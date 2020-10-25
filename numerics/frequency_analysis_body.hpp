@@ -29,12 +29,14 @@ using quantities::Square;
 using quantities::SquareRoot;
 
 template<typename Function,
-         int wdegree,
+         int aperiodic_wdegree, int periodic_wdegree,
          template<typename, typename, int> class Evaluator>
 AngularFrequency PreciseMode(
     Interval<AngularFrequency> const& fft_mode,
     Function const& function,
-    PoissonSeries<double, wdegree, Evaluator> const& weight) {
+    PoissonSeries<double,
+                  aperiodic_wdegree, periodic_wdegree,
+                  Evaluator> const& weight) {
   auto const weighted_function = weight * function;
   auto const weighted_function_spectrum = weighted_function.FourierTransform();
 
@@ -49,14 +51,18 @@ AngularFrequency PreciseMode(
                std::greater<>());
 }
 
-template<int degree,
+template<int aperiodic_degree, int periodic_degree,
          typename Function,
-         int wdegree,
+         int aperiodic_wdegree, int periodic_wdegree,
          template<typename, typename, int> class Evaluator>
-PoissonSeries<std::invoke_result_t<Function, Instant>, degree, Evaluator>
+PoissonSeries<std::invoke_result_t<Function, Instant>,
+              aperiodic_degree, periodic_degree,
+              Evaluator>
 Projection(Function const& function,
            AngularFrequency const& ω,
-           PoissonSeries<double, wdegree, Evaluator> const& weight,
+           PoissonSeries<double,
+                         aperiodic_wdegree, periodic_wdegree,
+                         Evaluator> const& weight,
            Instant const& t_min,
            Instant const& t_max) {
   std::optional<AngularFrequency> optional_ω = ω;
@@ -76,18 +82,19 @@ Projection(Function const& function,
 
 template<int aperiodic_degree, int periodic_degree,
          typename Function,
-         typename AngularFrequencyCalculator, int wdegree,
+         typename AngularFrequencyCalculator,
+         int aperiodic_wdegree, int periodic_wdegree,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<std::invoke_result_t<Function, Instant>,
-              std::max(aperiodic_degree, periodic_degree),
+              aperiodic_degree, periodic_degree,
               Evaluator>
 IncrementalProjection(Function const& function,
                       AngularFrequencyCalculator const& calculator,
-                      PoissonSeries<double, wdegree, Evaluator> const& weight,
+                      PoissonSeries<double,
+                                    aperiodic_wdegree, periodic_wdegree,
+                                    Evaluator> const& weight,
                       Instant const& t_min,
                       Instant const& t_max) {
-  constexpr int degree = std::max(aperiodic_degree, periodic_degree);
-
   using Value = std::invoke_result_t<Function, Instant>;
   using Norm = typename Hilbert<Value>::NormType;
   using Normalized = typename Hilbert<Value>::NormalizedType;
