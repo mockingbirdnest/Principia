@@ -13,6 +13,8 @@
 #include "gtest/gtest.h"
 #include "numerics/apodization.hpp"
 #include "numerics/fast_fourier_transform.hpp"
+#include "numerics/piecewise_poisson_series.hpp"
+#include "numerics/poisson_series.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"

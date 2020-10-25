@@ -3,9 +3,14 @@
 
 #include "numerics/piecewise_poisson_series.hpp"
 
+#include "quantities/elementary_functions.hpp"
+
 namespace principia {
 namespace numerics {
 namespace internal_piecewise_poisson_series {
+
+using quantities::Cos;
+using quantities::Sin;
 
 template<typename Value, int degree_,
          template<typename, typename, int> class Evaluator>
