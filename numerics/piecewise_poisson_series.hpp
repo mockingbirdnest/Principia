@@ -1,7 +1,9 @@
 ﻿
 #pragma once
 
+#include <algorithm>
 #include <optional>
+#include <string>
 #include <vector>
 
 #include "base/macros.hpp"
