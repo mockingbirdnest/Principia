@@ -1,10 +1,11 @@
 ﻿
-#include "numerics/poisson_series.hpp"
+#include "numerics/piecewise_poisson_series.hpp"
 
 #include <functional>
 #include <limits>
 #include <memory>
 
+#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
@@ -25,17 +26,32 @@
 namespace principia {
 namespace numerics {
 
+using geometry::Displacement;
+using geometry::Frame;
+using geometry::Handedness;
+using geometry::Inertial;
 using geometry::Instant;
 using quantities::AngularFrequency;
+using quantities::Cos;
+using quantities::Sin;
 using quantities::Sqrt;
+using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
+using testing_utilities::IsNear;
 using testing_utilities::VanishesBefore;
+using testing_utilities::RelativeErrorFrom;
+using testing_utilities::operator""_⑴;
 
 class PiecewisePoissonSeriesTest : public ::testing::Test {
  protected:
+  using World = Frame<serialization::Frame::TestTag,
+                      Inertial,
+                      Handedness::Right,
+                      serialization::Frame::TEST>;
+
   using Degree0 = PiecewisePoissonSeries<double, 0, HornerEvaluator>;
 
   PiecewisePoissonSeriesTest()
@@ -205,7 +221,7 @@ TEST_F(PiecewisePoissonSeriesTest, InnerProductMultiorigin) {
 }
 
 TEST_F(PiecewisePoissonSeriesTest, Fourier) {
-  Degree0::Polynomial constant({1.0}, t0_);
+  Degree0::Series::Polynomial constant({1.0}, t0_);
   AngularFrequency const ω = 4 * Radian / Second;
   PoissonSeries<Displacement<World>, 0, HornerEvaluator> signal(
       constant * Displacement<World>{},

@@ -17,7 +17,7 @@
 
 namespace principia {
 namespace numerics {
-FORWARD_DECLARE_FROM(poisson_series,
+FORWARD_DECLARE_FROM(piecewise_poisson_series,
                      TEMPLATE(typename Value, int degree_,
                               template<typename, typename, int> class Evaluator)
                               class,
@@ -43,6 +43,7 @@ using geometry::Complexification;
 using geometry::Hilbert;
 using geometry::Instant;
 using geometry::Interval;
+using quantities::AngularFrequency;
 using quantities::Primitive;
 using quantities::Product;
 using quantities::Quotient;
@@ -309,7 +310,7 @@ InnerProduct(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
 
 }  // namespace internal_piecewise_poisson_series
 
-using internal_poisson_series::PiecewisePoissonSeries;
+using internal_piecewise_poisson_series::PiecewisePoissonSeries;
 
 }  // namespace numerics
 }  // namespace principia
