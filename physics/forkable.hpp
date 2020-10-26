@@ -1,12 +1,12 @@
 ﻿
 #pragma once
 
-#include <deque>
-#include <optional>
 #include <map>
 #include <memory>
+#include <optional>
 #include <vector>
 
+#include "absl/container/inlined_vector.h"
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "serialization/physics.pb.h"
@@ -84,9 +84,10 @@ class ForkableIterator {
   void CheckNormalizedIfEnd();
 
   // |ancestry_| is never empty.  |current_| is an iterator in the timeline
-  // for |ancestry_.front()|.  |current_| may be at end.
+  // for |ancestry_.back()|.  |current_| may be at end.
   TimelineConstIterator current_;
-  std::deque<not_null<Tr4jectory const*>> ancestry_;  // Pointers not owned.
+  absl::InlinedVector<not_null<Tr4jectory const*>, 2>
+      ancestry_;  // Pointers not owned.
 
   template<typename, typename, typename>
   friend class Forkable;
