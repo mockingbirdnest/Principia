@@ -135,21 +135,14 @@ IncrementalProjection(Function const& function,
                             aperiodic_degree, periodic_degree,
                             Evaluator>> q;
 
-  using FType = PoissonSeries<Value,
-                              aperiodic_degree, aperiodic_degree,
-                              Evaluator>;
-  using QType = PoissonSeries<Normalized,
-                              aperiodic_degree, aperiodic_degree,
-                              Evaluator>;
-
   auto const a₀ = basis[0];
   auto const r₀₀ = a₀.Norm(weight, t_min, t_max);
   q.push_back(a₀ / r₀₀);
 
-  auto const A₀ = InnerProduct(function, QType(q[0]), weight, t_min, t_max);
+  auto const A₀ = InnerProduct(function, q[0], weight, t_min, t_max);
 
   Series F = A₀ * q[0];
-  auto f = function - FType(F);
+  auto f = function - F;
 
   int m_begin = 1;
   for (;;) {
@@ -164,9 +157,9 @@ IncrementalProjection(Function const& function,
       q.push_back(aₘ⁽ᵏ⁾ / rₘₘ);
       DCHECK_EQ(m + 1, q.size());
 
-      Norm const Aₘ = InnerProduct(f, QType(q[m]), weight, t_min, t_max);
+      Norm const Aₘ = InnerProduct(f, q[m], weight, t_min, t_max);
 
-      f -= FType(Aₘ * q[m]);
+      f -= Aₘ * q[m];
       F += Aₘ * q[m];
     }
 

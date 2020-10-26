@@ -52,7 +52,7 @@ class PiecewisePoissonSeriesTest : public ::testing::Test {
                       Handedness::Right,
                       serialization::Frame::TEST>;
 
-  using Degree0 = PiecewisePoissonSeries<double, 0, HornerEvaluator>;
+  using Degree0 = PiecewisePoissonSeries<double, 0, 0, HornerEvaluator>;
 
   PiecewisePoissonSeriesTest()
       : ω_(π / 2 * Radian / Second),
@@ -203,20 +203,28 @@ TEST_F(PiecewisePoissonSeriesTest, ActionMultiorigin) {
 }
 
 TEST_F(PiecewisePoissonSeriesTest, InnerProduct) {
-  double const d1 = InnerProduct<double, double, 0, 0, 0, HornerEvaluator, 8>(
-      pp_, p_, apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
-  double const d2 = InnerProduct<double, double, 0, 0, 0, HornerEvaluator, 8>(
-      p_, pp_, apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
+  double const d1 =
+      InnerProduct<double, double, 0, 0, 0, 0, 0, 0, HornerEvaluator, 8>(
+          pp_, p_,
+          apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
+  double const d2 =
+      InnerProduct<double, double, 0, 0, 0, 0, 0, 0, HornerEvaluator, 8>(
+          p_, pp_,
+          apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
   EXPECT_THAT(d1, AlmostEquals((3 * π - 26) / (8 * π), 0));
   EXPECT_THAT(d2, AlmostEquals((3 * π - 26) / (8 * π), 0));
 }
 
 TEST_F(PiecewisePoissonSeriesTest, InnerProductMultiorigin) {
   auto const p = p_.AtOrigin(t0_ + 2 * Second);
-  double const d1 = InnerProduct<double, double, 0, 0, 0, HornerEvaluator, 8>(
-      pp_, p, apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
-  double const d2 = InnerProduct<double, double, 0, 0, 0, HornerEvaluator, 8>(
-      p, pp_, apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
+  double const d1 =
+      InnerProduct<double, double, 0, 0, 0, 0, 0, 0, HornerEvaluator, 8>(
+          pp_, p,
+          apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
+  double const d2 =
+      InnerProduct<double, double, 0, 0, 0, 0, 0, 0, HornerEvaluator, 8>(
+          p, pp_,
+          apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
   EXPECT_THAT(d1, AlmostEquals((3 * π - 26) / (8 * π), 0));
   EXPECT_THAT(d2, AlmostEquals((3 * π - 26) / (8 * π), 0));
 }
@@ -235,7 +243,7 @@ TEST_F(PiecewisePoissonSeriesTest, Fourier) {
   // Slice our signal into segments short enough that one-point Gauss-Legendre
   // (also known as midpoint) does the job.
   constexpr int segments = 100;
-  PiecewisePoissonSeries<Displacement<World>, 0, HornerEvaluator> f(
+  PiecewisePoissonSeries<Displacement<World>, 0, 0, HornerEvaluator> f(
       {t0_, t0_ + π * Second / segments}, signal);
   for (int k = 1; k < segments; ++k) {
     f.Append({t0_ + k * π * Second / segments,

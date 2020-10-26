@@ -443,7 +443,7 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
   Instant const t_max = trajectory->t_max() - 3 * step / number_of_substeps;
   EXPECT_EQ(3, trajectory->PiecewisePoissonSeriesDegree(t_min, t_max));
   auto const piecewise_poisson_series =
-      trajectory->ToPiecewisePoissonSeries<3>(t_min, t_max);
+      trajectory->ToPiecewisePoissonSeries<3, 0>(t_min, t_max);
   EXPECT_EQ(t_min, piecewise_poisson_series.t_min());
   EXPECT_EQ(t_max, piecewise_poisson_series.t_max());
   for (Instant time = t_min; time <= t_max; time += step / number_of_substeps) {

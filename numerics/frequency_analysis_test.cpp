@@ -115,7 +115,8 @@ TEST_F(FrequencyAnalysisTest, PreciseModeScalar) {
   std::uniform_real_distribution<> amplitude_distribution(-0.1, 0.1);
   std::uniform_real_distribution<> frequency_distribution(-100.0, 100.0);
 
-  using PiecewiseSeries0 = PiecewisePoissonSeries<Length, 0, HornerEvaluator>;
+  using PiecewiseSeries0 =
+      PiecewisePoissonSeries<Length, 0, 0, HornerEvaluator>;
   using Series0 = PiecewiseSeries0::Series;
   Series0::PolynomialsByAngularFrequency polynomials;
 
@@ -172,7 +173,7 @@ TEST_F(FrequencyAnalysisTest, PreciseModeVector) {
   Time const Δt = 1 * Second;
 
   using PiecewiseSeries0 =
-      PiecewisePoissonSeries<Displacement<World>, 0, HornerEvaluator>;
+      PiecewisePoissonSeries<Displacement<World>, 0, 0, HornerEvaluator>;
   using Series0 = PiecewiseSeries0::Series;
   Series0::PolynomialsByAngularFrequency polynomials;
 
@@ -348,7 +349,8 @@ TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
   std::uniform_real_distribution<> amplitude_distribution(-10.0, 10.0);
   std::uniform_real_distribution<> perturbation_distribution(-1e-6, 1e-6);
 
-  using PiecewiseSeries4 = PiecewisePoissonSeries<Length, 4, HornerEvaluator>;
+  using PiecewiseSeries4 =
+      PiecewisePoissonSeries<Length, 4, 4, HornerEvaluator>;
 
   auto const sin = random_polynomial4_(t0_, random, amplitude_distribution);
   auto const cos = random_polynomial4_(t0_, random, amplitude_distribution);
