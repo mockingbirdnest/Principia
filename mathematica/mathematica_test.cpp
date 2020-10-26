@@ -349,12 +349,12 @@ TEST_F(MathematicaTest, ToMathematica) {
         ToMathematica(polynomial2));
   }
   {
-    using Series = PoissonSeries<double, 0, HornerEvaluator>;
+    using Series = PoissonSeries<double, 0, 0, HornerEvaluator>;
     Instant const t0 = Instant() + 3 * Second;
-    Series series(Series::Polynomial({1.5}, t0),
+    Series series(Series::AperiodicPolynomial({1.5}, t0),
                   {{4 * Radian / Second,
-                    {/*sin=*/Series::Polynomial({0.5}, t0),
-                     /*cos=*/Series::Polynomial({-1}, t0)}}});
+                    {/*sin=*/Series::PeriodicPolynomial({0.5}, t0),
+                     /*cos=*/Series::PeriodicPolynomial({-1}, t0)}}});
     EXPECT_EQ(
         "Function["
         "Plus["
@@ -393,10 +393,10 @@ TEST_F(MathematicaTest, ToMathematica) {
     using PiecewiseSeries = PiecewisePoissonSeries<double, 0, HornerEvaluator>;
     using Series = PiecewiseSeries::Series;
     Instant const t0 = Instant() + 3 * Second;
-    Series series(Series::Polynomial({1.5}, t0),
+    Series series(Series::AperiodicPolynomial({1.5}, t0),
                   {{4 * Radian / Second,
-                    {/*sin=*/Series::Polynomial({0.5}, t0),
-                     /*cos=*/Series::Polynomial({-1}, t0)}}});
+                    {/*sin=*/Series::PeriodicPolynomial({0.5}, t0),
+                     /*cos=*/Series::PeriodicPolynomial({-1}, t0)}}});
     Interval<Instant> interval{t0 - 2 * Second, t0 + 3 * Second};
     PiecewiseSeries pw(interval, series);
     EXPECT_EQ(

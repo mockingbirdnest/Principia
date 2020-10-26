@@ -38,7 +38,7 @@ class PoissonSeriesBasisTest : public ::testing::Test {
                       Handedness::Right,
                       serialization::Frame::TEST>;
 
-  using Series3 = PoissonSeries<Displacement<World>, 3, HornerEvaluator>;
+  using Series3 = PoissonSeries<Displacement<World>, 3, 3, HornerEvaluator>;
 
   Instant const t0_;
 };

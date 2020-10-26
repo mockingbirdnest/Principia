@@ -67,8 +67,7 @@ class AnalyticalSeriesTest : public ::testing::Test {
 
   template<int degree>
   PoissonSeries<Displacement<ICRS>,
-                std::max(aperiodic_approximation_degree,
-                         periodic_approximation_degree),
+                aperiodic_approximation_degree, periodic_approximation_degree,
                 EstrinEvaluator>
   ComputeCompactRepresentation(ContinuousTrajectory<ICRS> const& trajectory) {
     Instant const t_min = trajectory.t_min();
@@ -140,16 +139,16 @@ class AnalyticalSeriesTest : public ::testing::Test {
   mathematica::Logger logger_;
 };
 
-#define PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(         \
-    degree, approximation, trajectory)                         \
-  case degree: {                                               \
-    approximation = std::make_unique<                          \
-        PoissonSeries<Displacement<ICRS>,                      \
-                      std::max(aperiodic_approximation_degree, \
-                               periodic_approximation_degree), \
-                      EstrinEvaluator>>(                       \
-        ComputeCompactRepresentation<(degree)>(trajectory));   \
-    break;                                                     \
+#define PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(                 \
+    degree, approximation, trajectory)                                 \
+  case degree: {                                                       \
+    approximation =                                                    \
+        std::make_unique<PoissonSeries<Displacement<ICRS>,             \
+                                       aperiodic_approximation_degree, \
+                                       periodic_approximation_degree,  \
+                                       EstrinEvaluator>>(              \
+            ComputeCompactRepresentation<(degree)>(trajectory));       \
+    break;                                                             \
   }
 
 #if !_DEBUG
@@ -178,8 +177,8 @@ TEST_F(AnalyticalSeriesTest, CompactRepresentation) {
         celestial_trajectory.PiecewisePoissonSeriesDegree(
             celestial_trajectory.t_min(), celestial_trajectory.t_max());
     std::unique_ptr<PoissonSeries<Displacement<ICRS>,
-                                  std::max(aperiodic_approximation_degree,
-                                           periodic_approximation_degree),
+                                  aperiodic_approximation_degree,
+                                  periodic_approximation_degree,
                                   EstrinEvaluator>>
         celestial_approximation;
 

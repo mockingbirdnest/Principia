@@ -30,42 +30,44 @@ struct SeriesGenerator {
 
  private:
   // The polynomial tⁿ.
-  static typename Series::Polynomial Unit(Instant const& origin);
+  template<typename Polynomial>
+  static Polynomial Unit(Instant const& origin);
 };
 
 template<typename Series, int n, int d>
 Series SeriesGenerator<Series, n, d>::Aperiodic(Instant const& origin) {
-  return Series(Unit(origin), {});
+  return Series(Unit<typename Series::AperiodicPolynomial>(origin), {});
 }
 
 template<typename Series, int n, int d>
 Series SeriesGenerator<Series, n, d>::Sin(AngularFrequency const& ω,
                                           Instant const& origin) {
-  typename Series::Polynomial::Coefficients const zeros;
-  typename Series::Polynomial const zero{zeros, origin};
-  return Series(zero,
+  typename Series::AperiodicPolynomial const aperiodic_zero{{}, origin};
+  typename Series::PeriodicPolynomial const periodic_zero{{}, origin};
+  return Series(aperiodic_zero,
                 {{ω,
-                  {/*sin=*/Unit(origin),
-                   /*cos=*/zero}}});
+                  {/*sin=*/Unit<typename Series::PeriodicPolynomial>(origin),
+                   /*cos=*/periodic_zero}}});
 }
 
 template<typename Series, int n, int d>
 Series SeriesGenerator<Series, n, d>::Cos(AngularFrequency const& ω,
                                           Instant const& origin) {
-  typename Series::Polynomial::Coefficients const zeros;
-  typename Series::Polynomial const zero{zeros, origin};
-  return Series(zero,
-                {{ω,
-                  {/*sin=*/zero,
-                   /*cos=*/Unit(origin)}}});
+  typename Series::AperiodicPolynomial const aperiodic_zero{{}, origin};
+  typename Series::PeriodicPolynomial const periodic_zero{{}, origin};
+  return Series(
+      aperiodic_zero,
+      {{ω,
+        {/*sin=*/periodic_zero,
+         /*cos=*/Unit<typename Series::PeriodicPolynomial>(origin)}}});
 }
 
 template<typename Series, int n, int d>
-typename Series::Polynomial SeriesGenerator<Series, n, d>::Unit(
-    Instant const& origin) {
-  typename Series::Polynomial::Coefficients coefficients;
+template<typename Polynomial>
+Polynomial SeriesGenerator<Series, n, d>::Unit(Instant const& origin) {
+  typename Polynomial::Coefficients coefficients;
   using Coefficient =
-      std::tuple_element_t<n, typename Series::Polynomial::Coefficients>;
+      std::tuple_element_t<n, typename Polynomial::Coefficients>;
   Coefficient& coefficient = std::get<n>(coefficients);
   if constexpr (is_quantity_v<Coefficient>) {
     coefficient = si::Unit<Coefficient>;
@@ -79,7 +81,7 @@ typename Series::Polynomial SeriesGenerator<Series, n, d>::Unit(
       coefficient = Coefficient({Scalar{}, Scalar{}, si::Unit<Scalar>});
     }
   }
-  return typename Series::Polynomial(coefficients, origin);
+  return Polynomial(coefficients, origin);
 }
 
 template<typename Series, int dimension, int degree, std::size_t... indices>

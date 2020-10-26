@@ -29,12 +29,14 @@ using quantities::Square;
 using quantities::SquareRoot;
 
 template<typename Function,
-         int wdegree,
+         int aperiodic_wdegree, int periodic_wdegree,
          template<typename, typename, int> class Evaluator>
 AngularFrequency PreciseMode(
     Interval<AngularFrequency> const& fft_mode,
     Function const& function,
-    PoissonSeries<double, wdegree, Evaluator> const& weight) {
+    PoissonSeries<double,
+                  aperiodic_wdegree, periodic_wdegree,
+                  Evaluator> const& weight) {
   auto const weighted_function = weight * function;
   auto const weighted_function_spectrum = weighted_function.FourierTransform();
 
@@ -49,14 +51,18 @@ AngularFrequency PreciseMode(
                std::greater<>());
 }
 
-template<int degree,
+template<int aperiodic_degree, int periodic_degree,
          typename Function,
-         int wdegree,
+         int aperiodic_wdegree, int periodic_wdegree,
          template<typename, typename, int> class Evaluator>
-PoissonSeries<std::invoke_result_t<Function, Instant>, degree, Evaluator>
+PoissonSeries<std::invoke_result_t<Function, Instant>,
+              aperiodic_degree, periodic_degree,
+              Evaluator>
 Projection(Function const& function,
            AngularFrequency const& ω,
-           PoissonSeries<double, wdegree, Evaluator> const& weight,
+           PoissonSeries<double,
+                         aperiodic_wdegree, periodic_wdegree,
+                         Evaluator> const& weight,
            Instant const& t_min,
            Instant const& t_max) {
   std::optional<AngularFrequency> optional_ω = ω;
@@ -68,30 +74,34 @@ Projection(Function const& function,
     return result;
   };
 
-  return IncrementalProjection<degree>(function,
-                                        angular_frequency_calculator,
-                                        weight,
-                                        t_min, t_max);
+  return IncrementalProjection<aperiodic_degree, periodic_degree>(
+      function,
+      angular_frequency_calculator,
+      weight,
+      t_min, t_max);
 }
 
 template<int aperiodic_degree, int periodic_degree,
          typename Function,
-         typename AngularFrequencyCalculator, int wdegree,
+         typename AngularFrequencyCalculator,
+         int aperiodic_wdegree, int periodic_wdegree,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<std::invoke_result_t<Function, Instant>,
-              std::max(aperiodic_degree, periodic_degree),
+              aperiodic_degree, periodic_degree,
               Evaluator>
 IncrementalProjection(Function const& function,
                       AngularFrequencyCalculator const& calculator,
-                      PoissonSeries<double, wdegree, Evaluator> const& weight,
+                      PoissonSeries<double,
+                                    aperiodic_wdegree, periodic_wdegree,
+                                    Evaluator> const& weight,
                       Instant const& t_min,
                       Instant const& t_max) {
-  constexpr int degree = std::max(aperiodic_degree, periodic_degree);
-
   using Value = std::invoke_result_t<Function, Instant>;
   using Norm = typename Hilbert<Value>::NormType;
   using Normalized = typename Hilbert<Value>::NormalizedType;
-  using Series = PoissonSeries<Value, degree, Evaluator>;
+  using Series = PoissonSeries<Value,
+                               aperiodic_degree, periodic_degree,
+                               Evaluator>;
 
   // This code follows [Kud07], section 2.  Our indices start at 0, unlike those
   // of Кудрявцев which start at 1.
@@ -121,16 +131,25 @@ IncrementalProjection(Function const& function,
   }
 
   // This is logically Q in the QR decomposition of basis.
-  std::vector<PoissonSeries<Normalized, degree, Evaluator>> q;
+  std::vector<PoissonSeries<Normalized,
+                            aperiodic_degree, periodic_degree,
+                            Evaluator>> q;
+
+  using FType = PoissonSeries<Value,
+                              aperiodic_degree, aperiodic_degree,
+                              Evaluator>;
+  using QType = PoissonSeries<Normalized,
+                              aperiodic_degree, aperiodic_degree,
+                              Evaluator>;
 
   auto const a₀ = basis[0];
   auto const r₀₀ = a₀.Norm(weight, t_min, t_max);
   q.push_back(a₀ / r₀₀);
 
-  auto const A₀ = InnerProduct(function, q[0], weight, t_min, t_max);
+  auto const A₀ = InnerProduct(function, QType(q[0]), weight, t_min, t_max);
 
-  PoissonSeries<Value, degree, Evaluator> F = A₀ * q[0];
-  auto f = function - F;
+  Series F = A₀ * q[0];
+  auto f = function - FType(F);
 
   int m_begin = 1;
   for (;;) {
@@ -145,9 +164,9 @@ IncrementalProjection(Function const& function,
       q.push_back(aₘ⁽ᵏ⁾ / rₘₘ);
       DCHECK_EQ(m + 1, q.size());
 
-      Norm const Aₘ = InnerProduct(f, q[m], weight, t_min, t_max);
+      Norm const Aₘ = InnerProduct(f, QType(q[m]), weight, t_min, t_max);
 
-      f -= Aₘ * q[m];
+      f -= FType(Aₘ * q[m]);
       F += Aₘ * q[m];
     }
 

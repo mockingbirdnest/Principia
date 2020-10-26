@@ -64,7 +64,7 @@ template<typename Value, int degree_,
 class PiecewisePoissonSeries {
  public:
   static constexpr int degree = degree_;
-  using Series = PoissonSeries<Value, degree_, Evaluator>;
+  using Series = PoissonSeries<Value, degree_, degree_, Evaluator>;
   using Spectrum = std::function<Complexification<Primitive<Value, Time>>(
       AngularFrequency const&)>;
 
@@ -99,10 +99,10 @@ class PiecewisePoissonSeries {
 
   template<int d>
   PiecewisePoissonSeries& operator+=(
-      PoissonSeries<Value, d, Evaluator> const& right);
+      PoissonSeries<Value, d, d, Evaluator> const& right);
   template<int d>
   PiecewisePoissonSeries& operator-=(
-      PoissonSeries<Value, d, Evaluator> const& right);
+      PoissonSeries<Value, d, d, Evaluator> const& right);
 
   void WriteToMessage(
       not_null<serialization::PiecewisePoissonSeries*> message) const;
@@ -140,44 +140,44 @@ class PiecewisePoissonSeries {
                    S const& right);
   template<typename V, int l, int r, template<typename, typename, int> class E>
   PiecewisePoissonSeries<V, std::max(l, r), E>
-  friend operator+(PoissonSeries<V, l, E> const& left,
+  friend operator+(PoissonSeries<V, l, l, E> const& left,
                    PiecewisePoissonSeries<V, r, E> const& right);
   template<typename V, int l, int r, template<typename, typename, int> class E>
   PiecewisePoissonSeries<V, std::max(l, r), E>
   friend operator+(PiecewisePoissonSeries<V, l, E> const& left,
-                   PoissonSeries<V, r, E> const& right);
+                   PoissonSeries<V, r, r, E> const& right);
   template<typename V, int l, int r, template<typename, typename, int> class E>
   PiecewisePoissonSeries<V, std::max(l, r), E>
-  friend operator-(PoissonSeries<V, l, E> const& left,
+  friend operator-(PoissonSeries<V, l, l, E> const& left,
                    PiecewisePoissonSeries<V, r, E> const& right);
   template<typename V, int l, int r, template<typename, typename, int> class E>
   PiecewisePoissonSeries<V, std::max(l, r), E>
   friend operator-(PiecewisePoissonSeries<V, l, E> const& left,
-                   PoissonSeries<V, r, E> const& right);
+                   PoissonSeries<V, r, r, E> const& right);
   template<typename L, typename R, int l, int r,
            template<typename, typename, int> class E>
   PiecewisePoissonSeries<Product<L, R>, l + r, E>
-  friend operator*(PoissonSeries<L, l, E> const& left,
+  friend operator*(PoissonSeries<L, l, l, E> const& left,
                    PiecewisePoissonSeries<R, r, E> const& right);
   template<typename L, typename R, int l, int r,
            template<typename, typename, int> class E>
   PiecewisePoissonSeries<Product<L, R>, l + r, E>
   friend operator*(PiecewisePoissonSeries<L, l, E> const& left,
-                   PoissonSeries<R, r, E> const& right);
+                   PoissonSeries<R, r, r, E> const& right);
   template<typename L, typename R, int l, int r, int w,
            template<typename, typename, int> class E, int p>
   typename Hilbert<L, R>::InnerProductType
-  friend InnerProduct(PoissonSeries<L, l, E> const& left,
+  friend InnerProduct(PoissonSeries<L, l, l, E> const& left,
                       PiecewisePoissonSeries<R, r, E> const& right,
-                      PoissonSeries<double, w, E> const& weight,
+                      PoissonSeries<double, w, w, E> const& weight,
                       Instant const& t_min,
                       Instant const& t_max);
   template<typename L, typename R, int l, int r, int w,
            template<typename, typename, int> class E, int p>
   typename Hilbert<L, R>::InnerProductType
   friend InnerProduct(PiecewisePoissonSeries<L, l, E> const& left,
-                      PoissonSeries<R, r, E> const& right,
-                      PoissonSeries<double, w, E> const& weight,
+                      PoissonSeries<R, r, r, E> const& right,
+                      PoissonSeries<double, w, w, E> const& weight,
                       Instant const& t_min,
                       Instant const& t_max);
   template<typename V, int d,
@@ -227,32 +227,32 @@ operator/(PiecewisePoissonSeries<Value, degree_, Evaluator> const& left,
 template<typename Value, int ldegree_, int rdegree_,
          template<typename, typename, int> class Evaluator>
 PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>
-operator+(PoissonSeries<Value, ldegree_, Evaluator> const& left,
+operator+(PoissonSeries<Value, ldegree_, ldegree_, Evaluator> const& left,
           PiecewisePoissonSeries<Value, rdegree_, Evaluator> const& right);
 
 template<typename Value, int ldegree_, int rdegree_,
          template<typename, typename, int> class Evaluator>
 PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>
 operator+(PiecewisePoissonSeries<Value, ldegree_, Evaluator> const& left,
-          PoissonSeries<Value, rdegree_, Evaluator> const& right);
+          PoissonSeries<Value, rdegree_, rdegree_, Evaluator> const& right);
 
 template<typename Value, int ldegree_, int rdegree_,
          template<typename, typename, int> class Evaluator>
 PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>
-operator-(PoissonSeries<Value, ldegree_, Evaluator> const& left,
+operator-(PoissonSeries<Value, ldegree_, ldegree_, Evaluator> const& left,
           PiecewisePoissonSeries<Value, rdegree_, Evaluator> const& right);
 
 template<typename Value, int ldegree_, int rdegree_,
          template<typename, typename, int> class Evaluator>
 PiecewisePoissonSeries<Value, std::max(ldegree_, rdegree_), Evaluator>
 operator-(PiecewisePoissonSeries<Value, ldegree_, Evaluator> const& left,
-          PoissonSeries<Value, rdegree_, Evaluator> const& right);
+          PoissonSeries<Value, rdegree_, rdegree_, Evaluator> const& right);
 
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_,
          template<typename, typename, int> class Evaluator>
 PiecewisePoissonSeries<Product<LValue, RValue>, ldegree_ + rdegree_, Evaluator>
-operator*(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
+operator*(PoissonSeries<LValue, ldegree_, ldegree_, Evaluator> const& left,
           PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right);
 
 template<typename LValue, typename RValue,
@@ -260,7 +260,18 @@ template<typename LValue, typename RValue,
          template<typename, typename, int> class Evaluator>
 PiecewisePoissonSeries<Product<LValue, RValue>, ldegree_ + rdegree_, Evaluator>
 operator*(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
-          PoissonSeries<RValue, rdegree_, Evaluator> const& right);
+          PoissonSeries<RValue, rdegree_, rdegree_, Evaluator> const& right);
+
+template<typename LValue, typename RValue,
+         int ldegree_, int rdegree_, int wdegree_,
+         template<typename, typename, int> class Evaluator,
+         int points = (ldegree_ + estimated_trigonometric_degree +
+                       rdegree_ + estimated_trigonometric_degree +
+                       wdegree_ + estimated_trigonometric_degree) / 2>
+typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
+    PoissonSeries<LValue, ldegree_, ldegree_, Evaluator> const& left,
+    PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
+    PoissonSeries<double, wdegree_, wdegree_, Evaluator> const& weight);
 
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
@@ -269,20 +280,9 @@ template<typename LValue, typename RValue,
                        rdegree_ + estimated_trigonometric_degree +
                        wdegree_ + estimated_trigonometric_degree) / 2>
 typename Hilbert<LValue, RValue>::InnerProductType
-InnerProduct(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
+InnerProduct(PoissonSeries<LValue, ldegree_, ldegree_, Evaluator> const& left,
              PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
-             PoissonSeries<double, wdegree_, Evaluator> const& weight);
-
-template<typename LValue, typename RValue,
-         int ldegree_, int rdegree_, int wdegree_,
-         template<typename, typename, int> class Evaluator,
-         int points = (ldegree_ + estimated_trigonometric_degree +
-                       rdegree_ + estimated_trigonometric_degree +
-                       wdegree_ + estimated_trigonometric_degree) / 2>
-typename Hilbert<LValue, RValue>::InnerProductType
-InnerProduct(PoissonSeries<LValue, ldegree_, Evaluator> const& left,
-             PiecewisePoissonSeries<RValue, rdegree_, Evaluator> const& right,
-             PoissonSeries<double, wdegree_, Evaluator> const& weight,
+             PoissonSeries<double, wdegree_, wdegree_, Evaluator> const& weight,
              Instant const& t_min,
              Instant const& t_max);
 
@@ -292,10 +292,10 @@ template<typename LValue, typename RValue,
          int points = (ldegree_ + estimated_trigonometric_degree +
                        rdegree_ + estimated_trigonometric_degree +
                        wdegree_ + estimated_trigonometric_degree) / 2>
-typename Hilbert<LValue, RValue>::InnerProductType
-InnerProduct(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
-             PoissonSeries<RValue, rdegree_, Evaluator> const& right,
-             PoissonSeries<double, wdegree_, Evaluator> const& weight);
+typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
+    PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
+    PoissonSeries<RValue, rdegree_, rdegree_, Evaluator> const& right,
+    PoissonSeries<double, wdegree_, wdegree_, Evaluator> const& weight);
 
 template<typename LValue, typename RValue,
          int ldegree_, int rdegree_, int wdegree_,
@@ -305,8 +305,8 @@ template<typename LValue, typename RValue,
                        wdegree_ + estimated_trigonometric_degree) / 2>
 typename Hilbert<LValue, RValue>::InnerProductType
 InnerProduct(PiecewisePoissonSeries<LValue, ldegree_, Evaluator> const& left,
-             PoissonSeries<RValue, rdegree_, Evaluator> const& right,
-             PoissonSeries<double, wdegree_, Evaluator> const& weight,
+             PoissonSeries<RValue, rdegree_, rdegree_, Evaluator> const& right,
+             PoissonSeries<double, wdegree_, wdegree_, Evaluator> const& weight,
              Instant const& t_min,
              Instant const& t_max);
 
