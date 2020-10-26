@@ -68,8 +68,9 @@ template<typename Value,
          template<typename, typename, int> class Evaluator>
 class PiecewisePoissonSeries {
  public:
-  static constexpr int degree = degree_;
-  using Series = PoissonSeries<Value, degree_, degree_, Evaluator>;
+  using Series = PoissonSeries<Value,
+                               aperiodic_degree_, periodic_degree_,
+                               Evaluator>;
   using Spectrum = std::function<Complexification<Primitive<Value, Time>>(
       AngularFrequency const&)>;
 
@@ -102,12 +103,16 @@ class PiecewisePoissonSeries {
   // |*this| must outlive the resulting function.
   Spectrum FourierTransform() const;
 
-  template<int d>
+  template<int aperiodic_rdegree, int periodic_rdegree>
   PiecewisePoissonSeries& operator+=(
-      PoissonSeries<Value, d, d, Evaluator> const& right);
-  template<int d>
+      PoissonSeries<Value,
+                    aperiodic_rdegree, periodic_rdegree,
+                    Evaluator> const& right);
+  template<int aperiodic_rdegree, int periodic_rdegree>
   PiecewisePoissonSeries& operator-=(
-      PoissonSeries<Value, d, d, Evaluator> const& right);
+      PoissonSeries<Value,
+                    aperiodic_rdegree, periodic_rdegree,
+                    Evaluator> const& right);
 
   void WriteToMessage(
       not_null<serialization::PiecewisePoissonSeries*> message) const;
