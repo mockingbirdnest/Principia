@@ -212,10 +212,10 @@ template<typename V, int ad, int pd,
 std::string ToMathematica(PoissonSeries<V, ad, pd, E> const& series,
                           OptionalExpressIn express_in = std::nullopt);
 
-template<typename V, int d,
+template<typename V, int ad, int pd,
          template<typename, typename, int> class E,
          typename OptionalExpressIn = std::nullopt_t>
-std::string ToMathematica(PiecewisePoissonSeries<V, d, E> const& series,
+std::string ToMathematica(PiecewisePoissonSeries<V, ad, pd, E> const& series,
                           OptionalExpressIn express_in = std::nullopt);
 
 template<typename OptionalExpressIn = std::nullopt_t>

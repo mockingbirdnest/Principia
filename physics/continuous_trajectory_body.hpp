@@ -253,40 +253,61 @@ int ContinuousTrajectory<Frame>::PiecewisePoissonSeriesDegree(
   }
 
 template<typename Frame>
-template<int degree>
-PiecewisePoissonSeries<Displacement<Frame>, degree, EstrinEvaluator>
+template<int aperiodic_degree, int periodic_degree>
+PiecewisePoissonSeries<Displacement<Frame>,
+                        aperiodic_degree, periodic_degree,
+                        EstrinEvaluator>
 ContinuousTrajectory<Frame>::ToPiecewisePoissonSeries(
     Instant const& t_min,
     Instant const& t_max) const {
-  static_assert(degree >= min_degree && degree <= max_degree);
+  static_assert(aperiodic_degree >= min_degree &&
+                aperiodic_degree <= max_degree);
+  // No check on the periodic degree, it plays no role here.
   CHECK(!polynomials_.empty());
   using PiecewisePoisson =
-      PiecewisePoissonSeries<Displacement<Frame>, degree, EstrinEvaluator>;
-  // TODO(phl): Fix this once piecewise series have two degrees.
-  using Poisson =
-      PoissonSeries<Displacement<Frame>, degree, degree, EstrinEvaluator>;
+      PiecewisePoissonSeries<Displacement<Frame>,
+                             aperiodic_degree, periodic_degree,
+                             EstrinEvaluator>;
+  using Poisson = PoissonSeries<Displacement<Frame>,
+                                aperiodic_degree, periodic_degree,
+                                EstrinEvaluator>;
 
   auto cast_to_degree =
       [](not_null<Polynomial<Displacement<Frame>, Instant> const*> const
              polynomial)
       -> PolynomialInMonomialBasis<Displacement<Frame>, Instant,
-                                   degree, EstrinEvaluator> {
+                                   aperiodic_degree, EstrinEvaluator> {
     switch (polynomial->degree()) {
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 3, degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 4, degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 5, degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 6, degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 7, degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 8, degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 9, degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 10, degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 11, degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 12, degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 13, degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 14, degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 15, degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 16, degree);
-      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, 17, degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 3, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 4, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 5, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 6, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 7, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 8, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 9, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 10, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 11, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 12, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 13, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 14, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 15, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 16, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 17, aperiodic_degree);
       default:
         LOG(FATAL) << "Unexpected degree " << polynomial->degree();
     }

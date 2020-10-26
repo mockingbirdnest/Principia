@@ -99,8 +99,10 @@ class ContinuousTrajectory : public Trajectory<Frame> {
 
   // Computes a piecewise Poisson series covering the given time interval.  The
   // degree must be at least the one returned by the preceding function.
-  template<int degree>
-  PiecewisePoissonSeries<Displacement<Frame>, degree, EstrinEvaluator>
+  template<int aperiodic_degree, int periodic_degree>
+  PiecewisePoissonSeries<Displacement<Frame>,
+                         aperiodic_degree, periodic_degree,
+                         EstrinEvaluator>
   ToPiecewisePoissonSeries(Instant const& t_min,
                            Instant const& t_max) const;
 

@@ -390,7 +390,8 @@ TEST_F(MathematicaTest, ToMathematica) {
         ToMathematica(series));
   }
   {
-    using PiecewiseSeries = PiecewisePoissonSeries<double, 0, HornerEvaluator>;
+    using PiecewiseSeries =
+        PiecewisePoissonSeries<double, 0, 0, HornerEvaluator>;
     using Series = PiecewiseSeries::Series;
     Instant const t0 = Instant() + 3 * Second;
     Series series(Series::AperiodicPolynomial({1.5}, t0),

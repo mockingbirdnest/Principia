@@ -73,7 +73,7 @@ class AnalyticalSeriesTest : public ::testing::Test {
     Instant const t_min = trajectory.t_min();
     Instant const t_max = trajectory.t_max();
     auto const piecewise_poisson_series =
-        trajectory.ToPiecewisePoissonSeries<degree>(t_min, t_max);
+        trajectory.ToPiecewisePoissonSeries<degree, 0>(t_min, t_max);
 
     logger_.Set("tMin", t_min, mathematica::ExpressIn(Second));
     logger_.Set("tMax", t_max, mathematica::ExpressIn(Second));
