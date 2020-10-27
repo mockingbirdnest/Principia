@@ -49,16 +49,14 @@ constexpr int clenshaw_curtis_point_per_period = 4;
 // two successive computations with increasing number of points.
 constexpr double clenshaw_curtis_relative_error = 0x1p-32;
 
-//TODO(phl):comment
+// This function computes ∫ₜ₁ᵗ²(p(t) sin ω t + q(t) cos ω t) dt.
 template<typename Value,
          int degree,
          template<typename, typename, int> class Evaluator>
 quantities::Primitive<Value, Time> AngularFrequencyIntegrate(
     AngularFrequency const& ω,
-    PolynomialInMonomialBasis<
-        Value, Instant, degree, Evaluator> const& sin_polynomial,
-    PolynomialInMonomialBasis<
-        Value, Instant, degree, Evaluator> const& cos_polynomial,
+    PolynomialInMonomialBasis<Value, Instant, degree, Evaluator> const& p,
+    PolynomialInMonomialBasis<Value, Instant, degree, Evaluator> const& q,
     Instant const& t1,
     Instant const& t2,
     double const sin_t1,
@@ -67,21 +65,21 @@ quantities::Primitive<Value, Time> AngularFrequencyIntegrate(
     double const cos_t2) {
   static_assert(degree >= 0);
   Value sum{};  // DP?
-  //TODO(phl): Iserles, Huybrechs.
-  sum += cos_polynomial(t2) * sin_t2 - sin_polynomial(t2) * cos_t2;
-  sum -= cos_polynomial(t1) * sin_t1 - sin_polynomial(t1) * cos_t1;
+  sum += q(t2) * sin_t2 - p(t2) * cos_t2;
+  sum -= q(t1) * sin_t1 - p(t1) * cos_t1;
   if constexpr (degree > 0) {
-    sum += AngularFrequencyIntegrate(
-        ω,
-        /*sin_polynomial=*/-cos_polynomial.template Derivative<1>(),
-        /*cos_polynomial=*/sin_polynomial.template Derivative<1>(),
-        t1, t2,
-        sin_t1, cos_t1,
-        sin_t2, cos_t2);
+    sum += AngularFrequencyIntegrate(ω,
+                                     /*p=*/-q.template Derivative<1>(),
+                                     /*q=*/p.template Derivative<1>(),
+                                     t1, t2,
+                                     sin_t1, cos_t1,
+                                     sin_t2, cos_t2);
   }
   return sum / ω * Radian;
 }
 
+// This function computes ∫(p(t) sin ω t + q(t) cos ω t) dt where p and q are
+// the two parts of the polynomials argument.
 template<typename Value,
          int aperiodic_degree, int periodic_degree,
          template<typename, typename, int> class Evaluator>
@@ -330,6 +328,7 @@ Integrate(Instant const& t1,
   quantities::Primitive<Value, Time> result =
       aperiodic_primitive(t2) - aperiodic_primitive(t1);
   for (auto const& [ω, polynomials] : periodic_) {
+    // This implementation follows [HO09], Theorem 1 and [INO06] equation 4.
     // The trigonometric functions are computed only once as we recurse through
     // the degree of the polynomials.
     auto const sin_t1 = Sin(ω * (t1 - origin_));
@@ -337,8 +336,7 @@ Integrate(Instant const& t1,
     auto const sin_t2 = Sin(ω * (t2 - origin_));
     auto const cos_t2 = Cos(ω * (t2 - origin_));
     result += AngularFrequencyIntegrate(ω,
-                                        /*sin_polynomial=*/polynomials.sin,
-                                        /*cos_polynomial=*/polynomials.cos,
+                                        polynomials.sin, polynomials.cos,
                                         t1, t2,
                                         sin_t1, cos_t1,
                                         sin_t2, cos_t2);
