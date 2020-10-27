@@ -331,7 +331,7 @@ Integrate(Instant const& t1,
       aperiodic_primitive(t2) - aperiodic_primitive(t1);
   for (auto const& [ω, polynomials] : periodic_) {
     // This implementation follows [HO09], Theorem 1 and [INO06] equation 4.
-    // The trigonometric functions are computed only once as we recurse through
+    // The trigonometric functions are computed only once as we iterate through
     // the degree of the polynomials.
     auto const sin_ωt1 = Sin(ω * (t1 - origin_));
     auto const cos_ωt1 = Cos(ω * (t1 - origin_));
