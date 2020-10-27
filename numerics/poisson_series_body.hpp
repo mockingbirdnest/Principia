@@ -64,9 +64,11 @@ quantities::Primitive<Value, Time> AngularFrequencyIntegrate(
     double const sin_t2,
     double const cos_t2) {
   static_assert(degree >= 0);
-  Value sum{};  // DP?
-  sum += q(t2) * sin_t2 - p(t2) * cos_t2;
-  sum -= q(t1) * sin_t1 - p(t1) * cos_t1;
+  DoublePrecision<Value> sum;
+  sum += q(t2) * sin_t2;
+  sum -= p(t2) * cos_t2;
+  sum -= q(t1) * sin_t1;
+  sum += p(t1) * cos_t1;
   if constexpr (degree > 0) {
     sum += AngularFrequencyIntegrate(ω,
                                      /*p=*/-q.template Derivative<1>(),
@@ -75,7 +77,7 @@ quantities::Primitive<Value, Time> AngularFrequencyIntegrate(
                                      sin_t1, cos_t1,
                                      sin_t2, cos_t2);
   }
-  return sum / ω * Radian;
+  return (sum.value + sum.error) / ω * Radian;
 }
 
 // This function computes ∫(p(t) sin ω t + q(t) cos ω t) dt where p and q are
