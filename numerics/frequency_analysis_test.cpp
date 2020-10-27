@@ -496,8 +496,8 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
                           ? AllOf(Gt(3.3e-2 * Metre), Lt(3.6 * Metre))
                           : ω_index == 3
                                 ? AllOf(Gt(7.5e-3 * Metre), Lt(5.4 * Metre))
-                                : AllOf(Gt(1.5e-16 * Metre),
-                                        Lt(9.7e-14 * Metre)))
+                                : AllOf(Gt(5.1e-17 * Metre),
+                                        Lt(5.6e-14 * Metre)))
           << ω_index;
     }
     if (ω_index == ωs.size()) {
@@ -509,6 +509,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
 
   // Projection on a 4th degree basis reconstructs the function with a decent
   // accuracy.
+  //TODO(phl): Tighten all the error bounds.
   auto const projection4 =
       IncrementalProjection<4, 4>(
           series,

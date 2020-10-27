@@ -49,6 +49,39 @@ constexpr int clenshaw_curtis_point_per_period = 4;
 // two successive computations with increasing number of points.
 constexpr double clenshaw_curtis_relative_error = 0x1p-32;
 
+//TODO(phl):comment
+template<typename Value,
+         int degree,
+         template<typename, typename, int> class Evaluator>
+quantities::Primitive<Value, Time> AngularFrequencyIntegrate(
+    AngularFrequency const& ω,
+    PolynomialInMonomialBasis<
+        Value, Instant, degree, Evaluator> const& sin_polynomial,
+    PolynomialInMonomialBasis<
+        Value, Instant, degree, Evaluator> const& cos_polynomial,
+    Instant const& t1,
+    Instant const& t2,
+    double const sin_t1,
+    double const cos_t1,
+    double const sin_t2,
+    double const cos_t2) {
+  static_assert(degree >= 0);
+  Value sum{};  // DP?
+  //TODO(phl): Iserles, Huybrechs.
+  sum += cos_polynomial(t2) * sin_t2 - sin_polynomial(t2) * cos_t2;
+  sum -= cos_polynomial(t1) * sin_t1 - sin_polynomial(t1) * cos_t1;
+  if constexpr (degree > 0) {
+    sum += AngularFrequencyIntegrate(
+        ω,
+        /*sin_polynomial=*/-cos_polynomial.template Derivative<1>(),
+        /*cos_polynomial=*/sin_polynomial.template Derivative<1>(),
+        t1, t2,
+        sin_t1, cos_t1,
+        sin_t2, cos_t2);
+  }
+  return sum / ω * Radian;
+}
+
 template<typename Value,
          int aperiodic_degree, int periodic_degree,
          template<typename, typename, int> class Evaluator>
@@ -293,37 +326,22 @@ quantities::Primitive<Value, Time>
 PoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
 Integrate(Instant const& t1,
           Instant const& t2) const {
-  using FirstPart = PoissonSeries<Value,
-                                  0, periodic_degree_,
-                                  Evaluator>;
-  using SecondPart = PoissonSeries<Variation<Value>,
-                                   0, periodic_degree_ - 1,
-                                   Evaluator>;
   auto const aperiodic_primitive = aperiodic_.Primitive();
   quantities::Primitive<Value, Time> result =
       aperiodic_primitive(t2) - aperiodic_primitive(t1);
   for (auto const& [ω, polynomials] : periodic_) {
-    // Integration by parts.
-    FirstPart const first_part(
-        typename FirstPart::AperiodicPolynomial({}, origin_),
-        {{ω,
-          {/*sin=*/typename FirstPart::PeriodicPolynomial(polynomials.cos),
-           /*cos=*/typename FirstPart::PeriodicPolynomial(-polynomials.sin)}}});
-    DoublePrecision<Value> sum;
-    sum += first_part(t2);
-    sum -= first_part(t1);
-
-    if constexpr (periodic_degree_ != 0) {
-      auto const sin_polynomial = -polynomials.cos.template Derivative<1>();
-      auto const cos_polynomial = polynomials.sin.template Derivative<1>();
-      SecondPart const second_part(
-          typename SecondPart::AperiodicPolynomial({}, origin_),
-          {{ω,
-            {/*sin=*/sin_polynomial,
-             /*cos=*/cos_polynomial}}});
-      sum += second_part.Integrate(t1, t2);
-    }
-    result += (sum.value + sum.error) / ω * Radian;
+    // The trigonometric functions are computed only once as we recurse through
+    // the degree of the polynomials.
+    auto const sin_t1 = Sin(ω * (t1 - origin_));
+    auto const cos_t1 = Cos(ω * (t1 - origin_));
+    auto const sin_t2 = Sin(ω * (t2 - origin_));
+    auto const cos_t2 = Cos(ω * (t2 - origin_));
+    result += AngularFrequencyIntegrate(ω,
+                                        /*sin_polynomial=*/polynomials.sin,
+                                        /*cos_polynomial=*/polynomials.cos,
+                                        t1, t2,
+                                        sin_t1, cos_t1,
+                                        sin_t2, cos_t2);
   }
   return result;
 }
