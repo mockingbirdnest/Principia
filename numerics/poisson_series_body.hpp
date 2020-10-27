@@ -59,23 +59,23 @@ quantities::Primitive<Value, Time> AngularFrequencyIntegrate(
     PolynomialInMonomialBasis<Value, Instant, degree, Evaluator> const& q,
     Instant const& t1,
     Instant const& t2,
-    double const sin_t1,
-    double const cos_t1,
-    double const sin_t2,
-    double const cos_t2) {
+    double const sin_ωt1,
+    double const cos_ωt1,
+    double const sin_ωt2,
+    double const cos_ωt2) {
   static_assert(degree >= 0);
   DoublePrecision<Value> sum;
-  sum += q(t2) * sin_t2;
-  sum -= p(t2) * cos_t2;
-  sum -= q(t1) * sin_t1;
-  sum += p(t1) * cos_t1;
+  sum += q(t2) * sin_ωt2;
+  sum -= p(t2) * cos_ωt2;
+  sum -= q(t1) * sin_ωt1;
+  sum += p(t1) * cos_ωt1;
   if constexpr (degree > 0) {
     sum += AngularFrequencyIntegrate(ω,
                                      /*p=*/-q.template Derivative<1>(),
                                      /*q=*/p.template Derivative<1>(),
                                      t1, t2,
-                                     sin_t1, cos_t1,
-                                     sin_t2, cos_t2);
+                                     sin_ωt1, cos_ωt1,
+                                     sin_ωt2, cos_ωt2);
   }
   return (sum.value + sum.error) / ω * Radian;
 }
@@ -333,15 +333,15 @@ Integrate(Instant const& t1,
     // This implementation follows [HO09], Theorem 1 and [INO06] equation 4.
     // The trigonometric functions are computed only once as we recurse through
     // the degree of the polynomials.
-    auto const sin_t1 = Sin(ω * (t1 - origin_));
-    auto const cos_t1 = Cos(ω * (t1 - origin_));
-    auto const sin_t2 = Sin(ω * (t2 - origin_));
-    auto const cos_t2 = Cos(ω * (t2 - origin_));
+    auto const sin_ωt1 = Sin(ω * (t1 - origin_));
+    auto const cos_ωt1 = Cos(ω * (t1 - origin_));
+    auto const sin_ωt2 = Sin(ω * (t2 - origin_));
+    auto const cos_ωt2 = Cos(ω * (t2 - origin_));
     result += AngularFrequencyIntegrate(ω,
                                         polynomials.sin, polynomials.cos,
                                         t1, t2,
-                                        sin_t1, cos_t1,
-                                        sin_t2, cos_t2);
+                                        sin_ωt1, cos_ωt1,
+                                        sin_ωt2, cos_ωt2);
   }
   return result;
 }
