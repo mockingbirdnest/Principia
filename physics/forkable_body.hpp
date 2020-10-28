@@ -91,7 +91,6 @@ It3rator& ForkableIterator<Tr4jectory, It3rator, Traits>::operator--() {
       current_ = *ancestor->position_in_parent_timeline_;
       ancestor = ancestor->parent_;
       ancestry_.push_back(ancestor);
-
     } while (current_ == ancestor->timeline_end() &&
              ancestor->parent_ != nullptr);
     return *that();
