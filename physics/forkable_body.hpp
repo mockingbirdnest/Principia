@@ -112,8 +112,6 @@ template<typename Tr4jectory, typename It3rator, typename Traits>
 void ForkableIterator<Tr4jectory, It3rator, Traits>::NormalizeIfEnd() {
   CHECK(!ancestry_.empty());
   if (current_ == ancestry_.back()->timeline_end() && ancestry_.size() > 1) {
-    // TODO(rlahaye): This takes linear time because it runs all the
-    // destructors, maybe?
     ancestry_ = {ancestry_.front()};
     current_ = ancestry_.back()->timeline_end();
   }
@@ -286,8 +284,6 @@ LowerBound(Instant const& time) const {
             // We found an interesting timeline, i.e. one that is nonempty and
             // not forked at the fork point of its parent.  Cut the ancestry and
             // return the beginning of that timeline.
-            // TODO(rlahaye): This takes linear time because it runs all the
-            // destructors, maybe?
             iterator.ancestry_ = {ancestry_it, iterator.ancestry_.rend()};
             ancestry_it = iterator.ancestry_.rbegin();
             iterator.current_ = (*ancestry_it)->timeline_begin();
