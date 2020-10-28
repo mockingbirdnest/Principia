@@ -453,7 +453,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionNoSecular) {
     EXPECT_THAT(
         projection4(t_min + i * (t_max - t_min) / 100),
         RelativeErrorFrom(series.value()(t_min + i * (t_max - t_min) / 100),
-                          AllOf(Ge(0), Lt(1.4e-11))));
+                          AllOf(Ge(0), Lt(2.0e-11))));
   }
 }
 
@@ -496,7 +496,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
                           ? AllOf(Gt(3.3e-2 * Metre), Lt(3.6 * Metre))
                           : ω_index == 3
                                 ? AllOf(Gt(7.5e-3 * Metre), Lt(5.4 * Metre))
-                                : AllOf(Gt(1.7e-16 * Metre),
+                                : AllOf(Gt(9.6e-17 * Metre),
                                         Lt(8.7e-14 * Metre)))
           << ω_index;
     }
