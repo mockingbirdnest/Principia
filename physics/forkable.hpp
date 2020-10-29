@@ -84,10 +84,11 @@ class ForkableIterator {
   void CheckNormalizedIfEnd();
 
   // |ancestry_| is never empty.  |current_| is an iterator in the timeline
-  // for |ancestry_.back()|.  |current_| may be at end.
+  // for |ancestry_.back()|.  |current_| may be at end. The inline size of 3
+  // for |ancestry_| is intended to cover a trajectory's history, psychohistory,
+  // and prediction.
   TimelineConstIterator current_;
-  absl::InlinedVector<not_null<Tr4jectory const*>, 2>
-      ancestry_;  // Pointers not owned.
+  absl::InlinedVector<not_null<Tr4jectory const*>, 3> ancestry_;
 
   template<typename, typename, typename>
   friend class Forkable;
