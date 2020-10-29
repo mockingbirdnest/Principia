@@ -1,4 +1,4 @@
-﻿
+
 #pragma once
 
 #include <deque>
@@ -283,7 +283,8 @@ LowerBound(Instant const& time) const {
             // We found an interesting timeline, i.e. one that is nonempty and
             // not forked at the fork point of its parent.  Cut the ancestry and
             // return the beginning of that timeline.
-            iterator.ancestry_ = {ancestry_it, iterator.ancestry_.rend()};
+            iterator.ancestry_.erase(ancestry_it.base(),
+                                     iterator.ancestry_.end());
             ancestry_it = iterator.ancestry_.rbegin();
             iterator.current_ = (*ancestry_it)->timeline_begin();
             break;
