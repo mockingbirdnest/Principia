@@ -1,10 +1,10 @@
-
+﻿
 #pragma once
 
-#include <deque>
 #include <optional>
 #include <vector>
 
+#include "absl/container/inlined_vector.h"
 #include "physics/forkable.hpp"
 
 namespace principia {
@@ -239,8 +239,8 @@ LowerBound(Instant const& time) const {
   // This queue is parallel to |iterator.ancestry_|, and each entry is an
   // iterator in the corresponding ancestry timeline.  Note that we use a
   // |nullopt| sentinel for the innermost timeline.
-  std::deque<std::optional<TimelineConstIterator>> fork_points;
-  fork_points.push_front(std::nullopt);
+  absl::InlinedVector<std::optional<TimelineConstIterator>, 3> fork_points;
+  fork_points.push_back(std::nullopt);
 
   // Go up the ancestry chain until we find a (nonempty) timeline that covers
   // |time| (that is, |time| is on or after the first time of the timeline).
@@ -253,7 +253,7 @@ LowerBound(Instant const& time) const {
       iterator.current_ = ancestor->timeline_lower_bound(time);
 
       // Check if the returned iterator is directly usable.
-      auto const& fork_point = fork_points.front();
+      auto const& fork_point = fork_points.back();
       if (iterator.current_ == ancestor->timeline_end() ||
           (fork_point &&
            *fork_point != ancestor->timeline_end() &&
@@ -267,14 +267,14 @@ LowerBound(Instant const& time) const {
         // down the ancestry looking for a timeline that is nonempty and not
         // forked at the same point as its parent.
         auto ancestry_it = iterator.ancestry_.rbegin();
-        auto fork_points_it = fork_points.begin();
+        auto fork_points_it = fork_points.rbegin();
         for (;;) {
           ++ancestry_it;
           ++fork_points_it;
           if (ancestry_it == iterator.ancestry_.rend()) {
             // We didn't find an interesting fork in the ancestry, so we stop
             // here and |NormalizeIfEnd| will return a proper |End|.
-            CHECK(fork_points_it == fork_points.end());
+            CHECK(fork_points_it == fork_points.rend());
             break;
           }
           if (!(*ancestry_it)->timeline_empty() &&
@@ -293,7 +293,7 @@ LowerBound(Instant const& time) const {
       }
       break;
     }
-    fork_points.push_front(ancestor->position_in_parent_timeline_);
+    fork_points.push_back(ancestor->position_in_parent_timeline_);
     iterator.current_ = ancestor->timeline_begin();
     ancestor = ancestor->parent_;
   } while (ancestor != nullptr);
