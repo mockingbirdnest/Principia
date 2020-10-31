@@ -12,6 +12,7 @@
 
 namespace principia {
 
+using base::Contains;
 using base::FindOrDie;
 
 namespace journal {
@@ -33,8 +34,9 @@ void Delete(std::uint64_t const address,
             Player::PointerMap& pointer_map) {
   if (reinterpret_cast<void*>(address) != nullptr) {
     auto const it = pointer_map.find(address);
-    CHECK(it != pointer_map.end()) << address;
-    pointer_map.erase(it);
+    if (it != pointer_map.end()) {
+      pointer_map.erase(it);
+    }
   }
 }
 
@@ -43,6 +45,8 @@ template<typename T,
 T DeserializePointer(std::uint64_t const address,
                      Player::PointerMap const& pointer_map) {
   if (reinterpret_cast<T>(address) == nullptr) {
+    return nullptr;
+  } else if (!Contains(pointer_map, address)) {
     return nullptr;
   } else {
     return reinterpret_cast<T>(FindOrDie(pointer_map, address));
