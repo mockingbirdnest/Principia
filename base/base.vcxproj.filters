@@ -188,6 +188,12 @@
     <ClInclude Include="zfp_compressor_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="bits.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bits_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
@@ -246,6 +252,9 @@
     </ClCompile>
     <ClCompile Include="zfp_compressor.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="bits_test.cpp">
+      <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

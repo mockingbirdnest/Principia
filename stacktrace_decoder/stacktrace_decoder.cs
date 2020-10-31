@@ -19,7 +19,7 @@ class StackTraceDecoder {
                                       StreamReader stream) {
     var base_address_regex =
         new Regex(unity_crash ? unity_regex
-                              : @"^I.*" + principia_cpp_regex +
+                              : @"^[EI].*" + principia_cpp_regex +
                                     @":.*\] Base address is ([0-9A-F]+)$");
     Match base_address_match;
     do {
@@ -126,7 +126,7 @@ class StackTraceDecoder {
                                   Encoding.UTF8);
     if (!unity_crash) {
       var version_regex = new Regex(
-          @"^I.*\] Principia version " +
+          @"^[EI].*\] Principia version " +
           @"([0-9]{10}-\w+)-[0-9]+-g([0-9a-f]{40})(-dirty)? built");
       Match version_match;
       do {
@@ -141,12 +141,12 @@ class StackTraceDecoder {
             $"Warning: version is dirty; line numbers may be incorrect."));
       }
     }
-    Int64 principia_base_address =
-        GetBaseAddress(unity_crash,
-                       @"GameData\\Principia\\x64\\principia.dll:principia.dll " +
-                           @"\(([0-9A-F]+)\)",
-                       "interface\\.cpp",
-                       stream);
+    Int64 principia_base_address = GetBaseAddress(
+        unity_crash,
+        @"GameData\\Principia\\x64\\principia.dll:principia.dll " +
+        @"\(([0-9A-F]+)\)",
+        "interface\\.cpp",
+        stream);
     Console.Write(
         comment($"Using Principia base address {principia_base_address:X}"));
     var stack_regex = new Regex(

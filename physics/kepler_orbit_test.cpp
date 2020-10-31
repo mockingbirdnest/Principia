@@ -1488,7 +1488,7 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndHyperbolicExcessVelocity) {
                                    /*characteristic_energy_ulps=*/1,
                                    /*mean_motion_ulps=*/0,
                                    /*period_ulps=*/0,
-                                   /*hyperbolic_mean_motion_ulps=*/1,
+                                   /*hyperbolic_mean_motion_ulps=*/2,
                                    /*hyperbolic_excess_velocity_ulps=*/0,
                                    /*semiminor_axis_ulps=*/0,
                                    /*impact_parameter_ulps=*/2,

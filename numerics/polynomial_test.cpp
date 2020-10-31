@@ -29,6 +29,7 @@ using geometry::Displacement;
 using geometry::Handedness;
 using geometry::Inertial;
 using geometry::Instant;
+using geometry::Position;
 using geometry::Vector;
 using geometry::Velocity;
 using quantities::Acceleration;
@@ -64,6 +65,8 @@ class PolynomialTest : public ::testing::Test {
   using P2V = PolynomialInMonomialBasis<Displacement<World>, Time, 2,
                                         HornerEvaluator>;
   using P2A = PolynomialInMonomialBasis<Displacement<World>, Instant, 2,
+                                        HornerEvaluator>;
+  using P2P = PolynomialInMonomialBasis<Position<World>, Instant, 2,
                                         HornerEvaluator>;
   using P17 = PolynomialInMonomialBasis<Displacement<World>, Time, 17,
                                         EstrinEvaluator>;
@@ -116,7 +119,7 @@ TEST_F(PolynomialTest, Coefficients) {
 TEST_F(PolynomialTest, Evaluate2V) {
   P2V const p(coefficients_);
   EXPECT_EQ(2, p.degree());
-  Displacement<World> const d = p.Evaluate(0.5 * Second);
+  Displacement<World> const d = p(0.5 * Second);
   Velocity<World> const v = p.EvaluateDerivative(0.5 * Second);
   EXPECT_THAT(d, AlmostEquals(Displacement<World>({0.25 * Metre,
                                                    0.5 * Metre,
@@ -131,8 +134,60 @@ TEST_F(PolynomialTest, Evaluate2A) {
   Instant const t0 = Instant() + 0.3 * Second;
   P2A const p(coefficients_, t0);
   EXPECT_EQ(2, p.degree());
-  Displacement<World> const d = p.Evaluate(t0 + 0.5 * Second);
+  Displacement<World> const d = p(t0 + 0.5 * Second);
   Velocity<World> const v = p.EvaluateDerivative(t0 + 0.5 * Second);
+  EXPECT_THAT(d, AlmostEquals(Displacement<World>({0.25 * Metre,
+                                                   0.5 * Metre,
+                                                   1 * Metre}), 0));
+  EXPECT_THAT(v, AlmostEquals(Velocity<World>({1 * Metre / Second,
+                                               1 * Metre / Second,
+                                               0 * Metre / Second}), 0));
+
+  // This compiles.
+  p.Primitive();
+}
+
+// Check that a polynomial can return an affine value.
+TEST_F(PolynomialTest, Evaluate2P) {
+  Instant const t0 = Instant() + 0.3 * Second;
+  P2P const p({World::origin + std::get<0>(coefficients_),
+               std::get<1>(coefficients_),
+               std::get<2>(coefficients_)},
+              t0);
+  EXPECT_EQ(2, p.degree());
+  Position<World> const d = p(t0 + 0.5 * Second);
+  Velocity<World> const v = p.EvaluateDerivative(t0 + 0.5 * Second);
+  EXPECT_THAT(d, AlmostEquals(World::origin + Displacement<World>({0.25 * Metre,
+                                                                   0.5 * Metre,
+                                                                   1 * Metre}),
+                              0));
+  EXPECT_THAT(v, AlmostEquals(Velocity<World>({1 * Metre / Second,
+                                               1 * Metre / Second,
+                                               0 * Metre / Second}), 0));
+
+  // This doesn't compile (and rightly so).
+#if 0
+  p.Primitive();
+#endif
+}
+
+// Check that a polynomial of high order may be declared.
+TEST_F(PolynomialTest, Evaluate17) {
+  P17::Coefficients const coefficients;
+  P17 const p(coefficients);
+  EXPECT_EQ(17, p.degree());
+  Displacement<World> const d = p(0.5 * Second);
+  EXPECT_THAT(d, AlmostEquals(Displacement<World>({0 * Metre,
+                                                   0 * Metre,
+                                                   0 * Metre}), 0));
+}
+
+// Check that a conversion to increase the degree works.
+TEST_F(PolynomialTest, Conversion) {
+  P2V const p2v(coefficients_);
+  P17 const p17 = P17(p2v);
+  Displacement<World> const d = p17(0.5 * Second);
+  Velocity<World> const v = p17.EvaluateDerivative(0.5 * Second);
   EXPECT_THAT(d, AlmostEquals(Displacement<World>({0.25 * Metre,
                                                    0.5 * Metre,
                                                    1 * Metre}), 0));
@@ -141,50 +196,39 @@ TEST_F(PolynomialTest, Evaluate2A) {
                                                0 * Metre / Second}), 0));
 }
 
-// Check that a polynomial of high order may be declared.
-TEST_F(PolynomialTest, Evaluate17) {
-  P17::Coefficients const coefficients;
-  P17 const p(coefficients);
-  EXPECT_EQ(17, p.degree());
-  Displacement<World> const d = p.Evaluate(0.5 * Second);
-  EXPECT_THAT(d, AlmostEquals(Displacement<World>({0 * Metre,
-                                                   0 * Metre,
-                                                   0 * Metre}), 0));
-}
-
 TEST_F(PolynomialTest, VectorSpace) {
   P2V const p2v(coefficients_);
   {
     auto const p = p2v + p2v;
-    auto const actual = p.Evaluate(0 * Second);
+    auto const actual = p(0 * Second);
     auto const expected =
         Displacement<World>({0 * Metre, 0 * Metre, 2 * Metre});
     EXPECT_THAT(actual, AlmostEquals(expected, 0));
   }
   {
     auto const p = p2v - p2v;
-    auto const actual = p.Evaluate(0 * Second);
+    auto const actual = p(0 * Second);
     auto const expected =
         Displacement<World>({0 * Metre, 0 * Metre, 0 * Metre});
     EXPECT_THAT(actual, AlmostEquals(expected, 0));
   }
   {
     auto const p = 3.0 * Joule * p2v;
-    auto const actual = p.Evaluate(0 * Second);
+    auto const actual = p(0 * Second);
     auto const expected = Vector<Product<Energy, Length>, World>(
                   {0 * Joule * Metre, 0 * Joule * Metre, 3 * Joule * Metre});
     EXPECT_THAT(actual, AlmostEquals(expected, 0));
   }
   {
     auto const p = p2v * (3.0 * Joule);
-    auto const actual = p.Evaluate(0 * Second);
+    auto const actual = p(0 * Second);
     auto const expected = Vector<Product<Length, Energy>, World>(
                   {0 * Joule * Metre, 0 * Joule * Metre, 3 * Joule * Metre});
     EXPECT_THAT(actual, AlmostEquals(expected, 0));
   }
   {
     auto const p = p2v / (4.0 * Joule);
-    auto const actual = p.Evaluate(0 * Second);
+    auto const actual = p(0 * Second);
     auto const expected = Vector<Quotient<Length, Energy>, World>(
                   {0 * Metre / Joule, 0 * Metre / Joule, 0.25 * Metre / Joule});
     EXPECT_THAT(actual, AlmostEquals(expected, 0));
@@ -201,24 +245,72 @@ TEST_F(PolynomialTest, Ring) {
                1 * Ampere / Second / Second / Second});
   auto const p = p2 * p3;
   {
-    auto const actual = p.Evaluate(0 * Second);
+    auto const actual = p(0 * Second);
     EXPECT_THAT(actual, AlmostEquals(2 * Ampere * Kelvin, 0));
   }
   {
-    auto const actual = p.Evaluate(1 * Second);
+    auto const actual = p(1 * Second);
     EXPECT_THAT(actual, AlmostEquals(-8 * Ampere * Kelvin, 0));
   }
   {
-    auto const actual = p.Evaluate(-1 * Second);
+    auto const actual = p(-1 * Second);
     EXPECT_THAT(actual, AlmostEquals(-80 * Ampere * Kelvin, 0));
   }
   {
-    auto const actual = p.Evaluate(2 * Second);
+    auto const actual = p(2 * Second);
     EXPECT_THAT(actual, AlmostEquals(-350 * Ampere * Kelvin, 0));
   }
   {
-    auto const actual = p.Evaluate(-2 * Second);
+    auto const actual = p(-2 * Second);
     EXPECT_THAT(actual, AlmostEquals(-518 * Ampere * Kelvin, 0));
+  }
+}
+
+TEST_F(PolynomialTest, PointwiseInnerProduct) {
+  P2V::Coefficients const coefficients({
+      Displacement<World>({0 * Metre,
+                           2 * Metre,
+                           3 * Metre}),
+      Velocity<World>({-1 * Metre / Second,
+                       1 * Metre / Second,
+                       0 * Metre / Second}),
+      Vector<Acceleration, World>({1 * Metre / Second / Second,
+                                   1 * Metre / Second / Second,
+                                   -2 * Metre / Second / Second})});
+  P2V const p2va(coefficients_);
+  P2V const p2vb(coefficients);
+
+  auto const p = PointwiseInnerProduct(p2va, p2vb);
+  {
+    auto const actual = p(0 * Second);
+    EXPECT_THAT(actual, AlmostEquals(3 * Metre * Metre, 0));
+  }
+  {
+    auto const actual = p(1 * Second);
+    EXPECT_THAT(actual, AlmostEquals(5 * Metre * Metre, 0));
+  }
+  {
+    auto const actual = p(-1 * Second);
+    EXPECT_THAT(actual, AlmostEquals(1 * Metre * Metre, 0));
+  }
+  {
+    auto const actual = p(2 * Second);
+    EXPECT_THAT(actual, AlmostEquals(19 * Metre * Metre, 0));
+  }
+  {
+    auto const actual = p(-2 * Second);
+    EXPECT_THAT(actual, AlmostEquals(11 * Metre * Metre, 0));
+  }
+}
+
+TEST_F(PolynomialTest, AtOrigin) {
+  Instant const t0 = Instant() + 3 * Second;
+  P2A const p(coefficients_, t0);
+  P2A const q = p.AtOrigin(Instant() - 2 * Second);
+  for (Instant t = Instant() - 10 * Second;
+       t < Instant() + 10 * Second;
+       t += 0.3 * Second) {
+    EXPECT_THAT(q(t), AlmostEquals(p(t), 0, 942));
   }
 }
 
@@ -232,16 +324,30 @@ TEST_F(PolynomialTest, Derivative) {
                1 * Ampere / Second / Second / Second});
 
   EXPECT_EQ(3 * Kelvin / Second,
-            p2.Derivative<1>().Evaluate(0 * Second));
+            p2.Derivative<1>()(0 * Second));
   EXPECT_EQ(-16 * Kelvin / Second / Second,
-            p2.Derivative<2>().Evaluate(0 * Second));
+            p2.Derivative<2>()(0 * Second));
 
   EXPECT_EQ(-4 * Ampere / Second,
-            p3.Derivative<1>().Evaluate(0 * Second));
+            p3.Derivative<1>()(0 * Second));
   EXPECT_EQ(6 * Ampere / Second / Second,
-            p3.Derivative<2>().Evaluate(0 * Second));
+            p3.Derivative<2>()(0 * Second));
   EXPECT_EQ(6 * Ampere / Second / Second / Second,
-            p3.Derivative<3>().Evaluate(0 * Second));
+            p3.Derivative<3>()(0 * Second));
+}
+
+TEST_F(PolynomialTest, Primitive) {
+  using P2 = PolynomialInMonomialBasis<Temperature, Time, 2, HornerEvaluator>;
+  P2 const p2({1 * Kelvin, 3 * Kelvin / Second, -8 * Kelvin / Second / Second});
+
+  EXPECT_THAT(p2.Primitive()(0 * Second),
+              AlmostEquals(0 * Kelvin * Second, 0));
+  EXPECT_THAT(p2.Primitive()(1 * Second),
+              AlmostEquals(-1.0 / 6.0 * Kelvin * Second, 5));
+  EXPECT_THAT(p2.Primitive()(-1 * Second),
+              AlmostEquals(19.0 / 6.0 * Kelvin * Second, 1));
+  EXPECT_THAT(p2.Primitive()(2 * Second),
+              AlmostEquals(-40.0 / 3.0 * Kelvin * Second, 1));
 }
 
 TEST_F(PolynomialTest, EvaluateConstant) {
@@ -249,8 +355,8 @@ TEST_F(PolynomialTest, EvaluateConstant) {
       horner_boltzmann(std::make_tuple(BoltzmannConstant));
   PolynomialInMonomialBasis<Entropy, Time, 0, EstrinEvaluator> const
       estrin_boltzmann(std::make_tuple(BoltzmannConstant));
-  EXPECT_THAT(horner_boltzmann.Evaluate(1729 * Second), Eq(BoltzmannConstant));
-  EXPECT_THAT(estrin_boltzmann.Evaluate(1729 * Second), Eq(BoltzmannConstant));
+  EXPECT_THAT(horner_boltzmann(1729 * Second), Eq(BoltzmannConstant));
+  EXPECT_THAT(estrin_boltzmann(1729 * Second), Eq(BoltzmannConstant));
   EXPECT_THAT(horner_boltzmann.EvaluateDerivative(1729 * Second),
               Eq(0 * Watt / Kelvin));
   EXPECT_THAT(estrin_boltzmann.EvaluateDerivative(1729 * Second),
@@ -263,8 +369,8 @@ TEST_F(PolynomialTest, EvaluateLinear) {
   PolynomialInMonomialBasis<Length, Time, 1, EstrinEvaluator> const
       estrin_light({0 * Metre, SpeedOfLight});
   constexpr Length light_second = Second * SpeedOfLight;
-  EXPECT_THAT(horner_light.Evaluate(1729 * Second), Eq(1729 * light_second));
-  EXPECT_THAT(estrin_light.Evaluate(1729 * Second), Eq(1729 * light_second));
+  EXPECT_THAT(horner_light(1729 * Second), Eq(1729 * light_second));
+  EXPECT_THAT(estrin_light(1729 * Second), Eq(1729 * light_second));
   EXPECT_THAT(horner_light.EvaluateDerivative(1729 * Second), Eq(SpeedOfLight));
   EXPECT_THAT(estrin_light.EvaluateDerivative(1729 * Second), Eq(SpeedOfLight));
 }
@@ -291,7 +397,7 @@ TEST_F(PolynomialTest, Serialization) {
             message);
     EXPECT_EQ(2, polynomial_read->degree());
     EXPECT_THAT(
-        polynomial_read->Evaluate(0.5 * Second),
+        (*polynomial_read)(0.5 * Second),
         AlmostEquals(
             Displacement<World>({0.25 * Metre, 0.5 * Metre, 1 * Metre}), 0));
     serialization::Polynomial message2;
@@ -319,7 +425,7 @@ TEST_F(PolynomialTest, Serialization) {
                    Instant>::ReadFromMessage<HornerEvaluator>(message);
     EXPECT_EQ(2, polynomial_read->degree());
     EXPECT_THAT(
-        polynomial_read->Evaluate(Instant() + 0.5 * Second),
+        (*polynomial_read)(Instant() + 0.5 * Second),
         AlmostEquals(
             Displacement<World>({0.25 * Metre, 0.5 * Metre, 1 * Metre}), 0));
     serialization::Polynomial message2;
@@ -346,13 +452,23 @@ TEST_F(PolynomialTest, Serialization) {
         Polynomial<Displacement<World>, Time>::ReadFromMessage<HornerEvaluator>(
             message);
     EXPECT_EQ(17, polynomial_read->degree());
-    EXPECT_THAT(polynomial_read->Evaluate(0.5 * Second),
+    EXPECT_THAT((*polynomial_read)(0.5 * Second),
                 AlmostEquals(
                     Displacement<World>({0 * Metre, 0 * Metre, 0 * Metre}), 0));
     serialization::Polynomial message2;
     polynomial_read->WriteToMessage(&message2);
     EXPECT_THAT(message2, EqualsProto(message));
   }
+}
+
+TEST_F(PolynomialTest, Output) {
+  P2V p2v(coefficients_);
+  P2A p2a(coefficients_, Instant());
+  P17::Coefficients const coefficients;
+  P17 p17(coefficients);
+  LOG(ERROR) << p2v;
+  LOG(ERROR) << p2a;
+  LOG(ERROR) << p17;
 }
 
 }  // namespace numerics

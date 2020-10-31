@@ -715,10 +715,12 @@ RigidMotion<Barycentric, World> Plugin::BarycentricToWorld(
       main_body_frame.ToThisFrameAtTime(current_time_);
   auto const barycentric_to_main_body_rotation =
       barycentric_to_main_body_motion.rigid_transformation().linear_map();
+  Part const& reference_part = *FindOrDie(part_id_to_vessel_, reference_part_id)
+                                    ->part(reference_part_id);
   auto const reference_part_degrees_of_freedom =
-      barycentric_to_main_body_motion(
-          FindOrDie(part_id_to_vessel_, reference_part_id)->
-              part(reference_part_id)->degrees_of_freedom());
+      barycentric_to_main_body_motion(reference_part.rigid_motion()(
+          reference_part.MakeRigidToEccentricMotion().Inverse()(
+              {EccentricPart::origin, EccentricPart::unmoving})));
 
   RigidTransformation<MainBodyCentred, World> const
       main_body_to_world_rigid_transformation = [&]() {

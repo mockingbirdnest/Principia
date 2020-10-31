@@ -4,8 +4,10 @@
 #include <cfloat>
 #include <cstdint>
 
+#include <complex>
 #include <string>
 
+#include "geometry/complexification.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/quaternion.hpp"
@@ -47,6 +49,8 @@ class AlmostEqualsMatcher final {
   bool MatchAndExplain(quantities::Quantity<Dimensions> const& actual,
                        testing::MatchResultListener* listener) const;
   bool MatchAndExplain(double actual,
+                       testing::MatchResultListener* listener) const;
+  bool MatchAndExplain(geometry::Complexification<double> actual,
                        testing::MatchResultListener* listener) const;
   template<typename Scalar>
   bool MatchAndExplain(geometry::R3Element<Scalar> const& actual,

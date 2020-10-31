@@ -14,6 +14,12 @@ namespace geometry {
 // polluting the entire universe in cases where they are not useful.
 namespace cartesian_product {
 
+template<typename RTuple>
+constexpr auto operator+(RTuple const& right);
+
+template<typename RTuple>
+constexpr auto operator-(RTuple const& right);
+
 template<typename LTuple, typename RTuple>
 constexpr auto operator+(LTuple const& left, RTuple const& right);
 
@@ -46,6 +52,16 @@ template<typename LTuple, typename RTuple,
 constexpr auto operator*(LTuple const& left, RTuple const& right);
 
 }  // namespace polynomial_ring
+
+namespace pointwise_inner_product {
+
+template<typename LTuple, typename RTuple,
+         typename = std::enable_if_t<quantities::is_tuple_v<LTuple>>,
+         typename = std::enable_if_t<quantities::is_tuple_v<RTuple>>>
+constexpr auto PointwiseInnerProduct(LTuple const& left, RTuple const& right);
+
+}  // namespace pointwise_inner_product
+
 }  // namespace geometry
 }  // namespace principia
 

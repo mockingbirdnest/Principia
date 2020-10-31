@@ -31,6 +31,7 @@ using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+using quantities::si::Tonne;
 namespace si = quantities::si;
 
 // No partial specialization of functions, so we wrap everything into structs.
@@ -110,17 +111,29 @@ struct XYZConverter<AngularVelocity<Frame>> {
   }
 };
 
+template<typename Frame>
+struct XYZConverter<Bivector<AngularMomentum, Frame>> {
+  static constexpr AngularMomentum mts_unit =
+      Pow<2>(Metre) * Tonne * Radian / Second;
+  static Bivector<AngularMomentum, Frame> FromXYZ(XYZ const& xyz) {
+    return Bivector<AngularMomentum, Frame>(interface::FromXYZ(xyz) * mts_unit);
+  }
+  static XYZ ToXYZ(Bivector<AngularMomentum, Frame> const& velocity) {
+    return interface::ToXYZ(velocity.coordinates() / mts_unit);
+  }
+};
+
 template<>
 struct XYZConverter<R3Element<MomentOfInertia>> {
+  static constexpr MomentOfInertia mts_unit = Pow<2>(Metre) * Tonne;
   static R3Element<MomentOfInertia> FromXYZ(XYZ const& xyz) {
-    return R3Element<MomentOfInertia>(xyz.x * si::Unit<MomentOfInertia>,
-                                      xyz.y * si::Unit<MomentOfInertia>,
-                                      xyz.z * si::Unit<MomentOfInertia>);
+    return R3Element<MomentOfInertia>(
+        xyz.x * mts_unit, xyz.y * mts_unit, xyz.z * mts_unit);
   }
   static XYZ ToXYZ(R3Element<MomentOfInertia> const& moments_of_inertia) {
-    return {moments_of_inertia.x / si::Unit<MomentOfInertia>,
-            moments_of_inertia.y / si::Unit<MomentOfInertia>,
-            moments_of_inertia.z / si::Unit<MomentOfInertia>};
+    return {moments_of_inertia.x / mts_unit,
+            moments_of_inertia.y / mts_unit,
+            moments_of_inertia.z / mts_unit};
   }
 };
 
@@ -507,6 +520,11 @@ inline XYZ ToXYZ(Vector<double, World> const& direction) {
 
 inline XYZ ToXYZ(Velocity<World> const& velocity) {
   return XYZConverter<Velocity<World>>::ToXYZ(velocity);
+}
+
+inline XYZ ToXYZ(Bivector<AngularMomentum, World> const& angular_momentum) {
+  return XYZConverter<Bivector<AngularMomentum, World>>::ToXYZ(
+      angular_momentum);
 }
 
 template<typename T>

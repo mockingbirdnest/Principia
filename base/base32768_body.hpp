@@ -13,6 +13,7 @@
 #include <type_traits>
 #include <vector>
 
+#include "base/bits.hpp"
 #include "base/macros.hpp"
 #include "glog/logging.h"
 
@@ -23,11 +24,6 @@
 namespace principia {
 namespace base {
 namespace internal_base32768 {
-
-// Ceiling log2 of n.  8 -> 3, 7 -> 2.
-constexpr int CeilingLog2(int const n) {
-  return n == 1 ? 0 : CeilingLog2(n >> 1) + 1;
-}
 
 // A repertoire is used to encode or decode integers into Basic Multilingual
 // Plane code points.
@@ -64,7 +60,7 @@ class CachingRepertoire : public Repertoire {
   // and must decode characters which lie within the blocks of this repertoire.
   std::array<char16_t, block_count * block_size> encoding_cache_;
   // Using a C array because MSVC gets confused with an std::array.
-  std::conditional_t<(CeilingLog2(block_size * block_count) > 8),
+  std::conditional_t<(FloorLog2(block_size * block_count) > 8),
                      std::uint16_t,
                      std::uint8_t>
       decoding_cache_[std::numeric_limits<char16_t>::max()];
@@ -83,7 +79,7 @@ template<std::int64_t block_count_plus_1>
 constexpr CachingRepertoire<block_size, block_count>::CachingRepertoire(
     char16_t const (&blocks)[block_count_plus_1])
     : blocks_(blocks),
-      encoding_bits_(CeilingLog2(block_size * block_count)),
+      encoding_bits_(FloorLog2(block_size * block_count)),
       decoding_cache_() {
   // Don't do pointer arithmetic in this constructor, it confuses MSVC.
   static_assert(block_count_plus_1 == block_count + 1,

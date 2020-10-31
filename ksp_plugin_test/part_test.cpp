@@ -147,7 +147,10 @@ TEST_F(PartTest, Serialization) {
   auto const p = Part::ReadFromMessage(message, /*deletion_callback=*/nullptr);
   EXPECT_EQ(part_.inertia_tensor(), p->inertia_tensor());
   EXPECT_EQ(part_.intrinsic_force(), p->intrinsic_force());
-  EXPECT_EQ(part_.degrees_of_freedom(), p->degrees_of_freedom());
+  EXPECT_EQ(part_.rigid_motion()({RigidPart::origin, RigidPart::unmoving}),
+            p->rigid_motion()({RigidPart::origin, RigidPart::unmoving}));
+  EXPECT_EQ(part_.rigid_motion().angular_velocity_of<RigidPart>(),
+            p->rigid_motion().angular_velocity_of<RigidPart>());
 
   serialization::Part second_message;
   p->WriteToMessage(&second_message,

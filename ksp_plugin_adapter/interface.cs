@@ -18,6 +18,9 @@ internal partial class Status {
   public bool is_out_of_range() {
     return error == 11;
   }
+  public bool is_unavailable() {
+    return error == 14;
+  }
   public bool ok() {
     return error == 0;
   }

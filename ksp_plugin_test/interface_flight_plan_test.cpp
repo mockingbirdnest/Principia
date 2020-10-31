@@ -243,18 +243,19 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
               FillBodyCentredNonRotatingNavigationFrame(celestial_index, _))
       .WillOnce(FillUniquePtr<1>(
                     new StrictMock<MockDynamicFrame<Barycentric, Navigation>>));
-  EXPECT_CALL(flight_plan,
-              Append(AllOf(HasThrust(1 * Kilo(Newton)),
-                           HasSpecificImpulse(2 * Second * StandardGravity),
-                           HasInitialTime(Instant() + 3 * Second),
-                           HasΔv(Velocity<Frenet<Navigation>>(
-                                     {4 * (Metre / Second),
-                                      5 * (Metre / Second),
-                                      6 * (Metre / Second)})))))
+  EXPECT_CALL(
+      flight_plan,
+      Insert(AllOf(HasThrust(1 * Kilo(Newton)),
+                   HasSpecificImpulse(2 * Second * StandardGravity),
+                   HasInitialTime(Instant() + 3 * Second),
+                   HasΔv(Velocity<Frenet<Navigation>>({4 * (Metre / Second),
+                                                       5 * (Metre / Second),
+                                                       6 * (Metre / Second)}))),
+             0))
       .WillOnce(Return(base::Status::OK));
-  EXPECT_THAT(
-      *principia__FlightPlanAppend(plugin_.get(), vessel_guid, interface_burn),
-      IsOk());
+  EXPECT_THAT(*principia__FlightPlanInsert(
+                  plugin_.get(), vessel_guid, interface_burn, 0),
+              IsOk());
 
   EXPECT_CALL(flight_plan, number_of_manœuvres())
       .WillOnce(Return(4));
@@ -410,8 +411,8 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                   plugin_.get(), vessel_guid, interface_burn, 42),
               IsOk());
 
-  EXPECT_CALL(flight_plan, RemoveLast());
-  principia__FlightPlanRemoveLast(plugin_.get(), vessel_guid);
+  EXPECT_CALL(flight_plan, Remove(0));
+  principia__FlightPlanRemove(plugin_.get(), vessel_guid, 0);
 
   EXPECT_CALL(vessel, DeleteFlightPlan());
   principia__FlightPlanDelete(plugin_.get(), vessel_guid);

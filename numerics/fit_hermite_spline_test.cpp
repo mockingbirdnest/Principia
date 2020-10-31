@@ -4,6 +4,7 @@
 #include <list>
 #include <vector>
 
+#include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/double_precision.hpp"

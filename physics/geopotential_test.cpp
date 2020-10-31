@@ -294,7 +294,6 @@ TEST_F(GeopotentialTest, J3) {
 
   // The acceleration at a point located in the equatorial plane points towards
   // the north, as it does on Earth (I think).
-  // TODO(phl): I don't know what I think anymore.  Oh the humanity!
   {
     auto const acceleration = GeneralSphericalHarmonicsAcceleration(
         geopotential,

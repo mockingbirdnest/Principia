@@ -110,10 +110,6 @@ class Part final {
       RigidMotion<RigidPart, Barycentric> const& rigid_motion);
   RigidMotion<RigidPart, Barycentric> const& rigid_motion() const;
 
-  // A convenience selector.
-  // TODO(phl): Should probably be eliminated at some point.
-  DegreesOfFreedom<Barycentric> degrees_of_freedom() const;
-
   // Return iterators to the beginning and end of the history and psychohistory
   // of the part, respectively.  Either trajectory may be empty, but they are
   // not both empty.

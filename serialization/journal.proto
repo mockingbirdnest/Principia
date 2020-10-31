@@ -178,6 +178,10 @@ message OrbitalElements {
   required Interval mean_inclination = 7;
   required Interval mean_longitude_of_ascending_nodes = 8;
   required Interval mean_argument_of_periapsis = 9;
+  required Interval mean_periapsis_distance = 10;
+  required Interval mean_apoapsis_distance = 11;
+  // Added in Gallai.
+  required Interval radial_distance = 12;
 }
 
 message OrbitRecurrence {
@@ -211,7 +215,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5172.
+  extensions 5000 to 5999;  // Last used: 5174.
 }
 
 message SetAngularMomentumConservation {
@@ -250,6 +254,23 @@ message AdvanceTime {
     required double planetarium_rotation = 3;
   }
   optional In in = 1;
+}
+
+message AngularMomentumFromAngularVelocity {
+  extend Method {
+    optional AngularMomentumFromAngularVelocity extension = 5174;
+  }
+  message In {
+    required XYZ world_angular_velocity = 1;
+    required XYZ moments_of_inertia_in_tonnes = 2;
+    required WXYZ principal_axes_rotation = 3;
+    required WXYZ part_rotation = 4;
+  }
+  message Return {
+    required XYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
 }
 
 message CameraReferenceRotation {
@@ -687,23 +708,6 @@ message ExternalGetNearestPlannedCoastDegreesOfFreedom {
 
 // End of external API.
 
-message FlightPlanAppend {
-  extend Method {
-    optional FlightPlanAppend extension = 5063;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required string vessel_guid = 2;
-    required Burn burn = 3;
-  }
-  message Return {
-    required Status result = 1 [(is_produced) = true];
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
 message FlightPlanCreate {
   extend Method {
     optional FlightPlanCreate extension = 5071;
@@ -861,6 +865,25 @@ message FlightPlanGetManoeuvreFrenetTrihedron {
   optional Return return = 3;
 }
 
+message FlightPlanInsert {
+  extend Method {
+    optional FlightPlanInsert extension = 5063;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required Burn burn = 3;
+    required int32 index = 4;
+  }
+  message Return {
+    required Status result = 1 [(is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+
 message FlightPlanNumberOfAnomalousManoeuvres {
   extend Method {
     optional FlightPlanNumberOfAnomalousManoeuvres extension = 5159;
@@ -909,14 +932,32 @@ message FlightPlanNumberOfSegments {
   optional Return return = 3;
 }
 
-message FlightPlanRemoveLast {
+message FlightPlanRebase {
   extend Method {
-    optional FlightPlanRemoveLast extension = 5065;
+    optional FlightPlanRebase extension = 5173;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
     required string vessel_guid = 2;
+    required double mass_in_tonnes = 3;
+  }
+  message Return {
+    required Status result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanRemove {
+  extend Method {
+    optional FlightPlanRemove extension = 5065;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required int32 index = 3;
   }
   message Return {
     required Status result = 1 [(is_produced) = true];

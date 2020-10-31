@@ -225,7 +225,7 @@ class OrbitAnalysisTest : public ::testing::Test {
         *earth_centred_trajectory,
         earth_,
         {{/*epoch=*/J2000,
-          /*mean_longitude_at_epoch=*/newcomb_mean_longitude.Evaluate(J2000),
+          /*mean_longitude_at_epoch=*/newcomb_mean_longitude(J2000),
           /*year*/ 2 * π * Radian /
               newcomb_mean_longitude.EvaluateDerivative(J2000)}});
     return {elements, recurrence, ground_track};

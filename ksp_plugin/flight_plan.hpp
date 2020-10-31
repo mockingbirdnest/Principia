@@ -73,12 +73,12 @@ class FlightPlan {
   // [0, number_of_manœuvres()[.
   virtual NavigationManœuvre const& GetManœuvre(int index) const;
 
-  // Appends a manœuvre using the specified |burn|.  |index| must be in
-  // [0, number_of_manœuvres()[.  Returns an error and has no effect if the
-  // given |burn| cannot fit between the preceding burn and the end of the
-  // flight plan.  Otherwise, updates the flight plan and returns the
-  // integration status.
-  virtual Status Append(NavigationManœuvre::Burn const& burn);
+  // Inserts a manœuvre at the given |index| using the specified |burn|. |index|
+  // must be in [0, number_of_manœuvres()].  Returns an error and has no effect
+  // if the given |burn| cannot fit between the preceding burn and the following
+  // one or the end of the flight plan.  Otherwise, updates the flight plan and
+  // returns the integration status.
+  virtual Status Insert(NavigationManœuvre::Burn const& burn, int index);
 
   // Forgets the flight plan at least before |time|.  The actual cutoff time
   // will be in a coast trajectory and may be after |time|.  |on_empty| is run
@@ -88,8 +88,9 @@ class FlightPlan {
                             std::function<void()> const& on_empty);
 
 
-  // Removes the last manœuvre.
-  virtual Status RemoveLast();
+  // Removes the manœuvre with the given |index|, which must be in
+  // [0, number_of_manœuvres()[.
+  virtual Status Remove(int index);
 
   // Replaces a manœuvre with one using the specified |burn|.  |index| must be
   // in [0, number_of_manœuvres()[.  Returns an error and has no effect if the
@@ -98,7 +99,7 @@ class FlightPlan {
   virtual Status Replace(NavigationManœuvre::Burn const& burn, int index);
 
   // Updates the desired final time of the flight plan.  Returns an error and
-  // has no effect |desired_final_time| is before the beginning of the last
+  // has no effect if |desired_final_time| is before the beginning of the last
   // coast.
   virtual Status SetDesiredFinalTime(Instant const& desired_final_time);
 
@@ -182,9 +183,20 @@ class FlightPlan {
   // anomalous trajectories, their number is decremented and may become 0.
   void PopLastSegment();
 
+  // Pops the burn of the manœuvre with the given index and all following
+  // segments, then resets the last segment (which is the coast preceding
+  // |manœuvres_[index]|).
+  void PopSegmentsAffectedByManœuvre(int index);
+
+  // Reconstructs each manœuvre after |manœuvres_[index]| (starting with
+  // |manœuvres_[index + 1]|), keeping the same burns but recomputing the
+  // initial masses from |manœuvres_[index].final_mass()|.
+  void UpdateInitialMassOfManœuvresAfter(int index);
+
   Instant start_of_last_coast() const;
 
   // In the following functions, |index| refers to the index of a manœuvre.
+  Instant start_of_burn(int index) const;
   Instant start_of_next_burn(int index) const;
   Instant start_of_previous_coast(int index) const;
 

@@ -626,12 +626,13 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
                          &ephemeris,
                          deletion_callback_.AsStdFunction());
   Velocity<Barycentric> const old_velocity =
-      p1_.degrees_of_freedom().velocity();
+      p1_.rigid_motion()({RigidPart::origin, RigidPart::unmoving}).velocity();
 
   pile_up.AdvanceTime(astronomy::J2000 + 1.5 * fixed_step);
   pile_up.NudgeParts();
-  EXPECT_THAT(p1_.degrees_of_freedom().velocity(),
-              AlmostEquals(old_velocity, 2));
+  EXPECT_THAT(
+      p1_.rigid_motion()({RigidPart::origin, RigidPart::unmoving}).velocity(),
+      AlmostEquals(old_velocity, 2));
 
   Vector<Acceleration, Barycentric> const a{{1729 * Metre / Pow<2>(Second),
                                              -168 * Metre / Pow<2>(Second),
@@ -640,8 +641,9 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
   pile_up.RecomputeFromParts();
   pile_up.AdvanceTime(astronomy::J2000 + 2 * fixed_step);
   pile_up.NudgeParts();
-  EXPECT_THAT(p1_.degrees_of_freedom().velocity(),
-              AlmostEquals(old_velocity + 0.5 * fixed_step * a, 1));
+  EXPECT_THAT(
+      p1_.rigid_motion()({RigidPart::origin, RigidPart::unmoving}).velocity(),
+      AlmostEquals(old_velocity + 0.5 * fixed_step * a, 1));
 }
 
 TEST_F(PileUpTest, Serialization) {

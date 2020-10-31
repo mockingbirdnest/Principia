@@ -106,12 +106,12 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
               i < plugin.FlightPlanNumberOfManoeuvres(vessel_guid);
               ++i) {
           // Dummy initial time, we call |Reset| immediately afterwards.
-          burn_editors_.Add(
-              new BurnEditor(adapter_,
-                             predicted_vessel,
-                             initial_time  : 0,
-                             index         : burn_editors_.Count,
-                             previous_burn : burn_editors_.LastOrDefault()));
+          burn_editors_.Add(new BurnEditor(
+              adapter_,
+              predicted_vessel,
+              initial_time      : 0,
+              index             : i,
+              get_burn_at_index : burn_editors_.ElementAtOrDefault));
           burn_editors_.Last().Reset(
               plugin.FlightPlanGetManoeuvre(vessel_guid, i));
         }
@@ -229,6 +229,20 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         Shrink();
         // The state change will happen the next time we go through OnGUI.
       } else {
+        if (UnityEngine.GUILayout.Button("Rebase")) {
+          var status = plugin.FlightPlanRebase(
+              vessel_guid, predicted_vessel.GetTotalMass());
+          UpdateStatus(status, null);
+          if (status.ok()) {
+            // The final time does not change, but since it is displayed with
+            // respect to the beginning of the flight plan, the text must be
+            // recomputed.
+            final_time_.ResetValue(
+                plugin.FlightPlanGetDesiredFinalTime(vessel_guid));
+            return;
+          }
+        }
+
         if (burn_editors_.Count > 0) {
           RenderUpcomingEvents();
         }
@@ -245,63 +259,45 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
 
         for (int i = 0; i < burn_editors_.Count; ++i) {
           Style.HorizontalLine();
+          if (RenderCoast(i)) {
+            return;
+          }
+          Style.HorizontalLine();
           BurnEditor burn = burn_editors_[i];
-          if (burn.Render(header          : "Manœuvre #" + (i + 1),
-                          anomalous       :
-                              i >= (burn_editors_.Count -
-                                    number_of_anomalous_manœuvres_),
-                          burn_final_time : final_times[i])) {
-            var status = plugin.FlightPlanReplace(vessel_guid, burn.Burn(), i);
-            UpdateStatus(status, i);
-            burn.Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, i));
+          switch (burn.Render(header          : "Manœuvre #" + (i + 1),
+                              anomalous       :
+                                  i >= (burn_editors_.Count -
+                                        number_of_anomalous_manœuvres_),
+                              burn_final_time : final_times[i])) {
+            case BurnEditor.Event.Deleted: {
+              var status = plugin.FlightPlanRemove(vessel_guid, i);
+              UpdateStatus(status, null);
+              burn_editors_[i].Close();
+              burn_editors_.RemoveAt(i);
+              UpdateBurnEditorIndices();
+              Shrink();
+              return;
+            }
+            case BurnEditor.Event.Minimized:
+            case BurnEditor.Event.Maximized: {
+              Shrink();
+              return;
+            }
+            case BurnEditor.Event.Changed: {
+              var status =
+                  plugin.FlightPlanReplace(vessel_guid, burn.Burn(), i);
+              UpdateStatus(status, i);
+              burn.Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, i));
+              break;
+            }
+            case BurnEditor.Event.None: {
+              break;
+            }
           }
         }
-
-        if (burn_editors_.Count > 0) {
-          if (UnityEngine.GUILayout.Button(
-                  "Delete last manœuvre",
-                  UnityEngine.GUILayout.ExpandWidth(true))) {
-            var status = plugin.FlightPlanRemoveLast(vessel_guid);
-            UpdateStatus(status, null);
-            burn_editors_.Last().Close();
-            burn_editors_.RemoveAt(burn_editors_.Count - 1);
-            Shrink();
-          }
-        }
-        if (UnityEngine.GUILayout.Button(
-                "Add manœuvre",
-                UnityEngine.GUILayout.ExpandWidth(true))) {
-          double initial_time;
-          if (burn_editors_.Count == 0) {
-            initial_time = plugin.CurrentTime() + 60;
-          } else {
-            initial_time = plugin.FlightPlanGetManoeuvre(
-                               vessel_guid,
-                               burn_editors_.Count - 1).final_time + 60;
-          }
-          var editor =
-              new BurnEditor(adapter_,
-                             predicted_vessel,
-                             initial_time,
-                             index         : burn_editors_.Count,
-                             previous_burn : burn_editors_.LastOrDefault());
-          Burn candidate_burn = editor.Burn();
-          var status = plugin.FlightPlanAppend(vessel_guid, candidate_burn);
-
-          // The previous call did not necessarily create a manœuvre.  Check if
-          // we need to add an editor.
-          int number_of_manœuvres =
-              plugin.FlightPlanNumberOfManoeuvres(vessel_guid);
-          if (number_of_manœuvres > burn_editors_.Count) {
-            editor.Reset(plugin.FlightPlanGetManoeuvre(
-                vessel_guid, number_of_manœuvres - 1));
-            burn_editors_.Add(editor);
-            UpdateStatus(status, number_of_manœuvres - 1);
-          } else {
-            UpdateStatus(status, number_of_manœuvres);
-          }
-
-          Shrink();
+        Style.HorizontalLine();
+        if (RenderCoast(burn_editors_.Count)) {
+          return;
         }
       }
     }
@@ -355,6 +351,62 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                                   Style.Warning(UnityEngine.GUI.skin.label));
       UnityEngine.GUILayout.Space(Width(1));
     }
+  }
+
+  private bool RenderCoast(int index) {
+    string vessel_guid = predicted_vessel.id.ToString();
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      double start_of_coast = index == 0
+          ? plugin.FlightPlanGetInitialTime(vessel_guid)
+          : burn_editors_[index - 1].final_time;
+      string coast_description = index == burn_editors_.Count
+          ? "Final trajectory"
+          : $@"Coast for {
+                (burn_editors_[index].initial_time -
+                 start_of_coast).FormatDuration(show_seconds : false)}";
+      UnityEngine.GUILayout.Label(coast_description);
+      if (UnityEngine.GUILayout.Button("Add manœuvre", GUILayoutWidth(4))) {
+        double initial_time;
+        if (index == 0) {
+          initial_time = plugin.CurrentTime() + 60;
+        } else {
+          initial_time =
+              plugin.FlightPlanGetManoeuvre(vessel_guid,
+                                            index - 1).final_time + 60;
+        }
+        var editor = new BurnEditor(
+            adapter_,
+            predicted_vessel,
+            initial_time,
+            index,
+            get_burn_at_index : burn_editors_.ElementAtOrDefault);
+        editor.minimized = false;
+        Burn candidate_burn = editor.Burn();
+        var status = plugin.FlightPlanInsert(
+            vessel_guid, candidate_burn, index);
+
+        // The previous call did not necessarily create a manœuvre.  Check if
+        // we need to add an editor.
+        int number_of_manœuvres =
+            plugin.FlightPlanNumberOfManoeuvres(vessel_guid);
+        if (number_of_manœuvres > burn_editors_.Count) {
+          editor.Reset(plugin.FlightPlanGetManoeuvre(
+              vessel_guid, index));
+          burn_editors_.Insert(index, editor);
+          UpdateBurnEditorIndices();
+          UpdateStatus(status, index);
+          Shrink();
+          return true;
+        }
+        // TODO(phl): The error messaging here will be either confusing or
+        // wrong.  The messages should mention the new manœuvre without
+        // numbering it, since the numbering has not changed (“the new manœuvre
+        // would overlap with manœuvre #1 or manœuvre #2” or something along
+        // these lines).
+        UpdateStatus(status, index);
+      }
+    }
+    return false;
   }
 
   internal static string FormatPositiveTimeSpan(double seconds) {
@@ -465,6 +517,10 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           status_message = "flight plan is too short";
           remedy_message = "increasing the flight plan duration";
         }
+      } else if (status_.is_unavailable()) {
+        status_message =
+            "flight plan cannot be rebased during scheduled manœuvre execution";
+        remedy_message = "moving the manœuvre or waiting for it to finish";
       }
 
       if (anomalous_manœuvres > 0) {
@@ -481,6 +537,12 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
     }
     message_was_displayed_ = true;
     return message;
+  }
+
+  private void UpdateBurnEditorIndices() {
+    for (int j = 0; j < burn_editors_.Count; ++j) {
+      burn_editors_[j].index = j;
+    }
   }
 
   private IntPtr plugin => adapter_.Plugin();

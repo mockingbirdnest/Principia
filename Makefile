@@ -6,6 +6,7 @@ UNAME_S := $(shell uname -s)
 UNAME_M := $(shell uname -m)
 
 CXX := clang++
+MSBUILD := msbuild
 
 VERSION_TRANSLATION_UNIT := base/version.generated.cc
 
@@ -100,7 +101,6 @@ ifeq ($(UNAME_S),Linux)
     else
         SHARED_ARGS += -m32
     endif
-    MDTOOL := mdtool
     LIBS += -lsupc++ -lc++fs
     TEST_LIBS += -lsupc++
     SHAREDFLAG := -shared
@@ -108,7 +108,6 @@ endif
 ifeq ($(UNAME_S),Darwin)
     INCLUDES += -I$(DEP_DIR)compatibility/filesystem -I$(DEP_DIR)compatibility/optional -I$(DEP_DIR)Optional
     SHARED_ARGS += -mmacosx-version-min=10.12 -arch x86_64 -D_LIBCPP_STD_VER=16
-    MDTOOL ?= "/Applications/Xamarin Studio.app/Contents/MacOS/mdtool"
     SHAREDFLAG := -dynamiclib
 endif
 
@@ -242,7 +241,7 @@ $(TEST_BINS)          : $(BIN_DIRECTORY)% : $(OBJ_DIRECTORY)%.o
 $(PACKAGE_TEST_BINS)  : $(BIN_DIRECTORY)%test : $$(filter $(OBJ_DIRECTORY)%$$(PERCENT), $(TEST_OBJECTS))
 $(PRINCIPIA_TEST_BIN) : $(TEST_OBJECTS)
 
-$(PLUGIN_INDEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_INDEPENDENT_TEST_BINS) : $(GMOCK_OBJECTS) $(GMOCK_MAIN_OBJECT) $(PROTO_OBJECTS) $(ASTRONOMY_LIB_OBJECTS) $(BASE_LIB_OBJECTS) $(MATHEMATICA_LIB_OBJECTS) $(NUMERICS_LIB_OBJECTS)
+$(PLUGIN_INDEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_INDEPENDENT_TEST_BINS) : $(GMOCK_OBJECTS) $(GMOCK_MAIN_OBJECT) $(PROTO_OBJECTS) $(ASTRONOMY_LIB_OBJECTS) $(MATHEMATICA_LIB_OBJECTS) $(PHYSICS_LIB_OBJECTS) $(BASE_LIB_OBJECTS) $(NUMERICS_LIB_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
 
@@ -251,7 +250,7 @@ $(PLUGIN_INDEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_INDEPENDENT_TEST_BINS) : $(GMOC
 # NOTE(egg): this assumes that only the plugin-dependent tests need to be linked
 # against mock objects.  The classes further up that are big enough to be mocked
 # are likely to be highly templatized, so this will probably hold for a while.
-$(PRINCIPIA_TEST_BIN) $(PLUGIN_DEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_DEPENDENT_TEST_BINS) : $(FAKE_OR_MOCK_OBJECTS) $(GMOCK_OBJECTS) $(GMOCK_MAIN_OBJECT) $(KSP_PLUGIN) $(ASTRONOMY_LIB_OBJECTS) $(BASE_LIB_OBJECTS) $(MATHEMATICA_LIB_OBJECTS) $(NUMERICS_LIB_OBJECTS)
+$(PRINCIPIA_TEST_BIN) $(PLUGIN_DEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_DEPENDENT_TEST_BINS) : $(FAKE_OR_MOCK_OBJECTS) $(GMOCK_OBJECTS) $(GMOCK_MAIN_OBJECT) $(KSP_PLUGIN) $(ASTRONOMY_LIB_OBJECTS) $(MATHEMATICA_LIB_OBJECTS) $(PHYSICS_LIB_OBJECTS) $(BASE_LIB_OBJECTS) $(NUMERICS_LIB_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) $(LIBS) -lpthread -o $@
 
@@ -279,7 +278,7 @@ PACKAGE_BENCHMARK_TARGET := $(patsubst $(BIN_DIRECTORY)%, %, $(PACKAGE_BENCHMARK
 
 PRINCIPIA_BENCHMARK_BIN := $(BIN_DIRECTORY)benchmark
 
-$(PRINCIPIA_BENCHMARK_BIN) : $(BENCHMARK_OBJECTS) $(FAKE_OR_MOCK_OBJECTS) $(GMOCK_OBJECTS) $(KSP_PLUGIN) $(BASE_LIB_OBJECTS) $(NUMERICS_LIB_OBJECTS) $(PHYSICS_LIB_OBJECTS)
+$(PRINCIPIA_BENCHMARK_BIN) : $(BENCHMARK_OBJECTS) $(FAKE_OR_MOCK_OBJECTS) $(GMOCK_OBJECTS) $(KSP_PLUGIN) $(BASE_LIB_OBJECTS) $(NUMERICS_LIB_OBJECTS) $(PHYSICS_LIB_OBJECTS) $(ASTRONOMY_LIB_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -lpthread -o $@
 
@@ -289,7 +288,7 @@ benchmark: $(PRINCIPIA_BENCHMARK_BIN)
 ########## Adapter
 
 $(ADAPTER): $(GENERATED_PROFILES)
-	$(MDTOOL) build -c:$(ADAPTER_CONFIGURATION) ksp_plugin_adapter/ksp_plugin_adapter.csproj
+	$(MSBUILD) -p:Configuration=$(ADAPTER_CONFIGURATION) ksp_plugin_adapter/ksp_plugin_adapter.csproj
 
 ######### Distribution
 
