@@ -111,7 +111,7 @@ template<typename Tr4jectory, typename It3rator, typename Traits>
 void ForkableIterator<Tr4jectory, It3rator, Traits>::NormalizeIfEnd() {
   CHECK(!ancestry_.empty());
   if (current_ == ancestry_.back()->timeline_end() && ancestry_.size() > 1) {
-    ancestry_ = {ancestry_.front()};
+    ancestry_.erase(ancestry_.begin() + 1, ancestry_.end());
     current_ = ancestry_.back()->timeline_end();
   }
 }
@@ -236,7 +236,7 @@ LowerBound(Instant const& time) const {
   It3rator iterator;
   Tr4jectory const* ancestor = that();
 
-  // This queue is parallel to |iterator.ancestry_|, and each entry is an
+  // This vector is parallel to |iterator.ancestry_|, and each entry is an
   // iterator in the corresponding ancestry timeline.  Note that we use a
   // |nullopt| sentinel for the innermost timeline.
   absl::InlinedVector<std::optional<TimelineConstIterator>, 3> fork_points;

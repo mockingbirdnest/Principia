@@ -11,6 +11,7 @@
 namespace principia {
 namespace physics {
 
+using base::make_not_null_unique;
 using base::not_null;
 using geometry::Frame;
 using geometry::Handedness;
@@ -23,12 +24,12 @@ using quantities::si::Second;
 namespace {
 
 // Creates a trajectory with the given number of steps.
-std::unique_ptr<DiscreteTrajectory<World>> CreateTrajectory(int const steps) {
-  auto trajectory = std::make_unique<DiscreteTrajectory<World>>();
-  DegreesOfFreedom<World> const d(World::origin, Velocity<World>());
+not_null<std::unique_ptr<DiscreteTrajectory<World>>> CreateTrajectory(
+    int const steps) {
+  auto trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
   Instant t;
-  for (int i = 0; i < steps; i++, t += Second) {
-    trajectory->Append(t, d);
+  for (int i = 0; i < steps; i++, t += 1 * Second) {
+    trajectory->Append(t, {World::origin, World::unmoving});
   }
   return trajectory;
 }
@@ -37,7 +38,7 @@ std::unique_ptr<DiscreteTrajectory<World>> CreateTrajectory(int const steps) {
 // |parent| should be nonempty.
 // |pos| should be in [0, 1].
 not_null<DiscreteTrajectory<World>*> ForkAt(DiscreteTrajectory<World>& parent,
-                                            float const pos) {
+                                            double const pos) {
   CHECK(!parent.Empty());
   CHECK_GE(pos, 0);
   CHECK_LE(pos, 1);
@@ -50,9 +51,10 @@ not_null<DiscreteTrajectory<World>*> ForkAt(DiscreteTrajectory<World>& parent,
 }  // namespace
 
 void BM_DiscreteTrajectoryFront(benchmark::State& state) {
-  std::unique_ptr<DiscreteTrajectory<World>> trajectory = CreateTrajectory(4);
-  not_null<DiscreteTrajectory<World>*> fork = ForkAt(*trajectory, 0.5);
-  fork = ForkAt(*fork, 0.75);
+  not_null<std::unique_ptr<DiscreteTrajectory<World>>> const trajectory =
+      CreateTrajectory(4);
+  not_null<DiscreteTrajectory<World>*> const fork =
+      ForkAt(*ForkAt(*trajectory, 0.5), 0.75);
 
   for (auto _ : state) {
     fork->front();
@@ -60,9 +62,10 @@ void BM_DiscreteTrajectoryFront(benchmark::State& state) {
 }
 
 void BM_DiscreteTrajectoryBack(benchmark::State& state) {
-  std::unique_ptr<DiscreteTrajectory<World>> trajectory = CreateTrajectory(4);
-  not_null<DiscreteTrajectory<World>*> fork = ForkAt(*trajectory, 0.5);
-  fork = ForkAt(*fork, 0.75);
+  not_null<std::unique_ptr<DiscreteTrajectory<World>>> const trajectory =
+      CreateTrajectory(4);
+  not_null<DiscreteTrajectory<World>*> const fork =
+      ForkAt(*ForkAt(*trajectory, 0.5), 0.75);
 
   for (auto _ : state) {
     fork->back();
@@ -70,9 +73,10 @@ void BM_DiscreteTrajectoryBack(benchmark::State& state) {
 }
 
 void BM_DiscreteTrajectoryBegin(benchmark::State& state) {
-  std::unique_ptr<DiscreteTrajectory<World>> trajectory = CreateTrajectory(4);
-  not_null<DiscreteTrajectory<World>*> fork = ForkAt(*trajectory, 0.5);
-  fork = ForkAt(*fork, 0.75);
+  not_null<std::unique_ptr<DiscreteTrajectory<World>>> const trajectory =
+      CreateTrajectory(4);
+  not_null<DiscreteTrajectory<World>*> const fork =
+      ForkAt(*ForkAt(*trajectory, 0.5), 0.75);
 
   for (auto _ : state) {
     fork->begin();
@@ -80,9 +84,10 @@ void BM_DiscreteTrajectoryBegin(benchmark::State& state) {
 }
 
 void BM_DiscreteTrajectoryEnd(benchmark::State& state) {
-  std::unique_ptr<DiscreteTrajectory<World>> trajectory = CreateTrajectory(4);
-  not_null<DiscreteTrajectory<World>*> fork = ForkAt(*trajectory, 0.5);
-  fork = ForkAt(*fork, 0.75);
+  not_null<std::unique_ptr<DiscreteTrajectory<World>>> const trajectory =
+      CreateTrajectory(4);
+  not_null<DiscreteTrajectory<World>*> const fork =
+      ForkAt(*ForkAt(*trajectory, 0.5), 0.75);
 
   for (auto _ : state) {
     fork->end();
@@ -98,10 +103,10 @@ void BM_DiscreteTrajectoryCreateDestroy(benchmark::State& state) {
 
 void BM_DiscreteTrajectoryIterate(benchmark::State& state) {
   int const steps = state.range(0);
-  std::unique_ptr<DiscreteTrajectory<World>> trajectory =
+  not_null<std::unique_ptr<DiscreteTrajectory<World>>> const trajectory =
       CreateTrajectory(steps);
-  not_null<DiscreteTrajectory<World>*> fork = ForkAt(*trajectory, 0.5);
-  fork = ForkAt(*fork, 0.75);
+  not_null<DiscreteTrajectory<World>*> const fork =
+      ForkAt(*ForkAt(*trajectory, 0.5), 0.75);
 
   for (auto _ : state) {
     for (auto it = fork->begin(); it != fork->end(); ++it) {
@@ -111,10 +116,10 @@ void BM_DiscreteTrajectoryIterate(benchmark::State& state) {
 
 void BM_DiscreteTrajectoryReverseIterate(benchmark::State& state) {
   int const steps = state.range(0);
-  std::unique_ptr<DiscreteTrajectory<World>> trajectory =
+  not_null<std::unique_ptr<DiscreteTrajectory<World>>> const trajectory =
       CreateTrajectory(steps);
-  not_null<DiscreteTrajectory<World>*> fork = ForkAt(*trajectory, 0.5);
-  fork = ForkAt(*fork, 0.75);
+  not_null<DiscreteTrajectory<World>*> const fork =
+      ForkAt(*ForkAt(*trajectory, 0.5), 0.75);
 
   for (auto _ : state) {
     for (auto it = fork->end(); it != fork->begin(); --it) {
@@ -124,10 +129,10 @@ void BM_DiscreteTrajectoryReverseIterate(benchmark::State& state) {
 
 void BM_DiscreteTrajectoryFind(benchmark::State& state) {
   int const steps = state.range(0);
-  std::unique_ptr<DiscreteTrajectory<World>> trajectory =
+  not_null<std::unique_ptr<DiscreteTrajectory<World>>> const trajectory =
       CreateTrajectory(steps);
-  not_null<DiscreteTrajectory<World>*> fork = ForkAt(*trajectory, 0.5);
-  fork = ForkAt(*fork, 0.75);
+  not_null<DiscreteTrajectory<World>*> const fork =
+      ForkAt(*ForkAt(*trajectory, 0.5), 0.75);
 
   for (auto _ : state) {
     // These times are in different segments of the fork.
@@ -139,10 +144,10 @@ void BM_DiscreteTrajectoryFind(benchmark::State& state) {
 
 void BM_DiscreteTrajectoryLowerBound(benchmark::State& state) {
   int const steps = state.range(0);
-  std::unique_ptr<DiscreteTrajectory<World>> trajectory =
+  not_null<std::unique_ptr<DiscreteTrajectory<World>>> const trajectory =
       CreateTrajectory(steps);
-  not_null<DiscreteTrajectory<World>*> fork = ForkAt(*trajectory, 0.5);
-  fork = ForkAt(*fork, 0.75);
+  not_null<DiscreteTrajectory<World>*> const fork =
+      ForkAt(*ForkAt(*trajectory, 0.5), 0.75);
 
   for (auto _ : state) {
     // These times are in different segments of the fork.

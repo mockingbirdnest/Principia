@@ -750,8 +750,8 @@ TEST_F(ForkableTest, IteratorLowerBoundInterestingTimeline) {
       fork->NewFork(fork->timeline_find(t2_));
   fork2->push_back(t3_);
 
-  auto lower_bound_it = fork2->LowerBound(t1_);
-  auto it1 = ++(fork2->begin());
+  auto const lower_bound_it = fork2->LowerBound(t1_);
+  auto const it1 = ++(fork2->begin());
   EXPECT_EQ(*lower_bound_it, t2_);
   EXPECT_EQ(*it1, t2_);
   EXPECT_EQ(lower_bound_it, it1);
