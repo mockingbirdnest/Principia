@@ -103,21 +103,27 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   LOG(ERROR) << "Last successful method out/return: \n"
              << player.last_method_out_return().DebugString();
 
-#if 0
+#if 1
   serialization::Method method_in;
   {
     auto* extension = method_in.MutableExtension(
-        serialization::CatchUpLaggingVessels::extension);
+        serialization::RenderedPredictionClosestApproaches::extension);
     auto* in = extension->mutable_in();
-    in->set_plugin(2899402431696);
+    in->set_plugin(1908086640464);
+    in->set_vessel_guid("db9cd970-10f6-4d4e-945a-90da6c172235");
+    auto* sun_world_position = in->mutable_sun_world_position();
+    sun_world_position->set_x(133454188283.63718);
+    sun_world_position->set_y(14499926553.110853);
+    sun_world_position->set_z(-68471845298.356018);
+    in->set_max_points(64);
   }
   serialization::Method method_out_return;
   {
     auto* extension = method_out_return.MutableExtension(
-        serialization::CatchUpLaggingVessels::extension);
+        serialization::RenderedPredictionClosestApproaches::extension);
   }
   LOG(ERROR) << "Running unpaired method:\n" << method_in.DebugString();
-  CHECK(RunIfAppropriate<CatchUpLaggingVessels>(
+  CHECK(RunIfAppropriate<RenderedPredictionClosestApproaches>(
       method_in, method_out_return, player));
 #endif
 }
