@@ -974,7 +974,6 @@ void Plugin::ComputeAndRenderClosestApproaches(
 
   DiscreteTrajectory<Barycentric> apoapsides_trajectory;
   DiscreteTrajectory<Barycentric> periapsides_trajectory;
-  LOG(ERROR)<<renderer_->GetTargetVessel().name()<<" "<<renderer_->GetTargetVessel().guid();
   ComputeApsides(renderer_->GetTargetVessel().prediction(),
                  begin,
                  end,

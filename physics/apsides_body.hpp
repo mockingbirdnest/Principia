@@ -75,10 +75,6 @@ void ComputeApsides(Trajectory<Frame> const& reference,
                squared_distance_derivative});
       BoundedArray<Instant, 2> const extrema =
           squared_distance_approximation.FindExtrema();
-      if (extrema.front() != extrema.front()) {
-        LOG(ERROR)<<*previous_time<<" "<<time<<" "<<*previous_squared_distance<<" "<<squared_distance<<" "<<*previous_squared_distance_derivative
-          <<" "<<squared_distance_derivative;
-      }
 
       // Now look at the extrema and check that exactly one is in the required
       // time interval.  This is normally the case, but it can fail due to
