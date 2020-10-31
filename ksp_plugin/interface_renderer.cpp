@@ -75,6 +75,7 @@ void __cdecl principia__RenderedPredictionClosestApproaches(
       {closest_approaches});
   CHECK_NOTNULL(plugin);
   auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
+  LOG(ERROR)<<plugin->GetVessel(vessel_guid)->name()<<" "<<vessel_guid;
   std::unique_ptr<DiscreteTrajectory<World>> rendered_closest_approaches;
   plugin->ComputeAndRenderClosestApproaches(
       prediction.Fork(),

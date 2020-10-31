@@ -641,6 +641,9 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
 template<typename Frame>
 Hermite3<Instant, Position<Frame>> DiscreteTrajectory<Frame>::GetInterpolation(
     Instant const& time) const {
+  if (!(t_min() <= time)) {
+    LOG(FATAL)<<"Oops";
+  }
   CHECK_LE(t_min(), time);
   CHECK_GE(t_max(), time);
   // This is the upper bound of the interval upon which we will do the

@@ -20,6 +20,7 @@ using geometry::Position;
 using geometry::Sign;
 using numerics::Bisect;
 using numerics::Hermite3;
+using quantities::IsFinite;
 using quantities::Length;
 using quantities::Speed;
 using quantities::Square;
@@ -74,6 +75,10 @@ void ComputeApsides(Trajectory<Frame> const& reference,
                squared_distance_derivative});
       BoundedArray<Instant, 2> const extrema =
           squared_distance_approximation.FindExtrema();
+      if (extrema.front() != extrema.front()) {
+        LOG(ERROR)<<*previous_time<<" "<<time<<" "<<*previous_squared_distance<<" "<<squared_distance<<" "<<*previous_squared_distance_derivative
+          <<" "<<squared_distance_derivative;
+      }
 
       // Now look at the extrema and check that exactly one is in the required
       // time interval.  This is normally the case, but it can fail due to
@@ -94,6 +99,12 @@ void ComputeApsides(Trajectory<Frame> const& reference,
             {time, *previous_time},
             {*previous_squared_distance_derivative,
              -squared_distance_derivative});
+      }
+
+      // This can happen for instance if the square distance is stationary.
+      // Safer to give up.
+      if (!IsFinite(apsis_time - Instant{})) {
+        break;
       }
 
       // Now that we know the time of the apsis, use a Hermite approximation to
