@@ -215,7 +215,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5174.
+  extensions 5000 to 5999;  // Last used: 5175.
 }
 
 message SetAngularMomentumConservation {
@@ -2006,6 +2006,17 @@ message SayHello {
   }
   message Return {
     required string result = 1;
+  }
+  optional Return return = 3;
+}
+
+message SayNotFound {
+  extend Method {
+    optional SayNotFound extension = 5175;
+  }
+  message Return {
+    required fixed64 result = 1 [(interchange) = "Status",
+                                 (is_produced) = true];
   }
   optional Return return = 3;
 }
