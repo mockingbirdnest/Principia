@@ -159,6 +159,9 @@ JournalProtoProcessor::GetCxxInterchangeImplementations() const {
   for (auto const& pair : cxx_serialize_definition_) {
     result.push_back(pair.second);
   }
+  for (auto const& pair : cxx_insert_definition_) {
+    result.push_back(pair.second);
+  }
   result.push_back("}  // namespace\n\n");
   return result;
 }
@@ -419,6 +422,8 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
         !options.HasExtension(journal::serialization::address_of))
       << descriptor->full_name()
       << " cannot have both an (encoding) and an (address_of) option";
+
+  bool is_produced = false;
   std::string pointer_to;
   if (options.HasExtension(journal::serialization::pointer_to)) {
     pointer_to = options.GetExtension(journal::serialization::pointer_to);
@@ -437,9 +442,18 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
     FieldDescriptor const* const address_of_field =
         descriptor->containing_type()->FindFieldByName(
             options.GetExtension(journal::serialization::address_of));
+    FieldOptions const& address_of_options = address_of_field->options();
+    CHECK(address_of_options.GetExtension(journal::serialization::is_produced))
+        << address_of_field->full_name()
+        << " is designated by an (address_of) option and must have the "
+        << "(is_produced) option";
+    is_produced = true;
     pointer_to = address_of_field->containing_type()->name();
     field_cxx_address_of_[descriptor] = address_of_field;
   }
+  CHECK(!pointer_to.empty()) << descriptor->full_name()
+                             << " must have exactly one of the (address_of), "
+                             << "(encoding) or (pointer_to) options";
 
   if (options.HasExtension(journal::serialization::disposable)) {
     CHECK(!options.HasExtension(journal::serialization::is_consumed) ||
@@ -485,8 +499,10 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
                  ") {\n    Delete(" + expr + ", pointer_map);\n  }\n";
         };
   }
-  if (options.HasExtension(journal::serialization::is_produced)) {
-    CHECK(options.GetExtension(journal::serialization::is_produced))
+  if (is_produced ||
+      options.HasExtension(journal::serialization::is_produced)) {
+    CHECK(is_produced ||
+          options.GetExtension(journal::serialization::is_produced))
         << descriptor->full_name() << " has incorrect (is_produced) option";
     field_cxx_inserter_fn_[descriptor] =
         [](std::string const& expr1, std::string const& expr2) {
@@ -1032,16 +1048,33 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
       << descriptor->full_name()
       << " must have exactly one field without the (address_of) option";
 
-  // Process the result field in the C++ code (Fill and Run).
+  // This check cannot be done when processing the (is_produced) option because
+  // we may not have seen the (address_of) field at that point.
   FieldOptions const& result_field_options = result_field_descriptor->options();
+  CHECK(
+      !result_field_options.HasExtension(journal::serialization::is_produced) ||
+      result_field_descriptor->type() != FieldDescriptor::TYPE_MESSAGE ||
+      address_field_descriptor != nullptr)
+      << result_field_descriptor->full_name()
+      << " is a produced message result and must have an (address_of) option";
+
+  // Process the result field in the C++ code (Fill and Run).
   cxx_fill_body_[descriptor] =
       field_cxx_assignment_fn_[result_field_descriptor](
           "message->mutable_return_()->",
           field_cxx_indirect_member_get_fn_[result_field_descriptor]("result"));
   std::string const cxx_field_getter =
       "message.return_()." + result_field_descriptor->name() + "()";
+  if (Contains(cxx_insert_definition_,
+               result_field_descriptor->message_type())) {
+    Descriptor const* message_type = result_field_descriptor->message_type();
+    std::string const& message_type_name = message_type->name();
+    cxx_run_body_epilog_[descriptor] += "  Insert" + message_type_name + "(" +
+                                        cxx_field_getter +
+                                        ", *result, pointer_map);\n";
+  }
   if (Contains(field_cxx_inserter_fn_, result_field_descriptor)) {
-    cxx_run_body_epilog_[descriptor] =
+    cxx_run_body_epilog_[descriptor] +=
         field_cxx_inserter_fn_[result_field_descriptor](cxx_field_getter,
                                                         "result");
   } else if (!result_field_options.HasExtension(
@@ -1050,7 +1083,7 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
         result_field_descriptor->message_type();
     if (Contains(cxx_deserialization_storage_declarations_,
                  field_message_type)) {
-      cxx_run_body_epilog_[descriptor] =
+      cxx_run_body_epilog_[descriptor] +=
           cxx_deserialization_storage_declarations_[field_message_type];
     }
     cxx_run_body_epilog_[descriptor] +=
@@ -1098,17 +1131,18 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     Descriptor const* descriptor) {
   std::string const& name = descriptor->name();
   std::string const& parameter_name = ToLower(name);
+  std::string const& proto_parameter_name = ToLower(name) + "_proto";
+  std::string const& object_parameter_name = ToLower(name) + "_object";
   MessageOptions const& options = descriptor->options();
-
-  cxx_serialize_definition_[descriptor] =
-      "serialization::" + name + " Serialize" + name + "(" + name + " const& " +
-      parameter_name + ") {\n  serialization::" + name + " m;\n";
 
   // Start by processing the fields.  We need to know if any of them has a
   // custom marshaler to decide whether we generate a struct or a class.
+  // Similarly, we'll need to know whether we have to generate an Insert method
+  // for inner pointers.
   bool const has_custom_marshaler =
       options.HasExtension(journal::serialization::custom_marshaler);
   bool needs_custom_marshaler = false;
+  bool needs_insert = false;
   for (int i = 0; i < descriptor->field_count(); ++i) {
     FieldDescriptor const* field_descriptor = descriptor->field(i);
     interchange_.insert(field_descriptor);
@@ -1116,6 +1150,9 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     if (!has_custom_marshaler &&
         Contains(field_cs_custom_marshaler_, field_descriptor)) {
       needs_custom_marshaler = true;
+    }
+    if (Contains(field_cxx_inserter_fn_, field_descriptor)) {
+      needs_insert = true;
     }
   }
   if (has_custom_marshaler) {
@@ -1149,6 +1186,15 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
       "  };\n";
 
   // Second pass on the fields to actually generate the code.
+  cxx_serialize_definition_[descriptor] =
+      "serialization::" + name + " Serialize" + name + "(" + name + " const& " +
+      parameter_name + ") {\n  serialization::" + name + " m;\n";
+  if (needs_insert) {
+    cxx_insert_definition_[descriptor] =
+        "void Insert" + name + "(serialization::" + name + " const& " +
+        proto_parameter_name + ", " + name + " const& " +
+        object_parameter_name + ", Player::PointerMap& pointer_map) {\n";
+  }
   std::vector<std::string> deserialized_expressions;
   for (int i = 0; i < descriptor->field_count(); ++i) {
     FieldDescriptor const* field_descriptor = descriptor->field(i);
@@ -1187,6 +1233,15 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
                 "m.",
                 field_cxx_indirect_member_get_fn_[field_descriptor](
                     serialize_member_name)));
+    if (Contains(field_cxx_inserter_fn_, field_descriptor)) {
+      std::string const proto_field_getter =
+          proto_parameter_name + "." + field_descriptor_name + "()";
+      std::string const object_field_reference =
+          object_parameter_name + "." + field_descriptor_name;
+      cxx_insert_definition_[descriptor] +=
+          field_cxx_inserter_fn_[field_descriptor](proto_field_getter,
+                                                   object_field_reference);
+    }
 
     if (Contains(field_cs_private_type_, field_descriptor)) {
       std::string const field_private_member_name = field_descriptor_name + "_";
@@ -1246,6 +1301,9 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     }
   }
   cxx_serialize_definition_[descriptor] += "  return m;\n}\n\n";
+  if (needs_insert) {
+    cxx_insert_definition_[descriptor] += "}\n\n";
+  }
 
   cxx_deserialize_definition_[descriptor] =
       name + " Deserialize" + name + "(serialization::" + name + " const& " +

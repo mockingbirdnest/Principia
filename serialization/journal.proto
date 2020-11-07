@@ -553,6 +553,7 @@ message ExternalCelestialGetPosition {
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -577,6 +578,7 @@ message ExternalCelestialGetSurfacePosition {
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -604,6 +606,7 @@ message ExternalFlowFreefall {
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -629,6 +632,7 @@ message ExternalGeopotentialGetCoefficient {
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -653,6 +657,7 @@ message ExternalGeopotentialGetReferenceRadius {
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -674,6 +679,7 @@ message ExternalVesselGetPosition {
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -700,6 +706,7 @@ message ExternalGetNearestPlannedCoastDegreesOfFreedom {
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -878,6 +885,7 @@ message FlightPlanInsert {
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -943,7 +951,8 @@ message FlightPlanRebase {
     required double mass_in_tonnes = 3;
   }
   message Return {
-    required Status result = 1;
+    required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -961,6 +970,7 @@ message FlightPlanRemove {
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -1067,6 +1077,7 @@ message FlightPlanReplace {
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -1085,6 +1096,7 @@ message FlightPlanSetAdaptiveStepParameters {
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -1102,6 +1114,7 @@ message FlightPlanSetDesiredFinalTime {
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -2016,7 +2029,7 @@ message SayNotFound {
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
-    required fixed64 result_address = 2 [(address_of) = "result"];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional Return return = 3;
 }
@@ -2277,6 +2290,7 @@ message VesselRefreshAnalysis {
   }
   message Return {
     required OrbitAnalysis result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Return return = 3;

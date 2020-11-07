@@ -114,7 +114,8 @@ class JournalProtoProcessor final {
   // The fields that are part of interchange messages.
   std::set<FieldDescriptor const*> interchange_;
 
-  //TODO(phl):Comment
+  // For a field that has an (address_of) option, the field designated by that
+  // option.
   std::map<FieldDescriptor const*, FieldDescriptor const*>
       field_cxx_address_of_;
 
@@ -291,10 +292,12 @@ class JournalProtoProcessor final {
   std::map<Descriptor const*, std::string> cs_managed_to_native_definition_;
   std::map<Descriptor const*, std::string> cs_native_to_managed_definition_;
 
-  // The definitions of the Serialize and Deserialize functions for interchange
-  // messages.  The key is a descriptor for an interchange message.
+  // The definitions of the Serialize, Deserialize and (if needed) Insert
+  // functions for interchange messages.  The key is a descriptor for an
+  // interchange message.
   std::map<Descriptor const*, std::string> cxx_deserialize_definition_;
   std::map<Descriptor const*, std::string> cxx_serialize_definition_;
+  std::map<Descriptor const*, std::string> cxx_insert_definition_;
 
   // For interchange messages that require deserialization storage, the
   // arguments for the storage in the call to the Deserialize function.  Starts
