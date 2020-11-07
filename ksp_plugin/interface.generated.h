@@ -360,6 +360,9 @@ struct OrbitAnalysis {
   OrbitalElements const* elements;
   OrbitRecurrence const* recurrence;
   OrbitGroundTrack const* ground_track;
+  OrbitAnalysis* elements_address;
+  OrbitAnalysis* recurrence_address;
+  OrbitAnalysis* ground_track_address;
 };
 
 static_assert(std::is_pod<OrbitAnalysis>::value,
@@ -1019,6 +1022,9 @@ void __cdecl principia__ReportPartCollision(
 
 extern "C" PRINCIPIA_DLL
 char const* __cdecl principia__SayHello();
+
+extern "C" PRINCIPIA_DLL
+Status* __cdecl principia__SayNotFound();
 
 extern "C" PRINCIPIA_DLL
 char const* __cdecl principia__SerializePlugin(

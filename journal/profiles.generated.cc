@@ -204,7 +204,10 @@ OrbitAnalysis DeserializeOrbitAnalysis(serialization::OrbitAnalysis const& orbit
           orbit_analysis.has_ground_track() ? [&pointer_map, &ground_track_storage](serialization::OrbitGroundTrack const& message) {
             ground_track_storage = DeserializeOrbitGroundTrack(message, pointer_map);
             return &ground_track_storage;
-          }(orbit_analysis.ground_track()) : nullptr};
+          }(orbit_analysis.ground_track()) : nullptr,
+          DeserializePointer<OrbitAnalysis*>(orbit_analysis.elements_address(), pointer_map),
+          DeserializePointer<OrbitAnalysis*>(orbit_analysis.recurrence_address(), pointer_map),
+          DeserializePointer<OrbitAnalysis*>(orbit_analysis.ground_track_address(), pointer_map)};
 }
 
 serialization::NavigationFrameParameters SerializeNavigationFrameParameters(NavigationFrameParameters const& navigation_frame_parameters) {
@@ -474,7 +477,20 @@ serialization::OrbitAnalysis SerializeOrbitAnalysis(OrbitAnalysis const& orbit_a
   if (orbit_analysis.ground_track != nullptr) {
     *m.mutable_ground_track() = SerializeOrbitGroundTrack(*orbit_analysis.ground_track);
   }
+  m.set_elements_address(SerializePointer(orbit_analysis.elements_address));
+  m.set_recurrence_address(SerializePointer(orbit_analysis.recurrence_address));
+  m.set_ground_track_address(SerializePointer(orbit_analysis.ground_track_address));
   return m;
+}
+
+void InsertStatus(serialization::Status const& status_proto, Status const& status_object, Player::PointerMap& pointer_map) {
+  Insert(status_proto.message(), status_object.message, pointer_map);
+}
+
+void InsertOrbitAnalysis(serialization::OrbitAnalysis const& orbit_analysis_proto, OrbitAnalysis const& orbit_analysis_object, Player::PointerMap& pointer_map) {
+  Insert(orbit_analysis_proto.elements_address(), orbit_analysis_object.elements_address, pointer_map);
+  Insert(orbit_analysis_proto.recurrence_address(), orbit_analysis_object.recurrence_address, pointer_map);
+  Insert(orbit_analysis_proto.ground_track_address(), orbit_analysis_object.ground_track_address, pointer_map);
 }
 
 }  // namespace
@@ -844,6 +860,7 @@ void ExternalCelestialGetPosition::Fill(Out const& out, not_null<Message*> const
 
 void ExternalCelestialGetPosition::Fill(Return const& result, not_null<Message*> const message) {
   *message->mutable_return_()->mutable_result() = SerializeStatus(*result);
+  message->mutable_return_()->set_address(SerializePointer(result));
 }
 
 void ExternalCelestialGetPosition::Run(Message const& message, Player::PointerMap& pointer_map) {
@@ -854,7 +871,9 @@ void ExternalCelestialGetPosition::Run(Message const& message, Player::PointerMa
   [[maybe_unused]] auto const& out = message.out();
   XYZ position;
   auto const result = interface::principia__ExternalCelestialGetPosition(plugin, body_index, time, &position);
+  InsertStatus(message.return_().result(), *result, pointer_map);
   PRINCIPIA_CHECK_EQ(DeserializeStatus(message.return_().result(), pointer_map), *result);
+  Insert(message.return_().address(), result, pointer_map);
 }
 
 void ExternalCelestialGetSurfacePosition::Fill(In const& in, not_null<Message*> const message) {
@@ -873,6 +892,7 @@ void ExternalCelestialGetSurfacePosition::Fill(Out const& out, not_null<Message*
 
 void ExternalCelestialGetSurfacePosition::Fill(Return const& result, not_null<Message*> const message) {
   *message->mutable_return_()->mutable_result() = SerializeStatus(*result);
+  message->mutable_return_()->set_address(SerializePointer(result));
 }
 
 void ExternalCelestialGetSurfacePosition::Run(Message const& message, Player::PointerMap& pointer_map) {
@@ -886,7 +906,9 @@ void ExternalCelestialGetSurfacePosition::Run(Message const& message, Player::Po
   [[maybe_unused]] auto const& out = message.out();
   XYZ position;
   auto const result = interface::principia__ExternalCelestialGetSurfacePosition(plugin, body_index, planetocentric_latitude_in_degrees, planetocentric_longitude_in_degrees, radius, time, &position);
+  InsertStatus(message.return_().result(), *result, pointer_map);
   PRINCIPIA_CHECK_EQ(DeserializeStatus(message.return_().result(), pointer_map), *result);
+  Insert(message.return_().address(), result, pointer_map);
 }
 
 void ExternalFlowFreefall::Fill(In const& in, not_null<Message*> const message) {
@@ -904,6 +926,7 @@ void ExternalFlowFreefall::Fill(Out const& out, not_null<Message*> const message
 
 void ExternalFlowFreefall::Fill(Return const& result, not_null<Message*> const message) {
   *message->mutable_return_()->mutable_result() = SerializeStatus(*result);
+  message->mutable_return_()->set_address(SerializePointer(result));
 }
 
 void ExternalFlowFreefall::Run(Message const& message, Player::PointerMap& pointer_map) {
@@ -916,7 +939,9 @@ void ExternalFlowFreefall::Run(Message const& message, Player::PointerMap& point
   [[maybe_unused]] auto const& out = message.out();
   QP world_body_centred_final_degrees_of_freedom;
   auto const result = interface::principia__ExternalFlowFreefall(plugin, central_body_index, world_body_centred_initial_degrees_of_freedom, t_initial, t_final, &world_body_centred_final_degrees_of_freedom);
+  InsertStatus(message.return_().result(), *result, pointer_map);
   PRINCIPIA_CHECK_EQ(DeserializeStatus(message.return_().result(), pointer_map), *result);
+  Insert(message.return_().address(), result, pointer_map);
 }
 
 void ExternalGeopotentialGetCoefficient::Fill(In const& in, not_null<Message*> const message) {
@@ -933,6 +958,7 @@ void ExternalGeopotentialGetCoefficient::Fill(Out const& out, not_null<Message*>
 
 void ExternalGeopotentialGetCoefficient::Fill(Return const& result, not_null<Message*> const message) {
   *message->mutable_return_()->mutable_result() = SerializeStatus(*result);
+  message->mutable_return_()->set_address(SerializePointer(result));
 }
 
 void ExternalGeopotentialGetCoefficient::Run(Message const& message, Player::PointerMap& pointer_map) {
@@ -944,7 +970,9 @@ void ExternalGeopotentialGetCoefficient::Run(Message const& message, Player::Poi
   [[maybe_unused]] auto const& out = message.out();
   XY coefficient;
   auto const result = interface::principia__ExternalGeopotentialGetCoefficient(plugin, body_index, degree, order, &coefficient);
+  InsertStatus(message.return_().result(), *result, pointer_map);
   PRINCIPIA_CHECK_EQ(DeserializeStatus(message.return_().result(), pointer_map), *result);
+  Insert(message.return_().address(), result, pointer_map);
 }
 
 void ExternalGeopotentialGetReferenceRadius::Fill(In const& in, not_null<Message*> const message) {
@@ -959,6 +987,7 @@ void ExternalGeopotentialGetReferenceRadius::Fill(Out const& out, not_null<Messa
 
 void ExternalGeopotentialGetReferenceRadius::Fill(Return const& result, not_null<Message*> const message) {
   *message->mutable_return_()->mutable_result() = SerializeStatus(*result);
+  message->mutable_return_()->set_address(SerializePointer(result));
 }
 
 void ExternalGeopotentialGetReferenceRadius::Run(Message const& message, Player::PointerMap& pointer_map) {
@@ -968,7 +997,9 @@ void ExternalGeopotentialGetReferenceRadius::Run(Message const& message, Player:
   [[maybe_unused]] auto const& out = message.out();
   double reference_radius;
   auto const result = interface::principia__ExternalGeopotentialGetReferenceRadius(plugin, body_index, &reference_radius);
+  InsertStatus(message.return_().result(), *result, pointer_map);
   PRINCIPIA_CHECK_EQ(DeserializeStatus(message.return_().result(), pointer_map), *result);
+  Insert(message.return_().address(), result, pointer_map);
 }
 
 void ExternalVesselGetPosition::Fill(In const& in, not_null<Message*> const message) {
@@ -984,6 +1015,7 @@ void ExternalVesselGetPosition::Fill(Out const& out, not_null<Message*> const me
 
 void ExternalVesselGetPosition::Fill(Return const& result, not_null<Message*> const message) {
   *message->mutable_return_()->mutable_result() = SerializeStatus(*result);
+  message->mutable_return_()->set_address(SerializePointer(result));
 }
 
 void ExternalVesselGetPosition::Run(Message const& message, Player::PointerMap& pointer_map) {
@@ -994,7 +1026,9 @@ void ExternalVesselGetPosition::Run(Message const& message, Player::PointerMap& 
   [[maybe_unused]] auto const& out = message.out();
   XYZ position;
   auto const result = interface::principia__ExternalVesselGetPosition(plugin, vessel_guid, time, &position);
+  InsertStatus(message.return_().result(), *result, pointer_map);
   PRINCIPIA_CHECK_EQ(DeserializeStatus(message.return_().result(), pointer_map), *result);
+  Insert(message.return_().address(), result, pointer_map);
 }
 
 void ExternalGetNearestPlannedCoastDegreesOfFreedom::Fill(In const& in, not_null<Message*> const message) {
@@ -1012,6 +1046,7 @@ void ExternalGetNearestPlannedCoastDegreesOfFreedom::Fill(Out const& out, not_nu
 
 void ExternalGetNearestPlannedCoastDegreesOfFreedom::Fill(Return const& result, not_null<Message*> const message) {
   *message->mutable_return_()->mutable_result() = SerializeStatus(*result);
+  message->mutable_return_()->set_address(SerializePointer(result));
 }
 
 void ExternalGetNearestPlannedCoastDegreesOfFreedom::Run(Message const& message, Player::PointerMap& pointer_map) {
@@ -1024,7 +1059,9 @@ void ExternalGetNearestPlannedCoastDegreesOfFreedom::Run(Message const& message,
   [[maybe_unused]] auto const& out = message.out();
   QP world_body_centred_nearest_degrees_of_freedom;
   auto const result = interface::principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(plugin, central_body_index, vessel_guid, manoeuvre_index, world_body_centred_reference_position, &world_body_centred_nearest_degrees_of_freedom);
+  InsertStatus(message.return_().result(), *result, pointer_map);
   PRINCIPIA_CHECK_EQ(DeserializeStatus(message.return_().result(), pointer_map), *result);
+  Insert(message.return_().address(), result, pointer_map);
 }
 
 void FlightPlanCreate::Fill(In const& in, not_null<Message*> const message) {
@@ -1217,6 +1254,7 @@ void FlightPlanInsert::Fill(In const& in, not_null<Message*> const message) {
 
 void FlightPlanInsert::Fill(Return const& result, not_null<Message*> const message) {
   *message->mutable_return_()->mutable_result() = SerializeStatus(*result);
+  message->mutable_return_()->set_address(SerializePointer(result));
 }
 
 void FlightPlanInsert::Run(Message const& message, Player::PointerMap& pointer_map) {
@@ -1226,7 +1264,9 @@ void FlightPlanInsert::Run(Message const& message, Player::PointerMap& pointer_m
   auto burn = DeserializeBurn(in.burn(), pointer_map);
   auto index = in.index();
   auto const result = interface::principia__FlightPlanInsert(plugin, vessel_guid, burn, index);
+  InsertStatus(message.return_().result(), *result, pointer_map);
   PRINCIPIA_CHECK_EQ(DeserializeStatus(message.return_().result(), pointer_map), *result);
+  Insert(message.return_().address(), result, pointer_map);
 }
 
 void FlightPlanNumberOfAnomalousManoeuvres::Fill(In const& in, not_null<Message*> const message) {
@@ -1292,6 +1332,7 @@ void FlightPlanRebase::Fill(In const& in, not_null<Message*> const message) {
 
 void FlightPlanRebase::Fill(Return const& result, not_null<Message*> const message) {
   *message->mutable_return_()->mutable_result() = SerializeStatus(*result);
+  message->mutable_return_()->set_address(SerializePointer(result));
 }
 
 void FlightPlanRebase::Run(Message const& message, Player::PointerMap& pointer_map) {
@@ -1300,7 +1341,9 @@ void FlightPlanRebase::Run(Message const& message, Player::PointerMap& pointer_m
   auto vessel_guid = in.vessel_guid().c_str();
   auto mass_in_tonnes = in.mass_in_tonnes();
   auto const result = interface::principia__FlightPlanRebase(plugin, vessel_guid, mass_in_tonnes);
+  InsertStatus(message.return_().result(), *result, pointer_map);
   PRINCIPIA_CHECK_EQ(DeserializeStatus(message.return_().result(), pointer_map), *result);
+  Insert(message.return_().address(), result, pointer_map);
 }
 
 void FlightPlanRemove::Fill(In const& in, not_null<Message*> const message) {
@@ -1312,6 +1355,7 @@ void FlightPlanRemove::Fill(In const& in, not_null<Message*> const message) {
 
 void FlightPlanRemove::Fill(Return const& result, not_null<Message*> const message) {
   *message->mutable_return_()->mutable_result() = SerializeStatus(*result);
+  message->mutable_return_()->set_address(SerializePointer(result));
 }
 
 void FlightPlanRemove::Run(Message const& message, Player::PointerMap& pointer_map) {
@@ -1320,7 +1364,9 @@ void FlightPlanRemove::Run(Message const& message, Player::PointerMap& pointer_m
   auto vessel_guid = in.vessel_guid().c_str();
   auto index = in.index();
   auto const result = interface::principia__FlightPlanRemove(plugin, vessel_guid, index);
+  InsertStatus(message.return_().result(), *result, pointer_map);
   PRINCIPIA_CHECK_EQ(DeserializeStatus(message.return_().result(), pointer_map), *result);
+  Insert(message.return_().address(), result, pointer_map);
 }
 
 void FlightPlanRenderedApsides::Fill(In const& in, not_null<Message*> const message) {
@@ -1437,6 +1483,7 @@ void FlightPlanReplace::Fill(In const& in, not_null<Message*> const message) {
 
 void FlightPlanReplace::Fill(Return const& result, not_null<Message*> const message) {
   *message->mutable_return_()->mutable_result() = SerializeStatus(*result);
+  message->mutable_return_()->set_address(SerializePointer(result));
 }
 
 void FlightPlanReplace::Run(Message const& message, Player::PointerMap& pointer_map) {
@@ -1446,7 +1493,9 @@ void FlightPlanReplace::Run(Message const& message, Player::PointerMap& pointer_
   auto burn = DeserializeBurn(in.burn(), pointer_map);
   auto index = in.index();
   auto const result = interface::principia__FlightPlanReplace(plugin, vessel_guid, burn, index);
+  InsertStatus(message.return_().result(), *result, pointer_map);
   PRINCIPIA_CHECK_EQ(DeserializeStatus(message.return_().result(), pointer_map), *result);
+  Insert(message.return_().address(), result, pointer_map);
 }
 
 void FlightPlanSetAdaptiveStepParameters::Fill(In const& in, not_null<Message*> const message) {
@@ -1458,6 +1507,7 @@ void FlightPlanSetAdaptiveStepParameters::Fill(In const& in, not_null<Message*> 
 
 void FlightPlanSetAdaptiveStepParameters::Fill(Return const& result, not_null<Message*> const message) {
   *message->mutable_return_()->mutable_result() = SerializeStatus(*result);
+  message->mutable_return_()->set_address(SerializePointer(result));
 }
 
 void FlightPlanSetAdaptiveStepParameters::Run(Message const& message, Player::PointerMap& pointer_map) {
@@ -1466,7 +1516,9 @@ void FlightPlanSetAdaptiveStepParameters::Run(Message const& message, Player::Po
   auto vessel_guid = in.vessel_guid().c_str();
   auto flight_plan_adaptive_step_parameters = DeserializeFlightPlanAdaptiveStepParameters(in.flight_plan_adaptive_step_parameters(), pointer_map);
   auto const result = interface::principia__FlightPlanSetAdaptiveStepParameters(plugin, vessel_guid, flight_plan_adaptive_step_parameters);
+  InsertStatus(message.return_().result(), *result, pointer_map);
   PRINCIPIA_CHECK_EQ(DeserializeStatus(message.return_().result(), pointer_map), *result);
+  Insert(message.return_().address(), result, pointer_map);
 }
 
 void FlightPlanSetDesiredFinalTime::Fill(In const& in, not_null<Message*> const message) {
@@ -1478,6 +1530,7 @@ void FlightPlanSetDesiredFinalTime::Fill(In const& in, not_null<Message*> const 
 
 void FlightPlanSetDesiredFinalTime::Fill(Return const& result, not_null<Message*> const message) {
   *message->mutable_return_()->mutable_result() = SerializeStatus(*result);
+  message->mutable_return_()->set_address(SerializePointer(result));
 }
 
 void FlightPlanSetDesiredFinalTime::Run(Message const& message, Player::PointerMap& pointer_map) {
@@ -1486,7 +1539,9 @@ void FlightPlanSetDesiredFinalTime::Run(Message const& message, Player::PointerM
   auto vessel_guid = in.vessel_guid().c_str();
   auto final_time = in.final_time();
   auto const result = interface::principia__FlightPlanSetDesiredFinalTime(plugin, vessel_guid, final_time);
+  InsertStatus(message.return_().result(), *result, pointer_map);
   PRINCIPIA_CHECK_EQ(DeserializeStatus(message.return_().result(), pointer_map), *result);
+  Insert(message.return_().address(), result, pointer_map);
 }
 
 void ForgetAllHistoriesBefore::Fill(In const& in, not_null<Message*> const message) {
@@ -2531,6 +2586,18 @@ void SayHello::Run(Message const& message, Player::PointerMap& pointer_map) {
   PRINCIPIA_CHECK_EQ(message.return_().result().c_str(), result);
 }
 
+void SayNotFound::Fill(Return const& result, not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_result() = SerializeStatus(*result);
+  message->mutable_return_()->set_address(SerializePointer(result));
+}
+
+void SayNotFound::Run(Message const& message, Player::PointerMap& pointer_map) {
+  auto const result = interface::principia__SayNotFound();
+  InsertStatus(message.return_().result(), *result, pointer_map);
+  PRINCIPIA_CHECK_EQ(DeserializeStatus(message.return_().result(), pointer_map), *result);
+  Insert(message.return_().address(), result, pointer_map);
+}
+
 void SerializePlugin::Fill(In const& in, not_null<Message*> const message) {
   auto* const m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
@@ -2824,6 +2891,7 @@ void VesselRefreshAnalysis::Fill(In const& in, not_null<Message*> const message)
 
 void VesselRefreshAnalysis::Fill(Return const& result, not_null<Message*> const message) {
   *message->mutable_return_()->mutable_result() = SerializeOrbitAnalysis(*result);
+  message->mutable_return_()->set_address(SerializePointer(result));
 }
 
 void VesselRefreshAnalysis::Run(Message const& message, Player::PointerMap& pointer_map) {
@@ -2844,10 +2912,12 @@ void VesselRefreshAnalysis::Run(Message const& message, Player::PointerMap& poin
           }(in.days_per_cycle()) : nullptr;
   auto ground_track_revolution = in.ground_track_revolution();
   auto const result = interface::principia__VesselRefreshAnalysis(plugin, vessel_guid, primary_index, mission_duration, revolutions_per_cycle, days_per_cycle, ground_track_revolution);
+  InsertOrbitAnalysis(message.return_().result(), *result, pointer_map);
   OrbitalElements elements_storage;
   OrbitRecurrence recurrence_storage;
   OrbitGroundTrack ground_track_storage;
   PRINCIPIA_CHECK_EQ(DeserializeOrbitAnalysis(message.return_().result(), pointer_map, elements_storage, recurrence_storage, ground_track_storage), *result);
+  Insert(message.return_().address(), result, pointer_map);
 }
 
 void VesselSetPredictionAdaptiveStepParameters::Fill(In const& in, not_null<Message*> const message) {

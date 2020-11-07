@@ -228,6 +228,8 @@
              *method_in, *method_out_return);
   ran |= RunIfAppropriate<SayHello>(
              *method_in, *method_out_return);
+  ran |= RunIfAppropriate<SayNotFound>(
+             *method_in, *method_out_return);
   ran |= RunIfAppropriate<SerializePlugin>(
              *method_in, *method_out_return);
   ran |= RunIfAppropriate<SetBufferDuration>(

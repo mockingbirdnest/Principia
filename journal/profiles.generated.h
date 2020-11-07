@@ -1624,6 +1624,15 @@ struct SayHello : not_constructible {
                   Player::PointerMap& pointer_map);
 };
 
+struct SayNotFound : not_constructible {
+  using Return = Status*;
+
+  using Message = serialization::SayNotFound;
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  Player::PointerMap& pointer_map);
+};
+
 struct SerializePlugin : not_constructible {
   struct In final {
     Plugin const* const plugin;

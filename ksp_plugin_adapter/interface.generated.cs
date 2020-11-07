@@ -224,6 +224,9 @@ internal partial class OrbitAnalysis {
   public OrbitalElements? elements;
   public OrbitRecurrence? recurrence;
   public OrbitGroundTrack? ground_track;
+  public IntPtr elements_address;
+  public IntPtr recurrence_address;
+  public IntPtr ground_track_address;
 }
 
 internal static partial class Interface {
@@ -565,7 +568,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__FlightPlanRebase",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(StatusMarshaler))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, StatusMarshaler>))]
   internal static extern Status FlightPlanRebase(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
@@ -1135,6 +1138,12 @@ internal static partial class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))]
   internal static extern string SayHello();
+
+  [DllImport(dllName           : dll_path,
+             EntryPoint        = "principia__SayNotFound",
+             CallingConvention = CallingConvention.Cdecl)]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, StatusMarshaler>))]
+  internal static extern Status SayNotFound();
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__SerializePlugin",
