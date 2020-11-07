@@ -20,6 +20,7 @@ using geometry::Position;
 using geometry::Sign;
 using numerics::Bisect;
 using numerics::Hermite3;
+using quantities::IsFinite;
 using quantities::Length;
 using quantities::Speed;
 using quantities::Square;
@@ -94,6 +95,12 @@ void ComputeApsides(Trajectory<Frame> const& reference,
             {time, *previous_time},
             {*previous_squared_distance_derivative,
              -squared_distance_derivative});
+      }
+
+      // This can happen for instance if the square distance is stationary.
+      // Safer to give up.
+      if (!IsFinite(apsis_time - Instant{})) {
+        break;
       }
 
       // Now that we know the time of the apsis, use a Hermite approximation to
