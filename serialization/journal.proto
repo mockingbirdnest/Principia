@@ -212,6 +212,9 @@ message OrbitAnalysis {
   optional OrbitalElements elements = 4 [(is_produced) = true];
   optional OrbitRecurrence recurrence = 5 [(is_produced) = true];
   optional OrbitGroundTrack ground_track = 6 [(is_produced) = true];
+  required fixed64 elements_address = 7 [(address_of) = "elements"];
+  required fixed64 recurrence_address = 8 [(address_of) = "recurrence"];
+  required fixed64 ground_track_address = 9 [(address_of) = "ground_track"];
 }
 
 message Method {

@@ -73,6 +73,8 @@ class JournalProtoProcessor final {
 
   void ProcessField(FieldDescriptor const* descriptor);
 
+  void ProcessAddressOf(Descriptor const* descriptor);
+
   void ProcessInOut(Descriptor const* descriptor,
                     std::vector<FieldDescriptor const*>* field_descriptors);
   void ProcessReturn(Descriptor const* descriptor);
@@ -114,10 +116,12 @@ class JournalProtoProcessor final {
   // The fields that are part of interchange messages.
   std::set<FieldDescriptor const*> interchange_;
 
-  // For a field that has an (address_of) option, the field designated by that
-  // option.
+  // For a field that has an (address_of) option, field_cxx_address_of_ has that
+  // field as a key and the field designated by the option as its value.
+  // field_cxx_address_ is the inverse map.
   std::map<FieldDescriptor const*, FieldDescriptor const*>
       field_cxx_address_of_;
+  std::map<FieldDescriptor const*, FieldDescriptor const*> field_cxx_address_;
 
   // For all fields, a lambda that takes the name of a local variable containing
   // data extracted (and deserialized) from the field and returns a list of

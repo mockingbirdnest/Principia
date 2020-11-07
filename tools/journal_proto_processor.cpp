@@ -272,6 +272,9 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
   if (options.HasExtension(journal::serialization::is_produced)) {
     CHECK(options.GetExtension(journal::serialization::is_produced))
         << descriptor->full_name() << " has incorrect (is_produced) option";
+    CHECK(Contains(field_cxx_address_, descriptor))
+        << descriptor->full_name()
+        << " is a produced field and must have an (address_of) option";
     custom_marshaler_generic_name =
         [](std::string const& type) {
           return "OwnershipTransferMarshaler<" + type +
@@ -438,18 +441,9 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
         break;
     }
   }
-  if (options.HasExtension(journal::serialization::address_of)) {
-    FieldDescriptor const* const address_of_field =
-        descriptor->containing_type()->FindFieldByName(
-            options.GetExtension(journal::serialization::address_of));
-    FieldOptions const& address_of_options = address_of_field->options();
-    CHECK(address_of_options.GetExtension(journal::serialization::is_produced))
-        << address_of_field->full_name()
-        << " is designated by an (address_of) option and must have the "
-        << "(is_produced) option";
+  if (Contains(field_cxx_address_of_, descriptor)) {
     is_produced = true;
-    pointer_to = address_of_field->containing_type()->name();
-    field_cxx_address_of_[descriptor] = address_of_field;
+    pointer_to = field_cxx_address_of_[descriptor]->containing_type()->name();
   }
   CHECK(!pointer_to.empty()) << descriptor->full_name()
                              << " must have exactly one of the (address_of), "
@@ -577,6 +571,10 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
         field_cs_custom_marshaler_[descriptor] =
             "OwnershipTransferMarshaler<" + field_cs_type_[descriptor] + ", " +
             cs_custom_marshaler_name_[message_type] + ">";
+        CHECK(Contains(field_cxx_address_, descriptor))
+            << descriptor->full_name()
+            << " is a produced message result and must have an (address_of) "
+            << "option";
       } else {
         field_cs_custom_marshaler_[descriptor] =
             cs_custom_marshaler_name_[message_type];
@@ -890,6 +888,33 @@ void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
     }
 }
 
+void JournalProtoProcessor::ProcessAddressOf(Descriptor const* descriptor) {
+  // Do a pass to build the field_cxx_address_of_ map.
+  for (int i = 0; i < descriptor->field_count(); ++i) {
+    FieldDescriptor const* field_descriptor = descriptor->field(i);
+    FieldOptions const& options = field_descriptor->options();
+    if (options.HasExtension(journal::serialization::address_of)) {
+      CHECK_EQ(field_descriptor->label(), FieldDescriptor::LABEL_REQUIRED)
+          << field_descriptor->full_name()
+          << " must be a required field to have the (address_of) option";
+      CHECK_EQ(field_descriptor->type(), FieldDescriptor::TYPE_FIXED64)
+          << field_descriptor->full_name()
+          << " must be a fixed64 field to have the (address_of) option";
+      FieldDescriptor const* const address_of_field =
+          field_descriptor->containing_type()->FindFieldByName(
+              options.GetExtension(journal::serialization::address_of));
+      FieldOptions const& address_of_options = address_of_field->options();
+      CHECK(
+          address_of_options.GetExtension(journal::serialization::is_produced))
+          << address_of_field->full_name()
+          << " is designated by an (address_of) option and must have the "
+          << "(is_produced) option";
+      field_cxx_address_of_[field_descriptor] = address_of_field;
+      field_cxx_address_[address_of_field] = field_descriptor;
+    }
+  }
+}
+
 void JournalProtoProcessor::ProcessInOut(
   Descriptor const* descriptor,
   std::vector<FieldDescriptor const*>* field_descriptors) {
@@ -1022,8 +1047,9 @@ void JournalProtoProcessor::ProcessInOut(
 void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
   CHECK(descriptor->field_count() >= 1 && descriptor->field_count() <= 2)
       << descriptor->full_name() << " must have one or two fields";
+  ProcessAddressOf(descriptor);
 
-  // Process the fields, making sure that at most one is the bona fied result.
+  // Process the fields, making sure that at most one is the bona fide result.
   FieldDescriptor const* address_field_descriptor = nullptr;
   FieldDescriptor const* result_field_descriptor = nullptr;
   for (int i = 0; i < descriptor->field_count(); ++i) {
@@ -1048,17 +1074,8 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
       << descriptor->full_name()
       << " must have exactly one field without the (address_of) option";
 
-  // This check cannot be done when processing the (is_produced) option because
-  // we may not have seen the (address_of) field at that point.
-  FieldOptions const& result_field_options = result_field_descriptor->options();
-  CHECK(
-      !result_field_options.HasExtension(journal::serialization::is_produced) ||
-      result_field_descriptor->type() != FieldDescriptor::TYPE_MESSAGE ||
-      address_field_descriptor != nullptr)
-      << result_field_descriptor->full_name()
-      << " is a produced message result and must have an (address_of) option";
-
   // Process the result field in the C++ code (Fill and Run).
+  FieldOptions const& result_field_options = result_field_descriptor->options();
   cxx_fill_body_[descriptor] =
       field_cxx_assignment_fn_[result_field_descriptor](
           "message->mutable_return_()->",
@@ -1134,6 +1151,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
   std::string const& proto_parameter_name = ToLower(name) + "_proto";
   std::string const& object_parameter_name = ToLower(name) + "_object";
   MessageOptions const& options = descriptor->options();
+  ProcessAddressOf(descriptor);
 
   // Start by processing the fields.  We need to know if any of them has a
   // custom marshaler to decide whether we generate a struct or a class.
