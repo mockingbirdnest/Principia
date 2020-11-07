@@ -411,6 +411,14 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
         !options.HasExtension(journal::serialization::encoding))
       << descriptor->full_name()
       << " cannot have both a (pointer_to) and an (encoding) option";
+  CHECK(!options.HasExtension(journal::serialization::pointer_to) ||
+        !options.HasExtension(journal::serialization::address_of))
+      << descriptor->full_name()
+      << " cannot have both a (pointer_to) and an (address_of) option";
+  CHECK(!options.HasExtension(journal::serialization::encoding) ||
+        !options.HasExtension(journal::serialization::address_of))
+      << descriptor->full_name()
+      << " cannot have both an (encoding) and an (address_of) option";
   std::string pointer_to;
   if (options.HasExtension(journal::serialization::pointer_to)) {
     pointer_to = options.GetExtension(journal::serialization::pointer_to);
@@ -424,6 +432,13 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
         pointer_to = "char16_t const";
         break;
     }
+  }
+  if (options.HasExtension(journal::serialization::address_of)) {
+    FieldDescriptor const* const address_of_field =
+        descriptor->containing_type()->FindFieldByName(
+            options.GetExtension(journal::serialization::address_of));
+    pointer_to = address_of_field->containing_type()->name();
+    field_cxx_address_of_[descriptor] = address_of_field;
   }
 
   if (options.HasExtension(journal::serialization::disposable)) {
@@ -989,25 +1004,50 @@ void JournalProtoProcessor::ProcessInOut(
 }
 
 void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
-  CHECK_EQ(1, descriptor->field_count())
-      << descriptor->full_name() << " must have exactly one field";
-  FieldDescriptor const* field_descriptor = descriptor->field(0);
-  FieldOptions const& field_options = field_descriptor->options();
-  CHECK_EQ(FieldDescriptor::LABEL_REQUIRED, field_descriptor->label())
-      << descriptor->full_name() << " must be required";
-  return_.insert(field_descriptor);
-  ProcessField(field_descriptor);
+  CHECK(descriptor->field_count() >= 1 && descriptor->field_count() <= 2)
+      << descriptor->full_name() << " must have one or two fields";
+
+  // Process the fields, making sure that at most one is the bona fied result.
+  FieldDescriptor const* address_field_descriptor = nullptr;
+  FieldDescriptor const* result_field_descriptor = nullptr;
+  for (int i = 0; i < descriptor->field_count(); ++i) {
+    FieldDescriptor const* field_descriptor = descriptor->field(i);
+    CHECK_EQ(FieldDescriptor::LABEL_REQUIRED, field_descriptor->label())
+        << descriptor->full_name() << " must be required";
+    return_.insert(field_descriptor);
+    ProcessField(field_descriptor);
+    if (Contains(field_cxx_address_of_, field_descriptor)) {
+      CHECK(address_field_descriptor == nullptr)
+          << descriptor->full_name()
+          << " must have at most one field with the (address_of) option";
+      address_field_descriptor = field_descriptor;
+    } else {
+      CHECK(result_field_descriptor == nullptr)
+          << descriptor->full_name()
+          << " must have exactly one field without the (address_of) option";
+      result_field_descriptor = field_descriptor;
+    }
+  }
+  CHECK(result_field_descriptor != nullptr)
+      << descriptor->full_name()
+      << " must have exactly one field without the (address_of) option";
+
+  // Process the result field in the C++ code (Fill and Run).
+  FieldOptions const& result_field_options = result_field_descriptor->options();
   cxx_fill_body_[descriptor] =
-      field_cxx_assignment_fn_[field_descriptor](
+      field_cxx_assignment_fn_[result_field_descriptor](
           "message->mutable_return_()->",
-          field_cxx_indirect_member_get_fn_[field_descriptor]("result"));
+          field_cxx_indirect_member_get_fn_[result_field_descriptor]("result"));
   std::string const cxx_field_getter =
-      "message.return_()." + field_descriptor->name() + "()";
-  if (Contains(field_cxx_inserter_fn_, field_descriptor)) {
+      "message.return_()." + result_field_descriptor->name() + "()";
+  if (Contains(field_cxx_inserter_fn_, result_field_descriptor)) {
     cxx_run_body_epilog_[descriptor] =
-        field_cxx_inserter_fn_[field_descriptor](cxx_field_getter, "result");
-  } else if (!field_options.HasExtension(journal::serialization::omit_check)) {
-    Descriptor const* field_message_type = field_descriptor->message_type();
+        field_cxx_inserter_fn_[result_field_descriptor](cxx_field_getter,
+                                                        "result");
+  } else if (!result_field_options.HasExtension(
+                 journal::serialization::omit_check)) {
+    Descriptor const* field_message_type =
+        result_field_descriptor->message_type();
     if (Contains(cxx_deserialization_storage_declarations_,
                  field_message_type)) {
       cxx_run_body_epilog_[descriptor] =
@@ -1015,19 +1055,41 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
     }
     cxx_run_body_epilog_[descriptor] +=
         "  PRINCIPIA_CHECK_EQ(" +
-        field_cxx_deserializer_fn_[field_descriptor](cxx_field_getter) + ", " +
-        field_cxx_indirect_member_get_fn_[field_descriptor]("result") + ");\n";
+        field_cxx_deserializer_fn_[result_field_descriptor](cxx_field_getter) +
+        ", " +
+        field_cxx_indirect_member_get_fn_[result_field_descriptor]("result") +
+        ");\n";
   } else {
-    CHECK(field_options.GetExtension(journal::serialization::omit_check))
-      << field_descriptor->full_name() << " has incorrect (omit_check) option";
+    CHECK(result_field_options.GetExtension(journal::serialization::omit_check))
+        << result_field_descriptor->full_name()
+        << " has incorrect (omit_check) option";
   }
+
+  // If there is an address field, record it in Fill and insert it in Run.
+  if (address_field_descriptor != nullptr) {
+    cxx_fill_body_[descriptor] +=
+        field_cxx_assignment_fn_[address_field_descriptor](
+            "message->mutable_return_()->",
+            field_cxx_indirect_member_get_fn_[address_field_descriptor](
+                "result"));
+    std::string const cxx_field_getter =
+        "message.return_()." + address_field_descriptor->name() + "()";
+    if (Contains(field_cxx_inserter_fn_, address_field_descriptor)) {
+      cxx_run_body_epilog_[descriptor] +=
+          field_cxx_inserter_fn_[address_field_descriptor](cxx_field_getter,
+                                                          "result");
+    }
+  }
+
   cs_interface_return_marshal_[descriptor] =
-      HasMarshaler(field_descriptor)
-          ? "[return : " + MarshalAs(field_descriptor) + "]"
+      HasMarshaler(result_field_descriptor)
+          ? "[return : " + MarshalAs(result_field_descriptor) + "]"
           : "";
-  cs_interface_return_type_[descriptor] = field_cs_type_[field_descriptor];
+  cs_interface_return_type_[descriptor] =
+      field_cs_type_[result_field_descriptor];
   cxx_interface_return_type_[descriptor] =
-      field_cxx_mode_fn_[field_descriptor](field_cxx_type_[field_descriptor]);
+      field_cxx_mode_fn_[result_field_descriptor](
+          field_cxx_type_[result_field_descriptor]);
   cxx_nested_type_declaration_[descriptor] =
       "  using Return = " + cxx_interface_return_type_[descriptor] + ";\n";
 }

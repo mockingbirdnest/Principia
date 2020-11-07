@@ -114,6 +114,10 @@ class JournalProtoProcessor final {
   // The fields that are part of interchange messages.
   std::set<FieldDescriptor const*> interchange_;
 
+  //TODO(phl):Comment
+  std::map<FieldDescriptor const*, FieldDescriptor const*>
+      field_cxx_address_of_;
+
   // For all fields, a lambda that takes the name of a local variable containing
   // data extracted (and deserialized) from the field and returns a list of
   // expressions to be passed to the interface.  Deals with passing by reference
