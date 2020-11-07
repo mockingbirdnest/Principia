@@ -196,25 +196,5 @@ XYZ __cdecl principia__VesselVelocity(Plugin const* const plugin,
   return m.Return(ToXYZ(plugin->VesselVelocity(vessel_guid)));
 }
 
-void __cdecl principia__SetAngularMomentumConservation(
-    bool const conserve_angular_momentum) {
-  journal::Method<journal::SetAngularMomentumConservation> m(
-      {conserve_angular_momentum});
-  ksp_plugin::PileUp::conserve_angular_momentum = conserve_angular_momentum;
-  return m.Return();
-}
-
-char const* __cdecl principia__VesselGetPileUpTrace(
-    Plugin const* const plugin,
-    char const* const vessel_guid) {
-  journal::Method<journal::VesselGetPileUpTrace> m({plugin, vessel_guid});
-  CHECK_NOTNULL(plugin);
-  char const* trace;
-  plugin->GetVessel(vessel_guid)->ForSomePart([&trace](ksp_plugin::Part& part) {
-    trace = part.containing_pile_up()->trace.data();
-  });
-  return m.Return(trace);
-}
-
 }  // namespace interface
 }  // namespace principia
