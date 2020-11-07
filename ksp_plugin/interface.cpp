@@ -1036,6 +1036,13 @@ char const* __cdecl principia__SayHello() {
   return m.Return("Hello from native C++!");
 }
 
+// For checking that interchange messages work.
+Status* __cdecl principia__SayNotFound() {
+  journal::Method<journal::SayNotFound> m;
+  return m.Return(ToNewStatus(
+      base::Status(base::Error::NOT_FOUND, "Not found from native C++!")));
+}
+
 // |plugin| must not be null.  The caller takes ownership of the result, except
 // when it is null (at the end of the stream).  No transfer of ownership of
 // |*plugin|.  |*serializer| must be null on the first call and must be passed
