@@ -110,7 +110,7 @@ IncrementalProjection(Function const& function,
 
   std::optional<AngularFrequency> ω = calculator(function);
   CHECK(ω.has_value());
-  
+
   std::vector<Series> basis;
   // The Poisson series basis[k] belongs to the subspace basis_subspaces[k];
   // this remains true after orthonormalization, i.e., q[k] belongs to the
