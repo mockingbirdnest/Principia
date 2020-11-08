@@ -48,7 +48,12 @@ TEST_F(PoissonSeriesBasisTest, Aperiodic) {
       Series3,
       Hilbert<Displacement<World>>::dimension,
       /*degree=*/3>::Basis(t0_);
+  auto const aperiodic_subspaces =
+      PoissonSeriesBasisGenerator<Series3,
+                                  Hilbert<Displacement<World>>::dimension,
+                                  /*degree=*/3>::Subspaces(t0_);
   EXPECT_EQ(12, aperiodic.size());
+  EXPECT_EQ(12, aperiodic_subspaces.size());
 
   Instant const t1 = t0_ + 2 * Second;
 
@@ -58,6 +63,12 @@ TEST_F(PoissonSeriesBasisTest, Aperiodic) {
             aperiodic[1](t1));
   EXPECT_EQ(Displacement<World>({0 * Metre, 0 * Metre, 1 * Metre}),
             aperiodic[2](t1));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[0],
+                                                 aperiodic_subspaces[0]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[0],
+                                                aperiodic_subspaces[1]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[0],
+                                                aperiodic_subspaces[2]));
 
   EXPECT_EQ(Displacement<World>({2 * Metre, 0 * Metre, 0 * Metre}),
             aperiodic[3](t1));
@@ -65,6 +76,12 @@ TEST_F(PoissonSeriesBasisTest, Aperiodic) {
             aperiodic[4](t1));
   EXPECT_EQ(Displacement<World>({0 * Metre, 0 * Metre, 2 * Metre}),
             aperiodic[5](t1));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[0],
+                                                 aperiodic_subspaces[3]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[0],
+                                                aperiodic_subspaces[4]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[0],
+                                                aperiodic_subspaces[5]));
 
   EXPECT_EQ(Displacement<World>({4 * Metre, 0 * Metre, 0 * Metre}),
             aperiodic[6](t1));
@@ -87,6 +104,10 @@ TEST_F(PoissonSeriesBasisTest, Periodic) {
       Series3,
       Hilbert<Displacement<World>>::dimension,
       /*degree=*/3>::Basis(ω, t0_);
+  auto const periodic_subspaces =
+      PoissonSeriesBasisGenerator<Series3,
+                                  Hilbert<Displacement<World>>::dimension,
+                                  /*degree=*/3>::Subspaces(ω, t0_);
   EXPECT_EQ(24, periodic.size());
 
   Instant const t1 = t0_ + 2 * Second;
@@ -99,10 +120,15 @@ TEST_F(PoissonSeriesBasisTest, Periodic) {
       periodic[1](t1),
       AlmostEquals(
           Displacement<World>({0.5 * Metre, 0 * Metre, 0 * Metre}), 1));
+  // TODO(egg): This will become true once we take parity into account.
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[0],
+                                                 periodic_subspaces[1]));
   EXPECT_THAT(
       periodic[2](t1),
       AlmostEquals(
           Displacement<World>({0 * Metre, Sqrt(3) / 2 * Metre, 0 * Metre}), 0));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[0],
+                                                 periodic_subspaces[2]));
   EXPECT_THAT(
       periodic[3](t1),
       AlmostEquals(

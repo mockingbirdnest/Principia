@@ -84,12 +84,33 @@ Polynomial SeriesGenerator<Series, n, d>::Unit(Instant const& origin) {
   return Polynomial(coefficients, origin);
 }
 
+inline bool PoissonSeriesSubspace::orthogonal(PoissonSeriesSubspace const v,
+                                              PoissonSeriesSubspace const w) {
+  return v.coordinate_ != w.coordinate_;
+}
+
+inline PoissonSeriesSubspace::PoissonSeriesSubspace(Coordinate coordinate,
+                                                    Parity parity)
+    : coordinate_(coordinate), parity_(parity) {}
+
 template<typename Series, int dimension, int degree, std::size_t... indices>
 std::array<Series, dimension * (degree + 1)> PoissonSeriesBasisGenerator<
     Series, dimension, degree,
     std::index_sequence<indices...>>::Basis(Instant const& origin) {
   return {SeriesGenerator<Series, indices / dimension, indices % dimension>::
               Aperiodic(origin)...};
+}
+
+template<typename Series, int dimension, int degree, std::size_t... indices>
+inline std::array<PoissonSeriesSubspace, dimension*(degree + 1)>
+PoissonSeriesBasisGenerator<
+    Series,
+    dimension,
+    degree,
+    std::index_sequence<indices...>>::Subspaces(Instant const& origin) {
+  return {PoissonSeriesSubspace{
+      static_cast<PoissonSeriesSubspace::Coordinate>(indices % dimension),
+      static_cast<PoissonSeriesSubspace::Parity>(indices / dimension)}...};
 }
 
 template<typename Series, int dimension, int degree, std::size_t... indices>
@@ -135,6 +156,26 @@ PoissonSeriesBasisGenerator<
     }
   }
   return all_series;
+}
+
+template<typename Series, int dimension, int degree, std::size_t... indices>
+inline std::array<PoissonSeriesSubspace, 2 * dimension * (degree + 1)>
+PoissonSeriesBasisGenerator<
+    Series,
+    dimension,
+    degree,
+    std::index_sequence<indices...>>::Subspaces(AngularFrequency const& ω,
+                                                Instant const& origin) {
+  return {PoissonSeriesSubspace{
+              static_cast<PoissonSeriesSubspace::Coordinate>((indices / 2) %
+                                                             dimension),
+              static_cast<PoissonSeriesSubspace::Parity>(
+                  (1 + indices + (indices / 2) / dimension) % 2)}...,
+          PoissonSeriesSubspace{
+              static_cast<PoissonSeriesSubspace::Coordinate>((indices / 2) %
+                                                             dimension),
+              static_cast<PoissonSeriesSubspace::Parity>(
+                  (1 + indices + (indices / 2) / dimension) % 2)}...};
 }
 
 }  // namespace internal_poisson_series_basis

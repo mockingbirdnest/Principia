@@ -110,8 +110,12 @@ IncrementalProjection(Function const& function,
 
   std::optional<AngularFrequency> ω = calculator(function);
   CHECK(ω.has_value());
-
+  
   std::vector<Series> basis;
+  // The Poisson series basis[k] belongs to the subspace basis_subspaces[k];
+  // this remains true after orthonormalization, i.e., q[k] belongs to the
+  // subspace basis_subspaces[k] below.
+  std::vector<PoissonSeriesSubspace> basis_subspaces;
 
   int basis_size;
   if (ω.value() == AngularFrequency{}) {
@@ -119,15 +123,29 @@ IncrementalProjection(Function const& function,
         PoissonSeriesBasisGenerator<Series,
                                     Hilbert<Value>::dimension,
                                     aperiodic_degree>::Basis(t0);
+    auto const ω_basis_subspaces =
+        PoissonSeriesBasisGenerator<Series,
+                                    Hilbert<Value>::dimension,
+                                    aperiodic_degree>::Subspaces(t0);
     basis_size = std::tuple_size_v<decltype(ω_basis)>;
     std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
+    std::move(ω_basis_subspaces.begin(),
+              ω_basis_subspaces.end(),
+              std::back_inserter(basis_subspaces));
   } else {
     auto const ω_basis =
         PoissonSeriesBasisGenerator<Series,
                                     Hilbert<Value>::dimension,
                                     periodic_degree>::Basis(ω.value(), t0);
+    auto const ω_basis_subspaces =
+        PoissonSeriesBasisGenerator<Series,
+                                    Hilbert<Value>::dimension,
+                                    periodic_degree>::Subspaces(ω.value(), t0);
     basis_size = std::tuple_size_v<decltype(ω_basis)>;
     std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
+    std::move(ω_basis_subspaces.begin(),
+              ω_basis_subspaces.end(),
+              std::back_inserter(basis_subspaces));
   }
 
   // This is logically Q in the QR decomposition of basis.
@@ -149,8 +167,11 @@ IncrementalProjection(Function const& function,
     for (int m = m_begin; m < basis_size; ++m) {
       auto aₘ⁽ᵏ⁾ = basis[m];
       for (int k = 0; k < m; ++k) {
-        auto const rₖₘ = InnerProduct(q[k], aₘ⁽ᵏ⁾, weight, t_min, t_max);
-        aₘ⁽ᵏ⁾ -= rₖₘ * q[k];
+        if (!PoissonSeriesSubspace::orthogonal(basis_subspaces[k],
+                                               basis_subspaces[m])) {
+          auto const rₖₘ = InnerProduct(q[k], aₘ⁽ᵏ⁾, weight, t_min, t_max);
+          aₘ⁽ᵏ⁾ -= rₖₘ * q[k];
+        }
       }
 
       auto const rₘₘ = aₘ⁽ᵏ⁾.Norm(weight, t_min, t_max);
@@ -174,15 +195,30 @@ IncrementalProjection(Function const& function,
           PoissonSeriesBasisGenerator<Series,
                                       Hilbert<Value>::dimension,
                                       aperiodic_degree>::Basis(t0);
+      auto const ω_basis_subspaces =
+          PoissonSeriesBasisGenerator<Series,
+                                      Hilbert<Value>::dimension,
+                                      aperiodic_degree>::Subspaces(t0);
       ω_basis_size = std::tuple_size_v<decltype(ω_basis)>;
       std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
+      std::move(ω_basis_subspaces.begin(),
+                ω_basis_subspaces.end(),
+                std::back_inserter(basis_subspaces));
     } else {
       auto const ω_basis =
           PoissonSeriesBasisGenerator<Series,
                                       Hilbert<Value>::dimension,
                                       periodic_degree>::Basis(ω.value(), t0);
+      auto const ω_basis_subspaces =
+          PoissonSeriesBasisGenerator<Series,
+                                      Hilbert<Value>::dimension,
+                                      periodic_degree>::Subspaces(ω.value(),
+                                                                  t0);
       ω_basis_size = std::tuple_size_v<decltype(ω_basis)>;
       std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
+      std::move(ω_basis_subspaces.begin(),
+                ω_basis_subspaces.end(),
+                std::back_inserter(basis_subspaces));
     }
     m_begin = basis_size;
     basis_size += ω_basis_size;
