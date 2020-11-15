@@ -20,7 +20,8 @@ using quantities::AngularFrequency;
 template<typename Series,
          int dimension,
          int degree,
-         typename = std::make_index_sequence<dimension * (degree + 1)>>
+         typename = std::make_index_sequence<dimension * (degree + 1)>,
+         typename = std::make_index_sequence<2 * dimension * (degree + 1)>>
 struct PoissonSeriesBasisGenerator;
 
 // A |PoissonSeriesSubspace| represents a linear subspace of the space of
@@ -52,18 +53,23 @@ class PoissonSeriesSubspace {
   // The parity of the Poisson series is defined with respect to its origin.
   Parity parity_;
 
-  template<typename Series, int dimension, int degree, typename>
+  template<typename Series, int dimension, int degree, typename, typename>
   friend struct PoissonSeriesBasisGenerator;
 };
 
 // In this template, the indices encode the degree and the dimension of the
 // basis term so that, in the terminology of SeriesGenerator, n (the degree) is
 // indices / dimension and d (the dimension index) is indices % dimension.
-template<typename Series, int dimension, int degree, std::size_t... indices>
+template<typename Series,
+         int dimension,
+         int degree,
+         std::size_t... indices,
+         std::size_t... periodic_indices>
 struct PoissonSeriesBasisGenerator<Series,
                                    dimension,
                                    degree,
-                                   std::index_sequence<indices...>> {
+                                   std::index_sequence<indices...>,
+                                   std::index_sequence<periodic_indices...>> {
   // Basis of aperiodic terms.
   static std::array<Series, dimension * (degree + 1)> Basis(
       Instant const& origin);

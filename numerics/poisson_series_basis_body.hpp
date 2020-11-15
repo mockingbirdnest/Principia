@@ -93,32 +93,50 @@ inline PoissonSeriesSubspace::PoissonSeriesSubspace(Coordinate coordinate,
                                                     Parity parity)
     : coordinate_(coordinate), parity_(parity) {}
 
-template<typename Series, int dimension, int degree, std::size_t... indices>
-std::array<Series, dimension * (degree + 1)> PoissonSeriesBasisGenerator<
-    Series, dimension, degree,
-    std::index_sequence<indices...>>::Basis(Instant const& origin) {
+template<typename Series,
+         int dimension,
+         int degree,
+         std::size_t... indices,
+         std::size_t... periodic_indices>
+std::array<Series, dimension*(degree + 1)> PoissonSeriesBasisGenerator<
+    Series,
+    dimension,
+    degree,
+    std::index_sequence<indices...>,
+    std::index_sequence<periodic_indices...>>::Basis(Instant const& origin) {
   return {SeriesGenerator<Series, indices / dimension, indices % dimension>::
               Aperiodic(origin)...};
 }
 
-template<typename Series, int dimension, int degree, std::size_t... indices>
+template<typename Series,
+         int dimension,
+         int degree,
+         std::size_t... indices,
+         std::size_t... periodic_indices>
 inline std::array<PoissonSeriesSubspace, dimension*(degree + 1)>
-PoissonSeriesBasisGenerator<
-    Series,
-    dimension,
-    degree,
-    std::index_sequence<indices...>>::Subspaces(Instant const& origin) {
+PoissonSeriesBasisGenerator<Series,
+                            dimension,
+                            degree,
+                            std::index_sequence<indices...>,
+                            std::index_sequence<periodic_indices...>>::
+    Subspaces(Instant const& origin) {
   return {PoissonSeriesSubspace{
       static_cast<PoissonSeriesSubspace::Coordinate>(indices % dimension),
       static_cast<PoissonSeriesSubspace::Parity>(indices / dimension)}...};
 }
 
-template<typename Series, int dimension, int degree, std::size_t... indices>
-std::array<Series, 2 * dimension * (degree + 1)>
-PoissonSeriesBasisGenerator<
-    Series, dimension, degree,
-    std::index_sequence<indices...>>::Basis(AngularFrequency const& ω,
-                                            Instant const& origin) {
+template<typename Series,
+         int dimension,
+         int degree,
+         std::size_t... indices,
+         std::size_t... periodic_indices>
+std::array<Series, 2 * dimension * (degree + 1)> PoissonSeriesBasisGenerator<
+    Series,
+    dimension,
+    degree,
+    std::index_sequence<indices...>,
+    std::index_sequence<periodic_indices...>>::Basis(AngularFrequency const& ω,
+                                                     Instant const& origin) {
   // This has the elements {Sin(ωt), t Sin(ωt), t² Sin(ωt), ..., Cos(ωt), ...}
   // in the scalar case and {x Sin(ωt), y Sin(ωt), z Sin(ωt), x t Sin(ωt), ...}
   // in the vector case.  This is not the order we want (we want lower-degree
@@ -158,24 +176,23 @@ PoissonSeriesBasisGenerator<
   return all_series;
 }
 
-template<typename Series, int dimension, int degree, std::size_t... indices>
-inline std::array<PoissonSeriesSubspace, 2 * dimension * (degree + 1)>
-PoissonSeriesBasisGenerator<
-    Series,
-    dimension,
-    degree,
-    std::index_sequence<indices...>>::Subspaces(AngularFrequency const& ω,
-                                                Instant const& origin) {
+template<typename Series,
+         int dimension,
+         int degree,
+         std::size_t... indices,
+         std::size_t... periodic_indices>
+inline std::array<PoissonSeriesSubspace, 2 * dimension*(degree + 1)>
+PoissonSeriesBasisGenerator<Series,
+                            dimension,
+                            degree,
+                            std::index_sequence<indices...>,
+                            std::index_sequence<periodic_indices...>>::
+    Subspaces(AngularFrequency const& ω, Instant const& origin) {
   return {PoissonSeriesSubspace{
-              static_cast<PoissonSeriesSubspace::Coordinate>((indices / 2) %
-                                                             dimension),
-              static_cast<PoissonSeriesSubspace::Parity>(
-                  (1 + indices + (indices / 2) / dimension) % 2)}...,
-          PoissonSeriesSubspace{
-              static_cast<PoissonSeriesSubspace::Coordinate>((indices / 2) %
-                                                             dimension),
-              static_cast<PoissonSeriesSubspace::Parity>(
-                  (1 + indices + (indices / 2) / dimension) % 2)}...};
+      static_cast<PoissonSeriesSubspace::Coordinate>((periodic_indices / 2) %
+                                                     dimension),
+      static_cast<PoissonSeriesSubspace::Parity>(
+          (1 + periodic_indices + (periodic_indices / 2) / dimension) % 2)}...};
 }
 
 }  // namespace internal_poisson_series_basis
