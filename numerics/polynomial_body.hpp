@@ -101,6 +101,10 @@ struct PolynomialAtOrigin<Value, Argument, degree, Evaluator,
       typename Polynomial::Coefficients const& coefficients,
       Point<Argument> const& from_origin,
       Point<Argument> const& to_origin);
+
+#if PRINCIPIA_COMPILER_MSVC_HAS_CXX20
+  using PolynomialAlias = Polynomial;
+#endif
 };
 
 template<typename Value, typename Argument, int degree,
@@ -109,9 +113,15 @@ template<typename Value, typename Argument, int degree,
 auto PolynomialAtOrigin<Value, Argument, degree,
                         Evaluator,
                         std::index_sequence<indices...>>::
+#if defined(PRINCIPIA_COMPILER_MSVC_HAS_CXX20)
+MakePolynomial(typename PolynomialAlias::Coefficients const& coefficients,
+               Point<Argument> const& from_origin,
+               Point<Argument> const& to_origin) -> PolynomialAlias {
+#else
 MakePolynomial(typename Polynomial::Coefficients const& coefficients,
-                Point<Argument> const& from_origin,
-                Point<Argument> const& to_origin) -> Polynomial {
+               Point<Argument> const& from_origin,
+               Point<Argument> const& to_origin) -> Polynomial {
+#endif
   Argument const shift = to_origin - from_origin;
   std::array<typename Polynomial::Coefficients, degree + 1> const
       all_coefficients{
