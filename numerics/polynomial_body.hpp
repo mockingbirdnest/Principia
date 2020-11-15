@@ -16,7 +16,6 @@
 #include "geometry/cartesian_product.hpp"
 #include "geometry/serialization.hpp"
 #include "numerics/combinatorics.hpp"
-#include "polynomial.hpp"
 
 namespace principia {
 namespace numerics {
@@ -113,7 +112,7 @@ template<typename Value, typename Argument, int degree,
 auto PolynomialAtOrigin<Value, Argument, degree,
                         Evaluator,
                         std::index_sequence<indices...>>::
-#if defined(PRINCIPIA_COMPILER_MSVC_HAS_CXX20)
+#if PRINCIPIA_COMPILER_MSVC_HAS_CXX20
 MakePolynomial(typename PolynomialAlias::Coefficients const& coefficients,
                Point<Argument> const& from_origin,
                Point<Argument> const& to_origin) -> PolynomialAlias {
@@ -648,7 +647,7 @@ template<typename Value, typename Argument, int ldegree_, int rdegree_,
          template<typename, typename, int> typename Evaluator>
 FORCE_INLINE(constexpr)
 PolynomialInMonomialBasis<Value, Argument,
-                          std::max(ldegree_, rdegree_), Evaluator>
+                          PRINCIPIA_MAX(ldegree_, rdegree_), Evaluator>
 operator+(
     PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator> const& left,
     PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
@@ -670,7 +669,7 @@ template<typename Value, typename Argument, int ldegree_, int rdegree_,
          template<typename, typename, int> typename Evaluator>
 FORCE_INLINE(constexpr)
 PolynomialInMonomialBasis<Value, Argument,
-                          std::max(ldegree_, rdegree_), Evaluator>
+                          PRINCIPIA_MAX(ldegree_, rdegree_), Evaluator>
 operator-(
     PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator> const& left,
     PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
