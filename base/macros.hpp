@@ -27,7 +27,7 @@ char const* const CompilerVersion = __VERSION__;
 char const* const CompilerName = "Microsoft Visual C++";
 char const* const CompilerVersion = STRINGIFY_EXPANSION(_MSC_FULL_VER);
 # if _HAS_CXX20
-#define PRINCIPIA_COMPILER_MSVC_HAS_CXX20 1
+# define PRINCIPIA_COMPILER_MSVC_HAS_CXX20 1
 # endif
 #elif defined(__ICC) || defined(__INTEL_COMPILER)
 #define PRINCIPIA_COMPILER_ICC 1
