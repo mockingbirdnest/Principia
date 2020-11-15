@@ -619,8 +619,8 @@ template<typename Value,
          int aperiodic_rdegree, int periodic_rdegree,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<Value,
-              std::max(aperiodic_ldegree, aperiodic_rdegree),
-              std::max(periodic_ldegree, periodic_rdegree),
+              PRINCIPIA_MAX(aperiodic_ldegree, aperiodic_rdegree),
+              PRINCIPIA_MAX(periodic_ldegree, periodic_rdegree),
               Evaluator>
 operator+(PoissonSeries<Value,
                         aperiodic_ldegree, periodic_ldegree,
@@ -628,10 +628,11 @@ operator+(PoissonSeries<Value,
           PoissonSeries<Value,
                         aperiodic_rdegree, periodic_rdegree,
                         Evaluator> const& right) {
-  using Result = PoissonSeries<Value,
-                               std::max(aperiodic_ldegree, aperiodic_rdegree),
-                               std::max(periodic_ldegree, periodic_rdegree),
-                               Evaluator>;
+  using Result =
+      PoissonSeries<Value,
+                    std::max(aperiodic_ldegree, aperiodic_rdegree),
+                    std::max(periodic_ldegree, periodic_rdegree),
+                    Evaluator>;
   using PeriodicPolynomial = typename Result::PeriodicPolynomial;
 
   auto aperiodic = left.aperiodic_ + right.aperiodic_;
@@ -688,8 +689,8 @@ template<typename Value,
          int aperiodic_rdegree, int periodic_rdegree,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<Value,
-              std::max(aperiodic_ldegree, aperiodic_rdegree),
-              std::max(periodic_ldegree, periodic_rdegree),
+              PRINCIPIA_MAX(aperiodic_ldegree, aperiodic_rdegree),
+              PRINCIPIA_MAX(periodic_ldegree, periodic_rdegree),
               Evaluator>
 operator-(PoissonSeries<Value,
                         aperiodic_ldegree, periodic_ldegree,
@@ -697,10 +698,11 @@ operator-(PoissonSeries<Value,
           PoissonSeries<Value,
                         aperiodic_rdegree, periodic_rdegree,
                         Evaluator> const& right) {
-  using Result = PoissonSeries<Value,
-                               std::max(aperiodic_ldegree, aperiodic_rdegree),
-                               std::max(periodic_ldegree, periodic_rdegree),
-                               Evaluator>;
+  using Result =
+      PoissonSeries<Value,
+                    std::max(aperiodic_ldegree, aperiodic_rdegree),
+                    std::max(periodic_ldegree, periodic_rdegree),
+                    Evaluator>;
   using PeriodicPolynomial = typename Result::PeriodicPolynomial;
 
   auto aperiodic = left.aperiodic_ - right.aperiodic_;
@@ -838,13 +840,13 @@ template<typename LValue, typename RValue,
          int aperiodic_rdegree, int periodic_rdegree,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<Product<LValue, RValue>,
-              std::max({aperiodic_ldegree + aperiodic_rdegree,
-                        aperiodic_ldegree + periodic_rdegree,
-                        periodic_ldegree + aperiodic_rdegree,
-                        periodic_ldegree + periodic_rdegree}),
-              std::max({aperiodic_ldegree + periodic_rdegree,
-                        periodic_ldegree + aperiodic_rdegree,
-                        periodic_ldegree + periodic_rdegree}),
+              PRINCIPIA_MAX4(aperiodic_ldegree + aperiodic_rdegree,
+                             aperiodic_ldegree + periodic_rdegree,
+                             periodic_ldegree + aperiodic_rdegree,
+                             periodic_ldegree + periodic_rdegree),
+              PRINCIPIA_MAX3(aperiodic_ldegree + periodic_rdegree,
+                             periodic_ldegree + aperiodic_rdegree,
+                             periodic_ldegree + periodic_rdegree),
               Evaluator>
 operator*(PoissonSeries<LValue,
                         aperiodic_ldegree, periodic_ldegree,
@@ -867,13 +869,13 @@ template<typename LValue, typename RValue,
          int aperiodic_rdegree, int periodic_rdegree,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<typename Hilbert<LValue, RValue>::InnerProductType,
-              std::max({aperiodic_ldegree + aperiodic_rdegree,
-                        aperiodic_ldegree + periodic_rdegree,
-                        periodic_ldegree + aperiodic_rdegree,
-                        periodic_ldegree + periodic_rdegree}),
-              std::max({aperiodic_ldegree + periodic_rdegree,
-                        periodic_ldegree + aperiodic_rdegree,
-                        periodic_ldegree + periodic_rdegree}),
+              PRINCIPIA_MAX4(aperiodic_ldegree + aperiodic_rdegree,
+                             aperiodic_ldegree + periodic_rdegree,
+                             periodic_ldegree + aperiodic_rdegree,
+                             periodic_ldegree + periodic_rdegree),
+              PRINCIPIA_MAX3(aperiodic_ldegree + periodic_rdegree,
+                             periodic_ldegree + aperiodic_rdegree,
+                             periodic_ldegree + periodic_rdegree),
               Evaluator>
 PointwiseInnerProduct(PoissonSeries<LValue,
                                     aperiodic_ldegree, periodic_ldegree,
