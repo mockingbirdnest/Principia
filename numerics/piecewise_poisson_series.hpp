@@ -386,15 +386,12 @@ template<
     int aperiodic_rdegree, int periodic_rdegree,
     int aperiodic_wdegree, int periodic_wdegree,
     template<typename, typename, int> class Evaluator,
-    int points = (PRINCIPIA_MAX(aperiodic_ldegree,
-                                periodic_ldegree +
-                                    estimated_trigonometric_degree) +
-                  PRINCIPIA_MAX(aperiodic_ldegree,
-                                periodic_ldegree +
-                                    estimated_trigonometric_degree) +
-                  PRINCIPIA_MAX(aperiodic_ldegree,
-                                periodic_ldegree +
-                                    estimated_trigonometric_degree)) /
+    int points = (std::max(aperiodic_ldegree,
+                           periodic_ldegree + estimated_trigonometric_degree) +
+                  std::max(aperiodic_ldegree,
+                           periodic_ldegree + estimated_trigonometric_degree) +
+                  std::max(aperiodic_ldegree,
+                           periodic_ldegree + estimated_trigonometric_degree)) /
                  2>
 typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
     PoissonSeries<LValue,
@@ -413,15 +410,12 @@ template<
     int aperiodic_rdegree, int periodic_rdegree,
     int aperiodic_wdegree, int periodic_wdegree,
     template<typename, typename, int> class Evaluator,
-    int points = (PRINCIPIA_MAX(aperiodic_ldegree,
-                                periodic_ldegree +
-                                    estimated_trigonometric_degree) +
-                  PRINCIPIA_MAX(aperiodic_ldegree,
-                                periodic_ldegree +
-                                    estimated_trigonometric_degree) +
-                  PRINCIPIA_MAX(aperiodic_ldegree,
-                                periodic_ldegree +
-                                    estimated_trigonometric_degree)) /
+    int points = (std::max(aperiodic_ldegree,
+                           periodic_ldegree + estimated_trigonometric_degree) +
+                  std::max(aperiodic_ldegree,
+                           periodic_ldegree + estimated_trigonometric_degree) +
+                  std::max(aperiodic_ldegree,
+                           periodic_ldegree + estimated_trigonometric_degree)) /
                  2>
 typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
     PoissonSeries<LValue,
@@ -442,15 +436,12 @@ template<
     int aperiodic_rdegree, int periodic_rdegree,
     int aperiodic_wdegree, int periodic_wdegree,
     template<typename, typename, int> class Evaluator,
-    int points = (PRINCIPIA_MAX(aperiodic_ldegree,
-                                periodic_ldegree +
-                                    estimated_trigonometric_degree) +
-                  PRINCIPIA_MAX(aperiodic_ldegree,
-                                periodic_ldegree +
-                                    estimated_trigonometric_degree) +
-                  PRINCIPIA_MAX(aperiodic_ldegree,
-                                periodic_ldegree +
-                                    estimated_trigonometric_degree)) /
+    int points = (std::max(aperiodic_ldegree,
+                           periodic_ldegree + estimated_trigonometric_degree) +
+                  std::max(aperiodic_ldegree,
+                           periodic_ldegree + estimated_trigonometric_degree) +
+                  std::max(aperiodic_ldegree,
+                           periodic_ldegree + estimated_trigonometric_degree)) /
                  2>
 typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
     PiecewisePoissonSeries<LValue,
@@ -469,15 +460,12 @@ template<
     int aperiodic_rdegree, int periodic_rdegree,
     int aperiodic_wdegree, int periodic_wdegree,
     template<typename, typename, int> class Evaluator,
-    int points = (PRINCIPIA_MAX(aperiodic_ldegree,
-                                periodic_ldegree +
-                                    estimated_trigonometric_degree) +
-                  PRINCIPIA_MAX(aperiodic_ldegree,
-                                periodic_ldegree +
-                                    estimated_trigonometric_degree) +
-                  PRINCIPIA_MAX(aperiodic_ldegree,
-                                periodic_ldegree +
-                                    estimated_trigonometric_degree)) /
+    int points = (std::max(aperiodic_ldegree,
+                           periodic_ldegree + estimated_trigonometric_degree) +
+                  std::max(aperiodic_ldegree,
+                           periodic_ldegree + estimated_trigonometric_degree) +
+                  std::max(aperiodic_ldegree,
+                           periodic_ldegree + estimated_trigonometric_degree)) /
                  2>
 typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
     PiecewisePoissonSeries<LValue,
