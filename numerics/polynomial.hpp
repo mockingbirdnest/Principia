@@ -17,12 +17,6 @@
 #include "quantities/tuples.hpp"
 #include "serialization/numerics.pb.h"
 
-#if PRINCIPIA_COMPILER_MSVC_HAS_CXX20
-#define PRINCIPIA_MAX(l, r) ((l) > (r) ? (l) : (r))
-#else
-#define PRINCIPIA_MAX(l, r) std::max((l), (r))
-#endif
-
 namespace principia {
 namespace numerics {
 FORWARD_DECLARE_FROM(
@@ -443,5 +437,3 @@ using internal_polynomial::PolynomialInMonomialBasis;
 }  // namespace principia
 
 #include "numerics/polynomial_body.hpp"
-
-#undef PRINCIPIA_MAX

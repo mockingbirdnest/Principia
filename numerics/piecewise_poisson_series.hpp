@@ -17,18 +17,6 @@
 #include "quantities/quantities.hpp"
 #include "serialization/numerics.pb.h"
 
-#if PRINCIPIA_COMPILER_MSVC_HAS_CXX20
-#define PRINCIPIA_MAX(l, r) ((l) > (r) ? (l) : (r))
-#define PRINCIPIA_MAX3(x1, x2, x3) \
-  PRINCIPIA_MAX((x1), PRINCIPIA_MAX((x2), (x3)))
-#define PRINCIPIA_MAX4(x1, x2, x3, x4) \
-  PRINCIPIA_MAX((x1), PRINCIPIA_MAX((x2), PRINCIPIA_MAX((x3), (x4))))
-#else
-#define PRINCIPIA_MAX(l, r) std::max((l), (r))
-#define PRINCIPIA_MAX3(x1, x2, x3) std::max({(x1), (x2), (x3)})
-#define PRINCIPIA_MAX4(x1, x2, x3) std::max({(x1), (x2), (x3), (x4)})
-#endif
-
 namespace principia {
 namespace numerics {
 FORWARD_DECLARE_FROM(piecewise_poisson_series,
@@ -488,7 +476,3 @@ using internal_piecewise_poisson_series::PiecewisePoissonSeries;
 }  // namespace principia
 
 #include "numerics/piecewise_poisson_series_body.hpp"
-
-#undef PRINCIPIA_MAX
-#undef PRINCIPIA_MAX3
-#undef PRINCIPIA_MAX4
