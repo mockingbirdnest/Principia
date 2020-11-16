@@ -187,7 +187,7 @@ inline void noreturn() { std::exit(0); }
 #else
 #define PRINCIPIA_MAX(l, r) std::max((l), (r))
 #define PRINCIPIA_MAX3(x1, x2, x3) std::max({(x1), (x2), (x3)})
-#define PRINCIPIA_MAX4(x1, x2, x3) std::max({(x1), (x2), (x3), (x4)})
+#define PRINCIPIA_MAX4(x1, x2, x3, x4) std::max({(x1), (x2), (x3), (x4)})
 #endif
 
 // Forward declaration of a class or struct declared in an internal namespace
