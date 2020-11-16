@@ -698,11 +698,10 @@ operator-(PoissonSeries<Value,
           PoissonSeries<Value,
                         aperiodic_rdegree, periodic_rdegree,
                         Evaluator> const& right) {
-  using Result =
-      PoissonSeries<Value,
-                    std::max(aperiodic_ldegree, aperiodic_rdegree),
-                    std::max(periodic_ldegree, periodic_rdegree),
-                    Evaluator>;
+  using Result = PoissonSeries<Value,
+                               std::max(aperiodic_ldegree, aperiodic_rdegree),
+                               std::max(periodic_ldegree, periodic_rdegree),
+                               Evaluator>;
   using PeriodicPolynomial = typename Result::PeriodicPolynomial;
 
   auto aperiodic = left.aperiodic_ - right.aperiodic_;
