@@ -80,7 +80,7 @@ CoefficientGenerator<Coefficient,
 // values in a Hilbert space with |dimension| dimensions.
 template<typename Polynomial, int dimension>
 struct PolynomialGenerator {
-  // Returns a polynomial whose dimension and degree are encoded in |index|.
+  // Returns a polynomial whose coordinate and degree are encoded in |index|.
   template<int index>
   static Polynomial UnitPolynomial(Instant const& origin);
 
