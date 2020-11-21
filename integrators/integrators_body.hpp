@@ -305,7 +305,7 @@ struct SprkAsSrknConstructor;
 
 template<typename Integrator, typename ODE>
 struct SprkAsSrknConstructor<Integrator, FixedStepSizeIntegrator<ODE> const&> {
-  static FixedStepSizeIntegrator<ODE> const& Make(
+  static FixedStepSizeIntegrator<ODE> const& BasisElements(
       serialization::FixedStepSizeIntegratorInstance const& message,
       Integrator const& integrator) {
     return integrator;
@@ -314,7 +314,7 @@ struct SprkAsSrknConstructor<Integrator, FixedStepSizeIntegrator<ODE> const&> {
 
 template<typename Integrator, typename Instance>
 struct SprkAsSrknConstructor<Integrator, not_null<std::unique_ptr<Instance>>> {
-  static not_null<std::unique_ptr<Instance>> Make(
+  static not_null<std::unique_ptr<Instance>> BasisElements(
       serialization::FixedStepSizeIntegratorInstance const& message,
       IntegrationProblem<typename Integrator::ODE> const& problem,
       typename Integrator::AppendState const& append_state,
@@ -343,7 +343,7 @@ Result ReadSprkFromMessage(
             Position>();
         using Integrator =
             std::remove_reference_t<std::remove_const_t<decltype(integrator)>>;
-        return SprkAsSrknConstructor<Integrator, Result>::Make(
+        return SprkAsSrknConstructor<Integrator, Result>::BasisElements(
             message, args..., integrator);
       }
       case serialization::FixedStepSizeIntegrator::BAB: {
@@ -353,7 +353,7 @@ Result ReadSprkFromMessage(
             Position>();
         using Integrator =
             std::remove_reference_t<std::remove_const_t<decltype(integrator)>>;
-        return SprkAsSrknConstructor<Integrator, Result>::Make(
+        return SprkAsSrknConstructor<Integrator, Result>::BasisElements(
             message, args..., integrator);
       }
       case serialization::FixedStepSizeIntegrator::BA:
@@ -370,7 +370,7 @@ Result ReadSprkFromMessage(
         Position>();
     using Integrator =
         std::remove_reference_t<std::remove_const_t<decltype(integrator)>>;
-    return SprkAsSrknConstructor<Integrator, Result>::Make(
+    return SprkAsSrknConstructor<Integrator, Result>::BasisElements(
         message, args..., integrator);
   }
 }
