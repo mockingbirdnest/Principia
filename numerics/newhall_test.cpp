@@ -199,7 +199,7 @@ MonomialAdapter<degree> MonomialAdapter<degree>::NewhallApproximation(
 
 template<int degree>
 Length MonomialAdapter<degree>::Evaluate(Instant const& t) const {
-  return polynomial_.Evaluate(t);
+  return polynomial_(t);
 }
 
 template<int degree>
@@ -765,7 +765,7 @@ TEST_F(NewhallTest, NonConstantDegree) {
             /*degree=*/10,
             lengths, speeds, t_min_, t_max_, length_error_estimate);
 
-    EXPECT_THAT(RelativeError(approximation->Evaluate(t_min_),
+    EXPECT_THAT(RelativeError((*approximation)(t_min_),
                               length_function_1_(t_min_)), IsNear(9e-13_⑴));
 }
 

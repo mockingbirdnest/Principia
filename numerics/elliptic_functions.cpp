@@ -78,9 +78,9 @@ void JacobiSNCNDNReduced(Angle const& u,
     u₀ = 0.5 * u₀;
   }
 
-  double const b₀1 = fukushima_b₀_maclaurin_m_1.Evaluate(m);
-  double const b₀2 = fukushima_b₀_maclaurin_m_2.Evaluate(m);
-  double const b₀3 = fukushima_b₀_maclaurin_m_3.Evaluate(m);
+  double const b₀1 = fukushima_b₀_maclaurin_m_1(m);
+  double const b₀2 = fukushima_b₀_maclaurin_m_2(m);
+  double const b₀3 = fukushima_b₀_maclaurin_m_3(m);
   PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
       fukushima_b₀_maclaurin_u₀²_3(std::make_tuple(0.0, b₀1, b₀2, b₀3));
   double const u₀² = (u₀ * u₀) / Pow<2>(Radian);
@@ -88,7 +88,7 @@ void JacobiSNCNDNReduced(Angle const& u,
   // We use the subscript i to indicate variables that are computed as part of
   // the iteration (Fukushima uses subscripts n and N).  This avoids confusion
   // between c (the result) and cᵢ (the intermediate numerator of c).
-  double bᵢ = fukushima_b₀_maclaurin_u₀²_3.Evaluate(u₀²);
+  double bᵢ = fukushima_b₀_maclaurin_u₀²_3(u₀²);
 
   Angle const uA = (1.76269 + 1.16357 * mc) * Radian;
   bool const may_have_cancellation = u > uA;

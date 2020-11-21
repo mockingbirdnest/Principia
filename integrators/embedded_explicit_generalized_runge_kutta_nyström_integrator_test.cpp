@@ -134,10 +134,10 @@ TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, Legendre) {
   for (ODE::SystemState const& state : solution) {
     double const x = (state.time.value - t_initial) / (1 * Second);
     double const error =
-        AbsoluteError(LegendrePolynomial<degree, EstrinEvaluator>().Evaluate(x),
+        AbsoluteError(LegendrePolynomial<degree, EstrinEvaluator>()(x),
                       state.positions[0].value);
     Variation<double> const derivative_error = AbsoluteError(
-        LegendrePolynomial<degree, EstrinEvaluator>().Derivative().Evaluate(x) /
+        LegendrePolynomial<degree, EstrinEvaluator>().Derivative()(x) /
             (1 * Second),
         state.velocities[0].value);
     max_error = std::max(max_error, error);

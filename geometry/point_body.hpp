@@ -129,26 +129,26 @@ Point<Vector> operator+(Vector const& translation,
 }
 
 template<typename Vector>
-constexpr typename std::enable_if_t<is_quantity<Vector>::value, bool> operator<(
+constexpr typename std::enable_if_t<is_quantity_v<Vector>, bool> operator<(
     Point<Vector> const& left,
     Point<Vector> const& right) {
   return left.coordinates_ < right.coordinates_;
 }
 
 template<typename Vector>
-constexpr typename std::enable_if_t<is_quantity<Vector>::value, bool>
+constexpr typename std::enable_if_t<is_quantity_v<Vector>, bool>
 operator<=(Point<Vector> const& left, Point<Vector> const& right) {
   return left.coordinates_ <= right.coordinates_;
 }
 
 template<typename Vector>
-constexpr typename std::enable_if_t<is_quantity<Vector>::value, bool>
+constexpr typename std::enable_if_t<is_quantity_v<Vector>, bool>
 operator>=(Point<Vector> const& left, Point<Vector> const& right) {
   return left.coordinates_ >= right.coordinates_;
 }
 
 template<typename Vector>
-constexpr typename std::enable_if_t<is_quantity<Vector>::value, bool> operator>(
+constexpr typename std::enable_if_t<is_quantity_v<Vector>, bool> operator>(
     Point<Vector> const& left,
     Point<Vector> const& right) {
   return left.coordinates_ > right.coordinates_;

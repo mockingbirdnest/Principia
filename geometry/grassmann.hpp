@@ -23,7 +23,7 @@ namespace internal_grassmann {
 
 using base::not_null;
 using quantities::Angle;
-using quantities::is_quantity;
+using quantities::is_quantity_v;
 using quantities::Product;
 using quantities::Quantity;
 using quantities::Quotient;
@@ -40,6 +40,8 @@ class Multivector;
 template<typename Scalar, typename Frame>
 class Multivector<Scalar, Frame, 1> final {
  public:
+  static constexpr int dimension = 3;
+
   constexpr Multivector() = default;
   explicit Multivector(R3Element<Scalar> const& coordinates);
 
@@ -80,6 +82,8 @@ class Multivector<Scalar, Frame, 1> final {
 template<typename Scalar, typename Frame>
 class Multivector<Scalar, Frame, 2> final {
  public:
+  static constexpr int dimension = 3;
+
   constexpr Multivector() = default;
   explicit Multivector(R3Element<Scalar> const& coordinates);
 
@@ -116,6 +120,8 @@ class Multivector<Scalar, Frame, 2> final {
 template<typename Scalar, typename Frame>
 class Multivector<Scalar, Frame, 3> final {
  public:
+  static constexpr int dimension = 1;
+
   constexpr Multivector() = default;
   explicit Multivector(Scalar const& coordinates);
 
@@ -265,19 +271,19 @@ Multivector<Scalar, Frame, rank> operator-(
     Multivector<Scalar, Frame, rank> const& right);
 
 template<typename LScalar, typename RScalar, typename Frame, int rank,
-         typename = std::enable_if_t<is_quantity<LScalar>::value>>
+         typename = std::enable_if_t<is_quantity_v<LScalar>>>
 Multivector<Product<LScalar, RScalar>, Frame, rank>
 operator*(LScalar const& left,
           Multivector<RScalar, Frame, rank> const& right);
 
 template<typename LScalar, typename RScalar, typename Frame, int rank,
-         typename = std::enable_if_t<is_quantity<RScalar>::value>>
+         typename = std::enable_if_t<is_quantity_v<RScalar>>>
 Multivector<Product<LScalar, RScalar>, Frame, rank>
 operator*(Multivector<LScalar, Frame, rank> const& left,
           RScalar const& right);
 
 template<typename LScalar, typename RScalar, typename Frame, int rank,
-         typename = std::enable_if_t<is_quantity<RScalar>::value>>
+         typename = std::enable_if_t<is_quantity_v<RScalar>>>
 Multivector<Quotient<LScalar, RScalar>, Frame, rank>
 operator/(Multivector<LScalar, Frame, rank> const& left,
           RScalar const& right);

@@ -23,14 +23,16 @@ template<typename T>
 struct is_quantity : std::is_arithmetic<T>, not_constructible {};
 template<typename D>
 struct is_quantity<Quantity<D>> : std::true_type, not_constructible {};
+template<typename T>
+struct is_quantity<T const> : is_quantity<T> {};
 
-// This doesn't quite work in VS2015.  Let's not use it for now.
 template<typename T>
 constexpr bool is_quantity_v = is_quantity<T>::value;
 
 }  // namespace internal_traits
 
 using internal_traits::is_quantity;
+using internal_traits::is_quantity_v;
 
 }  // namespace quantities
 }  // namespace principia

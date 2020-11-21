@@ -1246,8 +1246,7 @@ Angle BulirschCel(double kc, double const nc, double a, double b) {
 template<int degree>
 double EllipticNomeQ(double const mc) {
   return mc *
-         EllipticNomeQMaclaurin<degree - 1, EstrinEvaluator>::polynomial.
-             Evaluate(mc);
+         EllipticNomeQMaclaurin<degree - 1, EstrinEvaluator>::polynomial(mc);
 }
 
 void FukushimaEllipticBD(double const mc, Angle& B_m, Angle& D_m) {
@@ -1267,60 +1266,60 @@ void FukushimaEllipticBD(double const mc, Angle& B_m, Angle& D_m) {
     double KX_mc;  // KX(mc).
     double EX_mc;  // EX(mc).
     if (mc < 0.01) {
-      KX_mc = fukushima_KX_maclaurin.Evaluate(mc);
-      EX_mc = mc * fukushima_EX_maclaurin.Evaluate(mc);
+      KX_mc = fukushima_KX_maclaurin(mc);
+      EX_mc = mc * fukushima_EX_maclaurin(mc);
     } else {
       double const mx = mc - 0.05;
-      KX_mc = fukushima_KX_taylor_0_05.Evaluate(mx);
-      EX_mc = fukushima_EX_taylor_0_05.Evaluate(mx);
+      KX_mc = fukushima_KX_taylor_0_05(mx);
+      EX_mc = fukushima_EX_taylor_0_05(mx);
     }
     // Equivalent to Fukushima’s code [Fuk18], but much simplified.
     double const one_over_two_KX_mc = 0.5 / KX_mc;
     B_m = (X_mc * (EX_mc - mc * KX_mc) + one_over_two_KX_mc) * Radian / m;
     D_m = X_mc * KX_mc * Radian - B_m;
   } else if (m <= 0.01) {
-    B_m = (-π * Radian) * fukushima_B٭X_maclaurin.Evaluate(m);
-    D_m = (π * Radian) * fukushima_EX_maclaurin.Evaluate(m);
+    B_m = (-π * Radian) * fukushima_B٭X_maclaurin(m);
+    D_m = (π * Radian) * fukushima_EX_maclaurin(m);
   } else if (m <= 0.1) {
     double const mx = 0.95 - mc;
-    B_m = fukushima_B_taylor_0_05.Evaluate(mx) * Radian;
-    D_m = fukushima_D_taylor_0_05.Evaluate(mx) * Radian;
+    B_m = fukushima_B_taylor_0_05(mx) * Radian;
+    D_m = fukushima_D_taylor_0_05(mx) * Radian;
   } else if (m <= 0.2) {
     double const mx = 0.85 - mc;
-    B_m = fukushima_B_taylor_0_15.Evaluate(mx) * Radian;
-    D_m = fukushima_D_taylor_0_15.Evaluate(mx) * Radian;
+    B_m = fukushima_B_taylor_0_15(mx) * Radian;
+    D_m = fukushima_D_taylor_0_15(mx) * Radian;
   } else if (m <= 0.3) {
     double const mx = 0.75 - mc;
-    B_m = fukushima_B_taylor_0_25.Evaluate(mx) * Radian;
-    D_m = fukushima_D_taylor_0_25.Evaluate(mx) * Radian;
+    B_m = fukushima_B_taylor_0_25(mx) * Radian;
+    D_m = fukushima_D_taylor_0_25(mx) * Radian;
   } else if (m <= 0.4) {
     double const mx = 0.65 - mc;
-    B_m = fukushima_B_taylor_0_35.Evaluate(mx) * Radian;
-    D_m = fukushima_D_taylor_0_35.Evaluate(mx) * Radian;
+    B_m = fukushima_B_taylor_0_35(mx) * Radian;
+    D_m = fukushima_D_taylor_0_35(mx) * Radian;
   } else if (m <= 0.5) {
     double const mx = 0.55 - mc;
-    B_m = fukushima_B_taylor_0_45.Evaluate(mx) * Radian;
-    D_m = fukushima_D_taylor_0_45.Evaluate(mx) * Radian;
+    B_m = fukushima_B_taylor_0_45(mx) * Radian;
+    D_m = fukushima_D_taylor_0_45(mx) * Radian;
   } else if (m <= 0.6) {
     double const mx = 0.45 - mc;
-    B_m = fukushima_B_taylor_0_55.Evaluate(mx) * Radian;
-    D_m = fukushima_D_taylor_0_55.Evaluate(mx) * Radian;
+    B_m = fukushima_B_taylor_0_55(mx) * Radian;
+    D_m = fukushima_D_taylor_0_55(mx) * Radian;
   } else if (m <= 0.7) {
     double const mx = 0.35 - mc;
-    B_m = fukushima_B_taylor_0_65.Evaluate(mx) * Radian;
-    D_m = fukushima_D_taylor_0_65.Evaluate(mx) * Radian;
+    B_m = fukushima_B_taylor_0_65(mx) * Radian;
+    D_m = fukushima_D_taylor_0_65(mx) * Radian;
   } else if (m <= 0.8) {
     double const mx = 0.25 - mc;
-    B_m = fukushima_B_taylor_0_75.Evaluate(mx) * Radian;
-    D_m = fukushima_D_taylor_0_75.Evaluate(mx) * Radian;
+    B_m = fukushima_B_taylor_0_75(mx) * Radian;
+    D_m = fukushima_D_taylor_0_75(mx) * Radian;
   } else if (m <= 0.85) {
     double const mx = 0.175 - mc;
-    B_m = fukushima_B_taylor_0_825.Evaluate(mx) * Radian;
-    D_m = fukushima_D_taylor_0_825.Evaluate(mx) * Radian;
+    B_m = fukushima_B_taylor_0_825(mx) * Radian;
+    D_m = fukushima_D_taylor_0_825(mx) * Radian;
   } else {
     double const mx = 0.125 - mc;
-    B_m = fukushima_B_taylor_0_875.Evaluate(mx) * Radian;
-    D_m = fukushima_D_taylor_0_875.Evaluate(mx) * Radian;
+    B_m = fukushima_B_taylor_0_875(mx) * Radian;
+    D_m = fukushima_D_taylor_0_875(mx) * Radian;
   }
 }
 
@@ -1496,27 +1495,27 @@ void FukushimaEllipticBsDsMaclaurinSeries(double const y,
                                           double const m,
                                           Angle& Σ_Bₗ_m_yˡ,
                                           Angle& Σ_Dₗ_m_yˡ) {
-  double const Fs1 = FukushimaEllipticFsMaclaurin1::polynomial.Evaluate(m);
-  double const Fs2 = FukushimaEllipticFsMaclaurin2::polynomial.Evaluate(m);
-  double const Fs3 = FukushimaEllipticFsMaclaurin3::polynomial.Evaluate(m);
-  double const Fs4 = FukushimaEllipticFsMaclaurin4::polynomial.Evaluate(m);
-  double const Fs5 = FukushimaEllipticFsMaclaurin5::polynomial.Evaluate(m);
-  double const Fs6 = FukushimaEllipticFsMaclaurin6::polynomial.Evaluate(m);
-  double const Fs7 = FukushimaEllipticFsMaclaurin7::polynomial.Evaluate(m);
-  double const Fs8 = FukushimaEllipticFsMaclaurin8::polynomial.Evaluate(m);
-  double const Fs9 = FukushimaEllipticFsMaclaurin9::polynomial.Evaluate(m);
-  double const Fs10 = FukushimaEllipticFsMaclaurin10::polynomial.Evaluate(m);
-  double const Fs11 = FukushimaEllipticFsMaclaurin11::polynomial.Evaluate(m);
+  double const Fs1 = FukushimaEllipticFsMaclaurin1::polynomial(m);
+  double const Fs2 = FukushimaEllipticFsMaclaurin2::polynomial(m);
+  double const Fs3 = FukushimaEllipticFsMaclaurin3::polynomial(m);
+  double const Fs4 = FukushimaEllipticFsMaclaurin4::polynomial(m);
+  double const Fs5 = FukushimaEllipticFsMaclaurin5::polynomial(m);
+  double const Fs6 = FukushimaEllipticFsMaclaurin6::polynomial(m);
+  double const Fs7 = FukushimaEllipticFsMaclaurin7::polynomial(m);
+  double const Fs8 = FukushimaEllipticFsMaclaurin8::polynomial(m);
+  double const Fs9 = FukushimaEllipticFsMaclaurin9::polynomial(m);
+  double const Fs10 = FukushimaEllipticFsMaclaurin10::polynomial(m);
+  double const Fs11 = FukushimaEllipticFsMaclaurin11::polynomial(m);
 
   auto const fukushima_elliptic_Ds_maclaurin =
       FukushimaEllipticDsBsMaclaurin<EstrinEvaluator>::MakeDsPolynomial(
       1.0, Fs1, Fs2, Fs3, Fs4, Fs5, Fs6, Fs7, Fs8, Fs9, Fs10, Fs11);
-  Σ_Dₗ_m_yˡ = fukushima_elliptic_Ds_maclaurin.Evaluate(y) * Radian;
+  Σ_Dₗ_m_yˡ = fukushima_elliptic_Ds_maclaurin(y) * Radian;
 
   auto const fukushima_elliptic_Bs_maclaurin =
       FukushimaEllipticDsBsMaclaurin<EstrinEvaluator>::MakeBsPolynomial(
       1.0, Fs1, Fs2, Fs3, Fs4, Fs5, Fs6, Fs7, Fs8, Fs9, Fs10, Fs11);
-  Σ_Bₗ_m_yˡ = fukushima_elliptic_Bs_maclaurin.Evaluate(y) * Radian;
+  Σ_Bₗ_m_yˡ = fukushima_elliptic_Bs_maclaurin(y) * Radian;
 }
 
 // See [Fuk12], section 3.4 and 3.5.
@@ -1527,36 +1526,36 @@ Angle FukushimaEllipticJsMaclaurinSeries(double const y,
   // is the degree in m (k in Fukushima's notation).
   PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
       fukushima_elliptic_Js_maclaurin_m_0(
-          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_0_0.Evaluate(n)));
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_0_0(n)));
   PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
       fukushima_elliptic_Js_maclaurin_m_1(
-          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_1_0.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_1_1.Evaluate(n)));
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_1_0(n),
+                          fukushima_elliptic_Js_maclaurin_n_1_1(n)));
   PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
       fukushima_elliptic_Js_maclaurin_m_2(
-          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_2_0.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_2_1.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_2_2.Evaluate(n)));
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_2_0(n),
+                          fukushima_elliptic_Js_maclaurin_n_2_1(n),
+                          fukushima_elliptic_Js_maclaurin_n_2_2(n)));
   PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
       fukushima_elliptic_Js_maclaurin_m_3(
-          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_3_0.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_3_1.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_3_2.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_3_3.Evaluate(n)));
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_3_0(n),
+                          fukushima_elliptic_Js_maclaurin_n_3_1(n),
+                          fukushima_elliptic_Js_maclaurin_n_3_2(n),
+                          fukushima_elliptic_Js_maclaurin_n_3_3(n)));
   PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
       fukushima_elliptic_Js_maclaurin_m_4(
-          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_4_0.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_4_1.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_4_2.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_4_3.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_4_4.Evaluate(n)));
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_4_0(n),
+                          fukushima_elliptic_Js_maclaurin_n_4_1(n),
+                          fukushima_elliptic_Js_maclaurin_n_4_2(n),
+                          fukushima_elliptic_Js_maclaurin_n_4_3(n),
+                          fukushima_elliptic_Js_maclaurin_n_4_4(n)));
   // The first five coefficients Jₗ(n|m); the others are computed as needed.
   // TODO(egg): J₁(n|m) = 1/3; could we make it constexpr?
-  double const J₁ = fukushima_elliptic_Js_maclaurin_m_0.Evaluate(m);
-  double const J₂ = fukushima_elliptic_Js_maclaurin_m_1.Evaluate(m);
-  double const J₃ = fukushima_elliptic_Js_maclaurin_m_2.Evaluate(m);
-  double const J₄ = fukushima_elliptic_Js_maclaurin_m_3.Evaluate(m);
-  double const J₅ = fukushima_elliptic_Js_maclaurin_m_4.Evaluate(m);
+  double const J₁ = fukushima_elliptic_Js_maclaurin_m_0(m);
+  double const J₂ = fukushima_elliptic_Js_maclaurin_m_1(m);
+  double const J₃ = fukushima_elliptic_Js_maclaurin_m_2(m);
+  double const J₄ = fukushima_elliptic_Js_maclaurin_m_3(m);
+  double const J₅ = fukushima_elliptic_Js_maclaurin_m_4(m);
   // This function computes ∑ Jₗ(n|m) yˡ.  Since it has no constant term, we
   // compute it as y ∑ Jₗ(n|m) yˡ⁻¹.  In the remainder of this function,
   // |fukushima_elliptic_Js_maclaurin_y_*| is the polynomial ∑ Jₗ(n|m) yˡ⁻¹.
@@ -1567,96 +1566,96 @@ Angle FukushimaEllipticJsMaclaurinSeries(double const y,
     PolynomialInMonomialBasis<double, double, 4, EstrinEvaluator>
         fukushima_elliptic_Js_maclaurin_y_4(
             std::make_tuple(J₁, J₂, J₃, J₄, J₅));
-    return y * fukushima_elliptic_Js_maclaurin_y_4.Evaluate(y) * Radian;
+    return y * fukushima_elliptic_Js_maclaurin_y_4(y) * Radian;
   }
 
   PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
       fukushima_elliptic_Js_maclaurin_m_5(
-          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_5_0.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_5_1.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_5_2.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_5_3.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_5_4.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_5_5.Evaluate(n)));
-  double const J₆ = fukushima_elliptic_Js_maclaurin_m_5.Evaluate(m);
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_5_0(n),
+                          fukushima_elliptic_Js_maclaurin_n_5_1(n),
+                          fukushima_elliptic_Js_maclaurin_n_5_2(n),
+                          fukushima_elliptic_Js_maclaurin_n_5_3(n),
+                          fukushima_elliptic_Js_maclaurin_n_5_4(n),
+                          fukushima_elliptic_Js_maclaurin_n_5_5(n)));
+  double const J₆ = fukushima_elliptic_Js_maclaurin_m_5(m);
   if (y <= 2.0727505e-03) {
     PolynomialInMonomialBasis<double, double, 5, EstrinEvaluator>
         fukushima_elliptic_js_maclaurin_y_5(
             std::make_tuple(J₁, J₂, J₃, J₄, J₅, J₆));
-    return y * fukushima_elliptic_js_maclaurin_y_5.Evaluate(y) * Radian;
+    return y * fukushima_elliptic_js_maclaurin_y_5(y) * Radian;
   }
 
   PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
       fukushima_elliptic_Js_maclaurin_m_6(
-          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_6_0.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_6_1.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_6_2.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_6_3.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_6_4.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_6_5.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_6_6.Evaluate(n)));
-  double const J₇ = fukushima_elliptic_Js_maclaurin_m_6.Evaluate(m);
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_6_0(n),
+                          fukushima_elliptic_Js_maclaurin_n_6_1(n),
+                          fukushima_elliptic_Js_maclaurin_n_6_2(n),
+                          fukushima_elliptic_Js_maclaurin_n_6_3(n),
+                          fukushima_elliptic_Js_maclaurin_n_6_4(n),
+                          fukushima_elliptic_Js_maclaurin_n_6_5(n),
+                          fukushima_elliptic_Js_maclaurin_n_6_6(n)));
+  double const J₇ = fukushima_elliptic_Js_maclaurin_m_6(m);
   if (y <= 5.0047026e-03) {
     PolynomialInMonomialBasis<double, double, 6, EstrinEvaluator>
         fukushima_elliptic_js_maclaurin_y_6(
             std::make_tuple(J₁, J₂, J₃, J₄, J₅, J₆, J₇));
-    return y * fukushima_elliptic_js_maclaurin_y_6.Evaluate(y) * Radian;
+    return y * fukushima_elliptic_js_maclaurin_y_6(y) * Radian;
   }
 
   PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
       fukushima_elliptic_Js_maclaurin_m_7(
-          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_7_0.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_7_1.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_7_2.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_7_3.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_7_4.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_7_5.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_7_6.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_7_7.Evaluate(n)));
-  double const J₈ = fukushima_elliptic_Js_maclaurin_m_7.Evaluate(m);
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_7_0(n),
+                          fukushima_elliptic_Js_maclaurin_n_7_1(n),
+                          fukushima_elliptic_Js_maclaurin_n_7_2(n),
+                          fukushima_elliptic_Js_maclaurin_n_7_3(n),
+                          fukushima_elliptic_Js_maclaurin_n_7_4(n),
+                          fukushima_elliptic_Js_maclaurin_n_7_5(n),
+                          fukushima_elliptic_Js_maclaurin_n_7_6(n),
+                          fukushima_elliptic_Js_maclaurin_n_7_7(n)));
+  double const J₈ = fukushima_elliptic_Js_maclaurin_m_7(m);
   if (y <= 9.6961652e-03) {
     PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator>
         fukushima_elliptic_js_maclaurin_y_7(
             std::make_tuple(J₁, J₂, J₃, J₄, J₅, J₆, J₇, J₈));
-    return y * fukushima_elliptic_js_maclaurin_y_7.Evaluate(y) * Radian;
+    return y * fukushima_elliptic_js_maclaurin_y_7(y) * Radian;
   }
 
   PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator>
       fukushima_elliptic_Js_maclaurin_m_8(
-          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_8_0.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_8_1.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_8_2.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_8_3.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_8_4.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_8_5.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_8_6.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_8_7.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_8_8.Evaluate(n)));
-  double const J₉ = fukushima_elliptic_Js_maclaurin_m_8.Evaluate(m);
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_8_0(n),
+                          fukushima_elliptic_Js_maclaurin_n_8_1(n),
+                          fukushima_elliptic_Js_maclaurin_n_8_2(n),
+                          fukushima_elliptic_Js_maclaurin_n_8_3(n),
+                          fukushima_elliptic_Js_maclaurin_n_8_4(n),
+                          fukushima_elliptic_Js_maclaurin_n_8_5(n),
+                          fukushima_elliptic_Js_maclaurin_n_8_6(n),
+                          fukushima_elliptic_Js_maclaurin_n_8_7(n),
+                          fukushima_elliptic_Js_maclaurin_n_8_8(n)));
+  double const J₉ = fukushima_elliptic_Js_maclaurin_m_8(m);
   if (y <= 1.6220210e-02) {
     PolynomialInMonomialBasis<double, double, 8, EstrinEvaluator>
         fukushima_elliptic_Js_maclaurin_y_8(
             std::make_tuple(J₁, J₂, J₃, J₄, J₅, J₆, J₇, J₈, J₉));
-    return y * fukushima_elliptic_Js_maclaurin_y_8.Evaluate(y) * Radian;
+    return y * fukushima_elliptic_Js_maclaurin_y_8(y) * Radian;
   }
 
   PolynomialInMonomialBasis<double, double, 9, EstrinEvaluator>
       fukushima_elliptic_Js_maclaurin_m_9(
-          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_9_0.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_9_1.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_9_2.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_9_3.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_9_4.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_9_5.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_9_6.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_9_7.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_9_8.Evaluate(n),
-                          fukushima_elliptic_Js_maclaurin_n_9_9.Evaluate(n)));
-  double const J₁₀ = fukushima_elliptic_Js_maclaurin_m_9.Evaluate(m);
+          std::make_tuple(fukushima_elliptic_Js_maclaurin_n_9_0(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_1(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_2(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_3(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_4(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_5(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_6(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_7(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_8(n),
+                          fukushima_elliptic_Js_maclaurin_n_9_9(n)));
+  double const J₁₀ = fukushima_elliptic_Js_maclaurin_m_9(m);
   PolynomialInMonomialBasis<double, double, 9, EstrinEvaluator>
       fukushima_elliptic_Js_maclaurin_y_9(
           std::make_tuple(J₁, J₂, J₃, J₄, J₅, J₆, J₇, J₈, J₉, J₁₀));
-  return y * fukushima_elliptic_Js_maclaurin_y_9.Evaluate(y) * Radian;
+  return y * fukushima_elliptic_Js_maclaurin_y_9(y) * Radian;
 }
 
 Angle FukushimaT(double const t, double const h) {
@@ -1671,32 +1670,32 @@ Angle FukushimaT(double const t, double const h) {
   if (abs_z < 3.3306691e-16) {
     return t * Radian;
   } else if (abs_z < 2.3560805e-08) {
-    return t * FukushimaTMaclaurin1::polynomial.Evaluate(z) * Radian;
+    return t * FukushimaTMaclaurin1::polynomial(z) * Radian;
   } else if (abs_z < 9.1939631e-06) {
-    return t * FukushimaTMaclaurin2::polynomial.Evaluate(z) * Radian;
+    return t * FukushimaTMaclaurin2::polynomial(z) * Radian;
   } else if (abs_z < 1.7779240e-04) {
-    return t * FukushimaTMaclaurin3::polynomial.Evaluate(z) * Radian;
+    return t * FukushimaTMaclaurin3::polynomial(z) * Radian;
   } else if (abs_z < 1.0407839e-03) {
-    return t * FukushimaTMaclaurin4::polynomial.Evaluate(z) * Radian;
+    return t * FukushimaTMaclaurin4::polynomial(z) * Radian;
   } else if (abs_z < 3.3616998e-03) {
-    return t * FukushimaTMaclaurin5::polynomial.Evaluate(z) * Radian;
+    return t * FukushimaTMaclaurin5::polynomial(z) * Radian;
   } else if (abs_z < 7.7408014e-03) {
-    return t * FukushimaTMaclaurin6::polynomial.Evaluate(z) * Radian;
+    return t * FukushimaTMaclaurin6::polynomial(z) * Radian;
   } else if (abs_z < 1.4437181e-02) {
-    return t * FukushimaTMaclaurin7::polynomial.Evaluate(z) * Radian;
+    return t * FukushimaTMaclaurin7::polynomial(z) * Radian;
   } else if (abs_z < 2.3407312e-02) {
-    return t * FukushimaTMaclaurin8::polynomial.Evaluate(z) * Radian;
+    return t * FukushimaTMaclaurin8::polynomial(z) * Radian;
   } else if (abs_z < 3.4416203e-02) {
-    return t * FukushimaTMaclaurin9::polynomial.Evaluate(z) * Radian;
+    return t * FukushimaTMaclaurin9::polynomial(z) * Radian;
   } else if (z < 0.0) {
     double const r = Sqrt(h);
     return ArcTan(r * t) / r;
   } else if (abs_z < 4.7138547e-02) {
-    return t * FukushimaTMaclaurin10::polynomial.Evaluate(z) * Radian;
+    return t * FukushimaTMaclaurin10::polynomial(z) * Radian;
   } else if (abs_z < 6.1227405e-02) {
-    return t * FukushimaTMaclaurin11::polynomial.Evaluate(z) * Radian;
+    return t * FukushimaTMaclaurin11::polynomial(z) * Radian;
   } else if (abs_z < 7.6353468e-02) {
-    return t * FukushimaTMaclaurin12::polynomial.Evaluate(z) * Radian;
+    return t * FukushimaTMaclaurin12::polynomial(z) * Radian;
   } else {
     double const r = Sqrt(-h);
     double const rt = r * t;
@@ -2046,28 +2045,28 @@ Angle EllipticK(double const mʹ) {
     // The complementary nome.
     double const qʹ = EllipticNomeQ<14>(mʹ);
     // Use K′ = K(m′), see [Fuk09], equations (15) and (29).
-    double const Kʹ = elliptic_K_taylor_0_05.Evaluate(mʹ - 0.05);
+    double const Kʹ = elliptic_K_taylor_0_05(mʹ - 0.05);
     return -Kʹ * (1 / π) * std::log(qʹ) * Radian;
   } else if (m <= 0.1) {
-    return elliptic_K_taylor_0_05.Evaluate(m - 0.05) * Radian;
+    return elliptic_K_taylor_0_05(m - 0.05) * Radian;
   } else if (m <= 0.2) {
-    return elliptic_K_taylor_0_15.Evaluate(m - 0.15) * Radian;
+    return elliptic_K_taylor_0_15(m - 0.15) * Radian;
   } else if (m <= 0.3) {
-    return elliptic_K_taylor_0_25.Evaluate(m - 0.25) * Radian;
+    return elliptic_K_taylor_0_25(m - 0.25) * Radian;
   } else if (m <= 0.4) {
-    return elliptic_K_taylor_0_35.Evaluate(m - 0.35) * Radian;
+    return elliptic_K_taylor_0_35(m - 0.35) * Radian;
   } else if (m <= 0.5) {
-    return elliptic_K_taylor_0_45.Evaluate(m - 0.45) * Radian;
+    return elliptic_K_taylor_0_45(m - 0.45) * Radian;
   } else if (m <= 0.6) {
-    return elliptic_K_taylor_0_55.Evaluate(m - 0.55) * Radian;
+    return elliptic_K_taylor_0_55(m - 0.55) * Radian;
   } else if (m <= 0.7) {
-    return elliptic_K_taylor_0_65.Evaluate(m - 0.65) * Radian;
+    return elliptic_K_taylor_0_65(m - 0.65) * Radian;
   } else if (m <= 0.8) {
-    return elliptic_K_taylor_0_75.Evaluate(m - 0.75) * Radian;
+    return elliptic_K_taylor_0_75(m - 0.75) * Radian;
   } else if (m <= 0.85) {
-    return elliptic_K_taylor_0_825.Evaluate(m - 0.825) * Radian;
+    return elliptic_K_taylor_0_825(m - 0.825) * Radian;
   } else {
-    return elliptic_K_taylor_0_875.Evaluate(m - 0.875) * Radian;
+    return elliptic_K_taylor_0_875(m - 0.875) * Radian;
   }
 }
 

@@ -66,17 +66,17 @@ BoundedArray<Argument, 2> Hermite3<Argument, Value>::FindExtrema() const {
 
 template<typename Argument, typename Value>
 template<typename Samples>
-typename Normed<Difference<Value>>::NormType
+typename Hilbert<Difference<Value>>::NormType
 Hermite3<Argument, Value>::LInfinityError(
     Samples const& samples,
     std::function<Argument const&(
         typename Samples::value_type const&)> const& get_argument,
     std::function<Value const&(typename Samples::value_type const&)> const&
         get_value) const {
-  typename Normed<Difference<Value>>::NormType result{};
+  typename Hilbert<Difference<Value>>::NormType result{};
   for (const auto& sample : samples) {
     result = std::max(result,
-                      Normed<Difference<Value>>::Norm(
+                      Hilbert<Difference<Value>>::Norm(
                           Evaluate(get_argument(sample)) - get_value(sample)));
   }
   return result;

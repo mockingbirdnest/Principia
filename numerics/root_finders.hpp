@@ -2,9 +2,12 @@
 #pragma once
 
 #include <functional>
+#include <limits>
 #include <vector>
 
 #include "base/array.hpp"
+#include "numerics/scale_b.h"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -13,29 +16,52 @@ namespace internal_root_finders {
 
 using base::BoundedArray;
 using quantities::Derivative;
+using quantities::Sqrt;
 
 // Approximates a root of |f| between |lower_bound| and |upper_bound| by
 // bisection.  The result is less than one ULP from a root of any continuous
 // function agreeing with |f| on the values of |Argument|.
 // If |f(lower_bound)| and |f(upper_bound)| are both nonzero, they must be of
 // opposite signs.
-// TODO(phl): Use Brent's algorithm.
 template<typename Argument, typename Function>
 Argument Bisect(Function f,
                 Argument const& lower_bound,
                 Argument const& upper_bound);
 
-// Performs a golden-section search to find a minimum of |f| between
+// Performs Brent’s procedure |zero| from [Bre73], chapter 4, with an absolute
+// tolerance t=0.
+template<typename Argument, typename Function>
+Argument Brent(Function f,
+               Argument const& lower_bound,
+               Argument const& upper_bound);
+
+// Performs a golden-section search to find a local extremum of |f| between
 // |lower_bound| and |upper_bound|.
-// TODO(phl): Use Brent's algorithm.
-template<typename Argument,
-         typename Function,
-         typename Compare = std::less<
-             decltype(std::declval<Function>()(std::declval<Argument>()))>>
+// The function searches for a minimum if compare is <, and a maximum if compare
+// is >.  Arbitrary order relations are allowed; in general, this function
+// searches for a value x such that compare(y, f(x)) is false for all y in some
+// neighbourhood of x.
+template<typename Argument, typename Function, typename Compare>
 Argument GoldenSectionSearch(Function f,
                              Argument const& lower_bound,
                              Argument const& upper_bound,
-                             Compare comp = Compare());
+                             Compare compare);
+
+// Performs Brent’s procedure |localmin| from [Bre73], chapter 5, with an
+// absolute tolerance t set to the (subnormal) smallest strictly positive value
+// of |Difference<Argument>|.
+// The function searches for a minimum if compare is <, and a maximum if compare
+// is >.  No values of Compare other than std::less<> and std::greater<> are
+// allowed.
+// The default value of |eps| is √ϵ, for ϵ as defined in [Bre73], chapter 4,
+// (2.9).
+template<typename Argument, typename Function, typename Compare>
+Argument Brent(
+    Function f,
+    Argument const& lower_bound,
+    Argument const& upper_bound,
+    Compare compare,
+    double eps = Sqrt(ScaleB(0.5, 1 - std::numeric_limits<double>::digits)));
 
 // Returns the solutions of the quadratic equation:
 //   a2 * (x - origin)^2 + a1 * (x - origin) + a0 == 0
@@ -50,6 +76,7 @@ BoundedArray<Argument, 2> SolveQuadraticEquation(
 }  // namespace internal_root_finders
 
 using internal_root_finders::Bisect;
+using internal_root_finders::Brent;
 using internal_root_finders::GoldenSectionSearch;
 using internal_root_finders::SolveQuadraticEquation;
 

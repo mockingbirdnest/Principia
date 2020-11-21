@@ -42,6 +42,23 @@ message DoublePrecision {
   required Error error = 2;
 }
 
+message PiecewisePoissonSeries {
+  repeated Point bounds = 1;
+  repeated PoissonSeries series = 2;
+  optional PoissonSeries addend = 3;
+}
+
+message PoissonSeries {
+  message PolynomialsAndAngularFrequency {
+    required Quantity angular_frequency = 1;
+    required Polynomial sin = 2;
+    required Polynomial cos = 3;
+  }
+  // The origin is not serialized since it's part of the polynomials.
+  required Polynomial aperiodic = 1;
+  repeated PolynomialsAndAngularFrequency periodic = 2;
+}
+
 // Polynomials follow.
 
 message Polynomial {
@@ -58,6 +75,7 @@ message PolynomialInMonomialBasis {
       double double = 1;
       Quantity quantity = 2;
       Multivector multivector = 3;
+      Point point = 4;
     }
   }
   repeated Coefficient coefficient = 1;

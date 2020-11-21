@@ -43,7 +43,7 @@
   <!--Compiler.-->
   <PropertyGroup>
     <PlatformToolset>v142</PlatformToolset>
-    <PlatformToolset Condition="$(PrincipiaCompilerClangLLVM)">llvm</PlatformToolset>
+    <PlatformToolset Condition="$(PrincipiaCompilerClangLLVM)">ClangCL</PlatformToolset>
   </PropertyGroup>
 
   <!--Target.-->
@@ -74,13 +74,15 @@
       <AdditionalOptions>/bigobj /w14714 /Zc:char8_t-</AdditionalOptions>
       <AdditionalOptions Condition="$(ProjectName) != serialization">/w14061 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <LanguageStandard Condition="$(ProjectName) != numerics">stdcpplatest</LanguageStandard>
+      <LanguageStandard Condition="$(ProjectName) != xxx">stdcpplatest</LanguageStandard>
       <WarningLevel Condition="!$(PrincipiaCompilerClangLLVM)">Level3</WarningLevel>
       <WarningLevel Condition="$(PrincipiaCompilerClangLLVM) and
                                $(ProjectName) == serialization">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="$(PrincipiaCompilerClangLLVM) and
                                $(ProjectName) != serialization">EnableAllWarnings</WarningLevel>
       <AdditionalOptions Condition="$(PrincipiaCompilerClangLLVM)">
+        <!-- \-\-version-->
+        <!-- \-v-->
         -Werror=typename-missing
         -Werror=microsoft-template
         -Werror=unknown-argument

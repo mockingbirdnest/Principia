@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/bits.hpp"
+#include "geometry/complexification.hpp"
+#include "geometry/hilbert.hpp"
 #include "geometry/interval.hpp"
 #include "quantities/named_quantities.hpp"
 
@@ -16,52 +18,68 @@ namespace numerics {
 namespace internal_fast_fourier_transform {
 
 using base::FloorLog2;
+using geometry::Complexification;
+using geometry::Hilbert;
 using geometry::Interval;
-using quantities::AngularFrequency;
-using quantities::Square;
-using quantities::Time;
+using quantities::Angle;
+using quantities::Derivative;
+using quantities::Difference;
 
-// This class computes Fourier[{...}, FourierParameters -> {1, -1}] in
-// Mathematica notation (the "signal processing" Fourier transform).
-template<typename Scalar, std::size_t size_>
+// Given (u₀, ..., uₙ₋₁), this class computes the discrete Fourier transform
+//   Uₛ = ∑ᵣ uᵣ exp(-2πirs/n),
+// corresponding to
+//   Fourier[{...}, FourierParameters -> {1, -1}]
+// in Mathematica notation (the "signal processing" Fourier transform).
+template<typename Value, typename Argument, std::size_t size_>
 class FastFourierTransform {
  public:
+  // This is only an actual angular frequency if |Argument| is time-like.
+  // If |Argument| is an angular frequency, this is a time.
+  using AngularFrequency = Derivative<Angle, Argument>;
+
   // The size must be a power of 2.
   static constexpr int size = size_;
   static constexpr int log2_size = FloorLog2(size);
   static_assert(size == 1 << log2_size);
 
-  // In the constructors, the container must have |size| elements.  The samples
-  // are assumed to be separated by Δt.
+  // In the constructors, the container must have |size| elements.  For the
+  // purpose of expressing the frequencies, the values are assumed to be
+  // sampled at intervals of Δt.
 
   template<typename Container,
            typename = std::enable_if_t<
-               std::is_convertible_v<typename Container::value_type, Scalar>>>
+               std::is_convertible_v<typename Container::value_type, Value>>>
   FastFourierTransform(Container const& container,
-                       Time const& Δt);
+                       Difference<Argument> const& Δt);
 
   template<typename Iterator,
            typename = std::enable_if_t<std::is_convertible_v<
                typename std::iterator_traits<Iterator>::value_type,
-               Scalar>>>
+               Value>>>
   FastFourierTransform(Iterator begin, Iterator end,
-                       Time const& Δt);
+                       Difference<Argument> const& Δt);
 
-  FastFourierTransform(std::array<Scalar, size> const& container,
-                       Time const& Δt);
+  FastFourierTransform(std::array<Value, size> const& container,
+                       Difference<Argument> const& Δt);
 
-  std::map<AngularFrequency, Square<Scalar>> PowerSpectrum() const;
+  std::map<AngularFrequency, typename Hilbert<Value>::InnerProductType>
+  PowerSpectrum() const;
 
   // Returns the interval that contains the largest peak of power.
   Interval<AngularFrequency> Mode() const;
 
- private:
-  Time const Δt_;
-  AngularFrequency const ω_;
+  // Given s ∈ [0, size - 1] ∩ ℕ, returns the coefficient Uₛ.
+  Complexification<Value> const& operator[](int s) const;
 
-  // The elements of transform_ are in SI units of Scalar.  They are spaced in
-  // frequency by ω_.
-  std::array<std::complex<double>, size> transform_;
+  // Given s ∈ [0, size - 1] ∩ ℕ, returns the frequency corresponding to Uₛ.
+  AngularFrequency frequency(int s) const;
+
+ private:
+  Difference<Argument> const Δt_;
+  AngularFrequency const Δω_;
+
+  // The elements of transform_ are spaced in frequency by ω_.
+  std::array<Complexification<Value>, size> transform_;
 
   friend class FastFourierTransformTest;
 };

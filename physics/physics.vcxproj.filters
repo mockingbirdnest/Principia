@@ -283,5 +283,8 @@
     <ClCompile Include="..\base\flags.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="analytical_series_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

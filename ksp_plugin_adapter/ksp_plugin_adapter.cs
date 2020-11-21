@@ -266,11 +266,12 @@ public partial class PrincipiaPluginAdapter
           "error; it might get damaged.";
       bad_installation_dialog_.Show();
     }
-#if KSP_VERSION_1_9_1
+#if KSP_VERSION_1_10_1
     if (!(Versioning.version_major == 1 &&
           (Versioning.version_minor == 8 && Versioning.Revision == 1) ||
-          (Versioning.version_minor == 9 && Versioning.Revision == 1))) {
-      string expected_version = "1.8.1 and 1.9.1";
+          (Versioning.version_minor == 9 && Versioning.Revision == 1) ||
+          (Versioning.version_minor == 10 && Versioning.Revision == 1))) {
+      string expected_version = "1.8.1, 1.9.1 and 1.10.1";
 #elif KSP_VERSION_1_7_3
     if (!(Versioning.version_major == 1 &&
           (Versioning.version_minor == 5 && Versioning.Revision == 1) ||
