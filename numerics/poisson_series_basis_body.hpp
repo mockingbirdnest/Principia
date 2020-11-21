@@ -155,6 +155,44 @@ struct SeriesGenerator2<Series,
 
 
 
+template<typename Series,
+         int degree,
+         int dimensions,
+         typename = std::make_index_sequence<2 * dimensions * (degree + 1)>>
+struct SeriesGenerator3;
+
+template<typename Series, int degree, int dimensions, std::size_t... indices>
+struct SeriesGenerator3<Series,
+                        degree,
+                        dimensions,
+                        std::index_sequence<indices...>> {
+  template<int index>
+  static typename Series::Polynomials Unit(Instant const& origin) {
+    static constexpr int d = index % dimensions;
+    static constexpr int parity = (index / dimensions) % 2;
+    static constexpr int n = index / (2 * dimensions);
+    static typename Series::PeriodicPolynomial const zero{{}, origin};
+    if constexpr (parity == 0) {
+      return {/*sin=*/zero,
+              /*cos=*/PolynomialGenerator<typename Series::PeriodicPolynomial,
+                                          dimensions>::Unit<index / 2>(origin)};
+    } else {
+      return {/*sin=*/PolynomialGenerator<typename Series::PeriodicPolynomial,
+                                          dimensions>::Unit<index / 2>(origin),
+              /*cos=*/zero};
+    }
+  }
+
+  static std::array<Series, sizeof...(indices)> Make(AngularFrequency const& ω,
+                                                     Instant const& origin) {
+    static
+        typename Series::AperiodicPolynomial const aperiodic_zero{{}, origin};
+    return {Series(aperiodic_zero, {{ω, Unit<indices>(origin)}})...};
+  }
+};
+
+
+
 template<typename Series, int degree>
 auto PoissonSeriesBasisGenerator<Series, degree>::Basis(Instant const& origin)
     -> std::array<Series, dimension * (degree + 1)> {
@@ -165,43 +203,7 @@ template<typename Series, int degree>
 auto PoissonSeriesBasisGenerator<Series, degree>::Basis(
     AngularFrequency const& ω,
     Instant const& origin) -> std::array<Series, 2 * dimension * (degree + 1)> {
-  //// This has the elements {Sin(ωt), t Sin(ωt), t² Sin(ωt), ..., Cos(ωt), ...}
-  //// in the scalar case and {x Sin(ωt), y Sin(ωt), z Sin(ωt), x t Sin(ωt), ...}
-  //// in the vector case.  This is not the order we want (we want lower-degree
-  //// polynomials first) so we'll need to reorder the terms.
-  //std::array<Series, 2 * dimension * (degree + 1)> all_series = {
-  //    SeriesGenerator<Series, indices / dimension, indices % dimension>::Sin(
-  //        ω, origin)...,
-  //    SeriesGenerator<Series, indices / dimension, indices % dimension>::Cos(
-  //        ω, origin)...};
-
-  //// Order all_series by repeatedly swapping its elements.
-  //if constexpr (all_series.size() > 2) {
-  //  // The index of this array is the current index of a series in all_series.
-  //  // The value is the index of the final resting place of that series in
-  //  // all_series.  The elements at indices 0 and
-  //  // 2 * dimension * (Series::degree + 1) are unused.
-  //  std::array<int, all_series.size()> permutation;
-  //  for (int i = 1; i < all_series.size() - 1; ++i) {
-  //    permutation[i] = i < dimension * (degree + 1)
-  //                         ? 2 * i
-  //                         : 2 * (i - dimension * (degree + 1)) + 1;
-  //  }
-  //  for (int i = 1; i < all_series.size() - 1;) {
-  //    // Swap the series currently at index i to its final resting place.
-  //    // Iterate until the series at index i is at its final resting place
-  //    // (i.e., after we have executed an entire cycle of the permutation).
-  //    // Then move to the next series.
-  //    if (i == permutation[i]) {
-  //      ++i;
-  //    } else {
-  //      int const j = permutation[i];
-  //      std::swap(all_series[i], all_series[j]);
-  //      std::swap(permutation[i], permutation[j]);
-  //    }
-  //  }
-  //}
-  //return all_series;
+  return SeriesGenerator3<Series, degree, dimension>::Make(ω, origin);
 }
 
 }  // namespace internal_poisson_series_basis

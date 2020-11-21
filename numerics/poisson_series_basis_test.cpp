@@ -96,7 +96,6 @@ TEST_F(PoissonSeriesBasisTest, AperiodicVector) {
             aperiodic[11](t1));
 }
 
-#if 0
 TEST_F(PoissonSeriesBasisTest, Periodic) {
   AngularFrequency const ω = π / 6 * Radian / Second;
   auto const periodic = PoissonSeriesBasisGenerator<
@@ -207,6 +206,7 @@ TEST_F(PoissonSeriesBasisTest, Periodic) {
           Displacement<World>({0 * Metre, 0 * Metre, 4 * Metre}), 1));
 }
 
+#if 0
 TEST_F(PoissonSeriesBasisTest, ReducedDegree) {
   auto const aperiodic = PoissonSeriesBasisGenerator<
       Series3,
