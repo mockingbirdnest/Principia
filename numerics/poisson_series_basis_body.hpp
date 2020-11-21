@@ -72,20 +72,20 @@ CoefficientGenerator<Coefficient,
 }
 
 
-// In the following classes |index| and |indices...| encode the dimension, the
+// In the following classes |index| and |indices...| encode the coordinate, the
 // degree and the parity (Sin or Cos) of a series.  How this encoding is
 // performed determines the order of the series in the basis.
 
 // A helper to build unit polynomials.  |Polynomial| must be a polynomial with
-// values in a Hilbert space with |dimension| dimensions.
+// values in a |dimension|-dimensional Hilbert space.
 template<typename Polynomial, int dimension>
 struct PolynomialGenerator {
   // Returns a polynomial whose coordinate and degree are encoded in |index|.
   template<int index>
   static Polynomial UnitPolynomial(Instant const& origin);
 
-  // Returns a pair of polynomials (for Sin and Cos) whose parity, dimension and
-  // degree are encoded in |index|.
+  // Returns a pair of polynomials (for Sin and Cos) whose parity, coordinate
+  // and degree are encoded in |index|.
   template<typename Polynomials, int index>
   static Polynomials UnitPolynomials(Instant const& origin);
 };
@@ -94,17 +94,17 @@ template<typename Polynomial, int dimension>
 template<int index>
 Polynomial PolynomialGenerator<Polynomial, dimension>::UnitPolynomial(
     Instant const& origin) {
-  // Extract the dimension and the degree from |index|.  The dimension varies
-  // faster, so terms of the same degree but different dimensions are
+  // Extract the coordinate and the degree from |index|.  The coordinate varies
+  // faster, so terms of the same degree but different coordinates are
   // consecutive when this function is called from a template pack expansion.
-  static constexpr int d = index % dimension;
-  static constexpr int n = index / dimension;
+  static constexpr int coordinate = index % dimension;
+  static constexpr int degree = index / dimension;
 
   using Coefficients = typename Polynomial::Coefficients;
-  using Coefficient = std::tuple_element_t<n, Coefficients>;
+  using Coefficient = std::tuple_element_t<degree, Coefficients>;
   Coefficients coefficients;
-  std::get<n>(coefficients) =
-      CoefficientGenerator<Coefficient, dimension>::template Unit<d>();
+  std::get<degree>(coefficients) =
+      CoefficientGenerator<Coefficient, dimension>::template Unit<coordinate>();
   return Polynomial(coefficients, origin);
 }
 
@@ -112,26 +112,26 @@ template<typename Polynomial, int dimension>
 template<typename Polynomials, int index>
 static Polynomials PolynomialGenerator<Polynomial, dimension>::UnitPolynomials(
     Instant const& origin) {
-  // Extract the parity, dimension and the degree from |index|.  The dimension
+  // Extract the parity, coordinate and the degree from |index|.  The coordinate
   // varies faster, so terms of the same parity and degree but different
-  // dimensions are consecutive when this function is called from a template
+  // coordinates are consecutive when this function is called from a template
   // pack expansion.  The parity varies next, so Sin and Cos terms alternate for
   // a given degree.  Finally, the degree increases.
-  static constexpr int d = index % dimension;
+  static constexpr int coordinate = index % dimension;
   static constexpr int parity = (index / dimension) % 2;
-  static constexpr int n = index / (2 * dimension);
+  static constexpr int degree = index / (2 * dimension);
 
-  // Reencode the degree and dimension alone for generating the polynomials.
-  static constexpr int degree_and_dimension = d + dimension * n;
+  // Reencode the degree and coordinate alone for generating the polynomials.
+  static constexpr int degree_and_coordinate = coordinate + dimension * degree;
 
   static Polynomial const zero{{}, origin};
   if constexpr (parity == 0) {
     return {/*sin=*/zero,
             /*cos=*/PolynomialGenerator<Polynomial, dimension>::UnitPolynomial<
-                degree_and_dimension>(origin)};
+                degree_and_coordinate>(origin)};
   } else {
     return {/*sin=*/PolynomialGenerator<Polynomial, dimension>::UnitPolynomial<
-                degree_and_dimension>(origin),
+                degree_and_coordinate>(origin),
             /*cos=*/zero};
   }
 }
