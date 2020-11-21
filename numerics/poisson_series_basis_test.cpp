@@ -40,7 +40,7 @@ class PoissonSeriesBasisTest : public ::testing::Test {
                       Handedness::Right,
                       serialization::Frame::TEST>;
 
-  using Series1 = PoissonSeries<Temperature, 1, 1, HornerEvaluator>;
+  using Series2 = PoissonSeries<Temperature, 2, 2, HornerEvaluator>;
   using Series3 = PoissonSeries<Displacement<World>, 3, 3, HornerEvaluator>;
 
   Instant const t0_;
@@ -48,17 +48,17 @@ class PoissonSeriesBasisTest : public ::testing::Test {
 
 TEST_F(PoissonSeriesBasisTest, AperiodicScalar) {
   auto const aperiodic = PoissonSeriesBasisGenerator<
-      Series1,
-      /*degree=*/1>::Basis(t0_);
-  EXPECT_EQ(4, aperiodic.size());
+      Series2,
+      /*degree=*/2>::Basis(t0_);
+  EXPECT_EQ(3, aperiodic.size());
 
   Instant const t1 = t0_ + 2 * Second;
 
   EXPECT_EQ(1 * Kelvin, aperiodic[0](t1));
   EXPECT_EQ(2 * Kelvin, aperiodic[1](t1));
   EXPECT_EQ(4 * Kelvin, aperiodic[2](t1));
-  EXPECT_EQ(8 * Kelvin, aperiodic[3](t1));
 }
+
 TEST_F(PoissonSeriesBasisTest, AperiodicVector) {
   auto const aperiodic = PoissonSeriesBasisGenerator<
       Series3,
@@ -96,7 +96,26 @@ TEST_F(PoissonSeriesBasisTest, AperiodicVector) {
             aperiodic[11](t1));
 }
 
-TEST_F(PoissonSeriesBasisTest, Periodic) {
+TEST_F(PoissonSeriesBasisTest, PeriodicScalar) {
+  AngularFrequency const ω = π / 6 * Radian / Second;
+  auto const periodic = PoissonSeriesBasisGenerator<
+      Series2,
+      /*degree=*/2>::Basis(ω, t0_);
+  EXPECT_EQ(6, periodic.size());
+
+  Instant const t1 = t0_ + 2 * Second;
+
+  EXPECT_THAT(periodic[0](t1), AlmostEquals(Sqrt(3) / 2 * Kelvin, 0));
+  EXPECT_THAT(periodic[1](t1), AlmostEquals(0.5 * Kelvin, 1));
+
+  EXPECT_THAT(periodic[2](t1), AlmostEquals(Sqrt(3) * Kelvin, 0));
+  EXPECT_THAT(periodic[3](t1), AlmostEquals(1 * Kelvin, 1));
+
+  EXPECT_THAT(periodic[4](t1), AlmostEquals(2 * Sqrt(3) * Kelvin, 0));
+  EXPECT_THAT(periodic[5](t1), AlmostEquals(2 * Kelvin, 1));
+}
+
+TEST_F(PoissonSeriesBasisTest, PeriodicVector) {
   AngularFrequency const ω = π / 6 * Radian / Second;
   auto const periodic = PoissonSeriesBasisGenerator<
       Series3,
@@ -206,7 +225,6 @@ TEST_F(PoissonSeriesBasisTest, Periodic) {
           Displacement<World>({0 * Metre, 0 * Metre, 4 * Metre}), 1));
 }
 
-#if 0
 TEST_F(PoissonSeriesBasisTest, ReducedDegree) {
   auto const aperiodic = PoissonSeriesBasisGenerator<
       Series3,
@@ -317,7 +335,6 @@ TEST_F(PoissonSeriesBasisTest, ReducedDegree) {
       AlmostEquals(
           Displacement<World>({0 * Metre, 0 * Metre, 2 * Metre}), 1));
 }
-#endif
 
 }  // namespace numerics
 }  // namespace principia
