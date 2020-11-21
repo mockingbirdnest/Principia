@@ -84,41 +84,6 @@ Polynomial SeriesGenerator<Series, n, d>::Unit(Instant const& origin) {
   return Polynomial(coefficients, origin);
 }
 
-template<typename Coefficient,
-         int dimensions,
-         typename = std::make_index_sequence<dimensions>,
-         typename = void>
-struct UnitGenerator;
-
-template<typename Coefficient, int dimensions, std::size_t... ds>
-struct UnitGenerator<Coefficient,
-                     dimensions,
-                     std::index_sequence<ds...>,
-                     std::enable_if_t<!is_quantity_v<Coefficient>>> {
-  template<int d>
-  static Coefficient One() {
-    using Scalar = typename Hilbert<Coefficient>::NormType;
-    auto one = {(ds, Scalar{})...};
-    one[d] = si::Unit<Scalar>;
-    return one;
-  }
-
-  static std::array<Coefficient, dimensions> Make() {
-    return {One<ds>()...};
-  }
-};
-
-template<typename Coefficient, std::size_t... ds>
-struct UnitGenerator<Coefficient,
-                     1,
-                     std::index_sequence<ds...>,
-                     std::enable_if_t<is_quantity_v<Coefficient>>> {
-  std::array<Coefficient, 1> Make() {
-    return {si::Unit<Coefficient>};
-  }
-};
-
-
 
 
 template<typename Coefficient,
@@ -133,7 +98,7 @@ struct CoefficientGenerator<Coefficient,
                             std::index_sequence<ds...>,
                             std::enable_if_t<!is_quantity_v<Coefficient>>> {
   template<int d>
-  static Coefficient One() {
+  static Coefficient Unit() {
     using Scalar = typename Hilbert<Coefficient>::NormType;
     return Coefficient({(d == ds ? si::Unit<Scalar> : Scalar{})...});
   }
@@ -145,13 +110,29 @@ struct CoefficientGenerator<Coefficient,
                             std::index_sequence<ds...>,
                             std::enable_if_t<is_quantity_v<Coefficient>>> {
   template<int d>
-  static Coefficient One() {
+  static Coefficient Unit() {
     static_assert(d == 0);
     return si::Unit<Coefficient>;
   }
 };
 
 
+
+
+template<typename Polynomial, int dimensions>
+struct PolynomialGenerator {
+  template<int index>
+  static Polynomial Unit(Instant const& origin) {
+    static constexpr int d = index % dimensions;
+    static constexpr int n = index / dimensions;
+    using Coefficients = typename Polynomial::Coefficients;
+    using Coefficient = std::tuple_element_t<n, Coefficients>;
+    Coefficients coefficients;
+    std::get<n>(coefficients) =
+        CoefficientGenerator<Coefficient, dimensions>::template Unit<d>();
+    return Polynomial(coefficients, origin);
+  }
+};
 
 
 template<typename Series,
@@ -165,23 +146,10 @@ struct SeriesGenerator2<Series,
                         degree,
                         dimensions,
                         std::index_sequence<indices...>> {
-  template<int index>
-  static typename Series::AperiodicPolynomial One(Instant const& origin) {
-    static constexpr int d = index % dimensions;
-    static constexpr int n = index / dimensions;
-    using Coefficients = typename Series::AperiodicPolynomial::Coefficients;
-    using Coefficient = std::tuple_element_t<n, Coefficients>;
-    Coefficients coefficients;
-    Coefficient& coefficient = std::get<n>(coefficients);
-    coefficient =
-        CoefficientGenerator<Coefficient, dimensions>::template One<d>();
-    return typename Series::AperiodicPolynomial(coefficients, origin);
-  }
-
   static std::array<Series, sizeof...(indices)> Make(Instant const& origin) {
-    std::array<typename Series::AperiodicPolynomial, sizeof...(indices)> p = {
-      One<indices>(origin)...};
-    return {(Series(One<indices>(origin), {}))...};
+    return {(Series(PolynomialGenerator<typename Series::AperiodicPolynomial,
+                                        dimensions>::Unit<indices>(origin),
+                    {}))...};
   }
 };
 

@@ -26,6 +26,8 @@ using geometry::Instant;
 using quantities::AngularFrequency;
 using quantities::Length;
 using quantities::Sqrt;
+using quantities::Temperature;
+using quantities::si::Kelvin;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
@@ -38,12 +40,26 @@ class PoissonSeriesBasisTest : public ::testing::Test {
                       Handedness::Right,
                       serialization::Frame::TEST>;
 
+  using Series1 = PoissonSeries<Temperature, 1, 1, HornerEvaluator>;
   using Series3 = PoissonSeries<Displacement<World>, 3, 3, HornerEvaluator>;
 
   Instant const t0_;
 };
 
-TEST_F(PoissonSeriesBasisTest, Aperiodic) {
+TEST_F(PoissonSeriesBasisTest, AperiodicScalar) {
+  auto const aperiodic = PoissonSeriesBasisGenerator<
+      Series1,
+      /*degree=*/1>::Basis(t0_);
+  EXPECT_EQ(4, aperiodic.size());
+
+  Instant const t1 = t0_ + 2 * Second;
+
+  EXPECT_EQ(1 * Kelvin, aperiodic[0](t1));
+  EXPECT_EQ(2 * Kelvin, aperiodic[1](t1));
+  EXPECT_EQ(4 * Kelvin, aperiodic[2](t1));
+  EXPECT_EQ(8 * Kelvin, aperiodic[3](t1));
+}
+TEST_F(PoissonSeriesBasisTest, AperiodicVector) {
   auto const aperiodic = PoissonSeriesBasisGenerator<
       Series3,
       /*degree=*/3>::Basis(t0_);
