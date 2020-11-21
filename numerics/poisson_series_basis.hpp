@@ -17,14 +17,9 @@ using geometry::Hilbert;
 using geometry::Instant;
 using quantities::AngularFrequency;
 
-//TODO(phl):Fix the comments
-// A helper struct for generating the Кудрявцев basis, i.e., functions of the
-// form tⁿ sin ω t and tⁿ cos ω t properly ordered.  |dimension| is the number
-// of multivector dimensions to produce.  |degree| is the maximum degree of tⁿ.
-
-// In this template, the indices encode the degree and the dimension of the
-// basis term so that, in the terminology of SeriesGenerator, n (the degree) is
-// indices / dimension and d (the dimension index) is indices % dimension.
+// A generator for the Кудрявцев basis, i.e., functions of the
+// form tⁿ sin ω t and tⁿ cos ω t properly ordered.  |degree| is the maximum
+// degree of tⁿ.
 template<typename Series, int degree>
 class PoissonSeriesBasisGenerator {
   using Value = std::invoke_result_t<Series, Instant>;

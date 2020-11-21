@@ -16,75 +16,6 @@ using geometry::Hilbert;
 using quantities::is_quantity_v;
 namespace si = quantities::si;
 
-// A helper struct for generating the Poisson series tⁿ sin ω t and tⁿ cos ω t.
-// d is either 0 (for a 1-dimensional value type) or 0, 1, 2 (for a
-// 3-dimensional value type).
-template<typename Series, int n, int d>
-struct SeriesGenerator {
-  // The series tⁿ.
-  static Series Aperiodic(Instant const& origin);
-  // The series tⁿ sin ω t.
-  static Series Sin(AngularFrequency const& ω, Instant const& origin);
-  // The series tⁿ cos ω t.
-  static Series Cos(AngularFrequency const& ω, Instant const& origin);
-
- private:
-  // The polynomial tⁿ.
-  template<typename Polynomial>
-  static Polynomial Unit(Instant const& origin);
-};
-
-template<typename Series, int n, int d>
-Series SeriesGenerator<Series, n, d>::Aperiodic(Instant const& origin) {
-  return Series(Unit<typename Series::AperiodicPolynomial>(origin), {});
-}
-
-template<typename Series, int n, int d>
-Series SeriesGenerator<Series, n, d>::Sin(AngularFrequency const& ω,
-                                          Instant const& origin) {
-  typename Series::AperiodicPolynomial const aperiodic_zero{{}, origin};
-  typename Series::PeriodicPolynomial const periodic_zero{{}, origin};
-  return Series(aperiodic_zero,
-                {{ω,
-                  {/*sin=*/Unit<typename Series::PeriodicPolynomial>(origin),
-                   /*cos=*/periodic_zero}}});
-}
-
-template<typename Series, int n, int d>
-Series SeriesGenerator<Series, n, d>::Cos(AngularFrequency const& ω,
-                                          Instant const& origin) {
-  typename Series::AperiodicPolynomial const aperiodic_zero{{}, origin};
-  typename Series::PeriodicPolynomial const periodic_zero{{}, origin};
-  return Series(
-      aperiodic_zero,
-      {{ω,
-        {/*sin=*/periodic_zero,
-         /*cos=*/Unit<typename Series::PeriodicPolynomial>(origin)}}});
-}
-
-template<typename Series, int n, int d>
-template<typename Polynomial>
-Polynomial SeriesGenerator<Series, n, d>::Unit(Instant const& origin) {
-  typename Polynomial::Coefficients coefficients;
-  using Coefficient =
-      std::tuple_element_t<n, typename Polynomial::Coefficients>;
-  Coefficient& coefficient = std::get<n>(coefficients);
-  if constexpr (is_quantity_v<Coefficient>) {
-    coefficient = si::Unit<Coefficient>;
-  } else {
-    using Scalar = typename Hilbert<Coefficient>::NormType;
-    if constexpr (d == 0) {
-      coefficient = Coefficient({si::Unit<Scalar>, Scalar{}, Scalar{}});
-    } else if constexpr (d == 1) {
-      coefficient = Coefficient({Scalar{}, si::Unit<Scalar>, Scalar{}});
-    } else if constexpr (d == 2) {
-      coefficient = Coefficient({Scalar{}, Scalar{}, si::Unit<Scalar>});
-    }
-  }
-  return Polynomial(coefficients, origin);
-}
-
-
 
 // A helper to build unit quantities or multivector.  |Coefficient| must be a
 // member of a Hilbert space with |dimension| dimensions.
@@ -190,14 +121,17 @@ static Polynomials PolynomialGenerator<Polynomial, dimension>::UnitPolynomials(
   static constexpr int parity = (index / dimension) % 2;
   static constexpr int n = index / (2 * dimension);
 
+  // Reencode the degree and dimension alone for generating the polynomials.
+  static constexpr int degree_and_dimension = d + dimension * n;
+
   static Polynomial const zero{{}, origin};
   if constexpr (parity == 0) {
     return {/*sin=*/zero,
             /*cos=*/PolynomialGenerator<Polynomial, dimension>::UnitPolynomial<
-                index / 2>(origin)};
+                degree_and_dimension>(origin)};
   } else {
     return {/*sin=*/PolynomialGenerator<Polynomial, dimension>::UnitPolynomial<
-                index / 2>(origin),
+                degree_and_dimension>(origin),
             /*cos=*/zero};
   }
 }
