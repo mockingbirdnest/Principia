@@ -218,7 +218,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5175.
+  extensions 5000 to 5999;  // Last used: 5178.
 }
 
 message AdvanceTime {
@@ -708,7 +708,7 @@ message FlightPlanCreate {
 
 message FlightPlanDecrementCoastRevolutions {
   extend Method {
-    optional FlightPlanDecrementCoastRevolutions extension = 5177;
+    optional FlightPlanDecrementCoastRevolutions extension = 5178;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
@@ -719,6 +719,7 @@ message FlightPlanDecrementCoastRevolutions {
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -786,7 +787,7 @@ message FlightPlanGetActualFinalTime {
 
 message FlightPlanGetCoastAnalysis {
   extend Method {
-    optional FlightPlanGetCoastAnalysis extension = 5175;
+    optional FlightPlanGetCoastAnalysis extension = 5176;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
@@ -886,7 +887,7 @@ message FlightPlanGetManoeuvreFrenetTrihedron {
 
 message FlightPlanIncrementCoastRevolutions {
   extend Method {
-    optional FlightPlanIncrementCoastRevolutions extension = 5176;
+    optional FlightPlanIncrementCoastRevolutions extension = 5177;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
@@ -897,6 +898,7 @@ message FlightPlanIncrementCoastRevolutions {
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Return return = 3;
