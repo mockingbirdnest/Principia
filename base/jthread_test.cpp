@@ -8,23 +8,21 @@ namespace principia {
 namespace base {
 
 TEST(JThreadTest, StopOnDestruction) {
-  auto f = [](stop_token st, int* const value, bool* const observed_stop) {
+  auto f = [](stop_token st, int value, bool* const observed_stop) {
     while (!st.stop_requested()) {
-      std::cout << ++(*value) << ' ' << std::flush;
+      std::cout << ++value << ' ' << std::flush;
       absl::SleepFor(absl::Milliseconds(10));
     }
     std::cout << std::endl;
     *observed_stop = true;
   };
 
-  int i = 5;
   bool observed_stop = false;
   {
-    jthread thread(f, &i, &observed_stop);
+    jthread thread(f, 5, &observed_stop);
     absl::SleepFor(absl::Milliseconds(100));
   }
   EXPECT_TRUE(observed_stop);
-  EXPECT_GT(i, 14);  // May flake.
 }
 
 TEST(JThreadTest, RequestStop) {
@@ -117,6 +115,32 @@ TEST(JThreadTest, StopCallback) {
       });
   EXPECT_TRUE(callback_after_stop_executed);
 }
+
+TEST(JThreadTest, ThisJThread) {
+  bool observed_stop = false;
+
+  auto sleepy_worker = this_jthread::Make(
+      [](stop_token /*unused*/, bool* const observed_stop) {
+        for (int i = 0; i < 10; i++) {
+          absl::SleepFor(absl::Milliseconds(10));
+          if (this_jthread::get_stop_token().stop_requested()) {
+            std::cout << "Sleepy worker is requested to stop\n";
+            *observed_stop = true;
+            return;
+          }
+          std::cout << "Sleepy worker goes back to sleep\n";
+        }
+      },
+      &observed_stop);
+
+  absl::SleepFor(absl::Milliseconds(30));
+  std::cout << "Requesting stop of sleepy worker\n";
+  sleepy_worker.request_stop();
+  sleepy_worker.join();
+  EXPECT_TRUE(observed_stop);
+}
+
+
 
 }  // namespace base
 }  // namespace principia

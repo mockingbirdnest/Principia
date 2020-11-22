@@ -63,6 +63,8 @@ inline void StopState::Unregister(not_null<stop_callback*> const callback) {
   callbacks_.erase(callback);
 }
 
+inline stop_token::stop_token() : stop_state_(nullptr) {}
+
 inline bool stop_token::stop_requested() const {
   return stop_state_->stop_requested();
 }
@@ -137,6 +139,23 @@ inline stop_source jthread::get_stop_source() const {
 inline stop_token jthread::get_stop_token() const {
   return stop_token(stop_state_.get());
 }
+
+template<typename Function, typename... Args>
+jthread this_jthread::Make(Function&& f, Args&&... args) {
+  return jthread(
+      [f](stop_token const& st, Args&&... args) {
+        // This assignment happens on the thread of the jthread.
+        stop_token_ = st;
+        f(st, args...);
+      },
+      args...);
+}
+
+stop_token this_jthread::get_stop_token() {
+  return stop_token_;
+}
+
+thread_local stop_token this_jthread::stop_token_;
 
 }  // namespace internal_jthread
 }  // namespace base
