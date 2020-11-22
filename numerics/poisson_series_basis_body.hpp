@@ -110,7 +110,7 @@ Polynomial PolynomialGenerator<Polynomial, dimension>::UnitPolynomial(
 
 template<typename Polynomial, int dimension>
 template<typename Polynomials, int index>
-static Polynomials PolynomialGenerator<Polynomial, dimension>::UnitPolynomials(
+Polynomials PolynomialGenerator<Polynomial, dimension>::UnitPolynomials(
     Instant const& origin) {
   // Extract the parity, coordinate and the degree from |index|.  The coordinate
   // varies faster, so terms of the same parity and degree but different
@@ -158,10 +158,10 @@ std::array<Series, sizeof...(indices)> AperiodicSeriesGenerator<
     Series,
     degree, dimension,
     std::index_sequence<indices...>>::BasisElements(Instant const& origin) {
-  return {
-      (Series(PolynomialGenerator<typename Series::AperiodicPolynomial,
-                                  dimension>::UnitPolynomial<indices>(origin),
-              {}))...};
+  return {(Series(
+      PolynomialGenerator<typename Series::AperiodicPolynomial,
+                          dimension>::template UnitPolynomial<indices>(origin),
+      {}))...};
 }
 
 
