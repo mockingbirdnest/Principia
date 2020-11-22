@@ -14,18 +14,18 @@ class StopState {
 
   bool stop_requested() const;
 
-  void Register(stop_callback* callback);
-  void Unregister(stop_callback* callback);
+  void Register(not_null<stop_callback*> callback);
+  void Unregister(not_null<stop_callback*> callback);
 
  private:
   mutable absl::Mutex lock_;
   bool stop_requested_ GUARDED_BY(lock_) = false;
-  std::set<stop_callback*> callbacks_ GUARDED_BY(lock_);
+  std::set<not_null<stop_callback*>> callbacks_ GUARDED_BY(lock_);
 };
 
 bool StopState::request_stop() {
   // NOTE(phl): If performance matters here we could do double-locking.
-  std::set<stop_callback*> callbacks;
+  std::set<not_null<stop_callback*>> callbacks;
   {
     absl::MutexLock l(&lock_);
     if (stop_requested_) {
@@ -35,7 +35,7 @@ bool StopState::request_stop() {
       callbacks.swap(callbacks_);
     }
   }
-  for (auto* const callback : callbacks_) {
+  for (auto const callback : callbacks_) {
     callback->Run();
   }
   return true;
@@ -46,12 +46,12 @@ bool StopState::stop_requested() const {
   return stop_requested_;
 }
 
-void StopState::Register(stop_callback* const callback) {
+void StopState::Register(not_null<stop_callback*> const callback) {
   absl::MutexLock l(&lock_);
   callbacks_.insert(callback);
 }
 
-void StopState::Unregister(stop_callback* const callback) {
+void StopState::Unregister(not_null<stop_callback*> const callback) {
   absl::MutexLock l(&lock_);
   callbacks_.erase(callback);
 }
