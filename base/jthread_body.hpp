@@ -1,5 +1,7 @@
 #pragma once
 
+#include <set>
+
 #include "base/jthread.hpp"
 #include "base/macros.hpp"
 
