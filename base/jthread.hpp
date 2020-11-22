@@ -1,17 +1,21 @@
 #pragma once
 
 #include <functional>
+#include <memory>
+#include <set>
 #include <thread>
 
 #include "absl/synchronization/mutex.h"
+#include "base/not_null.hpp"
 
 namespace principia {
 namespace base {
+namespace internal_jthread {
 
 // A minimal implementation of the C++20 jthread library, intended to be
 // compatible.
 
-class stop_source;
+class StopState;
 
 // Provides the means to check if a stop request has been made or can be made,
 // for its associated stop_source object.
@@ -21,12 +25,13 @@ class stop_token {
   bool stop_requested() const;
 
  private:
-  explicit stop_token(stop_source* ss);
+  explicit stop_token(not_null<StopState*> stop_state);
 
-  stop_source& get_stop_source() const;
+  StopState& get_stop_state() const;
 
-  stop_source* const ss_;
+  not_null<StopState*> const stop_state_;
 
+  friend class jthread;
   friend class stop_callback;
   friend class stop_source;
 };
@@ -37,8 +42,6 @@ class stop_token {
 // https://en.cppreference.com/w/cpp/thread/stop_source
 class stop_source {
  public:
-  stop_source();
-
   bool request_stop();
 
   bool stop_requested() const;
@@ -46,15 +49,11 @@ class stop_source {
   stop_token get_token() const;
 
  private:
-  using Callback = std::function<void()>;
+  explicit stop_source(not_null<StopState*> stop_state);
 
-  void Register(Callback callback);
+  not_null<StopState*> const stop_state_;
 
-  absl::Mutex lock_;
-  bool stopped_ = false;
-  std::vector<Callback> callbacks_;
-
-  friend class stop_callback;
+  friend class jthread;
 };
 
 // An RAII object type that registers a callback function for an associated
@@ -65,6 +64,13 @@ class stop_callback {
  public:
   explicit stop_callback(stop_token const& st, std::function<void()> callback);
   ~stop_callback();
+
+ private:
+  void Run() const;
+
+  std::function<void()> const callback_;
+
+  friend class StopState;
 };
 
 // A single thread of execution which and can be cancelled/stopped in certain
@@ -72,10 +78,10 @@ class stop_callback {
 // https://en.cppreference.com/w/cpp/thread/jthread
 class jthread {
  public:
-  jthread();
+  jthread() = default;
 
   template<typename... Args>
-  explicit jthread(std::function<void(stop_token const&, Args...)>,
+  explicit jthread(std::function<void(stop_token const&, Args...)> f,
                    Args&&... args);
 
   void join();
@@ -89,9 +95,16 @@ class jthread {
   stop_token get_stop_token() const;
 
  private:
+  std::unique_ptr<StopState> stop_state_;
   std::thread thread_;
-  stop_source stop_source_;
 };
+
+}  // namespace internal_jthread
+
+using internal_jthread::jthread;
+using internal_jthread::stop_callback;
+using internal_jthread::stop_source;
+using internal_jthread::stop_token;
 
 }  // namespace base
 }  // namespace principia
