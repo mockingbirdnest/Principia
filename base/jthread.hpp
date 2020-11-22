@@ -97,6 +97,7 @@ class jthread {
  private:
   std::unique_ptr<StopState> stop_state_;
   std::thread thread_;
+  stop_source stop_source_;
 };
 
 }  // namespace internal_jthread
