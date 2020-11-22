@@ -123,9 +123,7 @@ IncrementalProjection(Function const& function,
         PoissonSeriesBasisGenerator<Series,
                                     aperiodic_degree>::Basis(t0);
     auto const ω_basis_subspaces =
-        PoissonSeriesBasisGenerator<Series,
-                                    Hilbert<Value>::dimension,
-                                    aperiodic_degree>::Subspaces(t0);
+        PoissonSeriesBasisGenerator<Series, aperiodic_degree>::Subspaces(t0);
     basis_size = std::tuple_size_v<decltype(ω_basis)>;
     std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
     std::move(ω_basis_subspaces.begin(),
@@ -136,9 +134,8 @@ IncrementalProjection(Function const& function,
         PoissonSeriesBasisGenerator<Series,
                                     periodic_degree>::Basis(ω.value(), t0);
     auto const ω_basis_subspaces =
-        PoissonSeriesBasisGenerator<Series,
-                                    Hilbert<Value>::dimension,
-                                    periodic_degree>::Subspaces(ω.value(), t0);
+        PoissonSeriesBasisGenerator<Series, periodic_degree>::Subspaces(
+            ω.value(), t0);
     basis_size = std::tuple_size_v<decltype(ω_basis)>;
     std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
     std::move(ω_basis_subspaces.begin(),
@@ -193,9 +190,7 @@ IncrementalProjection(Function const& function,
           PoissonSeriesBasisGenerator<Series,
                                       aperiodic_degree>::Basis(t0);
       auto const ω_basis_subspaces =
-          PoissonSeriesBasisGenerator<Series,
-                                      Hilbert<Value>::dimension,
-                                      aperiodic_degree>::Subspaces(t0);
+          PoissonSeriesBasisGenerator<Series, aperiodic_degree>::Subspaces(t0);
       ω_basis_size = std::tuple_size_v<decltype(ω_basis)>;
       std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
       std::move(ω_basis_subspaces.begin(),
@@ -206,10 +201,8 @@ IncrementalProjection(Function const& function,
           PoissonSeriesBasisGenerator<Series,
                                       periodic_degree>::Basis(ω.value(), t0);
       auto const ω_basis_subspaces =
-          PoissonSeriesBasisGenerator<Series,
-                                      Hilbert<Value>::dimension,
-                                      periodic_degree>::Subspaces(ω.value(),
-                                                                  t0);
+          PoissonSeriesBasisGenerator<Series, periodic_degree>::Subspaces(
+              ω.value(), t0);
       ω_basis_size = std::tuple_size_v<decltype(ω_basis)>;
       std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
       std::move(ω_basis_subspaces.begin(),

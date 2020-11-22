@@ -159,6 +159,8 @@ struct AperiodicSeriesGenerator<Series,
                                 std::index_sequence<indices...>> {
   static std::array<Series, sizeof...(indices)> BasisElements(
       Instant const& origin);
+  static std::array<PoissonSeriesSubspace, sizeof...(indices)> Subspaces(
+      Instant const& origin);
 };
 
 template<typename Series, int degree, int dimension, std::size_t... indices>
@@ -170,6 +172,20 @@ std::array<Series, sizeof...(indices)> AperiodicSeriesGenerator<
       (Series(PolynomialGenerator<typename Series::AperiodicPolynomial,
                                   dimension>::UnitPolynomial<indices>(origin),
               {}))...};
+}
+
+template<typename Series, int degree, int dimension, std::size_t... indices>
+std::array<PoissonSeriesSubspace, sizeof...(indices)> AperiodicSeriesGenerator<
+    Series,
+    degree,
+    dimension,
+    std::index_sequence<indices...>>::Subspaces(Instant const& origin) {
+  return {PoissonSeriesSubspace{
+      static_cast<PoissonSeriesSubspace::Coordinate>(indices % dimension),
+      // The degree of the ith polynomial is i / dimension, so its parity is
+      // (i / dimension) % 2.
+      static_cast<PoissonSeriesSubspace::Parity>((indices / dimension) %
+                                                 2)}...};
 }
 
 
@@ -186,6 +202,9 @@ struct PeriodicSeriesGenerator<Series,
                         degree, dimension,
                         std::index_sequence<indices...>> {
   static std::array<Series, sizeof...(indices)> BasisElements(
+      AngularFrequency const& ω,
+      Instant const& origin);
+  static std::array<PoissonSeriesSubspace, sizeof...(indices)> Subspaces(
       AngularFrequency const& ω,
       Instant const& origin);
 };
@@ -205,6 +224,24 @@ std::array<Series, sizeof...(indices)> PeriodicSeriesGenerator<
                 origin)}})...};
 }
 
+template<typename Series, int degree, int dimension, std::size_t... indices>
+std::array<PoissonSeriesSubspace, sizeof...(indices)> PeriodicSeriesGenerator<
+    Series,
+    degree,
+    dimension,
+    std::index_sequence<indices...>>::Subspaces(AngularFrequency const& ω,
+                                                Instant const& origin) {
+  return {PoissonSeriesSubspace{
+      static_cast<PoissonSeriesSubspace::Coordinate>(indices % dimension),
+      // The parity of the trigonometric factors of the ith basis element is
+      // (i / dimension) % 2; the degrees its polynomial factor is
+      // i / (2 * dimension), so that the overall parity of that basis element is
+      // (i / dimension + i / (2 * dimension)) % 2, which simplifies to
+      // (3 * i / (2 * dimension)) % 2.
+      static_cast<PoissonSeriesSubspace::Parity>(
+          (3 * indices / (2 * dimension)) % 2)}...};
+}
+
 
 template<typename Series, int degree>
 auto PoissonSeriesBasisGenerator<Series, degree>::Basis(Instant const& origin)
@@ -213,21 +250,11 @@ auto PoissonSeriesBasisGenerator<Series, degree>::Basis(Instant const& origin)
              BasisElements(origin);
 }
 
-template<typename Series,
-         int dimension,
-         int degree,
-         std::size_t... indices,
-         std::size_t... periodic_indices>
-inline std::array<PoissonSeriesSubspace, dimension*(degree + 1)>
-PoissonSeriesBasisGenerator<Series,
-                            dimension,
-                            degree,
-                            std::index_sequence<indices...>,
-                            std::index_sequence<periodic_indices...>>::
-    Subspaces(Instant const& origin) {
-  return {PoissonSeriesSubspace{
-      static_cast<PoissonSeriesSubspace::Coordinate>(indices % dimension),
-      static_cast<PoissonSeriesSubspace::Parity>(indices / dimension)}...};
+template<typename Series, int degree>
+inline auto PoissonSeriesBasisGenerator<Series, degree>::Subspaces(
+    Instant const& origin)
+    -> std::array<PoissonSeriesSubspace, dimension * (degree + 1)> {
+  return AperiodicSeriesGenerator<Series, degree, dimension>::Subspaces(origin);
 }
 
 template<typename Series, int degree>
@@ -238,23 +265,14 @@ auto PoissonSeriesBasisGenerator<Series, degree>::Basis(
              BasisElements(ω, origin);
 }
 
-template<typename Series,
-         int dimension,
-         int degree,
-         std::size_t... indices,
-         std::size_t... periodic_indices>
-inline std::array<PoissonSeriesSubspace, 2 * dimension*(degree + 1)>
-PoissonSeriesBasisGenerator<Series,
-                            dimension,
-                            degree,
-                            std::index_sequence<indices...>,
-                            std::index_sequence<periodic_indices...>>::
-    Subspaces(AngularFrequency const& ω, Instant const& origin) {
-  return {PoissonSeriesSubspace{
-      static_cast<PoissonSeriesSubspace::Coordinate>((periodic_indices / 2) %
-                                                     dimension),
-      static_cast<PoissonSeriesSubspace::Parity>(
-          (1 + periodic_indices + (periodic_indices / 2) / dimension) % 2)}...};
+template<typename Series, int degree>
+inline auto
+PoissonSeriesBasisGenerator<Series, degree>::Subspaces(
+    AngularFrequency const& ω,
+    Instant const& origin)
+    -> std::array<PoissonSeriesSubspace, 2 * dimension * (degree + 1)> {
+  return PeriodicSeriesGenerator<Series, degree, dimension>::Subspaces(ω,
+                                                                       origin);
 }
 
 }  // namespace internal_poisson_series_basis

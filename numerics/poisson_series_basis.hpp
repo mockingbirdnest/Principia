@@ -46,8 +46,10 @@ class PoissonSeriesSubspace {
   // The parity of the Poisson series is defined with respect to its origin.
   Parity parity_;
 
-  template<typename Series, int dimension, int degree, typename, typename>
-  friend struct PoissonSeriesBasisGenerator;
+  template<typename Series, int degree, int dimension, typename>
+  friend struct AperiodicSeriesGenerator;
+  template<typename Series, int degree, int dimension, typename>
+  friend struct PeriodicSeriesGenerator;
 };
 
 // A generator for the Кудрявцев basis, i.e., functions of the
