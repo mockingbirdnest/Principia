@@ -194,6 +194,9 @@
     <ClInclude Include="bits_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="jthread.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
