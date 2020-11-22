@@ -8,6 +8,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
 #include "geometry/hilbert.hpp"
@@ -152,12 +153,12 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   friend operator-(PolynomialInMonomialBasis<V, A, r, E> const& right);
   template<typename V, typename A, int l, int r,
            template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<V, A, std::max(l, r), E>
+  constexpr PolynomialInMonomialBasis<V, A, PRINCIPIA_MAX(l, r), E>
   friend operator+(PolynomialInMonomialBasis<V, A, l, E> const& left,
                    PolynomialInMonomialBasis<V, A, r, E> const& right);
   template<typename V, typename A, int l, int r,
            template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<V, A, std::max(l, r), E>
+  constexpr PolynomialInMonomialBasis<V, A, PRINCIPIA_MAX(l, r), E>
   friend operator-(PolynomialInMonomialBasis<V, A, l, E> const& left,
                    PolynomialInMonomialBasis<V, A, r, E> const& right);
   template<typename S,
@@ -276,12 +277,12 @@ class PolynomialInMonomialBasis<Value_, Point<Argument_>, degree_, Evaluator>
   friend operator-(PolynomialInMonomialBasis<V, A, r, E> const& right);
   template<typename V, typename A, int l, int r,
            template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<V, A, std::max(l, r), E>
+  constexpr PolynomialInMonomialBasis<V, A, PRINCIPIA_MAX(l, r), E>
   friend operator+(PolynomialInMonomialBasis<V, A, l, E> const& left,
                    PolynomialInMonomialBasis<V, A, r, E> const& right);
   template<typename V, typename A, int l, int r,
            template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<V, A, std::max(l, r), E>
+  constexpr PolynomialInMonomialBasis<V, A, PRINCIPIA_MAX(l, r), E>
   friend operator-(PolynomialInMonomialBasis<V, A, l, E> const& left,
                    PolynomialInMonomialBasis<V, A, r, E> const& right);
   template<typename S,
@@ -347,7 +348,8 @@ operator-(PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
 template<typename Value, typename Argument, int ldegree_, int rdegree_,
          template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Value, Argument,
-                                    std::max(ldegree_, rdegree_), Evaluator>
+                                    PRINCIPIA_MAX(ldegree_, rdegree_),
+                                    Evaluator>
 operator+(
     PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator> const& left,
     PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
@@ -356,7 +358,8 @@ operator+(
 template<typename Value, typename Argument, int ldegree_, int rdegree_,
          template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Value, Argument,
-                                    std::max(ldegree_, rdegree_), Evaluator>
+                                    PRINCIPIA_MAX(ldegree_, rdegree_),
+                                    Evaluator>
 operator-(
     PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator> const& left,
     PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&

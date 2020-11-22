@@ -509,9 +509,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
           t, {NonRotatingPileUp::origin, NonRotatingPileUp::unmoving});
 
   RigidMotion<ApparentPileUp, NonRotatingPileUp> const rotational_correction =
-      conserve_angular_momentum
-          ? actual_pile_up_motion * apparent_pile_up_motion.Inverse()
-          : RigidMotion<ApparentPileUp, NonRotatingPileUp>::Identity();
+      actual_pile_up_motion * apparent_pile_up_motion.Inverse();
   RigidMotion<Apparent, NonRotatingPileUp> const correction =
       rotational_correction * apparent_system.LinearMotion().Inverse();
 
@@ -531,43 +529,6 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
             actual_rigid_motion.rigid_transformation());
   }
   apparent_part_rigid_motion_.clear();
-
-#if 0
-  std::stringstream s;
-  Angle const α =
-      rotational_correction.orthogonal_map().AsRotation().RotationAngle();
-  AngularVelocity<PileUpPrincipalAxes> const ω_apparent =
-      apparent_pile_up_motion.angular_velocity_of_to_frame();
-  AngularVelocity<PileUpPrincipalAxes> const ω_actual =
-      actual_pile_up_motion.angular_velocity_of_to_frame();
-  constexpr AngularFrequency rpm = 2 * π * Radian / quantities::si::Minute;
-  s << "|Lap|: " << apparent_angular_momentum.Norm() << "\n"
-    << "|Lac|: " << angular_momentum_.Norm() << "\n"
-    << "|Lap-Lac|: "
-    << (angular_momentum_ - Identity<ApparentPileUp, NonRotatingPileUp>()(
-                                apparent_angular_momentum))
-           .Norm()
-    << "\n"
-    << "|Lap|-|Lac|: "
-    << angular_momentum_.Norm() - apparent_angular_momentum.Norm() << "\n"
-    << u8"∡Lap, Lac: "
-    << geometry::AngleBetween(angular_momentum_,
-                              Identity<ApparentPileUp, NonRotatingPileUp>()(
-                                  apparent_angular_momentum)) /
-           quantities::si::Degree
-    << u8"°\n"
-    << u8"α: " << α / quantities::si::Degree << u8"°\n"
-    << u8"|ωap|: " << ω_apparent.Norm() / rpm << " rpm\n"
-    << u8"|ωac|: " << ω_actual.Norm() / rpm << " rpm\n"
-    << u8"|ωac|-|ωap|: " << (ω_actual.Norm() - ω_apparent.Norm()) / rpm
-    << " rpm\n"
-    << u8"∡ωac, ωap: "
-    << geometry::AngleBetween(ω_actual, ω_apparent) / quantities::si::Degree
-    << u8"°\n"
-    << "reference part: " << reference_part->ShortDebugString() << "\n"
-    << u8"|ωref|: " << reference_part_proper_ω / rpm << " rpm\n";
-  trace = s.str();
-#endif
 }
 
 Status PileUp::AdvanceTime(Instant const& t) {
@@ -691,8 +652,6 @@ PileUpFuture::PileUpFuture(not_null<PileUp const*> const pile_up,
                            std::future<Status> future)
     : pile_up(pile_up),
       future(std::move(future)) {}
-
-bool PileUp::conserve_angular_momentum = true;
 
 }  // namespace internal_pile_up
 }  // namespace ksp_plugin

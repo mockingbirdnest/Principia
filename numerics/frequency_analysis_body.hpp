@@ -121,7 +121,6 @@ IncrementalProjection(Function const& function,
   if (ω.value() == AngularFrequency{}) {
     auto const ω_basis =
         PoissonSeriesBasisGenerator<Series,
-                                    Hilbert<Value>::dimension,
                                     aperiodic_degree>::Basis(t0);
     auto const ω_basis_subspaces =
         PoissonSeriesBasisGenerator<Series,
@@ -135,7 +134,6 @@ IncrementalProjection(Function const& function,
   } else {
     auto const ω_basis =
         PoissonSeriesBasisGenerator<Series,
-                                    Hilbert<Value>::dimension,
                                     periodic_degree>::Basis(ω.value(), t0);
     auto const ω_basis_subspaces =
         PoissonSeriesBasisGenerator<Series,
@@ -193,7 +191,6 @@ IncrementalProjection(Function const& function,
     if (ω.value() == AngularFrequency{}) {
       auto const ω_basis =
           PoissonSeriesBasisGenerator<Series,
-                                      Hilbert<Value>::dimension,
                                       aperiodic_degree>::Basis(t0);
       auto const ω_basis_subspaces =
           PoissonSeriesBasisGenerator<Series,
@@ -207,7 +204,6 @@ IncrementalProjection(Function const& function,
     } else {
       auto const ω_basis =
           PoissonSeriesBasisGenerator<Series,
-                                      Hilbert<Value>::dimension,
                                       periodic_degree>::Basis(ω.value(), t0);
       auto const ω_basis_subspaces =
           PoissonSeriesBasisGenerator<Series,

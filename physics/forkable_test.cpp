@@ -739,6 +739,24 @@ TEST_F(ForkableTest, IteratorLowerBoundSuccess) {
   EXPECT_EQ(t5_, *it.current());
 }
 
+TEST_F(ForkableTest, IteratorLowerBoundInterestingTimeline) {
+  // Test for the "interesting timeline" branch of Iterator::LowerBound.
+  trajectory_.push_back(t0_);
+
+  not_null<FakeTrajectory*> const fork =
+      trajectory_.NewFork(trajectory_.timeline_find(t0_));
+  fork->push_back(t2_);
+  not_null<FakeTrajectory*> const fork2 =
+      fork->NewFork(fork->timeline_find(t2_));
+  fork2->push_back(t3_);
+
+  auto const lower_bound_it = fork2->LowerBound(t1_);
+  auto const it1 = ++(fork2->begin());
+  EXPECT_EQ(*lower_bound_it, t2_);
+  EXPECT_EQ(*it1, t2_);
+  EXPECT_EQ(lower_bound_it, it1);
+}
+
 TEST_F(ForkableTest, FrontBack) {
   trajectory_.push_back(t1_);
   trajectory_.push_back(t2_);

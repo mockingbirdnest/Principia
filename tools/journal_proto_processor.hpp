@@ -73,6 +73,8 @@ class JournalProtoProcessor final {
 
   void ProcessField(FieldDescriptor const* descriptor);
 
+  void ProcessAddressOf(Descriptor const* descriptor);
+
   void ProcessInOut(Descriptor const* descriptor,
                     std::vector<FieldDescriptor const*>* field_descriptors);
   void ProcessReturn(Descriptor const* descriptor);
@@ -113,6 +115,13 @@ class JournalProtoProcessor final {
 
   // The fields that are part of interchange messages.
   std::set<FieldDescriptor const*> interchange_;
+
+  // For a field that has an (address_of) option, field_cxx_address_of_ has that
+  // field as a key and the field designated by the option as its value.
+  // field_cxx_address_ is the inverse map.
+  std::map<FieldDescriptor const*, FieldDescriptor const*>
+      field_cxx_address_of_;
+  std::map<FieldDescriptor const*, FieldDescriptor const*> field_cxx_address_;
 
   // For all fields, a lambda that takes the name of a local variable containing
   // data extracted (and deserialized) from the field and returns a list of
@@ -287,10 +296,12 @@ class JournalProtoProcessor final {
   std::map<Descriptor const*, std::string> cs_managed_to_native_definition_;
   std::map<Descriptor const*, std::string> cs_native_to_managed_definition_;
 
-  // The definitions of the Serialize and Deserialize functions for interchange
-  // messages.  The key is a descriptor for an interchange message.
+  // The definitions of the Serialize, Deserialize and (if needed) Insert
+  // functions for interchange messages.  The key is a descriptor for an
+  // interchange message.
   std::map<Descriptor const*, std::string> cxx_deserialize_definition_;
   std::map<Descriptor const*, std::string> cxx_serialize_definition_;
+  std::map<Descriptor const*, std::string> cxx_insert_definition_;
 
   // For interchange messages that require deserialization storage, the
   // arguments for the storage in the call to the Deserialize function.  Starts

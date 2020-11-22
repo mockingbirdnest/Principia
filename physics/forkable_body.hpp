@@ -1,10 +1,10 @@
 ﻿
 #pragma once
 
-#include <deque>
 #include <optional>
 #include <vector>
 
+#include "absl/container/inlined_vector.h"
 #include "physics/forkable.hpp"
 
 namespace principia {
@@ -15,14 +15,14 @@ template<typename Tr4jectory, typename It3rator, typename Traits>
 not_null<Tr4jectory const*>
 ForkableIterator<Tr4jectory, It3rator, Traits>::trajectory() const {
   CHECK(!ancestry_.empty());
-  return ancestry_.back();
+  return ancestry_.front();
 }
 
 template<typename Tr4jectory, typename It3rator, typename Traits>
 bool ForkableIterator<Tr4jectory, It3rator, Traits>::operator==(
     It3rator const& right) const {
   DCHECK_EQ(trajectory(), right.trajectory());
-  // The comparison of iterators is faster than the comparison of deques, so if
+  // The comparison of iterators is faster than the comparison of vectors, so if
   // this function returns false (which it does repeatedly in loops), it might
   // as well do so quickly.  There is a complication, however, because the two
   // iterators may not point to the same container, and we believe that
@@ -43,11 +43,11 @@ bool ForkableIterator<Tr4jectory, It3rator, Traits>::operator!=(
 template<typename Tr4jectory, typename It3rator, typename Traits>
 It3rator& ForkableIterator<Tr4jectory, It3rator, Traits>::operator++() {
   CHECK(!ancestry_.empty());
-  CHECK(current_ != ancestry_.front()->timeline_end());
+  CHECK(current_ != ancestry_.back()->timeline_end());
 
   // Check if there is a next child in the ancestry.
-  auto ancestry_it = ancestry_.begin();
-  if (++ancestry_it != ancestry_.end()) {
+  auto ancestry_it = ancestry_.rbegin();
+  if (++ancestry_it != ancestry_.rend()) {
     // There is a next child.  See if we reached its fork time.
     Instant const& current_time = Traits::time(current_);
     not_null<Tr4jectory const*> child = *ancestry_it;
@@ -58,8 +58,8 @@ It3rator& ForkableIterator<Tr4jectory, It3rator, Traits>::operator++() {
       // a different time or the end of the children.
       do {
         current_ = child->timeline_begin();  // May be at end.
-        ancestry_.pop_front();
-        if (++ancestry_it == ancestry_.end()) {
+        ancestry_.pop_back();
+        if (++ancestry_it == ancestry_.rend()) {
           break;
         }
         child = *ancestry_it;
@@ -81,7 +81,7 @@ template<typename Tr4jectory, typename It3rator, typename Traits>
 It3rator& ForkableIterator<Tr4jectory, It3rator, Traits>::operator--() {
   CHECK(!ancestry_.empty());
 
-  not_null<Tr4jectory const*> ancestor = ancestry_.front();
+  not_null<Tr4jectory const*> ancestor = ancestry_.back();
   if (current_ == ancestor->timeline_begin()) {
     CHECK_NOTNULL(ancestor->parent_);
     // At the beginning of the first timeline.  Push the parent in front of the
@@ -90,7 +90,7 @@ It3rator& ForkableIterator<Tr4jectory, It3rator, Traits>::operator--() {
     do {
       current_ = *ancestor->position_in_parent_timeline_;
       ancestor = ancestor->parent_;
-      ancestry_.push_front(ancestor);
+      ancestry_.push_back(ancestor);
     } while (current_ == ancestor->timeline_end() &&
              ancestor->parent_ != nullptr);
     return *that();
@@ -110,19 +110,17 @@ ForkableIterator<Tr4jectory, It3rator, Traits>::current() const {
 template<typename Tr4jectory, typename It3rator, typename Traits>
 void ForkableIterator<Tr4jectory, It3rator, Traits>::NormalizeIfEnd() {
   CHECK(!ancestry_.empty());
-  if (current_ == ancestry_.front()->timeline_end() &&
-      ancestry_.size() > 1) {
-    ancestry_.erase(ancestry_.begin(), --ancestry_.end());
-    current_ = ancestry_.front()->timeline_end();
+  if (current_ == ancestry_.back()->timeline_end() && ancestry_.size() > 1) {
+    ancestry_.erase(ancestry_.begin() + 1, ancestry_.end());
+    current_ = ancestry_.back()->timeline_end();
   }
 }
 
 template<typename Tr4jectory, typename It3rator, typename Traits>
 void ForkableIterator<Tr4jectory, It3rator, Traits>::CheckNormalizedIfEnd() {
   // Checking if the trajectory is a root is faster than obtaining the end of
-  // the front of the deque, so it should be done first.
-  CHECK(ancestry_.size() == 1 ||
-        current_ != ancestry_.front()->timeline_end());
+  // the back of the vector, so it should be done first.
+  CHECK(ancestry_.size() == 1 || current_ != ancestry_.back()->timeline_end());
 }
 
 template<typename Tr4jectory, typename It3rator, typename Traits>
@@ -187,7 +185,7 @@ template<typename Tr4jectory, typename It3rator, typename Traits>
 It3rator Forkable<Tr4jectory, It3rator, Traits>::end() const {
   not_null<Tr4jectory const*> const ancestor = that();
   It3rator iterator;
-  iterator.ancestry_.push_front(ancestor);
+  iterator.ancestry_.push_back(ancestor);
   iterator.current_ = ancestor->timeline_end();
   iterator.CheckNormalizedIfEnd();
   return iterator;
@@ -215,10 +213,10 @@ Find(Instant const& time) const {
   // Go up the ancestry chain until we find a timeline that covers |time| (that
   // is, |time| is after the first time of the timeline).  Set |current_| to
   // the location of |time|, which may be |end()|.  The ancestry has |forkable|
-  // at the back, and the object containing |current_| at the front.
+  // at the front, and the object containing |current_| at the back.
   Tr4jectory const* ancestor = that();
   do {
-    iterator.ancestry_.push_front(ancestor);
+    iterator.ancestry_.push_back(ancestor);
     if (!ancestor->timeline_empty() &&
         Traits::time(ancestor->timeline_begin()) <= time) {
       iterator.current_ = ancestor->timeline_find(time);  // May be at end.
@@ -238,16 +236,16 @@ LowerBound(Instant const& time) const {
   It3rator iterator;
   Tr4jectory const* ancestor = that();
 
-  // This queue is parallel to |iterator.ancestry_|, and each entry is an
+  // This vector is parallel to |iterator.ancestry_|, and each entry is an
   // iterator in the corresponding ancestry timeline.  Note that we use a
   // |nullopt| sentinel for the innermost timeline.
-  std::deque<std::optional<TimelineConstIterator>> fork_points;
-  fork_points.push_front(std::nullopt);
+  absl::InlinedVector<std::optional<TimelineConstIterator>, 3> fork_points;
+  fork_points.push_back(std::nullopt);
 
   // Go up the ancestry chain until we find a (nonempty) timeline that covers
   // |time| (that is, |time| is on or after the first time of the timeline).
   do {
-    iterator.ancestry_.push_front(ancestor);
+    iterator.ancestry_.push_back(ancestor);
     if (!ancestor->timeline_empty() &&
         Traits::time(ancestor->timeline_begin()) <= time) {
       // We have found a timeline that covers |time|.  Find where |time| falls
@@ -255,7 +253,7 @@ LowerBound(Instant const& time) const {
       iterator.current_ = ancestor->timeline_lower_bound(time);
 
       // Check if the returned iterator is directly usable.
-      auto const& fork_point = fork_points.front();
+      auto const& fork_point = fork_points.back();
       if (iterator.current_ == ancestor->timeline_end() ||
           (fork_point &&
            *fork_point != ancestor->timeline_end() &&
@@ -268,15 +266,15 @@ LowerBound(Instant const& time) const {
         // Check if we have a more nested fork with a point before |time|.  Go
         // down the ancestry looking for a timeline that is nonempty and not
         // forked at the same point as its parent.
-        auto ancestry_it = iterator.ancestry_.begin();
-        auto fork_points_it = fork_points.begin();
+        auto ancestry_it = iterator.ancestry_.rbegin();
+        auto fork_points_it = fork_points.rbegin();
         for (;;) {
           ++ancestry_it;
           ++fork_points_it;
-          if (ancestry_it == iterator.ancestry_.end()) {
+          if (ancestry_it == iterator.ancestry_.rend()) {
             // We didn't find an interesting fork in the ancestry, so we stop
             // here and |NormalizeIfEnd| will return a proper |End|.
-            CHECK(fork_points_it == fork_points.end());
+            CHECK(fork_points_it == fork_points.rend());
             break;
           }
           if (!(*ancestry_it)->timeline_empty() &&
@@ -285,7 +283,9 @@ LowerBound(Instant const& time) const {
             // We found an interesting timeline, i.e. one that is nonempty and
             // not forked at the fork point of its parent.  Cut the ancestry and
             // return the beginning of that timeline.
-            iterator.ancestry_.erase(iterator.ancestry_.begin(), ancestry_it);
+            iterator.ancestry_.erase(ancestry_it.base(),
+                                     iterator.ancestry_.end());
+            ancestry_it = iterator.ancestry_.rbegin();
             iterator.current_ = (*ancestry_it)->timeline_begin();
             break;
           }
@@ -293,7 +293,7 @@ LowerBound(Instant const& time) const {
       }
       break;
     }
-    fork_points.push_front(ancestor->position_in_parent_timeline_);
+    fork_points.push_back(ancestor->position_in_parent_timeline_);
     iterator.current_ = ancestor->timeline_begin();
     ancestor = ancestor->parent_;
   } while (ancestor != nullptr);
@@ -511,7 +511,7 @@ It3rator Forkable<Tr4jectory, It3rator, Traits>::Wrap(
   // at the back, and the object containing |current_| at the front.
   not_null<Tr4jectory const*> ancest0r = that();
   do {
-    iterator.ancestry_.push_front(ancest0r);
+    iterator.ancestry_.push_back(ancest0r);
     if (ancestor == ancest0r) {
       iterator.current_ = position_in_ancestor_timeline;  // May be at end.
       iterator.CheckNormalizedIfEnd();

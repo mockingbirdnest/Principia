@@ -5,10 +5,10 @@ namespace ksp_plugin_adapter {
 
 internal class MainWindow : VesselSupervisedWindowRenderer {
   // Update this section before each release.
-  private const string next_release_name_ = "Гельфанд";
-  private const int next_release_lunation_number_ = 258;
+  private const string next_release_name_ = "Гельфонд";
+  private const int next_release_lunation_number_ = 259;
   private readonly DateTimeOffset next_release_date_ =
-      new DateTimeOffset(2020, 11, 15, 05, 08, 00, TimeSpan.Zero);
+      new DateTimeOffset(2020, 12, 14, 16, 17, 00, TimeSpan.Zero);
 
   public MainWindow(PrincipiaPluginAdapter adapter,
                     FlightPlanner flight_planner,
@@ -238,33 +238,6 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
   }
 
   private void RenderKSPFeatures() {
-    if (show_2519_debugging_ui) {
-      string offsets = "";
-      if (FlightGlobals.ActiveVessel != null) {
-        foreach (var part in FlightGlobals.ActiveVessel.parts) {
-          double? offset = part.rb?.centerOfMass.magnitude;
-          if (offset != 0) {
-            offsets += $"{part.name}: {offset:F3} m; ";
-          }
-        }
-      }
-      UnityEngine.GUILayout.TextArea(
-          offsets,
-          style: Style.Multiline(UnityEngine.GUI.skin.textArea));
-      conserve_angular_momentum = UnityEngine.GUILayout.Toggle(
-          conserve_angular_momentum,
-          "Conserve angular momentum");
-      Interface.SetAngularMomentumConservation(conserve_angular_momentum);
-      string trace = null;
-      if (FlightGlobals.ActiveVessel != null &&
-          plugin.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
-        trace = plugin.VesselGetPileUpTrace(
-            FlightGlobals.ActiveVessel.id.ToString());
-      }
-      UnityEngine.GUILayout.TextArea(
-          trace ?? "No managed active vessel",
-          style : Style.Multiline(UnityEngine.GUI.skin.textArea));
-    }
     display_patched_conics = UnityEngine.GUILayout.Toggle(
         value : display_patched_conics,
         text  : "Display patched conics (do not use for flight planning!)");
@@ -516,12 +489,6 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
       field_width      : 5) {
       value = 7 * 24 * 60 * 60
   };
-
-  // These flags exist to facilitate investigation of #2519.
-  // They must not be serialized: their non-default values can lead to absurd
-  // behaviour.
-  private static bool conserve_angular_momentum = true;
-  private static readonly bool show_2519_debugging_ui = false;
 
   private static readonly double[] prediction_length_tolerances_ =
       {1e-3, 1e-2, 1e0, 1e1, 1e2, 1e3, 1e4};

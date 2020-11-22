@@ -172,12 +172,12 @@ class PoissonSeries {
   friend operator-(PoissonSeries<V, ar, pr, E> const& right);
   template<typename V, int al, int pl, int ar, int pr,
            template<typename, typename, int> class E>
-  PoissonSeries<V, std::max(al, ar), std::max(pl, pr), E>
+  PoissonSeries<V, PRINCIPIA_MAX(al, ar), PRINCIPIA_MAX(pl, pr), E>
   friend operator+(PoissonSeries<V, al, pl, E> const& left,
                    PoissonSeries<V, ar, pr, E> const& right);
   template<typename V, int al, int pl, int ar, int pr,
            template<typename, typename, int> class E>
-  PoissonSeries<V, std::max(al, ar), std::max(pl, pr), E>
+  PoissonSeries<V, PRINCIPIA_MAX(al, ar), PRINCIPIA_MAX(pl, pr), E>
   friend operator-(PoissonSeries<V, al, pl, E> const& left,
                    PoissonSeries<V, ar, pr, E> const& right);
   template<typename S, typename V, int ar, int pr,
@@ -248,8 +248,8 @@ template<typename Value,
          int aperiodic_rdegree, int periodic_rdegree,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<Value,
-              std::max(aperiodic_ldegree, aperiodic_rdegree),
-              std::max(periodic_ldegree, periodic_rdegree),
+              PRINCIPIA_MAX(aperiodic_ldegree, aperiodic_rdegree),
+              PRINCIPIA_MAX(periodic_ldegree, periodic_rdegree),
               Evaluator>
 operator+(PoissonSeries<Value,
                         aperiodic_ldegree, periodic_ldegree,
@@ -263,8 +263,8 @@ template<typename Value,
          int aperiodic_rdegree, int periodic_rdegree,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<Value,
-              std::max(aperiodic_ldegree, aperiodic_rdegree),
-              std::max(periodic_ldegree, periodic_rdegree),
+              PRINCIPIA_MAX(aperiodic_ldegree, aperiodic_rdegree),
+              PRINCIPIA_MAX(periodic_ldegree, periodic_rdegree),
               Evaluator>
 operator-(PoissonSeries<Value,
                         aperiodic_ldegree, periodic_ldegree,
@@ -316,13 +316,13 @@ template<typename LValue, typename RValue,
          int aperiodic_rdegree, int periodic_rdegree,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<Product<LValue, RValue>,
-              std::max({aperiodic_ldegree + aperiodic_rdegree,
-                        aperiodic_ldegree + periodic_rdegree,
-                        periodic_ldegree + aperiodic_rdegree,
-                        periodic_ldegree + periodic_rdegree}),
-              std::max({aperiodic_ldegree + periodic_rdegree,
-                        periodic_ldegree + aperiodic_rdegree,
-                        periodic_ldegree + periodic_rdegree}),
+              PRINCIPIA_MAX4(aperiodic_ldegree + aperiodic_rdegree,
+                             aperiodic_ldegree + periodic_rdegree,
+                             periodic_ldegree + aperiodic_rdegree,
+                             periodic_ldegree + periodic_rdegree),
+              PRINCIPIA_MAX3(aperiodic_ldegree + periodic_rdegree,
+                             periodic_ldegree + aperiodic_rdegree,
+                             periodic_ldegree + periodic_rdegree),
               Evaluator>
 operator*(PoissonSeries<LValue,
                         aperiodic_ldegree, periodic_ldegree,
@@ -338,13 +338,13 @@ template<typename LValue, typename RValue,
          int aperiodic_rdegree, int periodic_rdegree,
          template<typename, typename, int> class Evaluator>
 PoissonSeries<typename Hilbert<LValue, RValue>::InnerProductType,
-              std::max({aperiodic_ldegree + aperiodic_rdegree,
-                        aperiodic_ldegree + periodic_rdegree,
-                        periodic_ldegree + aperiodic_rdegree,
-                        periodic_ldegree + periodic_rdegree}),
-              std::max({aperiodic_ldegree + periodic_rdegree,
-                        periodic_ldegree + aperiodic_rdegree,
-                        periodic_ldegree + periodic_rdegree}),
+              PRINCIPIA_MAX4(aperiodic_ldegree + aperiodic_rdegree,
+                             aperiodic_ldegree + periodic_rdegree,
+                             periodic_ldegree + aperiodic_rdegree,
+                             periodic_ldegree + periodic_rdegree),
+              PRINCIPIA_MAX3(aperiodic_ldegree + periodic_rdegree,
+                             periodic_ldegree + aperiodic_rdegree,
+                             periodic_ldegree + periodic_rdegree),
               Evaluator>
 PointwiseInnerProduct(PoissonSeries<LValue,
                                     aperiodic_ldegree, periodic_ldegree,

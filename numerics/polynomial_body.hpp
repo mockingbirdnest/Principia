@@ -16,7 +16,6 @@
 #include "geometry/cartesian_product.hpp"
 #include "geometry/serialization.hpp"
 #include "numerics/combinatorics.hpp"
-#include "polynomial.hpp"
 
 namespace principia {
 namespace numerics {
@@ -101,6 +100,10 @@ struct PolynomialAtOrigin<Value, Argument, degree, Evaluator,
       typename Polynomial::Coefficients const& coefficients,
       Point<Argument> const& from_origin,
       Point<Argument> const& to_origin);
+
+#if PRINCIPIA_COMPILER_MSVC_HAS_CXX20
+  using PolynomialAlias = Polynomial;
+#endif
 };
 
 template<typename Value, typename Argument, int degree,
@@ -109,9 +112,15 @@ template<typename Value, typename Argument, int degree,
 auto PolynomialAtOrigin<Value, Argument, degree,
                         Evaluator,
                         std::index_sequence<indices...>>::
+#if PRINCIPIA_COMPILER_MSVC_HAS_CXX20
+MakePolynomial(typename PolynomialAlias::Coefficients const& coefficients,
+               Point<Argument> const& from_origin,
+               Point<Argument> const& to_origin) -> PolynomialAlias {
+#else
 MakePolynomial(typename Polynomial::Coefficients const& coefficients,
-                Point<Argument> const& from_origin,
-                Point<Argument> const& to_origin) -> Polynomial {
+               Point<Argument> const& from_origin,
+               Point<Argument> const& to_origin) -> Polynomial {
+#endif
   Argument const shift = to_origin - from_origin;
   std::array<typename Polynomial::Coefficients, degree + 1> const
       all_coefficients{
@@ -638,7 +647,7 @@ template<typename Value, typename Argument, int ldegree_, int rdegree_,
          template<typename, typename, int> typename Evaluator>
 FORCE_INLINE(constexpr)
 PolynomialInMonomialBasis<Value, Argument,
-                          std::max(ldegree_, rdegree_), Evaluator>
+                          PRINCIPIA_MAX(ldegree_, rdegree_), Evaluator>
 operator+(
     PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator> const& left,
     PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
@@ -660,7 +669,7 @@ template<typename Value, typename Argument, int ldegree_, int rdegree_,
          template<typename, typename, int> typename Evaluator>
 FORCE_INLINE(constexpr)
 PolynomialInMonomialBasis<Value, Argument,
-                          std::max(ldegree_, rdegree_), Evaluator>
+                          PRINCIPIA_MAX(ldegree_, rdegree_), Evaluator>
 operator-(
     PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator> const& left,
     PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
