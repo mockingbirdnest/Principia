@@ -231,15 +231,16 @@ std::array<PoissonSeriesSubspace, sizeof...(indices)> PeriodicSeriesGenerator<
     dimension,
     std::index_sequence<indices...>>::Subspaces(AngularFrequency const& ω,
                                                 Instant const& origin) {
-  return {PoissonSeriesSubspace{
-      static_cast<PoissonSeriesSubspace::Coordinate>(indices % dimension),
-      // The parity of the trigonometric factors of the ith basis element is
-      // (i / dimension) % 2; the degrees its polynomial factor is
-      // i / (2 * dimension), so that the overall parity of that basis element is
-      // (i / dimension + i / (2 * dimension)) % 2, which simplifies to
-      // (3 * i / (2 * dimension)) % 2.
-      static_cast<PoissonSeriesSubspace::Parity>(
-          (3 * indices / (2 * dimension)) % 2)}...};
+  return {
+      PoissonSeriesSubspace{
+          static_cast<PoissonSeriesSubspace::Coordinate>(indices % dimension),
+          // The parity of the trigonometric factors of the ith basis element is
+          // (i / dimension) % 2; the degrees its polynomial factor is
+          // i / (2 * dimension), so that the overall parity of that basis
+          // element is (i / dimension + i / (2 * dimension)) % 2, which
+          // simplifies to (3 * i / (2 * dimension)) % 2.
+          static_cast<PoissonSeriesSubspace::Parity>(
+              (3 * indices / (2 * dimension)) % 2)}...};
 }
 
 
