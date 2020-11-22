@@ -117,14 +117,12 @@ IncrementalProjection(Function const& function,
   if (ω.value() == AngularFrequency{}) {
     auto const ω_basis =
         PoissonSeriesBasisGenerator<Series,
-                                    Hilbert<Value>::dimension,
                                     aperiodic_degree>::Basis(t0);
     basis_size = std::tuple_size_v<decltype(ω_basis)>;
     std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
   } else {
     auto const ω_basis =
         PoissonSeriesBasisGenerator<Series,
-                                    Hilbert<Value>::dimension,
                                     periodic_degree>::Basis(ω.value(), t0);
     basis_size = std::tuple_size_v<decltype(ω_basis)>;
     std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
@@ -172,14 +170,12 @@ IncrementalProjection(Function const& function,
     if (ω.value() == AngularFrequency{}) {
       auto const ω_basis =
           PoissonSeriesBasisGenerator<Series,
-                                      Hilbert<Value>::dimension,
                                       aperiodic_degree>::Basis(t0);
       ω_basis_size = std::tuple_size_v<decltype(ω_basis)>;
       std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
     } else {
       auto const ω_basis =
           PoissonSeriesBasisGenerator<Series,
-                                      Hilbert<Value>::dimension,
                                       periodic_degree>::Basis(ω.value(), t0);
       ω_basis_size = std::tuple_size_v<decltype(ω_basis)>;
       std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));

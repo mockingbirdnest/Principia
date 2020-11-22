@@ -16,125 +16,201 @@ using geometry::Hilbert;
 using quantities::is_quantity_v;
 namespace si = quantities::si;
 
-// A helper struct for generating the Poisson series tⁿ sin ω t and tⁿ cos ω t.
-// d is either 0 (for a 1-dimensional value type) or 0, 1, 2 (for a
-// 3-dimensional value type).
-template<typename Series, int n, int d>
-struct SeriesGenerator {
-  // The series tⁿ.
-  static Series Aperiodic(Instant const& origin);
-  // The series tⁿ sin ω t.
-  static Series Sin(AngularFrequency const& ω, Instant const& origin);
-  // The series tⁿ cos ω t.
-  static Series Cos(AngularFrequency const& ω, Instant const& origin);
 
- private:
-  // The polynomial tⁿ.
-  template<typename Polynomial>
-  static Polynomial Unit(Instant const& origin);
+// A helper to build unit quantities or multivector.  |Coefficient| must be a
+// member of a Hilbert space with |dimension| dimensions.
+template<typename Coefficient,
+         int dimension,
+         typename = std::make_index_sequence<dimension>,
+         typename = void>
+struct CoefficientGenerator;
+
+// Specialization for non-quantities (i.e., Multivector).
+template<typename Coefficient, int dimension, std::size_t... ds>
+struct CoefficientGenerator<Coefficient,
+                            dimension,
+                            std::index_sequence<ds...>,
+                            std::enable_if_t<!is_quantity_v<Coefficient>>> {
+  // Returns a unit multivector in the direction given by |d|, for instance,
+  // a multivector with coordinates {1, 0, 0}.
+  template<int d>
+  static Coefficient Unit();
 };
 
-template<typename Series, int n, int d>
-Series SeriesGenerator<Series, n, d>::Aperiodic(Instant const& origin) {
-  return Series(Unit<typename Series::AperiodicPolynomial>(origin), {});
+// Specialization for quantities.
+template<typename Coefficient, std::size_t... ds>
+struct CoefficientGenerator<Coefficient,
+                            /*dimension=*/1,
+                            std::index_sequence<ds...>,
+                            std::enable_if_t<is_quantity_v<Coefficient>>> {
+  // Returns a unit quantity.  This function is templated for consistency with
+  // the preceeding specialization; |d| must be 0.
+  template<int d>
+  static Coefficient Unit();
+};
+
+template<typename Coefficient, int dimension, std::size_t... ds>
+template<int d>
+Coefficient
+CoefficientGenerator<Coefficient,
+                     dimension,
+                     std::index_sequence<ds...>,
+                     std::enable_if_t<!is_quantity_v<Coefficient>>>::Unit() {
+  using Scalar = typename Hilbert<Coefficient>::NormType;
+  return Coefficient({(d == ds ? si::Unit<Scalar> : Scalar{})...});
 }
 
-template<typename Series, int n, int d>
-Series SeriesGenerator<Series, n, d>::Sin(AngularFrequency const& ω,
-                                          Instant const& origin) {
-  typename Series::AperiodicPolynomial const aperiodic_zero{{}, origin};
-  typename Series::PeriodicPolynomial const periodic_zero{{}, origin};
-  return Series(aperiodic_zero,
-                {{ω,
-                  {/*sin=*/Unit<typename Series::PeriodicPolynomial>(origin),
-                   /*cos=*/periodic_zero}}});
+template<typename Coefficient, std::size_t... ds>
+template<int d>
+Coefficient
+CoefficientGenerator<Coefficient,
+                     /*dimension=*/1,
+                     std::index_sequence<ds...>,
+                     std::enable_if_t<is_quantity_v<Coefficient>>>::Unit() {
+  static_assert(d == 0);
+  return si::Unit<Coefficient>;
 }
 
-template<typename Series, int n, int d>
-Series SeriesGenerator<Series, n, d>::Cos(AngularFrequency const& ω,
-                                          Instant const& origin) {
-  typename Series::AperiodicPolynomial const aperiodic_zero{{}, origin};
-  typename Series::PeriodicPolynomial const periodic_zero{{}, origin};
-  return Series(
-      aperiodic_zero,
-      {{ω,
-        {/*sin=*/periodic_zero,
-         /*cos=*/Unit<typename Series::PeriodicPolynomial>(origin)}}});
-}
 
-template<typename Series, int n, int d>
-template<typename Polynomial>
-Polynomial SeriesGenerator<Series, n, d>::Unit(Instant const& origin) {
-  typename Polynomial::Coefficients coefficients;
-  using Coefficient =
-      std::tuple_element_t<n, typename Polynomial::Coefficients>;
-  Coefficient& coefficient = std::get<n>(coefficients);
-  if constexpr (is_quantity_v<Coefficient>) {
-    coefficient = si::Unit<Coefficient>;
-  } else {
-    using Scalar = typename Hilbert<Coefficient>::NormType;
-    if constexpr (d == 0) {
-      coefficient = Coefficient({si::Unit<Scalar>, Scalar{}, Scalar{}});
-    } else if constexpr (d == 1) {
-      coefficient = Coefficient({Scalar{}, si::Unit<Scalar>, Scalar{}});
-    } else if constexpr (d == 2) {
-      coefficient = Coefficient({Scalar{}, Scalar{}, si::Unit<Scalar>});
-    }
-  }
+// In the following classes |index| and |indices...| encode the coordinate, the
+// degree and the parity (Sin or Cos) of a series.  How this encoding is
+// performed determines the order of the series in the basis.
+
+// A helper to build unit polynomials.  |Polynomial| must be a polynomial with
+// values in a |dimension|-dimensional Hilbert space.
+template<typename Polynomial, int dimension>
+struct PolynomialGenerator {
+  // Returns a polynomial whose coordinate and degree are encoded in |index|.
+  template<int index>
+  static Polynomial UnitPolynomial(Instant const& origin);
+
+  // Returns a pair of polynomials (for Sin and Cos) whose parity, coordinate
+  // and degree are encoded in |index|.
+  template<typename Polynomials, int index>
+  static Polynomials UnitPolynomials(Instant const& origin);
+};
+
+template<typename Polynomial, int dimension>
+template<int index>
+Polynomial PolynomialGenerator<Polynomial, dimension>::UnitPolynomial(
+    Instant const& origin) {
+  // Extract the coordinate and the degree from |index|.  The coordinate varies
+  // faster, so terms of the same degree but different coordinates are
+  // consecutive when this function is called from a template pack expansion.
+  static constexpr int coordinate = index % dimension;
+  static constexpr int degree = index / dimension;
+
+  using Coefficients = typename Polynomial::Coefficients;
+  using Coefficient = std::tuple_element_t<degree, Coefficients>;
+  Coefficients coefficients;
+  std::get<degree>(coefficients) =
+      CoefficientGenerator<Coefficient, dimension>::template Unit<coordinate>();
   return Polynomial(coefficients, origin);
 }
 
-template<typename Series, int dimension, int degree, std::size_t... indices>
-std::array<Series, dimension * (degree + 1)> PoissonSeriesBasisGenerator<
-    Series, dimension, degree,
-    std::index_sequence<indices...>>::Basis(Instant const& origin) {
-  return {SeriesGenerator<Series, indices / dimension, indices % dimension>::
-              Aperiodic(origin)...};
+template<typename Polynomial, int dimension>
+template<typename Polynomials, int index>
+static Polynomials PolynomialGenerator<Polynomial, dimension>::UnitPolynomials(
+    Instant const& origin) {
+  // Extract the parity, coordinate and the degree from |index|.  The coordinate
+  // varies faster, so terms of the same parity and degree but different
+  // coordinates are consecutive when this function is called from a template
+  // pack expansion.  The parity varies next, so Sin and Cos terms alternate for
+  // a given degree.  Finally, the degree increases.
+  static constexpr int coordinate = index % dimension;
+  static constexpr int parity = (index / dimension) % 2;
+  static constexpr int degree = index / (2 * dimension);
+
+  // Reencode the degree and coordinate alone for generating the polynomials.
+  static constexpr int degree_and_coordinate = coordinate + dimension * degree;
+
+  static Polynomial const zero{{}, origin};
+  if constexpr (parity == 0) {
+    return {/*sin=*/zero,
+            /*cos=*/PolynomialGenerator<Polynomial, dimension>::UnitPolynomial<
+                degree_and_coordinate>(origin)};
+  } else {
+    return {/*sin=*/PolynomialGenerator<Polynomial, dimension>::UnitPolynomial<
+                degree_and_coordinate>(origin),
+            /*cos=*/zero};
+  }
 }
 
-template<typename Series, int dimension, int degree, std::size_t... indices>
-std::array<Series, 2 * dimension * (degree + 1)>
-PoissonSeriesBasisGenerator<
-    Series, dimension, degree,
-    std::index_sequence<indices...>>::Basis(AngularFrequency const& ω,
-                                            Instant const& origin) {
-  // This has the elements {Sin(ωt), t Sin(ωt), t² Sin(ωt), ..., Cos(ωt), ...}
-  // in the scalar case and {x Sin(ωt), y Sin(ωt), z Sin(ωt), x t Sin(ωt), ...}
-  // in the vector case.  This is not the order we want (we want lower-degree
-  // polynomials first) so we'll need to reorder the terms.
-  std::array<Series, 2 * dimension * (degree + 1)> all_series = {
-      SeriesGenerator<Series, indices / dimension, indices % dimension>::Sin(
-          ω, origin)...,
-      SeriesGenerator<Series, indices / dimension, indices % dimension>::Cos(
-          ω, origin)...};
 
-  // Order all_series by repeatedly swapping its elements.
-  if constexpr (all_series.size() > 2) {
-    // The index of this array is the current index of a series in all_series.
-    // The value is the index of the final resting place of that series in
-    // all_series.  The elements at indices 0 and
-    // 2 * dimension * (Series::degree + 1) are unused.
-    std::array<int, all_series.size()> permutation;
-    for (int i = 1; i < all_series.size() - 1; ++i) {
-      permutation[i] = i < dimension * (degree + 1)
-                           ? 2 * i
-                           : 2 * (i - dimension * (degree + 1)) + 1;
-    }
-    for (int i = 1; i < all_series.size() - 1;) {
-      // Swap the series currently at index i to its final resting place.
-      // Iterate until the series at index i is at its final resting place
-      // (i.e., after we have executed an entire cycle of the permutation).
-      // Then move to the next series.
-      if (i == permutation[i]) {
-        ++i;
-      } else {
-        int const j = permutation[i];
-        std::swap(all_series[i], all_series[j]);
-        std::swap(permutation[i], permutation[j]);
-      }
-    }
-  }
-  return all_series;
+// A helper to generate aperiodic series, i.e., series of the form tⁿ along some
+// dimension.  Note how a single index_sequence is generated that covers the
+// cross-product of degrees and dimensions.
+template<typename Series,
+         int degree, int dimension,
+         typename = std::make_index_sequence<dimension * (degree + 1)>>
+struct AperiodicSeriesGenerator;
+
+template<typename Series, int degree, int dimension, std::size_t... indices>
+struct AperiodicSeriesGenerator<Series,
+                                degree, dimension,
+                                std::index_sequence<indices...>> {
+  static std::array<Series, sizeof...(indices)> BasisElements(
+      Instant const& origin);
+};
+
+template<typename Series, int degree, int dimension, std::size_t... indices>
+std::array<Series, sizeof...(indices)> AperiodicSeriesGenerator<
+    Series,
+    degree, dimension,
+    std::index_sequence<indices...>>::BasisElements(Instant const& origin) {
+  return {
+      (Series(PolynomialGenerator<typename Series::AperiodicPolynomial,
+                                  dimension>::UnitPolynomial<indices>(origin),
+              {}))...};
+}
+
+
+// A helper to generate periodic series, i.e., series of the form  tⁿ sin ω t
+// and tⁿ cos ω t along some dimension.  Note how a single index_sequence is
+// generated that covers the cross-product of parities, degrees and dimensions.
+template<typename Series,
+         int degree, int dimension,
+         typename = std::make_index_sequence<2 * dimension * (degree + 1)>>
+struct PeriodicSeriesGenerator;
+
+template<typename Series, int degree, int dimension, std::size_t... indices>
+struct PeriodicSeriesGenerator<Series,
+                        degree, dimension,
+                        std::index_sequence<indices...>> {
+  static std::array<Series, sizeof...(indices)> BasisElements(
+      AngularFrequency const& ω,
+      Instant const& origin);
+};
+
+template<typename Series, int degree, int dimension, std::size_t... indices>
+std::array<Series, sizeof...(indices)> PeriodicSeriesGenerator<
+    Series,
+    degree, dimension,
+    std::index_sequence<indices...>>::BasisElements(AngularFrequency const& ω,
+                                                    Instant const& origin) {
+  static typename Series::AperiodicPolynomial const aperiodic_zero{{}, origin};
+  return {Series(
+      aperiodic_zero,
+      {{ω,
+        PolynomialGenerator<typename Series::PeriodicPolynomial, dimension>::
+            template UnitPolynomials<typename Series::Polynomials, indices>(
+                origin)}})...};
+}
+
+
+template<typename Series, int degree>
+auto PoissonSeriesBasisGenerator<Series, degree>::Basis(Instant const& origin)
+    -> std::array<Series, dimension * (degree + 1)> {
+  return AperiodicSeriesGenerator<Series, degree, dimension>::
+             BasisElements(origin);
+}
+
+template<typename Series, int degree>
+auto PoissonSeriesBasisGenerator<Series, degree>::Basis(
+    AngularFrequency const& ω,
+    Instant const& origin) -> std::array<Series, 2 * dimension * (degree + 1)> {
+  return PeriodicSeriesGenerator<Series, degree, dimension>::
+             BasisElements(ω, origin);
 }
 
 }  // namespace internal_poisson_series_basis
