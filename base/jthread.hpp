@@ -69,6 +69,7 @@ class stop_callback {
   void Run() const;
 
   std::function<void()> const callback_;
+  stop_token const stop_token_;
 
   friend class StopState;
 };

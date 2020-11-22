@@ -1,7 +1,6 @@
 #pragma once
 
 #include "base/jthread.hpp"
-
 #include "base/macros.hpp"
 
 namespace principia {
@@ -37,7 +36,7 @@ inline bool StopState::request_stop() {
       callbacks.swap(callbacks_);
     }
   }
-  for (auto const callback : callbacks_) {
+  for (auto const callback : callbacks) {
     callback->Run();
   }
   return true;
@@ -49,8 +48,14 @@ inline bool StopState::stop_requested() const {
 }
 
 inline void StopState::Register(not_null<stop_callback*> const callback) {
-  absl::MutexLock l(&lock_);
-  callbacks_.insert(callback);
+  {
+    absl::MutexLock l(&lock_);
+    if (!stop_requested_) {
+      callbacks_.insert(callback);
+      return;
+    }
+  }
+  callback->Run();
 }
 
 inline void StopState::Unregister(not_null<stop_callback*> const callback) {
@@ -85,12 +90,15 @@ inline stop_source::stop_source(not_null<StopState*> const stop_state)
     : stop_state_(stop_state) {}
 
 inline stop_callback::stop_callback(stop_token const& st,
-                             std::function<void()> callback)
-    : callback_(std::move(callback)) {
-  st.get_stop_state().Register(this);
+                                    std::function<void()> callback)
+    : callback_(std::move(callback)),
+      stop_token_(st) {
+  stop_token_.get_stop_state().Register(this);
 }
 
-inline stop_callback::~stop_callback() {}
+inline stop_callback::~stop_callback() {
+  stop_token_.get_stop_state().Unregister(this);
+}
 
 inline void stop_callback::Run() const {
   callback_();
