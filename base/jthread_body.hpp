@@ -1,3 +1,5 @@
+#pragma once
+
 #include "base/jthread.hpp"
 
 #include "base/macros.hpp"
@@ -23,7 +25,7 @@ class StopState {
   std::set<not_null<stop_callback*>> callbacks_ GUARDED_BY(lock_);
 };
 
-bool StopState::request_stop() {
+inline bool StopState::request_stop() {
   // NOTE(phl): If performance matters here we could do double-locking.
   std::set<not_null<stop_callback*>> callbacks;
   {
@@ -41,83 +43,90 @@ bool StopState::request_stop() {
   return true;
 }
 
-bool StopState::stop_requested() const {
+inline bool StopState::stop_requested() const {
   absl::ReaderMutexLock l(&lock_);
   return stop_requested_;
 }
 
-void StopState::Register(not_null<stop_callback*> const callback) {
+inline void StopState::Register(not_null<stop_callback*> const callback) {
   absl::MutexLock l(&lock_);
   callbacks_.insert(callback);
 }
 
-void StopState::Unregister(not_null<stop_callback*> const callback) {
+inline void StopState::Unregister(not_null<stop_callback*> const callback) {
   absl::MutexLock l(&lock_);
   callbacks_.erase(callback);
 }
 
-bool stop_token::stop_requested() const {
+inline bool stop_token::stop_requested() const {
   return stop_state_->stop_requested();
 }
 
-stop_token::stop_token(not_null<StopState*> const stop_state)
+inline stop_token::stop_token(not_null<StopState*> const stop_state)
     : stop_state_(stop_state) {}
 
-StopState& stop_token::get_stop_state() const {
+inline StopState& stop_token::get_stop_state() const {
   return *stop_state_;
 }
 
-bool stop_source::request_stop() {
+inline bool stop_source::request_stop() {
   return stop_state_->request_stop();
 }
 
-bool stop_source::stop_requested() const {
+inline bool stop_source::stop_requested() const {
   return stop_state_->stop_requested();
 }
 
-stop_token stop_source::get_token() const {
+inline stop_token stop_source::get_token() const {
   return stop_token(stop_state_);
 }
 
-stop_source::stop_source(not_null<StopState*> const stop_state)
+inline stop_source::stop_source(not_null<StopState*> const stop_state)
     : stop_state_(stop_state) {}
 
-stop_callback::stop_callback(stop_token const& st,
+inline stop_callback::stop_callback(stop_token const& st,
                              std::function<void()> callback)
     : callback_(std::move(callback)) {
   st.get_stop_state().Register(this);
 }
 
-stop_callback::~stop_callback() {}
+inline stop_callback::~stop_callback() {}
 
-void stop_callback::Run() const {
+inline void stop_callback::Run() const {
   callback_();
 }
 
-template<typename... Args>
-jthread::jthread(std::function<void(stop_token const&, Args...)> f,
-                 Args&&... args)
+template<typename Function, typename... Args>
+jthread::jthread(Function&& f, Args&&... args)
     : stop_state_(std::make_unique<StopState>()),
       thread_(std::move(f),
               stop_token(stop_state_.get()),
               std::forward<Args>(args)...) {}
 
-void jthread::join() {
+inline jthread::~jthread() {
+  stop_state_->request_stop();
+  if (thread_.joinable()) {
+    thread_.join();
+  }
+}
+
+inline void jthread::join() {
   thread_.join();
 }
 
-void jthread::detach() {
+inline void jthread::detach() {
   thread_.detach();
 }
 
-bool jthread::request_stop() {
+inline bool jthread::request_stop() {
   return stop_state_->request_stop();
 }
-stop_source jthread::get_stop_source() const {
+
+inline stop_source jthread::get_stop_source() const {
   return stop_source(stop_state_.get());
 }
 
-stop_token jthread::get_stop_token() const {
+inline stop_token jthread::get_stop_token() const {
   return stop_token(stop_state_.get());
 }
 

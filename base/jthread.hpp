@@ -80,9 +80,10 @@ class jthread {
  public:
   jthread() = default;
 
-  template<typename... Args>
-  explicit jthread(std::function<void(stop_token const&, Args...)> f,
-                   Args&&... args);
+  template<typename Function, typename... Args>
+  jthread(Function&& f, Args&&... args);
+
+  ~jthread();
 
   void join();
 
@@ -108,3 +109,5 @@ using internal_jthread::stop_token;
 
 }  // namespace base
 }  // namespace principia
+
+#include "base/jthread_body.hpp"
