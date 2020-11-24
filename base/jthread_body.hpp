@@ -124,7 +124,9 @@ inline jthread& jthread::operator=(jthread&& other) {
 }
 
 inline jthread::~jthread() {
-  stop_state_->request_stop();
+  if (stop_state_ != nullptr) {
+    stop_state_->request_stop();
+  }
   if (thread_.joinable()) {
     thread_.join();
   }
