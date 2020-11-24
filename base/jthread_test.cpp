@@ -116,5 +116,31 @@ TEST(JThreadTest, StopCallback) {
   EXPECT_TRUE(callback_after_stop_executed);
 }
 
+TEST(JThreadTest, ThisJThread) {
+  bool observed_stop = false;
+
+  auto sleepy_worker = MakeStoppableThread(
+      [](stop_token /*unused*/, bool* const observed_stop) {
+        for (int i = 0; i < 10; i++) {
+          absl::SleepFor(absl::Milliseconds(10));
+          if (this_stoppable_thread::get_stop_token().stop_requested()) {
+            std::cout << "Sleepy worker is requested to stop\n";
+            *observed_stop = true;
+            return;
+          }
+          std::cout << "Sleepy worker goes back to sleep\n";
+        }
+      },
+      &observed_stop);
+
+  absl::SleepFor(absl::Milliseconds(30));
+  std::cout << "Requesting stop of sleepy worker\n";
+  sleepy_worker.request_stop();
+  sleepy_worker.join();
+  EXPECT_TRUE(observed_stop);
+}
+
+
+
 }  // namespace base
 }  // namespace principia

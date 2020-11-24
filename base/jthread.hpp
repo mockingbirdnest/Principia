@@ -22,6 +22,8 @@ class StopState;
 // https://en.cppreference.com/w/cpp/thread/stop_token
 class stop_token {
  public:
+  stop_token();
+
   bool stop_requested() const;
 
  private:
@@ -29,7 +31,7 @@ class stop_token {
 
   StopState& get_stop_state() const;
 
-  not_null<StopState*> const stop_state_;
+  StopState* stop_state_;
 
   friend class jthread;
   friend class stop_callback;
@@ -101,12 +103,28 @@ class jthread {
   std::thread thread_;
 };
 
+template<typename Function, typename... Args>
+static jthread MakeStoppableThread(Function&& f, Args&&... args);
+
+class this_stoppable_thread {
+ public:
+  static stop_token get_stop_token();
+
+ private:
+  static thread_local stop_token stop_token_;
+
+  template<typename Function, typename... Args>
+  friend jthread MakeStoppableThread(Function&& f, Args&&... args);
+};
+
 }  // namespace internal_jthread
 
+using internal_jthread::MakeStoppableThread;
 using internal_jthread::jthread;
 using internal_jthread::stop_callback;
 using internal_jthread::stop_source;
 using internal_jthread::stop_token;
+using internal_jthread::this_stoppable_thread;
 
 }  // namespace base
 }  // namespace principia
