@@ -8,6 +8,7 @@
 #include "astronomy/orbit_ground_track.hpp"
 #include "astronomy/orbit_recurrence.hpp"
 #include "astronomy/orbital_elements.hpp"
+#include "base/jthread.hpp"
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "ksp_plugin/frames.hpp"
@@ -23,6 +24,7 @@ namespace internal_orbit_analyser {
 using astronomy::OrbitalElements;
 using astronomy::OrbitGroundTrack;
 using astronomy::OrbitRecurrence;
+using base::jthread;
 using base::not_null;
 using geometry::Instant;
 using physics::DegreesOfFreedom;
@@ -86,7 +88,6 @@ class OrbitAnalyser {
   OrbitAnalyser(not_null<Ephemeris<Barycentric>*> ephemeris,
                 Ephemeris<Barycentric>::FixedStepParameters
                     analysed_trajectory_parameters);
-  ~OrbitAnalyser();
 
   // Sets the parameters that will be used for the computation of the next
   // analysis.
@@ -125,7 +126,7 @@ class OrbitAnalyser {
   std::optional<Analysis> analysis_;
 
   mutable absl::Mutex lock_;
-  std::thread analyser_;
+  jthread analyser_;
   // |parameters_| is set by the main thread; it is read and cleared by the
   // |analyser_| thread.
   std::optional<Parameters> parameters_ GUARDED_BY(lock_);
@@ -135,10 +136,6 @@ class OrbitAnalyser {
   // |progress_of_next_analysis_| is set by the |analyser_| thread; it tracks
   // progress in computing |next_analysis_|.
   std::atomic<double> progress_of_next_analysis_ = 0;
-  // |keep_analysing_| is tested by the |analyser_| thread, which cooperatively
-  // aborts if it is false; it is set at construction, and cleared by the main
-  // thread at destruction.
-  std::atomic_bool keep_analysing_ = true;
 };
 
 }  // namespace internal_orbit_analyser

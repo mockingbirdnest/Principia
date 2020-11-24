@@ -65,8 +65,6 @@ inline void StopState::Unregister(not_null<stop_callback*> const callback) {
   callbacks_.erase(callback);
 }
 
-inline stop_token::stop_token() : stop_state_(nullptr) {}
-
 inline bool stop_token::stop_requested() const {
   return stop_state_->stop_requested();
 }
@@ -115,11 +113,25 @@ jthread::jthread(Function&& f, Args&&... args)
               stop_token(stop_state_.get()),
               std::forward<Args>(args)...) {}
 
+inline jthread::jthread(jthread&& other)
+    : stop_state_(std::move(other.stop_state_)),
+      thread_(std::move(other.thread_)) {}
+
+inline jthread& jthread::operator=(jthread&& other) {
+  stop_state_ = std::move(other.stop_state_);
+  thread_ = std::move(other.thread_);
+  return *this;
+}
+
 inline jthread::~jthread() {
   stop_state_->request_stop();
   if (thread_.joinable()) {
     thread_.join();
   }
+}
+
+inline bool jthread::joinable() const {
+  return thread_.joinable();
 }
 
 inline void jthread::join() {
@@ -153,11 +165,9 @@ jthread MakeStoppableThread(Function&& f, Args&&... args) {
       args...);
 }
 
-stop_token this_stoppable_thread::get_stop_token() {
+inline stop_token this_stoppable_thread::get_stop_token() {
   return stop_token_;
 }
-
-thread_local stop_token this_stoppable_thread::stop_token_;
 
 }  // namespace internal_jthread
 }  // namespace base
