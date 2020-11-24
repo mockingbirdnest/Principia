@@ -119,11 +119,11 @@ TEST(JThreadTest, StopCallback) {
 TEST(JThreadTest, ThisJThread) {
   bool observed_stop = false;
 
-  auto sleepy_worker = this_jthread::Make(
+  auto sleepy_worker = MakeStoppableThread(
       [](stop_token /*unused*/, bool* const observed_stop) {
         for (int i = 0; i < 10; i++) {
           absl::SleepFor(absl::Milliseconds(10));
-          if (this_jthread::get_stop_token().stop_requested()) {
+          if (this_stoppable_thread::get_stop_token().stop_requested()) {
             std::cout << "Sleepy worker is requested to stop\n";
             *observed_stop = true;
             return;

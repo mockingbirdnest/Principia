@@ -143,21 +143,21 @@ inline stop_token jthread::get_stop_token() const {
 }
 
 template<typename Function, typename... Args>
-jthread this_jthread::Make(Function&& f, Args&&... args) {
+jthread MakeStoppableThread(Function&& f, Args&&... args) {
   return jthread(
       [f](stop_token const& st, Args&&... args) {
         // This assignment happens on the thread of the jthread.
-        stop_token_ = st;
+        this_stoppable_thread::stop_token_ = st;
         f(st, args...);
       },
       args...);
 }
 
-stop_token this_jthread::get_stop_token() {
+stop_token this_stoppable_thread::get_stop_token() {
   return stop_token_;
 }
 
-thread_local stop_token this_jthread::stop_token_;
+thread_local stop_token this_stoppable_thread::stop_token_;
 
 }  // namespace internal_jthread
 }  // namespace base
