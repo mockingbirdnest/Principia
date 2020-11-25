@@ -34,8 +34,7 @@ void OrbitAnalyser::RequestAnalysis(
     Time const& mission_duration,
     not_null<RotatingBody<Barycentric> const*> primary) {
   if (!analyser_.joinable()) {
-    analyser_ = base::MakeStoppableThread(
-        [this](stop_token) { RepeatedlyAnalyseOrbit(); });
+    analyser_ = base::MakeStoppableThread([this] { RepeatedlyAnalyseOrbit(); });
   }
   Ephemeris<Barycentric>::Guard guard(ephemeris_);
   if (ephemeris_->t_min() > first_time) {

@@ -162,7 +162,7 @@ jthread MakeStoppableThread(Function&& f, Args&&... args) {
       [f](stop_token const& st, Args&&... args) {
         // This assignment happens on the thread of the jthread.
         this_stoppable_thread::stop_token_ = st;
-        f(st, args...);
+        f(args...);
       },
       args...);
 }
