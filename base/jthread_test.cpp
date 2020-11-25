@@ -120,7 +120,7 @@ TEST(JThreadTest, ThisJThread) {
   bool observed_stop = false;
 
   auto sleepy_worker = MakeStoppableThread(
-      [](stop_token /*unused*/, bool* const observed_stop) {
+      [](bool* const observed_stop) {
         for (int i = 0; i < 10; i++) {
           absl::SleepFor(absl::Milliseconds(10));
           if (this_stoppable_thread::get_stop_token().stop_requested()) {
