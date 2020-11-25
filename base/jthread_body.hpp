@@ -66,7 +66,7 @@ inline void StopState::Unregister(not_null<stop_callback*> const callback) {
 }
 
 inline bool stop_token::stop_requested() const {
-  return stop_state_->stop_requested();
+  return stop_state_ != nullptr && stop_state_->stop_requested();
 }
 
 inline stop_token::stop_token(not_null<StopState*> const stop_state)
