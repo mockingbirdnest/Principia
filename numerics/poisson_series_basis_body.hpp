@@ -176,9 +176,7 @@ std::array<Series, sizeof...(indices)> AperiodicSeriesGenerator<
 
 template<typename Series, int degree, int dimension, std::size_t... indices>
 std::array<PoissonSeriesSubspace, sizeof...(indices)> AperiodicSeriesGenerator<
-    Series,
-    degree,
-    dimension,
+    Series, degree, dimension,
     std::index_sequence<indices...>>::Subspaces(Instant const& origin) {
   return {PoissonSeriesSubspace{
       static_cast<PoissonSeriesSubspace::Coordinate>(indices % dimension),
@@ -198,9 +196,8 @@ template<typename Series,
 struct PeriodicSeriesGenerator;
 
 template<typename Series, int degree, int dimension, std::size_t... indices>
-struct PeriodicSeriesGenerator<Series,
-                        degree, dimension,
-                        std::index_sequence<indices...>> {
+struct PeriodicSeriesGenerator<Series, degree, dimension,
+                               std::index_sequence<indices...>> {
   static std::array<Series, sizeof...(indices)> BasisElements(
       AngularFrequency const& ω,
       Instant const& origin);
@@ -226,9 +223,7 @@ std::array<Series, sizeof...(indices)> PeriodicSeriesGenerator<
 
 template<typename Series, int degree, int dimension, std::size_t... indices>
 std::array<PoissonSeriesSubspace, sizeof...(indices)> PeriodicSeriesGenerator<
-    Series,
-    degree,
-    dimension,
+    Series, degree, dimension,
     std::index_sequence<indices...>>::Subspaces(AngularFrequency const& ω,
                                                 Instant const& origin) {
   return {
@@ -252,9 +247,9 @@ auto PoissonSeriesBasisGenerator<Series, degree>::Basis(Instant const& origin)
 }
 
 template<typename Series, int degree>
-inline auto PoissonSeriesBasisGenerator<Series, degree>::Subspaces(
+auto PoissonSeriesBasisGenerator<Series, degree>::Subspaces(
     Instant const& origin)
-    -> std::array<PoissonSeriesSubspace, dimension * (degree + 1)> {
+    -> std::array<PoissonSeriesSubspace, dimension*(degree + 1)> {
   return AperiodicSeriesGenerator<Series, degree, dimension>::Subspaces(origin);
 }
 
@@ -267,11 +262,10 @@ auto PoissonSeriesBasisGenerator<Series, degree>::Basis(
 }
 
 template<typename Series, int degree>
-inline auto
-PoissonSeriesBasisGenerator<Series, degree>::Subspaces(
+auto PoissonSeriesBasisGenerator<Series, degree>::Subspaces(
     AngularFrequency const& ω,
     Instant const& origin)
-    -> std::array<PoissonSeriesSubspace, 2 * dimension * (degree + 1)> {
+    -> std::array<PoissonSeriesSubspace, 2 * dimension*(degree + 1)> {
   return PeriodicSeriesGenerator<Series, degree, dimension>::Subspaces(ω,
                                                                        origin);
 }

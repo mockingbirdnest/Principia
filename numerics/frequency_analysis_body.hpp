@@ -118,6 +118,7 @@ IncrementalProjection(Function const& function,
   std::vector<PoissonSeriesSubspace> basis_subspaces;
 
   int basis_size;
+  // TODO(phl): This is replicated below.
   if (ω.value() == AngularFrequency{}) {
     auto const ω_basis =
         PoissonSeriesBasisGenerator<Series,
