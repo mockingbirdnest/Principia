@@ -23,13 +23,7 @@ using quantities::AngularFrequency;
 // space of Poisson series, i.e., The space of Poisson series is the orthogonal
 // sum of all values of |PoissonSeriesSubspace|.
 class PoissonSeriesSubspace {
- public:/*
-  PoissonSeriesSubspace(PoissonSeriesSubspace const&) = default;
-  PoissonSeriesSubspace(PoissonSeriesSubspace&&) = default;
-
-  PoissonSeriesSubspace& operator=(PoissonSeriesSubspace const&) = default;
-  PoissonSeriesSubspace& operator=(PoissonSeriesSubspace&&) = default;*/
-
+ public:
   // Whether the subspaces |v| and |w| are orthogonal.
   // TODO(egg): When we take parity into account, orthogonality will be defined
   // with respect to an inner product over an interval centred on the origin of
