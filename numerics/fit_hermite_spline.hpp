@@ -2,6 +2,7 @@
 
 #include <list>
 
+#include "geometry/hilbert.hpp"
 #include "numerics/hermite3.hpp"
 
 namespace principia {
@@ -10,7 +11,7 @@ namespace internal_fit_hermite_spline {
 
 using quantities::Derivative;
 using quantities::Difference;
-using geometry::Normed;
+using geometry::Hilbert;
 
 // Given |samples| for which the arguments, values, and derivatives can be
 // obtained via the given functors, returns a sequence of iterators
@@ -32,7 +33,7 @@ std::list<typename Samples::const_iterator> FitHermiteSpline(
         get_value,
     std::function<Derivative<Value, Argument> const&(
         typename Samples::value_type const&)> const& get_derivative,
-    typename Normed<Difference<Value>>::NormType const& tolerance);
+    typename Hilbert<Difference<Value>>::NormType const& tolerance);
 
 }  // namespace internal_fit_hermite_spline
 

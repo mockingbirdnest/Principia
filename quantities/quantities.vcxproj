@@ -39,6 +39,7 @@
     <ClCompile Include="elementary_functions_test.cpp" />
     <ClCompile Include="parser_test.cpp" />
     <ClCompile Include="quantities_test.cpp" />
+    <ClCompile Include="traits_test.cpp" />
     <ClCompile Include="wide_test.cpp" />
   </ItemGroup>
 </Project>

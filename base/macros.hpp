@@ -26,6 +26,9 @@ char const* const CompilerVersion = __VERSION__;
 #define PRINCIPIA_COMPILER_MSVC 1
 char const* const CompilerName = "Microsoft Visual C++";
 char const* const CompilerVersion = STRINGIFY_EXPANSION(_MSC_FULL_VER);
+# if _HAS_CXX20
+# define PRINCIPIA_COMPILER_MSVC_HAS_CXX20 1
+# endif
 #elif defined(__ICC) || defined(__INTEL_COMPILER)
 #define PRINCIPIA_COMPILER_ICC 1
 char const* const CompilerName = "Intel C++ Compiler";
@@ -173,6 +176,20 @@ inline void noreturn() { std::exit(0); }
 // For templates in macro parameters.
 #define TEMPLATE(...) template<__VA_ARGS__>
 
+// For circumventing
+// https://developercommunity.visualstudio.com/content/problem/1256363/operator-call-incorrectly-marked-as-ambiguous-with.html.
+#if PRINCIPIA_COMPILER_MSVC_HAS_CXX20
+#define PRINCIPIA_MAX(l, r) ((l) > (r) ? (l) : (r))
+#define PRINCIPIA_MAX3(x1, x2, x3) \
+  PRINCIPIA_MAX((x1), PRINCIPIA_MAX((x2), (x3)))
+#define PRINCIPIA_MAX4(x1, x2, x3, x4) \
+  PRINCIPIA_MAX((x1), PRINCIPIA_MAX((x2), PRINCIPIA_MAX((x3), (x4))))
+#else
+#define PRINCIPIA_MAX(l, r) std::max((l), (r))
+#define PRINCIPIA_MAX3(x1, x2, x3) std::max({(x1), (x2), (x3)})
+#define PRINCIPIA_MAX4(x1, x2, x3, x4) std::max({(x1), (x2), (x3), (x4)})
+#endif
+
 // Forward declaration of a class or struct declared in an internal namespace
 // according to #602.
 // Usage:
@@ -184,6 +201,15 @@ inline void noreturn() { std::exit(0); }
 namespace internal_##package_name {                  \
 template_and_class_key declared_name;                \
 }                                                    \
+using internal_##package_name::declared_name
+
+#define FORWARD_DECLARE_FUNCTION_FROM(package_name,        \
+                                      template_and_result, \
+                                      declared_name,       \
+                                      parameters)          \
+namespace internal_##package_name {                        \
+template_and_result declared_name parameters;              \
+}                                                          \
 using internal_##package_name::declared_name
 
 }  // namespace base

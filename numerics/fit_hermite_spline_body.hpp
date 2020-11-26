@@ -12,7 +12,6 @@ namespace numerics {
 namespace internal_fit_hermite_spline {
 
 using base::Range;
-using geometry::Normed;
 
 template<typename Argument, typename Value, typename Samples>
 std::list<typename Samples::const_iterator> FitHermiteSpline(
@@ -23,7 +22,7 @@ std::list<typename Samples::const_iterator> FitHermiteSpline(
         get_value,
     std::function<Derivative<Value, Argument> const&(
         typename Samples::value_type const&)> const& get_derivative,
-    typename Normed<Difference<Value>>::NormType const& tolerance) {
+    typename Hilbert<Difference<Value>>::NormType const& tolerance) {
   using Iterator = typename Samples::const_iterator;
 
   auto interpolation_error = [get_argument, get_derivative, get_value](

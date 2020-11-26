@@ -828,7 +828,7 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   plugin_->CreateFlightPlan(guid,
                             /*final_time=*/HistoryTime(time, 8),
                             /*initial_mass=*/1 * Kilogram);
-  satellite->flight_plan().Append(burn());
+  satellite->flight_plan().Insert(burn(), 0);
 
   plugin_->InsertOrKeepVessel(guid,
                               "v" + guid,

@@ -40,6 +40,8 @@
     <ClInclude Include="graveyard_body.hpp" />
     <ClInclude Include="hexadecimal.hpp" />
     <ClInclude Include="hexadecimal_body.hpp" />
+    <ClInclude Include="jthread.hpp" />
+    <ClInclude Include="jthread_body.hpp" />
     <ClInclude Include="macros.hpp" />
     <ClInclude Include="mappable.hpp" />
     <ClInclude Include="map_util.hpp" />
@@ -88,6 +90,7 @@
     <ClCompile Include="flags_test.cpp" />
     <ClCompile Include="function_test.cpp" />
     <ClCompile Include="hexadecimal_test.cpp" />
+    <ClCompile Include="jthread_test.cpp" />
     <ClCompile Include="not_null_test.cpp" />
     <ClCompile Include="pull_serializer_test.cpp" />
     <ClCompile Include="push_deserializer_test.cpp" />

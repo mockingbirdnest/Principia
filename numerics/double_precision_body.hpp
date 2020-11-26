@@ -82,7 +82,7 @@ DoublePrecision<T>& DoublePrecision<T>::operator+=(
 template<typename T>
 DoublePrecision<T>& DoublePrecision<T>::operator+=(
     Difference<T> const& right) {
-  *this = *this + right;
+  *this = *this + DoublePrecision(right);
   return *this;
 }
 
@@ -96,7 +96,7 @@ DoublePrecision<T>& DoublePrecision<T>::operator-=(
 template<typename T>
 DoublePrecision<T>& DoublePrecision<T>::operator-=(
     Difference<T> const& right) {
-  *this = *this - right;
+  *this = *this - DoublePrecision(right);
   return *this;
 }
 

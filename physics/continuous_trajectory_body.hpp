@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "astronomy/epoch.hpp"
+#include "geometry/interval.hpp"
 #include "glog/stl_logging.h"
 #include "numerics/newhall.hpp"
-#include "numerics/polynomial_evaluators.hpp"
 #include "numerics/ulp_distance.hpp"
 #include "numerics/чебышёв_series.hpp"
 #include "quantities/si.hpp"
@@ -22,9 +22,13 @@ namespace principia {
 namespace physics {
 namespace internal_continuous_trajectory {
 
+using base::dynamic_cast_not_null;
 using base::Error;
 using base::make_not_null_unique;
+using geometry::Interval;
 using numerics::EstrinEvaluator;
+using numerics::PoissonSeries;
+using numerics::PolynomialInMonomialBasis;
 using numerics::ULPDistance;
 using numerics::ЧебышёвSeries;
 using quantities::DebugString;
@@ -32,8 +36,8 @@ using quantities::si::Metre;
 using quantities::si::Second;
 namespace si = quantities::si;
 
-int const max_degree = 17;
-int const min_degree = 3;
+constexpr int max_degree = 17;
+constexpr int min_degree = 3;
 int const max_degree_age = 100;
 
 // Only supports 8 divisions for now.
@@ -183,8 +187,8 @@ Position<Frame> ContinuousTrajectory<Frame>::EvaluatePosition(
   CHECK_GE(t_max_locked(), time);
   auto const it = FindPolynomialForInstant(time);
   CHECK(it != polynomials_.end());
-  auto const& polynomial = it->polynomial;
-  return polynomial->Evaluate(time) + Frame::origin;
+  auto const& polynomial = *it->polynomial;
+  return polynomial(time) + Frame::origin;
 }
 
 template<typename Frame>
@@ -195,8 +199,8 @@ Velocity<Frame> ContinuousTrajectory<Frame>::EvaluateVelocity(
   CHECK_GE(t_max_locked(), time);
   auto const it = FindPolynomialForInstant(time);
   CHECK(it != polynomials_.end());
-  auto const& polynomial = it->polynomial;
-  return polynomial->EvaluateDerivative(time);
+  auto const& polynomial = *it->polynomial;
+  return polynomial.EvaluateDerivative(time);
 }
 
 template<typename Frame>
@@ -207,10 +211,135 @@ DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
   CHECK_GE(t_max_locked(), time);
   auto const it = FindPolynomialForInstant(time);
   CHECK(it != polynomials_.end());
-  auto const& polynomial = it->polynomial;
-  return DegreesOfFreedom<Frame>(polynomial->Evaluate(time) + Frame::origin,
-                                 polynomial->EvaluateDerivative(time));
+  auto const& polynomial = *it->polynomial;
+  return DegreesOfFreedom<Frame>(polynomial(time) + Frame::origin,
+                                 polynomial.EvaluateDerivative(time));
 }
+
+template<typename Frame>
+int ContinuousTrajectory<Frame>::PiecewisePoissonSeriesDegree(
+    Instant const& t_min,
+    Instant const& t_max) const {
+  absl::ReaderMutexLock l(&lock_);
+  CHECK_LE(t_min_locked(), t_min);
+  CHECK_GE(t_max_locked(), t_max);
+  auto const it_min = FindPolynomialForInstant(t_min);
+  auto const it_max = FindPolynomialForInstant(t_max);
+  int degree = min_degree;
+  for (auto it = it_min;; ++it) {
+    degree = std::max(degree, it->polynomial->degree());
+    if (it == it_max) {
+      break;
+    }
+  }
+  return degree;
+}
+
+
+// Casts the polynomial to one of degree d1, and then increases the degree to
+// d2.
+#define PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(polynomial, d1, d2)     \
+  case d1: {                                                                   \
+    if constexpr (d1 <= d2) {                                                  \
+      return PolynomialInMonomialBasis<Displacement<Frame>, Instant,           \
+                                       d2, EstrinEvaluator>(                   \
+          *dynamic_cast_not_null<                                              \
+              PolynomialInMonomialBasis<Displacement<Frame>, Instant,          \
+                                        d1, EstrinEvaluator> const*>(          \
+                                        polynomial));                          \
+    } else {                                                                   \
+      LOG(FATAL) << "Inconsistent degrees " << d1 << " and " << d2;            \
+    }                                                                          \
+  }
+
+template<typename Frame>
+template<int aperiodic_degree, int periodic_degree>
+PiecewisePoissonSeries<Displacement<Frame>,
+                        aperiodic_degree, periodic_degree,
+                        EstrinEvaluator>
+ContinuousTrajectory<Frame>::ToPiecewisePoissonSeries(
+    Instant const& t_min,
+    Instant const& t_max) const {
+  static_assert(aperiodic_degree >= min_degree &&
+                aperiodic_degree <= max_degree);
+  // No check on the periodic degree, it plays no role here.
+  CHECK(!polynomials_.empty());
+  using PiecewisePoisson =
+      PiecewisePoissonSeries<Displacement<Frame>,
+                             aperiodic_degree, periodic_degree,
+                             EstrinEvaluator>;
+  using Poisson = PoissonSeries<Displacement<Frame>,
+                                aperiodic_degree, periodic_degree,
+                                EstrinEvaluator>;
+
+  auto cast_to_degree =
+      [](not_null<Polynomial<Displacement<Frame>, Instant> const*> const
+             polynomial)
+      -> PolynomialInMonomialBasis<Displacement<Frame>, Instant,
+                                   aperiodic_degree, EstrinEvaluator> {
+    switch (polynomial->degree()) {
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 3, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 4, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 5, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 6, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 7, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 8, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 9, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 10, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 11, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 12, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 13, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 14, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 15, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 16, aperiodic_degree);
+      PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS(
+          polynomial, 17, aperiodic_degree);
+      default:
+        LOG(FATAL) << "Unexpected degree " << polynomial->degree();
+    }
+  };
+
+  std::unique_ptr<PiecewisePoisson> result;
+
+  absl::ReaderMutexLock l(&lock_);
+  auto const it_min = FindPolynomialForInstant(t_min);
+  auto const it_max = FindPolynomialForInstant(t_max);
+  Instant current_t_min = t_min;
+  for (auto it = it_min;; ++it) {
+    Instant const current_t_max = std::min(t_max, it->t_max);
+    Interval<Instant> interval;
+    interval.Include(current_t_min);
+    interval.Include(current_t_max);
+    auto const polynomial_cast_to_degree = cast_to_degree(it->polynomial.get());
+    if (result == nullptr) {
+      result = std::make_unique<PiecewisePoisson>(
+          interval, Poisson(polynomial_cast_to_degree, {{}}));
+    } else {
+      result->Append(interval, Poisson(polynomial_cast_to_degree, {{}}));
+    }
+    current_t_min = current_t_max;
+    if (it == it_max) {
+      break;
+    }
+  }
+  return *result;
+}
+
+#undef PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS
 
 template<typename Frame>
 void ContinuousTrajectory<Frame>::WriteToMessage(

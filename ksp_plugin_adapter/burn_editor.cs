@@ -9,12 +9,12 @@ class BurnEditor : ScalingRenderer {
                     Vessel vessel,
                     double initial_time,
                     int index,
-                    BurnEditor previous_burn) {
+                    Func<int, BurnEditor> get_burn_at_index) {
     adapter_ = adapter;
     vessel_ = vessel;
     initial_time_ = initial_time;
-    index_ = index;
-    previous_burn_ = previous_burn;
+    this.index = index;
+    get_burn_at_index_ = get_burn_at_index;
     Δv_tangent_ =
         new DifferentialSlider(label            : "Δv tangent",
                                unit             : "m / s",
@@ -56,23 +56,44 @@ class BurnEditor : ScalingRenderer {
     ComputeEngineCharacteristics();
   }
 
+  public enum Event {
+    None,
+    Changed,
+    Deleted,
+    Minimized,
+    Maximized,
+  }
+
   // Renders the |BurnEditor|.  Returns true if and only if the settings were
   // changed.
-  public bool Render(string header,
-                     bool anomalous,
-                     double burn_final_time) {
+  public Event Render(string header,
+                      bool anomalous,
+                      double burn_final_time) {
     bool changed = false;
     previous_coast_duration_.max_value = burn_final_time - time_base;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
-      UnityEngine.GUILayout.Label(header);
-      string frame_info = "";
-      if (!reference_frame_selector_.FrameParameters().Equals(
+      if (UnityEngine.GUILayout.Button(
+              minimized ? "+" : "-", GUILayoutWidth(1))) {
+        minimized = !minimized;
+        return minimized ? Event.Minimized : Event.Maximized;
+      }
+      UnityEngine.GUILayout.Label(minimized ? $"{header} ({Δv():0.000} m/s)"
+                                            : header);
+      string info = "";
+      if (!minimized &&
+          !reference_frame_selector_.FrameParameters().Equals(
               adapter_.plotting_frame_selector_.FrameParameters())) {
-        frame_info = "Manœuvre frame differs from plotting frame";
+        info = "Manœuvre frame differs from plotting frame";
       }
       UnityEngine.GUILayout.Label(
-          frame_info,
-          Style.RightAligned(Style.Info(UnityEngine.GUI.skin.label)));
+          info,
+          Style.Info(UnityEngine.GUI.skin.label));
+      if (UnityEngine.GUILayout.Button("Delete", GUILayoutWidth(2))) {
+        return Event.Deleted;
+      }
+    }
+    if (minimized) {
+      return Event.None;
     }
     using (new UnityEngine.GUILayout.VerticalScope()) {
       // When we are first rendered, the |initial_mass_in_tonnes_| will just have
@@ -132,8 +153,8 @@ class BurnEditor : ScalingRenderer {
         }
       }
       UnityEngine.GUILayout.Label(
-          index_ == 0 ? "Time base: start of flight plan"
-                      : $"Time base: end of manœuvre #{index_}",
+          index == 0 ? "Time base: start of flight plan"
+                     : $"Time base: end of manœuvre #{index}",
           style : new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label){
               alignment = UnityEngine.TextAnchor.UpperLeft});
       using (new UnityEngine.GUILayout.HorizontalScope()) {
@@ -147,7 +168,7 @@ class BurnEditor : ScalingRenderer {
                                   Style.Warning(UnityEngine.GUI.skin.label));
       changed_reference_frame_ = false;
     }
-    return changed;
+    return changed ? Event.Changed : Event.None;
   }
 
   public double Δv() {
@@ -288,13 +309,17 @@ class BurnEditor : ScalingRenderer {
     return true;
   }
 
-  private double time_base => previous_burn_?.final_time ??
+  private double time_base => previous_burn?.final_time ??
                               plugin.FlightPlanGetInitialTime(
                                   vessel_.id.ToString());
 
-  private double final_time => initial_time_ + duration_;
+  public double initial_time => initial_time_;
+  public double final_time => initial_time_ + duration_;
 
   private IntPtr plugin => adapter_.Plugin();
+  public int index { private get; set; }
+  public bool minimized { private get; set; } = true;
+  private BurnEditor previous_burn => get_burn_at_index_(index - 1);
 
   private bool is_inertially_fixed_;
   private readonly DifferentialSlider Δv_tangent_;
@@ -317,8 +342,7 @@ class BurnEditor : ScalingRenderer {
 
   // Not owned.
   private readonly Vessel vessel_;
-  private readonly int index_;
-  private readonly BurnEditor previous_burn_;
+  private readonly Func<int, BurnEditor> get_burn_at_index_;
   private readonly PrincipiaPluginAdapter adapter_;
 
   private bool changed_reference_frame_ = false;

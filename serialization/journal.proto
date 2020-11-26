@@ -212,36 +212,13 @@ message OrbitAnalysis {
   optional OrbitalElements elements = 4 [(is_produced) = true];
   optional OrbitRecurrence recurrence = 5 [(is_produced) = true];
   optional OrbitGroundTrack ground_track = 6 [(is_produced) = true];
+  required fixed64 elements_address = 7 [(address_of) = "elements"];
+  required fixed64 recurrence_address = 8 [(address_of) = "recurrence"];
+  required fixed64 ground_track_address = 9 [(address_of) = "ground_track"];
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5174.
-}
-
-message SetAngularMomentumConservation {
-  extend Method {
-    optional SetAngularMomentumConservation extension = 5999;
-  }
-  message In {
-    required bool conserve_angular_momentum = 1;
-  }
-  optional In in = 1;
-}
-
-message VesselGetPileUpTrace {
-  extend Method {
-    optional VesselGetPileUpTrace extension = 5998;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required string vessel_guid = 2;
-  }
-  message Return {
-    required string result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
+  extensions 5000 to 5999;  // Last used: 5175.
 }
 
 message AdvanceTime {
@@ -553,6 +530,7 @@ message ExternalCelestialGetPosition {
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -577,6 +555,7 @@ message ExternalCelestialGetSurfacePosition {
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -604,6 +583,7 @@ message ExternalFlowFreefall {
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -629,6 +609,7 @@ message ExternalGeopotentialGetCoefficient {
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -653,6 +634,7 @@ message ExternalGeopotentialGetReferenceRadius {
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -674,6 +656,7 @@ message ExternalVesselGetPosition {
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -700,6 +683,7 @@ message ExternalGetNearestPlannedCoastDegreesOfFreedom {
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -707,23 +691,6 @@ message ExternalGetNearestPlannedCoastDegreesOfFreedom {
 }
 
 // End of external API.
-
-message FlightPlanAppend {
-  extend Method {
-    optional FlightPlanAppend extension = 5063;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required string vessel_guid = 2;
-    required Burn burn = 3;
-  }
-  message Return {
-    required Status result = 1 [(is_produced) = true];
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
 
 message FlightPlanCreate {
   extend Method {
@@ -882,6 +849,26 @@ message FlightPlanGetManoeuvreFrenetTrihedron {
   optional Return return = 3;
 }
 
+message FlightPlanInsert {
+  extend Method {
+    optional FlightPlanInsert extension = 5063;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required Burn burn = 3;
+    required int32 index = 4;
+  }
+  message Return {
+    required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+
 message FlightPlanNumberOfAnomalousManoeuvres {
   extend Method {
     optional FlightPlanNumberOfAnomalousManoeuvres extension = 5159;
@@ -941,23 +928,26 @@ message FlightPlanRebase {
     required double mass_in_tonnes = 3;
   }
   message Return {
-    required Status result = 1;
+    required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Return return = 3;
 }
 
-message FlightPlanRemoveLast {
+message FlightPlanRemove {
   extend Method {
-    optional FlightPlanRemoveLast extension = 5065;
+    optional FlightPlanRemove extension = 5065;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
     required string vessel_guid = 2;
+    required int32 index = 3;
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -1064,6 +1054,7 @@ message FlightPlanReplace {
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -1082,6 +1073,7 @@ message FlightPlanSetAdaptiveStepParameters {
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -1099,6 +1091,7 @@ message FlightPlanSetDesiredFinalTime {
   }
   message Return {
     required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -2007,6 +2000,17 @@ message SayHello {
   optional Return return = 3;
 }
 
+message SayNotFound {
+  extend Method {
+    optional SayNotFound extension = 5175;
+  }
+  message Return {
+    required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
+  }
+  optional Return return = 3;
+}
+
 message SerializePlugin {
   extend Method {
     optional SerializePlugin extension = 5054;
@@ -2262,6 +2266,7 @@ message VesselRefreshAnalysis {
   }
   message Return {
     required OrbitAnalysis result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -2328,10 +2333,6 @@ extend google.protobuf.FieldOptions {
   optional string is_consumed_if = 50004;
   optional string is_produced_if = 50005;
 
-  // For a fixed64 field that is not consumed, indicates that it should follow
-  // the Dispose pattern and gives the name of the disposable class.
-  optional string disposable = 50009;
-
   // For a fixed64 field (which is used to represent a pointer), indicates that
   // it should be the subject in C# methods.
   optional bool is_subject = 50006;
@@ -2344,6 +2345,13 @@ extend google.protobuf.FieldOptions {
   // For a fixed64 field that is produced and denotes a string, indicates the
   // encoding and the representation.
   optional Encoding encoding = 50008;
+
+  // For a fixed64 field that is not consumed, indicates that it should follow
+  // the Dispose pattern and gives the name of the disposable class.
+  optional string disposable = 50009;
+
+  //TODO(phl):comment
+  optional string address_of = 50010;
 }
 
 extend google.protobuf.MessageOptions {

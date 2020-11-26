@@ -14,6 +14,8 @@ namespace ksp_plugin {
 namespace internal_orbit_analyser {
 
 using base::dynamic_cast_not_null;
+using base::stop_token;
+using base::this_stoppable_thread;
 using geometry::Frame;
 using geometry::NonRotating;
 using physics::BodyCentredNonRotatingDynamicFrame;
@@ -30,19 +32,12 @@ OrbitAnalyser::OrbitAnalyser(
       analysed_trajectory_parameters_(
           std::move(analysed_trajectory_parameters)) {}
 
-OrbitAnalyser::~OrbitAnalyser() {
-  if (analyser_.joinable()) {
-    keep_analysing_ = false;
-    analyser_.join();
-  }
-}
-
 void OrbitAnalyser::RequestAnalysis(
     Instant const& first_time,
     DegreesOfFreedom<Barycentric> const& first_degrees_of_freedom,
     Time const& mission_duration) {
   if (!analyser_.joinable()) {
-    analyser_ = std::thread([this] { RepeatedlyAnalyseOrbit(); });
+    analyser_ = base::MakeStoppableThread([this] { RepeatedlyAnalyseOrbit(); });
   }
   Ephemeris<Barycentric>::Guard guard(ephemeris_);
   if (ephemeris_->t_min() > first_time) {
@@ -78,7 +73,7 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
     std::chrono::steady_clock::time_point const wakeup_time =
         std::chrono::steady_clock::now() + std::chrono::milliseconds(20);
 
-    if (!keep_analysing_) {
+    if (this_stoppable_thread::get_stop_token().stop_requested()) {
       return;
     }
 
@@ -115,7 +110,7 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
       progress_of_next_analysis_ =
           (trajectory.back().time - parameters->first_time) /
           parameters->mission_duration;
-      if (!keep_analysing_) {
+      if (this_stoppable_thread::get_stop_token().stop_requested()) {
         return;
       }
     }
