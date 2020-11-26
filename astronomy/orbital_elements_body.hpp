@@ -150,15 +150,15 @@ OrbitalElements::OsculatingEquinoctialElements(
     double const tg_½i = Tan(i / 2);
     double const cotg_½i = 1 / tg_½i;
     result.push_back(
-        {/*.t = */ time,
-         /*.a = */ *osculating_elements.semimajor_axis,
-         /*.h = */ e * Sin(ϖ),
-         /*.k = */ e * Cos(ϖ),
-         /*.λ = */ result.empty() ? ϖ + M : UnwindFrom(result.back().λ, ϖ + M),
-         /*.p = */ tg_½i * Sin(Ω),
-         /*.q = */ tg_½i * Cos(Ω),
-         /*.pʹ = */ cotg_½i * Sin(Ω),
-         /*.qʹ = */ cotg_½i * Cos(Ω)});
+        {.t = time,
+         .a = *osculating_elements.semimajor_axis,
+         .h = e * Sin(ϖ),
+         .k = e * Cos(ϖ),
+         .λ = result.empty() ? ϖ + M : UnwindFrom(result.back().λ, ϖ + M),
+         .p = tg_½i * Sin(Ω),
+         .q = tg_½i * Cos(Ω),
+         .pʹ = cotg_½i * Sin(Ω),
+         .qʹ = cotg_½i * Cos(Ω)});
   }
   return result;
 }
@@ -335,22 +335,22 @@ OrbitalElements::ToClassicalElements(
     Angle const ω = ϖ - Ω;
     Angle const M = equinoctial.λ - ϖ;
     classical_elements.push_back(
-        {/*.time = */ equinoctial.t,
-         /*.semimajor_axis = */ equinoctial.a,
-         /*.eccentricity = */ e,
-         /*.inclination = */ i,
-         /*.longitude_of_ascending_node = */ classical_elements.empty()
+        {.time = equinoctial.t,
+         .semimajor_axis = equinoctial.a,
+         .eccentricity = e,
+         .inclination = i,
+         .longitude_of_ascending_node = classical_elements.empty()
              ? Mod(Ω, 2 * π * Radian)
              : UnwindFrom(classical_elements.back().longitude_of_ascending_node,
                           Ω),
-         /*.argument_of_periapsis = */ classical_elements.empty()
+         .argument_of_periapsis = classical_elements.empty()
              ? Mod(ω, 2 * π * Radian)
              : UnwindFrom(classical_elements.back().argument_of_periapsis, ω),
-         /*.mean_anomaly = */ classical_elements.empty()
+         .mean_anomaly = classical_elements.empty()
              ? Mod(M, 2 * π * Radian)
              : UnwindFrom(classical_elements.back().mean_anomaly, M),
-         /*.periapsis_distance = */ (1 - e) * equinoctial.a,
-         /*.apoapsis_distance = */ (1 + e) * equinoctial.a});
+         .periapsis_distance = (1 - e) * equinoctial.a,
+         .apoapsis_distance = (1 + e) * equinoctial.a});
   }
   return classical_elements;
 }

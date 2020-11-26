@@ -542,7 +542,10 @@ inline void FillOrbitAnalysis(
     int const ground_track_revolution,
     not_null<OrbitAnalysis*> analysis) {
   analysis->primary_index =
-      new int(plugin.CelestialIndexOfBody(vessel_analysis.primary()));
+      vessel_analysis.primary() == nullptr
+          ? nullptr
+          : new int(plugin.CelestialIndexOfBody(*vessel_analysis.primary()));
+
   analysis->mission_duration = vessel_analysis.mission_duration() / Second;
   if (vessel_analysis.elements().has_value()) {
     auto const& elements = *vessel_analysis.elements();
@@ -566,9 +569,9 @@ inline void FillOrbitAnalysis(
         .radial_distance = ToInterval(elements.radial_distance_interval()),
     };
   }
-  if (has_nominal_recurrence) {
+  if (has_nominal_recurrence && vessel_analysis.primary() != nullptr) {
     int const Cᴛₒ =
-        geometry::Sign(vessel_analysis.primary().angular_frequency()) *
+        geometry::Sign(vessel_analysis.primary()->angular_frequency()) *
         std::abs(*days_per_cycle);
     int const νₒ =
         std::nearbyint(static_cast<double>(*revolutions_per_cycle) / Cᴛₒ);
