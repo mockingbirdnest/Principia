@@ -7,19 +7,23 @@
 
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/kepler_orbit.hpp"
 
 namespace principia {
 namespace ksp_plugin {
 namespace internal_orbit_analyser {
 
+using base::dynamic_cast_not_null;
 using base::stop_token;
 using base::this_stoppable_thread;
 using geometry::Frame;
 using geometry::NonRotating;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DiscreteTrajectory;
+using physics::KeplerOrbit;
 using physics::MasslessBody;
 using quantities::IsFinite;
+using quantities::Infinity;
 
 OrbitAnalyser::OrbitAnalyser(
     not_null<Ephemeris<Barycentric>*> const ephemeris,
@@ -31,8 +35,7 @@ OrbitAnalyser::OrbitAnalyser(
 void OrbitAnalyser::RequestAnalysis(
     Instant const& first_time,
     DegreesOfFreedom<Barycentric> const& first_degrees_of_freedom,
-    Time const& mission_duration,
-    not_null<RotatingBody<Barycentric> const*> primary) {
+    Time const& mission_duration) {
   if (!analyser_.joinable()) {
     analyser_ = base::MakeStoppableThread([this] { RepeatedlyAnalyseOrbit(); });
   }
@@ -45,8 +48,7 @@ void OrbitAnalyser::RequestAnalysis(
   parameters_ = {std::move(guard),
                  first_time,
                  first_degrees_of_freedom,
-                 mission_duration,
-                 primary};
+                 mission_duration};
 }
 
 void OrbitAnalyser::RefreshAnalysis() {
@@ -85,8 +87,7 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
       std::swap(parameters, parameters_);
     }
 
-    Analysis analysis{parameters->first_time,
-                      parameters->primary};
+    Analysis analysis{parameters->first_time};
     DiscreteTrajectory<Barycentric> trajectory;
     trajectory.Append(parameters->first_time,
                       parameters->first_degrees_of_freedom);
@@ -101,7 +102,9 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
          trajectory.back().time <
          parameters->first_time + parameters->mission_duration;
          t += parameters->mission_duration / 0x1p10) {
+      auto const flow_status = ephemeris_->FlowWithFixedStep(t, *instance);
       if (!ephemeris_->FlowWithFixedStep(t, *instance).ok()) {
+        // TODO(egg): Report that the integration failed.
         break;
       }
       progress_of_next_analysis_ =
@@ -119,31 +122,50 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
     // the progress bar being stuck at 100% while the elements and nodes are
     // being computed.
 
-    using PrimaryCentred = Frame<enum class PrimaryCentredTag, NonRotating>;
-    BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred>
-        primary_centred(ephemeris_, parameters->primary);
-    DiscreteTrajectory<PrimaryCentred> primary_centred_trajectory;
-    for (auto const& [time, degrees_of_freedom] : trajectory) {
-      primary_centred_trajectory.Append(
-          time, primary_centred.ToThisFrameAtTime(time)(degrees_of_freedom));
+    RotatingBody<Barycentric> const* primary = nullptr;
+    auto smallest_osculating_period = Infinity<Time>;
+    for (auto const body : ephemeris_->bodies()) {
+      auto const initial_osculating_elements =
+          KeplerOrbit<Barycentric>{
+              *body,
+              MasslessBody{},
+              parameters->first_degrees_of_freedom -
+                  ephemeris_->trajectory(body)->EvaluateDegreesOfFreedom(
+                      parameters->first_time),
+              parameters->first_time}.elements_at_epoch();
+      if (initial_osculating_elements.period.has_value() &&
+          initial_osculating_elements.period < smallest_osculating_period) {
+        smallest_osculating_period = *initial_osculating_elements.period;
+        primary = dynamic_cast_not_null<RotatingBody<Barycentric> const*>(body);
+      }
     }
-
-    auto const elements = OrbitalElements::ForTrajectory(
-        primary_centred_trajectory, *parameters->primary, MasslessBody{});
-    if (elements.ok()) {
-      analysis.elements_ = elements.ValueOrDie();
-      // TODO(egg): max_abs_Cᴛₒ should probably depend on the number of
-      // revolutions.
-      analysis.closest_recurrence_ = OrbitRecurrence::ClosestRecurrence(
-          analysis.elements_->nodal_period(),
-          analysis.elements_->nodal_precession(),
-          *parameters->primary,
-          /*max_abs_Cᴛₒ=*/100);
-      analysis.ground_track_ =
-          OrbitGroundTrack::ForTrajectory(primary_centred_trajectory,
-                                          *parameters->primary,
-                                          /*mean_sun=*/std::nullopt);
-      analysis.ResetRecurrence();
+    if (primary != nullptr) {
+      using PrimaryCentred = Frame<enum class PrimaryCentredTag, NonRotating>;
+      DiscreteTrajectory<PrimaryCentred> primary_centred_trajectory;
+      BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred>
+          body_centred(ephemeris_, primary);
+      for (auto const& [time, degrees_of_freedom] : trajectory) {
+        primary_centred_trajectory.Append(
+            time, body_centred.ToThisFrameAtTime(time)(degrees_of_freedom));
+      }
+      analysis.primary_ = primary;
+      auto const elements = OrbitalElements::ForTrajectory(
+          primary_centred_trajectory, *primary, MasslessBody{});
+      if (elements.ok()) {
+        analysis.elements_ = elements.ValueOrDie();
+        // TODO(egg): max_abs_Cᴛₒ should probably depend on the number of
+        // revolutions.
+        analysis.closest_recurrence_ = OrbitRecurrence::ClosestRecurrence(
+            analysis.elements_->nodal_period(),
+            analysis.elements_->nodal_precession(),
+            *primary,
+            /*max_abs_Cᴛₒ=*/100);
+        analysis.ground_track_ =
+            OrbitGroundTrack::ForTrajectory(primary_centred_trajectory,
+                                            *primary,
+                                            /*mean_sun=*/std::nullopt);
+        analysis.ResetRecurrence();
+      }
     }
 
     {
@@ -163,8 +185,8 @@ Time const& OrbitAnalyser::Analysis::mission_duration() const {
   return mission_duration_;
 }
 
-RotatingBody<Barycentric> const& OrbitAnalyser::Analysis::primary() const {
-  return *primary_;
+RotatingBody<Barycentric> const* OrbitAnalyser::Analysis::primary() const {
+  return primary_;
 }
 
 std::optional<OrbitalElements> const& OrbitAnalyser::Analysis::elements()
@@ -207,10 +229,8 @@ void OrbitAnalyser::Analysis::ResetRecurrence() {
   }
 }
 
-OrbitAnalyser::Analysis::Analysis(
-    Instant const& first_time,
-    not_null<RotatingBody<Barycentric> const*> const primary)
-    : first_time_(first_time), primary_(primary) {}
+OrbitAnalyser::Analysis::Analysis(Instant const& first_time)
+    : first_time_(first_time) {}
 
 }  // namespace internal_orbit_analyser
 }  // namespace ksp_plugin
