@@ -542,7 +542,7 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
     int const* const revolutions_per_cycle,
     int const* const days_per_cycle,
     int const ground_track_revolution) {
-  auto analysis = new OrbitAnalysis{};
+  auto* const analysis = new OrbitAnalysis{};
   CHECK_EQ(revolutions_per_cycle == nullptr, days_per_cycle == nullptr);
   bool const has_nominal_recurrence = revolutions_per_cycle != nullptr;
   if (has_nominal_recurrence) {
