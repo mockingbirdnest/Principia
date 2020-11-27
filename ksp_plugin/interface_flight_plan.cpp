@@ -257,21 +257,12 @@ OrbitAnalysis* __cdecl principia__FlightPlanGetCoastAnalysis(
   journal::Method<journal::FlightPlanGetCoastAnalysis> m(
       {plugin, vessel_guid, index});
   CHECK_NOTNULL(plugin);
-  OrbitAnalysis* const analysis = new OrbitAnalysis{};
-  auto* const coast_analysis =
-      GetFlightPlan(*plugin, vessel_guid).analysis(index);
-
-  if (coast_analysis != nullptr) {
-    FillOrbitAnalysis(*coast_analysis,
-                      *plugin,
-                      /*has_nominal_recurrence=*/false,
-                      /*revolutions_per_cycle=*/nullptr,
-                      /*days_per_cycle=*/nullptr,
-                      /*ground_track_revolution=*/0,
-                      analysis);
-  }
-
-  return m.Return(analysis);
+  return m.Return(
+      NewOrbitAnalysis(GetFlightPlan(*plugin, vessel_guid).analysis(index),
+                       *plugin,
+                       /*revolutions_per_cycle=*/nullptr,
+                       /*days_per_cycle=*/nullptr,
+                       /*ground_track_revolution=*/0));
 }
 
 double __cdecl principia__FlightPlanGetDesiredFinalTime(
