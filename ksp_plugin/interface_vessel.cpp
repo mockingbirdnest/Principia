@@ -82,25 +82,14 @@ OrbitAnalysis* __cdecl principia__VesselRefreshAnalysis(
                                                      days_per_cycle,
                                                      ground_track_revolution});
   CHECK_NOTNULL(plugin);
-  CHECK_EQ(revolutions_per_cycle == nullptr, days_per_cycle == nullptr);
-  bool const has_nominal_recurrence = revolutions_per_cycle != nullptr;
-  if (has_nominal_recurrence) {
-    CHECK_GT(*revolutions_per_cycle, 0);
-    CHECK_NE(*days_per_cycle, 0);
-  }
   Vessel& vessel = *plugin->GetVessel(vessel_guid);
   vessel.RefreshOrbitAnalysis(mission_duration * Second);
-  OrbitAnalysis* const analysis = new OrbitAnalysis{};
+  not_null<OrbitAnalysis*> analysis = NewOrbitAnalysis(vessel.orbit_analysis(),
+                                                       *plugin,
+                                                       revolutions_per_cycle,
+                                                       days_per_cycle,
+                                                       ground_track_revolution);
   analysis->progress_of_next_analysis = vessel.progress_of_orbit_analysis();
-  if (vessel.orbit_analysis() != nullptr) {
-    FillOrbitAnalysis(*vessel.orbit_analysis(),
-                      *plugin,
-                      has_nominal_recurrence,
-                      revolutions_per_cycle,
-                      days_per_cycle,
-                      ground_track_revolution,
-                      analysis);
-  }
 
   return m.Return(analysis);
 }
