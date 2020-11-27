@@ -598,8 +598,7 @@ inline void FillOrbitAnalysis(
       vessel_analysis.equatorial_crossings().has_value()) {
     auto const& equatorial_crossings = *vessel_analysis.equatorial_crossings();
     analysis->ground_track = new OrbitGroundTrack{
-        .equatorial_crossings =
-            {
+        .equatorial_crossings = {
                 .longitudes_reduced_to_ascending_pass =
                     ToInterval(equatorial_crossings.longitudes_reduced_to_pass(
                         2 * ground_track_revolution - 1)),
