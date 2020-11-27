@@ -7,6 +7,7 @@
 
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
+#include "base/status.hpp"
 
 namespace principia {
 namespace base {
@@ -122,6 +123,13 @@ class this_stoppable_thread {
   template<typename Function, typename... Args>
   friend jthread MakeStoppableThread(Function&& f, Args&&... args);
 };
+
+#define RETURN_IF_STOPPED                                                     \
+  do {                                                                        \
+    if (base::this_stoppable_thread::get_stop_token().stop_requested()) {     \
+      return base::Status(base::Error::CANCELLED, "Cancelled by stop token"); \
+    }                                                                         \
+  } while (false)
 
 }  // namespace internal_jthread
 

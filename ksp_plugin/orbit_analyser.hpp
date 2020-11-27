@@ -26,6 +26,7 @@ using astronomy::OrbitGroundTrack;
 using astronomy::OrbitRecurrence;
 using base::jthread;
 using base::not_null;
+using base::Status;
 using geometry::Instant;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
@@ -84,16 +85,26 @@ class OrbitAnalyser {
     friend class OrbitAnalyser;
   };
 
+  struct Parameters {
+    Instant first_time;
+    DegreesOfFreedom<Barycentric> first_degrees_of_freedom;
+    Time mission_duration;
+  };
+
   OrbitAnalyser(not_null<Ephemeris<Barycentric>*> ephemeris,
                 Ephemeris<Barycentric>::FixedStepParameters
                     analysed_trajectory_parameters);
 
+  // Cancel any computation in progress, causing the next call to
+  // |RequestAnalysis| to be processed as fast as possible.
+  void Restart();
+
   // Sets the parameters that will be used for the computation of the next
   // analysis.
-  void RequestAnalysis(
-      Instant const& first_time,
-      DegreesOfFreedom<Barycentric> const& first_degrees_of_freedom,
-      Time const& mission_duration);
+  void RequestAnalysis(Parameters const& parameters);
+
+  // The last value passed to |RequestAnalysis|.
+  std::optional<Parameters> const& last_parameters() const;
 
   // Sets |analysis()| to the latest computed analysis.
   void RefreshAnalysis();
@@ -107,18 +118,18 @@ class OrbitAnalyser {
   double progress_of_next_analysis() const;
 
  private:
-  struct Parameters {
+  struct GuardedParameters {
     Ephemeris<Barycentric>::Guard guard;
-    Instant first_time;
-    DegreesOfFreedom<Barycentric> first_degrees_of_freedom;
-    Time mission_duration;
+    Parameters parameters;
   };
 
-  void RepeatedlyAnalyseOrbit();
+  Status RepeatedlyAnalyseOrbit();
 
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
   Ephemeris<Barycentric>::FixedStepParameters const
       analysed_trajectory_parameters_;
+
+  std::optional<Parameters> last_parameters_;
 
   std::optional<Analysis> analysis_;
 
@@ -126,7 +137,10 @@ class OrbitAnalyser {
   jthread analyser_;
   // |parameters_| is set by the main thread; it is read and cleared by the
   // |analyser_| thread.
-  std::optional<Parameters> parameters_ GUARDED_BY(lock_);
+  std::optional<GuardedParameters> guarded_parameters_ GUARDED_BY(lock_);
+  // |requested_mission_duration_| is set by the |analyser_| thread; it is read
+  // by the main thread.  It is the |mission_duration| of the current 
+  std::optional<Time> requested_mission_duration_ GUARDED_BY(lock_);
   // |next_analysis_| is set by the |analyser_| thread; it is read and cleared
   // by the main thread.
   std::optional<Analysis> next_analysis_ GUARDED_BY(lock_);
