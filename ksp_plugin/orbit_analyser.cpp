@@ -104,7 +104,6 @@ Status OrbitAnalyser::RepeatedlyAnalyseOrbit() {
          trajectory.back().time <
          parameters.first_time + parameters.mission_duration;
          t += parameters.mission_duration / 0x1p10) {
-      auto const flow_status = ephemeris_->FlowWithFixedStep(t, *instance);
       if (!ephemeris_->FlowWithFixedStep(t, *instance).ok()) {
         // TODO(egg): Report that the integration failed.
         break;
