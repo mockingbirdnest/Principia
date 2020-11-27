@@ -19,6 +19,7 @@
 namespace principia {
 namespace interface {
 
+using base::make_not_null_unique;
 using base::UniqueArray;
 using geometry::OrthogonalMap;
 using geometry::RigidTransformation;
@@ -533,22 +534,33 @@ Interval ToInterval(geometry::Interval<T> const& interval) {
           interval.max / quantities::si::Unit<T>};
 }
 
-inline void FillOrbitAnalysis(
-    ksp_plugin::OrbitAnalyser::Analysis& vessel_analysis,
+// Ownership is returned to the caller.  Note that the result may own additional
+// objects via C pointers; it must be not be deleted from C++, and must instead
+// be passed to the generated C# marshaller, which will properly delete it.
+inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
+    ksp_plugin::OrbitAnalyser::Analysis* const vessel_analysis,
     ksp_plugin::Plugin const& plugin,
-    bool const has_nominal_recurrence,
     int const* const revolutions_per_cycle,
     int const* const days_per_cycle,
-    int const ground_track_revolution,
-    not_null<OrbitAnalysis*> analysis) {
+    int const ground_track_revolution) {
+  auto analysis = new OrbitAnalysis{};
+  CHECK_EQ(revolutions_per_cycle == nullptr, days_per_cycle == nullptr);
+  bool const has_nominal_recurrence = revolutions_per_cycle != nullptr;
+  if (has_nominal_recurrence) {
+    CHECK_GT(*revolutions_per_cycle, 0);
+    CHECK_NE(*days_per_cycle, 0);
+  }
+  if (vessel_analysis == nullptr) {
+    return analysis;
+  }
   analysis->primary_index =
-      vessel_analysis.primary() == nullptr
+      vessel_analysis->primary() == nullptr
           ? nullptr
-          : new int(plugin.CelestialIndexOfBody(*vessel_analysis.primary()));
+          : new int(plugin.CelestialIndexOfBody(*vessel_analysis->primary()));
 
-  analysis->mission_duration = vessel_analysis.mission_duration() / Second;
-  if (vessel_analysis.elements().has_value()) {
-    auto const& elements = *vessel_analysis.elements();
+  analysis->mission_duration = vessel_analysis->mission_duration() / Second;
+  if (vessel_analysis->elements().has_value()) {
+    auto const& elements = *vessel_analysis->elements();
     analysis->elements = new OrbitalElements{
         .sidereal_period = elements.sidereal_period() / Second,
         .nodal_period = elements.nodal_period() / Second,
@@ -569,20 +581,20 @@ inline void FillOrbitAnalysis(
         .radial_distance = ToInterval(elements.radial_distance_interval()),
     };
   }
-  if (has_nominal_recurrence && vessel_analysis.primary() != nullptr) {
+  if (has_nominal_recurrence && vessel_analysis->primary() != nullptr) {
     int const Cᴛₒ =
-        geometry::Sign(vessel_analysis.primary()->angular_frequency()) *
+        geometry::Sign(vessel_analysis->primary()->angular_frequency()) *
         std::abs(*days_per_cycle);
     int const νₒ =
         std::nearbyint(static_cast<double>(*revolutions_per_cycle) / Cᴛₒ);
     int const Dᴛₒ = *revolutions_per_cycle - νₒ * Cᴛₒ;
     int const gcd = std::gcd(Dᴛₒ, Cᴛₒ);
-    vessel_analysis.SetRecurrence({νₒ, Dᴛₒ / gcd, Cᴛₒ / gcd});
+    vessel_analysis->SetRecurrence({νₒ, Dᴛₒ / gcd, Cᴛₒ / gcd});
   } else {
-    vessel_analysis.ResetRecurrence();
+    vessel_analysis->ResetRecurrence();
   }
-  if (vessel_analysis.recurrence().has_value()) {
-    auto const& recurrence = *vessel_analysis.recurrence();
+  if (vessel_analysis->recurrence().has_value()) {
+    auto const& recurrence = *vessel_analysis->recurrence();
     analysis->recurrence = new OrbitRecurrence{
         .nuo = recurrence.νₒ(),
         .dto = recurrence.Dᴛₒ(),
@@ -594,9 +606,9 @@ inline void FillOrbitAnalysis(
         .subcycle = recurrence.subcycle(),
     };
   }
-  if (vessel_analysis.ground_track().has_value() &&
-      vessel_analysis.equatorial_crossings().has_value()) {
-    auto const& equatorial_crossings = *vessel_analysis.equatorial_crossings();
+  if (vessel_analysis->ground_track().has_value() &&
+      vessel_analysis->equatorial_crossings().has_value()) {
+    auto const& equatorial_crossings = *vessel_analysis->equatorial_crossings();
     analysis->ground_track = new OrbitGroundTrack{
         .equatorial_crossings = {
                 .longitudes_reduced_to_ascending_pass =
@@ -608,6 +620,7 @@ inline void FillOrbitAnalysis(
             },
     };
   }
+  return analysis;
 }
 
 inline Instant FromGameTime(Plugin const& plugin,
