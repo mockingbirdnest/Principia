@@ -124,6 +124,7 @@ Status OrbitAnalyser::RepeatedlyAnalyseOrbit() {
     RotatingBody<Barycentric> const* primary = nullptr;
     auto smallest_osculating_period = Infinity<Time>;
     for (auto const body : ephemeris_->bodies()) {
+      RETURN_IF_STOPPED;
       auto const initial_osculating_elements =
           KeplerOrbit<Barycentric>{
               *body,
@@ -144,6 +145,7 @@ Status OrbitAnalyser::RepeatedlyAnalyseOrbit() {
       BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred>
           body_centred(ephemeris_, primary);
       for (auto const& [time, degrees_of_freedom] : trajectory) {
+        RETURN_IF_STOPPED;
         primary_centred_trajectory.Append(
             time, body_centred.ToThisFrameAtTime(time)(degrees_of_freedom));
       }
