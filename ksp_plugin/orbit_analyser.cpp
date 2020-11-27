@@ -150,10 +150,13 @@ Status OrbitAnalyser::RepeatedlyAnalyseOrbit() {
             time, body_centred.ToThisFrameAtTime(time)(degrees_of_freedom));
       }
       analysis.primary_ = primary;
-      auto const elements = OrbitalElements::ForTrajectory(
+      auto elements = OrbitalElements::ForTrajectory(
           primary_centred_trajectory, *primary, MasslessBody{});
+      // We do not RETURN_IF_ERROR as ForTrajectory can return non-CANCELLED
+      // statuses.
+      RETURN_IF_STOPPED;
       if (elements.ok()) {
-        analysis.elements_ = elements.ValueOrDie();
+        analysis.elements_ = std::move(elements).ValueOrDie();
         // TODO(egg): max_abs_Cᴛₒ should probably depend on the number of
         // revolutions.
         analysis.closest_recurrence_ = OrbitRecurrence::ClosestRecurrence(
@@ -161,10 +164,12 @@ Status OrbitAnalyser::RepeatedlyAnalyseOrbit() {
             analysis.elements_->nodal_precession(),
             *primary,
             /*max_abs_Cᴛₒ=*/100);
-        analysis.ground_track_ =
+        auto ground_track =
             OrbitGroundTrack::ForTrajectory(primary_centred_trajectory,
                                             *primary,
                                             /*mean_sun=*/std::nullopt);
+        RETURN_IF_ERROR(ground_track.status());
+        analysis.ground_track_ = std::move(ground_track).ValueOrDie();
         analysis.ResetRecurrence();
       }
     }

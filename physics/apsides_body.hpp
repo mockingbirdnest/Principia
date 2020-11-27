@@ -130,7 +130,7 @@ void ComputeApsides(Trajectory<Frame> const& reference,
 }
 
 template<typename Frame, typename Predicate>
-void ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
+Status ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
                   typename DiscreteTrajectory<Frame>::Iterator end,
                   Vector<double, Frame> const& north,
                   int const max_points,
@@ -148,6 +148,7 @@ void ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
   std::optional<Speed> previous_z_speed;
 
   for (auto it = begin; it != end; ++it) {
+    RETURN_IF_STOPPED;
     auto const& [time, degrees_of_freedom] = *it;
     Length const z =
         (degrees_of_freedom.position() - Frame::origin).coordinates().z;
@@ -203,6 +204,7 @@ void ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
     previous_z = z;
     previous_z_speed = z_speed;
   }
+  return Status::OK;
 }
 
 }  // namespace internal_apsides

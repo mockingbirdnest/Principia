@@ -3,6 +3,7 @@
 #include <functional>
 
 #include "base/constant_function.hpp"
+#include "base/status.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/trajectory.hpp"
 
@@ -12,6 +13,7 @@ namespace internal_apsides {
 
 using base::ConstantFunction;
 using base::Identically;
+using base::Status;
 using geometry::Vector;
 
 // Computes the apsides with respect to |reference| for the discrete trajectory
@@ -31,13 +33,13 @@ void ComputeApsides(Trajectory<Frame> const& reference,
 // |north| side to |descending|.
 // Nodes for which |predicate| returns false are excluded.
 template<typename Frame, typename Predicate = ConstantFunction<bool>>
-void ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
-                  typename DiscreteTrajectory<Frame>::Iterator end,
-                  Vector<double, Frame> const& north,
-                  int max_points,
-                  DiscreteTrajectory<Frame>& ascending,
-                  DiscreteTrajectory<Frame>& descending,
-                  Predicate predicate = Identically(true));
+Status ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
+                    typename DiscreteTrajectory<Frame>::Iterator end,
+                    Vector<double, Frame> const& north,
+                    int max_points,
+                    DiscreteTrajectory<Frame>& ascending,
+                    DiscreteTrajectory<Frame>& descending,
+                    Predicate predicate = Identically(true));
 
 // TODO(egg): when we can usefully iterate over an arbitrary |Trajectory|, move
 // the following from |Ephemeris|.
