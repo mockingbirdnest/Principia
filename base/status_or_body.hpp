@@ -57,6 +57,12 @@ StatusOr<T>::StatusOr(T const& value) {
 }
 
 template<typename T>
+StatusOr<T>::StatusOr(T&& value) {
+  status_ = Status::OK;
+  value_ = std::move(value);
+}
+
+template<typename T>
 template<typename U>
 StatusOr<T>::StatusOr(StatusOr<U> const& other)
     : status_(other.status_) {

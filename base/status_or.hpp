@@ -118,9 +118,11 @@ class StatusOr final {
   // so it is convenient and sensible to be able to do |return T()|
   // when when the return type is |StatusOr<T>|.
   StatusOr(T const& value);  // NOLINT
+  StatusOr(T&& value);  // NOLINT
 
   // Copy constructor.
   StatusOr(StatusOr const& other) = default;
+  StatusOr(StatusOr&& other) = default;
 
   // Conversion copy constructor, |T| must be copy-constructible from |U|.
   template<typename U>
@@ -128,6 +130,7 @@ class StatusOr final {
 
   // Assignment operator.
   StatusOr& operator=(StatusOr const& other) = default;
+  StatusOr& operator=(StatusOr&& other) = default;
 
   // Conversion assignment operator, |T| must be copy-assignable from |U|.
   template<typename U>
