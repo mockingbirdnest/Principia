@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/jthread.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "quantities/elementary_functions.hpp"
 
@@ -14,6 +15,7 @@ namespace internal_orbital_elements {
 
 using base::Error;
 using base::Status;
+using base::this_stoppable_thread;
 using geometry::Velocity;
 using physics::DegreesOfFreedom;
 using physics::KeplerOrbit;
@@ -42,17 +44,22 @@ StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
   orbital_elements.osculating_equinoctial_elements_ =
       OsculatingEquinoctialElements(trajectory, primary, secondary);
   orbital_elements.radial_distances_ = RadialDistances(trajectory);
-  orbital_elements.sidereal_period_ =
+  auto const sidereal_period =
       SiderealPeriod(orbital_elements.osculating_equinoctial_elements_);
+  RETURN_IF_ERROR(sidereal_period.status());
+  orbital_elements.sidereal_period_ = sidereal_period.ValueOrDie();
   if (!IsFinite(orbital_elements.sidereal_period_)) {
     // Guard against NaN sidereal periods (from hyperbolic orbits).
     return Status(
         Error::OUT_OF_RANGE,
         "sidereal period is " + DebugString(orbital_elements.sidereal_period_));
   }
-  orbital_elements.mean_equinoctial_elements_ =
+  auto mean_equinoctial_elements =
       MeanEquinoctialElements(orbital_elements.osculating_equinoctial_elements_,
                               orbital_elements.sidereal_period_);
+  RETURN_IF_ERROR(mean_equinoctial_elements.status());
+  orbital_elements.mean_equinoctial_elements_ =
+      std::move(mean_equinoctial_elements).ValueOrDie();
   if (orbital_elements.mean_equinoctial_elements_.size() < 2) {
     return Status(
         Error::OUT_OF_RANGE,
@@ -62,10 +69,13 @@ StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
             DebugString(trajectory.back().time -
                         trajectory.front().time));
   }
-  orbital_elements.mean_classical_elements_ =
+  auto mean_classical_elements =
       ToClassicalElements(orbital_elements.mean_equinoctial_elements_);
-  orbital_elements.ComputePeriodsAndPrecession();
-  orbital_elements.ComputeIntervals();
+  RETURN_IF_ERROR(mean_classical_elements.status());
+  orbital_elements.mean_classical_elements_ =
+      std::move(mean_classical_elements).ValueOrDie();
+  RETURN_IF_ERROR(orbital_elements.ComputePeriodsAndPrecession());
+  RETURN_IF_ERROR(orbital_elements.ComputeIntervals());
   return orbital_elements;
 }
 
@@ -187,7 +197,7 @@ OrbitalElements::mean_equinoctial_elements() const {
   return mean_equinoctial_elements_;
 }
 
-inline Time OrbitalElements::SiderealPeriod(
+inline StatusOr<Time> OrbitalElements::SiderealPeriod(
     std::vector<EquinoctialElements> const& equinoctial_elements) {
   Time const Δt =
       equinoctial_elements.back().t - equinoctial_elements.front().t;
@@ -200,6 +210,7 @@ inline Time OrbitalElements::SiderealPeriod(
   for (auto previous = first, it = first + 1;
        it != equinoctial_elements.end();
        previous = it, ++it) {
+    RETURN_IF_STOPPED;
     Time const t = it->t - t0;
     auto const λt = it->λ * t;
     Time const dt = it->t - previous->t;
@@ -209,7 +220,7 @@ inline Time OrbitalElements::SiderealPeriod(
   return 2 * π * Radian * Pow<3>(Δt) / (12 * ʃ_λt_dt);
 }
 
-inline std::vector<OrbitalElements::EquinoctialElements>
+inline StatusOr<std::vector<OrbitalElements::EquinoctialElements>>
 OrbitalElements::MeanEquinoctialElements(
     std::vector<EquinoctialElements> const& osculating,
     Time const& period) {
@@ -249,6 +260,7 @@ OrbitalElements::MeanEquinoctialElements(
   for (auto previous = osculating.begin(), it = osculating.begin() + 1;
        it != osculating.end();
        previous = it, ++it) {
+    RETURN_IF_STOPPED;
     integrals.push_back(integrals.back());
     integrals.back().t_max = it->t;
     Time const dt = it->t - previous->t;
@@ -266,6 +278,7 @@ OrbitalElements::MeanEquinoctialElements(
   std::vector<EquinoctialElements> mean_elements;
   int j = 0;
   for (auto const& up_to_tᵢ : integrals) {
+    RETURN_IF_STOPPED;
     // We are averaging the elements over the interval [tᵢ, tᵢ + period].
     Instant const tᵢ = up_to_tᵢ.t_max;
     while (integrals[j].t_max < tᵢ + period) {
@@ -318,11 +331,12 @@ OrbitalElements::MeanEquinoctialElements(
   return mean_elements;
 }
 
-inline std::vector<OrbitalElements::ClassicalElements>
+inline StatusOr<std::vector<OrbitalElements::ClassicalElements>>
 OrbitalElements::ToClassicalElements(
     std::vector<EquinoctialElements> const& equinoctial_elements) {
   std::vector<ClassicalElements> classical_elements;
   for (auto const& equinoctial : equinoctial_elements) {
+    RETURN_IF_STOPPED;
     double const tg_½i = Sqrt(Pow<2>(equinoctial.p) + Pow<2>(equinoctial.q));
     double const cotg_½i =
         Sqrt(Pow<2>(equinoctial.pʹ) + Pow<2>(equinoctial.qʹ));
@@ -355,7 +369,7 @@ OrbitalElements::ToClassicalElements(
   return classical_elements;
 }
 
-inline void OrbitalElements::ComputePeriodsAndPrecession() {
+inline Status OrbitalElements::ComputePeriodsAndPrecession() {
   Time const Δt = mean_classical_elements_.back().time -
                   mean_classical_elements_.front().time;
   auto const Δt³ = Pow<3>(Δt);
@@ -384,6 +398,7 @@ inline void OrbitalElements::ComputePeriodsAndPrecession() {
   for (auto previous = first, it = first + 1;
        it != mean_classical_elements_.end();
        previous = it, ++it) {
+    RETURN_IF_STOPPED;
     Angle const u = it->argument_of_periapsis + it->mean_anomaly;
     Angle const& M = it->mean_anomaly;
     Angle const& Ω = it->longitude_of_ascending_node;
@@ -406,13 +421,16 @@ inline void OrbitalElements::ComputePeriodsAndPrecession() {
   anomalistic_period_ = 2 * π * Radian * Δt³ / (12 * ʃ_Mt_dt);
   nodal_period_ = 2 * π * Radian * Δt³ / (12 * ʃ_ut_dt);
   nodal_precession_ = 12 * ʃ_Ωt_dt / Δt³;
+  return Status::OK;
 }
 
-inline void OrbitalElements::ComputeIntervals() {
+inline Status OrbitalElements::ComputeIntervals() {
   for (auto const& r : radial_distances_) {
+    RETURN_IF_STOPPED;
     radial_distance_interval_.Include(r);
   }
   for (auto const& elements : mean_classical_elements_) {
+    RETURN_IF_STOPPED;
     mean_semimajor_axis_interval_.Include(elements.semimajor_axis);
     mean_eccentricity_interval_.Include(elements.eccentricity);
     mean_inclination_interval_.Include(elements.inclination);
@@ -423,6 +441,7 @@ inline void OrbitalElements::ComputeIntervals() {
     mean_periapsis_distance_interval_.Include(elements.periapsis_distance);
     mean_apoapsis_distance_interval_.Include(elements.apoapsis_distance);
   }
+  return Status::OK;
 }
 
 
