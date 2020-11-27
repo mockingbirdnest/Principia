@@ -31,6 +31,12 @@ using quantities::Time;
 
 class OrbitalElements {
  public:
+  OrbitalElements(OrbitalElements const&) = delete;
+  OrbitalElements(OrbitalElements&&) = default;
+
+  OrbitalElements& operator=(OrbitalElements const&) = delete;
+  OrbitalElements& operator=(OrbitalElements&&) = default;
+
   template<typename PrimaryCentred>
   static StatusOr<OrbitalElements> ForTrajectory(
       DiscreteTrajectory<PrimaryCentred> const& trajectory,

@@ -56,7 +56,7 @@ std::optional<OrbitAnalyser::Parameters> const& OrbitAnalyser::last_parameters()
 void OrbitAnalyser::RefreshAnalysis() {
   absl::MutexLock l(&lock_);
   if (next_analysis_.has_value()) {
-    analysis_ = next_analysis_;
+    analysis_ = std::move(next_analysis_);
     next_analysis_.reset();
   }
 }

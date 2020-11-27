@@ -57,6 +57,12 @@ class OrbitGroundTrack {
     friend class OrbitGroundTrack;
   };
 
+  OrbitGroundTrack(OrbitGroundTrack const&) = delete;
+  OrbitGroundTrack(OrbitGroundTrack&&) = default;
+
+  OrbitGroundTrack& operator=(OrbitGroundTrack const&) = delete;
+  OrbitGroundTrack& operator=(OrbitGroundTrack&&) = default;
+
   // Returns an object that describes the properties of the ground track of
   // |trajectory| as an orbit around |primary|; if |mean_sun| is provided,
   // sun-synchronicity is analysed.
