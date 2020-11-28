@@ -436,12 +436,12 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionNoSecular) {
       EXPECT_THAT(
           Abs(residual(t_min + i * (t_max - t_min) / 100)),
           ω_index == 0
-              ? AllOf(Gt(2.9e-2 * Metre), Lt(8.9 * Metre))
+              ? AllOf(Gt(5.2e-1 * Metre), Lt(8.9 * Metre))
               : ω_index == 1
-                    ? AllOf(Gt(2.0e-10 * Metre), Lt(7.9 * Metre))
+                    ? AllOf(Gt(2.0e-10 * Metre), Lt(5.3e-7 * Metre))
                     : ω_index == 2
                           ? AllOf(Gt(2.9e-13 * Metre), Lt(2.6e-9 * Metre))
-                          : AllOf(Gt(1.0e-17 * Metre), Lt(6.6e-13 * Metre)))
+                          : AllOf(Gt(1.3e-17 * Metre), Lt(6.6e-14 * Metre)))
           << ω_index;
     }
     if (ω_index == ωs.size()) {
@@ -463,7 +463,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionNoSecular) {
     EXPECT_THAT(
         projection4(t_min + i * (t_max - t_min) / 100),
         RelativeErrorFrom(series.value()(t_min + i * (t_max - t_min) / 100),
-                          AllOf(Ge(0), Lt(2.0e-11))));
+                          AllOf(Ge(0), Lt(1.7e-14))));
   }
 }
 
@@ -504,14 +504,14 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
       EXPECT_THAT(
           Abs(residual(t_min + i * (t_max - t_min) / 100)),
           ω_index == 0
-              ? AllOf(Gt(12.4 * Metre), Lt(28.5 * Metre))
+              ? AllOf(Gt(14.8 * Metre), Lt(28.5 * Metre))
               : ω_index == 1
-                    ? AllOf(Gt(8.4e-3 * Metre), Lt(6.4 * Metre))
+                    ? AllOf(Gt(2.4e-2 * Metre), Lt(6.4 * Metre))
                     : ω_index == 2
                           ? AllOf(Gt(2.8e-10 * Metre), Lt(1.3e-6 * Metre))
                           : ω_index == 3
                                 ? AllOf(Gt(1.3e-13 * Metre), Lt(4.5e-9 * Metre))
-                                : AllOf(Gt(6.4e-18 * Metre),
+                                : AllOf(Gt(6.4e-17 * Metre),
                                         Lt(1.1e-13 * Metre)))
           << ω_index;
     }
