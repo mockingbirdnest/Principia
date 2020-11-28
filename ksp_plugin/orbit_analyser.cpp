@@ -14,8 +14,7 @@ namespace ksp_plugin {
 namespace internal_orbit_analyser {
 
 using base::dynamic_cast_not_null;
-using base::stop_token;
-using base::this_stoppable_thread;
+using base::MakeStoppableThread;
 using geometry::Frame;
 using geometry::NonRotating;
 using physics::BodyCentredNonRotatingDynamicFrame;
@@ -32,29 +31,33 @@ OrbitAnalyser::OrbitAnalyser(
       analysed_trajectory_parameters_(
           std::move(analysed_trajectory_parameters)) {}
 
-void OrbitAnalyser::RequestAnalysis(
-    Instant const& first_time,
-    DegreesOfFreedom<Barycentric> const& first_degrees_of_freedom,
-    Time const& mission_duration) {
+void OrbitAnalyser::Restart() {
+  analyser_ = MakeStoppableThread([this] { RepeatedlyAnalyseOrbit(); });
+}
+
+void OrbitAnalyser::RequestAnalysis(Parameters const& parameters) {
   if (!analyser_.joinable()) {
-    analyser_ = base::MakeStoppableThread([this] { RepeatedlyAnalyseOrbit(); });
+    analyser_ = MakeStoppableThread([this] { RepeatedlyAnalyseOrbit(); });
   }
   Ephemeris<Barycentric>::Guard guard(ephemeris_);
-  if (ephemeris_->t_min() > first_time) {
+  if (ephemeris_->t_min() > parameters.first_time) {
     // Too much has been forgotten; we cannot perform this analysis.
     return;
   }
+  last_parameters_ = parameters;
   absl::MutexLock l(&lock_);
-  parameters_ = {std::move(guard),
-                 first_time,
-                 first_degrees_of_freedom,
-                 mission_duration};
+  guarded_parameters_ = {std::move(guard), parameters};
+}
+
+std::optional<OrbitAnalyser::Parameters> const& OrbitAnalyser::last_parameters()
+    const {
+  return last_parameters_;
 }
 
 void OrbitAnalyser::RefreshAnalysis() {
   absl::MutexLock l(&lock_);
   if (next_analysis_.has_value()) {
-    analysis_ = next_analysis_;
+    analysis_ = std::move(next_analysis_);
     next_analysis_.reset();
   }
 }
@@ -67,30 +70,30 @@ double OrbitAnalyser::progress_of_next_analysis() const {
   return progress_of_next_analysis_;
 }
 
-void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
+Status OrbitAnalyser::RepeatedlyAnalyseOrbit() {
   for (;;) {
     // No point in going faster than 50 Hz.
     std::chrono::steady_clock::time_point const wakeup_time =
         std::chrono::steady_clock::now() + std::chrono::milliseconds(20);
 
-    if (this_stoppable_thread::get_stop_token().stop_requested()) {
-      return;
-    }
+    RETURN_IF_STOPPED;
 
-    std::optional<Parameters> parameters;
+    std::optional<GuardedParameters> guarded_parameters;
     {
-      absl::ReaderMutexLock l(&lock_);
-      if (!parameters_.has_value()) {
+      absl::MutexLock l(&lock_);
+      if (!guarded_parameters_.has_value()) {
         // No parameters, let's wait for them to appear.
         continue;
       }
-      std::swap(parameters, parameters_);
+      std::swap(guarded_parameters, guarded_parameters_);
     }
 
-    Analysis analysis{parameters->first_time};
+    auto const& parameters = guarded_parameters->parameters;
+
+    Analysis analysis{parameters.first_time};
     DiscreteTrajectory<Barycentric> trajectory;
-    trajectory.Append(parameters->first_time,
-                      parameters->first_degrees_of_freedom);
+    trajectory.Append(parameters.first_time,
+                      parameters.first_degrees_of_freedom);
     std::vector<not_null<DiscreteTrajectory<Barycentric>*>> trajectories = {
         &trajectory};
     auto instance = ephemeris_->NewInstance(
@@ -98,24 +101,21 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
         Ephemeris<Barycentric>::NoIntrinsicAccelerations,
         analysed_trajectory_parameters_);
     for (Instant t =
-             parameters->first_time + parameters->mission_duration / 0x1p10;
+             parameters.first_time + parameters.mission_duration / 0x1p10;
          trajectory.back().time <
-         parameters->first_time + parameters->mission_duration;
-         t += parameters->mission_duration / 0x1p10) {
-      auto const flow_status = ephemeris_->FlowWithFixedStep(t, *instance);
+         parameters.first_time + parameters.mission_duration;
+         t += parameters.mission_duration / 0x1p10) {
       if (!ephemeris_->FlowWithFixedStep(t, *instance).ok()) {
         // TODO(egg): Report that the integration failed.
         break;
       }
       progress_of_next_analysis_ =
-          (trajectory.back().time - parameters->first_time) /
-          parameters->mission_duration;
-      if (this_stoppable_thread::get_stop_token().stop_requested()) {
-        return;
-      }
+          (trajectory.back().time - parameters.first_time) /
+          parameters.mission_duration;
+      RETURN_IF_STOPPED;
     }
     analysis.mission_duration_ =
-        trajectory.back().time - parameters->first_time;
+        trajectory.back().time - parameters.first_time;
 
     // TODO(egg): |next_analysis_percentage_| only reflects the progress of the
     // integration, but the analysis itself can take a while; this results in
@@ -125,14 +125,15 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
     RotatingBody<Barycentric> const* primary = nullptr;
     auto smallest_osculating_period = Infinity<Time>;
     for (auto const body : ephemeris_->bodies()) {
+      RETURN_IF_STOPPED;
       auto const initial_osculating_elements =
           KeplerOrbit<Barycentric>{
               *body,
               MasslessBody{},
-              parameters->first_degrees_of_freedom -
+              parameters.first_degrees_of_freedom -
                   ephemeris_->trajectory(body)->EvaluateDegreesOfFreedom(
-                      parameters->first_time),
-              parameters->first_time}.elements_at_epoch();
+                      parameters.first_time),
+              parameters.first_time}.elements_at_epoch();
       if (initial_osculating_elements.period.has_value() &&
           initial_osculating_elements.period < smallest_osculating_period) {
         smallest_osculating_period = *initial_osculating_elements.period;
@@ -145,14 +146,18 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
       BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred>
           body_centred(ephemeris_, primary);
       for (auto const& [time, degrees_of_freedom] : trajectory) {
+        RETURN_IF_STOPPED;
         primary_centred_trajectory.Append(
             time, body_centred.ToThisFrameAtTime(time)(degrees_of_freedom));
       }
       analysis.primary_ = primary;
-      auto const elements = OrbitalElements::ForTrajectory(
+      auto elements = OrbitalElements::ForTrajectory(
           primary_centred_trajectory, *primary, MasslessBody{});
+      // We do not RETURN_IF_ERROR as ForTrajectory can return non-CANCELLED
+      // statuses.
+      RETURN_IF_STOPPED;
       if (elements.ok()) {
-        analysis.elements_ = elements.ValueOrDie();
+        analysis.elements_ = std::move(elements).ValueOrDie();
         // TODO(egg): max_abs_Cᴛₒ should probably depend on the number of
         // revolutions.
         analysis.closest_recurrence_ = OrbitRecurrence::ClosestRecurrence(
@@ -160,10 +165,12 @@ void OrbitAnalyser::RepeatedlyAnalyseOrbit() {
             analysis.elements_->nodal_precession(),
             *primary,
             /*max_abs_Cᴛₒ=*/100);
-        analysis.ground_track_ =
+        auto ground_track =
             OrbitGroundTrack::ForTrajectory(primary_centred_trajectory,
                                             *primary,
                                             /*mean_sun=*/std::nullopt);
+        RETURN_IF_ERROR(ground_track);
+        analysis.ground_track_ = std::move(ground_track).ValueOrDie();
         analysis.ResetRecurrence();
       }
     }

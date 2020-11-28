@@ -118,6 +118,12 @@ inline jthread::jthread(jthread&& other)
       thread_(std::move(other.thread_)) {}
 
 inline jthread& jthread::operator=(jthread&& other) {
+  if (stop_state_ != nullptr) {
+    stop_state_->request_stop();
+  }
+  if (thread_.joinable()) {
+    thread_.join();
+  }
   stop_state_ = std::move(other.stop_state_);
   thread_ = std::move(other.thread_);
   return *this;

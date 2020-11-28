@@ -118,19 +118,19 @@ inline OrbitGroundTrack::EquatorCrossingLongitudes::EquatorCrossingLongitudes(
     : nominal_recurrence_(nominal_recurrence) {}
 
 template<typename PrimaryCentred, typename Inertial>
-OrbitGroundTrack OrbitGroundTrack::ForTrajectory(
+StatusOr<OrbitGroundTrack> OrbitGroundTrack::ForTrajectory(
     DiscreteTrajectory<PrimaryCentred> const& trajectory,
     RotatingBody<Inertial> const& primary,
     std::optional<MeanSun> const& mean_sun) {
   DiscreteTrajectory<PrimaryCentred> ascending_nodes;
   DiscreteTrajectory<PrimaryCentred> descending_nodes;
   OrbitGroundTrack ground_track;
-  ComputeNodes(trajectory.begin(),
-               trajectory.end(),
-               Vector<double, PrimaryCentred>({0, 0, 1}),
-               /*max_points=*/std::numeric_limits<int>::max(),
-               ascending_nodes,
-               descending_nodes);
+  RETURN_IF_ERROR(ComputeNodes(trajectory.begin(),
+                               trajectory.end(),
+                               Vector<double, PrimaryCentred>({0, 0, 1}),
+                               /*max_points=*/std::numeric_limits<int>::max(),
+                               ascending_nodes,
+                               descending_nodes));
   if (mean_sun.has_value()) {
     if (!ascending_nodes.Empty()) {
       ground_track.mean_solar_times_of_ascending_nodes_ =

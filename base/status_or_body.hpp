@@ -57,6 +57,12 @@ StatusOr<T>::StatusOr(T const& value) {
 }
 
 template<typename T>
+StatusOr<T>::StatusOr(T&& value) {
+  status_ = Status::OK;
+  value_ = std::move(value);
+}
+
+template<typename T>
 template<typename U>
 StatusOr<T>::StatusOr(StatusOr<U> const& other)
     : status_(other.status_) {
@@ -86,11 +92,32 @@ bool StatusOr<T>::ok() const {
 }
 
 template<typename T>
-T const& StatusOr<T>::ValueOrDie() const {
-  if (!status_.ok()) {
-    LOG(FATAL) <<status_;
-  }
+T const& StatusOr<T>::ValueOrDie() const& {
+  CHECK_OK(status());
   return *value_;
+}
+
+template<typename T>
+T& StatusOr<T>::ValueOrDie() & {
+  CHECK_OK(status());
+  return *value_;
+}
+
+template<typename T>
+T const&& StatusOr<T>::ValueOrDie() const&& {  // NOLINT
+  CHECK_OK(status());
+  return std::move(*value_);
+}
+
+template<typename T>
+T&& StatusOr<T>::ValueOrDie() && {
+  CHECK_OK(status());
+  return std::move(*value_);
+}
+
+template<typename T>
+Status const& GetStatus(StatusOr<T> const& s) {
+  return s.status();
 }
 
 template<typename T>

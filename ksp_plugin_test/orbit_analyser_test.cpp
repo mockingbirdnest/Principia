@@ -92,10 +92,11 @@ TEST_F(OrbitAnalyserTest, TOPEXPoséidon) {
       *topex_poséidon_.orbit(
           {StandardProduct3::SatelliteGroup::General, 1}).front();
   ephemeris_->Prolong(arc.begin()->time);
-  analyser.RequestAnalysis(arc.begin()->time,
-                           itrs_.FromThisFrameAtTime(arc.begin()->time)(
-                               arc.begin()->degrees_of_freedom),
-                           3 * Hour);
+  analyser.RequestAnalysis(
+      {.first_time = arc.begin()->time,
+       .first_degrees_of_freedom = itrs_.FromThisFrameAtTime(arc.begin()->time)(
+           arc.begin()->degrees_of_freedom),
+       .mission_duration = 3 * Hour});
   while (analyser.progress_of_next_analysis() != 1) {
     absl::SleepFor(absl::Milliseconds(10));
   }

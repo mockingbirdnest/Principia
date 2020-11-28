@@ -172,10 +172,10 @@ class OrbitAnalysisTest : public ::testing::Test {
   std::tuple<OrbitalElements, OrbitRecurrence, OrbitGroundTrack>
   ElementsAndRecurrence(SP3Orbit const& orbit) {
     auto const earth_centred_trajectory = EarthCentredTrajectory(orbit);
-    auto const elements = OrbitalElements::ForTrajectory(
-                              *earth_centred_trajectory,
-                              earth_,
-                              MasslessBody{}).ValueOrDie();
+    auto elements = OrbitalElements::ForTrajectory(
+                        *earth_centred_trajectory,
+                        earth_,
+                        MasslessBody{}).ValueOrDie();
 
     {
       auto const identifier = (std::stringstream() << orbit.satellite).str();
@@ -221,14 +221,14 @@ class OrbitAnalysisTest : public ::testing::Test {
              129'602'768.13 * ArcSecond / (100 * JulianYear),
              1.089 * ArcSecond / Pow<2>(100 * JulianYear)},
             "1899-12-31T12:00:00"_TT);
-    auto const ground_track = OrbitGroundTrack::ForTrajectory(
+    auto ground_track = OrbitGroundTrack::ForTrajectory(
         *earth_centred_trajectory,
         earth_,
         {{/*epoch=*/J2000,
           /*mean_longitude_at_epoch=*/newcomb_mean_longitude(J2000),
           /*year*/ 2 * π * Radian /
-              newcomb_mean_longitude.EvaluateDerivative(J2000)}});
-    return {elements, recurrence, ground_track};
+              newcomb_mean_longitude.EvaluateDerivative(J2000)}}).ValueOrDie();
+    return {std::move(elements), recurrence, std::move(ground_track)};
   }
 
   SolarSystem<ICRS> earth_1957_;

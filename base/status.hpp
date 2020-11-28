@@ -103,6 +103,10 @@ class Status final {
   std::string message_;
 };
 
+inline Status const& GetStatus(Status const& s) {
+  return s;
+}
+
 // Prints a human-readable representation of |s| to |os|.
 std::ostream& operator<<(std::ostream& os, Status const& s);
 
@@ -113,7 +117,8 @@ std::ostream& operator<<(std::ostream& os, Status const& s);
 #define RETURN_IF_ERROR(expr)                                                \
   do {                                                                       \
     /* Using _status below to avoid capture problems if expr is "status". */ \
-    ::principia::base::Status const _status = (expr);                        \
+    ::principia::base::Status const _status =                                \
+        (::principia::base::GetStatus(expr));                                \
     if (!_status.ok())                                                       \
       return _status;                                                        \
   } while (false)
