@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/array.hpp"
+#include "base/jthread.hpp"
 #include "numerics/root_finders.hpp"
 
 namespace principia {
