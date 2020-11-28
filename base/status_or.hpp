@@ -157,6 +157,9 @@ class StatusOr final {
   friend class StatusOr;
 };
 
+template<typename T>
+Status const& GetStatus(StatusOr<T> const& s);
+
 // Prints a human-readable representation of |x| to |os|.
 template<typename T>
 std::ostream& operator<<(std::ostream& os, StatusOr<T> const& x);

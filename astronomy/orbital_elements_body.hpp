@@ -46,7 +46,7 @@ StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
   orbital_elements.radial_distances_ = RadialDistances(trajectory);
   auto const sidereal_period =
       SiderealPeriod(orbital_elements.osculating_equinoctial_elements_);
-  RETURN_IF_ERROR(sidereal_period.status());
+  RETURN_IF_ERROR(sidereal_period);
   orbital_elements.sidereal_period_ = sidereal_period.ValueOrDie();
   if (!IsFinite(orbital_elements.sidereal_period_)) {
     // Guard against NaN sidereal periods (from hyperbolic orbits).
@@ -57,7 +57,7 @@ StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
   auto mean_equinoctial_elements =
       MeanEquinoctialElements(orbital_elements.osculating_equinoctial_elements_,
                               orbital_elements.sidereal_period_);
-  RETURN_IF_ERROR(mean_equinoctial_elements.status());
+  RETURN_IF_ERROR(mean_equinoctial_elements);
   orbital_elements.mean_equinoctial_elements_ =
       std::move(mean_equinoctial_elements).ValueOrDie();
   if (orbital_elements.mean_equinoctial_elements_.size() < 2) {
@@ -71,7 +71,7 @@ StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
   }
   auto mean_classical_elements =
       ToClassicalElements(orbital_elements.mean_equinoctial_elements_);
-  RETURN_IF_ERROR(mean_classical_elements.status());
+  RETURN_IF_ERROR(mean_classical_elements);
   orbital_elements.mean_classical_elements_ =
       std::move(mean_classical_elements).ValueOrDie();
   RETURN_IF_ERROR(orbital_elements.ComputePeriodsAndPrecession());

@@ -116,6 +116,11 @@ T&& StatusOr<T>::ValueOrDie() && {
 }
 
 template<typename T>
+Status const& GetStatus(StatusOr<T> const& s) {
+  return s.status();
+}
+
+template<typename T>
 std::ostream& operator<<(std::ostream& os, StatusOr<T> const& x) {
   os << x.status();
   return os;

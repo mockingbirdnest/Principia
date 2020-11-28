@@ -169,7 +169,7 @@ Status OrbitAnalyser::RepeatedlyAnalyseOrbit() {
             OrbitGroundTrack::ForTrajectory(primary_centred_trajectory,
                                             *primary,
                                             /*mean_sun=*/std::nullopt);
-        RETURN_IF_ERROR(ground_track.status());
+        RETURN_IF_ERROR(ground_track);
         analysis.ground_track_ = std::move(ground_track).ValueOrDie();
         analysis.ResetRecurrence();
       }
