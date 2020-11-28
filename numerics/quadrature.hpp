@@ -24,7 +24,7 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> GaussLegendre(
 // using |max_relative_error| (returns when the relative error on the result is
 // estimated to be less that the specified value) and |max_points| (returns when
 // the number of points would exceed the specified value).
-template<int initial_points = 2, typename Argument, typename Function>
+template<int initial_points = 3, typename Argument, typename Function>
 Primitive<std::invoke_result_t<Function, Argument>, Argument>
 AutomaticClenshawCurtis(
     Function const& f,

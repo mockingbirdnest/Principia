@@ -124,7 +124,7 @@ Polynomials PolynomialGenerator<Polynomial, dimension>::UnitPolynomials(
   // Reencode the degree and coordinate alone for generating the polynomials.
   static constexpr int degree_and_coordinate = coordinate + dimension * degree;
 
-  static Polynomial const zero{{}, origin};
+  Polynomial const zero{{}, origin};
   if constexpr (parity == 0) {
     return {/*sin=*/zero,
             /*cos=*/PolynomialGenerator<Polynomial, dimension>::UnitPolynomial<
@@ -212,7 +212,7 @@ std::array<Series, sizeof...(indices)> PeriodicSeriesGenerator<
     degree, dimension,
     std::index_sequence<indices...>>::BasisElements(AngularFrequency const& ω,
                                                     Instant const& origin) {
-  static typename Series::AperiodicPolynomial const aperiodic_zero{{}, origin};
+  typename Series::AperiodicPolynomial const aperiodic_zero{{}, origin};
   return {Series(
       aperiodic_zero,
       {{ω,
