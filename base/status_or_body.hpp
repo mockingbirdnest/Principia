@@ -104,7 +104,7 @@ T& StatusOr<T>::ValueOrDie() & {
 }
 
 template<typename T>
-T const&& StatusOr<T>::ValueOrDie() const&& {
+T const&& StatusOr<T>::ValueOrDie() const&& {  // NOLINT
   CHECK_OK(status());
   return std::move(*value_);
 }

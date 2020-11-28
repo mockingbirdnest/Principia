@@ -146,7 +146,7 @@ class StatusOr final {
   // Returns a reference to our current value, or fails if the status is not OK.
   T const& ValueOrDie() const&;
   T& ValueOrDie() &;
-  T const&& ValueOrDie() const&&;
+  T const&& ValueOrDie() const&&;  // NOLINT
   T&& ValueOrDie() &&;
 
  private:

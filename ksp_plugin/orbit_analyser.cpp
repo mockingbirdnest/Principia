@@ -49,7 +49,8 @@ void OrbitAnalyser::RequestAnalysis(Parameters const& parameters) {
   guarded_parameters_ = {std::move(guard), parameters};
 }
 
-std::optional<OrbitAnalyser::Parameters> const& OrbitAnalyser::last_parameters() const {
+std::optional<OrbitAnalyser::Parameters> const& OrbitAnalyser::last_parameters()
+    const {
   return last_parameters_;
 }
 

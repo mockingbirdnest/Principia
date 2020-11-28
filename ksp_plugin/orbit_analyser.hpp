@@ -138,9 +138,6 @@ class OrbitAnalyser {
   // |parameters_| is set by the main thread; it is read and cleared by the
   // |analyser_| thread.
   std::optional<GuardedParameters> guarded_parameters_ GUARDED_BY(lock_);
-  // |requested_mission_duration_| is set by the |analyser_| thread; it is read
-  // by the main thread.  It is the |mission_duration| of the current 
-  std::optional<Time> requested_mission_duration_ GUARDED_BY(lock_);
   // |next_analysis_| is set by the |analyser_| thread; it is read and cleared
   // by the main thread.
   std::optional<Analysis> next_analysis_ GUARDED_BY(lock_);
