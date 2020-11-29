@@ -70,6 +70,7 @@ TEST_F(PoissonSeriesBasisTest, AperiodicVector) {
 
   Instant const t1 = t0_ + 2 * Second;
 
+  // Degree 0.
   EXPECT_EQ(Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}),
             aperiodic[0](t1));
   EXPECT_EQ(Displacement<World>({0 * Metre, 1 * Metre, 0 * Metre}),
@@ -83,7 +84,14 @@ TEST_F(PoissonSeriesBasisTest, AperiodicVector) {
                                                 aperiodic_subspaces[1]));
   EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[0],
                                                 aperiodic_subspaces[2]));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[1],
+                                                 aperiodic_subspaces[1]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[1],
+                                                aperiodic_subspaces[2]));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[2],
+                                                 aperiodic_subspaces[2]));
 
+  // Degree 1.
   EXPECT_EQ(Displacement<World>({2 * Metre, 0 * Metre, 0 * Metre}),
             aperiodic[3](t1));
   EXPECT_EQ(Displacement<World>({0 * Metre, 2 * Metre, 0 * Metre}),
@@ -91,13 +99,39 @@ TEST_F(PoissonSeriesBasisTest, AperiodicVector) {
   EXPECT_EQ(Displacement<World>({0 * Metre, 0 * Metre, 2 * Metre}),
             aperiodic[5](t1));
 
-  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[0],
-                                                 aperiodic_subspaces[3]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[0],
+                                                aperiodic_subspaces[3]));
   EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[0],
                                                 aperiodic_subspaces[4]));
   EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[0],
                                                 aperiodic_subspaces[5]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[1],
+                                                aperiodic_subspaces[3]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[1],
+                                                aperiodic_subspaces[4]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[1],
+                                                aperiodic_subspaces[5]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[2],
+                                                aperiodic_subspaces[3]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[2],
+                                                aperiodic_subspaces[4]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[2],
+                                                aperiodic_subspaces[5]));
 
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[3],
+                                                 aperiodic_subspaces[3]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[3],
+                                                aperiodic_subspaces[4]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[3],
+                                                aperiodic_subspaces[5]));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[4],
+                                                 aperiodic_subspaces[4]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[4],
+                                                aperiodic_subspaces[5]));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[5],
+                                                 aperiodic_subspaces[5]));
+
+  // Degree 2.
   EXPECT_EQ(Displacement<World>({4 * Metre, 0 * Metre, 0 * Metre}),
             aperiodic[6](t1));
   EXPECT_EQ(Displacement<World>({0 * Metre, 4 * Metre, 0 * Metre}),
@@ -105,12 +139,134 @@ TEST_F(PoissonSeriesBasisTest, AperiodicVector) {
   EXPECT_EQ(Displacement<World>({0 * Metre, 0 * Metre, 4 * Metre}),
             aperiodic[8](t1));
 
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[0],
+                                                 aperiodic_subspaces[6]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[0],
+                                                aperiodic_subspaces[7]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[0],
+                                                aperiodic_subspaces[8]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[1],
+                                                aperiodic_subspaces[6]));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[1],
+                                                 aperiodic_subspaces[7]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[1],
+                                                aperiodic_subspaces[8]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[2],
+                                                aperiodic_subspaces[6]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[2],
+                                                aperiodic_subspaces[7]));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[2],
+                                                 aperiodic_subspaces[8]));
+
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[3],
+                                                aperiodic_subspaces[6]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[3],
+                                                aperiodic_subspaces[7]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[3],
+                                                aperiodic_subspaces[8]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[4],
+                                                aperiodic_subspaces[6]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[4],
+                                                aperiodic_subspaces[7]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[4],
+                                                aperiodic_subspaces[8]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[5],
+                                                aperiodic_subspaces[6]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[5],
+                                                aperiodic_subspaces[7]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[5],
+                                                aperiodic_subspaces[8]));
+
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[6],
+                                                 aperiodic_subspaces[6]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[6],
+                                                aperiodic_subspaces[7]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[6],
+                                                aperiodic_subspaces[8]));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[7],
+                                                 aperiodic_subspaces[7]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[7],
+                                                aperiodic_subspaces[8]));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[8],
+                                                 aperiodic_subspaces[8]));
+
+  // Degree 3.
   EXPECT_EQ(Displacement<World>({8 * Metre, 0 * Metre, 0 * Metre}),
             aperiodic[9](t1));
   EXPECT_EQ(Displacement<World>({0 * Metre, 8 * Metre, 0 * Metre}),
             aperiodic[10](t1));
   EXPECT_EQ(Displacement<World>({0 * Metre, 0 * Metre, 8 * Metre}),
             aperiodic[11](t1));
+
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[0],
+                                                aperiodic_subspaces[9]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[0],
+                                                aperiodic_subspaces[10]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[0],
+                                                aperiodic_subspaces[11]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[1],
+                                                aperiodic_subspaces[9]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[1],
+                                                aperiodic_subspaces[10]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[1],
+                                                aperiodic_subspaces[11]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[2],
+                                                aperiodic_subspaces[9]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[2],
+                                                aperiodic_subspaces[10]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[2],
+                                                aperiodic_subspaces[11]));
+
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[3],
+                                                 aperiodic_subspaces[9]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[3],
+                                                aperiodic_subspaces[10]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[3],
+                                                aperiodic_subspaces[11]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[4],
+                                                aperiodic_subspaces[9]));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[4],
+                                                 aperiodic_subspaces[10]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[4],
+                                                aperiodic_subspaces[11]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[5],
+                                                aperiodic_subspaces[9]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[5],
+                                                aperiodic_subspaces[10]));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[5],
+                                                 aperiodic_subspaces[11]));
+
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[6],
+                                                aperiodic_subspaces[9]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[6],
+                                                aperiodic_subspaces[10]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[6],
+                                                aperiodic_subspaces[11]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[7],
+                                                aperiodic_subspaces[9]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[7],
+                                                aperiodic_subspaces[10]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[7],
+                                                aperiodic_subspaces[11]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[8],
+                                                aperiodic_subspaces[9]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[8],
+                                                aperiodic_subspaces[10]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[8],
+                                                aperiodic_subspaces[11]));
+
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[9],
+                                                 aperiodic_subspaces[9]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[9],
+                                                aperiodic_subspaces[10]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[9],
+                                                aperiodic_subspaces[11]));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[10],
+                                                 aperiodic_subspaces[10]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[10],
+                                                aperiodic_subspaces[11]));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(aperiodic_subspaces[11],
+                                                 aperiodic_subspaces[11]));
 }
 
 TEST_F(PoissonSeriesBasisTest, PeriodicScalar) {
@@ -144,6 +300,7 @@ TEST_F(PoissonSeriesBasisTest, PeriodicVector) {
 
   Instant const t1 = t0_ + 2 * Second;
 
+  // Degree 0, Cos.
   EXPECT_THAT(
       periodic[0](t1),
       AlmostEquals(
@@ -163,7 +320,14 @@ TEST_F(PoissonSeriesBasisTest, PeriodicVector) {
                                                 periodic_subspaces[1]));
   EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[0],
                                                 periodic_subspaces[2]));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[1],
+                                                 periodic_subspaces[1]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[1],
+                                                periodic_subspaces[2]));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[2],
+                                                 periodic_subspaces[2]));
 
+  // Degree 0, Sin.
   EXPECT_THAT(
       periodic[3](t1),
       AlmostEquals(
@@ -177,13 +341,41 @@ TEST_F(PoissonSeriesBasisTest, PeriodicVector) {
       AlmostEquals(
           Displacement<World>({0 * Metre, 0 * Metre, Sqrt(3) / 2 * Metre}), 0));
 
-  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[0],
-                                                 periodic_subspaces[3]));
+  LOG(ERROR)<<periodic_subspaces[1];
+  LOG(ERROR)<<periodic_subspaces[4];
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[0],
+                                                periodic_subspaces[3]));
   EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[0],
                                                 periodic_subspaces[4]));
   EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[0],
                                                 periodic_subspaces[5]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[1],
+                                                periodic_subspaces[3]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[1],
+                                                periodic_subspaces[4]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[1],
+                                                periodic_subspaces[5]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[2],
+                                                periodic_subspaces[3]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[2],
+                                                periodic_subspaces[4]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[2],
+                                                periodic_subspaces[5]));
 
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[3],
+                                                 periodic_subspaces[3]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[3],
+                                                periodic_subspaces[4]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[3],
+                                                periodic_subspaces[5]));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[4],
+                                                 periodic_subspaces[4]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[4],
+                                                periodic_subspaces[5]));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[5],
+                                                 periodic_subspaces[5]));
+
+  // Degree 1, Cos.
   EXPECT_THAT(
       periodic[6](t1),
       AlmostEquals(
@@ -196,6 +388,59 @@ TEST_F(PoissonSeriesBasisTest, PeriodicVector) {
       periodic[8](t1),
       AlmostEquals(
           Displacement<World>({0 * Metre, 0 * Metre, 1 * Metre}), 1));
+
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[0],
+                                                periodic_subspaces[6]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[0],
+                                                periodic_subspaces[7]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[0],
+                                                periodic_subspaces[8]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[1],
+                                                periodic_subspaces[6]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[1],
+                                                periodic_subspaces[7]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[1],
+                                                periodic_subspaces[8]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[2],
+                                                periodic_subspaces[6]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[2],
+                                                periodic_subspaces[7]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[2],
+                                                periodic_subspaces[8]));
+
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[3],
+                                                 periodic_subspaces[6]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[3],
+                                                periodic_subspaces[7]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[3],
+                                                periodic_subspaces[8]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[4],
+                                                periodic_subspaces[6]));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[4],
+                                                 periodic_subspaces[7]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[4],
+                                                periodic_subspaces[8]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[5],
+                                                periodic_subspaces[6]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[5],
+                                                periodic_subspaces[7]));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[5],
+                                                 periodic_subspaces[8]));
+
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[6],
+                                                 periodic_subspaces[6]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[6],
+                                                periodic_subspaces[7]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[6],
+                                                periodic_subspaces[8]));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[7],
+                                                 periodic_subspaces[7]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[7],
+                                                periodic_subspaces[8]));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[8],
+                                                 periodic_subspaces[8]));
+
+  // Degree 1, Sin.
   EXPECT_THAT(
       periodic[9](t1),
       AlmostEquals(
@@ -209,6 +454,77 @@ TEST_F(PoissonSeriesBasisTest, PeriodicVector) {
       AlmostEquals(
           Displacement<World>({0 * Metre, 0 * Metre, Sqrt(3) * Metre}), 0));
 
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[0],
+                                                 periodic_subspaces[9]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[0],
+                                                periodic_subspaces[10]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[0],
+                                                periodic_subspaces[11]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[1],
+                                                periodic_subspaces[9]));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[1],
+                                                 periodic_subspaces[10]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[1],
+                                                periodic_subspaces[11]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[2],
+                                                periodic_subspaces[9]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[2],
+                                                periodic_subspaces[10]));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[2],
+                                                 periodic_subspaces[11]));
+
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[3],
+                                                periodic_subspaces[9]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[3],
+                                                periodic_subspaces[10]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[3],
+                                                periodic_subspaces[11]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[4],
+                                                periodic_subspaces[9]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[4],
+                                                periodic_subspaces[10]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[4],
+                                                periodic_subspaces[11]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[5],
+                                                periodic_subspaces[9]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[5],
+                                                periodic_subspaces[10]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[5],
+                                                periodic_subspaces[11]));
+
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[6],
+                                                periodic_subspaces[9]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[6],
+                                                periodic_subspaces[10]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[6],
+                                                periodic_subspaces[11]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[7],
+                                                periodic_subspaces[9]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[7],
+                                                periodic_subspaces[10]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[7],
+                                                periodic_subspaces[11]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[8],
+                                                periodic_subspaces[9]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[8],
+                                                periodic_subspaces[10]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[8],
+                                                periodic_subspaces[11]));
+
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[9],
+                                                 periodic_subspaces[9]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[9],
+                                                periodic_subspaces[10]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[9],
+                                                periodic_subspaces[11]));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[10],
+                                                 periodic_subspaces[10]));
+  EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[10],
+                                                periodic_subspaces[11]));
+  EXPECT_FALSE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[11],
+                                                 periodic_subspaces[11]));
+
+  // Degree 2, Cos.
   EXPECT_THAT(
       periodic[12](t1),
       AlmostEquals(
@@ -221,6 +537,8 @@ TEST_F(PoissonSeriesBasisTest, PeriodicVector) {
       periodic[14](t1),
       AlmostEquals(
           Displacement<World>({0 * Metre, 0 * Metre, 2 * Metre}), 1));
+
+  // Degree 2, Sin.
   EXPECT_THAT(
       periodic[15](t1),
       AlmostEquals(
@@ -234,6 +552,7 @@ TEST_F(PoissonSeriesBasisTest, PeriodicVector) {
       AlmostEquals(
           Displacement<World>({0 * Metre, 0 * Metre, 2 * Sqrt(3) * Metre}), 0));
 
+  // Degree 3, Cos.
   EXPECT_THAT(
       periodic[18](t1),
       AlmostEquals(
@@ -246,6 +565,8 @@ TEST_F(PoissonSeriesBasisTest, PeriodicVector) {
       periodic[20](t1),
       AlmostEquals(
           Displacement<World>({0 * Metre, 0 * Metre, 4 * Metre}), 1));
+
+  // Degree 3, Sin.
   EXPECT_THAT(
       periodic[21](t1),
       AlmostEquals(

@@ -138,7 +138,7 @@ Polynomials PolynomialGenerator<Polynomial, dimension>::UnitPolynomials(
 
 inline bool PoissonSeriesSubspace::orthogonal(PoissonSeriesSubspace const v,
                                               PoissonSeriesSubspace const w) {
-  return v.coordinate_ != w.coordinate_;
+  return v.coordinate_ != w.coordinate_ || v.parity_ != w.parity_;
 }
 
 inline PoissonSeriesSubspace::PoissonSeriesSubspace(Coordinate coordinate,
@@ -230,12 +230,11 @@ std::array<PoissonSeriesSubspace, sizeof...(indices)> PeriodicSeriesGenerator<
       PoissonSeriesSubspace{
           static_cast<PoissonSeriesSubspace::Coordinate>(indices % dimension),
           // The parity of the trigonometric factors of the ith basis element is
-          // (i / dimension) % 2; the degrees its polynomial factor is
-          // i / (2 * dimension), so that the overall parity of that basis
-          // element is (i / dimension + i / (2 * dimension)) % 2, which
-          // simplifies to (3 * i / (2 * dimension)) % 2.
+          // ⌊i / dimension⌋ mod 2; the degrees its polynomial factor is
+          // ⌊i / (2 * dimension)⌋, so that the overall parity of that basis
+          // element is (⌊i / dimension⌋ + ⌊i / (2 * dimension)⌋) mod 2.
           static_cast<PoissonSeriesSubspace::Parity>(
-              (3 * indices / (2 * dimension)) % 2)}...};
+              (indices / dimension + indices / (2 * dimension)) % 2)}...};
 }
 
 
@@ -268,6 +267,12 @@ auto PoissonSeriesBasisGenerator<Series, degree>::Subspaces(
     -> std::array<PoissonSeriesSubspace, 2 * dimension*(degree + 1)> {
   return PeriodicSeriesGenerator<Series, degree, dimension>::Subspaces(ω,
                                                                        origin);
+}
+
+inline std::ostream& operator<<(std::ostream& out,
+                                PoissonSeriesSubspace const& subspace) {
+  return out << "{coordinate: " << static_cast<int>(subspace.coordinate_)
+             << ", parity: " << static_cast<int>(subspace.parity_) << "}";
 }
 
 }  // namespace internal_poisson_series_basis

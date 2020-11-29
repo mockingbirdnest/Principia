@@ -44,6 +44,8 @@ class PoissonSeriesSubspace {
   friend struct AperiodicSeriesGenerator;
   template<typename Series, int degree, int dimension, typename>
   friend struct PeriodicSeriesGenerator;
+  friend std::ostream& operator<<(std::ostream& out,
+                                  PoissonSeriesSubspace const& subspace);
 };
 
 // A generator for the Кудрявцев basis, i.e., functions of the
@@ -70,6 +72,9 @@ class PoissonSeriesBasisGenerator {
   static std::array<PoissonSeriesSubspace, 2 * dimension * (degree + 1)>
   Subspaces(AngularFrequency const& ω, Instant const& origin);
 };
+
+std::ostream& operator<<(std::ostream& out,
+                         PoissonSeriesSubspace const& subspace);
 
 }  // namespace internal_poisson_series_basis
 
