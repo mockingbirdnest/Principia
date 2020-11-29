@@ -166,11 +166,14 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
           analysis.ground_track,
           (int?)(analysis.mission_duration / analysis.elements?.nodal_period));
     }
-    RenderButton($"{Title}...");
+    RenderButton( orbit_description_ == null
+        ? "Orbit analysis..."
+        : $"Analysis: {orbit_description_}...");
   }
   protected override string Title => orbit_description_ == null
       ? "Orbit analysis"
-      : $"Orbit analysis ({orbit_description_})";
+      : orbit_description_[0].ToString().ToUpper() +
+        orbit_description_.Substring(1);
 
   protected override void RenderWindow(int window_id) {
     string vessel_guid = predicted_vessel?.id.ToString();
@@ -290,9 +293,13 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
     if (elements.Value.mean_eccentricity.max < 0.01) {
       circular = true;
       properties += "circular ";
+    } else if (elements.Value.mean_eccentricity.min > 0.5) {
+      circular = true;
+      properties += "highly elliptical ";
     }
     const double degree = Math.PI / 180;
-    if (elements.Value.mean_inclination.max < 5 * degree) {
+    if (elements.Value.mean_inclination.max < 5 * degree ||
+        elements.Value.mean_inclination.min > 175 * degree) {
       equatorial = true;
       properties += "equatorial ";
     } else if (elements.Value.mean_inclination.min > 80 * degree &&
@@ -324,14 +331,14 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
               }
               break;
             case 2:
-              properties += "semisynchronous ";
+              properties += "semisynch. ";
               break;
             default:
-              properties += "subsynchronous ";
+              properties += "subsynch. ";
               break;
           }
         } else if (recurrence.Value.dto == 0) {
-          properties += "supersynchronous ";
+          properties += "supersynch. ";
         }
       }
     }
