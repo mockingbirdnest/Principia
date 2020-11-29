@@ -145,7 +145,9 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
 
   public void RenderButton() {
     string vessel_guid = predicted_vessel?.id.ToString();
-    if (!Shown() && vessel_guid != null) {
+    if (vessel_guid == null) {
+      orbit_description_ = null;
+    } else if (!Shown()) {
       // Keep refreshing the analysis even when the analyser is not shown, so
       // that the analysis button can display an up-to-date one-line summary.
       OrbitAnalysis analysis = plugin.VesselRefreshAnalysis(
