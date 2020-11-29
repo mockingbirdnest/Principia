@@ -341,8 +341,6 @@ TEST_F(PoissonSeriesBasisTest, PeriodicVector) {
       AlmostEquals(
           Displacement<World>({0 * Metre, 0 * Metre, Sqrt(3) / 2 * Metre}), 0));
 
-  LOG(ERROR)<<periodic_subspaces[1];
-  LOG(ERROR)<<periodic_subspaces[4];
   EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[0],
                                                 periodic_subspaces[3]));
   EXPECT_TRUE(PoissonSeriesSubspace::orthogonal(periodic_subspaces[0],
