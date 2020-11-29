@@ -511,8 +511,8 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
                           ? AllOf(Gt(2.8e-10 * Metre), Lt(1.3e-6 * Metre))
                           : ω_index == 3
                                 ? AllOf(Gt(1.3e-13 * Metre), Lt(4.5e-9 * Metre))
-                                : AllOf(Gt(6.4e-17 * Metre),
-                                        Lt(9.8e-13 * Metre)))
+                                : AllOf(Gt(-1.0e-100 * Metre),
+                                        Lt(1.2e-12 * Metre)))
           << ω_index;
     }
     if (ω_index == ωs.size()) {
@@ -534,7 +534,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
     EXPECT_THAT(
         projection4(t_min + i * (t_max - t_min) / 100),
         RelativeErrorFrom(series(t_min + i * (t_max - t_min) / 100),
-                          AllOf(Ge(0), Lt(4.5e-14))));
+                          AllOf(Ge(0), Lt(5.2e-14))));
   }
 }
 
