@@ -290,7 +290,7 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
       properties += "circular ";
     }
     const double degree = Math.PI / 180;
-    if (elements.Value.mean_inclination.max < 10 * degree) {
+    if (elements.Value.mean_inclination.max < 5 * degree) {
       equatorial = true;
       properties += "equatorial ";
     } else if (elements.Value.mean_inclination.min > 80 * degree &&
