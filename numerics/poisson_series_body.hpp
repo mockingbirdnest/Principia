@@ -22,6 +22,7 @@ namespace numerics {
 namespace internal_poisson_series {
 
 using quantities::Abs;
+using quantities::Angle;
 using quantities::Cos;
 using quantities::Infinity;
 using quantities::Sin;
@@ -260,10 +261,11 @@ template<typename Value,
          template<typename, typename, int> class Evaluator>
 Value PoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
 operator()(Instant const& t) const {
+  Time const Δt = t - origin_;
   Value result = aperiodic_(t);
   for (auto const& [ω, polynomials] : periodic_) {
-    result += polynomials.sin(t) * Sin(ω * (t - origin_)) +
-              polynomials.cos(t) * Cos(ω * (t - origin_));
+    Angle const ωΔt = ω * Δt;
+    result += polynomials.sin(t) * Sin(ωΔt) + polynomials.cos(t) * Cos(ωΔt);
   }
   return result;
 }
