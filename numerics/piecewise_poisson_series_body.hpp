@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "quantities/elementary_functions.hpp"
+#include "quantities/si.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
@@ -15,6 +16,20 @@ namespace internal_piecewise_poisson_series {
 
 using quantities::Cos;
 using quantities::Sin;
+using quantities::si::Radian;
+
+//TODO(phl):Cleanup
+// The minimum value of the max_point parameter passed to Clenshaw-Curtis
+// integration, irrespective of the frequencies of the argument function.
+constexpr int clenshaw_curtis_min_points_overall = 65;
+
+// The maximum number of points use in Clenshaw-Curtis integration for each
+// period of the highest frequency of the argument function.
+constexpr int clenshaw_curtis_point_per_period = 6;
+
+// The desired relative error on Clenshaw-Curtis integration, as determined by
+// two successive computations with increasing number of points.
+constexpr double clenshaw_curtis_relative_error = 0x1p-32;
 
 template<typename Value,
          int aperiodic_degree_, int periodic_degree_,
@@ -631,7 +646,7 @@ InnerProduct(PiecewisePoissonSeries<LValue,
                            Evaluator> const& weight,
              Instant const& t_min,
              Instant const& t_max) {
-#define USE_GAUSS 1
+#define USE_GAUSS 0
 #if USE_GAUSS
   using Result =
       Primitive<typename Hilbert<LValue, RValue>::InnerProductType, Time>;
@@ -669,6 +684,32 @@ InnerProduct(PiecewisePoissonSeries<LValue,
   } else {
     return result / (t_max - t_min);
   }
+#else
+  AngularFrequency max_ω{};
+  for (int i = 0; i < left.series_.size(); ++i) {
+    max_ω = std::max(max_ω, left.series_[i].max_ω());
+  }
+  max_ω += right.max_ω() + weight.max_ω();
+
+  //TODO(phl):Cleanup
+  std::optional<int> max_points =
+      max_ω == AngularFrequency()
+          ? std::optional<int>{}
+          : std::max(
+                clenshaw_curtis_min_points_overall,
+                static_cast<int>(clenshaw_curtis_point_per_period *
+                                 (t_max - t_min) * max_ω / (2 * π * Radian)));
+
+  auto integrand = [&left, &right, &weight](Instant const& t) {
+    return Hilbert<LValue, RValue>::InnerProduct(left(t), right(t)) * weight(t);
+  };
+  return quadrature::AutomaticClenshawCurtis(
+             integrand,
+             t_min,
+             t_max,
+             /*max_relative_error=*/clenshaw_curtis_relative_error,
+             max_points) /
+         (t_max - t_min);
 #endif
 }
 

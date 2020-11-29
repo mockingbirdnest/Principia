@@ -100,6 +100,7 @@ class PoissonSeries {
                                   HigherEvaluator>() const;
 
   Instant const& origin() const;
+  AngularFrequency max_ω() const;
 
   Value operator()(Instant const& t) const;
 

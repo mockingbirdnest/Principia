@@ -258,6 +258,14 @@ origin() const {
 
 template<typename Value,
          int aperiodic_degree_, int periodic_degree_,
+         template<typename, typename, int> class Evaluator> AngularFrequency
+PoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
+max_ω() const {
+  return periodic_.empty() ? AngularFrequency{} : periodic_.back().first;
+}
+
+template<typename Value,
+         int aperiodic_degree_, int periodic_degree_,
          template<typename, typename, int> class Evaluator>
 Value PoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
 operator()(Instant const& t) const {
