@@ -42,16 +42,16 @@ TEST_F(ApodizationTest, Dirichlet) {
 
 TEST_F(ApodizationTest, Sine) {
   auto a = apodization::Sine<HornerEvaluator>(t1_, t2_);
-  EXPECT_THAT(a(t1_), AlmostEquals(0, 0));
-  EXPECT_THAT(a(t0_), AlmostEquals(Sqrt(3) / 2, 0));
+  EXPECT_THAT(a(t1_), VanishesBefore(1, 0));
+  EXPECT_THAT(a(t0_), AlmostEquals(Sqrt(3) / 2, 1));
   EXPECT_THAT(a(mid_), AlmostEquals(1, 0));
-  EXPECT_THAT(a(t2_), VanishesBefore(1, 1));
+  EXPECT_THAT(a(t2_), VanishesBefore(1, 0));
 }
 
 TEST_F(ApodizationTest, Hann) {
   auto a = apodization::Hann<HornerEvaluator>(t1_, t2_);
   EXPECT_THAT(a(t1_), AlmostEquals(0, 0));
-  EXPECT_THAT(a(t0_), AlmostEquals(0.75, 1));
+  EXPECT_THAT(a(t0_), AlmostEquals(0.75, 0));
   EXPECT_THAT(a(mid_), AlmostEquals(1, 0));
   EXPECT_THAT(a(t2_), VanishesBefore(1, 0));
 }
@@ -59,7 +59,7 @@ TEST_F(ApodizationTest, Hann) {
 TEST_F(ApodizationTest, Hamming) {
   auto a = apodization::Hamming<HornerEvaluator>(t1_, t2_);
   EXPECT_THAT(a(t1_), AlmostEquals(2.0 / 23.0, 0));
-  EXPECT_THAT(a(t0_), AlmostEquals(71.0 / 92.0, 1));
+  EXPECT_THAT(a(t0_), AlmostEquals(71.0 / 92.0, 0));
   EXPECT_THAT(a(mid_), AlmostEquals(1, 0));
   EXPECT_THAT(a(t2_), AlmostEquals(2.0 / 23.0, 0));
 }
@@ -75,7 +75,7 @@ TEST_F(ApodizationTest, Blackman) {
 TEST_F(ApodizationTest, ExactBlackman) {
   auto a = apodization::ExactBlackman<HornerEvaluator>(t1_, t2_);
   EXPECT_THAT(a(t1_), AlmostEquals(8.0 / 1163.0, 37));
-  EXPECT_THAT(a(t0_), AlmostEquals(11843.0 / 18608.0, 1));
+  EXPECT_THAT(a(t0_), AlmostEquals(11843.0 / 18608.0, 2));
   EXPECT_THAT(a(mid_), AlmostEquals(1, 0));
   EXPECT_THAT(a(t2_), AlmostEquals(8.0 / 1163.0, 37));
 }
@@ -83,7 +83,7 @@ TEST_F(ApodizationTest, ExactBlackman) {
 TEST_F(ApodizationTest, Nuttall) {
   auto a = apodization::Nuttall<HornerEvaluator>(t1_, t2_);
   EXPECT_THAT(a(t1_), VanishesBefore(1, 0));
-  EXPECT_THAT(a(t0_), AlmostEquals(0.514746, 2));
+  EXPECT_THAT(a(t0_), AlmostEquals(0.514746, 1));
   EXPECT_THAT(a(mid_), AlmostEquals(1, 0));
   EXPECT_THAT(a(t2_), VanishesBefore(1, 0));
 }
@@ -107,7 +107,7 @@ TEST_F(ApodizationTest, BlackmanHarris) {
 TEST_F(ApodizationTest, ISO18431_2) {
   auto a = apodization::ISO18431_2<HornerEvaluator>(t1_, t2_);
   EXPECT_THAT(a(t1_), AlmostEquals(-0.00195313 / 4.63867187, 440));
-  EXPECT_THAT(a(t0_), AlmostEquals(0.9194336 / 4.63867187, 6));
+  EXPECT_THAT(a(t0_), AlmostEquals(0.9194336 / 4.63867187, 5));
   EXPECT_THAT(a(mid_), AlmostEquals(1, 1));
   EXPECT_THAT(a(t2_), AlmostEquals(-0.00195313 / 4.63867187, 440));
 }

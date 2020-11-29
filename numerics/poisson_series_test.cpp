@@ -263,21 +263,24 @@ TEST_F(PoissonSeriesTest, Primitive) {
 
 TEST_F(PoissonSeriesTest, InnerProduct) {
   Instant const t_min = t0_;
+  Instant const t_mid = t0_ + 1.5 * Second;
   Instant const t_max = t0_ + 3 * Second;
   // Computed using Mathematica.
-  EXPECT_THAT(InnerProduct(*pa_,
-                           *pb_,
+  EXPECT_THAT(InnerProduct(pa_->AtOrigin(t_mid),
+                           pb_->AtOrigin(t_mid),
                            apodization::Hann<HornerEvaluator>(t_min, t_max),
                            t_min,
                            t_max),
-              AlmostEquals(-381.25522770148542400, 4, 7));
+              AlmostEquals(-381.25522770148542400, 3, 7));
 }
 
 TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct) {
   using Degree4 = PoissonSeries<Length, 0, 4, HornerEvaluator>;
   using Degree5 = PoissonSeries<Length, 0, 5, HornerEvaluator>;
+  Time const duration = 4.77553415434249021e-02 * Second;
   Instant const t_min = t0_;
-  Instant const t_max = t0_ + 4.77553415434249021e-02 * Second;
+  Instant const t_mid = t0_ + duration / 2;
+  Instant const t_max = t0_ + duration;
   AngularFrequency const ω = 2.09400659210170170e+03 * Radian / Second;
   Degree4 const f(Degree4::AperiodicPolynomial({}, t0_),
                   {{ω,
@@ -316,12 +319,16 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct) {
 
   // The integral is very small compared to the functions, so we end up in the
   // numerical noise, and adding more points would not help much.
-  auto const product = InnerProduct(
-      f, q, apodization::Hann<HornerEvaluator>(t_min, t_max), t_min, t_max);
+  auto const product =
+      InnerProduct(f.AtOrigin(t_mid),
+                   q.AtOrigin(t_mid),
+                   apodization::Hann<HornerEvaluator>(t_min, t_max),
+                   t_min,
+                   t_max);
   // Exact result obtained using Mathematica.
   EXPECT_THAT(product,
               RelativeErrorFrom(-4.848079980325297e-13 * Metre * Metre,
-                                IsNear(0.05_⑴)));
+                                IsNear(0.19_⑴)));
 }
 
 TEST_F(PoissonSeriesTest, Output) {
