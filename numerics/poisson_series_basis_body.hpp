@@ -230,7 +230,7 @@ std::array<PoissonSeriesSubspace, sizeof...(indices)> PeriodicSeriesGenerator<
       PoissonSeriesSubspace{
           static_cast<PoissonSeriesSubspace::Coordinate>(indices % dimension),
           // The parity of the trigonometric factors of the ith basis element is
-          // ⌊i / dimension⌋ mod 2; the degrees its polynomial factor is
+          // ⌊i / dimension⌋ mod 2; the degree of its polynomial factor is
           // ⌊i / (2 * dimension)⌋, so that the overall parity of that basis
           // element is (⌊i / dimension⌋ + ⌊i / (2 * dimension)⌋) mod 2.
           static_cast<PoissonSeriesSubspace::Parity>(
