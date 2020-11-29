@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "quantities/elementary_functions.hpp"
+#include "testing_utilities/numerics.hpp"
 
 namespace principia {
 namespace numerics {
@@ -630,6 +631,8 @@ InnerProduct(PiecewisePoissonSeries<LValue,
                            Evaluator> const& weight,
              Instant const& t_min,
              Instant const& t_max) {
+#define USE_GAUSS 1
+#if USE_GAUSS
   using Result =
       Primitive<typename Hilbert<LValue, RValue>::InnerProductType, Time>;
   Result result{};
@@ -643,7 +646,30 @@ InnerProduct(PiecewisePoissonSeries<LValue,
         integrand, left.bounds_[i], left.bounds_[i + 1]);
     result += integral;
   }
-  return result / (t_max - t_min);
+  if constexpr (points == 15 || points == 10 || points == 7) {
+    auto const ip1 = result / (t_max - t_min);
+    auto const ip2 =
+        InnerProduct<LValue,
+                     RValue,
+                     aperiodic_ldegree,
+                     periodic_ldegree,
+                     aperiodic_rdegree,
+                     periodic_rdegree,
+                     aperiodic_wdegree,
+                     periodic_wdegree,
+                     Evaluator,
+                     2 * points>(left, right, weight, t_min, t_max);
+    static double max_relative_error = 0;
+    double const relative_error = testing_utilities::RelativeError(ip1, ip2);
+    if (relative_error > max_relative_error) {
+      max_relative_error = relative_error;
+      LOG(ERROR) << max_relative_error;
+    }
+    return ip2;
+  } else {
+    return result / (t_max - t_min);
+  }
+#endif
 }
 
 }  // namespace internal_piecewise_poisson_series
