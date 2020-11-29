@@ -69,7 +69,7 @@ XYZ __cdecl principia__VesselNormal(Plugin const* const plugin,
 }
 
 OrbitAnalysis* __cdecl principia__VesselRefreshAnalysis(
-    Plugin const* const plugin,
+    Plugin* const plugin,
     char const* const vessel_guid,
     double const mission_duration,
     int const* const revolutions_per_cycle,
@@ -83,6 +83,7 @@ OrbitAnalysis* __cdecl principia__VesselRefreshAnalysis(
                                                      ground_track_revolution});
   CHECK_NOTNULL(plugin);
   Vessel& vessel = *plugin->GetVessel(vessel_guid);
+  plugin->ClearOrbitAnalysersOfVesselsOtherThan(vessel);
   vessel.RefreshOrbitAnalysis(mission_duration * Second);
   not_null<OrbitAnalysis*> analysis = NewOrbitAnalysis(vessel.orbit_analysis(),
                                                        *plugin,
@@ -90,7 +91,6 @@ OrbitAnalysis* __cdecl principia__VesselRefreshAnalysis(
                                                        days_per_cycle,
                                                        ground_track_revolution);
   analysis->progress_of_next_analysis = vessel.progress_of_orbit_analysis();
-
   return m.Return(analysis);
 }
 

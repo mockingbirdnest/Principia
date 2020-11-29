@@ -268,6 +268,11 @@ TEST_F(OrbitAnalysisTest, 北斗GEO) {
               IsNear(0.000186_⑴));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
               IsNear(166_⑴ * Degree));
+
+  EXPECT_THAT(ground_track.equator_crossing_longitudes(recurrence, 1)
+                  .longitudes_reduced_to_pass(1)
+                  .measure(),
+              IsNear(0.000_⑴ * Degree));
 }
 
 // COSPAR ID 2010-036A, SVN C005.
@@ -289,6 +294,11 @@ TEST_F(OrbitAnalysisTest, 北斗IGSO) {
               IsNear(0.0078_⑴));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
               IsNear(232_⑴ * Degree));
+
+  EXPECT_THAT(ground_track.equator_crossing_longitudes(recurrence, 1)
+                  .longitudes_reduced_to_pass(1)
+                  .measure(),
+              IsNear(0.000_⑴ * Degree));
 }
 
 // COSPAR ID 2010-045A, SVN J001.
@@ -316,6 +326,11 @@ TEST_F(OrbitAnalysisTest, みちびきQZO) {
               IsNear(270_⑴ * Degree));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().measure(),
               IsNear(0.12_⑴ * Degree));
+
+  EXPECT_THAT(ground_track.equator_crossing_longitudes(recurrence, 1)
+                  .longitudes_reduced_to_pass(1)
+                  .measure(),
+              IsNear(0.000_⑴ * Degree));
 }
 
 // COSPAR ID 2017-048A, SVN J003.
@@ -340,6 +355,11 @@ TEST_F(OrbitAnalysisTest, みちびきGEO) {
               IsNear(0.00023_⑴));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
               IsNear(224_⑴ * Degree));
+
+  EXPECT_THAT(ground_track.equator_crossing_longitudes(recurrence, 1)
+                  .longitudes_reduced_to_pass(1)
+                  .measure(),
+              IsNear(0.000_⑴ * Degree));
 }
 
 // COSPAR ID 2018-078B, SVN C216.
@@ -545,6 +565,11 @@ TEST_F(OrbitAnalysisTest, GPS) {
               IsNear(0.0086_⑴));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
               IsNear(39_⑴ * Degree));
+
+  EXPECT_THAT(ground_track.equator_crossing_longitudes(recurrence, 1)
+                  .longitudes_reduced_to_pass(1)
+                  .measure(),
+              IsNear(0.000_⑴ * Degree));
 }
 
 // COSPAR ID 1992-052A, TOPEX/Poséidon.
