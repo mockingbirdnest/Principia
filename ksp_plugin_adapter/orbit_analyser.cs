@@ -166,7 +166,7 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
           analysis.ground_track,
           (int?)(analysis.mission_duration / analysis.elements?.nodal_period));
     }
-    RenderButton( orbit_description_ == null
+    RenderButton(orbit_description_ == null
         ? "Orbit analysis..."
         : $"Analysis: {orbit_description_}...");
   }
