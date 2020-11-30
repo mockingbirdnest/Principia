@@ -183,6 +183,23 @@ AutomaticClenshawCurtisImplementation(
           estimate,
           f_cos_N⁻¹π_bit_reversed);
     }
+  } else if (do_the_logging) {
+    using Value = std::invoke_result_t<Function, Argument>;
+    typename Hilbert<Value>::NormType max;
+    for (const auto& f_value : f_cos_N⁻¹π_bit_reversed) {
+      max = std::max(max, Hilbert<Value>::Norm(f_value));
+    }
+    LOG(ERROR) << (max_relative_error.has_value() &&
+                           absolute_error_estimate <=
+                               max_relative_error.value() *
+                                   Hilbert<Result>::Norm(estimate)
+                       ? "E"
+                       : "P")
+               << " abserr: " << absolute_error_estimate
+               << " relerr: " << absolute_error_estimate / estimate
+               << " max: " << max * (upper_bound - lower_bound) << " relerr2: "
+               << absolute_error_estimate / (max * (upper_bound - lower_bound))
+               << " points: " << points;
   }
   return estimate;
 }

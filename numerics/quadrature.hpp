@@ -11,6 +11,8 @@ namespace numerics {
 namespace quadrature {
 namespace internal_quadrature {
 
+static inline bool do_the_logging = false;
+
 using quantities::Primitive;
 
 template<int points, typename Argument, typename Function>
