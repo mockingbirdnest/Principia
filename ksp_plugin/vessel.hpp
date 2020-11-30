@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "absl/synchronization/mutex.h"
+#include "base/jthread.hpp"
 #include "base/status.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
@@ -170,6 +171,8 @@ class Vessel {
   // have a last time at or before |time|.
   virtual void RefreshPrediction(Instant const& time);
 
+  void StopPrognosticator();
+
   // Returns "vessel_name (GUID)".
   std::string ShortDebugString() const;
 
@@ -220,7 +223,7 @@ class Vessel {
 
   // Run by the |prognosticator_| thread to periodically recompute the
   // prognostication.
-  void RepeatedlyFlowPrognostication();
+  Status RepeatedlyFlowPrognostication();
 
   // Runs the integrator to compute the |prognostication_| based on the given
   // parameters.
@@ -265,7 +268,7 @@ class Vessel {
   // that reading it clears it.
   std::optional<PrognosticatorParameters> prognosticator_parameters_
       GUARDED_BY(prognosticator_lock_);
-  std::thread prognosticator_;
+  base::jthread prognosticator_;
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_;

@@ -910,16 +910,22 @@ void Plugin::SetPredictionAdaptiveStepParameters(
 void Plugin::UpdatePrediction(GUID const& vessel_guid) const {
   CHECK(!initializing_);
   Vessel& vessel = *FindOrDie(vessels_, vessel_guid);
+  Vessel* target_vessel = nullptr;
 
   // If there is a target vessel, ensure that the prediction of |vessel| is not
   // longer than that of the target vessel.  This is necessary to build the
   // targetting frame.
   if (renderer_->HasTargetVessel()) {
-    Vessel& target_vessel = renderer_->GetTargetVessel();
-    target_vessel.RefreshPrediction();
-    vessel.RefreshPrediction(target_vessel.prediction().back().time);
+    target_vessel = &renderer_->GetTargetVessel();
+    target_vessel->RefreshPrediction();
+    vessel.RefreshPrediction(target_vessel->prediction().back().time);
   } else {
     vessel.RefreshPrediction();
+  }
+  for (auto const& [guid, v] : vessels_) {
+    if (v.get() != &vessel && v.get() != target_vessel) {
+      v->StopPrognosticator();
+    }
   }
 }
 
