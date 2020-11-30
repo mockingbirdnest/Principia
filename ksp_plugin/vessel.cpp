@@ -525,6 +525,10 @@ void Vessel::RefreshOrbitAnalysis(Time const& mission_duration) {
   orbit_analyser_->RefreshAnalysis();
 }
 
+void Vessel::ClearOrbitAnalyser() {
+  orbit_analyser_.reset();
+}
+
 double Vessel::progress_of_orbit_analysis() const {
   if (!orbit_analyser_.has_value()) {
     return 0;

@@ -188,6 +188,7 @@ class Vessel {
           pile_up_for_serialization_index);
 
   void RefreshOrbitAnalysis(Time const& mission_duration);
+  void ClearOrbitAnalyser();
 
   double progress_of_orbit_analysis() const;
   OrbitAnalyser::Analysis* orbit_analysis();

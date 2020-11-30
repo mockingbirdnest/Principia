@@ -1060,6 +1060,14 @@ not_null<Vessel*> Plugin::GetVessel(GUID const& vessel_guid) const {
   return FindOrDie(vessels_, vessel_guid).get();
 }
 
+void Plugin::ClearOrbitAnalysersOfVesselsOtherThan(Vessel const& vessel) {
+  for (auto const& [guid, v] : vessels_) {
+    if (v.get() != &vessel) {
+      v->ClearOrbitAnalyser();
+    }
+  }
+}
+
 not_null<std::unique_ptr<Planetarium>> Plugin::NewPlanetarium(
     Planetarium::Parameters const& parameters,
     Perspective<Navigation, Camera> const& perspective)
