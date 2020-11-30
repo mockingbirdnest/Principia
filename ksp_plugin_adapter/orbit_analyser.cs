@@ -144,10 +144,36 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
   }
 
   public void RenderButton() {
-    RenderButton("Orbit analysis...");
+    string vessel_guid = predicted_vessel?.id.ToString();
+    if (vessel_guid == null) {
+      orbit_description_ = null;
+    } else if (!Shown()) {
+      // Keep refreshing the analysis even when the analyser is not shown, so
+      // that the analysis button can display an up-to-date one-line summary.
+      OrbitAnalysis analysis = plugin.VesselRefreshAnalysis(
+          vessel_guid,
+          mission_duration_.value,
+          autodetect_recurrence_ ? null : (int?)revolutions_per_cycle_,
+          autodetect_recurrence_ ? null : (int?)days_per_cycle_,
+          ground_track_revolution_);
+      CelestialBody primary = analysis.primary_index.HasValue
+          ? FlightGlobals.Bodies[analysis.primary_index.Value]
+          : null;
+      orbit_description_ = OrbitDescription(
+          primary,
+          analysis.elements,
+          analysis.recurrence,
+          analysis.ground_track,
+          (int?)(analysis.mission_duration / analysis.elements?.nodal_period));
+    }
+    RenderButton( orbit_description_ == null
+        ? "Orbit analysis..."
+        : $"Analysis: {orbit_description_}...");
   }
-
-  protected override string Title => "Orbit analysis";
+  protected override string Title => orbit_description_ == null
+      ? "Orbit analysis"
+      : orbit_description_[0].ToString().ToUpper() +
+        orbit_description_.Substring(1);
 
   protected override void RenderWindow(int window_id) {
     string vessel_guid = predicted_vessel?.id.ToString();
@@ -167,12 +193,13 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
           multiline_style,
           UnityEngine.GUILayout.Height(two_lines));
 
-      OrbitAnalysis analysis = plugin.VesselRefreshAnalysis(
-          predicted_vessel.id.ToString(),
-          mission_duration_.value,
-          autodetect_recurrence_ ? null : (int?)revolutions_per_cycle_,
-          autodetect_recurrence_ ? null : (int?)days_per_cycle_,
-          ground_track_revolution_);
+    OrbitAnalysis analysis = plugin.VesselRefreshAnalysis(
+        predicted_vessel.id.ToString(),
+        mission_duration_.value,
+        autodetect_recurrence_ ? null : (int?)revolutions_per_cycle_,
+        autodetect_recurrence_ ? null : (int?)days_per_cycle_,
+        ground_track_revolution_);
+
       if (autodetect_recurrence_ &&
           analysis.recurrence.HasValue &&
           analysis.recurrence.Value.number_of_revolutions != 0 &&
@@ -194,6 +221,10 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
       CelestialBody primary =
           analysis.primary_index.HasValue ? FlightGlobals.Bodies[analysis.primary_index.Value]
                                           : null;
+
+      orbit_description_ = OrbitDescription(
+          primary, elements, recurrence, ground_track,
+          (int?)(mission_duration / elements?.nodal_period));
 
       Style.HorizontalLine();
       string duration_in_revolutions;
@@ -245,6 +276,73 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
       RenderOrbitGroundTrack(ground_track, primary);
     }
     UnityEngine.GUI.DragWindow();
+  }
+
+  private string OrbitDescription(
+      CelestialBody primary,
+      OrbitalElements? elements,
+      OrbitRecurrence? recurrence,
+      OrbitGroundTrack? ground_track,
+      int? nodal_revolutions) {
+    if (!elements.HasValue) {
+      return null;
+    }
+    string properties = "";
+    bool circular = false;
+    bool equatorial = false;
+    if (elements.Value.mean_eccentricity.max < 0.01) {
+      circular = true;
+      properties += "circular ";
+    } else if (elements.Value.mean_eccentricity.min > 0.5) {
+      circular = true;
+      properties += "highly elliptical ";
+    }
+    const double degree = Math.PI / 180;
+    if (elements.Value.mean_inclination.max < 5 * degree ||
+        elements.Value.mean_inclination.min > 175 * degree) {
+      equatorial = true;
+      properties += "equatorial ";
+    } else if (elements.Value.mean_inclination.min > 80 * degree &&
+               elements.Value.mean_inclination.max < 100 * degree) {
+      properties += "polar ";
+    } else if (elements.Value.mean_inclination.min > 90 * degree) {
+      properties += "retrograde ";
+    }
+    if (recurrence.HasValue && ground_track.HasValue) {
+      Interval ascending_longitudes = ground_track.Value.equatorial_crossings.
+          longitudes_reduced_to_ascending_pass;
+      Interval descending_longitudes = ground_track.Value.equatorial_crossings.
+          longitudes_reduced_to_descending_pass;
+      double drift = Math.Max(
+          ascending_longitudes.max - ascending_longitudes.min,
+          descending_longitudes.max - descending_longitudes.min);
+      double revolutions_per_day =
+          (double)recurrence.Value.number_of_revolutions / recurrence.Value.cto;
+      double days = nodal_revolutions.Value / revolutions_per_day;
+      // We ignore 0 drift as it means that there was only one pass, which is
+      // insufficient to assess synchronicity.
+      if (drift > 0 && drift / days < 0.1 * degree) {
+        if (recurrence.Value.cto == 1) {
+          switch(recurrence.Value.nuo) {
+            case 1:
+              properties += "synchronous ";
+              if (circular && equatorial) {
+                properties = "stationary ";
+              }
+              break;
+            case 2:
+              properties += "semisynch. ";
+              break;
+            default:
+              properties += "subsynch. ";
+              break;
+          }
+        } else if (recurrence.Value.dto == 0) {
+          properties += "supersynch. ";
+        }
+      }
+    }
+    return $"{properties}{primary.name} orbit";
   }
 
   private void RenderOrbitalElements(OrbitalElements? elements,
@@ -405,6 +503,8 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
   private int revolutions_per_cycle_ = 1;
   private int days_per_cycle_ = 1;
   private int ground_track_revolution_ = 1;
+
+  private string orbit_description_ = null;
 }
 
 

@@ -284,8 +284,8 @@ internal abstract class
   }
 
   // A helper for implementing the RenderButton() method of the subclasses.
-  protected void RenderButton(string text) {
-    if (UnityEngine.GUILayout.Button(text)) {
+  protected void RenderButton(string text, params UnityEngine.GUILayoutOption[] options) {
+    if (UnityEngine.GUILayout.Button(text, options)) {
       Toggle();
     }
     // Override the state of the toggle if there is no predicted vessel.

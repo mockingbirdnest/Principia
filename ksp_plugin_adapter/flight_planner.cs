@@ -23,7 +23,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
   }
 
   public void RenderButton() {
-    RenderButton("Flight plan...");
+    RenderButton("Flight plan...", GUILayoutWidth(4));
   }
 
   public bool show_guidance => show_guidance_;
