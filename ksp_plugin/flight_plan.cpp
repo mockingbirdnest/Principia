@@ -481,9 +481,9 @@ Status FlightPlan::ComputeSegments(
         anomalous_status_ = status;
       }
       coast_analysers_.back()->RequestAnalysis(
-          coast->Fork()->time,
-          coast->Fork()->degrees_of_freedom,
-          coast->back().time - coast->Fork()->time);
+          {.first_time = coast->Fork()->time,
+           .first_degrees_of_freedom = coast->Fork()->degrees_of_freedom,
+           .mission_duration = coast->back().time - coast->Fork()->time});
     }
 
     AddLastSegment();
@@ -508,9 +508,11 @@ Status FlightPlan::ComputeSegments(
     desired_final_time_ =
         std::max(desired_final_time_, segments_.back()->t_max());
     coast_analysers_.back()->RequestAnalysis(
-        segments_.back()->Fork()->time,
-        segments_.back()->Fork()->degrees_of_freedom,
-        desired_final_time_ - segments_.back()->Fork()->time);
+        {.first_time = segments_.back()->Fork()->time,
+         .first_degrees_of_freedom =
+             segments_.back()->Fork()->degrees_of_freedom,
+         .mission_duration =
+             desired_final_time_ - segments_.back()->Fork()->time});
     Status const status = CoastSegment(desired_final_time_, segments_.back());
     if (!status.ok()) {
       overall_status.Update(status);
