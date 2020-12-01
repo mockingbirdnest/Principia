@@ -77,6 +77,20 @@ t_max() const {
 template<typename Value,
          int aperiodic_degree_, int periodic_degree_,
          template<typename, typename, int> class Evaluator>
+AngularFrequency
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
+max_ω() const {
+  AngularFrequency max_ω =
+      addend_.has_value() ? addend_->max_ω() : AngularFrequency{};
+  for (int i = 0; i < series_.size(); ++i) {
+    max_ω = std::max(max_ω, series_[i].max_ω());
+  }
+  return max_ω;
+}
+
+template<typename Value,
+         int aperiodic_degree_, int periodic_degree_,
+         template<typename, typename, int> class Evaluator>
 Value
 PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
 operator()(Instant const& t) const {
@@ -650,12 +664,7 @@ InnerProduct(PiecewisePoissonSeries<LValue,
   }
   return result / (t_max - t_min);
 #else
-  AngularFrequency max_ω =
-      left.addend_.has_value() ? left.addend_->max_ω() : AngularFrequency{};
-  for (int i = 0; i < left.series_.size(); ++i) {
-    max_ω = std::max(max_ω, left.series_[i].max_ω());
-  }
-  max_ω += right.max_ω() + weight.max_ω();
+  AngularFrequency const max_ω = left.max_ω() + right.max_ω() + weight.max_ω();
 
   //TODO(phl):Cleanup
   std::optional<int> max_points =

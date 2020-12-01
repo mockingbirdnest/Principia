@@ -85,6 +85,7 @@ class PiecewisePoissonSeries {
 
   Instant t_min() const;
   Instant t_max() const;
+  AngularFrequency max_ω() const;
 
   // t must be in the interval [t_min, t_max].
   Value operator()(Instant const& t) const;

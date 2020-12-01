@@ -371,11 +371,7 @@ Norm(PoissonSeries<double,
       2 * π * Radian * clenshaw_curtis_max_periods_overall / (t_max - t_min);
   auto const split = Split(ω_cutoff);
 
-  AngularFrequency const max_ω =
-      (split.slow.periodic_.empty() ? AngularFrequency{}
-                                     : 2 * split.slow.periodic_.back().first) +
-      (weight.periodic_.empty() ? AngularFrequency{}
-                                : weight.periodic_.back().first);
+  AngularFrequency const max_ω = 2 * split.slow.max_ω() + weight.max_ω();
   std::optional<int> max_points =
       max_ω == AngularFrequency()
           ? std::optional<int>{}
@@ -959,14 +955,7 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
   auto const right_split = right.Split(ω_cutoff);
 
   AngularFrequency const max_ω =
-      (left_split.slow.periodic_.empty()
-           ? AngularFrequency{}
-           : left_split.slow.periodic_.back().first) +
-      (right_split.slow.periodic_.empty()
-           ? AngularFrequency{}
-           : right_split.slow.periodic_.back().first) +
-      (weight.periodic_.empty() ? AngularFrequency{}
-                                : weight.periodic_.back().first);
+      left_split.slow.max_ω() + right_split.slow.max_ω() + weight.max_ω();
   std::optional<int> max_points =
       max_ω == AngularFrequency()
           ? std::optional<int>{}
