@@ -26,7 +26,7 @@ constexpr int clenshaw_curtis_min_points_overall = 513;
 
 // The maximum number of points use in Clenshaw-Curtis integration for each
 // period of the highest frequency of the argument function.
-constexpr int clenshaw_curtis_point_per_period = 4;
+constexpr int clenshaw_curtis_points_per_period = 4;
 
 // The desired relative error on Clenshaw-Curtis integration, as determined by
 // two successive computations with increasing number of points.
@@ -665,29 +665,23 @@ InnerProduct(PiecewisePoissonSeries<LValue,
   return result / (t_max - t_min);
 #else
   AngularFrequency const max_ω = left.max_ω() + right.max_ω() + weight.max_ω();
-
-  //TODO(phl):Cleanup
   std::optional<int> max_points =
-      max_ω == AngularFrequency()
-          ? std::optional<int>{}
-          : std::max(
-                clenshaw_curtis_min_points_overall,
-                static_cast<int>(clenshaw_curtis_point_per_period *
-                                 (t_max - t_min) * max_ω / (2 * π * Radian)));
+      quadrature::MaxPointsHeuristicsForAutomaticClenshawCurtis(
+          max_ω,
+          t_max - t_min,
+          clenshaw_curtis_min_points_overall,
+          clenshaw_curtis_points_per_period);
 
   auto integrand = [&left, &right, &weight](Instant const& t) {
     return Hilbert<LValue, RValue>::InnerProduct(left(t), right(t)) * weight(t);
   };
-  quadrature::internal_quadrature::do_the_logging = true;
-  auto const result = quadrature::AutomaticClenshawCurtis(
+  return quadrature::AutomaticClenshawCurtis(
              integrand,
              t_min,
              t_max,
              /*max_relative_error=*/clenshaw_curtis_relative_error,
-             max_points) /
+             /*max_points=*/max_points) /
          (t_max - t_min);
-  quadrature::internal_quadrature::do_the_logging = false;
-  return result;
 #endif
 
 }

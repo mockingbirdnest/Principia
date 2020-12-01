@@ -44,7 +44,7 @@ constexpr int clenshaw_curtis_min_points_overall = 65;
 
 // The maximum number of points use in Clenshaw-Curtis integration for each
 // period of the highest frequency of the argument function.
-constexpr int clenshaw_curtis_point_per_period = 4;
+constexpr int clenshaw_curtis_points_per_period = 4;
 
 // The desired relative error on Clenshaw-Curtis integration, as determined by
 // two successive computations with increasing number of points.
@@ -373,12 +373,11 @@ Norm(PoissonSeries<double,
 
   AngularFrequency const max_ω = 2 * split.slow.max_ω() + weight.max_ω();
   std::optional<int> max_points =
-      max_ω == AngularFrequency()
-          ? std::optional<int>{}
-          : std::max(
-                clenshaw_curtis_min_points_overall,
-                static_cast<int>(clenshaw_curtis_point_per_period *
-                                 (t_max - t_min) * max_ω / (2 * π * Radian)));
+      quadrature::MaxPointsHeuristicsForAutomaticClenshawCurtis(
+          max_ω,
+          t_max - t_min,
+          clenshaw_curtis_min_points_overall,
+          clenshaw_curtis_points_per_period);
 
   auto slow_integrand = [&split, &weight](Instant const& t) {
     return Hilbert<Value>::Norm²(split.slow(t)) * weight(t);
@@ -957,12 +956,11 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
   AngularFrequency const max_ω =
       left_split.slow.max_ω() + right_split.slow.max_ω() + weight.max_ω();
   std::optional<int> max_points =
-      max_ω == AngularFrequency()
-          ? std::optional<int>{}
-          : std::max(
-                clenshaw_curtis_min_points_overall,
-                static_cast<int>(clenshaw_curtis_point_per_period *
-                                 (t_max - t_min) * max_ω / (2 * π * Radian)));
+      quadrature::MaxPointsHeuristicsForAutomaticClenshawCurtis(
+          max_ω,
+          t_max - t_min,
+          clenshaw_curtis_min_points_overall,
+          clenshaw_curtis_points_per_period);
 
   auto slow_integrand = [&left_split, &right_split, &weight](Instant const& t) {
     return Hilbert<LValue, RValue>::InnerProduct(left_split.slow(t),

@@ -183,23 +183,6 @@ AutomaticClenshawCurtisImplementation(
           estimate,
           f_cos_N⁻¹π_bit_reversed);
     }
-  } else if (do_the_logging) {
-    using Value = std::invoke_result_t<Function, Argument>;
-    typename Hilbert<Value>::NormType max;
-    for (const auto& f_value : f_cos_N⁻¹π_bit_reversed) {
-      max = std::max(max, Hilbert<Value>::Norm(f_value));
-    }
-    LOG(ERROR) << (max_relative_error.has_value() &&
-                           absolute_error_estimate <=
-                               max_relative_error.value() *
-                                   Hilbert<Result>::Norm(estimate)
-                       ? "E"
-                       : "P")
-               << " abserr: " << absolute_error_estimate
-               << " relerr: " << absolute_error_estimate / estimate
-               << " max: " << max * (upper_bound - lower_bound) << " relerr2: "
-               << absolute_error_estimate / (max * (upper_bound - lower_bound))
-               << " points: " << points;
   }
   return estimate;
 }
@@ -306,6 +289,18 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> ClenshawCurtis(
   f_cos_N⁻¹π_bit_reversed.reserve(points);
   return ClenshawCurtisImplementation<points>(
       f, lower_bound, upper_bound, f_cos_N⁻¹π_bit_reversed);
+}
+
+inline std::optional<int> MaxPointsHeuristicsForAutomaticClenshawCurtis(
+    AngularFrequency const& max_ω,
+    Time const& Δt,
+    int min_points_overall,
+    int points_per_period) {
+  return max_ω == AngularFrequency{}
+             ? std::optional<int>{}
+             : std::max(min_points_overall,
+                        static_cast<int>(points_per_period * Δt * max_ω /
+                                         (2 * π * Radian)));
 }
 
 template<typename Argument, typename Function>
