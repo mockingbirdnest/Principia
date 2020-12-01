@@ -262,8 +262,10 @@ OrbitAnalyser::Analysis* FlightPlan::analysis(int coast_index) {
 Status FlightPlan::IncrementCoastRevolutions(int coast_index, Period kind) {
   auto* const analysis = coast_analysers_[coast_index]->analysis();
   if (analysis == nullptr) {
+    return Status(Error::UNIMPLEMENTED, "TODO: Error reporting");
   }
   if (!analysis->elements().has_value()) {
+    return Status(Error::UNIMPLEMENTED, "TODO: Error reporting");
   }
   Time period;
   switch (kind) {
@@ -291,8 +293,10 @@ Status FlightPlan::IncrementCoastRevolutions(int coast_index, Period kind) {
 Status FlightPlan::DecrementCoastRevolutions(int coast_index, Period kind) {
   auto* const analysis = coast_analysers_[coast_index]->analysis();
   if (analysis == nullptr) {
+    return Status(Error::UNIMPLEMENTED, "TODO: Error reporting");
   }
   if (!analysis->elements().has_value()) {
+    return Status(Error::UNIMPLEMENTED, "TODO: Error reporting");
   }
   Time period;
   switch (kind) {
