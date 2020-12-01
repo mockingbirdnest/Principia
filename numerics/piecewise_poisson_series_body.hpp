@@ -10,8 +10,6 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/numerics.hpp"
 
-#define PRINCIPIA_PW_INNER_PRODUCT_USE_GAUSS 0
-
 namespace principia {
 namespace numerics {
 namespace internal_piecewise_poisson_series {
@@ -563,8 +561,7 @@ template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree,
          int aperiodic_wdegree, int periodic_wdegree,
-         template<typename, typename, int> class Evaluator,
-         int points>
+         template<typename, typename, int> class Evaluator>
 typename Hilbert<LValue, RValue>::InnerProductType
 InnerProduct(PoissonSeries<LValue,
                            aperiodic_ldegree, periodic_ldegree,
@@ -574,22 +571,21 @@ InnerProduct(PoissonSeries<LValue,
                                     Evaluator> const& right,
              PoissonSeries<double,
                            aperiodic_wdegree, periodic_wdegree,
-                           Evaluator> const& weight) {
+                           Evaluator> const& weight,
+             std::optional<int> max_points) {
   return InnerProduct<LValue, RValue,
                       aperiodic_ldegree, periodic_ldegree,
                       aperiodic_rdegree, periodic_rdegree,
                       aperiodic_wdegree, periodic_wdegree,
-                      Evaluator,
-                      points>(
-      left, right, weight, right.t_min(), right.t_max());
+                      Evaluator>(
+      left, right, weight, right.t_min(), right.t_max(), max_points);
 }
 
 template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree,
          int aperiodic_wdegree, int periodic_wdegree,
-         template<typename, typename, int> class Evaluator,
-         int points>
+         template<typename, typename, int> class Evaluator>
 typename Hilbert<LValue, RValue>::InnerProductType
 InnerProduct(PoissonSeries<LValue,
                            aperiodic_ldegree, periodic_ldegree,
@@ -601,16 +597,16 @@ InnerProduct(PoissonSeries<LValue,
                            aperiodic_wdegree, periodic_wdegree,
                            Evaluator> const& weight,
              Instant const& t_min,
-             Instant const& t_max) {
-  return InnerProduct(right, left, weight, t_min, t_max);
+             Instant const& t_max,
+             std::optional<int> max_points) {
+  return InnerProduct(right, left, weight, t_min, t_max, max_points);
 }
 
 template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree,
          int aperiodic_wdegree, int periodic_wdegree,
-         template<typename, typename, int> class Evaluator,
-         int points>
+         template<typename, typename, int> class Evaluator>
 typename Hilbert<LValue, RValue>::InnerProductType
 InnerProduct(PiecewisePoissonSeries<LValue,
                                     aperiodic_ldegree, periodic_ldegree,
@@ -620,22 +616,21 @@ InnerProduct(PiecewisePoissonSeries<LValue,
                            Evaluator> const& right,
              PoissonSeries<double,
                            aperiodic_wdegree, periodic_wdegree,
-                           Evaluator> const& weight) {
+                           Evaluator> const& weight,
+             std::optional<int> max_points) {
   return InnerProduct<LValue, RValue,
                       aperiodic_ldegree, periodic_ldegree,
                       aperiodic_rdegree, periodic_rdegree,
                       aperiodic_wdegree, periodic_wdegree,
-                      Evaluator,
-                      points>(
-       left, right, weight, left.t_min(), left.t_max());
+                      Evaluator>(
+       left, right, weight, left.t_min(), left.t_max(), max_points);
 }
 
 template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree,
          int aperiodic_wdegree, int periodic_wdegree,
-         template<typename, typename, int> class Evaluator,
-         int points>
+         template<typename, typename, int> class Evaluator>
 typename Hilbert<LValue, RValue>::InnerProductType
 InnerProduct(PiecewisePoissonSeries<LValue,
                                     aperiodic_ldegree, periodic_ldegree,
@@ -647,25 +642,10 @@ InnerProduct(PiecewisePoissonSeries<LValue,
                            aperiodic_wdegree, periodic_wdegree,
                            Evaluator> const& weight,
              Instant const& t_min,
-             Instant const& t_max) {
-#if PRINCIPIA_PW_INNER_PRODUCT_USE_GAUSS
-  using Result =
-      Primitive<typename Hilbert<LValue, RValue>::InnerProductType, Time>;
-  Result result{};
-  for (int i = 0; i < left.series_.size(); ++i) {
-    auto integrand = [i, &left, &right, &weight](Instant const& t) {
-      return Hilbert<LValue, RValue>::InnerProduct(
-          left.series_[i](t) + left.EvaluateAddend(t),
-          right(t) * weight(t));
-    };
-    auto const integral = quadrature::GaussLegendre<points>(
-        integrand, left.bounds_[i], left.bounds_[i + 1]);
-    result += integral;
-  }
-  return result / (t_max - t_min);
-#else
+             Instant const& t_max,
+             std::optional<int> max_points) {
   AngularFrequency const max_ω = left.max_ω() + right.max_ω() + weight.max_ω();
-  std::optional<int> max_points =
+  std::optional<int> const max_points_heuristic =
       quadrature::MaxPointsHeuristicsForAutomaticClenshawCurtis(
           max_ω,
           t_max - t_min,
@@ -680,14 +660,11 @@ InnerProduct(PiecewisePoissonSeries<LValue,
              t_min,
              t_max,
              /*max_relative_error=*/clenshaw_curtis_relative_error,
-             /*max_points=*/max_points) /
+             /*max_points=*/max_points.has_value() ? max_points
+                                                   : max_points_heuristic) /
          (t_max - t_min);
-#endif
-
 }
 
 }  // namespace internal_piecewise_poisson_series
 }  // namespace numerics
 }  // namespace principia
-
-#undef PRINCIPIA_PW_INNER_PRODUCT_USE_GAUSS

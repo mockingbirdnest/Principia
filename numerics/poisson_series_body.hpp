@@ -372,7 +372,7 @@ Norm(PoissonSeries<double,
   auto const split = Split(ω_cutoff);
 
   AngularFrequency const max_ω = 2 * split.slow.max_ω() + weight.max_ω();
-  std::optional<int> max_points =
+  std::optional<int> const max_points =
       quadrature::MaxPointsHeuristicsForAutomaticClenshawCurtis(
           max_ω,
           t_max - t_min,
@@ -955,7 +955,7 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
 
   AngularFrequency const max_ω =
       left_split.slow.max_ω() + right_split.slow.max_ω() + weight.max_ω();
-  std::optional<int> max_points =
+  std::optional<int> const max_points =
       quadrature::MaxPointsHeuristicsForAutomaticClenshawCurtis(
           max_ω,
           t_max - t_min,
