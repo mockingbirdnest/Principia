@@ -10,6 +10,8 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/numerics.hpp"
 
+#define PRINCIPIA_PW_INNER_PRODUCT_USE_GAUSS 0
+
 namespace principia {
 namespace numerics {
 namespace internal_piecewise_poisson_series {
@@ -18,15 +20,13 @@ using quantities::Cos;
 using quantities::Sin;
 using quantities::si::Radian;
 
-#define USE_GAUSS 0
-//TODO(phl):Cleanup
 // The minimum value of the max_point parameter passed to Clenshaw-Curtis
 // integration, irrespective of the frequencies of the argument function.
-constexpr int clenshaw_curtis_min_points_overall = 65;
+constexpr int clenshaw_curtis_min_points_overall = 513;
 
 // The maximum number of points use in Clenshaw-Curtis integration for each
 // period of the highest frequency of the argument function.
-constexpr int clenshaw_curtis_point_per_period = 5;
+constexpr int clenshaw_curtis_point_per_period = 4;
 
 // The desired relative error on Clenshaw-Curtis integration, as determined by
 // two successive computations with increasing number of points.
@@ -588,48 +588,7 @@ InnerProduct(PoissonSeries<LValue,
                            Evaluator> const& weight,
              Instant const& t_min,
              Instant const& t_max) {
-#if USE_GAUSS
-  using Result =
-      Primitive<typename Hilbert<LValue, RValue>::InnerProductType, Time>;
-  Result result{};
-  for (int i = 0; i < right.series_.size(); ++i) {
-    auto integrand = [i, &left, &right, &weight](Instant const& t) {
-      return Hilbert<LValue, RValue>::InnerProduct(
-          left(t) * weight(t),
-          right.series_[i](t) + right.EvaluateAddend(t));
-    };
-    auto const integral = quadrature::GaussLegendre<points>(
-        integrand, right.bounds_[i], right.bounds_[i + 1]);
-    result += integral;
-  }
-  return result / (t_max - t_min);
-#else
-  AngularFrequency max_ω =
-      left.addend_.has_value() ? right.addend_->max_ω() : AngularFrequency{};
-  for (int i = 0; i < right.series_.size(); ++i) {
-    max_ω = std::max(max_ω, right.series_[i].max_ω());
-  }
-  max_ω += left.max_ω() + weight.max_ω();
-
-  std::optional<int> max_points =
-      max_ω == AngularFrequency()
-          ? std::optional<int>{}
-          : std::max(
-                clenshaw_curtis_min_points_overall,
-                static_cast<int>(clenshaw_curtis_point_per_period *
-                                 (t_max - t_min) * max_ω / (2 * π * Radian)));
-
-  auto integrand = [&left, &right, &weight](Instant const& t) {
-    return Hilbert<LValue, RValue>::InnerProduct(left(t), right(t)) * weight(t);
-  };
-  return quadrature::AutomaticClenshawCurtis(
-             integrand,
-             t_min,
-             t_max,
-             /*max_relative_error=*/clenshaw_curtis_relative_error,
-             max_points) /
-         (t_max - t_min);
-#endif
+  return InnerProduct(right, left, weight, t_min, t_max);
 }
 
 template<typename LValue, typename RValue,
@@ -675,7 +634,7 @@ InnerProduct(PiecewisePoissonSeries<LValue,
                            Evaluator> const& weight,
              Instant const& t_min,
              Instant const& t_max) {
-#if USE_GAUSS
+#if PRINCIPIA_PW_INNER_PRODUCT_USE_GAUSS
   using Result =
       Primitive<typename Hilbert<LValue, RValue>::InnerProductType, Time>;
   Result result{};
@@ -689,29 +648,7 @@ InnerProduct(PiecewisePoissonSeries<LValue,
         integrand, left.bounds_[i], left.bounds_[i + 1]);
     result += integral;
   }
-  if constexpr (points == 15 || points == 10 || points == 7) {
-    auto const ip1 = result / (t_max - t_min);
-    auto const ip2 =
-        InnerProduct<LValue,
-                     RValue,
-                     aperiodic_ldegree,
-                     periodic_ldegree,
-                     aperiodic_rdegree,
-                     periodic_rdegree,
-                     aperiodic_wdegree,
-                     periodic_wdegree,
-                     Evaluator,
-                     2 * points>(left, right, weight, t_min, t_max);
-    static double max_relative_error = 0;
-    double const relative_error = testing_utilities::RelativeError(ip1, ip2);
-    if (relative_error > max_relative_error) {
-      max_relative_error = relative_error;
-      LOG(ERROR) << max_relative_error;
-    }
-    return ip2;
-  } else {
-    return result / (t_max - t_min);
-  }
+  return result / (t_max - t_min);
 #else
   AngularFrequency max_ω =
       left.addend_.has_value() ? left.addend_->max_ω() : AngularFrequency{};
@@ -743,8 +680,11 @@ InnerProduct(PiecewisePoissonSeries<LValue,
   quadrature::internal_quadrature::do_the_logging = false;
   return result;
 #endif
+
 }
 
 }  // namespace internal_piecewise_poisson_series
 }  // namespace numerics
 }  // namespace principia
+
+#undef PRINCIPIA_PW_INNER_PRODUCT_USE_GAUSS

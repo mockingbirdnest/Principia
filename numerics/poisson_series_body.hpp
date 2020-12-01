@@ -40,7 +40,7 @@ constexpr int clenshaw_curtis_max_periods_overall = 40;
 
 // The minimum value of the max_point parameter passed to Clenshaw-Curtis
 // integration, irrespective of the frequencies of the argument function.
-constexpr int clenshaw_curtis_min_points_overall = 33;
+constexpr int clenshaw_curtis_min_points_overall = 65;
 
 // The maximum number of points use in Clenshaw-Curtis integration for each
 // period of the highest frequency of the argument function.
