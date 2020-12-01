@@ -290,6 +290,34 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
               burn.Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, i));
               break;
             }
+            case BurnEditor.Event.DecrementedAnomalisticRevolutions: {
+              var status =
+                  plugin.FlightPlanDecrementCoastRevolutions(vessel_guid, i, 1);
+              UpdateStatus(status, i);
+              burn.Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, i));
+              break;
+            }
+            case BurnEditor.Event.IncrementedAnomalisticRevolutions: {
+              var status =
+                  plugin.FlightPlanIncrementCoastRevolutions(vessel_guid, i, 1);
+              UpdateStatus(status, i);
+              burn.Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, i));
+              break;
+            }
+            case BurnEditor.Event.DecrementedNodalRevolutions: {
+              var status =
+                  plugin.FlightPlanDecrementCoastRevolutions(vessel_guid, i, 2);
+              UpdateStatus(status, i);
+              burn.Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, i));
+              break;
+            }
+            case BurnEditor.Event.IncrementedNodalRevolutions: {
+              var status =
+                  plugin.FlightPlanIncrementCoastRevolutions(vessel_guid, i, 2);
+              UpdateStatus(status, i);
+              burn.Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, i));
+              break;
+            }
             case BurnEditor.Event.None: {
               break;
             }
@@ -358,17 +386,16 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
     var coast_analysis =
         plugin.FlightPlanGetCoastAnalysis(vessel_guid, index);
     string orbit_description = null;
-    string revolutions_description = null;
     if (coast_analysis.primary_index.HasValue) {
-      string primary_name =
-          FlightGlobals.Bodies[coast_analysis.primary_index.Value].name;
-      int? sidereal_revolutions =
-          (int?)(coast_analysis.mission_duration /
-          coast_analysis.elements?.sidereal_period);
-      if (sidereal_revolutions.HasValue) {
-        orbit_description = $"{primary_name} orbit";
-        revolutions_description = $"{sidereal_revolutions} sidereal rev.";
-      }
+      var primary = FlightGlobals.Bodies[coast_analysis.primary_index.Value];
+      int? nodal_revolutions = (int?)(coast_analysis.mission_duration /
+                                      coast_analysis.elements?.nodal_period);
+      orbit_description =
+          OrbitAnalyser.OrbitDescription(primary,
+                                         coast_analysis.elements,
+                                         coast_analysis.recurrence,
+                                         coast_analysis.ground_track,
+                                         nodal_revolutions);
     }
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       double start_of_coast = index == 0
@@ -383,8 +410,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           ? orbit_description ?? "Final trajectory"
           : orbit_description == null
               ? $"Coast for {coast_duration}"
-              : $@"Coast in {orbit_description} for {coast_duration} ({
-                  revolutions_description})";
+              : $@"Coast in {orbit_description} for {coast_duration}";
       UnityEngine.GUILayout.Label(coast_description);
       if (UnityEngine.GUILayout.Button("Add manœuvre", GUILayoutWidth(4))) {
         double initial_time;
@@ -427,32 +453,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         UpdateStatus(status, index);
       }
     }
-    if (index != burn_editors_.Count) {
-      using (new UnityEngine.GUILayout.HorizontalScope()) {
-        if (UnityEngine.GUILayout.Button("+S")) {
-          plugin.FlightPlanIncrementCoastRevolutions(vessel_guid, index, 0);
-        }
-        if (UnityEngine.GUILayout.Button("-S")) {
-          plugin.FlightPlanDecrementCoastRevolutions(vessel_guid, index, 0);
-        }
-      }
-      using (new UnityEngine.GUILayout.HorizontalScope()) {
-        if (UnityEngine.GUILayout.Button("+A")) {
-          plugin.FlightPlanIncrementCoastRevolutions(vessel_guid, index, 1);
-        }
-        if (UnityEngine.GUILayout.Button("-A")) {
-          plugin.FlightPlanDecrementCoastRevolutions(vessel_guid, index, 1);
-        }
-      }
-      using (new UnityEngine.GUILayout.HorizontalScope()) {
-        if (UnityEngine.GUILayout.Button("+N")) {
-          plugin.FlightPlanIncrementCoastRevolutions(vessel_guid, index, 2);
-        }
-        if (UnityEngine.GUILayout.Button("-N")) {
-          plugin.FlightPlanDecrementCoastRevolutions(vessel_guid, index, 2);
-        }
-      }
-    }
+
     return false;
   }
 

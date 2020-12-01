@@ -278,7 +278,7 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
     UnityEngine.GUI.DragWindow();
   }
 
-  private string OrbitDescription(
+  public static string OrbitDescription(
       CelestialBody primary,
       OrbitalElements? elements,
       OrbitRecurrence? recurrence,

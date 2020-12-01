@@ -62,6 +62,10 @@ class BurnEditor : ScalingRenderer {
     Deleted,
     Minimized,
     Maximized,
+    DecrementedAnomalisticRevolutions,
+    IncrementedAnomalisticRevolutions,
+    DecrementedNodalRevolutions,
+    IncrementedNodalRevolutions,
   }
 
   // Renders the |BurnEditor|.  Returns true if and only if the settings were
@@ -106,6 +110,38 @@ class BurnEditor : ScalingRenderer {
         ComputeEngineCharacteristics();
       }
 
+      {
+        var render_time_base = time_base;
+        previous_coast_duration_.value = initial_time_ - render_time_base;
+
+        // The duration of the previous coast is always enabled as it can make
+        // a manœuvre non-anomalous.
+        if (previous_coast_duration_.Render(enabled : true)) {
+          changed = true;
+          initial_time_ = previous_coast_duration_.value + render_time_base;
+        }
+        using (new UnityEngine.GUILayout.HorizontalScope()) {
+          if (UnityEngine.GUILayout.Button("-A")) {
+            return Event.DecrementedAnomalisticRevolutions;
+          }
+          if (UnityEngine.GUILayout.Button("+A")) {
+            return Event.IncrementedAnomalisticRevolutions;
+          }
+          if (UnityEngine.GUILayout.Button("-N")) {
+            return Event.DecrementedNodalRevolutions;
+          }
+          if (UnityEngine.GUILayout.Button("+N")) {
+            return Event.IncrementedNodalRevolutions;
+          }
+        }
+      }
+
+      UnityEngine.GUILayout.Label(
+          index == 0 ? "Time base: start of flight plan"
+                     : $"Time base: end of manœuvre #{index}",
+          style : new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label){
+              alignment = UnityEngine.TextAnchor.UpperLeft});
+
       // The frame selector is disabled for an anomalous manœuvre as is has no
       // effect.
       if (anomalous) {
@@ -141,22 +177,6 @@ class BurnEditor : ScalingRenderer {
       changed |= Δv_tangent_.Render(enabled : !anomalous);
       changed |= Δv_normal_.Render(enabled : !anomalous);
       changed |= Δv_binormal_.Render(enabled : !anomalous);
-      {
-        var render_time_base = time_base;
-        previous_coast_duration_.value = initial_time_ - render_time_base;
-
-        // The duration of the previous coast is always enabled as it can make
-        // a manœuvre non-anomalous.
-        if (previous_coast_duration_.Render(enabled : true)) {
-          changed = true;
-          initial_time_ = previous_coast_duration_.value + render_time_base;
-        }
-      }
-      UnityEngine.GUILayout.Label(
-          index == 0 ? "Time base: start of flight plan"
-                     : $"Time base: end of manœuvre #{index}",
-          style : new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label){
-              alignment = UnityEngine.TextAnchor.UpperLeft});
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         UnityEngine.GUILayout.Label(
             "Manœuvre Δv : " + Δv().ToString("0.000") + " m/s",
