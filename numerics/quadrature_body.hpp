@@ -291,18 +291,6 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> ClenshawCurtis(
       f, lower_bound, upper_bound, f_cos_N⁻¹π_bit_reversed);
 }
 
-inline std::optional<int> MaxPointsHeuristicsForAutomaticClenshawCurtis(
-    AngularFrequency const& max_ω,
-    Time const& Δt,
-    int min_points_overall,
-    int points_per_period) {
-  return max_ω == AngularFrequency{}
-             ? std::optional<int>{}
-             : std::max(min_points_overall,
-                        static_cast<int>(points_per_period * Δt * max_ω /
-                                         (2 * π * Radian)));
-}
-
 template<typename Argument, typename Function>
 Primitive<std::invoke_result_t<Function, Argument>, Argument> Midpoint(
     Function const& f,

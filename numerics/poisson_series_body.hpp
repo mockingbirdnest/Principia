@@ -373,7 +373,7 @@ Norm(PoissonSeries<double,
 
   AngularFrequency const max_ω = 2 * split.slow.max_ω() + weight.max_ω();
   std::optional<int> const max_points =
-      quadrature::MaxPointsHeuristicsForAutomaticClenshawCurtis(
+      MaxPointsHeuristicsForAutomaticClenshawCurtis(
           max_ω,
           t_max - t_min,
           clenshaw_curtis_min_points_overall,
@@ -956,7 +956,7 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
   AngularFrequency const max_ω =
       left_split.slow.max_ω() + right_split.slow.max_ω() + weight.max_ω();
   std::optional<int> const max_points =
-      quadrature::MaxPointsHeuristicsForAutomaticClenshawCurtis(
+      MaxPointsHeuristicsForAutomaticClenshawCurtis(
           max_ω,
           t_max - t_min,
           clenshaw_curtis_min_points_overall,
@@ -981,6 +981,18 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
   auto const fast_quadrature = fast_integrand.Integrate(t_min, t_max);
 
   return (slow_quadrature + fast_quadrature) / (t_max - t_min);
+}
+
+inline std::optional<int> MaxPointsHeuristicsForAutomaticClenshawCurtis(
+    AngularFrequency const& max_ω,
+    Time const& Δt,
+    int min_points_overall,
+    int points_per_period) {
+  return max_ω == AngularFrequency()
+             ? std::optional<int>{}
+             : std::max(min_points_overall,
+                        static_cast<int>(points_per_period * Δt * max_ω /
+                                         (2 * π * Radian)));
 }
 
 }  // namespace internal_poisson_series
