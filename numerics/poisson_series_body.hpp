@@ -40,11 +40,11 @@ constexpr int clenshaw_curtis_max_periods_overall = 40;
 
 // The minimum value of the max_point parameter passed to Clenshaw-Curtis
 // integration, irrespective of the frequencies of the argument function.
-constexpr int clenshaw_curtis_min_points_overall = 33;
+constexpr int clenshaw_curtis_min_points_overall = 65;
 
 // The maximum number of points use in Clenshaw-Curtis integration for each
 // period of the highest frequency of the argument function.
-constexpr int clenshaw_curtis_point_per_period = 4;
+constexpr int clenshaw_curtis_points_per_period = 4;
 
 // The desired relative error on Clenshaw-Curtis integration, as determined by
 // two successive computations with increasing number of points.
@@ -258,6 +258,14 @@ origin() const {
 
 template<typename Value,
          int aperiodic_degree_, int periodic_degree_,
+         template<typename, typename, int> class Evaluator> AngularFrequency
+PoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
+max_ω() const {
+  return periodic_.empty() ? AngularFrequency{} : periodic_.back().first;
+}
+
+template<typename Value,
+         int aperiodic_degree_, int periodic_degree_,
          template<typename, typename, int> class Evaluator>
 Value PoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
 operator()(Instant const& t) const {
@@ -363,18 +371,13 @@ Norm(PoissonSeries<double,
       2 * π * Radian * clenshaw_curtis_max_periods_overall / (t_max - t_min);
   auto const split = Split(ω_cutoff);
 
-  AngularFrequency const max_ω =
-      (split.slow.periodic_.empty() ? AngularFrequency{}
-                                     : 2 * split.slow.periodic_.back().first) +
-      (weight.periodic_.empty() ? AngularFrequency{}
-                                : weight.periodic_.back().first);
-  std::optional<int> max_points =
-      max_ω == AngularFrequency()
-          ? std::optional<int>{}
-          : std::max(
-                clenshaw_curtis_min_points_overall,
-                static_cast<int>(clenshaw_curtis_point_per_period *
-                                 (t_max - t_min) * max_ω / (2 * π * Radian)));
+  AngularFrequency const max_ω = 2 * split.slow.max_ω() + weight.max_ω();
+  std::optional<int> const max_points =
+      MaxPointsHeuristicsForAutomaticClenshawCurtis(
+          max_ω,
+          t_max - t_min,
+          clenshaw_curtis_min_points_overall,
+          clenshaw_curtis_points_per_period);
 
   auto slow_integrand = [&split, &weight](Instant const& t) {
     return Hilbert<Value>::Norm²(split.slow(t)) * weight(t);
@@ -951,21 +954,13 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
   auto const right_split = right.Split(ω_cutoff);
 
   AngularFrequency const max_ω =
-      (left_split.slow.periodic_.empty()
-           ? AngularFrequency{}
-           : left_split.slow.periodic_.back().first) +
-      (right_split.slow.periodic_.empty()
-           ? AngularFrequency{}
-           : right_split.slow.periodic_.back().first) +
-      (weight.periodic_.empty() ? AngularFrequency{}
-                                : weight.periodic_.back().first);
-  std::optional<int> max_points =
-      max_ω == AngularFrequency()
-          ? std::optional<int>{}
-          : std::max(
-                clenshaw_curtis_min_points_overall,
-                static_cast<int>(clenshaw_curtis_point_per_period *
-                                 (t_max - t_min) * max_ω / (2 * π * Radian)));
+      left_split.slow.max_ω() + right_split.slow.max_ω() + weight.max_ω();
+  std::optional<int> const max_points =
+      MaxPointsHeuristicsForAutomaticClenshawCurtis(
+          max_ω,
+          t_max - t_min,
+          clenshaw_curtis_min_points_overall,
+          clenshaw_curtis_points_per_period);
 
   auto slow_integrand = [&left_split, &right_split, &weight](Instant const& t) {
     return Hilbert<LValue, RValue>::InnerProduct(left_split.slow(t),
@@ -986,6 +981,18 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
   auto const fast_quadrature = fast_integrand.Integrate(t_min, t_max);
 
   return (slow_quadrature + fast_quadrature) / (t_max - t_min);
+}
+
+inline std::optional<int> MaxPointsHeuristicsForAutomaticClenshawCurtis(
+    AngularFrequency const& max_ω,
+    Time const& Δt,
+    int min_points_overall,
+    int points_per_period) {
+  return max_ω == AngularFrequency()
+             ? std::optional<int>{}
+             : std::max(min_points_overall,
+                        static_cast<int>(points_per_period * Δt * max_ω /
+                                         (2 * π * Radian)));
 }
 
 }  // namespace internal_poisson_series

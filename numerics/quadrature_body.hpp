@@ -170,7 +170,7 @@ AutomaticClenshawCurtisImplementation(
   if ((!max_relative_error.has_value() ||
        absolute_error_estimate >
            max_relative_error.value() * Hilbert<Result>::Norm(estimate)) &&
-      (!max_points.has_value() || points <= max_points.value())) {
+      (!max_points.has_value() || points < max_points.value())) {
     if constexpr (points > 1 << 24) {
       LOG(FATAL) << "Too many refinements while integrating from "
                  << lower_bound << " to " << upper_bound;

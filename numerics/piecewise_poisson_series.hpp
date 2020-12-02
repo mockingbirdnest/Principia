@@ -85,6 +85,7 @@ class PiecewisePoissonSeries {
 
   Instant t_min() const;
   Instant t_max() const;
+  AngularFrequency max_ω() const;
 
   // t must be in the interval [t_min, t_max].
   Value operator()(Instant const& t) const;
@@ -373,14 +374,7 @@ template<
     int aperiodic_ldegree, int periodic_ldegree,
     int aperiodic_rdegree, int periodic_rdegree,
     int aperiodic_wdegree, int periodic_wdegree,
-    template<typename, typename, int> class Evaluator,
-    int points = (std::max(aperiodic_ldegree,
-                           periodic_ldegree + estimated_trigonometric_degree) +
-                  std::max(aperiodic_ldegree,
-                           periodic_ldegree + estimated_trigonometric_degree) +
-                  std::max(aperiodic_ldegree,
-                           periodic_ldegree + estimated_trigonometric_degree)) /
-                 2>
+    template<typename, typename, int> class Evaluator>
 typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
     PoissonSeries<LValue,
                   aperiodic_ldegree, periodic_ldegree,
@@ -390,21 +384,15 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
                            Evaluator> const& right,
     PoissonSeries<double,
                   aperiodic_wdegree, periodic_wdegree,
-                  Evaluator> const& weight);
+                  Evaluator> const& weight,
+    std::optional<int> max_points = std::nullopt);
 
 template<
     typename LValue, typename RValue,
     int aperiodic_ldegree, int periodic_ldegree,
     int aperiodic_rdegree, int periodic_rdegree,
     int aperiodic_wdegree, int periodic_wdegree,
-    template<typename, typename, int> class Evaluator,
-    int points = (std::max(aperiodic_ldegree,
-                           periodic_ldegree + estimated_trigonometric_degree) +
-                  std::max(aperiodic_ldegree,
-                           periodic_ldegree + estimated_trigonometric_degree) +
-                  std::max(aperiodic_ldegree,
-                           periodic_ldegree + estimated_trigonometric_degree)) /
-                 2>
+    template<typename, typename, int> class Evaluator>
 typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
     PoissonSeries<LValue,
                   aperiodic_ldegree, periodic_ldegree,
@@ -416,21 +404,15 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
                   aperiodic_wdegree, periodic_wdegree,
                   Evaluator> const& weight,
     Instant const& t_min,
-    Instant const& t_max);
+    Instant const& t_max,
+    std::optional<int> max_points = std::nullopt);
 
 template<
     typename LValue, typename RValue,
     int aperiodic_ldegree, int periodic_ldegree,
     int aperiodic_rdegree, int periodic_rdegree,
     int aperiodic_wdegree, int periodic_wdegree,
-    template<typename, typename, int> class Evaluator,
-    int points = (std::max(aperiodic_ldegree,
-                           periodic_ldegree + estimated_trigonometric_degree) +
-                  std::max(aperiodic_ldegree,
-                           periodic_ldegree + estimated_trigonometric_degree) +
-                  std::max(aperiodic_ldegree,
-                           periodic_ldegree + estimated_trigonometric_degree)) /
-                 2>
+    template<typename, typename, int> class Evaluator>
 typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
     PiecewisePoissonSeries<LValue,
                            aperiodic_ldegree, periodic_ldegree,
@@ -440,21 +422,15 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
                   Evaluator> const& right,
     PoissonSeries<double,
                   aperiodic_wdegree, periodic_wdegree,
-                  Evaluator> const& weight);
+                  Evaluator> const& weight,
+    std::optional<int> max_points = std::nullopt);
 
 template<
     typename LValue, typename RValue,
     int aperiodic_ldegree, int periodic_ldegree,
     int aperiodic_rdegree, int periodic_rdegree,
     int aperiodic_wdegree, int periodic_wdegree,
-    template<typename, typename, int> class Evaluator,
-    int points = (std::max(aperiodic_ldegree,
-                           periodic_ldegree + estimated_trigonometric_degree) +
-                  std::max(aperiodic_ldegree,
-                           periodic_ldegree + estimated_trigonometric_degree) +
-                  std::max(aperiodic_ldegree,
-                           periodic_ldegree + estimated_trigonometric_degree)) /
-                 2>
+    template<typename, typename, int> class Evaluator>
 typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
     PiecewisePoissonSeries<LValue,
                            aperiodic_ldegree, periodic_ldegree,
@@ -466,7 +442,8 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
                   aperiodic_wdegree, periodic_wdegree,
                   Evaluator> const& weight,
     Instant const& t_min,
-    Instant const& t_max);
+    Instant const& t_max,
+    std::optional<int> max_points = std::nullopt);
 
 }  // namespace internal_piecewise_poisson_series
 
