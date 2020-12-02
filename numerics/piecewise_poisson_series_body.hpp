@@ -7,8 +7,6 @@
 #include <vector>
 
 #include "quantities/elementary_functions.hpp"
-#include "quantities/si.hpp"
-#include "testing_utilities/numerics.hpp"
 
 namespace principia {
 namespace numerics {
@@ -16,7 +14,6 @@ namespace internal_piecewise_poisson_series {
 
 using quantities::Cos;
 using quantities::Sin;
-using quantities::si::Radian;
 
 // The minimum value of the max_point parameter passed to Clenshaw-Curtis
 // integration, irrespective of the frequencies of the argument function.
