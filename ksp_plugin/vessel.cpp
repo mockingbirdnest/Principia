@@ -23,6 +23,7 @@ using base::Contains;
 using base::Error;
 using base::FindOrDie;
 using base::make_not_null_unique;
+using base::MakeStoppableThread;
 using geometry::BarycentreCalculator;
 using geometry::Position;
 using quantities::IsFinite;
@@ -381,6 +382,13 @@ void Vessel::RefreshPrediction(Instant const& time) {
   prediction_->ForgetAfter(time);
 }
 
+void Vessel::StopPrognosticator() {
+  if (prognosticator_.joinable()) {
+    prognosticator_.request_stop();
+    prognosticator_.join();
+  }
+}
+
 std::string Vessel::ShortDebugString() const {
   return name_ + " (" + guid_ + ")";
 }
@@ -558,20 +566,22 @@ Vessel::Vessel()
 void Vessel::StartPrognosticatorIfNeeded() {
   prognosticator_lock_.AssertHeld();
   if (!prognosticator_.joinable()) {
-    prognosticator_ =
-        std::thread(std::bind(&Vessel::RepeatedlyFlowPrognostication, this));
+    prognosticator_ = MakeStoppableThread(
+        std::bind(&Vessel::RepeatedlyFlowPrognostication, this));
   }
 }
 
-void Vessel::RepeatedlyFlowPrognostication() {
+Status Vessel::RepeatedlyFlowPrognostication() {
   for (;;) {
     // No point in going faster than 50 Hz.
     std::chrono::steady_clock::time_point const wakeup_time =
         std::chrono::steady_clock::now() + std::chrono::milliseconds(20);
 
+    RETURN_IF_STOPPED;
+
     std::optional<PrognosticatorParameters> prognosticator_parameters;
     {
-      absl::ReaderMutexLock l(&prognosticator_lock_);
+      absl::MutexLock l(&prognosticator_lock_);
       if (!prognosticator_parameters_) {
         // No parameters, let's wait for them to appear.
         continue;
@@ -587,6 +597,7 @@ void Vessel::RepeatedlyFlowPrognostication() {
     Status const status =
         FlowPrognostication(std::move(*prognosticator_parameters),
                             prognostication);
+    RETURN_IF_STOPPED;
     {
       absl::MutexLock l(&prognosticator_lock_);
       SwapPrognostication(prognostication, status);
@@ -594,6 +605,7 @@ void Vessel::RepeatedlyFlowPrognostication() {
 
     std::this_thread::sleep_until(wakeup_time);
   }
+  return Status::OK;
 }
 
 Status Vessel::FlowPrognostication(
