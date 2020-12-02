@@ -487,7 +487,9 @@ Status FlightPlan::ComputeSegments(
       coast_analysers_.back()->RequestAnalysis(
           {.first_time = coast->Fork()->time,
            .first_degrees_of_freedom = coast->Fork()->degrees_of_freedom,
-           .mission_duration = coast->back().time - coast->Fork()->time});
+           .mission_duration = coast->back().time - coast->Fork()->time,
+           .extended_mission_duration =
+               desired_final_time_ - coast->Fork()->time});
     }
 
     AddLastSegment();
