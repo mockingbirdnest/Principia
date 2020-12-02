@@ -12,6 +12,7 @@ namespace principia {
 namespace numerics {
 namespace internal_piecewise_poisson_series {
 
+using quantities::Angle;
 using quantities::Cos;
 using quantities::Sin;
 
@@ -112,24 +113,37 @@ template<typename Value,
 auto
 PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
 FourierTransform() const -> Spectrum {
-  // TODO(egg): consider pre-evaluating |*this| at all points used by the
-  // Gaussian quadratures, removing the lifetime requirement on |*this| and
-  // potentially speeding up repeated evaluations of the Fourier transform.
+  static constexpr int gauss_legendre_points =
+      std::max(1, (std::max(aperiodic_degree_, periodic_degree_) + 1) / 2);
+
   return [this](AngularFrequency const& ω) {
+    // Allocate a cache if there is none.  Make sure that the cache has enough
+    // storage for all the points that we'll evaluate.
+    if (gauss_legendre_cache_ == nullptr) {
+      gauss_legendre_cache_ = std::make_shared<std::vector<Value>>();
+    }
+    gauss_legendre_cache_->reserve(series_.size() * gauss_legendre_points);
+
     Interval<Instant> const time_domain{t_min(), t_max()};
     Instant const t0 = time_domain.midpoint();
     Primitive<Complexification<Value>, Instant> integral;
+    int cache_index = 0;
     for (int k = 0; k < series_.size(); ++k) {
-      integral +=
-          quadrature::GaussLegendre<std::max(1, (aperiodic_degree_ + 1) / 2)>(
-              [this, &f = series_[k], t0, ω](
-                  Instant const& t) -> Complexification<Value> {
-                return (f(t) + EvaluateAddend(t)) *
-                       Complexification<double>{Cos(ω * (t - t0)),
-                                                -Sin(ω * (t - t0))};
-              },
-              bounds_[k],
-              bounds_[k + 1]);
+      integral += quadrature::GaussLegendre<gauss_legendre_points>(
+          [this, &cache_index, &f = series_[k], t0, ω](
+              Instant const& t) -> Complexification<Value> {
+            Angle const θ = ω * (t - t0);
+            auto const e⁻ⁱᶿ = Complexification<double>{Cos(θ), -Sin(θ)};
+
+            // If we reach a point that has not been cached, evaluate it now and
+            // cache the result.
+            if (gauss_legendre_cache_->size() <= cache_index) {
+              gauss_legendre_cache_->push_back(f(t) + EvaluateAddend(t));
+            }
+            return gauss_legendre_cache_->at(cache_index++) * e⁻ⁱᶿ;
+          },
+          bounds_[k],
+          bounds_[k + 1]);
     }
     return integral;
   };

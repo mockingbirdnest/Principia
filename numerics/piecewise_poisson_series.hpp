@@ -2,6 +2,7 @@
 #pragma once
 
 #include <algorithm>
+#include <memory>
 #include <optional>
 #include <string>
 #include <vector>
@@ -130,6 +131,14 @@ class PiecewisePoissonSeries {
   std::vector<Instant> bounds_;
   std::vector<Series> series_;
   std::optional<Series> addend_;
+
+  // A cache of the evaluation of this function at the Gauss-Legendre points.
+  // Caching is possible because the Gauss-Legendre integration picks its points
+  // deterministically.  Note that caching keeps working if new series get
+  // appended to this function: the cache will just be "too short" and new
+  // entries can be appended as needed.  We use a shared_ptr<> to make sure that
+  // copies remain cheap.
+  mutable std::shared_ptr<std::vector<Value>> gauss_legendre_cache_;
 
   template<typename V, int ar, int pr,
            template<typename, typename, int> class E>
