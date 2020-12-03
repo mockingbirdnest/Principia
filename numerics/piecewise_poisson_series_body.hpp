@@ -98,6 +98,8 @@ operator()(Instant const& t) const {
   // If t is an element of bounds_, the returned iterator points to the next
   // element.  Otherwise it points to the upper bound of the interval to which
   // t belongs.
+  // TODO(phl): There may be a faster search if we assume that the buckets are
+  // quasi-linear in t.
   auto const it = std::upper_bound(bounds_.cbegin(), bounds_.cend(), t);
   DCHECK(it != bounds_.cbegin())
       << "Unexpected result looking up " << t << " in "
