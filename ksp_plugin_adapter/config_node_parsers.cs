@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -115,6 +116,17 @@ internal static class ConfigNodeParsers {
       }
     }
     return elements;
+  }
+
+  public static UnityEngine.Color GetDrawColour(this ConfigNode node) {
+    return XKCDColors.ColorTranslator.FromHtml(node.GetUniqueValue("colour"));
+  }
+
+  public static GLLines.Style GetDrawStyle(this ConfigNode node) {
+    return (GLLines.Style)Enum.Parse(
+        typeof(GLLines.Style),
+        node.GetUniqueValue("style"),
+        true);
   }
 
 }
