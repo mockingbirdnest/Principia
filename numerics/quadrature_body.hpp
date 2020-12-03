@@ -227,6 +227,8 @@ ClenshawCurtisImplementation(
   }
   f_cos_N⁻¹π[N] = f_cos_N⁻¹π_bit_reversed[0];
 
+  // TODO(phl): We could save some time by implementing a proper cosine
+  // transform.
   auto const fft = std::make_unique<FastFourierTransform<Value, Angle, 2 * N>>(
       f_cos_N⁻¹π, N⁻¹π);
   auto const& a = *fft;
