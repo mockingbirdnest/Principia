@@ -89,6 +89,9 @@ class OrbitAnalyser {
     Instant first_time;
     DegreesOfFreedom<Barycentric> first_degrees_of_freedom;
     Time mission_duration;
+    // The analyser may compute the trajectory up to |extended_mission_duration|
+    // to ensure that at least one revolution is analysed.
+    std::optional<Time> extended_mission_duration;
   };
 
   OrbitAnalyser(not_null<Ephemeris<Barycentric>*> ephemeris,
