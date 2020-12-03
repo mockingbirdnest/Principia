@@ -31,14 +31,11 @@ OrbitAnalyser::OrbitAnalyser(
       analysed_trajectory_parameters_(
           std::move(analysed_trajectory_parameters)) {}
 
-void OrbitAnalyser::Restart() {
-  analyser_ = MakeStoppableThread([this] { RepeatedlyAnalyseOrbit(); });
+void OrbitAnalyser::Interrupt() {
+  analyser_ = jthread();
 }
 
 void OrbitAnalyser::RequestAnalysis(Parameters const& parameters) {
-  if (!analyser_.joinable()) {
-    analyser_ = MakeStoppableThread([this] { RepeatedlyAnalyseOrbit(); });
-  }
   Ephemeris<Barycentric>::Guard guard(ephemeris_);
   if (ephemeris_->t_min() > parameters.first_time) {
     // Too much has been forgotten; we cannot perform this analysis.
@@ -46,6 +43,10 @@ void OrbitAnalyser::RequestAnalysis(Parameters const& parameters) {
   }
   last_parameters_ = parameters;
   absl::MutexLock l(&lock_);
+  if (analyser_done_ || !analyser_.joinable()) {
+    analyser_ = MakeStoppableThread([this] { RepeatedlyAnalyseOrbit(); });
+    analyser_done_ = false;
+  }
   guarded_parameters_ = {std::move(guard), parameters};
 }
 
@@ -82,8 +83,9 @@ Status OrbitAnalyser::RepeatedlyAnalyseOrbit() {
     {
       absl::MutexLock l(&lock_);
       if (!guarded_parameters_.has_value()) {
-        // No parameters, let's wait for them to appear.
-        continue;
+        // No parameters, stop.
+        analyser_done_ = true;
+        return Status::OK;
       }
       std::swap(guarded_parameters, guarded_parameters_);
     }
