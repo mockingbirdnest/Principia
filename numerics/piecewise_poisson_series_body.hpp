@@ -99,10 +99,10 @@ operator()(Instant const& t) const {
   // element.  Otherwise it points to the upper bound of the interval to which
   // t belongs.
   auto const it = std::upper_bound(bounds_.cbegin(), bounds_.cend(), t);
-  CHECK(it != bounds_.cbegin())
+  DCHECK(it != bounds_.cbegin())
       << "Unexpected result looking up " << t << " in "
       << bounds_.front() << " .. " << bounds_.back();
-  CHECK(it != bounds_.cend())
+  DCHECK(it != bounds_.cend())
       << t << " is outside of " << bounds_.front() << " .. " << bounds_.back();
   return series_[it - bounds_.cbegin() - 1](t) + addend;
 }
