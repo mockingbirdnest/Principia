@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "base/status_or.hpp"
 #include "physics/rotating_body.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -8,6 +9,7 @@ namespace principia {
 namespace astronomy {
 namespace internal_orbit_recurrence {
 
+using base::StatusOr;
 using physics::RotatingBody;
 using quantities::Angle;
 using quantities::AngularFrequency;
@@ -49,7 +51,7 @@ class OrbitRecurrence final {
   // The Nᴛₒ / Cᴛₒ of the result is the last convergent of the κ obtained from
   // the given arguments whose denominator is less than |max_abs_Cᴛₒ|.
   template<typename Frame>
-  static OrbitRecurrence ClosestRecurrence(
+  static StatusOr<OrbitRecurrence> ClosestRecurrence(
       Time const& nodal_period,
       AngularFrequency const& nodal_precession,
       RotatingBody<Frame> const& primary,

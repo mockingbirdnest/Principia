@@ -7,15 +7,20 @@
 
 #include "base/mod.hpp"
 #include "geometry/sign.hpp"
+#include "quantities/astronomy.hpp"
 
 namespace principia {
 namespace astronomy {
 namespace internal_orbit_recurrence {
 
+using base::Error;
+using base::Status;
 using base::mod;
 using geometry::Sign;
-using quantities::si::Radian;
 using quantities::Abs;
+using quantities::astronomy::JulianYear;
+using quantities::si::Minute;
+using quantities::si::Radian;
 
 inline OrbitRecurrence::OrbitRecurrence(int const νₒ,
                                         int const Dᴛₒ,
@@ -45,7 +50,7 @@ inline OrbitRecurrence::OrbitRecurrence(int const νₒ,
 }
 
 template<typename Frame>
-OrbitRecurrence OrbitRecurrence::ClosestRecurrence(
+StatusOr<OrbitRecurrence> OrbitRecurrence::ClosestRecurrence(
     Time const& nodal_period,
     AngularFrequency const& nodal_precession,
     RotatingBody<Frame> const& primary,
@@ -69,6 +74,14 @@ OrbitRecurrence OrbitRecurrence::ClosestRecurrence(
       min_frac_abs_κ_J = frac_abs_κ_J;
       Cᴛₒ = Sign(κ) * J;
     }
+  }
+
+  // During descents the orbit can precess absurdly, leading to arbitrarily
+  // large κ; allow for (unexpectedly short) 1-minute orbits with (unexpectedly
+  // long) 1-year days, in excess of 500 000 revolutions per day, far more than
+  // we will encounter in useful cases, and bail out beyond that.  See #2811.
+  if (Abs(κ) > 1 * JulianYear / Minute) {
+    return Status(Error::OUT_OF_RANGE, u8"κ > 1 a / min");
   }
 
   int const νₒ = std::nearbyint(κ);
