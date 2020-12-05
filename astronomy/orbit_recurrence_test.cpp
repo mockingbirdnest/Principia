@@ -51,34 +51,40 @@ TEST_F(OrbitRecurrenceTest, ClosestRecurrence) {
   AngularFrequency const Ωʹꜱ = 0.985647 * Degree / Day;
   // SPOT-4, figure 11.15(a).
   EXPECT_THAT(OrbitRecurrence::ClosestRecurrence(
-                  101.46 * Minute, Ωʹꜱ, *earth_, /*max_abs_Cᴛₒ=*/50),
+                  101.46 * Minute, Ωʹꜱ, *earth_, /*max_abs_Cᴛₒ=*/50)
+                  .ValueOrDie(),
               AllOf(Property(&OrbitRecurrence::νₒ, 14),
                     Property(&OrbitRecurrence::Dᴛₒ, 5),
                     Property(&OrbitRecurrence::Cᴛₒ, 26)));
   // Terra, figure 11.15(b).
   EXPECT_THAT(OrbitRecurrence::ClosestRecurrence(
-                  98.88 * Minute, Ωʹꜱ, *earth_, /*max_abs_Cᴛₒ=*/50),
+                  98.88 * Minute, Ωʹꜱ, *earth_, /*max_abs_Cᴛₒ=*/50)
+                  .ValueOrDie(),
               AllOf(Property(&OrbitRecurrence::νₒ, 15),
                     Property(&OrbitRecurrence::Dᴛₒ, -7),
                     Property(&OrbitRecurrence::Cᴛₒ, 16)));
 
   // TOPEX/Poséidon, figure 11.16(b).
   AngularFrequency const Ωʹ_topex_poséidon = -2.076659 * Degree / Day;
-  EXPECT_THAT(OrbitRecurrence::ClosestRecurrence(
-          112.43 * Minute, Ωʹ_topex_poséidon, *earth_, /*max_abs_Cᴛₒ=*/50),
+  EXPECT_THAT(
+      OrbitRecurrence::ClosestRecurrence(
+          112.43 * Minute, Ωʹ_topex_poséidon, *earth_, /*max_abs_Cᴛₒ=*/50)
+          .ValueOrDie(),
       AllOf(Property(&OrbitRecurrence::νₒ, 13),
             Property(&OrbitRecurrence::Dᴛₒ, -3),
             Property(&OrbitRecurrence::Cᴛₒ, 10)));
 
   // Z-Earth, figure 11.16(c).
   EXPECT_THAT(OrbitRecurrence::ClosestRecurrence(
-                  95.097610 * Minute, Ωʹꜱ, *earth_, /*max_abs_Cᴛₒ=*/300),
+                  95.097610 * Minute, Ωʹꜱ, *earth_, /*max_abs_Cᴛₒ=*/300)
+                  .ValueOrDie(),
               AllOf(Property(&OrbitRecurrence::νₒ, 15),
                     Property(&OrbitRecurrence::Dᴛₒ, 39),
                     Property(&OrbitRecurrence::Cᴛₒ, 274)));
   // Limiting Cᴛₒ to 50 days, we find the 7-day subcycle instead.
   EXPECT_THAT(OrbitRecurrence::ClosestRecurrence(
-                  95.097610 * Minute, Ωʹꜱ, *earth_, /*max_abs_Cᴛₒ=*/50),
+                  95.097610 * Minute, Ωʹꜱ, *earth_, /*max_abs_Cᴛₒ=*/50)
+                  .ValueOrDie(),
               AllOf(Property(&OrbitRecurrence::number_of_revolutions, 106),
                     Property(&OrbitRecurrence::Cᴛₒ, 7)));
 }
@@ -122,7 +128,7 @@ TEST_F(OrbitRecurrenceTest, RetrogradeRotation) {
       OrbitRecurrence::ClosestRecurrence(91.914680 * Minute,
                                          -0.000464 * Degree / Day,
                                          *venus_,
-                                         /*max_abs_Cᴛₒ=*/50);
+                                         /*max_abs_Cᴛₒ=*/50).ValueOrDie();
   EXPECT_THAT(AbsoluteError(0.094526 * Degree, magellan.equatorial_shift()),
               Lt(0.000001 * Degree));
   // There are approximately 3807 orbits per sidereal day; this value of νₒ is
@@ -137,7 +143,7 @@ TEST_F(OrbitRecurrenceTest, RetrogradeRotation) {
       OrbitRecurrence::ClosestRecurrence(169.584671 * Minute,
                                          -0.074331 * Degree / Day,
                                          *triton_,
-                                         /*max_abs_Cᴛₒ=*/50);
+                                         /*max_abs_Cᴛₒ=*/50).ValueOrDie();
   EXPECT_THAT(AbsoluteError(7.2 * Degree, triton_orbiter.equatorial_shift()),
               Lt(0.1 * Degree));
   EXPECT_THAT(triton_orbiter,
@@ -154,7 +160,7 @@ TEST_F(OrbitRecurrenceTest, OneDayRecurrenceCycle) {
       OrbitRecurrence::ClosestRecurrence(102.86 * Minute,
                                          Ωʹꜱ,
                                          *earth_,
-                                         /*max_abs_Cᴛₒ=*/50);
+                                         /*max_abs_Cᴛₒ=*/50).ValueOrDie();
   EXPECT_THAT(福爾摩沙衛星二號,
               AllOf(Property(&OrbitRecurrence::νₒ, 14),
                     Property(&OrbitRecurrence::Dᴛₒ, 0),

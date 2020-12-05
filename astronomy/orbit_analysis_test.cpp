@@ -194,7 +194,7 @@ class OrbitAnalysisTest : public ::testing::Test {
         OrbitRecurrence::ClosestRecurrence(elements.nodal_period(),
                                            elements.nodal_precession(),
                                            earth_,
-                                           /*max_abs_Cᴛₒ=*/100);
+                                           /*max_abs_Cᴛₒ=*/100).ValueOrDie();
     // Since our ITRS-to-ICRS conversion disregards the precession of the
     // equinoxes, it is not completely clear which year we should be dealing
     // with here.  Given that the SP3 files have data in the ITRS (whose equator

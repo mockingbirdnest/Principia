@@ -164,11 +164,14 @@ Status OrbitAnalyser::RepeatedlyAnalyseOrbit() {
         analysis.elements_ = std::move(elements).ValueOrDie();
         // TODO(egg): max_abs_Cᴛₒ should probably depend on the number of
         // revolutions.
-        analysis.closest_recurrence_ = OrbitRecurrence::ClosestRecurrence(
+        auto recurrence = OrbitRecurrence::ClosestRecurrence(
             analysis.elements_->nodal_period(),
             analysis.elements_->nodal_precession(),
             *primary,
             /*max_abs_Cᴛₒ=*/100);
+        if (recurrence.ok()) {
+          analysis.closest_recurrence_ = std::move(recurrence).ValueOrDie();
+        }
         auto ground_track =
             OrbitGroundTrack::ForTrajectory(primary_centred_trajectory,
                                             *primary,
