@@ -203,30 +203,30 @@ TEST_F(PiecewisePoissonSeriesTest, ActionMultiorigin) {
 }
 
 TEST_F(PiecewisePoissonSeriesTest, InnerProduct) {
-  double const d1 =
-      InnerProduct<double, double, 0, 0, 0, 0, 0, 0, HornerEvaluator, 8>(
-          pp_, p_,
-          apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
-  double const d2 =
-      InnerProduct<double, double, 0, 0, 0, 0, 0, 0, HornerEvaluator, 8>(
-          p_, pp_,
-          apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
-  EXPECT_THAT(d1, AlmostEquals((3 * π - 26) / (8 * π), 0));
-  EXPECT_THAT(d2, AlmostEquals((3 * π - 26) / (8 * π), 0));
+  double const d1 = InnerProduct(
+      pp_, p_,
+      apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second),
+      /*max_points=*/1 << 20);
+  double const d2 = InnerProduct(
+      p_, pp_,
+      apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second),
+      /*max_points=*/1 << 20);
+  EXPECT_THAT(d1, RelativeErrorFrom((3 * π - 26) / (8 * π), IsNear(3e-11_⑴)));
+  EXPECT_THAT(d2, RelativeErrorFrom((3 * π - 26) / (8 * π), IsNear(3e-11_⑴)));
 }
 
 TEST_F(PiecewisePoissonSeriesTest, InnerProductMultiorigin) {
   auto const p = p_.AtOrigin(t0_ + 2 * Second);
-  double const d1 =
-      InnerProduct<double, double, 0, 0, 0, 0, 0, 0, HornerEvaluator, 8>(
-          pp_, p,
-          apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
-  double const d2 =
-      InnerProduct<double, double, 0, 0, 0, 0, 0, 0, HornerEvaluator, 8>(
-          p, pp_,
-          apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second));
-  EXPECT_THAT(d1, AlmostEquals((3 * π - 26) / (8 * π), 0));
-  EXPECT_THAT(d2, AlmostEquals((3 * π - 26) / (8 * π), 0));
+  double const d1 = InnerProduct(
+      pp_, p,
+      apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second),
+      /*max_points=*/1 << 20);
+  double const d2 = InnerProduct(
+      p, pp_,
+      apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second),
+      /*max_points=*/1 << 20);
+  EXPECT_THAT(d1, RelativeErrorFrom((3 * π - 26) / (8 * π), IsNear(3e-11_⑴)));
+  EXPECT_THAT(d2, RelativeErrorFrom((3 * π - 26) / (8 * π), IsNear(3e-11_⑴)));
 }
 
 TEST_F(PiecewisePoissonSeriesTest, Fourier) {

@@ -100,6 +100,7 @@ class PoissonSeries {
                                   HigherEvaluator>() const;
 
   Instant const& origin() const;
+  AngularFrequency max_ω() const;
 
   Value operator()(Instant const& t) const;
 
@@ -387,9 +388,18 @@ InnerProduct(PoissonSeries<LValue,
              Instant const& t_min,
              Instant const& t_max);
 
+// Computes a heuristic for the maximum number of points for an oscillating
+// function.
+std::optional<int> MaxPointsHeuristicsForAutomaticClenshawCurtis(
+    AngularFrequency const& max_ω,
+    Time const& Δt,
+    int min_points_overall,
+    int points_per_period);
+
 }  // namespace internal_poisson_series
 
 using internal_poisson_series::InnerProduct;
+using internal_poisson_series::MaxPointsHeuristicsForAutomaticClenshawCurtis;
 using internal_poisson_series::PoissonSeries;
 
 }  // namespace numerics

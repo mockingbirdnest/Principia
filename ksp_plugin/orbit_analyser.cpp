@@ -96,33 +96,6 @@ Status OrbitAnalyser::RepeatedlyAnalyseOrbit() {
     DiscreteTrajectory<Barycentric> trajectory;
     trajectory.Append(parameters.first_time,
                       parameters.first_degrees_of_freedom);
-    std::vector<not_null<DiscreteTrajectory<Barycentric>*>> trajectories = {
-        &trajectory};
-    auto instance = ephemeris_->NewInstance(
-        trajectories,
-        Ephemeris<Barycentric>::NoIntrinsicAccelerations,
-        analysed_trajectory_parameters_);
-    for (Instant t =
-             parameters.first_time + parameters.mission_duration / 0x1p10;
-         trajectory.back().time <
-         parameters.first_time + parameters.mission_duration;
-         t += parameters.mission_duration / 0x1p10) {
-      if (!ephemeris_->FlowWithFixedStep(t, *instance).ok()) {
-        // TODO(egg): Report that the integration failed.
-        break;
-      }
-      progress_of_next_analysis_ =
-          (trajectory.back().time - parameters.first_time) /
-          parameters.mission_duration;
-      RETURN_IF_STOPPED;
-    }
-    analysis.mission_duration_ =
-        trajectory.back().time - parameters.first_time;
-
-    // TODO(egg): |next_analysis_percentage_| only reflects the progress of the
-    // integration, but the analysis itself can take a while; this results in
-    // the progress bar being stuck at 100% while the elements and nodes are
-    // being computed.
 
     RotatingBody<Barycentric> const* primary = nullptr;
     auto smallest_osculating_period = Infinity<Time>;
@@ -143,6 +116,37 @@ Status OrbitAnalyser::RepeatedlyAnalyseOrbit() {
       }
     }
     if (primary != nullptr) {
+      std::vector<not_null<DiscreteTrajectory<Barycentric>*>> trajectories = {
+          &trajectory};
+      auto instance = ephemeris_->NewInstance(
+          trajectories,
+          Ephemeris<Barycentric>::NoIntrinsicAccelerations,
+          analysed_trajectory_parameters_);
+      Time const analysis_duration =
+          std::min(parameters.extended_mission_duration.value_or(
+                       parameters.mission_duration),
+                   std::max(2 * smallest_osculating_period,
+                            parameters.mission_duration));
+      for (Instant t = parameters.first_time + analysis_duration / 0x1p10;
+           trajectory.back().time < parameters.first_time + analysis_duration;
+           t += analysis_duration / 0x1p10) {
+        if (!ephemeris_->FlowWithFixedStep(t, *instance).ok()) {
+          // TODO(egg): Report that the integration failed.
+          break;
+        }
+        progress_of_next_analysis_ =
+            (trajectory.back().time - parameters.first_time) /
+            analysis_duration;
+        RETURN_IF_STOPPED;
+      }
+      analysis.mission_duration_ =
+          trajectory.back().time - parameters.first_time;
+
+      // TODO(egg): |next_analysis_percentage_| only reflects the progress of
+      // the integration, but the analysis itself can take a while; this results
+      // in the progress bar being stuck at 100% while the elements and nodes
+      // are being computed.
+
       using PrimaryCentred = Frame<enum class PrimaryCentredTag, NonRotating>;
       DiscreteTrajectory<PrimaryCentred> primary_centred_trajectory;
       BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred>

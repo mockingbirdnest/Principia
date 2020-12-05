@@ -12,8 +12,21 @@ namespace principia {
 namespace numerics {
 namespace internal_piecewise_poisson_series {
 
+using quantities::Angle;
 using quantities::Cos;
 using quantities::Sin;
+
+// The minimum value of the max_point parameter passed to Clenshaw-Curtis
+// integration, irrespective of the frequencies of the argument function.
+constexpr int clenshaw_curtis_min_points_overall = 513;
+
+// The maximum number of points use in Clenshaw-Curtis integration for each
+// period of the highest frequency of the argument function.
+constexpr int clenshaw_curtis_points_per_period = 4;
+
+// The desired relative error on Clenshaw-Curtis integration, as determined by
+// two successive computations with increasing number of points.
+constexpr double clenshaw_curtis_relative_error = 0x1p-32;
 
 template<typename Value,
          int aperiodic_degree_, int periodic_degree_,
@@ -60,6 +73,20 @@ t_max() const {
 template<typename Value,
          int aperiodic_degree_, int periodic_degree_,
          template<typename, typename, int> class Evaluator>
+AngularFrequency
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
+max_ω() const {
+  AngularFrequency max_ω =
+      addend_.has_value() ? addend_->max_ω() : AngularFrequency{};
+  for (int i = 0; i < series_.size(); ++i) {
+    max_ω = std::max(max_ω, series_[i].max_ω());
+  }
+  return max_ω;
+}
+
+template<typename Value,
+         int aperiodic_degree_, int periodic_degree_,
+         template<typename, typename, int> class Evaluator>
 Value
 PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
 operator()(Instant const& t) const {
@@ -71,11 +98,13 @@ operator()(Instant const& t) const {
   // If t is an element of bounds_, the returned iterator points to the next
   // element.  Otherwise it points to the upper bound of the interval to which
   // t belongs.
+  // TODO(phl): There may be a faster search if we assume that the buckets are
+  // quasi-linear in t.
   auto const it = std::upper_bound(bounds_.cbegin(), bounds_.cend(), t);
-  CHECK(it != bounds_.cbegin())
+  DCHECK(it != bounds_.cbegin())
       << "Unexpected result looking up " << t << " in "
       << bounds_.front() << " .. " << bounds_.back();
-  CHECK(it != bounds_.cend())
+  DCHECK(it != bounds_.cend())
       << t << " is outside of " << bounds_.front() << " .. " << bounds_.back();
   return series_[it - bounds_.cbegin() - 1](t) + addend;
 }
@@ -86,24 +115,37 @@ template<typename Value,
 auto
 PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
 FourierTransform() const -> Spectrum {
-  // TODO(egg): consider pre-evaluating |*this| at all points used by the
-  // Gaussian quadratures, removing the lifetime requirement on |*this| and
-  // potentially speeding up repeated evaluations of the Fourier transform.
+  static constexpr int gauss_legendre_points =
+      std::max(1, (std::max(aperiodic_degree_, periodic_degree_) + 1) / 2);
+
   return [this](AngularFrequency const& ω) {
+    // Allocate a cache if there is none.  Make sure that the cache has enough
+    // storage for all the points that we'll evaluate.
+    if (gauss_legendre_cache_ == nullptr) {
+      gauss_legendre_cache_ = std::make_shared<std::vector<Value>>();
+    }
+    gauss_legendre_cache_->reserve(series_.size() * gauss_legendre_points);
+
     Interval<Instant> const time_domain{t_min(), t_max()};
     Instant const t0 = time_domain.midpoint();
     Primitive<Complexification<Value>, Instant> integral;
+    int cache_index = 0;
     for (int k = 0; k < series_.size(); ++k) {
-      integral +=
-          quadrature::GaussLegendre<std::max(1, (aperiodic_degree_ + 1) / 2)>(
-              [this, &f = series_[k], t0, ω](
-                  Instant const& t) -> Complexification<Value> {
-                return (f(t) + EvaluateAddend(t)) *
-                       Complexification<double>{Cos(ω * (t - t0)),
-                                                -Sin(ω * (t - t0))};
-              },
-              bounds_[k],
-              bounds_[k + 1]);
+      integral += quadrature::GaussLegendre<gauss_legendre_points>(
+          [this, &cache_index, &f = series_[k], t0, ω](
+              Instant const& t) -> Complexification<Value> {
+            Angle const θ = ω * (t - t0);
+            auto const e⁻ⁱᶿ = Complexification<double>{Cos(θ), -Sin(θ)};
+
+            // If we reach a point that has not been cached, evaluate it now and
+            // cache the result.
+            if (gauss_legendre_cache_->size() <= cache_index) {
+              gauss_legendre_cache_->push_back(f(t) + EvaluateAddend(t));
+            }
+            return gauss_legendre_cache_->at(cache_index++) * e⁻ⁱᶿ;
+          },
+          bounds_[k],
+          bounds_[k + 1]);
     }
     return integral;
   };
@@ -532,8 +574,7 @@ template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree,
          int aperiodic_wdegree, int periodic_wdegree,
-         template<typename, typename, int> class Evaluator,
-         int points>
+         template<typename, typename, int> class Evaluator>
 typename Hilbert<LValue, RValue>::InnerProductType
 InnerProduct(PoissonSeries<LValue,
                            aperiodic_ldegree, periodic_ldegree,
@@ -543,22 +584,21 @@ InnerProduct(PoissonSeries<LValue,
                                     Evaluator> const& right,
              PoissonSeries<double,
                            aperiodic_wdegree, periodic_wdegree,
-                           Evaluator> const& weight) {
+                           Evaluator> const& weight,
+             std::optional<int> max_points) {
   return InnerProduct<LValue, RValue,
                       aperiodic_ldegree, periodic_ldegree,
                       aperiodic_rdegree, periodic_rdegree,
                       aperiodic_wdegree, periodic_wdegree,
-                      Evaluator,
-                      points>(
-      left, right, weight, right.t_min(), right.t_max());
+                      Evaluator>(
+      left, right, weight, right.t_min(), right.t_max(), max_points);
 }
 
 template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree,
          int aperiodic_wdegree, int periodic_wdegree,
-         template<typename, typename, int> class Evaluator,
-         int points>
+         template<typename, typename, int> class Evaluator>
 typename Hilbert<LValue, RValue>::InnerProductType
 InnerProduct(PoissonSeries<LValue,
                            aperiodic_ldegree, periodic_ldegree,
@@ -570,29 +610,16 @@ InnerProduct(PoissonSeries<LValue,
                            aperiodic_wdegree, periodic_wdegree,
                            Evaluator> const& weight,
              Instant const& t_min,
-             Instant const& t_max) {
-  using Result =
-      Primitive<typename Hilbert<LValue, RValue>::InnerProductType, Time>;
-  Result result{};
-  for (int i = 0; i < right.series_.size(); ++i) {
-    auto integrand = [i, &left, &right, &weight](Instant const& t) {
-      return Hilbert<LValue, RValue>::InnerProduct(
-          left(t) * weight(t),
-          right.series_[i](t) + right.EvaluateAddend(t));
-    };
-    auto const integral = quadrature::GaussLegendre<points>(
-        integrand, right.bounds_[i], right.bounds_[i + 1]);
-    result += integral;
-  }
-  return result / (t_max - t_min);
+             Instant const& t_max,
+             std::optional<int> max_points) {
+  return InnerProduct(right, left, weight, t_min, t_max, max_points);
 }
 
 template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree,
          int aperiodic_wdegree, int periodic_wdegree,
-         template<typename, typename, int> class Evaluator,
-         int points>
+         template<typename, typename, int> class Evaluator>
 typename Hilbert<LValue, RValue>::InnerProductType
 InnerProduct(PiecewisePoissonSeries<LValue,
                                     aperiodic_ldegree, periodic_ldegree,
@@ -602,22 +629,21 @@ InnerProduct(PiecewisePoissonSeries<LValue,
                            Evaluator> const& right,
              PoissonSeries<double,
                            aperiodic_wdegree, periodic_wdegree,
-                           Evaluator> const& weight) {
+                           Evaluator> const& weight,
+             std::optional<int> max_points) {
   return InnerProduct<LValue, RValue,
                       aperiodic_ldegree, periodic_ldegree,
                       aperiodic_rdegree, periodic_rdegree,
                       aperiodic_wdegree, periodic_wdegree,
-                      Evaluator,
-                      points>(
-       left, right, weight, left.t_min(), left.t_max());
+                      Evaluator>(
+       left, right, weight, left.t_min(), left.t_max(), max_points);
 }
 
 template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree,
          int aperiodic_wdegree, int periodic_wdegree,
-         template<typename, typename, int> class Evaluator,
-         int points>
+         template<typename, typename, int> class Evaluator>
 typename Hilbert<LValue, RValue>::InnerProductType
 InnerProduct(PiecewisePoissonSeries<LValue,
                                     aperiodic_ldegree, periodic_ldegree,
@@ -629,21 +655,27 @@ InnerProduct(PiecewisePoissonSeries<LValue,
                            aperiodic_wdegree, periodic_wdegree,
                            Evaluator> const& weight,
              Instant const& t_min,
-             Instant const& t_max) {
-  using Result =
-      Primitive<typename Hilbert<LValue, RValue>::InnerProductType, Time>;
-  Result result{};
-  for (int i = 0; i < left.series_.size(); ++i) {
-    auto integrand = [i, &left, &right, &weight](Instant const& t) {
-      return Hilbert<LValue, RValue>::InnerProduct(
-          left.series_[i](t) + left.EvaluateAddend(t),
-          right(t) * weight(t));
-    };
-    auto const integral = quadrature::GaussLegendre<points>(
-        integrand, left.bounds_[i], left.bounds_[i + 1]);
-    result += integral;
-  }
-  return result / (t_max - t_min);
+             Instant const& t_max,
+             std::optional<int> max_points) {
+  AngularFrequency const max_ω = left.max_ω() + right.max_ω() + weight.max_ω();
+  std::optional<int> const max_points_heuristic =
+      MaxPointsHeuristicsForAutomaticClenshawCurtis(
+          max_ω,
+          t_max - t_min,
+          clenshaw_curtis_min_points_overall,
+          clenshaw_curtis_points_per_period);
+
+  auto integrand = [&left, &right, &weight](Instant const& t) {
+    return Hilbert<LValue, RValue>::InnerProduct(left(t), right(t)) * weight(t);
+  };
+  return quadrature::AutomaticClenshawCurtis(
+             integrand,
+             t_min,
+             t_max,
+             /*max_relative_error=*/clenshaw_curtis_relative_error,
+             /*max_points=*/max_points.has_value() ? max_points
+                                                   : max_points_heuristic) /
+         (t_max - t_min);
 }
 
 }  // namespace internal_piecewise_poisson_series

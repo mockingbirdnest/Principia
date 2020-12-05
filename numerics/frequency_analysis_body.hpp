@@ -176,8 +176,9 @@ IncrementalProjection(Function const& function,
 
       Norm const Aₘ = InnerProduct(f, q[m], weight, t_min, t_max);
 
-      f -= Aₘ * q[m];
-      F += Aₘ * q[m];
+      auto const Aₘqₘ = Aₘ * q[m];
+      f -= Aₘqₘ;
+      F += Aₘqₘ;
     }
 
     ω = calculator(f);
