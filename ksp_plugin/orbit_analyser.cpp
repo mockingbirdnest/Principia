@@ -74,8 +74,7 @@ double OrbitAnalyser::progress_of_next_analysis() const {
   return progress_of_next_analysis_;
 }
 
-Status OrbitAnalyser::AnalyseOrbit(
-    GuardedParameters guarded_parameters) {
+Status OrbitAnalyser::AnalyseOrbit(GuardedParameters guarded_parameters) {
   // This object will represent this thread once we are ready to detach from the
   // main thread.
   jthread analyser;
@@ -181,7 +180,7 @@ Status OrbitAnalyser::AnalyseOrbit(
       absl::MutexLock l(&lock_);
       next_analysis_ = std::move(analysis);
       // Take ownership of our own thread so we can safely detach.
-      analyser = std::move(analyser_);
+      std::swap(analyser, analyser_);
     }
   }
   analyser.detach();
