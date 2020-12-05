@@ -126,7 +126,7 @@ class OrbitAnalyser {
     Parameters parameters;
   };
 
-  Status RepeatedlyAnalyseOrbit();
+  Status AnalyseOrbit(GuardedParameters guarded_parameters);
 
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
   Ephemeris<Barycentric>::FixedStepParameters const
@@ -137,13 +137,7 @@ class OrbitAnalyser {
   std::optional<Analysis> analysis_;
 
   mutable absl::Mutex lock_;
-  jthread analyser_;
-  // Set by |analyser_| before returning if no |guarded_parameters_| are
-  // available.
-  bool analyser_done_ GUARDED_BY(lock_) = false;
-  // |guarded_parameters_| is set by the main thread; it is read and cleared by
-  // the |analyser_| thread.
-  std::optional<GuardedParameters> guarded_parameters_ GUARDED_BY(lock_);
+  jthread analyser_ GUARDED_BY(lock_);
   // |next_analysis_| is set by the |analyser_| thread; it is read and cleared
   // by the main thread.
   std::optional<Analysis> next_analysis_ GUARDED_BY(lock_);
