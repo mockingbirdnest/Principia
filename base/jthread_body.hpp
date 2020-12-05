@@ -168,9 +168,9 @@ jthread MakeStoppableThread(Function&& f, Args&&... args) {
       [f](stop_token const& st, Args&&... args) {
         // This assignment happens on the thread of the jthread.
         this_stoppable_thread::stop_token_ = st;
-        f(args...);
+        f(std::forward<Args>(args)...);
       },
-      args...);
+      std::forward<Args>(args)...);
 }
 
 inline stop_token this_stoppable_thread::get_stop_token() {
