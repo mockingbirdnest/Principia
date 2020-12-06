@@ -196,6 +196,17 @@ Quotient<Q2, Exponentiation<Q1, exponent>> ExpressIn<Qs...>::Divide(
 }
 
 template<typename T, typename OptionalExpressIn>
+std::string Apply(std::string const& name,
+                  T const& right,
+                  OptionalExpressIn express_in) {
+  return Apply("Apply", {name, ToMathematica(right, express_in)});
+}
+
+inline std::string Evaluate(std::string const& expression) {
+  return Apply("Evaluate", {expression});
+}
+
+template<typename T, typename OptionalExpressIn>
 std::string Option(std::string const& name,
                    T const& right,
                    OptionalExpressIn express_in) {
