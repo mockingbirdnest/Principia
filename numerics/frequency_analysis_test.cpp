@@ -38,6 +38,7 @@ using geometry::Vector;
 using quantities::Abs;
 using quantities::Acceleration;
 using quantities::AngularFrequency;
+using quantities::Infinity;
 using quantities::Jerk;
 using quantities::Length;
 using quantities::Pow;
@@ -155,7 +156,8 @@ TEST_F(FrequencyAnalysisTest, PreciseModeScalar) {
   auto transform = std::make_unique<FFT>(signal, Δt);
 
   // The FFT gives us an accuracy which is of the order of the number of points.
-  auto const mode = transform->Mode();
+  auto const mode = transform->Mode(AngularFrequency{},
+                                    Infinity<AngularFrequency>);
   EXPECT_THAT(mode.midpoint(), RelativeErrorFrom(ω, IsNear(8.1e-4_⑴)));
 
   // The precise analysis is only limited by our ability to pinpoint the
@@ -203,7 +205,8 @@ TEST_F(FrequencyAnalysisTest, PreciseModeVector) {
   auto transform = std::make_unique<FFT>(signal, Δt);
 
   // The FFT gives us an accuracy which is of the order of the number of points.
-  auto const mode = transform->Mode();
+  auto const mode = transform->Mode(AngularFrequency{},
+                                    Infinity<AngularFrequency>);
   EXPECT_THAT(mode.midpoint(), RelativeErrorFrom(ω, IsNear(8.1e-4_⑴)));
 
   // The precise analysis is only limited by our ability to pinpoint the

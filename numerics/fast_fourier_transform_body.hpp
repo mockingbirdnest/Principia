@@ -151,8 +151,8 @@ FastFourierTransform<Value, Argument, size_>::FastFourierTransform(
 
 template<typename Value, typename Argument, std::size_t size_>
 auto FastFourierTransform<Value, Argument, size_>::PowerSpectrum() const
-    -> std::map<AngularFrequency, typename Hilbert<Value>::InnerProductType> {
-  std::map<AngularFrequency, typename Hilbert<Value>::InnerProductType>
+    -> std::map<AngularFrequency, typename Hilbert<Value>::Norm²Type> {
+  std::map<AngularFrequency, typename Hilbert<Value>::Norm²Type>
       spectrum;
   int k = 0;
   for (auto const& coefficient : transform_) {
@@ -163,21 +163,28 @@ auto FastFourierTransform<Value, Argument, size_>::PowerSpectrum() const
 }
 
 template<typename Value, typename Argument, std::size_t size_>
-auto FastFourierTransform<Value, Argument, size_>::Mode() const
-    -> Interval<AngularFrequency> {
+auto FastFourierTransform<Value, Argument, size_>::Mode(
+    AngularFrequency const& min_ω,
+    AngularFrequency const& max_ω) const -> Interval<AngularFrequency> {
+  CHECK_LE(min_ω, max_ω);
   auto const spectrum = PowerSpectrum();
   typename std::map<AngularFrequency,
-                    typename Hilbert<Value>::InnerProductType>::const_iterator
+                    typename Hilbert<Value>::Norm²Type>::const_iterator
       max = spectrum.end();
 
   // Only look at the first size / 2 + 1 elements because the spectrum is
   // symmetrical.
   auto it = spectrum.begin();
   for (int i = 0; i < size / 2 + 1; ++i, ++it) {
-    if (max == spectrum.end() || it->second > max->second) {
+    AngularFrequency const& ω = it->first;
+    typename Hilbert<Value>::Norm²Type const& power = it->second;
+    if (min_ω <= ω && ω <= max_ω &&
+        (max == spectrum.end() || power > max->second)) {
       max = it;
     }
   }
+  CHECK(max != spectrum.end()) << min_ω << " " << max_ω;
+
   Interval<AngularFrequency> result;
   if (max == spectrum.begin()) {
     result.Include(max->first);

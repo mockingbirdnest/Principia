@@ -62,11 +62,13 @@ class FastFourierTransform {
   FastFourierTransform(std::array<Value, size> const& container,
                        Difference<Argument> const& Δt);
 
-  std::map<AngularFrequency, typename Hilbert<Value>::InnerProductType>
+  std::map<AngularFrequency, typename Hilbert<Value>::Norm²Type>
   PowerSpectrum() const;
 
-  // Returns the interval that contains the largest peak of power.
-  Interval<AngularFrequency> Mode() const;
+  // Returns the interval that contains the largest peak of power in the
+  // specifed range.
+  Interval<AngularFrequency> Mode(AngularFrequency const& min_ω,
+                                  AngularFrequency const& max_ω) const;
 
   // Given s ∈ [0, size - 1] ∩ ℕ, returns the coefficient Uₛ.
   Complexification<Value> const& operator[](int s) const;
