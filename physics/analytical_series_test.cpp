@@ -1,5 +1,6 @@
 ﻿
 #include <algorithm>
+#include <ctime>
 #include <vector>
 
 #include "absl/strings/str_cat.h"
@@ -42,6 +43,7 @@ using quantities::AngularFrequency;
 using quantities::Length;
 using quantities::Time;
 using quantities::astronomy::JulianYear;
+using quantities::si::Day;
 using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Minute;
@@ -65,6 +67,14 @@ class AnalyticalSeriesTest : public ::testing::Test {
     google::LogToStderr();
   }
 
+  std::string ApplyParameters(std::string const& name) {
+    return mathematica::Evaluate(
+        mathematica::Apply(name,
+                           std::tuple{aperiodic_approximation_degree,
+                                      periodic_approximation_degree,
+                                      celestial_}));
+  }
+
   template<int degree>
   PoissonSeries<Displacement<ICRS>,
                 aperiodic_approximation_degree, periodic_approximation_degree,
@@ -75,13 +85,16 @@ class AnalyticalSeriesTest : public ::testing::Test {
     auto const piecewise_poisson_series =
         trajectory.ToPiecewisePoissonSeries<degree, 0>(t_min, t_max);
 
-    logger_.Set("tMin", t_min, mathematica::ExpressIn(Second));
-    logger_.Set("tMax", t_max, mathematica::ExpressIn(Second));
+    logger_.Append(
+        "tMin", std::tuple(time_, t_min), mathematica::ExpressIn(Second));
+    logger_.Append(
+        "tMax", std::tuple(time_, t_max), mathematica::ExpressIn(Second));
 
     int step = 0;
+    std::clock_t const start_cpu = std::clock();
 
     auto angular_frequency_calculator =
-        [this, &step, t_min, t_max](
+        [this, start_cpu, &step, t_min, t_max](
             auto const& residual) -> std::optional<AngularFrequency> {
       Time const Δt = (t_max - t_min) / (1 << log2_number_of_samples);
       LOG(INFO) << "step=" << step;
@@ -97,6 +110,15 @@ class AnalyticalSeriesTest : public ::testing::Test {
           max_residual = std::max(max_residual, residuals.back().Norm());
         }
         LOG(INFO) << "max_residual=" << max_residual;
+
+        std::clock_t const end_cpu = std::clock();
+        logger_.Append(
+            ApplyParameters("maxResidual"),
+            std::tuple(time_, step - 1,
+                       max_residual,
+                       1000.0 * (end_cpu - start_cpu) / CLOCKS_PER_SEC),
+            mathematica::ExpressIn(Metre, Second));
+
         if (max_residual < acceptable_residual) {
           return std::nullopt;
         }
@@ -113,8 +135,6 @@ class AnalyticalSeriesTest : public ::testing::Test {
             mode, residual, apodization::Hann<EstrinEvaluator>(t_min, t_max));
         auto const precise_period = 2 * π * Radian / precise_mode;
         LOG(INFO) << "precise_period=" << precise_period;
-        logger_.Append(
-            "precisePeriods", precise_period, mathematica::ExpressIn(Second));
         return precise_mode;
       } else {
         Length max_residual;
@@ -124,6 +144,15 @@ class AnalyticalSeriesTest : public ::testing::Test {
         }
         LOG(INFO) << "max_residual=" << max_residual
                   << (max_residual > acceptable_residual ? " ***" : "");
+
+        std::clock_t const end_cpu = std::clock();
+        logger_.Append(
+            ApplyParameters("maxResidual"),
+            std::tuple(time_, step,
+                       max_residual,
+                       1000.0 * (end_cpu - start_cpu) / CLOCKS_PER_SEC),
+            mathematica::ExpressIn(Metre, Second));
+
         return std::nullopt;
       }
     };
@@ -137,6 +166,8 @@ class AnalyticalSeriesTest : public ::testing::Test {
   }
 
   mathematica::Logger logger_;
+  std::string celestial_;
+  Time time_;
 };
 
 #define PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(                 \
@@ -158,69 +189,74 @@ TEST_F(AnalyticalSeriesTest, CompactRepresentation) {
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2451545_000000000.proto.txt");
 
-  // NOTE(phl): Keep these parameters aligned with
-  // sol_numerics_blueprint.proto.txt.
-  auto const ephemeris = solar_system_at_j2000.MakeEphemeris(
-      /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
-                               /*geopotential_tolerance=*/0x1p-24},
-      Ephemeris<ICRS>::FixedStepParameters(
-          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                             Position<ICRS>>(),
-          /*step=*/10 * Minute));
-  ephemeris->Prolong(solar_system_at_j2000.epoch() + 0.25 * JulianYear);
+  for (Time time = 4 * Day; time <= 0.25 * JulianYear; time *= 2) {
+    // NOTE(phl): Keep these parameters aligned with
+    // sol_numerics_blueprint.proto.txt.
+    auto const ephemeris = solar_system_at_j2000.MakeEphemeris(
+        /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
+                                 /*geopotential_tolerance=*/0x1p-24},
+        Ephemeris<ICRS>::FixedStepParameters(
+            SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+                                               Position<ICRS>>(),
+            /*step=*/10 * Minute));
+    ephemeris->Prolong(solar_system_at_j2000.epoch() + time);
 
-  for (auto const& celestial : {"Io", "Moon", "Phobos"}) {
-    LOG(INFO) << "---------- " << celestial;
-    auto const& celestial_trajectory =
-        solar_system_at_j2000.trajectory(*ephemeris, celestial);
-    int const celestial_piecewise_poisson_series_degree =
-        celestial_trajectory.PiecewisePoissonSeriesDegree(
-            celestial_trajectory.t_min(), celestial_trajectory.t_max());
-    std::unique_ptr<PoissonSeries<Displacement<ICRS>,
-                                  aperiodic_approximation_degree,
-                                  periodic_approximation_degree,
-                                  EstrinEvaluator>>
-        celestial_approximation;
+    for (auto const& celestial : {"Io", "Moon", "Phobos"}) {
+      LOG(INFO) << "---------- " << celestial << " " << time;
+      auto const& celestial_trajectory =
+          solar_system_at_j2000.trajectory(*ephemeris, celestial);
+      int const celestial_piecewise_poisson_series_degree =
+          celestial_trajectory.PiecewisePoissonSeriesDegree(
+              celestial_trajectory.t_min(), celestial_trajectory.t_max());
+      std::unique_ptr<PoissonSeries<Displacement<ICRS>,
+                                    aperiodic_approximation_degree,
+                                    periodic_approximation_degree,
+                                    EstrinEvaluator>>
+          celestial_approximation;
 
-    switch (celestial_piecewise_poisson_series_degree) {
-      PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
-          3, celestial_approximation, celestial_trajectory);
-      PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
-          4, celestial_approximation, celestial_trajectory);
-      PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
-          5, celestial_approximation, celestial_trajectory);
-      PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
-          6, celestial_approximation, celestial_trajectory);
-      PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
-          7, celestial_approximation, celestial_trajectory);
-      PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
-          8, celestial_approximation, celestial_trajectory);
-      PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
-          9, celestial_approximation, celestial_trajectory);
-      PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
-          10, celestial_approximation, celestial_trajectory);
-      PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
-          11, celestial_approximation, celestial_trajectory);
-      PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
-          12, celestial_approximation, celestial_trajectory);
-      PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
-          13, celestial_approximation, celestial_trajectory);
-      PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
-          14, celestial_approximation, celestial_trajectory);
-      PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
-          15, celestial_approximation, celestial_trajectory);
-      PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
-          16, celestial_approximation, celestial_trajectory);
-      PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
-          17, celestial_approximation, celestial_trajectory);
-      default:
-        LOG(FATAL) << "Unexpected degree "
-                   << celestial_piecewise_poisson_series_degree;
-    };
+      celestial_ = celestial;
+      time_ = time;
 
-    logger_.Set(absl::StrCat("approximation", celestial),
-                *celestial_approximation,
-                mathematica::ExpressIn(Metre, Second, Radian));
+      switch (celestial_piecewise_poisson_series_degree) {
+        PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+            3, celestial_approximation, celestial_trajectory);
+        PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+            4, celestial_approximation, celestial_trajectory);
+        PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+            5, celestial_approximation, celestial_trajectory);
+        PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+            6, celestial_approximation, celestial_trajectory);
+        PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+            7, celestial_approximation, celestial_trajectory);
+        PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+            8, celestial_approximation, celestial_trajectory);
+        PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+            9, celestial_approximation, celestial_trajectory);
+        PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+            10, celestial_approximation, celestial_trajectory);
+        PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+            11, celestial_approximation, celestial_trajectory);
+        PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+            12, celestial_approximation, celestial_trajectory);
+        PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+            13, celestial_approximation, celestial_trajectory);
+        PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+            14, celestial_approximation, celestial_trajectory);
+        PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+            15, celestial_approximation, celestial_trajectory);
+        PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+            16, celestial_approximation, celestial_trajectory);
+        PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
+            17, celestial_approximation, celestial_trajectory);
+        default:
+          LOG(FATAL) << "Unexpected degree "
+                     << celestial_piecewise_poisson_series_degree;
+      };
+
+      logger_.Set(ApplyParameters("approximation"),
+                  *celestial_approximation,
+                  mathematica::ExpressIn(Metre, Second, Radian));
+    }
   }
 }
 #endif
