@@ -1,6 +1,7 @@
 ﻿
 #include <algorithm>
 #include <ctime>
+#include <string>
 #include <vector>
 
 #include "absl/strings/str_cat.h"
