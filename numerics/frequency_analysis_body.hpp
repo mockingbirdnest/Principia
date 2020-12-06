@@ -24,6 +24,7 @@ using base::uninitialized;
 using geometry::Hilbert;
 using geometry::Vector;
 using quantities::Inverse;
+using quantities::IsFinite;
 using quantities::Sqrt;
 using quantities::Square;
 using quantities::SquareRoot;
@@ -149,8 +150,9 @@ IncrementalProjection(Function const& function,
                             aperiodic_degree, periodic_degree,
                             Evaluator>> q;
 
-  auto const a₀ = basis[0];
+  auto const& a₀ = basis[0];
   auto const r₀₀ = a₀.Norm(weight, t_min, t_max);
+  CHECK(IsFinite(r₀₀)) << a₀;
   q.push_back(a₀ / r₀₀);
 
   auto const A₀ = InnerProduct(function, q[0], weight, t_min, t_max);
@@ -171,6 +173,12 @@ IncrementalProjection(Function const& function,
       }
 
       auto const rₘₘ = aₘ⁽ᵏ⁾.Norm(weight, t_min, t_max);
+      if (!IsFinite(rₘₘ)) {
+        // Call the calculator here just to evaluate how far we are from the
+        // truth.
+        calculator(f);
+        return F;
+      }
       q.push_back(aₘ⁽ᵏ⁾ / rₘₘ);
       DCHECK_EQ(m + 1, q.size());
 
