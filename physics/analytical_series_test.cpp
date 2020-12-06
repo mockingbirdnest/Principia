@@ -58,6 +58,8 @@ static constexpr int periodic_approximation_degree = 3;
 static constexpr int log2_number_of_samples = 14;
 static constexpr int number_of_frequencies = 10;
 static constexpr Length acceptable_residual = 1 * Metre;
+static constexpr Time min_projection_duration = 4 * Day;
+static constexpr Time max_projection_duration = 0.25 * JulianYear;
 
 class AnalyticalSeriesTest : public ::testing::Test {
  protected:
@@ -85,10 +87,12 @@ class AnalyticalSeriesTest : public ::testing::Test {
     auto const piecewise_poisson_series =
         trajectory.ToPiecewisePoissonSeries<degree, 0>(t_min, t_max);
 
-    logger_.Append(
-        "tMin", std::tuple(time_, t_min), mathematica::ExpressIn(Second));
-    logger_.Append(
-        "tMax", std::tuple(time_, t_max), mathematica::ExpressIn(Second));
+    logger_.Append("tMin",
+                   std::tuple(projection_duration_, t_min),
+                   mathematica::ExpressIn(Second));
+    logger_.Append("tMax",
+                   std::tuple(projection_duration_, t_max),
+                   mathematica::ExpressIn(Second));
 
     int step = 0;
     std::clock_t const start_cpu = std::clock();
@@ -114,7 +118,7 @@ class AnalyticalSeriesTest : public ::testing::Test {
         std::clock_t const end_cpu = std::clock();
         logger_.Append(
             ApplyParameters("maxResidual"),
-            std::tuple(time_, step - 1,
+            std::tuple(projection_duration_, step - 1,
                        max_residual,
                        1000.0 * (end_cpu - start_cpu) / CLOCKS_PER_SEC),
             mathematica::ExpressIn(Metre, Second));
@@ -148,7 +152,7 @@ class AnalyticalSeriesTest : public ::testing::Test {
         std::clock_t const end_cpu = std::clock();
         logger_.Append(
             ApplyParameters("maxResidual"),
-            std::tuple(time_, step,
+            std::tuple(projection_duration_, step,
                        max_residual,
                        1000.0 * (end_cpu - start_cpu) / CLOCKS_PER_SEC),
             mathematica::ExpressIn(Metre, Second));
@@ -167,7 +171,7 @@ class AnalyticalSeriesTest : public ::testing::Test {
 
   mathematica::Logger logger_;
   std::string celestial_;
-  Time time_;
+  Time projection_duration_;
 };
 
 #define PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(                 \
@@ -189,7 +193,9 @@ TEST_F(AnalyticalSeriesTest, CompactRepresentation) {
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2451545_000000000.proto.txt");
 
-  for (Time time = 4 * Day; time <= 0.25 * JulianYear; time *= 2) {
+  for (Time projection_duration = min_projection_duration;
+       projection_duration <= max_projection_duration;
+       projection_duration *= 2) {
     // NOTE(phl): Keep these parameters aligned with
     // sol_numerics_blueprint.proto.txt.
     auto const ephemeris = solar_system_at_j2000.MakeEphemeris(
@@ -199,10 +205,10 @@ TEST_F(AnalyticalSeriesTest, CompactRepresentation) {
             SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
                                                Position<ICRS>>(),
             /*step=*/10 * Minute));
-    ephemeris->Prolong(solar_system_at_j2000.epoch() + time);
+    ephemeris->Prolong(solar_system_at_j2000.epoch() + projection_duration);
 
     for (auto const& celestial : {"Io", "Moon", "Phobos"}) {
-      LOG(INFO) << "---------- " << celestial << " " << time;
+      LOG(INFO) << "---------- " << celestial << " " << projection_duration;
       auto const& celestial_trajectory =
           solar_system_at_j2000.trajectory(*ephemeris, celestial);
       int const celestial_piecewise_poisson_series_degree =
@@ -215,7 +221,7 @@ TEST_F(AnalyticalSeriesTest, CompactRepresentation) {
           celestial_approximation;
 
       celestial_ = celestial;
-      time_ = time;
+      projection_duration_ = projection_duration;
 
       switch (celestial_piecewise_poisson_series_degree) {
         PRINCIPIA_COMPUTE_COMPACT_REPRESENTATION_CASE(
