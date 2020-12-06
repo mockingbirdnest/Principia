@@ -24,6 +24,7 @@ using geometry::Inertial;
 using geometry::Instant;
 using quantities::AngularFrequency;
 using quantities::Cos;
+using quantities::Infinity;
 using quantities::Length;
 using quantities::Sqrt;
 using quantities::Time;
@@ -171,10 +172,20 @@ TEST_F(FastFourierTransformTest, Mode) {
   // Won't fit on the stack.
   auto transform = std::make_unique<FFT>(signal, Δt);
 
-  auto const mode = transform->Mode();
-  EXPECT_THAT(mode.midpoint(), AlmostEquals(ω, 0));
-  EXPECT_THAT(mode.measure(),
-              AlmostEquals(4 * π / FFT::size * Radian / Second, 24));
+  {
+    auto const mode =
+        transform->Mode(AngularFrequency{}, Infinity<AngularFrequency>);
+    EXPECT_THAT(mode.midpoint(), AlmostEquals(ω, 0));
+    EXPECT_THAT(mode.measure(),
+                AlmostEquals(4 * π / FFT::size * Radian / Second, 24));
+  }
+  {
+    auto const mode =
+        transform->Mode(0.99 * ω, 1.01 * ω);
+    EXPECT_THAT(mode.midpoint(), AlmostEquals(ω, 0));
+    EXPECT_THAT(mode.measure(),
+                AlmostEquals(4 * π / FFT::size * Radian / Second, 24));
+  }
 }
 
 TEST_F(FastFourierTransformTest, Vector) {
@@ -191,10 +202,20 @@ TEST_F(FastFourierTransformTest, Vector) {
   // Won't fit on the stack.
   auto transform = std::make_unique<FFT>(signal, Δt);
 
-  auto const mode = transform->Mode();
-  EXPECT_THAT(mode.midpoint(), AlmostEquals(ω, 0));
-  EXPECT_THAT(mode.measure(),
-              AlmostEquals(4 * π / FFT::size * Radian / Second, 24));
+  {
+    auto const mode =
+        transform->Mode(AngularFrequency{}, Infinity<AngularFrequency>);
+    EXPECT_THAT(mode.midpoint(), AlmostEquals(ω, 0));
+    EXPECT_THAT(mode.measure(),
+                AlmostEquals(4 * π / FFT::size * Radian / Second, 24));
+  }
+  {
+    auto const mode =
+        transform->Mode(0.99 * ω, 1.01 * ω);
+    EXPECT_THAT(mode.midpoint(), AlmostEquals(ω, 0));
+    EXPECT_THAT(mode.measure(),
+                AlmostEquals(4 * π / FFT::size * Radian / Second, 24));
+  }
 }
 
 TEST_F(FastFourierTransformTest, Inverse) {

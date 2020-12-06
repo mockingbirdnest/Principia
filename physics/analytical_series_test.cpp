@@ -40,6 +40,7 @@ using numerics::FastFourierTransform;
 using numerics::PoissonSeries;
 using quantities::Angle;
 using quantities::AngularFrequency;
+using quantities::Infinity;
 using quantities::Length;
 using quantities::Time;
 using quantities::astronomy::JulianYear;
@@ -131,7 +132,8 @@ class AnalyticalSeriesTest : public ::testing::Test {
                                                   Instant,
                                                   1 << log2_number_of_samples>>(
                 residuals, Δt);
-        auto const mode = fft->Mode();
+        auto const mode = fft->Mode(2 * π * Radian / (t_max - t_min),
+                                    Infinity<AngularFrequency>);
         Interval<Time> const period{2 * π * Radian / mode.max,
                                     2 * π * Radian / mode.min};
         LOG(INFO) << "period=" << period;
