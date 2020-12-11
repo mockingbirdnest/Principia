@@ -98,6 +98,13 @@ class ExpressIn {
   std::tuple<Qs...> units_;
 };
 
+template<typename T, typename OptionalExpressIn = std::nullopt_t>
+std::string Apply(std::string const& name,
+                  T const& right,
+                  OptionalExpressIn express_in = std::nullopt);
+
+std::string Evaluate(std::string const& expression);
+
 // TODO(phl): Rename this function to Rule.
 template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string Option(std::string const& name,
@@ -268,7 +275,9 @@ class Logger final {
 
 }  // namespace internal_mathematica
 
+using internal_mathematica::Apply;
 using internal_mathematica::Assign;
+using internal_mathematica::Evaluate;
 using internal_mathematica::ExpressIn;
 using internal_mathematica::Logger;
 using internal_mathematica::Option;

@@ -38,6 +38,7 @@ using geometry::Vector;
 using quantities::Abs;
 using quantities::Acceleration;
 using quantities::AngularFrequency;
+using quantities::Infinity;
 using quantities::Jerk;
 using quantities::Length;
 using quantities::Pow;
@@ -155,7 +156,8 @@ TEST_F(FrequencyAnalysisTest, PreciseModeScalar) {
   auto transform = std::make_unique<FFT>(signal, Δt);
 
   // The FFT gives us an accuracy which is of the order of the number of points.
-  auto const mode = transform->Mode();
+  auto const mode = transform->Mode(AngularFrequency{},
+                                    Infinity<AngularFrequency>);
   EXPECT_THAT(mode.midpoint(), RelativeErrorFrom(ω, IsNear(8.1e-4_⑴)));
 
   // The precise analysis is only limited by our ability to pinpoint the
@@ -203,7 +205,8 @@ TEST_F(FrequencyAnalysisTest, PreciseModeVector) {
   auto transform = std::make_unique<FFT>(signal, Δt);
 
   // The FFT gives us an accuracy which is of the order of the number of points.
-  auto const mode = transform->Mode();
+  auto const mode = transform->Mode(AngularFrequency{},
+                                    Infinity<AngularFrequency>);
   EXPECT_THAT(mode.midpoint(), RelativeErrorFrom(ω, IsNear(8.1e-4_⑴)));
 
   // The precise analysis is only limited by our ability to pinpoint the
@@ -441,7 +444,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionNoSecular) {
                     ? AllOf(Gt(2.0e-10 * Metre), Lt(5.3e-7 * Metre))
                     : ω_index == 2
                           ? AllOf(Gt(2.9e-13 * Metre), Lt(2.6e-9 * Metre))
-                          : AllOf(Gt(-1.0e-100 * Metre), Lt(7.1e-13 * Metre)))
+                          : AllOf(Gt(-1.0e-100 * Metre), Lt(7.9e-13 * Metre)))
           << ω_index;
     }
     if (ω_index == ωs.size()) {
@@ -534,7 +537,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
     EXPECT_THAT(
         projection4(t_min + i * (t_max - t_min) / 100),
         RelativeErrorFrom(series(t_min + i * (t_max - t_min) / 100),
-                          AllOf(Ge(0), Lt(5.2e-14))));
+                          AllOf(Ge(0), Lt(6.1e-14))));
   }
 }
 

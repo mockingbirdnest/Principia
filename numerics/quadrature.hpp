@@ -11,7 +11,9 @@ namespace numerics {
 namespace quadrature {
 namespace internal_quadrature {
 
+using quantities::AngularFrequency;
 using quantities::Primitive;
+using quantities::Time;
 
 template<int points, typename Argument, typename Function>
 Primitive<std::invoke_result_t<Function, Argument>, Argument> GaussLegendre(
@@ -40,6 +42,14 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> ClenshawCurtis(
     Function const& f,
     Argument const& lower_bound,
     Argument const& upper_bound);
+
+// Computes a heuristic for the maximum number of points for an oscillating
+// function.
+std::optional<int> MaxPointsHeuristicsForAutomaticClenshawCurtis(
+    AngularFrequency const& max_ω,
+    Time const& Δt,
+    int min_points_overall,
+    int points_per_period);
 
 template<typename Argument, typename Function>
 Primitive<std::invoke_result_t<Function, Argument>, Argument> Midpoint(

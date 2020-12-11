@@ -59,6 +59,8 @@ public partial class PrincipiaPluginAdapter
   private const string principia_override_version_check_config_name_ =
       "principia_override_version_check";
   private const string principia_flags_ = "principia_flags";
+  private const string principia_draw_styles_config_name_ =
+      "principia_draw_styles";
 
   private KSP.UI.Screens.ApplicationLauncherButton toolbar_button_;
   // Whether the user has hidden the UI.
@@ -110,6 +112,19 @@ public partial class PrincipiaPluginAdapter
   private ReferenceFrameSelector.FrameType last_non_surface_frame_type_ =
       ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING;
 
+  private UnityEngine.Color history_colour = XKCDColors.Lime;
+  private GLLines.Style history_style = GLLines.Style.Faded;
+  private UnityEngine.Color prediction_colour = XKCDColors.Fuchsia;
+  private GLLines.Style prediction_style = GLLines.Style.Solid;
+  private UnityEngine.Color flight_plan_colour = XKCDColors.PeriwinkleBlue;
+  private GLLines.Style flight_plan_style = GLLines.Style.Dashed;
+  private UnityEngine.Color burn_colour = XKCDColors.Pink;
+  private GLLines.Style burn_style = GLLines.Style.Solid;
+  private UnityEngine.Color target_history_colour = XKCDColors.Goldenrod;
+  private GLLines.Style target_history_style = GLLines.Style.Faded;
+  private UnityEngine.Color target_prediction_colour = XKCDColors.LightMauve;
+  private GLLines.Style target_prediction_style = GLLines.Style.Solid;
+  
   private readonly List<IntPtr> vessel_futures_ = new List<IntPtr>();
 
   // The RSAS is the component of the stock KSP autopilot that deals with
@@ -641,6 +656,11 @@ public partial class PrincipiaPluginAdapter
                      "navball_body_direction.png");
     LoadTextureOrDie(out surface_navball_texture_, "navball_surface.png");
     LoadTextureOrDie(out target_navball_texture_, "navball_target.png");
+
+    ConfigNode draw_styles = 
+        GameDatabase.Instance.GetAtMostOneNode(
+            principia_draw_styles_config_name_);
+    LoadDrawStyles(draw_styles);
 
     if (unmodified_orbits_ == null) {
       unmodified_orbits_ = new Dictionary<CelestialBody, Orbit>();
@@ -2064,8 +2084,8 @@ public partial class PrincipiaPluginAdapter
                         main_vessel_guid,
                         main_window_.history_length)) {
             GLLines.PlotRP2Lines(rp2_lines_iterator,
-                                 XKCDColors.Lime,
-                                 GLLines.Style.Faded);
+                                 history_colour,
+                                 history_style);
           }
           using (DisposableIterator rp2_lines_iterator =
                     planetarium.PlanetariumPlotPrediction(
@@ -2073,8 +2093,8 @@ public partial class PrincipiaPluginAdapter
                         чебышёв_plotting_method_,
                         main_vessel_guid)) {
             GLLines.PlotRP2Lines(rp2_lines_iterator,
-                                 XKCDColors.Fuchsia,
-                                 GLLines.Style.Solid);
+                                 prediction_colour,
+                                 prediction_style);
           }
           // Target psychohistory and prediction.
           string target_id =
@@ -2089,8 +2109,8 @@ public partial class PrincipiaPluginAdapter
                           target_id,
                           main_window_.history_length)) {
               GLLines.PlotRP2Lines(rp2_lines_iterator,
-                                   XKCDColors.Goldenrod,
-                                   GLLines.Style.Faded);
+                                   target_history_colour,
+                                   target_history_style);
             }
             using (DisposableIterator rp2_lines_iterator =
                       planetarium.PlanetariumPlotPrediction(
@@ -2098,8 +2118,8 @@ public partial class PrincipiaPluginAdapter
                           чебышёв_plotting_method_,
                           target_id)) {
               GLLines.PlotRP2Lines(rp2_lines_iterator,
-                                   XKCDColors.LightMauve,
-                                   GLLines.Style.Solid);
+                                   target_prediction_colour,
+                                   target_prediction_style);
             }
           }
           // Main vessel flight plan.
@@ -2131,8 +2151,8 @@ public partial class PrincipiaPluginAdapter
                               i)) {
                   GLLines.PlotRP2Lines(
                       rp2_lines_iterator,
-                      is_burn ? XKCDColors.Pink : XKCDColors.PeriwinkleBlue,
-                      is_burn ? GLLines.Style.Solid : GLLines.Style.Dashed);
+                      is_burn ? burn_colour : flight_plan_colour,
+                      is_burn ? burn_style : flight_plan_style);
                 }
                 if (is_burn) {
                   int manœuvre_index = i / 2;
@@ -2382,6 +2402,36 @@ public partial class PrincipiaPluginAdapter
     navball_changed_ = true;
     reset_rsas_target_ = true;
     planetarium_camera_adjuster_.should_transfer_camera_coordinates = true;
+  }
+
+  private void LoadDrawStyles(ConfigNode draw_styles) {
+    if (draw_styles == null) {
+      return;
+    }
+    ConfigNode history_parameters = draw_styles.GetAtMostOneNode("history");
+    history_parameters?.GetDrawStyle(out history_colour, out history_style);
+    ConfigNode prediction_parameters =
+        draw_styles.GetAtMostOneNode("prediction");
+    prediction_parameters?.GetDrawStyle(
+        out prediction_colour,
+        out prediction_style);
+    ConfigNode flight_plan_parameters =
+        draw_styles.GetAtMostOneNode("flight_plan");
+    flight_plan_parameters?.GetDrawStyle(
+        out flight_plan_colour,
+        out flight_plan_style);
+    ConfigNode burn_parameters = draw_styles.GetAtMostOneNode("burn");
+    burn_parameters?.GetDrawStyle(out burn_colour, out burn_style);
+    ConfigNode target_history_parameters =
+        draw_styles.GetAtMostOneNode("target_history");
+    target_history_parameters?.GetDrawStyle(
+        out target_history_colour,
+        out target_history_style);
+    ConfigNode target_prediction_parameters =
+        draw_styles.GetAtMostOneNode("target_prediction");
+    target_prediction_parameters?.GetDrawStyle(
+        out target_prediction_colour,
+        out target_prediction_style);
   }
 
   private static void InitializeIntegrators(

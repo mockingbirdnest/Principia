@@ -524,7 +524,7 @@ void Vessel::RefreshOrbitAnalysis(Time const& mission_duration) {
   if (orbit_analyser_->last_parameters().has_value() &&
       orbit_analyser_->last_parameters()->mission_duration !=
           mission_duration) {
-    orbit_analyser_->Restart();
+    orbit_analyser_->Interrupt();
   }
   orbit_analyser_->RequestAnalysis(
       {.first_time = psychohistory_->back().time,
