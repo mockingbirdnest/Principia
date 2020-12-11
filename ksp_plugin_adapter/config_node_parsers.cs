@@ -118,10 +118,6 @@ internal static class ConfigNodeParsers {
     return elements;
   }
 
-  public static UnityEngine.Color GetDrawColour(this ConfigNode node) {
-    return XKCDColors.ColorTranslator.FromHtml(node.GetUniqueValue("colour"));
-  }
-
   public static void GetDrawStyle(
       this ConfigNode node,
       out UnityEngine.Color colour,
