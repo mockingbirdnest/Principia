@@ -2410,12 +2410,8 @@ public partial class PrincipiaPluginAdapter
     }
     ConfigNode history_parameters = draw_styles.GetAtMostOneNode("history");
     history_parameters?.GetDrawStyle(out history_colour, out history_style);
-    history_parameters?.GetDrawStyle(out history_colour, out history_style);
     ConfigNode prediction_parameters =
         draw_styles.GetAtMostOneNode("prediction");
-    prediction_parameters?.GetDrawStyle(
-        out prediction_colour,
-        out prediction_style);
     prediction_parameters?.GetDrawStyle(
         out prediction_colour,
         out prediction_style);
@@ -2424,25 +2420,15 @@ public partial class PrincipiaPluginAdapter
     flight_plan_parameters?.GetDrawStyle(
         out flight_plan_colour,
         out flight_plan_style);
-    flight_plan_parameters?.GetDrawStyle(
-        out flight_plan_colour,
-        out flight_plan_style);
     ConfigNode burn_parameters = draw_styles.GetAtMostOneNode("burn");
-    burn_parameters?.GetDrawStyle(out burn_colour, out burn_style);
     burn_parameters?.GetDrawStyle(out burn_colour, out burn_style);
     ConfigNode target_history_parameters =
         draw_styles.GetAtMostOneNode("target_history");
     target_history_parameters?.GetDrawStyle(
         out target_history_colour,
         out target_history_style);
-    target_history_parameters?.GetDrawStyle(
-        out target_history_colour,
-        out target_history_style);
     ConfigNode target_prediction_parameters =
         draw_styles.GetAtMostOneNode("target_prediction");
-    target_prediction_parameters?.GetDrawStyle(
-        out target_prediction_colour,
-        out target_prediction_style);
     target_prediction_parameters?.GetDrawStyle(
         out target_prediction_colour,
         out target_prediction_style);
