@@ -2409,39 +2409,43 @@ public partial class PrincipiaPluginAdapter
       return;
     }
     ConfigNode history_parameters = draw_styles.GetAtMostOneNode("history");
-    if (history_parameters != null) {
-      history_colour = history_parameters.GetDrawColour();
-      history_style = history_parameters.GetDrawStyle();
-    }
+    history_parameters?.GetDrawStyle(out history_colour, out history_style);
+    history_parameters?.GetDrawStyle(out history_colour, out history_style);
     ConfigNode prediction_parameters =
         draw_styles.GetAtMostOneNode("prediction");
-    if (prediction_parameters != null) {
-      prediction_colour = prediction_parameters.GetDrawColour();
-      prediction_style = prediction_parameters.GetDrawStyle();
-    }
+    prediction_parameters?.GetDrawStyle(
+        out prediction_colour,
+        out prediction_style);
+    prediction_parameters?.GetDrawStyle(
+        out prediction_colour,
+        out prediction_style);
     ConfigNode flight_plan_parameters =
         draw_styles.GetAtMostOneNode("flight_plan");
-    if (flight_plan_parameters != null) {
-      flight_plan_colour = flight_plan_parameters.GetDrawColour();
-      flight_plan_style = flight_plan_parameters.GetDrawStyle();
-    }
+    flight_plan_parameters?.GetDrawStyle(
+        out flight_plan_colour,
+        out flight_plan_style);
+    flight_plan_parameters?.GetDrawStyle(
+        out flight_plan_colour,
+        out flight_plan_style);
     ConfigNode burn_parameters = draw_styles.GetAtMostOneNode("burn");
-    if (burn_parameters != null) {
-      burn_colour = burn_parameters.GetDrawColour();
-      burn_style = burn_parameters.GetDrawStyle();
-    }
+    burn_parameters?.GetDrawStyle(out burn_colour, out burn_style);
+    burn_parameters?.GetDrawStyle(out burn_colour, out burn_style);
     ConfigNode target_history_parameters =
         draw_styles.GetAtMostOneNode("target_history");
-    if (target_history_parameters != null) {
-      target_history_colour = target_history_parameters.GetDrawColour();
-      target_history_style = target_history_parameters.GetDrawStyle();
-    }
+    target_history_parameters?.GetDrawStyle(
+        out target_history_colour,
+        out target_history_style);
+    target_history_parameters?.GetDrawStyle(
+        out target_history_colour,
+        out target_history_style);
     ConfigNode target_prediction_parameters =
         draw_styles.GetAtMostOneNode("target_prediction");
-    if (target_prediction_parameters != null) {
-      target_prediction_colour = target_prediction_parameters.GetDrawColour();
-      target_prediction_style = target_prediction_parameters.GetDrawStyle();
-    }
+    target_prediction_parameters?.GetDrawStyle(
+        out target_prediction_colour,
+        out target_prediction_style);
+    target_prediction_parameters?.GetDrawStyle(
+        out target_prediction_colour,
+        out target_prediction_style);
   }
 
   private static void InitializeIntegrators(

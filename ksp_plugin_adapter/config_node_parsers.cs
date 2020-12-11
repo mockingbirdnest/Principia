@@ -122,8 +122,12 @@ internal static class ConfigNodeParsers {
     return XKCDColors.ColorTranslator.FromHtml(node.GetUniqueValue("colour"));
   }
 
-  public static GLLines.Style GetDrawStyle(this ConfigNode node) {
-    return (GLLines.Style)Enum.Parse(
+  public static void GetDrawStyle(
+      this ConfigNode node,
+      out UnityEngine.Color colour,
+      out GLLines.Style style) {
+    colour = XKCDColors.ColorTranslator.FromHtml(node.GetUniqueValue("colour"));
+    style = (GLLines.Style)Enum.Parse(
         typeof(GLLines.Style),
         node.GetUniqueValue("style"),
         true);
