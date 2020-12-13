@@ -333,27 +333,34 @@ template<typename Scalar>
 std::ostream& operator<<(std::ostream& out,
                          UnboundedLowerTriangularMatrix<Scalar> const& matrix) {
   std::stringstream s;
-  // TODO(phl): Triangular printout.
-  s << "rows: " << matrix.rows_ << " ";
-  for (int i = 0; i < matrix.data_.size(); ++i) {
-    s << (i == 0 ? "{" : "") << matrix.data_[i]
-      << (i == matrix.data_.size() - 1 ? "}" : ", ");
+  s << "rows: " << matrix.rows_ << "\n";
+  for (int i = 0; i < matrix.columns(); ++i) {
+    out << "{";
+    for (int j = 0; j <= i; ++j) {
+      if (j > i) {
+        out << ", ";
+      }
+      out << matrix[i][j];
+    }
+    out << "}\n";
   }
-  out << s.str();
   return out;
 }
 
 template<typename Scalar>
 std::ostream& operator<<(std::ostream& out,
                          UnboundedUpperTriangularMatrix<Scalar> const& matrix) {
-  std::stringstream s;
-  // TODO(phl): Triangular printout.
-  s << "columns: " << matrix.columns_ << " ";
-  for (int i = 0; i < matrix.data_.size(); ++i) {
-    s << (i == 0 ? "{" : "") << matrix.data_[i]
-      << (i == matrix.data_.size() - 1 ? "}" : ", ");
+  out << "columns: " << matrix.columns_ << "\n";
+  for (int i = 0; i < matrix.columns(); ++i) {
+    out << "{";
+    for (int j = i; j < matrix.columns(); ++j) {
+      if (j > i) {
+        out << ", ";
+      }
+      out << matrix[i][j];
+    }
+    out << "}\n";
   }
-  out << s.str();
   return out;
 }
 
