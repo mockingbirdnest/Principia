@@ -130,6 +130,18 @@ void UnboundedLowerTriangularMatrix<Scalar>::EraseToEnd(
 }
 
 template<typename Scalar>
+UnboundedUpperTriangularMatrix<Scalar>
+UnboundedLowerTriangularMatrix<Scalar>::Transpose() const {
+  UnboundedUpperTriangularMatrix<Scalar> u(rows_, uninitialized{});
+  for (int i = 0; i < rows_; ++i) {
+    for (int j = 0; j <= i; ++j) {
+      u[j][i] = (*this)[i][j];
+    }
+  }
+  return u;
+}
+
+template<typename Scalar>
 int UnboundedLowerTriangularMatrix<Scalar>::rows() const {
   return rows_;
 }
@@ -216,6 +228,18 @@ void UnboundedUpperTriangularMatrix<Scalar>::EraseToEnd(
   columns_ = begin_column_index;
   data_.erase(data_.begin() + begin_column_index * (begin_column_index + 1) / 2,
               data_.end());
+}
+
+template<typename Scalar>
+UnboundedLowerTriangularMatrix<Scalar>
+UnboundedUpperTriangularMatrix<Scalar>::Transpose() const {
+  UnboundedLowerTriangularMatrix<Scalar> l(rows_, uninitialized{});
+  for (int i = 0; i < columns_; ++i) {
+    for (int j = i; j < columns_; ++j) {
+      l[j][i] = (*this)[i][j];
+    }
+  }
+  return l;
 }
 
 template<typename Scalar>

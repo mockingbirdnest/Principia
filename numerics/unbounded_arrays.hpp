@@ -21,6 +21,9 @@ class uninitialized_allocator : public std::allocator<T> {
   void construct(U* p, Args&&... args);
 };
 
+template<typename Scalar>
+class UnboundedUpperTriangularMatrix;
+
 // The following classes are similar to those in fixed_arrays.hpp, but they have
 // an Extend method to add more entries to the arrays.
 
@@ -69,6 +72,8 @@ class UnboundedLowerTriangularMatrix final {
 
   void EraseToEnd(int begin_row_index);
 
+  UnboundedUpperTriangularMatrix<Scalar> Transpose() const;
+
   int rows() const;
   int dimension() const;
 
@@ -106,6 +111,8 @@ class UnboundedUpperTriangularMatrix final {
   void Extend(std::initializer_list<Scalar> const& data);
 
   void EraseToEnd(int begin_column_index);
+
+  UnboundedLowerTriangularMatrix<Scalar> Transpose() const;
 
   int columns() const;
   int dimension() const;
