@@ -132,7 +132,7 @@ void UnboundedLowerTriangularMatrix<Scalar>::EraseToEnd(
 template<typename Scalar>
 UnboundedUpperTriangularMatrix<Scalar>
 UnboundedLowerTriangularMatrix<Scalar>::Transpose() const {
-  UnboundedUpperTriangularMatrix<Scalar> u(rows_, uninitialized{});
+  UnboundedUpperTriangularMatrix<Scalar> u(rows_, uninitialized);
   for (int i = 0; i < rows_; ++i) {
     for (int j = 0; j <= i; ++j) {
       u[j][i] = (*this)[i][j];
@@ -233,7 +233,7 @@ void UnboundedUpperTriangularMatrix<Scalar>::EraseToEnd(
 template<typename Scalar>
 UnboundedLowerTriangularMatrix<Scalar>
 UnboundedUpperTriangularMatrix<Scalar>::Transpose() const {
-  UnboundedLowerTriangularMatrix<Scalar> l(rows_, uninitialized{});
+  UnboundedLowerTriangularMatrix<Scalar> l(columns_, uninitialized);
   for (int i = 0; i < columns_; ++i) {
     for (int j = i; j < columns_; ++j) {
       l[j][i] = (*this)[i][j];
@@ -263,7 +263,12 @@ template<typename Matrix>
 Scalar& UnboundedUpperTriangularMatrix<Scalar>::Row<Matrix>::operator[](
     int const column) {
   DCHECK_LT(column, matrix_.columns_);
-  return matrix_.data_[column * (column + 1) / 2 + row_];
+  auto x = column * (column + 1) / 2 + row_;
+  Matrix& m = matrix_;
+  std::vector<Scalar, uninitialized_allocator<Scalar>>& y = matrix_.data_;
+  Scalar& z = y[x];
+  return z;
+  //return matrix_.data_[column * (column + 1) / 2 + row_];
 }
 
 template<typename Scalar>
@@ -279,7 +284,7 @@ template<typename Scalar>
 template<typename Matrix>
 UnboundedUpperTriangularMatrix<Scalar>::Row<Matrix>::Row(Matrix& matrix,
                                                          int const row)
-    : matrix_(matrix),
+    : matrix_(const_cast<std::remove_const_t<Matrix>&>(matrix)),
       row_(row) {}
 
 template<typename Scalar>

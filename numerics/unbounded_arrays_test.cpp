@@ -93,6 +93,9 @@ TEST_F(UnboundedArraysTest, LowerTriangularMatrixIndexing) {
   EXPECT_EQ(89, l4_[3][3]);
   l4_[3][1] = -666;
   EXPECT_EQ(-666, l4_[3][1]);
+
+  UnboundedLowerTriangularMatrix<double> const l4 = l4_;
+  EXPECT_EQ(1, l4[0][0]);
 }
 
 TEST_F(UnboundedArraysTest, UpperTriangularMatrixIndexing) {
@@ -109,6 +112,9 @@ TEST_F(UnboundedArraysTest, UpperTriangularMatrixIndexing) {
   EXPECT_EQ(89, u4_[3][3]);
   u4_[1][3] = -666;
   EXPECT_EQ(-666, u4_[1][3]);
+
+  UnboundedUpperTriangularMatrix<double> const u4 = u4_;
+  EXPECT_EQ(1, u4[0][0]);
 }
 
 TEST_F(UnboundedArraysTest, Extend) {

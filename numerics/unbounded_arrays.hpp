@@ -3,6 +3,7 @@
 
 #include <initializer_list>
 #include <memory>
+#include <type_traits>
 #include <vector>
 
 #include "base/tags.hpp"
@@ -129,7 +130,10 @@ class UnboundedUpperTriangularMatrix final {
    private:
     explicit Row(Matrix& matrix, int row);
 
-    Matrix& matrix_;
+    // We need to remove the const because, when this class is instantiated with
+    // 'UnboundedUpperTriangularMatrix const', the first operator[], not the
+    // second, is picked by overload resolution.
+    std::remove_const_t<Matrix>& matrix_;
     int row_;
 
     template<typename S>
