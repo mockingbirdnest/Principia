@@ -48,9 +48,8 @@ class PoissonSeriesBasisTest : public ::testing::Test {
 
 TEST_F(PoissonSeriesBasisTest, AperiodicScalar) {
   auto const aperiodic =
-      PoissonSeriesBasisGenerator<double,
-                                  /*degree=*/2,
-                                  HornerEvaluator>::Basis(t0_);
+      PoissonSeriesBasisGenerator<Series2,
+                                  /*degree=*/2>::Basis(t0_);
   EXPECT_EQ(3, aperiodic.size());
 
   Instant const t1 = t0_ + 2 * Second;
@@ -62,13 +61,11 @@ TEST_F(PoissonSeriesBasisTest, AperiodicScalar) {
 
 TEST_F(PoissonSeriesBasisTest, AperiodicVector) {
   auto const aperiodic =
-      PoissonSeriesBasisGenerator<V,
-                                  /*degree=*/3,
-                                  HornerEvaluator>::Basis(t0_);
+      PoissonSeriesBasisGenerator<Series3,
+                                  /*degree=*/3>::Basis(t0_);
   auto const aperiodic_subspaces =
-      PoissonSeriesBasisGenerator<V,
-                                  /*degree=*/3,
-                                  HornerEvaluator>::Subspaces(t0_);
+      PoissonSeriesBasisGenerator<Series3,
+                                  /*degree=*/3>::Subspaces(t0_);
   EXPECT_EQ(12, aperiodic.size());
 
   Instant const t1 = t0_ + 2 * Second;
@@ -263,9 +260,8 @@ TEST_F(PoissonSeriesBasisTest, AperiodicVector) {
 TEST_F(PoissonSeriesBasisTest, PeriodicScalar) {
   AngularFrequency const ω = π / 6 * Radian / Second;
   auto const periodic =
-      PoissonSeriesBasisGenerator<double,
-                                  /*degree=*/2,
-                                  HornerEvaluator>::Basis(ω, t0_);
+      PoissonSeriesBasisGenerator<Series2,
+                                  /*degree=*/2>::Basis(ω, t0_);
   EXPECT_EQ(6, periodic.size());
 
   Instant const t1 = t0_ + 2 * Second;
@@ -283,13 +279,11 @@ TEST_F(PoissonSeriesBasisTest, PeriodicScalar) {
 TEST_F(PoissonSeriesBasisTest, PeriodicVector) {
   AngularFrequency const ω = π / 6 * Radian / Second;
   auto const periodic =
-      PoissonSeriesBasisGenerator<V,
-                                  /*degree=*/3,
-                                  HornerEvaluator>::Basis(ω, t0_);
+      PoissonSeriesBasisGenerator<Series3,
+                                  /*degree=*/3>::Basis(ω, t0_);
   auto const periodic_subspaces =
-      PoissonSeriesBasisGenerator<V,
-                                  /*degree=*/3,
-                                  HornerEvaluator>::Subspaces(ω, t0_);
+      PoissonSeriesBasisGenerator<Series3,
+                                  /*degree=*/3>::Subspaces(ω, t0_);
   EXPECT_EQ(24, periodic.size());
 
   Instant const t1 = t0_ + 2 * Second;
@@ -503,16 +497,14 @@ TEST_F(PoissonSeriesBasisTest, PeriodicVector) {
 
 TEST_F(PoissonSeriesBasisTest, ReducedDegree) {
   auto const aperiodic =
-      PoissonSeriesBasisGenerator<V,
-                                  /*degree=*/2,
-                                  HornerEvaluator>::Basis(t0_);
+      PoissonSeriesBasisGenerator<Series3,
+                                  /*degree=*/2>::Basis(t0_);
   EXPECT_EQ(9, aperiodic.size());
 
   AngularFrequency const ω = π / 6 * Radian / Second;
   auto const periodic =
-      PoissonSeriesBasisGenerator<V,
-                                  /*degree=*/2,
-                                  HornerEvaluator>::Basis(ω, t0_);
+      PoissonSeriesBasisGenerator<Series3,
+                                  /*degree=*/2>::Basis(ω, t0_);
   EXPECT_EQ(18, periodic.size());
 
   Instant const t1 = t0_ + 2 * Second;

@@ -238,37 +238,33 @@ std::array<PoissonSeriesSubspace, sizeof...(indices)> PeriodicSeriesGenerator<
 }
 
 
-template<typename Value, int degree,
-         template<typename, typename, int> class Evaluator>
-auto PoissonSeriesBasisGenerator<Value, degree, Evaluator>::
-Basis(Instant const& origin) -> std::array<Series, dimension * (degree + 1)> {
-  return AperiodicSeriesGenerator<Series, degree, dimension>::
-             BasisElements(origin);
+template<typename Series, int degree>
+auto PoissonSeriesBasisGenerator<Series, degree>::Basis(Instant const& origin)
+    -> std::array<Series, dimension * (degree + 1)> {
+  return AperiodicSeriesGenerator<Series, degree, dimension>::BasisElements(
+      origin);
 }
 
-template<typename Value, int degree,
-         template<typename, typename, int> class Evaluator>
-auto PoissonSeriesBasisGenerator<Value, degree, Evaluator>::Subspaces(
+template<typename Series, int degree>
+auto PoissonSeriesBasisGenerator<Series, degree>::Subspaces(
     Instant const& origin)
-    -> std::array<PoissonSeriesSubspace, dimension*(degree + 1)> {
+    -> std::array<PoissonSeriesSubspace, dimension * (degree + 1)> {
   return AperiodicSeriesGenerator<Series, degree, dimension>::Subspaces(origin);
 }
 
-template<typename Value, int degree,
-         template<typename, typename, int> class Evaluator>
-auto PoissonSeriesBasisGenerator<Value, degree, Evaluator>::Basis(
+template<typename Series, int degree>
+auto PoissonSeriesBasisGenerator<Series, degree>::Basis(
     AngularFrequency const& ω,
     Instant const& origin) -> std::array<Series, 2 * dimension * (degree + 1)> {
   return PeriodicSeriesGenerator<Series, degree, dimension>::
              BasisElements(ω, origin);
 }
 
-template<typename Value, int degree,
-         template<typename, typename, int> class Evaluator>
-auto PoissonSeriesBasisGenerator<Value, degree, Evaluator>::Subspaces(
+template<typename Series, int degree>
+auto PoissonSeriesBasisGenerator<Series, degree>::Subspaces(
     AngularFrequency const& ω,
     Instant const& origin)
-    -> std::array<PoissonSeriesSubspace, 2 * dimension*(degree + 1)> {
+    -> std::array<PoissonSeriesSubspace, 2 * dimension * (degree + 1)> {
   return PeriodicSeriesGenerator<Series, degree, dimension>::Subspaces(ω,
                                                                        origin);
 }

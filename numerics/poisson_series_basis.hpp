@@ -49,17 +49,15 @@ class PoissonSeriesSubspace {
 };
 
 // A generator for the Кудрявцев basis, i.e., functions of the
-// form tⁿ sin ω t and tⁿ cos ω t properly ordered.  The result of the basis
-// element has type |Value|, which must be dimensionless.  |degree| is the
-// maximum degree of tⁿ.
-template<typename Value, int degree,
-         template<typename, typename, int> class Evaluator>
+// form tⁿ sin ω t and tⁿ cos ω t properly ordered.  The basis elements have
+// type |Series|, which must be free from Quantity.  |degree| is the maximum
+// degree of tⁿ.
+template<typename Series, int degree>
 class PoissonSeriesBasisGenerator {
-  static_assert(std::is_same_v<Value, typename Hilbert<Value>::NormalizedType>,
-                "Value type must be dimensionless");
-
-  using Series = PoissonSeries<Value, degree, degree, Evaluator>;
+  using Value = std::invoke_result_t<Series, Instant>;
   static constexpr int dimension = Hilbert<Value>::dimension;
+  static_assert(std::is_same_v<Value, typename Hilbert<Value>::NormalizedType>,
+                "Value type must be free from Quantity");
 
  public:
   // Basis of aperiodic terms.
