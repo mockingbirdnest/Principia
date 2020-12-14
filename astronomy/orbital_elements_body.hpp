@@ -48,8 +48,10 @@ StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
       SiderealPeriod(orbital_elements.osculating_equinoctial_elements_);
   RETURN_IF_ERROR(sidereal_period);
   orbital_elements.sidereal_period_ = sidereal_period.ValueOrDie();
-  if (!IsFinite(orbital_elements.sidereal_period_)) {
-    // Guard against NaN sidereal periods (from hyperbolic orbits).
+  if (!IsFinite(orbital_elements.sidereal_period_) ||
+      orbital_elements.sidereal_period_ <= Time{}) {
+    // Guard against NaN sidereal periods (from hyperbolic orbits) or negative
+    // sidereal periods (from aberrant trajectories, see #2811).
     return Status(
         Error::OUT_OF_RANGE,
         "sidereal period is " + DebugString(orbital_elements.sidereal_period_));

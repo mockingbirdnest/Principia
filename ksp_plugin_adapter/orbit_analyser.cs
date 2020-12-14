@@ -145,11 +145,17 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
 
   public void RenderButton() {
     string vessel_guid = predicted_vessel?.id.ToString();
+    var now = DateTime.UtcNow;
     if (vessel_guid == null) {
       orbit_description_ = null;
-    } else if (!Shown()) {
-      // Keep refreshing the analysis even when the analyser is not shown, so
-      // that the analysis button can display an up-to-date one-line summary.
+    } else if (
+        !Shown() &&
+        (!last_background_analysis_time_.HasValue ||
+         (now - last_background_analysis_time_) > TimeSpan.FromSeconds(2))) {
+      last_background_analysis_time_ = now;
+      // Keep refreshing the analysis (albeit at a reduced rate) even when the
+      // analyser is not shown, so that the analysis button can display an
+      // up-to-date one-line summary.
       OrbitAnalysis analysis = plugin.VesselRefreshAnalysis(
           vessel_guid,
           mission_duration_.value,
@@ -505,6 +511,7 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
   private int ground_track_revolution_ = 1;
 
   private string orbit_description_ = null;
+  private DateTime? last_background_analysis_time_ = null;
 }
 
 

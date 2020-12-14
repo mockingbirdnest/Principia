@@ -31,14 +31,11 @@ OrbitAnalyser::OrbitAnalyser(
       analysed_trajectory_parameters_(
           std::move(analysed_trajectory_parameters)) {}
 
-void OrbitAnalyser::Restart() {
-  analyser_ = MakeStoppableThread([this] { RepeatedlyAnalyseOrbit(); });
+void OrbitAnalyser::Interrupt() {
+  analyser_ = jthread();
 }
 
 void OrbitAnalyser::RequestAnalysis(Parameters const& parameters) {
-  if (!analyser_.joinable()) {
-    analyser_ = MakeStoppableThread([this] { RepeatedlyAnalyseOrbit(); });
-  }
   Ephemeris<Barycentric>::Guard guard(ephemeris_);
   if (ephemeris_->t_min() > parameters.first_time) {
     // Too much has been forgotten; we cannot perform this analysis.
@@ -46,7 +43,14 @@ void OrbitAnalyser::RequestAnalysis(Parameters const& parameters) {
   }
   last_parameters_ = parameters;
   absl::MutexLock l(&lock_);
-  guarded_parameters_ = {std::move(guard), parameters};
+  // Only process this request if there is no analysis in progress.
+  if (!analyser_.joinable()) {
+    analyser_ = MakeStoppableThread(
+        [this](GuardedParameters guarded_parameters) {
+          AnalyseOrbit(std::move(guarded_parameters));
+        },
+        GuardedParameters{std::move(guard), parameters});
+  }
 }
 
 std::optional<OrbitAnalyser::Parameters> const& OrbitAnalyser::last_parameters()
@@ -70,25 +74,18 @@ double OrbitAnalyser::progress_of_next_analysis() const {
   return progress_of_next_analysis_;
 }
 
-Status OrbitAnalyser::RepeatedlyAnalyseOrbit() {
-  for (;;) {
-    // No point in going faster than 50 Hz.
-    std::chrono::steady_clock::time_point const wakeup_time =
-        std::chrono::steady_clock::now() + std::chrono::milliseconds(20);
-
-    RETURN_IF_STOPPED;
-
-    std::optional<GuardedParameters> guarded_parameters;
-    {
-      absl::MutexLock l(&lock_);
-      if (!guarded_parameters_.has_value()) {
-        // No parameters, let's wait for them to appear.
-        continue;
-      }
-      std::swap(guarded_parameters, guarded_parameters_);
-    }
-
-    auto const& parameters = guarded_parameters->parameters;
+Status OrbitAnalyser::AnalyseOrbit(GuardedParameters guarded_parameters) {
+  // This object will represent this thread once we are ready to detach from the
+  // main thread.
+  jthread analyser;
+  // The thread is joinable within the following block; it is detached outside
+  // of it, so anything whose destructor relies on objects that can be destroyed
+  // by the main thread should live within the block.
+  {
+    // Ensure that we destroy the guard before leaving the block, while we know
+    // that the ephemeris still exists.
+    GuardedParameters guarded = std::move(guarded_parameters);
+    auto const& parameters = guarded.parameters;
 
     Analysis analysis{parameters.first_time};
     DiscreteTrajectory<Barycentric> trajectory;
@@ -182,10 +179,12 @@ Status OrbitAnalyser::RepeatedlyAnalyseOrbit() {
     {
       absl::MutexLock l(&lock_);
       next_analysis_ = std::move(analysis);
+      // Take ownership of our own thread so we can safely detach.
+      std::swap(analyser, analyser_);
     }
-
-    std::this_thread::sleep_until(wakeup_time);
   }
+  analyser.detach();
+  return Status::OK;
 }
 
 Instant const& OrbitAnalyser::Analysis::first_time() const {
