@@ -52,6 +52,7 @@ class PoissonSeriesSubspace {
 // form tⁿ sin ω t and tⁿ cos ω t properly ordered.  The basis elements have
 // type |Series|, which must be free from Quantity.  |degree| is the maximum
 // degree of tⁿ.
+//TODO(phl): t_min, t_max
 template<typename Series, int degree>
 class PoissonSeriesBasisGenerator {
   using Value = std::invoke_result_t<Series, Instant>;
@@ -62,18 +63,27 @@ class PoissonSeriesBasisGenerator {
  public:
   // Basis of aperiodic terms.
   static std::array<Series, dimension * (degree + 1)> Basis(
-      Instant const& origin);
+      Instant const& origin,
+      Instant const& t_min,
+      Instant const& t_max);
   // The subspaces to which the above terms belong.
   static std::array<PoissonSeriesSubspace, dimension * (degree + 1)> Subspaces(
-      Instant const& origin);
+      Instant const& origin,
+      Instant const& t_min,
+      Instant const& t_max);
 
   // Basis of periodic terms.
   static std::array<Series, 2 * dimension * (degree + 1)> Basis(
       AngularFrequency const& ω,
-      Instant const& origin);
+      Instant const& origin,
+      Instant const& t_min,
+      Instant const& t_max);
   // The subspaces to which the above terms belong.
   static std::array<PoissonSeriesSubspace, 2 * dimension * (degree + 1)>
-  Subspaces(AngularFrequency const& ω, Instant const& origin);
+  Subspaces(AngularFrequency const& ω,
+            Instant const& origin,
+            Instant const& t_min,
+            Instant const& t_max);
 };
 
 std::ostream& operator<<(std::ostream& out,
