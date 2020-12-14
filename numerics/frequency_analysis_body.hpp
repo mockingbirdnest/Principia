@@ -103,6 +103,9 @@ IncrementalProjection(Function const& function,
   using Series = PoissonSeries<Value,
                                aperiodic_degree, periodic_degree,
                                Evaluator>;
+  using BasisElement = PoissonSeries<Normalized,
+                                     aperiodic_degree, periodic_degree,
+                                     Evaluator>;
 
   // This code follows [Kud07], section 2.  Our indices start at 0, unlike those
   // of Кудрявцев which start at 1.
@@ -121,23 +124,22 @@ IncrementalProjection(Function const& function,
   int basis_size;
   // TODO(phl): This is replicated below.
   if (ω.value() == AngularFrequency{}) {
-    auto const ω_basis =
-        PoissonSeriesBasisGenerator<Series,
-                                    aperiodic_degree>::Basis(t0);
-    auto const ω_basis_subspaces =
-        PoissonSeriesBasisGenerator<Series, aperiodic_degree>::Subspaces(t0);
+    using Generator = PoissonSeriesBasisGenerator<Normalized,
+                                                  aperiodic_degree,
+                                                  Evaluator>;
+    auto const ω_basis = Generator::Basis(t0);
+    auto const ω_basis_subspaces = Generator::Subspaces(t0);
     basis_size = std::tuple_size_v<decltype(ω_basis)>;
     std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
     std::move(ω_basis_subspaces.begin(),
               ω_basis_subspaces.end(),
               std::back_inserter(basis_subspaces));
   } else {
-    auto const ω_basis =
-        PoissonSeriesBasisGenerator<Series,
-                                    periodic_degree>::Basis(ω.value(), t0);
-    auto const ω_basis_subspaces =
-        PoissonSeriesBasisGenerator<Series, periodic_degree>::Subspaces(
-            ω.value(), t0);
+    using Generator = PoissonSeriesBasisGenerator<Normalized,
+                                                  periodic_degree,
+                                                  Evaluator>;
+    auto const ω_basis = Generator::Basis(ω.value(), t0);
+    auto const ω_basis_subspaces = Generator::Subspaces(ω.value(), t0);
     basis_size = std::tuple_size_v<decltype(ω_basis)>;
     std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
     std::move(ω_basis_subspaces.begin(),
@@ -196,23 +198,22 @@ IncrementalProjection(Function const& function,
 
     int ω_basis_size;
     if (ω.value() == AngularFrequency{}) {
-      auto const ω_basis =
-          PoissonSeriesBasisGenerator<Series,
-                                      aperiodic_degree>::Basis(t0);
-      auto const ω_basis_subspaces =
-          PoissonSeriesBasisGenerator<Series, aperiodic_degree>::Subspaces(t0);
+      using Generator = PoissonSeriesBasisGenerator<Normalized,
+                                                    aperiodic_degree,
+                                                    Evaluator>;
+      auto const ω_basis = Generator::Basis(t0);
+      auto const ω_basis_subspaces = Generator::Subspaces(t0);
       ω_basis_size = std::tuple_size_v<decltype(ω_basis)>;
       std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
       std::move(ω_basis_subspaces.begin(),
                 ω_basis_subspaces.end(),
                 std::back_inserter(basis_subspaces));
     } else {
-      auto const ω_basis =
-          PoissonSeriesBasisGenerator<Series,
-                                      periodic_degree>::Basis(ω.value(), t0);
-      auto const ω_basis_subspaces =
-          PoissonSeriesBasisGenerator<Series, periodic_degree>::Subspaces(
-              ω.value(), t0);
+      using Generator = PoissonSeriesBasisGenerator<Normalized,
+                                                    periodic_degree,
+                                                    Evaluator>;
+      auto const ω_basis = Generator::Basis(ω.value(), t0);
+      auto const ω_basis_subspaces = Generator::Subspaces(ω.value(), t0);
       ω_basis_size = std::tuple_size_v<decltype(ω_basis)>;
       std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
       std::move(ω_basis_subspaces.begin(),
