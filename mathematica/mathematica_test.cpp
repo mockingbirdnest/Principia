@@ -19,6 +19,7 @@
 #include "numerics/poisson_series.hpp"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
+#include "numerics/unbounded_arrays.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "quantities/quantities.hpp"
@@ -45,6 +46,8 @@ using numerics::HornerEvaluator;
 using numerics::PiecewisePoissonSeries;
 using numerics::PoissonSeries;
 using numerics::PolynomialInMonomialBasis;
+using numerics::UnboundedLowerTriangularMatrix;
+using numerics::UnboundedUpperTriangularMatrix;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using quantities::Length;
@@ -236,6 +239,30 @@ TEST_F(MathematicaTest, ToMathematica) {
         "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
         "\" m s^-1\"]]",
         ToMathematica(std::tuple{1 * Metre, 2 * Second, 3 * Metre / Second}));
+  }
+  {
+    UnboundedLowerTriangularMatrix<double> l2({1,
+                                               2, 3});
+    EXPECT_EQ("List["
+              "List["
+              "SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
+              "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision]],"
+              "List["
+              "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
+              "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]]]",
+              ToMathematica(l2));
+  }
+  {
+    UnboundedUpperTriangularMatrix<double> u2({1, 2,
+                                                  3});
+    EXPECT_EQ("List["
+              "List["
+              "SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
+              "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision]],"
+              "List["
+              "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
+              "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]]]",
+              ToMathematica(u2));
   }
   {
     DiscreteTrajectory<F> trajectory;
