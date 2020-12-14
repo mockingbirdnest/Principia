@@ -417,6 +417,17 @@ std::string ToMathematica(UnboundedUpperTriangularMatrix<Scalar> const& matrix,
   return Apply("List", rows);
 }
 
+template<typename Scalar, typename OptionalExpressIn>
+std::string ToMathematica(UnboundedVector<Scalar> const& vector,
+                          OptionalExpressIn express_in) {
+  std::vector<std::string> elements;
+  elements.reserve(vector.size());
+  for (int i = 0; i < vector.size(); ++i) {
+    elements.push_back(ToMathematica(vector[i], express_in));
+  }
+  return Apply("List", elements);
+}
+
 template<typename R, typename, typename, typename OptionalExpressIn>
 std::string ToMathematica(R const ref,
                           OptionalExpressIn express_in) {

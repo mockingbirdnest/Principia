@@ -46,6 +46,7 @@ using numerics::PoissonSeries;
 using numerics::PolynomialInMonomialBasis;
 using numerics::UnboundedLowerTriangularMatrix;
 using numerics::UnboundedUpperTriangularMatrix;
+using numerics::UnboundedVector;
 using physics::DegreesOfFreedom;
 using quantities::Amount;
 using quantities::Angle;
@@ -208,6 +209,10 @@ std::string ToMathematica(UnboundedLowerTriangularMatrix<Scalar> const& matrix,
 
 template<typename Scalar, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(UnboundedUpperTriangularMatrix<Scalar> const& matrix,
+                          OptionalExpressIn express_in = std::nullopt);
+
+template<typename Scalar, typename OptionalExpressIn = std::nullopt_t>
+std::string ToMathematica(UnboundedVector<Scalar> const& vector,
                           OptionalExpressIn express_in = std::nullopt);
 
 template<typename R,

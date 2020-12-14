@@ -48,6 +48,7 @@ using numerics::PoissonSeries;
 using numerics::PolynomialInMonomialBasis;
 using numerics::UnboundedLowerTriangularMatrix;
 using numerics::UnboundedUpperTriangularMatrix;
+using numerics::UnboundedVector;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using quantities::Length;
@@ -263,6 +264,13 @@ TEST_F(MathematicaTest, ToMathematica) {
               "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
               "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]]]",
               ToMathematica(u2));
+  }
+  {
+    UnboundedVector<double> v2({1, 2});
+    EXPECT_EQ("List["
+              "SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
+              "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision]]",
+              ToMathematica(v2));
   }
   {
     DiscreteTrajectory<F> trajectory;
