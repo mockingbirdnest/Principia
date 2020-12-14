@@ -100,10 +100,10 @@ IncrementalProjection(Function const& function,
   using Value = std::invoke_result_t<Function, Instant>;
   using Norm = typename Hilbert<Value>::NormType;
   using Normalized = typename Hilbert<Value>::NormalizedType;
-  using Series = PoissonSeries<Value,
-                               aperiodic_degree, periodic_degree,
-                               Evaluator>;
-  using BasisElement = PoissonSeries<Normalized,
+  using BasisSeries = PoissonSeries<Normalized,
+                                    aperiodic_degree, periodic_degree,
+                                    Evaluator>;
+  using ResultSeries = PoissonSeries<Value,
                                      aperiodic_degree, periodic_degree,
                                      Evaluator>;
 
@@ -115,7 +115,7 @@ IncrementalProjection(Function const& function,
   std::optional<AngularFrequency> ω = calculator(function);
   CHECK(ω.has_value());
 
-  std::vector<Series> basis;
+  std::vector<BasisSeries> basis;
   // The Poisson series basis[k] belongs to the subspace basis_subspaces[k];
   // this remains true after orthonormalization, i.e., q[k] belongs to the
   // subspace basis_subspaces[k] below.
@@ -124,22 +124,20 @@ IncrementalProjection(Function const& function,
   int basis_size;
   // TODO(phl): This is replicated below.
   if (ω.value() == AngularFrequency{}) {
-    using Generator = PoissonSeriesBasisGenerator<Normalized,
-                                                  aperiodic_degree,
-                                                  Evaluator>;
-    auto const ω_basis = Generator::Basis(t0);
-    auto const ω_basis_subspaces = Generator::Subspaces(t0);
+    using Generator = PoissonSeriesBasisGenerator<BasisSeries,
+                                                  aperiodic_degree>;
+    auto const ω_basis = Generator::Basis(t_min, t_max);
+    auto const ω_basis_subspaces = Generator::Subspaces();
     basis_size = std::tuple_size_v<decltype(ω_basis)>;
     std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
     std::move(ω_basis_subspaces.begin(),
               ω_basis_subspaces.end(),
               std::back_inserter(basis_subspaces));
   } else {
-    using Generator = PoissonSeriesBasisGenerator<Normalized,
-                                                  periodic_degree,
-                                                  Evaluator>;
-    auto const ω_basis = Generator::Basis(ω.value(), t0);
-    auto const ω_basis_subspaces = Generator::Subspaces(ω.value(), t0);
+    using Generator = PoissonSeriesBasisGenerator<BasisSeries,
+                                                  periodic_degree>;
+    auto const ω_basis = Generator::Basis(ω.value(), t_min, t_max);
+    auto const ω_basis_subspaces = Generator::Subspaces(ω.value());
     basis_size = std::tuple_size_v<decltype(ω_basis)>;
     std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
     std::move(ω_basis_subspaces.begin(),
@@ -148,9 +146,7 @@ IncrementalProjection(Function const& function,
   }
 
   // This is logically Q in the QR decomposition of basis.
-  std::vector<PoissonSeries<Normalized,
-                            aperiodic_degree, periodic_degree,
-                            Evaluator>> q;
+  std::vector<BasisSeries> q;
 
   auto const& a₀ = basis[0];
   auto const r₀₀ = a₀.Norm(weight, t_min, t_max);
@@ -159,7 +155,7 @@ IncrementalProjection(Function const& function,
 
   auto const A₀ = InnerProduct(function, q[0], weight, t_min, t_max);
 
-  Series F = A₀ * q[0];
+  ResultSeries F = A₀ * q[0];
   auto f = function - F;
 
   int m_begin = 1;
@@ -198,22 +194,20 @@ IncrementalProjection(Function const& function,
 
     int ω_basis_size;
     if (ω.value() == AngularFrequency{}) {
-      using Generator = PoissonSeriesBasisGenerator<Normalized,
-                                                    aperiodic_degree,
-                                                    Evaluator>;
-      auto const ω_basis = Generator::Basis(t0);
-      auto const ω_basis_subspaces = Generator::Subspaces(t0);
+      using Generator = PoissonSeriesBasisGenerator<BasisSeries,
+                                                    aperiodic_degree>;
+      auto const ω_basis = Generator::Basis(t_min, t_max);
+      auto const ω_basis_subspaces = Generator::Subspaces();
       ω_basis_size = std::tuple_size_v<decltype(ω_basis)>;
       std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
       std::move(ω_basis_subspaces.begin(),
                 ω_basis_subspaces.end(),
                 std::back_inserter(basis_subspaces));
     } else {
-      using Generator = PoissonSeriesBasisGenerator<Normalized,
-                                                    periodic_degree,
-                                                    Evaluator>;
-      auto const ω_basis = Generator::Basis(ω.value(), t0);
-      auto const ω_basis_subspaces = Generator::Subspaces(ω.value(), t0);
+      using Generator = PoissonSeriesBasisGenerator<BasisSeries,
+                                                    periodic_degree>;
+      auto const ω_basis = Generator::Basis(ω.value(), t_min, t_max);
+      auto const ω_basis_subspaces = Generator::Subspaces(ω.value());
       ω_basis_size = std::tuple_size_v<decltype(ω_basis)>;
       std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
       std::move(ω_basis_subspaces.begin(),
