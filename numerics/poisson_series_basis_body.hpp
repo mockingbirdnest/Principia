@@ -4,7 +4,9 @@
 
 #include <algorithm>
 
+#include "geometry/barycentre_calculator.hpp"
 #include "geometry/hilbert.hpp"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 #include "quantities/traits.hpp"
 
@@ -12,8 +14,10 @@ namespace principia {
 namespace numerics {
 namespace internal_poisson_series_basis {
 
+using geometry::Barycentre;
 using geometry::Hilbert;
 using quantities::is_quantity_v;
+using quantities::Pow;
 namespace si = quantities::si;
 
 
@@ -76,23 +80,23 @@ template<typename Polynomial, int dimension>
 struct PolynomialGenerator {
   // Returns a polynomial whose coordinate and degree are encoded in |index|.
   template<int index>
-  static Polynomial UnitPolynomial(Instant const& origin,
-                                   Instant const& t_min,
+  static Polynomial UnitPolynomial(Instant const& t_min,
+                                   Instant const& t_mid,
                                    Instant const& t_max);
 
   // Returns a pair of polynomials (for Sin and Cos) whose parity, coordinate
   // and degree are encoded in |index|.
   template<typename Polynomials, int index>
-  static Polynomials UnitPolynomials(Instant const& origin,
-                                     Instant const& t_min,
+  static Polynomials UnitPolynomials(Instant const& t_min,
+                                     Instant const& t_mid,
                                      Instant const& t_max);
 };
 
 template<typename Polynomial, int dimension>
 template<int index>
 Polynomial PolynomialGenerator<Polynomial, dimension>::UnitPolynomial(
-    Instant const& origin,
     Instant const& t_min,
+    Instant const& t_mid,
     Instant const& t_max) {
   // Extract the coordinate and the degree from |index|.  The coordinate varies
   // faster, so terms of the same degree but different coordinates are
@@ -102,17 +106,20 @@ Polynomial PolynomialGenerator<Polynomial, dimension>::UnitPolynomial(
 
   using Coefficients = typename Polynomial::Coefficients;
   using Coefficient = std::tuple_element_t<degree, Coefficients>;
+  using NormalizedCoefficient = typename Hilbert<Coefficient>::NormalizedType;
   Coefficients coefficients;
   std::get<degree>(coefficients) =
-      CoefficientGenerator<Coefficient, dimension>::template Unit<coordinate>();
-  return Polynomial(coefficients, origin);
+      CoefficientGenerator<NormalizedCoefficient,
+                           dimension>::template Unit<coordinate>() /
+      Pow<degree>(0.5 * (t_max - t_min));
+  return Polynomial(coefficients, t_mid);
 }
 
 template<typename Polynomial, int dimension>
 template<typename Polynomials, int index>
 Polynomials PolynomialGenerator<Polynomial, dimension>::UnitPolynomials(
-    Instant const& origin,
     Instant const& t_min,
+    Instant const& t_mid,
     Instant const& t_max) {
   // Extract the parity, coordinate and the degree from |index|.  The coordinate
   // varies faster, so terms of the same parity and degree but different
@@ -126,14 +133,14 @@ Polynomials PolynomialGenerator<Polynomial, dimension>::UnitPolynomials(
   // Reencode the degree and coordinate alone for generating the polynomials.
   static constexpr int degree_and_coordinate = coordinate + dimension * degree;
 
-  Polynomial const zero{{}, origin};
+  Polynomial const zero{{}, t_mid};
   if constexpr (parity == 0) {
     return {/*sin=*/zero,
             /*cos=*/PolynomialGenerator<Polynomial, dimension>::UnitPolynomial<
-                degree_and_coordinate>(origin)};
+                degree_and_coordinate>(t_min, t_mid, t_max)};
   } else {
     return {/*sin=*/PolynomialGenerator<Polynomial, dimension>::UnitPolynomial<
-                degree_and_coordinate>(origin),
+                degree_and_coordinate>(t_min, t_mid, t_max),
             /*cos=*/zero};
   }
 }
@@ -160,26 +167,22 @@ struct AperiodicSeriesGenerator<Series,
                                 degree, dimension,
                                 std::index_sequence<indices...>> {
   static std::array<Series, sizeof...(indices)> BasisElements(
-      Instant const& origin,
       Instant const& t_min,
       Instant const& t_max);
-  static std::array<PoissonSeriesSubspace, sizeof...(indices)> Subspaces(
-      Instant const& origin,
-      Instant const& t_min,
-      Instant const& t_max);
+  static std::array<PoissonSeriesSubspace, sizeof...(indices)> Subspaces();
 };
 
 template<typename Series, int degree, int dimension, std::size_t... indices>
 std::array<Series, sizeof...(indices)> AperiodicSeriesGenerator<
     Series,
     degree, dimension,
-    std::index_sequence<indices...>>::BasisElements(Instant const& origin,
-                                                    Instant const& t_min,
+    std::index_sequence<indices...>>::BasisElements(Instant const& t_min,
                                                     Instant const& t_max) {
+  Instant const t_mid = Barycentre<Instant, int>({t_min, t_max}, {1, 1});
   return {(Series(
       PolynomialGenerator<typename Series::AperiodicPolynomial,
-                          dimension>::template UnitPolynomial<indices>(origin,
-                                                                       t_min,
+                          dimension>::template UnitPolynomial<indices>(t_min,
+                                                                       t_mid,
                                                                        t_max),
       {}))...};
 }
@@ -187,9 +190,7 @@ std::array<Series, sizeof...(indices)> AperiodicSeriesGenerator<
 template<typename Series, int degree, int dimension, std::size_t... indices>
 std::array<PoissonSeriesSubspace, sizeof...(indices)> AperiodicSeriesGenerator<
     Series, degree, dimension,
-    std::index_sequence<indices...>>::Subspaces(Instant const& origin,
-                                                Instant const& t_min,
-                                                Instant const& t_max) {
+    std::index_sequence<indices...>>::Subspaces() {
   return {PoissonSeriesSubspace{
       static_cast<PoissonSeriesSubspace::Coordinate>(indices % dimension),
       // The degree of the ith polynomial is i / dimension, so its parity is
@@ -212,14 +213,10 @@ struct PeriodicSeriesGenerator<Series, degree, dimension,
                                std::index_sequence<indices...>> {
   static std::array<Series, sizeof...(indices)> BasisElements(
       AngularFrequency const& ω,
-      Instant const& origin,
       Instant const& t_min,
       Instant const& t_max);
   static std::array<PoissonSeriesSubspace, sizeof...(indices)> Subspaces(
-      AngularFrequency const& ω,
-      Instant const& origin,
-      Instant const& t_min,
-      Instant const& t_max);
+      AngularFrequency const& ω);
 };
 
 template<typename Series, int degree, int dimension, std::size_t... indices>
@@ -227,25 +224,22 @@ std::array<Series, sizeof...(indices)> PeriodicSeriesGenerator<
     Series,
     degree, dimension,
     std::index_sequence<indices...>>::BasisElements(AngularFrequency const& ω,
-                                                    Instant const& origin,
                                                     Instant const& t_min,
                                                     Instant const& t_max) {
-  typename Series::AperiodicPolynomial const aperiodic_zero{{}, origin};
+  Instant const t_mid = Barycentre<Instant, int>({t_min, t_max}, {1, 1});
+  typename Series::AperiodicPolynomial const aperiodic_zero{{}, t_mid};
   return {Series(
       aperiodic_zero,
       {{ω,
         PolynomialGenerator<typename Series::PeriodicPolynomial, dimension>::
             template UnitPolynomials<typename Series::Polynomials, indices>(
-                origin, t_min, t_max)}})...};
+                t_min, t_mid, t_max)}})...};
 }
 
 template<typename Series, int degree, int dimension, std::size_t... indices>
 std::array<PoissonSeriesSubspace, sizeof...(indices)> PeriodicSeriesGenerator<
     Series, degree, dimension,
-    std::index_sequence<indices...>>::Subspaces(AngularFrequency const& ω,
-                                                Instant const& origin,
-                                                Instant const& t_min,
-                                                Instant const& t_max) {
+    std::index_sequence<indices...>>::Subspaces(AngularFrequency const& ω) {
   return {
       PoissonSeriesSubspace{
           static_cast<PoissonSeriesSubspace::Coordinate>(indices % dimension),
@@ -259,44 +253,34 @@ std::array<PoissonSeriesSubspace, sizeof...(indices)> PeriodicSeriesGenerator<
 
 
 template<typename Series, int degree>
-auto PoissonSeriesBasisGenerator<Series, degree>::Basis(Instant const& origin,
-                                                        Instant const& t_min,
+auto PoissonSeriesBasisGenerator<Series, degree>::Basis(Instant const& t_min,
                                                         Instant const& t_max)
     -> std::array<Series, dimension * (degree + 1)> {
   return AperiodicSeriesGenerator<Series, degree, dimension>::BasisElements(
-      origin, t_min, t_max);
+      t_min, t_max);
 }
 
 template<typename Series, int degree>
-auto PoissonSeriesBasisGenerator<Series, degree>::Subspaces(
-    Instant const& origin,
-    Instant const& t_min,
-    Instant const& t_max)
+auto PoissonSeriesBasisGenerator<Series, degree>::Subspaces()
     -> std::array<PoissonSeriesSubspace, dimension*(degree + 1)> {
-  return AperiodicSeriesGenerator<Series, degree, dimension>::Subspaces(
-      origin, t_min, t_max);
+  return AperiodicSeriesGenerator<Series, degree, dimension>::Subspaces();
 }
 
 template<typename Series, int degree>
 auto PoissonSeriesBasisGenerator<Series, degree>::Basis(
     AngularFrequency const& ω,
-    Instant const& origin,
     Instant const& t_min,
     Instant const& t_max)
     -> std::array<Series, 2 * dimension*(degree + 1)> {
   return PeriodicSeriesGenerator<Series, degree, dimension>::BasisElements(
-      ω, origin, t_min, t_max);
+      ω, t_min, t_max);
 }
 
 template<typename Series, int degree>
 auto PoissonSeriesBasisGenerator<Series, degree>::Subspaces(
-    AngularFrequency const& ω,
-    Instant const& origin,
-    Instant const& t_min,
-    Instant const& t_max)
+    AngularFrequency const& ω)
     -> std::array<PoissonSeriesSubspace, 2 * dimension*(degree + 1)> {
-  return PeriodicSeriesGenerator<Series, degree, dimension>::Subspaces(
-      ω, origin, t_min, t_max);
+  return PeriodicSeriesGenerator<Series, degree, dimension>::Subspaces(ω);
 }
 
 inline std::ostream& operator<<(std::ostream& out,

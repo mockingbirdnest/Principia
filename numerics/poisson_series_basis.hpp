@@ -63,27 +63,20 @@ class PoissonSeriesBasisGenerator {
  public:
   // Basis of aperiodic terms.
   static std::array<Series, dimension * (degree + 1)> Basis(
-      Instant const& origin,
       Instant const& t_min,
       Instant const& t_max);
   // The subspaces to which the above terms belong.
-  static std::array<PoissonSeriesSubspace, dimension * (degree + 1)> Subspaces(
-      Instant const& origin,
-      Instant const& t_min,
-      Instant const& t_max);
+  static std::array<PoissonSeriesSubspace, dimension * (degree + 1)>
+  Subspaces();
 
   // Basis of periodic terms.
   static std::array<Series, 2 * dimension * (degree + 1)> Basis(
       AngularFrequency const& ω,
-      Instant const& origin,
       Instant const& t_min,
       Instant const& t_max);
   // The subspaces to which the above terms belong.
   static std::array<PoissonSeriesSubspace, 2 * dimension * (degree + 1)>
-  Subspaces(AngularFrequency const& ω,
-            Instant const& origin,
-            Instant const& t_min,
-            Instant const& t_max);
+  Subspaces(AngularFrequency const& ω);
 };
 
 std::ostream& operator<<(std::ostream& out,
