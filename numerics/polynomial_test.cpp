@@ -266,6 +266,23 @@ TEST_F(PolynomialTest, Ring) {
   }
 }
 
+TEST_F(PolynomialTest, Monoid) {
+  using P2 =
+      PolynomialInMonomialBasis<Temperature, Time, 2, HornerEvaluator>;
+  using P3 =
+      PolynomialInMonomialBasis<Current, Temperature, 3, HornerEvaluator>;
+  P2 const p2({1 * Kelvin, 3 * Kelvin / Second, -8 * Kelvin / Second / Second});
+  P3 const p3({2 * Ampere,
+               -4 * Ampere / Kelvin,
+               3 * Ampere / Kelvin / Kelvin,
+               1 * Ampere / Kelvin / Kelvin / Kelvin});
+  auto const p = Compose(p3, p2);
+  {
+    auto const actual = p(0 * Second);
+    EXPECT_THAT(actual, AlmostEquals(2 * Ampere, 0));
+  }
+}
+
 TEST_F(PolynomialTest, PointwiseInnerProduct) {
   P2V::Coefficients const coefficients({
       Displacement<World>({0 * Metre,

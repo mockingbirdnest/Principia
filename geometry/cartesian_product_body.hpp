@@ -450,11 +450,11 @@ auto operator*(LTuple const& left, RTuple const& right) {
           left, right);
 }
 
-template<typename Tuple, int exponent>
+template<int exponent, typename Tuple>
 constexpr auto Pow(Tuple const& tuple) {
   if constexpr (exponent == 0) {
     Tuple t;
-    std::get<0>(t) = 1;
+//    std::get<0>(t) = 1;
     return t;
   } else if constexpr (exponent == 1) {
     return tuple;

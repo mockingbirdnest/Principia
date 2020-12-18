@@ -31,7 +31,6 @@ using geometry::cartesian_product::operator*;
 using geometry::cartesian_product::operator/;
 using geometry::pointwise_inner_product::PointwiseInnerProduct;
 using geometry::polynomial_ring::operator*;
-using geometry::polynomial_ring::Pow;
 using quantities::Apply;
 using quantities::DebugString;
 using quantities::Exponentiation;
@@ -167,9 +166,6 @@ template<typename LTuple, typename RTuple, std::size_t... left_indices>
 struct TupleComposition<LTuple, RTuple, std::index_sequence<left_indices...>> {
   static constexpr auto Compose(LTuple const& left_tuple,
                                 RTuple const& right_tuple);
-
-  template<
-  static constexpr auto Power(RTuple const& right_tuple);
 };
 
 template<typename LTuple, typename RTuple, std::size_t... left_indices>
@@ -177,8 +173,9 @@ constexpr auto
 TupleComposition<LTuple, RTuple, std::index_sequence<left_indices...>>::Compose(
     LTuple const& left_tuple,
     RTuple const& right_tuple) {
-  return (std::get<left_indices>(left_tuple) * Pow<left_indices>(right_tuple)) +
-         ...;
+  return ((std::get<left_indices>(left_tuple) *
+           geometry::polynomial_ring::Pow<left_indices>(right_tuple)) +
+          ...);
 }
 
 
@@ -805,15 +802,24 @@ Compose(
         left,
     PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
         right) {
+  using LCoefficients =
+      typename PolynomialInMonomialBasis<LValue, RValue, ldegree_,
+                                         Evaluator>::Coefficients;
+  using RCoefficients =
+      typename PolynomialInMonomialBasis<RValue, Argument, rdegree_,
+                                         Evaluator>::Coefficients;
   if constexpr (is_instance_of_v<Point, Argument>) {
     return PolynomialInMonomialBasis<LValue, Argument,
-                                     ldegree_ * rdegree_, Evaluator>(
-        TupleComposition::Compose(left.coefficients_, right.coefficients_),
+                                     ldegree_ * rdegree_,
+                                     Evaluator>(
+        TupleComposition<LCoefficients, RCoefficients>::Compose(
+            left.coefficients_, right.coefficients_),
         right.origin_);
   } else {
     return PolynomialInMonomialBasis<LValue, Argument,
                                      ldegree_ * rdegree_, Evaluator>(
-        TupleComposition::Compose(left.coefficients_, right.coefficients_));
+        TupleComposition<LCoefficients, RCoefficients>::Compose(
+            left.coefficients_, right.coefficients_));
   }
 }
 

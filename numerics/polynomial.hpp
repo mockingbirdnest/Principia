@@ -189,6 +189,12 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   template<typename L, typename R, typename A,
            int l, int r,
            template<typename, typename, int> typename E>
+  constexpr PolynomialInMonomialBasis<L, A, l * r, E>
+  friend Compose(PolynomialInMonomialBasis<L, R, l, E> const& left,
+                 PolynomialInMonomialBasis<R, A, r, E> const& right);
+  template<typename L, typename R, typename A,
+           int l, int r,
+           template<typename, typename, int> typename E>
   constexpr PolynomialInMonomialBasis<
       typename Hilbert<L, R>::InnerProductType, A, l + r, E>
   friend PointwiseInnerProduct(
@@ -310,6 +316,12 @@ class PolynomialInMonomialBasis<Value_, Point<Argument_>, degree_, Evaluator>
   friend operator*(
       PolynomialInMonomialBasis<L, A, l, E> const& left,
       PolynomialInMonomialBasis<R, A, r, E> const& right);
+  template<typename L, typename R, typename A,
+           int l, int r,
+           template<typename, typename, int> typename E>
+  constexpr PolynomialInMonomialBasis<L, A, l * r, E>
+  friend Compose(PolynomialInMonomialBasis<L, R, l, E> const& left,
+                 PolynomialInMonomialBasis<R, A, r, E> const& right);
   template<typename L, typename R, typename A,
            int l, int r,
            template<typename, typename, int> typename E>
