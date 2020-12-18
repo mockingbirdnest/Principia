@@ -405,6 +405,19 @@ operator*(
     PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
         right);
 
+// Application monoid.
+
+template<typename LValue, typename RValue,
+         typename Argument, int ldegree_, int rdegree_,
+         template<typename, typename, int> typename Evaluator>
+constexpr PolynomialInMonomialBasis<LValue, Argument,
+                                    ldegree_ * rdegree_, Evaluator>
+Compose(
+    PolynomialInMonomialBasis<LValue, RValue, ldegree_, Evaluator> const&
+        left,
+    PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
+        right);
+
 // Returns a scalar polynomial obtained by pointwise inner product of two
 // vector-valued polynomials.
 template<typename LValue, typename RValue,
