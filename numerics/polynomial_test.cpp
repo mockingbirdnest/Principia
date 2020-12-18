@@ -281,6 +281,22 @@ TEST_F(PolynomialTest, Monoid) {
     auto const actual = p(0 * Second);
     EXPECT_THAT(actual, AlmostEquals(2 * Ampere, 0));
   }
+  {
+    auto const actual = p(1 * Second);
+    EXPECT_THAT(actual, AlmostEquals(2 * Ampere, 0));
+  }
+  {
+    auto const actual = p(-1 * Second);
+    EXPECT_THAT(actual, AlmostEquals(-658 * Ampere, 0));
+  }
+  {
+    auto const actual = p(2 * Second);
+    EXPECT_THAT(actual, AlmostEquals(-13648 * Ampere, 0));
+  }
+  {
+    auto const actual = p(-2 * Second);
+    EXPECT_THAT(actual, AlmostEquals(-46396 * Ampere, 0));
+  }
 }
 
 TEST_F(PolynomialTest, PointwiseInnerProduct) {
