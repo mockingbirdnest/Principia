@@ -452,11 +452,8 @@ auto operator*(LTuple const& left, RTuple const& right) {
 
 template<int exponent, typename Tuple>
 constexpr auto Pow(Tuple const& tuple) {
-  if constexpr (exponent == 0) {
-    Tuple t;
-//    std::get<0>(t) = 1;
-    return t;
-  } else if constexpr (exponent == 1) {
+  static_assert(exponent > 0, "Cannot raise a tuple to the zero-th power");
+  if constexpr (exponent == 1) {
     return tuple;
   } else if constexpr (exponent % 2 == 0) {
     return Pow<exponent / 2>(tuple * tuple);

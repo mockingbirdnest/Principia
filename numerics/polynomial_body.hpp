@@ -157,9 +157,10 @@ void TupleAssigner<LTuple, RTuple, std::index_sequence<indices...>>::Assign(
 }
 
 
-
+// - 1 in the second type is ultimately to avoid evaluating Pow<0> as generating
+// a one is hard.
 template<typename LTuple, typename RTuple,
-         typename = std::make_index_sequence<std::tuple_size_v<LTuple>>>
+         typename = std::make_index_sequence<std::tuple_size_v<LTuple> - 1>>
 struct TupleComposition;
 
 template<typename LTuple, typename RTuple, std::size_t... left_indices>
@@ -173,8 +174,11 @@ constexpr auto
 TupleComposition<LTuple, RTuple, std::index_sequence<left_indices...>>::Compose(
     LTuple const& left_tuple,
     RTuple const& right_tuple) {
-  return ((std::get<left_indices>(left_tuple) *
-           geometry::polynomial_ring::Pow<left_indices>(right_tuple)) +
+  // The + 1 in the expressions below match the - 1 in the primary declaration
+  // of TupleComposition.
+  return std::tuple(std::get<0>(left_tuple)) +
+         ((std::get<left_indices + 1>(left_tuple) *
+           geometry::polynomial_ring::Pow<left_indices + 1>(right_tuple)) +
           ...);
 }
 
