@@ -51,6 +51,9 @@ template<typename LTuple, typename RTuple,
          typename = std::enable_if_t<quantities::is_tuple_v<RTuple>>>
 constexpr auto operator*(LTuple const& left, RTuple const& right);
 
+template<int exponent, typename Tuple>
+constexpr auto Pow(Tuple const& tuple);
+
 }  // namespace polynomial_ring
 
 namespace pointwise_inner_product {

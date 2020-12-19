@@ -189,6 +189,12 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   template<typename L, typename R, typename A,
            int l, int r,
            template<typename, typename, int> typename E>
+  constexpr PolynomialInMonomialBasis<L, A, l * r, E>
+  friend Compose(PolynomialInMonomialBasis<L, R, l, E> const& left,
+                 PolynomialInMonomialBasis<R, A, r, E> const& right);
+  template<typename L, typename R, typename A,
+           int l, int r,
+           template<typename, typename, int> typename E>
   constexpr PolynomialInMonomialBasis<
       typename Hilbert<L, R>::InnerProductType, A, l + r, E>
   friend PointwiseInnerProduct(
@@ -313,6 +319,12 @@ class PolynomialInMonomialBasis<Value_, Point<Argument_>, degree_, Evaluator>
   template<typename L, typename R, typename A,
            int l, int r,
            template<typename, typename, int> typename E>
+  constexpr PolynomialInMonomialBasis<L, A, l * r, E>
+  friend Compose(PolynomialInMonomialBasis<L, R, l, E> const& left,
+                 PolynomialInMonomialBasis<R, A, r, E> const& right);
+  template<typename L, typename R, typename A,
+           int l, int r,
+           template<typename, typename, int> typename E>
   constexpr PolynomialInMonomialBasis<
       typename Hilbert<L, R>::InnerProductType, A, l + r, E>
   friend PointwiseInnerProduct(
@@ -401,6 +413,19 @@ constexpr PolynomialInMonomialBasis<Product<LValue, RValue>, Argument,
                                     ldegree_ + rdegree_, Evaluator>
 operator*(
     PolynomialInMonomialBasis<LValue, Argument, ldegree_, Evaluator> const&
+        left,
+    PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
+        right);
+
+// Application monoid.
+
+template<typename LValue, typename RValue,
+         typename Argument, int ldegree_, int rdegree_,
+         template<typename, typename, int> typename Evaluator>
+constexpr PolynomialInMonomialBasis<LValue, Argument,
+                                    ldegree_ * rdegree_, Evaluator>
+Compose(
+    PolynomialInMonomialBasis<LValue, RValue, ldegree_, Evaluator> const&
         left,
     PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
         right);

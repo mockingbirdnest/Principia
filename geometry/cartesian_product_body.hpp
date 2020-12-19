@@ -450,6 +450,18 @@ auto operator*(LTuple const& left, RTuple const& right) {
           left, right);
 }
 
+template<int exponent, typename Tuple>
+constexpr auto Pow(Tuple const& tuple) {
+  static_assert(exponent > 0, "Cannot raise a tuple to the zero-th power");
+  if constexpr (exponent == 1) {
+    return tuple;
+  } else if constexpr (exponent % 2 == 0) {
+    return Pow<exponent / 2>(tuple * tuple);
+  } else {
+    return Pow<exponent / 2>(tuple * tuple) * tuple;
+  }
+}
+
 }  // namespace polynomial_ring
 
 namespace pointwise_inner_product {
