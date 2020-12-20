@@ -273,6 +273,8 @@ TEST_F(PolynomialTest, Ring) {
 // the bug would be hard, we ifdef out the test.
 #if PRINCIPIA_COMPILER_MSVC
 TEST_F(PolynomialTest, Monoid) {
+  using P0 =
+      PolynomialInMonomialBasis<Current, Temperature, 0, HornerEvaluator>;
   using P2A =
       PolynomialInMonomialBasis<Temperature, Instant, 2, HornerEvaluator>;
   using P2V =
@@ -280,6 +282,7 @@ TEST_F(PolynomialTest, Monoid) {
   using P3 =
       PolynomialInMonomialBasis<Current, Temperature, 3, HornerEvaluator>;
   Instant const t0;
+  P0 const p0(std::tuple{9 * Ampere});
   P2A const p2a({1 * Kelvin,
                  3 * Kelvin / Second,
                  -8 * Kelvin / Second / Second}, t0);
@@ -321,6 +324,10 @@ TEST_F(PolynomialTest, Monoid) {
     auto const actual_v = pv(-2 * Second);
     EXPECT_THAT(actual_a, AlmostEquals(-46396 * Ampere, 0));
     EXPECT_THAT(actual_v, AlmostEquals(-46396 * Ampere, 0));
+  }
+  {
+    auto const actual = Compose(p0, p2a)(t0);
+    EXPECT_THAT(actual, AlmostEquals(9 * Ampere, 0));
   }
 }
 #endif
