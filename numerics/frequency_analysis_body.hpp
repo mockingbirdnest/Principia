@@ -82,6 +82,10 @@ Projection(Function const& function,
       t_min, t_max);
 }
 
+#define DO_THE_LOGGING 0
+#define USE_CGS 1
+#define USE_INTEGRATE 0
+
 template<int aperiodic_degree, int periodic_degree,
          typename Function,
          typename AngularFrequencyCalculator,
@@ -163,23 +167,17 @@ IncrementalProjection(Function const& function,
   int m_begin = 1;
   for (;;) {
     for (int m = m_begin; m < basis_size; ++m) {
-      auto aₘ⁽ᵏ⁾ = basis[m];
-      for (int k = 0; k < m; ++k) {
-        if (!PoissonSeriesSubspace::orthogonal(basis_subspaces[k],
-                                               basis_subspaces[m])) {
-          auto const rₖₘ = InnerProduct(q[k], aₘ⁽ᵏ⁾, weight, t_min, t_max);
-          aₘ⁽ᵏ⁾ -= rₖₘ * q[k];
-        }
+      auto const& aₘ = basis[m];
+      auto const r₀ₘ = InnerProduct(q[0], aₘ, weight, t_min, t_max);
+      Series Σrᵢₘqᵢ = r₀ₘ * q[0];
+      for (int i = 1; i < m; ++i) {
+        auto const rᵢₘ = InnerProduct(q[i], aₘ, weight, t_min, t_max);
+        Σrᵢₘqᵢ += rᵢₘ * q[i];
       }
 
-      auto const rₘₘ = aₘ⁽ᵏ⁾.Norm(weight, t_min, t_max);
-      if (!IsFinite(rₘₘ)) {
-        // Call the calculator here just to evaluate how far we are from the
-        // truth.
-        calculator(f);
-        return F;
-      }
-      q.push_back(aₘ⁽ᵏ⁾ / rₘₘ);
+      auto const qʹₘ = aₘ - Σrᵢₘqᵢ;
+      auto rₘₘ = qʹₘ.Norm(weight, t_min, t_max);
+      q.push_back(qʹₘ / rₘₘ);
       DCHECK_EQ(m + 1, q.size());
 
       Norm const Aₘ = InnerProduct(f, q[m], weight, t_min, t_max);
