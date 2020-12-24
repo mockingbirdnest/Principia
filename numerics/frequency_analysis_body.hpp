@@ -168,6 +168,34 @@ IncrementalProjection(Function const& function,
   for (;;) {
     for (int m = m_begin; m < basis_size; ++m) {
       auto const& aₘ = basis[m];
+
+      // k -> m
+      std::optional<Series> previous_q̂ₘ;
+      Series q̂ₘ = aₘ;
+      std::vector<Norm> rₘ(m);
+      // Loop on p.
+      do {
+        std::vector<Norm> sᵖₘ;
+        for (int i = 0; i < m; ++i) {
+          sᵖₘ.push_back(InnerProduct(q[i], q̂ₘ, weight, t_min, t_max));
+        }
+        previous_q̂ₘ = q̂ₘ;
+        for (int i = 0; i < m; ++i) {
+          q̂ₘ -= sᵖₘ[i] * q[i];
+        }
+        for (int i = 0; i < m; ++i) {
+          rₘ[i] += sᵖₘ[i];
+        }
+        //LOG(ERROR) << "m: " << m << " q̂ₘ: " << q̂ₘ.Norm(weight, t_min, t_max)
+        //           << " previous q̂ₘ: "
+        //           << previous_q̂ₘ.value().Norm(
+        //                  weight, t_min, t_max);
+      } while (q̂ₘ.Norm(weight, t_min, t_max) <
+               0.5 * previous_q̂ₘ.value().Norm(weight, t_min, t_max));
+      auto const rₘₘ = q̂ₘ.Norm(weight, t_min, t_max);
+      q.push_back(q̂ₘ / rₘₘ);
+
+#if 0
       auto const r₀ₘ = InnerProduct(q[0], aₘ, weight, t_min, t_max);
       Series Σrᵢₘqᵢ = r₀ₘ * q[0];
       for (int i = 1; i < m; ++i) {
@@ -178,6 +206,7 @@ IncrementalProjection(Function const& function,
       auto const qʹₘ = aₘ - Σrᵢₘqᵢ;
       auto rₘₘ = qʹₘ.Norm(weight, t_min, t_max);
       q.push_back(qʹₘ / rₘₘ);
+#endif
       DCHECK_EQ(m + 1, q.size());
 
       Norm const Aₘ = InnerProduct(f, q[m], weight, t_min, t_max);
