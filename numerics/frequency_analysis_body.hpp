@@ -23,6 +23,7 @@ namespace internal_frequency_analysis {
 using base::uninitialized;
 using geometry::Hilbert;
 using geometry::Vector;
+using quantities::Abs;
 using quantities::Inverse;
 using quantities::IsFinite;
 using quantities::Sqrt;
@@ -82,8 +83,8 @@ Projection(Function const& function,
       t_min, t_max);
 }
 
-#define DO_THE_LOGGING 1
-#define USE_CGS 1
+#define DO_THE_LOGGING 0
+#define USE_CGS 0
 #define USE_INTEGRATE1 1
 #define USE_INTEGRATE2 0
 #define USE_INTEGRATE3 0
@@ -166,6 +167,30 @@ IncrementalProjection(Function const& function,
   Series F = A₀ * q[0];
   auto f = function - F;
 
+  auto do_the_logging = [&](int m, PoissonSeries<Normalized,
+                            aperiodic_degree, periodic_degree,
+                            Evaluator> const& qm) {
+    double max = 0;
+    int i_max = 0;
+    for (int i = 0; i < q.size(); ++i) {
+#if USE_INTEGRATE2
+      double ip = (PointwiseInnerProduct(q[i], qm) * weight)
+                      .Integrate(t_min, t_max) /
+                  (t_max - t_min);
+#else
+      double ip = InnerProduct(q[i], qm, weight, t_min, t_max);
+#endif
+      if (i == m) {
+        ip -= 1;
+      }
+      if (Abs(ip) > max) {
+        max = Abs(ip);
+        i_max = i;
+      }
+    }
+    LOG(ERROR) << "Max orth i: " << i_max << " m: " << m << " ip:" << max;
+  };
+
   int m_begin = 1;
   for (;;) {
     for (int m = m_begin; m < basis_size; ++m) {
@@ -197,7 +222,9 @@ IncrementalProjection(Function const& function,
             auto const sᵖₘ =
                 InnerProduct(q[i], previous_q̂ₘ, weight, t_min, t_max);
 #endif
-            //LOG(ERROR)<<"i: "<<i<<" m: "<<m<<" s:"<<sᵖₘ;
+#if DO_THE_LOGGING
+            LOG(ERROR)<<"i: "<<i<<" m: "<<m<<" s:"<<sᵖₘ;
+#endif
             q̂ₘ -= sᵖₘ * q[i];
           }
         }
@@ -209,7 +236,7 @@ IncrementalProjection(Function const& function,
         q̂ₘ_norm  = q̂ₘ.Norm(weight, t_min, t_max);
 #endif
 #if DO_THE_LOGGING
-        //do_the_logging(m, q̂ₘ / q̂ₘ_norm);
+        do_the_logging(m, q̂ₘ / q̂ₘ_norm);
         LOG(ERROR) << "m: " << m << " previous q̂ₘ: " << previous_q̂ₘ_norm
                    << " q̂ₘ: " << q̂ₘ_norm;
 #endif
@@ -219,7 +246,7 @@ IncrementalProjection(Function const& function,
 #if DO_THE_LOGGING
       do_the_logging(m, q[m]);
 #endif
-#if 0
+#if USE_CGS
       auto const r₀ₘ = InnerProduct(q[0], aₘ, weight, t_min, t_max);
       Series Σrᵢₘqᵢ = r₀ₘ * q[0];
       for (int i = 1; i < m; ++i) {
