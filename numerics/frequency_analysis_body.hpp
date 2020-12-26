@@ -171,7 +171,9 @@ IncrementalProjection(Function const& function,
                             aperiodic_degree, periodic_degree,
                             Evaluator> const& qm) {
     double max = 0;
+    double max_orth = 0;
     int i_max = 0;
+    int i_max_orth = 0;
     for (int i = 0; i < q.size(); ++i) {
 #if USE_INTEGRATE2
       double ip = (PointwiseInnerProduct(q[i], qm) * weight)
@@ -183,12 +185,21 @@ IncrementalProjection(Function const& function,
       if (i == m) {
         ip -= 1;
       }
-      if (Abs(ip) > max) {
-        max = Abs(ip);
-        i_max = i;
+      if (PoissonSeriesSubspace::orthogonal(basis_subspaces[i],
+                                            basis_subspaces[m])) {
+        if (Abs(ip) > max_orth) {
+          max_orth = Abs(ip);
+          i_max_orth = i;
+        }
+      } else {
+        if (Abs(ip) > max) {
+          max = Abs(ip);
+          i_max = i;
+        }
       }
     }
-    LOG(ERROR) << "Max orth i: " << i_max << " m: " << m << " ip:" << max;
+    LOG(ERROR) << "Max err: " << max << " at: " << i_max
+               << " max orth err: " << max_orth << " at: " << i_max_orth;
   };
 
   int m_begin = 1;
@@ -260,7 +271,7 @@ IncrementalProjection(Function const& function,
 #endif
       DCHECK_EQ(m + 1, q.size());
 
-      Norm const Aₘ = InnerProduct(function, q[m], weight, t_min, t_max);
+      Norm const Aₘ = InnerProduct(f, q[m], weight, t_min, t_max);
 
       auto const Aₘqₘ = Aₘ * q[m];
       f -= Aₘqₘ;
