@@ -170,28 +170,27 @@ IncrementalProjection(Function const& function,
       auto const& aₘ = basis[m];
 
       // k -> m
-      std::optional<Series> previous_q̂ₘ;
       Series q̂ₘ = aₘ;
+      Series previous_q̂ₘ = q̂ₘ;
       std::vector<Norm> rₘ(m);
       // Loop on p.
       do {
+        previous_q̂ₘ = q̂ₘ;
         std::vector<Norm> sᵖₘ;
         for (int i = 0; i < m; ++i) {
-          sᵖₘ.push_back(InnerProduct(q[i], q̂ₘ, weight, t_min, t_max));
-        }
-        previous_q̂ₘ = q̂ₘ;
-        for (int i = 0; i < m; ++i) {
-          q̂ₘ -= sᵖₘ[i] * q[i];
-        }
-        for (int i = 0; i < m; ++i) {
-          rₘ[i] += sᵖₘ[i];
+          if (!PoissonSeriesSubspace::orthogonal(basis_subspaces[i],
+                                                 basis_subspaces[m])) {
+            auto const sᵖₘ =
+                InnerProduct(q[i], previous_q̂ₘ, weight, t_min, t_max);
+            q̂ₘ -= sᵖₘ * q[i];
+          }
         }
         //LOG(ERROR) << "m: " << m << " q̂ₘ: " << q̂ₘ.Norm(weight, t_min, t_max)
         //           << " previous q̂ₘ: "
         //           << previous_q̂ₘ.value().Norm(
         //                  weight, t_min, t_max);
       } while (q̂ₘ.Norm(weight, t_min, t_max) <
-               0.5 * previous_q̂ₘ.value().Norm(weight, t_min, t_max));
+               0.5 * previous_q̂ₘ.Norm(weight, t_min, t_max));
       auto const rₘₘ = q̂ₘ.Norm(weight, t_min, t_max);
       q.push_back(q̂ₘ / rₘₘ);
 
