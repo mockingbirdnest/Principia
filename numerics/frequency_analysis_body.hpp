@@ -82,9 +82,11 @@ Projection(Function const& function,
       t_min, t_max);
 }
 
-#define DO_THE_LOGGING 0
+#define DO_THE_LOGGING 1
 #define USE_CGS 1
-#define USE_INTEGRATE 0
+#define USE_INTEGRATE1 1
+#define USE_INTEGRATE2 0
+#define USE_INTEGRATE3 0
 
 template<int aperiodic_degree, int periodic_degree,
          typename Function,
@@ -171,29 +173,52 @@ IncrementalProjection(Function const& function,
 
       // k -> m
       Series q̂ₘ = aₘ;
+#if USE_INTEGRATE1
+      Norm q̂ₘ_norm = Sqrt(
+          (PointwiseInnerProduct(q̂ₘ, q̂ₘ) * weight).Integrate(t_min, t_max) /
+          (t_max - t_min));
+#else
+      Norm q̂ₘ_norm = q̂ₘ.Norm(weight, t_min, t_max);
+#endif
       Series previous_q̂ₘ = q̂ₘ;
-      std::vector<Norm> rₘ(m);
+      Norm previous_q̂ₘ_norm;
       // Loop on p.
       do {
         previous_q̂ₘ = q̂ₘ;
-        std::vector<Norm> sᵖₘ;
+        previous_q̂ₘ_norm = q̂ₘ_norm;
         for (int i = 0; i < m; ++i) {
           if (!PoissonSeriesSubspace::orthogonal(basis_subspaces[i],
                                                  basis_subspaces[m])) {
+#if USE_INTEGRATE2
+            auto const sᵖₘ = (PointwiseInnerProduct(q[i], previous_q̂ₘ) * weight)
+                                 .Integrate(t_min, t_max) /
+                             (t_max - t_min);
+#else
             auto const sᵖₘ =
                 InnerProduct(q[i], previous_q̂ₘ, weight, t_min, t_max);
+#endif
+            //LOG(ERROR)<<"i: "<<i<<" m: "<<m<<" s:"<<sᵖₘ;
             q̂ₘ -= sᵖₘ * q[i];
           }
         }
-        //LOG(ERROR) << "m: " << m << " q̂ₘ: " << q̂ₘ.Norm(weight, t_min, t_max)
-        //           << " previous q̂ₘ: "
-        //           << previous_q̂ₘ.value().Norm(
-        //                  weight, t_min, t_max);
-      } while (q̂ₘ.Norm(weight, t_min, t_max) <
-               0.5 * previous_q̂ₘ.Norm(weight, t_min, t_max));
-      auto const rₘₘ = q̂ₘ.Norm(weight, t_min, t_max);
-      q.push_back(q̂ₘ / rₘₘ);
+#if USE_INTEGRATE3
+        q̂ₘ_norm = Sqrt(
+            (PointwiseInnerProduct(q̂ₘ, q̂ₘ) * weight).Integrate(t_min, t_max) /
+            (t_max - t_min));
+#else
+        q̂ₘ_norm  = q̂ₘ.Norm(weight, t_min, t_max);
+#endif
+#if DO_THE_LOGGING
+        //do_the_logging(m, q̂ₘ / q̂ₘ_norm);
+        LOG(ERROR) << "m: " << m << " previous q̂ₘ: " << previous_q̂ₘ_norm
+                   << " q̂ₘ: " << q̂ₘ_norm;
+#endif
+      } while (q̂ₘ_norm < 0.5 * previous_q̂ₘ_norm);
+      q.push_back(q̂ₘ / q̂ₘ_norm);
 
+#if DO_THE_LOGGING
+      do_the_logging(m, q[m]);
+#endif
 #if 0
       auto const r₀ₘ = InnerProduct(q[0], aₘ, weight, t_min, t_max);
       Series Σrᵢₘqᵢ = r₀ₘ * q[0];
@@ -208,7 +233,7 @@ IncrementalProjection(Function const& function,
 #endif
       DCHECK_EQ(m + 1, q.size());
 
-      Norm const Aₘ = InnerProduct(f, q[m], weight, t_min, t_max);
+      Norm const Aₘ = InnerProduct(function, q[m], weight, t_min, t_max);
 
       auto const Aₘqₘ = Aₘ * q[m];
       f -= Aₘqₘ;
