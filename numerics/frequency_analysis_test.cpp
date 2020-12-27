@@ -529,7 +529,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
       IncrementalProjection<4, 4>(
           series,
           angular_frequency_calculator,
-          apodization::Hann<HornerEvaluator>(t_min, t_max),
+          apodization::Dirichlet<HornerEvaluator>(t_min, t_max),
           t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(
