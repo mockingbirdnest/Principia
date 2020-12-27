@@ -21,6 +21,7 @@ using geometry::DoubleOrQuantityOrMultivectorSerializer;
 using quantities::Abs;
 using quantities::FusedMultiplyAdd;
 using quantities::Quantity;
+using quantities::si::Radian;
 namespace si = quantities::si;
 
 // Assumes that |T| and |U| have a memory representation that is a sequence of
@@ -202,6 +203,15 @@ DoublePrecision<Difference<T, U>> TwoDifference(T const& a, U const& b) {
 template<typename T, typename U, typename>
 DoublePrecision<Difference<T, U>> TwoDifference(T const& a, U const& b) {
   return TwoSum(a, -b);
+}
+
+inline DoublePrecision<Angle> Mod2π(DoublePrecision<Angle> const& θ) {
+  static DoublePrecision<Angle> const two_π = []() {
+    return QuickTwoSum(std::scalbn(7074237752028440.0, -50) * Radian,
+                       std::scalbn(4967757600021511.0, -104) * Radian);
+  }();
+  auto const θ_over_2π = θ / two_π;
+  return θ - two_π * DoublePrecision<double>(static_cast<int>(θ_over_2π.value));
 }
 
 template<typename T>
