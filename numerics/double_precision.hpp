@@ -14,6 +14,7 @@ namespace internal_double_precision {
 using base::not_null;
 using quantities::Difference;
 using quantities::Product;
+using quantities::Quotient;
 using quantities::Sum;
 
 // A simple container for accumulating a value using double precision.  The
@@ -102,6 +103,14 @@ DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
 template<typename T, typename U>
 DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
                                             DoublePrecision<U> const& right);
+
+template<typename T, typename U>
+DoublePrecision<Product<T, U>> operator*(DoublePrecision<T> const& left,
+                                         DoublePrecision<U> const& right);
+
+template<typename T, typename U>
+DoublePrecision<Quotient<T, U>> operator/(DoublePrecision<T> const& left,
+                                          DoublePrecision<U> const& right);
 
 template<typename T>
 std::string DebugString(DoublePrecision<T> const& double_precision);
