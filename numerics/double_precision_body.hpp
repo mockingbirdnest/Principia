@@ -255,6 +255,31 @@ DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
   return QuickTwoSum(sum.value, (sum.error + left.error) - right.error);
 }
 
+template<typename T, typename U>
+DoublePrecision<Product<T, U>> operator*(DoublePrecision<T> const& left,
+                                         DoublePrecision<U> const& right) {
+  // Linnainmaa (1981), Software for Doubled-Precision Floating-Point
+  // Computations, algorithm longmul.
+  auto const product = TwoProduct(left.value, right.value);
+  product.error +=
+      (left.value + left.error) * right.error + left.error * right.value;
+  return QuickTwoSum(product.value, product.error);
+}
+
+template<typename T, typename U>
+DoublePrecision<Quotient<T, U>> operator/(DoublePrecision<T> const& left,
+                                          DoublePrecision<U> const& right) {
+  // Linnainmaa (1981), Software for Doubled-Precision Floating-Point
+  // Computations, algorithm longdiv.
+  auto const z = left.value / right.value;
+  auto const product = TwoProduct(right.value, z);
+  auto const zz =
+      ((((left.value - product.value) - product.error) + left.error) -
+       z * right.error) /
+      (right.value + right.error);
+  return QuickTwoSum(z, zz);
+}
+
 template<typename T>
 std::string DebugString(DoublePrecision<T> const& double_precision) {
   // We use |DebugString| to get all digits when |T| is |double|.  In that case
