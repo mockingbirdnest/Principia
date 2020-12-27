@@ -260,7 +260,7 @@ DoublePrecision<Product<T, U>> operator*(DoublePrecision<T> const& left,
                                          DoublePrecision<U> const& right) {
   // Linnainmaa (1981), Software for Doubled-Precision Floating-Point
   // Computations, algorithm longmul.
-  auto const product = TwoProduct(left.value, right.value);
+  auto product = TwoProduct(left.value, right.value);
   product.error +=
       (left.value + left.error) * right.error + left.error * right.value;
   return QuickTwoSum(product.value, product.error);
