@@ -263,12 +263,7 @@ template<typename Matrix>
 Scalar& UnboundedUpperTriangularMatrix<Scalar>::Row<Matrix>::operator[](
     int const column) {
   DCHECK_LT(column, matrix_.columns_);
-  auto x = column * (column + 1) / 2 + row_;
-  Matrix& m = matrix_;
-  std::vector<Scalar, uninitialized_allocator<Scalar>>& y = matrix_.data_;
-  Scalar& z = y[x];
-  return z;
-  //return matrix_.data_[column * (column + 1) / 2 + row_];
+  return matrix_.data_[column * (column + 1) / 2 + row_];
 }
 
 template<typename Scalar>
