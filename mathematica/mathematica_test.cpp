@@ -40,6 +40,7 @@ using geometry::R3x3Matrix;
 using geometry::SymmetricBilinearForm;
 using geometry::Vector;
 using geometry::Velocity;
+using numerics::DoublePrecision;
 using numerics::FixedVector;
 using numerics::HornerEvaluator;
 using numerics::PiecewisePoissonSeries;
@@ -150,6 +151,19 @@ TEST_F(MathematicaTest, ToMathematica) {
         "SetPrecision[+1.50000000000000000*^+00,$MachinePrecision],"
         "\" m s^-1\"]",
         ToMathematica(1.5 * Metre / Second));
+  }
+  {
+    DoublePrecision<double> d(3);
+    d += 5e-20;
+    EXPECT_EQ(
+        "Plus["
+        "SetPrecision["
+        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
+        "2*$MachinePrecision],"
+        "SetPrecision["
+        "SetPrecision[+4.99999999999999988*^-20,$MachinePrecision],"
+        "2*$MachinePrecision]]",
+        ToMathematica(d));
   }
   {
     EXPECT_EQ(
