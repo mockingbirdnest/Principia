@@ -362,8 +362,8 @@ template<typename Scalar>
 std::ostream& operator<<(std::ostream& out,
                          UnboundedLowerTriangularMatrix<Scalar> const& matrix) {
   std::stringstream s;
-  s << "rows: " << matrix.rows_ << "\n";
-  for (int i = 0; i < matrix.columns(); ++i) {
+  s << "rows: " << matrix.rows() << "\n";
+  for (int i = 0; i < matrix.rows(); ++i) {
     out << "{";
     for (int j = 0; j <= i; ++j) {
       if (j > i) {
