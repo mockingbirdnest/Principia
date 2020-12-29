@@ -175,32 +175,22 @@ TEST_F(MathematicaTest, ToMathematica) {
   {
     UnboundedLowerTriangularMatrix<double> l2({1,
                                                2, 3});
-    EXPECT_EQ("List["
-              "List["
-              "SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
-              "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision]],"
-              "List["
-              "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
-              "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]]]",
-              ToMathematica(l2));
+    EXPECT_EQ(
+        "List[List[" + ToMathematica(1.0) + "," + ToMathematica(0.0) +
+        "],List[" + ToMathematica(2.0) + "," + ToMathematica(3.0) + "]]",
+        ToMathematica(l2));
   }
   {
     UnboundedUpperTriangularMatrix<double> u2({1, 2,
                                                   3});
-    EXPECT_EQ("List["
-              "List["
-              "SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
-              "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision]],"
-              "List["
-              "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
-              "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]]]",
-              ToMathematica(u2));
+    EXPECT_EQ(
+        "List[List[" + ToMathematica(1.0) + "," + ToMathematica(2.0) +
+        "],List[" + ToMathematica(0.0) + "," + ToMathematica(3.0) + "]]",
+        ToMathematica(u2));
   }
   {
     UnboundedVector<double> v2({1, 2});
-    EXPECT_EQ("List["
-              "SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
-              "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision]]",
+    EXPECT_EQ("List[" + ToMathematica(1.0) + "," + ToMathematica(2.0) + "]",
               ToMathematica(v2));
   }
   {
