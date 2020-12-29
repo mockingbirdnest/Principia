@@ -5,10 +5,12 @@
 
 #include <cmath>
 #include <map>
+#include <sstream>
 #include <string>
 #include <tuple>
 #include <vector>
 
+#include "base/mod.hpp"
 #include "base/not_constructible.hpp"
 #include "base/traits.hpp"
 #include "quantities/si.hpp"
@@ -19,6 +21,7 @@ namespace internal_mathematica {
 
 using astronomy::J2000;
 using base::is_instance_of_v;
+using base::mod;
 using base::not_constructible;
 using base::not_null;
 using quantities::DebugString;
@@ -264,27 +267,39 @@ std::string ToMathematica(T const integer, OptionalExpressIn /*express_in*/) {
 template<typename T, typename, typename OptionalExpressIn, typename>
 std::string ToMathematica(T const real,
                           OptionalExpressIn /*express_in*/) {
+  std::string absolute_value;
   if (std::isinf(real)) {
-    if (real > 0.0) {
-      return "Infinity";
-    } else {
-      return Apply("Minus", {"Infinity"});
-    }
+    absolute_value = "Infinity";
   } else if (std::isnan(real)) {
-    return "Indeterminate";
+    absolute_value = "Indeterminate";
   } else if (real == 0) {
-    // Mathematica has no signed 0.
-    return "0";
+    absolute_value = "0";
   } else {
     constexpr int τ = std::numeric_limits<T>::digits;
-    int const exponent = std::ilogb(real) - τ + 1;
-    // An integer in [β^(τ-1), β^τ[, i.e., a τ-digit integer.
-    std::int64_t const n = std::scalbln(std::abs(real), -exponent);
-    std::string absolute_value = Apply(
-        "Times",
-        {ToMathematica(n), Apply("Power", {"2", ToMathematica(exponent)})});
-    return std::signbit(real) ? Apply("Minus", absolute_value) : absolute_value;
+    int const exponent = std::ilogb(real);
+    // This offset makes n an integer in [β^(τ-1), β^τ[, i.e., a τ-digit
+    // integer.
+    int exponent_offset = τ - 1;
+    if (std::numeric_limits<T>::radix == 2) {
+      // For binary floating point, push the leading 1 to the least significant
+      // bit of a hex digit.
+      exponent_offset += mod(1 - τ, 4);
+    }
+    std::int64_t const n =
+        std::scalbln(std::abs(real), exponent_offset - exponent);
+    absolute_value = Apply("Times",
+                           {std::numeric_limits<T>::radix == 10
+                                ? ToMathematica(n)
+                                : (std::stringstream()
+                                   << "16^^" << std::uppercase << std::hex << n)
+                                      .str(),
+                            Apply("Power",
+                                  {"2",
+                                   Apply("Subtract",
+                                         {ToMathematica(std::ilogb(real)),
+                                          ToMathematica(exponent_offset)})})});
   }
+  return std::signbit(real) ? Apply("Minus", {absolute_value}) : absolute_value;
 }
 
 template<typename OptionalExpressIn>
