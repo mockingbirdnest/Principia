@@ -319,6 +319,20 @@ TEST_F(DoublePrecisionTest, LongQuotient) {
               AlmostEquals(-7352815717686216.0 * std::pow(0.5, 110), 0));
 }
 
+TEST_F(DoublePrecisionTest, Mod2π) {
+  // Slightly above 2000 π.
+  DoublePrecision<Angle> a((2e3 * 103'993 + 2) / 33'102 * Radian);
+  auto const c = Mod2π(a);
+  // HexLiteral[
+  //     CorrectlyRound[Mod[CorrectlyRound[(2000 103993 + 2)/33102], 2 π]]]
+  EXPECT_THAT(c.value + c.error,
+              AlmostEquals(0x1.F12375A5877D6p-15 * Radian, 0));
+  // HexLiteral[CorrectlyRound[(2000 103993 + 2)/33102] -
+  //     CorrectlyRound[2000 CorrectlyRound[π]]]
+  EXPECT_THAT(a.value - 2000 * π * Radian,
+              AlmostEquals(0x1.F123760000000p-15 * Radian, 0));
+}
+
 }  // namespace internal_double_precision
 }  // namespace numerics
 }  // namespace principia
