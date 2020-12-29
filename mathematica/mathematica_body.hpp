@@ -271,10 +271,18 @@ std::string ToMathematica(T const real,
     }
   } else if (std::isnan(real)) {
     return "Indeterminate";
+  } else if (real == 0) {
+    // Mathematica has no signed 0.
+    return "0";
   } else {
-    std::string s = DebugString(real);
-    s.replace(s.find("e"), 1, "*^");
-    return Apply("SetPrecision", {s, "$MachinePrecision"});
+    constexpr int τ = std::numeric_limits<T>::digits;
+    int const exponent = std::ilogb(real) - τ + 1;
+    // An integer in [β^(τ-1), β^τ[, i.e., a τ-digit integer.
+    std::int64_t const n = std::scalbln(std::abs(real), -exponent);
+    std::string absolute_value = Apply(
+        "Times",
+        {ToMathematica(n), Apply("Power", {"2", ToMathematica(exponent)})});
+    return std::signbit(real) ? Apply("Minus", absolute_value) : absolute_value;
   }
 }
 
