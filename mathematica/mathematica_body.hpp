@@ -85,10 +85,10 @@ struct TupleHelper<0, Tuple, OptionalExpressIn> : not_constructible {
 
 template<typename V, typename A, int d,
          template<typename, typename, int> class E,
-         typename OptionalExpressIn>
+         typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematicaExpression(
     PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
-    OptionalExpressIn express_in) {
+    OptionalExpressIn express_in = std::nullopt) {
   using Coefficients =
       typename PolynomialInMonomialBasis<V, A, d, E>::Coefficients;
   std::vector<std::string> coefficients;
@@ -122,9 +122,10 @@ std::string ToMathematicaExpression(
 
 template<typename V, int ad, int pd,
          template<typename, typename, int> class E,
-         typename OptionalExpressIn>
-std::string ToMathematicaExpression(PoissonSeries<V, ad, pd, E> const& series,
-                                    OptionalExpressIn express_in) {
+         typename OptionalExpressIn = std::nullopt_t>
+std::string ToMathematicaExpression(
+    PoissonSeries<V, ad, pd, E> const& series,
+    OptionalExpressIn express_in = std::nullopt) {
   std::vector<std::string> components = {
       ToMathematicaExpression(series.aperiodic_, express_in)};
   for (auto const& [ω, polynomials] : series.periodic_) {
@@ -147,10 +148,10 @@ std::string ToMathematicaExpression(PoissonSeries<V, ad, pd, E> const& series,
 
 template<typename V, int ad, int pd,
          template<typename, typename, int> class E,
-         typename OptionalExpressIn>
+         typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematicaExpression(
     PiecewisePoissonSeries<V, ad, pd, E> const& series,
-    OptionalExpressIn express_in) {
+    OptionalExpressIn express_in = std::nullopt) {
   std::vector<std::string> conditions_and_functions;
   for (int i = 0; i < series.series_.size(); ++i) {
     std::string const function =

@@ -31,12 +31,12 @@ FORWARD_DECLARE_FUNCTION_FROM(
     mathematica,
     TEMPLATE(typename Value, typename Argument, int degree_,
              template<typename, typename, int> typename Evaluator,
-             typename OptionalExpressIn = std::nullopt_t) std::string,
+             typename OptionalExpressIn) std::string,
     ToMathematicaExpression,
     (numerics::
          PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
              polynomial,
-     OptionalExpressIn express_in = std::nullopt));
+     OptionalExpressIn express_in));
 }  // namespace mathematica
 
 namespace numerics {
