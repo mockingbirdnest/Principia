@@ -9,6 +9,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
+#include "mathematica/mathematica.hpp"
 #include "numerics/apodization.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/quadrature.hpp"
@@ -329,6 +330,79 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct) {
   EXPECT_THAT(product,
               RelativeErrorFrom(-4.848079980325297e-13 * Metre * Metre,
                                 IsNear(0.19_⑴)));
+}
+
+TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct2) {
+  using Degree0 = PoissonSeries<double, 0, 0, HornerEvaluator>;
+  using Degree4 = PoissonSeries<double, 4, 4, HornerEvaluator>;
+  Time const duration = +3.62955915932496390e-02 * Second;
+  Instant const t_min = t0_;
+  Instant const t_mid = t0_ + duration;
+  Instant const t_max = t0_ + 2 * duration;//7.25911831864992779e-02 * Second;
+  AngularFrequency const ω1 = 2.63903139385469740e+03 * Radian / Second;
+  AngularFrequency const ω2 = 2.75515553295453901e+03 * Radian / Second;
+  AngularFrequency const ω3 = 2.75214520074802658e+03 * Radian / Second;
+  Degree4 const f(
+      Degree4::AperiodicPolynomial({-6.84494802606519098e-02,
+                                    0 / Second,
+                                    +7.62776153984628195e+02 / Pow<2>(Second),
+                                    0 / Pow<3>(Second),
+                                    -9.09000157727785874e+05 / Pow<4>(Second)},
+                                   t_mid),
+      {{ω1,
+        {/*sin=*/Degree4::PeriodicPolynomial(
+             {0,
+              -1.91877905970852938e+06 / Second,
+              0 / Pow<2>(Second),
+              +6.41616364182685137e+08 / Pow<3>(Second),
+              0 / Pow<4>(Second)},
+             t_mid),
+         /*cos=*/Degree4::PeriodicPolynomial(
+             {+3.30073762193190414e+04,
+              0 / Second,
+              -4.82683293024840727e+07 / Pow<2>(Second),
+              0 / Pow<3>(Second),
+              +4.17242083788431835e+09 / Pow<4>(Second)},
+             t_mid)}},
+       {ω2,
+        {/*sin=*/Degree4::PeriodicPolynomial(
+             {0,
+              -1.91373931192037021e+06 / Second,
+              0 / Pow<2>(Second),
+              +6.34735730739231467e+08 / Pow<3>(Second),
+              0 / Pow<4>(Second)},
+             t_mid),
+         /*cos=*/Degree4::PeriodicPolynomial(
+             {-3.30072258387235779e+04,
+              0 / Second,
+              +4.79716446803979352e+07 / Pow<2>(Second),
+              0 / Pow<3>(Second),
+              -4.08946453458770609e+09 / Pow<4>(Second)},
+             t_mid)}}});
+
+  Degree0 const g(Degree0::AperiodicPolynomial({}, t_mid),
+                  {{ω3,
+                    {/*sin=*/Degree0::PeriodicPolynomial({}, t_mid),
+                     /*cos=*/Degree0::PeriodicPolynomial({1}, t_mid)}}});
+
+
+  {
+    auto const product = InnerProduct(f, g,
+                     apodization::Dirichlet<HornerEvaluator>(t_min, t_max),
+                     t_min, t_max);
+    EXPECT_THAT(
+        product,
+        RelativeErrorFrom(+2.026745255082731e-11, IsNear(0.33_⑴)));
+  }
+  {
+    auto const product = (PointwiseInnerProduct(f, g) *
+                          apodization::Dirichlet<HornerEvaluator>(t_min, t_max))
+                             .Integrate(t_min, t_max) /
+                         (t_max - t_min);
+    EXPECT_THAT(
+        product,
+        RelativeErrorFrom(+2.026745255082731e-11, IsNear(4010_⑴)));
+  }
 }
 
 TEST_F(PoissonSeriesTest, Output) {
