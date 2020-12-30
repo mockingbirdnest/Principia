@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/str_replace.h"
 #include "astronomy/orbital_elements.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -69,10 +70,10 @@ class MathematicaTest : public ::testing::Test {
 TEST_F(MathematicaTest, ToMathematica) {
   {
     EXPECT_EQ(
-        "List[" +
-            (ToMathematica(1 * Metre) + "," + ToMathematica(2 * Second) + "," +
-             ToMathematica(3 * Metre / Second)) +
-            "]",
+        absl::StrReplaceAll(u8"List[α,β,γ]",
+                            {{u8"α", ToMathematica(1 * Metre)},
+                             {u8"β", ToMathematica(2 * Second)},
+                             {u8"γ", ToMathematica(3 * Metre / Second)}}),
         ToMathematica(std::tuple{1 * Metre, 2 * Second, 3 * Metre / Second}));
   }
   {
@@ -134,14 +135,16 @@ TEST_F(MathematicaTest, ToMathematica) {
   }
   {
     EXPECT_EQ(
-        "Quaternion[" +
-            (ToMathematica(1.0) + "," + ToMathematica(2.0) + "," +
-             ToMathematica(3.0) + "," + ToMathematica(-4.0)) +
-            "]",
+        absl::StrReplaceAll(u8"Quaternion[α,β,γ,δ]",
+                            {{u8"α", ToMathematica(1.0)},
+                             {u8"β", ToMathematica(2.0)},
+                             {u8"γ", ToMathematica(3.0)},
+                             {u8"δ", ToMathematica(-4.0)}}),
         ToMathematica(Quaternion(1.0, R3Element<double>(2.0, 3.0, -4.0))));
   }
   {
-    EXPECT_EQ("Quantity[" + ToMathematica(1.5) + ",\" m s^-1\"]",
+    EXPECT_EQ(absl::StrReplaceAll(u8R"(Quantity[α," m s^-1"])",
+                                  {{u8"α", ToMathematica(1.5)}}),
               ToMathematica(1.5 * Metre / Second));
   }
   {
@@ -176,8 +179,7 @@ TEST_F(MathematicaTest, ToMathematica) {
     UnboundedLowerTriangularMatrix<double> l2({1,
                                                2, 3});
     EXPECT_EQ(
-        "List[List[" + ToMathematica(1.0) + "," + ToMathematica(0.0) +
-        "],List[" + ToMathematica(2.0) + "," + ToMathematica(3.0) + "]]",
+        ToMathematica(std::tuple{std::tuple{1.0, 0.0}, std::tuple{2.0, 3.0}}),
         ToMathematica(l2));
   }
   {
@@ -216,19 +218,26 @@ TEST_F(MathematicaTest, ToMathematica) {
   {
     PolynomialInMonomialBasis<Length, Time, 2, HornerEvaluator> polynomial1(
         {2 * Metre, -3 * Metre / Second, 4 * Metre / Second / Second});
-    EXPECT_EQ("Function[Plus[" + ToMathematica(2 * Metre) + ",Times[" +
-                  ToMathematica(-3 * Metre / Second) + ",#],Times[" +
-                  ToMathematica(4 * Metre / Second / Second) + ",Power[#,2]]]]",
-        ToMathematica(polynomial1));
+    EXPECT_EQ(absl::StrReplaceAll(
+                  u8"Function[Plus[α,Times[β,#],Times[γ,Power[#,2]]]]",
+                  {{u8"α", ToMathematica(2 * Metre)},
+                   {u8"β", ToMathematica(-3 * Metre / Second)},
+                   {u8"γ", ToMathematica(4 * Metre / Second / Second)}}),
+              ToMathematica(polynomial1));
     PolynomialInMonomialBasis<Length, Instant, 2, HornerEvaluator> polynomial2(
         {5 * Metre, 6 * Metre / Second, -7 * Metre / Second / Second},
         Instant() + 2 * Second);
-    EXPECT_EQ("Function[Plus[" + ToMathematica(5 * Metre) + ",Times[" +
-                  ToMathematica(6 * Metre / Second) + ",Subtract[#," +
-                  ToMathematica(polynomial2.origin()) + "]],Times[" +
-                  ToMathematica(-7 * Metre / Second / Second) +
-                  ",Power[Subtract[#," + ToMathematica(polynomial2.origin()) +
-                  "],2]]]]",
+    EXPECT_EQ(absl::StrReplaceAll(
+                  u8R"(Function[Plus[
+                        α,
+                        Times[β,Subtract[#,δ]],
+                        Times[γ,Power[Subtract[#,δ],2]]]])",
+                  {{u8"α", ToMathematica(5 * Metre)},
+                   {u8"β", ToMathematica(6 * Metre / Second)},
+                   {u8"γ", ToMathematica(-7 * Metre / Second / Second)},
+                   {u8"δ", ToMathematica(polynomial2.origin())},
+                   {" ", ""},
+                   {"\n", ""}}),
               ToMathematica(polynomial2));
   }
   {
@@ -239,18 +248,18 @@ TEST_F(MathematicaTest, ToMathematica) {
     Series::PeriodicPolynomial cos({-1}, t0);
     Series series(secular, {{4 * Radian / Second, {sin, cos}}});
     EXPECT_EQ(
-        "Function[" +
-            ("Plus[" + ToMathematicaBody(secular) + "," +
-             ("Times[" + ToMathematicaBody(sin) + "," +
-              ("Sin[Times[" + ToMathematica(4 * Radian / Second) + "," +
-               ("Subtract[#," + ToMathematica(series.origin()) + "]") + "]]") +
-              "]") + "," +
-             ("Times[" + ToMathematicaBody(cos) + "," +
-              ("Cos[Times[" + ToMathematica(4 * Radian / Second) + "," +
-               ("Subtract[#," + ToMathematica(series.origin()) + "]") + "]]") +
-              "]") +
-             "]") +
-            "]",
+        absl::StrReplaceAll(
+            u8R"(Function[Plus[
+                  α,
+                  Times[β,Sin[Times[ω,Subtract[#,δ]]]],
+                  Times[γ,Cos[Times[ω,Subtract[#,δ]]]]]])",
+            {{u8"α", ToMathematicaBody(secular)},
+             {u8"β", ToMathematicaBody(sin)},
+             {u8"γ", ToMathematicaBody(cos)},
+             {u8"δ", ToMathematica(t0)},
+             {u8"ω", ToMathematica(4 * Radian / Second)},
+             {" ", ""},
+             {"\n", ""}}),
         ToMathematica(series));
   }
   {
@@ -265,11 +274,10 @@ TEST_F(MathematicaTest, ToMathematica) {
     Interval<Instant> interval{t0 - 2 * Second, t0 + 3 * Second};
     PiecewiseSeries pw(interval, series);
     EXPECT_EQ(
-        "Function[Piecewise[List[List[" +
-            (ToMathematicaBody(series) + "," +
-             ("Between[#," +
-              ToMathematica(std::tuple{interval.min, interval.max}) + "]")) +
-            "]]]]",
+        absl::StrReplaceAll(
+            u8"Function[Piecewise[List[List[α,Between[#,ι]]]]]",
+            {{u8"α", ToMathematicaBody(series)},
+             {u8"ι", ToMathematica(std::tuple{interval.min, interval.max})}}),
         ToMathematica(pw));
   }
   {
