@@ -4,6 +4,7 @@
 #include "mathematica/mathematica.hpp"
 
 #include <cmath>
+#include <limits>
 #include <map>
 #include <sstream>
 #include <string>
