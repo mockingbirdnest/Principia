@@ -266,7 +266,7 @@ TEST_F(MathematicaTest, ToMathematica) {
   {
     std::optional<std::string> opt1;
     std::optional<std::string> opt2("foo");
-    EXPECT_EQ("List[]", ToMathematica(opt1));s
+    EXPECT_EQ("List[]", ToMathematica(opt1));
     EXPECT_EQ("List[\"foo\"]", ToMathematica(opt2));
   }
 }
