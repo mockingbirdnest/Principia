@@ -68,7 +68,15 @@ class MathematicaTest : public ::testing::Test {
 
 TEST_F(MathematicaTest, ToMathematica) {
   {
-    EXPECT_EQ("List[" + ToMathematica(2.0) + "," + ToMathematica(3.0) + "]",
+    EXPECT_EQ(
+        "List[" +
+            (ToMathematica(1 * Metre) + "," + ToMathematica(2 * Second) + "," +
+             ToMathematica(3 * Metre / Second)) +
+            "]",
+        ToMathematica(std::tuple{1 * Metre, 2 * Second, 3 * Metre / Second}));
+  }
+  {
+    EXPECT_EQ(ToMathematica(std::tuple{2.0, 3.0}),
               ToMathematica(std::vector<double>{2, 3}));
     EXPECT_EQ("List[]", ToMathematica(std::vector<int>{}));
   }
@@ -80,7 +88,7 @@ TEST_F(MathematicaTest, ToMathematica) {
     auto it = list.cbegin();
     ++it;
     ++it;
-    EXPECT_EQ("List[" + ToMathematica(2.0) + "," + ToMathematica(3.0) + "]",
+    EXPECT_EQ(ToMathematica(std::tuple{2.0, 3.0}),
               ToMathematica(list.cbegin(), it));
     EXPECT_EQ("List[]", ToMathematica(it, it));
   }
@@ -108,38 +116,28 @@ TEST_F(MathematicaTest, ToMathematica) {
     EXPECT_EQ("Minus[Indeterminate]", ToMathematica(Sqrt(-1)));
   }
   {
-    EXPECT_EQ(
-        "List[" + ToMathematica(2.0) + "," + ToMathematica(3.0) + "]",
-        ToMathematica(FixedVector<double, 2>({2, 3})));
+    EXPECT_EQ(ToMathematica(std::tuple{2.0, 3.0}),
+              ToMathematica(FixedVector<double, 2>({2, 3})));
     EXPECT_EQ("List[]", ToMathematica(FixedVector<int, 0>()));
   }
   {
-    EXPECT_EQ("List[" + ToMathematica(2.0) + "," + ToMathematica(3.0) + "," +
-                  ToMathematica(-4.0) + "]",
-        ToMathematica(R3Element<double>(2.0, 3.0, -4.0)));
+    EXPECT_EQ(ToMathematica(std::tuple{2.0, 3.0, -4.0}),
+              ToMathematica(R3Element<double>(2.0, 3.0, -4.0)));
+  }
+  {
+    EXPECT_EQ(ToMathematica(std::tuple{std::tuple{1.0, 2.0, 3.0},
+                                       std::tuple{4.0, 5.0, 6.0},
+                                       std::tuple{7.0, 8.0, 9.0}}),
+              ToMathematica(R3x3Matrix<double>({1.0, 2.0, 3.0},
+                                               {4.0, 5.0, 6.0},
+                                               {7.0, 8.0, 9.0})));
   }
   {
     EXPECT_EQ(
-        "List["
-        "List[" +
-            ToMathematica(1.0) + "," + ToMathematica(2.0) + "," +
-            ToMathematica(3.0) +
-            "],"
-            "List[" +
-            ToMathematica(4.0) + "," + ToMathematica(5.0) + "," +
-            ToMathematica(6.0) +
-            "],"
-            "List[" +
-            ToMathematica(7.0) + "," + ToMathematica(8.0) + "," +
-            ToMathematica(9.0) + "]]",
-        ToMathematica(R3x3Matrix<double>({1.0, 2.0, 3.0},
-                                         {4.0, 5.0, 6.0},
-                                         {7.0, 8.0, 9.0})));
-  }
-  {
-    EXPECT_EQ(
-        "Quaternion[" + ToMathematica(1.0) + "," + ToMathematica(2.0) + "," +
-            ToMathematica(3.0) + "," + ToMathematica(-4.0) + "]",
+        "Quaternion[" +
+            (ToMathematica(1.0) + "," + ToMathematica(2.0) + "," +
+             ToMathematica(3.0) + "," + ToMathematica(-4.0)) +
+            "]",
         ToMathematica(Quaternion(1.0, R3Element<double>(2.0, 3.0, -4.0))));
   }
   {
@@ -171,15 +169,8 @@ TEST_F(MathematicaTest, ToMathematica) {
             Velocity<F>({-1.0 * Metre / Second,
                          -5.0 * Metre / Second,
                          8.0 * Metre / Second}));
-    EXPECT_EQ("List[" + ToMathematica(dof.position()) + "," +
-                  ToMathematica(dof.velocity()) + "]",
+    EXPECT_EQ(ToMathematica(std::tuple{dof.position(), dof.velocity()}),
               ToMathematica(dof));
-  }
-  {
-    EXPECT_EQ(
-        "List[" + ToMathematica(1 * Metre) + "," + ToMathematica(2 * Second) +
-            "," + ToMathematica(3 * Metre / Second) + "]",
-        ToMathematica(std::tuple{1 * Metre, 2 * Second, 3 * Metre / Second}));
   }
   {
     UnboundedLowerTriangularMatrix<double> l2({1,
@@ -192,15 +183,13 @@ TEST_F(MathematicaTest, ToMathematica) {
   {
     UnboundedUpperTriangularMatrix<double> u2({1, 2,
                                                   3});
-    EXPECT_EQ(
-        "List[List[" + ToMathematica(1.0) + "," + ToMathematica(2.0) +
-        "],List[" + ToMathematica(0.0) + "," + ToMathematica(3.0) + "]]",
-        ToMathematica(u2));
+    EXPECT_EQ(ToMathematica(std::tuple{std::tuple{1.0, 2.0},
+                                       std::tuple{0.0, 3.0}}),
+              ToMathematica(u2));
   }
   {
     UnboundedVector<double> v2({1, 2});
-    EXPECT_EQ("List[" + ToMathematica(1.0) + "," + ToMathematica(2.0) + "]",
-              ToMathematica(v2));
+    EXPECT_EQ(ToMathematica(std::tuple{1.0, 2.0}), ToMathematica(v2));
   }
   {
     DiscreteTrajectory<F> trajectory;
@@ -212,19 +201,17 @@ TEST_F(MathematicaTest, ToMathematica) {
             Velocity<F>({-1.0 * Metre / Second,
                          -5.0 * Metre / Second,
                          8.0 * Metre / Second})));
-    EXPECT_EQ("List[" + ToMathematica(trajectory.front().time) + "," +
-                  ToMathematica(trajectory.front().degrees_of_freedom) + "]",
+    EXPECT_EQ(ToMathematica(std::tuple{trajectory.front().time,
+                                       trajectory.front().degrees_of_freedom}),
               ToMathematica(trajectory.front()));
   }
   {
     OrbitalElements::EquinoctialElements elements{
         Instant(), 1 * Metre, 2, 3, 4 * Radian, 5, 6, 7, 8};
-    EXPECT_EQ("List[" + ToMathematica(Instant()) + "," +
-                  ToMathematica(1 * Metre) + "," + ToMathematica(2.0) + "," +
-                  ToMathematica(3.0) + "," + ToMathematica(4 * Radian) + "," +
-                  ToMathematica(5.0) + "," + ToMathematica(6.0) + "," +
-                  ToMathematica(7.0) + "," + ToMathematica(8.0) + "]",
-              ToMathematica(elements));
+    EXPECT_EQ(
+        ToMathematica(std::tuple{
+            Instant(), 1 * Metre, 2.0, 3.0, 4 * Radian, 5.0, 6.0, 7.0, 8.0}),
+        ToMathematica(elements));
   }
   {
     PolynomialInMonomialBasis<Length, Time, 2, HornerEvaluator> polynomial1(
@@ -253,13 +240,17 @@ TEST_F(MathematicaTest, ToMathematica) {
     Series series(secular, {{4 * Radian / Second, {sin, cos}}});
     EXPECT_EQ(
         "Function[" +
-            ("Plus[" + ToMathematicaExpression(secular) + "," +
-             ("Times[" + ToMathematicaExpression(sin) + ",Sin[Times[" +
-              ToMathematica(4 * Radian / Second) + ",Subtract[#," +
-              ToMathematica(series.origin()) + "]]]]") + "," +
-             ("Times[" + ToMathematicaExpression(cos) + ",Cos[Times[" +
-              ToMathematica(4 * Radian / Second) + ",Subtract[#," +
-              ToMathematica(series.origin()) + "]]]]") + "]") + "]",
+            ("Plus[" + ToMathematicaBody(secular) + "," +
+             ("Times[" + ToMathematicaBody(sin) + "," +
+              ("Sin[Times[" + ToMathematica(4 * Radian / Second) + "," +
+               ("Subtract[#," + ToMathematica(series.origin()) + "]") + "]]") +
+              "]") + "," +
+             ("Times[" + ToMathematicaBody(cos) + "," +
+              ("Cos[Times[" + ToMathematica(4 * Radian / Second) + "," +
+               ("Subtract[#," + ToMathematica(series.origin()) + "]") + "]]") +
+              "]") +
+             "]") +
+            "]",
         ToMathematica(series));
   }
   {
@@ -273,11 +264,13 @@ TEST_F(MathematicaTest, ToMathematica) {
                      /*cos=*/Series::PeriodicPolynomial({-1}, t0)}}});
     Interval<Instant> interval{t0 - 2 * Second, t0 + 3 * Second};
     PiecewiseSeries pw(interval, series);
-    EXPECT_EQ("Function[Piecewise[List[List[" +
-                  (ToMathematicaExpression(series) + ",Between[#,List[" +
-                   ToMathematica(interval.min) + "," +
-                   ToMathematica(interval.max) + "]]") + "]]]]",
-              ToMathematica(pw));
+    EXPECT_EQ(
+        "Function[Piecewise[List[List[" +
+            (ToMathematicaBody(series) + "," +
+             ("Between[#," +
+              ToMathematica(std::tuple{interval.min, interval.max}) + "]")) +
+            "]]]]",
+        ToMathematica(pw));
   }
   {
     std::optional<std::string> opt1;
@@ -298,8 +291,7 @@ TEST_F(MathematicaTest, Assign) {
 TEST_F(MathematicaTest, PlottableDataset) {
   std::vector<double> const abscissæ{2, 3};
   std::vector<std::string> const ordinates{"2", "3"};
-  EXPECT_EQ("Transpose[List[" + ToMathematica(abscissæ) + "," +
-                ToMathematica(ordinates) + "]]",
+  EXPECT_EQ("Transpose[" + ToMathematica(std::tuple{abscissæ, ordinates}) + "]",
             PlottableDataset(abscissæ, ordinates));
 }
 
