@@ -266,9 +266,9 @@ TEST_F(MathematicaTest, ToMathematica) {
     PiecewiseSeries pw(interval, series);
     EXPECT_EQ(
         absl::StrReplaceAll(
-            u8"Function[Piecewise[List[List[α,Between[#,ι]]]]]",
+            u8"Function[Piecewise[List[List[α,Between[#,β]]]]]",
             {{u8"α", ToMathematicaBody(series)},
-             {u8"ι", ToMathematica(std::tuple{interval.min, interval.max})}}),
+             {u8"β", ToMathematica(std::tuple{interval.min, interval.max})}}),
         ToMathematica(pw));
   }
   {
