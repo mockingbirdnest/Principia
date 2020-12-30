@@ -338,7 +338,7 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct2) {
   Time const duration = +3.62955915932496390e-02 * Second;
   Instant const t_min = t0_;
   Instant const t_mid = t0_ + duration;
-  Instant const t_max = t0_ + 2 * duration;//7.25911831864992779e-02 * Second;
+  Instant const t_max = t0_ + 2 * duration;
   AngularFrequency const ω1 = 2.63903139385469740e+03 * Radian / Second;
   AngularFrequency const ω2 = 2.75515553295453901e+03 * Radian / Second;
   AngularFrequency const ω3 = 2.75214520074802658e+03 * Radian / Second;
