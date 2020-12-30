@@ -207,8 +207,8 @@ DoublePrecision<Difference<T, U>> TwoDifference(T const& a, U const& b) {
 
 inline DoublePrecision<Angle> Mod2π(DoublePrecision<Angle> const& θ) {
   static DoublePrecision<Angle> const two_π = []() {
-    return QuickTwoSum(0x1.921FB54442D18p1 * Radian,
-                       0x1.1A62633145C07p-53 * Radian);
+    return QuickTwoSum(0x1.921FB54442D18p2 * Radian,
+                       0x1.1A62633145C07p-52 * Radian);
   }();
   auto const θ_over_2π = θ / two_π;
   return θ - two_π * DoublePrecision<double>(static_cast<int>(θ_over_2π.value));
