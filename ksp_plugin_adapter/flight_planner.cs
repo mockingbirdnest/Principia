@@ -290,34 +290,6 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
               burn.Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, i));
               break;
             }
-            case BurnEditor.Event.DecrementedAnomalisticRevolutions: {
-              var status =
-                  plugin.FlightPlanDecrementCoastRevolutions(vessel_guid, i, 1);
-              UpdateStatus(status, i);
-              burn.Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, i));
-              break;
-            }
-            case BurnEditor.Event.IncrementedAnomalisticRevolutions: {
-              var status =
-                  plugin.FlightPlanIncrementCoastRevolutions(vessel_guid, i, 1);
-              UpdateStatus(status, i);
-              burn.Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, i));
-              break;
-            }
-            case BurnEditor.Event.DecrementedNodalRevolutions: {
-              var status =
-                  plugin.FlightPlanDecrementCoastRevolutions(vessel_guid, i, 2);
-              UpdateStatus(status, i);
-              burn.Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, i));
-              break;
-            }
-            case BurnEditor.Event.IncrementedNodalRevolutions: {
-              var status =
-                  plugin.FlightPlanIncrementCoastRevolutions(vessel_guid, i, 2);
-              UpdateStatus(status, i);
-              burn.Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, i));
-              break;
-            }
             case BurnEditor.Event.None: {
               break;
             }
