@@ -907,24 +907,32 @@ void Plugin::SetPredictionAdaptiveStepParameters(
           prediction_adaptive_step_parameters);
 }
 
-void Plugin::UpdatePrediction(GUID const& vessel_guid) const {
+void Plugin::UpdatePrediction(std::vector<GUID> const& vessel_guids) const {
   CHECK(!initializing_);
-  Vessel& vessel = *FindOrDie(vessels_, vessel_guid);
+  std::set<not_null<Vessel*>> predicted_vessels;
+  for (auto const& guid : vessel_guids) {
+    predicted_vessels.insert(FindOrDie(vessels_, guid).get());
+  }
   Vessel* target_vessel = nullptr;
 
-  // If there is a target vessel, ensure that the prediction of |vessel| is not
-  // longer than that of the target vessel.  This is necessary to build the
-  // targetting frame.
+  // If there is a target vessel, ensure that the prediction of the |vessels| is
+  // not longer than that of the target vessel.  This is necessary to build the
+  // targeting frame.
   if (renderer_->HasTargetVessel()) {
     target_vessel = &renderer_->GetTargetVessel();
     target_vessel->RefreshPrediction();
-    vessel.RefreshPrediction(target_vessel->prediction().back().time);
+    for (auto const vessel : predicted_vessels) {
+      vessel->RefreshPrediction(target_vessel->prediction().back().time);
+    }
   } else {
-    vessel.RefreshPrediction();
+    for (auto const vessel : predicted_vessels) {
+      vessel->RefreshPrediction();
+    }
   }
-  for (auto const& [guid, v] : vessels_) {
-    if (v.get() != &vessel && v.get() != target_vessel) {
-      v->StopPrognosticator();
+  for (auto const& [guid, vessel] : vessels_) {
+    if (!Contains(predicted_vessels, vessel.get()) &&
+        vessel.get() != target_vessel) {
+      vessel->StopPrognosticator();
     }
   }
 }

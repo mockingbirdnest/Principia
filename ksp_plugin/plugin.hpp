@@ -335,8 +335,8 @@ class Plugin {
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
           prediction_adaptive_step_parameters) const;
 
-  // Updates the prediction for the vessel with guid |vessel_guid|.
-  void UpdatePrediction(GUID const& vessel_guid) const;
+  // Updates the prediction for the vessels with guids in |vessel_guids|.
+  void UpdatePrediction(std::vector<GUID> const& vessel_guids) const;
 
   virtual void CreateFlightPlan(GUID const& vessel_guid,
                                 Instant const& final_time,
