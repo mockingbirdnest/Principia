@@ -138,9 +138,6 @@ class FlightPlan {
     Nodal,
   };
 
-  Status IncrementCoastRevolutions(int coast_index, Period kind);
-  Status DecrementCoastRevolutions(int coast_index, Period kind);
-
   void WriteToMessage(not_null<serialization::FlightPlan*> message) const;
 
   // This may return a null pointer if the flight plan contained in the
