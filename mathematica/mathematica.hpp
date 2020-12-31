@@ -17,6 +17,7 @@
 #include "geometry/r3_element.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
+#include "numerics/double_precision.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/piecewise_poisson_series.hpp"
 #include "numerics/poisson_series.hpp"
@@ -40,6 +41,7 @@ using geometry::R3Element;
 using geometry::R3x3Matrix;
 using geometry::SymmetricBilinearForm;
 using geometry::Vector;
+using numerics::DoublePrecision;
 using numerics::FixedVector;
 using numerics::PiecewisePoissonSeries;
 using numerics::PoissonSeries;
@@ -171,9 +173,13 @@ template<typename D, typename... Qs>
 std::string ToMathematica(Quantity<D> const& quantity,
                           ExpressIn<Qs...> express_in);
 
-template<typename D, typename OptionalExpressIn = std::nullopt_t>
+template<typename D>
 std::string ToMathematica(Quantity<D> const& quantity,
                           std::nullopt_t express_in = std::nullopt);
+
+template<typename T, typename OptionalExpressIn = std::nullopt_t>
+std::string ToMathematica(DoublePrecision<T> const& double_precision,
+                          OptionalExpressIn express_in = std::nullopt);
 
 template<typename S, typename F, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(Vector<S, F> const& vector,

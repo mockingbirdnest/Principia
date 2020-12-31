@@ -349,7 +349,7 @@ std::string ToMathematica(Quantity<D> const& quantity,
   return ToMathematica(express_in(quantity));
 }
 
-template<typename D, typename OptionalExpressIn>
+template<typename D>
 std::string ToMathematica(Quantity<D> const& quantity,
                           std::nullopt_t express_in) {
   std::string s = DebugString(quantity);
@@ -357,6 +357,14 @@ std::string ToMathematica(Quantity<D> const& quantity,
   std::size_t const split = s.find(" ");
   std::string const units = Escape(s.substr(split, s.size()));
   return Apply("Quantity", {number, units});
+}
+
+template<typename T, typename OptionalExpressIn>
+std::string ToMathematica(DoublePrecision<T> const& double_precision,
+                          OptionalExpressIn express_in) {
+  return Apply("Plus",
+               {ToMathematica(double_precision.value, express_in),
+                ToMathematica(double_precision.error, express_in)});
 }
 
 template<typename S, typename F, typename OptionalExpressIn>

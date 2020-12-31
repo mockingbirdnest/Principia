@@ -42,6 +42,7 @@ using geometry::R3x3Matrix;
 using geometry::SymmetricBilinearForm;
 using geometry::Vector;
 using geometry::Velocity;
+using numerics::DoublePrecision;
 using numerics::FixedVector;
 using numerics::HornerEvaluator;
 using numerics::PiecewisePoissonSeries;
@@ -146,6 +147,15 @@ TEST_F(MathematicaTest, ToMathematica) {
     EXPECT_EQ(absl::StrReplaceAll(u8R"(Quantity[α," m s^-1"])",
                                   {{u8"α", ToMathematica(1.5)}}),
               ToMathematica(1.5 * Metre / Second));
+  }
+  {
+    DoublePrecision<double> d(3);
+    d += 5e-20;
+    EXPECT_EQ(absl::StrReplaceAll(
+                  u8"Plus[α,β]",
+                  {{u8"α", ToMathematica(3.0)},
+                   {u8"β", ToMathematica(5e-20)}}),
+              ToMathematica(d));
   }
   {
     Vector<double, F> const v({2.0, 3.0, -4.0});
