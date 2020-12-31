@@ -148,17 +148,18 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
     var now = DateTime.UtcNow;
     if (vessel_guid == null) {
       orbit_description_ = null;
-    } else if (
-        !Shown() &&
-        (!last_background_analysis_time_.HasValue ||
-         (now - last_background_analysis_time_) > TimeSpan.FromSeconds(2))) {
-      last_background_analysis_time_ = now;
-      // Keep refreshing the analysis (albeit at a reduced rate) even when the
-      // analyser is not shown, so that the analysis button can display an
-      // up-to-date one-line summary.
-      OrbitAnalysis analysis = plugin.VesselRefreshAnalysis(
+    } else {
+      if (Shown() ||
+          (!last_background_analysis_time_.HasValue ||
+           (now - last_background_analysis_time_) > TimeSpan.FromSeconds(2))) {
+        last_background_analysis_time_ = now;
+        // Keep refreshing the analysis (albeit at a reduced rate) even when the
+        // analyser is not shown, so that the analysis button can display an
+        // up-to-date one-line summary.
+        plugin.VesselRefreshAnalysis(vessel_guid, mission_duration_.value);
+      }
+      OrbitAnalysis analysis = plugin.VesselGetAnalysis(
           vessel_guid,
-          mission_duration_.value,
           autodetect_recurrence_ ? null : (int?)revolutions_per_cycle_,
           autodetect_recurrence_ ? null : (int?)days_per_cycle_,
           ground_track_revolution_);
@@ -199,9 +200,8 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
           multiline_style,
           UnityEngine.GUILayout.Height(two_lines));
 
-    OrbitAnalysis analysis = plugin.VesselRefreshAnalysis(
+    OrbitAnalysis analysis = plugin.VesselGetAnalysis(
         predicted_vessel.id.ToString(),
-        mission_duration_.value,
         autodetect_recurrence_ ? null : (int?)revolutions_per_cycle_,
         autodetect_recurrence_ ? null : (int?)days_per_cycle_,
         ground_track_revolution_);

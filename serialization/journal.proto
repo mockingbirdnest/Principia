@@ -2236,6 +2236,26 @@ message VesselFromParent {
   optional Return return = 3;
 }
 
+message VesselGetAnalysis {
+  extend Method {
+    optional VesselGetAnalysis extension = 5176;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    optional int32 revolutions_per_cycle = 5;
+    optional int32 days_per_cycle = 6;
+    required int32 ground_track_revolution = 7;
+  }
+  message Return {
+    required OrbitAnalysis result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
 message VesselGetPredictionAdaptiveStepParameters {
   extend Method {
     optional VesselGetPredictionAdaptiveStepParameters extension = 5090;
@@ -2277,16 +2297,8 @@ message VesselRefreshAnalysis {
                                  (is_subject) = true];
     required string vessel_guid = 2;
     required double mission_duration = 4;
-    optional int32 revolutions_per_cycle = 5;
-    optional int32 days_per_cycle = 6;
-    required int32 ground_track_revolution = 7;
-  }
-  message Return {
-    required OrbitAnalysis result = 1 [(is_produced) = true];
-    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
-  optional Return return = 3;
 }
 
 message VesselSetPredictionAdaptiveStepParameters {
