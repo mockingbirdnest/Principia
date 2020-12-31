@@ -50,6 +50,28 @@ QP __cdecl principia__VesselFromParent(Plugin const* const plugin,
   return m.Return(ToQP(plugin->VesselFromParent(parent_index, vessel_guid)));
 }
 
+OrbitAnalysis* __cdecl principia__VesselGetAnalysis(
+    Plugin* const plugin,
+    char const* const vessel_guid,
+    int const* const revolutions_per_cycle,
+    int const* const days_per_cycle,
+    int const ground_track_revolution) {
+  journal::Method<journal::VesselGetAnalysis> m({plugin,
+                                                 vessel_guid,
+                                                 revolutions_per_cycle,
+                                                 days_per_cycle,
+                                                 ground_track_revolution});
+  CHECK_NOTNULL(plugin);
+  Vessel& vessel = *plugin->GetVessel(vessel_guid);
+  not_null<OrbitAnalysis*> analysis = NewOrbitAnalysis(vessel.orbit_analysis(),
+                                                       *plugin,
+                                                       revolutions_per_cycle,
+                                                       days_per_cycle,
+                                                       ground_track_revolution);
+  analysis->progress_of_next_analysis = vessel.progress_of_orbit_analysis();
+  return m.Return(analysis);
+}
+
 AdaptiveStepParameters __cdecl
 principia__VesselGetPredictionAdaptiveStepParameters(
     Plugin const* const plugin,
@@ -68,30 +90,15 @@ XYZ __cdecl principia__VesselNormal(Plugin const* const plugin,
   return m.Return(ToXYZ(plugin->VesselNormal(vessel_guid)));
 }
 
-OrbitAnalysis* __cdecl principia__VesselRefreshAnalysis(
-    Plugin* const plugin,
-    char const* const vessel_guid,
-    double const mission_duration,
-    int const* const revolutions_per_cycle,
-    int const* const days_per_cycle,
-    int const ground_track_revolution) {
-  journal::Method<journal::VesselRefreshAnalysis> m({plugin,
-                                                     vessel_guid,
-                                                     mission_duration,
-                                                     revolutions_per_cycle,
-                                                     days_per_cycle,
-                                                     ground_track_revolution});
+void __cdecl principia__VesselRefreshAnalysis(Plugin* const plugin,
+                                              char const* const vessel_guid,
+                                              double const mission_duration) {
+  journal::Method<journal::VesselRefreshAnalysis> m(
+      {plugin, vessel_guid, mission_duration});
   CHECK_NOTNULL(plugin);
   Vessel& vessel = *plugin->GetVessel(vessel_guid);
   plugin->ClearOrbitAnalysersOfVesselsOtherThan(vessel);
   vessel.RefreshOrbitAnalysis(mission_duration * Second);
-  not_null<OrbitAnalysis*> analysis = NewOrbitAnalysis(vessel.orbit_analysis(),
-                                                       *plugin,
-                                                       revolutions_per_cycle,
-                                                       days_per_cycle,
-                                                       ground_track_revolution);
-  analysis->progress_of_next_analysis = vessel.progress_of_orbit_analysis();
-  return m.Return(analysis);
 }
 
 void __cdecl principia__VesselSetPredictionAdaptiveStepParameters(
