@@ -385,14 +385,13 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct2) {
                     {/*sin=*/Degree0::PeriodicPolynomial({}, t_mid),
                      /*cos=*/Degree0::PeriodicPolynomial({1}, t_mid)}}});
 
-
   {
     auto const product = InnerProduct(f, g,
                      apodization::Dirichlet<HornerEvaluator>(t_min, t_max),
                      t_min, t_max);
     EXPECT_THAT(
         product,
-        RelativeErrorFrom(+2.026745255082731e-11, IsNear(0.33_⑴)));
+        RelativeErrorFrom(+2.0267451184776034270e-11, IsNear(0.33_⑴)));
   }
   {
     auto const product = (PointwiseInnerProduct(f, g) *
@@ -401,7 +400,7 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct2) {
                          (t_max - t_min);
     EXPECT_THAT(
         product,
-        RelativeErrorFrom(+2.026745255082731e-11, IsNear(4010_⑴)));
+        RelativeErrorFrom(+2.0267451184776034270e-11, IsNear(4010_⑴)));
   }
 }
 
