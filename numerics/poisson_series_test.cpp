@@ -51,6 +51,7 @@ using testing_utilities::IsNear;
 using testing_utilities::VanishesBefore;
 using testing_utilities::RelativeErrorFrom;
 using testing_utilities::operator""_⑴;
+using ::testing::AnyOf;
 
 class PoissonSeriesTest : public ::testing::Test {
  protected:
@@ -389,9 +390,10 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct2) {
     auto const product = InnerProduct(f, g,
                      apodization::Dirichlet<HornerEvaluator>(t_min, t_max),
                      t_min, t_max);
-    EXPECT_THAT(
-        product,
-        RelativeErrorFrom(+2.0267451184776034270e-11, IsNear(0.33_⑴)));
+    EXPECT_THAT(product,
+                RelativeErrorFrom(
+                    +2.0267451184776034270e-11,
+                    AnyOf(IsNear(0.26_⑴), IsNear(0.33_⑴), IsNear(0.38_⑴))));
   }
   {
     auto const product = (PointwiseInnerProduct(f, g) *
