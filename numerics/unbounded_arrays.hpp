@@ -3,6 +3,7 @@
 
 #include <initializer_list>
 #include <memory>
+#include <type_traits>
 #include <vector>
 
 #include "base/tags.hpp"
@@ -20,6 +21,9 @@ class uninitialized_allocator : public std::allocator<T> {
   template<class U, class... Args>
   void construct(U* p, Args&&... args);
 };
+
+template<typename Scalar>
+class UnboundedUpperTriangularMatrix;
 
 // The following classes are similar to those in fixed_arrays.hpp, but they have
 // an Extend method to add more entries to the arrays.
@@ -69,6 +73,8 @@ class UnboundedLowerTriangularMatrix final {
 
   void EraseToEnd(int begin_row_index);
 
+  UnboundedUpperTriangularMatrix<Scalar> Transpose() const;
+
   int rows() const;
   int dimension() const;
 
@@ -107,6 +113,8 @@ class UnboundedUpperTriangularMatrix final {
 
   void EraseToEnd(int begin_column_index);
 
+  UnboundedLowerTriangularMatrix<Scalar> Transpose() const;
+
   int columns() const;
   int dimension() const;
 
@@ -122,7 +130,10 @@ class UnboundedUpperTriangularMatrix final {
    private:
     explicit Row(Matrix& matrix, int row);
 
-    Matrix& matrix_;
+    // We need to remove the const because, when this class is instantiated with
+    // 'UnboundedUpperTriangularMatrix const', the first operator[], not the
+    // second, is picked by overload resolution.
+    std::remove_const_t<Matrix>& matrix_;
     int row_;
 
     template<typename S>

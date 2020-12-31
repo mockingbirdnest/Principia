@@ -3,6 +3,7 @@
 
 #include <tuple>
 
+#include "base/macros.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
@@ -266,6 +267,11 @@ TEST_F(PolynomialTest, Ring) {
   }
 }
 
+// Compose contains a fold expression which fails to compile in Clang because of
+// https://bugs.llvm.org/show_bug.cgi?id=30590.  That bug will be fixed post-
+// 11.0.0.  Since we don't use Compose as of this writing, and working around
+// the bug would be hard, we ifdef out the test.
+#if PRINCIPIA_COMPILER_MSVC
 TEST_F(PolynomialTest, Monoid) {
   using P2A =
       PolynomialInMonomialBasis<Temperature, Instant, 2, HornerEvaluator>;
@@ -317,6 +323,7 @@ TEST_F(PolynomialTest, Monoid) {
     EXPECT_THAT(actual_v, AlmostEquals(-46396 * Ampere, 0));
   }
 }
+#endif
 
 TEST_F(PolynomialTest, PointwiseInnerProduct) {
   P2V::Coefficients const coefficients({

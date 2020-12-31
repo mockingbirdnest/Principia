@@ -4,11 +4,14 @@
 #include "mathematica/mathematica.hpp"
 
 #include <cmath>
+#include <limits>
 #include <map>
+#include <sstream>
 #include <string>
 #include <tuple>
 #include <vector>
 
+#include "base/mod.hpp"
 #include "base/not_constructible.hpp"
 #include "base/traits.hpp"
 #include "quantities/si.hpp"
@@ -19,6 +22,7 @@ namespace internal_mathematica {
 
 using astronomy::J2000;
 using base::is_instance_of_v;
+using base::mod;
 using base::not_constructible;
 using base::not_null;
 using quantities::DebugString;
@@ -86,7 +90,7 @@ struct TupleHelper<0, Tuple, OptionalExpressIn> : not_constructible {
 template<typename V, typename A, int d,
          template<typename, typename, int> class E,
          typename OptionalExpressIn>
-std::string ToMathematicaExpression(
+std::string ToMathematicaBody(
     PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
     OptionalExpressIn express_in) {
   using Coefficients =
@@ -123,15 +127,16 @@ std::string ToMathematicaExpression(
 template<typename V, int ad, int pd,
          template<typename, typename, int> class E,
          typename OptionalExpressIn>
-std::string ToMathematicaExpression(PoissonSeries<V, ad, pd, E> const& series,
-                                    OptionalExpressIn express_in) {
+std::string ToMathematicaBody(
+    PoissonSeries<V, ad, pd, E> const& series,
+    OptionalExpressIn express_in) {
   std::vector<std::string> components = {
-      ToMathematicaExpression(series.aperiodic_, express_in)};
+      ToMathematicaBody(series.aperiodic_, express_in)};
   for (auto const& [ω, polynomials] : series.periodic_) {
     std::string const polynomial_sin =
-        ToMathematicaExpression(polynomials.sin, express_in);
+        ToMathematicaBody(polynomials.sin, express_in);
     std::string const polynomial_cos =
-        ToMathematicaExpression(polynomials.cos, express_in);
+        ToMathematicaBody(polynomials.cos, express_in);
     std::string const angle =
         Apply("Times",
               {ToMathematica(ω, express_in),
@@ -148,13 +153,13 @@ std::string ToMathematicaExpression(PoissonSeries<V, ad, pd, E> const& series,
 template<typename V, int ad, int pd,
          template<typename, typename, int> class E,
          typename OptionalExpressIn>
-std::string ToMathematicaExpression(
+std::string ToMathematicaBody(
     PiecewisePoissonSeries<V, ad, pd, E> const& series,
     OptionalExpressIn express_in) {
   std::vector<std::string> conditions_and_functions;
   for (int i = 0; i < series.series_.size(); ++i) {
     std::string const function =
-        ToMathematicaExpression(series.series_[i], express_in);
+        ToMathematicaBody(series.series_[i], express_in);
     std::string const condition =
         Apply("Between",
               {"#",
@@ -263,19 +268,39 @@ std::string ToMathematica(T const integer, OptionalExpressIn /*express_in*/) {
 template<typename T, typename, typename OptionalExpressIn, typename>
 std::string ToMathematica(T const real,
                           OptionalExpressIn /*express_in*/) {
+  std::string absolute_value;
   if (std::isinf(real)) {
-    if (real > 0.0) {
-      return "Infinity";
-    } else {
-      return Apply("Minus", {"Infinity"});
-    }
+    absolute_value = "Infinity";
   } else if (std::isnan(real)) {
-    return "Indeterminate";
+    absolute_value = "Indeterminate";
+  } else if (real == 0) {
+    absolute_value = "0";
   } else {
-    std::string s = DebugString(real);
-    s.replace(s.find("e"), 1, "*^");
-    return Apply("SetPrecision", {s, "$MachinePrecision"});
+    constexpr int τ = std::numeric_limits<T>::digits;
+    int const exponent = std::ilogb(real);
+    // This offset makes n an integer in [β^(τ-1), β^τ[, i.e., a τ-digit
+    // integer.
+    int exponent_offset = τ - 1;
+    if (std::numeric_limits<T>::radix == 2) {
+      // For binary floating point, push the leading 1 to the least significant
+      // bit of a hex digit.
+      exponent_offset += mod(1 - τ, 4);
+    }
+    std::int64_t const n =
+        std::scalbln(std::abs(real), exponent_offset - exponent);
+    absolute_value = Apply("Times",
+                           {std::numeric_limits<T>::radix == 10
+                                ? ToMathematica(n)
+                                : (std::stringstream()
+                                   << "16^^" << std::uppercase << std::hex << n)
+                                      .str(),
+                            Apply("Power",
+                                  {"2",
+                                   Apply("Subtract",
+                                         {ToMathematica(std::ilogb(real)),
+                                          ToMathematica(exponent_offset)})})});
   }
+  return std::signbit(real) ? Apply("Minus", {absolute_value}) : absolute_value;
 }
 
 template<typename OptionalExpressIn>
@@ -391,6 +416,55 @@ std::string ToMathematica(Tuple const& tuple, OptionalExpressIn express_in) {
   return Apply("List", expressions);
 }
 
+template<typename Scalar, typename OptionalExpressIn>
+std::string ToMathematica(UnboundedLowerTriangularMatrix<Scalar> const& matrix,
+                          OptionalExpressIn express_in) {
+  std::vector<std::string> rows;
+  rows.reserve(matrix.rows());
+  for (int i = 0; i < matrix.rows(); ++i) {
+    std::vector<std::string> row;
+    row.reserve(matrix.rows());
+    for (int j = 0; j <= i; ++j) {
+      row.push_back(ToMathematica(matrix[i][j], express_in));
+    }
+    for (int j = i + 1; j < matrix.rows(); ++j) {
+      row.push_back(ToMathematica(Scalar{}, express_in));
+    }
+    rows.push_back(Apply("List", row));
+  }
+  return Apply("List", rows);
+}
+
+template<typename Scalar, typename OptionalExpressIn>
+std::string ToMathematica(UnboundedUpperTriangularMatrix<Scalar> const& matrix,
+                          OptionalExpressIn express_in) {
+  std::vector<std::string> rows;
+  rows.reserve(matrix.columns());
+  for (int i = 0; i < matrix.columns(); ++i) {
+    std::vector<std::string> row;
+    row.reserve(matrix.columns());
+    for (int j = 0; j < i; ++j) {
+      row.push_back(ToMathematica(Scalar{}, express_in));
+    }
+    for (int j = i; j < matrix.columns(); ++j) {
+      row.push_back(ToMathematica(matrix[i][j], express_in));
+    }
+    rows.push_back(Apply("List", row));
+  }
+  return Apply("List", rows);
+}
+
+template<typename Scalar, typename OptionalExpressIn>
+std::string ToMathematica(UnboundedVector<Scalar> const& vector,
+                          OptionalExpressIn express_in) {
+  std::vector<std::string> elements;
+  elements.reserve(vector.size());
+  for (int i = 0; i < vector.size(); ++i) {
+    elements.push_back(ToMathematica(vector[i], express_in));
+  }
+  return Apply("List", elements);
+}
+
 template<typename R, typename, typename, typename OptionalExpressIn>
 std::string ToMathematica(R const ref,
                           OptionalExpressIn express_in) {
@@ -406,7 +480,7 @@ template<typename V, typename A, int d,
 std::string ToMathematica(
     PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
     OptionalExpressIn express_in) {
-  return Apply("Function", {ToMathematicaExpression(polynomial, express_in)});
+  return Apply("Function", {ToMathematicaBody(polynomial, express_in)});
 }
 
 template<typename V, int ad, int pd,
@@ -414,7 +488,7 @@ template<typename V, int ad, int pd,
          typename OptionalExpressIn>
 std::string ToMathematica(PoissonSeries<V, ad, pd, E> const& series,
                           OptionalExpressIn express_in) {
-  return Apply("Function", {ToMathematicaExpression(series, express_in)});
+  return Apply("Function", {ToMathematicaBody(series, express_in)});
 }
 
 template<typename V, int ad, int pd,
@@ -422,7 +496,7 @@ template<typename V, int ad, int pd,
          typename OptionalExpressIn>
 std::string ToMathematica(PiecewisePoissonSeries<V, ad, pd, E> const& series,
                           OptionalExpressIn express_in) {
-  return Apply("Function", {ToMathematicaExpression(series, express_in)});
+  return Apply("Function", {ToMathematicaBody(series, express_in)});
 }
 
 template<typename OptionalExpressIn>
