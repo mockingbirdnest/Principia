@@ -218,7 +218,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5176.
+  extensions 5000 to 5999;  // Last used: 5177.
 }
 
 message AdvanceTime {
@@ -768,7 +768,7 @@ message FlightPlanGetActualFinalTime {
 
 message FlightPlanGetCoastAnalysis {
   extend Method {
-    optional FlightPlanGetCoastAnalysis extension = 5176;
+    optional FlightPlanGetCoastAnalysis extension = 5177;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
