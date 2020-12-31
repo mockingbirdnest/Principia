@@ -86,7 +86,7 @@ struct TupleHelper<0, Tuple, OptionalExpressIn> : not_constructible {
 template<typename V, typename A, int d,
          template<typename, typename, int> class E,
          typename OptionalExpressIn>
-std::string ToMathematicaExpression(
+std::string ToMathematicaBody(
     PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
     OptionalExpressIn express_in) {
   using Coefficients =
@@ -123,15 +123,16 @@ std::string ToMathematicaExpression(
 template<typename V, int ad, int pd,
          template<typename, typename, int> class E,
          typename OptionalExpressIn>
-std::string ToMathematicaExpression(PoissonSeries<V, ad, pd, E> const& series,
-                                    OptionalExpressIn express_in) {
+std::string ToMathematicaBody(
+    PoissonSeries<V, ad, pd, E> const& series,
+    OptionalExpressIn express_in) {
   std::vector<std::string> components = {
-      ToMathematicaExpression(series.aperiodic_, express_in)};
+      ToMathematicaBody(series.aperiodic_, express_in)};
   for (auto const& [ω, polynomials] : series.periodic_) {
     std::string const polynomial_sin =
-        ToMathematicaExpression(polynomials.sin, express_in);
+        ToMathematicaBody(polynomials.sin, express_in);
     std::string const polynomial_cos =
-        ToMathematicaExpression(polynomials.cos, express_in);
+        ToMathematicaBody(polynomials.cos, express_in);
     std::string const angle =
         Apply("Times",
               {ToMathematica(ω, express_in),
@@ -148,13 +149,13 @@ std::string ToMathematicaExpression(PoissonSeries<V, ad, pd, E> const& series,
 template<typename V, int ad, int pd,
          template<typename, typename, int> class E,
          typename OptionalExpressIn>
-std::string ToMathematicaExpression(
+std::string ToMathematicaBody(
     PiecewisePoissonSeries<V, ad, pd, E> const& series,
     OptionalExpressIn express_in) {
   std::vector<std::string> conditions_and_functions;
   for (int i = 0; i < series.series_.size(); ++i) {
     std::string const function =
-        ToMathematicaExpression(series.series_[i], express_in);
+        ToMathematicaBody(series.series_[i], express_in);
     std::string const condition =
         Apply("Between",
               {"#",
@@ -443,7 +444,7 @@ template<typename V, typename A, int d,
 std::string ToMathematica(
     PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
     OptionalExpressIn express_in) {
-  return Apply("Function", {ToMathematicaExpression(polynomial, express_in)});
+  return Apply("Function", {ToMathematicaBody(polynomial, express_in)});
 }
 
 template<typename V, int ad, int pd,
@@ -451,7 +452,7 @@ template<typename V, int ad, int pd,
          typename OptionalExpressIn>
 std::string ToMathematica(PoissonSeries<V, ad, pd, E> const& series,
                           OptionalExpressIn express_in) {
-  return Apply("Function", {ToMathematicaExpression(series, express_in)});
+  return Apply("Function", {ToMathematicaBody(series, express_in)});
 }
 
 template<typename V, int ad, int pd,
@@ -459,7 +460,7 @@ template<typename V, int ad, int pd,
          typename OptionalExpressIn>
 std::string ToMathematica(PiecewisePoissonSeries<V, ad, pd, E> const& series,
                           OptionalExpressIn express_in) {
-  return Apply("Function", {ToMathematicaExpression(series, express_in)});
+  return Apply("Function", {ToMathematicaBody(series, express_in)});
 }
 
 template<typename OptionalExpressIn>
