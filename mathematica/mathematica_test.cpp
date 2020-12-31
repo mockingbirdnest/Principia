@@ -151,23 +151,15 @@ TEST_F(MathematicaTest, ToMathematica) {
   {
     DoublePrecision<double> d(3);
     d += 5e-20;
-    EXPECT_EQ(
-        "Plus["
-        "SetPrecision["
-        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-        "2*$MachinePrecision],"
-        "SetPrecision["
-        "SetPrecision[+4.99999999999999988*^-20,$MachinePrecision],"
-        "2*$MachinePrecision]]",
-        ToMathematica(d));
+    EXPECT_EQ(absl::StrReplaceAll(
+                  u8"Plus[α,β]",
+                  {{u8"α", ToMathematica(3.0)},
+                   {u8"β", ToMathematica(5e-20)}}),
+              ToMathematica(d));
   }
   {
-    EXPECT_EQ(
-        "List["
-        "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[-4.00000000000000000*^+00,$MachinePrecision]]",
-        ToMathematica(Vector<double, F>({2.0, 3.0, -4.0})));
+    Vector<double, F> const v({2.0, 3.0, -4.0});
+    EXPECT_EQ(ToMathematica(v.coordinates()), ToMathematica(v));
   }
   {
     Bivector<double, F> const b({2.0, 3.0, -4.0});

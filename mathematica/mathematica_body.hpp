@@ -363,12 +363,8 @@ template<typename T, typename OptionalExpressIn>
 std::string ToMathematica(DoublePrecision<T> const& double_precision,
                           OptionalExpressIn express_in) {
   return Apply("Plus",
-               {Apply("SetPrecision",
-                      {ToMathematica(double_precision.value, express_in),
-                       "2*$MachinePrecision"}),
-                Apply("SetPrecision",
-                      {ToMathematica(double_precision.error, express_in),
-                       "2*$MachinePrecision"})});
+               {ToMathematica(double_precision.value, express_in),
+                ToMathematica(double_precision.error, express_in)});
 }
 
 template<typename S, typename F, typename OptionalExpressIn>
