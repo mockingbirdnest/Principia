@@ -30,6 +30,7 @@ using quantities::Mass;
 using quantities::Momentum;
 using quantities::Speed;
 using quantities::Sqrt;
+using quantities::Square;
 using quantities::Tan;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
@@ -286,6 +287,50 @@ TEST_F(DoublePrecisionTest, Product) {
               AlmostEquals(-3431314001806092.0 * std::pow(0.5, 110) * Kilogram *
                                Metre / Second,
                            0));
+}
+
+TEST_F(DoublePrecisionTest, LongProduct) {
+  DoublePrecision<Length> a(3 * Metre);
+  a.Increment(474 * ε * Metre);
+  DoublePrecision<Length> b(7 * Metre);
+  b.Increment(-517 * ε * Metre);
+  DoublePrecision<Square<Length>> const c = a * b;
+  // The numbers below were obtained using Mathematica.
+  EXPECT_THAT(
+      c.value,
+      AlmostEquals(5910974510923886.0 * std::pow(0.5, 48) * Metre * Metre,
+                   0));
+  EXPECT_THAT(
+      c.error,
+      AlmostEquals(7881299347837104.0 * std::pow(0.5, 102) * Metre * Metre,
+                   0));
+}
+
+TEST_F(DoublePrecisionTest, LongQuotient) {
+  DoublePrecision<Length> a(3 * Metre);
+  a.Increment(474 * ε * Metre);
+  DoublePrecision<Length> b(7 * Metre);
+  b.Increment(-517 * ε * Metre);
+  DoublePrecision<double> const c = a / b;
+  // The numbers below were obtained using Mathematica.
+  EXPECT_THAT(c.value,
+              AlmostEquals(7720456504064105.0 * std::pow(0.5, 54), 0));
+  EXPECT_THAT(c.error,
+              AlmostEquals(-7352815717686216.0 * std::pow(0.5, 110), 0));
+}
+
+TEST_F(DoublePrecisionTest, Mod2π) {
+  // Slightly above 2000 π.
+  DoublePrecision<Angle> a((2e3 * 103'993 + 2) / 33'102 * Radian);
+  auto const c = Mod2π(a);
+  // HexLiteral[
+  //     CorrectlyRound[Mod[CorrectlyRound[(2000 103993 + 2)/33102], 2 π]]]
+  EXPECT_THAT(c.value + c.error,
+              AlmostEquals(0x1.F12375A5877D6p-15 * Radian, 0));
+  // HexLiteral[CorrectlyRound[(2000 103993 + 2)/33102] -
+  //     CorrectlyRound[2000 CorrectlyRound[π]]]
+  EXPECT_THAT(a.value - 2000 * π * Radian,
+              AlmostEquals(0x1.F123760000000p-15 * Radian, 0));
 }
 
 }  // namespace internal_double_precision

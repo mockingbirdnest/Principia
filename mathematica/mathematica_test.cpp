@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/str_replace.h"
 #include "astronomy/orbital_elements.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -19,6 +20,7 @@
 #include "numerics/poisson_series.hpp"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
+#include "numerics/unbounded_arrays.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "quantities/quantities.hpp"
@@ -40,15 +42,21 @@ using geometry::R3x3Matrix;
 using geometry::SymmetricBilinearForm;
 using geometry::Vector;
 using geometry::Velocity;
+using numerics::DoublePrecision;
 using numerics::FixedVector;
 using numerics::HornerEvaluator;
 using numerics::PiecewisePoissonSeries;
 using numerics::PoissonSeries;
 using numerics::PolynomialInMonomialBasis;
+using numerics::UnboundedLowerTriangularMatrix;
+using numerics::UnboundedUpperTriangularMatrix;
+using numerics::UnboundedVector;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
+using quantities::Infinity;
 using quantities::Length;
 using quantities::Speed;
+using quantities::Sqrt;
 using quantities::Time;
 using quantities::si::Degree;
 using quantities::si::Metre;
@@ -63,10 +71,15 @@ class MathematicaTest : public ::testing::Test {
 TEST_F(MathematicaTest, ToMathematica) {
   {
     EXPECT_EQ(
-        "List["
-        "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]]",
-        ToMathematica(std::vector<double>{2, 3}));
+        absl::StrReplaceAll(u8"List[α,β,γ]",
+                            {{u8"α", ToMathematica(1 * Metre)},
+                             {u8"β", ToMathematica(2 * Second)},
+                             {u8"γ", ToMathematica(3 * Metre / Second)}}),
+        ToMathematica(std::tuple{1 * Metre, 2 * Second, 3 * Metre / Second}));
+  }
+  {
+    EXPECT_EQ(ToMathematica(std::tuple{2.0, 3.0}),
+              ToMathematica(std::vector<double>{2, 3}));
     EXPECT_EQ("List[]", ToMathematica(std::vector<int>{}));
   }
   {
@@ -77,11 +90,8 @@ TEST_F(MathematicaTest, ToMathematica) {
     auto it = list.cbegin();
     ++it;
     ++it;
-    EXPECT_EQ(
-        "List["
-        "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]]",
-        ToMathematica(list.cbegin(), it));
+    EXPECT_EQ(ToMathematica(std::tuple{2.0, 3.0}),
+              ToMathematica(list.cbegin(), it));
     EXPECT_EQ("List[]", ToMathematica(it, it));
   }
   {
@@ -93,149 +103,105 @@ TEST_F(MathematicaTest, ToMathematica) {
     EXPECT_EQ("-2", ToMathematica(-2));
   }
   {
-    EXPECT_EQ("SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]",
-              ToMathematica(3.0));
-    EXPECT_EQ("SetPrecision[-2.00000000000000000*^+09,$MachinePrecision]",
-              ToMathematica(-2.0e9));
-    EXPECT_EQ("SetPrecision[-0.00000000000000000*^+00,$MachinePrecision]",
-              ToMathematica(-0.0));
+    EXPECT_EQ("Times[16^^13456789ABCDEF,Power[2,Subtract[-163,52]]]",
+              ToMathematica(0x1.3'4567'89AB'CDEFp-163));
+    EXPECT_EQ("Minus[Times[16^^10000000000000,Power[2,Subtract[-1074,52]]]]",
+              ToMathematica(-0x1p-1074));
+    EXPECT_EQ("Minus[Times[16^^1FFFFFFFFFFFFF,Power[2,Subtract[1023,52]]]]",
+              ToMathematica(-0x1.F'FFFF'FFFF'FFFFp1023));
+    EXPECT_EQ("Times[16^^19ABCDE,Power[2,Subtract[-12,24]]]",
+              ToMathematica(0x1.9ABCDEp-12f));
+    EXPECT_EQ("0", ToMathematica(0.0));
+    EXPECT_EQ("Minus[0]", ToMathematica(-0.0));  // Not that this does anything.
+    EXPECT_EQ("Infinity", ToMathematica(Infinity<double>));
+    EXPECT_EQ("Minus[Infinity]", ToMathematica(-Infinity<double>));
+    EXPECT_EQ("Minus[Indeterminate]", ToMathematica(Sqrt(-1)));
   }
   {
-    EXPECT_EQ(
-        "List["
-        "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]]",
-        ToMathematica(FixedVector<double, 2>({2, 3})));
+    EXPECT_EQ(ToMathematica(std::tuple{2.0, 3.0}),
+              ToMathematica(FixedVector<double, 2>({2, 3})));
     EXPECT_EQ("List[]", ToMathematica(FixedVector<int, 0>()));
   }
   {
-    EXPECT_EQ(
-        "List["
-        "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[-4.00000000000000000*^+00,$MachinePrecision]]",
-        ToMathematica(R3Element<double>(2.0, 3.0, -4.0)));
+    EXPECT_EQ(ToMathematica(std::tuple{2.0, 3.0, -4.0}),
+              ToMathematica(R3Element<double>(2.0, 3.0, -4.0)));
+  }
+  {
+    EXPECT_EQ(ToMathematica(std::tuple{std::tuple{1.0, 2.0, 3.0},
+                                       std::tuple{4.0, 5.0, 6.0},
+                                       std::tuple{7.0, 8.0, 9.0}}),
+              ToMathematica(R3x3Matrix<double>({1.0, 2.0, 3.0},
+                                               {4.0, 5.0, 6.0},
+                                               {7.0, 8.0, 9.0})));
   }
   {
     EXPECT_EQ(
-        "List["
-        "List["
-        "SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]],"
-        "List["
-        "SetPrecision[+4.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+5.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+6.00000000000000000*^+00,$MachinePrecision]],"
-        "List["
-        "SetPrecision[+7.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+8.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+9.00000000000000000*^+00,$MachinePrecision]]]",
-        ToMathematica(R3x3Matrix<double>({1.0, 2.0, 3.0},
-                                         {4.0, 5.0, 6.0},
-                                         {7.0, 8.0, 9.0})));
-  }
-  {
-    EXPECT_EQ(
-        "Quaternion["
-        "SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[-4.00000000000000000*^+00,$MachinePrecision]]",
+        absl::StrReplaceAll(u8"Quaternion[α,β,γ,δ]",
+                            {{u8"α", ToMathematica(1.0)},
+                             {u8"β", ToMathematica(2.0)},
+                             {u8"γ", ToMathematica(3.0)},
+                             {u8"δ", ToMathematica(-4.0)}}),
         ToMathematica(Quaternion(1.0, R3Element<double>(2.0, 3.0, -4.0))));
   }
   {
-    EXPECT_EQ(
-        "Quantity["
-        "SetPrecision[+1.50000000000000000*^+00,$MachinePrecision],"
-        "\" m s^-1\"]",
-        ToMathematica(1.5 * Metre / Second));
+    EXPECT_EQ(absl::StrReplaceAll(u8R"(Quantity[α," m s^-1"])",
+                                  {{u8"α", ToMathematica(1.5)}}),
+              ToMathematica(1.5 * Metre / Second));
+  }
+  {
+    DoublePrecision<double> d(3);
+    d += 5e-20;
+    EXPECT_EQ(absl::StrReplaceAll(
+                  u8"Plus[α,β]",
+                  {{u8"α", ToMathematica(3.0)},
+                   {u8"β", ToMathematica(5e-20)}}),
+              ToMathematica(d));
+  }
+  {
+    Vector<double, F> const v({2.0, 3.0, -4.0});
+    EXPECT_EQ(ToMathematica(v.coordinates()), ToMathematica(v));
+  }
+  {
+    Bivector<double, F> const b({2.0, 3.0, -4.0});
+    EXPECT_EQ(ToMathematica(b.coordinates()), ToMathematica(b));
+  }
+  {
+    Vector<double, F> const v({2.0, 3.0, -4.0});
+    EXPECT_EQ(ToMathematica(v),
+              ToMathematica(Point<Vector<double, F>>() + v));
   }
   {
     EXPECT_EQ(
-        "List["
-        "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[-4.00000000000000000*^+00,$MachinePrecision]]",
-        ToMathematica(Vector<double, F>({2.0, 3.0, -4.0})));
-  }
-  {
-    EXPECT_EQ(
-        "List["
-        "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[-4.00000000000000000*^+00,$MachinePrecision]]",
-        ToMathematica(Bivector<double, F>({2.0, 3.0, -4.0})));
-  }
-  {
-    EXPECT_EQ(
-        "List["
-        "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[-4.00000000000000000*^+00,$MachinePrecision]]",
-        ToMathematica(Point<Vector<double, F>>() +
-                      Vector<double, F>({2.0, 3.0, -4.0})));
-  }
-  {
-    EXPECT_EQ(
-        "List["
-        "List["
-        "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision]],"
-        "List["
-        "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision]],"
-        "List["
-        "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision]]]",
+        ToMathematica(SymmetricBilinearForm<double, F, Vector>().coordinates()),
         ToMathematica(SymmetricBilinearForm<double, F, Vector>()));
   }
   {
-    EXPECT_EQ(
-        "List["
-        "List["
-        "Quantity["
-        "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
-        "\" m\"],"
-        "Quantity["
-        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-        "\" m\"],"
-        "Quantity["
-        "SetPrecision[-4.00000000000000000*^+00,$MachinePrecision],"
-        "\" m\"]],"
-        "List["
-        "Quantity["
-        "SetPrecision[-1.00000000000000000*^+00,$MachinePrecision],"
-        "\" m s^-1\"],"
-        "Quantity["
-        "SetPrecision[-5.00000000000000000*^+00,$MachinePrecision],"
-        "\" m s^-1\"],"
-        "Quantity["
-        "SetPrecision[+8.00000000000000000*^+00,$MachinePrecision],"
-        "\" m s^-1\"]]]",
-        ToMathematica(DegreesOfFreedom<F>(
+    DegreesOfFreedom<F> const dof(
             F::origin +
                 Displacement<F>({2.0 * Metre, 3.0 * Metre, -4.0 * Metre}),
             Velocity<F>({-1.0 * Metre / Second,
                          -5.0 * Metre / Second,
-                         8.0 * Metre / Second}))));
+                         8.0 * Metre / Second}));
+    EXPECT_EQ(ToMathematica(std::tuple{dof.position(), dof.velocity()}),
+              ToMathematica(dof));
   }
   {
+    UnboundedLowerTriangularMatrix<double> l2({1,
+                                               2, 3});
     EXPECT_EQ(
-        "List["
-        "Quantity["
-        "SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
-        "\" m\"],"
-        "Quantity["
-        "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
-        "\" s\"],"
-        "Quantity["
-        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-        "\" m s^-1\"]]",
-        ToMathematica(std::tuple{1 * Metre, 2 * Second, 3 * Metre / Second}));
+        ToMathematica(std::tuple{std::tuple{1.0, 0.0}, std::tuple{2.0, 3.0}}),
+        ToMathematica(l2));
+  }
+  {
+    UnboundedUpperTriangularMatrix<double> u2({1, 2,
+                                                  3});
+    EXPECT_EQ(ToMathematica(std::tuple{std::tuple{1.0, 2.0},
+                                       std::tuple{0.0, 3.0}}),
+              ToMathematica(u2));
+  }
+  {
+    UnboundedVector<double> v2({1, 2});
+    EXPECT_EQ(ToMathematica(std::tuple{1.0, 2.0}), ToMathematica(v2));
   }
   {
     DiscreteTrajectory<F> trajectory;
@@ -247,146 +213,63 @@ TEST_F(MathematicaTest, ToMathematica) {
             Velocity<F>({-1.0 * Metre / Second,
                          -5.0 * Metre / Second,
                          8.0 * Metre / Second})));
-    EXPECT_EQ(
-        "List["
-        "Quantity["
-        "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
-        "\" s\"],"
-        "List["
-        "List["
-        "Quantity["
-        "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
-        "\" m\"],"
-        "Quantity["
-        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-        "\" m\"],"
-        "Quantity["
-        "SetPrecision[-4.00000000000000000*^+00,$MachinePrecision],"
-        "\" m\"]],"
-        "List["
-        "Quantity["
-        "SetPrecision[-1.00000000000000000*^+00,$MachinePrecision],"
-        "\" m s^-1\"],"
-        "Quantity["
-        "SetPrecision[-5.00000000000000000*^+00,$MachinePrecision],"
-        "\" m s^-1\"],"
-        "Quantity["
-        "SetPrecision[+8.00000000000000000*^+00,$MachinePrecision],"
-        "\" m s^-1\"]]]]",
-        ToMathematica(*trajectory.begin()));
+    EXPECT_EQ(ToMathematica(std::tuple{trajectory.front().time,
+                                       trajectory.front().degrees_of_freedom}),
+              ToMathematica(trajectory.front()));
   }
   {
     OrbitalElements::EquinoctialElements elements{
         Instant(), 1 * Metre, 2, 3, 4 * Radian, 5, 6, 7, 8};
     EXPECT_EQ(
-        "List["
-        "Quantity["
-        "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
-        "\" s\"],"
-        "Quantity[SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
-        "\" m\"],"
-        "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-        "Quantity[SetPrecision[+4.00000000000000000*^+00,$MachinePrecision],"
-        "\" rad\"],"
-        "SetPrecision[+5.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+6.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+7.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+8.00000000000000000*^+00,$MachinePrecision]]",
+        ToMathematica(std::tuple{
+            Instant(), 1 * Metre, 2.0, 3.0, 4 * Radian, 5.0, 6.0, 7.0, 8.0}),
         ToMathematica(elements));
   }
   {
     PolynomialInMonomialBasis<Length, Time, 2, HornerEvaluator> polynomial1(
         {2 * Metre, -3 * Metre / Second, 4 * Metre / Second / Second});
-    EXPECT_EQ(
-        "Function["
-        "Plus["
-        "Quantity["
-        "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
-        "\" m\"],"
-        "Times["
-        "Quantity["
-        "SetPrecision[-3.00000000000000000*^+00,$MachinePrecision],"
-        "\" m s^-1\"],"
-        "#],"
-        "Times["
-        "Quantity["
-        "SetPrecision[+4.00000000000000000*^+00,$MachinePrecision],"
-        "\" m s^-2\"],"
-        "Power["
-        "#,"
-        "2]]]]",
-        ToMathematica(polynomial1));
+    EXPECT_EQ(absl::StrReplaceAll(
+                  u8"Function[Plus[α,Times[β,#],Times[γ,Power[#,2]]]]",
+                  {{u8"α", ToMathematica(2 * Metre)},
+                   {u8"β", ToMathematica(-3 * Metre / Second)},
+                   {u8"γ", ToMathematica(4 * Metre / Second / Second)}}),
+              ToMathematica(polynomial1));
     PolynomialInMonomialBasis<Length, Instant, 2, HornerEvaluator> polynomial2(
         {5 * Metre, 6 * Metre / Second, -7 * Metre / Second / Second},
         Instant() + 2 * Second);
-    EXPECT_EQ(
-        "Function["
-        "Plus["
-        "Quantity["
-        "SetPrecision[+5.00000000000000000*^+00,$MachinePrecision],"
-        "\" m\"],"
-        "Times["
-        "Quantity["
-        "SetPrecision[+6.00000000000000000*^+00,$MachinePrecision],"
-        "\" m s^-1\"],"
-        "Subtract["
-        "#,"
-        "Quantity["
-        "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
-        "\" s\"]]],"
-        "Times["
-        "Quantity["
-        "SetPrecision[-7.00000000000000000*^+00,$MachinePrecision],"
-        "\" m s^-2\"],"
-        "Power["
-        "Subtract["
-        "#,"
-        "Quantity["
-        "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
-        "\" s\"]],"
-        "2]]]]",
-        ToMathematica(polynomial2));
+    EXPECT_EQ(absl::StrReplaceAll(
+                  u8R"(Function[Plus[
+                        α,
+                        Times[β,Subtract[#,δ]],
+                        Times[γ,Power[Subtract[#,δ],2]]]])",
+                  {{u8"α", ToMathematica(5 * Metre)},
+                   {u8"β", ToMathematica(6 * Metre / Second)},
+                   {u8"γ", ToMathematica(-7 * Metre / Second / Second)},
+                   {u8"δ", ToMathematica(polynomial2.origin())},
+                   {" ", ""},
+                   {"\n", ""}}),
+              ToMathematica(polynomial2));
   }
   {
     using Series = PoissonSeries<double, 0, 0, HornerEvaluator>;
     Instant const t0 = Instant() + 3 * Second;
-    Series series(Series::AperiodicPolynomial({1.5}, t0),
-                  {{4 * Radian / Second,
-                    {/*sin=*/Series::PeriodicPolynomial({0.5}, t0),
-                     /*cos=*/Series::PeriodicPolynomial({-1}, t0)}}});
+    Series::AperiodicPolynomial secular({1.5}, t0);
+    Series::PeriodicPolynomial sin({0.5}, t0);
+    Series::PeriodicPolynomial cos({-1}, t0);
+    Series series(secular, {{4 * Radian / Second, {sin, cos}}});
     EXPECT_EQ(
-        "Function["
-        "Plus["
-        "Plus["
-        "SetPrecision[+1.50000000000000000*^+00,$MachinePrecision]],"
-        "Times["
-        "Plus["
-        "SetPrecision[+5.00000000000000000*^-01,$MachinePrecision]],"
-        "Sin["
-        "Times["
-        "Quantity["
-        "SetPrecision["
-        "+4.00000000000000000*^+00,$MachinePrecision],"
-        "\" s^-1 rad\"],"
-        "Subtract["
-        "#,"
-        "Quantity["
-        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-        "\" s\"]]]]],"
-        "Times["
-        "Plus["
-        "SetPrecision[-1.00000000000000000*^+00,$MachinePrecision]],"
-        "Cos["
-        "Times["
-        "Quantity["
-        "SetPrecision[+4.00000000000000000*^+00,$MachinePrecision],"
-        "\" s^-1 rad\"],"
-        "Subtract["
-        "#,"
-        "Quantity["
-        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-        "\" s\"]]]]]]]",
+        absl::StrReplaceAll(
+            u8R"(Function[Plus[
+                  α,
+                  Times[β,Sin[Times[ω,Subtract[#,δ]]]],
+                  Times[γ,Cos[Times[ω,Subtract[#,δ]]]]]])",
+            {{u8"α", ToMathematicaBody(secular)},
+             {u8"β", ToMathematicaBody(sin)},
+             {u8"γ", ToMathematicaBody(cos)},
+             {u8"δ", ToMathematica(t0)},
+             {u8"ω", ToMathematica(4 * Radian / Second)},
+             {" ", ""},
+             {"\n", ""}}),
         ToMathematica(series));
   }
   {
@@ -401,49 +284,10 @@ TEST_F(MathematicaTest, ToMathematica) {
     Interval<Instant> interval{t0 - 2 * Second, t0 + 3 * Second};
     PiecewiseSeries pw(interval, series);
     EXPECT_EQ(
-        "Function["
-        "Piecewise["
-        "List["
-        "List["
-        "Plus["
-        "Plus["
-        "SetPrecision[+1.50000000000000000*^+00,$MachinePrecision]],"
-        "Times["
-        "Plus["
-        "SetPrecision[+5.00000000000000000*^-01,$MachinePrecision]],"
-        "Sin["
-        "Times["
-        "Quantity["
-        "SetPrecision["
-        "+4.00000000000000000*^+00,$MachinePrecision],"
-        "\" s^-1 rad\"],"
-        "Subtract["
-        "#,"
-        "Quantity["
-        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-        "\" s\"]]]]],"
-        "Times["
-        "Plus["
-        "SetPrecision[-1.00000000000000000*^+00,$MachinePrecision]],"
-        "Cos["
-        "Times["
-        "Quantity["
-        "SetPrecision[+4.00000000000000000*^+00,$MachinePrecision],"
-        "\" s^-1 rad\"],"
-        "Subtract["
-        "#,"
-        "Quantity["
-        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-        "\" s\"]]]]]],"
-        "Between["
-        "#,"
-        "List["
-        "Quantity["
-        "SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
-        "\" s\"],"
-        "Quantity["
-        "SetPrecision[+6.00000000000000000*^+00,$MachinePrecision],"
-        "\" s\"]]]]]]]",
+        absl::StrReplaceAll(
+            u8"Function[Piecewise[List[List[α,Between[#,β]]]]]",
+            {{u8"α", ToMathematicaBody(series)},
+             {u8"β", ToMathematica(std::tuple{interval.min, interval.max})}}),
         ToMathematica(pw));
   }
   {
@@ -452,37 +296,21 @@ TEST_F(MathematicaTest, ToMathematica) {
     EXPECT_EQ("List[]", ToMathematica(opt1));
     EXPECT_EQ("List[\"foo\"]", ToMathematica(opt2));
   }
-  {
-    EXPECT_EQ("\"foo\\\"bar\"", ToMathematica("foo\"bar"));
-  }
 }
 
 TEST_F(MathematicaTest, Option) {
-  EXPECT_EQ(
-      "Rule["
-      "option,"
-      "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]]",
-      Option("option", 3.0));
+  EXPECT_EQ("Rule[option," + ToMathematica(3.0) + "]", Option("option", 3.0));
 }
 
 TEST_F(MathematicaTest, Assign) {
-  EXPECT_EQ(
-      "Set["
-      "var,"
-      "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]];\n",
-      Assign("var", 3.0));
+  EXPECT_EQ("Set[var," + ToMathematica(3.0) + "];\n", Assign("var", 3.0));
 }
 
 TEST_F(MathematicaTest, PlottableDataset) {
-  EXPECT_EQ(
-      "Transpose["
-      "List["
-      "List["
-      "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
-      "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]],"
-      "List[\"2\",\"3\"]]]",
-      PlottableDataset(std::vector<double>{2, 3},
-                       std::vector<std::string>{"2", "3"}));
+  std::vector<double> const abscissæ{2, 3};
+  std::vector<std::string> const ordinates{"2", "3"};
+  EXPECT_EQ("Transpose[" + ToMathematica(std::tuple{abscissæ, ordinates}) + "]",
+            PlottableDataset(abscissæ, ordinates));
 }
 
 TEST_F(MathematicaTest, Escape) {
@@ -498,22 +326,17 @@ TEST_F(MathematicaTest, Escape) {
 
 TEST_F(MathematicaTest, ExpressIn) {
   {
-    EXPECT_EQ("SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]",
-              ToMathematica(3.0 * Metre / Second / Second,
-                            ExpressIn(Metre, Second)));
-    EXPECT_EQ("SetPrecision[+5.72957795130823229*^+01,$MachinePrecision]",
+    EXPECT_EQ(
+        ToMathematica(3.0),
+        ToMathematica(3.0 * Metre / Second / Second, ExpressIn(Metre, Second)));
+    EXPECT_EQ(ToMathematica(1 * Radian / (1 * Degree)),
               ToMathematica(1 * Radian, ExpressIn(Degree)));
   }
   {
-    EXPECT_EQ(
-        "List["
-        "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[-4.00000000000000000*^+00,$MachinePrecision]]",
-        ToMathematica(Vector<Speed, F>({2.0 * Metre / Second,
-                                        3.0 * Metre / Second,
-                                        -4.0 * Metre / Second}),
-                      ExpressIn(Metre, Second)));
+    Vector<Speed, F> const v(
+        {2.0 * Metre / Second, 3.0 * Metre / Second, -4.0 * Metre / Second});
+    EXPECT_EQ(ToMathematica(v / (Metre / Second)),
+              ToMathematica(v, ExpressIn(Metre, Second)));
   }
   {
     DiscreteTrajectory<F> trajectory;
@@ -526,33 +349,16 @@ TEST_F(MathematicaTest, ExpressIn) {
                          -5.0 * Metre / Second,
                          8.0 * Metre / Second})));
     EXPECT_EQ(
-        "List["
-        "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
-        "List["
-        "List["
-        "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[-4.00000000000000000*^+00,$MachinePrecision]],"
-        "List["
-        "SetPrecision[-1.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[-5.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+8.00000000000000000*^+00,$MachinePrecision]]]]",
-        ToMathematica(*trajectory.begin(), ExpressIn(Metre, Second)));
+        ToMathematica(std::tuple{0.0,
+                                 std::tuple{std::tuple{2.0, 3.0, -4.0},
+                                            std::tuple{-1.0, -5.0, 8.0}}}),
+        ToMathematica(trajectory.front(), ExpressIn(Metre, Second)));
   }
   {
     OrbitalElements::EquinoctialElements elements{
         Instant(), 1 * Metre, 2, 3, 4 * Radian, 5, 6, 7, 8};
     EXPECT_EQ(
-        "List["
-        "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+4.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+5.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+6.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+7.00000000000000000*^+00,$MachinePrecision],"
-        "SetPrecision[+8.00000000000000000*^+00,$MachinePrecision]]",
+        ToMathematica(std::tuple(0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0)),
         ToMathematica(elements, ExpressIn(Metre, Second, Radian)));
   }
 
@@ -579,37 +385,12 @@ TEST_F(MathematicaTest, Logger) {
     logger.Set("c", 5.0);
   }
   // Go check the file.
-  EXPECT_EQ(
-      "Set["
-      "a,"
-      "List["
-      "List["
-      "SetPrecision[+1.00000000000000000*^+00,$MachinePrecision],"
-      "SetPrecision[+2.00000000000000000*^+00,$MachinePrecision],"
-      "SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]],"
-      "List["
-      "Quantity["
-      "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
-      "\" m\"],"
-      "Quantity["
-      "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
-      "\" m\"],"
-      "Quantity["
-      "SetPrecision[+0.00000000000000000*^+00,$MachinePrecision],"
-      "\" m\"]]]];\n"
-      "Set["
-      u8"β,"
-      "List["
-      "Quantity["
-      "SetPrecision[+4.00000000000000000*^+00,$MachinePrecision],"
-      "\" m s^-1\"]]];\n"
-      "Set["
-      "c,"
-      "SetPrecision[+5.00000000000000000*^+00,$MachinePrecision]];\n",
-      (
-          std::stringstream{}
-          << std::ifstream(TEMP_DIR / "mathematica_test0.wl").rdbuf())
-          .str());
+  EXPECT_EQ(Assign("a", std::tuple{std::vector{1.0, 2.0, 3.0}, F::origin}) +
+                Assign(u8"β", std::tuple{4 * Metre / Second}) +
+                Assign("c", 5.0),
+            (std::stringstream{}
+             << std::ifstream(TEMP_DIR / "mathematica_test0.wl").rdbuf())
+                .str());
 }
 #endif
 

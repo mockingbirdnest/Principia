@@ -12,8 +12,10 @@ namespace numerics {
 namespace internal_double_precision {
 
 using base::not_null;
+using quantities::Angle;
 using quantities::Difference;
 using quantities::Product;
+using quantities::Quotient;
 using quantities::Sum;
 
 // A simple container for accumulating a value using double precision.  The
@@ -79,6 +81,8 @@ DoublePrecision<Difference<T, U>> TwoDifference(T const& a, U const& b);
 template<typename T, typename U, typename = Difference<Difference<T, U>, T>>
 DoublePrecision<Difference<T, U>> TwoDifference(T const& a, U const& b);
 
+DoublePrecision<Angle> Mod2π(DoublePrecision<Angle> const& θ);
+
 template<typename T>
 bool operator==(DoublePrecision<T> const& left,
                 DoublePrecision<T> const& right);
@@ -103,6 +107,14 @@ template<typename T, typename U>
 DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
                                             DoublePrecision<U> const& right);
 
+template<typename T, typename U>
+DoublePrecision<Product<T, U>> operator*(DoublePrecision<T> const& left,
+                                         DoublePrecision<U> const& right);
+
+template<typename T, typename U>
+DoublePrecision<Quotient<T, U>> operator/(DoublePrecision<T> const& left,
+                                          DoublePrecision<U> const& right);
+
 template<typename T>
 std::string DebugString(DoublePrecision<T> const& double_precision);
 
@@ -113,6 +125,7 @@ std::ostream& operator<<(std::ostream& os,
 }  // namespace internal_double_precision
 
 using internal_double_precision::DoublePrecision;
+using internal_double_precision::Mod2π;
 using internal_double_precision::TwoDifference;
 using internal_double_precision::TwoProduct;
 using internal_double_precision::TwoSum;

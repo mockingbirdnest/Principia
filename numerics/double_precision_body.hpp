@@ -21,6 +21,7 @@ using geometry::DoubleOrQuantityOrMultivectorSerializer;
 using quantities::Abs;
 using quantities::FusedMultiplyAdd;
 using quantities::Quantity;
+using quantities::si::Radian;
 namespace si = quantities::si;
 
 // Assumes that |T| and |U| have a memory representation that is a sequence of
@@ -204,6 +205,15 @@ DoublePrecision<Difference<T, U>> TwoDifference(T const& a, U const& b) {
   return TwoSum(a, -b);
 }
 
+inline DoublePrecision<Angle> Mod2π(DoublePrecision<Angle> const& θ) {
+  static DoublePrecision<Angle> const two_π = []() {
+    return QuickTwoSum(0x1.921FB54442D18p2 * Radian,
+                       0x1.1A62633145C07p-52 * Radian);
+  }();
+  auto const θ_over_2π = θ / two_π;
+  return θ - two_π * DoublePrecision<double>(static_cast<int>(θ_over_2π.value));
+}
+
 template<typename T>
 bool operator==(DoublePrecision<T> const& left,
                 DoublePrecision<T> const& right) {
@@ -253,6 +263,31 @@ DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
   // Computations, algorithm longadd.
   auto const sum = TwoDifference(left.value, right.value);
   return QuickTwoSum(sum.value, (sum.error + left.error) - right.error);
+}
+
+template<typename T, typename U>
+DoublePrecision<Product<T, U>> operator*(DoublePrecision<T> const& left,
+                                         DoublePrecision<U> const& right) {
+  // Linnainmaa (1981), Software for Doubled-Precision Floating-Point
+  // Computations, algorithm longmul.
+  auto product = TwoProduct(left.value, right.value);
+  product.error +=
+      (left.value + left.error) * right.error + left.error * right.value;
+  return QuickTwoSum(product.value, product.error);
+}
+
+template<typename T, typename U>
+DoublePrecision<Quotient<T, U>> operator/(DoublePrecision<T> const& left,
+                                          DoublePrecision<U> const& right) {
+  // Linnainmaa (1981), Software for Doubled-Precision Floating-Point
+  // Computations, algorithm longdiv.
+  auto const z = left.value / right.value;
+  auto const product = TwoProduct(right.value, z);
+  auto const zz =
+      ((((left.value - product.value) - product.error) + left.error) -
+       z * right.error) /
+      (right.value + right.error);
+  return QuickTwoSum(z, zz);
 }
 
 template<typename T>

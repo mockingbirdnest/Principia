@@ -3,6 +3,7 @@
 
 #include <tuple>
 
+#include "base/macros.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
@@ -265,6 +266,64 @@ TEST_F(PolynomialTest, Ring) {
     EXPECT_THAT(actual, AlmostEquals(-518 * Ampere * Kelvin, 0));
   }
 }
+
+// Compose contains a fold expression which fails to compile in Clang because of
+// https://bugs.llvm.org/show_bug.cgi?id=30590.  That bug will be fixed post-
+// 11.0.0.  Since we don't use Compose as of this writing, and working around
+// the bug would be hard, we ifdef out the test.
+#if PRINCIPIA_COMPILER_MSVC
+TEST_F(PolynomialTest, Monoid) {
+  using P2A =
+      PolynomialInMonomialBasis<Temperature, Instant, 2, HornerEvaluator>;
+  using P2V =
+      PolynomialInMonomialBasis<Temperature, Time, 2, HornerEvaluator>;
+  using P3 =
+      PolynomialInMonomialBasis<Current, Temperature, 3, HornerEvaluator>;
+  Instant const t0;
+  P2A const p2a({1 * Kelvin,
+                 3 * Kelvin / Second,
+                 -8 * Kelvin / Second / Second}, t0);
+  P2V const p2v({1 * Kelvin,
+                 3 * Kelvin / Second,
+                 -8 * Kelvin / Second / Second});
+  P3 const p3({2 * Ampere,
+               -4 * Ampere / Kelvin,
+               3 * Ampere / Kelvin / Kelvin,
+               1 * Ampere / Kelvin / Kelvin / Kelvin});
+  auto const pa = Compose(p3, p2a);
+  auto const pv = Compose(p3, p2v);
+  {
+    auto const actual_a = pa(t0 + 0 * Second);
+    auto const actual_v = pv(0 * Second);
+    EXPECT_THAT(actual_a, AlmostEquals(2 * Ampere, 0));
+    EXPECT_THAT(actual_v, AlmostEquals(2 * Ampere, 0));
+  }
+  {
+    auto const actual_a = pa(t0 + 1 * Second);
+    auto const actual_v = pv(1 * Second);
+    EXPECT_THAT(actual_a, AlmostEquals(2 * Ampere, 0));
+    EXPECT_THAT(actual_v, AlmostEquals(2 * Ampere, 0));
+  }
+  {
+    auto const actual_a = pa(t0 - 1 * Second);
+    auto const actual_v = pv(-1 * Second);
+    EXPECT_THAT(actual_a, AlmostEquals(-658 * Ampere, 0));
+    EXPECT_THAT(actual_v, AlmostEquals(-658 * Ampere, 0));
+  }
+  {
+    auto const actual_a = pa(t0 + 2 * Second);
+    auto const actual_v = pv(2 * Second);
+    EXPECT_THAT(actual_a, AlmostEquals(-13648 * Ampere, 0));
+    EXPECT_THAT(actual_v, AlmostEquals(-13648 * Ampere, 0));
+  }
+  {
+    auto const actual_a = pa(t0 - 2 * Second);
+    auto const actual_v = pv(-2 * Second);
+    EXPECT_THAT(actual_a, AlmostEquals(-46396 * Ampere, 0));
+    EXPECT_THAT(actual_v, AlmostEquals(-46396 * Ampere, 0));
+  }
+}
+#endif
 
 TEST_F(PolynomialTest, PointwiseInnerProduct) {
   P2V::Coefficients const coefficients({

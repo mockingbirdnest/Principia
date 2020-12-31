@@ -35,7 +35,7 @@ FORWARD_DECLARE_FUNCTION_FROM(
              int aperiodic_degree, int periodic_degree,
              template<typename, typename, int> class Evaluator,
              typename OptionalExpressIn) std::string,
-    ToMathematicaExpression,
+    ToMathematicaBody,
     (numerics::PiecewisePoissonSeries<Value,
                                       aperiodic_degree, periodic_degree,
                                       Evaluator> const& series,
@@ -197,26 +197,28 @@ class PiecewisePoissonSeries {
                    PoissonSeries<R, ar, pr, E> const& right);
   template<typename L, typename R,
            int al, int pl, int ar, int pr, int aw, int pw,
-           template<typename, typename, int> class E, int p>
+           template<typename, typename, int> class E>
   typename Hilbert<L, R>::InnerProductType
   friend InnerProduct(PoissonSeries<L, al, pl, E> const& left,
                       PiecewisePoissonSeries<R, ar, pr, E> const& right,
                       PoissonSeries<double, aw, pw, E> const& weight,
                       Instant const& t_min,
-                      Instant const& t_max);
+                      Instant const& t_max,
+                      std::optional<int> max_points);
   template<typename L, typename R,
            int al, int pl, int ar, int pr, int aw, int pw,
-           template<typename, typename, int> class E, int p>
+           template<typename, typename, int> class E>
   typename Hilbert<L, R>::InnerProductType
   friend InnerProduct(PiecewisePoissonSeries<L, al, pl, E> const& left,
                       PoissonSeries<R, ar, pr, E> const& right,
                       PoissonSeries<double, aw, pw, E> const& weight,
                       Instant const& t_min,
-                      Instant const& t_max);
+                      Instant const& t_max,
+                      std::optional<int> max_points);
   template<typename V, int ad, int pd,
            template<typename, typename, int> class E,
            typename O>
-  friend std::string mathematica::internal_mathematica::ToMathematicaExpression(
+  friend std::string mathematica::internal_mathematica::ToMathematicaBody(
       PiecewisePoissonSeries<V, ad, pd, E> const& polynomial,
       O express_in);
 };

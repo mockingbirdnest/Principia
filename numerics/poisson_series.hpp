@@ -37,7 +37,7 @@ FORWARD_DECLARE_FUNCTION_FROM(
              int aperiodic_degree, int periodic_degree,
              template<typename, typename, int> class Evaluator,
              typename OptionalExpressIn) std::string,
-    ToMathematicaExpression,
+    ToMathematicaBody,
     (numerics::PoissonSeries<Value,
                              aperiodic_degree, periodic_degree,
                              Evaluator> const& series,
@@ -218,7 +218,7 @@ class PoissonSeries {
   template<typename V, int ad, int pd,
            template<typename, typename, int> class E,
            typename O>
-  friend std::string mathematica::internal_mathematica::ToMathematicaExpression(
+  friend std::string mathematica::internal_mathematica::ToMathematicaBody(
       PoissonSeries<V, ad, pd, E> const& polynomial,
       O express_in);
   template<typename V, int ad, int pd,

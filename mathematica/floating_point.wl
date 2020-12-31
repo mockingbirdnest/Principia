@@ -35,6 +35,9 @@ UlpPlot;
 Bits;
 
 
+HexLiteral;
+
+
 CorrectlyRound;
 \[LeftAngleBracket]x_\[RightAngleBracket]:=CorrectlyRound[x];
 
@@ -85,6 +88,37 @@ Bits[n_]:=If[n>=0,"0","1"]<>
 "|"<>IntegerString[IntegerPart[Representation[Abs[n]]/2^(significandBits-1)],2,exponentBits]<>
 "|"<>IntegerString[Mod[IntegerPart[Representation[Abs[n]]],2^(significandBits-1)],2,significandBits-1]<>
 ";"<>If[FractionalPart[Representation[Abs[n]]]==0,"",ToString/@RealDigits[N[FractionalPart[Representation[Abs[n]]],5],2,10,-1][[1]]<>"\[Ellipsis]"];
+
+
+fullHexDigits:=Floor[(significandBits-1)/4]
+
+
+leastFullHexDigitValue:=2^(significandBits-1)/16^fullHexDigits
+
+
+leastHexDigitValue:=If[leastFullHexDigitValue>1,leastFullHexDigitValue/16,leastFullHexDigitValue]
+
+
+HexLiteral[n_]:=If[n<0,"-",""]<>
+"0x1."<>ToUpperCase[
+IntegerString[
+Mod[IntegerPart[Representation[Abs[n]]/leastFullHexDigitValue],16^fullHexDigits],16,fullHexDigits]<>
+If[
+leastHexDigitValue<1,
+"'"<>IntegerString[Mod[IntegerPart[Representation[Abs[n]]/leastHexDigitValue],16],16,1],
+""]<>
+If[FractionalPart[Representation[Abs[n]]]==0,
+"",
+"'"<>ToString/@RealDigits[
+N[FractionalPart[Representation[Abs[n]]/leastHexDigitValue],5],
+16,3,-1][[1]]<>"\[Ellipsis]"]]<>
+"p"<>ToString[IntegerPart[Representation[Abs[n]]/2^(significandBits-1)]-bias]<>
+Switch[
+{significandBits,exponentBits},
+binary32,"f",
+binary64,"",
+x87extended,"l",
+_,"_"<>ToString[significandBits]<>"_sigbits"]
 
 
 smol=-12;
@@ -159,3 +193,10 @@ EndPackage[]
 
 (* ::Code:: *)
 (*{Bits[Sqrt[2]],Bits[\[LeftAngleBracket]Sqrt[2]\[RightAngleBracket]],Bits[-Sqrt[2]],Bits[\[LeftAngleBracket]-Sqrt[2]\[RightAngleBracket]]}//Column*)
+
+
+(* ::Code:: *)
+(*Table[*)
+(*SetFloatingPointFormat[format];*)
+(*{#,{Bits[#],HexLiteral[#]},{Bits[CorrectlyRound[#]],HexLiteral[CorrectlyRound[#]]}}&/@{\[Pi],1/3,Sqrt[2],1+2^-format[[1]],1+2^(-format[[1]]-5)}//TableForm,*)
+(*{format,{binary16,binary32,binary64,x87extended}}]//TableForm*)
