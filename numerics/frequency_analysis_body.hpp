@@ -190,7 +190,11 @@ IncrementalProjection(Function const& function,
             q̂ₘ -= sᵖₘ * q[i];
           }
         }
-        q̂ₘ_norm  = q̂ₘ.Norm(weight, t_min, t_max);
+        q̂ₘ_norm = q̂ₘ.Norm(weight, t_min, t_max);
+
+        if (!IsFinite(q̂ₘ_norm)) {
+          return F;
+        }
       } while (q̂ₘ_norm < α * previous_q̂ₘ_norm);
 
       q.push_back(q̂ₘ / q̂ₘ_norm);
