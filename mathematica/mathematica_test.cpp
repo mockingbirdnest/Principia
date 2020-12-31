@@ -52,8 +52,10 @@ using numerics::UnboundedUpperTriangularMatrix;
 using numerics::UnboundedVector;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
+using quantities::Infinity;
 using quantities::Length;
 using quantities::Speed;
+using quantities::Sqrt;
 using quantities::Time;
 using quantities::si::Degree;
 using quantities::si::Metre;
@@ -100,12 +102,19 @@ TEST_F(MathematicaTest, ToMathematica) {
     EXPECT_EQ("-2", ToMathematica(-2));
   }
   {
-    EXPECT_EQ("SetPrecision[+3.00000000000000000*^+00,$MachinePrecision]",
-              ToMathematica(3.0));
-    EXPECT_EQ("SetPrecision[-2.00000000000000000*^+09,$MachinePrecision]",
-              ToMathematica(-2.0e9));
-    EXPECT_EQ("SetPrecision[-0.00000000000000000*^+00,$MachinePrecision]",
-              ToMathematica(-0.0));
+    EXPECT_EQ("Times[16^^13456789ABCDEF,Power[2,Subtract[-163,52]]]",
+              ToMathematica(0x1.3'4567'89AB'CDEFp-163));
+    EXPECT_EQ("Minus[Times[16^^10000000000000,Power[2,Subtract[-1074,52]]]]",
+              ToMathematica(-0x1p-1074));
+    EXPECT_EQ("Minus[Times[16^^1FFFFFFFFFFFFF,Power[2,Subtract[1023,52]]]]",
+              ToMathematica(-0x1.F'FFFF'FFFF'FFFFp1023));
+    EXPECT_EQ("Times[16^^19ABCDE,Power[2,Subtract[-12,24]]]",
+              ToMathematica(0x1.9ABCDEp-12f));
+    EXPECT_EQ("0", ToMathematica(0.0));
+    EXPECT_EQ("Minus[0]", ToMathematica(-0.0));  // Not that this does anything.
+    EXPECT_EQ("Infinity", ToMathematica(Infinity<double>));
+    EXPECT_EQ("Minus[Infinity]", ToMathematica(-Infinity<double>));
+    EXPECT_EQ("Minus[Indeterminate]", ToMathematica(Sqrt(-1)));
   }
   {
     EXPECT_EQ(ToMathematica(std::tuple{2.0, 3.0}),
