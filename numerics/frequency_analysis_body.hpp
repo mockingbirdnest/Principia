@@ -23,7 +23,6 @@ namespace internal_frequency_analysis {
 using base::uninitialized;
 using geometry::Hilbert;
 using geometry::Vector;
-using quantities::Abs;
 using quantities::Inverse;
 using quantities::IsFinite;
 using quantities::Sqrt;
