@@ -378,11 +378,13 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         coast_duration = (burn_editors_[index].initial_time -
                           start_of_coast).FormatDuration(show_seconds: false);
       }
-      string coast_description = index == burn_editors_.Count
-          ? orbit_description ?? "Final trajectory"
-          : orbit_description == null
-              ? $"Coast for {coast_duration}"
-              : $@"Coast in {orbit_description} for {coast_duration}";
+      string coast_description = orbit_description == null
+          ? index == burn_editors_.Count
+            ? "Final trajectory"
+            : $"Coast for {coast_duration}"
+          : index == burn_editors_.Count
+            ? $"Final trajectory: {orbit_description}"
+            : $"Coast in {orbit_description} for {coast_duration}";
       UnityEngine.GUILayout.Label(coast_description);
       if (UnityEngine.GUILayout.Button("Add manœuvre", GUILayoutWidth(4))) {
         double initial_time;
