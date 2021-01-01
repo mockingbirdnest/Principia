@@ -233,7 +233,7 @@ template<typename V, typename A, int d,
          typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematicaBody(
     PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
-    OptionalExpressIn express_in = std::nullopt);
+    OptionalExpressIn express_in);
 
 template<typename V, typename A, int d,
          template<typename, typename, int> class E,
@@ -248,7 +248,7 @@ template<typename V, int ad, int pd,
          typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematicaBody(
     PoissonSeries<V, ad, pd, E> const& series,
-    OptionalExpressIn express_in = std::nullopt);
+    OptionalExpressIn express_in);
 
 template<typename V, int ad, int pd,
          template<typename, typename, int> class E,
@@ -261,7 +261,7 @@ template<typename V, int ad, int pd,
          typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematicaBody(
     PiecewisePoissonSeries<V, ad, pd, E> const& series,
-    OptionalExpressIn express_in = std::nullopt);
+    OptionalExpressIn express_in);
 
 template<typename V, int ad, int pd,
          template<typename, typename, int> class E,

@@ -174,12 +174,17 @@ constexpr auto
 TupleComposition<LTuple, RTuple, std::index_sequence<left_indices...>>::Compose(
     LTuple const& left_tuple,
     RTuple const& right_tuple) {
-  // The + 1 in the expressions below match the - 1 in the primary declaration
-  // of TupleComposition.
-  return std::tuple(std::get<0>(left_tuple)) +
-         ((std::get<left_indices + 1>(left_tuple) *
-           geometry::polynomial_ring::Pow<left_indices + 1>(right_tuple)) +
-          ...);
+  auto const degree_0 = std::tuple(std::get<0>(left_tuple));
+  if constexpr (sizeof...(left_indices) == 0) {
+    return degree_0;
+  } else {
+    // The + 1 in the expressions below match the - 1 in the primary declaration
+    // of TupleComposition.
+    return degree_0 +
+           ((std::get<left_indices + 1>(left_tuple) *
+             geometry::polynomial_ring::Pow<left_indices + 1>(right_tuple)) +
+            ...);
+  }
 }
 
 
