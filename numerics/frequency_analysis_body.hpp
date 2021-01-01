@@ -166,16 +166,16 @@ IncrementalProjection(Function const& function,
       // This code follows Björk, Numerics of Gram-Schmidt Orthogonalization,
       // Algorithm 6.1.
       static constexpr double α = 0.5;
-      Series q̂ₘ = aₘ;
+      BasisSeries q̂ₘ = aₘ;
 
       // Formal integration works for a single basis element.
-      Norm q̂ₘ_norm = Sqrt(
+      double q̂ₘ_norm = Sqrt(
           (PointwiseInnerProduct(q̂ₘ, q̂ₘ) * weight).Integrate(t_min, t_max) /
           (t_max - t_min));
 
       // Loop on p.
-      Series previous_q̂ₘ = q̂ₘ;
-      Norm previous_q̂ₘ_norm;
+      BasisSeries previous_q̂ₘ = q̂ₘ;
+      double previous_q̂ₘ_norm;
       do {
         previous_q̂ₘ = q̂ₘ;
         previous_q̂ₘ_norm = q̂ₘ_norm;
