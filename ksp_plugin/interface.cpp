@@ -18,6 +18,7 @@
 #include <psapi.h>
 #endif
 
+#include "absl/strings/str_split.h"
 #include "astronomy/epoch.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/array.hpp"
@@ -1174,10 +1175,10 @@ void __cdecl principia__UpdateCelestialHierarchy(Plugin const* const plugin,
 }
 
 void __cdecl principia__UpdatePrediction(Plugin const* const plugin,
-                                         char const* const vessel_guid) {
-  journal::Method<journal::UpdatePrediction> m({plugin, vessel_guid});
+                                         char const* const vessel_guids) {
+  journal::Method<journal::UpdatePrediction> m({plugin, vessel_guids});
   CHECK_NOTNULL(plugin);
-  plugin->UpdatePrediction(vessel_guid);
+  plugin->UpdatePrediction(absl::StrSplit(vessel_guids, '\x1F'));
   return m.Return();
 }
 

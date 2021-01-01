@@ -442,7 +442,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionNoSecular) {
                     ? AllOf(Gt(2.0e-10 * Metre), Lt(5.3e-7 * Metre))
                     : ω_index == 2
                           ? AllOf(Gt(2.9e-13 * Metre), Lt(2.6e-9 * Metre))
-                          : AllOf(Gt(-1.0e-100 * Metre), Lt(9.8e-13 * Metre)))
+                          : AllOf(Gt(-1.0e-100 * Metre), Lt(8.9e-13 * Metre)))
           << ω_index;
     }
     if (ω_index == ωs.size()) {
@@ -507,7 +507,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
           ω_index == 0
               ? AllOf(Gt(14.8 * Metre), Lt(28.5 * Metre))
               : ω_index == 1
-                    ? AllOf(Gt(2.4e-2 * Metre), Lt(6.4 * Metre))
+                    ? AllOf(Gt(2.4e-2 * Metre), Lt(6.9 * Metre))
                     : ω_index == 2
                           ? AllOf(Gt(2.8e-10 * Metre), Lt(1.3e-6 * Metre))
                           : ω_index == 3
@@ -529,7 +529,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
       IncrementalProjection<4, 4>(
           series,
           angular_frequency_calculator,
-          apodization::Hann<HornerEvaluator>(t_min, t_max),
+          apodization::Dirichlet<HornerEvaluator>(t_min, t_max),
           t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(
