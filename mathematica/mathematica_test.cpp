@@ -263,9 +263,9 @@ TEST_F(MathematicaTest, ToMathematica) {
                   α,
                   Times[β,Sin[Times[ω,Subtract[#,δ]]]],
                   Times[γ,Cos[Times[ω,Subtract[#,δ]]]]]])",
-            {{u8"α", ToMathematicaBody(secular)},
-             {u8"β", ToMathematicaBody(sin)},
-             {u8"γ", ToMathematicaBody(cos)},
+            {{u8"α", ToMathematicaBody(secular, /*express_in=*/std::nullopt)},
+             {u8"β", ToMathematicaBody(sin, /*express_in=*/std::nullopt)},
+             {u8"γ", ToMathematicaBody(cos, /*express_in=*/std::nullopt)},
              {u8"δ", ToMathematica(t0)},
              {u8"ω", ToMathematica(4 * Radian / Second)},
              {" ", ""},
@@ -286,7 +286,7 @@ TEST_F(MathematicaTest, ToMathematica) {
     EXPECT_EQ(
         absl::StrReplaceAll(
             u8"Function[Piecewise[List[List[α,Between[#,β]]]]]",
-            {{u8"α", ToMathematicaBody(series)},
+            {{u8"α", ToMathematicaBody(series, /*express_in=*/std::nullopt)},
              {u8"β", ToMathematica(std::tuple{interval.min, interval.max})}}),
         ToMathematica(pw));
   }
