@@ -100,6 +100,7 @@ void __cdecl principia__VesselRefreshAnalysis(Plugin* const plugin,
   Vessel& vessel = *plugin->GetVessel(vessel_guid);
   plugin->ClearOrbitAnalysersOfVesselsOtherThan(vessel);
   vessel.RefreshOrbitAnalysis(mission_duration * Second);
+  return m.Return();
 }
 
 void __cdecl principia__VesselSetPredictionAdaptiveStepParameters(

@@ -145,6 +145,8 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
 
   protected abstract void Refresh();
   protected abstract OrbitAnalysis GetAnalysis();
+  protected abstract string ButtonText(string orbit_description);
+  protected abstract string AnalysingText();
 
   // Whether |Refresh()| needs to be called.
   protected abstract bool refreshes { get; }
@@ -176,9 +178,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
           analysis.ground_track,
           (int?)(analysis.mission_duration / analysis.elements?.nodal_period));
     }
-    RenderButton(orbit_description_ == null
-        ? "Orbit analysis..."
-        : $"Analysis: {orbit_description_}...");
+    RenderButton(ButtonText(orbit_description_));
   }
   protected override string Title => orbit_description_ == null
       ? "Orbit analysis"
@@ -200,10 +200,9 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
           new UnityEngine.GUIContent("1\n2"), Width(1));
       float five_lines = multiline_style.CalcHeight(
           new UnityEngine.GUIContent("1\n2\n3\n4\n5"), Width(1));
-      UnityEngine.GUILayout.Label(
-          $@"Analysing orbit of {predicted_vessel.vesselName}...",
-          multiline_style,
-          UnityEngine.GUILayout.Height(two_lines));
+      UnityEngine.GUILayout.Label(AnalysingText(),
+                                  multiline_style,
+                                  UnityEngine.GUILayout.Height(two_lines));
 
     OrbitAnalysis analysis = GetAnalysis();
 
@@ -533,6 +532,16 @@ internal class CurrentOrbitAnalyser : OrbitAnalyser {
         ground_track_revolution_);
   }
 
+  protected override string ButtonText(string orbit_description) {
+    return orbit_description == null
+        ? "Orbit analysis..."
+        : $"Analysis: {orbit_description}...";
+  }
+
+  protected override string AnalysingText() {
+    return $"Analysing orbit of {predicted_vessel.vesselName}...";
+  }
+
   protected override bool refreshes => true;
 }
 
@@ -548,6 +557,16 @@ internal class PlannedOrbitAnalyser : OrbitAnalyser {
   protected override OrbitAnalysis GetAnalysis() {
     return plugin.FlightPlanGetCoastAnalysis(predicted_vessel.id.ToString(),
                                              index);
+  }
+
+  protected override string ButtonText(string orbit_description) {
+    return orbit_description == null
+        ? "Analyse final trajectory..."
+        : $"Final orbit analysis: {orbit_description}...";
+  }
+
+  protected override string AnalysingText() {
+    return $"Analysing final planned orbit of {predicted_vessel.vesselName}...";
   }
 
   protected override bool refreshes => false;
