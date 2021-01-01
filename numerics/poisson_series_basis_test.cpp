@@ -17,12 +17,12 @@
 namespace principia {
 namespace numerics {
 
-using geometry::Vector;
 using geometry::Frame;
 using geometry::Handedness;
 using geometry::Hilbert;
 using geometry::Inertial;
 using geometry::Instant;
+using geometry::Vector;
 using quantities::AngularFrequency;
 using quantities::Length;
 using quantities::Sqrt;
