@@ -63,11 +63,12 @@ OrbitAnalysis* __cdecl principia__VesselGetAnalysis(
                                                  ground_track_revolution});
   CHECK_NOTNULL(plugin);
   Vessel& vessel = *plugin->GetVessel(vessel_guid);
-  not_null<OrbitAnalysis*> analysis = NewOrbitAnalysis(vessel.orbit_analysis(),
-                                                       *plugin,
-                                                       revolutions_per_cycle,
-                                                       days_per_cycle,
-                                                       ground_track_revolution);
+  not_null<OrbitAnalysis*> const analysis =
+      NewOrbitAnalysis(vessel.orbit_analysis(),
+                       *plugin,
+                       revolutions_per_cycle,
+                       days_per_cycle,
+                       ground_track_revolution);
   analysis->progress_of_next_analysis = vessel.progress_of_orbit_analysis();
   return m.Return(analysis);
 }
