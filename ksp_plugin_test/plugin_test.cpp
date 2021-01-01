@@ -411,7 +411,7 @@ TEST_F(PluginTest, Serialization) {
                              inserted);
   plugin->AdvanceTime(HistoryTime(time, 6), Angle());
   plugin->CatchUpLaggingVessels(collided_vessels);
-  plugin->UpdatePrediction(satellite);
+  plugin->UpdatePrediction({satellite});
 
   // The call to |UpdatePrediction| above may guard the ephemeris and delay
   // forgetting the histories until after the plugin is serialized below.  To
@@ -913,7 +913,7 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   plugin_->CatchUpLaggingVessels(collided_vessels);
   EXPECT_CALL(plugin_->mock_ephemeris(), t_min_locked)
       .WillRepeatedly(Return(HistoryTime(time, 0)));
-  plugin_->UpdatePrediction(guid);
+  plugin_->UpdatePrediction({guid});
   plugin_->InsertOrKeepVessel(guid,
                               "v" + guid,
                               SolarSystemFactory::Earth,
