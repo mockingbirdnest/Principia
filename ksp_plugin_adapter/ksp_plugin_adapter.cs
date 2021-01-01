@@ -307,7 +307,7 @@ public partial class PrincipiaPluginAdapter
 
     map_node_pool_ = new MapNodePool();
     flight_planner_ = new FlightPlanner(this, PredictedVessel);
-    orbit_analyser_ = new OrbitAnalyser(this, PredictedVessel);
+    orbit_analyser_ = new CurrentOrbitAnalyser(this, PredictedVessel);
     plotting_frame_selector_ = new ReferenceFrameSelector(this,
                                                           UpdateRenderingFrame,
                                                           "Plotting frame");

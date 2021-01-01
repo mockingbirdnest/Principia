@@ -136,12 +136,18 @@ internal static class Formatters {
   }
 }
 
-internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
+internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
   public OrbitAnalyser(PrincipiaPluginAdapter adapter,
                        PredictedVessel predicted_vessel)
       : base(adapter, predicted_vessel, UnityEngine.GUILayout.MinWidth(0)) {
     adapter_ = adapter;
   }
+
+  protected abstract void Refresh();
+  protected abstract OrbitAnalysis GetAnalysis();
+
+  // Whether |Refresh()| needs to be called.
+  protected abstract bool refreshes { get; }
 
   public void RenderButton() {
     string vessel_guid = predicted_vessel?.id.ToString();
@@ -149,20 +155,17 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
     if (vessel_guid == null) {
       orbit_description_ = null;
     } else {
-      if (Shown() ||
-          (!last_background_analysis_time_.HasValue ||
-           (now - last_background_analysis_time_) > TimeSpan.FromSeconds(2))) {
+      if (refreshes &&
+          (Shown() ||
+           (!last_background_analysis_time_.HasValue ||
+            (now - last_background_analysis_time_) > TimeSpan.FromSeconds(2)))) {
         last_background_analysis_time_ = now;
         // Keep refreshing the analysis (albeit at a reduced rate) even when the
         // analyser is not shown, so that the analysis button can display an
         // up-to-date one-line summary.
-        plugin.VesselRefreshAnalysis(vessel_guid, mission_duration_.value);
+        Refresh();
       }
-      OrbitAnalysis analysis = plugin.VesselGetAnalysis(
-          vessel_guid,
-          autodetect_recurrence_ ? null : (int?)revolutions_per_cycle_,
-          autodetect_recurrence_ ? null : (int?)days_per_cycle_,
-          ground_track_revolution_);
+      OrbitAnalysis analysis = GetAnalysis();
       CelestialBody primary = analysis.primary_index.HasValue
           ? FlightGlobals.Bodies[analysis.primary_index.Value]
           : null;
@@ -189,7 +192,9 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
     }
 
     using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(8))) {
-      mission_duration_.Render(enabled : true);
+      if (refreshes) {
+        mission_duration_.Render(enabled : true);
+      }
       var multiline_style = Style.Multiline(UnityEngine.GUI.skin.label);
       float two_lines = multiline_style.CalcHeight(
           new UnityEngine.GUIContent("1\n2"), Width(1));
@@ -200,11 +205,7 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
           multiline_style,
           UnityEngine.GUILayout.Height(two_lines));
 
-    OrbitAnalysis analysis = plugin.VesselGetAnalysis(
-        predicted_vessel.id.ToString(),
-        autodetect_recurrence_ ? null : (int?)revolutions_per_cycle_,
-        autodetect_recurrence_ ? null : (int?)days_per_cycle_,
-        ground_track_revolution_);
+    OrbitAnalysis analysis = GetAnalysis();
 
       if (autodetect_recurrence_ &&
           analysis.recurrence.HasValue &&
@@ -486,12 +487,12 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
     }
   }
 
-  private IntPtr plugin => adapter_.Plugin();
+  protected IntPtr plugin => adapter_.Plugin();
 
   private const string em_dash = "—";
 
   private readonly PrincipiaPluginAdapter adapter_;
-  private readonly DifferentialSlider mission_duration_ =
+  protected readonly DifferentialSlider mission_duration_ =
       new DifferentialSlider(
           label            : "Duration",
           unit             : null,
@@ -505,13 +506,34 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
           field_width      : 5) {
           value = 7 * 24 * 60 * 60
       };
-  private bool autodetect_recurrence_ = true;
-  private int revolutions_per_cycle_ = 1;
-  private int days_per_cycle_ = 1;
-  private int ground_track_revolution_ = 1;
+  protected bool autodetect_recurrence_ = true;
+  protected int revolutions_per_cycle_ = 1;
+  protected int days_per_cycle_ = 1;
+  protected int ground_track_revolution_ = 1;
 
   private string orbit_description_ = null;
   private DateTime? last_background_analysis_time_ = null;
+}
+
+internal class CurrentOrbitAnalyser : OrbitAnalyser {
+  public CurrentOrbitAnalyser(PrincipiaPluginAdapter adapter,
+                              PredictedVessel predicted_vessel)
+      : base(adapter, predicted_vessel) {}
+
+  protected override void Refresh() {
+    plugin.VesselRefreshAnalysis(predicted_vessel.id.ToString(),
+                                 mission_duration_.value);
+  }
+
+  protected override OrbitAnalysis GetAnalysis() {
+    return plugin.VesselGetAnalysis(
+        predicted_vessel.id.ToString(),
+        autodetect_recurrence_ ? null : (int?)revolutions_per_cycle_,
+        autodetect_recurrence_ ? null : (int?)days_per_cycle_,
+        ground_track_revolution_);
+  }
+
+  protected override bool refreshes => true;
 }
 
 
