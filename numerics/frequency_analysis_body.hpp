@@ -163,23 +163,40 @@ IncrementalProjection(Function const& function,
   int m_begin = 1;
   for (;;) {
     for (int m = m_begin; m < basis_size; ++m) {
-      auto aₘ⁽ᵏ⁾ = basis[m];
-      for (int k = 0; k < m; ++k) {
-        if (!PoissonSeriesSubspace::orthogonal(basis_subspaces[k],
-                                               basis_subspaces[m])) {
-          auto const rₖₘ = InnerProduct(q[k], aₘ⁽ᵏ⁾, weight, t_min, t_max);
-          aₘ⁽ᵏ⁾ -= rₖₘ * q[k];
-        }
-      }
+      auto const& aₘ = basis[m];
 
-      auto const rₘₘ = aₘ⁽ᵏ⁾.Norm(weight, t_min, t_max);
-      if (!IsFinite(rₘₘ)) {
-        // Call the calculator here just to evaluate how far we are from the
-        // truth.
-        calculator(f);
-        return F;
-      }
-      q.push_back(aₘ⁽ᵏ⁾ / rₘₘ);
+      // This code follows Björk, Numerics of Gram-Schmidt Orthogonalization,
+      // Algorithm 6.1.
+      static constexpr double α = 0.5;
+      Series q̂ₘ = aₘ;
+
+      // Formal integration works for a single basis element.
+      Norm q̂ₘ_norm = Sqrt(
+          (PointwiseInnerProduct(q̂ₘ, q̂ₘ) * weight).Integrate(t_min, t_max) /
+          (t_max - t_min));
+
+      // Loop on p.
+      Series previous_q̂ₘ = q̂ₘ;
+      Norm previous_q̂ₘ_norm;
+      do {
+        previous_q̂ₘ = q̂ₘ;
+        previous_q̂ₘ_norm = q̂ₘ_norm;
+        for (int i = 0; i < m; ++i) {
+          if (!PoissonSeriesSubspace::orthogonal(basis_subspaces[i],
+                                                 basis_subspaces[m])) {
+            auto const sᵖₘ =
+                InnerProduct(q[i], previous_q̂ₘ, weight, t_min, t_max);
+            q̂ₘ -= sᵖₘ * q[i];
+          }
+        }
+        q̂ₘ_norm = q̂ₘ.Norm(weight, t_min, t_max);
+
+        if (!IsFinite(q̂ₘ_norm)) {
+          return F;
+        }
+      } while (q̂ₘ_norm < α * previous_q̂ₘ_norm);
+
+      q.push_back(q̂ₘ / q̂ₘ_norm);
       DCHECK_EQ(m + 1, q.size());
 
       Norm const Aₘ = InnerProduct(f, q[m], weight, t_min, t_max);
