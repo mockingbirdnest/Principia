@@ -536,6 +536,24 @@ internal class CurrentOrbitAnalyser : OrbitAnalyser {
   protected override bool refreshes => true;
 }
 
+internal class PlannedOrbitAnalyser : OrbitAnalyser {
+  public PlannedOrbitAnalyser(PrincipiaPluginAdapter adapter,
+                              PredictedVessel predicted_vessel)
+      : base(adapter, predicted_vessel) {}
+
+  protected override void Refresh() {
+    Log.Fatal("Cannot refresh a PlannedOrbitAnalyser");
+  }
+
+  protected override OrbitAnalysis GetAnalysis() {
+    return plugin.FlightPlanGetCoastAnalysis(predicted_vessel.id.ToString(),
+                                             index);
+  }
+
+  protected override bool refreshes => false;
+
+  public int index { private get; set; }
+}
 
 }  // namespace ksp_plugin_adapter
 }  // namespace principia
