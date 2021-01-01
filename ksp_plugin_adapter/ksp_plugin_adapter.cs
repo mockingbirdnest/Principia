@@ -411,7 +411,6 @@ public partial class PrincipiaPluginAdapter
         main_vessel != null && MapView.MapIsEnabled;
 
     if (ready_to_draw_active_vessel_trajectory) {
-      plugin_.UpdatePrediction(main_vessel.id.ToString());
       string target_id =
           FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
       if (!plotting_frame_selector_.target_override &&
@@ -423,7 +422,10 @@ public partial class PrincipiaPluginAdapter
                 main_vessel.id.ToString());
         plugin_.VesselSetPredictionAdaptiveStepParameters(
             target_id, adaptive_step_parameters);
-        plugin_.UpdatePrediction(target_id);
+        plugin_.UpdatePrediction(
+            string.Join("\x1F", main_vessel.id.ToString(), target_id));
+      } else {
+        plugin_.UpdatePrediction(main_vessel.id.ToString());
       }
     }
   }
