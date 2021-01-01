@@ -51,8 +51,8 @@ class PoissonSeriesSubspace {
 // A generator for the Кудрявцев basis, i.e., functions of the
 // form tⁿ sin ω t and tⁿ cos ω t properly ordered.  The basis elements have
 // type |Series|, which must be free from Quantity.  |degree| is the maximum
-// degree of tⁿ.
-//TODO(phl): t_min, t_max
+// degree of tⁿ.  The basis elements are valid over the interval [t_min, t_max]
+// and symmetrical (odd, even) around the midpoint of that interval.
 template<typename Series, int degree>
 class PoissonSeriesBasisGenerator {
   using Value = std::invoke_result_t<Series, Instant>;

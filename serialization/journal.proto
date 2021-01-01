@@ -2350,7 +2350,8 @@ extend google.protobuf.FieldOptions {
   // the Dispose pattern and gives the name of the disposable class.
   optional string disposable = 50009;
 
-  //TODO(phl):comment
+  // For a produced field that is returned by reference, this option is attached
+  // to the field that contains the address of the returned field.
   optional string address_of = 50010;
 }
 
