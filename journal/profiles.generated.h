@@ -1775,7 +1775,7 @@ struct UpdateCelestialHierarchy : not_constructible {
 struct UpdatePrediction : not_constructible {
   struct In final {
     Plugin const* const plugin;
-    char const* const vessel_guids;
+    char const* const* const vessel_guids;
   };
 
   using Message = serialization::UpdatePrediction;

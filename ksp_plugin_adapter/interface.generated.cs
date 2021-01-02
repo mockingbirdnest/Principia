@@ -1228,7 +1228,7 @@ internal static partial class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void UpdatePrediction(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guids);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(RepeatedMarshaler<String, NoOwnershipTransferUTF8Marshaler>))] string[] vessel_guids);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__VesselBinormal",

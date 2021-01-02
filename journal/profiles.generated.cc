@@ -2767,13 +2767,21 @@ void UpdateCelestialHierarchy::Run(Message const& message, Player::PointerMap& p
 void UpdatePrediction::Fill(In const& in, not_null<Message*> const message) {
   auto* const m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
-  m->set_vessel_guids(in.vessel_guids);
+  for (char const* const* vessel_guids = in.vessel_guids; vessel_guids != nullptr && *vessel_guids != nullptr; ++vessel_guids) {
+    *m->add_vessel_guids() = **vessel_guids;
+  }
 }
 
 void UpdatePrediction::Run(Message const& message, Player::PointerMap& pointer_map) {
   [[maybe_unused]] auto const& in = message.in();
   auto plugin = DeserializePointer<Plugin const*>(in.plugin(), pointer_map);
-  auto vessel_guids = in.vessel_guids().c_str();
+  std::vector<char const*> vessel_guids_storage;
+  auto vessel_guids = [&vessel_guids_storage](::google::protobuf::RepeatedPtrField<std::string> const& strings) {
+            for (auto const& s : strings) {
+              vessel_guids_storage.push_back(s.c_str());
+            }
+            return &vessel_guids_storage[0];
+          }(in.vessel_guids());
   interface::principia__UpdatePrediction(plugin, vessel_guids);
 }
 

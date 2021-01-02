@@ -1085,7 +1085,7 @@ void __cdecl principia__UpdateCelestialHierarchy(
 extern "C" PRINCIPIA_DLL
 void __cdecl principia__UpdatePrediction(
     Plugin const* const plugin,
-    char const* const vessel_guids);
+    char const* const* const vessel_guids);
 
 extern "C" PRINCIPIA_DLL
 XYZ __cdecl principia__VesselBinormal(
