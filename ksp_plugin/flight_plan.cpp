@@ -115,6 +115,9 @@ Status FlightPlan::Insert(NavigationManœuvre::Burn const& burn,
     return DoesNotFit();
   }
   manœuvres_.insert(manœuvres_.begin() + index, manœuvre);
+  coast_analysers_.insert(coast_analysers_.begin() + index + 1,
+                          make_not_null_unique<OrbitAnalyser>(
+                              ephemeris_, DefaultHistoryParameters()));
   UpdateInitialMassOfManœuvresAfter(index);
   PopSegmentsAffectedByManœuvre(index);
   return ComputeSegments(manœuvres_.begin() + index, manœuvres_.end());
@@ -153,6 +156,8 @@ void FlightPlan::ForgetBefore(Instant const& time,
                   segments_.cbegin() + *first_to_keep);
   manœuvres_.erase(manœuvres_.cbegin(),
                    manœuvres_.cbegin() + *first_to_keep / 2);
+  coast_analysers_.erase(coast_analysers_.cbegin(),
+                         coast_analysers_.cbegin() + *first_to_keep / 2);
 
   auto const root_begin = root_->begin();
   initial_time_ = root_begin->time;
@@ -163,6 +168,7 @@ Status FlightPlan::Remove(int index) {
   CHECK_GE(index, 0);
   CHECK_LT(index, number_of_manœuvres());
   manœuvres_.erase(manœuvres_.begin() + index);
+  coast_analysers_.erase(coast_analysers_.begin() + index + 1);
   UpdateInitialMassOfManœuvresAfter(index);
   PopSegmentsAffectedByManœuvre(index);
   return ComputeSegments(manœuvres_.begin() + index, manœuvres_.end());
@@ -319,6 +325,8 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
     auto const& manoeuvre = message.manoeuvre(i);
     flight_plan->manœuvres_.push_back(
         NavigationManœuvre::ReadFromMessage(manoeuvre, ephemeris));
+    flight_plan->coast_analysers_.push_back(make_not_null_unique<OrbitAnalyser>(
+        flight_plan->ephemeris_, DefaultHistoryParameters()));
   }
   // We need to forcefully prolong, otherwise we might exceed the ephemeris
   // step limit while recomputing the segments and make the flight plan
@@ -418,7 +426,7 @@ Status FlightPlan::ComputeSegments(
         anomalous_segments_ = 1;
         anomalous_status_ = status;
       }
-      coast_analysers_.back()->RequestAnalysis(
+      coast_analysers_[it - manœuvres_.begin()]->RequestAnalysis(
           {.first_time = coast->Fork()->time,
            .first_degrees_of_freedom = coast->Fork()->degrees_of_freedom,
            .mission_duration = coast->back().time - coast->Fork()->time,
@@ -465,10 +473,6 @@ Status FlightPlan::ComputeSegments(
 
 void FlightPlan::AddLastSegment() {
   segments_.emplace_back(segments_.back()->NewForkAtLast());
-  if (segments_.size() % 2 == 1) {
-    coast_analysers_.emplace_back(make_not_null_unique<OrbitAnalyser>(
-        ephemeris_, DefaultHistoryParameters()));
-  }
   if (anomalous_segments_ > 0) {
     ++anomalous_segments_;
   }
@@ -485,9 +489,6 @@ void FlightPlan::PopLastSegment() {
   DiscreteTrajectory<Barycentric>* trajectory = segments_.back();
   CHECK(!trajectory->is_root());
   trajectory->parent()->DeleteFork(trajectory);
-  if (segments_.size() % 2 == 1) {
-    coast_analysers_.pop_back();
-  }
   segments_.pop_back();
   if (anomalous_segments_ > 0) {
     --anomalous_segments_;
