@@ -31,7 +31,7 @@ using quantities::SquareRoot;
 
 // Appends basis elements for |ω| to |basis| and |basis_subspaces|.  Returns the
 // number of elements that were appended.
-template<int aperiodic_degree, int periodic_degree, 
+template<int aperiodic_degree, int periodic_degree,
          typename BasisSeries>
 int MakeBasis(std::optional<AngularFrequency> const& ω,
               Instant const& t_min,
