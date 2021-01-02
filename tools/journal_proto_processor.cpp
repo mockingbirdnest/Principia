@@ -260,6 +260,54 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
       };
 }
 
+void JournalProtoProcessor::ProcessRepeatedStringField(
+    FieldDescriptor const* descriptor) {
+  FieldOptions const& options = descriptor->options();
+  LOG_IF(FATAL,
+         options.HasExtension(journal::serialization::is_produced) ||
+             options.HasExtension(journal::serialization::is_produced_if))
+      << descriptor->full_name()
+      << " is a string field and cannot be produced. Use a fixed64 field that "
+      << "has the (encoding) option instead.";
+
+  field_cs_custom_marshaler_[descriptor] =
+      "RepeatedMarshaler<String, NoOwnershipTransferUTF8Marshaler>";
+  field_cs_type_[descriptor] = "string[]";
+  field_cxx_type_[descriptor] = "char const* const*";
+  field_cxx_assignment_fn_[descriptor] =
+      [this, descriptor](
+          std::string const& prefix, std::string const& expr) {
+        std::string const& descriptor_name = descriptor->name();
+        return "  for (" + field_cxx_type_[descriptor] + " " + descriptor_name +
+               " = " + expr + "; " +
+               descriptor_name + " != nullptr && "
+               "*" + descriptor_name + " != nullptr; "
+               "++" + descriptor_name + ") {\n"
+               "    *" + prefix + "add_" + descriptor_name + "() = " +
+               field_cxx_serializer_fn_[descriptor]("**"+ descriptor_name) +
+               ";\n"
+               "  }\n";
+      };
+  std::string const storage_name = descriptor->name() + "_storage";
+  field_cxx_deserialization_storage_name_[descriptor] = storage_name;
+  field_cxx_deserializer_fn_[descriptor] =
+      [storage_name](
+          std::string const& expr) {
+        // Yes, this lambda generates a lambda.
+        return "[&" + storage_name + "]("
+               "::google::protobuf::RepeatedPtrField<std::string> "
+               "const& strings) {\n"
+               "            for (auto const& s : strings) {\n" +
+               "              " + storage_name +
+               ".push_back(s.c_str());\n" +
+               "            }\n"
+               "            return &" + storage_name + "[0];\n" +
+               "          }(" + expr + ")";
+      };
+  field_cxx_deserialization_storage_type_[descriptor] =
+      "std::vector<char const*>";
+}
+
 void JournalProtoProcessor::ProcessOptionalNonStringField(
     FieldDescriptor const* descriptor,
     std::string const& cs_boxed_type,
@@ -748,8 +796,11 @@ void JournalProtoProcessor::ProcessOptionalField(
 void JournalProtoProcessor::ProcessRepeatedField(
     FieldDescriptor const* descriptor) {
   switch (descriptor->type()) {
-  case FieldDescriptor::TYPE_MESSAGE:
+    case FieldDescriptor::TYPE_MESSAGE:
       ProcessRepeatedMessageField(descriptor);
+      break;
+    case FieldDescriptor::TYPE_STRING:
+      ProcessRepeatedStringField(descriptor);
       break;
     default:
       LOG(FATAL) << descriptor->full_name() << " has unexpected type "
