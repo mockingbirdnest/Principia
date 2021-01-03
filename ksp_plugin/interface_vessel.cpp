@@ -63,6 +63,7 @@ OrbitAnalysis* __cdecl principia__VesselGetAnalysis(
                                                  ground_track_revolution});
   CHECK_NOTNULL(plugin);
   Vessel& vessel = *plugin->GetVessel(vessel_guid);
+  vessel.RefreshOrbitAnalysis();
   not_null<OrbitAnalysis*> const analysis =
       NewOrbitAnalysis(vessel.orbit_analysis(),
                        *plugin,
@@ -91,15 +92,15 @@ XYZ __cdecl principia__VesselNormal(Plugin const* const plugin,
   return m.Return(ToXYZ(plugin->VesselNormal(vessel_guid)));
 }
 
-void __cdecl principia__VesselRefreshAnalysis(Plugin* const plugin,
+void __cdecl principia__VesselRequestAnalysis(Plugin* const plugin,
                                               char const* const vessel_guid,
                                               double const mission_duration) {
-  journal::Method<journal::VesselRefreshAnalysis> m(
+  journal::Method<journal::VesselRequestAnalysis> m(
       {plugin, vessel_guid, mission_duration});
   CHECK_NOTNULL(plugin);
   Vessel& vessel = *plugin->GetVessel(vessel_guid);
   plugin->ClearOrbitAnalysersOfVesselsOtherThan(vessel);
-  vessel.RefreshOrbitAnalysis(mission_duration * Second);
+  vessel.RequestOrbitAnalysis(mission_duration * Second);
   return m.Return();
 }
 

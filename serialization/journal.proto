@@ -2271,9 +2271,9 @@ message VesselNormal {
   optional Return return = 3;
 }
 
-message VesselRefreshAnalysis {
+message VesselRequestAnalysis {
   extend Method {
-    optional VesselRefreshAnalysis extension = 5160;
+    optional VesselRequestAnalysis extension = 5160;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin",
