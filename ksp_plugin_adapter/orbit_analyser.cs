@@ -551,7 +551,7 @@ internal class PlannedOrbitAnalyser : OrbitAnalyser {
       : base(adapter, predicted_vessel) {}
 
   protected override void RequestAnalysis() {
-    Log.Fatal("Cannot refresh a PlannedOrbitAnalyser");
+    Log.Fatal("A PlannedOrbitAnalyser cannot request analysis");
   }
 
   protected override OrbitAnalysis GetAnalysis() {
