@@ -433,7 +433,6 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         UpdateStatus(status, index);
       }
     }
-
     return false;
   }
 

@@ -133,12 +133,6 @@ class FlightPlan {
   virtual OrbitAnalyser::Analysis* analysis(int coast_index);
   double progress_of_analysis(int coast_index) const;
 
-  enum class Period {
-    Sidereal,
-    Anomalistic,
-    Nodal,
-  };
-
   void WriteToMessage(not_null<serialization::FlightPlan*> message) const;
 
   // This may return a null pointer if the flight plan contained in the

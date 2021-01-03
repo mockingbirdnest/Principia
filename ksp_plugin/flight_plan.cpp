@@ -27,7 +27,6 @@ using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using integrators::methods::Fine1987RKNG34;
 using quantities::Acceleration;
-using quantities::Time;
 using quantities::si::Metre;
 using quantities::si::Second;
 
