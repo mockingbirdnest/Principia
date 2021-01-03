@@ -43,6 +43,7 @@ class JournalProtoProcessor final {
 
  private:
   void ProcessRepeatedMessageField(FieldDescriptor const* descriptor);
+  void ProcessRepeatedStringField(FieldDescriptor const* descriptor);
 
   void ProcessOptionalNonStringField(FieldDescriptor const* descriptor,
                                      std::string const& cs_boxed_type,

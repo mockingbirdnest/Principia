@@ -1174,11 +1174,18 @@ void __cdecl principia__UpdateCelestialHierarchy(Plugin const* const plugin,
   return m.Return();
 }
 
-void __cdecl principia__UpdatePrediction(Plugin const* const plugin,
-                                         char const* const vessel_guids) {
+void __cdecl principia__UpdatePrediction(
+    Plugin const* const plugin,
+    char const* const* const vessel_guids) {
   journal::Method<journal::UpdatePrediction> m({plugin, vessel_guids});
   CHECK_NOTNULL(plugin);
-  plugin->UpdatePrediction(absl::StrSplit(vessel_guids, '\x1F'));
+  std::vector<ksp_plugin::GUID> guids;
+  for (char const* const* c = vessel_guids;
+       *c != nullptr;
+       ++c) {
+    guids.push_back(std::string(*c));
+  }
+  plugin->UpdatePrediction(guids);
   return m.Return();
 }
 

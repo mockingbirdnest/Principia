@@ -124,7 +124,7 @@ public partial class PrincipiaPluginAdapter
   private GLLines.Style target_history_style = GLLines.Style.Faded;
   private UnityEngine.Color target_prediction_colour = XKCDColors.LightMauve;
   private GLLines.Style target_prediction_style = GLLines.Style.Solid;
-  
+
   private readonly List<IntPtr> vessel_futures_ = new List<IntPtr>();
 
   // The RSAS is the component of the stock KSP autopilot that deals with
@@ -423,9 +423,9 @@ public partial class PrincipiaPluginAdapter
         plugin_.VesselSetPredictionAdaptiveStepParameters(
             target_id, adaptive_step_parameters);
         plugin_.UpdatePrediction(
-            string.Join("\x1F", main_vessel.id.ToString(), target_id));
+            new string[]{main_vessel.id.ToString(), target_id});
       } else {
-        plugin_.UpdatePrediction(main_vessel.id.ToString());
+        plugin_.UpdatePrediction(new string[]{main_vessel.id.ToString()});
       }
     }
   }
@@ -659,7 +659,7 @@ public partial class PrincipiaPluginAdapter
     LoadTextureOrDie(out surface_navball_texture_, "navball_surface.png");
     LoadTextureOrDie(out target_navball_texture_, "navball_target.png");
 
-    ConfigNode draw_styles = 
+    ConfigNode draw_styles =
         GameDatabase.Instance.GetAtMostOneNode(
             principia_draw_styles_config_name_);
     LoadDrawStyles(draw_styles);

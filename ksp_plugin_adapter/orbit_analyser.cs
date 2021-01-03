@@ -143,13 +143,13 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
     adapter_ = adapter;
   }
 
-  protected abstract void Refresh();
+  protected abstract void RequestAnalysis();
   protected abstract OrbitAnalysis GetAnalysis();
   protected abstract string ButtonText(string orbit_description);
   protected abstract string AnalysingText();
 
-  // Whether |Refresh()| needs to be called.
-  protected abstract bool refreshes { get; }
+  // Whether |RequestAnalysis()| needs to be called.
+  protected abstract bool should_request_analysis { get; }
 
   public void RenderButton() {
     string vessel_guid = predicted_vessel?.id.ToString();
@@ -157,7 +157,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
     if (vessel_guid == null) {
       orbit_description_ = null;
     } else {
-      if (refreshes &&
+      if (should_request_analysis &&
           (Shown() ||
            (!last_background_analysis_time_.HasValue ||
             (now - last_background_analysis_time_) > TimeSpan.FromSeconds(2)))) {
@@ -165,7 +165,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
         // Keep refreshing the analysis (albeit at a reduced rate) even when the
         // analyser is not shown, so that the analysis button can display an
         // up-to-date one-line summary.
-        Refresh();
+        RequestAnalysis();
       }
       OrbitAnalysis analysis = GetAnalysis();
       CelestialBody primary = analysis.primary_index.HasValue
@@ -192,7 +192,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
     }
 
     using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(8))) {
-      if (refreshes) {
+      if (should_request_analysis) {
         mission_duration_.Render(enabled : true);
       }
       var multiline_style = Style.Multiline(UnityEngine.GUI.skin.label);
@@ -519,8 +519,8 @@ internal class CurrentOrbitAnalyser : OrbitAnalyser {
                               PredictedVessel predicted_vessel)
       : base(adapter, predicted_vessel) {}
 
-  protected override void Refresh() {
-    plugin.VesselRefreshAnalysis(predicted_vessel.id.ToString(),
+  protected override void RequestAnalysis() {
+    plugin.VesselRequestAnalysis(predicted_vessel.id.ToString(),
                                  mission_duration_.value);
   }
 
@@ -542,7 +542,7 @@ internal class CurrentOrbitAnalyser : OrbitAnalyser {
     return $"Analysing orbit of {predicted_vessel.vesselName}...";
   }
 
-  protected override bool refreshes => true;
+  protected override bool should_request_analysis => true;
 }
 
 internal class PlannedOrbitAnalyser : OrbitAnalyser {
@@ -550,7 +550,7 @@ internal class PlannedOrbitAnalyser : OrbitAnalyser {
                               PredictedVessel predicted_vessel)
       : base(adapter, predicted_vessel) {}
 
-  protected override void Refresh() {
+  protected override void RequestAnalysis() {
     Log.Fatal("Cannot refresh a PlannedOrbitAnalyser");
   }
 
@@ -569,7 +569,7 @@ internal class PlannedOrbitAnalyser : OrbitAnalyser {
     return $"Analysing final planned orbit of {predicted_vessel.vesselName}...";
   }
 
-  protected override bool refreshes => false;
+  protected override bool should_request_analysis => false;
 
   public int index { private get; set; }
 }

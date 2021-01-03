@@ -29,6 +29,37 @@ using quantities::Sqrt;
 using quantities::Square;
 using quantities::SquareRoot;
 
+// Appends basis elements for |ω| to |basis| and |basis_subspaces|.  Returns the
+// number of elements that were appended.
+template<int aperiodic_degree, int periodic_degree,
+         typename BasisSeries>
+int MakeBasis(std::optional<AngularFrequency> const& ω,
+              Instant const& t_min,
+              Instant const& t_max,
+              std::vector<BasisSeries>& basis,
+              std::vector<PoissonSeriesSubspace>& basis_subspaces) {
+  if (ω.value() == AngularFrequency{}) {
+    using Generator =
+        PoissonSeriesBasisGenerator<BasisSeries, aperiodic_degree>;
+    auto const ω_basis = Generator::Basis(t_min, t_max);
+    auto const ω_basis_subspaces = Generator::Subspaces();
+    std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
+    std::move(ω_basis_subspaces.begin(),
+              ω_basis_subspaces.end(),
+              std::back_inserter(basis_subspaces));
+    return std::tuple_size_v<decltype(ω_basis)>;
+  } else {
+    using Generator = PoissonSeriesBasisGenerator<BasisSeries, periodic_degree>;
+    auto const ω_basis = Generator::Basis(ω.value(), t_min, t_max);
+    auto const ω_basis_subspaces = Generator::Subspaces(ω.value());
+    std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
+    std::move(ω_basis_subspaces.begin(),
+              ω_basis_subspaces.end(),
+              std::back_inserter(basis_subspaces));
+    return std::tuple_size_v<decltype(ω_basis)>;
+  }
+}
+
 template<typename Function,
          int aperiodic_wdegree, int periodic_wdegree,
          template<typename, typename, int> class Evaluator>
@@ -100,9 +131,12 @@ IncrementalProjection(Function const& function,
   using Value = std::invoke_result_t<Function, Instant>;
   using Norm = typename Hilbert<Value>::NormType;
   using Normalized = typename Hilbert<Value>::NormalizedType;
-  using Series = PoissonSeries<Value,
-                               aperiodic_degree, periodic_degree,
-                               Evaluator>;
+  using BasisSeries = PoissonSeries<Normalized,
+                                    aperiodic_degree, periodic_degree,
+                                    Evaluator>;
+  using ResultSeries = PoissonSeries<Value,
+                                     aperiodic_degree, periodic_degree,
+                                     Evaluator>;
 
   // This code follows [Kud07], section 2.  Our indices start at 0, unlike those
   // of Кудрявцев which start at 1.
@@ -112,43 +146,17 @@ IncrementalProjection(Function const& function,
   std::optional<AngularFrequency> ω = calculator(function);
   CHECK(ω.has_value());
 
-  std::vector<Series> basis;
+  std::vector<BasisSeries> basis;
   // The Poisson series basis[k] belongs to the subspace basis_subspaces[k];
   // this remains true after orthonormalization, i.e., q[k] belongs to the
   // subspace basis_subspaces[k] below.
   std::vector<PoissonSeriesSubspace> basis_subspaces;
 
-  int basis_size;
-  // TODO(phl): This is replicated below.
-  if (ω.value() == AngularFrequency{}) {
-    auto const ω_basis =
-        PoissonSeriesBasisGenerator<Series,
-                                    aperiodic_degree>::Basis(t0);
-    auto const ω_basis_subspaces =
-        PoissonSeriesBasisGenerator<Series, aperiodic_degree>::Subspaces(t0);
-    basis_size = std::tuple_size_v<decltype(ω_basis)>;
-    std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
-    std::move(ω_basis_subspaces.begin(),
-              ω_basis_subspaces.end(),
-              std::back_inserter(basis_subspaces));
-  } else {
-    auto const ω_basis =
-        PoissonSeriesBasisGenerator<Series,
-                                    periodic_degree>::Basis(ω.value(), t0);
-    auto const ω_basis_subspaces =
-        PoissonSeriesBasisGenerator<Series, periodic_degree>::Subspaces(
-            ω.value(), t0);
-    basis_size = std::tuple_size_v<decltype(ω_basis)>;
-    std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
-    std::move(ω_basis_subspaces.begin(),
-              ω_basis_subspaces.end(),
-              std::back_inserter(basis_subspaces));
-  }
+  int basis_size = MakeBasis<aperiodic_degree, periodic_degree>(
+      ω, t_min, t_max, basis, basis_subspaces);
 
   // This is logically Q in the QR decomposition of basis.
-  std::vector<PoissonSeries<Normalized,
-                            aperiodic_degree, periodic_degree,
-                            Evaluator>> q;
+  std::vector<BasisSeries> q;
 
   auto const& a₀ = basis[0];
   auto const r₀₀ = a₀.Norm(weight, t_min, t_max);
@@ -157,29 +165,46 @@ IncrementalProjection(Function const& function,
 
   auto const A₀ = InnerProduct(function, q[0], weight, t_min, t_max);
 
-  Series F = A₀ * q[0];
+  ResultSeries F = A₀ * q[0];
   auto f = function - F;
 
   int m_begin = 1;
   for (;;) {
     for (int m = m_begin; m < basis_size; ++m) {
-      auto aₘ⁽ᵏ⁾ = basis[m];
-      for (int k = 0; k < m; ++k) {
-        if (!PoissonSeriesSubspace::orthogonal(basis_subspaces[k],
-                                               basis_subspaces[m])) {
-          auto const rₖₘ = InnerProduct(q[k], aₘ⁽ᵏ⁾, weight, t_min, t_max);
-          aₘ⁽ᵏ⁾ -= rₖₘ * q[k];
-        }
-      }
+      auto const& aₘ = basis[m];
 
-      auto const rₘₘ = aₘ⁽ᵏ⁾.Norm(weight, t_min, t_max);
-      if (!IsFinite(rₘₘ)) {
-        // Call the calculator here just to evaluate how far we are from the
-        // truth.
-        calculator(f);
-        return F;
-      }
-      q.push_back(aₘ⁽ᵏ⁾ / rₘₘ);
+      // This code follows Björk, Numerics of Gram-Schmidt Orthogonalization,
+      // Algorithm 6.1.
+      static constexpr double α = 0.5;
+      BasisSeries q̂ₘ = aₘ;
+
+      // Formal integration works for a single basis element.
+      double q̂ₘ_norm = Sqrt(
+          (PointwiseInnerProduct(q̂ₘ, q̂ₘ) * weight).Integrate(t_min, t_max) /
+          (t_max - t_min));
+
+      // Loop on p.
+      BasisSeries previous_q̂ₘ = q̂ₘ;
+      double previous_q̂ₘ_norm;
+      do {
+        previous_q̂ₘ = q̂ₘ;
+        previous_q̂ₘ_norm = q̂ₘ_norm;
+        for (int i = 0; i < m; ++i) {
+          if (!PoissonSeriesSubspace::orthogonal(basis_subspaces[i],
+                                                 basis_subspaces[m])) {
+            auto const sᵖₘ =
+                InnerProduct(q[i], previous_q̂ₘ, weight, t_min, t_max);
+            q̂ₘ -= sᵖₘ * q[i];
+          }
+        }
+        q̂ₘ_norm = q̂ₘ.Norm(weight, t_min, t_max);
+
+        if (!IsFinite(q̂ₘ_norm)) {
+          return F;
+        }
+      } while (q̂ₘ_norm < α * previous_q̂ₘ_norm);
+
+      q.push_back(q̂ₘ / q̂ₘ_norm);
       DCHECK_EQ(m + 1, q.size());
 
       Norm const Aₘ = InnerProduct(f, q[m], weight, t_min, t_max);
@@ -194,31 +219,8 @@ IncrementalProjection(Function const& function,
       return F;
     }
 
-    int ω_basis_size;
-    if (ω.value() == AngularFrequency{}) {
-      auto const ω_basis =
-          PoissonSeriesBasisGenerator<Series,
-                                      aperiodic_degree>::Basis(t0);
-      auto const ω_basis_subspaces =
-          PoissonSeriesBasisGenerator<Series, aperiodic_degree>::Subspaces(t0);
-      ω_basis_size = std::tuple_size_v<decltype(ω_basis)>;
-      std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
-      std::move(ω_basis_subspaces.begin(),
-                ω_basis_subspaces.end(),
-                std::back_inserter(basis_subspaces));
-    } else {
-      auto const ω_basis =
-          PoissonSeriesBasisGenerator<Series,
-                                      periodic_degree>::Basis(ω.value(), t0);
-      auto const ω_basis_subspaces =
-          PoissonSeriesBasisGenerator<Series, periodic_degree>::Subspaces(
-              ω.value(), t0);
-      ω_basis_size = std::tuple_size_v<decltype(ω_basis)>;
-      std::move(ω_basis.begin(), ω_basis.end(), std::back_inserter(basis));
-      std::move(ω_basis_subspaces.begin(),
-                ω_basis_subspaces.end(),
-                std::back_inserter(basis_subspaces));
-    }
+    int const ω_basis_size = MakeBasis<aperiodic_degree, periodic_degree>(
+        ω, t_min, t_max, basis, basis_subspaces);
     m_begin = basis_size;
     basis_size += ω_basis_size;
   }

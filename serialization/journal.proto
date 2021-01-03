@@ -2198,9 +2198,7 @@ message UpdatePrediction {
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
-    // Separated by ASCII unit separators.
-    // TODO(phl): Change this to a repeated field.
-    required string vessel_guids = 2;
+    repeated string vessel_guids = 2;
   }
   optional In in = 1;
 }
@@ -2290,9 +2288,9 @@ message VesselNormal {
   optional Return return = 3;
 }
 
-message VesselRefreshAnalysis {
+message VesselRequestAnalysis {
   extend Method {
-    optional VesselRefreshAnalysis extension = 5160;
+    optional VesselRequestAnalysis extension = 5160;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin",
@@ -2381,7 +2379,8 @@ extend google.protobuf.FieldOptions {
   // the Dispose pattern and gives the name of the disposable class.
   optional string disposable = 50009;
 
-  //TODO(phl):comment
+  // For a produced field that is returned by reference, this option is attached
+  // to the field that contains the address of the returned field.
   optional string address_of = 50010;
 }
 
