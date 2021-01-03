@@ -190,10 +190,11 @@ class Vessel {
       PileUp::PileUpForSerializationIndex const&
           pile_up_for_serialization_index);
 
-  void RefreshOrbitAnalysis(Time const& mission_duration);
+  void RequestOrbitAnalysis(Time const& mission_duration);
   void ClearOrbitAnalyser();
 
   double progress_of_orbit_analysis() const;
+  void RefreshOrbitAnalysis();
   OrbitAnalyser::Analysis* orbit_analysis();
 
   static void MakeAsynchronous();

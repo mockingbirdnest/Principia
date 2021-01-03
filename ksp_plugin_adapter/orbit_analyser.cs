@@ -156,7 +156,7 @@ internal class OrbitAnalyser : VesselSupervisedWindowRenderer {
         // Keep refreshing the analysis (albeit at a reduced rate) even when the
         // analyser is not shown, so that the analysis button can display an
         // up-to-date one-line summary.
-        plugin.VesselRefreshAnalysis(vessel_guid, mission_duration_.value);
+        plugin.VesselRequestAnalysis(vessel_guid, mission_duration_.value);
       }
       OrbitAnalysis analysis = plugin.VesselGetAnalysis(
           vessel_guid,

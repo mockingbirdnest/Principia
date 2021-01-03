@@ -512,7 +512,7 @@ void Vessel::FillContainingPileUpsFromMessage(
   }
 }
 
-void Vessel::RefreshOrbitAnalysis(Time const& mission_duration) {
+void Vessel::RequestOrbitAnalysis(Time const& mission_duration) {
   if (!orbit_analyser_.has_value()) {
     // TODO(egg): perhaps we should get the history parameters from the plugin;
     // on the other hand, these are probably overkill for high orbits anyway,
@@ -530,7 +530,6 @@ void Vessel::RefreshOrbitAnalysis(Time const& mission_duration) {
       {.first_time = psychohistory_->back().time,
        .first_degrees_of_freedom = psychohistory_->back().degrees_of_freedom,
        .mission_duration = mission_duration});
-  orbit_analyser_->RefreshAnalysis();
 }
 
 void Vessel::ClearOrbitAnalyser() {
@@ -544,8 +543,14 @@ double Vessel::progress_of_orbit_analysis() const {
   return orbit_analyser_->progress_of_next_analysis();
 }
 
+void Vessel::RefreshOrbitAnalysis() {
+  if (orbit_analyser_.has_value()) {
+    orbit_analyser_->RefreshAnalysis();
+  }
+}
+
 OrbitAnalyser::Analysis* Vessel::orbit_analysis() {
-  return orbit_analyser_->analysis();
+  return orbit_analyser_.has_value() ? orbit_analyser_->analysis() : nullptr;
 }
 
 void Vessel::MakeAsynchronous() {
