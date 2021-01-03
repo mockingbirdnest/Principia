@@ -358,7 +358,12 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
   private bool RenderCoast(int index) {
     string vessel_guid = predicted_vessel.id.ToString();
     var coast_analysis =
-        plugin.FlightPlanGetCoastAnalysis(vessel_guid, index);
+        plugin.FlightPlanGetCoastAnalysis(
+            vessel_guid,
+            revolutions_per_cycle   : null,
+            days_per_cycle          : null,
+            ground_track_revolution : 0,
+            index);
     string orbit_description = null;
     if (coast_analysis.primary_index.HasValue) {
       var primary = FlightGlobals.Bodies[coast_analysis.primary_index.Value];

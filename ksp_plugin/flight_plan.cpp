@@ -261,6 +261,11 @@ void FlightPlan::GetAllSegments(
 }
 
 OrbitAnalyser::Analysis* FlightPlan::analysis(int coast_index) {
+  if (coast_index > manœuvres_.size() - number_of_anomalous_manœuvres()) {
+    // If the coast follows an anomalous manœuvre, no valid initial state was
+    // available with which to request an analysis.
+    return nullptr;
+  }
   coast_analysers_[coast_index]->RefreshAnalysis();
   return coast_analysers_[coast_index]->analysis();
 }

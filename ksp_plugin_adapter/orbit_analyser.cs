@@ -555,8 +555,12 @@ internal class PlannedOrbitAnalyser : OrbitAnalyser {
   }
 
   protected override OrbitAnalysis GetAnalysis() {
-    return plugin.FlightPlanGetCoastAnalysis(predicted_vessel.id.ToString(),
-                                             index);
+    return plugin.FlightPlanGetCoastAnalysis(
+        predicted_vessel.id.ToString(),
+        autodetect_recurrence_ ? null : (int?)revolutions_per_cycle_,
+        autodetect_recurrence_ ? null : (int?)days_per_cycle_,
+        ground_track_revolution_,
+        index);
   }
 
   protected override string ButtonText(string orbit_description) {

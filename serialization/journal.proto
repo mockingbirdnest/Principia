@@ -774,7 +774,10 @@ message FlightPlanGetCoastAnalysis {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
     required string vessel_guid = 2;
-    required int32 index = 3;
+    optional int32 revolutions_per_cycle = 3;
+    optional int32 days_per_cycle = 4;
+    required int32 ground_track_revolution = 5;
+    required int32 index = 6;
   }
   message Return {
     required OrbitAnalysis result = 1;
