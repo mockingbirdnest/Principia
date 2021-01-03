@@ -250,12 +250,15 @@ OrbitAnalysis* __cdecl principia__FlightPlanGetCoastAnalysis(
        ground_track_revolution,
        index});
   CHECK_NOTNULL(plugin);
-  return m.Return(
-      NewOrbitAnalysis(GetFlightPlan(*plugin, vessel_guid).analysis(index),
+  auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
+  auto const analysis =
+      NewOrbitAnalysis(flight_plan.analysis(index),
                        *plugin,
                        /*revolutions_per_cycle=*/revolutions_per_cycle,
                        /*days_per_cycle=*/days_per_cycle,
-                       /*ground_track_revolution=*/ground_track_revolution));
+                       /*ground_track_revolution=*/ground_track_revolution);
+  analysis->progress_of_next_analysis = flight_plan.progress_of_analysis(index);
+  return m.Return(analysis);
 }
 
 double __cdecl principia__FlightPlanGetDesiredFinalTime(

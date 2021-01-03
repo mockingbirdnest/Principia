@@ -270,6 +270,13 @@ OrbitAnalyser::Analysis* FlightPlan::analysis(int coast_index) {
   return coast_analysers_[coast_index]->analysis();
 }
 
+double FlightPlan::progress_of_analysis(int coast_index) const {
+  if (coast_index > manœuvres_.size() - number_of_anomalous_manœuvres()) {
+    return 0.0;
+  }
+  return coast_analysers_[coast_index]->progress_of_next_analysis();
+}
+
 void FlightPlan::WriteToMessage(
     not_null<serialization::FlightPlan*> const message) const {
   initial_mass_.WriteToMessage(message->mutable_initial_mass());

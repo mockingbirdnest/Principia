@@ -131,6 +131,7 @@ class FlightPlan {
 
   // |coast_index| must be in [0, number_of_manœuvres()].
   virtual OrbitAnalyser::Analysis* analysis(int coast_index);
+  double progress_of_analysis(int coast_index) const;
 
   enum class Period {
     Sidereal,
