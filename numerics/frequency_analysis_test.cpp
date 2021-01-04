@@ -397,12 +397,14 @@ TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
   }
 }
 
+#if !defined(_DEBUG)
+
 TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionNoSecular) {
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> frequency_distribution(2000.0, 3000.0);
 
   std::vector<AngularFrequency> ωs;
-  for (int i = 3; i >= 1; --i) {
+  for (int i = 0; i < 3; ++i) {
     ωs.push_back(frequency_distribution(random) * Radian / Second);
   }
 
@@ -413,14 +415,14 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionNoSecular) {
       t0_ + 200 * Radian / *std::max_element(ωs.cbegin(), ωs.cend());
 
   std::optional<Series4> series;
-  for (int i = 3; i >= 1; --i) {
-    std::uniform_real_distribution<> amplitude_distribution(-(1 << i),
-                                                            (1 << i));
+  for (int i = 0; i < 3; ++i) {
+    std::uniform_real_distribution<> amplitude_distribution(-(8 >> i),
+                                                            (8 >> i));
     auto const sin = random_polynomial4_(t_mid, random, amplitude_distribution);
     auto const cos = random_polynomial4_(t_mid, random, amplitude_distribution);
     Series4 const s(
         Series4::AperiodicPolynomial({}, t_mid),
-        {{ωs.back(), Series4::Polynomials{sin, cos}}});
+        {{ωs[i], Series4::Polynomials{sin, cos}}});
     if (series.has_value()) {
       series.value() += s;
     } else {
@@ -437,12 +439,12 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionNoSecular) {
       EXPECT_THAT(
           Abs(residual(t_min + i * (t_max - t_min) / 100)),
           ω_index == 0
-              ? AllOf(Gt(5.2e-1 * Metre), Lt(8.9 * Metre))
+              ? AllOf(Gt(1.3e-1 * Metre), Lt(12 * Metre))
               : ω_index == 1
-                    ? AllOf(Gt(2.0e-10 * Metre), Lt(5.3e-7 * Metre))
+                    ? AllOf(Gt(4.8e-3 * Metre), Lt(7.8 * Metre))
                     : ω_index == 2
-                          ? AllOf(Gt(2.9e-13 * Metre), Lt(2.6e-9 * Metre))
-                          : AllOf(Gt(-1.0e-100 * Metre), Lt(1.3e-12 * Metre)))
+                          ? AllOf(Gt(5.6e-14 * Metre), Lt(6.2e-10 * Metre))
+                          : AllOf(Gt(5.5e-17 * Metre), Lt(1.1e-13 * Metre)))
           << ω_index;
     }
     if (ω_index == ωs.size()) {
@@ -464,7 +466,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionNoSecular) {
     EXPECT_THAT(
         projection4(t_min + i * (t_max - t_min) / 100),
         RelativeErrorFrom(series.value()(t_min + i * (t_max - t_min) / 100),
-                          AllOf(Ge(0), Lt(3.7e-13))));
+                          AllOf(Ge(0), Lt(6.9e-14))));
   }
 }
 
@@ -474,7 +476,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
   std::uniform_real_distribution<> secular_distribution(-30.0, 30.0);
 
   std::vector<AngularFrequency> ωs = {AngularFrequency{}};
-  for (int i = 3; i >= 1; --i) {
+  for (int i = 1; i < 4; ++i) {
     ωs.push_back(frequency_distribution(random) * Radian / Second);
   }
 
@@ -486,14 +488,16 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
 
   Series4 series(
       random_polynomial4_(t_mid, random, secular_distribution), {});
-  for (int i = 3; i >= 1; --i) {
-    std::uniform_real_distribution<> amplitude_distribution(-(1 << i),
-                                                            (1 << i));
+
+  // Skip the zero frequency in the loop.
+  for (int i = 1; i < 4; ++i) {
+    std::uniform_real_distribution<> amplitude_distribution(-(16 >> i),
+                                                            (16 >> i));
     auto const sin = random_polynomial4_(t_mid, random, amplitude_distribution);
     auto const cos = random_polynomial4_(t_mid, random, amplitude_distribution);
     series += Series4(
         Series4::AperiodicPolynomial({}, t_mid),
-        {{ωs.back(), Series4::Polynomials{sin, cos}}});
+        {{ωs[i], Series4::Polynomials{sin, cos}}});
   }
 
   // A perfect calculator for the frequencies of the series.
@@ -502,18 +506,17 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
       [&series, t_min, t_max, &ω_index, &ωs](
           auto const& residual) -> std::optional<AngularFrequency> {
     for (int i = 0; i <= 100; ++i) {
-      EXPECT_THAT(
-          Abs(residual(t_min + i * (t_max - t_min) / 100)),
-          ω_index == 0
-              ? AllOf(Gt(14.8 * Metre), Lt(28.5 * Metre))
-              : ω_index == 1
-                    ? AllOf(Gt(2.4e-2 * Metre), Lt(6.9 * Metre))
-                    : ω_index == 2
-                          ? AllOf(Gt(2.8e-10 * Metre), Lt(1.3e-6 * Metre))
-                          : ω_index == 3
-                                ? AllOf(Gt(1.3e-13 * Metre), Lt(4.5e-9 * Metre))
-                                : AllOf(Gt(-1.0e-100 * Metre),
-                                        Lt(1.2e-12 * Metre)))
+      EXPECT_THAT(Abs(residual(t_min + i * (t_max - t_min) / 100)),
+                  ω_index == 0
+                      ? AllOf(Gt(12 * Metre), Lt(32 * Metre))
+                      : ω_index == 1
+                            ? AllOf(Gt(5.2e-3 * Metre), Lt(9.0 * Metre))
+                            : ω_index == 2
+                                  ? AllOf(Gt(7.0e-3 * Metre), Lt(3.1 * Metre))
+                                  : ω_index == 3 ? AllOf(Gt(1.1e-14 * Metre),
+                                                         Lt(1.7e-10 * Metre))
+                                                 : AllOf(Gt(-1.0e-100 * Metre),
+                                                         Lt(2.4e-14 * Metre)))
           << ω_index;
     }
     if (ω_index == ωs.size()) {
@@ -535,9 +538,11 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
     EXPECT_THAT(
         projection4(t_min + i * (t_max - t_min) / 100),
         RelativeErrorFrom(series(t_min + i * (t_max - t_min) / 100),
-                          AllOf(Ge(0), Lt(6.1e-14))));
+                          AllOf(Ge(0), Lt(1.5e-15))));
   }
 }
+
+#endif
 
 }  // namespace frequency_analysis
 }  // namespace numerics
