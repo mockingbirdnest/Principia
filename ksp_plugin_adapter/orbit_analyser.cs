@@ -491,7 +491,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
   private const string em_dash = "—";
 
   private readonly PrincipiaPluginAdapter adapter_;
-  protected readonly DifferentialSlider mission_duration_ =
+  private readonly DifferentialSlider mission_duration_ =
       new DifferentialSlider(
           label            : "Duration",
           unit             : null,
@@ -505,10 +505,19 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
           field_width      : 5) {
           value = 7 * 24 * 60 * 60
       };
-  protected bool autodetect_recurrence_ = true;
-  protected int revolutions_per_cycle_ = 1;
-  protected int days_per_cycle_ = 1;
-  protected int ground_track_revolution_ = 1;
+
+  protected double requested_mission_duration => mission_duration_.value;
+
+  private bool autodetect_recurrence_ = true;
+  private int revolutions_per_cycle_ = 1;
+  private int days_per_cycle_ = 1;
+  private int ground_track_revolution_ = 1;
+
+  protected int? manual_revolutions_per_cycle =>
+      autodetect_recurrence_ ? null : (int?)revolutions_per_cycle_;
+  protected int? manual_days_per_cycle =>
+      autodetect_recurrence_ ? null : (int?)days_per_cycle_;
+  protected int ground_track_revolution => ground_track_revolution_;
 
   private string orbit_description_ = null;
   private DateTime? last_background_analysis_time_ = null;
@@ -521,15 +530,14 @@ internal class CurrentOrbitAnalyser : OrbitAnalyser {
 
   protected override void RequestAnalysis() {
     plugin.VesselRequestAnalysis(predicted_vessel.id.ToString(),
-                                 mission_duration_.value);
+                                 requested_mission_duration);
   }
 
   protected override OrbitAnalysis GetAnalysis() {
-    return plugin.VesselGetAnalysis(
-        predicted_vessel.id.ToString(),
-        autodetect_recurrence_ ? null : (int?)revolutions_per_cycle_,
-        autodetect_recurrence_ ? null : (int?)days_per_cycle_,
-        ground_track_revolution_);
+    return plugin.VesselGetAnalysis(predicted_vessel.id.ToString(),
+                                    manual_revolutions_per_cycle,
+                                    manual_days_per_cycle,
+                                    ground_track_revolution);
   }
 
   protected override string ButtonText(string orbit_description) {
@@ -555,12 +563,11 @@ internal class PlannedOrbitAnalyser : OrbitAnalyser {
   }
 
   protected override OrbitAnalysis GetAnalysis() {
-    return plugin.FlightPlanGetCoastAnalysis(
-        predicted_vessel.id.ToString(),
-        autodetect_recurrence_ ? null : (int?)revolutions_per_cycle_,
-        autodetect_recurrence_ ? null : (int?)days_per_cycle_,
-        ground_track_revolution_,
-        index);
+    return plugin.FlightPlanGetCoastAnalysis(predicted_vessel.id.ToString(),
+                                             manual_revolutions_per_cycle,
+                                             manual_days_per_cycle,
+                                             ground_track_revolution,
+                                             index);
   }
 
   protected override string ButtonText(string orbit_description) {
