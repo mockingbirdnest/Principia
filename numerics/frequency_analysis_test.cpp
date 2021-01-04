@@ -397,6 +397,8 @@ TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
   }
 }
 
+#if !defined(_DEBUG)
+
 TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionNoSecular) {
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> frequency_distribution(2000.0, 3000.0);
@@ -539,6 +541,8 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
                           AllOf(Ge(0), Lt(1.5e-15))));
   }
 }
+
+#endif
 
 }  // namespace frequency_analysis
 }  // namespace numerics
