@@ -504,18 +504,17 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
       [&series, t_min, t_max, &ω_index, &ωs](
           auto const& residual) -> std::optional<AngularFrequency> {
     for (int i = 0; i <= 100; ++i) {
-      EXPECT_THAT(
-          Abs(residual(t_min + i * (t_max - t_min) / 100)),
-          ω_index == 0
-              ? AllOf(Gt(12 * Metre), Lt(32 * Metre))
-              : ω_index == 1
-                    ? AllOf(Gt(5.2e-3 * Metre), Lt(9.0 * Metre))
-                    : ω_index == 2
-                          ? AllOf(Gt(7.0e-3 * Metre), Lt(3.1 * Metre))
-                          : ω_index == 3
-                                ? AllOf(Gt(1.1e-14 * Metre), Lt(1.7e-10 * Metre))
-                                : AllOf(Gt(-1.0e-100 * Metre),
-                                        Lt(2.4e-14 * Metre)))
+      EXPECT_THAT(Abs(residual(t_min + i * (t_max - t_min) / 100)),
+                  ω_index == 0
+                      ? AllOf(Gt(12 * Metre), Lt(32 * Metre))
+                      : ω_index == 1
+                            ? AllOf(Gt(5.2e-3 * Metre), Lt(9.0 * Metre))
+                            : ω_index == 2
+                                  ? AllOf(Gt(7.0e-3 * Metre), Lt(3.1 * Metre))
+                                  : ω_index == 3 ? AllOf(Gt(1.1e-14 * Metre),
+                                                         Lt(1.7e-10 * Metre))
+                                                 : AllOf(Gt(-1.0e-100 * Metre),
+                                                         Lt(2.4e-14 * Metre)))
           << ω_index;
     }
     if (ω_index == ωs.size()) {
