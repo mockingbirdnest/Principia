@@ -53,6 +53,7 @@ using ::testing::DoAll;
 using ::testing::ElementsAre;
 using ::testing::MockFunction;
 using ::testing::Return;
+using ::testing::ReturnRef;
 using ::testing::_;
 
 class VesselTest : public testing::Test {
@@ -400,6 +401,8 @@ TEST_F(VesselTest, FlightPlan) {
       ephemeris_,
       FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _))
       .Times(AnyNumber());
+  std::vector<not_null<MassiveBody const*>> const bodies;
+  ON_CALL(ephemeris_, bodies()).WillByDefault(ReturnRef(bodies));
   vessel_.PrepareHistory(astronomy::J2000);
 
   EXPECT_FALSE(vessel_.has_flight_plan());
