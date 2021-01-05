@@ -31,8 +31,16 @@ OrbitAnalyser::OrbitAnalyser(
       analysed_trajectory_parameters_(
           std::move(analysed_trajectory_parameters)) {}
 
+OrbitAnalyser::~OrbitAnalyser() {
+  // Ensure that we do not have a thread still running with references to the
+  // members of this class when those are destroyed.
+  Interrupt();
+}
+
 void OrbitAnalyser::Interrupt() {
   analyser_ = jthread();
+  // We are single-threaded here, no need to lock.
+  analyser_idle_ = true;
 }
 
 void OrbitAnalyser::RequestAnalysis(Parameters const& parameters) {
@@ -44,7 +52,8 @@ void OrbitAnalyser::RequestAnalysis(Parameters const& parameters) {
   last_parameters_ = parameters;
   absl::MutexLock l(&lock_);
   // Only process this request if there is no analysis in progress.
-  if (!analyser_.joinable()) {
+  if (analyser_idle_) {
+    analyser_idle_ = false;
     analyser_ = MakeStoppableThread(
         [this](GuardedParameters guarded_parameters) {
           AnalyseOrbit(std::move(guarded_parameters));
@@ -75,115 +84,97 @@ double OrbitAnalyser::progress_of_next_analysis() const {
 }
 
 Status OrbitAnalyser::AnalyseOrbit(GuardedParameters guarded_parameters) {
-  // This object will represent this thread once we are ready to detach from the
-  // main thread.
-  jthread analyser;
-  // The thread is joinable within the following block; it is detached outside
-  // of it, so anything whose destructor relies on objects that can be destroyed
-  // by the main thread should live within the block.
-  {
-    // Ensure that we destroy the guard before leaving the block, while we know
-    // that the ephemeris still exists.
-    GuardedParameters guarded = std::move(guarded_parameters);
-    auto const& parameters = guarded.parameters;
+  auto const& parameters = guarded_parameters.parameters;
 
-    Analysis analysis{parameters.first_time};
-    DiscreteTrajectory<Barycentric> trajectory;
-    trajectory.Append(parameters.first_time,
-                      parameters.first_degrees_of_freedom);
+  Analysis analysis{parameters.first_time};
+  DiscreteTrajectory<Barycentric> trajectory;
+  trajectory.Append(parameters.first_time, parameters.first_degrees_of_freedom);
 
-    RotatingBody<Barycentric> const* primary = nullptr;
-    auto smallest_osculating_period = Infinity<Time>;
-    for (auto const body : ephemeris_->bodies()) {
-      RETURN_IF_STOPPED;
-      auto const initial_osculating_elements =
-          KeplerOrbit<Barycentric>{
-              *body,
-              MasslessBody{},
-              parameters.first_degrees_of_freedom -
-                  ephemeris_->trajectory(body)->EvaluateDegreesOfFreedom(
-                      parameters.first_time),
-              parameters.first_time}.elements_at_epoch();
-      if (initial_osculating_elements.period.has_value() &&
-          initial_osculating_elements.period < smallest_osculating_period) {
-        smallest_osculating_period = *initial_osculating_elements.period;
-        primary = dynamic_cast_not_null<RotatingBody<Barycentric> const*>(body);
-      }
-    }
-    if (primary != nullptr) {
-      std::vector<not_null<DiscreteTrajectory<Barycentric>*>> trajectories = {
-          &trajectory};
-      auto instance = ephemeris_->NewInstance(
-          trajectories,
-          Ephemeris<Barycentric>::NoIntrinsicAccelerations,
-          analysed_trajectory_parameters_);
-      Time const analysis_duration =
-          std::min(parameters.extended_mission_duration.value_or(
-                       parameters.mission_duration),
-                   std::max(2 * smallest_osculating_period,
-                            parameters.mission_duration));
-      for (Instant t = parameters.first_time + analysis_duration / 0x1p10;
-           trajectory.back().time < parameters.first_time + analysis_duration;
-           t += analysis_duration / 0x1p10) {
-        if (!ephemeris_->FlowWithFixedStep(t, *instance).ok()) {
-          // TODO(egg): Report that the integration failed.
-          break;
-        }
-        progress_of_next_analysis_ =
-            (trajectory.back().time - parameters.first_time) /
-            analysis_duration;
-        RETURN_IF_STOPPED;
-      }
-      analysis.mission_duration_ =
-          trajectory.back().time - parameters.first_time;
-
-      // TODO(egg): |next_analysis_percentage_| only reflects the progress of
-      // the integration, but the analysis itself can take a while; this results
-      // in the progress bar being stuck at 100% while the elements and nodes
-      // are being computed.
-
-      using PrimaryCentred = Frame<enum class PrimaryCentredTag, NonRotating>;
-      DiscreteTrajectory<PrimaryCentred> primary_centred_trajectory;
-      BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred>
-          body_centred(ephemeris_, primary);
-      for (auto const& [time, degrees_of_freedom] : trajectory) {
-        RETURN_IF_STOPPED;
-        primary_centred_trajectory.Append(
-            time, body_centred.ToThisFrameAtTime(time)(degrees_of_freedom));
-      }
-      analysis.primary_ = primary;
-      auto elements = OrbitalElements::ForTrajectory(
-          primary_centred_trajectory, *primary, MasslessBody{});
-      // We do not RETURN_IF_ERROR as ForTrajectory can return non-CANCELLED
-      // statuses.
-      RETURN_IF_STOPPED;
-      if (elements.ok()) {
-        analysis.elements_ = std::move(elements).ValueOrDie();
-        // TODO(egg): max_abs_Cᴛₒ should probably depend on the number of
-        // revolutions.
-        analysis.closest_recurrence_ = OrbitRecurrence::ClosestRecurrence(
-            analysis.elements_->nodal_period(),
-            analysis.elements_->nodal_precession(),
-            *primary,
-            /*max_abs_Cᴛₒ=*/100);
-        auto ground_track =
-            OrbitGroundTrack::ForTrajectory(primary_centred_trajectory,
-                                            *primary,
-                                            /*mean_sun=*/std::nullopt);
-        RETURN_IF_ERROR(ground_track);
-        analysis.ground_track_ = std::move(ground_track).ValueOrDie();
-        analysis.ResetRecurrence();
-      }
-    }
-
-    {
-      absl::MutexLock l(&lock_);
-      next_analysis_ = std::move(analysis);
-      // Take ownership of our own thread so we can safely detach.
-      std::swap(analyser, analyser_);
+  RotatingBody<Barycentric> const* primary = nullptr;
+  auto smallest_osculating_period = Infinity<Time>;
+  for (auto const body : ephemeris_->bodies()) {
+    RETURN_IF_STOPPED;
+    auto const initial_osculating_elements =
+        KeplerOrbit<Barycentric>{
+            *body,
+            MasslessBody{},
+            parameters.first_degrees_of_freedom -
+                ephemeris_->trajectory(body)->EvaluateDegreesOfFreedom(
+                    parameters.first_time),
+            parameters.first_time}
+            .elements_at_epoch();
+    if (initial_osculating_elements.period.has_value() &&
+        initial_osculating_elements.period < smallest_osculating_period) {
+      smallest_osculating_period = *initial_osculating_elements.period;
+      primary = dynamic_cast_not_null<RotatingBody<Barycentric> const*>(body);
     }
   }
-  analyser.detach();
+  if (primary != nullptr) {
+    std::vector<not_null<DiscreteTrajectory<Barycentric>*>> trajectories = {
+        &trajectory};
+    auto instance = ephemeris_->NewInstance(
+        trajectories,
+        Ephemeris<Barycentric>::NoIntrinsicAccelerations,
+        analysed_trajectory_parameters_);
+    Time const analysis_duration = std::min(
+        parameters.extended_mission_duration.value_or(
+            parameters.mission_duration),
+        std::max(2 * smallest_osculating_period, parameters.mission_duration));
+    for (Instant t = parameters.first_time + analysis_duration / 0x1p10;
+         trajectory.back().time < parameters.first_time + analysis_duration;
+         t += analysis_duration / 0x1p10) {
+      if (!ephemeris_->FlowWithFixedStep(t, *instance).ok()) {
+        // TODO(egg): Report that the integration failed.
+        break;
+      }
+      progress_of_next_analysis_ =
+          (trajectory.back().time - parameters.first_time) / analysis_duration;
+      RETURN_IF_STOPPED;
+    }
+    analysis.mission_duration_ = trajectory.back().time - parameters.first_time;
+
+    // TODO(egg): |next_analysis_percentage_| only reflects the progress of
+    // the integration, but the analysis itself can take a while; this results
+    // in the progress bar being stuck at 100% while the elements and nodes
+    // are being computed.
+
+    using PrimaryCentred = Frame<enum class PrimaryCentredTag, NonRotating>;
+    DiscreteTrajectory<PrimaryCentred> primary_centred_trajectory;
+    BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred>
+        body_centred(ephemeris_, primary);
+    for (auto const& [time, degrees_of_freedom] : trajectory) {
+      RETURN_IF_STOPPED;
+      primary_centred_trajectory.Append(
+          time, body_centred.ToThisFrameAtTime(time)(degrees_of_freedom));
+    }
+    analysis.primary_ = primary;
+    auto elements = OrbitalElements::ForTrajectory(
+        primary_centred_trajectory, *primary, MasslessBody{});
+    // We do not RETURN_IF_ERROR as ForTrajectory can return non-CANCELLED
+    // statuses.
+    RETURN_IF_STOPPED;
+    if (elements.ok()) {
+      analysis.elements_ = std::move(elements).ValueOrDie();
+      // TODO(egg): max_abs_Cᴛₒ should probably depend on the number of
+      // revolutions.
+      analysis.closest_recurrence_ = OrbitRecurrence::ClosestRecurrence(
+          analysis.elements_->nodal_period(),
+          analysis.elements_->nodal_precession(),
+          *primary,
+          /*max_abs_Cᴛₒ=*/100);
+      auto ground_track =
+          OrbitGroundTrack::ForTrajectory(primary_centred_trajectory,
+                                          *primary,
+                                          /*mean_sun=*/std::nullopt);
+      RETURN_IF_ERROR(ground_track);
+      analysis.ground_track_ = std::move(ground_track).ValueOrDie();
+      analysis.ResetRecurrence();
+    }
+  }
+
+  absl::MutexLock l(&lock_);
+  next_analysis_ = std::move(analysis);
+  analyser_idle_ = true;
   return Status::OK;
 }
 
