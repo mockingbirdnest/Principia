@@ -443,6 +443,10 @@ TEST_F(VesselTest, SerializationSuccess) {
       ephemeris_,
       FlowWithAdaptiveStep(_, _, astronomy::J2000 + 3 * Second, _, _))
       .WillRepeatedly(Return(Status::OK));
+
+  std::vector<not_null<MassiveBody const*>> const bodies;
+  ON_CALL(ephemeris_, bodies()).WillByDefault(ReturnRef(bodies));
+
   vessel_.CreateFlightPlan(astronomy::J2000 + 3.0 * Second,
                            10 * Kilogram,
                            DefaultPredictionParameters(),
