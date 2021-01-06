@@ -3,6 +3,7 @@
 
 #include <limits>
 #include <set>
+#include <vector>
 
 #include "astronomy/epoch.hpp"
 #include "base/not_null.hpp"
@@ -53,6 +54,7 @@ using ::testing::DoAll;
 using ::testing::ElementsAre;
 using ::testing::MockFunction;
 using ::testing::Return;
+using ::testing::ReturnRef;
 using ::testing::_;
 
 class VesselTest : public testing::Test {
@@ -400,6 +402,8 @@ TEST_F(VesselTest, FlightPlan) {
       ephemeris_,
       FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _))
       .Times(AnyNumber());
+  std::vector<not_null<MassiveBody const*>> const bodies;
+  ON_CALL(ephemeris_, bodies()).WillByDefault(ReturnRef(bodies));
   vessel_.PrepareHistory(astronomy::J2000);
 
   EXPECT_FALSE(vessel_.has_flight_plan());
@@ -439,6 +443,10 @@ TEST_F(VesselTest, SerializationSuccess) {
       ephemeris_,
       FlowWithAdaptiveStep(_, _, astronomy::J2000 + 3 * Second, _, _))
       .WillRepeatedly(Return(Status::OK));
+
+  std::vector<not_null<MassiveBody const*>> const bodies;
+  ON_CALL(ephemeris_, bodies()).WillByDefault(ReturnRef(bodies));
+
   vessel_.CreateFlightPlan(astronomy::J2000 + 3.0 * Second,
                            10 * Kilogram,
                            DefaultPredictionParameters(),

@@ -20,6 +20,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                       formatter        : FormatPlanLength,
                       parser           : TryParsePlanLength,
                       field_width      : 7);
+    final_trajectory_analyser_ = new PlannedOrbitAnalyser(adapter,
+                                                          predicted_vessel);
   }
 
   public void RenderButton() {
@@ -355,16 +357,41 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
 
   private bool RenderCoast(int index) {
     string vessel_guid = predicted_vessel.id.ToString();
+    var coast_analysis =
+        plugin.FlightPlanGetCoastAnalysis(
+            vessel_guid,
+            revolutions_per_cycle   : null,
+            days_per_cycle          : null,
+            ground_track_revolution : 0,
+            index);
+    string orbit_description = null;
+    if (coast_analysis.primary_index.HasValue) {
+      var primary = FlightGlobals.Bodies[coast_analysis.primary_index.Value];
+      int? nodal_revolutions = (int?)(coast_analysis.mission_duration /
+                                      coast_analysis.elements?.nodal_period);
+      orbit_description =
+          OrbitAnalyser.OrbitDescription(primary,
+                                         coast_analysis.elements,
+                                         coast_analysis.recurrence,
+                                         coast_analysis.ground_track,
+                                         nodal_revolutions);
+    }
     using (new UnityEngine.GUILayout.HorizontalScope()) {
-      double start_of_coast = index == 0
-          ? plugin.FlightPlanGetInitialTime(vessel_guid)
-          : burn_editors_[index - 1].final_time;
-      string coast_description = index == burn_editors_.Count
-          ? "Final trajectory"
-          : $@"Coast for {
-                (burn_editors_[index].initial_time -
-                 start_of_coast).FormatDuration(show_seconds : false)}";
-      UnityEngine.GUILayout.Label(coast_description);
+      if (index == burn_editors_.Count) {
+        final_trajectory_analyser_.index = index;
+        final_trajectory_analyser_.RenderButton();
+      } else {
+        double start_of_coast = index == 0
+            ? plugin.FlightPlanGetInitialTime(vessel_guid)
+            : burn_editors_[index - 1].final_time;
+        string coast_duration =
+            (burn_editors_[index].initial_time -
+             start_of_coast).FormatDuration(show_seconds: false);
+        string coast_description = orbit_description == null
+            ? $"Coast for {coast_duration}"
+            : $"Coast in {orbit_description} for {coast_duration}";
+        UnityEngine.GUILayout.Label(coast_description);
+      }
       if (UnityEngine.GUILayout.Button("Add manœuvre", GUILayoutWidth(4))) {
         double initial_time;
         if (index == 0) {
@@ -554,6 +581,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
   private Vessel previous_predicted_vessel_;
 
   private List<BurnEditor> burn_editors_;
+  private PlannedOrbitAnalyser final_trajectory_analyser_;
   private readonly DifferentialSlider final_time_;
   private int? first_future_manœuvre_;
   private int number_of_anomalous_manœuvres_ = 0;

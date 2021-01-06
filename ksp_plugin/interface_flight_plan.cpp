@@ -235,6 +235,32 @@ double __cdecl principia__FlightPlanGetActualFinalTime(
                  GetFlightPlan(*plugin, vessel_guid).actual_final_time()));
 }
 
+OrbitAnalysis* __cdecl principia__FlightPlanGetCoastAnalysis(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    int const* const revolutions_per_cycle,
+    int const* const days_per_cycle,
+    int const ground_track_revolution,
+    int const index) {
+  journal::Method<journal::FlightPlanGetCoastAnalysis> m(
+      {plugin,
+       vessel_guid,
+       revolutions_per_cycle,
+       days_per_cycle,
+       ground_track_revolution,
+       index});
+  CHECK_NOTNULL(plugin);
+  auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
+  auto const analysis =
+      NewOrbitAnalysis(flight_plan.analysis(index),
+                       *plugin,
+                       /*revolutions_per_cycle=*/revolutions_per_cycle,
+                       /*days_per_cycle=*/days_per_cycle,
+                       /*ground_track_revolution=*/ground_track_revolution);
+  analysis->progress_of_next_analysis = flight_plan.progress_of_analysis(index);
+  return m.Return(analysis);
+}
+
 double __cdecl principia__FlightPlanGetDesiredFinalTime(
     Plugin const* const plugin,
     char const* const vessel_guid) {

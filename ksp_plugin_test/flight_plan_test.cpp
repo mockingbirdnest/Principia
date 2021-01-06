@@ -15,6 +15,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/massive_body.hpp"
+#include "physics/rotating_body.hpp"
 #include "serialization/ksp_plugin.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
@@ -45,6 +46,7 @@ using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::Frenet;
 using physics::MassiveBody;
+using physics::RotatingBody;
 using quantities::Force;
 using quantities::Pow;
 using quantities::SpecificImpulse;
@@ -54,6 +56,7 @@ using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Newton;
+using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
@@ -74,8 +77,15 @@ class FlightPlanTest : public testing::Test {
 
   FlightPlanTest() {
     std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
-    bodies.emplace_back(
-        make_not_null_unique<MassiveBody>(1 * Pow<3>(Metre) / Pow<2>(Second)));
+    bodies.emplace_back(make_not_null_unique<RotatingBody<Barycentric>>(
+        1 * Pow<3>(Metre) / Pow<2>(Second),
+        RotatingBody<Barycentric>::Parameters(
+            /*mean_radius=*/1 * Metre,
+            /*reference_angle=*/0 * Radian,
+            /*reference_instant=*/J2000,
+            /*angular_frequency=*/1 * Radian / Second,
+            /*right_ascension_of_pole=*/0 * Radian,
+            /*declination_of_pole=*/0 * Radian)));
     std::vector<DegreesOfFreedom<Barycentric>> initial_state{
         {Barycentric::origin, Barycentric::unmoving}};
     ephemeris_ = std::make_unique<Ephemeris<Barycentric>>(

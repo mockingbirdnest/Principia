@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <atomic>
 #include <optional>
@@ -98,6 +98,8 @@ class OrbitAnalyser {
                 Ephemeris<Barycentric>::FixedStepParameters
                     analysed_trajectory_parameters);
 
+  virtual ~OrbitAnalyser();
+
   // Cancel any computation in progress, causing the next call to
   // |RequestAnalysis| to be processed as fast as possible.
   void Interrupt();
@@ -137,7 +139,14 @@ class OrbitAnalyser {
   std::optional<Analysis> analysis_;
 
   mutable absl::Mutex lock_;
-  jthread analyser_ GUARDED_BY(lock_);
+  jthread analyser_;
+  // The |analyser_| is idle:
+  // — if it is not joinable, e.g. because it was stopped by |Interrupt()|, or
+  // — if it is done computing |next_analysis_| and has stopped or is about to
+  //   stop executing.
+  // If it is joined once idle (and joinable), it will not attempt to acquire
+  // |lock_|.
+  bool analyser_idle_ GUARDED_BY(lock_) = true;
   // |next_analysis_| is set by the |analyser_| thread; it is read and cleared
   // by the main thread.
   std::optional<Analysis> next_analysis_ GUARDED_BY(lock_);

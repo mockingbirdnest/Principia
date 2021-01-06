@@ -779,6 +779,8 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   EXPECT_CALL(*mock_dynamic_frame, FrenetFrame(_, _))
       .WillRepeatedly(Return(
           MockDynamicFrame<Barycentric, Navigation>::Rot::Identity()));
+  std::vector<not_null<MassiveBody const*>> const bodies;
+  ON_CALL(plugin_->mock_ephemeris(), bodies()).WillByDefault(ReturnRef(bodies));
 
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
