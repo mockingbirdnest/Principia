@@ -3,6 +3,7 @@
 
 #include <limits>
 #include <set>
+#include <vector>
 
 #include "astronomy/epoch.hpp"
 #include "base/not_null.hpp"

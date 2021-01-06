@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <atomic>
 #include <optional>
@@ -141,8 +141,8 @@ class OrbitAnalyser {
   mutable absl::Mutex lock_;
   jthread analyser_;
   // The |analyser_| is idle:
-  // — if it is not joinable, e.g. because it was stopped by |Interrupt()|, or
-  // — if it is done computing |next_analysis_| and has stopped or is about to
+  // â€” if it is not joinable, e.g. because it was stopped by |Interrupt()|, or
+  // â€” if it is done computing |next_analysis_| and has stopped or is about to
   //   stop executing.
   // If it is joined once idle (and joinable), it will not attempt to acquire
   // |lock_|.
