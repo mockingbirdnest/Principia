@@ -98,7 +98,7 @@ class OrbitAnalyser {
                 Ephemeris<Barycentric>::FixedStepParameters
                     analysed_trajectory_parameters);
 
-  ~OrbitAnalyser();
+  virtual ~OrbitAnalyser();
 
   // Cancel any computation in progress, causing the next call to
   // |RequestAnalysis| to be processed as fast as possible.
