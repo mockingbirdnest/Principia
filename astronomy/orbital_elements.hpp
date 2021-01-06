@@ -125,8 +125,7 @@ class OrbitalElements {
   // the mean elements are stable, and what useful quantities can be derived
   // from the mean elements.
 
-  // The equinoctial elements, together with an epoch.
-  // See Broucke and Cefola (1972), On the equinoctial orbit elements.
+  // The equinoctial elements, together with an epoch.  See [BC72].
   struct EquinoctialElements {
     Instant t;  // The epoch of the elements.
     Length a;   // The semimajor axis.

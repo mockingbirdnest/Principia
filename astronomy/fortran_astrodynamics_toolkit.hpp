@@ -2,9 +2,7 @@
 #pragma once
 
 // This code is a straightforward translation of Jacob Williams' implementation
-// of Lear (1987) "The Programs TRAJ1 and TRAJ2", JSC Internal Note 87-FM-4, and
-// Lear (1986), "The Gravitational Acceleration Equations", JSC Internal Note
-// 86-FM-15.  The original comes with the following notice:
+// of [Lea86] and [Lea87].  The original comes with the following notice:
 /*
  Fortran Astrodynamics Toolkit
  https://github.com/jacobwilliams/Fortran-Astrodynamics-Toolkit
