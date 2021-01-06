@@ -37,9 +37,8 @@ using quantities::si::Degree;
 //   is in preparation, as well as an optical realization based on Gaia data.
 // - The terms Barycentric Celestial Reference System (BCRS) and ICRS are often
 //   used interchangeably:
-//   - the ICRS has its origin at the barycentre (IAU 1997 resolution B2; Arias
-//     et al. 1995 "The extragalactic reference system of the International
-//     Earth Rotation Service", IAU 1991 recommendations);
+//   - the ICRS has its origin at the barycentre (IAU 1997 resolution B2;
+//     [ACFL95], IAU 1991 recommendations);
 //   - the relativistic framework, including the metric
 //     tensor, is defined for the BCRS (IAU 2000 resolution B1.3);
 //   - the orientation of the BCRS is given by the ICRS axes unless otherwise

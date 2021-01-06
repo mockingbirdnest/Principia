@@ -262,9 +262,7 @@ Rotation<Frame, Frame> Exp(Bivector<Angle, Frame> const& exponent) {
   }
 }
 
-// Implementation from W. Kahan, 2006, How Futile are Mindless Assessments of
-// Roundoff in Floating-Point Computation?, §12 "Mangled Angles", p. 47.
-// https://www.cs.berkeley.edu/~wkahan/Mindless.pdf
+// Implementation from [Kah06], §12 "Mangled Angles", p. 47.
 template<typename LScalar, typename RScalar, typename Frame>
 Angle AngleBetween(Vector<LScalar, Frame> const& v,
                    Vector<RScalar, Frame> const& w) {

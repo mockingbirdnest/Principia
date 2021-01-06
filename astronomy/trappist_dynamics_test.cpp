@@ -451,13 +451,10 @@ void Population::TraceNewBestGenome(Genome const& genome) const {
 }  // namespace genetics
 
 // DEMCMC stands for Differential Evolution - Марков Chain Monte-Carlo.
-// See for instance "A Markov Chain Monte Carlo version of the genetic algorithm
-// Differential Evolution: easy Bayesian computing for real parameter spaces",
-// Braak, 2006.
+// See for instance [Bra06].
 namespace deмcmc {
 
-// These parameters follow "The Laplace resonance in the Kepler-60 planetary
-// system", Goździewski et al., 2016.
+// These parameters follow [GMPS16].
 struct PlanetParameters {
   constexpr static int count = 4;
   Time period;

@@ -60,7 +60,7 @@ TEST_F(QuantitiesTest, DimensionlfulOperations) {
   testing_utilities::TestVectorSpace(
       0 * Metre / Second, SpeedOfLight, 88 * Mile / Hour,
       -340.29 * Metre / Second, 0.0, 1.0, -2 * π, 1729.0, 0, 2);
-  // Dimensionful multiplication is a tensor product, see [Tao 2012].
+  // Dimensionful multiplication is a tensor product, see [Tao12].
   testing_utilities::TestBilinearMap(
       std::multiplies<>(), ProtonMass, ElectronMass, SpeedOfLight,
       1 * Furlong / JulianYear, -e, 0, 2);
