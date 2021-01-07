@@ -2,33 +2,6 @@
 
 #include "quantities/quantities.hpp"
 
-// Bibliography:
-// [Bul65] Bulirsch (1965), Numerical Calculation of Elliptic Integrals and
-// Elliptic Fuctions.
-// [Bul69] Bulirsch (1969), Numerical Calculation of Elliptic Integrals and
-// Elliptic Fuctions.  III.
-// [Fuk09] Fukushima (2009), Fast computation of complete elliptic integrals and
-// Jacobian elliptic functions.
-// [Fuk11a] Fukushima (2011), Precise and fast computation of the general
-// complete elliptic integral of the second kind.
-// [Fuk11b] Fukushima (2011), Precise and fast computation of a general
-// incomplete elliptic integral of second kind by half and double argument
-// transformations.
-// [Fuk12] Fukushima (2012), Precise and fast computation of a general
-// incomplete elliptic integral of third kind by half and double argument
-// transformations.
-// [Fuk18] Fukushima (2018), xelbdj.txt: Fortran test driver for
-// “elbdj”/“relbdj”, subroutines to compute the double / single precision
-// general incomplete elliptic integrals of all three kinds.
-// [JE33] Jahnke and Emde (1933), Funktionentafeln mit Formeln und Kurven—Tables
-// of functions with formulæ and curves.
-// [JE38] Jahnke and Emde (1938), Funktionentafeln mit Formeln und Kurven—Tables
-// of functions with formulæ and curves.
-// [JEL60] Jahnke, Emde, and Lösch (1960) Tafeln Höherer Funktionen—Tables of
-// higher functions.
-// [OLBC10] Olver, Lozier, Boisvert, Clark Eds. (2010), NIST Handbook of
-// Mathematical Functions.
-
 namespace principia {
 namespace numerics {
 namespace internal_elliptic_integrals {

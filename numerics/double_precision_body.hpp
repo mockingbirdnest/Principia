@@ -250,8 +250,7 @@ DoublePrecision<Difference<T>> operator-(DoublePrecision<T> const& left) {
 template<typename T, typename U>
 DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
                                      DoublePrecision<U> const& right) {
-  // Linnainmaa (1981), Software for Doubled-Precision Floating-Point
-  // Computations, algorithm longadd.
+  // [Lin81], algorithm longadd.
   auto const sum = TwoSum(left.value, right.value);
   return QuickTwoSum(sum.value, (sum.error + left.error) + right.error);
 }
@@ -259,8 +258,7 @@ DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
 template<typename T, typename U>
 DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
                                             DoublePrecision<U> const& right) {
-  // Linnainmaa (1981), Software for Doubled-Precision Floating-Point
-  // Computations, algorithm longadd.
+  // [Lin81], algorithm longadd.
   auto const sum = TwoDifference(left.value, right.value);
   return QuickTwoSum(sum.value, (sum.error + left.error) - right.error);
 }
@@ -268,8 +266,7 @@ DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
 template<typename T, typename U>
 DoublePrecision<Product<T, U>> operator*(DoublePrecision<T> const& left,
                                          DoublePrecision<U> const& right) {
-  // Linnainmaa (1981), Software for Doubled-Precision Floating-Point
-  // Computations, algorithm longmul.
+  // [Lin81], algorithm longmul.
   auto product = TwoProduct(left.value, right.value);
   product.error +=
       (left.value + left.error) * right.error + left.error * right.value;
@@ -279,8 +276,7 @@ DoublePrecision<Product<T, U>> operator*(DoublePrecision<T> const& left,
 template<typename T, typename U>
 DoublePrecision<Quotient<T, U>> operator/(DoublePrecision<T> const& left,
                                           DoublePrecision<U> const& right) {
-  // Linnainmaa (1981), Software for Doubled-Precision Floating-Point
-  // Computations, algorithm longdiv.
+  // [Lin81], algorithm longdiv.
   auto const z = left.value / right.value;
   auto const product = TwoProduct(right.value, z);
   auto const zz =
