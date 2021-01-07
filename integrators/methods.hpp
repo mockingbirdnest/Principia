@@ -319,12 +319,10 @@ struct BlanesMoan2002SRKN14A : SymplecticRungeKuttaNyström {
                                                    0.091719152624461650}}};
 };
 
-// Coefficients from Forest and Ruth (1990),
-// Fourth-order symplectic integration, equation 4.8.
+// Coefficients from [FR90], equation 4.8.
 // http://zwe.web.cern.ch/zwe/CAS/biblio/ruth-forest.pdf.
-// This scheme was independently discovered by Candy and Rozmus (1991),
-// A Symplectic Integration Algorithm for Separable Hamiltonian Functions
-// (submitted earlier and published later than the Forest and Ruth paper).
+// This scheme was independently discovered by [CR91] (submitted earlier and
+// published later than [FR90]).
 struct CandyRozmus1991ForestRuth1990 : SymplecticPartitionedRungeKutta {
   static constexpr int order = 4;
   static constexpr bool time_reversible = true;
@@ -344,7 +342,7 @@ struct CandyRozmus1991ForestRuth1990 : SymplecticPartitionedRungeKutta {
                                                    +0.6756035959798288170}}};
 };
 
-// Coefficients from Fine (1987), Low order practical Methods.
+// Coefficients from [Fin87].
 struct Fine1987RKNG34 : EmbeddedExplicitGeneralizedRungeKuttaNyström {
   static constexpr int higher_order = 4;
   static constexpr int lower_order = 3;
@@ -374,8 +372,7 @@ struct Fine1987RKNG34 : EmbeddedExplicitGeneralizedRungeKuttaNyström {
       {  2 /   125.0,    0        , -27 /   625.0, 32 /   625.0,  -3 / 125.0}}};
 };
 
-// Coefficients from Dormand, El-Mikkawy, and Prince (1986),
-// Families of Runge-Kutta-Nyström formulae, table 3 (the RK4(3)4FM).
+// Coefficients from [DEP87a], table 3 (the RK4(3)4FM).
 // Minimizes the 4th order truncation error.
 struct DormandالمكاوىPrince1986RKN434FM :
     EmbeddedExplicitRungeKuttaNyström {
@@ -402,9 +399,8 @@ struct DormandالمكاوىPrince1986RKN434FM :
       {13.0 /   21.0, -20.0 /  27.0, 275.0 / 189.0, -1.0 /  3.0}}};
 };
 
-// The following methods have coefficients from McLachlan (1995),
-// On the numerical integration of ordinary differential equations by symmetric
-// composition methods, http://www.massey.ac.nz/~rmclachl/sisc95.pdf.
+// The following methods have coefficients from [McL95],
+// http://www.massey.ac.nz/~rmclachl/sisc95.pdf.
 struct McLachlan1995S2 : SymplecticPartitionedRungeKutta {
   static constexpr int order = 2;
   static constexpr bool time_reversible = true;
