@@ -400,7 +400,6 @@ struct DormandالمكاوىPrince1986RKN434FM :
 };
 
 // The following methods have coefficients from [McL95],
-// http://www.massey.ac.nz/~rmclachl/sisc95.pdf.
 struct McLachlan1995S2 : SymplecticPartitionedRungeKutta {
   static constexpr int order = 2;
   static constexpr bool time_reversible = true;
@@ -624,7 +623,6 @@ struct McLachlan1995SS17 : SymplecticPartitionedRungeKutta {
 };
 
 // The following methods have coefficients from [MA92], table 2.
-// http://eaton.math.rpi.edu/CSUMS/Papers/Symplectic/McLachlan_Atela_92.pdf.
 struct McLachlanAtela1992Order2Optimal : SymplecticPartitionedRungeKutta {
   static constexpr int order = 2;
   static constexpr bool time_reversible = false;
@@ -696,9 +694,8 @@ struct McLachlanAtela1992Order5Optimal : SymplecticRungeKuttaNyström {
                                                    -0.0589796254980311632}}};
 };
 
-// This integrator goes by many names, see [HLW03],
-// http://www.math.kit.edu/ianm3/lehre/geonumint2009s/media/gni_by_stoermer-verlet.pdf,
-// section 1.3 (Historical remarks).
+// This integrator goes by many names, see [HLW03], section 1.3 (Historical
+// remarks).
 // Notably, it appears in Philosophiae Naturalis Principia Mathematica,
 // in section II (De inventione Virium centripetarum), in the proof of
 // theorem I.  See p. 37 of the first edition,
@@ -717,7 +714,7 @@ struct NewtonDelambreStørmerVerletLeapfrog : SymplecticPartitionedRungeKutta {
   static constexpr FixedVector<double, stages> b{{{0.5, 0.5}}};
 };
 
-// Coefficients from [OS94], https://bionum.cs.purdue.edu/94OkSk.pdf.
+// Coefficients from [OS94].
 // NOTE(egg): The coefficients were actually copied from McLachlan (1995), they
 // seem to differ after a dozen significant figures or so.  Okunbor and Skeel
 // remark "we did not use HYBRJ1 to improve the accuracy of method coefficients
