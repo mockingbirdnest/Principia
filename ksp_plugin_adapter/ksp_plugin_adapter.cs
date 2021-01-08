@@ -281,12 +281,13 @@ public partial class PrincipiaPluginAdapter
           "error; it might get damaged.";
       bad_installation_dialog_.Show();
     }
-#if KSP_VERSION_1_10_1
+#if KSP_VERSION_1_11_0
     if (!(Versioning.version_major == 1 &&
           (Versioning.version_minor == 8 && Versioning.Revision == 1) ||
           (Versioning.version_minor == 9 && Versioning.Revision == 1) ||
-          (Versioning.version_minor == 10 && Versioning.Revision == 1))) {
-      string expected_version = "1.8.1, 1.9.1 and 1.10.1";
+          (Versioning.version_minor == 10 && Versioning.Revision == 1) ||
+          (Versioning.version_minor == 11 && Versioning.Revision == 0))) {
+      string expected_version = "1.8.1, 1.9.1, 1.10.1, and 1.11.0";
 #elif KSP_VERSION_1_7_3
     if (!(Versioning.version_major == 1 &&
           (Versioning.version_minor == 5 && Versioning.Revision == 1) ||
@@ -1081,8 +1082,8 @@ public partial class PrincipiaPluginAdapter
     double Δt = Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
 
     QP main_body_degrees_of_freedom =
-        new QP{q = (XYZ)(FlightGlobals.currentMainBody ??
-                             FlightGlobals.GetHomeBody()).position,
+        new QP{q = (XYZ)((FlightGlobals.currentMainBody ?? FlightGlobals.GetHomeBody()).position +
+                         Δt * krakensbane.FrameVel),
                p = (XYZ)(-krakensbane.FrameVel)};
 
     // NOTE(egg): Inserting vessels and parts has to occur in
