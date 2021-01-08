@@ -1082,7 +1082,8 @@ public partial class PrincipiaPluginAdapter
     double Δt = Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
 
     QP main_body_degrees_of_freedom =
-        new QP{q = (XYZ)((FlightGlobals.currentMainBody ?? FlightGlobals.GetHomeBody()).position +
+        new QP{q = (XYZ)((FlightGlobals.currentMainBody ??
+                          FlightGlobals.GetHomeBody()).position +
                          Δt * krakensbane.FrameVel),
                p = (XYZ)(-krakensbane.FrameVel)};
 
