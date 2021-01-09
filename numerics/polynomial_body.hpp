@@ -451,7 +451,7 @@ quantities::Primitive<Value_, Argument_>
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::Integrate(
     Argument const& argument1,
     Argument const& argument2) const {
-  // + 2 is to take into account the trucation resulting from integer division.
+  // + 2 is to take into account the truncation resulting from integer division.
   return quadrature::GaussLegendre<(degree_ + 2) / 2>(*this,
                                                       argument1, argument2);
 }
@@ -615,7 +615,7 @@ quantities::Primitive<Value_, Argument_>
 PolynomialInMonomialBasis<Value_, Point<Argument_>, degree_, Evaluator>::
 Integrate(Point<Argument> const& argument1,
           Point<Argument> const& argument2) const {
-  // + 2 is to take into account the trucation resulting from integer division.
+  // + 2 is to take into account the truncation resulting from integer division.
   return quadrature::GaussLegendre<(degree_ + 2) / 2>(*this,
                                                       argument1, argument2);
 }
