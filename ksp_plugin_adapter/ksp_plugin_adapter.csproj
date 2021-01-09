@@ -178,6 +178,14 @@
       <Link>real_solar_system\sol_numerics_blueprint.cfg</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="..\Localization\en-us.cfg">
+      <Link>Localization\en-us.cfg</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\Localization\zh-cn.cfg">
+      <Link>Localization\zh-cn.cfg</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="ksp_plugin_adapter.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
