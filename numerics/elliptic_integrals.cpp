@@ -70,7 +70,7 @@ void FukushimaEllipticBD(double mc, Angle& B_m, Angle& D_m);
 // Computes Emde’s complete elliptic integrals of the second kind B(m) and D(m),
 // as well as Fukushima’s complete elliptic integral of the third kind J(n, m),
 // where m = 1 - mc and n = 1 - nc.  The methods are similar to those described
-// in [Fuk11a] and [Fuk12].
+// in [Fuk11a] and [Fuk12b].
 template<typename ThirdKind, typename = EnableIfAngleResult<ThirdKind>>
 void FukushimaEllipticBDJ(double nc,
                           double mc,
@@ -82,7 +82,7 @@ void FukushimaEllipticBDJ(double nc,
 // from the cosine of the amplitude: Bc(c|m) = B(arccos c|m),
 // Dc(c|m) = D(arccos c|m), Jc(c, n|m) = J(arccos c, n|m), where m = 1 - mc.
 // These functions are defined in [Fuk11b], equations (9) and (10), and
-// [Fuk12], equation (24).
+// [Fuk12b], equation (24).
 template<typename ThirdKind, typename = EnableIfAngleResult<ThirdKind>>
 void FukushimaEllipticBcDcJc(double c,
                              double n,
@@ -95,7 +95,7 @@ void FukushimaEllipticBcDcJc(double c,
 // from the sine of the amplitude: Bs(s|m) = B(arcsin s|m),
 // Ds(s|m) = D(arcsin s|m), Js(s, n|m) = J(arcsin s, n|m), where m = 1 - mc.
 // These functions are defined in [Fuk11b], equations (9) and (10), and
-// [Fuk12], equation (24).
+// [Fuk12b], equation (24).
 template<typename ThirdKind, typename = EnableIfAngleResult<ThirdKind>>
 void FukushimaEllipticBsDsJs(double s,
                              double n,
@@ -111,10 +111,10 @@ void FukushimaEllipticBsDsMaclaurinSeries(double y,
                                           Angle& Σ_Bₗ_m_yˡ,
                                           Angle& Σ_Dₗ_m_yˡ);
 
-// Maclaurin series expansion of Js [Fuk12].
+// Maclaurin series expansion of Js [Fuk12b].
 Angle FukushimaEllipticJsMaclaurinSeries(double y, double n, double m);
 
-// Fukushima's T function [Fuk12].
+// Fukushima's T function [Fuk12b].
 Angle FukushimaT(double t, double h);
 
 // Argument reduction: angle = fractional_part + integer_part * π where
@@ -1345,7 +1345,7 @@ void FukushimaEllipticBDJ(double const nc,
     FukushimaEllipticBD(mc, B_m, D_m);
   }
 
-  // According to [Fuk12], A.1, the Bulirsch function will work for all values
+  // According to [Fuk12b], A.1, the Bulirsch function will work for all values
   // of m and n.
   if constexpr (should_compute<ThirdKind>) {
     // See [Bul69], special examples after equation (1.2.2).
@@ -1356,10 +1356,10 @@ void FukushimaEllipticBDJ(double const nc,
 
 // Note that the identifiers in the function definition are not the same as
 // those in the function declaration.
-// The declaration follows [Fuk11b], equations (9) and (10), and [Fuk12],
+// The declaration follows [Fuk11b], equations (9) and (10), and [Fuk12b],
 // equation (24), whereas the definition follows [Fuk11b], section 2.2, and
-// [Fuk12], section 3.3.
-// [Fuk11b] (for B and D) calls the index j and [Fuk12] (for J) calls it i; we
+// [Fuk12b], section 3.3.
+// [Fuk11b] (for B and D) calls the index j and [Fuk12b] (for J) calls it i; we
 // use i everywhere.
 template<typename ThirdKind, typename>
 void FukushimaEllipticBcDcJc(double const c₀,
@@ -1384,7 +1384,7 @@ void FukushimaEllipticBcDcJc(double const c₀,
   double const y₀ = 1.0 - x₀;
 
   // Alternate half and double argument transformations, when cancellations
-  // would occur, [Fuk12] section 3.3.
+  // would occur, [Fuk12b] section 3.3.
 
   // Half argument transformation of c.
   y[0] = y₀;
@@ -1409,7 +1409,7 @@ void FukushimaEllipticBcDcJc(double const c₀,
   FukushimaEllipticBsDsJs(s[I], n, mc, Bᵢ, Dᵢ, Jᵢ);
 
   // Double argument transformation of B, D, J, [Fuk11b] equation (16) and
-  // [Fuk12] equations (33–35).
+  // [Fuk12b] equations (33–35).
   for (int i = I; i > 0; --i) {
     double const sy = s[i - 1] * y[i];
     Bᵢ = 2.0 * Bᵢ - sy * Radian;
@@ -1423,10 +1423,10 @@ void FukushimaEllipticBcDcJc(double const c₀,
 
 // Note that the identifiers in the function definition are not the same as
 // those in the function declaration.
-// The declaration follows [Fuk11b], equations (9) and (10), and [Fuk12],
+// The declaration follows [Fuk11b], equations (9) and (10), and [Fuk12b],
 // equation (24), whereas the definition follows [Fuk11b], section 2.2, and
-// [Fuk12], section 3.3.
-// [Fuk11b] (for B and D) calls the index j and [Fuk12] (for J) calls it i; we
+// [Fuk12b], section 3.3.
+// [Fuk11b] (for B and D) calls the index j and [Fuk12b] (for J) calls it i; we
 // use i everywhere.
 template<typename ThirdKind, typename>
 void FukushimaEllipticBsDsJs(double const s₀,
@@ -1435,7 +1435,7 @@ void FukushimaEllipticBsDsJs(double const s₀,
                              Angle& Bᵢ,
                              Angle& Dᵢ,
                              ThirdKind& Jᵢ) {
-  // See [Fuk12] section 3.5 for the determination of yB.
+  // See [Fuk12b] section 3.5 for the determination of yB.
   constexpr double yB = 0.01622;
   // The maximum number of argument transformations, related to yB.  This is the
   // maximum number of iterations in the first loop below.
@@ -1445,7 +1445,7 @@ void FukushimaEllipticBsDsJs(double const s₀,
   double s[max_transformations + 1];
   double cd[max_transformations + 1];
 
-  // Half and double argument transformations, [Fuk12] section 3.3.
+  // Half and double argument transformations, [Fuk12b] section 3.3.
   double const m = 1.0 - mc;
   double const h = n * (1.0 - n) * (n - m);
   double const y₀ = s₀ * s₀;
@@ -1467,7 +1467,7 @@ void FukushimaEllipticBsDsJs(double const s₀,
   }
   int const I = i;  // The index at termination.
 
-  // Maclaurin series, [Fuk11b] equation (15) and [Fuk12] equation (32).
+  // Maclaurin series, [Fuk11b] equation (15) and [Fuk12b] equation (32).
   Angle Σ_Bₗ_m_yˡ{uninitialized};
   Angle Σ_Dₗ_m_yˡ{uninitialized};
   FukushimaEllipticBsDsMaclaurinSeries(yᵢ, m, Σ_Bₗ_m_yˡ, Σ_Dₗ_m_yˡ);
@@ -1478,7 +1478,7 @@ void FukushimaEllipticBsDsJs(double const s₀,
   }
 
   // Double argument transformation of B, D, J, [Fuk11b] equation (16) and
-  // [Fuk12] equations (33–35).
+  // [Fuk12b] equations (33–35).
   for (int i = I; i > 0; --i) {
     double const sy = s[i - 1] * y[i];
     Bᵢ = 2.0 * Bᵢ - sy * Radian;
@@ -1518,7 +1518,7 @@ void FukushimaEllipticBsDsMaclaurinSeries(double const y,
   Σ_Bₗ_m_yˡ = fukushima_elliptic_Bs_maclaurin(y) * Radian;
 }
 
-// See [Fuk12], section 3.4 and 3.5.
+// See [Fuk12b], section 3.4 and 3.5.
 Angle FukushimaEllipticJsMaclaurinSeries(double const y,
                                          double const n,
                                          double const m) {
@@ -1663,7 +1663,7 @@ Angle FukushimaT(double const t, double const h) {
   double const abs_z = Abs(z);
 
   // NOTE(phl): One might be tempted to rewrite this statement using a binary
-  // split of the interval [0, 1], but according to Table 1 of [Fuk12] the
+  // split of the interval [0, 1], but according to Table 1 of [Fuk12b] the
   // distribution of z is very biased towards the small values, so this is
   // simpler and probably better.  (It also explains the position of z < 0 in
   // the list.)
@@ -1699,7 +1699,7 @@ Angle FukushimaT(double const t, double const h) {
   } else {
     double const r = Sqrt(-h);
     double const rt = r * t;
-    // [Fuk12], equations A.15 and A.16, superbly hides the following problem
+    // [Fuk12b], equations A.15 and A.16, superbly hides the following problem
     // with the phrase "universal rewriting": rt may be arbitrarily large when φ
     // is close to π/2, in which case the ArcTanh would return a complex number
     // (aka NaN).  We effectively drop the imaginary part of that number by
@@ -1763,7 +1763,7 @@ void FukushimaEllipticBDJReduced(Angle const& φ,
   Angle D_m{uninitialized};        // D(m).
   ThirdKind J_nǀm{uninitialized};  // J(n|m).
 
-  // The selection rule in [Fuk11b] section 2.1, equations (7–11) and [Fuk12]
+  // The selection rule in [Fuk11b] section 2.1, equations (7–11) and [Fuk12b]
   // section 3.2, equations (22) and (23).  The identifiers follow Fukushima's
   // notation.
   // NOTE(phl): The computation of 1 - c² loses accuracy with respect to the
@@ -1822,10 +1822,10 @@ void FukushimaEllipticBDJ(Angle const& φ,
                           Angle& B_φǀm,
                           Angle& D_φǀm,
                           ThirdKind& J_φ_nǀm) {
-  // See Appendix B of [Fuk11b] and Appendix A.1 of [Fuk12] for argument
+  // See Appendix B of [Fuk11b] and Appendix A.1 of [Fuk12b] for argument
   // reduction.
 
-  // [Fuk12] A.1: Reduction of amplitude.
+  // [Fuk12b] A.1: Reduction of amplitude.
   if (φ < 0 * Radian || φ > π / 2 * Radian) {
     // TODO(phl): This is extremely imprecise near large multiples of π.  Use a
     // better algorithm (Payne-Hanek?).
@@ -1852,7 +1852,7 @@ void FukushimaEllipticBDJ(Angle const& φ,
       ThirdKind J_nǀm{uninitialized};  // J(n|m).
       FukushimaEllipticBDJ(nc, mc, B_m, D_m, J_nǀm);
 
-      // See [Fuk11b], equations (B.2), and [Fuk12], equation (A.2).
+      // See [Fuk11b], equations (B.2), and [Fuk12b], equation (A.2).
       B_φǀm += 2 * j * B_m;
       D_φǀm += 2 * j * D_m;
       if constexpr (should_compute<ThirdKind>) {
@@ -1862,7 +1862,7 @@ void FukushimaEllipticBDJ(Angle const& φ,
     return;
   }
 
-  // [Fuk11b] B.2, [Fuk12] A.2: Reduction of parameter.
+  // [Fuk11b] B.2, [Fuk12b] A.2: Reduction of parameter.
   // NOTE(phl): Not implementing the special values mc = 0, etc. on the
   // assumption that the normal implementation will work.
   if (mc < 0) {  // m > 1
@@ -1904,13 +1904,13 @@ void FukushimaEllipticBDJ(Angle const& φ,
     B_φǀm = sqrt_mcN * (D_φNǀmN + addend);
     D_φǀm = sqrt_mcN * (B_φNǀmN - addend);
     if constexpr (should_compute<ThirdKind>) {
-      // Note that [Fuk12] equation A.11 is incorrect.
+      // Note that [Fuk12b] equation A.11 is incorrect.
       J_φ_nǀm = mcN * sqrt_mcN * J_φN_nNǀmN;
     }
     return;
   }
 
-  // [Fuk12] A.3: Reduction of characteristics.
+  // [Fuk12b] A.3: Reduction of characteristics.
   // NOTE(phl): Special case n == 1 as at leads to NaN in the normal algorithm
   // and to infinite recursion in the n > 1 branch below.
   if constexpr (should_compute<ThirdKind>) {
@@ -2029,7 +2029,7 @@ void EllipticFEΠ(Angle const& φ,
 
 // Note that the identifiers in the function definition are not the same as
 // those in the function declaration.
-// The notation here follows [Fuk09], whereas the notation in the function
+// The notation here follows [Fuk09a], whereas the notation in the function
 // declaration uses |mc| for consistency with the other functions.
 Angle EllipticK(double const mʹ) {
   DCHECK_LE(0, mʹ);
@@ -2044,7 +2044,7 @@ Angle EllipticK(double const mʹ) {
   } else if (mʹ < 0.1) {
     // The complementary nome.
     double const qʹ = EllipticNomeQ<14>(mʹ);
-    // Use K′ = K(m′), see [Fuk09], equations (15) and (29).
+    // Use K′ = K(m′), see [Fuk09a], equations (15) and (29).
     double const Kʹ = elliptic_K_taylor_0_05(mʹ - 0.05);
     return -Kʹ * (1 / π) * std::log(qʹ) * Radian;
   } else if (m <= 0.1) {

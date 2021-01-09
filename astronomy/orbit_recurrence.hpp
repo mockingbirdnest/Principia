@@ -13,8 +13,8 @@ using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::Time;
 
-// All references in this class are to Capderou (2012), Satellites : de Kepler
-// au GPS; the notation follows that of the book.
+// All references in this class are to [Cap12]; the notation follows that of the
+// book.
 //
 // The ground track of a satellite recurs when, in a reference frame fixing the
 // plane of the orbit and the equator of the Earth (such a reference frame is

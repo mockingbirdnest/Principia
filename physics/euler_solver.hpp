@@ -35,10 +35,8 @@ using quantities::NaN;
 using quantities::Product;
 using quantities::Time;
 
-// A solver for Euler's rotation equations.  It follows Celledoni, Fassò,
-// Säfström and Zanna, 2007, The exact computation of the free rigid body motion
-// and its use in splitting method [CFSZ07].  See documentation/Celledoni.pdf
-// for corrections and adaptations.
+// A solver for Euler's rotation equations.  It follows [CFSZ07] and [CFSZ08].
+// See documentation/Celledoni.pdf for corrections and adaptations.
 template<typename InertialFrame, typename PrincipalAxesFrame>
 class EulerSolver {
   static_assert(!InertialFrame::may_rotate);

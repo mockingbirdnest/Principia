@@ -159,8 +159,7 @@ DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b) {
   CHECK(ComponentwiseGreaterThanOrEqualOrZero(a, b))
       << "|" << DebugString(a) << "| < |" << DebugString(b) << "|";
 #endif
-  // Hida, Li and Bailey (2007), Library for Double-Double and Quad-Double
-  // Arithmetic.
+  // [HLB07].
   DoublePrecision<Sum<T, U>> result;
   auto& s = result.value;
   auto& e = result.error;
@@ -171,8 +170,7 @@ DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b) {
 
 template<typename T, typename U>
 DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b) {
-  // Hida, Li and Bailey (2007), Library for Double-Double and Quad-Double
-  // Arithmetic.
+  // [HLB07].
   DoublePrecision<Sum<T, U>> result;
   auto& s = result.value;
   auto& e = result.error;

@@ -166,9 +166,7 @@ struct AsSymplecticRungeKuttaNyström {
 };
 
 
-// The following methods have coefficients from Blanes and Moan (2002),
-// Practical symplectic partitioned Runge–Kutta and Runge–Kutta–Nyström methods,
-// http://personales.upv.es/serblaza/2002JCAM.pdf.
+// The following methods have coefficients from [BM02].
 struct BlanesMoan2002S6 : SymplecticPartitionedRungeKutta {
   static constexpr int order = 4;
   static constexpr bool time_reversible = true;
