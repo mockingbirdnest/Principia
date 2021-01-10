@@ -147,10 +147,7 @@ void JacobiSNCNDNWithK(Angle const& u,
                        double& s,
                        double& c,
                        double& d) {
-  // The argument reduction follows Fukushima (2009), Fast computation of
-  // Jacobian elliptic function and incomplete elliptic integrals for constant
-  // values of elliptic parameter and elliptic characteristic, sections 2.4 and
-  // 3.5.2.
+  // The argument reduction follows [Fuk09a], sections 2.4 and 3.5.2.
   double const kʹ = Sqrt(mc);
   Angle abs_u = Abs(u);
   if (abs_u < k_over_2_lower_bound) {
@@ -220,12 +217,10 @@ Angle JacobiAmplitude(Angle const& u, double mc) {
     }
     n = 0.0;
   } else {
-    // We *don't* follow Fukushima, Fast computation of elliptic functions and
-    // incomplete integrals for constant values of elliptic parameter and
-    // elliptic characteristic, formula (20).  It calls the ArcTan function with
-    // negative values of c and values of s close to 0, which corresponds to a
-    // branch cut: ArcTan can jump from -π or +π (or vice-versa) depending on
-    // the accuracy of s.  Similarly the truncation to integer can jump by 1
+    // We *don't* follow [Fuk09b], formula (20).  It calls the ArcTan function
+    // with negative values of c and values of s close to 0, which corresponds
+    // to a branch cut: ArcTan can jump from -π or +π (or vice-versa) depending
+    // on the accuracy of s.  Similarly the truncation to integer can jump by 1
     // depending on the accuracy of k.  These problems may result in jumps of
     // 2π for the final value of am(u|m).
     // Instead, we explicitly reduce u to the range [-k, k] and thus the ArcTan

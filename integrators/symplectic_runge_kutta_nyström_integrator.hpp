@@ -42,9 +42,7 @@ using quantities::Time;
 //   exp(aᵣ₋₁ h A) exp(bᵣ₋₁ h B) ... exp(b₁ h B) exp(a₀ h A)  or
 //   exp(bᵣ₋₁ h B) exp(aᵣ₋₂ h A) ... exp(a₀ h A) exp(b₀ h B).
 // The former is called type ABA, the latter type BAB, following the conventions
-// used in Blanes, Casas and Ros (2001),
-// New Families of Symplectic Runge-Kutta-Nyström Integration Methods,
-// http://www.gicas.uji.es/Fernando/Proceedings/2000NAA.pdf.
+// used in [BCR01b].
 // In the implementation, we call |stages_| the integer r above.  The number of
 // |evaluations| is r-1 in the ABA and BAB cases, and r otherwise.
 // See the documentation for an explanation of how types ABA and BAB reduce the
@@ -58,11 +56,10 @@ using quantities::Time;
 //   (B, b) in Sofroniou and Spaletta;
 //   (<unnamed>, B) in Okunbor and Skeel;
 //   (<unnamed>, b) in Calvo and Sanz-Serna.
-// Moreover, we follow the convention of Sofroniou and Spaletta (2002),
-// Symplectic Methods for Separable Hamiltonian Systems, in calling c the
-// nodes used for the time argument of the evolution of B, with
+// Moreover, we follow the convention of [SS02] in calling c the nodes used for
+// the time argument of the evolution of B, with
 //   c₀ = 0, cᵢ = cᵢ₋₁ + aᵢ₋₁ for i > 0.
-// The notation γ is used for these nodes in Calvo and Sanz-Serna.
+// The notation γ is used for these nodes in [CS93a].
 // See the documentation for a description of the correspondence between
 // these coefficients and those of a general Runge-Kutta-Nyström method.
 

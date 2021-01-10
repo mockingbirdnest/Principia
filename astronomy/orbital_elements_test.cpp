@@ -275,7 +275,7 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
       DifferenceFrom(*initial_osculating.period, IsNear(-16_⑴ * Second)));
 
   // The notation for the computation of the theoretical precessions follows
-  // Capderou (2012), Satellites : de Kepler au GPS, section 7.1.1.
+  // [Cap12], section 7.1.1.
   double const η = elements.mean_semimajor_axis_interval().midpoint() /
                    oblate_earth.reference_radius();
   Angle const i = elements.mean_inclination_interval().midpoint();

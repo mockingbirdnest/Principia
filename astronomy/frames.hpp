@@ -37,9 +37,8 @@ using quantities::si::Degree;
 //   is in preparation, as well as an optical realization based on Gaia data.
 // - The terms Barycentric Celestial Reference System (BCRS) and ICRS are often
 //   used interchangeably:
-//   - the ICRS has its origin at the barycentre (IAU 1997 resolution B2; Arias
-//     et al. 1995 "The extragalactic reference system of the International
-//     Earth Rotation Service", IAU 1991 recommendations);
+//   - the ICRS has its origin at the barycentre (IAU 1997 resolution B2;
+//     [ACFL95], IAU 1991 recommendations);
 //   - the relativistic framework, including the metric
 //     tensor, is defined for the BCRS (IAU 2000 resolution B1.3);
 //   - the orientation of the BCRS is given by the ICRS axes unless otherwise
@@ -113,10 +112,9 @@ using ITRS = Frame<serialization::Frame::SolarSystemTag,
 // The rotation around the z axis relating the Terrestrial and Celestial
 // Intermediate Reference Systems, i.e., the angle between the Terrestrial and
 // Celestial Intermediate Origins, is the Earth Rotation Angle (ERA); the Earth
-// Rotation Angle is an affine function of UT1 defined by equation 5.14 of the
-// IERS conventions (2010).  Note that the rate is faster than 2π radians per
-// UT1 day, as UT1 is notionally mean solar days, whereas revolutions of the ERA
-// are stellar days.
+// Rotation Angle is an affine function of UT1 defined by equation 5.14 of
+// [PL10].  Note that the rate is faster than 2π radians per UT1 day, as UT1 is
+// notionally mean solar days, whereas revolutions of the ERA are stellar days.
 
 // The glossary of the Nomenclature for Fundamental Astronomy notes for both
 // that "since the acronym for this system is close to another acronym (namely
@@ -126,8 +124,7 @@ using ITRS = Frame<serialization::Frame::SolarSystemTag,
 // The Terrestrial Intermediate Reference System.
 // The x axis is the Terrestrial Intermediate Origin.
 // The ITRS is related to the Terrestrial Intermediate Reference System by polar
-// motion, as described in sections 5.4.1 and 5.5.1 of the IERS conventions
-// (2010).
+// motion, as described in sections 5.4.1 and 5.5.1 of [PL10].
 // TODO(egg): identifying this with the ITRS, besides leading to acronym
 // confusion, results in arcsecond-level errors.
 using TerrestrialIntermediateReferenceSystem = ITRS;
@@ -137,8 +134,7 @@ using TerrestrialIntermediateReferenceSystem = ITRS;
 // i.e., the intermediate equator.
 // The x axis is the Celestial Intermediate Origin.
 // The GCRS is related to the Celestial Intermediate Reference System by
-// precession-nutation and frame biases, see sections 5.4.4 and 5.5.4 of the
-// IERS conventions (2010).
+// precession-nutation and frame biases, see sections 5.4.4 and 5.5.4 of [PL10].
 // TODO(egg): identifying this with the GCRS leads to errors on the order of 10
 // arcminutes at the time of this writing, and on the order of a degree over a
 // century.

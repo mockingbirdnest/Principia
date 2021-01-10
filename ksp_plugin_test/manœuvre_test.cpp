@@ -223,10 +223,7 @@ TEST_F(ManœuvreTest, TargetΔv) {
 }
 
 TEST_F(ManœuvreTest, Apollo8SIVB) {
-  // Data from NASA's Saturn V Launch Vehicle, Flight Evaluation Report AS-503,
-  // Apollo 8 Mission (1969),
-  // http://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19690015314.pdf.
-  // We use the reconstructed or actual values.
+  // Data from [Sat69].  We use the reconstructed or actual values.
 
   // Table 2-2. Significant Event Times Summary.
   Instant const range_zero;

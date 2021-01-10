@@ -96,11 +96,10 @@ class OrbitalElements {
   //   determines the region of the sky that may be observed.
   // — ω exhibits a secular variation, except for frozen orbits or orbits at the
   //   critical inclination; For frozen orbits (type II frozen orbits in the
-  //   terminology of Ulrich Walter (2018), Astronautics: The Physics of Space
-  //   Flight), its constant value must be either 90° or 270°; for orbits at the
-  //   critical inclination (type I frozen orbits), ω is arbitrary; in highly
-  //   eccentric cases, it is often chosen to be 270° so that the apogee is at
-  //   high latitudes (Молния, みちびき, etc.).
+  //   terminology of [Wal18]), its constant value must be either 90° or 270°;
+  //   for orbits at the critical inclination (type I frozen orbits), ω is
+  //   arbitrary; in highly eccentric cases, it is often chosen to be 270° so
+  //   that the apogee is at high latitudes (Молния, みちびき, etc.).
   // — a, e, i exhibit no secular variation.
   // However, the elements that exhibit no secular variation still have
   // long-period variations; instead of trying to characterize these complex
@@ -125,8 +124,7 @@ class OrbitalElements {
   // the mean elements are stable, and what useful quantities can be derived
   // from the mean elements.
 
-  // The equinoctial elements, together with an epoch.
-  // See Broucke and Cefola (1972), On the equinoctial orbit elements.
+  // The equinoctial elements, together with an epoch.  See [BC72].
   struct EquinoctialElements {
     Instant t;  // The epoch of the elements.
     Length a;   // The semimajor axis.

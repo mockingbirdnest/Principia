@@ -31,8 +31,7 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator() {
   CHECK_EQ(0.0, c_[0]);
   if (first_same_as_last) {
     // Check that the conditions for the FSAL property are satisfied, see for
-    // instance Dormand, El-Mikkawy and Prince (1986),
-    // Families of Runge-Kutta-Nyström formulae, equation 3.1.
+    // instance [DEP87a], equation 3.1.
     CHECK_EQ(1.0, c_[stages_ - 1]);
     CHECK_EQ(0.0, b̂_[stages_ - 1]);
     for (int j = 0; j < stages_ - 1; ++j) {

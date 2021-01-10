@@ -299,8 +299,8 @@ class WorkErrorGraphGenerator {
                           << amortized_evaluations << " amortized) with "
                           << method.name;
     // We plot the maximum error, i.e., the L∞ norm of the error.
-    // Blanes and Moan (2002), or Blanes, Casas and Ros (2001) tend to use
-    // the average error (the normalized L¹ norm) instead.
+    // [BM02] or [BCR01a] tend to use the average error (the normalized L¹ norm)
+    // instead.
     q_errors_[method_index][time_step_index] = max_q_error;
     v_errors_[method_index][time_step_index] = max_v_error;
     e_errors_[method_index][time_step_index] = max_e_error;

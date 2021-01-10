@@ -549,13 +549,8 @@ TEST_F(OrbitAnalysisTest, GPS) {
 
 // COSPAR ID 1992-052A, TOPEX/Poséidon.
 TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
-  // The references for these orbital characteristics are:
-  // — Bhat et al. (1998), TOPEX/Poseidon orbit maintenance for the first five
-  //   years;
-  // — Benada (1997), PO.DAAC Merged GDR (TOPEX-Poseidon) Generation B User’s
-  //   handbook, version 2.0;
-  // — Blanc et al. (1996), AVISO/Altimetry, AVISO User Handbook for Merged
-  //   TOPEX/POSEIDON products, AVI-NT-02-101, Edition 3.0.
+  // The references for these orbital characteristics are [BSFL98], [Ben97] and
+  // [BS96].
 
   auto const [elements, recurrence, ground_track] =
       ElementsAndRecurrence({{StandardProduct3::SatelliteGroup::General, 1},

@@ -330,9 +330,7 @@ Instance::ComputeVelocityUsingCohenHubbardOesterwinter() {
   using Velocity = typename ODE::Velocity;
 
   // For the computation of the velocity we use a formula similar to that of
-  // Cohen, Hubbard, Oesterwinter (1973), Astronomical papers prepared for the
-  // use of the American ephemeris and nautical almanac, Volume XXII, Part I.
-  // More specifically, we use the coefficients η from
+  // [CHO73].  More specifically, we use the coefficients η from
   // cohen_hubbard_oesterwinter.wl.
   auto const& cohen_hubbard_oesterwinter =
       integrator_.cohen_hubbard_oesterwinter_;
