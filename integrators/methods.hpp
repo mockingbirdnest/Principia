@@ -694,9 +694,8 @@ struct McLachlanAtela1992Order5Optimal : SymplecticRungeKuttaNyström {
 
 // This integrator goes by many names, see [HLW03], section 1.3 (Historical
 // remarks).
-// Notably, it appears in Philosophiae Naturalis Principia Mathematica,
-// in section II (De inventione Virium centripetarum), in the proof of
-// theorem I.  See p. 37 of the first edition,
+// Notably, it appears in [New87], in section II (De inventione Virium
+// centripetarum), in the proof of theorem I.  See p. 37 of the first edition,
 // https://cudl.lib.cam.ac.uk/view/PR-ADV-B-00039-00001/97.
 // It also appears in [Del90], [Stö12] and [Ver67].
 struct NewtonDelambreStørmerVerletLeapfrog : SymplecticPartitionedRungeKutta {

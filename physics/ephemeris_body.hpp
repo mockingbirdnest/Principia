@@ -996,7 +996,7 @@ void Ephemeris<Frame>::
     auto const μ1_over_Δq³ = μ1 * one_over_Δq³;
     acceleration_on_b2 += Δq * μ1_over_Δq³;
 
-    // Lex. III. Actioni contrariam semper & æqualem esse reactionem:
+    // [New87], Lex. III. Actioni contrariam semper & æqualem esse reactionem:
     // sive corporum duorum actiones in se mutuo semper esse æquales &
     // in partes contrarias dirigi.
     auto const μ2_over_Δq³ = μ2 * one_over_Δq³;

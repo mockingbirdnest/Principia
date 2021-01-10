@@ -50,7 +50,7 @@ using quantities::Variation;
 // المكاوى, and Prince for RKN methods.
 
 // Alternative notations use a and b for the velocity Runge Kutta matrix and
-// weights: [Mur98] uses (c, α, a, β̂, b̂, β, b), and [Dor96], uses
+// weights: [Mur98] uses (c, α, a, β̂, b̂, β, b), and [Dor96] uses
 // (c, ā, a, b̄̂, b̂, b̄, b).
 // These alternative notations are more consistent with the usual notation for
 // Runge-Kutta methods, as a Runge-Kutta method with nodes cᵢ, Runge-Kutta

@@ -2,7 +2,7 @@
 
 #include "quantities/quantities.hpp"
 
-// This code is a derived from: [Fuk12a].  The original code has been translated
+// This code is derived from: [Fuk12a].  The original code has been translated
 // into C++ and adapted to the needs of this project.
 namespace principia {
 namespace numerics {
