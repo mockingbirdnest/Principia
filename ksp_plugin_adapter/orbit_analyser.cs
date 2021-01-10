@@ -402,7 +402,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
       LabeledField(
             Localizer.Format("#Principia_OBTAnalyser_Resault_ArgumentPE"),
             elements?.mean_argument_of_periapsis.FormatAngleInterval());
-      LabeledField(Localizer.Format(" #Principia_OBTAnalyser_Resault_ALTPE"),
+      LabeledField(Localizer.Format("#Principia_OBTAnalyser_Resault_ALTPE"),
                    elements?.mean_periapsis_distance.FormatLengthInterval(
                        primary.Radius));
       LabeledField(Localizer.Format("#Principia_OBTAnalyser_Resault_ALTAP"),
