@@ -402,7 +402,7 @@ TEST_F(PolynomialTest, Derivative) {
             p3.Derivative<3>()(0 * Second));
 }
 
-TEST_F(PolynomialTest, Primitive) {
+TEST_F(PolynomialTest, PrimitiveIntegrate) {
   using P2 = PolynomialInMonomialBasis<Temperature, Time, 2, HornerEvaluator>;
   P2 const p2({1 * Kelvin, 3 * Kelvin / Second, -8 * Kelvin / Second / Second});
 
@@ -414,6 +414,9 @@ TEST_F(PolynomialTest, Primitive) {
               AlmostEquals(19.0 / 6.0 * Kelvin * Second, 1));
   EXPECT_THAT(p2.Primitive()(2 * Second),
               AlmostEquals(-40.0 / 3.0 * Kelvin * Second, 1));
+
+  EXPECT_THAT(p2.Integrate(-1 * Second, 2 * Second),
+              AlmostEquals(-99.0 / 6.0 * Kelvin * Second, 3));
 }
 
 TEST_F(PolynomialTest, EvaluateConstant) {

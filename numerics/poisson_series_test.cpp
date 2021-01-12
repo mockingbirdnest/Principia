@@ -276,7 +276,7 @@ TEST_F(PoissonSeriesTest, InnerProduct) {
               AlmostEquals(-381.25522770148542400, 0, 7));
 }
 
-TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct) {
+TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct1) {
   using Degree4 = PoissonSeries<Length, 0, 4, HornerEvaluator>;
   using Degree5 = PoissonSeries<Length, 0, 5, HornerEvaluator>;
   Time const duration = 4.77553415434249021e-02 * Second;
@@ -403,6 +403,216 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct2) {
     EXPECT_THAT(
         product,
         RelativeErrorFrom(+2.0267451184776034270e-11, IsNear(4010_⑴)));
+  }
+}
+
+// This product occurs when orthogonalizing the basis for the Moon.
+TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct3) {
+  using Series = PoissonSeries<double, 5, 3, EstrinEvaluator>;
+  Time const duration = 3'945'600 * Second;
+  Instant const t_min = t0_;
+  Instant const t_mid = t0_ + duration;
+  Instant const t_max = t0_ + 2 * duration;
+  AngularFrequency const ω1 = 2.54633324931485220e-06 * Radian / Second;
+  AngularFrequency const ω2 = 5.18914422934776064e-06 * Radian / Second;
+  AngularFrequency const ω3 = 7.57219765654625247e-06 * Radian / Second;
+  AngularFrequency const ω4 = 1.02018287773409324e-05 * Radian / Second;
+  AngularFrequency const ω5 = 1.28742687976556365e-05 * Radian / Second;
+  AngularFrequency const ω6 = 1.55555632099122024e-05 * Radian / Second;
+  Series const f(
+      Series::AperiodicPolynomial({0,
+                                   +1.39108537630392846e+01 / Second,
+                                   0 / Pow<2>(Second),
+                                   -4.28766872062564245e-12 / Pow<3>(Second),
+                                   0 / Pow<4>(Second),
+                                   +2.19546428440080956e-25 / Pow<5>(Second)},
+                                  t_mid),
+      {{ω1,
+        {/*sin=*/Series::PeriodicPolynomial(
+             {-8.35023222649048083e+06,
+              0 / Second,
+              +3.14056500770589297e-06 / Pow<2>(Second),
+              0 / Pow<3>(Second)},
+             t_mid),
+         /*cos=*/Series::PeriodicPolynomial(
+             {0,
+              +1.01168828383876246e+01 / Second,
+              0 / Pow<2>(Second),
+              -1.04312630151309924e-12 / Pow<3>(Second)},
+             t_mid)}},
+       {ω2,
+        {/*sin=*/Series::PeriodicPolynomial(
+             {-4.91207898169697961e+05,
+              0 / Second,
+              +2.37420192215719412e-07 / Pow<2>(Second),
+              0 / Pow<3>(Second)},
+             t_mid),
+         /*cos=*/Series::PeriodicPolynomial(
+             {0,
+              +1.06674312857622944e+00 / Second,
+              0 / Pow<2>(Second),
+              -1.52459927383197132e-13 / Pow<3>(Second)},
+             t_mid)}},
+       {ω3,
+        {/*sin=*/Series::PeriodicPolynomial(
+             {-1.85065842467988288e+05,
+              0 / Second,
+              +7.57044590566114320e-08 / Pow<2>(Second),
+              0 / Pow<3>(Second)},
+             t_mid),
+         /*cos=*/Series::PeriodicPolynomial(
+             {0,
+              +2.22354757856304569e-01 / Second,
+              0 / Pow<2>(Second),
+              -2.34730179758300617e-14 / Pow<3>(Second)},
+             t_mid)}},
+       {ω4,
+        {/*sin=*/Series::PeriodicPolynomial(
+             {-1.09194717716096820e+04,
+              0 / Second,
+              +4.85897411923250085e-09 / Pow<2>(Second),
+              0 / Pow<3>(Second)},
+             t_mid),
+         /*cos=*/Series::PeriodicPolynomial(
+             {0,
+              +1.31475484344253241e-02 / Second,
+              0 / Pow<2>(Second),
+              -1.41217171514512962e-15 / Pow<3>(Second)},
+             t_mid)}},
+       {ω5,
+        {/*sin=*/Series::PeriodicPolynomial(
+             {-4.86759403394113406e+02,
+              0 / Second,
+              +2.03337116963348534e-10 / Pow<2>(Second),
+              0 / Pow<3>(Second)},
+             t_mid),
+         /*cos=*/Series::PeriodicPolynomial(
+             {0,
+              +5.16201144683406409e-04 / Second,
+              0 / Pow<2>(Second),
+              -4.29187706226779285e-17 / Pow<3>(Second)},
+             t_mid)}},
+       {ω6,
+        {/*sin=*/Series::PeriodicPolynomial({-2.66335757891223146e+00,
+                                             0 / Second,
+                                             0 / Pow<2>(Second),
+                                             0 / Pow<3>(Second)},
+                                            t_mid),
+         /*cos=*/Series::PeriodicPolynomial({0,
+                                             +3.60057656319038812e-06 / Second,
+                                             0 / Pow<2>(Second),
+                                             0 / Pow<3>(Second)},
+                                            t_mid)}}});
+
+  Series const g(
+      Series::AperiodicPolynomial({0,
+                                   +2.63050245340104294e-01 / Second,
+                                   0 / Pow<2>(Second),
+                                   -8.09823291316016917e-14 / Pow<3>(Second),
+                                   0 / Pow<4>(Second),
+                                   +4.14056618803521400e-27 / Pow<5>(Second)},
+                                  t_mid),
+      {{ω1,
+        {/*sin=*/Series::PeriodicPolynomial(
+             {-1.57708056520423561e+05,
+              0 / Second,
+              +5.93414912295899838e-08 / Pow<2>(Second),
+              0 / Pow<3>(Second)},
+             t_mid),
+         /*cos=*/Series::PeriodicPolynomial(
+             {0,
+              +1.91902315754011399e-01 / Second,
+              0 / Pow<2>(Second),
+              -1.98598703231757471e-14 / Pow<3>(Second)},
+             t_mid)}},
+       {ω2,
+        {/*sin=*/Series::PeriodicPolynomial(
+             {-9.31144597269088263e+03,
+              0 / Second,
+              +4.51121125348543404e-09 / Pow<2>(Second),
+              0 / Pow<3>(Second)},
+             t_mid),
+         /*cos=*/Series::PeriodicPolynomial(
+             {0,
+              +2.08585690999323684e-02 / Second,
+              0 / Pow<2>(Second),
+              -2.99826421429525608e-15 / Pow<3>(Second)},
+             t_mid)}},
+       {ω3,
+        {/*sin=*/Series::PeriodicPolynomial(
+             {-3.71934064860903527e+03,
+              0 / Second,
+              +1.52991642654451839e-09 / Pow<2>(Second),
+              0 / Pow<3>(Second)},
+             t_mid),
+         /*cos=*/Series::PeriodicPolynomial(
+             {0,
+              +4.54325428407370037e-03 / Second,
+              0 / Pow<2>(Second),
+              -4.88811294904941287e-16 / Pow<3>(Second)},
+             t_mid)}},
+       {ω4,
+        {/*sin=*/Series::PeriodicPolynomial(
+             {-2.38782465236558210e+02,
+              0 / Second,
+              +1.07675550289214021e-10 / Pow<2>(Second),
+              0 / Pow<3>(Second)},
+             t_mid),
+         /*cos=*/Series::PeriodicPolynomial(
+             {0,
+              +2.96344251787576066e-04 / Second,
+              0 / Pow<2>(Second),
+              -3.31546592884930502e-17 / Pow<3>(Second)},
+             t_mid)}},
+       {ω5,
+        {/*sin=*/Series::PeriodicPolynomial(
+             {-1.29376251439425527e+01,
+              0 / Second,
+              +5.63467102431514781e-12 / Pow<2>(Second),
+              0 / Pow<3>(Second)},
+             t_mid),
+         /*cos=*/Series::PeriodicPolynomial(
+             {0,
+              +1.43747865681285978e-05 / Second,
+              0 / Pow<2>(Second),
+              -1.34490730453117390e-18 / Pow<3>(Second)},
+             t_mid)}},
+       {ω6,
+        {/*sin=*/Series::PeriodicPolynomial(
+             {-2.29407203043806407e-01,
+              0 / Second,
+              +6.42353197319720082e-14 / Pow<2>(Second),
+              0 / Pow<3>(Second)},
+             t_mid),
+         /*cos=*/Series::PeriodicPolynomial({0,
+                                             +1.76202789977736386e-07 / Second,
+                                             0 / Pow<2>(Second),
+                                             0 / Pow<3>(Second)},
+                                            t_mid)}}});
+
+  double const expected_product = -9.93743685469196454745e-9;
+  {
+    auto const product =
+        InnerProduct(f, g,
+                     apodization::Dirichlet<EstrinEvaluator>(t_min, t_max),
+                     t_min, t_max);
+    EXPECT_THAT(product,
+                RelativeErrorFrom(expected_product, AnyOf(IsNear(0.0015_⑴))));
+  }
+  // This test demonstrates how bad Integrate can be, for products that arise in
+  // practice.  Exact integration of the result of PointwiseInnerProduct yields
+  // the correct value to 7 digits, but Integrate suffers from enormous
+  // cancellations: the intermediate terms may be as large as 6.2e12,
+  // effectively losing 69 bits.  In other words, there is no hope of computing
+  // this product using double.
+  {
+    auto const product = (PointwiseInnerProduct(f, g) *
+                          apodization::Dirichlet<EstrinEvaluator>(t_min, t_max))
+                             .Integrate(t_min, t_max) /
+                         (t_max - t_min);
+    EXPECT_THAT(
+        product,
+        RelativeErrorFrom(expected_product, IsNear(7.7e6_⑴)));
   }
 }
 
