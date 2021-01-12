@@ -16,6 +16,7 @@
 #include "geometry/cartesian_product.hpp"
 #include "geometry/serialization.hpp"
 #include "numerics/combinatorics.hpp"
+#include "numerics/quadrature.hpp"
 
 namespace principia {
 namespace numerics {
@@ -446,6 +447,17 @@ Primitive() const {
 
 template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator>
+quantities::Primitive<Value_, Argument_>
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::Integrate(
+    Argument const& argument1,
+    Argument const& argument2) const {
+  // + 2 is to take into account the trucation resulting from integer division.
+  return quadrature::GaussLegendre<(degree_ + 2) / 2>(*this,
+                                                      argument1, argument2);
+}
+
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator>
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>&
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::operator+=(
     PolynomialInMonomialBasis const& right) {
@@ -595,6 +607,17 @@ Primitive() const {
              degree_ + 1, Evaluator>(
              TupleIntegration<Argument, Coefficients>::Integrate(coefficients_),
              origin_);
+}
+
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator>
+quantities::Primitive<Value_, Argument_>
+PolynomialInMonomialBasis<Value_, Point<Argument_>, degree_, Evaluator>::
+Integrate(Point<Argument> const& argument1,
+          Point<Argument> const& argument2) const {
+  // + 2 is to take into account the trucation resulting from integer division.
+  return quadrature::GaussLegendre<(degree_ + 2) / 2>(*this,
+                                                      argument1, argument2);
 }
 
 template<typename Value_, typename Argument_, int degree_,
