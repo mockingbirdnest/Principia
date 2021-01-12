@@ -406,6 +406,7 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct2) {
   }
 }
 
+// This product occurs when orthogonalizing the basis for the Moon.
 TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct3) {
   using Series = PoissonSeries<double, 5, 3, EstrinEvaluator>;
   Time const duration = 3'945'600 * Second;
@@ -598,6 +599,12 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct3) {
     EXPECT_THAT(product,
                 RelativeErrorFrom(expected_product, AnyOf(IsNear(0.0015_⑴))));
   }
+  // This test demonstrates how bad Integrate can be, for products that arise in
+  // practice.  Exact integration of the result of PointwiseInnerProduct yields
+  // the correct value to 7 digits, but Integrate suffers from enormous
+  // cancellations: the intermediate terms may be as large as 6.2e12,
+  // effectively losing 69 bits.  In other words, there is no hope of computing
+  // this product using double.
   {
     auto const product = (PointwiseInnerProduct(f, g) *
                           apodization::Dirichlet<EstrinEvaluator>(t_min, t_max))
@@ -605,7 +612,7 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct3) {
                          (t_max - t_min);
     EXPECT_THAT(
         product,
-        RelativeErrorFrom(expected_product, IsNear(0.0000000000000001_⑴)));
+        RelativeErrorFrom(expected_product, IsNear(7.7e6_⑴)));
   }
 }
 
