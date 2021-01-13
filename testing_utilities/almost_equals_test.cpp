@@ -8,6 +8,7 @@
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "numerics/unbounded_arrays.hpp"
 #include "quantities/bipm.hpp"
 #include "quantities/cgs.hpp"
 #include "quantities/named_quantities.hpp"
@@ -24,6 +25,7 @@ using geometry::Quaternion;
 using geometry::R3Element;
 using geometry::Vector;
 using geometry::Trivector;
+using numerics::UnboundedVector;
 using quantities::Length;
 using quantities::MagneticFlux;
 using quantities::Speed;
@@ -138,6 +140,20 @@ TEST_F(AlmostEqualsTest, Trivector) {
   }
   EXPECT_THAT(v_accumulated, Ne(v1));
   EXPECT_THAT(v_accumulated, AlmostEquals(v1, 9));
+}
+
+TEST_F(AlmostEqualsTest, UnboundedVector) {
+  UnboundedVector<double> const v1({1, 2, 3});
+  UnboundedVector<double> const v2 = v1;
+  EXPECT_THAT(v2, AlmostEquals(v1, 0));
+  EXPECT_THAT(v2, Not(AlmostEquals(v1, 4)));
+  double const δv = v1[1] / 100;
+  UnboundedVector<double> v_accumulated({1, 0, 3});
+  for (int i = 1; i <= 100; ++i) {
+    v_accumulated[1] += δv;
+  }
+  EXPECT_THAT(v_accumulated, Ne(v1));
+  EXPECT_THAT(v_accumulated, AlmostEquals(v1, 3));
 }
 
 TEST_F(AlmostEqualsTest, Describe) {
