@@ -178,7 +178,7 @@ UnboundedUpperTriangularMatrix<SquareRoot<Scalar>> CholeskyFactorization(
     UnboundedUpperTriangularMatrix<Scalar> const& A);
 
 // If A is the upper half of a symmetric matrix, returns R and D so that
-// that A = ᵗR D R.
+// that A = ᵗR D R.  The diagonal matrix is represented as a vector.
 template<typename Scalar>
 void ᵗRDRDecomposition(UnboundedUpperTriangularMatrix<Scalar> const& A,
                        UnboundedUpperTriangularMatrix<double>& R,

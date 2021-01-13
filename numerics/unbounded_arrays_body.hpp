@@ -407,7 +407,7 @@ UnboundedVector<Quotient<RScalar, LScalar>> BackSubstitution(
 }
 
 // [Hig02] says: "We will not state the analogous algorithm for solving a lower
-// triangular system, forward substitution".  So we follow
+// triangular system, forward substitution."  So we follow
 // https://en.wikipedia.org/wiki/Triangular_matrix#Forward_substitution.
 template<typename LScalar, typename RScalar>
 UnboundedVector<Quotient<RScalar, LScalar>> ForwardSubstitution(
