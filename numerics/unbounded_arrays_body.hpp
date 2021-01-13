@@ -440,15 +440,14 @@ std::ostream& operator<<(std::ostream& out,
 template<typename Scalar>
 std::ostream& operator<<(std::ostream& out,
                          UnboundedLowerTriangularMatrix<Scalar> const& matrix) {
-  std::stringstream s;
-  s << "rows: " << matrix.rows() << "\n";
+  out << "rows: " << matrix.rows() << "\n";
   for (int i = 0; i < matrix.rows(); ++i) {
     out << "{";
     for (int j = 0; j <= i; ++j) {
-      if (j > i) {
+      out << matrix[i][j];
+      if (j < i) {
         out << ", ";
       }
-      out << matrix[i][j];
     }
     out << "}\n";
   }

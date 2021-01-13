@@ -25,6 +25,8 @@ using geometry::Quaternion;
 using geometry::R3Element;
 using geometry::Vector;
 using geometry::Trivector;
+using numerics::UnboundedLowerTriangularMatrix;
+using numerics::UnboundedUpperTriangularMatrix;
 using numerics::UnboundedVector;
 using quantities::Length;
 using quantities::MagneticFlux;
@@ -154,6 +156,42 @@ TEST_F(AlmostEqualsTest, UnboundedVector) {
   }
   EXPECT_THAT(v_accumulated, Ne(v1));
   EXPECT_THAT(v_accumulated, AlmostEquals(v1, 3));
+}
+
+TEST_F(AlmostEqualsTest, UnboundedLowerTriangularMatrix) {
+  UnboundedLowerTriangularMatrix<double> const m1({1,
+                                                   2, 3,
+                                                   4, 5, 6});
+  UnboundedLowerTriangularMatrix<double> const m2 = m1;
+  EXPECT_THAT(m2, AlmostEquals(m1, 0));
+  EXPECT_THAT(m2, Not(AlmostEquals(m1, 4)));
+  double const δv = m1[1][0] / 100;
+  UnboundedLowerTriangularMatrix<double> m_accumulated({1,
+                                                        0, 3,
+                                                        4, 5, 6});
+  for (int i = 1; i <= 100; ++i) {
+    m_accumulated[1][0] += δv;
+  }
+  EXPECT_THAT(m_accumulated, Ne(m1));
+  EXPECT_THAT(m_accumulated, AlmostEquals(m1, 3));
+}
+
+TEST_F(AlmostEqualsTest, UnboundedUpperTriangularMatrix) {
+  UnboundedUpperTriangularMatrix<double> const m1({1, 2, 3,
+                                                      4, 5,
+                                                         6});
+  UnboundedUpperTriangularMatrix<double> const m2 = m1;
+  EXPECT_THAT(m2, AlmostEquals(m1, 0));
+  EXPECT_THAT(m2, Not(AlmostEquals(m1, 4)));
+  double const δv = m1[0][1] / 100;
+  UnboundedUpperTriangularMatrix<double> m_accumulated({1, 0, 3,
+                                                           4, 5,
+                                                              6});
+  for (int i = 1; i <= 100; ++i) {
+    m_accumulated[0][1] += δv;
+  }
+  EXPECT_THAT(m_accumulated, Ne(m1));
+  EXPECT_THAT(m_accumulated, AlmostEquals(m1, 3));
 }
 
 TEST_F(AlmostEqualsTest, Describe) {
