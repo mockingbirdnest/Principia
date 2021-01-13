@@ -210,6 +210,10 @@ std::ostream& operator<<(std::ostream& out,
 
 }  // namespace internal_unbounded_arrays
 
+using internal_unbounded_arrays::BackSubstitution;
+using internal_unbounded_arrays::CholeskyFactorization;
+using internal_unbounded_arrays::ForwardSubstitution;
+using internal_unbounded_arrays::ᵗRDRDecomposition;
 using internal_unbounded_arrays::UnboundedLowerTriangularMatrix;
 using internal_unbounded_arrays::UnboundedUpperTriangularMatrix;
 using internal_unbounded_arrays::UnboundedVector;

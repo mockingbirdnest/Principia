@@ -15,6 +15,7 @@ namespace numerics {
 namespace internal_unbounded_arrays {
 
 using base::uninitialized;
+using quantities::Pow;
 using quantities::Sqrt;
 
 template<class T>

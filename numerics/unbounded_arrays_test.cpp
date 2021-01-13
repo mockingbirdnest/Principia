@@ -2,9 +2,12 @@
 #include "numerics/unbounded_arrays.hpp"
 
 #include "gtest/gtest.h"
+#include "quantities/elementary_functions.hpp"
 
 namespace principia {
 namespace numerics {
+
+using quantities::Sqrt;
 
 class UnboundedArraysTest : public ::testing::Test {
  protected:
@@ -180,6 +183,21 @@ TEST_F(UnboundedArraysTest, Erase) {
     u4.EraseToEnd(2);
     EXPECT_EQ(u2, u4);
   }
+}
+
+TEST_F(UnboundedArraysTest, CholeskyFactorization) {
+  UnboundedUpperTriangularMatrix<double> hilbert4({
+      1, 1.0 / 2.0, 1.0 / 3.0, 1.0 / 4.0,
+         1.0 / 3.0, 1.0 / 4.0, 1.0 / 5.0,
+                    1.0 / 5.0, 1.0 / 6.0,
+                               1.0 / 7.0});
+  auto const r4_actual = CholeskyFactorization(hilbert4);
+  UnboundedUpperTriangularMatrix<double> r4_expected({
+      1,        1.0 / 2.0,         1.0 / 3.0,          1.0 / 4.0,
+         1.0 / Sqrt(12.0),  1.0 / Sqrt(12.0),  Sqrt(27.0) / 20.0,
+                           1.0 / Sqrt(180.0),   1.0 / Sqrt(80.0),
+                                              1.0 / Sqrt(2800.0)});
+  EXPECT_EQ(r4_actual, r4_expected);
 }
 
 }  // namespace numerics
