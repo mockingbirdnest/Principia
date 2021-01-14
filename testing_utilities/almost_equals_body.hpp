@@ -311,7 +311,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   }
   bool const matches = min_ulps_ <= max_distance && max_distance <= max_ulps_;
   if (!matches) {
-    *listener << "the component at index " << max_i << ", " << max_j
+    *listener << "the component at indices " << max_i << ", " << max_j
               << " is not within " << min_ulps_ << " to " << max_ulps_
               << " ULPs: it differs by " << max_distance << " ULPs";
   }
@@ -348,7 +348,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   }
   bool const matches = min_ulps_ <= max_distance && max_distance <= max_ulps_;
   if (!matches) {
-    *listener << "the component at index " << max_i << ", " << max_j
+    *listener << "the component at indices " << max_i << ", " << max_j
               << " is not within " << min_ulps_ << " to " << max_ulps_
               << " ULPs: it differs by " << max_distance << " ULPs";
   }
