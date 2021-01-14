@@ -188,7 +188,7 @@ TEST_F(UnboundedArraysTest, Erase) {
   }
 }
 
-TEST_F(UnboundedArraysTest, CholeskyFactorization) {
+TEST_F(UnboundedArraysTest, CholeskyDecomposition) {
   UnboundedUpperTriangularMatrix<double> const hilbert4({
       1, 1.0 / 2.0, 1.0 / 3.0, 1.0 / 4.0,
          1.0 / 3.0, 1.0 / 4.0, 1.0 / 5.0,
@@ -200,7 +200,7 @@ TEST_F(UnboundedArraysTest, CholeskyFactorization) {
                            1.0 / Sqrt(180.0),   1.0 / Sqrt(80.0),
                                               1.0 / Sqrt(2800.0)});
 
-  auto const r4_actual = CholeskyFactorization(hilbert4);
+  auto const r4_actual = CholeskyDecomposition(hilbert4);
   EXPECT_THAT(r4_actual, AlmostEquals(r4_expected, 245));
 }
 

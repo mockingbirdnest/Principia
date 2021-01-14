@@ -344,7 +344,7 @@ UnboundedUpperTriangularMatrix<Scalar>::Transpose(
 
 // [Hig02], Algorithm 10.2.
 template<typename Scalar>
-UnboundedUpperTriangularMatrix<SquareRoot<Scalar>> CholeskyFactorization(
+UnboundedUpperTriangularMatrix<SquareRoot<Scalar>> CholeskyDecomposition(
     UnboundedUpperTriangularMatrix<Scalar> const& A) {
   UnboundedUpperTriangularMatrix<SquareRoot<Scalar>> R(A.columns(),
                                                        uninitialized);
@@ -391,17 +391,17 @@ void ᵗRDRDecomposition(UnboundedUpperTriangularMatrix<Scalar> const& A,
 // [Hig02], Algorithm 8.1.
 template<typename LScalar, typename RScalar>
 UnboundedVector<Quotient<RScalar, LScalar>> BackSubstitution(
-    UnboundedUpperTriangularMatrix<LScalar> const& u,
+    UnboundedUpperTriangularMatrix<LScalar> const& U,
     UnboundedVector<RScalar> const& b) {
   UnboundedVector<Quotient<RScalar, LScalar>> x(b.size(), uninitialized);
   int const n = b.size() - 1;
-  x[n] = b[n] / u[n][n];
+  x[n] = b[n] / U[n][n];
   for (int i = n - 1; i >= 0; --i) {
     auto s = b[i];
     for (int j = i + 1; j <= n; ++j) {
-      s -= u[i][j] * x[j];
+      s -= U[i][j] * x[j];
     }
-    x[i] = s / u[i][i];
+    x[i] = s / U[i][i];
   }
   return x;
 }
@@ -411,16 +411,16 @@ UnboundedVector<Quotient<RScalar, LScalar>> BackSubstitution(
 // https://en.wikipedia.org/wiki/Triangular_matrix#Forward_substitution.
 template<typename LScalar, typename RScalar>
 UnboundedVector<Quotient<RScalar, LScalar>> ForwardSubstitution(
-    UnboundedLowerTriangularMatrix<LScalar> const& l,
+    UnboundedLowerTriangularMatrix<LScalar> const& L,
     UnboundedVector<RScalar> const& b) {
   UnboundedVector<Quotient<RScalar, LScalar>> x(b.size(), uninitialized);
-  x[0] = b[0] / l[0][0];
+  x[0] = b[0] / L[0][0];
   for (int i = 1; i < b.size(); ++i) {
     auto s = b[i];
     for (int j = 0; j < i; ++j) {
-      s -= l[i][j] * x[j];
+      s -= L[i][j] * x[j];
     }
-    x[i] = s / l[i][i];
+    x[i] = s / L[i][i];
   }
   return x;
 }

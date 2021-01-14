@@ -174,7 +174,7 @@ class UnboundedUpperTriangularMatrix final {
 // If A is the upper half of a symmetric positive definite matrix, returns R so
 // that A = ᵗR R.
 template<typename Scalar>
-UnboundedUpperTriangularMatrix<SquareRoot<Scalar>> CholeskyFactorization(
+UnboundedUpperTriangularMatrix<SquareRoot<Scalar>> CholeskyDecomposition(
     UnboundedUpperTriangularMatrix<Scalar> const& A);
 
 // If A is the upper half of a symmetric matrix, returns R and D so that
@@ -211,7 +211,7 @@ std::ostream& operator<<(std::ostream& out,
 }  // namespace internal_unbounded_arrays
 
 using internal_unbounded_arrays::BackSubstitution;
-using internal_unbounded_arrays::CholeskyFactorization;
+using internal_unbounded_arrays::CholeskyDecomposition;
 using internal_unbounded_arrays::ForwardSubstitution;
 using internal_unbounded_arrays::ᵗRDRDecomposition;
 using internal_unbounded_arrays::UnboundedLowerTriangularMatrix;
