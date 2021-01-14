@@ -160,7 +160,8 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
           UnityEngine.GUILayout.TextArea(
               Localizer.Format("#Principia_MainMenu_VersionInformText1", 
               next_release_lunation_number_,
-              next_release_name_),          
+              next_release_name_,  
+              "1.8.1"),
               style : Style.Multiline(UnityEngine.GUI.skin.textArea));
         } else {
           UnityEngine.GUILayout.TextArea(
@@ -267,7 +268,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
 
   private void RenderLoggingSettings() {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
-      UnityEngine.GUILayout.Label(text : Localizer.Format("#Principia_MainMenu_LogText_VerboseLevel"));
+      UnityEngine.GUILayout.Label(text : Localizer.Format("#Principia_MainMenu_StaticText_VerboseLevel"));
       if (UnityEngine.GUILayout.Button(text    : "←",
                                        options : GUILayoutWidth(2))) {
         Log.SetVerboseLogging(Math.Max(verbose_logging_ - 1, 0));
@@ -286,11 +287,11 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     var gui_layout_column_width = GUILayoutWidth(3);
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Space(column_width);
-      UnityEngine.GUILayout.Label(text    : Localizer.Format("#Principia_MainMenu_LogText_LogOption"),
+      UnityEngine.GUILayout.Label(text    : Localizer.Format("#Principia_MainMenu_StaticText_LogOption"),
                                   options : gui_layout_column_width);
-      UnityEngine.GUILayout.Label(text    : Localizer.Format("#Principia_MainMenu_LogText_StderrOption"),
+      UnityEngine.GUILayout.Label(text    : Localizer.Format("#Principia_MainMenu_StaticText_StderrOption"),
                                   options : gui_layout_column_width);
-      UnityEngine.GUILayout.Label(text    : Localizer.Format("#Principia_MainMenu_LogText_FlushOption"),
+      UnityEngine.GUILayout.Label(text    : Localizer.Format("#Principia_MainMenu_StaticText_FlushOption"),
                                   options : gui_layout_column_width);
     }
     using (new UnityEngine.GUILayout.HorizontalScope()) {
@@ -351,11 +352,11 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       must_record_journal_ = UnityEngine.GUILayout.Toggle(
           value   : must_record_journal_,
-          text    : Localizer.Format("#Principia_MainMenu_LogText_Recordjournal"));
+          text    : Localizer.Format("#Principia_MainMenu_StaticText_Recordjournal"));
       UnityEngine.GUILayout.Label(
-          Localizer.Format("#Principia_MainMenu_LogText_RecordjournalResault",
-          (journaling_ ? Localizer.Format("#Principia_MainMenu_LogText_RecordjournalON") : 
-                         Localizer.Format("#Principia_MainMenu_LogText_RecordjournalOFF"))),
+          Localizer.Format("#Principia_MainMenu_StaticText_RecordjournalResault",
+          (journaling_ ? Localizer.Format("#Principia_MainMenu_StaticText_RecordjournalON") : 
+                         Localizer.Format("#Principia_MainMenu_StaticText_RecordjournalOFF"))),
           style : Style.Info(Style.RightAligned(UnityEngine.GUI.skin.label)));
     }
     if (journaling_ && !must_record_journal_) {
