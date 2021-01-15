@@ -414,20 +414,19 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
                                      CelestialBody primary) {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(
-          Localizer.Format(
-                           "#Principia_OBTAnalyser_Plugin_Recurrence",
-                                recurrence?.nuo.ToString() ?? em_dash,
-                         recurrence?.dto.ToString("+0;-0") ?? em_dash,
-                                recurrence?.cto.ToString() ?? em_dash),
+          $@"{Localizer.Format("#Principia_OBTAnalyser_StaticText_Recurrence")} [{
+            recurrence?.nuo.ToString() ?? em_dash}; {
+            recurrence?.dto.ToString("+0;-0") ?? em_dash}; {
+            recurrence?.cto.ToString() ?? em_dash}]",
           GUILayoutWidth(8));
       UnityEngine.GUILayout.FlexibleSpace();
       autodetect_recurrence_ = UnityEngine.GUILayout.Toggle(
           autodetect_recurrence_,
-          Localizer.Format("#Principia_OBTAnalyser_Plugin_AutoDetect"),
+          Localizer.Format("#Principia_OBTAnalyser_StaticText_AutoDetect"),
           UnityEngine.GUILayout.ExpandWidth(false));
     }
     using (new UnityEngine.GUILayout.HorizontalScope()) {
-      UnityEngine.GUILayout.Label(Localizer.Format("#Principia_OBTAnalyser_Plugin_Cycle"));
+      UnityEngine.GUILayout.Label(Localizer.Format("#Principia_OBTAnalyser_StaticText_Cycle"));
       string text = UnityEngine.GUILayout.TextField(
           recurrence.HasValue || !autodetect_recurrence_
               ? $"{revolutions_per_cycle_}"
@@ -439,7 +438,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
           revolutions_per_cycle > 0) {
         revolutions_per_cycle_ = revolutions_per_cycle;
       }
-      UnityEngine.GUILayout.Label(Localizer.Format("#Principia_OBTAnalyser_Plugin_Revolutions"),
+      UnityEngine.GUILayout.Label(Localizer.Format("#Principia_OBTAnalyser_StaticText_Revolutions"),
                                   UnityEngine.GUILayout.ExpandWidth(false));
       text = UnityEngine.GUILayout.TextField(
           recurrence.HasValue || !autodetect_recurrence_
@@ -470,7 +469,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
                                       CelestialBody primary) {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(
-          Localizer.Format("#Principia_OBTAnalyser_Plugin_REC"),
+          Localizer.Format("#Principia_OBTAnalyser_StaticText_REC"),
           UnityEngine.GUILayout.ExpandWidth(false));
       string text = UnityEngine.GUILayout.TextField(
           $"{ground_track_revolution_}",
@@ -505,7 +504,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
   private readonly PrincipiaPluginAdapter adapter_;
   private readonly DifferentialSlider mission_duration_ =
       new DifferentialSlider(
-          label            : Localizer.Format("#Principia_OBTAnalyser_Plugin_Duration"),
+          label            : Localizer.Format("#Principia_OBTAnalyser_StaticText_Duration"),
           unit             : null,
           log10_lower_rate : 0,
           log10_upper_rate : 7,
@@ -554,12 +553,12 @@ internal class CurrentOrbitAnalyser : OrbitAnalyser {
 
   protected override string ButtonText(string orbit_description) {
     return orbit_description == null
-        ? Localizer.Format("#Principia_OBTAnalyser_ButtonText1")
-        : Localizer.Format("#Principia_OBTAnalyser_ButtonText2", orbit_description);
+        ? Localizer.Format("#Principia_OBTAnalyser_ButtonOrbitAnalysis")
+        : Localizer.Format("#Principia_OBTAnalyser_ButtonAnalysis", orbit_description);
   }
 
   protected override string AnalysingText() {
-    return Localizer.Format("#Principia_OBTAnalyser_ButtonText3", predicted_vessel.vesselName);
+    return Localizer.Format("#Principia_OBTAnalyser_ButtonAnalysisOBTOf", predicted_vessel.vesselName);
   }
 
   protected override bool should_request_analysis => true;
@@ -584,12 +583,12 @@ internal class PlannedOrbitAnalyser : OrbitAnalyser {
 
   protected override string ButtonText(string orbit_description) {
     return orbit_description == null
-        ? Localizer.Format("#Principia_OBTAnalyser_ButtonText4")
-        : Localizer.Format("#Principia_OBTAnalyser_ButtonText5", orbit_description);
+        ? Localizer.Format("#Principia_OBTAnalyser_ButtonAnalyseFinalTR")
+        : Localizer.Format("#Principia_OBTAnalyser_ButtonFinalOBTAnalysis", orbit_description);
   }
 
   protected override string AnalysingText() {
-    return Localizer.Format("#Principia_OBTAnalyser_ButtonText6", predicted_vessel.vesselName);
+    return Localizer.Format("#Principia_OBTAnalyser_ButtonAnalysisFinalPlanObt", predicted_vessel.vesselName);
   }
 
   protected override bool should_request_analysis => false;
