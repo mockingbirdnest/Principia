@@ -89,7 +89,7 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   // An example of how journaling may be used for debugging.  You must set
   // |path| and fill the |method_in| and |method_out_return| protocol buffers.
   std::string path =
-      R"(P:\Public Mockingbird\Principia\Crashes\2640\JOURNAL.20200716-231640)";  // NOLINT
+      R"(P:\Public Mockingbird\Principia\Crashes\2853\JOURNAL.20210108-203946)";  // NOLINT
   Player player(path);
   int count = 0;
   while (player.Play(count)) {
@@ -103,27 +103,21 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   LOG(ERROR) << "Last successful method out/return: \n"
              << player.last_method_out_return().DebugString();
 
-#if 0
+#if 1
   serialization::Method method_in;
   {
     auto* extension = method_in.MutableExtension(
-        serialization::RenderedPredictionClosestApproaches::extension);
+        serialization::CatchUpLaggingVessels::extension);
     auto* in = extension->mutable_in();
-    in->set_plugin(1908086640464);
-    in->set_vessel_guid("db9cd970-10f6-4d4e-945a-90da6c172235");
-    auto* sun_world_position = in->mutable_sun_world_position();
-    sun_world_position->set_x(133454188283.63718);
-    sun_world_position->set_y(14499926553.110853);
-    sun_world_position->set_z(-68471845298.356018);
-    in->set_max_points(64);
+    in->set_plugin(1924947714096);
   }
   serialization::Method method_out_return;
   {
     auto* extension = method_out_return.MutableExtension(
-        serialization::RenderedPredictionClosestApproaches::extension);
+        serialization::CatchUpLaggingVessels::extension);
   }
   LOG(ERROR) << "Running unpaired method:\n" << method_in.DebugString();
-  CHECK(RunIfAppropriate<RenderedPredictionClosestApproaches>(
+  CHECK(RunIfAppropriate<CatchUpLaggingVessels>(
       method_in, method_out_return, player));
 #endif
 }

@@ -25,7 +25,8 @@ void Insert(std::uint64_t const address,
       const_cast<typename std::remove_cv<T>::type*>(pointer));
   auto const [it, inserted] = pointer_map.emplace(address, inserted_pointer);
   if (!inserted) {
-    CHECK_EQ(it->second, inserted_pointer);
+    it->second = inserted_pointer;
+    //CHECK_EQ(it->second, inserted_pointer);
   }
 }
 
@@ -78,7 +79,7 @@ std::uint64_t SerializePointer(T* t) {
 
 // To remove the check, define this macro to be:
 //   auto aa = (a); auto bb = (b);
-#define PRINCIPIA_CHECK_EQ(a, b) CHECK((a) == (b))
+#define PRINCIPIA_CHECK_EQ(a, b) DCHECK((a) == (b))
 #define PRINCIPIA_SET_VERBOSE_LOGGING 1
 
 #include "journal/profiles.generated.cc"
