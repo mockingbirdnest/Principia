@@ -537,6 +537,30 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
     EXPECT_THAT(f_eigensystem.rotation(e₁), Componentwise(0, 1, 0));
     EXPECT_THAT(f_eigensystem.rotation(e₂), Componentwise(0, 0, 1));
   }
+  {
+    auto const f = MakeSymmetricBilinearForm<World>(
+        R3x3Matrix<double>({{+4.00000065565109253e+00,
+                             +0.00000000000000000e+00,
+                             +0.00000000000000000e+00},
+                            {+0.00000000000000000e+00,
+                             +4.00000065565109519e+00,
+                             +8.32667268468867405e-17},
+                            {+0.00000000000000000e+00,
+                             +8.32667268468867405e-17,
+                             +4.00000065565109519e+00}}));
+    auto const f_eigensystem = f.Diagonalize<Eigenworld>();
+
+    EXPECT_THAT(f_eigensystem.rotation.quaternion().Norm(),
+                AlmostEquals(1.0, 0))
+        << f << "\n" << f_eigensystem.form;
+    Vector<double, Eigenworld> const e₀({1, 0, 0});
+    Vector<double, Eigenworld> const e₁({0, 1, 0});
+    Vector<double, Eigenworld> const e₂({0, 0, 1});
+
+    EXPECT_THAT(f_eigensystem.rotation(e₀), Componentwise(1, 0, 0));
+    EXPECT_THAT(f_eigensystem.rotation(e₁), Componentwise(0, 1, 0));
+    EXPECT_THAT(f_eigensystem.rotation(e₂), Componentwise(0, 0, 1));
+  }
 }
 
 }  // namespace internal_symmetric_bilinear_form
