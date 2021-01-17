@@ -37,22 +37,24 @@ struct CosSin {
 // Givens rotation.
 inline R3x3Matrix<double> JacobiRotation(int const p,
                                          int const q,
-                                         CosSin const& cos_sin) {
-  R3x3Matrix<double> j = R3x3Matrix<double>::Identity();
-  j(p, p) = cos_sin.cos;
-  j(q, q) = cos_sin.cos;
-  j(p, q) = cos_sin.sin;
-  j(q, p) = -cos_sin.sin;
-  return j;
+                                         CosSin const& θ) {
+  auto const& [c, s] = θ;
+  R3x3Matrix<double> J = R3x3Matrix<double>::Identity();
+  J(p, p) = c;
+  J(q, q) = c;
+  J(p, q) = s;
+  J(q, p) = -s;
+  return J;
 };
 
-// See [GV13] section 8.5.2.
+// See [GV13] section 8.5.2, algorithm 8.5.1.
 template<typename Scalar>
 CosSin SymmetricShurDecomposition2(R3x3Matrix<Scalar> const& A,
                                    int const p,
                                    int const q) {
   static Scalar const zero{};
-  CosSin cos_sin;
+  CosSin θ;
+  auto& [c, s] = θ;
   if (A(p, q) != zero) {
     double const τ = (A(q, q) - A(p, p)) / (2 * A(p, q));
     double t;
@@ -61,12 +63,12 @@ CosSin SymmetricShurDecomposition2(R3x3Matrix<Scalar> const& A,
     } else {
       t = 1 / (τ - Sqrt(1 + τ * τ));
     }
-    cos_sin.cos = 1 / Sqrt(1 + t * t);
-    cos_sin.sin = t * cos_sin.cos;
+    c = 1 / Sqrt(1 + t * t);
+    s = t * c;
   } else {
-    cos_sin = {1, 0};
+    θ = {1, 0};
   }
-  return cos_sin;
+  return θ;
 };
 
 
@@ -186,7 +188,7 @@ typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
 
   // [GV13], Algorithm 8.5.2.
   R3x3Matrix<Scalar> A = matrix_;
-  Scalar const frobenius_norm_of_A = A.FrobeniusNorm();
+  Scalar const A_frobenius_norm = A.FrobeniusNorm();
   auto V = R3x3Matrix<double>::Identity();
   for (int k = 0; k < max_iterations; ++k) {
     Scalar max_Apq{};
@@ -204,12 +206,12 @@ typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
         }
       }
     }
-    if (max_Apq <= ε * frobenius_norm_of_A) {
+    if (max_Apq <= ε * A_frobenius_norm) {
       break;
     }
 
-    auto cos_sin = SymmetricShurDecomposition2(A, max_p, max_q);
-    auto const J = JacobiRotation(max_p, max_q, cos_sin);
+    auto θ = SymmetricShurDecomposition2(A, max_p, max_q);
+    auto const J = JacobiRotation(max_p, max_q, θ);
     A = J.Transpose() * A * J;
     V = V * J;
     if (k == max_iterations - 1) {

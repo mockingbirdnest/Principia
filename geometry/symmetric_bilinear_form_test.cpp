@@ -247,9 +247,9 @@ TEST_F(SymmetricBilinearFormTest, AnticommutatorDiagonalization) {
   EXPECT_THAT(bivector_eigensystem.rotation(bieigenvector(0)),
               Componentwise(0, 1, 0));
   EXPECT_THAT(bivector_eigensystem.rotation(bieigenvector(1)),
-              Componentwise(0, 0, -1));
+              Componentwise(0, 0, 1));
   EXPECT_THAT(bivector_eigensystem.rotation(bieigenvector(2)),
-              Componentwise(-1, 0, 0));
+              Componentwise(1, 0, 0));
 }
 
 TEST_F(SymmetricBilinearFormTest, InnerProductForm) {
