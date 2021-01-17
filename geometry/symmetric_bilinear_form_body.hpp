@@ -208,15 +208,38 @@ typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
     auto const J = JacobiRotation(max_p, max_q, cos_sin);
     A = J.Transpose() * A * J;
     V = V * J;
-    LOG(ERROR) << A << " " << V;
+    //LOG(ERROR) << k << " " << A << " " << V;
     if (k == max_iterations - 1) {
-      LOG(WARNING) << "Difficult diagonalization: " << matrix_
-                   << ", stopping with: " << A;
+      LOG(ERROR) << "Difficult diagonalization: " << matrix_
+                 << ", stopping with: " << A;
     }
   }
 
-  return {SymmetricBilinearForm<Scalar, Eigenframe, Multivector>(std::move(A)),
-    Rotation<Eigenframe, Frame>::Identity()};
+  // Now we must sort the eigenvalues by increasing value and reorder the
+  // eigenvectors accordingly.
+  using ValueAndVector = std::pair<Scalar, Bivector<double, Frame>>;
+  std::array<ValueAndVector, 3> values_and_vectors;
+
+  // The minus signs are to preserve the orientation of the basis.
+  auto const ᵗV = V.Transpose();
+  values_and_vectors[0] = {A(0, 0), Bivector<double, Frame>(-ᵗV.row_x())};
+  values_and_vectors[1] = {A(1, 1), Bivector<double, Frame>(-ᵗV.row_y())};
+  values_and_vectors[2] = {A(2, 2), Bivector<double, Frame>(-ᵗV.row_z())};
+
+  std::sort(values_and_vectors.begin(),
+            values_and_vectors.end(),
+            [](ValueAndVector const& left, ValueAndVector const& right) {
+              return left.first < right.first;
+            });
+
+  return {
+      SymmetricBilinearForm<Scalar, Eigenframe, Multivector>(
+          R3x3Matrix<Scalar>::DiagonalMatrix({values_and_vectors[0].first,
+                                              values_and_vectors[1].first,
+                                              values_and_vectors[2].first})),
+      Rotation<Eigenframe, Frame>(values_and_vectors[0].second,
+                                  values_and_vectors[1].second,
+                                  values_and_vectors[2].second)};
 }
 
 template<typename Scalar,
