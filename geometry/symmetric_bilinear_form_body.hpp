@@ -4,11 +4,13 @@
 #include "geometry/symmetric_bilinear_form.hpp"
 
 #include <algorithm>
+#include <limits>
 #include <string>
 
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/sign.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -17,12 +19,59 @@ namespace principia {
 namespace geometry {
 namespace internal_symmetric_bilinear_form {
 
+using quantities::Abs;
 using quantities::Angle;
 using quantities::ArcCos;
 using quantities::Cos;
+using quantities::IsFinite;
 using quantities::Sqrt;
 using quantities::Square;
 using quantities::si::Radian;
+
+struct CosSin {
+  double cos;
+  double sin;
+};
+
+// This is J(p, q, θ) in [GV13] section 8.5.1.  This matrix is also called a
+// Givens rotation.
+inline R3x3Matrix<double> JacobiRotation(int const p,
+                                         int const q,
+                                         CosSin const& θ) {
+  auto const& [c, s] = θ;
+  R3x3Matrix<double> J = R3x3Matrix<double>::Identity();
+  J(p, p) = c;
+  J(q, q) = c;
+  J(p, q) = s;
+  J(q, p) = -s;
+  return J;
+};
+
+// See [GV13] section 8.5.2, algorithm 8.5.1.
+template<typename Scalar>
+CosSin SymmetricShurDecomposition2(R3x3Matrix<Scalar> const& A,
+                                   int const p,
+                                   int const q) {
+  static Scalar const zero{};
+  CosSin θ;
+  auto& [c, s] = θ;
+  if (A(p, q) != zero) {
+    double const τ = (A(q, q) - A(p, p)) / (2 * A(p, q));
+    double t;
+    if (τ >= 0) {
+      t = 1 / (τ + Sqrt(1 + τ * τ));
+    } else {
+      t = 1 / (τ - Sqrt(1 + τ * τ));
+    }
+    c = 1 / Sqrt(1 + t * t);
+    s = t * c;
+  } else {
+    θ = {1, 0};
+  }
+  return θ;
+};
+
+
 
 template<typename Scalar,
          typename Frame,
@@ -130,88 +179,79 @@ template<typename Eigenframe>
 typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
     template Eigensystem<Eigenframe>
     SymmetricBilinearForm<Scalar, Frame, Multivector>::Diagonalize() const {
-  Scalar const zero;
-  R3x3Matrix<Scalar> const& A = matrix_;
-  auto const I = R3x3Matrix<double>::Identity();
+  // As a safety measure we limit the number of iterations.  We prefer to exit
+  // when the matrix is nearly diagonal, though.
+  static constexpr int max_iterations = 16;
+  static constexpr double ε = std::numeric_limits<double>::epsilon() / 128;
 
-  // This algorithm follows
-  // https://en.wikipedia.org/wiki/Eigenvalue_algorithm#3%C3%973_matrices which
-  // gives closed-form formulæ for 3x3 matrices.
-  Scalar const q = A.Trace() / 3;
-  R3x3Matrix<Scalar> const A_minus_qI = A - q * I;
-  Scalar const p = Sqrt((A_minus_qI * A_minus_qI).Trace() / 6);
+  static Scalar const zero{};
 
-  if (p == zero) {
-    // A is very close to q * I.
-    SymmetricBilinearForm<Scalar, Eigenframe, Multivector> form(
-        R3x3Matrix<Scalar>({q, zero, zero},
-                           {zero, q, zero},
-                           {zero, zero, q}));
-    return {form, Rotation<Eigenframe, Frame>::Identity()};
+  // [GV13], Algorithm 8.5.2.
+  R3x3Matrix<Scalar> A = matrix_;
+  Scalar const A_frobenius_norm = A.FrobeniusNorm();
+  auto V = R3x3Matrix<double>::Identity();
+  for (int k = 0; k < max_iterations; ++k) {
+    Scalar max_Apq{};
+    int max_p;
+    int max_q;
+
+    // Find the largest off-diagonal element and exit if it's small.
+    for (int p = 0; p < 3; ++p) {
+      for (int q = p + 1; q < 3; ++q) {
+        Scalar const abs_Apq = Abs(A(p, q));
+        if (abs_Apq >= max_Apq) {
+          max_Apq = abs_Apq;
+          max_p = p;
+          max_q = q;
+        }
+      }
+    }
+    if (max_Apq <= ε * A_frobenius_norm) {
+      break;
+    }
+
+    auto θ = SymmetricShurDecomposition2(A, max_p, max_q);
+    auto const J = JacobiRotation(max_p, max_q, θ);
+    A = J.Transpose() * A * J;
+    V = V * J;
+    if (k == max_iterations - 1) {
+      LOG(ERROR) << "Difficult diagonalization: " << matrix_
+                 << ", stopping with: " << A;
+    }
   }
 
-  // When det_B is close to -2 or 2, two of the eigenvalues are close.
-  R3x3Matrix<double> const B = A_minus_qI / p;
-  double const det_B = B.Determinant();
-  Angle const θ = ArcCos(std::clamp(det_B, -2.0, 2.0) * 0.5);
-  double const β₀ = 2 * Cos(θ / 3);
-  double const β₁ = 2 * Cos((θ + 2 * π * Radian) / 3);
-  double const β₂ = 2 * Cos((θ + 4 * π * Radian) / 3);
-  std::array<Scalar, 3> αs = {p * β₀ + q, p * β₁ + q, p * β₂ + q};
-  // We expect αs[1] <= αs[2] <= αs[0] here, but sorting ensures that we are
-  // correct irrespective of numerical errors.
-  std::sort(αs.begin(), αs.end());
-  Scalar const& α₀ = αs[0];
-  Scalar const& α₁ = αs[1];
-  Scalar const& α₂ = αs[2];
+  // Now we must sort the eigenvalues by increasing value and reorder the
+  // eigenvectors accordingly.  In doing so, we must track the parity of the
+  // basis.
+  bool odd = false;
+  auto const ᵗV = V.Transpose();
+  std::array<Bivector<double, Frame>, 3> v = {
+      Bivector<double, Frame>(ᵗV.row_x()),
+      Bivector<double, Frame>(ᵗV.row_y()),
+      Bivector<double, Frame>(ᵗV.row_z())};
 
-  // The form in its diagonal basis.
-  SymmetricBilinearForm<Scalar, Eigenframe, Multivector> form(
-      R3x3Matrix<Scalar>({α₀, zero, zero},
-                         {zero, α₁, zero},
-                         {zero, zero, α₂}));
+  auto const swap_if_needed = [&](int const i, int const j) {
+    if (A(i, i) > A(j, j)) {
+      odd = !odd;
+      std::swap(A(i, i), A(j, j));
+      std::swap(v[i], v[j]);
+    }
+  };
 
-  // Use the Cayley-Hamilton theorem to efficiently find the eigenvectors.  The
-  // mᵢ matrices contain, in columns, eigenvectors for the corresponding αᵢ.
-  R3x3Matrix<Scalar> const A_minus_α₀I = A - α₀ * I;
-  R3x3Matrix<Scalar> const A_minus_α₁I = A - α₁ * I;
-  R3x3Matrix<Scalar> const A_minus_α₂I = A - α₂ * I;
+  // Unrolling a bubble sort.
+  swap_if_needed(0, 1);
+  swap_if_needed(1, 2);
+  swap_if_needed(0, 1);
 
-  // If two eigenvalues are very close, we want to be as precise as possible for
-  // the eigenvector that's not close to the other two.  That happens for the
-  // inertia of an object that is a disc or a needle.  So we locate the third
-  // eigenvalue and read its eigenvector directly from the matrix mᵢ.  The other
-  // eigenvectors are orthogonal, but they may be far from the truth because of
-  // the singularity.
-  auto const m₁ = A_minus_α₂I * A_minus_α₀I;
-  std::unique_ptr<Rotation<Eigenframe, Frame> const> rotation;
-  if (α₀ == α₂) {
-    // This can happen even if p != zero because of errors in the computation of
-    // the αs.
-    SymmetricBilinearForm<Scalar, Eigenframe, Multivector> form(
-        R3x3Matrix<Scalar>({q, zero, zero},
-                           {zero, q, zero},
-                           {zero, zero, q}));
-    return {form, Rotation<Eigenframe, Frame>::Identity()};
-  } else if (α₁ - α₀ < α₂ - α₁) {
-    auto const m₂ = A_minus_α₀I * A_minus_α₁I;
-    auto const v₂ =
-        Normalize(Vector<Square<Scalar>, Frame>(PickEigenvector(m₂)));
-    auto const v₁ = Normalize(Vector<Square<Scalar>, Frame>(PickEigenvector(m₁))
-                                  .OrthogonalizationAgainst(v₂));
-    rotation =
-        std::make_unique<Rotation<Eigenframe, Frame>>(Wedge(v₁, v₂), v₁, v₂);
-  } else {  // α₁ - α₀ >= α₂ - α₁
-    auto const m₀ = A_minus_α₁I * A_minus_α₂I;
-    auto const v₀ =
-        Normalize(Vector<Square<Scalar>, Frame>(PickEigenvector(m₀)));
-    auto const v₁ = Normalize(Vector<Square<Scalar>, Frame>(PickEigenvector(m₁))
-                                  .OrthogonalizationAgainst(v₀));
-    rotation =
-        std::make_unique<Rotation<Eigenframe, Frame>>(v₀, v₁, Wedge(v₀, v₁));
+  if (odd) {
+    // This choice is arbitrary but it seems to maintain pretty good
+    // compatibility with the old algorithm.
+    v[1] *= -1;
   }
 
-  return {form, *rotation};
+  return {SymmetricBilinearForm<Scalar, Eigenframe, Multivector>(
+              R3x3Matrix<Scalar>::DiagonalMatrix({A(0, 0), A(1, 1), A(2, 2)})),
+          Rotation<Eigenframe, Frame>(v[0], v[1], v[2])};
 }
 
 template<typename Scalar,
