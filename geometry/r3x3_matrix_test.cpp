@@ -48,6 +48,10 @@ TEST_F(R3x3MatrixTest, Transpose) {
               Eq(R3x3Matrix<double>({-9, 7, -1}, {6, -5, 2}, {6, -4, 1})));
 }
 
+TEST_F(R3x3MatrixTest, FrobeniusNorm) {
+  EXPECT_THAT(m1_.FrobeniusNorm(), Eq(Sqrt(249)));
+}
+
 TEST_F(R3x3MatrixTest, QRDecomposition) {
   R3x3Matrix<Length> hilbert(
       {1 * Metre, 1.0 / 2.0 * Metre, 1.0 / 3.0 * Metre},

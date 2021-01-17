@@ -45,6 +45,8 @@ class R3x3Matrix final {
   Cube<Scalar> Determinant() const;
   R3x3Matrix Transpose() const;
 
+  Scalar FrobeniusNorm() const;
+
   void QRDecomposition(R3x3Matrix<double>& Q, R3x3Matrix& R) const;
 
   template<typename RScalar>
