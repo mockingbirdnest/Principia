@@ -297,15 +297,15 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
     Vector<double, Eigenworld> const e₀({1, 0, 0});
     Vector<double, Eigenworld> const e₁({0, 1, 0});
     Vector<double, Eigenworld> const e₂({0, 0, 1});
-    EXPECT_THAT(f_eigensystem.form(e₀, e₀), AlmostEquals(-3 * Metre, 1));
+    EXPECT_THAT(f_eigensystem.form(e₀, e₀), AlmostEquals(-3 * Metre, 0));
     EXPECT_THAT(f_eigensystem.form(e₀, e₁), AlmostEquals(0 * Metre, 0));
     EXPECT_THAT(f_eigensystem.form(e₀, e₂), AlmostEquals(0 * Metre, 0));
     EXPECT_THAT(f_eigensystem.form(e₁, e₀), AlmostEquals(0 * Metre, 0));
-    EXPECT_THAT(f_eigensystem.form(e₁, e₁), AlmostEquals(1 * Metre, 6));
+    EXPECT_THAT(f_eigensystem.form(e₁, e₁), AlmostEquals(1 * Metre, 0));
     EXPECT_THAT(f_eigensystem.form(e₁, e₂), AlmostEquals(0 * Metre, 0));
     EXPECT_THAT(f_eigensystem.form(e₂, e₀), AlmostEquals(0 * Metre, 0));
     EXPECT_THAT(f_eigensystem.form(e₂, e₁), AlmostEquals(0 * Metre, 0));
-    EXPECT_THAT(f_eigensystem.form(e₂, e₂), AlmostEquals(2 * Metre, 1));
+    EXPECT_THAT(f_eigensystem.form(e₂, e₂), AlmostEquals(2 * Metre, 0));
 
     Vector<double, World> const w₀({ 0, 1, 0});
     Vector<double, World> const w₁({-1, 0, 0});
@@ -338,7 +338,7 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
     EXPECT_THAT(f_eigensystem.form(e₀, e₀),
                 AlmostEquals(-10.096452436666494320 * Metre, 0));
     EXPECT_THAT(f_eigensystem.form(e₁, e₁),
-                AlmostEquals(-0.79093267638983993780 * Metre, 34));
+                AlmostEquals(-0.79093267638983993780 * Metre, 6));
     EXPECT_THAT(f_eigensystem.form(e₂, e₂),
                 AlmostEquals(6.8873851130563342581 * Metre, 1));
 
@@ -353,15 +353,15 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
                                     0.68385298338325629274});
     EXPECT_THAT(f_eigensystem.rotation.Inverse()(w₀),
                 Componentwise(AlmostEquals(1, 0),
-                              VanishesBefore(1, 0),
-                              VanishesBefore(1, 1)));
+                              VanishesBefore(1, 1),
+                              VanishesBefore(1, 0)));
     EXPECT_THAT(f_eigensystem.rotation.Inverse()(w₁),
                 Componentwise(VanishesBefore(1, 0),
                               AlmostEquals(1, 0),
-                              VanishesBefore(1, 0)));
+                              VanishesBefore(1, 1)));
     EXPECT_THAT(f_eigensystem.rotation.Inverse()(w₂),
-                Componentwise(VanishesBefore(1, 2),
-                              VanishesBefore(1, 2),
+                Componentwise(VanishesBefore(1, 0),
+                              VanishesBefore(1, 0),
                               AlmostEquals(1, 0)));
   }
 
@@ -393,7 +393,7 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
     std::mt19937_64 random(42);
     std::uniform_real_distribution<> inertia_tensor_distribution(-1000.0,
                                                                  1000.0);
-    for (int i = 0; i < 1'000'000; ++i) {
+    for (int i = 0; i < 1'0/*00'000*/; ++i) {
       double const i00 = inertia_tensor_distribution(random);
       double const i01 = inertia_tensor_distribution(random);
       double const i02 = inertia_tensor_distribution(random);
@@ -428,7 +428,7 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
     auto const f_eigensystem = f.Diagonalize<Eigenworld>();
 
     EXPECT_THAT(f_eigensystem.rotation.quaternion().Norm(),
-                AlmostEquals(1.0, 1)) << f;
+                AlmostEquals(1.0, 0)) << f;
   }
 
   // A case with two eigenvalues that are very close (exact relative error
@@ -453,23 +453,22 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
     Vector<double, Eigenworld> const e₁({0, 1, 0});
     Vector<double, Eigenworld> const e₂({0, 0, 1});
 
-    // Real eigenvectors obtained with Mathematica.  Note how bad the first two
-    // eigenvectors are: that's because the object is very nearly a disc, and
-    // our computation yields eigenvectors that are roughly 45° from the real
-    // ones.  But at least they are in the right plane and determine a rotation
-    // that correctly aligns the isolated eigenvector.
-    EXPECT_THAT(f_eigensystem.rotation(e₀),
-                Componentwise(
-                    AbsoluteErrorFrom(-0.71267592684216601514, IsNear(0.7_⑴)),
-                    AbsoluteErrorFrom(+0.086267747252993862323, IsNear(0.01_⑴)),
-                    AbsoluteErrorFrom(-0.69616872888945048034, IsNear(0.3_⑴))));
-    EXPECT_THAT(f_eigensystem.rotation(e₁),
-                Componentwise(
-                    AbsoluteErrorFrom(-0.69988076924532898781, IsNear(0.3_⑴)),
-                    AbsoluteErrorFrom(-0.02018794239465783510, IsNear(0.07_⑴)),
-                    AbsoluteErrorFrom(+0.71397433835008141314, IsNear(0.7_⑴))));
+    // Real eigenvectors obtained with Mathematica.  The first two eigenvectors
+    // have sizeable errors.
+    EXPECT_THAT(
+        f_eigensystem.rotation(e₀),
+        Componentwise(
+            AbsoluteErrorFrom(+0.71267592684216601514, IsNear(6.4e-3_⑴)),
+            AbsoluteErrorFrom(-0.086267747252993862323, IsNear(1.8e-4_⑴)),
+            AbsoluteErrorFrom(+0.69616872888945048034, IsNear(6.4e-3_⑴))));
+    EXPECT_THAT(
+        f_eigensystem.rotation(e₁),
+        Componentwise(
+            AbsoluteErrorFrom(+0.69988076924532898781, IsNear(6.4e-3_⑴)),
+            AbsoluteErrorFrom(+0.02018794239465783510, IsNear(7.8e-4_⑴)),
+            AbsoluteErrorFrom(-0.71397433835008141314, IsNear(6.4e-3_⑴))));
     EXPECT_THAT(f_eigensystem.rotation(e₂),
-                Componentwise(AlmostEquals(+0.04753874357012595212, 10),
+                Componentwise(AlmostEquals(+0.04753874357012595212, 14),
                               AlmostEquals(+0.99606742882485799451, 1),
                               AlmostEquals(+0.07476459786563599011, 4)));
   }
@@ -497,23 +496,25 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
 
     // Same comment as above regarding the last two eigenvectors.
     EXPECT_THAT(f_eigensystem.rotation(e₀),
-                Componentwise(AlmostEquals(+0.88005120297326585654, 1),
-                              AlmostEquals(-0.04350022098854655144, 1),
-                              AlmostEquals(+0.47288223789782508101, 2)));
-    EXPECT_THAT(f_eigensystem.rotation(e₁),
-                Componentwise(
-                    AbsoluteErrorFrom(-0.42509236497268917818, IsNear(0.07_⑴)),
-                    AbsoluteErrorFrom(+0.37170808088366222608, IsNear(1.1_⑴)),
-                    AbsoluteErrorFrom(+0.82530575173550731715, IsNear(0.2_⑴))));
-    EXPECT_THAT(f_eigensystem.rotation(e₂),
-                Componentwise(
-                    AbsoluteErrorFrom(+0.21167513171658507292, IsNear(0.1_⑴)),
-                    AbsoluteErrorFrom(+0.92732994849715299942, IsNear(1.6_⑴)),
-                    AbsoluteErrorFrom(-0.30863053191969508327, IsNear(0.3_⑴))));
+                Componentwise(AlmostEquals(+0.88005120297326585654, 0),
+                              AlmostEquals(-0.04350022098854655144, 7),
+                              AlmostEquals(+0.47288223789782508101, 1)));
+    EXPECT_THAT(
+        f_eigensystem.rotation(e₁),
+        Componentwise(
+            AbsoluteErrorFrom(+0.21167513171658507292, IsNear(1.2e-3_⑴)),
+            AbsoluteErrorFrom(+0.92732994849715299942, IsNear(1.1e-3_⑴)),
+            AbsoluteErrorFrom(-0.30863053191969508327, IsNear(2.4e-3_⑴))));
+    EXPECT_THAT(
+        f_eigensystem.rotation(e₂),
+        Componentwise(
+            AbsoluteErrorFrom(-0.42509236497268917818, IsNear(6.2e-4_⑴)),
+            AbsoluteErrorFrom(+0.37170808088366222608, IsNear(2.7e-3_⑴)),
+            AbsoluteErrorFrom(+0.82530575173550731715, IsNear(9.1e-4_⑴))));
   }
 
-  // A matrix whose eigenvalues are computed to be identical, even though p is
-  // not zero (#2716).
+  // A matrix for which two eigenvalues are computed to be identical and the
+  // third is very close (#2716).
   {
     auto const f = MakeSymmetricBilinearForm<World>(
         R3x3Matrix<double>({{+8.37592291645705700e-01,
@@ -526,17 +527,37 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
                              +0.00000000000000000e+00,
                              +8.37592291645705700e-01}}));
     auto const f_eigensystem = f.Diagonalize<Eigenworld>();
+    LOG(ERROR)<<f_eigensystem.form;
 
     EXPECT_THAT(f_eigensystem.rotation.quaternion().Norm(),
-                AlmostEquals(1.0, 0)) << f;
+                AlmostEquals(1.0, 1)) << f;
     Vector<double, Eigenworld> const e₀({1, 0, 0});
     Vector<double, Eigenworld> const e₁({0, 1, 0});
     Vector<double, Eigenworld> const e₂({0, 0, 1});
 
-    EXPECT_THAT(f_eigensystem.rotation(e₀), Componentwise(1, 0, 0));
-    EXPECT_THAT(f_eigensystem.rotation(e₁), Componentwise(0, 1, 0));
-    EXPECT_THAT(f_eigensystem.rotation(e₂), Componentwise(0, 0, 1));
+    // The results are very far from the truth as computed by Mathematica, but
+    // they form a perfectly good orthonormal basis.
+    EXPECT_THAT(
+        f_eigensystem.rotation(e₀),
+        Componentwise(
+            AbsoluteErrorFrom(-0.70710678118654752440, IsNear(0.015_⑴)),
+            AbsoluteErrorFrom(-0.58834840541455209490, IsNear(0.10_⑴)),
+            AbsoluteErrorFrom(+0.39223227027636806515, IsNear(0.18_⑴))));
+    EXPECT_THAT(
+        f_eigensystem.rotation(e₁),
+        Componentwise(
+            AbsoluteErrorFrom(+2.05936741823631274854e-26, IsNear(0.70_⑴)),
+            AbsoluteErrorFrom(+0.55470019622522912386, IsNear(1.3_⑴)),
+            AbsoluteErrorFrom(+0.83205029433784368179, IsNear(0.87_⑴))));
+    EXPECT_THAT(
+        f_eigensystem.rotation(e₂),
+        Componentwise(
+            AbsoluteErrorFrom(-0.70710678118654752440, IsNear(0.88_⑴)),
+            AbsoluteErrorFrom(+0.58834840541455209490, IsNear(0.47_⑴)),
+            AbsoluteErrorFrom(-0.39223227027636806515, IsNear(1.4_⑴))));
   }
+
+  // A matrix found in game, see #2853.
   {
     auto const f = MakeSymmetricBilinearForm<World>(
         R3x3Matrix<double>({{+4.00000065565109253e+00,
@@ -558,8 +579,14 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
     Vector<double, Eigenworld> const e₂({0, 0, 1});
 
     EXPECT_THAT(f_eigensystem.rotation(e₀), Componentwise(1, 0, 0));
-    EXPECT_THAT(f_eigensystem.rotation(e₁), Componentwise(0, 1, 0));
-    EXPECT_THAT(f_eigensystem.rotation(e₂), Componentwise(0, 0, 1));
+    EXPECT_THAT(f_eigensystem.rotation(e₁),
+                Componentwise(AlmostEquals(0, 0),
+                              AlmostEquals(+0.70710678118654752440, 1),
+                              AlmostEquals(-0.70710678118654752440, 0)));
+    EXPECT_THAT(f_eigensystem.rotation(e₂),
+                Componentwise(AlmostEquals(0, 0),
+                              AlmostEquals(+0.70710678118654752440, 0),
+                              AlmostEquals(+0.70710678118654752440, 1)));
   }
 }
 
