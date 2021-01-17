@@ -393,7 +393,7 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
     std::mt19937_64 random(42);
     std::uniform_real_distribution<> inertia_tensor_distribution(-1000.0,
                                                                  1000.0);
-    for (int i = 0; i < 1'0/*00'000*/; ++i) {
+    for (int i = 0; i < 1'000'000; ++i) {
       double const i00 = inertia_tensor_distribution(random);
       double const i01 = inertia_tensor_distribution(random);
       double const i02 = inertia_tensor_distribution(random);
@@ -407,7 +407,7 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
       auto const f_eigensystem = f.Diagonalize<Eigenworld>();
 
       EXPECT_THAT(f_eigensystem.rotation.quaternion().Norm(),
-                  AlmostEquals(1.0, 0, 3)) << f;
+                  AlmostEquals(1.0, 0, 4)) << f;
     }
   }
 #endif
@@ -527,10 +527,9 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
                              +0.00000000000000000e+00,
                              +8.37592291645705700e-01}}));
     auto const f_eigensystem = f.Diagonalize<Eigenworld>();
-    LOG(ERROR)<<f_eigensystem.form;
 
     EXPECT_THAT(f_eigensystem.rotation.quaternion().Norm(),
-                AlmostEquals(1.0, 1)) << f;
+                AlmostEquals(1.0, 0)) << f;
     Vector<double, Eigenworld> const e₀({1, 0, 0});
     Vector<double, Eigenworld> const e₁({0, 1, 0});
     Vector<double, Eigenworld> const e₂({0, 0, 1});
@@ -540,15 +539,15 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
     EXPECT_THAT(
         f_eigensystem.rotation(e₀),
         Componentwise(
-            AbsoluteErrorFrom(-0.70710678118654752440, IsNear(0.015_⑴)),
-            AbsoluteErrorFrom(-0.58834840541455209490, IsNear(0.10_⑴)),
-            AbsoluteErrorFrom(+0.39223227027636806515, IsNear(0.18_⑴))));
+            AbsoluteErrorFrom(-0.70710678118654752440, IsNear(1.4_⑴)),
+            AbsoluteErrorFrom(-0.58834840541455209490, IsNear(0.12_⑴)),
+            AbsoluteErrorFrom(+0.39223227027636806515, IsNear(0.43_⑴))));
     EXPECT_THAT(
         f_eigensystem.rotation(e₁),
         Componentwise(
             AbsoluteErrorFrom(+2.05936741823631274854e-26, IsNear(0.70_⑴)),
-            AbsoluteErrorFrom(+0.55470019622522912386, IsNear(1.3_⑴)),
-            AbsoluteErrorFrom(+0.83205029433784368179, IsNear(0.87_⑴))));
+            AbsoluteErrorFrom(+0.55470019622522912386, IsNear(0.14_⑴)),
+            AbsoluteErrorFrom(+0.83205029433784368179, IsNear(1.0_⑴))));
     EXPECT_THAT(
         f_eigensystem.rotation(e₂),
         Componentwise(

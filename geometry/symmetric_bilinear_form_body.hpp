@@ -4,6 +4,7 @@
 #include "geometry/symmetric_bilinear_form.hpp"
 
 #include <algorithm>
+#include <limits>
 #include <string>
 
 #include "geometry/grassmann.hpp"
@@ -34,9 +35,9 @@ struct CosSin {
 
 // This is J(p, q, θ) in [GV13] section 8.5.1.  This matrix is also called a
 // Givens rotation.
-R3x3Matrix<double> JacobiRotation(int const p,
-                                  int const q,
-                                  CosSin const& cos_sin) {
+inline R3x3Matrix<double> JacobiRotation(int const p,
+                                         int const q,
+                                         CosSin const& cos_sin) {
   R3x3Matrix<double> j = R3x3Matrix<double>::Identity();
   j(p, p) = cos_sin.cos;
   j(q, q) = cos_sin.cos;
@@ -177,19 +178,22 @@ typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
     template Eigensystem<Eigenframe>
     SymmetricBilinearForm<Scalar, Frame, Multivector>::Diagonalize() const {
   // As a safety measure we limit the number of iterations.  We prefer to exit
-  // when the matrix is actually diagonal, though.
-  static constexpr int max_iterations = 10;
+  // when the matrix is nearly diagonal, though.
+  static constexpr int max_iterations = 16;
+  static constexpr double ε = std::numeric_limits<double>::epsilon() / 128;
+
   static Scalar const zero{};
 
   // [GV13], Algorithm 8.5.2.
   R3x3Matrix<Scalar> A = matrix_;
+  Scalar const frobenius_norm_of_A = A.FrobeniusNorm();
   auto V = R3x3Matrix<double>::Identity();
   for (int k = 0; k < max_iterations; ++k) {
     Scalar max_Apq{};
     int max_p;
     int max_q;
 
-    // Find the largest off-diagonal element and exit if it's zero.
+    // Find the largest off-diagonal element and exit if it's small.
     for (int p = 0; p < 3; ++p) {
       for (int q = p + 1; q < 3; ++q) {
         Scalar const abs_Apq = Abs(A(p, q));
@@ -200,7 +204,7 @@ typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
         }
       }
     }
-    if (max_Apq == zero) {
+    if (max_Apq <= ε * frobenius_norm_of_A) {
       break;
     }
 
@@ -208,7 +212,6 @@ typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
     auto const J = JacobiRotation(max_p, max_q, cos_sin);
     A = J.Transpose() * A * J;
     V = V * J;
-    //LOG(ERROR) << k << " " << A << " " << V;
     if (k == max_iterations - 1) {
       LOG(ERROR) << "Difficult diagonalization: " << matrix_
                  << ", stopping with: " << A;
