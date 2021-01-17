@@ -152,6 +152,38 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 }
 
 template<typename T>
+template<typename Scalar>
+bool AlmostEqualsMatcher<T>::MatchAndExplain(
+    geometry::R3x3Matrix<Scalar> const& actual,
+    testing::MatchResultListener* listener) const {
+  // Check that the types are equality-comparable up to implicit casts.
+  if (actual == expected_) {
+    return MatchAndExplainIdentical(listener);
+  }
+  std::int64_t max_distance = -1;
+  int max_i = -1;
+  int max_j = -1;
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 3; ++j) {
+      int const distance = NormalizedNaNULPDistance(
+          DoubleValue(actual(i, j)), DoubleValue(expected_(i, j)));
+      if (distance > max_distance) {
+        max_distance = distance;
+        max_i = i;
+        max_j = j;
+      }
+    }
+  }
+  bool const matches = min_ulps_ <= max_distance && max_distance <= max_ulps_;
+  if (!matches) {
+    *listener << "the component at indices " << max_i << ", " << max_j
+              << " is not within " << min_ulps_ << " to " << max_ulps_
+              << " ULPs: it differs by " << max_distance << " ULPs";
+  }
+  return matches;
+}
+
+template<typename T>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
     geometry::Quaternion const& actual,
     testing::MatchResultListener* listener) const {

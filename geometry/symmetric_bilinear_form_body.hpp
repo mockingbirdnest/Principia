@@ -200,10 +200,9 @@ typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
         Normalize(Vector<Square<Scalar>, Frame>(PickEigenvector(m₂)));
     auto const v₁ = Normalize(Vector<Square<Scalar>, Frame>(PickEigenvector(m₁))
                                   .OrthogonalizationAgainst(v₂));
-#if 0
-    CHECK(IsFinite(v₁.Norm()) && IsFinite(v₂.Norm()))
+    // Cannot use CHECK because glog has not heard of Unicode.
+    LOG_IF(FATAL, IsFinite(v₁.Norm()) && IsFinite(v₂.Norm()))
         << A << " " << v₁ << " " << v₂;
-#endif
     rotation =
         std::make_unique<Rotation<Eigenframe, Frame>>(Wedge(v₁, v₂), v₁, v₂);
   } else {  // α₁ - α₀ >= α₂ - α₁
@@ -212,10 +211,9 @@ typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
         Normalize(Vector<Square<Scalar>, Frame>(PickEigenvector(m₀)));
     auto const v₁ = Normalize(Vector<Square<Scalar>, Frame>(PickEigenvector(m₁))
                                   .OrthogonalizationAgainst(v₀));
-#if 0
-    CHECK(IsFinite(v₀.Norm()) && IsFinite(v₁.Norm()))
+    // Cannot use CHECK because glog has not heard of Unicode.
+    LOG_IF(FATAL, IsFinite(v₀.Norm()) && IsFinite(v₁.Norm()))
         << A << " " << v₀ << " " << v₁;
-#endif
     rotation =
         std::make_unique<Rotation<Eigenframe, Frame>>(v₀, v₁, Wedge(v₀, v₁));
   }

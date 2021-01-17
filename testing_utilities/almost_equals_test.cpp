@@ -23,6 +23,7 @@ namespace testing_utilities {
 using geometry::Bivector;
 using geometry::Quaternion;
 using geometry::R3Element;
+using geometry::R3x3Matrix;
 using geometry::Vector;
 using geometry::Trivector;
 using numerics::UnboundedLowerTriangularMatrix;
@@ -86,6 +87,22 @@ TEST_F(AlmostEqualsTest, R3Element) {
   }
   EXPECT_THAT(v_accumulated, Ne(v1));
   EXPECT_THAT(v_accumulated, AlmostEquals(v1, 8));
+}
+
+TEST_F(AlmostEqualsTest, R3x3Matrix) {
+  R3x3Matrix<Speed> const m1({1 * Knot, 2 * Knot, 3 * Knot},
+                             {4 * Knot, -5 * Knot, 7 * Knot},
+                             {10 * Knot, 2 * Knot, -30 * Knot});
+  R3x3Matrix<Speed> const m2 = m1;
+  EXPECT_THAT(m2, AlmostEquals(m1, 0));
+  EXPECT_THAT(2 * m2, Not(AlmostEquals(m1, 4)));
+  R3x3Matrix<Speed> const δm = m1 / 100;
+  R3x3Matrix<Speed> m_accumulated;
+  for (int i = 1; i <= 100; ++i) {
+    m_accumulated += δm;
+  }
+  EXPECT_THAT(m_accumulated, Ne(m1));
+  EXPECT_THAT(m_accumulated, AlmostEquals(m1, 16));
 }
 
 TEST_F(AlmostEqualsTest, Quaternion) {
