@@ -216,30 +216,37 @@ typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
   }
 
   // Now we must sort the eigenvalues by increasing value and reorder the
-  // eigenvectors accordingly.
-  using ValueAndVector = std::pair<Scalar, Bivector<double, Frame>>;
-  std::array<ValueAndVector, 3> values_and_vectors;
-
-  // The minus signs are to preserve the orientation of the basis.
+  // eigenvectors accordingly.  In doing so, we must track the parity of the
+  // basis.
+  bool odd = false;
   auto const ᵗV = V.Transpose();
-  values_and_vectors[0] = {A(0, 0), Bivector<double, Frame>(-ᵗV.row_x())};
-  values_and_vectors[1] = {A(1, 1), Bivector<double, Frame>(-ᵗV.row_y())};
-  values_and_vectors[2] = {A(2, 2), Bivector<double, Frame>(-ᵗV.row_z())};
+  std::array<Bivector<double, Frame>, 3> v = {
+      Bivector<double, Frame>(ᵗV.row_x()),
+      Bivector<double, Frame>(ᵗV.row_y()),
+      Bivector<double, Frame>(ᵗV.row_z())};
 
-  std::sort(values_and_vectors.begin(),
-            values_and_vectors.end(),
-            [](ValueAndVector const& left, ValueAndVector const& right) {
-              return left.first < right.first;
-            });
+  auto const swap_if_needed = [&](int const i, int const j) {
+    if (A(i, i) > A(j, j)) {
+      odd = !odd;
+      std::swap(A(i, i), A(j, j));
+      std::swap(v[i], v[j]);
+    }
+  };
 
-  return {
-      SymmetricBilinearForm<Scalar, Eigenframe, Multivector>(
-          R3x3Matrix<Scalar>::DiagonalMatrix({values_and_vectors[0].first,
-                                              values_and_vectors[1].first,
-                                              values_and_vectors[2].first})),
-      Rotation<Eigenframe, Frame>(values_and_vectors[0].second,
-                                  values_and_vectors[1].second,
-                                  values_and_vectors[2].second)};
+  // Unrolling a bubble sort.
+  swap_if_needed(0, 1);
+  swap_if_needed(1, 2);
+  swap_if_needed(0, 1);
+
+  if (odd) {
+    // This choice is arbitrary but it seems to maintain pretty good
+    // compatibility with the old algorithm.
+    v[1] *= -1;
+  }
+
+  return {SymmetricBilinearForm<Scalar, Eigenframe, Multivector>(
+              R3x3Matrix<Scalar>::DiagonalMatrix({A(0, 0), A(1, 1), A(2, 2)})),
+          Rotation<Eigenframe, Frame>(v[0], v[1], v[2])};
 }
 
 template<typename Scalar,
