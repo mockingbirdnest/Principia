@@ -171,7 +171,6 @@ TEST_F(AlmostEqualsTest, UnboundedVector) {
   for (int i = 1; i <= 100; ++i) {
     v_accumulated[1] += δv;
   }
-  EXPECT_THAT(v_accumulated, Ne(v1));
   EXPECT_THAT(v_accumulated, AlmostEquals(v1, 3));
 }
 
@@ -189,7 +188,6 @@ TEST_F(AlmostEqualsTest, UnboundedLowerTriangularMatrix) {
   for (int i = 1; i <= 100; ++i) {
     m_accumulated[1][0] += δv;
   }
-  EXPECT_THAT(m_accumulated, Ne(m1));
   EXPECT_THAT(m_accumulated, AlmostEquals(m1, 3));
 }
 
@@ -207,7 +205,6 @@ TEST_F(AlmostEqualsTest, UnboundedUpperTriangularMatrix) {
   for (int i = 1; i <= 100; ++i) {
     m_accumulated[0][1] += δv;
   }
-  EXPECT_THAT(m_accumulated, Ne(m1));
   EXPECT_THAT(m_accumulated, AlmostEquals(m1, 3));
 }
 
