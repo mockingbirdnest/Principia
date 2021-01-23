@@ -109,7 +109,7 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
     auto* extension = method_in.MutableExtension(
         serialization::CatchUpLaggingVessels::extension);
     auto* in = extension->mutable_in();
-    in->set_plugin(1924947714096);
+    in->set_plugin(1851148864528);
   }
   serialization::Method method_out_return;
   {
