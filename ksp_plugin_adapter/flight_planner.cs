@@ -10,6 +10,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                        PredictedVessel predicted_vessel)
       : base(adapter, predicted_vessel) {
     adapter_ = adapter;
+    predicted_vessel_ = predicted_vessel;
     final_time_ = new DifferentialSlider(
                       label            : "Plan length",
                       unit             : null,
@@ -226,6 +227,9 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
 
       if (burn_editors_.Count == 0 &&
           UnityEngine.GUILayout.Button("Delete flight plan")) {
+        final_trajectory_analyser_.DisposeWindow();
+        final_trajectory_analyser_ = new PlannedOrbitAnalyser(adapter_,
+                                                              predicted_vessel_);
         plugin.FlightPlanDelete(vessel_guid);
         ResetStatus();
         Shrink();
@@ -575,6 +579,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
   private IntPtr plugin => adapter_.Plugin();
 
   private readonly PrincipiaPluginAdapter adapter_;
+  private readonly PredictedVessel predicted_vessel_;
 
   // Because this class is stateful (it holds the burn_editors_) we must detect
   // if the vessel changed.  Hence the caching of the vessel.
