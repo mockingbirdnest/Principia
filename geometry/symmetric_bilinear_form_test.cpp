@@ -286,7 +286,6 @@ TEST_F(SymmetricBilinearFormTest, Serialization) {
 }
 
 TEST_F(SymmetricBilinearFormTest, Diagonalize) {
-#if 0
   // A simple test where it's clear what the eigensystem should be.
   {
     auto const f = MakeSymmetricBilinearForm<World>(
@@ -588,7 +587,8 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
                               AlmostEquals(+0.70710678118654752440, 0),
                               AlmostEquals(+0.70710678118654752440, 1)));
   }
-#endif
+
+  // A matrix found in game, see #2866.
   {
     auto const f = MakeSymmetricBilinearForm<World>(
         R3x3Matrix<double>({{+3.99999646469950676e+00,
@@ -610,8 +610,10 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
     Vector<double, Eigenworld> const e₂({0, 0, 1});
 
     EXPECT_THAT(f_eigensystem.rotation(e₀), Componentwise(1, 0, 0));
-    EXPECT_THAT(f_eigensystem.rotation(e₁), Componentwise(0, 1, 0));
-    EXPECT_THAT(f_eigensystem.rotation(e₂), Componentwise(0, 0, 1));
+    EXPECT_THAT(f_eigensystem.rotation(e₁),
+                Componentwise(0, VanishesBefore(1, 1), -1));
+    EXPECT_THAT(f_eigensystem.rotation(e₂),
+                Componentwise(0, 1, VanishesBefore(1, 1)));
   }
 }
 
