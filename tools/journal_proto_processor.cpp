@@ -284,7 +284,7 @@ void JournalProtoProcessor::ProcessRepeatedStringField(
                "*" + descriptor_name + " != nullptr; "
                "++" + descriptor_name + ") {\n"
                "    *" + prefix + "add_" + descriptor_name + "() = " +
-               field_cxx_serializer_fn_[descriptor]("**"+ descriptor_name) +
+               field_cxx_serializer_fn_[descriptor]("*"+ descriptor_name) +
                ";\n"
                "  }\n";
       };
