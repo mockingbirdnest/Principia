@@ -301,6 +301,8 @@ void JournalProtoProcessor::ProcessRepeatedStringField(
                "              " + storage_name +
                ".push_back(s.c_str());\n" +
                "            }\n"
+               "            " + storage_name +
+               ".push_back(nullptr);\n"
                "            return &" + storage_name + "[0];\n" +
                "          }(" + expr + ")";
       };
