@@ -120,9 +120,8 @@ Status OrbitAnalyser::AnalyseOrbit(GuardedParameters guarded_parameters) {
         parameters.extended_mission_duration.value_or(
             parameters.mission_duration),
         std::max(2 * smallest_osculating_period, parameters.mission_duration));
-    for (Instant t = parameters.first_time + analysis_duration / 0x1p10;
-         trajectory.back().time < parameters.first_time + analysis_duration;
-         t += analysis_duration / 0x1p10) {
+    for (int n = 0; n <= 0x1p10; ++n) {
+      Instant const t = parameters.first_time + n / 0x1p10 * analysis_duration;
       if (!ephemeris_->FlowWithFixedStep(t, *instance).ok()) {
         // TODO(egg): Report that the integration failed.
         break;
