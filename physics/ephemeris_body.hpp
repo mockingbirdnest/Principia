@@ -523,6 +523,9 @@ Status Ephemeris<Frame>::FlowWithFixedStep(
   if (empty() || t > t_max()) {
     Prolong(t);
   }
+  if (instance.time() == DoublePrecision<Instant>(t)) {
+    return Status::OK;
+  }
 
   return instance.Solve(t);
 }
