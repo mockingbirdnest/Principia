@@ -30,7 +30,7 @@ TEST(JThreadTest, RequestStop) {
 
   jthread sleepy_worker(
       [](stop_token st, bool* const observed_stop) {
-        for (int i = 0; i < 10; i++) {
+        for (;;) {
           absl::SleepFor(absl::Milliseconds(10));
           if (st.stop_requested()) {
             std::cout << "Sleepy worker is requested to stop\n";
@@ -121,7 +121,7 @@ TEST(JThreadTest, ThisJThread) {
 
   auto sleepy_worker = MakeStoppableThread(
       [](bool* const observed_stop) {
-        for (int i = 0; i < 10; i++) {
+        for (;;) {
           absl::SleepFor(absl::Milliseconds(10));
           if (this_stoppable_thread::get_stop_token().stop_requested()) {
             std::cout << "Sleepy worker is requested to stop\n";
