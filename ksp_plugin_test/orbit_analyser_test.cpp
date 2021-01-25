@@ -16,6 +16,7 @@ namespace principia {
 namespace ksp_plugin {
 
 using astronomy::ITRS;
+using astronomy::J2000;
 using astronomy::OrbitRecurrence;
 using astronomy::StandardProduct3;
 using base::not_null;
@@ -26,6 +27,7 @@ using physics::BodySurfaceDynamicFrame;
 using physics::Ephemeris;
 using physics::RotatingBody;
 using physics::SolarSystem;
+using quantities::Abs;
 using quantities::astronomy::JulianYear;
 using quantities::astronomy::TerrestrialEquatorialRadius;
 using quantities::si::Hour;
@@ -83,6 +85,26 @@ class OrbitAnalyserTest : public testing::Test {
     return solar_system;
   }
 };
+
+TEST_F(OrbitAnalyserTest, TinyAnalysis) {
+  OrbitAnalyser analyser(ephemeris_.get(), DefaultHistoryParameters());
+  EXPECT_THAT(analyser.analysis(), IsNull());
+  EXPECT_THAT(analyser.progress_of_next_analysis(), Eq(0));
+  auto const& arc =
+      *topex_poséidon_.orbit(
+          {StandardProduct3::SatelliteGroup::General, 1}).front();
+  ephemeris_->Prolong(arc.begin()->time);
+  analyser.RequestAnalysis(
+      {.first_time = arc.begin()->time,
+       .first_degrees_of_freedom = itrs_.FromThisFrameAtTime(arc.begin()->time)(
+           arc.begin()->degrees_of_freedom),
+       .mission_duration = Abs(J2000 - arc.begin()->time) * 0x1p-45});
+  do {
+    absl::SleepFor(absl::Milliseconds(10));
+    analyser.RefreshAnalysis();
+  } while (analyser.analysis() == nullptr);
+}
+
 
 TEST_F(OrbitAnalyserTest, TOPEXPoséidon) {
   OrbitAnalyser analyser(ephemeris_.get(), DefaultHistoryParameters());

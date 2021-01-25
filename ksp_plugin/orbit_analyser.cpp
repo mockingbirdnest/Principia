@@ -83,7 +83,7 @@ double OrbitAnalyser::progress_of_next_analysis() const {
   return progress_of_next_analysis_;
 }
 
-Status OrbitAnalyser::AnalyseOrbit(GuardedParameters guarded_parameters) {
+Status OrbitAnalyser::AnalyseOrbit(GuardedParameters const guarded_parameters) {
   auto const& parameters = guarded_parameters.parameters;
 
   Analysis analysis{parameters.first_time};
@@ -120,9 +120,10 @@ Status OrbitAnalyser::AnalyseOrbit(GuardedParameters guarded_parameters) {
         parameters.extended_mission_duration.value_or(
             parameters.mission_duration),
         std::max(2 * smallest_osculating_period, parameters.mission_duration));
-    for (Instant t = parameters.first_time + analysis_duration / 0x1p10;
-         trajectory.back().time < parameters.first_time + analysis_duration;
-         t += analysis_duration / 0x1p10) {
+    constexpr int progress_bar_steps = 0x1p10;
+    for (int n = 0; n <= progress_bar_steps; ++n) {
+      Instant const t =
+          parameters.first_time + n / progress_bar_steps * analysis_duration;
       if (!ephemeris_->FlowWithFixedStep(t, *instance).ok()) {
         // TODO(egg): Report that the integration failed.
         break;
