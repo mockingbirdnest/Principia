@@ -393,7 +393,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     // TODO(egg): make the speed tolerance independent.
     if (RenderSelector(prediction_length_tolerances_,
                        ref prediction_length_tolerance_index_,
-                       Localizer.Format("#Principia_MainWindow_PredictionSettings_Tolerance"),
+                       Localizer.Format("#Principia_PredictionSettings_Tolerance"),
                        "{0:0.0e0} m",
                        enabled: adaptive_step_parameters.HasValue)) {
       AdaptiveStepParameters new_adaptive_step_parameters =
@@ -407,7 +407,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     }
     if (RenderSelector(prediction_steps_,
                        ref prediction_steps_index_,
-                       Localizer.Format("#Principia_MainWindow_PredictionSettings_Steps"),
+                       Localizer.Format("#Principia_PredictionSettings_Steps"),
                        "{0:0.00e0}",
                        enabled: adaptive_step_parameters.HasValue)) {
       AdaptiveStepParameters new_adaptive_step_parameters =
@@ -430,7 +430,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(text    : label + ":",
                                   options : GUILayoutWidth(6));
-      if (UnityEngine.GUILayout.Button(text    : index == 0 ? Localizer.Format("#Principia_MainWindow_DiscreteSelector_Min") : "-",
+      if (UnityEngine.GUILayout.Button(text    : index == 0 ? Localizer.Format("#Principia_DiscreteSelector_Min") : "-",
                                        options : GUILayoutWidth(2)) &&
           enabled &&
           index != 0) {
@@ -444,7 +444,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
           style   : Style.RightAligned(UnityEngine.GUI.skin.textArea),
           options : GUILayoutWidth(3));
       if (UnityEngine.GUILayout.Button(
-              text    : index == array.Length - 1 ? Localizer.Format("#Principia_MainWindow_DiscreteSelector_Max = max") : "+",
+              text    : index == array.Length - 1 ? Localizer.Format("#Principia_DiscreteSelector_Max") : "+",
               options : GUILayoutWidth(2)) &&
           enabled &&
           index != array.Length - 1) {
