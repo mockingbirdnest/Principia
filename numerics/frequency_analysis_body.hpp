@@ -158,6 +158,8 @@ IncrementalProjection(Function const& function,
   // This is logically Q in the QR decomposition of basis.
   std::vector<BasisSeries> q;
 
+  UnboundedUpperTriangularMatrix<double> r;  // Zero-initialized.
+
   auto const& a₀ = basis[0];
   auto const r₀₀ = a₀.Norm(weight, t_min, t_max);
   CHECK(IsFinite(r₀₀)) << a₀;
@@ -174,7 +176,7 @@ IncrementalProjection(Function const& function,
       auto const& aₘ = basis[m];
 
       // This code follows Björk, Numerics of Gram-Schmidt Orthogonalization,
-      // Algorithm 6.1.
+      // Algorithm 6.1.  It processes one column of q and r at a time.
       static constexpr double α = 0.5;
       BasisSeries q̂ₘ = aₘ;
 
@@ -185,6 +187,7 @@ IncrementalProjection(Function const& function,
 
       // Loop on p.
       BasisSeries previous_q̂ₘ = q̂ₘ;
+      std::vector<double> rₘ(m, 0.0);
       double previous_q̂ₘ_norm;
       do {
         previous_q̂ₘ = q̂ₘ;
@@ -192,9 +195,10 @@ IncrementalProjection(Function const& function,
         for (int i = 0; i < m; ++i) {
           if (!PoissonSeriesSubspace::orthogonal(basis_subspaces[i],
                                                  basis_subspaces[m])) {
-            auto const sᵖₘ =
+            double const sᵖₘ =
                 InnerProduct(q[i], previous_q̂ₘ, weight, t_min, t_max);
             q̂ₘ -= sᵖₘ * q[i];
+            rₘ[i] += sᵖₘ;
           }
         }
         q̂ₘ_norm = q̂ₘ.Norm(weight, t_min, t_max);
@@ -204,6 +208,11 @@ IncrementalProjection(Function const& function,
         }
       } while (q̂ₘ_norm < α * previous_q̂ₘ_norm);
 
+      // Fill the resulting q and r.
+      for (int i = 0; i < m; ++i) {
+        r[i][m] = rₘ[i];
+      }
+      r[m][m] = q̂ₘ_norm;
       q.push_back(q̂ₘ / q̂ₘ_norm);
       DCHECK_EQ(m + 1, q.size());
 
