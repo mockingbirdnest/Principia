@@ -67,7 +67,7 @@ int MakeBasis(std::optional<AngularFrequency> const& ω,
 template<typename Function, typename BasisSeries,
          int aperiodic_wdegree, int periodic_wdegree,
          template<typename, typename, int> class Evaluator>
-base::Status GramSchmidtStep(
+Status GramSchmidtStep(
     Function const& aₘ,
     PoissonSeries<double,
                   aperiodic_wdegree, periodic_wdegree, Evaluator> const& weight,
@@ -75,7 +75,7 @@ base::Status GramSchmidtStep(
     Instant const& t_max,
     std::vector<PoissonSeriesSubspace> const& basis_subspaces,
     std::vector<BasisSeries> const& q,
-    BasisSeries& qₘ,
+    std::optional<BasisSeries>& qₘ,
     std::vector<double>& rₘ) {
   // This code follows Björk, Numerics of Gram-Schmidt Orthogonalization,
   // Algorithm 6.1.  It processes one column of q and r at a time.
@@ -218,7 +218,8 @@ IncrementalProjection(Function const& function,
   // This is logically Q in the QR decomposition of basis.
   std::vector<BasisSeries> q;
 
-  UnboundedUpperTriangularMatrix<double> r;  // Zero-initialized.
+  // This is logically R in the QR decomposition of basis.
+  UnboundedUpperTriangularMatrix<double> r(basis_size);  // Zero-initialized.
 
   auto const& a₀ = basis[0];
   auto const r₀₀ = a₀.Norm(weight, t_min, t_max);
@@ -233,47 +234,16 @@ IncrementalProjection(Function const& function,
   int m_begin = 1;
   for (;;) {
     for (int m = m_begin; m < basis_size; ++m) {
-      auto const& aₘ = basis[m];
+      std::optional<BasisSeries> qₘ;
+      std::vector<double> rₘ;
 
-      // This code follows Björk, Numerics of Gram-Schmidt Orthogonalization,
-      // Algorithm 6.1.  It processes one column of q and r at a time.
-      static constexpr double α = 0.5;
-      BasisSeries q̂ₘ = aₘ;
-
-      // Formal integration works for a single basis element.
-      double q̂ₘ_norm = Sqrt(
-          (PointwiseInnerProduct(q̂ₘ, q̂ₘ) * weight).Integrate(t_min, t_max) /
-          (t_max - t_min));
-
-      // Loop on p.
-      BasisSeries previous_q̂ₘ = q̂ₘ;
-      std::vector<double> rₘ(m, 0.0);
-      double previous_q̂ₘ_norm;
-      do {
-        previous_q̂ₘ = q̂ₘ;
-        previous_q̂ₘ_norm = q̂ₘ_norm;
-        for (int i = 0; i < m; ++i) {
-          if (!PoissonSeriesSubspace::orthogonal(basis_subspaces[i],
-                                                 basis_subspaces[m])) {
-            double const sᵖₘ =
-                InnerProduct(q[i], previous_q̂ₘ, weight, t_min, t_max);
-            q̂ₘ -= sᵖₘ * q[i];
-            rₘ[i] += sᵖₘ;
-          }
-        }
-        q̂ₘ_norm = q̂ₘ.Norm(weight, t_min, t_max);
-
-        if (!IsFinite(q̂ₘ_norm)) {
-          return F;
-        }
-      } while (q̂ₘ_norm < α * previous_q̂ₘ_norm);
-
-      // Fill the resulting q and r.
-      for (int i = 0; i < m; ++i) {
-        r[i][m] = rₘ[i];
+      auto const status = GramSchmidtStep(
+          /*aₘ=*/basis[m], weight, t_min, t_max, basis_subspaces, q, qₘ, rₘ);
+      if (!status.ok()) {
+        return F;
       }
-      r[m][m] = q̂ₘ_norm;
-      q.push_back(q̂ₘ / q̂ₘ_norm);
+
+      q.push_back(qₘ.value());
       DCHECK_EQ(m + 1, q.size());
 
       Norm const Aₘ = InnerProduct(f, q[m], weight, t_min, t_max);
