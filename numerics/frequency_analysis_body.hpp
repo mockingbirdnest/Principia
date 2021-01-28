@@ -64,7 +64,7 @@ int MakeBasis(std::optional<AngularFrequency> const& ω,
 }
 
 //TODO(phl):comment
-template<typename Function, typename BasisSeries,
+template<typename Function, typename BasisSeries, typename Norm,
          int aperiodic_wdegree, int periodic_wdegree,
          template<typename, typename, int> class Evaluator>
 Status GramSchmidtStep(
@@ -76,31 +76,32 @@ Status GramSchmidtStep(
     std::vector<PoissonSeriesSubspace> const& basis_subspaces,
     std::vector<BasisSeries> const& q,
     BasisSeries& qₘ,
-    std::vector<double>& rₘ) {
+    std::vector<Norm>& rₘ) {
+  //TODO(phl):comment
   // This code follows Björk, Numerics of Gram-Schmidt Orthogonalization,
   // Algorithm 6.1.  It processes one column of q and r at a time.
 
   static constexpr double α = 0.5;
   int const m = q.size();
-  rₘ.resize(m + 1, 0.0);
+  rₘ.resize(m + 1, Norm{});
 
   Function q̂ₘ = aₘ;
 
   // Formal integration works for a single basis element.
-  double q̂ₘ_norm =
+  Norm q̂ₘ_norm =
       Sqrt((PointwiseInnerProduct(q̂ₘ, q̂ₘ) * weight).Integrate(t_min, t_max) /
            (t_max - t_min));
 
   // Loop on p.
   Function previous_q̂ₘ = q̂ₘ;
-  double previous_q̂ₘ_norm;
+  Norm previous_q̂ₘ_norm;
   do {
     previous_q̂ₘ = q̂ₘ;
     previous_q̂ₘ_norm = q̂ₘ_norm;
     for (int i = 0; i < m; ++i) {
       if (!PoissonSeriesSubspace::orthogonal(basis_subspaces[i],
                                              basis_subspaces[m])) {
-        double const sᵖₘ =
+        Norm const sᵖₘ =
             InnerProduct(q[i], previous_q̂ₘ, weight, t_min, t_max);
         q̂ₘ -= sᵖₘ * q[i];
         rₘ[i] += sᵖₘ;
@@ -235,8 +236,10 @@ IncrementalProjection(Function const& function,
       BasisSeries qₘ(basis_zero, {{}});
       std::vector<double> rₘ;
 
-      auto const status = GramSchmidtStep(
-          /*aₘ=*/basis[m], weight, t_min, t_max, basis_subspaces, q, qₘ, rₘ);
+      auto const status = GramSchmidtStep(/*aₘ=*/basis[m],
+                                          weight, t_min, t_max,
+                                          basis_subspaces, q,
+                                          qₘ, rₘ);
       if (!status.ok()) {
         return F;
       }
@@ -252,6 +255,16 @@ IncrementalProjection(Function const& function,
       auto const Aₘqₘ = Aₘ * q[m];
       f -= Aₘqₘ;
       F += Aₘqₘ;
+    }
+
+    BasisSeries qₘ₊₁(basis_zero, {{}});
+    std::vector<Norm> z_ρ;
+    auto const status = GramSchmidtStep(/*aₘ=*/function,
+                                        weight, t_min, t_max,
+                                        basis_subspaces, q,///Wrong
+                                        qₘ₊₁, /*rₘ=*/z_ρ);
+    if (!status.ok()) {
+      return F;
     }
 
     ω = calculator(f);
