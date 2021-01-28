@@ -224,7 +224,7 @@ IncrementalProjection(Function const& function,
   std::vector<BasisSeries> q;
 
   // This is logically R in the QR decomposition of basis.
-  UnboundedUpperTriangularMatrix<double> r(basis_size);  // Zero-initialized.
+  UnboundedUpperTriangularMatrix<double> r(basis_size, uninitialized);
 
   ResultSeries F(result_zero, {{}});
   auto f = function - F;
@@ -241,6 +241,9 @@ IncrementalProjection(Function const& function,
         return F;
       }
 
+      for (int i = 0; i <=m; ++i) {
+        r[i][m] = rₘ[i];
+      }
       q.push_back(qₘ);
       DCHECK_EQ(m + 1, q.size());
 
@@ -260,7 +263,7 @@ IncrementalProjection(Function const& function,
         ω, t_min, t_max, basis, basis_subspaces);
     m_begin = basis_size;
     basis_size += ω_basis_size;
-    r.Extend(basis_size);
+    r.Extend(basis_size, uninitialized);
   }
 }
 
