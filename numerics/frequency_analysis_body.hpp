@@ -75,7 +75,7 @@ Status GramSchmidtStep(
     Instant const& t_max,
     std::vector<PoissonSeriesSubspace> const& basis_subspaces,
     std::vector<BasisSeries> const& q,
-    std::optional<BasisSeries>& qₘ,
+    BasisSeries& qₘ,
     std::vector<double>& rₘ) {
   // This code follows Björk, Numerics of Gram-Schmidt Orthogonalization,
   // Algorithm 6.1.  It processes one column of q and r at a time.
@@ -198,10 +198,15 @@ IncrementalProjection(Function const& function,
                                      aperiodic_degree, periodic_degree,
                                      Evaluator>;
 
-  // This code follows [Kud07], section 2.  Our indices start at 0, unlike those
-  // of Кудрявцев which start at 1.
-
   Instant const& t0 = weight.origin();
+  auto const basis_zero = static_cast<
+      typename BasisSeries::AperiodicPolynomial>(
+      typename PoissonSeries<Normalized, 0, 0, Evaluator>::AperiodicPolynomial(
+          {Normalized{}}, t0));
+  auto const result_zero =
+      static_cast<typename ResultSeries::AperiodicPolynomial>(
+          typename PoissonSeries<Value, 0, 0, Evaluator>::AperiodicPolynomial(
+              {Value{}}, t0));
 
   std::optional<AngularFrequency> ω = calculator(function);
   CHECK(ω.has_value());
@@ -221,20 +226,13 @@ IncrementalProjection(Function const& function,
   // This is logically R in the QR decomposition of basis.
   UnboundedUpperTriangularMatrix<double> r(basis_size);  // Zero-initialized.
 
-  auto const& a₀ = basis[0];
-  auto const r₀₀ = a₀.Norm(weight, t_min, t_max);
-  CHECK(IsFinite(r₀₀)) << a₀;
-  q.push_back(a₀ / r₀₀);
-
-  auto const A₀ = InnerProduct(function, q[0], weight, t_min, t_max);
-
-  ResultSeries F = A₀ * q[0];
+  ResultSeries F(result_zero, {{}});
   auto f = function - F;
 
-  int m_begin = 1;
+  int m_begin = 0;
   for (;;) {
     for (int m = m_begin; m < basis_size; ++m) {
-      std::optional<BasisSeries> qₘ;
+      BasisSeries qₘ(basis_zero, {{}});
       std::vector<double> rₘ;
 
       auto const status = GramSchmidtStep(
@@ -243,7 +241,7 @@ IncrementalProjection(Function const& function,
         return F;
       }
 
-      q.push_back(qₘ.value());
+      q.push_back(qₘ);
       DCHECK_EQ(m + 1, q.size());
 
       Norm const Aₘ = InnerProduct(f, q[m], weight, t_min, t_max);
@@ -262,6 +260,7 @@ IncrementalProjection(Function const& function,
         ω, t_min, t_max, basis, basis_subspaces);
     m_begin = basis_size;
     basis_size += ω_basis_size;
+    r.Extend(basis_size);
   }
 }
 
