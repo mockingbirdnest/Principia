@@ -7,6 +7,7 @@
 #include <functional>
 #include <vector>
 
+#include "base/status.hpp"
 #include "base/tags.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/hilbert.hpp"
@@ -20,6 +21,8 @@ namespace numerics {
 namespace frequency_analysis {
 namespace internal_frequency_analysis {
 
+using base::Error;
+using base::Status;
 using base::uninitialized;
 using geometry::Hilbert;
 using geometry::Vector;
@@ -58,6 +61,63 @@ int MakeBasis(std::optional<AngularFrequency> const& ω,
               std::back_inserter(basis_subspaces));
     return std::tuple_size_v<decltype(ω_basis)>;
   }
+}
+
+//TODO(phl):comment
+template<typename Function, typename BasisSeries,
+         int aperiodic_wdegree, int periodic_wdegree,
+         template<typename, typename, int> class Evaluator>
+base::Status GramSchmidtStep(
+    Function const& aₘ,
+    PoissonSeries<double,
+                  aperiodic_wdegree, periodic_wdegree, Evaluator> const& weight,
+    Instant const& t_min,
+    Instant const& t_max,
+    std::vector<PoissonSeriesSubspace> const& basis_subspaces,
+    std::vector<BasisSeries> const& q,
+    BasisSeries& qₘ,
+    std::vector<double>& rₘ) {
+  // This code follows Björk, Numerics of Gram-Schmidt Orthogonalization,
+  // Algorithm 6.1.  It processes one column of q and r at a time.
+
+  static constexpr double α = 0.5;
+  int const m = q.size();
+  rₘ.resize(m + 1, 0.0);
+
+  Function q̂ₘ = aₘ;
+
+  // Formal integration works for a single basis element.
+  double q̂ₘ_norm =
+      Sqrt((PointwiseInnerProduct(q̂ₘ, q̂ₘ) * weight).Integrate(t_min, t_max) /
+           (t_max - t_min));
+
+  // Loop on p.
+  Function previous_q̂ₘ = q̂ₘ;
+  double previous_q̂ₘ_norm;
+  do {
+    previous_q̂ₘ = q̂ₘ;
+    previous_q̂ₘ_norm = q̂ₘ_norm;
+    for (int i = 0; i < m; ++i) {
+      if (!PoissonSeriesSubspace::orthogonal(basis_subspaces[i],
+                                             basis_subspaces[m])) {
+        double const sᵖₘ =
+            InnerProduct(q[i], previous_q̂ₘ, weight, t_min, t_max);
+        q̂ₘ -= sᵖₘ * q[i];
+        rₘ[i] += sᵖₘ;
+      }
+    }
+    q̂ₘ_norm = q̂ₘ.Norm(weight, t_min, t_max);
+
+    if (!IsFinite(q̂ₘ_norm)) {
+      return Status(Error::OUT_OF_RANGE, u8"Unable to compute q̂ₘ_norm");
+    }
+  } while (q̂ₘ_norm < α * previous_q̂ₘ_norm);
+
+  // Fill the result.
+  qₘ = q̂ₘ / q̂ₘ_norm;
+  rₘ[m] = q̂ₘ_norm;
+
+  return Status::OK;
 }
 
 template<typename Function,
