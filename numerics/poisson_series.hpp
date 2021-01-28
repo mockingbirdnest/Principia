@@ -121,8 +121,8 @@ class PoissonSeries {
       PoissonSeries<double,
                     aperiodic_wdegree, periodic_wdegree,
                     Evaluator> const& weight,
-                    Instant const& t_min,
-                    Instant const& t_max) const;
+      Instant const& t_min,
+      Instant const& t_max) const;
 
   template<int aperiodic_rdegree, int periodic_rdegree>
   PoissonSeries& operator+=(PoissonSeries<Value,

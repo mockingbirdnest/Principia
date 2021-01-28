@@ -105,6 +105,14 @@ class PiecewisePoissonSeries {
   // |*this| must outlive the resulting function.
   Spectrum FourierTransform() const;
 
+  template<int aperiodic_wdegree, int periodic_wdegree>
+  typename Hilbert<Value>::NormType Norm(
+      PoissonSeries<double,
+                    aperiodic_wdegree, periodic_wdegree,
+                    Evaluator> const& weight,
+      Instant const& t_min,
+      Instant const& t_max) const;
+
   template<int aperiodic_rdegree, int periodic_rdegree>
   PiecewisePoissonSeries& operator+=(
       PoissonSeries<Value,
