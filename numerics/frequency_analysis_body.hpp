@@ -76,14 +76,13 @@ Status NormalGramSchmidtStep(
     std::vector<PoissonSeriesSubspace> const& basis_subspaces,
     std::vector<BasisSeries> const& q,
     BasisSeries& qₘ,
-    std::vector<double>& rₘ) {
+    UnboundedVector<double>& rₘ) {
   //TODO(phl):comment
   // This code follows Björk, Numerics of Gram-Schmidt Orthogonalization,
   // Algorithm 6.1.  It processes one column of q and r at a time.
 
   static constexpr double α = 0.5;
   int const m = q.size();
-  rₘ.resize(m + 1, 0.0);
 
   BasisSeries q̂ₘ = aₘ;
 
@@ -132,14 +131,13 @@ Status AugmentedGramSchmidtStep(
     Instant const& t_min,
     Instant const& t_max,
     std::vector<BasisSeries> const& q,
-    std::vector<Norm>& rₘ) {
+    UnboundedVector<Norm>& rₘ) {
   //TODO(phl):comment
   // This code follows Björk, Numerics of Gram-Schmidt Orthogonalization,
   // Algorithm 6.1.  It processes one column of q and r at a time.
 
   static constexpr double α = 0.5;
   int const m = q.size();
-  rₘ.resize(m + 1, Norm{});
 
   Function q̂ₘ = aₘ;
   Norm q̂ₘ_norm = q̂ₘ.Norm(weight, t_min, t_max);
@@ -275,13 +273,18 @@ IncrementalProjection(Function const& function,
   UnboundedUpperTriangularMatrix<double> r(basis_size, uninitialized);
 
   ResultSeries F(result_zero, {{}});
+
+  // The input function with a degree suitable for the augmented Gram-Schmidt
+  // step.
+  auto augmented_function = function - F;
+
   auto f = function - F;
 
   int m_begin = 0;
   for (;;) {
     for (int m = m_begin; m < basis_size; ++m) {
       BasisSeries qₘ(basis_zero, {{}});
-      std::vector<double> rₘ;
+      UnboundedVector<double> rₘ(m + 1);
 
       auto const status = NormalGramSchmidtStep(/*aₘ=*/basis[m],
                                                 weight, t_min, t_max,
@@ -297,15 +300,15 @@ IncrementalProjection(Function const& function,
       q.push_back(qₘ);
       DCHECK_EQ(m + 1, q.size());
 
-      Norm const Aₘ = InnerProduct(f, q[m], weight, t_min, t_max);
+      //Norm const Aₘ = InnerProduct(f, q[m], weight, t_min, t_max);
 
-      auto const Aₘqₘ = Aₘ * q[m];
-      f -= Aₘqₘ;
-      F += Aₘqₘ;
+      //auto const Aₘqₘ = Aₘ * q[m];
+      //f -= Aₘqₘ;
+      //F += Aₘqₘ;
     }
 
-    std::vector<Norm> z_ρ;
-    auto const status = AugmentedGramSchmidtStep(/*aₘ=*/function,
+    UnboundedVector<Norm> z_ρ(basis_size + 1);
+    auto const status = AugmentedGramSchmidtStep(/*aₘ=*/augmented_function,
                                                  weight, t_min, t_max,
                                                  q,
                                                  /*rₘ=*/z_ρ);
