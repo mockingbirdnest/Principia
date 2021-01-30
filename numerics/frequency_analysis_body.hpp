@@ -276,9 +276,8 @@ IncrementalProjection(Function const& function,
 
   // The input function with a degree suitable for the augmented Gram-Schmidt
   // step.
-  auto augmented_function = function - F;
+  auto const augmented_function = function - F;
 
-  auto f = function - F;
 
   int m_begin = 0;
   for (;;) {
@@ -299,12 +298,6 @@ IncrementalProjection(Function const& function,
       }
       q.push_back(qₘ);
       DCHECK_EQ(m + 1, q.size());
-
-      //Norm const Aₘ = InnerProduct(f, q[m], weight, t_min, t_max);
-
-      //auto const Aₘqₘ = Aₘ * q[m];
-      //f -= Aₘqₘ;
-      //F += Aₘqₘ;
     }
 
     UnboundedVector<Norm> z_ρ(basis_size + 1);
@@ -314,6 +307,18 @@ IncrementalProjection(Function const& function,
                                                  /*rₘ=*/z_ρ);
     if (!status.ok()) {
       return F;
+    }
+
+    LOG(ERROR) << "ρ: " << z_ρ[z_ρ.size() - 1];
+    z_ρ.EraseToEnd(z_ρ.size() - 1);
+    auto const x = BackSubstitution(r, z_ρ);
+
+    F = ResultSeries(result_zero, {{}});
+    auto f = augmented_function;
+    for (int i = 0; i < x.size(); ++i) {
+      auto const x_basis = x[i] * basis[i];
+      F += x_basis;
+      f -= x_basis;
     }
 
     ω = calculator(f);
