@@ -11,6 +11,7 @@
 #include "base/tags.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/hilbert.hpp"
+#include "mathematica/mathematica.hpp"
 #include "numerics/poisson_series_basis.hpp"
 #include "numerics/root_finders.hpp"
 #include "numerics/unbounded_arrays.hpp"
@@ -31,6 +32,9 @@ using quantities::IsFinite;
 using quantities::Sqrt;
 using quantities::Square;
 using quantities::SquareRoot;
+using quantities::si::Metre;
+using quantities::si::Radian;
+using quantities::si::Second;
 
 // Appends basis elements for |ω| to |basis| and |basis_subspaces|.  Returns the
 // number of elements that were appended.
@@ -111,6 +115,8 @@ Status NormalGramSchmidtStep(
     if (!IsFinite(q̂ₘ_norm)) {
       return Status(Error::OUT_OF_RANGE, u8"Unable to compute q̂ₘ_norm");
     }
+    LOG_IF(ERROR, q̂ₘ_norm < α * previous_q̂ₘ_norm)
+        << "CGS retrying: " << m << " " << q̂ₘ_norm << " " << previous_q̂ₘ_norm;
   } while (q̂ₘ_norm < α * previous_q̂ₘ_norm);
 
   // Fill the result.
@@ -278,6 +284,13 @@ IncrementalProjection(Function const& function,
   // step.
   auto const augmented_function = function - F;
 
+  mathematica::Logger logger(TEMP_DIR / "least_square.wl");
+  logger.Set(
+      "function", function, mathematica::ExpressIn(Metre, Radian, Second));
+  logger.Set(
+      "tMin", t_min, mathematica::ExpressIn(Metre, Radian, Second));
+  logger.Set(
+      "tMax", t_max, mathematica::ExpressIn(Metre, Radian, Second));
 
   int m_begin = 0;
   for (;;) {
@@ -293,7 +306,10 @@ IncrementalProjection(Function const& function,
         return F;
       }
 
-      for (int i = 0; i <=m; ++i) {
+      //LOG_IF(ERROR, m == 0) << qₘ;
+      //LOG(ERROR) << "m: " << m << " rₘ[m]: " << rₘ[m]
+      //           << " qₘ:" << qₘ.Norm(weight, t_min, t_max);
+      for (int i = 0; i <= m; ++i) {
         r[i][m] = rₘ[i];
       }
       q.push_back(qₘ);
@@ -309,10 +325,18 @@ IncrementalProjection(Function const& function,
       return F;
     }
 
-    LOG(ERROR) << "ρ: " << z_ρ[z_ρ.size() - 1];
+    logger.Append("q", q, mathematica::ExpressIn(Metre, Radian, Second));
+    logger.Append("r", r, mathematica::ExpressIn(Metre, Radian, Second));
+    logger.Append("basis", basis, mathematica::ExpressIn(Metre, Radian, Second));
+    logger.Append(u8"zρ", z_ρ, mathematica::ExpressIn(Metre, Radian, Second));
+    //LOG(ERROR) << "ρ: " << z_ρ[z_ρ.size() - 1];
+    //for (int i = 0; i < z_ρ.size() - 1; ++i) {
+    //  LOG(ERROR) << "z[" << i << "]: " << z_ρ[i];
+    //}
     z_ρ.EraseToEnd(z_ρ.size() - 1);
     auto const x = BackSubstitution(r, z_ρ);
 
+    logger.Append("x", x, mathematica::ExpressIn(Metre, Radian, Second));
     F = ResultSeries(result_zero, {{}});
     auto f = augmented_function;
     for (int i = 0; i < x.size(); ++i) {
@@ -320,6 +344,8 @@ IncrementalProjection(Function const& function,
       F += x_basis;
       f -= x_basis;
     }
+    logger.Append(
+        "approximation", F, mathematica::ExpressIn(Metre, Radian, Second));
 
     ω = calculator(f);
     if (!ω.has_value()) {
