@@ -22,8 +22,9 @@ namespace numerics {
 namespace frequency_analysis {
 namespace internal_frequency_analysis {
 
-#define PRINCIPIA_USE_CGS1 0
+#define PRINCIPIA_USE_CGS1 1
 #define PRINCIPIA_USE_CGS2 0
+#define PRINCIPIA_USE_LEAST_SQUARE 0
 
 using base::Error;
 using base::Status;
@@ -119,8 +120,8 @@ Status NormalGramSchmidtStep(
     if (!IsFinite(q̂ₘ_norm)) {
       return Status(Error::OUT_OF_RANGE, u8"Unable to compute q̂ₘ_norm");
     }
-    LOG_IF(ERROR, q̂ₘ_norm < α * previous_q̂ₘ_norm)
-        << "CGS retrying: " << m << " " << q̂ₘ_norm << " " << previous_q̂ₘ_norm;
+    //LOG_IF(ERROR, q̂ₘ_norm < α * previous_q̂ₘ_norm)
+    //    << "CGS retrying: " << m << " " << q̂ₘ_norm << " " << previous_q̂ₘ_norm;
   } while (q̂ₘ_norm < α * previous_q̂ₘ_norm);
 
   // Fill the result.
@@ -320,6 +321,9 @@ IncrementalProjection(Function const& function,
   // The input function with a degree suitable for the augmented Gram-Schmidt
   // step.
   auto const augmented_function = function - F;
+#if !PRINCIPIA_USE_LEAST_SQUARE
+  auto f = augmented_function;
+#endif
 
   mathematica::Logger logger(TEMP_DIR / "least_square.wl");
   logger.Set(
@@ -351,8 +355,16 @@ IncrementalProjection(Function const& function,
       }
       q.push_back(qₘ);
       DCHECK_EQ(m + 1, q.size());
+
+#if !PRINCIPIA_USE_LEAST_SQUARE
+      Norm const Aₘ = InnerProduct(f, q[m], weight, t_min, t_max);
+      auto const Aₘqₘ = Aₘ * q[m];
+      f -= Aₘqₘ;
+      F += Aₘqₘ;
+#endif
     }
 
+#if PRINCIPIA_USE_LEAST_SQUARE
     UnboundedVector<Norm> z_ρ(basis_size + 1);
     auto const status = AugmentedGramSchmidtStep(/*aₘ=*/augmented_function,
                                                  weight, t_min, t_max,
@@ -383,6 +395,7 @@ IncrementalProjection(Function const& function,
     }
     logger.Append(
         "approximation", F, mathematica::ExpressIn(Metre, Radian, Second));
+#endif
 
     ω = calculator(f);
     if (!ω.has_value()) {
