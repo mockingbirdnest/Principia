@@ -22,6 +22,9 @@ namespace numerics {
 namespace frequency_analysis {
 namespace internal_frequency_analysis {
 
+#define PRINCIPIA_USE_CGS1 0
+#define PRINCIPIA_USE_CGS2 0
+
 using base::Error;
 using base::Status;
 using base::uninitialized;
@@ -81,12 +84,13 @@ Status NormalGramSchmidtStep(
     std::vector<BasisSeries> const& q,
     BasisSeries& qₘ,
     UnboundedVector<double>& rₘ) {
+  int const m = q.size();
+#if PRINCIPIA_USE_CGS1
   //TODO(phl):comment
   // This code follows Björk, Numerics of Gram-Schmidt Orthogonalization,
   // Algorithm 6.1.  It processes one column of q and r at a time.
 
   static constexpr double α = 0.5;
-  int const m = q.size();
 
   BasisSeries q̂ₘ = aₘ;
 
@@ -122,7 +126,25 @@ Status NormalGramSchmidtStep(
   // Fill the result.
   qₘ = q̂ₘ / q̂ₘ_norm;
   rₘ[m] = q̂ₘ_norm;
+#else
+  auto aₘ⁽ᵏ⁾ = aₘ;
+  for (int k = 0; k < m; ++k) {
+    if (!PoissonSeriesSubspace::orthogonal(basis_subspaces[k],
+                                           basis_subspaces[m])) {
+      rₘ[k] = InnerProduct(q[k], aₘ⁽ᵏ⁾, weight, t_min, t_max);
+      aₘ⁽ᵏ⁾ -= rₘ[k] * q[k];
+    }
+  }
 
+  auto const rₘₘ = aₘ⁽ᵏ⁾.Norm(weight, t_min, t_max);
+  if (!IsFinite(rₘₘ)) {
+    return Status(Error::OUT_OF_RANGE, u8"Unable to compute rₘₘ");
+  }
+
+  // Fill the result.
+  qₘ = aₘ⁽ᵏ⁾ / rₘₘ;
+  rₘ[m] = rₘₘ;
+#endif
   return Status::OK;
 }
 
@@ -138,12 +160,13 @@ Status AugmentedGramSchmidtStep(
     Instant const& t_max,
     std::vector<BasisSeries> const& q,
     UnboundedVector<Norm>& rₘ) {
+  int const m = q.size();
+#if PRINCIPIA_USE_CGS2
   //TODO(phl):comment
   // This code follows Björk, Numerics of Gram-Schmidt Orthogonalization,
   // Algorithm 6.1.  It processes one column of q and r at a time.
 
   static constexpr double α = 0.5;
-  int const m = q.size();
 
   Function q̂ₘ = aₘ;
   Norm q̂ₘ_norm = q̂ₘ.Norm(weight, t_min, t_max);
@@ -168,7 +191,21 @@ Status AugmentedGramSchmidtStep(
 
   // Fill the result.
   rₘ[m] = q̂ₘ_norm;
+#else
+  auto aₘ⁽ᵏ⁾ = aₘ;
+  for (int k = 0; k < m; ++k) {
+    rₘ[k] = InnerProduct(q[k], aₘ⁽ᵏ⁾, weight, t_min, t_max);
+    aₘ⁽ᵏ⁾ -= rₘ[k] * q[k];
+  }
 
+  auto const rₘₘ = aₘ⁽ᵏ⁾.Norm(weight, t_min, t_max);
+  if (!IsFinite(rₘₘ)) {
+    return Status(Error::OUT_OF_RANGE, u8"Unable to compute rₘₘ");
+  }
+
+  // Fill the result.
+  rₘ[m] = rₘₘ;
+#endif
   return Status::OK;
 }
 
@@ -329,7 +366,7 @@ IncrementalProjection(Function const& function,
     logger.Append("r", r, mathematica::ExpressIn(Metre, Radian, Second));
     logger.Append("basis", basis, mathematica::ExpressIn(Metre, Radian, Second));
     logger.Append(u8"zρ", z_ρ, mathematica::ExpressIn(Metre, Radian, Second));
-    //LOG(ERROR) << "ρ: " << z_ρ[z_ρ.size() - 1];
+    LOG(ERROR) << "ρ: " << z_ρ[z_ρ.size() - 1];
     //for (int i = 0; i < z_ρ.size() - 1; ++i) {
     //  LOG(ERROR) << "z[" << i << "]: " << z_ρ[i];
     //}
