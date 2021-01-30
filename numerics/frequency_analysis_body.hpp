@@ -330,7 +330,7 @@ IncrementalProjection(Function const& function,
         ω, t_min, t_max, basis, basis_subspaces);
     m_begin = basis_size;
     basis_size += ω_basis_size;
-    r.Extend(basis_size, uninitialized);
+    r.Extend(ω_basis_size, uninitialized);
   }
 }
 

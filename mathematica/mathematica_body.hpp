@@ -548,7 +548,9 @@ inline Logger::Logger(std::filesystem::path const& path, bool const make_unique)
         } else {
           return path;
         }
-      }()) {}
+      }()) {
+  file_ << "\xEF\xBB\xBF";
+}
 
 inline Logger::~Logger() {
   for (auto const& [name, values] : name_and_multiple_values_) {
