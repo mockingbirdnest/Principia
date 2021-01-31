@@ -516,7 +516,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
                                   : ω_index == 3 ? AllOf(Ge(5.9e-15 * Metre),
                                                          Lt(1.7e-10 * Metre))
                                                  : AllOf(Ge(0 * Metre),
-                                                         Lt(2.4e-14 * Metre)))
+                                                         Lt(2.6e-14 * Metre)))
           << ω_index;
     }
     if (ω_index == ωs.size()) {

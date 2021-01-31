@@ -322,7 +322,6 @@ IncrementalProjection(Function const& function,
       }
       q.push_back(qₘ);
       DCHECK_EQ(m + 1, q.size());
-
     }
 
     auto const status = AugmentedGramSchmidtStep(b,
