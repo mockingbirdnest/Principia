@@ -24,7 +24,6 @@ namespace internal_frequency_analysis {
 
 #define PRINCIPIA_USE_CGS1 1
 #define PRINCIPIA_USE_CGS2 0
-#define PRINCIPIA_USE_LEAST_SQUARE 1
 
 using base::Error;
 using base::Status;
@@ -39,6 +38,8 @@ using quantities::SquareRoot;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+
+Status const bad_norm(Error::OUT_OF_RANGE, "Unable to compute norm");
 
 // Appends basis elements for |ω| to |basis| and |basis_subspaces|.  Returns the
 // number of elements that were appended.
@@ -89,7 +90,6 @@ Status NormalGramSchmidtStep(
     std::vector<BasisSeries> const& q,
     BasisSeries& qₘ,
     UnboundedVector<double>& rₘ) {
-  static const Status bad_norm(Error::OUT_OF_RANGE, u8"Unable to compute norm");
   int const m = q.size();
 
 #if PRINCIPIA_USE_CGS1
@@ -127,7 +127,7 @@ Status NormalGramSchmidtStep(
   qₘ = q̂ₘ / q̂ₘ_norm;
   rₘ[m] = q̂ₘ_norm;
 #else
-  // This code follows [Hig12], Algorithm 19.12.  See also [Bjö94], Algorithm
+  // This code follows [Hig02], Algorithm 19.12.  See also [Bjö94], Algorithm
   // 2.2, for the column version of MGS which is what we are using here.
   auto aₘ⁽ᵏ⁾ = aₘ;
   for (int k = 0; k < m; ++k) {
@@ -150,7 +150,13 @@ Status NormalGramSchmidtStep(
   return Status::OK;
 }
 
-//TODO(phl):comment
+// This function performs the augmented QR decomposition step described in
+// [Hig02] section 20.3.  Note that as an optimization in updates b, because
+// the computation of z for larger and larger R would perform the exact same
+// inner products for the range [0, m_begin[.  The range of q to process (and
+// the range of z to update is at indices [m_begin, m_end[.  This function
+// doesn't return qₘ₊₁ because it's not needed for the solution.  It also
+// doesn't return ρ.
 template<typename Function, typename BasisSeries, typename Norm,
          int aperiodic_wdegree, int periodic_wdegree,
          template<typename, typename, int> class Evaluator>
@@ -163,54 +169,24 @@ Status AugmentedGramSchmidtStep(
     std::vector<BasisSeries> const& q,
     int const m_begin,
     int const m_end,
-    UnboundedVector<Norm>& rₘ) {
-#if PRINCIPIA_USE_CGS2
-  //TODO(phl):comment
-  // This code follows Björk, Numerics of Gram-Schmidt Orthogonalization,
-  // Algorithm 6.1.  It processes one column of q and r at a time.
+    UnboundedVector<Norm>& z) {
+  // It would be conceptually possible to use [Bjö94], Algorithm 6.1 here and
+  // do reorthonormalization.  Unfortunately, it runs afoul of an issue where
+  // the inner product of a piecewise Poisson series with a polynomial doesn't
+  // converge (because it depends on a heuristics that uses the maximum
+  // frequency).  Instead of trying to make it work, we use MGS.
 
-  static constexpr double α = 0.5;
-
-  Function q̂ₘ = b;
-  Norm q̂ₘ_norm = q̂ₘ.Norm(weight, t_min, t_max);
-
-  // Loop on p.
-  Function previous_q̂ₘ = q̂ₘ;
-  Norm previous_q̂ₘ_norm;
-  do {
-    previous_q̂ₘ = q̂ₘ;
-    previous_q̂ₘ_norm = q̂ₘ_norm;
-    for (int i = m_begin; i < m_end; ++i) {
-      Norm const sᵖₘ = InnerProduct(q[i], previous_q̂ₘ, weight, t_min, t_max);
-      q̂ₘ -= sᵖₘ * q[i];
-      rₘ[i] += sᵖₘ;
-    }
-    q̂ₘ_norm = q̂ₘ.Norm(weight, t_min, t_max);
-
-    if (!IsFinite(q̂ₘ_norm)) {
-      return Status(Error::OUT_OF_RANGE, u8"Unable to compute q̂ₘ_norm");
-    }
-  } while (q̂ₘ_norm < α * previous_q̂ₘ_norm);
-
-  // Fill the result.
-  b = q̂ₘ;
-  rₘ[m_end] = q̂ₘ_norm;
-#else
-  auto aₘ⁽ᵏ⁾ = b;
+  // This code follows [Hig02], Algorithm 19.12.  See also [Bjö94], Algorithm
+  // 2.2, for the column version of MGS which is what we are using here.
   for (int k = m_begin; k < m_end; ++k) {
-    rₘ[k] = InnerProduct(q[k], aₘ⁽ᵏ⁾, weight, t_min, t_max);
-    aₘ⁽ᵏ⁾ -= rₘ[k] * q[k];
+    z[k] = InnerProduct(q[k], b, weight, t_min, t_max);
+    b -= z[k] * q[k];
   }
 
-  auto const rₘₘ = aₘ⁽ᵏ⁾.Norm(weight, t_min, t_max);
-  if (!IsFinite(rₘₘ)) {
-    return Status(Error::OUT_OF_RANGE, u8"Unable to compute rₘₘ");
-  }
+  // We do not compute the norm of b here (named ρ in [Hig02] section 20.3)
+  // because it's an additional cost: the client can compute the norm of the
+  // residual however they want anyway.
 
-  // Fill the result.
-  b = aₘ⁽ᵏ⁾;
-  rₘ[m_end] = rₘₘ;
-#endif
   return Status::OK;
 }
 
@@ -324,12 +300,8 @@ IncrementalProjection(Function const& function,
 
   // The input function with a degree suitable for the augmented Gram-Schmidt
   // step.
-#if !PRINCIPIA_USE_LEAST_SQUARE
-  auto f = function - F;
-#else
   UnboundedVector<Norm> z_ρ(basis_size + 1);
   auto b = function - F;
-#endif
 
   mathematica::Logger logger(TEMP_DIR / "least_square.wl");
   logger.Set(
@@ -362,15 +334,8 @@ IncrementalProjection(Function const& function,
       q.push_back(qₘ);
       DCHECK_EQ(m + 1, q.size());
 
-#if !PRINCIPIA_USE_LEAST_SQUARE
-      Norm const Aₘ = InnerProduct(f, q[m], weight, t_min, t_max);
-      auto const Aₘqₘ = Aₘ * q[m];
-      f -= Aₘqₘ;
-      F += Aₘqₘ;
-#endif
     }
 
-#if PRINCIPIA_USE_LEAST_SQUARE
     auto const status = AugmentedGramSchmidtStep(/*aₘ=*/b,
                                                  weight, t_min, t_max,
                                                  q,
@@ -401,7 +366,6 @@ IncrementalProjection(Function const& function,
     }
     logger.Append(
         "approximation", F, mathematica::ExpressIn(Metre, Radian, Second));
-#endif
 
     ω = calculator(f);
     if (!ω.has_value()) {
