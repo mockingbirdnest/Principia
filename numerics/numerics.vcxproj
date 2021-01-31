@@ -72,6 +72,7 @@
     <ClInclude Include="чебышёв_series_body.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="apodization_test.cpp" />
     <ClCompile Include="cbrt.cpp" />
     <ClCompile Include="cbrt_test.cpp" />

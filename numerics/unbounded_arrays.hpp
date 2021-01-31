@@ -34,7 +34,7 @@ class UnboundedUpperTriangularMatrix;
 template<typename Scalar>
 class UnboundedVector final {
  public:
-  explicit UnboundedVector(int size);
+  explicit UnboundedVector(int size);  // Zero-initialized.
   UnboundedVector(int size, uninitialized_t);
   UnboundedVector(std::initializer_list<Scalar> data);
 

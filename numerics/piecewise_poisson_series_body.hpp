@@ -15,6 +15,7 @@ namespace internal_piecewise_poisson_series {
 using quantities::Angle;
 using quantities::Cos;
 using quantities::Sin;
+using quantities::Sqrt;
 
 // The minimum value of the max_point parameter passed to Clenshaw-Curtis
 // integration, irrespective of the frequencies of the argument function.
@@ -149,6 +150,36 @@ FourierTransform() const -> Spectrum {
     }
     return integral;
   };
+}
+
+template<typename Value,
+         int aperiodic_degree_, int periodic_degree_,
+         template<typename, typename, int> class Evaluator>
+template<int aperiodic_wdegree, int periodic_wdegree>
+typename Hilbert<Value>::NormType
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
+Norm(PoissonSeries<double,
+                   aperiodic_wdegree, periodic_wdegree,
+                   Evaluator> const& weight,
+     Instant const& t_min,
+     Instant const& t_max) const {
+  AngularFrequency const max_ω = 2 * this->max_ω() + weight.max_ω();
+  std::optional<int> const max_points =
+      MaxPointsHeuristicsForAutomaticClenshawCurtis(
+          max_ω,
+          t_max - t_min,
+          clenshaw_curtis_min_points_overall,
+          clenshaw_curtis_points_per_period);
+
+  auto integrand = [this, &weight](Instant const& t) {
+    return Hilbert<Value>::Norm²((*this)(t)) * weight(t);
+  };
+  return Sqrt(quadrature::AutomaticClenshawCurtis(
+                  integrand,
+                  t_min, t_max,
+                  /*max_relative_error=*/clenshaw_curtis_relative_error,
+                  /*max_points=*/max_points) /
+              (t_max - t_min));
 }
 
 template<typename Value,

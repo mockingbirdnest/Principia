@@ -173,7 +173,9 @@ AutomaticClenshawCurtisImplementation(
       (!max_points.has_value() || points < max_points.value())) {
     if constexpr (points > 1 << 24) {
       LOG(FATAL) << "Too many refinements while integrating from "
-                 << lower_bound << " to " << upper_bound;
+                 << lower_bound << " to " << upper_bound
+                 << ", relative error is "
+                 << absolute_error_estimate / Hilbert<Result>::Norm(estimate);
     } else {
       f_cos_N⁻¹π_bit_reversed.reserve(2 * points - 1);
       return AutomaticClenshawCurtisImplementation<2 * points - 1>(
