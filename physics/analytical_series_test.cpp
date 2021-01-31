@@ -60,7 +60,7 @@ static constexpr int periodic_approximation_degree = 3;
 static constexpr int log2_number_of_samples = 14;
 static constexpr int number_of_frequencies = 10;
 static constexpr Length acceptable_residual = 1 * Metre;
-static constexpr Time min_projection_duration = 4 * Day;
+static constexpr Time min_projection_duration = 0.25 * Day;
 static constexpr Time max_projection_duration = 0.25 * JulianYear;
 
 class AnalyticalSeriesTest : public ::testing::Test {
