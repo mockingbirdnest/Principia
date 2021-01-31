@@ -39,8 +39,6 @@ using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
 
-Status const bad_norm(Error::OUT_OF_RANGE, "Unable to compute norm");
-
 // Appends basis elements for |ω| to |basis| and |basis_subspaces|.  Returns the
 // number of elements that were appended.
 template<int aperiodic_degree, int periodic_degree,
@@ -90,6 +88,7 @@ Status NormalGramSchmidtStep(
     std::vector<BasisSeries> const& q,
     BasisSeries& qₘ,
     UnboundedVector<double>& rₘ) {
+  static Status const bad_norm(Error::OUT_OF_RANGE, "Unable to compute norm");
   int const m = q.size();
 
 #if PRINCIPIA_USE_CGS1
@@ -300,7 +299,7 @@ IncrementalProjection(Function const& function,
 
   // The input function with a degree suitable for the augmented Gram-Schmidt
   // step.
-  UnboundedVector<Norm> z_ρ(basis_size + 1);
+  UnboundedVector<Norm> z(basis_size, uninitialized);
   auto b = function - F;
 
   mathematica::Logger logger(TEMP_DIR / "least_square.wl");
@@ -325,9 +324,7 @@ IncrementalProjection(Function const& function,
         return F;
       }
 
-      //LOG_IF(ERROR, m == 0) << qₘ;
-      //LOG(ERROR) << "m: " << m << " rₘ[m]: " << rₘ[m]
-      //           << " qₘ:" << qₘ.Norm(weight, t_min, t_max);
+      // Fill the QR decomposition.
       for (int i = 0; i <= m; ++i) {
         r[i][m] = rₘ[i];
       }
@@ -336,11 +333,11 @@ IncrementalProjection(Function const& function,
 
     }
 
-    auto const status = AugmentedGramSchmidtStep(/*aₘ=*/b,
+    auto const status = AugmentedGramSchmidtStep(b,
                                                  weight, t_min, t_max,
                                                  q,
-                                                 m_begin, basis_size,
-                                                 /*rₘ=*/z_ρ);
+                                                 m_begin, /*m_end=*/basis_size,
+                                                 z);
     if (!status.ok()) {
       return F;
     }
@@ -348,13 +345,8 @@ IncrementalProjection(Function const& function,
     logger.Append("q", q, mathematica::ExpressIn(Metre, Radian, Second));
     logger.Append("r", r, mathematica::ExpressIn(Metre, Radian, Second));
     logger.Append("basis", basis, mathematica::ExpressIn(Metre, Radian, Second));
-    logger.Append(u8"zρ", z_ρ, mathematica::ExpressIn(Metre, Radian, Second));
-    LOG(ERROR) << "ρ: " << z_ρ[z_ρ.size() - 1];
-    //for (int i = 0; i < z_ρ.size() - 1; ++i) {
-    //  LOG(ERROR) << "z[" << i << "]: " << z_ρ[i];
-    //}
-    z_ρ.EraseToEnd(z_ρ.size() - 1);
-    auto const x = BackSubstitution(r, z_ρ);
+    logger.Append(u8"zρ", z, mathematica::ExpressIn(Metre, Radian, Second));
+    auto const x = BackSubstitution(r, z);
 
     logger.Append("x", x, mathematica::ExpressIn(Metre, Radian, Second));
     F = ResultSeries(result_zero, {{}});
@@ -377,7 +369,7 @@ IncrementalProjection(Function const& function,
     m_begin = basis_size;
     basis_size += ω_basis_size;
     r.Extend(ω_basis_size, uninitialized);
-    z_ρ.Extend(ω_basis_size + 1); // +1 is for ρ.
+    z.Extend(ω_basis_size, uninitialized);
   }
 }
 
