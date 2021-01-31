@@ -22,9 +22,9 @@ namespace numerics {
 namespace frequency_analysis {
 namespace internal_frequency_analysis {
 
-#define PRINCIPIA_USE_CGS1 1
+#define PRINCIPIA_USE_CGS1 0
 #define PRINCIPIA_USE_CGS2 0
-#define PRINCIPIA_USE_LEAST_SQUARE 0
+#define PRINCIPIA_USE_LEAST_SQUARE 1
 
 using base::Error;
 using base::Status;
@@ -154,14 +154,15 @@ template<typename Function, typename BasisSeries, typename Norm,
          int aperiodic_wdegree, int periodic_wdegree,
          template<typename, typename, int> class Evaluator>
 Status AugmentedGramSchmidtStep(
-    Function const& aₘ,
+    Function& aₘ,
     PoissonSeries<double,
                   aperiodic_wdegree, periodic_wdegree, Evaluator> const& weight,
     Instant const& t_min,
     Instant const& t_max,
     std::vector<BasisSeries> const& q,
+    int const m_begin,
+    int const m_end,
     UnboundedVector<Norm>& rₘ) {
-  int const m = q.size();
 #if PRINCIPIA_USE_CGS2
   //TODO(phl):comment
   // This code follows Björk, Numerics of Gram-Schmidt Orthogonalization,
@@ -194,7 +195,7 @@ Status AugmentedGramSchmidtStep(
   rₘ[m] = q̂ₘ_norm;
 #else
   auto aₘ⁽ᵏ⁾ = aₘ;
-  for (int k = 0; k < m; ++k) {
+  for (int k = m_begin; k < m_end; ++k) {
     rₘ[k] = InnerProduct(q[k], aₘ⁽ᵏ⁾, weight, t_min, t_max);
     aₘ⁽ᵏ⁾ -= rₘ[k] * q[k];
   }
@@ -205,7 +206,8 @@ Status AugmentedGramSchmidtStep(
   }
 
   // Fill the result.
-  rₘ[m] = rₘₘ;
+  aₘ = aₘ⁽ᵏ⁾;
+  rₘ[m_end] = rₘₘ;
 #endif
   return Status::OK;
 }
@@ -320,9 +322,11 @@ IncrementalProjection(Function const& function,
 
   // The input function with a degree suitable for the augmented Gram-Schmidt
   // step.
-  auto const augmented_function = function - F;
 #if !PRINCIPIA_USE_LEAST_SQUARE
-  auto f = augmented_function;
+  auto f = function - F;
+#else
+  UnboundedVector<Norm> z_ρ(basis_size + 1);
+  auto b = function - F;
 #endif
 
   mathematica::Logger logger(TEMP_DIR / "least_square.wl");
@@ -365,10 +369,10 @@ IncrementalProjection(Function const& function,
     }
 
 #if PRINCIPIA_USE_LEAST_SQUARE
-    UnboundedVector<Norm> z_ρ(basis_size + 1);
-    auto const status = AugmentedGramSchmidtStep(/*aₘ=*/augmented_function,
+    auto const status = AugmentedGramSchmidtStep(/*aₘ=*/b,
                                                  weight, t_min, t_max,
                                                  q,
+                                                 m_begin, basis_size,
                                                  /*rₘ=*/z_ρ);
     if (!status.ok()) {
       return F;
@@ -387,7 +391,7 @@ IncrementalProjection(Function const& function,
 
     logger.Append("x", x, mathematica::ExpressIn(Metre, Radian, Second));
     F = ResultSeries(result_zero, {{}});
-    auto f = augmented_function;
+    auto f = function - F;
     for (int i = 0; i < x.size(); ++i) {
       auto const x_basis = x[i] * basis[i];
       F += x_basis;
@@ -407,6 +411,7 @@ IncrementalProjection(Function const& function,
     m_begin = basis_size;
     basis_size += ω_basis_size;
     r.Extend(ω_basis_size, uninitialized);
+    z_ρ.Extend(ω_basis_size + 1); // +1 is for ρ.
   }
 }
 
