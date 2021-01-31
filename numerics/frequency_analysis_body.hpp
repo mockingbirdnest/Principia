@@ -11,7 +11,6 @@
 #include "base/tags.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/hilbert.hpp"
-#include "mathematica/mathematica.hpp"
 #include "numerics/poisson_series_basis.hpp"
 #include "numerics/root_finders.hpp"
 #include "numerics/unbounded_arrays.hpp"
@@ -39,9 +38,6 @@ using quantities::IsFinite;
 using quantities::Sqrt;
 using quantities::Square;
 using quantities::SquareRoot;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
 
 // Appends basis elements for |ω| to |basis| and |basis_subspaces|.  Returns the
 // number of elements that were appended.
