@@ -71,7 +71,11 @@ int MakeBasis(std::optional<AngularFrequency> const& ω,
   }
 }
 
-//TODO(phl):comment, parameter names
+// Given a column aₘ of a matrix (or quasimatrix in our case, see [Tre10]) this
+// function produces the columns qₘ, rₘ of its QR decomposition.  The inner
+// product is defined by weight, t_min and t_max.  q is the Q quasimatrix
+// constructed so far, and subspaces specify the subspaces spanned by the qs and
+// by aₘ.
 template<typename BasisSeries,
          int aperiodic_wdegree, int periodic_wdegree,
          template<typename, typename, int> class Evaluator>
@@ -81,18 +85,16 @@ Status NormalGramSchmidtStep(
                   aperiodic_wdegree, periodic_wdegree, Evaluator> const& weight,
     Instant const& t_min,
     Instant const& t_max,
-    std::vector<PoissonSeriesSubspace> const& basis_subspaces,
+    std::vector<PoissonSeriesSubspace> const& subspaces,
     std::vector<BasisSeries> const& q,
     BasisSeries& qₘ,
     UnboundedVector<double>& rₘ) {
+  static const Status bad_norm(Error::OUT_OF_RANGE, u8"Unable to compute norm");
   int const m = q.size();
+
 #if PRINCIPIA_USE_CGS1
-  //TODO(phl):comment
-  // This code follows Björk, Numerics of Gram-Schmidt Orthogonalization,
-  // Algorithm 6.1.  It processes one column of q and r at a time.
-
+  // This code follows [Bjö94], Algorithm 6.1.
   static constexpr double α = 0.5;
-
   BasisSeries q̂ₘ = aₘ;
 
   // Formal integration works for a single basis element.
@@ -107,8 +109,7 @@ Status NormalGramSchmidtStep(
     previous_q̂ₘ = q̂ₘ;
     previous_q̂ₘ_norm = q̂ₘ_norm;
     for (int i = 0; i < m; ++i) {
-      if (!PoissonSeriesSubspace::orthogonal(basis_subspaces[i],
-                                             basis_subspaces[m])) {
+      if (!PoissonSeriesSubspace::orthogonal(subspaces[i], subspaces[m])) {
         double const sᵖₘ =
             InnerProduct(q[i], previous_q̂ₘ, weight, t_min, t_max);
         q̂ₘ -= sᵖₘ * q[i];
@@ -118,20 +119,19 @@ Status NormalGramSchmidtStep(
     q̂ₘ_norm = q̂ₘ.Norm(weight, t_min, t_max);
 
     if (!IsFinite(q̂ₘ_norm)) {
-      return Status(Error::OUT_OF_RANGE, u8"Unable to compute q̂ₘ_norm");
+      return bad_norm;
     }
-    //LOG_IF(ERROR, q̂ₘ_norm < α * previous_q̂ₘ_norm)
-    //    << "CGS retrying: " << m << " " << q̂ₘ_norm << " " << previous_q̂ₘ_norm;
   } while (q̂ₘ_norm < α * previous_q̂ₘ_norm);
 
   // Fill the result.
   qₘ = q̂ₘ / q̂ₘ_norm;
   rₘ[m] = q̂ₘ_norm;
 #else
+  // This code follows [Hig12], Algorithm 19.12.  See also [Bjö94], Algorithm
+  // 2.2, for the column version of MGS which is what we are using here.
   auto aₘ⁽ᵏ⁾ = aₘ;
   for (int k = 0; k < m; ++k) {
-    if (!PoissonSeriesSubspace::orthogonal(basis_subspaces[k],
-                                           basis_subspaces[m])) {
+    if (!PoissonSeriesSubspace::orthogonal(subspaces[k], subspaces[m])) {
       rₘ[k] = InnerProduct(q[k], aₘ⁽ᵏ⁾, weight, t_min, t_max);
       aₘ⁽ᵏ⁾ -= rₘ[k] * q[k];
     }
@@ -139,13 +139,14 @@ Status NormalGramSchmidtStep(
 
   auto const rₘₘ = aₘ⁽ᵏ⁾.Norm(weight, t_min, t_max);
   if (!IsFinite(rₘₘ)) {
-    return Status(Error::OUT_OF_RANGE, u8"Unable to compute rₘₘ");
+    return bad_norm;
   }
 
   // Fill the result.
   qₘ = aₘ⁽ᵏ⁾ / rₘₘ;
   rₘ[m] = rₘₘ;
 #endif
+
   return Status::OK;
 }
 
