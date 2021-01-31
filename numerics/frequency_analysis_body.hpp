@@ -22,7 +22,7 @@ namespace numerics {
 namespace frequency_analysis {
 namespace internal_frequency_analysis {
 
-#define PRINCIPIA_USE_CGS1 0
+#define PRINCIPIA_USE_CGS1 1
 #define PRINCIPIA_USE_CGS2 0
 #define PRINCIPIA_USE_LEAST_SQUARE 1
 
@@ -154,7 +154,7 @@ template<typename Function, typename BasisSeries, typename Norm,
          int aperiodic_wdegree, int periodic_wdegree,
          template<typename, typename, int> class Evaluator>
 Status AugmentedGramSchmidtStep(
-    Function& aₘ,
+    Function& b,
     PoissonSeries<double,
                   aperiodic_wdegree, periodic_wdegree, Evaluator> const& weight,
     Instant const& t_min,
@@ -170,7 +170,7 @@ Status AugmentedGramSchmidtStep(
 
   static constexpr double α = 0.5;
 
-  Function q̂ₘ = aₘ;
+  Function q̂ₘ = b;
   Norm q̂ₘ_norm = q̂ₘ.Norm(weight, t_min, t_max);
 
   // Loop on p.
@@ -179,7 +179,7 @@ Status AugmentedGramSchmidtStep(
   do {
     previous_q̂ₘ = q̂ₘ;
     previous_q̂ₘ_norm = q̂ₘ_norm;
-    for (int i = 0; i < m; ++i) {
+    for (int i = m_begin; i < m_end; ++i) {
       Norm const sᵖₘ = InnerProduct(q[i], previous_q̂ₘ, weight, t_min, t_max);
       q̂ₘ -= sᵖₘ * q[i];
       rₘ[i] += sᵖₘ;
@@ -192,9 +192,10 @@ Status AugmentedGramSchmidtStep(
   } while (q̂ₘ_norm < α * previous_q̂ₘ_norm);
 
   // Fill the result.
-  rₘ[m] = q̂ₘ_norm;
+  b = q̂ₘ;
+  rₘ[m_end] = q̂ₘ_norm;
 #else
-  auto aₘ⁽ᵏ⁾ = aₘ;
+  auto aₘ⁽ᵏ⁾ = b;
   for (int k = m_begin; k < m_end; ++k) {
     rₘ[k] = InnerProduct(q[k], aₘ⁽ᵏ⁾, weight, t_min, t_max);
     aₘ⁽ᵏ⁾ -= rₘ[k] * q[k];
@@ -206,7 +207,7 @@ Status AugmentedGramSchmidtStep(
   }
 
   // Fill the result.
-  aₘ = aₘ⁽ᵏ⁾;
+  b = aₘ⁽ᵏ⁾;
   rₘ[m_end] = rₘₘ;
 #endif
   return Status::OK;
