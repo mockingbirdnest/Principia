@@ -24,9 +24,10 @@ namespace internal_frequency_analysis {
 
 // Note that using CGS and R in some tests produces imprecise results, possibly
 // because CGS doesn't yield a good value for R ([Bjö94] is silent on this
-// topic.)
-#define PRINCIPIA_USE_CGS 1
-#define PRINCIPIA_USE_R 0
+// point).  MGS appears a bit faster and more precise than CGS on some tests.
+// R has no visible performance effect.
+#define PRINCIPIA_USE_CGS 0
+#define PRINCIPIA_USE_R 1
 
 using base::Error;
 using base::Status;
@@ -73,11 +74,11 @@ int MakeBasis(std::optional<AngularFrequency> const& ω,
   }
 }
 
-// Given a column aₘ of a matrix (or quasimatrix in our case, see [Tre10]) this
-// function produces the columns qₘ, rₘ of its QR decomposition.  The inner
-// product is defined by weight, t_min and t_max.  q is the Q quasimatrix
-// constructed so far, and subspaces specify the subspaces spanned by the qs and
-// by aₘ.
+// Given a column |aₘ| of a matrix (or quasimatrix in our case, see [Tre10])
+// this function produces the columns |qₘ|, |rₘ| of its QR decomposition.  The
+// inner product is defined by |weight|, |t_min| and |t_max|.  |q| is the Q
+// quasimatrix constructed so far, and |subspaces| specify the subspaces spanned
+// by the |q|s and by |aₘ|.
 template<typename BasisSeries,
          int aperiodic_wdegree, int periodic_wdegree,
          template<typename, typename, int> class Evaluator>
@@ -153,12 +154,12 @@ Status NormalGramSchmidtStep(
 }
 
 // This function performs the augmented QR decomposition step described in
-// [Hig02] section 20.3.  Note that as an optimization in updates b, because
-// the computation of z for larger and larger R would perform the exact same
-// inner products for the range [0, m_begin[.  The range of q to process (and
-// the range of z to update is at indices [m_begin, m_end[.  This function
-// doesn't return qₘ₊₁ because it's not needed for the solution.  It also
-// doesn't return ρ.
+// [Hig02] section 20.3.  Note that as an optimization in updates |b|, because
+// the computation of |z| for larger and larger R would perform the exact same
+// inner products for the range [0, m_begin[.  The range of |q| to process (and
+// the range of |z| to update is at indices [m_begin, m_end[.  This function
+// doesn't return |qₘ₊₁| because it's not needed for the solution.  It also
+// doesn't return |ρ|.
 template<typename Function, typename BasisSeries, typename Norm,
          int aperiodic_wdegree, int periodic_wdegree,
          template<typename, typename, int> class Evaluator>
@@ -185,7 +186,7 @@ Status AugmentedGramSchmidtStep(
     b -= z[k] * q[k];
   }
 
-  // We do not compute the norm of b here (named ρ in [Hig02] section 20.3)
+  // We do not compute the norm of |b| here (named |ρ| in [Hig02] section 20.3)
   // because it's an additional cost: the client can compute the norm of the
   // residual however they want anyway.
 
@@ -301,7 +302,7 @@ IncrementalProjection(Function const& function,
   ResultSeries F(result_zero, {{}});
 
   // The input function with a degree suitable for the augmented Gram-Schmidt
-  // step.
+  // step.  Updated by the augmented Gram-Schmidt step.
   auto b = function - F;
   UnboundedVector<Norm> z(basis_size, uninitialized);
 
@@ -342,7 +343,7 @@ IncrementalProjection(Function const& function,
     // presumably to get the solution in the canonical basis.  There is no
     // canonical basis for quasimatrices, though, and it's easy to see that the
     // solution can also be expressed as Q z, which appears numerically well-
-    // conditioned and slightly cheaper (note that we don't use R on that path).
+    // conditioned (note that we don't use R on that path).
 #if PRINCIPIA_USE_R
     auto const x = BackSubstitution(r, z);
     F = ResultSeries(result_zero, {{}});
@@ -373,6 +374,9 @@ IncrementalProjection(Function const& function,
     z.Extend(ω_basis_size, uninitialized);
   }
 }
+
+#undef PRINCIPIA_USE_CGS
+#undef PRINCIPIA_USE_R
 
 }  // namespace internal_frequency_analysis
 }  // namespace frequency_analysis
