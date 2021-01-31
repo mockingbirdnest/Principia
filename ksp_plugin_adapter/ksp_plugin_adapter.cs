@@ -311,7 +311,7 @@ public partial class PrincipiaPluginAdapter
     orbit_analyser_ = new CurrentOrbitAnalyser(this, PredictedVessel);
     plotting_frame_selector_ = new ReferenceFrameSelector(this,
                                                           UpdateRenderingFrame,
-                             Localizer.Format("#Principia_Global_PresentFrame"));
+                             Localizer.Format("#Principia_PlottingFrame"));
     main_window_ = new MainWindow(this,
                                   flight_planner_,
                                   orbit_analyser_,
