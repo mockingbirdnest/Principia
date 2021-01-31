@@ -22,8 +22,11 @@ namespace numerics {
 namespace frequency_analysis {
 namespace internal_frequency_analysis {
 
-#define PRINCIPIA_USE_CGS1 1
-#define PRINCIPIA_USE_CGS2 0
+// Note that using CGS and R in some tests produces imprecise results, possibly
+// because CGS doesn't yield a good value for R ([Bjö94] is silent on this
+// topic.)
+#define PRINCIPIA_USE_CGS 1
+#define PRINCIPIA_USE_R 0
 
 using base::Error;
 using base::Status;
@@ -91,7 +94,7 @@ Status NormalGramSchmidtStep(
   static Status const bad_norm(Error::OUT_OF_RANGE, "Unable to compute norm");
   int const m = q.size();
 
-#if PRINCIPIA_USE_CGS1
+#if PRINCIPIA_USE_CGS
   // This code follows [Bjö94], Algorithm 6.1.
   static constexpr double α = 0.5;
   BasisSeries q̂ₘ = aₘ;
@@ -299,16 +302,8 @@ IncrementalProjection(Function const& function,
 
   // The input function with a degree suitable for the augmented Gram-Schmidt
   // step.
-  UnboundedVector<Norm> z(basis_size, uninitialized);
   auto b = function - F;
-
-  mathematica::Logger logger(TEMP_DIR / "least_square.wl");
-  logger.Set(
-      "function", function, mathematica::ExpressIn(Metre, Radian, Second));
-  logger.Set(
-      "tMin", t_min, mathematica::ExpressIn(Metre, Radian, Second));
-  logger.Set(
-      "tMax", t_max, mathematica::ExpressIn(Metre, Radian, Second));
+  UnboundedVector<Norm> z(basis_size, uninitialized);
 
   int m_begin = 0;
   for (;;) {
@@ -342,13 +337,14 @@ IncrementalProjection(Function const& function,
       return F;
     }
 
-    logger.Append("q", q, mathematica::ExpressIn(Metre, Radian, Second));
-    logger.Append("r", r, mathematica::ExpressIn(Metre, Radian, Second));
-    logger.Append("basis", basis, mathematica::ExpressIn(Metre, Radian, Second));
-    logger.Append(u8"zρ", z, mathematica::ExpressIn(Metre, Radian, Second));
+    // The conventional way to proceed here ([Hig02], section 20.3, [GV13],
+    // section 5.3.5) is to solve R x = z and compute the solution as A x,
+    // presumably to get the solution in the canonical basis.  There is no
+    // canonical basis for quasimatrices, though, and it's easy to see that the
+    // solution can also be expressed as Q z, which appears numerically well-
+    // conditioned and slightly cheaper (note that we don't use R on that path).
+#if PRINCIPIA_USE_R
     auto const x = BackSubstitution(r, z);
-
-    logger.Append("x", x, mathematica::ExpressIn(Metre, Radian, Second));
     F = ResultSeries(result_zero, {{}});
     auto f = function - F;
     for (int i = 0; i < x.size(); ++i) {
@@ -356,8 +352,13 @@ IncrementalProjection(Function const& function,
       F += x_basis;
       f -= x_basis;
     }
-    logger.Append(
-        "approximation", F, mathematica::ExpressIn(Metre, Radian, Second));
+#else
+    F = ResultSeries(result_zero, {{}});
+    auto const f = b;
+    for (int i = 0; i < z.size(); ++i) {
+      F += z[i] * q[i];
+    }
+#endif
 
     ω = calculator(f);
     if (!ω.has_value()) {
