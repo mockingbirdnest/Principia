@@ -595,8 +595,8 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
                  instantaneous_dof.degrees_of_freedom()));
     }
   } else {
-    CHECK_EQ(ZFP_CODEC, message.zfp().codec_version());
-    CHECK_EQ(ZFP_VERSION, message.zfp().library_version());
+    ZfpCompressor decompressor;
+    ZfpCompressor::ReadVersion(message);
 
     int const timeline_size = message.zfp().timeline_size();
     std::vector<double> t(timeline_size);
@@ -609,8 +609,6 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     std::string_view zfp_timeline(message.zfp().timeline().data(),
                                   message.zfp().timeline().size());
 
-    ZfpCompressor decompressor;
-    ZfpCompressor::ReadVersion(message);
     decompressor.ReadFromMessageMultidimensional<2>(t, zfp_timeline);
     decompressor.ReadFromMessageMultidimensional<2>(qx, zfp_timeline);
     decompressor.ReadFromMessageMultidimensional<2>(qy, zfp_timeline);
