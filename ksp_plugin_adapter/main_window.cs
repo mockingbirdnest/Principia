@@ -158,10 +158,10 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
       if (DateTimeOffset.Now > next_release_date_) {
         if (Versioning.version_minor <= 7) {
           UnityEngine.GUILayout.TextArea(
-              Localizer.Format("#Principia_MainWindow_NewMoonAnnouncementWithKspDeprecation", 
+              Localizer.Format("#Principia_MainWindow_NewMoonAnnouncementWithKspDeprecation",
               next_release_lunation_number_,
               next_release_name_,
-              "1.8.1"),          
+              "1.8.1"),
               style : Style.Multiline(UnityEngine.GUI.skin.textArea));
         } else {
           UnityEngine.GUILayout.TextArea(
@@ -188,8 +188,8 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
           }
           if (FlightGlobals.fetch.VesselTarget?.GetVessel()) {
             UnityEngine.GUILayout.Label(
-                Localizer.Format("#Principia_MainWindow_TargetVessel_Name", 
-                FlightGlobals.fetch.VesselTarget.GetVessel().vesselName),    
+                Localizer.Format("#Principia_MainWindow_TargetVessel_Name",
+                FlightGlobals.fetch.VesselTarget.GetVessel().vesselName),
                 UnityEngine.GUILayout.ExpandWidth(true));
             if (UnityEngine.GUILayout.Button(Localizer.Format("#Principia_MainWindow_TargetVessel_Clear"), GUILayoutWidth(2))) {
               selecting_active_vessel_target = false;
@@ -354,9 +354,9 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
           value   : must_record_journal_,
           text    : Localizer.Format("#Principia_MainWindow_LoggingSettings_RecordJournal"));
       UnityEngine.GUILayout.Label(
-          Localizer.Format("#Principia_MainWindow_LoggingSettings_RecordJournalResault",
-          (journaling_ ? Localizer.Format("#Principia_MainWindow_LoggingSettings_JournallingStatus_ON") : 
-                         Localizer.Format("#Principia_MainWindow_LoggingSettings_JournallingStatus_OFF"))),
+          Localizer.Format("#Principia_MainWindow_LoggingSettings_RecordJournalResult",
+          (journaling_ ? Localizer.Format("#Principia_MainWindow_LoggingSettings_JournalingStatus_ON") :
+                         Localizer.Format("#Principia_MainWindow_LoggingSettings_JournalingStatus_OFF"))),
           style : Style.Info(Style.RightAligned(UnityEngine.GUI.skin.label)));
     }
     if (journaling_ && !must_record_journal_) {

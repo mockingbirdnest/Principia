@@ -61,8 +61,7 @@ internal class DifferentialSlider : ScalingRenderer {
   public double value {
     get => value_ ?? 0.0;
     set {
-      if (!value_.HasValue ||
-          value_ != value) {
+      if (!value_.HasValue || value_ != value) {
         value_ = value;
         formatted_value_ = formatter_(value_.Value);
       }

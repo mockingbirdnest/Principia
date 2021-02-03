@@ -626,7 +626,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
             ".");
       } else {
         message =
-            Localizer.Format("#Principia_FlightPlan_StatusMessage_Resault",
+            Localizer.Format("#Principia_FlightPlan_StatusMessage_Result",
                              status_message,
                              remedy_message);
       }
