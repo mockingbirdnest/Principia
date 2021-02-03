@@ -26,9 +26,13 @@ class PrincipiaTimeSpan {
                 date_time_formatter.Minute;
       hours =
           ((int)(seconds_ - seconds - minutes * date_time_formatter.Minute) %
-           date_time_formatter.Day) / date_time_formatter.Hour;
-      days = (int)(seconds_ - seconds - minutes * date_time_formatter.Minute -
-                   hours * date_time_formatter.Hour) / date_time_formatter.Day;
+           date_time_formatter.Day) /
+          date_time_formatter.Hour;
+      days = (int)(seconds_ -
+                   seconds -
+                   minutes * date_time_formatter.Minute -
+                   hours * date_time_formatter.Hour) /
+             date_time_formatter.Day;
       return true;
     } catch (OverflowException) {
       return false;
@@ -38,8 +42,8 @@ class PrincipiaTimeSpan {
   // Formats a duration, optionally omitting leading components if they are 0,
   // and leading 0s on the days; optionally exclude seconds.
   public string Format(bool with_leading_zeroes, bool with_seconds) {
-    return seconds_.ToString("+;-") + FormatPositive(with_leading_zeroes,
-                                                     with_seconds);
+    return seconds_.ToString("+;-") +
+           FormatPositive(with_leading_zeroes, with_seconds);
   }
 
   public string FormatPositive(bool with_leading_zeroes, bool with_seconds) {
@@ -70,7 +74,9 @@ class PrincipiaTimeSpan {
                          : hours.ToString("00;00"));
       components.Add($"{nbsp}h{nbsp}");
     }
-    if (components.Count > 0 || with_leading_zeroes || minutes != 0 ||
+    if (components.Count > 0 ||
+        with_leading_zeroes ||
+        minutes != 0 ||
         !with_seconds) {
       components.Add(minutes.ToString("00;00"));
       components.Add($"{nbsp}min");
@@ -88,7 +94,8 @@ class PrincipiaTimeSpan {
                               out PrincipiaTimeSpan time_span) {
     time_span = new PrincipiaTimeSpan(double.NaN);
     // Using a technology that is customarily used to parse HTML.
-    string pattern = @"^[+]?\s*(\d+)\s*" + day_symbol +
+    string pattern = @"^[+]?\s*(\d+)\s*" +
+                     day_symbol +
                      @"\s*(\d+)\s*h\s*(\d+)\s*min";
     if (with_seconds) {
       pattern += @"\s*([0-9.,']+)\s*s$";
@@ -107,17 +114,20 @@ class PrincipiaTimeSpan {
     if (with_seconds) {
       seconds = match.Groups[4].Value;
     }
-    if (!int.TryParse(days, out int d) || !int.TryParse(hours, out int h) ||
-        !int.TryParse(minutes, out int min) || !double.TryParse(
-            seconds.Replace(',', '.'),
-            NumberStyles.AllowDecimalPoint | NumberStyles.AllowThousands,
-            Culture.culture.NumberFormat,
-            out double s)) {
+    if (!int.TryParse(days, out int d) ||
+        !int.TryParse(hours, out int h) ||
+        !int.TryParse(minutes, out int min) ||
+        !double.TryParse(seconds.Replace(',', '.'),
+                         NumberStyles.AllowDecimalPoint |
+                         NumberStyles.AllowThousands,
+                         Culture.culture.NumberFormat,
+                         out double s)) {
       return false;
     }
     time_span = new PrincipiaTimeSpan(d * date_time_formatter.Day +
                                       h * date_time_formatter.Hour +
-                                      min * date_time_formatter.Minute + s);
+                                      min * date_time_formatter.Minute +
+                                      s);
     return true;
   }
 
@@ -130,9 +140,11 @@ class PrincipiaTimeSpan {
 
   private static bool day_is_short =>
       date_time_formatter.Day / date_time_formatter.Hour < 10;
+
   private static bool hour_divides_day =>
       (int)(date_time_formatter.Day / date_time_formatter.Hour) *
-      date_time_formatter.Hour == date_time_formatter.Day;
+      date_time_formatter.Hour ==
+      date_time_formatter.Day;
 
   private static IDateTimeFormatter date_time_formatter =>
       KSPUtil.dateTimeFormatter;

@@ -39,7 +39,7 @@ static_assert(
 std::array<Monitor, monitor_count> monitors{};
 }  // namespace
 
-// No journalling to avoid measuring overhead from that; these functions have no
+// No journaling to avoid measuring overhead from that; these functions have no
 // side effects aside from logging and changing the internal state of the
 // monitors.
 

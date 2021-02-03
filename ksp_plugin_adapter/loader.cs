@@ -34,26 +34,31 @@ internal static class Loader {
       case PlatformID.MacOSX:
         possible_dll_paths = new [] {
             @"GameData/Principia/Linux64/principia.so",
-            @"GameData/Principia/MacOS64/principia.so"};
+            @"GameData/Principia/MacOS64/principia.so"
+        };
         is_cxx_installed = null;
         required_cxx_packages = "libc++abi1-8 and libc++1-8 or later (Linux) " +
                                 "or Sierra or later (MacOS)";
         break;
       default:
-        return "The operating system " + Environment.OSVersion +
+        return "The operating system " +
+               Environment.OSVersion +
                " is not supported at this time.";
     }
     if (!possible_dll_paths.Any(File.Exists)) {
       return "The principia DLL was not found at '" +
-             string.Join("', '", possible_dll_paths) + "' in directory '" +
-             Directory.GetCurrentDirectory() + "'.";
+             string.Join("', '", possible_dll_paths) +
+             "' in directory '" +
+             Directory.GetCurrentDirectory() +
+             "'.";
     }
     string non_ascii_path_error = null;
     foreach (char c in Directory.GetCurrentDirectory()) {
       if (c >= 128) {
         non_ascii_path_error = Directory.GetCurrentDirectory() +
-                             " contains the non-ASCII character " + c +
-                             "; this is known to confuse Mono.";
+                               " contains the non-ASCII character " +
+                               c +
+                               "; this is known to confuse Mono.";
         break;
       }
     }
@@ -66,13 +71,17 @@ internal static class Loader {
       if (non_ascii_path_error != null) {
         return non_ascii_path_error;
       } else if (is_cxx_installed == false) {
-        return "Dependencies, namely " + required_cxx_packages +
+        return "Dependencies, namely " +
+               required_cxx_packages +
                ", were not found.";
       } else {
         return "An unknown error occurred; detected OS " +
-               Environment.OSVersion + " 64-bit; tried loading dll at '" +
-               string.Join("', '", possible_dll_paths) + "'. Note that " +
-               required_cxx_packages + " are required.";
+               Environment.OSVersion +
+               " 64-bit; tried loading dll at '" +
+               string.Join("', '", possible_dll_paths) +
+               "'. Note that " +
+               required_cxx_packages +
+               " are required.";
       }
     }
   }
@@ -102,7 +111,7 @@ internal static class Loader {
 
   [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Ansi)]
   private static extern IntPtr LoadLibrary(
-      [MarshalAs(UnmanagedType.LPStr)]string lpFileName);
+      [MarshalAs(UnmanagedType.LPStr)] string lpFileName);
 
   internal static bool loaded_principia_dll_ { get; private set; } = false;
 }

@@ -31,8 +31,8 @@ internal class BoxedInt32 : Boxed<int> {
 }
 
 internal class BoxedKeplerianElements : Boxed<KeplerianElements> {
-  public static implicit operator BoxedKeplerianElements(
-      KeplerianElements all) {
+  public static implicit operator
+      BoxedKeplerianElements(KeplerianElements all) {
     return new BoxedKeplerianElements(all);
   }
 
