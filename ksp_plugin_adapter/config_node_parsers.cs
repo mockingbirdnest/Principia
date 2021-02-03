@@ -5,9 +5,8 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 internal static class ConfigNodeParsers {
-
   public static BodyParameters NewCartesianBodyParameters(CelestialBody body,
-                                                          ConfigNode node) {
+    ConfigNode node) {
     return new BodyParameters{
         name                    = body.name,
         gravitational_parameter =
@@ -30,34 +29,37 @@ internal static class ConfigNodeParsers {
   }
 
   public static ConfigurationAccuracyParameters
-  NewConfigurationAccuracyParameters(ConfigNode node) {
+      NewConfigurationAccuracyParameters(ConfigNode node) {
     return new ConfigurationAccuracyParameters{
         fitting_tolerance      = node.GetUniqueValue("fitting_tolerance"),
-        geopotential_tolerance = node.GetUniqueValue("geopotential_tolerance")};
+        geopotential_tolerance = node.GetUniqueValue("geopotential_tolerance")
+    };
   }
 
   public static ConfigurationAdaptiveStepParameters
-  NewConfigurationAdaptiveStepParameters(ConfigNode node) {
+      NewConfigurationAdaptiveStepParameters(ConfigNode node) {
     return new ConfigurationAdaptiveStepParameters{
         adaptive_step_size_integrator =
             node.GetUniqueValue("adaptive_step_size_integrator"),
         length_integration_tolerance  =
             node.GetUniqueValue("length_integration_tolerance"),
         speed_integration_tolerance   =
-            node.GetUniqueValue("speed_integration_tolerance")};
+            node.GetUniqueValue("speed_integration_tolerance")
+    };
   }
 
   public static ConfigurationFixedStepParameters
-  NewConfigurationFixedStepParameters(ConfigNode node) {
+      NewConfigurationFixedStepParameters(ConfigNode node) {
     return new ConfigurationFixedStepParameters{
         fixed_step_size_integrator =
             node.GetUniqueValue("fixed_step_size_integrator"),
         integration_step_size      =
-            node.GetUniqueValue("integration_step_size")};
+            node.GetUniqueValue("integration_step_size")
+    };
   }
 
   public static BodyParameters NewKeplerianBodyParameters(CelestialBody body,
-                                                          ConfigNode node) {
+    ConfigNode node) {
     var j2 = node?.GetAtMostOneValue("j2");
     var geopotential = node?.GetBodyGeopotentialElements()?.ToArray();
     return new BodyParameters{
@@ -70,11 +72,9 @@ internal static class ConfigNodeParsers {
         // ascension is -90 deg.
         reference_instant       =
             node?.GetAtMostOneValue("reference_instant") ?? "JD2451545.0",
-        min_radius =
-            (body.pqsController?.radiusMin ?? body.Radius) + " m",
+        min_radius = (body.pqsController?.radiusMin ?? body.Radius) + " m",
         mean_radius = body.Radius + " m",
-        max_radius =
-            (body.pqsController?.radiusMax ?? body.Radius) + " m",
+        max_radius = (body.pqsController?.radiusMax ?? body.Radius) + " m",
         axis_right_ascension    =
             node?.GetAtMostOneValue("axis_right_ascension") ?? "-90 deg",
         axis_declination        =
@@ -84,11 +84,11 @@ internal static class ConfigNodeParsers {
         angular_frequency       =
             node?.GetAtMostOneValue("angular_frequency") ??
             (body.angularV + " rad/s"),
-        reference_radius        =
-            node?.GetAtMostOneValue("reference_radius") ??
-            (j2 != null || (geopotential?.Length ?? 0) != 0
-                 ? body.Radius + " m"
-                 : null),
+        reference_radius        = node?.GetAtMostOneValue("reference_radius") ??
+                                  (j2 != null ||
+                                   (geopotential?.Length ?? 0) != 0
+                                       ? body.Radius + " m"
+                                       : null),
         j2                      = j2,
         geopotential            = geopotential
     };
@@ -108,27 +108,26 @@ internal static class ConfigNodeParsers {
         string j = geopotential_column.GetAtMostOneValue("j");
         string cos = geopotential_column.GetAtMostOneValue("cos");
         string sin = geopotential_column.GetUniqueValue("sin");
-        elements.Add(new BodyGeopotentialElement{degree = degree,
-                                                 order = order,
-                                                 cos = cos,
-                                                 j = j,
-                                                 sin = sin});
+        elements.Add(new BodyGeopotentialElement{
+            degree = degree,
+            order = order,
+            cos = cos,
+            j = j,
+            sin = sin
+        });
       }
     }
     return elements;
   }
 
-  public static void GetDrawStyle(
-      this ConfigNode node,
-      out UnityEngine.Color colour,
-      out GLLines.Style style) {
+  public static void GetDrawStyle(this ConfigNode node,
+                                  out UnityEngine.Color colour,
+                                  out GLLines.Style style) {
     colour = XKCDColors.ColorTranslator.FromHtml(node.GetUniqueValue("colour"));
-    style = (GLLines.Style)Enum.Parse(
-        typeof(GLLines.Style),
-        node.GetUniqueValue("style"),
-        true);
+    style = (GLLines.Style)Enum.Parse(typeof(GLLines.Style),
+                                      node.GetUniqueValue("style"),
+                                      true);
   }
-
 }
 
 }  // namespace ksp_plugin_adapter
