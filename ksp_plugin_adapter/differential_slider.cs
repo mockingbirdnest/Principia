@@ -6,6 +6,7 @@ namespace ksp_plugin_adapter {
 
 internal class DifferentialSlider : ScalingRenderer {
   public delegate string ValueFormatter(double value);
+
   public delegate bool ValueParser(string s, out double value);
 
   // Rates are in units of |value| per real-time second.
@@ -33,15 +34,15 @@ internal class DifferentialSlider : ScalingRenderer {
     }
     if (parser == null) {
       // As a special exemption we allow a comma as the decimal separator.
-      parser_ = (string s, out double value) =>
-                    double.TryParse(s.Replace(',', '.'),
-                                    NumberStyles.AllowDecimalPoint |
-                                    NumberStyles.AllowLeadingSign |
-                                    NumberStyles.AllowLeadingWhite |
-                                    NumberStyles.AllowThousands |
-                                    NumberStyles.AllowTrailingWhite,
-                                    Culture.culture.NumberFormat,
-                                    out value);
+      parser_ = (string s, out double value) => double.TryParse(
+          s.Replace(',', '.'),
+          NumberStyles.AllowDecimalPoint |
+          NumberStyles.AllowLeadingSign |
+          NumberStyles.AllowLeadingWhite |
+          NumberStyles.AllowThousands |
+          NumberStyles.AllowTrailingWhite,
+          Culture.culture.NumberFormat,
+          out value);
     } else {
       parser_ = parser;
     }
@@ -60,7 +61,8 @@ internal class DifferentialSlider : ScalingRenderer {
   public double value {
     get => value_ ?? 0.0;
     set {
-      if (!value_.HasValue || value_ != value) {
+      if (!value_.HasValue ||
+          value_ != value) {
         value_ = value;
         formatted_value_ = formatter_(value_.Value);
       }
@@ -116,7 +118,7 @@ internal class DifferentialSlider : ScalingRenderer {
             UnityEngine.GUI.GetNameOfFocusedControl() == text_field_name) {
           terminate_text_entry = true;
         } else if (UnityEngine.GUI.GetNameOfFocusedControl() !=
-                       text_field_name &&
+                   text_field_name &&
                    formatted_value_ != formatter_(value_.Value)) {
           terminate_text_entry = true;
         }
@@ -136,14 +138,15 @@ internal class DifferentialSlider : ScalingRenderer {
           }
         }
       } else {
-        UnityEngine.GUILayout.Label(
-            text    : formatted_value_,
-            style   : Style.RightAligned(UnityEngine.GUI.skin.label),
-            options : GUILayoutWidth(5 + (unit_ == null ? 2 : 0)));
+        UnityEngine.GUILayout.Label(text    : formatted_value_,
+                                    style   : Style.RightAligned(
+                                        UnityEngine.GUI.skin.label),
+                                    options : GUILayoutWidth(
+                                        5 + (unit_ == null ? 2 : 0)));
       }
-      UnityEngine.GUILayout.Label(
-          text    : unit_ ?? "",
-          options : GUILayoutWidth(unit_ == null ? 0 : 2));
+      UnityEngine.GUILayout.Label(text    : unit_ ?? "",
+                                  options : GUILayoutWidth(
+                                      unit_ == null ? 0 : 2));
 
       if (enabled) {
         if (!UnityEngine.Input.GetMouseButton(0)) {
@@ -168,10 +171,11 @@ internal class DifferentialSlider : ScalingRenderer {
             value = v;
           }
           value += Math.Sign(slider_position_) *
-                Math.Pow(10, log10_lower_rate_ +
-                                (log10_upper_rate_ - log10_lower_rate_) *
-                                    Math.Abs(slider_position_)) *
-                (DateTime.Now - last_time_).TotalSeconds;
+                   Math.Pow(10,
+                            log10_lower_rate_ +
+                            (log10_upper_rate_ - log10_lower_rate_) *
+                            Math.Abs(slider_position_)) *
+                   (DateTime.Now - last_time_).TotalSeconds;
           value = Math.Min(Math.Max(min_value_, value), max_value_);
         }
       } else {
