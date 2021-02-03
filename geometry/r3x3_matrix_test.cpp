@@ -1,6 +1,7 @@
 ﻿
 #include <utility>
 
+#include "quantities/elementary_functions.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
@@ -14,6 +15,7 @@ namespace geometry {
 namespace internal_r3x3_matrix {
 
 using quantities::Length;
+using quantities::Sqrt;
 using quantities::si::Metre;
 using testing_utilities::AlmostEquals;
 using ::testing::Eq;
@@ -44,6 +46,33 @@ TEST_F(R3x3MatrixTest, Determinant) {
 TEST_F(R3x3MatrixTest, Transpose) {
   EXPECT_THAT(m1_.Transpose(),
               Eq(R3x3Matrix<double>({-9, 7, -1}, {6, -5, 2}, {6, -4, 1})));
+}
+
+TEST_F(R3x3MatrixTest, FrobeniusNorm) {
+  EXPECT_THAT(m1_.FrobeniusNorm(), Eq(Sqrt(249)));
+}
+
+TEST_F(R3x3MatrixTest, QRDecomposition) {
+  R3x3Matrix<Length> hilbert(
+      {1 * Metre, 1.0 / 2.0 * Metre, 1.0 / 3.0 * Metre},
+      {1.0 / 2.0 * Metre, 1.0 / 3.0 * Metre, 1.0 / 4.0 * Metre},
+      {1.0 / 3.0 * Metre, 1.0 / 4.0 * Metre, 1.0 / 5.0 * Metre});
+  R3x3Matrix<double> q;
+  R3x3Matrix<Length> r;
+  hilbert.QRDecomposition(q, r);
+  EXPECT_THAT(
+      q,
+      AlmostEquals(R3x3Matrix<double>(
+          {6.0 / 7.0, 3.0 / 7.0, 2.0 / 7.0},
+          {-30.0 / Sqrt(3577.0), 34.0 / Sqrt(3577.0), 39.0 / Sqrt(3577.0)},
+          {1.0 / Sqrt(73.0), -6.0 / Sqrt(73.0), 6.0 / Sqrt(73.0)}), 10));
+  EXPECT_THAT(
+      r,
+      AlmostEquals(R3x3Matrix<Length>(
+          {7.0 / 6.0 * Metre, 9.0 / 14.0 * Metre, 9.0 / 20.0 * Metre},
+          {0 * Metre, Sqrt(73.0) / 84.0 * Metre, 9.0 / Sqrt(7300.0) * Metre},
+          {0 * Metre, 0 * Metre, 1 / Sqrt(65700.0) * Metre}), 23));
+  EXPECT_THAT(q * r, AlmostEquals(hilbert, 0));
 }
 
 TEST_F(R3x3MatrixTest, Solve) {

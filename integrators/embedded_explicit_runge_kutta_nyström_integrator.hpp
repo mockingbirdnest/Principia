@@ -41,18 +41,11 @@ using quantities::Variation;
 //   b̂′ for the velocity weights of the high-order method;
 //   b for the position weights of the low-order method;
 //   b′ for the velocity weights of the low-order method.
-// See Dormand, El-Mikkawy and Prince (1986),
-// Families of Runge-Kutta-Nyström formulae, for an example.
-// Note that other notations exist for the weights:
-// El-Mikkawy and Rahmo (2003), A new optimized non-FSAL embedded
-// Runge–Kutta–Nystrom algorithm of orders 6 and 4 in six stages, and
-// Sommeijer (1993), Explicit, high-order Runge-Kutta-Nyström methods for
-// parallel computers, call the the velocity weights d instead of b′,
-// and Alonso-Mallo, Cano, and Moreta (2005), Stability of Runge–Kutta–Nyström
-// methods, call the position and velocity weights β and b instead of b and b′.
-// Further, Dormand (1996), Numerical Methods for Differential Equations: A
-// Computational Approach, uses ā for the Runge-Kutta matrix, and b̄ and b for
-// the position and velocity weights.
+// See [DEP87a], for an example.
+// Note that other notations exist for the weights: [ER03] and [Som93] call the
+// velocity weights d instead of b′, and [ACM06] call the position and velocity
+// weights β and b instead of b and b′.  Further, [Dor96] uses ā for the
+// Runge-Kutta matrix, and b̄ and b for the position and velocity weights.
 
 // In the implementation, we follow Dormand, El-Mikkawy and Prince in calling
 // the results of the right-hand-side evaluations gᵢ.  The notations kᵢ or fᵢ

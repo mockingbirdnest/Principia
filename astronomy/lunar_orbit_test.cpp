@@ -173,7 +173,7 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
 
   // This Moon-centred, Moon-fixed reference frame has the x axis pointing
   // towards the Earth, and the y axis in the direction of the velocity of the
-  // Earth, see figure 1. of Russell and Lara (2006).
+  // Earth, see figure 1. of [RL06].
   using LunarSurface = Frame<enum class LunarSurfaceTag, Arbitrary>;
 
   // This reference frame is non-rotating, with its origin at the selenocentre.
@@ -283,8 +283,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
               "lunar_orbit_", GetParam().DegreeAndOrder(), ".generated.wl"),
       /*make_unique=*/false);
 
-  // We work with orbit C from Russell and Lara (2006), Repeat Ground Track
-  // Lunar Orbits in the Full-Potential Plus Third-Body Problem.
+  // We work with orbit C from [RL06].
 
   // The length and time units LU and TU are such that, in an idealized
   // Earth-Moon system, the Earth-Moon distance is 1 LU and the angular
@@ -298,7 +297,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   // properties ensure that the initial osculating lunar orbit has the same
   // orientation, eccentricity, and anomaly.
 
-  // The _rl values are the ones from table 1 of Russell and Lara (2006).
+  // The _rl values are the ones from table 1 of [RL06].
   Length const LU_rl = 384'400 * Kilo(Metre);
   Time const TU_rl = 375'190.258663027 * Second;
   GravitationalParameter const GM_rl =
@@ -318,7 +317,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   Time const period = 2 * π * TU;
   int const orbits_per_period = 328;
 
-  // Initial conditions and elements from table 2 of Russell and Lara (2006).
+  // Initial conditions and elements from table 2 of [RL06].
   Length const x0 = -4.498948742093e-03 * LU;
   Length const y0 = -1.731769313131e-03 * LU;
   Length const z0 =  0 * LU;

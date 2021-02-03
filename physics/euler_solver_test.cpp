@@ -912,8 +912,7 @@ TEST_F(EulerSolverTest, SeparatrixConstantMomentum) {
   EXPECT_THAT(actual_attitude(e3_), AlmostEquals(expected_attitude(e3_), 6, 7));
 }
 
-// The data in this test are from Takahashi, Busch and Scheeres, Spin state and
-// moment of inertia characterization of 4179 Toutatis, 2013 [TBS13].
+// The data in this test are from [TBS13].
 TEST_F(EulerSolverTest, Toutatis) {
   Instant const epoch = "1992-11-09T17:49:47"_UTC;
 

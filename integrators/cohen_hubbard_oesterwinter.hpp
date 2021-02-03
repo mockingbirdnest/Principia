@@ -9,10 +9,8 @@ namespace internal_cohen_hubbard_oesterwinter {
 
 using numerics::FixedVector;
 
-// Definition of a modified Cohen-Hubbard-Oesterwinter formula, see Cohen,
-// Hubbard, Oesterwinter (1973), Astronomical papers prepared for the use of the
-// American ephemeris and nautical almanac Volume XXII Part I, p. 21.  Our
-// formula is:
+// Definition of a modified Cohen-Hubbard-Oesterwinter formula, see [CHO73],
+// p. 21.  Our formula is:
 //   f′(x₀) ≅ f(x₀) - f(x₋₁) + h Σ(ηᵢ f″(x₋ᵢ))
 // where the sum is for i going from 0 to order_ - 1.  The ηᵢ are computed
 // using Mathematica, see cohen_hubbard_oesterwinter.wl.

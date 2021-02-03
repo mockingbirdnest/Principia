@@ -17,7 +17,9 @@ namespace geometry {
 namespace internal_r3x3_matrix {
 
 using base::uninitialized;
+using geometry::Dot;
 using quantities::Abs;
+using quantities::Sqrt;
 
 template<typename Scalar>
 R3x3Matrix<Scalar>::R3x3Matrix(uninitialized_t) {}
@@ -63,6 +65,29 @@ R3x3Matrix<Scalar> R3x3Matrix<Scalar>::Transpose() const {
   return R3x3Matrix({rows_[X].x, rows_[Y].x, rows_[Z].x},
                     {rows_[X].y, rows_[Y].y, rows_[Z].y},
                     {rows_[X].z, rows_[Y].z, rows_[Z].z});
+}
+
+template<typename Scalar>
+Scalar R3x3Matrix<Scalar>::FrobeniusNorm() const {
+  return Sqrt(rows_[X].Norm²() + rows_[Y].Norm²() + rows_[Z].Norm²());
+}
+
+template<typename Scalar>
+void R3x3Matrix<Scalar>::QRDecomposition(R3x3Matrix<double>& Q,
+                                         R3x3Matrix& R) const {
+  // This implementation of modified Gram-Schmidt follows [Hig02], Algorithm
+  // 19.12.  Note that since our representation is by rows, it's more convenient
+  // to decompose as: ᵗA = ᵗR.Q and transpose Q at the end.
+  R3x3Matrix<Scalar> A = this->Transpose();
+  for (int k = 0; k < 3; ++k) {
+    R(k, k) = A.rows_[k].Norm();
+    Q.rows_[k] = A.rows_[k] / R(k, k);
+    for (int j = k + 1; j < 3; ++j) {
+      R(k, j) = Dot(Q.rows_[k], A.rows_[j]);
+      A.rows_[j] -= R(k, j) * Q.rows_[k];
+    }
+  }
+  Q = Q.Transpose();
 }
 
 template<typename Scalar>

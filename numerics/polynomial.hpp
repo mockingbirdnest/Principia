@@ -132,9 +132,13 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   // The constant term of the result is zero.
   template<typename V = Value,
            typename = std::enable_if_t<!base::is_instance_of_v<Point, V>>>
-  PolynomialInMonomialBasis<Primitive<Value, Argument>, Argument,
+  PolynomialInMonomialBasis<quantities::Primitive<Value, Argument>, Argument,
                             degree_ + 1, Evaluator>
   Primitive() const;
+
+  quantities::Primitive<Value, Argument> Integrate(
+      Argument const& argument1,
+      Argument const& argument2) const;
 
   PolynomialInMonomialBasis& operator+=(PolynomialInMonomialBasis const& right);
   PolynomialInMonomialBasis& operator-=(PolynomialInMonomialBasis const& right);
@@ -261,9 +265,13 @@ class PolynomialInMonomialBasis<Value_, Point<Argument_>, degree_, Evaluator>
   // The constant term of the result is zero.
   template<typename V = Value,
            typename = std::enable_if_t<!base::is_instance_of_v<Point, V>>>
-  PolynomialInMonomialBasis<Primitive<Value, Argument>, Point<Argument>,
-                            degree_ + 1, Evaluator>
+  PolynomialInMonomialBasis<quantities::Primitive<Value, Argument>,
+                            Point<Argument>, degree_ + 1, Evaluator>
   Primitive() const;
+
+  quantities::Primitive<Value, Argument> Integrate(
+      Point<Argument> const& argument1,
+      Point<Argument> const& argument2) const;
 
   PolynomialInMonomialBasis& operator+=(const PolynomialInMonomialBasis& right);
   PolynomialInMonomialBasis& operator-=(const PolynomialInMonomialBasis& right);
