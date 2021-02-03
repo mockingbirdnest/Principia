@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using KSP.Localization;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -12,7 +13,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
     adapter_ = adapter;
     predicted_vessel_ = predicted_vessel;
     final_time_ = new DifferentialSlider(
-                      label            : "Plan length",
+                      label            : Localizer.Format("#Principia_FlightPlan_PlanLength"),
                       unit             : null,
                       log10_lower_rate : log10_time_lower_rate_,
                       log10_upper_rate : log10_time_upper_rate_,
@@ -26,7 +27,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
   }
 
   public void RenderButton() {
-    RenderButton("Flight plan...", GUILayoutWidth(4));
+    RenderButton(Localizer.Format("#Principia_FlightPlan_ToggleButton"), GUILayoutWidth(4));
   }
 
   public bool show_guidance => show_guidance_;
@@ -48,7 +49,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                   createIfNotFound : true);
   }
 
-  protected override string Title => "Flight plan";
+  protected override string Title => Localizer.Format("#Principia_FlightPlan_Title");
 
   protected override void RenderWindow(int window_id) {
     // We must ensure that the GUI elements don't change between Layout and
@@ -70,7 +71,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
 
     if (plugin.FlightPlanExists(vessel_guid)) {
       RenderFlightPlan(vessel_guid);
-    } else if (UnityEngine.GUILayout.Button("Create flight plan")) {
+    } else if (UnityEngine.GUILayout.Button(Localizer.Format("#Principia_FlightPlan_Create"))) {
       plugin.FlightPlanCreate(vessel_guid,
                               plugin.CurrentTime() + 3600,
                               predicted_vessel.GetTotalMass());
@@ -157,11 +158,11 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
 
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
-          UnityEngine.GUILayout.Label("Max. steps per segment:",
+          UnityEngine.GUILayout.Label(Localizer.Format("#Principia_FlightPlan_MaxSteps"),
                                       GUILayoutWidth(6));
           const int factor = 4;
           if (parameters.max_steps <= 100) {
-            UnityEngine.GUILayout.Button("min");
+            UnityEngine.GUILayout.Button(Localizer.Format("#Principia_DiscreteSelector_Min"));
           } else if (UnityEngine.GUILayout.Button("-")) {
             parameters.max_steps /= factor;
             var status = plugin.FlightPlanSetAdaptiveStepParameters(vessel_guid,
@@ -171,7 +172,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           UnityEngine.GUILayout.TextArea(parameters.max_steps.ToString(),
                                           GUILayoutWidth(3));
           if (parameters.max_steps >= long.MaxValue / factor) {
-            UnityEngine.GUILayout.Button("max");
+            UnityEngine.GUILayout.Button(Localizer.Format("#Principia_DiscreteSelector_Max"));
           } else if (UnityEngine.GUILayout.Button("+")) {
             parameters.max_steps *= factor;
             var status = plugin.FlightPlanSetAdaptiveStepParameters(vessel_guid,
@@ -180,10 +181,10 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           }
         }
         using (new UnityEngine.GUILayout.HorizontalScope()) {
-          UnityEngine.GUILayout.Label("Tolerance:",
+          UnityEngine.GUILayout.Label(Localizer.Format("#Principia_PredictionSettings_Tolerance") + ":",
                                       GUILayoutWidth(3));
           if (parameters.length_integration_tolerance <= 1e-6) {
-            UnityEngine.GUILayout.Button("min");
+            UnityEngine.GUILayout.Button(Localizer.Format("#Principia_DiscreteSelector_Min"));
           } else if (UnityEngine.GUILayout.Button("-")) {
             parameters.length_integration_tolerance /= 2;
             parameters.speed_integration_tolerance /= 2;
@@ -195,7 +196,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
               parameters.length_integration_tolerance.ToString("0.0e0") + " m",
               GUILayoutWidth(3));
           if (parameters.length_integration_tolerance >= 1e6) {
-            UnityEngine.GUILayout.Button("max");
+            UnityEngine.GUILayout.Button(Localizer.Format("#Principia_DiscreteSelector_Max"));
           } else if (UnityEngine.GUILayout.Button("+")) {
             parameters.length_integration_tolerance *= 2;
             parameters.speed_integration_tolerance *= 2;
@@ -209,7 +210,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
       double Δv = (from burn_editor in burn_editors_
                    select burn_editor.Δv()).Sum();
       UnityEngine.GUILayout.Label(
-          "Total Δv : " + Δv.ToString("0.000") + " m/s");
+          Localizer.Format("#Principia_FlightPlan_TotalΔv",Δv.ToString("0.000") + " m/s"));
 
       {
         var style = Style.Warning(Style.Multiline(UnityEngine.GUI.skin.label));
@@ -226,7 +227,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
       }
 
       if (burn_editors_.Count == 0 &&
-          UnityEngine.GUILayout.Button("Delete flight plan")) {
+          UnityEngine.GUILayout.Button(Localizer.Format("#Principia_FlightPlan_Delete"))) {
         final_trajectory_analyser_.DisposeWindow();
         final_trajectory_analyser_ = new PlannedOrbitAnalyser(adapter_,
                                                               predicted_vessel_);
@@ -235,7 +236,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         Shrink();
         // The state change will happen the next time we go through OnGUI.
       } else {
-        if (UnityEngine.GUILayout.Button("Rebase")) {
+        if (UnityEngine.GUILayout.Button(Localizer.Format("#Principia_FlightPlan_Rebase"))) {
           var status = plugin.FlightPlanRebase(
               vessel_guid, predicted_vessel.GetTotalMass());
           UpdateStatus(status, null);
@@ -270,7 +271,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           }
           Style.HorizontalLine();
           BurnEditor burn = burn_editors_[i];
-          switch (burn.Render(header          : "Manœuvre #" + (i + 1),
+          switch (burn.Render(header          : Localizer.Format("#Principia_FlightPlan_ManœuvreHeader",i+1),
                               anomalous       :
                                   i >= (burn_editors_.Count -
                                         number_of_anomalous_manœuvres_),
@@ -320,19 +321,17 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           plugin.FlightPlanGetManoeuvre(vessel_guid, first_future_manœuvre);
       if (manœuvre.burn.initial_time > current_time) {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
-          UnityEngine.GUILayout.Label("Upcoming manœuvre #" +
-                                      (first_future_manœuvre + 1) + ":");
+          UnityEngine.GUILayout.Label(Localizer.Format("#Principia_FlightPlan_UpcomingManœuvre", first_future_manœuvre + 1) + ":");
           UnityEngine.GUILayout.Label(
-              "Ignition " +
-              FormatTimeSpan(current_time - manœuvre.burn.initial_time),
+              Localizer.Format("#Principia_FlightPlan_IgnitionCountdown",
+              FormatTimeSpan(current_time - manœuvre.burn.initial_time)),
               style : Style.RightAligned(UnityEngine.GUI.skin.label));
         }
       } else {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
-          UnityEngine.GUILayout.Label("Ongoing manœuvre #" +
-                                      (first_future_manœuvre + 1) + ":");
+          UnityEngine.GUILayout.Label(Localizer.Format("#Principia_FlightPlan_OngoingManœuvre",first_future_manœuvre + 1 + ":"));
           UnityEngine.GUILayout.Label(
-              "Cutoff " + FormatTimeSpan(current_time - manœuvre.final_time),
+              Localizer.Format("#Principia_FlightPlan_CutoffCountdown",FormatTimeSpan(current_time - manœuvre.final_time)),
               style : Style.RightAligned(UnityEngine.GUI.skin.label));
         }
       }
@@ -344,8 +343,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
       if (predicted_vessel.patchedConicSolver != null) {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           show_guidance_ =
-              UnityEngine.GUILayout.Toggle(show_guidance_, "Show on navball");
-          if (UnityEngine.GUILayout.Button("Warp to manœuvre")) {
+              UnityEngine.GUILayout.Toggle(show_guidance_, Localizer.Format("#Principia_FlightPlan_ShowManœuvreOnNavball"));
+          if (UnityEngine.GUILayout.Button(Localizer.Format("#Principia_FlightPlan_WarpToManœuvre"))) {
             TimeWarp.fetch.WarpTo(manœuvre.burn.initial_time - 60);
           }
         }
@@ -353,7 +352,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
     } else {
       // Reserve some space to avoid the UI changing shape if we have
       // nothing to say.
-      UnityEngine.GUILayout.Label("All manœuvres are in the past",
+      UnityEngine.GUILayout.Label(Localizer.Format("#Principia_FlightPlan_Warning_AllManœuvresInThePast"),
                                   Style.Warning(UnityEngine.GUI.skin.label));
       UnityEngine.GUILayout.Space(Width(1));
     }
@@ -392,11 +391,11 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
             (burn_editors_[index].initial_time -
              start_of_coast).FormatDuration(show_seconds: false);
         string coast_description = orbit_description == null
-            ? $"Coast for {coast_duration}"
-            : $"Coast in {orbit_description} for {coast_duration}";
+            ? Localizer.Format("#Principia_FlightPlan_Coast", coast_duration)
+            : Localizer.Format("#Principia_FlightPlan_CoastInOrbit", orbit_description, coast_duration);
         UnityEngine.GUILayout.Label(coast_description);
       }
-      if (UnityEngine.GUILayout.Button("Add manœuvre", GUILayoutWidth(4))) {
+      if (UnityEngine.GUILayout.Button(Localizer.Format("#Principia_FlightPlan_AddManœuvre"), GUILayoutWidth(4))) {
         double initial_time;
         if (index == 0) {
           initial_time = plugin.CurrentTime() + 60;
@@ -498,72 +497,63 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           plugin.FlightPlanGetActualFinalTime(vessel_guid);
       bool timed_out = actual_final_time < final_time_.value;
 
-      string remedy_message = "changing the flight plan";  // Preceded by "Try".
-      string status_message = "computation failed with error " + status_.error +
-                              " and message \"" + status_.message +
-                              "\"";  // Preceded by "The".
+      string remedy_message = Localizer.Format("#Principia_FlightPlan_StatusMessage_ChangFightPlan");  // Preceded by "Try".
+      string status_message = Localizer.Format("#Principia_FlightPlan_StatusMessage_FailedError", status_.error, status_.message);
       string time_out_message = timed_out
-                                    ? " after " +
-                                      FormatPositiveTimeSpan(
+                                    ? Localizer.Format("#Principia_FlightPlan_StatusMessage_TimeOut",
+                                                FormatPositiveTimeSpan(
                                           actual_final_time -
                                           plugin.FlightPlanGetInitialTime(
-                                              vessel_guid))
+                                              vessel_guid)))
                                     : "";
       if (status_.is_aborted()) {
-        status_message = "integrator reached the maximum number of steps" +
-                         time_out_message;
-        remedy_message = "increasing 'Max. steps per segment' or avoiding " +
-                         "collisions with a celestial";
+        status_message = Localizer.Format("#Principia_FlightPlan_StatusMessage_MaxSteps", time_out_message);
+        remedy_message = Localizer.Format("#Principia_FlightPlan_StatusMessage_MaxSegment");
       } else if (status_.is_failed_precondition()) {
-        status_message = "integrator encountered a singularity (probably the " +
-                         "centre of a celestial)" + time_out_message;
-        remedy_message = "avoiding collisions with a celestial";
+        status_message = Localizer.Format("#Principia_FlightPlan_StatusMessage_Singularity",time_out_message);
+        remedy_message = Localizer.Format("#Principia_FlightPlan_StatusMessage_AvoidingCollision");
       } else if (status_.is_invalid_argument()) {
-        status_message = "manœuvre #" + (first_error_manœuvre_.Value + 1) +
-                         " would result in an infinite or indeterminate " +
-                         "velocity";
-        remedy_message = "adjusting the duration of manœuvre #" +
-                         (first_error_manœuvre_.Value + 1);
+        status_message =Localizer.Format("#Principia_FlightPlan_StatusMessage_Infinite",(first_error_manœuvre_.Value + 1));
+        remedy_message = Localizer.Format("#Principia_FlightPlan_StatusMessage_Adjust",(first_error_manœuvre_.Value + 1));
       } else if (status_.is_out_of_range()) {
         if (first_error_manœuvre_.HasValue) {
-          status_message = "manœuvre #" + (first_error_manœuvre_.Value + 1) +
-                           " overlaps with " +
-                           ((first_error_manœuvre_.Value == 0)
-                                ? "the start of the flight plan"
-                                : "manœuvre #" +
-                                  first_error_manœuvre_.Value) + " or " +
-                           ((manœuvres == 0 ||
+          status_message = Localizer.Format("#Principia_FlightPlan_StatusMessage_OutRange1",
+                                            (first_error_manœuvre_.Value + 1),
+                                           ((first_error_manœuvre_.Value == 0)
+                                                 ? Localizer.Format("#Principia_FlightPlan_StatusMessage_OutRange2")
+                                                 : Localizer.Format("#Principia_FlightPlan_StatusMessage_OutRange3",
+                                                                     first_error_manœuvre_.Value)),
+                                              ((manœuvres == 0 || first_error_manœuvre_.Value == manœuvres - 1)
+                                                 ? Localizer.Format("#Principia_FlightPlan_StatusMessage_OutRange4")
+                                                 : Localizer.Format("#Principia_FlightPlan_StatusMessage_OutRange5",
+                                                              (first_error_manœuvre_.Value + 2))));
+          remedy_message =  Localizer.Format("#Principia_FlightPlan_StatusMessage_OutRange6",
+                            ((manœuvres == 0 ||
                              first_error_manœuvre_.Value == manœuvres - 1)
-                                ? "the end of the flight plan"
-                                : "manœuvre #" +
-                                  (first_error_manœuvre_.Value + 2));
-          remedy_message = ((manœuvres == 0 ||
-                             first_error_manœuvre_.Value == manœuvres - 1)
-                               ? "extending the flight plan or "
-                               : "") +
-                           "adjusting the initial time or reducing the " +
-                           "duration of manœuvre #" +
-                           (first_error_manœuvre_.Value + 1);
+                               ? Localizer.Format("#Principia_FlightPlan_StatusMessage_OutRange7")
+                               : ""),
+                            (first_error_manœuvre_.Value + 1));
         } else {
-          status_message = "flight plan is too short";
-          remedy_message = "increasing the flight plan duration";
+          status_message = Localizer.Format("#Principia_FlightPlan_StatusMessage_TooShort");
+          remedy_message = Localizer.Format("#Principia_FlightPlan_StatusMessage_Increase");
         }
       } else if (status_.is_unavailable()) {
         status_message =
-            "flight plan cannot be rebased during scheduled manœuvre execution";
-        remedy_message = "moving the manœuvre or waiting for it to finish";
+            Localizer.Format("#Principia_FlightPlan_StatusMessage_CantRebase");
+        remedy_message = Localizer.Format("#Principia_FlightPlan_StatusMessage_WaitFinish");
       }
 
       if (anomalous_manœuvres > 0) {
-        message = "The last " + anomalous_manœuvres + " manœuvres could " +
-                  "not be drawn because the " + status_message + "; try " +
-                  remedy_message +
-                  (anomalous_manœuvres < manœuvres
-                       ?  " or adjusting manœuvre #" +
-                          (manœuvres - anomalous_manœuvres)
-                       : "") + ".";
+        message = Localizer.Format("#Principia_FlightPlan_StatusMessage_Last",
+                                        anomalous_manœuvres,
+                                            status_message , 
+                                             remedy_message, 
+                            (anomalous_manœuvres < manœuvres
+                                 ? Localizer.Format("#Principia_FlightPlan_StatusMessage_Last2",
+                                             (manœuvres - anomalous_manœuvres))
+                                  : "") + ".");
       } else {
-        message = "The " + status_message + "; try " + remedy_message + ".";
+        message = Localizer.Format("#Principia_FlightPlan_StatusMessage_Resault",status_message,remedy_message);
       }
     }
     message_was_displayed_ = true;

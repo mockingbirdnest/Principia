@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using KSP.Localization;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -311,7 +312,7 @@ public partial class PrincipiaPluginAdapter
     orbit_analyser_ = new CurrentOrbitAnalyser(this, PredictedVessel);
     plotting_frame_selector_ = new ReferenceFrameSelector(this,
                                                           UpdateRenderingFrame,
-                                                          "Plotting frame");
+                             Localizer.Format("#Principia_PlottingFrame"));
     main_window_ = new MainWindow(this,
                                   flight_planner_,
                                   orbit_analyser_,
