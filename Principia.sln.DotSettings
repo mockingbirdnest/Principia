@@ -52,7 +52,7 @@
 	<s:Int64 x:Key="/Default/CodeStyle/CodeFormatting/CSharpFormat/CONTINUOUS_INDENT_MULTIPLIER/@EntryValue">2</s:Int64>
 	<s:String x:Key="/Default/CodeStyle/CodeFormatting/CSharpFormat/EMPTY_BLOCK_STYLE/@EntryValue">TOGETHER</s:String>
 	<s:String x:Key="/Default/CodeStyle/CodeFormatting/CSharpFormat/EXTRA_SPACES/@EntryValue">LEAVE_ALL</s:String>
-	<s:Boolean x:Key="/Default/CodeStyle/CodeFormatting/CSharpFormat/FORCE_CHOP_COMPOUND_IF_EXPRESSION/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/CodeStyle/CodeFormatting/CSharpFormat/FORCE_CHOP_COMPOUND_IF_EXPRESSION/@EntryValue">False</s:Boolean>
 	<s:Boolean x:Key="/Default/CodeStyle/CodeFormatting/CSharpFormat/INDENT_INSIDE_NAMESPACE/@EntryValue">False</s:Boolean>
 	<s:String x:Key="/Default/CodeStyle/CodeFormatting/CSharpFormat/INDENT_INVOCATION_PARS/@EntryValue">INSIDE</s:String>
 	<s:Int64 x:Key="/Default/CodeStyle/CodeFormatting/CSharpFormat/INDENT_SIZE/@EntryValue">2</s:Int64>
@@ -152,10 +152,12 @@
 	<s:Boolean x:Key="/Default/Environment/ExcludedFiles/FileMasksToSkip/=_002A_002Ecpp/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/Environment/ExcludedFiles/FileMasksToSkip/=_002A_002Ehpp/@EntryIndexedValue">True</s:Boolean>
 	<s:String x:Key="/Default/Environment/InlayHints/CSharpParameterNameHintsOptions/ExclusionList/=0940d860_002D8332_002D41c9_002Db12d_002D6684cddf3d3f/@EntryIndexedValue">(name)</s:String>
+	<s:String x:Key="/Default/Environment/InlayHints/CSharpParameterNameHintsOptions/ExclusionList/=2a8a5d4d_002D8c44_002D4492_002Daa98_002D0297a06a069f/@EntryIndexedValue">(format)</s:String>
 	<s:String x:Key="/Default/Environment/InlayHints/CSharpParameterNameHintsOptions/ExclusionList/=9a31ba5a_002D7652_002D4cfb_002D9b12_002Df8402cf11fd2/@EntryIndexedValue">(message)</s:String>
 	<s:String x:Key="/Default/Environment/InlayHints/CSharpParameterNameHintsOptions/ExclusionList/=a505f839_002D9fd2_002D40a5_002Daeac_002D3b789eec2728/@EntryIndexedValue">UnityEngine.GUILayout.*</s:String>
 	<s:String x:Key="/Default/Environment/InlayHints/CSharpParameterNameHintsOptions/ExclusionList/=d51c4446_002Dc6a4_002D4665_002D8a16_002D27f5eadec289/@EntryIndexedValue">KSP.Localization.Localizer.Format</s:String>
 	<s:String x:Key="/Default/Environment/InlayHints/CSharpParameterNameHintsOptions/ExclusionList/=d9675de5_002D6bd2_002D48b2_002Dbfd8_002Db7fc900fb0d2/@EntryIndexedValue">principia.ksp_plugin_adapter.Log.*</s:String>
+	<s:Boolean x:Key="/Default/Environment/InlayHints/CSharpParameterNameHintsOptions/HideForParametersArrays/@EntryValue">True</s:Boolean>
 	
 	<s:Boolean x:Key="/Default/Environment/ParameterNameHintsOptions/ShowParameterNameHints/@EntryValue">False</s:Boolean>
 	<s:String x:Key="/Default/Environment/PerformanceGuide/SwitchBehaviour/=Antivirus/@EntryIndexedValue">DO_NOTHING</s:String>
@@ -182,6 +184,7 @@
 	<s:Boolean x:Key="/Default/Environment/SettingsMigration/IsMigratorApplied/=JetBrains_002EReSharper_002EPsi_002ECSharp_002ECodeStyle_002ESettingsUpgrade_002EMigrateBlankLinesAroundFieldToBlankLinesAroundProperty/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/Environment/UserInterface/HideVsMenus/@EntryValue">False</s:Boolean>
 	<s:Boolean x:Key="/Default/Environment/UserInterface/OverrideVsRefactorings/@EntryValue">False</s:Boolean>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=analyser/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Analysing/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=apoapsis/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=apsides/@EntryIndexedValue">True</s:Boolean>
