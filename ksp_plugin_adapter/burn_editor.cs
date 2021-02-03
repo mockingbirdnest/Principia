@@ -16,26 +16,27 @@ class BurnEditor : ScalingRenderer {
     initial_time_ = initial_time;
     this.index = index;
     get_burn_at_index_ = get_burn_at_index;
-    Δv_tangent_ =
-        new DifferentialSlider(label            : Localizer.Format("#Principia_BurnEditor_ΔvTangent"),
-                               unit             : "m / s",
-                               log10_lower_rate : Log10ΔvLowerRate,
-                               log10_upper_rate : Log10ΔvUpperRate,
-                               text_colour      : Style.Tangent);
-    Δv_normal_ =
-        new DifferentialSlider(label            : Localizer.Format("#Principia_BurnEditor_ΔvNormal"),
-                               unit             : "m / s",
-                               log10_lower_rate : Log10ΔvLowerRate,
-                               log10_upper_rate : Log10ΔvUpperRate,
-                               text_colour      : Style.Normal);
-    Δv_binormal_ =
-        new DifferentialSlider(label            : Localizer.Format("#Principia_BurnEditor_ΔvBinormal"),
-                               unit             : "m / s",
-                               log10_lower_rate : Log10ΔvLowerRate,
-                               log10_upper_rate : Log10ΔvUpperRate,
-                               text_colour      : Style.Binormal);
+    Δv_tangent_ = new DifferentialSlider(
+        label            : Localizer.Format("#Principia_BurnEditor_ΔvTangent"),
+        unit             : "m / s",
+        log10_lower_rate : Log10ΔvLowerRate,
+        log10_upper_rate : Log10ΔvUpperRate,
+        text_colour      : Style.Tangent);
+    Δv_normal_ = new DifferentialSlider(
+        label            : Localizer.Format("#Principia_BurnEditor_ΔvNormal"),
+        unit             : "m / s",
+        log10_lower_rate : Log10ΔvLowerRate,
+        log10_upper_rate : Log10ΔvUpperRate,
+        text_colour      : Style.Normal);
+    Δv_binormal_ = new DifferentialSlider(
+        label            : Localizer.Format("#Principia_BurnEditor_ΔvBinormal"),
+        unit             : "m / s",
+        log10_lower_rate : Log10ΔvLowerRate,
+        log10_upper_rate : Log10ΔvUpperRate,
+        text_colour      : Style.Binormal);
     previous_coast_duration_ = new DifferentialSlider(
-        label            : Localizer.Format("#Principia_BurnEditor_InitialTime"),
+        label            :
+        Localizer.Format("#Principia_BurnEditor_InitialTime"),
         unit             : null,
         log10_lower_rate : Log10TimeLowerRate,
         log10_upper_rate : Log10TimeUpperRate,
@@ -49,9 +50,9 @@ class BurnEditor : ScalingRenderer {
         value            = initial_time_ - time_base
     };
     reference_frame_selector_ = new ReferenceFrameSelector(
-                                    adapter_,
-                                    ReferenceFrameChanged,
-                                    Localizer.Format("#Principia_BurnEditor_ManœuvringFrame"));
+        adapter_,
+        ReferenceFrameChanged,
+        Localizer.Format("#Principia_BurnEditor_ManœuvringFrame"));
     reference_frame_selector_.SetFrameParameters(
         adapter_.plotting_frame_selector_.FrameParameters());
     ComputeEngineCharacteristics();
@@ -67,9 +68,7 @@ class BurnEditor : ScalingRenderer {
 
   // Renders the |BurnEditor|.  Returns true if and only if the settings were
   // changed.
-  public Event Render(string header,
-                      bool anomalous,
-                      double burn_final_time) {
+  public Event Render(string header, bool anomalous, double burn_final_time) {
     bool changed = false;
     previous_coast_duration_.max_value = burn_final_time - time_base;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
@@ -78,18 +77,20 @@ class BurnEditor : ScalingRenderer {
         minimized = !minimized;
         return minimized ? Event.Minimized : Event.Maximized;
       }
-      UnityEngine.GUILayout.Label(minimized ? $"{header} ({Δv():0.000} m/s)"
-                                            : header);
+      UnityEngine.GUILayout.Label(minimized
+                                      ? $"{header} ({Δv():0.000} m/s)"
+                                      : header);
       string info = "";
       if (!minimized &&
           !reference_frame_selector_.FrameParameters().Equals(
               adapter_.plotting_frame_selector_.FrameParameters())) {
-        info = Localizer.Format("#Principia_BurnEditor_Info_InconsistentFrames");
+        info = Localizer.Format(
+            "#Principia_BurnEditor_Info_InconsistentFrames");
       }
-      UnityEngine.GUILayout.Label(
-          info,
-          Style.Info(UnityEngine.GUI.skin.label));
-      if (UnityEngine.GUILayout.Button(Localizer.Format("#Principia_BurnEditor_Delete"), GUILayoutWidth(2))) {
+      UnityEngine.GUILayout.Label(info, Style.Info(UnityEngine.GUI.skin.label));
+      if (UnityEngine.GUILayout.Button(
+              Localizer.Format("#Principia_BurnEditor_Delete"),
+              GUILayoutWidth(2))) {
         return Event.Deleted;
       }
     }
@@ -110,18 +111,21 @@ class BurnEditor : ScalingRenderer {
       // The frame selector is disabled for an anomalous manœuvre as is has no
       // effect.
       if (anomalous) {
-         reference_frame_selector_.Hide();
+        reference_frame_selector_.Hide();
       } else {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
-          if (UnityEngine.GUILayout.Button(Localizer.Format("#Principia_BurnEditor_ActiveEngines"))) {
+          if (UnityEngine.GUILayout.Button(
+                  Localizer.Format("#Principia_BurnEditor_ActiveEngines"))) {
             engine_warning_ = "";
             ComputeEngineCharacteristics();
             changed = true;
-          } else if (UnityEngine.GUILayout.Button(Localizer.Format("#Principia_BurnEditor_ActiveRCS"))) {
+          } else if (UnityEngine.GUILayout.Button(
+              Localizer.Format("#Principia_BurnEditor_ActiveRCS"))) {
             engine_warning_ = "";
             ComputeRCSCharacteristics();
             changed = true;
-          } else if (UnityEngine.GUILayout.Button(Localizer.Format("#Principia_BurnEditor_InstantImpulse"))) {
+          } else if (UnityEngine.GUILayout.Button(
+              Localizer.Format("#Principia_BurnEditor_InstantImpulse"))) {
             engine_warning_ = "";
             UseTheForceLuke();
             changed = true;
@@ -130,8 +134,9 @@ class BurnEditor : ScalingRenderer {
         reference_frame_selector_.RenderButton();
       }
       if (is_inertially_fixed_ !=
-          UnityEngine.GUILayout.Toggle(is_inertially_fixed_,
-                                       Localizer.Format("#Prinicpia_BurnEditor_InertiallyFixed"))) {
+          UnityEngine.GUILayout.Toggle(
+              is_inertially_fixed_,
+              Localizer.Format("#Principia_BurnEditor_InertiallyFixed"))) {
         changed = true;
         is_inertially_fixed_ = !is_inertially_fixed_;
       }
@@ -154,16 +159,22 @@ class BurnEditor : ScalingRenderer {
         }
       }
       UnityEngine.GUILayout.Label(
-          index == 0 ? Localizer.Format("#Principia_BurnEditor_TimeBase_StartOfFlightPlan")
-                     : Localizer.Format("#Principia_BurnEditor_TimeBase_EndOfManœuvre", index),
+          index == 0
+              ? Localizer.Format(
+                  "#Principia_BurnEditor_TimeBase_StartOfFlightPlan")
+              : Localizer.Format("#Principia_BurnEditor_TimeBase_EndOfManœuvre",
+                                 index),
           style : new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label){
-              alignment = UnityEngine.TextAnchor.UpperLeft});
+              alignment = UnityEngine.TextAnchor.UpperLeft
+          });
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         UnityEngine.GUILayout.Label(
-            Localizer.Format("#Principia_BurnEditor_Δv", Δv().ToString("0.000") + " m/s"),
+            Localizer.Format("#Principia_BurnEditor_Δv",
+                             Δv().ToString("0.000") + " m/s"),
             GUILayoutWidth(8));
-        UnityEngine.GUILayout.Label(Localizer.Format("#Principia_BurnEditor_Duration", duration_.ToString("0.0") +
-                                    " s"));
+        UnityEngine.GUILayout.Label(Localizer.Format(
+                                        "#Principia_BurnEditor_Duration",
+                                        duration_.ToString("0.0") + " s"));
       }
       UnityEngine.GUILayout.Label(engine_warning_,
                                   Style.Warning(UnityEngine.GUI.skin.label));
@@ -173,9 +184,11 @@ class BurnEditor : ScalingRenderer {
   }
 
   public double Δv() {
-    return new Vector3d{x = Δv_tangent_.value,
-                        y = Δv_normal_.value,
-                        z = Δv_binormal_.value}.magnitude;
+    return new Vector3d{
+        x = Δv_tangent_.value,
+        y = Δv_normal_.value,
+        z = Δv_binormal_.value
+    }.magnitude;
   }
 
   public void Reset(NavigationManoeuvre manœuvre) {
@@ -196,10 +209,13 @@ class BurnEditor : ScalingRenderer {
         specific_impulse_in_seconds_g0 = specific_impulse_in_seconds_g0_,
         frame = reference_frame_selector_.FrameParameters(),
         initial_time = initial_time_,
-        delta_v = new XYZ{x = Δv_tangent_.value,
-                          y = Δv_normal_.value,
-                          z = Δv_binormal_.value},
-        is_inertially_fixed = is_inertially_fixed_};
+        delta_v = new XYZ{
+            x = Δv_tangent_.value,
+            y = Δv_normal_.value,
+            z = Δv_binormal_.value
+        },
+        is_inertially_fixed = is_inertially_fixed_
+    };
   }
 
   public void ReferenceFrameChanged(NavigationFrameParameters parameters) {
@@ -219,12 +235,13 @@ class BurnEditor : ScalingRenderer {
     Vector3d reference_direction = vessel_.ReferenceTransform.up;
     double[] thrusts =
         (from engine in active_engines
-         select engine.MaxThrustOutputVac(useThrustLimiter: true) *
+         select
+             engine.MaxThrustOutputVac(useThrustLimiter: true) *
              (from transform in engine.thrustTransforms
               select Math.Max(0,
                               Vector3d.Dot(reference_direction,
                                            -transform.forward))).Average()).
-            ToArray();
+        ToArray();
     thrust_in_kilonewtons_ = thrusts.Sum();
 
     // This would use zip if we had 4.0 or later.  We loop for now.
@@ -237,29 +254,31 @@ class BurnEditor : ScalingRenderer {
 
     // If there are no engines, fall back onto RCS.
     if (thrust_in_kilonewtons_ == 0) {
-      engine_warning_ += Localizer.Format("#Principia_BurnEditor_Warning_NoActiveEngines");
+      engine_warning_ +=
+          Localizer.Format("#Principia_BurnEditor_Warning_NoActiveEngines");
       ComputeRCSCharacteristics();
     }
   }
 
   private void ComputeRCSCharacteristics() {
-    ModuleRCS[] active_rcs =
-        (from part in vessel_.parts
-         select (from PartModule module in part.Modules
-                 where module is ModuleRCS module_rcs && module_rcs.rcsEnabled
-                 select module as ModuleRCS)).SelectMany(x => x).ToArray();
+    ModuleRCS[] active_rcs = (from part in vessel_.parts
+                              select (from PartModule module in part.Modules
+                                      where module is ModuleRCS module_rcs &&
+                                            module_rcs.rcsEnabled
+                                      select module as ModuleRCS)).
+        SelectMany(x => x).ToArray();
     Vector3d reference_direction = vessel_.ReferenceTransform.up;
     // NOTE(egg): NathanKell informs me that in >= 1.0.5, RCS has a useZaxis
     // property, that controls whether they thrust -up or -forward.  The madness
     // keeps piling up.
-    double[] thrusts =
-        (from engine in active_rcs
-         select engine.thrusterPower *
-             (from transform in engine.thrusterTransforms
-              select Math.Max(0,
-                              Vector3d.Dot(reference_direction,
-                                           -transform.up))).Sum()).
-            ToArray();
+    double[] thrusts = (from engine in active_rcs
+                        select engine.thrusterPower *
+                               (from transform in engine.thrusterTransforms
+                                select Math.Max(0,
+                                                Vector3d.Dot(
+                                                    reference_direction,
+                                                    -transform.up))).Sum()).
+        ToArray();
     thrust_in_kilonewtons_ = thrusts.Sum();
 
     // This would use zip if we had 4.0 or later.  We loop for now.
@@ -272,7 +291,8 @@ class BurnEditor : ScalingRenderer {
 
     // If RCS provides no thrust, model a virtually instant burn.
     if (thrust_in_kilonewtons_ == 0) {
-      engine_warning_ += Localizer.Format("#Principia_BurnEditor_Warning_NoActiveRCS");
+      engine_warning_ +=
+          Localizer.Format("#Principia_BurnEditor_Warning_NoActiveRCS");
       UseTheForceLuke();
     }
   }
