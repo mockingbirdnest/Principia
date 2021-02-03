@@ -57,8 +57,8 @@ internal class MapNodePool {
         CelestialBody fixed_body = reference_frame.selected_celestial;
         associated_map_object = fixed_body.MapObject;
         colour = fixed_body.orbit == null
-              ? XKCDColors.SunshineYellow
-              : fixed_body.orbitDriver.Renderer.nodeColor;
+                     ? XKCDColors.SunshineYellow
+                     : fixed_body.orbitDriver.Renderer.nodeColor;
         break;
       case MapObject.ObjectType.ApproachIntersect:
         associated_map_object = reference_frame.target_override.mapObject;
@@ -68,9 +68,9 @@ internal class MapNodePool {
       case MapObject.ObjectType.DescendingNode:
         if (!reference_frame.target_override &&
             (reference_frame.frame_type ==
-                 ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING ||
+             ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING ||
              reference_frame.frame_type ==
-                 ReferenceFrameSelector.FrameType.BODY_SURFACE)) {
+             ReferenceFrameSelector.FrameType.BODY_SURFACE)) {
           // In one-body frames, the apsides are shown with the colour of the
           // body.
           // The nodes are with respect to the equator, rather than with respect
@@ -85,12 +85,13 @@ internal class MapNodePool {
           // The nodes are with respect to the orbit of the secondary around the
           // primary. We show the nodes with the colour of the primary.
           CelestialBody primary = reference_frame.target_override
-              ? reference_frame.selected_celestial
-              : reference_frame.selected_celestial.referenceBody;
+                                      ? reference_frame.selected_celestial
+                                      : reference_frame.selected_celestial.
+                                          referenceBody;
           associated_map_object = primary.MapObject;
           colour = primary.orbit == null
-              ? XKCDColors.SunshineYellow
-              : primary.orbitDriver.Renderer.nodeColor;
+                       ? XKCDColors.SunshineYellow
+                       : primary.orbitDriver.Renderer.nodeColor;
         }
         break;
       default:
@@ -98,19 +99,20 @@ internal class MapNodePool {
     }
     colour.a = 1;
 
-    for (int i = 0; i < MaxRenderedNodes && !apsis_iterator.IteratorAtEnd();
+    for (int i = 0;
+         i < MaxRenderedNodes && !apsis_iterator.IteratorAtEnd();
          ++i, apsis_iterator.IteratorIncrement()) {
       QP apsis = apsis_iterator.IteratorGetDiscreteTrajectoryQP();
       MapNodeProperties node_properties = new MapNodeProperties {
-        visible = true,
-        object_type = type,
-        colour = colour,
-        reference_frame = reference_frame,
-        world_position = (Vector3d)apsis.q,
-        velocity = (Vector3d)apsis.p,
-        source = source,
-        time = apsis_iterator.IteratorGetDiscreteTrajectoryTime(),
-        associated_map_object = associated_map_object,
+          visible = true,
+          object_type = type,
+          colour = colour,
+          reference_frame = reference_frame,
+          world_position = (Vector3d)apsis.q,
+          velocity = (Vector3d)apsis.p,
+          source = source,
+          time = apsis_iterator.IteratorGetDiscreteTrajectoryTime(),
+          associated_map_object = associated_map_object,
       };
       if (type == MapObject.ObjectType.Periapsis &&
           reference_frame.selected_celestial.GetAltitude(
@@ -122,9 +124,9 @@ internal class MapNodePool {
       if (pool_index_ == nodes_.Count) {
         nodes_.Add(MakePoolNode());
       } else if (properties_[nodes_[pool_index_]].object_type !=
-                     node_properties.object_type ||
+                 node_properties.object_type ||
                  properties_[nodes_[pool_index_]].colour !=
-                     node_properties.colour) {
+                 node_properties.colour) {
         // KSP attaches labels to its map nodes, but never detaches them.
         // If the node changes type, we end up with an arbitrary combination of
         // labels Ap, Pe, AN, DN.
@@ -133,9 +135,8 @@ internal class MapNodePool {
         // cases).  Recreating the node entirely takes a long time
         // (approximately 𝑁 * 70 μs, where 𝑁 is the total number of map nodes
         // in existence), instead we manually get rid of the labels.
-        foreach (var component in
-                 nodes_[pool_index_].transform.GetComponentsInChildren<
-                     TMPro.TextMeshProUGUI>()) {
+        foreach (var component in nodes_[pool_index_].transform.
+            GetComponentsInChildren<TMPro.TextMeshProUGUI>()) {
           if (component.name == "iconLabel(Clone)") {
             UnityEngine.Object.Destroy(component.gameObject);
           }
@@ -155,17 +156,15 @@ internal class MapNodePool {
   }
 
   private KSP.UI.Screens.Mapview.MapNode MakePoolNode() {
-    var new_node = KSP.UI.Screens.Mapview.MapNode.Create(
-        "apsis",
-        // If we see this colour, something has gone wrong.
-        XKCDColors.Pale,
-        pixelSize : 32,
-        hoverable : true,
-        pinnable : true,
-        blocksInput : true);
+    var new_node = KSP.UI.Screens.Mapview.MapNode.Create("apsis",
+      // If we see this colour, something has gone wrong.
+      XKCDColors.Pale,
+      pixelSize : 32,
+      hoverable : true,
+      pinnable : true,
+      blocksInput : true);
     new_node.OnClick +=
-        (KSP.UI.Screens.Mapview.MapNode node,
-         Mouse.Buttons buttons) => {
+        (KSP.UI.Screens.Mapview.MapNode node, Mouse.Buttons buttons) => {
           if (buttons == Mouse.Buttons.Left) {
             MapNodeProperties properties = properties_[node];
             if (PlanetariumCamera.fetch.target !=
@@ -175,100 +174,96 @@ internal class MapNodePool {
             }
           }
         };
-    new_node.OnUpdateVisible +=
-        (KSP.UI.Screens.Mapview.MapNode node,
-         KSP.UI.Screens.Mapview.MapNode.IconData icon) => {
-          icon.visible = properties_[node].visible;
-          icon.color = properties_[node].colour;
-        };
-    new_node.OnUpdateType +=
-        (KSP.UI.Screens.Mapview.MapNode node,
-         KSP.UI.Screens.Mapview.MapNode.TypeData type) => {
-          MapNodeProperties properties = properties_[node];
-          type.oType = properties.object_type;
-          switch (properties.object_type) {
-            case MapObject.ObjectType.PatchTransition:
-              type.pType =
-                  KSP.UI.Screens.Mapview.MapNode.PatchTransitionNodeType.Impact;
-              break;
-            case MapObject.ObjectType.ApproachIntersect:
-              type.aType = KSP.UI.Screens.Mapview.MapNode.ApproachNodeType.
-                  CloseApproachOwn;
-              break;
-          }
-        };
-    new_node.OnUpdateCaption +=
-        (KSP.UI.Screens.Mapview.MapNode node,
-         KSP.UI.Screens.Mapview.MapNode.CaptionData caption) => {
-          var properties = properties_[node];
-          string source;
-          switch (properties.source) {
-            case NodeSource.FlightPlan:
-              source = "Planned";
-              break;
-            case NodeSource.Prediction:
-              source = "Predicted";
-              break;
-            default:
-              throw Log.Fatal($"Unexpected node source {properties.source}");
-          }
-          switch (properties.object_type) {
-            case MapObject.ObjectType.Periapsis:
-            case MapObject.ObjectType.Apoapsis: {
-              string apsis_name =
-                  properties.object_type == MapObject.ObjectType.Periapsis
-                      ? "Periapsis"
-                      : "Apoapsis";
-              CelestialBody celestial =
-                  properties.reference_frame.selected_celestial;
-              Vector3d position = properties.world_position;
-              double speed = properties.velocity.magnitude;
-              caption.Header =
-                  $@"{source} {celestial.name} {apsis_name} :\n{
-                     celestial.GetAltitude(position).FormatN(0)} m";
-              caption.captionLine2 = $"{speed.FormatN(0)} m/s";
-              break;
-            }
-            case MapObject.ObjectType.AscendingNode:
-            case MapObject.ObjectType.DescendingNode: {
-              string node_name =
-                  properties.object_type == MapObject.ObjectType.AscendingNode
-                      ? "Ascending Node"
-                      : "Descending Node";
-              string plane =
-                  properties.reference_frame.ReferencePlaneDescription();
-              caption.Header = $"{source} {node_name} :\n{plane}";
-              caption.captionLine2 = $"{properties.velocity.z.FormatN(0)} m/s";
-              break;
-            }
-            case MapObject.ObjectType.ApproachIntersect: {
-              Vessel target_vessel = properties.reference_frame.target_override;
-              double separation = (target_vessel.GetWorldPos3D() -
-                                   properties.world_position).magnitude;
-              double speed = properties.velocity.magnitude;
-              caption.Header =
-                  $@"{source} Target Approach : {separation.FormatN(0)} m";
-              caption.captionLine2 = $"{speed.FormatN(0)} m/s";
-              break;
-            }
-            case MapObject.ObjectType.PatchTransition: {
-              CelestialBody celestial =
-                  properties.reference_frame.selected_celestial;
-              caption.Header = $"{source} {celestial.name} Impact";
-              caption.captionLine1 = "";
-              caption.captionLine2 = "";
-              break;
-            }
-          }
-          if (properties.object_type != MapObject.ObjectType.PatchTransition) {
-            caption.captionLine1 =
-                "T" + new PrincipiaTimeSpan(
-                        Planetarium.GetUniversalTime() - properties.time).
-                    Format(with_leading_zeroes: false, with_seconds: true);
-          }
-        };
-    new_node.OnUpdatePosition +=
-        (KSP.UI.Screens.Mapview.MapNode node) =>
+    new_node.OnUpdateVisible += (KSP.UI.Screens.Mapview.MapNode node,
+                                 KSP.UI.Screens.Mapview.MapNode.IconData
+                                     icon) => {
+      icon.visible = properties_[node].visible;
+      icon.color = properties_[node].colour;
+    };
+    new_node.OnUpdateType += (KSP.UI.Screens.Mapview.MapNode node,
+                              KSP.UI.Screens.Mapview.MapNode.TypeData type) => {
+      MapNodeProperties properties = properties_[node];
+      type.oType = properties.object_type;
+      switch (properties.object_type) {
+        case MapObject.ObjectType.PatchTransition:
+          type.pType = KSP.UI.Screens.Mapview.MapNode.PatchTransitionNodeType.
+              Impact;
+          break;
+        case MapObject.ObjectType.ApproachIntersect:
+          type.aType = KSP.UI.Screens.Mapview.MapNode.ApproachNodeType.
+              CloseApproachOwn;
+          break;
+      }
+    };
+    new_node.OnUpdateCaption += (KSP.UI.Screens.Mapview.MapNode node,
+                                 KSP.UI.Screens.Mapview.MapNode.CaptionData
+                                     caption) => {
+      var properties = properties_[node];
+      string source;
+      switch (properties.source) {
+        case NodeSource.FlightPlan:
+          source = "Planned";
+          break;
+        case NodeSource.Prediction:
+          source = "Predicted";
+          break;
+        default:
+          throw Log.Fatal($"Unexpected node source {properties.source}");
+      }
+      switch (properties.object_type) {
+        case MapObject.ObjectType.Periapsis:
+        case MapObject.ObjectType.Apoapsis: {
+          string apsis_name =
+              properties.object_type == MapObject.ObjectType.Periapsis
+                  ? "Periapsis"
+                  : "Apoapsis";
+          CelestialBody celestial =
+              properties.reference_frame.selected_celestial;
+          Vector3d position = properties.world_position;
+          double speed = properties.velocity.magnitude;
+          caption.Header = $@"{source} {celestial.name} {apsis_name} :\n{
+            celestial.GetAltitude(position).FormatN(0)} m";
+          caption.captionLine2 = $"{speed.FormatN(0)} m/s";
+          break;
+        }
+        case MapObject.ObjectType.AscendingNode:
+        case MapObject.ObjectType.DescendingNode: {
+          string node_name =
+              properties.object_type == MapObject.ObjectType.AscendingNode
+                  ? "Ascending Node"
+                  : "Descending Node";
+          string plane = properties.reference_frame.ReferencePlaneDescription();
+          caption.Header = $"{source} {node_name} :\n{plane}";
+          caption.captionLine2 = $"{properties.velocity.z.FormatN(0)} m/s";
+          break;
+        }
+        case MapObject.ObjectType.ApproachIntersect: {
+          Vessel target_vessel = properties.reference_frame.target_override;
+          double separation = (target_vessel.GetWorldPos3D() -
+                               properties.world_position).magnitude;
+          double speed = properties.velocity.magnitude;
+          caption.Header =
+              $@"{source} Target Approach : {separation.FormatN(0)} m";
+          caption.captionLine2 = $"{speed.FormatN(0)} m/s";
+          break;
+        }
+        case MapObject.ObjectType.PatchTransition: {
+          CelestialBody celestial =
+              properties.reference_frame.selected_celestial;
+          caption.Header = $"{source} {celestial.name} Impact";
+          caption.captionLine1 = "";
+          caption.captionLine2 = "";
+          break;
+        }
+      }
+      if (properties.object_type != MapObject.ObjectType.PatchTransition) {
+        caption.captionLine1 =
+            "T" + new PrincipiaTimeSpan(
+                    Planetarium.GetUniversalTime() - properties.time).
+                Format(with_leading_zeroes: false, with_seconds: true);
+      }
+    };
+    new_node.OnUpdatePosition += (KSP.UI.Screens.Mapview.MapNode node) =>
         ScaledSpace.LocalToScaledSpace(properties_[node].world_position);
     return new_node;
   }
@@ -277,9 +272,9 @@ internal class MapNodePool {
     public bool visible;
     public MapObject.ObjectType object_type;
     public Vector3d world_position;
-     // Velocity in the plotting frame.  Note that the handedness is
-     // inconsistent with World; for practical purposes only the norm or
-     // individual coordinates of this vector should be used here.
+    // Velocity in the plotting frame.  Note that the handedness is
+    // inconsistent with World; for practical purposes only the norm or
+    // individual coordinates of this vector should be used here.
     public Vector3d velocity;
     public UnityEngine.Color colour;
     public MapObject associated_map_object;
@@ -289,8 +284,8 @@ internal class MapNodePool {
   }
 
   private List<KSP.UI.Screens.Mapview.MapNode> nodes_;
-  private Dictionary<KSP.UI.Screens.Mapview.MapNode,
-                     MapNodeProperties> properties_;
+  private Dictionary<KSP.UI.Screens.Mapview.MapNode, MapNodeProperties>
+      properties_;
   private int pool_index_ = 0;
 }
 
