@@ -348,11 +348,8 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
               properties += Localizer.Format("#Principia_OrbitAnalyser_OrbitDescription_Semisynchronous");
               break;
             default:
-              properties += Localizer.Format("#Principia_OrbitAnalyser_OrbitDescription_Subsynchronous");
               break;
           }
-        } else if (recurrence.Value.dto == 0) {
-          properties += Localizer.Format(" #Principia_OrbitAnalyser_OrbitDescription_Supersynchronous");
         }
       }
     }
