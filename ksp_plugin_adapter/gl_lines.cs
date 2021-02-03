@@ -26,8 +26,7 @@ internal static class GLLines {
     }
   }
 
-  public static void AddSegment(Vector3d world_begin,
-                                Vector3d world_end) {
+  public static void AddSegment(Vector3d world_begin, Vector3d world_end) {
     UnityEngine.Vector3 begin = WorldToMapScreen(world_begin);
     UnityEngine.Vector3 end = WorldToMapScreen(world_end);
     if (begin.z > 0 && end.z > 0) {
@@ -67,14 +66,13 @@ internal static class GLLines {
     double m11 = camera.projectionMatrix[1, 1];
     double field_of_view = Math.Atan2(Math.Sqrt(m00 * m00 + m11 * m11),
                                       m00 * m11);
-    return plugin.PlanetariumCreate(
-               sun_world_position,
-               (XYZ)(Vector3d)opengl_camera_x_in_world,
-               (XYZ)(Vector3d)opengl_camera_y_in_world,
-               (XYZ)(Vector3d)opengl_camera_z_in_world,
-               (XYZ)(Vector3d)camera_position_in_world,
-               /*focal=*/1,
-               field_of_view);
+    return plugin.PlanetariumCreate(sun_world_position,
+                                    (XYZ)(Vector3d)opengl_camera_x_in_world,
+                                    (XYZ)(Vector3d)opengl_camera_y_in_world,
+                                    (XYZ)(Vector3d)opengl_camera_z_in_world,
+                                    (XYZ)(Vector3d)camera_position_in_world,
+                                    1,
+                                    field_of_view);
   }
 
   public static void PlotRP2Lines(DisposableIterator rp2_lines_iterator,
@@ -85,10 +83,10 @@ internal static class GLLines {
     // First evaluate the total size of the lines.
     int size = 0;
     for (;
-         !rp2_lines_iterator.IteratorAtEnd();
-         rp2_lines_iterator.IteratorIncrement()) {
+        !rp2_lines_iterator.IteratorAtEnd();
+        rp2_lines_iterator.IteratorIncrement()) {
       using (DisposableIterator rp2_line_iterator =
-                rp2_lines_iterator.IteratorGetRP2LinesIterator()) {
+          rp2_lines_iterator.IteratorGetRP2LinesIterator()) {
         size += rp2_line_iterator.IteratorSize();
       }
     }
@@ -97,14 +95,14 @@ internal static class GLLines {
     rp2_lines_iterator.IteratorReset();
     int index = 0;
     for (;
-         !rp2_lines_iterator.IteratorAtEnd();
-         rp2_lines_iterator.IteratorIncrement()) {
+        !rp2_lines_iterator.IteratorAtEnd();
+        rp2_lines_iterator.IteratorIncrement()) {
       using (DisposableIterator rp2_line_iterator =
-                rp2_lines_iterator.IteratorGetRP2LinesIterator()) {
+          rp2_lines_iterator.IteratorGetRP2LinesIterator()) {
         XY? previous_rp2_point = null;
         for (;
-             !rp2_line_iterator.IteratorAtEnd();
-             rp2_line_iterator.IteratorIncrement()) {
+            !rp2_line_iterator.IteratorAtEnd();
+            rp2_line_iterator.IteratorIncrement()) {
           XY current_rp2_point = ToScreen(
               rp2_line_iterator.IteratorGetRP2LineXY());
           if (previous_rp2_point.HasValue) {
@@ -117,11 +115,11 @@ internal static class GLLines {
             }
             if (style != Style.Dashed || index % 2 == 1) {
               UnityEngine.GL.Vertex3((float)previous_rp2_point.Value.x,
-                                      (float)previous_rp2_point.Value.y,
-                                      0);
+                                     (float)previous_rp2_point.Value.y,
+                                     0);
               UnityEngine.GL.Vertex3((float)current_rp2_point.x,
-                                      (float)current_rp2_point.y,
-                                      0);
+                                     (float)current_rp2_point.y,
+                                     0);
             }
           }
           previous_rp2_point = current_rp2_point;
@@ -133,18 +131,23 @@ internal static class GLLines {
 
   private static UnityEngine.Vector3 WorldToMapScreen(Vector3d world) {
     return PlanetariumCamera.Camera.WorldToScreenPoint(
-               ScaledSpace.LocalToScaledSpace(world));
+        ScaledSpace.LocalToScaledSpace(world));
   }
 
   private static XY ToScreen(XY rp2_point) {
     UnityEngine.Camera camera = PlanetariumCamera.Camera;
-    return new XY{x = (rp2_point.x * camera.projectionMatrix[0, 0] + 1.0) *
-                      0.5 * camera.pixelWidth,
-                  y = (rp2_point.y * camera.projectionMatrix[1, 1] + 1.0) *
-                      0.5 * camera.pixelHeight};
-   }
+    return new XY{
+        x = (rp2_point.x * camera.projectionMatrix[0, 0] + 1.0) *
+            0.5 *
+            camera.pixelWidth,
+        y = (rp2_point.y * camera.projectionMatrix[1, 1] + 1.0) *
+            0.5 *
+            camera.pixelHeight
+    };
+  }
 
   private static UnityEngine.Material line_material_;
+
   private static UnityEngine.Material line_material {
     get {
       if (line_material_ == null) {

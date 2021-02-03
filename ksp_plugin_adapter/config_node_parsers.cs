@@ -6,7 +6,7 @@ namespace ksp_plugin_adapter {
 
 internal static class ConfigNodeParsers {
   public static BodyParameters NewCartesianBodyParameters(CelestialBody body,
-    ConfigNode node) {
+                                                          ConfigNode node) {
     return new BodyParameters{
         name                    = body.name,
         gravitational_parameter =
@@ -59,7 +59,7 @@ internal static class ConfigNodeParsers {
   }
 
   public static BodyParameters NewKeplerianBodyParameters(CelestialBody body,
-    ConfigNode node) {
+                                                          ConfigNode node) {
     var j2 = node?.GetAtMostOneValue("j2");
     var geopotential = node?.GetBodyGeopotentialElements()?.ToArray();
     return new BodyParameters{
