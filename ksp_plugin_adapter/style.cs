@@ -2,7 +2,6 @@
 namespace ksp_plugin_adapter {
 
 internal static class Style {
-
   public static UnityEngine.Color Tangent { get; } = XKCDColors.NeonYellow;
   public static UnityEngine.Color Normal { get; } = XKCDColors.AquaBlue;
   public static UnityEngine.Color Binormal { get; } = XKCDColors.PurplePink;
@@ -43,8 +42,8 @@ internal static class Style {
   }
 
   public static void HorizontalLine() {
-    var horizontal_line_style = new UnityEngine.GUIStyle
-                                    (UnityEngine.GUI.skin.horizontalSlider);
+    var horizontal_line_style =
+        new UnityEngine.GUIStyle(UnityEngine.GUI.skin.horizontalSlider);
     horizontal_line_style.fixedHeight /= 5;
     horizontal_line_style.normal.background = ultra_cool_grey_texture;
     UnityEngine.GUILayout.Label("", horizontal_line_style);

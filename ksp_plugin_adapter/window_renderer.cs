@@ -47,8 +47,8 @@ internal class ScalingRenderer {
     float toggle_height = skin.toggle.CalcHeight(pangram, width : 1000);
 
     skin.font = UnityEngine.Font.CreateDynamicFontFromOSFont(
-                      skin.font.fontNames,
-                      (int)(skin.font.fontSize * scale_));
+        skin.font.fontNames,
+        (int)(skin.font.fontSize * scale_));
 
     skin.button.alignment = UnityEngine.TextAnchor.MiddleCenter;
     skin.button.contentOffset =
@@ -124,12 +124,11 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
     }
     UnityEngine.GUI.skin = skin_;
     if (show_) {
-      rectangle_ = UnityEngine.GUILayout.Window(
-                       id         : this.GetHashCode(),
-                       screenRect : rectangle_,
-                       func       : RenderWindow,
-                       text       : Title,
-                       options    : options_);
+      rectangle_ = UnityEngine.GUILayout.Window(id         : this.GetHashCode(),
+                                                screenRect : rectangle_,
+                                                func       : RenderWindow,
+                                                text       : Title,
+                                                options    : options_);
 
       // The first time a window is shown, we have a moral duty to place it at
       // the centre of the screen.  This is tricky because we don't know its
@@ -140,17 +139,16 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
       // the conversion to float to avoid losing decimals and to avoid double
       // rounding.
       if (must_centre_ && rectangle_.width > 0) {
-        rectangle_ =
-            UnityEngine.GUILayout.Window(
-                id         : GetHashCode(),
-                screenRect : new UnityEngine.Rect(
-                    x      : (UnityEngine.Screen.width - rectangle_.width) / 2,
-                    y      : (float)UnityEngine.Screen.height / 3f,
-                    width  : 0,
-                    height : 0),
-                func       : RenderWindow,
-                text       : Title,
-                options    : options_);
+        rectangle_ = UnityEngine.GUILayout.Window(
+            id         : GetHashCode(),
+            screenRect : new UnityEngine.Rect(
+                x      : (UnityEngine.Screen.width - rectangle_.width) / 2,
+                y      : (float)UnityEngine.Screen.height / 3f,
+                width  : 0,
+                height : 0),
+            func       : RenderWindow,
+            text       : Title,
+            options    : options_);
         must_centre_ = false;
       }
       EnsureOnScreen();
@@ -163,13 +161,13 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
 
   private void EnsureOnScreen() {
     rectangle_.x = UnityEngine.Mathf.Clamp(
-                       rectangle_.x,
-                       -rectangle_.width + min_width_on_screen_,
-                       UnityEngine.Screen.width - min_width_on_screen_);
+        rectangle_.x,
+        -rectangle_.width + min_width_on_screen_,
+        UnityEngine.Screen.width - min_width_on_screen_);
     rectangle_.y = UnityEngine.Mathf.Clamp(
-                       rectangle_.y,
-                       -rectangle_.height + min_height_on_screen_,
-                       UnityEngine.Screen.height - min_height_on_screen_);
+        rectangle_.y,
+        -rectangle_.height + min_height_on_screen_,
+        UnityEngine.Screen.height - min_height_on_screen_);
   }
 
   public void Shrink() {
@@ -224,8 +222,7 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
   }
 
   private static readonly ControlTypes PrincipiaLock =
-      ControlTypes.ALLBUTCAMERAS &
-      ~ControlTypes.ALL_SHIP_CONTROLS;
+      ControlTypes.ALLBUTCAMERAS & ~ControlTypes.ALL_SHIP_CONTROLS;
 
   private const float min_height_on_screen_ = 50;
   private const float min_width_on_screen_ = 50;
@@ -247,9 +244,9 @@ internal abstract class SupervisedWindowRenderer : BaseWindowRenderer {
     event Action WindowsRendering;
   }
 
-  protected SupervisedWindowRenderer(
-      ISupervisor supervisor,
-      params UnityEngine.GUILayoutOption[] options) : base(options) {
+  protected SupervisedWindowRenderer(ISupervisor supervisor,
+                                     params UnityEngine.GUILayoutOption[]
+                                         options) : base(options) {
     supervisor_ = supervisor;
     supervisor_.LockClearing += ClearLock;
     supervisor_.WindowsDisposal += DisposeWindow;
@@ -284,7 +281,8 @@ internal abstract class
   }
 
   // A helper for implementing the RenderButton() method of the subclasses.
-  protected void RenderButton(string text, params UnityEngine.GUILayoutOption[] options) {
+  protected void RenderButton(string text,
+                              params UnityEngine.GUILayoutOption[] options) {
     if (UnityEngine.GUILayout.Button(text, options)) {
       Toggle();
     }
