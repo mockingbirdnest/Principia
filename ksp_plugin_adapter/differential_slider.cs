@@ -170,10 +170,9 @@ internal class DifferentialSlider : ScalingRenderer {
             value = v;
           }
           value += Math.Sign(slider_position_) *
-                   Math.Pow(10,
-                            log10_lower_rate_ +
-                            (log10_upper_rate_ - log10_lower_rate_) *
-                            Math.Abs(slider_position_)) *
+                   Math.Pow(10, log10_lower_rate_ +
+                                (log10_upper_rate_ - log10_lower_rate_) *
+                                Math.Abs(slider_position_)) *
                    (DateTime.Now - last_time_).TotalSeconds;
           value = Math.Min(Math.Max(min_value_, value), max_value_);
         }

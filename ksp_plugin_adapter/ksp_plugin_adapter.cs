@@ -283,7 +283,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       bad_installation_dialog_.Hide();
     } else {
       is_bad_installation_ = true;
-      //TODO(phl):Localize
       bad_installation_dialog_.message =
           "The Principia DLL failed to load.\n" + load_error +
           "\n\nWarning: don't load a Principia save before you have fixed " +
@@ -308,8 +307,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             Versioning.version_minor}.{Versioning.Revision}; this build targets {
             expected_version}.";
       if (GameDatabase.Instance.GetAtMostOneNode(
-              principia_override_version_check_config_name_) ==
-          null) {
+              principia_override_version_check_config_name_) == null) {
         Log.Fatal(message);
       } else {
         Log.Error(message);
@@ -2549,8 +2547,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         // We create the plugin at J2000 (a.k.a. Instant{}), rather than
         // |Planetarium.GetUniversalTime()|, in order to get a deterministic
         // initial state.
-        plugin_ = Interface.NewPlugin("JD2451545",
-                                      "JD2451545",
+        plugin_ = Interface.NewPlugin(game_epoch: "JD2451545",
+                                      solar_system_epoch: "JD2451545",
                                       Planetarium.InverseRotAngle);
         InitializeIntegrators(plugin_, numerics_blueprint);
         BodyProcessor insert_body = body => {
@@ -2558,8 +2556,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           ConfigNode body_gravity_model = null;
           if (name_to_gravity_model?.TryGetValue(
                   body.name,
-                  out body_gravity_model) ==
-              true) {
+                  out body_gravity_model) == true) {
             Log.Info("using custom gravity model");
           }
           Orbit orbit = unmodified_orbits_.GetValueOrNull(body);

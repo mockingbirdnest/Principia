@@ -250,7 +250,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
         target_override != null
             ? Localizer.Format(
                 "#Principia_ReferenceFrameSelector_ReferencePlane_Secondary_Target")
-                           : selected_celestial.NameWithArticle();
+            : selected_celestial.NameWithArticle();
     string primary = target_override != null
                          ? selected_celestial.NameWithArticle()
                          : selected_celestial.referenceBody.NameWithArticle();

@@ -36,7 +36,7 @@ class BurnEditor : ScalingRenderer {
         text_colour      : Style.Binormal);
     previous_coast_duration_ = new DifferentialSlider(
         label            :
-        Localizer.Format("#Principia_BurnEditor_InitialTime"),
+            Localizer.Format("#Principia_BurnEditor_InitialTime"),
         unit             : null,
         log10_lower_rate : Log10TimeLowerRate,
         log10_upper_rate : Log10TimeUpperRate,
@@ -115,7 +115,7 @@ class BurnEditor : ScalingRenderer {
       } else {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           if (UnityEngine.GUILayout.Button(
-                  Localizer.Format("#Principia_BurnEditor_ActiveEngines"))) {
+              Localizer.Format("#Principia_BurnEditor_ActiveEngines"))) {
             engine_warning_ = "";
             ComputeEngineCharacteristics();
             changed = true;

@@ -156,13 +156,14 @@ internal class MapNodePool {
   }
 
   private KSP.UI.Screens.Mapview.MapNode MakePoolNode() {
-    var new_node = KSP.UI.Screens.Mapview.MapNode.Create("apsis",
-      // If we see this colour, something has gone wrong.
-      XKCDColors.Pale,
-      pixelSize : 32,
-      hoverable : true,
-      pinnable : true,
-      blocksInput : true);
+    var new_node = KSP.UI.Screens.Mapview.MapNode.Create(
+        "apsis",
+        // If we see this colour, something has gone wrong.
+        XKCDColors.Pale,
+        pixelSize : 32,
+        hoverable : true,
+        pinnable : true,
+        blocksInput : true);
     new_node.OnClick +=
         (KSP.UI.Screens.Mapview.MapNode node, Mouse.Buttons buttons) => {
           if (buttons == Mouse.Buttons.Left) {

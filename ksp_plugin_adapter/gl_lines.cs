@@ -71,7 +71,7 @@ internal static class GLLines {
                                     (XYZ)(Vector3d)opengl_camera_y_in_world,
                                     (XYZ)(Vector3d)opengl_camera_z_in_world,
                                     (XYZ)(Vector3d)camera_position_in_world,
-                                    1,
+                                    focal:1,
                                     field_of_view);
   }
 

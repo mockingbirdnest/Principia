@@ -224,8 +224,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         }
       }
 
-      double Δv = (from burn_editor in burn_editors_ select burn_editor.Δv()).
-          Sum();
+      double Δv = (from burn_editor in burn_editors_
+                   select burn_editor.Δv()).Sum();
       UnityEngine.GUILayout.Label(Localizer.Format(
                                       "#Principia_FlightPlan_TotalΔv",
                                       Δv.ToString("0.000") + " m/s"));
@@ -298,8 +298,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
               header          :
               Localizer.Format("#Principia_FlightPlan_ManœuvreHeader", i + 1),
               anomalous       : i >=
-                                (burn_editors_.Count -
-                                 number_of_anomalous_manœuvres_),
+                                burn_editors_.Count -
+                                number_of_anomalous_manœuvres_,
               burn_final_time : final_times[i])) {
             case BurnEditor.Event.Deleted: {
               var status = plugin.FlightPlanRemove(vessel_guid, i);
@@ -444,9 +444,9 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         if (index == 0) {
           initial_time = plugin.CurrentTime() + 60;
         } else {
-          initial_time = plugin.FlightPlanGetManoeuvre(vessel_guid, index - 1).
-                             final_time +
-                         60;
+          initial_time =
+              plugin.FlightPlanGetManoeuvre(vessel_guid,
+                                            index - 1).final_time + 60;
         }
         var editor = new BurnEditor(adapter_,
                                     predicted_vessel,
@@ -582,21 +582,21 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
               first_error_manœuvre_.Value + 1,
               first_error_manœuvre_.Value == 0
                   ? Localizer.Format(
-                        "#Principia_FlightPlan_StatusMessage_OutRange2")
+                      "#Principia_FlightPlan_StatusMessage_OutRange2")
                   : Localizer.Format(
-                        "#Principia_FlightPlan_StatusMessage_OutRange3",
-                        first_error_manœuvre_.Value),
+                      "#Principia_FlightPlan_StatusMessage_OutRange3",
+                      first_error_manœuvre_.Value),
               manœuvres == 0 || first_error_manœuvre_.Value == manœuvres - 1
                   ? Localizer.Format(
-                        "#Principia_FlightPlan_StatusMessage_OutRange4")
+                      "#Principia_FlightPlan_StatusMessage_OutRange4")
                   : Localizer.Format(
-                        "#Principia_FlightPlan_StatusMessage_OutRange5",
-                        first_error_manœuvre_.Value + 2));
+                      "#Principia_FlightPlan_StatusMessage_OutRange5",
+                      first_error_manœuvre_.Value + 2));
           remedy_message =  Localizer.Format(
               "#Principia_FlightPlan_StatusMessage_OutRange6",
               manœuvres == 0 || first_error_manœuvre_.Value == manœuvres - 1
                   ? Localizer.Format(
-                        "#Principia_FlightPlan_StatusMessage_OutRange7")
+                      "#Principia_FlightPlan_StatusMessage_OutRange7")
                   : "",
               first_error_manœuvre_.Value + 1);
         } else {
@@ -619,9 +619,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
             status_message ,
             remedy_message,
             (anomalous_manœuvres < manœuvres
-                 ? Localizer.Format(
-                     "#Principia_FlightPlan_StatusMessage_Last2",
-                     manœuvres - anomalous_manœuvres)
+                 ? Localizer.Format("#Principia_FlightPlan_StatusMessage_Last2",
+                                    manœuvres - anomalous_manœuvres)
                  : "") +
             ".");
       } else {
