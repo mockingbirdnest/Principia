@@ -19,8 +19,10 @@ internal abstract class MonoMarshaler : ICustomMarshaler {
   // Subclasses must override the following methods to implement the contract
   // defined by .Net.
   public abstract void CleanUpNativeDataImplementation(IntPtr native_data);
+
   public abstract IntPtr MarshalManagedToNativeImplementation(
       object managed_object);
+
   public abstract object MarshalNativeToManaged(IntPtr native_data);
 
   // We have no evidence that this method is ever called.

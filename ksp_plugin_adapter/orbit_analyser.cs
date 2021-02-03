@@ -84,15 +84,15 @@ internal static class Formatters {
   // Similar to |FormatAngleInterval|, but annotated with the equivalent
   // of the half-width as a distance at the equator in parentheses.
   public static string FormatEquatorialAngleInterval(this Interval interval,
-                                                     CelestialBody primary) {
+    CelestialBody primary) {
     double half_width_angle = (interval.max - interval.min) / 2;
     if (half_width_angle > Math.PI) {
       return "(precesses)";
     }
     double half_width_distance = half_width_angle * primary.Radius;
     string formatted_distance = half_width_distance > 1000
-        ? $"{(half_width_distance / 1000).FormatN(1)} km"
-        : $"{(half_width_distance).FormatN(0)} m";
+                                    ? $"{(half_width_distance / 1000).FormatN(1)} km"
+                                    : $"{(half_width_distance).FormatN(0)} m";
     return $"{interval.FormatAngleInterval()} ({formatted_distance})";
   }
 
@@ -123,8 +123,7 @@ internal static class Formatters {
         with_seconds: false);
   }
 
-  public static bool TryParseMissionDuration(string str,
-                                             out double seconds) {
+  public static bool TryParseMissionDuration(string str, out double seconds) {
     seconds = 0;
     if (PrincipiaTimeSpan.TryParse(str,
                                    with_seconds: false,
@@ -139,8 +138,10 @@ internal static class Formatters {
 
 internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
   public OrbitAnalyser(PrincipiaPluginAdapter adapter,
-                       PredictedVessel predicted_vessel)
-      : base(adapter, predicted_vessel, UnityEngine.GUILayout.MinWidth(0)) {
+                       PredictedVessel predicted_vessel) : base(
+      adapter,
+      predicted_vessel,
+      UnityEngine.GUILayout.MinWidth(0)) {
     adapter_ = adapter;
   }
 
@@ -160,8 +161,8 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
     } else {
       if (should_request_analysis &&
           (Shown() ||
-           (!last_background_analysis_time_.HasValue ||
-            (now - last_background_analysis_time_) > TimeSpan.FromSeconds(2)))) {
+           !last_background_analysis_time_.HasValue ||
+           now - last_background_analysis_time_ > TimeSpan.FromSeconds(2))) {
         last_background_analysis_time_ = now;
         // Keep refreshing the analysis (albeit at a reduced rate) even when the
         // analyser is not shown, so that the analysis button can display an
@@ -170,21 +171,26 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
       }
       OrbitAnalysis analysis = GetAnalysis();
       CelestialBody primary = analysis.primary_index.HasValue
-          ? FlightGlobals.Bodies[analysis.primary_index.Value]
-          : null;
-      orbit_description_ = OrbitDescription(
-          primary,
-          analysis.elements,
-          analysis.recurrence,
-          analysis.ground_track,
-          (int?)(analysis.mission_duration / analysis.elements?.nodal_period));
+                                  ? FlightGlobals.Bodies[
+                                      analysis.primary_index.Value]
+                                  : null;
+      orbit_description_ = OrbitDescription(primary,
+                                            analysis.elements,
+                                            analysis.recurrence,
+                                            analysis.ground_track,
+                                            (int?)(analysis.mission_duration /
+                                                   analysis.elements?.
+                                                       nodal_period));
     }
     RenderButton(ButtonText(orbit_description_));
   }
+
   protected override string Title => orbit_description_ == null
-      ? Localizer.Format("#Principia_OrbitAnalyser_Title")
-      : orbit_description_[0].ToString().ToUpper() +
-        orbit_description_.Substring(1);
+                                         ? Localizer.Format(
+                                             "#Principia_OrbitAnalyser_Title")
+                                         : orbit_description_[0].ToString().
+                                               ToUpper() +
+                                           orbit_description_.Substring(1);
 
   protected override void RenderWindow(int window_id) {
     string vessel_guid = predicted_vessel?.id.ToString();
@@ -198,14 +204,16 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
       }
       var multiline_style = Style.Multiline(UnityEngine.GUI.skin.label);
       float two_lines = multiline_style.CalcHeight(
-          new UnityEngine.GUIContent("1\n2"), Width(1));
+          new UnityEngine.GUIContent("1\n2"),
+          Width(1));
       float five_lines = multiline_style.CalcHeight(
-          new UnityEngine.GUIContent("1\n2\n3\n4\n5"), Width(1));
+          new UnityEngine.GUIContent("1\n2\n3\n4\n5"),
+          Width(1));
       UnityEngine.GUILayout.Label(AnalysingText(),
                                   multiline_style,
                                   UnityEngine.GUILayout.Height(two_lines));
 
-    OrbitAnalysis analysis = GetAnalysis();
+      OrbitAnalysis analysis = GetAnalysis();
 
       if (autodetect_recurrence_ &&
           analysis.recurrence.HasValue &&
@@ -225,13 +233,17 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
       OrbitRecurrence? recurrence = analysis.recurrence;
       OrbitGroundTrack? ground_track = analysis.ground_track;
       double mission_duration = analysis.mission_duration;
-      CelestialBody primary =
-          analysis.primary_index.HasValue ? FlightGlobals.Bodies[analysis.primary_index.Value]
-                                          : null;
+      CelestialBody primary = analysis.primary_index.HasValue
+                                  ? FlightGlobals.Bodies[
+                                      analysis.primary_index.Value]
+                                  : null;
 
-      orbit_description_ = OrbitDescription(
-          primary, elements, recurrence, ground_track,
-          (int?)(mission_duration / elements?.nodal_period));
+      orbit_description_ = OrbitDescription(primary,
+                                            elements,
+                                            recurrence,
+                                            ground_track,
+                                            (int?)(mission_duration /
+                                                   elements?.nodal_period));
 
       Style.HorizontalLine();
       string duration_in_revolutions;
@@ -243,45 +255,47 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
         int anomalistic_revolutions =
             (int)(mission_duration / elements.Value.anomalistic_period);
         int ground_track_cycles = analysis.recurrence.HasValue
-                                      ? nodal_revolutions / analysis.recurrence.
-                                            Value.number_of_revolutions
+                                      ? nodal_revolutions /
+                                        analysis.recurrence.Value.
+                                            number_of_revolutions
                                       : 0;
-        string duration_in_ground_track_cycles = ground_track_cycles > 0
-            ?  Localizer.Format("#Principia_OrbitAnalyser_Duration_GroundTrackCycles",
-                                                ground_track_cycles.FormatN(0))
-            : "";
+        string duration_in_ground_track_cycles =
+            ground_track_cycles > 0
+                ?  Localizer.Format(
+                    "#Principia_OrbitAnalyser_Duration_GroundTrackCycles",
+                    ground_track_cycles.FormatN(0))
+                : "";
         duration_in_revolutions = Localizer.Format(
             "#Principia_OrbitAnalyser_Duration_Revolutions",
-                             sidereal_revolutions.FormatN(0),
-                                nodal_revolutions.FormatN(0),
-                             duration_in_ground_track_cycles,
-                          anomalistic_revolutions.FormatN(0));
- } else {
+            sidereal_revolutions.FormatN(0),
+            nodal_revolutions.FormatN(0),
+            duration_in_ground_track_cycles,
+            anomalistic_revolutions.FormatN(0));
+      } else {
         duration_in_revolutions = null;
         if (primary != null) {
           duration_in_revolutions = Localizer.Format(
               "#Principia_OrbitAnalyser_Warning_NoElements",
-                                  primary.NameWithArticle());
+              primary.NameWithArticle());
         }
         multiline_style = Style.Warning(multiline_style);
       }
       string analysis_description =
-      primary == null 
-          ? Localizer.Format(
-              "#Principia_OrbitAnalyser_Warning_NoPrimary",
-                                    predicted_vessel.vesselName,
-            mission_duration.FormatDuration(show_seconds: false))
-           :Localizer.Format(
-              "#Principia_OrbitAnalyser_AnalysisDescription",
-                                     predicted_vessel.vesselName,
-                                       primary.NameWithArticle(),
-            mission_duration.FormatDuration(show_seconds: false),
-                                         duration_in_revolutions);
+          primary == null
+              ? Localizer.Format(
+                  "#Principia_OrbitAnalyser_Warning_NoPrimary",
+                  predicted_vessel.vesselName,
+                  mission_duration.FormatDuration(show_seconds: false))
+              : Localizer.Format(
+                  "#Principia_OrbitAnalyser_AnalysisDescription",
+                  predicted_vessel.vesselName,
+                  primary.NameWithArticle(),
+                  mission_duration.FormatDuration(show_seconds: false),
+                  duration_in_revolutions);
 
-      UnityEngine.GUILayout.Label(
-          analysis_description,
-          multiline_style,
-          UnityEngine.GUILayout.Height(five_lines));
+      UnityEngine.GUILayout.Label(analysis_description,
+                                  multiline_style,
+                                  UnityEngine.GUILayout.Height(five_lines));
       Style.HorizontalLine();
       RenderOrbitalElements(elements, primary);
       Style.HorizontalLine();
@@ -292,12 +306,11 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
     UnityEngine.GUI.DragWindow();
   }
 
-  public static string OrbitDescription(
-      CelestialBody primary,
-      OrbitalElements? elements,
-      OrbitRecurrence? recurrence,
-      OrbitGroundTrack? ground_track,
-      int? nodal_revolutions) {
+  public static string OrbitDescription(CelestialBody primary,
+                                        OrbitalElements? elements,
+                                        OrbitRecurrence? recurrence,
+                                        OrbitGroundTrack? ground_track,
+                                        int? nodal_revolutions) {
     if (!elements.HasValue) {
       return null;
     }
@@ -306,21 +319,30 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
     bool equatorial = false;
     if (elements.Value.mean_eccentricity.max < 0.01) {
       circular = true;
-      properties += Localizer.Format("#Principia_OrbitAnalyser_OrbitDescription_Circular");
+      properties +=
+          Localizer.Format(
+              "#Principia_OrbitAnalyser_OrbitDescription_Circular");
     } else if (elements.Value.mean_eccentricity.min > 0.5) {
       circular = true;
-      properties += Localizer.Format("#Principia_OrbitAnalyser_OrbitDescription_HighlyElliptical");
+      properties +=
+          Localizer.Format(
+              "#Principia_OrbitAnalyser_OrbitDescription_HighlyElliptical");
     }
     const double degree = Math.PI / 180;
     if (elements.Value.mean_inclination.max < 5 * degree ||
         elements.Value.mean_inclination.min > 175 * degree) {
       equatorial = true;
-      properties += Localizer.Format("#Principia_OrbitAnalyser_OrbitDescription_Equatorial");
+      properties +=
+          Localizer.Format(
+              "#Principia_OrbitAnalyser_OrbitDescription_Equatorial");
     } else if (elements.Value.mean_inclination.min > 80 * degree &&
                elements.Value.mean_inclination.max < 100 * degree) {
-      properties += Localizer.Format("#Principia_OrbitAnalyser_OrbitDescription_Polar");
+      properties +=
+          Localizer.Format("#Principia_OrbitAnalyser_OrbitDescription_Polar");
     } else if (elements.Value.mean_inclination.min > 90 * degree) {
-      properties += Localizer.Format("#Principia_OrbitAnalyser_OrbitDescription_Retrograde");
+      properties +=
+          Localizer.Format(
+              "#Principia_OrbitAnalyser_OrbitDescription_Retrograde");
     }
     if (recurrence.HasValue && ground_track.HasValue) {
       Interval ascending_longitudes = ground_track.Value.equatorial_crossings.
@@ -337,97 +359,118 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
       // insufficient to assess synchronicity.
       if (drift > 0 && drift / days < 0.1 * degree) {
         if (recurrence.Value.cto == 1) {
-          switch(recurrence.Value.nuo) {
+          switch (recurrence.Value.nuo) {
             case 1:
-              properties += Localizer.Format("#Principia_OrbitAnalyser_OrbitDescription_Synchronous");
+              properties +=
+                  Localizer.Format(
+                      "#Principia_OrbitAnalyser_OrbitDescription_Synchronous");
               if (circular && equatorial) {
-                properties = Localizer.Format("#Principia_OrbitAnalyser_OrbitDescription_Stationary");
+                properties = Localizer.Format(
+                    "#Principia_OrbitAnalyser_OrbitDescription_Stationary");
               }
               break;
             case 2:
-              properties += Localizer.Format("#Principia_OrbitAnalyser_OrbitDescription_Semisynchronous");
+              properties += Localizer.Format(
+                  "#Principia_OrbitAnalyser_OrbitDescription_Semisynchronous");
               break;
             default:
-              properties += Localizer.Format("#Principia_OrbitAnalyser_OrbitDescription_Subsynchronous");
+              properties += Localizer.Format(
+                  "#Principia_OrbitAnalyser_OrbitDescription_Subsynchronous");
               break;
           }
         } else if (recurrence.Value.dto == 0) {
-          properties += Localizer.Format(" #Principia_OrbitAnalyser_OrbitDescription_Supersynchronous");
+          properties += Localizer.Format(
+              " #Principia_OrbitAnalyser_OrbitDescription_Supersynchronous");
         }
       }
     }
-    return Localizer.Format(
-                  "#Principia_OrbitAnalyser_OrbitDescription",
-                                                    properties,
-                                                  primary.name);
+    return Localizer.Format("#Principia_OrbitAnalyser_OrbitDescription",
+                            properties,
+                            primary.name);
   }
 
   private void RenderOrbitalElements(OrbitalElements? elements,
                                      CelestialBody primary) {
-      double? lowest_distance = elements?.radial_distance.min;
-      LabeledField(
-          Localizer.Format("#Principia_OrbitAnalyser_Elements_LowestAltitude"),
-          (lowest_distance - primary?.Radius)?.FormatAltitude());
-      double? lowest_primary_distance = primary?.ocean == true
-          ? primary.Radius
-          : primary?.pqsController?.radiusMin;
-      string altitude_warning = lowest_distance < lowest_primary_distance
-          ? Localizer.Format("#Principia_OrbitAnalyser_Warning_Collision")
-          : lowest_distance < primary?.pqsController?.radiusMax
-          ? Localizer.Format("#Principia_OrbitAnalyser_Warning_CollisionRisk")
-          : lowest_distance < primary?.Radius + primary?.atmosphereDepth
-          ? Localizer.Format("#Principia_OrbitAnalyser_Warning_Reentry")
-          : "";
-      UnityEngine.GUILayout.Label(altitude_warning,
-                                  Style.Warning(UnityEngine.GUI.skin.label));
-      UnityEngine.GUILayout.Label(Localizer.Format("#Principia_OrbitAnalyser_Elements_MeanElements"));
-      LabeledField(Localizer.Format("#Principia_OrbitAnalyser_Elements_SiderealPeriod"),
-                   elements?.sidereal_period.FormatDuration());
-      LabeledField(Localizer.Format("#Principia_OrbitAnalyser_Elements_NodalPeriod"),
-                   elements?.nodal_period.FormatDuration());
-      LabeledField(Localizer.Format("#Principia_OrbitAnalyser_Elements_AnomalisticPeriod"),
-                   elements?.anomalistic_period.FormatDuration());
-      LabeledField(Localizer.Format("#Principia_OrbitAnalyser_Elements_SemimajorAxis"),
-                   elements?.mean_semimajor_axis.FormatLengthInterval());
-      LabeledField(Localizer.Format("#Principia_OrbitAnalyser_Elements_Eccentricity"),
-                   elements?.mean_eccentricity.FormatInterval());
-      LabeledField(Localizer.Format("#Principia_OrbitAnalyser_Elements_Inclination"),
-                   elements?.mean_inclination.FormatAngleInterval());
-      LabeledField(
-            Localizer.Format("#Principia_OrbitAnalyser_Elements_LongitudeOfAscendingNode"),
-            elements?.mean_longitude_of_ascending_nodes.FormatAngleInterval());
-      LabeledField(
-            Localizer.Format("#Principia_OrbitAnalyser_Elements_NodalPrecession"),
-            elements?.nodal_precession.FormatAngularFrequency());
-      LabeledField(
-            Localizer.Format("#Principia_OrbitAnalyser_Elements_ArgumentOfPeriapsis"),
-            elements?.mean_argument_of_periapsis.FormatAngleInterval());
-      LabeledField(Localizer.Format("#Principia_OrbitAnalyser_Elements_MeanPeriapsisAltitude"),
-                   elements?.mean_periapsis_distance.FormatLengthInterval(
-                       primary.Radius));
-      LabeledField(Localizer.Format("#Principia_OrbitAnalyser_Elements_MeanApoapsisAltitude"),
-                   elements?.mean_apoapsis_distance.FormatLengthInterval(
-                       primary.Radius));
+    double? lowest_distance = elements?.radial_distance.min;
+    LabeledField(
+        Localizer.Format("#Principia_OrbitAnalyser_Elements_LowestAltitude"),
+        (lowest_distance - primary?.Radius)?.FormatAltitude());
+    double? lowest_primary_distance = primary?.ocean == true
+                                          ? primary.Radius
+                                          : primary?.pqsController?.radiusMin;
+    string altitude_warning =
+        lowest_distance < lowest_primary_distance
+            ?
+            Localizer.Format("#Principia_OrbitAnalyser_Warning_Collision")
+            : lowest_distance < primary?.pqsController?.radiusMax
+                ? Localizer.Format(
+                    "#Principia_OrbitAnalyser_Warning_CollisionRisk")
+                : lowest_distance < primary?.Radius + primary?.atmosphereDepth
+                    ? Localizer.Format(
+                        "#Principia_OrbitAnalyser_Warning_Reentry")
+                    : "";
+    UnityEngine.GUILayout.Label(altitude_warning,
+                                Style.Warning(UnityEngine.GUI.skin.label));
+    UnityEngine.GUILayout.Label(
+        Localizer.Format("#Principia_OrbitAnalyser_Elements_MeanElements"));
+    LabeledField(
+        Localizer.Format("#Principia_OrbitAnalyser_Elements_SiderealPeriod"),
+        elements?.sidereal_period.FormatDuration());
+    LabeledField(
+        Localizer.Format("#Principia_OrbitAnalyser_Elements_NodalPeriod"),
+        elements?.nodal_period.FormatDuration());
+    LabeledField(
+        Localizer.Format("#Principia_OrbitAnalyser_Elements_AnomalisticPeriod"),
+        elements?.anomalistic_period.FormatDuration());
+    LabeledField(
+        Localizer.Format("#Principia_OrbitAnalyser_Elements_SemimajorAxis"),
+        elements?.mean_semimajor_axis.FormatLengthInterval());
+    LabeledField(
+        Localizer.Format("#Principia_OrbitAnalyser_Elements_Eccentricity"),
+        elements?.mean_eccentricity.FormatInterval());
+    LabeledField(
+        Localizer.Format("#Principia_OrbitAnalyser_Elements_Inclination"),
+        elements?.mean_inclination.FormatAngleInterval());
+    LabeledField(
+        Localizer.Format(
+            "#Principia_OrbitAnalyser_Elements_LongitudeOfAscendingNode"),
+        elements?.mean_longitude_of_ascending_nodes.FormatAngleInterval());
+    LabeledField(
+        Localizer.Format("#Principia_OrbitAnalyser_Elements_NodalPrecession"),
+        elements?.nodal_precession.FormatAngularFrequency());
+    LabeledField(
+        Localizer.Format(
+            "#Principia_OrbitAnalyser_Elements_ArgumentOfPeriapsis"),
+        elements?.mean_argument_of_periapsis.FormatAngleInterval());
+    LabeledField(
+        Localizer.Format(
+            "#Principia_OrbitAnalyser_Elements_MeanPeriapsisAltitude"),
+        elements?.mean_periapsis_distance.FormatLengthInterval(primary.Radius));
+    LabeledField(
+        Localizer.Format(
+            "#Principia_OrbitAnalyser_Elements_MeanApoapsisAltitude"),
+        elements?.mean_apoapsis_distance.FormatLengthInterval(primary.Radius));
   }
 
   private void RenderOrbitRecurrence(OrbitRecurrence? recurrence,
                                      CelestialBody primary) {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
-                    string νₒ = recurrence?.nuo.ToString() ?? em_dash;
-                    string Dᴛₒ = recurrence?.dto.ToString("+0;-0") ?? em_dash;
-                    string Cᴛₒ = recurrence?.cto.ToString() ?? em_dash;
-                    UnityEngine.GUILayout.Label(
-                        Localizer.Format("#Principia_OrbitAnalyser_Recurrence_CapderouTriple",
-                                         $"[{νₒ}; {Dᴛₒ}; {Cᴛₒ}]"),
-                        GUILayoutWidth(8));
-                    UnityEngine.GUILayout.FlexibleSpace();
+      string νₒ = recurrence?.nuo.ToString() ?? em_dash;
+      string Dᴛₒ = recurrence?.dto.ToString("+0;-0") ?? em_dash;
+      string Cᴛₒ = recurrence?.cto.ToString() ?? em_dash;
+      UnityEngine.GUILayout.Label(
+          Localizer.Format("#Principia_OrbitAnalyser_Recurrence_CapderouTriple",
+                           $"[{νₒ}; {Dᴛₒ}; {Cᴛₒ}]"),
+          GUILayoutWidth(8));
+      UnityEngine.GUILayout.FlexibleSpace();
       autodetect_recurrence_ = UnityEngine.GUILayout.Toggle(
           autodetect_recurrence_,
           Localizer.Format("#Principia_OrbitAnalyser_Recurrence_AutoDetect"),
           UnityEngine.GUILayout.ExpandWidth(false));
     }
     using (new UnityEngine.GUILayout.HorizontalScope()) {
-      UnityEngine.GUILayout.Label(Localizer.Format("#Principia_OrbitAnalyser_Recurrence_Cycle"));
+      UnityEngine.GUILayout.Label(
+          Localizer.Format("#Principia_OrbitAnalyser_Recurrence_Cycle"));
       string text = UnityEngine.GUILayout.TextField(
           recurrence.HasValue || !autodetect_recurrence_
               ? $"{revolutions_per_cycle_}"
@@ -439,8 +482,10 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
           revolutions_per_cycle > 0) {
         revolutions_per_cycle_ = revolutions_per_cycle;
       }
-      UnityEngine.GUILayout.Label(Localizer.Format("#Principia_OrbitAnalyser_Recurrence_Cycle_RevolutionsEquals"),
-                                  UnityEngine.GUILayout.ExpandWidth(false));
+      UnityEngine.GUILayout.Label(
+          Localizer.Format(
+              "#Principia_OrbitAnalyser_Recurrence_Cycle_RevolutionsEquals"),
+          UnityEngine.GUILayout.ExpandWidth(false));
       text = UnityEngine.GUILayout.TextField(
           recurrence.HasValue || !autodetect_recurrence_
               ? $"{days_per_cycle_}"
@@ -452,12 +497,15 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
           days_per_cycle != 0) {
         days_per_cycle_ = days_per_cycle;
       }
-      UnityEngine.GUILayout.Label(Localizer.Format("#Principia_OrbitAnalyser_Recurrence_Cycle_Days"),
-                                  UnityEngine.GUILayout.ExpandWidth(false));
+      UnityEngine.GUILayout.Label(
+          Localizer.Format("#Principia_OrbitAnalyser_Recurrence_Cycle_Days"),
+          UnityEngine.GUILayout.ExpandWidth(false));
     }
     LabeledField(
         Localizer.Format("#Principia_OrbitAnalyser_Recurrence_Subcycle"),
-        Localizer.Format("#Principia_OrbitAnalyser_Recurrence_SubcycleLengthInDays", recurrence?.subcycle.FormatN(0) ?? em_dash));
+        Localizer.Format(
+            "#Principia_OrbitAnalyser_Recurrence_SubcycleLengthInDays",
+            recurrence?.subcycle.FormatN(0) ?? em_dash));
     LabeledField(
         Localizer.Format("#Principia_OrbitAnalyser_Recurrence_EquatorialShift"),
         recurrence?.equatorial_shift.FormatEquatorialAngle(primary));
@@ -470,7 +518,8 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
                                       CelestialBody primary) {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(
-          Localizer.Format("#Principia_OrbitAnalyser_GroundTrack_LongitudesOfEquatorialCrossings"),
+          Localizer.Format(
+              "#Principia_OrbitAnalyser_GroundTrack_LongitudesOfEquatorialCrossings"),
           UnityEngine.GUILayout.ExpandWidth(false));
       string text = UnityEngine.GUILayout.TextField(
           $"{ground_track_revolution_}",
@@ -494,7 +543,8 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(label);
       UnityEngine.GUILayout.Label(value ?? em_dash,
-          Style.RightAligned(UnityEngine.GUI.skin.label));
+                                  Style.RightAligned(
+                                      UnityEngine.GUI.skin.label));
     }
   }
 
@@ -505,7 +555,8 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
   private readonly PrincipiaPluginAdapter adapter_;
   private readonly DifferentialSlider mission_duration_ =
       new DifferentialSlider(
-          label            : Localizer.Format("#Principia_OrbitAnalyser_MissionDuration"),
+          label            :
+              Localizer.Format("#Principia_OrbitAnalyser_MissionDuration"),
           unit             : null,
           log10_lower_rate : 0,
           log10_upper_rate : 7,
@@ -527,8 +578,10 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
 
   protected int? manual_revolutions_per_cycle =>
       autodetect_recurrence_ ? null : (int?)revolutions_per_cycle_;
+
   protected int? manual_days_per_cycle =>
       autodetect_recurrence_ ? null : (int?)days_per_cycle_;
+
   protected int ground_track_revolution => ground_track_revolution_;
 
   private string orbit_description_ = null;
@@ -537,8 +590,9 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
 
 internal class CurrentOrbitAnalyser : OrbitAnalyser {
   public CurrentOrbitAnalyser(PrincipiaPluginAdapter adapter,
-                              PredictedVessel predicted_vessel)
-      : base(adapter, predicted_vessel) {}
+                              PredictedVessel predicted_vessel) : base(
+      adapter,
+      predicted_vessel) {}
 
   protected override void RequestAnalysis() {
     plugin.VesselRequestAnalysis(predicted_vessel.id.ToString(),
@@ -554,12 +608,16 @@ internal class CurrentOrbitAnalyser : OrbitAnalyser {
 
   protected override string ButtonText(string orbit_description) {
     return orbit_description == null
-        ? Localizer.Format("#Principia_CurrentOrbitAnalyser_ToggleButton")
-        : Localizer.Format("#Principia_CurrentOrbitAnalyser_ToggleButtonWithDescription", orbit_description);
+               ? Localizer.Format(
+                   "#Principia_CurrentOrbitAnalyser_ToggleButton")
+               : Localizer.Format(
+                   "#Principia_CurrentOrbitAnalyser_ToggleButtonWithDescription",
+                   orbit_description);
   }
 
   protected override string AnalysingText() {
-    return Localizer.Format("#Principia_CurentOrbitAnalyser_Analysing", predicted_vessel.vesselName);
+    return Localizer.Format("#Principia_CurrentOrbitAnalyser_Analysing",
+                            predicted_vessel.vesselName);
   }
 
   protected override bool should_request_analysis => true;
@@ -567,8 +625,9 @@ internal class CurrentOrbitAnalyser : OrbitAnalyser {
 
 internal class PlannedOrbitAnalyser : OrbitAnalyser {
   public PlannedOrbitAnalyser(PrincipiaPluginAdapter adapter,
-                              PredictedVessel predicted_vessel)
-      : base(adapter, predicted_vessel) {}
+                              PredictedVessel predicted_vessel) : base(
+      adapter,
+      predicted_vessel) {}
 
   protected override void RequestAnalysis() {
     Log.Fatal("A PlannedOrbitAnalyser cannot request analysis");
@@ -584,12 +643,16 @@ internal class PlannedOrbitAnalyser : OrbitAnalyser {
 
   protected override string ButtonText(string orbit_description) {
     return orbit_description == null
-        ? Localizer.Format("#Principia_PlannedOrbitAnalyser_ToggleButton")
-        : Localizer.Format("#Principia_PlannedOrbitAnalyser_ToggleButtonWithDescription", orbit_description);
+               ? Localizer.Format(
+                   "#Principia_PlannedOrbitAnalyser_ToggleButton")
+               : Localizer.Format(
+                   "#Principia_PlannedOrbitAnalyser_ToggleButtonWithDescription",
+                   orbit_description);
   }
 
   protected override string AnalysingText() {
-    return Localizer.Format("#Principia_PlannedOrbitAnalyser_Analysing", predicted_vessel.vesselName);
+    return Localizer.Format("#Principia_PlannedOrbitAnalyser_Analysing",
+                            predicted_vessel.vesselName);
   }
 
   protected override bool should_request_analysis => false;
