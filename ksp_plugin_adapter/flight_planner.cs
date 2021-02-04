@@ -348,8 +348,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           UnityEngine.GUILayout.Label(
               Localizer.Format("#Principia_FlightPlan_UpcomingManœuvre",
-                               first_future_manœuvre + 1) +
-              ":");
+                               first_future_manœuvre + 1));
           UnityEngine.GUILayout.Label(
               Localizer.Format("#Principia_FlightPlan_IgnitionCountdown",
                                FormatTimeSpan(
@@ -360,7 +359,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           UnityEngine.GUILayout.Label(
               Localizer.Format("#Principia_FlightPlan_OngoingManœuvre",
-                               first_future_manœuvre + 1 + ":"));
+                               first_future_manœuvre + 1));
           UnityEngine.GUILayout.Label(
               Localizer.Format("#Principia_FlightPlan_CutoffCountdown",
                                FormatTimeSpan(
@@ -543,7 +542,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
 
       string remedy_message =
           Localizer.Format(
-              "#Principia_FlightPlan_StatusMessage_ChangFightPlan");  // Preceded by "Try".
+              "#Principia_FlightPlan_StatusMessage_ChangeFlightPlan");  // Preceded by "Try".
       string status_message = Localizer.Format(
           "#Principia_FlightPlan_StatusMessage_FailedError",
           status_.error,

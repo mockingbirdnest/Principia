@@ -272,10 +272,12 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
             duration_in_ground_track_cycles,
             anomalistic_revolutions.FormatN(0));
       } else {
-        duration_in_revolutions = null;
-        if (primary != null) {
+        if (primary == null) {
           duration_in_revolutions = Localizer.Format(
-              "#Principia_OrbitAnalyser_Warning_NoElements",
+              "#Principia_OrbitAnalyser_Warning_NoElements1");
+        } else {
+          duration_in_revolutions = Localizer.Format(
+              "#Principia_OrbitAnalyser_Warning_NoElements2",
               primary.NameWithArticle());
         }
         multiline_style = Style.Warning(multiline_style);
