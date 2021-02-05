@@ -23,7 +23,7 @@ public class PlanetariumCameraAdjuster : UnityEngine.MonoBehaviour {
     var reference_rotation =
         (UnityEngine.QuaternionD)adapter.Plugin().CameraReferenceRotation();
     var camera_roll = UnityEngine.QuaternionD.AngleAxis(camera_roll_ / degree,
-                                                        Vector3d.forward);
+      Vector3d.forward);
     if (should_transfer_camera_coordinates) {
       UnityEngine.QuaternionD previous_referenced_pivot =
           previous_camera_reference_rotation_ *
@@ -36,7 +36,8 @@ public class PlanetariumCameraAdjuster : UnityEngine.MonoBehaviour {
           UnityEngine.QuaternionD.Inverse(reference_rotation) *
           previous_referenced_pivot;
       double new_heading = (new_dereferenced_pivot.eulerAngles.y -
-                            Planetarium.InverseRotAngle) * degree;
+                            Planetarium.InverseRotAngle) *
+                           degree;
       double new_pitch = new_dereferenced_pivot.eulerAngles.x * degree;
       // The camera cannot be given nonzero roll by camera controls, but we
       // smoothly bring its roll to 0 over the course of a few frames to make
@@ -69,7 +70,8 @@ public class PlanetariumCameraAdjuster : UnityEngine.MonoBehaviour {
           camera_roll;
       ScaledCamera.Instance.galaxyCamera.transform.rotation =
           reference_rotation *
-          (UnityEngine.QuaternionD)ScaledCamera.Instance.galaxyCamera.transform.rotation *
+          (UnityEngine.QuaternionD)ScaledCamera.Instance.galaxyCamera.transform.
+              rotation *
           camera_roll;
     }
     if (camera_roll_ != 0) {
@@ -78,8 +80,9 @@ public class PlanetariumCameraAdjuster : UnityEngine.MonoBehaviour {
       if (Math.Abs(camera_roll_) < roll_change_per_frame) {
         camera_roll_ = 0;
       } else {
-        camera_roll_ += camera_roll_ > 0 ? -roll_change_per_frame
-                                         : roll_change_per_frame;
+        camera_roll_ += camera_roll_ > 0
+                            ? -roll_change_per_frame
+                            : roll_change_per_frame;
       }
     }
   }

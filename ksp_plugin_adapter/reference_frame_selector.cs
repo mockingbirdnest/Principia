@@ -30,8 +30,9 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
 
   public ReferenceFrameSelector(ISupervisor supervisor,
                                 Callback on_change,
-                                string name)
-      : base(supervisor, UnityEngine.GUILayout.MinWidth(0)) {
+                                string name) : base(
+      supervisor,
+      UnityEngine.GUILayout.MinWidth(0)) {
     on_change_ = on_change;
     name_ = name;
 
@@ -109,69 +110,79 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   public static string Name(FrameType type,
                             CelestialBody selected,
                             Vessel target_override) {
-   if (target_override) {
-     return Localizer.Format("#Principia_ReferenceFrameSelector_Name_Target", selected.NameWithArticle());
-   }
-   switch (type) {
-     case FrameType.BODY_CENTRED_NON_ROTATING:
-       return Localizer.Format("#Principia_ReferenceFrameSelector_Name_BodyCentredNonRotating", 
-                                            selected.name);
-     case FrameType.BARYCENTRIC_ROTATING:
-        if (selected.is_root()) {
-          throw Log.Fatal("Naming barycentric rotating frame of root body");
-        } else {
-          return Localizer.Format("#Principia_ReferenceFrameSelector_Name_BarycentricRotating", 
-                                  selected.referenceBody.name, 
-                                                selected.name);
-        }
-     case FrameType.BODY_CENTRED_PARENT_DIRECTION:
-        if (selected.is_root()) {
-          throw Log.Fatal(
-              "Naming parent-direction rotating frame of root body");
-        } else {
-          return Localizer.Format("#Principia_ReferenceFrameSelector_Name_BodyCentredParentDirection",
-                                                 selected.name,
-                                   selected.referenceBody.name);
-        }
-     case FrameType.BODY_SURFACE:
-       return Localizer.Format("#Principia_ReferenceFrameSelector_Name_BodySurface",
-                                              selected.name);
-     default:
-       throw Log.Fatal("Unexpected type " + type.ToString());
-   }
-  }
-
-  public static string ShortName(FrameType type,
-                                 CelestialBody selected,
-                                 Vessel target_override) {
     if (target_override) {
-      return Localizer.Format("#Principia_ReferenceFrameSelector_ShortName_Target",
-                                                 selected.name[0]);
+      return Localizer.Format("#Principia_ReferenceFrameSelector_Name_Target",
+                              selected.NameWithArticle());
     }
     switch (type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
-        return Localizer.Format("#Principia_ReferenceFrameSelector_ShortName_BodyCentredNonRotating",
-                                                 selected.name[0]);
+        return Localizer.Format(
+            "#Principia_ReferenceFrameSelector_Name_BodyCentredNonRotating",
+            selected.name);
       case FrameType.BARYCENTRIC_ROTATING:
         if (selected.is_root()) {
           throw Log.Fatal("Naming barycentric rotating frame of root body");
         } else {
-          return Localizer.Format("#Principia_ReferenceFrameSelector_ShortName_BarycentricRotating",
-                                    selected.referenceBody.name[0],
-                                                  selected.name[0]);
+          return Localizer.Format(
+              "#Principia_ReferenceFrameSelector_Name_BarycentricRotating",
+              selected.referenceBody.name,
+              selected.name);
         }
       case FrameType.BODY_CENTRED_PARENT_DIRECTION:
         if (selected.is_root()) {
           throw Log.Fatal(
               "Naming parent-direction rotating frame of root body");
         } else {
-          return Localizer.Format("#Principia_ReferenceFrameSelector_ShortName_BodyCentredParentDirection",
-                                                   selected.name[0],
-                                     selected.referenceBody.name[0]);
+          return Localizer.Format(
+              "#Principia_ReferenceFrameSelector_Name_BodyCentredParentDirection",
+              selected.name,
+              selected.referenceBody.name);
         }
       case FrameType.BODY_SURFACE:
-        return Localizer.Format("#Principia_ReferenceFrameSelector_ShortName_BodySurface",
-                                                  selected.name[0]);
+        return Localizer.Format(
+            "#Principia_ReferenceFrameSelector_Name_BodySurface",
+            selected.name);
+      default:
+        throw Log.Fatal("Unexpected type " + type.ToString());
+    }
+  }
+
+  public static string ShortName(FrameType type,
+                                 CelestialBody selected,
+                                 Vessel target_override) {
+    if (target_override) {
+      return Localizer.Format(
+          "#Principia_ReferenceFrameSelector_ShortName_Target",
+          selected.name[0]);
+    }
+    switch (type) {
+      case FrameType.BODY_CENTRED_NON_ROTATING:
+        return Localizer.Format(
+            "#Principia_ReferenceFrameSelector_ShortName_BodyCentredNonRotating",
+            selected.name[0]);
+      case FrameType.BARYCENTRIC_ROTATING:
+        if (selected.is_root()) {
+          throw Log.Fatal("Naming barycentric rotating frame of root body");
+        } else {
+          return Localizer.Format(
+              "#Principia_ReferenceFrameSelector_ShortName_BarycentricRotating",
+              selected.referenceBody.name[0],
+              selected.name[0]);
+        }
+      case FrameType.BODY_CENTRED_PARENT_DIRECTION:
+        if (selected.is_root()) {
+          throw Log.Fatal(
+              "Naming parent-direction rotating frame of root body");
+        } else {
+          return Localizer.Format(
+              "#Principia_ReferenceFrameSelector_ShortName_BodyCentredParentDirection",
+              selected.name[0],
+              selected.referenceBody.name[0]);
+        }
+      case FrameType.BODY_SURFACE:
+        return Localizer.Format(
+            "#Principia_ReferenceFrameSelector_ShortName_BodySurface",
+            selected.name[0]);
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
     }
@@ -181,34 +192,39 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
                                    CelestialBody selected,
                                    Vessel target_override) {
     if (target_override) {
-      return Localizer.Format("#Principia_ReferenceFrameSelector_Description_Target",
-                                    target_override.vesselName,
-                                    selected.NameWithArticle());
+      return Localizer.Format(
+          "#Principia_ReferenceFrameSelector_Description_Target",
+          target_override.vesselName,
+          selected.NameWithArticle());
     }
     switch (type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
-        return Localizer.Format("#Principia_ReferenceFrameSelector_Description_BodyCentredNonRotating",
-                                    selected.NameWithArticle());
+        return Localizer.Format(
+            "#Principia_ReferenceFrameSelector_Description_BodyCentredNonRotating",
+            selected.NameWithArticle());
       case FrameType.BARYCENTRIC_ROTATING:
         if (selected.is_root()) {
           throw Log.Fatal("Describing barycentric rotating frame of root body");
         } else {
-          return Localizer.Format("#Principia_ReferenceFrameSelector_Description_BarycentricRotating",
-                                     selected.NameWithArticle(),
-                       selected.referenceBody.NameWithArticle());
+          return Localizer.Format(
+              "#Principia_ReferenceFrameSelector_Description_BarycentricRotating",
+              selected.NameWithArticle(),
+              selected.referenceBody.NameWithArticle());
         }
       case FrameType.BODY_CENTRED_PARENT_DIRECTION:
         if (selected.is_root()) {
           throw Log.Fatal(
               "Describing parent-direction rotating frame of root body");
         } else {
-          return Localizer.Format("#Principia_ReferenceFrameSelector_Description_BodyCentredParentDirection",
-                                      selected.NameWithArticle(),
-                        selected.referenceBody.NameWithArticle());
+          return Localizer.Format(
+              "#Principia_ReferenceFrameSelector_Description_BodyCentredParentDirection",
+              selected.NameWithArticle(),
+              selected.referenceBody.NameWithArticle());
         }
       case FrameType.BODY_SURFACE:
-        return Localizer.Format("#Principia_ReferenceFrameSelector_Description_BodySurface",
-                                    selected.NameWithArticle());
+        return Localizer.Format(
+            "#Principia_ReferenceFrameSelector_Description_BodySurface",
+            selected.NameWithArticle());
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
     }
@@ -226,18 +242,21 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     if (!target_override &&
         (frame_type == FrameType.BODY_CENTRED_NON_ROTATING ||
          frame_type == FrameType.BODY_SURFACE)) {
-      return Localizer.Format("#Principia_ReferenceFrameSelector_ReferencePlane_Centred", 
-                          selected_celestial.NameWithArticle());
+      return Localizer.Format(
+          "#Principia_ReferenceFrameSelector_ReferencePlane_Centred",
+          selected_celestial.NameWithArticle());
     }
-    string secondary = target_override != null
-        ? Localizer.Format("#Principia_ReferenceFrameSelector_ReferencePlane_Secondary_Target")
-        : selected_celestial.NameWithArticle();
+    string secondary =
+        target_override != null
+            ? Localizer.Format(
+                "#Principia_ReferenceFrameSelector_ReferencePlane_Secondary_Target")
+            : selected_celestial.NameWithArticle();
     string primary = target_override != null
-        ? selected_celestial.NameWithArticle()
-        : selected_celestial.referenceBody.NameWithArticle();
-    return Localizer.Format("#Principia_ReferenceFrameSelector_ReferencePlane", 
-                                                        secondary,
-                                                          primary);
+                         ? selected_celestial.NameWithArticle()
+                         : selected_celestial.referenceBody.NameWithArticle();
+    return Localizer.Format("#Principia_ReferenceFrameSelector_ReferencePlane",
+                            secondary,
+                            primary);
   }
 
   public CelestialBody[] FixedBodies() {
@@ -262,13 +281,14 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
       case FrameType.BODY_SURFACE:
         return new NavigationFrameParameters{
             extension = (int)frame_type,
-            centre_index = selected_celestial.flightGlobalsIndex};
+            centre_index = selected_celestial.flightGlobalsIndex
+        };
       case FrameType.BARYCENTRIC_ROTATING:
         return new NavigationFrameParameters{
             extension = (int)frame_type,
-            primary_index =
-                selected_celestial.referenceBody.flightGlobalsIndex,
-            secondary_index = selected_celestial.flightGlobalsIndex};
+            primary_index = selected_celestial.referenceBody.flightGlobalsIndex,
+            secondary_index = selected_celestial.flightGlobalsIndex
+        };
       case FrameType.BODY_CENTRED_PARENT_DIRECTION:
         // We put the primary body as secondary, because the one we want fixed
         // is the secondary body (which means it has to be the primary in the
@@ -277,7 +297,8 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
             extension = (int)frame_type,
             primary_index = selected_celestial.flightGlobalsIndex,
             secondary_index =
-                selected_celestial.referenceBody.flightGlobalsIndex};
+                selected_celestial.referenceBody.flightGlobalsIndex
+        };
       default:
         throw Log.Fatal("Unexpected frame_type " + frame_type.ToString());
     }
@@ -285,9 +306,9 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
 
   public void RenderButton() {
     if (UnityEngine.GUILayout.Button(
-        Localizer.Format("#Principia_ReferenceFrameSelector_ToggleButton", 
-                                           name_, 
-                                           Name()))) {
+        Localizer.Format("#Principia_ReferenceFrameSelector_ToggleButton",
+                         name_,
+                         Name()))) {
       Toggle();
     }
   }
@@ -296,9 +317,10 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   public CelestialBody selected_celestial { get; private set; }
   public Vessel target_override { get; set; }
 
-  protected override string Title =>Localizer.Format("#Principia_ReferenceFrameSelector_Title", 
-                                                                      name_,
-                                                                      Name());
+  protected override string Title =>
+      Localizer.Format("#Principia_ReferenceFrameSelector_Title",
+                       name_,
+                       Name());
 
   protected override void RenderWindow(int window_id) {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
@@ -311,8 +333,9 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
       using (new UnityEngine.GUILayout.VerticalScope()) {
         if (target_override) {
           UnityEngine.GUILayout.Label(
-              Localizer.Format("#Principia_ReferenceFrameSelector_TargetFrameSelected", 
-              Description(frame_type, selected_celestial, target_override)),
+              Localizer.Format(
+                  "#Principia_ReferenceFrameSelector_TargetFrameSelected",
+                  Description(frame_type, selected_celestial, target_override)),
               Style.Multiline(UnityEngine.GUI.skin.label),
               GUILayoutWidth(6));
         } else {
@@ -333,8 +356,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     const int offset = 1;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       if (!celestial.is_root()) {
-        UnityEngine.GUILayout.Label("",
-                                    GUILayoutWidth(offset * (depth - 1)));
+        UnityEngine.GUILayout.Label("", GUILayoutWidth(offset * (depth - 1)));
         string button_text;
         if (celestial.is_leaf()) {
           button_text = "";
@@ -343,8 +365,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
         } else {
           button_text = "+";
         }
-        if (UnityEngine.GUILayout.Button(button_text,
-                                         GUILayoutWidth(offset))) {
+        if (UnityEngine.GUILayout.Button(button_text, GUILayoutWidth(offset))) {
           Shrink();
           if (!celestial.is_leaf()) {
             expanded_[celestial] = !expanded_[celestial];
@@ -372,15 +393,15 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.toggle);
     style.fixedHeight = 0;
     style.wordWrap = true;
-    if (UnityEngine.GUILayout.Toggle(
-            frame_type == value,
-            Description(value, selected_celestial, target_override),
-            style,
-            GUILayoutWidth(6),
-            GUILayoutHeight(5))) {
-      EffectChange(() => {
-        frame_type = value;
-      });
+    if (UnityEngine.GUILayout.Toggle(frame_type == value,
+                                     Description(
+                                         value,
+                                         selected_celestial,
+                                         target_override),
+                                     style,
+                                     GUILayoutWidth(6),
+                                     GUILayoutHeight(5))) {
+      EffectChange(() => { frame_type = value; });
     }
   }
 
