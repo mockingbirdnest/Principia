@@ -24,6 +24,10 @@
 \setotherlanguages{greek,german,russian,latin,french}
 \newcommand{\foreign}{\emph}
 
+\RequirePackage{xeCJK}
+\makexeCJKinactive
+\newcommand{\chinese}[1]{{\makexeCJKactive\cjkfont#1\makexeCJKinactive}}
+
 % Font definitions.
 
 \RequirePackage{fontspec}
@@ -62,6 +66,9 @@
   SmallCapsFeatures={Letters=SmallCaps},
   Contextuals=WordFinal
             ]{Linux Biolinum O}
+
+\newfontfamily\cjkfont{BabelStoneHan.ttf}
+\setCJKmainfont{BabelStoneHan.ttf}
 
 % Layout.
 
