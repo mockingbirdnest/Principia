@@ -461,7 +461,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
                                  bool enabled) {
     bool changed = false;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
-      UnityEngine.GUILayout.Label(text    : label + ":",
+      UnityEngine.GUILayout.Label(text    : label,
                                   options : GUILayoutWidth(6));
       if (UnityEngine.GUILayout.Button(
               text    : index == 0

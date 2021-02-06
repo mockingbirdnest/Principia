@@ -18,19 +18,19 @@ class BurnEditor : ScalingRenderer {
     get_burn_at_index_ = get_burn_at_index;
     Δv_tangent_ = new DifferentialSlider(
         label            : Localizer.Format("#Principia_BurnEditor_ΔvTangent"),
-        unit             : "m / s",
+        unit             : Localizer.Format("#Principia_BurnEditor_SpeedUnit"),
         log10_lower_rate : Log10ΔvLowerRate,
         log10_upper_rate : Log10ΔvUpperRate,
         text_colour      : Style.Tangent);
     Δv_normal_ = new DifferentialSlider(
         label            : Localizer.Format("#Principia_BurnEditor_ΔvNormal"),
-        unit             : "m / s",
+        unit             : Localizer.Format("#Principia_BurnEditor_SpeedUnit"),
         log10_lower_rate : Log10ΔvLowerRate,
         log10_upper_rate : Log10ΔvUpperRate,
         text_colour      : Style.Normal);
     Δv_binormal_ = new DifferentialSlider(
         label            : Localizer.Format("#Principia_BurnEditor_ΔvBinormal"),
-        unit             : "m / s",
+        unit             : Localizer.Format("#Principia_BurnEditor_SpeedUnit"),
         log10_lower_rate : Log10ΔvLowerRate,
         log10_upper_rate : Log10ΔvUpperRate,
         text_colour      : Style.Binormal);
@@ -77,9 +77,11 @@ class BurnEditor : ScalingRenderer {
         minimized = !minimized;
         return minimized ? Event.Minimized : Event.Maximized;
       }
-      UnityEngine.GUILayout.Label(minimized
-                                      ? $"{header} ({Δv():0.000} m/s)"
-                                      : header);
+      UnityEngine.GUILayout.Label(
+          minimized ? Localizer.Format("#Principia_BurnEditor_MinimizedHeader",
+                                       header,
+                                       Δv().ToString("0.000"))
+                    : header);
       string info = "";
       if (!minimized &&
           !reference_frame_selector_.FrameParameters().Equals(
@@ -170,11 +172,11 @@ class BurnEditor : ScalingRenderer {
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         UnityEngine.GUILayout.Label(
             Localizer.Format("#Principia_BurnEditor_Δv",
-                             Δv().ToString("0.000") + " m/s"),
+                             Δv().ToString("0.000")),
             GUILayoutWidth(8));
         UnityEngine.GUILayout.Label(Localizer.Format(
                                         "#Principia_BurnEditor_Duration",
-                                        duration_.ToString("0.0") + " s"));
+                                        duration_.ToString("0.0")));
       }
       UnityEngine.GUILayout.Label(engine_warning_,
                                   Style.Warning(UnityEngine.GUI.skin.label));
