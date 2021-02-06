@@ -283,10 +283,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       bad_installation_dialog_.Hide();
     } else {
       is_bad_installation_ = true;
-      bad_installation_dialog_.message =
-          "The Principia DLL failed to load.\n" + load_error +
-          "\n\nWarning: don't load a Principia save before you have fixed " +
-          "this error; it might get damaged.";
+      bad_installation_dialog_.message = Localizer.Format(
+          "#Principia_DLLFailedToLoad",
+          load_error);
       bad_installation_dialog_.Show();
     }
 #if KSP_VERSION_1_11_0
@@ -902,7 +901,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       if (plotting_frame_selector_.target_override == null &&
           FlightGlobals.speedDisplayMode ==
           FlightGlobals.SpeedDisplayModes.Target) {
-        KSP.UI.Screens.Flight.SpeedDisplay.Instance.textTitle.text = "Target";
+        KSP.UI.Screens.Flight.SpeedDisplay.Instance.textTitle.text =
+            Localizer.Format("#Principia_SpeedDisplayModeTarget");
       }
 
       if (FlightGlobals.speedDisplayMode ==
@@ -928,8 +928,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                       new QP{q = (XYZ)active_vessel.orbit.pos,
                           p = (XYZ)active_vessel.orbit.vel},
                       active_vessel.orbit.referenceBody.flightGlobalsIndex);
-          speed_display.textSpeed.text =
-              active_vessel_velocity.magnitude.ToString("F1") + "m/s";
+          speed_display.textSpeed.text = Localizer.Format(
+              "#Principia_SpeedDisplayText",
+              active_vessel_velocity.magnitude.ToString("F1"));
         }
 
         if (!plugin_has_active_manageable_vessel) {
