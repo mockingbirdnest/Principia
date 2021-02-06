@@ -6,26 +6,26 @@ namespace ksp_plugin_adapter {
 // A helper class for scaling the UI.  Unlike the WindowRenderer below, it can
 // be used for elements that are not windows.
 internal class ScalingRenderer {
-  protected ScalingRenderer() {
+  static ScalingRenderer() {
     // All dimensions are expressed in "units".  By default a unit is 25 pixels
     // but it can scale up or down based on the KSP UI scale.
     scale_ = GameSettings.UI_SCALE * GameSettings.UI_SCALE_APPS;
     unit_ = 25 * scale_;
   }
 
-  protected UnityEngine.GUILayoutOption GUILayoutHeight(int units) {
+  protected static UnityEngine.GUILayoutOption GUILayoutHeight(int units) {
     return UnityEngine.GUILayout.Height(unit_ * units);
   }
 
-  protected UnityEngine.GUILayoutOption GUILayoutMinWidth(int units) {
+  protected static UnityEngine.GUILayoutOption GUILayoutMinWidth(int units) {
     return UnityEngine.GUILayout.MinWidth(Width(units));
   }
 
-  protected UnityEngine.GUILayoutOption GUILayoutWidth(int units) {
+  protected static UnityEngine.GUILayoutOption GUILayoutWidth(int units) {
     return UnityEngine.GUILayout.Width(Width(units));
   }
 
-  protected float Width(int units) {
+  protected static float Width(int units) {
     return unit_ * units;
   }
 
@@ -81,8 +81,8 @@ internal class ScalingRenderer {
     return skin;
   }
 
-  private readonly float scale_;
-  private readonly float unit_;
+  private static readonly float scale_;
+  private static readonly float unit_;
 }
 
 // A class that gather all the mechanisms for rendering entire windows.  It

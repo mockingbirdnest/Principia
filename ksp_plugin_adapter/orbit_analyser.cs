@@ -141,7 +141,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
                        PredictedVessel predicted_vessel) : base(
       adapter,
       predicted_vessel,
-      UnityEngine.GUILayout.MinWidth(0)) {
+      GUILayoutMinWidth(0)) {
     adapter_ = adapter;
   }
 
@@ -198,16 +198,16 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
       return;
     }
 
-    using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(8))) {
+    using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(12))) {
       if (should_request_analysis) {
         mission_duration_.Render(enabled : true);
       }
       var multiline_style = Style.Multiline(UnityEngine.GUI.skin.label);
       float two_lines = multiline_style.CalcHeight(
-          new UnityEngine.GUIContent("1\n2"),
+          new UnityEngine.GUIContent("1一\n2二"),
           Width(1));
       float five_lines = multiline_style.CalcHeight(
-          new UnityEngine.GUIContent("1\n2\n3\n4\n5"),
+          new UnityEngine.GUIContent("1一\n2二\n3三\n4四\n5五"),
           Width(1));
       UnityEngine.GUILayout.Label(AnalysingText(),
                                   multiline_style,
@@ -382,7 +382,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
           }
         } else if (recurrence.Value.dto == 0) {
           properties += Localizer.Format(
-              " #Principia_OrbitAnalyser_OrbitDescription_Supersynchronous");
+              "#Principia_OrbitAnalyser_OrbitDescription_Supersynchronous");
         }
       }
     }

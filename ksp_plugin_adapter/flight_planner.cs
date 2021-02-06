@@ -207,7 +207,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
             UpdateStatus(status, null);
           }
           UnityEngine.GUILayout.TextArea(
-              Localizer.Format("#PrincipiaPredictionSettings_ToleranceText",
+              Localizer.Format("#Principia_PredictionSettings_ToleranceText",
                                parameters.length_integration_tolerance.ToString(
                                    "0.0e0")),
               GUILayoutWidth(3));

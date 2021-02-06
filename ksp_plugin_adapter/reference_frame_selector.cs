@@ -32,7 +32,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
                                 Callback on_change,
                                 string name) : base(
       supervisor,
-      UnityEngine.GUILayout.MinWidth(0)) {
+      GUILayoutMinWidth(0)) {
     on_change_ = on_change;
     name_ = name;
 
