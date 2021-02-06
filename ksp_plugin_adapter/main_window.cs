@@ -281,7 +281,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(
           text : Localizer.Format(
-              "Principia_MainWindow_LoggingSettings_VerboseLevel"));
+              "#Principia_MainWindow_LoggingSettings_VerboseLevel"));
       if (UnityEngine.GUILayout.Button(text    : "←",
                                        options : GUILayoutWidth(2))) {
         Log.SetVerboseLogging(Math.Max(verbose_logging_ - 1, 0));
@@ -422,7 +422,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     if (RenderSelector(prediction_length_tolerances_,
                        ref prediction_length_tolerance_index_,
                        Localizer.Format(
-                           "#Principia_PredictionSettings_Tolerance"),
+                           "#Principia_PredictionSettings_ToleranceLabel"),
                        "{0:0.0e0} m",
                        enabled: adaptive_step_parameters.HasValue)) {
       AdaptiveStepParameters new_adaptive_step_parameters =
