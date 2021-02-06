@@ -141,7 +141,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
                        PredictedVessel predicted_vessel) : base(
       adapter,
       predicted_vessel,
-      GUILayoutMinWidth(0)) {
+      UnityEngine.GUILayout.MinWidth(0)) {
     adapter_ = adapter;
   }
 
