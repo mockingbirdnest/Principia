@@ -1,6 +1,7 @@
 ﻿
 #include "physics/solar_system.hpp"
 
+#include <algorithm>
 #include <ios>
 
 #include "absl/strings/str_replace.h"
