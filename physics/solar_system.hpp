@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <cstdint>
 #include <filesystem>
 #include <map>
 #include <string>
@@ -109,6 +110,10 @@ class SolarSystem final {
   bool has_keplerian_initial_state_message(std::string const& name) const;
   serialization::InitialState::Keplerian::Body const&
   keplerian_initial_state_message(std::string const& name) const;
+
+  // The fingerprint is independent from the order of bodies, geopotential
+  // parameters, and other repeated quantities.
+  std::uint64_t Fingerprint() const;
 
   // Factory functions for converting configuration protocol buffers into
   // structured objects.

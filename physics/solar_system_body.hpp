@@ -14,7 +14,9 @@
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
+#include "base/fingerprint2011.hpp"
 #include "base/map_util.hpp"
+#include "base/serialization.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
@@ -29,6 +31,8 @@
 #include "quantities/parser.hpp"
 #include "quantities/si.hpp"
 #include "serialization/astronomy.pb.h"
+#include "serialization/geometry.pb.h"
+#include "serialization/physics.pb.h"
 
 namespace principia {
 namespace physics {
@@ -39,7 +43,10 @@ using astronomy::ParseTT;
 using base::Contains;
 using base::dynamic_cast_not_null;
 using base::FindOrDie;
+using base::Fingerprint2011;
+using base::FingerprintCat2011;
 using base::make_not_null_unique;
+using base::SerializeAsBytes;
 using geometry::Bivector;
 using geometry::Frame;
 using geometry::Instant;
@@ -282,6 +289,51 @@ serialization::InitialState::Keplerian::Body const&
 SolarSystem<Frame>::keplerian_initial_state_message(
     std::string const& name) const {
   return *FindOrDie(keplerian_initial_state_map_, name);
+}
+
+template<typename Frame>
+std::uint64_t SolarSystem<Frame>::Fingerprint() const {
+  // This code reserializes everything, instead of using the protos passed at
+  // construction, in order to produce a fingerprint that's independent from the
+  // ordering of things.
+  std::uint64_t fingerprint;
+  {
+    serialization::Point message;
+    epoch_.WriteToMessage(&message);
+    fingerprint = Fingerprint2011(SerializeAsBytes(message).get());
+  }
+  {
+    serialization::MassiveBody message;
+    for (auto const& [name, body] : gravity_model_map_) {
+      auto const massive_body = MakeMassiveBody(*body);
+      massive_body->WriteToMessage(&message);
+      fingerprint = FingerprintCat2011(
+          fingerprint, Fingerprint2011(SerializeAsBytes(message).get()));
+    }
+  }
+  fingerprint =
+      FingerprintCat2011(fingerprint, initial_state_.coordinates_case());
+  switch (initial_state_.coordinates_case()) {
+    case serialization::InitialState::CoordinatesCase::kCartesian: {
+      for (auto const& [name, body] : cartesian_initial_state_map_) {
+        auto const degrees_of_freedom = MakeDegreesOfFreedom(*body);
+        serialization::Pair message;
+        degrees_of_freedom.WriteToMessage(&message);
+        fingerprint = FingerprintCat2011(
+            fingerprint, Fingerprint2011(SerializeAsBytes(message).get()));
+      }
+      break;
+    }
+    case serialization::InitialState::CoordinatesCase::kKeplerian: {
+      auto const hierarchical_system = MakeHierarchicalSystem();
+      serialization::HierarchicalSystem message;
+      hierarchical_system->WriteToMessage(&message);
+      fingerprint = FingerprintCat2011(
+          fingerprint, Fingerprint2011(SerializeAsBytes(message).get()));
+      break;
+    }
+  }
+  return fingerprint;
 }
 
 template<typename Frame>
