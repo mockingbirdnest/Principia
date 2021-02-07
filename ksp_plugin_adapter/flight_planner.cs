@@ -192,7 +192,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         }
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           UnityEngine.GUILayout.Label(
-              Localizer.Format("#Principia_PredictionSettings_Tolerance") + ":",
+              Localizer.Format("#Principia_PredictionSettings_ToleranceLabel"),
               GUILayoutWidth(3));
           if (parameters.length_integration_tolerance <= 1e-6) {
             UnityEngine.GUILayout.Button(
@@ -207,7 +207,9 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
             UpdateStatus(status, null);
           }
           UnityEngine.GUILayout.TextArea(
-              parameters.length_integration_tolerance.ToString("0.0e0") + " m",
+              Localizer.Format("#Principia_PredictionSettings_ToleranceText",
+                               parameters.length_integration_tolerance.ToString(
+                                   "0.0e0")),
               GUILayoutWidth(3));
           if (parameters.length_integration_tolerance >= 1e6) {
             UnityEngine.GUILayout.Button(
@@ -228,7 +230,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                    select burn_editor.Δv()).Sum();
       UnityEngine.GUILayout.Label(Localizer.Format(
                                       "#Principia_FlightPlan_TotalΔv",
-                                      Δv.ToString("0.000") + " m/s"));
+                                      Δv.ToString("0.000")));
 
       {
         var style = Style.Warning(Style.Multiline(UnityEngine.GUI.skin.label));
@@ -620,8 +622,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
             (anomalous_manœuvres < manœuvres
                  ? Localizer.Format("#Principia_FlightPlan_StatusMessage_Last2",
                                     manœuvres - anomalous_manœuvres)
-                 : "") +
-            ".");
+                 : ""));
       } else {
         message =
             Localizer.Format("#Principia_FlightPlan_StatusMessage_Result",

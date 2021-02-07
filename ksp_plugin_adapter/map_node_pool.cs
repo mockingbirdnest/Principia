@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using KSP.Localization;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -203,10 +204,10 @@ internal class MapNodePool {
       string source;
       switch (properties.source) {
         case NodeSource.FlightPlan:
-          source = "Planned";
+          source = Localizer.Format("#Principia_MapNode_Planned");
           break;
         case NodeSource.Prediction:
-          source = "Predicted";
+          source = Localizer.Format("#Principia_MapNode_Predicted");
           break;
         default:
           throw Log.Fatal($"Unexpected node source {properties.source}");
@@ -216,26 +217,37 @@ internal class MapNodePool {
         case MapObject.ObjectType.Apoapsis: {
           string apsis_name =
               properties.object_type == MapObject.ObjectType.Periapsis
-                  ? "Periapsis"
-                  : "Apoapsis";
+                  ? Localizer.Format("#Principia_MapNode_Periapsis")
+                  : Localizer.Format("#Principia_MapNode_Apoapsis");
           CelestialBody celestial =
               properties.reference_frame.selected_celestial;
           Vector3d position = properties.world_position;
           double speed = properties.velocity.magnitude;
-          caption.Header = $@"{source} {celestial.name} {apsis_name} :\n{
-            celestial.GetAltitude(position).FormatN(0)} m";
-          caption.captionLine2 = $"{speed.FormatN(0)} m/s";
+          caption.Header = Localizer.Format("#Principia_MapNode_ApsisHeader",
+                                            source,
+                                            celestial.name,
+                                            apsis_name,
+                                            celestial.GetAltitude(position).
+                                                FormatN(0));
+          caption.captionLine2 =
+              Localizer.Format("#Principia_MapNode_ApsisCaptionLine2",
+                               speed.FormatN(0));
           break;
         }
         case MapObject.ObjectType.AscendingNode:
         case MapObject.ObjectType.DescendingNode: {
           string node_name =
               properties.object_type == MapObject.ObjectType.AscendingNode
-                  ? "Ascending Node"
-                  : "Descending Node";
+                  ? Localizer.Format("#Principia_MapNode_AscendingNode")
+                  : Localizer.Format("#Principia_MapNode_DescendingNode");
           string plane = properties.reference_frame.ReferencePlaneDescription();
-          caption.Header = $"{source} {node_name} :\n{plane}";
-          caption.captionLine2 = $"{properties.velocity.z.FormatN(0)} m/s";
+          caption.Header = Localizer.Format("#Principia_MapNode_NodeHeader",
+                                            source,
+                                            node_name,
+                                            plane);
+          caption.captionLine2 = Localizer.Format(
+              "#Principia_MapNode_NodeCaptionLine2",
+              properties.velocity.z.FormatN(0));
           break;
         }
         case MapObject.ObjectType.ApproachIntersect: {
@@ -243,15 +255,20 @@ internal class MapNodePool {
           double separation = (target_vessel.GetWorldPos3D() -
                                properties.world_position).magnitude;
           double speed = properties.velocity.magnitude;
-          caption.Header =
-              $@"{source} Target Approach : {separation.FormatN(0)} m";
-          caption.captionLine2 = $"{speed.FormatN(0)} m/s";
+          caption.Header = Localizer.Format("#Principia_MapNode_ApproachHeader",
+                                            source,
+                                            separation.FormatN(0));
+          caption.captionLine2 = Localizer.Format(
+              "#Principia_MapNode_ApproachCaptionLine2",
+              speed.FormatN(0));
           break;
         }
         case MapObject.ObjectType.PatchTransition: {
           CelestialBody celestial =
               properties.reference_frame.selected_celestial;
-          caption.Header = $"{source} {celestial.name} Impact";
+          caption.Header = Localizer.Format("#Principia_MapNode_ImpactHeader",
+                                            source,
+                                            celestial.name);
           caption.captionLine1 = "";
           caption.captionLine2 = "";
           break;
