@@ -20,8 +20,10 @@
 % Language.
 
 \RequirePackage{polyglossia}
-\setdefaultlanguage{english}
+\setdefaultlanguage[variant=british]{english}
 \setotherlanguages{greek,german,russian,latin,french}
+\RequirePackage{csquotes}
+
 \newcommand{\foreign}{\emph}
 
 \RequirePackage{xeCJK}
