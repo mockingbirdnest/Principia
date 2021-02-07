@@ -87,6 +87,7 @@ internal static class Formatters {
     CelestialBody primary) {
     double half_width_angle = (interval.max - interval.min) / 2;
     if (half_width_angle > Math.PI) {
+      // TODO(egg): Translate.
       return "(precesses)";
     }
     double half_width_distance = half_width_angle * primary.Radius;
