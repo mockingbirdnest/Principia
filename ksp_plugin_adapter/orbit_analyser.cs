@@ -299,10 +299,16 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
                                   multiline_style,
                                   UnityEngine.GUILayout.Height(five_lines));
       Style.HorizontalLine();
+      RenderLowestAltitude(elements, primary);
+      Style.HorizontalLine();
+      UnityEngine.GUILayout.Label(
+          Localizer.Format("#Principia_OrbitAnalyser_Elements_MeanElements"));
       RenderOrbitalElements(elements, primary);
       Style.HorizontalLine();
+      UnityEngine.GUILayout.Label(
+          Localizer.Format("#Principia_OrbitAnalyser_GroundTrack"));
       RenderOrbitRecurrence(recurrence, primary);
-      Style.HorizontalLine();
+      Style.LineSpacing();
       RenderOrbitGroundTrack(ground_track, primary);
     }
     UnityEngine.GUI.DragWindow();
@@ -386,8 +392,8 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
                             primary.name);
   }
 
-  private void RenderOrbitalElements(OrbitalElements? elements,
-                                     CelestialBody primary) {
+  private void RenderLowestAltitude(OrbitalElements? elements,
+                                    CelestialBody primary) {
     double? lowest_distance = elements?.radial_distance.min;
     LabeledField(
         Localizer.Format("#Principia_OrbitAnalyser_Elements_LowestAltitude"),
@@ -408,8 +414,10 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
                     : "";
     UnityEngine.GUILayout.Label(altitude_warning,
                                 Style.Warning(UnityEngine.GUI.skin.label));
-    UnityEngine.GUILayout.Label(
-        Localizer.Format("#Principia_OrbitAnalyser_Elements_MeanElements"));
+  }
+
+  private void RenderOrbitalElements(OrbitalElements? elements,
+                                     CelestialBody primary) {
     LabeledField(
         Localizer.Format("#Principia_OrbitAnalyser_Elements_SiderealPeriod"),
         elements?.sidereal_period.FormatDuration());
