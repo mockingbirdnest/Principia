@@ -1,8 +1,10 @@
 ﻿
 #include "physics/solar_system.hpp"
 
+#include <algorithm>
 #include <ios>
 
+#include "absl/strings/str_replace.h"
 #include "astronomy/frames.hpp"
 #include "base/fingerprint2011.hpp"
 #include "integrators/methods.hpp"
@@ -205,6 +207,102 @@ TEST_F(SolarSystemTest, Clear) {
   auto const& sun_gravity_model = solar_system.gravity_model_message("Sun");
   EXPECT_FALSE(sun_gravity_model.has_j2());
   EXPECT_FALSE(sun_gravity_model.has_reference_radius());
+}
+
+TEST_F(SolarSystemTest, FingerprintCartesian) {
+  auto gravity_model =
+      ParseGravityModel(SOLUTION_DIR / "astronomy" /
+                        "sol_gravity_model.proto.txt");
+  auto initial_state =
+      ParseInitialState(SOLUTION_DIR / "astronomy" /
+                        "sol_initial_state_jd_2433282_500000000.proto.txt");
+
+  auto const fingerprint1 =
+      SolarSystem<ICRS>(gravity_model, initial_state).Fingerprint();
+
+  // Check that the fingerprint is independent from the order of bodies.
+  std::swap(*gravity_model.mutable_body(5), *gravity_model.mutable_body(7));
+  std::swap(*initial_state.mutable_cartesian()->mutable_body(3),
+            *initial_state.mutable_cartesian()->mutable_body(11));
+
+  auto const fingerprint2 =
+      SolarSystem<ICRS>(gravity_model, initial_state).Fingerprint();
+  CHECK_EQ(fingerprint1, fingerprint2);
+
+  // Check that the fingerprint is independent from the order of geopotential
+  // rows.
+  serialization::GravityModel::Body* moon_gravity_model = nullptr;
+  for (auto& body : *gravity_model.mutable_body()) {
+    if (body.name() == "Moon") {
+      moon_gravity_model = &body;
+      break;
+    }
+  }
+  std::swap(*moon_gravity_model->mutable_geopotential()->mutable_row(2),
+            *moon_gravity_model->mutable_geopotential()->mutable_row(3));
+
+  auto const fingerprint3 =
+      SolarSystem<ICRS>(gravity_model, initial_state).Fingerprint();
+  CHECK_EQ(fingerprint1, fingerprint3);
+
+  // Check that the fingerprint depends on the fields of the gravity model.
+  gravity_model.mutable_body(13)->set_gravitational_parameter(
+      absl::StrReplaceAll(gravity_model.body(13).gravitational_parameter(),
+                          {{"km", "m"}}));
+
+  auto const fingerprint4 =
+      SolarSystem<ICRS>(gravity_model, initial_state).Fingerprint();
+  CHECK_NE(fingerprint1, fingerprint4);
+
+  // Check that the fingerprint depends on the fields of the initial state.
+  initial_state.mutable_cartesian()->mutable_body(13)->set_x(
+      absl::StrReplaceAll(initial_state.cartesian().body(13).x(),
+                          {{"km", "m"}}));
+
+  auto const fingerprint5 =
+      SolarSystem<ICRS>(gravity_model, initial_state).Fingerprint();
+  CHECK_NE(fingerprint4, fingerprint5);
+}
+
+TEST_F(SolarSystemTest, FingerprintKeplerian) {
+  auto gravity_model =
+      ParseGravityModel(SOLUTION_DIR / "astronomy" /
+                        "kerbol_gravity_model.proto.txt");
+  auto initial_state =
+      ParseInitialState(SOLUTION_DIR / "astronomy" /
+                        "kerbol_initial_state_0_0.proto.txt");
+
+  auto const fingerprint1 =
+      SolarSystem<ICRS>(gravity_model, initial_state).Fingerprint();
+
+  // Check that the fingerprint is independent from the order of bodies.
+  std::swap(*gravity_model.mutable_body(5), *gravity_model.mutable_body(7));
+  std::swap(*initial_state.mutable_keplerian()->mutable_body(3),
+            *initial_state.mutable_keplerian()->mutable_body(11));
+
+  auto const fingerprint2 =
+      SolarSystem<ICRS>(gravity_model, initial_state).Fingerprint();
+  CHECK_EQ(fingerprint1, fingerprint2);
+
+  // Check that the fingerprint depends on the fields of the gravity model.
+  gravity_model.mutable_body(13)->set_gravitational_parameter(
+      absl::StrReplaceAll(gravity_model.body(13).gravitational_parameter(),
+                          {{"m", "km"}}));
+
+  auto const fingerprint3 =
+      SolarSystem<ICRS>(gravity_model, initial_state).Fingerprint();
+  CHECK_NE(fingerprint1, fingerprint3);
+
+  // Check that the fingerprint depends on the fields of the initial state.
+  initial_state.mutable_keplerian()
+      ->mutable_body(13)->mutable_elements()->set_mean_motion(
+          absl::StrReplaceAll(
+              initial_state.keplerian().body(13).elements().mean_motion(),
+              {{"rad", "deg"}}));
+
+  auto const fingerprint4 =
+      SolarSystem<ICRS>(gravity_model, initial_state).Fingerprint();
+  CHECK_NE(fingerprint3, fingerprint4);
 }
 
 }  // namespace internal_solar_system
