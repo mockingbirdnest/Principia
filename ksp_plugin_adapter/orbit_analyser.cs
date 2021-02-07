@@ -516,11 +516,14 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(
           Localizer.Format(
-              "#Principia_OrbitAnalyser_GroundTrack_LongitudesOfEquatorialCrossings"),
+              "#Principia_OrbitAnalyser_GroundTrack_LongitudesOfEquatorialCrossings_Prefix"),
           UnityEngine.GUILayout.ExpandWidth(false));
       string text = UnityEngine.GUILayout.TextField(
           $"{ground_track_revolution_}",
           GUILayoutWidth(2));
+      UnityEngine.GUILayout.Label(
+          Localizer.Format(
+              "#Principia_OrbitAnalyser_GroundTrack_LongitudesOfEquatorialCrossings_Suffix"));
       if (int.TryParse(text, out int revolution)) {
         ground_track_revolution_ = revolution;
       }
