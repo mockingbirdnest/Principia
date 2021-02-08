@@ -293,8 +293,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           (Versioning.version_minor == 8 && Versioning.Revision == 1) ||
           (Versioning.version_minor == 9 && Versioning.Revision == 1) ||
           (Versioning.version_minor == 10 && Versioning.Revision == 1) ||
-          (Versioning.version_minor == 11 && Versioning.Revision == 0))) {
-      string expected_version = "1.8.1, 1.9.1, 1.10.1, and 1.11.0";
+          (Versioning.version_minor == 11 && Versioning.Revision >= 0))) {
+      string expected_version = "1.8.1, 1.9.1, 1.10.1, and 1.11.x";
 #elif KSP_VERSION_1_7_3
     if (!(Versioning.version_major == 1 &&
           (Versioning.version_minor == 5 && Versioning.Revision == 1) ||
