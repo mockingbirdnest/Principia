@@ -102,7 +102,7 @@ LocalErrorAnalyser<Frame>::ForkEphemeris(
       degrees_of_freedom,
       t,
       Ephemeris<Frame>::AccuracyParameters(fitting_tolerance_,
-                                          /*geopotential_tolerance=*/0x1p-24),
+                                           /*geopotential_tolerance=*/0x1p-24),
       Ephemeris<Frame>::FixedStepParameters(integrator, step));
 }
 
