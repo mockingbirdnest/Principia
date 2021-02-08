@@ -20,9 +20,15 @@
 % Language.
 
 \RequirePackage{polyglossia}
-\setdefaultlanguage{english}
+\setdefaultlanguage[variant=british]{english}
 \setotherlanguages{greek,german,russian,latin,french}
+\RequirePackage{csquotes}
+
 \newcommand{\foreign}{\emph}
+
+\RequirePackage{xeCJK}
+\makexeCJKinactive
+\newcommand{\chinese}[1]{{\makexeCJKactive\cjkfont#1\makexeCJKinactive}}
 
 % Font definitions.
 
@@ -62,6 +68,9 @@
   SmallCapsFeatures={Letters=SmallCaps},
   Contextuals=WordFinal
             ]{Linux Biolinum O}
+
+\newfontfamily\cjkfont{BabelStoneHan.ttf}
+\setCJKmainfont{BabelStoneHan.ttf}
 
 % Layout.
 

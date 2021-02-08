@@ -87,6 +87,7 @@ internal static class Formatters {
     CelestialBody primary) {
     double half_width_angle = (interval.max - interval.min) / 2;
     if (half_width_angle > Math.PI) {
+      // TODO(egg): Translate.
       return "(precesses)";
     }
     double half_width_distance = half_width_angle * primary.Radius;
@@ -299,10 +300,16 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
                                   multiline_style,
                                   UnityEngine.GUILayout.Height(five_lines));
       Style.HorizontalLine();
+      RenderLowestAltitude(elements, primary);
+      Style.HorizontalLine();
+      UnityEngine.GUILayout.Label(
+          Localizer.Format("#Principia_OrbitAnalyser_Elements_MeanElements"));
       RenderOrbitalElements(elements, primary);
       Style.HorizontalLine();
+      UnityEngine.GUILayout.Label(
+          Localizer.Format("#Principia_OrbitAnalyser_GroundTrack"));
       RenderOrbitRecurrence(recurrence, primary);
-      Style.HorizontalLine();
+      Style.LineSpacing();
       RenderOrbitGroundTrack(ground_track, primary);
     }
     UnityEngine.GUI.DragWindow();
@@ -376,13 +383,8 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
                   "#Principia_OrbitAnalyser_OrbitDescription_Semisynchronous");
               break;
             default:
-              properties += Localizer.Format(
-                  "#Principia_OrbitAnalyser_OrbitDescription_Subsynchronous");
               break;
           }
-        } else if (recurrence.Value.dto == 0) {
-          properties += Localizer.Format(
-              "#Principia_OrbitAnalyser_OrbitDescription_Supersynchronous");
         }
       }
     }
@@ -391,8 +393,8 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
                             primary.name);
   }
 
-  private void RenderOrbitalElements(OrbitalElements? elements,
-                                     CelestialBody primary) {
+  private void RenderLowestAltitude(OrbitalElements? elements,
+                                    CelestialBody primary) {
     double? lowest_distance = elements?.radial_distance.min;
     LabeledField(
         Localizer.Format("#Principia_OrbitAnalyser_Elements_LowestAltitude"),
@@ -413,8 +415,10 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
                     : "";
     UnityEngine.GUILayout.Label(altitude_warning,
                                 Style.Warning(UnityEngine.GUI.skin.label));
-    UnityEngine.GUILayout.Label(
-        Localizer.Format("#Principia_OrbitAnalyser_Elements_MeanElements"));
+  }
+
+  private void RenderOrbitalElements(OrbitalElements? elements,
+                                     CelestialBody primary) {
     LabeledField(
         Localizer.Format("#Principia_OrbitAnalyser_Elements_SiderealPeriod"),
         elements?.sidereal_period.FormatDuration());
@@ -521,11 +525,14 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(
           Localizer.Format(
-              "#Principia_OrbitAnalyser_GroundTrack_LongitudesOfEquatorialCrossings"),
+              "#Principia_OrbitAnalyser_GroundTrack_LongitudesOfEquatorialCrossings_Prefix"),
           UnityEngine.GUILayout.ExpandWidth(false));
       string text = UnityEngine.GUILayout.TextField(
           $"{ground_track_revolution_}",
           GUILayoutWidth(2));
+      UnityEngine.GUILayout.Label(
+          Localizer.Format(
+              "#Principia_OrbitAnalyser_GroundTrack_LongitudesOfEquatorialCrossings_Suffix"));
       if (int.TryParse(text, out int revolution)) {
         ground_track_revolution_ = revolution;
       }

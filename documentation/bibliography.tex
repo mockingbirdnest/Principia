@@ -11,6 +11,12 @@
     \ifhyperref
       {\href{https://doi.org/#1}{\nolinkurl{#1}}}
       {\nolinkurl{#1}}}
+\DeclareFieldFormat{eprint:cnki}{%
+  \newline
+  \mkbibacro{CNKI}\addcolon\space
+    \ifhyperref
+      {\href{http://www.cnki.com.cn/Article/CJFDTOTAL-#1.htm}{\nolinkurl{#1}}}
+      {\nolinkurl{#1}}}
 \DeclareFieldFormat{eprint}{%
   \newline
   eprint\addcolon\space

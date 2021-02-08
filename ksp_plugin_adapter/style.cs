@@ -49,6 +49,13 @@ internal static class Style {
     UnityEngine.GUILayout.Label("", horizontal_line_style);
   }
 
+  public static void LineSpacing() {
+    var horizontal_line_style =
+        new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label);
+    horizontal_line_style.fixedHeight /= 5;
+    UnityEngine.GUILayout.Label("", horizontal_line_style);
+  }
+
   private static UnityEngine.Texture2D ultra_cool_grey_texture {
     get {
       var texture = new UnityEngine.Texture2D(width : 4, height : 4);
