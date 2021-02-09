@@ -60,7 +60,7 @@ internal static class Formatters {
     double half_width = (interval.max - interval.min) / 2;
     double midpoint = interval.min + half_width;
     if (half_width > Math.PI) {
-      return "(precesses)";
+      return Localizer.Format("#Principia_OrbitAnalyser_Precesses");
     }
     const double degree = Math.PI / 180;
     int fractional_digits =
@@ -87,7 +87,6 @@ internal static class Formatters {
     CelestialBody primary) {
     double half_width_angle = (interval.max - interval.min) / 2;
     if (half_width_angle > Math.PI) {
-      // TODO(egg): Translate.
       return "(precesses)";
     }
     double half_width_distance = half_width_angle * primary.Radius;
