@@ -87,7 +87,7 @@ internal static class Formatters {
     CelestialBody primary) {
     double half_width_angle = (interval.max - interval.min) / 2;
     if (half_width_angle > Math.PI) {
-      return "(precesses)";
+      return Localizer.Format("#Principia_OrbitAnalyser_Precesses");
     }
     double half_width_distance = half_width_angle * primary.Radius;
     string formatted_distance = half_width_distance > 1000
