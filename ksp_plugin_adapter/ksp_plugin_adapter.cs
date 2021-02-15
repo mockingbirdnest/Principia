@@ -226,7 +226,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         Part.ForceHolder holder) {
       return new PartCentredForceHolder{
           force_in_world_coordinates_ = holder.force,
-          lever_arm_in_world_coordinates_ = holder.pos - part.rb.worldCenterOfMass
+          lever_arm_in_world_coordinates_ =
+              holder.pos - part.rb.worldCenterOfMass
       };
     }
 
