@@ -577,7 +577,7 @@ void Vessel::StartPrognosticatorIfNeeded() {
 }
 
 Status Vessel::RepeatedlyFlowPrognostication() {
-  for (auto wakeup_time = std::chrono::steady_clock::now();;
+  for (std::chrono::steady_clock::time_point wakeup_time;;
        std::this_thread::sleep_until(wakeup_time)) {
     // No point in going faster than 50 Hz.
     wakeup_time =
