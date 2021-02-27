@@ -87,6 +87,7 @@ SHARED_ARGS   := \
 	-Wall -Wpedantic                                              \
 	-Wno-char-subscripts                                          \
 	-Wno-gnu-anonymous-struct                                     \
+	-Wno-c99-extensions                                           \
 	-Wno-gnu-zero-variadic-macro-arguments                        \
 	-Wno-nested-anon-types                                        \
 	-Wno-unknown-pragmas                                          \
