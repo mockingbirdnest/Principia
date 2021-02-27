@@ -10,6 +10,7 @@
 #include <string>
 
 #include "absl/synchronization/mutex.h"
+#include "base/box.hpp"
 #include "base/not_null.hpp"
 #include "base/status.hpp"
 #include "geometry/frame.hpp"
@@ -34,6 +35,7 @@ FORWARD_DECLARE_FROM(part, class, Part);
 
 namespace internal_pile_up {
 
+using base::Box;
 using base::not_null;
 using base::Status;
 using geometry::Arbitrary;
@@ -150,7 +152,7 @@ class PileUp {
       std::list<not_null<Part*>>&& parts,
       Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters,
       Ephemeris<Barycentric>::FixedStepParameters fixed_step_parameters,
-      not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history,
+      Box<DiscreteTrajectory<Barycentric>> history,
       DiscreteTrajectory<Barycentric>* psychohistory,
       Bivector<AngularMomentum, NonRotatingPileUp> const& angular_momentum,
       not_null<Ephemeris<Barycentric>*> ephemeris,
@@ -205,7 +207,7 @@ class PileUp {
   // integrated with a fixed step using |fixed_instance_|, except in the
   // presence of intrinsic acceleration.  It is authoritative in the sense that
   // it is never going to change.
-  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_;
+  Box<DiscreteTrajectory<Barycentric>> history_;
 
   // The |psychohistory_| is the recent past trajectory of the pile-up.  Since
   // we need to draw something between the last point of the |history_| and the

@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "astronomy/epoch.hpp"
+#include "base/box.hpp"
 #include "base/jthread.hpp"
 #include "base/macros.hpp"
 #include "base/map_util.hpp"
@@ -32,6 +33,7 @@ namespace physics {
 namespace internal_ephemeris {
 
 using astronomy::J2000;
+using base::Box;
 using base::dynamic_cast_not_null;
 using base::Error;
 using base::FindOrDie;
@@ -268,7 +270,7 @@ Ephemeris<Frame>::Ephemeris(
 
     auto const [it, inserted] = bodies_to_trajectories_.emplace(
         body.get(),
-        std::make_unique<ContinuousTrajectory<Frame>>(
+        Box<ContinuousTrajectory<Frame>>(
             fixed_step_parameters_.step_,
             accuracy_parameters_.fitting_tolerance_));
     CHECK(inserted);
@@ -778,7 +780,7 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   ephemeris->trajectories_.clear();
   for (auto const& trajectory : message.trajectory()) {
     not_null<MassiveBody const*> const body = ephemeris->bodies_[index].get();
-    not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>
+    Box<ContinuousTrajectory<Frame>>
         deserialized_trajectory =
             ContinuousTrajectory<Frame>::ReadFromMessage(trajectory);
     ephemeris->trajectories_.push_back(deserialized_trajectory.get());

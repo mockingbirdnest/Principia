@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/box.hpp"
 #include "base/disjoint_sets.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
@@ -24,6 +25,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_part {
 
+using base::Box;
 using base::not_null;
 using base::Subset;
 using geometry::Bivector;
@@ -199,7 +201,7 @@ class Part final {
   // to make it convenient to hook the |psychohistory_| even if there is no
   // point in the |history_| (it's not possible to fork-at-last an empty root
   // trajectory, but it works for a non-root).
-  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> prehistory_;
+  Box<DiscreteTrajectory<Barycentric>> prehistory_;
   // The |history_| is nearly always not null, except in some transient
   // situations.  It's a fork of the |prehistory_|.
   DiscreteTrajectory<Barycentric>* history_ = nullptr;

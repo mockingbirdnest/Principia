@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/box.hpp"
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
@@ -16,6 +17,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_flight_plan {
 
+using base::Box;
 using base::Error;
 using base::make_not_null_unique;
 using base::Status;
@@ -141,7 +143,7 @@ void FlightPlan::ForgetBefore(Instant const& time,
 
   // Detach the first coast to keep, truncate its beginning, and reattach it
   // to a new root.
-  std::unique_ptr<DiscreteTrajectory<Barycentric>> new_first_coast =
+  Box<DiscreteTrajectory<Barycentric>> new_first_coast =
       segments_[*first_to_keep]->DetachFork();
   new_first_coast->ForgetBefore(time);
   root_ = make_not_null_unique<DiscreteTrajectory<Barycentric>>();

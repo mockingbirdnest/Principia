@@ -355,10 +355,10 @@ not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator, Traits>::NewFork(
   } else {
     time = Traits::time(timeline_it);
   }
-  auto const child_it = children_.emplace(time, std::make_unique<Tr4jectory>());
+  auto const child_it = children_.emplace(time, Box<Tr4jectory>());
 
   // Now set the members of the child object.
-  std::unique_ptr<Tr4jectory> const& child_forkable = child_it->second;
+  Box<Tr4jectory> const& child_forkable = child_it->second;
   child_forkable->parent_ = that();
   child_forkable->position_in_parent_children_ = child_it;
   child_forkable->position_in_parent_timeline_ = timeline_it;
@@ -368,7 +368,7 @@ not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator, Traits>::NewFork(
 
 template<typename Tr4jectory, typename It3rator, typename Traits>
 void Forkable<Tr4jectory, It3rator, Traits>::AttachForkToCopiedBegin(
-    not_null<std::unique_ptr<Tr4jectory>> fork) {
+    Box<Tr4jectory> fork) {
   CHECK(fork->is_root());
   CHECK(!fork->timeline_empty());
   auto const fork_timeline_begin = fork->timeline_begin();
@@ -400,7 +400,7 @@ void Forkable<Tr4jectory, It3rator, Traits>::AttachForkToCopiedBegin(
 }
 
 template<typename Tr4jectory, typename It3rator, typename Traits>
-not_null<std::unique_ptr<Tr4jectory>>
+Box<Tr4jectory>
 Forkable<Tr4jectory, It3rator, Traits>::DetachForkWithCopiedBegin() {
   CHECK(!is_root());
 

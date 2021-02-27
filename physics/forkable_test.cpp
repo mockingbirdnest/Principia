@@ -14,7 +14,6 @@ namespace principia {
 namespace physics {
 namespace internal_forkable {
 
-using base::make_not_null_unique;
 using base::not_constructible;
 using geometry::Instant;
 using quantities::si::Second;
@@ -335,14 +334,7 @@ TEST_F(ForkableTest, DeleteForkSuccess) {
 TEST_F(ForkableDeathTest, AttachForkWithCopiedBeginError) {
   EXPECT_DEATH({
     trajectory_.push_back(t1_);
-    not_null<FakeTrajectory*> const fork =
-        trajectory_.NewFork(trajectory_.timeline_find(t1_));
-    trajectory_.AttachForkToCopiedBegin(std::unique_ptr<FakeTrajectory>(fork));
-  }, "is_root");
-  EXPECT_DEATH({
-    trajectory_.push_back(t1_);
-    not_null<std::unique_ptr<FakeTrajectory>> fork =
-        make_not_null_unique<FakeTrajectory>();
+    Box<FakeTrajectory> fork{};
     trajectory_.AttachForkToCopiedBegin(std::move(fork));
   }, "timeline_empty");
 }
@@ -352,8 +344,7 @@ TEST_F(ForkableTest, AttachForkWithCopiedBeginSuccess) {
   trajectory_.push_back(t2_);
   trajectory_.push_back(t3_);
 
-  not_null<std::unique_ptr<FakeTrajectory>> fork1 =
-      make_not_null_unique<FakeTrajectory>();
+  Box<FakeTrajectory> fork1{};
   fork1->push_back(t3_);
   not_null<FakeTrajectory*> const fork2 =
       fork1->NewFork(fork1->timeline_find(t3_));
@@ -377,8 +368,7 @@ TEST_F(ForkableTest, AttachForkWithCopiedBeginEmpty) {
   trajectory_.push_back(t1_);
   not_null<FakeTrajectory*> const fork1 =
       trajectory_.NewFork(trajectory_.timeline_find(t1_));
-  not_null<std::unique_ptr<FakeTrajectory>> fork2 =
-      make_not_null_unique<FakeTrajectory>();
+  Box<FakeTrajectory> fork2{};
   fork2->push_back(t3_);
   fork1->AttachForkToCopiedBegin(std::move(fork2));
 }

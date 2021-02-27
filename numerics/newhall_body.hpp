@@ -14,7 +14,6 @@ namespace principia {
 namespace numerics {
 namespace internal_newhall {
 
-using base::make_not_null_unique;
 using geometry::Barycentre;
 using quantities::Exponentiation;
 using quantities::Frequency;
@@ -225,7 +224,7 @@ NewhallApproximationInMonomialBasis(std::vector<Vector> const& q,
 
 #define PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(degree)    \
   case (degree):                                                          \
-    return make_not_null_unique<                                          \
+    return Box<                                          \
         PolynomialInMonomialBasis<Vector, Instant, (degree), Evaluator>>( \
         NewhallApproximationInMonomialBasis<Vector, (degree), Evaluator>( \
             q, v,                                                         \
@@ -233,7 +232,7 @@ NewhallApproximationInMonomialBasis(std::vector<Vector> const& q,
             error_estimate))
 
 template<typename Vector, template<typename, typename, int> class Evaluator>
-not_null<std::unique_ptr<Polynomial<Vector, Instant>>>
+Box<Polynomial<Vector, Instant>>
 NewhallApproximationInMonomialBasis(int degree,
                                     std::vector<Vector> const& q,
                                     std::vector<Variation<Vector>> const& v,

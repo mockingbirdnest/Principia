@@ -66,7 +66,7 @@ class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {
   using ContinuousTrajectory<Frame>::ContinuousTrajectory;
 
   // Mock the Newhall factory.
-  not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+  Box<Polynomial<Displacement<Frame>, Instant>>
   NewhallApproximationInMonomialBasis(
       int degree,
       std::vector<Displacement<Frame>> const& q,
@@ -83,7 +83,7 @@ class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {
            Instant const& t_min,
            Instant const& t_max,
            Displacement<Frame>& error_estimate,
-           not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>&
+           Box<Polynomial<Displacement<Frame>, Instant>>&
                polynomial));
 
   Status LockAndComputeBestNewhallApproximation(
@@ -99,7 +99,7 @@ class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {
 };
 
 template<typename Frame>
-not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+Box<Polynomial<Displacement<Frame>, Instant>>
 TestableContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
     int degree,
     std::vector<Displacement<Frame>> const& q,
@@ -111,8 +111,8 @@ TestableContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
                 Displacement<Frame>, Instant, /*degree=*/1, HornerEvaluator>;
   typename P::Coefficients const coefficients = {Displacement<Frame>(),
                                                  Velocity<Frame>()};
-  not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
-      polynomial = make_not_null_unique<P>(coefficients, Instant());
+  Box<Polynomial<Displacement<Frame>, Instant>> polynomial =
+      Box<P>(coefficients, Instant());
   FillNewhallApproximationInMonomialBasis(degree,
                                           q, v,
                                           t_min, t_max,

@@ -321,14 +321,14 @@ std::vector<std::string> TupleSerializer<Tuple, size, size>::TupleDebugString(
 
 #define PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(value)                  \
   case value:                                                          \
-    return make_not_null_unique<                                       \
+    return Box<                                                        \
         PolynomialInMonomialBasis<Value, Argument, value, Evaluator>>( \
         PolynomialInMonomialBasis<Value, Argument, value, Evaluator>:: \
             ReadFromMessage(message))
 
 template<typename Value_, typename Argument_>
 template<template<typename, typename, int> typename Evaluator>
-not_null<std::unique_ptr<Polynomial<Value_, Argument_>>>
+Box<Polynomial<Value_, Argument_>>
 Polynomial<Value_, Argument_>::ReadFromMessage(
     serialization::Polynomial const& message) {
   // 24 is the largest exponent that we can serialize for Quantity.

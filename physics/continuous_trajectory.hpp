@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "absl/synchronization/mutex.h"
+#include "base/box.hpp"
 #include "base/not_null.hpp"
 #include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
@@ -23,17 +24,18 @@ namespace principia {
 namespace physics {
 namespace internal_continuous_trajectory {
 
+using base::Box;
 using base::not_null;
 using base::Status;
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Velocity;
-using quantities::Length;
-using quantities::Time;
 using numerics::EstrinEvaluator;
 using numerics::PiecewisePoissonSeries;
 using numerics::Polynomial;
+using quantities::Length;
+using quantities::Time;
 
 template<typename Frame>
 class TestableContinuousTrajectory;
@@ -110,7 +112,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
       const EXCLUDES(lock_);
   template<typename F = Frame,
            typename = std::enable_if_t<base::is_serializable_v<F>>>
-  static not_null<std::unique_ptr<ContinuousTrajectory>> ReadFromMessage(
+  static Box<ContinuousTrajectory> ReadFromMessage(
       serialization::ContinuousTrajectory const& message);
 
   // Checkpointing support.  The checkpointer is exposed to make it possible for
@@ -137,11 +139,9 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   struct InstantPolynomialPair {
     InstantPolynomialPair(
         Instant t_max,
-        not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
-            polynomial);
+        Box<Polynomial<Displacement<Frame>, Instant>> polynomial);
     Instant t_max;
-    not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
-        polynomial;
+    Box<Polynomial<Displacement<Frame>, Instant>> polynomial;
   };
   using InstantPolynomialPairs = std::vector<InstantPolynomialPair>;
 
@@ -149,7 +149,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   Instant t_max_locked() const REQUIRES_SHARED(lock_);
 
   // Really a static method, but may be overridden for testing.
-  virtual not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+  virtual Box<Polynomial<Displacement<Frame>, Instant>>
   NewhallApproximationInMonomialBasis(
       int degree,
       std::vector<Displacement<Frame>> const& q,

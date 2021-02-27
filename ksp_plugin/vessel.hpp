@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "absl/synchronization/mutex.h"
+#include "base/box.hpp"
 #include "base/jthread.hpp"
 #include "base/status.hpp"
 #include "ksp_plugin/celestial.hpp"
@@ -26,6 +27,8 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_vessel {
 
+using base::Box;
+using base::NullableBox;
 using base::not_null;
 using base::Status;
 using geometry::Instant;
@@ -230,11 +233,11 @@ class Vessel {
   // parameters.
   Status FlowPrognostication(
       PrognosticatorParameters prognosticator_parameters,
-      std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication);
+      NullableBox<DiscreteTrajectory<Barycentric>>& prognostication);
 
   // Publishes the prognostication if the computation was not cancelled.
   void SwapPrognostication(
-      std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication,
+      NullableBox<DiscreteTrajectory<Barycentric>>& prognostication,
       Status const& status);
 
   // Appends to |trajectory| the centre of mass of the trajectories of the parts
@@ -247,7 +250,7 @@ class Vessel {
   // Attaches the given |trajectory| to the end of the |psychohistory_| to
   // become the new |prediction_|.
   void AttachPrediction(
-      not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> trajectory);
+      Box<DiscreteTrajectory<Barycentric>> trajectory);
 
   GUID const guid_;
   std::string name_;
@@ -272,7 +275,7 @@ class Vessel {
   base::jthread prognosticator_;
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
-  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_;
+  Box<DiscreteTrajectory<Barycentric>> history_;
   DiscreteTrajectory<Barycentric>* psychohistory_ = nullptr;
 
   // The |prediction_| is forked off the end of the |psychohistory_|.
@@ -280,7 +283,7 @@ class Vessel {
 
   // The |prognostication_| is a root trajectory that's computed asynchronously
   // and may or may not be used as a prediction;
-  std::unique_ptr<DiscreteTrajectory<Barycentric>> prognostication_
+  NullableBox<DiscreteTrajectory<Barycentric>> prognostication_
       GUARDED_BY(prognosticator_lock_);
 
   std::unique_ptr<FlightPlan> flight_plan_;

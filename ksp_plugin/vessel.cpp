@@ -62,7 +62,7 @@ Vessel::Vessel(GUID guid,
           std::move(prediction_adaptive_step_parameters)),
       parent_(parent),
       ephemeris_(ephemeris),
-      history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
+      history_(Box<DiscreteTrajectory<Barycentric>>()) {
   // Can't create the |psychohistory_| and |prediction_| here because |history_|
   // is empty;
 }
@@ -362,7 +362,7 @@ void Vessel::RefreshPrediction() {
                                prediction_adaptive_step_parameters_,
                                /*shutdown=*/false};
   if (synchronous_) {
-    std::unique_ptr<DiscreteTrajectory<Barycentric>> prognostication;
+    NullableBox<DiscreteTrajectory<Barycentric>> prognostication = nullptr;
     std::optional<PrognosticatorParameters> prognosticator_parameters;
     std::swap(prognosticator_parameters, prognosticator_parameters_);
     Status const status =
@@ -566,7 +566,7 @@ Vessel::Vessel()
       prediction_adaptive_step_parameters_(DefaultPredictionParameters()),
       parent_(testing_utilities::make_not_null<Celestial const*>()),
       ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
-      history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {}
+      history_(Box<DiscreteTrajectory<Barycentric>>()) {}
 
 void Vessel::StartPrognosticatorIfNeeded() {
   prognosticator_lock_.AssertHeld();
@@ -598,7 +598,7 @@ Status Vessel::RepeatedlyFlowPrognostication() {
       break;
     }
 
-    std::unique_ptr<DiscreteTrajectory<Barycentric>> prognostication;
+    NullableBox<DiscreteTrajectory<Barycentric>> prognostication = nullptr;
     Status const status =
         FlowPrognostication(std::move(*prognosticator_parameters),
                             prognostication);
@@ -613,10 +613,10 @@ Status Vessel::RepeatedlyFlowPrognostication() {
 
 Status Vessel::FlowPrognostication(
     PrognosticatorParameters prognosticator_parameters,
-    std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication) {
+    NullableBox<DiscreteTrajectory<Barycentric>>& prognostication) {
   // The guard contained in |prognosticator_parameters| ensures that the |t_min|
   // of the ephemeris doesn't move in this function.
-  prognostication = std::make_unique<DiscreteTrajectory<Barycentric>>();
+  prognostication = Box<DiscreteTrajectory<Barycentric>>();
   prognostication->Append(
       prognosticator_parameters.first_time,
       prognosticator_parameters.first_degrees_of_freedom);
@@ -645,7 +645,7 @@ Status Vessel::FlowPrognostication(
 }
 
 void Vessel::SwapPrognostication(
-    std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication,
+    NullableBox<DiscreteTrajectory<Barycentric>>& prognostication,
     Status const& status) {
   prognosticator_lock_.AssertHeld();
   if (status.error() != Error::CANCELLED) {
@@ -710,7 +710,7 @@ void Vessel::AppendToVesselTrajectory(
 }
 
 void Vessel::AttachPrediction(
-    not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> trajectory) {
+    Box<DiscreteTrajectory<Barycentric>> trajectory) {
   trajectory->ForgetBefore(psychohistory_->back().time);
   if (trajectory->Empty()) {
     prediction_ = psychohistory_->NewForkAtLast();

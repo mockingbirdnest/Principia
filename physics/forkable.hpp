@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "absl/container/inlined_vector.h"
+#include "base/box.hpp"
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "serialization/physics.pb.h"
@@ -178,7 +179,7 @@ class Forkable {
   // time as the last point of this object.  |fork| is attached to this object
   // as a child at the end of the timeline.  The caller must then delete the
   // first point of |fork|'s timeline.
-  void AttachForkToCopiedBegin(not_null<std::unique_ptr<Tr4jectory>> fork);
+  void AttachForkToCopiedBegin(Box<Tr4jectory> fork);
 
   // This object must not be a root.  It is detached from its parent and becomes
   // a root.  All the children which were fork at this object's fork time are
@@ -186,7 +187,7 @@ class Forkable {
   // requires the caller to ensure that this object's timeline is not empty and
   // that its beginning properly represents the fork time.  Returns an owning
   // pointer to this object.
-  not_null<std::unique_ptr<Tr4jectory>> DetachForkWithCopiedBegin();
+  Box<Tr4jectory> DetachForkWithCopiedBegin();
 
   // Deletes all forks for times (strictly) greater than |time|.  |time| must be
   // at or after the fork time of this trajectory, if any.
@@ -217,7 +218,7 @@ class Forkable {
   // There may be several forks starting from the same time, hence the multimap.
   // A level of indirection is needed to avoid referencing an incomplete type in
   // CRTP.
-  using Children = std::multimap<Instant, std::unique_ptr<Tr4jectory>>;
+  using Children = std::multimap<Instant, Box<Tr4jectory>>;
 
   // Null for a root.
   Tr4jectory* parent_ = nullptr;

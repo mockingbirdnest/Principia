@@ -64,7 +64,6 @@ namespace internal_discrete_trajectory {
 using astronomy::InfiniteFuture;
 using astronomy::InfinitePast;
 using base::Flags;
-using base::make_not_null_unique;
 using base::ZfpCompressor;
 using geometry::Displacement;
 using numerics::FitHermiteSpline;
@@ -115,7 +114,7 @@ DiscreteTrajectory<Frame>::NewForkAtLast() {
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::AttachFork(
-    not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> fork) {
+    Box<DiscreteTrajectory<Frame>> fork) {
   CHECK(fork->is_root());
   CHECK(!this->Empty());
 
@@ -160,7 +159,7 @@ void DiscreteTrajectory<Frame>::AttachFork(
 }
 
 template<typename Frame>
-not_null<std::unique_ptr<DiscreteTrajectory<Frame>>>
+Box<DiscreteTrajectory<Frame>>
 DiscreteTrajectory<Frame>::DetachFork() {
   CHECK(!this->is_root());
 
@@ -345,11 +344,11 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
 
 template<typename Frame>
 template<typename, typename>
-not_null<std::unique_ptr<DiscreteTrajectory<Frame>>>
+Box<DiscreteTrajectory<Frame>>
 DiscreteTrajectory<Frame>::ReadFromMessage(
     serialization::DiscreteTrajectory const& message,
     std::vector<DiscreteTrajectory<Frame>**> const& forks) {
-  auto trajectory = make_not_null_unique<DiscreteTrajectory>();
+  auto trajectory = Box<DiscreteTrajectory>();
   CHECK(std::all_of(forks.begin(),
                     forks.end(),
                     [](DiscreteTrajectory<Frame>** const fork) {

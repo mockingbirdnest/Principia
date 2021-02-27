@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "astronomy/frames.hpp"
-#include "base/not_null.hpp"
+#include "base/box.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/named_quantities.hpp"
 #include "numerics/newhall.hpp"
@@ -18,7 +18,7 @@
 namespace principia {
 
 using astronomy::ICRS;
-using base::not_null;
+using base::Box;
 using geometry::Displacement;
 using geometry::Instant;
 using quantities::Variation;
@@ -95,9 +95,9 @@ void BM_NewhallApproximationDisplacement(benchmark::State& state) {
 using ResultЧебышёвDouble = ЧебышёвSeries<double>;
 using ResultЧебышёвDisplacement = ЧебышёвSeries<Displacement<ICRS>>;
 using ResultMonomialDouble =
-    not_null<std::unique_ptr<Polynomial<double, Instant>>>;
+    Box<Polynomial<double, Instant>>;
 using ResultMonomialDisplacement =
-    not_null<std::unique_ptr<Polynomial<Displacement<ICRS>, Instant>>>;
+    Box<Polynomial<Displacement<ICRS>, Instant>>;
 
 BENCHMARK_TEMPLATE(
     BM_NewhallApproximationDouble,

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "absl/synchronization/mutex.h"
+#include "base/box.hpp"
 #include "base/not_null.hpp"
 #include "base/status.hpp"
 #include "geometry/grassmann.hpp"
@@ -31,6 +32,7 @@ namespace principia {
 namespace physics {
 namespace internal_ephemeris {
 
+using base::Box;
 using base::Error;
 using base::not_null;
 using base::Status;
@@ -414,7 +416,7 @@ class Ephemeris {
   std::vector<not_null<ContinuousTrajectory<Frame>*>> trajectories_;
 
   std::map<not_null<MassiveBody const*>,
-           not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>>
+           Box<ContinuousTrajectory<Frame>>>
       bodies_to_trajectories_;
 
   AccuracyParameters const accuracy_parameters_;

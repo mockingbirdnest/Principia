@@ -372,7 +372,7 @@ Part::Part(PartId const part_id,
       mass_(mass),
       inertia_tensor_(inertia_tensor),
       rigid_motion_(std::move(rigid_motion)),
-      prehistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
+      prehistory_(Box<DiscreteTrajectory<Barycentric>>()),
       subset_node_(make_not_null_unique<Subset<Part>::Node>()),
       deletion_callback_(std::move(deletion_callback)) {
   prehistory_->Append(astronomy::InfinitePast,

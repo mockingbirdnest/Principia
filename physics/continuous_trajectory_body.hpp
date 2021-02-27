@@ -24,7 +24,6 @@ namespace internal_continuous_trajectory {
 
 using base::dynamic_cast_not_null;
 using base::Error;
-using base::make_not_null_unique;
 using geometry::Interval;
 using numerics::EstrinEvaluator;
 using numerics::PoissonSeries;
@@ -367,14 +366,13 @@ void ContinuousTrajectory<Frame>::WriteToMessage(
 
 template<typename Frame>
 template<typename, typename>
-not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>
+Box<ContinuousTrajectory<Frame>>
 ContinuousTrajectory<Frame>::ReadFromMessage(
       serialization::ContinuousTrajectory const& message) {
   bool const is_pre_cohen = message.series_size() > 0;
   bool const is_pre_fatou = !message.has_checkpoint_time();
 
-  not_null<std::unique_ptr<ContinuousTrajectory<Frame>>> continuous_trajectory =
-      std::make_unique<ContinuousTrajectory<Frame>>(
+  Box<ContinuousTrajectory<Frame>> continuous_trajectory(
           Time::ReadFromMessage(message.step()),
           Length::ReadFromMessage(message.tolerance()));
   if (is_pre_cohen) {
@@ -475,13 +473,11 @@ template<typename Frame>
 ContinuousTrajectory<Frame>::ContinuousTrajectory()
     : checkpointer_(/*reader=*/nullptr, /*writer=*/nullptr) {}
 
-template<typename Frame>
+template <typename Frame>
 ContinuousTrajectory<Frame>::InstantPolynomialPair::InstantPolynomialPair(
     Instant const t_max,
-    not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
-        polynomial)
-    : t_max(t_max),
-      polynomial(std::move(polynomial)) {}
+    Box<Polynomial<Displacement<Frame>, Instant>> polynomial)
+    : t_max(t_max), polynomial(std::move(polynomial)) {}
 
 template<typename Frame>
 Instant ContinuousTrajectory<Frame>::t_min_locked() const {
@@ -505,8 +501,8 @@ Instant ContinuousTrajectory<Frame>::t_max_locked() const {
   return polynomials_.crbegin()->t_max;
 }
 
-template<typename Frame>
-not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+template <typename Frame>
+Box<Polynomial<Displacement<Frame>, Instant>>
 ContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
     int degree,
     std::vector<Displacement<Frame>> const& q,

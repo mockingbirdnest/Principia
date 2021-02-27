@@ -8,6 +8,7 @@
 #include <optional>
 #include <vector>
 
+#include "base/box.hpp"
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
@@ -62,6 +63,7 @@ class DiscreteTrajectoryIterator
 
 namespace internal_discrete_trajectory {
 
+using base::Box;
 using base::not_null;
 using geometry::Instant;
 using geometry::Position;
@@ -110,12 +112,12 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // trajectory.  |fork| must be a non-empty root and must start at or after the
   // last time of this trajectory.  If it has a point at the last time of this
   // trajectory, that point is ignored.
-  void AttachFork(not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> fork);
+  void AttachFork(Box<DiscreteTrajectory<Frame>> fork);
 
   // This object must not be a root.  It is detached from its parent and becomes
   // a root.  A point corresponding to the fork point is prepended to this
   // object (so it's never empty) and an owning pointer to it is returned.
-  not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> DetachFork();
+  Box<DiscreteTrajectory<Frame>> DetachFork();
 
   // Appends one point to the trajectory.
   void Append(Instant const& time,
@@ -171,7 +173,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // be null at entry; they may be null at exit.
   template<typename F = Frame,
            typename = std::enable_if_t<base::is_serializable_v<F>>>
-  static not_null<std::unique_ptr<DiscreteTrajectory>> ReadFromMessage(
+  static Box<DiscreteTrajectory> ReadFromMessage(
       serialization::DiscreteTrajectory const& message,
       std::vector<DiscreteTrajectory<Frame>**> const& forks);
 

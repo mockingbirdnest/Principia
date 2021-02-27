@@ -8,6 +8,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/box.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
@@ -42,6 +43,7 @@ FORWARD_DECLARE_FUNCTION_FROM(
 namespace numerics {
 namespace internal_polynomial {
 
+using base::Box;
 using base::is_instance_of_v;
 using base::not_constructible;
 using base::not_null;
@@ -88,7 +90,7 @@ class Polynomial {
   // The evaluator is not part of the serialization because it's fine to read
   // with a different evaluator than the one the polynomial was written with.
   template<template<typename, typename, int> typename Evaluator>
-  static not_null<std::unique_ptr<Polynomial>> ReadFromMessage(
+  static Box<Polynomial> ReadFromMessage(
       serialization::Polynomial const& message);
 };
 

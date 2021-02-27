@@ -472,8 +472,7 @@ TEST_F(DiscreteTrajectoryTest, AttachFork) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
 
-  not_null<std::unique_ptr<DiscreteTrajectory<World>>> fork1 =
-      make_not_null_unique<DiscreteTrajectory<World>>();
+  Box<DiscreteTrajectory<World>> fork1 = Box<DiscreteTrajectory<World>>();
   fork1->Append(t3_, d3_);
   not_null<DiscreteTrajectory<World>*> const fork2 =
       fork1->NewForkWithoutCopy(t3_);
@@ -708,7 +707,7 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   DiscreteTrajectory<World>* deserialized_fork1 = nullptr;
   DiscreteTrajectory<World>* deserialized_fork2 = nullptr;
   DiscreteTrajectory<World>* deserialized_fork3 = nullptr;
-  not_null<std::unique_ptr<DiscreteTrajectory<World>>> const
+  Box<DiscreteTrajectory<World>> const
       deserialized_trajectory =
           DiscreteTrajectory<World>::ReadFromMessage(message,
                                                      {&deserialized_fork1,
@@ -867,7 +866,7 @@ TEST_F(DiscreteTrajectoryTest, Downsampling) {
 
 TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
   DiscreteTrajectory<World> circle;
-  auto deserialized_circle = make_not_null_unique<DiscreteTrajectory<World>>();
+  auto deserialized_circle = Box<DiscreteTrajectory<World>>();
   circle.SetDownsampling(/*max_dense_intervals=*/50,
                          /*tolerance=*/1 * Milli(Metre));
   deserialized_circle->SetDownsampling(/*max_dense_intervals=*/50,
