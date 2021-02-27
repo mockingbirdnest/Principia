@@ -15,6 +15,7 @@ namespace principia {
 namespace physics {
 namespace internal_forkable {
 
+using base::Box;
 using base::not_null;
 using geometry::Instant;
 
