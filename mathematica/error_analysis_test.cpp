@@ -62,7 +62,7 @@ TEST_F(ErrorAnalysisTest,
 
 TEST_F(ErrorAnalysisTest, DISABLED_SECULAR_LocalErrorAnalysis) {
   google::LogToStderr();
-  std::vector<std::string> argv = ::testing::internal::GetArgvs();
+  ::std::vector<std::string> argv = ::testing::internal::GetArgvs();
   std::map<std::string, std::optional<std::string>> flags;
   for (int i = 2; i < argv.size(); ++i) {
     std::string const flag(argv[i]);
