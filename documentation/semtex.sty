@@ -307,6 +307,7 @@
 \newcommand{\emptyBar}[1]{\emptyBarUnkerned{\kern-\nulldelimiterspace #1}}
 \DeclareDelimiter\parentheses{\lparen}{\rparen}
 \DeclareDelimiter\squareBrackets{[}{]}
+\DeclareDelimiter\doubleSquareBrackets{\lBrack}{\rBrack}
 \DeclareDelimiter\curlyBrackets{\lbrace}{\rbrace}
 \DeclareDelimiter\angleBrackets{\langle}{\rangle}
 \DeclareDelimiter\floor{\lfloor}{\rfloor}
@@ -358,6 +359,9 @@
 \newcommand{\PauliMatrix}[1]{\StandardMatrixSymbol{\sigma}_{k}}
 %\newcommand{\PauliTensor}{\StandardTensorSymbol\sigma} Nonstandard.
 
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\argmax}{argmax}
+
 %%% Operators, standard functions.
 %% Prefix operators and functions.
 % \DiracDelta[x] is the dirac delta distribution, with \DiracDelta[x]\of y = 0
@@ -391,6 +395,7 @@
 \DeclareMathOperator{\EllipticPi}{\StandardSymbol\capitalPi}
 % \Sign is the sign function.
 \DeclareMathOperator{\Sign}{sgn}
+\DeclareMathOperator{\FractionalPart}{frac}
 % \Laplacian is the Laplacian.
 \DeclareMathOperator{\Laplacian}{\increment}
 % \diffd is the total differential.
