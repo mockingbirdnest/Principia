@@ -107,7 +107,11 @@ ifeq ($(UNAME_S),Linux)
     SHAREDFLAG := -shared
 endif
 ifeq ($(UNAME_S),Darwin)
-    INCLUDES += -I$(DEP_DIR)compatibility/filesystem -I$(DEP_DIR)compatibility/optional -I$(DEP_DIR)Optional
+    INCLUDES += \
+			-I$(DEP_DIR)compatibility/filesystem \
+			-I$(DEP_DIR)compatibility/optional \
+			-I$(DEP_DIR)Optional \
+			-include "magic/malloc_allocator.hpp"
     SHARED_ARGS += -mmacosx-version-min=10.12 -arch x86_64 -D_LIBCPP_STD_VER=16
     SHAREDFLAG := -dynamiclib
 endif
