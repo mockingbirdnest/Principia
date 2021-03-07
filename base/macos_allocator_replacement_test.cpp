@@ -1,4 +1,5 @@
-#include "magic/malloc_allocator.hpp"
+
+// "macos_allocator_replacement.hpp" should be automagically included.
 
 #include <deque>
 #include <list>
@@ -8,15 +9,21 @@
 #include <utility>
 #include <vector>
 
+#include "base/macros.hpp"
+#include "base/malloc_allocator.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+
+#ifdef OS_MACOSX
 
 namespace principia {
 namespace magic {
 
+using base::MallocAllocator;
+
 // AllocatorIs<container, alloc>() returns true iff container's allocator is
 // alloc.
-template <typename T, typename Allocator>
+template<typename T, typename Allocator>
 constexpr bool AllocatorIs() {
   return std::is_same<typename T::allocator_type, Allocator>::value;
 }
@@ -37,3 +44,5 @@ TEST(PrincipiaMallocAllocatorTest, DefaultAllocators) {
 
 }  // namespace magic
 }  // namespace principia
+
+#endif

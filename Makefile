@@ -111,7 +111,7 @@ ifeq ($(UNAME_S),Darwin)
 			-I$(DEP_DIR)compatibility/filesystem \
 			-I$(DEP_DIR)compatibility/optional \
 			-I$(DEP_DIR)Optional \
-			-include "magic/malloc_allocator.hpp"
+			-include "base/macos_allocator_replacement.hpp"
     SHARED_ARGS += -mmacosx-version-min=10.12 -arch x86_64 -D_LIBCPP_STD_VER=16
     SHAREDFLAG := -dynamiclib
 endif
