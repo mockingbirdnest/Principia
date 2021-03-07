@@ -17,9 +17,7 @@
 #ifdef OS_MACOSX
 
 namespace principia {
-namespace magic {
-
-using base::MallocAllocator;
+namespace base {
 
 // AllocatorIs<container, alloc>() returns true iff container's allocator is
 // alloc.
@@ -29,7 +27,7 @@ constexpr bool AllocatorIs() {
 }
 
 // Test that the default allocators for various classes are overridden.
-TEST(PrincipiaMallocAllocatorTest, DefaultAllocators) {
+TEST(MacosAllocatorReplacementTest, DefaultAllocators) {
   // STL
   EXPECT_TRUE((AllocatorIs<std::vector<int>, MallocAllocator<int>>()));
   EXPECT_TRUE((AllocatorIs<std::deque<int>, MallocAllocator<int>>()));
@@ -42,7 +40,7 @@ TEST(PrincipiaMallocAllocatorTest, DefaultAllocators) {
                            MallocAllocator<std::pair<const int, int>>>()));
 }
 
-}  // namespace magic
+}  // namespace base
 }  // namespace principia
 
 #endif
