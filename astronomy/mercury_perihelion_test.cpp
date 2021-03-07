@@ -243,8 +243,7 @@ TEST_F(MercuryPerihelionTest, DISABLED_Year2050) {
                     keplerian_elements_2050_.longitude_of_ascending_node),
       IsNear(1.5e-7_⑴));
   // The actual number is 42.98" on average, but there are other periodic
-  // effects so your mileage will vary.  See Nobili and Will, The real value of
-  // Mercury's perihelion advance.
+  // effects so your mileage will vary.  See [NW86].
   EXPECT_THAT(*keplerian_elements_2050_.argument_of_periapsis -
                   *keplerian_elements.argument_of_periapsis,
               IsNear(42.87_⑴ * ArcSecond));
