@@ -122,6 +122,39 @@ The values are more precisely\footnote{These may be computed formally, but the e
 leading to $C_{\mathrm{Kahan}}=\hex{2A9F\,7625\,3119\,D328}\Multiply 2^{-52}$ for IEEE 754-2008 binary64.
 However, as we will see in the next section, this value does not optimize the final error, so it is not the one that we use.
 \section{Getting to a third of the precision}
-We use a single iterate of de Lagny’s method to 
+We use a single iterate of Fantet de Lagny’s method to compute $ξ$,\[
+ξ\DefineAs
+\round{q - \round{\frac{\round{\pa{\round{\round{q^2}q}-y} q}}
+                       {\round{2\round{\round{q^2}q}+y}}}}\text.
+\]
+Note that the subtraction in the numerator is exact by Sterbenz's lemma.
+Let $Δ \DefineAs \frac{ξ}{\sqrt[3] y}-1$ and  % TODO(egg): Figure out why \cuberoot does not render here.
+\[
+ξ'=q'-\frac{\pa{{q'}^3-y}q'}{2{q'}^3+y}\text.
+\]
+We have, up to rounding errors (TODO: bound those),\[
+Δ \approx Δ' \DefineAs \frac{ξ'}{\sqrt[3] y}-1\text.
+\]
+With $q'=\cuberoot{y}\pa{1+ε'}$, we can express $Δ'$ using the transformation of
+the relative error error by one step of Fantet de Lagny’s method on the cube root,\[
+Δ' = \frac{2{ε'}^3+{ε'}^4}{3+6ε'+6{ε'}^2+2{ε'}^3}\text.
+\]
+If $q'$ is computed using $γ=γ_{\mathrm{Kahan}}$, we get\begin{align*}
+\max_{y} \abs{Δ'} \approx 0.00002196\text,\\
+\log_2 \max_{y} \abs{Δ'} \approx -15.47\text.
+\end{align*}
+However, $γ_{\mathrm{Kahan}}$, which minimizes $\max_{y} \abs{ε}$, does not
+minimize $\max_{y} \abs{Δ'}$. This is because while $Δ'$ is monotonic as a
+function of $ε'$, it is not odd: positive errors are reduced more than negative
+errors are, so that the minimum is attained for a different value of $γ$.
+Specifically, we have\begin{align*}
+γ_{\mathrm{L}}&\DefineAs\argmin_{γ\in\R}\max_{y}\abs{Δ'}\\
+&\approx 0.09918\,74615\,29855\,99525\,66149\,20761\,31234\,34720\,23067\,92759
+\intertext{with}
+\max_{y} \abs{ε'} &\approx 0.03103\,20521\,29929\,93577\,08166\,75859\,02139\,33719\,41389\,93269\text,
+\intertext{but}
+\max_{y} \abs{Δ'} &\approx 0.00002\,08686\,35536\,39593\,48770\,92008\,39844\,10254\,14831\,61229\text.
+\end{align*}
+The corresponding fixed-point constant is $C_{\mathrm{L}}\DefineAs\hex{2A9F\,7893\,782D\,A1CE} \Multiply 2^{-52}$ for binary64.
 \printbibliography
 \end{document}
