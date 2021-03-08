@@ -18,12 +18,20 @@
 #include <utility>
 #include <vector>
 
+#include "base/allocator_deleter.hpp"
 #include "base/macros.hpp"
 #include "base/malloc_allocator.hpp"
 
 #if !OS_MACOSX
 #error Only include this file for macOS
 #endif
+
+// Forward declare google::compression::Compressor.
+namespace google {
+namespace compression {
+class Compressor;
+}  // namespace compression
+}  // namespace google
 
 namespace principia {
 namespace std {
@@ -63,6 +71,33 @@ template<typename Key,
          typename Compare = std::less<Key>,
          typename Allocator = allocator<std::pair<const Key, T>>>
 using multimap = ::std::multimap<Key, T, Compare, Allocator>;
+
+// unique_ptr is overridden for all classes except arrays and
+// google::compression::Compressor.
+template<typename T,
+         typename Deleter = ::std::conditional_t<
+             (::std::is_array<T>::value ||
+              ::std::is_same<T, ::google::compression::Compressor>::value),
+             ::std::default_delete<T>,
+             base::AllocatorDeleter<allocator<T>>>>
+using unique_ptr = ::std::unique_ptr<T, Deleter>;
+
+// C++ doesn't support function aliases, so we wrap make_unique instead.
+
+// Non-array variant of make_unique.
+template<typename T, typename... Args>
+inline unique_ptr<std::enable_if_t<!std::is_array<T>::value, T>> make_unique(
+    Args&&... args) {
+  return base::MakeUniqueWithAllocator<allocator<T>>(
+      std::forward<Args>(args)...);
+}
+
+// Array variant of make_unique.
+template<typename T>
+inline unique_ptr<std::enable_if_t<std::is_array<T>::value, T>> make_unique(
+    std::size_t size) {
+  return ::std::make_unique<T>(size);
+}
 
 }  // namespace std
 }  // namespace principia
