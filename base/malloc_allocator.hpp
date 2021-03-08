@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <cstdlib>
+#include <type_traits>
 
 namespace principia {
 namespace base {
@@ -27,7 +28,7 @@ class MallocAllocator {
   }
 
   void deallocate(T* p, size_t n) {
-    free(p);
+    free(const_cast<std::remove_const_t<T>*>(p));
   }
 };
 

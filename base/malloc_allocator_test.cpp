@@ -38,5 +38,11 @@ TEST(MallocAllocatorTest, RoundTrip) {
   MallocAllocator<int>().deallocate(p, 1);
 }
 
+TEST(MallocAllocatorTest, Const) {
+  int const* p = MallocAllocator<int const>().allocate(1);
+  EXPECT_THAT(p, Not(IsNull()));
+  MallocAllocator<int const>().deallocate(p, 1);
+}
+
 }  // namespace base
 }  // namespace principia
