@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 
+#include "base/allocated_by.hpp"
 #include "base/array.hpp"
 #include "base/hexadecimal.hpp"
 #include "ksp_plugin/frames.hpp"
@@ -24,6 +25,7 @@ namespace internal_plugin {
 
 using base::Array;
 using base::UniqueArray;
+using base::AssertAllocatedBy;
 using base::HexadecimalEncoder;
 using geometry::Bivector;
 using geometry::Trivector;
@@ -64,9 +66,10 @@ std::map<GUID, not_null<Vessel const*>> TestablePlugin::vessels() const {
 
 not_null<std::unique_ptr<TestablePlugin>> TestablePlugin::ReadFromMessage(
   serialization::Plugin const& message) {
-  std::unique_ptr<Plugin> plugin = Plugin::ReadFromMessage(message);
+  Plugin* plugin = Plugin::ReadFromMessage(message).release();
   return std::unique_ptr<TestablePlugin>(
-      static_cast<TestablePlugin*>(plugin.release()));
+      AssertAllocatedBy<std::allocator<TestablePlugin>>(
+          static_cast<TestablePlugin*>(plugin)));
 }
 
 class PluginCompatibilityTest : public testing::Test {
