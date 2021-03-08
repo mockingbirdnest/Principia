@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "base/allocated_by.hpp"
 #include "base/array.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/version.hpp"
@@ -24,7 +25,8 @@ class RecorderTest : public testing::Test {
   RecorderTest()
       : test_name_(
             testing::UnitTest::GetInstance()->current_test_info()->name()),
-        plugin_(interface::principia__NewPlugin("MJD0", "MJD0", 0)),
+        plugin_(base::AssertAllocatedBy<std::allocator<ksp_plugin::Plugin>>(
+            interface::principia__NewPlugin("MJD0", "MJD0", 0))),
         recorder_(new Recorder(test_name_ + ".journal.hex")) {
     Recorder::Activate(recorder_);
   }

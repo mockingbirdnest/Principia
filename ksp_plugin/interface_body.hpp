@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/allocated_by.hpp"
 #include "base/array.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/orthogonal_map.hpp"
@@ -19,6 +20,7 @@
 namespace principia {
 namespace interface {
 
+using base::AssertAllocatedBy;
 using base::UniqueArray;
 using geometry::OrthogonalMap;
 using geometry::RigidTransformation;
@@ -144,7 +146,8 @@ inline bool NaNIndependentEq(double const left, double const right) {
 template<typename T>
 std::unique_ptr<T> TakeOwnership(T** const pointer) {
   CHECK_NOTNULL(pointer);
-  std::unique_ptr<T> owned_pointer(*pointer);
+  std::unique_ptr<T> owned_pointer(
+      AssertAllocatedBy<std::allocator<T>>(*pointer));
   *pointer = nullptr;
   return owned_pointer;
 }

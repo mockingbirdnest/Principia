@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "base/allocated_by.hpp"
 #include "benchmark/benchmark.h"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
@@ -38,7 +39,8 @@ class PlayerTest : public ::testing::Test {
       : test_info_(testing::UnitTest::GetInstance()->current_test_info()),
         test_case_name_(test_info_->test_case_name()),
         test_name_(test_info_->name()),
-        plugin_(interface::principia__NewPlugin("MJD0", "MJD0", 0)) {}
+        plugin_(base::AssertAllocatedBy<std::allocator<ksp_plugin::Plugin>>(
+            interface::principia__NewPlugin("MJD0", "MJD0", 0))) {}
 
   template<typename Profile>
   bool RunIfAppropriate(serialization::Method const& method_in,
