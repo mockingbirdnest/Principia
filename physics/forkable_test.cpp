@@ -4,6 +4,7 @@
 #include <list>
 #include <vector>
 
+#include "base/allocated_by.hpp"
 #include "base/not_constructible.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
@@ -14,6 +15,7 @@ namespace principia {
 namespace physics {
 namespace internal_forkable {
 
+using base::AssertAllocatedBy;
 using base::make_not_null_unique;
 using base::not_constructible;
 using geometry::Instant;
@@ -337,7 +339,8 @@ TEST_F(ForkableDeathTest, AttachForkWithCopiedBeginError) {
     trajectory_.push_back(t1_);
     not_null<FakeTrajectory*> const fork =
         trajectory_.NewFork(trajectory_.timeline_find(t1_));
-    trajectory_.AttachForkToCopiedBegin(std::unique_ptr<FakeTrajectory>(fork));
+    trajectory_.AttachForkToCopiedBegin(std::unique_ptr<FakeTrajectory>(
+        AssertAllocatedBy<std::allocator<FakeTrajectory>>(fork)));
   }, "is_root");
   EXPECT_DEATH({
     trajectory_.push_back(t1_);
