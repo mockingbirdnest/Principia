@@ -4,6 +4,7 @@
 #include <memory>
 #include <type_traits>
 
+#include "base/allocated_by.hpp"
 #include "base/macros.hpp"
 #include "base/not_constructible.hpp"
 #include "base/traits.hpp"
@@ -250,6 +251,11 @@ class not_null final {
   bool operator!=(pointer other) const;
   bool operator!=(not_null other) const;
 
+  template<typename Q>
+  bool operator==(Q other) const;
+  template<typename Q>
+  bool operator!=(Q other) const;
+
   // Ordering.
   bool operator<(not_null other) const;
   bool operator<=(not_null other) const;
@@ -323,6 +329,10 @@ not_null<Result> dynamic_cast_not_null(not_null<T*> const pointer);
 
 template<typename Result, typename T>
 not_null<Result> dynamic_cast_not_null(not_null<std::unique_ptr<T>>&& pointer);
+
+template<typename Result, typename Alloc>
+not_null<Result> dynamic_cast_not_null(
+    not_null<AllocatedBy<Alloc>> const pointer);
 
 }  // namespace base
 }  // namespace principia

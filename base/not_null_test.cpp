@@ -2,15 +2,17 @@
 #include "base/not_null.hpp"
 
 #include <memory>
-#include <utility>
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "base/allocator_deleter.hpp"
 #include "base/macros.hpp"
-#include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 using testing::Eq;
+using testing::Pointee;
 
 namespace principia {
 namespace base {
@@ -187,6 +189,14 @@ TEST_F(NotNullTest, DynamicCast) {
     not_null<std::unique_ptr<Derived>> d =
         dynamic_cast_not_null<std::unique_ptr<Derived>>(std::move(b));
   }
+  {
+    not_null<std::unique_ptr<Base, AllocatorDeleter<std::allocator<Base>>>>
+        b_owned =
+            check_not_null(MakeUniqueWithAllocator<std::allocator<Derived>>());
+    not_null<AllocatedBy<std::allocator<Base>>> b_unowned = b_owned.get();
+    not_null<Derived*> d_unowned = dynamic_cast_not_null<Derived*>(b_unowned);
+    EXPECT_EQ(static_cast<Base*>(d_unowned), b_owned.get());
+  }
 }
 
 TEST_F(NotNullTest, RValue) {
@@ -257,5 +267,12 @@ TEST_F(NotNullTest, RValue) {
   EXPECT_EQ(5, *owner_const_int);
 }
 
+TEST_F(NotNullTest, UniquePtrAllocatorDeleterToSharedPtr) {
+  not_null<std::unique_ptr<int, AllocatorDeleter<std::allocator<int>>>> owned =
+      check_not_null(MakeUniqueWithAllocator<std::allocator<int>>(2));
+
+  not_null<std::shared_ptr<int>> shared = std::move(owned);  
+  EXPECT_THAT(shared, Pointee(2));
+}
 }  // namespace base
 }  // namespace principia

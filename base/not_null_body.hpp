@@ -153,6 +153,18 @@ bool not_null<Pointer>::operator!=(pointer const other) const {
 }
 
 template<typename Pointer>
+template<typename Q>
+bool not_null<Pointer>::operator==(Q const other) const {
+  return pointer_ == other;
+}
+
+template<typename Pointer>
+template<typename Q>
+bool not_null<Pointer>::operator!=(Q const other) const {
+  return pointer_ != other;
+}
+
+template<typename Pointer>
 bool not_null<Pointer>::operator!=(not_null const other) const {
   return pointer_ != other.pointer_;
 }
@@ -227,8 +239,18 @@ not_null<Result> dynamic_cast_not_null(not_null<std::unique_ptr<T>>&& pointer) {
   static_assert(is_unique<Result>::value,
                 "|Result| should be |std::unique_ptr<U>|");
   T* const unowned_pointer = pointer.release();
-  Result owned_pointer(dynamic_cast<typename Result::pointer>(unowned_pointer));
+  Result owned_pointer(
+      AssertAllocatedBy<std::allocator<typename Result::element_type>>(
+          dynamic_cast<typename Result::element_type*>(unowned_pointer)));
   return std::move(owned_pointer);
+}
+
+template<typename Result, typename Alloc>
+not_null<Result> dynamic_cast_not_null(
+    not_null<AllocatedBy<Alloc>> const pointer) {
+  static_assert(std::is_pointer<Result>::value, "|Result| should be |U*|");
+  using T = typename std::allocator_traits<Alloc>::value_type;
+  return not_null<Result>(dynamic_cast<Result>(static_cast<T*>(pointer)));
 }
 
 }  // namespace base
