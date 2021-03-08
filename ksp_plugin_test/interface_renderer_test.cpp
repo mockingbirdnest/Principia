@@ -60,9 +60,9 @@ class InterfaceRendererTest : public ::testing::Test {
 };
 
 TEST_F(InterfaceRendererTest, SetPlottingFrame) {
-  StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
-     mock_navigation_frame =
-         new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
+  auto mock_navigation_frame =
+      std::make_unique<StrictMock<MockDynamicFrame<Barycentric, Navigation>>>()
+          .release();
   EXPECT_CALL(*plugin_,
               FillBarycentricRotatingNavigationFrame(celestial_index,
                                                      parent_index,
@@ -81,9 +81,9 @@ TEST_F(InterfaceRendererTest, SetPlottingFrame) {
 }
 
 TEST_F(InterfaceRendererTest, Frenet) {
-  StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
-     mock_navigation_frame =
-         new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
+  auto mock_navigation_frame =
+      std::make_unique<StrictMock<MockDynamicFrame<Barycentric, Navigation>>>()
+          .release();
   EXPECT_CALL(*plugin_,
               FillBarycentricRotatingNavigationFrame(celestial_index,
                                                      parent_index,

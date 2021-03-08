@@ -59,11 +59,11 @@ class ApsidesTest : public ::testing::Test {
 TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
   Instant const t0;
   GravitationalParameter const μ = SolarGravitationalParameter;
-  auto const b = new MassiveBody(μ);
 
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<World>> initial_state;
-  bodies.emplace_back(std::unique_ptr<MassiveBody const>(b));
+  auto const b =
+      bodies.emplace_back(std::make_unique<MassiveBody const>(μ)).get();
   initial_state.emplace_back(World::origin, World::unmoving);
 
   Ephemeris<World> ephemeris(
@@ -153,11 +153,10 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
 TEST_F(ApsidesTest, ComputeNodes) {
   Instant const t0;
   GravitationalParameter const μ = SolarGravitationalParameter;
-  auto const b = new MassiveBody(μ);
 
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<World>> initial_state;
-  bodies.emplace_back(std::unique_ptr<MassiveBody const>(b));
+  bodies.emplace_back(std::make_unique<MassiveBody const>(μ));
   initial_state.emplace_back(World::origin, World::unmoving);
 
   Ephemeris<World> ephemeris(

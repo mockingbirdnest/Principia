@@ -848,25 +848,22 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   auto const μ2 = 3 * SolarGravitationalParameter;
   auto const μ3 = 4 * SolarGravitationalParameter;
 
-  auto const b0 =
-      new OblateBody<ICRS>(μ0,
-                           RotatingBody<ICRS>::Parameters(1 * Metre,
-                                                          1 * Radian,
-                                                          t0_,
-                                                          4 * Radian / Second,
-                                                          0 * Radian,
-                                                          π / 2 * Radian),
-                           OblateBody<ICRS>::Parameters(j2, radius));
-  auto const b1 = new MassiveBody(μ1);
-  auto const b2 = new MassiveBody(μ2);
-  auto const b3 = new MassiveBody(μ3);
-
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<ICRS>> initial_state;
-  bodies.emplace_back(std::unique_ptr<MassiveBody const>(b0));
-  bodies.emplace_back(std::unique_ptr<MassiveBody const>(b1));
-  bodies.emplace_back(std::unique_ptr<MassiveBody const>(b2));
-  bodies.emplace_back(std::unique_ptr<MassiveBody const>(b3));
+  auto const b0 = bodies
+                      .emplace_back(std::make_unique<OblateBody<ICRS>>(
+                          μ0,
+                          RotatingBody<ICRS>::Parameters(1 * Metre,
+                                                         1 * Radian,
+                                                         t0_,
+                                                         4 * Radian / Second,
+                                                         0 * Radian,
+                                                         π / 2 * Radian),
+                          OblateBody<ICRS>::Parameters(j2, radius)))
+                      .get();
+  auto const b1 = bodies.emplace_back(std::make_unique<MassiveBody>(μ1)).get();
+  auto const b2 = bodies.emplace_back(std::make_unique<MassiveBody>(μ2)).get();
+  auto const b3 = bodies.emplace_back(std::make_unique<MassiveBody>(μ3)).get();
 
   Velocity<ICRS> const v({0 * si::Unit<Speed>,
                           0 * si::Unit<Speed>,

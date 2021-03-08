@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include "base/allocated_by.hpp"
+#include "base/allocator_new.hpp"
 #include "base/not_null.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/named_quantities.hpp"
@@ -36,6 +38,8 @@
 namespace principia {
 namespace interface {
 
+using base::AllocateWith;
+using base::AssertAllocatedBy;
 using base::check_not_null;
 using base::make_not_null_unique;
 using base::not_null;
@@ -242,7 +246,9 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   EXPECT_CALL(*plugin_,
               FillBodyCentredNonRotatingNavigationFrame(celestial_index, _))
       .WillOnce(FillUniquePtr<1>(
-                    new StrictMock<MockDynamicFrame<Barycentric, Navigation>>));
+          std::make_unique<
+              StrictMock<MockDynamicFrame<Barycentric, Navigation>>>()
+              .release()));
   EXPECT_CALL(
       flight_plan,
       Insert(AllOf(HasThrust(1 * Kilo(Newton)),
@@ -272,11 +278,9 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       .WillOnce(Return(&centre_trajectory));
   // Cannot use a mock here since we use |dynamic_cast| to find the type of the
   // actual frame.
-  BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation> const* const
-      navigation_manœuvre_frame =
-          new BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation>(
-            &ephemeris,
-            &centre);
+  auto navigation_manœuvre_frame = std::make_unique<
+      BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation> const>(
+      &ephemeris, &centre);
 
   MockManœuvre<Barycentric, Navigation>::Intensity intensity;
   intensity.direction = Vector<double, Frenet<Navigation>>({1, 1, 1});
@@ -289,7 +293,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       10 * Kilo(Newton),
       30 * Second * StandardGravity,
       std::unique_ptr<DynamicFrame<Barycentric, Navigation> const>(
-          navigation_manœuvre_frame),
+          std::move(navigation_manœuvre_frame)),
       /*is_inertially_fixed=*/true};
   MockManœuvre<Barycentric, Navigation> navigation_manœuvre(20 * Tonne, burn);
   auto const barycentric_to_plotting = RigidMotion<Barycentric, Navigation>(
@@ -394,7 +398,9 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   EXPECT_CALL(*plugin_,
               FillBodyCentredNonRotatingNavigationFrame(celestial_index, _))
       .WillOnce(FillUniquePtr<1>(
-                    new StrictMock<MockDynamicFrame<Barycentric, Navigation>>));
+          std::make_unique<
+              StrictMock<MockDynamicFrame<Barycentric, Navigation>>>()
+              .release()));
   auto const manœuvre = NavigationManœuvre(/*initial_mass=*/1 * Kilogram, burn);
   EXPECT_CALL(
       flight_plan,

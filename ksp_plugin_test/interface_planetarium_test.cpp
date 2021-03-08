@@ -64,7 +64,8 @@ TEST_F(InterfacePlanetariumTest, ConstructionDestruction) {
               Permutation<World, Navigation>::CoordinatePermutation::YXZ)
               .Forget<OrthogonalMap>())));
   EXPECT_CALL(*plugin_, FillPlanetarium(_, _, _))
-      .WillOnce(FillUniquePtr<2>(new MockPlanetarium));
+      .WillOnce(
+          FillUniquePtr<2>(std::make_unique<MockPlanetarium>().release()));
 
   Planetarium const* planetarium = principia__PlanetariumCreate(plugin_.get(),
                                                                 {100, 200, 300},

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "astronomy/time_scales.hpp"
+#include "base/allocated_by.hpp"
 #include "base/file.hpp"
 #include "base/not_null.hpp"
 #include "base/pull_serializer.hpp"
@@ -36,6 +37,7 @@ namespace principia {
 namespace interface {
 
 using astronomy::operator""_TT;
+using base::AssertAllocatedBy;
 using base::check_not_null;
 using base::make_not_null_unique;
 using base::OFStream;
@@ -236,10 +238,8 @@ TEST_F(InterfaceTest, Log) {
 }
 
 TEST_F(InterfaceTest, NewPlugin) {
-  std::unique_ptr<Plugin> plugin(principia__NewPlugin(
-                                     "MJD1",
-                                     "MJD2",
-                                     planetarium_rotation));
+  std::unique_ptr<Plugin> plugin(AssertAllocatedBy<std::allocator<Plugin>>(
+      principia__NewPlugin("MJD1", "MJD2", planetarium_rotation)));
   EXPECT_THAT(plugin, Not(IsNull()));
 }
 
@@ -541,9 +541,9 @@ TEST_F(InterfaceTest, CelestialFromParent) {
 }
 
 TEST_F(InterfaceTest, NewNavigationFrame) {
-  StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
-      mock_navigation_frame =
-          new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
+  auto mock_navigation_frame =
+      std::make_unique<StrictMock<MockDynamicFrame<Barycentric, Navigation>>>()
+          .release();
 
   NavigationFrameParameters parameters = {
       serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber,
@@ -571,9 +571,9 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
 }
 
 TEST_F(InterfaceTest, NavballOrientation) {
-  StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
-     mock_navigation_frame =
-         new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
+  auto mock_navigation_frame =
+      std::make_unique<StrictMock<MockDynamicFrame<Barycentric, Navigation>>>()
+          .release();
   EXPECT_CALL(*plugin_,
               FillBarycentricRotatingNavigationFrame(celestial_index,
                                                 parent_index,

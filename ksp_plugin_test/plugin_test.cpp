@@ -738,8 +738,8 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   Instant const time = initial_time + 1 * Second;
   Instant t_max = time;
 
-  auto* const mock_dynamic_frame =
-      new MockDynamicFrame<Barycentric, Navigation>();
+  auto const mock_dynamic_frame =
+      std::make_unique<MockDynamicFrame<Barycentric, Navigation>>().release();
   std::vector<not_null<DiscreteTrajectory<Barycentric>*>> trajectories = {
       make_not_null<DiscreteTrajectory<Barycentric>*>()};
   auto instance = make_not_null_unique<MockFixedStepSizeIntegrator<
