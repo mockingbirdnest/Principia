@@ -9,6 +9,8 @@
 #include <optional>
 #include <vector>
 
+#include "base/allocated_by.hpp"
+#include "base/allocator_new.hpp"
 #include "geometry/sign.hpp"
 #include "glog/logging.h"
 #include "quantities/quantities.hpp"
@@ -17,6 +19,8 @@ namespace principia {
 namespace integrators {
 namespace internal_embedded_explicit_runge_kutta_nyström_integrator {
 
+using base::AssertAllocatedBy;
+using base::AllocateWith;
 using base::make_not_null_unique;
 using geometry::Sign;
 using numerics::DoublePrecision;
@@ -266,7 +270,8 @@ not_null<std::unique_ptr<typename Integrator<
     SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
 EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position>::
 Instance::Clone() const {
-  return std::unique_ptr<Instance>(new Instance(*this));
+  return std::unique_ptr<Instance>(AssertAllocatedBy<std::allocator<Instance>>(
+      new (AllocateWith<std::allocator<Instance>>{}) Instance(*this)));
 }
 
 template<typename Method, typename Position>
@@ -303,13 +308,15 @@ ReadFromMessage(
     EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator) {
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is
   // private.
-  return std::unique_ptr<Instance>(new Instance(problem,
-                                                append_state,
-                                                tolerance_to_error_ratio,
-                                                parameters,
-                                                time_step,
-                                                first_use,
-                                                integrator));
+  return std::unique_ptr<Instance>(AssertAllocatedBy<std::allocator<Instance>>(
+      new (AllocateWith<std::allocator<Instance>>{})
+          Instance(problem,
+                   append_state,
+                   tolerance_to_error_ratio,
+                   parameters,
+                   time_step,
+                   first_use,
+                   integrator)));
 }
 
 template<typename Method, typename Position>
@@ -340,14 +347,15 @@ NewInstance(IntegrationProblem<ODE> const& problem,
             Parameters const& parameters) const {
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is
   // private.
-  return std::unique_ptr<Instance>(
-      new Instance(problem,
+  return std::unique_ptr<Instance>(AssertAllocatedBy<std::allocator<Instance>>(
+      new (AllocateWith<std::allocator<Instance>>{})
+          Instance(problem,
                    append_state,
                    tolerance_to_error_ratio,
                    parameters,
                    /*time_step=*/parameters.first_time_step,
                    /*first_use=*/true,
-                   *this));
+                   *this)));
 }
 
 template<typename Method, typename Position>

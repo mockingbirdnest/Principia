@@ -5,6 +5,8 @@
 
 #include <vector>
 
+#include "base/allocated_by.hpp"
+#include "base/allocator_new.hpp"
 #include "geometry/sign.hpp"
 #include "integrators/methods.hpp"
 #include "numerics/ulp_distance.hpp"
@@ -14,6 +16,8 @@ namespace principia {
 namespace integrators {
 namespace internal_symplectic_runge_kutta_nyström_integrator {
 
+using base::AllocateWith;
+using base::AssertAllocatedBy;
 using base::make_not_null_unique;
 using geometry::Sign;
 using numerics::DoublePrecision;
@@ -148,7 +152,8 @@ not_null<std::unique_ptr<typename Integrator<
     SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
 SymplecticRungeKuttaNyströmIntegrator<Method, Position>::
 Instance::Clone() const {
-  return std::unique_ptr<Instance>(new Instance(*this));
+  return std::unique_ptr<Instance>(AssertAllocatedBy<std::allocator<Instance>>(
+      new (AllocateWith<std::allocator<Instance>>{}) Instance(*this)));
 }
 
 template<typename Method, typename Position>
@@ -176,8 +181,9 @@ ReadFromMessage(
     AppendState const& append_state,
     Time const& step,
     SymplecticRungeKuttaNyströmIntegrator const& integrator) {
-  return std::unique_ptr<Instance>(
-      new Instance(problem, append_state, step, integrator));
+  return std::unique_ptr<Instance>(AssertAllocatedBy<std::allocator<Instance>>(
+      new (AllocateWith<std::allocator<Instance>>{})
+          Instance(problem, append_state, step, integrator)));
 }
 
 template<typename Method, typename Position>
@@ -241,8 +247,9 @@ SymplecticRungeKuttaNyströmIntegrator<Method, Position>::NewInstance(
     Time const& step) const {
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is
   // private.
-  return std::unique_ptr<Instance>(
-      new Instance(problem, append_state, step, *this));
+  return std::unique_ptr<Instance>(AssertAllocatedBy<std::allocator<Instance>>(
+      new (AllocateWith<std::allocator<Instance>>{})
+          Instance(problem, append_state, step, *this)));
 }
 
 template<typename Method, typename Position>

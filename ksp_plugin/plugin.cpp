@@ -20,6 +20,8 @@
 #include "astronomy/solar_system_fingerprints.hpp"
 #include "astronomy/stabilize_ksp.hpp"
 #include "astronomy/time_scales.hpp"
+#include "base/allocated_by.hpp"
+#include "base/allocator_new.hpp"
 #include "base/file.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/map_util.hpp"
@@ -64,6 +66,8 @@ using astronomy::KSPStabilizedSystemFingerprints;
 using astronomy::KSPStockSystemFingerprints;
 using astronomy::ParseTT;
 using astronomy::StabilizeKSP;
+using base::AllocateWith;
+using base::AssertAllocatedBy;
 using base::check_not_null;
 using base::dynamic_cast_not_null;
 using base::Error;
@@ -86,8 +90,8 @@ using geometry::Identity;
 using geometry::Normalize;
 using geometry::OddPermutation;
 using geometry::Permutation;
-using geometry::RigidTransformation;
 using geometry::R3x3Matrix;
+using geometry::RigidTransformation;
 using geometry::Sign;
 using physics::BarycentricRotatingDynamicFrame;
 using physics::BodyCentredBodyDirectionDynamicFrame;
@@ -1389,8 +1393,9 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
       Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
           message.psychohistory_parameters());
   not_null<std::unique_ptr<Plugin>> plugin =
-      std::unique_ptr<Plugin>(new Plugin(history_parameters,
-                                         psychohistory_parameters));
+      std::unique_ptr<Plugin>(AssertAllocatedBy<std::allocator<Plugin>>(
+          new (AllocateWith<std::allocator<Plugin>>{})
+              Plugin(history_parameters, psychohistory_parameters)));
 
   plugin->game_epoch_ = Instant::ReadFromMessage(message.game_epoch());
   plugin->current_time_ = Instant::ReadFromMessage(message.current_time());

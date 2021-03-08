@@ -8,6 +8,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/allocated_by.hpp"
+#include "base/allocator_new.hpp"
 #include "geometry/serialization.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
@@ -16,6 +18,8 @@ namespace principia {
 namespace integrators {
 namespace internal_symmetric_linear_multistep_integrator {
 
+using base::AllocateWith;
+using base::AssertAllocatedBy;
 using base::make_not_null_unique;
 using geometry::QuantityOrMultivectorSerializer;
 
@@ -159,7 +163,8 @@ template<typename Method, typename Position>
 not_null<std::unique_ptr<typename Integrator<
     SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
 SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Clone() const {
-  return std::unique_ptr<Instance>(new Instance(*this));
+  return std::unique_ptr<Instance>(AssertAllocatedBy<std::allocator<Instance>>(
+      new (AllocateWith<std::allocator<Instance>>{}) Instance(*this)));
 }
 
 template<typename Method, typename Position>
@@ -194,12 +199,14 @@ SymmetricLinearMultistepIntegrator<Method, Position>::Instance::ReadFromMessage(
   for (auto const& previous_step : extension.previous_steps()) {
     previous_steps.push_back(Step::ReadFromMessage(previous_step));
   }
-  return std::unique_ptr<Instance>(new Instance(problem,
-                                                append_state,
-                                                step,
-                                                extension.startup_step_index(),
-                                                previous_steps,
-                                                integrator));
+  return std::unique_ptr<Instance>(AssertAllocatedBy<std::allocator<Instance>>(
+      new (AllocateWith<std::allocator<Instance>>{})
+          Instance(problem,
+                   append_state,
+                   step,
+                   extension.startup_step_index(),
+                   previous_steps,
+                   integrator)));
 }
 
 template<typename Method, typename Position>
@@ -399,8 +406,9 @@ SymmetricLinearMultistepIntegrator<Method, Position>::NewInstance(
     Time const& step) const {
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is
   // private.
-  return std::unique_ptr<Instance>(
-      new Instance(problem, append_state, step, *this));
+  return std::unique_ptr<Instance>(AssertAllocatedBy<std::allocator<Instance>>(
+      new (AllocateWith<std::allocator<Instance>>{})
+          Instance(problem, append_state, step, *this)));
 }
 
 template<typename Method, typename Position>

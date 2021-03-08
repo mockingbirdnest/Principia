@@ -5,6 +5,8 @@
 #include <string>
 #include <utility>
 
+#include "base/allocated_by.hpp"
+#include "base/allocator_new.hpp"
 #include "base/array.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/not_null.hpp"
@@ -18,7 +20,9 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_part {
 
+using base::AllocateWith;
 using base::Array;
+using base::AssertAllocatedBy;
 using base::HexadecimalEncoder;
 using base::make_not_null_unique;
 using base::UniqueArray;
@@ -272,36 +276,39 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     auto const degrees_of_freedom =
         DegreesOfFreedom<Barycentric>::ReadFromMessage(
             message.degrees_of_freedom());
-    part = std::unique_ptr<Part>(new Part(
-        message.part_id(),
-        message.name(),
-        message.truthful(),
-        Mass::ReadFromMessage(message.mass()),
-        MakeWaterSphereInertiaTensor(Mass::ReadFromMessage(message.mass())),
-        RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
-            degrees_of_freedom),
-        std::move(deletion_callback)));
+    part = std::unique_ptr<Part>(AssertAllocatedBy<std::allocator<Part>>(
+        new (AllocateWith<std::allocator<Part>>{}) Part(
+            message.part_id(),
+            message.name(),
+            message.truthful(),
+            Mass::ReadFromMessage(message.mass()),
+            MakeWaterSphereInertiaTensor(Mass::ReadFromMessage(message.mass())),
+            RigidMotion<RigidPart, Barycentric>::MakeNonRotatingMotion(
+                degrees_of_freedom),
+            std::move(deletion_callback))));
   } else if (is_pre_frenet) {
-    part = std::unique_ptr<Part>(new Part(
-        message.part_id(),
-        message.name(),
-        message.truthful(),
-        Mass::ReadFromMessage(message.pre_frenet_inertia_tensor().mass()),
-        InertiaTensor<RigidPart>::ReadFromMessage(
-            message.pre_frenet_inertia_tensor().form()),
-        RigidMotion<RigidPart, Barycentric>::ReadFromMessage(
-            message.rigid_motion()),
-        std::move(deletion_callback)));
+    part = std::unique_ptr<Part>(AssertAllocatedBy<std::allocator<Part>>(
+        new (AllocateWith<std::allocator<Part>>{}) Part(
+            message.part_id(),
+            message.name(),
+            message.truthful(),
+            Mass::ReadFromMessage(message.pre_frenet_inertia_tensor().mass()),
+            InertiaTensor<RigidPart>::ReadFromMessage(
+                message.pre_frenet_inertia_tensor().form()),
+            RigidMotion<RigidPart, Barycentric>::ReadFromMessage(
+                message.rigid_motion()),
+            std::move(deletion_callback))));
   } else {
-    part = std::unique_ptr<Part>(new Part(
-        message.part_id(),
-        message.name(),
-        message.truthful(),
-        Mass::ReadFromMessage(message.mass()),
-        InertiaTensor<RigidPart>::ReadFromMessage(message.inertia_tensor()),
-        RigidMotion<RigidPart, Barycentric>::ReadFromMessage(
-            message.rigid_motion()),
-        std::move(deletion_callback)));
+    part = std::unique_ptr<Part>(AssertAllocatedBy<std::allocator<Part>>(
+        new (AllocateWith<std::allocator<Part>>{}) Part(
+            message.part_id(),
+            message.name(),
+            message.truthful(),
+            Mass::ReadFromMessage(message.mass()),
+            InertiaTensor<RigidPart>::ReadFromMessage(message.inertia_tensor()),
+            RigidMotion<RigidPart, Barycentric>::ReadFromMessage(
+                message.rigid_motion()),
+            std::move(deletion_callback))));
   }
 
   if (!is_pre_galileo) {

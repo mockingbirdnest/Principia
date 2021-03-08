@@ -8,6 +8,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/allocated_by.hpp"
+#include "base/allocator_new.hpp"
 #include "base/map_util.hpp"
 #include "geometry/identity.hpp"
 #include "ksp_plugin/integrators.hpp"
@@ -18,6 +20,8 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_pile_up {
 
+using base::AllocateWith;
+using base::AssertAllocatedBy;
 using base::check_not_null;
 using base::FindOrDie;
 using base::make_not_null_unique;
@@ -220,20 +224,23 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
   std::unique_ptr<PileUp> pile_up;
   if (is_pre_cesàro) {
     if (is_pre_cartan) {
-      pile_up = std::unique_ptr<PileUp>(
-          new PileUp(std::move(parts),
-                     DefaultPsychohistoryParameters(),
-                     DefaultHistoryParameters(),
-                     DiscreteTrajectory<Barycentric>::ReadFromMessage(
-                         message.history(),
-                         /*forks=*/{}),
-                     /*psychohistory=*/nullptr,
-                     /*angular_momentum=*/{},
-                     ephemeris,
-                     std::move(deletion_callback)));
+      pile_up =
+          std::unique_ptr<PileUp>(AssertAllocatedBy<std::allocator<PileUp>>(
+              new (AllocateWith<std::allocator<PileUp>>{})
+                  PileUp(std::move(parts),
+                         DefaultPsychohistoryParameters(),
+                         DefaultHistoryParameters(),
+                         DiscreteTrajectory<Barycentric>::ReadFromMessage(
+                             message.history(),
+                             /*forks=*/{}),
+                         /*psychohistory=*/nullptr,
+                         /*angular_momentum=*/{},
+                         ephemeris,
+                         std::move(deletion_callback))));
     } else {
-      pile_up = std::unique_ptr<PileUp>(
-          new PileUp(
+      pile_up = std::unique_ptr<
+          PileUp>(AssertAllocatedBy<std::allocator<PileUp>>(
+          new (AllocateWith<std::allocator<PileUp>>{}) PileUp(
               std::move(parts),
               Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
                   message.adaptive_step_parameters()),
@@ -245,7 +252,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
               /*psychohistory=*/nullptr,
               /*angular_momentum=*/{},
               ephemeris,
-              std::move(deletion_callback)));
+              std::move(deletion_callback))));
     }
     // Fork a psychohistory for compatibility if there is a non-authoritative
     // point.
@@ -264,8 +271,9 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
             message.history(),
             /*forks=*/{&psychohistory});
     if (is_pre_frobenius) {
-      pile_up = std::unique_ptr<PileUp>(
-          new PileUp(
+      pile_up = std::unique_ptr<
+          PileUp>(AssertAllocatedBy<std::allocator<PileUp>>(
+          new (AllocateWith<std::allocator<PileUp>>{}) PileUp(
               std::move(parts),
               Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
                   message.adaptive_step_parameters()),
@@ -275,10 +283,11 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
               psychohistory,
               /*angular_momentum=*/{},
               ephemeris,
-              std::move(deletion_callback)));
+              std::move(deletion_callback))));
     } else {
-      pile_up = std::unique_ptr<PileUp>(
-          new PileUp(
+      pile_up = std::unique_ptr<
+          PileUp>(AssertAllocatedBy<std::allocator<PileUp>>(
+          new (AllocateWith<std::allocator<PileUp>>{}) PileUp(
               std::move(parts),
               Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
                   message.adaptive_step_parameters()),
@@ -289,7 +298,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
               Bivector<AngularMomentum, NonRotatingPileUp>::ReadFromMessage(
                   message.angular_momentum()),
               ephemeris,
-              std::move(deletion_callback)));
+              std::move(deletion_callback))));
     }
   }
 
