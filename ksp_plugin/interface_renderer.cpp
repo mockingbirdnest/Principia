@@ -55,12 +55,12 @@ void __cdecl principia__RenderedPredictionApsides(
                                   max_points,
                                   rendered_apoapsides,
                                   rendered_periapsides);
-  *apoapsides = new TypedIterator<DiscreteTrajectory<World>>(
+  *apoapsides = std::make_unique<TypedIterator<DiscreteTrajectory<World>>>(
       check_not_null(std::move(rendered_apoapsides)),
-      plugin);
-  *periapsides = new TypedIterator<DiscreteTrajectory<World>>(
+      plugin).release();
+  *periapsides = std::make_unique<TypedIterator<DiscreteTrajectory<World>>>(
       check_not_null(std::move(rendered_periapsides)),
-      plugin);
+      plugin).release();
   return m.Return();
 }
 
@@ -82,9 +82,10 @@ void __cdecl principia__RenderedPredictionClosestApproaches(
       FromXYZ<Position<World>>(sun_world_position),
       max_points,
       rendered_closest_approaches);
-  *closest_approaches = new TypedIterator<DiscreteTrajectory<World>>(
-      check_not_null(std::move(rendered_closest_approaches)),
-      plugin);
+  *closest_approaches =
+      std::make_unique<TypedIterator<DiscreteTrajectory<World>>>(
+          check_not_null(std::move(rendered_closest_approaches)), plugin)
+          .release();
   return m.Return();
 }
 
@@ -107,12 +108,12 @@ void __cdecl principia__RenderedPredictionNodes(Plugin const* const plugin,
                                 max_points,
                                 rendered_ascending,
                                 rendered_descending);
-  *ascending = new TypedIterator<DiscreteTrajectory<World>>(
+  *ascending = std::make_unique<TypedIterator<DiscreteTrajectory<World>>>(
       check_not_null(std::move(rendered_ascending)),
-      plugin);
-  *descending = new TypedIterator<DiscreteTrajectory<World>>(
-      check_not_null(std::move(rendered_descending)),
-      plugin);
+      plugin).release();
+  *descending = std::make_unique<TypedIterator<DiscreteTrajectory<World>>>(
+                    check_not_null(std::move(rendered_descending)), plugin)
+                    .release();
   return m.Return();
 }
 

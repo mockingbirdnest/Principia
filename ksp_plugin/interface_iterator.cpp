@@ -84,7 +84,9 @@ Iterator* __cdecl principia__IteratorGetRP2LinesIterator(
       dynamic_cast<TypedIterator<RP2Lines<Length, Camera>> const*>(iterator));
   return m.Return(typed_iterator->Get<Iterator*>(
       [](RP2Line<Length, Camera> const& rp2_line) -> Iterator* {
-        return new TypedIterator<RP2Line<Length, Camera>>(rp2_line);
+        return std::make_unique<TypedIterator<RP2Line<Length, Camera>>>(
+                   rp2_line)
+            .release();
       }));
 }
 

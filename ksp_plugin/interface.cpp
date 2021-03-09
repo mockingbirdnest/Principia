@@ -325,8 +325,8 @@ void __cdecl principia__ActivateRecorder(bool const activate) {
     std::tm* const localtime = std::localtime(&time);
     std::stringstream name;
     name << std::put_time(localtime, "JOURNAL.%Y%m%d-%H%M%S");
-    journal::Recorder* const recorder = new journal::Recorder(
-        std::filesystem::path("glog") / "Principia" / name.str());
+    journal::Recorder* const recorder = std::make_unique<journal::Recorder>(
+        std::filesystem::path("glog") / "Principia" / name.str()).release();
     Vessel::MakeSynchronous();
     journal::Recorder::Activate(recorder);
   } else if (!activate && journal::Recorder::IsActivated()) {
@@ -394,7 +394,8 @@ void __cdecl principia__CatchUpLaggingVessels(
   VesselSet collided_vessel_set;
   plugin->CatchUpLaggingVessels(collided_vessel_set);
   *collided_vessels =
-      new TypedIterator<VesselSet>(std::move(collided_vessel_set));
+      std::make_unique<TypedIterator<VesselSet>>(std::move(collided_vessel_set))
+          .release();
   return m.Return();
 }
 
@@ -547,9 +548,9 @@ void __cdecl principia__DeserializePlugin(
   // Create and start a deserializer if the caller didn't provide one.
   if (*deserializer == nullptr) {
     LOG(INFO) << "Begin plugin deserialization";
-    *deserializer = new PushDeserializer(chunk_size,
+    *deserializer = std::make_unique<PushDeserializer>(chunk_size,
                                          number_of_chunks,
-                                         NewCompressor(compressor));
+                                         NewCompressor(compressor)).release();
     CHECK_NOTNULL(arena);
     not_null<serialization::Plugin*> const message =
         Arena::CreateMessage<serialization::Plugin>(arena);
@@ -1064,9 +1065,9 @@ char const* __cdecl principia__SerializePlugin(
   // Create and start a serializer if the caller didn't provide one.
   if (*serializer == nullptr) {
     LOG(INFO) << "Begin plugin serialization";
-    *serializer = new PullSerializer(chunk_size,
+    *serializer = std::make_unique<PullSerializer>(chunk_size,
                                      number_of_chunks,
-                                     NewCompressor(compressor));
+                                     NewCompressor(compressor)).release();
     not_null<serialization::Plugin*> const message =
         Arena::CreateMessage<serialization::Plugin>(arena);
     plugin->WriteToMessage(message);

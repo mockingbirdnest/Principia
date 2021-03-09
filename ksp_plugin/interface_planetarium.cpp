@@ -163,7 +163,9 @@ Iterator* __cdecl principia__PlanetariumPlotFlightPlanSegment(
                              plugin->CurrentTime(),
                              /*reverse=*/false);
   }
-  return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
+  return m.Return(
+      std::make_unique<TypedIterator<RP2Lines<Length, Camera>>>(rp2_lines)
+          .release());
 }
 
 Iterator* __cdecl principia__PlanetariumPlotPrediction(
@@ -184,7 +186,9 @@ Iterator* __cdecl principia__PlanetariumPlotPrediction(
                                      prediction.end(),
                                      plugin->CurrentTime(),
                                      /*reverse=*/false);
-  return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
+  return m.Return(
+      std::make_unique<TypedIterator<RP2Lines<Length, Camera>>>(rp2_lines)
+          .release());
 }
 
 Iterator* __cdecl principia__PlanetariumPlotPsychohistory(
@@ -201,7 +205,9 @@ Iterator* __cdecl principia__PlanetariumPlotPsychohistory(
   // Do not plot the psychohistory when there is a target vessel as it is
   // misleading.
   if (plugin->renderer().HasTargetVessel()) {
-    return m.Return(new TypedIterator<RP2Lines<Length, Camera>>({}));
+    return m.Return(std::make_unique<TypedIterator<RP2Lines<Length, Camera>>>(
+                        RP2Lines<Length, Camera>{})
+                        .release());
   } else {
     auto const& psychohistory = plugin->GetVessel(vessel_guid)->psychohistory();
     auto const rp2_lines =
@@ -212,7 +218,9 @@ Iterator* __cdecl principia__PlanetariumPlotPsychohistory(
                     psychohistory.end(),
                     plugin->CurrentTime(),
                     /*reverse=*/true);
-    return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
+    return m.Return(
+        std::make_unique<TypedIterator<RP2Lines<Length, Camera>>>(rp2_lines)
+            .release());
   }
 }
 
@@ -237,7 +245,9 @@ Iterator* __cdecl principia__PlanetariumPlotCelestialTrajectoryForPsychohistory(
 
   // Do not plot the past when there is a target vessel as it is misleading.
   if (plugin->renderer().HasTargetVessel()) {
-    return m.Return(new TypedIterator<RP2Lines<Length, Camera>>({}));
+    return m.Return(std::make_unique<TypedIterator<RP2Lines<Length, Camera>>>(
+                        RP2Lines<Length, Camera>{})
+                        .release());
   } else {
     auto const& celestial_trajectory =
         plugin->GetCelestial(celestial_index).trajectory();
@@ -250,7 +260,9 @@ Iterator* __cdecl principia__PlanetariumPlotCelestialTrajectoryForPsychohistory(
                                  /*last_time=*/plugin->CurrentTime(),
                                  /*now=*/plugin->CurrentTime(),
                                  /*reverse=*/true);
-    return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
+    return m.Return(
+        std::make_unique<TypedIterator<RP2Lines<Length, Camera>>>(rp2_lines)
+            .release());
   }
 }
 
@@ -271,7 +283,9 @@ principia__PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
 
   // Do not plot the past when there is a target vessel as it is misleading.
   if (plugin->renderer().HasTargetVessel()) {
-    return m.Return(new TypedIterator<RP2Lines<Length, Camera>>({}));
+    return m.Return(std::make_unique<TypedIterator<RP2Lines<Length, Camera>>>(
+                        RP2Lines<Length, Camera>{})
+                        .release());
   } else {
     auto const& vessel = *plugin->GetVessel(vessel_guid);
     Instant const prediction_final_time = vessel.prediction().t_max();
@@ -288,7 +302,9 @@ principia__PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
                                  /*last_time=*/final_time,
                                  /*now=*/plugin->CurrentTime(),
                                  /*reverse=*/false);
-    return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
+    return m.Return(
+        std::make_unique<TypedIterator<RP2Lines<Length, Camera>>>(rp2_lines)
+            .release());
   }
 }
 

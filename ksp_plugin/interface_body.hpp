@@ -558,7 +558,9 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
   analysis->primary_index =
       vessel_analysis->primary() == nullptr
           ? nullptr
-          : new int(plugin.CelestialIndexOfBody(*vessel_analysis->primary()));
+          : std::make_unique<int>(
+                plugin.CelestialIndexOfBody(*vessel_analysis->primary()))
+                .release();
 
   analysis->mission_duration = vessel_analysis->mission_duration() / Second;
   if (vessel_analysis->elements().has_value()) {

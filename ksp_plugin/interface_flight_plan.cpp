@@ -415,12 +415,12 @@ void __cdecl principia__FlightPlanRenderedApsides(
                                   max_points,
                                   rendered_apoapsides,
                                   rendered_periapsides);
-  *apoapsides = new TypedIterator<DiscreteTrajectory<World>>(
-      check_not_null(std::move(rendered_apoapsides)),
-      plugin);
-  *periapsides = new TypedIterator<DiscreteTrajectory<World>>(
-      check_not_null(std::move(rendered_periapsides)),
-      plugin);
+  *apoapsides = std::make_unique<TypedIterator<DiscreteTrajectory<World>>>(
+                    check_not_null(std::move(rendered_apoapsides)), plugin)
+                    .release();
+  *periapsides = std::make_unique<TypedIterator<DiscreteTrajectory<World>>>(
+                     check_not_null(std::move(rendered_periapsides)), plugin)
+                     .release();
   return m.Return();
 }
 
@@ -444,9 +444,10 @@ void __cdecl principia__FlightPlanRenderedClosestApproaches(
       FromXYZ<Position<World>>(sun_world_position),
       max_points,
       rendered_closest_approaches);
-  *closest_approaches = new TypedIterator<DiscreteTrajectory<World>>(
-      check_not_null(std::move(rendered_closest_approaches)),
-      plugin);
+  *closest_approaches =
+      std::make_unique<TypedIterator<DiscreteTrajectory<World>>>(
+          check_not_null(std::move(rendered_closest_approaches)), plugin)
+          .release();
   return m.Return();
 }
 
@@ -470,12 +471,12 @@ void __cdecl principia__FlightPlanRenderedNodes(Plugin const* const plugin,
                                 max_points,
                                 rendered_ascending,
                                 rendered_descending);
-  *ascending = new TypedIterator<DiscreteTrajectory<World>>(
-      check_not_null(std::move(rendered_ascending)),
-      plugin);
-  *descending = new TypedIterator<DiscreteTrajectory<World>>(
-      check_not_null(std::move(rendered_descending)),
-      plugin);
+  *ascending = std::make_unique<TypedIterator<DiscreteTrajectory<World>>>(
+                   check_not_null(std::move(rendered_ascending)), plugin)
+                   .release();
+  *descending = std::make_unique<TypedIterator<DiscreteTrajectory<World>>>(
+                    check_not_null(std::move(rendered_descending)), plugin)
+                    .release();
   return m.Return();
 }
 
@@ -507,9 +508,9 @@ Iterator* __cdecl principia__FlightPlanRenderedSegment(
     // start and we fail.
     rendered_trajectory->ForgetAfter(astronomy::InfinitePast);
   }
-  return m.Return(new TypedIterator<DiscreteTrajectory<World>>(
-      std::move(rendered_trajectory),
-      plugin));
+  return m.Return(std::make_unique<TypedIterator<DiscreteTrajectory<World>>>(
+                      std::move(rendered_trajectory), plugin)
+                      .release());
 }
 
 Status* __cdecl principia__FlightPlanReplace(Plugin const* const plugin,

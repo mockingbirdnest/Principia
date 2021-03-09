@@ -46,7 +46,7 @@ std::array<Monitor, monitor_count> monitors{};
 void __cdecl principia__MonitorSetName(int const i, char const* const name) {
   Monitor& monitor = monitors[i];
   if (monitor.name == nullptr) {
-    monitor.name = new std::string(name);
+    monitor.name = std::make_unique<std::string>(name).release();
   }
 }
 
