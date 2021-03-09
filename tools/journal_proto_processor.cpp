@@ -1253,7 +1253,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
       "extern \"C\"\n"
       "struct " + name + " {\n"
       "  static void* operator new(std::size_t size) {\n"
-      "    return ::operator new(size);\n"
+      "    return ::operator new (size, base::AllocateWith<std::allocator<" + name + ">>{});\n"
       "  };\n";
 
   // Second pass on the fields to actually generate the code.
