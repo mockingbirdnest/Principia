@@ -145,3 +145,24 @@ marginparwidth=5cm, marginparsep=0.5cm, top=2.5cm, bottom=2.5cm, left=2.5cm, rig
 }
 
 \RequirePackage{hyperref}
+
+\RequirePackage[backend=biber,firstinits=true,maxnames=100,style=alphabetic,maxalphanames=4,doi=true,isbn=false,url=false,eprint=true]{biblatex}
+\AtEveryBibitem{\clearlist{language}}
+\DeclareFieldFormat{doi}{%
+  \newline
+  \mkbibacro{DOI}\addcolon\space
+    \ifhyperref
+      {\href{https://doi.org/#1}{\nolinkurl{#1}}}
+      {\nolinkurl{#1}}}
+\DeclareFieldFormat{eprint:cnki}{%
+  \newline
+  \mkbibacro{CNKI}\addcolon\space
+    \ifhyperref
+      {\href{http://www.cnki.com.cn/Article/CJFDTOTAL-#1.htm}{\nolinkurl{#1}}}
+      {\nolinkurl{#1}}}
+\DeclareFieldFormat{eprint}{%
+  \newline
+  eprint\addcolon\space
+    \ifhyperref
+      {\href{#1}{\nolinkurl{#1}}}
+      {\nolinkurl{#1}}}
