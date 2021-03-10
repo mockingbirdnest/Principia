@@ -200,6 +200,12 @@
     <ClInclude Include="jthread_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="malloc_allocator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="macos_allocator_replacement.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
@@ -263,6 +269,12 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="jthread_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="macos_allocator_replacement_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="malloc_allocator_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

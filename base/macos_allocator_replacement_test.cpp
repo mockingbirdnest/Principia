@@ -17,9 +17,7 @@
 #ifdef OS_MACOSX
 
 namespace principia {
-namespace magic {
-
-using base::MallocAllocator;
+namespace base {
 
 // AllocatorIs<container, alloc>() returns true iff container's allocator is
 // alloc.
@@ -42,7 +40,7 @@ TEST(PrincipiaMallocAllocatorTest, DefaultAllocators) {
                            MallocAllocator<std::pair<const int, int>>>()));
 }
 
-}  // namespace magic
+}  // namespace base
 }  // namespace principia
 
 #endif
