@@ -128,6 +128,10 @@ marginparwidth=5cm, marginparsep=0.5cm, top=2.5cm, bottom=2.5cm, left=2.5cm, rig
 
 \RequirePackage{marginnote}
 
+% Latin locutions.
+\newcommand{\idest}{\emph{i.e.}}
+\newcommand{\exempligratia}{\emph{e.g.}}
+
 % For comments in align environments
 \newcommand\commentbox[1]{\parbox{.3\linewidth}{#1}}
 

@@ -136,7 +136,7 @@ for some constant $K$ which does not depend on $\increment t$ (recall that this 
 
 It follows that the error in the approximation at $t_{\text{end}}$ should intuitively behave as $\frac{t_{\text{end}} - t_0}{\increment t} \increment t^2 = \pa{t_{\text{end}} - t_0} \increment t$, and indeed this is the case. In order to properly show that, some additional assumptions must be made, the description of which is beyond the scope of this introduction.\footnote{For the advanced reader: the solution has to be Lipschitz continuous and its second derivative has to be bounded.}
 
-Thus, the conclusion about Euler's method is that when computing the solution over a fixed duration $t_{\text{end}} - t_0$, the error behaves like $\increment t$, \emph{i.e.}, linearly: halving the time step will halve the error. We call Euler's method a \emph{first-order method}.
+Thus, the conclusion about Euler's method is that when computing the solution over a fixed duration $t_{\text{end}} - t_0$, the error behaves like $\increment t$, \emph{\idest}, linearly: halving the time step will halve the error. We call Euler's method a \emph{first-order method}.
 
 We remark that we can rewrite Euler's method as follows.
 \begin{align*}
@@ -271,7 +271,7 @@ c_s    &  a_{s1} &  \cdots &  a_{ss} \\
        &  b_{1}  &  \cdots &  b_{s}
 \end{array}
 \]
-We will only consider \emph{explicit} Runge-Kutta methods, \emph{i.e.}, those where $\matA$ is strictly lower triangular, so that the Butcher tableau is as follows (blank spaces in $\matA$ are zeros).\[
+We will only consider \emph{explicit} Runge-Kutta methods, \emph{\idest}, those where $\matA$ is strictly lower triangular, so that the Butcher tableau is as follows (blank spaces in $\matA$ are zeros).\[
 \begin{array}{l | c c c c c}
 0      &        &         &        &           &   \\
 c_2    & a_{21} &         &        &           &   \\
