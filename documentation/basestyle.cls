@@ -147,6 +147,12 @@ marginparwidth=5cm, marginparsep=0.5cm, top=2.5cm, bottom=2.5cm, left=2.5cm, rig
 \RequirePackage{hyperref}
 
 \RequirePackage[backend=biber,firstinits=true,maxnames=100,style=alphabetic,maxalphanames=4,doi=true,isbn=false,url=false,eprint=true,labelalpha=true]{biblatex}
+
+% Allow breaking after lower and upper case letters in bibliography URLs, see
+% https://tex.stackexchange.com/a/134281.
+\setcounter{biburllcpenalty}{7000}
+\setcounter{biburlucpenalty}{8000}
+
 \AtEveryBibitem{\clearlist{language}}  % TODO(egg): Why are we doing this?
 
 \DeclareFieldFormat{doi}{%
