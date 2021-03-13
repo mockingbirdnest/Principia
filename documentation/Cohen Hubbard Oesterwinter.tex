@@ -36,7 +36,7 @@ the formula for a velocity component [is] of the form:
 \end{quotation}
 They then proceed to give explicit values for the (rational) coefficients $\gb_i$ without explaining how they are computed.  This makes it impossible to use this formula for integrators of a different order.
 
-\subsection*{Finite Differences}
+\subsection*{Lemma}
 \cite{Fornberg1987} gives finite difference formulæ for any order and for kernels of arbitrary size.  Given a sufficient regular function $f\of{x}$ and a family $\VectorSymbol{\ga} = \pa{\ga_0, \ga_1, ..., \ga_N}$ of points (which may not be equidistant), the $m$-th derivative at any point $x_0$ may be approximated to order $n - m + 1$ as:
 \[
 f^{(m)}\of{x_0} ≅ \sum{\gn = 0}[n]{\gd^{m}_{n,\gn}\of{\VectorSymbol{\ga}} f\of{\ga_\gn}}
@@ -44,9 +44,10 @@ f^{(m)}\of{x_0} ≅ \sum{\gn = 0}[n]{\gd^{m}_{n,\gn}\of{\VectorSymbol{\ga}} f\of
 where the coefficients $\gd^{m}_{n,\gn}$ are dependent on $\VectorSymbol{\ga}$ but independent of $f$.
 
 If the $\VectorSymbol{\ga}$ are equally spaced with step $h$ (i.e., $\ga_\gn = x_0 + \gn h$) then we can write a forward formula as follows:
-\[
+\begin{equation}
 f^{(m)}\of{x_0} = \sum{\gn = 0}[n]{\gd^{m}_{n,\gn}\of{x_0, h} f\of{x_0 + \gn h}} + \BigO\of{h^{n - m + 1}}
-\]
+\label{fornbergforwardpreliminary}
+\end{equation}
 
 In this case equation (3.8) from \cite{Fornberg1987} may be rewritten as follows, restoring $x_0$:
 \begin{align*}
@@ -63,14 +64,43 @@ where $\gl^{m}_{n,\gn}$ is independent from $x_0$ and $h$.  We can check that eq
 \gl^{m}_{n,\gn} = \frac{1}{n - \gn} \pa{n \gl^{m}_{n - 1,\gn} - m \gl^{m - 1}_{n - 1,\gn}}
 \]
 
-\subsection*{Derivation}
-In this section we derive equation (\ref{eqncho}) and obtain an explicit expression for the coefficients appearing in the sum.
+and rewrite equation (\ref{fornbergforwardpreliminary}) as:
+\begin{equation}
+f^{(m)}\of{x_0} = \frac{1}{h^m} \sum{\gn = 0}[n]{\gl^{m}_{n,\gn} f\of{x_0 + \gn h}} + \BigO\of{h^{n - m + 1}}
+\label{fornbergforward}
+\end{equation}
 
-We consider a sufficient regular function $f\of{x}$ and write its Taylor series near $x_0$:
-\begin{align*}
-f\of{x} &= \sum{n = 0}[\infty]{\frac{f^{(n)}\of{x_0}}{\Factorial{n}} \pa{x - x_0}^n}\\
-&=f\of{x_0} + \pa{x - x_0} f\der\of{x_0} + \sum{n = 2}[\infty]{\frac{f^{(n)}\of{x_0}}{\Factorial{n}} \pa{x - x_0}^n}
-\end{align*}
+
+\subsection*{Derivation}
+In this section we derive equation (\ref{eqncho}) and obtain an explicit expression for the coefficients appearing in the sum, using equation (\ref{fornbergforward}) from the preceding lemma.
+
+We start by writing the Taylor series of $f\of{x_0 + h}$ for $h$ close to $0$, extracting the leading terms:
+\begin{align}
+f\of{x_0 + h} &= \sum{m = 0}[\infty]{\frac{f^{(m)}\of{x_0}}{\Factorial{m}} h^m} \nonumber \\
+&=f\of{x_0} + h f\der\of{x_0} + \sum{m = 2}[\infty]{\frac{f^{(m)}\of{x_0}}{\Factorial{m}} h^m} \nonumber \\
+&=f\of{x_0} + h f\der\of{x_0} + \sum{m = 2}[n]{\frac{f^{(m)}\of{x_0}}{\Factorial{m}} h^m} + \BigO\of{h^{n+1}} \label{eqntaylor}
+\end{align}
+
+Equation (\ref{fornbergforward}) can be applied to the second derivative $f\dersecond\of{x_0}$ to yield an approximation which is still of order $n - m + 1$:
+\[
+f^{(m)}\of{x_0} = \frac{1}{h^m} \sum{\gn = 0}[n - 2]{\gl^{m - 2}_{n - 2,\gn} f\dersecond\of{x_0 + \gn h}} + \BigO\of{h^{n - m + 1}}
+\]
+
+Injecting this expression into equation (\ref{eqntaylor}) we find:
+\[
+f\of{x_0 + h} = f\of{x_0} + h f\der\of{x_0} + \sum{m = 2}[n]{\sum{\gn = 0}[n - 2]{\gl^{m - 2}_{n - 2,\gn} f\dersecond\of{x_0 + \gn h}}} + \BigO\of{h^{n + 1}}
+\]
+
+The summations are independent and can be exchanged:
+\[
+f\of{x_0 + h} = f\of{x_0} + h f\der\of{x_0} + \sum{\gn = 0}[n - 2]{\pa{\sum{m = 2}[n]{\gl^{m - 2}_{n - 2,\gn}}} f\dersecond\of{x_0 + \gn h}} + \BigO\of{h^{n + 1}}
+\]
+
+We can then define:
+\[
+\gh_{n, \gn} \DefineAs \sum{m = 2}[n]{\gl^{m - 2}_{n,\gn}}
+\]
+
 
 
 \subsection*{Conclusion}
