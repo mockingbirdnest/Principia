@@ -195,8 +195,4 @@ marginparwidth=5cm, marginparsep=0.5cm, top=2.5cm, bottom=2.5cm, left=2.5cm, rig
 
 \bibliography{bibliography}
 
-% Automatically add a bibliography to every document, and ensure global
-% consistency of citation labels by putting the entire .bib file in the same
-% scope (but in a different segment, so that only the citations of the document
-% are printed).
-\AtEndDocument{\printbibliography[segment=0]\newrefsegment\nocite{*}}
+\AtEndDocument{\printbibliography}
