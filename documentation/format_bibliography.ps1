@@ -11,3 +11,6 @@ biber --tool                         `
     --output-fieldcase=lower         `
     --output-file=.\bibliography.bib `
     .\bibliography.bib
+# Add a BOM on its own line.
+@("") + [system.io.file]::ReadAllLines("$(get-location)\bibliography.bib") `
+    | out-file -encoding "UTF8" .\bibliography.bib
