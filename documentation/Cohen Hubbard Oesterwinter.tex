@@ -30,11 +30,11 @@ This document proves and generalizes a formula given in \cite{CohenHubbardOester
 \begin{quotation}
 the formula for a velocity component [is] of the form:
 \begin{equation}
-\TimeDerivative{x}_{n + 1} = \frac{x_n - x_{n - 1} + h^2 \sum{i = 0}[12] \gb_i \SecondTimeDerivative{x}_{n-i}}{h}
+\TimeDerivative{x}_{n + 1} = \frac{1}{h}\pa{x_n - x_{n - 1} + h^2 \sum{i = 0}[12] \gb_i \SecondTimeDerivative{x}_{n-i}}
 \label{eqncho}
 \end{equation}
 \end{quotation}
-They then proceed to give explicit values for the (rational) coefficients $\gb_i$ without explaining how they are computed.  This makes it impossible to use this formula for integrators of a different order.
+They then proceed to tabulate explicit values for the (rational) coefficients $\gb_i$ without explaining how they are computed.  This makes it impossible to use this formula for integrators of a different order.
 
 \subsection*{Lemma}
 \cite{Fornberg1987} gives finite difference formulæ for any order and for kernels of arbitrary size.  Given a sufficient regular function $f\of{x}$ and a family $\VectorSymbol{\ga} = \pa{\ga_0, \ga_1, ..., \ga_N}$ of points (which may not be equidistant), the $m$-th derivative at any point $x_0$ may be approximated to order $n - m + 1$ as:
@@ -83,24 +83,29 @@ f\of{x_0 + h} &= \sum{m = 0}[\infty]{\frac{f^{(m)}\of{x_0}}{\Factorial{m}} h^m} 
 
 Equation (\ref{fornbergforward}) can be applied to the second derivative $f\dersecond\of{x_0}$ to yield an approximation which is still of order $n - m + 1$:
 \[
-f^{(m)}\of{x_0} = \frac{1}{h^m} \sum{\gn = 0}[n - 2]{\gl^{m - 2}_{n - 2,\gn} f\dersecond\of{x_0 + \gn h}} + \BigO\of{h^{n - m + 1}}
+f^{(m)}\of{x_0} = \frac{1}{h^{m - 2}} \sum{\gn = 0}[n - 2]{\gl^{m - 2}_{n - 2,\gn} f\dersecond\of{x_0 + \gn h}} + \BigO\of{h^{n - m + 1}}
 \]
 
 Injecting this expression into equation (\ref{eqntaylor}) we find:
 \[
-f\of{x_0 + h} = f\of{x_0} + h f\der\of{x_0} + \sum{m = 2}[n]{\sum{\gn = 0}[n - 2]{\gl^{m - 2}_{n - 2,\gn} f\dersecond\of{x_0 + \gn h}}} + \BigO\of{h^{n + 1}}
+f\of{x_0 + h} = f\of{x_0} + h f\der\of{x_0} + h^2 \sum{m = 2}[n]{\sum{\gn = 0}[n - 2]{\gl^{m - 2}_{n - 2,\gn} f\dersecond\of{x_0 + \gn h}}} + \BigO\of{h^{n + 1}}
 \]
 
 The summations are independent and can be exchanged:
-\[
-f\of{x_0 + h} = f\of{x_0} + h f\der\of{x_0} + \sum{\gn = 0}[n - 2]{\pa{\sum{m = 2}[n]{\gl^{m - 2}_{n - 2,\gn}}} f\dersecond\of{x_0 + \gn h}} + \BigO\of{h^{n + 1}}
-\]
+\begin{align*}
+f\of{x_0 + h} &= f\of{x_0} + h f\der\of{x_0} + h^2 \sum{\gn = 0}[n - 2]{\pa{\sum{m = 2}[n]{\gl^{m - 2}_{n - 2,\gn}}} f\dersecond\of{x_0 + \gn h}} + \BigO\of{h^{n + 1}} \\
+&= f\of{x_0} + h f\der\of{x_0} + h^2 \sum{\gn = 0}[n - 2]{\pa{\sum{m = 0}[n - 2]{\gl^m_{n - 2,\gn}}} f\dersecond\of{x_0 + \gn h}} + \BigO\of{h^{n + 1}}
+\end{align*}
 
 We can then define:
 \[
-\gh_{n, \gn} \DefineAs \sum{m = 2}[n]{\gl^{m - 2}_{n,\gn}}
+\gh_{n, \gn} \DefineAs \sum{m = 0}[n]{\gl^m_{n,\gn}}
 \]
 
+and we finally obtain:
+\[
+f\der\of{x_0} = \frac{1}{h} \pa{f\of{x_0 + h} - f\of{x_0} - h^2 \sum{\gn = 0}[n - 2]\gh_{n - 2, \gn} f\dersecond\of{x_0 + \gn h}} + \BigO\of{h^n}
+\]
 
 
 \subsection*{Conclusion}
