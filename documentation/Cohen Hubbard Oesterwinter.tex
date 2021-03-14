@@ -47,23 +47,31 @@ f^{(m)}\of{x_0} = \sum{\gn = 0}[n]{\gd^{m}_{n,\gn}\of{x_0, h} f\of{x_0 - \gn h}}
 \end{equation}
 
 In this case equation (3.8) from \cite{Fornberg1987} may be rewritten as follows, restoring $x_0$:
-\begin{align*}
-\gd^{m}_{n,\gn} &= \frac{1}{\ga_n - \ga_\gn}\pa{\pa{\ga_n - x_0} \gd^{m}_{n - 1,\gn} - m \gd^{m - 1}_{n - 1,\gn}}\\
-&= \frac{1}{\pa{\gn - n} h} \pa{-n h \gd^{m}_{n - 1,\gn} - m \gd^{m - 1}_{n - 1,\gn}}
-\end{align*}
+\begin{align}
+\gd^{m}_{n,\gn} &= \frac{1}{\ga_n - \ga_\gn}\pa{\pa{\ga_n - x_0} \gd^{m}_{n - 1,\gn} - m \gd^{m - 1}_{n - 1,\gn}} \nonumber \\
+&= \frac{1}{\pa{\gn - n} h} \pa{-n h \gd^{m}_{n - 1,\gn} - m \gd^{m - 1}_{n - 1,\gn}} \label{eqndelta}
+\end{align}
 
-It is convenient to extract the powers of $h$ from the coefficients:
+It is convenient to extract the powers of $h$ from the coefficients by defining:
 \[
-\gd^{m}_{n,\gn}\of{x_0, h} = \frac{\gl^{m}_{n,\gn}}{h^m}
-\]
-where $\gl^{m}_{n,\gn}$ is independent from $x_0$ and $h$.  We can check that equation (3.8) is still verified by multiplying both sides by $h^m$:
-\[
-\gl^{m}_{n,\gn} = \frac{1}{\gn - n} \pa{-n \gl^{m}_{n - 1,\gn} - m \gl^{m - 1}_{n - 1,\gn}}
+\gl^{m}_{n,\gn} \DefineAs \gd^{m}_{n,\gn}\of{x_0, h} \pa{-1}^m h^m
 \]
 
-and rewrite equation (\ref{fornbergbackwardpreliminary}) as:
+Substituting into equation (\ref{eqndelta}) we obtain:
+\[
+\gl^{m}_{n,\gn} = \frac{1}{n - \gn} \pa{n \gl^{m}_{n - 1,\gn} - m \gl^{m - 1}_{n - 1,\gn}}
+\]
+
+and we see that $\gl^{m}_{n,\gn}$ is independent from $x_0$ and $h$.
+
+Using:
+\[
+\gd^{m}_{n,\gn}\of{x_0, h} = \pa{-1}^m \frac{\gl^{m}_{n,\gn}}{h^m}
+\]
+
+we can rewrite equation (\ref{fornbergbackwardpreliminary}) as:
 \begin{equation}
-f^{(m)}\of{x_0} = \frac{1}{h^m} \sum{\gn = 0}[n]{\gl^{m}_{n,\gn} f\of{x_0 - \gn h}} + \BigO\of{h^{n - m + 1}}
+f^{(m)}\of{x_0} = \frac{\pa{-1}^m}{h^m} \sum{\gn = 0}[n]{\gl^{m}_{n,\gn} f\of{x_0 - \gn h}} + \BigO\of{h^{n - m + 1}}
 \label{fornbergbackward}
 \end{equation}
 
@@ -78,31 +86,32 @@ f\of{x_0 - h} &= \sum{m = 0}[\infty]{\frac{f^{(m)}\of{x_0}}{\Factorial{m}} \pa{-
 &=f\of{x_0} - h f\der\of{x_0} + \sum{m = 2}[n]{\frac{f^{(m)}\of{x_0}}{\Factorial{m}} \pa{-1}^m h^m} + \BigO\of{h^{n+1}} \label{eqntaylor}
 \end{align}
 
-Equation (\ref{fornbergbackward}) can be applied to the second derivative $f\dersecond\of{x_0}$ to yield an approximation which is still of order $n - m + 1$:
+Equation (\ref{fornbergbackward}) can be applied to the second derivative $f\dersecond\of{x_0}$ to yield an approximation of $f^{(m)}\of{x_0}$  of order $n - m + 1$ when $m ≥ 2$:
 \[
-f^{(m)}\of{x_0} = \frac{1}{h^{m - 2}} \sum{\gn = 0}[n - 2]{\gl^{m - 2}_{n - 2,\gn} f\dersecond\of{x_0 - \gn h}} + \BigO\of{h^{n - m + 1}}
+f^{(m)}\of{x_0} = \frac{\pa{-1}^m}{h^{m - 2}} \sum{\gn = 0}[n - 2]{\gl^{m - 2}_{n - 2,\gn} f\dersecond\of{x_0 - \gn h}} + \BigO\of{h^{n - m + 1}}
 \]
 
 Injecting this expression into equation (\ref{eqntaylor}) we find:
 \[
-f\of{x_0 - h} = f\of{x_0} - h f\der\of{x_0} + h^2 \sum{m = 2}[n]{~\sum{\gn = 0}[n - 2]{\frac{\pa{-1}^m \gl^{m - 2}_{n - 2,\gn}}{\Factorial m} f\dersecond\of{x_0 - \gn h}}} + \BigO\of{h^{n + 1}}
+f\of{x_0 - h} = f\of{x_0} - h f\der\of{x_0} + h^2 \sum{m = 2}[n]{~\sum{\gn = 0}[n - 2]{\frac{\gl^{m - 2}_{n - 2,\gn}}{\Factorial m} f\dersecond\of{x_0 - \gn h}}} + \BigO\of{h^{n + 1}}
 \]
 
 The summations are independent and can be exchanged:
 \[
-f\of{x_0 - h} = f\of{x_0} - h f\der\of{x_0} + h^2 \sum{\gn = 0}[n - 2]{\pa{\sum{m = 2}[n]{\frac{\pa{-1}^m \gl^{m - 2}_{n - 2,\gn}}{\Factorial m}}} f\dersecond\of{x_0 + \gn h}} + \BigO\of{h^{n + 1}} \\
+f\of{x_0 - h} = f\of{x_0} - h f\der\of{x_0} + h^2 \sum{\gn = 0}[n - 2]{\pa{\sum{m = 2}[n]{\frac{\gl^{m - 2}_{n - 2,\gn}}{\Factorial m}}} f\dersecond\of{x_0 - \gn h}} + \BigO\of{h^{n + 1}} \\
 \]
 
 We can then define:
 \[
-\gh_{n, \gn} \DefineAs \sum{m = 2}[n]{\frac{\pa{-1}^m \gl^{m - 2}_{n - 2,\gn}}{\Factorial m}}
+\gh_{n, \gn} \DefineAs \sum{m = 2}[n]{\frac{\gl^{m - 2}_{n - 2,\gn}}{\Factorial m}}
 \]
 
 and we finally obtain:
 \[
-f\der\of{x_0} = \frac{1}{h} \pa{f\of{x_0} - f\of{x_0 - h} - h^2 \sum{\gn = 0}[n - 2]\gh_{n, \gn} f\dersecond\of{x_0 - \gn h}} + \BigO\of{h^n}
+f\der\of{x_0} = \frac{1}{h} \pa{f\of{x_0} - f\of{x_0 - h} + h^2 \sum{\gn = 0}[n - 2]\gh_{n, \gn} f\dersecond\of{x_0 - \gn h}} + \BigO\of{h^n}
 \]
 
+This is the formula we use, after integration using a symmetry linear multistep integrator, to compute the velocity of a body knowing its positions and accelerations are preceding times.
 
 \subsection*{Conclusion}
 
