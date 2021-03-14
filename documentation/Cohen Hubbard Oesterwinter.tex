@@ -34,7 +34,7 @@ the formula for a velocity component [is] of the form:
 They then proceed to tabulate explicit values for the (rational) coefficients $\gb_i$ without explaining how they are computed.  This makes it impossible to use this formula for integrators of a different order.
 
 \subsection*{Lemma}
-\cite{Fornberg1987} gives finite difference formulæ for any order and for kernels of arbitrary size.  Given a sufficient regular function $f\of{x}$ and a family $\VectorSymbol{\ga} = \pa{\ga_0, \ga_1, ..., \ga_N}$ of points (which may not be equidistant), the $m$-th derivative at any point $x_0$ may be approximated to order $n - m + 1$ as:
+\cite{Fornberg1988} gives finite difference formulæ for any order and for kernels of arbitrary size.  Given a sufficient regular function $f\of{x}$ and a family $\VectorSymbol{\ga} = \pa{\ga_0, \ga_1, ..., \ga_N}$ of points (which may not be equidistant), the $m$-th derivative at any point $x_0$ may be approximated to order $n - m + 1$ as:
 \[
 f^{(m)}\of{x_0} ≅ \sum{\gn = 0}[n]{\gd^{m}_{n,\gn}\of{\VectorSymbol{\ga}} f\of{\ga_\gn}}
 \]
@@ -46,7 +46,7 @@ f^{(m)}\of{x_0} = \sum{\gn = 0}[n]{\gd^{m}_{n,\gn}\of{x_0, h} f\of{x_0 - \gn h}}
 \label{fornbergbackwardpreliminary}
 \end{equation}
 
-In this case equation (3.8) from \cite{Fornberg1987} may be rewritten as follows, restoring $x_0$:
+In this case equation (3.8) from \cite{Fornberg1988} may be rewritten as follows, restoring $x_0$:
 \begin{align}
 \gd^{m}_{n,\gn} &= \frac{1}{\ga_n - \ga_\gn}\pa{\pa{\ga_n - x_0} \gd^{m}_{n - 1,\gn} - m \gd^{m - 1}_{n - 1,\gn}} \nonumber \\
 &= \frac{1}{\pa{\gn - n} h} \pa{-n h \gd^{m}_{n - 1,\gn} - m \gd^{m - 1}_{n - 1,\gn}} \label{eqndelta}
