@@ -10,6 +10,7 @@
 Documentation for the symplectic methods%
 }%
 }
+\date{\printdate{2015-06-06}}
 \author{Robin~Leroy (eggrobin)}
 \begin{document}
 \maketitle
@@ -57,20 +58,20 @@ $\commutator{\vB}{\commutator{\vB}{\commutator{\vB}{\vA}}}=\nullvec$.
 We introduce $t$ and its conjugate momentum $\gcp$ to the phase space,
 and write
 \[
-\tilde\vq=\tuple{\vq, t}\text,\quad
-\tilde\vp=\tuple{\vp, \gcp}\text,\quad
-L\of{\tilde\vp} = \frac{1}{2}\Transpose{\vp}\matM^{-1}\vp + \gcp\text.
+\tilde{\vq}=\tuple{\vq, t}\text,\quad
+\tilde{\vp}=\tuple{\vp, \gcp}\text,\quad
+L\of{\tilde{\vp}} = \frac{1}{2}\Transpose{\vp}\matM^{-1}\vp + \gcp\text.
 \]
 (\ref{rkn}) follows from Hamilton's equations with\[
-H\of{\tilde\vq,\tilde\vp} =
-L\of{\tilde\vp} + V\of{\tilde\vq} =
+H\of{\tilde{\vq},\tilde{\vp}} =
+L\of{\tilde{\vp}} + V\of{\tilde{\vq}} =
 \frac{1}{2}\Transpose{\vp}\matM^{-1}\vp + \gcp + V\of{\vq, t}
 \]		
 since we then get $t\der = 1$.		
 The desired property follows from the following lemma:
 \begin{lemma}
-Let $L\of{\tilde\vq,\tilde\vp}$ be a quadratic polynomial in $\tilde\vp$,
-$V\of{\tilde\vq}$ a smooth function, $\vA=\Poisson\placeholder L$, and
+Let $L\of{\tilde{\vq},\tilde{\vp}}$ be a quadratic polynomial in $\tilde{\vp}$,
+$V\of{\tilde{\vq}}$ a smooth function, $\vA=\Poisson\placeholder L$, and
 $\vB=\Poisson\placeholder V$.
 Then\[
 \commutator{\vB}{\commutator{\vB}{\commutator{\vB}{\vA}}}=\nullvec\text.\]
@@ -79,14 +80,11 @@ Then\[
 It suffices to show that $\Poisson V{\Poisson V{\Poisson L V}} = 0$. It is
 immediate that every term in that expression will contain a third order
 partial derivative in the $\tilde p_i$ of $L$, and since $L$ is quadratic
-in $\tilde\vp$ all such derivatives vanish.
+in $\tilde{\vp}$ all such derivatives vanish.
 \end{proof}
-See McLachlan and Quispel (2006), Geometric Integrators for ODEs, page 26,
-\url{http://www.massey.ac.nz/~rmclachl/JPAReview.pdf} for a detailed treatment
+See \cite[p.~26]{McLachlanQuispel2006} for a detailed treatment
 of non-autonomous Hamiltonians using an extended phase space.
-
-See McLachlan (1993), Symplectic Integration of Wave Equations, page 8,
-\url{http://www.massey.ac.nz/~rmclachl/wave.ps} for a proof that
+See \cite[p.~8]{McLachlan1993} for a proof that
 $\Poisson V{\Poisson V{\Poisson L V}} = 0$ for arbitrary Poisson tensors.
 \section{Composition and first-same-as-last property}
 Recall from the comments that each step is computed as
