@@ -22,7 +22,10 @@
 \RequirePackage{polyglossia}
 \setdefaultlanguage[variant=british]{english}
 \setotherlanguages{greek,german,russian,latin,french}
-\RequirePackage{csquotes}
+% We use the english/american quote style, i.e., outer double quotes and inner
+% single quotes, but british typographic rules (punctuation after the quotation
+% marks).
+\RequirePackage[style=english/american]{csquotes}
 
 \newcommand{\foreign}{\emph}
 
