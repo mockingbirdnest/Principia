@@ -94,6 +94,9 @@ marginparwidth=5cm, marginparsep=0.5cm, top=2.5cm, bottom=2.5cm, left=2.5cm, rig
 
 \usepackage[margin=10pt,font=small,labelfont=bf,labelsep=period]{caption}
 
+\RequirePackage{titling}
+\renewcommand{\maketitlehooka}{\textdisplay}
+
 % Miscellaneous.
 \XeTeXdashbreakstate=0
 \RequirePackage{soul}
