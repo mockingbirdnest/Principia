@@ -2,8 +2,10 @@
 \ProvidesClass{basestyle}[2013/04/20 General layout and font definitions]
 
 \newif\iftwoside\twosidefalse
+\newif\ifmarginnotes\marginnotestrue
 
 \DeclareOption{twoside}{\twosidetrue\PassOptionsToClass{twoside}{article}}
+\DeclareOption{nomarginnotes}{\marginnotesfalse}
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{article}}
 \ProcessOptions
 \LoadClass{article}
@@ -22,7 +24,11 @@
 \RequirePackage{polyglossia}
 \setdefaultlanguage[variant=british]{english}
 \setotherlanguages{greek,german,russian,latin,french}
-\RequirePackage{csquotes}
+% We use the english/american quote style, i.e., outer double quotes and inner
+% single quotes, but british typographic rules (punctuation after the quotation
+% marks).
+\RequirePackage[style=english/american]{csquotes}
+\RequirePackage[shortcuts]{extdash}
 
 \newcommand{\foreign}{\emph}
 
@@ -75,10 +81,17 @@
 % Layout.
 
 \iftwoside
-\RequirePackage[heightrounded,
-marginparwidth=5cm, marginparsep=0.5cm, top=2.5cm, bottom=2.5cm, left=2.5cm, right=6.5cm]{geometry}
+  \ifmarginnotes
+    \RequirePackage[heightrounded,
+                    marginparwidth=5cm,
+                    marginparsep=0.5cm,
+                    top=2.5cm, bottom=2.5cm, left=2.5cm, right=6.5cm]{geometry}
+  \else
+    \RequirePackage[heightrounded,
+                    top=2.5cm, bottom=2.5cm, left=2.5cm, right=4.5cm]{geometry}
+  \fi
 \else
-\RequirePackage[top=2.25cm, bottom=2.25cm, left=3.5cm, right=3.5cm]{geometry}
+  \RequirePackage[top=2.25cm, bottom=2.25cm, left=3.5cm, right=3.5cm]{geometry}
 \fi
 
 \RequirePackage{fancyhdr}
@@ -90,6 +103,9 @@ marginparwidth=5cm, marginparsep=0.5cm, top=2.5cm, bottom=2.5cm, left=2.5cm, rig
 \renewcommand{\maketitle}{\makearticletitle\thispagestyle{empty}}
 
 \usepackage[margin=10pt,font=small,labelfont=bf,labelsep=period]{caption}
+
+\RequirePackage{titling}
+\renewcommand{\maketitlehooka}{\textdisplay}
 
 % Miscellaneous.
 \XeTeXdashbreakstate=0
