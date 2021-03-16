@@ -2,8 +2,10 @@
 \ProvidesClass{basestyle}[2013/04/20 General layout and font definitions]
 
 \newif\iftwoside\twosidefalse
+\newif\ifmarginnotes\marginnotestrue
 
 \DeclareOption{twoside}{\twosidetrue\PassOptionsToClass{twoside}{article}}
+\DeclareOption{nomarginnotes}{\marginnotesfalse}
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{article}}
 \ProcessOptions
 \LoadClass{article}
@@ -79,10 +81,17 @@
 % Layout.
 
 \iftwoside
-\RequirePackage[heightrounded,
-marginparwidth=5cm, marginparsep=0.5cm, top=2.5cm, bottom=2.5cm, left=2.5cm, right=6.5cm]{geometry}
+  \ifmarginnotes
+    \RequirePackage[heightrounded,
+                    marginparwidth=5cm,
+                    marginparsep=0.5cm,
+                    top=2.5cm, bottom=2.5cm, left=2.5cm, right=6.5cm]{geometry}
+  \else
+    \RequirePackage[heightrounded,
+                    top=2.5cm, bottom=2.5cm, left=2.5cm, right=4.5cm]{geometry}
+  \fi
 \else
-\RequirePackage[top=2.25cm, bottom=2.25cm, left=3.5cm, right=3.5cm]{geometry}
+  \RequirePackage[top=2.25cm, bottom=2.25cm, left=3.5cm, right=3.5cm]{geometry}
 \fi
 
 \RequirePackage{fancyhdr}
