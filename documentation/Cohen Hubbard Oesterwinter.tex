@@ -8,11 +8,7 @@
 
 %%%% Title and authors.
 
-\title{%
-\textdisplay{%
-On a Formula by Cohen, Hubbard and Oesterwinter%
-}%
-}
+\title{On a Formula by Cohen, Hubbard and Oesterwinter}
 \date{\printdate{2021-03-13}}
 \author{Robin~Leroy (eggrobin) \& Pascal~Leroy (phl)}
 \begin{document}
@@ -82,7 +78,7 @@ In this section we derive equation (\ref{eqncho}) and obtain an explicit express
 We start by writing the Taylor series of $f\of{x_0 - h}$ for $h$ close to $0$, extracting the leading terms:
 \begin{align}
 f\of{x_0 - h} &= \sum{m = 0}[\infty]{\frac{f^{(m)}\of{x_0}}{\Factorial{m}} \pa{-1}^m h^m} \nonumber \\
-&=f\of{x_0} - h f\der\of{x_0} + \sum{m = 2}[\infty]{\frac{f^{(m)}\of{x_0}}{\Factorial{m}} \pa{-1}^m h^m} \label{eqntaylorinfty} \\
+&=f\of{x_0} - h f\der\of{x_0} + \sum{m = 2}[\infty]{\frac{f^{(m)}\of{x_0}}{\Factorial{m}} \pa{-1}^m h^m} \nonumber \\
 &=f\of{x_0} - h f\der\of{x_0} + \sum{m = 2}[n]{\frac{f^{(m)}\of{x_0}}{\Factorial{m}} \pa{-1}^m h^m} + \BigO\of{h^{n+1}} \label{eqntaylorn}
 \end{align}
 
@@ -115,15 +111,15 @@ f\der\of{x_0} = \frac{1}{h} \pa{f\of{x_0} - f\of{x_0 - h} + h^2 \sum{\gn = 0}[n 
 This is the formula we use, after integration using a symmetry linear multistep integrator, to compute the velocity of a body knowing its positions and accelerations are preceding times.
 
 The alert reader will notice that equation (\ref{eqnslms}) is similar, but not identical, to equation (\ref{eqncho}).  To derive the latter, we write the Taylor series of $f\der\of{x_0 + h}$ for $h$ close to $0$:
-\[
-f\der\of{x_0 + h} = f\der\of{x_0} + \sum{m = 2}[\infty]{\frac{h^{m - 1}}{\Factorial{\pa{m - 1}}} f^{(m)}\of{x_0}}
-\]
-
-and we replace $f\der\of{x_0}$ with its value from equation (\ref{eqntaylorinfty}):
 \begin{align*}
-f\der\of{x_0 + h} &= \frac{1}{h} \pa{f\of{x_0} - f\of{x_0 -h}} + \sum{m = 2}[\infty]{\frac{h^{m - 1}}{\Factorial{\pa{m - 1}}} \pa{1 + \frac{\pa{-1}^m}{m}} f^{(m)}\of{x_0}} \\
-&= \frac{1}{h} \pa{f\of{x_0} - f\of{x_0 -h}} + \sum{m = 2}[\infty]{\frac{h^{m - 1}}{\Factorial{\pa{m - 1}}} \pa{1 + \frac{\pa{-1}^m}{m}} f^{(m)}\of{x_0}} + \BigO\of{h^n}
+f\der\of{x_0 + h} &= f\der\of{x_0} + \sum{m = 2}[\infty]{\frac{h^{m - 1}}{\Factorial{\pa{m - 1}}} f^{(m)}\of{x_0}} \\
+&= f\der\of{x_0} + \sum{m = 2}[n]{\frac{h^{m - 1}}{\Factorial{\pa{m - 1}}} f^{(m)}\of{x_0}} + \BigO\of{h^n}
 \end{align*}
+
+and we replace $f\der\of{x_0}$ with its value from equation (\ref{eqntaylorn}):
+\[
+f\der\of{x_0 + h} = \frac{1}{h} \pa{f\of{x_0} - f\of{x_0 -h}} + \sum{m = 2}[n]{\frac{h^{m - 1}}{\Factorial{\pa{m - 1}}} \pa{1 + \frac{\pa{-1}^m}{m}} f^{(m)}\of{x_0}} + \BigO\of{h^n}
+\]
 
 \subsection*{Conclusion}
 
