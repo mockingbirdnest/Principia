@@ -26,6 +26,7 @@
 % single quotes, but british typographic rules (punctuation after the quotation
 % marks).
 \RequirePackage[style=english/american]{csquotes}
+\RequirePackage[shortcuts]{extdash}
 
 \newcommand{\foreign}{\emph}
 
