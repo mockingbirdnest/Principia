@@ -29,7 +29,18 @@ the formula for a velocity component [is] of the form:
 \end{quotation}
 They then proceed to tabulate explicit values for the (rational) coefficients $\gb_i$ without explaining how they are computed.  This makes it impossible to use this formula for integrators of a different order or to construct similar formulæ for slightly different purposes.
 
-\subsection*{Lemma}
+\subsection*{Finite difference formula}
+In this section we prove a backward difference formula that makes it possible to compute an approximation of any derivative of a function on an equally-spaced grid at any desired order.
+\begin{lemma}
+Given a sufficient regular function $f\of{x}$ and two integers $m ≤ n$, there exist a family of rational numbers $\gl^{m}_{n,\gn}$, with $0 ≤ \gn ≤ n$ such that:
+
+\begin{equation}
+f^{(m)}\of{x_0} = \frac{\pa{-1}^m}{h^m} \sum{\gn = 0}[n]{\gl^{m}_{n,\gn} f\of{x_0 - \gn h}} + \BigO\of{h^{n - m + 1}} 
+\label{fornbergbackward}
+\end{equation}
+Furthermore, the $\gl^{m}_{n,\gn}$ are independent from $x_0$ and $h$.
+
+\begin{proof}
 \cite{Fornberg1988} gives finite difference formulæ for any order and for kernels of arbitrary size.  Given a sufficient regular function $f\of{x}$ and a family $\VectorSymbol{\ga} = \pa{\ga_0, \ga_1, ..., \ga_N}$ of points (which may not be equidistant), the $m$-th derivative at any point $x_0$ may be approximated to order $n - m + 1$ as:
 \[
 f^{(m)}\of{x_0} ≅ \sum{\gn = 0}[n]{\gd^{m}_{n,\gn}\of{\VectorSymbol{\ga}} f\of{\ga_\gn}}
@@ -48,7 +59,7 @@ In this case equation (3.8) from \cite{Fornberg1988} may be rewritten as follows
 &= \frac{1}{\pa{\gn - n} h} \pa{-n h \gd^{m}_{n - 1,\gn} - m \gd^{m - 1}_{n - 1,\gn}} \label{eqndelta}
 \end{align}
 
-It is convenient to extract the powers of $h$ from the coefficients by defining, for $\gn < n$:
+It is possible to extract the powers of $h$ from the coefficients by defining, for $\gn < n$:
 \[
 \gl^{m}_{n,\gn} \DefineAs \gd^{m}_{n,\gn}\of{\VectorSymbol{\ga}} \pa{-1}^m h^m
 \]
@@ -60,19 +71,17 @@ Substituting into equation (\ref{eqndelta}) we obtain:
 
 and we see that $\gl^{m}_{n,\gn}$ is independent from $x_0$ and $h$ and therefore that $\gd^{m}_{n,\gn}$ is independent from $x_0$.
 
-Using:
+Note that the definition of $\gl^{m}_{n,\gn}$ extends immediately to $n = \gn$, that is to $\gl^{m}_{n,n}$, using equation (3.10) of \cite{Fornberg1988}.
+
+Now knowing that:
 \[
 \gd^{m}_{n,\gn}\of{\VectorSymbol{\ga}} = \pa{-1}^m \frac{\gl^{m}_{n,\gn}}{h^m}
 \]
 
-we can rewrite equation (\ref{fornbergbackwardpreliminary}) as:
-\begin{equation}
-f^{(m)}\of{x_0} = \frac{\pa{-1}^m}{h^m} \sum{\gn = 0}[n]{\gl^{m}_{n,\gn} f\of{x_0 - \gn h}} + \BigO\of{h^{n - m + 1}} 
-\label{fornbergbackward}
-\end{equation}
+it is straightforward to rewrite equation (\ref{fornbergbackwardpreliminary}) to obtain equation (\ref{fornbergbackward}), thus demonstrating the lemma.
 
-Note that the definition of $\gl^{m}_{n,\gn}$ extends immediately to $n = \gn$, that is to $\gl^{m}_{n,n}$, using equation (3.10) of \cite{Fornberg1988}.
-
+\end{proof}
+\end{lemma}
 
 \subsection*{Derivation}
 In this section we derive equation (\ref{eqncho}) and obtain an explicit expression for the coefficients appearing in the sum, using equation (\ref{fornbergbackward}) from the preceding lemma.
