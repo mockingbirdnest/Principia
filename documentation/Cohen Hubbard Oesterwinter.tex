@@ -27,18 +27,18 @@ the formula for a velocity component [is] of the form:
 \label{eqncho}
 \end{equation}
 \end{quotation}
-They then proceed to tabulate explicit values for the (rational) coefficients $\gb_i$ without explaining how they are computed.  This makes it impossible to use this formula for integrators of a different order.
+They then proceed to tabulate explicit values for the (rational) coefficients $\gb_i$ without explaining how they are computed.  This makes it impossible to use this formula for integrators of a different order or to construct similar formulæ for slightly different purposes.
 
 \subsection*{Lemma}
 \cite{Fornberg1988} gives finite difference formulæ for any order and for kernels of arbitrary size.  Given a sufficient regular function $f\of{x}$ and a family $\VectorSymbol{\ga} = \pa{\ga_0, \ga_1, ..., \ga_N}$ of points (which may not be equidistant), the $m$-th derivative at any point $x_0$ may be approximated to order $n - m + 1$ as:
 \[
 f^{(m)}\of{x_0} ≅ \sum{\gn = 0}[n]{\gd^{m}_{n,\gn}\of{\VectorSymbol{\ga}} f\of{\ga_\gn}}
 \]
-where the coefficients $\gd^{m}_{n,\gn}$ are dependent on $\VectorSymbol{\ga}$ but independent of $f$.
+where $m ≤ n$ and the coefficients $\gd^{m}_{n,\gn}$ are dependent on $\VectorSymbol{\ga}$ but independent of $f$.
 
 If the $\VectorSymbol{\ga}$ are equally spaced with step $-h$ (i.e., $\ga_\gn = x_0 - \gn h$) then we can write a backward formula as follows:
 \begin{equation}
-f^{(m)}\of{x_0} = \sum{\gn = 0}[n]{\gd^{m}_{n,\gn}\of{x_0, h} f\of{x_0 - \gn h}} + \BigO\of{h^{n - m + 1}}
+f^{(m)}\of{x_0} = \sum{\gn = 0}[n]{\gd^{m}_{n,\gn}\of{\VectorSymbol{\ga}} f\of{x_0 - \gn h}} + \BigO\of{h^{n - m + 1}}
 \label{fornbergbackwardpreliminary}
 \end{equation}
 
@@ -48,9 +48,9 @@ In this case equation (3.8) from \cite{Fornberg1988} may be rewritten as follows
 &= \frac{1}{\pa{\gn - n} h} \pa{-n h \gd^{m}_{n - 1,\gn} - m \gd^{m - 1}_{n - 1,\gn}} \label{eqndelta}
 \end{align}
 
-It is convenient to extract the powers of $h$ from the coefficients by defining:
+It is convenient to extract the powers of $h$ from the coefficients by defining, for $\gn < n$:
 \[
-\gl^{m}_{n,\gn} \DefineAs \gd^{m}_{n,\gn}\of{x_0, h} \pa{-1}^m h^m
+\gl^{m}_{n,\gn} \DefineAs \gd^{m}_{n,\gn}\of{\VectorSymbol{\ga}} \pa{-1}^m h^m
 \]
 
 Substituting into equation (\ref{eqndelta}) we obtain:
@@ -58,18 +58,20 @@ Substituting into equation (\ref{eqndelta}) we obtain:
 \gl^{m}_{n,\gn} = \frac{1}{n - \gn} \pa{n \gl^{m}_{n - 1,\gn} - m \gl^{m - 1}_{n - 1,\gn}}
 \]
 
-and we see that $\gl^{m}_{n,\gn}$ is independent from $x_0$ and $h$.
+and we see that $\gl^{m}_{n,\gn}$ is independent from $x_0$ and $h$ and therefore that $\gd^{m}_{n,\gn}$ is independent from $x_0$.
 
 Using:
 \[
-\gd^{m}_{n,\gn}\of{x_0, h} = \pa{-1}^m \frac{\gl^{m}_{n,\gn}}{h^m}
+\gd^{m}_{n,\gn}\of{\VectorSymbol{\ga}} = \pa{-1}^m \frac{\gl^{m}_{n,\gn}}{h^m}
 \]
 
 we can rewrite equation (\ref{fornbergbackwardpreliminary}) as:
 \begin{equation}
-f^{(m)}\of{x_0} = \frac{\pa{-1}^m}{h^m} \sum{\gn = 0}[n]{\gl^{m}_{n,\gn} f\of{x_0 - \gn h}} + \BigO\of{h^{n - m + 1}}
+f^{(m)}\of{x_0} = \frac{\pa{-1}^m}{h^m} \sum{\gn = 0}[n]{\gl^{m}_{n,\gn} f\of{x_0 - \gn h}} + \BigO\of{h^{n - m + 1}} 
 \label{fornbergbackward}
 \end{equation}
+
+Note that the definition of $\gl^{m}_{n,\gn}$ extends immediately to $n = \gn$, that is to $\gl^{m}_{n,n}$, using equation (3.10) of \cite{Fornberg1988}.
 
 
 \subsection*{Derivation}
@@ -125,13 +127,13 @@ f\der\of{x_0 + h} = \frac{1}{h} \pa{f\of{x_0} - f\of{x_0 - h}} + \sum{m = 2}[n]{
 As we did above, we replace $f^{(m)}\of{x_0}$ using its expression from equation (\ref{eqnfornbergbackward2}) to obtain:
 \[
 f\der\of{x_0 + h} = \frac{1}{h} \pa{f\of{x_0} - f\of{x_0 - h}} + h \sum{m = 2}[n]{
-\pa{\frac{1}{\Factorial{m - 1}} \pa{\pa{-1}^m + \frac{1}{m}} \sum{\gn = 0}[n - 2]{\gl^{m - 2}_{n - 2, \gn}} f\dersecond\of{x_0 - \gn h}}
+\pa{\frac{1}{\Factorial{\pa{m - 1}}} \pa{\pa{-1}^m + \frac{1}{m}} \sum{\gn = 0}[n - 2]{\gl^{m - 2}_{n - 2, \gn}} f\dersecond\of{x_0 - \gn h}}
 } + \BigO\of{h^n}
 \]
 
 If we define:
 \[
-\gb_{n, \gn} = \sum{m = 2}[n]{\frac{\gl^{m - 2}_{n - 2, \gn}}{\Factorial{m - 1}} \pa{\pa{-1}^m + \frac{1}{m}}}
+\gb_{n, \gn} = \sum{m = 2}[n]{\frac{\gl^{m - 2}_{n - 2, \gn}}{\Factorial{\pa{m - 1}}} \pa{\pa{-1}^m + \frac{1}{m}}}
 \]
 
 we finally find an expression equivalent to equation (\ref{eqncho}):
