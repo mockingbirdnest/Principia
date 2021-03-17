@@ -83,9 +83,10 @@ f\of{x_0 - h} &= \sum{m = 0}[\infty]{\frac{f^{(m)}\of{x_0}}{\Factorial{m}} \pa{-
 \end{align}
 
 Equation (\ref{fornbergbackward}) can be applied to the second derivative $f\dersecond\of{x_0}$ to yield an approximation of $f^{(m)}\of{x_0}$  of order $n - m + 1$ when $m ≥ 2$:
-\[
+\begin{equation}
 f^{(m)}\of{x_0} = \frac{\pa{-1}^m}{h^{m - 2}} \sum{\gn = 0}[n - 2]{\gl^{m - 2}_{n - 2,\gn} f\dersecond\of{x_0 - \gn h}} + \BigO\of{h^{n - m + 1}}
-\]
+\label{eqnfornbergbackward2}
+\end{equation}
 
 Injecting this expression into equation (\ref{eqntaylorn}) we find:
 \[
@@ -104,7 +105,7 @@ We can then define:
 
 and we finally obtain:
 \begin{equation}
-f\der\of{x_0} = \frac{1}{h} \pa{f\of{x_0} - f\of{x_0 - h} + h^2 \sum{\gn = 0}[n - 2]\gh_{n, \gn} f\dersecond\of{x_0 - \gn h}} + \BigO\of{h^n} 
+f\der\of{x_0} = \frac{1}{h} \pa{f\of{x_0} - f\of{x_0 - h} + h^2 \sum{\gn = 0}[n - 2]{\gh_{n, \gn} f\dersecond\of{x_0 - \gn h}}} + \BigO\of{h^n} 
 \label{eqnslms}
 \end{equation}
 
@@ -118,7 +119,24 @@ f\der\of{x_0 + h} &= f\der\of{x_0} + \sum{m = 2}[\infty]{\frac{h^{m - 1}}{\Facto
 
 and we replace $f\der\of{x_0}$ with its value from equation (\ref{eqntaylorn}):
 \[
-f\der\of{x_0 + h} = \frac{1}{h} \pa{f\of{x_0} - f\of{x_0 -h}} + \sum{m = 2}[n]{\frac{h^{m - 1}}{\Factorial{\pa{m - 1}}} \pa{1 + \frac{\pa{-1}^m}{m}} f^{(m)}\of{x_0}} + \BigO\of{h^n}
+f\der\of{x_0 + h} = \frac{1}{h} \pa{f\of{x_0} - f\of{x_0 - h}} + \sum{m = 2}[n]{\frac{h^{m - 1}}{\Factorial{\pa{m - 1}}} \pa{1 + \frac{\pa{-1}^m}{m}} f^{(m)}\of{x_0}} + \BigO\of{h^n}
+\]
+
+As we did above, we replace $f^{(m)}\of{x_0}$ using its expression from equation (\ref{eqnfornbergbackward2}) to obtain:
+\[
+f\der\of{x_0 + h} = \frac{1}{h} \pa{f\of{x_0} - f\of{x_0 - h}} + h \sum{m = 2}[n]{
+\pa{\frac{1}{\Factorial{m - 1}} \pa{\pa{-1}^m + \frac{1}{m}} \sum{\gn = 0}[n - 2]{\gl^{m - 2}_{n - 2, \gn}} f\dersecond\of{x_0 - \gn h}}
+} + \BigO\of{h^n}
+\]
+
+If we define:
+\[
+\gb_{n, \gn} = \sum{m = 2}[n]{\frac{\gl^{m - 2}_{n - 2, \gn}}{\Factorial{m - 1}} \pa{\pa{-1}^m + \frac{1}{m}}}
+\]
+
+we finally find an expression equivalent to equation (\ref{eqncho}):
+\[
+f\der\of{x_0 + h} = \frac{1}{h} \pa{f\of{x_0} - f\of{x_0 - h}} + h \sum{\gn = 0}[n - 2]{\gb_{n, \gn} f\dersecond\of{x_0 - \gn h}} + \BigO\of{h^n}
 \]
 
 \subsection*{Conclusion}
