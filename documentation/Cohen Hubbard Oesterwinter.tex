@@ -15,7 +15,7 @@
 \maketitle
 \begin{sloppypar}
 \noindent
-This document proves and generalizes a formula given in \cite{CohenHubbardOesterwinter1973} to compute the velocity of a body in the context of 12th-order numerical integration of $n$-body systems.
+This document proves and generalizes a formula given in \cite{CohenHubbardOesterwinter1973} to compute the velocity of a body in the context of numerical integration of $n$-body systems.
 \end{sloppypar}
 
 \subsection*{Statement}
@@ -41,13 +41,13 @@ f^{(m)}\of{x_0} = \frac{\pa{-1}^m}{h^m} \sum{\gn = 0}[n]{\gl^{m}_{n,\gn} f\of{x_
 Furthermore, the $\gl^{m}_{n,\gn}$ are independent from $x_0$ and $h$.
 
 \begin{proof}
-\cite{Fornberg1988} gives finite difference formulæ for any order and for kernels of arbitrary size.  Given a sufficient regular function $f\of{x}$ and a family $\VectorSymbol{\ga} = \pa{\ga_0, \ga_1, ..., \ga_N}$ of points (which may not be equidistant), the $m$-th derivative at any point $x_0$ may be approximated to order $n - m + 1$ as:
+\cite{Fornberg1988} gives finite difference formulæ for any order and for kernels of arbitrary size.  Given a family $\VectorSymbol{\ga} = \pa{\ga_0, \ga_1, ..., \ga_N}$ of points (which may not be equidistant), the $m$-th derivative at any point $x_0$ may be approximated to order $n - m + 1$ as:
 \[
 f^{(m)}\of{x_0} ≅ \sum{\gn = 0}[n]{\gd^{m}_{n,\gn}\of{\VectorSymbol{\ga}} f\of{\ga_\gn}}
 \]
 where $m ≤ n$ and the coefficients $\gd^{m}_{n,\gn}$ are dependent on $\VectorSymbol{\ga}$ but independent of $f$.
 
-If the $\VectorSymbol{\ga}$ are equally spaced with step $-h$ (i.e., $\ga_\gn = x_0 - \gn h$) then we can write a backward formula as follows:
+If the $\VectorSymbol{\ga}$ are equally spaced with step $-h$ (\idest, $\ga_\gn = x_0 - \gn h$) then we can write a backward formula as follows:
 \begin{equation}
 f^{(m)}\of{x_0} = \sum{\gn = 0}[n]{\gd^{m}_{n,\gn}\of{\VectorSymbol{\ga}} f\of{x_0 - \gn h}} + \BigO\of{h^{n - m + 1}}
 \label{fornbergbackwardpreliminary}
@@ -95,7 +95,7 @@ f^{(m)}\of{x_0} = \frac{\pa{-1}^m}{h^{m - 2}} \sum{\gn = 0}[n - 2]{\gl^{m - 2}_{
 In this section we derive a formula suitable for computing the velocity of a body knowing its positions and accelerations at preceding times.  This is the formula we use after integration using a symmetry linear multistep integrator.
 
 \begin{proposition}
-Given a sufficient regular function $f\of{x}$ there exists a family of rational numbers $\gh_{n, \gn}$, with $0 ≤ \gn ≤ n$, such that: 
+Given a sufficient regular function $f\of{x}$ there exists a family of rational numbers $\gh_{n, \gn}$, with $0 ≤ \gn ≤ n - 2$, such that: 
 \begin{equation}
 f\der\of{x_0} = \frac{1}{h} \pa{f\of{x_0} - f\of{x_0 - h} + h^2 \sum{\gn = 0}[n - 2]{\gh_{n, \gn} f\dersecond\of{x_0 - \gn h}}} + \BigO\of{h^n} 
 \label{eqnslms}
@@ -132,7 +132,7 @@ the equation (\ref{eqnslms}) follows immediately.
 In this section we derive the Cohen-Hubbard-Osterwinder formula, equation (\ref{eqncho}).
 
 \begin{proposition}
-Given a sufficient regular function $f\of{x}$ there exists a family of rational numbers $\gb_{n, \gn}$, with $0 ≤ \gn ≤ n$, such that: 
+Given a sufficient regular function $f\of{x}$ there exists a family of rational numbers $\gb_{n, \gn}$, with $0 ≤ \gn ≤ n - 2$, such that: 
 \[
 f\der\of{x_0 + h} = \frac{1}{h} \pa{f\of{x_0} - f\of{x_0 - h}} + h \sum{\gn = 0}[n - 2]{\gb_{n, \gn} f\dersecond\of{x_0 - \gn h}} + \BigO\of{h^n}
 \]
@@ -148,7 +148,7 @@ and we replace $f\der\of{x_0}$ with its value from equation (\ref{eqntaylorn}):
 f\der\of{x_0 + h} = \frac{1}{h} \pa{f\of{x_0} - f\of{x_0 - h}} + \sum{m = 2}[n]{\frac{h^{m - 1}}{\Factorial{\pa{m - 1}}} \pa{1 + \frac{\pa{-1}^m}{m}} f^{(m)}\of{x_0}} + \BigO\of{h^n}
 \]
 
-As we did above, we replace $f^{(m)}\of{x_0}$ using its expression from the corollary (\ref{eqnfornbergbackward2}) to obtain:
+As we did above, we replace $f^{(m)}\of{x_0}$ using its expression from corollary (\ref{eqnfornbergbackward2}) to obtain:
 \[
 f\der\of{x_0 + h} = \frac{1}{h} \pa{f\of{x_0} - f\of{x_0 - h}} + h \sum{m = 2}[n]{
 \pa{\frac{1}{\Factorial{\pa{m - 1}}} \pa{\pa{-1}^m + \frac{1}{m}} \sum{\gn = 0}[n - 2]{\gl^{m - 2}_{n - 2, \gn}} f\dersecond\of{x_0 - \gn h}}
