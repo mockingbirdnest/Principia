@@ -124,23 +124,21 @@ StringRiffle[
   "FixedMatrix<double, "<>
   ToString[n]<>", "<>
   ToString[n]<>">{{\n        "<>
-  StringRiffle[
-   With[
-    {numberWidth=Table[
-      Max[StringLength@*ToString/@fornbergNumeratorMatrix[n][[;;,col]]],
-      {col,1,n}]},
-    StringRiffle[
-     Map[
-      StringRiffle[
-       Table[
-        StringPadLeft[
-         ToString[#[[col]]],
-         numberWidth[[col]]],
-        {col,1,n}],
-       ", "]<>",\n"&,
-      fornbergNumeratorMatrix[n]],
-     "        "]],
-   ",\n        "]<>"    }}",
+  With[
+   {numberWidth=Table[
+     Max[StringLength@*ToString/@fornbergNumeratorMatrix[n][[;;,col]]],
+     {col,1,n}]},
+   StringRiffle[
+    Map[
+     StringRiffle[
+      Table[
+       StringPadLeft[
+        ToString[#[[col]]],
+        numberWidth[[col]]],
+       {col,1,n}],
+      ", "]<>",\n"&,
+     fornbergNumeratorMatrix[n]],
+    "        "]]<>"    }}",
   {n,1,\[ScriptCapitalN]}],
  ",\n    "]<>");
 
