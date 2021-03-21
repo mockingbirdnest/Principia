@@ -19,7 +19,7 @@ This document proves and generalizes a formula given in \cite{CohenHubbardOester
 \end{sloppypar}
 
 \subsection*{Statement}
-\cite{CohenHubbardOesterwinter1973} states that
+\cite[20]{CohenHubbardOesterwinter1973} states that
 \begin{quotation}
 the formula for a velocity component [is] of the form:
 \begin{equation}
@@ -32,14 +32,12 @@ They then proceed to tabulate explicit values for the (rational) coefficients $\
 \subsection*{Finite difference formulæ}
 In this section we prove a backward difference formula that makes it possible to compute an approximation of any derivative of a function on an equally-spaced grid at any desired order.  We then derive a corollary based on the second derivative $f\dersecond\of{x}$ that is useful for the following sections. 
 \begin{lemma}
-Given a sufficient regular function $f\of{x}$ and two integers $m ≤ n$, there exists a family of rational numbers $\gl^{m}_{n,\gn}$, with $0 ≤ \gn ≤ n$, such that:
+Given two integers $m ≤ n$, there exists a family of rational numbers $\gl^{m}_{n,\gn}$, with $0 ≤ \gn ≤ n$, such that for any sufficiently regular function $f$:
 
 \begin{equation}
 f^{(m)}\of{x_0} = \frac{\pa{-1}^m}{h^m} \sum{\gn = 0}[n]{\gl^{m}_{n,\gn} f\of{x_0 - \gn h}} + \BigO\of{h^{n - m + 1}} 
 \label{fornbergbackward}
 \end{equation}
-Furthermore, the $\gl^{m}_{n,\gn}$ are independent from $x_0$ and $h$.
-
 \begin{proof}
 \cite{Fornberg1988} gives finite difference formulæ for any order and for kernels of arbitrary size.  Given a family $\VectorSymbol{\ga} = \pa{\ga_0, \ga_1, ..., \ga_N}$ of points (which may not be equidistant), the $m$-th derivative at any point $x_0$ may be approximated to order $n - m + 1$ as:
 \[
@@ -58,12 +56,10 @@ In this case equation (3.8) from \cite{Fornberg1988} may be rewritten as follows
 \gd^{m}_{n,\gn} &= \frac{1}{\ga_n - \ga_\gn}\pa{\pa{\ga_n - x_0} \gd^{m}_{n - 1,\gn} - m \gd^{m - 1}_{n - 1,\gn}} \nonumber \\
 &= \frac{1}{\pa{\gn - n} h} \pa{-n h \gd^{m}_{n - 1,\gn} - m \gd^{m - 1}_{n - 1,\gn}} \label{eqndelta}
 \end{align}
-
 It is possible to extract the powers of $h$ from the coefficients by defining, for $\gn < n$:
 \[
 \gl^{m}_{n,\gn} \DefineAs \gd^{m}_{n,\gn}\of{\VectorSymbol{\ga}} \pa{-1}^m h^m
 \]
-
 Substituting into equation (\ref{eqndelta}) we obtain:
 \[
 \gl^{m}_{n,\gn} = \frac{1}{n - \gn} \pa{n \gl^{m}_{n - 1,\gn} - m \gl^{m - 1}_{n - 1,\gn}}
@@ -72,11 +68,11 @@ and we see that $\gl^{m}_{n,\gn}$ is independent from $x_0$ and $h$ and therefor
 
 Note that the definition of $\gl^{m}_{n,\gn}$ extends immediately to $n = \gn$, that is to $\gl^{m}_{n,n}$, using equation (3.10) of \cite{Fornberg1988}.
 
-Now knowing that:
+Substituting:
 \[
 \gd^{m}_{n,\gn}\of{\VectorSymbol{\ga}} = \pa{-1}^m \frac{\gl^{m}_{n,\gn}}{h^m}
 \]
-it is straightforward to rewrite equation (\ref{fornbergbackwardpreliminary}) to obtain equation (\ref{fornbergbackward}), thus demonstrating the lemma.
+into equation (\ref{fornbergbackwardpreliminary}) yields equation (\ref{fornbergbackward}), thus proving the lemma.
 
 % https://tex.stackexchange.com/questions/79194/misplaced-qed-symbol-after-displaymath-inside-item-of-inline-list
 \vspace{-\belowdisplayskip}\[\]
@@ -95,7 +91,7 @@ f^{(m)}\of{x_0} = \frac{\pa{-1}^m}{h^{m - 2}} \sum{\gn = 0}[n - 2]{\gl^{m - 2}_{
 In this section we derive a formula suitable for computing the velocity of a body knowing its positions and accelerations at preceding times.  This is the formula we use after integration using a symmetry linear multistep integrator.
 
 \begin{proposition}
-Given a sufficient regular function $f\of{x}$ there exists a family of rational numbers $\gh_{n, \gn}$, with $0 ≤ \gn ≤ n - 2$, such that: 
+There exists a family of rational numbers $\gh_{n, \gn}$, with $0 ≤ \gn ≤ n - 2$, such that for any sufficiently regular function $f$: 
 \begin{equation}
 f\der\of{x_0} = \frac{1}{h} \pa{f\of{x_0} - f\of{x_0 - h} + h^2 \sum{\gn = 0}[n - 2]{\gh_{n, \gn} f\dersecond\of{x_0 - \gn h}}} + \BigO\of{h^n} 
 \label{eqnslms}
@@ -107,17 +103,14 @@ f\of{x_0 - h} &= \sum{m = 0}[\infty]{\frac{f^{(m)}\of{x_0}}{\Factorial{m}} \pa{-
 &=f\of{x_0} - h f\der\of{x_0} + \sum{m = 2}[\infty]{\frac{f^{(m)}\of{x_0}}{\Factorial{m}} \pa{-1}^m h^m} \nonumber \\
 &=f\of{x_0} - h f\der\of{x_0} + \sum{m = 2}[n]{\frac{f^{(m)}\of{x_0}}{\Factorial{m}} \pa{-1}^m h^m} + \BigO\of{h^{n+1}} \label{eqntaylorn}
 \end{align}
-
 Injecting the expression from corollary (\ref{eqnfornbergbackward2}) into this series we find:
 \[
 f\of{x_0 - h} = f\of{x_0} - h f\der\of{x_0} + h^2 \sum{m = 2}[n]{~\sum{\gn = 0}[n - 2]{\frac{\gl^{m - 2}_{n - 2,\gn}}{\Factorial m} f\dersecond\of{x_0 - \gn h}}} + \BigO\of{h^{n + 1}}
 \]
-
 The summations are independent and can be exchanged:
 \[
 f\of{x_0 - h} = f\of{x_0} - h f\der\of{x_0} + h^2 \sum{\gn = 0}[n - 2]{\pa{\sum{m = 2}[n]{\frac{\gl^{m - 2}_{n - 2,\gn}}{\Factorial m}}} f\dersecond\of{x_0 - \gn h}} + \BigO\of{h^{n + 1}} \\
 \]
-
 If we define:
 \[
 \gh_{n, \gn} \DefineAs \sum{m = 2}[n]{\frac{\gl^{m - 2}_{n - 2,\gn}}{\Factorial m}}
@@ -132,7 +125,7 @@ the equation (\ref{eqnslms}) follows immediately.
 In this section we derive the Cohen-Hubbard-Osterwinder formula, equation (\ref{eqncho}).
 
 \begin{proposition}
-Given a sufficient regular function $f\of{x}$ there exists a family of rational numbers $\gb_{n, \gn}$, with $0 ≤ \gn ≤ n - 2$, such that: 
+There exists a family of rational numbers $\gb_{n, \gn}$, with $0 ≤ \gn ≤ n - 2$, such that for any sufficiently regular function $f$:
 \[
 f\der\of{x_0 + h} = \frac{1}{h} \pa{f\of{x_0} - f\of{x_0 - h}} + h \sum{\gn = 0}[n - 2]{\gb_{n, \gn} f\dersecond\of{x_0 - \gn h}} + \BigO\of{h^n}
 \]
@@ -142,7 +135,6 @@ We start by writing the Taylor series of $f\der\of{x_0 + h}$ for $h$ close to $0
 f\der\of{x_0 + h} &= f\der\of{x_0} + \sum{m = 2}[\infty]{\frac{h^{m - 1}}{\Factorial{\pa{m - 1}}} f^{(m)}\of{x_0}} \\
 &= f\der\of{x_0} + \sum{m = 2}[n]{\frac{h^{m - 1}}{\Factorial{\pa{m - 1}}} f^{(m)}\of{x_0}} + \BigO\of{h^n}
 \end{align*}
-
 and we replace $f\der\of{x_0}$ with its value from equation (\ref{eqntaylorn}):
 \[
 f\der\of{x_0 + h} = \frac{1}{h} \pa{f\of{x_0} - f\of{x_0 - h}} + \sum{m = 2}[n]{\frac{h^{m - 1}}{\Factorial{\pa{m - 1}}} \pa{1 + \frac{\pa{-1}^m}{m}} f^{(m)}\of{x_0}} + \BigO\of{h^n}
@@ -154,7 +146,6 @@ f\der\of{x_0 + h} = \frac{1}{h} \pa{f\of{x_0} - f\of{x_0 - h}} + h \sum{m = 2}[n
 \pa{\frac{1}{\Factorial{\pa{m - 1}}} \pa{\pa{-1}^m + \frac{1}{m}} \sum{\gn = 0}[n - 2]{\gl^{m - 2}_{n - 2, \gn}} f\dersecond\of{x_0 - \gn h}}
 } + \BigO\of{h^n}
 \]
-
 If we exchange the summations and define:
 \[
 \gb_{n, \gn} = \sum{m = 2}[n]{\frac{\gl^{m - 2}_{n - 2, \gn}}{\Factorial{\pa{m - 1}}} \pa{\pa{-1}^m + \frac{1}{m}}}
