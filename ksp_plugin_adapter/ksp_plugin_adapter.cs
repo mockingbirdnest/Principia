@@ -305,13 +305,26 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       string expected_version = "1.7.3, 1.7.2, 1.7.1, 1.7.0, 1.6.1, and 1.5.1";
 #endif
       string message = $@"Unexpected KSP version {Versioning.version_major}.{
-            Versioning.version_minor}.{Versioning.Revision}; this build targets {
-            expected_version}.";
-      if (GameDatabase.Instance.GetAtMostOneNode(
-              principia_override_version_check_config_name_) == null) {
-        Log.Fatal(message);
-      } else {
+            Versioning.version_minor}.{
+            Versioning.Revision}; this build targets {expected_version}.";
+      bool version_check_overridden = false;
+      ConfigNode override_version_check =
+          GameDatabase.Instance.GetAtMostOneNode(
+              principia_override_version_check_config_name_);
+      if (override_version_check != null) {
+        foreach (var version in override_version_check.GetValues("version")) {
+          if (version ==
+              $@"{Versioning.version_major}.{Versioning.version_minor}.{
+                Versioning.Revision}") {
+            version_check_overridden = true;
+            break;
+          }
+        }
+      }
+      if (version_check_overridden) {
         Log.Error(message);
+      } else {
+        Log.Fatal(message);
       }
     }
 
