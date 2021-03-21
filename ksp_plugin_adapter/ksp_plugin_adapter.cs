@@ -49,17 +49,17 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     Vectors = 31,
   };
 
-  private const string principia_serialized_plugin = "serialized_plugin";
-  private const string principia_initial_state_config_name =
+  private const string principia_serialized_plugin_ = "serialized_plugin";
+  private const string principia_initial_state_config_name_ =
       "principia_initial_state";
-  private const string principia_gravity_model_config_name =
+  private const string principia_gravity_model_config_name_ =
       "principia_gravity_model";
-  private const string principia_numerics_blueprint_config_name =
+  private const string principia_numerics_blueprint_config_name_ =
       "principia_numerics_blueprint";
-  private const string principia_override_version_check_config_name =
+  private const string principia_override_version_check_config_name_ =
       "principia_override_version_check";
-  private const string principia_flags = "principia_flags";
-  private const string principia_draw_styles_config_name =
+  private const string principia_flags_ = "principia_flags";
+  private const string principia_draw_styles_config_name_ =
       "principia_draw_styles";
 
   private KSP.UI.Screens.ApplicationLauncherButton toolbar_button_;
@@ -307,24 +307,24 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       string message = $@"Unexpected KSP version {Versioning.version_major}.{
             Versioning.version_minor}.{
             Versioning.Revision}; this build targets {expected_version}.";
-      bool fail_version_check = true;
+      bool version_check_overridden = false;
       ConfigNode override_version_check =
           GameDatabase.Instance.GetAtMostOneNode(
-              principia_override_version_check_config_name);
+              principia_override_version_check_config_name_);
       if (override_version_check != null) {
         foreach (var version in override_version_check.GetValues("version")) {
           if (version ==
               $@"{Versioning.version_major}.{Versioning.version_minor}.{
                 Versioning.Revision}") {
-            fail_version_check = false;
+            version_check_overridden = true;
             break;
           }
         }
       }
-      if (fail_version_check) {
-        Log.Fatal(message);
-      } else {
+      if (version_check_overridden) {
         Log.Error(message);
+      } else {
+        Log.Fatal(message);
       }
     }
 
@@ -689,7 +689,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
     ConfigNode draw_styles =
         GameDatabase.Instance.GetAtMostOneNode(
-            principia_draw_styles_config_name);
+            principia_draw_styles_config_name_);
     LoadDrawStyles(draw_styles);
 
     if (unmodified_orbits_ == null) {
@@ -774,7 +774,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         if (serialization == null) {
           break;
         }
-        node.AddValue(principia_serialized_plugin, serialization);
+        node.AddValue(principia_serialized_plugin_, serialization);
       }
     }
   }
@@ -784,12 +784,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     if (is_bad_installation_ || in_main_menu_) {
       return;
     }
-    if (node.HasValue(principia_serialized_plugin)) {
+    if (node.HasValue(principia_serialized_plugin_)) {
       Cleanup();
       RemoveBuggyTidalLocking();
 
       IntPtr deserializer = IntPtr.Zero;
-      string[] serializations = node.GetValues(principia_serialized_plugin);
+      string[] serializations = node.GetValues(principia_serialized_plugin_);
       Log.Info("Serialization has " + serializations.Length + " chunks");
       foreach (string serialization in serializations) {
         Interface.DeserializePlugin(serialization,
@@ -2416,7 +2416,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     // Load the flags.
     Interface.ClearFlags();
     ConfigNode.ValueList flags = GameDatabase.Instance.
-        GetAtMostOneNode(principia_flags)?.values;
+        GetAtMostOneNode(principia_flags_)?.values;
     if (flags != null) {
       foreach (ConfigNode.Value flag in flags) {
         Interface.SetFlag(flag.name, flag.value);
@@ -2501,11 +2501,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       RemoveBuggyTidalLocking();
       Dictionary<string, ConfigNode> name_to_gravity_model = null;
       ConfigNode gravity_model = GameDatabase.Instance.GetAtMostOneNode(
-          principia_gravity_model_config_name);
+          principia_gravity_model_config_name_);
       ConfigNode initial_state = GameDatabase.Instance.GetAtMostOneNode(
-          principia_initial_state_config_name);
+          principia_initial_state_config_name_);
       ConfigNode numerics_blueprint = GameDatabase.Instance.GetAtMostOneNode(
-          principia_numerics_blueprint_config_name);
+          principia_numerics_blueprint_config_name_);
       if (gravity_model != null) {
         name_to_gravity_model = gravity_model.GetNodes("body").
             ToDictionary(node => node.GetUniqueValue("name"));
