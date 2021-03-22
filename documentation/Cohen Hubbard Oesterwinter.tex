@@ -50,7 +50,6 @@ If the $\VectorSymbol{\ga}$ are equally spaced with step $-h$ (\idest, $\ga_\gn 
 f^{(m)}\of{x_0} = \sum{\gn = 0}[n]{\gd^{m}_{n,\gn}\of{\VectorSymbol{\ga}} f\of{x_0 - \gn h}} + \BigO\of{h^{n - m + 1}}
 \label{fornbergbackwardpreliminary}
 \end{equation}
-
 In this case equation (3.8) from \cite{Fornberg1988} may be rewritten as follows, restoring $x_0$:
 \begin{align}
 \gd^{m}_{n,\gn} &= \frac{1}{\ga_n - \ga_\gn}\pa{\pa{\ga_n - x_0} \gd^{m}_{n - 1,\gn} - m \gd^{m - 1}_{n - 1,\gn}} \nonumber \\
@@ -65,7 +64,6 @@ Substituting into equation (\ref{eqndelta}) we obtain:
 \gl^{m}_{n,\gn} = \frac{1}{n - \gn} \pa{n \gl^{m}_{n - 1,\gn} - m \gl^{m - 1}_{n - 1,\gn}}
 \]
 and we see that $\gl^{m}_{n,\gn}$ is independent from $x_0$ and $h$ and therefore that $\gd^{m}_{n,\gn}$ is independent from $x_0$.
-
 Note that the definition of $\gl^{m}_{n,\gn}$ extends immediately to $n = \gn$, that is to $\gl^{m}_{n,n}$, using equation (3.10) of \cite{Fornberg1988}.
 
 Substituting:
