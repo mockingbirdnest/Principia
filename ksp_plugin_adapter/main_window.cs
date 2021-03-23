@@ -6,8 +6,8 @@ namespace ksp_plugin_adapter {
 
 internal class MainWindow : VesselSupervisedWindowRenderer {
   // Update this section before each release.
-  private const string next_release_name_ = "Grassmann";
-  private const int next_release_lunation_number_ = 263;
+  private const string next_release_name = "Grassmann";
+  private const int next_release_lunation_number = 263;
   private readonly DateTimeOffset next_release_date_ =
       new DateTimeOffset(2021, 04, 12, 02, 32, 00, TimeSpan.Zero);
 
@@ -153,15 +153,15 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
           UnityEngine.GUILayout.TextArea(
               Localizer.Format(
                   "#Principia_MainWindow_NewMoonAnnouncementWithKspDeprecation",
-                  next_release_lunation_number_,
-                  next_release_name_,
+                  next_release_lunation_number,
+                  next_release_name,
                   "1.8.1"),
               style : Style.Multiline(UnityEngine.GUI.skin.textArea));
         } else {
           UnityEngine.GUILayout.TextArea(
               Localizer.Format("#Principia_MainWindow_NewMoonAnnouncement",
-                               next_release_lunation_number_,
-                               next_release_name_ ),
+                               next_release_lunation_number,
+                               next_release_name ),
               style: Style.Multiline(UnityEngine.GUI.skin.textArea));
         }
       }
@@ -406,7 +406,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
                                     length_integration_tolerance);
       if (prediction_length_tolerance_index_ < 0) {
         prediction_length_tolerance_index_ =
-            default_prediction_length_tolerance_index_;
+            default_prediction_length_tolerance_index;
       }
       prediction_steps_index_ = Array.FindIndex(prediction_steps_,
                                                 (long step) =>
@@ -414,7 +414,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
                                                     adaptive_step_parameters.
                                                         Value.max_steps);
       if (prediction_steps_index_ < 0) {
-        prediction_steps_index_ = default_prediction_steps_index_;
+        prediction_steps_index_ = default_prediction_steps_index;
       }
     }
 
@@ -539,8 +539,8 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
       1 << 18, 1 << 20, 1 << 22, 1 << 24
   };
 
-  private const int default_prediction_length_tolerance_index_ = 1;
-  private const int default_prediction_steps_index_ = 4;
+  private const int default_prediction_length_tolerance_index = 1;
+  private const int default_prediction_steps_index = 4;
 
   private readonly PrincipiaPluginAdapter adapter_;
   private readonly FlightPlanner flight_planner_;
@@ -556,8 +556,8 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
   private bool show_selection_ui_ = false;
 
   private int prediction_length_tolerance_index_ =
-      default_prediction_length_tolerance_index_;
-  private int prediction_steps_index_ = default_prediction_steps_index_;
+      default_prediction_length_tolerance_index;
+  private int prediction_steps_index_ = default_prediction_steps_index;
 
   private int buffered_logging_ = 0;
   private int stderr_logging_ = 2;

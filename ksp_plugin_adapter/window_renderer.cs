@@ -162,12 +162,12 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
   private void EnsureOnScreen() {
     rectangle_.x = UnityEngine.Mathf.Clamp(
         rectangle_.x,
-        -rectangle_.width + min_width_on_screen_,
-        UnityEngine.Screen.width - min_width_on_screen_);
+        -rectangle_.width + min_width_on_screen,
+        UnityEngine.Screen.width - min_width_on_screen);
     rectangle_.y = UnityEngine.Mathf.Clamp(
         rectangle_.y,
-        -rectangle_.height + min_height_on_screen_,
-        UnityEngine.Screen.height - min_height_on_screen_);
+        -rectangle_.height + min_height_on_screen,
+        UnityEngine.Screen.height - min_height_on_screen);
   }
 
   public void Shrink() {
@@ -224,8 +224,8 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
   private static readonly ControlTypes PrincipiaLock =
       ControlTypes.ALLBUTCAMERAS & ~ControlTypes.ALL_SHIP_CONTROLS;
 
-  private const float min_height_on_screen_ = 50;
-  private const float min_width_on_screen_ = 50;
+  private const float min_height_on_screen = 50;
+  private const float min_width_on_screen = 50;
 
   private readonly UnityEngine.GUILayoutOption[] options_;
   private readonly string lock_name_;

@@ -49,17 +49,17 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     Vectors = 31,
   };
 
-  private const string principia_serialized_plugin_ = "serialized_plugin";
-  private const string principia_initial_state_config_name_ =
+  private const string principia_serialized_plugin = "serialized_plugin";
+  private const string principia_initial_state_config_name =
       "principia_initial_state";
-  private const string principia_gravity_model_config_name_ =
+  private const string principia_gravity_model_config_name =
       "principia_gravity_model";
-  private const string principia_numerics_blueprint_config_name_ =
+  private const string principia_numerics_blueprint_config_name =
       "principia_numerics_blueprint";
-  private const string principia_override_version_check_config_name_ =
+  private const string principia_override_version_check_config_name =
       "principia_override_version_check";
-  private const string principia_flags_ = "principia_flags";
-  private const string principia_draw_styles_config_name_ =
+  private const string principia_flags = "principia_flags";
+  private const string principia_draw_styles_config_name =
       "principia_draw_styles";
 
   private KSP.UI.Screens.ApplicationLauncherButton toolbar_button_;
@@ -71,7 +71,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   private readonly bool in_main_menu_ =
       HighLogic.LoadedScene == GameScenes.MAINMENU;
 
-  private const int чебышёв_plotting_method_ = 2;
+  private const int чебышёв_plotting_method = 2;
 
   private IntPtr plugin_ = IntPtr.Zero;
 
@@ -310,7 +310,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       bool version_check_overridden = false;
       ConfigNode override_version_check =
           GameDatabase.Instance.GetAtMostOneNode(
-              principia_override_version_check_config_name_);
+              principia_override_version_check_config_name);
       if (override_version_check != null) {
         foreach (var version in override_version_check.GetValues("version")) {
           if (version ==
@@ -689,7 +689,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
     ConfigNode draw_styles =
         GameDatabase.Instance.GetAtMostOneNode(
-            principia_draw_styles_config_name_);
+            principia_draw_styles_config_name);
     LoadDrawStyles(draw_styles);
 
     if (unmodified_orbits_ == null) {
@@ -774,7 +774,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         if (serialization == null) {
           break;
         }
-        node.AddValue(principia_serialized_plugin_, serialization);
+        node.AddValue(principia_serialized_plugin, serialization);
       }
     }
   }
@@ -784,12 +784,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     if (is_bad_installation_ || in_main_menu_) {
       return;
     }
-    if (node.HasValue(principia_serialized_plugin_)) {
+    if (node.HasValue(principia_serialized_plugin)) {
       Cleanup();
       RemoveBuggyTidalLocking();
 
       IntPtr deserializer = IntPtr.Zero;
-      string[] serializations = node.GetValues(principia_serialized_plugin_);
+      string[] serializations = node.GetValues(principia_serialized_plugin);
       Log.Info("Serialization has " + serializations.Length + " chunks");
       foreach (string serialization in serializations) {
         Interface.DeserializePlugin(serialization,
@@ -2119,7 +2119,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           using (DisposableIterator rp2_lines_iterator =
               planetarium.PlanetariumPlotPsychohistory(
                   plugin_,
-                  чебышёв_plotting_method_,
+                  чебышёв_plotting_method,
                   main_vessel_guid,
                   main_window_.history_length)) {
             GLLines.PlotRP2Lines(rp2_lines_iterator,
@@ -2129,7 +2129,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           using (DisposableIterator rp2_lines_iterator =
               planetarium.PlanetariumPlotPrediction(
                   plugin_,
-                  чебышёв_plotting_method_,
+                  чебышёв_plotting_method,
                   main_vessel_guid)) {
             GLLines.PlotRP2Lines(rp2_lines_iterator,
                                  prediction_colour,
@@ -2145,7 +2145,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             using (DisposableIterator rp2_lines_iterator =
                 planetarium.PlanetariumPlotPsychohistory(
                     plugin_,
-                    чебышёв_plotting_method_,
+                    чебышёв_plotting_method,
                     target_id,
                     main_window_.history_length)) {
               GLLines.PlotRP2Lines(rp2_lines_iterator,
@@ -2155,7 +2155,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             using (DisposableIterator rp2_lines_iterator =
                 planetarium.PlanetariumPlotPrediction(
                     plugin_,
-                    чебышёв_plotting_method_,
+                    чебышёв_plotting_method,
                     target_id)) {
               GLLines.PlotRP2Lines(rp2_lines_iterator,
                                    target_prediction_colour,
@@ -2185,7 +2185,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                 using (DisposableIterator rp2_lines_iterator =
                     planetarium.PlanetariumPlotFlightPlanSegment(
                         plugin_,
-                        чебышёв_plotting_method_,
+                        чебышёв_plotting_method,
                         main_vessel_guid,
                         i)) {
                   GLLines.PlotRP2Lines(rp2_lines_iterator,
@@ -2416,7 +2416,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     // Load the flags.
     Interface.ClearFlags();
     ConfigNode.ValueList flags = GameDatabase.Instance.
-        GetAtMostOneNode(principia_flags_)?.values;
+        GetAtMostOneNode(principia_flags)?.values;
     if (flags != null) {
       foreach (ConfigNode.Value flag in flags) {
         Interface.SetFlag(flag.name, flag.value);
@@ -2501,11 +2501,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       RemoveBuggyTidalLocking();
       Dictionary<string, ConfigNode> name_to_gravity_model = null;
       ConfigNode gravity_model = GameDatabase.Instance.GetAtMostOneNode(
-          principia_gravity_model_config_name_);
+          principia_gravity_model_config_name);
       ConfigNode initial_state = GameDatabase.Instance.GetAtMostOneNode(
-          principia_initial_state_config_name_);
+          principia_initial_state_config_name);
       ConfigNode numerics_blueprint = GameDatabase.Instance.GetAtMostOneNode(
-          principia_numerics_blueprint_config_name_);
+          principia_numerics_blueprint_config_name);
       if (gravity_model != null) {
         name_to_gravity_model = gravity_model.GetNodes("body").
             ToDictionary(node => node.GetUniqueValue("name"));
