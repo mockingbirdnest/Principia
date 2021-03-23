@@ -19,27 +19,27 @@ class BurnEditor : ScalingRenderer {
     Δv_tangent_ = new DifferentialSlider(
         label            : Localizer.Format("#Principia_BurnEditor_ΔvTangent"),
         unit             : Localizer.Format("#Principia_BurnEditor_SpeedUnit"),
-        log10_lower_rate : Log10ΔvLowerRate,
-        log10_upper_rate : Log10ΔvUpperRate,
+        log10_lower_rate : log10_Δv_lower_rate,
+        log10_upper_rate : log10_Δv_upper_rate,
         text_colour      : Style.Tangent);
     Δv_normal_ = new DifferentialSlider(
         label            : Localizer.Format("#Principia_BurnEditor_ΔvNormal"),
         unit             : Localizer.Format("#Principia_BurnEditor_SpeedUnit"),
-        log10_lower_rate : Log10ΔvLowerRate,
-        log10_upper_rate : Log10ΔvUpperRate,
+        log10_lower_rate : log10_Δv_lower_rate,
+        log10_upper_rate : log10_Δv_upper_rate,
         text_colour      : Style.Normal);
     Δv_binormal_ = new DifferentialSlider(
         label            : Localizer.Format("#Principia_BurnEditor_ΔvBinormal"),
         unit             : Localizer.Format("#Principia_BurnEditor_SpeedUnit"),
-        log10_lower_rate : Log10ΔvLowerRate,
-        log10_upper_rate : Log10ΔvUpperRate,
+        log10_lower_rate : log10_Δv_lower_rate,
+        log10_upper_rate : log10_Δv_upper_rate,
         text_colour      : Style.Binormal);
     previous_coast_duration_ = new DifferentialSlider(
         label            :
             Localizer.Format("#Principia_BurnEditor_InitialTime"),
         unit             : null,
-        log10_lower_rate : Log10TimeLowerRate,
-        log10_upper_rate : Log10TimeUpperRate,
+        log10_lower_rate : log10_time_lower_rate,
+        log10_upper_rate : log10_time_upper_rate,
         // We cannot have a coast of length 0, so let's make it very
         // short: that will be indistinguishable.
         zero_value       : 0.001,
@@ -358,10 +358,10 @@ class BurnEditor : ScalingRenderer {
 
   private bool first_time_rendering_ = true;
 
-  private const double Log10ΔvLowerRate = -3.0;
-  private const double Log10ΔvUpperRate = 3.5;
-  private const double Log10TimeLowerRate = 0.0;
-  private const double Log10TimeUpperRate = 7.0;
+  private const double log10_Δv_lower_rate = -3.0;
+  private const double log10_Δv_upper_rate = 3.5;
+  private const double log10_time_lower_rate = 0.0;
+  private const double log10_time_upper_rate = 7.0;
 
   // Not owned.
   private readonly Vessel vessel_;
