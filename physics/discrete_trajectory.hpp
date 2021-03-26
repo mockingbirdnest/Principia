@@ -273,7 +273,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
 
   // For using the private constructor in maps.
   template<typename, typename>
-  friend struct std::pair;
+  friend struct ::std::pair;
 };
 
 }  // namespace internal_discrete_trajectory

@@ -2,8 +2,10 @@
 \ProvidesClass{basestyle}[2013/04/20 General layout and font definitions]
 
 \newif\iftwoside\twosidefalse
+\newif\ifmarginnotes\marginnotestrue
 
 \DeclareOption{twoside}{\twosidetrue\PassOptionsToClass{twoside}{article}}
+\DeclareOption{nomarginnotes}{\marginnotesfalse}
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{article}}
 \ProcessOptions
 \LoadClass{article}
@@ -22,7 +24,11 @@
 \RequirePackage{polyglossia}
 \setdefaultlanguage[variant=british]{english}
 \setotherlanguages{greek,german,russian,latin,french}
-\RequirePackage{csquotes}
+% We use the english/american quote style, i.e., outer double quotes and inner
+% single quotes, but british typographic rules (punctuation after the quotation
+% marks).
+\RequirePackage[style=english/american]{csquotes}
+\RequirePackage[shortcuts]{extdash}
 
 \newcommand{\foreign}{\emph}
 
@@ -75,10 +81,17 @@
 % Layout.
 
 \iftwoside
-\RequirePackage[heightrounded,
-marginparwidth=5cm, marginparsep=0.5cm, top=2.5cm, bottom=2.5cm, left=2.5cm, right=6.5cm]{geometry}
+  \ifmarginnotes
+    \RequirePackage[heightrounded,
+                    marginparwidth=5cm,
+                    marginparsep=0.5cm,
+                    top=2.5cm, bottom=2.5cm, left=2.5cm, right=6.5cm]{geometry}
+  \else
+    \RequirePackage[heightrounded,
+                    top=2.5cm, bottom=2.5cm, left=2.5cm, right=4.5cm]{geometry}
+  \fi
 \else
-\RequirePackage[top=2.25cm, bottom=2.25cm, left=3.5cm, right=3.5cm]{geometry}
+  \RequirePackage[top=2.25cm, bottom=2.25cm, left=3.5cm, right=3.5cm]{geometry}
 \fi
 
 \RequirePackage{fancyhdr}
@@ -90,6 +103,9 @@ marginparwidth=5cm, marginparsep=0.5cm, top=2.5cm, bottom=2.5cm, left=2.5cm, rig
 \renewcommand{\maketitle}{\makearticletitle\thispagestyle{empty}}
 
 \usepackage[margin=10pt,font=small,labelfont=bf,labelsep=period]{caption}
+
+\RequirePackage{titling}
+\renewcommand{\maketitlehooka}{\textdisplay}
 
 % Miscellaneous.
 \XeTeXdashbreakstate=0
@@ -128,6 +144,10 @@ marginparwidth=5cm, marginparsep=0.5cm, top=2.5cm, bottom=2.5cm, left=2.5cm, rig
 
 \RequirePackage{marginnote}
 
+% Latin locutions.
+\newcommand{\idest}{\emph{i.e.}}
+\newcommand{\exempligratia}{\emph{e.g.}}
+
 % For comments in align environments
 \newcommand\commentbox[1]{\parbox{.3\linewidth}{#1}}
 
@@ -145,3 +165,60 @@ marginparwidth=5cm, marginparsep=0.5cm, top=2.5cm, bottom=2.5cm, left=2.5cm, rig
 }
 
 \RequirePackage{hyperref}
+
+\RequirePackage[backend=biber,firstinits=true,maxnames=100,style=alphabetic,maxalphanames=4,doi=true,isbn=false,url=false,eprint=true,labelalpha=true]{biblatex}
+
+% Allow breaking after lower and upper case letters in bibliography URLs, see
+% https://tex.stackexchange.com/a/134281.
+\setcounter{biburllcpenalty}{7000}
+\setcounter{biburlucpenalty}{8000}
+
+\AtEveryBibitem{\clearlist{language}}  % TODO(egg): Why are we doing this?
+
+\DeclareFieldFormat{doi}{%
+  \newline
+  \mkbibacro{DOI}\addcolon\space
+    \ifhyperref
+      {\href{https://doi.org/#1}{\nolinkurl{#1}}}
+      {\nolinkurl{#1}}}
+\DeclareFieldFormat{eprint:cnki}{%
+  \newline
+  \mkbibacro{CNKI}\addcolon\space
+    \ifhyperref
+      {\href{http://www.cnki.com.cn/Article/CJFDTOTAL-#1.htm}{\nolinkurl{#1}}}
+      {\nolinkurl{#1}}}
+\DeclareFieldFormat{eprint}{%
+  \newline
+  eprint\addcolon\space
+    \ifhyperref
+      {\href{#1}{\nolinkurl{#1}}}
+      {\nolinkurl{#1}}}
+
+% Use the userd field for stable disambiguation; raise an error if automated
+% disambiguation is needed.
+\DeclareLabelalphaTemplate{
+  \labelelement{
+    \field[final]{shorthand}
+    \field{label}
+    \field[strwidth=3,strside=left,ifnames=1]{labelname}
+    \field[strwidth=1,strside=left]{labelname}
+  }
+  \labelelement{
+    \field[strwidth=2,strside=right]{year}
+  }
+  \labelelement{
+    \field[strside=right]{userd}
+  }
+}
+\AtEveryBibitem{
+  \iffieldundef{extraalpha}{
+    % We expect extraalpha, the counter for the auto-generated disambiguator, to
+    % be undefined.
+  }{
+    \PackageError{Principia basestyle.cls}{Ambiguous key \thefield{labelalpha} in bibliography}
+  }
+}
+
+\bibliography{bibliography}
+
+\AtEndDocument{\printbibliography}

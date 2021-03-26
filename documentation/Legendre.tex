@@ -1,4 +1,4 @@
-\documentclass[10pt, a4paper, oneside]{basestyle}
+\documentclass[10pt, a4paper, twoside]{basestyle}
 \usepackage[Mathematics]{semtex}
 \usepackage{chngcntr}
 \counterwithout{equation}{section}
@@ -7,16 +7,13 @@
 
 %%%% Title and authors.
 
-\title{%
-\textdisplay{%
-Explicit representation of Legendre polynomials%
-}%
-}
+\title{Explicit representation of Legendre polynomials}
+\date{\printdate{2018-09-03}}
 \author{Pascal~Leroy (phl)}
 \begin{document}
 \maketitle
 \noindent
-According to Wikipedia (\url{https://en.wikipedia.org/wiki/Legendre_polynomials}), the Legendre polynomials have the following representation in terms of monomials, which is immediate from the recursion formula\footnote{The same article has a simpler formula (third one in the "Explicit representation" section) which unfortunately is more prone to integer overflows.}:
+According to Wikipedia\footnote{\url{https://en.wikipedia.org/wiki/Legendre_polynomials}.}, the Legendre polynomials have the following representation in terms of monomials, which is immediate from the recursion formula\footnote{The same article has a simpler formula (third one in the ``Explicit representation'' section) which unfortunately is more prone to integer overflows.}:
 \begin{equation*}
 P_n(x) = 2^n \sum{k = 0}[n] x^k \binom{n}{k} \binom{\frac{n + k - 1}{2}}{n}
 \end{equation*}

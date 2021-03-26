@@ -1,6 +1,5 @@
 \documentclass[10pt, a4paper, twoside]{basestyle}
 \usepackage{tkz-euclide}
-\usetkzobj{all}
 \usepackage[Mathematics]{semtex}
 \usepackage{chngcntr}
 \counterwithout{equation}{section}
@@ -15,11 +14,8 @@
 \newcommand{\plane}[3]{\point #1 \point #2 \point #3}
 \newcommand{\squarenorm}[1]{\scal{#1}{#1}}
 
-\title{%
-\textdisplay{%
-Hiding Computations in Projection%
-}%
-}
+\title{Hiding Computations in Projection}
+\date{\printdate{2017-08-17}}
 \author{Pascal~Leroy (pleroy)}
 \begin{document}
 \maketitle
@@ -220,7 +216,7 @@ outside the wedge $\plane KAB$ on the side of $\straightline KA$.
 \tkzDefPoint(2,5){H}
 \tkzDefPoint(0,-4){K}
 
-\tkzTangent[from with R=K](H,3cm) \tkzGetPoints{P'}{P}
+\tkzDefTangent[from with R=K](H,3cm) \tkzGetPoints{P'}{P}
 \tkzInterLL(K,P)(A,B) \tkzGetPoint{Q}
 
 \tkzDefPointBy[rotation=center H angle -130](P) \tkzGetPoint{r}
@@ -346,7 +342,7 @@ in front or behind the camera.  This is what we need to determine next.
 \tkzDefPoint(0,0){H}
 \tkzDefPoint(0,6){K}
 
-\tkzTangent[from with R=K](H,3cm) \tkzGetPoints{P2}{P}
+\tkzDefTangent[from with R=K](H,3cm) \tkzGetPoints{P2}{P}
 
 \tkzDefLine[orthogonal=through P](K,H) \tkzGetPoint{p}
 \tkzInterLL(P,p)(A,B) \tkzGetPoint{T}
@@ -420,7 +416,7 @@ that $\bipoint KT$ is orthogonal to $\bipoint KH$ we obtain\[
            {\scal{\bipoint AB}{\bipoint KH}}
 \]
 We can now determine if $\point Q$ (or alternatively, $\gl$) is an
-``interesting'' intersection, i.e., one that intersects the cone behind the
+``interesting'' intersection, \idest, one that intersects the cone behind the
 sphere when seen from the camera.  That's because the location of $\point S$ let
 us separate what is behind the camera from what is in front of the camera, and
 the location of $\point T$ determines where the cone starts (points in front
@@ -442,7 +438,7 @@ The same analysis must be performed for $\gl'$ corresponding to $\point Q'$.
 
 \subsection*{Point at infinity}
 There is another special case that requires some care: if the line 
-$\straightline AB$ is in ``hyperbolic'' position, i.e., intersects both halves
+$\straightline AB$ is in ``hyperbolic'' position, \idest, intersects both halves
 of the cone, then one of the values $\gl$, $\gl'$ is smaller than $\gs$ and the
 other is greater than $\gs$ (this is the situation shown in figure~\ref{figST}).
 Exactly one of $\gl$, $\gl'$ will be retained by the preceding analysis.  To
@@ -459,7 +455,7 @@ extra value of $\gl$ equal to an infinity with the sign of $\gt - \gs$.
 \tkzDefPoint(2,7){H}
 \tkzDefPoint(0,-4){K}
 
-\tkzTangent[from with R=K](H,3cm) \tkzGetPoints{P'}{P}
+\tkzDefTangent[from with R=K](H,3cm) \tkzGetPoints{P'}{P}
 \tkzInterLC[R](A,B)(H,3cm) \tkzGetPoints{Q'}{Q}
 
 \tkzDefPointBy[rotation=center H angle 100](Q') \tkzGetPoint{r}

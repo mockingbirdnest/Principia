@@ -1,8 +1,5 @@
 \documentclass[10pt, a4paper, twoside]{basestyle}
 
-\usepackage[backend=biber,firstinits=true,maxnames=100,style=alphabetic,maxalphanames=4,doi=true,isbn=false,url=false,eprint=true]{biblatex}
-\bibliography{bibliography}
-
 \usepackage[Mathematics]{semtex}
 \usepackage{chngcntr}
 \counterwithout{equation}{section}
@@ -13,11 +10,8 @@
 
 %%%% Title and authors.
 
-\title{%
-\textdisplay{%
-Geopotential%
-}%
-}
+\title{Geopotential}
+\date{\printdate{2019-01-27}}
 \author{Pascal~Leroy (phl) and Robin~Leroy (egg)}
 \begin{document}
 \maketitle
@@ -369,7 +363,7 @@ The radial component of the acceleration resulting from $V_{nm}$ is
 \[
 \gm\InnerProduct {\grad V_{nm}}{\frac \vr r} = \gm \deriv r {{\gs\of r \mathfrak R\of r}}{\mathfrak B\of \gb}\,{\mathfrak L\of \gl}\text.
 \]
-We require that it and all its derivatives be monotone, i.e., that
+We require that it and all its derivatives be monotone, \idest, that
 \[
 \forall k \in \Positives, \deriv[k+1] r {\gs\of r \mathfrak R\of r}{\mathfrak B\of \gb}\,{\mathfrak L\of \gl}
 \]
@@ -569,7 +563,7 @@ We want to prove that the smallest root, $r_-$ verifies $r_{-}>3s_0$.  This ineq
 \iff &\pa{n-1}\pa{k+1} > n+k-1 \\
 \iff &k\pa{n-2} > 0 \quad \text{which is trivally true.}
 \end{align*}
-When $n=2$ equation (\ref{eqn3s0}) further reduces to a first-degree equation with root $r = \frac{3}{2} s_0 \pa{k+2}$ which verifies $r≥3s_0$.  Note however that the latter inequality is not strict, i.e., the value $3s_0$ may be reached if $k=0$ and $n=2$.
+When $n=2$ equation (\ref{eqn3s0}) further reduces to a first-degree equation with root $r = \frac{3}{2} s_0 \pa{k+2}$ which verifies $r≥3s_0$.  Note however that the latter inequality is not strict, \idest, the value $3s_0$ may be reached if $k=0$ and $n=2$.
 \end{proof}
 Accordingly, we pick $s_1=3s_0$.
 The expression for $\gs$ on $\intclos {s_0} {s_1}$ simplifies to\[
@@ -605,6 +599,4 @@ Thus we can compute the desired $s_0$ as
 \[
 s_0 = R \pa{\frac{\max_\gb\abs{\p nm\of{\sin \gb}}\pa{n+1}\sqrt{C_{nm}^2 + S_{nm}^2}}{\gce}}^{\frac 1 n}\text.
 \]
-
-\printbibliography
 \end{document}

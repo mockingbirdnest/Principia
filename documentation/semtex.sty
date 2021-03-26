@@ -420,6 +420,8 @@
 \newcommand{\Closure}[1]{\overline{#1}}
 % f\der is a compact notation for the derivative of f.
 \newcommand{\der}{'}
+% f\dersecond is the second derivative.
+\newcommand{\dersecond}{''}
 %% Many-argument operators.
 % \deriv[n] x f is the nth derivative of f with respect to x.
 % Use \deriv x f for the first derivative, and
@@ -643,9 +645,12 @@
 \newcommand{\vx}{\VectorSymbol x}
 \newcommand{\vy}{\VectorSymbol y}
 \newcommand{\vz}{\VectorSymbol z}
+\newcommand{\vA}{\VectorSymbol A}
+\newcommand{\vB}{\VectorSymbol B}
 \newcommand{\vF}{\VectorSymbol F}
 \newcommand{\vQ}{\VectorSymbol Q}
 \newcommand{\vP}{\VectorSymbol P}
+\newcommand{\vX}{\VectorSymbol X}
 
 \newcommand{\miga}{{\MultiIndexSymbol \alpha}}
 \newcommand{\migb}{{\MultiIndexSymbol \beta}}
@@ -827,6 +832,8 @@
 \newcommand\Z\Integers
 \newcommand\Q\Rationals
 \newcommand\R\Reals
+% TODO(egg): why do we sometimes have \C already?
+\providecommand\C\Complexes
 \renewcommand\C\Complexes
 
 \newcommand{\FreeGroup}[1]{\operatorname{F}_{#1}}
