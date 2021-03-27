@@ -20,13 +20,13 @@ This document proves and generalizes a formula given in \cite{CohenHubbardOester
 
 \subsection*{Statement}
 \cite[20]{CohenHubbardOesterwinter1973} states that
-\begin{quotation}
+\begin{quote}
 the formula for a velocity component [is] of the form:
 \begin{equation}
 \TimeDerivative{x}_{n + 1} = \frac{1}{h}\pa{x_n - x_{n - 1} + h^2 \sum{i = 0}[12] \gb_i \SecondTimeDerivative{x}_{n-i}}
 \label{eqncho}
 \end{equation}
-\end{quotation}
+\end{quote}
 They then proceed to tabulate explicit values for the (rational) coefficients $\gb_i$ without explaining how they are computed.  This makes it impossible to use this formula for integrators of a different order or to construct similar formulæ for slightly different purposes.
 
 \subsection*{Finite difference formulæ}

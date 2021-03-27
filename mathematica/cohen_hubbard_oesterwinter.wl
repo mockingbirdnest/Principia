@@ -25,13 +25,13 @@ f2s[x_,n_]:=Normal[Series[f''[\[Xi]],{\[Xi],0,n}]]/.\[Xi]->x;
 
 
 \[Beta][\[ScriptCapitalN]_]:=Module[
-{\[CapitalDelta] = GenerateFornberg[\[ScriptCapitalN], \[ScriptCapitalN], 1, -# &],\[Delta]},
+{\[CapitalDelta] = GenerateFornberg[\[ScriptCapitalN], \[ScriptCapitalN], 0, -# &],\[Delta]},
 \[Delta][m_, n_, j_] := \[CapitalDelta][[m + 1, n + 1, j + 1]];
 With[
  {n = \[ScriptCapitalN]},
  Table[
   Sum[
-   ((-1)^(k - 1) (1 - 2^k) \[Delta][k - 2, n - 2, j])/k!,
+   ((1 + (-1)^k / k) \[Delta][k - 2, n - 2, j])/(k-1)!,
    {k, 2, n}],
   {j, 0, n - 2}]]];
 
