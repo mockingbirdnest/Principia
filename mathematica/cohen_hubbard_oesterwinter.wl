@@ -31,7 +31,7 @@ With[
  {n = \[ScriptCapitalN]},
  Table[
   Sum[
-   ((1 + (-1)^k / k) \[Delta][k - 2, n - 2, j])/(k-1)!,
+   ((1 + (-1)^k / k) \[Delta][k - 2, n - 2, j])/(k - 1)!,
    {k, 2, n}],
   {j, 0, n - 2}]]];
 
