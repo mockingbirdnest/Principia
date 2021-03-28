@@ -486,21 +486,18 @@ void AnalyseGlobalError() {
     if (reference_ephemeris != nullptr) {
       bundle.Add([&reference_ephemeris = *reference_ephemeris, t]() {
         reference_ephemeris.Prolong(t);
-        reference_ephemeris.EventuallyForgetBefore(t);
         return Status::OK;
       });
     }
     if (refined_ephemeris != nullptr) {
       bundle.Add([&refined_ephemeris = *refined_ephemeris, t]() {
         refined_ephemeris.Prolong(t);
-        refined_ephemeris.EventuallyForgetBefore(t);
         return Status::OK;
       });
     }
     for (auto const& ephemeris : perturbed_ephemerides) {
       bundle.Add([ephemeris = ephemeris.get(), t]() {
         ephemeris->Prolong(t);
-        ephemeris->EventuallyForgetBefore(t);
         return Status::OK;
       });
     }
@@ -606,7 +603,6 @@ void StatisticallyAnalyseStability() {
                                                       Position<Barycentric>>(),
                 step / 2));
         ephemeris->Prolong(t);
-        ephemeris->EventuallyForgetBefore(t);
         refined.Prolong(t);
         Length numerical_error;
         Celestial most_erroneous_moon;

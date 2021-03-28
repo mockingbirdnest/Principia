@@ -184,12 +184,6 @@ class Ephemeris {
 
   virtual Status last_severe_integration_status() const;
 
-  // If the time |t| is not protected by a |Guard|, calls |ForgetBefore| on all
-  // trajectories and returns true, after which |t_min() == t|.  If the time |t|
-  // is protected by a |Guard|, returns false; the actual action is delayed
-  // until the destruction of the |Guard|.
-  virtual bool EventuallyForgetBefore(Instant const& t) EXCLUDES(lock_);
-
   // Prolongs the ephemeris up to at least |t|.  After the call, |t_max() >= t|.
   virtual void Prolong(Instant const& t) EXCLUDES(lock_);
 
@@ -430,7 +424,7 @@ class Ephemeris {
   // The fields above this line are fixed at construction and therefore not
   // protected.  Note that |ContinuousTrajectory| is thread-safe.  |lock_| is
   // also used to protect sections where the trajectories are not mutually
-  // consistent (e.g., during ForgetBefore, Prolong, etc.).
+  // consistent (e.g., during Prolong).
   mutable absl::Mutex lock_;
 
   std::unique_ptr<typename Integrator<NewtonianMotionEquation>::Instance>

@@ -25,8 +25,6 @@ class MockVessel : public Vessel {
   MOCK_CONST_METHOD0(flight_plan, FlightPlan&());
   MOCK_CONST_METHOD0(has_flight_plan, bool());
 
-  MOCK_METHOD1(ForgetBefore, void(Instant const& time));
-
   MOCK_METHOD4(CreateFlightPlan,
                void(Instant const& final_time,
                     Mass const& initial_mass,

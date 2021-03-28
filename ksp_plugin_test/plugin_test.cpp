@@ -413,21 +413,6 @@ TEST_F(PluginTest, Serialization) {
   plugin->CatchUpLaggingVessels(collided_vessels);
   plugin->UpdatePrediction({satellite});
 
-  // The call to |UpdatePrediction| above may guard the ephemeris and delay
-  // forgetting the histories until after the plugin is serialized below.  To
-  // make this test deterministic, we poll until forgetting has actually
-  // happened.
-  for (;;) {
-    Instant const t_min = HistoryTime(time, 2);
-    plugin->ForgetAllHistoriesBefore(t_min);
-    if (t_min <=
-        plugin->GetCelestial(SolarSystemFactory::Sun).trajectory().t_min()) {
-      break;
-    }
-    using namespace std::chrono_literals;
-    std::this_thread::sleep_for(100ms);
-  }
-
   plugin->CreateFlightPlan(satellite, HistoryTime(time, 7), 4 * Kilogram);
   plugin->renderer().SetPlottingFrame(
       plugin->NewBodyCentredNonRotatingNavigationFrame(
@@ -446,7 +431,7 @@ TEST_F(PluginTest, Serialization) {
   EXPECT_EQ(message.celestial(0).index(), message.celestial(1).parent_index());
 
   EXPECT_EQ(
-      HistoryTime(time, 2),
+      ParseTT(initial_time_),
       Instant::ReadFromMessage(message.ephemeris().trajectory(0).first_time()));
 
   EXPECT_EQ(1, message.vessel_size());
@@ -454,7 +439,7 @@ TEST_F(PluginTest, Serialization) {
   EXPECT_TRUE(message.vessel(0).vessel().has_flight_plan());
   EXPECT_TRUE(message.vessel(0).vessel().has_history());
   auto const& vessel_0_history = message.vessel(0).vessel().history();
-  EXPECT_EQ(4, vessel_0_history.zfp().timeline_size());
+  EXPECT_EQ(7, vessel_0_history.zfp().timeline_size());
   EXPECT_TRUE(message.has_renderer());
   EXPECT_TRUE(message.renderer().has_plotting_frame());
   EXPECT_TRUE(message.renderer().plotting_frame().HasExtension(
@@ -727,214 +712,6 @@ TEST_F(PluginDeathTest, AdvanceTimeError) {
     InsertAllSolarSystemBodies();
     plugin_->AdvanceTime(Instant(), Angle());
   }, "Check failed: !initializing");
-}
-
-TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
-  GUID const guid = "Test Satellite";
-  PartId const part_id = 666;
-  auto const dof = DegreesOfFreedom<Barycentric>(Barycentric::origin,
-                                                 Barycentric::unmoving);
-  Instant const initial_time = ParseTT(initial_time_);
-  Instant const time = initial_time + 1 * Second;
-  Instant t_max = time;
-
-  auto* const mock_dynamic_frame =
-      new MockDynamicFrame<Barycentric, Navigation>();
-  std::vector<not_null<DiscreteTrajectory<Barycentric>*>> trajectories = {
-      make_not_null<DiscreteTrajectory<Barycentric>*>()};
-  auto instance = make_not_null_unique<MockFixedStepSizeIntegrator<
-      Ephemeris<Barycentric>::NewtonianMotionEquation>::MockInstance>();
-  EXPECT_CALL(plugin_->mock_ephemeris(), NewInstance(_, _, _))
-      .WillOnce(DoAll(SaveArg<0>(&trajectories),
-                      Return(ByMove(std::move(instance)))));
-  EXPECT_CALL(plugin_->mock_ephemeris(), t_max())
-      .WillRepeatedly(Return(t_max));
-  EXPECT_CALL(plugin_->mock_ephemeris(), empty()).WillRepeatedly(Return(false));
-  EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_))
-      .WillRepeatedly(SaveArg<0>(&t_max));
-  EXPECT_CALL(
-      plugin_->mock_ephemeris(),
-      FlowWithAdaptiveStep(_, _, Ne(astronomy::InfiniteFuture), _, _))
-      .WillRepeatedly(
-          DoAll(AppendToDiscreteTrajectory(dof), Return(Status::OK)));
-  EXPECT_CALL(plugin_->mock_ephemeris(),
-              FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
-      .WillRepeatedly(Return(Status::OK));
-  EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithFixedStep(_, _))
-      .WillRepeatedly(DoAll(AppendToDiscreteTrajectory2(&trajectories[0], dof),
-                            Return(Status::OK)));
-  EXPECT_CALL(plugin_->mock_ephemeris(), planetary_integrator())
-      .WillRepeatedly(ReturnRef(
-          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                             Position<Barycentric>>()));
-  EXPECT_CALL(plugin_->mock_ephemeris(), EventuallyForgetBefore(_))
-      .Times(2)
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(*mock_dynamic_frame, ToThisFrameAtTime(_))
-      .WillRepeatedly(Return(
-          RigidMotion<Barycentric, Navigation>(
-              RigidTransformation<Barycentric, Navigation>::Identity(),
-              Barycentric::nonrotating,
-              Barycentric::unmoving)));
-  EXPECT_CALL(*mock_dynamic_frame, FrenetFrame(_, _))
-      .WillRepeatedly(Return(
-          MockDynamicFrame<Barycentric, Navigation>::Rot::Identity()));
-  std::vector<not_null<MassiveBody const*>> const bodies;
-  ON_CALL(plugin_->mock_ephemeris(), bodies()).WillByDefault(ReturnRef(bodies));
-
-  InsertAllSolarSystemBodies();
-  plugin_->EndInitialization();
-
-  bool inserted;
-  plugin_->InsertOrKeepVessel(guid,
-                              "v" + guid,
-                              SolarSystemFactory::Earth,
-                              /*loaded=*/false,
-                              inserted);
-  plugin_->InsertUnloadedPart(
-      part_id,
-      "part",
-      guid,
-      RelativeDegreesOfFreedom<AliceSun>(satellite_initial_displacement_,
-                                         satellite_initial_velocity_));
-  plugin_->PrepareToReportCollisions();
-  plugin_->FreeVesselsAndPartsAndCollectPileUps(20 * Milli(Second));
-  auto const satellite = plugin_->GetVessel(guid);
-
-  plugin_->AdvanceTime(time, Angle());
-  plugin_->InsertOrKeepVessel(guid,
-                              "v" + guid,
-                              SolarSystemFactory::Earth,
-                              /*loaded=*/false,
-                              inserted);
-  plugin_->AdvanceTime(HistoryTime(time, 3), Angle());
-  VesselSet collided_vessels;
-  plugin_->CatchUpLaggingVessels(collided_vessels);
-
-  auto const burn =
-      [this, mock_dynamic_frame, time]() -> NavigationManœuvre::Burn {
-    NavigationManœuvre::Intensity intensity;
-    intensity.Δv = Velocity<Frenet<Navigation>>({1 * Metre / Second,
-                                                 0 * Metre / Second,
-                                                 0 * Metre / Second});
-    NavigationManœuvre::Timing timing;
-    timing.initial_time = HistoryTime(time, 4);
-    return {intensity,
-            timing,
-            /*thrust=*/1 * Newton,
-            /*specific_impulse=*/1 * Newton * Second / Kilogram,
-            std::unique_ptr<MockDynamicFrame<Barycentric, Navigation>>(
-                mock_dynamic_frame),
-            /*is_inertially_fixed=*/true};
-  };
-  plugin_->CreateFlightPlan(guid,
-                            /*final_time=*/HistoryTime(time, 8),
-                            /*initial_mass=*/1 * Kilogram);
-  satellite->flight_plan().Insert(burn(), 0);
-
-  plugin_->InsertOrKeepVessel(guid,
-                              "v" + guid,
-                              SolarSystemFactory::Earth,
-                              /*loaded=*/false,
-                              inserted);
-  plugin_->AdvanceTime(HistoryTime(time, 6), Angle());
-  plugin_->CatchUpLaggingVessels(collided_vessels);
-  plugin_->ForgetAllHistoriesBefore(HistoryTime(time, 3));
-  EXPECT_LE(HistoryTime(time, 3), satellite->flight_plan().initial_time());
-  EXPECT_LE(HistoryTime(time, 3), satellite->psychohistory().front().time);
-  EXPECT_EQ(1, satellite->flight_plan().number_of_manœuvres());
-  EXPECT_EQ(1 * Newton, satellite->flight_plan().GetManœuvre(0).thrust());
-  plugin_->ForgetAllHistoriesBefore(HistoryTime(time, 5));
-  EXPECT_LE(HistoryTime(time, 5), satellite->flight_plan().initial_time());
-  EXPECT_LE(HistoryTime(time, 5), satellite->psychohistory().front().time);
-  EXPECT_EQ(0, satellite->flight_plan().number_of_manœuvres());
-}
-
-TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
-  GUID const guid = "Test Satellite";
-  PartId const part_id = 666;
-  auto const dof = DegreesOfFreedom<Barycentric>(Barycentric::origin,
-                                                 Barycentric::unmoving);
-
-  InsertAllSolarSystemBodies();
-  plugin_->EndInitialization();
-
-  std::vector<not_null<DiscreteTrajectory<Barycentric>*>> trajectories = {
-      make_not_null<DiscreteTrajectory<Barycentric>*>()};
-  auto instance = make_not_null_unique<MockFixedStepSizeIntegrator<
-      Ephemeris<Barycentric>::NewtonianMotionEquation>::MockInstance>();
-  EXPECT_CALL(plugin_->mock_ephemeris(), NewInstance(_, _, _))
-      .WillOnce(DoAll(SaveArg<0>(&trajectories),
-                      Return(ByMove(std::move(instance)))));
-  EXPECT_CALL(plugin_->mock_ephemeris(), t_max())
-      .WillRepeatedly(Return(Instant() + 12 * Hour));
-  EXPECT_CALL(plugin_->mock_ephemeris(), empty()).WillRepeatedly(Return(false));
-  EXPECT_CALL(plugin_->mock_ephemeris(), trajectory(_))
-      .WillOnce(Return(plugin_->trajectory(SolarSystemFactory::Sun)));
-  EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_)).Times(AnyNumber());
-  EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithAdaptiveStep(_, _, _, _, _))
-      .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(dof),
-                            Return(Status(Error::DEADLINE_EXCEEDED, ""))));
-  EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithFixedStep(_, _))
-      .WillRepeatedly(DoAll(AppendToDiscreteTrajectory2(&trajectories[0], dof),
-                            Return(Status::OK)));
-  EXPECT_CALL(plugin_->mock_ephemeris(), planetary_integrator())
-      .WillRepeatedly(ReturnRef(
-          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                             Position<Barycentric>>()));
-
-  plugin_->renderer().SetPlottingFrame(
-      plugin_->NewBodyCentredNonRotatingNavigationFrame(
-          SolarSystemFactory::Sun));
-  bool inserted;
-  plugin_->InsertOrKeepVessel(guid,
-                              "v" + guid,
-                              SolarSystemFactory::Earth,
-                              /*loaded=*/false,
-                              inserted);
-  plugin_->InsertUnloadedPart(
-      part_id,
-      "part",
-      guid,
-      RelativeDegreesOfFreedom<AliceSun>(satellite_initial_displacement_,
-                                         satellite_initial_velocity_));
-  plugin_->PrepareToReportCollisions();
-  plugin_->FreeVesselsAndPartsAndCollectPileUps(20 * Milli(Second));
-
-  Instant const initial_time = ParseTT(initial_time_);
-  Instant const& time = initial_time + 1 * Second;
-  plugin_->AdvanceTime(time, Angle());
-  VesselSet collided_vessels;
-  plugin_->CatchUpLaggingVessels(collided_vessels);
-  plugin_->InsertOrKeepVessel(guid,
-                              "v" + guid,
-                              SolarSystemFactory::Earth,
-                              /*loaded=*/false,
-                              inserted);
-  plugin_->AdvanceTime(HistoryTime(time, 3), Angle());
-  plugin_->CatchUpLaggingVessels(collided_vessels);
-  EXPECT_CALL(plugin_->mock_ephemeris(), t_min_locked)
-      .WillRepeatedly(Return(HistoryTime(time, 0)));
-  plugin_->UpdatePrediction({guid});
-  plugin_->InsertOrKeepVessel(guid,
-                              "v" + guid,
-                              SolarSystemFactory::Earth,
-                              /*loaded=*/false,
-                              inserted);
-  plugin_->AdvanceTime(HistoryTime(time, 6), Angle());
-  plugin_->CatchUpLaggingVessels(collided_vessels);
-  EXPECT_CALL(plugin_->mock_ephemeris(),
-              EventuallyForgetBefore(HistoryTime(time, 5)))
-      .WillOnce(Return(true));
-  plugin_->ForgetAllHistoriesBefore(HistoryTime(time, 5));
-  auto const& prediction = plugin_->GetVessel(guid)->prediction();
-  auto const rendered_prediction =
-      plugin_->renderer().RenderBarycentricTrajectoryInWorld(
-          plugin_->CurrentTime(),
-          prediction.Fork(),
-          prediction.end(),
-          World::origin,
-          plugin_->PlanetariumRotation());
 }
 
 TEST_F(PluginDeathTest, VesselFromParentError) {

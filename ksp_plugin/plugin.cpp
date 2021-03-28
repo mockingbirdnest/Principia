@@ -848,15 +848,6 @@ void Plugin::WaitForVesselToCatchUp(PileUpFuture& pile_up_future,
   }
 }
 
-void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {
-  CHECK(!initializing_);
-  CHECK_LT(t, current_time_);
-  ephemeris_->EventuallyForgetBefore(t);
-  for (auto const& [_, vessel] : vessels_) {
-    vessel->ForgetBefore(t);
-  }
-}
-
 RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
     Index const parent_index,
     GUID const& vessel_guid) const {

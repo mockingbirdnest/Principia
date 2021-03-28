@@ -81,14 +81,6 @@ class FlightPlan {
   // returns the integration status.
   virtual Status Insert(NavigationManœuvre::Burn const& burn, int index);
 
-  // Forgets the flight plan at least before |time|.  The actual cutoff time
-  // will be in a coast trajectory and may be after |time|.  |on_empty| is run
-  // if the flight plan would become empty (it is not modified before running
-  // |on_empty|).
-  virtual void ForgetBefore(Instant const& time,
-                            std::function<void()> const& on_empty);
-
-
   // Removes the manœuvre with the given |index|, which must be in
   // [0, number_of_manœuvres()[.
   virtual Status Remove(int index);
