@@ -531,33 +531,6 @@ TEST_F(ContinuousTrajectoryTest, Io) {
   }
   EXPECT_THAT(max_position_absolute_error, IsNear(31_⑴ * Milli(Metre)));
   EXPECT_THAT(max_velocity_absolute_error, IsNear(1.40e-5_⑴ * Metre / Second));
-
-  trajectory->ForgetBefore(trajectory->t_min() - step);
-
-  Instant const forget_before_time = t0_ + 44444 * Second;
-  trajectory->ForgetBefore(forget_before_time);
-  EXPECT_EQ(forget_before_time, trajectory->t_min());
-  EXPECT_EQ(t0_ + (((number_of_steps - 1) / 8) * 8 + 1) * step,
-            trajectory->t_max());
-
-  max_position_absolute_error = 0 * Metre;
-  max_velocity_absolute_error = 0 * Metre / Second;
-  for (Instant time = trajectory->t_min();
-       time <= trajectory->t_max();
-       time += step / number_of_substeps) {
-    Position<World> const actual_position = trajectory->EvaluatePosition(time);
-    Position<World> const expected_position = position_function(time);
-    Velocity<World> const actual_velocity = trajectory->EvaluateVelocity(time);
-    Velocity<World> const expected_velocity = velocity_function(time);
-    max_position_absolute_error =
-        std::max(max_position_absolute_error,
-                 AbsoluteError(expected_position, actual_position));
-    max_velocity_absolute_error =
-        std::max(max_velocity_absolute_error,
-                 AbsoluteError(expected_velocity, actual_velocity));
-  }
-  EXPECT_THAT(max_position_absolute_error, IsNear(31_⑴ * Milli(Metre)));
-  EXPECT_THAT(max_velocity_absolute_error, IsNear(1.43e-5_⑴ * Metre / Second));
 }
 
 TEST_F(ContinuousTrajectoryTest, Continuity) {

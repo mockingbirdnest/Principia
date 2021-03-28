@@ -135,10 +135,6 @@ class Vessel {
   // psychohistory.  Clears the parts' history and psychohistory.
   virtual void AdvanceTime();
 
-  // Forgets the trajectories and flight plan before |time|.  This may delete
-  // the flight plan.
-  virtual void ForgetBefore(Instant const& time);
-
   // Creates a |flight_plan_| at the end of history using the given parameters.
   virtual void CreateFlightPlan(
       Instant const& final_time,

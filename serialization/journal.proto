@@ -1117,17 +1117,6 @@ message FlightPlanSetDesiredFinalTime {
   optional Return return = 3;
 }
 
-message ForgetAllHistoriesBefore {
-  extend Method {
-    optional ForgetAllHistoriesBefore extension = 5021;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    required double t = 2;
-  }
-  optional In in = 1;
-}
-
 message FreeVesselsAndPartsAndCollectPileUps {
   extend Method {
     optional FreeVesselsAndPartsAndCollectPileUps extension = 5111;

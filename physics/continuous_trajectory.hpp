@@ -73,9 +73,6 @@ class ContinuousTrajectory : public Trajectory<Frame> {
                 DegreesOfFreedom<Frame> const& degrees_of_freedom)
       EXCLUDES(lock_);
 
-  // Removes all data for times strictly less than |time|.
-  void ForgetBefore(Instant const& time) EXCLUDES(lock_);
-
   // Implementation of the interface |Trajectory|.
 
   // |t_max| may be less than the last time passed to Append.  For an empty

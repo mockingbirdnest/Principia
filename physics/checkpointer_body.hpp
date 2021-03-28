@@ -32,14 +32,6 @@ bool Checkpointer<Message>::CreateIfNeeded(
 }
 
 template<typename Message>
-void Checkpointer<Message>::ForgetBefore(Instant const& t) {
-  absl::MutexLock l(&lock_);
-  auto const it = checkpoints_.lower_bound(t);
-  CHECK(it == checkpoints_.end() || t <= it->first);
-  checkpoints_.erase(checkpoints_.begin(), it);
-}
-
-template<typename Message>
 Instant Checkpointer<Message>::WriteToMessage(
     not_null<Message*> const message) const {
   absl::ReaderMutexLock l(&lock_);

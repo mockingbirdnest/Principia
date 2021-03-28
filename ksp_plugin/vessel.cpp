@@ -275,16 +275,6 @@ void Vessel::AdvanceTime() {
   }
 }
 
-void Vessel::ForgetBefore(Instant const& time) {
-  // Make sure that the history keeps at least one point and don't change the
-  // psychohistory or prediction.  We cannot use the parts because they may have
-  // been moved to the future already.
-  history_->ForgetBefore(std::min(time, history_->back().time));
-  if (flight_plan_ != nullptr) {
-    flight_plan_->ForgetBefore(time, [this]() { flight_plan_.reset(); });
-  }
-}
-
 void Vessel::CreateFlightPlan(
     Instant const& final_time,
     Mass const& initial_mass,
@@ -351,10 +341,9 @@ void Vessel::RefreshPrediction() {
   // integrate.
   // The guard will be destroyed either when the next set of parameters is
   // created or when the prognostication has been computed.
-  // Note that we know that both |EventuallyForgetBefore| and
-  // |RefreshPrediction| are called on the main thread, therefore the ephemeris
-  // currently covers the last time of the psychohistory.  Were this to change,
-  // this code might have to change.
+  // Note that we know that |RefreshPrediction| is called on the main thread,
+  // therefore the ephemeris currently covers the last time of the
+  // psychohistory.  Were this to change, this code might have to change.
   prognosticator_parameters_ =
       PrognosticatorParameters{Ephemeris<Barycentric>::Guard(ephemeris_),
                                psychohistory_->back().time,

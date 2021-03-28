@@ -308,9 +308,6 @@ class Plugin {
   virtual void WaitForVesselToCatchUp(PileUpFuture& pile_up_future,
                                       VesselSet& collided_vessels);
 
-  // Forgets the histories of the |celestials_| and of the vessels before |t|.
-  virtual void ForgetAllHistoriesBefore(Instant const& t) const;
-
   // Returns the displacement and velocity of the vessel with GUID |vessel_guid|
   // relative to its parent at current time. For a KSP |Vessel| |v|, the
   // argument corresponds to  |v.id.ToString()|, the return value to
