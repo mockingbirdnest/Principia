@@ -44,9 +44,9 @@ void OrbitAnalyser::Interrupt() {
 }
 
 void OrbitAnalyser::RequestAnalysis(Parameters const& parameters) {
+  Ephemeris<Barycentric>::Guard guard(ephemeris_);
   if (ephemeris_->t_min() > parameters.first_time) {
-    // We cannot perform this analysis, this happens in tests when building a
-    // flight plan on an empty ephemeris.
+    // Too much has been forgotten; we cannot perform this analysis.
     return;
   }
   last_parameters_ = parameters;
@@ -55,10 +55,10 @@ void OrbitAnalyser::RequestAnalysis(Parameters const& parameters) {
   if (analyser_idle_) {
     analyser_idle_ = false;
     analyser_ = MakeStoppableThread(
-        [this](Parameters parameters) {
-          AnalyseOrbit(std::move(parameters));
+        [this](GuardedParameters guarded_parameters) {
+          AnalyseOrbit(std::move(guarded_parameters));
         },
-        parameters);
+        GuardedParameters{std::move(guard), parameters});
   }
 }
 
@@ -83,7 +83,9 @@ double OrbitAnalyser::progress_of_next_analysis() const {
   return progress_of_next_analysis_;
 }
 
-Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
+Status OrbitAnalyser::AnalyseOrbit(GuardedParameters const guarded_parameters) {
+  auto const& parameters = guarded_parameters.parameters;
+
   Analysis analysis{parameters.first_time};
   DiscreteTrajectory<Barycentric> trajectory;
   trajectory.Append(parameters.first_time, parameters.first_degrees_of_freedom);

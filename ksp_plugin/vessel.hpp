@@ -202,6 +202,7 @@ class Vessel {
 
  private:
   struct PrognosticatorParameters {
+    Ephemeris<Barycentric>::Guard guard;
     Instant first_time;
     DegreesOfFreedom<Barycentric> first_degrees_of_freedom;
     Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters;

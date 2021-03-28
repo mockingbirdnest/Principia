@@ -75,7 +75,8 @@ Vessel::~Vessel() {
     {
       absl::MutexLock l(&prognosticator_lock_);
       prognosticator_parameters_ =
-          PrognosticatorParameters{psychohistory_->back().time,
+          PrognosticatorParameters{Ephemeris<Barycentric>::Guard(ephemeris_),
+                                   psychohistory_->back().time,
                                    psychohistory_->back().degrees_of_freedom,
                                    prediction_adaptive_step_parameters_,
                                    /*shutdown=*/true};
@@ -344,7 +345,8 @@ void Vessel::RefreshPrediction() {
   // therefore the ephemeris currently covers the last time of the
   // psychohistory.  Were this to change, this code might have to change.
   prognosticator_parameters_ =
-      PrognosticatorParameters{psychohistory_->back().time,
+      PrognosticatorParameters{Ephemeris<Barycentric>::Guard(ephemeris_),
+                               psychohistory_->back().time,
                                psychohistory_->back().degrees_of_freedom,
                                prediction_adaptive_step_parameters_,
                                /*shutdown=*/false};

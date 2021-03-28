@@ -275,6 +275,24 @@ class Ephemeris {
   static not_null<std::unique_ptr<Ephemeris>> ReadFromMessage(
       serialization::Ephemeris const& message) EXCLUDES(lock_);
 
+  // A |Guard| is an RAII object that protects a critical section against
+  // changes to |t_min| due to calls to |EventuallyForgetBefore|.
+  class Guard final {
+   public:
+    explicit Guard(not_null<Ephemeris<Frame> const*> ephemeris);
+    ~Guard();
+
+    // Move only.  A moved-from |Guard| does not protect anything.
+    Guard(Guard&& other);
+    Guard& operator=(Guard&& other);
+    Guard(Guard const&) = delete;
+    Guard& operator=(Guard const&) = delete;
+
+   private:
+    Ephemeris<Frame> const* ephemeris_;
+    Instant t_min_;
+  };
+
  protected:
   // For mocking purposes, leaves everything uninitialized and uses the given
   // |integrator|.
@@ -401,6 +419,7 @@ class Ephemeris {
 
   not_null<
       std::unique_ptr<Checkpointer<serialization::Ephemeris>>> checkpointer_;
+  not_null<std::unique_ptr<Protector>> protector_;
 
   // The fields above this line are fixed at construction and therefore not
   // protected.  Note that |ContinuousTrajectory| is thread-safe.  |lock_| is
@@ -412,6 +431,8 @@ class Ephemeris {
       instance_ GUARDED_BY(lock_);
 
   Status last_severe_integration_status_ GUARDED_BY(lock_);
+
+  friend class Guard;
 };
 
 }  // namespace internal_ephemeris
