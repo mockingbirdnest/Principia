@@ -32,33 +32,38 @@ bool Checkpointer<Message>::CreateIfNeeded(
 }
 
 template<typename Message>
-Instant Checkpointer<Message>::WriteToMessage(
-    not_null<Message*> const message) const {
+void Checkpointer<Message>::WriteToMessage(
+    not_null<google::protobuf::RepeatedPtrField<typename Message::Checkpoint>*>
+        message) const {
   absl::ReaderMutexLock l(&lock_);
-  if (checkpoints_.empty()) {
-    // TODO(phl): declare this next to Instant.
-    static Instant infinite_future = Instant() + quantities::Infinity<Time>;
-    return infinite_future;
-  } else {
-    message->MergeFrom(checkpoints_.cbegin()->second);
-    return checkpoints_.cbegin()->first;
+  for (const auto [time, checkpoint] : checkpoints_) {
+    typename Message::Checkpoint* const message_checkpoint = message->Add();
+    *message_checkpoint = checkpoint;
+    time.WriteToMessage(message_checkpoint->mutable_time());
   }
 }
 
 template<typename Message>
-void Checkpointer<Message>::ReadFromMessage(Instant const& t,
-                                            Message const& message) {
-  absl::MutexLock l(&lock_);
-  checkpoints_.clear();
-  if (reader_(message)) {
-    CreateUnconditionallyLocked(t);
+not_null<std::unique_ptr<Checkpointer<Message>>>
+Checkpointer<Message>::ReadFromMessage(
+    Reader reader,
+    Writer writer,
+    google::protobuf::RepeatedPtrField<typename Message::Checkpoint> const&
+        message) {
+  auto checkpointer =
+      std::make_unique<Checkpointer>(std::move(reader), std::move(writer));
+  for (const auto& checkpoint : message) {
+    Instant const time = Instant::ReadFromMessage(checkpoint.time());
+    checkpointer->checkpoints_.emplace(time, checkpoint);
   }
+  return std::move(checkpointer);
 }
 
 template<typename Message>
 void Checkpointer<Message>::CreateUnconditionallyLocked(Instant const& t) {
   lock_.AssertHeld();
-  auto const it = checkpoints_.emplace_hint(checkpoints_.end(), t, Message());
+  auto const it = checkpoints_.emplace_hint(
+      checkpoints_.end(), t, typename Message::Checkpoint());
   writer_(&it->second);
 }
 

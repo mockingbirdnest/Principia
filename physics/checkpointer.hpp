@@ -7,6 +7,7 @@
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
+#include "google/protobuf/repeated_field.h"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -32,6 +33,7 @@ using quantities::Time;
 // Logically checkpoints would serialize to/deserialize from a specific message,
 // but for historical reasons they just fill some fields of a message that may
 // contain other information.
+//TODO(phl):Fix comments
 // This class is thread-safe.
 template<typename Message>
 class Checkpointer {
@@ -41,13 +43,14 @@ class Checkpointer {
   // If it returns false, it must leave the object in a state corresponding to
   // its default initialization.  This function is expected to capture the
   // object being deserialized.
-  using Reader = std::function<bool(Message const&)>;
+  using Reader = std::function<bool(typename Message::Checkpoint const&)>;
 
   // A function that writes an object to a checkpoint.  This function is
   // expected to capture the object being serialized.
-  using Writer = std::function<void(not_null<Message*>)>;
+  using Writer = std::function<void(not_null<typename Message::Checkpoint*>)>;
 
-  Checkpointer(Reader reader, Writer writer);
+  Checkpointer(Reader reader,
+               Writer writer);
 
   // Creates a checkpoint at time |t|, which will be used to recreate the
   // timeline after |t|.  The checkpoint is constructed by calling the |Writer|
@@ -64,14 +67,19 @@ class Checkpointer {
   // The time returned by this function should be serialized and passed to
   // |ReadFromMessage| when deserializing to ensure that checkpoints are
   // preserved across serialization/deserialization cycles.
-  Instant WriteToMessage(not_null<Message*> message) const EXCLUDES(lock_);
+  void WriteToMessage(not_null<google::protobuf::RepeatedPtrField<
+                          typename Message::Checkpoint>*> message) const
+      EXCLUDES(lock_);
 
   // Clears all the checkpoints in this checkpointer, and calls the |Reader|
   // passed at construction to reconstruct the object from |message|.  If the
   // |Reader| returns true (i.e., there was a checkpoint in the |message|),
   // creates a new checkpoint in this checkpointer at the given time.
-  void ReadFromMessage(Instant const& t,
-                       Message const& message) EXCLUDES(lock_);
+  static not_null<std::unique_ptr<Checkpointer>> ReadFromMessage(
+      Reader reader,
+      Writer writer,
+      google::protobuf::RepeatedPtrField<typename Message::Checkpoint> const&
+          message);
 
  private:
   void CreateUnconditionallyLocked(Instant const& t)
@@ -80,7 +88,10 @@ class Checkpointer {
   mutable absl::Mutex lock_;
   Reader const reader_;
   Writer const writer_;
-  std::map<Instant, Message> checkpoints_;
+
+  // The time field of the Checkpoint message may or may not be set.  The map
+  // key is the source of truth.
+  std::map<Instant, typename Message::Checkpoint> checkpoints_;
 };
 
 }  // namespace internal_checkpointer
