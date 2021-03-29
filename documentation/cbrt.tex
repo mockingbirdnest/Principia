@@ -15,16 +15,118 @@
 
 %%%% Title and authors.
 
-\title{%
-\textdisplay{%
-A nearly correctly-rounded cube root%
-}%
-}
+\title{A nearly correctly-rounded cube root}
+\date{TODO(egg): \printdate{2017-03-36}}
 \author{Robin~Leroy (eggrobin)}
 \begin{document}
 \maketitle
 \noindent
 This document describes the error analysis of the real cube root function \texttt{Cbrt} implemented in \texttt{numerics/cbrt.cpp}.
+
+\part*{On root finding methods studied by Lagny, Halley, Householder, \emph{et alii}}
+
+We start with a historical overview of a family of root-finding methods.
+
+In \cite{FantetdeLagny1691a}, Lagny first presents the iterates\begin{align}
+\FunctionBody*{a}{\frac{1}{2}a+\sqrt{\frac{1}{4}a^2+\frac{b}{3a}}}\text, \label{LagnyIrrationalCubeRootIterate}
+\intertext{hereafter the \emph{irrational method}, and}
+\FunctionBody*{a}{a+\frac{ab}{3a^3+b}}\text, \label{LagnyRationalCubeRootIterate}
+\end{align}
+the \emph{rational method}, for the computation of the cube root
+$\cuberoot{a^3+b}$, mentioning the existence of similar methods for arbitrarily
+higher powers.
+In \cite{FantetdeLagny1691b} the above methods are again given, with an outline
+of the general method for higher powers, and a mention of their applicability to
+finding roots of polynomials other than $z^p-r$.
+
+That general method is given in detail in \cite[19]{FantetdeLagny1692}.
+Modernizing the notation, the general rule is as follows for finding a root of the monic
+polynomial of degree $p\geq2$\[
+f\of{z}\DefineAs z^p - \sum{k=1}[p-1]c_{k} z^{p-k} \DefinitionOf z^p - R\of{z}
+\]
+with an initial approximation $a$.
+
+Separate the binomial expansion of $\pa{x+\frac{1}{2}a}^p$ into alternating sums of
+degree $p$ and $p-1$ in $z$,\begin{align*}
+S_1&\DefineAs\sum{\substack{k=0\\2\Divides k}}[p]\binom{p}{k}x^{p-k}\pa{\frac{1}{2}a}^k\\
+S_2&\DefineAs\sum{\substack{k=0\\2\DoesNotDivide k}}[p]\binom{p}{k}x^{p-k}\pa{\frac{1}{2}a}^k
+\end{align*}
+and consider the polynomials in $x$\begin{align*}
+P_{p}&\DefineAs S_1-\frac{1}{2}R\of{x+\frac{1}{2}a}\\
+P_{p-1}&\DefineAs S_2-\frac{1}{2}R\of{x+\frac{1}{2}a}\text.
+\end{align*}
+Let $P_{n-1}$ be the remainder of the polynomial
+division\footnote{While the rest of the method is a straightforward translation, this step bears some explanations; its description in \cite{FantetdeLagny1692} is
+% TODO(egg): Right single quotation mark leads to incorrect spacing in French, so we use Apostrophe here.  Figure out what is going on.
+\begin{quote}\textfrench{De ces deux égalitez, ou priſes ſéparément, ou comparées enſemble ſelon la methode des problêmes plus que déterminez tirez en une valeur d'$x$ rationelle, ou ſimplement d'un degré commode.}
+\end{quote}
+It is assumed that the reader is familiar with this ``method of more-than-determined problems''.
+While the derivation of the root-finding method is described in painstaking detail in \cite{FantetdeLagny1733},
+which outlines the treatment of overdetermined problems, it is perhaps this remark from \cite[494]{FantetdeLagny1697} which lays it out most clearly:
+\begin{quote}\textfrench{Il n'y a rien de nouveau à remarquer ſur les Problemes plus que déterminez du quatriéme degré. La Regle générale eſt d'égaler tout à zero, \& de diviſer la plus haute équation par la moins élevée, ou l'également élevée l'une par l'autre, continuellement juſques à ce que l'on trouve le reſte ou le diviſeur le plus ſimple.}
+\end{quote}}
+of $P_{n+1}$ by $P_{n}$.
+
+The iterate is $x+\frac{1}{2}a$, where $x$ is a root of $P_{2}$ for the irrational method,
+and the root of $P_{1}$ for the rational method.
+
+\begin{theorem}
+The iterate of Lagny’s rational method for a polynomial $f$ of degree $p$ is\begin{equation}
+z\mapsto z + \pa{p-1}\frac{\pa{1/f}^{\pa{p-2}}\of{z}}{\pa{1/f}^{\pa{p-1}}\of{z}}\label{LagnyRationalIterate}
+\end{equation}
+\begin{proof}
+TODO(egg): The proof is left as an eggsercise to the reader.
+\end{proof}
+\end{theorem}
+
+This iterate was described by Householder for an arbitrary analytic functions $f$ in \cite[169]{Householder1970} (see
+equation (14), wherein one should take $g\Identically 1$, and theorem 4.4.2 which mentions this special case; see also
+\cite{SebahGourdon2001} which explicitly gives that form).
+
+For $p=2$ and $f$ an arbitrary polynomial, (\ref{LagnyRationalIterate}) is Newton's method, presented by Wallis in
+\cite[338]{Wallis1685}.
+
+For $p=3$ and $f$ an arbitrary polynomial, it is Halley's rational method, given by him in \cite[142--143]{Halley1694} in
+an effort to generalize\footnote{Lagny's method is general, in that an iterate is given for any
+polynomial, albeit one whose order changes with the degree. However, while he refers to its
+results---and even corrects a misprint therein---, Halley
+did not have access to a copy of \cite{FantetdeLagny1692},
+\begin{quote}
+Has Regulas, cum nondum librum videram, ab amico communicatas habui
+\end{quote}
+and it appears that said friend communicated only the formul\ae for the cube and fifth root, as opposed to the
+general method and its proof, as Halley writes
+\begin{quote}
+[...] \emph{D. de Lagney} [...] qui cum totus fere sit in eliciendis Potestatum purarum radicibus,
+praefertim Cubic\^a, pauca tantum eaque perplexa nec satis demonstrata de affectarum radicum
+extractione subjungit.
+\end{quote}
+or, about Lagny's irrational method for the fifth root,
+\begin{quote}
+Author autem nullibi inveniendi methodum ejusve demonstrationem concedit,
+etiamsi maxime desiderari videatur [...].
+\end{quote}
+Being unaware of this generality, Halley sets out to generalize (\ref{LagnyIrrationalCubeRootIterate}) and (\ref{LagnyRationalCubeRootIterate}) to
+arbitrary polynomials, and does so by keeping the order constant.} Lagny's (\ref{LagnyRationalCubeRootIterate}).
+It is generally simply known as Halley's method, as the irrational method (which likewise generalizes Lagny's irrational
+method for $p=3$, while retaining constant order as the degree changes) has comparatively fallen into obscurity;
+see \cite{ScavoThoo1995}.
+
+Considering that generalizing from arbitrary polynomials to other functions does not change the method,
+we call the method given by the iterate (\ref{LagnyRationalIterate})\begin{itemize}
+\setlength\itemsep{0em}
+\item Newton’s method when $p=2$, for arbitrary $f$;
+\item Lagny’s rational method when $p>2$ and $f$ is a polynomial of degree $p$;
+\item Halley’s (rational) method when $p=3$ and $f$ is not a polynomial of degree $p$;
+\item the Lagny--Householder method otherwise.
+\end{itemize}
+Note that we avoid the name ``Householder’s method'' in this last case, as it is often used to refer to a
+different third order iterate instead, see TODO CITATION.
+
+
+\part*{Computing a real cube root}
+
+We now turn to the computation in \texttt{numerics/cbrt.cpp}.
 
 \section*{Overview}
 The general approach to compute the cube root of $y>0$ is the same as the one described in \cite{KahanBindel2001}:
@@ -122,7 +224,7 @@ The values are more precisely\footnote{These may be computed formally, but the e
 leading to $C_{\mathrm{Kahan}}=\hex{2A9F\,7625\,3119\,D328}\Multiply 2^{-52}$ for IEEE 754-2008 binary64.
 However, as we will see in the next section, this value does not optimize the final error, so it is not the one that we use.
 \section{Getting to a third of the precision}
-We use a single iterate of Fantet de Lagny’s method to compute $ξ$,\[
+We use a single iterate of Lagny’s method to compute $ξ$,\[
 ξ\DefineAs
 \round{q - \round{\frac{\round{\pa{\round{\round{q^2}q}-y} q}}
                        {\round{2\round{\round{q^2}q}+y}}}}\text.
@@ -156,5 +258,4 @@ Specifically, we have\begin{align*}
 \max_{y} \abs{Δ'} &\approx 0.00002\,08686\,35536\,39593\,48770\,92008\,39844\,10254\,14831\,61229\text.
 \end{align*}
 The corresponding fixed-point constant is $C_{\mathrm{L}}\DefineAs\hex{2A9F\,7893\,782D\,A1CE} \Multiply 2^{-52}$ for binary64.
-\printbibliography
 \end{document}

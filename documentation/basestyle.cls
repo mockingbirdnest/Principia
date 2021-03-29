@@ -132,6 +132,8 @@
 }%
 }
 
+\renewcommand\labelitemi{---}
+
 %\makeatletter
 %\renewcommand*{\@makefnmark}{%
 %  \hbox{%
