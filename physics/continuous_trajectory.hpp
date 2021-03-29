@@ -114,11 +114,13 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // Ephemeris to create synchronized checkpoints of its state and that of its
   // trajectories.
   Checkpointer<serialization::ContinuousTrajectory>& checkpointer();
+  //TODO(phl): private?
   void WriteToCheckpoint(
-      not_null<serialization::ContinuousTrajectory*> message);
+      not_null<serialization::ContinuousTrajectory::Checkpoint*> message);
   template<typename F = Frame,
            typename = std::enable_if_t<base::is_serializable_v<F>>>
-  bool ReadFromCheckpoint(serialization::ContinuousTrajectory const& message);
+  bool ReadFromCheckpoint(
+      serialization::ContinuousTrajectory::Checkpoint const& message);
 
  protected:
   // For mocking.

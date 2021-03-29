@@ -69,12 +69,13 @@ message ContinuousTrajectory {
   required bool is_unstable = 4;  // Pre-Grassmann.
   required int32 degree = 5;  // Pre-Grassmann.
   required int32 degree_age = 6;  // Pre-Grassmann.
-  repeated ChebyshevSeries series = 7;  // Pre-Cohen.
-  optional Point first_time = 8;
   repeated InstantaneousDegreesOfFreedom last_point = 9;  // Pre-Grassmann.
   optional Point checkpoint_time = 11;  // Added in Fatou, removed in Grassmann.
+  repeated ChebyshevSeries series = 7;  // Pre-Cohen.
+  optional Point first_time = 8;
   repeated InstantPolynomialPair
       instant_polynomial_pair = 10;  // Added in Cohen.
+  repeated Checkpoint checkpoint = 12;  // Added in Grassmann.
 }
 
 message DiscreteTrajectory {
