@@ -43,7 +43,7 @@ class Checkpointer {
   // If it returns false, it must leave the object in a state corresponding to
   // its default initialization.  This function is expected to capture the
   // object being deserialized.
-  using Reader = std::function<bool(typename Message::Checkpoint const&)>;
+  using Reader = std::function<void(typename Message::Checkpoint const&)>;
 
   // A function that writes an object to a checkpoint.  This function is
   // expected to capture the object being serialized.
@@ -51,6 +51,8 @@ class Checkpointer {
 
   Checkpointer(Reader reader,
                Writer writer);
+
+  Instant oldest_checkpoint() const;
 
   // Creates a checkpoint at time |t|, which will be used to recreate the
   // timeline after |t|.  The checkpoint is constructed by calling the |Writer|

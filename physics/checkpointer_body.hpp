@@ -13,6 +13,17 @@ Checkpointer<Message>::Checkpointer(Reader reader, Writer writer)
       writer_(std::move(writer)) {}
 
 template<typename Message>
+Instant Checkpointer<Message>::oldest_checkpoint() const {
+  absl::ReaderMutexLock l(&lock_);
+  if (checkpoints_.empty()) {
+    //TODO(phl): declare this next to Instant.
+    static Instant infinite_future = Instant() + quantities::Infinity<Time>;
+    return infinite_future;
+  }
+  return checkpoints_.cbegin()->first;
+}
+
+template<typename Message>
 void Checkpointer<Message>::CreateUnconditionally(Instant const& t) {
   absl::MutexLock l(&lock_);
   CreateUnconditionallyLocked(t);

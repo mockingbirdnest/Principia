@@ -80,7 +80,7 @@ TEST_F(CheckpointerTest, Serialization) {
       Checkpointer<Message>::ReadFromMessage(reader_.AsStdFunction(),
                                              writer_.AsStdFunction(),
                                              m.checkpoint);
-  // TODO(phl): Check the behaviour of the deserialized object.
+  EXPECT_EQ(Instant() + 10 * Second, checkpointer->oldest_checkpoint());
 }
 
 }  // namespace physics

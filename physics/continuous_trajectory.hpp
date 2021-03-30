@@ -119,7 +119,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
       not_null<serialization::ContinuousTrajectory::Checkpoint*> message);
   template<typename F = Frame,
            typename = std::enable_if_t<base::is_serializable_v<F>>>
-  bool ReadFromCheckpoint(
+  void ReadFromCheckpoint(
       serialization::ContinuousTrajectory::Checkpoint const& message);
 
  protected:
