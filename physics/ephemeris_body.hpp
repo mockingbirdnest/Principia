@@ -236,8 +236,8 @@ Ephemeris<Frame>::Ephemeris(
       fixed_step_parameters_(std::move(fixed_step_parameters)),
       checkpointer_(
           make_not_null_unique<Checkpointer<serialization::Ephemeris>>(
-              MakeCheckpointerReader(this),
-              MakeCheckpointerWriter(this))),
+              MakeCheckpointerReader(),
+              MakeCheckpointerWriter())),
       protector_(make_not_null_unique<Protector>()) {
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
@@ -783,14 +783,14 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
     *checkpoint->mutable_instance() = message.instance();
     ephemeris->checkpointer_ =
         Checkpointer<serialization::Ephemeris>::ReadFromMessage(
-            MakeCheckpointerReader(ephemeris.get()),
-            MakeCheckpointerWriter(ephemeris.get()),
+            ephemeris->MakeCheckpointerReader(),
+            ephemeris->MakeCheckpointerWriter(),
             serialized_ephemeris.checkpoint());
   } else {
     ephemeris->checkpointer_ =
         Checkpointer<serialization::Ephemeris>::ReadFromMessage(
-            MakeCheckpointerReader(ephemeris.get()),
-            MakeCheckpointerWriter(ephemeris.get()),
+            ephemeris->MakeCheckpointerReader(),
+            ephemeris->MakeCheckpointerWriter(),
             message.checkpoint());
   }
   //TODO(phl): Load from a checkpoint here.
@@ -853,35 +853,6 @@ Ephemeris<Frame>::Ephemeris(
       protector_(make_not_null_unique<Protector>()) {}
 
 template<typename Frame>
-void Ephemeris<Frame>::WriteToCheckpoint(
-    not_null<serialization::Ephemeris::Checkpoint*> message) {
-  instance_->WriteToMessage(message->mutable_instance());
-}
-
-template<typename Frame>
-template<typename, typename>
-void Ephemeris<Frame>::ReadFromCheckpoint(
-    serialization::Ephemeris::Checkpoint const& message) {
-  NewtonianMotionEquation equation;
-  equation.compute_acceleration = [this](
-      Instant const& t,
-      std::vector<Position<Frame>> const& positions,
-      std::vector<Vector<Acceleration, Frame>>& accelerations) {
-    ComputeMassiveBodiesGravitationalAccelerations(t,
-                                                   positions,
-                                                   accelerations);
-    return Status::OK;
-  };
-
-  instance_ = FixedStepSizeIntegrator<NewtonianMotionEquation>::Instance::
-      ReadFromMessage(
-          message.instance(),
-          equation,
-          /*append_state=*/
-          std::bind(&Ephemeris::AppendMassiveBodiesState, this, _1));
-}
-
-template<typename Frame>
 void Ephemeris<Frame>::CreateCheckpointIfNeeded(Instant const& time) const {
   if constexpr (base::is_serializable_v<Frame>) {
     lock_.AssertReaderHeld();
@@ -895,10 +866,27 @@ void Ephemeris<Frame>::CreateCheckpointIfNeeded(Instant const& time) const {
 
 template<typename Frame>
 Checkpointer<serialization::Ephemeris>::Reader
-Ephemeris<Frame>::MakeCheckpointerReader(Ephemeris* const ephemeris) {
+Ephemeris<Frame>::MakeCheckpointerReader() {
   if constexpr (base::is_serializable_v<Frame>) {
-    return [ephemeris](serialization::Ephemeris::Checkpoint const& message) {
-      return ephemeris->ReadFromCheckpoint(message);
+    return [this](serialization::Ephemeris::Checkpoint const& message) {
+      lock_.AssertHeld();
+      NewtonianMotionEquation equation;
+      equation.compute_acceleration = [this](
+          Instant const& t,
+          std::vector<Position<Frame>> const& positions,
+          std::vector<Vector<Acceleration, Frame>>& accelerations) {
+        ComputeMassiveBodiesGravitationalAccelerations(t,
+                                                       positions,
+                                                       accelerations);
+        return Status::OK;
+      };
+
+      instance_ = FixedStepSizeIntegrator<NewtonianMotionEquation>::Instance::
+          ReadFromMessage(
+              message.instance(),
+              equation,
+              /*append_state=*/
+              std::bind(&Ephemeris::AppendMassiveBodiesState, this, _1));
     };
   } else {
     return nullptr;
@@ -907,11 +895,12 @@ Ephemeris<Frame>::MakeCheckpointerReader(Ephemeris* const ephemeris) {
 
 template<typename Frame>
 Checkpointer<serialization::Ephemeris>::Writer
-Ephemeris<Frame>::MakeCheckpointerWriter(Ephemeris* const ephemeris) {
+Ephemeris<Frame>::MakeCheckpointerWriter() {
   if constexpr (base::is_serializable_v<Frame>) {
-    return [ephemeris](
+    lock_.AssertReaderHeld();
+    return [this](
                not_null<serialization::Ephemeris::Checkpoint*> const message) {
-      return ephemeris->WriteToCheckpoint(message);
+      instance_->WriteToMessage(message->mutable_instance());
     };
   } else {
     return nullptr;

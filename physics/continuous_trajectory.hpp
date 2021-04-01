@@ -114,13 +114,6 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // Ephemeris to create synchronized checkpoints of its state and that of its
   // trajectories.
   Checkpointer<serialization::ContinuousTrajectory>& checkpointer();
-  //TODO(phl): private?
-  void WriteToCheckpoint(
-      not_null<serialization::ContinuousTrajectory::Checkpoint*> message);
-  template<typename F = Frame,
-           typename = std::enable_if_t<base::is_serializable_v<F>>>
-  void ReadFromCheckpoint(
-      serialization::ContinuousTrajectory::Checkpoint const& message);
 
  protected:
   // For mocking.
@@ -143,6 +136,12 @@ class ContinuousTrajectory : public Trajectory<Frame> {
         polynomial;
   };
   using InstantPolynomialPairs = std::vector<InstantPolynomialPair>;
+
+  // Checkpointing support.
+  Checkpointer<serialization::ContinuousTrajectory>::Reader
+  MakeCheckpointerReader();
+  Checkpointer<serialization::ContinuousTrajectory>::Writer
+  MakeCheckpointerWriter();
 
   Instant t_min_locked() const REQUIRES_SHARED(lock_);
   Instant t_max_locked() const REQUIRES_SHARED(lock_);
