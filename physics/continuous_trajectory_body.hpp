@@ -75,8 +75,11 @@ ContinuousTrajectory<Frame>::ContinuousTrajectory(Time const& step,
                                                   Length const& tolerance)
     : step_(step),
       tolerance_(tolerance),
-      checkpointer_(MakeCheckpointerReader(this),
-                    MakeCheckpointerWriter(this)),
+      checkpointer_(
+          make_not_null_unique<
+              Checkpointer<serialization::ContinuousTrajectory>>(
+                  MakeCheckpointerReader(this),
+                  MakeCheckpointerWriter(this))),
       adjusted_tolerance_(tolerance_),
       is_unstable_(false),
       degree_(min_degree),
@@ -332,13 +335,13 @@ template<typename Frame>
 void ContinuousTrajectory<Frame>::WriteToMessage(
       not_null<serialization::ContinuousTrajectory*> const message) const {
   absl::ReaderMutexLock l(&lock_);
-  checkpointer_.WriteToMessage(message->mutable_checkpoint());
+  checkpointer_->WriteToMessage(message->mutable_checkpoint());
   step_.WriteToMessage(message->mutable_step());
   tolerance_.WriteToMessage(message->mutable_tolerance());
   for (auto const& pair : polynomials_) {
     Instant const& t_max = pair.t_max;
     auto const& polynomial = pair.polynomial;
-    if (t_max <= checkpointer_.oldest_checkpoint()) {
+    if (t_max <= checkpointer_->oldest_checkpoint()) {
       auto* const pair = message->add_instant_polynomial_pair();
       t_max.WriteToMessage(pair->mutable_t_max());
       polynomial->WriteToMessage(pair->mutable_polynomial());
@@ -418,17 +421,19 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
     for (const auto& last_point : message.last_point()) {
       *checkpoint->add_last_point() = last_point;
     }
-    continuous_trajectory->checkpointer_.ReadFromMessage(
-        MakeCheckpointerReader<Frame>(continuous_trajectory.get()),
-        MakeCheckpointerWriter<Frame>(continuous_trajectory.get()),
-        serialized_continuous_trajectory.checkpoint());
+    continuous_trajectory->checkpointer_ =
+        Checkpointer<serialization::ContinuousTrajectory>::ReadFromMessage(
+            MakeCheckpointerReader<Frame>(continuous_trajectory.get()),
+            MakeCheckpointerWriter<Frame>(continuous_trajectory.get()),
+            serialized_continuous_trajectory.checkpoint());
   } else {
-    continuous_trajectory->checkpointer_.ReadFromMessage(
-        MakeCheckpointerReader<Frame>(continuous_trajectory.get()),
-        MakeCheckpointerWriter<Frame>(continuous_trajectory.get()),
-        message.checkpoint());
-    //TODO(phl): Load from a checkpoint here.
+    continuous_trajectory->checkpointer_ =
+        Checkpointer<serialization::ContinuousTrajectory>::ReadFromMessage(
+            MakeCheckpointerReader<Frame>(continuous_trajectory.get()),
+            MakeCheckpointerWriter<Frame>(continuous_trajectory.get()),
+            message.checkpoint());
   }
+  //TODO(phl): Load from a checkpoint here.
 
   return continuous_trajectory;
 }
@@ -436,7 +441,7 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
 template<typename Frame>
 Checkpointer<serialization::ContinuousTrajectory>&
 ContinuousTrajectory<Frame>::checkpointer() {
-  return checkpointer_;
+  return *checkpointer_;
 }
 
 template<typename Frame>

@@ -236,11 +236,8 @@ Ephemeris<Frame>::Ephemeris(
       fixed_step_parameters_(std::move(fixed_step_parameters)),
       checkpointer_(
           make_not_null_unique<Checkpointer<serialization::Ephemeris>>(
-              /*reader=*/MakeCheckpointerReader(this),
-              /*writer=*/
-              [this](not_null<serialization::Ephemeris*> const message) {
-                WriteToCheckpoint(message);
-              })),
+              MakeCheckpointerReader(this),
+              MakeCheckpointerWriter(this))),
       protector_(make_not_null_unique<Protector>()) {
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
@@ -705,8 +702,7 @@ void Ephemeris<Frame>::WriteToMessage(
   // Make sure that a checkpoint exists, otherwise we would not serialize some
   // parts of the state.
   CreateCheckpointIfNeeded(instance_->time().value);
-  Instant const checkpoint_time = checkpointer_->WriteToMessage(message);
-  checkpoint_time.WriteToMessage(message->mutable_checkpoint_time());
+  checkpointer_->WriteToMessage(message->mutable_checkpoint());
 
   // The bodies are serialized in the order in which they were given at
   // construction.
@@ -732,6 +728,7 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
     serialization::Ephemeris const& message) {
   bool const is_pre_ἐρατοσθένης = !message.has_accuracy_parameters();
   bool const is_pre_fatou = !message.has_checkpoint_time();
+  bool const is_pre_grassmann = message.checkpoint_size() == 0;
 
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   for (auto const& body : message.body()) {
@@ -774,14 +771,30 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
     ++index;
   }
 
-  Instant checkpoint_time;
-  if (is_pre_fatou) {
-    checkpoint_time = Instant::ReadFromMessage(
-        message.instance().current_state().time().value().point());
+  if (is_pre_grassmann) {
+    serialization::Ephemeris serialized_ephemeris;
+    auto* const checkpoint = serialized_ephemeris.add_checkpoint();
+    if (is_pre_fatou) {
+      *checkpoint->mutable_time() =
+          message.instance().current_state().time().value().point();
+    } else {
+      *checkpoint->mutable_time() = message.checkpoint_time();
+    }
+    *checkpoint->mutable_instance() = message.instance();
+    ephemeris->checkpointer_ =
+        Checkpointer<serialization::Ephemeris>::ReadFromMessage(
+            MakeCheckpointerReader(ephemeris.get()),
+            MakeCheckpointerWriter(ephemeris.get()),
+            serialized_ephemeris.checkpoint());
   } else {
-    checkpoint_time = Instant::ReadFromMessage(message.checkpoint_time());
+    ephemeris->checkpointer_ =
+        Checkpointer<serialization::Ephemeris>::ReadFromMessage(
+            MakeCheckpointerReader(ephemeris.get()),
+            MakeCheckpointerWriter(ephemeris.get()),
+            message.checkpoint());
   }
-  ephemeris->checkpointer_->ReadFromMessage(checkpoint_time, message);
+  //TODO(phl): Load from a checkpoint here.
+
   // The ephemeris will need to be prolonged as needed when deserializing the
   // plugin.
 
@@ -841,36 +854,22 @@ Ephemeris<Frame>::Ephemeris(
 
 template<typename Frame>
 void Ephemeris<Frame>::WriteToCheckpoint(
-    not_null<serialization::Ephemeris*> message) {
+    not_null<serialization::Ephemeris::Checkpoint*> message) {
   instance_->WriteToMessage(message->mutable_instance());
 }
 
 template<typename Frame>
-Checkpointer<serialization::Ephemeris>::Reader
-Ephemeris<Frame>::MakeCheckpointerReader(Ephemeris* const ephemeris) {
-  if constexpr (base::is_serializable_v<Frame>) {
-    return [ephemeris](serialization::Ephemeris const& message) {
-      return ephemeris->ReadFromCheckpoint(message);
-    };
-  } else {
-    return nullptr;
-  }
-}
-
-template<typename Frame>
 template<typename, typename>
-bool Ephemeris<Frame>::ReadFromCheckpoint(
-    serialization::Ephemeris const& message) {
-  bool const has_checkpoint = message.has_instance();
-  CHECK(has_checkpoint) << message.DebugString();
+void Ephemeris<Frame>::ReadFromCheckpoint(
+    serialization::Ephemeris::Checkpoint const& message) {
   NewtonianMotionEquation equation;
   equation.compute_acceleration = [this](
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations) {
     ComputeMassiveBodiesGravitationalAccelerations(t,
-                                                    positions,
-                                                    accelerations);
+                                                   positions,
+                                                   accelerations);
     return Status::OK;
   };
 
@@ -880,7 +879,6 @@ bool Ephemeris<Frame>::ReadFromCheckpoint(
           equation,
           /*append_state=*/
           std::bind(&Ephemeris::AppendMassiveBodiesState, this, _1));
-  return true;
 }
 
 template<typename Frame>
@@ -892,6 +890,31 @@ void Ephemeris<Frame>::CreateCheckpointIfNeeded(Instant const& time) const {
         trajectory->checkpointer().CreateUnconditionally(time);
       }
     }
+  }
+}
+
+template<typename Frame>
+Checkpointer<serialization::Ephemeris>::Reader
+Ephemeris<Frame>::MakeCheckpointerReader(Ephemeris* const ephemeris) {
+  if constexpr (base::is_serializable_v<Frame>) {
+    return [ephemeris](serialization::Ephemeris::Checkpoint const& message) {
+      return ephemeris->ReadFromCheckpoint(message);
+    };
+  } else {
+    return nullptr;
+  }
+}
+
+template<typename Frame>
+Checkpointer<serialization::Ephemeris>::Writer
+Ephemeris<Frame>::MakeCheckpointerWriter(Ephemeris* const ephemeris) {
+  if constexpr (base::is_serializable_v<Frame>) {
+    return [ephemeris](
+               not_null<serialization::Ephemeris::Checkpoint*> const message) {
+      return ephemeris->WriteToCheckpoint(message);
+    };
+  } else {
+    return nullptr;
   }
 }
 

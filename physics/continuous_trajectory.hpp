@@ -175,7 +175,9 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // Construction parameters;
   Time const step_;
   Length const tolerance_;
-  Checkpointer<serialization::ContinuousTrajectory> checkpointer_;
+  not_null<
+      std::unique_ptr<Checkpointer<serialization::ContinuousTrajectory>>>
+      checkpointer_;
 
   mutable absl::Mutex lock_;
 
