@@ -75,7 +75,7 @@ The iterate of Lagny’s rational method for a polynomial $f$ of degree $p$ is\b
 z\mapsto z + \pa{p-1}\frac{\pa{1/f}^{\pa{p-2}}\of{z}}{\pa{1/f}^{\pa{p-1}}\of{z}}\label{LagnyRationalIterate}
 \end{equation}
 \begin{proof}
-TODO(egg): The proof is left as an eggsercise to the reader.
+TODO(egg): Probably something using \cite[52--54]{Householder1970} to try to get to \cite[169]{Householder1970}, (12).
 \end{proof}
 \end{theorem}
 
@@ -86,7 +86,7 @@ equation (14), wherein one should take $g\Identically 1$, and theorem 4.4.2 whic
 For $p=2$ and $f$ an arbitrary polynomial, (\ref{LagnyRationalIterate}) is Newton's method, presented by Wallis in
 \cite[338]{Wallis1685}.
 
-For $p=3$ and $f$ an arbitrary polynomial, it is Halley's rational method, given by him in \cite[142--143]{Halley1694} in
+For $p=3$ and $f$ an arbitrary polynomial, it is Halley's rational method, given in \cite[142--143]{Halley1694} in
 an effort to generalize\footnote{Lagny's method is general, in that an iterate is given for any
 polynomial, albeit one whose order changes with the degree. However, while he refers to its
 results---and even corrects a misprint therein---, Halley
@@ -94,7 +94,7 @@ did not have access to a copy of \cite{FantetdeLagny1692},
 \begin{quote}
 Has Regulas, cum nondum librum videram, ab amico communicatas habui
 \end{quote}
-and it appears that said friend communicated only the formul\ae for the cube and fifth root, as opposed to the
+and it appears that said friend communicated only the formulæ for the cube and fifth root, as opposed to the
 general method and its proof, as Halley writes
 \begin{quote}
 [...] \emph{D. de Lagney} [...] qui cum totus fere sit in eliciendis Potestatum purarum radicibus,
@@ -108,16 +108,16 @@ etiamsi maxime desiderari videatur [...].
 \end{quote}
 Being unaware of this generality, Halley sets out to generalize (\ref{LagnyIrrationalCubeRootIterate}) and (\ref{LagnyRationalCubeRootIterate}) to
 arbitrary polynomials, and does so by keeping the order constant.} Lagny's (\ref{LagnyRationalCubeRootIterate}).
-It is generally simply known as Halley's method, as the irrational method (which likewise generalizes Lagny's irrational
+It is usually simply known as Halley's method, as the irrational method (which likewise generalizes Lagny's irrational
 method for $p=3$, while retaining constant order as the degree changes) has comparatively fallen into obscurity;
 see \cite{ScavoThoo1995}.
 
-Considering that generalizing from arbitrary polynomials to other functions does not change the method,
+Considering a method remains the same when generalized from arbitrary polynomials to arbitrary analytic functions,
 we call the method given by the iterate (\ref{LagnyRationalIterate})\begin{itemize}
 \setlength\itemsep{0em}
 \item Newton’s method when $p=2$, for arbitrary $f$;
 \item Lagny’s rational method when $p>2$ and $f$ is a polynomial of degree $p$;
-\item Halley’s (rational) method when $p=3$ and $f$ is not a polynomial of degree $p$;
+\item Halley’s (rational) method when $p=3$ and $f$ is not a polynomial of degree $3$;
 \item the Lagny--Householder method otherwise.
 \end{itemize}
 Note that we avoid the name ``Householder’s method'' in this last case, as it is often used to refer to a
