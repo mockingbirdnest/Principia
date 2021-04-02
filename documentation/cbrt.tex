@@ -52,27 +52,28 @@ S_1&\DefineAs\sum{\substack{k=0\\2\Divides k}}[p]\binom{p}{k}x^{p-k}\pa{\frac{1}
 S_2&\DefineAs\sum{\substack{k=0\\2\DoesNotDivide k}}[p]\binom{p}{k}x^{p-k}\pa{\frac{1}{2}a}^k
 \end{align*}
 and consider the polynomials in $x$\begin{align*}
-P_{p}&\DefineAs S_1-\frac{1}{2}R\of{x+\frac{1}{2}a}\\
-P_{p-1}&\DefineAs S_2-\frac{1}{2}R\of{x+\frac{1}{2}a}\text.
+E_{p}&\DefineAs S_1-\frac{1}{2}R\of{x+\frac{1}{2}a}\\
+E_{p-1}&\DefineAs S_2-\frac{1}{2}R\of{x+\frac{1}{2}a}\text.
 \end{align*}
-Let $P_{n-1}$ be the remainder of the polynomial
+Let $E_{n-1}$ be the remainder of the polynomial
 division\footnote{While the rest of the method is a straightforward translation, this step bears some explanations; its description in \cite{FantetdeLagny1692} is
 % TODO(egg): Right single quotation mark leads to incorrect spacing in French, so we use Apostrophe here.  Figure out what is going on.
 \begin{quote}\textfrench{De ces deux égalitez, ou priſes ſéparément, ou comparées enſemble ſelon la methode des problêmes plus que déterminez tirez en une valeur d'$x$ rationelle, ou ſimplement d'un degré commode.}
 \end{quote}
-It is assumed that the reader is familiar with this ``method of more-than-determined problems''.
+It is assumed that the reader is familiar with this ``comparison according to the method of
+more-than-determined problems''.
 While the derivation of the root-finding method is described in painstaking detail in \cite{FantetdeLagny1733},
 which outlines the treatment of overdetermined problems, it is perhaps this remark from \cite[494]{FantetdeLagny1697} which lays it out most clearly:
 \begin{quote}\textfrench{Il n'y a rien de nouveau à remarquer ſur les Problemes plus que déterminez du quatriéme degré. La Regle générale eſt d'égaler tout à zero, \& de diviſer la plus haute équation par la moins élevée, ou l'également élevée l'une par l'autre, continuellement juſques à ce que l'on trouve le reſte ou le diviſeur le plus ſimple.}
 \end{quote}}
-of $P_{n+1}$ by $P_{n}$.
+of $E_{n+1}$ by $E_{n}$.
 
-The iterate is $x+\frac{1}{2}a$, where $x$ is a root of $P_{2}$ for the irrational method,
-and the root of $P_{1}$ for the rational method.
+The iterate is $x+\frac{1}{2}a$, where $x$ is a root of $E_{2}$ for the irrational method,
+and the root of $E_{1}$ for the rational method.
 
 \begin{theorem}
 The iterate of Lagny’s rational method for a polynomial $f$ of degree $p$ is\begin{equation}
-z\mapsto z + \pa{p-1}\frac{\pa{1/f}^{\pa{p-2}}\of{z}}{\pa{1/f}^{\pa{p-1}}\of{z}}\label{LagnyRationalIterate}
+a\mapsto a + \pa{p-1}\frac{\pa{1/f}^{\pa{p-2}}\of{a}}{\pa{1/f}^{\pa{p-1}}\of{a}}\label{LagnyRationalIterate}
 \end{equation}
 \begin{proof}
 TODO(egg): Probably something using \cite[52--54]{Householder1970} to try to get to \cite[169]{Householder1970}, (12).
@@ -112,7 +113,7 @@ It is usually simply known as Halley's method, as the irrational method (which l
 method for $p=3$, while retaining constant order as the degree changes) has comparatively fallen into obscurity;
 see \cite{ScavoThoo1995}.
 
-Considering a method remains the same when generalized from arbitrary polynomials to arbitrary analytic functions,
+Considering that a method remains the same when generalized from arbitrary polynomials to arbitrary analytic functions,
 we call the method given by the iterate (\ref{LagnyRationalIterate})\begin{itemize}
 \setlength\itemsep{0em}
 \item Newton’s method when $p=2$, for arbitrary $f$;
