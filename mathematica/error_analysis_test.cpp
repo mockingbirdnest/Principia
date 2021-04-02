@@ -7,6 +7,7 @@
 #include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "integrators/integrators.hpp"
+#include "ksp_plugin/frames.hpp"
 #include "mathematica/integrator_plots.hpp"
 #include "mathematica/mathematica.hpp"
 #include "mathematica/local_error_analysis.hpp"
@@ -21,6 +22,7 @@ using base::Contains;
 using base::make_not_null_unique;
 using quantities::ParseQuantity;
 using integrators::ParseFixedStepSizeIntegrator;
+using ksp_plugin::Barycentric;
 
 namespace mathematica {
 
@@ -82,10 +84,11 @@ TEST_F(ErrorAnalysisTest, DISABLED_SECULAR_LocalErrorAnalysis) {
   if (flags.empty() || Contains(flags, "help") || Contains(flags, "?")) {
     // Example:
     // .\Release\x64\mathematica_tests.exe \
-    //   --gtest_filter=ErrorAnalysisTest.LocalErrorAnalysis \
+    //   --gtest_filter=ErrorAnalysisTest.DISABLED_SECULAR_LocalErrorAnalysis \
+    //   --gtest_also_run_disabled_tests \
     //   --gravity_model=.\astronomy\kerbol_gravity_model.proto.txt \
     //   --initial_state=.\astronomy\kerbol_initial_state_0_0.proto.txt \
-    //   --time_step=1h --integrator=QUINLAN_1999_ORDER_8A
+    //   --time_step=35min --integrator=BLANES_MOAN_2002_SRKN_14A
     std::printf(
         "Usage:\n"
         "mathematica_tests --gtest_filter=%s.%s \n"
@@ -107,11 +110,10 @@ TEST_F(ErrorAnalysisTest, DISABLED_SECULAR_LocalErrorAnalysis) {
       std::filesystem::path(*flags["gravity_model"]);
   auto const initial_state_path =
       std::filesystem::path(*flags["initial_state"]);
-  auto solar_system = make_not_null_unique<SolarSystem<ICRS>>(
+  auto solar_system = make_not_null_unique<SolarSystem<Barycentric>>(
       gravity_model_path, initial_state_path, /*ignore_frame=*/true);
-  auto const& integrator =
-      ParseFixedStepSizeIntegrator<Ephemeris<ICRS>::NewtonianMotionEquation>(
-          *flags["integrator"]);
+  auto const& integrator = ParseFixedStepSizeIntegrator<
+      Ephemeris<Barycentric>::NewtonianMotionEquation>(*flags["integrator"]);
   auto const time_step = ParseQuantity<Time>(*flags["time_step"]);
   auto const out =
       std::filesystem::path(flags["output_directory"].value_or(".")) /
@@ -121,7 +123,8 @@ TEST_F(ErrorAnalysisTest, DISABLED_SECULAR_LocalErrorAnalysis) {
   LocalErrorAnalyser analyser(std::move(solar_system), integrator, time_step);
   analyser.WriteLocalErrors(
       out,
-      ParseFixedStepSizeIntegrator<Ephemeris<ICRS>::NewtonianMotionEquation>(
+      ParseFixedStepSizeIntegrator<
+          Ephemeris<Barycentric>::NewtonianMotionEquation>(
           flags["fine_integrator"].value_or("BLANES_MOAN_2002_SRKN_14A")),
       ParseQuantity<Time>(flags["fine_step"].value_or("1 min")),
       ParseQuantity<Time>(flags["granularity"].value_or("1 d")),
