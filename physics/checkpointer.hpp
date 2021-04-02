@@ -30,6 +30,9 @@ using quantities::Time;
 // timeline may be reconstructed as needed based on the checkpoints.
 // Checkpoints must be created at regular intervals to ensure that the timeline
 // may be reconstructed fast enough.
+// The |Message| must declare a nested message named |Checkpoint|, which must
+// have a field named |time| of type |Point|.  There must be a repeated field of
+// |Checkpoint|s in |Message|.
 // This class is thread-safe.
 template<typename Message>
 class Checkpointer {
