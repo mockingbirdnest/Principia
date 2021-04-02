@@ -203,7 +203,8 @@ void Plugin::EndInitialization() {
       system_fingerprint_ = solar_system.Fingerprint();
       LOG(INFO) << "System fingerprint after stabilization is 0x" << std::hex
                 << std::uppercase << system_fingerprint_;
-      CHECK_EQ(KSPStabilizedSystemFingerprints[ksp_version], system_fingerprint_)
+      CHECK_EQ(KSPStabilizedSystemFingerprints[ksp_version],
+               system_fingerprint_)
           << "Attempt at stabilizing the KSP system failed!\n"
           << gravity_model_.DebugString() << "\n"
           << initial_state_.DebugString();
