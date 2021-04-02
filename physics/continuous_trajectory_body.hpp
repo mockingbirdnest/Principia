@@ -441,8 +441,8 @@ ContinuousTrajectory<Frame>::MakeCheckpointerWriter() {
     return [this](
         not_null<
             serialization::ContinuousTrajectory::Checkpoint*> const message) {
-      // This takes place with the trajectory unlocked because checkpointing is
-      // synchronized by the parent ephemeris.
+      // This takes place with the trajectory unlocked because writing to a
+      // checkpoint is synchronized by the parent ephemeris.
       adjusted_tolerance_.WriteToMessage(message->mutable_adjusted_tolerance());
       message->set_is_unstable(is_unstable_);
       message->set_degree(degree_);
@@ -468,7 +468,8 @@ ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
   if constexpr (base::is_serializable_v<Frame>) {
     return [this](
                serialization::ContinuousTrajectory::Checkpoint const& message) {
-      absl::MutexLock l(&lock_);
+      // This takes place with the trajectory unlocked because reading from a
+      // checkpoint is synchronized by the parent ephemeris.
       adjusted_tolerance_ =
           Length::ReadFromMessage(message.adjusted_tolerance());
       is_unstable_ = message.is_unstable();

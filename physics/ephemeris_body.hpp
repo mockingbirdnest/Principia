@@ -885,7 +885,8 @@ Checkpointer<serialization::Ephemeris>::Reader
 Ephemeris<Frame>::MakeCheckpointerReader() {
   if constexpr (base::is_serializable_v<Frame>) {
     return [this](serialization::Ephemeris::Checkpoint const& message) {
-      absl::MutexLock l(&lock_);
+      // No locking here because reading from a checkpoint is synchronized by
+      // the caller.
       NewtonianMotionEquation equation;
       equation.compute_acceleration = [this](
           Instant const& t,
