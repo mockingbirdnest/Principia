@@ -34,15 +34,15 @@ using quantities::Time;
 template<typename Message>
 class Checkpointer {
  public:
-  // A function that reconstructs an object from a checkpoint as a side effect.
-  // This function is expected to capture the object being deserialized.
-  using Reader = std::function<void(typename Message::Checkpoint const&)>;
-
   // A function that writes an object to a checkpoint.  This function is
   // expected to capture the object being serialized.
   using Writer = std::function<void(not_null<typename Message::Checkpoint*>)>;
 
-  Checkpointer(Reader reader, Writer writer);
+  // A function that reconstructs an object from a checkpoint as a side effect.
+  // This function is expected to capture the object being deserialized.
+  using Reader = std::function<void(typename Message::Checkpoint const&)>;
+
+  Checkpointer(Writer writer, Reader reader);
 
   // Returns the oldest checkpoint in this object, or +∞ if no checkpoint was
   // ever created.
@@ -69,8 +69,8 @@ class Checkpointer {
                           typename Message::Checkpoint>*> message) const
       EXCLUDES(lock_);
   static not_null<std::unique_ptr<Checkpointer>> ReadFromMessage(
-      Reader reader,
       Writer writer,
+      Reader reader,
       google::protobuf::RepeatedPtrField<typename Message::Checkpoint> const&
           message);
 
@@ -79,8 +79,8 @@ class Checkpointer {
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   mutable absl::Mutex lock_;
-  Reader const reader_;
   Writer const writer_;
+  Reader const reader_;
 
   // The time field of the Checkpoint message may or may not be set.  The map
   // key is the source of truth.

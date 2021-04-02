@@ -12,9 +12,9 @@ namespace internal_checkpointer {
 using astronomy::InfiniteFuture;
 
 template<typename Message>
-Checkpointer<Message>::Checkpointer(Reader reader, Writer writer)
-    : reader_(std::move(reader)),
-      writer_(std::move(writer)) {}
+Checkpointer<Message>::Checkpointer(Writer writer, Reader reader)
+    : writer_(std::move(writer)),
+      reader_(std::move(reader)) {}
 
 template<typename Message>
 Instant Checkpointer<Message>::oldest_checkpoint() const {
@@ -69,12 +69,12 @@ void Checkpointer<Message>::WriteToMessage(
 template<typename Message>
 not_null<std::unique_ptr<Checkpointer<Message>>>
 Checkpointer<Message>::ReadFromMessage(
-    Reader reader,
     Writer writer,
+    Reader reader,
     google::protobuf::RepeatedPtrField<typename Message::Checkpoint> const&
         message) {
   auto checkpointer =
-      std::make_unique<Checkpointer>(std::move(reader), std::move(writer));
+      std::make_unique<Checkpointer>(std::move(writer), std::move(reader));
   for (const auto& checkpoint : message) {
     Instant const time = Instant::ReadFromMessage(checkpoint.time());
     checkpointer->checkpoints_.emplace(time, checkpoint);

@@ -33,8 +33,8 @@ struct Message {
 class CheckpointerTest : public ::testing::Test {
  protected:
   CheckpointerTest()
-      : checkpointer_(reader_.AsStdFunction(),
-                      writer_.AsStdFunction()) {}
+      : checkpointer_(writer_.AsStdFunction(),
+                      reader_.AsStdFunction()) {}
 
   MockFunction<bool(Message::Checkpoint const&)> reader_;
   MockFunction<void(not_null<Message::Checkpoint*>)> writer_;
@@ -54,13 +54,15 @@ TEST_F(CheckpointerTest, WriteToCheckpointIfNeeded) {
 
   Instant const t2 = t1 + 8 * Second;
   EXPECT_CALL(writer_, Call(_)).Times(0);
-  checkpointer_.WriteToCheckpointIfNeeded(t2,
-                               /*max_time_between_checkpoints=*/10 * Second);
+  checkpointer_.WriteToCheckpointIfNeeded(
+      t2,
+      /*max_time_between_checkpoints=*/10 * Second);
 
   EXPECT_CALL(writer_, Call(_));
   Instant const t3 = t2 + 3 * Second;
-  checkpointer_.WriteToCheckpointIfNeeded(t3,
-                               /*max_time_between_checkpoints=*/10 * Second);
+  checkpointer_.WriteToCheckpointIfNeeded(
+      t3,
+      /*max_time_between_checkpoints=*/10 * Second);
 }
 
 TEST_F(CheckpointerTest, Serialization) {
@@ -77,8 +79,8 @@ TEST_F(CheckpointerTest, Serialization) {
   EXPECT_EQ(23, m.checkpoint[1].time().scalar().magnitude());
 
   auto const checkpointer =
-      Checkpointer<Message>::ReadFromMessage(reader_.AsStdFunction(),
-                                             writer_.AsStdFunction(),
+      Checkpointer<Message>::ReadFromMessage(writer_.AsStdFunction(),
+                                             reader_.AsStdFunction(),
                                              m.checkpoint);
   EXPECT_EQ(Instant() + 10 * Second, checkpointer->oldest_checkpoint());
 }

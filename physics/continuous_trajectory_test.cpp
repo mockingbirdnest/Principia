@@ -790,7 +790,7 @@ TEST_F(ContinuousTrajectoryTest, PreGrassmannCompatibility) {
   checkpoint_time.WriteToMessage(pre_grassmann.mutable_checkpoint_time());
   pre_grassmann.clear_checkpoint();
 
-  // Read from the pre-Grassmann message, write to a separate message, and check
+  // Read from the pre-Grassmann message, write to a second message, and check
   // that we get the same result.
   auto const trajectory2 =
       ContinuousTrajectory<World>::ReadFromMessage(pre_grassmann);

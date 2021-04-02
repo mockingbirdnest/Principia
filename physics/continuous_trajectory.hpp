@@ -138,10 +138,10 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   using InstantPolynomialPairs = std::vector<InstantPolynomialPair>;
 
   // Checkpointing support.
-  Checkpointer<serialization::ContinuousTrajectory>::Reader
-  MakeCheckpointerReader();
   Checkpointer<serialization::ContinuousTrajectory>::Writer
   MakeCheckpointerWriter();
+  Checkpointer<serialization::ContinuousTrajectory>::Reader
+  MakeCheckpointerReader();
 
   Instant t_min_locked() const REQUIRES_SHARED(lock_);
   Instant t_max_locked() const REQUIRES_SHARED(lock_);
