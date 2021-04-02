@@ -301,7 +301,7 @@ class Ephemeris {
 
  private:
   // Checkpointing support.
-  void CreateCheckpointIfNeeded(Instant const& time) const
+  void WriteToCheckpointIfNeeded(Instant const& time) const
       SHARED_LOCKS_REQUIRED(lock_);
 
   Checkpointer<serialization::Ephemeris>::Reader MakeCheckpointerReader();

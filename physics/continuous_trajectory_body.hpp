@@ -380,8 +380,6 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
   }
 
   if (is_pre_grassmann) {
-    // This compatibility code is rather iffy.  I am not sure that we would fare
-    // well on a pre-Fatou save.
     serialization::ContinuousTrajectory serialized_continuous_trajectory;
     auto* const checkpoint = serialized_continuous_trajectory.add_checkpoint();
     if (is_pre_fatou) {

@@ -701,7 +701,7 @@ void Ephemeris<Frame>::WriteToMessage(
 
   // Make sure that a checkpoint exists, otherwise we would not serialize some
   // parts of the state.
-  CreateCheckpointIfNeeded(instance_->time().value);
+  WriteToCheckpointIfNeeded(instance_->time().value);
   checkpointer_->WriteToMessage(message->mutable_checkpoint());
 
   // The bodies are serialized in the order in which they were given at
@@ -853,12 +853,13 @@ Ephemeris<Frame>::Ephemeris(
       protector_(make_not_null_unique<Protector>()) {}
 
 template<typename Frame>
-void Ephemeris<Frame>::CreateCheckpointIfNeeded(Instant const& time) const {
+void Ephemeris<Frame>::WriteToCheckpointIfNeeded(Instant const& time) const {
   if constexpr (base::is_serializable_v<Frame>) {
     lock_.AssertReaderHeld();
-    if (checkpointer_->CreateIfNeeded(time, max_time_between_checkpoints)) {
+    if (checkpointer_->WriteToCheckpointIfNeeded(
+            time, max_time_between_checkpoints)) {
       for (auto const& trajectory : trajectories_) {
-        trajectory->checkpointer().CreateUnconditionally(time);
+        trajectory->checkpointer().WriteToCheckpoint(time);
       }
     }
   }
@@ -932,7 +933,7 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
     ++index;
   }
 
-  CreateCheckpointIfNeeded(time);
+  WriteToCheckpointIfNeeded(time);
 }
 
 template<typename Frame>

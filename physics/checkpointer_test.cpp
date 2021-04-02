@@ -41,34 +41,34 @@ class CheckpointerTest : public ::testing::Test {
   Checkpointer<Message> checkpointer_;
 };
 
-TEST_F(CheckpointerTest, CreateUnconditionally) {
+TEST_F(CheckpointerTest, WriteToCheckpoint) {
   Instant const t = Instant() + 10 * Second;
   EXPECT_CALL(writer_, Call(_));
-  checkpointer_.CreateUnconditionally(t);
+  checkpointer_.WriteToCheckpoint(t);
 }
 
-TEST_F(CheckpointerTest, CreateIfNeeded) {
+TEST_F(CheckpointerTest, WriteToCheckpointIfNeeded) {
   Instant const t1 = Instant() + 10 * Second;
   EXPECT_CALL(writer_, Call(_));
-  checkpointer_.CreateUnconditionally(t1);
+  checkpointer_.WriteToCheckpoint(t1);
 
   Instant const t2 = t1 + 8 * Second;
   EXPECT_CALL(writer_, Call(_)).Times(0);
-  checkpointer_.CreateIfNeeded(t2,
+  checkpointer_.WriteToCheckpointIfNeeded(t2,
                                /*max_time_between_checkpoints=*/10 * Second);
 
   EXPECT_CALL(writer_, Call(_));
   Instant const t3 = t2 + 3 * Second;
-  checkpointer_.CreateIfNeeded(t3,
+  checkpointer_.WriteToCheckpointIfNeeded(t3,
                                /*max_time_between_checkpoints=*/10 * Second);
 }
 
 TEST_F(CheckpointerTest, Serialization) {
   Instant t = Instant() + 10 * Second;
   EXPECT_CALL(writer_, Call(_)).Times(2);
-  checkpointer_.CreateUnconditionally(t);
+  checkpointer_.WriteToCheckpoint(t);
   t += 13 * Second;
-  checkpointer_.CreateUnconditionally(t);
+  checkpointer_.WriteToCheckpoint(t);
 
   Message m;
   checkpointer_.WriteToMessage(&m.checkpoint);

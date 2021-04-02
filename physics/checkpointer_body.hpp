@@ -3,9 +3,13 @@
 
 #include "physics/checkpointer.hpp"
 
+#include "astronomy/epoch.hpp"
+
 namespace principia {
 namespace physics {
 namespace internal_checkpointer {
+
+using astronomy::InfiniteFuture;
 
 template<typename Message>
 Checkpointer<Message>::Checkpointer(Reader reader, Writer writer)
@@ -16,15 +20,14 @@ template<typename Message>
 Instant Checkpointer<Message>::oldest_checkpoint() const {
   absl::ReaderMutexLock l(&lock_);
   if (checkpoints_.empty()) {
-    //TODO(phl): declare this next to Instant.
-    static Instant infinite_future = Instant() + quantities::Infinity<Time>;
-    return infinite_future;
+    return InfiniteFuture;
   }
   return checkpoints_.cbegin()->first;
 }
 
 template<typename Message>
 bool Checkpointer<Message>::ReadFromOldestCheckpoint() const {
+  absl::ReaderMutexLock l(&lock_);
   if (!checkpoints_.empty()) {
     reader_(checkpoints_.cbegin()->second);
     return true;
@@ -33,19 +36,19 @@ bool Checkpointer<Message>::ReadFromOldestCheckpoint() const {
 }
 
 template<typename Message>
-void Checkpointer<Message>::CreateUnconditionally(Instant const& t) {
+void Checkpointer<Message>::WriteToCheckpoint(Instant const& t) {
   absl::MutexLock l(&lock_);
-  CreateUnconditionallyLocked(t);
+  WriteToCheckpointLocked(t);
 }
 
 template<typename Message>
-bool Checkpointer<Message>::CreateIfNeeded(
+bool Checkpointer<Message>::WriteToCheckpointIfNeeded(
     Instant const& t,
     Time const& max_time_between_checkpoints) {
   absl::MutexLock l(&lock_);
   if (checkpoints_.empty() ||
       max_time_between_checkpoints < t - checkpoints_.crbegin()->first) {
-    CreateUnconditionallyLocked(t);
+    WriteToCheckpointLocked(t);
     return true;
   }
   return false;
@@ -80,7 +83,7 @@ Checkpointer<Message>::ReadFromMessage(
 }
 
 template<typename Message>
-void Checkpointer<Message>::CreateUnconditionallyLocked(Instant const& t) {
+void Checkpointer<Message>::WriteToCheckpointLocked(Instant const& t) {
   lock_.AssertHeld();
   auto const it = checkpoints_.emplace_hint(
       checkpoints_.end(), t, typename Message::Checkpoint());

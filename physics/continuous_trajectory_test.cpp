@@ -649,7 +649,7 @@ TEST_F(ContinuousTrajectoryTest, Serialization) {
 
   // Now take a checkpoint and verify that the checkpointed data is properly
   // serialized.
-  trajectory->checkpointer().CreateUnconditionally(trajectory->t_max());
+  trajectory->checkpointer().WriteToCheckpoint(trajectory->t_max());
   {
     serialization::ContinuousTrajectory message;
     trajectory->WriteToMessage(&message);
@@ -772,7 +772,7 @@ TEST_F(ContinuousTrajectoryTest, PreGrassmannCompatibility) {
                  t0_,
                  *trajectory1);
   Instant const checkpoint_time = trajectory1->t_max();
-  trajectory1->checkpointer().CreateUnconditionally(checkpoint_time);
+  trajectory1->checkpointer().WriteToCheckpoint(checkpoint_time);
 
   serialization::ContinuousTrajectory message1;
   trajectory1->WriteToMessage(&message1);
@@ -834,7 +834,7 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
                  t0_,
                  *trajectory);
   Instant const checkpoint_time = trajectory->t_max();
-  trajectory->checkpointer().CreateUnconditionally(checkpoint_time);
+  trajectory->checkpointer().WriteToCheckpoint(checkpoint_time);
   FillTrajectory(number_of_steps2,
                  step,
                  position_function,
