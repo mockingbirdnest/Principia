@@ -64,6 +64,8 @@ class Checkpointer {
   bool CreateIfNeeded(Instant const& t,
                       Time const& max_time_between_checkpoints) EXCLUDES(lock_);
 
+  bool ReadFromOldestCheckpoint() const;
+
   // If there exists a checkpoint, writes the oldest checkpoint to the |message|
   // using protocol buffer merging and returns its time.  Otherwise returns +∞.
   // The time returned by this function should be serialized and passed to

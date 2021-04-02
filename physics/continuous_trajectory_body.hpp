@@ -334,7 +334,10 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
       serialization::ContinuousTrajectory const& message) {
   bool const is_pre_cohen = message.series_size() > 0;
   bool const is_pre_fatou = !message.has_checkpoint_time();
-  bool const is_pre_grassmann = message.checkpoint_size() == 0;
+  bool const is_pre_grassmann = message.has_adjusted_tolerance() &&
+                                message.has_is_unstable() &&
+                                message.has_degree() &&
+                                message.has_degree_age();
 
   not_null<std::unique_ptr<ContinuousTrajectory<Frame>>> continuous_trajectory =
       std::make_unique<ContinuousTrajectory<Frame>>(
@@ -406,7 +409,7 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
             continuous_trajectory->MakeCheckpointerWriter(),
             message.checkpoint());
   }
-  //TODO(phl): Load from a checkpoint here.
+  continuous_trajectory->checkpointer_->ReadFromOldestCheckpoint();
 
   return continuous_trajectory;
 }

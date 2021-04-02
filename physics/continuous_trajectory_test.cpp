@@ -621,13 +621,15 @@ TEST_F(ContinuousTrajectoryTest, Serialization) {
     trajectory->WriteToMessage(&message);
     EXPECT_EQ(step / Second, message.step().magnitude());
     EXPECT_EQ(tolerance / Metre, message.tolerance().magnitude());
+    EXPECT_EQ(2, message.instant_polynomial_pair_size());
+    EXPECT_TRUE(message.has_first_time());
+
+    EXPECT_EQ(0, message.checkpoint_size());
     EXPECT_FALSE(message.has_adjusted_tolerance());
     EXPECT_FALSE(message.has_is_unstable());
     EXPECT_FALSE(message.has_degree());
     EXPECT_FALSE(message.has_degree_age());
     EXPECT_EQ(0, message.last_point_size());
-    EXPECT_EQ(2, message.instant_polynomial_pair_size());
-    EXPECT_TRUE(message.has_first_time());
 
     auto const trajectory_read =
         ContinuousTrajectory<World>::ReadFromMessage(message);
@@ -653,14 +655,23 @@ TEST_F(ContinuousTrajectoryTest, Serialization) {
     trajectory->WriteToMessage(&message);
     EXPECT_EQ(step / Second, message.step().magnitude());
     EXPECT_EQ(tolerance / Metre, message.tolerance().magnitude());
-    EXPECT_GE(message.adjusted_tolerance().magnitude(),
-              message.tolerance().magnitude());
-    EXPECT_TRUE(message.has_is_unstable());
-    EXPECT_EQ(3, message.degree());
-    EXPECT_GE(100, message.degree_age());
     EXPECT_EQ(2, message.instant_polynomial_pair_size());
     EXPECT_TRUE(message.has_first_time());
-    EXPECT_EQ(4, message.last_point_size());
+
+    EXPECT_EQ(1, message.checkpoint_size());
+    EXPECT_FALSE(message.has_adjusted_tolerance());
+    EXPECT_FALSE(message.has_is_unstable());
+    EXPECT_FALSE(message.has_degree());
+    EXPECT_FALSE(message.has_degree_age());
+    EXPECT_EQ(0, message.last_point_size());
+
+    auto const& checkpoint = message.checkpoint(0);
+    EXPECT_GE(checkpoint.adjusted_tolerance().magnitude(),
+              message.tolerance().magnitude());
+    EXPECT_TRUE(checkpoint.has_is_unstable());
+    EXPECT_EQ(3, checkpoint.degree());
+    EXPECT_GE(100, checkpoint.degree_age());
+    EXPECT_EQ(4, checkpoint.last_point_size());
 
     auto const trajectory_read =
         ContinuousTrajectory<World>::ReadFromMessage(message);

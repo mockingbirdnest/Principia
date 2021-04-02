@@ -24,6 +24,15 @@ Instant Checkpointer<Message>::oldest_checkpoint() const {
 }
 
 template<typename Message>
+bool Checkpointer<Message>::ReadFromOldestCheckpoint() const {
+  if (!checkpoints_.empty()) {
+    reader_(checkpoints_.cbegin()->second);
+    return true;
+  }
+  return false;
+}
+
+template<typename Message>
 void Checkpointer<Message>::CreateUnconditionally(Instant const& t) {
   absl::MutexLock l(&lock_);
   CreateUnconditionallyLocked(t);

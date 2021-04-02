@@ -793,7 +793,7 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
             ephemeris->MakeCheckpointerWriter(),
             message.checkpoint());
   }
-  //TODO(phl): Load from a checkpoint here.
+  CHECK(ephemeris->checkpointer_->ReadFromOldestCheckpoint());
 
   // The ephemeris will need to be prolonged as needed when deserializing the
   // plugin.
@@ -897,9 +897,9 @@ template<typename Frame>
 Checkpointer<serialization::Ephemeris>::Writer
 Ephemeris<Frame>::MakeCheckpointerWriter() {
   if constexpr (base::is_serializable_v<Frame>) {
-    lock_.AssertReaderHeld();
     return [this](
                not_null<serialization::Ephemeris::Checkpoint*> const message) {
+      lock_.AssertReaderHeld();
       instance_->WriteToMessage(message->mutable_instance());
     };
   } else {
