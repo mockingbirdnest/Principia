@@ -49,8 +49,7 @@ class Checkpointer {
   // expected to capture the object being serialized.
   using Writer = std::function<void(not_null<typename Message::Checkpoint*>)>;
 
-  Checkpointer(Reader reader,
-               Writer writer);
+  Checkpointer(Reader reader, Writer writer);
 
   Instant oldest_checkpoint() const;
 

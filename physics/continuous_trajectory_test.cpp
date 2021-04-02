@@ -743,6 +743,63 @@ TEST_F(ContinuousTrajectoryTest, PreCohenCompatibility) {
                 x().quantity().magnitude());
 }
 
+TEST_F(ContinuousTrajectoryTest, PreGrassmannCompatibility) {
+  int const number_of_steps = 30;
+  Time const step = 0.01 * Second;
+  Length const tolerance = 0.1 * Metre;
+
+  // Fill a ContinuousTrajectory and take a checkpoint.
+  auto position_function =
+      [this](Instant const t) {
+        return World::origin +
+            Displacement<World>({(t - t0_) * 3 * Metre / Second,
+                                 (t - t0_) * 5 * Metre / Second,
+                                 (t - t0_) * (-2) * Metre / Second});
+      };
+  auto velocity_function =
+      [](Instant const t) {
+        return Velocity<World>({3 * Metre / Second,
+                                5 * Metre / Second,
+                                -2 * Metre / Second});
+      };
+
+  auto const trajectory1 = std::make_unique<ContinuousTrajectory<World>>(
+                              step, tolerance);
+  FillTrajectory(number_of_steps,
+                 step,
+                 position_function,
+                 velocity_function,
+                 t0_,
+                 *trajectory1);
+  Instant const checkpoint_time = trajectory1->t_max();
+  trajectory1->checkpointer().CreateUnconditionally(checkpoint_time);
+
+  serialization::ContinuousTrajectory message1;
+  trajectory1->WriteToMessage(&message1);
+
+  // Fill the pre-Grassmann fields and clear the post-Grassmann fields.
+  serialization::ContinuousTrajectory pre_grassmann = message1;
+  EXPECT_EQ(1, pre_grassmann.checkpoint_size());
+  auto checkpoint = pre_grassmann.checkpoint(0);
+  *pre_grassmann.mutable_adjusted_tolerance() = checkpoint.adjusted_tolerance();
+  pre_grassmann.set_is_unstable(checkpoint.is_unstable());
+  pre_grassmann.set_degree(checkpoint.degree());
+  pre_grassmann.set_degree_age(checkpoint.degree_age());
+  pre_grassmann.mutable_last_point()->Swap(checkpoint.mutable_last_point());
+  // This is post-Fatou.
+  checkpoint_time.WriteToMessage(pre_grassmann.mutable_checkpoint_time());
+  pre_grassmann.clear_checkpoint();
+
+  // Read from the pre-Grassmann message, write to a separate message, and check
+  // that we get the same result.
+  auto const trajectory2 =
+      ContinuousTrajectory<World>::ReadFromMessage(pre_grassmann);
+  serialization::ContinuousTrajectory message2;
+  trajectory2->WriteToMessage(&message2);
+
+  EXPECT_THAT(message2, EqualsProto(message1));
+}
+
 TEST_F(ContinuousTrajectoryTest, Checkpoint) {
   int const number_of_steps1 = 30;
   int const number_of_steps2 = 20;
