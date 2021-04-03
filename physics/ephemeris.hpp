@@ -319,8 +319,9 @@ class Ephemeris {
       typename NewtonianMotionEquation::SystemState const& state,
       std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories);
 
-  // Returns an equation suitable for the bodies contained in this object.
-  NewtonianMotionEquation MakeNewtonianMotionEquation();
+  // Returns an equation suitable for the massive bodies contained in this
+  // ephemeris.
+  NewtonianMotionEquation MakeMassiveBodiesNewtonianMotionEquation();
 
   // Note the return by copy: the returned value is usable even if the
   // |instance_| is being integrated.

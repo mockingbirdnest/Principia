@@ -244,7 +244,7 @@ Ephemeris<Frame>::Ephemeris(
   CHECK_EQ(bodies.size(), initial_state.size());
 
   IntegrationProblem<NewtonianMotionEquation> problem;
-  problem.equation = MakeNewtonianMotionEquation();
+  problem.equation = MakeMassiveBodiesNewtonianMotionEquation();
 
   typename NewtonianMotionEquation::SystemState& state = problem.initial_state;
   state.time = DoublePrecision<Instant>(initial_time);
@@ -895,7 +895,7 @@ Ephemeris<Frame>::MakeCheckpointerReader() {
       instance_ = FixedStepSizeIntegrator<NewtonianMotionEquation>::Instance::
           ReadFromMessage(
               message.instance(),
-              MakeNewtonianMotionEquation(),
+              MakeMassiveBodiesNewtonianMotionEquation(),
               /*append_state=*/
               std::bind(&Ephemeris::AppendMassiveBodiesState, this, _1));
     };
@@ -959,7 +959,7 @@ void Ephemeris<Frame>::AppendMasslessBodiesState(
 
 template<typename Frame>
 typename Ephemeris<Frame>::NewtonianMotionEquation
-Ephemeris<Frame>::MakeNewtonianMotionEquation() {
+Ephemeris<Frame>::MakeMassiveBodiesNewtonianMotionEquation() {
   NewtonianMotionEquation equation;
   equation.compute_acceleration =
       [this](Instant const& t,
