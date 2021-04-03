@@ -53,7 +53,7 @@ void LocalErrorAnalyser<Frame>::WriteLocalErrors(
   auto const reference_ephemeris = solar_system_->MakeEphemeris(
       /*accuracy_parameters=*/{fitting_tolerance_,
                                /*geopotential_tolerance=*/0x1p-24},
-      Ephemeris<Frame>::FixedStepParameters(integrator_, step_));
+      typename Ephemeris<Frame>::FixedStepParameters(integrator_, step_));
   reference_ephemeris->Prolong(solar_system_->epoch());
   std::vector<std::vector<Length>> errors;
   for (Instant t0 = solar_system_->epoch(),
@@ -101,9 +101,9 @@ LocalErrorAnalyser<Frame>::ForkEphemeris(
       solar_system_->MakeAllMassiveBodies(),
       degrees_of_freedom,
       t,
-      Ephemeris<Frame>::AccuracyParameters(fitting_tolerance_,
-                                           /*geopotential_tolerance=*/0x1p-24),
-      Ephemeris<Frame>::FixedStepParameters(integrator, step));
+      typename Ephemeris<Frame>::AccuracyParameters(
+          fitting_tolerance_, /*geopotential_tolerance=*/0x1p-24),
+      typename Ephemeris<Frame>::FixedStepParameters(integrator, step));
 }
 
 }  // namespace mathematica

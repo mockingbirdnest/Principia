@@ -191,27 +191,27 @@ void Plugin::EndInitialization() {
 
   // Check if this is the stock KSP system in which case it needs to be
   // stabilized.
-  std::uint64_t const system_fingerprint = solar_system.Fingerprint();
+  system_fingerprint_ = solar_system.Fingerprint();
   LOG(INFO) << "System fingerprint is 0x" << std::hex << std::uppercase
-            << system_fingerprint;
+            << system_fingerprint_;
 
   bool is_well_known = false;
   for (auto const ksp_version : {KSP122, KSP191}) {
-    if (system_fingerprint == KSPStockSystemFingerprints[ksp_version]) {
+    if (system_fingerprint_ == KSPStockSystemFingerprints[ksp_version]) {
       LOG(WARNING) << "This appears to be the dreaded KSP stock system!";
       StabilizeKSP(solar_system);
-      std::uint64_t const system_fingerprint = solar_system.Fingerprint();
+      system_fingerprint_ = solar_system.Fingerprint();
       LOG(INFO) << "System fingerprint after stabilization is 0x" << std::hex
-                << std::uppercase << system_fingerprint;
+                << std::uppercase << system_fingerprint_;
       CHECK_EQ(KSPStabilizedSystemFingerprints[ksp_version],
-                system_fingerprint)
+               system_fingerprint_)
           << "Attempt at stabilizing the KSP system failed!\n"
           << gravity_model_.DebugString() << "\n"
           << initial_state_.DebugString();
       LOG(INFO) << "This is the stabilized KSP system, all hail retrobop!";
       is_well_known = true;
       break;
-    } else if (system_fingerprint ==
+    } else if (system_fingerprint_ ==
                 KSPStabilizedSystemFingerprints[ksp_version]) {
       LOG(INFO) << "This is the stabilized KSP system, and we didn't have to "
                 << "stabilize it ourselves.  All hail retrobop anyway!";
@@ -1291,6 +1291,8 @@ void Plugin::WriteToMessage(
     not_null<serialization::Plugin*> const message) const {
   LOG(INFO) << __FUNCTION__;
   CHECK(!initializing_);
+  CHECK_NE(0, system_fingerprint_);
+  message->set_system_fingerprint(system_fingerprint_);
   ephemeris_->Prolong(current_time_);
   std::map<not_null<Celestial const*>, Index const> celestial_to_index;
   for (auto const& [index, owned_celestial] : celestials_) {
@@ -1372,6 +1374,24 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   not_null<std::unique_ptr<Plugin>> plugin =
       std::unique_ptr<Plugin>(new Plugin(history_parameters,
                                          psychohistory_parameters));
+
+  if (message.has_system_fingerprint()) {
+    plugin->system_fingerprint_ = message.system_fingerprint();
+    std::string details = "this is an unknown system";
+    for (auto const ksp_version : {KSP122, KSP191}) {
+      if (plugin->system_fingerprint_ ==
+          KSPStockSystemFingerprints[ksp_version]) {
+        details = "this is the dreaded KSP stock system!";
+        break;
+      } else if (plugin->system_fingerprint_ ==
+                 KSPStabilizedSystemFingerprints[ksp_version]) {
+        details = "this is the stabilized KSP system, all hail retrobop!";
+        break;
+      }
+    }
+    LOG(INFO) << "System has fingerprint 0x" << std::hex << std::uppercase
+              << plugin->system_fingerprint_ << "; " << details;
+  }
 
   plugin->game_epoch_ = Instant::ReadFromMessage(message.game_epoch());
   plugin->current_time_ = Instant::ReadFromMessage(message.current_time());

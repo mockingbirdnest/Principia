@@ -332,6 +332,10 @@ std::uint64_t SolarSystem<Frame>::Fingerprint() const {
           fingerprint, Fingerprint2011(SerializeAsBytes(message).get()));
       break;
     }
+    case serialization::InitialState::CoordinatesCase::COORDINATES_NOT_SET: {
+      LOG(FATAL) << "Unable to fingerprint initial state: "
+                 << initial_state_.DebugString();
+    }
   }
   return fingerprint;
 }
