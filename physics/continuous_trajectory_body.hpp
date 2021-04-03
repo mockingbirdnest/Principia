@@ -309,6 +309,7 @@ template<typename Frame>
 void ContinuousTrajectory<Frame>::WriteToMessage(
       not_null<serialization::ContinuousTrajectory*> const message) const {
   absl::ReaderMutexLock l(&lock_);
+  CHECK_LT(checkpointer_->oldest_checkpoint(), InfiniteFuture);
   checkpointer_->WriteToMessage(message->mutable_checkpoint());
   step_.WriteToMessage(message->mutable_step());
   tolerance_.WriteToMessage(message->mutable_tolerance());
@@ -408,13 +409,7 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
             continuous_trajectory->MakeCheckpointerReader(),
             message.checkpoint());
   }
-
-  // Normally the ephemeris will have created a checkpoint, but in tests and in
-  // legacy saves we may not have one.
-  if (continuous_trajectory->checkpointer_->oldest_checkpoint() <
-      InfiniteFuture) {
-    continuous_trajectory->checkpointer_->ReadFromOldestCheckpointOrDie();
-  }
+  continuous_trajectory->checkpointer_->ReadFromOldestCheckpointOrDie();
 
   return continuous_trajectory;
 }
