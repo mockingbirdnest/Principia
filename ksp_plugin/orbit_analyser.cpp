@@ -89,7 +89,7 @@ Status OrbitAnalyser::AnalyseOrbit(GuardedParameters const guarded_parameters) {
 
   Analysis analysis{parameters.first_time};
   DiscreteTrajectory<Barycentric> trajectory;
-  trajectory.SetDownsampling(max_dense_intervals, downsampling_tolerance);
+  trajectory.SetDownsampling(MaxDenseIntervals, DownsamplingTolerance);
   trajectory.Append(parameters.first_time, parameters.first_degrees_of_freedom);
 
   RotatingBody<Barycentric> const* primary = nullptr;
