@@ -26,16 +26,6 @@ Instant Checkpointer<Message>::oldest_checkpoint() const {
 }
 
 template<typename Message>
-bool Checkpointer<Message>::ReadFromOldestCheckpoint() const {
-  absl::ReaderMutexLock l(&lock_);
-  if (!checkpoints_.empty()) {
-    reader_(checkpoints_.cbegin()->second);
-    return true;
-  }
-  return false;
-}
-
-template<typename Message>
 void Checkpointer<Message>::WriteToCheckpoint(Instant const& t) {
   absl::MutexLock l(&lock_);
   WriteToCheckpointLocked(t);
@@ -52,6 +42,13 @@ bool Checkpointer<Message>::WriteToCheckpointIfNeeded(
     return true;
   }
   return false;
+}
+
+template<typename Message>
+void Checkpointer<Message>::ReadFromOldestCheckpointOrDie() const {
+  absl::ReaderMutexLock l(&lock_);
+  CHECK(!checkpoints_.empty());
+  reader_(checkpoints_.cbegin()->second);
 }
 
 template<typename Message>

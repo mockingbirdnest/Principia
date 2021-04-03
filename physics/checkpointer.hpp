@@ -63,10 +63,9 @@ class Checkpointer {
                                  Time const& max_time_between_checkpoints)
       EXCLUDES(lock_);
 
-  // Caller the |Reader| passed at construction to reconstruct an object using
-  // the oldest checkpoint.  Returns true iff this object contains at least one
-  // checkpoint.
-  bool ReadFromOldestCheckpoint() const EXCLUDES(lock_);
+  // Calls the |Reader| passed at construction to reconstruct an object using
+  // the oldest checkpoint.  Dies if this object contains no checkpoint.
+  void ReadFromOldestCheckpointOrDie() const EXCLUDES(lock_);
 
   void WriteToMessage(not_null<google::protobuf::RepeatedPtrField<
                           typename Message::Checkpoint>*> message) const

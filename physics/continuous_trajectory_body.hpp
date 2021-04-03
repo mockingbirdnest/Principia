@@ -22,6 +22,7 @@ namespace principia {
 namespace physics {
 namespace internal_continuous_trajectory {
 
+using astronomy::InfiniteFuture;
 using base::dynamic_cast_not_null;
 using base::Error;
 using base::make_not_null_unique;
@@ -407,7 +408,13 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
             continuous_trajectory->MakeCheckpointerReader(),
             message.checkpoint());
   }
-  continuous_trajectory->checkpointer_->ReadFromOldestCheckpoint();
+
+  // Normally the ephemeris will have created a checkpoint, but in tests and in
+  // legacy saves we may not have one.
+  if (continuous_trajectory->checkpointer_->oldest_checkpoint() <
+      InfiniteFuture) {
+    continuous_trajectory->checkpointer_->ReadFromOldestCheckpointOrDie();
+  }
 
   return continuous_trajectory;
 }
