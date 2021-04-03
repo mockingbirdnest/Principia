@@ -167,6 +167,7 @@ class Vessel {
   // have a last time at or before |time|.
   virtual void RefreshPrediction(Instant const& time);
 
+  // Stop the asynchronous prognosticator as soon as convenient.
   void StopPrognosticator();
 
   // Returns "vessel_name (GUID)".
@@ -206,7 +207,6 @@ class Vessel {
     Instant first_time;
     DegreesOfFreedom<Barycentric> first_degrees_of_freedom;
     Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters;
-    bool shutdown = false;
   };
   friend bool operator!=(PrognosticatorParameters const& left,
                          PrognosticatorParameters const& right);
