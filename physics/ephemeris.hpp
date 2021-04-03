@@ -308,6 +308,7 @@ class Ephemeris {
   Checkpointer<serialization::Ephemeris>::Writer MakeCheckpointerWriter();
   Checkpointer<serialization::Ephemeris>::Reader MakeCheckpointerReader();
 
+  //TODO(phl):comment
   Status Reanimate();
 
   // Callbacks for the integrators.
@@ -317,6 +318,9 @@ class Ephemeris {
   static void AppendMasslessBodiesState(
       typename NewtonianMotionEquation::SystemState const& state,
       std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories);
+
+  // Returns an equation suitable for the bodies contained in this object.
+  NewtonianMotionEquation MakeNewtonianMotionEquation();
 
   // Note the return by copy: the returned value is usable even if the
   // |instance_| is being integrated.

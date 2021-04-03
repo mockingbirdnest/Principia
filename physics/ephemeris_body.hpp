@@ -244,15 +244,7 @@ Ephemeris<Frame>::Ephemeris(
   CHECK_EQ(bodies.size(), initial_state.size());
 
   IntegrationProblem<NewtonianMotionEquation> problem;
-  problem.equation.compute_acceleration = [this](
-      Instant const& t,
-      std::vector<Position<Frame>> const& positions,
-      std::vector<Vector<Acceleration, Frame>>& accelerations) {
-    ComputeMassiveBodiesGravitationalAccelerations(t,
-                                                   positions,
-                                                   accelerations);
-    return Status::OK;
-  };
+  problem.equation = MakeNewtonianMotionEquation();
 
   typename NewtonianMotionEquation::SystemState& state = problem.initial_state;
   state.time = DoublePrecision<Instant>(initial_time);
@@ -897,21 +889,10 @@ Ephemeris<Frame>::MakeCheckpointerReader() {
     return [this](serialization::Ephemeris::Checkpoint const& message) {
       // No locking here because reading from a checkpoint is synchronized by
       // the caller.
-      NewtonianMotionEquation equation;
-      equation.compute_acceleration = [this](
-          Instant const& t,
-          std::vector<Position<Frame>> const& positions,
-          std::vector<Vector<Acceleration, Frame>>& accelerations) {
-        ComputeMassiveBodiesGravitationalAccelerations(t,
-                                                       positions,
-                                                       accelerations);
-        return Status::OK;
-      };
-
       instance_ = FixedStepSizeIntegrator<NewtonianMotionEquation>::Instance::
           ReadFromMessage(
               message.instance(),
-              equation,
+              MakeNewtonianMotionEquation(),
               /*append_state=*/
               std::bind(&Ephemeris::AppendMassiveBodiesState, this, _1));
     };
@@ -971,6 +952,22 @@ void Ephemeris<Frame>::AppendMasslessBodiesState(
                                 state.velocities[index].value));
     ++index;
   }
+}
+
+template<typename Frame>
+typename Ephemeris<Frame>::NewtonianMotionEquation
+Ephemeris<Frame>::MakeNewtonianMotionEquation() {
+  NewtonianMotionEquation equation;
+  equation.compute_acceleration =
+      [this](Instant const& t,
+             std::vector<Position<Frame>> const& positions,
+             std::vector<Vector<Acceleration, Frame>>& accelerations) {
+        ComputeMassiveBodiesGravitationalAccelerations(t,
+                                                       positions,
+                                                       accelerations);
+        return Status::OK;
+      };
+  return equation;
 }
 
 template<typename Frame>
