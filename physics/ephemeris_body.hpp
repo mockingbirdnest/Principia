@@ -796,13 +796,12 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   // code.
   ephemeris->checkpointer_->ReadFromOldestCheckpoint();
 
-  // The ephemeris will need to be prolonged as needed when deserializing the
-  // plugin.
-  //TODO(phl):Comments
-
+  // Start a thread to asynchronously reconstruct the past using checkpoints.
   ephemeris->reanimator_ =
       MakeStoppableThread(std::bind(&Ephemeris::Reanimate, ephemeris.get()));
 
+  // The ephemeris will need to be prolonged as needed when deserializing the
+  // plugin.
   return ephemeris;
 }
 

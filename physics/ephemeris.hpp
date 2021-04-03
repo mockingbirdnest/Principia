@@ -308,7 +308,8 @@ class Ephemeris {
   Checkpointer<serialization::Ephemeris>::Writer MakeCheckpointerWriter();
   Checkpointer<serialization::Ephemeris>::Reader MakeCheckpointerReader();
 
-  //TODO(phl):comment
+  // Called on a stoppable thread to reconstruct the past state of the ephemeris
+  // and its trajectories.
   Status Reanimate();
 
   // Callbacks for the integrators.

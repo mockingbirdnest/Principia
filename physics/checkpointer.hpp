@@ -67,7 +67,8 @@ class Checkpointer {
   // the oldest checkpoint.  Dies if this object contains no checkpoint.
   void ReadFromOldestCheckpoint() const EXCLUDES(lock_);
 
-  //TODO(phl): Comment
+  // Calls |reader| on each of the checkpoints in this object, going backwards
+  // from the most recent to the oldest.
   void ReadFromAllCheckpointsBackwards(Reader const& reader) const
       EXCLUDES(lock_);
 
