@@ -36,6 +36,7 @@ using base::dynamic_cast_not_null;
 using base::Error;
 using base::FindOrDie;
 using base::make_not_null_unique;
+using base::MakeStoppableThread;
 using geometry::Barycentre;
 using geometry::Displacement;
 using geometry::InnerProduct;
@@ -304,6 +305,11 @@ Ephemeris<Frame>::Ephemeris(
       /*append_state=*/std::bind(
           &Ephemeris::AppendMassiveBodiesState, this, _1),
       fixed_step_parameters_.step_);
+}
+
+template<typename Frame>
+Ephemeris<Frame>::Ephemeris() {
+
 }
 
 template<typename Frame>
@@ -784,6 +790,10 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   ephemeris->checkpointer_->ReadFromMessage(checkpoint_time, message);
   // The ephemeris will need to be prolonged as needed when deserializing the
   // plugin.
+  //TODO(phl):Comments
+
+  ephemeris->reanimator_ =
+      MakeStoppableThread(std::bind(&Ephemeris::Reanimate, ephemeris.get()));
 
   return ephemeris;
 }
@@ -856,6 +866,9 @@ Ephemeris<Frame>::MakeCheckpointerReader(Ephemeris* const ephemeris) {
     return nullptr;
   }
 }
+
+template<typename Frame>
+void Ephemeris<Frame>::Reanimate() {}
 
 template<typename Frame>
 template<typename, typename>

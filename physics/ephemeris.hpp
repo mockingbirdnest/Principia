@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "absl/synchronization/mutex.h"
+#include "base/jthread.hpp"
 #include "base/not_null.hpp"
 #include "base/status.hpp"
 #include "geometry/grassmann.hpp"
@@ -32,6 +33,7 @@ namespace physics {
 namespace internal_ephemeris {
 
 using base::Error;
+using base::jthread;
 using base::not_null;
 using base::Status;
 using geometry::Instant;
@@ -162,7 +164,7 @@ class Ephemeris {
             AccuracyParameters const& accuracy_parameters,
             FixedStepParameters fixed_step_parameters);
 
-  virtual ~Ephemeris() = default;
+  virtual ~Ephemeris();
 
   // Returns the bodies in the order in which they were given at construction.
   virtual std::vector<not_null<MassiveBody const*>> const& bodies() const;
@@ -310,6 +312,8 @@ class Ephemeris {
   Checkpointer<serialization::Ephemeris>::Reader
   static MakeCheckpointerReader(Ephemeris* ephemeris);
 
+  void Reanimate();
+
   // Callbacks for the integrators.
   void AppendMassiveBodiesState(
       typename NewtonianMotionEquation::SystemState const& state)
@@ -420,6 +424,9 @@ class Ephemeris {
   not_null<
       std::unique_ptr<Checkpointer<serialization::Ephemeris>>> checkpointer_;
   not_null<std::unique_ptr<Protector>> protector_;
+
+  //TODO(phl): Bibliography?
+  jthread reanimator_;
 
   // The fields above this line are fixed at construction and therefore not
   // protected.  Note that |ContinuousTrajectory| is thread-safe.  |lock_| is
