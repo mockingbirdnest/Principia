@@ -228,7 +228,7 @@ Ephemeris<Frame>::FixedStepParameters::ReadFromMessage(
 
 template<typename Frame>
 Ephemeris<Frame>::Ephemeris(
-    std::vector<not_null<std::unique_ptr<MassiveBody const>>>&& bodies,
+    std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies,
     std::vector<DegreesOfFreedom<Frame>> const& initial_state,
     Instant const& initial_time,
     AccuracyParameters const& accuracy_parameters,

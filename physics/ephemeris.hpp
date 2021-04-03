@@ -158,7 +158,7 @@ class Ephemeris {
 
   // Constructs an Ephemeris that owns the |bodies|.  The elements of vectors
   // |bodies| and |initial_state| correspond to one another.
-  Ephemeris(std::vector<not_null<std::unique_ptr<MassiveBody const>>>&& bodies,
+  Ephemeris(std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies,
             std::vector<DegreesOfFreedom<Frame>> const& initial_state,
             Instant const& initial_time,
             AccuracyParameters const& accuracy_parameters,
