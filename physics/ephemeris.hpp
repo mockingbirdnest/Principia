@@ -431,7 +431,7 @@ class Ephemeris {
       std::unique_ptr<Checkpointer<serialization::Ephemeris>>> checkpointer_;
   not_null<std::unique_ptr<Protector>> protector_;
 
-  //TODO(phl): Bibliography?
+  // The techniques and terminology follow [Lov22].
   jthread reanimator_;
 
   // The fields above this line are fixed at construction and therefore not
