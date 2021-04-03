@@ -409,7 +409,7 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
             continuous_trajectory->MakeCheckpointerReader(),
             message.checkpoint());
   }
-  continuous_trajectory->checkpointer_->ReadFromOldestCheckpointOrDie();
+  continuous_trajectory->checkpointer_->ReadFromOldestCheckpoint();
 
   return continuous_trajectory;
 }
