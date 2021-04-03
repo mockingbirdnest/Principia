@@ -303,14 +303,10 @@ class Ephemeris {
 
  private:
   // Checkpointing support.
-  void WriteToCheckpoint(not_null<serialization::Ephemeris*> message);
-  template<typename F = Frame,
-           typename = std::enable_if_t<base::is_serializable_v<F>>>
-  bool ReadFromCheckpoint(serialization::Ephemeris const& message);
-  void CreateCheckpointIfNeeded(Instant const& time) const
+  void WriteToCheckpointIfNeeded(Instant const& time) const
       SHARED_LOCKS_REQUIRED(lock_);
-  Checkpointer<serialization::Ephemeris>::Reader
-  static MakeCheckpointerReader(Ephemeris* ephemeris);
+  Checkpointer<serialization::Ephemeris>::Writer MakeCheckpointerWriter();
+  Checkpointer<serialization::Ephemeris>::Reader MakeCheckpointerReader();
 
   Status Reanimate();
 
