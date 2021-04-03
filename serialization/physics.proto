@@ -51,22 +51,31 @@ message ContinuousTrajectory {
     required Point instant = 1;
     required Pair degrees_of_freedom = 2;
   }
-  required Quantity step = 1;
-  required Quantity tolerance = 2;
-  required Quantity adjusted_tolerance = 3;
-  required bool is_unstable = 4;
-  required int32 degree = 5;
-  required int32 degree_age = 6;
-  repeated ChebyshevSeries series = 7;  // Pre-Cohen.
-  optional Point first_time = 8;
-  repeated InstantaneousDegreesOfFreedom last_point = 9;
-  optional Point checkpoint_time = 11;  // Added in Fatou.
-  // Added in Cohen.
   message InstantPolynomialPair {
     required Point t_max = 1;
     required Polynomial polynomial = 2;
   }
-  repeated InstantPolynomialPair instant_polynomial_pair = 10;
+  message Checkpoint {
+    required Point time = 1;
+    required Quantity adjusted_tolerance = 2;
+    required bool is_unstable = 3;
+    required int32 degree = 4;
+    required int32 degree_age = 5;
+    repeated InstantaneousDegreesOfFreedom last_point = 6;
+  }
+  required Quantity step = 1;
+  required Quantity tolerance = 2;
+  optional Quantity adjusted_tolerance = 3;  // Pre-Grassmann.
+  optional bool is_unstable = 4;  // Pre-Grassmann.
+  optional int32 degree = 5;  // Pre-Grassmann.
+  optional int32 degree_age = 6;  // Pre-Grassmann.
+  repeated InstantaneousDegreesOfFreedom last_point = 9;  // Pre-Grassmann.
+  optional Point checkpoint_time = 11;  // Added in Fatou, removed in Grassmann.
+  repeated ChebyshevSeries series = 7;  // Pre-Cohen.
+  optional Point first_time = 8;
+  repeated InstantPolynomialPair
+      instant_polynomial_pair = 10;  // Added in Cohen.
+  repeated Checkpoint checkpoint = 12;  // Added in Grassmann.
 }
 
 message DiscreteTrajectory {
@@ -105,7 +114,6 @@ message DynamicFrame {
 }
 
 message Ephemeris {
-  // Added in Ἐρατοσθένης.
   message AccuracyParameters {
     required Quantity fitting_tolerance = 1;
     required double geopotential_tolerance = 2;
@@ -120,12 +128,17 @@ message Ephemeris {
     required FixedStepSizeIntegrator integrator = 1;
     required Quantity step = 2;
   }
+  message Checkpoint {
+    required Point time = 1;
+    required IntegratorInstance instance = 2;
+  }
   repeated MassiveBody body = 1;
   repeated ContinuousTrajectory trajectory = 2;
   optional AccuracyParameters accuracy_parameters = 10; // Added in Ἐρατοσθένης.
   required FixedStepParameters fixed_step_parameters = 7;
-  required IntegratorInstance instance = 9;
-  optional Point checkpoint_time = 12;  // Added in Fatou.
+  optional IntegratorInstance instance = 9;  // Pre-Grassmann.
+  optional Point checkpoint_time = 12;  // Added in Fatou, removed in Grassmann.
+  repeated Checkpoint checkpoint = 13;  // Added in Grassmann.
 
   // Pre-Fatou.
   reserved 11;
