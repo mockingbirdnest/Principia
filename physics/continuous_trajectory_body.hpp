@@ -22,6 +22,7 @@ namespace principia {
 namespace physics {
 namespace internal_continuous_trajectory {
 
+using astronomy::InfiniteFuture;
 using base::dynamic_cast_not_null;
 using base::Error;
 using base::make_not_null_unique;
@@ -308,6 +309,7 @@ template<typename Frame>
 void ContinuousTrajectory<Frame>::WriteToMessage(
       not_null<serialization::ContinuousTrajectory*> const message) const {
   absl::ReaderMutexLock l(&lock_);
+  CHECK_LT(checkpointer_->oldest_checkpoint(), InfiniteFuture);
   checkpointer_->WriteToMessage(message->mutable_checkpoint());
   step_.WriteToMessage(message->mutable_step());
   tolerance_.WriteToMessage(message->mutable_tolerance());

@@ -791,7 +791,10 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
             ephemeris->MakeCheckpointerReader(),
             message.checkpoint());
   }
-  CHECK(ephemeris->checkpointer_->ReadFromOldestCheckpoint());
+
+  // WriteToMessage always creates a checkpoint, and so does the compatibility
+  // code.
+  ephemeris->checkpointer_->ReadFromOldestCheckpoint();
 
   // The ephemeris will need to be prolonged as needed when deserializing the
   // plugin.

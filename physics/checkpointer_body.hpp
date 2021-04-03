@@ -45,13 +45,10 @@ bool Checkpointer<Message>::WriteToCheckpointIfNeeded(
 }
 
 template<typename Message>
-bool Checkpointer<Message>::ReadFromOldestCheckpoint() const {
+void Checkpointer<Message>::ReadFromOldestCheckpoint() const {
   absl::ReaderMutexLock l(&lock_);
-  if (!checkpoints_.empty()) {
-    reader_(checkpoints_.cbegin()->second);
-    return true;
-  }
-  return false;
+  CHECK(!checkpoints_.empty());
+  reader_(checkpoints_.cbegin()->second);
 }
 
 template<typename Message>
