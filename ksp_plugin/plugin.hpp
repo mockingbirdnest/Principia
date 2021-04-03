@@ -490,6 +490,7 @@ class Plugin {
   serialization::InitialState initial_state_;
   std::map<std::string, Index> name_to_index_;
   std::map<Index, std::string> index_to_name_;
+  std::uint64_t system_fingerprint_ = 0;
   std::map<Index, std::optional<Index>> parents_;
   // The ephemeris is only constructed once, so this is an initialization
   // object.  The other parameters must be persisted to create new vessels.

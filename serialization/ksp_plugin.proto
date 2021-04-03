@@ -105,12 +105,12 @@ message PileUp {
 }
 
 message Plugin {
-	message CelestialParenthood {
-		required int32 index = 1;
-		optional int32 parent_index = 2;
-		// Added in Catalan.
-		optional int32 ephemeris_index = 3;
-	}
+  message CelestialParenthood {
+    required int32 index = 1;
+    optional int32 parent_index = 2;
+    // Added in Catalan.
+    optional int32 ephemeris_index = 3;
+  }
   message VesselAndProperties {
     required string guid = 1;
     required Vessel vessel = 2;
@@ -125,6 +125,7 @@ message Plugin {
     required string guid = 1;
     required Ephemeris.AdaptiveStepParameters prediction_parameters = 2;
   }
+  optional fixed64 system_fingerprint = 20;  // Added in Grassmann.
   repeated VesselAndProperties vessel = 1;
   map<fixed32, string> part_id_to_vessel = 16;
   repeated CelestialParenthood celestial = 10;
