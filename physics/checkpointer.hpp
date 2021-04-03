@@ -27,9 +27,8 @@ using quantities::Time;
 // serializing a timeline, the pairs (time, data) are written up to the oldest
 // checkpoint, followed by the checkpoint itself.  When deserializing, the
 // timeline may be reconstructed as needed based on the checkpoint.
-// Checkpoints must be created at regular intervals because they are dropped by
-// ForgetBefore: this ensures that there is always a sufficient old checkpoint
-// available the next time serialization is performed.
+// Checkpoints must be created at regular intervals to ensure that the timeline
+// may be reconstructed fast enough.
 // Logically checkpoints would serialize to/deserialize from a specific message,
 // but for historical reasons they just fill some fields of a message that may
 // contain other information.
@@ -60,10 +59,7 @@ class Checkpointer {
   bool CreateIfNeeded(Instant const& t,
                       Time const& max_time_between_checkpoints) EXCLUDES(lock_);
 
-  // Removes all checkpoints for times strictly less than |t|.
-  void ForgetBefore(Instant const& t) EXCLUDES(lock_);
-
-  // If there exist a checkpoint, writes the oldest checkpoint to the |message|
+  // If there exists a checkpoint, writes the oldest checkpoint to the |message|
   // using protocol buffer merging and returns its time.  Otherwise returns +∞.
   // The time returned by this function should be serialized and passed to
   // |ReadFromMessage| when deserializing to ensure that checkpoints are

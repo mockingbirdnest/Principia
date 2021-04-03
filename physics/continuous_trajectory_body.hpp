@@ -144,30 +144,6 @@ Status ContinuousTrajectory<Frame>::Append(
 }
 
 template<typename Frame>
-void ContinuousTrajectory<Frame>::ForgetBefore(Instant const& time) {
-  absl::MutexLock l(&lock_);
-  if (time < t_min_locked()) {
-    // TODO(phl): test for this case, it yielded a check failure in
-    // |FindPolynomialForInstant|.
-    return;
-  }
-
-  polynomials_.erase(polynomials_.begin(), FindPolynomialForInstant(time));
-
-  // If there are no |polynomials_| left, clear everything.  Otherwise, update
-  // the first time.
-  if (polynomials_.empty()) {
-    first_time_ = std::nullopt;
-    last_points_.clear();
-    last_accessed_polynomial_ = 0;
-  } else {
-    first_time_ = time;
-    last_accessed_polynomial_ = polynomials_.size() - 1;
-  }
-  checkpointer_.ForgetBefore(time);
-}
-
-template<typename Frame>
 Instant ContinuousTrajectory<Frame>::t_min() const {
   absl::ReaderMutexLock l(&lock_);
   return t_min_locked();

@@ -122,47 +122,6 @@ Status FlightPlan::Insert(NavigationManœuvre::Burn const& burn,
   return ComputeSegments(manœuvres_.begin() + index, manœuvres_.end());
 }
 
-void FlightPlan::ForgetBefore(Instant const& time,
-                              std::function<void()> const& on_empty) {
-  // Find the first segment to keep.  Note that incrementing by 2 ensures that
-  // we only look at coasts.
-  std::optional<int> first_to_keep;
-  for (int i = 0; i < segments_.size(); i += 2) {
-    if (time <= segments_[i]->back().time) {
-      first_to_keep = i;
-      break;
-    }
-  }
-  if (!first_to_keep) {
-    // The entire flight plan needs to go away.
-    on_empty();
-    return;
-  }
-
-  // Detach the first coast to keep, truncate its beginning, and reattach it
-  // to a new root.
-  std::unique_ptr<DiscreteTrajectory<Barycentric>> new_first_coast =
-      segments_[*first_to_keep]->DetachFork();
-  new_first_coast->ForgetBefore(time);
-  root_ = make_not_null_unique<DiscreteTrajectory<Barycentric>>();
-  root_->Append(new_first_coast->front().time,
-                new_first_coast->front().degrees_of_freedom);
-  root_->AttachFork(std::move(new_first_coast));
-
-  // Remove from the vectors the trajectories and manœuvres that we don't want
-  // to keep.
-  segments_.erase(segments_.cbegin(),
-                  segments_.cbegin() + *first_to_keep);
-  manœuvres_.erase(manœuvres_.cbegin(),
-                   manœuvres_.cbegin() + *first_to_keep / 2);
-  coast_analysers_.erase(coast_analysers_.cbegin(),
-                         coast_analysers_.cbegin() + *first_to_keep / 2);
-
-  auto const root_begin = root_->begin();
-  initial_time_ = root_begin->time;
-  initial_degrees_of_freedom_ = root_begin->degrees_of_freedom;
-}
-
 Status FlightPlan::Remove(int index) {
   CHECK_GE(index, 0);
   CHECK_LT(index, number_of_manœuvres());

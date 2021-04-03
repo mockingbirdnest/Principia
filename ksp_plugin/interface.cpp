@@ -586,14 +586,6 @@ void __cdecl principia__EndInitialization(Plugin* const plugin) {
   return m.Return();
 }
 
-void __cdecl principia__ForgetAllHistoriesBefore(Plugin* const plugin,
-                                                 double const t) {
-  journal::Method<journal::ForgetAllHistoriesBefore> m({plugin, t});
-  CHECK_NOTNULL(plugin);
-  plugin->ForgetAllHistoriesBefore(FromGameTime(*plugin, t));
-  return m.Return();
-}
-
 void __cdecl principia__FreeVesselsAndPartsAndCollectPileUps(
     Plugin* const plugin,
     double const delta_t) {

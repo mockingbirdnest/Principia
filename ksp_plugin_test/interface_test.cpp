@@ -499,12 +499,6 @@ TEST_F(InterfaceTest, AdvanceTime) {
   principia__AdvanceTime(plugin_.get(), time, planetarium_rotation);
 }
 
-TEST_F(InterfaceTest, ForgetAllHistoriesBefore) {
-  EXPECT_CALL(*plugin_,
-              ForgetAllHistoriesBefore(t0_ + time * si::Unit<Time>));
-  principia__ForgetAllHistoriesBefore(plugin_.get(), time);
-}
-
 TEST_F(InterfaceTest, VesselFromParent) {
   EXPECT_CALL(*plugin_,
               VesselFromParent(celestial_index, vessel_guid))

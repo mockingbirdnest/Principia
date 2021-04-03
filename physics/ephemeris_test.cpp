@@ -308,55 +308,6 @@ TEST_P(EphemerisTest, EarthMoon) {
   EXPECT_THAT(Abs(moon_positions[100].coordinates().x), Lt(2 * Metre));
 }
 
-// Test the behavior of EventuallyForgetBefore on the Earth-Moon system.
-TEST_P(EphemerisTest, EventuallyForgetBefore) {
-  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
-  std::vector<DegreesOfFreedom<ICRS>> initial_state;
-  Position<ICRS> centre_of_mass;
-  Time period;
-  SetUpEarthMoonSystem(bodies, initial_state, centre_of_mass, period);
-
-  MassiveBody const* const earth = bodies[0].get();
-  MassiveBody const* const moon = bodies[1].get();
-
-  Ephemeris<ICRS> ephemeris(
-      std::move(bodies),
-      initial_state,
-      t0_,
-      /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
-                               /*geopotential_tolerance=*/0x1p-24},
-      Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 10));
-
-  ephemeris.Prolong(t0_ + 16 * period);
-
-  ContinuousTrajectory<ICRS> const& earth_trajectory =
-      *ephemeris.trajectory(earth);
-  ContinuousTrajectory<ICRS> const& moon_trajectory =
-      *ephemeris.trajectory(moon);
-
-  Instant t_max = ephemeris.t_max();
-  EXPECT_EQ(t0_ + 16 * period, t_max);
-  EXPECT_EQ(t_max, earth_trajectory.t_max());
-  EXPECT_EQ(t_max, moon_trajectory.t_max());
-
-  CHECK(ephemeris.EventuallyForgetBefore(t0_ + 3 * period));
-  EXPECT_EQ(t0_ + 3 * period, ephemeris.t_min());
-  EXPECT_EQ(t0_ + 3 * period, earth_trajectory.t_min());
-  EXPECT_EQ(t0_ + 3 * period, moon_trajectory.t_min());
-
-  // Check that a Guard delays the effect of EventuallyForgetBefore.
-  {
-    Ephemeris<ICRS>::Guard g(&ephemeris);
-    CHECK(!ephemeris.EventuallyForgetBefore(t0_ + 5 * period));
-    EXPECT_EQ(t0_ + 3 * period, ephemeris.t_min());
-    EXPECT_EQ(t0_ + 3 * period, earth_trajectory.t_min());
-    EXPECT_EQ(t0_ + 3 * period, moon_trajectory.t_min());
-  }
-  EXPECT_EQ(t0_ + 5 * period, ephemeris.t_min());
-  EXPECT_EQ(t0_ + 5 * period, earth_trajectory.t_min());
-  EXPECT_EQ(t0_ + 5 * period, moon_trajectory.t_min());
-}
-
 // The Moon alone.  It moves in straight line.
 TEST_P(EphemerisTest, Moon) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;

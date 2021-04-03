@@ -189,51 +189,41 @@ void Plugin::EndInitialization() {
   CHECK(initializing_);
   SolarSystem<Barycentric> solar_system(gravity_model_, initial_state_);
 
-  // If the system was constructed using keplerian elements, it may be the
-  // stock KSP system in which case it needs to be stabilized.
-  if (initial_state_.has_keplerian()) {
-    auto const hierarchical_system = solar_system.MakeHierarchicalSystem();
-    serialization::HierarchicalSystem message;
-    hierarchical_system->WriteToMessage(&message);
-    uint64_t const system_fingerprint =
-        Fingerprint2011(SerializeAsBytes(message).get());
-    LOG(INFO) << "System fingerprint is " << std::hex << std::uppercase
-              << system_fingerprint;
+  // Check if this is the stock KSP system in which case it needs to be
+  // stabilized.
+  system_fingerprint_ = solar_system.Fingerprint();
+  LOG(INFO) << "System fingerprint is 0x" << std::hex << std::uppercase
+            << system_fingerprint_;
 
-    bool is_well_known = false;
-    for (auto const ksp_version : {KSP122, KSP191}) {
-      if (system_fingerprint == KSPStockSystemFingerprints[ksp_version]) {
-        LOG(WARNING) << "This appears to be the dreaded KSP stock system!";
-        StabilizeKSP(solar_system);
-        auto const hierarchical_system = solar_system.MakeHierarchicalSystem();
-        serialization::HierarchicalSystem message;
-        hierarchical_system->WriteToMessage(&message);
-        uint64_t const system_fingerprint =
-            Fingerprint2011(SerializeAsBytes(message).get());
-        LOG(INFO) << "System fingerprint after stabilization is " << std::hex
-                  << std::uppercase << system_fingerprint;
-        CHECK_EQ(KSPStabilizedSystemFingerprints[ksp_version],
-                 system_fingerprint)
-            << "Attempt at stabilizing the KSP system failed!\n"
-            << gravity_model_.DebugString() << "\n"
-            << initial_state_.DebugString();
-        LOG(INFO) << "This is the stabilized KSP system, all hail retrobop!";
-        is_well_known = true;
-        break;
-      } else if (system_fingerprint ==
-                 KSPStabilizedSystemFingerprints[ksp_version]) {
-        LOG(INFO) << "This is the stabilized KSP system, and we didn't have to "
-                  << "stabilize it ourselves.  All hail retrobop anyway!";
-        is_well_known = true;
-        break;
-      }
+  bool is_well_known = false;
+  for (auto const ksp_version : {KSP122, KSP191}) {
+    if (system_fingerprint_ == KSPStockSystemFingerprints[ksp_version]) {
+      LOG(WARNING) << "This appears to be the dreaded KSP stock system!";
+      StabilizeKSP(solar_system);
+      system_fingerprint_ = solar_system.Fingerprint();
+      LOG(INFO) << "System fingerprint after stabilization is 0x" << std::hex
+                << std::uppercase << system_fingerprint_;
+      CHECK_EQ(KSPStabilizedSystemFingerprints[ksp_version],
+               system_fingerprint_)
+          << "Attempt at stabilizing the KSP system failed!\n"
+          << gravity_model_.DebugString() << "\n"
+          << initial_state_.DebugString();
+      LOG(INFO) << "This is the stabilized KSP system, all hail retrobop!";
+      is_well_known = true;
+      break;
+    } else if (system_fingerprint_ ==
+                KSPStabilizedSystemFingerprints[ksp_version]) {
+      LOG(INFO) << "This is the stabilized KSP system, and we didn't have to "
+                << "stabilize it ourselves.  All hail retrobop anyway!";
+      is_well_known = true;
+      break;
     }
-    if (!is_well_known) {
-      LOG(WARNING) << "This is an unknown system, we don't know anything about "
-                   << "its stability:\n"
-                   << gravity_model_.DebugString() << "\n"
-                   << initial_state_.DebugString();
-    }
+  }
+  if (!is_well_known) {
+    LOG(WARNING) << "This is an unknown system, we don't know anything about "
+                 << "its stability:\n"
+                 << gravity_model_.DebugString() << "\n"
+                 << initial_state_.DebugString();
   }
 
   // Construct the ephemeris.
@@ -848,15 +838,6 @@ void Plugin::WaitForVesselToCatchUp(PileUpFuture& pile_up_future,
   }
 }
 
-void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {
-  CHECK(!initializing_);
-  CHECK_LT(t, current_time_);
-  ephemeris_->EventuallyForgetBefore(t);
-  for (auto const& [_, vessel] : vessels_) {
-    vessel->ForgetBefore(t);
-  }
-}
-
 RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
     Index const parent_index,
     GUID const& vessel_guid) const {
@@ -1310,6 +1291,8 @@ void Plugin::WriteToMessage(
     not_null<serialization::Plugin*> const message) const {
   LOG(INFO) << __FUNCTION__;
   CHECK(!initializing_);
+  CHECK_NE(0, system_fingerprint_);
+  message->set_system_fingerprint(system_fingerprint_);
   ephemeris_->Prolong(current_time_);
   std::map<not_null<Celestial const*>, Index const> celestial_to_index;
   for (auto const& [index, owned_celestial] : celestials_) {
@@ -1391,6 +1374,24 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   not_null<std::unique_ptr<Plugin>> plugin =
       std::unique_ptr<Plugin>(new Plugin(history_parameters,
                                          psychohistory_parameters));
+
+  if (message.has_system_fingerprint()) {
+    plugin->system_fingerprint_ = message.system_fingerprint();
+    std::string details = "this is an unknown system";
+    for (auto const ksp_version : {KSP122, KSP191}) {
+      if (plugin->system_fingerprint_ ==
+          KSPStockSystemFingerprints[ksp_version]) {
+        details = "this is the dreaded KSP stock system!";
+        break;
+      } else if (plugin->system_fingerprint_ ==
+                 KSPStabilizedSystemFingerprints[ksp_version]) {
+        details = "this is the stabilized KSP system, all hail retrobop!";
+        break;
+      }
+    }
+    LOG(INFO) << "System has fingerprint 0x" << std::hex << std::uppercase
+              << plugin->system_fingerprint_ << "; " << details;
+  }
 
   plugin->game_epoch_ = Instant::ReadFromMessage(message.game_epoch());
   plugin->current_time_ = Instant::ReadFromMessage(message.current_time());

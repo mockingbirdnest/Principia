@@ -332,6 +332,10 @@ std::uint64_t SolarSystem<Frame>::Fingerprint() const {
           fingerprint, Fingerprint2011(SerializeAsBytes(message).get()));
       break;
     }
+    case serialization::InitialState::CoordinatesCase::COORDINATES_NOT_SET: {
+      LOG(FATAL) << "Unable to fingerprint initial state: "
+                 << initial_state_.DebugString();
+    }
   }
   return fingerprint;
 }
@@ -550,7 +554,7 @@ void SolarSystem<Frame>::RemoveMassiveBody(std::string const& name) {
   LOG(FATAL) << name << " does not exist";
 }
 
-#define PRINCIPIA_SET_FIELD_FROM_OPTIONAL(field)                \
+#define PRINCIPIA_SET_FIELD_FROM_OPTIONAL(field)              \
   if (elements.field) {                                       \
     body_elements->set_##field(DebugString(*elements.field)); \
   }

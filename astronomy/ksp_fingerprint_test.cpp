@@ -1,9 +1,9 @@
 
+#include <cstdint>
 #include <string>
 
 #include "astronomy/solar_system_fingerprints.hpp"
 #include "astronomy/stabilize_ksp.hpp"
-#include "base/fingerprint2011.hpp"
 #include "base/serialization.hpp"
 #include "geometry/frame.hpp"
 #include "glog/logging.h"
@@ -16,8 +16,6 @@
 namespace principia {
 namespace astronomy {
 
-using base::Fingerprint2011;
-using base::SerializeAsBytes;
 using geometry::Frame;
 using geometry::Handedness;
 using geometry::Inertial;
@@ -42,10 +40,7 @@ class KSPFingerprintTest : public ::testing::Test {
 };
 
 TEST_F(KSPFingerprintTest, Stock) {
-  auto const hierarchical_system = solar_system_.MakeHierarchicalSystem();
-  serialization::HierarchicalSystem message;
-  hierarchical_system->WriteToMessage(&message);
-  uint64_t const fingerprint = Fingerprint2011(SerializeAsBytes(message).get());
+  std::uint64_t const fingerprint = solar_system_.Fingerprint();
   LOG(INFO) << "Stock KSP fingerprint is 0x" << std::hex << std::uppercase
             << fingerprint;
   EXPECT_THAT(fingerprint, Eq(KSPStockSystemFingerprints[KSP191]));
@@ -53,10 +48,7 @@ TEST_F(KSPFingerprintTest, Stock) {
 
 TEST_F(KSPFingerprintTest, Corrected) {
   StabilizeKSP(solar_system_);
-  auto const hierarchical_system = solar_system_.MakeHierarchicalSystem();
-  serialization::HierarchicalSystem message;
-  hierarchical_system->WriteToMessage(&message);
-  uint64_t const fingerprint = Fingerprint2011(SerializeAsBytes(message).get());
+  std::uint64_t const fingerprint = solar_system_.Fingerprint();
   LOG(INFO) << "Corrected KSP fingerprint is 0x" << std::hex << std::uppercase
             << fingerprint;
   EXPECT_THAT(fingerprint, Eq(KSPStabilizedSystemFingerprints[KSP191]));

@@ -38,7 +38,6 @@ class MockEphemeris : public Ephemeris<Frame> {
       planetary_integrator,
       FixedStepSizeIntegrator<NewtonianMotionEquation> const&());
 
-  MOCK_METHOD1_T(EventuallyForgetBefore, bool(Instant const& t));
   MOCK_METHOD1_T(Prolong, void(Instant const& t));
   MOCK_METHOD3_T(
       NewInstance,

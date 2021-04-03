@@ -60,22 +60,6 @@ TEST_F(CheckpointerTest, CreateIfNeeded) {
   EXPECT_EQ(t1, checkpointer_.WriteToMessage(&m));
 }
 
-TEST_F(CheckpointerTest, ForgetBefore) {
-  Instant const t1 = Instant() + 10 * Second;
-  EXPECT_CALL(writer_, Call(_));
-  checkpointer_.CreateUnconditionally(t1);
-
-  Instant const t2 = t1 + 8 * Second;
-  EXPECT_CALL(writer_, Call(_));
-  checkpointer_.CreateUnconditionally(t2);
-
-  checkpointer_.ForgetBefore(t1 + 4 * Second);
-
-  Message m;
-  EXPECT_CALL(m, MergeFrom(_));
-  EXPECT_EQ(t2, checkpointer_.WriteToMessage(&m));
-}
-
 TEST_F(CheckpointerTest, ReadFromMessage) {
   Instant const t = Instant() + 10 * Second;
   Message m;

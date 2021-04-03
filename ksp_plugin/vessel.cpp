@@ -22,6 +22,7 @@ using astronomy::InfiniteFuture;
 using base::Contains;
 using base::Error;
 using base::FindOrDie;
+using base::jthread;
 using base::make_not_null_unique;
 using base::MakeStoppableThread;
 using geometry::BarycentreCalculator;
@@ -45,8 +46,7 @@ bool operator!=(Vessel::PrognosticatorParameters const& left,
          left.adaptive_step_parameters.length_integration_tolerance() !=
              right.adaptive_step_parameters.length_integration_tolerance() ||
          left.adaptive_step_parameters.speed_integration_tolerance() !=
-             right.adaptive_step_parameters.speed_integration_tolerance() ||
-         left.shutdown != right.shutdown;
+             right.adaptive_step_parameters.speed_integration_tolerance();
 }
 
 Vessel::Vessel(GUID guid,
@@ -69,20 +69,8 @@ Vessel::Vessel(GUID guid,
 
 Vessel::~Vessel() {
   LOG(INFO) << "Destroying vessel " << ShortDebugString();
-  // Ask the prognosticator to shut down.  This may take a while.  Make sure
-  // that we handle the case where |PrepareHistory| was not called.
-  if (prognosticator_.joinable()) {
-    {
-      absl::MutexLock l(&prognosticator_lock_);
-      prognosticator_parameters_ =
-          PrognosticatorParameters{Ephemeris<Barycentric>::Guard(ephemeris_),
-                                   psychohistory_->back().time,
-                                   psychohistory_->back().degrees_of_freedom,
-                                   prediction_adaptive_step_parameters_,
-                                   /*shutdown=*/true};
-    }
-    prognosticator_.join();
-  }
+  // Ask the prognosticator to shut down.  This may take a while.
+  StopPrognosticator();
 }
 
 GUID const& Vessel::guid() const {
@@ -275,16 +263,6 @@ void Vessel::AdvanceTime() {
   }
 }
 
-void Vessel::ForgetBefore(Instant const& time) {
-  // Make sure that the history keeps at least one point and don't change the
-  // psychohistory or prediction.  We cannot use the parts because they may have
-  // been moved to the future already.
-  history_->ForgetBefore(std::min(time, history_->back().time));
-  if (flight_plan_ != nullptr) {
-    flight_plan_->ForgetBefore(time, [this]() { flight_plan_.reset(); });
-  }
-}
-
 void Vessel::CreateFlightPlan(
     Instant const& final_time,
     Mass const& initial_mass,
@@ -351,16 +329,14 @@ void Vessel::RefreshPrediction() {
   // integrate.
   // The guard will be destroyed either when the next set of parameters is
   // created or when the prognostication has been computed.
-  // Note that we know that both |EventuallyForgetBefore| and
-  // |RefreshPrediction| are called on the main thread, therefore the ephemeris
-  // currently covers the last time of the psychohistory.  Were this to change,
-  // this code might have to change.
+  // Note that we know that |RefreshPrediction| is called on the main thread,
+  // therefore the ephemeris currently covers the last time of the
+  // psychohistory.  Were this to change, this code might have to change.
   prognosticator_parameters_ =
       PrognosticatorParameters{Ephemeris<Barycentric>::Guard(ephemeris_),
                                psychohistory_->back().time,
                                psychohistory_->back().degrees_of_freedom,
-                               prediction_adaptive_step_parameters_,
-                               /*shutdown=*/false};
+                               prediction_adaptive_step_parameters_};
   if (synchronous_) {
     std::unique_ptr<DiscreteTrajectory<Barycentric>> prognostication;
     std::optional<PrognosticatorParameters> prognosticator_parameters;
@@ -383,10 +359,7 @@ void Vessel::RefreshPrediction(Instant const& time) {
 }
 
 void Vessel::StopPrognosticator() {
-  if (prognosticator_.joinable()) {
-    prognosticator_.request_stop();
-    prognosticator_.join();
-  }
+  prognosticator_ = jthread();
 }
 
 std::string Vessel::ShortDebugString() const {
@@ -593,10 +566,7 @@ Status Vessel::RepeatedlyFlowPrognostication() {
       }
       std::swap(prognosticator_parameters, prognosticator_parameters_);
     }
-
-    if (prognosticator_parameters->shutdown) {
-      break;
-    }
+    RETURN_IF_STOPPED;
 
     std::unique_ptr<DiscreteTrajectory<Barycentric>> prognostication;
     Status const status =

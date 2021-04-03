@@ -357,19 +357,6 @@ Status Ephemeris<Frame>::last_severe_integration_status() const {
 }
 
 template<typename Frame>
-bool Ephemeris<Frame>::EventuallyForgetBefore(Instant const& t) {
-  auto forget_before_t = [this, t]() {
-    absl::MutexLock l(&lock_);
-    for (auto& [_, trajectory] : bodies_to_trajectories_) {
-      trajectory->ForgetBefore(t);
-    }
-    checkpointer_->ForgetBefore(t);
-  };
-
-  return protector_->RunWhenUnprotected(t, std::move(forget_before_t));
-}
-
-template<typename Frame>
 void Ephemeris<Frame>::Prolong(Instant const& t) {
   // Short-circuit without locking.
   if (t <= t_max()) {
