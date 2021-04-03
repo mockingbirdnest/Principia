@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 
+#include "ksp_plugin/integrators.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/kepler_orbit.hpp"
@@ -88,6 +89,7 @@ Status OrbitAnalyser::AnalyseOrbit(GuardedParameters const guarded_parameters) {
 
   Analysis analysis{parameters.first_time};
   DiscreteTrajectory<Barycentric> trajectory;
+  trajectory.SetDownsampling(MaxDenseIntervals, DownsamplingTolerance);
   trajectory.Append(parameters.first_time, parameters.first_degrees_of_freedom);
 
   RotatingBody<Barycentric> const* primary = nullptr;
