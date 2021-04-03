@@ -22,6 +22,7 @@ using astronomy::InfiniteFuture;
 using base::Contains;
 using base::Error;
 using base::FindOrDie;
+using base::jthread;
 using base::make_not_null_unique;
 using base::MakeStoppableThread;
 using geometry::BarycentreCalculator;
@@ -358,10 +359,7 @@ void Vessel::RefreshPrediction(Instant const& time) {
 }
 
 void Vessel::StopPrognosticator() {
-  if (prognosticator_.joinable()) {
-    prognosticator_.request_stop();
-    prognosticator_.join();
-  }
+  prognosticator_ = jthread();
 }
 
 std::string Vessel::ShortDebugString() const {
