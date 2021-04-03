@@ -32,9 +32,6 @@ using quantities::Length;
 using quantities::Time;
 using quantities::si::Metre;
 
-constexpr std::int64_t max_dense_intervals = 10'000;
-constexpr Length downsampling_tolerance = 10 * Metre;
-
 bool operator!=(Vessel::PrognosticatorParameters const& left,
                 Vessel::PrognosticatorParameters const& right) {
   return left.first_time != right.first_time ||
