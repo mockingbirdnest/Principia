@@ -68,6 +68,10 @@ class Checkpointer {
   // checkpoint.
   bool ReadFromOldestCheckpoint() const EXCLUDES(lock_);
 
+  //TODO(phl): Comment
+  void ReadFromAllCheckpointsBackwards(Reader const& reader) const
+      EXCLUDES(lock_);
+
   void WriteToMessage(not_null<google::protobuf::RepeatedPtrField<
                           typename Message::Checkpoint>*> message) const
       EXCLUDES(lock_);
