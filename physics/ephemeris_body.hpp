@@ -308,8 +308,8 @@ Ephemeris<Frame>::Ephemeris(
 }
 
 template<typename Frame>
-Ephemeris<Frame>::Ephemeris() {
-
+Ephemeris<Frame>::~Ephemeris() {
+  reanimator_ = jthread();
 }
 
 template<typename Frame>
@@ -868,7 +868,15 @@ Ephemeris<Frame>::MakeCheckpointerReader(Ephemeris* const ephemeris) {
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::Reanimate() {}
+Status Ephemeris<Frame>::Reanimate() {
+  //TODO(phl): Dummy.
+  for (std::chrono::steady_clock::time_point wakeup_time;;
+       std::this_thread::sleep_until(wakeup_time)) {
+    wakeup_time =
+        std::chrono::steady_clock::now() + std::chrono::milliseconds(500);
+    RETURN_IF_STOPPED;
+  }
+}
 
 template<typename Frame>
 template<typename, typename>

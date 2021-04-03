@@ -278,7 +278,7 @@ class Ephemeris {
       serialization::Ephemeris const& message) EXCLUDES(lock_);
 
   // A |Guard| is an RAII object that protects a critical section against
-  // changes to |t_min| due to calls to |EventuallyForgetBefore|.
+  // changes to |t_min|.
   class Guard final {
    public:
     explicit Guard(not_null<Ephemeris<Frame> const*> ephemeris);
@@ -312,7 +312,7 @@ class Ephemeris {
   Checkpointer<serialization::Ephemeris>::Reader
   static MakeCheckpointerReader(Ephemeris* ephemeris);
 
-  void Reanimate();
+  Status Reanimate();
 
   // Callbacks for the integrators.
   void AppendMassiveBodiesState(
