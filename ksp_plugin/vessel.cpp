@@ -566,6 +566,7 @@ Status Vessel::RepeatedlyFlowPrognostication() {
       }
       std::swap(prognosticator_parameters, prognosticator_parameters_);
     }
+    RETURN_IF_STOPPED;
 
     std::unique_ptr<DiscreteTrajectory<Barycentric>> prognostication;
     Status const status =
