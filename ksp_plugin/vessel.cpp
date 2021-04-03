@@ -45,8 +45,7 @@ bool operator!=(Vessel::PrognosticatorParameters const& left,
          left.adaptive_step_parameters.length_integration_tolerance() !=
              right.adaptive_step_parameters.length_integration_tolerance() ||
          left.adaptive_step_parameters.speed_integration_tolerance() !=
-             right.adaptive_step_parameters.speed_integration_tolerance() ||
-         left.shutdown != right.shutdown;
+             right.adaptive_step_parameters.speed_integration_tolerance();
 }
 
 Vessel::Vessel(GUID guid,
@@ -69,20 +68,8 @@ Vessel::Vessel(GUID guid,
 
 Vessel::~Vessel() {
   LOG(INFO) << "Destroying vessel " << ShortDebugString();
-  // Ask the prognosticator to shut down.  This may take a while.  Make sure
-  // that we handle the case where |PrepareHistory| was not called.
-  if (prognosticator_.joinable()) {
-    {
-      absl::MutexLock l(&prognosticator_lock_);
-      prognosticator_parameters_ =
-          PrognosticatorParameters{Ephemeris<Barycentric>::Guard(ephemeris_),
-                                   psychohistory_->back().time,
-                                   psychohistory_->back().degrees_of_freedom,
-                                   prediction_adaptive_step_parameters_,
-                                   /*shutdown=*/true};
-    }
-    prognosticator_.join();
-  }
+  // Ask the prognosticator to shut down.  This may take a while.
+  StopPrognosticator();
 }
 
 GUID const& Vessel::guid() const {
@@ -348,8 +335,7 @@ void Vessel::RefreshPrediction() {
       PrognosticatorParameters{Ephemeris<Barycentric>::Guard(ephemeris_),
                                psychohistory_->back().time,
                                psychohistory_->back().degrees_of_freedom,
-                               prediction_adaptive_step_parameters_,
-                               /*shutdown=*/false};
+                               prediction_adaptive_step_parameters_};
   if (synchronous_) {
     std::unique_ptr<DiscreteTrajectory<Barycentric>> prognostication;
     std::optional<PrognosticatorParameters> prognosticator_parameters;
@@ -581,10 +567,6 @@ Status Vessel::RepeatedlyFlowPrognostication() {
         continue;
       }
       std::swap(prognosticator_parameters, prognosticator_parameters_);
-    }
-
-    if (prognosticator_parameters->shutdown) {
-      break;
     }
 
     std::unique_ptr<DiscreteTrajectory<Barycentric>> prognostication;
