@@ -7,11 +7,15 @@
 \usepackage{chngcntr}
 \counterwithout{equation}{section}
 
+\setcounter{MaxMatrixCols}{20}
+
 %%%% Shorthands.
 \DeclareMathOperator{\bias}{\mathit{bias}}
 \newcommand{\round}[1]{\doubleSquareBrackets{#1}}
 \newcommand{\roundToZero}[1]{\doubleSquareBrackets{#1}_0}
 \newcommand{\hex}[1]{{_{16}}\mathrm{#1}}
+
+\newcommand{\bigradient}[4]{\det\begin{pmatrix}\pa{#1}_{#2}\\\pa{#3}_{#4}\end{pmatrix}}
 
 %%%% Title and authors.
 
@@ -42,7 +46,7 @@ finding roots of polynomials other than $z^p-r$.
 That general method is given in detail in \cite[19]{FantetdeLagny1692}.
 Modernizing the notation, the general rule is as follows for finding a root of the monic
 polynomial of degree $p\geq2$\[
-f\of{z}\DefineAs z^p - \sum{k=1}[p-1]c_{k} z^{p-k} \DefinitionOf z^p - R\of{z}
+f\of{z}\DefineAs z^p + c_1 z^{p-1} + \dotsb + c_{p-1} z + c_p \DefinitionOf z^p - R\of{z}
 \]
 with an initial approximation $a$.
 
@@ -57,18 +61,19 @@ E_{p-1}&\DefineAs S_2-\frac{1}{2}R\of{x+\frac{1}{2}a}\text.
 \end{align*}
 Let $E_{n-1}$ be the remainder of the polynomial
 division\footnote{While the rest of the method is a straightforward translation, this step bears some explanations; its description in \cite{FantetdeLagny1692} is
-% TODO(egg): Right single quotation mark leads to incorrect spacing in French, so we use Apostrophe here.  Figure out what is going on.
+% TODO(egg): Right Single Quotation Mark leads to incorrect spacing in French, so we use Apostrophe here (which
+% gets converted to Right Single Quotation Mark by the typesetting engine).  Figure out what is going on.
 \begin{quote}\textfrench{De ces deux égalitez, ou priſes ſéparément, ou comparées enſemble ſelon la methode des problêmes plus que déterminez tirez en une valeur d'$x$ rationelle, ou ſimplement d'un degré commode.}
 \end{quote}
 It is assumed that the reader is familiar with this ``comparison according to the method of
 more-than-determined problems''.
-While the derivation of the root-finding method is described in painstaking detail in \cite{FantetdeLagny1733},
+While the application of the root-finding method is described in painstaking detail in \cite{FantetdeLagny1733},
 which outlines the treatment of overdetermined problems, it is perhaps this remark from \cite[494]{FantetdeLagny1697} which lays it out most clearly:
 \begin{quote}\textfrench{Il n'y a rien de nouveau à remarquer ſur les Problemes plus que déterminez du quatriéme degré. La Regle générale eſt d'égaler tout à zero, \& de diviſer la plus haute équation par la moins élevée, ou l'également élevée l'une par l'autre, continuellement juſques à ce que l'on trouve le reſte ou le diviſeur le plus ſimple.}
 \end{quote}}
 of $E_{n+1}$ by $E_{n}$.
 
-The iterate is $x+\frac{1}{2}a$, where $x$ is a root of $E_{2}$ for the irrational method,
+The iterate is $\FunctionBody{a}{x+\frac{1}{2}a}$, where $x$ is a root of $E_{2}$ for the irrational method,
 and the root of $E_{1}$ for the rational method.
 
 \begin{theorem}
@@ -76,14 +81,80 @@ The iterate of Lagny’s rational method for a polynomial $f$ of degree $p$ is\b
 a\mapsto a + \pa{p-1}\frac{\pa{1/f}^{\pa{p-2}}\of{a}}{\pa{1/f}^{\pa{p-1}}\of{a}}\label{LagnyRationalIterate}
 \end{equation}
 \begin{proof}
-TODO(egg): Probably something using \cite[52--54]{Householder1970} to try to get to \cite[169]{Householder1970}, (12).
-See also \cite{Householder1968}.
+Let $E_p = d_0 x^p + \dotsb + d_p$, $E_p = e_0 x^{p-1} + \dotsb + e_{p-1}$.
+As shown in \cite[52--54]{Householder1970}, the polynomial remainders $E_k$ is are given up to a constant factor by
+\cite[19]{Householder1970} equation (23), \idest, for some $α$,\[
+\frac{E_k}{α_k} = \bigradient{E_p}{p-1-k}{E_{p-1}}{p-k}\text,
+\]
+where the expression on the right-hand side is the \emph{bigradient} defined in \cite{Householder1968} (3.2)
+or \cite[19]{Householder1970} (20),\[
+\frac{E_k}{α_k} = \det\begin{pmatrix}
+d_0    & d_1    & d_2 & \multicolumn{3}{c}{\cdots} & d_{2\pa{p-k}-3} & x^{p-k-2} E_p \\
+0      & d_0    & d_1 & \multicolumn{3}{c}{\cdots} & d_{2\pa{p-k}-4} & x^{p-k-3} E_p \\
+\vdots &        & \ddots  &      &                 &                 & \vdots \\
+0      & \cdots & 0       & d_0  & d_1 & \cdots    & d_{p-k-1}       & x^{0} E_p \\
+0      & \cdots & 0       & 0    & e_0 & \cdots    & e_{p-k-2}       & x^{0} E_{p-1} \\
+\vdots &        &         &\adots&     &           &                 & \vdots \\
+0      & 0      & e_0 & \multicolumn{3}{c}{\cdots} & e_{2\pa{p-k}-4} & x^{p-k-2} E_p \\
+0      & e_0    & e_1 & \multicolumn{3}{c}{\cdots} & e_{2\pa{p-k}-4} & x^{p-k-2} E_p \\
+e_0    & e_1    & e_2 & \multicolumn{3}{c}{\cdots} & e_{2\pa{p-k}-3} & x^{p-k-1} E_p \\
+\end{pmatrix}\DefinitionOf\det\matE_k\text,
+\]
+where $d_n\DefineAs0$ for $n>p$, and $e_n\DefineAs0$ for $n>p-1$.
+
+In particular, for $k=1$, the matrix $\matE_1$ is \[
+\begin{pmatrix}
+d_0    & d_1    & d_2    & \cdots & d_{p-3} & d_{p-2} & d_{p-1} & d_p     & 0       & \cdots  & 0       & x^{p-3} E_p \\
+0      & d_0    & d_1    & \cdots & d_{p-4} & d_{p-3} & d_{p-2} & d_{p-1} & d_p     & \ddots  & 0       & x^{p-4} E_p \\
+\vdots &        & \ddots &        &         &         &         &         &         &         &         & \vdots \\
+0      & \cdots & 0      & d_0    & d_1     & d_2     & \multicolumn{4}{c}{\cdots}            & d_{p-2} & x^{0} E_p \\
+0      & \cdots & 0      & 0      & e_0     & e_1     & \multicolumn{4}{c}{\cdots}            & e_{p-3} & x^{0} E_{p-1} \\
+\vdots &        &        & \adots &         &         &         &         &         &         &         & \vdots \\
+0      & 0      & e_0    & \cdots & e_{p-5} & e_{p-4} & e_{p-3} & e_{p-2} & e_{p-1} & \adots  & 0       & x^{p-5} E_{p-1} \\
+0      & e_0    & e_1    & \cdots & e_{p-4} & e_{p-3} & e_{p-2} & e_{p-1} & 0       & \cdots  & 0       & x^{p-4} E_{p-1} \\
+e_0    & e_1    & e_2    & \cdots & e_{p-3} & e_{p-2} & e_{p-1} & 0       & 0       & \cdots  & 0       & x^{p-3} E_{p-1} \\
+\end{pmatrix}\text.
+\]
+Observe that, since the value of $x$ used in the rational method is the root of $E_1$, for that value of $x$,
+$\det \matE = 0$, \idest, $\matE$ is singular.
+\begin{lemma}[Left as an exercise to the reviewer]
+The matrix $\matE_1$ is singular if and only if \[
+\matC\DefineAs\begin{pmatrix}
+x - \frac{1}{2}a & c_0 \\
+-1               & c_1     & c_0 \\
+0                & c_2     &        & \ddots \\
+\vdots           & \vdots  & \ddots &        & c_0 \\
+0                & c_{p-1} & \cdots & c_2    & c_1
+\end{pmatrix}
+\]is singular, where $c_0\DefineAs1$.
+\begin{proof}
+Observe that:\begin{itemize}
+\item since $\det \matE_1$ is a polynomial of degree $1$, all terms divisible by $x^2$ must cancel out in the Laplace expansion of that
+determinant on the last column, the determinant is equal to\[
+\pm δ_1 xE_p \mp δ_2 E_p \pm δ_3 E_{p-1} \mp δ_4 xE_{p-1}\text,
+\]
+where the $δ_i$ are determinants of real matrices;
+\item by the same reasoning, only the linear and constant terms of the polynomials remain in the above expression, which simplifies to\[
+\pm δ_1 d_p x \mp δ_2 \pa{d_{p-1}x + d_p} \pm δ_3 \pa{e_{p-2}x + e_{p-1}} \mp δ_4 e_{p-1}x\text;
+\]
+\item $E_1-E_2=S_1-S_2$, which, by Lagny’s \foreign{\textfrench{theoreme fondamental}}
+\cite[17]{FantetdeLagny1692}, is $\pa{x-\frac{1}{2}a}^p$.
+\end{itemize}
+The proof is a calculation.
+\end{proof}
+\end{lemma}
+The theorem follows from the lemma and theorem 4.4.2 from \cite[169]{Householder1970}:
+the iterate (\ref{LagnyRationalIterate}) corresponds to Householder’s (14) with $g\Identically 1$; for that
+value of $g$, theorem 4.4.2 states that (14) is equivalent to (12) from the same page, which, substituting the iterate
+$\FunctionBody{a}{x+\frac{1}{2}a}$, is $\det\matC=0$. By the lemma, this is equivalent the definition of Lagny’s rational
+method.
 \end{proof}
 \end{theorem}
 
-This iterate was described by Householder for an arbitrary analytic functions $f$ in \cite[169]{Householder1970} (see
-equation (14), wherein one should take $g\Identically 1$, and theorem 4.4.2 which mentions this special case; see also
-\cite{SebahGourdon2001} which explicitly gives that form).
+\section*{Names}
+As seen in the proof of the theorem, the iterate (\ref{LagnyRationalIterate}) was described by Householder for an
+arbitrary analytic functions $f$ in \cite[169]{Householder1970} (equation (14), wherein one should take $g\Identically 1$;
+see also \cite{SebahGourdon2001} which explicitly gives that form).
 
 For $p=2$ and $f$ an arbitrary polynomial, (\ref{LagnyRationalIterate}) is Newton's method, presented by Wallis in
 \cite[338]{Wallis1685}.
@@ -115,7 +186,7 @@ method for $p=3$, while retaining constant order as the degree changes) has comp
 see \cite{ScavoThoo1995}.
 
 Considering that a method remains the same when generalized from arbitrary polynomials to arbitrary analytic functions,
-we call the method given by the iterate (\ref{LagnyRationalIterate})\begin{itemize}
+we call the iterate (\ref{LagnyRationalIterate})\begin{itemize}
 \setlength\itemsep{0em}
 \item Newton’s method when $p=2$, for arbitrary $f$;
 \item Lagny’s rational method when $p>2$ and $f$ is a polynomial of degree $p$;
@@ -226,7 +297,7 @@ The values are more precisely\footnote{These may be computed formally, but the e
 leading to $C_{\mathrm{Kahan}}=\hex{2A9F\,7625\,3119\,D328}\Multiply 2^{-52}$ for IEEE 754-2008 binary64.
 However, as we will see in the next section, this value does not optimize the final error, so it is not the one that we use.
 \section{Getting to a third of the precision}
-We use a single iterate of Lagny’s method to compute $ξ$,\[
+We use a single iterate of Lagny’s rational method to compute $ξ$,\[
 ξ\DefineAs
 \round{q - \round{\frac{\round{\pa{\round{\round{q^2}q}-y} q}}
                        {\round{2\round{\round{q^2}q}+y}}}}\text.
@@ -240,7 +311,7 @@ We have, up to rounding errors (TODO: bound those),\[
 Δ \approx Δ' \DefineAs \frac{ξ'}{\sqrt[3] y}-1\text.
 \]
 With $q'=\cuberoot{y}\pa{1+ε'}$, we can express $Δ'$ using the transformation of
-the relative error error by one step of Fantet de Lagny’s method on the cube root,\[
+the relative error error by one step of Lagny’s rational method on the cube root,\[
 Δ' = \frac{2{ε'}^3+{ε'}^4}{3+6ε'+6{ε'}^2+2{ε'}^3}\text.
 \]
 If $q'$ is computed using $γ=γ_{\mathrm{Kahan}}$, we get\begin{align*}
