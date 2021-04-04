@@ -3,6 +3,8 @@
 
 #include "physics/checkpointer.hpp"
 
+#include <vector>
+
 #include "astronomy/epoch.hpp"
 
 namespace principia {
@@ -46,9 +48,30 @@ bool Checkpointer<Message>::WriteToCheckpointIfNeeded(
 
 template<typename Message>
 void Checkpointer<Message>::ReadFromOldestCheckpoint() const {
-  absl::ReaderMutexLock l(&lock_);
-  CHECK(!checkpoints_.empty());
-  reader_(checkpoints_.cbegin()->second);
+  typename Message::Checkpoint const* checkpoint = nullptr;
+  {
+    absl::ReaderMutexLock l(&lock_);
+    CHECK(!checkpoints_.empty());
+    checkpoint = &checkpoints_.cbegin()->second;
+  }
+  reader_(*checkpoint);
+}
+
+template<typename Message>
+void Checkpointer<Message>::ReadFromAllCheckpointsBackwards(
+    Reader const& reader) const {
+  // We'll be running the callback without the lock, so we take a snapshot of
+  // the checkpoints.
+  std::vector<not_null<typename Message::Checkpoint const*>> checkpoints;
+  {
+    absl::ReaderMutexLock l(&lock_);
+    for (auto it = checkpoints_.crbegin(); it != checkpoints_.crend(); ++it) {
+      checkpoints.push_back(&it->second);
+    }
+  }
+  for (auto const checkpoint : checkpoints) {
+    reader(*checkpoint);
+  }
 }
 
 template<typename Message>
@@ -84,7 +107,9 @@ void Checkpointer<Message>::WriteToCheckpointLocked(Instant const& t) {
   lock_.AssertHeld();
   auto const it = checkpoints_.emplace_hint(
       checkpoints_.end(), t, typename Message::Checkpoint());
+  lock_.Unlock();
   writer_(&it->second);
+  lock_.Lock();
 }
 
 }  // namespace internal_checkpointer

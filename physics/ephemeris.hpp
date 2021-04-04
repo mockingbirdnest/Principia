@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "absl/synchronization/mutex.h"
+#include "base/jthread.hpp"
 #include "base/not_null.hpp"
 #include "base/status.hpp"
 #include "geometry/grassmann.hpp"
@@ -32,6 +33,7 @@ namespace physics {
 namespace internal_ephemeris {
 
 using base::Error;
+using base::jthread;
 using base::not_null;
 using base::Status;
 using geometry::Instant;
@@ -156,13 +158,13 @@ class Ephemeris {
 
   // Constructs an Ephemeris that owns the |bodies|.  The elements of vectors
   // |bodies| and |initial_state| correspond to one another.
-  Ephemeris(std::vector<not_null<std::unique_ptr<MassiveBody const>>>&& bodies,
+  Ephemeris(std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies,
             std::vector<DegreesOfFreedom<Frame>> const& initial_state,
             Instant const& initial_time,
             AccuracyParameters const& accuracy_parameters,
             FixedStepParameters fixed_step_parameters);
 
-  virtual ~Ephemeris() = default;
+  virtual ~Ephemeris();
 
   // Returns the bodies in the order in which they were given at construction.
   virtual std::vector<not_null<MassiveBody const*>> const& bodies() const;
@@ -306,13 +308,25 @@ class Ephemeris {
   Checkpointer<serialization::Ephemeris>::Writer MakeCheckpointerWriter();
   Checkpointer<serialization::Ephemeris>::Reader MakeCheckpointerReader();
 
+  // Called on a stoppable thread to reconstruct the past state of the ephemeris
+  // and its trajectories.
+  Status Reanimate();
+
   // Callbacks for the integrators.
   void AppendMassiveBodiesState(
       typename NewtonianMotionEquation::SystemState const& state)
       REQUIRES(lock_);
-  static void AppendMasslessBodiesState(
+  template<typename ContinuousTrajectoryPtr>
+  static std::vector<Status> AppendMassiveBodiesStateToTrajectories(
+      typename NewtonianMotionEquation::SystemState const& state,
+      std::vector<not_null<ContinuousTrajectoryPtr>> const& trajectories);
+  static void AppendMasslessBodiesStateToTrajectories(
       typename NewtonianMotionEquation::SystemState const& state,
       std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories);
+
+  // Returns an equation suitable for the massive bodies contained in this
+  // ephemeris.
+  NewtonianMotionEquation MakeMassiveBodiesNewtonianMotionEquation();
 
   // Note the return by copy: the returned value is usable even if the
   // |instance_| is being integrated.
@@ -416,6 +430,9 @@ class Ephemeris {
   not_null<
       std::unique_ptr<Checkpointer<serialization::Ephemeris>>> checkpointer_;
   not_null<std::unique_ptr<Protector>> protector_;
+
+  // The techniques and terminology follow [Lov22].
+  jthread reanimator_;
 
   // The fields above this line are fixed at construction and therefore not
   // protected.  Note that |ContinuousTrajectory| is thread-safe.  |lock_| is

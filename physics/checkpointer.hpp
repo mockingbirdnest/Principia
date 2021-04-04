@@ -33,7 +33,7 @@ using quantities::Time;
 // The |Message| must declare a nested message named |Checkpoint|, which must
 // have a field named |time| of type |Point|.  There must be a repeated field of
 // |Checkpoint|s in |Message|.
-// This class is thread-safe.
+// This class is thread-safe.  The callbacks are not run under a lock.
 template<typename Message>
 class Checkpointer {
  public:
@@ -66,6 +66,11 @@ class Checkpointer {
   // Calls the |Reader| passed at construction to reconstruct an object using
   // the oldest checkpoint.  Dies if this object contains no checkpoint.
   void ReadFromOldestCheckpoint() const EXCLUDES(lock_);
+
+  // Calls |reader| on each of the checkpoints in this object, going backwards
+  // from the most recent to the oldest.
+  void ReadFromAllCheckpointsBackwards(Reader const& reader) const
+      EXCLUDES(lock_);
 
   void WriteToMessage(not_null<google::protobuf::RepeatedPtrField<
                           typename Message::Checkpoint>*> message) const
