@@ -422,8 +422,8 @@ Ephemeris<Frame>::NewInstance(
         last_degrees_of_freedom.velocity());
   }
 
-  auto const append_state =
-      std::bind(&Ephemeris::AppendMasslessBodiesStateToTrajectories, _1, trajectories);
+  auto const append_state = std::bind(
+      &Ephemeris::AppendMasslessBodiesStateToTrajectories, _1, trajectories);
 
   // The construction of the instance may evaluate the degrees of freedom of the
   // bodies.
@@ -1271,10 +1271,10 @@ Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
                 std::cref(parameters.speed_integration_tolerance_),
                 _1, _2);
 
-  typename AdaptiveStepSizeIntegrator<ODE>::AppendState append_state;
-  append_state = std::bind(
-      &Ephemeris::AppendMasslessBodiesStateToTrajectories, _1, std::cref(trajectories));
-
+  typename AdaptiveStepSizeIntegrator<ODE>::AppendState append_state =
+      std::bind(&Ephemeris::AppendMasslessBodiesStateToTrajectories,
+                _1,
+                std::cref(trajectories));
   auto const instance =
       parameters.integrator_->NewInstance(problem,
                                           append_state,
