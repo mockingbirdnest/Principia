@@ -129,6 +129,9 @@ inline void noreturn() { std::exit(0); }
 // 64-bit architectures.
 #define PRINCIPIA_USE_SSE3_INTRINSICS !_DEBUG
 
+// Set this to 1 to test analytical series based on piecewise Poisson series.
+#define PRINCIPIA_CONTINUOUS_TRAJECTORY_SUPPORTS_PIECEWISE_POISSON_SERIES 0
+
 // Thread-safety analysis.
 #if PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL
 #  define THREAD_ANNOTATION_ATTRIBUTE__(x) __attribute__((x))
