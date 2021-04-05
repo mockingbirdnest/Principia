@@ -132,9 +132,7 @@ Status ContinuousTrajectory<Frame>::Append(
 }
 
 template<typename Frame>
-Status ContinuousTrajectory<Frame>::Prepend(
-    ContinuousTrajectory&& prefix) {
-  Status status;
+void ContinuousTrajectory<Frame>::Prepend(ContinuousTrajectory&& prefix) {
   absl::MutexLock l1(&lock_);
   absl::MutexLock l2(&prefix.lock_);
 
@@ -143,7 +141,6 @@ Status ContinuousTrajectory<Frame>::Prepend(
 
   if (prefix.polynomials_.empty()) {
     // Nothing to do.
-    return Status::OK;
   } else if (polynomials_.empty()) {
     // All the data comes from |prefix|.  This must set all the fields of
     // this object that are not set at construction.
@@ -156,27 +153,12 @@ Status ContinuousTrajectory<Frame>::Prepend(
     first_time_ = prefix.first_time_;
     last_points_ = prefix.last_points_;
   } else {
-    // The polynomials must be aligned, but we are lenient because it's
-    // conceivable that small differences would occur when moving a save from
-    // one machine to another.  Because of this, we cannot check that the
-    // trajectories are "continuous" at the junction, whatever that means.
-    if (*first_time_ != prefix.polynomials_.back().t_max) {
-      // Lenient, but not too much: we don't want the last polynomial of
-      // |prefix| to start *after* our |first_time_|.
-      CHECK_LT(*prefix.first_time_, *first_time_);
-      CHECK(prefix.polynomials_.size() == 1 ||
-            prefix.polynomials_[prefix.polynomials_.size() - 2].t_max <
-                *first_time_);
-
-      status =
-          Status(Error::OUT_OF_RANGE,
-                 absl::StrCat(
-                     "Prepending a trajectory with inexact time alignment: ",
-                     DebugString(prefix.polynomials_.back().t_max),
-                     " vs. ",
-                     DebugString(*first_time_)));
-      prefix.polynomials_.back().t_max = *first_time_;
-    }
+    // The polynomials must be aligned, because the time computations only use
+    // basic arithmetic and are platform-independent.  The space computations,
+    // on the other may depend on characteristics of the hardware and/or math
+    // library, so we cannot check that the trajectories are "continuous" at the
+    // junction.
+    CHECK_EQ(*first_time_, prefix.polynomials_.back().t_max);
     // This operation is in O(prefix.size()).
     std::move(polynomials_.begin(),
               polynomials_.end(),
@@ -187,8 +169,6 @@ Status ContinuousTrajectory<Frame>::Prepend(
     // correspond to a time interval covered by the first polynomial of this
     // object.
   }
-
-  return status;
 }
 
 template<typename Frame>

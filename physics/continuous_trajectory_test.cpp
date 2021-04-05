@@ -55,7 +55,6 @@ using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
-using testing_utilities::StatusIs;
 using testing_utilities::operator""_⑴;
 using ::testing::Sequence;
 using ::testing::SetArgReferee;
@@ -171,6 +170,7 @@ class ContinuousTrajectoryTest : public testing::Test {
       // additions) because it results in a bit of jitter in the intervals,
       // which matters for continuity.
       Instant ti = time + (i + 1) * step;
+      LOG(ERROR)<<ti<<" "<<i;
       trajectory.Append(ti,
                         DegreesOfFreedom<World>(position_function(ti),
                                                 velocity_function(ti)));
@@ -589,7 +589,7 @@ TEST_F(ContinuousTrajectoryTest, Continuity) {
 
 TEST_F(ContinuousTrajectoryTest, Prepend) {
   int const number_of_steps1 = 20;
-  int const number_of_steps2 = 30;
+  int const number_of_steps2 = 15;
   int const number_of_substeps = 50;
   Time const step = 0.01 * Second;
   Length const tolerance = 0.1 * Metre;
@@ -621,9 +621,8 @@ TEST_F(ContinuousTrajectoryTest, Prepend) {
   EXPECT_EQ(t1 + step, trajectory1->t_min());
   EXPECT_EQ(t1 + (((number_of_steps1 - 1) / 8) * 8 + 1) * step,
             trajectory1->t_max());
-  auto const tm = trajectory1->t_max();
 
-  Instant const t2 = t1 + number_of_steps1 * step;
+  Instant const t2 = trajectory1->t_max();
   auto position_function2 =
       [this, &position_function1, t2](Instant const t) {
         return position_function1(t2) +
@@ -649,14 +648,8 @@ TEST_F(ContinuousTrajectoryTest, Prepend) {
   EXPECT_EQ(t2 + (number_of_steps2 / 8) * 8 * step,
             trajectory2->t_max());
 
-  // Gap between the trajectories.
-  EXPECT_LT(trajectory1->t_max(), trajectory2->t_min());
-
-  // Prepend one trajectory to the other.  Check that we properly handle the
-  // gap.
-  auto const status = trajectory2->Prepend(std::move(*trajectory1));
-  EXPECT_THAT(status, StatusIs(Error::OUT_OF_RANGE));
-  LOG(ERROR) << status;
+  // Prepend one trajectory to the other.
+  trajectory2->Prepend(std::move(*trajectory1));
 
   // Verify the resulting trajectory.
   EXPECT_EQ(t1 + step, trajectory2->t_min());
@@ -674,7 +667,7 @@ TEST_F(ContinuousTrajectoryTest, Prepend) {
        time <= trajectory2->t_max();
        time += step / number_of_substeps) {
     EXPECT_THAT(trajectory2->EvaluatePosition(time),
-                AlmostEquals(position_function2(time), 0, 256)) << time;
+                AlmostEquals(position_function2(time), 0, 2816)) << time;
     EXPECT_THAT(trajectory2->EvaluateVelocity(time),
                 AlmostEquals(velocity_function2(time), 0, 34)) << time;
   }
