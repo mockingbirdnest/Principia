@@ -170,7 +170,6 @@ class ContinuousTrajectoryTest : public testing::Test {
       // additions) because it results in a bit of jitter in the intervals,
       // which matters for continuity.
       Instant ti = time + (i + 1) * step;
-      LOG(ERROR)<<ti<<" "<<i;
       trajectory.Append(ti,
                         DegreesOfFreedom<World>(position_function(ti),
                                                 velocity_function(ti)));
