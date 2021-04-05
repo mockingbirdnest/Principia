@@ -89,6 +89,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
 
   // End of the implementation of the interface.
 
+#if PRINCIPIA_CONTINUOUS_TRAJECTORY_SUPPORTS_PIECEWISE_POISSON_SERIES
   // Returns the degree for a piecewise Poisson series covering the given time
   // interval.
   int PiecewisePoissonSeriesDegree(Instant const& t_min,
@@ -102,6 +103,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
                          EstrinEvaluator>
   ToPiecewisePoissonSeries(Instant const& t_min,
                            Instant const& t_max) const;
+#endif
 
   void WriteToMessage(not_null<serialization::ContinuousTrajectory*> message)
       const EXCLUDES(lock_);

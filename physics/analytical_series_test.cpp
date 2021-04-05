@@ -26,6 +26,10 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 
+#define PRINCIPIA_CONTINUOUS_TRAJECTORY_SUPPORTS_PIECEWISE_POISSON_SERIES 0
+
+#if PRINCIPIA_CONTINUOUS_TRAJECTORY_SUPPORTS_PIECEWISE_POISSON_SERIES
+
 namespace principia {
 namespace physics {
 
@@ -274,3 +278,5 @@ TEST_F(AnalyticalSeriesTest, CompactRepresentation) {
 
 }  // namespace physics
 }  // namespace principia
+
+#endif

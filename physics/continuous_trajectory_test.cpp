@@ -438,6 +438,7 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
                                       trajectory->EvaluateVelocity(time)));
   }
 
+#if PRINCIPIA_CONTINUOUS_TRAJECTORY_SUPPORTS_PIECEWISE_POISSON_SERIES
   // Now check that it can be converted to a piecewise Poisson series.
   Instant const t_min = trajectory->t_min() + 2 * step / number_of_substeps;
   Instant const t_max = trajectory->t_max() - 3 * step / number_of_substeps;
@@ -451,6 +452,7 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
         piecewise_poisson_series(time),
         AlmostEquals(trajectory->EvaluatePosition(time) - World::origin, 0, 0));
   }
+#endif
 }
 
 // An approximation to the trajectory of Io.
