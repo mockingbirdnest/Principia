@@ -7,6 +7,7 @@ namespace principia {
 namespace physics {
 
 using base::not_null;
+using base::Status;
 using geometry::Instant;
 using quantities::si::Second;
 using ::testing::MockFunction;
@@ -36,7 +37,7 @@ class CheckpointerTest : public ::testing::Test {
       : checkpointer_(writer_.AsStdFunction(),
                       reader_.AsStdFunction()) {}
 
-  MockFunction<bool(Message::Checkpoint const&)> reader_;
+  MockFunction<Status(Message::Checkpoint const&)> reader_;
   MockFunction<void(not_null<Message::Checkpoint*>)> writer_;
   Checkpointer<Message> checkpointer_;
 };
