@@ -1291,8 +1291,9 @@ void Plugin::WriteToMessage(
     not_null<serialization::Plugin*> const message) const {
   LOG(INFO) << __FUNCTION__;
   CHECK(!initializing_);
-  CHECK_NE(0, system_fingerprint_);
-  message->set_system_fingerprint(system_fingerprint_);
+  if (system_fingerprint_ != 0) {
+    message->set_system_fingerprint(system_fingerprint_);
+  }
   ephemeris_->Prolong(current_time_);
   std::map<not_null<Celestial const*>, Index const> celestial_to_index;
   for (auto const& [index, owned_celestial] : celestials_) {
