@@ -180,7 +180,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   Time const step_;
   Length const tolerance_;
   not_null<
-      std::unique_ptr<Checkpointer<serialization::ContinuousTrajectory>>> const
+      std::unique_ptr<Checkpointer<serialization::ContinuousTrajectory>>>
       checkpointer_;
 
   mutable absl::Mutex lock_;

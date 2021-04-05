@@ -160,10 +160,20 @@ Status ContinuousTrajectory<Frame>::Prepend(
     // conceivable that small differences would occur when moving a save from
     // one machine to another.
     if (*first_time_ != trajectory.polynomials_.back().t_max) {
-      status = Status(Error::OUT_OF_RANGE);
-      CHECK_LT(*trajectory.first_time_, first_time_);
+      status =
+          Status(Error::OUT_OF_RANGE,
+                 absl::StrCat(
+                     "Prepending a trajectory with inexact time alignment: ",
+                     trajectory.polynomials_.back().t_max,
+                     " vs. ",
+                     *first_time_));
+
+      // Lenient, but not too much: we don't want the last polynomial of
+      // |trajectory| to start *after* our |first_time_|.
+      CHECK_LT(*trajectory.first_time_, *first_time_);
       CHECK(trajectory.polynomials_.size() == 1 ||
-      trajectory.polynomials_[trajectory.polynomials_.size() - 2].t_max <)
+            trajectory.polynomials_[trajectory.polynomials_.size() - 2].t_max <
+                *first_time_);
     }
     polynomials_.insert(polynomials_.begin(),
                         trajectory.polynomials_.cbegin(),
