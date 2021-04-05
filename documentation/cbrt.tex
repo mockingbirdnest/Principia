@@ -238,7 +238,7 @@ where the $δ_i$ are determinants of real matrices;
 \item by the same reasoning, only the linear and constant terms of the polynomials remain in the above expression, which simplifies to\[
 \pm δ_1 d_p x \mp δ_2 \pa{d_{p-1}x + d_p} \pm δ_3 \pa{e_{p-2}x + e_{p-1}} \mp δ_4 e_{p-1}x\text;
 \]
-\item $E_1-E_2=S_1-S_2$, which, by Lagny’s \foreign{\textfrench{theoreme fondamental}}
+\item $E_p-E_{p-1}=S_1-S_2$, which, by Lagny’s \foreign{\textfrench{theoreme fondamental}}
 \cite[17]{FantetdeLagny1692}, is $\pa{x-\frac{1}{2}a}^p$.
 \end{itemize}
 The proof is a calculation.
@@ -357,11 +357,13 @@ We use a single iterate of Lagny’s rational method to compute $ξ$,\[
                        {\round{2\round{\round{q^2}q}+y}}}}\text.
 \]
 Note that the subtraction in the numerator is exact by Sterbenz's lemma.
+\marginpar{\small TODO(egg): bound the rounding errors.}
+
 Let $Δ \DefineAs \frac{ξ}{\sqrt[3] y}-1$ and  % TODO(egg): Figure out why \cuberoot does not render here.
 \[
 ξ'=q'-\frac{\pa{{q'}^3-y}q'}{2{q'}^3+y}\text.
 \]
-We have, up to rounding errors (TODO: bound those),\[
+We have, up to rounding errors,\[
 Δ \approx Δ' \DefineAs \frac{ξ'}{\sqrt[3] y}-1\text.
 \]
 With $q'=\cuberoot{y}\pa{1+ε'}$, we can express $Δ'$ using the transformation of
@@ -385,6 +387,34 @@ Specifically, we have\begin{align*}
 \max_{y} \abs{Δ'} &\approx 0.00002\,08686\,35536\,39593\,48770\,92008\,39844\,10254\,14831\,61229\text.
 \end{align*}
 The corresponding fixed-point constant is $C_{\mathrm{L}}\DefineAs\hex{2A9F\,7893\,782D\,A1CE} \Multiply 2^{-52}$ for binary64.
+\marginpar{\small
+TODO(egg): $Δ'$ accounts for half of the excess above correct rounding in the final bound; consider using either
+a higher order iterate or Lagny's irrational formula. Also consider optimizing the constants per Canon's  tweet;
+in the rational method there are none to optimize.
+% 9 Jul 2018
+% https://twitter.com/stephentyrone/status/1016284058438062081
+% Everyone else seems to worry about starting estimate, but use standard iterations,
+% which is appropriate for arbitrary precision, but silly with a fixed precision target.
+}
+
+\subsection{Rounded approximation}
+
+The number $x$ is obtained from $ξ$ by zeroing all but the most significant $\Floor{\frac{p}{3}}$ bits of
+its significand.
+The resulting relative error\[\abs{\frac{x}{ξ}-1}\]is greatest when the zeroed bits are all $1$ and the
+remaining bits (except for the leading $1$) are all $0$; this is the case when the significand of $ξ$ is
+$1+2^{-\Floor{\frac{p}{3}}+1}-2^{1-p}$, in which case that of $x$ is $1$.
+
+The relative error arising from $\FunctionBody ξ x$ is thus at most\[
+\frac{1}{1+2^{-\Floor{\frac{p}{3}}+1}-2^{1-p}} - 1 < 2^{-\Floor{\frac{p}{3}}+1}\text,
+\]
+$2^{-16}$ in binary64.
+
+\subsection{High order iterate}
+
+We use one iterate of the Lagny--Schröder method of order $6$.
+\marginpar{\small
+TODO(egg): consider order $5$; the truncation error is dominated by the rounding error here.}
 
 \emergencystretch 1em
 \end{document}
