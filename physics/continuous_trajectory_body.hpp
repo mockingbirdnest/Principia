@@ -180,6 +180,8 @@ DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
                                  polynomial.EvaluateDerivative(time));
 }
 
+#if PRINCIPIA_CONTINUOUS_TRAJECTORY_SUPPORTS_PIECEWISE_POISSON_SERIES
+
 template<typename Frame>
 int ContinuousTrajectory<Frame>::PiecewisePoissonSeriesDegree(
     Instant const& t_min,
@@ -304,6 +306,7 @@ ContinuousTrajectory<Frame>::ToPiecewisePoissonSeries(
 }
 
 #undef PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS
+#endif
 
 template<typename Frame>
 void ContinuousTrajectory<Frame>::WriteToMessage(
