@@ -133,10 +133,10 @@ Status ContinuousTrajectory<Frame>::Append(
 
 template<typename Frame>
 Status ContinuousTrajectory<Frame>::Prepend(
-    ContinuousTrajectory const& trajectory) {
+    ContinuousTrajectory&& trajectory) {
   Status status;
   absl::MutexLock l1(&lock_);
-  absl::ReaderMutexLock l2(&trajectory.lock_);
+  absl::MutexLock l2(&trajectory.lock_);
 
   CHECK_EQ(step_, trajectory.step_);
   CHECK_EQ(tolerance_, trajectory.tolerance_);
@@ -151,22 +151,23 @@ Status ContinuousTrajectory<Frame>::Prepend(
     is_unstable_ = trajectory.is_unstable_;
     degree_ = trajectory.degree_;
     degree_age_ = trajectory.degree_age_;
-    polynomials_ = trajectory.polynomials_;
+    polynomials_ = std::move(trajectory.polynomials_);
     last_accessed_polynomial_ = trajectory.last_accessed_polynomial_;
     first_time_ = trajectory.first_time_;
     last_points_ = trajectory.last_points_;
   } else {
     // The polynomials must be aligned, but we are lenient because it's
     // conceivable that small differences would occur when moving a save from
-    // one machine to another.
-    if (*first_time_ != trajectory.polynomials_.back().t_max) {
+    // one machine to another.  Because of this, we cannot check that the
+    // trajectories are "continuous" at the junction, whatever that means.
+    if (*first_time_ == trajectory.polynomials_.back().t_max) {
       status =
           Status(Error::OUT_OF_RANGE,
                  absl::StrCat(
                      "Prepending a trajectory with inexact time alignment: ",
-                     trajectory.polynomials_.back().t_max,
+                     DebugString(trajectory.polynomials_.back().t_max),
                      " vs. ",
-                     *first_time_));
+                     DebugString(*first_time_)));
 
       // Lenient, but not too much: we don't want the last polynomial of
       // |trajectory| to start *after* our |first_time_|.
@@ -175,9 +176,11 @@ Status ContinuousTrajectory<Frame>::Prepend(
             trajectory.polynomials_[trajectory.polynomials_.size() - 2].t_max <
                 *first_time_);
     }
-    polynomials_.insert(polynomials_.begin(),
-                        trajectory.polynomials_.cbegin(),
-                        trajectory.polynomials_.cend());
+    // This operation is in O(trajectory.size()).
+    std::move(polynomials_.begin(),
+              polynomials_.end(),
+              std::back_inserter(trajectory.polynomials_));
+    polynomials_.swap(trajectory.polynomials_);
     first_time_ = trajectory.first_time_;
     // Note that any |last_points_| in |trajectory| are irrelevant because they
     // correspond to a time interval covered by the first polynomial of this

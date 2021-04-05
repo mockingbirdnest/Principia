@@ -73,13 +73,15 @@ class ContinuousTrajectory : public Trajectory<Frame> {
                 DegreesOfFreedom<Frame> const& degrees_of_freedom)
       EXCLUDES(lock_);
 
-  //TODO(phl):Comment.
-  Status Prepend(ContinuousTrajectory const& trajectory);
+  //TODO(phl):Comment.  &&
+  Status Prepend(ContinuousTrajectory&& trajectory);
 
   // Implementation of the interface |Trajectory|.
 
-  // |t_max| may be less than the last time passed to Append.  For an empty
-  // trajectory, an infinity with the proper sign is returned.
+  // |t_max| may be less than the last time passed to Append because the
+  // trajectory cannot be evaluated for the last points, for which no polynomial
+  // was constructed.  For an empty trajectory, an infinity with the proper
+  // sign is returned.
   Instant t_min() const override EXCLUDES(lock_);
   Instant t_max() const override EXCLUDES(lock_);
 

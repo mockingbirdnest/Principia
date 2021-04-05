@@ -586,6 +586,89 @@ TEST_F(ContinuousTrajectoryTest, Continuity) {
   EXPECT_THAT(p1, AlmostEquals(p3, 0, 2));
 }
 
+TEST_F(ContinuousTrajectoryTest, Prepend) {
+  int const number_of_steps1 = 20;
+  int const number_of_steps2 = 30;
+  int const number_of_substeps = 50;
+  Time const step = 0.01 * Second;
+  Length const tolerance = 0.1 * Metre;
+
+  // Construct two trajectories with different functions.
+
+  Instant const t1 = t0_;
+  auto position_function1 =
+      [this, t1](Instant const t) {
+        return World::origin +
+            Displacement<World>({(t - t1) * 3 * Metre / Second,
+                                 (t - t1) * 5 * Metre / Second,
+                                 (t - t1) * (-2) * Metre / Second});
+      };
+  auto velocity_function1 =
+      [](Instant const t) {
+        return Velocity<World>({3 * Metre / Second,
+                                5 * Metre / Second,
+                                -2 * Metre / Second});
+      };
+  auto trajectory1 =
+      std::make_unique<ContinuousTrajectory<World>>(step, tolerance);
+  FillTrajectory(number_of_steps1,
+                 step,
+                 position_function1,
+                 velocity_function1,
+                 t1,
+                 *trajectory1);
+  EXPECT_EQ(t1 + step, trajectory1->t_min());
+  EXPECT_EQ(t1 + (((number_of_steps1 - 1) / 8) * 8 + 1) * step,
+            trajectory1->t_max());
+
+  Instant const t2 = t1 + number_of_steps1 * step;
+  auto position_function2 =
+      [this, &position_function1, t2](Instant const t) {
+        return position_function1(t2) +
+               Displacement<World>({(t - t2) * 6 * Metre / Second,
+                                    (t - t2) * 1.5 * Metre / Second,
+                                    (t - t2) * 7 * Metre / Second});
+      };
+  auto velocity_function2 =
+      [](Instant const t) {
+        return Velocity<World>({6 * Metre / Second,
+                                1.5 * Metre / Second,
+                                7 * Metre / Second});
+      };
+  auto trajectory2 =
+      std::make_unique<ContinuousTrajectory<World>>(step, tolerance);
+  FillTrajectory(number_of_steps2 + 1,
+                 step,
+                 position_function2,
+                 velocity_function2,
+                 t2 - step,  // First point at t2.
+                 *trajectory2);
+  EXPECT_EQ(t2, trajectory2->t_min());
+  EXPECT_EQ(t1 + (((number_of_steps1 + number_of_steps2) / 8) * 8 + 1) * step,
+            trajectory2->t_max());
+
+  // Prepend one trajectory to the other.  We tolerate small errors at the
+  // junction.
+  LOG(ERROR) << trajectory2->Prepend(std::move(*trajectory1));
+
+  // Verify the resulting trajectory.
+  EXPECT_EQ(t1, trajectory2->t_min());
+  EXPECT_EQ(t1 + (((number_of_steps1 + number_of_steps2) / 8) * 8 + 1) * step,
+            trajectory2->t_max());
+  for (Instant time = t1;
+       time <= t2;
+       time += step / number_of_substeps) {
+    EXPECT_EQ(trajectory2->EvaluatePosition(time), position_function1(time));
+    EXPECT_EQ(trajectory2->EvaluateVelocity(time), velocity_function1(time));
+  }
+  for (Instant time = t2;
+       time <= trajectory2->t_max();
+       time += step / number_of_substeps) {
+    EXPECT_EQ(trajectory2->EvaluatePosition(time), position_function2(time));
+    EXPECT_EQ(trajectory2->EvaluateVelocity(time), velocity_function2(time));
+  }
+}
+
 TEST_F(ContinuousTrajectoryTest, Serialization) {
   int const number_of_steps = 20;
   int const number_of_substeps = 50;
