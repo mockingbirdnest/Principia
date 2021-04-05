@@ -409,7 +409,7 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
             continuous_trajectory->MakeCheckpointerReader(),
             message.checkpoint());
   }
-  continuous_trajectory->checkpointer_->ReadFromOldestCheckpoint();
+  CHECK_OK(continuous_trajectory->checkpointer_->ReadFromOldestCheckpoint());
 
   return continuous_trajectory;
 }
@@ -443,8 +443,7 @@ ContinuousTrajectory<Frame>::MakeCheckpointerWriter() {
     return [this](
         not_null<
             serialization::ContinuousTrajectory::Checkpoint*> const message) {
-      // This takes place with the trajectory unlocked because writing to a
-      // checkpoint is synchronized by the parent ephemeris.
+      absl::ReaderMutexLock l(&lock_);
       adjusted_tolerance_.WriteToMessage(message->mutable_adjusted_tolerance());
       message->set_is_unstable(is_unstable_);
       message->set_degree(degree_);
@@ -470,8 +469,7 @@ ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
   if constexpr (base::is_serializable_v<Frame>) {
     return [this](
                serialization::ContinuousTrajectory::Checkpoint const& message) {
-      // This takes place with the trajectory unlocked because reading from a
-      // checkpoint is synchronized by the parent ephemeris.
+      absl::MutexLock l(&lock_);
       adjusted_tolerance_ =
           Length::ReadFromMessage(message.adjusted_tolerance());
       is_unstable_ = message.is_unstable();
@@ -483,6 +481,7 @@ ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
             {Instant::ReadFromMessage(l.instant()),
              DegreesOfFreedom<Frame>::ReadFromMessage(l.degrees_of_freedom())});
       }
+      return Status::OK;
     };
   } else {
     return nullptr;

@@ -889,14 +889,14 @@ Checkpointer<serialization::Ephemeris>::Reader
 Ephemeris<Frame>::MakeCheckpointerReader() {
   if constexpr (base::is_serializable_v<Frame>) {
     return [this](serialization::Ephemeris::Checkpoint const& message) {
-      // No locking here because reading from a checkpoint is synchronized by
-      // the caller.
+      absl::MutexLock l(&lock_);
       instance_ = FixedStepSizeIntegrator<NewtonianMotionEquation>::Instance::
           ReadFromMessage(
               message.instance(),
               MakeMassiveBodiesNewtonianMotionEquation(),
               /*append_state=*/
               std::bind(&Ephemeris::AppendMassiveBodiesState, this, _1));
+      return Status::OK;
     };
   } else {
     return nullptr;
@@ -924,15 +924,16 @@ Status Ephemeris<Frame>::Reanimate() {
               accuracy_parameters_.fitting_tolerance_));
     }
 
+    RETURN_IF_STOPPED;
     auto instance = FixedStepSizeIntegrator<NewtonianMotionEquation>::Instance::
         ReadFromMessage(message.instance(),
                         MakeMassiveBodiesNewtonianMotionEquation(),
                         append_massive_bodies_state);
+
+    return Status::OK;
   };
 
-  checkpointer_->ReadFromAllCheckpointsBackwards(reader);
-
-  return Status::OK;
+  return checkpointer_->ReadFromAllCheckpointsBackwards(reader);
 }
 
 template<typename Frame>

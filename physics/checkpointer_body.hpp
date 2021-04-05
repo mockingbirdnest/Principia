@@ -12,6 +12,7 @@ namespace physics {
 namespace internal_checkpointer {
 
 using astronomy::InfiniteFuture;
+using base::Error;
 
 template<typename Message>
 Checkpointer<Message>::Checkpointer(Writer writer, Reader reader)
@@ -47,18 +48,20 @@ bool Checkpointer<Message>::WriteToCheckpointIfNeeded(
 }
 
 template<typename Message>
-void Checkpointer<Message>::ReadFromOldestCheckpoint() const {
+Status Checkpointer<Message>::ReadFromOldestCheckpoint() const {
   typename Message::Checkpoint const* checkpoint = nullptr;
   {
     absl::ReaderMutexLock l(&lock_);
-    CHECK(!checkpoints_.empty());
+    if (checkpoints_.empty()) {
+      return Status(Error::NOT_FOUND, "No checkpoint");
+    }
     checkpoint = &checkpoints_.cbegin()->second;
   }
-  reader_(*checkpoint);
+  return reader_(*checkpoint);
 }
 
 template<typename Message>
-void Checkpointer<Message>::ReadFromAllCheckpointsBackwards(
+Status Checkpointer<Message>::ReadFromAllCheckpointsBackwards(
     Reader const& reader) const {
   // We'll be running the callback without the lock, so we take a snapshot of
   // the checkpoints.
@@ -70,8 +73,9 @@ void Checkpointer<Message>::ReadFromAllCheckpointsBackwards(
     }
   }
   for (auto const checkpoint : checkpoints) {
-    reader(*checkpoint);
+    RETURN_IF_ERROR(reader(*checkpoint));
   }
+  return Status::OK;
 }
 
 template<typename Message>
