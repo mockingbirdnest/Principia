@@ -160,7 +160,14 @@ Status ContinuousTrajectory<Frame>::Prepend(
     // conceivable that small differences would occur when moving a save from
     // one machine to another.  Because of this, we cannot check that the
     // trajectories are "continuous" at the junction, whatever that means.
-    if (*first_time_ == trajectory.polynomials_.back().t_max) {
+    if (*first_time_ != trajectory.polynomials_.back().t_max) {
+      // Lenient, but not too much: we don't want the last polynomial of
+      // |trajectory| to start *after* our |first_time_|.
+      CHECK_LT(*trajectory.first_time_, *first_time_);
+      CHECK(trajectory.polynomials_.size() == 1 ||
+            trajectory.polynomials_[trajectory.polynomials_.size() - 2].t_max <
+                *first_time_);
+
       status =
           Status(Error::OUT_OF_RANGE,
                  absl::StrCat(
@@ -168,13 +175,7 @@ Status ContinuousTrajectory<Frame>::Prepend(
                      DebugString(trajectory.polynomials_.back().t_max),
                      " vs. ",
                      DebugString(*first_time_)));
-
-      // Lenient, but not too much: we don't want the last polynomial of
-      // |trajectory| to start *after* our |first_time_|.
-      CHECK_LT(*trajectory.first_time_, *first_time_);
-      CHECK(trajectory.polynomials_.size() == 1 ||
-            trajectory.polynomials_[trajectory.polynomials_.size() - 2].t_max <
-                *first_time_);
+      trajectory.polynomials_.back().t_max = *first_time_;
     }
     // This operation is in O(trajectory.size()).
     std::move(polynomials_.begin(),

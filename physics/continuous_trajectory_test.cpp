@@ -55,6 +55,7 @@ using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
+using testing_utilities::StatusIs;
 using testing_utilities::operator""_⑴;
 using ::testing::Sequence;
 using ::testing::SetArgReferee;
@@ -620,6 +621,7 @@ TEST_F(ContinuousTrajectoryTest, Prepend) {
   EXPECT_EQ(t1 + step, trajectory1->t_min());
   EXPECT_EQ(t1 + (((number_of_steps1 - 1) / 8) * 8 + 1) * step,
             trajectory1->t_max());
+  auto const tm = trajectory1->t_max();
 
   Instant const t2 = t1 + number_of_steps1 * step;
   auto position_function2 =
@@ -644,28 +646,37 @@ TEST_F(ContinuousTrajectoryTest, Prepend) {
                  t2 - step,  // First point at t2.
                  *trajectory2);
   EXPECT_EQ(t2, trajectory2->t_min());
-  EXPECT_EQ(t1 + (((number_of_steps1 + number_of_steps2) / 8) * 8 + 1) * step,
+  EXPECT_EQ(t2 + (number_of_steps2 / 8) * 8 * step,
             trajectory2->t_max());
 
-  // Prepend one trajectory to the other.  We tolerate small errors at the
-  // junction.
-  LOG(ERROR) << trajectory2->Prepend(std::move(*trajectory1));
+  // Gap between the trajectories.
+  EXPECT_LT(trajectory1->t_max(), trajectory2->t_min());
+
+  // Prepend one trajectory to the other.  Check that we properly handle the
+  // gap.
+  auto const status = trajectory2->Prepend(std::move(*trajectory1));
+  EXPECT_THAT(status, StatusIs(Error::OUT_OF_RANGE));
+  LOG(ERROR) << status;
 
   // Verify the resulting trajectory.
-  EXPECT_EQ(t1, trajectory2->t_min());
-  EXPECT_EQ(t1 + (((number_of_steps1 + number_of_steps2) / 8) * 8 + 1) * step,
+  EXPECT_EQ(t1 + step, trajectory2->t_min());
+  EXPECT_EQ(t2 + (number_of_steps2 / 8) * 8 * step,
             trajectory2->t_max());
-  for (Instant time = t1;
+  for (Instant time = trajectory2->t_min();
        time <= t2;
        time += step / number_of_substeps) {
-    EXPECT_EQ(trajectory2->EvaluatePosition(time), position_function1(time));
-    EXPECT_EQ(trajectory2->EvaluateVelocity(time), velocity_function1(time));
+    EXPECT_THAT(trajectory2->EvaluatePosition(time),
+                AlmostEquals(position_function1(time), 0, 10)) << time;
+    EXPECT_THAT(trajectory2->EvaluateVelocity(time),
+                AlmostEquals(velocity_function1(time), 0, 4)) << time;
   }
-  for (Instant time = t2;
+  for (Instant time = t2 + step / number_of_substeps;
        time <= trajectory2->t_max();
        time += step / number_of_substeps) {
-    EXPECT_EQ(trajectory2->EvaluatePosition(time), position_function2(time));
-    EXPECT_EQ(trajectory2->EvaluateVelocity(time), velocity_function2(time));
+    EXPECT_THAT(trajectory2->EvaluatePosition(time),
+                AlmostEquals(position_function2(time), 0, 256)) << time;
+    EXPECT_THAT(trajectory2->EvaluateVelocity(time),
+                AlmostEquals(velocity_function2(time), 0, 34)) << time;
   }
 }
 
