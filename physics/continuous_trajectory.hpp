@@ -73,7 +73,14 @@ class ContinuousTrajectory : public Trajectory<Frame> {
                 DegreesOfFreedom<Frame> const& degrees_of_freedom)
       EXCLUDES(lock_);
 
-  //TODO(phl):Comment.  &&
+  // Prepends the given |trajectory| to this one.  Ideally the last point of
+  // |trajectory| should match the first point of this object, but we are
+  // tolerant of small errors and return a non-OK status in this case.
+  // Note the rvalue reference: |ContinuousTrajectory| is not moveable and not
+  // copyable, but the |InstantPolynomialPairs| are moveable and we really want
+  // to move them.  We could pass by non-const lvalue reference, but we would
+  // rather make it clear at the calling site that the object is consumed, so
+  // we require the use of std::move.
   Status Prepend(ContinuousTrajectory&& trajectory);
 
   // Implementation of the interface |Trajectory|.
