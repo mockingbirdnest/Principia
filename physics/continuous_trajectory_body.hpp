@@ -133,57 +133,57 @@ Status ContinuousTrajectory<Frame>::Append(
 
 template<typename Frame>
 Status ContinuousTrajectory<Frame>::Prepend(
-    ContinuousTrajectory&& trajectory) {
+    ContinuousTrajectory&& prefix) {
   Status status;
   absl::MutexLock l1(&lock_);
-  absl::MutexLock l2(&trajectory.lock_);
+  absl::MutexLock l2(&prefix.lock_);
 
-  CHECK_EQ(step_, trajectory.step_);
-  CHECK_EQ(tolerance_, trajectory.tolerance_);
+  CHECK_EQ(step_, prefix.step_);
+  CHECK_EQ(tolerance_, prefix.tolerance_);
 
-  if (trajectory.polynomials_.empty()) {
+  if (prefix.polynomials_.empty()) {
     // Nothing to do.
     return Status::OK;
   } else if (polynomials_.empty()) {
-    // All the data comes from |trajectory|.  This must set all the fields of
+    // All the data comes from |prefix|.  This must set all the fields of
     // this object that are not set at construction.
-    adjusted_tolerance_ = trajectory.adjusted_tolerance_;
-    is_unstable_ = trajectory.is_unstable_;
-    degree_ = trajectory.degree_;
-    degree_age_ = trajectory.degree_age_;
-    polynomials_ = std::move(trajectory.polynomials_);
-    last_accessed_polynomial_ = trajectory.last_accessed_polynomial_;
-    first_time_ = trajectory.first_time_;
-    last_points_ = trajectory.last_points_;
+    adjusted_tolerance_ = prefix.adjusted_tolerance_;
+    is_unstable_ = prefix.is_unstable_;
+    degree_ = prefix.degree_;
+    degree_age_ = prefix.degree_age_;
+    polynomials_ = std::move(prefix.polynomials_);
+    last_accessed_polynomial_ = prefix.last_accessed_polynomial_;
+    first_time_ = prefix.first_time_;
+    last_points_ = prefix.last_points_;
   } else {
     // The polynomials must be aligned, but we are lenient because it's
     // conceivable that small differences would occur when moving a save from
     // one machine to another.  Because of this, we cannot check that the
     // trajectories are "continuous" at the junction, whatever that means.
-    if (*first_time_ != trajectory.polynomials_.back().t_max) {
+    if (*first_time_ != prefix.polynomials_.back().t_max) {
       // Lenient, but not too much: we don't want the last polynomial of
-      // |trajectory| to start *after* our |first_time_|.
-      CHECK_LT(*trajectory.first_time_, *first_time_);
-      CHECK(trajectory.polynomials_.size() == 1 ||
-            trajectory.polynomials_[trajectory.polynomials_.size() - 2].t_max <
+      // |prefix| to start *after* our |first_time_|.
+      CHECK_LT(*prefix.first_time_, *first_time_);
+      CHECK(prefix.polynomials_.size() == 1 ||
+            prefix.polynomials_[prefix.polynomials_.size() - 2].t_max <
                 *first_time_);
 
       status =
           Status(Error::OUT_OF_RANGE,
                  absl::StrCat(
                      "Prepending a trajectory with inexact time alignment: ",
-                     DebugString(trajectory.polynomials_.back().t_max),
+                     DebugString(prefix.polynomials_.back().t_max),
                      " vs. ",
                      DebugString(*first_time_)));
-      trajectory.polynomials_.back().t_max = *first_time_;
+      prefix.polynomials_.back().t_max = *first_time_;
     }
-    // This operation is in O(trajectory.size()).
+    // This operation is in O(prefix.size()).
     std::move(polynomials_.begin(),
               polynomials_.end(),
-              std::back_inserter(trajectory.polynomials_));
-    polynomials_.swap(trajectory.polynomials_);
-    first_time_ = trajectory.first_time_;
-    // Note that any |last_points_| in |trajectory| are irrelevant because they
+              std::back_inserter(prefix.polynomials_));
+    polynomials_.swap(prefix.polynomials_);
+    first_time_ = prefix.first_time_;
+    // Note that any |last_points_| in |prefix| are irrelevant because they
     // correspond to a time interval covered by the first polynomial of this
     // object.
   }
