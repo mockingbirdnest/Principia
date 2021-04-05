@@ -36,6 +36,7 @@ using base::dynamic_cast_not_null;
 using base::Error;
 using base::FindOrDie;
 using base::make_not_null_unique;
+using base::MakeStoppableThread;
 using geometry::Barycentre;
 using geometry::Displacement;
 using geometry::InnerProduct;
@@ -227,7 +228,7 @@ Ephemeris<Frame>::FixedStepParameters::ReadFromMessage(
 
 template<typename Frame>
 Ephemeris<Frame>::Ephemeris(
-    std::vector<not_null<std::unique_ptr<MassiveBody const>>>&& bodies,
+    std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies,
     std::vector<DegreesOfFreedom<Frame>> const& initial_state,
     Instant const& initial_time,
     AccuracyParameters const& accuracy_parameters,
@@ -236,25 +237,14 @@ Ephemeris<Frame>::Ephemeris(
       fixed_step_parameters_(std::move(fixed_step_parameters)),
       checkpointer_(
           make_not_null_unique<Checkpointer<serialization::Ephemeris>>(
-              /*reader=*/MakeCheckpointerReader(this),
-              /*writer=*/
-              [this](not_null<serialization::Ephemeris*> const message) {
-                WriteToCheckpoint(message);
-              })),
+              MakeCheckpointerWriter(),
+              MakeCheckpointerReader())),
       protector_(make_not_null_unique<Protector>()) {
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
   IntegrationProblem<NewtonianMotionEquation> problem;
-  problem.equation.compute_acceleration = [this](
-      Instant const& t,
-      std::vector<Position<Frame>> const& positions,
-      std::vector<Vector<Acceleration, Frame>>& accelerations) {
-    ComputeMassiveBodiesGravitationalAccelerations(t,
-                                                   positions,
-                                                   accelerations);
-    return Status::OK;
-  };
+  problem.equation = MakeMassiveBodiesNewtonianMotionEquation();
 
   typename NewtonianMotionEquation::SystemState& state = problem.initial_state;
   state.time = DoublePrecision<Instant>(initial_time);
@@ -304,6 +294,11 @@ Ephemeris<Frame>::Ephemeris(
       /*append_state=*/std::bind(
           &Ephemeris::AppendMassiveBodiesState, this, _1),
       fixed_step_parameters_.step_);
+}
+
+template<typename Frame>
+Ephemeris<Frame>::~Ephemeris() {
+  reanimator_ = jthread();
 }
 
 template<typename Frame>
@@ -427,8 +422,8 @@ Ephemeris<Frame>::NewInstance(
         last_degrees_of_freedom.velocity());
   }
 
-  auto const append_state =
-      std::bind(&Ephemeris::AppendMasslessBodiesState, _1, trajectories);
+  auto const append_state = std::bind(
+      &Ephemeris::AppendMasslessBodiesStateToTrajectories, _1, trajectories);
 
   // The construction of the instance may evaluate the degrees of freedom of the
   // bodies.
@@ -704,9 +699,8 @@ void Ephemeris<Frame>::WriteToMessage(
 
   // Make sure that a checkpoint exists, otherwise we would not serialize some
   // parts of the state.
-  CreateCheckpointIfNeeded(instance_->time().value);
-  Instant const checkpoint_time = checkpointer_->WriteToMessage(message);
-  checkpoint_time.WriteToMessage(message->mutable_checkpoint_time());
+  WriteToCheckpointIfNeeded(instance_->time().value);
+  checkpointer_->WriteToMessage(message->mutable_checkpoint());
 
   // The bodies are serialized in the order in which they were given at
   // construction.
@@ -732,6 +726,7 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
     serialization::Ephemeris const& message) {
   bool const is_pre_ἐρατοσθένης = !message.has_accuracy_parameters();
   bool const is_pre_fatou = !message.has_checkpoint_time();
+  bool const is_pre_grassmann = message.checkpoint_size() == 0;
 
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   for (auto const& body : message.body()) {
@@ -774,17 +769,39 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
     ++index;
   }
 
-  Instant checkpoint_time;
-  if (is_pre_fatou) {
-    checkpoint_time = Instant::ReadFromMessage(
-        message.instance().current_state().time().value().point());
+  if (is_pre_grassmann) {
+    serialization::Ephemeris serialized_ephemeris;
+    auto* const checkpoint = serialized_ephemeris.add_checkpoint();
+    if (is_pre_fatou) {
+      *checkpoint->mutable_time() =
+          message.instance().current_state().time().value().point();
+    } else {
+      *checkpoint->mutable_time() = message.checkpoint_time();
+    }
+    *checkpoint->mutable_instance() = message.instance();
+    ephemeris->checkpointer_ =
+        Checkpointer<serialization::Ephemeris>::ReadFromMessage(
+            ephemeris->MakeCheckpointerWriter(),
+            ephemeris->MakeCheckpointerReader(),
+            serialized_ephemeris.checkpoint());
   } else {
-    checkpoint_time = Instant::ReadFromMessage(message.checkpoint_time());
+    ephemeris->checkpointer_ =
+        Checkpointer<serialization::Ephemeris>::ReadFromMessage(
+            ephemeris->MakeCheckpointerWriter(),
+            ephemeris->MakeCheckpointerReader(),
+            message.checkpoint());
   }
-  ephemeris->checkpointer_->ReadFromMessage(checkpoint_time, message);
+
+  // WriteToMessage always creates a checkpoint, and so does the compatibility
+  // code.
+  ephemeris->checkpointer_->ReadFromOldestCheckpoint();
+
+  // Start a thread to asynchronously reconstruct the past using checkpoints.
+  ephemeris->reanimator_ =
+      MakeStoppableThread(std::bind(&Ephemeris::Reanimate, ephemeris.get()));
+
   // The ephemeris will need to be prolonged as needed when deserializing the
   // plugin.
-
   return ephemeris;
 }
 
@@ -840,17 +857,27 @@ Ephemeris<Frame>::Ephemeris(
       protector_(make_not_null_unique<Protector>()) {}
 
 template<typename Frame>
-void Ephemeris<Frame>::WriteToCheckpoint(
-    not_null<serialization::Ephemeris*> message) {
-  instance_->WriteToMessage(message->mutable_instance());
+void Ephemeris<Frame>::WriteToCheckpointIfNeeded(Instant const& time) const {
+  if constexpr (base::is_serializable_v<Frame>) {
+    lock_.AssertReaderHeld();
+    if (checkpointer_->WriteToCheckpointIfNeeded(
+            time, max_time_between_checkpoints)) {
+      for (auto const& trajectory : trajectories_) {
+        trajectory->checkpointer().WriteToCheckpoint(time);
+      }
+    }
+  }
 }
 
+
 template<typename Frame>
-Checkpointer<serialization::Ephemeris>::Reader
-Ephemeris<Frame>::MakeCheckpointerReader(Ephemeris* const ephemeris) {
+Checkpointer<serialization::Ephemeris>::Writer
+Ephemeris<Frame>::MakeCheckpointerWriter() {
   if constexpr (base::is_serializable_v<Frame>) {
-    return [ephemeris](serialization::Ephemeris const& message) {
-      return ephemeris->ReadFromCheckpoint(message);
+    return [this](
+               not_null<serialization::Ephemeris::Checkpoint*> const message) {
+      lock_.AssertReaderHeld();
+      instance_->WriteToMessage(message->mutable_instance());
     };
   } else {
     return nullptr;
@@ -858,57 +885,68 @@ Ephemeris<Frame>::MakeCheckpointerReader(Ephemeris* const ephemeris) {
 }
 
 template<typename Frame>
-template<typename, typename>
-bool Ephemeris<Frame>::ReadFromCheckpoint(
-    serialization::Ephemeris const& message) {
-  bool const has_checkpoint = message.has_instance();
-  CHECK(has_checkpoint) << message.DebugString();
-  NewtonianMotionEquation equation;
-  equation.compute_acceleration = [this](
-      Instant const& t,
-      std::vector<Position<Frame>> const& positions,
-      std::vector<Vector<Acceleration, Frame>>& accelerations) {
-    ComputeMassiveBodiesGravitationalAccelerations(t,
-                                                    positions,
-                                                    accelerations);
-    return Status::OK;
-  };
-
-  instance_ = FixedStepSizeIntegrator<NewtonianMotionEquation>::Instance::
-      ReadFromMessage(
-          message.instance(),
-          equation,
-          /*append_state=*/
-          std::bind(&Ephemeris::AppendMassiveBodiesState, this, _1));
-  return true;
+Checkpointer<serialization::Ephemeris>::Reader
+Ephemeris<Frame>::MakeCheckpointerReader() {
+  if constexpr (base::is_serializable_v<Frame>) {
+    return [this](serialization::Ephemeris::Checkpoint const& message) {
+      // No locking here because reading from a checkpoint is synchronized by
+      // the caller.
+      instance_ = FixedStepSizeIntegrator<NewtonianMotionEquation>::Instance::
+          ReadFromMessage(
+              message.instance(),
+              MakeMassiveBodiesNewtonianMotionEquation(),
+              /*append_state=*/
+              std::bind(&Ephemeris::AppendMassiveBodiesState, this, _1));
+    };
+  } else {
+    return nullptr;
+  }
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::CreateCheckpointIfNeeded(Instant const& time) const {
-  if constexpr (base::is_serializable_v<Frame>) {
-    lock_.AssertReaderHeld();
-    if (checkpointer_->CreateIfNeeded(time, max_time_between_checkpoints)) {
-      for (auto const& trajectory : trajectories_) {
-        trajectory->checkpointer().CreateUnconditionally(time);
-      }
+Status Ephemeris<Frame>::Reanimate() {
+  std::vector<not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>>
+      trajectories;
+
+  auto append_massive_bodies_state =
+      [&trajectories](
+          typename NewtonianMotionEquation::SystemState const& state) {
+        AppendMassiveBodiesStateToTrajectories(state, trajectories);
+      };
+
+  auto reader = [this, &append_massive_bodies_state, &trajectories](
+                    serialization::Ephemeris::Checkpoint const& message) {
+    // Create or reset the trajectories.
+    for (int i = 0; i < trajectories_.size(); ++i) {
+      trajectories.emplace_back(
+            std::make_unique<ContinuousTrajectory<Frame>>(
+              fixed_step_parameters_.step_,
+              accuracy_parameters_.fitting_tolerance_));
     }
-  }
+
+    auto instance = FixedStepSizeIntegrator<NewtonianMotionEquation>::Instance::
+        ReadFromMessage(message.instance(),
+                        MakeMassiveBodiesNewtonianMotionEquation(),
+                        append_massive_bodies_state);
+  };
+
+  checkpointer_->ReadFromAllCheckpointsBackwards(reader);
+
+  return Status::OK;
 }
 
 template<typename Frame>
 void Ephemeris<Frame>::AppendMassiveBodiesState(
     typename NewtonianMotionEquation::SystemState const& state) {
   lock_.AssertHeld();
-  Instant const time = state.time.value;
-  int index = 0;
-  for (int i = 0; i < trajectories_.size(); ++i) {
-    auto const& trajectory = trajectories_[i];
-    auto const status = trajectory->Append(
-        time,
-        DegreesOfFreedom<Frame>(state.positions[index].value,
-                                state.velocities[index].value));
 
-    // Handle the apocalypse.
+  // Extend the trajectories.
+  auto const statuses = AppendMassiveBodiesStateToTrajectories(state,
+                                                               trajectories_);
+
+  // Handle the apocalypse.
+  for (int i = 0; i < statuses.size(); ++i) {
+    auto const& status = statuses[i];
     if (!status.ok()) {
       last_severe_integration_status_ =
           Status(status.error(),
@@ -916,25 +954,58 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
                      status.message());
       LOG(ERROR) << "New Apocalypse: " << last_severe_integration_status_;
     }
-
-    ++index;
   }
 
-  CreateCheckpointIfNeeded(time);
+  WriteToCheckpointIfNeeded(state.time.value);
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::AppendMasslessBodiesState(
+template<typename ContinuousTrajectoryPtr>
+std::vector<Status> Ephemeris<Frame>::AppendMassiveBodiesStateToTrajectories(
+    typename NewtonianMotionEquation::SystemState const& state,
+    std::vector<not_null<ContinuousTrajectoryPtr>> const& trajectories) {
+  std::vector<Status> statuses;
+  Instant const time = state.time.value;
+  int index = 0;
+  for (auto& trajectory : trajectories) {
+    statuses.push_back(trajectory->Append(
+        time,
+        DegreesOfFreedom<Frame>(state.positions[index].value,
+                                state.velocities[index].value)));
+    ++index;
+  }
+  return statuses;
+}
+
+template<typename Frame>
+void Ephemeris<Frame>::AppendMasslessBodiesStateToTrajectories(
     typename NewtonianMotionEquation::SystemState const& state,
     std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories) {
+  Instant const time = state.time.value;
   int index = 0;
   for (auto& trajectory : trajectories) {
     trajectory->Append(
-        state.time.value,
+        time,
         DegreesOfFreedom<Frame>(state.positions[index].value,
                                 state.velocities[index].value));
     ++index;
   }
+}
+
+template<typename Frame>
+typename Ephemeris<Frame>::NewtonianMotionEquation
+Ephemeris<Frame>::MakeMassiveBodiesNewtonianMotionEquation() {
+  NewtonianMotionEquation equation;
+  equation.compute_acceleration =
+      [this](Instant const& t,
+             std::vector<Position<Frame>> const& positions,
+             std::vector<Vector<Acceleration, Frame>>& accelerations) {
+        ComputeMassiveBodiesGravitationalAccelerations(t,
+                                                       positions,
+                                                       accelerations);
+        return Status::OK;
+      };
+  return equation;
 }
 
 template<typename Frame>
@@ -1200,10 +1271,10 @@ Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
                 std::cref(parameters.speed_integration_tolerance_),
                 _1, _2);
 
-  typename AdaptiveStepSizeIntegrator<ODE>::AppendState append_state;
-  append_state = std::bind(
-      &Ephemeris::AppendMasslessBodiesState, _1, std::cref(trajectories));
-
+  typename AdaptiveStepSizeIntegrator<ODE>::AppendState append_state =
+      std::bind(&Ephemeris::AppendMasslessBodiesStateToTrajectories,
+                _1,
+                std::cref(trajectories));
   auto const instance =
       parameters.integrator_->NewInstance(problem,
                                           append_state,

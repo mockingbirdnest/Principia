@@ -32,9 +32,6 @@ using quantities::Length;
 using quantities::Time;
 using quantities::si::Metre;
 
-constexpr std::int64_t max_dense_intervals = 10'000;
-constexpr Length downsampling_tolerance = 10 * Metre;
-
 bool operator!=(Vessel::PrognosticatorParameters const& left,
                 Vessel::PrognosticatorParameters const& right) {
   return left.first_time != right.first_time ||
@@ -163,7 +160,7 @@ void Vessel::PrepareHistory(Instant const& t) {
           part.mass());
     });
     CHECK(psychohistory_ == nullptr);
-    history_->SetDownsampling(max_dense_intervals, downsampling_tolerance);
+    history_->SetDownsampling(MaxDenseIntervals, DownsamplingTolerance);
     history_->Append(t, calculator.Get());
     psychohistory_ = history_->NewForkAtLast();
     prediction_ = psychohistory_->NewForkAtLast();
@@ -463,8 +460,8 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   }
 
   if (is_pre_陈景润) {
-    vessel->history_->SetDownsampling(max_dense_intervals,
-                                      downsampling_tolerance);
+    vessel->history_->SetDownsampling(MaxDenseIntervals,
+                                      DownsamplingTolerance);
   }
 
   if (message.has_flight_plan()) {

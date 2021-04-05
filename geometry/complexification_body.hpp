@@ -33,7 +33,7 @@ Complexification<Vector> Complexification<Vector>::Conjugate() const {
 }
 
 template<typename Vector>
-typename Hilbert<Vector>::InnerProductType Complexification<Vector>::Norm²()
+typename Hilbert<Vector>::Norm²Type Complexification<Vector>::Norm²()
     const {
   return Hilbert<Vector>::Norm²(real_part_) +
          Hilbert<Vector>::Norm²(imaginary_part_);
@@ -192,6 +192,21 @@ Complexification<Quotient<LVector, RVector>> operator/(
   auto const& denominator = rr * rr + ri * ri;
   return Complexification<Quotient<LVector, RVector>>(
       (lr * rr + li * ri) / denominator, (-lr * ri + li * rr) / denominator);
+}
+
+template<typename LVector, typename RVector>
+Complexification<typename Hilbert<LVector, RVector>::InnerProductType>
+InnerProduct(Complexification<LVector> const& left,
+             Complexification<RVector> const& right) {
+  return Complexification<typename Hilbert<LVector, RVector>::InnerProductType>(
+      Hilbert<LVector, RVector>::InnerProduct(left.real_part(),
+                                              right.real_part()) +
+          Hilbert<LVector, RVector>::InnerProduct(left.imaginary_part(),
+                                                  right.imaginary_part()),
+      Hilbert<LVector, RVector>::InnerProduct(left.imaginary_part(),
+                                              right.real_part()) -
+          Hilbert<LVector, RVector>::InnerProduct(left.real_part(),
+                                                  right.real_part()));
 }
 
 template<typename Vector>
