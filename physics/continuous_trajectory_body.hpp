@@ -132,6 +132,52 @@ Status ContinuousTrajectory<Frame>::Append(
 }
 
 template<typename Frame>
+Status ContinuousTrajectory<Frame>::Prepend(
+    ContinuousTrajectory const& trajectory) {
+  Status status;
+  absl::MutexLock l1(&lock_);
+  absl::ReaderMutexLock l2(&trajectory.lock_);
+
+  CHECK_EQ(step_, trajectory.step_);
+  CHECK_EQ(tolerance_, trajectory.tolerance_);
+
+  if (trajectory.polynomials_.empty()) {
+    // Nothing to do.
+    return Status::OK;
+  } else if (polynomials_.empty()) {
+    // All the data comes from |trajectory|.  This must set all the fields of
+    // this object that are not set at construction.
+    adjusted_tolerance_ = trajectory.adjusted_tolerance_;
+    is_unstable_ = trajectory.is_unstable_;
+    degree_ = trajectory.degree_;
+    degree_age_ = trajectory.degree_age_;
+    polynomials_ = trajectory.polynomials_;
+    last_accessed_polynomial_ = trajectory.last_accessed_polynomial_;
+    first_time_ = trajectory.first_time_;
+    last_points_ = trajectory.last_points_;
+  } else {
+    // The polynomials must be aligned, but we are lenient because it's
+    // conceivable that small differences would occur when moving a save from
+    // one machine to another.
+    if (*first_time_ != trajectory.polynomials_.back().t_max) {
+      status = Status(Error::OUT_OF_RANGE);
+      CHECK_LT(*trajectory.first_time_, first_time_);
+      CHECK(trajectory.polynomials_.size() == 1 ||
+      trajectory.polynomials_[trajectory.polynomials_.size() - 2].t_max <)
+    }
+    polynomials_.insert(polynomials_.begin(),
+                        trajectory.polynomials_.cbegin(),
+                        trajectory.polynomials_.cend());
+    first_time_ = trajectory.first_time_;
+    // Note that any |last_points_| in |trajectory| are irrelevant because they
+    // correspond to a time interval covered by the first polynomial of this
+    // object.
+  }
+
+  return status;
+}
+
+template<typename Frame>
 Instant ContinuousTrajectory<Frame>::t_min() const {
   absl::ReaderMutexLock l(&lock_);
   return t_min_locked();

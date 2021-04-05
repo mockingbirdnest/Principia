@@ -73,6 +73,9 @@ class ContinuousTrajectory : public Trajectory<Frame> {
                 DegreesOfFreedom<Frame> const& degrees_of_freedom)
       EXCLUDES(lock_);
 
+  //TODO(phl):Comment.
+  Status Prepend(ContinuousTrajectory const& trajectory);
+
   // Implementation of the interface |Trajectory|.
 
   // |t_max| may be less than the last time passed to Append.  For an empty
@@ -177,7 +180,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   Time const step_;
   Length const tolerance_;
   not_null<
-      std::unique_ptr<Checkpointer<serialization::ContinuousTrajectory>>>
+      std::unique_ptr<Checkpointer<serialization::ContinuousTrajectory>>> const
       checkpointer_;
 
   mutable absl::Mutex lock_;
