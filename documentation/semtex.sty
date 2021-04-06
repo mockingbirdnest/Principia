@@ -143,26 +143,37 @@
 % This declares delimiters #1* and #1, which both typeset according to the size of
 % their contents rendered under the delimsize flag.  We omit subscripts and superscripts
 % under that flag, so that they are allowed to stick out from delimiters.
-% The starred version grows when nested (its size under delimsize includes the delimiters as well
-% as a subscript to ensure nonzero growth), whereas the starless version remains at constant size.
+% The starred version grows when nested (it is sized under growingdelimsize, and under that flag
+% includes the delimiters as well as a subscript to ensure nonzero growth), whereas the starless
+% version remains at constant size.
+% The two flags are there to ensure that if [] is declared with * () without,
+% [([])] has the parentheses at the size as the inner brackets, rather than that of the outer
+% ones.
 \def\DeclareDelimiterX#1[#2]#3#4#5 {
   \DeclareDocumentCommand{#1}{s#2}{
     \IfBooleanTF{##1}{
     \if@delimsize
       % We do not bother with the delimiter wrappers etc.,
       % as horizontal kerning is irrelevant to (vertical) delimiter size.
-      {\left#3{#5}\right#4}_0
+      \if@growingdelimsize
+        {\left#3{#5}\right#4}_0
+      \else
+        {\left#3\@growingdelimsizetrue{#5}\@growingdelimsizefalse\right#4}
+      \fi
     \else
       \begingroup
         \@delimsizetrue
+        \@growingdelimsizetrue
         \@delimiterWrapper{\left#3}{
           \vphantom{#5}
           {\kern-\nulldelimiterspace}
         }{\right.}
         \def\@delimcontent{#5}
         \@delimsizefalse
+        \@growingdelimsizefalse
         {#5}
         \@delimsizetrue
+        \@growingdelimsizetrue
         \@delimiterWrapper{\left.}{
           {\kern-\nulldelimiterspace}
           \vphantom{#5}
@@ -276,6 +287,8 @@
 \makeatletter
 \newif\if@delimsize
 \@delimsizefalse
+\newif\if@growingdelimsize
+\@growingdelimsizefalse
 \livechars@
 \newcommand^[1]{\if@delimsize{}\else\sp{#1}\fi}
 \newcommand_[1]{\if@delimsize{}\else\sb{#1}\fi}

@@ -13,7 +13,8 @@
 
 %%%% Shorthands.
 \DeclareMathOperator{\bias}{\mathit{bias}}
-% Rounding brackets will be heavily nested, so we make them grow for readability.
+% Rounding brackets will be heavily nested, and reading the nesting depth is critically important,
+% so we make them grow for readability.
 \newcommand{\round}[1]{\doubleSquareBrackets*{#1}}
 \newcommand{\roundToZero}[1]{\doubleSquareBrackets{#1}_0}
 \newcommand{\hex}[1]{{_{16}}\mathrm{#1}}
@@ -358,7 +359,7 @@ We use a single iterate of Lagny’s rational method to compute $ξ$,\[
                        {\round{2\round{\round{q^2}q}+y}}}}\text.
 \]
 Note that the subtraction in the numerator is exact by Sterbenz's lemma.
-\marginpar{\small TODO(egg): bound the rounding errors.}
+\marginpar{\small TODO(egg): bound the rounding errors. The cancellation in the numerator makes things mildly annoying.}
 
 Let $Δ \DefineAs \frac{ξ}{\sqrt[3] y}-1$ and  % TODO(egg): Figure out why \cuberoot does not render here.
 \[
