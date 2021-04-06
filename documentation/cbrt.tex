@@ -13,7 +13,8 @@
 
 %%%% Shorthands.
 \DeclareMathOperator{\bias}{\mathit{bias}}
-\newcommand{\round}[1]{\doubleSquareBrackets{#1}}
+% Rounding brackets will be heavily nested, so we make them grow for readability.
+\newcommand{\round}[1]{\doubleSquareBrackets*{#1}}
 \newcommand{\roundToZero}[1]{\doubleSquareBrackets{#1}_0}
 \newcommand{\hex}[1]{{_{16}}\mathrm{#1}}
 
@@ -389,12 +390,22 @@ Specifically, we have\begin{align*}
 The corresponding fixed-point constant is $C_{\mathrm{L}}\DefineAs\hex{2A9F\,7893\,782D\,A1CE} \Multiply 2^{-52}$ for binary64.
 \marginpar{\small
 TODO(egg): $Δ'$ accounts for half of the excess above correct rounding in the final bound; consider using either
-a higher order iterate or Lagny's irrational formula. Also consider optimizing the constants per Canon's  tweet;
-in the rational method there are none to optimize.
+a higher order iterate or Lagny's irrational formula. Also consider optimizing the constants in the method, as in
+\cite{Canon2018}; in the rational method of order $3$ there are none to optimize.
 % 9 Jul 2018
+% https://twitter.com/stephentyrone/status/1016283784067665920
+% A trick I’ve used for years and should write up: you can apply optimization to the iteration,
+% not just the starting guess: x’ = x p(x), select p(x) to be minimax error on bounded initial
+% error in x. This yields a nice family of tunable approximations.
 % https://twitter.com/stephentyrone/status/1016284058438062081
 % Everyone else seems to worry about starting estimate, but use standard iterations,
 % which is appropriate for arbitrary precision, but silly with a fixed precision target.
+% Note:
+% Note that as p gets to be high-order, it converges quickly to the Taylor series for the
+% correction, but there's a nice space with cheap initial approximations and order 2-5 or
+% so, because we can evaluate these polynomials with lower latency then serially-dependent
+% iterations.
+
 }
 
 \subsection{Rounded approximation}
@@ -412,7 +423,15 @@ $2^{-16}$ in binary64.
 
 \subsection{High order iterate}
 
-We use one iterate of the Lagny--Schröder method of order $6$.
+We use one iterate of the Lagny--Schröder method of order $6$:\[
+r\DefineAs\round{x-\round{\frac{
+\round{\round{x\pa{x^3-y}}\round{\round{\round{\round{5x^3}+\round{17y}}x^3}+\round{5\round{y^2}}}}}{
+\round{\round{\round{\round{7x^3} + \round{42 y}}\round{x^6}}+\round{\round{\round{30x^3}+2y}\round{y^2}}}}}}\text,
+\]
+Where $x^3$ is exact thanks to the trailing $0$s of $x$, $\round{x^6}$ is correctly-rounded because it is computed as
+the square of $x^3$, and $x^3-y$ is exact by Sterbenz’s lemma.
+
+
 \marginpar{\small
 TODO(egg): consider order $5$; the truncation error is dominated by the rounding error here.}
 
