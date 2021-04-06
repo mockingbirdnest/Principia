@@ -3,6 +3,7 @@
 \usepackage[backend=biber,firstinits=true,maxnames=100,style=alphabetic,maxalphanames=4,doi=true,isbn=false,url=false,eprint=true]{biblatex}
 \bibliography{bibliography}
 
+\usepackage{pgfornament}
 \usepackage[Mathematics]{semtex}
 \usepackage{chngcntr}
 
@@ -31,14 +32,14 @@
 \noindent
 This document describes the error analysis of the real cube root function \texttt{Cbrt} implemented in \texttt{numerics/cbrt.cpp}.
 
-\section*{On a family of root-finding methods}
+\section*{On some abridged root-finding methods}
 
 We start with a historical overview of a family of root-finding methods.
 
-In \cite{FantetdeLagny1691a}, Lagny first presents the iterates\begin{align}
-\FunctionBody*{a}{\tfrac{1}{2}a+\sqrt{\tfrac{1}{4}a^2+\frac{b}{3a}}}\text, \label{LagnyIrrationalCubeRootIterate}
+In \cite{FantetdeLagny1691a}, Lagny first presents the iterations\begin{align}
+\FunctionBody*{a}{\tfrac{1}{2}a+\sqrt{\tfrac{1}{4}a^2+\frac{b}{3a}}}\text, \label{LagnyIrrationalCubeRootiteration}
 \intertext{hereafter the \emph{irrational method}, and}
-\FunctionBody*{a}{a+\frac{ab}{3a^3+b}}\text, \label{LagnyRationalCubeRootIterate}
+\FunctionBody*{a}{a+\frac{ab}{3a^3+b}}\text, \label{LagnyRationalCubeRootiteration}
 \end{align}
 the \emph{rational method}, for the computation of the cube root
 $\cuberoot{a^3+b}$, mentioning the existence of similar methods for arbitrarily
@@ -76,30 +77,30 @@ which outlines the treatment of overdetermined problems, it is perhaps this rema
 \end{quote}}
 of $E_{n+1}$ by $E_{n}$.
 
-The iterate is $\FunctionBody{a}{x+\frac{1}{2}a}$, where $x$ is a root of $E_{2}$ for the irrational method,
+The iteration is $\FunctionBody{a}{x+\frac{1}{2}a}$, where $x$ is a root of $E_{2}$ for the irrational method,
 and the root of $E_{1}$ for the rational method.
 
 Modern calculus allows us to give a more straightfoward expression for the rational method than was available to Lagny;
 the proof of the following equivalence will be given at the end of this section.
 
 \begin{proposition}
-The iterate of Lagny’s rational method for a polynomial $f$ of degree $p$ is\begin{equation}
-a\mapsto a + \pa{p-1}\frac{\pa{1/f}^{\pa{p-2}}\of{a}}{\pa{1/f}^{\pa{p-1}}\of{a}}\text.\label{LagnyRationalIterate}
+The iteration of Lagny’s rational method for a polynomial $f$ of degree $p$ is\begin{equation}
+a\mapsto a + \pa{p-1}\frac{\pa{1/f}^{\pa{p-2}}\of{a}}{\pa{1/f}^{\pa{p-1}}\of{a}}\text.\label{LagnyRationaliteration}
 \end{equation}
 \end{proposition}
 
 \subsection*{Names}
-The iterate (\ref{LagnyRationalIterate}) is a special case of the \foreign{Algorithmen $\pa{A^λ_ω}$} defined by Schröder for an
+The iteration (\ref{LagnyRationaliteration}) is a special case of the \foreign{Algorithmen $\pa{A^λ_ω}$} defined by Schröder for an
 arbitrary polynomial $f$ in \cite{Schröder1870}, equation (69) and p.~350; specifically, it is $\pa{A^0_{p-1}}$.
 As seen in the proof of the proposition, it is also a special case of Householder’s  equation (14) from \cite[169]{Householder1970},
 which generalizes it by substituting $\frac{f}{g}$ for $f$, and letting $f$ be an arbitrary analytic function. The case
 $g\Identically1$ is mentioned in theorem 4.4.2, and that expression is given explicitly in \cite{SebahGourdon2001}.
 
-For $p=2$ and $f$ an arbitrary polynomial, (\ref{LagnyRationalIterate}) is Newton's method, presented by Wallis in
+For $p=2$ and $f$ an arbitrary polynomial, (\ref{LagnyRationaliteration}) is Newton's method, presented by Wallis in
 \cite[338]{Wallis1685}.
 
 For $p=3$ and $f$ an arbitrary polynomial, it is Halley's rational method, given in \cite[142--143]{Halley1694} in
-an effort to generalize\footnote{Lagny's method is general, in that an iterate is given for any
+an effort to generalize\footnote{Lagny's method is general, in that an iteration is given for any
 polynomial, albeit one whose order changes with the degree. However, while he refers to its
 results---and even corrects a misprint therein---, Halley
 did not have access to a copy of \cite{FantetdeLagny1692},
@@ -118,15 +119,15 @@ or, about Lagny's irrational method for the fifth root,
 Author autem nullibi inveniendi methodum ejuſve demonſtrationem concedit,
 etiamſi maxime deſiderari videatur [...].
 \end{quote}
-Being unaware of this generality, Halley sets out to generalize (\ref{LagnyIrrationalCubeRootIterate}) and (\ref{LagnyRationalCubeRootIterate}) to
-arbitrary polynomials, and does so by keeping the order constant.} Lagny's (\ref{LagnyRationalCubeRootIterate}).
+Being unaware of this generality, Halley sets out to generalize (\ref{LagnyIrrationalCubeRootiteration}) and (\ref{LagnyRationalCubeRootiteration}) to
+arbitrary polynomials, and does so by keeping the order constant.} Lagny's (\ref{LagnyRationalCubeRootiteration}).
 It is usually simply known as Halley's method, as the irrational method---which likewise generalizes Lagny's irrational
 method for $p=3$ while retaining constant order as the degree changes---has comparatively fallen into obscurity;
 see \cite{ScavoThoo1995}.
 
 Considering, as remarked by \cite[334]{Schröder1870}, that a method can often
 be generalized from arbitrary polynomials or rational functions to arbitrary
-analytic functions, we call the iterate (\ref{LagnyRationalIterate})\begin{itemize}
+analytic functions, we call the iteration (\ref{LagnyRationaliteration})\begin{itemize}
 \setlength\itemsep{0em}
 \item Newton’s method when $p=2$, for arbitrary $f$;
 \item Lagny’s rational method when $p>2$ and $f$ is a polynomial of degree $p$;
@@ -137,10 +138,11 @@ We do not simply call this last case ``Schröder’s method'', as it is only a 
 defined in \cite{Schröder1870}, so that the expression would be ambiguous. 
 
 Note that we avoid the name ``Householder’s method'' which appears in \cite{SebahGourdon2001} and ulterior works, as it
-is variably used to refer to either (\ref{LagnyRationalIterate}) or to a method from a different family, namely $\gj_{p+1}$
+is variably used to refer to either (\ref{LagnyRationaliteration}) or to a method from a different family, namely $\gj_{p+1}$
 from \cite[168]{Householder1970}, equation (7), taking $γ_{p+1}\Identically0$ in the resulting iteration;
-$\gj_3$ is the iteration given in section 3.0.3 of \cite{SebahGourdon2001}. As mentioned by Householder,
-both of those were described by Schröder a century prior anyway: Householder’s (7) is Schröder’s (18) from
+$\gj_3$ is\footnote{We are grateful to Peter Barfuss for this observation.} the iteration given in section 3.0.3
+of \cite{SebahGourdon2001}. As mentioned by Householder, both of those were described by Schröder a century prior
+anyway: Householder’s (7) is Schröder’s (18) from
 \cite[327]{Schröder1870}.
 
 \subsection*{Bibliographic note}
@@ -175,7 +177,9 @@ The citation of Prouhet’s letter in \cite{Cantor1861} ends with these words:
 Tout cela est fort abrégé; mais qui nous délivrera des méthodes abrégées, qui n'en finissent pas?}
 \end{quote}
 
-\begin{center}☙❧\end{center}
+% This cul-de-lampe prevents the typesetting engine having too little to fill this page without setting the
+% giant matrix in it, thereby overflowing into the bottom margin.
+\begin{center}\pgfornament[width = 2cm]{59}\end{center}
 
 \subsection*{Proof of the proposition}
 
@@ -263,7 +267,7 @@ The general approach to compute the cube root of $y>0$ is the same as the one de
 \item integer arithmetic is used to get a an initial quick approximation $q$ of $\cuberoot y$;
 \item a root finding method is used to improve that that to an approximation $ξ$ with a third of the precision;
 \item $ξ$ is rounded to a third of the precision, resulting in the rounded approximation $x$ whose cube $x^3$ can be computed exactly;
-\item a single high order iterate of a root finding method is used to get the final result.
+\item a single high order iteration of a root finding method is used to get the final result.
 \end{enumerate}
 
 \subsection*{Notation}
@@ -353,7 +357,7 @@ The values are more precisely\footnote{These may be computed formally, but the e
 leading to $C_{\mathrm{Kahan}}=\hex{2A9F\,7625\,3119\,D328}\Multiply 2^{-52}$ for IEEE 754-2008 binary64.
 However, as we will see in the next section, this value does not optimize the final error, so it is not the one that we use.
 \subsection{Getting to a third of the precision}
-We use a single iterate of Lagny’s rational method to compute $ξ$,\[
+We use a single iteration of Lagny’s rational method to compute $ξ$,\[
 ξ\DefineAs
 \round{q - \round{\frac{\round{\pa{\round{\round{q^2}q}-y} q}}
                        {\round{2\round{\round{q^2}q}+y}}}}\text.
@@ -391,7 +395,7 @@ Specifically, we have\begin{align*}
 The corresponding fixed-point constant is $C_{\mathrm{L}}\DefineAs\hex{2A9F\,7893\,782D\,A1CE} \Multiply 2^{-52}$ for binary64.
 \marginpar{\small
 TODO(egg): $Δ'$ accounts for half of the excess above correct rounding in the final bound; consider using either
-a higher order iterate or Lagny's irrational formula. Also consider optimizing the constants in the method, as in
+a higher order iteration or Lagny's irrational formula. Also consider optimizing the constants in the method, as in
 \cite{Canon2018}; in the rational method of order $3$ there are none to optimize.
 % 9 Jul 2018
 % https://twitter.com/stephentyrone/status/1016283784067665920
@@ -422,9 +426,9 @@ The relative error arising from $\FunctionBody ξ x$ is thus at most\[
 \]
 $2^{-16}$ in binary64.
 
-\subsection{High order iterate}
+\subsection{High order iteration}
 
-We use one iterate of the Lagny--Schröder method of order $6$:\[
+We use one iteration of the Lagny--Schröder method of order $6$:\[
 r\DefineAs\round{x-\round{\frac{
 \round{\round{x\pa{x^3-y}}\round{\round{\round{\round{5x^3}+\round{17y}}x^3}+\round{5\round{y^2}}}}}{
 \round{\round{\round{\round{7x^3} + \round{42 y}}\round{x^6}}+\round{\round{\round{30x^3}+2y}\round{y^2}}}}}}\text,
