@@ -212,12 +212,12 @@ where $d_n\DefineAs0$ for $n>p$, and $e_n\DefineAs0$ for $n>p-1$.
 
 In particular, for $k=1$,\[
 \matE_1=\begin{pmatrix}
-d_0    & d_1    & d_2    & \cdots & d_{p-3} & d_{p-2} & d_{p-1} & d_p     &      &\zeroTR\huge& x^{p-3} E_p \\
-       & d_0    & d_1    & \cdots & d_{p-4} & d_{p-3} & d_{p-2} & d_{p-1} & d_p     &         & x^{p-4} E_p \\[1ex]
-       &        & \ddots &        &         &         &         &         &         & \ddots  & \vdots \\[1ex]
-       &        &        & d_0    & d_1     & d_2     & \multicolumn{3}{c}{\cdots}  & d_{p-2} & x^{0} E_p \\
-\zeroBL\huge&   &        &        & e_0     & e_1     & \multicolumn{3}{c}{\cdots}  & e_{p-3} & x^{0} E_{p-1} \\[1ex]
-       &        &        & \adots &         &         &         &         &         & \adots  & \vdots \\[1ex]
+d_0    & d_1    & d_2    & \cdots & d_{p-3} & d_{p-2} & d_{p-1} & d_p     &      &\zeroTR\huge& x^{p-3} E_p     \\
+       & d_0    & d_1    & \cdots & d_{p-4} & d_{p-3} & d_{p-2} & d_{p-1} & d_p     &         & x^{p-4} E_p     \\[1ex]
+       &        & \ddots &        &         &         &         &         &         & \ddots  & \vdots          \\[1ex]
+       &        &        & d_0    & d_1     & d_2     & \multicolumn{3}{c}{\cdots}  & d_{p-2} & x^{0} E_p       \\
+\zeroBL\huge&   &        &        & e_0     & e_1     & \multicolumn{3}{c}{\cdots}  & e_{p-3} & x^{0} E_{p-1}   \\[1ex]
+       &        &        & \adots &         &         &         &         &         & \adots  & \vdots          \\[1ex]
        &        & e_0    & \cdots & e_{p-5} & e_{p-4} & e_{p-3} & e_{p-2} & e_{p-1} &         & x^{p-5} E_{p-1} \\
        & e_0    & e_1    & \cdots & e_{p-4} & e_{p-3} & e_{p-2} & e_{p-1} &         &         & x^{p-4} E_{p-1} \\
 e_0    & e_1    & e_2    & \cdots & e_{p-3} & e_{p-2} & e_{p-1} &         &      &\zeroBR\huge& x^{p-3} E_{p-1} \\
@@ -274,9 +274,9 @@ The general approach to compute the cube root of $y>0$ is the same as the one de
 \subsection*{Notation}
 We define the fractional part as $\FractionalPart a\DefineAs a-\Floor a\in\intclop{0}{1}$, regardless of the sign of $a$.
 
-The quantities $p\in\N$ (precision in bits) and $\bias\in\N$ are as defined in IEEE 754-2008. 
+The quantities $p\in\N$ (precision in bits) and $\bias\in\N$ are as defined in IEEE 754-2008; $u\DefineAs2^-p$ is the unit roundoff.
 
-We use capital letters fixed-point numbers involved in the computation, and $A>0$ for the normal floating-point number $a>0$ reinterpreted as a binary fixed-point number with $t$ bits after the binary point\footnote{The implementation uses integers (obtained by multiplying the fixed-point numbers by $2^{p-1}$). For consistency with \cite{KahanBindel2001} we work with fixed-point numbers here. Since we do not multiply fixed point numbers together, the expressions are unchanged.},\begin{align*}
+We use capital letters fixed-point numbers involved in the computation, and $A>0$ for the normal floating-point number $a>0$ reinterpreted as a binary fixed-point number with $p-1$ bits after the binary point\footnote{The implementation uses integers (obtained by multiplying the fixed-point numbers by $2^{p-1}$). For consistency with \cite{KahanBindel2001} we work with fixed-point numbers here. Since we do not multiply fixed point numbers together, the expressions are unchanged.},\begin{align*}
   A &\DefineAs \bias + \Floor{\log_2 a} + \FractionalPart \pa{2^{-\Floor{\log_2 a}}a}\\
     &= \bias + \Floor{\log_2 a} + 2^{-\Floor{\log_2 a}}a - 1\text,\\
 \intertext{and \emph{vice versa},}
@@ -312,7 +312,8 @@ so that the properties of $ε$ need only be studied on some interval of the form
 Pick $η\DefineAs2^{\Floor{γ}}$, and $y\in\intclop{η}{8η}=\intclop{2^{\Floor{γ}}}{2^{\Floor{γ}+3}}$,
 so that $\log_2 y\in\intclop{\Floor{γ}}{\Floor{γ}+3}$. Let $k\DefineAs\Floor{\log_2 y}-\Floor{γ}$; note that $k\in\set{0,1,2}$.
 Let $f\DefineAs\FractionalPart\pa{2^{-\Floor{\log_2 y}}y}\in\intclop{0}{1}$.
-Up to at most $1.5$ units in the last place from rounding,\begin{align*}
+Up to at most $\tfrac{3}{2}$ units in the last place from rounding ($1$ from the directed rounding of the division
+by three and $\tfrac{1}{2}$ from the definition of $C$,\begin{align*}
 Q\approx Q'\DefineAs&\bias+\frac{\Floor{\log_2 y}}{3}+\frac{\FractionalPart\pa{2^{-\Floor{\log_2 y}}y}-γ}{3}\text,\\
 =&\bias+\frac{\Floor{γ}+k}{3}+\frac{f-γ}{3}\text,\\
 =&\bias+\frac{k+f-\FractionalPart γ}{3}\text.
@@ -328,7 +329,7 @@ Further, it is negative only if $k=0$, so that\begin{align*}
 \frac{k+f-\FractionalPart γ}{3} & \text{otherwise.}
 \end{cases}
 \end{align*}
-Accordingly, for the quick approximation $q$, we have, again up to at most $1.5$ units in the last place,\begin{align*}
+Accordingly, for the quick approximation $q$, we have, again up to at most $\tfrac{3}{2}$ units in the last place,\begin{align*}
 q\approx q' &= \begin{cases}
 1+\frac{f-\FractionalPart γ}{6} & \text{if }k = 0\text{ and }\FractionalPart γ > f\text, \\
 1+\frac{k+f-\FractionalPart γ}{3} & \text{otherwise,}
@@ -338,7 +339,7 @@ With $\cuberoot y = 2^{\frac{\Floor{γ}+k}{3}}\cuberoot{1+f}$, we can define\[
 ε' \DefineAs \frac{q'}{\cuberoot y}-1\text,
 \]
 which we can express piecewise as a function of $f$ and $k$. This gives us a bound on the relative error,\[
-\abs ε \leq \abs{ε'}+1.5 \Multiply 2^{p-1}\pa{1+\abs{ε'}}\text.
+\abs ε \leq \abs{ε'}\pa{1+3u}\text.
 \]
 The values $γ=0.1009678$ and $ε<3.2\%$ from \cite{KahanBindel2001} may be recovered by choosing $γ$ minimizing the maximum of $\abs{ε'}$ over $y\in\intclop{η}{8η}$,
 or equivalently.\begin{align*}
@@ -373,6 +374,8 @@ Let $Δ \DefineAs \frac{ξ}{\sqrt[3] y}-1$ and  % TODO(egg): Figure out why \cub
 We have, up to rounding errors,\[
 Δ \approx Δ' \DefineAs \frac{ξ'}{\sqrt[3] y}-1\text.
 \]
+Specifically, $\round{\round{q^2}q}-y$ differs from ${q'}^3-y$  by at most $q'\pa{1+u}^2\pa{1+3u}$
+
 With $q'=\cuberoot{y}\pa{1+ε'}$, we can express $Δ'$ using the transformation of
 the relative error error by one step of Lagny’s rational method on the cube root,\[
 Δ' = \frac{2{ε'}^3+{ε'}^4}{3+6ε'+6{ε'}^2+2{ε'}^3}\text.
