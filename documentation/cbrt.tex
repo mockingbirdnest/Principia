@@ -59,7 +59,7 @@ Separate the binomial expansion of $\pa{x+\tfrac{1}{2}a}^p$ into alternating sum
 degree $p$ and $p-1$ in $z$,\begin{align*}
 S_1\DefineAs\sum{\substack{k=0\\2\Divides k}}[p]\binom{p}{k}x^{p-k}\pa{\tfrac{1}{2}a}^k&\text{ and }
 S_2\DefineAs\sum{\substack{k=0\\2\DoesNotDivide k}}[p]\binom{p}{k}x^{p-k}\pa{\tfrac{1}{2}a}^k\text,
-\intertext{and consider the polynomials of degree $p$ and $p-1$ in $x$}
+\intertext{and consider the following polynomials, of degree $p$ and $p-1$ in $x$ almost all $a$:}
 E_{p}\DefineAs S_1-\tfrac{1}{2}R\of{x+\tfrac{1}{2}a}&\text{ and }
 E_{p-1}\DefineAs S_2-\tfrac{1}{2}R\of{x+\tfrac{1}{2}a}\text.
 \end{align*}
@@ -75,7 +75,7 @@ While the application of the root-finding method is described in painstaking det
 which outlines the treatment of overdetermined problems, it is perhaps this remark from \cite[494]{FantetdeLagny1697} which lays it out most clearly:
 \begin{quote}\textfrench{Il n'y a rien de nouveau à remarquer ſur les Problemes plus que déterminez du quatriéme degré. La Regle générale eſt d'égaler tout à zero, \& de diviſer la plus haute équation par la moins élevée, ou l'également élevée l'une par l'autre, continuellement juſques à ce que l'on trouve le reſte ou le diviſeur le plus ſimple.}
 \end{quote}}
-of $E_{n+1}$ by $E_{n}$; its degree is $n-1$.
+of $E_{n+1}$ by $E_{n}$; its degree is $n-1$ for almost all $a$.
 The iteration is $\FunctionBody{a}{x+\frac{1}{2}a}$, where $x$ is a root of $E_{2}$ for the irrational method,
 and the root of $E_{1}$ for the rational method.
 
