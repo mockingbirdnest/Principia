@@ -1,8 +1,5 @@
 ﻿\documentclass[10pt, a4paper, twoside]{basestyle}
 
-\usepackage[backend=biber,firstinits=true,maxnames=100,style=alphabetic,maxalphanames=4,doi=true,isbn=false,url=false,eprint=true]{biblatex}
-\bibliography{bibliography}
-
 \usepackage{pgfornament}
 \usepackage[Mathematics]{semtex}
 \usepackage{chngcntr}
@@ -11,6 +8,11 @@
 \renewcommand{\thesubsection}{\arabic{subsection}}
 
 \setcounter{MaxMatrixCols}{20}
+
+\newlength{\medianToZeroTop}
+\newcommand\zeroBL[1]{\multicolumn{1}{l}{\rlap{\smash{\text{{#1$0$}}}}}}
+\newcommand\zeroBR[1]{\multicolumn{1}{r}{\llap{\smash{\text{{#1$0$}}}}}}
+\newcommand\zeroTR[1]{\multicolumn{1}{r}{\llap{\smash{\setlength{\medianToZeroTop}{\heightof{#1$0$}-1ex}\raisebox{-\medianToZeroTop}{\text{{#1$0$}}}}}}}
 
 %%%% Shorthands.
 \DeclareMathOperator{\bias}{\mathit{bias}}
@@ -196,29 +198,29 @@ where the expression on the right-hand side is the \emph{bigradient} defined in 
 or \cite[19]{Householder1970} (20),\[
 \frac{E_k}{α_k} = \det\begin{pmatrix}
 d_0    & d_1    & d_2 & \multicolumn{3}{c}{\cdots} & d_{2\pa{p-k}-3} & x^{p-k-2} E_p \\
-0      & d_0    & d_1 & \multicolumn{3}{c}{\cdots} & d_{2\pa{p-k}-4} & x^{p-k-3} E_p \\
-\vdots &        & \ddots  &      &                 &                 & \vdots \\
-0      & \cdots & 0       & d_0  & d_1 & \cdots    & d_{p-k-1}       & x^{0} E_p \\
-0      & \cdots & 0       & 0    & e_0 & \cdots    & e_{p-k-2}       & x^{0} E_{p-1} \\
-\vdots &        &         &\adots&     &           &                 & \vdots \\
-0      & 0      & e_0 & \multicolumn{3}{c}{\cdots} & e_{2\pa{p-k}-4} & x^{p-k-2} E_p \\
-0      & e_0    & e_1 & \multicolumn{3}{c}{\cdots} & e_{2\pa{p-k}-4} & x^{p-k-2} E_p \\
+       & d_0    & d_1 & \multicolumn{3}{c}{\cdots} & d_{2\pa{p-k}-4} & x^{p-k-3} E_p \\
+       &        & \ddots  &      &                 &                 & \vdots \\
+       &        &         & d_0  & d_1 & \cdots    & d_{p-k-1}       & x^{0} E_p \\
+\zeroBL\huge&   &         &      & e_0 & \cdots    & e_{p-k-2}       & x^{0} E_{p-1} \\
+       &        &         &\adots&     &           &                 & \vdots \\
+       &        & e_0 & \multicolumn{3}{c}{\cdots} & e_{2\pa{p-k}-4} & x^{p-k-2} E_p \\
+       & e_0    & e_1 & \multicolumn{3}{c}{\cdots} & e_{2\pa{p-k}-4} & x^{p-k-2} E_p \\
 e_0    & e_1    & e_2 & \multicolumn{3}{c}{\cdots} & e_{2\pa{p-k}-3} & x^{p-k-1} E_p \\
 \end{pmatrix}\DefinitionOf\det\matE_k\text,
 \]
 where $d_n\DefineAs0$ for $n>p$, and $e_n\DefineAs0$ for $n>p-1$.
 
-In particular, for $k=1$, the matrix $\matE_1$ is \[
-\begin{pmatrix}
-d_0    & d_1    & d_2    & \cdots & d_{p-3} & d_{p-2} & d_{p-1} & d_p     & 0       & \cdots  & 0       & x^{p-3} E_p \\
-0      & d_0    & d_1    & \cdots & d_{p-4} & d_{p-3} & d_{p-2} & d_{p-1} & d_p     & \ddots  & 0       & x^{p-4} E_p \\
-\vdots &        & \ddots &        &         &         &         &         &         &         &         & \vdots \\
-0      & \cdots & 0      & d_0    & d_1     & d_2     & \multicolumn{4}{c}{\cdots}            & d_{p-2} & x^{0} E_p \\
-0      & \cdots & 0      & 0      & e_0     & e_1     & \multicolumn{4}{c}{\cdots}            & e_{p-3} & x^{0} E_{p-1} \\
-\vdots &        &        & \adots &         &         &         &         &         &         &         & \vdots \\
-0      & 0      & e_0    & \cdots & e_{p-5} & e_{p-4} & e_{p-3} & e_{p-2} & e_{p-1} & \adots  & 0       & x^{p-5} E_{p-1} \\
-0      & e_0    & e_1    & \cdots & e_{p-4} & e_{p-3} & e_{p-2} & e_{p-1} & 0       & \cdots  & 0       & x^{p-4} E_{p-1} \\
-e_0    & e_1    & e_2    & \cdots & e_{p-3} & e_{p-2} & e_{p-1} & 0       & 0       & \cdots  & 0       & x^{p-3} E_{p-1} \\
+In particular, for $k=1$,\[
+\matE_1=\begin{pmatrix}
+d_0    & d_1    & d_2    & \cdots & d_{p-3} & d_{p-2} & d_{p-1} & d_p     &      &\zeroTR\huge& x^{p-3} E_p \\
+       & d_0    & d_1    & \cdots & d_{p-4} & d_{p-3} & d_{p-2} & d_{p-1} & d_p     &         & x^{p-4} E_p \\[1ex]
+       &        & \ddots &        &         &         &         &         &         & \ddots  & \vdots \\[1ex]
+       &        &        & d_0    & d_1     & d_2     & \multicolumn{3}{c}{\cdots}  & d_{p-2} & x^{0} E_p \\
+\zeroBL\huge&   &        &        & e_0     & e_1     & \multicolumn{3}{c}{\cdots}  & e_{p-3} & x^{0} E_{p-1} \\[1ex]
+       &        &        & \adots &         &         &         &         &         & \adots  & \vdots \\[1ex]
+       &        & e_0    & \cdots & e_{p-5} & e_{p-4} & e_{p-3} & e_{p-2} & e_{p-1} &         & x^{p-5} E_{p-1} \\
+       & e_0    & e_1    & \cdots & e_{p-4} & e_{p-3} & e_{p-2} & e_{p-1} &         &         & x^{p-4} E_{p-1} \\
+e_0    & e_1    & e_2    & \cdots & e_{p-3} & e_{p-2} & e_{p-1} &         &      &\zeroBR\huge& x^{p-3} E_{p-1} \\
 \end{pmatrix}\text.
 \]
 Observe that, since the value of $x$ used in the rational method is the root of $E_1$, for that value of $x$,
@@ -226,11 +228,11 @@ $\det \matE_1 = 0$, \idest, $\matE_1$ is singular.
 \begin{lemma}[Left as an exercise to the reviewer]
 The matrix $\matE_1$ is singular if and only if $\matC\of{x+\frac{1}{2}a}$ is singular, where\[
 \matC\of{Ψ}\DefineAs\begin{pmatrix}
-Ψ - a & c_0 \\
--1               & c_1     & c_0 \\
-0                & c_2     &        & \ddots \\
-\vdots           & \vdots  & \ddots &        & c_0 \\
-0                & c_{p-1} & \cdots & c_2    & c_1
+Ψ - a  & c_0     &&&\zeroTR\huge\\
+-1     & c_1     & c_0 \\
+0      & c_2     &        & \ddots \\
+\vdots & \vdots  & \ddots &        & c_0 \\
+0      & c_{p-1} & \cdots & c_2    & c_1
 \end{pmatrix}
 \] and $c_0\DefineAs1$.
 \begin{proof}
