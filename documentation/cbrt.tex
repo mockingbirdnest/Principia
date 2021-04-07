@@ -147,23 +147,25 @@ anyway: Householder’s (7) is Schröder’s (18) from
 \cite[327]{Schröder1870}.
 
 \subsection*{Bibliographic note}
-This foray into the history of these methods was prompted by finding the ``historical background'' section of
+Our foray into the history of these methods was prompted by finding the ``historical background'' section of
 \cite{ScavoThoo1995} while looking for a reference for Halley’s method: it is mentioned therein that this
 method, as applied to the cube root, is due to Lagny.
 
-The search for Lagny’s work led to the historical note \cite{Cantor1861}, wherein a note by the editors Terquem and Gerono reads
-\begin{quote}\textfrench{%
+Searching for Lagny’s work led us to the historical note \cite{Cantor1861}, wherein a note by the editors Terquem and Gerono reads
+\begin{quote}\textfrench{\small%
 Naturellement, en mathématiques, séjour des propositions irréfragables, identiques en toute langue, en tout pays, ces rencontres ne peuvent manquer d'être assez fréquentes; nulle part les plagiats \emph{effectifs} sont si rares, et les plagiats \emph{apparents} si communs que dans la science exacte par excellence; mais les signaler est un devoir, un service rendu à l'histoire scientifique.}
 \end{quote}
-It then cites a letter by Prouhet which gives a reference to---and a citation of---\cite{FantetdeLagny1692}.
+The editors then quote a letter by Prouhet, wherein he gives a reference to \cite{FantetdeLagny1692}.
 
-Facing this duty, upon discovering that Lagny’s work was far more general than Halley or Scavo and Thoo suspected,
-it was natural to check whether the higher-order case corresponded to well-known higher order methods, such as
-the ones attributed to Householder in \cite{SebahGourdon2001}. Looking for references for these methods---and indeed
-for their properties, so as to prove the proposition---in \cite{Householder1970}, cited by \cite{SebahGourdon2001},
-one finds that they are attributed to Schröder. As mentioned in the translator’s note to the English translation
+Lagny’s work proved far more extensive than we expected: besides the root finding methods for arbitrary polynomials,
+it contains an error analysis, and even a discussion of the principles of performance analysis based on a
+decomposition in elementary operations on decimal digits.
+We observed that the higher-order examples corresponded to a well-known higher order method, attributed to
+Householder in \cite{SebahGourdon2001}. Looking for properties of these methods in \cite{Householder1970}
+so as to prove that observation, we found that they are attributed to Schröder therein.
+As mentioned in the translator’s note to the English translation
 \cite{SchröderStewart1993} of \cite{Schröder1870} by Stewart,
-\begin{quote}
+\begin{quote}\small
 A.~S.~Householder used to claim you could evaluate a paper on
 root finding by looking for a citation of Schröder’s paper. If it was
 missing, the author had probably rediscovered something already
@@ -173,8 +175,8 @@ It is quite possible that the irrational method could be expressed using Schrö
 the result would probably be more convenient, it is unlikely to be something well-known, as irrational methods are far less
 popular nowadays.
 
-The citation of Prouhet’s letter in \cite{Cantor1861} ends with these words:
-\begin{quote}\textfrench{%
+Prouhet’s letter in \cite{Cantor1861} ends with these words:
+\begin{quote}\textfrench{\small%
 Tout cela est fort abrégé; mais qui nous délivrera des méthodes abrégées, qui n'en finissent pas?}
 \end{quote}
 
@@ -287,6 +289,11 @@ This corresponds to \cite{KahanBindel2001}'s $B+K+F$.
 For both fixed- and floating-point numbers, given $α\in\R$, we write $\round{α}$ for the nearest representable number (rounding ties to even).
 For fixed-point numbers, we write $\roundToZero{α}$ for directed rounding towards $0$ to the fixed-point precision (as in division implemented with integer division).
 
+To quote \cite{Trefethen1997}, ``If rounding errors vanished, 95\% of numerical analysis would remain''.
+While we keep track of rounding errors throughout, they are of very little importance until the last step;
+when it is convenient to solely study the truncation error, we work with ideal quantities affected with a
+prime, which correspond to their primeless counterparts by removal of all intervening roundings.
+
 Except in the section on rescaling, the input $y$ and all intervening floating-point numbers are taken to be normal; the rescaling performed to avoid overflows also avoids subnormals.
 
 \subsection{Quick approximation}
@@ -365,16 +372,29 @@ We use a single iteration of Lagny’s rational method to compute $ξ$,\[
                        {\round{2\round{\round{q^2}q}+y}}}}\text.
 \]
 Note that the subtraction in the numerator is exact by Sterbenz's lemma.
-\marginpar{\small TODO(egg): bound the rounding errors. The cancellation in the numerator makes things mildly annoying.}
 
 Let $Δ \DefineAs \frac{ξ}{\sqrt[3] y}-1$ and  % TODO(egg): Figure out why \cuberoot does not render here.
 \[
 ξ'=q'-\frac{\pa{{q'}^3-y}q'}{2{q'}^3+y}\text.
 \]
-We have, up to rounding errors,\[
+So that, up to rounding errors,\[
 Δ \approx Δ' \DefineAs \frac{ξ'}{\sqrt[3] y}-1\text.
 \]
-Specifically, $\round{\round{q^2}q}-y$ differs from ${q'}^3-y$  by at most $q'\pa{1+u}^2\pa{1+3u}$
+Since we have a cancellation in the numerator, a little bit of care is
+needed to bound those errors.
+As mentioned above, $q$ approximates $q'$ to a relative error of at most $3u$.
+The sum in the denominator\[d\DefineAs\round{2\round{\round{q^2}q}+y}\]has positive terms,
+so its relative error with respect to $d'\DefineAs2{q'}^3+y$ is readily bounded by\[
+\pa{1+u}^3\pa{1+3u}^3-1\approx12u\text.
+\]
+The cancelling difference
+$b\DefineAs\round{\round{q^2}q}-y$ differs from $b'\DefineAs{q'}^3-y$  by at most
+\[δ\DefineAs{q'}^3\pa{\pa{1+u}^2\pa{1+3u}^3-1}\text,\]
+the numerator $\round{b q}$ from $b'q'$ by at most
+\[\pa{1+u}\pa{1+3u}δq'+\pa{4u+3u^2}b'q'\text,\]
+and thus the correction $\round{\frac{\round{bq}}{d}}$ differs from $\frac{b'q'}{d'}$ by at most\[
+meow
+\]
 
 With $q'=\cuberoot{y}\pa{1+ε'}$, we can express $Δ'$ using the transformation of
 the relative error error by one step of Lagny’s rational method on the cube root,\[
