@@ -358,14 +358,10 @@ or equivalently.\begin{align*}
 &=\argmin_{Γ\in\R}\max_{\tuple{f, k}\in\mathscr{E}\Union\mathscr{L}}\abs{ε'}\text,
 \end{align*}
 where $\mathscr{E}\DefineAs\set{\tuple{\FractionalPart Γ, 0}}\Union\setst{\tuple{0, k}}{k\in\set{0,1,2}}$ is the set of the endpoints of the intervals whereon $q'$ is piecewise affine, and
-$\mathscr{L}\DefineAs\setst{\tuple{\frac{k-\FractionalPart Γ}{2},k}}{k\in\set{1,2}}$ are the local extrema.
-
-The values are more precisely\footnote{These may be computed formally, but the expressions are unwieldy.}\begin{align*}
-Γ_{\mathrm{Kahan}} &\approx 0.10096\,78121\,55802\,88786\,36993\,42643\,55358\,06489\,88235\,75289\\
-\intertext{with}
-\max_{y}\abs{ε'} &\approx 0.03155\,46327\,73624\,80606\,11789\,73328\,17135\,58940\,02093\,40816\text,
-\end{align*}
-leading to $C_{\mathrm{Kahan}}=\hex{2A9F\,7625\,3119\,D328}\Multiply 2^{-52}$ for IEEE 754-2008 binary64.
+$\mathscr{L}\DefineAs\setst{\tuple{\frac{k-\FractionalPart Γ}{2},k}}{k\in\set{1,2}}$ are the local extrema. We get more precisely\footnote{These may be computed formally, but the expressions are unwieldy.}\[
+Γ_{\mathrm{Kahan}} \approx 0.10096\,78121\,55802\,88786\,36993\,42643\,55358\,06489\,88235\,75289\]
+with $\max_{y}\abs{ε'} \approx 0.03155$,
+yielding the constant\[C_{\mathrm{Kahan}}=\hex{2A9F\,7625\,3119\,D328}\Multiply 2^{-52}\]for IEEE 754-2008 binary64.
 However, as we will see in the next section, this value does not optimize the final error, so it is not the one that we use.
 \subsection{Getting to a third of the precision}
 We use a single iteration of Lagny’s rational method to compute $ξ$,\[
@@ -387,10 +383,8 @@ With $q'=\cuberoot{y}\pa{1+ε'}$, we can express $Δ'$ using the transformation 
 the relative error error by one step of Lagny’s rational method on the cube root,\[
 Δ' = \frac{2{ε'}^3+{ε'}^4}{3+6ε'+6{ε'}^2+2{ε'}^3}\text.
 \]
-If $q'$ is computed using $Γ=Γ_{\mathrm{Kahan}}$, we get\begin{align*}
-\max_{y} \abs{Δ'} \approx 0.00002196\text,\\
-\log_2 \max_{y} \abs{Δ'} \approx -15.47\text.
-\end{align*}
+If $q'$ is computed using $Γ=Γ_{\mathrm{Kahan}}$, we get
+$\max_{y} \abs{Δ'} \approx 0.00002196$, $\log_2 \max_{y} \abs{Δ'} \approx -15.47$.
 However, $Γ_{\mathrm{Kahan}}$, which minimizes $\max_{y} \abs{ε}$, does not
 minimize $\max_{y} \abs{Δ'}$. This is because while $Δ'$ is monotonic as a
 function of $ε'$, it is not odd: positive errors are reduced more than negative
@@ -398,12 +392,10 @@ errors are, so that the minimum is attained for a different value of $Γ$.
 Specifically, we have\begin{align*}
 Γ_{\mathrm{L}}&\DefineAs\argmin_{Γ\in\R}\max_{y}\abs{Δ'}\\
 &\approx 0.09918\,74615\,29855\,99525\,66149\,20761\,31234\,34720\,23067\,92759
-\intertext{with}
-\max_{y} \abs{ε'} &\approx 0.03103\,20521\,29929\,93577\,08166\,75859\,02139\,33719\,41389\,93269\text,
-\intertext{but}
-\max_{y} \abs{Δ'} &\approx 0.00002\,08686\,35536\,39593\,48770\,92008\,39844\,10254\,14831\,61229\text.
 \end{align*}
-The corresponding fixed-point constant is $C_{\mathrm{L}}\DefineAs\hex{2A9F\,7893\,782D\,A1CE} \Multiply 2^{-52}$ for binary64.
+with $\max_{y} \abs{ε'} \approx 0.0032025$, but
+$\max_{y} \abs{Δ'} \approx 0.00002086$, $\log_2 \max_{y} \abs{Δ'} \approx -15.54$.
+The corresponding fixed-point constant is\[C_{\mathrm{L}}\DefineAs\hex{2A9F\,7893\,782D\,A1CE} \Multiply 2^{-52}\]for binary64.
 \marginpar{\small
 TODO(egg): $Δ'$ accounts for half of the excess above correct rounding in the final bound; consider using either
 a higher order iteration or Lagny's irrational formula. Also consider optimizing the constants in the method, as in
@@ -425,10 +417,10 @@ a higher order iteration or Lagny's irrational formula. Also consider optimizing
 }
 
 \paragraph{Rounding error analysis.}
-It is fairly clear that $Δ'$ dominates the rounding error in $Δ\approx Δ'$;
-for the sake of completeness we quantify this.
+It is fairly clear that $Δ'$ dominates the rounding error in the approximation
+$Δ\approx Δ'$; for the sake of completeness we quantify this.
 
-Since we have a cancellation in the numerator, a little bit of care is
+Since we have a cancellation in the expression for $ξ$, a little bit of care is
 needed to bound those errors.
 As mentioned above, $q$ approximates $q'$ to a relative error of at most $3u<γ_3$.
 The sum in the denominator\[d\DefineAs\round{2\round{\round{q^2}q}+y}\]has positive terms,
@@ -440,13 +432,29 @@ $b\DefineAs\round{\round{q^2}q}-y$ differs from $b'\DefineAs{q'}^3-y$  by at mos
 \[δ\DefineAs{q'}^3γ_{3\Multiply3+2}={q'}^3γ_{11}\text,\]
 and the numerator $\round{b q}$ from $b'q'$ by at most
 \[\pa{\pa{b'+δ}q'\pa{1+γ_3}}\pa{1+γ}-b'q'=\pa{1+γ_4}δq'+γ_4b'q'\text.\]
-We can bound the relative error of the correction term,
+We can bound the absolute error of the correction term as
 \begin{align*}
-\abs{\frac{\round{\frac{\round{bq}}{d}}}{\frac{b'q'}{d'}}-1}<
-\frac{\frac{b'q'+\pa{1+γ_4}δq'+γ_4b'q'}{d'\pa{1-γ_{12}}}}{\frac{b'q'}{d'}}-1
-&=\frac{1+\frac{\pa{1+γ_4}δ}{b'}+γ_4}{\pa{1-γ_{12}}}-1\\
-&=\frac{\pa{1+γ_4}δ}{\pa{1-γ_{12}}b'}+\frac{γ_4+γ_{12}}{\pa{1-γ_{12}}}\\
+\abs{\round{\frac{\round{bq}}{d}}-\frac{b'q'}{d'}}<
+\frac{b'q'+\pa{1+γ_4}δq'+γ_4b'q'}{d'\pa{1-γ_{12}}}-\frac{b'q'}{d'}
+&=\frac{\pa{1+γ_4}δq'+\pa{γ_4+γ_{12}}b'q'}{d'\pa{1-γ_{12}}}\\
+&<q'\frac{\pa{1+γ_4}δ+γ_{16}b'}{d'\pa{1-γ_{12}}}\text,
 \end{align*}
+and that of $ξ$ as 
+\[
+\abs{ξ-ξ'}<q'\pa{γ_3+\frac{\pa{1+γ_4}δ+γ_{16}b'}{d'\pa{1-γ_{12}}}}\text.
+\]
+Substituting the truncation errors and the definition of $δ$, we can
+bound the relative error arising from rounding:
+\[
+\abs{\frac{ξ}{ξ'}-1}<
+\frac{1+ε'}{1+Δ'}
+\pa{γ_3+\frac{\pa{1+γ_4}γ_{11}\pa{1+ε'}^3+γ_{16}\pa{\pa{1+ε'}^3-1}}{(\pa{1+ε'}^3+1)+\pa{1-γ_{12}}}}\text.
+\]
+Linearizing, this bound is $\pa{6+\tfrac{2}{3} + \BigO\of{ε'+Δ'}}u+ \BigO\of{u^2}$.
+More palatably, for either choice of $γ$, we have\[
+\abs{\frac{ξ}{ξ'}-1}<8u
+\]
+provided that $p\geq 11$.
 
 \subsection{Rounded approximation}
 
@@ -470,6 +478,12 @@ r\DefineAs\round{x-\round{\frac{
 \]
 Where $x^3$ is exact thanks to the trailing $0$s of $x$, $\round{x^6}$ is correctly-rounded because it is computed as
 the square of $x^3$, and $x^3-y$ is exact by Sterbenz’s lemma.
+
+We first look at the truncation error. \[
+r'\DefineAs\round{x-\round{\frac{
+\round{\round{x\pa{x^3-y}}\round{\round{\round{\round{5x^3}+\round{17y}}x^3}+\round{5\round{y^2}}}}}{
+\round{\round{\round{\round{7x^3} + \round{42 y}}\round{x^6}}+\round{\round{\round{30x^3}+2y}\round{y^2}}}}}}\text,
+\]
 
 
 \marginpar{\small
