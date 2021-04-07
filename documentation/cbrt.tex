@@ -9,6 +9,7 @@
 
 \setcounter{MaxMatrixCols}{20}
 
+% REMOVE BEFORE FLIGHT: move to semtex.
 \newlength{\medianToZeroTop}
 \newcommand\zeroBL[1]{\multicolumn{1}{l}{\rlap{\smash{\text{{#1$0$}}}}}}
 \newcommand\zeroBR[1]{\multicolumn{1}{r}{\llap{\smash{\text{{#1$0$}}}}}}
@@ -79,7 +80,7 @@ which outlines the treatment of overdetermined problems, it is perhaps this rema
 \end{quote}}
 of $E_{n+1}$ by $E_{n}$; its degree is $n-1$ for almost all $a$.
 The iteration is $\FunctionBody{a}{x+\frac{1}{2}a}$, where $x$ is a root of $E_{2}$ for the irrational method,
-and the root of $E_{1}$ for the rational method.
+and the root of $E_{1}$ for the rational method. Its order is $p$.
 
 Modern calculus allows us to give a more straightfoward expression for the rational method than was available to Lagny;
 the proof of the following equivalence will be given at the end of this section.
@@ -128,8 +129,7 @@ see \cite{ScavoThoo1995}.
 
 Considering, as remarked by \cite[334]{Schröder1870}, that a method can often
 be generalized from arbitrary polynomials or rational functions to arbitrary
-analytic functions, we call the iteration (\ref{LagnyRationaliteration})\begin{itemize}
-\setlength\itemsep{0em}
+analytic functions, we call the iteration (\ref{LagnyRationaliteration})\begin{itemize}[nosep]
 \item Newton’s method when $p=2$, for arbitrary $f$;
 \item Lagny’s rational method when $p>2$ and $f$ is a polynomial of degree $p$;
 \item Halley’s (rational) method when $p=3$ and $f$ is not a polynomial of degree $3$;
@@ -140,7 +140,7 @@ defined in \cite{Schröder1870}, so that the expression would be ambiguous.
 
 Note that we avoid the name ``Householder’s method'' which appears in \cite{SebahGourdon2001} and ulterior works, as it
 is variably used to refer to either (\ref{LagnyRationaliteration}) or to a method from a different family, namely $\gj_{p+1}$
-from \cite[168]{Householder1970}, equation (7), taking $γ_{p+1}\Identically0$ in the resulting iteration;
+from \cite[168]{Householder1970}, equation (7), taking $Γ_{p+1}\Identically0$ in the resulting iteration;
 $\gj_3$ is\footnote{We are grateful to Peter Barfuss for this observation.} the iteration given in section 3.0.3
 of \cite{SebahGourdon2001}. As mentioned by Householder, both of those were described by Schröder a century prior
 anyway: Householder’s (7) is Schröder’s (18) from
@@ -152,20 +152,21 @@ Our foray into the history of these methods was prompted by finding the ``histor
 method, as applied to the cube root, is due to Lagny.
 
 Searching for Lagny’s work led us to the historical note \cite{Cantor1861}, wherein a note by the editors Terquem and Gerono reads
-\begin{quote}\textfrench{\small%
+\begin{quote}\textfrench{%
 Naturellement, en mathématiques, séjour des propositions irréfragables, identiques en toute langue, en tout pays, ces rencontres ne peuvent manquer d'être assez fréquentes; nulle part les plagiats \emph{effectifs} sont si rares, et les plagiats \emph{apparents} si communs que dans la science exacte par excellence; mais les signaler est un devoir, un service rendu à l'histoire scientifique.}
 \end{quote}
 The editors then quote a letter by Prouhet, wherein he gives a reference to \cite{FantetdeLagny1692}.
 
-Lagny’s work proved far more extensive than we expected: besides the root finding methods for arbitrary polynomials,
-it contains an error analysis, and even a discussion of the principles of performance analysis based on a
-decomposition in elementary operations on decimal digits.
-We observed that the higher-order examples corresponded to a well-known higher order method, attributed to
+Lagny’s work proved far more extensive than we expected: besides the above root finding methods for arbitrary
+polynomials, it contains an error analysis, and even a discussion of the principles of performance analysis
+based on a decomposition in elementary operations on decimal digits.
+
+We observed that the higher-order examples corresponded to the well-known higher order method attributed to
 Householder in \cite{SebahGourdon2001}. Looking for properties of these methods in \cite{Householder1970}
 so as to prove that observation, we found that they are attributed to Schröder therein.
 As mentioned in the translator’s note to the English translation
 \cite{SchröderStewart1993} of \cite{Schröder1870} by Stewart,
-\begin{quote}\small
+\begin{quote}
 A.~S.~Householder used to claim you could evaluate a paper on
 root finding by looking for a citation of Schröder’s paper. If it was
 missing, the author had probably rediscovered something already
@@ -176,13 +177,13 @@ the result would probably be more convenient, it is unlikely to be something wel
 popular nowadays.
 
 Prouhet’s letter in \cite{Cantor1861} ends with these words:
-\begin{quote}\textfrench{\small%
+\begin{quote}\begin{center}\textfrench{%
 Tout cela est fort abrégé; mais qui nous délivrera des méthodes abrégées, qui n'en finissent pas?}
-\end{quote}
+\end{center}\end{quote}
 
 % This cul-de-lampe prevents the typesetting engine having too little to fill this page without setting the
 % giant matrix in it, thereby overflowing into the bottom margin.
-\begin{center}\pgfornament[width = 2cm]{59}\end{center}
+\begin{center}\pgfornament[width = .2\linewidth]{59}\end{center}
 
 \subsection*{Proof of the proposition}
 
@@ -276,9 +277,9 @@ The general approach to compute the cube root of $y>0$ is the same as the one de
 \subsection*{Notation}
 We define the fractional part as $\FractionalPart a\DefineAs a-\Floor a\in\intclop{0}{1}$, regardless of the sign of $a$.
 
-The quantities $p\in\N$ (precision in bits) and $\bias\in\N$ are as defined in IEEE 754-2008; $u\DefineAs2^-p$ is the unit roundoff.
+The quantities $p\in\N$ (precision in bits) and $\bias\in\N$ are defined as in IEEE 754-2008.
 
-We use capital letters fixed-point numbers involved in the computation, and $A>0$ for the normal floating-point number $a>0$ reinterpreted as a binary fixed-point number with $p-1$ bits after the binary point\footnote{The implementation uses integers (obtained by multiplying the fixed-point numbers by $2^{p-1}$). For consistency with \cite{KahanBindel2001} we work with fixed-point numbers here. Since we do not multiply fixed point numbers together, the expressions are unchanged.},\begin{align*}
+We use capital Latin letters fixed-point numbers involved in the computation, and $A>0$ for the normal floating-point number $a>0$ reinterpreted as a binary fixed-point number with $p-1$ bits after the binary point\footnote{The implementation uses integers (obtained by multiplying the fixed-point numbers by $2^{p-1}$). For consistency with \cite{KahanBindel2001} we work with fixed-point numbers here. Since we do not multiply fixed point numbers together, the expressions are unchanged.},\begin{align*}
   A &\DefineAs \bias + \Floor{\log_2 a} + \FractionalPart \pa{2^{-\Floor{\log_2 a}}a}\\
     &= \bias + \Floor{\log_2 a} + 2^{-\Floor{\log_2 a}}a - 1\text,\\
 \intertext{and \emph{vice versa},}
@@ -288,6 +289,7 @@ This corresponds to \cite{KahanBindel2001}'s $B+K+F$.
 
 For both fixed- and floating-point numbers, given $α\in\R$, we write $\round{α}$ for the nearest representable number (rounding ties to even).
 For fixed-point numbers, we write $\roundToZero{α}$ for directed rounding towards $0$ to the fixed-point precision (as in division implemented with integer division).
+We write the unit roundoff $u\DefineAs2^{-p}$, and, after \cite[63]{Higham2002}, $γ_n\DefineAs\frac{nu}{1-nu}$.
 
 To quote \cite{Trefethen1997}, ``If rounding errors vanished, 95\% of numerical analysis would remain''.
 While we keep track of rounding errors throughout, they are of very little importance until the last step;
@@ -302,9 +304,9 @@ Q\DefineAs C + \roundToZero{\frac{Y}{3}}\text,
 \]
 where the fixed-point constant $C$ is defined as\footnote{Note
 that there is a typo in the corresponding expression $C\DefineAs\pa{B-0.1009678}/3$ in \cite{KahanBindel2001}; a factor of $2$ is missing on the bias term.}\[
-C\DefineAs \round{\frac{2\bias-γ}{3}}
+C\DefineAs \round{\frac{2\bias-Γ}{3}}
 \]
-for some $γ\in\R$.
+for some $Γ\in\R$.
 
 Let $ε \DefineAs \frac{q}{\sqrt[3] y}-1$,  % TODO(egg): Figure out why \cuberoot does not render here.
 so that $\cuberoot y\pa{1+ε}=q$; the relative error of $q$ as an approximation of $\cuberoot y$ is $\abs ε$.
@@ -316,50 +318,50 @@ q\of{8y} &= 2q\of{y}\text,\\
 \end{align*}
 so that the properties of $ε$ need only be studied on some interval of the form $\intclop{η}{8η}$.
 
-Pick $η\DefineAs2^{\Floor{γ}}$, and $y\in\intclop{η}{8η}=\intclop{2^{\Floor{γ}}}{2^{\Floor{γ}+3}}$,
-so that $\log_2 y\in\intclop{\Floor{γ}}{\Floor{γ}+3}$. Let $k\DefineAs\Floor{\log_2 y}-\Floor{γ}$; note that $k\in\set{0,1,2}$.
+Pick $η\DefineAs2^{\Floor{Γ}}$, and $y\in\intclop{η}{8η}=\intclop{2^{\Floor{Γ}}}{2^{\Floor{Γ}+3}}$,
+so that $\log_2 y\in\intclop{\Floor{Γ}}{\Floor{Γ}+3}$. Let $k\DefineAs\Floor{\log_2 y}-\Floor{Γ}$; note that $k\in\set{0,1,2}$.
 Let $f\DefineAs\FractionalPart\pa{2^{-\Floor{\log_2 y}}y}\in\intclop{0}{1}$.
-Up to at most $\tfrac{3}{2}$ units in the last place from rounding ($1$ from the directed rounding of the division
-by three and $\tfrac{1}{2}$ from the definition of $C$,\begin{align*}
-Q\approx Q'\DefineAs&\bias+\frac{\Floor{\log_2 y}}{3}+\frac{\FractionalPart\pa{2^{-\Floor{\log_2 y}}y}-γ}{3}\text,\\
-=&\bias+\frac{\Floor{γ}+k}{3}+\frac{f-γ}{3}\text,\\
-=&\bias+\frac{k+f-\FractionalPart γ}{3}\text.
+Up to at most $3$ half-units in the last place from rounding ($2$ from the directed rounding of the division
+by three and $1$ from the definition of $C$), we have\begin{align*}
+Q\approx Q'\DefineAs&\bias+\frac{\Floor{\log_2 y}}{3}+\frac{\FractionalPart\pa{2^{-\Floor{\log_2 y}}y}-Γ}{3}\text,\\
+=&\bias+\frac{\Floor{Γ}+k}{3}+\frac{f-Γ}{3}\text,\\
+=&\bias+\frac{k+f-\FractionalPart Γ}{3}\text.
 \end{align*}
-Since $k\in\intclos{0}{2}$, the numerator $k+f-\FractionalPart γ$ lies in $\intopen{-1}{3}$.
+Since $k\in\intclos{0}{2}$, the numerator $k+f-\FractionalPart Γ$ lies in $\intopen{-1}{3}$.
 Further, it is negative only if $k=0$, so that\begin{align*}
 \Floor{Q'}&=\begin{cases}
-\bias - 1 & \text{if }k = 0\text{ and }\FractionalPart γ > \FractionalPart\pa{2^{-\Floor{γ}}y}\text, \\
+\bias - 1 & \text{if }k = 0\text{ and }\FractionalPart Γ > \FractionalPart\pa{2^{-\Floor{Γ}}y}\text, \\
 \bias & \text{otherwise,}
 \end{cases}\text{ and}\\
 \FractionalPart{Q'}&=\begin{cases}
-1+\frac{f-\FractionalPart γ}{3} & \text{if }k = 0\text{ and }\FractionalPart γ > f\text, \\
-\frac{k+f-\FractionalPart γ}{3} & \text{otherwise.}
+1+\frac{f-\FractionalPart Γ}{3} & \text{if }k = 0\text{ and }\FractionalPart Γ > f\text, \\
+\frac{k+f-\FractionalPart Γ}{3} & \text{otherwise.}
 \end{cases}
 \end{align*}
-Accordingly, for the quick approximation $q$, we have, again up to at most $\tfrac{3}{2}$ units in the last place,\begin{align*}
+Accordingly, for the quick approximation $q$, we have, again up to at most $3$ half-units in the last place,\begin{align*}
 q\approx q' &= \begin{cases}
-1+\frac{f-\FractionalPart γ}{6} & \text{if }k = 0\text{ and }\FractionalPart γ > f\text, \\
-1+\frac{k+f-\FractionalPart γ}{3} & \text{otherwise,}
+1+\frac{f-\FractionalPart Γ}{6} & \text{if }k = 0\text{ and }\FractionalPart Γ > f\text, \\
+1+\frac{k+f-\FractionalPart Γ}{3} & \text{otherwise,}
 \end{cases}
 \end{align*}
-With $\cuberoot y = 2^{\frac{\Floor{γ}+k}{3}}\cuberoot{1+f}$, we can define\[
+With $\cuberoot y = 2^{\frac{\Floor{Γ}+k}{3}}\cuberoot{1+f}$, we can define\[
 ε' \DefineAs \frac{q'}{\cuberoot y}-1\text,
 \]
 which we can express piecewise as a function of $f$ and $k$. This gives us a bound on the relative error,\[
 \abs ε \leq \abs{ε'}\pa{1+3u}\text.
 \]
-The values $γ=0.1009678$ and $ε<3.2\%$ from \cite{KahanBindel2001} may be recovered by choosing $γ$ minimizing the maximum of $\abs{ε'}$ over $y\in\intclop{η}{8η}$,
+The values $Γ=0.1009678$ and $ε<3.2\%$ from \cite{KahanBindel2001} may be recovered by choosing $Γ$ minimizing the maximum of $\abs{ε'}$ over $y\in\intclop{η}{8η}$,
 or equivalently.\begin{align*}
-γ_{\mathrm{Kahan}}\DefineAs\argmin_{γ\in\R}\max_{y\in\intclop{η}{8η}}\abs{ε'}
-&=\argmin_{γ\in\R}\max_{\tuple{f, k}}\abs{ε'}\\
-\intertext{where the maximum is taken over $\tuple{f, k}\in\intclop{0}{\FractionalPart γ}\Cartesian\set{0}\Union\intclop{0}{1}\Cartesian\set{1,2}$,}
-&=\argmin_{γ\in\R}\max_{\tuple{f, k}\in\mathscr{E}\Union\mathscr{L}}\abs{ε'}\text,
+Γ_{\mathrm{Kahan}}\DefineAs\argmin_{Γ\in\R}\max_{y\in\intclop{η}{8η}}\abs{ε'}
+&=\argmin_{Γ\in\R}\max_{\tuple{f, k}}\abs{ε'}\\
+\intertext{where the maximum is taken over $\tuple{f, k}\in\intclop{0}{\FractionalPart Γ}\Cartesian\set{0}\Union\intclop{0}{1}\Cartesian\set{1,2}$,}
+&=\argmin_{Γ\in\R}\max_{\tuple{f, k}\in\mathscr{E}\Union\mathscr{L}}\abs{ε'}\text,
 \end{align*}
-where $\mathscr{E}\DefineAs\set{\tuple{\FractionalPart γ, 0}}\Union\setst{\tuple{0, k}}{k\in\set{0,1,2}}$ is the set of the endpoints of the intervals whereon $q'$ is piecewise affine, and
-$\mathscr{L}\DefineAs\setst{\tuple{\frac{k-\FractionalPart γ}{2},k}}{k\in\set{1,2}}$ are the local extrema.
+where $\mathscr{E}\DefineAs\set{\tuple{\FractionalPart Γ, 0}}\Union\setst{\tuple{0, k}}{k\in\set{0,1,2}}$ is the set of the endpoints of the intervals whereon $q'$ is piecewise affine, and
+$\mathscr{L}\DefineAs\setst{\tuple{\frac{k-\FractionalPart Γ}{2},k}}{k\in\set{1,2}}$ are the local extrema.
 
 The values are more precisely\footnote{These may be computed formally, but the expressions are unwieldy.}\begin{align*}
-γ_{\mathrm{Kahan}} &\approx 0.10096\,78121\,55802\,88786\,36993\,42643\,55358\,06489\,88235\,75289\\
+Γ_{\mathrm{Kahan}} &\approx 0.10096\,78121\,55802\,88786\,36993\,42643\,55358\,06489\,88235\,75289\\
 \intertext{with}
 \max_{y}\abs{ε'} &\approx 0.03155\,46327\,73624\,80606\,11789\,73328\,17135\,58940\,02093\,40816\text,
 \end{align*}
@@ -375,41 +377,26 @@ Note that the subtraction in the numerator is exact by Sterbenz's lemma.
 
 Let $Δ \DefineAs \frac{ξ}{\sqrt[3] y}-1$ and  % TODO(egg): Figure out why \cuberoot does not render here.
 \[
-ξ'=q'-\frac{\pa{{q'}^3-y}q'}{2{q'}^3+y}\text.
+ξ'=q'-\frac{\pa{{q'}^3-y}q'}{2{q'}^3+y}\text,
 \]
-So that, up to rounding errors,\[
+so that, up to rounding errors,\[
 Δ \approx Δ' \DefineAs \frac{ξ'}{\sqrt[3] y}-1\text.
-\]
-Since we have a cancellation in the numerator, a little bit of care is
-needed to bound those errors.
-As mentioned above, $q$ approximates $q'$ to a relative error of at most $3u$.
-The sum in the denominator\[d\DefineAs\round{2\round{\round{q^2}q}+y}\]has positive terms,
-so its relative error with respect to $d'\DefineAs2{q'}^3+y$ is readily bounded by\[
-\pa{1+u}^3\pa{1+3u}^3-1\approx12u\text.
-\]
-The cancelling difference
-$b\DefineAs\round{\round{q^2}q}-y$ differs from $b'\DefineAs{q'}^3-y$  by at most
-\[δ\DefineAs{q'}^3\pa{\pa{1+u}^2\pa{1+3u}^3-1}\text,\]
-the numerator $\round{b q}$ from $b'q'$ by at most
-\[\pa{1+u}\pa{1+3u}δq'+\pa{4u+3u^2}b'q'\text,\]
-and thus the correction $\round{\frac{\round{bq}}{d}}$ differs from $\frac{b'q'}{d'}$ by at most\[
-meow
 \]
 
 With $q'=\cuberoot{y}\pa{1+ε'}$, we can express $Δ'$ using the transformation of
 the relative error error by one step of Lagny’s rational method on the cube root,\[
 Δ' = \frac{2{ε'}^3+{ε'}^4}{3+6ε'+6{ε'}^2+2{ε'}^3}\text.
 \]
-If $q'$ is computed using $γ=γ_{\mathrm{Kahan}}$, we get\begin{align*}
+If $q'$ is computed using $Γ=Γ_{\mathrm{Kahan}}$, we get\begin{align*}
 \max_{y} \abs{Δ'} \approx 0.00002196\text,\\
 \log_2 \max_{y} \abs{Δ'} \approx -15.47\text.
 \end{align*}
-However, $γ_{\mathrm{Kahan}}$, which minimizes $\max_{y} \abs{ε}$, does not
+However, $Γ_{\mathrm{Kahan}}$, which minimizes $\max_{y} \abs{ε}$, does not
 minimize $\max_{y} \abs{Δ'}$. This is because while $Δ'$ is monotonic as a
 function of $ε'$, it is not odd: positive errors are reduced more than negative
-errors are, so that the minimum is attained for a different value of $γ$.
+errors are, so that the minimum is attained for a different value of $Γ$.
 Specifically, we have\begin{align*}
-γ_{\mathrm{L}}&\DefineAs\argmin_{γ\in\R}\max_{y}\abs{Δ'}\\
+Γ_{\mathrm{L}}&\DefineAs\argmin_{Γ\in\R}\max_{y}\abs{Δ'}\\
 &\approx 0.09918\,74615\,29855\,99525\,66149\,20761\,31234\,34720\,23067\,92759
 \intertext{with}
 \max_{y} \abs{ε'} &\approx 0.03103\,20521\,29929\,93577\,08166\,75859\,02139\,33719\,41389\,93269\text,
@@ -437,6 +424,30 @@ a higher order iteration or Lagny's irrational formula. Also consider optimizing
 
 }
 
+\paragraph{Rounding error analysis.}
+It is fairly clear that $Δ'$ dominates the rounding error in $Δ\approx Δ'$;
+for the sake of completeness we quantify this.
+
+Since we have a cancellation in the numerator, a little bit of care is
+needed to bound those errors.
+As mentioned above, $q$ approximates $q'$ to a relative error of at most $3u<γ_3$.
+The sum in the denominator\[d\DefineAs\round{2\round{\round{q^2}q}+y}\]has positive terms,
+so its relative error with respect to $d'\DefineAs2{q'}^3+y$ is readily bounded,\[
+\frac{d}{d'}-1<γ_{3\Multiply3+3}=γ_{12}\text.
+\]
+The cancelling difference
+$b\DefineAs\round{\round{q^2}q}-y$ differs from $b'\DefineAs{q'}^3-y$  by at most
+\[δ\DefineAs{q'}^3γ_{3\Multiply3+2}={q'}^3γ_{11}\text,\]
+and the numerator $\round{b q}$ from $b'q'$ by at most
+\[\pa{\pa{b'+δ}q'\pa{1+γ_3}}\pa{1+γ}-b'q'=\pa{1+γ_4}δq'+γ_4b'q'\text.\]
+We can bound the relative error of the correction term,
+\begin{align*}
+\abs{\frac{\round{\frac{\round{bq}}{d}}}{\frac{b'q'}{d'}}-1}<
+\frac{\frac{b'q'+\pa{1+γ_4}δq'+γ_4b'q'}{d'\pa{1-γ_{12}}}}{\frac{b'q'}{d'}}-1
+&=\frac{1+\frac{\pa{1+γ_4}δ}{b'}+γ_4}{\pa{1-γ_{12}}}-1\\
+&=\frac{\pa{1+γ_4}δ}{\pa{1-γ_{12}}b'}+\frac{γ_4+γ_{12}}{\pa{1-γ_{12}}}\\
+\end{align*}
+
 \subsection{Rounded approximation}
 
 The number $x$ is obtained from $ξ$ by zeroing all but the most significant $\Floor{\frac{p}{3}}$ bits of
@@ -446,7 +457,7 @@ remaining bits (except for the leading $1$) are all $0$; this is the case when t
 $1+2^{-\Floor{\frac{p}{3}}+1}-2^{1-p}$, in which case that of $x$ is $1$.
 
 The relative error arising from $\FunctionBody ξ x$ is thus at most\[
-\frac{1}{1+2^{-\Floor{\frac{p}{3}}+1}-2^{1-p}} - 1 < 2^{-\Floor{\frac{p}{3}}+1}\text,
+1-\frac{1}{1+2^{-\Floor{\frac{p}{3}}+1}-2^{1-p}} < 2^{-\Floor{\frac{p}{3}}+1}\text,
 \]
 $2^{-16}$ in binary64.
 

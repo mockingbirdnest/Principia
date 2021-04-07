@@ -132,6 +132,7 @@
 }%
 }
 
+\RequirePackage{enumitem}
 \renewcommand\labelitemi{---}
 
 %\makeatletter
