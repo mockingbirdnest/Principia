@@ -945,14 +945,14 @@ Status Ephemeris<Frame>::Reanimate(Instant const& t_final) {
     // Do the integration.  After this step the t_max() of the trajectories may
     // be before segment_t_final because there may be last_points_ that haven't
     // been put in a series.
-    //instance->Solve(segment_t_final);
+    instance->Solve(segment_t_final);
 
     RETURN_IF_STOPPED;
 
     {
       absl::MutexLock l(&lock_);
       for (int i = 0; i < trajectories_.size(); ++i) {
-        //trajectories_[i]->Prepend(std::move(*trajectories[i]));
+        trajectories_[i]->Prepend(std::move(*trajectories[i]));
       }
       trajectories.clear();
     }
@@ -962,6 +962,8 @@ Status Ephemeris<Frame>::Reanimate(Instant const& t_final) {
     return Status::OK;
   };
 
+  // This loop integrates all the segments defines by the checkpoints, going
+  // backwards in time.
   return checkpointer_->ReadFromAllCheckpointsBackwards(reader);
 }
 
