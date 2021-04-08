@@ -35,7 +35,7 @@ Instant Checkpointer<Message>::newest_checkpoint() const {
   if (checkpoints_.empty()) {
     return InfinitePast;
   }
-  return checkpoints_.cend()->first;
+  return checkpoints_.crbegin()->first;
 }
 
 template<typename Message>
@@ -78,7 +78,7 @@ Status Checkpointer<Message>::ReadFromNewestCheckpoint() const {
     if (checkpoints_.empty()) {
       return Status(Error::NOT_FOUND, "No checkpoint");
     }
-    checkpoint = &checkpoints_.cend()->second;
+    checkpoint = &checkpoints_.crbegin()->second;
   }
   return reader_(*checkpoint);
 }

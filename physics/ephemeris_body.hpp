@@ -906,7 +906,8 @@ Ephemeris<Frame>::MakeCheckpointerReader() {
 }
 
 template<typename Frame>
-Status Ephemeris<Frame>::Reanimate(Instant const& last_time) {
+Status Ephemeris<Frame>::Reanimate(Instant const& t_final) {
+  Instant segment_t_final = t_final;
   std::vector<not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>>
       trajectories;
 
@@ -916,7 +917,10 @@ Status Ephemeris<Frame>::Reanimate(Instant const& last_time) {
         AppendMassiveBodiesStateToTrajectories(state, trajectories);
       };
 
-  auto reader = [this, &append_massive_bodies_state, &trajectories](
+  auto reader = [this,
+                 &append_massive_bodies_state,
+                 &segment_t_final,
+                 &trajectories](
                     serialization::Ephemeris::Checkpoint const& message) {
     // Create or reset the trajectories.
     for (int i = 0; i < trajectories_.size(); ++i) {
@@ -926,8 +930,6 @@ Status Ephemeris<Frame>::Reanimate(Instant const& last_time) {
               accuracy_parameters_.fitting_tolerance_));
     }
 
-    RETURN_IF_STOPPED;
-
     // Reconstruct the integrator instance from the current checkpoint.
     auto const instance = FixedStepSizeIntegrator<NewtonianMotionEquation>::
         Instance::ReadFromMessage(message.instance(),
@@ -936,7 +938,27 @@ Status Ephemeris<Frame>::Reanimate(Instant const& last_time) {
 
     // Append the current points to the trajectories.
     append_massive_bodies_state(instance->state());
+    Instant const segment_t_initial = instance->time().value;
 
+    RETURN_IF_STOPPED;
+
+    // Do the integration.  After this step the t_max() of the trajectories may
+    // be before segment_t_final because there may be last_points_ that haven't
+    // been put in a series.
+    //instance->Solve(segment_t_final);
+
+    RETURN_IF_STOPPED;
+
+    {
+      absl::MutexLock l(&lock_);
+      for (int i = 0; i < trajectories_.size(); ++i) {
+        //trajectories_[i]->Prepend(std::move(*trajectories[i]));
+      }
+      trajectories.clear();
+    }
+
+    // Prepare for the next segment.
+    segment_t_final = segment_t_initial;
     return Status::OK;
   };
 

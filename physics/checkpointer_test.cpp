@@ -72,7 +72,7 @@ TEST_F(CheckpointerTest, WriteToCheckpointIfNeeded) {
       t2,
       /*max_time_between_checkpoints=*/10 * Second));
   EXPECT_EQ(t1, checkpointer_.oldest_checkpoint());
-  EXPECT_EQ(t2, checkpointer_.newest_checkpoint());
+  EXPECT_EQ(t1, checkpointer_.newest_checkpoint());
 
   EXPECT_CALL(writer_, Call(_));
   Instant const t3 = t2 + 3 * Second;
