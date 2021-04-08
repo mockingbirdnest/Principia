@@ -794,11 +794,13 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
 
   // WriteToMessage always creates a checkpoint, and so does the compatibility
   // code.
-  ephemeris->checkpointer_->ReadFromOldestCheckpoint();
+  ephemeris->checkpointer_->ReadFromNewestCheckpoint();
 
   // Start a thread to asynchronously reconstruct the past using checkpoints.
-  ephemeris->reanimator_ =
-      MakeStoppableThread(std::bind(&Ephemeris::Reanimate, ephemeris.get()));
+  ephemeris->reanimator_ = MakeStoppableThread(
+      std::bind(&Ephemeris::Reanimate,
+                ephemeris.get(),
+                ephemeris->checkpointer_->newest_checkpoint()));
 
   // The ephemeris will need to be prolonged as needed when deserializing the
   // plugin.
@@ -904,7 +906,7 @@ Ephemeris<Frame>::MakeCheckpointerReader() {
 }
 
 template<typename Frame>
-Status Ephemeris<Frame>::Reanimate() {
+Status Ephemeris<Frame>::Reanimate(Instant const& last_time) {
   std::vector<not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>>
       trajectories;
 
@@ -925,10 +927,15 @@ Status Ephemeris<Frame>::Reanimate() {
     }
 
     RETURN_IF_STOPPED;
-    auto instance = FixedStepSizeIntegrator<NewtonianMotionEquation>::Instance::
-        ReadFromMessage(message.instance(),
-                        MakeMassiveBodiesNewtonianMotionEquation(),
-                        append_massive_bodies_state);
+
+    // Reconstruct the integrator instance from the current checkpoint.
+    auto const instance = FixedStepSizeIntegrator<NewtonianMotionEquation>::
+        Instance::ReadFromMessage(message.instance(),
+                                  MakeMassiveBodiesNewtonianMotionEquation(),
+                                  append_massive_bodies_state);
+
+    // Append the current points to the trajectories.
+    append_massive_bodies_state(instance->state());
 
     return Status::OK;
   };
