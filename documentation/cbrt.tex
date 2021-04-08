@@ -138,9 +138,10 @@ analytic functions, we call the iteration (\ref{LagnyRationaliteration})\begin{i
 We do not simply call this last case ``Schröder’s method'', as it is only a special case of the methods
 defined in \cite{Schröder1870}, so that the expression would be ambiguous. 
 
-Note that we avoid the name ``Householder’s method'' which appears in \cite{SebahGourdon2001} and ulterior works, as it
+Note that we avoid the name ``Householder’s method'' which appears in \cite{SebahGourdon2001} and ulterior works (notably \emph{MathWorld} and \emph{Wikipedia}, both citing
+\cite{SebahGourdon2001}), as it
 is variably used to refer to either (\ref{LagnyRationaliteration}) or to a method from a different family, namely $\gj_{p+1}$
-from \cite[168]{Householder1970}, equation (7), taking $Γ_{p+1}\Identically0$ in the resulting iteration;
+from \cite[168]{Householder1970}, equation (7), taking $γ_{p+1}\Identically0$ in the resulting iteration;
 $\gj_3$ is\footnote{We are grateful to Peter Barfuss for this observation.} the iteration given in section 3.0.3
 of \cite{SebahGourdon2001}. As mentioned by Householder, both of those were described by Schröder a century prior
 anyway: Householder’s (7) is Schröder’s (18) from
@@ -228,7 +229,7 @@ e_0    & e_1    & e_2    & \cdots & e_{p-3} & e_{p-2} & e_{p-1} &         &     
 \]
 Observe that, since the value of $x$ used in the rational method is the root of $E_1$, for that value of $x$,
 $\det \matE_1 = 0$, \idest, $\matE_1$ is singular.
-\begin{lemma}[Left as an exercise to the reviewer]
+\begin{lemma}
 The matrix $\matE_1$ is singular if and only if $\matC\of{x+\frac{1}{2}a}$ is singular, where\[
 \matC\of{Ψ}\DefineAs\begin{pmatrix}
 Ψ - a  & c_0     &&&\zeroTR\huge\\
@@ -237,8 +238,8 @@ The matrix $\matE_1$ is singular if and only if $\matC\of{x+\frac{1}{2}a}$ is si
 \vdots & \vdots  & \ddots &        & c_0 \\
 0      & c_{p-1} & \cdots & c_2    & c_1
 \end{pmatrix}
-\] and $c_0\DefineAs1$.
-\begin{proof}
+\] and $c_0\DefineAs1$.\marginpar{TODO(egg): Prove the lemma.}
+\begin{proof}[Left as an exercise to the reviewer]
 Observe that:\begin{itemize}
 \item since $\det \matE_1$ is a polynomial of degree $1$, all terms divisible by $x^2$ must cancel out in the Laplace expansion of that
 determinant on the last column, the determinant is equal to\[
@@ -369,7 +370,7 @@ We use a single iteration of Lagny’s rational method to compute $ξ$,\[
 \round{q - \round{\frac{\round{\pa{\round{\round{q^2}q}-y} q}}
                        {\round{2\round{\round{q^2}q}+y}}}}\text.
 \]
-Note that the subtraction in the numerator is exact by Sterbenz's lemma.
+Note that the subtraction in the numerator is exact by Sterbenz's lemma \cite[p.~138, theorem~4.3.1]{Sterbenz1974}.
 
 Let $Δ \DefineAs \frac{ξ}{\sqrt[3] y}-1$ and  % TODO(egg): Figure out why \cuberoot does not render here.
 \[
@@ -397,24 +398,31 @@ with $\max_{y} \abs{ε'} \approx 0.0032025$, but
 $\max_{y} \abs{Δ'} \approx 0.00002086$, $\log_2 \max_{y} \abs{Δ'} \approx -15.54$.
 The corresponding fixed-point constant is\[C_{\mathrm{L}}\DefineAs\hex{2A9F\,7893\,782D\,A1CE} \Multiply 2^{-52}\]for binary64.
 \marginpar{\small
-TODO(egg): $Δ'$ accounts for half of the excess above correct rounding in the final bound; consider using either
-a higher order iteration or Lagny's irrational formula. Also consider optimizing the constants in the method, as in
-\cite{Canon2018}; in the rational method of order $3$ there are none to optimize.
-% 9 Jul 2018
-% https://twitter.com/stephentyrone/status/1016283784067665920
-% A trick I’ve used for years and should write up: you can apply optimization to the iteration,
-% not just the starting guess: x’ = x p(x), select p(x) to be minimax error on bounded initial
-% error in x. This yields a nice family of tunable approximations.
-% https://twitter.com/stephentyrone/status/1016284058438062081
-% Everyone else seems to worry about starting estimate, but use standard iterations,
-% which is appropriate for arbitrary precision, but silly with a fixed precision target.
-% Note:
-% Note that as p gets to be high-order, it converges quickly to the Taylor series for the
-% correction, but there's a nice space with cheap initial approximations and order 2-5 or
-% so, because we can evaluate these polynomials with lower latency then serially-dependent
-% iterations.
+TODO(egg): $Δ'$ accounts for more than half of the excess above correct rounding in the final bound (for $Δ=0$, the bound becomes $1.0001832u$). Consider using either
+a higher order iteration or Lagny's irrational formula. Also consider optimizing the constants in the method, as described in \cite{Canon2018}, reproduced below with the author’s permission.
+\begingroup
+\scriptsize
+\setlength{\leftmargini}{1em}
+\begin{quotation}
+ % https://twitter.com/stephentyrone/status/1016283784067665920
+ A trick I’ve used for years and should write up: you can apply optimization to the iteration,
+ not just the starting guess: $x' = x p\of x$, select $p\of x$ to be minimax error on bounded
+ initial error in $x$. This yields a nice family of tunable approximations.
 
-}
+ % https://twitter.com/stephentyrone/status/1016284058438062081
+ Everyone else seems to worry about starting estimate, but use standard iterations,
+ which is appropriate for arbitrary precision, but silly with a fixed precision target.
+
+ % https://twitter.com/stephentyrone/status/1016328842296864770
+ Note that as $p$ gets to be high-order, it converges quickly to the Taylor series for the
+ correction, but there's a nice space with cheap initial approximations and order $2$--$5$ or
+ so, because we can evaluate these polynomials with lower latency [than] serially-dependent
+ iterations.
+\end{quotation}
+\endgroup
+Note however that in the rational method for the cube root there is little room for
+optimization without altering performance; the only constant is $2$, and changing that
+turns an addition into a multiplication.}
 
 \paragraph{Rounding error analysis.}
 It is fairly clear that $Δ'$ dominates the rounding error in the approximation
@@ -476,18 +484,34 @@ r\DefineAs\round{x-\round{\frac{
 \round{\round{x\pa{x^3-y}}\round{\round{\round{\round{5x^3}+\round{17y}}x^3}+\round{5\round{y^2}}}}}{
 \round{\round{\round{\round{7x^3} + \round{42 y}}\round{x^6}}+\round{\round{\round{30x^3}+2y}\round{y^2}}}}}}\text,
 \]
-Where $x^3$ is exact thanks to the trailing $0$s of $x$, $\round{x^6}$ is correctly-rounded because it is computed as
+where $x^3$ is exact thanks to the trailing $0$s of $x$, $\round{x^6}$ is correctly-rounded because it is computed as
 the square of $x^3$, and $x^3-y$ is exact by Sterbenz’s lemma.
-
-We first look at the truncation error. \[
-r'\DefineAs\round{x-\round{\frac{
-\round{\round{x\pa{x^3-y}}\round{\round{\round{\round{5x^3}+\round{17y}}x^3}+\round{5\round{y^2}}}}}{
-\round{\round{\round{\round{7x^3} + \round{42 y}}\round{x^6}}+\round{\round{\round{30x^3}+2y}\round{y^2}}}}}}\text,
-\]
-
-
 \marginpar{\small
-TODO(egg): consider order $5$; the truncation error is dominated by the rounding error here.}
+TODO(egg): consider order $5$; the truncation error is dominated by the rounding error here.
+It is not immediately clear that order $5$ would incur fewer roundings though, for the
+same reason that it has the same performance.}
+
+In infinite precision, this method is of such high order that if $x$ has a relative error
+below $2^{-14}$, which is the case here, the relative error of the result is less than
+$2^{-100}$; we will not seek to bound the truncation error more closely, nor to tweak $Γ$
+nor the method itself to optimize it: as we will see, it is dominated by rounding.
+
+Thanks to the exact cube and exact difference, the rounding analysis is straightforward;
+all remaining sums, being of positive terms, have a relative error bounded by the largest of
+those of their terms, so that we get no more than $γ_{4}$ on the second factor of the
+numerator, $γ_{6}$ on the whole numerator, and similarly $γ_{5}$ on the denominator,
+overall $
+\frac{1+γ_{7}}{1-γ_{5}}-1
+$ on the correction term.
+
+Since the relative error of $x$ is at most $\pa{1+Δ}\pa{1+2^{-16}}-1$, the rounding-free
+correction term is no larger than $\pa{\pa{1+Δ}\pa{1+2^{-16}}-1}\cuberoot y$, so that the absolute error of the computed correction term is bounded by\[
+\pa{\frac{1+γ_{7}}{1-γ_{5}}-1}\pa{\pa{1+Δ}\pa{1+2^{-16}}-1}\cuberoot y\text.
+\]
+This gives us our bound for the relative error of the result,\[
+\abs{\frac{r}{\cuberoot y}-1}<\pa{1+\pa{\frac{1+γ_{7}}{1-γ_{5}}-1}\pa{\pa{1+Δ}\pa{1+2^{-16}}-1}}\pa{1+u}-1\text.
+\]
+For binary64, this bound is $\displaystyle\abs{\frac{r}{\cuberoot y}-1} < 1.0004336u$.
 
 \emergencystretch 1em
 \end{document}
