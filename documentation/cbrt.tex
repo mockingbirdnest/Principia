@@ -500,16 +500,14 @@ Thanks to the exact cube and exact difference, the rounding analysis is straight
 all remaining sums, being of positive terms, have a relative error bounded by the largest of
 those of their terms, so that we get no more than $γ_{4}$ on the second factor of the
 numerator, $γ_{6}$ on the whole numerator, and similarly $γ_{5}$ on the denominator,
-overall $
-\frac{1+γ_{7}}{1-γ_{5}}-1
-$ on the correction term.
+overall $\frac{1+γ_{7}}{1-γ_{5}}-1<\frac{γ_{12}}{1-γ_{5}}$ on the correction term.
 
 Since the relative error of $x$ is at most $\pa{1+Δ}\pa{1+2^{-16}}-1$, the rounding-free
 correction term is no larger than $\pa{\pa{1+Δ}\pa{1+2^{-16}}-1}\cuberoot y$, so that the absolute error of the computed correction term is bounded by\[
-\pa{\frac{1+γ_{7}}{1-γ_{5}}-1}\pa{\pa{1+Δ}\pa{1+2^{-16}}-1}\cuberoot y\text.
+\frac{γ_{12}}{1-γ_{5}}\pa{\pa{1+Δ}\pa{1+2^{-16}}-1}\cuberoot y\text.
 \]
 This gives us our bound for the relative error of the result,\[
-\abs{\frac{r}{\cuberoot y}-1}<\pa{1+\pa{\frac{1+γ_{7}}{1-γ_{5}}-1}\pa{\pa{1+Δ}\pa{1+2^{-16}}-1}}\pa{1+u}-1\text.
+\abs{\frac{r}{\cuberoot y}-1}<\pa{1+\frac{γ_{12}}{1-γ_{5}}\pa{\pa{1+Δ}\pa{1+2^{-16}}-1}}\pa{1+u}-1\text.
 \]
 For binary64, this bound is $\displaystyle\abs{\frac{r}{\cuberoot y}-1} < 1.0004336u$.
 
