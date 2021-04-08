@@ -64,6 +64,7 @@ TEST_F(CheckpointerTest, WriteToCheckpointIfNeeded) {
   EXPECT_CALL(writer_, Call(_));
   checkpointer_.WriteToCheckpoint(t1);
   EXPECT_EQ(t1, checkpointer_.oldest_checkpoint());
+  EXPECT_EQ(t1, checkpointer_.newest_checkpoint());
 
   Instant const t2 = t1 + 8 * Second;
   EXPECT_CALL(writer_, Call(_)).Times(0);
@@ -71,6 +72,7 @@ TEST_F(CheckpointerTest, WriteToCheckpointIfNeeded) {
       t2,
       /*max_time_between_checkpoints=*/10 * Second));
   EXPECT_EQ(t1, checkpointer_.oldest_checkpoint());
+  EXPECT_EQ(t2, checkpointer_.newest_checkpoint());
 
   EXPECT_CALL(writer_, Call(_));
   Instant const t3 = t2 + 3 * Second;
@@ -78,6 +80,7 @@ TEST_F(CheckpointerTest, WriteToCheckpointIfNeeded) {
       t3,
       /*max_time_between_checkpoints=*/10 * Second));
   EXPECT_EQ(t1, checkpointer_.oldest_checkpoint());
+  EXPECT_EQ(t3, checkpointer_.newest_checkpoint());
 }
 
 TEST_F(CheckpointerTest, ReadFromOldestCheckpoint) {
@@ -94,6 +97,22 @@ TEST_F(CheckpointerTest, ReadFromOldestCheckpoint) {
   EXPECT_THAT(checkpointer_.ReadFromOldestCheckpoint(),
               StatusIs(Error::CANCELLED));
   EXPECT_OK(checkpointer_.ReadFromOldestCheckpoint());
+}
+
+TEST_F(CheckpointerTest, ReadFromNewestCheckpoint) {
+  EXPECT_THAT(checkpointer_.ReadFromNewestCheckpoint(),
+              StatusIs(Error::NOT_FOUND));
+
+  Instant const t1 = Instant() + 10 * Second;
+  EXPECT_CALL(writer_, Call(_));
+  checkpointer_.WriteToCheckpoint(t1);
+
+  EXPECT_CALL(reader_, Call(_))
+      .WillOnce(Return(Status::CANCELLED))
+      .WillOnce(Return(Status::OK));
+  EXPECT_THAT(checkpointer_.ReadFromNewestCheckpoint(),
+              StatusIs(Error::CANCELLED));
+  EXPECT_OK(checkpointer_.ReadFromNewestCheckpoint());
 }
 
 TEST_F(CheckpointerTest, ReadFromAllCheckpointsBackwards) {

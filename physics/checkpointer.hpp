@@ -53,6 +53,10 @@ class Checkpointer {
   // ever created.
   Instant oldest_checkpoint() const EXCLUDES(lock_);
 
+  // Returns the newest checkpoint in this object, or -∞ if no checkpoint was
+  // ever created.
+  Instant newest_checkpoint() const EXCLUDES(lock_);
+
   // Creates a checkpoint at time |t|, which will be used to recreate the
   // timeline after |t|.  The checkpoint is constructed by calling the |Writer|
   // passed at construction.
@@ -69,6 +73,11 @@ class Checkpointer {
   // the oldest checkpoint.  Returns an error if this object contains no
   // checkpoint or if the |Reader| returns one.
   Status ReadFromOldestCheckpoint() const EXCLUDES(lock_);
+
+  // Calls the |Reader| passed at construction to reconstruct an object using
+  // the newest checkpoint.  Returns an error if this object contains no
+  // checkpoint or if the |Reader| returns one.
+  Status ReadFromNewestCheckpoint() const EXCLUDES(lock_);
 
   // Calls |reader| on each of the checkpoints in this object, going backwards
   // from the most recent to the oldest.  Returns an error if |reader| returns

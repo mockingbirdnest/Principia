@@ -12,6 +12,7 @@ namespace physics {
 namespace internal_checkpointer {
 
 using astronomy::InfiniteFuture;
+using astronomy::InfinitePast;
 using base::Error;
 
 template<typename Message>
@@ -26,6 +27,15 @@ Instant Checkpointer<Message>::oldest_checkpoint() const {
     return InfiniteFuture;
   }
   return checkpoints_.cbegin()->first;
+}
+
+template<typename Message>
+Instant Checkpointer<Message>::newest_checkpoint() const {
+  absl::ReaderMutexLock l(&lock_);
+  if (checkpoints_.empty()) {
+    return InfinitePast;
+  }
+  return checkpoints_.cend()->first;
 }
 
 template<typename Message>
@@ -56,6 +66,19 @@ Status Checkpointer<Message>::ReadFromOldestCheckpoint() const {
       return Status(Error::NOT_FOUND, "No checkpoint");
     }
     checkpoint = &checkpoints_.cbegin()->second;
+  }
+  return reader_(*checkpoint);
+}
+
+template<typename Message>
+Status Checkpointer<Message>::ReadFromNewestCheckpoint() const {
+  typename Message::Checkpoint const* checkpoint = nullptr;
+  {
+    absl::ReaderMutexLock l(&lock_);
+    if (checkpoints_.empty()) {
+      return Status(Error::NOT_FOUND, "No checkpoint");
+    }
+    checkpoint = &checkpoints_.cend()->second;
   }
   return reader_(*checkpoint);
 }
