@@ -15,6 +15,9 @@
 \newcommand\zeroBR[1]{\multicolumn{1}{r}{\llap{\smash{\text{{#1$0$}}}}}}
 \newcommand\zeroTR[1]{\multicolumn{1}{r}{\llap{\smash{\setlength{\medianToZeroTop}{\heightof{#1$0$}-1ex}\raisebox{-\medianToZeroTop}{\text{{#1$0$}}}}}}}
 
+% REMOVE BEFORE FLIGHT: move to basestyle.
+\usepackage[all]{nowidow}
+
 %%%% Shorthands.
 \DeclareMathOperator{\bias}{\mathit{bias}}
 % Rounding brackets will be heavily nested, and reading the nesting depth is critically important,
