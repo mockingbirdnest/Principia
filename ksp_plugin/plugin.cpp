@@ -690,8 +690,7 @@ DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
     RigidMotion<Barycentric, World> const& barycentric_to_world,
     Instant const& time) const {
   return barycentric_to_world(
-             FindOrDie(celestials_, index)->
-                 trajectory().EvaluateDegreesOfFreedom(time));
+      FindOrDie(celestials_, index)->current_degrees_of_freedom(time));
 }
 
 RigidMotion<Barycentric, World> Plugin::BarycentricToWorld(
