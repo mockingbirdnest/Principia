@@ -28,7 +28,7 @@
 %%%% Title and authors.
 
 \title{A nearly correctly-rounded cube root}
-\date{TODO(egg): \printdate{2017-03-36}}
+\date{\printdate{2021-04-08}}
 \author{Robin~Leroy (eggrobin)}
 \begin{document}
 \maketitle
@@ -466,14 +466,14 @@ provided that $p\geq 12$.
 
 \subsection{Rounded approximation}
 
-The number $x$ is obtained from $ξ$ by zeroing all but the most significant $\Floor{\frac{p}{3}}$ bits of
+The number $x$ is obtained from $ξ$ by zeroing all but the most significant $\smash{\Floor{\frac{p}{3}}}$ bits of
 its significand.
-The resulting relative error\[\abs{\frac{x}{ξ}-1}\]is greatest when the zeroed bits are all $1$ and the
+The resulting relative error $\abs{\frac{x}{ξ}-1}$is greatest when the zeroed bits are all $1$ and the
 remaining bits (except for the leading $1$) are all $0$; this is the case when the significand of $ξ$ is
 $1+2^{-\Floor{\frac{p}{3}}+1}-2^{1-p}$, in which case that of $x$ is $1$.
 
 The relative error arising from $\FunctionBody ξ x$ is thus at most\[
-1-\frac{1}{1+2^{-\Floor{\frac{p}{3}}+1}-2^{1-p}} < 2^{-\Floor{\frac{p}{3}}+1}\text,
+\abs{\frac{x}{ξ}-1}\le1-\frac{1}{1+2^{-\Floor{\frac{p}{3}}+1}-2^{1-p}} < 2^{-\Floor{\frac{p}{3}}+1}\text,
 \]
 $2^{-16}$ in binary64.
 
