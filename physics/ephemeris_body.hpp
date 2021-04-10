@@ -908,6 +908,7 @@ Ephemeris<Frame>::MakeCheckpointerReader() {
 template<typename Frame>
 Status Ephemeris<Frame>::Reanimate(Instant const& t_final) {
   Instant segment_t_final = t_final;
+  bool is_first = true;
   std::vector<not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>>
       trajectories;
 
@@ -919,9 +920,16 @@ Status Ephemeris<Frame>::Reanimate(Instant const& t_final) {
 
   auto reader = [this,
                  &append_massive_bodies_state,
+                 &is_first,
                  &segment_t_final,
                  &trajectories](
                     serialization::Ephemeris::Checkpoint const& message) {
+    // The first checkpoint has already been integrated by the caller.  Skip it.
+    if (is_first) {
+      is_first = false;
+      return Status::OK;
+    }
+
     // Create or reset the trajectories.
     for (int i = 0; i < trajectories_.size(); ++i) {
       trajectories.emplace_back(
