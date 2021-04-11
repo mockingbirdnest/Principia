@@ -1112,7 +1112,7 @@ TEST(EphemerisTestNoFixture, Reanimator) {
           /*step=*/10 * Minute});
   ephemeris1->Prolong(t_final);
   EXPECT_EQ(t_initial, ephemeris1->t_min());
-  EXPECT_EQ(t_final, ephemeris1->t_max());
+  EXPECT_LE(t_final, ephemeris1->t_max());
 
   // Serialize that ephemeris to a message and read it back.
   serialization::Ephemeris message;
