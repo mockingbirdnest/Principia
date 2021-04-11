@@ -114,6 +114,7 @@ TEST_F(FitHermiteSplineTest, Sinusoid) {
               IsNear(107_⑴ * Nano(Metre)));
 }
 
+#if PRINCIPIA_MUST_ALWAYS_DOWNSAMPLE
 TEST_F(FitHermiteSplineDeathTest, NoDownsampling) {
   AngularFrequency const ω = 1 * Radian / Second;
   auto const f = [ω, this](Instant const& t) {
@@ -146,6 +147,7 @@ TEST_F(FitHermiteSplineDeathTest, NoDownsampling) {
         interpolation_points = fit_hermite_spline();
   }, "tail.size.*samples.size");
 }
+#endif
 
 }  // namespace numerics
 }  // namespace principia
