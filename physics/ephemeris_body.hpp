@@ -953,10 +953,15 @@ Status Ephemeris<Frame>::Reanimate(Instant const& t_final) {
     // Do the integration.  After this step the t_max() of the trajectories may
     // be before segment_t_final because there may be last_points_ that haven't
     // been put in a series.
-    instance->Solve(segment_t_final);
+    //TODO(phl): Locking?
+    {
+      absl::ReaderMutexLock l(&lock_);
+      instance->Solve(segment_t_final);
+    }
 
     RETURN_IF_STOPPED;
 
+    // Stitch the trajectories to the ones in this object.
     {
       absl::MutexLock l(&lock_);
       for (int i = 0; i < trajectories_.size(); ++i) {
