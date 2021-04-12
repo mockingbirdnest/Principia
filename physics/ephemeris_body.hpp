@@ -800,7 +800,7 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   ephemeris->reanimator_ = MakeStoppableThread(
       std::bind(&Ephemeris::Reanimate,
                 ephemeris.get(),
-                ephemeris->checkpointer_->newest_checkpoint()));
+                ephemeris->checkpointer_->all_checkpoints()));
 
   // The ephemeris will need to be prolonged as needed when deserializing the
   // plugin.
@@ -906,78 +906,79 @@ Ephemeris<Frame>::MakeCheckpointerReader() {
 }
 
 template<typename Frame>
-Status Ephemeris<Frame>::Reanimate(Instant const& t_final) {
-  Instant segment_t_final = t_final;
-  bool is_first = true;
+Status Ephemeris<Frame>::Reanimate(std::set<Instant> const& checkpoints) {
+  // This loop integrates all the segments defined by the checkpoints, going
+  // backwards in time.
+  std::optional<Instant> following_checkpoint;
+  for (auto it = checkpoints.crbegin(); it != checkpoints.crend(); ++it) {
+    Instant const& checkpoint = *it;
+    if (following_checkpoint.has_value()) {
+      auto const status = checkpointer_->ReadFromCheckpointAt(
+          checkpoint,
+          [this, t_final = following_checkpoint.value()](
+              serialization::Ephemeris::Checkpoint const& message) {
+            return ReanimateOneCheckpoint(message, t_final);
+          });
+      if (!status.ok()) {
+        return status;
+      }
+    }
+    following_checkpoint = checkpoint;
+  }
+  return Status::OK;
+}
+
+template<typename Frame>
+Status Ephemeris<Frame>::ReanimateOneCheckpoint(
+    serialization::Ephemeris::Checkpoint const& message,
+    Instant const& t_final) {
+  // Create the trajectories.
   std::vector<not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>>
       trajectories;
+  for (int i = 0; i < trajectories_.size(); ++i) {
+    trajectories.emplace_back(std::make_unique<ContinuousTrajectory<Frame>>(
+        fixed_step_parameters_.step_,
+        accuracy_parameters_.fitting_tolerance_));
+  }
 
+  // Reconstruct the integrator instance from the current checkpoint.
   auto append_massive_bodies_state =
       [&trajectories](
           typename NewtonianMotionEquation::SystemState const& state) {
         AppendMassiveBodiesStateToTrajectories(state, trajectories);
       };
+  auto const instance = FixedStepSizeIntegrator<NewtonianMotionEquation>::
+      Instance::ReadFromMessage(message.instance(),
+                                MakeMassiveBodiesNewtonianMotionEquation(),
+                                append_massive_bodies_state);
 
-  auto reader = [this,
-                 &append_massive_bodies_state,
-                 &is_first,
-                 &segment_t_final,
-                 &trajectories](
-                    serialization::Ephemeris::Checkpoint const& message) {
-    // The first checkpoint has already been integrated by the caller.  Skip it.
-    if (is_first) {
-      is_first = false;
-      return Status::OK;
-    }
+  // Append the current points to the trajectories.
+  append_massive_bodies_state(instance->state());
+  Instant const segment_t_initial = instance->time().value;
 
-    // Create or reset the trajectories.
+  RETURN_IF_STOPPED;
+
+  // Do the integration.  After this step the t_max() of the trajectories may
+  // be before segment_t_final because there may be last_points_ that haven't
+  // been put in a series.
+  //TODO(phl): Locking?
+  {
+    absl::ReaderMutexLock l(&lock_);
+    instance->Solve(t_final);
+  }
+
+  RETURN_IF_STOPPED;
+
+  // Stitch the trajectories to the ones in this object.
+  {
+    absl::MutexLock l(&lock_);
     for (int i = 0; i < trajectories_.size(); ++i) {
-      trajectories.emplace_back(
-            std::make_unique<ContinuousTrajectory<Frame>>(
-              fixed_step_parameters_.step_,
-              accuracy_parameters_.fitting_tolerance_));
+      trajectories_[i]->Prepend(std::move(*trajectories[i]));
     }
+    trajectories.clear();
+  }
 
-    // Reconstruct the integrator instance from the current checkpoint.
-    auto const instance = FixedStepSizeIntegrator<NewtonianMotionEquation>::
-        Instance::ReadFromMessage(message.instance(),
-                                  MakeMassiveBodiesNewtonianMotionEquation(),
-                                  append_massive_bodies_state);
-
-    // Append the current points to the trajectories.
-    append_massive_bodies_state(instance->state());
-    Instant const segment_t_initial = instance->time().value;
-
-    RETURN_IF_STOPPED;
-
-    // Do the integration.  After this step the t_max() of the trajectories may
-    // be before segment_t_final because there may be last_points_ that haven't
-    // been put in a series.
-    //TODO(phl): Locking?
-    {
-      absl::ReaderMutexLock l(&lock_);
-      instance->Solve(segment_t_final);
-    }
-
-    RETURN_IF_STOPPED;
-
-    // Stitch the trajectories to the ones in this object.
-    {
-      absl::MutexLock l(&lock_);
-      for (int i = 0; i < trajectories_.size(); ++i) {
-        trajectories_[i]->Prepend(std::move(*trajectories[i]));
-      }
-      trajectories.clear();
-    }
-
-    // Prepare for the next segment.
-    segment_t_final = segment_t_initial;
-    return Status::OK;
-  };
-
-  // This loop integrates all the segments defines by the checkpoints, going
-  // backwards in time.
-  return checkpointer_->ReadFromAllCheckpointsBackwards(reader);
+  return Status::OK;
 }
 
 template<typename Frame>

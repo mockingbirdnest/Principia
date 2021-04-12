@@ -309,8 +309,13 @@ class Ephemeris {
   Checkpointer<serialization::Ephemeris>::Reader MakeCheckpointerReader();
 
   // Called on a stoppable thread to reconstruct the past state of the ephemeris
-  // and its trajectories until the given |t_final|.
-  Status Reanimate(Instant const& t_final);
+  // and its trajectories until the given |checkpoints|.
+  Status Reanimate(std::set<Instant> const& checkpoints);
+
+  //TODO(phl):comment
+  Status ReanimateOneCheckpoint(
+      serialization::Ephemeris::Checkpoint const& message,
+      Instant const& t_final);
 
   // Callbacks for the integrators.
   void AppendMassiveBodiesState(
