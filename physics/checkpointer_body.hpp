@@ -39,6 +39,20 @@ Instant Checkpointer<Message>::newest_checkpoint() const {
 }
 
 template<typename Message>
+std::set<Instant> Checkpointer<Message>::all_checkpoints() const {
+  absl::ReaderMutexLock l(&lock_);
+  std::set<Instant> result;
+  std::transform(
+      checkpoints_.cbegin(),
+      checkpoints_.cend(),
+      std::inserter(result, result.end()),
+      [](std::pair<Instant, typename Message::Checkpoint> const& pair) {
+        return pair.first;
+      });
+  return result;
+}
+
+template<typename Message>
 void Checkpointer<Message>::WriteToCheckpoint(Instant const& t) {
   absl::MutexLock l(&lock_);
   WriteToCheckpointLocked(t);
@@ -81,6 +95,20 @@ Status Checkpointer<Message>::ReadFromNewestCheckpoint() const {
     checkpoint = &checkpoints_.crbegin()->second;
   }
   return reader_(*checkpoint);
+}
+
+template<typename Message>
+Status Checkpointer<Message>::ReadFromCheckpointAt(Instant const& checkpoint,
+                                                   Reader const& reader) const {
+  typename std::map<Instant, Message::Checkpoint>::const_iterator it;
+  {
+    absl::ReaderMutexLock l(&lock_);
+    it = checkpoints_.find(checkpoint);
+    if (it == checkpoints_.end()) {
+      return Status(Error::NOT_FOUND, "No checkpoint found");
+    }
+  }
+  return reader_(it->second);
 }
 
 template<typename Message>
