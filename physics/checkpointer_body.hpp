@@ -108,7 +108,7 @@ Status Checkpointer<Message>::ReadFromCheckpointAt(Instant const& checkpoint,
       return Status(Error::NOT_FOUND, "No checkpoint found");
     }
   }
-  return reader_(it->second);
+  return reader(it->second);
 }
 
 template<typename Message>
