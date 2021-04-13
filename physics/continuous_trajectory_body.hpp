@@ -470,25 +470,11 @@ void ContinuousTrajectory<Frame>::WriteToCheckpoint(Instant const& t) const {
 
 template<typename Frame>
 Status ContinuousTrajectory<Frame>::ReadFromCheckpointAt(
-    Instant const& t) const {
-  return checkpointer_->ReadFromCheckpointAt(t);
+    Instant const& t,
+    Checkpointer<serialization::ContinuousTrajectory>::Reader const& reader)
+    const {
+  return checkpointer_->ReadFromCheckpointAt(t, reader);
 }
-
-template<typename Frame>
-ContinuousTrajectory<Frame>::ContinuousTrajectory()
-    : checkpointer_(
-          make_not_null_unique<
-              Checkpointer<serialization::ContinuousTrajectory>>(
-          /*reader=*/nullptr,
-          /*writer=*/nullptr)) {}
-
-template<typename Frame>
-ContinuousTrajectory<Frame>::InstantPolynomialPair::InstantPolynomialPair(
-    Instant const t_max,
-    not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
-        polynomial)
-    : t_max(t_max),
-      polynomial(std::move(polynomial)) {}
 
 template<typename Frame>
 Checkpointer<serialization::ContinuousTrajectory>::Writer
@@ -541,6 +527,22 @@ ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
     return nullptr;
   }
 }
+
+template<typename Frame>
+ContinuousTrajectory<Frame>::ContinuousTrajectory()
+    : checkpointer_(
+          make_not_null_unique<
+              Checkpointer<serialization::ContinuousTrajectory>>(
+          /*reader=*/nullptr,
+          /*writer=*/nullptr)) {}
+
+template<typename Frame>
+ContinuousTrajectory<Frame>::InstantPolynomialPair::InstantPolynomialPair(
+    Instant const t_max,
+    not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+        polynomial)
+    : t_max(t_max),
+      polynomial(std::move(polynomial)) {}
 
 template<typename Frame>
 Instant ContinuousTrajectory<Frame>::t_min_locked() const {

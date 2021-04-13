@@ -98,11 +98,6 @@ Status Checkpointer<Message>::ReadFromNewestCheckpoint() const {
 }
 
 template<typename Message>
-Status Checkpointer<Message>::ReadFromCheckpointAt(Instant const& t) const {
-  return ReadFromCheckpointAt(t, reader_);
-}
-
-template<typename Message>
 Status Checkpointer<Message>::ReadFromCheckpointAt(Instant const& t,
                                                    Reader const& reader) const {
   typename std::map<Instant, Message::Checkpoint>::const_iterator it;

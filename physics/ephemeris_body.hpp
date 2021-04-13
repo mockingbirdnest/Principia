@@ -935,14 +935,16 @@ Status Ephemeris<Frame>::ReanimateOneCheckpoint(
     serialization::Ephemeris::Checkpoint const& message,
     Instant const& t_initial,
     Instant const& t_final) {
-  // Create the trajectories.
+  // Create new trajectories and initialize them using the checkpoints of the
+  // trajectories of this ephemeris.
   std::vector<not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>>
       trajectories;
   for (int i = 0; i < trajectories_.size(); ++i) {
     trajectories.emplace_back(std::make_unique<ContinuousTrajectory<Frame>>(
         fixed_step_parameters_.step_,
         accuracy_parameters_.fitting_tolerance_));
-    trajectories.back()->checkpointer().ReadFromCheckpointAt(t_initial);
+    trajectories_[i]->ReadFromCheckpointAt(
+        t_initial, trajectories[i]->MakeCheckpointerReader());
   }
 
   // Reconstruct the integrator instance from the current checkpoint.

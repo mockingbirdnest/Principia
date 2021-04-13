@@ -129,7 +129,15 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   Checkpointer<serialization::ContinuousTrajectory>& checkpointer();
   //TODO(phl):Comment.
   void WriteToCheckpoint(Instant const& t) const;
-  Status ReadFromCheckpointAt(Instant const& t) const;
+  Status ReadFromCheckpointAt(
+      Instant const& t,
+      Checkpointer<serialization::ContinuousTrajectory>::Reader const& reader)
+      const;
+
+  Checkpointer<serialization::ContinuousTrajectory>::Writer
+  MakeCheckpointerWriter();
+  Checkpointer<serialization::ContinuousTrajectory>::Reader
+  MakeCheckpointerReader();
 
  protected:
   // For mocking.
@@ -152,12 +160,6 @@ class ContinuousTrajectory : public Trajectory<Frame> {
         polynomial;
   };
   using InstantPolynomialPairs = std::vector<InstantPolynomialPair>;
-
-  // Checkpointing support.
-  Checkpointer<serialization::ContinuousTrajectory>::Writer
-  MakeCheckpointerWriter();
-  Checkpointer<serialization::ContinuousTrajectory>::Reader
-  MakeCheckpointerReader();
 
   Instant t_min_locked() const REQUIRES_SHARED(lock_);
   Instant t_max_locked() const REQUIRES_SHARED(lock_);
