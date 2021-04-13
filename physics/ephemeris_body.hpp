@@ -915,9 +915,11 @@ Status Ephemeris<Frame>::Reanimate(std::set<Instant> const& checkpoints) {
     if (following_checkpoint.has_value()) {
       auto const status = checkpointer_->ReadFromCheckpointAt(
           checkpoint,
-          [this, t_final = following_checkpoint.value()](
+          [this,
+           t_final = following_checkpoint.value(),
+           t_initial = checkpoint](
               serialization::Ephemeris::Checkpoint const& message) {
-            return ReanimateOneCheckpoint(message, t_final);
+            return ReanimateOneCheckpoint(message, t_initial, t_final);
           });
       if (!status.ok()) {
         return status;
@@ -931,6 +933,7 @@ Status Ephemeris<Frame>::Reanimate(std::set<Instant> const& checkpoints) {
 template<typename Frame>
 Status Ephemeris<Frame>::ReanimateOneCheckpoint(
     serialization::Ephemeris::Checkpoint const& message,
+    Instant const& t_initial,
     Instant const& t_final) {
   // Create the trajectories.
   std::vector<not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>>
@@ -939,6 +942,7 @@ Status Ephemeris<Frame>::ReanimateOneCheckpoint(
     trajectories.emplace_back(std::make_unique<ContinuousTrajectory<Frame>>(
         fixed_step_parameters_.step_,
         accuracy_parameters_.fitting_tolerance_));
+    trajectories.back()->checkpointer().ReadFromCheckpointAt(t_initial);
   }
 
   // Reconstruct the integrator instance from the current checkpoint.

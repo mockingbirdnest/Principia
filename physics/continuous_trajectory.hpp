@@ -127,6 +127,9 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // Ephemeris to create synchronized checkpoints of its state and that of its
   // trajectories.
   Checkpointer<serialization::ContinuousTrajectory>& checkpointer();
+  //TODO(phl):Comment.
+  void WriteToCheckpoint(Instant const& t) const;
+  Status ReadFromCheckpointAt(Instant const& t) const;
 
  protected:
   // For mocking.

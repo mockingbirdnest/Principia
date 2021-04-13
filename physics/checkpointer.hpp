@@ -84,7 +84,8 @@ class Checkpointer {
   Status ReadFromNewestCheckpoint() const EXCLUDES(lock_);
 
   //TODO(phl):comment
-  Status ReadFromCheckpointAt(Instant const& checkpoint,
+  Status ReadFromCheckpointAt(Instant const& t) const EXCLUDES(lock_);
+  Status ReadFromCheckpointAt(Instant const& t,
                               Reader const& reader) const EXCLUDES(lock_);
 
   // Calls |reader| on each of the checkpoints in this object, going backwards

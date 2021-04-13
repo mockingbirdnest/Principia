@@ -315,6 +315,7 @@ class Ephemeris {
   //TODO(phl):comment
   Status ReanimateOneCheckpoint(
       serialization::Ephemeris::Checkpoint const& message,
+      Instant const& t_initial,
       Instant const& t_final);
 
   // Callbacks for the integrators.

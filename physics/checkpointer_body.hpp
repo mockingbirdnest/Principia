@@ -98,12 +98,17 @@ Status Checkpointer<Message>::ReadFromNewestCheckpoint() const {
 }
 
 template<typename Message>
-Status Checkpointer<Message>::ReadFromCheckpointAt(Instant const& checkpoint,
+Status Checkpointer<Message>::ReadFromCheckpointAt(Instant const& t) const {
+  return ReadFromCheckpointAt(t, reader_);
+}
+
+template<typename Message>
+Status Checkpointer<Message>::ReadFromCheckpointAt(Instant const& t,
                                                    Reader const& reader) const {
   typename std::map<Instant, Message::Checkpoint>::const_iterator it;
   {
     absl::ReaderMutexLock l(&lock_);
-    it = checkpoints_.find(checkpoint);
+    it = checkpoints_.find(t);
     if (it == checkpoints_.end()) {
       return Status(Error::NOT_FOUND, "No checkpoint found");
     }

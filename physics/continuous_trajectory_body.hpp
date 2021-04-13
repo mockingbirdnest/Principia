@@ -464,6 +464,17 @@ ContinuousTrajectory<Frame>::checkpointer() {
 }
 
 template<typename Frame>
+void ContinuousTrajectory<Frame>::WriteToCheckpoint(Instant const& t) const {
+  checkpointer_->WriteToCheckpoint(t);
+}
+
+template<typename Frame>
+Status ContinuousTrajectory<Frame>::ReadFromCheckpointAt(
+    Instant const& t) const {
+  return checkpointer_->ReadFromCheckpointAt(t);
+}
+
+template<typename Frame>
 ContinuousTrajectory<Frame>::ContinuousTrajectory()
     : checkpointer_(
           make_not_null_unique<
