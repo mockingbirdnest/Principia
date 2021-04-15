@@ -83,15 +83,10 @@ class Checkpointer {
   // checkpoint or if the |Reader| returns one.
   Status ReadFromNewestCheckpoint() const EXCLUDES(lock_);
 
-  //TODO(phl):comment
+  // Calls |reader| on the checkpoint at |t|.  Returns an error if there is no
+  // such checkpoint or if |reader| returns one.
   Status ReadFromCheckpointAt(Instant const& t,
                               Reader const& reader) const EXCLUDES(lock_);
-
-  // Calls |reader| on each of the checkpoints in this object, going backwards
-  // from the most recent to the oldest.  Returns an error if |reader| returns
-  // one.
-  Status ReadFromAllCheckpointsBackwards(Reader const& reader) const
-      EXCLUDES(lock_);
 
   void WriteToMessage(not_null<google::protobuf::RepeatedPtrField<
                           typename Message::Checkpoint>*> message) const

@@ -458,12 +458,6 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
 }
 
 template<typename Frame>
-Checkpointer<serialization::ContinuousTrajectory>&
-ContinuousTrajectory<Frame>::checkpointer() {
-  return *checkpointer_;
-}
-
-template<typename Frame>
 void ContinuousTrajectory<Frame>::WriteToCheckpoint(Instant const& t) const {
   checkpointer_->WriteToCheckpoint(t);
 }
@@ -473,7 +467,6 @@ Status ContinuousTrajectory<Frame>::ReadFromCheckpointAt(
     Instant const& t,
     Checkpointer<serialization::ContinuousTrajectory>::Reader const& reader)
     const {
-  //LOG(ERROR)<<"Traj: "<<t;
   return checkpointer_->ReadFromCheckpointAt(t, reader);
 }
 
@@ -521,7 +514,6 @@ ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
         last_points_.push_back(
             {Instant::ReadFromMessage(l.instant()),
              DegreesOfFreedom<Frame>::ReadFromMessage(l.degrees_of_freedom())});
-        //LOG(ERROR)<<"  lp: "<<last_points_.back().first;
       }
 
       // The first_time_ is not part of the checkpoint because it might be far

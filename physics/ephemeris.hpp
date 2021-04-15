@@ -312,7 +312,8 @@ class Ephemeris {
   // and its trajectories until the given |checkpoints|.
   Status Reanimate(std::set<Instant> const& checkpoints);
 
-  //TODO(phl):comment
+  // Reconstructs the past state of the ephemeris between |t_initial| and
+  // |t_final| using the given checkpoint |message|.
   Status ReanimateOneCheckpoint(
       serialization::Ephemeris::Checkpoint const& message,
       Instant const& t_initial,
@@ -375,11 +376,10 @@ class Ephemeris {
       REQUIRES_SHARED(lock_);
 
   // Computes the accelerations between all the massive bodies in |bodies_|.
-  void ComputeMassiveBodiesGravitationalAccelerations(
+  Status ComputeMassiveBodiesGravitationalAccelerations(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
-      std::vector<Vector<Acceleration, Frame>>& accelerations) const
-      REQUIRES_SHARED(lock_);
+      std::vector<Vector<Acceleration, Frame>>& accelerations) const;
 
   // Computes the acceleration exerted by the massive bodies in |bodies_| on
   // massless bodies.  The massless bodies are at the given |positions|.

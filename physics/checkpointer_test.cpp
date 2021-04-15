@@ -145,39 +145,6 @@ TEST_F(CheckpointerTest, ReadFromCheckpointAt) {
               StatusIs(Error::CANCELLED));
 }
 
-TEST_F(CheckpointerTest, ReadFromAllCheckpointsBackwards) {
-  Instant const t1 = Instant() + 10 * Second;
-  EXPECT_CALL(writer_, Call(_)).WillOnce(SetPayload(1));
-  checkpointer_.WriteToCheckpoint(t1);
-
-  Instant const t2 = t1 + 11 * Second;
-  EXPECT_CALL(writer_, Call(_)).WillOnce(SetPayload(2));
-  checkpointer_.WriteToCheckpoint(t2);
-
-  Instant const t3 = t2 + 11 * Second;
-  EXPECT_CALL(writer_, Call(_)).WillOnce(SetPayload(3));
-  checkpointer_.WriteToCheckpoint(t3);
-
-  {
-    InSequence s;
-    EXPECT_CALL(reader_, Call(Field(&Message::Checkpoint::payload, 3)));
-    EXPECT_CALL(reader_, Call(Field(&Message::Checkpoint::payload, 2)));
-    EXPECT_CALL(reader_, Call(Field(&Message::Checkpoint::payload, 1)));
-  }
-  EXPECT_OK(
-      checkpointer_.ReadFromAllCheckpointsBackwards(reader_.AsStdFunction()));
-
-  {
-    InSequence s;
-    EXPECT_CALL(reader_, Call(Field(&Message::Checkpoint::payload, 3)));
-    EXPECT_CALL(reader_, Call(Field(&Message::Checkpoint::payload, 2)))
-        .WillOnce(Return(Status::CANCELLED));
-  }
-  EXPECT_THAT(
-      checkpointer_.ReadFromAllCheckpointsBackwards(reader_.AsStdFunction()),
-      StatusIs(Error::CANCELLED));
-}
-
 TEST_F(CheckpointerTest, Serialization) {
   Instant t = Instant() + 10 * Second;
   EXPECT_CALL(writer_, Call(_)).Times(2);

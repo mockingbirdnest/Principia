@@ -865,12 +865,11 @@ void Ephemeris<Frame>::WriteToCheckpointIfNeeded(Instant const& time) const {
     if (checkpointer_->WriteToCheckpointIfNeeded(
             time, max_time_between_checkpoints)) {
       for (auto const& trajectory : trajectories_) {
-        trajectory->checkpointer().WriteToCheckpoint(time);
+        trajectory->WriteToCheckpoint(time);
       }
     }
   }
 }
-
 
 template<typename Frame>
 Checkpointer<serialization::Ephemeris>::Writer
@@ -935,7 +934,7 @@ Status Ephemeris<Frame>::ReanimateOneCheckpoint(
     serialization::Ephemeris::Checkpoint const& message,
     Instant const& t_initial,
     Instant const& t_final) {
-  LOG(ERROR)<<"Eph: "<<t_initial<<" "<<t_final;
+  LOG(INFO) << "Reanimating segment from " << t_initial << " to " << t_final;
   // Create new trajectories and initialize them using the checkpoints of the
   // trajectories of this ephemeris.
   std::vector<not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>>
@@ -953,15 +952,12 @@ Status Ephemeris<Frame>::ReanimateOneCheckpoint(
       [&trajectories](
           typename NewtonianMotionEquation::SystemState const& state) {
         AppendMassiveBodiesStateToTrajectories(state, trajectories);
-        //LOG(ERROR)<<"App: "<<state.time.value << " " <<trajectories[0]->t_min();
       };
   auto const instance = FixedStepSizeIntegrator<NewtonianMotionEquation>::
       Instance::ReadFromMessage(message.instance(),
                                 MakeMassiveBodiesNewtonianMotionEquation(),
                                 append_massive_bodies_state);
 
-  // Append the current points to the trajectories.
-  //append_massive_bodies_state(instance->state());
   Instant const segment_t_initial = instance->time().value;
 
   RETURN_IF_STOPPED;
@@ -969,11 +965,7 @@ Status Ephemeris<Frame>::ReanimateOneCheckpoint(
   // Do the integration.  After this step the t_max() of the trajectories may
   // be before segment_t_final because there may be last_points_ that haven't
   // been put in a series.
-  //TODO(phl): Locking?
-  {
-    absl::ReaderMutexLock l(&lock_);
-    instance->Solve(t_final);
-  }
+  instance->Solve(t_final);
 
   RETURN_IF_STOPPED;
 
@@ -981,10 +973,6 @@ Status Ephemeris<Frame>::ReanimateOneCheckpoint(
   {
     absl::MutexLock l(&lock_);
     for (int i = 0; i < trajectories_.size(); ++i) {
-      if (i == 0) {
-        LOG(ERROR)<<" max: "<<trajectories[i]->t_max()
-          <<" min: "<<trajectories_[i]->t_min();
-      }
       trajectories_[i]->Prepend(std::move(*trajectories[i]));
     }
     trajectories.clear();
@@ -1057,10 +1045,9 @@ Ephemeris<Frame>::MakeMassiveBodiesNewtonianMotionEquation() {
       [this](Instant const& t,
              std::vector<Position<Frame>> const& positions,
              std::vector<Vector<Acceleration, Frame>>& accelerations) {
-        ComputeMassiveBodiesGravitationalAccelerations(t,
-                                                       positions,
-                                                       accelerations);
-        return Status::OK;
+        return ComputeMassiveBodiesGravitationalAccelerations(t,
+                                                              positions,
+                                                              accelerations);
       };
   return equation;
 }
@@ -1198,11 +1185,12 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
+Status Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
     Instant const& t,
     std::vector<Position<Frame>> const& positions,
     std::vector<Vector<Acceleration, Frame>>& accelerations) const {
-  lock_.AssertReaderHeld();
+  RETURN_IF_STOPPED;
+
   accelerations.assign(accelerations.size(), Vector<Acceleration, Frame>());
 
   for (std::size_t b1 = 0; b1 < number_of_oblate_bodies_; ++b1) {
@@ -1241,6 +1229,8 @@ void Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
         /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
         positions, accelerations, geopotentials_);
   }
+
+  return Status::OK;
 }
 
 template<typename Frame>
