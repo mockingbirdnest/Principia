@@ -935,6 +935,7 @@ Status Ephemeris<Frame>::ReanimateOneCheckpoint(
     serialization::Ephemeris::Checkpoint const& message,
     Instant const& t_initial,
     Instant const& t_final) {
+  LOG(ERROR)<<"Eph: "<<t_initial<<" "<<t_final;
   // Create new trajectories and initialize them using the checkpoints of the
   // trajectories of this ephemeris.
   std::vector<not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>>
@@ -952,6 +953,7 @@ Status Ephemeris<Frame>::ReanimateOneCheckpoint(
       [&trajectories](
           typename NewtonianMotionEquation::SystemState const& state) {
         AppendMassiveBodiesStateToTrajectories(state, trajectories);
+        //LOG(ERROR)<<"App: "<<state.time.value << " " <<trajectories[0]->t_min();
       };
   auto const instance = FixedStepSizeIntegrator<NewtonianMotionEquation>::
       Instance::ReadFromMessage(message.instance(),
@@ -959,7 +961,7 @@ Status Ephemeris<Frame>::ReanimateOneCheckpoint(
                                 append_massive_bodies_state);
 
   // Append the current points to the trajectories.
-  append_massive_bodies_state(instance->state());
+  //append_massive_bodies_state(instance->state());
   Instant const segment_t_initial = instance->time().value;
 
   RETURN_IF_STOPPED;
@@ -979,6 +981,10 @@ Status Ephemeris<Frame>::ReanimateOneCheckpoint(
   {
     absl::MutexLock l(&lock_);
     for (int i = 0; i < trajectories_.size(); ++i) {
+      if (i == 0) {
+        LOG(ERROR)<<" max: "<<trajectories[i]->t_max()
+          <<" min: "<<trajectories_[i]->t_min();
+      }
       trajectories_[i]->Prepend(std::move(*trajectories[i]));
     }
     trajectories.clear();
@@ -1007,7 +1013,6 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
       LOG(ERROR) << "New Apocalypse: " << last_severe_integration_status_;
     }
   }
-
   WriteToCheckpointIfNeeded(state.time.value);
 }
 

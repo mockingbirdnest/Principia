@@ -473,6 +473,7 @@ Status ContinuousTrajectory<Frame>::ReadFromCheckpointAt(
     Instant const& t,
     Checkpointer<serialization::ContinuousTrajectory>::Reader const& reader)
     const {
+  //LOG(ERROR)<<"Traj: "<<t;
   return checkpointer_->ReadFromCheckpointAt(t, reader);
 }
 
@@ -520,6 +521,18 @@ ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
         last_points_.push_back(
             {Instant::ReadFromMessage(l.instant()),
              DegreesOfFreedom<Frame>::ReadFromMessage(l.degrees_of_freedom())});
+        //LOG(ERROR)<<"  lp: "<<last_points_.back().first;
+      }
+
+      // The first_time_ is not part of the checkpoint because it might be far
+      // in the past compared to the checkpoint.  When a checkpoint is read,
+      // though the first_time_ must be made consistent.
+      if (!last_points_.empty()) {
+        if (first_time_.has_value()) {
+          CHECK_LE(first_time_.value(), last_points_.front().first);
+        } else {
+          first_time_ = last_points_.front().first;
+        }
       }
       return Status::OK;
     };
