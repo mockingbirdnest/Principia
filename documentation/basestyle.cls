@@ -150,6 +150,7 @@
 % Latin locutions.
 \newcommand{\idest}{\emph{i.e.}}
 \newcommand{\exempligratia}{\emph{e.g.}}
+\newcommand{\sequentes}{\emph{sqq.}}
 
 % For comments in align environments
 \newcommand\commentbox[1]{\parbox{.3\linewidth}{#1}}
