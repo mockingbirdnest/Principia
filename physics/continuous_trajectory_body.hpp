@@ -422,7 +422,6 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
   if (message.has_first_time()) {
     continuous_trajectory->first_time_ =
         Instant::ReadFromMessage(message.first_time());
-    LOG(INFO)<<"First time read: "<<*continuous_trajectory->first_time_;
   }
 
   if (is_pre_grassmann) {

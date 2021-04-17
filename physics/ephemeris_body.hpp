@@ -794,6 +794,8 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
 
   // WriteToMessage always creates a checkpoint, and so does the compatibility
   // code.
+  LOG(INFO) << "Restoring to checkpoint at "
+            << ephemeris->checkpointer_->newest_checkpoint();
   ephemeris->checkpointer_->ReadFromNewestCheckpoint();
 
   // Start a thread to asynchronously reconstruct the past using checkpoints.
