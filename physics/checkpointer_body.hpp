@@ -3,7 +3,10 @@
 
 #include "physics/checkpointer.hpp"
 
+#include <map>
+#include <set>
 #include <vector>
+#include <utility>
 
 #include "astronomy/epoch.hpp"
 
@@ -12,6 +15,7 @@ namespace physics {
 namespace internal_checkpointer {
 
 using astronomy::InfiniteFuture;
+using astronomy::InfinitePast;
 using base::Error;
 
 template<typename Message>
@@ -26,6 +30,57 @@ Instant Checkpointer<Message>::oldest_checkpoint() const {
     return InfiniteFuture;
   }
   return checkpoints_.cbegin()->first;
+}
+
+template<typename Message>
+Instant Checkpointer<Message>::newest_checkpoint() const {
+  absl::ReaderMutexLock l(&lock_);
+  if (checkpoints_.empty()) {
+    return InfinitePast;
+  }
+  return checkpoints_.crbegin()->first;
+}
+
+template<typename Message>
+Instant Checkpointer<Message>::checkpoint_at_or_before(Instant const& t) const {
+  absl::ReaderMutexLock l(&lock_);
+  // |it| denotes an entry strictly greater than |t| (or end).
+  auto const it = checkpoints_.upper_bound(t);
+  if (it == checkpoints_.cbegin()) {
+    return InfinitePast;
+  }
+  return std::prev(it)->first;
+}
+
+template<typename Message>
+std::set<Instant> Checkpointer<Message>::all_checkpoints() const {
+  absl::ReaderMutexLock l(&lock_);
+  std::set<Instant> result;
+  std::transform(
+      checkpoints_.cbegin(),
+      checkpoints_.cend(),
+      std::inserter(result, result.end()),
+      [](std::pair<Instant, typename Message::Checkpoint> const& pair) {
+        return pair.first;
+      });
+  return result;
+}
+
+template<typename Message>
+std::set<Instant> Checkpointer<Message>::all_checkpoints_at_or_before(
+    Instant const& t) const {
+  absl::ReaderMutexLock l(&lock_);
+  // |it| denotes an entry strictly greater than |t| (or end).
+  auto const it = checkpoints_.upper_bound(t);
+  std::set<Instant> result;
+  std::transform(
+      checkpoints_.cbegin(),
+      it,
+      std::inserter(result, result.end()),
+      [](std::pair<Instant, typename Message::Checkpoint> const& pair) {
+        return pair.first;
+      });
+  return result;
 }
 
 template<typename Message>
@@ -58,6 +113,49 @@ Status Checkpointer<Message>::ReadFromOldestCheckpoint() const {
     checkpoint = &checkpoints_.cbegin()->second;
   }
   return reader_(*checkpoint);
+}
+
+template<typename Message>
+Status Checkpointer<Message>::ReadFromNewestCheckpoint() const {
+  typename Message::Checkpoint const* checkpoint = nullptr;
+  {
+    absl::ReaderMutexLock l(&lock_);
+    if (checkpoints_.empty()) {
+      return Status(Error::NOT_FOUND, "No checkpoint");
+    }
+    checkpoint = &checkpoints_.crbegin()->second;
+  }
+  return reader_(*checkpoint);
+}
+
+template<typename Message>
+Status Checkpointer<Message>::ReadFromCheckpointAtOrBefore(
+    Instant const& t) const {
+  typename Message::Checkpoint const* checkpoint = nullptr;
+  {
+    absl::ReaderMutexLock l(&lock_);
+    // |it| denotes an entry strictly greater than |t| (or end).
+    auto const it = checkpoints_.upper_bound(t);
+    if (it == checkpoints_.cbegin()) {
+      return Status(Error::NOT_FOUND, "No checkpoint");
+    }
+    checkpoint = &std::prev(it)->second;
+  }
+  return reader_(*checkpoint);
+}
+
+template<typename Message>
+Status Checkpointer<Message>::ReadFromCheckpointAt(Instant const& t,
+                                                   Reader const& reader) const {
+  typename std::map<Instant, Message::Checkpoint>::const_iterator it;
+  {
+    absl::ReaderMutexLock l(&lock_);
+    it = checkpoints_.find(t);
+    if (it == checkpoints_.end()) {
+      return Status(Error::NOT_FOUND, "No checkpoint found");
+    }
+  }
+  return reader(it->second);
 }
 
 template<typename Message>
