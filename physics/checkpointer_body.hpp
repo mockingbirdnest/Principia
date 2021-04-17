@@ -3,7 +3,10 @@
 
 #include "physics/checkpointer.hpp"
 
+#include <map>
+#include <set>
 #include <vector>
+#include <utility>
 
 #include "astronomy/epoch.hpp"
 
