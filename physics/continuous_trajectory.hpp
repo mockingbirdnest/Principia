@@ -183,8 +183,9 @@ class ContinuousTrajectory : public Trajectory<Frame> {
       std::vector<Velocity<Frame>> const& v) REQUIRES(lock_);
 
   // Returns an iterator to the polynomial applicable for the given |time|, or
-  // |begin()| if |time| is before the first polynomial or |end()| if |time| is
-  // after the last polynomial.  Time complexity is O(N Log N).
+  // |begin| if |time| is before the first polynomial or |end| if |time| is
+  // after the last polynomial.  If |time| is the |t_max| of some polynomial,
+  // that polynomial is returned.  Time complexity is O(N Log N).
   typename InstantPolynomialPairs::const_iterator
   FindPolynomialForInstant(Instant const& time) const REQUIRES_SHARED(lock_);
 

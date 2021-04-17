@@ -422,6 +422,7 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
   if (message.has_first_time()) {
     continuous_trajectory->first_time_ =
         Instant::ReadFromMessage(message.first_time());
+    LOG(INFO)<<"First time read: "<<*continuous_trajectory->first_time_;
   }
 
   if (is_pre_grassmann) {
@@ -452,7 +453,7 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
             continuous_trajectory->MakeCheckpointerReader(),
             message.checkpoint());
   }
-  CHECK_OK(continuous_trajectory->checkpointer_->ReadFromOldestCheckpoint());
+  CHECK_OK(continuous_trajectory->checkpointer_->ReadFromNewestCheckpoint());
 
   return continuous_trajectory;
 }
@@ -504,6 +505,8 @@ ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
     return [this](
                serialization::ContinuousTrajectory::Checkpoint const& message) {
       absl::MutexLock l(&lock_);
+
+      // Load the members that are recorded in the checkpoint.
       adjusted_tolerance_ =
           Length::ReadFromMessage(message.adjusted_tolerance());
       is_unstable_ = message.is_unstable();
@@ -516,16 +519,32 @@ ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
              DegreesOfFreedom<Frame>::ReadFromMessage(l.degrees_of_freedom())});
       }
 
-      // The first_time_ is not part of the checkpoint because it might be far
-      // in the past compared to the checkpoint.  When a checkpoint is read,
-      // though the first_time_ must be made consistent.
-      if (!last_points_.empty()) {
-        if (first_time_.has_value()) {
-          CHECK_LE(first_time_.value(), last_points_.front().first);
-        } else {
-          first_time_ = last_points_.front().first;
+      // Restore the other members to their state at the time of the checkpoint.
+      if (last_points_.empty()) {
+        polynomials_.clear();
+        first_time_ = std::nullopt;
+      } else {
+        // Locate the polynomial that ends at the first last_point_.  Note that
+        // we cannot use FindPolynomialForInstant because it calls lower_bound
+        // and we don't want to change its behaviour.
+        Instant const& oldest_time = last_points_.front().first;
+        // If oldest_time is the t_max of some polynomial, then the returned
+        // iterator points to the next polynomial.
+        auto const it =
+            std::upper_bound(polynomials_.begin(),
+                             polynomials_.end(),
+                             oldest_time,
+                             [](Instant const& left,
+                                InstantPolynomialPair const& right) {
+                               return left < right.t_max;
+                             });
+        polynomials_.erase(it, polynomials_.end());
+        if (polynomials_.empty()) {
+          first_time_ = oldest_time;
         }
       }
+      last_accessed_polynomial_ = 0;  // Always valid.
+
       return Status::OK;
     };
   } else {
