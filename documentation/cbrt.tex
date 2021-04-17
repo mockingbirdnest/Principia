@@ -285,17 +285,17 @@ $\det\matC\of{ψ\of{a}}=0$.
 By the lemma, for the value of $x$ in Lagny’s rational method, $x+\frac{1}{2}a$ solves that equation.
 \end{proof}
 
-\section*{A faithfully-rounded cube root}
+\section*{A faithfully rounded cube root}
 
 We now turn to the computation in \texttt{numerics/cbrt.cpp}.
 
 \subsection*{Overview}
-Our general approach to computing a faithfully-rounded cube root of $y>0$ is the one described in \cite{KahanBindel2001}:
+Our general approach to computing a faithfully rounded cube root of $y>0$ is the one described in \cite{KahanBindel2001}:
 \begin{enumerate}
 \item integer arithmetic is used to get a an initial quick approximation $q$ of $\cuberoot y$;
 \item a root finding method is used to improve that that to an approximation $ξ$ with a third of the precision;
 \item $ξ$ is rounded to a third of the precision, resulting in the rounded approximation $x$ whose cube $x^3$ can be computed exactly;
-\item a single high order iteration of a root finding method is used to get the faithfully-rounded result $r_0$.
+\item a single high order iteration of a root finding method is used to get the faithfully rounded result $r_0$.
 \end{enumerate}
 
 \subsection*{Notation}
