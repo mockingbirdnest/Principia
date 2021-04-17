@@ -41,7 +41,7 @@ Instant Checkpointer<Message>::newest_checkpoint() const {
 template<typename Message>
 Instant Checkpointer<Message>::checkpoint_at_or_before(Instant const& t) const {
   absl::ReaderMutexLock l(&lock_);
-  // it denotes an entry strictly greater than t (or end).
+  // |it| denotes an entry strictly greater than |t| (or end).
   auto const it = checkpoints_.upper_bound(t);
   if (it == checkpoints_.cbegin()) {
     return InfinitePast;
@@ -67,7 +67,7 @@ template<typename Message>
 std::set<Instant> Checkpointer<Message>::all_checkpoints_at_or_before(
     Instant const& t) const {
   absl::ReaderMutexLock l(&lock_);
-  // it denotes an entry strictly greater than t (or end).
+  // |it| denotes an entry strictly greater than |t| (or end).
   auto const it = checkpoints_.upper_bound(t);
   std::set<Instant> result;
   std::transform(
@@ -131,7 +131,7 @@ Status Checkpointer<Message>::ReadFromCheckpointAtOrBefore(
   typename Message::Checkpoint const* checkpoint = nullptr;
   {
     absl::ReaderMutexLock l(&lock_);
-    // it denotes an entry strictly greater than t (or end).
+    // |it| denotes an entry strictly greater than |t| (or end).
     auto const it = checkpoints_.upper_bound(t);
     if (it == checkpoints_.cbegin()) {
       return Status(Error::NOT_FOUND, "No checkpoint");
