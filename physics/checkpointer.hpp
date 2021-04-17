@@ -58,13 +58,14 @@ class Checkpointer {
   // ever created.
   Instant newest_checkpoint() const EXCLUDES(lock_);
 
-  //TODO(phl):comment and test
+  // Returns the checkpoint at or immediately before |t|, or -∞ if no such
+  // checkpoint exists.
   Instant checkpoint_at_or_before(Instant const& t) const EXCLUDES(lock_);
 
   // Returns all the checkpoints in this object.
   std::set<Instant> all_checkpoints() const EXCLUDES(lock_);
 
-  //TODO(phl):comment and test
+  // Returns all the checkpoints at or before |t|.
   std::set<Instant> all_checkpoints_at_or_before(Instant const& t) const
       EXCLUDES(lock_);
 
@@ -90,7 +91,9 @@ class Checkpointer {
   // checkpoint or if the |Reader| returns one.
   Status ReadFromNewestCheckpoint() const EXCLUDES(lock_);
 
-  //TODO(phl): comment and test
+  // Calls the |Reader| passed at construction to reconstruct an object using
+  // the checkpoint at or immediately before |t|.  Returns an error if no such
+  // checkpoint exists or if the |Reader| returns one.
   Status ReadFromCheckpointAtOrBefore(Instant const& t) const EXCLUDES(lock_);
 
   // Calls |reader| on the checkpoint at |t|.  Returns an error if there is no

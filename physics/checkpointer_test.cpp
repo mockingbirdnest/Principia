@@ -1,5 +1,6 @@
 #include "physics/checkpointer.hpp"
 
+#include "astronomy/epoch.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "testing_utilities/matchers.hpp"
@@ -7,6 +8,7 @@
 namespace principia {
 namespace physics {
 
+using astronomy::InfinitePast;
 using base::Error;
 using base::not_null;
 using base::Status;
@@ -16,6 +18,7 @@ using testing_utilities::StatusIs;
 using ::testing::ElementsAre;
 using ::testing::Field;
 using ::testing::InSequence;
+using ::testing::IsEmpty;
 using ::testing::MockFunction;
 using ::testing::Ref;
 using ::testing::Return;
@@ -117,6 +120,48 @@ TEST_F(CheckpointerTest, ReadFromNewestCheckpoint) {
   EXPECT_THAT(checkpointer_.ReadFromNewestCheckpoint(),
               StatusIs(Error::CANCELLED));
   EXPECT_OK(checkpointer_.ReadFromNewestCheckpoint());
+}
+
+TEST_F(CheckpointerTest, ReadFromCheckpointAtOrBefore) {
+  Instant const t1 = Instant() + 10 * Second;
+  EXPECT_CALL(writer_, Call(_)).WillOnce(SetPayload(1));
+  checkpointer_.WriteToCheckpoint(t1);
+
+  Instant const t2 = t1 + 11 * Second;
+  EXPECT_CALL(writer_, Call(_)).WillOnce(SetPayload(2));
+  checkpointer_.WriteToCheckpoint(t2);
+
+  Instant const t3 = t2 + 11 * Second;
+  EXPECT_CALL(writer_, Call(_)).WillOnce(SetPayload(3));
+  checkpointer_.WriteToCheckpoint(t3);
+
+  EXPECT_EQ(InfinitePast,
+            checkpointer_.checkpoint_at_or_before(Instant() + 1 * Second));
+  EXPECT_EQ(t1, checkpointer_.checkpoint_at_or_before(t1));
+  EXPECT_EQ(t2, checkpointer_.checkpoint_at_or_before(t2 + 1 * Second));
+
+  EXPECT_THAT(
+      checkpointer_.all_checkpoints_at_or_before(Instant() + 1 * Second),
+      IsEmpty());
+  EXPECT_THAT(checkpointer_.all_checkpoints_at_or_before(t1),
+              ElementsAre(t1));
+  EXPECT_THAT(checkpointer_.all_checkpoints_at_or_before(t2 + 1 * Second),
+              ElementsAre(t1, t2));
+
+  EXPECT_THAT(
+      checkpointer_.ReadFromCheckpointAtOrBefore(Instant() + 1 * Second),
+      StatusIs(Error::NOT_FOUND));
+
+  EXPECT_CALL(reader_, Call(Field(&Message::Checkpoint::payload, 1)));
+  EXPECT_OK(checkpointer_.ReadFromCheckpointAtOrBefore(t1));
+
+  EXPECT_CALL(reader_, Call(Field(&Message::Checkpoint::payload, 2)));
+  EXPECT_OK(checkpointer_.ReadFromCheckpointAtOrBefore(t2 + 1 * Second));
+
+  EXPECT_CALL(reader_, Call(Field(&Message::Checkpoint::payload, 3)))
+      .WillOnce(Return(Status::CANCELLED));
+  EXPECT_THAT(checkpointer_.ReadFromCheckpointAtOrBefore(t3),
+              StatusIs(Error::CANCELLED));
 }
 
 TEST_F(CheckpointerTest, ReadFromCheckpointAt) {
