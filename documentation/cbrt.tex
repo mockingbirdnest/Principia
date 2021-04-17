@@ -86,9 +86,9 @@ The iteration is $\FunctionBody{a}{x+\frac{1}{2}a}$, where $x$ is a root of $E_{
 and the root of $E_{1}$ in the rational method. Its order is $p$.
 
 \paragraph{A note on the multiplicity of irrational methods.} Lagny does not require that the polynomial division be carried out
-all the way to $E_2$, merely until one gets \foreign{\textfrench{une valeur d'$x$ [...] d'un degré commode}}, by which he likely means
+all the way to $E_2$, merely until one gets \foreign{\textfrench{une valeur d'$x$ rationelle \textnormal{[...]} d'un degré commode}}, by which he likely means
 one that is constructible. When $f$ is a cubic, he uses the term \foreign{\textfrench{formule irrationnelle}} for $x+\frac{1}{2}a$ where
-$x$ is a root of $E_2$, but when it comes to computing the fifth root, the same term is used to refer to the formula where $x$ is a root of
+$x$ is a root of $E_2$, but when it comes to computing the fifth root, the same term is used to refer to the case where $x$ is a root of
 $E_4$. In order to avoid confusion, we use the term \emph{quadratic irrational method} when $x$ is a root of $E_2$ in the general case,
 and we call the irrational formula from \cite[43]{FantetdeLagny1692}\footnote{The formula has a misprint in
 \cite[43]{FantetdeLagny1692}, $-\tfrac{1}{2}a^2$ instead of $-\tfrac{1}{4}a^2$ under the radical.
@@ -96,13 +96,13 @@ Halley remarks on it and gives the corrected formula in \cite[137,140]{Halley169
 The misprint remains forty years later in \cite[340]{FantetdeLagny1733}.} for $\sqrt[5]{a^5+b}$\[
 \FunctionBody{a}{\tfrac{1}{2}a+\sqrt{\sqrt{\tfrac{1}{4}a^4+\tfrac{b}{5a}}-\tfrac{1}{4}a^2}}
 \]
-Lagny's quartic irrational method for the fifth root, whereas the quadratic irrational method for the same fifth root would be\footnote{Both are of order $5$, but the reader who wishes
+Lagny's \emph{quartic irrational method} for the fifth root, whereas the quadratic irrational method for the same fifth root would be\footnote{Both are of order $5$, but the reader who wishes
 to compute a fifth root should note that leading term of the error of the quartic method is
 $\frac{2}{7}$ of that of the quadratic.}\[
 \FunctionBody{a}{\frac{a\pa{7b-\sqrt{100a^{10}+100a^{5}b-7b^2}}}{4b-10a^5}}\text.
 \]
-In the context of the computation of a real cube root, there is however no ambiguity; assuming one does not wish to compute a
-cube root using a cube root, the only irrational method is the quadratic one.
+When $p=3$, there is however no ambiguity; assuming one does not wish to reduce the computatio
+of the root of a cubic to that of another cubic, the only irrational method is the quadratic one.
 
 Modern calculus allows us to give a more straightfoward expression for the rational method than was available to Lagny;
 the proof of the following equivalence will be given at the end of this section.
@@ -117,7 +117,7 @@ a\mapsto a + \pa{p-1}\frac{\pa{1/f}^{\pa{p-2}}\of{a}}{\pa{1/f}^{\pa{p-1}}\of{a}}
 The iteration (\ref{LagnyRationaliteration}) is a special case of the \foreign{Algorithmen $\pa{A^λ_ω}$} defined by Schröder for an
 arbitrary polynomial $f$ in \cite[349\psq]{Schröder1870}, equation (69); specifically, it is $\pa{A^0_{p-1}}$.
 As seen in the proof of the proposition, it is also a special case of Householder’s  equation (14) from \cite[169]{Householder1970},
-which generalizes it by substituting $\frac{f}{g}$ for $f$, and letting $f$ be an arbitrary analytic function. The case
+which generalizes it by substituting $f/g$ for $f$, and letting $f$ be an arbitrary analytic function. The case
 $g\Identically1$ is mentioned in theorem 4.4.2, and that expression is given explicitly in \cite{SebahGourdon2001}.
 
 For $p=2$ and $f$ an arbitrary polynomial, (\ref{LagnyRationaliteration}) is Newton's method, presented by Wallis in
@@ -138,7 +138,8 @@ general method and its proof, as Halley writes
 præfertim Cubicâ, pauca tantum eaque perplexa nec ſatis demonſtrata de affectarum radicum
 extractione ſubjungit.
 \end{quote}
-or, about Lagny's irrational method for the fifth root,
+or, about the quartic irrational method for the fifth root, whereon Lagny does not elaborate as
+it is a direct application of the general method,
 \begin{quote}
 Author autem nullibi inveniendi methodum ejuſve demonſtrationem concedit,
 etiamſi maxime deſiderari videatur [...].
@@ -206,7 +207,7 @@ Tout cela est fort abrégé; mais qui nous délivrera des méthodes abrége
 
 % This cul-de-lampe prevents the typesetting engine having too little to fill this page without setting the
 % giant matrix in it, thereby overflowing into the bottom margin.
-\begin{center}\pgfornament[width = .2\linewidth]{59}\end{center}
+%\begin{center}\pgfornament[width = .15\linewidth]{59}\end{center}
 
 \subsection*{Proof of the proposition}
 
