@@ -274,7 +274,9 @@ class Ephemeris {
       not_null<serialization::Ephemeris*> message) const EXCLUDES(lock_);
   template<typename F = Frame,
            typename = std::enable_if_t<base::is_serializable_v<F>>>
-  //TODO(phl):comment
+  // The parameter |using_checkpoint_at_or_before| indicates that the ephemeris
+  // must be restored at the state it had at the checkpoint at or immediately
+  // before that time.
   static not_null<std::unique_ptr<Ephemeris>> ReadFromMessage(
       Instant const& using_checkpoint_at_or_before,
       serialization::Ephemeris const& message) EXCLUDES(lock_);
