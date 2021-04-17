@@ -723,6 +723,7 @@ void Ephemeris<Frame>::WriteToMessage(
 template<typename Frame>
 template<typename, typename>
 not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
+    Instant const& using_checkpoint_at_or_before,
     serialization::Ephemeris const& message) {
   bool const is_pre_ἐρατοσθένης = !message.has_accuracy_parameters();
   bool const is_pre_fatou = !message.has_checkpoint_time();
@@ -761,8 +762,8 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   for (auto const& trajectory : message.trajectory()) {
     not_null<MassiveBody const*> const body = ephemeris->bodies_[index].get();
     not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>
-        deserialized_trajectory =
-            ContinuousTrajectory<Frame>::ReadFromMessage(trajectory);
+        deserialized_trajectory = ContinuousTrajectory<Frame>::ReadFromMessage(
+            using_checkpoint_at_or_before, trajectory);
     ephemeris->trajectories_.push_back(deserialized_trajectory.get());
     ephemeris->bodies_to_trajectories_.emplace(
         body, std::move(deserialized_trajectory));
@@ -792,17 +793,21 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
             message.checkpoint());
   }
 
-  // WriteToMessage always creates a checkpoint, and so does the compatibility
-  // code.
   LOG(INFO) << "Restoring to checkpoint at "
-            << ephemeris->checkpointer_->newest_checkpoint();
-  ephemeris->checkpointer_->ReadFromNewestCheckpoint();
+            << ephemeris->checkpointer_->checkpoint_at_or_before(
+                   using_checkpoint_at_or_before);
+
+  // This has no effect if there is no checkpoint before
+  // |using_checkpoint_at_or_before|.
+  ephemeris->checkpointer_->ReadFromCheckpointAtOrBefore(
+      using_checkpoint_at_or_before);
 
   // Start a thread to asynchronously reconstruct the past using checkpoints.
   ephemeris->reanimator_ = MakeStoppableThread(
       std::bind(&Ephemeris::Reanimate,
                 ephemeris.get(),
-                ephemeris->checkpointer_->all_checkpoints()));
+                ephemeris->checkpointer_->all_checkpoints_at_or_before(
+                    using_checkpoint_at_or_before)));
 
   // The ephemeris will need to be prolonged as needed when deserializing the
   // plugin.

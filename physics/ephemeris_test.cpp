@@ -9,6 +9,7 @@
 #include <thread>
 #include <vector>
 
+#include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "base/macros.hpp"
 #include "geometry/barycentre_calculator.hpp"
@@ -47,6 +48,7 @@ namespace physics {
 namespace internal_ephemeris {
 
 using astronomy::ICRS;
+using astronomy::InfiniteFuture;
 using base::not_null;
 using geometry::Barycentre;
 using geometry::AngularVelocity;
@@ -630,7 +632,8 @@ TEST_P(EphemerisTest, Serialization) {
   serialization::Ephemeris message;
   ephemeris.WriteToMessage(&message);
 
-  auto const ephemeris_read = Ephemeris<ICRS>::ReadFromMessage(message);
+  auto const ephemeris_read =
+      Ephemeris<ICRS>::ReadFromMessage(InfiniteFuture, message);
   // After deserialization, the client must prolong as needed.
   ephemeris_read->Prolong(ephemeris.t_max());
 
@@ -1117,7 +1120,7 @@ TEST(EphemerisTestNoFixture, Reanimator) {
   // Serialize that ephemeris to a message and read it back.
   serialization::Ephemeris message;
   ephemeris1->WriteToMessage(&message);
-  auto ephemeris2 = Ephemeris<ICRS>::ReadFromMessage(message);
+  auto ephemeris2 = Ephemeris<ICRS>::ReadFromMessage(InfiniteFuture, message);
 
   // Wait for reanimation to happen.
   while (t_initial < ephemeris2->t_min()) {

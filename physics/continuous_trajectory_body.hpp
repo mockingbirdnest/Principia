@@ -376,7 +376,8 @@ template<typename Frame>
 template<typename, typename>
 not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>
 ContinuousTrajectory<Frame>::ReadFromMessage(
-      serialization::ContinuousTrajectory const& message) {
+    Instant const& using_checkpoint_at_or_before,
+    serialization::ContinuousTrajectory const& message) {
   bool const is_pre_cohen = message.series_size() > 0;
   bool const is_pre_fatou = !message.has_checkpoint_time();
   bool const is_pre_grassmann = message.has_adjusted_tolerance() &&
@@ -452,7 +453,8 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
             continuous_trajectory->MakeCheckpointerReader(),
             message.checkpoint());
   }
-  CHECK_OK(continuous_trajectory->checkpointer_->ReadFromNewestCheckpoint());
+  CHECK_OK(continuous_trajectory->checkpointer_->ReadFromCheckpointAtOrBefore(
+      using_checkpoint_at_or_before));
 
   return continuous_trajectory;
 }

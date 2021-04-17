@@ -39,12 +39,40 @@ Instant Checkpointer<Message>::newest_checkpoint() const {
 }
 
 template<typename Message>
+Instant Checkpointer<Message>::checkpoint_at_or_before(Instant const& t) const {
+  absl::ReaderMutexLock l(&lock_);
+  // it denotes an entry strictly greater than t (or end).
+  auto const it = checkpoints_.upper_bound(t);
+  if (it == checkpoints_.cbegin()) {
+    return InfinitePast;
+  }
+  return std::prev(it)->first;
+}
+
+template<typename Message>
 std::set<Instant> Checkpointer<Message>::all_checkpoints() const {
   absl::ReaderMutexLock l(&lock_);
   std::set<Instant> result;
   std::transform(
       checkpoints_.cbegin(),
       checkpoints_.cend(),
+      std::inserter(result, result.end()),
+      [](std::pair<Instant, typename Message::Checkpoint> const& pair) {
+        return pair.first;
+      });
+  return result;
+}
+
+template<typename Message>
+std::set<Instant> Checkpointer<Message>::all_checkpoints_at_or_before(
+    Instant const& t) const {
+  absl::ReaderMutexLock l(&lock_);
+  // it denotes an entry strictly greater than t (or end).
+  auto const it = checkpoints_.upper_bound(t);
+  std::set<Instant> result;
+  std::transform(
+      checkpoints_.cbegin(),
+      it,
       std::inserter(result, result.end()),
       [](std::pair<Instant, typename Message::Checkpoint> const& pair) {
         return pair.first;
@@ -93,6 +121,22 @@ Status Checkpointer<Message>::ReadFromNewestCheckpoint() const {
       return Status(Error::NOT_FOUND, "No checkpoint");
     }
     checkpoint = &checkpoints_.crbegin()->second;
+  }
+  return reader_(*checkpoint);
+}
+
+template<typename Message>
+Status Checkpointer<Message>::ReadFromCheckpointAtOrBefore(
+    Instant const& t) const {
+  typename Message::Checkpoint const* checkpoint = nullptr;
+  {
+    absl::ReaderMutexLock l(&lock_);
+    // it denotes an entry strictly greater than t (or end).
+    auto const it = checkpoints_.upper_bound(t);
+    if (it == checkpoints_.cbegin()) {
+      return Status(Error::NOT_FOUND, "No checkpoint");
+    }
+    checkpoint = &std::prev(it)->second;
   }
   return reader_(*checkpoint);
 }

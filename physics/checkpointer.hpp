@@ -58,8 +58,15 @@ class Checkpointer {
   // ever created.
   Instant newest_checkpoint() const EXCLUDES(lock_);
 
+  //TODO(phl):comment and test
+  Instant checkpoint_at_or_before(Instant const& t) const EXCLUDES(lock_);
+
   // Returns all the checkpoints in this object.
   std::set<Instant> all_checkpoints() const EXCLUDES(lock_);
+
+  //TODO(phl):comment and test
+  std::set<Instant> all_checkpoints_at_or_before(Instant const& t) const
+      EXCLUDES(lock_);
 
   // Creates a checkpoint at time |t|, which will be used to recreate the
   // timeline after |t|.  The checkpoint is constructed by calling the |Writer|
@@ -82,6 +89,9 @@ class Checkpointer {
   // the newest checkpoint.  Returns an error if this object contains no
   // checkpoint or if the |Reader| returns one.
   Status ReadFromNewestCheckpoint() const EXCLUDES(lock_);
+
+  //TODO(phl): comment and test
+  Status ReadFromCheckpointAtOrBefore(Instant const& t) const EXCLUDES(lock_);
 
   // Calls |reader| on the checkpoint at |t|.  Returns an error if there is no
   // such checkpoint or if |reader| returns one.
