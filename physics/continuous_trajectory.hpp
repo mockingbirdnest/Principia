@@ -121,8 +121,8 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   template<typename F = Frame,
            typename = std::enable_if_t<base::is_serializable_v<F>>>
   // The parameter |using_checkpoint_at_or_before| indicates that the ephemeris
-  // must be restored at the state it had at the checkpoint at or immediately
-  // before that time.
+  // must be restored at the state it had at the checkpoint that was taken at or
+  // immediately before that time.
   static not_null<std::unique_ptr<ContinuousTrajectory>> ReadFromMessage(
       Instant const& using_checkpoint_at_or_before,
       serialization::ContinuousTrajectory const& message);
@@ -135,7 +135,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
       Checkpointer<serialization::ContinuousTrajectory>::Reader const& reader)
       const;
 
-  // Returns functions that can be passed to a |Checkpointer| to write this
+  // Return functions that can be passed to a |Checkpointer| to write this
   // trajectory to a checkpoint or read it back.
   Checkpointer<serialization::ContinuousTrajectory>::Writer
   MakeCheckpointerWriter();

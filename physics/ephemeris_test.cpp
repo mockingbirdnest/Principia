@@ -1124,6 +1124,7 @@ TEST(EphemerisTestNoFixture, Reanimator) {
 
   // Wait for reanimation to happen.
   while (t_initial < ephemeris2->t_min()) {
+    LOG(WARNING) << "Sleeping until Herbert West is done...";
     std::this_thread::sleep_for(100ms);
   }
 
@@ -1134,7 +1135,7 @@ TEST(EphemerisTestNoFixture, Reanimator) {
   }
   for (int i = 0; i < ephemeris1->bodies().size(); ++i) {
     auto trajectory1 = ephemeris1->trajectory(ephemeris1->bodies()[i]);
-    auto trajectory2 = ephemeris1->trajectory(ephemeris1->bodies()[i]);
+    auto trajectory2 = ephemeris2->trajectory(ephemeris2->bodies()[i]);
     for (Instant t = t_initial;
          t <= t_final;
          t += (t_final - t_initial) / 100) {

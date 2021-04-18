@@ -453,8 +453,12 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
             continuous_trajectory->MakeCheckpointerReader(),
             message.checkpoint());
   }
-  CHECK_OK(continuous_trajectory->checkpointer_->ReadFromCheckpointAtOrBefore(
-      using_checkpoint_at_or_before));
+
+  // This has no effect if there is no checkpoint before
+  // |using_checkpoint_at_or_before|, and leaves the checkpointed fields in
+  // their default-constructed state.
+  continuous_trajectory->checkpointer_->ReadFromCheckpointAtOrBefore(
+      using_checkpoint_at_or_before);
 
   return continuous_trajectory;
 }

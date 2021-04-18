@@ -313,7 +313,9 @@ class Ephemeris {
   Checkpointer<serialization::Ephemeris>::Reader MakeCheckpointerReader();
 
   // Called on a stoppable thread to reconstruct the past state of the ephemeris
-  // and its trajectories until the given |checkpoints|.
+  // and its trajectories using the given |checkpoints|.  The last checkpoint in
+  // the set is assumed to be restored already and tells the reanimator where to
+  // stop.
   Status Reanimate(std::set<Instant> const& checkpoints);
 
   // Reconstructs the past state of the ephemeris between |t_initial| and

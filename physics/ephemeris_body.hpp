@@ -798,7 +798,8 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
                    using_checkpoint_at_or_before);
 
   // This has no effect if there is no checkpoint before
-  // |using_checkpoint_at_or_before|.
+  // |using_checkpoint_at_or_before|, and leaves the checkpointed fields in
+  // their default-constructed state.
   ephemeris->checkpointer_->ReadFromCheckpointAtOrBefore(
       using_checkpoint_at_or_before);
 
@@ -914,7 +915,8 @@ Ephemeris<Frame>::MakeCheckpointerReader() {
 template<typename Frame>
 Status Ephemeris<Frame>::Reanimate(std::set<Instant> const& checkpoints) {
   // This loop integrates all the segments defined by the checkpoints, going
-  // backwards in time.
+  // backwards in time.  The last checkpoint is not restored, it just serves as
+  // a limit.
   std::optional<Instant> following_checkpoint;
   for (auto it = checkpoints.crbegin(); it != checkpoints.crend(); ++it) {
     Instant const& checkpoint = *it;
@@ -942,14 +944,18 @@ Status Ephemeris<Frame>::ReanimateOneCheckpoint(
     Instant const& t_initial,
     Instant const& t_final) {
   LOG(INFO) << "Reanimating segment from " << t_initial << " to " << t_final;
-  // Create new trajectories and initialize them using the checkpoints of the
-  // trajectories of this ephemeris.
+  // Create new trajectories and initialize them from the checkpoint at
+  // t_initial.
   std::vector<not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>>
       trajectories;
   for (int i = 0; i < trajectories_.size(); ++i) {
     trajectories.emplace_back(std::make_unique<ContinuousTrajectory<Frame>>(
         fixed_step_parameters_.step_,
         accuracy_parameters_.fitting_tolerance_));
+
+    // This statement is subtle: it restores the checkpoints of the trajectories
+    // of this ephemeris, but thanks to the newly-created reader, it restores
+    // them into the local trajectories.
     trajectories_[i]->ReadFromCheckpointAt(
         t_initial, trajectories[i]->MakeCheckpointerReader());
   }
@@ -965,24 +971,21 @@ Status Ephemeris<Frame>::ReanimateOneCheckpoint(
                                 MakeMassiveBodiesNewtonianMotionEquation(),
                                 append_massive_bodies_state);
 
-  Instant const segment_t_initial = instance->time().value;
-
   RETURN_IF_STOPPED;
 
   // Do the integration.  After this step the t_max() of the trajectories may
-  // be before segment_t_final because there may be last_points_ that haven't
-  // been put in a series.
+  // be before t_final because there may be last_points_ that haven't been put
+  // in a series.
   instance->Solve(t_final);
 
   RETURN_IF_STOPPED;
 
-  // Stitch the trajectories to the ones in this object.
+  // Stitch the local trajectories to the ones in this object.
   {
     absl::MutexLock l(&lock_);
     for (int i = 0; i < trajectories_.size(); ++i) {
       trajectories_[i]->Prepend(std::move(*trajectories[i]));
     }
-    trajectories.clear();
   }
 
   return Status::OK;
