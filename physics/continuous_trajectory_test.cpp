@@ -705,7 +705,7 @@ TEST_F(ContinuousTrajectoryTest, Serialization) {
 
   // Take a checkpoint and verify that the checkpointed data is properly
   // serialized.
-  trajectory->checkpointer().WriteToCheckpoint(trajectory->t_max());
+  trajectory->WriteToCheckpoint(trajectory->t_max());
   serialization::ContinuousTrajectory message;
   trajectory->WriteToMessage(&message);
   EXPECT_EQ(step / Second, message.step().magnitude());
@@ -772,7 +772,7 @@ TEST_F(ContinuousTrajectoryTest, PreCohenCompatibility) {
                  velocity_function,
                  t0_,
                  *trajectory);
-  trajectory->checkpointer().WriteToCheckpoint(trajectory->t_max());
+  trajectory->WriteToCheckpoint(trajectory->t_max());
 
   serialization::ContinuousTrajectory message;
   trajectory->WriteToMessage(&message);
@@ -859,7 +859,7 @@ TEST_F(ContinuousTrajectoryTest, PreGrassmannCompatibility) {
                  t0_,
                  *trajectory1);
   Instant const checkpoint_time = trajectory1->t_max();
-  trajectory1->checkpointer().WriteToCheckpoint(checkpoint_time);
+  trajectory1->WriteToCheckpoint(checkpoint_time);
 
   serialization::ContinuousTrajectory message1;
   trajectory1->WriteToMessage(&message1);
@@ -921,7 +921,7 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
                  t0_,
                  *trajectory);
   Instant const checkpoint_time = trajectory->t_max();
-  trajectory->checkpointer().WriteToCheckpoint(checkpoint_time);
+  trajectory->WriteToCheckpoint(checkpoint_time);
   FillTrajectory(number_of_steps2,
                  step,
                  position_function,

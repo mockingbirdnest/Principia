@@ -123,10 +123,20 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   static not_null<std::unique_ptr<ContinuousTrajectory>> ReadFromMessage(
       serialization::ContinuousTrajectory const& message);
 
-  // Checkpointing support.  The checkpointer is exposed to make it possible for
-  // Ephemeris to create synchronized checkpoints of its state and that of its
-  // trajectories.
-  Checkpointer<serialization::ContinuousTrajectory>& checkpointer();
+  // These members call the corresponding functions of the internal
+  // checkpointer.
+  void WriteToCheckpoint(Instant const& t) const;
+  Status ReadFromCheckpointAt(
+      Instant const& t,
+      Checkpointer<serialization::ContinuousTrajectory>::Reader const& reader)
+      const;
+
+  // Returns functions that can be passed to a |Checkpointer| to write this
+  // trajectory to a checkpoint or read it back.
+  Checkpointer<serialization::ContinuousTrajectory>::Writer
+  MakeCheckpointerWriter();
+  Checkpointer<serialization::ContinuousTrajectory>::Reader
+  MakeCheckpointerReader();
 
  protected:
   // For mocking.
@@ -149,12 +159,6 @@ class ContinuousTrajectory : public Trajectory<Frame> {
         polynomial;
   };
   using InstantPolynomialPairs = std::vector<InstantPolynomialPair>;
-
-  // Checkpointing support.
-  Checkpointer<serialization::ContinuousTrajectory>::Writer
-  MakeCheckpointerWriter();
-  Checkpointer<serialization::ContinuousTrajectory>::Reader
-  MakeCheckpointerReader();
 
   Instant t_min_locked() const REQUIRES_SHARED(lock_);
   Instant t_max_locked() const REQUIRES_SHARED(lock_);
@@ -179,8 +183,9 @@ class ContinuousTrajectory : public Trajectory<Frame> {
       std::vector<Velocity<Frame>> const& v) REQUIRES(lock_);
 
   // Returns an iterator to the polynomial applicable for the given |time|, or
-  // |begin()| if |time| is before the first polynomial or |end()| if |time| is
-  // after the last polynomial.  Time complexity is O(N Log N).
+  // |begin| if |time| is before the first polynomial or |end| if |time| is
+  // after the last polynomial.  If |time| is the |t_max| of some polynomial,
+  // that polynomial is returned.  Time complexity is O(N Log N).
   typename InstantPolynomialPairs::const_iterator
   FindPolynomialForInstant(Instant const& time) const REQUIRES_SHARED(lock_);
 
