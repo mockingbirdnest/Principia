@@ -147,7 +147,7 @@ Status Checkpointer<Message>::ReadFromCheckpointAtOrBefore(
 template<typename Message>
 Status Checkpointer<Message>::ReadFromCheckpointAt(Instant const& t,
                                                    Reader const& reader) const {
-  typename std::map<Instant, Message::Checkpoint>::const_iterator it;
+  typename std::map<Instant, typename Message::Checkpoint>::const_iterator it;
   {
     absl::ReaderMutexLock l(&lock_);
     it = checkpoints_.find(t);
