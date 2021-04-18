@@ -185,33 +185,35 @@ Lagny’s work proved far more extensive than we expected: besides the above roo
 polynomials, it contains an error analysis, and even a discussion of the principles of performance analysis
 based on a decomposition in elementary operations on decimal digits.
 
-We observed that the higher-order examples corresponded to the well-known higher order method attributed to
-Householder in \cite{SebahGourdon2001}. Looking for properties of these methods in \cite{Householder1970}
-so as to prove that observation, we found that they are attributed to Schröder therein.
-As mentioned in the translator’s note to the English translation
-\cite{SchröderStewart1993} of \cite{Schröder1870} by Stewart,
+Observing that the higher-order examples correspond to the well-known higher order
+method attributed to Householder in \cite{SebahGourdon2001}, we looked for its properties in \cite{Householder1970} so as to prove that observation, and found that Householder attributes
+them to Schröder.
+As mentioned in the translator’s note by Stewart in \cite{SchröderStewart1993},
 \begin{quote}
 A.~S.~Householder used to claim you could evaluate a paper on
 root finding by looking for a citation of Schröder’s paper. If it was
 missing, the author had probably rediscovered something already
 known to Schröder.
 \end{quote}
-It is quite possible that the irrational method could be expressed using Schröder’s methods in one way or another, but while
+It is quite possible that the irrational methods could be expressed using Schröder’s methods in one way or another, but while
 the result would probably be more convenient, it is unlikely to be something well-known, as irrational methods are far less
 popular nowadays---unjustifiedly so, as we shall see.
 
 Prouhet’s letter in \cite{Cantor1861} ends with these words:
 \begin{quote}
-\shapepar{{3}
-{0}b{3}\\
-{0}t{0}{6}\\
-{4}e{3}}
+% Ending the section and the page on a line-and-a-half indented quote following a
+% half-line indented paragraph is particularly unsightly; turn the quote into
+% a cul-de-lampe instead.
+\shapepar{{0}
+{0}b{0}\\
+{0}t{-18.5}{37}\\
+{13}e{0}}
 \textfrench{%
-Tout cela est fort abrégé; mais qui nous délivrera des méthodes abrégées, qui n'en finissent pas?}\end{quote}
-
-% This cul-de-lampe prevents the typesetting engine having too little to fill this page without setting the
-% giant matrix in it, thereby overflowing into the bottom margin.
-%\begin{center}\pgfornament[width = .15\linewidth]{59}\end{center}
+Tout cela est fort abrégé; mais qui
+nous délivrera des méthodes
+abrégées, qui n'en
+finissent
+pas?}\end{quote}
 
 \subsection*{Proof of the proposition}
 
@@ -501,8 +503,23 @@ We thus write
 \[ξ'\DefineAs κq'+\sqrt{λ{q'}^2+\frac{y-{q'}^3}{μq'}}\]
 and choose $Γ$, $κ$, $λ$, and $μ$ minimizing $\max_{y} \abs{ε_ξ'}$.
 
-As this kind of optimization brings all local maxima together
+Unfortunately, computing $\max_{y} \abs{ε_ξ'}$ is not as nice as for the standard methods;
+the introduction of $κ$, $λ$, and $μ$ breaks the monotonicity of $ε_ξ'$,
+so that the local extrema of $ε_ξ'$ are not found in the same place as those of $ε_q'$.
+Directly looking for zeros of the derivative of $ε_ξ'$ with respect to $f$ is impractical.
+Instead we find the local maxima by numerical maximization on the four pieces whereon $q'$
+is a smooth function of $f$.
 
+That maximum can be minimized by a straightforward hill-climbing starting from
+$Γ=\frac{1}{10}$, $κ=\frac{1}{2}$, $λ=\frac{1}{4}$, and $μ=3$;
+
+
+Note that a similar optimization could be applied to the rational method; however, it
+would not unconditionally be free: changing the $2$ in the denominator turns an addition
+into a multiplication, and inserting additional constants adds more operations. Whether
+this hinders performance depends on the architecture. In any case, the optimization
+can scarcely gain more than two bits; such an optimized rational method would still
+have double the error of the optimized irrational method.
 
 \subsection{Rounded approximation}
 
