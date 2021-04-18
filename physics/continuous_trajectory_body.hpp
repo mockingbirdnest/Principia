@@ -542,7 +542,7 @@ ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
           first_time_ = oldest_time;
         }
       }
-      last_accessed_polynomial_ = 0;  // Always valid.
+      last_accessed_polynomial_ = 0;  // Always a valid value.
 
       return Status::OK;
     };

@@ -131,7 +131,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
       Checkpointer<serialization::ContinuousTrajectory>::Reader const& reader)
       const;
 
-  // Returns functions that can be passed to a |Checkpointer| to write this
+  // Return functions that can be passed to a |Checkpointer| to write this
   // trajectory to a checkpoint or read it back.
   Checkpointer<serialization::ContinuousTrajectory>::Writer
   MakeCheckpointerWriter();
