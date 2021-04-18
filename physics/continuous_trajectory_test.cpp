@@ -920,6 +920,8 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
                  velocity_function,
                  t0_,
                  *trajectory);
+  EXPECT_EQ(t0_ + (((number_of_steps1 - 1) / 8) * 8 + 1) * step,
+            trajectory->t_max());
   Instant const checkpoint_time = trajectory->t_max();
   trajectory->WriteToCheckpoint(checkpoint_time);
   FillTrajectory(number_of_steps2,
@@ -928,6 +930,9 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
                  velocity_function,
                  t0_ + number_of_steps1 * step,
                  *trajectory);
+  EXPECT_EQ(
+      t0_ + (((number_of_steps1 + number_of_steps2 - 1) / 8) * 8 + 1) * step,
+      trajectory->t_max());
 
   serialization::ContinuousTrajectory message;
   trajectory->WriteToMessage(&message);
@@ -965,8 +970,9 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
                  velocity_function,
                  t0_ + number_of_steps1 * step,
                  *trajectory_read);
-  EXPECT_EQ(trajectory_read->t_max(),
-            t0_ + (number_of_steps1 + number_of_steps2) * step);
+  EXPECT_EQ(
+      t0_ + (((number_of_steps1 + number_of_steps2 - 1) / 8) * 8 + 1) * step,
+      trajectory->t_max());
 
   // Reset to the checkpoint and check that the polynomials were truncated.
   trajectory_read->ReadFromCheckpointAt(
