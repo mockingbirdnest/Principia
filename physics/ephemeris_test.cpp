@@ -1120,15 +1120,19 @@ TEST(EphemerisTestNoFixture, Reanimator) {
   // Serialize that ephemeris to a message and read it back.
   serialization::Ephemeris message;
   ephemeris1->WriteToMessage(&message);
-  auto ephemeris2 = Ephemeris<ICRS>::ReadFromMessage(InfiniteFuture, message);
+  auto const ephemeris2 =
+      Ephemeris<ICRS>::ReadFromMessage(InfiniteFuture, message);
 
   // Wait for reanimation to happen.
   while (t_initial < ephemeris2->t_min()) {
-    LOG(WARNING) << "Sleeping until Herbert West is done...";
-    std::this_thread::sleep_for(100ms);
+    LOG(ERROR) << "Sleeping until Herbert West is done...";
+    std::this_thread::sleep_for(500ms);
   }
+  ephemeris2->Prolong(t_final);
 
   // Check that the two ephemerides have the exact same trajectories.
+  EXPECT_EQ(ephemeris1->t_min(), ephemeris2->t_min());
+  EXPECT_EQ(ephemeris1->t_max(), ephemeris2->t_max());
   EXPECT_EQ(ephemeris1->bodies().size(), ephemeris2->bodies().size());
   for (int i = 0; i < ephemeris1->bodies().size(); ++i) {
     EXPECT_EQ(ephemeris1->bodies()[i]->name(), ephemeris2->bodies()[i]->name());
