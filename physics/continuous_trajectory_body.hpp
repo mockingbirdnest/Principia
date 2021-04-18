@@ -518,6 +518,7 @@ ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
              DegreesOfFreedom<Frame>::ReadFromMessage(l.degrees_of_freedom())});
       }
 
+#if 0
       // Restore the other members to their state at the time of the checkpoint.
       if (last_points_.empty()) {
         polynomials_.clear();
@@ -543,6 +544,7 @@ ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
         }
       }
       last_accessed_polynomial_ = 0;  // Always valid.
+#endif
 
       return Status::OK;
     };

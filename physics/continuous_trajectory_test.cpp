@@ -945,6 +945,8 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
   EXPECT_GE(100, checkpoint.degree_age());
   EXPECT_EQ(6, checkpoint.last_point_size());
 
+  // Read the trajectory and check that everything is identical up to the
+  // checkpoint.
   auto const trajectory_read =
       ContinuousTrajectory<World>::ReadFromMessage(message);
   EXPECT_EQ(trajectory_read->t_min(), trajectory->t_min());
@@ -955,6 +957,21 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
     EXPECT_EQ(trajectory_read->EvaluateDegreesOfFreedom(time),
               trajectory->EvaluateDegreesOfFreedom(time));
   }
+
+  // Extend the trajectory that was just read.
+  FillTrajectory(number_of_steps2,
+                 step,
+                 position_function,
+                 velocity_function,
+                 t0_ + number_of_steps1 * step,
+                 *trajectory_read);
+  EXPECT_EQ(trajectory_read->t_max(),
+            t0_ + (number_of_steps1 + number_of_steps2) * step);
+
+  // Reset to the checkpoint and check that the polynomials were truncated.
+  trajectory_read->ReadFromCheckpointAt(
+      checkpoint_time, trajectory_read->MakeCheckpointerReader());
+  EXPECT_EQ(trajectory_read->t_max(), checkpoint_time);
 }
 
 }  // namespace internal_continuous_trajectory
