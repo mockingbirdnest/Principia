@@ -5,6 +5,7 @@
 #include <limits>
 #include <map>
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "absl/synchronization/mutex.h"
