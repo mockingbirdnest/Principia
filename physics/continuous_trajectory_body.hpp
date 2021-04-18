@@ -376,7 +376,7 @@ template<typename Frame>
 template<typename, typename>
 not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>
 ContinuousTrajectory<Frame>::ReadFromMessage(
-      serialization::ContinuousTrajectory const& message) {
+    serialization::ContinuousTrajectory const& message) {
   bool const is_pre_cohen = message.series_size() > 0;
   bool const is_pre_fatou = !message.has_checkpoint_time();
   bool const is_pre_grassmann = message.has_adjusted_tolerance() &&
@@ -458,26 +458,17 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
 }
 
 template<typename Frame>
-Checkpointer<serialization::ContinuousTrajectory>&
-ContinuousTrajectory<Frame>::checkpointer() {
-  return *checkpointer_;
+void ContinuousTrajectory<Frame>::WriteToCheckpoint(Instant const& t) const {
+  checkpointer_->WriteToCheckpoint(t);
 }
 
 template<typename Frame>
-ContinuousTrajectory<Frame>::ContinuousTrajectory()
-    : checkpointer_(
-          make_not_null_unique<
-              Checkpointer<serialization::ContinuousTrajectory>>(
-          /*reader=*/nullptr,
-          /*writer=*/nullptr)) {}
-
-template<typename Frame>
-ContinuousTrajectory<Frame>::InstantPolynomialPair::InstantPolynomialPair(
-    Instant const t_max,
-    not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
-        polynomial)
-    : t_max(t_max),
-      polynomial(std::move(polynomial)) {}
+Status ContinuousTrajectory<Frame>::ReadFromCheckpointAt(
+    Instant const& t,
+    Checkpointer<serialization::ContinuousTrajectory>::Reader const& reader)
+    const {
+  return checkpointer_->ReadFromCheckpointAt(t, reader);
+}
 
 template<typename Frame>
 Checkpointer<serialization::ContinuousTrajectory>::Writer
@@ -513,6 +504,8 @@ ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
     return [this](
                serialization::ContinuousTrajectory::Checkpoint const& message) {
       absl::MutexLock l(&lock_);
+
+      // Load the members that are recorded in the checkpoint.
       adjusted_tolerance_ =
           Length::ReadFromMessage(message.adjusted_tolerance());
       is_unstable_ = message.is_unstable();
@@ -524,12 +517,55 @@ ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
             {Instant::ReadFromMessage(l.instant()),
              DegreesOfFreedom<Frame>::ReadFromMessage(l.degrees_of_freedom())});
       }
+
+      // Restore the other members to their state at the time of the checkpoint.
+      if (last_points_.empty()) {
+        polynomials_.clear();
+        first_time_ = std::nullopt;
+      } else {
+        // Locate the polynomial that ends at the first last_point_.  Note that
+        // we cannot use FindPolynomialForInstant because it calls lower_bound
+        // and we don't want to change its behaviour.
+        Instant const& oldest_time = last_points_.front().first;
+        // If oldest_time is the t_max of some polynomial, then the returned
+        // iterator points to the next polynomial.
+        auto const it =
+            std::upper_bound(polynomials_.begin(),
+                             polynomials_.end(),
+                             oldest_time,
+                             [](Instant const& left,
+                                InstantPolynomialPair const& right) {
+                               return left < right.t_max;
+                             });
+        polynomials_.erase(it, polynomials_.end());
+        if (polynomials_.empty()) {
+          first_time_ = oldest_time;
+        }
+      }
+      last_accessed_polynomial_ = 0;  // Always a valid value.
+
       return Status::OK;
     };
   } else {
     return nullptr;
   }
 }
+
+template<typename Frame>
+ContinuousTrajectory<Frame>::ContinuousTrajectory()
+    : checkpointer_(
+          make_not_null_unique<
+              Checkpointer<serialization::ContinuousTrajectory>>(
+          /*reader=*/nullptr,
+          /*writer=*/nullptr)) {}
+
+template<typename Frame>
+ContinuousTrajectory<Frame>::InstantPolynomialPair::InstantPolynomialPair(
+    Instant const t_max,
+    not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+        polynomial)
+    : t_max(t_max),
+      polynomial(std::move(polynomial)) {}
 
 template<typename Frame>
 Instant ContinuousTrajectory<Frame>::t_min_locked() const {

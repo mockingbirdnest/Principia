@@ -863,7 +863,7 @@ void Ephemeris<Frame>::WriteToCheckpointIfNeeded(Instant const& time) const {
     if (checkpointer_->WriteToCheckpointIfNeeded(
             time, max_time_between_checkpoints)) {
       for (auto const& trajectory : trajectories_) {
-        trajectory->checkpointer().WriteToCheckpoint(time);
+        trajectory->WriteToCheckpoint(time);
       }
     }
   }

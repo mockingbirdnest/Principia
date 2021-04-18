@@ -705,7 +705,7 @@ TEST_F(ContinuousTrajectoryTest, Serialization) {
 
   // Take a checkpoint and verify that the checkpointed data is properly
   // serialized.
-  trajectory->checkpointer().WriteToCheckpoint(trajectory->t_max());
+  trajectory->WriteToCheckpoint(trajectory->t_max());
   serialization::ContinuousTrajectory message;
   trajectory->WriteToMessage(&message);
   EXPECT_EQ(step / Second, message.step().magnitude());
@@ -772,7 +772,7 @@ TEST_F(ContinuousTrajectoryTest, PreCohenCompatibility) {
                  velocity_function,
                  t0_,
                  *trajectory);
-  trajectory->checkpointer().WriteToCheckpoint(trajectory->t_max());
+  trajectory->WriteToCheckpoint(trajectory->t_max());
 
   serialization::ContinuousTrajectory message;
   trajectory->WriteToMessage(&message);
@@ -859,7 +859,7 @@ TEST_F(ContinuousTrajectoryTest, PreGrassmannCompatibility) {
                  t0_,
                  *trajectory1);
   Instant const checkpoint_time = trajectory1->t_max();
-  trajectory1->checkpointer().WriteToCheckpoint(checkpoint_time);
+  trajectory1->WriteToCheckpoint(checkpoint_time);
 
   serialization::ContinuousTrajectory message1;
   trajectory1->WriteToMessage(&message1);
@@ -920,14 +920,19 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
                  velocity_function,
                  t0_,
                  *trajectory);
+  EXPECT_EQ(t0_ + (((number_of_steps1 - 1) / 8) * 8 + 1) * step,
+            trajectory->t_max());
   Instant const checkpoint_time = trajectory->t_max();
-  trajectory->checkpointer().WriteToCheckpoint(checkpoint_time);
+  trajectory->WriteToCheckpoint(checkpoint_time);
   FillTrajectory(number_of_steps2,
                  step,
                  position_function,
                  velocity_function,
                  t0_ + number_of_steps1 * step,
                  *trajectory);
+  EXPECT_EQ(
+      t0_ + (((number_of_steps1 + number_of_steps2 - 1) / 8) * 8 + 1) * step,
+      trajectory->t_max());
 
   serialization::ContinuousTrajectory message;
   trajectory->WriteToMessage(&message);
@@ -945,6 +950,8 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
   EXPECT_GE(100, checkpoint.degree_age());
   EXPECT_EQ(6, checkpoint.last_point_size());
 
+  // Read the trajectory and check that everything is identical up to the
+  // checkpoint.
   auto const trajectory_read =
       ContinuousTrajectory<World>::ReadFromMessage(message);
   EXPECT_EQ(trajectory_read->t_min(), trajectory->t_min());
@@ -955,6 +962,22 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
     EXPECT_EQ(trajectory_read->EvaluateDegreesOfFreedom(time),
               trajectory->EvaluateDegreesOfFreedom(time));
   }
+
+  // Extend the trajectory that was just read.
+  FillTrajectory(number_of_steps2,
+                 step,
+                 position_function,
+                 velocity_function,
+                 t0_ + number_of_steps1 * step,
+                 *trajectory_read);
+  EXPECT_EQ(
+      t0_ + (((number_of_steps1 + number_of_steps2 - 1) / 8) * 8 + 1) * step,
+      trajectory->t_max());
+
+  // Reset to the checkpoint and check that the polynomials were truncated.
+  trajectory_read->ReadFromCheckpointAt(
+      checkpoint_time, trajectory_read->MakeCheckpointerReader());
+  EXPECT_EQ(trajectory_read->t_max(), checkpoint_time);
 }
 
 }  // namespace internal_continuous_trajectory
