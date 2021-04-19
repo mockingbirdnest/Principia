@@ -174,7 +174,7 @@ Iterator* __cdecl principia__PlanetariumPlotPsychohistory(
     auto const rp2_lines =
         planetarium->PlotMethod2(
             psychohistory.LowerBound(plugin->CurrentTime() -
-                                      max_history_length * Second),
+                                     max_history_length * Second),
             psychohistory.end(),
             plugin->CurrentTime(),
             /*reverse=*/true);
