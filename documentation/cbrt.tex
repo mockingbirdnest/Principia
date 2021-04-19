@@ -30,7 +30,7 @@
 
 %%%% Title and authors.
 
-\title{A correctly-rounded binary64 cube root}
+\title{A correctly rounded binary64 cube root}
 \date{REMOVE BEFORE FLIGHT \printdate{2021-04-36}}
 \author{Robin~Leroy (eggrobin)}
 \begin{document}
@@ -85,15 +85,16 @@ of $E_{n+1}$ by $E_{n}$; its degree is $n-1$ for almost all $a$.
 The iteration is $\FunctionBody{a}{x+\frac{1}{2}a}$, where $x$ is a root of $E_{2}$ in the quadratic irrational method,
 and the root of $E_{1}$ in the rational method. Its order is $p$.
 
-\paragraph{A note on the multiplicity of irrational methods.} Lagny does not require that the polynomial division be carried out
-all the way to $E_2$, merely until one gets \foreign{\textfrench{une valeur d'$x$ rationelle \textnormal{[...]} d'un degré commode}}, by which he likely means
+\subsection*{Names and multiplicity of the irrational methods}
+Lagny does not require that the polynomial division be carried out
+all the way to $E_2$, merely until one gets \foreign{\textfrench{une valeur d'$x$ \textnormal{[...]} d'un degré commode}}, by which he likely means
 one that is constructible. When $f$ is a cubic, he uses the term \foreign{\textfrench{formule irrationnelle}} for $x+\frac{1}{2}a$ where
 $x$ is a root of $E_2$, but when it comes to computing the fifth root, the same term is used to refer to the case where $x$ is a root of
 $E_4$. In order to avoid confusion, we use the term \emph{quadratic irrational method} when $x$ is a root of $E_2$ in the general case,
 and we call the irrational formula from \cite[43]{FantetdeLagny1692}\footnote{The formula has a misprint in
 \cite[43]{FantetdeLagny1692}, $-\tfrac{1}{2}a^2$ instead of $-\tfrac{1}{4}a^2$ under the radical.
 Halley remarks on it and gives the corrected formula in \cite[137,140]{Halley1694}.
-The misprint remains forty years later in \cite[340]{FantetdeLagny1733}.} for $\sqrt[5]{a^5+b}$\[
+The misprint remains forty years later in \cite[\pno~440 misnumbered 340]{FantetdeLagny1733}.} for $\sqrt[5]{a^5+b}$\[
 \FunctionBody{a}{\tfrac{1}{2}a+\sqrt{\sqrt{\tfrac{1}{4}a^4+\tfrac{b}{5a}}-\tfrac{1}{4}a^2}}
 \]
 Lagny's \emph{quartic irrational method} for the fifth root, whereas the quadratic irrational method for the same fifth root would be\footnote{Both are of order $5$, but the reader who wishes
@@ -101,9 +102,10 @@ to compute a fifth root should note that leading term of the error of the quarti
 $\frac{2}{7}$ of that of the quadratic.}\[
 \FunctionBody{a}{\frac{a\pa{7b-\sqrt{100a^{10}+100a^{5}b-7b^2}}}{4b-10a^5}}\text.
 \]
-When $p=3$, there is however no ambiguity; assuming one does not wish to reduce the computatio
+When $p=3$, there is however no ambiguity; assuming one does not wish to reduce the computation
 of the root of a cubic to that of another cubic, the only irrational method is the quadratic one.
 
+\subsection*{Names of the rational method}
 Modern calculus allows us to give a more straightfoward expression for the rational method than was available to Lagny;
 the proof of the following equivalence will be given at the end of this section.
 
@@ -112,8 +114,6 @@ The iteration of Lagny’s rational method for a monic polynomial $f$ of degree 
 a\mapsto a + \pa{p-1}\frac{\pa{1/f}^{\pa{p-2}}\of{a}}{\pa{1/f}^{\pa{p-1}}\of{a}}\text.\label{LagnyRationaliteration}
 \end{equation}
 \end{proposition}
-
-\subsection*{Names}
 The iteration (\ref{LagnyRationaliteration}) is a special case of the \foreign{Algorithmen $\pa{A^λ_ω}$} defined by Schröder for an
 arbitrary polynomial $f$ in \cite[349\psq]{Schröder1870}, equation (69); specifically, it is $\pa{A^0_{p-1}}$.
 As seen in the proof of the proposition, it is also a special case of Householder’s  equation (14) from \cite[169]{Householder1970},
@@ -156,7 +156,7 @@ analytic functions, we call the iteration (\ref{LagnyRationaliteration})\begin{i
 \item Newton’s method when $p=2$, for arbitrary $f$;
 \item Lagny’s rational method when $p>2$ and $f$ is a polynomial of degree $p$;
 \item Halley’s rational method when $p=3$ and $f$ is not a polynomial of degree $3$;
-\item the Lagny--Schröder method of order $p$ otherwise.
+\item the Lagny--Schröder rational method of order $p$ otherwise.
 \end{itemize}
 We do not simply call this last case ``Schröder’s method'', as it is only a special case of the methods
 defined in \cite{Schröder1870}, so that the expression would be ambiguous. 
@@ -307,9 +307,10 @@ Our general approach to computing a faithfully rounded cube root of $y>0$ is the
 \subsection*{Notation}
 We define the fractional part as $\FractionalPart a\DefineAs a-\Floor a\in\intclop{0}{1}$, regardless of the sign of $a$.
 
-The quantities $p\in\N$ (precision in bits) and $\bias\in\N$ are defined as in IEEE 754-2008.
+The floating-point format used throughout is binary64; the quantities $p\in\N$ (precision in bits) and $\bias\in\N$ are 
+defined as in IEEE 754-2008, $p=53$ and $\bias=1023$.
 
-We use capital Latin letters fixed-point numbers involved in the computation, and $A>0$ for the normal floating-point number $a>0$ reinterpreted as a binary fixed-point number with $p-1$ bits after the binary point\footnote{The implementation uses integers (obtained by multiplying the fixed-point numbers by $2^{p-1}$). For consistency with \cite{KahanBindel2001} we work with fixed-point numbers here. Since we do not multiply fixed point numbers together, the expressions are unchanged.},\begin{align*}
+We use capital Latin letters for fixed-point numbers involved in the computation, and $A>0$ for the normal floating-point number $a>0$ reinterpreted as a binary fixed-point\footnote{The implementation uses integers (obtained by multiplying the fixed-point numbers by $2^{p-1}$). For consistency with \cite{KahanBindel2001} we work with fixed-point numbers here. Since we do not multiply fixed point numbers together, the expressions are unchanged.} number with $p-1$ bits after the binary point,\begin{align*}
   A &\DefineAs \bias + \Floor{\log_2 a} + \FractionalPart \pa{2^{-\Floor{\log_2 a}}a}\\
     &= \bias + \Floor{\log_2 a} + 2^{-\Floor{\log_2 a}}a - 1\text,\\
 \intertext{and \emph{vice versa},}
@@ -317,16 +318,21 @@ We use capital Latin letters fixed-point numbers involved in the computation, an
 \end{align*}
 This corresponds to \cite{KahanBindel2001}'s $B+K+F$.
 
-For both fixed- and floating-point numbers, given $α\in\R$, we write $\round{α}$ for the nearest representable number (rounding ties to even).
-For fixed-point numbers, we write $\roundToZero{α}$ for directed rounding towards $0$ to the fixed-point precision (as in division implemented with integer division).
+For both fixed- and floating-point numbers, given $α\in\R$, we write $\round{α}$ for the nearest representable
+number (rounding ties to even).
+For fixed-point numbers, we write $\roundToZero{α}$ for directed rounding towards $0$ to the fixed-point
+precision (as in division implemented with integer division).
 We write the unit roundoff $u\DefineAs2^{-p}$, and, after \cite[63]{Higham2002}, $γ_n\DefineAs\frac{nu}{1-nu}$.
+We discuss other rounding modes in appendix~\ref{OtherRoundingModes}.
 
 To quote \cite{Trefethen1997}, ``If rounding errors vanished, 95\% of numerical analysis would remain''.
 While we keep track of rounding errors throughout, they are of very little importance until the last step;
 when it is convenient to solely study the truncation error, we work with ideal quantities affected with a
 prime, which correspond to their primeless counterparts by removal of all intervening roundings.
 
-The input $y$ and all intervening floating-point numbers are taken to be normal; the rescaling performed to avoid overflows also avoids subnormals.
+The input $y$ and all intervening floating-point numbers are taken to be normal; the rescaling performed
+to avoid overflows also avoids subnormals. We work only with correctly rounded addition, subtraction,
+multiplication, division, and square root; FMA is treated separately in appendix~\ref{FMA}.
 
 \subsection{Quick approximation}
 The quick approximation $q$ is computed using fixed-point arithmetic as\[
@@ -388,11 +394,11 @@ or equivalently.\begin{align*}
 &=\argmin_{Γ\in\R}\max_{\tuple{f, k}\in\mathscr{E}\Union\mathscr{L}}\abs{ε_q'}\text,
 \end{align*}
 where $\mathscr{E}\DefineAs\set{\tuple{\FractionalPart Γ, 0}}\Union\setst{\tuple{0, k}}{k\in\set{0,1,2}}$ is the set of the endpoints of the intervals whereon $q'$ is piecewise affine, and
-$\mathscr{L}\DefineAs\setst{\tuple{\frac{k-\FractionalPart Γ}{2},k}}{k\in\set{1,2}}$ are the local extrema. We get more precisely\footnote{These may be computed formally, but the expressions are unwieldy.}\[
+$\mathscr{L}\DefineAs\setst{\tuple{\frac{k-\FractionalPart Γ}{2},k}}{k\in\set{1,2}}$ are the local extrema. We get more precisely\footnote{This value may be computed formally, but the expression is unwieldy.}\[
 Γ_{\mathrm{Kahan}} \approx 0.10096\,78121\,55802\,88786\,36993\,42643\,55358\,06489\,88235\,75289\]
-with $\max_{y}\abs{ε_q'} \approx 0.03155$,
+with $\max_{y}\abs{ε_q'} \approx 3.155\%$,
 yielding the constant\[C_{\mathrm{Kahan}}=\hex{2A9F\,7625\,3119\,D328}\Multiply 2^{-52}\]for IEEE 754-2008 binary64.
-However, as we will see in the next section, this value does not optimize the final error, so it is not the one that we use.
+However, as we will see in the next section, this value does not optimize the final error.
 \subsection{Getting to a third of the precision}
 We now consider multiple methods for the refinement of $q$ to $ξ$.
 The rounding error in this step being both negligible and tedious to bound,
@@ -414,7 +420,7 @@ the relative error error by one step of Lagny’s rational method on the cube ro
 = \tfrac{2}{3}{ε_q'}^3 + \BigO\of{{ε_q'}^4}\text.
 \]
 If $q'$ is computed using $Γ=Γ_{\mathrm{Kahan}}$, we get
-$\max_{y} \abs{ε_ξ'} \approx 0.00002196$, $\log_2 \max_{y} \abs{ε_ξ'} \approx -15.47$.
+$\max_{y} \abs{ε_ξ'} \approx 21.96\Multiply10^{-6}$, $\log_2 \max_{y} \abs{ε_ξ'} \approx -15.47$.
 However, $Γ_{\mathrm{Kahan}}$, which minimizes $\max_{y} \abs{ε_q}$, does not
 minimize $\max_{y} \abs{ε_ξ'}$. This is because while $ε_ξ'$ is monotonic as a
 function of $ε_q'$, it is not odd: positive errors are reduced more than negative
@@ -423,8 +429,8 @@ Specifically, we have\begin{align*}
 Γ_{\mathrm{L^1}}&\DefineAs\argmin_{Γ\in\R}\max_{y}\abs{ε_ξ'}\\
 &\approx 0.09918\,74615\,29855\,99525\,66149\,20761\,31234\,34720\,23067\,92759
 \end{align*}
-with $\max_{y} \abs{ε_q'} \approx 0.0032025$, but
-$\max_{y} \abs{ε_ξ'} \approx 0.00002086$, $\log_2 \max_{y} \abs{ε_ξ'} \approx -15.54$.
+with $\max_{y} \abs{ε_q'} \approx 3.2025\%$, but
+$\max_{y} \abs{ε_ξ'} \approx 20.86\Multiply10^{-6}$, $\log_2 \max_{y} \abs{ε_ξ'} \approx -15.54$.
 The corresponding fixed-point constant is\[C_{\mathrm{L^1}}\DefineAs\hex{2A9F\,7893\,782D\,A1CE} \Multiply 2^{-52}\]for binary64.
 
 While it is close to the $16$ bits to which we will round in the next step, this error is
@@ -435,8 +441,9 @@ As written in (\ref{LagnyIrrationalCubeRootIteration}), Lagny's irrational metho
 \[ξ'\DefineAs \tfrac{1}{2}q'+\sqrt{\tfrac{1}{4}{q'}^2+\frac{y-{q'}^3}{3q'}}\]
 seems prohibitively computationally expensive in comparison to the rational one: it adds a
 square root on the critical path, dependent on the result of a division.
-However, rewriting it as\[
-ξ' = \tfrac{1}{2}q'+ \frac{1/\sqrt{12}}{q'}\sqrt{4yq'-{q'}^4}\text,\]
+However, rewriting it as\begin{equation}
+ξ' = \tfrac{1}{2}q'+ \frac{1/\sqrt{12}}{q'}\sqrt{4yq'-{q'}^4}\text,\label{RewrittenLagnyIrrational}
+\end{equation}
 one can evaluate it with similar\footnote{We compare specific evaluations strategies
 for various architetures in appendix~\ref{LagnyIrrationalPerformance}; on some of those, other rewritings are superior
 to this one.} performance to the rational method.
@@ -446,8 +453,8 @@ Its error is\[
 -\tfrac{1}{3}{ε_q'}^3 + \BigO\of{{ε_q'}^4}\text,
 \]
 whose leading term is half that of the rational method; indeed we find that with $Γ=Γ_{\mathrm{Kahan}}$,
-we have $\max_{y} \abs{ε_ξ'} \approx 0.00001048$, $\log_2 \max_{y} \abs{ε_ξ'} \approx -16.54$, one bit more
-than with the rational method.
+we have $\max_{y} \abs{ε_ξ'} \approx 10.48\Multiply10^{-6}$, $\log_2 \max_{y} \abs{ε_ξ'} \approx -16.54$, gaining one bit
+with respect to the rational method.
 
 Here $Γ=Γ_{\mathrm{Kahan}}$ is very close to optimal; with the optimal value\[
 Γ_{\mathrm{L^2}}\approx0.10096\,82076\,65096\,37285\,40885\,52460\,33434\,63384\,54584\,03306\text,
@@ -455,7 +462,7 @@ Here $Γ=Γ_{\mathrm{Kahan}}$ is very close to optimal; with the optimal value\[
 the error remains the same within the precision to which we have given it.
 However, we have other ways of improving the error at no cost to performance.
 \subsubsection*{Canon optimization of Lagny's irrational method}
-The idea for this optimization comes from \cite{Canon2018}, reproduced here with the author’s permission:
+The idea for this optimization comes from \cite{Canon2018a}, reproduced here with the author’s permission:
 \begin{quotation}
  % https://twitter.com/stephentyrone/status/1016283784067665920
  A trick I’ve used for years and should write up: you can apply optimization to the iteration,
@@ -472,7 +479,7 @@ The idea for this optimization comes from \cite{Canon2018}, reproduced here with
  so, because we can evaluate these polynomials with lower latency [than] serially-dependent
  iterations.
 \end{quotation}
-Canon later elaborated on this REMOVE BEFORE FLIGHT citation goes here:
+Canon later elaborated on this in \cite{Canon2018b}:
 \begin{quotation}
  % https://twitter.com/stephentyrone/status/1057788315699687424
  Quick version: we want to compute $1/\sqrt{y}$, we have an approximation $x_0$, we want to
@@ -498,20 +505,43 @@ with $Γ$.
 
 The constants $\frac{1}{2}$, $\frac{1}{4}$, and $3$ in Lagny's irrational method may be modified with no effect on
 performance; altering the first two of these introduces rounding errors, but these need not concern us here.
-
 We thus write
 \[ξ'\DefineAs κq'+\sqrt{λ{q'}^2+\frac{y-{q'}^3}{μq'}}\]
-and choose $Γ$, $κ$, $λ$, and $μ$ minimizing $\max_{y} \abs{ε_ξ'}$.
+and choose $Γ$, $κ$, $λ$, and $μ$ minimizing relative error in the Чебышёв norm,\[
+\tuple{Γ_{\mathrm{L^2C}}, κ_{\mathrm{L^2C}}, λ_{\mathrm{L^2C}},μ_{\mathrm{L^2C}}}
+\DefineAs\argmin_{Γ,κ,λ,μ}\max_{y}\abs{ε_ξ'}\text.\]
 
-Unfortunately, computing $\max_{y} \abs{ε_ξ'}$ is not as nice as for the standard methods;
-the introduction of $κ$, $λ$, and $μ$ breaks the monotonicity of $ε_ξ'$,
+Unfortunately, computing $\max_{y} \abs{ε_ξ'}$ is not as easy as for the standard methods;
+the introduction of $κ$, $λ$, and $μ$ breaks the monotonicity of $ε_ξ'\of{ε_q'}$,
 so that the local extrema of $ε_ξ'$ are not found in the same place as those of $ε_q'$.
-Directly looking for zeros of the derivative of $ε_ξ'$ with respect to $f$ is impractical.
+Formally looking for zeros of the derivative of $ε_ξ'$ with respect to $f$ is impractical.
 Instead we find the local maxima by numerical maximization on the four pieces whereon $q'$
 is a smooth function of $f$.
 
-That maximum can be minimized by a straightforward hill-climbing starting from
-$Γ=\frac{1}{10}$, $κ=\frac{1}{2}$, $λ=\frac{1}{4}$, and $μ=3$;
+That maximum can be minimized by a straightforward hill-climbing\footnote{It is plausible that some variation
+of Ремез's algorithm could be used here, much like it can be adapted to rational functions; since the hill-climbing converged satisfactorily, and did so much faster
+than we were writing this document, we have not investigated this.} starting from
+$Γ=\frac{1}{10}$, $κ=\frac{1}{2}$, $λ=\frac{1}{4}$, and $μ=3$. We obtain the values
+\begin{align*}
+Γ_{\mathrm{L^2C}} &\approx 0.10007\,61614\,69941\,46538\text,\\
+κ_{\mathrm{L^2C}} &\approx 0.49999\,99381\,08574\,04775\text,\\
+λ_{\mathrm{L^2C}} &\approx 0.25000\,00000\,00145\,58487\text,\\
+μ_{\mathrm{L^2C}} &\approx 3.00074\,62871\,20756\,72280\text,\\
+\end{align*}
+for an error of $\max_{y}\abs{ε_ξ'} \approx 2.6157\Multiply10^{-6}$, $\log_2\max_{y}\abs{ε_ξ'} \approx -18.54$: this
+optimization gains two bits.
+The resulting $ε_ξ'$ is remarkably equioscillating, as can be seen in
+figure~\ref{StepTwoComparison}.
+
+With the rewriting (\ref{RewrittenLagnyIrrational}), the constants $1/\sqrt{12}$ and $4$ should
+be replaced by\begin{align*}
+\sqrt{\frac{1-λ_{\mathrm{L^2C}}μ_{\mathrm{L^2C}}}{μ_{\mathrm{L^2C}}}}
+&\approx0.28853\,15115\,62316\,7190\\
+                     &\approx1/\sqrt{12.01194\,95117\,19793\,69}
+\intertext{and}
+\frac{1}{1-λ_{\mathrm{L^2C}}μ_{\mathrm{L^2C}}}&=4.00298\,73779\,31697\,182
+\end{align*}
+respectively.
 
 
 Note that a similar optimization could be applied to the rational method; however, it
@@ -527,26 +557,48 @@ The number $x$ is obtained from $ξ$ by zeroing all but the most significant $\s
 its significand.
 The resulting relative error $\abs{\frac{x}{ξ}-1}$is greatest when the zeroed bits are all $1$ and the
 remaining bits (except for the leading $1$) are all $0$; this is the case when the significand of $ξ$ is
-$1+2^{-\Floor{\frac{p}{3}}+1}-2^{1-p}$, in which case that of $x$ is $1$.
-
-The relative error arising from $\FunctionBody ξ x$ is thus at most\[
-\abs{\frac{x}{ξ}-1}\le1-\frac{1}{1+2^{-\Floor{\frac{p}{3}}+1}-2^{1-p}} < 2^{-\Floor{\frac{p}{3}}+1}\text,
+$1+2^{-\Floor{\frac{p}{3}}+1}-2^{1-p}$, in which case that of $x$ is $1$, so that\[
+\abs{\frac{x}{ξ}-1}\le1-\frac{1}{1+2^{-\Floor{\frac{p}{3}}+1}-2^{1-p}} < 2^{-\Floor{\frac{p}{3}}+1}=2^{-16}\text.
 \]
-$2^{-16}$ in binary64.
+For the error of $x$ as an approximation of the cube root,\[ε_x\DefineAs\frac{x}{\cuberoot{y}}-1\text,\]
+we have the bound $\abs{ε_x} < \pa{1+\abs{ε_ξ}}\pa{1+2^{-16}}-1$.
 
 \subsection{High order iteration}
 
-We use one iteration of the Lagny--Schröder method of order $6$:\[
+We use one iteration of the Lagny--Schröder rational method of order $5$:
+\[
+\round{x - \round{
+\frac{\round{(x^3 - y) \round{\round{\round{\round{10x^3} + 16y}x^3} + \round{y^2}}}}
+{\round{3 x^2 \round{\round{\round{\round{5 x^3} + \round{17 y}}x^3} + \round{5 \round{y^2}}}}}}}
+\]
+where $3x^2$ and $x^3$ are exact thanks to the trailing $0$s of $x$,
+$\round{x^6}$ is correctly rounded because it is computed as the square of $x^3$,
+and $x^3-y$ is exact by Sterbenz’s lemma.
+
+In infinite precision, this method is of such high order that if $\abs{ε_x} < 14.5$, which is the case
+even if $ξ$ is computed by the rational method, the relative error of the result is less than $2^{-75}$.
+we will not seek to bound the truncation error more closely, nor to tweak the constants in the method
+to optimize it: as we will see, it is dominated by rounding.
+
+Thanks to the exact cube and exact difference, the rounding analysis of the correction term is
+straightforward.
+All remaining sums being of positive terms, their relative error is readily bounded by the
+largest of those of their terms. This leads to bounds of $γ_{5}$ on the numerator and $γ_{5}$ on
+the denominator, overall $\frac{1+γ_{6}}{1-γ_{5}}-1<\frac{γ_{11}}{1-γ_{5}}$ on the correction term.
+
+However, considering that our final bound on the excess above $1u$, and thus our final misrounding
+estimate, is proportional to this error, a more careful analysis is warranted.
+Observe that $x^3=y\pa{1+ε_x}^3$
+
+--- REMOVE BEFORE FLIGHT, MOVE THE 6TH ORDER STUFF TO THE APPENDIX ---
+
+We use one iteration of the Lagny--Schröder rational method of order $6$:\[
 r_0\DefineAs\round{x-\round{\frac{
 \round{\round{x\pa{x^3-y}}\round{\round{\round{\round{5x^3}+\round{17y}}x^3}+\round{5\round{y^2}}}}}{
 \round{\round{\round{\round{7x^3} + \round{42 y}}\round{x^6}}+\round{\round{\round{30x^3}+2y}\round{y^2}}}}}}\text,
 \]
-where $x^3$ is exact thanks to the trailing $0$s of $x$, $\round{x^6}$ is correctly-rounded because it is computed as
+where $x^3$ is exact thanks to the trailing $0$s of $x$, $\round{x^6}$ is correctly rounded because it is computed as
 the square of $x^3$, and $x^3-y$ is exact by Sterbenz’s lemma.
-\marginpar{\small
-TODO(egg): consider order $5$; the truncation error is dominated by the rounding error here.
-It is not immediately clear that order $5$ would incur fewer roundings though, for the
-same reason that it has the same performance.}
 
 In infinite precision, this method is of such high order that if $x$ has a relative error
 below $2^{-14}$, which is the case here, the relative error of the result is less than
@@ -572,6 +624,7 @@ For binary64, this bound is $\displaystyle\abs{\frac{r}{\cuberoot y}-1} < 1.0004
 
 \appendix
 \section{FMA}
+\label{FMA}
 \section{Rounding error analysis for the second step}
 \label{LagnyStepTwoRounding}
 \[
@@ -609,8 +662,8 @@ and that of $ξ$ as
 \[
 \abs{ξ-ξ'}<q'\pa{γ_3+\frac{\pa{1+γ_4}δ+γ_{16}b'}{d'\pa{1-γ_{12}}}}\text.
 \]
-Substituting the truncation errors and the definition of $δ$, we can
-bound the relative error arising from rounding:
+Substituting the truncation errors and the definition of $δ$, we can bound
+the relative error arising from rounding:
 \[
 \abs{\frac{ξ}{ξ'}-1}<
 \frac{1+ε_q'}{1+ε_ξ'}
@@ -627,6 +680,8 @@ provided that $p\geq 12$.
 
 \section{Other rounding modes}
 \label{OtherRoundingModes}
+
+\section{Comparison with other faithful implementations}
 
 \emergencystretch 1em
 \end{document}
