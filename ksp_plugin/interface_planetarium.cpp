@@ -43,30 +43,6 @@ using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Radian;
 
-namespace {
-
-RP2Lines<Length, Camera> PlotMethodN(
-    Planetarium const& planetarium,
-    int const method,
-    DiscreteTrajectory<Barycentric>::Iterator const& begin,
-    DiscreteTrajectory<Barycentric>::Iterator const& end,
-    Instant const& now,
-    bool const reverse) {
-  switch (method) {
-    case 0:
-      return planetarium.PlotMethod0(begin, end, now, reverse);
-    case 1:
-      return planetarium.PlotMethod1(begin, end, now, reverse);
-    case 2:
-      return planetarium.PlotMethod2(begin, end, now, reverse);
-    default:
-      LOG(FATAL) << "Unexpected method " << method;
-      base::noreturn();
-  }
-}
-
-}  // namespace
-
 Planetarium* __cdecl principia__PlanetariumCreate(
     Plugin const* const plugin,
     XYZ const sun_world_position,
@@ -133,12 +109,10 @@ void __cdecl principia__PlanetariumDelete(
 Iterator* __cdecl principia__PlanetariumPlotFlightPlanSegment(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
-    int const method,
     char const* const vessel_guid,
     int const index) {
   journal::Method<journal::PlanetariumPlotFlightPlanSegment> m({planetarium,
                                                                 plugin,
-                                                                method,
                                                                 vessel_guid,
                                                                 index});
   CHECK_NOTNULL(plugin);
@@ -156,12 +130,10 @@ Iterator* __cdecl principia__PlanetariumPlotFlightPlanSegment(
   if (index % 2 == 0 ||
       segment_begin == segment_end ||
       segment_begin->time >= plugin->renderer().GetPlottingFrame()->t_min()) {
-     rp2_lines = PlotMethodN(*planetarium,
-                             method,
-                             segment_begin,
-                             segment_end,
-                             plugin->CurrentTime(),
-                             /*reverse=*/false);
+    rp2_lines = planetarium->PlotMethod2(segment_begin,
+                                         segment_end,
+                                         plugin->CurrentTime(),
+                                         /*reverse=*/false);
   }
   return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
 }
@@ -169,32 +141,27 @@ Iterator* __cdecl principia__PlanetariumPlotFlightPlanSegment(
 Iterator* __cdecl principia__PlanetariumPlotPrediction(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
-    int const method,
     char const* const vessel_guid) {
   journal::Method<journal::PlanetariumPlotPrediction> m({planetarium,
                                                          plugin,
-                                                         method,
                                                          vessel_guid});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
   auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
-  auto const rp2_lines = PlotMethodN(*planetarium,
-                                     method,
-                                     prediction.Fork(),
-                                     prediction.end(),
-                                     plugin->CurrentTime(),
-                                     /*reverse=*/false);
+  auto const rp2_lines = planetarium->PlotMethod2(prediction.Fork(),
+                                                  prediction.end(),
+                                                  plugin->CurrentTime(),
+                                                  /*reverse=*/false);
   return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
 }
 
 Iterator* __cdecl principia__PlanetariumPlotPsychohistory(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
-    int const method,
     char const* const vessel_guid,
     double const max_history_length) {
   journal::Method<journal::PlanetariumPlotPsychohistory> m(
-      {planetarium, plugin, method, vessel_guid, max_history_length});
+      {planetarium, plugin, vessel_guid, max_history_length});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
 
@@ -205,13 +172,12 @@ Iterator* __cdecl principia__PlanetariumPlotPsychohistory(
   } else {
     auto const& psychohistory = plugin->GetVessel(vessel_guid)->psychohistory();
     auto const rp2_lines =
-        PlotMethodN(*planetarium,
-                    method,
-                    psychohistory.LowerBound(plugin->CurrentTime() -
-                                             max_history_length * Second),
-                    psychohistory.end(),
-                    plugin->CurrentTime(),
-                    /*reverse=*/true);
+        planetarium->PlotMethod2(
+            psychohistory.LowerBound(plugin->CurrentTime() -
+                                     max_history_length * Second),
+            psychohistory.end(),
+            plugin->CurrentTime(),
+            /*reverse=*/true);
     return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
   }
 }
