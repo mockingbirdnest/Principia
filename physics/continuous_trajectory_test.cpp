@@ -728,8 +728,9 @@ TEST_F(ContinuousTrajectoryTest, Serialization) {
   EXPECT_GE(100, checkpoint.degree_age());
   EXPECT_EQ(4, checkpoint.last_point_size());
 
-  auto const trajectory_read =
-      ContinuousTrajectory<World>::ReadFromMessage(InfiniteFuture, message);
+  auto const trajectory_read = ContinuousTrajectory<World>::ReadFromMessage(
+      /*using_checkpoint_at_or_before=*/InfiniteFuture,
+      message);
   EXPECT_EQ(trajectory->t_min(), trajectory_read->t_min());
   EXPECT_EQ(trajectory->t_max(), trajectory_read->t_max());
   for (Instant time = trajectory->t_min();
@@ -807,8 +808,9 @@ TEST_F(ContinuousTrajectoryTest, PreCohenCompatibility) {
   // Deserialize the message and check that a polynomial was constructed and
   // that it has the form:
   //   -2 - 14 * t + 6 * t^2 + 16 * t^3.
-  auto const trajectory_read =
-      ContinuousTrajectory<World>::ReadFromMessage(InfiniteFuture, message);
+  auto const trajectory_read = ContinuousTrajectory<World>::ReadFromMessage(
+      /*using_checkpoint_at_or_before=*/InfiniteFuture,
+      message);
   serialization::ContinuousTrajectory message2;
   trajectory_read->WriteToMessage(&message2);
   EXPECT_EQ(1, message2.instant_polynomial_pair_size());
@@ -880,7 +882,8 @@ TEST_F(ContinuousTrajectoryTest, PreGrassmannCompatibility) {
   // Read from the pre-Grassmann message, write to a second message, and check
   // that we get the same result.
   auto const trajectory2 = ContinuousTrajectory<World>::ReadFromMessage(
-      InfiniteFuture, pre_grassmann);
+      /*using_checkpoint_at_or_before=*/InfiniteFuture,
+      pre_grassmann);
   serialization::ContinuousTrajectory message2;
   trajectory2->WriteToMessage(&message2);
 
@@ -952,8 +955,9 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
 
   // Read the trajectory and check that everything is identical up to the
   // checkpoint.
-  auto const trajectory_read =
-      ContinuousTrajectory<World>::ReadFromMessage(InfiniteFuture, message);
+  auto const trajectory_read = ContinuousTrajectory<World>::ReadFromMessage(
+      /*using_checkpoint_at_or_before=*/InfiniteFuture,
+      message);
   EXPECT_EQ(trajectory_read->t_min(), trajectory->t_min());
   EXPECT_EQ(trajectory_read->t_max(), checkpoint_time);
   for (Instant time = trajectory->t_min();
