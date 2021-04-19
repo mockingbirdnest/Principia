@@ -1840,7 +1840,6 @@ message PlanetariumPlotFlightPlanSegment {
                                       (disposable) = "DisposablePlanetarium",
                                       (is_subject) = true];
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
-    required int32 method = 3;
     required string vessel_guid = 4;
     required int32 index = 5;
   }
@@ -1862,7 +1861,6 @@ message PlanetariumPlotPrediction {
                                       (disposable) = "DisposablePlanetarium",
                                       (is_subject) = true];
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
-    required int32 method = 3;
     required string vessel_guid = 4;
   }
   message Return {
@@ -1883,7 +1881,6 @@ message PlanetariumPlotPsychohistory {
                                       (disposable) = "DisposablePlanetarium",
                                       (is_subject) = true];
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
-    required int32 method = 3;
     required string vessel_guid = 4;
     required double max_history_length = 5;
   }
