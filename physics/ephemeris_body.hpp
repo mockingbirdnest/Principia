@@ -238,8 +238,7 @@ Ephemeris<Frame>::Ephemeris(
       checkpointer_(
           make_not_null_unique<Checkpointer<serialization::Ephemeris>>(
               MakeCheckpointerWriter(),
-              MakeCheckpointerReader())),
-      protector_(make_not_null_unique<Protector>()) {
+              MakeCheckpointerReader())) {
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
@@ -806,45 +805,6 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
 }
 
 template<typename Frame>
-Ephemeris<Frame>::Guard::Guard(
-    not_null<Ephemeris<Frame> const*> const ephemeris)
-    : ephemeris_(ephemeris) {
-  absl::MutexLock l(&ephemeris->lock_);
-  t_min_ = ephemeris->t_min_locked();
-  ephemeris->protector_->Protect(t_min_);
-}
-
-template<typename Frame>
-Ephemeris<Frame>::Guard::~Guard() {
-  // |ephemeris_| may be null for a moved-from object.
-  if (ephemeris_ != nullptr) {
-    ephemeris_->protector_->Unprotect(t_min_);
-  }
-}
-
-template<typename Frame>
-Ephemeris<Frame>::Guard::Guard(Guard&& other)
-    : ephemeris_(std::move(other.ephemeris_)),
-      t_min_(std::move(other.t_min_)) {
-  other.ephemeris_ = nullptr;
-}
-
-template<typename Frame>
-typename Ephemeris<Frame>::Guard&
-Ephemeris<Frame>::Guard::operator=(Guard&& other) {
-  if (this != &other) {
-    // |ephemeris_| may be null for a moved-from object.
-    if (ephemeris_ != nullptr) {
-      ephemeris_->protector_->Unprotect(t_min_);
-    }
-    ephemeris_ = std::move(other.ephemeris_);
-    t_min_ = std::move(other.t_min_);
-    other.ephemeris_ = nullptr;
-  }
-  return *this;
-}
-
-template<typename Frame>
 Ephemeris<Frame>::Ephemeris(
     FixedStepSizeIntegrator<
         typename Ephemeris<Frame>::NewtonianMotionEquation> const& integrator)
@@ -853,8 +813,7 @@ Ephemeris<Frame>::Ephemeris(
       fixed_step_parameters_(integrator, 1 * Second),
       checkpointer_(
           make_not_null_unique<Checkpointer<serialization::Ephemeris>>(
-              /*reader=*/nullptr, /*writer=*/nullptr)),
-      protector_(make_not_null_unique<Protector>()) {}
+              /*reader=*/nullptr, /*writer=*/nullptr)) {}
 
 template<typename Frame>
 void Ephemeris<Frame>::WriteToCheckpointIfNeeded(Instant const& time) const {
