@@ -319,19 +319,11 @@ Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
 
 void Vessel::RefreshPrediction() {
   absl::MutexLock l(&prognosticator_lock_);
-  // The guard below ensures that the ephemeris will not be "forgotten before"
-  // the end of the psychohistory between now and the time when the
-  // prognosticator finishes the integration.  This ensures that the ephemeris'
-  // |t_min| is never after the time that |FlowWithAdaptiveStep| tries to
-  // integrate.
-  // The guard will be destroyed either when the next set of parameters is
-  // created or when the prognostication has been computed.
   // Note that we know that |RefreshPrediction| is called on the main thread,
   // therefore the ephemeris currently covers the last time of the
   // psychohistory.  Were this to change, this code might have to change.
   prognosticator_parameters_ =
-      PrognosticatorParameters{Ephemeris<Barycentric>::Guard(ephemeris_),
-                               psychohistory_->back().time,
+      PrognosticatorParameters{psychohistory_->back().time,
                                psychohistory_->back().degrees_of_freedom,
                                prediction_adaptive_step_parameters_};
   if (synchronous_) {
@@ -581,8 +573,6 @@ Status Vessel::RepeatedlyFlowPrognostication() {
 Status Vessel::FlowPrognostication(
     PrognosticatorParameters prognosticator_parameters,
     std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication) {
-  // The guard contained in |prognosticator_parameters| ensures that the |t_min|
-  // of the ephemeris doesn't move in this function.
   prognostication = std::make_unique<DiscreteTrajectory<Barycentric>>();
   prognostication->Append(
       prognosticator_parameters.first_time,
