@@ -5,6 +5,7 @@
 #include <limits>
 #include <map>
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "absl/synchronization/mutex.h"
@@ -274,7 +275,11 @@ class Ephemeris {
       not_null<serialization::Ephemeris*> message) const EXCLUDES(lock_);
   template<typename F = Frame,
            typename = std::enable_if_t<base::is_serializable_v<F>>>
+  // The parameter |using_checkpoint_at_or_before| indicates that the ephemeris
+  // must be restored at the state it had at the checkpoint at or immediately
+  // before that time.
   static not_null<std::unique_ptr<Ephemeris>> ReadFromMessage(
+      Instant const& using_checkpoint_at_or_before,
       serialization::Ephemeris const& message) EXCLUDES(lock_);
 
  protected:
@@ -291,8 +296,17 @@ class Ephemeris {
   Checkpointer<serialization::Ephemeris>::Reader MakeCheckpointerReader();
 
   // Called on a stoppable thread to reconstruct the past state of the ephemeris
-  // and its trajectories.
-  Status Reanimate();
+  // and its trajectories using the given |checkpoints|.  The last checkpoint in
+  // the set is assumed to be restored already and tells the reanimator where to
+  // stop.
+  Status Reanimate(std::set<Instant> const& checkpoints);
+
+  // Reconstructs the past state of the ephemeris between |t_initial| and
+  // |t_final| using the given checkpoint |message|.
+  Status ReanimateOneCheckpoint(
+      serialization::Ephemeris::Checkpoint const& message,
+      Instant const& t_initial,
+      Instant const& t_final);
 
   // Callbacks for the integrators.
   void AppendMassiveBodiesState(
@@ -351,11 +365,10 @@ class Ephemeris {
       REQUIRES_SHARED(lock_);
 
   // Computes the accelerations between all the massive bodies in |bodies_|.
-  void ComputeMassiveBodiesGravitationalAccelerations(
+  Status ComputeMassiveBodiesGravitationalAccelerations(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
-      std::vector<Vector<Acceleration, Frame>>& accelerations) const
-      REQUIRES_SHARED(lock_);
+      std::vector<Vector<Acceleration, Frame>>& accelerations) const;
 
   // Computes the acceleration exerted by the massive bodies in |bodies_| on
   // massless bodies.  The massless bodies are at the given |positions|.

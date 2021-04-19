@@ -690,8 +690,7 @@ DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
     RigidMotion<Barycentric, World> const& barycentric_to_world,
     Instant const& time) const {
   return barycentric_to_world(
-             FindOrDie(celestials_, index)->
-                 trajectory().EvaluateDegreesOfFreedom(time));
+      FindOrDie(celestials_, index)->current_degrees_of_freedom(time));
 }
 
 RigidMotion<Barycentric, World> Plugin::BarycentricToWorld(
@@ -1400,9 +1399,15 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
       Angle::ReadFromMessage(message.planetarium_rotation());
 
   // The ephemeris constructed here is *not* prolonged and needs to be
-  // explicitly prolonged to cover all the instants that we care about.
+  // explicitly prolonged to cover all the instants that we care about.  Note
+  // that it is important to pick the most recent checkpoint that covers the
+  // current time: an older checkpoint would require unnecessary work in
+  // Prolong that could be postponed until reanimation; a newer checkpoint would
+  // not cover the current time.
   plugin->ephemeris_ =
-      Ephemeris<Barycentric>::ReadFromMessage(message.ephemeris());
+      Ephemeris<Barycentric>::ReadFromMessage(/*using_checkpoint_at_or_before=*/
+                                              plugin->current_time_,
+                                              message.ephemeris());
   plugin->ephemeris_->Prolong(plugin->game_epoch_);
   plugin->ephemeris_->Prolong(plugin->current_time_);
 

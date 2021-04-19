@@ -159,24 +159,6 @@ Status Checkpointer<Message>::ReadFromCheckpointAt(Instant const& t,
 }
 
 template<typename Message>
-Status Checkpointer<Message>::ReadFromAllCheckpointsBackwards(
-    Reader const& reader) const {
-  // We'll be running the callback without the lock, so we take a snapshot of
-  // the checkpoints.
-  std::vector<not_null<typename Message::Checkpoint const*>> checkpoints;
-  {
-    absl::ReaderMutexLock l(&lock_);
-    for (auto it = checkpoints_.crbegin(); it != checkpoints_.crend(); ++it) {
-      checkpoints.push_back(&it->second);
-    }
-  }
-  for (auto const checkpoint : checkpoints) {
-    RETURN_IF_ERROR(reader(*checkpoint));
-  }
-  return Status::OK;
-}
-
-template<typename Message>
 void Checkpointer<Message>::WriteToMessage(
     not_null<google::protobuf::RepeatedPtrField<typename Message::Checkpoint>*>
         message) const {

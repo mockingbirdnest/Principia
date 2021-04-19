@@ -376,6 +376,7 @@ template<typename Frame>
 template<typename, typename>
 not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>
 ContinuousTrajectory<Frame>::ReadFromMessage(
+    Instant const& using_checkpoint_at_or_before,
     serialization::ContinuousTrajectory const& message) {
   bool const is_pre_cohen = message.series_size() > 0;
   bool const is_pre_fatou = !message.has_checkpoint_time();
@@ -452,7 +453,12 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
             continuous_trajectory->MakeCheckpointerReader(),
             message.checkpoint());
   }
-  CHECK_OK(continuous_trajectory->checkpointer_->ReadFromOldestCheckpoint());
+
+  // This has no effect if there is no checkpoint before
+  // |using_checkpoint_at_or_before|, and leaves the checkpointed fields in
+  // their default-constructed state.
+  continuous_trajectory->checkpointer_->ReadFromCheckpointAtOrBefore(
+      using_checkpoint_at_or_before);
 
   return continuous_trajectory;
 }

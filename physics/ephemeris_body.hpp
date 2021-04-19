@@ -722,6 +722,7 @@ void Ephemeris<Frame>::WriteToMessage(
 template<typename Frame>
 template<typename, typename>
 not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
+    Instant const& using_checkpoint_at_or_before,
     serialization::Ephemeris const& message) {
   bool const is_pre_ἐρατοσθένης = !message.has_accuracy_parameters();
   bool const is_pre_fatou = !message.has_checkpoint_time();
@@ -760,8 +761,8 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   for (auto const& trajectory : message.trajectory()) {
     not_null<MassiveBody const*> const body = ephemeris->bodies_[index].get();
     not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>
-        deserialized_trajectory =
-            ContinuousTrajectory<Frame>::ReadFromMessage(trajectory);
+        deserialized_trajectory = ContinuousTrajectory<Frame>::ReadFromMessage(
+            using_checkpoint_at_or_before, trajectory);
     ephemeris->trajectories_.push_back(deserialized_trajectory.get());
     ephemeris->bodies_to_trajectories_.emplace(
         body, std::move(deserialized_trajectory));
@@ -791,13 +792,22 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
             message.checkpoint());
   }
 
-  // WriteToMessage always creates a checkpoint, and so does the compatibility
-  // code.
-  ephemeris->checkpointer_->ReadFromOldestCheckpoint();
+  LOG(INFO) << "Restoring to checkpoint at "
+            << ephemeris->checkpointer_->checkpoint_at_or_before(
+                   using_checkpoint_at_or_before);
+
+  // This has no effect if there is no checkpoint before
+  // |using_checkpoint_at_or_before|, and leaves the checkpointed fields in
+  // their default-constructed state.
+  ephemeris->checkpointer_->ReadFromCheckpointAtOrBefore(
+      using_checkpoint_at_or_before);
 
   // Start a thread to asynchronously reconstruct the past using checkpoints.
-  ephemeris->reanimator_ =
-      MakeStoppableThread(std::bind(&Ephemeris::Reanimate, ephemeris.get()));
+  ephemeris->reanimator_ = MakeStoppableThread(
+      std::bind(&Ephemeris::Reanimate,
+                ephemeris.get(),
+                ephemeris->checkpointer_->all_checkpoints_at_or_before(
+                    using_checkpoint_at_or_before)));
 
   // The ephemeris will need to be prolonged as needed when deserializing the
   // plugin.
@@ -827,7 +837,6 @@ void Ephemeris<Frame>::WriteToCheckpointIfNeeded(Instant const& time) const {
     }
   }
 }
-
 
 template<typename Frame>
 Checkpointer<serialization::Ephemeris>::Writer
@@ -863,36 +872,82 @@ Ephemeris<Frame>::MakeCheckpointerReader() {
 }
 
 template<typename Frame>
-Status Ephemeris<Frame>::Reanimate() {
+Status Ephemeris<Frame>::Reanimate(std::set<Instant> const& checkpoints) {
+  // This loop integrates all the segments defined by the checkpoints, going
+  // backwards in time.  The last checkpoint is not restored, it just serves as
+  // a limit.
+  std::optional<Instant> following_checkpoint;
+  for (auto it = checkpoints.crbegin(); it != checkpoints.crend(); ++it) {
+    Instant const& checkpoint = *it;
+    if (following_checkpoint.has_value()) {
+      auto const status = checkpointer_->ReadFromCheckpointAt(
+          checkpoint,
+          [this,
+           t_final = following_checkpoint.value(),
+           t_initial = checkpoint](
+              serialization::Ephemeris::Checkpoint const& message) {
+            return ReanimateOneCheckpoint(message, t_initial, t_final);
+          });
+      if (!status.ok()) {
+        return status;
+      }
+    }
+    following_checkpoint = checkpoint;
+  }
+  return Status::OK;
+}
+
+template<typename Frame>
+Status Ephemeris<Frame>::ReanimateOneCheckpoint(
+    serialization::Ephemeris::Checkpoint const& message,
+    Instant const& t_initial,
+    Instant const& t_final) {
+  LOG(INFO) << "Reanimating segment from " << t_initial << " to " << t_final;
+  // Create new trajectories and initialize them from the checkpoint at
+  // t_initial.
   std::vector<not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>>
       trajectories;
+  for (int i = 0; i < trajectories_.size(); ++i) {
+    trajectories.emplace_back(std::make_unique<ContinuousTrajectory<Frame>>(
+        fixed_step_parameters_.step_,
+        accuracy_parameters_.fitting_tolerance_));
 
+    // This statement is subtle: it restores the checkpoints of the trajectories
+    // of this ephemeris, but thanks to the newly-created reader, it restores
+    // them into the local trajectories.
+    trajectories_[i]->ReadFromCheckpointAt(
+        t_initial, trajectories[i]->MakeCheckpointerReader());
+  }
+
+  // Reconstruct the integrator instance from the current checkpoint.
   auto append_massive_bodies_state =
       [&trajectories](
           typename NewtonianMotionEquation::SystemState const& state) {
         AppendMassiveBodiesStateToTrajectories(state, trajectories);
       };
+  auto const instance = FixedStepSizeIntegrator<NewtonianMotionEquation>::
+      Instance::ReadFromMessage(message.instance(),
+                                MakeMassiveBodiesNewtonianMotionEquation(),
+                                append_massive_bodies_state);
 
-  auto reader = [this, &append_massive_bodies_state, &trajectories](
-                    serialization::Ephemeris::Checkpoint const& message) {
-    // Create or reset the trajectories.
+  RETURN_IF_STOPPED;
+
+  // Do the integration.  After this step the t_max() of the trajectories may
+  // be before t_final because there may be last_points_ that haven't been put
+  // in a series.
+  instance->Solve(t_final);
+
+  RETURN_IF_STOPPED;
+
+  // Stitch the local trajectories to the ones in this object.
+  {
+    absl::MutexLock l(&lock_);
     for (int i = 0; i < trajectories_.size(); ++i) {
-      trajectories.emplace_back(
-            std::make_unique<ContinuousTrajectory<Frame>>(
-              fixed_step_parameters_.step_,
-              accuracy_parameters_.fitting_tolerance_));
+      trajectories_[i]->Prepend(std::move(*trajectories[i]));
     }
+  }
 
-    RETURN_IF_STOPPED;
-    auto instance = FixedStepSizeIntegrator<NewtonianMotionEquation>::Instance::
-        ReadFromMessage(message.instance(),
-                        MakeMassiveBodiesNewtonianMotionEquation(),
-                        append_massive_bodies_state);
-
-    return Status::OK;
-  };
-
-  return checkpointer_->ReadFromAllCheckpointsBackwards(reader);
+  return Status::OK;
 }
 
 template<typename Frame>
@@ -915,7 +970,6 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
       LOG(ERROR) << "New Apocalypse: " << last_severe_integration_status_;
     }
   }
-
   WriteToCheckpointIfNeeded(state.time.value);
 }
 
@@ -960,10 +1014,9 @@ Ephemeris<Frame>::MakeMassiveBodiesNewtonianMotionEquation() {
       [this](Instant const& t,
              std::vector<Position<Frame>> const& positions,
              std::vector<Vector<Acceleration, Frame>>& accelerations) {
-        ComputeMassiveBodiesGravitationalAccelerations(t,
-                                                       positions,
-                                                       accelerations);
-        return Status::OK;
+        return ComputeMassiveBodiesGravitationalAccelerations(t,
+                                                              positions,
+                                                              accelerations);
       };
   return equation;
 }
@@ -1101,11 +1154,12 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
+Status Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
     Instant const& t,
     std::vector<Position<Frame>> const& positions,
     std::vector<Vector<Acceleration, Frame>>& accelerations) const {
-  lock_.AssertReaderHeld();
+  RETURN_IF_STOPPED;
+
   accelerations.assign(accelerations.size(), Vector<Acceleration, Frame>());
 
   for (std::size_t b1 = 0; b1 < number_of_oblate_bodies_; ++b1) {
@@ -1144,6 +1198,8 @@ void Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
         /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
         positions, accelerations, geopotentials_);
   }
+
+  return Status::OK;
 }
 
 template<typename Frame>

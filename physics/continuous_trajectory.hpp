@@ -120,7 +120,11 @@ class ContinuousTrajectory : public Trajectory<Frame> {
       const EXCLUDES(lock_);
   template<typename F = Frame,
            typename = std::enable_if_t<base::is_serializable_v<F>>>
+  // The parameter |using_checkpoint_at_or_before| indicates that the ephemeris
+  // must be restored at the state it had at the checkpoint that was taken at or
+  // immediately before that time.
   static not_null<std::unique_ptr<ContinuousTrajectory>> ReadFromMessage(
+      Instant const& using_checkpoint_at_or_before,
       serialization::ContinuousTrajectory const& message);
 
   // These members call the corresponding functions of the internal
