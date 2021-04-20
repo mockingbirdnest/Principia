@@ -210,6 +210,7 @@ Iterator* __cdecl principia__PlanetariumPlotCelestialTrajectoryForPsychohistory(
     Instant const first_time = std::max(
         plugin->CurrentTime() - max_history_length * Second,
             celestial_trajectory.t_min());
+    plugin->TriggerReanimation(first_time);
     auto const rp2_lines =
         planetarium->PlotMethod2(celestial_trajectory,
                                  first_time,
@@ -248,6 +249,8 @@ principia__PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
             : prediction_final_time;
     auto const& celestial_trajectory =
         plugin->GetCelestial(celestial_index).trajectory();
+    // No need to trigger reanimation here because the current time of the
+    // plugin is necessarily covered.
     auto const rp2_lines =
         planetarium->PlotMethod2(celestial_trajectory,
                                  /*first_time=*/plugin->CurrentTime(),

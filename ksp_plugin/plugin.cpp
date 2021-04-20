@@ -1410,6 +1410,8 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
                                               message.ephemeris());
   plugin->ephemeris_->Prolong(plugin->game_epoch_);
   plugin->ephemeris_->Prolong(plugin->current_time_);
+  //TODO(phl):I believe that this check can fail...
+  CHECK_LE(plugin->ephemeris_->t_min(), plugin->current_time_);
 
   ReadCelestialsFromMessages(*plugin->ephemeris_,
                              message.celestial(),
