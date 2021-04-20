@@ -2,6 +2,8 @@
 
 #include "base/recurring_thread.hpp"
 
+#include <algorithm>
+
 namespace principia {
 namespace base {
 namespace internal_recurring_thread {
