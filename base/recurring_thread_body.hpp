@@ -12,9 +12,8 @@ RecurringThread<Input, Output>::RecurringThread(
     std::chrono::milliseconds const period)
     : action_(std::move(action)),
       period_(period),
-      jthread_(
-          MakeStoppableThread(std::bind(&RecurringThread::RepeatedlyRunAction),
-                              this)) {}
+      jthread_(MakeStoppableThread(
+          [this]() { Status const status = RepeatedlyRunAction(); })) {}
 
 template<typename Input, typename Output>
 void RecurringThread<Input, Output>::Put(Input input) {
@@ -33,7 +32,7 @@ std::optional<Output> RecurringThread<Input, Output>::Get() {
 }
 
 template<typename Input, typename Output>
-void RecurringThread<Input, Output>::RepeatedlyRunAction() {
+Status RecurringThread<Input, Output>::RepeatedlyRunAction() {
   for (std::chrono::steady_clock::time_point wakeup_time;;
        std::this_thread::sleep_until(wakeup_time)) {
     wakeup_time = std::chrono::steady_clock::now() + period_;
@@ -50,12 +49,12 @@ void RecurringThread<Input, Output>::RepeatedlyRunAction() {
     }
     RETURN_IF_STOPPED;
 
-    Output output = action_(input);
+    Output output = action_(input.value());
     RETURN_IF_STOPPED;
 
     {
       absl::MutexLock l(&lock_);
-      std::swap(output, output_);
+      output_ = std::move(output);
     }
     RETURN_IF_STOPPED;
   }

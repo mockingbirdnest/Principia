@@ -6,6 +6,7 @@
 
 #include "absl/synchronization/mutex.h"
 #include "base/jthread.hpp"
+#include "base/status.hpp"
 
 namespace principia {
 namespace base {
@@ -13,7 +14,7 @@ namespace internal_recurring_thread {
 
 // A stoppable thread that supports cyclical execution of an action.  It is
 // connected to two monodirectional channels that can (optionally) hold a value
-// of Input (for incoming data) or Output (for outgoing data), respectively.
+// of |Input| (for incoming data) or |Output| (for outgoing data), respectively.
 // The action is run to transform the input into the output.  This class is
 // thread-safe.
 template<typename Input, typename Output>
@@ -36,10 +37,10 @@ class RecurringThread {
   std::optional<Output> Get();
 
  private:
-  void RepeatedlyRunAction();
+  Status RepeatedlyRunAction();
 
   Action const action_;
-  std::chrono::duration const period_;
+  std::chrono::milliseconds const period_;
 
   jthread jthread_;
 

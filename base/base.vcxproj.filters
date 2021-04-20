@@ -283,5 +283,8 @@
     <ClCompile Include="malloc_allocator_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="recurring_thread_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
