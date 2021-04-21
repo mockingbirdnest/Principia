@@ -10,6 +10,8 @@
 
 #include "absl/synchronization/mutex.h"
 #include "base/jthread.hpp"
+#include "base/recurring_thread.hpp"
+#include "base/status_or.hpp"
 #include "base/status.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
@@ -27,7 +29,9 @@ namespace ksp_plugin {
 namespace internal_vessel {
 
 using base::not_null;
+using base::RecurringThread;
 using base::Status;
+using base::StatusOr;
 using geometry::Instant;
 using geometry::Vector;
 using physics::DegreesOfFreedom;
@@ -223,9 +227,8 @@ class Vessel {
 
   // Runs the integrator to compute the |prognostication_| based on the given
   // parameters.
-  Status FlowPrognostication(
-      PrognosticatorParameters prognosticator_parameters,
-      std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication);
+  StatusOr<std::unique_ptr<DiscreteTrajectory<Barycentric>>>
+  FlowPrognostication(PrognosticatorParameters prognosticator_parameters);
 
   // Publishes the prognostication if the computation was not cancelled.
   void SwapPrognostication(
@@ -258,13 +261,7 @@ class Vessel {
   std::set<PartId> kept_parts_;
 
   mutable absl::Mutex prognosticator_lock_;
-  // This member only contains a value if |RefreshPrediction| has been called
-  // but the parameters have not been picked by the |prognosticator_|.  It never
-  // contains a moved-from value, and is only read using |std::swap| to ensure
-  // that reading it clears it.
-  std::optional<PrognosticatorParameters> prognosticator_parameters_
-      GUARDED_BY(prognosticator_lock_);
-  base::jthread prognosticator_;
+  RecurringThread<PrognosticatorParameters, void*> prognosticator_;
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_;

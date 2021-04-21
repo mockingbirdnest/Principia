@@ -7,6 +7,7 @@
 #include "absl/synchronization/mutex.h"
 #include "base/jthread.hpp"
 #include "base/status.hpp"
+#include "base/status_or.hpp"
 
 namespace principia {
 namespace base {
@@ -20,7 +21,7 @@ namespace internal_recurring_thread {
 template<typename Input, typename Output>
 class RecurringThread {
  public:
-  using Action = std::function<Output(Input)>;
+  using Action = std::function<StatusOr<Output>(Input)>;
 
   // Constructs a stoppable thread that executes the given |action| no more
   // frequently than at the specified |period| (and less frequently if no input

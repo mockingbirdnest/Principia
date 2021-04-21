@@ -51,12 +51,12 @@ Status RecurringThread<Input, Output>::RepeatedlyRunAction() {
     }
     RETURN_IF_STOPPED;
 
-    Output output = action_(input.value());
+    StatusOr<Output> status_or_output = action_(input.value());
     RETURN_IF_STOPPED;
 
-    {
+    if (status_or_output.ok()) {
       absl::MutexLock l(&lock_);
-      output_ = std::move(output);
+      output_ = std::move(status_or_output.ValueOrDie());
     }
     RETURN_IF_STOPPED;
   }
