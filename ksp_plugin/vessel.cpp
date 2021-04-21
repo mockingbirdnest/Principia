@@ -2,6 +2,7 @@
 #include "ksp_plugin/vessel.hpp"
 
 #include <algorithm>
+#include <functional>
 #include <limits>
 #include <list>
 #include <string>
@@ -31,6 +32,7 @@ using quantities::IsFinite;
 using quantities::Length;
 using quantities::Time;
 using quantities::si::Metre;
+using ::std::placeholders::_1;
 
 using namespace std::chrono_literals;
 
@@ -61,11 +63,15 @@ Vessel::Vessel(GUID guid,
           std::move(prediction_adaptive_step_parameters)),
       parent_(parent),
       ephemeris_(ephemeris),
-      prognosticator_(std::bind(&Vessel::FlowPrognostication, this),
+      prognosticator_(std::bind(&Vessel::FlowPrognostication, this, _1),
                       20ms),  // 50 Hz.
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
   // Can't create the |psychohistory_| and |prediction_| here because |history_|
   // is empty;
+
+  //RecurringThread<PrognosticatorParameters,
+  //                std::unique_ptr<DiscreteTrajectory<Barycentric>>>::Action a =
+  //  []() { return FlowPrognostication};
 }
 
 Vessel::~Vessel() {
@@ -318,7 +324,7 @@ Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
 }
 
 void Vessel::RefreshPrediction() {
-  // The |prognostication_| is a root trajectory that's computed asynchronously
+  // The |prognostication| is a root trajectory that's computed asynchronously
   // and may or may not be used as a prediction;
   std::unique_ptr<DiscreteTrajectory<Barycentric>> prognostication;
 
@@ -336,7 +342,7 @@ void Vessel::RefreshPrediction() {
       prognostication = std::move(status_or_prognostication).ValueOrDie();
     }
   } else {
-    prognosticator_.Put(prognosticator_parameters);
+    prognosticator_.Put(std::move(prognosticator_parameters));
     prognosticator_.Start();
     prognostication = prognosticator_.Get().value_or(nullptr);
   }
