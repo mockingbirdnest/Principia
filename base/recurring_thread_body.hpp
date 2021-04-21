@@ -17,6 +17,7 @@ RecurringThread<Input, Output>::RecurringThread(
 
 template<typename Input, typename Output>
 void RecurringThread<Input, Output>::Start() {
+  absl::MutexLock l(&jthread_lock_);
   if (!jthread_.joinable()) {
     jthread_ = MakeStoppableThread(
         [this]() { Status const status = RepeatedlyRunAction(); });
@@ -25,18 +26,19 @@ void RecurringThread<Input, Output>::Start() {
 
 template<typename Input, typename Output>
 void RecurringThread<Input, Output>::Stop() {
+  absl::MutexLock l(&jthread_lock_);
   jthread_ = jthread();
 }
 
 template<typename Input, typename Output>
 void RecurringThread<Input, Output>::Put(Input input) {
-  absl::MutexLock l(&lock_);
+  absl::MutexLock l(&input_output_lock_);
   input_ = std::move(input);
 }
 
 template<typename Input, typename Output>
 std::optional<Output> RecurringThread<Input, Output>::Get() {
-  absl::MutexLock l(&lock_);
+  absl::MutexLock l(&input_output_lock_);
   std::optional<Output> result;
   if (output_.has_value()) {
     std::swap(result, output_);
@@ -53,7 +55,7 @@ Status RecurringThread<Input, Output>::RepeatedlyRunAction() {
 
     std::optional<Input> input;
     {
-      absl::MutexLock l(&lock_);
+      absl::MutexLock l(&input_output_lock_);
       if (!input_.has_value()) {
         // No input, let's wait for it to appear.
         continue;
@@ -66,7 +68,7 @@ Status RecurringThread<Input, Output>::RepeatedlyRunAction() {
     RETURN_IF_STOPPED;
 
     if (status_or_output.ok()) {
-      absl::MutexLock l(&lock_);
+      absl::MutexLock l(&input_output_lock_);
       output_ = std::move(status_or_output.ValueOrDie());
     }
     RETURN_IF_STOPPED;
