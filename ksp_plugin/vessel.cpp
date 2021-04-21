@@ -568,10 +568,10 @@ Vessel::FlowPrognostication(
       << "Prognostication from " << prognosticator_parameters.first_time
       << " finished at " << prognostication->back().time << " with "
       << status.ToString() << " for " << ShortDebugString();
-  if (status.ok()) {
-    return std::move(prognostication);
-  } else {
+  if (status.error() == Error::CANCELLED) {
     return status;
+  } else {
+    return std::move(prognostication);
   }
 }
 
