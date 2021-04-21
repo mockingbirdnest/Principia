@@ -1,6 +1,5 @@
 ﻿\documentclass[10pt, a4paper, twoside]{basestyle}
 
-\usepackage{shapepar}
 \usepackage[Mathematics]{semtex}
 \usepackage{chngcntr}
 
@@ -182,8 +181,8 @@ Naturellement, en mathématiques, séjour des propositions irréfragables, id
 The editors then quote a letter by Prouhet, wherein he gives a reference to \cite{FantetdeLagny1692}.
 
 Lagny’s work proved far more extensive than we expected: besides the above root finding methods for arbitrary
-polynomials, it contains an error analysis, and even a discussion of the principles of performance analysis
-based on a decomposition in elementary operations on decimal digits.
+polynomials, it contains an error analysis, and even a discussion of the principles of performance analysis based on a decomposition into elementary operations on---and
+writing of---decimal digits: a 17th century MIX.
 
 Observing that the higher-order examples correspond to the well-known higher order
 method attributed to Householder in \cite{SebahGourdon2001}, we looked for its properties in \cite{Householder1970} so as to prove that observation, and found that Householder attributes
@@ -200,20 +199,9 @@ the result would probably be more convenient, it is unlikely to be something wel
 popular nowadays---unjustifiedly so, as we shall see.
 
 Prouhet’s letter in \cite{Cantor1861} ends with these words:
-\begin{quote}
-% Ending the section and the page on a line-and-a-half indented quote following a
-% half-line indented paragraph is particularly unsightly; turn the quote into
-% a cul-de-lampe instead.
-\shapepar{{0}
-{0}b{0}\\
-{0}t{-18.5}{37}\\
-{13}e{0}}
-\textfrench{%
-Tout cela est fort abrégé; mais qui
-nous délivrera des méthodes
-abrégées, qui n'en
-finissent
-pas?}\end{quote}
+\begin{quote}\textfrench{%
+Tout cela est fort abrégé; mais qui nous délivrera des méthodes abrégées,
+qui n'en finissent pas?}\end{quote}
 
 \subsection*{Proof of the proposition}
 
@@ -455,7 +443,6 @@ Its error is\[
 whose leading term is half that of the rational method; indeed we find that with $Γ=Γ_{\mathrm{Kahan}}$,
 we have $\max_{y} \abs{ε_ξ'} \approx 10.48\Multiply10^{-6}$, $\log_2 \max_{y} \abs{ε_ξ'} \approx -16.54$, gaining one bit
 with respect to the rational method.
-
 Here $Γ=Γ_{\mathrm{Kahan}}$ is very close to optimal; with the optimal value\[
 Γ_{\mathrm{L^2}}\approx0.10096\,82076\,65096\,37285\,40885\,52460\,33434\,63384\,54584\,03306\text,
 \]
@@ -577,7 +564,7 @@ and $x^3-y$ is exact by Sterbenz’s lemma.
 
 In infinite precision, this method is of such high order that if $\abs{ε_x} < 14.5$, which is the case
 even if $ξ$ is computed by the rational method, the relative error of the result is less than $2^{-75}$.
-we will not seek to bound the truncation error more closely, nor to tweak the constants in the method
+We will not seek to bound the truncation error more closely, nor to tweak the constants in the method
 to optimize it: as we will see, it is dominated by rounding.
 
 Thanks to the exact cube and exact difference, the rounding analysis of the correction term is
@@ -588,7 +575,13 @@ the denominator, overall $\frac{1+γ_{6}}{1-γ_{5}}-1<\frac{γ_{11}}{1-γ_{5}}$ 
 
 However, considering that our final bound on the excess above $1u$, and thus our final misrounding
 estimate, is proportional to this error, a more careful analysis is warranted.
-Observe that $x^3=y\pa{1+ε_x}^3$
+Observe that $x^3=y\pa{1+ε_x}^3$, so that a sum
+\[Σ'=α x^{m}y^{p-m}\pa{1+δ_1} + β x^{n}y^{p-n}\pa{1+δ_2}\]
+whose terms carry the errors $δ_i$ may be rewritten as\begin{align*}
+Σ&=α x^{m}y^{p-m} + β x^{n}y^{p-n} + α x^{m}y^{p-m} δ_1 + βx^{n}y^{p-n}δ_2\\
+ &=α x^{m}y^{p-m} + β x^{n}y^{p-n} + αy^{p}\pa{1+ε_x}^{3m} δ_1 + βy^{p}\pa{1+ε_x}^{3n}δ_2\\
+ &=α x^{m}y^{p-m} + β x^{n}y^{p-n} + y^{p}\pa{α δ_1+ β δ_2} + ?
+\end{align*}
 
 --- REMOVE BEFORE FLIGHT, MOVE THE 6TH ORDER STUFF TO THE APPENDIX ---
 
