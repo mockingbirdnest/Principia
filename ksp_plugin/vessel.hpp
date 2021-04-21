@@ -217,23 +217,10 @@ class Vessel {
   using TrajectoryIterator =
       DiscreteTrajectory<Barycentric>::Iterator (Part::*)();
 
-  // Starts the |prognosticator_| if it is not started already.  The
-  // |prognosticator_parameters_| must have been set.
-  void StartPrognosticatorIfNeeded() REQUIRES(prognosticator_lock_);
-
-  // Run by the |prognosticator_| thread to periodically recompute the
-  // prognostication.
-  Status RepeatedlyFlowPrognostication();
-
   // Runs the integrator to compute the |prognostication_| based on the given
   // parameters.
   StatusOr<std::unique_ptr<DiscreteTrajectory<Barycentric>>>
   FlowPrognostication(PrognosticatorParameters prognosticator_parameters);
-
-  // Publishes the prognostication if the computation was not cancelled.
-  void SwapPrognostication(
-      std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication,
-      Status const& status);
 
   // Appends to |trajectory| the centre of mass of the trajectories of the parts
   // denoted by |part_trajectory_begin| and |part_trajectory_end|.  Only the
@@ -260,9 +247,6 @@ class Vessel {
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
   std::set<PartId> kept_parts_;
 
-  mutable absl::Mutex prognosticator_lock_;
-  RecurringThread<PrognosticatorParameters, void*> prognosticator_;
-
   // See the comments in pile_up.hpp for an explanation of the terminology.
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_;
   DiscreteTrajectory<Barycentric>* psychohistory_ = nullptr;
@@ -270,10 +254,9 @@ class Vessel {
   // The |prediction_| is forked off the end of the |psychohistory_|.
   DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
 
-  // The |prognostication_| is a root trajectory that's computed asynchronously
-  // and may or may not be used as a prediction;
-  std::unique_ptr<DiscreteTrajectory<Barycentric>> prognostication_
-      GUARDED_BY(prognosticator_lock_);
+  RecurringThread<PrognosticatorParameters,
+                  std::unique_ptr<DiscreteTrajectory<Barycentric>>>
+      prognosticator_;
 
   std::unique_ptr<FlightPlan> flight_plan_;
 

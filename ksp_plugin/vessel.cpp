@@ -32,6 +32,8 @@ using quantities::Length;
 using quantities::Time;
 using quantities::si::Metre;
 
+using namespace std::chrono_literals;
+
 bool operator!=(Vessel::PrognosticatorParameters const& left,
                 Vessel::PrognosticatorParameters const& right) {
   return left.first_time != right.first_time ||
@@ -59,6 +61,8 @@ Vessel::Vessel(GUID guid,
           std::move(prediction_adaptive_step_parameters)),
       parent_(parent),
       ephemeris_(ephemeris),
+      prognosticator_(std::bind(&Vessel::FlowPrognostication, this),
+                      20ms),  // 50 Hz.
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
   // Can't create the |psychohistory_| and |prediction_| here because |history_|
   // is empty;
@@ -241,13 +245,14 @@ void Vessel::AdvanceTime() {
   AppendToVesselTrajectory(&Part::psychohistory_begin,
                            &Part::psychohistory_end,
                            *psychohistory_);
-  {
-    absl::MutexLock l(&prognosticator_lock_);
-    if (prognostication_ == nullptr) {
-      AttachPrediction(std::move(prediction));
-    } else {
-      AttachPrediction(std::move(prognostication_));
-    }
+
+  // Attach the prognostication, if there is one.  Otherwise fall back to the
+  // prediction.
+  auto optional_prognostication = prognosticator_.Get();
+  if (optional_prognostication.has_value()) {
+    AttachPrediction(std::move(optional_prognostication.value()));
+  } else {
+    AttachPrediction(std::move(prediction));
   }
 
   for (auto const& [_, part] : parts_) {
@@ -313,7 +318,10 @@ Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
 }
 
 void Vessel::RefreshPrediction() {
-  absl::MutexLock l(&prognosticator_lock_);
+  // The |prognostication_| is a root trajectory that's computed asynchronously
+  // and may or may not be used as a prediction;
+  std::unique_ptr<DiscreteTrajectory<Barycentric>> prognostication;
+
   // Note that we know that |RefreshPrediction| is called on the main thread,
   // therefore the ephemeris currently covers the last time of the
   // psychohistory.  Were this to change, this code might have to change.
@@ -322,15 +330,18 @@ void Vessel::RefreshPrediction() {
       psychohistory_->back().degrees_of_freedom,
       prediction_adaptive_step_parameters_};
   if (synchronous_) {
-    auto const status_or_prognostication =
+    auto status_or_prognostication =
         FlowPrognostication(std::move(prognosticator_parameters));
-    SwapPrognostication(prognostication, status);
+    if (status_or_prognostication.ok()) {
+      prognostication = std::move(status_or_prognostication).ValueOrDie();
+    }
   } else {
     prognosticator_.Put(prognosticator_parameters);
-    StartPrognosticatorIfNeeded();
+    prognosticator_.Start();
+    prognostication = prognosticator_.Get().value_or(nullptr);
   }
-  if (prognostication_ != nullptr) {
-    AttachPrediction(std::move(prognostication_));
+  if (prognostication != nullptr) {
+    AttachPrediction(std::move(prognostication));
   }
 }
 
@@ -340,7 +351,7 @@ void Vessel::RefreshPrediction(Instant const& time) {
 }
 
 void Vessel::StopPrognosticator() {
-  prognosticator_ = jthread();
+  prognosticator_.Stop();
 }
 
 std::string Vessel::ShortDebugString() const {
@@ -520,45 +531,8 @@ Vessel::Vessel()
       prediction_adaptive_step_parameters_(DefaultPredictionParameters()),
       parent_(testing_utilities::make_not_null<Celestial const*>()),
       ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
-      history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {}
-
-void Vessel::StartPrognosticatorIfNeeded() {
-  prognosticator_lock_.AssertHeld();
-  if (!prognosticator_.joinable()) {
-    prognosticator_ = MakeStoppableThread(
-        std::bind(&Vessel::RepeatedlyFlowPrognostication, this));
-  }
-}
-
-Status Vessel::RepeatedlyFlowPrognostication() {
-  for (std::chrono::steady_clock::time_point wakeup_time;;
-       std::this_thread::sleep_until(wakeup_time)) {
-    // No point in going faster than 50 Hz.
-    wakeup_time =
-        std::chrono::steady_clock::now() + std::chrono::milliseconds(20);
-    RETURN_IF_STOPPED;
-
-    std::optional<PrognosticatorParameters> prognosticator_parameters;
-    {
-      absl::MutexLock l(&prognosticator_lock_);
-      if (!prognosticator_parameters_) {
-        // No parameters, let's wait for them to appear.
-        continue;
-      }
-      std::swap(prognosticator_parameters, prognosticator_parameters_);
-    }
-    RETURN_IF_STOPPED;
-
-    auto const status_or_prognostication =
-        FlowPrognostication(std::move(*prognosticator_parameters));
-    RETURN_IF_STOPPED;
-    {
-      absl::MutexLock l(&prognosticator_lock_);
-      SwapPrognostication(prognostication, status);
-    }
-  }
-  return Status::OK;
-}
+      history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
+      prognosticator_(nullptr, 20ms) {}
 
 StatusOr<std::unique_ptr<DiscreteTrajectory<Barycentric>>>
 Vessel::FlowPrognostication(
@@ -592,15 +566,6 @@ Vessel::FlowPrognostication(
     return std::move(prognostication);
   } else {
     return status;
-  }
-}
-
-void Vessel::SwapPrognostication(
-    std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication,
-    Status const& status) {
-  prognosticator_lock_.AssertHeld();
-  if (status.error() != Error::CANCELLED) {
-    prognostication_.swap(prognostication);
   }
 }
 

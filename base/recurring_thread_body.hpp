@@ -13,9 +13,20 @@ RecurringThread<Input, Output>::RecurringThread(
     Action action,
     std::chrono::milliseconds const period)
     : action_(std::move(action)),
-      period_(period),
-      jthread_(MakeStoppableThread(
-          [this]() { Status const status = RepeatedlyRunAction(); })) {}
+      period_(period) {}
+
+template<typename Input, typename Output>
+void RecurringThread<Input, Output>::Start() {
+  if (!jthread_.joinable()) {
+    jthread_ = MakeStoppableThread(
+        [this]() { Status const status = RepeatedlyRunAction(); });
+  }
+}
+
+template<typename Input, typename Output>
+void RecurringThread<Input, Output>::Stop() {
+  jthread_ = jthread();
+}
 
 template<typename Input, typename Output>
 void RecurringThread<Input, Output>::Put(Input input) {

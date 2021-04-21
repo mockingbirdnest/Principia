@@ -29,6 +29,10 @@ class RecurringThread {
   RecurringThread(Action action,
                   std::chrono::milliseconds period);
 
+  //TODO(phl):Comment idempotent
+  void Start();
+  void Stop();
+
   // Overwrites the contents of the input channel.  The |input| data will be
   // either picked by the next execution of |action|, or overwritten by the next
   // call to |Put|.
