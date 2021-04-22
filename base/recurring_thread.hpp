@@ -22,6 +22,7 @@ namespace internal_recurring_thread {
 template<typename Input, typename Output>
 class RecurringThread {
  public:
+  // If an action returns an error, no output in written to the output channel.
   using Action = std::function<StatusOr<Output>(Input)>;
 
   // Constructs a stoppable thread that executes the given |action| no more

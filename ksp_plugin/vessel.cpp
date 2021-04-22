@@ -571,6 +571,7 @@ Vessel::FlowPrognostication(
   if (status.error() == Error::CANCELLED) {
     return status;
   } else {
+    // Ignore the status in this case and try to use the prognostication.
     return std::move(prognostication);
   }
 }
