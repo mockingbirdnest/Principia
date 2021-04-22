@@ -68,10 +68,6 @@ Vessel::Vessel(GUID guid,
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
   // Can't create the |psychohistory_| and |prediction_| here because |history_|
   // is empty;
-
-  //RecurringThread<PrognosticatorParameters,
-  //                std::unique_ptr<DiscreteTrajectory<Barycentric>>>::Action a =
-  //  []() { return FlowPrognostication};
 }
 
 Vessel::~Vessel() {
@@ -571,6 +567,7 @@ Vessel::FlowPrognostication(
   if (status.error() == Error::CANCELLED) {
     return status;
   } else {
+    // Ignore the status in this case and try to use the prognostication.
     return std::move(prognostication);
   }
 }
