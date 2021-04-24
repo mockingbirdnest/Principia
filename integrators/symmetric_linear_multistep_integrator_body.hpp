@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/jthread.hpp"
 #include "geometry/serialization.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
@@ -141,6 +142,7 @@ Status SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Solve(
     ComputeVelocityUsingCohenHubbardOesterwinter();
 
     // Inform the caller of the new state.
+    RETURN_IF_STOPPED;
     current_state.time = t;
     append_state(current_state);
   }

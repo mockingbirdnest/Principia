@@ -393,7 +393,6 @@ Ephemeris<Frame>::NewInstance(
           Instant const& t,
           std::vector<Position<Frame>> const& positions,
           std::vector<Vector<Acceleration, Frame>>& accelerations) {
-    RETURN_IF_STOPPED;
     Error const error =
         ComputeMasslessBodiesGravitationalAccelerations(t,
                                                         positions,
@@ -444,7 +443,6 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations) {
-    RETURN_IF_STOPPED;
     Error const error =
         ComputeMasslessBodiesGravitationalAccelerations(t,
                                                         positions,
@@ -477,7 +475,6 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
           std::vector<Position<Frame>> const& positions,
           std::vector<Velocity<Frame>> const& velocities,
           std::vector<Vector<Acceleration, Frame>>& accelerations) {
-        RETURN_IF_STOPPED;
         Error const error =
             ComputeMasslessBodiesGravitationalAccelerations(t,
                                                             positions,
