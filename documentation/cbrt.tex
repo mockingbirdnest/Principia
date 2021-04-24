@@ -557,6 +557,24 @@ we have the bound $\abs{ε_x} < \pa{1+\abs{ε_ξ}}\pa{1+2^{-16}}-1$.
 
 \subsection{High order iteration}
 
+We compute the faithfully rounded result $r_0$ as\[
+r_0\DefineAs\round{x+Δ}\text,
+\]
+where the correction term $Δ$ is that of a high-order root finding method.
+As usual, we call the infinite-precision correction term $Δ'$, and $r_0'\DefineAs x+Δ'$.
+The truncation error is \[ε_{r_0}'\DefineAs\frac{\round{x+Δ'}}{\cuberoot y}-1\text.\]
+The rounding error on the correction term is $δ\DefineAs\frac{Δ}{Δ'}-1$.
+The overall error is thus\begin{align*}
+ε_{r_0}\DefineAs&\frac{\round{x+Δ}}{\cuberoot y}-1\\
+=&\pa{\frac{x+Δ'\pa{1+δ}}{\cuberoot y}}\pa{1+υ}-1\\
+=&\pa{\frac{x+Δ'+\pa{x+Δ'-x}δ}{\cuberoot y}}\pa{1+υ}-1\\
+=&\pa{1+ε_{r_0}'+\pa{ε_{r_0}'-ε_x}δ}\pa{1+υ}-1\text,
+\end{align*}
+where $\abs υ \le u$.
+
+We compute bounds for $ε_{r_0}'$ and $δ$ for two different methods.
+
+
 We use one iteration of the Lagny--Schröder rational method of order $5$:
 \[
 \round{x - \round{
@@ -588,7 +606,7 @@ whose terms carry the errors $δ_i$ may be rewritten as\begin{align*}
  &=α x^{m}y^{p-m} + β x^{n}y^{p-n} + y^{p}\pa{α δ_1+ β δ_2} + ?
 \end{align*}
 
---- REMOVE BEFORE FLIGHT, MOVE THE 6TH ORDER STUFF TO THE APPENDIX ---
+
 
 We use one iteration of the Lagny--Schröder rational method of order $6$:\[
 r_0\DefineAs\round{x-\round{\frac{
