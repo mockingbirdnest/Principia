@@ -297,6 +297,11 @@ We define the fractional part as $\FractionalPart a\DefineAs a-\Floor a\in\intcl
 
 The floating-point format used throughout is binary64; the quantities $p\in\N$ (precision in bits) and $\bias\in\N$ are 
 defined as in IEEE 754-2008, $p=53$ and $\bias=1023$.
+Some of the individual methods discussed may be of general use; we thus give all constants to thirty-six decimal
+digits\footnote{The constants used in the methods are rounded to the nearest decimal digit. A superscript sign after
+a final $5$ serves as the sticky bit: the unrounded quantity is in excess of the rounded one if the sign is $+$,
+and in default if it is $-$. The error bounds (and their logarithms) are rounded towards positive infinity.},
+which should suffice for decimal128, binary128, and all smaller formats.
 
 We use capital Latin letters for fixed-point numbers involved in the computation, and $A>0$ for the normal floating-point number $a>0$ reinterpreted as a binary fixed-point\footnote{The implementation uses integers (obtained by multiplying the fixed-point numbers by $2^{p-1}$). For consistency with \cite{KahanBindel2001} we work with fixed-point numbers here. Since we do not multiply fixed point numbers together, the expressions are unchanged.} number with $p-1$ bits after the binary point,\begin{align*}
   A &\DefineAs \bias + \Floor{\log_2 a} + \FractionalPart \pa{2^{-\Floor{\log_2 a}}a}\\
@@ -383,7 +388,7 @@ or equivalently.\begin{align*}
 \end{align*}
 where $\mathscr{E}\DefineAs\set{\tuple{\FractionalPart Γ, 0}}\Union\setst{\tuple{0, k}}{k\in\set{0,1,2}}$ is the set of the endpoints of the intervals whereon $q'$ is piecewise affine, and
 $\mathscr{L}\DefineAs\setst{\tuple{\frac{k-\FractionalPart Γ}{2},k}}{k\in\set{1,2}}$ are the local extrema. We get more precisely\footnote{This value may be computed formally, but the expression is unwieldy.}\[
-Γ_{\mathrm{Kahan}} \approx 0.10096\,78121\,55802\,88786\,36993\,42643\,55358\,06489\,88235\,75289\]
+Γ_{\mathrm{Kahan}} \approx 0.10096\,78121\,55802\,88786\,36993\,42643\,55358\,1\]
 with $\max_{y}\abs{ε_q'} \approx 3.155\%$,
 yielding the constant\[C_{\mathrm{Kahan}}=\hex{2A9F\,7625\,3119\,D328}\Multiply 2^{-52}\]for IEEE 754-2008 binary64.
 However, as we will see in the next section, this value does not optimize the final error.
@@ -396,7 +401,7 @@ will study only the truncation error, and thus work only with the primed quantit
 \subsubsection*{Lagny's rational method}
 One way to compute $ξ'$ is Lagny's rational method,
 \[
-ξ'=q'-\frac{\pa{{q'}^3-y}q'}{2{q'}^3+y}\text,
+ξ'=q'+\frac{q'\pa{y-{q'}^3}}{2{q'}^3+y}\text,
 \]
 with the error\[
 ε_ξ' \DefineAs \frac{ξ'}{\sqrt[3] y}-1\text.
@@ -415,7 +420,7 @@ function of $ε_q'$, it is not odd: positive errors are reduced more than negati
 errors are, so that the minimum is attained for a different value of $Γ$.
 Specifically, we have\begin{align*}
 Γ_{\mathrm{L^1}}&\DefineAs\argmin_{Γ\in\R}\max_{y}\abs{ε_ξ'}\\
-&\approx 0.09918\,74615\,29855\,99525\,66149\,20761\,31234\,34720\,23067\,92759
+&\approx 0.09918\,74615\,29855\,99525\,66149\,20761\,31234\,35^{-}
 \end{align*}
 with $\max_{y} \abs{ε_q'} \approx 3.2025\%$, but
 $\max_{y} \abs{ε_ξ'} \approx 20.86\Multiply10^{-6}$, $\log_2 \max_{y} \abs{ε_ξ'} \approx -15.54$.
@@ -426,7 +431,7 @@ still larger, and in any case is not comparatively negligible. As a result, it s
 Lagny's lesser-known irrational method provides us with a way to improve it.
 \subsubsection*{Lagny's irrational method}
 As written in (\ref{LagnyIrrationalCubeRootIteration}), Lagny's irrational method
-\[ξ'\DefineAs \tfrac{1}{2}q'+\sqrt{\tfrac{1}{4}{q'}^2+\frac{y-{q'}^3}{3q'}}\]
+\[ξ' = \tfrac{1}{2}q'+\sqrt{\tfrac{1}{4}{q'}^2+\frac{y-{q'}^3}{3q'}}\]
 seems prohibitively computationally expensive in comparison to the rational one: it adds a
 square root on the critical path, dependent on the result of a division.
 However, rewriting it as\begin{equation}
@@ -444,7 +449,7 @@ whose leading term is half that of the rational method; indeed we find that with
 we have $\max_{y} \abs{ε_ξ'} \approx 10.48\Multiply10^{-6}$, $\log_2 \max_{y} \abs{ε_ξ'} \approx -16.54$, gaining one bit
 with respect to the rational method.
 Here $Γ=Γ_{\mathrm{Kahan}}$ is very close to optimal; with the optimal value\[
-Γ_{\mathrm{L^2}}\approx0.10096\,82076\,65096\,37285\,40885\,52460\,33434\,63384\,54584\,03306\text,
+Γ_{\mathrm{L^2}}\approx0.10096\,82076\,65096\,37285\,40885\,52460\,33434\,6\text,
 \]
 the error remains the same within the precision to which we have given it.
 However, we have other ways of improving the error at no cost to performance.
@@ -493,7 +498,7 @@ with $Γ$.
 The constants $\frac{1}{2}$, $\frac{1}{4}$, and $3$ in Lagny's irrational method may be modified with no effect on
 performance; altering the first two of these introduces rounding errors, but these need not concern us here.
 We thus write
-\[ξ'\DefineAs κq'+\sqrt{λ{q'}^2+\frac{y-{q'}^3}{μq'}}\]
+\[ξ' = κq'+\sqrt{λ{q'}^2+\frac{y-{q'}^3}{μq'}}\]
 and choose $Γ$, $κ$, $λ$, and $μ$ minimizing relative error in the Чебышёв norm,\[
 \tuple{Γ_{\mathrm{L^2C}}, κ_{\mathrm{L^2C}}, λ_{\mathrm{L^2C}},μ_{\mathrm{L^2C}}}
 \DefineAs\argmin_{Γ,κ,λ,μ}\max_{y}\abs{ε_ξ'}\text.\]
