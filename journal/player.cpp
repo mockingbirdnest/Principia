@@ -20,6 +20,8 @@ using base::HexadecimalEncoder;
 using base::UniqueArray;
 using interface::principia__ActivatePlayer;
 
+using namespace std::chrono_literals;
+
 namespace journal {
 
 Player::Player(std::filesystem::path const& path)
@@ -67,8 +69,9 @@ bool Player::Play(int const index) {
 #include "journal/player.generated.cc"
 
   auto const after = std::chrono::system_clock::now();
-  if (after - before > std::chrono::milliseconds(100)) {
-    LOG(ERROR) << "Long method:\n" << method_in->DebugString();
+  if (after - before > 100ms) {
+    LOG(ERROR) << "Long method (" << (after - before) / 1ms << " ms):\n"
+               << method_in->DebugString();
   }
 
   last_method_in_.swap(method_in);
