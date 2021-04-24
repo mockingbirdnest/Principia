@@ -494,9 +494,7 @@ void Vessel::RequestOrbitAnalysis(Time const& mission_duration) {
   if (orbit_analyser_->last_parameters().has_value() &&
       orbit_analyser_->last_parameters()->mission_duration !=
           mission_duration) {
-    LOG(ERROR)<<"interrupt";
     orbit_analyser_->Interrupt();
-    LOG(ERROR)<<"interrupted";
   }
   orbit_analyser_->RequestAnalysis(
       {.first_time = psychohistory_->back().time,

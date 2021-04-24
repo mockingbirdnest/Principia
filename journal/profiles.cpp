@@ -33,9 +33,8 @@ void Delete(std::uint64_t const address,
             Player::PointerMap& pointer_map) {
   if (reinterpret_cast<void*>(address) != nullptr) {
     auto const it = pointer_map.find(address);
-    if (it != pointer_map.end()) {
-      pointer_map.erase(it);
-    }
+    CHECK(it != pointer_map.end()) << address;
+    pointer_map.erase(it);
   }
 }
 
@@ -46,13 +45,7 @@ T DeserializePointer(std::uint64_t const address,
   if (reinterpret_cast<T>(address) == nullptr) {
     return nullptr;
   } else {
-    auto it = pointer_map.find(address);
-    if (it == pointer_map.end()) {
-      return nullptr;
-    } else {
-      return reinterpret_cast<T>(it->second);
-    }
-    //return reinterpret_cast<T>(FindOrDie(pointer_map, address));
+    return reinterpret_cast<T>(FindOrDie(pointer_map, address));
   }
 }
 
@@ -85,7 +78,7 @@ std::uint64_t SerializePointer(T* t) {
 
 // To remove the check, define this macro to be:
 //   auto aa = (a); auto bb = (b);
-#define PRINCIPIA_CHECK_EQ(a, b)  auto aa = (a); auto bb = (b);
+#define PRINCIPIA_CHECK_EQ(a, b) CHECK((a) == (b))
 #define PRINCIPIA_SET_VERBOSE_LOGGING 1
 
 #include "journal/profiles.generated.cc"
