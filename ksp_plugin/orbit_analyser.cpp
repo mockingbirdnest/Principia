@@ -85,6 +85,7 @@ double OrbitAnalyser::progress_of_next_analysis() const {
 }
 
 Status OrbitAnalyser::AnalyseOrbit(GuardedParameters const guarded_parameters) {
+  LOG(ERROR)<<"analyse";
   auto const& parameters = guarded_parameters.parameters;
 
   Analysis analysis{parameters.first_time};
@@ -94,6 +95,7 @@ Status OrbitAnalyser::AnalyseOrbit(GuardedParameters const guarded_parameters) {
 
   RotatingBody<Barycentric> const* primary = nullptr;
   auto smallest_osculating_period = Infinity<Time>;
+  LOG(ERROR)<<"initial_osculating_elements";
   for (auto const body : ephemeris_->bodies()) {
     RETURN_IF_STOPPED;
     auto const initial_osculating_elements =
@@ -123,6 +125,7 @@ Status OrbitAnalyser::AnalyseOrbit(GuardedParameters const guarded_parameters) {
             parameters.mission_duration),
         std::max(2 * smallest_osculating_period, parameters.mission_duration));
     constexpr int progress_bar_steps = 0x1p10;
+    LOG(ERROR)<<"flow_with_fixed_step";
     for (int n = 0; n <= progress_bar_steps; ++n) {
       Instant const t =
           parameters.first_time + n / progress_bar_steps * analysis_duration;
@@ -145,12 +148,14 @@ Status OrbitAnalyser::AnalyseOrbit(GuardedParameters const guarded_parameters) {
     DiscreteTrajectory<PrimaryCentred> primary_centred_trajectory;
     BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred>
         body_centred(ephemeris_, primary);
+    LOG(ERROR)<<"append";
     for (auto const& [time, degrees_of_freedom] : trajectory) {
       RETURN_IF_STOPPED;
       primary_centred_trajectory.Append(
           time, body_centred.ToThisFrameAtTime(time)(degrees_of_freedom));
     }
     analysis.primary_ = primary;
+    LOG(ERROR)<<"for_trajectory";
     auto elements = OrbitalElements::ForTrajectory(
         primary_centred_trajectory, *primary, MasslessBody{});
     // We do not RETURN_IF_ERROR as ForTrajectory can return non-CANCELLED
@@ -160,6 +165,7 @@ Status OrbitAnalyser::AnalyseOrbit(GuardedParameters const guarded_parameters) {
       analysis.elements_ = std::move(elements).ValueOrDie();
       // TODO(egg): max_abs_Cᴛₒ should probably depend on the number of
       // revolutions.
+      LOG(ERROR)<<"closest_recurrence";
       analysis.closest_recurrence_ = OrbitRecurrence::ClosestRecurrence(
           analysis.elements_->nodal_period(),
           analysis.elements_->nodal_precession(),
@@ -171,7 +177,9 @@ Status OrbitAnalyser::AnalyseOrbit(GuardedParameters const guarded_parameters) {
                                           /*mean_sun=*/std::nullopt);
       RETURN_IF_ERROR(ground_track);
       analysis.ground_track_ = std::move(ground_track).ValueOrDie();
+      LOG(ERROR)<<"reset_recurrence";
       analysis.ResetRecurrence();
+      LOG(ERROR)<<"done";
     }
   }
 
