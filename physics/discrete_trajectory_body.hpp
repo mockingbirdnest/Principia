@@ -197,7 +197,6 @@ void DiscreteTrajectory<Frame>::Append(
       << "Append out of order at " << time << ", last time is "
       << (--timeline_.end())->first;
   if (downsampling_.has_value()) {
-    LOG(ERROR)<<"downsampling";
     if (timeline_.size() == 1) {
       downsampling_->SetStartOfDenseTimeline(timeline_.begin(), timeline_);
     } else {
@@ -207,7 +206,6 @@ void DiscreteTrajectory<Frame>::Append(
         std::vector<TimelineConstIterator> dense_iterators;
         // This contains points, hence one more than intervals.
         dense_iterators.reserve(downsampling_->max_dense_intervals() + 1);
-        LOG(ERROR)<<"fit_hermite_spline";
         for (TimelineConstIterator it =
                  downsampling_->start_of_dense_timeline();
              it != timeline_.end();
@@ -224,14 +222,12 @@ void DiscreteTrajectory<Frame>::Append(
           right_endpoints.push_back(dense_iterators.end() - 1);
         }
         TimelineConstIterator left = downsampling_->start_of_dense_timeline();
-        LOG(ERROR)<<"erase";
         for (const auto& it_in_dense_iterators : right_endpoints) {
           TimelineConstIterator const right = *it_in_dense_iterators;
           timeline_.erase(++left, right);
           left = right;
         }
         downsampling_->SetStartOfDenseTimeline(left, timeline_);
-        LOG(ERROR)<<"done";
       }
     }
   }

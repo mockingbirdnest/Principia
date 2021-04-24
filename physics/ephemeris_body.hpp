@@ -393,12 +393,6 @@ Ephemeris<Frame>::NewInstance(
           Instant const& t,
           std::vector<Position<Frame>> const& positions,
           std::vector<Vector<Acceleration, Frame>>& accelerations) {
-    if (::principia::base::this_stoppable_thread::get_stop_token()
-            .stop_requested()) {
-      LOG(FATAL)<<"Cancelled by stop token";
-    }
-    //RETURN_IF_STOPPED;
-    LOG(ERROR)<<"compute";
     Error const error =
         ComputeMasslessBodiesGravitationalAccelerations(t,
                                                         positions,
@@ -410,7 +404,6 @@ Ephemeris<Frame>::NewInstance(
         accelerations[i] += intrinsic_acceleration(t);
       }
     }
-    LOG(ERROR)<<"computed";
     return error == Error::OK ? Status::OK :
                     CollisionDetected();
   };
@@ -450,7 +443,6 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations) {
-    RETURN_IF_STOPPED;
     Error const error =
         ComputeMasslessBodiesGravitationalAccelerations(t,
                                                         positions,
@@ -483,7 +475,6 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
           std::vector<Position<Frame>> const& positions,
           std::vector<Velocity<Frame>> const& velocities,
           std::vector<Vector<Acceleration, Frame>>& accelerations) {
-        RETURN_IF_STOPPED;
         Error const error =
             ComputeMasslessBodiesGravitationalAccelerations(t,
                                                             positions,
@@ -509,18 +500,13 @@ Status Ephemeris<Frame>::FlowWithFixedStep(
     Instant const& t,
     typename Integrator<NewtonianMotionEquation>::Instance& instance) {
   if (empty() || t > t_max()) {
-    LOG(ERROR)<<"prolong";
     Prolong(t);
-    LOG(ERROR)<<"prolonged";
   }
   if (instance.time() == DoublePrecision<Instant>(t)) {
     return Status::OK;
   }
 
-  LOG(ERROR)<<"solve";
-  auto s = instance.Solve(t);
-  LOG(ERROR)<<"solved";
-  return s;
+  return instance.Solve(t);
 }
 
 template<typename Frame>
