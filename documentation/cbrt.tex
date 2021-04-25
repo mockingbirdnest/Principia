@@ -90,40 +90,26 @@ all the way to $E_2$, merely until one gets \foreign{\textfrench{une valeur d'$x
 one that is constructible. When $f$ is a cubic, he uses the term \foreign{\textfrench{formule irrationnelle}} for $x+\frac{1}{2}a$ where
 $x$ is a root of $E_2$, but when it comes to computing the fifth root, the same term is used to refer to the case where $x$ is a root of
 $E_4$. In order to avoid confusion, we use the term \emph{quadratic irrational method} when $x$ is a root of $E_2$ in the general case,
-and we call the irrational formula from \cite[43]{FantetdeLagny1692}\footnote{The formula has a misprint in
+and we call the irrational formula for $\sqrt[5]{a^5+b}$ from \cite[43]{FantetdeLagny1692}\footnote{The formula has a misprint in
 \cite[43]{FantetdeLagny1692}, $-\tfrac{1}{2}a^2$ instead of $-\tfrac{1}{4}a^2$ under the radical.
 Halley remarks on it and gives the corrected formula in \cite[137,140]{Halley1694}.
-The misprint remains forty years later in \cite[\pno~440 misnumbered 340]{FantetdeLagny1733}.} for $\sqrt[5]{a^5+b}$\[
+The misprint remains forty years later in \cite[\pno~440 misnumbered 340]{FantetdeLagny1733}.
+Bateman writes in \cite{Bateman1938} ``we must not infer that [these expressions] are not correct simply because
+they differ from Halley's expression'', but with Lagny's construction, which was seemingly unknown to Bateman, the
+error is plain.}\[
 \FunctionBody{a}{\tfrac{1}{2}a+\sqrt{\sqrt{\tfrac{1}{4}a^4+\tfrac{b}{5a}}-\tfrac{1}{4}a^2}}
 \]
-Lagny's \emph{quartic irrational method} for the fifth root, whereas the quadratic irrational method for the same fifth root would be\footnote{Both are of order $5$, but the reader who wishes
+Lagny's \emph{quartic irrational method} for the fifth root;
+the quadratic irrational method for the same fifth root would be\footnote{Both are of order $5$, but the reader who wishes
 to compute a fifth root should note that leading term of the error of the quartic method is
 $\frac{2}{7}$ of that of the quadratic.}\[
 \FunctionBody{a}{\frac{a\pa{7b-\sqrt{100a^{10}+100a^{5}b-7b^2}}}{4b-10a^5}}\text.
 \]
-When $p=3$, there is however no ambiguity; assuming one does not wish to reduce the computation
-of the root of a cubic to that of another cubic, the only irrational method is the quadratic one.
+Note that for the computation of the cube root, the phrase \emph{Lagny's irrational method} is unambiguous;
+assuming that one does not wish to reduce the computation of a cube root to that of of the root the cubic $E_3$,
+the only irrational method is the quadratic (\ref{LagnyIrrationalCubeRootIteration}).
 
-\subsection*{Names of the rational method}
-Modern calculus allows us to give a more straightfoward expression for the rational method than was available to Lagny;
-the proof of the following equivalence will be given at the end of this section.
-
-\begin{proposition}
-The iteration of Lagny’s rational method for a monic polynomial $f$ of degree $p$ is\begin{equation}
-a\mapsto a + \pa{p-1}\frac{\pa{1/f}^{\pa{p-2}}\of{a}}{\pa{1/f}^{\pa{p-1}}\of{a}}\text.\label{LagnyRationaliteration}
-\end{equation}
-\end{proposition}
-The iteration (\ref{LagnyRationaliteration}) is a special case of the \foreign{Algorithmen $\pa{A^λ_ω}$} defined by Schröder for an
-arbitrary polynomial $f$ in \cite[349\psq]{Schröder1870}, equation (69); specifically, it is $\pa{A^0_{p-1}}$.
-As seen in the proof of the proposition, it is also a special case of Householder’s  equation (14) from \cite[169]{Householder1970},
-which generalizes it by substituting $f/g$ for $f$, and letting $f$ be an arbitrary analytic function. The case
-$g\Identically1$ is mentioned in theorem 4.4.2, and that expression is given explicitly in \cite{SebahGourdon2001}.
-
-For $p=2$ and $f$ an arbitrary polynomial, (\ref{LagnyRationaliteration}) is Newton's method, presented by Wallis in
-\cite[338]{Wallis1685}.
-
-For $p=3$ and $f$ an arbitrary polynomial, it is Halley's rational method, given in \cite[142--143]{Halley1694} in
-an effort to generalize\footnote{Lagny's method is general, in that an iteration is given for any
+Halley generalized\footnote{Lagny's method is general, in that an iteration is given for any
 polynomial, albeit one whose order changes with the degree. However, while he refers to its
 results---and even corrects a misprint therein---, Halley
 did not have access to a copy of \cite{FantetdeLagny1692},
@@ -144,7 +130,34 @@ Author autem nullibi inveniendi methodum ejuſve demonſtrationem concedit,
 etiamſi maxime deſiderari videatur [...].
 \end{quote}
 Being unaware of this generality, Halley sets out to generalize (\ref{LagnyIrrationalCubeRootIteration}) and (\ref{LagnyRationalCubeRootIteration}) to
-arbitrary polynomials, and does so by keeping the order constant.} Lagny's (\ref{LagnyRationalCubeRootIteration}).
+arbitrary polynomials, and does so by keeping the order constant.}
+the quadratic irrational method for $p=3$ to arbitrary polynomials, retaining cubic convergence; when $f$ is
+not a polynomial of degree $3$, we call the resulting iteration \emph{Halley's irrational method}.
+This method was given in terms of derivatives by Bateman in \cite[12]{Bateman1938}:\[
+\FunctionBody{a}{a-\frac{f'\of{a}}}{f''\of{a}}+\frac{\sqrt{{f'}^2\of{a}-2f\of{a}f''\of{a}}}{f''\of{a}}\text.
+\]
+
+\subsection*{Names of the rational method}
+As for Halley's irrational method, modern calculus allows us to give a more straightfoward expression
+for the rational method than was available to Lagny;
+the proof of the following equivalence will be given at the end of this section.
+
+\begin{proposition}
+The iteration of Lagny’s rational method for a monic polynomial $f$ of degree $p$ is\begin{equation}
+a\mapsto a + \pa{p-1}\frac{\pa{1/f}^{\pa{p-2}}\of{a}}{\pa{1/f}^{\pa{p-1}}\of{a}}\text.\label{LagnyRationaliteration}
+\end{equation}
+\end{proposition}
+The iteration (\ref{LagnyRationaliteration}) is a special case of the \foreign{Algorithmen $\pa{A^λ_ω}$} defined by Schröder for an
+arbitrary polynomial $f$ in \cite[349\psq]{Schröder1870}, equation (69); specifically, it is $\pa{A^0_{p-1}}$.
+As seen in the proof of the proposition, it is also a special case of Householder’s  equation (14) from \cite[169]{Householder1970},
+which generalizes it by substituting $f/g$ for $f$, and letting $f$ be an arbitrary analytic function. The case
+$g\Identically1$ is mentioned in theorem 4.4.2, and that expression is given explicitly in \cite{SebahGourdon2001}.
+
+For $p=2$ and $f$ an arbitrary polynomial, (\ref{LagnyRationaliteration}) is Newton's method, presented by Wallis in
+\cite[338]{Wallis1685}.
+
+For $p=3$ and $f$ an arbitrary polynomial, it is Halley's rational method, given in \cite[142--143]{Halley1694} in
+an effort to generalize Lagny's (\ref{LagnyRationalCubeRootIteration}).
 It is usually simply known as Halley's method, as the irrational method---which likewise generalizes Lagny's irrational
 method for $p=3$ while retaining constant order as the degree changes---has comparatively fallen into obscurity;
 see \cite{ScavoThoo1995}.
@@ -194,9 +207,15 @@ root finding by looking for a citation of Schröder’s paper. If it was
 missing, the author had probably rediscovered something already
 known to Schröder.
 \end{quote}
-It is quite possible that the irrational methods could be expressed using Schröder’s methods in one way or another, but while
+It is possible that the irrational methods could be expressed using Schröder’s methods in one way or another, but while
 the result would probably be more convenient, it is unlikely to be something well-known, as irrational methods are far less
 popular nowadays---unjustifiedly so, as we shall see.
+
+It may however be useful to generalize the irrational methods as Halley did in the case $p=3$, untying their order from
+the degree of the polynomial---or indeed from the polynomial nature of $f$.
+This should yield a two-parameter family of root finding methods for an analytical $f$, depending on the convergence
+order and the degree of the equation solved by the iteration.
+We have not been able to find such a generalization.
 
 Prouhet’s letter in \cite{Cantor1861} ends with these words:
 \begin{quote}\textfrench{%
@@ -545,8 +564,10 @@ have double the error of the optimized irrational method.
 
 \subsection{Rounded approximation}
 
-The number $x$ is obtained from $ξ$ by zeroing all but the most significant $\smash{\Floor{\frac{p}{3}}}$ bits of
-its significand.
+The number $x$ is obtained from $ξ$ by rounding to $\smash{\Floor{\frac{p}{3}}}$ bits.
+
+\subsubsection*{Directed rounding towards zero}
+An easy solution is to zero all but the most significant $\smash{\Floor{\frac{p}{3}}}$ bits.
 The resulting relative error $\abs{\frac{x}{ξ}-1}$is greatest when the zeroed bits are all $1$ and the
 remaining bits (except for the leading $1$) are all $0$; this is the case when the significand of $ξ$ is
 $1+2^{-\Floor{\frac{p}{3}}+1}-2^{1-p}$, in which case that of $x$ is $1$, so that\[
@@ -555,33 +576,40 @@ $1+2^{-\Floor{\frac{p}{3}}+1}-2^{1-p}$, in which case that of $x$ is $1$, so tha
 For the error of $x$ as an approximation of the cube root,\[ε_x\DefineAs\frac{x}{\cuberoot{y}}-1\text,\]
 we have the bound $\abs{ε_x} < \pa{1+\abs{ε_ξ}}\pa{1+2^{-16}}-1$.
 
+\subsubsection*{Rounding to nearest}
+An alternative which has similar performance on some architectures is to round to nearest using Veltkamp's method
+TODO CITE.
+The rounding error is then bounded by $2^-\Floor{\frac{p}{3}}$ instead, thus
+we have the bound $\abs{ε_x} < \pa{1+\abs{ε_ξ}}\pa{1+2^{-17}}-1$.
+
 \subsection{High order iteration}
 
-We compute the faithfully rounded result $r_0$ as\[
-r_0\DefineAs\round{x+Δ}\text,
+We compute the faithfully rounded result $r_0$ as the correctly rounded sum of the rounded approximation
+and a correction term,\[
+r\DefineAs x+Δ\text{, }r_0\DefineAs\round{r}\text,
 \]
 where the correction term $Δ$ is that of a high-order root finding method.
-As usual, we call the infinite-precision correction term $Δ'$, and $r_0'\DefineAs x+Δ'$.
-The truncation error is \[ε_{r_0}'\DefineAs\frac{\round{x+Δ'}}{\cuberoot y}-1\text.\]
+As usual, we call the infinite-precision correction term $Δ'$, and $r'\DefineAs x+Δ'$.
+The truncation error is \[ε_r'\DefineAs\frac{\round{x+Δ'}}{\cuberoot y}-1\text.\]
 The rounding error on the correction term is $δ\DefineAs\frac{Δ}{Δ'}-1$.
-The overall error is thus\begin{align*}
-ε_{r_0}\DefineAs&\frac{\round{x+Δ}}{\cuberoot y}-1\\
-=&\pa{\frac{x+Δ'\pa{1+δ}}{\cuberoot y}}\pa{1+υ}-1\\
-=&\pa{\frac{x+Δ'+\pa{x+Δ'-x}δ}{\cuberoot y}}\pa{1+υ}-1\\
-=&\pa{1+ε_{r_0}'+\pa{ε_{r_0}'-ε_x}δ}\pa{1+υ}-1\text,
+The error of $r$ is thus\begin{align*}
+ε_r\DefineAs&\frac{x+Δ}{\cuberoot y}-1\\
+=&\frac{x+Δ'\pa{1+δ}}{\cuberoot y}-1\\
+=&\frac{x+Δ'+\pa{x+Δ'-x}δ}{\cuberoot y}-1\\
+=&ε_r'+\pa{ε_r'-ε_x}δ\text,
 \end{align*}
-where $\abs υ \le u$.
+and that of the faithfully-rounded result $r_0$ is $ε_r\pa{1+υ}$ for some $\abs υ \le u$.
 
 We compute bounds for $ε_{r_0}'$ and $δ$ for two different methods.
 
-
+\subsubsection*{Fifth order}
 We use one iteration of the Lagny--Schröder rational method of order $5$:
 \[
 \round{x - \round{
 \frac{\round{(x^3 - y) \round{\round{\round{\round{10x^3} + 16y}x^3} + \round{y^2}}}}
-{\round{3 x^2 \round{\round{\round{\round{5 x^3} + \round{17 y}}x^3} + \round{5 \round{y^2}}}}}}}
+{\round{x^2 \round{\round{\round{\round{15 x^3} + \round{51 y}}x^3} + \round{15 \round{y^2}}}}}}}
 \]
-where $3x^2$ and $x^3$ are exact thanks to the trailing $0$s of $x$,
+where $x^2$ and $x^3$ are exact thanks to the trailing $0$s of $x$,
 $\round{x^6}$ is correctly rounded because it is computed as the square of $x^3$,
 and $x^3-y$ is exact by Sterbenz’s lemma.
 
@@ -596,16 +624,16 @@ All remaining sums being of positive terms, their relative error is readily boun
 largest of those of their terms. This leads to bounds of $γ_{5}$ on the numerator and $γ_{5}$ on
 the denominator, overall $\frac{1+γ_{6}}{1-γ_{5}}-1<\frac{γ_{11}}{1-γ_{5}}$ on the correction term.
 
-However, considering that our final bound on the excess above $1u$, and thus our final misrounding
-estimate, is proportional to this error, a more careful analysis is warranted.
+However, considering that our final bound on the error of $x+Δ$, and thus our misrounding estimate,
+is proportional to this error, a more careful analysis is warranted.
 Observe that $x^3=y\pa{1+ε_x}^3$, so that a sum
-\[Σ'=α x^{m}y^{p-m}\pa{1+δ_1} + β x^{n}y^{p-n}\pa{1+δ_2}\]
-whose terms carry the errors $δ_i$ may be rewritten as\begin{align*}
-Σ&=α x^{m}y^{p-m} + β x^{n}y^{p-n} + α x^{m}y^{p-m} δ_1 + βx^{n}y^{p-n}δ_2\\
- &=α x^{m}y^{p-m} + β x^{n}y^{p-n} + αy^{p}\pa{1+ε_x}^{3m} δ_1 + βy^{p}\pa{1+ε_x}^{3n}δ_2\\
- &=α x^{m}y^{p-m} + β x^{n}y^{p-n} + y^{p}\pa{α δ_1+ β δ_2} + ?
-\end{align*}
-
+\[Σ'=α x^{m}y^{p-m} + β x^{n}y^{p-n}\]
+evaluated with terms that carry the errors $δ_i$ as
+\[Σ=α x^{m}y^{p-m}\pa{1+δ_1} + β x^{n}y^{p-n}\pa{1+δ_2}\]
+has the error\[
+\frac{Σ}{Σ'}-1=\frac{\pa{1+ε_x}^{3m}αδ_1+\pa{1+ε_x}^{3n}βδ_2}{\pa{1+ε_x}^{3m}α+\pa{1+ε_x}^{3n}β}\text,
+\]
+which we may bound
 
 
 We use one iteration of the Lagny--Schröder rational method of order $6$:\[
