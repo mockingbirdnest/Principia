@@ -334,9 +334,6 @@ internal class OrbitAnalysisMarshaler : MonoMarshaler {
     public IntPtr elements;
     public IntPtr recurrence;
     public IntPtr ground_track;
-    public IntPtr elements_address;
-    public IntPtr recurrence_address;
-    public IntPtr ground_track_address;
   }
 
   public static ICustomMarshaler GetInstance(string s) {
@@ -363,9 +360,6 @@ internal class OrbitAnalysisMarshaler : MonoMarshaler {
         elements = OwnershipTransferMarshaler<OrbitalElements, OptionalMarshaler<OrbitalElements>>.GetInstance(null).MarshalManagedToNative(value.elements),
         recurrence = OwnershipTransferMarshaler<OrbitRecurrence, OptionalMarshaler<OrbitRecurrence>>.GetInstance(null).MarshalManagedToNative(value.recurrence),
         ground_track = OwnershipTransferMarshaler<OrbitGroundTrack, OptionalMarshaler<OrbitGroundTrack>>.GetInstance(null).MarshalManagedToNative(value.ground_track),
-        elements_address = value.elements_address,
-        recurrence_address = value.recurrence_address,
-        ground_track_address = value.ground_track_address,
     };
     IntPtr buffer = Marshal.AllocHGlobal(Marshal.SizeOf(representation));
     Marshal.StructureToPtr(representation, buffer, fDeleteOld: false);
@@ -381,9 +375,6 @@ internal class OrbitAnalysisMarshaler : MonoMarshaler {
         elements = OwnershipTransferMarshaler<OrbitalElements, OptionalMarshaler<OrbitalElements>>.GetInstance(null).MarshalNativeToManaged(representation.elements) as OrbitalElements?,
         recurrence = OwnershipTransferMarshaler<OrbitRecurrence, OptionalMarshaler<OrbitRecurrence>>.GetInstance(null).MarshalNativeToManaged(representation.recurrence) as OrbitRecurrence?,
         ground_track = OwnershipTransferMarshaler<OrbitGroundTrack, OptionalMarshaler<OrbitGroundTrack>>.GetInstance(null).MarshalNativeToManaged(representation.ground_track) as OrbitGroundTrack?,
-        elements_address = representation.elements_address,
-        recurrence_address = representation.recurrence_address,
-        ground_track_address = representation.ground_track_address,
     };
   }
 

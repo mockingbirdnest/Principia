@@ -207,10 +207,7 @@ OrbitAnalysis DeserializeOrbitAnalysis(serialization::OrbitAnalysis const& orbit
           orbit_analysis.has_ground_track() ? [&pointer_map, &ground_track_storage](serialization::OrbitGroundTrack const& message) {
             ground_track_storage = DeserializeOrbitGroundTrack(message, pointer_map);
             return &ground_track_storage;
-          }(orbit_analysis.ground_track()) : nullptr,
-          DeserializePointer<OrbitalElements*>(orbit_analysis.elements_address(), pointer_map),
-          DeserializePointer<OrbitRecurrence*>(orbit_analysis.recurrence_address(), pointer_map),
-          DeserializePointer<OrbitGroundTrack*>(orbit_analysis.ground_track_address(), pointer_map)};
+          }(orbit_analysis.ground_track()) : nullptr};
 }
 
 serialization::NavigationFrameParameters SerializeNavigationFrameParameters(NavigationFrameParameters const& navigation_frame_parameters) {
@@ -482,9 +479,9 @@ serialization::OrbitAnalysis SerializeOrbitAnalysis(OrbitAnalysis const& orbit_a
   if (orbit_analysis.ground_track != nullptr) {
     *m.mutable_ground_track() = SerializeOrbitGroundTrack(*orbit_analysis.ground_track);
   }
-  m.set_elements_address(SerializePointer(orbit_analysis.elements_address));
-  m.set_recurrence_address(SerializePointer(orbit_analysis.recurrence_address));
-  m.set_ground_track_address(SerializePointer(orbit_analysis.ground_track_address));
+  m.set_elements_address(SerializePointer(orbit_analysis.elements));
+  m.set_recurrence_address(SerializePointer(orbit_analysis.recurrence));
+  m.set_ground_track_address(SerializePointer(orbit_analysis.ground_track));
   return m;
 }
 
@@ -493,9 +490,9 @@ void InsertStatus(serialization::Status const& status_proto, Status const& statu
 }
 
 void InsertOrbitAnalysis(serialization::OrbitAnalysis const& orbit_analysis_proto, OrbitAnalysis const& orbit_analysis_object, Player::PointerMap& pointer_map) {
-  Insert(orbit_analysis_proto.elements_address(), orbit_analysis_object.elements_address, pointer_map);
-  Insert(orbit_analysis_proto.recurrence_address(), orbit_analysis_object.recurrence_address, pointer_map);
-  Insert(orbit_analysis_proto.ground_track_address(), orbit_analysis_object.ground_track_address, pointer_map);
+  Insert(orbit_analysis_proto.elements_address(), orbit_analysis_object.elements, pointer_map);
+  Insert(orbit_analysis_proto.recurrence_address(), orbit_analysis_object.recurrence, pointer_map);
+  Insert(orbit_analysis_proto.ground_track_address(), orbit_analysis_object.ground_track, pointer_map);
 }
 
 }  // namespace

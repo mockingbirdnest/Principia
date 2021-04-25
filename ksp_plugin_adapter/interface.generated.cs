@@ -224,9 +224,6 @@ internal partial class OrbitAnalysis {
   public OrbitalElements? elements;
   public OrbitRecurrence? recurrence;
   public OrbitGroundTrack? ground_track;
-  public IntPtr elements_address;
-  public IntPtr recurrence_address;
-  public IntPtr ground_track_address;
 }
 
 internal static partial class Interface {

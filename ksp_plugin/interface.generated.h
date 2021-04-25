@@ -360,9 +360,6 @@ struct OrbitAnalysis {
   OrbitalElements const* elements;
   OrbitRecurrence const* recurrence;
   OrbitGroundTrack const* ground_track;
-  OrbitalElements* elements_address;
-  OrbitRecurrence* recurrence_address;
-  OrbitGroundTrack* ground_track_address;
 };
 
 static_assert(std::is_pod<OrbitAnalysis>::value,
