@@ -59,6 +59,15 @@ bool Player::Play(int const index) {
   }
 
 #if 0
+  LOG_IF(
+      ERROR,
+      method_in->HasExtension(serialization::VesselGetAnalysis::extension) ||
+      method_in->HasExtension(serialization::DeleteInterchange::extension))
+      << "index: " << index << "\n"
+      << method_in->ShortDebugString() << "\n"
+      << method_out_return->ShortDebugString();
+#endif
+#if 0
   LOG_IF(ERROR, index > 3170000) << "index: " << index << "\n"
                                  << method_in->ShortDebugString() << "\n"
                                  << method_out_return->ShortDebugString();
