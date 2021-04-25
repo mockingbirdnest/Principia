@@ -208,9 +208,9 @@ OrbitAnalysis DeserializeOrbitAnalysis(serialization::OrbitAnalysis const& orbit
             ground_track_storage = DeserializeOrbitGroundTrack(message, pointer_map);
             return &ground_track_storage;
           }(orbit_analysis.ground_track()) : nullptr,
-          DeserializePointer<OrbitAnalysis*>(orbit_analysis.elements_address(), pointer_map),
-          DeserializePointer<OrbitAnalysis*>(orbit_analysis.recurrence_address(), pointer_map),
-          DeserializePointer<OrbitAnalysis*>(orbit_analysis.ground_track_address(), pointer_map)};
+          DeserializePointer<OrbitalElements*>(orbit_analysis.elements_address(), pointer_map),
+          DeserializePointer<OrbitRecurrence*>(orbit_analysis.recurrence_address(), pointer_map),
+          DeserializePointer<OrbitGroundTrack*>(orbit_analysis.ground_track_address(), pointer_map)};
 }
 
 serialization::NavigationFrameParameters SerializeNavigationFrameParameters(NavigationFrameParameters const& navigation_frame_parameters) {

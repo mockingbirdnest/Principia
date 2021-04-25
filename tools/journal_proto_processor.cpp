@@ -493,7 +493,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
   }
   if (Contains(field_cxx_address_of_, descriptor)) {
     is_produced = true;
-    pointer_to = field_cxx_address_of_[descriptor]->containing_type()->name();
+    pointer_to = field_cxx_address_of_[descriptor]->message_type()->name();
   }
   CHECK(!pointer_to.empty()) << descriptor->full_name()
                              << " must have exactly one of the (address_of), "
