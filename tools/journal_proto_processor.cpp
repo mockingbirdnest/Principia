@@ -1285,18 +1285,20 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
           field_cxx_deserialization_storage_name_[field_descriptor];
     }
 
+    // If the field has an (address_of) attribute, serialization and insertion
+    // use the field addressed by that field.
+    std::string const addressed_field_descriptor_name =
+        Contains(field_cxx_address_of_, field_descriptor)
+            ? field_cxx_address_of_[field_descriptor]->name()
+            : field_descriptor_name;
+
     std::string const deserialize_field_checker =
         parameter_name + ".has_" + field_descriptor_name + "()";
     std::string const deserialize_field_getter =
         parameter_name + "." + field_descriptor_name + "()";
     std::string const serialize_member_name =
-        parameter_name + "." + field_descriptor_name;
+        parameter_name + "." + addressed_field_descriptor_name;
 
-    deserialized_expressions.push_back(
-        field_cxx_optional_pointer_fn_[field_descriptor](
-            deserialize_field_checker,
-            field_cxx_deserializer_fn_[field_descriptor](
-                deserialize_field_getter)));
     cxx_serialize_definition_[descriptor] +=
         field_cxx_optional_assignment_fn_[field_descriptor](
             serialize_member_name,
@@ -1308,7 +1310,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
       std::string const proto_field_getter =
           proto_parameter_name + "." + field_descriptor_name + "()";
       std::string const object_field_reference =
-          object_parameter_name + "." + field_descriptor_name;
+          object_parameter_name + "." + addressed_field_descriptor_name;
       cxx_insert_definition_[descriptor] +=
           field_cxx_inserter_fn_[field_descriptor](proto_field_getter,
                                                    object_field_reference);
@@ -1318,6 +1320,12 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     // address for journalling, and has no equivalent field in the C++ and C#
     // data structures.
     if (!Contains(field_cxx_address_of_, field_descriptor)) {
+      deserialized_expressions.push_back(
+          field_cxx_optional_pointer_fn_[field_descriptor](
+              deserialize_field_checker,
+              field_cxx_deserializer_fn_[field_descriptor](
+                  deserialize_field_getter)));
+
       if (Contains(field_cs_private_type_, field_descriptor)) {
         std::string const field_private_member_name =
             field_descriptor_name + "_";
