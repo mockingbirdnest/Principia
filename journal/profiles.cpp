@@ -22,7 +22,7 @@ void Insert(std::uint64_t const address,
             T* const pointer,
             Player::PointerMap& pointer_map) {
   if (reinterpret_cast<void*>(address) == nullptr) {
-    CHECK_EQ(nullptr, pointer);
+    CHECK(pointer == nullptr) << pointer;
     return;
   }
   void* const inserted_pointer = static_cast<void*>(
