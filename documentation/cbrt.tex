@@ -446,8 +446,8 @@ with $\max_{y} \abs{ε_q'} \approx 3.2025\%$, but
 $\max_{y} \abs{ε_ξ'} \approx 20.86\Multiply10^{-6}$, $\log_2 \max_{y} \abs{ε_ξ'} \approx -15.54$.
 The corresponding fixed-point constant is\[C_{\mathrm{L^1}}\DefineAs\hex{2A9F\,7893\,782D\,A1CE} \Multiply 2^{-52}\]for binary64.
 
-While it is close to the $16$ bits to which we will round in the next step, this error is
-still larger, and in any case is not comparatively negligible. As a result, it significantly contributes to the final error above $1u$, \idest, to misrounding.
+While it is not far from the seventeen bits to which we will round in the next step, this
+error is still larger, and in any case is not comparatively negligible. As a result, it significantly contributes to misrounding, see (\ref{MisroundingError}).
 Lagny's lesser-known irrational method provides us with a way to improve it.
 \subsubsection*{Lagny's irrational method}
 As written in (\ref{LagnyIrrationalCubeRootIteration}), Lagny's irrational method
@@ -579,10 +579,13 @@ For the error of $x$ as an approximation of the cube root,\[ε_x\DefineAs\frac{x
 we have the bound $\abs{ε_x} < \pa{1+\abs{ε_ξ}}\pa{1+2^{-16}}-1$.
 
 \subsubsection*{Rounding to nearest}
-An alternative which has similar performance on some architectures is to round to nearest using Veltkamp's method
-TODO CITE.
-The rounding error is then bounded by $2^{-\Floor{\frac{p}{3}}}$ instead, thus
-we have the bound $\abs{ε_x} < \pa{1+\abs{ε_ξ}}\pa{1+2^{-17}}-1$.
+An alternative which has similar performance on some architectures, but half the error,
+is to use Veltkamp's method TODO CITE to round to the nearest number with the desired
+number of bits; see also \cite[241]{Dekker1971} in \emph{mul12}:\[
+ϖ\DefineAs\round{ξ\pa{2^{p-\Floor{\frac{p}{3}}}+1}}\text{, }x\DefineAs\round{\round{ξ-ϖ}+ϖ}\text.
+\]
+The rounding error is then bounded by $2^{-\Floor{\frac{p}{3}}}$; we have
+$\abs{ε_x} < \pa{1+\abs{ε_ξ}}\pa{1+2^{-17}}-1$.
 
 \subsection{High order iteration}
 
@@ -598,7 +601,7 @@ The error of $r$ is thus\begin{align*}
 ε_r\DefineAs{}&\frac{x+Δ}{\cuberoot y}-1\\
 ={}&\frac{x+Δ'\pa{1+δ}}{\cuberoot y}-1\\
 ={}&\frac{x+Δ'+\pa{x+Δ'-x}δ}{\cuberoot y}-1\\
-={}&ε_r'+\pa{ε_r'-ε_x}δ\text,
+={}&ε_r'+\pa{ε_r'-ε_x}δ\text,\numberthis\label{MisroundingError}
 \end{align*}
 and that of the faithfully-rounded result $r_0$ is $ε_r\pa{1+υ}$ for some $\abs υ \le u$.
 
