@@ -105,9 +105,9 @@ to compute a fifth root should note that leading term of the error of the quarti
 $\frac{2}{7}$ of that of the quadratic.}\[
 \FunctionBody{a}{\frac{a\pa{7b-\sqrt{100a^{10}+100a^{5}b-7b^2}}}{4b-10a^5}}\text.
 \]
-Note that for the computation of the cube root, the phrase \emph{Lagny's irrational method} is unambiguous;
+Note however that for the computation of the cube root, the phrase \emph{Lagny's irrational method} is unambiguous;
 assuming that one does not wish to reduce the computation of a cube root to that of of the root the cubic $E_3$,
-the only irrational method is the quadratic (\ref{LagnyIrrationalCubeRootIteration}).
+the only irrational method is the quadratic one (\ref{LagnyIrrationalCubeRootIteration}).
 
 Halley generalized\footnote{Lagny's method is general, in that an iteration is given for any
 polynomial, albeit one whose order changes with the degree. However, while he refers to its
@@ -371,9 +371,10 @@ so that $\log_2 y\in\intclop{\Floor{Γ}}{\Floor{Γ}+3}$. Let $k\DefineAs\Floor{\
 Let $f\DefineAs\FractionalPart\pa{2^{-\Floor{\log_2 y}}y}\in\intclop{0}{1}$.
 Up to at most $3$ half-units in the last place from rounding ($2$ from the directed rounding of the division
 by three and $1$ from the definition of $C$), we have\begin{align*}
-Q\approx Q'\DefineAs&\bias+\frac{\Floor{\log_2 y}}{3}+\frac{\FractionalPart\pa{2^{-\Floor{\log_2 y}}y}-Γ}{3}\text,\\
-=&\bias+\frac{\Floor{Γ}+k}{3}+\frac{f-Γ}{3}\text,\\
-=&\bias+\frac{k+f-\FractionalPart Γ}{3}\text.
+% See https://tex.stackexchange.com/a/41091 for the ={}&.
+Q\approx Q'\DefineAs{}&\bias+\frac{\Floor{\log_2 y}}{3}+\frac{\FractionalPart\pa{2^{-\Floor{\log_2 y}}y}-Γ}{3}\text,\\
+={}&\bias+\frac{\Floor{Γ}+k}{3}+\frac{f-Γ}{3}\text,\\
+={}&\bias+\frac{k+f-\FractionalPart Γ}{3}\text.
 \end{align*}
 Since $k\in\intclos{0}{2}$, the numerator $k+f-\FractionalPart Γ$ lies in $\intopen{-1}{3}$.
 Further, it is negative only if $k=0$, so that\begin{align*}
@@ -567,7 +568,8 @@ have double the error of the optimized irrational method.
 The number $x$ is obtained from $ξ$ by rounding to $\smash{\Floor{\frac{p}{3}}}$ bits.
 
 \subsubsection*{Directed rounding towards zero}
-An easy solution is to zero all but the most significant $\smash{\Floor{\frac{p}{3}}}$ bits.
+An easy solution is to zero all but the most significant $\smash{\Floor{\frac{p}{3}}}$ bits of $ξ$.
+
 The resulting relative error $\abs{\frac{x}{ξ}-1}$is greatest when the zeroed bits are all $1$ and the
 remaining bits (except for the leading $1$) are all $0$; this is the case when the significand of $ξ$ is
 $1+2^{-\Floor{\frac{p}{3}}+1}-2^{1-p}$, in which case that of $x$ is $1$, so that\[
@@ -579,7 +581,7 @@ we have the bound $\abs{ε_x} < \pa{1+\abs{ε_ξ}}\pa{1+2^{-16}}-1$.
 \subsubsection*{Rounding to nearest}
 An alternative which has similar performance on some architectures is to round to nearest using Veltkamp's method
 TODO CITE.
-The rounding error is then bounded by $2^-\Floor{\frac{p}{3}}$ instead, thus
+The rounding error is then bounded by $2^{-\Floor{\frac{p}{3}}}$ instead, thus
 we have the bound $\abs{ε_x} < \pa{1+\abs{ε_ξ}}\pa{1+2^{-17}}-1$.
 
 \subsection{High order iteration}
@@ -593,30 +595,30 @@ As usual, we call the infinite-precision correction term $Δ'$, and $r'\DefineAs
 The truncation error is \[ε_r'\DefineAs\frac{\round{x+Δ'}}{\cuberoot y}-1\text.\]
 The rounding error on the correction term is $δ\DefineAs\frac{Δ}{Δ'}-1$.
 The error of $r$ is thus\begin{align*}
-ε_r\DefineAs&\frac{x+Δ}{\cuberoot y}-1\\
-=&\frac{x+Δ'\pa{1+δ}}{\cuberoot y}-1\\
-=&\frac{x+Δ'+\pa{x+Δ'-x}δ}{\cuberoot y}-1\\
-=&ε_r'+\pa{ε_r'-ε_x}δ\text,
+ε_r\DefineAs{}&\frac{x+Δ}{\cuberoot y}-1\\
+={}&\frac{x+Δ'\pa{1+δ}}{\cuberoot y}-1\\
+={}&\frac{x+Δ'+\pa{x+Δ'-x}δ}{\cuberoot y}-1\\
+={}&ε_r'+\pa{ε_r'-ε_x}δ\text,
 \end{align*}
 and that of the faithfully-rounded result $r_0$ is $ε_r\pa{1+υ}$ for some $\abs υ \le u$.
 
 We compute bounds for $ε_{r_0}'$ and $δ$ for two different methods.
 
-\subsubsection*{Fifth order}
+\subsubsection*{Fifth order rational}
 We use one iteration of the Lagny--Schröder rational method of order $5$:
 \[
-\round{x - \round{
+Δ=\round{
 \frac{\round{(x^3 - y) \round{\round{\round{\round{10x^3} + 16y}x^3} + \round{y^2}}}}
-{\round{x^2 \round{\round{\round{\round{15 x^3} + \round{51 y}}x^3} + \round{15 \round{y^2}}}}}}}
+{\round{x^2 \round{\round{\round{\round{15 x^3} + \round{51 y}}x^3} + \round{15 \round{y^2}}}}}}
 \]
 where $x^2$ and $x^3$ are exact thanks to the trailing $0$s of $x$,
 $\round{x^6}$ is correctly rounded because it is computed as the square of $x^3$,
 and $x^3-y$ is exact by Sterbenz’s lemma.
 
 In infinite precision, this method is of such high order that if $\abs{ε_x} < 14.5$, which is the case
-even if $ξ$ is computed by the rational method, the relative error of the result is less than $2^{-75}$.
-We will not seek to bound the truncation error more closely, nor to tweak the constants in the method
-to optimize it: as we will see, it is dominated by rounding.
+even if $ξ$ is computed by the rational method, the relative error $ε_r'$ of the result is less than
+$2^{-75}$. We will not seek to bound the truncation error more closely, nor to tweak the constants in
+the method to optimize it: as we will see, it is dominated by rounding.
 
 Thanks to the exact cube and exact difference, the rounding analysis of the correction term is
 straightforward.
@@ -624,8 +626,8 @@ All remaining sums being of positive terms, their relative error is readily boun
 largest of those of their terms. This leads to bounds of $γ_{5}$ on the numerator and $γ_{5}$ on
 the denominator, overall $\frac{1+γ_{6}}{1-γ_{5}}-1<\frac{γ_{11}}{1-γ_{5}}$ on the correction term.
 
-However, considering that our final bound on the error of $x+Δ$, and thus our misrounding estimate,
-is proportional to this error, a more careful analysis is warranted.
+However, considering that our final bound on $ε_r$, and thus our misrounding estimate,
+is nearly proportional to this error, a more careful analysis is warranted.
 Observe that $x^3=y\pa{1+ε_x}^3$, so that a sum
 \[Σ'=α x^{m}y^{p-m} + β x^{n}y^{p-n}\]
 evaluated with terms that carry the errors $δ_i$ as
@@ -633,9 +635,13 @@ evaluated with terms that carry the errors $δ_i$ as
 has the error\[
 \frac{Σ}{Σ'}-1=\frac{\pa{1+ε_x}^{3m}αδ_1+\pa{1+ε_x}^{3n}βδ_2}{\pa{1+ε_x}^{3m}α+\pa{1+ε_x}^{3n}β}\text,
 \]
-which we may bound
+which we may bound, assuming without loss of generality that $m\le n$, as\[
+\abs{\frac{Σ}{Σ'}-1}\le\pa{\frac{1+\abs{ε_x}}{1-\abs{ε_x}}}^{3n}\frac{αδ_1+βδ_2}{α+β}\text.
+\]
+Unfortunately $γ$ is poorly behaved under weighted averages, so we will resort to old-fashioned products of $1+u$. 
 
 
+\subsubsection*{Sixth order rational}
 We use one iteration of the Lagny--Schröder rational method of order $6$:\[
 r_0\DefineAs\round{x-\round{\frac{
 \round{\round{x\pa{x^3-y}}\round{\round{\round{\round{5x^3}+\round{17y}}x^3}+\round{5\round{y^2}}}}}{
