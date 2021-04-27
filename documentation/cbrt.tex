@@ -112,30 +112,32 @@ is the quadratic one; we can thus unambiguously refer to (\ref{LagnyIrrationalCu
 
 \subsection*{Generalization to arbitrary functions}
 Lagny's method of degree $d$ and convergence order $p$ may be generalized to functions $f$ other
-than monic polynomials of degree $p$, by defining $E_p$ and $E_{p-1}$ in terms of Taylor polynomials
+than polynomials of degree $p$, by defining $E_p$ and $E_{p-1}$ in terms of Taylor polynomials
 for $f$ around $\frac{1}{2}a$:\[
-E_p\DefineAs T_{p}-\frac{1}{2}T_{p-1}\text{ and }E_{p-1}\DefineAs \frac{1}{2}T_{p-1}\text,
+E_p\DefineAs T_{p}-\tfrac{1}{2}T_{p-1}\text{ and }E_{p-1}\DefineAs \tfrac{1}{2}T_{p-1}\text,
 \]
 where\[
 T_{n}\DefineAs\sum{k=0}[n]\frac{f^{\pa{n}}\of{\tfrac{1}{2}a}}{\Factorial k}\pa{x-\tfrac{1}{2}a}^k\text.
 \]
 The rest of the method remains unchanged; the iteration is given by $\FunctionBody{a}{x+\frac{1}{2}a}$ for a root $x$ of $E_{d}$.
-We call this method the \emph{generalized Lagny method of degree $d$ and order $p$}.
+We call this method the \emph{generalized Lagny method of degree $d$ and order $p$} when $f$ is not
+a polynomial of degree $p$; we use the terms ``rational'', ``quadratic irrational'', etc. for $d=1$, $d=2$, etc. respectively.
+
 Note that while the $E_n$ defined in this fashion may not have degree $n$ if the higher
 derivatives of $f$ vanish, \exempligratia, for a polynomial of degree less than $p$, the calculation
-may be carried out formally for an arbitrary $f$, and the offending function substituted in the result;
-the generalized methods of high order can thus be applied to polynomials of low degree.
+may be carried out formally for an arbitrary $f$, and the offending function substituted in the result,
+taking limits as needed to remove singularities; the generalized methods of high order can thus be applied to polynomials of low degree.
 
 These methods may equivalently be constructed using Maclaurin series in the correction term.
 Let\[
 M_n \DefineAs\sum{k=0}[n] \frac{f^{\pa{n}}\of{a+Δ}}{\Factorial k}Δ^k\text,\]
-and consider the polynomials in $Δ$\[
-\tilde E_p \DefineAs M_p\text{ and }\tilde E_{p-1} \DefineAs M_{p-1}\text.\]
-Let $\tilde E_{n-1}$ be the remainder of the polynomial of $\tilde E_{n+1}$ by $\tilde E_{n}$.
+and consider the polynomials $\tilde E_p \DefineAs M_p$ and $\tilde E_{p-1} \DefineAs M_{p-1}$ of
+degree $p$ and $p-1$ in $Δ$.
+Let $\tilde E_{n-1}$ be the remainder of the polynomial division of $\tilde E_{n+1}$ by $\tilde E_{n}$.
 The iteration is then $\FunctionBody{a}{a+Δ}$, where $Δ$ is a root of $\tilde E_d$.
 
 \subsection*{Names of the irrational methods}
-Halley generalized\footnote{Lagny's method is general, in that an iteration is given for any
+Halley likewise generalized the (quadratic) irrational method for the cubic to arbitrary\footnote{Lagny's method is general, in that an iteration is given for any
 polynomial, albeit one whose order changes with the degree. However, while he refers to its
 results---and even corrects a misprint therein---, Halley
 did not have access to a copy of \cite{FantetdeLagny1692},
@@ -157,26 +159,27 @@ etiamſi maxime deſiderari videatur [...].
 \end{quote}
 Being unaware of this generality, Halley sets out to generalize (\ref{LagnyIrrationalCubeRootIteration}) and (\ref{LagnyRationalCubeRootIteration}) to
 arbitrary polynomials, and does so by keeping the order constant.}
-the (quadratic) irrational method for the cubic to arbitrary polynomials, retaining cubic convergence; when $f$ is
-not a polynomial of degree $3$, we call the resulting iteration \emph{Halley's irrational method}.
+polynomials, retaining cubic convergence; when $f$ is
+not a polynomial of degree $3$, we thus call the generalized Lagny quadratic irrational method of
+order $3$ \emph{Halley's irrational method}.
 This method was given in terms of derivatives by Bateman in \cite[12]{Bateman1938}:\[
 \FunctionBody{a}{a-\frac{f'\of{a}}}{f''\of{a}}+\frac{\sqrt{{f'}^2\of{a}-2f\of{a}f''\of{a}}}{f''\of{a}}\text.
 \]
 
 \subsection*{Names of the rational method}
-As for Halley's irrational method, modern calculus allows us to give a more straightfoward expression
-for the rational method than was available to Lagny;
-the proof of the following equivalence will be given at the end of this section.
-
+Both special cases and generalizations of Lagny's rational method have been discovered multiple times
+and extensively studied; constructions that take advantage of modern calculus allow us to give a more
+straightfoward expression for the rational method than was available to Lagny.
+The proof of the following equivalence will be given at the end of this section.
 \begin{proposition}
-The iteration of Lagny’s rational method for a monic polynomial $f$ of degree $p$ is\begin{equation}
+The iteration of the generalized Lagny rational method of order $p$ for a root of the
+function $f$ is\begin{equation}
 a\mapsto a + \pa{p-1}\frac{\pa{1/f}^{\pa{p-2}}\of{a}}{\pa{1/f}^{\pa{p-1}}\of{a}}\text.\label{LagnyRationaliteration}
 \end{equation}
 \end{proposition}
 The iteration (\ref{LagnyRationaliteration}) is a special case of the \foreign{Algorithmen $\pa{A^λ_ω}$} defined by Schröder for an
 arbitrary polynomial $f$ in \cite[349\psq]{Schröder1870}, equation (69); specifically, it is $\pa{A^0_{p-1}}$.
-As seen in the proof of the proposition, it is also a special case of Householder’s  equation (14) from \cite[169]{Householder1970},
-which generalizes it by substituting $f/g$ for $f$, and letting $f$ be an arbitrary analytic function. The case
+As seen in the proof of the proposition, it is also a special case of Householder’s  equation (14) from \cite[169]{Householder1970}, which generalizes it by substituting $f/g$ for $f$. The case
 $g\Identically1$ is mentioned in theorem 4.4.2, and that expression is given explicitly in \cite{SebahGourdon2001}.
 
 For $p=2$ and $f$ an arbitrary polynomial, (\ref{LagnyRationaliteration}) is Newton's method, presented by Wallis in
@@ -233,15 +236,12 @@ root finding by looking for a citation of Schröder’s paper. If it was
 missing, the author had probably rediscovered something already
 known to Schröder.
 \end{quote}
-It is possible that the irrational methods could be expressed using Schröder’s methods in one way or another, but while
-the result would probably be more convenient, it is unlikely to be something well-known, as irrational methods are far less
-popular nowadays---unjustifiedly so, as we shall see.
+It is possible that the irrational methods could be expressed using Schröder’s methods in one way or another, but while the result would probably be more convenient, it is unlikely to be something
+well-known, as irrational methods are far less popular nowadays---unjustifiedly so, as we shall see.
 
-It may however be useful to generalize the irrational methods as Halley did in the case $p=3$, untying their order from
-the degree of the polynomial---or indeed from the polynomial nature of $f$.
-This should yield a two-parameter family of root finding methods for an analytical $f$, depending on the convergence
-order and the degree of the equation solved by the iteration.
-We have not been able to find such a generalization.
+Our generalization of Lagny's irrational methods to arbitrary $f$, decoupling the degree of $f$
+from the convergence order, was inspired by Gander's rephrasing of Halley's construction in \cite{Gander1985}, wherein the correction term of Halley's irrational method is expressed as a
+root of $M_2$.
 
 Prouhet’s letter in \cite{Cantor1861} ends with these words:
 \begin{quote}\textfrench{%
