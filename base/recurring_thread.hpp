@@ -14,13 +14,36 @@ namespace principia {
 namespace base {
 namespace internal_recurring_thread {
 
+class BaseRecurringThread {
+ public:
+  virtual ~BaseRecurringThread() = default;
+
+  // Starts or stops the thread.  These functions are idempotent.  Note that the
+  // thread is also stopped by the destruction of this object.
+  void Start();
+  void Stop();
+
+ protected:
+  explicit BaseRecurringThread(std::chrono::milliseconds period);
+
+  std::chrono::milliseconds period() const;
+
+  virtual Status RepeatedlyRunAction() = 0;
+
+ private:
+  std::chrono::milliseconds const period_;
+
+  absl::Mutex jthread_lock_;
+  jthread jthread_ GUARDED_BY(jthread_lock_);
+};
+
 // A stoppable thread that supports cyclical execution of an action.  It is
 // connected to two monodirectional channels that can (optionally) hold a value
 // of |Input| (for incoming data) or |Output| (for outgoing data), respectively.
 // The action is run to transform the input into the output.  This class is
 // thread-safe.
-template<typename Input, typename Output>
-class RecurringThread {
+template<typename Input, typename Output = void>
+class RecurringThread : public BaseRecurringThread {
  public:
   // If an action returns an error, no output in written to the output channel.
   using Action = std::function<StatusOr<Output>(Input)>;
@@ -31,11 +54,6 @@ class RecurringThread {
   RecurringThread(Action action,
                   std::chrono::milliseconds period);
 
-  // Starts or stops the thread.  These functions are idempotent.  Note that the
-  // thread is also stopped by the destruction of this object.
-  void Start();
-  void Stop();
-
   // Overwrites the contents of the input channel.  The |input| data will be
   // either picked by the next execution of |action|, or overwritten by the next
   // call to |Put|.
@@ -45,17 +63,38 @@ class RecurringThread {
   std::optional<Output> Get();
 
  private:
-  Status RepeatedlyRunAction();
+  Status RepeatedlyRunAction() override;
 
   Action const action_;
-  std::chrono::milliseconds const period_;
-
-  absl::Mutex jthread_lock_;
-  jthread jthread_ GUARDED_BY(jthread_lock_);
 
   absl::Mutex input_output_lock_;
   std::optional<Input> input_ GUARDED_BY(input_output_lock_);
   std::optional<Output> output_ GUARDED_BY(input_output_lock_);
+};
+
+template<typename Input>
+class RecurringThread<Input, void> : public BaseRecurringThread {
+ public:
+  using Action = std::function<Status(Input)>;
+
+  // Constructs a stoppable thread that executes the given |action| no more
+  // frequently than at the specified |period| (and less frequently if no input
+  // was provided).  At construction the thread is in the stopped state.
+  RecurringThread(Action action,
+                  std::chrono::milliseconds period);
+
+  // Overwrites the contents of the input channel.  The |input| data will be
+  // either picked by the next execution of |action|, or overwritten by the next
+  // call to |Put|.
+  void Put(Input input);
+
+ private:
+  Status RepeatedlyRunAction() override;
+
+  Action const action_;
+
+  absl::Mutex input_output_lock_;
+  std::optional<Input> input_ GUARDED_BY(input_output_lock_);
 };
 
 }  // namespace internal_recurring_thread

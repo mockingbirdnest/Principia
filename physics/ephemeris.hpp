@@ -426,7 +426,7 @@ class Ephemeris {
       std::unique_ptr<Checkpointer<serialization::Ephemeris>>> checkpointer_;
 
   // The techniques and terminology follow [Lov22].
-  RecurringThread<std::set<Instant>, std::nullptr_t> reanimator_;
+  RecurringThread<std::set<Instant>> reanimator_;
 
   // The fields above this line are fixed at construction and therefore not
   // protected.  Note that |ContinuousTrajectory| is thread-safe.  |lock_| is
