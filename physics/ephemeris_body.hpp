@@ -68,6 +68,8 @@ using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 
+using namespace std::chrono_literals;
+
 constexpr Length pre_ἐρατοσθένης_default_ephemeris_fitting_tolerance =
     1 * Milli(Metre);
 constexpr Time max_time_between_checkpoints = 180 * Day;
@@ -238,7 +240,12 @@ Ephemeris<Frame>::Ephemeris(
       checkpointer_(
           make_not_null_unique<Checkpointer<serialization::Ephemeris>>(
               MakeCheckpointerWriter(),
-              MakeCheckpointerReader())) {
+              MakeCheckpointerReader())),
+      reanimator_(
+          [this](std::set<Instant> const& checkpoints) {
+            return Reanimate(checkpoints);
+          },
+          50ms) {
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
@@ -297,7 +304,7 @@ Ephemeris<Frame>::Ephemeris(
 
 template<typename Frame>
 Ephemeris<Frame>::~Ephemeris() {
-  reanimator_ = jthread();
+  reanimator_.Stop();
 }
 
 template<typename Frame>
@@ -799,12 +806,11 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   ephemeris->checkpointer_->ReadFromCheckpointAtOrBefore(
       using_checkpoint_at_or_before);
 
-  // Start a thread to asynchronously reconstruct the past using checkpoints.
-  ephemeris->reanimator_ = MakeStoppableThread(
-      std::bind(&Ephemeris::Reanimate,
-                ephemeris.get(),
-                ephemeris->checkpointer_->all_checkpoints_at_or_before(
-                    using_checkpoint_at_or_before)));
+  // Ask the reanimator thread to asynchronously reconstruct the past using
+  // checkpoints.
+  ephemeris->reanimator_.Put(
+      ephemeris->checkpointer_->all_checkpoints_at_or_before(
+          using_checkpoint_at_or_before));
 
   // The ephemeris will need to be prolonged as needed when deserializing the
   // plugin.
@@ -820,7 +826,8 @@ Ephemeris<Frame>::Ephemeris(
       fixed_step_parameters_(integrator, 1 * Second),
       checkpointer_(
           make_not_null_unique<Checkpointer<serialization::Ephemeris>>(
-              /*reader=*/nullptr, /*writer=*/nullptr)) {}
+              /*reader=*/nullptr, /*writer=*/nullptr)),
+      reanimator_(/*action=*/nullptr, 0ms) {}
 
 template<typename Frame>
 void Ephemeris<Frame>::WriteToCheckpointIfNeeded(Instant const& time) const {
