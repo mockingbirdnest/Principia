@@ -890,7 +890,12 @@ Status Ephemeris<Frame>::Reanimate(std::set<Instant> const& checkpoints) {
            t_final = following_checkpoint.value(),
            t_initial = checkpoint](
               serialization::Ephemeris::Checkpoint const& message) {
-            return ReanimateOneCheckpoint(message, t_initial, t_final);
+            // No reanimation for non-serializable frames.
+            if constexpr (base::is_serializable_v<Frame>) {
+              return ReanimateOneCheckpoint(message, t_initial, t_final);
+            } else {
+              return Status::UNKNOWN;
+            }
           });
       if (!status.ok()) {
         return status;
@@ -907,6 +912,7 @@ Status Ephemeris<Frame>::ReanimateOneCheckpoint(
     Instant const& t_initial,
     Instant const& t_final) {
   LOG(INFO) << "Reanimating segment from " << t_initial << " to " << t_final;
+
   // Create new trajectories and initialize them from the checkpoint at
   // t_initial.
   std::vector<not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>>

@@ -8,7 +8,7 @@ namespace principia {
 namespace base {
 namespace internal_recurring_thread {
 
-void BaseRecurringThread::Start() {
+inline void BaseRecurringThread::Start() {
   absl::MutexLock l(&jthread_lock_);
   if (!jthread_.joinable()) {
     jthread_ = MakeStoppableThread(
@@ -16,15 +16,16 @@ void BaseRecurringThread::Start() {
   }
 }
 
-void BaseRecurringThread::Stop() {
+inline void BaseRecurringThread::Stop() {
   absl::MutexLock l(&jthread_lock_);
   jthread_ = jthread();
 }
 
-BaseRecurringThread::BaseRecurringThread(std::chrono::milliseconds const period)
+inline BaseRecurringThread::BaseRecurringThread(
+    std::chrono::milliseconds const period)
     : period_(period) {}
 
-Status BaseRecurringThread::RepeatedlyRunAction() {
+inline Status BaseRecurringThread::RepeatedlyRunAction() {
   for (std::chrono::steady_clock::time_point wakeup_time;;
        std::this_thread::sleep_until(wakeup_time)) {
     wakeup_time = std::chrono::steady_clock::now() + period_;
