@@ -63,8 +63,11 @@ Vessel::Vessel(GUID guid,
           std::move(prediction_adaptive_step_parameters)),
       parent_(parent),
       ephemeris_(ephemeris),
-      prognosticator_(std::bind(&Vessel::FlowPrognostication, this, _1),
-                      20ms),  // 50 Hz.
+      prognosticator_(
+          [this](PrognosticatorParameters const& parameters) {
+            return FlowPrognostication(parameters);
+          },
+          20ms),  // 50 Hz.
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
   // Can't create the |psychohistory_| and |prediction_| here because |history_|
   // is empty;
@@ -249,7 +252,7 @@ void Vessel::AdvanceTime() {
                            *psychohistory_);
 
   // Attach the prognostication, if there is one.  Otherwise fall back to the
-  // prediction.
+  // pre-existing prediction.
   auto optional_prognostication = prognosticator_.Get();
   if (optional_prognostication.has_value()) {
     AttachPrediction(std::move(optional_prognostication.value()));
@@ -320,8 +323,8 @@ Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
 }
 
 void Vessel::RefreshPrediction() {
-  // The |prognostication| is a root trajectory that's computed asynchronously
-  // and may or may not be used as a prediction;
+  // The |prognostication| is a root trajectory which is computed asynchronously
+  // and may be used as a prediction;
   std::unique_ptr<DiscreteTrajectory<Barycentric>> prognostication;
 
   // Note that we know that |RefreshPrediction| is called on the main thread,
@@ -567,7 +570,8 @@ Vessel::FlowPrognostication(
   if (status.error() == Error::CANCELLED) {
     return status;
   } else {
-    // Ignore the status in this case and try to use the prognostication.
+    // Unless we were stopped, ignore the status, which indicates a failure to
+    // reach |t_max|, and provide a short prognostication.
     return std::move(prognostication);
   }
 }
