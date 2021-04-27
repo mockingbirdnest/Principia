@@ -30,6 +30,7 @@ TEST_F(RecurringThreadTest, Basic) {
   };
 
   ToyRecurringThread thread(std::move(add_one_half), 1ms);
+  thread.Start();
 
   thread.Put(3);
   {

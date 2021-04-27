@@ -6,7 +6,9 @@
 
 #include "absl/synchronization/mutex.h"
 #include "base/jthread.hpp"
+#include "base/macros.hpp"
 #include "base/status.hpp"
+#include "base/status_or.hpp"
 
 namespace principia {
 namespace base {
@@ -20,13 +22,19 @@ namespace internal_recurring_thread {
 template<typename Input, typename Output>
 class RecurringThread {
  public:
-  using Action = std::function<Output(Input)>;
+  // If an action returns an error, no output in written to the output channel.
+  using Action = std::function<StatusOr<Output>(Input)>;
 
   // Constructs a stoppable thread that executes the given |action| no more
   // frequently than at the specified |period| (and less frequently if no input
-  // was provided).
+  // was provided).  At construction the thread is in the stopped state.
   RecurringThread(Action action,
                   std::chrono::milliseconds period);
+
+  // Starts or stops the thread.  These functions are idempotent.  Note that the
+  // thread is also stopped by the destruction of this object.
+  void Start();
+  void Stop();
 
   // Overwrites the contents of the input channel.  The |input| data will be
   // either picked by the next execution of |action|, or overwritten by the next
@@ -42,11 +50,12 @@ class RecurringThread {
   Action const action_;
   std::chrono::milliseconds const period_;
 
-  jthread jthread_;
+  absl::Mutex jthread_lock_;
+  jthread jthread_ GUARDED_BY(jthread_lock_);
 
-  absl::Mutex lock_;
-  std::optional<Input> input_;
-  std::optional<Output> output_;
+  absl::Mutex input_output_lock_;
+  std::optional<Input> input_ GUARDED_BY(input_output_lock_);
+  std::optional<Output> output_ GUARDED_BY(input_output_lock_);
 };
 
 }  // namespace internal_recurring_thread
