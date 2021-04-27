@@ -92,7 +92,7 @@ RecurringThread<Input, void>::RecurringThread(
 
 template<typename Input>
 void RecurringThread<Input, void>::Put(Input input) {
-  absl::MutexLock l(&input_output_lock_);
+  absl::MutexLock l(&input_lock_);
   input_ = std::move(input);
 }
 
@@ -100,7 +100,7 @@ template<typename Input>
 Status RecurringThread<Input, void>::RunAction() {
   std::optional<Input> input;
   {
-    absl::MutexLock l(&input_output_lock_);
+    absl::MutexLock l(&input_lock_);
     if (!input_.has_value()) {
       // No input, let's wait for it to appear.
       return Status::OK;

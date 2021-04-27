@@ -14,6 +14,12 @@ namespace principia {
 namespace base {
 namespace internal_recurring_thread {
 
+// A stoppable thread that supports cyclical execution of an action.  It is
+// connected to two monodirectional channels that can (optionally) hold a value
+// of |Input| (for incoming data) or |Output| (for outgoing data), respectively.
+// The action is run to transform the input into the output.  This class and its
+// subclasses are thread-safe.  The base class is used to factor code common to
+// the various template specializations and should not be used directly.
 class BaseRecurringThread {
  public:
   virtual ~BaseRecurringThread() = default;
@@ -24,10 +30,15 @@ class BaseRecurringThread {
   void Stop();
 
  protected:
+  // Constructs a stoppable thread that runs no more frequently than at the
+  // specified |period| (and less frequently if no input was provided).  At
+  // construction the thread is in the stopped state.
   explicit BaseRecurringThread(std::chrono::milliseconds period);
 
+  // Repeatedly calls RunAction no more frequently than at the specified period.
   Status RepeatedlyRunAction();
 
+  // Overidden by subclasses to actually run the action.
   virtual Status RunAction() = 0;
 
  private:
@@ -37,11 +48,7 @@ class BaseRecurringThread {
   jthread jthread_ GUARDED_BY(jthread_lock_);
 };
 
-// A stoppable thread that supports cyclical execution of an action.  It is
-// connected to two monodirectional channels that can (optionally) hold a value
-// of |Input| (for incoming data) or |Output| (for outgoing data), respectively.
-// The action is run to transform the input into the output.  This class is
-// thread-safe.
+// A template for an action that returns a value.
 template<typename Input, typename Output = void>
 class RecurringThread : public BaseRecurringThread {
  public:
@@ -72,6 +79,7 @@ class RecurringThread : public BaseRecurringThread {
   std::optional<Output> output_ GUARDED_BY(input_output_lock_);
 };
 
+// A template for an action that returns no value.
 template<typename Input>
 class RecurringThread<Input, void> : public BaseRecurringThread {
  public:
@@ -93,8 +101,8 @@ class RecurringThread<Input, void> : public BaseRecurringThread {
 
   Action const action_;
 
-  absl::Mutex input_output_lock_;
-  std::optional<Input> input_ GUARDED_BY(input_output_lock_);
+  absl::Mutex input_lock_;
+  std::optional<Input> input_ GUARDED_BY(input_lock_);
 };
 
 }  // namespace internal_recurring_thread
