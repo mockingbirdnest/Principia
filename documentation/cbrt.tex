@@ -84,12 +84,12 @@ of $E_{n+1}$ by $E_{n}$; its degree is $n-1$ for almost all $a$.
 The iteration is $\FunctionBody{a}{x+\frac{1}{2}a}$, where $x$ is a root of $E_{2}$ in the quadratic irrational method,
 and the root of $E_{1}$ in the rational method. Its order is $p$.
 
-\subsection*{Names and multiplicity of the irrational methods}
+\subsection*{Multiplicity of the irrational methods}
 Lagny does not require that the polynomial division be carried out
 all the way to $E_2$, merely until one gets \foreign{\textfrench{une valeur d'$x$ \textnormal{[...]} d'un degré commode}}, by which he likely means
 one that is constructible. When $f$ is a cubic, he uses the term \foreign{\textfrench{formule irrationnelle}} for $x+\frac{1}{2}a$ where
 $x$ is a root of $E_2$, but when it comes to computing the fifth root, the same term is used to refer to the case where $x$ is a root of
-$E_4$. In order to avoid confusion, we use the term \emph{quadratic irrational method} when $x$ is a root of $E_2$ in the general case,
+$E_4$. In order to avoid confusion, we use the term \emph{quadratic irrational method} when $x$ is a root of $E_2$,
 and we call the irrational formula for $\sqrt[5]{a^5+b}$ from \cite[43]{FantetdeLagny1692}\footnote{The formula has a misprint in
 \cite[43]{FantetdeLagny1692}, $-\tfrac{1}{2}a^2$ instead of $-\tfrac{1}{4}a^2$ under the radical.
 Halley remarks on it and gives the corrected formula in \cite[137,140]{Halley1694}.
@@ -105,10 +105,36 @@ to compute a fifth root should note that leading term of the error of the quarti
 $\frac{2}{7}$ of that of the quadratic.}\[
 \FunctionBody{a}{\frac{a\pa{7b-\sqrt{100a^{10}+100a^{5}b-7b^2}}}{4b-10a^5}}\text.
 \]
-Note however that for the computation of the cube root, the phrase \emph{Lagny's irrational method} is unambiguous;
-assuming that one does not wish to reduce the computation of a cube root to that of of the root the cubic $E_3$,
-the only irrational method is the quadratic one (\ref{LagnyIrrationalCubeRootIteration}).
+More generally, we call $\FunctionBody{a}{x+\frac{1}{2}a}$ \emph{Lagny's method of degree $d$} when
+$x$ is a root of $E_{d}$.
+Note however that when $p=3$, \idest, when finding a root of a cubic, Lagny's only irrational method
+is the quadratic one; we can thus unambiguously refer to (\ref{LagnyIrrationalCubeRootIteration}) as \emph{Lagny's irrational method for the cube root}.
 
+\subsection*{Generalization to arbitrary functions}
+Lagny's method of degree $d$ and convergence order $p$ may be generalized to functions $f$ other
+than monic polynomials of degree $p$, by defining $E_p$ and $E_{p-1}$ in terms of Taylor polynomials
+for $f$ around $\frac{1}{2}a$:\[
+E_p\DefineAs T_{p}-\frac{1}{2}T_{p-1}\text{ and }E_{p-1}\DefineAs \frac{1}{2}T_{p-1}\text,
+\]
+where\[
+T_{n}\DefineAs\sum{k=0}[n]\frac{f^{\pa{n}}\of{\tfrac{1}{2}a}}{\Factorial k}\pa{x-\tfrac{1}{2}a}^k\text.
+\]
+The rest of the method remains unchanged; the iteration is given by $\FunctionBody{a}{x+\frac{1}{2}a}$ for a root $x$ of $E_{d}$.
+We call this method the \emph{generalized Lagny method of degree $d$ and order $p$}.
+Note that while the $E_n$ defined in this fashion may not have degree $n$ if the higher
+derivatives of $f$ vanish, \exempligratia, for a polynomial of degree less than $p$, the calculation
+may be carried out formally for an arbitrary $f$, and the offending function substituted in the result;
+the generalized methods of high order can thus be applied to polynomials of low degree.
+
+These methods may equivalently be constructed using Maclaurin series in the correction term.
+Let\[
+M_n \DefineAs\sum{k=0}[n] \frac{f^{\pa{n}}\of{a+Δ}}{\Factorial k}Δ^k\text,\]
+and consider the polynomials in $Δ$\[
+\tilde E_p \DefineAs M_p\text{ and }\tilde E_{p-1} \DefineAs M_{p-1}\text.\]
+Let $\tilde E_{n-1}$ be the remainder of the polynomial of $\tilde E_{n+1}$ by $\tilde E_{n}$.
+The iteration is then $\FunctionBody{a}{a+Δ}$, where $Δ$ is a root of $\tilde E_d$.
+
+\subsection*{Names of the irrational methods}
 Halley generalized\footnote{Lagny's method is general, in that an iteration is given for any
 polynomial, albeit one whose order changes with the degree. However, while he refers to its
 results---and even corrects a misprint therein---, Halley
@@ -131,7 +157,7 @@ etiamſi maxime deſiderari videatur [...].
 \end{quote}
 Being unaware of this generality, Halley sets out to generalize (\ref{LagnyIrrationalCubeRootIteration}) and (\ref{LagnyRationalCubeRootIteration}) to
 arbitrary polynomials, and does so by keeping the order constant.}
-the quadratic irrational method for $p=3$ to arbitrary polynomials, retaining cubic convergence; when $f$ is
+the (quadratic) irrational method for the cubic to arbitrary polynomials, retaining cubic convergence; when $f$ is
 not a polynomial of degree $3$, we call the resulting iteration \emph{Halley's irrational method}.
 This method was given in terms of derivatives by Bateman in \cite[12]{Bateman1938}:\[
 \FunctionBody{a}{a-\frac{f'\of{a}}}{f''\of{a}}+\frac{\sqrt{{f'}^2\of{a}-2f\of{a}f''\of{a}}}{f''\of{a}}\text.
