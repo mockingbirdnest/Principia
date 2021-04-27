@@ -26,9 +26,9 @@ class BaseRecurringThread {
  protected:
   explicit BaseRecurringThread(std::chrono::milliseconds period);
 
-  std::chrono::milliseconds period() const;
+  Status RepeatedlyRunAction();
 
-  virtual Status RepeatedlyRunAction() = 0;
+  virtual Status RunAction() = 0;
 
  private:
   std::chrono::milliseconds const period_;
@@ -63,7 +63,7 @@ class RecurringThread : public BaseRecurringThread {
   std::optional<Output> Get();
 
  private:
-  Status RepeatedlyRunAction() override;
+  Status RunAction() override;
 
   Action const action_;
 
@@ -89,7 +89,7 @@ class RecurringThread<Input, void> : public BaseRecurringThread {
   void Put(Input input);
 
  private:
-  Status RepeatedlyRunAction() override;
+  Status RunAction() override;
 
   Action const action_;
 
