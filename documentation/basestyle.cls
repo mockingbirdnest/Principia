@@ -78,6 +78,9 @@
 \newfontfamily\cjkfont{BabelStoneHan.ttf}
 \setCJKmainfont{BabelStoneHan.ttf}
 
+% TODO(egg): Switch to 𒀭𒀝𒌷𒀏𒄴𒈽 when that is done.
+\newfontfamily\xsuxfont{Segoe UI Historic}
+
 % Layout.
 
 \iftwoside

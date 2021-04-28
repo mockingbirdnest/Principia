@@ -22,8 +22,12 @@
 % Rounding brackets will be heavily nested, and reading the nesting depth is critically important,
 % so we make them grow for readability.
 \newcommand{\round}[1]{\doubleSquareBrackets*{#1}}
-\newcommand{\roundToZero}[1]{\doubleSquareBrackets{#1}_0}
+\newcommand{\roundTowardZero}[1]{\doubleSquareBrackets{#1}_0}
 \newcommand{\hex}[1]{{_{16}}\mathrm{#1}}
+
+% For alignment of tabular rounding error analyses.
+\DeclareDelimiter\doubleSquareBracketEmptyUnkerned{\lBrack}{.}
+\newcommand{\leftRound}[1]{\doubleSquareBracketEmptyUnkerned*{#1\kern-\nulldelimiterspace}}
 
 \newcommand{\bigradient}[4]{\det\begin{pmatrix}\pa{#1}_{#2}\\\pa{#3}_{#4}\end{pmatrix}}
 
@@ -61,13 +65,13 @@ f\of{z}\DefineAs z^p + c_1 z^{p-1} + \dotsb + c_{p-1} z + c_p \DefinitionOf z^p 
 with an initial approximation $a$.
 
 Separate the binomial expansion of $\pa{x+\tfrac{1}{2}a}^p$ into alternating sums of
-degree $p$ and $p-1$ in $z$,\begin{align*}
+degree $p$ and $p-1$ in $z$,\begin{align}
 S_1\DefineAs\sum{\substack{k=0\\2\Divides k}}[p]\binom{p}{k}x^{p-k}\pa{\tfrac{1}{2}a}^k&\text{ and }
-S_2\DefineAs\sum{\substack{k=0\\2\DoesNotDivide k}}[p]\binom{p}{k}x^{p-k}\pa{\tfrac{1}{2}a}^k\text,
+S_2\DefineAs\sum{\substack{k=0\\2\DoesNotDivide k}}[p]\binom{p}{k}x^{p-k}\pa{\tfrac{1}{2}a}^k\text, \nonumber
 \intertext{and consider the following polynomials, of degree $p$ and $p-1$ in $x$ for almost all $a$:}
 E_{p}\DefineAs S_1-\tfrac{1}{2}R\of{x+\tfrac{1}{2}a}&\text{ and }
-E_{p-1}\DefineAs S_2-\tfrac{1}{2}R\of{x+\tfrac{1}{2}a}\text.
-\end{align*}
+E_{p-1}\DefineAs S_2-\tfrac{1}{2}R\of{x+\tfrac{1}{2}a}\text.  \label{LagnyEquations}
+\end{align}
 Let $E_{n-1}$ be the remainder of the polynomial
 division\footnote{While the rest of the method is a straightforward translation, this step bears some explanations; its description in \cite{FantetdeLagny1692} is
 % TODO(egg): Right Single Quotation Mark leads to incorrect spacing in French, so we use Apostrophe here (which
@@ -113,31 +117,36 @@ is the quadratic one; we can thus unambiguously refer to (\ref{LagnyIrrationalCu
 \subsection*{Generalization to arbitrary functions}
 Lagny's method of degree $d$ and convergence order $p$ may be generalized to functions $f$ other
 than polynomials of degree $p$, by defining $E_p$ and $E_{p-1}$ in terms of Taylor polynomials
-for $f$ around $\frac{1}{2}a$:\[
-E_p\DefineAs T_{p}-\tfrac{1}{2}T_{p-1}\text{ and }E_{p-1}\DefineAs \tfrac{1}{2}T_{p-1}\text,
-\]
+for $f\of{x+\frac{1}{2}a}$ around $x=\frac{1}{2}a$:\begin{equation}
+E_p\DefineAs T_{p}-\tfrac{1}{2}T_{p-1}\text{ and }E_{p-1}\DefineAs \tfrac{1}{2}T_{p-1}\text, \label{GeneralizedLagnyEquations}
+\end{equation}
 where\[
-T_{n}\DefineAs\sum{k=0}[n]\frac{f^{\pa{n}}\of{\tfrac{1}{2}a}}{\Factorial k}\pa{x-\tfrac{1}{2}a}^k\text.
+T_{n}\DefineAs\sum{k=0}[n]\frac{f^{\pa{n}}\of{a}}{\Factorial k}\pa{x-\tfrac{1}{2}a}^k\text.
 \]
 The rest of the method remains unchanged; the iteration is given by $\FunctionBody{a}{x+\frac{1}{2}a}$ for a root $x$ of $E_{d}$.
-We call this method the \emph{generalized Lagny method of degree $d$ and order $p$} when $f$ is not
-a polynomial of degree $p$; we use the terms ``rational'', ``quadratic irrational'', etc. for $d=1$, $d=2$, etc. respectively.
+When $f$ is a monic polynomial of degree $p$, (\ref{GeneralizedLagnyEquations}) is equivalent to (\ref{LagnyEquations}), so that
+we recover Lagny's method.
+When $f$ is not a polynomial of degree $p$, we thus call the method defined by (\ref{GeneralizedLagnyEquations}) the
+\emph{generalized Lagny method of degree $d$ and order $p$}; we use the terms ``rational'', ``quadratic irrational'',
+etc. for $d=1$, $d=2$, etc. respectively.
 
 Note that while the $E_n$ defined in this fashion may not have degree $n$ if the higher
 derivatives of $f$ vanish, \exempligratia, for a polynomial of degree less than $p$, the calculation
 may be carried out formally for an arbitrary $f$, and the offending function substituted in the result,
 taking limits as needed to remove singularities; the generalized methods of high order can thus be applied to polynomials of low degree.
 
-These methods may equivalently be constructed using Maclaurin series in the correction term.
+These methods may equivalently be constructed using the Maclaurin series for $f\of{a+Δ}$
+in the correction term $Δ$.
 Let\[
-M_n \DefineAs\sum{k=0}[n] \frac{f^{\pa{n}}\of{a+Δ}}{\Factorial k}Δ^k\text,\]
+M_n \DefineAs\sum{k=0}[n] \frac{f^{\pa{n}}\of{a}}{\Factorial k}Δ^k\text,\]
 and consider the polynomials $\tilde E_p \DefineAs M_p$ and $\tilde E_{p-1} \DefineAs M_{p-1}$ of
 degree $p$ and $p-1$ in $Δ$.
 Let $\tilde E_{n-1}$ be the remainder of the polynomial division of $\tilde E_{n+1}$ by $\tilde E_{n}$.
 The iteration is then $\FunctionBody{a}{a+Δ}$, where $Δ$ is a root of $\tilde E_d$.
 
 \subsection*{Names of the irrational methods}
-Halley likewise generalized the (quadratic) irrational method for the cubic to arbitrary\footnote{Lagny's method is general, in that an iteration is given for any
+Halley likewise generalized Lagny's (quadratic) irrational method for the cubic to
+arbitrary\footnote{Lagny's method is general, in that an iteration is given for any
 polynomial, albeit one whose order changes with the degree. However, while he refers to its
 results---and even corrects a misprint therein---, Halley
 did not have access to a copy of \cite{FantetdeLagny1692},
@@ -187,9 +196,7 @@ For $p=2$ and $f$ an arbitrary polynomial, (\ref{LagnyRationaliteration}) is New
 
 For $p=3$ and $f$ an arbitrary polynomial, it is Halley's rational method, given in \cite[142--143]{Halley1694} in
 an effort to generalize Lagny's (\ref{LagnyRationalCubeRootIteration}).
-It is usually simply known as Halley's method, as the irrational method---which likewise generalizes Lagny's irrational
-method for $p=3$ while retaining constant order as the degree changes---has comparatively fallen into obscurity;
-see \cite{ScavoThoo1995}.
+It is usually simply known as Halley's method, as his aforementioned irrational method has comparatively fallen into obscurity; see \cite{ScavoThoo1995}.
 
 Considering, as remarked by \cite[334]{Schröder1870}, that a method can often
 be generalized from arbitrary polynomials or rational functions to arbitrary
@@ -224,7 +231,8 @@ The editors then quote a letter by Prouhet, wherein he gives a reference to \cit
 
 Lagny’s work proved far more extensive than we expected: besides the above root finding methods for arbitrary
 polynomials, it contains an error analysis, and even a discussion of the principles of performance analysis based on a decomposition into elementary operations on---and
-writing of---decimal digits: a 17th century MIX.
+writing of---decimal digits \cite[5--9]{FantetdeLagny1692}, with a remark on applicability
+to bases other than ten: a 17th century MIX.
 
 Observing that the higher-order examples correspond to the well-known higher order
 method attributed to Householder in \cite{SebahGourdon2001}, we looked for its properties in \cite{Householder1970} so as to prove that observation, and found that Householder attributes
@@ -236,12 +244,14 @@ root finding by looking for a citation of Schröder’s paper. If it was
 missing, the author had probably rediscovered something already
 known to Schröder.
 \end{quote}
-It is possible that the irrational methods could be expressed using Schröder’s methods in one way or another, but while the result would probably be more convenient, it is unlikely to be something
-well-known, as irrational methods are far less popular nowadays---unjustifiedly so, as we shall see.
+It is possible that the irrational methods could be expressed using Schröder’s results in one way or another, although most of his methods seem to be rational; in any case, such a formulation
+is unlikely to be something well-known, as irrational methods are far less popular
+nowadays---unjustifiedly so, as we shall see.
 
-Our generalization of Lagny's irrational methods to arbitrary $f$, decoupling the degree of $f$
-from the convergence order, was inspired by Gander's rephrasing of Halley's construction in \cite{Gander1985}, wherein the correction term of Halley's irrational method is expressed as a
-root of $M_2$.
+Our generalization of Lagny's irrational methods to arbitrary $f$, which, in the polynomial case,
+decouples the degree of $f$ from the convergence order, was inspired by Gander's rephrasing in
+\cite{Gander1985} of Halley's construction from \cite{Halley1694}, wherein the correction term of
+Halley's irrational method is defined as a root of $M_2$.
 
 Prouhet’s letter in \cite{Cantor1861} ends with these words:
 \begin{quote}\textfrench{%
@@ -342,11 +352,19 @@ We define the fractional part as $\FractionalPart a\DefineAs a-\Floor a\in\intcl
 
 The floating-point format used throughout is binary64; the quantities $p\in\N$ (precision in bits) and $\bias\in\N$ are 
 defined as in IEEE 754-2008, $p=53$ and $\bias=1023$.
-Some of the individual methods discussed may be of general use; we thus give all constants to thirty-six decimal
-digits\footnote{The constants used in the methods are rounded to the nearest decimal digit. A superscript sign after
-a final $5$ serves as the sticky bit: the unrounded quantity is in excess of the rounded one if the sign is $+$,
-and in default if it is $-$. The error bounds (and their logarithms) are rounded towards positive infinity.},
-which should suffice for decimal128, binary128, and all smaller formats.
+Some of the individual methods discussed may be of general use; we thus give all inexact constants
+rounded to thirty-five decimal places and twenty-nine hexadecimal places, which suffices for
+decimal128, binary128, and all smaller formats. A superscript sign after the last
+digit serves as the sticky bit\footnote{We learned of this practice from Steve Canon, who found it
+in a re-edition of \cite[VIII]{Bruhns1870}; there it is only present on the digit $5$, to guard
+against double-rounding to the nearest decimal place.
+As mentioned in Hoüel's foreword to \cite[II]{Schrön1873}, this practice, originally seen as a way to
+convey another bit of precision rather than a way to ensure correct rounding, dates back to at least
+1827, in \cite[X]{Babbage1827}, 8th rule. Like Babbage and Schrön, we give this bit regardless of
+the last digit; this allows for directed rounding.}:
+the unrounded quantity is in excess of the rounded one if the sign is $+$,
+and in default if it is $-$.
+
 
 We use capital Latin letters for fixed-point numbers involved in the computation, and $A>0$ for the normal floating-point number $a>0$ reinterpreted as a binary fixed-point\footnote{The implementation uses integers (obtained by multiplying the fixed-point numbers by $2^{p-1}$). For consistency with \cite{KahanBindel2001} we work with fixed-point numbers here. Since we do not multiply fixed point numbers together, the expressions are unchanged.} number with $p-1$ bits after the binary point,\begin{align*}
   A &\DefineAs \bias + \Floor{\log_2 a} + \FractionalPart \pa{2^{-\Floor{\log_2 a}}a}\\
@@ -358,7 +376,7 @@ This corresponds to \cite{KahanBindel2001}'s $B+K+F$.
 
 For both fixed- and floating-point numbers, given $α\in\R$, we write $\round{α}$ for the nearest representable
 number (rounding ties to even).
-For fixed-point numbers, we write $\roundToZero{α}$ for directed rounding towards $0$ to the fixed-point
+For fixed-point numbers, we write $\roundTowardZero{α}$ for directed rounding towards $0$ to the fixed-point
 precision (as in division implemented with integer division).
 We write the unit roundoff $u\DefineAs2^{-p}$, and, after \cite[63]{Higham2002}, $γ_n\DefineAs\frac{nu}{1-nu}$.
 We discuss other rounding modes in appendix~\ref{OtherRoundingModes}.
@@ -374,7 +392,7 @@ multiplication, division, and square root; FMA is treated separately in appendix
 
 \subsection{Quick approximation}
 The quick approximation $q$ is computed using fixed-point arithmetic as\[
-Q\DefineAs C + \roundToZero{\frac{Y}{3}}\text,
+Q\DefineAs C + \roundTowardZero{\frac{Y}{3}}\text,
 \]
 where the fixed-point constant $C$ is defined as\footnote{Note
 that there is a typo in the corresponding expression $C\DefineAs\pa{B-0.1009678}/3$ in \cite{KahanBindel2001}; a factor of $2$ is missing on the bias term.}\[
@@ -433,8 +451,10 @@ or equivalently.\begin{align*}
 &=\argmin_{Γ\in\R}\max_{\tuple{f, k}\in\mathscr{E}\Union\mathscr{L}}\abs{ε_q'}\text,
 \end{align*}
 where $\mathscr{E}\DefineAs\set{\tuple{\FractionalPart Γ, 0}}\Union\setst{\tuple{0, k}}{k\in\set{0,1,2}}$ is the set of the endpoints of the intervals whereon $q'$ is piecewise affine, and
-$\mathscr{L}\DefineAs\setst{\tuple{\frac{k-\FractionalPart Γ}{2},k}}{k\in\set{1,2}}$ are the local extrema. We get more precisely\footnote{This value may be computed formally, but the expression is unwieldy.}\[
-Γ_{\mathrm{Kahan}} \approx 0.10096\,78121\,55802\,88786\,36993\,42643\,55358\,1\]
+$\mathscr{L}\DefineAs\setst{\tuple{\frac{k-\FractionalPart Γ}{2},k}}{k\in\set{1,2}}$ are the local extrema. We get more precisely\footnote{This value may be computed formally, but the expression is unwieldy.}\begin{align*}
+Γ_{\mathrm{Kahan}} &\approx 0.10096\,78121\,55802\,88786\,36993\,42643\,55358\,1\\
+                   &\approx \hex{E99.70D0\,DEAD\,BEEF}
+\end{align*}
 with $\max_{y}\abs{ε_q'} \approx 3.155\%$,
 yielding the constant\[C_{\mathrm{Kahan}}=\hex{2A9F\,7625\,3119\,D328}\Multiply 2^{-52}\]for IEEE 754-2008 binary64.
 However, as we will see in the next section, this value does not optimize the final error.
@@ -466,7 +486,8 @@ function of $ε_q'$, it is not odd: positive errors are reduced more than negati
 errors are, so that the minimum is attained for a different value of $Γ$.
 Specifically, we have\begin{align*}
 Γ_{\mathrm{L^1}}&\DefineAs\argmin_{Γ\in\R}\max_{y}\abs{ε_ξ'}\\
-&\approx 0.09918\,74615\,29855\,99525\,66149\,20761\,31234\,35^{-}
+&\approx 0.09918\,74615\,29855\,99525\,66149\,20761\,31234\,35^{-}\\
+&\approx \hex{E99.70D0\,DEAD\,BEEF}
 \end{align*}
 with $\max_{y} \abs{ε_q'} \approx 3.2025\%$, but
 $\max_{y} \abs{ε_ξ'} \approx 20.86\Multiply10^{-6}$, $\log_2 \max_{y} \abs{ε_ξ'} \approx -15.54$.
@@ -494,9 +515,10 @@ Its error is\[
 whose leading term is half that of the rational method; indeed we find that with $Γ=Γ_{\mathrm{Kahan}}$,
 we have $\max_{y} \abs{ε_ξ'} \approx 10.48\Multiply10^{-6}$, $\log_2 \max_{y} \abs{ε_ξ'} \approx -16.54$, gaining one bit
 with respect to the rational method.
-Here $Γ=Γ_{\mathrm{Kahan}}$ is very close to optimal; with the optimal value\[
-Γ_{\mathrm{L^2}}\approx0.10096\,82076\,65096\,37285\,40885\,52460\,33434\,6\text,
-\]
+Here $Γ=Γ_{\mathrm{Kahan}}$ is very close to optimal; with the optimal value\begin{align*}
+Γ_{\mathrm{L^2}}&\approx0.10096\,82076\,65096\,37285\,40885\,52460\,33434\,6\text,\\
+&\approx \hex{E99.70D0\,DEAD\,BEEF}
+\end{align*}
 the error remains the same within the precision to which we have given it.
 However, we have other ways of improving the error at no cost to performance.
 \subsubsection*{Canon optimization of Lagny's irrational method}
@@ -566,6 +588,13 @@ $Γ=\frac{1}{10}$, $κ=\frac{1}{2}$, $λ=\frac{1}{4}$, and $μ=3$. We obtain the
 λ_{\mathrm{L^2C}} &\approx 0.25000\,00000\,00145\,58487\,81104\,01052\,77249\,3\text,\\
 μ_{\mathrm{L^2C}} &\approx 3.00074\,62871\,20756\,72280\,51404\,24030\,90920\text,\\
 \end{align*}
+in hexadecimal
+\begin{align*}
+Γ_{\mathrm{L^2C}} &\approx \hex{E99.70D0\,DEAD\,BEEF}\\
+κ_{\mathrm{L^2C}} &\approx \hex{E99.70D0\,DEAD\,BEEF}\\
+λ_{\mathrm{L^2C}} &\approx \hex{E99.70D0\,DEAD\,BEEF}\\
+μ_{\mathrm{L^2C}} &\approx \hex{E99.70D0\,DEAD\,BEEF}
+\end{align*}
 for an error of $\max_{y}\abs{ε_ξ'} \approx 2.6157\Multiply10^{-6}$, $\log_2\max_{y}\abs{ε_ξ'} \approx -18.54$: this
 optimization gains two bits.
 The resulting $ε_ξ'$ is remarkably equioscillating, as can be seen in
@@ -574,10 +603,11 @@ figure~\ref{StepTwoComparison}.
 With the rewriting (\ref{RewrittenLagnyIrrational}), the constants $1/\sqrt{12}$ and $4$ should
 be replaced by\begin{align*}
 \sqrt{\frac{1-λ_{\mathrm{L^2C}}μ_{\mathrm{L^2C}}}{μ_{\mathrm{L^2C}}}}
-&\approx1/\sqrt{12.01194\,95117\,19793\,69720\,48452\,37177\,0703}\\
-&\approx0.28853\,15115\,62316\,71905\,38451\,44194\,38406\,3
+&\approx0.28853\,15115\,62316\,71905\,38451\,44194\,38406\,3\\
+&\approx \hex{E99.70D0\,DEAD\,BEEF}\\
 \intertext{and}
-\frac{1}{1-λ_{\mathrm{L^2C}}μ_{\mathrm{L^2C}}}&\approx4.00298\,73779\,31697\,18250\,67433\,26901\,80421
+\frac{1}{1-λ_{\mathrm{L^2C}}μ_{\mathrm{L^2C}}}&\approx4.00298\,73779\,31697\,18250\,67433\,26901\,80421\\
+ &\approx \hex{E99.70D0\,DEAD\,BEEF}
 \end{align*}
 respectively.
 
@@ -637,14 +667,15 @@ We compute bounds for $ε_{r_0}'$ and $δ$ for two different methods.
 We use one iteration of the Lagny--Schröder rational method of order $5$:
 \[
 Δ=\round{
-\frac{\round{(x^3 - y) \round{\round{\round{\round{10x^3} + 16y}x^3} + \round{y^2}}}}
+\frac{\round{\pa{x^3 - y} \round{\round{\round{\round{10x^3} + 16y}x^3} + \round{y^2}}}}
 {\round{x^2 \round{\round{\round{\round{15 x^3} + \round{51 y}}x^3} + \round{15 \round{y^2}}}}}}
 \]
 where $x^2$ and $x^3$ are exact thanks to the trailing $0$s of $x$,
 $\round{x^6}$ is correctly rounded because it is computed as the square of $x^3$,
 and $x^3-y$ is exact by Sterbenz’s lemma.
 
-In infinite precision, this method is of such high order that if $\abs{ε_x} < 14.5$, which is the case
+In infinite precision, this method is of such high order that if $\log_2\abs{ε_x} < 14.5$, which
+is the case
 even if $ξ$ is computed by the rational method, the relative error $ε_r'$ of the result is less than
 $2^{-75}$. We will not seek to bound the truncation error more closely, nor to tweak the constants in
 the method to optimize it: as we will see, it is dominated by rounding.
@@ -653,7 +684,8 @@ Thanks to the exact cube and exact difference, the rounding analysis of the corr
 straightforward.
 All remaining sums being of positive terms, their relative error is readily bounded by the
 largest of those of their terms. This leads to bounds of $γ_{5}$ on the numerator and $γ_{5}$ on
-the denominator, overall $\frac{1+γ_{6}}{1-γ_{5}}-1<\frac{γ_{11}}{1-γ_{5}}$ on the correction term.
+the denominator, overall \[
+δ=\frac{1+γ_{6}}{1-γ_{5}}-1<\frac{γ_{11}}{1-γ_{5}}\approx11u\text.\]
 
 However, considering that our final bound on $ε_r$, and thus our misrounding estimate,
 is nearly proportional to this error, a more careful analysis is warranted.
@@ -665,10 +697,65 @@ has the error\[
 \frac{Σ}{Σ'}-1=\frac{\pa{1+ε_x}^{3m}αδ_1+\pa{1+ε_x}^{3n}βδ_2}{\pa{1+ε_x}^{3m}α+\pa{1+ε_x}^{3n}β}\text,
 \]
 which we may bound, assuming without loss of generality that $m\le n$, as\[
-\abs{\frac{Σ}{Σ'}-1}\le\pa{\frac{1+\abs{ε_x}}{1-\abs{ε_x}}}^{3n}\frac{αδ_1+βδ_2}{α+β}\text.
+\abs{\frac{Σ}{Σ'}-1}\le ι^{3n}\frac{αδ_1+βδ_2}{α+β}\text,
 \]
-Unfortunately $γ$ is poorly behaved under weighted averages, so we will resort to old-fashioned products of $1+u$. 
+where $ι\DefineAs\frac{1+\abs{ε_x}}{1-\abs{ε_x}}$.
 
+With this property, we can, in particular, take advantage of the exact multiplication by
+$16$ in the numerator; the rounding error analysis of the numerator is as follows.
+% The phantom/llap dance is there to work around the impossibility of alignment across
+% matched brackets.
+\begin{center}
+\begin{tabular}{l r}
+Expression                    & Bound on the rounding error\\
+\hline\\
+$\hphantom{\leftRound{\pa{x^3-y}\leftRound{\leftRound{\leftRound{\round{10x^3}+16y}}}}}
+\mathllap{\round{10x^3} + 16y}$ &
+$ι^{3}\frac{10u}{26} < γ_{\frac{10}{26}ι^{3}}$ \\
+$\hphantom{\leftRound{\pa{x^3-y}\leftRound{\leftRound{\round{\round{10x^3}+16y}}}}}
+\mathllap{\round{\round{10x^3} + 16y}}$ &
+$γ_{\frac{10}{26}ι^{3}+1}$ \\
+$\hphantom{\leftRound{\pa{x^3-y}\leftRound{\round{\round{\round{10x^3}+16y}x^3}}}}
+\mathllap{\round{\round{\round{10x^3} + 16y}x^3}}$ &
+$γ_{\frac{10}{26}ι^{3}+2}$ \\
+$\hphantom{\leftRound{\pa{x^3-y}\leftRound{\round{\round{\round{10x^3}+16y}x^3}+\round{y^2}}}}
+\mathllap{\round{\round{\round{10x^3} + 16y}x^3} + \round{y^2}}$ &
+$ι^{6}\frac{1}{27}\pa{26γ_{\frac{10}{26}ι^{3}+2} + u}<\frac{1}{27}γ_{10ι^{9}+\pa{2\Multiply 26+1}ι^{6}}$\\
+$\hphantom{\leftRound{\pa{x^3-y}\round{\round{\round{\round{10x^3}+16y}x^3}+\round{y^2}}}}
+\mathllap{\round{\round{\round{\round{10x^3} + 16y}x^3} + \round{y^2}}}$ &
+$\frac{1}{27}γ_{10ι^{9}+\pa{2\Multiply 26+1}ι^{6}+27}$\\
+$\round{\pa{x^3 - y} \round{\round{\round{\round{10x^3} + 16y}x^3} + \round{y^2}}}$ &
+$\frac{1}{27}γ_{10ι^{9}+\pa{2\Multiply 26+1}ι^{6}+2\Multiply27}$
+\end{tabular}
+\end{center}
+The resulting bound on the numerator is approximately $4.33u$, an improvement of $\frac{2}{3}u$ over
+the naïve bound of $5u$.
+We may build a similar {\xsuxfont 𒋛𒄥𒊏𒋫}\footnote{\foreign{Ziqqurrata}.} for the denominator.
+\begin{center}
+\begin{tabular}{l r}
+Expression                    & Bound on the rounding error\\
+\hline\\
+$\hphantom{\leftRound{x^2 \leftRound{\leftRound{\leftRound{\round{15 x^3} + \round{51 y}}}}}}
+\mathllap{\round{15 x^3} + \round{51 y}}$ &
+$γ_1$\\
+$\hphantom{\leftRound{x^2 \leftRound{\leftRound{\round{\round{15 x^3} + \round{51 y}}}}}}
+\mathllap{\round{\round{15 x^3} + \round{51 y}}}$ &
+$γ_2$\\
+$\hphantom{\leftRound{x^2 \leftRound{\round{\round{\round{15 x^3} + \round{51 y}}x^3}}}}
+\mathllap{\round{\round{\round{15 x^3} + \round{51 y}}x^3}}$ &
+$γ_3$\\
+$\hphantom{\leftRound{x^2 \leftRound{\round{\round{\round{15 x^3} + \round{51 y}}x^3}+\round{15 \round{y^2}}}}}
+\mathllap{\round{\round{\round{15 x^3} + \round{51 y}}x^3} + \round{15 \round{y^2}}}$ &
+$ι^6\frac{66γ_3+15γ_2}{81}<\frac{1}{81}γ_{228ι^6}$\\
+$\hphantom{\leftRound{x^2 \round{\round{\round{\round{15 x^3} + \round{51 y}}x^3}+\round{15 \round{y^2}}}}}
+\mathllap{\round{\round{\round{\round{15 x^3} + \round{51 y}}x^3} + \round{15 \round{y^2}}}}$ &
+$\frac{1}{81}γ_{228ι^6+81}$\\
+$\round{x^2 \round{\round{\round{\round{15 x^3} + \round{51 y}}x^3} + \round{15 \round{y^2}}}}$ &
+$\frac{1}{81}γ_{228ι^6+2\Multiply81}$
+\end{tabular}
+\end{center}
+For a bound of about $4.81u$ on the denominator, a more modest improvement of $\frac{5}{27}u$ over
+our earlier $5u$.
 
 \subsubsection*{Sixth order rational}
 We use one iteration of the Lagny--Schröder rational method of order $6$:\[
