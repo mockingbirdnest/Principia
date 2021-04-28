@@ -5,6 +5,7 @@
 
 #include <vector>
 
+#include "base/jthread.hpp"
 #include "geometry/sign.hpp"
 #include "integrators/methods.hpp"
 #include "numerics/ulp_distance.hpp"
@@ -130,6 +131,7 @@ Instance::Solve(Instant const& t_final) {
       q[k].Increment(Δq[k]);
       v[k].Increment(Δv[k]);
     }
+    RETURN_IF_STOPPED;
     append_state(current_state);
   }
 

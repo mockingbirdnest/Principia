@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "absl/synchronization/mutex.h"
-#include "base/jthread.hpp"
+#include "base/recurring_thread.hpp"
 #include "base/not_null.hpp"
 #include "base/status.hpp"
 #include "geometry/grassmann.hpp"
@@ -34,8 +34,8 @@ namespace physics {
 namespace internal_ephemeris {
 
 using base::Error;
-using base::jthread;
 using base::not_null;
+using base::RecurringThread;
 using base::Status;
 using geometry::Instant;
 using geometry::Position;
@@ -426,7 +426,7 @@ class Ephemeris {
       std::unique_ptr<Checkpointer<serialization::Ephemeris>>> checkpointer_;
 
   // The techniques and terminology follow [Lov22].
-  jthread reanimator_;
+  RecurringThread<std::set<Instant>> reanimator_;
 
   // The fields above this line are fixed at construction and therefore not
   // protected.  Note that |ContinuousTrajectory| is thread-safe.  |lock_| is

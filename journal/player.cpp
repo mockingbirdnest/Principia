@@ -20,6 +20,8 @@ using base::HexadecimalEncoder;
 using base::UniqueArray;
 using interface::principia__ActivatePlayer;
 
+using namespace std::chrono_literals;
+
 namespace journal {
 
 Player::Player(std::filesystem::path const& path)
@@ -57,6 +59,15 @@ bool Player::Play(int const index) {
   }
 
 #if 0
+  LOG_IF(
+      ERROR,
+      method_in->HasExtension(serialization::VesselGetAnalysis::extension) ||
+      method_in->HasExtension(serialization::DeleteInterchange::extension))
+      << "index: " << index << "\n"
+      << method_in->ShortDebugString() << "\n"
+      << method_out_return->ShortDebugString();
+#endif
+#if 0
   LOG_IF(ERROR, index > 3170000) << "index: " << index << "\n"
                                  << method_in->ShortDebugString() << "\n"
                                  << method_out_return->ShortDebugString();
@@ -67,8 +78,9 @@ bool Player::Play(int const index) {
 #include "journal/player.generated.cc"
 
   auto const after = std::chrono::system_clock::now();
-  if (after - before > std::chrono::milliseconds(100)) {
-    LOG(ERROR) << "Long method:\n" << method_in->DebugString();
+  if (after - before > 100ms) {
+    LOG(ERROR) << "Long method (" << (after - before) / 1ms << " ms):\n"
+               << method_in->DebugString();
   }
 
   last_method_in_.swap(method_in);
