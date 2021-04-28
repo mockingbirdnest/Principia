@@ -251,6 +251,7 @@ Ephemeris<Frame>::Ephemeris(
 
   IntegrationProblem<NewtonianMotionEquation> problem;
   problem.equation = MakeMassiveBodiesNewtonianMotionEquation();
+  reanimator_.Start();
 
   typename NewtonianMotionEquation::SystemState& state = problem.initial_state;
   state.time = DoublePrecision<Instant>(initial_time);
