@@ -82,6 +82,11 @@ double ContinuousTrajectory<Frame>::average_degree() const {
 }
 
 template<typename Frame>
+Time ContinuousTrajectory<Frame>::polynomial_span() const {
+  return divisions * step_;
+}
+
+template<typename Frame>
 Status ContinuousTrajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {

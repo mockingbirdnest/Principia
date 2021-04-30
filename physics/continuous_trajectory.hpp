@@ -65,6 +65,9 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // benchmarking or analyzing performance.  Do not use in real code.
   double average_degree() const EXCLUDES(lock_);
 
+  // How much time is covered by a single polynomial.
+  Time polynomial_span() const;
+
   // Appends one point to the trajectory.  |time| must be after the last time
   // passed to |Append| if the trajectory is not empty.  The |time|s passed to
   // successive calls to |Append| must be equally spaced with the |step| given
@@ -120,7 +123,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
       const EXCLUDES(lock_);
   template<typename F = Frame,
            typename = std::enable_if_t<base::is_serializable_v<F>>>
-  // The parameter |using_checkpoint_at_or_before| indicates that the ephemeris
+  // The parameter |using_checkpoint_at_or_before| indicates that the trajectory
   // must be restored at the state it had at the checkpoint that was taken at or
   // immediately before that time.
   static not_null<std::unique_ptr<ContinuousTrajectory>> ReadFromMessage(

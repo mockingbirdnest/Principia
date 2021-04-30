@@ -727,7 +727,7 @@ void Ephemeris<Frame>::WriteToMessage(
 template<typename Frame>
 template<typename, typename>
 not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
-    Instant const& using_checkpoint_at_or_before,
+    Instant const& desired_t_min,
     serialization::Ephemeris const& message) {
   bool const is_pre_ἐρατοσθένης = !message.has_accuracy_parameters();
   bool const is_pre_fatou = !message.has_checkpoint_time();
@@ -796,6 +796,15 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
             ephemeris->MakeCheckpointerReader(),
             message.checkpoint());
   }
+
+  // Care is required to produce an ephemeris whose |t_min()| will be at or
+  // before |desired_t_min|: say that a snapshot was taken with 3 points in the
+  // trajectories |last_points_| member.  After restoring from that checkpoint
+  // and prolonging, |t_min()| will be 5 steps after the checkpoint time.  To
+  // deal with this situation, we pick a checkpoint that is 8 steps before
+  // |desired_t_min|.
+  Instant const using_checkpoint_at_or_before =
+      desired_t_min - ephemeris->trajectories_.front()->polynomial_span();
 
   LOG(INFO) << "Restoring to checkpoint at "
             << ephemeris->checkpointer_->checkpoint_at_or_before(
