@@ -24,6 +24,8 @@
 % so we make them grow for readability.
 \newcommand{\round}[1]{\doubleSquareBrackets*{#1}}
 \newcommand{\roundTowardZero}[1]{\doubleSquareBrackets{#1}_0}
+\newcommand{\roundTowardPositive}[1]{\doubleSquareBrackets{#1}_+}
+\newcommand{\roundTowardNegative}[1]{\doubleSquareBrackets{#1}_-}
 \newcommand{\hex}[1]{{_{16}}\mathrm{#1}}
 \newcommand{\bin}[1]{{_{2}}\mathrm{#1}}
 
@@ -338,23 +340,14 @@ By the lemma, for the value of $x$ in Lagny’s rational method, $x+\frac{1}{2}a
 
 \section*{A faithfully rounded cube root}
 
-We now turn to the computation in \texttt{numerics/cbrt.cpp}.
-
-\subsection*{Overview}
-Our general approach to computing a faithfully rounded cube root of $y>0$ is the one described in \cite{KahanBindel2001}:
-\begin{enumerate}
-\item integer arithmetic is used to get a an initial quick approximation $q$ of $\cuberoot y$;
-\item a root finding method is used to improve that that to an approximation $ξ$ with a third of the precision;
-\item $ξ$ is rounded to a third of the precision, resulting in the rounded approximation $x$ whose cube $x^3$ can be computed exactly;
-\item a single high order iteration of a root finding method is used to get the faithfully rounded result $r_0$.
-\end{enumerate}
+We now turn to the computation of the cube root of $y$ in \texttt{numerics/cbrt.cpp}.
 
 \subsection*{Notation}
 We define the fractional part as $\FractionalPart a\DefineAs a-\Floor a\in\intclop{0}{1}$, regardless of the sign of $a$.
 
 The floating-point format used throughout is binary64; the quantities $p\in\N$ (precision in bits) and $\bias\in\N$ are 
 defined as in IEEE 754-2008, $p=53$ and $\bias=1023$.
-Some of the individual methods discussed may be of general use; we thus give all inexact constants
+Some of the individual methods discussed may be of general use; we thus give all inexact constants used in such methods
 rounded to thirty-five decimal places and twenty-nine hexadecimal places, which suffices for
 decimal128, binary128, and all smaller formats. A superscript sign after the last
 digit serves as the sticky bit\footnote{We learned of this practice from Steve Canon, who found it
@@ -376,9 +369,15 @@ We use capital Latin letters for fixed-point numbers involved in the computation
 \end{align*}
 This corresponds to \cite{KahanBindel2001}'s $B+K+F$.
 
-For both fixed- and floating-point numbers, given $α\in\R$, we write $\round{α}$ for the nearest representable number (rounding ties to even), and $\roundTowardZero{α}$ for directed
-rounding towards $0$ to the fixed-point precision.
-We write the unit roundoff $u\DefineAs2^{-p}$, and, after \cite[63]{Higham2002}, $γ_n\DefineAs\frac{nu}{1-nu}$.
+For both fixed- and floating-point numbers, given $α\in\R$, we write:
+\begin{itemize}[nosep]
+\item $\round{α}$ for the nearest representable number, rounding ties to even---IEEE 754-2008 rounding-direction attribute roundTiesToEven---;
+\item $\roundTowardPositive{α}$ for directed rounding toward positive infinity---roundTowardPositive---;
+\item $\roundTowardNegative{α}$ for directed rounding toward negative infinity---roundTowardNegative---;
+\item $\roundTowardZero{α}$ for directed rounding toward $0$---roundTowardZero.
+\end{itemize}
+We write the unit roundoff $u\DefineAs2^{-p}$ (for rounding to nearest), and, after
+\cite[63]{Higham2002}, $γ_n\DefineAs\frac{nu}{1-nu}$.
 We discuss other rounding modes in appendix~\ref{OtherRoundingModes}.
 
 To quote \cite{Trefethen1997}, ``If rounding errors vanished, 95\% of numerical analysis would remain''.
@@ -389,6 +388,15 @@ prime, which correspond to their primeless counterparts by removal of all interv
 The input $y$ and all intervening floating-point numbers are taken to be normal; the rescaling performed
 to avoid overflows also avoids subnormals. We work only with correctly rounded addition, subtraction,
 multiplication, division, and square root; FMA is treated separately in appendix~\ref{FMA}.
+
+\subsection*{Overview}
+Our general approach to computing a faithfully rounded cube root of $y>0$ is the one described in \cite{KahanBindel2001}:
+\begin{enumerate}
+\item integer arithmetic is used to get a an initial quick approximation $q$ of $\cuberoot y$;
+\item a root finding method is used to improve that that to an approximation $ξ$ with a third of the precision;
+\item $ξ$ is rounded to a third of the precision, resulting in the rounded approximation $x$ whose cube $x^3$ can be computed exactly;
+\item a single high order iteration of a root finding method is used to get the faithfully rounded result $r_0$.
+\end{enumerate}
 
 \subsection{Quick approximation}\label{QuickApproximation}
 The quick approximation $q$ is computed using fixed-point arithmetic as\[
@@ -623,7 +631,7 @@ have double the error of the optimized irrational method.
 
 The number $x$ is obtained from $ξ$ by rounding to $\smash{\Floor{\frac{p}{3}}}$ bits.
 
-\subsubsection*{Directed rounding towards zero}
+\subsubsection*{Directed rounding toward zero}
 An easy solution is to zero all but the most significant $\smash{\Floor{\frac{p}{3}}}$ bits of $ξ$.
 
 The resulting relative error $\abs{\frac{x}{ξ}-1}$is greatest when the zeroed bits are all $1$ and the
@@ -867,16 +875,42 @@ However, the poorer bound on the maximal error means that we must instead use th
 ``potential misrounding'' path less often.
 
 \section*{Correct rounding}
-The difference between $r_0=\round{r}$ and the unrounded $r$ can be computed as
-described in \cite[224]{Dekker1971}, $r_1\DefineAs x-r_0+Δ$, evaluated as written
-(both operations are exact).
 We have $r=\cuberoot{y}\pa{1+ε_r}$, thus\[
 \cuberoot{y}\in\intclos{\frac{r}{1+\max\abs{ε_r}}}{\frac{r}{1-\max\abs{ε_r}}}\DefinitionOf \mathscr{I}\text.
 \]
-Consider the \emph{ties}, \idest, the number halfway betwen $r$ and its binary64
-successor and the number halfway between $r$ and its predecessor.
-If $\mathscr{I}$ contains neither of the ties, $r_0=\round{\cuberoot{y}}$;
+Consider the \emph{ties}, \idest, the number halfway betwen $r_0$ and its binary64
+successor and the number halfway between $r_0$ and its predecessor.
+If $\mathscr{I}$ contains neither of the ties, $r_0=\round{\cuberoot{y}}$:
 the faithful method returned a correct result.
+
+This criterion may be determined as follows. The difference between $r_0=\round{r}$ and
+the unrounded $r$ can be computed as described in \cite[224]{Dekker1971}, $r_1\DefineAs x-r_0+Δ$,
+evaluated as written (both operations are exact). The potential other candidate for
+$\round{\cuberoot{y}}$ may be computed as $\round{r_0+2r_1}$, which is $r_0$ only if $r_1$ is below
+a quarter-unit in the last place—in which case the small size of $\mathscr{I}$ ensures that it does
+not contain a tie. If $\round{r_0+2r_1}\neq r_0$, we must ascertain whether the tie lies in $\mathscr I$,\[
+\frac{\round{r_0+2r_1}+r_0}{2}\in\intclos{\frac{r}{1+\max\abs{ε_r}}}{\frac{r}{1-\max\abs{ε_r}}}\text,\]
+subtracting $r_0$ to get rid of the unrepresentable $r$ in the right-hand side,\[
+\frac{\round{r_0+2r_1}-r_0}{2}
+\in\intclos{\frac{r_1-\max\abs{ε_r}r_0}{1+\max\abs{ε_r}}}{\frac{r_1+\max\abs{ε_r}r_0}{1-\max\abs{ε_r}}}\text,\]
+subtracting $r_1$ to remove the cancellation,\[
+\frac{\round{r_0+2r_1}-r_0}{2}-r_1
+\in\intclos{-\max\abs{ε_r}\frac{r_0+r_1}{1+\max\abs{ε_r}}}{\max\abs{ε_r}\frac{r_0+r_1}{1-\max\abs{ε_r}}}\text.\]
+The left-hand-side may be computed as written; however the bounds of the interval above are not representable.
+We must relax them a little,\[
+\frac{\round{r_0+2r_1}-r_0}{2}-r_1\in
+\intclos{
+-\frac{\max\abs{ε_r}}{1+\max\abs{ε_r}}\pa{1+u}r_0}{
+ \frac{\max\abs{ε_r}}{1-\max\abs{ε_r}}\pa{1+u}r_0}\text.\]
+On an architecture where multiplications with directed rounding are not more expensive when the
+surrounding computation uses the roundTiesToEven rounding-direction attribute, these bounds may
+be used directly, provided that the constants therein have been rounded toward their respective
+signs, and the multiplication by $r_0$ be similarly rounded.
+
+If we restrict ourselves to roundTiesToAway at runtime, we must relax the bounds a little further,\[
+\intclos{
+\round{\roundTowardNegative{-\frac{\max\abs{ε_r}}{1+\max\abs{ε_r}}\pa{1+u}}r_0}\pa{1+u}}{
+ \round{\roundTowardPositive{\frac{\max\abs{ε_r}}{1-\max\abs{ε_r}}\pa{1+u}}r_0}\pa{1+u}}\text.\]
 
 Otherwise, there may be a misrounding. The correctly-rounded result may readily be computed
 using the ordinary cube root algorithm, described, \exempligratia, in Lagny's
