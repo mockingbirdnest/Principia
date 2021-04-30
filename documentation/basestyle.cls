@@ -78,7 +78,8 @@
 \newfontfamily\cjkfont{BabelStoneHan.ttf}
 \setCJKmainfont{BabelStoneHan.ttf}
 
-% TODO(egg): Switch to 𒀭𒀝𒌷𒀏𒄴𒈽 when that is done.
+% TODO(egg): Switch to 𒀭𒀝𒌷𒀏𒄴𒋢𒊻 after fixing the font size
+% and the kerning of the relevant signs.
 \newfontfamily\xsuxfont{Segoe UI Historic}
 
 % Layout.

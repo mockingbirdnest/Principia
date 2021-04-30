@@ -16,6 +16,7 @@
 
 % REMOVE BEFORE FLIGHT: move to basestyle.
 \usepackage[all]{nowidow}
+\usepackage{tabls}
 
 %%%% Shorthands.
 \DeclareMathOperator{\bias}{\mathit{bias}}
@@ -24,6 +25,7 @@
 \newcommand{\round}[1]{\doubleSquareBrackets*{#1}}
 \newcommand{\roundTowardZero}[1]{\doubleSquareBrackets{#1}_0}
 \newcommand{\hex}[1]{{_{16}}\mathrm{#1}}
+\newcommand{\bin}[1]{{_{2}}\mathrm{#1}}
 
 % For alignment of tabular rounding error analyses.
 \DeclareDelimiter\doubleSquareBracketEmptyUnkerned{\lBrack}{.}
@@ -124,11 +126,11 @@ where\[
 T_{n}\DefineAs\sum{k=0}[n]\frac{f^{\pa{n}}\of{a}}{\Factorial k}\pa{x-\tfrac{1}{2}a}^k\text.
 \]
 The rest of the method remains unchanged; the iteration is given by $\FunctionBody{a}{x+\frac{1}{2}a}$ for a root $x$ of $E_{d}$.
-When $f$ is a monic polynomial of degree $p$, (\ref{GeneralizedLagnyEquations}) is equivalent to (\ref{LagnyEquations}), so that
+When $f$ is a monic polynomial of degree $p$, the definitions (\ref{GeneralizedLagnyEquations}) are equivalent to (\ref{LagnyEquations}), so that
 we recover Lagny's method.
 When $f$ is not a polynomial of degree $p$, we thus call the method defined by (\ref{GeneralizedLagnyEquations}) the
 \emph{generalized Lagny method of degree $d$ and order $p$}; we use the terms ``rational'', ``quadratic irrational'',
-etc. for $d=1$, $d=2$, etc. respectively.
+etc.\ for $d=1$, $d=2$, etc.\ respectively.
 
 Note that while the $E_n$ defined in this fashion may not have degree $n$ if the higher
 derivatives of $f$ vanish, \exempligratia, for a polynomial of degree less than $p$, the calculation
@@ -156,7 +158,7 @@ Has Regulas, cum nondum librum videram, ab amico communicatas habui
 and it appears that said friend communicated only the formulæ for the cube and fifth root, as opposed to the
 general method and its proof, as Halley writes
 \begin{quote}
-[...] \emph{D. de Lagney} [...] qui cum totus fere ſit in eliciendis Poteſtatum purarum radicibus,
+[...] \emph{D.~de Lagney} [...] qui cum totus fere ſit in eliciendis Poteſtatum purarum radicibus,
 præfertim Cubicâ, pauca tantum eaque perplexa nec ſatis demonſtrata de affectarum radicum
 extractione ſubjungit.
 \end{quote}
@@ -187,7 +189,7 @@ a\mapsto a + \pa{p-1}\frac{\pa{1/f}^{\pa{p-2}}\of{a}}{\pa{1/f}^{\pa{p-1}}\of{a}}
 \end{equation}
 \end{proposition}
 The iteration (\ref{LagnyRationaliteration}) is a special case of the \foreign{Algorithmen $\pa{A^λ_ω}$} defined by Schröder for an
-arbitrary polynomial $f$ in \cite[349\psq]{Schröder1870}, equation (69); specifically, it is $\pa{A^0_{p-1}}$.
+arbitrary polynomial $f$ in \cite[349~\psq]{Schröder1870}, equation (69); specifically, it is $\pa{A^0_{p-1}}$.
 As seen in the proof of the proposition, it is also a special case of Householder’s  equation (14) from \cite[169]{Householder1970}, which generalizes it by substituting $f/g$ for $f$. The case
 $g\Identically1$ is mentioned in theorem 4.4.2, and that expression is given explicitly in \cite{SebahGourdon2001}.
 
@@ -360,7 +362,7 @@ in a re-edition of \cite[VIII]{Bruhns1870}; there it is only present on the digi
 against double-rounding to the nearest decimal place.
 As mentioned in Hoüel's foreword to \cite[II]{Schrön1873}, this practice, originally seen as a way to
 convey another bit of precision rather than a way to ensure correct rounding, dates back to at least
-1827, in \cite[X]{Babbage1827}, 8th rule. Like Babbage and Schrön, we give this bit regardless of
+1827; see \cite[X]{Babbage1827}, 8th rule. Like Babbage and Schrön, we give this bit regardless of
 the last digit; this allows for directed rounding.}:
 the unrounded quantity is in excess of the rounded one if the sign is $+$,
 and in default if it is $-$.
@@ -374,10 +376,8 @@ We use capital Latin letters for fixed-point numbers involved in the computation
 \end{align*}
 This corresponds to \cite{KahanBindel2001}'s $B+K+F$.
 
-For both fixed- and floating-point numbers, given $α\in\R$, we write $\round{α}$ for the nearest representable
-number (rounding ties to even).
-For fixed-point numbers, we write $\roundTowardZero{α}$ for directed rounding towards $0$ to the fixed-point
-precision (as in division implemented with integer division).
+For both fixed- and floating-point numbers, given $α\in\R$, we write $\round{α}$ for the nearest representable number (rounding ties to even), and $\roundTowardZero{α}$ for directed
+rounding towards $0$ to the fixed-point precision.
 We write the unit roundoff $u\DefineAs2^{-p}$, and, after \cite[63]{Higham2002}, $γ_n\DefineAs\frac{nu}{1-nu}$.
 We discuss other rounding modes in appendix~\ref{OtherRoundingModes}.
 
@@ -390,7 +390,7 @@ The input $y$ and all intervening floating-point numbers are taken to be normal;
 to avoid overflows also avoids subnormals. We work only with correctly rounded addition, subtraction,
 multiplication, division, and square root; FMA is treated separately in appendix~\ref{FMA}.
 
-\subsection{Quick approximation}
+\subsection{Quick approximation}\label{QuickApproximation}
 The quick approximation $q$ is computed using fixed-point arithmetic as\[
 Q\DefineAs C + \roundTowardZero{\frac{Y}{3}}\text,
 \]
@@ -661,7 +661,9 @@ The error of $r$ is thus\begin{align*}
 \end{align*}
 and that of the faithfully-rounded result $r_0$ is $ε_r\pa{1+υ}$ for some $\abs υ \le u$.
 
-We compute bounds for $ε_{r_0}'$ and $δ$ for two different methods.
+It is easy to make $ε_r'$ negligible by increasing the order of the method; the main
+contribution to misrounding is then $δε_x$: this is why $ε_x$ needed to be kept low in step~\ref{QuickApproximation}.
+We now compute bounds for $ε_r'$ and $δ$ for two different methods.
 
 \subsubsection*{Fifth order rational}
 We use one iteration of the Lagny--Schröder rational method of order $5$:
@@ -685,7 +687,7 @@ straightforward.
 All remaining sums being of positive terms, their relative error is readily bounded by the
 largest of those of their terms. This leads to bounds of $γ_{5}$ on the numerator and $γ_{5}$ on
 the denominator, overall \[
-δ=\frac{1+γ_{6}}{1-γ_{5}}-1<\frac{γ_{11}}{1-γ_{5}}\approx11u\text.\]
+δ<\frac{1+γ_{6}}{1-γ_{5}}-1<\frac{γ_{11}}{1-γ_{5}}\approx11u\text.\]
 
 However, considering that our final bound on $ε_r$, and thus our misrounding estimate,
 is nearly proportional to this error, a more careful analysis is warranted.
@@ -703,12 +705,12 @@ where $ι\DefineAs\frac{1+\abs{ε_x}}{1-\abs{ε_x}}$.
 
 With this property, we can, in particular, take advantage of the exact multiplication by
 $16$ in the numerator; the rounding error analysis of the numerator is as follows.
+\begin{center}
 % The phantom/llap dance is there to work around the impossibility of alignment across
 % matched brackets.
-\begin{center}
-\begin{tabular}{l r}
+\begin{tabular*}{\textwidth}{l @{\extracolsep{\fill}} r}
 Expression                    & Bound on the rounding error\\
-\hline\\
+\hline
 $\hphantom{\leftRound{\pa{x^3-y}\leftRound{\leftRound{\leftRound{\round{10x^3}+16y}}}}}
 \mathllap{\round{10x^3} + 16y}$ &
 $ι^{3}\frac{10u}{26} < γ_{\frac{10}{26}ι^{3}}$ \\
@@ -720,21 +722,24 @@ $\hphantom{\leftRound{\pa{x^3-y}\leftRound{\round{\round{\round{10x^3}+16y}x^3}}
 $γ_{\frac{10}{26}ι^{3}+2}$ \\
 $\hphantom{\leftRound{\pa{x^3-y}\leftRound{\round{\round{\round{10x^3}+16y}x^3}+\round{y^2}}}}
 \mathllap{\round{\round{\round{10x^3} + 16y}x^3} + \round{y^2}}$ &
-$ι^{6}\frac{1}{27}\pa{26γ_{\frac{10}{26}ι^{3}+2} + u}<\frac{1}{27}γ_{10ι^{9}+\pa{2\Multiply 26+1}ι^{6}}$\\
+% This rounding error runs into the footprint of the 𒋛𒄥𒊏𒋾, so we need a mathllap;
+% this looks OK because there is plenty of margin between it and the current level.
+$\mathllap{ι^{6}\frac{1}{27}\pa{26γ_{\frac{10}{26}ι^{3}+2} + u}<\frac{1}{27}γ_{10ι^{9}+\pa{2\Multiply 26+1}ι^{6}}}$\\
 $\hphantom{\leftRound{\pa{x^3-y}\round{\round{\round{\round{10x^3}+16y}x^3}+\round{y^2}}}}
 \mathllap{\round{\round{\round{\round{10x^3} + 16y}x^3} + \round{y^2}}}$ &
 $\frac{1}{27}γ_{10ι^{9}+\pa{2\Multiply 26+1}ι^{6}+27}$\\
 $\round{\pa{x^3 - y} \round{\round{\round{\round{10x^3} + 16y}x^3} + \round{y^2}}}$ &
 $\frac{1}{27}γ_{10ι^{9}+\pa{2\Multiply 26+1}ι^{6}+2\Multiply27}$
-\end{tabular}
+\end{tabular*}
 \end{center}
 The resulting bound on the numerator is approximately $4.33u$, an improvement of $\frac{2}{3}u$ over
 the naïve bound of $5u$.
-We may build a similar {\xsuxfont 𒋛𒄥𒊏𒋫}\footnote{\foreign{Ziqqurrata}.} for the denominator.
+We may build a similar {\xsuxfont 𒋛𒄥𒊏𒋫}\marginnote{Transcription:\hfill\foreign{siqqurrata}. REMOVE BEFORE FLIGHT: do we want the
+akk-x-neoass spelling {\xsuxfont 𒍨𒄥𒋥}? That one is invariable though. The akk-x-midass spelling is also used by Šulmānu-ašarēdu~III.} for the denominator.
 \begin{center}
-\begin{tabular}{l r}
+\begin{tabular*}{\textwidth}{l @{\extracolsep{\fill}} r}
 Expression                    & Bound on the rounding error\\
-\hline\\
+\hline
 $\hphantom{\leftRound{x^2 \leftRound{\leftRound{\leftRound{\round{15 x^3} + \round{51 y}}}}}}
 \mathllap{\round{15 x^3} + \round{51 y}}$ &
 $γ_1$\\
@@ -752,41 +757,170 @@ $\hphantom{\leftRound{x^2 \round{\round{\round{\round{15 x^3} + \round{51 y}}x^3
 $\frac{1}{81}γ_{228ι^6+81}$\\
 $\round{x^2 \round{\round{\round{\round{15 x^3} + \round{51 y}}x^3} + \round{15 \round{y^2}}}}$ &
 $\frac{1}{81}γ_{228ι^6+2\Multiply81}$
-\end{tabular}
+\end{tabular*}
 \end{center}
-For a bound of about $4.81u$ on the denominator, a more modest improvement of $\frac{5}{27}u$ over
-our earlier $5u$.
+This is a bound of about $4.81u$ on the denominator, a more modest improvement of
+$\frac{5}{27}u$ over our earlier $5u$.
+Overall, we get the bound\[
+δ<\frac{1+\frac{1}{27}γ_{10ι^{9}+\pa{2\Multiply 26+1}ι^{6}+2\Multiply27}+γ_1}{1-\frac{1}{81}γ_{228ι^6+2\Multiply81}}-1
+<\frac{1+\frac{1}{27}γ_{10ι^{9}+\pa{2\Multiply 26+1}ι^{6}+3\Multiply27}}{1-\frac{1}{81}γ_{228ι^6+2\Multiply81}}-1\text,
+\]
+approximately $10.14u$.
+
+REMOVE BEFORE FLIGHT: give the resulting bound for $ε_r$ using Lagny's irrational method with Canon optimization.
 
 \subsubsection*{Sixth order rational}
-We use one iteration of the Lagny--Schröder rational method of order $6$:\[
-r_0\DefineAs\round{x-\round{\frac{
+An alternative is the Lagny--Schröder rational method of order $6$:\[
+Δ=\round{\frac{
 \round{\round{x\pa{x^3-y}}\round{\round{\round{\round{5x^3}+\round{17y}}x^3}+\round{5\round{y^2}}}}}{
-\round{\round{\round{\round{7x^3} + \round{42 y}}\round{x^6}}+\round{\round{\round{30x^3}+2y}\round{y^2}}}}}}\text,
+\round{\round{\round{\round{7x^3} + \round{42 y}}\round{x^6}}+\round{\round{\round{30x^3}+2y}\round{y^2}}}}}\text,
 \]
 where $x^3$ is exact thanks to the trailing $0$s of $x$, $\round{x^6}$ is correctly rounded because it is computed as
 the square of $x^3$, and $x^3-y$ is exact by Sterbenz’s lemma.
 
-In infinite precision, this method is of such high order that if $x$ has a relative error
-below $2^{-14}$, which is the case here, the relative error of the result is less than
-$2^{-100}$; we will not seek to bound the truncation error more closely, nor to tweak $Γ$
-nor the method itself to optimize it: as we will see, it is dominated by rounding.
+Here we have $\abs{ε_r'}<2^{-100}$ if $\abs{ε_x}<2^{-14}$, so the truncation error is even more
+negligible.
+For rounding error, the maximum bound on the error of the sums gives us a naïve bound of $γ_6$
+on the numerator, $γ_5$ on the denominator, overall
+\[δ<\frac{1+γ_{7}}{1-γ_{5}}-1<\frac{γ_{12}}{1-γ_{5}}\approx12u\text.\]
 
-Thanks to the exact cube and exact difference, the rounding analysis is straightforward;
-all remaining sums, being of positive terms, have a relative error bounded by the largest of
-those of their terms, so that we get no more than $γ_{4}$ on the second factor of the
-numerator, $γ_{6}$ on the whole numerator, and similarly $γ_{5}$ on the denominator,
-overall $\frac{1+γ_{7}}{1-γ_{5}}-1<\frac{γ_{12}}{1-γ_{5}}$ on the correction term.
+The following {\xsuxfont 𒋛𒄥𒊏𒀀𒌅}\marginnote{Transcription:\hfill\foreign{siqqurrātu}.} tighten the bounds on the
+sums in the numerator and the denominator in the same way as for the fifth order method.
+\begin{center}
+\begin{tabular*}{\textwidth}{l @{\extracolsep{\fill}} r}
+Expression                    & Bound on the rounding error\\
+\hline
+$\hphantom{\leftRound{\round{x\pa{x^3-y}}\leftRound{\leftRound{\leftRound{\round{5x^3}+\round{17y}}}}}}
+\mathllap{\round{5x^3}+\round{17y}}$ & $γ_1$\\
+$\hphantom{\leftRound{\round{x\pa{x^3-y}}\leftRound{\leftRound{\round{\round{5x^3}+\round{17y}}}}}}
+\mathllap{\round{\round{5x^3}+\round{17y}}}$ &
+$γ_2$\\
+$\hphantom{\leftRound{\round{x\pa{x^3-y}}\leftRound{\round{\round{\round{5x^3}+\round{17y}}x^3}}}}
+\mathllap{\round{\round{\round{5x^3}+\round{17y}}x^3}}$ &
+$γ_3$\\
+$\hphantom{\leftRound{\round{x\pa{x^3-y}}\leftRound{\round{\round{\round{5x^3}+\round{17y}}x^3}}}}
+\mathllap{\round{\round{\round{5x^3}+\round{17y}}x^3}}+\round{5\round{y^2}}$ &
+$ι^6 \frac{22γ_3+5γ_2}{27}<\frac{1}{27}γ_{76ι^6}$\\
+$\hphantom{\leftRound{\round{x\pa{x^3-y}}\round{\round{\round{\round{5x^3}+\round{17y}}x^3}}+\round{5\round{y^2}}}}
+\mathllap{\round{\round{\round{\round{5x^3}+\round{17y}}x^3}+\round{5\round{y^2}}}}$ &
+$\frac{1}{27}γ_{76ι^6+27}$\\
+$\hphantom{\leftRound{\round{x\pa{x^3-y}}\round{\round{\round{\round{5x^3}+\round{17y}}x^3}}+\round{5\round{y^2}}}}
+\mathllap{\round{x\pa{x^3-y}}\round{\round{\round{\round{5x^3}+\round{17y}}x^3}+\round{5\round{y^2}}}}$ &
+$\frac{1}{27}γ_{76ι^6+2\Multiply27}$\\
+$\round{\round{x\pa{x^3-y}}\round{\round{\round{\round{5x^3}+\round{17y}}x^3}+\round{5\round{y^2}}}}$ &
+$\frac{1}{27}γ_{76ι^6+3\Multiply27}$\\
+\end{tabular*}
+\end{center}
+This bound is approximately $5.81u$ on the numerator.
+\begin{center}
+\begin{tabular*}{\textwidth}{l @{\extracolsep{\fill}} r}
+Expression                    & Bound on the rounding error\\
+\hline
+$\hphantom{\leftRound{\round{\round{\round{7x^3} + \round{42 y}}\round{x^6}}+\leftRound{\leftRound{\round{30x^3}+2y}}}}
+\mathllap{\round{30x^3}+2y}$ &
+$ι^3\frac{30u}{32}<γ_{\frac{10}{32}ι^3}$\\
+$\hphantom{\leftRound{\round{\round{\round{7x^3} + \round{42 y}}\round{x^6}}+\leftRound{\round{\round{30x^3}+2y}}}}
+\mathllap{\round{\round{30x^3}+2y}}$ &
+$γ_{\frac{10}{32}ι^3+1}$\\
+$\hphantom{\leftRound{\round{\round{\round{7x^3} + \round{42 y}}\round{x^6}}+\leftRound{\round{\round{30x^3}+2y}\round{y^2}}}}
+\mathllap{\round{\round{30x^3}+2y}\round{y^2}}$ &
+$γ_{\frac{10}{32}ι^3+2}$\\
+$\hphantom{\leftRound{\round{\round{\round{7x^3} + \round{42 y}}\round{x^6}}+\round{\round{\round{30x^3}+2y}\round{y^2}}}}
+\mathllap{\round{\round{\round{30x^3}+2y}\round{y^2}}}$ &
+$γ_{\frac{10}{32}ι^3+3}$\\
+$\hphantom{\leftRound{\round{\round{\round{7x^3} + \round{42 y}}\round{x^6}}+\round{\round{\round{30x^3}+2y}\round{y^2}}}}
+\mathllap{\round{\round{\round{7x^3} + \round{42 y}}\round{x^6}}+
+\round{\round{\round{30x^3}+2y}\round{y^2}}}$ &
+$\smash{ι^6\frac{49γ_4+32γ_{\frac{10}{32}ι^3+3}}{81}}<\frac{1}{81}γ_{10ι^9+282ι^6}$\\
+$\round{\round{\round{\round{7x^3} + \round{42 y}}\round{x^6}}+\round{\round{\round{30x^3}+2y}\round{y^2}}}$ &
+$\frac{1}{81}γ_{10ι^9+282ι^6+81}$
+\end{tabular*}
+\end{center}
+This bound is approximately $4.61u$ on the denominator. We thus have, for the method of
+order $6$,\[
+δ<\frac{1+\frac{1}{27}γ_{76ι^6+3\Multiply27}+γ_1}{1-\frac{1}{81}γ_{10ι^9+282ι^6+81}}
+<\frac{1+\frac{1}{27}γ_{76ι^6+4\Multiply27}}{1-\frac{1}{81}γ_{10ι^9+282ι^6+81}}\,
+\]
+approximately $11.42u$.
 
-Since the relative error of $x$ is at most $\pa{1+ε_ξ}\pa{1+2^{-16}}-1$, the rounding-free
-correction term is no larger than $\pa{\pa{1+ε_ξ}\pa{1+2^{-16}}-1}\cuberoot y$, so that the absolute error of the computed correction term is bounded by\[
-\frac{γ_{12}}{1-γ_{5}}\pa{\pa{1+ε_ξ}\pa{1+2^{-16}}-1}\cuberoot y\text.
-\]
-This gives us our bound for the relative error of the result,\[
-\abs{\frac{r}{\cuberoot y}-1}<\pa{1+\frac{γ_{12}}{1-γ_{5}}\pa{\pa{1+ε_ξ}\pa{1+2^{-16}}-1}}\pa{1+u}-1\text.
-\]
-For binary64, this bound is $\displaystyle\abs{\frac{r}{\cuberoot y}-1} < 1.0004336u$.
+REMOVE BEFORE FLIGHT: give the resulting bound for $ε_r$ using Lagny's irrational method with Canon
+optimization.
+
+\subsubsection*{The unreasonable effectiveness of the sixth order rational method}
+The bound on the rounding error in the sixth order rational method is a little more than
+$1u$ worse than the one on its fifth order rational method; this is to be expected, as it
+involves more calculations and does not benefit an exact multiplication by $16$.
+Accordingly, since truncation error is negligible before rounding error for both, one might
+expect that the fifth order method would be superior. Numerical experiments suggest otherwise:
+using the method of order $6$ leads to $4.33$  misroundings per million, whereas the method of
+order $5$ leads to $4.43$ per million.
+
+The bounds on $δ$ may need to be tightened further; for instance, we have not taken any account
+of rounding errors systematically compensating each other, the error induced by $\round{y^2}$
+is the same in the numerator and the denominator, but we bound it as if it had opposite signs.
+The explanation may however lie elsewhere; the larger number of operations involved for the
+overall maximal rounding error may lead to lower average error.
+
+Whatever the reason may be, the method of order $6$ appears to be preferable should one wish
+to implement a faithful cube root---they are about equally fast on modern architectures.
+However, the poorer bound on the maximal error means that we must instead use the method of order $5$ in our correctly-rounded cube root: its better bound means that we go through the
+``potential misrounding'' path less often.
 
 \section*{Correct rounding}
+The difference between $r_0=\round{r}$ and the unrounded $r$ can be computed as
+described in \cite[224]{Dekker1971}, $r_1\DefineAs x-r_0+Δ$, evaluated as written
+(both operations are exact).
+We have $r=\cuberoot{y}\pa{1+ε_r}$, thus\[
+\cuberoot{y}\in\intclos{\frac{r}{1+\max\abs{ε_r}}}{\frac{r}{1-\max\abs{ε_r}}}\DefinitionOf \mathscr{I}\text.
+\]
+Consider the \emph{ties}, \idest, the number halfway betwen $r$ and its binary64
+successor and the number halfway between $r$ and its predecessor.
+If $\mathscr{I}$ contains neither of the ties, $r_0=\round{\cuberoot{y}}$;
+the faithful method returned a correct result.
+
+Otherwise, there may be a misrounding. The correctly-rounded result may readily be computed
+using the ordinary cube root algorithm, described, \exempligratia, in Lagny's
+\cite[286~\psqq]{FantetdeLagny1697}, used with binary digits.
+
+\subsection*{Extracting a digit}
+This method extracts a single digit of $\roundTowardZero{\cuberoot{y}}$ at each step.
+Since $\mathscr{I}$ is small enough that it cannot contain both a floating-point number
+and a tie; thus if $\mathscr{I}$ contains a tie, we know that
+$\roundTowardZero{\cuberoot{y}}=\roundTowardZero{r}\DefinitionOf a$\text; we thus have the
+first $53$ bits already. Correct rounding may be achieved by extracting a
+single additional bit: the number is in excess of the tie---and thus must be rounded
+up---if and only if that bit is $1$, because, as remarked in \cite[15]{LangMuller2000},
+there are no halfway cases for the cube root.
+
+In the ordinary cube root method, our remainder is $ρ_{53}\DefineAs y-a^3$,
+and the next bit is $1$ if and only if the next remainder would be positive with that bit,\[
+ρ_{54|1}\DefineAs ρ_{53}-3a^2b-3ab^2-b^3\geq 0\text,\]
+where $b$ is the power of two corresponding to this bit (the difference between $a$ and
+the tie).
+
+Using Veltkamp's algorithm from \cite[234]{Dekker1971} to express $a^2$ as $a^2_0+a^2_1$ with
+$a^2_0=\round{a^2}$, the remainder is\[
+ρ_{53}=y-\pa{a^2_0+a^2_1}a\text;
+\]
+with two more applications of Veltkamp's algorithm,\[
+ρ_{53}=y-a^3_{00}-a^3_{01}-a^3_{10}-a^3_{11}\text,
+\]
+where the first subtraction is representable by Sterbenz's lemma.
+The remainder cannot have more digits than two plus twice the number of digits computed for
+the cube root, \idest, $2\Multiply53+2$ significant bits, for otherwise the ``digit''
+$2=\bin{10}$ would fit in the place $b$.
+By repeated exact subtractions we may thus express it as\[
+ρ_{53}=ρ_{53;0}+ρ_{53;1}+ρ_{53;2}\text,
+\]
+where $ρ_{53;i}=\round{ρ_{53;i}+ρ_{53;i+1}}$, with ample room to spare.
+The terms $3a^2b$, $3ab^2$, and $b^3$ may then be subtracted exactly while retaining
+triple precision: they add at most three significant digits.
+The first two of these terms should be split into representable parts,\begin{align*}
+3a^2b&=2a^2_0b+a^2_0b+2a^2_1b+a^2_1b\text,\\
+3ab^2&=2ab^2+ab^2\text.
+\end{align*}
+The sign of $ρ_{54|1}$ may then be checked.
+
 
 \appendix
 \section{FMA}
