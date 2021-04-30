@@ -82,11 +82,6 @@ double ContinuousTrajectory<Frame>::average_degree() const {
 }
 
 template<typename Frame>
-Time ContinuousTrajectory<Frame>::polynomial_span() const {
-  return divisions * step_;
-}
-
-template<typename Frame>
 Status ContinuousTrajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
@@ -381,7 +376,7 @@ template<typename Frame>
 template<typename, typename>
 not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>
 ContinuousTrajectory<Frame>::ReadFromMessage(
-    Instant const& using_checkpoint_at_or_before,
+    Instant const& desired_t_min,
     serialization::ContinuousTrajectory const& message) {
   bool const is_pre_cohen = message.series_size() > 0;
   bool const is_pre_fatou = !message.has_checkpoint_time();
@@ -458,6 +453,10 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
             continuous_trajectory->MakeCheckpointerReader(),
             message.checkpoint());
   }
+
+  // See the comment in Ephemeris::ReadFromMessage for this computation.
+  Instant const using_checkpoint_at_or_before =
+      desired_t_min - polynomial_span(continuous_trajectory->step_);
 
   // This has no effect if there is no checkpoint before
   // |using_checkpoint_at_or_before|, and leaves the checkpointed fields in
@@ -560,6 +559,11 @@ ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
   } else {
     return nullptr;
   }
+}
+
+template<typename Frame>
+Time ContinuousTrajectory<Frame>::polynomial_span(Time const& step) {
+  return divisions * step;
 }
 
 template<typename Frame>

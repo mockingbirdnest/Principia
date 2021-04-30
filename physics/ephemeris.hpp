@@ -276,7 +276,7 @@ class Ephemeris {
   template<typename F = Frame,
            typename = std::enable_if_t<base::is_serializable_v<F>>>
   // The parameter |desired_t_min| indicates that the ephemeris must be restored
-  // at a checkpoint such that, once the ephemeris is prolonged, the t_min() is
+  // at a checkpoint such that, once the ephemeris is prolonged, its t_min() is
   // at or before |desired_t_min|.
   static not_null<std::unique_ptr<Ephemeris>> ReadFromMessage(
       Instant const& desired_t_min,

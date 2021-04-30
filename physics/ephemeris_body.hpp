@@ -767,12 +767,13 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
     not_null<MassiveBody const*> const body = ephemeris->bodies_[index].get();
     not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>
         deserialized_trajectory = ContinuousTrajectory<Frame>::ReadFromMessage(
-            using_checkpoint_at_or_before, trajectory);
+            desired_t_min, trajectory);
     ephemeris->trajectories_.push_back(deserialized_trajectory.get());
     ephemeris->bodies_to_trajectories_.emplace(
         body, std::move(deserialized_trajectory));
     ++index;
   }
+  CHECK_LT(0, index) << "Empty ephemeris";
 
   if (is_pre_grassmann) {
     serialization::Ephemeris serialized_ephemeris;
@@ -804,7 +805,9 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   // deal with this situation, we pick a checkpoint that is 8 steps before
   // |desired_t_min|.
   Instant const using_checkpoint_at_or_before =
-      desired_t_min - ephemeris->trajectories_.front()->polynomial_span();
+      desired_t_min -
+      ContinuousTrajectory<Frame>::polynomial_span(
+          fixed_step_parameters.step());
 
   LOG(INFO) << "Restoring to checkpoint at "
             << ephemeris->checkpointer_->checkpoint_at_or_before(

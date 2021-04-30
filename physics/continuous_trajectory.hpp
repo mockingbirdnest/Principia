@@ -65,9 +65,6 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // benchmarking or analyzing performance.  Do not use in real code.
   double average_degree() const EXCLUDES(lock_);
 
-  // How much time is covered by a single polynomial.
-  Time polynomial_span() const;
-
   // Appends one point to the trajectory.  |time| must be after the last time
   // passed to |Append| if the trajectory is not empty.  The |time|s passed to
   // successive calls to |Append| must be equally spaced with the |step| given
@@ -123,11 +120,11 @@ class ContinuousTrajectory : public Trajectory<Frame> {
       const EXCLUDES(lock_);
   template<typename F = Frame,
            typename = std::enable_if_t<base::is_serializable_v<F>>>
-  // The parameter |using_checkpoint_at_or_before| indicates that the trajectory
-  // must be restored at the state it had at the checkpoint that was taken at or
-  // immediately before that time.
+  // The parameter |desired_t_min| indicates that the trajectory must be
+  // restored at a checkpoint such that, once it is appended to, its t_min() is
+  // at or before |desired_t_min|.
   static not_null<std::unique_ptr<ContinuousTrajectory>> ReadFromMessage(
-      Instant const& using_checkpoint_at_or_before,
+      Instant const& desired_t_min,
       serialization::ContinuousTrajectory const& message);
 
   // These members call the corresponding functions of the internal
@@ -144,6 +141,9 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   MakeCheckpointerWriter();
   Checkpointer<serialization::ContinuousTrajectory>::Reader
   MakeCheckpointerReader();
+
+  // How much time is covered by a single polynomial with the given step.
+  static Time polynomial_span(Time const& step);
 
  protected:
   // For mocking.
