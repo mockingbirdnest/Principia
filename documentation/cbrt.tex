@@ -1009,6 +1009,9 @@ instead computed fastest as\[
 \]
 which is about four cycles slower than the rational method.
 
+The rounding step $\FunctionBody ξ x$ was surprisingly faster when performed using Veltkamp--Dekker than by directed rounding using \texttt{andpd} on Sandy Bridge, and about equally fast on Ivy Bridge. Given the increased precision, we thus round to nearest in that
+step.
+
 TODO(egg): Give some numbers for the rate of passage in the ``potential misrounding'' path, and its cost.
 \subsection*{With FMA}
 TODO(egg): decide on which methods we use and then report on performance here.
