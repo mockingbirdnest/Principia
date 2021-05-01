@@ -20,7 +20,6 @@
 \RequirePackage{graphicx}
 
 % Language.
-
 \RequirePackage{polyglossia}
 \setdefaultlanguage[variant=british]{english}
 \setotherlanguages{greek,german,russian,latin,french}
@@ -78,9 +77,7 @@
 \newfontfamily\cjkfont{BabelStoneHan.ttf}
 \setCJKmainfont{BabelStoneHan.ttf}
 
-% TODO(egg): Switch to 𒀭𒀝𒌷𒀏𒄴𒋢𒊻 after fixing the font size
-% and the kerning of the relevant signs.
-\newfontfamily\xsuxfont{Segoe UI Historic}
+\newfontfamily\xsuxfont{Nabuninuaihsus.otf}
 
 % Layout.
 
