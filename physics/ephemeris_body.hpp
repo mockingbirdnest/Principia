@@ -364,24 +364,15 @@ void Ephemeris<Frame>::RequestReanimation(Instant const& desired_t_min) {
 
   // If the reanimator is asked to do less work than it is currently doing,
   // interrupt it.  Note that this is fundamentally racy: for instance the
-  // reanimator may not have picked the last input given by Put.  But helps if
-  // the user was doing a very long reanimation and wants to shorten it.
+  // reanimator may not have picked the last input given by Put.  But it helps
+  // if the user was doing a very long reanimation and wants to shorten it.
   if (last_desired_t_min_.has_value() &&
       last_desired_t_min_.value() < desired_t_min) {
     reanimator_.Restart();
   }
   last_desired_t_min_ = desired_t_min;
 
-  // See the comment in Ephemeris::ReadFromMessage for this computation.
-  Instant const including_checkpoint_at_or_before =
-      desired_t_min -
-      ContinuousTrajectory<Frame>::polynomial_span(
-          fixed_step_parameters_.step());
-  Instant const oldest_reanimated_checkpoint =
-      checkpointer_->checkpoint_at_or_before(including_checkpoint_at_or_before);
-
-  // Pass the oldest checkpoint to the reanimator.
-  reanimator_.Put(oldest_reanimated_checkpoint);
+  reanimator_.Put(desired_t_min);
 }
 
 template<typename Frame>
@@ -787,16 +778,25 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
                        fixed_step_parameters);
 
   int index = 0;
+  std::optional<Instant> using_ephemeris_checkpoint;
   ephemeris->bodies_to_trajectories_.clear();
   ephemeris->trajectories_.clear();
   for (auto const& trajectory : message.trajectory()) {
+    Instant using_trajectory_checkpoint;
     not_null<MassiveBody const*> const body = ephemeris->bodies_[index].get();
     not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>
         deserialized_trajectory = ContinuousTrajectory<Frame>::ReadFromMessage(
-            desired_t_min, trajectory);
+            desired_t_min, trajectory, using_trajectory_checkpoint);
     ephemeris->trajectories_.push_back(deserialized_trajectory.get());
     ephemeris->bodies_to_trajectories_.emplace(
         body, std::move(deserialized_trajectory));
+
+    CHECK(!using_ephemeris_checkpoint.has_value() ||
+          using_ephemeris_checkpoint.value() == using_trajectory_checkpoint)
+        << "Inconsistent trajectory checkpoints: "
+        << using_ephemeris_checkpoint.value() << " vs. "
+        << using_trajectory_checkpoint;
+    using_ephemeris_checkpoint = using_trajectory_checkpoint;
     ++index;
   }
   CHECK_LT(0, index) << "Empty ephemeris";
@@ -824,26 +824,11 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
             message.checkpoint());
   }
 
-  // Care is required to produce an ephemeris whose |t_min()| will be at or
-  // before |desired_t_min|: say that a snapshot was taken with 3 points in the
-  // trajectories |last_points_| member.  After restoring from that checkpoint
-  // and prolonging, |t_min()| will be 5 steps after the checkpoint time.  To
-  // deal with this situation, we pick a checkpoint that is 8 steps before
-  // |desired_t_min|.
-  Instant const using_checkpoint_at_or_before =
-      desired_t_min -
-      ContinuousTrajectory<Frame>::polynomial_span(
-          fixed_step_parameters.step());
-  ephemeris->oldest_reanimated_checkpoint_ =
-      ephemeris->checkpointer_->checkpoint_at_or_before(
-                   using_checkpoint_at_or_before);
+  ephemeris->oldest_reanimated_checkpoint_ = using_ephemeris_checkpoint.value();
   LOG(INFO) << "Restoring to checkpoint at "
             << ephemeris->oldest_reanimated_checkpoint_;
-
-  // This has no effect if there is the checkpoint is at infinity, and leaves
-  // the checkpointed fields in their default-constructed state.
-  ephemeris->checkpointer_->ReadFromCheckpointAt(
-      ephemeris->oldest_reanimated_checkpoint_);
+  CHECK_OK(ephemeris->checkpointer_->ReadFromCheckpointAt(
+      ephemeris->oldest_reanimated_checkpoint_));
 
   // The ephemeris will need to be prolonged and reanimated as needed when
   // deserializing the plugin.
@@ -909,14 +894,20 @@ Ephemeris<Frame>::MakeCheckpointerReader() {
 }
 
 template<typename Frame>
-Status Ephemeris<Frame>::Reanimate(Instant const oldest_reanimated_checkpoint) {
+Status Ephemeris<Frame>::Reanimate(Instant const desired_t_min) {
+  // The easiest way to make sure that |desired_t_min| is covered is to start
+  // a bit earlier, enough to cover the span of a single polynomial.
+  Instant const oldest_checkpoint_to_reanimate =
+      desired_t_min -
+      ContinuousTrajectory<Frame>::divisions * fixed_step_parameters_.step();
+
   // It is very important that |oldest_reanimated_checkpoint_| is only read by
   // the |reanimator_| thread.  If the caller was trying to determine the set of
   // checkpoints to reanimate it might race with a reanimation already in flight
   // and result in the same checkpoint reanimated multiple times, which is a
   // no-no.
   std::set<Instant> const checkpoints =
-      checkpointer_->all_checkpoints_between(oldest_reanimated_checkpoint,
+      checkpointer_->all_checkpoints_between(oldest_checkpoint_to_reanimate,
                                              oldest_reanimated_checkpoint_);
 
   // This loop integrates all the segments defined by the checkpoints, going
@@ -1020,6 +1011,9 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
       LOG(ERROR) << "New Apocalypse: " << last_severe_integration_status_;
     }
   }
+
+  // Note that the checkpoint is written systematically after inserting the
+  // first point of the trajectories.
   WriteToCheckpointIfNeeded(state.time.value);
 }
 

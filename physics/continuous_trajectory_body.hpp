@@ -41,9 +41,6 @@ constexpr int max_degree = 17;
 constexpr int min_degree = 3;
 int const max_degree_age = 100;
 
-// Only supports 8 divisions for now.
-int const divisions = 8;
-
 template<typename Frame>
 ContinuousTrajectory<Frame>::ContinuousTrajectory(Time const& step,
                                                   Length const& tolerance)
@@ -356,6 +353,11 @@ void ContinuousTrajectory<Frame>::WriteToMessage(
   checkpointer_->WriteToMessage(message->mutable_checkpoint());
   step_.WriteToMessage(message->mutable_step());
   tolerance_.WriteToMessage(message->mutable_tolerance());
+
+  // TODO(phl): There should be no polynomials before the oldest checkpoint, see
+  // Ephemeris::AppendMassiveBodiesState.  This has probably been true since
+  // Fatou (#2149) and possibly Burnside (#1029).  This code should be removed,
+  // but "Beware the Compatibility, my son!".
   for (auto const& pair : polynomials_) {
     Instant const& t_max = pair.t_max;
     auto const& polynomial = pair.polynomial;
@@ -377,7 +379,8 @@ template<typename, typename>
 not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>
 ContinuousTrajectory<Frame>::ReadFromMessage(
     Instant const& desired_t_min,
-    serialization::ContinuousTrajectory const& message) {
+    serialization::ContinuousTrajectory const& message,
+    Instant& using_checkpoint) {
   bool const is_pre_cohen = message.series_size() > 0;
   bool const is_pre_fatou = !message.has_checkpoint_time();
   bool const is_pre_grassmann = message.has_adjusted_tolerance() &&
@@ -454,15 +457,29 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
             message.checkpoint());
   }
 
-  // See the comment in Ephemeris::ReadFromMessage for this computation.
-  Instant const using_checkpoint_at_or_before =
-      desired_t_min - polynomial_span(continuous_trajectory->step_);
-
-  // This has no effect if there is no checkpoint before
-  // |using_checkpoint_at_or_before|, and leaves the checkpointed fields in
-  // their default-constructed state.
-  continuous_trajectory->checkpointer_->ReadFromCheckpointAtOrBefore(
-      using_checkpoint_at_or_before);
+  // Care is required to produce a trajectory whose |t_min()| will be at or
+  // before |desired_t_min|: say that a snapshot was taken with 3 points in the
+  // |last_points_| member.  After restoring from that checkpoint and appending,
+  // |t_min()| will be 5 steps after the checkpoint time.  To deal with this
+  // situation, if the restored checkpoint is not aligned with a polynomial we
+  // go back to the previous one.
+  // For modern saves we are sure to have a checkpoint at the first point of the
+  // trajectory.  For ancient saves it's much less clear, but if we have
+  // polynomials explicitly saved they will give us a |t_min()|, hence the first
+  // condition of the if statement.
+  using_checkpoint =
+      continuous_trajectory->checkpointer_->checkpoint_at_or_before(
+          desired_t_min);
+  CHECK_OK(continuous_trajectory->checkpointer_->ReadFromCheckpointAtOrBefore(
+      using_checkpoint));
+  if (desired_t_min < continuous_trajectory->t_min() &&
+      continuous_trajectory->last_points_.size() > 1) {
+    using_checkpoint =
+        continuous_trajectory->checkpointer_->checkpoint_at_or_before(
+            using_checkpoint - continuous_trajectory->step_);
+    CHECK_OK(continuous_trajectory->checkpointer_->ReadFromCheckpointAtOrBefore(
+        using_checkpoint));
+  }
 
   return continuous_trajectory;
 }
@@ -559,11 +576,6 @@ ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
   } else {
     return nullptr;
   }
-}
-
-template<typename Frame>
-Time ContinuousTrajectory<Frame>::polynomial_span(Time const& step) {
-  return divisions * step;
 }
 
 template<typename Frame>

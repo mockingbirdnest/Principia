@@ -302,10 +302,10 @@ class Ephemeris {
   Checkpointer<serialization::Ephemeris>::Reader MakeCheckpointerReader();
 
   // Called on a stoppable thread to reconstruct the past state of the ephemeris
-  // and its trajectories starting with the given
-  // |oldest_reanimated_checkpoint|.  The member variable
-  // |oldest_reanimated_checkpoint_| tells the reanimator where to/ stop.
-  Status Reanimate(Instant const oldest_reanimated_checkpoint);
+  // and its trajectories starting in such a way that |t_min()| is at or before
+  // |desired_t_min|.  The member variable |oldest_reanimated_checkpoint_| tells
+  // the reanimator where to stop.
+  Status Reanimate(Instant const desired_t_min);
 
   // Reconstructs the past state of the ephemeris between |t_initial| and
   // |t_final| using the given checkpoint |message|.

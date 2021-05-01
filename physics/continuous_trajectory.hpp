@@ -44,6 +44,9 @@ class TestableContinuousTrajectory;
 template<typename Frame>
 class ContinuousTrajectory : public Trajectory<Frame> {
  public:
+  // Only supports 8 divisions for now.
+  static constexpr int divisions = 8;
+
   // Constructs a trajectory with the given time |step|.  Because the Чебышёв
   // polynomials have values in the range [-1, 1], the error resulting of
   // truncating the infinite Чебышёв series to a finite degree are a small
@@ -122,10 +125,12 @@ class ContinuousTrajectory : public Trajectory<Frame> {
            typename = std::enable_if_t<base::is_serializable_v<F>>>
   // The parameter |desired_t_min| indicates that the trajectory must be
   // restored at a checkpoint such that, once it is appended to, its t_min() is
-  // at or before |desired_t_min|.
+  // at or before |desired_t_min|.  The choosen checkpoint is returned in
+  // |using_checkpoint|.
   static not_null<std::unique_ptr<ContinuousTrajectory>> ReadFromMessage(
       Instant const& desired_t_min,
-      serialization::ContinuousTrajectory const& message);
+      serialization::ContinuousTrajectory const& message,
+      Instant& using_checkpoint);
 
   // These members call the corresponding functions of the internal
   // checkpointer.
@@ -141,9 +146,6 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   MakeCheckpointerWriter();
   Checkpointer<serialization::ContinuousTrajectory>::Reader
   MakeCheckpointerReader();
-
-  // How much time is covered by a single polynomial with the given step.
-  static Time polynomial_span(Time const& step);
 
  protected:
   // For mocking.
