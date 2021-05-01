@@ -84,6 +84,26 @@ std::set<Instant> Checkpointer<Message>::all_checkpoints_at_or_before(
 }
 
 template<typename Message>
+std::set<Instant> Checkpointer<Message>::all_checkpoints_between(
+    Instant const& t1,
+    Instant const& t2) const {
+  absl::ReaderMutexLock l(&lock_);
+  // |it1| denotes an entry greater or equal to |t1| (or end).
+  auto const it1 = checkpoints_.lower_bound(t1);
+  // |it2| denotes an entry strictly greater than |t2| (or end).
+  auto const it2 = checkpoints_.upper_bound(t2);
+  std::set<Instant> result;
+  std::transform(
+      it1,
+      it2,
+      std::inserter(result, result.end()),
+      [](std::pair<Instant, typename Message::Checkpoint> const& pair) {
+        return pair.first;
+      });
+  return result;
+}
+
+template<typename Message>
 void Checkpointer<Message>::WriteToCheckpoint(Instant const& t) {
   absl::MutexLock l(&lock_);
   WriteToCheckpointLocked(t);
@@ -156,6 +176,11 @@ Status Checkpointer<Message>::ReadFromCheckpointAt(Instant const& t,
     }
   }
   return reader(it->second);
+}
+
+template<typename Message>
+Status Checkpointer<Message>::ReadFromCheckpointAt(Instant const& t) const {
+  return ReadFromCheckpointAt(t, reader_);
 }
 
 template<typename Message>

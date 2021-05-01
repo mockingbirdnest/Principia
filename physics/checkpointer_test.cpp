@@ -148,6 +148,21 @@ TEST_F(CheckpointerTest, ReadFromCheckpointAtOrBefore) {
   EXPECT_THAT(checkpointer_.all_checkpoints_at_or_before(t2 + 1 * Second),
               ElementsAre(t1, t2));
 
+  EXPECT_THAT(checkpointer_.all_checkpoints_between(Instant() + 1 * Second,
+                                                    Instant() + 3 * Second),
+              IsEmpty());
+  EXPECT_THAT(checkpointer_.all_checkpoints_between(Instant() + 1 * Second,
+                                                    t1),
+              ElementsAre(t1));
+  EXPECT_THAT(checkpointer_.all_checkpoints_between(Instant() + 1 * Second,
+                                                    t2 + 1 * Second),
+              ElementsAre(t1, t2));
+  EXPECT_THAT(checkpointer_.all_checkpoints_between(t1, t2),
+              ElementsAre(t1, t2));
+  EXPECT_THAT(checkpointer_.all_checkpoints_between(t1 - 1 * Second,
+                                                    t2 + 1 * Second),
+              ElementsAre(t1, t2));
+
   EXPECT_THAT(
       checkpointer_.ReadFromCheckpointAtOrBefore(Instant() + 1 * Second),
       StatusIs(Error::NOT_FOUND));
