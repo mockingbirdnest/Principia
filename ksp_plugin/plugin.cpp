@@ -1266,6 +1266,10 @@ Velocity<World> Plugin::VesselVelocity(GUID const& vessel_guid) const {
   return VesselVelocity(back.time, back.degrees_of_freedom);
 }
 
+void Plugin::RequestReanimation(Instant const& desired_t_min) const {
+  ephemeris_->RequestReanimation(desired_t_min);
+}
+
 Instant Plugin::GameEpoch() const {
   return game_epoch_;
 }

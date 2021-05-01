@@ -207,10 +207,16 @@ Iterator* __cdecl principia__PlanetariumPlotCelestialTrajectoryForPsychohistory(
   } else {
     auto const& celestial_trajectory =
         plugin->GetCelestial(celestial_index).trajectory();
-    Instant const first_time = std::max(
-        plugin->CurrentTime() - max_history_length * Second,
-            celestial_trajectory.t_min());
-    plugin->TriggerReanimation(first_time);
+    Instant const desired_first_time =
+        plugin->CurrentTime() - max_history_length * Second;
+
+    // Since we would want to plot starting from |desired_first_time|, ask the
+    // reanimator to reconstruct the past.  That may take a while, during which
+    // time the history will be shorter than desired.
+    plugin->RequestReanimation(desired_first_time);
+
+    Instant const first_time =
+        std::max(desired_first_time, celestial_trajectory.t_min());
     auto const rp2_lines =
         planetarium->PlotMethod2(celestial_trajectory,
                                  first_time,

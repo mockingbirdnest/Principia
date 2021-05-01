@@ -421,6 +421,8 @@ class Plugin {
   // of a vessel in |vessels_|.
   virtual Velocity<World> VesselVelocity(GUID const& vessel_guid) const;
 
+  void RequestReanimation(Instant const& desired_t_min) const;
+
   virtual Instant GameEpoch() const;
 
   virtual Instant CurrentTime() const;
