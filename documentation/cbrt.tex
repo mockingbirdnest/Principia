@@ -654,9 +654,9 @@ $\abs{ε_x} < \pa{1+\abs{ε_ξ}}\pa{1+2^{-17}}-1$.
 \subsection{High order iteration}
 
 We compute the faithfully rounded result $r_0$ as the correctly rounded sum of the rounded approximation
-and a correction term,\[
-r\DefineAs x+Δ\text{, }r_0\DefineAs\round{r}\text,
-\]
+and a correction term,\begin{equation}
+r\DefineAs x+Δ\text{, }r_0\DefineAs\round{r}\text,\label{AdditiveCorrection}
+\end{equation}
 where the correction term $Δ$ is that of a high-order root finding method.
 As usual, we call the infinite-precision correction term $Δ'$, and $r'\DefineAs x+Δ'$.
 The truncation error is \[ε_r'\DefineAs\frac{\round{x+Δ'}}{\cuberoot y}-1\text.\]
@@ -671,7 +671,10 @@ and that of the faithfully-rounded result $r_0$ is $ε_r\pa{1+υ}$ for some $\ab
 
 It is easy to make $ε_r'$ negligible by increasing the order of the method; the main
 contribution to misrounding is then $δε_x$: this is why $ε_x$ needed to be kept low in step~\ref{QuickApproximation}.
+
 We now compute bounds for $ε_r'$ and $δ$ for two different methods.
+Note that we do not consider the generalized Lagny irrational methods here, as their computation without FMA involves
+ill-conditioned differences after inexact operations.
 
 \subsubsection*{Fifth order rational}
 We use one iteration of the Lagny--Schröder rational method of order $5$:
@@ -687,7 +690,8 @@ and $y-x^3$ is exact by Sterbenz’s lemma.
 In infinite precision, this method is of such high order that if $\log_2\abs{ε_x} < 14.5$, which
 is the case
 even if $ξ$ is computed by the rational method, the relative error $ε_r'$ of the result is less than
-$2^{-75}$. We will not seek to bound the truncation error more closely, nor to tweak the constants in
+$2^{-75}$; if $ξ$ is computed by the irrational method with Canon optimization, the error is below $2^{-86}$.
+We will not seek to bound the truncation error more closely, nor to tweak the constants in
 the method to optimize it: as we will see, it is dominated by rounding.
 
 Thanks to the exact cube and exact difference, the rounding analysis of the correction term is
@@ -699,8 +703,7 @@ the denominator, overall \[
 
 However, considering that our final bound on $ε_r$, and thus our misrounding estimate,
 is nearly proportional to this error, a more careful analysis is warranted.
-Observe that $x^3=y\pa{1+ε_x}^3$, so that a sum
-\[Σ'=α x^{m}y^{p-m} + β x^{n}y^{p-n}\]
+Observe that $x^3=y\pa{1+ε_x}^3$, so that a sum $Σ'=α x^{m}y^{p-m} + β x^{n}y^{p-n}$
 evaluated with terms that carry the errors $δ_i$ as
 \[Σ=α x^{m}y^{p-m}\pa{1+δ_1} + β x^{n}y^{p-n}\pa{1+δ_2}\]
 has the error\[
@@ -876,8 +879,9 @@ However, the poorer bound on the maximal error means that we must instead use th
 
 \section*{Correct rounding}
 We have $r=\cuberoot{y}\pa{1+ε_r}$, thus\[
-\cuberoot{y}\in\intclos{\frac{r}{1+\max\abs{ε_r}}}{\frac{r}{1-\max\abs{ε_r}}}\DefinitionOf \mathscr{I}\text.
+\cuberoot{y}\in\intclos{\frac{r}{1+\bar ε_r}}{\frac{r}{1-\bar ε_r}}\DefinitionOf \mathscr{I}\text,
 \]
+where $\bar ε_r$ is a bound for $\bar ε_r$.
 Consider the \emph{ties}, \idest, the number halfway betwen $r_0$ and its binary64
 successor and the number halfway between $r_0$ and its predecessor.
 If $\mathscr{I}$ contains neither of the ties, $r_0=\round{\cuberoot{y}}$:
@@ -889,32 +893,33 @@ evaluated as written (both operations are exact). The potential other candidate 
 $\round{\cuberoot{y}}$ may be computed as $\tilde r\DefineAs\round{r_0+2r_1}$, which is $r_0$ only if $r_1$ is below
 a quarter-unit in the last place—in which case the small size of $\mathscr{I}$ ensures that it does
 not contain a tie. If $\tilde r\neq r_0$, we must ascertain whether the tie lies in $\mathscr I$,\[
-\frac{\tilde r+r_0}{2}\in\intclos{\frac{r}{1+\max\abs{ε_r}}}{\frac{r}{1-\max\abs{ε_r}}}\text,\]
+\frac{\tilde r+r_0}{2}\in\intclos{\frac{r}{1+\bar ε_r}}{\frac{r}{1-\bar ε_r}}\text,\]
 subtracting $r_0$ to get rid of the unrepresentable $r$ in the right-hand side,\[
 \frac{\tilde r-r_0}{2}
-\in\intclos{\frac{r_1-\max\abs{ε_r}r_0}{1+\max\abs{ε_r}}}{\frac{r_1+\max\abs{ε_r}r_0}{1-\max\abs{ε_r}}}\text,\]
+\in\intclos{\frac{r_1-\bar ε_rr_0}{1+\bar ε_r}}{\frac{r_1+\bar ε_rr_0}{1-\bar ε_r}}\text,\]
 subtracting $r_1$ to remove the cancellation,\[
 \frac{\tilde r-r_0}{2}-r_1
-\in\intclos{-\max\abs{ε_r}\frac{r_0+r_1}{1+\max\abs{ε_r}}}{\max\abs{ε_r}\frac{r_0+r_1}{1-\max\abs{ε_r}}}\text.\]
+\in\intclos{-\bar ε_r\frac{r_0+r_1}{1+\bar ε_r}}{\bar ε_r\frac{r_0+r_1}{1-\bar ε_r}}\text.\]
 The left-hand-side may be computed as written; however the bounds of the interval above are not representable.
 We must relax them a little,\[
 \frac{\tilde r-r_0}{2}-r_1\in
 \intclos{
--\frac{\max\abs{ε_r}}{1+\max\abs{ε_r}}\pa{1+u}r_0}{
- \frac{\max\abs{ε_r}}{1-\max\abs{ε_r}}\pa{1+u}r_0}\text.\]
+-\frac{\bar ε_r}{1+\bar ε_r}\pa{1+u}r_0}{
+ \frac{\bar ε_r}{1-\bar ε_r}\pa{1+u}r_0}\text.\]
 On an architecture where multiplications with directed rounding are not more expensive when the
 surrounding computation uses the roundTiesToEven rounding-direction attribute, these bounds may
 be used directly, provided that the constants therein have been rounded toward their respective
 signs, and the multiplication by $r_0$ be similarly rounded.
 
 If we restrict ourselves to roundTiesToEven at runtime, we must relax the bounds some more,\[
+\frac{\tilde r-r_0}{2}-r_1\in
 \intclos{
-\round{\roundTowardNegative{-\frac{\max\abs{ε_r}}{1+\max\abs{ε_r}}\pa{1+\frac{2u}{1-u}}}r_0}}{
- \round{\roundTowardPositive{\frac{\max\abs{ε_r}}{1-\max\abs{ε_r}}\pa{1+\frac{2u}{1-u}}}r_0}}\text.\]
+\round{\roundTowardNegative{-\frac{\bar ε_r}{1+\bar ε_r}\pa{1+\frac{2u}{1-u}}}r_0}}{
+ \round{\roundTowardPositive{\frac{\bar ε_r}{1-\bar ε_r}\pa{1+\frac{2u}{1-u}}}r_0}}\text.\]
 We may widen this interval slightly into one that is symmetric about $0$, thus requiring only one comparison
 \[\abs{\tilde r-r_1}\leq \round{τr_0}\text,\]
 with\begin{align*}
-τ&\DefineAs\roundTowardPositive{\frac{\max\abs{ε_r}}{1-\max\abs{ε_r}}\pa{1+\frac{2u}{1-u}}}\\
+τ&\DefineAs\roundTowardPositive{\frac{\bar ε_r}{1-\bar ε_r}\pa{1+\frac{2u}{1-u}}}\\
  &=\hex{DEAD\,BEEF}\text,
 \end{align*}
 where we have used the constants for Lagny's irrational method with Canon optimization, followed by
@@ -980,65 +985,49 @@ It seems that Canon optimization on the latter can readily bring down its rerror
 further.
 With the methods of order $5$, the errors are below $2^{-28}$; little stands to be gained from optimization.
 
-Conversely the computation of $r_0$ from $x$ may use a lower-order method, since it starts from $26$ rather than $17$,
-but still cannot add more than $53$.
-\section{Rounding error analysis for the second step}
-\label{LagnyStepTwoRounding}
-\[
-ξ\DefineAs
-\round{q - \round{\frac{\round{\pa{\round{\round{q^2}q}-y} q}}
-                       {\round{2\round{\round{q^2}q}+y}}}}\text.
-\]
-Note that the subtraction in the numerator is exact by Sterbenz's lemma \cite[\pno~138, theorem~4.3.1]{Sterbenz1974}.
+Conversely the computation of $r_0$ from $x$ may use a lower-order method, since it starts from $26$ bits rather
+than $17$, but still cannot add more than $53$. Again the irrational methods are unlikely to be of much use in
+this step, since we are already using the FMA to compute the cube of $x$, restricting its usage to avoid further
+cancellation; a fused addition of two products would be needed for that.
 
-Let $ε_ξ \DefineAs \frac{ξ}{\sqrt[3] y}-1$ and  % TODO(egg): Figure out why \cuberoot does not render here.
-
-It is fairly clear that $ε_ξ'$ dominates the rounding error in the approximation
-$ε_ξ\approx ε_ξ'$; for the sake of completeness we quantify this.
-
-Since we have a cancellation in the expression for $ξ$, a little bit of care is
-needed to bound those errors.
-As mentioned above, $q$ approximates $q'$ to a relative error of at most $3u<γ_3$.
-The sum in the denominator\[d\DefineAs\round{2\round{\round{q^2}q}+y}\]has positive terms,
-so its relative error with respect to $d'\DefineAs2{q'}^3+y$ is readily bounded,\[
-\frac{d}{d'}-1<γ_{3\Multiply3+3}=γ_{12}\text.
-\]
-The cancelling difference
-$b\DefineAs\round{\round{q^2}q}-y$ differs from $b'\DefineAs{q'}^3-y$  by at most
-\[δ\DefineAs{q'}^3γ_{3\Multiply3+2}={q'}^3γ_{11}\text,\]
-and the numerator $\round{b q}$ from $b'q'$ by at most
-\[\pa{\pa{b'+δ}q'\pa{1+γ_3}}\pa{1+γ}-b'q'=\pa{1+γ_4}δq'+γ_4b'q'\text.\]
-We can bound the absolute error of the correction term as
-\begin{align*}
-\abs{\round{\frac{\round{bq}}{d}}-\frac{b'q'}{d'}}<
-\frac{b'q'+\pa{1+γ_4}δq'+γ_4b'q'}{d'\pa{1-γ_{12}}}-\frac{b'q'}{d'}
-&=\frac{\pa{1+γ_4}δq'+\pa{γ_4+γ_{12}}b'q'}{d'\pa{1-γ_{12}}}\\
-&<q'\frac{\pa{1+γ_4}δ+γ_{16}b'}{d'\pa{1-γ_{12}}}\text,
-\end{align*}
-and that of $ξ$ as 
-\[
-\abs{ξ-ξ'}<q'\pa{γ_3+\frac{\pa{1+γ_4}δ+γ_{16}b'}{d'\pa{1-γ_{12}}}}\text.
-\]
-Substituting the truncation errors and the definition of $δ$, we can bound
-the relative error arising from rounding:
-\[
-\abs{\frac{ξ}{ξ'}-1}<
-\frac{1+ε_q'}{1+ε_ξ'}
-\pa{γ_3+\frac{\pa{1+γ_4}γ_{11}\pa{1+ε_q'}^3+γ_{16}\pa{\pa{1+ε_q'}^3-1}}{(\pa{1+ε_q'}^3+1)+\pa{1-γ_{12}}}}\text.
-\]
-Linearizing, this bound is $\pa{6+\tfrac{2}{3} + \BigO\of{ε_q'+ε_ξ'}}u+ \BigO\of{u^2}$.
-More palatably, for either choice of $γ$, we have\[
-\abs{\frac{ξ}{ξ'}-1}<8u
-\]
-provided that $p\geq 12$.
-
+TODO(egg): concrete method.
 \section{Performance considerations}
 \label{Performance}
+\subsection*{Without FMA}
+In the second step, where rounding errors are not a concern, Lagny's
+rational method is best evaluated as\[
+ξ = \round{\frac{\round{\round{q^2}\round{q^2}}+\round{2yq}}
+{\round{2\round{\round{q^2}q}+y}}}\text.
+\]
+On Ivy Bridge\footnote{We thank Peter Barfuss for running some benchmarks for us on a machine with an Ivy Bridge processor.},
+the irrational method evaluated as\[
+ξ = \round{\round{\tfrac{1}{2}q'}+ \round{\round{\frac{\round{1/\sqrt{12}}}{q}}{\round{\sqrt{\round{\round{4yq}-\round{\round{q^2}\round{q^2}}}}}}}}\text,
+\]
+\emph{mutatis mutandis} with Canon optimization, is a couple cycles faster than the rational method. On Sandy Bridge, it is
+instead computed fastest as\[
+ξ = \round{\round{\tfrac{1}{2}q'}+ \round{\sqrt{\round{\round{\round{4 y}-\round{\round{q^2}\round{q}}}\round{\frac{\round{1/12}}{q}}}}}}\text,
+\]
+which is about four cycles slower than the rational method.
 
+TODO(egg): Give some numbers for the rate of passage in the ``potential misrounding'' path, and its cost.
+\subsection*{With FMA}
+TODO(egg): decide on which methods we use and then report on performance here.
+
+
+\section{Rounding error analysis for the second step}
+\label{LagnyStepTwoRounding}
+
+TODO(egg): analysis.
 \section{Other rounding modes}
 \label{OtherRoundingModes}
 
+TODO(egg): short blurb---there is not much to say here.
+
 \section{Comparison with other faithful implementations}
+
+TODO(egg): \url{https://twitter.com/eggleroy/status/988114872616484866} (probably only the frequency one,
+the maximum is noisy), compared with the FMAless faithful method so as to compare like with like; the same
+with the one by njuffa \url{https://stackoverflow.com/a/27008559} for our FMA method.
 
 \emergencystretch 1em
 \end{document}
