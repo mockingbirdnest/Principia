@@ -590,6 +590,7 @@ That maximum can be minimized by a straightforward hill-climbing\footnote{It is 
 of Ремез's algorithm could be used here, much like it can be adapted to rational functions; since the hill-climbing converged satisfactorily, and did so much faster
 than we were writing this document, we have not investigated this.} starting from
 $Γ=\frac{1}{10}$, $κ=\frac{1}{2}$, $λ=\frac{1}{4}$, and $μ=3$. We obtain the values
+\marginfig[Error of $ξ'$ for various methods.\label{figStepTwoComparison}]{\hfill\llap{\includegraphics[scale=0.7]{cbrt_ξ_error.pdf}}}
 \begin{align*}
 Γ_{\mathrm{L^2C}} &\approx 0.10007\,61614\,69941\,46538\,73178\,74111\,71965\,6\text,\\
 κ_{\mathrm{L^2C}} &\approx 0.49999\,99381\,08574\,04775\,14291\,72928\,30652\,9\text,\\
@@ -606,7 +607,7 @@ in hexadecimal
 for an error of $\max_{y}\abs{ε_ξ'} \approx 2.6157\Multiply10^{-6}$, $\log_2\max_{y}\abs{ε_ξ'} \approx -18.54$: this
 optimization gains two bits.
 The resulting $ε_ξ'$ is remarkably equioscillating, as can be seen in
-figure~\ref{StepTwoComparison}.
+figure~\ref{figStepTwoComparison}.
 
 With the rewriting (\ref{RewrittenLagnyIrrational}), the constants $1/\sqrt{12}$ and $4$ should
 be replaced by\begin{align*}
