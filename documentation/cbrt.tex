@@ -217,7 +217,7 @@ Note that we avoid the name ``Householder’s method'' which appears in \cite{Se
 \cite{SebahGourdon2001}), as it
 is variably used to refer to either (\ref{LagnyRationaliteration}) or to a method from a different family, namely $\gj_{p+1}$
 from \cite[168]{Householder1970}, equation (7), taking $γ_{p+1}\Identically0$ in the resulting iteration;
-$\gj_3$ is\footnote{We are grateful to Peter Barfuss for this observation.} the iteration given in section 3.0.3
+$\gj_3$ is\footnote{We are grateful to Peter Barfuss for this observation.} the iteration given in section~3.0.3
 of \cite{SebahGourdon2001}. As mentioned by Householder, both of those were described by Schröder a century prior
 anyway: Householder’s (7) is Schröder’s (18) from
 \cite[327]{Schröder1870}.
@@ -340,7 +340,16 @@ By the lemma, for the value of $x$ in Lagny’s rational method, $x+\frac{1}{2}a
 
 \section*{A faithfully rounded cube root}
 
-We now turn to the computation of the cube root of $y$ in \texttt{numerics/cbrt.cpp}.
+We now turn to the computation of the cube root of in \texttt{numerics/cbrt.cpp}.
+
+\subsection*{Overview}
+Our general approach to computing a faithfully rounded cube root of $y>0$ is the one described in \cite{KahanBindel2001}:
+\begin{enumerate}
+\item integer arithmetic is used to get a an initial quick approximation $q$ of $\cuberoot y$;
+\item a root finding method is used to improve that that to an approximation $ξ$ with a third of the precision;
+\item $ξ$ is rounded to a third of the precision, resulting in the rounded approximation $x$ whose cube $x^3$ can be computed exactly;
+\item a single high order iteration of a root finding method is used to get the faithfully rounded result $r_0$.
+\end{enumerate} 
 
 \subsection*{Notation}
 We define the fractional part as $\FractionalPart a\DefineAs a-\Floor a\in\intclop{0}{1}$, regardless of the sign of $a$.
@@ -368,13 +377,15 @@ We use capital Latin letters for fixed-point numbers involved in the computation
   a &\DefineAs 2^{\Floor A-\bias} \pa{1+\FractionalPart{A}}\text.\\
 \end{align*}
 This corresponds to \cite{KahanBindel2001}'s $B+K+F$.
-
 For both fixed- and floating-point numbers, given $α\in\R$, we write:
 \begin{itemize}[nosep]
-\item $\round{α}$ for the nearest representable number, rounding ties to even---IEEE 754-2008 rounding-direction attribute roundTiesToEven---;
-\item $\roundTowardPositive{α}$ for directed rounding toward positive infinity---roundTowardPositive---;
-\item $\roundTowardNegative{α}$ for directed rounding toward negative infinity---roundTowardNegative---;
-\item $\roundTowardZero{α}$ for directed rounding toward $0$---roundTowardZero.
+\item $\round{α}$ for the nearest representable number, rounding ties to even: IEEE 754-2008 rounding-direction attribute roundTiesToEven;
+\item $\roundTowardPositive{α}$ for the smallest positive representable number $\geq α$:
+rounding-direction attribute roundTowardPositive;
+\item $\roundTowardNegative{α}$ for the largest negative representable number $\leq α$:
+rounding-direction attribute roundTowardNegative;
+\item $\roundTowardZero{α}$ for the representable number with the same sign as $α$ and the largest magnitude
+$\leq \abs α$: rounding-direction attribute roundTowardZero.
 \end{itemize}
 We write the unit roundoff $u\DefineAs2^{-p}$ (for rounding to nearest), and, after
 \cite[63]{Higham2002}, $γ_n\DefineAs\frac{nu}{1-nu}$.
@@ -388,15 +399,6 @@ prime, which correspond to their primeless counterparts by removal of all interv
 The input $y$ and all intervening floating-point numbers are taken to be normal; the rescaling performed
 to avoid overflows also avoids subnormals. We work only with correctly rounded addition, subtraction,
 multiplication, division, and square root; FMA is treated separately in appendix~\ref{FMA}.
-
-\subsection*{Overview}
-Our general approach to computing a faithfully rounded cube root of $y>0$ is the one described in \cite{KahanBindel2001}:
-\begin{enumerate}
-\item integer arithmetic is used to get a an initial quick approximation $q$ of $\cuberoot y$;
-\item a root finding method is used to improve that that to an approximation $ξ$ with a third of the precision;
-\item $ξ$ is rounded to a third of the precision, resulting in the rounded approximation $x$ whose cube $x^3$ can be computed exactly;
-\item a single high order iteration of a root finding method is used to get the faithfully rounded result $r_0$.
-\end{enumerate}
 
 \subsection{Quick approximation}\label{QuickApproximation}
 The quick approximation $q$ is computed using fixed-point arithmetic as\[
@@ -512,9 +514,7 @@ square root on the critical path, dependent on the result of a division.
 However, rewriting it as\begin{equation}
 ξ' = \tfrac{1}{2}q'+ \frac{1/\sqrt{12}}{q'}\sqrt{4yq'-{q'}^4}\text,\label{RewrittenLagnyIrrational}
 \end{equation}
-one can evaluate it with similar\footnote{We compare specific evaluations strategies
-for various architetures in appendix~\ref{LagnyIrrationalPerformance}; on some of those, other rewritings are superior
-to this one.} performance to the rational method.
+one can evaluate it with similar\footnote{Other rewritings are preferable on some architectures; we discuss this in appendix~\ref{Performance}.} performance to the rational method.
 
 Its error is\[
 ε_ξ' = \frac{-{ε_q'}^3}{3\pa{\tfrac{1}{2}+\sqrt{\tfrac{1}{2}-2{ε_q'}^2-\tfrac{4}{3}{ε_q'}^3-\tfrac{1}{3}{ε_q'}^4}- {ε_q'}^2}} =
@@ -677,12 +677,12 @@ We now compute bounds for $ε_r'$ and $δ$ for two different methods.
 We use one iteration of the Lagny--Schröder rational method of order $5$:
 \[
 Δ=\round{
-\frac{\round{\pa{x^3 - y} \round{\round{\round{\round{10x^3} + 16y}x^3} + \round{y^2}}}}
+\frac{\round{\pa{y-x^3} \round{\round{\round{\round{10x^3} + 16y}x^3} + \round{y^2}}}}
 {\round{x^2 \round{\round{\round{\round{15 x^3} + \round{51 y}}x^3} + \round{15 \round{y^2}}}}}}
 \]
 where $x^2$ and $x^3$ are exact thanks to the trailing $0$s of $x$,
 $\round{x^6}$ is correctly rounded because it is computed as the square of $x^3$,
-and $x^3-y$ is exact by Sterbenz’s lemma.
+and $y-x^3$ is exact by Sterbenz’s lemma.
 
 In infinite precision, this method is of such high order that if $\log_2\abs{ε_x} < 14.5$, which
 is the case
@@ -719,21 +719,21 @@ $16$ in the numerator; the rounding error analysis of the numerator is as follow
 \begin{tabular*}{\textwidth}{l @{\extracolsep{\fill}} r}
 Expression                    & Bound on the rounding error\\
 \hline
-$\hphantom{\leftRound{\pa{x^3-y}\leftRound{\leftRound{\leftRound{\round{10x^3}+16y}}}}}
+$\hphantom{\leftRound{\pa{y-x^3}\leftRound{\leftRound{\leftRound{\round{10x^3}+16y}}}}}
 \mathllap{\round{10x^3} + 16y}$ &
 $ι^{3}\frac{10u}{26} < γ_{\frac{10}{26}ι^{3}}$ \\
-$\hphantom{\leftRound{\pa{x^3-y}\leftRound{\leftRound{\round{\round{10x^3}+16y}}}}}
+$\hphantom{\leftRound{\pa{y-x^3}\leftRound{\leftRound{\round{\round{10x^3}+16y}}}}}
 \mathllap{\round{\round{10x^3} + 16y}}$ &
 $γ_{\frac{10}{26}ι^{3}+1}$ \\
-$\hphantom{\leftRound{\pa{x^3-y}\leftRound{\round{\round{\round{10x^3}+16y}x^3}}}}
+$\hphantom{\leftRound{\pa{y-x^3}\leftRound{\round{\round{\round{10x^3}+16y}x^3}}}}
 \mathllap{\round{\round{\round{10x^3} + 16y}x^3}}$ &
 $γ_{\frac{10}{26}ι^{3}+2}$ \\
-$\hphantom{\leftRound{\pa{x^3-y}\leftRound{\round{\round{\round{10x^3}+16y}x^3}+\round{y^2}}}}
+$\hphantom{\leftRound{\pa{y-x^3}\leftRound{\round{\round{\round{10x^3}+16y}x^3}+\round{y^2}}}}
 \mathllap{\round{\round{\round{10x^3} + 16y}x^3} + \round{y^2}}$ &
 % This rounding error runs into the footprint of the 𒋛𒄥𒊏𒋾, so we need a mathllap;
 % this looks OK because there is plenty of margin between it and the current level.
 $\mathllap{ι^{6}\frac{1}{27}\pa{26γ_{\frac{10}{26}ι^{3}+2} + u}<\frac{1}{27}γ_{10ι^{9}+\pa{2\Multiply 26+1}ι^{6}}}$\\
-$\hphantom{\leftRound{\pa{x^3-y}\round{\round{\round{\round{10x^3}+16y}x^3}+\round{y^2}}}}
+$\hphantom{\leftRound{\pa{y-x^3}\round{\round{\round{\round{10x^3}+16y}x^3}+\round{y^2}}}}
 \mathllap{\round{\round{\round{\round{10x^3} + 16y}x^3} + \round{y^2}}}$ &
 $\frac{1}{27}γ_{10ι^{9}+\pa{2\Multiply 26+1}ι^{6}+27}$\\
 $\round{\pa{x^3 - y} \round{\round{\round{\round{10x^3} + 16y}x^3} + \round{y^2}}}$ &
@@ -780,11 +780,11 @@ REMOVE BEFORE FLIGHT: give the resulting bound for $ε_r$ using Lagny's irration
 \subsubsection*{Sixth order rational}
 An alternative is the Lagny--Schröder rational method of order $6$:\[
 Δ=\round{\frac{
-\round{\round{x\pa{x^3-y}}\round{\round{\round{\round{5x^3}+\round{17y}}x^3}+\round{5\round{y^2}}}}}{
+\round{\round{x\pa{y-x^3}}\round{\round{\round{\round{5x^3}+\round{17y}}x^3}+\round{5\round{y^2}}}}}{
 \round{\round{\round{\round{7x^3} + \round{42 y}}\round{x^6}}+\round{\round{\round{30x^3}+2y}\round{y^2}}}}}\text,
 \]
 where $x^3$ is exact thanks to the trailing $0$s of $x$, $\round{x^6}$ is correctly rounded because it is computed as
-the square of $x^3$, and $x^3-y$ is exact by Sterbenz’s lemma.
+the square of $x^3$, and $y-x^3$ is exact by Sterbenz’s lemma.
 
 Here we have $\abs{ε_r'}<2^{-100}$ if $\abs{ε_x}<2^{-14}$, so the truncation error is even more
 negligible.
@@ -798,24 +798,24 @@ sums in the numerator and the denominator in the same way as for the fifth order
 \begin{tabular*}{\textwidth}{l @{\extracolsep{\fill}} r}
 Expression                    & Bound on the rounding error\\
 \hline
-$\hphantom{\leftRound{\round{x\pa{x^3-y}}\leftRound{\leftRound{\leftRound{\round{5x^3}+\round{17y}}}}}}
+$\hphantom{\leftRound{\round{x\pa{y-x^3}}\leftRound{\leftRound{\leftRound{\round{5x^3}+\round{17y}}}}}}
 \mathllap{\round{5x^3}+\round{17y}}$ & $γ_1$\\
-$\hphantom{\leftRound{\round{x\pa{x^3-y}}\leftRound{\leftRound{\round{\round{5x^3}+\round{17y}}}}}}
+$\hphantom{\leftRound{\round{x\pa{y-x^3}}\leftRound{\leftRound{\round{\round{5x^3}+\round{17y}}}}}}
 \mathllap{\round{\round{5x^3}+\round{17y}}}$ &
 $γ_2$\\
-$\hphantom{\leftRound{\round{x\pa{x^3-y}}\leftRound{\round{\round{\round{5x^3}+\round{17y}}x^3}}}}
+$\hphantom{\leftRound{\round{x\pa{y-x^3}}\leftRound{\round{\round{\round{5x^3}+\round{17y}}x^3}}}}
 \mathllap{\round{\round{\round{5x^3}+\round{17y}}x^3}}$ &
 $γ_3$\\
-$\hphantom{\leftRound{\round{x\pa{x^3-y}}\leftRound{\round{\round{\round{5x^3}+\round{17y}}x^3}}}}
+$\hphantom{\leftRound{\round{x\pa{y-x^3}}\leftRound{\round{\round{\round{5x^3}+\round{17y}}x^3}}}}
 \mathllap{\round{\round{\round{5x^3}+\round{17y}}x^3}}+\round{5\round{y^2}}$ &
 $ι^6 \frac{22γ_3+5γ_2}{27}<\frac{1}{27}γ_{76ι^6}$\\
-$\hphantom{\leftRound{\round{x\pa{x^3-y}}\round{\round{\round{\round{5x^3}+\round{17y}}x^3}}+\round{5\round{y^2}}}}
+$\hphantom{\leftRound{\round{x\pa{y-x^3}}\round{\round{\round{\round{5x^3}+\round{17y}}x^3}}+\round{5\round{y^2}}}}
 \mathllap{\round{\round{\round{\round{5x^3}+\round{17y}}x^3}+\round{5\round{y^2}}}}$ &
 $\frac{1}{27}γ_{76ι^6+27}$\\
-$\hphantom{\leftRound{\round{x\pa{x^3-y}}\round{\round{\round{\round{5x^3}+\round{17y}}x^3}}+\round{5\round{y^2}}}}
-\mathllap{\round{x\pa{x^3-y}}\round{\round{\round{\round{5x^3}+\round{17y}}x^3}+\round{5\round{y^2}}}}$ &
+$\hphantom{\leftRound{\round{x\pa{y-x^3}}\round{\round{\round{\round{5x^3}+\round{17y}}x^3}}+\round{5\round{y^2}}}}
+\mathllap{\round{x\pa{y-x^3}}\round{\round{\round{\round{5x^3}+\round{17y}}x^3}+\round{5\round{y^2}}}}$ &
 $\frac{1}{27}γ_{76ι^6+2\Multiply27}$\\
-$\round{\round{x\pa{x^3-y}}\round{\round{\round{\round{5x^3}+\round{17y}}x^3}+\round{5\round{y^2}}}}$ &
+$\round{\round{x\pa{y-x^3}}\round{\round{\round{\round{5x^3}+\round{17y}}x^3}+\round{5\round{y^2}}}}$ &
 $\frac{1}{27}γ_{76ι^6+3\Multiply27}$\\
 \end{tabular*}
 \end{center}
@@ -883,22 +883,22 @@ successor and the number halfway between $r_0$ and its predecessor.
 If $\mathscr{I}$ contains neither of the ties, $r_0=\round{\cuberoot{y}}$:
 the faithful method returned a correct result.
 
-This criterion may be determined as follows. The difference between $r_0=\round{r}$ and
+This criterion, slightly weakened, may be determined as follows. The difference between $r_0=\round{r}$ and
 the unrounded $r$ can be computed as described in \cite[224]{Dekker1971}, $r_1\DefineAs x-r_0+Δ$,
 evaluated as written (both operations are exact). The potential other candidate for
-$\round{\cuberoot{y}}$ may be computed as $\round{r_0+2r_1}$, which is $r_0$ only if $r_1$ is below
+$\round{\cuberoot{y}}$ may be computed as $\tilde r\DefineAs\round{r_0+2r_1}$, which is $r_0$ only if $r_1$ is below
 a quarter-unit in the last place—in which case the small size of $\mathscr{I}$ ensures that it does
-not contain a tie. If $\round{r_0+2r_1}\neq r_0$, we must ascertain whether the tie lies in $\mathscr I$,\[
-\frac{\round{r_0+2r_1}+r_0}{2}\in\intclos{\frac{r}{1+\max\abs{ε_r}}}{\frac{r}{1-\max\abs{ε_r}}}\text,\]
+not contain a tie. If $\tilde r\neq r_0$, we must ascertain whether the tie lies in $\mathscr I$,\[
+\frac{\tilde r+r_0}{2}\in\intclos{\frac{r}{1+\max\abs{ε_r}}}{\frac{r}{1-\max\abs{ε_r}}}\text,\]
 subtracting $r_0$ to get rid of the unrepresentable $r$ in the right-hand side,\[
-\frac{\round{r_0+2r_1}-r_0}{2}
+\frac{\tilde r-r_0}{2}
 \in\intclos{\frac{r_1-\max\abs{ε_r}r_0}{1+\max\abs{ε_r}}}{\frac{r_1+\max\abs{ε_r}r_0}{1-\max\abs{ε_r}}}\text,\]
 subtracting $r_1$ to remove the cancellation,\[
-\frac{\round{r_0+2r_1}-r_0}{2}-r_1
+\frac{\tilde r-r_0}{2}-r_1
 \in\intclos{-\max\abs{ε_r}\frac{r_0+r_1}{1+\max\abs{ε_r}}}{\max\abs{ε_r}\frac{r_0+r_1}{1-\max\abs{ε_r}}}\text.\]
 The left-hand-side may be computed as written; however the bounds of the interval above are not representable.
 We must relax them a little,\[
-\frac{\round{r_0+2r_1}-r_0}{2}-r_1\in
+\frac{\tilde r-r_0}{2}-r_1\in
 \intclos{
 -\frac{\max\abs{ε_r}}{1+\max\abs{ε_r}}\pa{1+u}r_0}{
  \frac{\max\abs{ε_r}}{1-\max\abs{ε_r}}\pa{1+u}r_0}\text.\]
@@ -907,21 +907,31 @@ surrounding computation uses the roundTiesToEven rounding-direction attribute, t
 be used directly, provided that the constants therein have been rounded toward their respective
 signs, and the multiplication by $r_0$ be similarly rounded.
 
-If we restrict ourselves to roundTiesToAway at runtime, we must relax the bounds a little further,\[
+If we restrict ourselves to roundTiesToEven at runtime, we must relax the bounds some more,\[
 \intclos{
-\round{\roundTowardNegative{-\frac{\max\abs{ε_r}}{1+\max\abs{ε_r}}\pa{1+u}}r_0}\pa{1+u}}{
- \round{\roundTowardPositive{\frac{\max\abs{ε_r}}{1-\max\abs{ε_r}}\pa{1+u}}r_0}\pa{1+u}}\text.\]
+\round{\roundTowardNegative{-\frac{\max\abs{ε_r}}{1+\max\abs{ε_r}}\pa{1+\frac{2u}{1-u}}}r_0}}{
+ \round{\roundTowardPositive{\frac{\max\abs{ε_r}}{1-\max\abs{ε_r}}\pa{1+\frac{2u}{1-u}}}r_0}}\text.\]
+We may widen this interval slightly into one that is symmetric about $0$, thus requiring only one comparison
+\[\abs{\tilde r-r_1}\leq \round{τr_0}\text,\]
+with\begin{align*}
+τ&\DefineAs\roundTowardPositive{\frac{\max\abs{ε_r}}{1-\max\abs{ε_r}}\pa{1+\frac{2u}{1-u}}}\\
+ &=\hex{DEAD\,BEEF}\text,
+\end{align*}
+where we have used the constants for Lagny's irrational method with Canon optimization, followed by
+the method of fifth order.
 
-Otherwise, there may be a misrounding. The correctly-rounded result may readily be computed
-using the ordinary cube root algorithm, described, \exempligratia, in Lagny's
+If this inequality holds, there may be a misrounding. The correctly-rounded result may then
+readily be computed using the ordinary cube root algorithm, described, \exempligratia, in Lagny's
 \cite[286~\psqq]{FantetdeLagny1697}, used with binary digits.
 
 \subsection*{Extracting a digit}
 This method extracts a single digit of $\roundTowardZero{\cuberoot{y}}$ at each step.
-Since $\mathscr{I}$ is small enough that it cannot contain both a floating-point number
-and a tie; thus if $\mathscr{I}$ contains a tie, we know that
+Since $\mathscr{I}_\pm$ is small enough that it cannot contain both a floating-point number
+and a tie; thus if $\mathscr{I}_\pm$ contains a tie, we know that
 $\roundTowardZero{\cuberoot{y}}=\roundTowardZero{r}\DefinitionOf a$\text; we thus have the
-first $53$ bits already. Correct rounding may be achieved by extracting a
+first $53$ bits already, as\[
+a=\min\of{r_0,\tilde r}\text.\]
+Correct rounding may be achieved by extracting a
 single additional bit: the number is in excess of the tie---and thus must be rounded
 up---if and only if that bit is $1$, because, as remarked in \cite[15]{LangMuller2000},
 there are no halfway cases for the cube root.
@@ -955,10 +965,23 @@ The first two of these terms should be split into representable parts,\begin{ali
 \end{align*}
 The sign of $ρ_{54|1}$ may then be checked.
 
-
 \appendix
 \section{FMA}
 \label{FMA}
+The overall strategy is different with FMA, since we need only round $x$ to half the precision ($26$~bits),
+rather than a third; this is because the expression $y-x^3$ may be computed as $\round{y-\pa{x^2}x}$,
+requiring only an exact square.
+
+This means that $ε_ξ'$ should ideally be somewhat less than $2^{-26}$ or $2^{-27}$ depending on
+the manner in which $x$ is rounded. Even with Canon optimization, Lagny's irrational method cannot
+achieve that from $q$. The error of the Lagny--Schröder rational method of order $4$ reaches a below $2^{-21}$,
+and that of the generalized Lagny quadratic irrational method of order $4$ below $2^{-23}$.
+It seems that Canon optimization on the latter can readily bring down its rerror below $2^{-24}$, but not much
+further.
+With the methods of order $5$, the errors are below $2^{-28}$; little stands to be gained from optimization.
+
+Conversely the computation of $r_0$ from $x$ may use a lower-order method, since it starts from $26$ rather than $17$,
+but still cannot add more than $53$.
 \section{Rounding error analysis for the second step}
 \label{LagnyStepTwoRounding}
 \[
@@ -1009,8 +1032,8 @@ More palatably, for either choice of $γ$, we have\[
 \]
 provided that $p\geq 12$.
 
-\section{Performance of Lagny's methods for the cube root}
-\label{LagnyIrrationalPerformance}
+\section{Performance considerations}
+\label{Performance}
 
 \section{Other rounding modes}
 \label{OtherRoundingModes}
