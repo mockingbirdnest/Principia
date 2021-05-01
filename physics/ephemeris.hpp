@@ -5,10 +5,10 @@
 #include <limits>
 #include <map>
 #include <memory>
-#include <set>
 #include <vector>
 
 #include "absl/synchronization/mutex.h"
+#include "astronomy/epoch.hpp"
 #include "base/recurring_thread.hpp"
 #include "base/not_null.hpp"
 #include "base/status.hpp"
@@ -33,6 +33,7 @@ namespace principia {
 namespace physics {
 namespace internal_ephemeris {
 
+using astronomy::InfinitePast;
 using base::Error;
 using base::not_null;
 using base::RecurringThread;
@@ -190,6 +191,11 @@ class Ephemeris {
   // Prolongs the ephemeris up to at least |t|.  After the call, |t_max() >= t|.
   virtual void Prolong(Instant const& t) EXCLUDES(lock_);
 
+  // Asks the reanimator thread to asynchronously reconstruct the past so that
+  // the |t_min()| of the ephemeris ultimately ends up is at or before
+  // |desired_t_min|.
+  void RequestReanimation(Instant const& desired_t_min);
+
   // Creates an instance suitable for integrating the given |trajectories| with
   // their |intrinsic_accelerations| using a fixed-step integrator parameterized
   // by |parameters|.
@@ -276,8 +282,8 @@ class Ephemeris {
   template<typename F = Frame,
            typename = std::enable_if_t<base::is_serializable_v<F>>>
   // The parameter |desired_t_min| indicates that the ephemeris must be restored
-  // at a checkpoint such that, once the ephemeris is prolonged, its t_min() is
-  // at or before |desired_t_min|.
+  // at a checkpoint such that, once the ephemeris is prolonged, its |t_min()|
+  // is at or before |desired_t_min|.
   static not_null<std::unique_ptr<Ephemeris>> ReadFromMessage(
       Instant const& desired_t_min,
       serialization::Ephemeris const& message) EXCLUDES(lock_);
@@ -296,10 +302,10 @@ class Ephemeris {
   Checkpointer<serialization::Ephemeris>::Reader MakeCheckpointerReader();
 
   // Called on a stoppable thread to reconstruct the past state of the ephemeris
-  // and its trajectories using the given |checkpoints|.  The last checkpoint in
-  // the set is assumed to be restored already and tells the reanimator where to
-  // stop.
-  Status Reanimate(std::set<Instant> const& checkpoints);
+  // and its trajectories starting with the given
+  // |oldest_reanimated_checkpoint|.  The member variable
+  // |oldest_reanimated_checkpoint_| tells the reanimator where to/ stop.
+  Status Reanimate(Instant const oldest_reanimated_checkpoint);
 
   // Reconstructs the past state of the ephemeris between |t_initial| and
   // |t_final| using the given checkpoint |message|.
@@ -425,14 +431,20 @@ class Ephemeris {
   not_null<
       std::unique_ptr<Checkpointer<serialization::Ephemeris>>> checkpointer_;
 
+  // This member must only be accessed by the |reanimator_| thread.
+  Instant oldest_reanimated_checkpoint_ = InfinitePast;
+
   // The techniques and terminology follow [Lov22].
-  RecurringThread<std::set<Instant>> reanimator_;
+  RecurringThread<Instant> reanimator_;
 
   // The fields above this line are fixed at construction and therefore not
   // protected.  Note that |ContinuousTrajectory| is thread-safe.  |lock_| is
   // also used to protect sections where the trajectories are not mutually
   // consistent (e.g., during Prolong).
   mutable absl::Mutex lock_;
+
+  // Parameter passed to the last call to |RequestReanimation|, if any.
+  std::optional<Instant> last_desired_t_min_ GUARDED_BY(lock_);
 
   std::unique_ptr<typename Integrator<NewtonianMotionEquation>::Instance>
       instance_ GUARDED_BY(lock_);

@@ -1125,6 +1125,9 @@ TEST(EphemerisTestNoFixture, Reanimator) {
       /*using_checkpoint_at_or_before=*/InfiniteFuture,
       message);
 
+  // Reanimate the ephemeris that we just read.
+  ephemeris2->RequestReanimation(t_initial);
+
   // Wait for reanimation to happen.
   while (t_initial < ephemeris2->t_min()) {
     LOG(ERROR) << "Sleeping until Herbert West is done...";
