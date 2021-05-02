@@ -69,6 +69,11 @@ class Checkpointer {
   std::set<Instant> all_checkpoints_at_or_before(Instant const& t) const
       EXCLUDES(lock_);
 
+  // Returns all the checkpoints in interval [t1, t2].
+  std::set<Instant> all_checkpoints_between(Instant const& t1,
+                                            Instant const& t2) const
+      EXCLUDES(lock_);
+
   // Creates a checkpoint at time |t|, which will be used to recreate the
   // timeline after |t|.  The checkpoint is constructed by calling the |Writer|
   // passed at construction.
@@ -100,6 +105,9 @@ class Checkpointer {
   // such checkpoint or if |reader| returns one.
   Status ReadFromCheckpointAt(Instant const& t,
                               Reader const& reader) const EXCLUDES(lock_);
+
+  // Same as above, but uses the reader passed at construction.
+  Status ReadFromCheckpointAt(Instant const& t) const EXCLUDES(lock_);
 
   void WriteToMessage(not_null<google::protobuf::RepeatedPtrField<
                           typename Message::Checkpoint>*> message) const
