@@ -380,9 +380,9 @@ This corresponds to \cite{KahanBindel2001}'s $B+K+F$.
 For both fixed- and floating-point numbers, given $α\in\R$, we write:
 \begin{itemize}[nosep]
 \item $\round{α}$ for the nearest representable number, rounding ties to even: IEEE 754-2008 rounding-direction attribute roundTiesToEven;
-\item $\roundTowardPositive{α}$ for the nearest representable number no smaller than $α$:
+\item $\roundTowardPositive{α}$ for the nearest representable number $\geq α$:
 rounding-direction attribute roundTowardPositive;
-\item $\roundTowardNegative{α}$ for the nearest representable number no larger than $α$:
+\item $\roundTowardNegative{α}$ for the nearest representable number $\leq α$:
 rounding-direction attribute roundTowardNegative;
 \item $\roundTowardZero{α}$ for the nearest representable number with a smaller magnitude: rounding-direction attribute roundTowardZero.
 \end{itemize}
