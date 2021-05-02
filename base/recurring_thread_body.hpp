@@ -21,6 +21,13 @@ inline void BaseRecurringThread::Stop() {
   jthread_ = jthread();
 }
 
+inline void BaseRecurringThread::Restart() {
+  absl::MutexLock l(&jthread_lock_);
+  jthread_ = jthread();
+  jthread_ = MakeStoppableThread(
+      [this]() { Status const status = RepeatedlyRunAction(); });
+}
+
 inline BaseRecurringThread::BaseRecurringThread(
     std::chrono::milliseconds const period)
     : period_(period) {}
