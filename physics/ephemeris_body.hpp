@@ -242,8 +242,8 @@ Ephemeris<Frame>::Ephemeris(
               MakeCheckpointerWriter(),
               MakeCheckpointerReader())),
       reanimator_(
-          [this](std::set<Instant> const& checkpoints) {
-            return Reanimate(checkpoints);
+          [this](Instant const& desired_t_min) {
+            return Reanimate(desired_t_min);
           },
           50ms) {
   CHECK(!bodies.empty());
@@ -356,6 +356,33 @@ template<typename Frame>
 Status Ephemeris<Frame>::last_severe_integration_status() const {
   absl::ReaderMutexLock l(&lock_);
   return last_severe_integration_status_;
+}
+
+template<typename Frame>
+void Ephemeris<Frame>::RequestReanimation(Instant const& desired_t_min) {
+  bool must_restart;
+  {
+    absl::MutexLock l(&lock_);
+
+    // If the reanimator is asked to do significantly less work (as defined by
+    // the time between checkpoints) than it is currently doing, interrupt it.
+    // Note that this is fundamentally racy: for instance the reanimator may not
+    // have picked the last input given by Put.  But it helps if the user was
+    // doing a very long reanimation and wants to shorten it.
+    must_restart = last_desired_t_min_.has_value() &&
+                   last_desired_t_min_.value() + max_time_between_checkpoints <
+                       desired_t_min;
+    LOG_IF(WARNING, must_restart)
+        << "Restarting reanimator because desired t_min went from "
+        << last_desired_t_min_.value() << " to " << desired_t_min;
+    last_desired_t_min_ = desired_t_min;
+  }
+
+  // Don't hold the lock while restarting, the reanimator needs it.
+  if (must_restart) {
+    reanimator_.Restart();
+  }
+  reanimator_.Put(desired_t_min);
 }
 
 template<typename Frame>
@@ -727,7 +754,7 @@ void Ephemeris<Frame>::WriteToMessage(
 template<typename Frame>
 template<typename, typename>
 not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
-    Instant const& using_checkpoint_at_or_before,
+    Instant const& desired_t_min,
     serialization::Ephemeris const& message) {
   bool const is_pre_ἐρατοσθένης = !message.has_accuracy_parameters();
   bool const is_pre_fatou = !message.has_checkpoint_time();
@@ -767,12 +794,13 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
     not_null<MassiveBody const*> const body = ephemeris->bodies_[index].get();
     not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>
         deserialized_trajectory = ContinuousTrajectory<Frame>::ReadFromMessage(
-            using_checkpoint_at_or_before, trajectory);
+            desired_t_min, trajectory);
     ephemeris->trajectories_.push_back(deserialized_trajectory.get());
     ephemeris->bodies_to_trajectories_.emplace(
         body, std::move(deserialized_trajectory));
     ++index;
   }
+  CHECK_LT(0, index) << "Empty ephemeris";
 
   if (is_pre_grassmann) {
     serialization::Ephemeris serialized_ephemeris;
@@ -797,24 +825,19 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
             message.checkpoint());
   }
 
+  // The checkpoint at or before |desired_t_min| will result in a |t_min()|
+  // which is at |desired_t_min| (if the checkpoint was taken with
+  // |last_points_.size() == 1|) or before (if the checkpoint was taken with
+  // |last_points_.size() > 1|).
+  ephemeris->oldest_reanimated_checkpoint_ =
+      ephemeris->checkpointer_->checkpoint_at_or_before(desired_t_min);
   LOG(INFO) << "Restoring to checkpoint at "
-            << ephemeris->checkpointer_->checkpoint_at_or_before(
-                   using_checkpoint_at_or_before);
+            << ephemeris->oldest_reanimated_checkpoint_;
+  CHECK_OK(ephemeris->checkpointer_->ReadFromCheckpointAt(
+      ephemeris->oldest_reanimated_checkpoint_));
 
-  // This has no effect if there is no checkpoint before
-  // |using_checkpoint_at_or_before|, and leaves the checkpointed fields in
-  // their default-constructed state.
-  ephemeris->checkpointer_->ReadFromCheckpointAtOrBefore(
-      using_checkpoint_at_or_before);
-
-  // Ask the reanimator thread to asynchronously reconstruct the past using
-  // checkpoints.
-  ephemeris->reanimator_.Put(
-      ephemeris->checkpointer_->all_checkpoints_at_or_before(
-          using_checkpoint_at_or_before));
-
-  // The ephemeris will need to be prolonged as needed when deserializing the
-  // plugin.
+  // The ephemeris will need to be prolonged and reanimated as needed when
+  // deserializing the plugin.
   return ephemeris;
 }
 
@@ -877,7 +900,22 @@ Ephemeris<Frame>::MakeCheckpointerReader() {
 }
 
 template<typename Frame>
-Status Ephemeris<Frame>::Reanimate(std::set<Instant> const& checkpoints) {
+Status Ephemeris<Frame>::Reanimate(Instant const desired_t_min) {
+  std::set<Instant> checkpoints;
+  {
+    absl::ReaderMutexLock l(&lock_);
+
+    // It is very important that |oldest_reanimated_checkpoint_| be only read by
+    // the |reanimator_| thread.  If the caller was trying to determine the set
+    // of checkpoints to reanimate it might race with a reanimation already in
+    // flight and result in the same checkpoint reanimated multiple times, which
+    // is a no-no.
+    Instant const oldest_checkpoint_to_reanimate =
+        checkpointer_->checkpoint_at_or_before(desired_t_min);
+    checkpoints = checkpointer_->all_checkpoints_between(
+        oldest_checkpoint_to_reanimate, oldest_reanimated_checkpoint_);
+  }
+
   // This loop integrates all the segments defined by the checkpoints, going
   // backwards in time.  The last checkpoint is not restored, it just serves as
   // a limit.
@@ -885,7 +923,7 @@ Status Ephemeris<Frame>::Reanimate(std::set<Instant> const& checkpoints) {
   for (auto it = checkpoints.crbegin(); it != checkpoints.crend(); ++it) {
     Instant const& checkpoint = *it;
     if (following_checkpoint.has_value()) {
-      auto const status = checkpointer_->ReadFromCheckpointAt(
+      RETURN_IF_ERROR(checkpointer_->ReadFromCheckpointAt(
           checkpoint,
           [this,
            t_final = following_checkpoint.value(),
@@ -897,10 +935,7 @@ Status Ephemeris<Frame>::Reanimate(std::set<Instant> const& checkpoints) {
             } else {
               return Status::UNKNOWN;
             }
-          });
-      if (!status.ok()) {
-        return status;
-      }
+          }));
     }
     following_checkpoint = checkpoint;
   }
@@ -926,8 +961,8 @@ Status Ephemeris<Frame>::ReanimateOneCheckpoint(
     // This statement is subtle: it restores the checkpoints of the trajectories
     // of this ephemeris, but thanks to the newly-created reader, it restores
     // them into the local trajectories.
-    trajectories_[i]->ReadFromCheckpointAt(
-        t_initial, trajectories[i]->MakeCheckpointerReader());
+    CHECK_OK(trajectories_[i]->ReadFromCheckpointAt(
+        t_initial, trajectories[i]->MakeCheckpointerReader()));
   }
 
   // Reconstruct the integrator instance from the current checkpoint.
@@ -941,21 +976,20 @@ Status Ephemeris<Frame>::ReanimateOneCheckpoint(
                                 MakeMassiveBodiesNewtonianMotionEquation(),
                                 append_massive_bodies_state);
 
-  RETURN_IF_STOPPED;
-
   // Do the integration.  After this step the t_max() of the trajectories may
   // be before t_final because there may be last_points_ that haven't been put
-  // in a series.
-  instance->Solve(t_final);
+  // in a series.  Don't proceed in case of error, we would run into a gap when
+  // trying to stitch the trajectories.
+  RETURN_IF_ERROR(instance->Solve(t_final));
 
-  RETURN_IF_STOPPED;
-
-  // Stitch the local trajectories to the ones in this object.
+  // Stitch the local trajectories to the ones in this ephemeris and record that
+  // we will not reanimate this checkpoint again.
   {
     absl::MutexLock l(&lock_);
     for (int i = 0; i < trajectories_.size(); ++i) {
       trajectories_[i]->Prepend(std::move(*trajectories[i]));
     }
+    oldest_reanimated_checkpoint_ = t_initial;
   }
 
   return Status::OK;
@@ -981,6 +1015,9 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
       LOG(ERROR) << "New Apocalypse: " << last_severe_integration_status_;
     }
   }
+
+  // Note that the checkpoint is written systematically after inserting the
+  // first point of the trajectories.
   WriteToCheckpointIfNeeded(state.time.value);
 }
 

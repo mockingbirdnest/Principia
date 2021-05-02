@@ -87,6 +87,10 @@ template<typename Message>
 std::set<Instant> Checkpointer<Message>::all_checkpoints_between(
     Instant const& t1,
     Instant const& t2) const {
+  if (t2 < t1) {
+    return std::set<Instant>();
+  }
+
   absl::ReaderMutexLock l(&lock_);
   // |it1| denotes an entry greater or equal to |t1| (or end).
   auto const it1 = checkpoints_.lower_bound(t1);

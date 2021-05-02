@@ -1266,6 +1266,10 @@ Velocity<World> Plugin::VesselVelocity(GUID const& vessel_guid) const {
   return VesselVelocity(back.time, back.degrees_of_freedom);
 }
 
+void Plugin::RequestReanimation(Instant const& desired_t_min) const {
+  ephemeris_->RequestReanimation(desired_t_min);
+}
+
 Instant Plugin::GameEpoch() const {
   return game_epoch_;
 }
@@ -1410,6 +1414,7 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
                                               message.ephemeris());
   plugin->ephemeris_->Prolong(plugin->game_epoch_);
   plugin->ephemeris_->Prolong(plugin->current_time_);
+  CHECK_LE(plugin->ephemeris_->t_min(), plugin->current_time_);
 
   ReadCelestialsFromMessages(*plugin->ephemeris_,
                              message.celestial(),

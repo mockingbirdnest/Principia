@@ -633,7 +633,7 @@ TEST_P(EphemerisTest, Serialization) {
   ephemeris.WriteToMessage(&message);
 
   auto const ephemeris_read = Ephemeris<ICRS>::ReadFromMessage(
-      /*using_checkpoint_at_or_before=*/InfiniteFuture,
+      /*desired_t_min=*/InfiniteFuture,
       message);
   // After deserialization, the client must prolong as needed.
   ephemeris_read->Prolong(ephemeris.t_max());
@@ -1122,8 +1122,11 @@ TEST(EphemerisTestNoFixture, Reanimator) {
   serialization::Ephemeris message;
   ephemeris1->WriteToMessage(&message);
   auto const ephemeris2 = Ephemeris<ICRS>::ReadFromMessage(
-      /*using_checkpoint_at_or_before=*/InfiniteFuture,
+      /*desired_t_min=*/InfiniteFuture,
       message);
+
+  // Reanimate the ephemeris that we just read.
+  ephemeris2->RequestReanimation(t_initial);
 
   // Wait for reanimation to happen.
   while (t_initial < ephemeris2->t_min()) {

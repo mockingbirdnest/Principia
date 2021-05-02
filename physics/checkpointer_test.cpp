@@ -162,6 +162,13 @@ TEST_F(CheckpointerTest, ReadFromCheckpointAtOrBefore) {
   EXPECT_THAT(checkpointer_.all_checkpoints_between(t1 - 1 * Second,
                                                     t2 + 1 * Second),
               ElementsAre(t1, t2));
+  EXPECT_THAT(checkpointer_.all_checkpoints_between(t3, t1),
+              IsEmpty());
+  EXPECT_THAT(checkpointer_.all_checkpoints_between(t2, t2),
+              ElementsAre(t2));
+  EXPECT_THAT(checkpointer_.all_checkpoints_between(t1 + 1 * Second,
+                                                    t1 + 1 * Second),
+              IsEmpty());
 
   EXPECT_THAT(
       checkpointer_.ReadFromCheckpointAtOrBefore(Instant() + 1 * Second),
