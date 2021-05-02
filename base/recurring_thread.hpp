@@ -29,6 +29,9 @@ class BaseRecurringThread {
   void Start();
   void Stop();
 
+  // Stop followed by Start, atomically.
+  void Restart();
+
  protected:
   // Constructs a stoppable thread that runs no more frequently than at the
   // specified |period| (and less frequently if no input was provided).  At
