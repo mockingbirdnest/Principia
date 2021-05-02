@@ -47,7 +47,7 @@ This document describes the computations in \href{https://github.com/mockingbird
 
 \section*{On some abridged root-finding methods}
 
-We recall two families of root-finding methods from the late 17th century.
+We recall and generalize a family of root-finding methods from the late 17th century.
 
 In \cite{FantetdeLagny1691a}, Thomas Fantet de~Lagny first presents the iterations\begin{align}
 \FunctionBody*{a}{\tfrac{1}{2}a+\sqrt{\tfrac{1}{4}a^2+\frac{b}{3a}}}\text, \label{LagnyIrrationalCubeRootIteration}
@@ -255,7 +255,8 @@ nowadays---unjustifiedly so, as we shall see.
 Our generalization of Lagny's irrational methods to arbitrary $f$, which, in the polynomial case,
 decouples the degree of $f$ from the convergence order, was inspired by Gander's rephrasing in
 \cite{Gander1985} of Halley's construction from \cite{Halley1694}, wherein the correction term of
-Halley's irrational method is defined as a root of $M_2$.
+Halley's irrational method is defined as a root of $M_2$. This change of variables with respect to
+Lagny's construction drastically simplifies the proof of the proposition.
 
 Prouhet’s letter in \cite{Cantor1861} ends with these words:
 \begin{quote}\textfrench{%
