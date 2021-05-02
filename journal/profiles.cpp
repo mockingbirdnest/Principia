@@ -29,7 +29,7 @@ void Insert(std::uint64_t const address,
       const_cast<typename std::remove_cv<T>::type*>(pointer));
   auto const [it, inserted] = pointer_map.emplace(address, inserted_pointer);
   if (!inserted) {
-    CHECK_EQ(it->second, inserted_pointer);
+    CHECK_EQ(it->second, inserted_pointer) << address;
   }
 }
 
