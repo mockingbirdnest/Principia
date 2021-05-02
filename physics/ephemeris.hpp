@@ -192,7 +192,7 @@ class Ephemeris {
   virtual void Prolong(Instant const& t) EXCLUDES(lock_);
 
   // Asks the reanimator thread to asynchronously reconstruct the past so that
-  // the |t_min()| of the ephemeris ultimately ends up is at or before
+  // the |t_min()| of the ephemeris ultimately ends up at or before
   // |desired_t_min|.
   void RequestReanimation(Instant const& desired_t_min);
 
