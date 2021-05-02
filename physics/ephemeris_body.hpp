@@ -827,8 +827,8 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
 
   // The checkpoint at or before |desired_t_min| will result in a |t_min()|
   // which is at |desired_t_min| (if the checkpoint was taken with
-  // |last_points_.size() == 1) or before (if the checkpoint was taken with
-  // |last_points_.size() > 1).
+  // |last_points_.size() == 1|) or before (if the checkpoint was taken with
+  // |last_points_.size() > 1|).
   ephemeris->oldest_reanimated_checkpoint_ =
       ephemeris->checkpointer_->checkpoint_at_or_before(desired_t_min);
   LOG(INFO) << "Restoring to checkpoint at "

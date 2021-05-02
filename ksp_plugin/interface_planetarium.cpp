@@ -255,7 +255,7 @@ principia__PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
             : prediction_final_time;
     auto const& celestial_trajectory =
         plugin->GetCelestial(celestial_index).trajectory();
-    // No need to trigger reanimation here because the current time of the
+    // No need to request reanimation here because the current time of the
     // plugin is necessarily covered.
     auto const rp2_lines =
         planetarium->PlotMethod2(celestial_trajectory,
