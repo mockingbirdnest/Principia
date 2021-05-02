@@ -556,7 +556,9 @@ Canon later elaborated on this in \cite{Canon2018b}:
  % https://twitter.com/stephentyrone/status/1057789050810232834
  Specifically, if $x_0$ has relative error $e$, $x_0x_0y$ is bounded by something like $1 \pm 2e$.
  So, we want to find $p$ that minimizes $\abs{x/x_0 - p\of{x_0x_0y}}$ on $\intclos{1-2e}{1+2e}$.
- NR\footnote{Newton--Raphson, \idest, Newton's method. REMOVE BEFORE FLIGHT: Cite Raphson, cite Lagrange's remarks}
+ NR\footnote{Newton--Raphson, \idest, Newton's method; Raphson described a different formulation of it in \cite{Raphson1690}.
+Lagrange notes in \volcite{8}[161]{Lagrange1867}, it is likely that Raphson was aware of Newton's method, and thus
+regarded his as entirely different; as Lagrange points out, they are equivalent.}
 uses the $p = 1$st order Taylor. We know that we can do better via usual approximation theory techniques.
 
  % https://twitter.com/stephentyrone/status/1057789379052232704
@@ -586,7 +588,8 @@ Instead we find the local maxima by numerical maximization on the four pieces wh
 is a smooth function of $f$.
 
 That maximum can be minimized by a straightforward hill-climbing\footnote{It is plausible that some variation
-of Ремез's algorithm could be used here, much like it can be adapted to rational functions; since the hill-climbing converged satisfactorily, and did so much faster
+of Ремез's algorithm could be used here, much like it can be adapted to rational functions;
+since the hill-climbing converged satisfactorily, and did so much faster
 than we were writing this document, we have not investigated this.} starting from
 $Γ=\frac{1}{10}$, $κ=\frac{1}{2}$, $λ=\frac{1}{4}$, and $μ=3$. We obtain the values
 \marginfig[Error of $ξ'$ for various methods.\label{figStepTwoComparison}]{\hfill\llap{\includegraphics[scale=0.7]{cbrt_ξ_error.pdf}}}
@@ -644,8 +647,8 @@ we have the bound $\abs{ε_x} < \pa{1+\abs{ε_ξ}}\pa{1+2^{-16}}-1$.
 
 \subsubsection*{Rounding to nearest}
 An alternative which has similar performance on some architectures, but half the error,
-is to use Veltkamp's method TODO CITE to round to the nearest number with the desired
-number of bits; see also \cite[241]{Dekker1971} in \emph{mul12}:\[
+is to use Dekker's method to round to the nearest number with the desired
+number of bits; see \cite[235,241]{Dekker1971} in \emph{mul12}:\[
 ϖ\DefineAs\round{ξ\pa{2^{p-\Floor{\frac{p}{3}}}+1}}\text{, }x\DefineAs\round{\round{ξ-ϖ}+ϖ}\text.
 \]
 The rounding error is then bounded by $2^{-\Floor{\frac{p}{3}}}$; we have
@@ -672,9 +675,12 @@ and that of the faithfully-rounded result $r_0$ is $ε_r\pa{1+υ}$ for some $\ab
 It is easy to make $ε_r'$ negligible by increasing the order of the method; the main
 contribution to misrounding is then $δε_x$: this is why $ε_x$ needed to be kept low in step~\ref{QuickApproximation}.
 
-We now compute bounds for $ε_r'$ and $δ$ for two different methods.
-Note that we do not consider the generalized Lagny irrational methods here, as their computation without FMA involves
-ill-conditioned differences after inexact operations.
+We now compute bounds for $ε_r'$ and $δ$ for two different methods.\marginnote{TODO(egg): the quadratic irrational method
+of order $5$ \emph{looks} costly, but who knows. It certainly would be tedious to analyse its rounding errors, as it has
+differences of inexact positive terms---those are far from cancellation though, so the method is likely still viable.}
+In the interest of brevity, we have not considered the generalized Lagny irrational methods here; both the rational and
+quadratic irrational methods of order $4$ have overly high truncation error, and the quadratic irrational method of
+order $5$ is costly to evaluate.
 
 \subsubsection*{Fifth order rational}
 We use one iteration of the Lagny--Schröder rational method of order $5$:
@@ -705,7 +711,7 @@ However, considering that our final bound on $ε_r$, and thus our misrounding es
 is nearly proportional to this error, a more careful analysis is warranted.
 Observe that $x^3=y\pa{1+ε_x}^3$, so that a sum $Σ'=α x^{m}y^{p-m} + β x^{n}y^{p-n}$
 evaluated with terms that carry the errors $δ_i$ as
-\[Σ=α x^{m}y^{p-m}\pa{1+δ_1} + β x^{n}y^{p-n}\pa{1+δ_2}\]
+$Σ=α x^{m}y^{p-m}\pa{1+δ_1} + β x^{n}y^{p-n}\pa{1+δ_2}$
 has the error\[
 \frac{Σ}{Σ'}-1=\frac{\pa{1+ε_x}^{3m}αδ_1+\pa{1+ε_x}^{3n}βδ_2}{\pa{1+ε_x}^{3m}α+\pa{1+ε_x}^{3n}β}\text,
 \]
@@ -946,7 +952,8 @@ and the next bit is $1$ if and only if the next remainder would be positive with
 where $b$ is the power of two corresponding to this bit (the difference between $a$ and
 the tie).
 
-Using Veltkamp's algorithm from \cite[234]{Dekker1971} to express $a^2$ as $a^2_0+a^2_1$ with
+Using Veltkamp's\footnote{We have not been able to find a copy of \emph{RC-Informatie}, wherein Veltkamp's work was published;
+we follow Dekker's account of thereof.} algorithm from \cite[234]{Dekker1971} to express $a^2$ as $a^2_0+a^2_1$ with
 $a^2_0=\round{a^2}$, the remainder is\[
 ρ_{53}=y-\pa{a^2_0+a^2_1}a\text;
 \]
@@ -985,9 +992,7 @@ further.
 With the methods of order $5$, the errors are below $2^{-28}$; little stands to be gained from optimization.
 
 Conversely the computation of $r_0$ from $x$ may use a lower-order method, since it starts from $26$ bits rather
-than $17$, but still cannot add more than $53$. Again the irrational methods are unlikely to be of much use in
-this step, since we are already using the FMA to compute the cube of $x$, restricting its usage to avoid further
-cancellation; a fused addition of two products would be needed for that.
+than $17$, but still cannot add more than $53$.
 
 TODO(egg): concrete method.
 \section{Performance considerations}
