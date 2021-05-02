@@ -380,12 +380,11 @@ This corresponds to \cite{KahanBindel2001}'s $B+K+F$.
 For both fixed- and floating-point numbers, given $α\in\R$, we write:
 \begin{itemize}[nosep]
 \item $\round{α}$ for the nearest representable number, rounding ties to even: IEEE 754-2008 rounding-direction attribute roundTiesToEven;
-\item $\roundTowardPositive{α}$ for the smallest positive representable number $\geq α$:
+\item $\roundTowardPositive{α}$ for the nearest representable number no smaller than $α$:
 rounding-direction attribute roundTowardPositive;
-\item $\roundTowardNegative{α}$ for the largest negative representable number $\leq α$:
+\item $\roundTowardNegative{α}$ for the nearest representable number no larger than $α$:
 rounding-direction attribute roundTowardNegative;
-\item $\roundTowardZero{α}$ for the representable number with the same sign as $α$ and the largest magnitude
-$\leq \abs α$: rounding-direction attribute roundTowardZero.
+\item $\roundTowardZero{α}$ for the nearest representable number with a smaller magnitude: rounding-direction attribute roundTowardZero.
 \end{itemize}
 We write the unit roundoff $u\DefineAs2^{-p}$ (for rounding to nearest), and, after
 \cite[63]{Higham2002}, $γ_n\DefineAs\frac{nu}{1-nu}$.
