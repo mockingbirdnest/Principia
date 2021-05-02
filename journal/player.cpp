@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <string>
 
+#include "absl/strings/match.h"
 #include "base/array.hpp"
 #include "base/get_line.hpp"
 #include "base/hexadecimal.hpp"
@@ -44,13 +45,14 @@ bool Player::Play(int const index) {
 
   // Check that the version of the journal matches that of the binary.  Remember
   // that a GetVersion message is logged in Recorder::Activate, so it's always
-  // present.
+  // present.  The |StartsWith| test below allows the "-dirty" suffix, which is
+  // typically present when debugging.
   if (method_in->HasExtension(serialization::GetVersion::extension)) {
     auto const& get_version_out =
         method_out_return->GetExtension(serialization::GetVersion::extension)
             .out();
     LOG_IF(FATAL,
-           get_version_out.version() != Version &&
+           !absl::StartsWith(Version, get_version_out.version())  &&
                (PRINCIPIA_PLAYER_ALLOW_VERSION_MISMATCH == 0))
         << "Journal version is " << get_version_out.version()
         << ", running with a binary built at version " << Version
