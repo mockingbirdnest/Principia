@@ -356,6 +356,11 @@ void ContinuousTrajectory<Frame>::WriteToMessage(
   checkpointer_->WriteToMessage(message->mutable_checkpoint());
   step_.WriteToMessage(message->mutable_step());
   tolerance_.WriteToMessage(message->mutable_tolerance());
+
+  // TODO(phl): There should be no polynomials before the oldest checkpoint, see
+  // Ephemeris::AppendMassiveBodiesState.  This has probably been true since
+  // Fatou (#2149) and possibly Burnside (#1029).  This code should be removed,
+  // but "Beware the Compatibility, my son!".
   for (auto const& pair : polynomials_) {
     Instant const& t_max = pair.t_max;
     auto const& polynomial = pair.polynomial;
@@ -376,7 +381,7 @@ template<typename Frame>
 template<typename, typename>
 not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>
 ContinuousTrajectory<Frame>::ReadFromMessage(
-    Instant const& using_checkpoint_at_or_before,
+    Instant const& desired_t_min,
     serialization::ContinuousTrajectory const& message) {
   bool const is_pre_cohen = message.series_size() > 0;
   bool const is_pre_fatou = !message.has_checkpoint_time();
@@ -454,11 +459,11 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
             message.checkpoint());
   }
 
-  // This has no effect if there is no checkpoint before
-  // |using_checkpoint_at_or_before|, and leaves the checkpointed fields in
-  // their default-constructed state.
-  continuous_trajectory->checkpointer_->ReadFromCheckpointAtOrBefore(
-      using_checkpoint_at_or_before);
+  // There should always be a checkpoint, either at the end of the trajectory,
+  // in the pre-Grassmann compatibility case; or at the first point of the
+  // trajectory, for modern saves (see the comment in WriteToMessage).
+  CHECK_OK(continuous_trajectory->checkpointer_->ReadFromCheckpointAtOrBefore(
+      desired_t_min));
 
   return continuous_trajectory;
 }
