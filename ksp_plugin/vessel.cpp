@@ -19,6 +19,7 @@ namespace ksp_plugin {
 namespace internal_vessel {
 
 using astronomy::InfiniteFuture;
+using astronomy::InfinitePast;
 using base::Contains;
 using base::Error;
 using base::FindOrDie;
@@ -224,6 +225,10 @@ void Vessel::AdvanceTime() {
   // prognostication.
   auto prediction = prediction_->DetachFork();
 
+  // Read the wall of text below and realize that this can happen for the
+  // history as well as the psychohistory, if the history of the part was
+  // obtained using an adaptive step integrator, which is the case during a
+  // burn.  See #2931.
   history_->DeleteFork(psychohistory_);
   AppendToVesselTrajectory(&Part::history_begin,
                            &Part::history_end,
@@ -242,7 +247,7 @@ void Vessel::AdvanceTime() {
   // multiple points, say one at t₀ + 21 s and one at t₀ + 24 s.  In this case
   // trying to insert the point at t₀ + 21 s would put us before the last point
   // of the history of B and would fail a check.  Therefore, we just ignore that
-  // point.  See #2507.
+  // point.  See #2507 and the |last_time| in AppendToVesselTrajectory.
   AppendToVesselTrajectory(&Part::psychohistory_begin,
                            &Part::psychohistory_end,
                            *psychohistory_);
@@ -634,10 +639,9 @@ void Vessel::AppendToVesselTrajectory(
     ends.push_back((*part.*part_trajectory_end)());
   }
 
-  Instant fork_time;
-  if (!trajectory.is_root()) {
-    fork_time = trajectory.Fork()->time;
-  }
+  // We cannot append a point before this time, see the comments in AdvanceTime.
+  Instant const last_time =
+      trajectory.Empty() ? InfinitePast : trajectory.back().time;
 
   // Loop over the times of the trajectory.
   for (;;) {
@@ -645,9 +649,8 @@ void Vessel::AppendToVesselTrajectory(
     bool const at_end_of_part_trajectory = it0 == ends[0];
     Instant const first_time = at_end_of_part_trajectory ? Instant()
                                                          : it0->time;
-    bool const after_fork_time = !at_end_of_part_trajectory &&
-                                 (trajectory.is_root() ||
-                                  first_time > fork_time);
+    bool const can_be_appended = !at_end_of_part_trajectory &&
+                                 first_time > last_time;
 
     // Loop over the parts at a given time.
     BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
@@ -668,7 +671,7 @@ void Vessel::AppendToVesselTrajectory(
     }
 
     // Append the parts' barycentre to the trajectory.
-    if (after_fork_time) {
+    if (can_be_appended) {
       DegreesOfFreedom<Barycentric> const vessel_degrees_of_freedom =
           calculator.Get();
       trajectory.Append(first_time, vessel_degrees_of_freedom);
