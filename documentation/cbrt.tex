@@ -538,7 +538,8 @@ or equivalently.\begin{align*}
 &=\argmin_{Γ\in\R}\max_{\tuple{f, k}\in\mathscr{E}\Union\mathscr{L}}\abs{ε_q'}\text,
 \end{align*}
 where $\mathscr{E}\DefineAs\set{\tuple{\FractionalPart Γ, 0}}\Union\setst{\tuple{0, k}}{k\in\set{0,1,2}}$ is the set of the endpoints of the intervals whereon $q'$ is piecewise affine, and
-$\mathscr{L}\DefineAs\setst{\tuple{\frac{k-\FractionalPart Γ}{2},k}}{k\in\set{1,2}}$ are the local extrema. We get more precisely\footnote{This value may be computed formally, but the expression is unwieldy.}\begin{align*}
+$\mathscr{L}\DefineAs\setst{\tuple{\frac{k-\FractionalPart Γ}{2},k}}{k\in\set{1,2}}$ are the local extrema. We get more precisely\footnote{These values may
+be computed formally, but the expression is unwieldy.}\begin{align*}
 Γ_{\mathrm{Kahan}} &\approx 0.10096\,78121\,55802\,88786\,36993\,42643\,55358\,06490^-\\
                    &\approx \hex{0.19D9\,06CB\,2868\,81F4\,88FD\,38DF\,E7F6\,98DD\,B^+}
 \intertext{with}
@@ -605,10 +606,13 @@ whose leading term is half that of the rational method; indeed we find that with
 we have $\max_{y} \abs{ε_ξ'} \approx 10.48\Multiply10^{-6}$, $\log_2 \max_{y} \abs{ε_ξ'} \approx -16.54$, gaining one bit
 with respect to the rational method.
 Here $Γ=Γ_{\mathrm{Kahan}}$ is very close to optimal; with the optimal value\begin{align*}
-Γ_{\mathrm{L^2}}&\approx0.10096\,82076\,65096\,37285\,40885\,52460\,33434\,6\text,\\
-&\approx \hex{E99.70D0\,DEAD\,BEEF}
+Γ_{\mathrm{L^2}}&\approx0.10096\,82076\,65096\,37285\,40885\,52460\,33434\,63385^-\text,\\
+&\approx \hex{0.19D9\,0D6D\,DB79\,AE1F\,D556\,591B\,78EF\,F3DD\,B^+}
+\intertext{the error bound}
+\max_{y} \abs{ε_{ξ}'}&\approx 10.48337\,57985\,85309\,87229\,03375\,83237\,37064\,369^+\Multiply 10^{-6}\\
+&\approx \hex{1.5FC3\,832D\,82FF\,67E3\,E4A4\,C2FD\,A877\,7C2E^-}\Multiply 2^{-17}
 \end{align*}
-the error remains the same within the precision to which we have given it.
+improves only in its sixth decimal place.
 However, we have other ways of improving the error at no cost to performance.
 \subsubsection*{Canon optimization of Lagny's irrational method}
 The idea for this optimization comes from \cite{Canon2018a}, reproduced here with the author’s permission:
