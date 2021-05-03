@@ -548,7 +548,7 @@ be computed formally, but the expression is unwieldy.}\begin{align*}
 \end{align*}
 yielding the constant\[C_{\mathrm{Kahan}}=\hex{2A9F\,7625\,3119\,D328}\Multiply 2^{-52}\]for IEEE 754-2008 binary64.
 However, as we will see in the next section, this value does not optimize the final error.
-\subsection{Getting to a third of the precision}
+\subsection{Getting to a third of the precision}\label{ThirdPrecision}
 We now consider multiple methods for the refinement of $q$ to $ξ$.
 The rounding error in this step being both negligible and tedious to bound,
 its analysis is relegated to appendix~\ref{LagnyStepTwoRounding}. Here we
@@ -761,7 +761,7 @@ The error of $r$ is thus\begin{align*}
 and that of the faithfully-rounded result $r_0$ is $ε_r\pa{1+υ}$ for some $\abs υ \le u$.
 
 It is easy to make $ε_r'$ negligible by increasing the order of the method; the main
-contribution to misrounding is then $δε_x$: this is why $ε_x$ needed to be kept low in step~\ref{QuickApproximation}.
+contribution to misrounding is then $δε_x$: this is why $ε_x$ needed to be kept low in step~\ref{ThirdPrecision}.
 
 We now compute bounds for $ε_r'$ and $δ$ for two different methods.\marginnote{TODO(egg): the quadratic irrational method
 of order $5$ \emph{looks} costly, but who knows. It certainly would be tedious to analyse its rounding errors, as it has
@@ -1102,7 +1102,7 @@ instead computed fastest as\[
 which is about four cycles slower than the rational method.
 
 Surprisingly, the rounding step $\FunctionBody ξ x$ is faster when performed using Veltkamp\--Dekker than by directed rounding using \texttt{andpd} on Sandy Bridge, and about equally fast on Ivy Bridge. Given the increased precision, we round to the nearest
-$16$-bit value in that step.
+$17$-bit value in that step.
 
 TODO(egg): Give some numbers for the rate of passage in the ``potential misrounding'' path, and its cost.
 \subsection*{With FMA}
