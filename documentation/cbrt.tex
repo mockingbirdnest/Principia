@@ -606,8 +606,8 @@ whose leading term is half that of the rational method; indeed we find that with
 we have $\max_{y} \abs{ε_ξ'} \approx 10.48\Multiply10^{-6}$, $\log_2 \max_{y} \abs{ε_ξ'} \approx -16.54$, gaining one bit
 with respect to the rational method.
 Here $Γ=Γ_{\mathrm{Kahan}}$ is very close to optimal; with the optimal value\begin{align*}
-Γ_{\mathrm{L^2}}&\approx0.10096\,82076\,65096\,37285\,40885\,52460\,33434\,63385^-\text,\\
-&\approx \hex{0.19D9\,0D6D\,DB79\,AE1F\,D556\,591B\,78EF\,F3DD\,B^+}
+Γ_{\mathrm{L^2}}&\approx0.10096\,82076\,65096\,37285\,40885\,52460\,33434\,63385^-\\
+&\approx \hex{0.19D9\,0D6D\,DB79\,AE1F\,D556\,591B\,78EF\,F3DD\,B^+\text,}
 \intertext{the error bound}
 \max_{y} \abs{ε_{ξ}'}&\approx 10.48337\,57985\,85309\,87229\,03375\,83237\,37064\,369^+\Multiply 10^{-6}\\
 &\approx \hex{1.5FC3\,832D\,82FF\,67E3\,E4A4\,C2FD\,A877\,7C2E^-}\Multiply 2^{-17}
@@ -684,18 +684,15 @@ $Γ=\frac{1}{10}$, $κ=\frac{1}{2}$, $λ=\frac{1}{4}$, and $μ=3$. We obtain the
 κ_{\mathrm{L^2C}} &\approx 0.49999\,99381\,08574\,04775\,14291\,72928\,30652\,9????\text,\\
 λ_{\mathrm{L^2C}} &\approx 0.25000\,00000\,00145\,58487\,81104\,01052\,77249\,3????\text,\\
 μ_{\mathrm{L^2C}} &\approx 3.00074\,62871\,20756\,72280\,51404\,24030\,90920\,????\text,\\
-\end{align*}
-\begin{center}
-in hexadecimal
-\end{center}
-\begin{align*}
+\max_{y}\abs{ε_ξ'} &\approx 2.6157\Multiply10^{-6}\text,\\
+\intertext{\centering in hexadecimal}
 Γ_{\mathrm{L^2C}} &\approx \hex{E99.70D0\,DEAD\,BEEF},\\
 κ_{\mathrm{L^2C}} &\approx \hex{E99.70D0\,DEAD\,BEEF},\\
 λ_{\mathrm{L^2C}} &\approx \hex{E99.70D0\,DEAD\,BEEF},\\
-μ_{\mathrm{L^2C}} &\approx \hex{E99.70D0\,DEAD\,BEEF},
+μ_{\mathrm{L^2C}} &\approx \hex{E99.70D0\,DEAD\,BEEF},\\
+\max_{y}\abs{ε_ξ'} &\approx\hex{1.DEAD\,BEEF}\Multiply2^{-19}\text,
 \end{align*}
-for an error of $\max_{y}\abs{ε_ξ'} \approx 2.6157\Multiply10^{-6}$, $\log_2\max_{y}\abs{ε_ξ'} \approx -18.54$: this
-optimization gains two bits.
+$\log_2\max_{y}\abs{ε_ξ'} \approx -18.54$: this optimization gains two bits.
 The resulting $ε_ξ'$ is remarkably equioscillating, as can be seen in
 figure~\ref{figStepTwoComparison}.
 
