@@ -540,8 +540,8 @@ or equivalently.\begin{align*}
 \end{align*}
 where $\mathscr{E}\DefineAs\set{\tuple{\FractionalPart Γ, 0}}\Union\setst{\tuple{0, k}}{k\in\set{0,1,2}}$ is the set of the endpoints of the intervals whereon $q'$ is piecewise affine, and
 $\mathscr{L}\DefineAs\setst{\tuple{\frac{k-\FractionalPart Γ}{2},k}}{k\in\set{1,2}}$ are the local extrema. We get more precisely\footnote{This value may be computed formally, but the expression is unwieldy.}\begin{align*}
-Γ_{\mathrm{Kahan}} &\approx 0.10096\,78121\,55802\,88786\,36993\,42643\,55358\,1\\
-                   &\approx \hex{E99.70D0\,DEAD\,BEEF}
+Γ_{\mathrm{Kahan}} &\approx 0.10096\,78121\,55802\,88786\,36993\,42643\,55358^+\\
+                   &\approx \hex{0.19D9\,06CB\,2868\,81F4\,88FD\,38DF\,E7F6\,A^-}
 \end{align*}
 with $\max_{y}\abs{ε_q'} \approx 3.155\%$,
 yielding the constant\[C_{\mathrm{Kahan}}=\hex{2A9F\,7625\,3119\,D328}\Multiply 2^{-52}\]for IEEE 754-2008 binary64.
