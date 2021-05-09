@@ -642,6 +642,10 @@ internal class PlannedOrbitAnalyser : OrbitAnalyser {
   }
 
   protected override OrbitAnalysis GetAnalysis() {
+    if (!plugin.FlightPlanExists(predicted_vessel.id.ToString())) {
+      Hide();
+      return new OrbitAnalysis();
+    }
     return plugin.FlightPlanGetCoastAnalysis(predicted_vessel.id.ToString(),
                                              manual_revolutions_per_cycle,
                                              manual_days_per_cycle,
