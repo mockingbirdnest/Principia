@@ -352,10 +352,10 @@ Status Ephemeris<Frame>::last_severe_integration_status() const {
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::Prolong(Instant const& t) {
+Status Ephemeris<Frame>::Prolong(Instant const& t) {
   // Short-circuit without locking.
   if (t <= t_max()) {
-    return;
+    return Status::OK;
   }
 
   // Note that |t| may be before the last time that we integrated and still
@@ -375,14 +375,28 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   absl::MutexLock l(&lock_);
   while (t_max() < t) {
     instance_->Solve(t_final);
+    RETURN_IF_STOPPED;
     t_final += fixed_step_parameters_.step_;
   }
+
+  return Status::OK;
 }
 
 template<typename Frame>
 not_null<std::unique_ptr<typename Integrator<
     typename Ephemeris<Frame>::NewtonianMotionEquation>::Instance>>
 Ephemeris<Frame>::NewInstance(
+    std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
+    IntrinsicAccelerations const& intrinsic_accelerations,
+    FixedStepParameters const& parameters) {
+  return StoppableNewInstance(trajectories, intrinsic_accelerations, parameters)
+      .ValueOrDie();
+}
+
+template<typename Frame>
+StatusOr<not_null<std::unique_ptr<typename Integrator<
+    typename Ephemeris<Frame>::NewtonianMotionEquation>::Instance>>>
+Ephemeris<Frame>::StoppableNewInstance(
     std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
     IntrinsicAccelerations const& intrinsic_accelerations,
     FixedStepParameters const& parameters) {
@@ -427,6 +441,7 @@ Ephemeris<Frame>::NewInstance(
   // The construction of the instance may evaluate the degrees of freedom of the
   // bodies.
   Prolong(trajectory_last_time + parameters.step_);
+  RETURN_IF_STOPPED;
 
   return parameters.integrator_->NewInstance(
       problem, append_state, parameters.step_);
@@ -501,6 +516,7 @@ Status Ephemeris<Frame>::FlowWithFixedStep(
     typename Integrator<NewtonianMotionEquation>::Instance& instance) {
   if (empty() || t > t_max()) {
     Prolong(t);
+    RETURN_IF_STOPPED;
   }
   if (instance.time() == DoublePrecision<Instant>(t)) {
     return Status::OK;
@@ -1244,6 +1260,7 @@ Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
                         trajectory_last_time + fixed_step_parameters_.step()),
                t);
   Prolong(t_final);
+  RETURN_IF_STOPPED;
 
   IntegrationProblem<ODE> problem;
   problem.equation.compute_acceleration = std::move(compute_acceleration);
