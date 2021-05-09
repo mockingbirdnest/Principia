@@ -188,8 +188,9 @@ class Ephemeris {
 
   virtual Status last_severe_integration_status() const;
 
-  // Prolongs the ephemeris up to at least |t|.  After the call, |t_max() >= t|.
-  virtual void Prolong(Instant const& t) EXCLUDES(lock_);
+  // Prolongs the ephemeris up to at least |t|.  After a successful call,
+  // |t_max() >= t|.
+  virtual Status Prolong(Instant const& t) EXCLUDES(lock_);
 
   // Asks the reanimator thread to asynchronously reconstruct the past so that
   // the |t_min()| of the ephemeris ultimately ends up at or before

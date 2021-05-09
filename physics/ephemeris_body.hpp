@@ -397,10 +397,10 @@ void Ephemeris<Frame>::WaitForReanimation(Instant const& desired_t_min) {
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::Prolong(Instant const& t) {
+Status Ephemeris<Frame>::Prolong(Instant const& t) {
   // Short-circuit without locking.
   if (t <= t_max()) {
-    return;
+    return Status::OK;
   }
 
   // Note that |t| may be before the last time that we integrated and still
@@ -419,9 +419,11 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   // after the first integration.
   absl::MutexLock l(&lock_);
   while (t_max() < t) {
-    instance_->Solve(t_final);
+    /*RETURN_IF_ERROR(*/instance_->Solve(t_final)/*)*/;
     t_final += fixed_step_parameters_.step_;
   }
+
+  return Status::OK;
 }
 
 template<typename Frame>
