@@ -389,6 +389,17 @@ Ephemeris<Frame>::NewInstance(
     std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
     IntrinsicAccelerations const& intrinsic_accelerations,
     FixedStepParameters const& parameters) {
+  return StoppableNewInstance(trajectories, intrinsic_accelerations, parameters)
+      .ValueOrDie();
+}
+
+template<typename Frame>
+StatusOr<not_null<std::unique_ptr<typename Integrator<
+    typename Ephemeris<Frame>::NewtonianMotionEquation>::Instance>>>
+Ephemeris<Frame>::StoppableNewInstance(
+    std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
+    IntrinsicAccelerations const& intrinsic_accelerations,
+    FixedStepParameters const& parameters) {
   IntegrationProblem<NewtonianMotionEquation> problem;
 
   problem.equation.compute_acceleration =
@@ -430,6 +441,7 @@ Ephemeris<Frame>::NewInstance(
   // The construction of the instance may evaluate the degrees of freedom of the
   // bodies.
   Prolong(trajectory_last_time + parameters.step_);
+  RETURN_IF_STOPPED;
 
   return parameters.integrator_->NewInstance(
       problem, append_state, parameters.step_);

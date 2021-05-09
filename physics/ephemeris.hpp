@@ -11,6 +11,7 @@
 #include "base/jthread.hpp"
 #include "base/not_null.hpp"
 #include "base/status.hpp"
+#include "base/status_or.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "google/protobuf/repeated_field.h"
@@ -36,6 +37,7 @@ using base::Error;
 using base::jthread;
 using base::not_null;
 using base::Status;
+using base::StatusOr;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Vector;
@@ -196,6 +198,14 @@ class Ephemeris {
   virtual not_null<
       std::unique_ptr<typename Integrator<NewtonianMotionEquation>::Instance>>
   NewInstance(
+      std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
+      IntrinsicAccelerations const& intrinsic_accelerations,
+      FixedStepParameters const& parameters);
+
+  // Same as above, but returns an error status if the thread is stopped.
+  virtual StatusOr<not_null<
+      std::unique_ptr<typename Integrator<NewtonianMotionEquation>::Instance>>>
+  StoppableNewInstance(
       std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
       IntrinsicAccelerations const& intrinsic_accelerations,
       FixedStepParameters const& parameters);
