@@ -352,7 +352,7 @@ Status Ephemeris<Frame>::last_severe_integration_status() const {
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::Prolong(Instant const& t) {
+Status Ephemeris<Frame>::Prolong(Instant const& t) {
   // Short-circuit without locking.
   if (t <= t_max()) {
     return Status::OK;
@@ -374,7 +374,8 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   // after the first integration.
   absl::MutexLock l(&lock_);
   while (t_max() < t) {
-    /*RETURN_IF_ERROR(*/instance_->Solve(t_final)/*)*/;
+    instance_->Solve(t_final);
+    RETURN_IF_STOPPED;
     t_final += fixed_step_parameters_.step_;
   }
 
@@ -503,6 +504,7 @@ Status Ephemeris<Frame>::FlowWithFixedStep(
     typename Integrator<NewtonianMotionEquation>::Instance& instance) {
   if (empty() || t > t_max()) {
     Prolong(t);
+    RETURN_IF_STOPPED;
   }
   if (instance.time() == DoublePrecision<Instant>(t)) {
     return Status::OK;
@@ -1246,6 +1248,7 @@ Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
                         trajectory_last_time + fixed_step_parameters_.step()),
                t);
   Prolong(t_final);
+  RETURN_IF_STOPPED;
 
   IntegrationProblem<ODE> problem;
   problem.equation.compute_acceleration = std::move(compute_acceleration);

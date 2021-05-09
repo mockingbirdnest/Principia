@@ -186,8 +186,8 @@ class Ephemeris {
 
   virtual Status last_severe_integration_status() const;
 
-  // Prolongs the ephemeris up to at least |t|.  After a successful call,
-  // |t_max() >= t|.
+  // Prolongs the ephemeris up to at least |t|.  Returns an error iff the thread
+  // is stopped.  After a successful call, |t_max() >= t|.
   virtual Status Prolong(Instant const& t) EXCLUDES(lock_);
 
   // Creates an instance suitable for integrating the given |trajectories| with
