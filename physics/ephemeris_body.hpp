@@ -386,6 +386,17 @@ void Ephemeris<Frame>::RequestReanimation(Instant const& desired_t_min) {
 }
 
 template<typename Frame>
+void Ephemeris<Frame>::WaitForReanimation(Instant const& desired_t_min) {
+  auto desired_t_min_reached = [this, desired_t_min]() {
+    lock_.AssertReaderHeld();
+    return t_min_locked() <= desired_t_min;
+  };
+
+  absl::ReaderMutexLock l(&lock_);
+  lock_.Await(absl::Condition(&desired_t_min_reached));
+}
+
+template<typename Frame>
 void Ephemeris<Frame>::Prolong(Instant const& t) {
   // Short-circuit without locking.
   if (t <= t_max()) {

@@ -345,29 +345,28 @@ Status FlightPlan::BurnSegment(
     not_null<DiscreteTrajectory<Barycentric>*> const segment) {
   Instant const final_time = manœuvre.final_time();
   if (manœuvre.initial_time() < final_time) {
+    // Make sure that the ephemeris covers the entire segment, reannimating and
+    // waiting if necessary.
     Instant const starting_time = segment->back().time;
-
-    // Don't try to integrate if the entire segment is not covered by the
-    // ephemeris yet.  Request a reanimation instead.
-    if (ephemeris_->t_min() <= starting_time) {
-      if (manœuvre.is_inertially_fixed()) {
-        return ephemeris_->FlowWithAdaptiveStep(
-            segment,
-            manœuvre.InertialIntrinsicAcceleration(),
-            final_time,
-            adaptive_step_parameters_,
-            max_ephemeris_steps_per_frame);
-      } else {
-        return ephemeris_->FlowWithAdaptiveStep(
-            segment,
-            manœuvre.FrenetIntrinsicAcceleration(),
-            final_time,
-            generalized_adaptive_step_parameters_,
-            max_ephemeris_steps_per_frame);
-      }
-    } else {
+    if (starting_time < ephemeris_->t_min()) {
       ephemeris_->RequestReanimation(starting_time);
-      return Status::OK;
+      ephemeris_->WaitForReanimation(starting_time);
+    }
+
+    if (manœuvre.is_inertially_fixed()) {
+      return ephemeris_->FlowWithAdaptiveStep(
+          segment,
+          manœuvre.InertialIntrinsicAcceleration(),
+          final_time,
+          adaptive_step_parameters_,
+          max_ephemeris_steps_per_frame);
+    } else {
+      return ephemeris_->FlowWithAdaptiveStep(
+          segment,
+          manœuvre.FrenetIntrinsicAcceleration(),
+          final_time,
+          generalized_adaptive_step_parameters_,
+          max_ephemeris_steps_per_frame);
     }
   } else {
     return Status::OK;
@@ -377,21 +376,20 @@ Status FlightPlan::BurnSegment(
 Status FlightPlan::CoastSegment(
     Instant const& desired_final_time,
     not_null<DiscreteTrajectory<Barycentric>*> const segment) {
+  // Make sure that the ephemeris covers the entire segment, reannimating and
+  // waiting if necessary.
   Instant const starting_time = segment->back().time;
-
-  // Don't try to integrate if the entire segment is not covered by the
-  // ephemeris yet.  Request a reanimation instead.
-  if (ephemeris_->t_min() <= starting_time) {
-    return ephemeris_->FlowWithAdaptiveStep(
-        segment,
-        Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-        desired_final_time,
-        adaptive_step_parameters_,
-        max_ephemeris_steps_per_frame);
-  } else {
+  if (starting_time < ephemeris_->t_min()) {
     ephemeris_->RequestReanimation(starting_time);
-    return Status::OK;
+    ephemeris_->WaitForReanimation(starting_time);
   }
+
+  return ephemeris_->FlowWithAdaptiveStep(
+      segment,
+      Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+      desired_final_time,
+      adaptive_step_parameters_,
+      max_ephemeris_steps_per_frame);
 }
 
 Status FlightPlan::ComputeSegments(
