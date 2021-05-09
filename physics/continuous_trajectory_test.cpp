@@ -438,6 +438,7 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
                                       trajectory->EvaluateVelocity(time)));
   }
 
+#if PRINCIPIA_CONTINUOUS_TRAJECTORY_SUPPORTS_PIECEWISE_POISSON_SERIES
   // Now check that it can be converted to a piecewise Poisson series.
   Instant const t_min = trajectory->t_min() + 2 * step / number_of_substeps;
   Instant const t_max = trajectory->t_max() - 3 * step / number_of_substeps;
@@ -451,6 +452,7 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
         piecewise_poisson_series(time),
         AlmostEquals(trajectory->EvaluatePosition(time) - World::origin, 0, 0));
   }
+#endif
 }
 
 // An approximation to the trajectory of Io.
@@ -582,6 +584,92 @@ TEST_F(ContinuousTrajectoryTest, Continuity) {
   Position<World> const p3 =
       trajectory->EvaluatePosition(continuity_time);
   EXPECT_THAT(p1, AlmostEquals(p3, 0, 2));
+}
+
+TEST_F(ContinuousTrajectoryTest, Prepend) {
+  int const number_of_steps1 = 20;
+  int const number_of_steps2 = 15;
+  int const number_of_substeps = 50;
+  Time const step = 0.01 * Second;
+  Length const tolerance = 0.1 * Metre;
+
+  // Construct two trajectories with different functions.
+
+  Instant const t1 = t0_;
+  auto position_function1 =
+      [this, t1](Instant const t) {
+        return World::origin +
+            Displacement<World>({(t - t1) * 3 * Metre / Second,
+                                 (t - t1) * 5 * Metre / Second,
+                                 (t - t1) * (-2) * Metre / Second});
+      };
+  auto velocity_function1 =
+      [](Instant const t) {
+        return Velocity<World>({3 * Metre / Second,
+                                5 * Metre / Second,
+                                -2 * Metre / Second});
+      };
+  auto trajectory1 =
+      std::make_unique<ContinuousTrajectory<World>>(step, tolerance);
+  FillTrajectory(number_of_steps1,
+                 step,
+                 position_function1,
+                 velocity_function1,
+                 t1,
+                 *trajectory1);
+  EXPECT_EQ(t1 + step, trajectory1->t_min());
+  EXPECT_EQ(t1 + (((number_of_steps1 - 1) / 8) * 8 + 1) * step,
+            trajectory1->t_max());
+
+  Instant const t2 = trajectory1->t_max();
+  auto position_function2 =
+      [this, &position_function1, t2](Instant const t) {
+        return position_function1(t2) +
+               Displacement<World>({(t - t2) * 6 * Metre / Second,
+                                    (t - t2) * 1.5 * Metre / Second,
+                                    (t - t2) * 7 * Metre / Second});
+      };
+  auto velocity_function2 =
+      [](Instant const t) {
+        return Velocity<World>({6 * Metre / Second,
+                                1.5 * Metre / Second,
+                                7 * Metre / Second});
+      };
+  auto trajectory2 =
+      std::make_unique<ContinuousTrajectory<World>>(step, tolerance);
+  FillTrajectory(number_of_steps2 + 1,
+                 step,
+                 position_function2,
+                 velocity_function2,
+                 t2 - step,  // First point at t2.
+                 *trajectory2);
+  EXPECT_EQ(t2, trajectory2->t_min());
+  EXPECT_EQ(t2 + (number_of_steps2 / 8) * 8 * step,
+            trajectory2->t_max());
+
+  // Prepend one trajectory to the other.
+  trajectory2->Prepend(std::move(*trajectory1));
+
+  // Verify the resulting trajectory.
+  EXPECT_EQ(t1 + step, trajectory2->t_min());
+  EXPECT_EQ(t2 + (number_of_steps2 / 8) * 8 * step,
+            trajectory2->t_max());
+  for (Instant time = trajectory2->t_min();
+       time <= t2;
+       time += step / number_of_substeps) {
+    EXPECT_THAT(trajectory2->EvaluatePosition(time),
+                AlmostEquals(position_function1(time), 0, 10)) << time;
+    EXPECT_THAT(trajectory2->EvaluateVelocity(time),
+                AlmostEquals(velocity_function1(time), 0, 4)) << time;
+  }
+  for (Instant time = t2 + step / number_of_substeps;
+       time <= trajectory2->t_max();
+       time += step / number_of_substeps) {
+    EXPECT_THAT(trajectory2->EvaluatePosition(time),
+                AlmostEquals(position_function2(time), 0, 2816)) << time;
+    EXPECT_THAT(trajectory2->EvaluateVelocity(time),
+                AlmostEquals(velocity_function2(time), 0, 34)) << time;
+  }
 }
 
 TEST_F(ContinuousTrajectoryTest, Serialization) {

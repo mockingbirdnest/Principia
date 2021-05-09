@@ -73,10 +73,21 @@ class ContinuousTrajectory : public Trajectory<Frame> {
                 DegreesOfFreedom<Frame> const& degrees_of_freedom)
       EXCLUDES(lock_);
 
+  // Prepends the given |trajectory| to this one.  Ideally the last point of
+  // |trajectory| should match the first point of this object.
+  // Note the rvalue reference: |ContinuousTrajectory| is not moveable and not
+  // copyable, but the |InstantPolynomialPairs| are moveable and we really want
+  // to move them.  We could pass by non-const lvalue reference, but we would
+  // rather make it clear at the calling site that the object is consumed, so
+  // we require the use of std::move.
+  void Prepend(ContinuousTrajectory&& trajectory);
+
   // Implementation of the interface |Trajectory|.
 
-  // |t_max| may be less than the last time passed to Append.  For an empty
-  // trajectory, an infinity with the proper sign is returned.
+  // |t_max| may be less than the last time passed to Append because the
+  // trajectory cannot be evaluated for the last points, for which no polynomial
+  // was constructed.  For an empty trajectory, an infinity with the proper
+  // sign is returned.
   Instant t_min() const override EXCLUDES(lock_);
   Instant t_max() const override EXCLUDES(lock_);
 
@@ -89,6 +100,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
 
   // End of the implementation of the interface.
 
+#if PRINCIPIA_CONTINUOUS_TRAJECTORY_SUPPORTS_PIECEWISE_POISSON_SERIES
   // Returns the degree for a piecewise Poisson series covering the given time
   // interval.
   int PiecewisePoissonSeriesDegree(Instant const& t_min,
@@ -102,6 +114,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
                          EstrinEvaluator>
   ToPiecewisePoissonSeries(Instant const& t_min,
                            Instant const& t_max) const;
+#endif
 
   void WriteToMessage(not_null<serialization::ContinuousTrajectory*> message)
       const EXCLUDES(lock_);

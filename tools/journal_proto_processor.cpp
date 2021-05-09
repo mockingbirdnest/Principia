@@ -493,7 +493,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
   }
   if (Contains(field_cxx_address_of_, descriptor)) {
     is_produced = true;
-    pointer_to = field_cxx_address_of_[descriptor]->containing_type()->name();
+    pointer_to = field_cxx_address_of_[descriptor]->message_type()->name();
   }
   CHECK(!pointer_to.empty()) << descriptor->full_name()
                              << " must have exactly one of the (address_of), "
@@ -1285,18 +1285,20 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
           field_cxx_deserialization_storage_name_[field_descriptor];
     }
 
+    // If the field has an (address_of) attribute, serialization and insertion
+    // use the field addressed by that field.
+    std::string const addressed_field_descriptor_name =
+        Contains(field_cxx_address_of_, field_descriptor)
+            ? field_cxx_address_of_[field_descriptor]->name()
+            : field_descriptor_name;
+
     std::string const deserialize_field_checker =
         parameter_name + ".has_" + field_descriptor_name + "()";
     std::string const deserialize_field_getter =
         parameter_name + "." + field_descriptor_name + "()";
     std::string const serialize_member_name =
-        parameter_name + "." + field_descriptor_name;
+        parameter_name + "." + addressed_field_descriptor_name;
 
-    deserialized_expressions.push_back(
-        field_cxx_optional_pointer_fn_[field_descriptor](
-            deserialize_field_checker,
-            field_cxx_deserializer_fn_[field_descriptor](
-                deserialize_field_getter)));
     cxx_serialize_definition_[descriptor] +=
         field_cxx_optional_assignment_fn_[field_descriptor](
             serialize_member_name,
@@ -1308,66 +1310,79 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
       std::string const proto_field_getter =
           proto_parameter_name + "." + field_descriptor_name + "()";
       std::string const object_field_reference =
-          object_parameter_name + "." + field_descriptor_name;
+          object_parameter_name + "." + addressed_field_descriptor_name;
       cxx_insert_definition_[descriptor] +=
           field_cxx_inserter_fn_[field_descriptor](proto_field_getter,
                                                    object_field_reference);
     }
 
-    if (Contains(field_cs_private_type_, field_descriptor)) {
-      std::string const field_private_member_name = field_descriptor_name + "_";
-      std::vector<std::string> fn_arguments = {field_private_member_name};
-      cs_interchange_type_declaration_[descriptor] +=
-          "  private " + field_cs_private_type_[field_descriptor] + " " +
-          field_private_member_name + ";\n";
-      cs_interchange_type_declaration_[descriptor] +=
-          "  public " + field_cs_type_[field_descriptor] + " " +
-          field_descriptor_name + " {\n" +
-          "    " + field_cs_private_getter_fn_[field_descriptor](fn_arguments) +
-          "\n" +
-          "    " + field_cs_private_setter_fn_[field_descriptor](fn_arguments) +
-          "\n" +
-          "  }\n";
-    } else {
-      cs_interchange_type_declaration_[descriptor] +=
-          "  public " + field_cs_type_[field_descriptor] + " " +
-          field_descriptor_name + ";\n";
-    }
-    cxx_interchange_type_declaration_[descriptor] +=
-        "  " + field_cxx_type_[field_descriptor] + " " + field_descriptor_name +
-        ";\n";
+    // A field that has an (address_of) attribute is only used for recording the
+    // address for journalling, and has no equivalent field in the C++ and C#
+    // data structures.
+    if (!Contains(field_cxx_address_of_, field_descriptor)) {
+      deserialized_expressions.push_back(
+          field_cxx_optional_pointer_fn_[field_descriptor](
+              deserialize_field_checker,
+              field_cxx_deserializer_fn_[field_descriptor](
+                  deserialize_field_getter)));
 
-    // If we need to generate a marshaler, do it now.
-    if (needs_custom_marshaler) {
-      cs_representation_type_declaration_[descriptor] += "    public ";
-      if (Contains(field_cs_custom_marshaler_, field_descriptor)) {
-        cs_representation_type_declaration_[descriptor] +=
-            "IntPtr " + field_descriptor_name + ";\n";
-        cs_clean_up_native_definition_[descriptor] +=
-            "    " + field_cs_custom_marshaler_[field_descriptor] +
-            ".GetInstance(null).CleanUpNativeData(representation." +
-            field_descriptor_name + ");\n";
-        cs_managed_to_native_definition_[descriptor] +=
-            "        " + field_descriptor_name + " = " +
-            field_cs_custom_marshaler_[field_descriptor] +
-            ".GetInstance(null).MarshalManagedToNative(value." +
-            field_descriptor_name + "),\n";
-        cs_native_to_managed_definition_[descriptor] +=
-            "        " + field_descriptor_name + " = " +
-            field_cs_custom_marshaler_[field_descriptor] +
-            ".GetInstance(null).MarshalNativeToManaged(representation." +
-            field_descriptor_name + ") as " + field_cs_type_[field_descriptor] +
-            ",\n";
+      if (Contains(field_cs_private_type_, field_descriptor)) {
+        std::string const field_private_member_name =
+            field_descriptor_name + "_";
+        std::vector<std::string> fn_arguments = {field_private_member_name};
+        cs_interchange_type_declaration_[descriptor] +=
+            "  private " + field_cs_private_type_[field_descriptor] + " " +
+            field_private_member_name + ";\n";
+        cs_interchange_type_declaration_[descriptor] +=
+            "  public " + field_cs_type_[field_descriptor] + " " +
+            field_descriptor_name + " {\n" +
+            "    " +
+            field_cs_private_getter_fn_[field_descriptor](fn_arguments) + "\n" +
+            "    " +
+            field_cs_private_setter_fn_[field_descriptor](fn_arguments) + "\n" +
+            "  }\n";
       } else {
-        cs_representation_type_declaration_[descriptor] +=
-            field_cs_type_[field_descriptor] + " " + field_descriptor_name +
-            ";\n";
-        cs_managed_to_native_definition_[descriptor] +=
-            "        " + field_descriptor_name + " = value." +
-            field_descriptor_name + ",\n";
-        cs_native_to_managed_definition_[descriptor] +=
-            "        " + field_descriptor_name + " = representation." +
-            field_descriptor_name + ",\n";
+        cs_interchange_type_declaration_[descriptor] +=
+            "  public " + field_cs_type_[field_descriptor] + " " +
+            field_descriptor_name + ";\n";
+      }
+
+      cxx_interchange_type_declaration_[descriptor] +=
+          "  " + field_cxx_type_[field_descriptor] + " " +
+          field_descriptor_name + ";\n";
+
+      // If we need to generate a marshaler, do it now.
+      if (needs_custom_marshaler) {
+        cs_representation_type_declaration_[descriptor] += "    public ";
+        if (Contains(field_cs_custom_marshaler_, field_descriptor)) {
+          cs_representation_type_declaration_[descriptor] +=
+              "IntPtr " + field_descriptor_name + ";\n";
+          cs_clean_up_native_definition_[descriptor] +=
+              "    " + field_cs_custom_marshaler_[field_descriptor] +
+              ".GetInstance(null).CleanUpNativeData(representation." +
+              field_descriptor_name + ");\n";
+          cs_managed_to_native_definition_[descriptor] +=
+              "        " + field_descriptor_name + " = " +
+              field_cs_custom_marshaler_[field_descriptor] +
+              ".GetInstance(null).MarshalManagedToNative(value." +
+              field_descriptor_name + "),\n";
+          cs_native_to_managed_definition_[descriptor] +=
+              "        " + field_descriptor_name + " = " +
+              field_cs_custom_marshaler_[field_descriptor] +
+              ".GetInstance(null).MarshalNativeToManaged(representation." +
+              field_descriptor_name + ") as " +
+              field_cs_type_[field_descriptor] + ",\n";
+        } else {
+          cs_representation_type_declaration_[descriptor] +=
+              field_cs_type_[field_descriptor] + " " + field_descriptor_name +
+              ";\n";
+          cs_managed_to_native_definition_[descriptor] +=
+              "        " + field_descriptor_name + " = value." +
+              field_descriptor_name + ",\n";
+          cs_native_to_managed_definition_[descriptor] +=
+              "        " + field_descriptor_name + " = representation." +
+              field_descriptor_name + ",\n";
+        }
       }
     }
   }

@@ -81,7 +81,9 @@ std::list<typename Samples::const_iterator> FitHermiteSpline(
   // If downsampling is not effective we'll output one iterator for each input
   // point, except at the end where we give up because we don't have enough
   // points left.
+#if PRINCIPIA_MUST_ALWAYS_DOWNSAMPLE
   CHECK_LT(tail.size(), samples.size() - 2);
+#endif
   return tail;
 }
 

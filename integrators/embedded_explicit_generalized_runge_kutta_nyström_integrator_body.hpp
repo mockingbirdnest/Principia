@@ -9,6 +9,7 @@
 #include <optional>
 #include <vector>
 
+#include "base/jthread.hpp"
 #include "geometry/sign.hpp"
 #include "glog/logging.h"
 #include "quantities/quantities.hpp"
@@ -243,6 +244,7 @@ Status EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
       q̂[k].Increment(Δq̂[k]);
       v̂[k].Increment(Δv̂[k]);
     }
+    RETURN_IF_STOPPED;
     append_state(current_state);
     ++step_count;
     if (step_count == parameters.max_steps && !at_end) {

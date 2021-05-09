@@ -3,9 +3,11 @@
 
 #include <functional>
 #include <map>
+#include <set>
 
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
+#include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
 #include "google/protobuf/repeated_field.h"
 #include "quantities/quantities.hpp"
@@ -15,6 +17,7 @@ namespace physics {
 namespace internal_checkpointer {
 
 using base::not_null;
+using base::Status;
 using geometry::Instant;
 using quantities::Time;
 
@@ -43,13 +46,28 @@ class Checkpointer {
 
   // A function that reconstructs an object from a checkpoint as a side effect.
   // This function is expected to capture the object being deserialized.
-  using Reader = std::function<void(typename Message::Checkpoint const&)>;
+  using Reader = std::function<Status(typename Message::Checkpoint const&)>;
 
   Checkpointer(Writer writer, Reader reader);
 
   // Returns the oldest checkpoint in this object, or +∞ if no checkpoint was
   // ever created.
   Instant oldest_checkpoint() const EXCLUDES(lock_);
+
+  // Returns the newest checkpoint in this object, or -∞ if no checkpoint was
+  // ever created.
+  Instant newest_checkpoint() const EXCLUDES(lock_);
+
+  // Returns the checkpoint at or immediately before |t|, or -∞ if no such
+  // checkpoint exists.
+  Instant checkpoint_at_or_before(Instant const& t) const EXCLUDES(lock_);
+
+  // Returns all the checkpoints in this object.
+  std::set<Instant> all_checkpoints() const EXCLUDES(lock_);
+
+  // Returns all the checkpoints at or before |t|.
+  std::set<Instant> all_checkpoints_at_or_before(Instant const& t) const
+      EXCLUDES(lock_);
 
   // Creates a checkpoint at time |t|, which will be used to recreate the
   // timeline after |t|.  The checkpoint is constructed by calling the |Writer|
@@ -64,12 +82,29 @@ class Checkpointer {
       EXCLUDES(lock_);
 
   // Calls the |Reader| passed at construction to reconstruct an object using
-  // the oldest checkpoint.  Dies if this object contains no checkpoint.
-  void ReadFromOldestCheckpoint() const EXCLUDES(lock_);
+  // the oldest checkpoint.  Returns an error if this object contains no
+  // checkpoint or if the |Reader| returns one.
+  Status ReadFromOldestCheckpoint() const EXCLUDES(lock_);
+
+  // Calls the |Reader| passed at construction to reconstruct an object using
+  // the newest checkpoint.  Returns an error if this object contains no
+  // checkpoint or if the |Reader| returns one.
+  Status ReadFromNewestCheckpoint() const EXCLUDES(lock_);
+
+  // Calls the |Reader| passed at construction to reconstruct an object using
+  // the checkpoint at or immediately before |t|.  Returns an error if no such
+  // checkpoint exists or if the |Reader| returns one.
+  Status ReadFromCheckpointAtOrBefore(Instant const& t) const EXCLUDES(lock_);
+
+  // Calls |reader| on the checkpoint at |t|.  Returns an error if there is no
+  // such checkpoint or if |reader| returns one.
+  Status ReadFromCheckpointAt(Instant const& t,
+                              Reader const& reader) const EXCLUDES(lock_);
 
   // Calls |reader| on each of the checkpoints in this object, going backwards
-  // from the most recent to the oldest.
-  void ReadFromAllCheckpointsBackwards(Reader const& reader) const
+  // from the most recent to the oldest.  Returns an error if |reader| returns
+  // one.
+  Status ReadFromAllCheckpointsBackwards(Reader const& reader) const
       EXCLUDES(lock_);
 
   void WriteToMessage(not_null<google::protobuf::RepeatedPtrField<

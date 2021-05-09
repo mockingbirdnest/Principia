@@ -132,6 +132,46 @@ Status ContinuousTrajectory<Frame>::Append(
 }
 
 template<typename Frame>
+void ContinuousTrajectory<Frame>::Prepend(ContinuousTrajectory&& prefix) {
+  absl::MutexLock l1(&lock_);
+  absl::MutexLock l2(&prefix.lock_);
+
+  CHECK_EQ(step_, prefix.step_);
+  CHECK_EQ(tolerance_, prefix.tolerance_);
+
+  if (prefix.polynomials_.empty()) {
+    // Nothing to do.
+  } else if (polynomials_.empty()) {
+    // All the data comes from |prefix|.  This must set all the fields of
+    // this object that are not set at construction.
+    adjusted_tolerance_ = prefix.adjusted_tolerance_;
+    is_unstable_ = prefix.is_unstable_;
+    degree_ = prefix.degree_;
+    degree_age_ = prefix.degree_age_;
+    polynomials_ = std::move(prefix.polynomials_);
+    last_accessed_polynomial_ = prefix.last_accessed_polynomial_;
+    first_time_ = prefix.first_time_;
+    last_points_ = prefix.last_points_;
+  } else {
+    // The polynomials must be aligned, because the time computations only use
+    // basic arithmetic and are platform-independent.  The space computations,
+    // on the other may depend on characteristics of the hardware and/or math
+    // library, so we cannot check that the trajectories are "continuous" at the
+    // junction.
+    CHECK_EQ(*first_time_, prefix.polynomials_.back().t_max);
+    // This operation is in O(prefix.size()).
+    std::move(polynomials_.begin(),
+              polynomials_.end(),
+              std::back_inserter(prefix.polynomials_));
+    polynomials_.swap(prefix.polynomials_);
+    first_time_ = prefix.first_time_;
+    // Note that any |last_points_| in |prefix| are irrelevant because they
+    // correspond to a time interval covered by the first polynomial of this
+    // object.
+  }
+}
+
+template<typename Frame>
 Instant ContinuousTrajectory<Frame>::t_min() const {
   absl::ReaderMutexLock l(&lock_);
   return t_min_locked();
@@ -179,6 +219,8 @@ DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
   return DegreesOfFreedom<Frame>(polynomial(time) + Frame::origin,
                                  polynomial.EvaluateDerivative(time));
 }
+
+#if PRINCIPIA_CONTINUOUS_TRAJECTORY_SUPPORTS_PIECEWISE_POISSON_SERIES
 
 template<typename Frame>
 int ContinuousTrajectory<Frame>::PiecewisePoissonSeriesDegree(
@@ -304,6 +346,7 @@ ContinuousTrajectory<Frame>::ToPiecewisePoissonSeries(
 }
 
 #undef PRINCIPIA_CAST_TO_POLYNOMIAL_IN_MONOMIAL_BASIS
+#endif
 
 template<typename Frame>
 void ContinuousTrajectory<Frame>::WriteToMessage(
@@ -409,7 +452,7 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
             continuous_trajectory->MakeCheckpointerReader(),
             message.checkpoint());
   }
-  continuous_trajectory->checkpointer_->ReadFromOldestCheckpoint();
+  CHECK_OK(continuous_trajectory->checkpointer_->ReadFromOldestCheckpoint());
 
   return continuous_trajectory;
 }
@@ -443,8 +486,7 @@ ContinuousTrajectory<Frame>::MakeCheckpointerWriter() {
     return [this](
         not_null<
             serialization::ContinuousTrajectory::Checkpoint*> const message) {
-      // This takes place with the trajectory unlocked because writing to a
-      // checkpoint is synchronized by the parent ephemeris.
+      absl::ReaderMutexLock l(&lock_);
       adjusted_tolerance_.WriteToMessage(message->mutable_adjusted_tolerance());
       message->set_is_unstable(is_unstable_);
       message->set_degree(degree_);
@@ -470,8 +512,7 @@ ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
   if constexpr (base::is_serializable_v<Frame>) {
     return [this](
                serialization::ContinuousTrajectory::Checkpoint const& message) {
-      // This takes place with the trajectory unlocked because reading from a
-      // checkpoint is synchronized by the parent ephemeris.
+      absl::MutexLock l(&lock_);
       adjusted_tolerance_ =
           Length::ReadFromMessage(message.adjusted_tolerance());
       is_unstable_ = message.is_unstable();
@@ -483,6 +524,7 @@ ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
             {Instant::ReadFromMessage(l.instant()),
              DegreesOfFreedom<Frame>::ReadFromMessage(l.degrees_of_freedom())});
       }
+      return Status::OK;
     };
   } else {
     return nullptr;

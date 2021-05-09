@@ -1,8 +1,8 @@
 # Principia
 
-**[Goldbach](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#goldbach), the March version of Principia, is available, with bug fixes and performance improvements on macOS.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, and 1.11.1](https://bit.ly/3qBflaI).**
+**[Grassmann](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#grassmann), the April version of Principia, is available, with bug fixes and support for 1.11.2.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, and 1.11.2](https://bit.ly/3a36adx).**
 
-**For the convenience of Chinese users, downloads from 腾讯微云: [Principia Goldbach for 1.8.1—1.11.1](https://share.weiyun.com/qkUTDKQK), [Trappist-1 for Principia](https://share.weiyun.com/5wVtWYQ).**
+**For the convenience of Chinese users, downloads from 腾讯微云: [Principia Grassmann for 1.8.1—1.11.2](https://share.weiyun.com/1HxBrsnU), [Trappist-1 for Principia](https://share.weiyun.com/5wVtWYQ).**
 
 Principia is a mod for Kerbal Space Program (KSP) which implements N-body and extended body gravitation.  Instead of being within the sphere of influence of a single celestial body at any point in time, your vessels are influenced by all the celestials.  This makes it possible to implement missions that are more complex and more realistic than in the stock game, especially if used in conjunction with a mod like RealSolarSystem which has real-life celestials.
 
@@ -18,4 +18,4 @@ The [change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log) g
 
 Principia is released on every [new moon](https://en.wikipedia.org/wiki/New_moon) with whatever features and bug fixes are ready at the time.  This ensures relatively timely improvements and bug fixes.
 
-Download the binary (Ubuntu, macOS, and Windows) [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, and 1.11.1](https://bit.ly/3qBflaI).  Download the [“Trappist-1 for Principia”](https://github.com/mockingbirdnest/Principia/wiki/Installing,-reporting-bugs,-and-frequently-asked-questions#installing-trappist-1-for-principia) mini-mod [here](https://bit.ly/2ZHf3Tt).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [Goldbach](https://github.com/mockingbirdnest/Principia/releases/tag/2021031310-Goldbach) release.
+Download the binary (Ubuntu, macOS, and Windows) [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, and 1.11.2](https://bit.ly/3a36adx).  Download the [“Trappist-1 for Principia”](https://github.com/mockingbirdnest/Principia/wiki/Installing,-reporting-bugs,-and-frequently-asked-questions#installing-trappist-1-for-principia) mini-mod [here](https://bit.ly/2ZHf3Tt).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [Grassmann](https://github.com/mockingbirdnest/Principia/releases/tag/2021041203-Grassmann) release.
