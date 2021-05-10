@@ -43,10 +43,50 @@
 \begin{document}
 \maketitle
 \noindent
-This document describes the computations in \href{https://github.com/mockingbirdnest/Principia/blob/master/numerics/cbrt.cpp}{\texttt{numerics/cbrt.cpp}}.
+This document describes the implementation of the function {\texttt{principia::\hspace{0pt}numerics::\hspace{0pt}Cbrt}},
+in \href{https://github.com/mockingbirdnest/Principia/blob/master/numerics/cbrt.cpp}{\texttt{numerics/cbrt.cpp}}.
 
-\section*{On some abridged root-finding methods}
+\part*{Outline}
 
+Our computation of the cube root uses root-finding methods that have fallen into disuse, and thus that may be unfamiliar to the reader.
+
+So that there can no confusion on the properties and names of these methods, this document comprises two parts,
+the first of which is about a family of root-finding methods for arbitrary functions, wherein all methods here
+considered for the cube root can be found. The second is about the computation of a binary64 cube root and its error
+analysis.
+
+The methods considered in the first part originate from a series of works by Thomas Fantet de~Lagny\footnote{Thomas Fantet de~Lagny (1660--1734), professor
+of hydrography in Rochefort, 1697--1714, subdirector then director of Law's \foreign{\textfrench{Banque générale}}.
+Member of the \foreign{\textfrench{Académie Royale des Sciences}}. See \cite{Fontenelle1734}.}. Lagny's methods
+may be used to find a root of any polynomial; curiously, they are of convergence order $p$ for polynomials of degree $p$.
+We give a generalization of these methods which applies to arbitrary functions (and in particular to polynomials
+of degree other than the order).
+
+Throughout the centuries, some of Lagny's methods have been rediscovered, whether from Lagny's works or from first principles,
+and generalized to arbitrary functions. The reader may be familiar with these special cases, as some of them have remained in
+use, and are found in more modern literature; most famous of these is perhaps Halley's (rational) method. We thus show that
+these are indeed special cases of the generalization of Lagny's method, and describe which names we use for specific cases,
+depending on the order of their discovery.
+
+The path through more than three centuries of literature to rediscovering---and then generalizing---Lagny's methods led us to
+many remarkable works; we mention those in a bibliographic note.
+
+The second part starts with the treatment of a faithfully rounded---and very nearly correctly rounded---cube root.
+For each step in the computation of the cube root, we consider multiple alternatives, each with their error analyses; the one that
+should be chosen is revealed by the final error analysis.
+
+We then describe how correct rounding is achieved, by determining whether the faithful result might be misrounded,
+in which case the correct digit needs to be more carefully ascertained.
+
+In order not to interrupt the flow of reading, in both parts, we relegate to the appendices
+any miscellaneous considerations that are independent of the matter currently being discussed,
+long-winded proofs, and lists of examples.
+\pagebreak
+
+
+
+\part{Abridged root-finding methods}
+\label{Abridged}
 We recall and generalize a family of root-finding methods from the late 17th century.
 
 In \cite{FantetdeLagny1691a}, Thomas Fantet de~Lagny first presents the iterations\begin{align}
@@ -69,7 +109,7 @@ f\of{z}\DefineAs z^p + c_1 z^{p-1} + \dotsb + c_{p-1} z + c_p \DefinitionOf z^p 
 with an initial approximation $a$.
 
 Separate the binomial expansion of $\pa{x+\tfrac{1}{2}a}^p$ into alternating sums of
-degree $p$ and $p-1$ in $z$,\begin{align}
+degree $p$ and $p-1$ in $x$,\begin{align}
 S_1\DefineAs\sum{\substack{k=0\\2\Divides k}}[p]\binom{p}{k}x^{p-k}\pa{\tfrac{1}{2}a}^k&\text{ and }
 S_2\DefineAs\sum{\substack{k=0\\2\DoesNotDivide k}}[p]\binom{p}{k}x^{p-k}\pa{\tfrac{1}{2}a}^k\text, \nonumber
 \intertext{and consider the following polynomials, of degree $p$ and $p-1$ in $x$ for almost all $a$:}
@@ -92,7 +132,7 @@ of $E_{n+1}$ by $E_{n}$; its degree is $n-1$ for almost all $a$.
 The iteration is $\FunctionBody{a}{x+\frac{1}{2}a}$, where $x$ is a root of $E_{2}$ in the quadratic irrational method,
 and the root of $E_{1}$ in the rational method. Its order is $p$.
 
-\subsection*{Multiplicity of the irrational methods}
+\section*{Multiplicity of the irrational methods}
 Lagny does not require that the polynomial division be carried out
 all the way to $E_2$, merely until one gets \foreign{\textfrench{une valeur d'$x$ \textnormal{[...]} d'un degré commode}}, by which he likely means
 one that is constructible. When $f$ is a cubic, he uses the term \foreign{\textfrench{formule irrationnelle}} for $x+\frac{1}{2}a$ where
@@ -118,7 +158,7 @@ $x$ is a root of $E_{d}$.
 Note however that when $p=3$, \idest, when finding a root of a cubic, Lagny's only irrational method
 is the quadratic one; we can thus unambiguously refer to (\ref{LagnyIrrationalCubeRootIteration}) as \emph{Lagny's irrational method for the cube root}.
 
-\subsection*{Generalization to arbitrary functions}
+\section*{Generalization to arbitrary functions}
 Lagny's method of degree $d$ and convergence order $p$ may be generalized to functions $f$ other
 than polynomials of degree $p$, by defining $E_p$ and $E_{p-1}$ in terms of Taylor polynomials
 for $f\of{x+\frac{1}{2}a}$ around $x=\frac{1}{2}a$:\begin{equation}
@@ -148,8 +188,12 @@ degree $p$ and $p-1$ in $Δ$.
 Let $\tilde E_{n-1}$ be the remainder of the polynomial division of $\tilde E_{n+1}$ by $\tilde E_{n}$.
 The iteration is then $\FunctionBody{a}{a+Δ}$, where $Δ$ is a root of $\tilde E_d$.
 
+\section*{Names}
+The generalized Lagny methods form a broad family; many of the methods therein are well-known.
+Since these special cases are better known under the names of their discoverers, we give a list of such
+occurences, and use the appropriate names in the remainder of this document.
 \subsection*{Names of the irrational methods}
-Halley likewise generalized Lagny's (quadratic) irrational method for the cubic to
+Halley generalized Lagny's (quadratic) irrational method for the cubic to
 arbitrary\footnote{Lagny's method is general, in that an iteration is given for any
 polynomial, albeit one whose order changes with the degree. However, while he refers to its
 results---and even corrects a misprint therein---, Halley
@@ -183,7 +227,7 @@ This method was given in terms of derivatives by Bateman in \cite[12]{Bateman193
 Both special cases and generalizations of Lagny's rational method have been discovered multiple times
 and extensively studied; constructions that take advantage of modern calculus allow us to give a more
 straightfoward expression for the rational method than was available to Lagny.
-The proof of the following equivalence will be given at the end of this section.
+The proof of the following equivalence is given in appendix~\ref{ProofOfTheProposition}.
 \begin{proposition}
 The iteration of the generalized Lagny rational method of order $p$ for a root of the
 function $f$ is\begin{equation}
@@ -222,7 +266,7 @@ of \cite{SebahGourdon2001}. As mentioned by Householder, both of those were desc
 anyway: Householder’s (7) is Schröder’s (18) from
 \cite[327]{Schröder1870}.
 
-\subsection*{Bibliographic note}
+\section*{Bibliographic note}
 Our foray into the history of these methods was prompted by finding the ``historical background'' section of
 \cite{ScavoThoo1995} while looking for a reference for Halley’s method: it is mentioned therein that this
 method, as applied to the cube root, is due to Lagny.
@@ -263,166 +307,11 @@ Prouhet’s letter in \cite{Cantor1861} ends with these words:
 Tout cela est fort abrégé; mais qui nous délivrera des méthodes abrégées,
 qui n'en finissent pas?}\end{quote}
 
-\subsection*{Proof of the proposition}
-
-We now prove the above proposition, which, substituting the definition of the generalized Lagny rational method, is that
-\[x+\tfrac{1}{2}a = a + \pa{p-1}\frac{\pa{1/f}^{\pa{p-2}}\of{a}}{\pa{1/f}^{\pa{p-1}}\of{a}}\DefinitionOf ψ\of{a}\]
-if $x$ is the root of $E_1$. This can be expressed equivalently, and more conveniently for the proof, as
-\[a+Δ = a+\pa{p-1}\frac{\pa{1/f}^{\pa{p-2}}\of{a}}{\pa{1/f}^{\pa{p-1}}\of{a}}\DefinitionOf ψ\of{a}\]
-if $Δ$ is the root of $\tilde E_1$.
-
-\begin{proof}
-Let $\tilde E_p = d_0 Δ^p + \dotsb + d_p$, $\tilde E_{p-1} = e_0 Δ^{p-1} + \dotsb + e_{p-1}$, and
-As shown in \cite[52--54]{Householder1970}, the polynomial remainders $E_k$ are given up to a constant factor by
-\cite[19]{Householder1970} equation (23), \idest, for some $α$,\[
-\frac{\tilde E_n}{α_n} = \bigradient{\tilde E_p}{p-1-n}{\tilde E_{p-1}}{p-n}\text,
-\]
-where the expression on the right-hand side is the \emph{bigradient} defined in \cite{Householder1968} (3.4)
-or \cite[19]{Householder1970} (20),\[
-\frac{\tilde E_n}{α_n} = \det\begin{pmatrix}
-d_0    & d_1    & d_2 & \multicolumn{3}{c}{\cdots} & d_{2\pa{p-n}-3} & Δ^{p-n-2} E_p \\
-       & d_0    & d_1 & \multicolumn{3}{c}{\cdots} & d_{2\pa{p-n}-4} & Δ^{p-n-3} E_p \\[1ex]
-       &        & \ddots  &      &                 &                 & \vdots \\[1ex]
-       &        &         & d_0  & d_1 & \cdots    & d_{p-n-1}       & Δ^{0} E_p \\
-\zeroBL\huge&   &         &      & e_0 & \cdots    & e_{p-n-2}       & Δ^{0} E_{p-1} \\
-       &        &         & e_0  & e_1 & \cdots    & e_{p-n-1}       & Δ^{1} E_{p-1} \\[1ex]
-       &        & \adots  &      &    &            &                 & \vdots \\[1ex]
-       & e_0    & e_1 & \multicolumn{3}{c}{\cdots} & e_{2\pa{p-n}-4} & Δ^{p-n-2} E_{p-1} \\
-e_0    & e_1    & e_2 & \multicolumn{3}{c}{\cdots} & e_{2\pa{p-n}-3} & Δ^{p-n-1} E_{p-1} \\
-\end{pmatrix}\DefinitionOf\det\tilde{\matE}_k\text,
-\]
-with $p-1-n$ rows of the $d_k$ and $p-n$ of the $e_k$,
-where $d_k\DefineAs0$ for $k>p$, and $e_k\DefineAs0$ for $k>p-1$.
-
-In particular, for $n=1$,\[
-\tilde{\matE}_1=\begin{pmatrix}
-d_0    & d_1    & d_2    & \cdots & d_{p-2} & d_{p-1} & d_p     &        & &\zeroTR\huge& Δ^{p-3} E_p     \\
-       & d_0    & d_1    & \cdots & d_{p-3} & d_{p-2} & d_{p-1} & d_{p} &          &         & Δ^{p-4} E_p     \\[1ex]
-       &        & \ddots &        &         &         &         &         &         & \ddots  & \vdots          \\[1ex]
-       &        &        & d_0    & d_1     & d_2     & \multicolumn{3}{c}{\cdots}  & d_{p-2} & Δ^{0} E_p       \\
-\zeroBL\huge&   &        &        & e_0     & e_1     & \multicolumn{3}{c}{\cdots}  & e_{p-3} & Δ^{0} E_{p-1}   \\
-       &        &        & e_0    & e_1     & e_2     & \multicolumn{3}{c}{\cdots}  & e_{p-2} & Δ^{1} E_{p-1}   \\[1ex]
-       &        & \adots &        &         &         &         &         &         & \adots  & \vdots          \\[1ex]
-       & e_0    & e_1    & \cdots & e_{p-3} & e_{p-2} & e_{p-1} &         &         &         & Δ^{p-3} E_{p-1} \\
-e_0    & e_1    & e_2    & \cdots & e_{p-2} & e_{p-1} &         &         &      &\zeroBR\huge& Δ^{p-2} E_{p-1} \\
-\end{pmatrix}\text,
-\]
-with $p-2$ rows of the $d_k$ and $p-1$ of the $e_k$.
-Observe that since the value of $Δ$ used in the rational method is the root of $\tilde E_1$, for that value of $Δ$,
-$\det \tilde{\matE}_1 = 0$, \idest, $\tilde{\matE}_1$ is singular.
-\begin{lemma}
-The matrix $\tilde{\matE}_1$ is singular if and only if $\matC\of{a+Δ}$ is singular, where\[
-\matC\of{Ψ}\DefineAs\begin{pmatrix}
-Ψ - a  & f_0     &&&\zeroTR\huge\\
--1     & f_1     & f_0 \\
-0      & f_2     &        & \ddots \\
-\vdots & \vdots  & \ddots &        & f_0 \\
-0      & f_{p-1} & \cdots & f_2    & f_1
-\end{pmatrix}
-\] and $f_k\DefineAs \frac{f^{\pa{k}}\of{a}}{\Factorial k}$.
-\begin{proof}
-Observe that by the definition of $\tilde E_p$ and $\tilde E_{p-1}$,
-$d_k=f_{p-k}$ and $e_k=f_{p-1-k}$, so that\[
-\tilde{\matE}_1=\begin{pmatrix}
-f_p    & f_{p-1}    & f_{p-2}    & \cdots & f_2 & f_1 & f_0 &    &      &\zeroTR\huge& Δ^{p-3} E_p     \\
-       & f_p   & f_{p-1}    & \cdots & f_3 & f_2 & f_1 & f_0 &    &         & Δ^{p-4} E_p     \\[1.75ex]
-       &        & \ddots &        &         &         &         &         &         & \ddots  & \vdots          \\[1.75ex]
-       &        &        & f_p    & f_{p-1}     & f_{p-2}     & \multicolumn{3}{c}{\cdots}  & f_2 & Δ^{0} E_p       \\
-\zeroBL\huge&   &        &        & f_{p-1}     & f_{p-2}     & \multicolumn{3}{c}{\cdots}  & f_2 & Δ^{0} E_{p-1} \\
-            &   &        & f_{p-1}& f_{p-2}     & f_{p-3}  & \multicolumn{3}{c}{\cdots}  & f_1 & Δ^{1} E_{p-1}   \\[1ex]
-       &        & \adots &         &         &         &   &      &         & \adots  & \vdots          \\[1ex]
-       & f_{p-1}    & f_{p-2}    & \cdots & f_2 & f_1 & f_0 &   &         &         & Δ^{p-3} E_{p-1} \\
-f_{p-1}    & f_{p-2}    & f_{p-1}    & \cdots & f_1 & f_0 &  &         &      &\zeroBR\huge& Δ^{p-2} E_{p-1} \\
-\end{pmatrix}\text.
-\]
-Note that $\tilde E_p-\tilde E_{p-1}=f_pΔ^p$. Subtracting the penultimate row from the first, the antepenultimate
-from the second, etc., the determinant is that of\[
-\begin{pmatrix}
-f_p    &     &    &  &  & &  &      &      &\zeroTR\huge& Δ^{2p-3} f_p     \\
-       & f_p   &     &  & & &  & &     &         & Δ^{2p-4} f_p     \\[1.75ex]
-       &        & \ddots &    &   &    &     &    &      &  & \vdots          \\[1.75ex]
-       &        &        & f_p    &    &   & && & & Δ^{p} f_p       \\
-\zeroBL\huge&   &        &        & f_{p-1}     & f_{p-2}  & \multicolumn{3}{c}{\cdots}  & f_2 & Δ^{0} E_{p-1}   \\
-            &   &        & f_{p-1}& f_{p-2}     & f_{p-3}  & \multicolumn{3}{c}{\cdots}  & f_1 & Δ^{1} E_{p-1}   \\[1ex]
-       &        & \adots &         &         &         &   &      &         & \adots  & \vdots          \\[1ex]
-       & f_{p-1}    & f_{p-2}    & \cdots & f_2 & f_1 & f_0 &   &         &         & Δ^{p-3} E_{p-1} \\
-f_{p-1}    & f_{p-2}    & f_{p-1}    & \cdots & f_1 & f_0 &   &         &      &\zeroBR\huge& Δ^{p-2} E_{p-1} \\
-\end{pmatrix}\text.
-\]
-Since $\det \tilde{\matE}_1$ is a polynomial of degree $1$, all terms divisible by $Δ^2$ must cancel out in the Laplace expansion\footnote{
-\cite[294--304]{Laplace1772}, reprinted in \volcite{8}[395\psqq]{Laplace1878}.} of the determinant of the above matrix in the last column, so that
-\[\det \tilde{\matE}_1 = \pm \pa{f_0 + f_1Δ}\det \matA \mp f_0Δ \det \matB\text,\]
-where\[
-\matA\DefineAs\pa{\begin{array}{c|c}
-f_p \Identity_{p-2} & \nullmat \\
-\hline
-\matX    & \begin{matrix}
-f_{p-2} & \multicolumn{2}{c}{\cdots} & f_1\\
-f_{p-3} & \multicolumn{2}{c}{\cdots} & f_0\\
-\vdots  &    & \adots \\
-f_1    & f_0 &        & \zeroBR\LARGE
-\end{matrix}
-\end{array}}
-\text{ and }
-\matB\DefineAs\pa{\begin{array}{c|c}
-f_p \Identity_{p-2} & \nullmat \\
-\hline
-\matY    & \begin{matrix}
-f_{p-1} & \multicolumn{2}{c}{\cdots} & f_2\\
-f_{p-3} & \multicolumn{2}{c}{\cdots} & f_1\\
-\vdots  &    & \adots \\
-f_1    & f_0 &   & \zeroBR\LARGE
-\end{matrix}
-\end{array}}\text,
-\]
-where the matrices $\matX$ and $\matY$ are of no consequence for the determinant:
-\[\frac{\det \tilde{\matE}_1}{f_p^{p-2}} = \pm \pa{f_0 + f_1Δ}\det \matA' \mp f_0Δ \det \matB'\text,\]
-where the matrices $\matA'$ and $\matB'$ are the bottom right blocks $\matA$ and $\matB$ respectively.
-
-A few Laplace expansions of\[
-\det\matC\of{a+Δ}=\det\begin{pmatrix}
-Δ      & f_0     &&&\zeroTR\huge\\
--1     & f_1     & f_0 \\
-0      & f_2     &        & \ddots \\
-\vdots & \vdots  & \ddots &        & f_0 \\
-0      & f_{p-1} & \cdots & f_2    & f_1
-\end{pmatrix}\]
-finish the proof; along the first column,\[
-\det\matC\of{a+Δ} = Δ\det\begin{pmatrix}
-f_1     & f_0    && \zeroTR\LARGE\\
-f_2     &        & \ddots \\
-\vdots  & \ddots &        & f_0 \\
-f_{p-1} & \cdots & f_2    & f_1
-\end{pmatrix}
-+\det\begin{pmatrix}
-f_0     &&&&\zeroTR\LARGE\\
-f_2     & f_1     & f_0  \\
-f_3     & f_2     &        & \ddots  \\
-\vdots  &         &        &       & f_0 \\
-f_{p-1} & f_{p-2} &        & f_2   & f_1
-\end{pmatrix}\text,
-\]
-along the first row of both matrices,\[
-\det\matC\of{a+Δ} = Δ\pa{f_1\det\downrightcurvedarrow\matA'-f_0\det\downrightcurvedarrow\matB'}+
-f_0\det\downrightcurvedarrow{\matA}'\text,
-\]
-where $\downrightcurvedarrow{\matZ}'$ is obtained by reversing the order of the columns of the transpose of $\matZ$,
-so that\[
-\det\matC\of{a+Δ}=\pm\frac{\det \tilde{\matE}_1}{f_p^{p-2}}\text.
-\]
-\end{proof}
-\end{lemma}
-The proposition follows from the lemma and theorem 4.4.2 from \cite[169]{Householder1970}:
-$ψ\of{a}$ is Householder’s (14) with $g\Identically 1$; for that
-value of $g$, theorem 4.4.2 states that (14) is the solution of (12) from the same page, which is
-$\det\matC\of{ψ\of{a}}=0$.
-By the lemma, for the value of $Δ$ in the rational method, $a+Δ$ solves that equation.
-\end{proof}
-
-\section*{A faithfully rounded cube root}
+\part{Computing a real cube root}
 
 We now turn to the computation of the cube root of in \texttt{numerics/cbrt.cpp}.
 
+\section*{A faithfully rounded cube root}
 \subsection*{Overview}
 Our general approach to computing a faithfully rounded cube root of $y>0$ is the one described in \cite{KahanBindel2001}:
 \begin{enumerate}
@@ -678,7 +567,7 @@ of Ремез's algorithm could be used here, much like it can be adapted to rat
 since the hill-climbing converged satisfactorily, and did so much faster
 than we were writing this document, we have not investigated this.} starting from
 $Γ=\frac{1}{10}$, $κ=\frac{1}{2}$, $λ=\frac{1}{4}$, and $μ=3$. We obtain the values
-\marginfig[Error of $ξ'$ for various methods.\label{figStepTwoComparison}]{\rlap{\includegraphics[scale=0.7]{cbrt_ξ_error.pdf}}}
+\marginfig[Error of $ξ'$ for various methods.\label{figStepTwoComparison}]{\hfill\llap{\includegraphics[scale=0.7]{cbrt_ξ_error.pdf}}}
 \begin{align*}
 Γ_{\mathrm{L^2C}} &\approx 0.10007\,61614\,69941\,46538\,73178\,74111\,71965\,58348^-\text,\\
 κ_{\mathrm{L^2C}} &\approx 0.49999\,99381\,08574\,04775\,14291\,72928\,30652\,88838^-\text,\\
@@ -1060,8 +949,166 @@ The first two of these terms should be split into representable parts,\begin{ali
 3ab^2&=2ab^2+ab^2\text.
 \end{align*}
 The sign of $ρ_{54|1}$ may then be checked.
-
+\vfill
+\pagebreak
 \appendix
+\part*{Appendices}
+\section{Proof of the equivalence of Lagny's rational method and Schröder's $\pa{A^0_{p-1}}$}
+\label{ProofOfTheProposition}
+
+We now prove the proposition from part~\ref{Abridged}, which, substituting the definition of the generalized Lagny rational method, is that
+\[x+\tfrac{1}{2}a = a + \pa{p-1}\frac{\pa{1/f}^{\pa{p-2}}\of{a}}{\pa{1/f}^{\pa{p-1}}\of{a}}\DefinitionOf ψ\of{a}\]
+if $x$ is the root of $E_1$. This can be expressed equivalently, and more conveniently for the proof, as
+\[a+Δ = a+\pa{p-1}\frac{\pa{1/f}^{\pa{p-2}}\of{a}}{\pa{1/f}^{\pa{p-1}}\of{a}}\DefinitionOf ψ\of{a}\]
+if $Δ$ is the root of $\tilde E_1$.
+
+\begin{proof}
+Let $\tilde E_p = d_0 Δ^p + \dotsb + d_p$, $\tilde E_{p-1} = e_0 Δ^{p-1} + \dotsb + e_{p-1}$, and
+As shown in \cite[52--54]{Householder1970}, the polynomial remainders $E_k$ are given up to a constant factor by
+\cite[19]{Householder1970} equation (23), \idest, for some $α$,\[
+\frac{\tilde E_n}{α_n} = \bigradient{\tilde E_p}{p-1-n}{\tilde E_{p-1}}{p-n}\text,
+\]
+where the expression on the right-hand side is the \emph{bigradient} defined in \cite{Householder1968} (3.4)
+or \cite[19]{Householder1970} (20),\[
+\frac{\tilde E_n}{α_n} = \det\begin{pmatrix}
+d_0    & d_1    & d_2 & \multicolumn{3}{c}{\cdots} & d_{2\pa{p-n}-3} & Δ^{p-n-2} E_p \\
+       & d_0    & d_1 & \multicolumn{3}{c}{\cdots} & d_{2\pa{p-n}-4} & Δ^{p-n-3} E_p \\[1ex]
+       &        & \ddots  &      &                 &                 & \vdots \\[1ex]
+       &        &         & d_0  & d_1 & \cdots    & d_{p-n-1}       & Δ^{0} E_p \\
+\zeroBL\huge&   &         &      & e_0 & \cdots    & e_{p-n-2}       & Δ^{0} E_{p-1} \\
+       &        &         & e_0  & e_1 & \cdots    & e_{p-n-1}       & Δ^{1} E_{p-1} \\[1ex]
+       &        & \adots  &      &    &            &                 & \vdots \\[1ex]
+       & e_0    & e_1 & \multicolumn{3}{c}{\cdots} & e_{2\pa{p-n}-4} & Δ^{p-n-2} E_{p-1} \\
+e_0    & e_1    & e_2 & \multicolumn{3}{c}{\cdots} & e_{2\pa{p-n}-3} & Δ^{p-n-1} E_{p-1} \\
+\end{pmatrix}\DefinitionOf\det\tilde{\matE}_k\text,
+\]
+with $p-1-n$ rows of the $d_k$ and $p-n$ of the $e_k$,
+where $d_k\DefineAs0$ for $k>p$, and $e_k\DefineAs0$ for $k>p-1$.
+
+In particular, for $n=1$,\[
+\tilde{\matE}_1=\begin{pmatrix}
+d_0    & d_1    & d_2    & \cdots & d_{p-2} & d_{p-1} & d_p     &        & &\zeroTR\huge& Δ^{p-3} E_p     \\
+       & d_0    & d_1    & \cdots & d_{p-3} & d_{p-2} & d_{p-1} & d_{p} &          &         & Δ^{p-4} E_p     \\[1ex]
+       &        & \ddots &        &         &         &         &         &         & \ddots  & \vdots          \\[1ex]
+       &        &        & d_0    & d_1     & d_2     & \multicolumn{3}{c}{\cdots}  & d_{p-2} & Δ^{0} E_p       \\
+\zeroBL\huge&   &        &        & e_0     & e_1     & \multicolumn{3}{c}{\cdots}  & e_{p-3} & Δ^{0} E_{p-1}   \\
+       &        &        & e_0    & e_1     & e_2     & \multicolumn{3}{c}{\cdots}  & e_{p-2} & Δ^{1} E_{p-1}   \\[1ex]
+       &        & \adots &        &         &         &         &         &         & \adots  & \vdots          \\[1ex]
+       & e_0    & e_1    & \cdots & e_{p-3} & e_{p-2} & e_{p-1} &         &         &         & Δ^{p-3} E_{p-1} \\
+e_0    & e_1    & e_2    & \cdots & e_{p-2} & e_{p-1} &         &         &      &\zeroBR\huge& Δ^{p-2} E_{p-1} \\
+\end{pmatrix}\text,
+\]
+with $p-2$ rows of the $d_k$ and $p-1$ of the $e_k$.
+Observe that since the value of $Δ$ used in the rational method is the root of $\tilde E_1$, for that value of $Δ$,
+$\det \tilde{\matE}_1 = 0$, \idest, $\tilde{\matE}_1$ is singular.
+\begin{lemma}
+The matrix $\tilde{\matE}_1$ is singular if and only if $\matC\of{a+Δ}$ is singular, where\[
+\matC\of{Ψ}\DefineAs\begin{pmatrix}
+Ψ - a  & f_0     &&&\zeroTR\huge\\
+-1     & f_1     & f_0 \\
+0      & f_2     &        & \ddots \\
+\vdots & \vdots  & \ddots &        & f_0 \\
+0      & f_{p-1} & \cdots & f_2    & f_1
+\end{pmatrix}
+\] and $f_k\DefineAs \frac{f^{\pa{k}}\of{a}}{\Factorial k}$.
+\begin{proof}
+Observe that by the definition of $\tilde E_p$ and $\tilde E_{p-1}$,
+$d_k=f_{p-k}$ and $e_k=f_{p-1-k}$, so that\[
+\tilde{\matE}_1=\begin{pmatrix}
+f_p    & f_{p-1}    & f_{p-2}    & \cdots & f_2 & f_1 & f_0 &    &      &\zeroTR\huge& Δ^{p-3} E_p     \\
+       & f_p   & f_{p-1}    & \cdots & f_3 & f_2 & f_1 & f_0 &    &         & Δ^{p-4} E_p     \\[1.75ex]
+       &        & \ddots &        &         &         &         &         &         & \ddots  & \vdots          \\[1.75ex]
+       &        &        & f_p    & f_{p-1}     & f_{p-2}     & \multicolumn{3}{c}{\cdots}  & f_2 & Δ^{0} E_p       \\
+\zeroBL\huge&   &        &        & f_{p-1}     & f_{p-2}     & \multicolumn{3}{c}{\cdots}  & f_2 & Δ^{0} E_{p-1} \\
+            &   &        & f_{p-1}& f_{p-2}     & f_{p-3}  & \multicolumn{3}{c}{\cdots}  & f_1 & Δ^{1} E_{p-1}   \\[1ex]
+       &        & \adots &         &         &         &   &      &         & \adots  & \vdots          \\[1ex]
+       & f_{p-1}    & f_{p-2}    & \cdots & f_2 & f_1 & f_0 &   &         &         & Δ^{p-3} E_{p-1} \\
+f_{p-1}    & f_{p-2}    & f_{p-1}    & \cdots & f_1 & f_0 &  &         &      &\zeroBR\huge& Δ^{p-2} E_{p-1} \\
+\end{pmatrix}\text.
+\]
+Note that $\tilde E_p-\tilde E_{p-1}=f_pΔ^p$. Subtracting the penultimate row from the first, the antepenultimate
+from the second, etc., the determinant is that of\[
+\begin{pmatrix}
+f_p    &     &    &  &  & &  &      &      &\zeroTR\huge& Δ^{2p-3} f_p     \\
+       & f_p   &     &  & & &  & &     &         & Δ^{2p-4} f_p     \\[1.75ex]
+       &        & \ddots &    &   &    &     &    &      &  & \vdots          \\[1.75ex]
+       &        &        & f_p    &    &   & && & & Δ^{p} f_p       \\
+\zeroBL\huge&   &        &        & f_{p-1}     & f_{p-2}  & \multicolumn{3}{c}{\cdots}  & f_2 & Δ^{0} E_{p-1}   \\
+            &   &        & f_{p-1}& f_{p-2}     & f_{p-3}  & \multicolumn{3}{c}{\cdots}  & f_1 & Δ^{1} E_{p-1}   \\[1ex]
+       &        & \adots &         &         &         &   &      &         & \adots  & \vdots          \\[1ex]
+       & f_{p-1}    & f_{p-2}    & \cdots & f_2 & f_1 & f_0 &   &         &         & Δ^{p-3} E_{p-1} \\
+f_{p-1}    & f_{p-2}    & f_{p-1}    & \cdots & f_1 & f_0 &   &         &      &\zeroBR\huge& Δ^{p-2} E_{p-1} \\
+\end{pmatrix}\text.
+\]
+Since $\det \tilde{\matE}_1$ is a polynomial of degree $1$, all terms divisible by $Δ^2$ must cancel out in the Laplace expansion\footnote{
+\cite[294--304]{Laplace1772}, reprinted in \volcite{8}[395\psqq]{Laplace1878}.} of the determinant of the above matrix in the last column, so that
+\[\det \tilde{\matE}_1 = \pm \pa{f_0 + f_1Δ}\det \matA \mp f_0Δ \det \matB\text,\]
+where\[
+\matA\DefineAs\pa{\begin{array}{c|c}
+f_p \Identity_{p-2} & \nullmat \\
+\hline
+\matX    & \begin{matrix}
+f_{p-2} & \multicolumn{2}{c}{\cdots} & f_1\\
+f_{p-3} & \multicolumn{2}{c}{\cdots} & f_0\\
+\vdots  &    & \adots \\
+f_1    & f_0 &        & \zeroBR\LARGE
+\end{matrix}
+\end{array}}
+\text{ and }
+\matB\DefineAs\pa{\begin{array}{c|c}
+f_p \Identity_{p-2} & \nullmat \\
+\hline
+\matY    & \begin{matrix}
+f_{p-1} & \multicolumn{2}{c}{\cdots} & f_2\\
+f_{p-3} & \multicolumn{2}{c}{\cdots} & f_1\\
+\vdots  &    & \adots \\
+f_1    & f_0 &   & \zeroBR\LARGE
+\end{matrix}
+\end{array}}\text,
+\]
+where the matrices $\matX$ and $\matY$ are of no consequence for the determinant:
+\[\frac{\det \tilde{\matE}_1}{f_p^{p-2}} = \pm \pa{f_0 + f_1Δ}\det \matA' \mp f_0Δ \det \matB'\text,\]
+where the matrices $\matA'$ and $\matB'$ are the bottom right blocks $\matA$ and $\matB$ respectively.
+
+A few Laplace expansions of\[
+\det\matC\of{a+Δ}=\det\begin{pmatrix}
+Δ      & f_0     &&&\zeroTR\huge\\
+-1     & f_1     & f_0 \\
+0      & f_2     &        & \ddots \\
+\vdots & \vdots  & \ddots &        & f_0 \\
+0      & f_{p-1} & \cdots & f_2    & f_1
+\end{pmatrix}\]
+finish the proof; along the first column,\[
+\det\matC\of{a+Δ} = Δ\det\begin{pmatrix}
+f_1     & f_0    && \zeroTR\LARGE\\
+f_2     &        & \ddots \\
+\vdots  & \ddots &        & f_0 \\
+f_{p-1} & \cdots & f_2    & f_1
+\end{pmatrix}
++\det\begin{pmatrix}
+f_0     &&&&\zeroTR\LARGE\\
+f_2     & f_1     & f_0  \\
+f_3     & f_2     &        & \ddots  \\
+\vdots  &         &        &       & f_0 \\
+f_{p-1} & f_{p-2} &        & f_2   & f_1
+\end{pmatrix}\text,
+\]
+along the first row of both matrices,\[
+\det\matC\of{a+Δ} = Δ\pa{f_1\det\downrightcurvedarrow\matA'-f_0\det\downrightcurvedarrow\matB'}+
+f_0\det\downrightcurvedarrow{\matA}'\text,
+\]
+where $\downrightcurvedarrow{\matZ}'$ is obtained by reversing the order of the columns of the transpose of $\matZ$,
+so that\[
+\det\matC\of{a+Δ}=\pm\frac{\det \tilde{\matE}_1}{f_p^{p-2}}\text.
+\]
+\end{proof}
+\end{lemma}
+The proposition follows from the lemma and theorem 4.4.2 from \cite[169]{Householder1970}:
+$ψ\of{a}$ is Householder’s (14) with $g\Identically 1$; for that
+value of $g$, theorem 4.4.2 states that (14) is the solution of (12) from the same page, which is
+$\det\matC\of{ψ\of{a}}=0$.
+By the lemma, for the value of $Δ$ in the rational method, $a+Δ$ solves that equation.
+\end{proof}
 \section{FMA}
 \label{FMA}
 The overall strategy is different with FMA, since we need only round $x$ to half the precision ($26$~bits),
