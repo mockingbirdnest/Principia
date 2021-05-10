@@ -1,4 +1,4 @@
-﻿
+
 #pragma once
 
 #include "physics/discrete_trajectory.hpp"
@@ -311,19 +311,37 @@ Instant DiscreteTrajectory<Frame>::t_max() const {
 template<typename Frame>
 Position<Frame> DiscreteTrajectory<Frame>::EvaluatePosition(
     Instant const& time) const {
-  return GetInterpolation(time).Evaluate(time);
+  auto const iter = this->LowerBound(time);
+  if (iter->time == time) {
+    return iter->degrees_of_freedom.position();
+  }
+  CHECK_LE(t_min(), time);
+  CHECK_GE(t_max(), time);
+  return GetInterpolation(iter).Evaluate(time);
 }
 
 template<typename Frame>
 Velocity<Frame> DiscreteTrajectory<Frame>::EvaluateVelocity(
-    Instant const& time) const {;
-  return GetInterpolation(time).EvaluateDerivative(time);
+    Instant const& time) const {
+  auto const iter = this->LowerBound(time);
+  if (iter->time == time) {
+    return iter->degrees_of_freedom.velocity();
+  }
+  CHECK_LE(t_min(), time);
+  CHECK_GE(t_max(), time);
+  return GetInterpolation(iter).EvaluateDerivative(time);
 }
 
 template<typename Frame>
 DegreesOfFreedom<Frame> DiscreteTrajectory<Frame>::EvaluateDegreesOfFreedom(
     Instant const& time) const {
-  auto const interpolation = GetInterpolation(time);
+  auto const iter = this->LowerBound(time);
+  if (iter->time == time) {
+    return iter->degrees_of_freedom;
+  }
+  CHECK_LE(t_min(), time);
+  CHECK_GE(t_max(), time);
+  auto const interpolation = GetInterpolation(iter);
   return {interpolation.Evaluate(time), interpolation.EvaluateDerivative(time)};
 }
 
@@ -638,12 +656,7 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
 
 template<typename Frame>
 Hermite3<Instant, Position<Frame>> DiscreteTrajectory<Frame>::GetInterpolation(
-    Instant const& time) const {
-  CHECK_LE(t_min(), time);
-  CHECK_GE(t_max(), time);
-  // This is the upper bound of the interval upon which we will do the
-  // interpolation.
-  auto const upper = this->LowerBound(time);
+    Iterator const& upper) const {
   auto const lower = upper == this->begin() ? upper : --Iterator{upper};
   return Hermite3<Instant, Position<Frame>>{
       {lower->time, upper->time},
