@@ -109,10 +109,12 @@ Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
   if (primary != nullptr) {
     std::vector<not_null<DiscreteTrajectory<Barycentric>*>> trajectories = {
         &trajectory};
-    auto instance = ephemeris_->NewInstance(
+    auto instance = ephemeris_->StoppableNewInstance(
         trajectories,
         Ephemeris<Barycentric>::NoIntrinsicAccelerations,
         analysed_trajectory_parameters_);
+    RETURN_IF_STOPPED;
+
     Time const analysis_duration = std::min(
         parameters.extended_mission_duration.value_or(
             parameters.mission_duration),
@@ -121,7 +123,7 @@ Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
     for (int n = 0; n <= progress_bar_steps; ++n) {
       Instant const t =
           parameters.first_time + n / progress_bar_steps * analysis_duration;
-      if (!ephemeris_->FlowWithFixedStep(t, *instance).ok()) {
+      if (!ephemeris_->FlowWithFixedStep(t, *instance.ValueOrDie()).ok()) {
         // TODO(egg): Report that the integration failed.
         break;
       }
