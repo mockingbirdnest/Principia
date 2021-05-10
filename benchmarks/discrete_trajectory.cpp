@@ -13,12 +13,14 @@ namespace physics {
 
 using base::make_not_null_unique;
 using base::not_null;
+using geometry::Displacement;
 using geometry::Frame;
 using geometry::Handedness;
 using geometry::Inertial;
 using geometry::Instant;
 using geometry::Velocity;
 using ksp_plugin::World;
+using quantities::si::Metre;
 using quantities::si::Second;
 
 namespace {
@@ -30,6 +32,25 @@ not_null<std::unique_ptr<DiscreteTrajectory<World>>> CreateTrajectory(
   Instant t;
   for (int i = 0; i < steps; i++, t += 1 * Second) {
     trajectory->Append(t, {World::origin, World::unmoving});
+  }
+  return trajectory;
+}
+
+// Creates a circular trajectory with the given number of steps.
+not_null<std::unique_ptr<DiscreteTrajectory<World>>> CreateCircularTrajectory(
+    int const steps) {
+  auto trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
+  Instant t;
+  for (int i = 0; i < steps; i++, t += 1 * Second) {
+    const double sine = std::sin(i);
+    const double cosine = std::cos(i);
+    trajectory->Append(
+        t,
+        {World::origin +
+             Displacement<World>({cosine * Metre, 0 * Metre, sine * Metre}),
+         Velocity<World>({-sine * Metre / Second,
+                          0 * Metre / Second,
+                          cosine * Metre / Second})});
   }
   return trajectory;
 }
@@ -157,6 +178,29 @@ void BM_DiscreteTrajectoryLowerBound(benchmark::State& state) {
   }
 }
 
+void BM_DiscreteTrajectoryEvaluateDegreesOfFreedomExact(
+    benchmark::State& state) {
+  int const steps = state.range(0);
+  not_null<std::unique_ptr<DiscreteTrajectory<World>>> const trajectory =
+      CreateCircularTrajectory(4);
+
+  Instant const t = Instant() + 1 * Second;
+  for (auto _ : state) {
+    trajectory->EvaluateDegreesOfFreedom(t);
+  }
+}
+
+void BM_DiscreteTrajectoryEvaluateDegreesOfFreedomInterpolated(
+    benchmark::State& state) {
+  not_null<std::unique_ptr<DiscreteTrajectory<World>>> const trajectory =
+      CreateCircularTrajectory(4);
+
+  Instant const t = Instant() + 1.5 * Second;
+  for (auto _ : state) {
+    trajectory->EvaluateDegreesOfFreedom(t);
+  }
+}
+
 BENCHMARK(BM_DiscreteTrajectoryFront);
 BENCHMARK(BM_DiscreteTrajectoryBack);
 BENCHMARK(BM_DiscreteTrajectoryBegin);
@@ -166,6 +210,8 @@ BENCHMARK(BM_DiscreteTrajectoryIterate)->Range(8, 1024);
 BENCHMARK(BM_DiscreteTrajectoryReverseIterate)->Range(8, 1024);
 BENCHMARK(BM_DiscreteTrajectoryFind)->Range(8, 1024);
 BENCHMARK(BM_DiscreteTrajectoryLowerBound)->Range(8, 1024);
+BENCHMARK(BM_DiscreteTrajectoryEvaluateDegreesOfFreedomExact);
+BENCHMARK(BM_DiscreteTrajectoryEvaluateDegreesOfFreedomInterpolated);
 
 }  // namespace physics
 }  // namespace principia
