@@ -1129,10 +1129,9 @@ TEST(EphemerisTestNoFixture, Reanimator) {
   ephemeris2->RequestReanimation(t_initial);
 
   // Wait for reanimation to happen.
-  while (t_initial < ephemeris2->t_min()) {
-    LOG(ERROR) << "Sleeping until Herbert West is done...";
-    std::this_thread::sleep_for(500ms);
-  }
+  LOG(ERROR) << "Waiting until Herbert West is done...";
+  ephemeris2->WaitForReanimation(t_initial);
+  LOG(ERROR) << "Herbert West is finally done.";
   ephemeris2->Prolong(t_final);
 
   // Check that the two ephemerides have the exact same trajectories.
