@@ -151,8 +151,10 @@ void BM_DiscreteTrajectoryIterate(benchmark::State& state) {
   not_null<DiscreteTrajectory<World>*> const fork =
       ForkAt(*ForkAt(*trajectory, 0.5), 0.75);
 
+  auto const begin = fork->begin();
+  auto const end = fork->end();
   for (auto _ : state) {
-    for (auto it = fork->begin(); it != fork->end(); ++it) {
+    for (auto it = begin; it != end; ++it) {
     }
   }
 }
@@ -164,8 +166,10 @@ void BM_DiscreteTrajectoryReverseIterate(benchmark::State& state) {
   not_null<DiscreteTrajectory<World>*> const fork =
       ForkAt(*ForkAt(*trajectory, 0.5), 0.75);
 
+  auto const begin = fork->begin();
+  auto const end = fork->end();
   for (auto _ : state) {
-    for (auto it = fork->end(); it != fork->begin(); --it) {
+    for (auto it = end; it != begin; --it) {
     }
   }
 }
