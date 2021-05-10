@@ -25,8 +25,8 @@ using quantities::si::Second;
 
 namespace {
 
-// Creates a trajectory with the given number of steps.
-not_null<std::unique_ptr<DiscreteTrajectory<World>>> CreateTrajectory(
+// Creates a motionless trajectory with the given number of steps.
+not_null<std::unique_ptr<DiscreteTrajectory<World>>> CreateMotionlessTrajectory(
     int const steps) {
   auto trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
   Instant t;
@@ -73,7 +73,7 @@ not_null<DiscreteTrajectory<World>*> ForkAt(DiscreteTrajectory<World>& parent,
 
 void BM_DiscreteTrajectoryFront(benchmark::State& state) {
   not_null<std::unique_ptr<DiscreteTrajectory<World>>> const trajectory =
-      CreateTrajectory(4);
+      CreateMotionlessTrajectory(4);
   not_null<DiscreteTrajectory<World>*> const fork =
       ForkAt(*ForkAt(*trajectory, 0.5), 0.75);
 
@@ -84,7 +84,7 @@ void BM_DiscreteTrajectoryFront(benchmark::State& state) {
 
 void BM_DiscreteTrajectoryBack(benchmark::State& state) {
   not_null<std::unique_ptr<DiscreteTrajectory<World>>> const trajectory =
-      CreateTrajectory(4);
+      CreateMotionlessTrajectory(4);
   not_null<DiscreteTrajectory<World>*> const fork =
       ForkAt(*ForkAt(*trajectory, 0.5), 0.75);
 
@@ -95,7 +95,7 @@ void BM_DiscreteTrajectoryBack(benchmark::State& state) {
 
 void BM_DiscreteTrajectoryBegin(benchmark::State& state) {
   not_null<std::unique_ptr<DiscreteTrajectory<World>>> const trajectory =
-      CreateTrajectory(4);
+      CreateMotionlessTrajectory(4);
   not_null<DiscreteTrajectory<World>*> const fork =
       ForkAt(*ForkAt(*trajectory, 0.5), 0.75);
 
@@ -106,7 +106,7 @@ void BM_DiscreteTrajectoryBegin(benchmark::State& state) {
 
 void BM_DiscreteTrajectoryEnd(benchmark::State& state) {
   not_null<std::unique_ptr<DiscreteTrajectory<World>>> const trajectory =
-      CreateTrajectory(4);
+      CreateMotionlessTrajectory(4);
   not_null<DiscreteTrajectory<World>*> const fork =
       ForkAt(*ForkAt(*trajectory, 0.5), 0.75);
 
@@ -118,14 +118,14 @@ void BM_DiscreteTrajectoryEnd(benchmark::State& state) {
 void BM_DiscreteTrajectoryCreateDestroy(benchmark::State& state) {
   int const steps = state.range(0);
   for (auto _ : state) {
-    CreateTrajectory(steps);
+    CreateMotionlessTrajectory(steps);
   }
 }
 
 void BM_DiscreteTrajectoryIterate(benchmark::State& state) {
   int const steps = state.range(0);
   not_null<std::unique_ptr<DiscreteTrajectory<World>>> const trajectory =
-      CreateTrajectory(steps);
+      CreateMotionlessTrajectory(steps);
   not_null<DiscreteTrajectory<World>*> const fork =
       ForkAt(*ForkAt(*trajectory, 0.5), 0.75);
 
@@ -138,7 +138,7 @@ void BM_DiscreteTrajectoryIterate(benchmark::State& state) {
 void BM_DiscreteTrajectoryReverseIterate(benchmark::State& state) {
   int const steps = state.range(0);
   not_null<std::unique_ptr<DiscreteTrajectory<World>>> const trajectory =
-      CreateTrajectory(steps);
+      CreateMotionlessTrajectory(steps);
   not_null<DiscreteTrajectory<World>*> const fork =
       ForkAt(*ForkAt(*trajectory, 0.5), 0.75);
 
@@ -151,7 +151,7 @@ void BM_DiscreteTrajectoryReverseIterate(benchmark::State& state) {
 void BM_DiscreteTrajectoryFind(benchmark::State& state) {
   int const steps = state.range(0);
   not_null<std::unique_ptr<DiscreteTrajectory<World>>> const trajectory =
-      CreateTrajectory(steps);
+      CreateMotionlessTrajectory(steps);
   not_null<DiscreteTrajectory<World>*> const fork =
       ForkAt(*ForkAt(*trajectory, 0.5), 0.75);
 
@@ -166,7 +166,7 @@ void BM_DiscreteTrajectoryFind(benchmark::State& state) {
 void BM_DiscreteTrajectoryLowerBound(benchmark::State& state) {
   int const steps = state.range(0);
   not_null<std::unique_ptr<DiscreteTrajectory<World>>> const trajectory =
-      CreateTrajectory(steps);
+      CreateMotionlessTrajectory(steps);
   not_null<DiscreteTrajectory<World>*> const fork =
       ForkAt(*ForkAt(*trajectory, 0.5), 0.75);
 
