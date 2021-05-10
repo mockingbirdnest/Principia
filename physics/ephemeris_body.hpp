@@ -359,7 +359,7 @@ Status Ephemeris<Frame>::last_severe_integration_status() const {
 }
 
 template<typename Frame>
-Status Ephemeris<Frame>::RequestReanimation(Instant const& desired_t_min) {
+void Ephemeris<Frame>::RequestReanimation(Instant const& desired_t_min) {
   bool must_restart;
   {
     absl::MutexLock l(&lock_);
