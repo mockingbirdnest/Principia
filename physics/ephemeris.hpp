@@ -12,6 +12,7 @@
 #include "base/recurring_thread.hpp"
 #include "base/not_null.hpp"
 #include "base/status.hpp"
+#include "base/status_or.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "google/protobuf/repeated_field.h"
@@ -38,6 +39,7 @@ using base::Error;
 using base::not_null;
 using base::RecurringThread;
 using base::Status;
+using base::StatusOr;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Vector;
@@ -188,8 +190,9 @@ class Ephemeris {
 
   virtual Status last_severe_integration_status() const;
 
-  // Prolongs the ephemeris up to at least |t|.  After the call, |t_max() >= t|.
-  virtual void Prolong(Instant const& t) EXCLUDES(lock_);
+  // Prolongs the ephemeris up to at least |t|.  Returns an error iff the thread
+  // is stopped.  After a successful call, |t_max() >= t|.
+  virtual Status Prolong(Instant const& t) EXCLUDES(lock_);
 
   // Asks the reanimator thread to asynchronously reconstruct the past so that
   // the |t_min()| of the ephemeris ultimately ends up at or before
@@ -202,6 +205,14 @@ class Ephemeris {
   virtual not_null<
       std::unique_ptr<typename Integrator<NewtonianMotionEquation>::Instance>>
   NewInstance(
+      std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
+      IntrinsicAccelerations const& intrinsic_accelerations,
+      FixedStepParameters const& parameters);
+
+  // Same as above, but returns an error status if the thread is stopped.
+  virtual StatusOr<not_null<
+      std::unique_ptr<typename Integrator<NewtonianMotionEquation>::Instance>>>
+  StoppableNewInstance(
       std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
       IntrinsicAccelerations const& intrinsic_accelerations,
       FixedStepParameters const& parameters);
