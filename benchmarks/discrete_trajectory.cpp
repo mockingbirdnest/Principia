@@ -115,6 +115,28 @@ void BM_DiscreteTrajectoryEnd(benchmark::State& state) {
   }
 }
 
+void BM_DiscreteTrajectoryTMin(benchmark::State& state) {
+  not_null<std::unique_ptr<DiscreteTrajectory<World>>> const trajectory =
+      CreateMotionlessTrajectory(4);
+  not_null<DiscreteTrajectory<World>*> const fork =
+      ForkAt(*ForkAt(*trajectory, 0.5), 0.75);
+
+  for (auto _ : state) {
+    fork->t_min();
+  }
+}
+
+void BM_DiscreteTrajectoryTMax(benchmark::State& state) {
+  not_null<std::unique_ptr<DiscreteTrajectory<World>>> const trajectory =
+      CreateMotionlessTrajectory(4);
+  not_null<DiscreteTrajectory<World>*> const fork =
+      ForkAt(*ForkAt(*trajectory, 0.5), 0.75);
+
+  for (auto _ : state) {
+    fork->t_max();
+  }
+}
+
 void BM_DiscreteTrajectoryCreateDestroy(benchmark::State& state) {
   int const steps = state.range(0);
   for (auto _ : state) {
@@ -205,6 +227,8 @@ BENCHMARK(BM_DiscreteTrajectoryFront);
 BENCHMARK(BM_DiscreteTrajectoryBack);
 BENCHMARK(BM_DiscreteTrajectoryBegin);
 BENCHMARK(BM_DiscreteTrajectoryEnd);
+BENCHMARK(BM_DiscreteTrajectoryTMin);
+BENCHMARK(BM_DiscreteTrajectoryTMax);
 BENCHMARK(BM_DiscreteTrajectoryCreateDestroy)->Range(8, 1024);
 BENCHMARK(BM_DiscreteTrajectoryIterate)->Range(8, 1024);
 BENCHMARK(BM_DiscreteTrajectoryReverseIterate)->Range(8, 1024);
