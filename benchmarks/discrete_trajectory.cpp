@@ -136,9 +136,9 @@ void BM_DiscreteTrajectoryFind(benchmark::State& state) {
 
   for (auto _ : state) {
     // These times are in different segments of the fork.
-    fork->Find(Instant() + 333 * Second);
-    fork->Find(Instant() + 667 * Second);
-    fork->Find(Instant() + 833 * Second);
+    fork->Find(Instant() + 1.0 / 3.0 * steps * Second);
+    fork->Find(Instant() + 2.0 / 3.0 * steps * Second);
+    fork->Find(Instant() + 5.0 / 6.0 * steps * Second);
   }
 }
 
@@ -151,9 +151,9 @@ void BM_DiscreteTrajectoryLowerBound(benchmark::State& state) {
 
   for (auto _ : state) {
     // These times are in different segments of the fork.
-    fork->LowerBound(Instant() + 333 * Second);
-    fork->LowerBound(Instant() + 667 * Second);
-    fork->LowerBound(Instant() + 833 * Second);
+    fork->LowerBound(Instant() + 1.0 / 3.0 * steps * Second);
+    fork->LowerBound(Instant() + 2.0 / 3.0 * steps * Second);
+    fork->LowerBound(Instant() + 5.0 / 6.0 * steps * Second);
   }
 }
 
