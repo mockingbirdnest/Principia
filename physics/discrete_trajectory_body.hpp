@@ -1,4 +1,4 @@
-
+﻿
 #pragma once
 
 #include "physics/discrete_trajectory.hpp"
@@ -32,17 +32,22 @@ Instant const& DiscreteTrajectoryTraits<Frame>::time(
 }
 
 template<typename Frame>
+DiscreteTrajectoryIterator<Frame>::reference::reference(
+    typename DiscreteTrajectoryTraits<Frame>::TimelineConstIterator it)
+    : time(it->first), degrees_of_freedom(it->second) {}
+
+template<typename Frame>
 typename DiscreteTrajectoryIterator<Frame>::reference
 DiscreteTrajectoryIterator<Frame>::operator*() const {
   auto const& it = this->current();
-  return {it->first, it->second};
+  return reference(it);
 }
 
 template<typename Frame>
 std::optional<typename DiscreteTrajectoryIterator<Frame>::reference>
     DiscreteTrajectoryIterator<Frame>::operator->() const {
   auto const& it = this->current();
-  return std::make_optional<reference>({it->first, it->second});
+  return std::make_optional<reference>(it);
 }
 
 template<typename Frame>
