@@ -36,6 +36,9 @@ class FakeTrajectoryIterator : public ForkableIterator<FakeTrajectory,
                          FakeTrajectoryTraits>::current;
   using reference = Instant const&;
 
+  static reference MakeReference(
+      FakeTrajectoryTraits::TimelineConstIterator it);
+
   reference operator*() const;
 
  protected:
@@ -89,6 +92,11 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
 };
 
 Instant const& FakeTrajectoryTraits::time(TimelineConstIterator const it) {
+  return *it;
+}
+
+FakeTrajectoryIterator::reference FakeTrajectoryIterator::MakeReference(
+    FakeTrajectoryTraits::TimelineConstIterator it) {
   return *it;
 }
 

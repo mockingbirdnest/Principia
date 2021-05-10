@@ -46,12 +46,12 @@ class DiscreteTrajectoryIterator
                               DiscreteTrajectoryTraits<Frame>> {
  public:
   struct reference {
-    explicit reference(
-        typename DiscreteTrajectoryTraits<Frame>::TimelineConstIterator it);
-
     Instant const& time;
     DegreesOfFreedom<Frame> const& degrees_of_freedom;
   };
+
+  static reference MakeReference(
+      typename DiscreteTrajectoryTraits<Frame>::TimelineConstIterator it);
 
   reference operator*() const;
   std::optional<reference> operator->() const;

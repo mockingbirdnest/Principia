@@ -32,22 +32,23 @@ Instant const& DiscreteTrajectoryTraits<Frame>::time(
 }
 
 template<typename Frame>
-DiscreteTrajectoryIterator<Frame>::reference::reference(
+typename DiscreteTrajectoryIterator<Frame>::reference DiscreteTrajectoryIterator<Frame>::MakeReference(
     typename DiscreteTrajectoryTraits<Frame>::TimelineConstIterator it)
-    : time(it->first), degrees_of_freedom(it->second) {}
+    { return {it->first, it->second};
+    }
 
 template<typename Frame>
 typename DiscreteTrajectoryIterator<Frame>::reference
 DiscreteTrajectoryIterator<Frame>::operator*() const {
   auto const& it = this->current();
-  return reference(it);
+  return MakeReference(it);
 }
 
 template<typename Frame>
 std::optional<typename DiscreteTrajectoryIterator<Frame>::reference>
     DiscreteTrajectoryIterator<Frame>::operator->() const {
   auto const& it = this->current();
-  return std::make_optional<reference>(it);
+  return std::make_optional<reference>(MakeReference(it));
 }
 
 template<typename Frame>

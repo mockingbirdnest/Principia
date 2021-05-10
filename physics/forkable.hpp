@@ -39,6 +39,10 @@ using geometry::Instant;
 // TimelineConstIterator must be an STL-like iterator in the timeline of
 // Tr4jectory.  |time()| must return the corresponding time.  Iterators must be
 // STL-like and *must*not* be invalidated when the trajectory changes.
+//
+// The It3rator class must export declarations similar to the following:
+//   using reference = ...;
+//   static reference MakeReference(Traits::TimelineConstIterator it);
 
 template<typename Tr4jectory, typename It3rator, typename Traits>
 class Forkable;
