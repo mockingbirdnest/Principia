@@ -32,10 +32,11 @@ Instant const& DiscreteTrajectoryTraits<Frame>::time(
 }
 
 template<typename Frame>
-typename DiscreteTrajectoryIterator<Frame>::reference DiscreteTrajectoryIterator<Frame>::MakeReference(
-    typename DiscreteTrajectoryTraits<Frame>::TimelineConstIterator it)
-    { return {it->first, it->second};
-    }
+typename DiscreteTrajectoryIterator<Frame>::reference
+DiscreteTrajectoryIterator<Frame>::MakeReference(
+    typename DiscreteTrajectoryTraits<Frame>::TimelineConstIterator it) {
+  return {it->first, it->second};
+}
 
 template<typename Frame>
 typename DiscreteTrajectoryIterator<Frame>::reference
