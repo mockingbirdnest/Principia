@@ -85,7 +85,6 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Benchmarks) {
 }
 
 TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
-  google::LogToStderr();
   // An example of how journaling may be used for debugging.  You must set
   // |path| and fill the |method_in| and |method_out_return| protocol buffers.
   std::string path =
@@ -94,6 +93,9 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   int count = 0;
   while (player.Play(count)) {
     ++count;
+    // Reset logging after each method so as to output all messages irrespective
+    // of what the game did.
+    google::LogToStderr();
     LOG_IF(ERROR, (count % 100'000) == 0) << count
                                           << " journal entries replayed";
   }
