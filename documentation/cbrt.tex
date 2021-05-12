@@ -150,7 +150,7 @@ error is plain.}\[
 Lagny's \emph{quartic irrational method} for the fifth root;
 the quadratic irrational method for the same fifth root would be\footnote{Both are of order $5$, but the reader who wishes
 to compute a fifth root should note that leading term of the error of the quartic method is
-$\frac{2}{7}$ of that of the quadratic.}\[
+$\frac{2}{7}$ of that of the quadratic. See appendix~\ref{ExampleGeneralizedLagnyMethods}.}\[
 \FunctionBody{a}{\frac{a\pa{7b-\sqrt{100a^{10}+100a^{5}b-7b^2}}}{4b-10a^5}}\text.
 \]
 More generally, we call $\FunctionBody{a}{x+\frac{1}{2}a}$ \emph{Lagny's method of degree $d$} when
@@ -1113,7 +1113,135 @@ $\det\matC\of{ψ\of{a}}=0$.
 By the lemma, for the value of $Δ$ in the rational method, $a+Δ$ solves that equation.
 \end{proof}
 \section{Some applications of the generalized Lagny methods}
+As previously mentioned, the rational methods are well known; we list them solely
+so that they may be compared with the irrational ones.
 \label{ExampleGeneralizedLagnyMethods}
+\subsection{Formulæ for the cube root}
+Let $f\of z\DefineAs y-z^3$, and $a$ be the starting estimate for the root of $f$, \idest, for
+$\cuberoot y$. Let $b\DefineAs f\of{a}=y-a^3$. Let $ε\DefineAs \frac{a}{\sqrt[3] y}-1$.
+We have the following formulæ.
+\subsubsection{Rational methods}
+The rational methods of orders $2$ through $5$ are given below. The first two of these are Newton's method and Lagny's rational method.
+\begin{center}
+\begin{tabular}{lr}
+ Iteration & Asymptotic relative error\\
+\hline
+$a+\frac{b}{3a^2}$ & $ε^2$ \\
+$a+\frac{ab}{3a^3+b}$ & $\tfrac{2}{3}ε^3$\\
+$a+\frac{3ab\pa{3a^3+b}}{26a^6+18a^3b+b^2}$ & $\tfrac{1}{3}ε^4$\\
+$a+\frac{b\pa{27a^6+18a^3b+b^2}}{81a^8+81a^5b+15a^2b^2}$ & $\tfrac{1}{9}ε^5$\\
+\end{tabular}
+\end{center}
+\subsubsection{Quadratic irrational methods}
+The quadratic irrational methods of orders $3$ through $5$ are given below. The first of these is Lagny's irrational method, for which we give
+the form from \cite{FantetdeLagny1691a}.
+\begin{center}
+\begin{tabular}{lr}
+Iteration & Asymptotic relative error\\
+\hline
+$\frac{3a^2+\sqrt{9a^4+12ab}}{6a}=\tfrac{1}{2}a+\sqrt{\tfrac{1}{4}a^2+\frac{b}{3a}}$ &  $-\tfrac{1}{3}ε^3$ \\
+$\frac{3a^3-b+\sqrt{81a^6 + 90a^3b+b^2}}{12a^2}$ & $-\tfrac{1}{9}ε^4$ \\
+$\frac{-5a^3b+\sqrt{3a^6\pa{108a^6+108a^3b-5b^2}}}{18a^5-2a^2b}$ & $-\tfrac{1}{18}ε^5$ \\
+\end{tabular}
+\end{center}
+\subsection{Formulæ for the fifth root}
+Let $f\of z\DefineAs y-z^5$, and $a$ be the starting estimate for the root of $f$, \idest, for
+$\sqrt[5] y$. Let $b\DefineAs f\of{a}=y-a^3$. Let $ε\DefineAs \frac{a}{\sqrt[5] y}-1$.
+We have the following formulæ.
+\subsubsection{Rational methods}
+The rational methods of orders $2$ through $5$ are given below. The first of these is Newton's method, the second is Halley's rational method,
+the last is Lagny's rational method.
+\begin{center}
+\begin{tabular}{lr}
+ Iteration & Asymptotic relative error\\
+\hline
+$a+\frac{b}{5a^4}$ & $2ε^2$ \\
+$a+\frac{ab}{5a^5+2b}$ & $2ε^3$\\
+$a+\frac{ab\pa{5a^5+2b}}{25a^{10}+20a^5b+2b^2}$ & $ε^4$\\
+$a+\frac{ab\pa{25a^{10}+20a^5b+2b^2}}{125a^{15}+150a^{10}b+40a^5b^2+b^3}$ & $-\tfrac{1}{5}ε^5$\\
+\end{tabular}
+\end{center}
+\subsubsection{Quadratic irrational methods}
+The quadratic irrational methods of orders $2$ through $5$ are given below. The first of these is Halley's irrational method, for which we give
+the form from \cite[141]{Halley1694}, the last is Lagny's quadratic irrational method.
+\begin{center}
+\begin{tabular}{lr}
+Iteration & Asymptotic relative error\\
+\hline
+$\frac{15a^4+\sqrt{25a^8+40a^3b}}{20a^3}=\tfrac{3}{4}a+\sqrt{\tfrac{1}{16}a^2+\frac{b}{10a^3}}$ &  $-\tfrac{1}{3}ε^3$ \\
+$\frac{5a^7-a^2b+a^2\sqrt{25a^{10}+30a^5b+b^2}}{10a^6}$ & $-ε^4$ \\
+$a\frac{-7b+\sqrt{100a^{10}+100a^5b-7b^2}}{10a^5-4b}$ & $-\tfrac{7}{10}ε^5$ \\
+\end{tabular}
+\end{center}
+\subsubsection{Quartic irrational method}
+Lagny's quartic irrational method is given below, in the form from \cite{FantetdeLagny1692} (with the misprint corrected).
+The quartic methods involve the solution of a quartic equation, so they are often impractical;
+in this case however, the equation $E_4=0$ is biquadratic.
+\begin{center}
+\begin{tabular}{lr}
+Iteration & Asymptotic relative error\\
+\hline
+$\tfrac{1}{2}a+\sqrt{\sqrt{\tfrac{1}{4}a^4+\tfrac{b}{5a}}-\tfrac{1}{4}a^2}$&$-\tfrac{1}{5}ε^5$
+\end{tabular}
+\end{center}
+\subsection{Formulæ for the resolution of Kepler's equation}
+Let $f\of E\DefineAs E - e \sin E - M$; $f\of E=0$ is Kepler's equation\footnote{From \cite[295--300]{Kepler1609}. Kepler writes of this equation:
+\begin{quote}
+Mihi ſufficit credere, ſolvi a priori non poſſe, propter arcus \& ſinus ἑτερογένειαν.
+Erranti mihi, quicunque viam monſtraverit, is erit mihi magnus Apollonius.
+\end{quote}
+It appears that this honour belongs either to Lagrange, with a series in $\sin^n M$, in \cite{Lagrange1770} reprinted in \volcite{3}[117]{Lagrange1867},
+or to Bessel, with a series in $\sin nM$ whose coefficients are given by his eponymous functions, in \cite{Bessel1852};
+see \cite{Colwell1992}.}, where $E$ is the eccentric anomaly, $M$ the mean anomaly,
+and $e$ the eccentricity of an elliptic orbit.
+
+We give the iterations for a starting estimate $α$ of the root $E$.
+Since $E$ is an angle and $M$ a fictitious angle, both in $\intclos{0}{2\Pi}$,
+we consider absolute errors rather than relative ones. We give the asymptotic errors for the specific
+choice of starting estimate $α=M$, whose starting error is linear in $e$.
+Note that the formulæ of higher order greatly simplify for $α=M$.
+For brevity, we write $c\DefineAs \cos α$, $s\DefineAs \sin α$.
+\subsubsection{Rational methods}
+The rational methods of orders $2$ through $4$ are given below.
+\begin{center}
+\begin{tabular}{l}
+Iteration\\
+\hline
+$α+\frac{M-α+es}{1-ec}$ \\
+$α+\frac{2\pa{1-ec}\pa{M-α+es}}{2-4ec+e^2c^2-eαs+eMs+e^2}$ \\
+$α+\frac{3\pa{M-a+es}\pa{2-4ec+e^2c^2-eαs+eMs+e^2}}{6\pa{1+e^2+2e^2c^2-c^3e^3-eαs+eMs}+e\pa{\pa{α-M}^2-18+4eαs-4eMs-5e^2s^2}c}$ 
+\end{tabular}
+\end{center}
+For $α=M$, we have the following simplified formulæ.
+\begin{center}
+\begin{tabular}{lr}
+Formula & Asymptotic error\\
+\hline
+$M+\frac{es}{1-ec}$ & $\BigO\of{e^3}$\\
+$M+\frac{2\pa{1-ec}es}{2-4ec+e^2c^2+e^2}$ & $\BigO\of{e^4}$\\
+$M+\frac{3es\pa{2-4ec+e^2c^2+e^2}}{6\pa{1+2e^2c^2-e^3c^3+e^2}-e\pa{18+5e^2s^2}c}$ & $\BigO\of{e^5}$\\
+\end{tabular}
+\end{center}
+\subsubsection{Quadratic irrational methods}
+The quadratic irrational methods of orders $3$ and $4$ are given below.
+For the method of order $4$, the sign $\pm$ should be positive when $M<π$, and negative when $M>π$.
+\begin{center}
+\begin{tabular}{l}
+Iteration\\
+\hline
+$α+\frac{ec-1+\sqrt{\pa{1-ec}^2+2es\pa{M-α+es}}}{es}$ \\
+$α+\frac{\pa{α-M+2es}c-3s\pm\sqrt{\pa{α-M}^2c^2-2\pa{4ec-3}\pa{α-M}sc+\pa{3-4ec}^2s^2+18e\pa{M-α}s^3+18e^2s^4}}{2c\pa{ec-1}+3es^2}$ 
+\end{tabular}
+\end{center}
+For $α=M$, we have the following simplified formulæ.
+\begin{center}
+\begin{tabular}{lr}
+Formula & Asymptotic error\\
+\hline
+$M+\frac{ec-1+\sqrt{\pa{1-ec}^2+2e^2s^2}}{2es}$ & $\BigO\of{e^4}$\\
+$M+\frac{2esc-3s\pm\sqrt{\pa{3-4ec}^2s^2+18e^2s^4}}{2c\pa{ec-1}+3es^2}$  & $\BigO\of{e^5}$\\
+\end{tabular}
+\end{center}
 
 \section{FMA}
 \label{FMA}
