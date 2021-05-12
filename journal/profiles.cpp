@@ -82,7 +82,7 @@ std::uint64_t SerializePointer(T* t) {
 
 // To remove the check, define this macro to be:
 //   auto aa = (a); auto bb = (b);
-#define PRINCIPIA_CHECK_EQ(a, b) CHECK((a) == (b))
+#define PRINCIPIA_CHECK_EQ(a, b) auto aa = (a); auto bb = (b);
 #define PRINCIPIA_SET_VERBOSE_LOGGING 1
 
 #include "journal/profiles.generated.cc"

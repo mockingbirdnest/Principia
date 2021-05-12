@@ -8,7 +8,7 @@
 
 #include "serialization/journal.pb.h"
 
-#define PRINCIPIA_PLAYER_ALLOW_VERSION_MISMATCH 0
+#define PRINCIPIA_PLAYER_ALLOW_VERSION_MISMATCH 1
 
 namespace principia {
 namespace journal {

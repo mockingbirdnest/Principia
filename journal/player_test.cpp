@@ -89,7 +89,7 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   // An example of how journaling may be used for debugging.  You must set
   // |path| and fill the |method_in| and |method_out_return| protocol buffers.
   std::string path =
-      R"(P:\Public Mockingbird\Principia\Crashes\2931\JOURNAL.20210330-124441)";  // NOLINT
+      R"(P:\Public Mockingbird\Principia\Crashes\2922\JOURNAL.20210312-215639)";  // NOLINT
   Player player(path);
   int count = 0;
   while (player.Play(count)) {
@@ -103,21 +103,22 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   LOG(ERROR) << "Last successful method out/return: \n"
              << player.last_method_out_return().DebugString();
 
-#if 0
+#if 1
   serialization::Method method_in;
   {
     auto* extension = method_in.MutableExtension(
-        serialization::CatchUpLaggingVessels::extension);
+        serialization::FreeVesselsAndPartsAndCollectPileUps::extension);
     auto* in = extension->mutable_in();
-    in->set_plugin(2109308527968);
+    in->set_plugin(2718550096736);
+    in->set_delta_t(0.02);
   }
   serialization::Method method_out_return;
   {
     auto* extension = method_out_return.MutableExtension(
-        serialization::CatchUpLaggingVessels::extension);
+        serialization::FreeVesselsAndPartsAndCollectPileUps::extension);
   }
   LOG(ERROR) << "Running unpaired method:\n" << method_in.DebugString();
-  CHECK(RunIfAppropriate<CatchUpLaggingVessels>(
+  CHECK(RunIfAppropriate<FreeVesselsAndPartsAndCollectPileUps>(
       method_in, method_out_return, player));
 #endif
 }
