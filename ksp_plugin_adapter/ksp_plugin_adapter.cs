@@ -574,6 +574,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     if (vessel.loaded && hack_gravity?.toggle.isOn == true) {
       reasons.Add("vessel is loaded and gravity is being hacked");
     }
+    if (vessel.parts.All(part => !PartIsFaithful(part))) {
+      reasons.Add("vessel is completely unfaithful");
+    }
     if (reasons.Count == 0) {
       return null;
     } else {
