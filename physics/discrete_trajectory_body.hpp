@@ -322,8 +322,8 @@ Position<Frame> DiscreteTrajectory<Frame>::EvaluatePosition(
   if (iter->time == time) {
     return iter->degrees_of_freedom.position();
   }
-  CHECK_LE(t_min(), time);
-  CHECK_GE(t_max(), time);
+  CHECK_LT(t_min(), time);
+  CHECK_GT(t_max(), time);
   return GetInterpolation(iter).Evaluate(time);
 }
 
@@ -334,8 +334,8 @@ Velocity<Frame> DiscreteTrajectory<Frame>::EvaluateVelocity(
   if (iter->time == time) {
     return iter->degrees_of_freedom.velocity();
   }
-  CHECK_LE(t_min(), time);
-  CHECK_GE(t_max(), time);
+  CHECK_LT(t_min(), time);
+  CHECK_GT(t_max(), time);
   return GetInterpolation(iter).EvaluateDerivative(time);
 }
 
@@ -346,8 +346,8 @@ DegreesOfFreedom<Frame> DiscreteTrajectory<Frame>::EvaluateDegreesOfFreedom(
   if (iter->time == time) {
     return iter->degrees_of_freedom;
   }
-  CHECK_LE(t_min(), time);
-  CHECK_GE(t_max(), time);
+  CHECK_LT(t_min(), time);
+  CHECK_GT(t_max(), time);
   auto const interpolation = GetInterpolation(iter);
   return {interpolation.Evaluate(time), interpolation.EvaluateDerivative(time)};
 }
@@ -664,7 +664,8 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
 template<typename Frame>
 Hermite3<Instant, Position<Frame>> DiscreteTrajectory<Frame>::GetInterpolation(
     Iterator const& upper) const {
-  auto const lower = upper == this->begin() ? upper : --Iterator{upper};
+  CHECK(upper != this->begin());
+  auto const lower = --Iterator{upper};
   return Hermite3<Instant, Position<Frame>>{
       {lower->time, upper->time},
       {lower->degrees_of_freedom.position(),

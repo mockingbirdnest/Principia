@@ -213,7 +213,7 @@ back() const {
     return It3rator::MakeReference(--timeline_end());
   }
 
-  // Handle case where back is in some parent timeline.
+  // Handle case where back is in the first nonempty parent timeline.
   CHECK_NOTNULL(parent_);
   not_null<Tr4jectory const*> trajectory = that();
   while (trajectory->position_in_parent_timeline_ ==

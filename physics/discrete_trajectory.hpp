@@ -259,9 +259,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
       std::vector<DiscreteTrajectory<Frame>**> const& forks);
 
   // Returns the Hermite interpolation for the left-open, right-closed
-  // trajectory segment bounded above by |upper|, or, if |upper| is |begin()|,
-  // returns a first-degree polynomial which should be evaluated only at
-  // |t_min()|.
+  // trajectory segment bounded above by |upper|.
   Hermite3<Instant, Position<Frame>> GetInterpolation(
       Iterator const& upper) const;
 

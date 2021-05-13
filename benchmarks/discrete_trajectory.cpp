@@ -7,6 +7,9 @@
 #include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace physics {
@@ -20,7 +23,12 @@ using geometry::Inertial;
 using geometry::Instant;
 using geometry::Velocity;
 using ksp_plugin::World;
+using quantities::AngularFrequency;
+using quantities::Cos;
+using quantities::Sin;
+using quantities::Time;
 using quantities::si::Metre;
+using quantities::si::Radian;
 using quantities::si::Second;
 
 namespace {
@@ -29,28 +37,27 @@ namespace {
 not_null<std::unique_ptr<DiscreteTrajectory<World>>> CreateMotionlessTrajectory(
     int const steps) {
   auto trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
-  Instant t;
-  for (int i = 0; i < steps; i++, t += 1 * Second) {
-    trajectory->Append(t, {World::origin, World::unmoving});
+  for (Time t = 0 * Second; t < steps * Second; t += 1 * Second) {
+    trajectory->Append(Instant{} + t, {World::origin, World::unmoving});
   }
   return trajectory;
 }
 
-// Creates a circular trajectory with the given number of steps.
+// Creates a circular trajectory with the given number of steps in the XZ plane.
 not_null<std::unique_ptr<DiscreteTrajectory<World>>> CreateCircularTrajectory(
     int const steps) {
   auto trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
-  Instant t;
-  for (int i = 0; i < steps; i++, t += 1 * Second) {
-    const double sine = std::sin(i);
-    const double cosine = std::cos(i);
+  constexpr AngularFrequency ω = 1 * Radian / Second;
+  for (Time t = 0 * Second; t < steps * Second; t += 1 * Second) {
+    double const sin_ωt = Sin(ω * t);
+    double const cos_ωt = Cos(ω * t);
     trajectory->Append(
-        t,
+        Instant{} + t,
         {World::origin +
-             Displacement<World>({cosine * Metre, 0 * Metre, sine * Metre}),
-         Velocity<World>({-sine * Metre / Second,
+             Displacement<World>({cos_ωt * Metre, 0 * Metre, sin_ωt * Metre}),
+         Velocity<World>({-sin_ωt * Metre / Second,
                           0 * Metre / Second,
-                          cosine * Metre / Second})});
+                          cos_ωt * Metre / Second})});
   }
   return trajectory;
 }
