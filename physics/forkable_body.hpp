@@ -220,7 +220,8 @@ back() const {
          trajectory->parent()->timeline_end()) {
     trajectory = trajectory->parent();
   }
-  return typename It3rator::reference(*trajectory->position_in_parent_timeline_);
+  return
+      typename It3rator::reference(*trajectory->position_in_parent_timeline_);
 }
 
 template<typename Tr4jectory, typename It3rator, typename Traits>
