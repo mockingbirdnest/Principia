@@ -202,7 +202,7 @@ It3rator Forkable<Tr4jectory, It3rator, Traits>::end() const {
 template<typename Tr4jectory, typename It3rator, typename Traits>
 typename It3rator::reference
 Forkable<Tr4jectory, It3rator, Traits>::front() const {
-  return It3rator::MakeReference(root()->timeline_begin());
+  return typename It3rator::reference(root()->timeline_begin());
 }
 
 template<typename Tr4jectory, typename It3rator, typename Traits>
@@ -210,7 +210,7 @@ typename It3rator::reference Forkable<Tr4jectory, It3rator, Traits>::
 back() const {
   // Handle case where back is in our timeline.
   if (!timeline_empty()) {
-    return It3rator::MakeReference(--timeline_end());
+    return typename It3rator::reference(--timeline_end());
   }
 
   // Handle case where back is in the first nonempty parent timeline.
@@ -220,7 +220,7 @@ back() const {
          trajectory->parent()->timeline_end()) {
     trajectory = trajectory->parent();
   }
-  return It3rator::MakeReference(*trajectory->position_in_parent_timeline_);
+  return typename It3rator::reference(*trajectory->position_in_parent_timeline_);
 }
 
 template<typename Tr4jectory, typename It3rator, typename Traits>

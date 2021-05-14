@@ -42,7 +42,7 @@ using geometry::Instant;
 //
 // The It3rator class must export declarations similar to the following:
 //   using reference = ...;
-//   static reference MakeReference(Traits::TimelineConstIterator it);
+// where reference can be constructed from a TimelineConstIterator.
 
 template<typename Tr4jectory, typename It3rator, typename Traits>
 class Forkable;

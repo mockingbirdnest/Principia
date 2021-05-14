@@ -34,10 +34,10 @@ class FakeTrajectoryIterator : public ForkableIterator<FakeTrajectory,
   using ForkableIterator<FakeTrajectory,
                          FakeTrajectoryIterator,
                          FakeTrajectoryTraits>::current;
-  using reference = Instant const&;
-
-  static reference MakeReference(
-      FakeTrajectoryTraits::TimelineConstIterator it);
+  struct reference {
+    explicit reference(FakeTrajectoryTraits::TimelineConstIterator it);
+    Instant const& time;
+  };
 
   reference operator*() const;
 
@@ -95,13 +95,12 @@ Instant const& FakeTrajectoryTraits::time(TimelineConstIterator const it) {
   return *it;
 }
 
-FakeTrajectoryIterator::reference FakeTrajectoryIterator::MakeReference(
-    FakeTrajectoryTraits::TimelineConstIterator it) {
-  return *it;
-}
+FakeTrajectoryIterator::reference::reference(
+    FakeTrajectoryTraits::TimelineConstIterator it)
+    : time(*it) {}
 
 FakeTrajectoryIterator::reference FakeTrajectoryIterator::operator*() const {
-  return *current();
+  return reference(current());
 }
 
 not_null<FakeTrajectoryIterator*> FakeTrajectoryIterator::that() {
@@ -760,8 +759,8 @@ TEST_F(ForkableTest, IteratorLowerBoundInterestingTimeline) {
 
   auto const lower_bound_it = fork2->LowerBound(t1_);
   auto const it1 = ++(fork2->begin());
-  EXPECT_EQ(*lower_bound_it, t2_);
-  EXPECT_EQ(*it1, t2_);
+  EXPECT_EQ((*lower_bound_it).time, t2_);
+  EXPECT_EQ((*it1).time, t2_);
   EXPECT_EQ(lower_bound_it, it1);
 }
 
@@ -770,22 +769,22 @@ TEST_F(ForkableTest, FrontBack) {
   trajectory_.push_back(t2_);
   trajectory_.push_back(t3_);
 
-  EXPECT_EQ(t1_, trajectory_.front());
-  EXPECT_EQ(t3_, trajectory_.back());
+  EXPECT_EQ(t1_, trajectory_.front().time);
+  EXPECT_EQ(t3_, trajectory_.back().time);
 
   not_null<FakeTrajectory*> const fork1 =
       trajectory_.NewFork(trajectory_.timeline_find(t2_));
   fork1->push_back(t4_);
 
-  EXPECT_EQ(t1_, fork1->front());
-  EXPECT_EQ(t4_, fork1->back());
+  EXPECT_EQ(t1_, fork1->front().time);
+  EXPECT_EQ(t4_, fork1->back().time);
 
   not_null<FakeTrajectory*> const fork2 =
       fork1->NewFork(fork1->timeline_find(t2_));
   fork2->push_back(t5_);
 
-  EXPECT_EQ(t1_, fork2->front());
-  EXPECT_EQ(t5_, fork2->back());
+  EXPECT_EQ(t1_, fork2->front().time);
+  EXPECT_EQ(t5_, fork2->back().time);
 }
 
 }  // namespace internal_forkable

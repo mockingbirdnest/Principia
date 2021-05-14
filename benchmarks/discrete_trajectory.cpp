@@ -38,7 +38,7 @@ not_null<std::unique_ptr<DiscreteTrajectory<World>>> CreateMotionlessTrajectory(
     int const steps) {
   auto trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
   for (Time t = 0 * Second; t < steps * Second; t += 1 * Second) {
-    trajectory->Append(Instant{} + t, {World::origin, World::unmoving});
+    trajectory->Append(Instant() + t, {World::origin, World::unmoving});
   }
   return trajectory;
 }
@@ -52,7 +52,7 @@ not_null<std::unique_ptr<DiscreteTrajectory<World>>> CreateCircularTrajectory(
     double const sin_ωt = Sin(ω * t);
     double const cos_ωt = Cos(ω * t);
     trajectory->Append(
-        Instant{} + t,
+        Instant() + t,
         {World::origin +
              Displacement<World>({cos_ωt * Metre, 0 * Metre, sin_ωt * Metre}),
          Velocity<World>({-sin_ωt * Metre / Second,
