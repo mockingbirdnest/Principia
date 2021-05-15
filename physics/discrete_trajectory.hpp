@@ -46,6 +46,9 @@ class DiscreteTrajectoryIterator
                               DiscreteTrajectoryTraits<Frame>> {
  public:
   struct reference {
+    explicit reference(
+        typename DiscreteTrajectoryTraits<Frame>::TimelineConstIterator it);
+
     Instant const& time;
     DegreesOfFreedom<Frame> const& degrees_of_freedom;
   };
@@ -256,11 +259,9 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
       std::vector<DiscreteTrajectory<Frame>**> const& forks);
 
   // Returns the Hermite interpolation for the left-open, right-closed
-  // trajectory segment containing the given |time|, or, if |time| is |t_min()|,
-  // returns a first-degree polynomial which should be evaluated only at
-  // |t_min()|.
+  // trajectory segment bounded above by |upper|.
   Hermite3<Instant, Position<Frame>> GetInterpolation(
-      Instant const& time) const;
+      Iterator const& upper) const;
 
   Timeline timeline_;
 
