@@ -20,7 +20,7 @@ $primary_ksp_version = $args[3]
 $compatibility_ksp_versions = $args[4]
 $branch = $args[5]
 if (!$branch) {
-  'master'
+  $branch = 'master'
 }
 
 if ($culture.lcid -eq 0x1000) {
