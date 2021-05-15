@@ -2,7 +2,7 @@
 
 "Usage:"
 "make_principia_release mathematician culture date primary_ksp_version"
-"                       compatibility_ksp_versions"
+"                       compatibility_ksp_versions [branch]"
 ""
 "    ARGUMENT                         EXAMPLE VALUES"
 "    mathematician                    陈景润"
@@ -10,6 +10,7 @@
 "    date                             2017111812"
 "    primary_ksp_version              1.3.1"
 "    compatibility_ksp_versions       @('1.2.1', '1.3.0')"
+"    branch                           Grassmannian"
 
 
 $mathematician = $args[0]
@@ -17,6 +18,10 @@ $culture = new-object CultureInfo $args[1]
 $date = $args[2]
 $primary_ksp_version = $args[3]
 $compatibility_ksp_versions = $args[4]
+$branch = $args[5]
+if (!$branch) {
+  $branch = 'master'
+}
 
 if ($culture.lcid -eq 0x1000) {
   write-error ("Culture $culture has LCID 0x1000.")
@@ -50,7 +55,7 @@ if (test-path .\Release) {
   rm .\Release -recurse
 }
 
-git checkout "$remote/master"
+git checkout "$remote/$branch"
 git tag $tag -m $mathematician
 
 &$msbuild                           `
