@@ -177,8 +177,16 @@ not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator, Traits>::parent() {
 
 template<typename Tr4jectory, typename It3rator, typename Traits>
 It3rator Forkable<Tr4jectory, It3rator, Traits>::begin() const {
-  not_null<Tr4jectory const*> ancestor = root();
-  return Wrap(ancestor, ancestor->timeline_begin());
+  It3rator iterator;
+  not_null<Tr4jectory const*> ancestor = that();
+  iterator.ancestry_.push_back(ancestor);
+  while (ancestor->parent_ != nullptr) {
+    ancestor = ancestor->parent();
+    iterator.ancestry_.push_back(ancestor);
+  }
+  iterator.current_ = ancestor->timeline_begin();
+
+  return iterator;
 }
 
 template<typename Tr4jectory, typename It3rator, typename Traits>
@@ -194,15 +202,26 @@ It3rator Forkable<Tr4jectory, It3rator, Traits>::end() const {
 template<typename Tr4jectory, typename It3rator, typename Traits>
 typename It3rator::reference
 Forkable<Tr4jectory, It3rator, Traits>::front() const {
-  // TODO(phl): This can be implemented more efficiently.
-  return *begin();
+  return typename It3rator::reference(root()->timeline_begin());
 }
 
 template<typename Tr4jectory, typename It3rator, typename Traits>
 typename It3rator::reference Forkable<Tr4jectory, It3rator, Traits>::
 back() const {
-  // TODO(phl): This can be implemented more efficiently.
-  return *--end();
+  // Handle case where back is in our timeline.
+  if (!timeline_empty()) {
+    return typename It3rator::reference(--timeline_end());
+  }
+
+  // Handle case where back is in the first nonempty parent timeline.
+  CHECK_NOTNULL(parent_);
+  not_null<Tr4jectory const*> trajectory = that();
+  while (trajectory->position_in_parent_timeline_ ==
+         trajectory->parent()->timeline_end()) {
+    trajectory = trajectory->parent();
+  }
+  return
+      typename It3rator::reference(*trajectory->position_in_parent_timeline_);
 }
 
 template<typename Tr4jectory, typename It3rator, typename Traits>
