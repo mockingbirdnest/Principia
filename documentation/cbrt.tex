@@ -1207,14 +1207,23 @@ Olbers \cite{Bessel1852}; see \cite{Colwell1992}.}, where $E$ is the eccentric a
 and $e$ the eccentricity of an elliptic orbit.
 
 We give the iterations for a starting estimate $α$ of the root $E$.
-Since $E$ is an angle and $M$ a fictitious angle, both in $\intclos{0}{2\Pi}$,
-we consider absolute errors rather than relative ones. We give the asymptotic errors for the specific
-choice of starting estimate $α=M$, whose starting error is asymptotically linear in $e$, and linear
-in $M$ near $M=0$ (periapsis) and $M=\Pi$ (apoapsis).
-Note that the formulæ of higher order greatly simplify for $α=M$.
+Since $E$ is an angle and $M$ a fictitious angle, both in $\intclos{0}{2\Pi}$, we consider absolute
+errors rather than relative ones.
+With this two-parameter transcendental function, the two-parameter asymptotics are not particularly useful.
+Instead we give the approximate maximal error over $M\in\intclos{0}{2\Pi}$ for several values of $e$,
+and for the specific choice of starting estimate $α=M$, which greatly simplifies the higher-order formulæ.
+
+The errors of the starting estimate $α=M$ are given in the table below.
+\begin{center}
+\begin{tabular}{lrrrr}
+Approximation of $E$ & Max.~error for $e=0.2$ & $e=0.5$ & $e=0.9$ & $e=0.999$ \\
+\hline
+$M$ & $10°37'$ & $28°34'$ & $51°34'$ & $57°14'$
+\end{tabular}
+\end{center}
 For brevity, we write $c\DefineAs \cos α$, $s\DefineAs \sin α$.
 \subsubsection{Rational methods}
-The rational methods of orders $2$ through $4$ are given below.
+The rational methods of orders $2$ through $4$ are given below; the first two of these are Newton's method and Halley's rational method.
 \begin{center}
 \begin{tabular}{l}
 Iteration\\
@@ -1224,14 +1233,17 @@ $α+\frac{2\pa{1-ec}\pa{M-α+es}}{2-4ec+e^2c^2-eαs+eMs+e^2}$ \\
 $α+\frac{3\pa{M-a+es}\pa{2-4ec+e^2c^2-eαs+eMs+e^2}}{6\pa{1+e^2+2e^2c^2-c^3e^3-eαs+eMs}+e\pa{\pa{α-M}^2-18+4eαs-4eMs-5e^2s^2}c}$ 
 \end{tabular}
 \end{center}
-For $α=M$, we have the following simplified formulæ; the asymptotic errors near $M=\Pi$ are the same up to sign.
+For $α=M$, we have the following simplified formulæ.
 \begin{center}
-\begin{tabular}{lr}
-Formula & Asymptotic error near $M=0$\\
+\begin{tabular}{lrrrr}
+Approximation of $E$ &  Max.~error for $e=0.2$ & $e=0.5$ & $e=0.9$ & $e=0.999$ \\
 \hline
-$M+\frac{es}{1-ec}$ & $\tfrac{1}{2}e^3M^3+\BigO\of{e^3M^5+e^4M^3}$\\
-$M+\frac{2\pa{1-ec}es}{2-4ec+e^2c^2+e^2}$ & $\tfrac{1}{6}e^4M^3+\BigO\of{e^4M^5+e^5M^3}$\\
-$M+\frac{3es\pa{2-4ec+e^2c^2+e^2}}{6\pa{1+2e^2c^2-e^3c^3+e^2}-e\pa{18+5e^2s^2}c}$ & $-\tfrac{1}{24}e^5M^5+\BigO\of{e^5M^7+e^6M^5}$\\
+$M+\frac{es}{1-ec}$
+& $14'11^\dprime\hphantom{00}$ & $4°27'\hphantom{00\dprime}$ & $68°32'$ & $1246°\hphantom{00'}$\\
+\rlap{$M+\frac{2\pa{1-ec}es}{2-4ec+e^2c^2+e^2}$}
+& $21\rlap.\dprime43$ & $22'35\dprime$ & $13°07'$& $38°44'$ \\
+\rlap{$M+\frac{3es\pa{2-4ec+e^2c^2+e^2}}{6\pa{1+2e^2c^2-e^3c^3+e^2}-e\pa{18+5e^2s^2}c}$}
+& $3\rlap.\dprime03$ & $7'56\dprime$ & $10°30'$& $27°20'$\\
 \end{tabular}
 \end{center}
 \subsubsection{Quadratic irrational methods}
@@ -1245,15 +1257,42 @@ $α+\frac{ec-1+\sqrt{\pa{1-ec}^2+2es\pa{M-α+es}}}{es}$ \\
 $α+\frac{\pa{α-M+2es}c-3s\pm\sqrt{\pa{α-M}^2c^2-2\pa{4ec-3}\pa{α-M}sc+\pa{3-4ec}^2s^2+18e\pa{M-α}s^3+18e^2s^4}}{2c\pa{ec-1}+3es^2}$ 
 \end{tabular}
 \end{center}
-For $α=M$, we have the following simplified formulæ; again the asymptotic errors near apoapsis are the same up to sign.
+For $α=M$, we have the following simplified formulæ.
 \begin{center}
-\begin{tabular}{lrr}
-Formula & Asymptotic error near $M=0$\\
+\begin{tabular}{lrrrr}
+Approximation of $E$ &  Max.~error for $e=0.2$ & $e=0.5$ & $e=0.9$ & $e=0.999$ \\
 \hline
-$M+\frac{ec-1+\sqrt{\pa{1-ec}^2+2e^2s^2}}{es}$ & $\tfrac{1}{6}e^4M^3+\BigO\of{e^4M^5+e^5M^3}$\\
-$M+\frac{2esc-3s\pm\sqrt{\pa{3-4ec}^2s^2+18e^2s^4}}{2c\pa{ec-1}+3es^2}$  & $-\tfrac{1}{18}e^5M^3+\BigO\of{e^5M^5+e^6M^3}$\\
+\rlap{$M+\frac{ec-1+\sqrt{\pa{1-ec}^2+2e^2s^2}}{es}$}
+& $24\rlap.\dprime37$ & $24'38\dprime$ & $10°54'$& $53°25'$\\
+\rlap{$M+\frac{2esc-3s\pm\sqrt{\pa{3-4ec}^2s^2+18e^2s^4}}{2c\pa{ec-1}+3es^2}$}
+& $3\rlap.\dprime06$ & $8'31\dprime$ & $14°14'$& $27°23'$
 \end{tabular}
 \end{center}
+\subsubsection{Cubic irrational method}
+For the extraction of the roots of polynomials, it makes little sense to consider the cubic irrational methods, whose
+computation involves the extraction of a cube root. However, when it comes to functions whose derivatives involve trigonometric lines,
+a cube root is no longer prohibitive.
+The approxmiation obtained from the method of degree $3$ and order $4$ with the starting estimate $α=M$ is given below;
+its error is remarkably low even at high eccentricities (an order of magnitude better than either the rational or the quadratic method
+of the same order for $e\geq 0.9$).
+
+Note that this formula is valid for $M\leq\smash{\frac{\Pi}{2}}$;
+the corresponding expressions for $\frac{\Pi}{2}\leq M\leq\frac{3\Pi}{2}$ and for
+some of the $M>\frac{3\Pi}{2}$ are \emph{casus irreducibiles}\footnote{See \cite[469]{FantetdeLagny1697} for a definition
+of the \emph{cas irreductible} of a cubic; see \cite[125\psqq]{Wantzel1843} for a proof of its irreducibility.}, and thus are less
+practically useful; it is probably best to use one of the formulæ above for the middle, and to get rid of the upper half by argument
+reduction.
+\begin{center}
+\begin{tabular}{lrrrr}
+Approximation of $E$ & Max.~error for $e=0.2$ & $e=0.5$ & $e=0.9$ & $e=0.999$ \\
+\hline
+$M+\frac{\frac{2c\pa{ec-1}+es^2}{R}+\frac{R}{e}-s}{c}$
+ & $2\rlap.\dprime71$ & $4'04\dprime$ & $58'33\dprime$& $1°29'$
+\end{tabular}
+\end{center}
+In the above formula,\[
+R\DefineAs\sqrt[3]{3e^2sc-e^3s^3+\sqrt{e^3c^2\pa{8\pa{1-ec}^3-3es^2\pa{1+4ec\pa{ec-2}}-6e^3s^4}}}\text.
+\]
 
 \section{FMA}
 \label{FMA}
