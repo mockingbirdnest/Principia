@@ -345,12 +345,12 @@ the unrounded quantity is in excess of the rounded one if the sign is $+$,
 and in default if it is $-$.
 
 
-We use capital Latin letters for fixed-point numbers involved in the computation, and $A>0$ for the normal floating-point number $a>0$ reinterpreted as a binary fixed-point\footnote{The implementation uses integers (obtained by multiplying the fixed-point numbers by $2^{p-1}$). For consistency with \cite{KahanBindel2001} we work with fixed-point numbers here. Since we do not multiply fixed point numbers together, the expressions are unchanged.} number with $p-1$ bits after the binary point,\begin{align*}
-  A &\DefineAs \bias + \Floor{\log_2 a} + \FractionalPart \pa{2^{-\Floor{\log_2 a}}a}\\
-    &= \bias + \Floor{\log_2 a} + 2^{-\Floor{\log_2 a}}a - 1\text,\\
+We use capital Latin letters for fixed-point numbers involved in the computation, and $A>0$ for the normal floating-point number $a>0$ reinterpreted as a binary fixed-point\footnote{The implementation uses integers (obtained by multiplying the fixed-point numbers by $2^{p-1}$). For consistency with \cite{KahanBindel2001} we work with fixed-point numbers here. Since we do not multiply fixed point numbers together, the expressions are unchanged.} number with $p-1$ bits after the binary point,\begin{align}
+  A &\DefineAs \bias + \Floor{\log_2 a} + \FractionalPart \pa{2^{-\Floor{\log_2 a}}a}\label{defA}\\
+    &= \bias + \Floor{\log_2 a} + 2^{-\Floor{\log_2 a}}a - 1\text,\nonumber\\
 \intertext{and \emph{vice versa},}
-  a &\DefineAs 2^{\Floor A-\bias} \pa{1+\FractionalPart{A}}\text.\\
-\end{align*}
+  a &\DefineAs 2^{\Floor A-\bias} \pa{1+\FractionalPart{A}}\label{defa}\text.
+\end{align}
 This corresponds to \cite{KahanBindel2001}'s $B+K+F$.
 For both fixed- and floating-point numbers, given $α\in\R$, we write:
 \begin{itemize}[nosep]
@@ -380,7 +380,8 @@ where the fixed-point constant $C$ is defined as\footnote{Note
 that there is a typo in the corresponding expression $C\DefineAs\pa{B-0.1009678}/3$ in \cite{KahanBindel2001}; a factor of $2$ is missing on the bias term.}\[
 C\DefineAs \round{\frac{2\bias-Γ}{3}}
 \]
-for some $Γ\in\R$.
+for some $Γ\in\R$. As we will now show, this step is effectively an argument reduction; we will discuss the choice of the free
+parameter $Γ$ below.
 
 Let $ε_q \DefineAs \frac{q}{\sqrt[3] y}-1$,  % TODO(egg): Figure out why \cuberoot does not render here.
 so that $\cuberoot y\pa{1+ε_q}=q$; the relative error of $q$ as an approximation of $\cuberoot y$ is $\abs{ε_q}$.
@@ -394,9 +395,11 @@ so that the properties of $ε_q$ need only be studied on some interval of the fo
 
 Pick $η\DefineAs2^{\Floor{Γ}}$, and $y\in\intclop{η}{8η}=\intclop{2^{\Floor{Γ}}}{2^{\Floor{Γ}+3}}$,
 so that $\log_2 y\in\intclop{\Floor{Γ}}{\Floor{Γ}+3}$. Let $k\DefineAs\Floor{\log_2 y}-\Floor{Γ}$; note that $k\in\set{0,1,2}$.
-Let $f\DefineAs\FractionalPart\pa{2^{-\Floor{\log_2 y}}y}\in\intclop{0}{1}$.
+Let $f\DefineAs\FractionalPart\pa{2^{-\Floor{\log_2 y}}y}\in\intclop{0}{1}$, so that\[
+y=2^{\Floor{\log_2 y}}\pa{1+\FractionalPart\pa{2^{-\Floor{\log_2 y}}y}}=2^{\Floor{Γ}+k}\pa{1+f}\text.
+\]
 Up to at most $3$ half-units in the last place from rounding ($2$ from the directed rounding of the division
-by three and $1$ from the definition of $C$), we have\begin{align*}
+by three and $1$ from the definition of $C$), we have, using the definition (\ref{defA}) of $Y$,\begin{align*}
 % See https://tex.stackexchange.com/a/41091 for the ={}&.
 Q\approx Q'\DefineAs{}&\bias+\frac{\Floor{\log_2 y}}{3}+\frac{\FractionalPart\pa{2^{-\Floor{\log_2 y}}y}-Γ}{3}\text,\\
 ={}&\bias+\frac{\Floor{Γ}+k}{3}+\frac{f-Γ}{3}\text,\\
@@ -405,7 +408,7 @@ Q\approx Q'\DefineAs{}&\bias+\frac{\Floor{\log_2 y}}{3}+\frac{\FractionalPart\pa
 Since $k\in\intclos{0}{2}$, the numerator $k+f-\FractionalPart Γ$ lies in $\intopen{-1}{3}$.
 Further, it is negative only if $k=0$, so that\begin{align*}
 \Floor{Q'}&=\begin{cases}
-\bias - 1 & \text{if }k = 0\text{ and }\FractionalPart Γ > \FractionalPart\pa{2^{-\Floor{Γ}}y}\text, \\
+\bias - 1 & \text{if }k = 0\text{ and }\FractionalPart Γ > f\text, \\
 \bias & \text{otherwise,}
 \end{cases}\text{ and}\\
 \FractionalPart{Q'}&=\begin{cases}
@@ -413,16 +416,18 @@ Further, it is negative only if $k=0$, so that\begin{align*}
 \frac{k+f-\FractionalPart Γ}{3} & \text{otherwise.}
 \end{cases}
 \end{align*}
-Accordingly, for the quick approximation $q$, we have, again up to at most $3$ half-units in the last place,\begin{align*}
+Accordingly, for the quick approximation $q$, we have, again up to at most $3$ half-units in the last place,
+by the definition (\ref{defa}) of $q$,\begin{align*}
 q\approx q' &= \begin{cases}
 1+\frac{f-\FractionalPart Γ}{6} & \text{if }k = 0\text{ and }\FractionalPart Γ > f\text, \\
 1+\frac{k+f-\FractionalPart Γ}{3} & \text{otherwise,}
 \end{cases}
 \end{align*}
-With $\cuberoot y = 2^{\frac{\Floor{Γ}+k}{3}}\cuberoot{1+f}$, we can define\[
-ε_q' \DefineAs \frac{q'}{\cuberoot y}-1\text,
-\]
-which we can express piecewise as a function of $f$ and $k$. This gives us a bound on the relative error,\[
+so that $q$ is a piecewise affine function of $y$ and may be expressed as an affine function of $f$ on each piece.
+
+With $\cuberoot y = 2^{\frac{\Floor{Γ}+k}{3}}\cuberoot{1+f}$, we express $ε_q' \DefineAs \frac{q'}{\sqrt[3] y}-1$
+piecewise as a function of $f$ and $k$.
+The maximum of $ε_q'$ gives us a bound on the relative error of $q$, as\[
 \abs ε_q \leq \abs{ε_q'}\pa{1+3u}\text.
 \]
 The values $Γ=0.1009678$ and $ε_q<3.2\%$ from \cite{KahanBindel2001} may be recovered by choosing $Γ$ minimizing the maximum of $\abs{ε_q'}$ over $y\in\intclop{η}{8η}$,
@@ -433,7 +438,7 @@ or equivalently.\begin{align*}
 &=\argmin_{Γ\in\R}\max_{\tuple{f, k}\in\mathscr{E}\Union\mathscr{L}}\abs{ε_q'}\text,
 \end{align*}
 where $\mathscr{E}\DefineAs\set{\tuple{\FractionalPart Γ, 0}}\Union\setst{\tuple{0, k}}{k\in\set{0,1,2}}$ is the set of the endpoints of the intervals whereon $q'$ is piecewise affine, and
-$\mathscr{L}\DefineAs\setst{\tuple{\frac{k-\FractionalPart Γ}{2},k}}{k\in\set{1,2}}$ are the local extrema. We get more precisely\footnote{These values may
+$\mathscr{L}\DefineAs\setst{\tuple{\frac{k-\FractionalPart Γ}{2},k}}{k\in\set{1,2}}$ are the smooth local extrema. We get more precisely\footnote{These values may
 be computed formally, but the expression is unwieldy.}\begin{align*}
 Γ_{\mathrm{Kahan}} &\approx 0.10096\,78121\,55802\,88786\,36993\,42643\,55358\,06490^-\\
                    &\approx \hex{0.19D9\,06CB\,2868\,81F4\,88FD\,38DF\,E7F6\,98DD\,B^+}
