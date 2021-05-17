@@ -1271,17 +1271,12 @@ Approximation of $E$ &  Max.~error for $e=0.2$ & $e=0.5$ & $e=0.9$ & $e=0.999$ \
 \subsubsection{Cubic irrational method}
 For the extraction of the roots of polynomials, it makes little sense to consider the cubic irrational methods, whose
 computation involves the extraction of a cube root. However, when it comes to functions whose derivatives involve trigonometric lines,
-a cube root is no longer prohibitive.
+a cube root is no longer obviously prohibitive.
+
 The approxmiation obtained from the method of degree $3$ and order $4$ with the starting estimate $α=M$ is given below;
 its error is remarkably low even at high eccentricities (an order of magnitude better than either the rational or the quadratic method
 of the same order for $e\geq 0.9$).
 
-Note that this formula is valid for $M\leq\smash{\frac{\Pi}{2}}$;
-the corresponding expressions for $\frac{\Pi}{2}\leq M\leq\frac{3\Pi}{2}$ and for
-some of the $M>\frac{3\Pi}{2}$ are \emph{casus irreducibiles}\footnote{See \cite[469]{FantetdeLagny1697} for a definition
-of the \emph{cas irreductible} of a cubic; see \cite[125\psqq]{Wantzel1843} for a proof of its irreducibility.}, and thus are less
-practically useful; it is probably best to use one of the formulæ above for the middle, and to get rid of the upper half by argument
-reduction.
 \begin{center}
 \begin{tabular}{lrrrr}
 Approximation of $E$ & Max.~error for $e=0.2$ & $e=0.5$ & $e=0.9$ & $e=0.999$ \\
@@ -1293,6 +1288,18 @@ $M+\frac{\frac{2c\pa{ec-1}+es^2}{R}+\frac{R}{e}-s}{c}$
 In the above formula,\[
 R\DefineAs\sqrt[3]{3e^2sc-e^3s^3+\sqrt{e^3c^2\pa{8\pa{1-ec}^3-3es^2\pa{1+4ec\pa{ec-2}}-6e^3s^4}}}\text.
 \]
+This method is applicable only if the expression under the square root is nonnegative.
+This is the case from $M=0$ to approximately $M=85°$, $M=79°$, $M=70°$, and $M=68°$
+respectively for the eccentricities considered. Note that with the argument reduction\[
+E\of{M}=\Pi-E\of{\Pi-M}\text,\]
+the same formula may be used for the values of $M$ near the upper end of the interval $\intclos{0}{2\Pi}$.
+
+In between, the method involves 
+\emph{casus irreducibiles}\footnote{See \cite[469]{FantetdeLagny1697} for a definition
+of the \emph{cas irreductible} of a cubic; see \cite[125\psqq]{Wantzel1843} for a proof of its irreducibility to real
+roots.} rather than real cube roots.
+Unless a dedicated implementation of $\cos\smash{\frac{1}{3}}\arccos$ or a similar function is available,
+it is probably best to use one of the formulæ of lower degree for those values of $M$.
 
 \section{FMA}
 \label{FMA}
