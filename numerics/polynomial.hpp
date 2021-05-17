@@ -92,6 +92,7 @@ class Polynomial {
       serialization::Polynomial const& message);
 };
 
+#if 0
 template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator>
 class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
@@ -216,11 +217,11 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
       PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
       O express_in);
 };
+#endif
 
 template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator>
-class PolynomialInMonomialBasis<Value_, Point<Argument_>, degree_, Evaluator>
-    : public Polynomial<Value_, Point<Argument_>> {
+class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
  public:
   using Argument = Argument_;
   using Value = Value_;
@@ -234,44 +235,45 @@ class PolynomialInMonomialBasis<Value_, Point<Argument_>, degree_, Evaluator>
   // The coefficients are relative to origin; in other words they are applied to
   // powers of (argument - origin).
   constexpr PolynomialInMonomialBasis(Coefficients coefficients,
-                                      Point<Argument> const& origin);
+                                      Argument const& origin);
+  ///No origin if vector
 
   // A polynomial may be explicitly converted to a higher degree (possibly with
   // a different evaluator).
   template<int higher_degree_,
            template<typename, typename, int> class HigherEvaluator>
   explicit operator PolynomialInMonomialBasis<
-      Value, Point<Argument>, higher_degree_, HigherEvaluator>() const;
+      Value, Argument, higher_degree_, HigherEvaluator>() const;
 
   FORCE_INLINE(inline) Value
-  operator()(Point<Argument> const& argument) const override;
+  operator()(Argument const& argument) const override;
   FORCE_INLINE(inline) Derivative<Value, Argument>
-  EvaluateDerivative(Point<Argument> const& argument) const override;
+  EvaluateDerivative(Argument const& argument) const override;
 
   constexpr int degree() const override;
   bool is_zero() const override;
 
-  Point<Argument> const& origin() const;
+  Argument const& origin() const;
 
   // Returns a copy of this polynomial adjusted to the given origin.
-  PolynomialInMonomialBasis AtOrigin(Point<Argument> const& origin) const;
+  PolynomialInMonomialBasis AtOrigin(Argument const& origin) const;
 
   template<int order = 1>
   PolynomialInMonomialBasis<
-      Derivative<Value, Argument, order>, Point<Argument>, degree_ - order,
-      Evaluator>
+      Derivative<Value, Argument, order>, Argument, degree_ - order, Evaluator>
   Derivative() const;
 
   // The constant term of the result is zero.
+  ///if vector
   template<typename V = Value,
            typename = std::enable_if_t<!base::is_instance_of_v<Point, V>>>
   PolynomialInMonomialBasis<quantities::Primitive<Value, Argument>,
-                            Point<Argument>, degree_ + 1, Evaluator>
+                            Argument, degree_ + 1, Evaluator>
   Primitive() const;
 
   quantities::Primitive<Value, Argument> Integrate(
-      Point<Argument> const& argument1,
-      Point<Argument> const& argument2) const;
+      Argument const& argument1,
+      Argument const& argument2) const;
 
   PolynomialInMonomialBasis& operator+=(const PolynomialInMonomialBasis& right);
   PolynomialInMonomialBasis& operator-=(const PolynomialInMonomialBasis& right);
@@ -283,7 +285,7 @@ class PolynomialInMonomialBasis<Value_, Point<Argument_>, degree_, Evaluator>
 
  private:
   Coefficients coefficients_;
-  Point<Argument> origin_;
+  Argument origin_;
 
   template<typename V, typename A, int r,
            template<typename, typename, int> typename E>
