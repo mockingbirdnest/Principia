@@ -616,6 +616,7 @@ can scarcely gain more than two bits; such an optimized rational method would st
 have double the error of the optimized irrational method.
 
 \subsection{Rounded approximation}
+\label{RoundedApproximation}
 
 The number $x$ is obtained from $ξ$ by rounding to $\smash{\Floor{\frac{p}{3}}}$ bits.
 
@@ -640,6 +641,7 @@ The rounding error is then bounded by $2^{-\Floor{\frac{p}{3}}}$; we have
 $\abs{ε_x} < \pa{1+\abs{ε_ξ}}\pa{1+2^{-17}}-1$.
 
 \subsection{High order iteration}
+\label{HighOrder}
 
 We compute the faithfully rounded result $r_0$ as the correctly rounded sum of the rounded approximation
 and a correction term,\begin{equation}
@@ -769,7 +771,12 @@ Overall, we get the bound\[
 \]
 approximately $10.14u$.
 
-REMOVE BEFORE FLIGHT: give the resulting bound for $ε_r$ using Lagny's irrational method with Canon optimization.
+The resulting bound, using Lagny's irrational method with Canon optimization in step~{\ref{ThirdPrecision}} and rounding to
+nearest in step~{\ref{RoundedApproximation}}, is\begin{equation}
+\abs{ε_r}<0.00010397576244095^+u\text,\label{FaithfulBound}
+\end{equation}
+where all figures given are correct if the rounding error in the computation of $ξ$, namely $\abs{\frac{ε_ξ}{ε_ξ'}-1}$,
+does not exceed $100u$.
 
 \subsubsection*{Sixth order rational}
 An alternative is the Lagny--Schröder rational method of order $6$:\[
@@ -845,8 +852,12 @@ order $6$,\[
 \]
 approximately $11.42u$.
 
-REMOVE BEFORE FLIGHT: give the resulting bound for $ε_r$ using Lagny's irrational method with Canon
-optimization.
+The resulting bound, using Lagny's irrational method with Canon optimization in step~{\ref{ThirdPrecision}} and rounding to
+nearest in step~{\ref{RoundedApproximation}}, is\[
+\abs{ε_r}<0.00011700493079505^-u\text,
+\]
+where again all figures given are correct if the rounding error $\abs{\frac{ε_ξ}{ε_ξ'}-1}$ in the computation of $ξ$
+does not exceed $100u$.
 
 \subsubsection*{The unreasonable effectiveness of the sixth order rational method}
 The bound on the rounding error in the sixth order rational method is a little more than
@@ -914,10 +925,12 @@ We may widen this interval slightly into one that is symmetric about $0$, thus r
 \[\abs{\tilde r-r_1}\leq \round{τr_0}\text,\]
 with\begin{align*}
 τ&\DefineAs\roundTowardPositive{\frac{\bar ε_r}{1-\bar ε_r}\pa{1+\frac{2u}{1-u}}}\\
- &=\hex{DEAD\,BEEF}\text,
-\end{align*}
-where we have used the constants for Lagny's irrational method with Canon optimization, followed by
-the method of fifth order.
+ &=\hex{1.B426\,BBF49D2}\text,
+\end{align*}\marginnote{TODO(egg): Refine this value of $τ$ for the actual bound on the rounding error in $ξ$,
+to be given in annex~\ref{LagnyStepTwoRounding}.}
+where $\bar ε_r$ is the bound from (\ref{FaithfulBound}) for Lagny's irrational method with Canon optimization
+in step~\ref{ThirdPrecision}, rounding to nearest in step~\ref{RoundedApproximation},
+and the method of fifth order in step~\ref{HighOrder}, allowing for $100u$ on the computation of $ξ$.
 
 If this inequality holds, there may be a misrounding. The correctly-rounded result may then
 readily be computed using the ordinary cube root algorithm, described, \exempligratia, in Lagny's
