@@ -13,7 +13,8 @@ namespace internal_traits {
 using base::not_constructible;
 using quantities::Difference;
 
-// A type trait for testing if a type is a vector.
+// A type trait for testing if a type is a member of a vector space (as opposed
+// to an affine space).
 template<typename T, typename = void>
 struct is_vector : std::false_type, not_constructible {};
 template<typename T>
