@@ -5,6 +5,7 @@
 #include "base/not_constructible.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/point.hpp"
+#include "geometry/traits.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
@@ -62,21 +63,18 @@ struct enable_if_affine<Pair<Point<T1>, Point<T2>>> : not_constructible {
   using type = Pair<Point<T1>, Point<T2>>;
 };
 
-// A template to enable declarations on vector pairs (i.e., when none of the
-// components is a Point).
-template<typename T, typename U = T>
-struct enable_if_vector : not_constructible {
+// A template to enable declarations on vector pairs (i.e., when both of the
+// components are vectors).
+template<typename T, typename U = T, typename = void>
+struct enable_if_vector;
+
+template<typename T1, typename T2, typename U>
+struct enable_if_vector<
+    Pair<T1, T2>, U,
+    std::enable_if_t<std::conjunction_v<is_vector<T1>, is_vector<T2>>>>
+    : not_constructible {
   using type = U;
 };
-
-template<typename T1, typename T2>
-struct enable_if_vector<Pair<Point<T1>, T2>> : not_constructible {};
-
-template<typename T1, typename T2>
-struct enable_if_vector<Pair<T1, Point<T2>>> :not_constructible {};
-
-template<typename T1, typename T2>
-struct enable_if_vector<Pair<Point<T1>, Point<T2>>> : not_constructible {};
 
 // This class represents a pair of two values which can be members of an affine
 // space (i.e., Points) or of a vector space (such as double, Quantity, Vector,
