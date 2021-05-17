@@ -658,8 +658,8 @@ The error of $r$ is thus\begin{align*}
 and that of the faithfully-rounded result $r_0$ is $ε_r\pa{1+υ}$ for some $\abs υ \le u$.
 
 It is easy to make $ε_r'$ negligible by increasing the order of the method; the main
-contribution to misrounding is then $δε_x=δ\pa{\pa{1+ε_ξ}\pa{1+2^{-16}}-1}$:
-this is why $ε_ξ$ needed to be kept low in step~\ref{ThirdPrecision}.
+contribution to misrounding is then $δ\abs{ε_x}<δ\pa{\pa{1+\abs{ε_ξ}}\pa{1+2^{-17}}-1}$:
+this is why $\abs{ε_ξ}$ needed to be kept low in step~\ref{ThirdPrecision}.
 
 We now compute bounds for $ε_r'$ and $δ$ for two different methods.\marginnote{TODO(egg): the quadratic irrational method
 of order $5$ \emph{looks} costly, but who knows. It certainly would be tedious to analyse its rounding errors, as it has
