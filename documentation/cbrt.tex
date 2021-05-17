@@ -1288,18 +1288,19 @@ $M+\frac{\frac{2c\pa{ec-1}+es^2}{R}+\frac{R}{e}-s}{c}$
 In the above formula,\[
 R\DefineAs\sqrt[3]{3e^2sc-e^3s^3+\sqrt{e^3c^2\pa{8\pa{1-ec}^3-3es^2\pa{1+4ec\pa{ec-2}}-6e^3s^4}}}\text.
 \]
-This method is applicable only if the expression under the square root is nonnegative.
+This formula is applicable only if the expression under the square root is nonnegative.
 This is the case from $M=0$ to approximately $M=85°$, $M=79°$, $M=70°$, and $M=68°$
 respectively for the eccentricities considered. Note that with the argument reduction\[
 E\of{M}=\Pi-E\of{\Pi-M}\text,\]
 the same formula may be used for the values of $M$ near the upper end of the interval $\intclos{0}{2\Pi}$.
-
 In between, the method involves 
 \emph{casus irreducibiles}\footnote{See \cite[469]{FantetdeLagny1697} for a definition
 of the \emph{cas irreductible} of a cubic; see \cite[125\psqq]{Wantzel1843} for a proof of its irreducibility to real
 roots.} rather than real cube roots.
-Unless a dedicated implementation of $\cos\smash{\frac{1}{3}}\arccos$ or a similar function is available,
-it is probably best to use one of the formulæ of lower degree for those values of $M$.
+This is however not a fundamental impediment: just like a cube root may be efficiently computed with generalized Lagny
+methods, so can a \emph{casus irreducibilis}; indeed Lagny gives some formulæ for that (of order $3$ and degree $1$ and $2$) in
+\cite[41]{FantetdeLagny1692}. For convenience, it may be useful to implement the function
+$\cos\frac{1}{3}\arccos$, with which the roots of any such case may be expressed.
 
 \section{FMA}
 \label{FMA}
