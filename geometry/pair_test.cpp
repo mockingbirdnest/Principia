@@ -325,6 +325,10 @@ TEST_F(PairTest, AffineSubtraction) {
   VP const vp = vp_ + vv_;
   EXPECT_EQ(vv_, vp - vp_);
   // No test for VV, that would be a vector subtraction.
+#ifdef CHECK_ILLEGAL
+  auto const pvvp = pv_ - vp_;
+  auto const vppv = vp_ - pv_;
+#endif
 }
 
 TEST_F(PairTest, UnaryPlus) {

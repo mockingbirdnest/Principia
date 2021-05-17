@@ -6,6 +6,7 @@
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/point.hpp"
 #include "geometry/traits.hpp"
+#include "quantities/named_quantities.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
@@ -21,46 +22,33 @@ namespace internal_pair {
 
 using base::not_constructible;
 using base::not_null;
+using quantities::Difference;
 using quantities::Product;
 using quantities::Quotient;
 
 template<typename T1, typename T2>
 class Pair;
 
-// A template to peel off the affine layer (i.e., the class Point) if any.
+// A template to peel off the affine layer, if any, in a Pair.
 template<typename T>
-struct vector_of : not_constructible {
-  using type = T;
-};
+struct vector_of;
 
 template<typename T1, typename T2>
 struct vector_of<Pair<T1, T2>> : not_constructible {
-  using type = Pair<typename vector_of<T1>::type, typename vector_of<T2>::type>;
-};
-
-template<typename T>
-struct vector_of<Point<T>> : not_constructible {
-  using type = T;
+  using type = Pair<Difference<T1>, Difference<T2>>;
 };
 
 // A template to enable declarations on affine pairs (i.e., when one of the
-// components is a Point).
-template<typename T>
-struct enable_if_affine : not_constructible {};
+// components is not a vector).
+template<typename T, typename U = T, typename = void>
+struct enable_if_affine;
 
-template<typename T1, typename T2>
-struct enable_if_affine<Pair<Point<T1>, T2>> : not_constructible {
-  using type = Pair<Point<T1>, T2>;
-};
-
-template<typename T1, typename T2>
-struct enable_if_affine<Pair<T1, Point<T2>>> : not_constructible {
-  using type = Pair<T1, Point<T2>>;
-};
-
-template<typename T1, typename T2>
-struct enable_if_affine<Pair<Point<T1>, Point<T2>>> : not_constructible {
-  using type = Pair<Point<T1>, Point<T2>>;
+template<typename T1, typename T2, typename U>
+struct enable_if_affine<
+    Pair<T1, T2>, U,
+    std::enable_if_t<!std::conjunction_v<is_vector<T1>, is_vector<T2>>>>
+    : not_constructible {
+  using type = U;
 };
 
 // A template to enable declarations on vector pairs (i.e., when both of the
@@ -222,6 +210,8 @@ using internal_pair::vector_of;
 // Specialize BarycentreCalculator to make it applicable to Pairs.
 namespace internal_barycentre_calculator {
 
+using quantities::Difference;
+
 template<typename T1, typename T2, typename Weight>
 class BarycentreCalculator<Pair<T1, T2>, Weight> final {
  public:
@@ -234,8 +224,8 @@ class BarycentreCalculator<Pair<T1, T2>, Weight> final {
 
  private:
   bool empty_ = true;
-  Product<typename vector_of<T1>::type, Weight> t1_weighted_sum_;
-  Product<typename vector_of<T2>::type, Weight> t2_weighted_sum_;
+  Product<Difference<T1>, Weight> t1_weighted_sum_;
+  Product<Difference<T2>, Weight> t2_weighted_sum_;
   Weight weight_;
 
   // We need reference values to convert points into vectors, if needed.  We
