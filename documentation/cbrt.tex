@@ -464,7 +464,7 @@ with the error\[
 \]
 
 With $q'=\cuberoot{y}\pa{1+ε_q'}$, we can express $ε_ξ'$ using the transformation of
-the relative error error by one step of Lagny’s rational method on the cube root,\[
+the relative error by one step of Lagny’s rational method on the cube root,\[
 ε_ξ' = \frac{2{ε_q'}^3+{ε_q'}^4}{3+6ε_q'+6{ε_q'}^2+2{ε_q'}^3}
 = \tfrac{2}{3}{ε_q'}^3 + \BigO\of{{ε_q'}^4}\text.
 \]
@@ -537,11 +537,11 @@ Canon later elaborated on this in \cite{Canon2018b}:
  % https://twitter.com/stephentyrone/status/1057788315699687424
  Quick version: we want to compute $1/\sqrt{y}$, we have an approximation $x_0$, we want to
  improve it to $x_1 = x_0 p\of{x_0, y}$. For efficiency, we want $p$ to be a polynomial correction.\\
- \textit{handwavy motivation for brevity} make $p$ a polynomial in $x_0x_0y$, which is approximately $1$.
+ \textit{Handwavy motivation for brevity} make $p$ a polynomial in $x_0^2y$, which is approximately $1$.
 
  % https://twitter.com/stephentyrone/status/1057789050810232834
  Specifically, if $x_0$ has relative error $e$, $x_0x_0y$ is bounded by something like $1 \pm 2e$.
- So, we want to find $p$ that minimizes $\abs{x/x_0 - p\of{x_0x_0y}}$ on $\intclos{1-2e}{1+2e}$.
+ So, we want to find $p$ that minimizes $\abs{x/x_0 - p\of{x_0^2y}}$ on $\intclos{1-2e}{1+2e}$.
  NR\footnote{Newton--Raphson, \idest, Newton's method; Raphson described a different formulation of it in \cite{Raphson1690}.
 Lagrange notes in \volcite{8}[161]{Lagrange1867} that Raphson was likely aware of Newton's method, and thus
 regarded his as entirely different; as Lagrange points out, they are equivalent.}
@@ -570,7 +570,7 @@ Unfortunately, computing $\max_{y} \abs{ε_ξ'}$ is not as easy as for the stand
 the introduction of $κ$, $λ$, and $μ$ breaks the monotonicity of $ε_ξ'\of{ε_q'}$,
 so that the local extrema of $ε_ξ'$ are not found in the same place as those of $ε_q'$.
 Formally looking for zeros of the derivative of $ε_ξ'$ with respect to $f$ is impractical.
-Instead we find the local maxima by numerical maximization on the four pieces whereon $q'$
+Instead we find the local maxima by numerical maximization on the four pieces on which $q'$
 is a smooth function of $f$.
 
 That maximum can be minimized by a straightforward hill-climbing\footnote{It is plausible that some variation
@@ -647,7 +647,7 @@ r\DefineAs x+Δ\text{, }r_0\DefineAs\round{r}\text,\label{AdditiveCorrection}
 \end{equation}
 where the correction term $Δ$ is that of a high-order root finding method.
 As usual, we call the infinite-precision correction term $Δ'$, and $r'\DefineAs x+Δ'$.
-The truncation error is \[ε_r'\DefineAs\frac{\round{x+Δ'}}{\cuberoot y}-1\text.\]
+The truncation error is \[ε_r'\DefineAs\frac{x+Δ'}{\cuberoot y}-1\text.\]
 The rounding error on the correction term is $δ\DefineAs\frac{Δ}{Δ'}-1$.
 The error of $r$ is thus\begin{align*}
 ε_r\DefineAs{}&\frac{x+Δ}{\cuberoot y}-1\\
@@ -658,7 +658,8 @@ The error of $r$ is thus\begin{align*}
 and that of the faithfully-rounded result $r_0$ is $ε_r\pa{1+υ}$ for some $\abs υ \le u$.
 
 It is easy to make $ε_r'$ negligible by increasing the order of the method; the main
-contribution to misrounding is then $δε_x$: this is why $ε_x$ needed to be kept low in step~\ref{ThirdPrecision}.
+contribution to misrounding is then $δε_x=δ\pa{\pa{1+ε_ξ}\pa{1+2^{-16}}-1}$:
+this is why $ε_ξ$ needed to be kept low in step~\ref{ThirdPrecision}.
 
 We now compute bounds for $ε_r'$ and $δ$ for two different methods.\marginnote{TODO(egg): the quadratic irrational method
 of order $5$ \emph{looks} costly, but who knows. It certainly would be tedious to analyse its rounding errors, as it has
@@ -675,7 +676,6 @@ We use one iteration of the Lagny--Schröder rational method of order $5$:
 {\round{x^2 \round{\round{\round{\round{15 x^3} + \round{51 y}}x^3} + \round{15 \round{y^2}}}}}}
 \]
 where $x^2$ and $x^3$ are exact thanks to the trailing $0$s of $x$,
-$\round{x^6}$ is correctly rounded because it is computed as the square of $x^3$,
 and $y-x^3$ is exact by Sterbenz’s lemma.
 
 In infinite precision, this method is of such high order that if $\log_2\abs{ε_x} < 14.5$, which
@@ -690,7 +690,7 @@ straightforward.
 All remaining sums being of positive terms, their relative error is readily bounded by the
 largest of those of their terms. This leads to bounds of $γ_{5}$ on the numerator and $γ_{5}$ on
 the denominator, overall \[
-δ<\frac{1+γ_{6}}{1-γ_{5}}-1<\frac{γ_{11}}{1-γ_{5}}\approx11u\text.\]
+δ<\frac{1+γ_{5}+γ_{1}}{1-γ_{5}}-1<\frac{1+γ_{6}}{1-γ_{5}}-1<\frac{γ_{11}}{1-γ_{5}}\approx11u\text.\]
 
 However, considering that our final bound on $ε_r$, and thus our misrounding estimate,
 is nearly proportional to this error, a more careful analysis is warranted.
@@ -706,7 +706,8 @@ which we may bound, assuming without loss of generality that $m\le n$, as\[
 where $ι\DefineAs\frac{1+\abs{ε_x}}{1-\abs{ε_x}}$.
 
 With this property, we can, in particular, take advantage of the exact multiplication by
-$16$ in the numerator; the rounding error analysis of the numerator is as follows.
+$16$ in the numerator; the rounding error analysis of the numerator is as follows, using the fact that
+$λu<γ_λ$ for $0<λ<\frac{1}{u}$ and the subadditivity of $γ$ in the same domain.
 \begin{center}
 % The phantom/llap dance is there to work around the impossibility of alignment across
 % matched brackets.
@@ -872,17 +873,20 @@ We have $r=\cuberoot{y}\pa{1+ε_r}$, thus\[
 \cuberoot{y}\in\intclos{\frac{r}{1+\bar ε_r}}{\frac{r}{1-\bar ε_r}}\DefinitionOf \mathscr{I}\text,
 \]
 where $\bar ε_r$ is a bound for $\bar ε_r$.
-Consider the \emph{ties}, \idest, the number halfway betwen $r_0$ and its binary64
+Consider the \emph{ties}, \idest, the number halfway betwen $r_0=\round{r}$ and its binary64
 successor and the number halfway between $r_0$ and its predecessor.
 If $\mathscr{I}$ contains neither of the ties, $r_0=\round{\cuberoot{y}}$:
 the faithful method returned a correct result.
 
-This criterion, slightly weakened, may be determined as follows. The difference between $r_0=\round{r}$ and
+This criterion, slightly weakened, may be determined as follows. The difference between $r_0$ and
 the unrounded $r$ can be computed as described in \cite[224]{Dekker1971}, $r_1\DefineAs x-r_0+Δ$,
 evaluated as written (both operations are exact). The potential other candidate for
-$\round{\cuberoot{y}}$ may be computed as $\tilde r\DefineAs\round{r_0+2r_1}$, which is $r_0$ only if $r_1$ is below
-a quarter-unit in the last place—in which case the small size of $\mathscr{I}$ ensures that it does
-not contain a tie. If $\tilde r\neq r_0$, we must ascertain whether the tie lies in $\mathscr I$,\[
+$\round{\cuberoot{y}}$ may be computed as $\tilde r\DefineAs\round{r_0+2r_1}$, which is
+equal to $r_0$ only if $r_1$ is below a quarter-unit in the last place—in which case the small
+size of $\mathscr{I}$ ensures that it does not contain a tie.
+
+If $\tilde r\neq r_0$, the tie of interest is $\frac{\tilde r+r_0}{2}$,
+and we must ascertain whether it lies in $\mathscr I$,\[
 \frac{\tilde r+r_0}{2}\in\intclos{\frac{r}{1+\bar ε_r}}{\frac{r}{1-\bar ε_r}}\text,\]
 subtracting $r_0$ to get rid of the unrepresentable $r$ in the right-hand side,\[
 \frac{\tilde r-r_0}{2}
@@ -921,7 +925,7 @@ readily be computed using the ordinary cube root algorithm, described, \exemplig
 
 \subsection*{Extracting a digit}
 This method extracts a single digit of $\roundTowardZero{\cuberoot{y}}$ at each step.
-Since $\mathscr{I}_\pm$ is small enough that it cannot contain both a floating-point number
+The interval $\mathscr{I}_\pm$ is small enough that it cannot contain both a floating-point number
 and a tie; thus if $\mathscr{I}_\pm$ contains a tie, we know that
 $\roundTowardZero{\cuberoot{y}}=\roundTowardZero{r}\DefinitionOf a$\text; we thus have the
 first $53$ bits already, as\[
@@ -938,7 +942,7 @@ where $b$ is the power of two corresponding to this bit (the difference between 
 the tie).
 
 Using Veltkamp's\footnote{We have not been able to find a copy of \emph{RC-Informatie}, wherein Veltkamp's work was published;
-we follow Dekker's account of thereof.} algorithm from \cite[234]{Dekker1971} to express $a^2$ as $a^2_0+a^2_1$ with
+we follow Dekker's account thereof.} algorithm from \cite[234]{Dekker1971} to express $a^2$ as $a^2_0+a^2_1$ with
 $a^2_0=\round{a^2}$, the remainder is\[
 ρ_{53}=y-\pa{a^2_0+a^2_1}a\text;
 \]
@@ -1298,8 +1302,8 @@ In between, the method involves
 of the \emph{cas irreductible} of a cubic; see \cite[125\psqq]{Wantzel1843} for a proof of its irreducibility to real
 roots.} rather than real cube roots.
 This is however not a fundamental impediment: just like a cube root may be efficiently computed with generalized Lagny
-methods, so can a \emph{casus irreducibilis}; indeed Lagny gives some formulæ for that (of order $3$ and degree $1$ and $2$) in
-\cite[41]{FantetdeLagny1692}. For convenience, it may be useful to implement the function
+methods, so can a \emph{casus irreducibilis}; indeed Lagny gives the formulæ of order $3$ and degrees $1$ and $2$ for those
+cases in \cite[41]{FantetdeLagny1692}. It may be convenient to implement the function
 $\cos\frac{1}{3}\arccos$, with which the roots of any such case may be expressed.
 
 \section{FMA}
