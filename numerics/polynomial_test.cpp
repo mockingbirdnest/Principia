@@ -459,7 +459,7 @@ TEST_F(PolynomialTest, Serialization) {
     for (auto const& coefficient : extension.coefficient()) {
       EXPECT_TRUE(coefficient.has_multivector());
     }
-    EXPECT_FALSE(extension.has_origin());
+    EXPECT_TRUE(extension.has_quantity());
 
     auto const polynomial_read =
         Polynomial<Displacement<World>, Time>::ReadFromMessage<HornerEvaluator>(
@@ -486,8 +486,8 @@ TEST_F(PolynomialTest, Serialization) {
     for (auto const& coefficient : extension.coefficient()) {
       EXPECT_TRUE(coefficient.has_multivector());
     }
-    EXPECT_TRUE(extension.has_origin());
-    EXPECT_TRUE(extension.origin().has_scalar());
+    EXPECT_TRUE(extension.has_point());
+    EXPECT_TRUE(extension.point().has_scalar());
 
     auto const polynomial_read =
         Polynomial<Displacement<World>,
@@ -515,7 +515,7 @@ TEST_F(PolynomialTest, Serialization) {
     for (auto const& coefficient : extension.coefficient()) {
       EXPECT_TRUE(coefficient.has_multivector());
     }
-    EXPECT_FALSE(extension.has_origin());
+    EXPECT_TRUE(extension.has_quantity());
 
     auto const polynomial_read =
         Polynomial<Displacement<World>, Time>::ReadFromMessage<HornerEvaluator>(
