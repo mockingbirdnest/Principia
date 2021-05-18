@@ -17,6 +17,7 @@
 #include "geometry/serialization.hpp"
 #include "numerics/combinatorics.hpp"
 #include "numerics/quadrature.hpp"
+#include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace numerics {
@@ -34,6 +35,7 @@ using geometry::pointwise_inner_product::PointwiseInnerProduct;
 using geometry::polynomial_ring::operator*;
 using quantities::Apply;
 using quantities::DebugString;
+using quantities::Difference;
 using quantities::Exponentiation;
 using quantities::Pow;
 using quantities::Time;
@@ -57,15 +59,14 @@ struct MonomialAtOrigin<Value, Argument, degree, n,
                         Evaluator,
                         std::index_sequence<k...>> {
   using Coefficients =
-      typename
-      PolynomialInMonomialBasis<Value, Point<Argument>, degree, Evaluator>::
+      typename PolynomialInMonomialBasis<Value, Argument, degree, Evaluator>::
           Coefficients;
 
   // The parameter coefficient is the coefficient of the monomial.  The
   // parameter shift is x₁ - x₂, computed only once by the caller.
   static Coefficients MakeCoefficients(
       std::tuple_element_t<n, Coefficients> const& coefficient,
-      Argument const& shift);
+      Difference<Argument> const& shift);
 };
 
 template<typename Value, typename Argument, int degree, int n,
@@ -75,7 +76,7 @@ auto MonomialAtOrigin<Value, Argument, degree, n,
                       Evaluator,
                       std::index_sequence<k...>>::MakeCoefficients(
     std::tuple_element_t<n, Coefficients> const& coefficient,
-    Argument const& shift) -> Coefficients {
+    Difference<Argument> const& shift) -> Coefficients {
   return {(k <= n ? coefficient * Binomial(n, k) *
                         Pow<static_cast<int>(n - k)>(shift)
                   : std::tuple_element_t<k, Coefficients>{})...};
@@ -95,12 +96,12 @@ template<typename Value, typename Argument, int degree,
 struct PolynomialAtOrigin<Value, Argument, degree, Evaluator,
                           std::index_sequence<indices...>> {
   using Polynomial =
-      PolynomialInMonomialBasis<Value, Point<Argument>, degree, Evaluator>;
+      PolynomialInMonomialBasis<Value, Argument, degree, Evaluator>;
 
   static Polynomial MakePolynomial(
       typename Polynomial::Coefficients const& coefficients,
-      Point<Argument> const& from_origin,
-      Point<Argument> const& to_origin);
+      Argument const& from_origin,
+      Argument const& to_origin);
 
 #if PRINCIPIA_COMPILER_MSVC_HAS_CXX20
   using PolynomialAlias = Polynomial;
@@ -115,14 +116,14 @@ auto PolynomialAtOrigin<Value, Argument, degree,
                         std::index_sequence<indices...>>::
 #if PRINCIPIA_COMPILER_MSVC_HAS_CXX20
 MakePolynomial(typename PolynomialAlias::Coefficients const& coefficients,
-               Point<Argument> const& from_origin,
-               Point<Argument> const& to_origin) -> PolynomialAlias {
+               Argument const& from_origin,
+               Argument const& to_origin) -> PolynomialAlias {
 #else
 MakePolynomial(typename Polynomial::Coefficients const& coefficients,
-               Point<Argument> const& from_origin,
-               Point<Argument> const& to_origin) -> Polynomial {
+               Argument const& from_origin,
+               Argument const& to_origin) -> Polynomial {
 #endif
-  Argument const shift = to_origin - from_origin;
+  Difference<Argument> const shift = to_origin - from_origin;
   std::array<typename Polynomial::Coefficients, degree + 1> const
       all_coefficients{
           MonomialAtOrigin<Value, Argument, degree, indices, Evaluator>::
@@ -536,7 +537,7 @@ template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator>
 Value_ PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::
 operator()(Argument const& argument) const {
-  return Evaluator<Value, Argument, degree_>::Evaluate(
+  return Evaluator<Value, Difference<Argument>, degree_>::Evaluate(
       coefficients_, argument - origin_);
 }
 
@@ -545,7 +546,7 @@ template<typename Value_, typename Argument_, int degree_,
 Derivative<Value_, Argument_>
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::
 EvaluateDerivative(Argument const& argument) const {
-  return Evaluator<Value, Argument, degree_>::EvaluateDerivative(
+  return Evaluator<Value, Difference<Argument>, degree_>::EvaluateDerivative(
       coefficients_, argument - origin_);
 }
 
@@ -657,7 +658,10 @@ void PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::
       message->MutableExtension(
           serialization::PolynomialInMonomialBasis::extension);
   TupleSerializer<Coefficients, 0>::WriteToMessage(coefficients_, extension);
-  origin_.WriteToMessage(extension->mutable_origin());
+  DoubleOrQuantityOrPointOrMultivectorSerializer<
+      Argument,
+      serialization::PolynomialInMonomialBasis>::WriteToMessage(origin_,
+                                                                extension);
 }
 
 template<typename Value_, typename Argument_, int degree_,
@@ -672,9 +676,18 @@ ReadFromMessage(serialization::Polynomial const& message) {
   auto const& extension =
       message.GetExtension(
           serialization::PolynomialInMonomialBasis::extension);
+
+  bool const is_pre_gröbner = extension.origin_case() ==
+    serialization::PolynomialInMonomialBasis::ORIGIN_NOT_SET;
   Coefficients coefficients;
   TupleSerializer<Coefficients, 0>::FillFromMessage(extension, coefficients);
-  auto const origin = Argument::ReadFromMessage(extension.origin());
+
+  auto const origin = is_pre_gröbner
+                          ? Argument{}
+                          : DoubleOrQuantityOrPointOrMultivectorSerializer<
+                                Argument,
+                                serialization::PolynomialInMonomialBasis>::
+                                ReadFromMessage(extension);
   return PolynomialInMonomialBasis(coefficients, origin);
 }
 
