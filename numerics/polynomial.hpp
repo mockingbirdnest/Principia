@@ -13,6 +13,7 @@
 #include "base/traits.hpp"
 #include "geometry/hilbert.hpp"
 #include "geometry/point.hpp"
+#include "geometry/traits.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/tuples.hpp"
 #include "serialization/numerics.pb.h"
@@ -45,6 +46,7 @@ namespace internal_polynomial {
 using base::is_instance_of_v;
 using base::not_constructible;
 using base::not_null;
+using geometry::is_vector_v;
 using geometry::Hilbert;
 using geometry::Point;
 using quantities::Derivative;
@@ -236,7 +238,10 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   // powers of (argument - origin).
   constexpr PolynomialInMonomialBasis(Coefficients coefficients,
                                       Argument const& origin);
-  ///No origin if vector
+  template<typename A = Argument,
+           typename = std::enable_if_t<is_vector_v<A>>>
+  explicit constexpr PolynomialInMonomialBasis(
+      Coefficients coefficients);
 
   // A polynomial may be explicitly converted to a higher degree (possibly with
   // a different evaluator).
@@ -264,9 +269,8 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   Derivative() const;
 
   // The constant term of the result is zero.
-  ///if vector
   template<typename V = Value,
-           typename = std::enable_if_t<!base::is_instance_of_v<Point, V>>>
+           typename = std::enable_if_t<is_vector_v<V>>>
   PolynomialInMonomialBasis<quantities::Primitive<Value, Argument>,
                             Argument, degree_ + 1, Evaluator>
   Primitive() const;
