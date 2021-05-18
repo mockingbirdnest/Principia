@@ -169,7 +169,9 @@ where\[
 T_{n}\DefineAs\sum{k=0}[n]\frac{f^{\pa{k}}\of{a}}{\Factorial k}\pa{x-\tfrac{1}{2}a}^k\text.
 \]
 The rest of the method remains unchanged; the iteration is given by $\FunctionBody{a}{x+\frac{1}{2}a}$ for a root $x$ of $E_{d}$.
-When $f$ is a monic polynomial of degree $p$, the definitions (\ref{GeneralizedLagnyEquations}) are equivalent to (\ref{LagnyEquations}), so that
+When $f$ is a monic polynomial of degree $p$, the definitions (\ref{GeneralizedLagnyEquations}) are equivalent\footnote{The Taylor polynomials are then $T_p=f\of{x+\tfrac{1}{2}a}=\pa{x+\tfrac{1}{2}a}^p-R\of{x+\tfrac{1}{2}a}=S_1+S_2-R\of{x+\tfrac{1}{2}a}$ and
+$T_{p-1}=T_p-\pa{x-\tfrac{1}{2}a}^p
+=T_p-\pa{S_1-S_2}=2S_2-R\of{x+\tfrac{1}{2}a}$.} to (\ref{LagnyEquations}), so that
 we recover Lagny's method.
 When $f$ is not a polynomial of degree $p$, we thus call the method defined by (\ref{GeneralizedLagnyEquations}) the
 \emph{generalized Lagny method of degree $d$ and order $p$}; we use the terms ``rational'', ``quadratic irrational'',
@@ -189,7 +191,7 @@ degree $p$ and $p-1$ in $Δ$.
 Let $\tilde E_{n-1}$ be the remainder of the polynomial division of $\tilde E_{n+1}$ by $\tilde E_{n}$.
 The iteration is then $\FunctionBody{a}{a+Δ}$, where $Δ$ is a root of $\tilde E_d$.
 
-Examples of this method for specific values of the function $f$, the order $p$, and the degree $d$
+Examples of the generalized Lagny method for specific values of the function $f$, the order $p$, and the degree $d$
 are given in appendix~\ref{ExampleGeneralizedLagnyMethods}.
 
 \section*{Names}
