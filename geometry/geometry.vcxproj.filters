@@ -167,6 +167,9 @@
     <ClInclude Include="complexification_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="traits.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sign_test.cpp">
@@ -227,6 +230,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="complexification_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="traits_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
