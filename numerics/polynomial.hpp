@@ -57,10 +57,6 @@ using quantities::Quotient;
 
 // |Value_| must belong to an affine space.  |Argument_| must belong to a ring
 // or to Point based on a ring.
-// TODO(phl): We would like the base case to be the affine case (not limited to
-// Point) and the specialized case to check for the existence of Sum and Product
-// for Argument_, and that works with Clang but not with VS2015.  Revisit once
-// MSFT has fixed their bugs.
 template<typename Value_, typename Argument_>
 class Polynomial {
  public:
