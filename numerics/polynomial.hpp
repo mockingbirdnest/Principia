@@ -94,133 +94,6 @@ class Polynomial {
       serialization::Polynomial const& message);
 };
 
-#if 0
-template<typename Value_, typename Argument_, int degree_,
-         template<typename, typename, int> typename Evaluator>
-class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
- public:
-  using Argument = Argument_;
-  using Value = Value_;
-
-  // Equivalent to:
-  //   std::tuple<Value,
-  //              Derivative<Value, Argument>,
-  //              Derivative<Derivative<Value, Argument>>...>
-  using Coefficients = Derivatives<Value, Argument, degree_ + 1>;
-
-  // The coefficients are applied to powers of argument.
-  explicit constexpr PolynomialInMonomialBasis(
-      Coefficients coefficients);
-
-  // A polynomial may be explicitly converted to a higher degree (possibly with
-  // a different evaluator).
-  template<int higher_degree_,
-           template<typename, typename, int> class HigherEvaluator>
-  explicit operator PolynomialInMonomialBasis<
-      Value, Argument, higher_degree_, HigherEvaluator>() const;
-
-  FORCE_INLINE(inline) Value
-  operator()(Argument const& argument) const override;
-  FORCE_INLINE(inline) Derivative<Value, Argument>
-  EvaluateDerivative(Argument const& argument) const override;
-
-  constexpr int degree() const override;
-  bool is_zero() const override;
-
-  template<int order = 1>
-  PolynomialInMonomialBasis<
-      Derivative<Value, Argument, order>, Argument, degree_ - order, Evaluator>
-  Derivative() const;
-
-  // The constant term of the result is zero.
-  template<typename V = Value,
-           typename = std::enable_if_t<!base::is_instance_of_v<Point, V>>>
-  PolynomialInMonomialBasis<quantities::Primitive<Value, Argument>, Argument,
-                            degree_ + 1, Evaluator>
-  Primitive() const;
-
-  quantities::Primitive<Value, Argument> Integrate(
-      Argument const& argument1,
-      Argument const& argument2) const;
-
-  PolynomialInMonomialBasis& operator+=(PolynomialInMonomialBasis const& right);
-  PolynomialInMonomialBasis& operator-=(PolynomialInMonomialBasis const& right);
-
-  void WriteToMessage(
-      not_null<serialization::Polynomial*> message) const override;
-  static PolynomialInMonomialBasis ReadFromMessage(
-      serialization::Polynomial const& message);
-
- private:
-  Coefficients coefficients_;
-
-  template<typename V, typename A, int r,
-           template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<V, A, r, E>
-  friend operator-(PolynomialInMonomialBasis<V, A, r, E> const& right);
-  template<typename V, typename A, int l, int r,
-           template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<V, A, PRINCIPIA_MAX(l, r), E>
-  friend operator+(PolynomialInMonomialBasis<V, A, l, E> const& left,
-                   PolynomialInMonomialBasis<V, A, r, E> const& right);
-  template<typename V, typename A, int l, int r,
-           template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<V, A, PRINCIPIA_MAX(l, r), E>
-  friend operator-(PolynomialInMonomialBasis<V, A, l, E> const& left,
-                   PolynomialInMonomialBasis<V, A, r, E> const& right);
-  template<typename S,
-           typename V, typename A, int d,
-           template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<Product<S, V>, A, d, E>
-  friend operator*(S const& left,
-                   PolynomialInMonomialBasis<V, A, d, E> const& right);
-  template<typename S,
-           typename V, typename A, int d,
-           template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<Product<V, S>, A, d, E>
-  friend operator*(PolynomialInMonomialBasis<V, A, d, E> const& left,
-                   S const& right);
-  template<typename S,
-           typename V, typename A, int d,
-           template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<Quotient<V, S>, A, d, E>
-  friend operator/(PolynomialInMonomialBasis<V, A, d, E> const& left,
-                   S const& right);
-  template<typename L, typename R, typename A,
-           int l, int r,
-           template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<Product<L, R>, A, l + r, E>
-  friend operator*(
-      PolynomialInMonomialBasis<L, A, l, E> const& left,
-      PolynomialInMonomialBasis<R, A, r, E> const& right);
-  template<typename L, typename R, typename A,
-           int l, int r,
-           template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<L, A, l * r, E>
-  friend Compose(PolynomialInMonomialBasis<L, R, l, E> const& left,
-                 PolynomialInMonomialBasis<R, A, r, E> const& right);
-  template<typename L, typename R, typename A,
-           int l, int r,
-           template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<
-      typename Hilbert<L, R>::InnerProductType, A, l + r, E>
-  friend PointwiseInnerProduct(
-      PolynomialInMonomialBasis<L, A, l, E> const& left,
-      PolynomialInMonomialBasis<R, A, r, E> const& right);
-  template<typename V, typename A, int d,
-           template<typename, typename, int> typename E>
-  friend std::ostream& operator<<(
-      std::ostream& out,
-      PolynomialInMonomialBasis<V, A, d, E> const& polynomial);
-  template<typename V, typename A, int d,
-           template<typename, typename, int> class E,
-           typename O>
-  friend std::string mathematica::internal_mathematica::ToMathematicaBody(
-      PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
-      O express_in);
-};
-#endif
-
 template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator>
 class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
@@ -275,6 +148,8 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
                             Argument, degree_ + 1, Evaluator>
   Primitive() const;
 
+  template<typename V = Value,
+           typename = std::enable_if_t<is_vector_v<V>>>
   quantities::Primitive<Value, Argument> Integrate(
       Argument const& argument1,
       Argument const& argument2) const;
