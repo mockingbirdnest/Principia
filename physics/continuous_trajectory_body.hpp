@@ -105,16 +105,16 @@ Status ContinuousTrajectory<Frame>::Append(
   if (last_points_.size() == divisions) {
     // These vectors are thread-local to avoid deallocation/reallocation each
     // time we go through this code path.
-    thread_local std::vector<Position<Frame>> q(divisions + 1);
+    thread_local std::vector<Displacement<Frame>> q(divisions + 1);
     thread_local std::vector<Velocity<Frame>> v(divisions + 1);
     q.clear();
     v.clear();
 
     for (auto const& [_, degrees_of_freedom] : last_points_) {
-      q.push_back(degrees_of_freedom.position());
+      q.push_back(degrees_of_freedom.position() - Frame::origin);
       v.push_back(degrees_of_freedom.velocity());
     }
-    q.push_back(degrees_of_freedom.position());
+    q.push_back(degrees_of_freedom.position() - Frame::origin);
     v.push_back(degrees_of_freedom.velocity());
 
     status = ComputeBestNewhallApproximation(time, q, v);
@@ -393,10 +393,10 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
       // Read the series, evaluate it and use the resulting values to build a
       // polynomial in the monomial basis.
       auto const series =
-          ЧебышёвSeries<Position<Frame>>::ReadFromMessage(s);
+          ЧебышёвSeries<Displacement<Frame>>::ReadFromMessage(s);
       Time const step = (series.t_max() - series.t_min()) / divisions;
       Instant t = series.t_min();
-      std::vector<Position<Frame>> q;
+      std::vector<Displacement<Frame>> q;
       std::vector<Velocity<Frame>> v;
       for (int i = 0; i <= divisions; t += step, ++i) {
         q.push_back(series.Evaluate(t));
@@ -554,25 +554,25 @@ Instant ContinuousTrajectory<Frame>::t_max_locked() const {
 }
 
 template<typename Frame>
-not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>
+not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
 ContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
     int degree,
-    std::vector<Position<Frame>> const& q,
+    std::vector<Displacement<Frame>> const& q,
     std::vector<Velocity<Frame>> const& v,
     Instant const& t_min,
     Instant const& t_max,
     Displacement<Frame>& error_estimate) const {
   return numerics::NewhallApproximationInMonomialBasis<
-            Position<Frame>, EstrinEvaluator>(degree,
-                                              q, v,
-                                              t_min, t_max,
-                                              error_estimate);
+             Displacement<Frame>, EstrinEvaluator>(degree,
+                                                   q, v,
+                                                   t_min, t_max,
+                                                   error_estimate);
 }
 
 template<typename Frame>
 Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
     Instant const& time,
-    std::vector<Position<Frame>> const& q,
+    std::vector<Displacement<Frame>> const& q,
     std::vector<Velocity<Frame>> const& v) {
   lock_.AssertHeld();
   Length const previous_adjusted_tolerance = adjusted_tolerance_;
@@ -627,11 +627,12 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
     ++degree_;
     VLOG(1) << "Increasing degree for " << this << " to " <<degree_
             << " because error estimate was " << error_estimate;
-    polynomials_.back().polynomial = NewhallApproximationInMonomialBasis(
-                                         degree_,
-                                         q, v,
-                                         last_points_.cbegin()->first, time,
-                                         displacement_error_estimate);
+    polynomials_.back().polynomial =
+        NewhallApproximationInMonomialBasis(
+            degree_,
+            q, v,
+            last_points_.cbegin()->first, time,
+            displacement_error_estimate) + Frame::origin;
     previous_error_estimate = error_estimate;
     error_estimate = displacement_error_estimate.Norm();
   }
