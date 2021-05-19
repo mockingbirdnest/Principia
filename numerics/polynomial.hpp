@@ -51,6 +51,7 @@ using geometry::Hilbert;
 using geometry::Point;
 using quantities::Derivative;
 using quantities::Derivatives;
+using quantities::Difference;
 using quantities::Primitive;
 using quantities::Product;
 using quantities::Quotient;
@@ -201,6 +202,30 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   friend operator*(
       PolynomialInMonomialBasis<L, A, l, E> const& left,
       PolynomialInMonomialBasis<R, A, r, E> const& right);
+#if 0
+  template<typename V, typename A, int l,
+           template<typename, typename, int> typename E>
+  constexpr PolynomialInMonomialBasis<V, A, l, E>
+  friend operator+(
+      PolynomialInMonomialBasis<Difference<V>, A, l, E> const& left,
+      V const& right);
+#endif
+  template<typename V, typename A, int r,
+           template<typename, typename, int> typename E>
+  constexpr PolynomialInMonomialBasis<V, A, r, E>
+  friend operator+(
+      V const& left,
+      PolynomialInMonomialBasis<Difference<V>, A, r, E> const& right);
+  template<typename V, typename A, int l,
+           template<typename, typename, int> typename E>
+  constexpr PolynomialInMonomialBasis<Difference<V>, A, l, E>
+  friend operator-(PolynomialInMonomialBasis<V, A, l, E> const& left,
+                   V const& right);
+  template<typename V, typename A, int r,
+           template<typename, typename, int> typename E>
+  constexpr PolynomialInMonomialBasis<Difference<V>, A, r, E>
+  friend operator-(V const& left,
+                   PolynomialInMonomialBasis<V, A, r, E> const& right);
   template<typename L, typename R, typename A,
            int l, int r,
            template<typename, typename, int> typename E>
@@ -301,6 +326,39 @@ operator*(
         left,
     PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
         right);
+
+//TODO(phl):comment
+#if 0
+template<typename Value, typename Argument, int ldegree_,
+         template<typename, typename, int> typename Evaluator>
+constexpr PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator>
+operator+(PolynomialInMonomialBasis<Difference<Value>, Argument,
+                                    ldegree_, Evaluator> const& left,
+          Value const& right);
+#endif
+
+template<typename Value, typename Argument, int rdegree_,
+         template<typename, typename, int> typename Evaluator>
+constexpr PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator>
+operator+(Value const& left,
+          PolynomialInMonomialBasis<Difference<Value>, Argument,
+                                    rdegree_, Evaluator> const& right);
+
+template<typename Value, typename Argument, int ldegree_,
+         template<typename, typename, int> typename Evaluator>
+constexpr PolynomialInMonomialBasis<Difference<Value>, Argument,
+                                    ldegree_, Evaluator>
+operator-(PolynomialInMonomialBasis<Value, Argument,
+                                    ldegree_, Evaluator> const& left,
+          Value const& right);
+
+template<typename Value, typename Argument, int rdegree_,
+         template<typename, typename, int> typename Evaluator>
+constexpr PolynomialInMonomialBasis<Difference<Value>, Argument,
+                                    rdegree_, Evaluator>
+operator-(Value const& left,
+          PolynomialInMonomialBasis<Value, Argument,
+                                    rdegree_, Evaluator> const& right);
 
 // Application monoid.
 

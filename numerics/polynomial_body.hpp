@@ -190,7 +190,6 @@ TupleComposition<LTuple, RTuple, std::index_sequence<left_indices...>>::Compose(
 }
 
 
-
 template<typename Tuple, int order,
          typename = std::make_index_sequence<std::tuple_size_v<Tuple> - order>>
 struct TupleDerivation;
@@ -666,6 +665,52 @@ operator*(
                                     ldegree_ + rdegree_, Evaluator>(
               left.coefficients_ * right.coefficients_,
               left.origin_);
+}
+
+#if 0
+template<typename Value, typename Argument, int ldegree_,
+         template<typename, typename, int> typename Evaluator>
+constexpr PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator>
+operator+(PolynomialInMonomialBasis<Value, Difference<Argument>,
+                                    ldegree_, Evaluator> const& left,
+          Argument const& right) {
+  return PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator>(
+      left.coefficients_ + std::make_tuple(right), left.origin_);
+}
+#endif
+
+template<typename Value, typename Argument, int rdegree_,
+         template<typename, typename, int> typename Evaluator>
+constexpr PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator>
+operator+(Value const& left,
+          PolynomialInMonomialBasis<Difference<Value>, Argument,
+                                    rdegree_, Evaluator> const& right) {
+  return PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator>(
+      std::make_tuple(left) + right.coefficients_, right.origin_);
+}
+
+template<typename Value, typename Argument, int ldegree_,
+         template<typename, typename, int> typename Evaluator>
+constexpr PolynomialInMonomialBasis<Difference<Value>, Argument,
+                                    ldegree_, Evaluator>
+operator-(PolynomialInMonomialBasis<Value, Argument,
+                                    ldegree_, Evaluator> const& left,
+          Value const& right) {
+  return PolynomialInMonomialBasis<Difference<Value>, Argument,
+                                   ldegree_, Evaluator>(
+      left.coefficients_ - std::make_tuple(right), left.origin_);
+}
+
+template<typename Value, typename Argument, int rdegree_,
+         template<typename, typename, int> typename Evaluator>
+constexpr PolynomialInMonomialBasis<Difference<Value>, Argument,
+                                    rdegree_, Evaluator>
+operator-(Value const& left,
+          PolynomialInMonomialBasis<Value, Argument,
+                                    rdegree_, Evaluator> const& right) {
+  return PolynomialInMonomialBasis<Difference<Value>, Argument,
+                                   rdegree_, Evaluator>(
+      std::make_tuple(left) - right.coefficients_, right.origin_);
 }
 
 template<typename LValue, typename RValue,
