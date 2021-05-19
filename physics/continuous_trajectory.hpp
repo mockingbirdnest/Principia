@@ -138,14 +138,13 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // never need to extract their |t_min|.  Logically, the |t_min| for a
   // polynomial is the |t_max| of the previous one.  The first polynomial has a
   // |t_min| which is |*first_time_|.
-  // TODO(phl): These should be polynomials returning Position<Frame>.
   struct InstantPolynomialPair {
     InstantPolynomialPair(
         Instant t_max,
-        not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+        not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>
             polynomial);
     Instant t_max;
-    not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+    not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>
         polynomial;
   };
   using InstantPolynomialPairs = std::vector<InstantPolynomialPair>;
@@ -160,10 +159,10 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   Instant t_max_locked() const REQUIRES_SHARED(lock_);
 
   // Really a static method, but may be overridden for testing.
-  virtual not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+  virtual not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>
   NewhallApproximationInMonomialBasis(
       int degree,
-      std::vector<Displacement<Frame>> const& q,
+      std::vector<Position<Frame>> const& q,
       std::vector<Velocity<Frame>> const& v,
       Instant const& t_min,
       Instant const& t_max,
@@ -175,7 +174,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // instabilities.
   Status ComputeBestNewhallApproximation(
       Instant const& time,
-      std::vector<Displacement<Frame>> const& q,
+      std::vector<Position<Frame>> const& q,
       std::vector<Velocity<Frame>> const& v) REQUIRES(lock_);
 
   // Returns an iterator to the polynomial applicable for the given |time|, or
