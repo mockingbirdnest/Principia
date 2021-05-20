@@ -34,6 +34,7 @@
     <ClInclude Include="double_precision.hpp" />
     <ClInclude Include="double_precision_body.hpp" />
     <ClInclude Include="fma.hpp" />
+    <ClInclude Include="fma_body.hpp" />
     <ClInclude Include="frequency_analysis.hpp" />
     <ClInclude Include="frequency_analysis_body.hpp" />
     <ClInclude Include="gauss_legendre_weights.mathematica.h" />
@@ -73,6 +74,7 @@
     <ClInclude Include="чебышёв_series_body.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\base\cpuid.cpp" />
     <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="apodization_test.cpp" />
     <ClCompile Include="cbrt.cpp" />

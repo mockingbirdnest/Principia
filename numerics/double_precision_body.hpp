@@ -19,7 +19,7 @@ namespace internal_double_precision {
 using geometry::DoubleOrQuantityOrPointOrMultivectorSerializer;
 using geometry::DoubleOrQuantityOrMultivectorSerializer;
 using quantities::Abs;
-using quantities::FusedMultiplyAdd;
+using quantities::FusedMultiplySubtract;
 using quantities::Quantity;
 using quantities::si::Radian;
 namespace si = quantities::si;
@@ -147,7 +147,7 @@ DoublePrecision<Product<T, U>> Scale(T const & scale,
 template<typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b) {
   DoublePrecision<Product<T, U>> result(a * b);
-  result.error = FusedMultiplyAdd(a, b, -result.value);
+  result.error = FusedMultiplySubtract(a, b, result.value);
   return result;
 }
 
