@@ -1,7 +1,7 @@
 # Instructions for catching-up dependents
 
 - [ ] Create a tag for the current master.
-- [ ]  Create a new branch for the catch-up:
+- [ ] Create a new branch for the catch-up:
 ```powershell
   git checkout master
   git checkout -b Ketchup
