@@ -1,0 +1,18 @@
+1 - Create a tag for the current master.
+2 - Create a new branch for the catch-up:
+  git checkout master
+  git checkout -b Ketchup
+3 - Move master to the last commit at the time of the previous catch-up (the one on which we applied our changes):
+  git checkout master
+  git reset --hard <commit>
+4 - Pull the changes made to google/master:
+  git pull google master
+5 - Redo our changes on top of google/master:
+  git checkout Ketchup
+  git rebase master
+6 - Update our master
+  git checkout master
+  git merge Ketchup
+  git push -f
+7 - Cleanup and squash some of the commits.
+  git branch -d Ketchup
