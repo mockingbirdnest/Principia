@@ -55,7 +55,7 @@ struct ComponentwiseComparator<Point<T>, U> : base::not_constructible {
   static bool GreaterThanOrEqualOrZero(Point<T> const& left,
                                        U const& right) {
     // We only care about the coordinates, the geometric structure is
-    // irrelavant.
+    // irrelevant.
     return ComponentwiseComparator<T, U>::GreaterThanOrEqualOrZero(
         left - Point<T>{}, right);
   }
@@ -66,7 +66,7 @@ struct ComponentwiseComparator<T, Point<U>> : base::not_constructible {
   static bool GreaterThanOrEqualOrZero(T const& left,
                                        Point<U> const& right) {
     // We only care about the coordinates, the geometric structure is
-    // irrelavant.
+    // irrelevant.
     return ComponentwiseComparator<T, U>::GreaterThanOrEqualOrZero(
         left, right - Point<U>{});
   }
