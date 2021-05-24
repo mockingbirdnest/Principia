@@ -123,7 +123,9 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
     </ClCompile>
-    <Link></Link>
+    <Link>
+      <AdditionalOptions>/ignore:4099</AdditionalOptions>
+    </Link>
   </ItemDefinitionGroup>
   <!--Release options.-->
   <PropertyGroup Condition="$(PrincipiaOptimize)">

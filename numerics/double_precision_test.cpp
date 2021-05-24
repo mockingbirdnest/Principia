@@ -41,13 +41,6 @@ using ::testing::Eq;
 using ::testing::Ge;
 using ::testing::Ne;
 
-// Let's not try to compare those things.
-template<typename T, typename U>
-bool ComponentwiseGreaterThanOrEqualOrZero(DoublePrecision<T> const& left,
-                                           DoublePrecision<U> const& right) {
-  return true;
-}
-
 constexpr double ε = std::numeric_limits<double>::epsilon();
 constexpr double ε² = ε * ε;
 constexpr double ε³ = ε² * ε;
