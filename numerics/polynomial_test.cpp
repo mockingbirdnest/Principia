@@ -271,24 +271,24 @@ TEST_F(PolynomialTest, Affine) {
   using P0A = PolynomialInMonomialBasis<Instant, Time, 0, HornerEvaluator>;
   using P0V = PolynomialInMonomialBasis<Time, Time, 0, HornerEvaluator>;
 
-  P0A const p0a(std::tuple{Instant{} + 1 * Second});
+  P0A const p0a(std::tuple{Instant() + 1 * Second});
   P0V const p0v(std::tuple{2 * Second});
 #if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS
   {
-    P0A const p = p0v + Instant{};
-    EXPECT_THAT(p(3 * Second), AlmostEquals(Instant{} + 2 * Second, 0));
+    P0A const p = p0v + Instant();
+    EXPECT_THAT(p(3 * Second), AlmostEquals(Instant() + 2 * Second, 0));
   }
 #endif
   {
-    P0A const p =  Instant{} + p0v;
-    EXPECT_THAT(p(3 * Second), AlmostEquals(Instant{} + 2 * Second, 0));
+    P0A const p =  Instant() + p0v;
+    EXPECT_THAT(p(3 * Second), AlmostEquals(Instant() + 2 * Second, 0));
   }
   {
-    P0V const p = p0a - Instant{};
+    P0V const p = p0a - Instant();
     EXPECT_THAT(p(3 * Second), AlmostEquals(1 * Second, 0));
   }
   {
-    P0V const p = Instant{} - p0a;
+    P0V const p = Instant() - p0a;
     EXPECT_THAT(p(3 * Second), AlmostEquals(-1 * Second, 0));
   }
 }
