@@ -40,103 +40,103 @@ using testing_utilities::operator""_⑴;
 // The adapters wrap the result of the Newhall approximation so that they can be
 // used consistently in this test.
 
-template<typename Argument, int degree>
+template<typename Value, int degree>
 class ЧебышёвAdapter {
  public:
   static ЧебышёвAdapter NewhallApproximation(
-      std::vector<Argument> const& q,
-      std::vector<Variation<Argument>> const& v,
+      std::vector<Value> const& q,
+      std::vector<Variation<Value>> const& v,
       Instant const& t_min,
       Instant const& t_max,
-      Difference<Argument>& error_estimate);
+      Difference<Value>& error_estimate);
 
-  Argument Evaluate(Instant const& t) const;
-  Variation<Argument> EvaluateDerivative(Instant const& t) const;
+  Value Evaluate(Instant const& t) const;
+  Variation<Value> EvaluateDerivative(Instant const& t) const;
 
  private:
-  explicit ЧебышёвAdapter(ЧебышёвSeries<Argument> series);
+  explicit ЧебышёвAdapter(ЧебышёвSeries<Value> series);
 
-  ЧебышёвSeries<Argument> series_;
+  ЧебышёвSeries<Value> series_;
 };
 
-template<typename Argument, int degree>
+template<typename Value, int degree>
 class MonomialAdapter {
  public:
   static MonomialAdapter NewhallApproximation(
-      std::vector<Argument> const& q,
-      std::vector<Variation<Argument>> const& v,
+      std::vector<Value> const& q,
+      std::vector<Variation<Value>> const& v,
       Instant const& t_min,
       Instant const& t_max,
-      Difference<Argument>& error_estimate);
+      Difference<Value>& error_estimate);
 
-  Argument Evaluate(Instant const& t) const;
-  Variation<Argument> EvaluateDerivative(Instant const& t) const;
+  Value Evaluate(Instant const& t) const;
+  Variation<Value> EvaluateDerivative(Instant const& t) const;
 
  private:
   using P =
-      PolynomialInMonomialBasis<Argument, Instant, degree, EstrinEvaluator>;
+      PolynomialInMonomialBasis<Value, Instant, degree, EstrinEvaluator>;
   explicit MonomialAdapter(P const& polynomial);
 
   P polynomial_;
 };
 
-template<typename Argument, int degree>
-ЧебышёвAdapter<Argument, degree>
-ЧебышёвAdapter<Argument, degree>::NewhallApproximation(
-    std::vector<Argument> const& q,
-    std::vector<Variation<Argument>> const& v,
+template<typename Value, int degree>
+ЧебышёвAdapter<Value, degree>
+ЧебышёвAdapter<Value, degree>::NewhallApproximation(
+    std::vector<Value> const& q,
+    std::vector<Variation<Value>> const& v,
     Instant const& t_min,
     Instant const& t_max,
-    Difference<Argument>& error_estimate) {
+    Difference<Value>& error_estimate) {
   return ЧебышёвAdapter(NewhallApproximationInЧебышёвBasis(degree,
                                                            q, v,
                                                            t_min, t_max,
                                                            error_estimate));
 }
 
-template<typename Argument, int degree>
-Argument ЧебышёвAdapter<Argument, degree>::Evaluate(Instant const& t) const {
+template<typename Value, int degree>
+Value ЧебышёвAdapter<Value, degree>::Evaluate(Instant const& t) const {
   return series_.Evaluate(t);
 }
 
-template<typename Argument, int degree>
-Variation<Argument>
-ЧебышёвAdapter<Argument, degree>::EvaluateDerivative(Instant const& t) const {
+template<typename Value, int degree>
+Variation<Value>
+ЧебышёвAdapter<Value, degree>::EvaluateDerivative(Instant const& t) const {
   return series_.EvaluateDerivative(t);
 }
 
-template<typename Argument, int degree>
-ЧебышёвAdapter<Argument, degree>::ЧебышёвAdapter(ЧебышёвSeries<Argument> series)
+template<typename Value, int degree>
+ЧебышёвAdapter<Value, degree>::ЧебышёвAdapter(ЧебышёвSeries<Value> series)
     : series_(std::move(series)) {}
 
-template<typename Argument, int degree>
-MonomialAdapter<Argument, degree>
-MonomialAdapter<Argument, degree>::NewhallApproximation(
-    std::vector<Argument> const& q,
-    std::vector<Variation<Argument>> const& v,
+template<typename Value, int degree>
+MonomialAdapter<Value, degree>
+MonomialAdapter<Value, degree>::NewhallApproximation(
+    std::vector<Value> const& q,
+    std::vector<Variation<Value>> const& v,
     Instant const& t_min,
     Instant const& t_max,
-    Difference<Argument>& error_estimate) {
+    Difference<Value>& error_estimate) {
   return MonomialAdapter(
-      NewhallApproximationInMonomialBasis<Argument, degree, EstrinEvaluator>(
+      NewhallApproximationInMonomialBasis<Value, degree, EstrinEvaluator>(
           q, v,
           t_min, t_max,
           error_estimate));
 }
 
-template<typename Argument, int degree>
-Argument MonomialAdapter<Argument, degree>::Evaluate(Instant const& t) const {
+template<typename Value, int degree>
+Value MonomialAdapter<Value, degree>::Evaluate(Instant const& t) const {
   return polynomial_(t);
 }
 
-template<typename Argument, int degree>
-Variation<Argument>
-MonomialAdapter<Argument, degree>::EvaluateDerivative(Instant const& t) const {
+template<typename Value, int degree>
+Variation<Value>
+MonomialAdapter<Value, degree>::EvaluateDerivative(Instant const& t) const {
   return polynomial_.EvaluateDerivative(t);
 }
 
-template<typename Argument, int degree>
-MonomialAdapter<Argument, degree>::MonomialAdapter(P const& polynomial)
+template<typename Value, int degree>
+MonomialAdapter<Value, degree>::MonomialAdapter(P const& polynomial)
     : polynomial_(polynomial) {}
 
 class NewhallTest : public ::testing::Test {
@@ -171,49 +171,49 @@ class NewhallTest : public ::testing::Test {
         }) {}
 
   template<template<typename, int> typename Adapter,
-           typename Argument, int degree>
+           typename Value, int degree>
   void CheckNewhallApproximationErrors(
-      std::function<Argument(Instant const)> length_function,
-      std::function<Variation<Argument>(Instant const)> speed_function,
-      ApproximateQuantity<Difference<Argument>> const&
-          expected_argument_error_estimate,
-      ApproximateQuantity<Difference<Argument>> const&
-          expected_argument_absolute_error,
-      ApproximateQuantity<Variation<Argument>> const&
+      std::function<Value(Instant const)> length_function,
+      std::function<Variation<Value>(Instant const)> speed_function,
+      ApproximateQuantity<Difference<Value>> const&
+          expected_value_error_estimate,
+      ApproximateQuantity<Difference<Value>> const&
+          expected_value_absolute_error,
+      ApproximateQuantity<Variation<Value>> const&
           expected_variation_absolute_error) {
-    std::vector<Argument> arguments;
-    std::vector<Variation<Argument>> variations;
+    std::vector<Value> arguments;
+    std::vector<Variation<Value>> variations;
     for (Instant t = t_min_; t <= t_max_; t += 0.5 * Second) {
       arguments.push_back(length_function(t));
       variations.push_back(speed_function(t));
     }
 
-    Difference<Argument> argument_error_estimate;
+    Difference<Value> argument_error_estimate;
     auto const approximation =
-        Adapter<Argument, degree>::NewhallApproximation(
+        Adapter<Value, degree>::NewhallApproximation(
             arguments, variations, t_min_, t_max_, argument_error_estimate);
 
     // Compute the absolute error of both functions throughout the interval.
-    Difference<Argument> argument_absolute_error;
-    Variation<Argument> variation_absolute_error;
+    Difference<Value> argument_absolute_error;
+    Variation<Value> variation_absolute_error;
     for (Instant t = t_min_; t <= t_max_; t += 0.05 * Second) {
-      Argument const expected_argument = length_function(t);
-      Argument const actual_argument = approximation.Evaluate(t);
-      Variation<Argument> const expected_variation = speed_function(t);
-      Variation<Argument> const actual_variation =
+      Value const expected_value = length_function(t);
+      Value const actual_value = approximation.Evaluate(t);
+      Variation<Value> const expected_variation = speed_function(t);
+      Variation<Value> const actual_variation =
           approximation.EvaluateDerivative(t);
       argument_absolute_error =
           std::max(argument_absolute_error,
-                    AbsoluteError(expected_argument, actual_argument));
+                   AbsoluteError(expected_value, actual_value));
       variation_absolute_error =
           std::max(variation_absolute_error,
-                    AbsoluteError(expected_variation, actual_variation));
+                   AbsoluteError(expected_variation, actual_variation));
     }
 
     EXPECT_THAT(Abs(argument_error_estimate),
-                IsNear(expected_argument_error_estimate));
+                IsNear(expected_value_error_estimate));
     EXPECT_THAT(argument_absolute_error,
-                IsNear(expected_argument_absolute_error));
+                IsNear(expected_value_absolute_error));
     EXPECT_THAT(variation_absolute_error,
                 IsNear(expected_variation_absolute_error));
   }
@@ -231,8 +231,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_3) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 3>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/3.9e1_⑴ * Metre,
-      /*expected_argument_absolute_error=*/1.7e2_⑴ * Metre,
+      /*expected_value_error_estimate=*/3.9e1_⑴ * Metre,
+      /*expected_value_absolute_error=*/1.7e2_⑴ * Metre,
       /*expected_variation_absolute_error=*/2.3e2_⑴ * Metre / Second);
 }
 
@@ -240,8 +240,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_4) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 4>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/1.8e1_⑴ * Metre,
-      /*expected_argument_absolute_error=*/4.7e1_⑴ * Metre,
+      /*expected_value_error_estimate=*/1.8e1_⑴ * Metre,
+      /*expected_value_absolute_error=*/4.7e1_⑴ * Metre,
       /*expected_variation_absolute_error=*/1.2e2_⑴ * Metre / Second);
 }
 
@@ -249,8 +249,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_5) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 5>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/8.3e0_⑴ * Metre,
-      /*expected_argument_absolute_error=*/4.3e1_⑴ * Metre,
+      /*expected_value_error_estimate=*/8.3e0_⑴ * Metre,
+      /*expected_value_absolute_error=*/4.3e1_⑴ * Metre,
       /*expected_variation_absolute_error=*/1.2e2_⑴ * Metre / Second);
 }
 
@@ -258,8 +258,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_6) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 6>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/1.4e0_⑴ * Metre,
-      /*expected_argument_absolute_error=*/3.8e1_⑴ * Metre,
+      /*expected_value_error_estimate=*/1.4e0_⑴ * Metre,
+      /*expected_value_absolute_error=*/3.8e1_⑴ * Metre,
       /*expected_variation_absolute_error=*/1.0e2_⑴ * Metre / Second);
 }
 
@@ -267,8 +267,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_7) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 7>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/7.5e0_⑴ * Metre,
-      /*expected_argument_absolute_error=*/1.4e1_⑴ * Metre,
+      /*expected_value_error_estimate=*/7.5e0_⑴ * Metre,
+      /*expected_value_absolute_error=*/1.4e1_⑴ * Metre,
       /*expected_variation_absolute_error=*/4.5e1_⑴ * Metre / Second);
 }
 
@@ -276,8 +276,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_8) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 8>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/4.2e0_⑴ * Metre,
-      /*expected_argument_absolute_error=*/6.3e0_⑴ * Metre,
+      /*expected_value_error_estimate=*/4.2e0_⑴ * Metre,
+      /*expected_value_absolute_error=*/6.3e0_⑴ * Metre,
       /*expected_variation_absolute_error=*/2.8e1_⑴ * Metre / Second);
 }
 
@@ -285,8 +285,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_9) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 9>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/3.1e-1_⑴ * Metre,
-      /*expected_argument_absolute_error=*/4.9e0_⑴ * Metre,
+      /*expected_value_error_estimate=*/3.1e-1_⑴ * Metre,
+      /*expected_value_absolute_error=*/4.9e0_⑴ * Metre,
       /*expected_variation_absolute_error=*/2.2e1_⑴ * Metre / Second);
 }
 
@@ -294,8 +294,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_10) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 10>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/7.5e-1_⑴ * Metre,
-      /*expected_argument_absolute_error=*/6.5e-1_⑴ * Metre,
+      /*expected_value_error_estimate=*/7.5e-1_⑴ * Metre,
+      /*expected_value_absolute_error=*/6.5e-1_⑴ * Metre,
       /*expected_variation_absolute_error=*/3.6e0_⑴ * Metre / Second);
 }
 
@@ -303,8 +303,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_11) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 11>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/1.8e-1_⑴ * Metre,
-      /*expected_argument_absolute_error=*/2.0e-1_⑴ * Metre,
+      /*expected_value_error_estimate=*/1.8e-1_⑴ * Metre,
+      /*expected_value_absolute_error=*/2.0e-1_⑴ * Metre,
       /*expected_variation_absolute_error=*/1.6e0_⑴ * Metre / Second);
 }
 
@@ -312,8 +312,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_12) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 12>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/4.9e-2_⑴ * Metre,
-      /*expected_argument_absolute_error=*/7.9e-2_⑴ * Metre,
+      /*expected_value_error_estimate=*/4.9e-2_⑴ * Metre,
+      /*expected_value_absolute_error=*/7.9e-2_⑴ * Metre,
       /*expected_variation_absolute_error=*/7.3e-1_⑴ * Metre / Second);
 }
 
@@ -321,8 +321,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_13) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 13>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/2.6e-2_⑴ * Metre,
-      /*expected_argument_absolute_error=*/1.3e-2_⑴ * Metre,
+      /*expected_value_error_estimate=*/2.6e-2_⑴ * Metre,
+      /*expected_value_absolute_error=*/1.3e-2_⑴ * Metre,
       /*expected_variation_absolute_error=*/1.2e-1_⑴ * Metre / Second);
 }
 
@@ -330,8 +330,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_14) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 14>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/8.9e-4_⑴ * Metre,
-      /*expected_argument_absolute_error=*/1.5e-2_⑴ * Metre,
+      /*expected_value_error_estimate=*/8.9e-4_⑴ * Metre,
+      /*expected_value_absolute_error=*/1.5e-2_⑴ * Metre,
       /*expected_variation_absolute_error=*/1.5e-1_⑴ * Metre / Second);
 }
 
@@ -339,8 +339,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_15) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 15>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/1.6e-3_⑴ * Metre,
-      /*expected_argument_absolute_error=*/4.3e-3_⑴ * Metre,
+      /*expected_value_error_estimate=*/1.6e-3_⑴ * Metre,
+      /*expected_value_absolute_error=*/4.3e-3_⑴ * Metre,
       /*expected_variation_absolute_error=*/4.4e-2_⑴ * Metre / Second);
 }
 
@@ -348,8 +348,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_16) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 16>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/2.9e-4_⑴ * Metre,
-      /*expected_argument_absolute_error=*/1.7e-3_⑴ * Metre,
+      /*expected_value_error_estimate=*/2.9e-4_⑴ * Metre,
+      /*expected_value_absolute_error=*/1.7e-3_⑴ * Metre,
       /*expected_variation_absolute_error=*/1.8e-2_⑴ * Metre / Second);
 }
 
@@ -357,8 +357,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_17) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 17>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/3.7e-5_⑴ * Metre,
-      /*expected_argument_absolute_error=*/7.6e-4_⑴ * Metre,
+      /*expected_value_error_estimate=*/3.7e-5_⑴ * Metre,
+      /*expected_value_absolute_error=*/7.6e-4_⑴ * Metre,
       /*expected_variation_absolute_error=*/8.2e-3_⑴ * Metre / Second);
 }
 
@@ -366,8 +366,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_3) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 3>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/7.9e-1_⑴ * Metre,
-      /*expected_argument_absolute_error=*/2.0e0_⑴ * Metre,
+      /*expected_value_error_estimate=*/7.9e-1_⑴ * Metre,
+      /*expected_value_absolute_error=*/2.0e0_⑴ * Metre,
       /*expected_variation_absolute_error=*/1.8e0_⑴ * Metre / Second);
 }
 
@@ -375,8 +375,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_4) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 4>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/2.5e-1_⑴ * Metre,
-      /*expected_argument_absolute_error=*/2.9e-1_⑴ * Metre,
+      /*expected_value_error_estimate=*/2.5e-1_⑴ * Metre,
+      /*expected_value_absolute_error=*/2.9e-1_⑴ * Metre,
       /*expected_variation_absolute_error=*/4.6e-1_⑴ * Metre / Second);
 }
 
@@ -384,8 +384,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_5) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 5>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/5.7e-2_⑴ * Metre,
-      /*expected_argument_absolute_error=*/3.6e-2_⑴ * Metre,
+      /*expected_value_error_estimate=*/5.7e-2_⑴ * Metre,
+      /*expected_value_absolute_error=*/3.6e-2_⑴ * Metre,
       /*expected_variation_absolute_error=*/7.4e-2_⑴ * Metre / Second);
 }
 
@@ -393,8 +393,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_6) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 6>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/8.6e-3_⑴ * Metre,
-      /*expected_argument_absolute_error=*/2.3e-3_⑴ * Metre,
+      /*expected_value_error_estimate=*/8.6e-3_⑴ * Metre,
+      /*expected_value_absolute_error=*/2.3e-3_⑴ * Metre,
       /*expected_variation_absolute_error=*/6.0e-3_⑴ * Metre / Second);
 }
 
@@ -402,8 +402,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_7) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 7>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/6.2e-4_⑴ * Metre,
-      /*expected_argument_absolute_error=*/2.9e-14_⑴ * Metre,
+      /*expected_value_error_estimate=*/6.2e-4_⑴ * Metre,
+      /*expected_value_absolute_error=*/2.9e-14_⑴ * Metre,
       /*expected_variation_absolute_error=*/2.5e-14_⑴ * Metre / Second);
 }
 
@@ -411,8 +411,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_8) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 8>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/4.5e-16_⑴ * Metre,
-      /*expected_argument_absolute_error=*/2.9e-14_⑴ * Metre,
+      /*expected_value_error_estimate=*/4.5e-16_⑴ * Metre,
+      /*expected_value_absolute_error=*/2.9e-14_⑴ * Metre,
       /*expected_variation_absolute_error=*/2.2e-14_⑴ * Metre / Second);
 }
 
@@ -420,8 +420,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_9) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 9>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/4.8e-16_⑴ * Metre,
-      /*expected_argument_absolute_error=*/2.9e-14_⑴ * Metre,
+      /*expected_value_error_estimate=*/4.8e-16_⑴ * Metre,
+      /*expected_value_absolute_error=*/2.9e-14_⑴ * Metre,
       /*expected_variation_absolute_error=*/2.2e-14_⑴ * Metre / Second);
 }
 
@@ -429,8 +429,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_10) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 10>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/4.8e-16_⑴ * Metre,
-      /*expected_argument_absolute_error=*/4.3e-14_⑴ * Metre,
+      /*expected_value_error_estimate=*/4.8e-16_⑴ * Metre,
+      /*expected_value_absolute_error=*/4.3e-14_⑴ * Metre,
       /*expected_variation_absolute_error=*/2.9e-14_⑴ * Metre / Second);
 }
 
@@ -438,8 +438,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_11) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 11>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/1.1e-16_⑴ * Metre,
-      /*expected_argument_absolute_error=*/3.6e-14_⑴ * Metre,
+      /*expected_value_error_estimate=*/1.1e-16_⑴ * Metre,
+      /*expected_value_absolute_error=*/3.6e-14_⑴ * Metre,
       /*expected_variation_absolute_error=*/2.2e-14_⑴ * Metre / Second);
 }
 
@@ -447,8 +447,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_12) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 12>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/7.3e-16_⑴ * Metre,
-      /*expected_argument_absolute_error=*/2.9e-14_⑴ * Metre,
+      /*expected_value_error_estimate=*/7.3e-16_⑴ * Metre,
+      /*expected_value_absolute_error=*/2.9e-14_⑴ * Metre,
       /*expected_variation_absolute_error=*/2.9e-14_⑴ * Metre / Second);
 }
 
@@ -456,8 +456,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_13) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 13>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/1.3e-15_⑴ * Metre,
-      /*expected_argument_absolute_error=*/1.4e-14_⑴ * Metre,
+      /*expected_value_error_estimate=*/1.3e-15_⑴ * Metre,
+      /*expected_value_absolute_error=*/1.4e-14_⑴ * Metre,
       /*expected_variation_absolute_error=*/6.1e-14_⑴ * Metre / Second);
 }
 
@@ -465,8 +465,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_14) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 14>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/2.1e-16_⑴ * Metre,
-      /*expected_argument_absolute_error=*/1.4e-14_⑴ * Metre,
+      /*expected_value_error_estimate=*/2.1e-16_⑴ * Metre,
+      /*expected_value_absolute_error=*/1.4e-14_⑴ * Metre,
       /*expected_variation_absolute_error=*/6.8e-14_⑴ * Metre / Second);
 }
 
@@ -474,8 +474,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_15) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 15>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/3.2e-16_⑴ * Metre,
-      /*expected_argument_absolute_error=*/2.9e-14_⑴ * Metre,
+      /*expected_value_error_estimate=*/3.2e-16_⑴ * Metre,
+      /*expected_value_absolute_error=*/2.9e-14_⑴ * Metre,
       /*expected_variation_absolute_error=*/3.5e-13_⑴ * Metre / Second);
 }
 
@@ -483,8 +483,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_16) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 16>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/1.1e-15_⑴ * Metre,
-      /*expected_argument_absolute_error=*/2.9e-14_⑴ * Metre,
+      /*expected_value_error_estimate=*/1.1e-15_⑴ * Metre,
+      /*expected_value_absolute_error=*/2.9e-14_⑴ * Metre,
       /*expected_variation_absolute_error=*/8.5e-13_⑴ * Metre / Second);
 }
 
@@ -492,8 +492,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_17) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 17>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/4.8e-15_⑴ * Metre,
-      /*expected_argument_absolute_error=*/7.2e-14_⑴ * Metre,
+      /*expected_value_error_estimate=*/4.8e-15_⑴ * Metre,
+      /*expected_value_absolute_error=*/7.2e-14_⑴ * Metre,
       /*expected_variation_absolute_error=*/1.2e-12_⑴ * Metre / Second);
 }
 
@@ -501,8 +501,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_1_3) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 3>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/3.9e1_⑴ * Metre,
-      /*expected_argument_absolute_error=*/1.7e2_⑴ * Metre,
+      /*expected_value_error_estimate=*/3.9e1_⑴ * Metre,
+      /*expected_value_absolute_error=*/1.7e2_⑴ * Metre,
       /*expected_variation_absolute_error=*/2.3e2_⑴ * Metre / Second);
 }
 
@@ -510,8 +510,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_1_4) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 4>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/1.8e1_⑴ * Metre,
-      /*expected_argument_absolute_error=*/4.7e1_⑴ * Metre,
+      /*expected_value_error_estimate=*/1.8e1_⑴ * Metre,
+      /*expected_value_absolute_error=*/4.7e1_⑴ * Metre,
       /*expected_variation_absolute_error=*/1.2e2_⑴ * Metre / Second);
 }
 
@@ -519,8 +519,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_1_5) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 5>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/8.3e0_⑴ * Metre,
-      /*expected_argument_absolute_error=*/4.3e1_⑴ * Metre,
+      /*expected_value_error_estimate=*/8.3e0_⑴ * Metre,
+      /*expected_value_absolute_error=*/4.3e1_⑴ * Metre,
       /*expected_variation_absolute_error=*/1.2e2_⑴ * Metre / Second);
 }
 
@@ -528,8 +528,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_1_6) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 6>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/1.4e0_⑴ * Metre,
-      /*expected_argument_absolute_error=*/3.8e1_⑴ * Metre,
+      /*expected_value_error_estimate=*/1.4e0_⑴ * Metre,
+      /*expected_value_absolute_error=*/3.8e1_⑴ * Metre,
       /*expected_variation_absolute_error=*/1.0e2_⑴ * Metre / Second);
 }
 
@@ -537,8 +537,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_1_7) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 7>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/7.5e0_⑴ * Metre,
-      /*expected_argument_absolute_error=*/1.4e1_⑴ * Metre,
+      /*expected_value_error_estimate=*/7.5e0_⑴ * Metre,
+      /*expected_value_absolute_error=*/1.4e1_⑴ * Metre,
       /*expected_variation_absolute_error=*/4.5e1_⑴ * Metre / Second);
 }
 
@@ -546,8 +546,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_1_8) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 8>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/4.2e0_⑴ * Metre,
-      /*expected_argument_absolute_error=*/6.3e0_⑴ * Metre,
+      /*expected_value_error_estimate=*/4.2e0_⑴ * Metre,
+      /*expected_value_absolute_error=*/6.3e0_⑴ * Metre,
       /*expected_variation_absolute_error=*/2.8e1_⑴ * Metre / Second);
 }
 
@@ -555,8 +555,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_1_9) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 9>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/3.1e-1_⑴ * Metre,
-      /*expected_argument_absolute_error=*/4.9e0_⑴ * Metre,
+      /*expected_value_error_estimate=*/3.1e-1_⑴ * Metre,
+      /*expected_value_absolute_error=*/4.9e0_⑴ * Metre,
       /*expected_variation_absolute_error=*/2.2e1_⑴ * Metre / Second);
 }
 
@@ -564,8 +564,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_1_10) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 10>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/7.5e-1_⑴ * Metre,
-      /*expected_argument_absolute_error=*/6.5e-1_⑴ * Metre,
+      /*expected_value_error_estimate=*/7.5e-1_⑴ * Metre,
+      /*expected_value_absolute_error=*/6.5e-1_⑴ * Metre,
       /*expected_variation_absolute_error=*/3.6e0_⑴ * Metre / Second);
 }
 
@@ -573,8 +573,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_1_11) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 11>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/1.8e-1_⑴ * Metre,
-      /*expected_argument_absolute_error=*/2.0e-1_⑴ * Metre,
+      /*expected_value_error_estimate=*/1.8e-1_⑴ * Metre,
+      /*expected_value_absolute_error=*/2.0e-1_⑴ * Metre,
       /*expected_variation_absolute_error=*/1.6e0_⑴ * Metre / Second);
 }
 
@@ -582,8 +582,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_1_12) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 12>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/4.9e-2_⑴ * Metre,
-      /*expected_argument_absolute_error=*/7.9e-2_⑴ * Metre,
+      /*expected_value_error_estimate=*/4.9e-2_⑴ * Metre,
+      /*expected_value_absolute_error=*/7.9e-2_⑴ * Metre,
       /*expected_variation_absolute_error=*/7.3e-1_⑴ * Metre / Second);
 }
 
@@ -591,8 +591,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_1_13) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 13>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/2.6e-2_⑴ * Metre,
-      /*expected_argument_absolute_error=*/1.3e-2_⑴ * Metre,
+      /*expected_value_error_estimate=*/2.6e-2_⑴ * Metre,
+      /*expected_value_absolute_error=*/1.3e-2_⑴ * Metre,
       /*expected_variation_absolute_error=*/1.2e-1_⑴ * Metre / Second);
 }
 
@@ -600,8 +600,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_1_14) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 14>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/8.9e-4_⑴ * Metre,
-      /*expected_argument_absolute_error=*/1.5e-2_⑴ * Metre,
+      /*expected_value_error_estimate=*/8.9e-4_⑴ * Metre,
+      /*expected_value_absolute_error=*/1.5e-2_⑴ * Metre,
       /*expected_variation_absolute_error=*/1.5e-1_⑴ * Metre / Second);
 }
 
@@ -609,8 +609,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_1_15) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 15>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/1.6e-3_⑴ * Metre,
-      /*expected_argument_absolute_error=*/4.3e-3_⑴ * Metre,
+      /*expected_value_error_estimate=*/1.6e-3_⑴ * Metre,
+      /*expected_value_absolute_error=*/4.3e-3_⑴ * Metre,
       /*expected_variation_absolute_error=*/4.4e-2_⑴ * Metre / Second);
 }
 
@@ -618,8 +618,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_1_16) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 16>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/2.9e-4_⑴ * Metre,
-      /*expected_argument_absolute_error=*/1.7e-3_⑴ * Metre,
+      /*expected_value_error_estimate=*/2.9e-4_⑴ * Metre,
+      /*expected_value_absolute_error=*/1.7e-3_⑴ * Metre,
       /*expected_variation_absolute_error=*/1.8e-2_⑴ * Metre / Second);
 }
 
@@ -627,8 +627,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_1_17) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 17>(
       length_function_1_,
       speed_function_1_,
-      /*expected_argument_error_estimate=*/3.7e-5_⑴ * Metre,
-      /*expected_argument_absolute_error=*/7.6e-4_⑴ * Metre,
+      /*expected_value_error_estimate=*/3.7e-5_⑴ * Metre,
+      /*expected_value_absolute_error=*/7.6e-4_⑴ * Metre,
       /*expected_variation_absolute_error=*/8.2e-3_⑴ * Metre / Second);
 }
 
@@ -636,8 +636,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_2_3) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 3>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/7.9e-1_⑴ * Metre,
-      /*expected_argument_absolute_error=*/2.0e0_⑴ * Metre,
+      /*expected_value_error_estimate=*/7.9e-1_⑴ * Metre,
+      /*expected_value_absolute_error=*/2.0e0_⑴ * Metre,
       /*expected_variation_absolute_error=*/1.8e0_⑴ * Metre / Second);
 }
 
@@ -645,8 +645,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_2_4) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 4>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/2.5e-1_⑴ * Metre,
-      /*expected_argument_absolute_error=*/2.9e-1_⑴ * Metre,
+      /*expected_value_error_estimate=*/2.5e-1_⑴ * Metre,
+      /*expected_value_absolute_error=*/2.9e-1_⑴ * Metre,
       /*expected_variation_absolute_error=*/4.6e-1_⑴ * Metre / Second);
 }
 
@@ -654,8 +654,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_2_5) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 5>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/5.7e-2_⑴ * Metre,
-      /*expected_argument_absolute_error=*/3.6e-2_⑴ * Metre,
+      /*expected_value_error_estimate=*/5.7e-2_⑴ * Metre,
+      /*expected_value_absolute_error=*/3.6e-2_⑴ * Metre,
       /*expected_variation_absolute_error=*/7.4e-2_⑴ * Metre / Second);
 }
 
@@ -663,8 +663,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_2_6) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 6>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/8.6e-3_⑴ * Metre,
-      /*expected_argument_absolute_error=*/2.3e-3_⑴ * Metre,
+      /*expected_value_error_estimate=*/8.6e-3_⑴ * Metre,
+      /*expected_value_absolute_error=*/2.3e-3_⑴ * Metre,
       /*expected_variation_absolute_error=*/6.0e-3_⑴ * Metre / Second);
 }
 
@@ -672,8 +672,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_2_7) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 7>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/6.2e-4_⑴ * Metre,
-      /*expected_argument_absolute_error=*/2.9e-14_⑴ * Metre,
+      /*expected_value_error_estimate=*/6.2e-4_⑴ * Metre,
+      /*expected_value_absolute_error=*/2.9e-14_⑴ * Metre,
       /*expected_variation_absolute_error=*/2.5e-14_⑴ * Metre / Second);
 }
 
@@ -681,8 +681,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_2_8) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 8>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/4.5e-16_⑴ * Metre,
-      /*expected_argument_absolute_error=*/3.9e-14_⑴ * Metre,
+      /*expected_value_error_estimate=*/4.5e-16_⑴ * Metre,
+      /*expected_value_absolute_error=*/3.9e-14_⑴ * Metre,
       /*expected_variation_absolute_error=*/1.2e-13_⑴ * Metre / Second);
 }
 
@@ -690,8 +690,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_2_9) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 9>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/4.8e-16_⑴ * Metre,
-      /*expected_argument_absolute_error=*/1.0e-13_⑴ * Metre,
+      /*expected_value_error_estimate=*/4.8e-16_⑴ * Metre,
+      /*expected_value_absolute_error=*/1.0e-13_⑴ * Metre,
       /*expected_variation_absolute_error=*/4.8e-13_⑴ * Metre / Second);
 }
 
@@ -699,8 +699,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_2_10) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 10>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/4.8e-16_⑴ * Metre,
-      /*expected_argument_absolute_error=*/3.5e-13_⑴ * Metre,
+      /*expected_value_error_estimate=*/4.8e-16_⑴ * Metre,
+      /*expected_value_absolute_error=*/3.5e-13_⑴ * Metre,
       /*expected_variation_absolute_error=*/7.1e-13_⑴ * Metre / Second);
 }
 
@@ -708,8 +708,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_2_11) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 11>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/1.1e-16_⑴ * Metre,
-      /*expected_argument_absolute_error=*/5.6e-13_⑴ * Metre,
+      /*expected_value_error_estimate=*/1.1e-16_⑴ * Metre,
+      /*expected_value_absolute_error=*/5.6e-13_⑴ * Metre,
       /*expected_variation_absolute_error=*/1.7e-12_⑴ * Metre / Second);
 }
 
@@ -717,8 +717,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_2_12) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 12>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/7.3e-16_⑴ * Metre,
-      /*expected_argument_absolute_error=*/1.3e-11_⑴ * Metre,
+      /*expected_value_error_estimate=*/7.3e-16_⑴ * Metre,
+      /*expected_value_absolute_error=*/1.3e-11_⑴ * Metre,
       /*expected_variation_absolute_error=*/5.4e-11_⑴ * Metre / Second);
 }
 
@@ -726,8 +726,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_2_13) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 13>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/1.3e-15_⑴ * Metre,
-      /*expected_argument_absolute_error=*/1.9e-11_⑴ * Metre,
+      /*expected_value_error_estimate=*/1.3e-15_⑴ * Metre,
+      /*expected_value_absolute_error=*/1.9e-11_⑴ * Metre,
       /*expected_variation_absolute_error=*/9.5e-11_⑴ * Metre / Second);
 }
 
@@ -735,8 +735,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_2_14) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 14>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/2.1e-16_⑴ * Metre,
-      /*expected_argument_absolute_error=*/8.1e-12_⑴ * Metre,
+      /*expected_value_error_estimate=*/2.1e-16_⑴ * Metre,
+      /*expected_value_absolute_error=*/8.1e-12_⑴ * Metre,
       /*expected_variation_absolute_error=*/5.1e-11_⑴ * Metre / Second);
 }
 
@@ -744,8 +744,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_2_15) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 15>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/3.2e-16_⑴ * Metre,
-      /*expected_argument_absolute_error=*/3.0e-10_⑴ * Metre,
+      /*expected_value_error_estimate=*/3.2e-16_⑴ * Metre,
+      /*expected_value_absolute_error=*/3.0e-10_⑴ * Metre,
       /*expected_variation_absolute_error=*/1.6e-9_⑴ * Metre / Second);
 }
 
@@ -753,8 +753,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_2_16) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 16>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/1.1e-15_⑴ * Metre,
-      /*expected_argument_absolute_error=*/5.8e-10_⑴ * Metre,
+      /*expected_value_error_estimate=*/1.1e-15_⑴ * Metre,
+      /*expected_value_absolute_error=*/5.8e-10_⑴ * Metre,
       /*expected_variation_absolute_error=*/2.8e-9_⑴ * Metre / Second);
 }
 
@@ -762,8 +762,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_2_17) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 17>(
       length_function_2_,
       speed_function_2_,
-      /*expected_argument_error_estimate=*/4.8e-15_⑴ * Metre,
-      /*expected_argument_absolute_error=*/3.7e-9_⑴ * Metre,
+      /*expected_value_error_estimate=*/4.8e-15_⑴ * Metre,
+      /*expected_value_absolute_error=*/3.7e-9_⑴ * Metre,
       /*expected_variation_absolute_error=*/2.2e-8_⑴ * Metre / Second);
 }
 
@@ -777,8 +777,8 @@ TEST_F(NewhallTest, Affine) {
   CheckNewhallApproximationErrors<MonomialAdapter, Instant, 3>(
       instant_function,
       double_function,
-      /*expected_argument_error_estimate=*/3.90000000000000e1_⑴ * Second,
-      /*expected_argument_absolute_error=*/1.7000000000000000e2_⑴ * Second,
+      /*expected_value_error_estimate=*/3.90000000000000e1_⑴ * Second,
+      /*expected_value_absolute_error=*/1.7000000000000000e2_⑴ * Second,
       /*expected_variation_absolute_error=*/2.30000000000000e2_⑴);
 
 }
