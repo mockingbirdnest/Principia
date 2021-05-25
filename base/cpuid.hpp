@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include <cstdint>
-
 #include <string>
 
 namespace principia {
@@ -21,6 +20,7 @@ constexpr std::uint64_t ecx_bit = edx_bit << 32;
 enum class FeatureFlags : std::uint64_t {
   // Table 3-11.
   FPU = edx_bit << 0,
+  PSN = edx_bit << 18,
   SSE = edx_bit << 25,
   SSE2 = edx_bit << 26,
   // Table 3-10.
@@ -28,7 +28,6 @@ enum class FeatureFlags : std::uint64_t {
   FMA = ecx_bit << 12,
   SSE4_1 = ecx_bit << 19,
   AVX = ecx_bit << 28,
-  NotUsed = ecx_bit << 31,  // Always 0.
 };
 
 FeatureFlags operator|(FeatureFlags left, FeatureFlags right);

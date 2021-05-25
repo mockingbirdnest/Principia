@@ -1,3 +1,4 @@
+﻿
 #include "base/cpuid.hpp"
 
 #include "gmock/gmock.h"
@@ -24,11 +25,13 @@ TEST_F(CPUIDTest, FeatureFlags) {
                              FeatureFlags::SSE2 | FeatureFlags::SSE3));
   // We develop on Sandy Bridge or later.
   EXPECT_TRUE(HasCPUFeatures(FeatureFlags::AVX));
-  // Check that we don�t always return true.
-  EXPECT_FALSE(HasCPUFeatures(FeatureFlags::NotUsed));
+  // Check that we don’t always return true.
+  // We are not running these tests on a Pentium III, so we do not have the
+  // Processor Serial Number feature.
+  EXPECT_FALSE(HasCPUFeatures(FeatureFlags::PSN));
   EXPECT_FALSE(HasCPUFeatures(FeatureFlags::FPU | FeatureFlags::SSE |
                               FeatureFlags::SSE2 | FeatureFlags::SSE3 |
-                              FeatureFlags::NotUsed));
+                              FeatureFlags::PSN));
 }
 
 }  // namespace base

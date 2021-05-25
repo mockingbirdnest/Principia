@@ -1,5 +1,7 @@
 #include "base/cpuid.hpp"
 
+#include <string>
+
 #include "base/macros.hpp"
 #if PRINCIPIA_COMPILER_MSVC
 #include <intrin.h>
