@@ -207,6 +207,25 @@ TupleDerivation<Tuple, order, std::index_sequence<indices...>>::Derive(
                          std::get<order + indices>(tuple)...);
 }
 
+
+template<typename Tuple, int count,
+         typename = std::make_index_sequence<std::tuple_size_v<Tuple> - count>>
+struct TupleDropper;
+
+template<typename Tuple, int count, std::size_t... indices>
+struct TupleDropper<Tuple, count, std::index_sequence<indices...>> {
+  // Drops the first |count| elements of |tuple|.
+  static constexpr auto Drop(Tuple const& tuple);
+};
+
+template<typename Tuple, int count, std::size_t... indices>
+constexpr auto
+TupleDropper<Tuple, count, std::index_sequence<indices...>>::Drop(
+    Tuple const& tuple) {
+  return std::make_tuple(std::get<count + indices>(tuple)...);
+}
+
+
 template<typename Argument, typename Tuple,
          typename = std::make_index_sequence<std::tuple_size_v<Tuple>>>
 struct TupleIntegration;
@@ -225,6 +244,7 @@ TupleIntegration<Argument, Tuple, std::index_sequence<indices...>>::Integrate(
   return std::make_tuple(
       zero, std::get<indices>(tuple) / static_cast<double>(indices + 1)...);
 }
+
 
 template<typename Tuple, int k, int size = std::tuple_size_v<Tuple>>
 struct TupleSerializer : not_constructible {
@@ -685,8 +705,15 @@ constexpr PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator>
 operator+(Value const& left,
           PolynomialInMonomialBasis<Difference<Value>, Argument,
                                     rdegree_, Evaluator> const& right) {
+  auto const dropped_right_coefficients =
+      TupleDropper<typename PolynomialInMonomialBasis<
+                       Difference<Value>, Argument, rdegree_, Evaluator>::
+                       Coefficients,
+                   /*count=*/1>::Drop(right.coefficients_);
   return PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator>(
-      std::make_tuple(left) + right.coefficients_, right.origin_);
+      std::tuple_cat(std::tuple(left + std::get<0>(right.coefficients_)),
+                     dropped_right_coefficients),
+      right.origin_);
 }
 
 template<typename Value, typename Argument, int ldegree_,
@@ -696,9 +723,15 @@ constexpr PolynomialInMonomialBasis<Difference<Value>, Argument,
 operator-(PolynomialInMonomialBasis<Value, Argument,
                                     ldegree_, Evaluator> const& left,
           Value const& right) {
+  auto const dropped_left_coefficients =
+      TupleDropper<typename PolynomialInMonomialBasis<
+                       Value, Argument, ldegree_, Evaluator>::Coefficients,
+                   /*count=*/1>::Drop(left.coefficients_);
   return PolynomialInMonomialBasis<Difference<Value>, Argument,
                                    ldegree_, Evaluator>(
-      left.coefficients_ - std::make_tuple(right), left.origin_);
+      std::tuple_cat(std::tuple(std::get<0>(left.coefficients_) - right),
+                     dropped_left_coefficients),
+      left.origin_);
 }
 
 template<typename Value, typename Argument, int rdegree_,
@@ -708,9 +741,15 @@ constexpr PolynomialInMonomialBasis<Difference<Value>, Argument,
 operator-(Value const& left,
           PolynomialInMonomialBasis<Value, Argument,
                                     rdegree_, Evaluator> const& right) {
+  auto const dropped_right_coefficients =
+      TupleDropper<typename PolynomialInMonomialBasis<
+                       Value, Argument, rdegree_, Evaluator>::Coefficients,
+                   /*count=*/1>::Drop(right.coefficients_);
   return PolynomialInMonomialBasis<Difference<Value>, Argument,
                                    rdegree_, Evaluator>(
-      std::make_tuple(left) - right.coefficients_, right.origin_);
+      std::tuple_cat(std::tuple(left - std::get<0>(right.coefficients_)),
+                     dropped_right_coefficients),
+      right.origin_);
 }
 
 template<typename LValue, typename RValue,
