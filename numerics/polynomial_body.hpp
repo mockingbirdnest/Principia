@@ -687,15 +687,22 @@ operator*(
               left.origin_);
 }
 
-#if 0
+#if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS
 template<typename Value, typename Argument, int ldegree_,
          template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator>
-operator+(PolynomialInMonomialBasis<Value, Difference<Argument>,
+operator+(PolynomialInMonomialBasis<Difference<Value>, Argument,
                                     ldegree_, Evaluator> const& left,
           Argument const& right) {
+  auto const dropped_left_coefficients =
+      TupleDropper<typename PolynomialInMonomialBasis<
+                       Difference<Value>, Argument, ldegree_, Evaluator>::
+                       Coefficients,
+                   /*count=*/1>::Drop(left.coefficients_);
   return PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator>(
-      left.coefficients_ + std::make_tuple(right), left.origin_);
+      std::tuple_cat(std::tuple(std::get<0>(left.coefficients_) + right),
+                     dropped_left_coefficients),
+      left.origin_);
 }
 #endif
 

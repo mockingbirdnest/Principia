@@ -18,6 +18,11 @@
 #include "quantities/tuples.hpp"
 #include "serialization/numerics.pb.h"
 
+// The presence of an operator+ below causes a bizarre compilation error in
+// seemingly unrelated code in PolynomialTest.VectorSpace.
+#define PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS \
+  !PRINCIPIA_COMPILER_MSVC || !(_MSC_FULL_VER == 192'930'036)
+
 namespace principia {
 namespace numerics {
 FORWARD_DECLARE_FROM(
@@ -202,7 +207,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   friend operator*(
       PolynomialInMonomialBasis<L, A, l, E> const& left,
       PolynomialInMonomialBasis<R, A, r, E> const& right);
-#if 0
+#if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS
   template<typename V, typename A, int l,
            template<typename, typename, int> typename E>
   constexpr PolynomialInMonomialBasis<V, A, l, E>
@@ -327,8 +332,7 @@ operator*(
     PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
         right);
 
-//TODO(phl):comment
-#if 0
+#if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS
 template<typename Value, typename Argument, int ldegree_,
          template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator>
