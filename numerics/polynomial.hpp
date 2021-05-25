@@ -332,6 +332,8 @@ operator*(
     PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
         right);
 
+// Additive operators polynomial ± constant.
+
 #if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS
 template<typename Value, typename Argument, int ldegree_,
          template<typename, typename, int> typename Evaluator>
