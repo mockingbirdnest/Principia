@@ -289,7 +289,7 @@ TEST_F(PolynomialTest, Affine) {
   }
   {
     P0V const p = Instant{} - p0a;
-    EXPECT_THAT(p(3 * Second), AlmostEquals(1 * Second, 0));
+    EXPECT_THAT(p(3 * Second), AlmostEquals(-1 * Second, 0));
   }
 }
 
