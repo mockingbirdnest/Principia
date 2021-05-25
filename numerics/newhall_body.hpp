@@ -23,42 +23,42 @@ using quantities::Time;
 // Only supports 8 divisions for now.
 constexpr int divisions = 8;
 
-template<typename Vector, int degree,
+template<typename Argument, int degree,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Vector, Instant, degree, Evaluator> Dehomogeneize(
-    FixedVector<Vector, degree + 1> const& homogeneous_coefficients,
+PolynomialInMonomialBasis<Argument, Instant, degree, Evaluator> Dehomogeneize(
+    FixedVector<Argument, degree + 1> const& homogeneous_coefficients,
     Frequency const& scale,
     Instant const& origin);
 
-template<typename Vector,
+template<typename Argument,
          typename DehomogeneizedCoefficients, int degree, int k>
 struct Dehomogeneizer {
   static void Convert(
-      FixedVector<Vector, degree + 1> const& homogeneous_coefficients,
+      FixedVector<Argument, degree + 1> const& homogeneous_coefficients,
       Frequency const& scale,
       Exponentiation<Frequency, k> const& scale_k,
       DehomogeneizedCoefficients& dehomogeneized_coefficients);
 };
 
-template<typename Vector,
+template<typename Argument,
          typename DehomogeneizedCoefficients, int degree>
-struct Dehomogeneizer<Vector, DehomogeneizedCoefficients, degree, degree> {
+struct Dehomogeneizer<Argument, DehomogeneizedCoefficients, degree, degree> {
   static void Convert(
-      FixedVector<Vector, degree + 1> const& homogeneous_coefficients,
+      FixedVector<Argument, degree + 1> const& homogeneous_coefficients,
       Frequency const& scale,
       Exponentiation<Frequency, degree> const& scale_degree,
       DehomogeneizedCoefficients& dehomogeneized_coefficients);
 };
 
-template<typename Vector, int degree,
+template<typename Argument, int degree,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Vector, Instant, degree, Evaluator> Dehomogeneize(
-    FixedVector<Vector, degree + 1> const& homogeneous_coefficients,
+PolynomialInMonomialBasis<Argument, Instant, degree, Evaluator> Dehomogeneize(
+    FixedVector<Argument, degree + 1> const& homogeneous_coefficients,
     Frequency const& scale,
     Instant const& origin) {
-  using P = PolynomialInMonomialBasis<Vector, Instant, degree, Evaluator>;
+  using P = PolynomialInMonomialBasis<Argument, Instant, degree, Evaluator>;
   typename P::Coefficients dehomogeneized_coefficients;
-  Dehomogeneizer<Vector, typename P::Coefficients, degree, /*k=*/0>::Convert(
+  Dehomogeneizer<Argument, typename P::Coefficients, degree, /*k=*/0>::Convert(
       homogeneous_coefficients,
       scale,
       /*scale_k=*/1.0,
@@ -66,26 +66,26 @@ PolynomialInMonomialBasis<Vector, Instant, degree, Evaluator> Dehomogeneize(
   return P(dehomogeneized_coefficients, origin);
 }
 
-template<typename Vector,
+template<typename Argument,
          typename DehomogeneizedCoefficients, int degree, int k>
-void Dehomogeneizer<Vector, DehomogeneizedCoefficients, degree, k>::Convert(
-    FixedVector<Vector, degree + 1> const& homogeneous_coefficients,
+void Dehomogeneizer<Argument, DehomogeneizedCoefficients, degree, k>::Convert(
+    FixedVector<Argument, degree + 1> const& homogeneous_coefficients,
     Frequency const& scale,
     Exponentiation<Frequency, k> const& scale_k,
     DehomogeneizedCoefficients& dehomogeneized_coefficients) {
   std::get<k>(dehomogeneized_coefficients) =
       homogeneous_coefficients[k] * scale_k;
-  Dehomogeneizer<Vector, DehomogeneizedCoefficients, degree, k + 1>::Convert(
+  Dehomogeneizer<Argument, DehomogeneizedCoefficients, degree, k + 1>::Convert(
       homogeneous_coefficients,
       scale,
       scale_k * scale,
       dehomogeneized_coefficients);
 }
 
-template<typename Vector,
+template<typename Argument,
          typename DehomogeneizedCoefficients, int degree>
-void Dehomogeneizer<Vector, DehomogeneizedCoefficients, degree, degree>::
-Convert(FixedVector<Vector, degree + 1> const& homogeneous_coefficients,
+void Dehomogeneizer<Argument, DehomogeneizedCoefficients, degree, degree>::
+Convert(FixedVector<Argument, degree + 1> const& homogeneous_coefficients,
         Frequency const& scale,
         Exponentiation<Frequency, degree> const& scale_degree,
         DehomogeneizedCoefficients& dehomogeneized_coefficients) {
@@ -93,24 +93,26 @@ Convert(FixedVector<Vector, degree + 1> const& homogeneous_coefficients,
       homogeneous_coefficients[degree] * scale_degree;
 }
 
-template<typename Vector, int degree,
+template<typename Argument, int degree,
          template<typename, typename, int> class Evaluator>
 struct NewhallAppromixator {
-  static FixedVector<Vector, degree + 1> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv,
-      Vector& error_estimate);
+  static FixedVector<Argument, degree + 1> HomogeneousCoefficients(
+      FixedVector<Argument, 2 * divisions + 2> const& qv,
+      Argument& error_estimate);
 };
 
 #define PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(degree)                  \
-  template<typename Vector,                                                    \
-           template<typename, typename, int> class Evaluator>                  \
-  struct NewhallAppromixator<Vector, (degree), Evaluator> {                    \
-    static FixedVector<Vector, ((degree) + 1)> HomogeneousCoefficients(        \
-        FixedVector<Vector, 2 * divisions + 2> const& qv,                      \
-        Vector& error_estimate) {                                              \
+  template<typename Argument,                                                  \
+           template<typename, typename, int>                                   \
+           class Evaluator>                                                    \
+  struct NewhallAppromixator<Argument, (degree), Evaluator> {                  \
+    static FixedVector<Argument, ((degree) + 1)> HomogeneousCoefficients(      \
+        FixedVector<Argument, 2 * divisions + 2> const& qv,                    \
+        Argument& error_estimate) {                                            \
       error_estimate =                                                         \
-          newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04.row<      \
-              (degree)>() * qv;                                                \
+          newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04           \
+              .row<(degree)>() *                                               \
+          qv;                                                                  \
       return newhall_c_matrix_monomial_degree_##degree##_divisions_8_w04 * qv; \
     }                                                                          \
   }
@@ -133,37 +135,37 @@ PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(17);
 
 #undef PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION
 
-#define PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(degree)         \
-  case (degree):                                                              \
-    coefficients =                                                            \
-        std::vector<Vector>(                                                  \
-            newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04 * qv); \
+#define PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(degree)     \
+  case (degree):                                                          \
+    coefficients = std::vector<Argument>(                                 \
+        newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04 * qv); \
     break
 
-template<typename Vector>
-ЧебышёвSeries<Vector>
+template<typename Argument>
+ЧебышёвSeries<Argument>
 NewhallApproximationInЧебышёвBasis(int degree,
-                                   std::vector<Vector> const& q,
-                                   std::vector<Variation<Vector>> const& v,
+                                   std::vector<Argument> const& q,
+                                   std::vector<Variation<Argument>> const& v,
                                    Instant const& t_min,
                                    Instant const& t_max,
-                                   Vector& error_estimate) {
+                                   Difference<Argument>& error_estimate) {
   CHECK_EQ(divisions + 1, q.size());
   CHECK_EQ(divisions + 1, v.size());
 
+  Argument const origin{};
   Time const duration_over_two = 0.5 * (t_max - t_min);
 
   // Tricky.  The order in Newhall's matrices is such that the entries for the
   // largest time occur first.
-  FixedVector<Vector, 2 * divisions + 2> qv;
+  FixedVector<Argument, 2 * divisions + 2> qv;
   for (int i = 0, j = 2 * divisions;
        i < divisions + 1 && j >= 0;
        ++i, j -= 2) {
-    qv[j] = q[i];
+    qv[j] = q[i] - origin;
     qv[j + 1] = v[i] * duration_over_two;
   }
 
-  std::vector<Vector> coefficients;
+  std::vector<Argument> coefficients;
   coefficients.reserve(degree);
   switch (degree) {
     PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(3);
@@ -187,59 +189,58 @@ NewhallApproximationInЧебышёвBasis(int degree,
   }
   CHECK_EQ(degree + 1, coefficients.size());
   error_estimate = coefficients[degree];
-  return ЧебышёвSeries<Vector>(coefficients, t_min, t_max);
+  return ЧебышёвSeries<Difference<Argument>>(coefficients, t_min, t_max);
 }
 
 #undef PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE
 
-template<typename Vector, int degree,
+template<typename Argument, int degree,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Vector, Instant, degree, Evaluator>
-NewhallApproximationInMonomialBasis(std::vector<Vector> const& q,
-                                    std::vector<Variation<Vector>> const& v,
+PolynomialInMonomialBasis<Argument, Instant, degree, Evaluator>
+NewhallApproximationInMonomialBasis(std::vector<Argument> const& q,
+                                    std::vector<Variation<Argument>> const& v,
                                     Instant const& t_min,
                                     Instant const& t_max,
-                                    Vector& error_estimate) {
+                                    Difference<Argument>& error_estimate) {
   CHECK_EQ(divisions + 1, q.size());
   CHECK_EQ(divisions + 1, v.size());
 
+  Argument const origin{};
   Time const duration_over_two = 0.5 * (t_max - t_min);
 
   // Tricky.  The order in Newhall's matrices is such that the entries for the
   // largest time occur first.
-  FixedVector<Vector, 2 * divisions + 2> qv;
+  FixedVector<Difference<Argument>, 2 * divisions + 2> qv;
   for (int i = 0, j = 2 * divisions;
        i < divisions + 1 && j >= 0;
        ++i, j -= 2) {
-    qv[j] = q[i];
+    qv[j] = q[i] - origin;
     qv[j + 1] = v[i] * duration_over_two;
   }
 
   Instant const t_mid = Barycentre<Instant, double>({t_min, t_max}, {1, 1});
-  return Dehomogeneize<Vector, degree, Evaluator>(
-             NewhallAppromixator<Vector, degree, Evaluator>::
+  return Dehomogeneize<Difference<Argument>, degree, Evaluator>(
+             NewhallAppromixator<Difference<Argument>, degree, Evaluator>::
                  HomogeneousCoefficients(qv, error_estimate),
              /*scale=*/1.0 / duration_over_two,
              t_mid);
 }
 
-#define PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(degree)    \
-  case (degree):                                                          \
-    return make_not_null_unique<                                          \
-        PolynomialInMonomialBasis<Vector, Instant, (degree), Evaluator>>( \
-        NewhallApproximationInMonomialBasis<Vector, (degree), Evaluator>( \
-            q, v,                                                         \
-            t_min, t_max,                                                 \
-            error_estimate))
+#define PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(degree)      \
+  case (degree):                                                            \
+    return make_not_null_unique<                                            \
+        PolynomialInMonomialBasis<Argument, Instant, (degree), Evaluator>>( \
+        NewhallApproximationInMonomialBasis<Argument, (degree), Evaluator>( \
+            q, v, t_min, t_max, error_estimate))
 
-template<typename Vector, template<typename, typename, int> class Evaluator>
-not_null<std::unique_ptr<Polynomial<Vector, Instant>>>
+template<typename Argument, template<typename, typename, int> class Evaluator>
+not_null<std::unique_ptr<Polynomial<Argument, Instant>>>
 NewhallApproximationInMonomialBasis(int degree,
-                                    std::vector<Vector> const& q,
-                                    std::vector<Variation<Vector>> const& v,
+                                    std::vector<Argument> const& q,
+                                    std::vector<Variation<Argument>> const& v,
                                     Instant const& t_min,
                                     Instant const& t_max,
-                                    Vector& error_estimate) {
+                                    Difference<Argument>& error_estimate) {
   switch (degree) {
     PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(3);
     PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(4);
