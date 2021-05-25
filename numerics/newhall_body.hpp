@@ -219,7 +219,8 @@ NewhallApproximationInMonomialBasis(std::vector<Value> const& q,
   }
 
   Instant const t_mid = Barycentre<Instant, double>({t_min, t_max}, {1, 1});
-  return Dehomogeneize<Difference<Value>, degree, Evaluator>(
+  return origin +
+         Dehomogeneize<Difference<Value>, degree, Evaluator>(
              NewhallAppromixator<Difference<Value>, degree, Evaluator>::
                  HomogeneousCoefficients(qv, error_estimate),
              /*scale=*/1.0 / duration_over_two,
