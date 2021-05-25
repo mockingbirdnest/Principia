@@ -273,7 +273,7 @@ TEST_F(PolynomialTest, Affine) {
 
   P0A const p0a(std::tuple{Instant{} + 1 * Second});
   P0V const p0v(std::tuple{2 * Second});
-#if 0
+#if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS
   {
     P0A const p = p0v + Instant{};
     EXPECT_THAT(p(3 * Second), AlmostEquals(Instant{} + 2 * Second, 0));
