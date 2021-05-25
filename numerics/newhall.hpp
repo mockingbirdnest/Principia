@@ -24,38 +24,38 @@ using quantities::Variation;
 // [t_min, t_max].  |error_estimate| gives an estimate of the error between the
 // approximation the input data.  The client probably wants to compute some
 // norm of that estimate.
-template<typename Argument>
-ЧебышёвSeries<Argument>
+template<typename Value>
+ЧебышёвSeries<Value>
 NewhallApproximationInЧебышёвBasis(int degree,
-                                   std::vector<Argument> const& q,
-                                   std::vector<Variation<Argument>> const& v,
+                                   std::vector<Value> const& q,
+                                   std::vector<Variation<Value>> const& v,
                                    Instant const& t_min,
                                    Instant const& t_max,
-                                   Difference<Argument>& error_estimate);
+                                   Difference<Value>& error_estimate);
 
 // Computes a Newhall approximation of the given |degree| in the monomial basis.
 // The parameters have the same meaning as in the preceding function.  The
 // result is a polynomial of |Time| valid around |(t_min + t_max) / 2| with
 // an argument in the range [(t_min - t_max) / 2, (t_max - t_min) / 2].
-template<typename Argument, int degree,
+template<typename Value, int degree,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Argument, Instant, degree, Evaluator>
-NewhallApproximationInMonomialBasis(std::vector<Argument> const& q,
-                                    std::vector<Variation<Argument>> const& v,
+PolynomialInMonomialBasis<Value, Instant, degree, Evaluator>
+NewhallApproximationInMonomialBasis(std::vector<Value> const& q,
+                                    std::vector<Variation<Value>> const& v,
                                     Instant const& t_min,
                                     Instant const& t_max,
-                                    Difference<Argument>& error_estimate);
+                                    Difference<Value>& error_estimate);
 
 // Same as above but the |degree| is not a constant expression.
-template<typename Argument,
+template<typename Value,
          template<typename, typename, int> class Evaluator>
-not_null<std::unique_ptr<Polynomial<Argument, Instant>>>
+not_null<std::unique_ptr<Polynomial<Value, Instant>>>
 NewhallApproximationInMonomialBasis(int degree,
-                                    std::vector<Argument> const& q,
-                                    std::vector<Variation<Argument>> const& v,
+                                    std::vector<Value> const& q,
+                                    std::vector<Variation<Value>> const& v,
                                     Instant const& t_min,
                                     Instant const& t_max,
-                                    Difference<Argument>& error_estimate);
+                                    Difference<Value>& error_estimate);
 
 }  // namespace internal_newhall
 
