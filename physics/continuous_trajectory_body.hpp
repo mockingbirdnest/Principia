@@ -383,6 +383,11 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
                                 message.has_is_unstable() &&
                                 message.has_degree() &&
                                 message.has_degree_age();
+  bool const is_pre_gröbner =
+    message.instant_polynomial_pair_size() > 0 &&
+    message.instant_polynomial_pair(0).polynomial().
+        GetExtension(serialization::PolynomialInMonomialBasis::extension).
+            coefficient(0).has_multivector();
 
   not_null<std::unique_ptr<ContinuousTrajectory<Frame>>> continuous_trajectory =
       std::make_unique<ContinuousTrajectory<Frame>>(
@@ -413,10 +418,28 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
     }
   } else {
     for (auto const& pair : message.instant_polynomial_pair()) {
-      continuous_trajectory->polynomials_.emplace_back(
-          Instant::ReadFromMessage(pair.t_max()),
-          Polynomial<Position<Frame>, Instant>::template ReadFromMessage<
-              EstrinEvaluator>(pair.polynomial()));
+      if (is_pre_gröbner) {
+        // The easiest way to implement compatibility is to patch the serialized
+        // form.
+        serialization::Polynomial polynomial = pair.polynomial();
+        auto const coefficient0_multivector = polynomial.GetExtension(
+            serialization::PolynomialInMonomialBasis::extension).
+            coefficient(0).multivector();
+        auto* const coefficient0_point = polynomial.MutableExtension(
+            serialization::PolynomialInMonomialBasis::extension)->
+            mutable_coefficient(0)->mutable_point();
+        *coefficient0_point->mutable_multivector() = coefficient0_multivector;
+
+        continuous_trajectory->polynomials_.emplace_back(
+            Instant::ReadFromMessage(pair.t_max()),
+            Polynomial<Position<Frame>, Instant>::template ReadFromMessage<
+                EstrinEvaluator>(polynomial));
+      } else {
+        continuous_trajectory->polynomials_.emplace_back(
+            Instant::ReadFromMessage(pair.t_max()),
+            Polynomial<Position<Frame>, Instant>::template ReadFromMessage<
+                EstrinEvaluator>(pair.polynomial()));
+      }
     }
   }
   if (message.has_first_time()) {
@@ -627,12 +650,11 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
     ++degree_;
     VLOG(1) << "Increasing degree for " << this << " to " <<degree_
             << " because error estimate was " << error_estimate;
-    polynomials_.back().polynomial =
-        NewhallApproximationInMonomialBasis(
-            degree_,
-            q, v,
-            last_points_.cbegin()->first, time,
-            displacement_error_estimate);
+    polynomials_.back().polynomial = NewhallApproximationInMonomialBasis(
+                                         degree_,
+                                         q, v,
+                                         last_points_.cbegin()->first, time,
+                                         displacement_error_estimate);
     previous_error_estimate = error_estimate;
     error_estimate = displacement_error_estimate.Norm();
   }
