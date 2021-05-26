@@ -66,10 +66,10 @@ class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {
   using ContinuousTrajectory<Frame>::ContinuousTrajectory;
 
   // Mock the Newhall factory.
-  not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+  not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>
   NewhallApproximationInMonomialBasis(
       int degree,
-      std::vector<Displacement<Frame>> const& q,
+      std::vector<Position<Frame>> const& q,
       std::vector<Velocity<Frame>> const& v,
       Instant const& t_min,
       Instant const& t_max,
@@ -78,17 +78,17 @@ class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {
   MOCK_CONST_METHOD7_T(
       FillNewhallApproximationInMonomialBasis,
       void(int degree,
-           std::vector<Displacement<Frame>> const& q,
+           std::vector<Position<Frame>> const& q,
            std::vector<Velocity<Frame>> const& v,
            Instant const& t_min,
            Instant const& t_max,
            Displacement<Frame>& error_estimate,
-           not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>&
+           not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>&
                polynomial));
 
   Status LockAndComputeBestNewhallApproximation(
       Instant const& time,
-      std::vector<Displacement<Frame>> const& q,
+      std::vector<Position<Frame>> const& q,
       std::vector<Velocity<Frame>> const& v);
 
   // Helpers to access the internal state of the Newhall optimization.
@@ -99,19 +99,19 @@ class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {
 };
 
 template<typename Frame>
-not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>
 TestableContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
     int degree,
-    std::vector<Displacement<Frame>> const& q,
+    std::vector<Position<Frame>> const& q,
     std::vector<Velocity<Frame>> const& v,
     Instant const& t_min,
     Instant const& t_max,
     Displacement<Frame>& error_estimate) const {
   using P = PolynomialInMonomialBasis<
-                Displacement<Frame>, Instant, /*degree=*/1, HornerEvaluator>;
-  typename P::Coefficients const coefficients = {Displacement<Frame>(),
+                Position<Frame>, Instant, /*degree=*/1, HornerEvaluator>;
+  typename P::Coefficients const coefficients = {Position<Frame>(),
                                                  Velocity<Frame>()};
-  not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+  not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>
       polynomial = make_not_null_unique<P>(coefficients, Instant());
   FillNewhallApproximationInMonomialBasis(degree,
                                           q, v,
@@ -125,7 +125,7 @@ template<typename Frame>
 Status
 TestableContinuousTrajectory<Frame>::LockAndComputeBestNewhallApproximation(
     Instant const& time,
-    std::vector<Displacement<Frame>> const& q,
+    std::vector<Position<Frame>> const& q,
     std::vector<Velocity<Frame>> const& v) {
   absl::MutexLock l(&this->lock_);
   return this->ComputeBestNewhallApproximation(time, q, v);
@@ -183,7 +183,7 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
   Time const step = 1 * Second;
   Length const tolerance = 1 * Metre;
   Instant t = t0_;
-  std::vector<Displacement<World>> const q;
+  std::vector<Position<World>> const q;
   std::vector<Velocity<World>> const v;
 
   auto const trajectory = std::make_unique<TestableContinuousTrajectory<World>>(

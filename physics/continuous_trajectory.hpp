@@ -159,10 +159,10 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   Instant t_max_locked() const REQUIRES_SHARED(lock_);
 
   // Really a static method, but may be overridden for testing.
-  virtual not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+  virtual not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>
   NewhallApproximationInMonomialBasis(
       int degree,
-      std::vector<Displacement<Frame>> const& q,
+      std::vector<Position<Frame>> const& q,
       std::vector<Velocity<Frame>> const& v,
       Instant const& t_min,
       Instant const& t_max,
@@ -174,7 +174,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // instabilities.
   Status ComputeBestNewhallApproximation(
       Instant const& time,
-      std::vector<Displacement<Frame>> const& q,
+      std::vector<Position<Frame>> const& q,
       std::vector<Velocity<Frame>> const& v) REQUIRES(lock_);
 
   // Returns an iterator to the polynomial applicable for the given |time|, or

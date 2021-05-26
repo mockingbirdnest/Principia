@@ -105,16 +105,16 @@ Status ContinuousTrajectory<Frame>::Append(
   if (last_points_.size() == divisions) {
     // These vectors are thread-local to avoid deallocation/reallocation each
     // time we go through this code path.
-    thread_local std::vector<Displacement<Frame>> q(divisions + 1);
+    thread_local std::vector<Position<Frame>> q(divisions + 1);
     thread_local std::vector<Velocity<Frame>> v(divisions + 1);
     q.clear();
     v.clear();
 
     for (auto const& [_, degrees_of_freedom] : last_points_) {
-      q.push_back(degrees_of_freedom.position() - Frame::origin);
+      q.push_back(degrees_of_freedom.position());
       v.push_back(degrees_of_freedom.velocity());
     }
-    q.push_back(degrees_of_freedom.position() - Frame::origin);
+    q.push_back(degrees_of_freedom.position());
     v.push_back(degrees_of_freedom.velocity());
 
     status = ComputeBestNewhallApproximation(time, q, v);
@@ -261,8 +261,8 @@ int ContinuousTrajectory<Frame>::PiecewisePoissonSeriesDegree(
 template<typename Frame>
 template<int aperiodic_degree, int periodic_degree>
 PiecewisePoissonSeries<Displacement<Frame>,
-                        aperiodic_degree, periodic_degree,
-                        EstrinEvaluator>
+                       aperiodic_degree, periodic_degree,
+                       EstrinEvaluator>
 ContinuousTrajectory<Frame>::ToPiecewisePoissonSeries(
     Instant const& t_min,
     Instant const& t_max) const {
@@ -396,10 +396,10 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
           ЧебышёвSeries<Displacement<Frame>>::ReadFromMessage(s);
       Time const step = (series.t_max() - series.t_min()) / divisions;
       Instant t = series.t_min();
-      std::vector<Displacement<Frame>> q;
+      std::vector<Position<Frame>> q;
       std::vector<Velocity<Frame>> v;
       for (int i = 0; i <= divisions; t += step, ++i) {
-        q.push_back(series.Evaluate(t));
+        q.push_back(series.Evaluate(t) + Frame::origin);
         v.push_back(series.EvaluateDerivative(t));
       }
       Displacement<Frame> error_estimate;  // Should we do something with this?
@@ -415,7 +415,7 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
     for (auto const& pair : message.instant_polynomial_pair()) {
       continuous_trajectory->polynomials_.emplace_back(
           Instant::ReadFromMessage(pair.t_max()),
-          Polynomial<Displacement<Frame>, Instant>::template ReadFromMessage<
+          Polynomial<Position<Frame>, Instant>::template ReadFromMessage<
               EstrinEvaluator>(pair.polynomial()));
     }
   }
@@ -554,25 +554,25 @@ Instant ContinuousTrajectory<Frame>::t_max_locked() const {
 }
 
 template<typename Frame>
-not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>
 ContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
     int degree,
-    std::vector<Displacement<Frame>> const& q,
+    std::vector<Position<Frame>> const& q,
     std::vector<Velocity<Frame>> const& v,
     Instant const& t_min,
     Instant const& t_max,
     Displacement<Frame>& error_estimate) const {
   return numerics::NewhallApproximationInMonomialBasis<
-             Displacement<Frame>, EstrinEvaluator>(degree,
-                                                   q, v,
-                                                   t_min, t_max,
-                                                   error_estimate);
+             Position<Frame>, EstrinEvaluator>(degree,
+                                               q, v,
+                                               t_min, t_max,
+                                               error_estimate);
 }
 
 template<typename Frame>
 Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
     Instant const& time,
-    std::vector<Displacement<Frame>> const& q,
+    std::vector<Position<Frame>> const& q,
     std::vector<Velocity<Frame>> const& v) {
   lock_.AssertHeld();
   Length const previous_adjusted_tolerance = adjusted_tolerance_;
@@ -632,7 +632,7 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
             degree_,
             q, v,
             last_points_.cbegin()->first, time,
-            displacement_error_estimate) + Frame::origin;
+            displacement_error_estimate);
     previous_error_estimate = error_estimate;
     error_estimate = displacement_error_estimate.Norm();
   }
