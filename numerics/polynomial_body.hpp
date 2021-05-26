@@ -693,7 +693,7 @@ template<typename Value, typename Argument, int ldegree_,
 constexpr PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator>
 operator+(PolynomialInMonomialBasis<Difference<Value>, Argument,
                                     ldegree_, Evaluator> const& left,
-          Argument const& right) {
+          Value const& right) {
   auto const dropped_left_coefficients =
       TupleDropper<typename PolynomialInMonomialBasis<
                        Difference<Value>, Argument, ldegree_, Evaluator>::
