@@ -33,7 +33,6 @@
     <ClInclude Include="fixed_arrays_body.hpp" />
     <ClInclude Include="double_precision.hpp" />
     <ClInclude Include="double_precision_body.hpp" />
-    <ClInclude Include="fma.hpp" />
     <ClInclude Include="frequency_analysis.hpp" />
     <ClInclude Include="frequency_analysis_body.hpp" />
     <ClInclude Include="gauss_legendre_weights.mathematica.h" />
