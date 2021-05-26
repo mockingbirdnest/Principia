@@ -65,7 +65,7 @@ endif
 TEST_LIBS     := $(DEP_DIR)benchmark/src/libbenchmark.a $(DEP_DIR)protobuf/src/.libs/libprotobuf.a
 LIBS          := $(DEP_DIR)protobuf/src/.libs/libprotobuf.a \
 	$(DEP_DIR)gipfeli/libgipfeli.a \
-	$(DEP_DIR)abseil-cpp/absl/strings/libabsl_strings.a \
+	$(DEP_DIR)abseil-cpp/absl/strings/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/synchronization/libabsl_synchronization.a \
 	$(DEP_DIR)abseil-cpp/absl/time/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/debugging/libabsl_*.a \
@@ -112,6 +112,7 @@ ifeq ($(UNAME_S),Darwin)
 			-I$(DEP_DIR)compatibility/optional \
 			-I$(DEP_DIR)Optional \
 			-include "base/macos_allocator_replacement.hpp"
+    LIBS += -framework CoreFoundation
     SHARED_ARGS += -mmacosx-version-min=10.12 -arch x86_64 -D_LIBCPP_STD_VER=16
     SHAREDFLAG := -dynamiclib
 endif
