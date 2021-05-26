@@ -102,13 +102,11 @@ struct NewhallAppromixator {
 };
 
 #define PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(degree)                  \
-  template<typename Value,                                                  \
-           template<typename, typename, int>                                   \
-           class Evaluator>                                                    \
-  struct NewhallAppromixator<Value, (degree), Evaluator> {                  \
-    static FixedVector<Value, ((degree) + 1)> HomogeneousCoefficients(      \
-        FixedVector<Value, 2 * divisions + 2> const& qv,                    \
-        Value& error_estimate) {                                            \
+  template<typename Value, template<typename, typename, int> class Evaluator>  \
+  struct NewhallAppromixator<Value, (degree), Evaluator> {                     \
+    static FixedVector<Value, ((degree) + 1)> HomogeneousCoefficients(         \
+        FixedVector<Value, 2 * divisions + 2> const& qv,                       \
+        Value& error_estimate) {                                               \
       error_estimate =                                                         \
           newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04           \
               .row<(degree)>() *                                               \
@@ -137,7 +135,7 @@ PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(17);
 
 #define PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(degree)     \
   case (degree):                                                          \
-    coefficients = std::vector<Value>(                                 \
+    coefficients = std::vector<Value>(                                    \
         newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04 * qv); \
     break
 
