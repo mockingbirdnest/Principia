@@ -20,24 +20,22 @@ struct CPUIDResult {
   std::uint32_t edx;
 };
 
+CPUIDResult CPUID(std::uint32_t const eax, std::uint32_t const ecx) {
 #if PRINCIPIA_COMPILER_MSVC
-CPUIDResult CPUID(const std::uint32_t eax, const std::uint32_t ecx) {
   int result[4];
   __cpuidex(result, eax, ecx);
   return {.eax = static_cast<std::uint32_t>(result[0]),
           .ebx = static_cast<std::uint32_t>(result[1]),
           .ecx = static_cast<std::uint32_t>(result[2]),
           .edx = static_cast<std::uint32_t>(result[3])};
-}
 #else
-CPUIDResult CPUID(const std::uint32_t eax, const std::uint32_t ecx) {
   CPUIDResult result;
   __cpuid_count(eax, ecx, result.eax, result.ebx, result.ecx, result.edx);
   return result;
-}
 #endif
+}
 
-std::string VendorIdentificationString() {
+std::string CPUVendorIdentificationString() {
   auto const leaf_0 = CPUID(0, 0);
   std::string result(12, '\0');
   std::memcpy(&result[0], &leaf_0.ebx, 4);
@@ -46,14 +44,15 @@ std::string VendorIdentificationString() {
   return result;
 }
 
-FeatureFlags operator|(FeatureFlags left, FeatureFlags right) {
-  return static_cast<FeatureFlags>(static_cast<std::uint64_t>(left) |
-                                  static_cast<std::uint64_t>(right));
+CPUFeatureFlags operator|(CPUFeatureFlags const left,
+                          CPUFeatureFlags const right) {
+  return static_cast<CPUFeatureFlags>(static_cast<std::uint64_t>(left) |
+                                      static_cast<std::uint64_t>(right));
 }
 
-bool HasCPUFeatures(FeatureFlags const flags) {
+bool HasCPUFeatures(CPUFeatureFlags const flags) {
   auto const leaf_1 = CPUID(1, 0);
-  return static_cast<FeatureFlags>(
+  return static_cast<CPUFeatureFlags>(
              (ecx_bit * leaf_1.ecx | edx_bit * leaf_1.edx) &
              static_cast<std::uint64_t>(flags)) == flags;
 }
