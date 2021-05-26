@@ -150,7 +150,6 @@ NewhallApproximationInЧебышёвBasis(int degree,
   CHECK_EQ(divisions + 1, q.size());
   CHECK_EQ(divisions + 1, v.size());
 
-  Vector const origin{};
   Time const duration_over_two = 0.5 * (t_max - t_min);
 
   // Tricky.  The order in Newhall's matrices is such that the entries for the
@@ -159,7 +158,7 @@ NewhallApproximationInЧебышёвBasis(int degree,
   for (int i = 0, j = 2 * divisions;
        i < divisions + 1 && j >= 0;
        ++i, j -= 2) {
-    qv[j] = q[i] - origin;
+    qv[j] = q[i];
     qv[j + 1] = v[i] * duration_over_two;
   }
 
