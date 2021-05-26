@@ -102,13 +102,11 @@ struct NewhallAppromixator {
 };
 
 #define PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(degree)                  \
-  template<typename Value,                                                  \
-           template<typename, typename, int>                                   \
-           class Evaluator>                                                    \
-  struct NewhallAppromixator<Value, (degree), Evaluator> {                  \
-    static FixedVector<Value, ((degree) + 1)> HomogeneousCoefficients(      \
-        FixedVector<Value, 2 * divisions + 2> const& qv,                    \
-        Value& error_estimate) {                                            \
+  template<typename Value, template<typename, typename, int> class Evaluator>  \
+  struct NewhallAppromixator<Value, (degree), Evaluator> {                     \
+    static FixedVector<Value, ((degree) + 1)> HomogeneousCoefficients(         \
+        FixedVector<Value, 2 * divisions + 2> const& qv,                       \
+        Value& error_estimate) {                                               \
       error_estimate =                                                         \
           newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04           \
               .row<(degree)>() *                                               \
@@ -137,7 +135,7 @@ PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(17);
 
 #define PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(degree)     \
   case (degree):                                                          \
-    coefficients = std::vector<Value>(                                 \
+    coefficients = std::vector<Vector>(                                   \
         newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04 * qv); \
     break
 
@@ -152,7 +150,6 @@ NewhallApproximationInЧебышёвBasis(int degree,
   CHECK_EQ(divisions + 1, q.size());
   CHECK_EQ(divisions + 1, v.size());
 
-  Value const origin{};
   Time const duration_over_two = 0.5 * (t_max - t_min);
 
   // Tricky.  The order in Newhall's matrices is such that the entries for the
@@ -161,7 +158,7 @@ NewhallApproximationInЧебышёвBasis(int degree,
   for (int i = 0, j = 2 * divisions;
        i < divisions + 1 && j >= 0;
        ++i, j -= 2) {
-    qv[j] = q[i] - origin;
+    qv[j] = q[i];
     qv[j + 1] = v[i] * duration_over_two;
   }
 

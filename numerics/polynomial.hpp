@@ -1,4 +1,4 @@
-
+﻿
 #pragma once
 
 #include <algorithm>
@@ -331,6 +331,8 @@ operator*(
         left,
     PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
         right);
+
+// Additive operators polynomial ± constant.
 
 #if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS
 template<typename Value, typename Argument, int ldegree_,
