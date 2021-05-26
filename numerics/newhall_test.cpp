@@ -774,13 +774,13 @@ TEST_F(NewhallTest, Affine) {
   auto double_function = [this](Instant const t) -> double {
     return 1;
   };
+
   CheckNewhallApproximationErrors<MonomialAdapter, Instant, 3>(
       instant_function,
       double_function,
       /*expected_value_error_estimate=*/0.0_⑴ * Second,
       /*expected_value_absolute_error=*/1.1e-16_⑴ * Second,
       /*expected_variation_absolute_error=*/0.0_⑴);
-
 }
 
 TEST_F(NewhallTest, NonConstantDegree) {
