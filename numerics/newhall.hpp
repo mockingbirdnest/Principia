@@ -24,14 +24,14 @@ using quantities::Variation;
 // [t_min, t_max].  |error_estimate| gives an estimate of the error between the
 // approximation the input data.  The client probably wants to compute some
 // norm of that estimate.
-template<typename Value>
-ЧебышёвSeries<Value>
+template<typename Vector>
+ЧебышёвSeries<Vector>
 NewhallApproximationInЧебышёвBasis(int degree,
-                                   std::vector<Value> const& q,
-                                   std::vector<Variation<Value>> const& v,
+                                   std::vector<Vector> const& q,
+                                   std::vector<Variation<Vector>> const& v,
                                    Instant const& t_min,
                                    Instant const& t_max,
-                                   Difference<Value>& error_estimate);
+                                   Vector& error_estimate);
 
 // Computes a Newhall approximation of the given |degree| in the monomial basis.
 // The parameters have the same meaning as in the preceding function.  The

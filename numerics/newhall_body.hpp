@@ -139,14 +139,14 @@ PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(17);
         newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04 * qv); \
     break
 
-template<typename Value>
-ЧебышёвSeries<Value>
+template<typename Vector>
+ЧебышёвSeries<Vector>
 NewhallApproximationInЧебышёвBasis(int degree,
-                                   std::vector<Value> const& q,
-                                   std::vector<Variation<Value>> const& v,
+                                   std::vector<Vector> const& q,
+                                   std::vector<Variation<Vector>> const& v,
                                    Instant const& t_min,
                                    Instant const& t_max,
-                                   Difference<Value>& error_estimate) {
+                                   Vector& error_estimate) {
   CHECK_EQ(divisions + 1, q.size());
   CHECK_EQ(divisions + 1, v.size());
 
@@ -154,7 +154,7 @@ NewhallApproximationInЧебышёвBasis(int degree,
 
   // Tricky.  The order in Newhall's matrices is such that the entries for the
   // largest time occur first.
-  FixedVector<Value, 2 * divisions + 2> qv;
+  FixedVector<Vector, 2 * divisions + 2> qv;
   for (int i = 0, j = 2 * divisions;
        i < divisions + 1 && j >= 0;
        ++i, j -= 2) {
@@ -162,7 +162,7 @@ NewhallApproximationInЧебышёвBasis(int degree,
     qv[j + 1] = v[i] * duration_over_two;
   }
 
-  std::vector<Value> coefficients;
+  std::vector<Vector> coefficients;
   coefficients.reserve(degree);
   switch (degree) {
     PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(3);
@@ -186,7 +186,7 @@ NewhallApproximationInЧебышёвBasis(int degree,
   }
   CHECK_EQ(degree + 1, coefficients.size());
   error_estimate = coefficients[degree];
-  return ЧебышёвSeries<Difference<Value>>(coefficients, t_min, t_max);
+  return ЧебышёвSeries<Vector>(coefficients, t_min, t_max);
 }
 
 #undef PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE
