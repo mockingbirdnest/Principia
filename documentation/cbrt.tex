@@ -302,7 +302,7 @@ known to Schröder.
 \end{quote}
 It is possible that the irrational methods could be expressed using Schröder’s results in one way or another, although most of his methods seem to be rational; in any case, such a formulation
 is unlikely to be something well-known, as irrational methods are far less popular
-nowadays---unjustifiedly so, as we shall see.
+nowadays---unjustifiedly so, as we shall see in part~\ref{CubeRoot} and appendix~\ref{Performance}.
 
 Our generalization of Lagny's irrational methods to arbitrary $f$, which, in the polynomial case,
 decouples the degree of $f$ from the convergence order, was inspired by Gander's rephrasing in
@@ -316,6 +316,7 @@ Tout cela est fort abrégé; mais qui nous délivrera des méthodes abrége
 qui n'en finissent pas?}\end{quote}
 
 \part{Computing a real cube root}
+\label{CubeRoot}
 
 We now turn to the computation of the cube root of in \texttt{numerics/cbrt.cpp}.
 
@@ -1334,7 +1335,7 @@ and that of the generalized Lagny quadratic irrational method of order $4$ below
 It seems that Canon optimization on the latter can readily bring down its rerror below $2^{-24}$, but not much
 further.
 Both the rational and irrational methods of order $5$ have errors below $2^{-28}$; little stands to be gained
-from optimization.
+from optimization there.
 
 Conversely the computation of $r_0$ from $x$ may use a lower-order method, since it starts from $26$ bits rather
 than $17$, but still cannot add more than $53$; a fourth-order method suffices to make the truncation error
@@ -1342,14 +1343,33 @@ negligible; again we use the rational method for the last step.
 
 Of course, besides allowing for a correctly-rounded $y-x^3$ from an $x$ with an exact square, FMA improves performance
 and rounding errors in all steps; even the slow path benefits from it, as the exact products may be computed with a
-multiplication and an FMA, $a_0=\round{a^2}$, $a_1=\round{a^2-a_0}$, instead of Veltkampf's algorithm.
+multiplication and an FMA, $a^2_0=\round{a^2}$, $a^2_1=\round{a^2-a_0}$, instead of Veltkamp's algorithm.
 
 The constants become TODO(egg): compute those.
 
 \section{Performance considerations}
 \label{Performance}
+We obviously consider the latency of the cube root function. Its reciprocal throughput is however a somewhat artificial
+quantity, as workloads consisting solely of cube roots are rare. We thus also consider the variation in throughput of
+the cubic formula for Kepler's problem, given in appendix~\ref{ExampleGeneralizedLagnyMethods}, as a more plausible workload.
+In this context the irrational methods tend to be superior, as they put more of their work on the otherwise less-used
+division unit.
+
+While the irrational methods, being the solutions equations of the second degree, are of the form
+\[\frac{\mathfrak{a}\pm\sqrt{\mathfrak{b}}}{\mathfrak{c}}\text,\]where the letters stand for polynomial expressions, the degree of
+$\mathfrak{c}$ is much lower than that of the denominator of the rational methods; a division may thus be scheduled early, and
+its result multiplied at the end, for a latency similar to that of the corresponding rational methods.
+
+This is not unlike the reason for Halley's preference for his irrational method over his rational one in \cite[140]{Halley1694}:
+\begin{quote}
+Hæc vero formula merito præferenda eſt rationali, ob ingentem diviſorem, non fine magno labore tractandum; cum Lateris quadrati
+extractio multo facilius procedat, ut experientia multiplex me docuit.
+\end{quote}
+While in Halley's case the issue is not the delay in scheduling the division (hand computation by a single computer is not pipelined)
+but the latency of a division by a large number, both ultimately boil down to the denominator being of smaller degree---and thus, for
+Halley, having fewer digits---in the irrational method.
 \subsection*{Without FMA}
-In the second step, where rounding errors are not a concern, Lagny's
+In the second step $\FunctionBody{q}{ξ}$, where rounding errors are not a concern, Lagny's
 rational method is best evaluated as\[
 ξ = \round{\frac{\round{\round{q^2}\round{q^2}}+\round{2yq}}
 {\round{2\round{\round{q^2}q}+y}}}\text.
@@ -1358,19 +1378,30 @@ On Ivy Bridge\footnote{We thank Peter Barfuss for running some benchmarks for us
 the irrational method evaluated as\[
 ξ = \round{\round{\tfrac{1}{2}q'}+ \round{\round{\frac{\round{1/\sqrt{12}}}{q}}{\round{\sqrt{\round{\round{4yq}-\round{\round{q^2}\round{q^2}}}}}}}}\text,
 \]
-\emph{mutatis mutandis} with Canon optimization, is a couple cycles faster than the rational method. On Sandy Bridge, it is
-instead computed fastest as\[
-ξ = \round{\round{\tfrac{1}{2}q'}+ \round{\sqrt{\round{\round{\round{4 y}-\round{\round{q^2}\round{q}}}\round{\frac{\round{1/12}}{q}}}}}}\text,
-\]
-which is about four cycles slower than the rational method.
-
-Surprisingly, the rounding step $\FunctionBody ξ x$ is faster when performed using Veltkamp\--Dekker than by directed rounding using \texttt{andpd} on Sandy Bridge, and about equally fast on Ivy Bridge. Given the increased precision, we round to the nearest
-$17$-bit value in that step.
+\emph{mutatis mutandis} with Canon optimization, has about the same latency as the rational method.
 
 TODO(egg): Give some numbers for the rate of passage in the ``potential misrounding'' path, and its cost.
 \subsection*{With FMA}
-TODO(egg): decide on which methods we use and then report on performance here.
-
+The rational method of order $5$ may be evaluated with FMA as\[
+ξ = \round{
+\frac{
+\round{\round{\round{\round{q^2}q}\round{\round{q^2}q}}
+       \round{\round{\round{5q}\round{q^2}+\round{45 y}}}+
+       \round{\round{\round{30q}\round{q^2}+y}\round{y^2}}}}
+{\round{\round{\round{\round{q^2}q}\round{q^2}} \round{\round{15q}\round{q^2}+\round{51y}} + \round{\round{15 \round{y^2}} \round{q^2}}}}}\text.
+\]
+The irrational method of the same order may be evaluated with similar performance on Skylake if it is rewritten as\[
+\frac{q}{\tfrac{20}{\sqrt{15}}q^3-\tfrac{2}{\sqrt{15}}y}\pa{\sqrt{-q^6+\tfrac{118}{5}q^3y-y^2}+\tfrac{5}{\sqrt{15}}\pa{q^3-y}}
+\]and evaluated as\[
+ξ = \round{d
+       \round{\sqrt{\round{\round{\round{q^2}q}
+                           \round{-\round{q^2}q+\round{\round{\tfrac{118}{5}}y}}+
+                           \round{y^2}}}}+
+      \round{d\round{\round{\tfrac{5}{\sqrt{15}}}\round{\round{q^2}q-y}}}}\text,
+\]
+where\[
+d\DefineAs\round{\frac{q}{\round{\round{q^2}\round{\round{\tfrac{20}{\sqrt{15}}}q}-\round{\round{\tfrac{2}{\sqrt{15}}}y}}}}\text.
+\]
 
 \section{Rounding error analysis for the second step}
 \label{LagnyStepTwoRounding}
