@@ -25,6 +25,7 @@
     <ClInclude Include="bits_body.hpp" />
     <ClInclude Include="bundle.hpp" />
     <ClInclude Include="constant_function.hpp" />
+    <ClInclude Include="cpuid.hpp" />
     <ClInclude Include="disjoint_sets.hpp" />
     <ClInclude Include="disjoint_sets_body.hpp" />
     <ClInclude Include="encoder.hpp" />
@@ -87,6 +88,8 @@
     <ClCompile Include="bits_test.cpp" />
     <ClCompile Include="bundle.cpp" />
     <ClCompile Include="bundle_test.cpp" />
+    <ClCompile Include="cpuid.cpp" />
+    <ClCompile Include="cpuid_test.cpp" />
     <ClCompile Include="disjoint_sets_test.cpp" />
     <ClCompile Include="flags.cpp" />
     <ClCompile Include="flags_test.cpp" />
