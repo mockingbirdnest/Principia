@@ -635,8 +635,7 @@ For the error of $x$ as an approximation of the cube root,\[ε_x\DefineAs\frac{x
 we have the bound $\abs{ε_x} < \pa{1+\abs{ε_ξ}}\pa{1+2^{-16}}-1$.
 
 \subsubsection*{Rounding to nearest}
-An alternative which has similar performance on some architectures, but half the error,
-is to use Dekker's method to round to the nearest number with the desired
+An alternative is to use Dekker's method to round to the nearest number with the desired
 number of bits; see \cite[235,241]{Dekker1971} in \emph{mul12}:\[
 ϖ\DefineAs\round{ξ\pa{2^{p-\Floor{\frac{p}{3}}}+1}}\text{, }x\DefineAs\round{\round{ξ-ϖ}+ϖ}\text.
 \]
