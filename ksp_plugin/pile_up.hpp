@@ -128,7 +128,7 @@ class PileUp {
   // that we return a local variable even though we capture by reference.
   // TODO(phl): Try to fix in VS2022 or later.
   using PileUpForSerializationIndex =
-      std::function<not_null<std::shared_ptr<PileUp>>(int)>;
+      std::function<not_null<std::shared_ptr<PileUp>> const&(int)>;
   using SerializationIndexForPileUp =
       std::function<int(not_null<PileUp const*>)>;
 
