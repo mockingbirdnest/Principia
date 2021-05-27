@@ -21,7 +21,8 @@
 // The presence of an operator+ below causes a bizarre compilation error in
 // seemingly unrelated code in PolynomialTest.VectorSpace.
 #define PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS \
-  !PRINCIPIA_COMPILER_MSVC || !(_MSC_FULL_VER == 192'930'036)
+  !PRINCIPIA_COMPILER_MSVC || !(_MSC_FULL_VER == 192'930'036 || \
+                                _MSC_FULL_VER == 192'930'037)
 
 namespace principia {
 namespace numerics {
