@@ -118,13 +118,8 @@ TEST_F(PairTest, MemberSubtraction) {
                           3 * si::Unit<Amount>})),
             pp_ - vv_);
   EXPECT_EQ(PV(P1() + V1({3 * si::Unit<Action>,
-                          2 * si::Unit<Action>,
-                          3 * si::Unit<Action>}) +
-                      // A convoluted way of writing {3, 3, 3}, to circumvent a
-                      // frightening bug in VS2017.
-                      V1({0 * si::Unit<Action>,
-                          1 * si::Unit<Action>,
-                          0 * si::Unit<Action> }),
+                          3 * si::Unit<Action>,
+                          3 * si::Unit<Action>}),
                V2({0 * si::Unit<Amount>,
                    0 * si::Unit<Amount>,
                    0 * si::Unit<Amount>})),
