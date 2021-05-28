@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
 #include "astronomy/epoch.hpp"
 #include "base/jthread.hpp"
 #include "base/macros.hpp"
@@ -966,9 +967,10 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
     auto const& status = statuses[i];
     if (!status.ok()) {
       last_severe_integration_status_ =
-          absl::Status(status.error(),
-                       "Error extending trajectory for " + bodies_[i]->name() +
-                           ". " + status.message());
+          absl::Status(status.code(),
+                       absl::StrCat("Error extending trajectory for ",
+                                    bodies_[i]->name(), ". ",
+                                    status.message()));
       LOG(ERROR) << "New Apocalypse: " << last_severe_integration_status_;
     }
   }
@@ -1127,7 +1129,7 @@ Ephemeris<Frame>::ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
   Position<Frame> const position1 = trajectory1.EvaluatePosition(t);
   Length const body1_collision_radius =
       min_radius_tolerance * body1.min_radius();
-  // NOTE(phl): In C++23 we'll have std::to_underlying.
+  // TODO(phl): Use std::to_underlying when we have C++23.
   auto error = static_cast<std::underlying_type_t<absl::StatusCode>>(
       absl::StatusCode::kOk);
 
@@ -1218,7 +1220,7 @@ Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
     std::vector<Vector<Acceleration, Frame>>& accelerations) const {
   CHECK_EQ(positions.size(), accelerations.size());
   accelerations.assign(accelerations.size(), Vector<Acceleration, Frame>());
-  // NOTE(phl): In C++23 we'll have std::to_underlying.
+  // TODO(phl): Use std::to_underlying when we have C++23.
   auto error = static_cast<std::underlying_type_t<absl::StatusCode>>(
       absl::StatusCode::kOk);
 

@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "astronomy/epoch.hpp"
+#include "base/status_utilities.hpp"
 
 namespace principia {
 namespace physics {

@@ -101,8 +101,8 @@ Status* __cdecl principia__ExternalCelestialGetSurfacePosition(
   }
   if (!plugin->HasCelestial(body_index)) {
     return m.Return(ToNewStatus(
-        Error::NOT_FOUND,
-        absl::StrCat("No celestial with index ", body_index)));
+        absl::NotFoundError(
+            absl::StrCat("No celestial with index ", body_index))));
   }
   auto const& celestial = plugin->GetCelestial(body_index);
   auto const& trajectory = celestial.trajectory();
@@ -110,7 +110,7 @@ Status* __cdecl principia__ExternalCelestialGetSurfacePosition(
   if (t < trajectory.t_min() || t > trajectory.t_max()) {
     return m.Return(
         ToNewStatus(
-            absl::OutOfRange(
+            absl::OutOfRangeError(
                 (std::stringstream{}
                   << "|time| " << t << " does not lie within the domain ["
                   << trajectory.t_min() << ", " << trajectory.t_max()
@@ -147,10 +147,10 @@ Status* __cdecl principia__ExternalFlowFreefall(
       {world_body_centred_final_degrees_of_freedom}};
   if (plugin == nullptr) {
     return m.Return(
-        ToNewStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
+        ToNewStatus(absl::InvalidArgumentError("|plugin| must not be null")));
   }
-  return m.Return(ToNewStatus(Error::UNIMPLEMENTED,
-                             "|ExternalFlowFreefall| is not yet implemented"));
+  return m.Return(ToNewStatus(absl::UnimplementedError(
+      "|ExternalFlowFreefall| is not yet implemented")));
 }
 
 Status* __cdecl principia__ExternalGeopotentialGetCoefficient(
@@ -167,18 +167,18 @@ Status* __cdecl principia__ExternalGeopotentialGetCoefficient(
       {coefficient}};
   if (plugin == nullptr) {
     return m.Return(
-        ToNewStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
+        ToNewStatus(absl::InvalidArgumentError("|plugin| must not be null")));
   }
   if (!plugin->HasCelestial(body_index)) {
     return m.Return(ToNewStatus(
-        Error::NOT_FOUND,
-        absl::StrCat("No celestial with index ", body_index)));
+        absl::NotFoundError(
+            absl::StrCat("No celestial with index ", body_index))));
   }
   if (order < 0 || order > degree) {
     return m.Return(ToNewStatus(
-        Error::INVALID_ARGUMENT,
-        absl::StrCat(u8"Expected 0 ≤ order ≤ degree; got degree = ",
-                     degree, ", order = ", order)));
+        absl::InvalidArgumentError(
+            absl::StrCat(u8"Expected 0 ≤ order ≤ degree; got degree = ",
+                         degree, ", order = ", order))));
   }
   if (degree == 0) {
     *coefficient = {1, 0};
@@ -209,12 +209,12 @@ Status* __cdecl principia__ExternalGeopotentialGetReferenceRadius(
       {reference_radius}};
   if (plugin == nullptr) {
     return m.Return(
-        ToNewStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
+        ToNewStatus(absl::InvalidArgumentError("|plugin| must not be null")));
   }
   if (!plugin->HasCelestial(body_index)) {
     return m.Return(ToNewStatus(
-        Error::NOT_FOUND,
-        absl::StrCat("No celestial with index ", body_index)));
+        absl::NotFoundError(
+            absl::StrCat("No celestial with index ", body_index))));
   }
   auto const& body = *plugin->GetCelestial(body_index).body();
   if (!body.is_oblate()) {
@@ -242,45 +242,45 @@ Status* __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
       {world_body_centred_nearest_degrees_of_freedom}};
   if (plugin == nullptr) {
     return m.Return(
-        ToNewStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
+        ToNewStatus(absl::InvalidArgumentError("|plugin| must not be null")));
   }
   if (manoeuvre_index < 0) {
-    return m.Return(ToNewStatus(Error::INVALID_ARGUMENT,
-                              "Invalid negative |manoeuvre_index|" +
-                                  std::to_string(manoeuvre_index)));
+    return m.Return(ToNewStatus(absl::InvalidArgumentError(
+                                    "Invalid negative |manoeuvre_index|" +
+                                        std::to_string(manoeuvre_index))));
   }
   if (!plugin->HasCelestial(central_body_index)) {
     return m.Return(ToNewStatus(
-        Error::NOT_FOUND,
-        "No celestial with index " + std::to_string(central_body_index)));
+        absl::NotFoundError(
+            "No celestial with index " + std::to_string(central_body_index))));
   }
   if (!plugin->HasVessel(vessel_guid)) {
     return m.Return(ToNewStatus(
-        Error::NOT_FOUND,
-        "No vessel with GUID " + std::string(vessel_guid)));
+        absl::NotFoundError(
+            "No vessel with GUID " + std::string(vessel_guid))));
   }
   Vessel const& vessel = *plugin->GetVessel(vessel_guid);
   if (!vessel.has_flight_plan()) {
     return m.Return(ToNewStatus(
-        Error::FAILED_PRECONDITION,
-        "Vessel " + vessel.ShortDebugString() + " has no flight plan"));
+        absl::FailedPreconditionError(
+            "Vessel " + vessel.ShortDebugString() + " has no flight plan")));
   }
   FlightPlan const& flight_plan = vessel.flight_plan();
   if (manoeuvre_index >= flight_plan.number_of_manœuvres()) {
     return m.Return(ToNewStatus(
-        Error::OUT_OF_RANGE,
-        "|manoeuvre_index| " + std::to_string(manoeuvre_index) +
-            " out of range, vessel " + vessel.ShortDebugString() + " has " +
-            std::to_string(flight_plan.number_of_manœuvres()) +
-            u8" planned manœuvres"));
+        absl::OutOfRangeError(
+            "|manoeuvre_index| " + std::to_string(manoeuvre_index) +
+                " out of range, vessel " + vessel.ShortDebugString() + " has " +
+                std::to_string(flight_plan.number_of_manœuvres()) +
+                u8" planned manœuvres")));
   }
   // The index of the coast segment following the desired manœuvre.
   int const segment_index = manoeuvre_index * 2 + 2;
   if (segment_index >= flight_plan.number_of_segments()) {
-    return m.Return(ToNewStatus(Error::FAILED_PRECONDITION,
-                               u8"A singularity occurs within manœuvre " +
-                                   std::to_string(manoeuvre_index) + " of " +
-                                   vessel.ShortDebugString()));
+    return m.Return(ToNewStatus(absl::FailedPreconditionError(
+                                u8"A singularity occurs within manœuvre " +
+                                    std::to_string(manoeuvre_index) + " of " +
+                                    vessel.ShortDebugString())));
   }
   DiscreteTrajectory<Barycentric>::Iterator coast_begin;
   DiscreteTrajectory<Barycentric>::Iterator coast_end;
@@ -360,23 +360,24 @@ Status* __cdecl principia__ExternalVesselGetPosition(
       {position}};
   if (plugin == nullptr) {
     return m.Return(
-        ToNewStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
+        ToNewStatus(absl::InvalidArgumentError("|plugin| must not be null")));
   }
   if (!plugin->HasVessel(vessel_guid)) {
     return m.Return(ToNewStatus(
-        Error::NOT_FOUND,
-        absl::StrCat("No vessel with GUID ", vessel_guid)));
+        absl::NotFoundError(
+            absl::StrCat("No vessel with GUID ", vessel_guid))));
   }
   auto const& vessel = *plugin->GetVessel(vessel_guid);
   auto const& trajectory = vessel.psychohistory();
   Instant const t = FromGameTime(*plugin, time);
   if (t < trajectory.t_min() || t > trajectory.t_max()) {
     return m.Return(ToNewStatus(
-        Error::OUT_OF_RANGE,
-        (std::stringstream{}
-         << "|time| " << t << " does not lie within the domain ["
-         << trajectory.t_min() << ", " << trajectory.t_max()
-         << "] of the psychohistory of " << vessel.ShortDebugString()).str()));
+        absl::OutOfRangeError(
+            (std::stringstream{}
+             << "|time| " << t << " does not lie within the domain ["
+             << trajectory.t_min() << ", " << trajectory.t_max()
+             << "] of the psychohistory of "
+             << vessel.ShortDebugString()).str())));
   }
   auto const from_solar_system_barycentre =
       plugin->renderer().BarycentricToWorldSun(plugin->PlanetariumRotation())(

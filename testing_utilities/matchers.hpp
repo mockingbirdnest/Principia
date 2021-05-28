@@ -34,10 +34,10 @@ MATCHER(IsOk,
 }
 
 MATCHER_P(StatusIs,
-          error,
-          std::string(negation ? "does not have" : "has") + " error: " +
-              ::principia::base::ErrorToString(error)) {
-  return arg.error() == error;
+          code,
+          std::string(negation ? "does not have" : "has") + " code: " +
+              (std::stringstream{} << code).str()) {
+  return arg.code() == code;
 }
 
 MATCHER_P(SSEHighHalfIs,

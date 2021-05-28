@@ -59,7 +59,7 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
                               orbital_elements.sidereal_period_);
   RETURN_IF_ERROR(mean_equinoctial_elements);
   orbital_elements.mean_equinoctial_elements_ =
-      std::move(mean_equinoctial_elements).ValueOrDie();
+      std::move(mean_equinoctial_elements).value();
   if (orbital_elements.mean_equinoctial_elements_.size() < 2) {
     return absl::OutOfRangeError(
         "trajectory does not span one sidereal period: sidereal period is " +
@@ -72,7 +72,7 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
       ToClassicalElements(orbital_elements.mean_equinoctial_elements_);
   RETURN_IF_ERROR(mean_classical_elements);
   orbital_elements.mean_classical_elements_ =
-      std::move(mean_classical_elements).ValueOrDie();
+      std::move(mean_classical_elements).value();
   RETURN_IF_ERROR(orbital_elements.ComputePeriodsAndPrecession());
   RETURN_IF_ERROR(orbital_elements.ComputeIntervals());
   return orbital_elements;

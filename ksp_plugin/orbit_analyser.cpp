@@ -128,7 +128,7 @@ absl::Status OrbitAnalyser::AnalyseOrbit(GuardedParameters const guarded_paramet
     for (int n = 0; n <= progress_bar_steps; ++n) {
       Instant const t =
           parameters.first_time + n / progress_bar_steps * analysis_duration;
-      if (!ephemeris_->FlowWithFixedStep(t, *instance.ValueOrDie()).ok()) {
+      if (!ephemeris_->FlowWithFixedStep(t, *instance.value()).ok()) {
         // TODO(egg): Report that the integration failed.
         break;
       }
@@ -159,7 +159,7 @@ absl::Status OrbitAnalyser::AnalyseOrbit(GuardedParameters const guarded_paramet
     // statuses.
     RETURN_IF_STOPPED;
     if (elements.ok()) {
-      analysis.elements_ = std::move(elements).ValueOrDie();
+      analysis.elements_ = std::move(elements).value();
       // TODO(egg): max_abs_Cᴛₒ should probably depend on the number of
       // revolutions.
       analysis.closest_recurrence_ = OrbitRecurrence::ClosestRecurrence(
@@ -172,7 +172,7 @@ absl::Status OrbitAnalyser::AnalyseOrbit(GuardedParameters const guarded_paramet
                                           *primary,
                                           /*mean_sun=*/std::nullopt);
       RETURN_IF_ERROR(ground_track);
-      analysis.ground_track_ = std::move(ground_track).ValueOrDie();
+      analysis.ground_track_ = std::move(ground_track).value();
       analysis.ResetRecurrence();
     }
   }

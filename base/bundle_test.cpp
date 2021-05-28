@@ -4,6 +4,7 @@
 #include <atomic>
 #include <vector>
 
+#include "base/status_utilities.hpp"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "testing_utilities/matchers.hpp"

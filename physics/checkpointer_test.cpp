@@ -1,6 +1,7 @@
 #include "physics/checkpointer.hpp"
 
 #include "astronomy/epoch.hpp"
+#include "base/status_utilities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "testing_utilities/matchers.hpp"

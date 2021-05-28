@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "astronomy/epoch.hpp"
+#include "base/status_utilities.hpp"
 #include "geometry/interval.hpp"
 #include "glog/stl_logging.h"
 #include "numerics/newhall.hpp"
