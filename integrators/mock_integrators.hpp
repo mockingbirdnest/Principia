@@ -43,13 +43,6 @@ class MockFixedStepSizeIntegrator
               WriteToMessage,
               (not_null<serialization::FixedStepSizeIntegrator*> message),
               (const, override));
-  MOCK_METHOD(not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>,
-              ReadFromMessage,
-              (serialization::FixedStepSizeIntegratorInstance const& message,
-               IntegrationProblem<ODE> const& problem,
-               AppendState const& append_state,
-               Time const& step),
-              (const, override));
 
   static MockFixedStepSizeIntegrator const& Get() {
     static MockFixedStepSizeIntegrator const integrator;

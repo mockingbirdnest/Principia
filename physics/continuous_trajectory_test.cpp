@@ -86,7 +86,7 @@ class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {
        Displacement<Frame>& error_estimate,
        (not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>> &
         polynomial)),
-      (const, override));
+      (const));
 
   absl::Status LockAndComputeBestNewhallApproximation(
       Instant const& time,

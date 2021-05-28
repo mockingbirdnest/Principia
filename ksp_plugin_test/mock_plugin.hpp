@@ -67,11 +67,6 @@ class MockPlugin : public Plugin {
               (Instant const& t, Angle const& planetarium_rotation),
               (override));
 
-  MOCK_METHOD(void,
-              ForgetAllHistoriesBefore,
-              (Instant const& t),
-              (const, override));
-
   MOCK_METHOD(RelativeDegreesOfFreedom<AliceSun>,
               VesselFromParent,
               (Index parent_index, GUID const& vessel_guid),
@@ -117,18 +112,18 @@ class MockPlugin : public Plugin {
               (Planetarium::Parameters const& parameters,
                (Perspective<Navigation, Camera> const& perspective),
                std::unique_ptr<Planetarium>* planetarium),
-              (const, override));
+              (const));
   MOCK_METHOD(void,
               FillBodyCentredNonRotatingNavigationFrame,
               (Index reference_body_index,
                std::unique_ptr<NavigationFrame>* navigation_frame),
-              (const, override));
+              (const));
   MOCK_METHOD(void,
               FillBarycentricRotatingNavigationFrame,
               (Index primary_index,
                Index secondary_index,
                std::unique_ptr<NavigationFrame>* navigation_frame),
-              (const, override));
+              (const));
 
   MOCK_METHOD((std::unique_ptr<FrameField<World, Navball>>),
               NavballFrameField,

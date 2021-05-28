@@ -72,10 +72,10 @@ class MockEphemeris : public Ephemeris<Frame> {
               (const, override));
 
   // NOTE(phl): This overload introduces ambiguities in the expectations.
-  // MOCK_METHOD(MOCK_CONST_METHOD2_T,
-  // //ComputeGravitationalAccelerationOnMasslessBody, (
+  // MOCK_METHOD(
+  // ComputeGravitationalAccelerationOnMasslessBody, (
   //     ComputeGravitationalAccelerationOnMasslessBody,
-(  //     Vector<Acceleration, Frame>(
+  //     Vector<Acceleration, Frame>(
   //         not_null<DiscreteTrajectory<Frame>*> /*const*/ trajectory),
   //         Instant const& t), (const, override));
 

@@ -19,7 +19,7 @@ class MockRenderer : public Renderer {
   MOCK_METHOD(void,
               SetPlottingFrameConstRef,
               (NavigationFrame const& plotting_frame),
-              (override));
+              ());
 
   MOCK_METHOD(not_null<NavigationFrame const*>,
               GetPlottingFrame,
@@ -43,7 +43,7 @@ class MockRenderer : public Renderer {
                (Rotation<Barycentric, AliceSun> const& planetarium_rotation),
                std::unique_ptr<DiscreteTrajectory<World>>*
                    rendered_barycentric_trajectory_in_world),
-              (const, override));
+              (const));
 
   MOCK_METHOD((OrthogonalMap<Barycentric, WorldSun>),
               BarycentricToWorldSun,
