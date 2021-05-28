@@ -50,7 +50,6 @@ namespace internal_plugin {
 
 using astronomy::ICRS;
 using astronomy::ParseTT;
-using base::Error;
 using base::FindOrDie;
 using base::make_not_null_unique;
 using base::not_null;

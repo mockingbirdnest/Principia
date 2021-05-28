@@ -21,7 +21,6 @@ namespace internal_vessel {
 using astronomy::InfiniteFuture;
 using astronomy::InfinitePast;
 using base::Contains;
-using base::Error;
 using base::FindOrDie;
 using base::jthread;
 using base::make_not_null_unique;

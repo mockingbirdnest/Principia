@@ -24,7 +24,6 @@ namespace internal_continuous_trajectory {
 
 using astronomy::InfiniteFuture;
 using base::dynamic_cast_not_null;
-using base::Error;
 using base::make_not_null_unique;
 using geometry::Interval;
 using numerics::EstrinEvaluator;

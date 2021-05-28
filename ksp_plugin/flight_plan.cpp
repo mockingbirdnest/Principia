@@ -16,7 +16,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_flight_plan {
 
-using base::Error;
 using base::make_not_null_unique;
 using geometry::Position;
 using geometry::Vector;

@@ -16,7 +16,6 @@ namespace principia {
 namespace integrators {
 namespace internal_integrators {
 
-using base::Error;
 using base::not_null;
 using geometry::Instant;
 using numerics::DoublePrecision;

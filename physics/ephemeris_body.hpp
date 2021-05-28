@@ -33,7 +33,6 @@ namespace internal_ephemeris {
 
 using astronomy::J2000;
 using base::dynamic_cast_not_null;
-using base::Error;
 using base::FindOrDie;
 using base::make_not_null_unique;
 using base::MakeStoppableThread;

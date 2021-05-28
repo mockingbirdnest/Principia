@@ -66,7 +66,6 @@ using astronomy::ParseTT;
 using astronomy::StabilizeKSP;
 using base::check_not_null;
 using base::dynamic_cast_not_null;
-using base::Error;
 using base::FindOrDie;
 using base::Fingerprint2011;
 using base::HexadecimalEncoder;

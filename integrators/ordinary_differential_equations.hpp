@@ -29,7 +29,6 @@ constexpr base::Error VanishingStepSize = base::Error::FAILED_PRECONDITION;
 
 namespace internal_ordinary_differential_equations {
 
-using base::Error;
 using base::not_null;
 using geometry::Instant;
 using numerics::DoublePrecision;

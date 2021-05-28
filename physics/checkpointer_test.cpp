@@ -9,7 +9,6 @@ namespace principia {
 namespace physics {
 
 using astronomy::InfinitePast;
-using base::Error;
 using base::not_null;
 using geometry::Instant;
 using quantities::si::Second;

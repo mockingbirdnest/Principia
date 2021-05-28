@@ -28,7 +28,6 @@ namespace internal_frequency_analysis {
 #define PRINCIPIA_USE_CGS 0
 #define PRINCIPIA_USE_R 1
 
-using base::Error;
 using base::uninitialized;
 using geometry::Hilbert;
 using geometry::Vector;

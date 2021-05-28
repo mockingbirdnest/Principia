@@ -16,7 +16,6 @@ namespace internal_checkpointer {
 
 using astronomy::InfiniteFuture;
 using astronomy::InfinitePast;
-using base::Error;
 
 template<typename Message>
 Checkpointer<Message>::Checkpointer(Writer writer, Reader reader)

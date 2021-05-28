@@ -33,7 +33,6 @@ namespace principia {
 namespace physics {
 namespace internal_ephemeris {
 
-using base::Error;
 using base::jthread;
 using base::not_null;
 using geometry::Instant;

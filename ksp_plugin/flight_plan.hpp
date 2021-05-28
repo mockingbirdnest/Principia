@@ -21,7 +21,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_flight_plan {
 
-using base::Error;
 using base::not_null;
 using geometry::Instant;
 using integrators::AdaptiveStepSizeIntegrator;
