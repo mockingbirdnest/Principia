@@ -389,7 +389,7 @@ Ephemeris<Frame>::NewInstance(
     IntrinsicAccelerations const& intrinsic_accelerations,
     FixedStepParameters const& parameters) {
   return StoppableNewInstance(trajectories, intrinsic_accelerations, parameters)
-      .ValueOrDie();
+      .value();
 }
 
 template<typename Frame>
@@ -442,8 +442,12 @@ Ephemeris<Frame>::StoppableNewInstance(
   Prolong(trajectory_last_time + parameters.step_);
   RETURN_IF_STOPPED;
 
-  return parameters.integrator_->NewInstance(
-      problem, append_state, parameters.step_);
+  // NOTE(phl): For some reason the May 2021 version of absl wants an explicit
+  // construction here.  Unsure if the bug is in absl, VS 2019, or both.
+  return absl::StatusOr<not_null<std::unique_ptr<typename Integrator<
+      typename Ephemeris<Frame>::NewtonianMotionEquation>::Instance>>>(
+      parameters.integrator_->NewInstance(
+          problem, append_state, parameters.step_));
 }
 
 template<typename Frame>
@@ -1110,8 +1114,8 @@ void Ephemeris<Frame>::
 
 template<typename Frame>
 template<bool body1_is_oblate>
-absl::StatusCode Ephemeris<Frame>::
-ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
+std::underlying_type_t<absl::StatusCode>
+Ephemeris<Frame>::ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
     Instant const& t,
     MassiveBody const& body1,
     std::size_t const b1,
@@ -1123,7 +1127,9 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
   Position<Frame> const position1 = trajectory1.EvaluatePosition(t);
   Length const body1_collision_radius =
       min_radius_tolerance * body1.min_radius();
-  auto error = absl::StatusCode::kOk;
+  // NOTE(phl): In C++23 we'll have std::to_underlying.
+  auto error = static_cast<std::underlying_type_t<absl::StatusCode>>(
+      absl::StatusCode::kOk);
 
   for (std::size_t b2 = 0; b2 < positions.size(); ++b2) {
     // A vector from the center of |b2| to the center of |b1|.
@@ -1131,8 +1137,11 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
 
     Square<Length> const Δq² = Δq.Norm²();
     Length const Δq_norm = Sqrt(Δq²);
-    error |= Δq_norm > body1_collision_radius ? absl::StatusCode::kOk :
-                                                absl::StatusCode::kOutOfRange;
+    error |= Δq_norm > body1_collision_radius
+                 ? static_cast<std::underlying_type_t<absl::StatusCode>>(
+                       absl::StatusCode::kOk)
+                 : static_cast<std::underlying_type_t<absl::StatusCode>>(
+                       absl::StatusCode::kOutOfRange);
 
     Exponentiation<Length, -3> const one_over_Δq³ = Δq_norm / (Δq² * Δq²);
 
@@ -1209,7 +1218,9 @@ Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
     std::vector<Vector<Acceleration, Frame>>& accelerations) const {
   CHECK_EQ(positions.size(), accelerations.size());
   accelerations.assign(accelerations.size(), Vector<Acceleration, Frame>());
-  auto error = absl::StatusCode::kOk;
+  // NOTE(phl): In C++23 we'll have std::to_underlying.
+  auto error = static_cast<std::underlying_type_t<absl::StatusCode>>(
+      absl::StatusCode::kOk);
 
   // Locking ensures that we see a consistent state of all the trajectories.
   absl::ReaderMutexLock l(&lock_);
@@ -1234,7 +1245,7 @@ Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
                  positions,
                  accelerations);
   }
-  return error;
+  return static_cast<absl::StatusCode>(error);
 }
 
 template<typename Frame>

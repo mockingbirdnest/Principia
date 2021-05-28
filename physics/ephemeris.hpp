@@ -366,9 +366,10 @@ class Ephemeris {
   // Computes the accelerations due to one body, |body1| (with index |b1| in the
   // |bodies_| and |trajectories_| arrays) on massless bodies at the given
   // |positions|.  The template parameter specifies what we know about the
-  // massive body, and therefore what forces apply.
+  // massive body, and therefore what forces apply.  Returns an integer for
+  // efficiency.
   template<bool body1_is_oblate>
-  absl::StatusCode
+  std::underlying_type_t<absl::StatusCode>
   ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
       Instant const& t,
       MassiveBody const& body1,
