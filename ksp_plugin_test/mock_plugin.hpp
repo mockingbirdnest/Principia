@@ -15,7 +15,7 @@ namespace internal_plugin {
 
 class MockPlugin : public Plugin {
  public:
-  MockPlugin();
+  MockPlugin() : Plugin("JD2451545", "JD2451545", Angle()) {}
   MockPlugin(MockPlugin const&) = delete;
   MockPlugin(MockPlugin&&) = delete;
 

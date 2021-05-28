@@ -191,9 +191,6 @@
     <ClCompile Include="..\numerics\elliptic_integrals.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mock_renderer.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mock_plugin.hpp">
