@@ -690,7 +690,7 @@ absl::Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
             << " and the last velocity is " << v.back()
             << ". An apocalypse occurred and two celestials probably "
             << "collided because your solar system is unstable.";
-    return absl::Status(Error::INVALID_ARGUMENT, message.str());
+    return absl::InvalidArgumentError(message.str());
   }
 }
 

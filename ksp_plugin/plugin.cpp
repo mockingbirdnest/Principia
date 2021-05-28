@@ -285,7 +285,7 @@ void Plugin::EndInitialization() {
 bool Plugin::HasEncounteredApocalypse(std::string* const details) const {
   CHECK_NOTNULL(details);
   auto const status = ephemeris_->last_severe_integration_status();
-  if (status.error() == Error::INVALID_ARGUMENT) {
+  if (absl::IsInvalidArgument(status)) {
     *details = status.message();
     return true;
   } else {

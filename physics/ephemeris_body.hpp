@@ -75,7 +75,7 @@ constexpr Time max_time_between_checkpoints = 180 * Day;
 constexpr double min_radius_tolerance = 0.99;
 
 inline absl::Status CollisionDetected() {
-  return absl::Status(Error::OUT_OF_RANGE, "Collision detected");
+  return absl::OutOfRangeError("Collision detected");
 }
 
 template<typename Frame>
@@ -406,7 +406,7 @@ Ephemeris<Frame>::StoppableNewInstance(
           Instant const& t,
           std::vector<Position<Frame>> const& positions,
           std::vector<Vector<Acceleration, Frame>>& accelerations) {
-    Error const error =
+    auto const error =
         ComputeMasslessBodiesGravitationalAccelerations(t,
                                                         positions,
                                                         accelerations);
@@ -417,7 +417,7 @@ Ephemeris<Frame>::StoppableNewInstance(
         accelerations[i] += intrinsic_acceleration(t);
       }
     }
-    return error == Error::OK ? absl::OkStatus() :
+    return error == absl::StatusCode::kOk ? absl::OkStatus() :
                     CollisionDetected();
   };
 
@@ -457,14 +457,14 @@ absl::Status Ephemeris<Frame>::FlowWithAdaptiveStep(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations) {
-    Error const error =
+    auto const error =
         ComputeMasslessBodiesGravitationalAccelerations(t,
                                                         positions,
                                                         accelerations);
     if (intrinsic_acceleration != nullptr) {
       accelerations[0] += intrinsic_acceleration(t);
     }
-    return error == Error::OK ? absl::OkStatus() :
+    return error == absl::StatusCode::kOk ? absl::OkStatus() :
                     CollisionDetected();
   };
 
@@ -489,7 +489,7 @@ absl::Status Ephemeris<Frame>::FlowWithAdaptiveStep(
           std::vector<Position<Frame>> const& positions,
           std::vector<Velocity<Frame>> const& velocities,
           std::vector<Vector<Acceleration, Frame>>& accelerations) {
-        Error const error =
+        auto const error =
             ComputeMasslessBodiesGravitationalAccelerations(t,
                                                             positions,
                                                             accelerations);
@@ -497,7 +497,7 @@ absl::Status Ephemeris<Frame>::FlowWithAdaptiveStep(
           accelerations[0] +=
               intrinsic_acceleration(t, {positions[0], velocities[0]});
         }
-        return error == Error::OK ? absl::OkStatus() :
+        return error == absl::StatusCode::kOk ? absl::OkStatus() :
                         CollisionDetected();
       };
 
@@ -1110,7 +1110,7 @@ void Ephemeris<Frame>::
 
 template<typename Frame>
 template<bool body1_is_oblate>
-Error Ephemeris<Frame>::
+absl::StatusCode Ephemeris<Frame>::
 ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
     Instant const& t,
     MassiveBody const& body1,
@@ -1123,7 +1123,7 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
   Position<Frame> const position1 = trajectory1.EvaluatePosition(t);
   Length const body1_collision_radius =
       min_radius_tolerance * body1.min_radius();
-  Error error = Error::OK;
+  auto error = absl::StatusCode::kOk;
 
   for (std::size_t b2 = 0; b2 < positions.size(); ++b2) {
     // A vector from the center of |b2| to the center of |b1|.
@@ -1131,7 +1131,8 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
 
     Square<Length> const Δq² = Δq.Norm²();
     Length const Δq_norm = Sqrt(Δq²);
-    error |= Δq_norm > body1_collision_radius ? Error::OK : Error::OUT_OF_RANGE;
+    error |= Δq_norm > body1_collision_radius ? absl::StatusCode::kOk :
+                                                absl::StatusCode::kOutOfRange;
 
     Exponentiation<Length, -3> const one_over_Δq³ = Δq_norm / (Δq² * Δq²);
 
@@ -1201,13 +1202,14 @@ void Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
 }
 
 template<typename Frame>
-Error Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
+absl::StatusCode
+Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
     Instant const& t,
     std::vector<Position<Frame>> const& positions,
     std::vector<Vector<Acceleration, Frame>>& accelerations) const {
   CHECK_EQ(positions.size(), accelerations.size());
   accelerations.assign(accelerations.size(), Vector<Acceleration, Frame>());
-  Error error = Error::OK;
+  auto error = absl::StatusCode::kOk;
 
   // Locking ensures that we see a consistent state of all the trajectories.
   absl::ReaderMutexLock l(&lock_);
@@ -1301,7 +1303,7 @@ absl::Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
   // we only use this integrator for the future.  So we swallow the error.  Note
   // that a collision in the prediction or the flight plan (for which this path
   // is used) should not cause the vessel to be deleted.
-  if (status.error() == Error::OUT_OF_RANGE) {
+  if (absl::IsOutOfRange(status)) {
     status = absl::OkStatus();
   }
 
@@ -1313,9 +1315,8 @@ absl::Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
   if (!status.ok() || t_final == t) {
     return status;
   } else {
-    return absl::Status(Error::DEADLINE_EXCEEDED,
-                        "Couldn't reach " + DebugString(t) + ", stopping at " +
-                            DebugString(t_final));
+    return absl::DeadlineExceededError("Couldn't reach " + DebugString(t) +
+                                       ", stopping at " + DebugString(t_final));
   }
 }
 

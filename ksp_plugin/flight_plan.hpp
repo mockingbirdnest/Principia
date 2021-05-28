@@ -133,9 +133,12 @@ class FlightPlan {
 
   static constexpr std::int64_t max_ephemeris_steps_per_frame = 1000;
 
-  static constexpr Error bad_desired_final_time = Error::OUT_OF_RANGE;
-  static constexpr Error does_not_fit = Error::OUT_OF_RANGE;
-  static constexpr Error singular = Error::INVALID_ARGUMENT;
+  static constexpr absl::StatusCode bad_desired_final_time =
+      absl::StatusCode::kOutOfRange;
+  static constexpr absl::StatusCode does_not_fit =
+      absl::StatusCode::kOutOfRange;
+  static constexpr absl::StatusCode singular =
+      absl::StatusCode::kInvalidArgument;
 
  protected:
   // For mocking.

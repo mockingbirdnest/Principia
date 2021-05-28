@@ -16,6 +16,8 @@ using namespace std::chrono_literals;
 
 namespace base {
 
+using principia::testing_utilities::StatusIs;
+
 constexpr int workers = 8;
 
 class BundleTest : public testing::Test {
@@ -83,7 +85,7 @@ TEST_F(BundleTest, Deadline) {
     });
   }
   auto const status = bundle_.JoinWithin(10ms);
-  EXPECT_THAT(status.error(), Eq(Error::DEADLINE_EXCEEDED));
+  EXPECT_THAT(status, StatusIs(absl::StatusCode::kDeadlineExceeded));
   EXPECT_THAT(status.message(), Eq("bundle deadline exceeded"));
 }
 

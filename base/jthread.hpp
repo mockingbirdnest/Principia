@@ -128,8 +128,7 @@ class this_stoppable_thread {
   do {                                                             \
     if (::principia::base::this_stoppable_thread::get_stop_token() \
             .stop_requested()) {                                   \
-      return ::absl::Status(::principia::base::Error::CANCELLED,   \
-                            "Cancelled by stop token");            \
+      return ::absl::CancelledError("Cancelled by stop token");    \
     }                                                              \
   } while (false)
 

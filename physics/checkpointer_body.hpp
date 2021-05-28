@@ -107,7 +107,7 @@ absl::Status Checkpointer<Message>::ReadFromOldestCheckpoint() const {
   {
     absl::ReaderMutexLock l(&lock_);
     if (checkpoints_.empty()) {
-      return absl::Status(Error::NOT_FOUND, "No checkpoint");
+      return absl::NotFoundError("No checkpoint");
     }
     checkpoint = &checkpoints_.cbegin()->second;
   }
@@ -120,7 +120,7 @@ absl::Status Checkpointer<Message>::ReadFromNewestCheckpoint() const {
   {
     absl::ReaderMutexLock l(&lock_);
     if (checkpoints_.empty()) {
-      return absl::Status(Error::NOT_FOUND, "No checkpoint");
+      return absl::NotFoundError("No checkpoint");
     }
     checkpoint = &checkpoints_.crbegin()->second;
   }
@@ -136,7 +136,7 @@ absl::Status Checkpointer<Message>::ReadFromCheckpointAtOrBefore(
     // |it| denotes an entry strictly greater than |t| (or end).
     auto const it = checkpoints_.upper_bound(t);
     if (it == checkpoints_.cbegin()) {
-      return absl::Status(Error::NOT_FOUND, "No checkpoint");
+      return absl::NotFoundError("No checkpoint");
     }
     checkpoint = &std::prev(it)->second;
   }
@@ -152,7 +152,7 @@ absl::Status Checkpointer<Message>::ReadFromCheckpointAt(
     absl::ReaderMutexLock l(&lock_);
     it = checkpoints_.find(t);
     if (it == checkpoints_.end()) {
-      return absl::Status(Error::NOT_FOUND, "No checkpoint found");
+      return absl::NotFoundError("No checkpoint found");
     }
   }
   return reader(it->second);

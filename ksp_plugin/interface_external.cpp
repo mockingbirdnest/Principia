@@ -52,24 +52,25 @@ Status* __cdecl principia__ExternalCelestialGetPosition(
       {position}};
   if (plugin == nullptr) {
     return m.Return(
-        ToNewStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
+        ToNewStatus(absl::InvalidArgumentError("|plugin| must not be null")));
   }
   if (!plugin->HasCelestial(body_index)) {
-    return m.Return(ToNewStatus(
-        Error::NOT_FOUND,
-        absl::StrCat("No celestial with index ", body_index)));
+    return m.Return(
+        ToNewStatus(absl::NotFoundError(
+            absl::StrCat("No celestial with index ", body_index))));
   }
   auto const& celestial = plugin->GetCelestial(body_index);
   auto const& trajectory = celestial.trajectory();
   Instant const t = FromGameTime(*plugin, time);
   if (t < trajectory.t_min() || t > trajectory.t_max()) {
     return m.Return(
-        ToNewStatus(Error::OUT_OF_RANGE,
-                    (std::stringstream{}
-                     << "|time| " << t << " does not lie within the domain ["
-                     << trajectory.t_min() << ", " << trajectory.t_max()
-                     << "] of the trajectory of " << celestial.body()->name())
-                        .str()));
+        ToNewStatus(
+            absl::OutOfRangeError(
+                (std::stringstream{}
+                  << "|time| " << t << " does not lie within the domain ["
+                  << trajectory.t_min() << ", " << trajectory.t_max()
+                  << "] of the trajectory of " << celestial.body()->name())
+                    .str())));
   }
   auto const from_solar_system_barycentre =
       plugin->renderer().BarycentricToWorldSun(plugin->PlanetariumRotation())(
@@ -96,7 +97,7 @@ Status* __cdecl principia__ExternalCelestialGetSurfacePosition(
       {position}};
   if (plugin == nullptr) {
     return m.Return(
-        ToNewStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
+        ToNewStatus(absl::InvalidArgumentError("|plugin| must not be null")));
   }
   if (!plugin->HasCelestial(body_index)) {
     return m.Return(ToNewStatus(
@@ -108,12 +109,13 @@ Status* __cdecl principia__ExternalCelestialGetSurfacePosition(
   Instant const t = FromGameTime(*plugin, time);
   if (t < trajectory.t_min() || t > trajectory.t_max()) {
     return m.Return(
-        ToNewStatus(Error::OUT_OF_RANGE,
-                    (std::stringstream{}
-                     << "|time| " << t << " does not lie within the domain ["
-                     << trajectory.t_min() << ", " << trajectory.t_max()
-                     << "] of the trajectory of " << celestial.body()->name())
-                        .str()));
+        ToNewStatus(
+            absl::OutOfRange(
+                (std::stringstream{}
+                  << "|time| " << t << " does not lie within the domain ["
+                  << trajectory.t_min() << ", " << trajectory.t_max()
+                  << "] of the trajectory of " << celestial.body()->name())
+                    .str())));
   }
   using Surface = Frame<enum class SurfaceTag>;
   OrthogonalMap<Surface, WorldSun> const to_world_axes =

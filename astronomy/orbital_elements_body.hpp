@@ -36,8 +36,7 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
     Body const& secondary) {
   OrbitalElements orbital_elements;
   if (trajectory.Size() < 2) {
-    return absl::Status(
-        Error::INVALID_ARGUMENT,
+    return absl::InvalidArgumentError(
         "trajectory.Size() is " + std::to_string(trajectory.Size()));
   }
   orbital_elements.osculating_equinoctial_elements_ =
@@ -51,8 +50,7 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
       orbital_elements.sidereal_period_ <= Time{}) {
     // Guard against NaN sidereal periods (from hyperbolic orbits) or negative
     // sidereal periods (from aberrant trajectories, see #2811).
-    return absl::Status(
-        Error::OUT_OF_RANGE,
+    return absl::OutOfRangeError(
         "sidereal period is " + DebugString(orbital_elements.sidereal_period_));
   }
   auto mean_equinoctial_elements =
@@ -62,8 +60,7 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
   orbital_elements.mean_equinoctial_elements_ =
       std::move(mean_equinoctial_elements).ValueOrDie();
   if (orbital_elements.mean_equinoctial_elements_.size() < 2) {
-    return absl::Status(
-        Error::OUT_OF_RANGE,
+    return absl::OutOfRangeError(
         "trajectory does not span one sidereal period: sidereal period is " +
             DebugString(orbital_elements.sidereal_period_) +
             ", trajectory spans " +

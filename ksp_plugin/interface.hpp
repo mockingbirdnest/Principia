@@ -163,7 +163,6 @@ QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof);
 
 // Ownership of the status and its message is transferred to the caller.
 Status* ToNewStatus(absl::Status const& status);
-Status* ToNewStatus(base::Error error, std::string const& message);
 
 WXYZ ToWXYZ(geometry::Quaternion const& quaternion);
 

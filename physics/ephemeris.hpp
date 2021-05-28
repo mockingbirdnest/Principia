@@ -368,7 +368,8 @@ class Ephemeris {
   // |positions|.  The template parameter specifies what we know about the
   // massive body, and therefore what forces apply.
   template<bool body1_is_oblate>
-  Error ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
+  absl::StatusCode
+  ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
       Instant const& t,
       MassiveBody const& body1,
       std::size_t b1,
@@ -387,7 +388,7 @@ class Ephemeris {
   // massless bodies.  The massless bodies are at the given |positions|.
   // Returns false iff a collision occurred, i.e., the massless body is inside
   // one of the |bodies_|.
-  Error ComputeMasslessBodiesGravitationalAccelerations(
+  absl::StatusCode ComputeMasslessBodiesGravitationalAccelerations(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations) const

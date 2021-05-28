@@ -477,7 +477,7 @@ TEST_P(EphemerisTest, EarthProbe) {
                       1e-9 * Metre,
                       2.6e-15 * Metre / Second),
                   /*max_ephemeris_steps=*/0),
-              StatusIs(Error::DEADLINE_EXCEEDED));
+              StatusIs(absl::StatusCode::kDeadlineExceeded));
   EXPECT_THAT(ephemeris.t_max(), Eq(old_t_max));
   EXPECT_THAT(trajectory.back().time, Eq(old_t_max));
 }
@@ -785,7 +785,7 @@ TEST_P(EphemerisTest, CollisionDetection) {
 
   EXPECT_OK(ephemeris.FlowWithFixedStep(t0_ + short_duration, *instance));
   EXPECT_THAT(ephemeris.FlowWithFixedStep(t0_ + long_duration, *instance),
-              StatusIs(Error::OUT_OF_RANGE));
+              StatusIs(absl::StatusCode::kOutOfRange));
 }
 #endif
 

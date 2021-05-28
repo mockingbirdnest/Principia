@@ -486,11 +486,6 @@ inline Status* ToNewStatus(absl::Status const& status) {
   }
 }
 
-inline Status* ToNewStatus(base::Error const error,
-                           std::string const& message) {
-  return ToNewStatus(absl::Status(error, message));
-}
-
 inline WXYZ ToWXYZ(geometry::Quaternion const& quaternion) {
   return {quaternion.real_part(),
           quaternion.imaginary_part().x,

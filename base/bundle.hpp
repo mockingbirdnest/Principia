@@ -23,13 +23,14 @@ class Bundle final {
  public:
   using Task = std::function<absl::Status()>;
 
-  // If a |task| returns an erroneous |absl::Status|, |Join| returns that status.
+  // If a |task| returns an erroneous |absl::Status|, |Join| returns that
+  // status.
   void Add(Task task) LOCKS_EXCLUDED(lock_);
 
   // Returns the first non-OK status encountered, or OK.  All worker threads are
   // joined; no calls to member functions may follow this call.
   absl::Status Join() LOCKS_EXCLUDED(lock_, status_lock_);
-  // Same as above, but returns |Error::DEADLINE_EXCEEDED| if it fails to
+  // Same as above, but returns a |kDeadlineExceeded| status if it fails to
   // complete within the given interval.
   absl::Status JoinWithin(std::chrono::steady_clock::duration Δt)
       LOCKS_EXCLUDED(lock_, status_lock_);

@@ -295,8 +295,7 @@ absl::Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
     if (manœuvre.initial_time() < new_initial_time) {
       first_manœuvre_kept = i + 1;
       if (new_initial_time < manœuvre.final_time()) {
-        return absl::Status(
-            Error::UNAVAILABLE,
+        return absl::UnavailableError(
             u8"Cannot rebase during planned manœuvre execution");
       }
     }
@@ -620,7 +619,7 @@ void Vessel::SwapPrognostication(
     std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication,
     absl::Status const& status) {
   prognosticator_lock_.AssertHeld();
-  if (status.error() != Error::CANCELLED) {
+  if (!absl::IsCancelled(status)) {
     prognostication_.swap(prognostication);
   }
 }

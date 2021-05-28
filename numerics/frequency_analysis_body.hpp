@@ -86,7 +86,8 @@ absl::Status NormalGramSchmidtStep(
     std::vector<BasisSeries> const& q,
     BasisSeries& qₘ,
     UnboundedVector<double>& rₘ) {
-  static absl::Status const bad_norm(Error::OUT_OF_RANGE, "Unable to compute norm");
+  static absl::Status const bad_norm =
+    absl::OutOfRangeError("Unable to compute norm");
   int const m = q.size();
 
 #if PRINCIPIA_USE_CGS

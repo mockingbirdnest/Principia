@@ -19,12 +19,13 @@ namespace integrators {
 // The |Solve| function of the |AdaptiveStepSizeIntegrator| exclusively returns
 // one of the following statuses.
 namespace termination_condition {
-constexpr base::Error Done = base::Error::OK;
+constexpr absl::StatusCode Done = absl::StatusCode::kOk;
 // The integration may be retried with the same arguments and progress will
 // happen.
-constexpr base::Error ReachedMaximalStepCount = base::Error::ABORTED;
+constexpr absl::StatusCode ReachedMaximalStepCount = absl::StatusCode::kAborted;
 // A singularity.
-constexpr base::Error VanishingStepSize = base::Error::FAILED_PRECONDITION;
+constexpr absl::StatusCode VanishingStepSize =
+    absl::StatusCode::kFailedPrecondition;
 }  // namespace termination_condition
 
 namespace internal_ordinary_differential_equations {
