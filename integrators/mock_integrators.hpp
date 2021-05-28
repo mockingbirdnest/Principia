@@ -23,20 +23,33 @@ class MockFixedStepSizeIntegrator
     MockInstance() : Integrator<ODE>::Instance() {}
 
     MOCK_METHOD(absl::Status, Solve, (Instant const& t_final), (override));
-    MOCK_METHOD(not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>, Clone, (), (const, override));
-    MOCK_METHOD(FixedStepSizeIntegrator<ODE> const&, integrator, (), (const, override));
+    MOCK_METHOD(not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>,
+                Clone,
+                (),
+                (const, override));
+    MOCK_METHOD(FixedStepSizeIntegrator<ODE> const&,
+                integrator,
+                (),
+                (const, override));
   };
 
-  MOCK_METHOD(not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>, NewInstance, (
-          IntegrationProblem<ODE> const& problem,
-          typename Integrator<ODE>::AppendState const& append_state,
-          Time const& step), (const, override));
-  MOCK_METHOD(void, WriteToMessage, (not_null<serialization::FixedStepSizeIntegrator*> message), (const, override));
-  MOCK_METHOD(not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>, ReadFromMessage, (
-          serialization::FixedStepSizeIntegratorInstance const& message,
-          IntegrationProblem<ODE> const& problem,
-          AppendState const& append_state,
-          Time const& step), (const, override));
+  MOCK_METHOD(not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>,
+              NewInstance,
+              (IntegrationProblem<ODE> const& problem,
+               typename Integrator<ODE>::AppendState const& append_state,
+               Time const& step),
+              (const, override));
+  MOCK_METHOD(void,
+              WriteToMessage,
+              (not_null<serialization::FixedStepSizeIntegrator*> message),
+              (const, override));
+  MOCK_METHOD(not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>,
+              ReadFromMessage,
+              (serialization::FixedStepSizeIntegratorInstance const& message,
+               IntegrationProblem<ODE> const& problem,
+               AppendState const& append_state,
+               Time const& step),
+              (const, override));
 
   static MockFixedStepSizeIntegrator const& Get() {
     static MockFixedStepSizeIntegrator const integrator;

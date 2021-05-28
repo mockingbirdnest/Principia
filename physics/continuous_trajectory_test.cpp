@@ -75,14 +75,18 @@ class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {
       Instant const& t_max,
       Displacement<Frame>& error_estimate) const override;
 
-  MOCK_METHOD(void, FillNewhallApproximationInMonomialBasis, (int degree,
-           std::vector<Position<Frame>> const& q,
-           std::vector<Velocity<Frame>> const& v,
-           Instant const& t_min,
-           Instant const& t_max,
-           Displacement<Frame>& error_estimate,
-(           not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>&
-               polynomial)), (const, override));
+  MOCK_METHOD(
+      void,
+      FillNewhallApproximationInMonomialBasis,
+      (int degree,
+       std::vector<Position<Frame>> const& q,
+       std::vector<Velocity<Frame>> const& v,
+       Instant const& t_min,
+       Instant const& t_max,
+       Displacement<Frame>& error_estimate,
+       (not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>> &
+        polynomial)),
+      (const, override));
 
   absl::Status LockAndComputeBestNewhallApproximation(
       Instant const& time,

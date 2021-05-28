@@ -16,9 +16,18 @@ class MockCelestial : public Celestial {
   MockCelestial()
       : Celestial(make_not_null<RotatingBody<Barycentric> const*>()) {}
 
-  MOCK_METHOD(DegreesOfFreedom<Barycentric>, current_degrees_of_freedom, (Instant const& current_time), (const, override));
-  MOCK_METHOD(Position<Barycentric>, current_position, (Instant const& current_time), (const, override));
-  MOCK_METHOD(Velocity<Barycentric>, current_velocity, (Instant const& current_time), (const, override));
+  MOCK_METHOD(DegreesOfFreedom<Barycentric>,
+              current_degrees_of_freedom,
+              (Instant const& current_time),
+              (const, override));
+  MOCK_METHOD(Position<Barycentric>,
+              current_position,
+              (Instant const& current_time),
+              (const, override));
+  MOCK_METHOD(Velocity<Barycentric>,
+              current_velocity,
+              (Instant const& current_time),
+              (const, override));
 };
 
 }  // namespace internal_celestial
