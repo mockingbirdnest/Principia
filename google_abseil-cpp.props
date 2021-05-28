@@ -8,7 +8,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)..\Google\abseil-cpp\msvc\$(PrincipiaDependencyConfiguration)\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>base.lib;container.lib;debugging.lib;hash.lib;numeric.lib;strings.lib;synchronization.lib;time.lib;types.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>base.lib;container.lib;debugging.lib;flags.lib;hash.lib;numeric.lib;random.lib;status.lib;strings.lib;synchronization.lib;time.lib;types.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup />
