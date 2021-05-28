@@ -86,7 +86,7 @@ class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {
            not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>&
                polynomial));
 
-  Status LockAndComputeBestNewhallApproximation(
+  absl::Status LockAndComputeBestNewhallApproximation(
       Instant const& time,
       std::vector<Position<Frame>> const& q,
       std::vector<Velocity<Frame>> const& v);
@@ -122,7 +122,7 @@ TestableContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
 }
 
 template<typename Frame>
-Status
+absl::Status
 TestableContinuousTrajectory<Frame>::LockAndComputeBestNewhallApproximation(
     Instant const& time,
     std::vector<Position<Frame>> const& q,

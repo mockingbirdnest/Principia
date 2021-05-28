@@ -286,7 +286,7 @@ void Vessel::DeleteFlightPlan() {
   flight_plan_.reset();
 }
 
-Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
+absl::Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
   CHECK(has_flight_plan());
   Instant const new_initial_time = history_->back().time;
   int first_manœuvre_kept = 0;
@@ -295,8 +295,9 @@ Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
     if (manœuvre.initial_time() < new_initial_time) {
       first_manœuvre_kept = i + 1;
       if (new_initial_time < manœuvre.final_time()) {
-        return Status(Error::UNAVAILABLE,
-                      u8"Cannot rebase during planned manœuvre execution");
+        return absl::Status(
+            Error::UNAVAILABLE,
+            u8"Cannot rebase during planned manœuvre execution");
       }
     }
   }
@@ -342,7 +343,7 @@ void Vessel::RefreshPrediction() {
     std::unique_ptr<DiscreteTrajectory<Barycentric>> prognostication;
     std::optional<PrognosticatorParameters> prognosticator_parameters;
     std::swap(prognosticator_parameters, prognosticator_parameters_);
-    Status const status =
+    absl::Status const status =
         FlowPrognostication(std::move(*prognosticator_parameters),
                             prognostication);
     SwapPrognostication(prognostication, status);
@@ -550,7 +551,7 @@ void Vessel::StartPrognosticatorIfNeeded() {
   }
 }
 
-Status Vessel::RepeatedlyFlowPrognostication() {
+absl::Status Vessel::RepeatedlyFlowPrognostication() {
   for (std::chrono::steady_clock::time_point wakeup_time;;
        std::this_thread::sleep_until(wakeup_time)) {
     // No point in going faster than 50 Hz.
@@ -570,7 +571,7 @@ Status Vessel::RepeatedlyFlowPrognostication() {
     RETURN_IF_STOPPED;
 
     std::unique_ptr<DiscreteTrajectory<Barycentric>> prognostication;
-    Status const status =
+    absl::Status const status =
         FlowPrognostication(std::move(*prognosticator_parameters),
                             prognostication);
     RETURN_IF_STOPPED;
@@ -582,7 +583,7 @@ Status Vessel::RepeatedlyFlowPrognostication() {
   return absl::OkStatus();
 }
 
-Status Vessel::FlowPrognostication(
+absl::Status Vessel::FlowPrognostication(
     PrognosticatorParameters prognosticator_parameters,
     std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication) {
   // The guard contained in |prognosticator_parameters| ensures that the |t_min|
@@ -591,7 +592,7 @@ Status Vessel::FlowPrognostication(
   prognostication->Append(
       prognosticator_parameters.first_time,
       prognosticator_parameters.first_degrees_of_freedom);
-  Status status;
+  absl::Status status;
   status = ephemeris_->FlowWithAdaptiveStep(
       prognostication.get(),
       Ephemeris<Barycentric>::NoIntrinsicAcceleration,
@@ -617,7 +618,7 @@ Status Vessel::FlowPrognostication(
 
 void Vessel::SwapPrognostication(
     std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication,
-    Status const& status) {
+    absl::Status const& status) {
   prognosticator_lock_.AssertHeld();
   if (status.error() != Error::CANCELLED) {
     prognostication_.swap(prognostication);

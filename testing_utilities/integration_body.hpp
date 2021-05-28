@@ -32,7 +32,7 @@ using quantities::Time;
 using quantities::si::Second;
 namespace si = quantities::si;
 
-inline Status ComputeHarmonicOscillatorAcceleration1D(
+inline absl::Status ComputeHarmonicOscillatorAcceleration1D(
     Instant const& t,
     std::vector<Length> const& q,
     std::vector<Acceleration>& result,
@@ -45,7 +45,7 @@ inline Status ComputeHarmonicOscillatorAcceleration1D(
 }
 
 template<typename Frame>
-Status ComputeHarmonicOscillatorAcceleration3D(
+absl::Status ComputeHarmonicOscillatorAcceleration3D(
     Instant const& t,
     std::vector<Position<Frame>> const& q,
     std::vector<Vector<Acceleration, Frame>>& result,
@@ -57,7 +57,7 @@ Status ComputeHarmonicOscillatorAcceleration3D(
   return absl::OkStatus();
 }
 
-inline Status ComputeKeplerAcceleration(
+inline absl::Status ComputeKeplerAcceleration(
     Instant const& t,
     std::vector<Length> const& q,
     std::vector<Acceleration>& result,
@@ -75,7 +75,7 @@ inline Status ComputeKeplerAcceleration(
 
 
 template<int degree>
-Status ComputeЧебышёвPolynomialSecondDerivative(
+absl::Status ComputeЧебышёвPolynomialSecondDerivative(
     Instant const& t,
     std::vector<double> const& ч,
     std::vector<Variation<double>> const& чʹ,
@@ -93,7 +93,7 @@ Status ComputeЧебышёвPolynomialSecondDerivative(
 }
 
 template<int degree>
-Status ComputeLegendrePolynomialSecondDerivative(
+absl::Status ComputeLegendrePolynomialSecondDerivative(
     Instant const& t,
     std::vector<double> const& p,
     std::vector<Variation<double>> const& pʹ,

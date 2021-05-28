@@ -45,7 +45,7 @@ class Checkpointer {
 
   // A function that reconstructs an object from a checkpoint as a side effect.
   // This function is expected to capture the object being deserialized.
-  using Reader = std::function<Status(typename Message::Checkpoint const&)>;
+  using Reader = std::function<absl::Status(typename Message::Checkpoint const&)>;
 
   Checkpointer(Writer writer, Reader reader);
 
@@ -83,27 +83,28 @@ class Checkpointer {
   // Calls the |Reader| passed at construction to reconstruct an object using
   // the oldest checkpoint.  Returns an error if this object contains no
   // checkpoint or if the |Reader| returns one.
-  Status ReadFromOldestCheckpoint() const EXCLUDES(lock_);
+  absl::Status ReadFromOldestCheckpoint() const EXCLUDES(lock_);
 
   // Calls the |Reader| passed at construction to reconstruct an object using
   // the newest checkpoint.  Returns an error if this object contains no
   // checkpoint or if the |Reader| returns one.
-  Status ReadFromNewestCheckpoint() const EXCLUDES(lock_);
+  absl::Status ReadFromNewestCheckpoint() const EXCLUDES(lock_);
 
   // Calls the |Reader| passed at construction to reconstruct an object using
   // the checkpoint at or immediately before |t|.  Returns an error if no such
   // checkpoint exists or if the |Reader| returns one.
-  Status ReadFromCheckpointAtOrBefore(Instant const& t) const EXCLUDES(lock_);
+  absl::Status ReadFromCheckpointAtOrBefore(Instant const& t) const
+      EXCLUDES(lock_);
 
   // Calls |reader| on the checkpoint at |t|.  Returns an error if there is no
   // such checkpoint or if |reader| returns one.
-  Status ReadFromCheckpointAt(Instant const& t,
-                              Reader const& reader) const EXCLUDES(lock_);
+  absl::Status ReadFromCheckpointAt(Instant const& t,
+                                    Reader const& reader) const EXCLUDES(lock_);
 
   // Calls |reader| on each of the checkpoints in this object, going backwards
   // from the most recent to the oldest.  Returns an error if |reader| returns
   // one.
-  Status ReadFromAllCheckpointsBackwards(Reader const& reader) const
+  absl::Status ReadFromAllCheckpointsBackwards(Reader const& reader) const
       EXCLUDES(lock_);
 
   void WriteToMessage(not_null<google::protobuf::RepeatedPtrField<

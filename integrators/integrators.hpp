@@ -39,7 +39,7 @@ class Integrator {
 
     // The subclass must document the time passed to the last call to
     // |append_state|.
-    virtual Status Solve(Instant const& t_final) = 0;
+    virtual absl::Status Solve(Instant const& t_final) = 0;
 
     // The last instant integrated by this instance.
     DoublePrecision<Instant> const& time() const;

@@ -81,7 +81,7 @@ double ContinuousTrajectory<Frame>::average_degree() const {
 }
 
 template<typename Frame>
-Status ContinuousTrajectory<Frame>::Append(
+absl::Status ContinuousTrajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
   absl::MutexLock l(&lock_);
@@ -99,7 +99,7 @@ Status ContinuousTrajectory<Frame>::Append(
     first_time_ = time;
   }
 
-  Status status;
+  absl::Status status;
   CHECK_LE(last_points_.size(), divisions);
   if (last_points_.size() == divisions) {
     // These vectors are thread-local to avoid deallocation/reallocation each
@@ -592,7 +592,7 @@ ContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
 }
 
 template<typename Frame>
-Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
+absl::Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
     Instant const& time,
     std::vector<Position<Frame>> const& q,
     std::vector<Velocity<Frame>> const& v) {
@@ -690,7 +690,7 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
             << " and the last velocity is " << v.back()
             << ". An apocalypse occurred and two celestials probably "
             << "collided because your solar system is unstable.";
-    return Status(Error::INVALID_ARGUMENT, message.str());
+    return absl::Status(Error::INVALID_ARGUMENT, message.str());
   }
 }
 

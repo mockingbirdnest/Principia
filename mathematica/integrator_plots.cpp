@@ -199,10 +199,10 @@ class WorkErrorGraphGenerator {
   };
 
   WorkErrorGraphGenerator(
-      std::function<Status(Instant const& t,
-                           std::vector<Length> const& q,
-                           std::vector<Acceleration>& result,
-                           int* evaluations)> compute_accelerations,
+      std::function<absl::Status(Instant const& t,
+                                 std::vector<Length> const& q,
+                                 std::vector<Acceleration>& result,
+                                 int* evaluations)> compute_accelerations,
       ODE::SystemState initial_state,
       std::function<Errors(ODE::SystemState const&)> compute_errors,
       Instant const& tmax,
@@ -263,7 +263,7 @@ class WorkErrorGraphGenerator {
   }
 
  private:
-  Status Integrate(int const method_index, int const time_step_index) {
+  absl::Status Integrate(int const method_index, int const time_step_index) {
     auto const& method = methods_[method_index];
     Problem problem;
     int number_of_evaluations = 0;
@@ -309,10 +309,10 @@ class WorkErrorGraphGenerator {
   }
 
   std::vector<SimpleHarmonicMotionPlottedIntegrator> const methods_;
-  std::function<Status(Instant const& t,
-                       std::vector<Length> const& q,
-                       std::vector<Acceleration>& result,
-                       int* evaluations)>
+  std::function<absl::Status(Instant const& t,
+                             std::vector<Length> const& q,
+                             std::vector<Acceleration>& result,
+                             int* evaluations)>
       compute_accelerations_;
   ODE::SystemState initial_state_;
   std::function<Errors(ODE::SystemState const&)> compute_errors_;

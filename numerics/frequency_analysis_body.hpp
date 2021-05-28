@@ -76,7 +76,7 @@ int MakeBasis(std::optional<AngularFrequency> const& ω,
 template<typename BasisSeries,
          int aperiodic_wdegree, int periodic_wdegree,
          template<typename, typename, int> class Evaluator>
-Status NormalGramSchmidtStep(
+absl::Status NormalGramSchmidtStep(
     BasisSeries const& aₘ,
     PoissonSeries<double,
                   aperiodic_wdegree, periodic_wdegree, Evaluator> const& weight,
@@ -86,7 +86,7 @@ Status NormalGramSchmidtStep(
     std::vector<BasisSeries> const& q,
     BasisSeries& qₘ,
     UnboundedVector<double>& rₘ) {
-  static Status const bad_norm(Error::OUT_OF_RANGE, "Unable to compute norm");
+  static absl::Status const bad_norm(Error::OUT_OF_RANGE, "Unable to compute norm");
   int const m = q.size();
 
 #if PRINCIPIA_USE_CGS
@@ -157,7 +157,7 @@ Status NormalGramSchmidtStep(
 template<typename Function, typename BasisSeries, typename Norm,
          int aperiodic_wdegree, int periodic_wdegree,
          template<typename, typename, int> class Evaluator>
-Status AugmentedGramSchmidtStep(
+absl::Status AugmentedGramSchmidtStep(
     Function& b,
     PoissonSeries<double,
                   aperiodic_wdegree, periodic_wdegree, Evaluator> const& weight,

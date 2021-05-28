@@ -22,7 +22,7 @@ class MockFixedStepSizeIntegrator
    public:
     MockInstance() : Integrator<ODE>::Instance() {}
 
-    MOCK_METHOD1_T(Solve, Status(Instant const& t_final));
+    MOCK_METHOD1_T(Solve, absl::Status(Instant const& t_final));
     MOCK_CONST_METHOD0_T(
         Clone,
         not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>());

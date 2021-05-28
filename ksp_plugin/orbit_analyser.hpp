@@ -127,7 +127,7 @@ class OrbitAnalyser {
     Parameters parameters;
   };
 
-  Status AnalyseOrbit(GuardedParameters guarded_parameters);
+  absl::Status AnalyseOrbit(GuardedParameters guarded_parameters);
 
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
   Ephemeris<Barycentric>::FixedStepParameters const

@@ -77,7 +77,7 @@ class SymplecticRungeKuttaNyströmIntegrator
 
   class Instance : public FixedStepSizeIntegrator<ODE>::Instance {
    public:
-    Status Solve(Instant const& t_final) override;
+    absl::Status Solve(Instant const& t_final) override;
     SymplecticRungeKuttaNyströmIntegrator const& integrator() const override;
     not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> Clone()
         const override;

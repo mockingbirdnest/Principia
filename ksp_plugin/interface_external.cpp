@@ -34,7 +34,7 @@ using physics::RigidTransformation;
 namespace {
 
 Status* OK() {
-  static Status* const ok = ToNewStatus(base::absl::OkStatus());
+  static Status* const ok = ToNewStatus(absl::OkStatus());
   return ok;
 }
 

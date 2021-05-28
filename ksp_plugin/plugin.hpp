@@ -514,7 +514,7 @@ class Plugin {
   Ephemeris<Barycentric>::AdaptiveStepParameters psychohistory_parameters_;
 
   // The thread pool for advancing vessels.
-  ThreadPool<Status> vessel_thread_pool_;
+  ThreadPool<absl::Status> vessel_thread_pool_;
 
   Angle planetarium_rotation_;
   std::optional<Rotation<Barycentric, AliceSun>> cached_planetarium_rotation_;

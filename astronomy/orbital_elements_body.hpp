@@ -36,8 +36,9 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
     Body const& secondary) {
   OrbitalElements orbital_elements;
   if (trajectory.Size() < 2) {
-    return Status(Error::INVALID_ARGUMENT,
-                  "trajectory.Size() is " + std::to_string(trajectory.Size()));
+    return absl::Status(
+        Error::INVALID_ARGUMENT,
+        "trajectory.Size() is " + std::to_string(trajectory.Size()));
   }
   orbital_elements.osculating_equinoctial_elements_ =
       OsculatingEquinoctialElements(trajectory, primary, secondary);
@@ -50,7 +51,7 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
       orbital_elements.sidereal_period_ <= Time{}) {
     // Guard against NaN sidereal periods (from hyperbolic orbits) or negative
     // sidereal periods (from aberrant trajectories, see #2811).
-    return Status(
+    return absl::Status(
         Error::OUT_OF_RANGE,
         "sidereal period is " + DebugString(orbital_elements.sidereal_period_));
   }
@@ -61,7 +62,7 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
   orbital_elements.mean_equinoctial_elements_ =
       std::move(mean_equinoctial_elements).ValueOrDie();
   if (orbital_elements.mean_equinoctial_elements_.size() < 2) {
-    return Status(
+    return absl::Status(
         Error::OUT_OF_RANGE,
         "trajectory does not span one sidereal period: sidereal period is " +
             DebugString(orbital_elements.sidereal_period_) +
@@ -369,7 +370,7 @@ OrbitalElements::ToClassicalElements(
   return classical_elements;
 }
 
-inline Status OrbitalElements::ComputePeriodsAndPrecession() {
+inline absl::Status OrbitalElements::ComputePeriodsAndPrecession() {
   Time const Δt = mean_classical_elements_.back().time -
                   mean_classical_elements_.front().time;
   auto const Δt³ = Pow<3>(Δt);
@@ -424,7 +425,7 @@ inline Status OrbitalElements::ComputePeriodsAndPrecession() {
   return absl::OkStatus();
 }
 
-inline Status OrbitalElements::ComputeIntervals() {
+inline absl::Status OrbitalElements::ComputeIntervals() {
   for (auto const& r : radial_distances_) {
     RETURN_IF_STOPPED;
     radial_distance_interval_.Include(r);

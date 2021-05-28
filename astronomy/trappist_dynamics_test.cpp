@@ -294,7 +294,7 @@ void Population::ComputeAllFitnesses() {
         // Sleep a bit to reduce contention in new/delete.
         std::this_thread::sleep_for(i * 1ms);
         fitnesses_[i] = compute_fitness_(current_[i], traces_[i]);
-        return Status();
+        return absl::OkStatus();
       });
     }
     bundle.Join();

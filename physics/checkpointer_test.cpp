@@ -50,7 +50,7 @@ class CheckpointerTest : public ::testing::Test {
       : checkpointer_(writer_.AsStdFunction(),
                       reader_.AsStdFunction()) {}
 
-  MockFunction<Status(Message::Checkpoint const&)> reader_;
+  MockFunction<absl::Status(Message::Checkpoint const&)> reader_;
   MockFunction<void(not_null<Message::Checkpoint*>)> writer_;
   Checkpointer<Message> checkpointer_;
 };
@@ -97,7 +97,7 @@ TEST_F(CheckpointerTest, ReadFromOldestCheckpoint) {
   checkpointer_.WriteToCheckpoint(t1);
 
   EXPECT_CALL(reader_, Call(_))
-      .WillOnce(Return(Status::CANCELLED))
+      .WillOnce(Return(absl::Status::CANCELLED))
       .WillOnce(Return(absl::OkStatus()));
   EXPECT_THAT(checkpointer_.ReadFromOldestCheckpoint(),
               StatusIs(Error::CANCELLED));
@@ -113,7 +113,7 @@ TEST_F(CheckpointerTest, ReadFromNewestCheckpoint) {
   checkpointer_.WriteToCheckpoint(t1);
 
   EXPECT_CALL(reader_, Call(_))
-      .WillOnce(Return(Status::CANCELLED))
+      .WillOnce(Return(absl::Status::CANCELLED))
       .WillOnce(Return(absl::OkStatus()));
   EXPECT_THAT(checkpointer_.ReadFromNewestCheckpoint(),
               StatusIs(Error::CANCELLED));
@@ -157,7 +157,7 @@ TEST_F(CheckpointerTest, ReadFromCheckpointAtOrBefore) {
   EXPECT_OK(checkpointer_.ReadFromCheckpointAtOrBefore(t2 + 1 * Second));
 
   EXPECT_CALL(reader_, Call(Field(&Message::Checkpoint::payload, 3)))
-      .WillOnce(Return(Status::CANCELLED));
+      .WillOnce(Return(absl::Status::CANCELLED));
   EXPECT_THAT(checkpointer_.ReadFromCheckpointAtOrBefore(t3),
               StatusIs(Error::CANCELLED));
 }
@@ -183,7 +183,7 @@ TEST_F(CheckpointerTest, ReadFromCheckpointAt) {
   EXPECT_OK(checkpointer_.ReadFromCheckpointAt(t2, reader_.AsStdFunction()));
 
   EXPECT_CALL(reader_, Call(Field(&Message::Checkpoint::payload, 3)))
-      .WillOnce(Return(Status::CANCELLED));
+      .WillOnce(Return(absl::Status::CANCELLED));
   EXPECT_THAT(checkpointer_.ReadFromCheckpointAt(t3, reader_.AsStdFunction()),
               StatusIs(Error::CANCELLED));
 }
@@ -214,7 +214,7 @@ TEST_F(CheckpointerTest, ReadFromAllCheckpointsBackwards) {
     InSequence s;
     EXPECT_CALL(reader_, Call(Field(&Message::Checkpoint::payload, 3)));
     EXPECT_CALL(reader_, Call(Field(&Message::Checkpoint::payload, 2)))
-        .WillOnce(Return(Status::CANCELLED));
+        .WillOnce(Return(absl::Status::CANCELLED));
   }
   EXPECT_THAT(
       checkpointer_.ReadFromAllCheckpointsBackwards(reader_.AsStdFunction()),

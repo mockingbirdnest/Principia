@@ -42,7 +42,7 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator() {
 }
 
 template<typename Method, typename Position>
-Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position>::
+absl::Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position>::
 Instance::Solve(Instant const& t_final) {
   using Displacement = typename ODE::Displacement;
   using Velocity = typename ODE::Velocity;
@@ -124,8 +124,8 @@ Instance::Solve(Instant const& t_final) {
   // The number of steps already performed.
   std::int64_t step_count = 0;
 
-  Status status;
-  Status step_status;
+  absl::Status status;
+  absl::Status step_status;
 
   // No step size control on the first step.  If this instance is being
   // restarted we already have a value of |h| suitable for the next step, based
@@ -149,10 +149,10 @@ Instance::Solve(Instant const& t_final) {
       // TODO(egg): should we check whether it vanishes in double precision
       // instead?
       if (t.value + (t.error + h) == t.value) {
-        return Status(termination_condition::VanishingStepSize,
-                      "At time " + DebugString(t.value) +
-                          ", step size is effectively zero.  Singularity or "
-                          "stiff system suspected.");
+        return absl::Status(termination_condition::VanishingStepSize,
+                            "At time " + DebugString(t.value) +
+                                ", step size is effectively zero.  "
+                                "Singularity or stiff system suspected.");
       }
 
     runge_kutta_nyström_step:
@@ -242,12 +242,12 @@ Instance::Solve(Instant const& t_final) {
     append_state(current_state);
     ++step_count;
     if (step_count == parameters.max_steps && !at_end) {
-      return Status(termination_condition::ReachedMaximalStepCount,
-                    "Reached maximum step count " +
-                        std::to_string(parameters.max_steps) +
-                        " at time " + DebugString(t.value) +
-                        "; requested t_final is " + DebugString(t_final) +
-                        ".");
+      return absl::Status(termination_condition::ReachedMaximalStepCount,
+                          "Reached maximum step count " +
+                              std::to_string(parameters.max_steps) +
+                              " at time " + DebugString(t.value) +
+                              "; requested t_final is " + DebugString(t_final) +
+                              ".");
     }
   }
   // The resolution is restartable from the last non-truncated state.

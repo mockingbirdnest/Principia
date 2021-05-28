@@ -28,16 +28,17 @@ using quantities::Acceleration;
 using quantities::si::Metre;
 using quantities::si::Second;
 
-inline Status BadDesiredFinalTime() {
-  return Status(FlightPlan::bad_desired_final_time, "Bad desired final time");
+inline absl::Status BadDesiredFinalTime() {
+  return absl::Status(FlightPlan::bad_desired_final_time,
+                      "Bad desired final time");
 }
 
-inline Status DoesNotFit() {
-  return Status(FlightPlan::does_not_fit, "Does not fit");
+inline absl::Status DoesNotFit() {
+  return absl::Status(FlightPlan::does_not_fit, "Does not fit");
 }
 
-inline Status Singular() {
-  return Status(FlightPlan::singular, "Singular");
+inline absl::Status Singular() {
+  return absl::Status(FlightPlan::singular, "Singular");
 }
 
 FlightPlan::FlightPlan(
@@ -97,8 +98,8 @@ NavigationManœuvre const& FlightPlan::GetManœuvre(int const index) const {
   return manœuvres_[index];
 }
 
-Status FlightPlan::Insert(NavigationManœuvre::Burn const& burn,
-                          int const index) {
+absl::Status FlightPlan::Insert(NavigationManœuvre::Burn const& burn,
+                                int const index) {
   CHECK_GE(index, 0);
   CHECK_LE(index, number_of_manœuvres());
   NavigationManœuvre const manœuvre(
@@ -120,7 +121,7 @@ Status FlightPlan::Insert(NavigationManœuvre::Burn const& burn,
   return ComputeSegments(manœuvres_.begin() + index, manœuvres_.end());
 }
 
-Status FlightPlan::Remove(int index) {
+absl::Status FlightPlan::Remove(int index) {
   CHECK_GE(index, 0);
   CHECK_LT(index, number_of_manœuvres());
   manœuvres_.erase(manœuvres_.begin() + index);
@@ -130,8 +131,8 @@ Status FlightPlan::Remove(int index) {
   return ComputeSegments(manœuvres_.begin() + index, manœuvres_.end());
 }
 
-Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
-                           int const index) {
+absl::Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
+                                 int const index) {
   CHECK_LE(0, index);
   CHECK_LT(index, number_of_manœuvres());
   NavigationManœuvre const manœuvre(manœuvres_[index].initial_mass(),
@@ -164,7 +165,7 @@ Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
   return ComputeSegments(manœuvres_.begin() + index, manœuvres_.end());
 }
 
-Status FlightPlan::SetDesiredFinalTime(Instant const& desired_final_time) {
+absl::Status FlightPlan::SetDesiredFinalTime(Instant const& desired_final_time) {
   if (desired_final_time < start_of_last_coast()) {
     return BadDesiredFinalTime();
   }
@@ -174,7 +175,7 @@ Status FlightPlan::SetDesiredFinalTime(Instant const& desired_final_time) {
   return ComputeSegments(manœuvres_.end(), manœuvres_.end());
 }
 
-Status FlightPlan::SetAdaptiveStepParameters(
+absl::Status FlightPlan::SetAdaptiveStepParameters(
     Ephemeris<Barycentric>::AdaptiveStepParameters const&
         adaptive_step_parameters,
     Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
@@ -300,7 +301,7 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
   // step limit while recomputing the segments and make the flight plan
   // anomalous for no good reason.
   flight_plan->ephemeris_->Prolong(flight_plan->desired_final_time_);
-  Status const status = flight_plan->RecomputeAllSegments();
+  absl::Status const status = flight_plan->RecomputeAllSegments();
   LOG_IF(INFO, flight_plan->anomalous_segments_ > 0)
       << "Loading a flight plan with " << flight_plan->anomalous_segments_
       << " anomalous segments and status " << status << "\n"
@@ -328,7 +329,7 @@ FlightPlan::FlightPlan()
           /*length_integration_tolerance=*/1 * Metre,
           /*speed_integration_tolerance=*/1 * Metre / Second) {}
 
-Status FlightPlan::RecomputeAllSegments() {
+absl::Status FlightPlan::RecomputeAllSegments() {
   // It is important that the segments be destroyed in (reverse chronological)
   // order of the forks.
   while (segments_.size() > 1) {
@@ -338,7 +339,7 @@ Status FlightPlan::RecomputeAllSegments() {
   return ComputeSegments(manœuvres_.begin(), manœuvres_.end());
 }
 
-Status FlightPlan::BurnSegment(
+absl::Status FlightPlan::BurnSegment(
     NavigationManœuvre const& manœuvre,
     not_null<DiscreteTrajectory<Barycentric>*> const segment) {
   Instant const final_time = manœuvre.final_time();
@@ -363,7 +364,7 @@ Status FlightPlan::BurnSegment(
   }
 }
 
-Status FlightPlan::CoastSegment(
+absl::Status FlightPlan::CoastSegment(
     Instant const& desired_final_time,
     not_null<DiscreteTrajectory<Barycentric>*> const segment) {
   return ephemeris_->FlowWithAdaptiveStep(
@@ -374,21 +375,21 @@ Status FlightPlan::CoastSegment(
                          max_ephemeris_steps_per_frame);
 }
 
-Status FlightPlan::ComputeSegments(
+absl::Status FlightPlan::ComputeSegments(
     std::vector<NavigationManœuvre>::iterator const begin,
     std::vector<NavigationManœuvre>::iterator const end) {
   CHECK(!segments_.empty());
   if (anomalous_segments_ == 0) {
     anomalous_status_ = absl::OkStatus();
   }
-  Status overall_status = anomalous_status_;
+  absl::Status overall_status = anomalous_status_;
   for (auto it = begin; it != end; ++it) {
     auto& manœuvre = *it;
     auto& coast = segments_.back();
     manœuvre.set_coasting_trajectory(coast);
 
     if (anomalous_segments_ == 0) {
-      Status const status = CoastSegment(manœuvre.initial_time(), coast);
+      absl::Status const status = CoastSegment(manœuvre.initial_time(), coast);
       if (!status.ok()) {
         overall_status.Update(status);
         anomalous_segments_ = 1;
@@ -406,7 +407,7 @@ Status FlightPlan::ComputeSegments(
 
     if (anomalous_segments_ == 0) {
       auto& burn = segments_.back();
-      Status const status = BurnSegment(manœuvre, burn);
+      absl::Status const status = BurnSegment(manœuvre, burn);
       if (!status.ok()) {
         overall_status.Update(status);
         anomalous_segments_ = 1;
@@ -429,7 +430,8 @@ Status FlightPlan::ComputeSegments(
              segments_.back()->Fork()->degrees_of_freedom,
          .mission_duration =
              desired_final_time_ - segments_.back()->Fork()->time});
-    Status const status = CoastSegment(desired_final_time_, segments_.back());
+    absl::Status const status =
+        CoastSegment(desired_final_time_, segments_.back());
     if (!status.ok()) {
       overall_status.Update(status);
       anomalous_segments_ = 1;

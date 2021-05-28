@@ -155,7 +155,7 @@ class Vessel {
   // performed.
   // If |history_->back().time| is greater than the current desired final time,
   // the flight plan length is kept; otherwise, the desired final time is kept.
-  Status RebaseFlightPlan(Mass const& initial_mass);
+  absl::Status RebaseFlightPlan(Mass const& initial_mass);
 
   // Tries to replace the current prediction with a more recently computed one.
   // No guarantees that this happens.  No guarantees regarding the end time of
@@ -219,18 +219,18 @@ class Vessel {
 
   // Run by the |prognosticator_| thread to periodically recompute the
   // prognostication.
-  Status RepeatedlyFlowPrognostication();
+  absl::Status RepeatedlyFlowPrognostication();
 
   // Runs the integrator to compute the |prognostication_| based on the given
   // parameters.
-  Status FlowPrognostication(
+  absl::Status FlowPrognostication(
       PrognosticatorParameters prognosticator_parameters,
       std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication);
 
   // Publishes the prognostication if the computation was not cancelled.
   void SwapPrognostication(
       std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication,
-      Status const& status);
+      absl::Status const& status);
 
   // Appends to |trajectory| the centre of mass of the trajectories of the parts
   // denoted by |part_trajectory_begin| and |part_trajectory_end|.  Only the

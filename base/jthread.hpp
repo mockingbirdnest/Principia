@@ -124,13 +124,13 @@ class this_stoppable_thread {
   friend jthread MakeStoppableThread(Function&& f, Args&&... args);
 };
 
-#define RETURN_IF_STOPPED                                                   \
-  do {                                                                      \
-    if (::principia::base::this_stoppable_thread::get_stop_token()          \
-            .stop_requested()) {                                            \
-      return ::principia::base::Status(::principia::base::Error::CANCELLED, \
-                                       "Cancelled by stop token");          \
-    }                                                                       \
+#define RETURN_IF_STOPPED                                          \
+  do {                                                             \
+    if (::principia::base::this_stoppable_thread::get_stop_token() \
+            .stop_requested()) {                                   \
+      return ::absl::Status(::principia::base::Error::CANCELLED,   \
+                            "Cancelled by stop token");            \
+    }                                                              \
   } while (false)
 
 }  // namespace internal_jthread

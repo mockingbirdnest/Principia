@@ -172,11 +172,11 @@ class OrbitalElements {
   // |anomalistic_period_|, |nodal_period_|, and |nodal_precession_|
   // accordingly. Note that this does not compute |sidereal_period_| (our mean
   // element computation is based on it, so it gets computed earlier).
-  Status ComputePeriodsAndPrecession();
+  absl::Status ComputePeriodsAndPrecession();
 
   // |radial_distances_| and |mean_classical_elements_| must have been computed;
   // sets |radial_distance_interval_| and |mean_*_interval_| accordingly.
-  Status ComputeIntervals();
+  absl::Status ComputeIntervals();
 
   std::vector<EquinoctialElements> osculating_equinoctial_elements_;
   std::vector<Length> radial_distances_;

@@ -68,8 +68,8 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // passed to |Append| if the trajectory is not empty.  The |time|s passed to
   // successive calls to |Append| must be equally spaced with the |step| given
   // at construction.
-  Status Append(Instant const& time,
-                DegreesOfFreedom<Frame> const& degrees_of_freedom)
+  absl::Status Append(Instant const& time,
+                      DegreesOfFreedom<Frame> const& degrees_of_freedom)
       EXCLUDES(lock_);
 
   // Prepends the given |trajectory| to this one.  Ideally the last point of
@@ -171,7 +171,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // Adjust the |degree_| and other member variables to stay within the
   // tolerance while minimizing the computational cost and avoiding numerical
   // instabilities.
-  Status ComputeBestNewhallApproximation(
+  absl::Status ComputeBestNewhallApproximation(
       Instant const& time,
       std::vector<Position<Frame>> const& q,
       std::vector<Velocity<Frame>> const& v) REQUIRES(lock_);

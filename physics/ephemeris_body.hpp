@@ -74,8 +74,8 @@ constexpr Time max_time_between_checkpoints = 180 * Day;
 // downsampling from going postal.
 constexpr double min_radius_tolerance = 0.99;
 
-inline Status CollisionDetected() {
-  return Status(Error::OUT_OF_RANGE, "Collision detected");
+inline absl::Status CollisionDetected() {
+  return absl::Status(Error::OUT_OF_RANGE, "Collision detected");
 }
 
 template<typename Frame>
@@ -345,13 +345,13 @@ Ephemeris<Frame>::planetary_integrator() const {
 }
 
 template<typename Frame>
-Status Ephemeris<Frame>::last_severe_integration_status() const {
+absl::Status Ephemeris<Frame>::last_severe_integration_status() const {
   absl::ReaderMutexLock l(&lock_);
   return last_severe_integration_status_;
 }
 
 template<typename Frame>
-Status Ephemeris<Frame>::Prolong(Instant const& t) {
+absl::Status Ephemeris<Frame>::Prolong(Instant const& t) {
   // Short-circuit without locking.
   if (t <= t_max()) {
     return absl::OkStatus();
@@ -447,7 +447,7 @@ Ephemeris<Frame>::StoppableNewInstance(
 }
 
 template<typename Frame>
-Status Ephemeris<Frame>::FlowWithAdaptiveStep(
+absl::Status Ephemeris<Frame>::FlowWithAdaptiveStep(
     not_null<DiscreteTrajectory<Frame>*> const trajectory,
     IntrinsicAcceleration intrinsic_acceleration,
     Instant const& t,
@@ -477,7 +477,7 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
 }
 
 template<typename Frame>
-Status Ephemeris<Frame>::FlowWithAdaptiveStep(
+absl::Status Ephemeris<Frame>::FlowWithAdaptiveStep(
     not_null<DiscreteTrajectory<Frame>*> trajectory,
     GeneralizedIntrinsicAcceleration intrinsic_acceleration,
     Instant const& t,
@@ -510,7 +510,7 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
 }
 
 template<typename Frame>
-Status Ephemeris<Frame>::FlowWithFixedStep(
+absl::Status Ephemeris<Frame>::FlowWithFixedStep(
     Instant const& t,
     typename Integrator<NewtonianMotionEquation>::Instance& instance) {
   if (empty() || t > t_max()) {
@@ -916,7 +916,7 @@ Ephemeris<Frame>::MakeCheckpointerReader() {
 }
 
 template<typename Frame>
-Status Ephemeris<Frame>::Reanimate() {
+absl::Status Ephemeris<Frame>::Reanimate() {
   std::vector<not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>>
       trajectories;
 
@@ -962,9 +962,9 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
     auto const& status = statuses[i];
     if (!status.ok()) {
       last_severe_integration_status_ =
-          Status(status.error(),
-                 "Error extending trajectory for " + bodies_[i]->name() + ". " +
-                     status.message());
+          absl::Status(status.error(),
+                       "Error extending trajectory for " + bodies_[i]->name() +
+                           ". " + status.message());
       LOG(ERROR) << "New Apocalypse: " << last_severe_integration_status_;
     }
   }
@@ -974,10 +974,11 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
 
 template<typename Frame>
 template<typename ContinuousTrajectoryPtr>
-std::vector<Status> Ephemeris<Frame>::AppendMassiveBodiesStateToTrajectories(
+std::vector<absl::Status>
+Ephemeris<Frame>::AppendMassiveBodiesStateToTrajectories(
     typename NewtonianMotionEquation::SystemState const& state,
     std::vector<not_null<ContinuousTrajectoryPtr>> const& trajectories) {
-  std::vector<Status> statuses;
+  std::vector<absl::Status> statuses;
   Instant const time = state.time.value;
   int index = 0;
   for (auto& trajectory : trajectories) {
@@ -1236,7 +1237,7 @@ Error Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
 
 template<typename Frame>
 template<typename ODE>
-Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
+absl::Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
     typename ODE::RightHandSideComputation compute_acceleration,
     not_null<DiscreteTrajectory<Frame>*> trajectory,
     Instant const& t,
@@ -1312,9 +1313,9 @@ Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
   if (!status.ok() || t_final == t) {
     return status;
   } else {
-    return Status(Error::DEADLINE_EXCEEDED,
-                  "Couldn't reach " + DebugString(t) + ", stopping at " +
-                      DebugString(t_final));
+    return absl::Status(Error::DEADLINE_EXCEEDED,
+                        "Couldn't reach " + DebugString(t) + ", stopping at " +
+                            DebugString(t_final));
   }
 }
 

@@ -44,8 +44,10 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
   using State = std::tuple<std::vector<StateElements>...>;
   using StateVariation = std::tuple<std::vector<Variation<StateElements>>...>;
 
-  using RightHandSideComputation = std::function<
-      Status(Instant const& t, State const& state, StateVariation& variations)>;
+  using RightHandSideComputation =
+      std::function<absl::Status(Instant const& t,
+                                 State const& state,
+                                 StateVariation& variations)>;
 
   struct SystemState final {
     SystemState() = default;
@@ -76,10 +78,10 @@ template<typename... StateElements>
 struct DecomposableFirstOrderDifferentialEquation final {
   using State = std::tuple<std::vector<StateElements>...>;
 
-  using Flow = std::function<Status(Instant const& t_initial,
-                                    Instant const& t_final,
-                                    State const& initial_state,
-                                    State& final_state)>;
+  using Flow = std::function<absl::Status(Instant const& t_initial,
+                                          Instant const& t_final,
+                                          State const& initial_state,
+                                          State& final_state)>;
 
   struct SystemState final {
     SystemState() = default;
@@ -118,10 +120,10 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
   // The type of q″.
   using Acceleration = Variation<Velocity>;
   using RightHandSideComputation =
-      std::function<Status(Instant const& t,
-                           std::vector<Position> const& positions,
-                           std::vector<Velocity> const& velocities,
-                           std::vector<Acceleration>& accelerations)>;
+      std::function<absl::Status(Instant const& t,
+                                 std::vector<Position> const& positions,
+                                 std::vector<Velocity> const& velocities,
+                                 std::vector<Acceleration>& accelerations)>;
 
   struct SystemState final {
     SystemState() = default;
@@ -169,9 +171,9 @@ struct SpecialSecondOrderDifferentialEquation final {
   using Acceleration = Variation<Velocity>;
   using RightHandSideComputation =
       std::function<
-          Status(Instant const& t,
-                 std::vector<Position> const& positions,
-                 std::vector<Acceleration>& accelerations)>;
+          absl::Status(Instant const& t,
+                       std::vector<Position> const& positions,
+                       std::vector<Acceleration>& accelerations)>;
 
   using SystemState = typename ExplicitSecondOrderOrdinaryDifferentialEquation<
       Position>::SystemState;
