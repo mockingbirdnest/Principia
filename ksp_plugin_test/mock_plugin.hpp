@@ -97,33 +97,19 @@ class MockPlugin : public Plugin {
               (GUID const& vessel_guid),
               (const, override));
 
-  not_null<std::unique_ptr<Planetarium>> NewPlanetarium(
-      Planetarium::Parameters const& parameters,
-      Perspective<Navigation, Camera> const& perspective) const override;
-  not_null<std::unique_ptr<NavigationFrame>>
-  NewBodyCentredNonRotatingNavigationFrame(
-      Index reference_body_index) const override;
-  not_null<std::unique_ptr<NavigationFrame>>
-  NewBarycentricRotatingNavigationFrame(Index primary_index,
-                                        Index secondary_index) const override;
-
-  MOCK_METHOD(void,
-              FillPlanetarium,
+  MOCK_METHOD(not_null<std::unique_ptr<Planetarium>>,
+              NewPlanetarium,
               (Planetarium::Parameters const& parameters,
-               (Perspective<Navigation, Camera> const& perspective),
-               std::unique_ptr<Planetarium>* planetarium),
-              (const));
-  MOCK_METHOD(void,
-              FillBodyCentredNonRotatingNavigationFrame,
-              (Index reference_body_index,
-               std::unique_ptr<NavigationFrame>* navigation_frame),
-              (const));
-  MOCK_METHOD(void,
-              FillBarycentricRotatingNavigationFrame,
-              (Index primary_index,
-               Index secondary_index,
-               std::unique_ptr<NavigationFrame>* navigation_frame),
-              (const));
+               (Perspective<Navigation, Camera> const& perspective)),
+              (const, override));
+  MOCK_METHOD(not_null<std::unique_ptr<NavigationFrame>>,
+              NewBodyCentredNonRotatingNavigationFrame,
+              (Index reference_body_index),
+              (const, override));
+  MOCK_METHOD(not_null<std::unique_ptr<NavigationFrame>>,
+              NewBarycentricRotatingNavigationFrame,
+              (Index primary_index, Index secondary_index),
+              (const, override));
 
   MOCK_METHOD((std::unique_ptr<FrameField<World, Navball>>),
               NavballFrameField,

@@ -71,19 +71,15 @@ class MockEphemeris : public Ephemeris<Frame> {
               (Position<Frame> const& position, Instant const& t),
               (const, override));
 
-  // NOTE(phl): This overload introduces ambiguities in the expectations.
-  // MOCK_METHOD(
-  // ComputeGravitationalAccelerationOnMasslessBody, (
-  //     ComputeGravitationalAccelerationOnMasslessBody,
-  //     Vector<Acceleration, Frame>(
-  //         not_null<DiscreteTrajectory<Frame>*> /*const*/ trajectory),
-  //         Instant const& t), (const, override));
+   MOCK_METHOD((Vector<Acceleration, Frame>),
+              ComputeGravitationalAccelerationOnMasslessBody,
+              (not_null<DiscreteTrajectory<Frame>*> trajectory,
+               Instant const& t),
+              (const, override));
 
-  // NOTE(phl): The commented-out const below is to work-around a compiler
-  // internal error.  Don't ask.
   MOCK_METHOD((Vector<Acceleration, Frame>),
               ComputeGravitationalAccelerationOnMassiveBody,
-              (not_null<MassiveBody const*> /*const*/ body,
+              (not_null<MassiveBody const*> body,
                Instant const& t),
               (const, override));
 

@@ -65,28 +65,16 @@ class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {
  public:
   using ContinuousTrajectory<Frame>::ContinuousTrajectory;
 
-  // Mock the Newhall factory.
-  not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>
-  NewhallApproximationInMonomialBasis(
-      int degree,
-      std::vector<Position<Frame>> const& q,
-      std::vector<Velocity<Frame>> const& v,
-      Instant const& t_min,
-      Instant const& t_max,
-      Displacement<Frame>& error_estimate) const override;
-
   MOCK_METHOD(
-      void,
-      FillNewhallApproximationInMonomialBasis,
+      (not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>),
+      NewhallApproximationInMonomialBasis,
       (int degree,
        std::vector<Position<Frame>> const& q,
        std::vector<Velocity<Frame>> const& v,
        Instant const& t_min,
        Instant const& t_max,
-       Displacement<Frame>& error_estimate,
-       (not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>> &
-        polynomial)),
-      (const));
+       Displacement<Frame>& error_estimate),
+      (const, override));
 
   absl::Status LockAndComputeBestNewhallApproximation(
       Instant const& time,
@@ -99,29 +87,6 @@ class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {
   bool is_unstable() const;
   void ResetBestNewhallApproximation();
 };
-
-template<typename Frame>
-not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>
-TestableContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
-    int degree,
-    std::vector<Position<Frame>> const& q,
-    std::vector<Velocity<Frame>> const& v,
-    Instant const& t_min,
-    Instant const& t_max,
-    Displacement<Frame>& error_estimate) const {
-  using P = PolynomialInMonomialBasis<
-                Position<Frame>, Instant, /*degree=*/1, HornerEvaluator>;
-  typename P::Coefficients const coefficients = {Position<Frame>(),
-                                                 Velocity<Frame>()};
-  not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>
-      polynomial = make_not_null_unique<P>(coefficients, Instant());
-  FillNewhallApproximationInMonomialBasis(degree,
-                                          q, v,
-                                          t_min, t_max,
-                                          error_estimate,
-                                          polynomial);
-  return polynomial;
-}
 
 template<typename Frame>
 absl::Status

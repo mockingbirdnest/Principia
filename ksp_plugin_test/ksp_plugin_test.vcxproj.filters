@@ -59,9 +59,6 @@
     <ClCompile Include="..\ksp_plugin\interface_flight_plan.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mock_plugin.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\ksp_plugin\interface_iterator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -94,9 +91,6 @@
     </ClCompile>
     <ClCompile Include="interface_flight_plan_test.cpp">
       <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mock_renderer.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="interface_renderer_test.cpp">
       <Filter>Test Files</Filter>
