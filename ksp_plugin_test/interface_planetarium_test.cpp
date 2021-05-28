@@ -13,7 +13,6 @@
 #include "ksp_plugin_test/mock_plugin.hpp"
 #include "ksp_plugin_test/mock_renderer.hpp"
 #include "quantities/quantities.hpp"
-#include "testing_utilities/actions.hpp"
 
 namespace principia {
 namespace interface {
@@ -31,7 +30,6 @@ using ksp_plugin::MockPlanetarium;
 using ksp_plugin::MockPlugin;
 using ksp_plugin::MockRenderer;
 using quantities::Length;
-using testing_utilities::FillUniquePtr;
 using ::testing::ByMove;
 using ::testing::IsNull;
 using ::testing::Return;

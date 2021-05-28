@@ -13,7 +13,6 @@
 #include "physics/discrete_trajectory.hpp"
 #include "physics/mock_dynamic_frame.hpp"
 #include "quantities/si.hpp"
-#include "testing_utilities/actions.hpp"
 
 namespace principia {
 namespace interface {
@@ -30,7 +29,6 @@ using ksp_plugin::Navigation;
 using physics::DiscreteTrajectory;
 using physics::MockDynamicFrame;
 using quantities::si::Metre;
-using testing_utilities::FillUniquePtr;
 using ::testing::ByMove;
 using ::testing::IsNull;
 using ::testing::Pointer;

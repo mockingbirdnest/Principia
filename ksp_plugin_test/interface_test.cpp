@@ -27,7 +27,6 @@
 #include "quantities/astronomy.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/si.hpp"
-#include "testing_utilities/actions.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/matchers.hpp"
 #include "testing_utilities/serialization.hpp"
@@ -88,7 +87,6 @@ using quantities::si::Second;
 using quantities::si::Tonne;
 using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
-using testing_utilities::FillUniquePtr;
 using testing_utilities::ReadFromBinaryFile;
 using testing_utilities::ReadLinesFromBase64File;
 using testing_utilities::ReadFromHexadecimalFile;

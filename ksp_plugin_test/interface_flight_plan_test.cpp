@@ -30,7 +30,6 @@
 #include "physics/rigid_motion.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/si.hpp"
-#include "testing_utilities/actions.hpp"
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
@@ -78,7 +77,6 @@ using quantities::si::Newton;
 using quantities::si::Second;
 using quantities::si::Tonne;
 using testing_utilities::AlmostEquals;
-using testing_utilities::FillUniquePtr;
 using ::testing::AllOf;
 using ::testing::ByMove;
 using ::testing::DoAll;
