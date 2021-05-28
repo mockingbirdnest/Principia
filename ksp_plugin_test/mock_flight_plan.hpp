@@ -16,7 +16,8 @@ class MockFlightPlan : public FlightPlan {
   MOCK_CONST_METHOD0(number_of_manœuvres, int());
   MOCK_CONST_METHOD1(GetManœuvre, NavigationManœuvre const& (int index));
 
-  MOCK_METHOD2(Insert, absl::Status(NavigationManœuvre::Burn const& burn, int index));
+  MOCK_METHOD2(Insert,
+               absl::Status(NavigationManœuvre::Burn const& burn, int index));
   MOCK_METHOD1(Remove, absl::Status(int index));
   MOCK_METHOD2(Replace,
                absl::Status(NavigationManœuvre::Burn const& burn, int index));

@@ -808,7 +808,8 @@ not_null<std::unique_ptr<PileUpFuture>> Plugin::CatchUpVessel(
         // Note that there can be contention in the following method if the
         // caller is catching-up two vessels belonging to the same pile-up in
         // parallel.
-        absl::Status const status = pile_up->DeformAndAdvanceTime(current_time_);
+        absl::Status const status =
+            pile_up->DeformAndAdvanceTime(current_time_);
         if (!status.ok()) {
           vessel.DisableDownsampling();
         }

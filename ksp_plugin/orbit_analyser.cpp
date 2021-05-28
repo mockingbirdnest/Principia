@@ -84,7 +84,8 @@ double OrbitAnalyser::progress_of_next_analysis() const {
   return progress_of_next_analysis_;
 }
 
-absl::Status OrbitAnalyser::AnalyseOrbit(GuardedParameters const guarded_parameters) {
+absl::Status OrbitAnalyser::AnalyseOrbit(
+    GuardedParameters const guarded_parameters) {
   auto const& parameters = guarded_parameters.parameters;
 
   Analysis analysis{parameters.first_time};

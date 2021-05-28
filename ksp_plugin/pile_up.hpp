@@ -242,7 +242,8 @@ class PileUp {
 
 // A convenient data object to track a pile-up and the result of integrating it.
 struct PileUpFuture {
-  PileUpFuture(not_null<PileUp const*> pile_up, std::future<absl::Status> future);
+  PileUpFuture(not_null<PileUp const*> pile_up,
+               std::future<absl::Status> future);
   not_null<PileUp const*> pile_up;
   std::future<absl::Status> future;
 };

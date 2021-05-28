@@ -165,7 +165,8 @@ absl::Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
   return ComputeSegments(manœuvres_.begin() + index, manœuvres_.end());
 }
 
-absl::Status FlightPlan::SetDesiredFinalTime(Instant const& desired_final_time) {
+absl::Status FlightPlan::SetDesiredFinalTime(
+    Instant const& desired_final_time) {
   if (desired_final_time < start_of_last_coast()) {
     return BadDesiredFinalTime();
   }

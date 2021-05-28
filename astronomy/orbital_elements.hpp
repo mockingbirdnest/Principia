@@ -161,9 +161,9 @@ class OrbitalElements {
   // |osculating| must contain at least 2 elements.
   // The resulting elements are averaged over one period, centred on
   // their |EquinoctialElements::t|.
-  static absl::StatusOr<std::vector<EquinoctialElements>> MeanEquinoctialElements(
-      std::vector<EquinoctialElements> const& osculating,
-      Time const& period);
+  static absl::StatusOr<std::vector<EquinoctialElements>>
+  MeanEquinoctialElements(std::vector<EquinoctialElements> const& osculating,
+                          Time const& period);
 
   static absl::StatusOr<std::vector<ClassicalElements>> ToClassicalElements(
       std::vector<EquinoctialElements> const& equinoctial_elements);

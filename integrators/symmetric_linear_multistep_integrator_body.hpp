@@ -23,7 +23,8 @@ using geometry::QuantityOrMultivectorSerializer;
 int const startup_step_divisor = 16;
 
 template<typename Method, typename Position>
-absl::Status SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Solve(
+absl::Status
+SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Solve(
     Instant const& t_final) {
   using Acceleration = typename ODE::Acceleration;
   using Displacement = typename ODE::Displacement;

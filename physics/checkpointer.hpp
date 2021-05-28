@@ -45,7 +45,8 @@ class Checkpointer {
 
   // A function that reconstructs an object from a checkpoint as a side effect.
   // This function is expected to capture the object being deserialized.
-  using Reader = std::function<absl::Status(typename Message::Checkpoint const&)>;
+  using Reader =
+      std::function<absl::Status(typename Message::Checkpoint const&)>;
 
   Checkpointer(Writer writer, Reader reader);
 
