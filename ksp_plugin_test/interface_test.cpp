@@ -103,6 +103,7 @@ using ::testing::Invoke;
 using ::testing::IsNull;
 using ::testing::NotNull;
 using ::testing::Pointee;
+using ::testing::Pointer;
 using ::testing::Property;
 using ::testing::Ref;
 using ::testing::Return;
@@ -550,8 +551,11 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
 
   EXPECT_CALL(
       *plugin_,
-      FillBarycentricRotatingNavigationFrame(celestial_index, parent_index, _))
-      .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
+      NewBarycentricRotatingNavigationFrame(celestial_index, parent_index))
+      .WillOnce(
+          Return(ByMove(std::unique_ptr<
+                        StrictMock<MockDynamicFrame<Barycentric, Navigation>>>(
+              mock_navigation_frame))));
   principia__SetPlottingFrame(plugin_.get(), parameters);
 
   parameters.extension =
@@ -559,8 +563,11 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
   parameters.centre_index = celestial_index;
 
   EXPECT_CALL(*plugin_,
-              FillBodyCentredNonRotatingNavigationFrame(celestial_index, _))
-      .WillOnce(FillUniquePtr<1>(mock_navigation_frame));
+              NewBodyCentredNonRotatingNavigationFrame(celestial_index))
+      .WillOnce(
+          Return(ByMove(std::unique_ptr<
+                        StrictMock<MockDynamicFrame<Barycentric, Navigation>>>(
+              mock_navigation_frame))));
   principia__SetPlottingFrame(plugin_.get(), parameters);
 }
 
@@ -569,10 +576,12 @@ TEST_F(InterfaceTest, NavballOrientation) {
      mock_navigation_frame =
          new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingNavigationFrame(celestial_index,
-                                                parent_index,
-                                                _))
-      .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
+              NewBarycentricRotatingNavigationFrame(celestial_index,
+                                                    parent_index))
+      .WillOnce(
+          Return(ByMove(std::unique_ptr<
+                        StrictMock<MockDynamicFrame<Barycentric, Navigation>>>(
+              mock_navigation_frame))));
   NavigationFrameParameters parameters = {
       serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber,
       unused,
@@ -581,7 +590,7 @@ TEST_F(InterfaceTest, NavballOrientation) {
 
   MockRenderer renderer;
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
-  EXPECT_CALL(renderer, SetPlottingFrameConstRef(Ref(*mock_navigation_frame)));
+  EXPECT_CALL(renderer, SetPlottingFrame(Pointer(mock_navigation_frame)));
   principia__SetPlottingFrame(plugin_.get(), parameters);
 
   Position<World> sun_position =

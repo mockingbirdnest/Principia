@@ -71,7 +71,7 @@ class MockEphemeris : public Ephemeris<Frame> {
               (Position<Frame> const& position, Instant const& t),
               (const, override));
 
-   MOCK_METHOD((Vector<Acceleration, Frame>),
+  MOCK_METHOD((Vector<Acceleration, Frame>),
               ComputeGravitationalAccelerationOnMasslessBody,
               (not_null<DiscreteTrajectory<Frame>*> trajectory,
                Instant const& t),

@@ -32,6 +32,7 @@ using ksp_plugin::MockPlugin;
 using ksp_plugin::MockRenderer;
 using quantities::Length;
 using testing_utilities::FillUniquePtr;
+using ::testing::ByMove;
 using ::testing::IsNull;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -63,8 +64,8 @@ TEST_F(InterfacePlanetariumTest, ConstructionDestruction) {
           Permutation<World, Navigation>(
               Permutation<World, Navigation>::CoordinatePermutation::YXZ)
               .Forget<OrthogonalMap>())));
-  EXPECT_CALL(*plugin_, FillPlanetarium(_, _, _))
-      .WillOnce(FillUniquePtr<2>(new MockPlanetarium));
+  EXPECT_CALL(*plugin_, NewPlanetarium(_, _))
+      .WillOnce(Return(ByMove(std::unique_ptr<MockPlanetarium>())));
 
   Planetarium const* planetarium = principia__PlanetariumCreate(plugin_.get(),
                                                                 {100, 200, 300},
