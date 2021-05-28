@@ -393,7 +393,7 @@ Ephemeris<Frame>::NewInstance(
 }
 
 template<typename Frame>
-StatusOr<not_null<std::unique_ptr<typename Integrator<
+absl::StatusOr<not_null<std::unique_ptr<typename Integrator<
     typename Ephemeris<Frame>::NewtonianMotionEquation>::Instance>>>
 Ephemeris<Frame>::StoppableNewInstance(
     std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,

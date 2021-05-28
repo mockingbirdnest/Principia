@@ -30,7 +30,7 @@ using quantities::UnwindFrom;
 using quantities::si::Radian;
 
 template<typename PrimaryCentred>
-StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
+absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
     DiscreteTrajectory<PrimaryCentred> const& trajectory,
     MassiveBody const& primary,
     Body const& secondary) {
@@ -197,7 +197,7 @@ OrbitalElements::mean_equinoctial_elements() const {
   return mean_equinoctial_elements_;
 }
 
-inline StatusOr<Time> OrbitalElements::SiderealPeriod(
+inline absl::StatusOr<Time> OrbitalElements::SiderealPeriod(
     std::vector<EquinoctialElements> const& equinoctial_elements) {
   Time const Δt =
       equinoctial_elements.back().t - equinoctial_elements.front().t;
@@ -220,7 +220,7 @@ inline StatusOr<Time> OrbitalElements::SiderealPeriod(
   return 2 * π * Radian * Pow<3>(Δt) / (12 * ʃ_λt_dt);
 }
 
-inline StatusOr<std::vector<OrbitalElements::EquinoctialElements>>
+inline absl::StatusOr<std::vector<OrbitalElements::EquinoctialElements>>
 OrbitalElements::MeanEquinoctialElements(
     std::vector<EquinoctialElements> const& osculating,
     Time const& period) {
@@ -331,7 +331,7 @@ OrbitalElements::MeanEquinoctialElements(
   return mean_elements;
 }
 
-inline StatusOr<std::vector<OrbitalElements::ClassicalElements>>
+inline absl::StatusOr<std::vector<OrbitalElements::ClassicalElements>>
 OrbitalElements::ToClassicalElements(
     std::vector<EquinoctialElements> const& equinoctial_elements) {
   std::vector<ClassicalElements> classical_elements;

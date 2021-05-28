@@ -66,7 +66,7 @@ class OrbitGroundTrack {
   // |trajectory| as an orbit around |primary|; if |mean_sun| is provided,
   // sun-synchronicity is analysed.
   template<typename PrimaryCentred, typename Inertial>
-  static StatusOr<OrbitGroundTrack> ForTrajectory(
+  static absl::StatusOr<OrbitGroundTrack> ForTrajectory(
       DiscreteTrajectory<PrimaryCentred> const& trajectory,
       RotatingBody<Inertial> const& primary,
       std::optional<MeanSun> const& mean_sun);

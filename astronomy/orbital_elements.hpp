@@ -36,7 +36,7 @@ class OrbitalElements {
   OrbitalElements& operator=(OrbitalElements&&) = default;
 
   template<typename PrimaryCentred>
-  static StatusOr<OrbitalElements> ForTrajectory(
+  static absl::StatusOr<OrbitalElements> ForTrajectory(
       DiscreteTrajectory<PrimaryCentred> const& trajectory,
       MassiveBody const& primary,
       Body const& secondary);
@@ -155,17 +155,17 @@ class OrbitalElements {
       DiscreteTrajectory<PrimaryCentred> const& trajectory);
 
   // |equinoctial_elements| must contain at least 2 elements.
-  static StatusOr<Time> SiderealPeriod(
+  static absl::StatusOr<Time> SiderealPeriod(
       std::vector<EquinoctialElements> const& equinoctial_elements);
 
   // |osculating| must contain at least 2 elements.
   // The resulting elements are averaged over one period, centred on
   // their |EquinoctialElements::t|.
-  static StatusOr<std::vector<EquinoctialElements>> MeanEquinoctialElements(
+  static absl::StatusOr<std::vector<EquinoctialElements>> MeanEquinoctialElements(
       std::vector<EquinoctialElements> const& osculating,
       Time const& period);
 
-  static StatusOr<std::vector<ClassicalElements>> ToClassicalElements(
+  static absl::StatusOr<std::vector<ClassicalElements>> ToClassicalElements(
       std::vector<EquinoctialElements> const& equinoctial_elements);
 
   // |mean_classical_elements_| must have been computed; sets

@@ -200,7 +200,7 @@ class Ephemeris {
       FixedStepParameters const& parameters);
 
   // Same as above, but returns an error status if the thread is stopped.
-  virtual StatusOr<not_null<
+  virtual absl::StatusOr<not_null<
       std::unique_ptr<typename Integrator<NewtonianMotionEquation>::Instance>>>
   StoppableNewInstance(
       std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
