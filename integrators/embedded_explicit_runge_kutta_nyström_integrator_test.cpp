@@ -43,6 +43,7 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::ComputeHarmonicOscillatorAcceleration1D;
 using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
+using testing_utilities::StatusIs;
 using testing_utilities::operator""_⑴;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
@@ -132,7 +133,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
                                            tolerance_to_error_ratio,
                                            parameters);
     auto outcome = instance->Solve(t_final);
-    EXPECT_EQ(termination_condition::Done, outcome.error());
+    EXPECT_THAT(outcome, StatusIs(termination_condition::Done));
   }
   EXPECT_THAT(AbsoluteError(x_initial, solution.back().positions[0].value),
               IsNear(3.5e-4_⑴ * Metre));
@@ -164,7 +165,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
     auto instance = integrator.NewInstance(
         problem, append_state, tolerance_to_error_ratio, parameters);
     auto outcome = instance->Solve(t_initial);
-    EXPECT_EQ(termination_condition::Done, outcome.error());
+    EXPECT_THAT(outcome, StatusIs(termination_condition::Done));
   }
   EXPECT_THAT(AbsoluteError(x_initial, solution.back().positions[0].value),
               IsNear(1.2e-3_⑴ * Metre));
@@ -227,7 +228,8 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, MaxSteps) {
                                                parameters);
   auto const outcome = instance->Solve(t_final);
 
-  EXPECT_EQ(termination_condition::ReachedMaximalStepCount, outcome.error());
+  EXPECT_THAT(outcome,
+              StatusIs(termination_condition::ReachedMaximalStepCount));
   EXPECT_THAT(AbsoluteError(
                   x_initial * Cos(ω * (solution.back().time.value - t_initial)),
                       solution.back().positions[0].value),
@@ -255,7 +257,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, MaxSteps) {
                                                  tolerance_to_error_ratio,
                                                  parameters);
     auto const outcome = instance->Solve(t_final);
-    EXPECT_EQ(termination_condition::Done, outcome.error());
+    EXPECT_THAT(outcome, StatusIs(termination_condition::Done));
     EXPECT_THAT(AbsoluteError(x_initial, solution.back().positions[0].value),
                 IsNear(3.6e-4_⑴ * Metre));
     EXPECT_THAT(AbsoluteError(v_initial, solution.back().velocities[0].value),
@@ -295,7 +297,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Singularity) {
       std::vector<Length> const& position,
       std::vector<Acceleration>& acceleration) {
     acceleration.back() = mass_flow * specific_impulse / mass(t);
-    return Status::OK;
+    return absl::OkStatus();
   };
   IntegrationProblem<ODE> problem;
   auto const append_state = [&solution](ODE::SystemState const& state) {
@@ -323,7 +325,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Singularity) {
                                                parameters);
   auto const outcome = instance->Solve(t_final);
 
-  EXPECT_EQ(termination_condition::VanishingStepSize, outcome.error());
+  EXPECT_THAT(outcome, StatusIs(termination_condition::VanishingStepSize));
   EXPECT_EQ(132, solution.size());
   EXPECT_THAT(solution.back().time.value - t_initial,
               AlmostEquals(t_singular - t_initial, 15));
@@ -378,7 +380,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Restart) {
                                                  tolerance_to_error_ratio,
                                                  parameters);
     auto outcome = instance->Solve(t_initial + duration);
-    EXPECT_EQ(termination_condition::Done, outcome.error());
+    EXPECT_THAT(outcome, StatusIs(termination_condition::Done));
 
     // Check that the time step has been updated.
     EXPECT_EQ(131, solution1.size());
@@ -389,7 +391,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Restart) {
 
     // Restart the integration.
     outcome = instance->Solve(t_initial + 2.0 * duration);
-    EXPECT_EQ(termination_condition::Done, outcome.error());
+    EXPECT_THAT(outcome, StatusIs(termination_condition::Done));
 
     // Check that the time step has been updated again.
     EXPECT_EQ(261, solution1.size());
@@ -430,7 +432,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Restart) {
                                                  tolerance_to_error_ratio,
                                                  parameters);
     auto outcome = instance->Solve(t_initial + 2.0 * duration);
-    EXPECT_EQ(termination_condition::Done, outcome.error());
+    EXPECT_THAT(outcome, StatusIs(termination_condition::Done));
   }
 
   EXPECT_THAT(solution2, ElementsAreArray(solution1));

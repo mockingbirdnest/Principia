@@ -6,9 +6,9 @@
 #include <utility>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
-#include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
 #include "numerics/piecewise_poisson_series.hpp"
 #include "numerics/polynomial.hpp"
@@ -24,7 +24,6 @@ namespace physics {
 namespace internal_continuous_trajectory {
 
 using base::not_null;
-using base::Status;
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::Position;
@@ -69,8 +68,8 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // passed to |Append| if the trajectory is not empty.  The |time|s passed to
   // successive calls to |Append| must be equally spaced with the |step| given
   // at construction.
-  Status Append(Instant const& time,
-                DegreesOfFreedom<Frame> const& degrees_of_freedom)
+  absl::Status Append(Instant const& time,
+                      DegreesOfFreedom<Frame> const& degrees_of_freedom)
       EXCLUDES(lock_);
 
   // Prepends the given |trajectory| to this one.  Ideally the last point of
@@ -172,7 +171,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // Adjust the |degree_| and other member variables to stay within the
   // tolerance while minimizing the computational cost and avoiding numerical
   // instabilities.
-  Status ComputeBestNewhallApproximation(
+  absl::Status ComputeBestNewhallApproximation(
       Instant const& time,
       std::vector<Position<Frame>> const& q,
       std::vector<Velocity<Frame>> const& v) REQUIRES(lock_);

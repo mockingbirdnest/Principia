@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "base/status.hpp"
+#include "absl/status/status.h"
 #include "geometry/named_quantities.hpp"
 #include "physics/massive_body.hpp"
 #include "quantities/quantities.hpp"
@@ -14,7 +14,6 @@ namespace testing_utilities {
 namespace internal_integration {
 
 using base::not_null;
-using base::Status;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Vector;
@@ -32,14 +31,14 @@ using quantities::Variation;
 
 // The Runge-Kutta-Nyström formulation
 //   qʺ = -q k / m.
-Status ComputeHarmonicOscillatorAcceleration1D(
+absl::Status ComputeHarmonicOscillatorAcceleration1D(
     Instant const& t,
     std::vector<Length> const& q,
     std::vector<Acceleration>& result,
     int* evaluations);
 
 template<typename Frame>
-Status ComputeHarmonicOscillatorAcceleration3D(
+absl::Status ComputeHarmonicOscillatorAcceleration3D(
     Instant const& t,
     std::vector<Position<Frame>> const& q,
     std::vector<Vector<Acceleration, Frame>>& result,
@@ -50,17 +49,17 @@ Status ComputeHarmonicOscillatorAcceleration3D(
 // the Runge-Kutta-Nyström formulation
 //   q" = -q μ / |q|³,
 // where μ = 1 m³ s⁻².
-Status ComputeKeplerAcceleration(Instant const& t,
-                                 std::vector<Length> const& q,
-                                 std::vector<Acceleration>& result,
-                                 int* evaluations);
+absl::Status ComputeKeplerAcceleration(Instant const& t,
+                                       std::vector<Length> const& q,
+                                       std::vector<Acceleration>& result,
+                                       int* evaluations);
 
 // The right-hand side of the Чебышёв differential equation, with the
 // independent variable scaled so that the interval [-1, 1] maps to
 // [J2000 - 1 s, J2000 + 1 s].
 // ч, чʹ, and чʺ must have size 1.
 template<int degree>
-Status ComputeЧебышёвPolynomialSecondDerivative(
+absl::Status ComputeЧебышёвPolynomialSecondDerivative(
     Instant const& t,
     std::vector<double> const& ч,
     std::vector<Variation<double>> const& чʹ,
@@ -72,7 +71,7 @@ Status ComputeЧебышёвPolynomialSecondDerivative(
 // [J2000 - 1 s, J2000 + 1 s].
 // p, pʹ, and pʺ must have size 1.
 template<int degree>
-Status ComputeLegendrePolynomialSecondDerivative(
+absl::Status ComputeLegendrePolynomialSecondDerivative(
     Instant const& t,
     std::vector<double> const& p,
     std::vector<Variation<double>> const& pʹ,

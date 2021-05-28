@@ -9,9 +9,9 @@
 #include <optional>
 #include <string>
 
+#include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
-#include "base/status.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
@@ -35,7 +35,6 @@ FORWARD_DECLARE_FROM(part, class, Part);
 namespace internal_pile_up {
 
 using base::not_null;
-using base::Status;
 using geometry::Arbitrary;
 using geometry::Bivector;
 using geometry::Frame;
@@ -118,7 +117,7 @@ class PileUp {
   // Does nothing if the psychohistory is already advanced beyond |t|.  Several
   // executions of this method may happen concurrently on multiple threads, but
   // not concurrently with any other method of this class.
-  Status DeformAndAdvanceTime(Instant const& t);
+  absl::Status DeformAndAdvanceTime(Instant const& t);
 
   // Recomputes the state of motion of the pile-up based on that of its parts.
   void RecomputeFromParts();
@@ -172,7 +171,7 @@ class PileUp {
   // the histories of the parts and updates the degrees of freedom of the parts
   // if the pile-up is in the bubble.  After this call, the tail (of |*this|)
   // and of its parts have a (possibly ahistorical) final point exactly at |t|.
-  Status AdvanceTime(Instant const& t);
+  absl::Status AdvanceTime(Instant const& t);
 
   // Adjusts the degrees of freedom of all parts in this pile up based on the
   // degrees of freedom of the pile-up computed by |AdvanceTime| and on the
@@ -243,9 +242,10 @@ class PileUp {
 
 // A convenient data object to track a pile-up and the result of integrating it.
 struct PileUpFuture {
-  PileUpFuture(not_null<PileUp const*> pile_up, std::future<Status> future);
+  PileUpFuture(not_null<PileUp const*> pile_up,
+               std::future<absl::Status> future);
   not_null<PileUp const*> pile_up;
-  std::future<Status> future;
+  std::future<absl::Status> future;
 };
 
 }  // namespace internal_pile_up

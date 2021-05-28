@@ -3,8 +3,8 @@
 
 #include <type_traits>
 
+#include "absl/status/status.h"
 #include "base/not_null.hpp"
-#include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
 #include "integrators/integrators.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
@@ -15,7 +15,6 @@ namespace integrators {
 namespace internal_symplectic_partitioned_runge_kutta_integrator {
 
 using base::not_null;
-using base::Status;
 using geometry::Instant;
 using quantities::Time;
 
@@ -61,7 +60,7 @@ class SymplecticPartitionedRungeKuttaIntegrator
 
   class Instance : public FixedStepSizeIntegrator<ODE>::Instance {
    public:
-    Status Solve(Instant const& t_final) override;
+    absl::Status Solve(Instant const& t_final) override;
     SymplecticPartitionedRungeKuttaIntegrator const& integrator()
         const override;
     not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> Clone()

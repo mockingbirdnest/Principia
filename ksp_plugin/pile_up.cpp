@@ -122,9 +122,9 @@ void PileUp::SetPartApparentRigidMotion(
                   << rigid_motion;
 }
 
-Status PileUp::DeformAndAdvanceTime(Instant const& t) {
+absl::Status PileUp::DeformAndAdvanceTime(Instant const& t) {
   absl::MutexLock l(lock_.get());
-  Status status;
+  absl::Status status;
   if (psychohistory_->back().time < t) {
     DeformPileUpIfNeeded(t);
     status = AdvanceTime(t);
@@ -531,10 +531,10 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   apparent_part_rigid_motion_.clear();
 }
 
-Status PileUp::AdvanceTime(Instant const& t) {
+absl::Status PileUp::AdvanceTime(Instant const& t) {
   CHECK_NOTNULL(psychohistory_);
 
-  Status status;
+  absl::Status status;
   auto const history_last = --history_->end();
   if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
     // Remove the fork.
@@ -644,7 +644,7 @@ void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
 }
 
 PileUpFuture::PileUpFuture(not_null<PileUp const*> const pile_up,
-                           std::future<Status> future)
+                           std::future<absl::Status> future)
     : pile_up(pile_up),
       future(std::move(future)) {}
 

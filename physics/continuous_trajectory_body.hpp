@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "astronomy/epoch.hpp"
+#include "base/status_utilities.hpp"
 #include "geometry/interval.hpp"
 #include "glog/stl_logging.h"
 #include "numerics/newhall.hpp"
@@ -24,7 +25,6 @@ namespace internal_continuous_trajectory {
 
 using astronomy::InfiniteFuture;
 using base::dynamic_cast_not_null;
-using base::Error;
 using base::make_not_null_unique;
 using geometry::Interval;
 using numerics::EstrinEvaluator;
@@ -82,7 +82,7 @@ double ContinuousTrajectory<Frame>::average_degree() const {
 }
 
 template<typename Frame>
-Status ContinuousTrajectory<Frame>::Append(
+absl::Status ContinuousTrajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
   absl::MutexLock l(&lock_);
@@ -100,7 +100,7 @@ Status ContinuousTrajectory<Frame>::Append(
     first_time_ = time;
   }
 
-  Status status;
+  absl::Status status;
   CHECK_LE(last_points_.size(), divisions);
   if (last_points_.size() == divisions) {
     // These vectors are thread-local to avoid deallocation/reallocation each
@@ -547,7 +547,7 @@ ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
             {Instant::ReadFromMessage(l.instant()),
              DegreesOfFreedom<Frame>::ReadFromMessage(l.degrees_of_freedom())});
       }
-      return Status::OK;
+      return absl::OkStatus();
     };
   } else {
     return nullptr;
@@ -593,7 +593,7 @@ ContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
 }
 
 template<typename Frame>
-Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
+absl::Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
     Instant const& time,
     std::vector<Position<Frame>> const& q,
     std::vector<Velocity<Frame>> const& v) {
@@ -681,7 +681,7 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
 
   // Check that the tolerance did not explode.
   if (adjusted_tolerance_ < 1e6 * previous_adjusted_tolerance) {
-    return Status::OK;
+    return absl::OkStatus();
   } else {
     std::stringstream message;
     message << "Error trying to fit a smooth polynomial to the trajectory. "
@@ -691,7 +691,7 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
             << " and the last velocity is " << v.back()
             << ". An apocalypse occurred and two celestials probably "
             << "collided because your solar system is unstable.";
-    return Status(Error::INVALID_ARGUMENT, message.str());
+    return absl::InvalidArgumentError(message.str());
   }
 }
 

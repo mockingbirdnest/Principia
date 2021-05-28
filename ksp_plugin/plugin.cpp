@@ -16,6 +16,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "astronomy/epoch.hpp"
 #include "astronomy/solar_system_fingerprints.hpp"
 #include "astronomy/stabilize_ksp.hpp"
@@ -26,7 +27,6 @@
 #include "base/not_null.hpp"
 #include "base/optional_logging.hpp"
 #include "base/serialization.hpp"
-#include "base/status.hpp"
 #include "base/unique_ptr_logging.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/barycentre_calculator.hpp"
@@ -66,7 +66,6 @@ using astronomy::ParseTT;
 using astronomy::StabilizeKSP;
 using base::check_not_null;
 using base::dynamic_cast_not_null;
-using base::Error;
 using base::FindOrDie;
 using base::Fingerprint2011;
 using base::HexadecimalEncoder;
@@ -74,7 +73,6 @@ using base::make_not_null_unique;
 using base::not_null;
 using base::OFStream;
 using base::SerializeAsBytes;
-using base::Status;
 using geometry::AffineMap;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
@@ -287,7 +285,7 @@ void Plugin::EndInitialization() {
 bool Plugin::HasEncounteredApocalypse(std::string* const details) const {
   CHECK_NOTNULL(details);
   auto const status = ephemeris_->last_severe_integration_status();
-  if (status.error() == Error::INVALID_ARGUMENT) {
+  if (absl::IsInvalidArgument(status)) {
     *details = status.message();
     return true;
   } else {
@@ -810,7 +808,8 @@ not_null<std::unique_ptr<PileUpFuture>> Plugin::CatchUpVessel(
         // Note that there can be contention in the following method if the
         // caller is catching-up two vessels belonging to the same pile-up in
         // parallel.
-        Status const status = pile_up->DeformAndAdvanceTime(current_time_);
+        absl::Status const status =
+            pile_up->DeformAndAdvanceTime(current_time_);
         if (!status.ok()) {
           vessel.DisableDownsampling();
         }
@@ -824,7 +823,7 @@ void Plugin::WaitForVesselToCatchUp(PileUpFuture& pile_up_future,
   PileUp const* const pile_up = pile_up_future.pile_up;
   auto& future = pile_up_future.future;
   future.wait();
-  Status const status = future.get();
+  absl::Status const status = future.get();
   if (!status.ok()) {
     for (not_null<Part*> const part : pile_up->parts()) {
       not_null<Vessel*> const vessel =

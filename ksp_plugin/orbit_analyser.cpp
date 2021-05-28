@@ -84,7 +84,8 @@ double OrbitAnalyser::progress_of_next_analysis() const {
   return progress_of_next_analysis_;
 }
 
-Status OrbitAnalyser::AnalyseOrbit(GuardedParameters const guarded_parameters) {
+absl::Status OrbitAnalyser::AnalyseOrbit(
+    GuardedParameters const guarded_parameters) {
   auto const& parameters = guarded_parameters.parameters;
 
   Analysis analysis{parameters.first_time};
@@ -128,7 +129,7 @@ Status OrbitAnalyser::AnalyseOrbit(GuardedParameters const guarded_parameters) {
     for (int n = 0; n <= progress_bar_steps; ++n) {
       Instant const t =
           parameters.first_time + n / progress_bar_steps * analysis_duration;
-      if (!ephemeris_->FlowWithFixedStep(t, *instance.ValueOrDie()).ok()) {
+      if (!ephemeris_->FlowWithFixedStep(t, *instance.value()).ok()) {
         // TODO(egg): Report that the integration failed.
         break;
       }
@@ -159,7 +160,7 @@ Status OrbitAnalyser::AnalyseOrbit(GuardedParameters const guarded_parameters) {
     // statuses.
     RETURN_IF_STOPPED;
     if (elements.ok()) {
-      analysis.elements_ = std::move(elements).ValueOrDie();
+      analysis.elements_ = std::move(elements).value();
       // TODO(egg): max_abs_Cᴛₒ should probably depend on the number of
       // revolutions.
       analysis.closest_recurrence_ = OrbitRecurrence::ClosestRecurrence(
@@ -172,7 +173,7 @@ Status OrbitAnalyser::AnalyseOrbit(GuardedParameters const guarded_parameters) {
                                           *primary,
                                           /*mean_sun=*/std::nullopt);
       RETURN_IF_ERROR(ground_track);
-      analysis.ground_track_ = std::move(ground_track).ValueOrDie();
+      analysis.ground_track_ = std::move(ground_track).value();
       analysis.ResetRecurrence();
     }
   }
@@ -180,7 +181,7 @@ Status OrbitAnalyser::AnalyseOrbit(GuardedParameters const guarded_parameters) {
   absl::MutexLock l(&lock_);
   next_analysis_ = std::move(analysis);
   analyser_idle_ = true;
-  return Status::OK;
+  return absl::OkStatus();
 }
 
 Instant const& OrbitAnalyser::Analysis::first_time() const {

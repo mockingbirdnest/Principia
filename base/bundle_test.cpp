@@ -4,6 +4,7 @@
 #include <atomic>
 #include <vector>
 
+#include "base/status_utilities.hpp"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "testing_utilities/matchers.hpp"
@@ -15,6 +16,8 @@ using ::testing::Eq;
 using namespace std::chrono_literals;
 
 namespace base {
+
+using principia::testing_utilities::StatusIs;
 
 constexpr int workers = 8;
 
@@ -30,13 +33,13 @@ TEST_F(BundleDeathTest, AddAfterJoin) {
       for (int i = 0; i < workers; ++i) {
         bundle_.Add([]() {
           std::this_thread::sleep_for(10ms);
-          return Status::OK;
+          return absl::OkStatus();
         });
       }
       bundle_.Join();
       bundle_.Add([]() {
         std::this_thread::sleep_for(10ms);
-        return Status::OK;
+        return absl::OkStatus();
       });
     },
     "!joining_");
@@ -65,7 +68,7 @@ TEST_F(BundleTest, MatrixVectorProduct) {
           for (int j = 0; j < long_dimension; ++j) {
             product[i] += matrix[i + short_dimension * j] * vector[j];
           }
-          return Status::OK;
+          return absl::OkStatus();
         });
   }
   EXPECT_OK(bundle_.Join());
@@ -79,12 +82,12 @@ TEST_F(BundleTest, Deadline) {
   for (int i = 0; i < workers; ++i) {
     bundle_.Add([]() {
       std::this_thread::sleep_for(1000ms);
-      return Status::OK;
+      return absl::OkStatus();
     });
   }
   auto const status = bundle_.JoinWithin(10ms);
-  EXPECT_THAT(status.error(), Eq(Error::DEADLINE_EXCEEDED));
-  EXPECT_THAT(status.message(), Eq("bundle deadline exceeded"));
+  EXPECT_THAT(status, StatusIs(absl::StatusCode::kDeadlineExceeded));
+  EXPECT_THAT(status.message(), Eq("Bundle deadline exceeded"));
 }
 
 }  // namespace base

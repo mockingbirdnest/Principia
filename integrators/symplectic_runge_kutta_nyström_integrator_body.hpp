@@ -22,7 +22,7 @@ using numerics::ULPDistance;
 using quantities::Abs;
 
 template<typename Method, typename Position>
-Status SymplecticRungeKuttaNyströmIntegrator<Method, Position>::
+absl::Status SymplecticRungeKuttaNyströmIntegrator<Method, Position>::
 Instance::Solve(Instant const& t_final) {
   using Displacement = typename ODE::Displacement;
   using Velocity = typename ODE::Velocity;
@@ -84,7 +84,7 @@ Instance::Solve(Instant const& t_final) {
   // previous evaluation.
   constexpr int first_stage = composition == BA ? 0 : 1;
 
-  Status status;
+  absl::Status status;
 
   if (composition == BAB) {
     for (int k = 0; k < dimension; ++k) {

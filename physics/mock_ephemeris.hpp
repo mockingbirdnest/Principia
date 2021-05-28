@@ -38,7 +38,7 @@ class MockEphemeris : public Ephemeris<Frame> {
       planetary_integrator,
       FixedStepSizeIntegrator<NewtonianMotionEquation> const&());
 
-  MOCK_METHOD1_T(Prolong, Status(Instant const& t));
+  MOCK_METHOD1_T(Prolong, absl::Status(Instant const& t));
   MOCK_METHOD3_T(
       NewInstance,
       not_null<std::unique_ptr<
@@ -46,17 +46,17 @@ class MockEphemeris : public Ephemeris<Frame> {
           std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
           IntrinsicAccelerations const& intrinsic_accelerations,
           FixedStepParameters const& parameters));
-  MOCK_METHOD5_T(
-      FlowWithAdaptiveStep,
-      Status(not_null<DiscreteTrajectory<Frame>*> trajectory,
-             IntrinsicAcceleration intrinsic_acceleration,
-             Instant const& t,
-             AdaptiveStepParameters const& parameters,
-             std::int64_t max_ephemeris_steps));
+  MOCK_METHOD5_T(FlowWithAdaptiveStep,
+                 absl::Status(not_null<DiscreteTrajectory<Frame>*> trajectory,
+                              IntrinsicAcceleration intrinsic_acceleration,
+                              Instant const& t,
+                              AdaptiveStepParameters const& parameters,
+                              std::int64_t max_ephemeris_steps));
   MOCK_METHOD2_T(
       FlowWithFixedStep,
-      Status(Instant const& t,
-             typename Integrator<NewtonianMotionEquation>::Instance& instance));
+      absl::Status(
+          Instant const& t,
+          typename Integrator<NewtonianMotionEquation>::Instance& instance));
 
   MOCK_CONST_METHOD2_T(
       ComputeGravitationalAccelerationOnMasslessBody,
