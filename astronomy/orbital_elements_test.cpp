@@ -167,7 +167,7 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
       spherical_earth,
       MasslessBody{});
   ASSERT_THAT(status_or_elements, IsOk());
-  OrbitalElements const& elements = status_or_elements.ValueOrDie();
+  OrbitalElements const& elements = status_or_elements.value();
   EXPECT_THAT(
       elements.anomalistic_period(),
       AbsoluteErrorFrom(*initial_osculating.period, Lt(510 * Micro(Second))));
@@ -263,7 +263,7 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
       oblate_earth,
       MasslessBody{});
   ASSERT_THAT(status_or_elements, IsOk());
-  OrbitalElements const& elements = status_or_elements.ValueOrDie();
+  OrbitalElements const& elements = status_or_elements.value();
   EXPECT_THAT(
       elements.anomalistic_period(),
       DifferenceFrom(*initial_osculating.period, IsNear(-7.8_⑴ * Second)));
@@ -364,7 +364,7 @@ TEST_F(OrbitalElementsTest, RealPerturbation) {
       earth,
       MasslessBody{});
   ASSERT_THAT(status_or_elements, IsOk());
-  OrbitalElements const& elements = status_or_elements.ValueOrDie();
+  OrbitalElements const& elements = status_or_elements.value();
   EXPECT_THAT(
       elements.anomalistic_period(),
       DifferenceFrom(*initial_osculating.period, IsNear(-8.0_⑴ * Second)));
