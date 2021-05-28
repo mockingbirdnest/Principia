@@ -51,6 +51,7 @@ using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::VanishesBefore;
+using ::testing::A;
 using ::testing::Eq;
 using ::testing::InSequence;
 using ::testing::IsNull;
