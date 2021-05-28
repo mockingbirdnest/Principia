@@ -7,11 +7,11 @@
 #include <memory>
 #include <vector>
 
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/synchronization/mutex.h"
 #include "base/jthread.hpp"
 #include "base/not_null.hpp"
-#include "absl/status/status.h"
-#include "absl/status/statusor.h"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "google/protobuf/repeated_field.h"

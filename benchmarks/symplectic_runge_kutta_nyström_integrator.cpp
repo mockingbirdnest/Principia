@@ -8,8 +8,8 @@
 #include <type_traits>
 #include <vector>
 
-#include "base/not_null.hpp"
 #include "absl/status/status.h"
+#include "base/not_null.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"

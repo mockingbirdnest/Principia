@@ -11,12 +11,12 @@
 #include <utility>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "base/serialization.hpp"
-#include "absl/status/status.h"
 #include "geometry/identity.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/permutation.hpp"

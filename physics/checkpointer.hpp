@@ -5,9 +5,9 @@
 #include <map>
 #include <set>
 
+#include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
-#include "absl/status/status.h"
 #include "geometry/named_quantities.hpp"
 #include "google/protobuf/repeated_field.h"
 #include "quantities/quantities.hpp"

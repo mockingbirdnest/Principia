@@ -12,8 +12,8 @@
 #include <functional>
 #include <vector>
 
-#include "base/not_null.hpp"
 #include "absl/status/status.h"
+#include "base/not_null.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"

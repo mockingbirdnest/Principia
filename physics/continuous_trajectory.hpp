@@ -6,9 +6,9 @@
 #include <utility>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
-#include "absl/status/status.h"
 #include "geometry/named_quantities.hpp"
 #include "numerics/piecewise_poisson_series.hpp"
 #include "numerics/polynomial.hpp"

@@ -2,8 +2,8 @@
 
 #include <functional>
 
-#include "base/constant_function.hpp"
 #include "absl/status/status.h"
+#include "base/constant_function.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/trajectory.hpp"
 

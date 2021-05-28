@@ -16,6 +16,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "astronomy/epoch.hpp"
 #include "astronomy/solar_system_fingerprints.hpp"
 #include "astronomy/stabilize_ksp.hpp"
@@ -26,7 +27,6 @@
 #include "base/not_null.hpp"
 #include "base/optional_logging.hpp"
 #include "base/serialization.hpp"
-#include "absl/status/status.h"
 #include "base/unique_ptr_logging.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/barycentre_calculator.hpp"

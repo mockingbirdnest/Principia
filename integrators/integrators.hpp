@@ -4,8 +4,8 @@
 #include <functional>
 #include <string>
 
-#include "base/not_null.hpp"
 #include "absl/status/status.h"
+#include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/double_precision.hpp"

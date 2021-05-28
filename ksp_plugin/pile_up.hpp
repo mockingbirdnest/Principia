@@ -9,9 +9,9 @@
 #include <optional>
 #include <string>
 
+#include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
-#include "absl/status/status.h"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"

@@ -4,8 +4,8 @@
 #include <functional>
 #include <list>
 
-#include "base/map_util.hpp"
 #include "absl/status/status.h"
+#include "base/map_util.hpp"
 
 namespace principia {
 namespace base {

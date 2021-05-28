@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/synchronization/mutex.h"
 #include "astronomy/frames.hpp"
@@ -17,7 +18,6 @@
 #include "base/file.hpp"
 #include "base/graveyard.hpp"
 #include "base/not_null.hpp"
-#include "absl/status/status.h"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/sign.hpp"

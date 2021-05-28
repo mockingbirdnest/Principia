@@ -5,9 +5,9 @@
 #include <set>
 #include <thread>
 
+#include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
-#include "absl/status/status.h"
 
 namespace principia {
 namespace base {

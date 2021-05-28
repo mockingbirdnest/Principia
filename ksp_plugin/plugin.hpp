@@ -12,8 +12,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/monostable.hpp"
 #include "absl/status/status.h"
+#include "base/monostable.hpp"
 #include "base/thread_pool.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"

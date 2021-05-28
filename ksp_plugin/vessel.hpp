@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
 #include "base/jthread.hpp"
-#include "absl/status/status.h"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/orbit_analyser.hpp"
