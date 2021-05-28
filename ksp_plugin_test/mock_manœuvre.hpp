@@ -19,10 +19,9 @@ class MockManœuvre : public Manœuvre<InertialFrame, Frame>{
                Burn const& burn)
     : Manœuvre<InertialFrame, Frame>(initial_mass, burn) {}
 
-  MOCK_CONST_METHOD0_T(InertialDirection, Vector<double, InertialFrame>());
+  MOCK_METHOD((Vector<double, InertialFrame>), InertialDirection, (), (const, override));
 
-  MOCK_CONST_METHOD0_T(FrenetFrame,
-                       OrthogonalMap<Frenet<Frame>, InertialFrame>());
+  MOCK_METHOD((OrthogonalMap<Frenet<Frame>, InertialFrame>), FrenetFrame, (), (const, override));
 };
 
 }  // namespace internal_manœuvre

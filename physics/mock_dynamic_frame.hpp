@@ -14,39 +14,27 @@ namespace internal_dynamic_frame {
 template<typename InertialFrame, typename ThisFrame>
 class MockDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
  public:
-  MOCK_CONST_METHOD1_T(ToThisFrameAtTime,
-                       RigidMotion<InertialFrame, ThisFrame>(Instant const& t));
-  MOCK_CONST_METHOD1_T(FromThisFrameAtTime,
-                       RigidMotion<ThisFrame, InertialFrame>(Instant const& t));
+  MOCK_METHOD((RigidMotion<InertialFrame, ThisFrame>), ToThisFrameAtTime, (Instant const& t), (const, override));
+  MOCK_METHOD((RigidMotion<ThisFrame, InertialFrame>), FromThisFrameAtTime, (Instant const& t), (const, override));
 
-  MOCK_CONST_METHOD0(t_min, Instant());
-  MOCK_CONST_METHOD0(t_max, Instant());
+  MOCK_METHOD(Instant, t_min, (), (const, override));
+  MOCK_METHOD(Instant, t_max, (), (const, override));
 
-  MOCK_CONST_METHOD2_T(
-      GeometricAcceleration,
-      Vector<Acceleration, ThisFrame>(
+  MOCK_METHOD((Vector<Acceleration, ThisFrame>), GeometricAcceleration, (
           Instant const& t,
-          DegreesOfFreedom<ThisFrame> const& degrees_of_freedom));
+          DegreesOfFreedom<ThisFrame> const& degrees_of_freedom), (const, override));
 
   using Rot = Rotation<Frenet<ThisFrame>, ThisFrame>;
 
-  MOCK_CONST_METHOD2_T(
-      FrenetFrame,
-      Rot(Instant const& t,
-          DegreesOfFreedom<ThisFrame> const& degrees_of_freedom));
+  MOCK_METHOD(Rot, FrenetFrame, (Instant const& t,
+          DegreesOfFreedom<ThisFrame> const& degrees_of_freedom), (const, override));
 
-  MOCK_CONST_METHOD1_T(
-      WriteToMessage,
-      void(not_null<serialization::DynamicFrame*> message));
+  MOCK_METHOD(void, WriteToMessage, (not_null<serialization::DynamicFrame*> message), (const, override));
 
  private:
-  MOCK_CONST_METHOD2_T(
-      GravitationalAcceleration,
-      Vector<Acceleration, InertialFrame>(Instant const& t,
-                                          Position<InertialFrame> const& q));
-  MOCK_CONST_METHOD1_T(
-      MotionOfThisFrame,
-      AcceleratedRigidMotion<InertialFrame, ThisFrame>(Instant const& t));
+  MOCK_METHOD((Vector<Acceleration, InertialFrame>), GravitationalAcceleration, (Instant const& t,
+                                          Position<InertialFrame> const& q), (const, override));
+  MOCK_METHOD((AcceleratedRigidMotion<InertialFrame, ThisFrame>), MotionOfThisFrame, (Instant const& t), (const, override));
 };
 
 }  // namespace internal_dynamic_frame

@@ -14,32 +14,30 @@ class MockVessel : public Vessel {
  public:
   MockVessel() = default;
 
-  MOCK_CONST_METHOD0(body, not_null<MasslessBody const*>());
+  MOCK_METHOD(not_null<MasslessBody const*>, body, (), (const, override));
 
-  MOCK_CONST_METHOD0(parent, not_null<Celestial const*>());
-  MOCK_METHOD1(set_parent, void(not_null<Celestial const*> parent));
+  MOCK_METHOD(not_null<Celestial const*>, parent, (), (const, override));
+  MOCK_METHOD(void, set_parent, (not_null<Celestial const*> parent), (override));
 
-  MOCK_CONST_METHOD0(psychohistory, DiscreteTrajectory<Barycentric> const&());
-  MOCK_CONST_METHOD0(prediction, DiscreteTrajectory<Barycentric> const&());
+  MOCK_METHOD(DiscreteTrajectory<Barycentric> const&, psychohistory, (), (const, override));
+  MOCK_METHOD(DiscreteTrajectory<Barycentric> const&, prediction, (), (const, override));
 
-  MOCK_CONST_METHOD0(flight_plan, FlightPlan&());
-  MOCK_CONST_METHOD0(has_flight_plan, bool());
+  MOCK_METHOD(FlightPlan&, flight_plan, (), (const, override));
+  MOCK_METHOD(bool, has_flight_plan, (), (const, override));
 
-  MOCK_METHOD4(CreateFlightPlan,
-               void(Instant const& final_time,
+  MOCK_METHOD(void, CreateFlightPlan, (Instant const& final_time,
                     Mass const& initial_mass,
                     Ephemeris<Barycentric>::AdaptiveStepParameters const&
                         flight_plan_adaptive_step_parameters,
                     Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters
                         const&
-                        flight_plan_generalized_adaptive_step_parameters));
+                        flight_plan_generalized_adaptive_step_parameters), (override));
 
-  MOCK_METHOD0(DeleteFlightPlan, void());
+  MOCK_METHOD(void, DeleteFlightPlan, (), (override));
 
-  MOCK_CONST_METHOD2(WriteToMessage,
-                     void(not_null<serialization::Vessel*> message,
+  MOCK_METHOD(void, WriteToMessage, (not_null<serialization::Vessel*> message,
                           PileUp::SerializationIndexForPileUp const&
-                              serialization_index_for_pile_up));
+                              serialization_index_for_pile_up), (const, override));
 };
 
 }  // namespace internal_vessel
