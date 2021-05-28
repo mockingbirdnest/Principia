@@ -82,9 +82,6 @@
     <ClCompile Include="symplectic_runge_kutta_nyström_integrator_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\base\status.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="symmetric_linear_multistep_integrator_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>

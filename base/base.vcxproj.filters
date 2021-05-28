@@ -83,15 +83,6 @@
     <ClInclude Include="version.generated.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="status.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="status_or.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="status_or_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="disjoint_sets.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -221,15 +212,6 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="push_deserializer_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="status.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="status_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="status_or_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="disjoint_sets_test.cpp">
