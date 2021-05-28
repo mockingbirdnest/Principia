@@ -305,7 +305,7 @@ class WorkErrorGraphGenerator {
     e_errors_[method_index][time_step_index] = max_e_error;
     evaluations_[method_index][time_step_index] = amortized_evaluations;
 
-    return Status::OK;
+    return absl::OkStatus();
   }
 
   std::vector<SimpleHarmonicMotionPlottedIntegrator> const methods_;

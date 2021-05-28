@@ -180,7 +180,7 @@ Status OrbitAnalyser::AnalyseOrbit(GuardedParameters const guarded_parameters) {
   absl::MutexLock l(&lock_);
   next_analysis_ = std::move(analysis);
   analyser_idle_ = true;
-  return Status::OK;
+  return absl::OkStatus();
 }
 
 Instant const& OrbitAnalyser::Analysis::first_time() const {

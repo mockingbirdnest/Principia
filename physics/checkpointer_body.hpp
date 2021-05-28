@@ -172,7 +172,7 @@ Status Checkpointer<Message>::ReadFromAllCheckpointsBackwards(
   for (auto const checkpoint : checkpoints) {
     RETURN_IF_ERROR(reader(*checkpoint));
   }
-  return Status::OK;
+  return absl::OkStatus();
 }
 
 template<typename Message>

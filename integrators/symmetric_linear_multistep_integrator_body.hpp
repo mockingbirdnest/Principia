@@ -46,7 +46,7 @@ Status SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Solve(
     // If |t_final| is not large enough, we may not have generated enough
     // points.  Bail out, we'll continue the next time |Solve| is called.
     if (previous_steps_.size() < order) {
-      return Status::OK;
+      return absl::OkStatus();
     }
   }
   CHECK_EQ(previous_steps_.size(), order);

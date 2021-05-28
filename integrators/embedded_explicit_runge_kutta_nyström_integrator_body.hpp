@@ -139,7 +139,7 @@ Instance::Solve(Instant const& t_final) {
     do {
       // Reset the status as any error returned by a force computation for a
       // rejected step is now moot.
-      step_status = Status::OK;
+      step_status = absl::OkStatus();
 
       // Adapt step size.
       // TODO(egg): find out whether there's a smarter way to compute that root,

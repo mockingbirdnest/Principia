@@ -354,7 +354,7 @@ template<typename Frame>
 Status Ephemeris<Frame>::Prolong(Instant const& t) {
   // Short-circuit without locking.
   if (t <= t_max()) {
-    return Status::OK;
+    return absl::OkStatus();
   }
 
   // Note that |t| may be before the last time that we integrated and still
@@ -378,7 +378,7 @@ Status Ephemeris<Frame>::Prolong(Instant const& t) {
     t_final += fixed_step_parameters_.step_;
   }
 
-  return Status::OK;
+  return absl::OkStatus();
 }
 
 template<typename Frame>
@@ -417,7 +417,7 @@ Ephemeris<Frame>::StoppableNewInstance(
         accelerations[i] += intrinsic_acceleration(t);
       }
     }
-    return error == Error::OK ? Status::OK :
+    return error == Error::OK ? absl::OkStatus() :
                     CollisionDetected();
   };
 
@@ -464,7 +464,7 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
     if (intrinsic_acceleration != nullptr) {
       accelerations[0] += intrinsic_acceleration(t);
     }
-    return error == Error::OK ? Status::OK :
+    return error == Error::OK ? absl::OkStatus() :
                     CollisionDetected();
   };
 
@@ -497,7 +497,7 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
           accelerations[0] +=
               intrinsic_acceleration(t, {positions[0], velocities[0]});
         }
-        return error == Error::OK ? Status::OK :
+        return error == Error::OK ? absl::OkStatus() :
                         CollisionDetected();
       };
 
@@ -518,7 +518,7 @@ Status Ephemeris<Frame>::FlowWithFixedStep(
     RETURN_IF_STOPPED;
   }
   if (instance.time() == DoublePrecision<Instant>(t)) {
-    return Status::OK;
+    return absl::OkStatus();
   }
 
   return instance.Solve(t);
@@ -908,7 +908,7 @@ Ephemeris<Frame>::MakeCheckpointerReader() {
               MakeMassiveBodiesNewtonianMotionEquation(),
               /*append_state=*/
               std::bind(&Ephemeris::AppendMassiveBodiesState, this, _1));
-      return Status::OK;
+      return absl::OkStatus();
     };
   } else {
     return nullptr;
@@ -942,7 +942,7 @@ Status Ephemeris<Frame>::Reanimate() {
                         MakeMassiveBodiesNewtonianMotionEquation(),
                         append_massive_bodies_state);
 
-    return Status::OK;
+    return absl::OkStatus();
   };
 
   return checkpointer_->ReadFromAllCheckpointsBackwards(reader);
@@ -1016,7 +1016,7 @@ Ephemeris<Frame>::MakeMassiveBodiesNewtonianMotionEquation() {
         ComputeMassiveBodiesGravitationalAccelerations(t,
                                                        positions,
                                                        accelerations);
-        return Status::OK;
+        return absl::OkStatus();
       };
   return equation;
 }
@@ -1244,7 +1244,7 @@ Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
     std::int64_t max_ephemeris_steps) {
   Instant const& trajectory_last_time = trajectory->back().time;
   if (trajectory_last_time == t) {
-    return Status::OK;
+    return absl::OkStatus();
   }
 
   std::vector<not_null<DiscreteTrajectory<Frame>*>> const trajectories =
@@ -1301,7 +1301,7 @@ Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
   // that a collision in the prediction or the flight plan (for which this path
   // is used) should not cause the vessel to be deleted.
   if (status.error() == Error::OUT_OF_RANGE) {
-    status = Status::OK;
+    status = absl::OkStatus();
   }
 
   // TODO(egg): when we have events in trajectories, we should add a singularity

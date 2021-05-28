@@ -295,7 +295,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Singularity) {
       std::vector<Length> const& position,
       std::vector<Acceleration>& acceleration) {
     acceleration.back() = mass_flow * specific_impulse / mass(t);
-    return Status::OK;
+    return absl::OkStatus();
   };
   IntegrationProblem<ODE> problem;
   auto const append_state = [&solution](ODE::SystemState const& state) {

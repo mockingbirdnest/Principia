@@ -41,7 +41,7 @@ inline Status ComputeHarmonicOscillatorAcceleration1D(
   if (evaluations != nullptr) {
     ++*evaluations;
   }
-  return Status::OK;
+  return absl::OkStatus();
 }
 
 template<typename Frame>
@@ -54,7 +54,7 @@ Status ComputeHarmonicOscillatorAcceleration3D(
   if (evaluations != nullptr) {
     ++*evaluations;
   }
-  return Status::OK;
+  return absl::OkStatus();
 }
 
 inline Status ComputeKeplerAcceleration(
@@ -70,7 +70,7 @@ inline Status ComputeKeplerAcceleration(
   if (evaluations != nullptr) {
     ++*evaluations;
   }
-  return Status::OK;
+  return absl::OkStatus();
 }
 
 
@@ -89,7 +89,7 @@ Status ComputeЧебышёвPolynomialSecondDerivative(
   if (evaluations != nullptr) {
     ++*evaluations;
   }
-  return Status::OK;
+  return absl::OkStatus();
 }
 
 template<int degree>
@@ -107,7 +107,7 @@ Status ComputeLegendrePolynomialSecondDerivative(
   if (evaluations != nullptr) {
     ++*evaluations;
   }
-  return Status::OK;
+  return absl::OkStatus();
 }
 
 }  // namespace internal_integration

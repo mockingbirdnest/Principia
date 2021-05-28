@@ -546,7 +546,7 @@ ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
             {Instant::ReadFromMessage(l.instant()),
              DegreesOfFreedom<Frame>::ReadFromMessage(l.degrees_of_freedom())});
       }
-      return Status::OK;
+      return absl::OkStatus();
     };
   } else {
     return nullptr;
@@ -680,7 +680,7 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
 
   // Check that the tolerance did not explode.
   if (adjusted_tolerance_ < 1e6 * previous_adjusted_tolerance) {
-    return Status::OK;
+    return absl::OkStatus();
   } else {
     std::stringstream message;
     message << "Error trying to fit a smooth polynomial to the trajectory. "

@@ -421,7 +421,7 @@ inline Status OrbitalElements::ComputePeriodsAndPrecession() {
   anomalistic_period_ = 2 * π * Radian * Δt³ / (12 * ʃ_Mt_dt);
   nodal_period_ = 2 * π * Radian * Δt³ / (12 * ʃ_ut_dt);
   nodal_precession_ = 12 * ʃ_Ωt_dt / Δt³;
-  return Status::OK;
+  return absl::OkStatus();
 }
 
 inline Status OrbitalElements::ComputeIntervals() {
@@ -441,7 +441,7 @@ inline Status OrbitalElements::ComputeIntervals() {
     mean_periapsis_distance_interval_.Include(elements.periapsis_distance);
     mean_apoapsis_distance_interval_.Include(elements.apoapsis_distance);
   }
-  return Status::OK;
+  return absl::OkStatus();
 }
 
 

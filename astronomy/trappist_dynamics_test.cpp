@@ -561,7 +561,7 @@ std::vector<double> EvaluatePopulation(Population const& population,
     auto const& parameters = population[i];
     bundle.Add([&compute_log_pdf, i, &log_pdf, &parameters, &info]() {
       log_pdf[i] = compute_log_pdf(parameters, info[i]);
-      return Status::OK;
+      return absl::OkStatus();
     });
   }
   bundle.Join();
@@ -1412,7 +1412,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_SECULAR_Optimization) {
           great_old_one = population.best_genome();
           great_old_one_fitness = population.best_genome_fitness();
         }
-        return Status::OK;
+        return absl::OkStatus();
       });
     }
     bundle.Join();

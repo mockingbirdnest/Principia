@@ -30,13 +30,13 @@ TEST_F(BundleDeathTest, AddAfterJoin) {
       for (int i = 0; i < workers; ++i) {
         bundle_.Add([]() {
           std::this_thread::sleep_for(10ms);
-          return Status::OK;
+          return absl::OkStatus();
         });
       }
       bundle_.Join();
       bundle_.Add([]() {
         std::this_thread::sleep_for(10ms);
-        return Status::OK;
+        return absl::OkStatus();
       });
     },
     "!joining_");
@@ -65,7 +65,7 @@ TEST_F(BundleTest, MatrixVectorProduct) {
           for (int j = 0; j < long_dimension; ++j) {
             product[i] += matrix[i + short_dimension * j] * vector[j];
           }
-          return Status::OK;
+          return absl::OkStatus();
         });
   }
   EXPECT_OK(bundle_.Join());
@@ -79,7 +79,7 @@ TEST_F(BundleTest, Deadline) {
   for (int i = 0; i < workers; ++i) {
     bundle_.Add([]() {
       std::this_thread::sleep_for(1000ms);
-      return Status::OK;
+      return absl::OkStatus();
     });
   }
   auto const status = bundle_.JoinWithin(10ms);

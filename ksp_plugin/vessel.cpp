@@ -318,7 +318,7 @@ Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
     auto const& manœuvre = original_flight_plan->GetManœuvre(i);
     flight_plan_->Insert(manœuvre.burn(), i - first_manœuvre_kept);
   }
-  return Status::OK;
+  return absl::OkStatus();
 }
 
 void Vessel::RefreshPrediction() {
@@ -579,7 +579,7 @@ Status Vessel::RepeatedlyFlowPrognostication() {
       SwapPrognostication(prognostication, status);
     }
   }
-  return Status::OK;
+  return absl::OkStatus();
 }
 
 Status Vessel::FlowPrognostication(

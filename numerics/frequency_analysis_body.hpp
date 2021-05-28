@@ -144,7 +144,7 @@ Status NormalGramSchmidtStep(
   rₘ[m] = rₘₘ;
 #endif
 
-  return Status::OK;
+  return absl::OkStatus();
 }
 
 // This function performs the augmented QR decomposition step described in
@@ -184,7 +184,7 @@ Status AugmentedGramSchmidtStep(
   // because it's an additional cost: the client can compute the norm of the
   // residual however they want anyway.
 
-  return Status::OK;
+  return absl::OkStatus();
 }
 
 template<typename Function,

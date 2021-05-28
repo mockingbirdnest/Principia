@@ -160,7 +160,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                               /*mass_in_tonnes=*/100);
 
   EXPECT_CALL(flight_plan, SetDesiredFinalTime(Instant() + 60 * Second))
-      .WillOnce(Return(base::Status::OK));
+      .WillOnce(Return(base::absl::OkStatus()));
   EXPECT_THAT(
       *principia__FlightPlanSetDesiredFinalTime(plugin_.get(), vessel_guid, 60),
       IsOk());
@@ -199,7 +199,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                   &Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters::
                       speed_integration_tolerance,
                   33 * Metre / Second))))
-      .WillOnce(Return(base::Status::OK));
+      .WillOnce(Return(base::absl::OkStatus()));
   EXPECT_THAT(*principia__FlightPlanSetAdaptiveStepParameters(
                   plugin_.get(),
                   vessel_guid,
@@ -252,7 +252,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                                                        5 * (Metre / Second),
                                                        6 * (Metre / Second)}))),
              0))
-      .WillOnce(Return(base::Status::OK));
+      .WillOnce(Return(base::absl::OkStatus()));
   EXPECT_THAT(*principia__FlightPlanInsert(
                   plugin_.get(), vessel_guid, interface_burn, 0),
               IsOk());
@@ -406,7 +406,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                                                     5 * (Metre / Second),
                                                     6 * (Metre / Second)}))),
           42))
-      .WillOnce(Return(base::Status::OK));
+      .WillOnce(Return(base::absl::OkStatus()));
   EXPECT_THAT(*principia__FlightPlanReplace(
                   plugin_.get(), vessel_guid, interface_burn, 42),
               IsOk());

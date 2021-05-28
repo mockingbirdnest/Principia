@@ -205,7 +205,7 @@ Status ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
     previous_z = z;
     previous_z_speed = z_speed;
   }
-  return Status::OK;
+  return absl::OkStatus();
 }
 
 }  // namespace internal_apsides

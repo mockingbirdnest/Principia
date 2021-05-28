@@ -98,7 +98,7 @@ TEST_F(CheckpointerTest, ReadFromOldestCheckpoint) {
 
   EXPECT_CALL(reader_, Call(_))
       .WillOnce(Return(Status::CANCELLED))
-      .WillOnce(Return(Status::OK));
+      .WillOnce(Return(absl::OkStatus()));
   EXPECT_THAT(checkpointer_.ReadFromOldestCheckpoint(),
               StatusIs(Error::CANCELLED));
   EXPECT_OK(checkpointer_.ReadFromOldestCheckpoint());
@@ -114,7 +114,7 @@ TEST_F(CheckpointerTest, ReadFromNewestCheckpoint) {
 
   EXPECT_CALL(reader_, Call(_))
       .WillOnce(Return(Status::CANCELLED))
-      .WillOnce(Return(Status::OK));
+      .WillOnce(Return(absl::OkStatus()));
   EXPECT_THAT(checkpointer_.ReadFromNewestCheckpoint(),
               StatusIs(Error::CANCELLED));
   EXPECT_OK(checkpointer_.ReadFromNewestCheckpoint());

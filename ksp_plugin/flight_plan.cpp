@@ -359,7 +359,7 @@ Status FlightPlan::BurnSegment(
                              max_ephemeris_steps_per_frame);
     }
   } else {
-    return Status::OK;
+    return absl::OkStatus();
   }
 }
 
@@ -379,7 +379,7 @@ Status FlightPlan::ComputeSegments(
     std::vector<NavigationManœuvre>::iterator const end) {
   CHECK(!segments_.empty());
   if (anomalous_segments_ == 0) {
-    anomalous_status_ = Status::OK;
+    anomalous_status_ = absl::OkStatus();
   }
   Status overall_status = anomalous_status_;
   for (auto it = begin; it != end; ++it) {

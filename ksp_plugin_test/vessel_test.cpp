@@ -274,8 +274,8 @@ TEST_F(VesselTest, Prediction) {
                         Velocity<Barycentric>({150.0 / 3.0 * Metre / Second,
                                                60.0 * Metre / Second,
                                                50.0 * Metre / Second}))),
-                Return(Status::OK)))
-      .WillRepeatedly(Return(Status::OK));
+                Return(absl::OkStatus())))
+      .WillRepeatedly(Return(absl::OkStatus()));
   EXPECT_CALL(
       ephemeris_,
       FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _))
@@ -289,8 +289,8 @@ TEST_F(VesselTest, Prediction) {
                         Velocity<Barycentric>({140.0 / 3.0 * Metre / Second,
                                                50.0 * Metre / Second,
                                                40.0 * Metre / Second}))),
-                Return(Status::OK)))
-      .WillRepeatedly(Return(Status::OK));
+                Return(absl::OkStatus())))
+      .WillRepeatedly(Return(absl::OkStatus()));
 
   vessel_.PrepareHistory(astronomy::J2000);
   // Polling for the integration to happen.
@@ -348,7 +348,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
                         Velocity<Barycentric>({140.0 / 3.0 * Metre / Second,
                                                50.0 * Metre / Second,
                                                40.0 * Metre / Second}))),
-                Return(Status::OK)));
+                Return(absl::OkStatus())));
   EXPECT_CALL(
       ephemeris_,
       FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
@@ -363,7 +363,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
                         Velocity<Barycentric>({50.0 * Metre / Second,
                                                60.0 * Metre / Second,
                                                50.0 * Metre / Second}))),
-                Return(Status::OK)));
+                Return(absl::OkStatus())));
   vessel_.PrepareHistory(astronomy::J2000);
   // Polling for the integration to happen.
   do {
@@ -409,7 +409,7 @@ TEST_F(VesselTest, FlightPlan) {
   EXPECT_CALL(
       ephemeris_,
       FlowWithAdaptiveStep(_, _, astronomy::J2000 + 3 * Second, _, _))
-      .WillOnce(Return(Status::OK));
+      .WillOnce(Return(absl::OkStatus()));
   vessel_.CreateFlightPlan(astronomy::J2000 + 3.0 * Second,
                            10 * Kilogram,
                            DefaultPredictionParameters(),
@@ -441,7 +441,7 @@ TEST_F(VesselTest, SerializationSuccess) {
   EXPECT_CALL(
       ephemeris_,
       FlowWithAdaptiveStep(_, _, astronomy::J2000 + 3 * Second, _, _))
-      .WillRepeatedly(Return(Status::OK));
+      .WillRepeatedly(Return(absl::OkStatus()));
 
   std::vector<not_null<MassiveBody const*>> const bodies;
   ON_CALL(ephemeris_, bodies()).WillByDefault(ReturnRef(bodies));
