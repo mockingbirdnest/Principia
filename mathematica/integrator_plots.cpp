@@ -10,7 +10,7 @@
 
 #include "base/bundle.hpp"
 #include "base/file.hpp"
-#include "base/status.hpp"
+#include "absl/status/status.h"
 #include "glog/logging.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"

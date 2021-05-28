@@ -26,7 +26,7 @@
 #include "base/not_null.hpp"
 #include "base/optional_logging.hpp"
 #include "base/serialization.hpp"
-#include "base/status.hpp"
+#include "absl/status/status.h"
 #include "base/unique_ptr_logging.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/barycentre_calculator.hpp"

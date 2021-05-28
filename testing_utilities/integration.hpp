@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "base/status.hpp"
+#include "absl/status/status.h"
 #include "geometry/named_quantities.hpp"
 #include "physics/massive_body.hpp"
 #include "quantities/quantities.hpp"

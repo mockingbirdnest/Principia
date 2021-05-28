@@ -5,7 +5,7 @@
 #include <list>
 
 #include "base/map_util.hpp"
-#include "base/status.hpp"
+#include "absl/status/status.h"
 
 namespace principia {
 namespace base {

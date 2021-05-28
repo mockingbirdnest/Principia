@@ -7,7 +7,7 @@
 
 #include "astronomy/epoch.hpp"
 #include "base/not_null.hpp"
-#include "base/status.hpp"
+#include "absl/status/status.h"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "gmock/gmock.h"

@@ -6,8 +6,8 @@
 
 #include "absl/strings/str_cat.h"
 #include "base/array.hpp"
-#include "base/status.hpp"
-#include "base/status_or.hpp"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
 #include "ksp_plugin/frames.hpp"

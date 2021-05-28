@@ -10,7 +10,7 @@
 
 #include "absl/synchronization/mutex.h"
 #include "base/jthread.hpp"
-#include "base/status.hpp"
+#include "absl/status/status.h"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/orbit_analyser.hpp"

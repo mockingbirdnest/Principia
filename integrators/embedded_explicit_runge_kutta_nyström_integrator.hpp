@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
-#include "base/status.hpp"
+#include "absl/status/status.h"
 #include "numerics/fixed_arrays.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"

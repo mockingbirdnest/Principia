@@ -7,7 +7,7 @@
 #include <functional>
 #include <vector>
 
-#include "base/status.hpp"
+#include "absl/status/status.h"
 #include "base/tags.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/hilbert.hpp"

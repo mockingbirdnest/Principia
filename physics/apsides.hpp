@@ -3,7 +3,7 @@
 #include <functional>
 
 #include "base/constant_function.hpp"
-#include "base/status.hpp"
+#include "absl/status/status.h"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/trajectory.hpp"
 

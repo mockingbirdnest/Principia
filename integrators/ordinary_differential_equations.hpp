@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
-#include "base/status.hpp"
+#include "absl/status/status.h"
 #include "geometry/named_quantities.hpp"
 #include "numerics/double_precision.hpp"
 #include "quantities/quantities.hpp"

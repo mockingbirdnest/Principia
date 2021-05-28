@@ -4,7 +4,7 @@
 #include <type_traits>
 
 #include "base/not_null.hpp"
-#include "base/status.hpp"
+#include "absl/status/status.h"
 #include "geometry/named_quantities.hpp"
 #include "integrators/integrators.hpp"
 #include "integrators/ordinary_differential_equations.hpp"

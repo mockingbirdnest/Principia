@@ -10,7 +10,7 @@
 #include "base/macros.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
-#include "base/status.hpp"
+#include "absl/status/status.h"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/quaternion.hpp"

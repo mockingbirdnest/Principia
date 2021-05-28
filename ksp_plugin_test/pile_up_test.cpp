@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "base/status.hpp"
+#include "absl/status/status.h"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
 #include "geometry/named_quantities.hpp"

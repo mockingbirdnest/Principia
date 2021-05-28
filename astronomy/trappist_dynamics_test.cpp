@@ -17,7 +17,7 @@
 #include "base/file.hpp"
 #include "base/graveyard.hpp"
 #include "base/not_null.hpp"
-#include "base/status.hpp"
+#include "absl/status/status.h"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/sign.hpp"

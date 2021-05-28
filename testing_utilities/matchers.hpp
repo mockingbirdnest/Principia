@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "base/status.hpp"
+#include "absl/status/status.h"
 #include "gmock/gmock.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/util/message_differencer.h"

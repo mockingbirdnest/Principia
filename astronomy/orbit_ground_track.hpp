@@ -5,7 +5,7 @@
 
 #include "astronomy/orbit_recurrence.hpp"
 #include "astronomy/orbital_elements.hpp"
-#include "base/status_or.hpp"
+#include "absl/status/statusor.h"
 #include "geometry/interval.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/rotating_body.hpp"

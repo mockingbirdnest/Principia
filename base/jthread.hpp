@@ -7,7 +7,7 @@
 
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
-#include "base/status.hpp"
+#include "absl/status/status.h"
 
 namespace principia {
 namespace base {

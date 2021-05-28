@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "base/status_or.hpp"
+#include "absl/status/statusor.h"
 #include "geometry/interval.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/body.hpp"

@@ -16,7 +16,7 @@
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "base/serialization.hpp"
-#include "base/status.hpp"
+#include "absl/status/status.h"
 #include "geometry/identity.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/permutation.hpp"

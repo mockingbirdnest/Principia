@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
-#include "base/status.hpp"
+#include "absl/status/status.h"
 #include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
