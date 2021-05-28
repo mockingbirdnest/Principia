@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/jthread.hpp"
+#include "base/status_utilities.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "quantities/elementary_functions.hpp"
 
@@ -45,7 +46,7 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
   auto const sidereal_period =
       SiderealPeriod(orbital_elements.osculating_equinoctial_elements_);
   RETURN_IF_ERROR(sidereal_period);
-  orbital_elements.sidereal_period_ = sidereal_period.ValueOrDie();
+  orbital_elements.sidereal_period_ = sidereal_period.value();
   if (!IsFinite(orbital_elements.sidereal_period_) ||
       orbital_elements.sidereal_period_ <= Time{}) {
     // Guard against NaN sidereal periods (from hyperbolic orbits) or negative

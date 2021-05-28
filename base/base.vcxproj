@@ -67,6 +67,7 @@
     <ClInclude Include="sink_source.hpp" />
     <ClInclude Include="sink_source_body.hpp" />
     <ClInclude Include="not_constructible.hpp" />
+    <ClInclude Include="status_utilities.hpp" />
     <ClInclude Include="tags.hpp" />
     <ClInclude Include="thread_pool.hpp" />
     <ClInclude Include="thread_pool_body.hpp" />

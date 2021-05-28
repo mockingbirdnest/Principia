@@ -200,6 +200,9 @@
     <ClInclude Include="cpuid.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="status_utilities.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
