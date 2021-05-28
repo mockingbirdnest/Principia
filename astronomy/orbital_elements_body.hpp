@@ -14,7 +14,6 @@ namespace astronomy {
 namespace internal_orbital_elements {
 
 using base::Error;
-using base::Status;
 using base::this_stoppable_thread;
 using geometry::Velocity;
 using physics::DegreesOfFreedom;

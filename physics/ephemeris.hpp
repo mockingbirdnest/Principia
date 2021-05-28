@@ -36,8 +36,6 @@ namespace internal_ephemeris {
 using base::Error;
 using base::jthread;
 using base::not_null;
-using base::Status;
-using base::StatusOr;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Vector;

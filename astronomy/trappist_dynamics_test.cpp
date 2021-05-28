@@ -44,7 +44,6 @@ using base::Bundle;
 using base::Graveyard;
 using base::not_null;
 using base::OFStream;
-using base::Status;
 using geometry::Displacement;
 using geometry::InnerProduct;
 using geometry::Instant;

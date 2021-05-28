@@ -27,7 +27,6 @@ namespace ksp_plugin {
 namespace internal_vessel {
 
 using base::not_null;
-using base::Status;
 using geometry::Instant;
 using geometry::Vector;
 using physics::DegreesOfFreedom;

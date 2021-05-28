@@ -74,7 +74,6 @@ using base::make_not_null_unique;
 using base::not_null;
 using base::OFStream;
 using base::SerializeAsBytes;
-using base::Status;
 using geometry::AffineMap;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;

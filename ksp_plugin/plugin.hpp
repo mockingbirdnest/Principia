@@ -48,7 +48,6 @@ namespace ksp_plugin {
 namespace internal_plugin {
 
 using base::not_null;
-using base::Status;
 using base::Subset;
 using base::ThreadPool;
 using geometry::AffineMap;

@@ -15,7 +15,6 @@ namespace integrators {
 namespace internal_symplectic_partitioned_runge_kutta_integrator {
 
 using base::not_null;
-using base::Status;
 using geometry::Instant;
 using quantities::Time;
 

@@ -19,7 +19,6 @@ namespace astronomy {
 using base::Bundle;
 using base::dynamic_cast_not_null;
 using base::not_null;
-using base::Status;
 using geometry::AngleBetween;
 using geometry::Displacement;
 using geometry::Instant;

@@ -55,7 +55,6 @@ namespace principia {
 using base::Bundle;
 using base::not_null;
 using base::OFStream;
-using base::Status;
 using geometry::BarycentreCalculator;
 using geometry::Displacement;
 using geometry::Inertial;

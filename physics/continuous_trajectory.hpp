@@ -24,7 +24,6 @@ namespace physics {
 namespace internal_continuous_trajectory {
 
 using base::not_null;
-using base::Status;
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::Position;

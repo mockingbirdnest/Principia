@@ -26,7 +26,6 @@
 
 namespace principia {
 
-using base::Status;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Inertial;

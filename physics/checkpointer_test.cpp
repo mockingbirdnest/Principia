@@ -11,7 +11,6 @@ namespace physics {
 using astronomy::InfinitePast;
 using base::Error;
 using base::not_null;
-using base::Status;
 using geometry::Instant;
 using quantities::si::Second;
 using testing_utilities::StatusIs;

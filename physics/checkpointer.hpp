@@ -17,7 +17,6 @@ namespace physics {
 namespace internal_checkpointer {
 
 using base::not_null;
-using base::Status;
 using geometry::Instant;
 using quantities::Time;
 

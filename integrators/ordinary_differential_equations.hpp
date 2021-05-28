@@ -31,7 +31,6 @@ namespace internal_ordinary_differential_equations {
 
 using base::Error;
 using base::not_null;
-using base::Status;
 using geometry::Instant;
 using numerics::DoublePrecision;
 using quantities::Difference;

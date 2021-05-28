@@ -18,7 +18,6 @@ namespace internal_integrators {
 
 using base::Error;
 using base::not_null;
-using base::Status;
 using geometry::Instant;
 using numerics::DoublePrecision;
 using quantities::Time;

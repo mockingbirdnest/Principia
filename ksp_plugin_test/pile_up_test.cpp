@@ -35,7 +35,6 @@ namespace internal_pile_up {
 
 using base::check_not_null;
 using base::make_not_null_unique;
-using base::Status;
 using geometry::AngularVelocity;
 using geometry::Displacement;
 using geometry::NonRotating;

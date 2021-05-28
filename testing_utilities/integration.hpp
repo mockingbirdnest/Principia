@@ -14,7 +14,6 @@ namespace testing_utilities {
 namespace internal_integration {
 
 using base::not_null;
-using base::Status;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Vector;

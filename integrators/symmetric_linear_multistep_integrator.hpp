@@ -23,7 +23,6 @@ namespace integrators {
 namespace internal_symmetric_linear_multistep_integrator {
 
 using base::not_null;
-using base::Status;
 using geometry::Instant;
 using numerics::DoublePrecision;
 using numerics::FixedVector;

@@ -15,8 +15,6 @@ namespace principia {
 namespace astronomy {
 namespace internal_orbital_elements {
 
-using base::Status;
-using base::StatusOr;
 using geometry::Instant;
 using geometry::Interval;
 using physics::Body;

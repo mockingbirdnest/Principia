@@ -17,7 +17,6 @@ namespace principia {
 namespace interface {
 
 using base::Error;
-using base::StatusOr;
 using base::UniqueArray;
 using geometry::AngularVelocity;
 using geometry::Frame;

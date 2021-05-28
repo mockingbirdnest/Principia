@@ -23,7 +23,6 @@ namespace internal_flight_plan {
 
 using base::Error;
 using base::not_null;
-using base::Status;
 using geometry::Instant;
 using integrators::AdaptiveStepSizeIntegrator;
 using physics::DegreesOfFreedom;

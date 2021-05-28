@@ -30,7 +30,6 @@ namespace principia {
 
 using base::Bundle;
 using base::not_null;
-using base::Status;
 using base::GetLine;
 using base::OFStream;
 using base::UniqueArray;

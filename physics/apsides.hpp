@@ -13,7 +13,6 @@ namespace internal_apsides {
 
 using base::ConstantFunction;
 using base::Identically;
-using base::Status;
 using geometry::Vector;
 
 // Computes the apsides with respect to |reference| for the discrete trajectory

@@ -55,7 +55,6 @@ using base::FindOrDie;
 using base::make_not_null_unique;
 using base::not_null;
 using base::SerializeAsBytes;
-using base::Status;
 using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::Identity;

@@ -26,7 +26,6 @@ using astronomy::OrbitGroundTrack;
 using astronomy::OrbitRecurrence;
 using base::jthread;
 using base::not_null;
-using base::Status;
 using geometry::Instant;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;

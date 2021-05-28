@@ -19,7 +19,6 @@ namespace integrators {
 namespace internal_symplectic_runge_kutta_nyström_integrator {
 
 using base::not_null;
-using base::Status;
 using geometry::Instant;
 using numerics::FixedVector;
 using quantities::Time;

@@ -35,7 +35,6 @@ FORWARD_DECLARE_FROM(part, class, Part);
 namespace internal_pile_up {
 
 using base::not_null;
-using base::Status;
 using geometry::Arbitrary;
 using geometry::Bivector;
 using geometry::Frame;

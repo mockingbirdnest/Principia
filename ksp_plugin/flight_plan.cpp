@@ -18,7 +18,6 @@ namespace internal_flight_plan {
 
 using base::Error;
 using base::make_not_null_unique;
-using base::Status;
 using geometry::Position;
 using geometry::Vector;
 using geometry::Velocity;

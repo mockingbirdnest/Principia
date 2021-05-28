@@ -30,7 +30,6 @@ namespace ksp_plugin {
 namespace internal_vessel {
 
 using base::make_not_null_unique;
-using base::Status;
 using geometry::Displacement;
 using geometry::InertiaTensor;
 using geometry::Position;

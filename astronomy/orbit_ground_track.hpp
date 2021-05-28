@@ -14,7 +14,6 @@ namespace principia {
 namespace astronomy {
 namespace internal_orbit_ground_track {
 
-using base::StatusOr;
 using geometry::Instant;
 using geometry::Interval;
 using physics::DiscreteTrajectory;

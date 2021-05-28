@@ -25,7 +25,6 @@ namespace integrators {
 namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator {  // NOLINT(whitespace/line_length)
 
 using base::not_null;
-using base::Status;
 using geometry::Instant;
 using numerics::FixedStrictlyLowerTriangularMatrix;
 using numerics::FixedVector;
