@@ -87,7 +87,7 @@ TEST_F(BundleTest, Deadline) {
   }
   auto const status = bundle_.JoinWithin(10ms);
   EXPECT_THAT(status, StatusIs(absl::StatusCode::kDeadlineExceeded));
-  EXPECT_THAT(status.message(), Eq("bundle deadline exceeded"));
+  EXPECT_THAT(status.message(), Eq("Bundle deadline exceeded"));
 }
 
 }  // namespace base
