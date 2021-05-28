@@ -514,11 +514,7 @@ template<typename Value_, typename Argument_, int degree_,
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>&
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::
 operator+=(PolynomialInMonomialBasis const& right) {
-#if PRINCIPIA_COMPILER_MSVC
-  this->coefficients_ = this->coefficients_ + right.coefficients_;
-#else
   *this = *this + right;
-#endif
   return *this;
 }
 
@@ -527,11 +523,7 @@ template<typename Value_, typename Argument_, int degree_,
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>&
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::
 operator-=(PolynomialInMonomialBasis const& right) {
-#if PRINCIPIA_COMPILER_MSVC
-  this->coefficients_ = this->coefficients_ - right.coefficients_;
-#else
   *this = *this - right;
-#endif
   return *this;
 }
 
