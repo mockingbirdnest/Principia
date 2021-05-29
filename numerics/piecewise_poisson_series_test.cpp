@@ -58,21 +58,21 @@ class PiecewisePoissonSeriesTest : public ::testing::Test {
       : ω_(π / 2 * Radian / Second),
         p_(Degree0::Series::AperiodicPolynomial({1.5}, t0_),
            {{ω_,
-             {/*sin=*/Degree0::Series::PeriodicPolynomial({0.5}, t0_),
-              /*cos=*/Degree0::Series::PeriodicPolynomial({-1}, t0_)}}}),
+             {.sin = Degree0::Series::PeriodicPolynomial({0.5}, t0_),
+              .cos = Degree0::Series::PeriodicPolynomial({-1}, t0_)}}}),
         pp_({t0_, t0_ + 1 * Second},
             Degree0::Series(
                 Degree0::Series::AperiodicPolynomial({1}, t0_),
                 {{ω_,
-                  {/*sin=*/Degree0::Series::PeriodicPolynomial({-1}, t0_),
-                   /*cos=*/Degree0::Series::PeriodicPolynomial({0}, t0_)}}})) {
+                  {.sin = Degree0::Series::PeriodicPolynomial({-1}, t0_),
+                   .cos = Degree0::Series::PeriodicPolynomial({0}, t0_)}}})) {
     pp_.Append(
         {t0_ + 1 * Second, t0_ + 2 * Second},
         Degree0::Series(
             Degree0::Series::AperiodicPolynomial({0}, t0_),
             {{ω_,
-              {/*sin=*/Degree0::Series::PeriodicPolynomial({0}, t0_),
-               /*cos=*/Degree0::Series::PeriodicPolynomial({1}, t0_)}}}));
+              {.sin = Degree0::Series::PeriodicPolynomial({0}, t0_),
+               .cos = Degree0::Series::PeriodicPolynomial({1}, t0_)}}}));
   }
 
   Instant const t0_;
@@ -236,9 +236,9 @@ TEST_F(PiecewisePoissonSeriesTest, Fourier) {
   PoissonSeries<Displacement<World>, 0, 0, HornerEvaluator> signal(
       aperiodic_constant * Displacement<World>{},
       {{ω,
-        {/*sin=*/periodic_constant *
+        {.sin = periodic_constant *
              Displacement<World>({2 * Metre, -3 * Metre, 5 * Metre}),
-         /*cos=*/periodic_constant *
+         .cos = periodic_constant *
              Displacement<World>({-7 * Metre, 11 * Metre, -13 * Metre})}}});
   // Slice our signal into segments short enough that one-point Gauss-Legendre
   // (also known as midpoint) does the job.
