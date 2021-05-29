@@ -53,7 +53,7 @@ TEST_F(RecurringThreadTest, NoResult) {
 
   auto add_one_half = [&value](int const input) {
     value = static_cast<double>(input) + 0.5;
-    return Status::OK;
+    return absl::OkStatus();
   };
 
   ToyRecurringThread1 thread(std::move(add_one_half), 1ms);
