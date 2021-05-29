@@ -18,27 +18,25 @@ Pair<T1, T2>::Pair(T1 const& t1, T2 const& t2)
 
 template<typename T1, typename T2>
 Pair<T1, T2> Pair<T1, T2>::operator+(
-    typename vector_of<Pair<T1, T2>>::type const& right) const {
+    vector_of_t<Pair<T1, T2>> const& right) const {
   return Pair<T1, T2>(t1_ + right.t1_, t2_ + right.t2_);
 }
 
 template<typename T1, typename T2>
 Pair<T1, T2> Pair<T1, T2>::operator-(
-    typename vector_of<Pair<T1, T2>>::type const& right) const {
+    vector_of_t<Pair<T1, T2>> const& right) const {
   return Pair<T1, T2>(t1_ - right.t1_, t2_ - right.t2_);
 }
 
 template<typename T1, typename T2>
-Pair<T1, T2>& Pair<T1, T2>::operator+=(
-    typename vector_of<Pair<T1, T2>>::type const& right) {
+Pair<T1, T2>& Pair<T1, T2>::operator+=(vector_of_t<Pair<T1, T2>> const& right) {
   t1_ += right.t1_;
   t2_ += right.t2_;
   return *this;
 }
 
 template<typename T1, typename T2>
-Pair<T1, T2>& Pair<T1, T2>::operator-=(
-    typename vector_of<Pair<T1, T2>>::type const& right) {
+Pair<T1, T2>& Pair<T1, T2>::operator-=(vector_of_t<Pair<T1, T2>> const& right) {
   t1_ -= right.t1_;
   t2_ -= right.t2_;
   return *this;
@@ -74,22 +72,20 @@ Pair<T1, T2> Pair<T1, T2>::ReadFromMessage(serialization::Pair const& message) {
 }
 
 template<typename T1, typename T2>
-typename vector_of<Pair<T1, T2>>::type operator-(
-    typename enable_if_affine<Pair<T1, T2>>::type const& left,
+vector_of_t<Pair<T1, T2>> operator-(
+    enable_if_affine_t<Pair<T1, T2>> const& left,
     Pair<T1, T2> const& right) {
-  return typename vector_of<Pair<T1, T2>>::type(left.t1_ - right.t1_,
+  return vector_of_t<Pair<T1, T2>>(left.t1_ - right.t1_,
                                                 left.t2_ - right.t2_);
 }
 
 template<typename T1, typename T2>
-typename enable_if_vector<Pair<T1, T2>>::type operator+(
-  Pair<T1, T2> const& right) {
+enable_if_vector_t<Pair<T1, T2>> operator+(Pair<T1, T2> const& right) {
   return right;
 }
 
 template<typename T1, typename T2>
-typename enable_if_vector<Pair<T1, T2>>::type operator-(
-  Pair<T1, T2> const& right) {
+enable_if_vector_t<Pair<T1, T2>> operator-(Pair<T1, T2> const& right) {
   return Pair<T1, T2>(-right.t1_, -right.t2_);
 }
 
@@ -121,16 +117,16 @@ operator/(Pair<T1, T2> const& left, Scalar const right) {
 }
 
 template<typename T1, typename T2>
-typename enable_if_vector<Pair<T1, T2>>::type& operator*=(Pair<T1, T2>& left,
-                                                          double const right) {
+enable_if_vector_t<Pair<T1, T2>>& operator*=(Pair<T1, T2>& left,
+                                             double const right) {
   left.t1_ *= right;
   left.t2_ *= right;
   return left;
 }
 
 template<typename T1, typename T2>
-typename enable_if_vector<Pair<T1, T2>>::type& operator/=(Pair<T1, T2>& left,
-                                                          double const right) {
+enable_if_vector_t<Pair<T1, T2>>& operator/=(Pair<T1, T2>& left,
+                                             double const right) {
   left.t1_ /= right;
   left.t2_ /= right;
   return left;
@@ -184,14 +180,13 @@ T2 const BarycentreCalculator<Pair<T1, T2>, Weight>::reference_t2_;
 namespace base {
 
 template<typename Functor, typename T1, typename T2>
-typename Mappable<Functor,
-                geometry::Pair<T1, T2>,
-                typename geometry::enable_if_vector<
-                    geometry::Pair<T1, T2>, void>::type>::type
+typename Mappable<
+    Functor,
+    geometry::Pair<T1, T2>,
+    geometry::enable_if_vector_t<geometry::Pair<T1, T2>, void>>::type
 Mappable<Functor,
-       geometry::Pair<T1, T2>,
-       typename geometry::enable_if_vector<
-          geometry::Pair<T1, T2>, void>::type>::Do(
+         geometry::Pair<T1, T2>,
+         geometry::enable_if_vector_t<geometry::Pair<T1, T2>, void>>::Do(
     Functor const& functor,
     geometry::Pair<T1, T2> const& pair) {
   return type(functor(pair.t1_), functor(pair.t2_));

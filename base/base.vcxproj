@@ -25,6 +25,7 @@
     <ClInclude Include="bits_body.hpp" />
     <ClInclude Include="bundle.hpp" />
     <ClInclude Include="constant_function.hpp" />
+    <ClInclude Include="cpuid.hpp" />
     <ClInclude Include="disjoint_sets.hpp" />
     <ClInclude Include="disjoint_sets_body.hpp" />
     <ClInclude Include="encoder.hpp" />
@@ -67,10 +68,8 @@
     <ClInclude Include="serialization_body.hpp" />
     <ClInclude Include="sink_source.hpp" />
     <ClInclude Include="sink_source_body.hpp" />
-    <ClInclude Include="status.hpp" />
-    <ClInclude Include="status_or.hpp" />
-    <ClInclude Include="status_or_body.hpp" />
     <ClInclude Include="not_constructible.hpp" />
+    <ClInclude Include="status_utilities.hpp" />
     <ClInclude Include="tags.hpp" />
     <ClInclude Include="thread_pool.hpp" />
     <ClInclude Include="thread_pool_body.hpp" />
@@ -89,6 +88,8 @@
     <ClCompile Include="bits_test.cpp" />
     <ClCompile Include="bundle.cpp" />
     <ClCompile Include="bundle_test.cpp" />
+    <ClCompile Include="cpuid.cpp" />
+    <ClCompile Include="cpuid_test.cpp" />
     <ClCompile Include="disjoint_sets_test.cpp" />
     <ClCompile Include="flags.cpp" />
     <ClCompile Include="flags_test.cpp" />
@@ -101,9 +102,6 @@
     <ClCompile Include="pull_serializer_test.cpp" />
     <ClCompile Include="push_deserializer_test.cpp" />
     <ClCompile Include="recurring_thread_test.cpp" />
-    <ClCompile Include="status.cpp" />
-    <ClCompile Include="status_or_test.cpp" />
-    <ClCompile Include="status_test.cpp" />
     <ClCompile Include="thread_pool_test.cpp" />
     <ClCompile Include="version.generated.cc" />
     <ClCompile Include="zfp_compressor.cpp" />

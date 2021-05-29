@@ -470,25 +470,20 @@ inline QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof) {
   return QPConverter<RelativeDegreesOfFreedom<AliceSun>>::ToQP(relative_dof);
 }
 
-inline Status* ToNewStatus(base::Status const& status) {
+inline Status* ToNewStatus(absl::Status const& status) {
   if (status.ok()) {
-    return new Status{static_cast<int>(status.error()),
+    return new Status{static_cast<int>(status.code()),
                       /*message=*/nullptr};
   } else {
-    std::string const& message = status.message();
+    std::string_view const message = status.message();
     LOG(ERROR) << message;
     UniqueArray<char> allocated_message(message.size() + 1);
     std::memcpy(allocated_message.data.get(),
-                message.c_str(),
+                message.data(),
                 message.size() + 1);
-    return new Status{static_cast<int>(status.error()),
+    return new Status{static_cast<int>(status.code()),
                       allocated_message.data.release()};
   }
-}
-
-inline Status* ToNewStatus(base::Error const error,
-                           std::string const& message) {
-  return ToNewStatus(base::Status(error, message));
 }
 
 inline WXYZ ToWXYZ(geometry::Quaternion const& quaternion) {

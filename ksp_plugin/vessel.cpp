@@ -22,7 +22,6 @@ namespace internal_vessel {
 using astronomy::InfiniteFuture;
 using astronomy::InfinitePast;
 using base::Contains;
-using base::Error;
 using base::FindOrDie;
 using base::jthread;
 using base::make_not_null_unique;
@@ -292,7 +291,7 @@ void Vessel::DeleteFlightPlan() {
   flight_plan_.reset();
 }
 
-Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
+absl::Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
   CHECK(has_flight_plan());
   Instant const new_initial_time = history_->back().time;
   int first_manœuvre_kept = 0;
@@ -301,8 +300,8 @@ Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
     if (manœuvre.initial_time() < new_initial_time) {
       first_manœuvre_kept = i + 1;
       if (new_initial_time < manœuvre.final_time()) {
-        return Status(Error::UNAVAILABLE,
-                      u8"Cannot rebase during planned manœuvre execution");
+        return absl::UnavailableError(
+            u8"Cannot rebase during planned manœuvre execution");
       }
     }
   }
@@ -324,7 +323,7 @@ Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
     auto const& manœuvre = original_flight_plan->GetManœuvre(i);
     flight_plan_->Insert(manœuvre.burn(), i - first_manœuvre_kept);
   }
-  return Status::OK;
+  return absl::OkStatus();
 }
 
 void Vessel::RefreshPrediction() {
@@ -343,7 +342,7 @@ void Vessel::RefreshPrediction() {
     auto status_or_prognostication =
         FlowPrognostication(std::move(prognosticator_parameters));
     if (status_or_prognostication.ok()) {
-      prognostication = std::move(status_or_prognostication).ValueOrDie();
+      prognostication = std::move(status_or_prognostication).value();
     }
   } else {
     prognosticator_.Put(std::move(prognosticator_parameters));
@@ -544,14 +543,14 @@ Vessel::Vessel()
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       prognosticator_(nullptr, 20ms) {}
 
-StatusOr<std::unique_ptr<DiscreteTrajectory<Barycentric>>>
+absl::StatusOr<std::unique_ptr<DiscreteTrajectory<Barycentric>>>
 Vessel::FlowPrognostication(
     PrognosticatorParameters prognosticator_parameters) {
   auto prognostication = std::make_unique<DiscreteTrajectory<Barycentric>>();
   prognostication->Append(
       prognosticator_parameters.first_time,
       prognosticator_parameters.first_degrees_of_freedom);
-  Status status;
+  absl::Status status;
   status = ephemeris_->FlowWithAdaptiveStep(
       prognostication.get(),
       Ephemeris<Barycentric>::NoIntrinsicAcceleration,
@@ -572,7 +571,7 @@ Vessel::FlowPrognostication(
       << "Prognostication from " << prognosticator_parameters.first_time
       << " finished at " << prognostication->back().time << " with "
       << status.ToString() << " for " << ShortDebugString();
-  if (status.error() == Error::CANCELLED) {
+  if (absl::IsCancelled(status)) {
     return status;
   } else {
     // Unless we were stopped, ignore the status, which indicates a failure to

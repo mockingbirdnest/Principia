@@ -28,7 +28,6 @@ namespace ksp_plugin {
 namespace internal_flight_plan {
 
 using astronomy::J2000;
-using base::Error;
 using base::make_not_null_shared;
 using base::make_not_null_unique;
 using geometry::Barycentre;

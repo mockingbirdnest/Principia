@@ -267,6 +267,32 @@ TEST_F(PolynomialTest, Ring) {
   }
 }
 
+TEST_F(PolynomialTest, Affine) {
+  using P0A = PolynomialInMonomialBasis<Instant, Time, 0, HornerEvaluator>;
+  using P0V = PolynomialInMonomialBasis<Time, Time, 0, HornerEvaluator>;
+
+  P0A const p0a(std::tuple{Instant() + 1 * Second});
+  P0V const p0v(std::tuple{2 * Second});
+#if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS
+  {
+    P0A const p = p0v + Instant();
+    EXPECT_THAT(p(3 * Second), AlmostEquals(Instant() + 2 * Second, 0));
+  }
+#endif
+  {
+    P0A const p =  Instant() + p0v;
+    EXPECT_THAT(p(3 * Second), AlmostEquals(Instant() + 2 * Second, 0));
+  }
+  {
+    P0V const p = p0a - Instant();
+    EXPECT_THAT(p(3 * Second), AlmostEquals(1 * Second, 0));
+  }
+  {
+    P0V const p = Instant() - p0a;
+    EXPECT_THAT(p(3 * Second), AlmostEquals(-1 * Second, 0));
+  }
+}
+
 // Compose contains a fold expression which fails to compile in Clang because of
 // https://bugs.llvm.org/show_bug.cgi?id=30590.  That bug will be fixed post-
 // 11.0.0.  Since we don't use Compose as of this writing, and working around
@@ -459,7 +485,7 @@ TEST_F(PolynomialTest, Serialization) {
     for (auto const& coefficient : extension.coefficient()) {
       EXPECT_TRUE(coefficient.has_multivector());
     }
-    EXPECT_FALSE(extension.has_origin());
+    EXPECT_TRUE(extension.has_quantity());
 
     auto const polynomial_read =
         Polynomial<Displacement<World>, Time>::ReadFromMessage<HornerEvaluator>(
@@ -486,8 +512,8 @@ TEST_F(PolynomialTest, Serialization) {
     for (auto const& coefficient : extension.coefficient()) {
       EXPECT_TRUE(coefficient.has_multivector());
     }
-    EXPECT_TRUE(extension.has_origin());
-    EXPECT_TRUE(extension.origin().has_scalar());
+    EXPECT_TRUE(extension.has_point());
+    EXPECT_TRUE(extension.point().has_scalar());
 
     auto const polynomial_read =
         Polynomial<Displacement<World>,
@@ -515,7 +541,7 @@ TEST_F(PolynomialTest, Serialization) {
     for (auto const& coefficient : extension.coefficient()) {
       EXPECT_TRUE(coefficient.has_multivector());
     }
-    EXPECT_FALSE(extension.has_origin());
+    EXPECT_TRUE(extension.has_quantity());
 
     auto const polynomial_read =
         Polynomial<Displacement<World>, Time>::ReadFromMessage<HornerEvaluator>(

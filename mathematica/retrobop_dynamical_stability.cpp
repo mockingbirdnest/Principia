@@ -30,7 +30,6 @@ namespace principia {
 
 using base::Bundle;
 using base::not_null;
-using base::Status;
 using base::GetLine;
 using base::OFStream;
 using base::UniqueArray;
@@ -486,19 +485,19 @@ void AnalyseGlobalError() {
     if (reference_ephemeris != nullptr) {
       bundle.Add([&reference_ephemeris = *reference_ephemeris, t]() {
         reference_ephemeris.Prolong(t);
-        return Status::OK;
+        return absl::OkStatus();
       });
     }
     if (refined_ephemeris != nullptr) {
       bundle.Add([&refined_ephemeris = *refined_ephemeris, t]() {
         refined_ephemeris.Prolong(t);
-        return Status::OK;
+        return absl::OkStatus();
       });
     }
     for (auto const& ephemeris : perturbed_ephemerides) {
       bundle.Add([ephemeris = ephemeris.get(), t]() {
         ephemeris->Prolong(t);
-        return Status::OK;
+        return absl::OkStatus();
       });
     }
     bundle.Join();
@@ -616,7 +615,7 @@ void StatisticallyAnalyseStability() {
                     << names[most_erroneous_moon] << ")";
           numerically_unsound[ephemeris] = true;
         }
-        return Status::OK;
+        return absl::OkStatus();
       });
     }
     bundle.Join();

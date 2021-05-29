@@ -118,13 +118,8 @@ TEST_F(PairTest, MemberSubtraction) {
                           3 * si::Unit<Amount>})),
             pp_ - vv_);
   EXPECT_EQ(PV(P1() + V1({3 * si::Unit<Action>,
-                          2 * si::Unit<Action>,
-                          3 * si::Unit<Action>}) +
-                      // A convoluted way of writing {3, 3, 3}, to circumvent a
-                      // frightening bug in VS2017.
-                      V1({0 * si::Unit<Action>,
-                          1 * si::Unit<Action>,
-                          0 * si::Unit<Action> }),
+                          3 * si::Unit<Action>,
+                          3 * si::Unit<Action>}),
                V2({0 * si::Unit<Amount>,
                    0 * si::Unit<Amount>,
                    0 * si::Unit<Amount>})),
@@ -325,6 +320,10 @@ TEST_F(PairTest, AffineSubtraction) {
   VP const vp = vp_ + vv_;
   EXPECT_EQ(vv_, vp - vp_);
   // No test for VV, that would be a vector subtraction.
+#ifdef CHECK_ILLEGAL
+  auto const pvvp = pv_ - vp_;
+  auto const vppv = vp_ - pv_;
+#endif
 }
 
 TEST_F(PairTest, UnaryPlus) {

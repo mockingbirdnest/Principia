@@ -11,12 +11,12 @@
 #include <utility>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "base/serialization.hpp"
-#include "base/status.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/permutation.hpp"
@@ -50,12 +50,10 @@ namespace internal_plugin {
 
 using astronomy::ICRS;
 using astronomy::ParseTT;
-using base::Error;
 using base::FindOrDie;
 using base::make_not_null_unique;
 using base::not_null;
 using base::SerializeAsBytes;
-using base::Status;
 using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::Identity;

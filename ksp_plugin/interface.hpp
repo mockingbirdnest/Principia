@@ -6,11 +6,11 @@
 #include <type_traits>
 #include <utility>
 
+#include "absl/status/status.h"
 #include "base/not_null.hpp"
 #include "base/macros.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
-#include "base/status.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/quaternion.hpp"
@@ -162,8 +162,7 @@ QP ToQP(DegreesOfFreedom<World> const& dof);
 QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof);
 
 // Ownership of the status and its message is transferred to the caller.
-Status* ToNewStatus(base::Status const& status);
-Status* ToNewStatus(base::Error error, std::string const& message);
+Status* ToNewStatus(absl::Status const& status);
 
 WXYZ ToWXYZ(geometry::Quaternion const& quaternion);
 

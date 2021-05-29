@@ -6,9 +6,9 @@
 #include <utility>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
-#include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
 #include "numerics/piecewise_poisson_series.hpp"
 #include "numerics/polynomial.hpp"
@@ -24,7 +24,6 @@ namespace physics {
 namespace internal_continuous_trajectory {
 
 using base::not_null;
-using base::Status;
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::Position;
@@ -69,8 +68,8 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // passed to |Append| if the trajectory is not empty.  The |time|s passed to
   // successive calls to |Append| must be equally spaced with the |step| given
   // at construction.
-  Status Append(Instant const& time,
-                DegreesOfFreedom<Frame> const& degrees_of_freedom)
+  absl::Status Append(Instant const& time,
+                      DegreesOfFreedom<Frame> const& degrees_of_freedom)
       EXCLUDES(lock_);
 
   // Prepends the given |trajectory| to this one.  Ideally the last point of
@@ -152,14 +151,13 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // never need to extract their |t_min|.  Logically, the |t_min| for a
   // polynomial is the |t_max| of the previous one.  The first polynomial has a
   // |t_min| which is |*first_time_|.
-  // TODO(phl): These should be polynomials returning Position<Frame>.
   struct InstantPolynomialPair {
     InstantPolynomialPair(
         Instant t_max,
-        not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+        not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>
             polynomial);
     Instant t_max;
-    not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+    not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>
         polynomial;
   };
   using InstantPolynomialPairs = std::vector<InstantPolynomialPair>;
@@ -168,10 +166,10 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   Instant t_max_locked() const REQUIRES_SHARED(lock_);
 
   // Really a static method, but may be overridden for testing.
-  virtual not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+  virtual not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>
   NewhallApproximationInMonomialBasis(
       int degree,
-      std::vector<Displacement<Frame>> const& q,
+      std::vector<Position<Frame>> const& q,
       std::vector<Velocity<Frame>> const& v,
       Instant const& t_min,
       Instant const& t_max,
@@ -181,9 +179,9 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // Adjust the |degree_| and other member variables to stay within the
   // tolerance while minimizing the computational cost and avoiding numerical
   // instabilities.
-  Status ComputeBestNewhallApproximation(
+  absl::Status ComputeBestNewhallApproximation(
       Instant const& time,
-      std::vector<Displacement<Frame>> const& q,
+      std::vector<Position<Frame>> const& q,
       std::vector<Velocity<Frame>> const& v) REQUIRES(lock_);
 
   // Returns an iterator to the polynomial applicable for the given |time|, or

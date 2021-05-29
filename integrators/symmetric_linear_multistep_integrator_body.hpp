@@ -23,7 +23,8 @@ using geometry::QuantityOrMultivectorSerializer;
 int const startup_step_divisor = 16;
 
 template<typename Method, typename Position>
-Status SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Solve(
+absl::Status
+SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Solve(
     Instant const& t_final) {
   using Acceleration = typename ODE::Acceleration;
   using Displacement = typename ODE::Displacement;
@@ -46,7 +47,7 @@ Status SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Solve(
     // If |t_final| is not large enough, we may not have generated enough
     // points.  Bail out, we'll continue the next time |Solve| is called.
     if (previous_steps_.size() < order) {
-      return Status::OK;
+      return absl::OkStatus();
     }
   }
   CHECK_EQ(previous_steps_.size(), order);
@@ -62,7 +63,7 @@ Status SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Solve(
   // Order.
   int const k = order;
 
-  Status status;
+  absl::Status status;
   std::vector<Position> positions(dimension);
 
   DoubleDisplacements Σj_minus_ɑj_qj(dimension);

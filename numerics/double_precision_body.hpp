@@ -7,9 +7,14 @@
 #include <cmath>
 #include <cstring>
 #include <string>
+#include <type_traits>
 
+#include "geometry/grassmann.hpp"
+#include "geometry/point.hpp"
+#include "geometry/r3_element.hpp"
 #include "geometry/serialization.hpp"
 #include "quantities/elementary_functions.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -18,33 +23,93 @@ namespace internal_double_precision {
 
 using geometry::DoubleOrQuantityOrPointOrMultivectorSerializer;
 using geometry::DoubleOrQuantityOrMultivectorSerializer;
+using geometry::Multivector;
+using geometry::Point;
+using geometry::R3Element;
 using quantities::Abs;
 using quantities::FusedMultiplyAdd;
+using quantities::is_quantity;
 using quantities::Quantity;
 using quantities::si::Radian;
 namespace si = quantities::si;
 
-// Assumes that |T| and |U| have a memory representation that is a sequence of
-// |double|s, and returns the conjunction of componentwise
-// |left[i]| >= |right[i]| or left[i] == 0.
+// A helper to check that the preconditions of QuickTwoSum are met.  Annoyingly
+// complicated as it needs to peel off all of our abstractions until it reaches
+// doubles.
+template<typename T, typename U, typename = void>
+struct ComponentwiseComparator;
+
 template<typename T, typename U>
-bool ComponentwiseGreaterThanOrEqualOrZero(T const& left, U const& right) {
-  static_assert(sizeof(left) == sizeof(right),
-                "Comparing types of different sizes");
-  static_assert(sizeof(left) % sizeof(double) == 0,
-                "Types are not sequences of doubles");
-  constexpr int size = sizeof(left) / sizeof(double);
-  std::array<double, size> left_doubles;
-  std::memcpy(left_doubles.data(), &left, sizeof(left));
-  std::array<double, size> right_doubles;
-  std::memcpy(right_doubles.data(), &right, sizeof(right));
-  bool result = true;
-  for (int i = 0; i < size; ++i) {
-    result &=
-        (Abs(left_doubles[i]) >= Abs(right_doubles[i]) || left_doubles[i] == 0);
+struct ComponentwiseComparator<DoublePrecision<T>, DoublePrecision<U>> {
+  static bool GreaterThanOrEqualOrZero(DoublePrecision<T> const& left,
+                                       DoublePrecision<U> const& right) {
+    // This check is incomplete: it doesn't compare the errors component.  To
+    // the best of my understanding this code is only used in tests.
+    return ComponentwiseComparator<T, U>::GreaterThanOrEqualOrZero(left.value,
+                                                                   right.value);
   }
-  return result;
-}
+};
+
+template<typename T, typename U>
+struct ComponentwiseComparator<Point<T>, U> : base::not_constructible {
+  static bool GreaterThanOrEqualOrZero(Point<T> const& left,
+                                       U const& right) {
+    // We only care about the coordinates, the geometric structure is
+    // irrelevant.
+    return ComponentwiseComparator<T, U>::GreaterThanOrEqualOrZero(
+        left - Point<T>{}, right);
+  }
+};
+
+template<typename T, typename U>
+struct ComponentwiseComparator<T, Point<U>> : base::not_constructible {
+  static bool GreaterThanOrEqualOrZero(T const& left,
+                                       Point<U> const& right) {
+    // We only care about the coordinates, the geometric structure is
+    // irrelevant.
+    return ComponentwiseComparator<T, U>::GreaterThanOrEqualOrZero(
+        left, right - Point<U>{});
+  }
+};
+
+template<typename T, typename TFrame, int trank,
+         typename U, typename UFrame, int urank>
+struct ComponentwiseComparator<Multivector<T, TFrame, trank>,
+                               Multivector<U, UFrame, urank>>
+    : base::not_constructible {
+  static bool GreaterThanOrEqualOrZero(
+      Multivector<T, TFrame, trank> const& left,
+      Multivector<U, UFrame, urank> const& right) {
+    // This doesn't handle trivectors.
+    return ComponentwiseComparator<R3Element<T>, R3Element<U>>::
+        GreaterThanOrEqualOrZero(left.coordinates(), right.coordinates());
+  }
+};
+
+template<typename T, typename U>
+struct ComponentwiseComparator<R3Element<T>, R3Element<U>>
+    : base::not_constructible {
+  static bool GreaterThanOrEqualOrZero(R3Element<T> const& left,
+                                       R3Element<U> const& right) {
+    bool result = true;
+    for (int i = 0; i < 3; ++i) {
+      result &= ComponentwiseComparator<T, U>::GreaterThanOrEqualOrZero(
+          left[i], right[i]);
+    }
+    return result;
+  }
+};
+
+template<typename T, typename U>
+struct ComponentwiseComparator<T, U,
+                               std::enable_if_t<
+                                   std::conjunction_v<is_quantity<T>,
+                                                      is_quantity<U>>>> {
+  static bool GreaterThanOrEqualOrZero(T const& left, U const& right) {
+    return Abs(left) >= Abs(right) || left == T{};
+  }
+};
+
 
 template<typename T>
 constexpr DoublePrecision<T>::DoublePrecision(T const& value)
@@ -156,7 +221,8 @@ FORCE_INLINE(inline)
 DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b) {
 #if _DEBUG
   using quantities::DebugString;
-  CHECK(ComponentwiseGreaterThanOrEqualOrZero(a, b))
+  using Comparator = ComponentwiseComparator<T, U>;
+  CHECK(Comparator::GreaterThanOrEqualOrZero(a, b))
       << "|" << DebugString(a) << "| < |" << DebugString(b) << "|";
 #endif
   // [HLB07].

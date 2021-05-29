@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "astronomy/epoch.hpp"
+#include "base/status_utilities.hpp"
 
 namespace principia {
 namespace physics {
@@ -16,7 +17,6 @@ namespace internal_checkpointer {
 
 using astronomy::InfiniteFuture;
 using astronomy::InfinitePast;
-using base::Error;
 
 template<typename Message>
 Checkpointer<Message>::Checkpointer(Writer writer, Reader reader)
@@ -127,12 +127,12 @@ bool Checkpointer<Message>::WriteToCheckpointIfNeeded(
 }
 
 template<typename Message>
-Status Checkpointer<Message>::ReadFromOldestCheckpoint() const {
+absl::Status Checkpointer<Message>::ReadFromOldestCheckpoint() const {
   typename Message::Checkpoint const* checkpoint = nullptr;
   {
     absl::ReaderMutexLock l(&lock_);
     if (checkpoints_.empty()) {
-      return Status(Error::NOT_FOUND, "No checkpoint");
+      return absl::NotFoundError("No checkpoint");
     }
     checkpoint = &checkpoints_.cbegin()->second;
   }
@@ -140,12 +140,12 @@ Status Checkpointer<Message>::ReadFromOldestCheckpoint() const {
 }
 
 template<typename Message>
-Status Checkpointer<Message>::ReadFromNewestCheckpoint() const {
+absl::Status Checkpointer<Message>::ReadFromNewestCheckpoint() const {
   typename Message::Checkpoint const* checkpoint = nullptr;
   {
     absl::ReaderMutexLock l(&lock_);
     if (checkpoints_.empty()) {
-      return Status(Error::NOT_FOUND, "No checkpoint");
+      return absl::NotFoundError("No checkpoint");
     }
     checkpoint = &checkpoints_.crbegin()->second;
   }
@@ -153,7 +153,7 @@ Status Checkpointer<Message>::ReadFromNewestCheckpoint() const {
 }
 
 template<typename Message>
-Status Checkpointer<Message>::ReadFromCheckpointAtOrBefore(
+absl::Status Checkpointer<Message>::ReadFromCheckpointAtOrBefore(
     Instant const& t) const {
   typename Message::Checkpoint const* checkpoint = nullptr;
   {
@@ -161,7 +161,7 @@ Status Checkpointer<Message>::ReadFromCheckpointAtOrBefore(
     // |it| denotes an entry strictly greater than |t| (or end).
     auto const it = checkpoints_.upper_bound(t);
     if (it == checkpoints_.cbegin()) {
-      return Status(Error::NOT_FOUND, "No checkpoint");
+      return absl::NotFoundError("No checkpoint");
     }
     checkpoint = &std::prev(it)->second;
   }
@@ -169,21 +169,23 @@ Status Checkpointer<Message>::ReadFromCheckpointAtOrBefore(
 }
 
 template<typename Message>
-Status Checkpointer<Message>::ReadFromCheckpointAt(Instant const& t,
-                                                   Reader const& reader) const {
+absl::Status Checkpointer<Message>::ReadFromCheckpointAt(
+    Instant const& t,
+    Reader const& reader) const {
   typename std::map<Instant, typename Message::Checkpoint>::const_iterator it;
   {
     absl::ReaderMutexLock l(&lock_);
     it = checkpoints_.find(t);
     if (it == checkpoints_.end()) {
-      return Status(Error::NOT_FOUND, "No checkpoint found");
+      return absl::NotFoundError("No checkpoint found");
     }
   }
   return reader(it->second);
 }
 
 template<typename Message>
-Status Checkpointer<Message>::ReadFromCheckpointAt(Instant const& t) const {
+absl::Status Checkpointer<Message>::ReadFromCheckpointAt(
+    Instant const& t) const {
   return ReadFromCheckpointAt(t, reader_);
 }
 

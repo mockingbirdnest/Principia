@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
 #include "astronomy/epoch.hpp"
 #include "base/jthread.hpp"
 #include "base/macros.hpp"
@@ -33,7 +34,6 @@ namespace internal_ephemeris {
 
 using astronomy::J2000;
 using base::dynamic_cast_not_null;
-using base::Error;
 using base::FindOrDie;
 using base::make_not_null_unique;
 using base::MakeStoppableThread;
@@ -77,8 +77,8 @@ constexpr Time max_time_between_checkpoints = 180 * Day;
 // downsampling from going postal.
 constexpr double min_radius_tolerance = 0.99;
 
-inline Status CollisionDetected() {
-  return Status(Error::OUT_OF_RANGE, "Collision detected");
+inline absl::Status CollisionDetected() {
+  return absl::OutOfRangeError("Collision detected");
 }
 
 template<typename Frame>
@@ -353,7 +353,7 @@ Ephemeris<Frame>::planetary_integrator() const {
 }
 
 template<typename Frame>
-Status Ephemeris<Frame>::last_severe_integration_status() const {
+absl::Status Ephemeris<Frame>::last_severe_integration_status() const {
   absl::ReaderMutexLock l(&lock_);
   return last_severe_integration_status_;
 }
@@ -400,7 +400,7 @@ template<typename Frame>
 Status Ephemeris<Frame>::Prolong(Instant const& t) {
   // Short-circuit without locking.
   if (t <= t_max()) {
-    return Status::OK;
+    return absl::OkStatus();
   }
 
   // Note that |t| may be before the last time that we integrated and still
@@ -424,7 +424,7 @@ Status Ephemeris<Frame>::Prolong(Instant const& t) {
     t_final += fixed_step_parameters_.step_;
   }
 
-  return Status::OK;
+  return absl::OkStatus();
 }
 
 template<typename Frame>
@@ -435,11 +435,11 @@ Ephemeris<Frame>::NewInstance(
     IntrinsicAccelerations const& intrinsic_accelerations,
     FixedStepParameters const& parameters) {
   return StoppableNewInstance(trajectories, intrinsic_accelerations, parameters)
-      .ValueOrDie();
+      .value();
 }
 
 template<typename Frame>
-StatusOr<not_null<std::unique_ptr<typename Integrator<
+absl::StatusOr<not_null<std::unique_ptr<typename Integrator<
     typename Ephemeris<Frame>::NewtonianMotionEquation>::Instance>>>
 Ephemeris<Frame>::StoppableNewInstance(
     std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
@@ -452,7 +452,7 @@ Ephemeris<Frame>::StoppableNewInstance(
           Instant const& t,
           std::vector<Position<Frame>> const& positions,
           std::vector<Vector<Acceleration, Frame>>& accelerations) {
-    Error const error =
+    auto const error =
         ComputeMasslessBodiesGravitationalAccelerations(t,
                                                         positions,
                                                         accelerations);
@@ -463,7 +463,7 @@ Ephemeris<Frame>::StoppableNewInstance(
         accelerations[i] += intrinsic_acceleration(t);
       }
     }
-    return error == Error::OK ? Status::OK :
+    return error == absl::StatusCode::kOk ? absl::OkStatus() :
                     CollisionDetected();
   };
 
@@ -488,12 +488,16 @@ Ephemeris<Frame>::StoppableNewInstance(
   Prolong(trajectory_last_time + parameters.step_);
   RETURN_IF_STOPPED;
 
-  return parameters.integrator_->NewInstance(
-      problem, append_state, parameters.step_);
+  // NOTE(phl): For some reason the May 2021 version of absl wants an explicit
+  // construction here.  Unsure if the bug is in absl, VS 2019, or both.
+  return absl::StatusOr<not_null<std::unique_ptr<typename Integrator<
+      typename Ephemeris<Frame>::NewtonianMotionEquation>::Instance>>>(
+      parameters.integrator_->NewInstance(
+          problem, append_state, parameters.step_));
 }
 
 template<typename Frame>
-Status Ephemeris<Frame>::FlowWithAdaptiveStep(
+absl::Status Ephemeris<Frame>::FlowWithAdaptiveStep(
     not_null<DiscreteTrajectory<Frame>*> const trajectory,
     IntrinsicAcceleration intrinsic_acceleration,
     Instant const& t,
@@ -503,14 +507,14 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations) {
-    Error const error =
+    auto const error =
         ComputeMasslessBodiesGravitationalAccelerations(t,
                                                         positions,
                                                         accelerations);
     if (intrinsic_acceleration != nullptr) {
       accelerations[0] += intrinsic_acceleration(t);
     }
-    return error == Error::OK ? Status::OK :
+    return error == absl::StatusCode::kOk ? absl::OkStatus() :
                     CollisionDetected();
   };
 
@@ -523,7 +527,7 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
 }
 
 template<typename Frame>
-Status Ephemeris<Frame>::FlowWithAdaptiveStep(
+absl::Status Ephemeris<Frame>::FlowWithAdaptiveStep(
     not_null<DiscreteTrajectory<Frame>*> trajectory,
     GeneralizedIntrinsicAcceleration intrinsic_acceleration,
     Instant const& t,
@@ -535,7 +539,7 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
           std::vector<Position<Frame>> const& positions,
           std::vector<Velocity<Frame>> const& velocities,
           std::vector<Vector<Acceleration, Frame>>& accelerations) {
-        Error const error =
+        auto const error =
             ComputeMasslessBodiesGravitationalAccelerations(t,
                                                             positions,
                                                             accelerations);
@@ -543,7 +547,7 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
           accelerations[0] +=
               intrinsic_acceleration(t, {positions[0], velocities[0]});
         }
-        return error == Error::OK ? Status::OK :
+        return error == absl::StatusCode::kOk ? absl::OkStatus() :
                         CollisionDetected();
       };
 
@@ -556,7 +560,7 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
 }
 
 template<typename Frame>
-Status Ephemeris<Frame>::FlowWithFixedStep(
+absl::Status Ephemeris<Frame>::FlowWithFixedStep(
     Instant const& t,
     typename Integrator<NewtonianMotionEquation>::Instance& instance) {
   if (empty() || t > t_max()) {
@@ -564,7 +568,7 @@ Status Ephemeris<Frame>::FlowWithFixedStep(
     RETURN_IF_STOPPED;
   }
   if (instance.time() == DoublePrecision<Instant>(t)) {
-    return Status::OK;
+    return absl::OkStatus();
   }
 
   return instance.Solve(t);
@@ -919,7 +923,7 @@ Ephemeris<Frame>::MakeCheckpointerReader() {
               MakeMassiveBodiesNewtonianMotionEquation(),
               /*append_state=*/
               std::bind(&Ephemeris::AppendMassiveBodiesState, this, _1));
-      return Status::OK;
+      return absl::OkStatus();
     };
   } else {
     return nullptr;
@@ -927,7 +931,7 @@ Ephemeris<Frame>::MakeCheckpointerReader() {
 }
 
 template<typename Frame>
-Status Ephemeris<Frame>::Reanimate(Instant const desired_t_min) {
+absl::Status Ephemeris<Frame>::Reanimate(Instant const desired_t_min) {
   std::set<Instant> checkpoints;
   {
     absl::ReaderMutexLock l(&lock_);
@@ -966,7 +970,7 @@ Status Ephemeris<Frame>::Reanimate(Instant const desired_t_min) {
     }
     following_checkpoint = checkpoint;
   }
-  return Status::OK;
+  return absl::OkStatus();
 }
 
 template<typename Frame>
@@ -1019,7 +1023,7 @@ Status Ephemeris<Frame>::ReanimateOneCheckpoint(
     oldest_reanimated_checkpoint_ = t_initial;
   }
 
-  return Status::OK;
+  return absl::OkStatus();
 }
 
 template<typename Frame>
@@ -1036,9 +1040,10 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
     auto const& status = statuses[i];
     if (!status.ok()) {
       last_severe_integration_status_ =
-          Status(status.error(),
-                 "Error extending trajectory for " + bodies_[i]->name() + ". " +
-                     status.message());
+          absl::Status(status.code(),
+                       absl::StrCat("Error extending trajectory for ",
+                                    bodies_[i]->name(), ". ",
+                                    status.message()));
       LOG(ERROR) << "New Apocalypse: " << last_severe_integration_status_;
     }
   }
@@ -1050,10 +1055,11 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
 
 template<typename Frame>
 template<typename ContinuousTrajectoryPtr>
-std::vector<Status> Ephemeris<Frame>::AppendMassiveBodiesStateToTrajectories(
+std::vector<absl::Status>
+Ephemeris<Frame>::AppendMassiveBodiesStateToTrajectories(
     typename NewtonianMotionEquation::SystemState const& state,
     std::vector<not_null<ContinuousTrajectoryPtr>> const& trajectories) {
-  std::vector<Status> statuses;
+  std::vector<absl::Status> statuses;
   Instant const time = state.time.value;
   int index = 0;
   for (auto& trajectory : trajectories) {
@@ -1184,8 +1190,8 @@ void Ephemeris<Frame>::
 
 template<typename Frame>
 template<bool body1_is_oblate>
-Error Ephemeris<Frame>::
-ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
+std::underlying_type_t<absl::StatusCode>
+Ephemeris<Frame>::ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
     Instant const& t,
     MassiveBody const& body1,
     std::size_t const b1,
@@ -1197,7 +1203,9 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
   Position<Frame> const position1 = trajectory1.EvaluatePosition(t);
   Length const body1_collision_radius =
       min_radius_tolerance * body1.min_radius();
-  Error error = Error::OK;
+  // TODO(phl): Use std::to_underlying when we have C++23.
+  auto error = static_cast<std::underlying_type_t<absl::StatusCode>>(
+      absl::StatusCode::kOk);
 
   for (std::size_t b2 = 0; b2 < positions.size(); ++b2) {
     // A vector from the center of |b2| to the center of |b1|.
@@ -1205,7 +1213,11 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
 
     Square<Length> const Δq² = Δq.Norm²();
     Length const Δq_norm = Sqrt(Δq²);
-    error |= Δq_norm > body1_collision_radius ? Error::OK : Error::OUT_OF_RANGE;
+    error |= Δq_norm > body1_collision_radius
+                 ? static_cast<std::underlying_type_t<absl::StatusCode>>(
+                       absl::StatusCode::kOk)
+                 : static_cast<std::underlying_type_t<absl::StatusCode>>(
+                       absl::StatusCode::kOutOfRange);
 
     Exponentiation<Length, -3> const one_over_Δq³ = Δq_norm / (Δq² * Δq²);
 
@@ -1278,13 +1290,16 @@ Status Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
 }
 
 template<typename Frame>
-Error Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
+absl::StatusCode
+Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
     Instant const& t,
     std::vector<Position<Frame>> const& positions,
     std::vector<Vector<Acceleration, Frame>>& accelerations) const {
   CHECK_EQ(positions.size(), accelerations.size());
   accelerations.assign(accelerations.size(), Vector<Acceleration, Frame>());
-  Error error = Error::OK;
+  // TODO(phl): Use std::to_underlying when we have C++23.
+  auto error = static_cast<std::underlying_type_t<absl::StatusCode>>(
+      absl::StatusCode::kOk);
 
   // Locking ensures that we see a consistent state of all the trajectories.
   absl::ReaderMutexLock l(&lock_);
@@ -1309,12 +1324,12 @@ Error Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
                  positions,
                  accelerations);
   }
-  return error;
+  return static_cast<absl::StatusCode>(error);
 }
 
 template<typename Frame>
 template<typename ODE>
-Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
+absl::Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
     typename ODE::RightHandSideComputation compute_acceleration,
     not_null<DiscreteTrajectory<Frame>*> trajectory,
     Instant const& t,
@@ -1322,7 +1337,7 @@ Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
     std::int64_t max_ephemeris_steps) {
   Instant const& trajectory_last_time = trajectory->back().time;
   if (trajectory_last_time == t) {
-    return Status::OK;
+    return absl::OkStatus();
   }
 
   std::vector<not_null<DiscreteTrajectory<Frame>*>> const trajectories =
@@ -1378,8 +1393,8 @@ Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
   // we only use this integrator for the future.  So we swallow the error.  Note
   // that a collision in the prediction or the flight plan (for which this path
   // is used) should not cause the vessel to be deleted.
-  if (status.error() == Error::OUT_OF_RANGE) {
-    status = Status::OK;
+  if (absl::IsOutOfRange(status)) {
+    status = absl::OkStatus();
   }
 
   // TODO(egg): when we have events in trajectories, we should add a singularity
@@ -1390,9 +1405,8 @@ Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
   if (!status.ok() || t_final == t) {
     return status;
   } else {
-    return Status(Error::DEADLINE_EXCEEDED,
-                  "Couldn't reach " + DebugString(t) + ", stopping at " +
-                      DebugString(t_final));
+    return absl::DeadlineExceededError("Couldn't reach " + DebugString(t) +
+                                       ", stopping at " + DebugString(t_final));
   }
 }
 

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "astronomy/epoch.hpp"
+#include "base/status_utilities.hpp"
 #include "geometry/interval.hpp"
 #include "glog/stl_logging.h"
 #include "numerics/newhall.hpp"
@@ -24,7 +25,6 @@ namespace internal_continuous_trajectory {
 
 using astronomy::InfiniteFuture;
 using base::dynamic_cast_not_null;
-using base::Error;
 using base::make_not_null_unique;
 using geometry::Interval;
 using numerics::EstrinEvaluator;
@@ -82,7 +82,7 @@ double ContinuousTrajectory<Frame>::average_degree() const {
 }
 
 template<typename Frame>
-Status ContinuousTrajectory<Frame>::Append(
+absl::Status ContinuousTrajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
   absl::MutexLock l(&lock_);
@@ -100,21 +100,21 @@ Status ContinuousTrajectory<Frame>::Append(
     first_time_ = time;
   }
 
-  Status status;
+  absl::Status status;
   CHECK_LE(last_points_.size(), divisions);
   if (last_points_.size() == divisions) {
     // These vectors are thread-local to avoid deallocation/reallocation each
     // time we go through this code path.
-    thread_local std::vector<Displacement<Frame>> q(divisions + 1);
+    thread_local std::vector<Position<Frame>> q(divisions + 1);
     thread_local std::vector<Velocity<Frame>> v(divisions + 1);
     q.clear();
     v.clear();
 
     for (auto const& [_, degrees_of_freedom] : last_points_) {
-      q.push_back(degrees_of_freedom.position() - Frame::origin);
+      q.push_back(degrees_of_freedom.position());
       v.push_back(degrees_of_freedom.velocity());
     }
-    q.push_back(degrees_of_freedom.position() - Frame::origin);
+    q.push_back(degrees_of_freedom.position());
     v.push_back(degrees_of_freedom.velocity());
 
     status = ComputeBestNewhallApproximation(time, q, v);
@@ -192,7 +192,7 @@ Position<Frame> ContinuousTrajectory<Frame>::EvaluatePosition(
   auto const it = FindPolynomialForInstant(time);
   CHECK(it != polynomials_.end());
   auto const& polynomial = *it->polynomial;
-  return polynomial(time) + Frame::origin;
+  return polynomial(time);
 }
 
 template<typename Frame>
@@ -216,7 +216,7 @@ DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
   auto const it = FindPolynomialForInstant(time);
   CHECK(it != polynomials_.end());
   auto const& polynomial = *it->polynomial;
-  return DegreesOfFreedom<Frame>(polynomial(time) + Frame::origin,
+  return DegreesOfFreedom<Frame>(polynomial(time),
                                  polynomial.EvaluateDerivative(time));
 }
 
@@ -261,8 +261,8 @@ int ContinuousTrajectory<Frame>::PiecewisePoissonSeriesDegree(
 template<typename Frame>
 template<int aperiodic_degree, int periodic_degree>
 PiecewisePoissonSeries<Displacement<Frame>,
-                        aperiodic_degree, periodic_degree,
-                        EstrinEvaluator>
+                       aperiodic_degree, periodic_degree,
+                       EstrinEvaluator>
 ContinuousTrajectory<Frame>::ToPiecewisePoissonSeries(
     Instant const& t_min,
     Instant const& t_max) const {
@@ -389,6 +389,11 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
                                 message.has_is_unstable() &&
                                 message.has_degree() &&
                                 message.has_degree_age();
+  bool const is_pre_gröbner =
+    message.instant_polynomial_pair_size() > 0 &&
+    message.instant_polynomial_pair(0).polynomial().
+        GetExtension(serialization::PolynomialInMonomialBasis::extension).
+            coefficient(0).has_multivector();
 
   not_null<std::unique_ptr<ContinuousTrajectory<Frame>>> continuous_trajectory =
       std::make_unique<ContinuousTrajectory<Frame>>(
@@ -402,10 +407,10 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
           ЧебышёвSeries<Displacement<Frame>>::ReadFromMessage(s);
       Time const step = (series.t_max() - series.t_min()) / divisions;
       Instant t = series.t_min();
-      std::vector<Displacement<Frame>> q;
+      std::vector<Position<Frame>> q;
       std::vector<Velocity<Frame>> v;
       for (int i = 0; i <= divisions; t += step, ++i) {
-        q.push_back(series.Evaluate(t));
+        q.push_back(series.Evaluate(t) + Frame::origin);
         v.push_back(series.EvaluateDerivative(t));
       }
       Displacement<Frame> error_estimate;  // Should we do something with this?
@@ -419,10 +424,28 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
     }
   } else {
     for (auto const& pair : message.instant_polynomial_pair()) {
-      continuous_trajectory->polynomials_.emplace_back(
-          Instant::ReadFromMessage(pair.t_max()),
-          Polynomial<Displacement<Frame>, Instant>::template ReadFromMessage<
-              EstrinEvaluator>(pair.polynomial()));
+      if (is_pre_gröbner) {
+        // The easiest way to implement compatibility is to patch the serialized
+        // form.
+        serialization::Polynomial polynomial = pair.polynomial();
+        auto const coefficient0_multivector = polynomial.GetExtension(
+            serialization::PolynomialInMonomialBasis::extension).
+            coefficient(0).multivector();
+        auto* const coefficient0_point = polynomial.MutableExtension(
+            serialization::PolynomialInMonomialBasis::extension)->
+            mutable_coefficient(0)->mutable_point();
+        *coefficient0_point->mutable_multivector() = coefficient0_multivector;
+
+        continuous_trajectory->polynomials_.emplace_back(
+            Instant::ReadFromMessage(pair.t_max()),
+            Polynomial<Position<Frame>, Instant>::template ReadFromMessage<
+                EstrinEvaluator>(polynomial));
+      } else {
+        continuous_trajectory->polynomials_.emplace_back(
+            Instant::ReadFromMessage(pair.t_max()),
+            Polynomial<Position<Frame>, Instant>::template ReadFromMessage<
+                EstrinEvaluator>(pair.polynomial()));
+      }
     }
   }
   if (message.has_first_time()) {
@@ -474,7 +497,7 @@ void ContinuousTrajectory<Frame>::WriteToCheckpoint(Instant const& t) const {
 }
 
 template<typename Frame>
-Status ContinuousTrajectory<Frame>::ReadFromCheckpointAt(
+absl::Status ContinuousTrajectory<Frame>::ReadFromCheckpointAt(
     Instant const& t,
     Checkpointer<serialization::ContinuousTrajectory>::Reader const& reader)
     const {
@@ -555,7 +578,7 @@ ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
       }
       last_accessed_polynomial_ = 0;  // Always a valid value.
 
-      return Status::OK;
+      return absl::OkStatus();
     };
   } else {
     return nullptr;
@@ -601,25 +624,25 @@ Instant ContinuousTrajectory<Frame>::t_max_locked() const {
 }
 
 template<typename Frame>
-not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>
 ContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
     int degree,
-    std::vector<Displacement<Frame>> const& q,
+    std::vector<Position<Frame>> const& q,
     std::vector<Velocity<Frame>> const& v,
     Instant const& t_min,
     Instant const& t_max,
     Displacement<Frame>& error_estimate) const {
   return numerics::NewhallApproximationInMonomialBasis<
-            Displacement<Frame>, EstrinEvaluator>(degree,
-                                                  q, v,
-                                                  t_min, t_max,
-                                                  error_estimate);
+             Position<Frame>, EstrinEvaluator>(degree,
+                                               q, v,
+                                               t_min, t_max,
+                                               error_estimate);
 }
 
 template<typename Frame>
-Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
+absl::Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
     Instant const& time,
-    std::vector<Displacement<Frame>> const& q,
+    std::vector<Position<Frame>> const& q,
     std::vector<Velocity<Frame>> const& v) {
   lock_.AssertHeld();
   Length const previous_adjusted_tolerance = adjusted_tolerance_;
@@ -705,7 +728,7 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
 
   // Check that the tolerance did not explode.
   if (adjusted_tolerance_ < 1e6 * previous_adjusted_tolerance) {
-    return Status::OK;
+    return absl::OkStatus();
   } else {
     std::stringstream message;
     message << "Error trying to fit a smooth polynomial to the trajectory. "
@@ -715,7 +738,7 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
             << " and the last velocity is " << v.back()
             << ". An apocalypse occurred and two celestials probably "
             << "collided because your solar system is unstable.";
-    return Status(Error::INVALID_ARGUMENT, message.str());
+    return absl::InvalidArgumentError(message.str());
   }
 }
 

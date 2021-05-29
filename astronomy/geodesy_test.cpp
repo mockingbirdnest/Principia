@@ -19,7 +19,6 @@ namespace astronomy {
 using base::Bundle;
 using base::dynamic_cast_not_null;
 using base::not_null;
-using base::Status;
 using geometry::AngleBetween;
 using geometry::Displacement;
 using geometry::Instant;
@@ -133,8 +132,8 @@ TEST_F(GeodesyTest, DISABLED_LAGEOS2) {
   secondary_lageos2_trajectory.Append(
       initial_time, itrs_.FromThisFrameAtTime(initial_time)(initial_dof_ilrsb));
   auto flow_lageos2 =
-      [this,
-       final_time](DiscreteTrajectory<ICRS>& lageos2_trajectory) -> Status {
+      [this, final_time](
+          DiscreteTrajectory<ICRS>& lageos2_trajectory) -> absl::Status {
         return ephemeris_->FlowWithAdaptiveStep(
             &lageos2_trajectory,
             Ephemeris<ICRS>::NoIntrinsicAcceleration,

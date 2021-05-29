@@ -4,8 +4,8 @@
 #include <functional>
 #include <string>
 
+#include "absl/status/status.h"
 #include "base/not_null.hpp"
-#include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/double_precision.hpp"
@@ -16,9 +16,7 @@ namespace principia {
 namespace integrators {
 namespace internal_integrators {
 
-using base::Error;
 using base::not_null;
-using base::Status;
 using geometry::Instant;
 using numerics::DoublePrecision;
 using quantities::Time;
@@ -41,7 +39,7 @@ class Integrator {
 
     // The subclass must document the time passed to the last call to
     // |append_state|.
-    virtual Status Solve(Instant const& t_final) = 0;
+    virtual absl::Status Solve(Instant const& t_final) = 0;
 
     // The last instant integrated by this instance.
     DoublePrecision<Instant> const& time() const;

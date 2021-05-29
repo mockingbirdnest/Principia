@@ -15,9 +15,14 @@ class MockContinuousTrajectory : public ContinuousTrajectory<Frame> {
  public:
   MockContinuousTrajectory() : ContinuousTrajectory<Frame>() {}
 
-  MOCK_CONST_METHOD1_T(EvaluatePosition, Position<Frame>(Instant const& time));
-  MOCK_CONST_METHOD1_T(EvaluateDegreesOfFreedom,
-                       DegreesOfFreedom<Frame>(Instant const& time));
+  MOCK_METHOD(Position<Frame>,
+              EvaluatePosition,
+              (Instant const& time),
+              (const, override));
+  MOCK_METHOD(DegreesOfFreedom<Frame>,
+              EvaluateDegreesOfFreedom,
+              (Instant const& time),
+              (const, override));
 };
 
 }  // namespace internal_continuous_trajectory
