@@ -84,14 +84,14 @@ class PoissonSeriesTest : public ::testing::Test {
     Degree1::PeriodicPolynomial psb3({-17, -18 / Second}, t0_);
     Degree1::PeriodicPolynomial pcb3({19, 20 / Second}, t0_);
 
-    Degree1::Polynomials psca0{/*sin=*/psa0, /*cos=*/pca0};
+    Degree1::Polynomials psca0{.sin = psa0, .cos = pca0};
 
-    Degree1::Polynomials psca1{/*sin=*/psa1, /*cos=*/pca1};
-    Degree1::Polynomials pscb1{/*sin=*/psb1, /*cos=*/pcb1};
+    Degree1::Polynomials psca1{.sin = psa1, .cos = pca1};
+    Degree1::Polynomials pscb1{.sin = psb1, .cos = pcb1};
 
-    Degree1::Polynomials psca2{/*sin=*/psa2, /*cos=*/pca2};
+    Degree1::Polynomials psca2{.sin = psa2, .cos = pca2};
 
-    Degree1::Polynomials pscb3{/*sin=*/psb3, /*cos=*/pcb3};
+    Degree1::Polynomials pscb3{.sin = psb3, .cos = pcb3};
 
     pa_ = std::make_unique<Degree1>(
         pa0,
@@ -286,14 +286,14 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct1) {
   AngularFrequency const ω = 2.09400659210170170e+03 * Radian / Second;
   Degree4 const f(Degree4::AperiodicPolynomial({}, t0_),
                   {{ω,
-                    {/*sin=*/Degree4::PeriodicPolynomial(
+                    {.sin = Degree4::PeriodicPolynomial(
                          {+5.10311065909077932e+00 * Metre,
                           +2.78062787709394854e+00 * Metre / Second,
                           +5.04290401496053242e+00 * Metre / Pow<2>(Second),
                           -7.27454632735125806e+00 * Metre / Pow<3>(Second),
                           +8.06537932856756612e+00 * Metre / Pow<4>(Second)},
                          t0_),
-                     /*cos=*/Degree4::PeriodicPolynomial(
+                     .cos = Degree4::PeriodicPolynomial(
                          {-8.11863376474325804e+00 * Metre,
                           +1.49140608216528037e+00 * Metre / Second,
                           -2.54224601087630298e+00 * Metre / Pow<2>(Second),
@@ -302,7 +302,7 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct1) {
                          t0_)}}});
   Degree5 const q(Degree5::AperiodicPolynomial({}, t0_),
                   {{ω,
-                    {/*sin=*/Degree5::PeriodicPolynomial(
+                    {.sin = Degree5::PeriodicPolynomial(
                          {-4.41249783881549433e+01 * Metre,
                           +1.50208859053174347e+04 * Metre / Second,
                           -1.70674564621978020e+06 * Metre / Pow<2>(Second),
@@ -310,7 +310,7 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct1) {
                           -1.92799129073151779e+09 * Metre / Pow<4>(Second),
                           +1.61514557548221931e+10 * Metre / Pow<5>(Second)},
                          t0_),
-                     /*cos=*/Degree5::PeriodicPolynomial(
+                     .cos = Degree5::PeriodicPolynomial(
                          {-1.00752842659088765e-01 * Metre,
                           +2.25402995957193006e+01 * Metre / Second,
                           -1.66819064858902379e+03 * Metre / Pow<2>(Second),
@@ -351,14 +351,14 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct2) {
                                     -9.09000157727785874e+05 / Pow<4>(Second)},
                                    t_mid),
       {{ω1,
-        {/*sin=*/Degree4::PeriodicPolynomial(
+        {.sin = Degree4::PeriodicPolynomial(
              {0,
               -1.91877905970852938e+06 / Second,
               0 / Pow<2>(Second),
               +6.41616364182685137e+08 / Pow<3>(Second),
               0 / Pow<4>(Second)},
              t_mid),
-         /*cos=*/Degree4::PeriodicPolynomial(
+         .cos = Degree4::PeriodicPolynomial(
              {+3.30073762193190414e+04,
               0 / Second,
               -4.82683293024840727e+07 / Pow<2>(Second),
@@ -366,14 +366,14 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct2) {
               +4.17242083788431835e+09 / Pow<4>(Second)},
              t_mid)}},
        {ω2,
-        {/*sin=*/Degree4::PeriodicPolynomial(
+        {.sin = Degree4::PeriodicPolynomial(
              {0,
               -1.91373931192037021e+06 / Second,
               0 / Pow<2>(Second),
               +6.34735730739231467e+08 / Pow<3>(Second),
               0 / Pow<4>(Second)},
              t_mid),
-         /*cos=*/Degree4::PeriodicPolynomial(
+         .cos = Degree4::PeriodicPolynomial(
              {-3.30072258387235779e+04,
               0 / Second,
               +4.79716446803979352e+07 / Pow<2>(Second),
@@ -383,8 +383,8 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct2) {
 
   Degree0 const g(Degree0::AperiodicPolynomial({}, t_mid),
                   {{ω3,
-                    {/*sin=*/Degree0::PeriodicPolynomial({}, t_mid),
-                     /*cos=*/Degree0::PeriodicPolynomial({1}, t_mid)}}});
+                    {.sin = Degree0::PeriodicPolynomial({}, t_mid),
+                     .cos = Degree0::PeriodicPolynomial({1}, t_mid)}}});
 
   {
     auto const product = InnerProduct(f, g,
@@ -428,77 +428,77 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct3) {
                                    +2.19546428440080956e-25 / Pow<5>(Second)},
                                   t_mid),
       {{ω1,
-        {/*sin=*/Series::PeriodicPolynomial(
+        {.sin = Series::PeriodicPolynomial(
              {-8.35023222649048083e+06,
               0 / Second,
               +3.14056500770589297e-06 / Pow<2>(Second),
               0 / Pow<3>(Second)},
              t_mid),
-         /*cos=*/Series::PeriodicPolynomial(
+         .cos = Series::PeriodicPolynomial(
              {0,
               +1.01168828383876246e+01 / Second,
               0 / Pow<2>(Second),
               -1.04312630151309924e-12 / Pow<3>(Second)},
              t_mid)}},
        {ω2,
-        {/*sin=*/Series::PeriodicPolynomial(
+        {.sin = Series::PeriodicPolynomial(
              {-4.91207898169697961e+05,
               0 / Second,
               +2.37420192215719412e-07 / Pow<2>(Second),
               0 / Pow<3>(Second)},
              t_mid),
-         /*cos=*/Series::PeriodicPolynomial(
+         .cos = Series::PeriodicPolynomial(
              {0,
               +1.06674312857622944e+00 / Second,
               0 / Pow<2>(Second),
               -1.52459927383197132e-13 / Pow<3>(Second)},
              t_mid)}},
        {ω3,
-        {/*sin=*/Series::PeriodicPolynomial(
+        {.sin = Series::PeriodicPolynomial(
              {-1.85065842467988288e+05,
               0 / Second,
               +7.57044590566114320e-08 / Pow<2>(Second),
               0 / Pow<3>(Second)},
              t_mid),
-         /*cos=*/Series::PeriodicPolynomial(
+         .cos = Series::PeriodicPolynomial(
              {0,
               +2.22354757856304569e-01 / Second,
               0 / Pow<2>(Second),
               -2.34730179758300617e-14 / Pow<3>(Second)},
              t_mid)}},
        {ω4,
-        {/*sin=*/Series::PeriodicPolynomial(
+        {.sin = Series::PeriodicPolynomial(
              {-1.09194717716096820e+04,
               0 / Second,
               +4.85897411923250085e-09 / Pow<2>(Second),
               0 / Pow<3>(Second)},
              t_mid),
-         /*cos=*/Series::PeriodicPolynomial(
+         .cos = Series::PeriodicPolynomial(
              {0,
               +1.31475484344253241e-02 / Second,
               0 / Pow<2>(Second),
               -1.41217171514512962e-15 / Pow<3>(Second)},
              t_mid)}},
        {ω5,
-        {/*sin=*/Series::PeriodicPolynomial(
+        {.sin = Series::PeriodicPolynomial(
              {-4.86759403394113406e+02,
               0 / Second,
               +2.03337116963348534e-10 / Pow<2>(Second),
               0 / Pow<3>(Second)},
              t_mid),
-         /*cos=*/Series::PeriodicPolynomial(
+         .cos = Series::PeriodicPolynomial(
              {0,
               +5.16201144683406409e-04 / Second,
               0 / Pow<2>(Second),
               -4.29187706226779285e-17 / Pow<3>(Second)},
              t_mid)}},
        {ω6,
-        {/*sin=*/Series::PeriodicPolynomial({-2.66335757891223146e+00,
+        {.sin = Series::PeriodicPolynomial({-2.66335757891223146e+00,
                                              0 / Second,
                                              0 / Pow<2>(Second),
                                              0 / Pow<3>(Second)},
                                             t_mid),
-         /*cos=*/Series::PeriodicPolynomial({0,
+         .cos = Series::PeriodicPolynomial({0,
                                              +3.60057656319038812e-06 / Second,
                                              0 / Pow<2>(Second),
                                              0 / Pow<3>(Second)},
@@ -513,82 +513,83 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct3) {
                                    +4.14056618803521400e-27 / Pow<5>(Second)},
                                   t_mid),
       {{ω1,
-        {/*sin=*/Series::PeriodicPolynomial(
+        {.sin = Series::PeriodicPolynomial(
              {-1.57708056520423561e+05,
               0 / Second,
               +5.93414912295899838e-08 / Pow<2>(Second),
               0 / Pow<3>(Second)},
              t_mid),
-         /*cos=*/Series::PeriodicPolynomial(
+         .cos = Series::PeriodicPolynomial(
              {0,
               +1.91902315754011399e-01 / Second,
               0 / Pow<2>(Second),
               -1.98598703231757471e-14 / Pow<3>(Second)},
              t_mid)}},
        {ω2,
-        {/*sin=*/Series::PeriodicPolynomial(
+        {.sin = Series::PeriodicPolynomial(
              {-9.31144597269088263e+03,
               0 / Second,
               +4.51121125348543404e-09 / Pow<2>(Second),
               0 / Pow<3>(Second)},
              t_mid),
-         /*cos=*/Series::PeriodicPolynomial(
+         .cos = Series::PeriodicPolynomial(
              {0,
               +2.08585690999323684e-02 / Second,
               0 / Pow<2>(Second),
               -2.99826421429525608e-15 / Pow<3>(Second)},
              t_mid)}},
        {ω3,
-        {/*sin=*/Series::PeriodicPolynomial(
+        {.sin = Series::PeriodicPolynomial(
              {-3.71934064860903527e+03,
               0 / Second,
               +1.52991642654451839e-09 / Pow<2>(Second),
               0 / Pow<3>(Second)},
              t_mid),
-         /*cos=*/Series::PeriodicPolynomial(
+         .cos = Series::PeriodicPolynomial(
              {0,
               +4.54325428407370037e-03 / Second,
               0 / Pow<2>(Second),
               -4.88811294904941287e-16 / Pow<3>(Second)},
              t_mid)}},
        {ω4,
-        {/*sin=*/Series::PeriodicPolynomial(
+        {.sin = Series::PeriodicPolynomial(
              {-2.38782465236558210e+02,
               0 / Second,
               +1.07675550289214021e-10 / Pow<2>(Second),
               0 / Pow<3>(Second)},
              t_mid),
-         /*cos=*/Series::PeriodicPolynomial(
+         .cos = Series::PeriodicPolynomial(
              {0,
               +2.96344251787576066e-04 / Second,
               0 / Pow<2>(Second),
               -3.31546592884930502e-17 / Pow<3>(Second)},
              t_mid)}},
        {ω5,
-        {/*sin=*/Series::PeriodicPolynomial(
+        {.sin = Series::PeriodicPolynomial(
              {-1.29376251439425527e+01,
               0 / Second,
               +5.63467102431514781e-12 / Pow<2>(Second),
               0 / Pow<3>(Second)},
              t_mid),
-         /*cos=*/Series::PeriodicPolynomial(
+         .cos = Series::PeriodicPolynomial(
              {0,
               +1.43747865681285978e-05 / Second,
               0 / Pow<2>(Second),
               -1.34490730453117390e-18 / Pow<3>(Second)},
              t_mid)}},
        {ω6,
-        {/*sin=*/Series::PeriodicPolynomial(
+        {.sin = Series::PeriodicPolynomial(
              {-2.29407203043806407e-01,
               0 / Second,
               +6.42353197319720082e-14 / Pow<2>(Second),
               0 / Pow<3>(Second)},
              t_mid),
-         /*cos=*/Series::PeriodicPolynomial({0,
-                                             +1.76202789977736386e-07 / Second,
-                                             0 / Pow<2>(Second),
-                                             0 / Pow<3>(Second)},
-                                            t_mid)}}});
+         .cos = Series::PeriodicPolynomial(
+             {0,
+              +1.76202789977736386e-07 / Second,
+              0 / Pow<2>(Second),
+              0 / Pow<3>(Second)},
+             t_mid)}}});
 
   double const expected_product = -9.93743685469196454745e-9;
   {

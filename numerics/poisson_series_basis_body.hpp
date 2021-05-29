@@ -135,13 +135,13 @@ Polynomials PolynomialGenerator<Polynomial, dimension>::UnitPolynomials(
 
   Polynomial const zero{{}, t_mid};
   if constexpr (parity == 0) {
-    return {/*sin=*/zero,
-            /*cos=*/PolynomialGenerator<Polynomial, dimension>::UnitPolynomial<
+    return {.sin = zero,
+            .cos = PolynomialGenerator<Polynomial, dimension>::UnitPolynomial<
                 degree_and_coordinate>(t_min, t_mid, t_max)};
   } else {
-    return {/*sin=*/PolynomialGenerator<Polynomial, dimension>::UnitPolynomial<
+    return {.sin = PolynomialGenerator<Polynomial, dimension>::UnitPolynomial<
                 degree_and_coordinate>(t_min, t_mid, t_max),
-            /*cos=*/zero};
+            .cos = zero};
   }
 }
 
