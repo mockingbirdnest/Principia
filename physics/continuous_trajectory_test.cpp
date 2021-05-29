@@ -921,7 +921,7 @@ TEST_F(ContinuousTrajectoryTest, PreGröbnerCompatibility) {
                  t0_,
                  *trajectory1);
   Instant const checkpoint_time = trajectory1->t_max();
-  trajectory1->checkpointer().WriteToCheckpoint(checkpoint_time);
+  trajectory1->WriteToCheckpoint(checkpoint_time);
 
   serialization::ContinuousTrajectory message1;
   trajectory1->WriteToMessage(&message1);
@@ -940,8 +940,9 @@ TEST_F(ContinuousTrajectoryTest, PreGröbnerCompatibility) {
 
   // Read from the pre-Gröbner message, write to a second message, and check
   // that we get the same result.
-  auto const trajectory2 =
-      ContinuousTrajectory<World>::ReadFromMessage(pre_gröbner);
+  auto const trajectory2 = ContinuousTrajectory<World>::ReadFromMessage(
+      /*desired_t_min=*/InfiniteFuture,
+      pre_gröbner);
   serialization::ContinuousTrajectory message2;
   trajectory2->WriteToMessage(&message2);
 

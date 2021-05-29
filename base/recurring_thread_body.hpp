@@ -12,7 +12,7 @@ inline void BaseRecurringThread::Start() {
   absl::MutexLock l(&jthread_lock_);
   if (!jthread_.joinable()) {
     jthread_ = MakeStoppableThread(
-        [this]() { Status const status = RepeatedlyRunAction(); });
+        [this]() { absl::Status const status = RepeatedlyRunAction(); });
   }
 }
 
@@ -25,14 +25,14 @@ inline void BaseRecurringThread::Restart() {
   absl::MutexLock l(&jthread_lock_);
   jthread_ = jthread();
   jthread_ = MakeStoppableThread(
-      [this]() { Status const status = RepeatedlyRunAction(); });
+      [this]() { absl::Status const status = RepeatedlyRunAction(); });
 }
 
 inline BaseRecurringThread::BaseRecurringThread(
     std::chrono::milliseconds const period)
     : period_(period) {}
 
-inline Status BaseRecurringThread::RepeatedlyRunAction() {
+inline absl::Status BaseRecurringThread::RepeatedlyRunAction() {
   for (std::chrono::steady_clock::time_point wakeup_time;;
        std::this_thread::sleep_until(wakeup_time)) {
     wakeup_time = std::chrono::steady_clock::now() + period_;
@@ -68,24 +68,24 @@ std::optional<Output> RecurringThread<Input, Output>::Get() {
 }
 
 template<typename Input, typename Output>
-Status RecurringThread<Input, Output>::RunAction() {
+absl::Status RecurringThread<Input, Output>::RunAction() {
   std::optional<Input> input;
   {
     absl::MutexLock l(&input_output_lock_);
     if (!input_.has_value()) {
       // No input, let's wait for it to appear.
-      return Status::OK;
+      return absl::OkStatus();
     }
     std::swap(input, input_);
   }
   RETURN_IF_STOPPED;
 
-  StatusOr<Output> status_or_output = action_(input.value());
+  absl::StatusOr<Output> status_or_output = action_(input.value());
   RETURN_IF_STOPPED;
 
   if (status_or_output.ok()) {
     absl::MutexLock l(&input_output_lock_);
-    output_ = std::move(status_or_output.ValueOrDie());
+    output_ = std::move(status_or_output.value());
   }
 
   return status_or_output.status();
@@ -105,13 +105,13 @@ void RecurringThread<Input, void>::Put(Input input) {
 }
 
 template<typename Input>
-Status RecurringThread<Input, void>::RunAction() {
+absl::Status RecurringThread<Input, void>::RunAction() {
   std::optional<Input> input;
   {
     absl::MutexLock l(&input_lock_);
     if (!input_.has_value()) {
       // No input, let's wait for it to appear.
-      return Status::OK;
+      return absl::OkStatus();
     }
     std::swap(input, input_);
   }

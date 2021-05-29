@@ -385,7 +385,7 @@ class Ephemeris {
       REQUIRES_SHARED(lock_);
 
   // Computes the accelerations between all the massive bodies in |bodies_|.
-  Status ComputeMassiveBodiesGravitationalAccelerations(
+  absl::Status ComputeMassiveBodiesGravitationalAccelerations(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations) const;

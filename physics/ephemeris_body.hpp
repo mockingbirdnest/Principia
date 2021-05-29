@@ -397,7 +397,7 @@ void Ephemeris<Frame>::WaitForReanimation(Instant const& desired_t_min) {
 }
 
 template<typename Frame>
-Status Ephemeris<Frame>::Prolong(Instant const& t) {
+absl::Status Ephemeris<Frame>::Prolong(Instant const& t) {
   // Short-circuit without locking.
   if (t <= t_max()) {
     return absl::OkStatus();
@@ -960,11 +960,11 @@ absl::Status Ephemeris<Frame>::Reanimate(Instant const desired_t_min) {
            t_final = following_checkpoint.value(),
            t_initial = checkpoint](
               serialization::Ephemeris::Checkpoint const& message) {
-            // No reanimation for non-serializable frames.
             if constexpr (base::is_serializable_v<Frame>) {
               return ReanimateOneCheckpoint(message, t_initial, t_final);
             } else {
-              return Status::UNKNOWN;
+              return absl::UnknownError(
+                  "No reanimation for non-serializable frames");
             }
           }));
     }
@@ -974,7 +974,7 @@ absl::Status Ephemeris<Frame>::Reanimate(Instant const desired_t_min) {
 }
 
 template<typename Frame>
-Status Ephemeris<Frame>::ReanimateOneCheckpoint(
+absl::Status Ephemeris<Frame>::ReanimateOneCheckpoint(
     serialization::Ephemeris::Checkpoint const& message,
     Instant const& t_initial,
     Instant const& t_final) {
@@ -1241,7 +1241,7 @@ Ephemeris<Frame>::ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
 }
 
 template<typename Frame>
-Status Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
+absl::Status Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
     Instant const& t,
     std::vector<Position<Frame>> const& positions,
     std::vector<Vector<Acceleration, Frame>>& accelerations) const {
@@ -1286,7 +1286,7 @@ Status Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
         positions, accelerations, geopotentials_);
   }
 
-  return Status::OK;
+  return absl::OkStatus();
 }
 
 template<typename Frame>

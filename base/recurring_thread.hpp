@@ -4,11 +4,11 @@
 #include <functional>
 #include <optional>
 
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/synchronization/mutex.h"
 #include "base/jthread.hpp"
 #include "base/macros.hpp"
-#include "base/status.hpp"
-#include "base/status_or.hpp"
 
 namespace principia {
 namespace base {
@@ -39,10 +39,10 @@ class BaseRecurringThread {
   explicit BaseRecurringThread(std::chrono::milliseconds period);
 
   // Repeatedly calls RunAction no more frequently than at the specified period.
-  Status RepeatedlyRunAction();
+  absl::Status RepeatedlyRunAction();
 
   // Overidden by subclasses to actually run the action.
-  virtual Status RunAction() = 0;
+  virtual absl::Status RunAction() = 0;
 
  private:
   std::chrono::milliseconds const period_;
@@ -56,7 +56,7 @@ template<typename Input, typename Output = void>
 class RecurringThread : public BaseRecurringThread {
  public:
   // If an action returns an error, no output in written to the output channel.
-  using Action = std::function<StatusOr<Output>(Input)>;
+  using Action = std::function<absl::StatusOr<Output>(Input)>;
 
   // Constructs a stoppable thread that executes the given |action| no more
   // frequently than at the specified |period| (and less frequently if no input
@@ -73,7 +73,7 @@ class RecurringThread : public BaseRecurringThread {
   std::optional<Output> Get();
 
  private:
-  Status RunAction() override;
+  absl::Status RunAction() override;
 
   Action const action_;
 
@@ -86,7 +86,7 @@ class RecurringThread : public BaseRecurringThread {
 template<typename Input>
 class RecurringThread<Input, void> : public BaseRecurringThread {
  public:
-  using Action = std::function<Status(Input)>;
+  using Action = std::function<absl::Status(Input)>;
 
   // Constructs a stoppable thread that executes the given |action| no more
   // frequently than at the specified |period| (and less frequently if no input
@@ -100,7 +100,7 @@ class RecurringThread<Input, void> : public BaseRecurringThread {
   void Put(Input input);
 
  private:
-  Status RunAction() override;
+  absl::Status RunAction() override;
 
   Action const action_;
 

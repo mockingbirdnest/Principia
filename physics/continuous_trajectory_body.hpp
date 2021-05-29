@@ -596,7 +596,7 @@ ContinuousTrajectory<Frame>::ContinuousTrajectory()
 template<typename Frame>
 ContinuousTrajectory<Frame>::InstantPolynomialPair::InstantPolynomialPair(
     Instant const t_max,
-    not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+    not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>
         polynomial)
     : t_max(t_max),
       polynomial(std::move(polynomial)) {}

@@ -129,7 +129,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // These members call the corresponding functions of the internal
   // checkpointer.
   void WriteToCheckpoint(Instant const& t) const;
-  Status ReadFromCheckpointAt(
+  absl::Status ReadFromCheckpointAt(
       Instant const& t,
       Checkpointer<serialization::ContinuousTrajectory>::Reader const& reader)
       const;
