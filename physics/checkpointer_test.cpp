@@ -147,6 +147,28 @@ TEST_F(CheckpointerTest, ReadFromCheckpointAtOrBefore) {
   EXPECT_THAT(checkpointer_.all_checkpoints_at_or_before(t2 + 1 * Second),
               ElementsAre(t1, t2));
 
+  EXPECT_THAT(checkpointer_.all_checkpoints_between(Instant() + 1 * Second,
+                                                    Instant() + 3 * Second),
+              IsEmpty());
+  EXPECT_THAT(checkpointer_.all_checkpoints_between(Instant() + 1 * Second,
+                                                    t1),
+              ElementsAre(t1));
+  EXPECT_THAT(checkpointer_.all_checkpoints_between(Instant() + 1 * Second,
+                                                    t2 + 1 * Second),
+              ElementsAre(t1, t2));
+  EXPECT_THAT(checkpointer_.all_checkpoints_between(t1, t2),
+              ElementsAre(t1, t2));
+  EXPECT_THAT(checkpointer_.all_checkpoints_between(t1 - 1 * Second,
+                                                    t2 + 1 * Second),
+              ElementsAre(t1, t2));
+  EXPECT_THAT(checkpointer_.all_checkpoints_between(t3, t1),
+              IsEmpty());
+  EXPECT_THAT(checkpointer_.all_checkpoints_between(t2, t2),
+              ElementsAre(t2));
+  EXPECT_THAT(checkpointer_.all_checkpoints_between(t1 + 1 * Second,
+                                                    t1 + 1 * Second),
+              IsEmpty());
+
   EXPECT_THAT(
       checkpointer_.ReadFromCheckpointAtOrBefore(Instant() + 1 * Second),
       StatusIs(absl::StatusCode::kNotFound));
@@ -187,39 +209,6 @@ TEST_F(CheckpointerTest, ReadFromCheckpointAt) {
       .WillOnce(Return(absl::CancelledError()));
   EXPECT_THAT(checkpointer_.ReadFromCheckpointAt(t3, reader_.AsStdFunction()),
               StatusIs(absl::StatusCode::kCancelled));
-}
-
-TEST_F(CheckpointerTest, ReadFromAllCheckpointsBackwards) {
-  Instant const t1 = Instant() + 10 * Second;
-  EXPECT_CALL(writer_, Call(_)).WillOnce(SetPayload(1));
-  checkpointer_.WriteToCheckpoint(t1);
-
-  Instant const t2 = t1 + 11 * Second;
-  EXPECT_CALL(writer_, Call(_)).WillOnce(SetPayload(2));
-  checkpointer_.WriteToCheckpoint(t2);
-
-  Instant const t3 = t2 + 11 * Second;
-  EXPECT_CALL(writer_, Call(_)).WillOnce(SetPayload(3));
-  checkpointer_.WriteToCheckpoint(t3);
-
-  {
-    InSequence s;
-    EXPECT_CALL(reader_, Call(Field(&Message::Checkpoint::payload, 3)));
-    EXPECT_CALL(reader_, Call(Field(&Message::Checkpoint::payload, 2)));
-    EXPECT_CALL(reader_, Call(Field(&Message::Checkpoint::payload, 1)));
-  }
-  EXPECT_OK(
-      checkpointer_.ReadFromAllCheckpointsBackwards(reader_.AsStdFunction()));
-
-  {
-    InSequence s;
-    EXPECT_CALL(reader_, Call(Field(&Message::Checkpoint::payload, 3)));
-    EXPECT_CALL(reader_, Call(Field(&Message::Checkpoint::payload, 2)))
-        .WillOnce(Return(absl::CancelledError()));
-  }
-  EXPECT_THAT(
-      checkpointer_.ReadFromAllCheckpointsBackwards(reader_.AsStdFunction()),
-      StatusIs(absl::StatusCode::kCancelled));
 }
 
 TEST_F(CheckpointerTest, Serialization) {

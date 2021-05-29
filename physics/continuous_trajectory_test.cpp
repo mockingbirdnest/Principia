@@ -707,7 +707,7 @@ TEST_F(ContinuousTrajectoryTest, Serialization) {
 
   // Take a checkpoint and verify that the checkpointed data is properly
   // serialized.
-  trajectory->checkpointer().WriteToCheckpoint(trajectory->t_max());
+  trajectory->WriteToCheckpoint(trajectory->t_max());
   serialization::ContinuousTrajectory message;
   trajectory->WriteToMessage(&message);
   EXPECT_EQ(step / Second, message.step().magnitude());
@@ -730,8 +730,9 @@ TEST_F(ContinuousTrajectoryTest, Serialization) {
   EXPECT_GE(100, checkpoint.degree_age());
   EXPECT_EQ(4, checkpoint.last_point_size());
 
-  auto const trajectory_read =
-      ContinuousTrajectory<World>::ReadFromMessage(message);
+  auto const trajectory_read = ContinuousTrajectory<World>::ReadFromMessage(
+      /*desired_t_min=*/InfiniteFuture,
+      message);
   EXPECT_EQ(trajectory->t_min(), trajectory_read->t_min());
   EXPECT_EQ(trajectory->t_max(), trajectory_read->t_max());
   for (Instant time = trajectory->t_min();
@@ -774,7 +775,7 @@ TEST_F(ContinuousTrajectoryTest, PreCohenCompatibility) {
                  velocity_function,
                  t0_,
                  *trajectory);
-  trajectory->checkpointer().WriteToCheckpoint(trajectory->t_max());
+  trajectory->WriteToCheckpoint(trajectory->t_max());
 
   serialization::ContinuousTrajectory message;
   trajectory->WriteToMessage(&message);
@@ -809,8 +810,9 @@ TEST_F(ContinuousTrajectoryTest, PreCohenCompatibility) {
   // Deserialize the message and check that a polynomial was constructed and
   // that it has the form:
   //   -2 - 14 * t + 6 * t^2 + 16 * t^3.
-  auto const trajectory_read =
-      ContinuousTrajectory<World>::ReadFromMessage(message);
+  auto const trajectory_read = ContinuousTrajectory<World>::ReadFromMessage(
+      /*desired_t_min=*/InfiniteFuture,
+      message);
   serialization::ContinuousTrajectory message2;
   trajectory_read->WriteToMessage(&message2);
   EXPECT_EQ(1, message2.instant_polynomial_pair_size());
@@ -861,7 +863,7 @@ TEST_F(ContinuousTrajectoryTest, PreGrassmannCompatibility) {
                  t0_,
                  *trajectory1);
   Instant const checkpoint_time = trajectory1->t_max();
-  trajectory1->checkpointer().WriteToCheckpoint(checkpoint_time);
+  trajectory1->WriteToCheckpoint(checkpoint_time);
 
   serialization::ContinuousTrajectory message1;
   trajectory1->WriteToMessage(&message1);
@@ -881,8 +883,9 @@ TEST_F(ContinuousTrajectoryTest, PreGrassmannCompatibility) {
 
   // Read from the pre-Grassmann message, write to a second message, and check
   // that we get the same result.
-  auto const trajectory2 =
-      ContinuousTrajectory<World>::ReadFromMessage(pre_grassmann);
+  auto const trajectory2 = ContinuousTrajectory<World>::ReadFromMessage(
+      /*desired_t_min=*/InfiniteFuture,
+      pre_grassmann);
   serialization::ContinuousTrajectory message2;
   trajectory2->WriteToMessage(&message2);
 
@@ -918,7 +921,7 @@ TEST_F(ContinuousTrajectoryTest, PreGröbnerCompatibility) {
                  t0_,
                  *trajectory1);
   Instant const checkpoint_time = trajectory1->t_max();
-  trajectory1->checkpointer().WriteToCheckpoint(checkpoint_time);
+  trajectory1->WriteToCheckpoint(checkpoint_time);
 
   serialization::ContinuousTrajectory message1;
   trajectory1->WriteToMessage(&message1);
@@ -937,8 +940,9 @@ TEST_F(ContinuousTrajectoryTest, PreGröbnerCompatibility) {
 
   // Read from the pre-Gröbner message, write to a second message, and check
   // that we get the same result.
-  auto const trajectory2 =
-      ContinuousTrajectory<World>::ReadFromMessage(pre_gröbner);
+  auto const trajectory2 = ContinuousTrajectory<World>::ReadFromMessage(
+      /*desired_t_min=*/InfiniteFuture,
+      pre_gröbner);
   serialization::ContinuousTrajectory message2;
   trajectory2->WriteToMessage(&message2);
 
@@ -978,14 +982,19 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
                  velocity_function,
                  t0_,
                  *trajectory);
+  EXPECT_EQ(t0_ + (((number_of_steps1 - 1) / 8) * 8 + 1) * step,
+            trajectory->t_max());
   Instant const checkpoint_time = trajectory->t_max();
-  trajectory->checkpointer().WriteToCheckpoint(checkpoint_time);
+  trajectory->WriteToCheckpoint(checkpoint_time);
   FillTrajectory(number_of_steps2,
                  step,
                  position_function,
                  velocity_function,
                  t0_ + number_of_steps1 * step,
                  *trajectory);
+  EXPECT_EQ(
+      t0_ + (((number_of_steps1 + number_of_steps2 - 1) / 8) * 8 + 1) * step,
+      trajectory->t_max());
 
   serialization::ContinuousTrajectory message;
   trajectory->WriteToMessage(&message);
@@ -1003,8 +1012,11 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
   EXPECT_GE(100, checkpoint.degree_age());
   EXPECT_EQ(6, checkpoint.last_point_size());
 
-  auto const trajectory_read =
-      ContinuousTrajectory<World>::ReadFromMessage(message);
+  // Read the trajectory and check that everything is identical up to the
+  // checkpoint.
+  auto const trajectory_read = ContinuousTrajectory<World>::ReadFromMessage(
+      /*desired_t_min=*/InfiniteFuture,
+      message);
   EXPECT_EQ(trajectory_read->t_min(), trajectory->t_min());
   EXPECT_EQ(trajectory_read->t_max(), checkpoint_time);
   for (Instant time = trajectory->t_min();
@@ -1013,6 +1025,22 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
     EXPECT_EQ(trajectory_read->EvaluateDegreesOfFreedom(time),
               trajectory->EvaluateDegreesOfFreedom(time));
   }
+
+  // Extend the trajectory that was just read.
+  FillTrajectory(number_of_steps2,
+                 step,
+                 position_function,
+                 velocity_function,
+                 t0_ + number_of_steps1 * step,
+                 *trajectory_read);
+  EXPECT_EQ(
+      t0_ + (((number_of_steps1 + number_of_steps2 - 1) / 8) * 8 + 1) * step,
+      trajectory->t_max());
+
+  // Reset to the checkpoint and check that the polynomials were truncated.
+  trajectory_read->ReadFromCheckpointAt(
+      checkpoint_time, trajectory_read->MakeCheckpointerReader());
+  EXPECT_EQ(trajectory_read->t_max(), checkpoint_time);
 }
 
 }  // namespace internal_continuous_trajectory

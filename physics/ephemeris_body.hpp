@@ -68,6 +68,8 @@ using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 
+using namespace std::chrono_literals;
+
 constexpr Length pre_ἐρατοσθένης_default_ephemeris_fitting_tolerance =
     1 * Milli(Metre);
 constexpr Time max_time_between_checkpoints = 180 * Day;
@@ -239,12 +241,17 @@ Ephemeris<Frame>::Ephemeris(
           make_not_null_unique<Checkpointer<serialization::Ephemeris>>(
               MakeCheckpointerWriter(),
               MakeCheckpointerReader())),
-      protector_(make_not_null_unique<Protector>()) {
+      reanimator_(
+          [this](Instant const& desired_t_min) {
+            return Reanimate(desired_t_min);
+          },
+          50ms) {
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
   IntegrationProblem<NewtonianMotionEquation> problem;
   problem.equation = MakeMassiveBodiesNewtonianMotionEquation();
+  reanimator_.Start();
 
   typename NewtonianMotionEquation::SystemState& state = problem.initial_state;
   state.time = DoublePrecision<Instant>(initial_time);
@@ -298,7 +305,7 @@ Ephemeris<Frame>::Ephemeris(
 
 template<typename Frame>
 Ephemeris<Frame>::~Ephemeris() {
-  reanimator_ = jthread();
+  reanimator_.Stop();
 }
 
 template<typename Frame>
@@ -349,6 +356,44 @@ template<typename Frame>
 absl::Status Ephemeris<Frame>::last_severe_integration_status() const {
   absl::ReaderMutexLock l(&lock_);
   return last_severe_integration_status_;
+}
+
+template<typename Frame>
+void Ephemeris<Frame>::RequestReanimation(Instant const& desired_t_min) {
+  bool must_restart;
+  {
+    absl::MutexLock l(&lock_);
+
+    // If the reanimator is asked to do significantly less work (as defined by
+    // the time between checkpoints) than it is currently doing, interrupt it.
+    // Note that this is fundamentally racy: for instance the reanimator may not
+    // have picked the last input given by Put.  But it helps if the user was
+    // doing a very long reanimation and wants to shorten it.
+    must_restart = last_desired_t_min_.has_value() &&
+                   last_desired_t_min_.value() + max_time_between_checkpoints <
+                       desired_t_min;
+    LOG_IF(WARNING, must_restart)
+        << "Restarting reanimator because desired t_min went from "
+        << last_desired_t_min_.value() << " to " << desired_t_min;
+    last_desired_t_min_ = desired_t_min;
+  }
+
+  // Don't hold the lock while restarting, the reanimator needs it.
+  if (must_restart) {
+    reanimator_.Restart();
+  }
+  reanimator_.Put(desired_t_min);
+}
+
+template<typename Frame>
+void Ephemeris<Frame>::WaitForReanimation(Instant const& desired_t_min) {
+  auto desired_t_min_reached = [this, desired_t_min]() {
+    lock_.AssertReaderHeld();
+    return t_min_locked() <= desired_t_min;
+  };
+
+  absl::ReaderMutexLock l(&lock_);
+  lock_.Await(absl::Condition(&desired_t_min_reached));
 }
 
 template<typename Frame>
@@ -740,6 +785,7 @@ void Ephemeris<Frame>::WriteToMessage(
 template<typename Frame>
 template<typename, typename>
 not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
+    Instant const& desired_t_min,
     serialization::Ephemeris const& message) {
   bool const is_pre_ἐρατοσθένης = !message.has_accuracy_parameters();
   bool const is_pre_fatou = !message.has_checkpoint_time();
@@ -778,13 +824,14 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   for (auto const& trajectory : message.trajectory()) {
     not_null<MassiveBody const*> const body = ephemeris->bodies_[index].get();
     not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>
-        deserialized_trajectory =
-            ContinuousTrajectory<Frame>::ReadFromMessage(trajectory);
+        deserialized_trajectory = ContinuousTrajectory<Frame>::ReadFromMessage(
+            desired_t_min, trajectory);
     ephemeris->trajectories_.push_back(deserialized_trajectory.get());
     ephemeris->bodies_to_trajectories_.emplace(
         body, std::move(deserialized_trajectory));
     ++index;
   }
+  CHECK_LT(0, index) << "Empty ephemeris";
 
   if (is_pre_grassmann) {
     serialization::Ephemeris serialized_ephemeris;
@@ -809,56 +856,20 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
             message.checkpoint());
   }
 
-  // WriteToMessage always creates a checkpoint, and so does the compatibility
-  // code.
-  ephemeris->checkpointer_->ReadFromOldestCheckpoint();
+  // The checkpoint at or before |desired_t_min| will result in a |t_min()|
+  // which is at |desired_t_min| (if the checkpoint was taken with
+  // |last_points_.size() == 1|) or before (if the checkpoint was taken with
+  // |last_points_.size() > 1|).
+  ephemeris->oldest_reanimated_checkpoint_ =
+      ephemeris->checkpointer_->checkpoint_at_or_before(desired_t_min);
+  LOG(INFO) << "Restoring to checkpoint at "
+            << ephemeris->oldest_reanimated_checkpoint_;
+  CHECK_OK(ephemeris->checkpointer_->ReadFromCheckpointAt(
+      ephemeris->oldest_reanimated_checkpoint_));
 
-  // Start a thread to asynchronously reconstruct the past using checkpoints.
-  ephemeris->reanimator_ =
-      MakeStoppableThread(std::bind(&Ephemeris::Reanimate, ephemeris.get()));
-
-  // The ephemeris will need to be prolonged as needed when deserializing the
-  // plugin.
+  // The ephemeris will need to be prolonged and reanimated as needed when
+  // deserializing the plugin.
   return ephemeris;
-}
-
-template<typename Frame>
-Ephemeris<Frame>::Guard::Guard(
-    not_null<Ephemeris<Frame> const*> const ephemeris)
-    : ephemeris_(ephemeris) {
-  absl::MutexLock l(&ephemeris->lock_);
-  t_min_ = ephemeris->t_min_locked();
-  ephemeris->protector_->Protect(t_min_);
-}
-
-template<typename Frame>
-Ephemeris<Frame>::Guard::~Guard() {
-  // |ephemeris_| may be null for a moved-from object.
-  if (ephemeris_ != nullptr) {
-    ephemeris_->protector_->Unprotect(t_min_);
-  }
-}
-
-template<typename Frame>
-Ephemeris<Frame>::Guard::Guard(Guard&& other)
-    : ephemeris_(std::move(other.ephemeris_)),
-      t_min_(std::move(other.t_min_)) {
-  other.ephemeris_ = nullptr;
-}
-
-template<typename Frame>
-typename Ephemeris<Frame>::Guard&
-Ephemeris<Frame>::Guard::operator=(Guard&& other) {
-  if (this != &other) {
-    // |ephemeris_| may be null for a moved-from object.
-    if (ephemeris_ != nullptr) {
-      ephemeris_->protector_->Unprotect(t_min_);
-    }
-    ephemeris_ = std::move(other.ephemeris_);
-    t_min_ = std::move(other.t_min_);
-    other.ephemeris_ = nullptr;
-  }
-  return *this;
 }
 
 template<typename Frame>
@@ -871,7 +882,7 @@ Ephemeris<Frame>::Ephemeris(
       checkpointer_(
           make_not_null_unique<Checkpointer<serialization::Ephemeris>>(
               /*reader=*/nullptr, /*writer=*/nullptr)),
-      protector_(make_not_null_unique<Protector>()) {}
+      reanimator_(/*action=*/nullptr, 0ms) {}
 
 template<typename Frame>
 void Ephemeris<Frame>::WriteToCheckpointIfNeeded(Instant const& time) const {
@@ -880,12 +891,11 @@ void Ephemeris<Frame>::WriteToCheckpointIfNeeded(Instant const& time) const {
     if (checkpointer_->WriteToCheckpointIfNeeded(
             time, max_time_between_checkpoints)) {
       for (auto const& trajectory : trajectories_) {
-        trajectory->checkpointer().WriteToCheckpoint(time);
+        trajectory->WriteToCheckpoint(time);
       }
     }
   }
 }
-
 
 template<typename Frame>
 Checkpointer<serialization::Ephemeris>::Writer
@@ -921,36 +931,99 @@ Ephemeris<Frame>::MakeCheckpointerReader() {
 }
 
 template<typename Frame>
-absl::Status Ephemeris<Frame>::Reanimate() {
+absl::Status Ephemeris<Frame>::Reanimate(Instant const desired_t_min) {
+  std::set<Instant> checkpoints;
+  {
+    absl::ReaderMutexLock l(&lock_);
+
+    // It is very important that |oldest_reanimated_checkpoint_| be only read by
+    // the |reanimator_| thread.  If the caller was trying to determine the set
+    // of checkpoints to reanimate it might race with a reanimation already in
+    // flight and result in the same checkpoint reanimated multiple times, which
+    // is a no-no.
+    Instant const oldest_checkpoint_to_reanimate =
+        checkpointer_->checkpoint_at_or_before(desired_t_min);
+    checkpoints = checkpointer_->all_checkpoints_between(
+        oldest_checkpoint_to_reanimate, oldest_reanimated_checkpoint_);
+  }
+
+  // This loop integrates all the segments defined by the checkpoints, going
+  // backwards in time.  The last checkpoint is not restored, it just serves as
+  // a limit.
+  std::optional<Instant> following_checkpoint;
+  for (auto it = checkpoints.crbegin(); it != checkpoints.crend(); ++it) {
+    Instant const& checkpoint = *it;
+    if (following_checkpoint.has_value()) {
+      RETURN_IF_ERROR(checkpointer_->ReadFromCheckpointAt(
+          checkpoint,
+          [this,
+           t_final = following_checkpoint.value(),
+           t_initial = checkpoint](
+              serialization::Ephemeris::Checkpoint const& message) {
+            if constexpr (base::is_serializable_v<Frame>) {
+              return ReanimateOneCheckpoint(message, t_initial, t_final);
+            } else {
+              return absl::UnknownError(
+                  "No reanimation for non-serializable frames");
+            }
+          }));
+    }
+    following_checkpoint = checkpoint;
+  }
+  return absl::OkStatus();
+}
+
+template<typename Frame>
+absl::Status Ephemeris<Frame>::ReanimateOneCheckpoint(
+    serialization::Ephemeris::Checkpoint const& message,
+    Instant const& t_initial,
+    Instant const& t_final) {
+  LOG(INFO) << "Reanimating segment from " << t_initial << " to " << t_final;
+
+  // Create new trajectories and initialize them from the checkpoint at
+  // t_initial.
   std::vector<not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>>
       trajectories;
+  for (int i = 0; i < trajectories_.size(); ++i) {
+    trajectories.emplace_back(std::make_unique<ContinuousTrajectory<Frame>>(
+        fixed_step_parameters_.step_,
+        accuracy_parameters_.fitting_tolerance_));
 
+    // This statement is subtle: it restores the checkpoints of the trajectories
+    // of this ephemeris, but thanks to the newly-created reader, it restores
+    // them into the local trajectories.
+    CHECK_OK(trajectories_[i]->ReadFromCheckpointAt(
+        t_initial, trajectories[i]->MakeCheckpointerReader()));
+  }
+
+  // Reconstruct the integrator instance from the current checkpoint.
   auto append_massive_bodies_state =
       [&trajectories](
           typename NewtonianMotionEquation::SystemState const& state) {
         AppendMassiveBodiesStateToTrajectories(state, trajectories);
       };
+  auto const instance = FixedStepSizeIntegrator<NewtonianMotionEquation>::
+      Instance::ReadFromMessage(message.instance(),
+                                MakeMassiveBodiesNewtonianMotionEquation(),
+                                append_massive_bodies_state);
 
-  auto reader = [this, &append_massive_bodies_state, &trajectories](
-                    serialization::Ephemeris::Checkpoint const& message) {
-    // Create or reset the trajectories.
+  // Do the integration.  After this step the t_max() of the trajectories may
+  // be before t_final because there may be last_points_ that haven't been put
+  // in a series.  Don't proceed in case of error, we would run into a gap when
+  // trying to stitch the trajectories.
+  RETURN_IF_ERROR(instance->Solve(t_final));
+
+  // Stitch the local trajectories to the ones in this ephemeris and record that
+  // we will not reanimate this checkpoint again.
+  {
+    absl::MutexLock l(&lock_);
     for (int i = 0; i < trajectories_.size(); ++i) {
-      trajectories.emplace_back(
-            std::make_unique<ContinuousTrajectory<Frame>>(
-              fixed_step_parameters_.step_,
-              accuracy_parameters_.fitting_tolerance_));
+      trajectories_[i]->Prepend(std::move(*trajectories[i]));
     }
+    oldest_reanimated_checkpoint_ = t_initial;
+  }
 
-    RETURN_IF_STOPPED;
-    auto instance = FixedStepSizeIntegrator<NewtonianMotionEquation>::Instance::
-        ReadFromMessage(message.instance(),
-                        MakeMassiveBodiesNewtonianMotionEquation(),
-                        append_massive_bodies_state);
-
-    return absl::OkStatus();
-  };
-
-  return checkpointer_->ReadFromAllCheckpointsBackwards(reader);
+  return absl::OkStatus();
 }
 
 template<typename Frame>
@@ -975,6 +1048,8 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
     }
   }
 
+  // Note that the checkpoint is written systematically after inserting the
+  // first point of the trajectories.
   WriteToCheckpointIfNeeded(state.time.value);
 }
 
@@ -1020,10 +1095,9 @@ Ephemeris<Frame>::MakeMassiveBodiesNewtonianMotionEquation() {
       [this](Instant const& t,
              std::vector<Position<Frame>> const& positions,
              std::vector<Vector<Acceleration, Frame>>& accelerations) {
-        ComputeMassiveBodiesGravitationalAccelerations(t,
-                                                       positions,
-                                                       accelerations);
-        return absl::OkStatus();
+        return ComputeMassiveBodiesGravitationalAccelerations(t,
+                                                              positions,
+                                                              accelerations);
       };
   return equation;
 }
@@ -1167,11 +1241,12 @@ Ephemeris<Frame>::ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
+absl::Status Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
     Instant const& t,
     std::vector<Position<Frame>> const& positions,
     std::vector<Vector<Acceleration, Frame>>& accelerations) const {
-  lock_.AssertReaderHeld();
+  RETURN_IF_STOPPED;
+
   accelerations.assign(accelerations.size(), Vector<Acceleration, Frame>());
 
   for (std::size_t b1 = 0; b1 < number_of_oblate_bodies_; ++b1) {
@@ -1210,6 +1285,8 @@ void Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
         /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
         positions, accelerations, geopotentials_);
   }
+
+  return absl::OkStatus();
 }
 
 template<typename Frame>

@@ -122,12 +122,7 @@ class OrbitAnalyser {
   double progress_of_next_analysis() const;
 
  private:
-  struct GuardedParameters {
-    Ephemeris<Barycentric>::Guard guard;
-    Parameters parameters;
-  };
-
-  absl::Status AnalyseOrbit(GuardedParameters guarded_parameters);
+  absl::Status AnalyseOrbit(Parameters parameters);
 
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
   Ephemeris<Barycentric>::FixedStepParameters const

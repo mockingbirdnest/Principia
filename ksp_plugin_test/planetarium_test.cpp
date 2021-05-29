@@ -260,6 +260,7 @@ TEST_F(PlanetariumTest, RealSolarSystem) {
       /*forks=*/{});
 
   auto ephemeris = Ephemeris<Barycentric>::ReadFromMessage(
+      InfiniteFuture,
       ParseFromBytes<serialization::Ephemeris>(
           ReadFromBinaryFile(SOLUTION_DIR / "ksp_plugin_test" /
                              "planetarium_ephemeris.proto.bin")));

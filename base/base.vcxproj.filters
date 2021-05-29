@@ -203,6 +203,12 @@
     <ClInclude Include="status_utilities.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="recurring_thread.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="recurring_thread_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
@@ -269,6 +275,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="cpuid_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="recurring_thread_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

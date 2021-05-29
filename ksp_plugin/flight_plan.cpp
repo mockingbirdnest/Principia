@@ -345,6 +345,14 @@ absl::Status FlightPlan::BurnSegment(
     not_null<DiscreteTrajectory<Barycentric>*> const segment) {
   Instant const final_time = manœuvre.final_time();
   if (manœuvre.initial_time() < final_time) {
+    // Make sure that the ephemeris covers the entire segment, reanimating and
+    // waiting if necessary.
+    Instant const starting_time = segment->back().time;
+    if (starting_time < ephemeris_->t_min()) {
+      ephemeris_->RequestReanimation(starting_time);
+      ephemeris_->WaitForReanimation(starting_time);
+    }
+
     if (manœuvre.is_inertially_fixed()) {
       return ephemeris_->FlowWithAdaptiveStep(
                              segment,
@@ -368,6 +376,14 @@ absl::Status FlightPlan::BurnSegment(
 absl::Status FlightPlan::CoastSegment(
     Instant const& desired_final_time,
     not_null<DiscreteTrajectory<Barycentric>*> const segment) {
+  // Make sure that the ephemeris covers the entire segment, reanimating and
+  // waiting if necessary.
+  Instant const starting_time = segment->back().time;
+  if (starting_time < ephemeris_->t_min()) {
+    ephemeris_->RequestReanimation(starting_time);
+    ephemeris_->WaitForReanimation(starting_time);
+  }
+
   return ephemeris_->FlowWithAdaptiveStep(
                          segment,
                          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
