@@ -13,7 +13,6 @@
 #include "physics/discrete_trajectory.hpp"
 #include "physics/mock_dynamic_frame.hpp"
 #include "quantities/si.hpp"
-#include "testing_utilities/actions.hpp"
 
 namespace principia {
 namespace interface {
@@ -30,8 +29,9 @@ using ksp_plugin::Navigation;
 using physics::DiscreteTrajectory;
 using physics::MockDynamicFrame;
 using quantities::si::Metre;
-using testing_utilities::FillUniquePtr;
+using ::testing::ByMove;
 using ::testing::IsNull;
+using ::testing::Pointer;
 using ::testing::Ref;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -64,10 +64,12 @@ TEST_F(InterfaceRendererTest, SetPlottingFrame) {
      mock_navigation_frame =
          new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingNavigationFrame(celestial_index,
-                                                     parent_index,
-                                                     _))
-      .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
+              NewBarycentricRotatingNavigationFrame(celestial_index,
+                                                    parent_index))
+      .WillOnce(
+          Return(ByMove(std::unique_ptr<
+                        StrictMock<MockDynamicFrame<Barycentric, Navigation>>>(
+              mock_navigation_frame))));
   NavigationFrameParameters parameters = {
       serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber,
       unused,
@@ -76,7 +78,7 @@ TEST_F(InterfaceRendererTest, SetPlottingFrame) {
   MockRenderer renderer;
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
   EXPECT_CALL(*const_plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
-  EXPECT_CALL(renderer, SetPlottingFrameConstRef(Ref(*mock_navigation_frame)));
+  EXPECT_CALL(renderer, SetPlottingFrame(Pointer(mock_navigation_frame)));
   principia__SetPlottingFrame(plugin_.get(), parameters);
 }
 
@@ -85,10 +87,12 @@ TEST_F(InterfaceRendererTest, Frenet) {
      mock_navigation_frame =
          new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingNavigationFrame(celestial_index,
-                                                     parent_index,
-                                                     _))
-      .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
+              NewBarycentricRotatingNavigationFrame(celestial_index,
+                                                    parent_index))
+      .WillOnce(
+          Return(ByMove(std::unique_ptr<
+                        StrictMock<MockDynamicFrame<Barycentric, Navigation>>>(
+              mock_navigation_frame))));
   NavigationFrameParameters parameters = {
       serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber,
       unused,
@@ -97,7 +101,7 @@ TEST_F(InterfaceRendererTest, Frenet) {
 
   MockRenderer renderer;
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
-  EXPECT_CALL(renderer, SetPlottingFrameConstRef(Ref(*mock_navigation_frame)));
+  EXPECT_CALL(renderer, SetPlottingFrame(Pointer(mock_navigation_frame)));
   principia__SetPlottingFrame(plugin_.get(), parameters);
 
   {

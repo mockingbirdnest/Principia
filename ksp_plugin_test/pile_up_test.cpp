@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "base/status.hpp"
+#include "absl/status/status.h"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
 #include "geometry/named_quantities.hpp"
@@ -35,7 +35,6 @@ namespace internal_pile_up {
 
 using base::check_not_null;
 using base::make_not_null_unique;
-using base::Status;
 using geometry::AngularVelocity;
 using geometry::Displacement;
 using geometry::NonRotating;
@@ -319,7 +318,7 @@ TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
               Velocity<Barycentric>({10.0 * Metre / Second,
                                      140.0 * Metre / Second,
                                      310.0 / 3.0 * Metre / Second}))),
-          Return(Status::OK)));
+          Return(absl::OkStatus())));
   pile_up.AdvanceTime(astronomy::J2000 + 1 * Second);
 
   EXPECT_EQ(++p1_.history_begin(), p1_.history_end());
@@ -438,7 +437,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                   Velocity<Barycentric>({10.2 * Metre / Second,
                                          140.2 * Metre / Second,
                                          310.2 / 3.0 * Metre / Second}))),
-          Return(Status::OK)));
+          Return(absl::OkStatus())));
   EXPECT_CALL(ephemeris, FlowWithAdaptiveStep(_, _, _, _, _))
       .WillOnce(DoAll(
           AppendToDiscreteTrajectory(DegreesOfFreedom<Barycentric>(
@@ -449,7 +448,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
               Velocity<Barycentric>({10.0 * Metre / Second,
                                      140.0 * Metre / Second,
                                      310.0 / 3.0 * Metre / Second}))),
-          Return(Status::OK)));
+          Return(absl::OkStatus())));
   pile_up.AdvanceTime(astronomy::J2000 + 1 * Second);
 
   EXPECT_EQ(++(++p1_.history_begin()), p1_.history_end());
@@ -736,7 +735,7 @@ TEST_F(PileUpTest, SerializationCompatibility) {
               Velocity<Barycentric>({10.0 * Metre / Second,
                                      140.0 * Metre / Second,
                                      310.0 / 3.0 * Metre / Second}))),
-          Return(Status::OK)));
+          Return(absl::OkStatus())));
   p->DeformAndAdvanceTime(astronomy::J2000 + 1 * Second);
 }
 

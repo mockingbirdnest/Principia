@@ -7,7 +7,7 @@
 #include <functional>
 #include <vector>
 
-#include "base/status.hpp"
+#include "absl/status/status.h"
 #include "base/tags.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/hilbert.hpp"
@@ -28,8 +28,6 @@ namespace internal_frequency_analysis {
 #define PRINCIPIA_USE_CGS 0
 #define PRINCIPIA_USE_R 1
 
-using base::Error;
-using base::Status;
 using base::uninitialized;
 using geometry::Hilbert;
 using geometry::Vector;
@@ -78,7 +76,7 @@ int MakeBasis(std::optional<AngularFrequency> const& ω,
 template<typename BasisSeries,
          int aperiodic_wdegree, int periodic_wdegree,
          template<typename, typename, int> class Evaluator>
-Status NormalGramSchmidtStep(
+absl::Status NormalGramSchmidtStep(
     BasisSeries const& aₘ,
     PoissonSeries<double,
                   aperiodic_wdegree, periodic_wdegree, Evaluator> const& weight,
@@ -88,7 +86,8 @@ Status NormalGramSchmidtStep(
     std::vector<BasisSeries> const& q,
     BasisSeries& qₘ,
     UnboundedVector<double>& rₘ) {
-  static Status const bad_norm(Error::OUT_OF_RANGE, "Unable to compute norm");
+  static absl::Status const bad_norm =
+    absl::OutOfRangeError("Unable to compute norm");
   int const m = q.size();
 
 #if PRINCIPIA_USE_CGS
@@ -146,7 +145,7 @@ Status NormalGramSchmidtStep(
   rₘ[m] = rₘₘ;
 #endif
 
-  return Status::OK;
+  return absl::OkStatus();
 }
 
 // This function performs the augmented QR decomposition step described in
@@ -159,7 +158,7 @@ Status NormalGramSchmidtStep(
 template<typename Function, typename BasisSeries, typename Norm,
          int aperiodic_wdegree, int periodic_wdegree,
          template<typename, typename, int> class Evaluator>
-Status AugmentedGramSchmidtStep(
+absl::Status AugmentedGramSchmidtStep(
     Function& b,
     PoissonSeries<double,
                   aperiodic_wdegree, periodic_wdegree, Evaluator> const& weight,
@@ -186,7 +185,7 @@ Status AugmentedGramSchmidtStep(
   // because it's an additional cost: the client can compute the norm of the
   // residual however they want anyway.
 
-  return Status::OK;
+  return absl::OkStatus();
 }
 
 template<typename Function,

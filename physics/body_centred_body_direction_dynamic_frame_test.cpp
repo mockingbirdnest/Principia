@@ -51,6 +51,7 @@ using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::VanishesBefore;
+using ::testing::A;
 using ::testing::Eq;
 using ::testing::InSequence;
 using ::testing::IsNull;
@@ -234,7 +235,8 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, CoriolisAcceleration) {
                                                -400 * Metre / Pow<2>(Second),
                                                0 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMasslessBody(_, t))
+                ComputeGravitationalAccelerationOnMasslessBody(
+                    A<Position<ICRS> const&>(), t))
         .WillOnce(Return(Vector<Acceleration, ICRS>()));
   }
 
@@ -282,7 +284,8 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, CentrifugalAcceleration) {
                                                -400 * Metre / Pow<2>(Second),
                                                0 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMasslessBody(_, t))
+                ComputeGravitationalAccelerationOnMasslessBody(
+                    A<Position<ICRS> const&>(), t))
         .WillOnce(Return(Vector<Acceleration, ICRS>()));
   }
 
@@ -333,7 +336,8 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, EulerAcceleration) {
                                         (-400 - 300) * Metre / Pow<2>(Second),
                                         0 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMasslessBody(_, t))
+                ComputeGravitationalAccelerationOnMasslessBody(
+                    A<Position<ICRS> const&>(), t))
         .WillOnce(Return(Vector<Acceleration, ICRS>()));
   }
 
@@ -385,7 +389,8 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, LinearAcceleration) {
                                         (120 - 400) * Metre / Pow<2>(Second),
                                         300 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMasslessBody(_, t))
+                ComputeGravitationalAccelerationOnMasslessBody(
+                    A<Position<ICRS> const&>(), t))
         .WillOnce(Return(Vector<Acceleration, ICRS>()));
   }
 

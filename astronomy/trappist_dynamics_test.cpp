@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/synchronization/mutex.h"
 #include "astronomy/frames.hpp"
@@ -17,7 +18,6 @@
 #include "base/file.hpp"
 #include "base/graveyard.hpp"
 #include "base/not_null.hpp"
-#include "base/status.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/sign.hpp"
@@ -44,7 +44,6 @@ using base::Bundle;
 using base::Graveyard;
 using base::not_null;
 using base::OFStream;
-using base::Status;
 using geometry::Displacement;
 using geometry::InnerProduct;
 using geometry::Instant;
@@ -295,7 +294,7 @@ void Population::ComputeAllFitnesses() {
         // Sleep a bit to reduce contention in new/delete.
         std::this_thread::sleep_for(i * 1ms);
         fitnesses_[i] = compute_fitness_(current_[i], traces_[i]);
-        return Status();
+        return absl::OkStatus();
       });
     }
     bundle.Join();
@@ -562,7 +561,7 @@ std::vector<double> EvaluatePopulation(Population const& population,
     auto const& parameters = population[i];
     bundle.Add([&compute_log_pdf, i, &log_pdf, &parameters, &info]() {
       log_pdf[i] = compute_log_pdf(parameters, info[i]);
-      return Status::OK;
+      return absl::OkStatus();
     });
   }
   bundle.Join();
@@ -1413,7 +1412,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_SECULAR_Optimization) {
           great_old_one = population.best_genome();
           great_old_one_fitness = population.best_genome_fitness();
         }
-        return Status::OK;
+        return absl::OkStatus();
       });
     }
     bundle.Join();

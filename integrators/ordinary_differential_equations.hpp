@@ -5,8 +5,8 @@
 #include <tuple>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "base/not_null.hpp"
-#include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
 #include "numerics/double_precision.hpp"
 #include "quantities/quantities.hpp"
@@ -19,19 +19,18 @@ namespace integrators {
 // The |Solve| function of the |AdaptiveStepSizeIntegrator| exclusively returns
 // one of the following statuses.
 namespace termination_condition {
-constexpr base::Error Done = base::Error::OK;
+constexpr absl::StatusCode Done = absl::StatusCode::kOk;
 // The integration may be retried with the same arguments and progress will
 // happen.
-constexpr base::Error ReachedMaximalStepCount = base::Error::ABORTED;
+constexpr absl::StatusCode ReachedMaximalStepCount = absl::StatusCode::kAborted;
 // A singularity.
-constexpr base::Error VanishingStepSize = base::Error::FAILED_PRECONDITION;
+constexpr absl::StatusCode VanishingStepSize =
+    absl::StatusCode::kFailedPrecondition;
 }  // namespace termination_condition
 
 namespace internal_ordinary_differential_equations {
 
-using base::Error;
 using base::not_null;
-using base::Status;
 using geometry::Instant;
 using numerics::DoublePrecision;
 using quantities::Difference;
@@ -46,8 +45,10 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
   using State = std::tuple<std::vector<StateElements>...>;
   using StateVariation = std::tuple<std::vector<Variation<StateElements>>...>;
 
-  using RightHandSideComputation = std::function<
-      Status(Instant const& t, State const& state, StateVariation& variations)>;
+  using RightHandSideComputation =
+      std::function<absl::Status(Instant const& t,
+                                 State const& state,
+                                 StateVariation& variations)>;
 
   struct SystemState final {
     SystemState() = default;
@@ -78,10 +79,10 @@ template<typename... StateElements>
 struct DecomposableFirstOrderDifferentialEquation final {
   using State = std::tuple<std::vector<StateElements>...>;
 
-  using Flow = std::function<Status(Instant const& t_initial,
-                                    Instant const& t_final,
-                                    State const& initial_state,
-                                    State& final_state)>;
+  using Flow = std::function<absl::Status(Instant const& t_initial,
+                                          Instant const& t_final,
+                                          State const& initial_state,
+                                          State& final_state)>;
 
   struct SystemState final {
     SystemState() = default;
@@ -120,10 +121,10 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
   // The type of q″.
   using Acceleration = Variation<Velocity>;
   using RightHandSideComputation =
-      std::function<Status(Instant const& t,
-                           std::vector<Position> const& positions,
-                           std::vector<Velocity> const& velocities,
-                           std::vector<Acceleration>& accelerations)>;
+      std::function<absl::Status(Instant const& t,
+                                 std::vector<Position> const& positions,
+                                 std::vector<Velocity> const& velocities,
+                                 std::vector<Acceleration>& accelerations)>;
 
   struct SystemState final {
     SystemState() = default;
@@ -171,9 +172,9 @@ struct SpecialSecondOrderDifferentialEquation final {
   using Acceleration = Variation<Velocity>;
   using RightHandSideComputation =
       std::function<
-          Status(Instant const& t,
-                 std::vector<Position> const& positions,
-                 std::vector<Acceleration>& accelerations)>;
+          absl::Status(Instant const& t,
+                       std::vector<Position> const& positions,
+                       std::vector<Acceleration>& accelerations)>;
 
   using SystemState = typename ExplicitSecondOrderOrdinaryDifferentialEquation<
       Position>::SystemState;

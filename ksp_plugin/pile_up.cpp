@@ -122,9 +122,9 @@ void PileUp::SetPartApparentRigidMotion(
                   << rigid_motion;
 }
 
-Status PileUp::DeformAndAdvanceTime(Instant const& t) {
+absl::Status PileUp::DeformAndAdvanceTime(Instant const& t) {
   absl::MutexLock l(lock_.get());
-  Status status;
+  absl::Status status;
   if (psychohistory_->back().time < t) {
     DeformPileUpIfNeeded(t);
     status = AdvanceTime(t);
@@ -531,10 +531,10 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   apparent_part_rigid_motion_.clear();
 }
 
-Status PileUp::AdvanceTime(Instant const& t) {
+absl::Status PileUp::AdvanceTime(Instant const& t) {
   CHECK_NOTNULL(psychohistory_);
 
-  Status status;
+  absl::Status status;
   auto const history_last = --history_->end();
   if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
     // Remove the fork.
@@ -573,13 +573,8 @@ Status PileUp::AdvanceTime(Instant const& t) {
     }
     history_->DeleteFork(psychohistory_);
 
-    auto const a = intrinsic_force_ / mass_;
-    // NOTE(phl): |a| used to be captured by copy below, which is the logical
-    // thing to do.  However, since it contains an |R3Element|, it must be
-    // aligned on a 16-byte boundary.  Unfortunately, VS2015 gets confused and
-    // aligns the function object on an 8-byte boundary, resulting in an
-    // addressing fault.  With a reference, VS2015 knows what to do.
-    auto const intrinsic_acceleration = [&a](Instant const& t) { return a; };
+    auto const intrinsic_acceleration =
+        [a = intrinsic_force_ / mass_](Instant const& t) { return a; };
     status = ephemeris_->FlowWithAdaptiveStep(
                  history_.get(),
                  intrinsic_acceleration,
@@ -649,7 +644,7 @@ void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
 }
 
 PileUpFuture::PileUpFuture(not_null<PileUp const*> const pile_up,
-                           std::future<Status> future)
+                           std::future<absl::Status> future)
     : pile_up(pile_up),
       future(std::move(future)) {}
 

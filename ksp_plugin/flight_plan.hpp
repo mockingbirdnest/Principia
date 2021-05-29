@@ -3,8 +3,8 @@
 
 #include <vector>
 
+#include "absl/status/status.h"
 #include "base/not_null.hpp"
-#include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "ksp_plugin/frames.hpp"
@@ -21,9 +21,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_flight_plan {
 
-using base::Error;
 using base::not_null;
-using base::Status;
 using geometry::Instant;
 using integrators::AdaptiveStepSizeIntegrator;
 using physics::DegreesOfFreedom;
@@ -79,26 +77,26 @@ class FlightPlan {
   // if the given |burn| cannot fit between the preceding burn and the following
   // one or the end of the flight plan.  Otherwise, updates the flight plan and
   // returns the integration status.
-  virtual Status Insert(NavigationManœuvre::Burn const& burn, int index);
+  virtual absl::Status Insert(NavigationManœuvre::Burn const& burn, int index);
 
   // Removes the manœuvre with the given |index|, which must be in
   // [0, number_of_manœuvres()[.
-  virtual Status Remove(int index);
+  virtual absl::Status Remove(int index);
 
   // Replaces a manœuvre with one using the specified |burn|.  |index| must be
   // in [0, number_of_manœuvres()[.  Returns an error and has no effect if the
   // given |burn| cannot fit between the preceding and following burns.
   // Otherwise, updates the flight plan and returns the integration status.
-  virtual Status Replace(NavigationManœuvre::Burn const& burn, int index);
+  virtual absl::Status Replace(NavigationManœuvre::Burn const& burn, int index);
 
   // Updates the desired final time of the flight plan.  Returns an error and
   // has no effect if |desired_final_time| is before the beginning of the last
   // coast.
-  virtual Status SetDesiredFinalTime(Instant const& desired_final_time);
+  virtual absl::Status SetDesiredFinalTime(Instant const& desired_final_time);
 
   // Sets the parameters used to compute the trajectories and recomputes them
   // all.  Returns the integration status.
-  virtual Status SetAdaptiveStepParameters(
+  virtual absl::Status SetAdaptiveStepParameters(
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
           adaptive_step_parameters,
       Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
@@ -135,9 +133,12 @@ class FlightPlan {
 
   static constexpr std::int64_t max_ephemeris_steps_per_frame = 1000;
 
-  static constexpr Error bad_desired_final_time = Error::OUT_OF_RANGE;
-  static constexpr Error does_not_fit = Error::OUT_OF_RANGE;
-  static constexpr Error singular = Error::INVALID_ARGUMENT;
+  static constexpr absl::StatusCode bad_desired_final_time =
+      absl::StatusCode::kOutOfRange;
+  static constexpr absl::StatusCode does_not_fit =
+      absl::StatusCode::kOutOfRange;
+  static constexpr absl::StatusCode singular =
+      absl::StatusCode::kInvalidArgument;
 
  protected:
   // For mocking.
@@ -145,17 +146,17 @@ class FlightPlan {
 
  private:
   // Clears and recomputes all trajectories in |segments_|.
-  Status RecomputeAllSegments();
+  absl::Status RecomputeAllSegments();
 
   // Flows the given |segment| for the duration of |manœuvre| using its
   // intrinsic acceleration.
-  Status BurnSegment(NavigationManœuvre const& manœuvre,
-                     not_null<DiscreteTrajectory<Barycentric>*> segment);
+  absl::Status BurnSegment(NavigationManœuvre const& manœuvre,
+                           not_null<DiscreteTrajectory<Barycentric>*> segment);
 
   // Flows the given |segment| until |desired_final_time| with no intrinsic
   // acceleration.
-  Status CoastSegment(Instant const& desired_final_time,
-                      not_null<DiscreteTrajectory<Barycentric>*> segment);
+  absl::Status CoastSegment(Instant const& desired_final_time,
+                            not_null<DiscreteTrajectory<Barycentric>*> segment);
 
   // Computes new trajectories and appends them to |segments_|.  This updates
   // the last coast of |segments_| and then appends one coast and one burn for
@@ -164,8 +165,8 @@ class FlightPlan {
   // error are of length 0 and are anomalous.
   // TODO(phl): The argument should really be an std::span, but then Apple has
   // invented the Macintosh.
-  Status ComputeSegments(std::vector<NavigationManœuvre>::iterator begin,
-                         std::vector<NavigationManœuvre>::iterator end);
+  absl::Status ComputeSegments(std::vector<NavigationManœuvre>::iterator begin,
+                               std::vector<NavigationManœuvre>::iterator end);
 
   // Adds a trajectory to |segments_|, forked at the end of the last one.  If
   // there are already anomalous trajectories, the newly created trajectory is
@@ -214,7 +215,7 @@ class FlightPlan {
   int anomalous_segments_ = 0;
   // The status of the first anomalous segment.  Set and used exclusively by
   // |ComputeSegments|.
-  Status anomalous_status_;
+  absl::Status anomalous_status_;
 
   std::vector<NavigationManœuvre> manœuvres_;
   std::vector<not_null<std::unique_ptr<OrbitAnalyser>>> coast_analysers_;

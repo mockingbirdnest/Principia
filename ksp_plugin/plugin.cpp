@@ -16,6 +16,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "astronomy/epoch.hpp"
 #include "astronomy/solar_system_fingerprints.hpp"
 #include "astronomy/stabilize_ksp.hpp"
@@ -26,7 +27,6 @@
 #include "base/not_null.hpp"
 #include "base/optional_logging.hpp"
 #include "base/serialization.hpp"
-#include "base/status.hpp"
 #include "base/unique_ptr_logging.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/barycentre_calculator.hpp"
@@ -66,7 +66,6 @@ using astronomy::ParseTT;
 using astronomy::StabilizeKSP;
 using base::check_not_null;
 using base::dynamic_cast_not_null;
-using base::Error;
 using base::FindOrDie;
 using base::Fingerprint2011;
 using base::HexadecimalEncoder;
@@ -74,7 +73,6 @@ using base::make_not_null_unique;
 using base::not_null;
 using base::OFStream;
 using base::SerializeAsBytes;
-using base::Status;
 using geometry::AffineMap;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
@@ -287,7 +285,7 @@ void Plugin::EndInitialization() {
 bool Plugin::HasEncounteredApocalypse(std::string* const details) const {
   CHECK_NOTNULL(details);
   auto const status = ephemeris_->last_severe_integration_status();
-  if (status.error() == Error::INVALID_ARGUMENT) {
+  if (absl::IsInvalidArgument(status)) {
     *details = status.message();
     return true;
   } else {
@@ -690,8 +688,7 @@ DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
     RigidMotion<Barycentric, World> const& barycentric_to_world,
     Instant const& time) const {
   return barycentric_to_world(
-             FindOrDie(celestials_, index)->
-                 trajectory().EvaluateDegreesOfFreedom(time));
+      FindOrDie(celestials_, index)->current_degrees_of_freedom(time));
 }
 
 RigidMotion<Barycentric, World> Plugin::BarycentricToWorld(
@@ -810,7 +807,8 @@ not_null<std::unique_ptr<PileUpFuture>> Plugin::CatchUpVessel(
         // Note that there can be contention in the following method if the
         // caller is catching-up two vessels belonging to the same pile-up in
         // parallel.
-        Status const status = pile_up->DeformAndAdvanceTime(current_time_);
+        absl::Status const status =
+            pile_up->DeformAndAdvanceTime(current_time_);
         if (!status.ok()) {
           vessel.DisableDownsampling();
         }
@@ -824,7 +822,7 @@ void Plugin::WaitForVesselToCatchUp(PileUpFuture& pile_up_future,
   PileUp const* const pile_up = pile_up_future.pile_up;
   auto& future = pile_up_future.future;
   future.wait();
-  Status const status = future.get();
+  absl::Status const status = future.get();
   if (!status.ok()) {
     for (not_null<Part*> const part : pile_up->parts()) {
       not_null<Vessel*> const vessel =
@@ -1267,6 +1265,10 @@ Velocity<World> Plugin::VesselVelocity(GUID const& vessel_guid) const {
   return VesselVelocity(back.time, back.degrees_of_freedom);
 }
 
+void Plugin::RequestReanimation(Instant const& desired_t_min) const {
+  ephemeris_->RequestReanimation(desired_t_min);
+}
+
 Instant Plugin::GameEpoch() const {
   return game_epoch_;
 }
@@ -1400,11 +1402,18 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
       Angle::ReadFromMessage(message.planetarium_rotation());
 
   // The ephemeris constructed here is *not* prolonged and needs to be
-  // explicitly prolonged to cover all the instants that we care about.
+  // explicitly prolonged to cover all the instants that we care about.  Note
+  // that it is important to pick the most recent checkpoint that covers the
+  // current time: an older checkpoint would require unnecessary work in
+  // Prolong that could be postponed until reanimation; a newer checkpoint would
+  // not cover the current time.
   plugin->ephemeris_ =
-      Ephemeris<Barycentric>::ReadFromMessage(message.ephemeris());
+      Ephemeris<Barycentric>::ReadFromMessage(/*using_checkpoint_at_or_before=*/
+                                              plugin->current_time_,
+                                              message.ephemeris());
   plugin->ephemeris_->Prolong(plugin->game_epoch_);
   plugin->ephemeris_->Prolong(plugin->current_time_);
+  CHECK_LE(plugin->ephemeris_->t_min(), plugin->current_time_);
 
   ReadCelestialsFromMessages(*plugin->ephemeris_,
                              message.celestial(),

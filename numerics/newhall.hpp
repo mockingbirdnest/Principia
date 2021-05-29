@@ -16,6 +16,7 @@ namespace internal_newhall {
 
 using base::not_null;
 using geometry::Instant;
+using quantities::Difference;
 using quantities::Variation;
 
 // Computes a Newhall approximation of the given |degree| in the Чебышёв basis.
@@ -36,25 +37,25 @@ NewhallApproximationInЧебышёвBasis(int degree,
 // The parameters have the same meaning as in the preceding function.  The
 // result is a polynomial of |Time| valid around |(t_min + t_max) / 2| with
 // an argument in the range [(t_min - t_max) / 2, (t_max - t_min) / 2].
-template<typename Vector, int degree,
+template<typename Value, int degree,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Vector, Instant, degree, Evaluator>
-NewhallApproximationInMonomialBasis(std::vector<Vector> const& q,
-                                    std::vector<Variation<Vector>> const& v,
+PolynomialInMonomialBasis<Value, Instant, degree, Evaluator>
+NewhallApproximationInMonomialBasis(std::vector<Value> const& q,
+                                    std::vector<Variation<Value>> const& v,
                                     Instant const& t_min,
                                     Instant const& t_max,
-                                    Vector& error_estimate);
+                                    Difference<Value>& error_estimate);
 
 // Same as above but the |degree| is not a constant expression.
-template<typename Vector,
+template<typename Value,
          template<typename, typename, int> class Evaluator>
-not_null<std::unique_ptr<Polynomial<Vector, Instant>>>
+not_null<std::unique_ptr<Polynomial<Value, Instant>>>
 NewhallApproximationInMonomialBasis(int degree,
-                                    std::vector<Vector> const& q,
-                                    std::vector<Variation<Vector>> const& v,
+                                    std::vector<Value> const& q,
+                                    std::vector<Variation<Value>> const& v,
                                     Instant const& t_min,
                                     Instant const& t_max,
-                                    Vector& error_estimate);
+                                    Difference<Value>& error_estimate);
 
 }  // namespace internal_newhall
 

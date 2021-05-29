@@ -8,9 +8,10 @@
 #include <string>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
 #include "base/jthread.hpp"
-#include "base/status.hpp"
+#include "base/recurring_thread.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/orbit_analyser.hpp"
@@ -27,7 +28,7 @@ namespace ksp_plugin {
 namespace internal_vessel {
 
 using base::not_null;
-using base::Status;
+using base::RecurringThread;
 using geometry::Instant;
 using geometry::Vector;
 using physics::DegreesOfFreedom;
@@ -156,7 +157,7 @@ class Vessel {
   // performed.
   // If |history_->back().time| is greater than the current desired final time,
   // the flight plan length is kept; otherwise, the desired final time is kept.
-  Status RebaseFlightPlan(Mass const& initial_mass);
+  absl::Status RebaseFlightPlan(Mass const& initial_mass);
 
   // Tries to replace the current prediction with a more recently computed one.
   // No guarantees that this happens.  No guarantees regarding the end time of
@@ -203,7 +204,6 @@ class Vessel {
 
  private:
   struct PrognosticatorParameters {
-    Ephemeris<Barycentric>::Guard guard;
     Instant first_time;
     DegreesOfFreedom<Barycentric> first_degrees_of_freedom;
     Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters;
@@ -214,24 +214,10 @@ class Vessel {
   using TrajectoryIterator =
       DiscreteTrajectory<Barycentric>::Iterator (Part::*)();
 
-  // Starts the |prognosticator_| if it is not started already.  The
-  // |prognosticator_parameters_| must have been set.
-  void StartPrognosticatorIfNeeded() REQUIRES(prognosticator_lock_);
-
-  // Run by the |prognosticator_| thread to periodically recompute the
-  // prognostication.
-  Status RepeatedlyFlowPrognostication();
-
   // Runs the integrator to compute the |prognostication_| based on the given
   // parameters.
-  Status FlowPrognostication(
-      PrognosticatorParameters prognosticator_parameters,
-      std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication);
-
-  // Publishes the prognostication if the computation was not cancelled.
-  void SwapPrognostication(
-      std::unique_ptr<DiscreteTrajectory<Barycentric>>& prognostication,
-      Status const& status);
+  absl::StatusOr<std::unique_ptr<DiscreteTrajectory<Barycentric>>>
+  FlowPrognostication(PrognosticatorParameters prognosticator_parameters);
 
   // Appends to |trajectory| the centre of mass of the trajectories of the parts
   // denoted by |part_trajectory_begin| and |part_trajectory_end|.  Only the
@@ -258,15 +244,6 @@ class Vessel {
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
   std::set<PartId> kept_parts_;
 
-  mutable absl::Mutex prognosticator_lock_;
-  // This member only contains a value if |RefreshPrediction| has been called
-  // but the parameters have not been picked by the |prognosticator_|.  It never
-  // contains a moved-from value, and is only read using |std::swap| to ensure
-  // that reading it clears it.
-  std::optional<PrognosticatorParameters> prognosticator_parameters_
-      GUARDED_BY(prognosticator_lock_);
-  base::jthread prognosticator_;
-
   // See the comments in pile_up.hpp for an explanation of the terminology.
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_;
   DiscreteTrajectory<Barycentric>* psychohistory_ = nullptr;
@@ -274,10 +251,9 @@ class Vessel {
   // The |prediction_| is forked off the end of the |psychohistory_|.
   DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
 
-  // The |prognostication_| is a root trajectory that's computed asynchronously
-  // and may or may not be used as a prediction;
-  std::unique_ptr<DiscreteTrajectory<Barycentric>> prognostication_
-      GUARDED_BY(prognosticator_lock_);
+  RecurringThread<PrognosticatorParameters,
+                  std::unique_ptr<DiscreteTrajectory<Barycentric>>>
+      prognosticator_;
 
   std::unique_ptr<FlightPlan> flight_plan_;
 

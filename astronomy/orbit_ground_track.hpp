@@ -3,9 +3,9 @@
 #include <optional>
 #include <vector>
 
+#include "absl/status/statusor.h"
 #include "astronomy/orbit_recurrence.hpp"
 #include "astronomy/orbital_elements.hpp"
-#include "base/status_or.hpp"
 #include "geometry/interval.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/rotating_body.hpp"
@@ -14,7 +14,6 @@ namespace principia {
 namespace astronomy {
 namespace internal_orbit_ground_track {
 
-using base::StatusOr;
 using geometry::Instant;
 using geometry::Interval;
 using physics::DiscreteTrajectory;
@@ -67,7 +66,7 @@ class OrbitGroundTrack {
   // |trajectory| as an orbit around |primary|; if |mean_sun| is provided,
   // sun-synchronicity is analysed.
   template<typename PrimaryCentred, typename Inertial>
-  static StatusOr<OrbitGroundTrack> ForTrajectory(
+  static absl::StatusOr<OrbitGroundTrack> ForTrajectory(
       DiscreteTrajectory<PrimaryCentred> const& trajectory,
       RotatingBody<Inertial> const& primary,
       std::optional<MeanSun> const& mean_sun);

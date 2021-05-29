@@ -6,8 +6,10 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <thread>
 #include <vector>
 
+#include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "base/macros.hpp"
 #include "geometry/barycentre_calculator.hpp"
@@ -46,6 +48,7 @@ namespace physics {
 namespace internal_ephemeris {
 
 using astronomy::ICRS;
+using astronomy::InfiniteFuture;
 using base::not_null;
 using geometry::Barycentre;
 using geometry::AngularVelocity;
@@ -97,6 +100,7 @@ using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Ref;
+using namespace std::chrono_literals;
 namespace si = quantities::si;
 
 namespace {
@@ -477,7 +481,7 @@ TEST_P(EphemerisTest, EarthProbe) {
                       1e-9 * Metre,
                       2.6e-15 * Metre / Second),
                   /*max_ephemeris_steps=*/0),
-              StatusIs(Error::DEADLINE_EXCEEDED));
+              StatusIs(absl::StatusCode::kDeadlineExceeded));
   EXPECT_THAT(ephemeris.t_max(), Eq(old_t_max));
   EXPECT_THAT(trajectory.back().time, Eq(old_t_max));
 }
@@ -628,7 +632,9 @@ TEST_P(EphemerisTest, Serialization) {
   serialization::Ephemeris message;
   ephemeris.WriteToMessage(&message);
 
-  auto const ephemeris_read = Ephemeris<ICRS>::ReadFromMessage(message);
+  auto const ephemeris_read = Ephemeris<ICRS>::ReadFromMessage(
+      /*desired_t_min=*/InfiniteFuture,
+      message);
   // After deserialization, the client must prolong as needed.
   ephemeris_read->Prolong(ephemeris.t_max());
 
@@ -785,7 +791,7 @@ TEST_P(EphemerisTest, CollisionDetection) {
 
   EXPECT_OK(ephemeris.FlowWithFixedStep(t0_ + short_duration, *instance));
   EXPECT_THAT(ephemeris.FlowWithFixedStep(t0_ + long_duration, *instance),
-              StatusIs(Error::OUT_OF_RANGE));
+              StatusIs(absl::StatusCode::kOutOfRange));
 }
 #endif
 
@@ -1088,6 +1094,63 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
       /*make_unique=*/false);
   logger.Set("trajectory1", trajectory1.begin(), trajectory1.end());
   logger.Set("trajectory2", trajectory2->begin(), trajectory2->end());
+}
+
+TEST(EphemerisTestNoFixture, Reanimator) {
+  Instant const t_initial;
+  Instant const t_final = t_initial + 5 * JulianYear;
+
+  SolarSystem<ICRS> solar_system(
+      SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "sol_initial_state_jd_2451545_000000000.proto.txt");
+
+  // Create an ephemeris and prolong it for a few years to make sure that we
+  // have multiple checkpoints.
+  auto ephemeris1 = solar_system.MakeEphemeris(
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
+      /*fixed_step_parameters=*/{
+          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+                                             Position<ICRS>>(),
+          /*step=*/10 * Minute});
+  ephemeris1->Prolong(t_final);
+  EXPECT_EQ(t_initial, ephemeris1->t_min());
+  EXPECT_LE(t_final, ephemeris1->t_max());
+
+  // Serialize that ephemeris to a message and read it back.
+  serialization::Ephemeris message;
+  ephemeris1->WriteToMessage(&message);
+  auto const ephemeris2 = Ephemeris<ICRS>::ReadFromMessage(
+      /*desired_t_min=*/InfiniteFuture,
+      message);
+
+  // Reanimate the ephemeris that we just read.
+  ephemeris2->RequestReanimation(t_initial);
+
+  // Wait for reanimation to happen.
+  LOG(ERROR) << "Waiting until Herbert West is done...";
+  ephemeris2->WaitForReanimation(t_initial);
+  LOG(ERROR) << "Herbert West is finally done.";
+  ephemeris2->Prolong(t_final);
+
+  // Check that the two ephemerides have the exact same trajectories.
+  EXPECT_EQ(ephemeris1->t_min(), ephemeris2->t_min());
+  EXPECT_EQ(ephemeris1->t_max(), ephemeris2->t_max());
+  EXPECT_EQ(ephemeris1->bodies().size(), ephemeris2->bodies().size());
+  for (int i = 0; i < ephemeris1->bodies().size(); ++i) {
+    EXPECT_EQ(ephemeris1->bodies()[i]->name(), ephemeris2->bodies()[i]->name());
+  }
+  for (int i = 0; i < ephemeris1->bodies().size(); ++i) {
+    auto trajectory1 = ephemeris1->trajectory(ephemeris1->bodies()[i]);
+    auto trajectory2 = ephemeris2->trajectory(ephemeris2->bodies()[i]);
+    for (Instant t = t_initial;
+         t <= t_final;
+         t += (t_final - t_initial) / 100) {
+      EXPECT_EQ(trajectory1->EvaluateDegreesOfFreedom(t),
+                trajectory2->EvaluateDegreesOfFreedom(t));
+    }
+  }
 }
 #endif
 

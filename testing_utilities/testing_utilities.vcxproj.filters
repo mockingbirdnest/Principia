@@ -71,9 +71,6 @@
     <ClInclude Include="matchers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="actions.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="serialization.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

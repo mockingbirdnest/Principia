@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "absl/base/thread_annotations.h"
+#include "absl/status/status.h"
 #include "absl/synchronization/notification.h"
 #include "absl/synchronization/mutex.h"
-#include "base/status.hpp"
 
 namespace principia {
 namespace base {
@@ -21,20 +21,21 @@ namespace base {
 // any) produced by the tasks.
 class Bundle final {
  public:
-  using Task = std::function<Status()>;
+  using Task = std::function<absl::Status()>;
 
-  // If a |task| returns an erroneous |Status|, |Join| returns that status.
+  // If a |task| returns an erroneous |absl::Status|, |Join| returns that
+  // status.
   void Add(Task task) LOCKS_EXCLUDED(lock_);
 
   // Returns the first non-OK status encountered, or OK.  All worker threads are
   // joined; no calls to member functions may follow this call.
-  Status Join() LOCKS_EXCLUDED(lock_, status_lock_);
-  // Same as above, but returns |Error::DEADLINE_EXCEEDED| if it fails to
+  absl::Status Join() LOCKS_EXCLUDED(lock_, status_lock_);
+  // Same as above, but returns a |kDeadlineExceeded| status if it fails to
   // complete within the given interval.
-  Status JoinWithin(std::chrono::steady_clock::duration Δt)
+  absl::Status JoinWithin(std::chrono::steady_clock::duration Δt)
       LOCKS_EXCLUDED(lock_, status_lock_);
   // Same as above with absolute time.
-  Status JoinBefore(std::chrono::system_clock::time_point t)
+  absl::Status JoinBefore(std::chrono::system_clock::time_point t)
       LOCKS_EXCLUDED(lock_, status_lock_);
 
  private:
@@ -44,7 +45,7 @@ class Bundle final {
   void JoinAll() LOCKS_EXCLUDED(lock_);
 
   absl::Mutex status_lock_;
-  Status status_ GUARDED_BY(status_lock_);
+  absl::Status status_ GUARDED_BY(status_lock_);
 
   absl::Mutex lock_;
 

@@ -12,8 +12,8 @@
 #include <utility>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "base/monostable.hpp"
-#include "base/status.hpp"
 #include "base/thread_pool.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
@@ -48,7 +48,6 @@ namespace ksp_plugin {
 namespace internal_plugin {
 
 using base::not_null;
-using base::Status;
 using base::Subset;
 using base::ThreadPool;
 using geometry::AffineMap;
@@ -421,6 +420,8 @@ class Plugin {
   // of a vessel in |vessels_|.
   virtual Velocity<World> VesselVelocity(GUID const& vessel_guid) const;
 
+  void RequestReanimation(Instant const& desired_t_min) const;
+
   virtual Instant GameEpoch() const;
 
   virtual Instant CurrentTime() const;
@@ -515,7 +516,7 @@ class Plugin {
   Ephemeris<Barycentric>::AdaptiveStepParameters psychohistory_parameters_;
 
   // The thread pool for advancing vessels.
-  ThreadPool<Status> vessel_thread_pool_;
+  ThreadPool<absl::Status> vessel_thread_pool_;
 
   Angle planetarium_rotation_;
   std::optional<Rotation<Barycentric, AliceSun>> cached_planetarium_rotation_;
