@@ -566,9 +566,9 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
             new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
     EXPECT_CALL(*plugin_,
                 NewBodyCentredNonRotatingNavigationFrame(celestial_index))
-        .WillOnce(
-            Return(ByMove(std::unique_ptr<
-                          StrictMock<MockDynamicFrame<Barycentric, Navigation>>>(
+        .WillOnce(Return(
+            ByMove(std::unique_ptr<
+                   StrictMock<MockDynamicFrame<Barycentric, Navigation>>>(
                 mock_navigation_frame))));
     EXPECT_CALL(renderer, SetPlottingFrame(Pointer(mock_navigation_frame)));
     principia__SetPlottingFrame(plugin_.get(), parameters);
