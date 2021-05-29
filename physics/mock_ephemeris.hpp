@@ -26,68 +26,78 @@ class MockEphemeris : public Ephemeris<Frame> {
       : Ephemeris<Frame>(
             MockFixedStepSizeIntegrator<NewtonianMotionEquation>::Get()) {}
 
-  MOCK_CONST_METHOD0_T(bodies,
-                       std::vector<not_null<MassiveBody const*>> const&());
-  MOCK_CONST_METHOD1_T(trajectory,
-                       not_null<ContinuousTrajectory<Frame> const*>(
-                           not_null<MassiveBody const*> body));
-  MOCK_CONST_METHOD0_T(empty, bool());
-  MOCK_CONST_METHOD0_T(t_min, Instant());
-  MOCK_CONST_METHOD0_T(t_max, Instant());
-  MOCK_CONST_METHOD0_T(
-      planetary_integrator,
-      FixedStepSizeIntegrator<NewtonianMotionEquation> const&());
+  MOCK_METHOD(std::vector<not_null<MassiveBody const*>> const&,
+              bodies,
+              (),
+              (const, override));
+  MOCK_METHOD(not_null<ContinuousTrajectory<Frame> const*>,
+              trajectory,
+              (not_null<MassiveBody const*> body),
+              (const, override));
+  MOCK_METHOD(bool, empty, (), (const, override));
+  MOCK_METHOD(Instant, t_min, (), (const, override));
+  MOCK_METHOD(Instant, t_max, (), (const, override));
+  MOCK_METHOD(FixedStepSizeIntegrator<NewtonianMotionEquation> const&,
+              planetary_integrator,
+              (),
+              (const, override));
 
-  MOCK_METHOD1_T(Prolong, absl::Status(Instant const& t));
-  MOCK_METHOD3_T(
-      NewInstance,
+  MOCK_METHOD(absl::Status, Prolong, (Instant const& t), (override));
+  MOCK_METHOD(
       not_null<std::unique_ptr<
-          typename Integrator<NewtonianMotionEquation>::Instance>>(
-          std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
-          IntrinsicAccelerations const& intrinsic_accelerations,
-          FixedStepParameters const& parameters));
-  MOCK_METHOD5_T(FlowWithAdaptiveStep,
-                 absl::Status(not_null<DiscreteTrajectory<Frame>*> trajectory,
-                              IntrinsicAcceleration intrinsic_acceleration,
-                              Instant const& t,
-                              AdaptiveStepParameters const& parameters,
-                              std::int64_t max_ephemeris_steps));
-  MOCK_METHOD2_T(
+          typename Integrator<NewtonianMotionEquation>::Instance>>,
+      NewInstance,
+      (std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
+       IntrinsicAccelerations const& intrinsic_accelerations,
+       FixedStepParameters const& parameters),
+      (override));
+  MOCK_METHOD(absl::Status,
+              FlowWithAdaptiveStep,
+              (not_null<DiscreteTrajectory<Frame>*> trajectory,
+               IntrinsicAcceleration intrinsic_acceleration,
+               Instant const& t,
+               AdaptiveStepParameters const& parameters,
+               std::int64_t max_ephemeris_steps),
+              (override));
+  MOCK_METHOD(
+      absl::Status,
       FlowWithFixedStep,
-      absl::Status(
-          Instant const& t,
-          typename Integrator<NewtonianMotionEquation>::Instance& instance));
+      (Instant const& t,
+       typename Integrator<NewtonianMotionEquation>::Instance& instance),
+      (override));
 
-  MOCK_CONST_METHOD2_T(
-      ComputeGravitationalAccelerationOnMasslessBody,
-      Vector<Acceleration, Frame>(Position<Frame> const& position,
-                                  Instant const & t));
+  MOCK_METHOD((Vector<Acceleration, Frame>),
+              ComputeGravitationalAccelerationOnMasslessBody,
+              (Position<Frame> const& position, Instant const& t),
+              (const, override));
 
-  // NOTE(phl): This overload introduces ambiguities in the expectations.
-  // MOCK_CONST_METHOD2_T(
-  //     ComputeGravitationalAccelerationOnMasslessBody,
-  //     Vector<Acceleration, Frame>(
-  //         not_null<DiscreteTrajectory<Frame>*> /*const*/ trajectory,
-  //         Instant const& t));
+  MOCK_METHOD((Vector<Acceleration, Frame>),
+              ComputeGravitationalAccelerationOnMasslessBody,
+              (not_null<DiscreteTrajectory<Frame>*> trajectory,
+               Instant const& t),
+              (const, override));
 
-  // NOTE(phl): The commented-out const below is to work-around a compiler
-  // internal error.  Don't ask.
-  MOCK_CONST_METHOD2_T(
-      ComputeGravitationalAccelerationOnMassiveBody,
-      Vector<Acceleration, Frame>(
-          not_null<MassiveBody const*> /*const*/ body,
-          Instant const& t));
+  MOCK_METHOD((Vector<Acceleration, Frame>),
+              ComputeGravitationalAccelerationOnMassiveBody,
+              (not_null<MassiveBody const*> body,
+               Instant const& t),
+              (const, override));
 
-  MOCK_CONST_METHOD1_T(serialization_index_for_body,
-                       int(not_null<MassiveBody const*> body));
-  MOCK_CONST_METHOD1_T(
-      body_for_serialization_index,
-      not_null<MassiveBody const*>(int serialization_index));
+  MOCK_METHOD(int,
+              serialization_index_for_body,
+              (not_null<MassiveBody const*> body),
+              (const, override));
+  MOCK_METHOD(not_null<MassiveBody const*>,
+              body_for_serialization_index,
+              (int serialization_index),
+              (const, override));
 
-  MOCK_CONST_METHOD1_T(WriteToMessage,
-                       void(not_null<serialization::Ephemeris*> message));
+  MOCK_METHOD(void,
+              WriteToMessage,
+              (not_null<serialization::Ephemeris*> message),
+              (const, override));
 
-  MOCK_CONST_METHOD0_T(t_min_locked, Instant());
+  MOCK_METHOD(Instant, t_min_locked, (), (const, override));
 };
 
 }  // namespace internal_ephemeris

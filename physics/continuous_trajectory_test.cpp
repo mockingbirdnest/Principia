@@ -65,7 +65,7 @@ class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {
  public:
   using ContinuousTrajectory<Frame>::ContinuousTrajectory;
 
-  // Mock the Newhall factory.
+  // Fake the Newhall factory.
   not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>
   NewhallApproximationInMonomialBasis(
       int degree,
@@ -75,16 +75,18 @@ class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {
       Instant const& t_max,
       Displacement<Frame>& error_estimate) const override;
 
-  MOCK_CONST_METHOD7_T(
+  MOCK_METHOD(
+      void,
       FillNewhallApproximationInMonomialBasis,
-      void(int degree,
-           std::vector<Position<Frame>> const& q,
-           std::vector<Velocity<Frame>> const& v,
-           Instant const& t_min,
-           Instant const& t_max,
-           Displacement<Frame>& error_estimate,
-           not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>&
-               polynomial));
+      (int degree,
+       std::vector<Position<Frame>> const& q,
+       std::vector<Velocity<Frame>> const& v,
+       Instant const& t_min,
+       Instant const& t_max,
+       Displacement<Frame>& error_estimate,
+       (not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>> &
+        polynomial)),
+      (const));
 
   absl::Status LockAndComputeBestNewhallApproximation(
       Instant const& time,

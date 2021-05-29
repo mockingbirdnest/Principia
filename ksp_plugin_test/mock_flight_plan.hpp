@@ -10,39 +10,54 @@ namespace internal_flight_plan {
 
 class MockFlightPlan : public FlightPlan {
  public:
-  MOCK_CONST_METHOD0(initial_time, Instant());
-  MOCK_CONST_METHOD0(desired_final_time, Instant());
+  MOCK_METHOD(Instant, initial_time, (), (const, override));
+  MOCK_METHOD(Instant, desired_final_time, (), (const, override));
 
-  MOCK_CONST_METHOD0(number_of_manœuvres, int());
-  MOCK_CONST_METHOD1(GetManœuvre, NavigationManœuvre const& (int index));
+  MOCK_METHOD(int, number_of_manœuvres, (), (const, override));
+  MOCK_METHOD(NavigationManœuvre const&,
+              GetManœuvre,
+              (int index),
+              (const, override));
 
-  MOCK_METHOD2(Insert,
-               absl::Status(NavigationManœuvre::Burn const& burn, int index));
-  MOCK_METHOD1(Remove, absl::Status(int index));
-  MOCK_METHOD2(Replace,
-               absl::Status(NavigationManœuvre::Burn const& burn, int index));
+  MOCK_METHOD(absl::Status,
+              Insert,
+              (NavigationManœuvre::Burn const& burn, int index),
+              (override));
+  MOCK_METHOD(absl::Status, Remove, (int index), (override));
+  MOCK_METHOD(absl::Status,
+              Replace,
+              (NavigationManœuvre::Burn const& burn, int index),
+              (override));
 
-  MOCK_METHOD1(SetDesiredFinalTime, absl::Status(Instant const& final_time));
+  MOCK_METHOD(absl::Status,
+              SetDesiredFinalTime,
+              (Instant const& final_time),
+              (override));
 
-  MOCK_CONST_METHOD0(adaptive_step_parameters,
-                     Ephemeris<Barycentric>::AdaptiveStepParameters const&());
-  MOCK_CONST_METHOD0(
-      generalized_adaptive_step_parameters,
-      Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&());
-  MOCK_METHOD2(
-      SetAdaptiveStepParameters,
-      absl::Status(
-          Ephemeris<Barycentric>::AdaptiveStepParameters const&
+  MOCK_METHOD(Ephemeris<Barycentric>::AdaptiveStepParameters const&,
               adaptive_step_parameters,
-          Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
-              generalized_adaptive_step_parameters));
+              (),
+              (const, override));
+  MOCK_METHOD(Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&,
+              generalized_adaptive_step_parameters,
+              (),
+              (const, override));
+  MOCK_METHOD(absl::Status,
+              SetAdaptiveStepParameters,
+              (Ephemeris<Barycentric>::AdaptiveStepParameters const&
+                   adaptive_step_parameters,
+               Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
+                   generalized_adaptive_step_parameters),
+              (override));
 
-  MOCK_CONST_METHOD0(number_of_segments, int());
+  MOCK_METHOD(int, number_of_segments, (), (const, override));
 
-  MOCK_CONST_METHOD3(GetSegment,
-                     void(int index,
-                          DiscreteTrajectory<Barycentric>::Iterator& begin,
-                          DiscreteTrajectory<Barycentric>::Iterator& end));
+  MOCK_METHOD(void,
+              GetSegment,
+              (int index,
+               DiscreteTrajectory<Barycentric>::Iterator& begin,
+               DiscreteTrajectory<Barycentric>::Iterator& end),
+              (const, override));
 };
 
 }  // namespace internal_flight_plan
