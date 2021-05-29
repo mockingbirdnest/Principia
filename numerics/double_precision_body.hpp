@@ -21,8 +21,8 @@ namespace principia {
 namespace numerics {
 namespace internal_double_precision {
 
-using geometry::DoubleOrQuantityOrPointOrMultivectorSerializer;
 using geometry::DoubleOrQuantityOrMultivectorSerializer;
+using geometry::DoubleOrQuantityOrPointOrMultivectorSerializer;
 using geometry::Multivector;
 using geometry::Point;
 using geometry::R3Element;
@@ -210,10 +210,43 @@ DoublePrecision<Product<T, U>> Scale(T const & scale,
 }
 
 template<typename T, typename U>
-DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b) {
-  DoublePrecision<Product<T, U>> result(a * b);
-  result.error = FusedMultiplySubtract(a, b, result.value);
+DoublePrecision<Product<T, U>> VeltkampDekkerProduct(T const& a, U const& b) {
+  DoublePrecision<Product<T, U>> result;
+  auto const& x = a;
+  auto const& y = b;
+  auto& z = result.value;
+  auto& zz = result.error;
+  // Split x and y as in mul12 from [Dek71, p. 241]; see also [Dek71, p. 235].
+  constexpr std::int64_t t = std::numeric_limits<double>::digits;
+  constexpr double c = 1 << (t - t / 2);
+  T const px = x * c;
+  T const hx = x - px + px;
+  T const tx = x - hx;
+  U const py = y * c;
+  U const hy = y - py + py;
+  U const ty = y - hy;
+  // Veltkamp’s 1968 algorithm, as given in [Dek71, p. 234].
+  z = x * y;
+  zz = (((hx * hy - z) + hx * ty) + tx * hy) + tx * ty;
+  // Dekker’s algorithm (5.12) would be
+  // z = (hx * hy) + (hx * ty + tx * hy);
+  // zz = (hx * hy) - z + (hx * ty + tx * hy) + tx * ty;
+  // where the parenthesized expressions are common (overall one more addition
+  // and one multiplication fewer), but it then requires an additional
+  // QuickTwoSum (5.14) for z to be the correctly-rounded product x * y,
+  // which we require, e.g., for equality comparison.
   return result;
+}
+
+template<typename T, typename U>
+DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b) {
+  if (UseHardwareFMA) {
+    DoublePrecision<Product<T, U>> result(a * b);
+    result.error = FusedMultiplySubtract(a, b, result.value);
+    return result;
+  } else {
+    return VeltkampDekkerProduct(a, b);
+  }
 }
 
 template<typename T, typename U>

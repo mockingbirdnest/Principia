@@ -10,33 +10,35 @@ namespace principia {
 namespace numerics {
 namespace internal_fma {
 
-using base::FeatureFlags;
+using base::CPUFeatureFlags;
 
+// The functions in this file unconditionally wrap the appropriate intrinsics.
+// The caller may only use them if |UseHardwareFMA| is true.
 #if PRINCIPIA_USE_FMA_IF_AVAILABLE
-inline bool UseHardwareFMA = HasCPUFeatures(FeatureFlags::FMA);
+inline bool const UseHardwareFMA = HasCPUFeatures(CPUFeatureFlags::FMA);
 #else
-inline bool UseHardwareFMA = false;
+inline bool const UseHardwareFMA = false;
 #endif
 
 // ⟦ab + c⟧.
-double FusedMultiplyAdd(double a, double b, double c);
+inline double FusedMultiplyAdd(double a, double b, double c);
 
 // ⟦ab - c⟧.
-double FusedMultiplySubtract(double a, double b, double c);
+inline double FusedMultiplySubtract(double a, double b, double c);
 
 // ⟦-ab + c⟧.
-double FusedNegatedMultiplyAdd(double a, double b, double c);
+inline double FusedNegatedMultiplyAdd(double a, double b, double c);
 
 // ⟦-ab - c⟧.
-double FusedNegatedMultiplySubtract(double a, double b, double c);
+inline double FusedNegatedMultiplySubtract(double a, double b, double c);
 
 }  // namespace internal_fma
 
-using internal_fma::UseHardwareFMA;
 using internal_fma::FusedMultiplyAdd;
 using internal_fma::FusedMultiplySubtract;
 using internal_fma::FusedNegatedMultiplyAdd;
 using internal_fma::FusedNegatedMultiplySubtract;
+using internal_fma::UseHardwareFMA;
 
 }  // namespace numerics
 }  // namespace principia
