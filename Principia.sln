@@ -96,8 +96,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "coverage_analyser", "covera
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Setup Files", "Setup Files", "{E3536C51-3B98-4D50-8973-A72D03042FCF}"
 	ProjectSection(SolutionItems) = preProject
-		documentation\Setup Files\chromium.patch = documentation\Setup Files\chromium.patch
-		documentation\Setup Files\chromium_sparse_checkout.txt = documentation\Setup Files\chromium_sparse_checkout.txt
 		Makefile = Makefile
 		Vagrantfile = Vagrantfile
 	EndProjectSection
