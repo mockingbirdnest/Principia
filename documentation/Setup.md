@@ -37,8 +37,7 @@ This project depends upon:
 - our [fork](https://github.com/mockingbirdnest/gipfeli) of the Google gipfeli library;
 - our [fork](https://github.com/mockingbirdnest/abseil-cpp) of the Google Abseil C++ library;
 - our [fork](https://github.com/mockingbirdnest/zfp) of the LLNL zfp library;
-- parts of the Chromium codebase (for stack tracing support in glog on Windows),
-  *modified according to the instructions below*.
+- our [modified excerpts](https://github.com/mockingbirdnest/chromium) of the Chromium codebase (for stack tracing support in glog on Windows).
 
 ## Installation steps
 
@@ -50,25 +49,6 @@ In `<root>`, run `git clone https://github.com/mockingbirdnest/Principia.git`.
 
 In order to build for KSP 1.8.1, copy the corresponding KSP 1.8.1 assemblies to `<root>\KSP Assemblies\1.8.1`
 
-### Downloading the dependencies
-
-In `<root>`, run the following commands.
-```powershell
-mkdir "Google"
-mkdir "Third Party"
-push-location -path "Google"
-git clone "https://chromium.googlesource.com/chromium/src.git" chromium -n --depth 1 -b "40.0.2193.1"
-$GitPromptSettings.RepositoriesInWhichToDisableFileStatus += join-path  (gi -path .).FullName chromium
-push-location -path "chromium"
-git config core.sparsecheckout true
-copy "..\..\Principia\documentation\setup files\chromium_sparse_checkout.txt" ".git/info/sparse-checkout"
-git checkout
-copy "..\..\Principia\documentation\setup files\chromium.patch"
-git am "chromium.patch"
-rm "chromium.patch"
-pop-location
-pop-location
-```
 ### Building
 
 In `<root>`, run the following command:
