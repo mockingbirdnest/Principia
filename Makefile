@@ -65,7 +65,6 @@ endif
 TEST_LIBS     := $(DEP_DIR)benchmark/src/libbenchmark.a $(DEP_DIR)protobuf/src/.libs/libprotobuf.a
 LIBS          := $(DEP_DIR)protobuf/src/.libs/libprotobuf.a \
 	$(DEP_DIR)gipfeli/libgipfeli.a \
-	--start-group \
 	$(DEP_DIR)abseil-cpp/absl/status/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/strings/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/synchronization/libabsl_synchronization.a \
@@ -73,7 +72,6 @@ LIBS          := $(DEP_DIR)protobuf/src/.libs/libprotobuf.a \
 	$(DEP_DIR)abseil-cpp/absl/debugging/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/numeric/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/base/libabsl_*.a \
-	--end-group \
 	$(DEP_DIR)zfp/build/lib/libzfp.a \
 	$(DEP_DIR)glog/.libs/libglog.a -lpthread -lc++ -lc++abi
 TEST_INCLUDES := \
