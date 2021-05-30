@@ -16,6 +16,7 @@
   </ImportGroup>
   <ItemGroup>
     <ClCompile Include="..\base\bundle.cpp" />
+    <ClCompile Include="..\base\cpuid.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="..\physics\protector.cpp" />
     <ClCompile Include="error_analysis_test.cpp" />
