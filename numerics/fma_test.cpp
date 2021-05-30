@@ -11,10 +11,9 @@ namespace numerics {
 
 using base::CPUFeatureFlags;
 using base::HasCPUFeatures;
-using ::testing::Test;
 using testing_utilities::AlmostEquals;
 
-class FMATest : public Test {};
+class FMATest : public testing::Test {};
 
 TEST_F(FMATest, FMA) {
   // Note that we test even if |UseHardwareFMA| is false, i.e., even in debug.
