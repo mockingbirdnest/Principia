@@ -10,6 +10,7 @@
 
 #include "quantities/si.hpp"
 #include "numerics/cbrt.hpp"
+#include "numerics/fma.hpp"
 
 namespace principia {
 namespace quantities {
@@ -21,9 +22,36 @@ template<typename Q1, typename Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z) {
-  return si::Unit<Product<Q1, Q2>> * std::fma(x / si::Unit<Q1>,
-                                              y / si::Unit<Q2>,
-                                              z / si::Unit<Product<Q1, Q2>>);
+  return si::Unit<Product<Q1, Q2>> *
+         numerics::FusedMultiplyAdd(
+             x / si::Unit<Q1>, y / si::Unit<Q2>, z / si::Unit<Product<Q1, Q2>>);
+}
+
+template<typename Q1, typename Q2>
+Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
+                                      Q2 const& y,
+                                      Product<Q1, Q2> const& z) {
+  return si::Unit<Product<Q1, Q2>> *
+         numerics::FusedMultiplySubtract(
+             x / si::Unit<Q1>, y / si::Unit<Q2>, z / si::Unit<Product<Q1, Q2>>);
+}
+
+template<typename Q1, typename Q2>
+Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
+                                        Q2 const& y,
+                                        Product<Q1, Q2> const& z) {
+  return si::Unit<Product<Q1, Q2>> *
+         numerics::FusedNegatedMultiplyAdd(
+             x / si::Unit<Q1>, y / si::Unit<Q2>, z / si::Unit<Product<Q1, Q2>>);
+}
+
+template<typename Q1, typename Q2>
+Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
+                                             Q2 const& y,
+                                             Product<Q1, Q2> const& z) {
+  return si::Unit<Product<Q1, Q2>> *
+         numerics::FusedNegatedMultiplySubtract(
+             x / si::Unit<Q1>, y / si::Unit<Q2>, z / si::Unit<Product<Q1, Q2>>);
 }
 
 template<typename Q>

@@ -60,6 +60,7 @@
     <ClInclude Include="traits.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\base\cpuid.cpp" />
     <ClCompile Include="barycentre_calculator_test.cpp" />
     <ClCompile Include="complexification_test.cpp" />
     <ClCompile Include="frame_test.cpp" />
