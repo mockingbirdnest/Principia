@@ -126,10 +126,9 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   explicit operator PolynomialInMonomialBasis<
       Value, Argument, higher_degree_, HigherEvaluator>() const;
 
-  FORCE_INLINE(inline) Value
-  operator()(Argument const& argument) const override;
-  FORCE_INLINE(inline) Derivative<Value, Argument>
-  EvaluateDerivative(Argument const& argument) const override;
+  Value operator()(Argument const& argument) const override;
+  Derivative<Value, Argument> EvaluateDerivative(
+      Argument const& argument) const override;
 
   constexpr int degree() const override;
   bool is_zero() const override;
