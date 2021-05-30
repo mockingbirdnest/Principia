@@ -72,11 +72,13 @@ ABSL_LIBS     := \
 	$(DEP_DIR)abseil-cpp/absl/synchronization/libabsl_synchronization.a \
 	$(DEP_DIR)abseil-cpp/absl/time/libabsl_*.a
 ifeq ($(UNAME_S),Linux)
-    ABSL_LIBS = -Wl,--start-group $(ABSL_LIBS) -Wl,--end-group
+    ABSL_GROUP_LIBS = -Wl,--start-group $(ABSL_LIBS) -Wl,--end-group
+else
+    ABSL_GROUP_LIBS = $(ABSL_LIBS)
 endif
 LIBS          := $(DEP_DIR)protobuf/src/.libs/libprotobuf.a \
 	$(DEP_DIR)gipfeli/libgipfeli.a \
-	$(ABSL_LIBS) \
+	$(ABSL_GROUP_LIBS) \
 	$(DEP_DIR)zfp/build/lib/libzfp.a \
 	$(DEP_DIR)glog/.libs/libglog.a -lpthread -lc++ -lc++abi
 TEST_INCLUDES := \
