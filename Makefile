@@ -86,6 +86,7 @@ INCLUDES      := -I. -I$(DEP_DIR)glog/src \
 	-I$(DEP_DIR)zfp/include
 SHARED_ARGS   := \
 	-std=c++1z -stdlib=libc++ -O3 -g                              \
+	-mfma                                                         \
 	-fPIC -fexceptions -ferror-limit=1000 -fno-omit-frame-pointer \
 	-Wall -Wpedantic                                              \
 	-Wno-char-subscripts                                          \
@@ -224,7 +225,7 @@ $(PROTO_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cc
 
 ##### tools
 
-$(TOOLS_BIN): $(TOOLS_OBJECTS) $(PROTO_OBJECTS) $(NUMERICS_LIB_OBJECTS)
+$(TOOLS_BIN): $(TOOLS_OBJECTS) $(PROTO_OBJECTS) $(BASE_LIB_OBJECTS) $(NUMERICS_LIB_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
 

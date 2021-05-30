@@ -271,13 +271,16 @@ TEST_F(DoublePrecisionTest, Product) {
   Mass const a = 1.0 / 3.0 * Kilogram;
   Speed const b = 1.0 / 7.0 * Metre / Second;
   DoublePrecision<Momentum> const c = TwoProduct(a, b);
+  DoublePrecision<Momentum> const d = VeltkampDekkerProduct(a, b);
+  EXPECT_THAT(c.value, AlmostEquals(d.value, 0));
+  EXPECT_THAT(c.error, AlmostEquals(d.error, 0));
   // The numbers below were obtained using Mathematica.
   EXPECT_THAT(c.value,
-              AlmostEquals(6862628003612184.0 * std::pow(0.5, 57) * Kilogram *
+              AlmostEquals(6862628003612184.0 * 0x1p-57 * Kilogram *
                                Metre / Second,
                            0));
   EXPECT_THAT(c.error,
-              AlmostEquals(-3431314001806092.0 * std::pow(0.5, 110) * Kilogram *
+              AlmostEquals(-3431314001806092.0 * 0x1p-110 * Kilogram *
                                Metre / Second,
                            0));
 }

@@ -13,6 +13,18 @@ template<typename Q1, typename Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z);
+template<typename Q1, typename Q2>
+Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
+                                      Q2 const& y,
+                                      Product<Q1, Q2> const& z);
+template<typename Q1, typename Q2>
+Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
+                                        Q2 const& y,
+                                        Product<Q1, Q2> const& z);
+template<typename Q1, typename Q2>
+Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
+                                             Q2 const& y,
+                                             Product<Q1, Q2> const& z);
 
 // Equivalent to |std::abs(x)|.
 template<typename Q>
@@ -75,6 +87,9 @@ using internal_elementary_functions::Cbrt;
 using internal_elementary_functions::Cos;
 using internal_elementary_functions::Cosh;
 using internal_elementary_functions::FusedMultiplyAdd;
+using internal_elementary_functions::FusedMultiplySubtract;
+using internal_elementary_functions::FusedNegatedMultiplyAdd;
+using internal_elementary_functions::FusedNegatedMultiplySubtract;
 using internal_elementary_functions::Mod;
 using internal_elementary_functions::Pow;
 using internal_elementary_functions::Sin;

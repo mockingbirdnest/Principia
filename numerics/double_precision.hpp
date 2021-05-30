@@ -51,9 +51,17 @@ template<typename T, typename U>
 DoublePrecision<Product<T, U>> Scale(T const& scale,
                                      DoublePrecision<U> const& right);
 
-// Returns the exact product of its arguments.
+// Returns the exact product of its arguments.  Note that this function checks
+// whether |UseHardwareFMA| is true.  If the value of that flag is already known
+// from context, it may be preferable to either:
+// — use VeltkampDekkerProduct(a, b) below;
+// — directly compute value = a * b, error = FusedMultiplySubtract(a, b, value).
 template<typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b);
+
+// Same as |TwoProduct|, but never uses FMA.
+template<typename T, typename U>
+DoublePrecision<Product<T, U>> VeltkampDekkerProduct(T const& a, U const& b);
 
 // Computes the exact sum of a and b.  The arguments must be such that
 // |a| >= |b| or a == 0.
@@ -127,6 +135,7 @@ using internal_double_precision::Mod2π;
 using internal_double_precision::TwoDifference;
 using internal_double_precision::TwoProduct;
 using internal_double_precision::TwoSum;
+using internal_double_precision::VeltkampDekkerProduct;
 
 }  // namespace numerics
 }  // namespace principia

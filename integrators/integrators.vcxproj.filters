@@ -88,5 +88,8 @@
     <ClCompile Include="embedded_explicit_generalized_runge_kutta_nyström_integrator_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\base\cpuid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

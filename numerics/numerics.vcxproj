@@ -31,6 +31,8 @@
     <ClInclude Include="fit_hermite_spline_body.hpp" />
     <ClInclude Include="fixed_arrays.hpp" />
     <ClInclude Include="fixed_arrays_body.hpp" />
+    <ClInclude Include="fma.hpp" />
+    <ClInclude Include="fma_body.hpp" />
     <ClInclude Include="double_precision.hpp" />
     <ClInclude Include="double_precision_body.hpp" />
     <ClInclude Include="frequency_analysis.hpp" />
@@ -72,6 +74,7 @@
     <ClInclude Include="чебышёв_series_body.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\base\cpuid.cpp" />
     <ClCompile Include="apodization_test.cpp" />
     <ClCompile Include="cbrt.cpp" />
     <ClCompile Include="cbrt_test.cpp" />
@@ -87,6 +90,7 @@
     <ClCompile Include="finite_difference_test.cpp" />
     <ClCompile Include="fit_hermite_spline_test.cpp" />
     <ClCompile Include="fixed_arrays_test.cpp" />
+    <ClCompile Include="fma_test.cpp" />
     <ClCompile Include="frequency_analysis_test.cpp" />
     <ClCompile Include="hermite3_test.cpp" />
     <ClCompile Include="legendre_test.cpp" />
