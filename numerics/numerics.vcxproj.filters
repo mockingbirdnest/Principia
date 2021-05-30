@@ -286,6 +286,9 @@
     <ClCompile Include="..\base\cpuid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="fma_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="xgscd.proto.txt">

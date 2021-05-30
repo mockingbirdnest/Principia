@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include <cmath>
 #include <immintrin.h>
 
 #include "base/cpuid.hpp"

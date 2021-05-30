@@ -90,6 +90,7 @@
     <ClCompile Include="finite_difference_test.cpp" />
     <ClCompile Include="fit_hermite_spline_test.cpp" />
     <ClCompile Include="fixed_arrays_test.cpp" />
+    <ClCompile Include="fma_test.cpp" />
     <ClCompile Include="frequency_analysis_test.cpp" />
     <ClCompile Include="hermite3_test.cpp" />
     <ClCompile Include="legendre_test.cpp" />
