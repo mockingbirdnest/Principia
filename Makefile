@@ -63,17 +63,20 @@ ifeq ($(UNAME_S),Darwin)
 endif
 
 TEST_LIBS     := $(DEP_DIR)benchmark/src/libbenchmark.a $(DEP_DIR)protobuf/src/.libs/libprotobuf.a
-LIBS          := $(DEP_DIR)protobuf/src/.libs/libprotobuf.a \
-	$(DEP_DIR)gipfeli/libgipfeli.a \
-	-Wl,--start-group \
+ABSL_LIBS     := \
+	$(DEP_DIR)abseil-cpp/absl/base/libabsl_*.a \
+	$(DEP_DIR)abseil-cpp/absl/debugging/libabsl_*.a \
+	$(DEP_DIR)abseil-cpp/absl/numeric/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/status/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/strings/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/synchronization/libabsl_synchronization.a \
-	$(DEP_DIR)abseil-cpp/absl/time/libabsl_*.a \
-	$(DEP_DIR)abseil-cpp/absl/debugging/libabsl_*.a \
-	$(DEP_DIR)abseil-cpp/absl/numeric/libabsl_*.a \
-	$(DEP_DIR)abseil-cpp/absl/base/libabsl_*.a \
-	-Wl,--end-group \
+	$(DEP_DIR)abseil-cpp/absl/time/libabsl_*.a
+ifeq ($(UNAME_S),Linux)
+    ABSL_LIBS = -Wl,--start-group $(ABSL_LIBS) -Wl,--end-group
+endif
+LIBS          := $(DEP_DIR)protobuf/src/.libs/libprotobuf.a \
+	$(DEP_DIR)gipfeli/libgipfeli.a \
+	$(ABSL_LIBS) \
 	$(DEP_DIR)zfp/build/lib/libzfp.a \
 	$(DEP_DIR)glog/.libs/libglog.a -lpthread -lc++ -lc++abi
 TEST_INCLUDES := \
