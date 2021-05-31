@@ -4,11 +4,15 @@
 #include <cstddef>
 #include <utility>
 
+#include "base/cpuid.hpp"
 #include "gtest/gtest.h"
 #include "numerics/combinatorics.hpp"
 
 namespace principia {
 namespace numerics {
+
+using base::HasCPUFeatures;
+using base::CPUFeatureFlags;
 
 class PolynomialEvaluatorTest : public ::testing::Test {
  public:
@@ -28,11 +32,19 @@ class PolynomialEvaluatorTest : public ::testing::Test {
         MakeBinomialTuple<typename E::Coefficients, degree>(
             std::make_index_sequence<degree + 1>());
     for (int argument = -degree; argument <= degree; ++argument) {
-      EXPECT_EQ(E::Evaluate(binomial_coefficients, argument),
+      EXPECT_EQ(E::Evaluate<false>(binomial_coefficients, argument),
                 std::pow(argument + 1, degree)) << argument << " " << degree;
-      EXPECT_EQ(E::EvaluateDerivative(binomial_coefficients, argument),
+      EXPECT_EQ(E::EvaluateDerivative<false>(binomial_coefficients, argument),
                 degree * std::pow(argument + 1, degree - 1))
           << argument << " " << degree;
+      if (HasCPUFeatures(CPUFeatureFlags::FMA)) {
+        EXPECT_EQ(E::Evaluate<true>(binomial_coefficients, argument),
+                  std::pow(argument + 1, degree))
+            << argument << " " << degree;
+        EXPECT_EQ(E::EvaluateDerivative<true>(binomial_coefficients, argument),
+                  degree * std::pow(argument + 1, degree - 1))
+            << argument << " " << degree;
+      }
     }
   }
 };

@@ -61,7 +61,7 @@ auto SquaresGenerator<Argument, std::index_sequence<orders...>>::
 // polynomial, |low| and |subdegree| defines the subpolynomial that we currently
 // evaluate, i.e., the one with a constant term coefficient
 // |std::get<low>(coefficients)| and degree |subdegree|.
-template<typename Value, typename Argument, int degree, int low, int subdegree>
+template<typename Value, typename Argument, int degree, int low, int subdegree, bool fma>
 struct InternalEstrinEvaluator {
   using ArgumentSquaresGenerator =
       SquaresGenerator<Argument, std::make_index_sequence<FloorLog2(degree)>>;
@@ -80,8 +80,8 @@ struct InternalEstrinEvaluator {
       ArgumentSquares const& argument_squares);
 };
 
-template<typename Value, typename Argument, int degree, int low>
-struct InternalEstrinEvaluator<Value, Argument, degree, low, 1> {
+template<typename Value, typename Argument, int degree, int low, bool fma>
+struct InternalEstrinEvaluator<Value, Argument, degree, low, 1, fma> {
   using ArgumentSquaresGenerator =
       SquaresGenerator<Argument, std::make_index_sequence<FloorLog2(degree)>>;
   using ArgumentSquares = typename ArgumentSquaresGenerator::Type;
@@ -99,8 +99,8 @@ struct InternalEstrinEvaluator<Value, Argument, degree, low, 1> {
       ArgumentSquares const& argument_squares);
 };
 
-template<typename Value, typename Argument, int degree, int low>
-struct InternalEstrinEvaluator<Value, Argument, degree, low, 0> {
+template<typename Value, typename Argument, int degree, int low, bool fma>
+struct InternalEstrinEvaluator<Value, Argument, degree, low, 0, fma> {
   using ArgumentSquaresGenerator =
       SquaresGenerator<Argument, std::make_index_sequence<FloorLog2(degree)>>;
   using ArgumentSquares = typename ArgumentSquaresGenerator::Type;
@@ -118,9 +118,14 @@ struct InternalEstrinEvaluator<Value, Argument, degree, low, 0> {
       ArgumentSquares const& argument_squares);
 };
 
-template<typename Value, typename Argument, int degree, int low, int subdegree>
+template<typename Value,
+         typename Argument,
+         int degree,
+         int low,
+         int subdegree,
+         bool fma>
 Derivative<Value, Argument, low>
-InternalEstrinEvaluator<Value, Argument, degree, low, subdegree>::Evaluate(
+InternalEstrinEvaluator<Value, Argument, degree, low, subdegree, fma>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument,
     ArgumentSquares const& argument_squares) {
@@ -131,20 +136,25 @@ InternalEstrinEvaluator<Value, Argument, degree, low, subdegree>::Evaluate(
   // |m| is |2^(n + 1)|.
   constexpr int m = PowerOf2Le(subdegree);
   return InternalEstrinEvaluator<Value, Argument, degree,
-                                 low, m - 1>::
+                                 low, m - 1, fma>::
              Evaluate(coefficients, argument, argument_squares) +
          std::get<n>(argument_squares) *
              InternalEstrinEvaluator<Value, Argument, degree,
-                                     low + m, subdegree - m>::
+                                     low + m, subdegree - m, fma>::
                  Evaluate(coefficients, argument, argument_squares);
 }
 
-template<typename Value, typename Argument, int degree, int low, int subdegree>
+template<typename Value,
+         typename Argument,
+         int degree,
+         int low,
+         int subdegree,
+         bool fma>
 Derivative<Value, Argument, low>
-InternalEstrinEvaluator<Value, Argument, degree, low, subdegree>::
-EvaluateDerivative(Coefficients const& coefficients,
-                   Argument const& argument,
-                   ArgumentSquares const& argument_squares) {
+InternalEstrinEvaluator<Value, Argument, degree, low, subdegree, fma>::
+    EvaluateDerivative(Coefficients const& coefficients,
+                       Argument const& argument,
+                       ArgumentSquares const& argument_squares) {
   static_assert(subdegree >= 2,
                 "Unexpected subdegree in InternalEstrinEvaluator::"
                 "EvaluateDerivative");
@@ -152,18 +162,22 @@ EvaluateDerivative(Coefficients const& coefficients,
   constexpr int n = FloorLog2(subdegree) - 1;
   // |m| is |2^(n + 1)|.
   constexpr int m = PowerOf2Le(subdegree);
-  return InternalEstrinEvaluator<Value, Argument, degree,
-                                 low, m - 1>::
+  return InternalEstrinEvaluator<Value, Argument, degree, low, m - 1, fma>::
              EvaluateDerivative(coefficients, argument, argument_squares) +
          std::get<n>(argument_squares) *
-             InternalEstrinEvaluator<Value, Argument, degree,
-                                     low + m, subdegree - m>::
-                 EvaluateDerivative(coefficients, argument, argument_squares);
+             InternalEstrinEvaluator<Value,
+                                     Argument,
+                                     degree,
+                                     low + m,
+                                     subdegree - m,
+                                     fma>::EvaluateDerivative(coefficients,
+                                                              argument,
+                                                              argument_squares);
 }
 
-template<typename Value, typename Argument, int degree, int low>
+template<typename Value, typename Argument, int degree, int low, bool fma>
 Derivative<Value, Argument, low>
-InternalEstrinEvaluator<Value, Argument, degree, low, 1>::Evaluate(
+InternalEstrinEvaluator<Value, Argument, degree, low, 1, fma>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument,
     ArgumentSquares const& argument_squares) {
@@ -171,35 +185,36 @@ InternalEstrinEvaluator<Value, Argument, degree, low, 1>::Evaluate(
          argument * std::get<low + 1>(coefficients);
 }
 
-template<typename Value, typename Argument, int degree, int low>
+template<typename Value, typename Argument, int degree, int low, bool fma>
 Derivative<Value, Argument, low>
-InternalEstrinEvaluator<Value, Argument, degree, low, 0>::Evaluate(
+InternalEstrinEvaluator<Value, Argument, degree, low, 0, fma>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument,
     ArgumentSquares const& argument_squares) {
   return std::get<low>(coefficients);
 }
 
-template<typename Value, typename Argument, int degree, int low>
+template<typename Value, typename Argument, int degree, int low, bool fma>
 Derivative<Value, Argument, low>
-InternalEstrinEvaluator<Value, Argument, degree, low, 1>::EvaluateDerivative(
-    Coefficients const& coefficients,
-    Argument const& argument,
-    ArgumentSquares const& argument_squares) {
+InternalEstrinEvaluator<Value, Argument, degree, low, 1, fma>::
+    EvaluateDerivative(Coefficients const& coefficients,
+                       Argument const& argument,
+                       ArgumentSquares const& argument_squares) {
   return low * std::get<low>(coefficients) +
          argument * (low + 1) * std::get<low + 1>(coefficients);
 }
 
-template<typename Value, typename Argument, int degree, int low>
+template<typename Value, typename Argument, int degree, int low, bool fma>
 Derivative<Value, Argument, low>
-InternalEstrinEvaluator<Value, Argument, degree, low, 0>::EvaluateDerivative(
-    Coefficients const& coefficients,
-    Argument const& argument,
-    ArgumentSquares const& argument_squares) {
+InternalEstrinEvaluator<Value, Argument, degree, low, 0, fma>::
+    EvaluateDerivative(Coefficients const& coefficients,
+                       Argument const& argument,
+                       ArgumentSquares const& argument_squares) {
   return low * std::get<low>(coefficients);
 }
 
 template<typename Value, typename Argument, int degree>
+template<bool fma>
 Value EstrinEvaluator<Value, Argument, degree>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument) {
@@ -207,7 +222,8 @@ Value EstrinEvaluator<Value, Argument, degree>::Evaluate(
                                                     Argument,
                                                     degree,
                                                     /*low=*/0,
-                                                    /*subdegree=*/degree>;
+                                                    /*subdegree=*/degree,
+                                                    fma>;
   return InternalEvaluator::Evaluate(
       coefficients,
       argument,
@@ -215,6 +231,7 @@ Value EstrinEvaluator<Value, Argument, degree>::Evaluate(
 }
 
 template<typename Value, typename Argument, int degree>
+template<bool fma>
 Derivative<Value, Argument>
 EstrinEvaluator<Value, Argument, degree>::EvaluateDerivative(
     Coefficients const& coefficients,
@@ -226,7 +243,8 @@ EstrinEvaluator<Value, Argument, degree>::EvaluateDerivative(
                                                       Argument,
                                                       degree,
                                                       /*low=*/1,
-                                                      /*subdegree=*/degree - 1>;
+                                                      /*subdegree=*/degree - 1,
+                                                      fma>;
     return InternalEvaluator::EvaluateDerivative(
         coefficients,
         argument,
@@ -237,7 +255,7 @@ EstrinEvaluator<Value, Argument, degree>::EvaluateDerivative(
 // Internal helper for Horner evaluation.  |degree| is the degree of the overall
 // polynomial, |low| defines the subpolynomial that we currently evaluate, i.e.,
 // the one with a constant term coefficient |std::get<low>(coefficients)|.
-template<typename Value, typename Argument, int degree, int low>
+template<typename Value, typename Argument, int degree, int low, bool fma>
 struct InternalHornerEvaluator {
   using Coefficients =
       typename PolynomialInMonomialBasis<Value, Argument, degree,
@@ -251,8 +269,8 @@ struct InternalHornerEvaluator {
                      Argument const& argument);
 };
 
-template<typename Value, typename Argument, int degree>
-struct InternalHornerEvaluator<Value, Argument, degree, degree> {
+template<typename Value, typename Argument, int degree, bool fma>
+struct InternalHornerEvaluator<Value, Argument, degree, degree, fma> {
   using Coefficients =
       typename PolynomialInMonomialBasis<Value, Argument, degree,
                                          HornerEvaluator>::Coefficients;
@@ -265,53 +283,55 @@ struct InternalHornerEvaluator<Value, Argument, degree, degree> {
                      Argument const& argument);
 };
 
-template<typename Value, typename Argument, int degree, int low>
+template<typename Value, typename Argument, int degree, int low, bool fma>
 Derivative<Value, Argument, low>
-InternalHornerEvaluator<Value, Argument, degree, low>::Evaluate(
+InternalHornerEvaluator<Value, Argument, degree, low, fma>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument) {
   return std::get<low>(coefficients) +
          argument *
-         InternalHornerEvaluator<Value, Argument, degree, low + 1>::
+         InternalHornerEvaluator<Value, Argument, degree, low + 1, fma>::
              Evaluate(coefficients, argument);
 }
 
-template<typename Value, typename Argument, int degree, int low>
+template<typename Value, typename Argument, int degree, int low, bool fma>
 Derivative<Value, Argument, low>
-InternalHornerEvaluator<Value, Argument, degree, low>::EvaluateDerivative(
+InternalHornerEvaluator<Value, Argument, degree, low, fma>::EvaluateDerivative(
     Coefficients const& coefficients,
     Argument const& argument) {
   return std::get<low>(coefficients) * low +
          argument *
-         InternalHornerEvaluator<Value, Argument, degree, low + 1>::
-             EvaluateDerivative(coefficients, argument);
+             InternalHornerEvaluator<Value, Argument, degree, low + 1, fma>::
+                 EvaluateDerivative(coefficients, argument);
 }
 
-template<typename Value, typename Argument, int degree>
+template<typename Value, typename Argument, int degree, bool fma>
 Derivative<Value, Argument, degree>
-InternalHornerEvaluator<Value, Argument, degree, degree>::Evaluate(
+InternalHornerEvaluator<Value, Argument, degree, degree, fma>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument) {
   return std::get<degree>(coefficients);
 }
 
-template<typename Value, typename Argument, int degree>
+template<typename Value, typename Argument, int degree, bool fma>
 Derivative<Value, Argument, degree>
-InternalHornerEvaluator<Value, Argument, degree, degree>::EvaluateDerivative(
-    Coefficients const& coefficients,
-    Argument const& argument) {
+InternalHornerEvaluator<Value, Argument, degree, degree, fma>::
+    EvaluateDerivative(Coefficients const& coefficients,
+                       Argument const& argument) {
   return std::get<degree>(coefficients) * degree;
 }
 
 template<typename Value, typename Argument, int degree>
+template<bool fma>
 Value HornerEvaluator<Value, Argument, degree>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument) {
-  return InternalHornerEvaluator<Value, Argument, degree, /*low=*/0>::Evaluate(
-      coefficients, argument);
+  return InternalHornerEvaluator<Value, Argument, degree, /*low=*/0, fma>::
+      Evaluate(coefficients, argument);
 }
 
 template<typename Value, typename Argument, int degree>
+template<bool fma>
 Derivative<Value, Argument>
 HornerEvaluator<Value, Argument, degree>::EvaluateDerivative(
     Coefficients const& coefficients,
@@ -319,7 +339,7 @@ HornerEvaluator<Value, Argument, degree>::EvaluateDerivative(
   if constexpr (degree == 0) {
     return Derivative<Value, Argument>{};
   } else {
-    return InternalHornerEvaluator<Value, Argument, degree, /*low=*/1>::
+    return InternalHornerEvaluator<Value, Argument, degree, /*low=*/1, fma>::
         EvaluateDerivative(coefficients, argument);
   }
 }

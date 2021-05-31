@@ -385,6 +385,20 @@ Polynomial<Value_, Argument_>::ReadFromMessage(
 
 #undef PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE
 
+template<typename Value_, typename Argument_>
+Value_ Polynomial<Value_, Argument_>::operator()(
+    Argument const& argument) const {
+  return UseHardwareFMA ? EvaluateWithFMA(argument)
+                        : EvaluateWithoutFMA(argument);
+}
+
+template<typename Value_, typename Argument_>
+Derivative<Value_, Argument_> Polynomial<Value_, Argument_>::EvaluateDerivative(
+    Argument const& argument) const {
+  return UseHardwareFMA ? EvaluateDerivativeWithFMA(argument)
+                        : EvaluateDerivativeWithoutFMA(argument);
+}
+
 template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator>
 constexpr
@@ -416,23 +430,6 @@ operator PolynomialInMonomialBasis<Value_, Argument_, higher_degree_,
   TupleAssigner<typename Result::Coefficients, Coefficients>::Assign(
       higher_coefficients, coefficients_);
   return Result(higher_coefficients, origin_);
-}
-
-template<typename Value_, typename Argument_, int degree_,
-         template<typename, typename, int> typename Evaluator>
-Value_ PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::
-operator()(Argument const& argument) const {
-  return Evaluator<Value, Difference<Argument>, degree_>::Evaluate(
-      coefficients_, argument - origin_);
-}
-
-template<typename Value_, typename Argument_, int degree_,
-         template<typename, typename, int> typename Evaluator>
-Derivative<Value_, Argument_>
-PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::
-EvaluateDerivative(Argument const& argument) const {
-  return Evaluator<Value, Difference<Argument>, degree_>::EvaluateDerivative(
-      coefficients_, argument - origin_);
 }
 
 template<typename Value_, typename Argument_, int degree_,
@@ -567,6 +564,40 @@ ReadFromMessage(serialization::Polynomial const& message) {
                                 serialization::PolynomialInMonomialBasis>::
                                 ReadFromMessage(extension);
   return PolynomialInMonomialBasis(coefficients, origin);
+}
+
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator>
+Value_ PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::
+    EvaluateWithFMA(Argument const& argument) const {
+  return Evaluator<Value, Difference<Argument>, degree_>::Evaluate<
+      /*fma=*/true>(coefficients_, argument - origin_);
+}
+
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator>
+Value_ PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::
+    EvaluateWithoutFMA(Argument const& argument) const {
+  return Evaluator<Value, Difference<Argument>, degree_>::Evaluate<
+      /*fma=*/false>(coefficients_, argument - origin_);
+}
+
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator>
+Derivative<Value_, Argument_>
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::
+    EvaluateDerivativeWithFMA(Argument const& argument) const {
+  return Evaluator<Value, Difference<Argument>, degree_>::EvaluateDerivative<
+      /*fma=*/true>(coefficients_, argument - origin_);
+}
+
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator>
+Derivative<Value_, Argument_>
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::
+    EvaluateDerivativeWithoutFMA(Argument const& argument) const {
+  return Evaluator<Value, Difference<Argument>, degree_>::EvaluateDerivative<
+      /*fma=*/false>(coefficients_, argument - origin_);
 }
 
 template<typename Value, typename Argument, int rdegree_,

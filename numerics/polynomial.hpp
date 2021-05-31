@@ -76,9 +76,9 @@ class Polynomial {
   // making the destructor protected and nonvirtual.
   virtual ~Polynomial() = default;
 
-  virtual Value operator()(Argument const& argument) const = 0;
-  virtual Derivative<Value, Argument> EvaluateDerivative(
-      Argument const& argument) const = 0;
+  Value operator()(Argument const& argument) const;
+  Derivative<Value, Argument> EvaluateDerivative(
+      Argument const& argument) const;
 
   // Only useful for benchmarking, analyzing performance or for downcasting.  Do
   // not use in other circumstances.
@@ -95,6 +95,16 @@ class Polynomial {
   template<template<typename, typename, int> typename Evaluator>
   static not_null<std::unique_ptr<Polynomial>> ReadFromMessage(
       serialization::Polynomial const& message);
+
+ protected:
+  // We need to dispatch both on the subclass of Polynomial (in practice, on the
+  // degree) and on the availability of FMA, so we do both at the same time.
+  virtual Value EvaluateWithFMA(Argument const& argument) const = 0;
+  virtual Value EvaluateWithoutFMA(Argument const& argument) const = 0;
+  virtual Derivative<Value, Argument> EvaluateDerivativeWithFMA(
+      Argument const& argument) const = 0;
+  virtual Derivative<Value, Argument> EvaluateDerivativeWithoutFMA(
+      Argument const& argument) const = 0;
 };
 
 template<typename Value_, typename Argument_, int degree_,
@@ -125,10 +135,6 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
            template<typename, typename, int> class HigherEvaluator>
   explicit operator PolynomialInMonomialBasis<
       Value, Argument, higher_degree_, HigherEvaluator>() const;
-
-  Value operator()(Argument const& argument) const override;
-  Derivative<Value, Argument> EvaluateDerivative(
-      Argument const& argument) const override;
 
   constexpr int degree() const override;
   bool is_zero() const override;
@@ -163,6 +169,14 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
       not_null<serialization::Polynomial*> message) const override;
   static PolynomialInMonomialBasis ReadFromMessage(
       serialization::Polynomial const& message);
+
+protected:
+  Value EvaluateWithFMA(Argument const& argument) const override;
+  Value EvaluateWithoutFMA(Argument const& argument) const override;
+  quantities::Derivative<Value, Argument> EvaluateDerivativeWithFMA(
+      Argument const& argument) const override;
+  quantities::Derivative<Value, Argument> EvaluateDerivativeWithoutFMA(
+      Argument const& argument) const override;
 
  private:
   Coefficients coefficients_;
