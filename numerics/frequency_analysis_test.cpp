@@ -125,8 +125,8 @@ TEST_F(FrequencyAnalysisTest, PreciseModeScalar) {
   polynomials.emplace_back(
       ω,
       Series0::Polynomials{
-          /*sin=*/Series0::PeriodicPolynomial({1 * Metre}, t0_),
-          /*cos=*/Series0::PeriodicPolynomial({0 * Metre}, t0_)});
+          .sin = Series0::PeriodicPolynomial({1 * Metre}, t0_),
+          .cos = Series0::PeriodicPolynomial({0 * Metre}, t0_)});
 
   // Noise with lower amplitude and higher frequency.
   for (int i = 0; i < 10; ++i) {
@@ -135,8 +135,8 @@ TEST_F(FrequencyAnalysisTest, PreciseModeScalar) {
     polynomials.emplace_back(
         ω * frequency_distribution(random),
         Series0::Polynomials{
-            /*sin=*/Series0::PeriodicPolynomial({sin_amplitude}, t0_),
-            /*cos=*/Series0::PeriodicPolynomial({cos_amplitude}, t0_)});
+            .sin = Series0::PeriodicPolynomial({sin_amplitude}, t0_),
+            .cos = Series0::PeriodicPolynomial({cos_amplitude}, t0_)});
   }
   Series0 const sin(Series0::AperiodicPolynomial(
                         {amplitude_distribution(random) * Metre}, t0_),
@@ -183,9 +183,9 @@ TEST_F(FrequencyAnalysisTest, PreciseModeVector) {
   polynomials.emplace_back(
       ω,
       Series0::Polynomials{
-          /*sin=*/Series0::PeriodicPolynomial(
+          .sin = Series0::PeriodicPolynomial(
               {Displacement<World>({1 * Metre, 2 * Metre, 3 * Metre})}, t0_),
-          /*cos=*/Series0::PeriodicPolynomial(
+          .cos = Series0::PeriodicPolynomial(
               {Displacement<World>({-5 * Metre, 7 * Metre, 11 * Metre})},
               t0_)});
   Series0 const sin(Series0::AperiodicPolynomial(Displacement<World>(), t0_),

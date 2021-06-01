@@ -13,7 +13,7 @@ $dependencies = @(".\Google\glog\google-glog.sln",
 
 push-location -path "Google"
 foreach ($repository in @("glog", "googletest", "protobuf", "benchmark",
-                          "gipfeli", "abseil-cpp")) {
+                          "gipfeli", "abseil-cpp", "chromium")) {
   if (!(test-path -path $repository)) {
     git clone ("https://github.com/mockingbirdnest/" + $repository + ".git")
   }

@@ -224,9 +224,9 @@ class OrbitAnalysisTest : public ::testing::Test {
     auto ground_track = OrbitGroundTrack::ForTrajectory(
         *earth_centred_trajectory,
         earth_,
-        {{/*epoch=*/J2000,
-          /*mean_longitude_at_epoch=*/newcomb_mean_longitude(J2000),
-          /*year*/ 2 * π * Radian /
+        {{.epoch = J2000,
+          .mean_longitude_at_epoch = newcomb_mean_longitude(J2000),
+          .year = 2 * π * Radian /
               newcomb_mean_longitude.EvaluateDerivative(J2000)}}).value();
     return {std::move(elements), recurrence, std::move(ground_track)};
   }

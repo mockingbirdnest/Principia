@@ -26,11 +26,14 @@ using astronomy::Parsec;
 using astronomy::JovianGravitationalParameter;
 using astronomy::SolarGravitationalParameter;
 using astronomy::TerrestrialGravitationalParameter;
+using base::CPUFeatureFlags;
+using base::HasCPUFeatures;
 using constants::GravitationalConstant;
 using constants::SpeedOfLight;
 using constants::StandardGravity;
 using constants::VacuumPermeability;
 using constants::VacuumPermittivity;
+using numerics::CanEmitFMAInstructions;
 using si::Ampere;
 using si::Coulomb;
 using si::Day;
@@ -54,6 +57,10 @@ using ::testing::Lt;
 class ElementaryFunctionsTest : public testing::Test {};
 
 TEST_F(ElementaryFunctionsTest, FMA) {
+  if (!CanEmitFMAInstructions || !HasCPUFeatures(CPUFeatureFlags::FMA)) {
+    LOG(ERROR) << "Cannot test FMA on a machine without FMA";
+    return;
+  }
   EXPECT_EQ(11 * Coulomb,
             FusedMultiplyAdd(2 * Ampere, 3 * Second, 5 * Coulomb));
   EXPECT_EQ(11 * Radian, FusedMultiplyAdd(2.0, 3 * Radian, 5 * Radian));

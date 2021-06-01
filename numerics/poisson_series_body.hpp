@@ -101,8 +101,8 @@ AngularFrequencyPrimitive(
 
   // Integration by parts.
   typename Result::Polynomials const first_part{
-      /*sin=*/PeriodicPolynomial(polynomials.cos / ω * Radian),
-      /*cos=*/PeriodicPolynomial(-polynomials.sin / ω * Radian)};
+      .sin = PeriodicPolynomial(polynomials.cos / ω * Radian),
+      .cos = PeriodicPolynomial(-polynomials.sin / ω * Radian)};
   if constexpr (periodic_degree == 0) {
     return first_part;
   } else {
@@ -114,10 +114,10 @@ AngularFrequencyPrimitive(
         AngularFrequencyPrimitive<Value,
                                   aperiodic_degree - 1, periodic_degree - 1,
                                   Evaluator>(ω,
-                                             {/*sin=*/sin_polynomial,
-                                              /*cos=*/cos_polynomial});
-    return {/*sin=*/first_part.sin + second_part.sin,
-            /*cos=*/first_part.cos + second_part.cos};
+                                             {.sin = sin_polynomial,
+                                              .cos = cos_polynomial});
+    return {.sin = first_part.sin + second_part.sin,
+            .cos = first_part.cos + second_part.cos};
   }
 }
 
@@ -170,8 +170,8 @@ auto Multiply(PoissonSeries<LValue,
     auto const sin_polynomial = typename Result::PeriodicPolynomial(
         product(polynomials.sin, right.aperiodic_));
     periodic.emplace_back(ω,
-                          typename Result::Polynomials{/*sin=*/sin_polynomial,
-                                                       /*cos=*/cos_polynomial});
+                          typename Result::Polynomials{.sin = sin_polynomial,
+                                                       .cos = cos_polynomial});
   }
   for (auto const& [ω, polynomials] : right.periodic_) {
     auto const cos_polynomial = typename Result::PeriodicPolynomial(
@@ -179,8 +179,8 @@ auto Multiply(PoissonSeries<LValue,
     auto const sin_polynomial = typename Result::PeriodicPolynomial(
         product(left.aperiodic_, polynomials.sin));
     periodic.emplace_back(ω,
-                          typename Result::Polynomials{/*sin=*/sin_polynomial,
-                                                       /*cos=*/cos_polynomial});
+                          typename Result::Polynomials{.sin = sin_polynomial,
+                                                       .cos = cos_polynomial});
   }
   for (auto const& [ωl, polynomials_left] : left.periodic_) {
     for (auto const& [ωr, polynomials_right] : right.periodic_) {
@@ -194,12 +194,12 @@ auto Multiply(PoissonSeries<LValue,
           product(polynomials_left.sin, polynomials_right.sin));
       periodic.emplace_back(
           ωl - ωr,
-          typename Result::Polynomials{/*sin=*/(-cos_sin + sin_cos) / 2,
-                                       /*cos=*/(sin_sin + cos_cos) / 2});
+          typename Result::Polynomials{.sin = (-cos_sin + sin_cos) / 2,
+                                       .cos = (sin_sin + cos_cos) / 2});
       periodic.emplace_back(
           ωl + ωr,
-          typename Result::Polynomials{/*sin=*/(cos_sin + sin_cos) / 2,
-                                       /*cos=*/(-sin_sin + cos_cos) / 2});
+          typename Result::Polynomials{.sin = (cos_sin + sin_cos) / 2,
+                                       .cos = (-sin_sin + cos_cos) / 2});
     }
   }
 
@@ -239,8 +239,8 @@ operator PoissonSeries<Value,
     periodic.emplace_back(
         ω,
         typename Result::Polynomials{
-            /*sin=*/typename Result::PeriodicPolynomial(polynomials.sin),
-            /*cos=*/typename Result::PeriodicPolynomial(polynomials.cos)});
+            .sin = typename Result::PeriodicPolynomial(polynomials.sin),
+            .cos = typename Result::PeriodicPolynomial(polynomials.cos)});
   }
   return Result(typename Result::TrustedPrivateConstructor{},
                 std::move(aperiodic),
@@ -295,10 +295,10 @@ PoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::AtOrigin(
     PeriodicPolynomial const sin_at_origin = polynomials.sin.AtOrigin(origin);
     PeriodicPolynomial const cos_at_origin = polynomials.cos.AtOrigin(origin);
     periodic.emplace_back(ω,
-                          Polynomials{/*sin=*/sin_at_origin * cos_ω_shift -
-                                              cos_at_origin * sin_ω_shift,
-                                      /*cos=*/sin_at_origin * sin_ω_shift +
-                                              cos_at_origin * cos_ω_shift});
+                          Polynomials{.sin = sin_at_origin * cos_ω_shift -
+                                             cos_at_origin * sin_ω_shift,
+                                      .cos = sin_at_origin * sin_ω_shift +
+                                             cos_at_origin * cos_ω_shift});
   }
   return {TrustedPrivateConstructor{},
           std::move(aperiodic),
@@ -457,7 +457,7 @@ ReadFromMessage(serialization::PoissonSeries const& message) {
         polynomial_and_angular_frequency.sin());
     auto const cos = PeriodicPolynomial::ReadFromMessage(
         polynomial_and_angular_frequency.cos());
-    periodic.emplace_back(ω, Polynomials{/*sin=*/sin, /*cos=*/cos});
+    periodic.emplace_back(ω, Polynomials{.sin = sin, .cos = cos});
   }
   return PoissonSeries(aperiodic, periodic);
 }
@@ -570,7 +570,7 @@ Split(AngularFrequency const& ω_cutoff) const {
     PoissonSeries fast(TrustedPrivateConstructor{},
                        aperiodic_,
                        std::move(fast_periodic));
-    return {/*slow=*/std::move(slow), /*fast=*/std::move(fast)};
+    return {.slow = std::move(slow), .fast = std::move(fast)};
   } else {
     PoissonSeries slow(TrustedPrivateConstructor{},
                        aperiodic_,
@@ -579,7 +579,7 @@ Split(AngularFrequency const& ω_cutoff) const {
                        typename PoissonSeries::AperiodicPolynomial(
                            {}, aperiodic_.origin()),
                        std::move(fast_periodic));
-    return {/*slow=*/std::move(slow), /*fast=*/std::move(fast)};
+    return {.slow = std::move(slow), .fast = std::move(fast)};
   }
 }
 
@@ -609,8 +609,8 @@ operator-(PoissonSeries<Value,
   for (auto const& [ω, polynomials] : right.periodic_) {
     periodic.emplace_back(
         ω,
-        typename Result::Polynomials{/*sin=*/-polynomials.sin,
-                                     /*cos=*/-polynomials.cos});
+        typename Result::Polynomials{.sin = -polynomials.sin,
+                                     .cos = -polynomials.cos});
   }
   return {typename Result::TrustedPrivateConstructor{},
           std::move(aperiodic),
@@ -656,16 +656,16 @@ operator+(PoissonSeries<Value,
       periodic.emplace_back(
           ωl,
           typename Result::Polynomials{
-              /*sin=*/PeriodicPolynomial(polynomials_left.sin),
-              /*cos=*/PeriodicPolynomial(polynomials_left.cos)});
+              .sin = PeriodicPolynomial(polynomials_left.sin),
+              .cos = PeriodicPolynomial(polynomials_left.cos)});
       ++it_left;
     } else if (ωr < ωl) {
       auto const& polynomials_right = it_right->second;
       periodic.emplace_back(
           ωr,
           typename Result::Polynomials{
-              /*sin=*/PeriodicPolynomial(polynomials_right.sin),
-              /*cos=*/PeriodicPolynomial(polynomials_right.cos)});
+              .sin = PeriodicPolynomial(polynomials_right.sin),
+              .cos = PeriodicPolynomial(polynomials_right.cos)});
       ++it_right;
     } else {
       DCHECK_EQ(ωl, ωr);
@@ -674,8 +674,8 @@ operator+(PoissonSeries<Value,
       periodic.emplace_back(
           ωl,
           typename Result::Polynomials{
-              /*sin=*/polynomials_left.sin + polynomials_right.sin,
-              /*cos=*/polynomials_left.cos + polynomials_right.cos});
+              .sin = polynomials_left.sin + polynomials_right.sin,
+              .cos = polynomials_left.cos + polynomials_right.cos});
       ++it_left;
       ++it_right;
     }
@@ -725,16 +725,16 @@ operator-(PoissonSeries<Value,
       periodic.emplace_back(
           ωl,
           typename Result::Polynomials{
-              /*sin=*/PeriodicPolynomial(polynomials_left.sin),
-              /*cos=*/PeriodicPolynomial(polynomials_left.cos)});
+              .sin = PeriodicPolynomial(polynomials_left.sin),
+              .cos = PeriodicPolynomial(polynomials_left.cos)});
       ++it_left;
     } else if (ωr < ωl) {
       auto const& polynomials_right = it_right->second;
       periodic.emplace_back(
           ωr,
           typename Result::Polynomials{
-              /*sin=*/PeriodicPolynomial(-polynomials_right.sin),
-              /*cos=*/PeriodicPolynomial(-polynomials_right.cos)});
+              .sin = PeriodicPolynomial(-polynomials_right.sin),
+              .cos = PeriodicPolynomial(-polynomials_right.cos)});
       ++it_right;
     } else {
       DCHECK_EQ(ωl, ωr);
@@ -743,8 +743,8 @@ operator-(PoissonSeries<Value,
       periodic.emplace_back(
           ωl,
           typename Result::Polynomials{
-              /*sin=*/polynomials_left.sin - polynomials_right.sin,
-              /*cos=*/polynomials_left.cos - polynomials_right.cos});
+              .sin = polynomials_left.sin - polynomials_right.sin,
+              .cos = polynomials_left.cos - polynomials_right.cos});
       ++it_left;
       ++it_right;
     }
@@ -775,8 +775,8 @@ operator*(Scalar const& left,
   for (auto const& [ω, polynomials] : right.periodic_) {
     periodic.emplace_back(
         ω,
-        typename Result::Polynomials{/*sin=*/left * polynomials.sin,
-                                     /*cos=*/left * polynomials.cos});
+        typename Result::Polynomials{.sin = left * polynomials.sin,
+                                     .cos = left * polynomials.cos});
   }
   return {typename Result::PrivateConstructor{},
           std::move(aperiodic),
@@ -802,8 +802,8 @@ operator*(PoissonSeries<Value,
   for (auto const& [ω, polynomials] : left.periodic_) {
     periodic.emplace_back(
         ω,
-        typename Result::Polynomials{/*sin=*/polynomials.sin * right,
-                                     /*cos=*/polynomials.cos * right});
+        typename Result::Polynomials{.sin = polynomials.sin * right,
+                                     .cos = polynomials.cos * right});
   }
   return {typename Result::TrustedPrivateConstructor{},
           std::move(aperiodic),
@@ -829,8 +829,8 @@ operator/(PoissonSeries<Value,
   for (auto const& [ω, polynomials] : left.periodic_) {
     periodic.emplace_back(
         ω,
-        typename Result::Polynomials{/*sin=*/polynomials.sin / right,
-                                     /*cos=*/polynomials.cos / right});
+        typename Result::Polynomials{.sin = polynomials.sin / right,
+                                     .cos = polynomials.cos / right});
   }
   return {typename Result::TrustedPrivateConstructor{},
           std::move(aperiodic),

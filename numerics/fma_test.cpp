@@ -17,7 +17,7 @@ class FMATest : public testing::Test {};
 
 TEST_F(FMATest, FMA) {
   // Note that we test even if |UseHardwareFMA| is false, i.e., even in debug.
-  if (!HasCPUFeatures(CPUFeatureFlags::FMA)) {
+  if (!CanEmitFMAInstructions || !HasCPUFeatures(CPUFeatureFlags::FMA)) {
     LOG(ERROR) << "Cannot test FMA on a machine without FMA";
     return;
   }
