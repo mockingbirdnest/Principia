@@ -11,10 +11,18 @@ namespace internal_fma {
 
 using base::CPUFeatureFlags;
 
+// With clang, using FMA requires VEX-encoding everything; see #3019.
+#if PRINCIPIA_COMPILER_MSVC
+constexpr bool CanEmitFMAInstructions = true;
+#else
+constexpr bool CanEmitFMAInstructions = false;
+#endif
+
 // The functions in this file unconditionally wrap the appropriate intrinsics.
 // The caller may only use them if |UseHardwareFMA| is true.
 #if PRINCIPIA_USE_FMA_IF_AVAILABLE
-inline bool const UseHardwareFMA = HasCPUFeatures(CPUFeatureFlags::FMA);
+inline bool const UseHardwareFMA =
+    CanEmitFMAInstructions && HasCPUFeatures(CPUFeatureFlags::FMA);
 #else
 inline bool const UseHardwareFMA = false;
 #endif
@@ -33,6 +41,7 @@ inline double FusedNegatedMultiplySubtract(double a, double b, double c);
 
 }  // namespace internal_fma
 
+using internal_fma::CanEmitFMAInstructions;
 using internal_fma::FusedMultiplyAdd;
 using internal_fma::FusedMultiplySubtract;
 using internal_fma::FusedNegatedMultiplyAdd;
