@@ -18,6 +18,9 @@ namespace geometry {
 
 using astronomy::J2000;
 using astronomy::operator""_TT;
+using base::CPUFeatureFlags;
+using base::HasCPUFeatures;
+using numerics::CanEmitFMAInstructions;
 using quantities::Length;
 using quantities::Time;
 using quantities::Volume;
@@ -41,6 +44,10 @@ class PointTest : public testing::Test {
 using PointDeathTest = PointTest;
 
 TEST_F(PointTest, FMA) {
+  if (!CanEmitFMAInstructions || !HasCPUFeatures(CPUFeatureFlags::FMA)) {
+    LOG(ERROR) << "Cannot test FMA on a machine without FMA";
+    return;
+  }
   EXPECT_THAT(FusedMultiplyAdd(3 * Litre, 5 * Second / Litre, mjd0),
               AlmostEquals(mjd0 + 15 * Second, 0));
   EXPECT_THAT(FusedNegatedMultiplyAdd(3, 5 * Second, mjd0),
