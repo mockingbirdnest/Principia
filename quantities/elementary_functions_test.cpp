@@ -58,8 +58,7 @@ class ElementaryFunctionsTest : public testing::Test {};
 
 TEST_F(ElementaryFunctionsTest, FMA) {
   if (!CanEmitFMAInstructions || !HasCPUFeatures(CPUFeatureFlags::FMA)) {
-    LOG(ERROR) << "Cannot test FMA on a machine without FMA";
-    return;
+    GTEST_SKIP() << "Cannot test FMA on a machine without FMA";
   }
   EXPECT_EQ(11 * Coulomb,
             FusedMultiplyAdd(2 * Ampere, 3 * Second, 5 * Coulomb));
