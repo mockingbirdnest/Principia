@@ -382,7 +382,7 @@ R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplyAdd(
     R3Element<RScalar> const& b,
     R3Element<Product<LScalar, RScalar>> const& c) {
   if constexpr (CanEmitFMAInstructions) {
-    __m128d const b_128d = ToM128D(a);
+    __m128d const a_128d = ToM128D(a);
     return R3Element<Product<LScalar, RScalar>>(
         _mm_fnmadd_pd(a_128d, b.xy, c.xy), _mm_fnmadd_sd(a_128d, b.zt, c.zt));
   } else {
