@@ -65,14 +65,11 @@ class Point final {
   template<typename V>
   friend Point<V> operator+(V const& translation, Point<V> const& point);
   template<typename L, typename R>
-  friend Point<Product<L, R>> FusedMultiplyAdd(L const& a,
-                                               R const& b,
+  friend Point<Product<L, R>> FusedMultiplyAdd(L const& a, R const& b,
                                                Point<Product<L, R>> const& c);
   template<typename L, typename R>
   friend Point<Product<L, R>> FusedNegatedMultiplyAdd(
-      L const& a,
-      R const& b,
-      Point<Product<L, R>> const& c);
+      L const& a, R const& b, Point<Product<L, R>> const& c);
 
   template<typename V>
   friend constexpr typename std::enable_if_t<is_quantity_v<V>, bool>

@@ -45,8 +45,7 @@ using PointDeathTest = PointTest;
 
 TEST_F(PointTest, FMA) {
   if (!CanEmitFMAInstructions || !HasCPUFeatures(CPUFeatureFlags::FMA)) {
-    LOG(ERROR) << "Cannot test FMA on a machine without FMA";
-    return;
+    GTEST_SKIP() << "Cannot test FMA on a machine without FMA";
   }
   EXPECT_THAT(FusedMultiplyAdd(3 * Litre, 5 * Second / Litre, mjd0),
               AlmostEquals(mjd0 + 15 * Second, 0));

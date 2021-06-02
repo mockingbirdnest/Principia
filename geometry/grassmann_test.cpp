@@ -94,8 +94,7 @@ using GrassmannDeathTest = GrassmannTest;
 
 TEST_F(GrassmannTest, VectorFMA) {
   if (!CanEmitFMAInstructions || !HasCPUFeatures(CPUFeatureFlags::FMA)) {
-    LOG(ERROR) << "Cannot test FMA on a machine without FMA";
-    return;
+    GTEST_SKIP() << "Cannot test FMA on a machine without FMA";
   }
   Length const a = a_.x;
   Vector<Length, World> const v(v_);
@@ -114,8 +113,7 @@ TEST_F(GrassmannTest, VectorFMA) {
 
 TEST_F(GrassmannTest, BivectorFMA) {
   if (!CanEmitFMAInstructions || !HasCPUFeatures(CPUFeatureFlags::FMA)) {
-    LOG(ERROR) << "Cannot test FMA on a machine without FMA";
-    return;
+    GTEST_SKIP() << "Cannot test FMA on a machine without FMA";
   }
   Length const a = a_.x;
   Bivector<Length, World> const v(v_);
@@ -134,8 +132,7 @@ TEST_F(GrassmannTest, BivectorFMA) {
 
 TEST_F(GrassmannTest, TrivectorFMA) {
   if (!CanEmitFMAInstructions || !HasCPUFeatures(CPUFeatureFlags::FMA)) {
-    LOG(ERROR) << "Cannot test FMA on a machine without FMA";
-    return;
+    GTEST_SKIP() << "Cannot test FMA on a machine without FMA";
   }
   Length const a = a_.x;
   Trivector<Length, World> const v(v_.x);
