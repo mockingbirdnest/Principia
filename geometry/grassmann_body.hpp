@@ -379,7 +379,7 @@ Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplyAdd(
     Multivector<LScalar, Frame, rank> const& a,
     RScalar const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
-  return FusedMultiplyAdd(a.cooordinates(), b, c.coordinates());
+  return FusedMultiplyAdd(a.coordinates(), b, c.coordinates());
 }
 
 template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
@@ -395,7 +395,7 @@ Multivector<Product<LScalar, RScalar>, Frame, rank> FusedNegatedMultiplyAdd(
     Multivector<LScalar, Frame, rank> const& a,
     RScalar const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
-  return FusedNegatedMultiplyAdd(a.cooordinates(), b, c.coordinates());
+  return FusedNegatedMultiplyAdd(a.coordinates(), b, c.coordinates());
 }
 
 template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
