@@ -411,6 +411,43 @@ FusedNegatedMultiplySubtract(
       FusedNegatedMultiplySubtract(a.coordinates(), b, c.coordinates()));
 }
 
+template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplyAdd(
+    LScalar const& a,
+    Multivector<RScalar, Frame, rank> const& b,
+    Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
+  return Multivector<Product<LScalar, RScalar>, Frame, rank>(
+      FusedMultiplyAdd(a, b.coordinates(), c.coordinates()));
+}
+
+template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplySubtract(
+    LScalar const& a,
+    Multivector<RScalar, Frame, rank> const& b,
+    Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
+  return Multivector<Product<LScalar, RScalar>, Frame, rank>(
+      FusedMultiplySubtract(a, b.coordinates(), c.coordinates()));
+}
+
+template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+Multivector<Product<LScalar, RScalar>, Frame, rank> FusedNegatedMultiplyAdd(
+    LScalar const& a,
+    Multivector<RScalar, Frame, rank> const& b,
+    Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
+  return Multivector<Product<LScalar, RScalar>, Frame, rank>(
+      FusedNegatedMultiplyAdd(a, b.coordinates(), c.coordinates()));
+}
+
+template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+Multivector<Product<LScalar, RScalar>, Frame, rank>
+FusedNegatedMultiplySubtract(
+    LScalar const& a,
+    Multivector<RScalar, Frame, rank> const& b,
+    Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
+  return Multivector<Product<LScalar, RScalar>, Frame, rank>(
+      FusedNegatedMultiplySubtract(a, b.coordinates(), c.coordinates()));
+}
+
 template<typename Scalar, typename Frame, int rank>
 bool operator==(Multivector<Scalar, Frame, rank> const& left,
                 Multivector<Scalar, Frame, rank> const& right) {

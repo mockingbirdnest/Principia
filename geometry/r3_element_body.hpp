@@ -348,6 +348,62 @@ R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplySubtract(
   }
 }
 
+template<typename LScalar, typename RScalar, typename>
+R3Element<Product<LScalar, RScalar>> FusedMultiplyAdd(
+    LScalar const& a,
+    R3Element<RScalar> const& b,
+    R3Element<Product<LScalar, RScalar>> const& c) {
+  if constexpr (CanEmitFMAInstructions) {
+    __m128d const a_128d = ToM128D(a);
+    return R3Element<Product<LScalar, RScalar>>(
+        _mm_fmadd_pd(a_128d, b.xy, c.xy), _mm_fmadd_sd(a_128d, b.zt, c.zt));
+  } else {
+    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
+  }
+}
+
+template<typename LScalar, typename RScalar, typename>
+R3Element<Product<LScalar, RScalar>> FusedMultiplySubtract(
+    LScalar const& a,
+    R3Element<RScalar> const& b,
+    R3Element<Product<LScalar, RScalar>> const& c) {
+  if constexpr (CanEmitFMAInstructions) {
+    __m128d const a_128d = ToM128D(a);
+    return R3Element<Product<LScalar, RScalar>>(
+        _mm_fmsub_pd(a_128d, b.xy, c.xy), _mm_fmsub_sd(a_128d, b.zt, c.zt));
+  } else {
+    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
+  }
+}
+
+template<typename LScalar, typename RScalar, typename>
+R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplyAdd(
+    LScalar const& a,
+    R3Element<RScalar> const& b,
+    R3Element<Product<LScalar, RScalar>> const& c) {
+  if constexpr (CanEmitFMAInstructions) {
+    __m128d const b_128d = ToM128D(a);
+    return R3Element<Product<LScalar, RScalar>>(
+        _mm_fnmadd_pd(a_128d, b.xy, c.xy), _mm_fnmadd_sd(a_128d, b.zt, c.zt));
+  } else {
+    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
+  }
+}
+
+template<typename LScalar, typename RScalar, typename>
+R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplySubtract(
+    LScalar const& a,
+    R3Element<RScalar> const& b,
+    R3Element<Product<LScalar, RScalar>> const& c) {
+  if constexpr (CanEmitFMAInstructions) {
+    __m128d const a_128d = ToM128D(a);
+    return R3Element<Product<LScalar, RScalar>>(
+        _mm_fnmsub_pd(a_128d, b.xy, c.xy), _mm_fnmsub_sd(a_128d, b.zt, c.zt));
+  } else {
+    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
+  }
+}
+
 template<typename Scalar>
 bool operator==(R3Element<Scalar> const& left,
                 R3Element<Scalar> const& right) {
