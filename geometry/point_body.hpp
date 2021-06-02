@@ -128,6 +128,20 @@ Point<Vector> operator+(Vector const& translation,
   return point + translation;
 }
 
+template<typename L, typename R>
+Point<Product<L, R>> FusedMultiplyAdd(L const& a,
+                                      R const& b,
+                                      Point<Product<L, R>> const& c) {
+  return FusedMultiplyAdd(a, b, c.coordinates_);
+}
+
+template<typename L, typename R>
+Point<Product<L, R>> FusedNegatedMultiplyAdd(L const& a,
+                                             R const& b,
+                                             Point<Product<L, R>> const& c) {
+  return FusedNegatedMultiplyAdd(a, b, c.coordinates_);
+}
+
 template<typename Vector>
 constexpr typename std::enable_if_t<is_quantity_v<Vector>, bool> operator<(
     Point<Vector> const& left,
