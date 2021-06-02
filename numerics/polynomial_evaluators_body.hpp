@@ -226,8 +226,8 @@ InternalEstrinEvaluator<Value, Argument, degree, low, 1, fma>::
                        Argument const& argument,
                        ArgumentSquares const& argument_squares) {
   auto const& x = argument;
-  auto const& a = low * std::get<low>(coefficients);
-  auto const& b = (low + 1) * std::get<low + 1>(coefficients);
+  auto const& a = (low + 1) * std::get<low + 1>(coefficients);
+  auto const& b = low * std::get<low>(coefficients);
   if constexpr (fma) {
     return FusedMultiplyAdd(a, x, b);
   } else {
