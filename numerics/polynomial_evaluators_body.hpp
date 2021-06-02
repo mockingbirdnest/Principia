@@ -126,11 +126,11 @@ template<typename Value,
          int low,
          int subdegree,
          bool fma>
-Derivative<Value, Argument, low>
-InternalEstrinEvaluator<Value, Argument, degree, low, subdegree, fma>::Evaluate(
-    Coefficients const& coefficients,
-    Argument const& argument,
-    ArgumentSquares const& argument_squares) {
+FORCE_INLINE(inline) Derivative<Value, Argument, low>
+InternalEstrinEvaluator<Value, Argument, degree, low, subdegree, fma>::
+    Evaluate(Coefficients const& coefficients,
+             Argument const& argument,
+             ArgumentSquares const& argument_squares) {
   static_assert(subdegree >= 2,
                 "Unexpected subdegree in InternalEstrinEvaluator::Evaluate");
   // |n| is used to select |argument^(2^(n + 1))| = |argument^m|.
@@ -162,7 +162,7 @@ template<typename Value,
          int low,
          int subdegree,
          bool fma>
-Derivative<Value, Argument, low>
+FORCE_INLINE(inline) Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, low, subdegree, fma>::
     EvaluateDerivative(Coefficients const& coefficients,
                        Argument const& argument,
@@ -195,7 +195,7 @@ InternalEstrinEvaluator<Value, Argument, degree, low, subdegree, fma>::
 }
 
 template<typename Value, typename Argument, int degree, int low, bool fma>
-Derivative<Value, Argument, low>
+FORCE_INLINE(inline) Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, low, 1, fma>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument,
@@ -211,7 +211,7 @@ InternalEstrinEvaluator<Value, Argument, degree, low, 1, fma>::Evaluate(
 }
 
 template<typename Value, typename Argument, int degree, int low, bool fma>
-Derivative<Value, Argument, low>
+FORCE_INLINE(inline) Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, low, 0, fma>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument,
@@ -220,7 +220,7 @@ InternalEstrinEvaluator<Value, Argument, degree, low, 0, fma>::Evaluate(
 }
 
 template<typename Value, typename Argument, int degree, int low, bool fma>
-Derivative<Value, Argument, low>
+FORCE_INLINE(inline) Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, low, 1, fma>::
     EvaluateDerivative(Coefficients const& coefficients,
                        Argument const& argument,
@@ -236,7 +236,7 @@ InternalEstrinEvaluator<Value, Argument, degree, low, 1, fma>::
 }
 
 template<typename Value, typename Argument, int degree, int low, bool fma>
-Derivative<Value, Argument, low>
+FORCE_INLINE(inline) Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, low, 0, fma>::
     EvaluateDerivative(Coefficients const& coefficients,
                        Argument const& argument,
@@ -246,7 +246,7 @@ InternalEstrinEvaluator<Value, Argument, degree, low, 0, fma>::
 
 template<typename Value, typename Argument, int degree>
 template<bool fma>
-Value EstrinEvaluator<Value, Argument, degree>::Evaluate(
+FORCE_INLINE(inline) Value EstrinEvaluator<Value, Argument, degree>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument) {
   using InternalEvaluator = InternalEstrinEvaluator<Value,
@@ -263,7 +263,7 @@ Value EstrinEvaluator<Value, Argument, degree>::Evaluate(
 
 template<typename Value, typename Argument, int degree>
 template<bool fma>
-Derivative<Value, Argument>
+FORCE_INLINE(inline) Derivative<Value, Argument>
 EstrinEvaluator<Value, Argument, degree>::EvaluateDerivative(
     Coefficients const& coefficients,
     Argument const& argument) {
@@ -315,7 +315,7 @@ struct InternalHornerEvaluator<Value, Argument, degree, degree, fma> {
 };
 
 template<typename Value, typename Argument, int degree, int low, bool fma>
-Derivative<Value, Argument, low>
+FORCE_INLINE(inline) Derivative<Value, Argument, low>
 InternalHornerEvaluator<Value, Argument, degree, low, fma>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument) {
@@ -332,7 +332,7 @@ InternalHornerEvaluator<Value, Argument, degree, low, fma>::Evaluate(
 }
 
 template<typename Value, typename Argument, int degree, int low, bool fma>
-Derivative<Value, Argument, low>
+FORCE_INLINE(inline) Derivative<Value, Argument, low>
 InternalHornerEvaluator<Value, Argument, degree, low, fma>::EvaluateDerivative(
     Coefficients const& coefficients,
     Argument const& argument) {
@@ -349,15 +349,14 @@ InternalHornerEvaluator<Value, Argument, degree, low, fma>::EvaluateDerivative(
 }
 
 template<typename Value, typename Argument, int degree, bool fma>
-Derivative<Value, Argument, degree>
+FORCE_INLINE(inline) Derivative<Value, Argument, degree>
 InternalHornerEvaluator<Value, Argument, degree, degree, fma>::Evaluate(
-    Coefficients const& coefficients,
-    Argument const& argument) {
+    Coefficients const& coefficients, Argument const& argument) {
   return std::get<degree>(coefficients);
 }
 
 template<typename Value, typename Argument, int degree, bool fma>
-Derivative<Value, Argument, degree>
+FORCE_INLINE(inline) Derivative<Value, Argument, degree>
 InternalHornerEvaluator<Value, Argument, degree, degree, fma>::
     EvaluateDerivative(Coefficients const& coefficients,
                        Argument const& argument) {
@@ -366,7 +365,7 @@ InternalHornerEvaluator<Value, Argument, degree, degree, fma>::
 
 template<typename Value, typename Argument, int degree>
 template<bool fma>
-Value HornerEvaluator<Value, Argument, degree>::Evaluate(
+FORCE_INLINE(inline) Value HornerEvaluator<Value, Argument, degree>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument) {
   return InternalHornerEvaluator<Value, Argument, degree, /*low=*/0, fma>::
@@ -375,7 +374,7 @@ Value HornerEvaluator<Value, Argument, degree>::Evaluate(
 
 template<typename Value, typename Argument, int degree>
 template<bool fma>
-Derivative<Value, Argument>
+FORCE_INLINE(inline) Derivative<Value, Argument>
 HornerEvaluator<Value, Argument, degree>::EvaluateDerivative(
     Coefficients const& coefficients,
     Argument const& argument) {
