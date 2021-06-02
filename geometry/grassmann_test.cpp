@@ -103,11 +103,13 @@ TEST_F(GrassmannTest, VectorFMA) {
   EXPECT_THAT(FusedMultiplyAdd(a, v, w), AlmostEquals(a * v + w, 0));
   EXPECT_THAT(FusedMultiplySubtract(a, v, w), AlmostEquals(a * v - w, 0));
   EXPECT_THAT(FusedNegatedMultiplyAdd(a, v, w), AlmostEquals(-a * v + w, 0));
-  EXPECT_THAT(FusedNegatedMultiplySubtract(a, v, w), AlmostEquals(-a * v - w, 0));
+  EXPECT_THAT(FusedNegatedMultiplySubtract(a, v, w),
+              AlmostEquals(-a * v - w, 0));
   EXPECT_THAT(FusedMultiplyAdd(v, a, w), AlmostEquals(v * a + w, 0));
   EXPECT_THAT(FusedMultiplySubtract(v, a, w), AlmostEquals(v * a - w, 0));
   EXPECT_THAT(FusedNegatedMultiplyAdd(v, a, w), AlmostEquals(-v * a + w, 0));
-  EXPECT_THAT(FusedNegatedMultiplySubtract(v, a, w), AlmostEquals(-v * a - w, 0));
+  EXPECT_THAT(FusedNegatedMultiplySubtract(v, a, w),
+              AlmostEquals(-v * a - w, 0));
 }
 
 TEST_F(GrassmannTest, BivectorFMA) {
@@ -121,11 +123,13 @@ TEST_F(GrassmannTest, BivectorFMA) {
   EXPECT_THAT(FusedMultiplyAdd(a, v, w), AlmostEquals(a * v + w, 0));
   EXPECT_THAT(FusedMultiplySubtract(a, v, w), AlmostEquals(a * v - w, 0));
   EXPECT_THAT(FusedNegatedMultiplyAdd(a, v, w), AlmostEquals(-a * v + w, 0));
-  EXPECT_THAT(FusedNegatedMultiplySubtract(a, v, w), AlmostEquals(-a * v - w, 0));
+  EXPECT_THAT(FusedNegatedMultiplySubtract(a, v, w),
+              AlmostEquals(-a * v - w, 0));
   EXPECT_THAT(FusedMultiplyAdd(v, a, w), AlmostEquals(v * a + w, 0));
   EXPECT_THAT(FusedMultiplySubtract(v, a, w), AlmostEquals(v * a - w, 0));
   EXPECT_THAT(FusedNegatedMultiplyAdd(v, a, w), AlmostEquals(-v * a + w, 0));
-  EXPECT_THAT(FusedNegatedMultiplySubtract(v, a, w), AlmostEquals(-v * a - w, 0));
+  EXPECT_THAT(FusedNegatedMultiplySubtract(v, a, w),
+              AlmostEquals(-v * a - w, 0));
 }
 
 TEST_F(GrassmannTest, TrivectorFMA) {
@@ -139,11 +143,13 @@ TEST_F(GrassmannTest, TrivectorFMA) {
   EXPECT_THAT(FusedMultiplyAdd(a, v, w), AlmostEquals(a * v + w, 0));
   EXPECT_THAT(FusedMultiplySubtract(a, v, w), AlmostEquals(a * v - w, 0));
   EXPECT_THAT(FusedNegatedMultiplyAdd(a, v, w), AlmostEquals(-a * v + w, 0));
-  EXPECT_THAT(FusedNegatedMultiplySubtract(a, v, w), AlmostEquals(-a * v - w, 0));
+  EXPECT_THAT(FusedNegatedMultiplySubtract(a, v, w),
+              AlmostEquals(-a * v - w, 0));
   EXPECT_THAT(FusedMultiplyAdd(v, a, w), AlmostEquals(v * a + w, 0));
   EXPECT_THAT(FusedMultiplySubtract(v, a, w), AlmostEquals(v * a - w, 0));
   EXPECT_THAT(FusedNegatedMultiplyAdd(v, a, w), AlmostEquals(-v * a + w, 0));
-  EXPECT_THAT(FusedNegatedMultiplySubtract(v, a, w), AlmostEquals(-v * a - w, 0));
+  EXPECT_THAT(FusedNegatedMultiplySubtract(v, a, w),
+              AlmostEquals(-v * a - w, 0));
 }
 
 TEST_F(GrassmannTest, Operators) {
