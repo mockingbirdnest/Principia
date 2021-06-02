@@ -64,7 +64,7 @@ class Point final {
   
   template<typename V>
   friend Point<V> operator+(V const& translation, Point<V> const& point);
-  template<typename L, typename R, typename V>
+  template<typename L, typename R>
   friend Point<Product<L, R>> FusedMultiplyAdd(L const& a,
                                                R const& b,
                                                Point<Product<L, R>> const& c);
