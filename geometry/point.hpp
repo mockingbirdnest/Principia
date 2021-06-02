@@ -61,7 +61,7 @@ class Point final {
   constexpr explicit Point(Vector const& coordinates);
 
   Vector coordinates_;
-  
+
   template<typename V>
   friend Point<V> operator+(V const& translation, Point<V> const& point);
   template<typename L, typename R>

@@ -21,6 +21,10 @@
 
 namespace principia {
 
+using base::CPUFeatureFlags;
+using base::HasCPUFeatures;
+using numerics::CanEmitFMAInstructions;
+using quantities::Area;
 using quantities::Charge;
 using quantities::Inverse;
 using quantities::Length;
@@ -87,6 +91,60 @@ class GrassmannTest : public testing::Test {
 };
 
 using GrassmannDeathTest = GrassmannTest;
+
+TEST_F(GrassmannTest, VectorFMA) {
+  if (!CanEmitFMAInstructions || !HasCPUFeatures(CPUFeatureFlags::FMA)) {
+    LOG(ERROR) << "Cannot test FMA on a machine without FMA";
+    return;
+  }
+  Length const a = a_.x;
+  Vector<Length, World> const v(v_);
+  Vector<Area, World> const w(a_.y * w_);
+  EXPECT_THAT(FusedMultiplyAdd(a, v, w), AlmostEquals(a * v + w, 0));
+  EXPECT_THAT(FusedMultiplySubtract(a, v, w), AlmostEquals(a * v - w, 0));
+  EXPECT_THAT(FusedNegatedMultiplyAdd(a, v, w), AlmostEquals(-a * v + w, 0));
+  EXPECT_THAT(FusedNegatedMultiplySubtract(a, v, w), AlmostEquals(-a * v - w, 0));
+  EXPECT_THAT(FusedMultiplyAdd(v, a, w), AlmostEquals(v * a + w, 0));
+  EXPECT_THAT(FusedMultiplySubtract(v, a, w), AlmostEquals(v * a - w, 0));
+  EXPECT_THAT(FusedNegatedMultiplyAdd(v, a, w), AlmostEquals(-v * a + w, 0));
+  EXPECT_THAT(FusedNegatedMultiplySubtract(v, a, w), AlmostEquals(-v * a - w, 0));
+}
+
+TEST_F(GrassmannTest, BivectorFMA) {
+  if (!CanEmitFMAInstructions || !HasCPUFeatures(CPUFeatureFlags::FMA)) {
+    LOG(ERROR) << "Cannot test FMA on a machine without FMA";
+    return;
+  }
+  Length const a = a_.x;
+  Bivector<Length, World> const v(v_);
+  Bivector<Area, World> const w(a_.y * w_);
+  EXPECT_THAT(FusedMultiplyAdd(a, v, w), AlmostEquals(a * v + w, 0));
+  EXPECT_THAT(FusedMultiplySubtract(a, v, w), AlmostEquals(a * v - w, 0));
+  EXPECT_THAT(FusedNegatedMultiplyAdd(a, v, w), AlmostEquals(-a * v + w, 0));
+  EXPECT_THAT(FusedNegatedMultiplySubtract(a, v, w), AlmostEquals(-a * v - w, 0));
+  EXPECT_THAT(FusedMultiplyAdd(v, a, w), AlmostEquals(v * a + w, 0));
+  EXPECT_THAT(FusedMultiplySubtract(v, a, w), AlmostEquals(v * a - w, 0));
+  EXPECT_THAT(FusedNegatedMultiplyAdd(v, a, w), AlmostEquals(-v * a + w, 0));
+  EXPECT_THAT(FusedNegatedMultiplySubtract(v, a, w), AlmostEquals(-v * a - w, 0));
+}
+
+TEST_F(GrassmannTest, TrivectorFMA) {
+  if (!CanEmitFMAInstructions || !HasCPUFeatures(CPUFeatureFlags::FMA)) {
+    LOG(ERROR) << "Cannot test FMA on a machine without FMA";
+    return;
+  }
+  Length const a = a_.x;
+  Trivector<Length, World> const v(v_.x);
+  Trivector<Area, World> const w(a_.y * w_.x);
+  EXPECT_THAT(FusedMultiplyAdd(a, v, w), AlmostEquals(a * v + w, 0));
+  EXPECT_THAT(FusedMultiplySubtract(a, v, w), AlmostEquals(a * v - w, 0));
+  EXPECT_THAT(FusedNegatedMultiplyAdd(a, v, w), AlmostEquals(-a * v + w, 0));
+  EXPECT_THAT(FusedNegatedMultiplySubtract(a, v, w), AlmostEquals(-a * v - w, 0));
+  EXPECT_THAT(FusedMultiplyAdd(v, a, w), AlmostEquals(v * a + w, 0));
+  EXPECT_THAT(FusedMultiplySubtract(v, a, w), AlmostEquals(v * a - w, 0));
+  EXPECT_THAT(FusedNegatedMultiplyAdd(v, a, w), AlmostEquals(-v * a + w, 0));
+  EXPECT_THAT(FusedNegatedMultiplySubtract(v, a, w), AlmostEquals(-v * a - w, 0));
+}
 
 TEST_F(GrassmannTest, Operators) {
   testing_utilities::TestEquality(Bivector<Length, World>(u_),

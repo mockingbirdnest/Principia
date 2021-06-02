@@ -127,10 +127,6 @@ R3Element<Quotient<LScalar, RScalar>>
 operator/(R3Element<LScalar> const& left, RScalar const& right);
 
 // FMA for ±vector * scalar ± vector.
-// We use this order as it lends itself to writing polynomial evaluation with
-// the coefficient before the variable in the product, as ax+b, the variable x
-// being a scalar.
-// TODO(egg): Consider providing functions for ±scalar * vector ± vector.
 template<typename LScalar,
          typename RScalar,
          typename = std::enable_if_t<is_quantity_v<RScalar>>>
@@ -158,6 +154,36 @@ template<typename LScalar,
 R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplySubtract(
     R3Element<LScalar> const& a,
     RScalar const& b,
+    R3Element<Product<LScalar, RScalar>> const& c);
+
+// FMA for ±scalar * vector ± vector.
+template<typename LScalar,
+         typename RScalar,
+         typename = std::enable_if_t<is_quantity_v<RScalar>>>
+R3Element<Product<LScalar, RScalar>> FusedMultiplyAdd(
+    LScalar const& a,
+    R3Element<RScalar> const& b,
+    R3Element<Product<LScalar, RScalar>> const& c);
+template<typename LScalar,
+         typename RScalar,
+         typename = std::enable_if_t<is_quantity_v<RScalar>>>
+R3Element<Product<LScalar, RScalar>> FusedMultiplySubtract(
+    LScalar const& a,
+    R3Element<RScalar> const& b,
+    R3Element<Product<LScalar, RScalar>> const& c);
+template<typename LScalar,
+         typename RScalar,
+         typename = std::enable_if_t<is_quantity_v<RScalar>>>
+R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplyAdd(
+    LScalar const& a,
+    R3Element<RScalar> const& b,
+    R3Element<Product<LScalar, RScalar>> const& c);
+template<typename LScalar,
+         typename RScalar,
+         typename = std::enable_if_t<is_quantity_v<RScalar>>>
+R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplySubtract(
+    LScalar const& a,
+    R3Element<RScalar> const& b,
     R3Element<Product<LScalar, RScalar>> const& c);
 
 template<typename Scalar>
