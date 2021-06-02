@@ -287,6 +287,44 @@ template<typename LScalar, typename RScalar, typename Frame, int rank,
 Multivector<Quotient<LScalar, RScalar>, Frame, rank>
 operator/(Multivector<LScalar, Frame, rank> const& left,
           RScalar const& right);
+          
+template<typename LScalar,
+         typename RScalar,
+         typename Frame,
+         int rank,
+         typename = std::enable_if_t<is_quantity_v<RScalar>>>
+Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplyAdd(
+    Multivector<LScalar, Frame, rank> const& a,
+    RScalar const& b,
+    Multivector<Product<LScalar, RScalar>, Frame, rank> const& c);
+template<typename LScalar,
+         typename RScalar,
+         typename Frame,
+         int rank,
+         typename = std::enable_if_t<is_quantity_v<RScalar>>>
+Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplySubtract(
+    Multivector<LScalar, Frame, rank> const& a,
+    RScalar const& b,
+    Multivector<Product<LScalar, RScalar>, Frame, rank> const& c);
+template<typename LScalar,
+         typename RScalar,
+         typename Frame,
+         int rank,
+         typename = std::enable_if_t<is_quantity_v<RScalar>>>
+Multivector<Product<LScalar, RScalar>, Frame, rank> FusedNegatedMultiplyAdd(
+    Multivector<LScalar, Frame, rank> const& a,
+    RScalar const& b,
+    Multivector<Product<LScalar, RScalar>, Frame, rank> const& c);
+template<typename LScalar,
+         typename RScalar,
+         typename Frame,
+         int rank,
+         typename = std::enable_if_t<is_quantity_v<RScalar>>>
+Multivector<Product<LScalar, RScalar>, Frame, rank>
+FusedNegatedMultiplySubtract(
+    Multivector<LScalar, Frame, rank> const& a,
+    RScalar const& b,
+    Multivector<Product<LScalar, RScalar>, Frame, rank> const& c);
 
 template<typename Scalar, typename Frame, int rank>
 bool operator==(Multivector<Scalar, Frame, rank> const& left,
