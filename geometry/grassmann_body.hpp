@@ -374,6 +374,43 @@ operator/(Multivector<LScalar, Frame, rank> const& left,
       left.coordinates() / right);
 }
 
+template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplyAdd(
+    Multivector<LScalar, Frame, rank> const& a,
+    RScalar const& b,
+    Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
+  return Multivector<Product<LScalar, RScalar>, Frame, rank>(
+      FusedMultiplyAdd(a.coordinates(), b, c.coordinates()));
+}
+
+template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplySubtract(
+    Multivector<LScalar, Frame, rank> const& a,
+    RScalar const& b,
+    Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
+  return Multivector<Product<LScalar, RScalar>, Frame, rank>(
+      FusedMultiplySubtract(a.coordinates(), b, c.coordinates()));
+}
+
+template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+Multivector<Product<LScalar, RScalar>, Frame, rank> FusedNegatedMultiplyAdd(
+    Multivector<LScalar, Frame, rank> const& a,
+    RScalar const& b,
+    Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
+  return Multivector<Product<LScalar, RScalar>, Frame, rank>(
+      FusedNegatedMultiplyAdd(a.coordinates(), b, c.coordinates()));
+}
+
+template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+Multivector<Product<LScalar, RScalar>, Frame, rank>
+FusedNegatedMultiplySubtract(
+    Multivector<LScalar, Frame, rank> const& a,
+    RScalar const& b,
+    Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
+  return Multivector<Product<LScalar, RScalar>, Frame, rank>(
+      FusedNegatedMultiplySubtract(a.coordinates(), b, c.coordinates()));
+}
+
 template<typename Scalar, typename Frame, int rank>
 bool operator==(Multivector<Scalar, Frame, rank> const& left,
                 Multivector<Scalar, Frame, rank> const& right) {

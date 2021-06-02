@@ -16,6 +16,8 @@ namespace geometry {
 namespace internal_point {
 
 using base::not_constructible;
+using quantities::FusedMultiplyAdd;
+using quantities::FusedNegatedMultiplyAdd;
 using quantities::Product;
 using quantities::Quantity;
 
@@ -126,6 +128,20 @@ template<typename Vector>
 Point<Vector> operator+(Vector const& translation,
                         Point<Vector> const& point) {
   return point + translation;
+}
+
+template<typename L, typename R>
+Point<Product<L, R>> FusedMultiplyAdd(L const& a,
+                                      R const& b,
+                                      Point<Product<L, R>> const& c) {
+  return Point<Product<L, R>>(FusedMultiplyAdd(a, b, c.coordinates_));
+}
+
+template<typename L, typename R>
+Point<Product<L, R>> FusedNegatedMultiplyAdd(L const& a,
+                                             R const& b,
+                                             Point<Product<L, R>> const& c) {
+  return Point<Product<L, R>>(FusedNegatedMultiplyAdd(a, b, c.coordinates_));
 }
 
 template<typename Vector>

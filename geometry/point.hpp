@@ -17,6 +17,7 @@ namespace internal_point {
 
 using base::not_null;
 using quantities::is_quantity_v;
+using quantities::Product;
 
 // Point<Vector> is an affine space on the vector space Vector. Vector should
 // be equipped with operators +, -, +=, -=, ==, !=, as well as Vector * Weight
@@ -60,9 +61,18 @@ class Point final {
   constexpr explicit Point(Vector const& coordinates);
 
   Vector coordinates_;
-
+  
   template<typename V>
   friend Point<V> operator+(V const& translation, Point<V> const& point);
+  template<typename L, typename R>
+  friend Point<Product<L, R>> FusedMultiplyAdd(L const& a,
+                                               R const& b,
+                                               Point<Product<L, R>> const& c);
+  template<typename L, typename R>
+  friend Point<Product<L, R>> FusedNegatedMultiplyAdd(
+      L const& a,
+      R const& b,
+      Point<Product<L, R>> const& c);
 
   template<typename V>
   friend constexpr typename std::enable_if_t<is_quantity_v<V>, bool>
@@ -88,6 +98,15 @@ class Point final {
 template<typename Vector>
 Point<Vector> operator+(Vector const& translation,
                         Point<Vector> const& point);
+
+template<typename L, typename R>
+Point<Product<L, R>> FusedMultiplyAdd(L const& a,
+                                      R const& b,
+                                      Point<Product<L, R>> const& c);
+template<typename L, typename R>
+Point<Product<L, R>> FusedNegatedMultiplyAdd(L const& a,
+                                             R const& b,
+                                             Point<Product<L, R>> const& c);
 
 template<typename Vector>
 constexpr typename std::enable_if_t<is_quantity_v<Vector>, bool>
