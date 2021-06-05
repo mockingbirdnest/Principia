@@ -65,14 +65,14 @@ git tag $tag -m $mathematician
     .\Principia.sln
 
 &$msbuild                              `
-    "/t:ksp_plugin;ksp_plugin_adapter" `
+    "/t:ksp_plugin:Rebuild;ksp_plugin_adapter:Rebuild" `
     /property:Configuration=Release    `
     /property:Platform=x64             `
     .\Principia.sln
 
 foreach ($ksp_version in $compatibility_ksp_versions) {
   &$msbuild                                              `
-      /t:ksp_plugin_adapter                              `
+      /t:ksp_plugin_adapter:Rebuild                              `
       "/property:Configuration=Release KSP $ksp_version" `
       /property:Platform=x64                             `
       .\Principia.sln
