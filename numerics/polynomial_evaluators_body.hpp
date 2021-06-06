@@ -154,8 +154,8 @@ template<typename Value, typename Argument,
 FORCE_INLINE(inline) Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, fma, low, subdegree>::
     EvaluateDerivative(Coefficients const& coefficients,
-                        Argument const& argument,
-                        ArgumentSquares const& argument_squares) {
+                       Argument const& argument,
+                       ArgumentSquares const& argument_squares) {
   static_assert(subdegree >= 2,
                 "Unexpected subdegree in InternalEstrinEvaluator::"
                 "EvaluateDerivative");
@@ -207,8 +207,8 @@ template<typename Value, typename Argument, int degree, bool fma, int low>
 FORCE_INLINE(inline) Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, fma, low, 1>::
     EvaluateDerivative(Coefficients const& coefficients,
-                        Argument const& argument,
-                        ArgumentSquares const& argument_squares) {
+                       Argument const& argument,
+                       ArgumentSquares const& argument_squares) {
   auto const& x = argument;
   auto const& a = (low + 1) * std::get<low + 1>(coefficients);
   auto const& b = low * std::get<low>(coefficients);
@@ -223,8 +223,8 @@ template<typename Value, typename Argument, int degree, bool fma, int low>
 FORCE_INLINE(inline) Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, fma, low, 0>::
     EvaluateDerivative(Coefficients const& coefficients,
-                        Argument const& argument,
-                        ArgumentSquares const& argument_squares) {
+                       Argument const& argument,
+                       ArgumentSquares const& argument_squares) {
   return low * std::get<low>(coefficients);
 }
 
