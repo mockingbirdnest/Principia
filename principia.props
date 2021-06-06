@@ -150,7 +150,7 @@
   <Import Project="$(SolutionDir)include_solution.props" />
   <Import Project="$(SolutionDir)..\Google\protobuf\vsprojects\portability_macros.props" />
   <Import Project="$(SolutionDir)google_protobuf.props" />
-  <Import Project="$(SolutionDir)..\Google\glog\vsprojects\portability_macros.props" />
+  <Import Project="$(SolutionDir)..\Google\glog\msvc\portability_macros.props" />
   <Import Project="$(SolutionDir)google_glog.props" />
   <Import Project="$(SolutionDir)..\Google\gipfeli\msvc\portability_macros.props" />
   <Import Project="$(SolutionDir)google_gipfeli.props" />
@@ -222,7 +222,7 @@
     <PostBuildEvent>
       <Command>
         if not exist "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)" mkdir "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
-        if exist "$(OutDir)libglog.dll" copy /Y "$(OutDir)libglog.dll" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
+        if exist "$(OutDir)glog.dll" copy /Y "$(OutDir)glog.dll" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
         if exist "$(OutDir)libprotobuf.dll" copy /Y "$(OutDir)libprotobuf.dll" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
         copy /Y "$(TargetPath)" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
         copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"

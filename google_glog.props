@@ -7,13 +7,13 @@
       <AdditionalIncludeDirectories>$(SolutionDir)..\Google\glog\src\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\Google\glog\$(PrincipiaDependencyConfiguration)\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libglog.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\Google\glog\msvc\$(PrincipiaDependencyConfiguration)\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glog.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup />
   <Target Name="CopyGlogDll" AfterTargets="Build">
-    <Copy SourceFiles="$(SolutionDir)..\Google\glog\$(PrincipiaDependencyConfiguration)\$(Platform)\libglog.dll"
+    <Copy SourceFiles="$(SolutionDir)..\Google\glog\msvc\$(PrincipiaDependencyConfiguration)\$(Platform)\glog.dll"
           DestinationFolder="$(OutDir)"
           SkipUnchangedFiles="true"/>
   </Target>
