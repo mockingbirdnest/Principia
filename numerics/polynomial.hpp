@@ -166,12 +166,6 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   static PolynomialInMonomialBasis ReadFromMessage(
       serialization::Polynomial const& message);
 
-protected:
-  quantities::Derivative<Value, Argument> EvaluateDerivativeWithFMA(
-      Argument const& argument) const;
-  quantities::Derivative<Value, Argument> EvaluateDerivativeWithoutFMA(
-      Argument const& argument) const;
-
  private:
   Coefficients coefficients_;
   Argument origin_;
