@@ -27,11 +27,9 @@ struct EstrinEvaluator {
       degree,
       internal_polynomial_evaluators::EstrinEvaluator>::Coefficients;
 
-  template<bool fma>
   FORCE_INLINE(static) Value Evaluate(Coefficients const& coefficients,
                                       Argument const& argument);
 
-  template<bool fma>
   FORCE_INLINE(static) Derivative<Value, Argument>
   EvaluateDerivative(Coefficients const& coefficients,
                      Argument const& argument);
@@ -51,11 +49,9 @@ struct HornerEvaluator {
       degree,
       internal_polynomial_evaluators::HornerEvaluator>::Coefficients;
 
-  template<bool fma>
   FORCE_INLINE(static) Value Evaluate(Coefficients const& coefficients,
                                       Argument const& argument);
 
-  template<bool fma>
   FORCE_INLINE(static) Derivative<Value, Argument>
   EvaluateDerivative(Coefficients const& coefficients,
                      Argument const& argument);

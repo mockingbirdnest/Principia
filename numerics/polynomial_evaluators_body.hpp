@@ -229,25 +229,36 @@ InternalEstrinEvaluator<Value, Argument, degree, fma, low, 0>::
 }
 
 template<typename Value, typename Argument, int degree, bool allow_fma>
-template<bool fma>
 FORCE_INLINE(inline) Value
 EstrinEvaluator<Value, Argument, degree, allow_fma>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument) {
-  using InternalEvaluator = InternalEstrinEvaluator<Value,
-                                                    Argument,
-                                                    degree,
-                                                    allow_fma && fma,
-                                                    /*low=*/0,
-                                                    /*subdegree=*/degree>;
-  return InternalEvaluator::Evaluate(
-      coefficients,
-      argument,
-      InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
+  if (allow_fma && UseHardwareFMA) {
+    using InternalEvaluator = InternalEstrinEvaluator<Value,
+                                                      Argument,
+                                                      degree,
+                                                      /*fma=*/true,
+                                                      /*low=*/0,
+                                                      /*subdegree=*/degree>;
+    return InternalEvaluator::Evaluate(
+        coefficients,
+        argument,
+        InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
+  } else {
+    using InternalEvaluator = InternalEstrinEvaluator<Value,
+                                                      Argument,
+                                                      degree,
+                                                      /*fma=*/false,
+                                                      /*low=*/0,
+                                                      /*subdegree=*/degree>;
+    return InternalEvaluator::Evaluate(
+        coefficients,
+        argument,
+        InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
+  }
 }
 
 template<typename Value, typename Argument, int degree, bool allow_fma>
-template<bool fma>
 FORCE_INLINE(inline) Derivative<Value, Argument>
 EstrinEvaluator<Value, Argument, degree, allow_fma>::EvaluateDerivative(
     Coefficients const& coefficients,
@@ -255,16 +266,31 @@ EstrinEvaluator<Value, Argument, degree, allow_fma>::EvaluateDerivative(
   if constexpr (degree == 0) {
     return Derivative<Value, Argument>{};
   } else {
-    using InternalEvaluator = InternalEstrinEvaluator<Value,
-                                                      Argument,
-                                                      degree,
-                                                      allow_fma && fma,
-                                                      /*low=*/1,
-                                                      /*subdegree=*/degree - 1>;
-    return InternalEvaluator::EvaluateDerivative(
-        coefficients,
-        argument,
-        InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
+    if (allow_fma && UseHardwareFMA) {
+      using InternalEvaluator =
+          InternalEstrinEvaluator<Value,
+                                  Argument,
+                                  degree,
+                                  true,
+                                  /*low=*/1,
+                                  /*subdegree=*/degree - 1>;
+      return InternalEvaluator::EvaluateDerivative(
+          coefficients,
+          argument,
+          InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
+    } else {
+      using InternalEvaluator =
+          InternalEstrinEvaluator<Value,
+                                  Argument,
+                                  degree,
+                                  false,
+                                  /*low=*/1,
+                                  /*subdegree=*/degree - 1>;
+      return InternalEvaluator::EvaluateDerivative(
+          coefficients,
+          argument,
+          InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
+    }
   }
 }
 
@@ -349,18 +375,22 @@ InternalHornerEvaluator<Value, Argument, degree, fma, degree>::
 }
 
 template<typename Value, typename Argument, int degree, bool allow_fma>
-template<bool fma>
 FORCE_INLINE(inline) Value
 HornerEvaluator<Value, Argument, degree, allow_fma>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument) {
-  return InternalHornerEvaluator<
-      Value, Argument, degree, allow_fma && fma, /*low=*/0>::Evaluate(
-          coefficients, argument);
+  if (allow_fma && UseHardwareFMA) {
+    return InternalHornerEvaluator<
+        Value, Argument, degree, /*fma=*/true, /*low=*/0>::Evaluate(
+            coefficients, argument);
+  } else {
+    return InternalHornerEvaluator<
+        Value, Argument, degree, /*fma=*/false, /*low=*/0>::Evaluate(
+            coefficients, argument);
+  }
 }
 
 template<typename Value, typename Argument, int degree, bool allow_fma>
-template<bool fma>
 FORCE_INLINE(inline) Derivative<Value, Argument>
 HornerEvaluator<Value, Argument, degree, allow_fma>::EvaluateDerivative(
     Coefficients const& coefficients,
@@ -368,10 +398,17 @@ HornerEvaluator<Value, Argument, degree, allow_fma>::EvaluateDerivative(
   if constexpr (degree == 0) {
     return Derivative<Value, Argument>{};
   } else {
-    return InternalHornerEvaluator<
-        Value, Argument, degree,
-        allow_fma && fma, /*low=*/1>::EvaluateDerivative(
-            coefficients, argument);
+    if (allow_fma && UseHardwareFMA) {
+      return InternalHornerEvaluator<
+          Value, Argument, degree,
+          /*fma=*/true, /*low=*/1>::EvaluateDerivative(
+              coefficients, argument);
+    } else {
+      return InternalHornerEvaluator<
+          Value, Argument, degree,
+          /*fma=*/false, /*low=*/1>::EvaluateDerivative(
+              coefficients, argument);
+    }
   }
 }
 

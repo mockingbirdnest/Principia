@@ -423,11 +423,8 @@ template<typename Value_, typename Argument_, int degree_,
 Value_
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::operator()(
     Argument const& argument) const {
-  using EvaluatorInstance = Evaluator<Value, Difference<Argument>, degree_>;
-  return UseHardwareFMA ? EvaluatorInstance::Evaluate<
-                              /*fma=*/true>(coefficients_, argument - origin_)
-                        : EvaluatorInstance::Evaluate<
-                              /*fma=*/false>(coefficients_, argument - origin_);
+  return Evaluator<Value, Difference<Argument>, degree_>::Evaluate(
+      coefficients_, argument - origin_);
 }
 
 template<typename Value_, typename Argument_, int degree_,
@@ -435,11 +432,8 @@ template<typename Value_, typename Argument_, int degree_,
 Derivative<Value_, Argument_>
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::
     EvaluateDerivative(Argument const& argument) const {
-  using EvaluatorInstance = Evaluator<Value, Difference<Argument>, degree_>;
-  return UseHardwareFMA ? EvaluatorInstance::EvaluateDerivative<
-                              /*fma=*/true>(coefficients_, argument - origin_)
-                        : EvaluatorInstance::EvaluateDerivative<
-                              /*fma=*/false>(coefficients_, argument - origin_);
+  return Evaluator<Value, Difference<Argument>, degree_>::EvaluateDerivative(
+      coefficients_, argument - origin_);
 }
 
 template<typename Value_, typename Argument_, int degree_,
