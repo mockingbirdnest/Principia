@@ -265,32 +265,30 @@ EstrinEvaluator<Value, Argument, degree, allow_fma>::EvaluateDerivative(
     Argument const& argument) {
   if constexpr (degree == 0) {
     return Derivative<Value, Argument>{};
+  } else if (allow_fma && UseHardwareFMA) {
+    using InternalEvaluator =
+        InternalEstrinEvaluator<Value,
+                                Argument,
+                                degree,
+                                true,
+                                /*low=*/1,
+                                /*subdegree=*/degree - 1>;
+    return InternalEvaluator::EvaluateDerivative(
+        coefficients,
+        argument,
+        InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
   } else {
-    if (allow_fma && UseHardwareFMA) {
-      using InternalEvaluator =
-          InternalEstrinEvaluator<Value,
-                                  Argument,
-                                  degree,
-                                  true,
-                                  /*low=*/1,
-                                  /*subdegree=*/degree - 1>;
-      return InternalEvaluator::EvaluateDerivative(
-          coefficients,
-          argument,
-          InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
-    } else {
-      using InternalEvaluator =
-          InternalEstrinEvaluator<Value,
-                                  Argument,
-                                  degree,
-                                  false,
-                                  /*low=*/1,
-                                  /*subdegree=*/degree - 1>;
-      return InternalEvaluator::EvaluateDerivative(
-          coefficients,
-          argument,
-          InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
-    }
+    using InternalEvaluator =
+        InternalEstrinEvaluator<Value,
+                                Argument,
+                                degree,
+                                false,
+                                /*low=*/1,
+                                /*subdegree=*/degree - 1>;
+    return InternalEvaluator::EvaluateDerivative(
+        coefficients,
+        argument,
+        InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
   }
 }
 
