@@ -29,7 +29,6 @@ struct EstrinEvaluator {
 
   FORCE_INLINE(static) Value Evaluate(Coefficients const& coefficients,
                                       Argument const& argument);
-
   FORCE_INLINE(static) Derivative<Value, Argument>
   EvaluateDerivative(Coefficients const& coefficients,
                      Argument const& argument);
@@ -51,7 +50,6 @@ struct HornerEvaluator {
 
   FORCE_INLINE(static) Value Evaluate(Coefficients const& coefficients,
                                       Argument const& argument);
-
   FORCE_INLINE(static) Derivative<Value, Argument>
   EvaluateDerivative(Coefficients const& coefficients,
                      Argument const& argument);

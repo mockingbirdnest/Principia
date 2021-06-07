@@ -4,15 +4,11 @@
 #include <cstddef>
 #include <utility>
 
-#include "base/cpuid.hpp"
 #include "gtest/gtest.h"
 #include "numerics/combinatorics.hpp"
 
 namespace principia {
 namespace numerics {
-
-using base::HasCPUFeatures;
-using base::CPUFeatureFlags;
 
 class PolynomialEvaluatorTest : public ::testing::Test {
  public:

@@ -124,10 +124,10 @@ struct InternalEstrinEvaluator<Value, Argument, degree, fma, low, 0> {
 template<typename Value, typename Argument,
          int degree, bool fma, int low, int subdegree>
 FORCE_INLINE(inline) Derivative<Value, Argument, low>
-InternalEstrinEvaluator<Value, Argument, degree, fma, low, subdegree>::
-    Evaluate(Coefficients const& coefficients,
-             Argument const& argument,
-             ArgumentSquares const& argument_squares) {
+InternalEstrinEvaluator<Value, Argument, degree, fma, low, subdegree>::Evaluate(
+    Coefficients const& coefficients,
+    Argument const& argument,
+    ArgumentSquares const& argument_squares) {
   static_assert(subdegree >= 2,
                 "Unexpected subdegree in InternalEstrinEvaluator::Evaluate");
   // |n| is used to select |argument^(2^(n + 1))| = |argument^m|.
@@ -153,9 +153,9 @@ template<typename Value, typename Argument,
          int degree, bool fma, int low, int subdegree>
 FORCE_INLINE(inline) Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, fma, low, subdegree>::
-    EvaluateDerivative(Coefficients const& coefficients,
-                       Argument const& argument,
-                       ArgumentSquares const& argument_squares) {
+EvaluateDerivative(Coefficients const& coefficients,
+                   Argument const& argument,
+                   ArgumentSquares const& argument_squares) {
   static_assert(subdegree >= 2,
                 "Unexpected subdegree in InternalEstrinEvaluator::"
                 "EvaluateDerivative");
@@ -362,7 +362,8 @@ InternalHornerEvaluator<Value, Argument, degree, fma, low>::EvaluateDerivative(
 template<typename Value, typename Argument, int degree, bool fma>
 FORCE_INLINE(inline) Derivative<Value, Argument, degree>
 InternalHornerEvaluator<Value, Argument, degree, fma, degree>::Evaluate(
-    Coefficients const& coefficients, Argument const& argument) {
+    Coefficients const& coefficients,
+    Argument const& argument) {
   return std::get<degree>(coefficients);
 }
 
@@ -397,18 +398,16 @@ HornerEvaluator<Value, Argument, degree, allow_fma>::EvaluateDerivative(
     Argument const& argument) {
   if constexpr (degree == 0) {
     return Derivative<Value, Argument>{};
+  } else if (allow_fma && UseHardwareFMA) {
+    return InternalHornerEvaluator<
+        Value, Argument, degree,
+        /*fma=*/true, /*low=*/1>::EvaluateDerivative(
+            coefficients, argument);
   } else {
-    if (allow_fma && UseHardwareFMA) {
-      return InternalHornerEvaluator<
-          Value, Argument, degree,
-          /*fma=*/true, /*low=*/1>::EvaluateDerivative(
-              coefficients, argument);
-    } else {
-      return InternalHornerEvaluator<
-          Value, Argument, degree,
-          /*fma=*/false, /*low=*/1>::EvaluateDerivative(
-              coefficients, argument);
-    }
+    return InternalHornerEvaluator<
+        Value, Argument, degree,
+        /*fma=*/false, /*low=*/1>::EvaluateDerivative(
+            coefficients, argument);
   }
 }
 

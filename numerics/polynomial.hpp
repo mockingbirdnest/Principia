@@ -95,8 +95,6 @@ class Polynomial {
   template<template<typename, typename, int> typename Evaluator>
   static not_null<std::unique_ptr<Polynomial>> ReadFromMessage(
       serialization::Polynomial const& message);
-
- protected:
 };
 
 template<typename Value_, typename Argument_, int degree_,

@@ -461,11 +461,11 @@ TEST_P(EphemerisTest, EarthProbe) {
   // on the use of FMA in polynomial evaluation.
   EXPECT_THAT(probe_positions.size(),
               AnyOf(Eq(358),    // MSVC no FMA/0
-                    Eq(421),    // MSVC no FMA/1
-                    Eq(420),    // MSVC FMA in libm only/1
+                    Eq(366),    // Clang Linux
                     Eq(373),    // MSVC all FMA/0
                     Eq(406),    // MSVC all FMA/1
-                    Eq(366)));  // Clang Linux
+                    Eq(420),    // MSVC FMA in libm only/1
+                    Eq(421)));  // MSVC no FMA/1
   EXPECT_THAT(probe_positions.back().coordinates().x,
               AlmostEquals(1.00 * period * v_probe, 220, 266));
   EXPECT_THAT(probe_positions.back().coordinates().y,
