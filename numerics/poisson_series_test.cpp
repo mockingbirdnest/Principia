@@ -601,7 +601,7 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct3) {
         product,
         RelativeErrorFrom(
             expected_product,
-            AnyOf(IsNear(0.0013_⑴), IsNear(0.0015_⑴), IsNear(0.00069_⑴))));
+            AnyOf(IsNear(0.00069_⑴), IsNear(0.0013_⑴), IsNear(0.0015_⑴))));
   }
   // This test demonstrates how bad Integrate can be, for products that arise in
   // practice.  Exact integration of the result of PointwiseInnerProduct yields
@@ -617,7 +617,7 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct3) {
     EXPECT_THAT(product,
                 RelativeErrorFrom(
                     expected_product,
-                    AnyOf(IsNear(7.7e6_⑴), IsNear(1.0e7_⑴), IsNear(8.8e6_⑴))));
+                    AnyOf(IsNear(7.7e6_⑴), IsNear(8.8e6_⑴), IsNear(1.0e7_⑴))));
   }
 }
 
