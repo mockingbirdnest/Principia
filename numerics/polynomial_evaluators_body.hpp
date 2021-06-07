@@ -369,7 +369,8 @@ HornerEvaluator<Value, Argument, degree, allow_fma>::EvaluateDerivative(
     return Derivative<Value, Argument>{};
   } else {
     return InternalHornerEvaluator<
-        Value, Argument, degree, allow_fma && fma, /*low=*/1>::EvaluateDerivative(
+        Value, Argument, degree,
+        allow_fma && fma, /*low=*/1>::EvaluateDerivative(
             coefficients, argument);
   }
 }
