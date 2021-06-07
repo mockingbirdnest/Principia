@@ -668,7 +668,7 @@ TEST_F(ContinuousTrajectoryTest, Prepend) {
        time <= trajectory2->t_max();
        time += step / number_of_substeps) {
     EXPECT_THAT(trajectory2->EvaluatePosition(time),
-                AlmostEquals(position_function2(time), 0, 2816)) << time;
+                AlmostEquals(position_function2(time), 0, 2842)) << time;
     EXPECT_THAT(trajectory2->EvaluateVelocity(time),
                 AlmostEquals(velocity_function2(time), 0, 34)) << time;
   }

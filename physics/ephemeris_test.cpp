@@ -455,12 +455,16 @@ TEST_P(EphemerisTest, EarthProbe) {
   for (auto const& [time, degrees_of_freedom] : trajectory) {
     probe_positions.push_back(degrees_of_freedom.position() - ICRS::origin);
   }
-  // The solution is a line, so the rounding errors dominate.  Different
-  // libms result in different errors and thus different numbers of steps.
+  // The solution is a line, so the rounding errors dominate.  The size depends
+  // on the test parameter (the fixed-step integrator of the ephemeris), on the
+  // libm, including its use of FMA (via the std::pow in the adaptive step), and
+  // on the use of FMA in polynomial evaluation.
   EXPECT_THAT(probe_positions.size(),
-              AnyOf(Eq(358),    // MSVC Release/0
-                    Eq(420),    // MSVC Debug
-                    Eq(421),    // MSVC Release/1
+              AnyOf(Eq(358),    // MSVC no FMA/0
+                    Eq(421),    // MSVC no FMA/1
+                    Eq(420),    // MSVC FMA in libm only/1
+                    Eq(373),    // MSVC all FMA/0
+                    Eq(406),    // MSVC all FMA/1
                     Eq(366)));  // Clang Linux
   EXPECT_THAT(probe_positions.back().coordinates().x,
               AlmostEquals(1.00 * period * v_probe, 220, 266));
