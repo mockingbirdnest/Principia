@@ -167,7 +167,7 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, Inverse) {
         small_initial_state_.velocity().coordinates();
     EXPECT_THAT(
         small_initial_state_transformed_and_back.position() - ICRS::origin,
-        Componentwise(AlmostEquals(position_coordinates.x, 0),
+        Componentwise(VanishesBefore(position_coordinates.y, 0),
                       AlmostEquals(position_coordinates.y, 0),
                       VanishesBefore(position_coordinates.y, 0)));
     EXPECT_THAT(small_initial_state_transformed_and_back.velocity(),

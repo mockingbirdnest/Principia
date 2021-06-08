@@ -402,7 +402,7 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct2) {
                          (t_max - t_min);
     EXPECT_THAT(
         product,
-        RelativeErrorFrom(+2.0267451184776034270e-11, IsNear(4010_⑴)));
+        RelativeErrorFrom(+2.0267451184776034270e-11, IsNear(4.0e3_⑴)));
   }
 }
 
@@ -597,9 +597,11 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct3) {
         InnerProduct(f, g,
                      apodization::Dirichlet<EstrinEvaluator>(t_min, t_max),
                      t_min, t_max);
-    EXPECT_THAT(product,
-                RelativeErrorFrom(expected_product,
-                                  AnyOf(IsNear(0.0013_⑴), IsNear(0.0015_⑴))));
+    EXPECT_THAT(
+        product,
+        RelativeErrorFrom(
+            expected_product,
+            AnyOf(IsNear(0.00069_⑴), IsNear(0.0013_⑴), IsNear(0.0015_⑴))));
   }
   // This test demonstrates how bad Integrate can be, for products that arise in
   // practice.  Exact integration of the result of PointwiseInnerProduct yields
@@ -613,8 +615,9 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct3) {
                              .Integrate(t_min, t_max) /
                          (t_max - t_min);
     EXPECT_THAT(product,
-                RelativeErrorFrom(expected_product,
-                                  AnyOf(IsNear(7.7e6_⑴), IsNear(1.0e7_⑴))));
+                RelativeErrorFrom(
+                    expected_product,
+                    AnyOf(IsNear(7.7e6_⑴), IsNear(8.8e6_⑴), IsNear(1.0e7_⑴))));
   }
 }
 

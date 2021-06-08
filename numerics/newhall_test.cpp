@@ -180,7 +180,9 @@ class NewhallTest : public ::testing::Test {
       ApproximateQuantity<Difference<Value>> const&
           expected_value_absolute_error,
       ApproximateQuantity<Variation<Value>> const&
-          expected_variation_absolute_error) {
+          expected_variation_absolute_error,
+      std::optional<ApproximateQuantity<Difference<Value>>> const&
+          expected_value_absolute_error_with_fma = std::nullopt) {
     std::vector<Value> arguments;
     std::vector<Variation<Value>> variations;
     for (Instant t = t_min_; t <= t_max_; t += 0.5 * Second) {
@@ -212,8 +214,13 @@ class NewhallTest : public ::testing::Test {
 
     EXPECT_THAT(Abs(argument_error_estimate),
                 IsNear(expected_value_error_estimate));
-    EXPECT_THAT(argument_absolute_error,
-                IsNear(expected_value_absolute_error));
+    if (expected_value_absolute_error_with_fma.has_value() && UseHardwareFMA) {
+      EXPECT_THAT(argument_absolute_error,
+                  IsNear(*expected_value_absolute_error_with_fma));
+    } else {
+      EXPECT_THAT(argument_absolute_error,
+                  IsNear(expected_value_absolute_error));
+    }
     EXPECT_THAT(variation_absolute_error,
                 IsNear(expected_variation_absolute_error));
   }
@@ -674,7 +681,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_2_7) {
       speed_function_2_,
       /*expected_value_error_estimate=*/6.2e-4_⑴ * Metre,
       /*expected_value_absolute_error=*/2.9e-14_⑴ * Metre,
-      /*expected_variation_absolute_error=*/2.5e-14_⑴ * Metre / Second);
+      /*expected_variation_absolute_error=*/2.5e-14_⑴ * Metre / Second,
+      /*expected_value_absolute_error_with_fma=*/1.7e-14_⑴ * Metre);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_2_8) {
@@ -692,7 +700,8 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_2_9) {
       speed_function_2_,
       /*expected_value_error_estimate=*/4.8e-16_⑴ * Metre,
       /*expected_value_absolute_error=*/1.0e-13_⑴ * Metre,
-      /*expected_variation_absolute_error=*/4.8e-13_⑴ * Metre / Second);
+      /*expected_variation_absolute_error=*/4.8e-13_⑴ * Metre / Second,
+      /*expected_value_absolute_error_with_fma=*/1.1e-13_⑴ * Metre);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_2_10) {
