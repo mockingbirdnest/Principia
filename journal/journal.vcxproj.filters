@@ -58,13 +58,13 @@
     <ClCompile Include="player.generated.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\base\status.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\physics\protector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\base\version.generated.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\base\cpuid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

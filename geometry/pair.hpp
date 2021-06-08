@@ -5,6 +5,8 @@
 #include "base/not_constructible.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/point.hpp"
+#include "geometry/traits.hpp"
+#include "quantities/named_quantities.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
@@ -20,63 +22,56 @@ namespace internal_pair {
 
 using base::not_constructible;
 using base::not_null;
+using quantities::Difference;
 using quantities::Product;
 using quantities::Quotient;
 
 template<typename T1, typename T2>
 class Pair;
 
-// A template to peel off the affine layer (i.e., the class Point) if any.
+// A template to peel off the affine layer, if any, in a Pair.
 template<typename T>
-struct vector_of : not_constructible {
-  using type = T;
-};
+struct vector_of;
 
 template<typename T1, typename T2>
 struct vector_of<Pair<T1, T2>> : not_constructible {
-  using type = Pair<typename vector_of<T1>::type, typename vector_of<T2>::type>;
+  using type = Pair<Difference<T1>, Difference<T2>>;
 };
 
 template<typename T>
-struct vector_of<Point<T>> : not_constructible {
-  using type = T;
-};
+using vector_of_t = typename vector_of<T>::type;
 
 // A template to enable declarations on affine pairs (i.e., when one of the
-// components is a Point).
-template<typename T>
-struct enable_if_affine : not_constructible {};
+// components is not a vector).
+template<typename T, typename U = T, typename = void>
+struct enable_if_affine;
 
-template<typename T1, typename T2>
-struct enable_if_affine<Pair<Point<T1>, T2>> : not_constructible {
-  using type = Pair<Point<T1>, T2>;
-};
-
-template<typename T1, typename T2>
-struct enable_if_affine<Pair<T1, Point<T2>>> : not_constructible {
-  using type = Pair<T1, Point<T2>>;
-};
-
-template<typename T1, typename T2>
-struct enable_if_affine<Pair<Point<T1>, Point<T2>>> : not_constructible {
-  using type = Pair<Point<T1>, Point<T2>>;
-};
-
-// A template to enable declarations on vector pairs (i.e., when none of the
-// components is a Point).
-template<typename T, typename U = T>
-struct enable_if_vector : not_constructible {
+template<typename T1, typename T2, typename U>
+struct enable_if_affine<
+    Pair<T1, T2>, U,
+    std::enable_if_t<!std::conjunction_v<is_vector<T1>, is_vector<T2>>>>
+    : not_constructible {
   using type = U;
 };
 
-template<typename T1, typename T2>
-struct enable_if_vector<Pair<Point<T1>, T2>> : not_constructible {};
+template<typename T>
+using enable_if_affine_t = typename enable_if_affine<T>::type;
 
-template<typename T1, typename T2>
-struct enable_if_vector<Pair<T1, Point<T2>>> :not_constructible {};
+// A template to enable declarations on vector pairs (i.e., when both of the
+// components are vectors).
+template<typename T, typename U = T, typename = void>
+struct enable_if_vector;
 
-template<typename T1, typename T2>
-struct enable_if_vector<Pair<Point<T1>, Point<T2>>> : not_constructible {};
+template<typename T1, typename T2, typename U>
+struct enable_if_vector<
+    Pair<T1, T2>, U,
+    std::enable_if_t<std::conjunction_v<is_vector<T1>, is_vector<T2>>>>
+    : not_constructible {
+  using type = U;
+};
+
+template<typename T, typename U = T>
+using enable_if_vector_t = typename enable_if_vector<T, U>::type;
 
 // This class represents a pair of two values which can be members of an affine
 // space (i.e., Points) or of a vector space (such as double, Quantity, Vector,
@@ -88,11 +83,11 @@ class Pair {
   Pair(T1 const& t1, T2 const& t2);
   virtual ~Pair() = default;
 
-  Pair operator+(typename vector_of<Pair>::type const& right) const;
-  Pair operator-(typename vector_of<Pair>::type const& right) const;
+  Pair operator+(vector_of_t<Pair> const& right) const;
+  Pair operator-(vector_of_t<Pair> const& right) const;
 
-  Pair& operator+=(typename vector_of<Pair>::type const& right);
-  Pair& operator-=(typename vector_of<Pair>::type const& right);
+  Pair& operator+=(vector_of_t<Pair> const& right);
+  Pair& operator-=(vector_of_t<Pair> const& right);
 
   bool operator==(Pair const& right) const;
   bool operator!=(Pair const& right) const;
@@ -129,17 +124,15 @@ class Pair {
       ComponentwiseMatcher2Impl;
 
   template<typename U1, typename U2>
-  friend typename vector_of<Pair<U1, U2>>::type operator-(
-      typename enable_if_affine<Pair<U1, U2>>::type const& left,
+  friend vector_of_t<Pair<U1, U2>> operator-(
+      enable_if_affine_t<Pair<U1, U2>> const& left,
       Pair<U1, U2> const& right);
 
   template<typename U1, typename U2>
-  friend typename enable_if_vector<Pair<U1, U2>>::type operator+(
-      Pair<U1, U2> const& right);
+  friend enable_if_vector_t<Pair<U1, U2>> operator+(Pair<U1, U2> const& right);
 
   template<typename U1, typename U2>
-  friend typename enable_if_vector<Pair<U1, U2>>::type operator-(
-      Pair<U1, U2> const& right);
+  friend enable_if_vector_t<Pair<U1, U2>> operator-(Pair<U1, U2> const& right);
 
   template<typename Scalar, typename U1, typename U2>
   friend typename enable_if_vector<
@@ -160,31 +153,27 @@ class Pair {
   operator/(Pair<U1, U2> const& left, Scalar right);
 
   template<typename U1, typename U2>
-  friend typename enable_if_vector<Pair<U1, U2>>::type& operator*=(
-      Pair<U1, U2>& left,
-      double right);
+  friend enable_if_vector_t<Pair<U1, U2>>& operator*=(Pair<U1, U2>& left,
+                                                      double right);
 
   template<typename U1, typename U2>
-  friend typename enable_if_vector<Pair<U1, U2>>::type& operator/=(
-      Pair<U1, U2>& left,
-      double right);
+  friend enable_if_vector_t<Pair<U1, U2>>& operator/=(Pair<U1, U2>& left,
+                                                      double right);
 
   template<typename U1, typename U2>
   friend std::ostream& operator<<(std::ostream& out, Pair<U1, U2> const& pair);
 };
 
 template<typename T1, typename T2>
-typename vector_of<Pair<T1, T2>>::type operator-(
-    typename enable_if_affine<Pair<T1, T2>>::type const& left,
+vector_of_t<Pair<T1, T2>> operator-(
+    enable_if_affine_t<Pair<T1, T2>> const& left,
     Pair<T1, T2> const& right);
 
 template<typename T1, typename T2>
-typename enable_if_vector<Pair<T1, T2>>::type operator+(
-    Pair<T1, T2> const& right);
+enable_if_vector_t<Pair<T1, T2>> operator+(Pair<T1, T2> const& right);
 
 template<typename T1, typename T2>
-typename enable_if_vector<Pair<T1, T2>>::type operator-(
-    Pair<T1, T2> const& right);
+enable_if_vector_t<Pair<T1, T2>> operator-(Pair<T1, T2> const& right);
 
 template<typename Scalar, typename T1, typename T2>
 typename enable_if_vector<
@@ -205,24 +194,24 @@ typename enable_if_vector<
 operator/(Pair<T1, T2> const& left, Scalar right);
 
 template<typename T1, typename T2>
-typename enable_if_vector<Pair<T1, T2>>::type& operator*=(Pair<T1, T2>& left,
-                                                          double right);
+enable_if_vector_t<Pair<T1, T2>>& operator*=(Pair<T1, T2>& left, double right);
 
 template<typename T1, typename T2>
-typename enable_if_vector<Pair<T1, T2>>::type& operator/=(Pair<T1, T2>& left,
-                                                          double right);
+enable_if_vector_t<Pair<T1, T2>>& operator/=(Pair<T1, T2>& left, double right);
 
 template<typename T1, typename T2>
 std::ostream& operator<<(std::ostream& out, Pair<T1, T2> const& pair);
 
 }  // namespace internal_pair
 
-using internal_pair::enable_if_vector;
+using internal_pair::enable_if_vector_t;
 using internal_pair::Pair;
 using internal_pair::vector_of;
 
 // Specialize BarycentreCalculator to make it applicable to Pairs.
 namespace internal_barycentre_calculator {
+
+using quantities::Difference;
 
 template<typename T1, typename T2, typename Weight>
 class BarycentreCalculator<Pair<T1, T2>, Weight> final {
@@ -236,8 +225,8 @@ class BarycentreCalculator<Pair<T1, T2>, Weight> final {
 
  private:
   bool empty_ = true;
-  Product<typename vector_of<T1>::type, Weight> t1_weighted_sum_;
-  Product<typename vector_of<T2>::type, Weight> t2_weighted_sum_;
+  Product<Difference<T1>, Weight> t1_weighted_sum_;
+  Product<Difference<T2>, Weight> t2_weighted_sum_;
   Weight weight_;
 
   // We need reference values to convert points into vectors, if needed.  We
@@ -256,8 +245,7 @@ namespace base {
 template<typename Functor, typename T1, typename T2>
 class Mappable<Functor,
                geometry::Pair<T1, T2>,
-               typename geometry::enable_if_vector<
-                   geometry::Pair<T1, T2>, void>::type> {
+               geometry::enable_if_vector_t<geometry::Pair<T1, T2>, void>> {
  public:
   using type = geometry::Pair<
                    decltype(std::declval<Functor>()(std::declval<T1>())),

@@ -16,8 +16,8 @@
   </ImportGroup>
   <ItemGroup>
     <ClCompile Include="..\astronomy\standard_product_3.cpp" />
+    <ClCompile Include="..\base\cpuid.cpp" />
     <ClCompile Include="..\base\flags.cpp" />
-    <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="..\base\version.generated.cc" />
     <ClCompile Include="..\base\zfp_compressor.cpp" />
     <ClCompile Include="..\journal\profiles.cpp" />
@@ -59,8 +59,6 @@
     <ClCompile Include="interface_renderer_test.cpp" />
     <ClCompile Include="interface_test.cpp" />
     <ClCompile Include="manœuvre_test.cpp" />
-    <ClCompile Include="mock_plugin.cpp" />
-    <ClCompile Include="mock_renderer.cpp" />
     <ClCompile Include="orbit_analyser_test.cpp" />
     <ClCompile Include="part_test.cpp" />
     <ClCompile Include="pile_up_test.cpp" />

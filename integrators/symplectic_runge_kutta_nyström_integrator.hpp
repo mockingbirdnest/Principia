@@ -9,7 +9,7 @@
 #ifndef PRINCIPIA_INTEGRATORS_SYMPLECTIC_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_
 #define PRINCIPIA_INTEGRATORS_SYMPLECTIC_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_
 
-#include "base/status.hpp"
+#include "absl/status/status.h"
 #include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/fixed_arrays.hpp"
@@ -19,7 +19,6 @@ namespace integrators {
 namespace internal_symplectic_runge_kutta_nyström_integrator {
 
 using base::not_null;
-using base::Status;
 using geometry::Instant;
 using numerics::FixedVector;
 using quantities::Time;
@@ -78,7 +77,7 @@ class SymplecticRungeKuttaNyströmIntegrator
 
   class Instance : public FixedStepSizeIntegrator<ODE>::Instance {
    public:
-    Status Solve(Instant const& t_final) override;
+    absl::Status Solve(Instant const& t_final) override;
     SymplecticRungeKuttaNyströmIntegrator const& integrator() const override;
     not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> Clone()
         const override;

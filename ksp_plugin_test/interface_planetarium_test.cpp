@@ -13,7 +13,6 @@
 #include "ksp_plugin_test/mock_plugin.hpp"
 #include "ksp_plugin_test/mock_renderer.hpp"
 #include "quantities/quantities.hpp"
-#include "testing_utilities/actions.hpp"
 
 namespace principia {
 namespace interface {
@@ -31,7 +30,7 @@ using ksp_plugin::MockPlanetarium;
 using ksp_plugin::MockPlugin;
 using ksp_plugin::MockRenderer;
 using quantities::Length;
-using testing_utilities::FillUniquePtr;
+using ::testing::ByMove;
 using ::testing::IsNull;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -63,8 +62,8 @@ TEST_F(InterfacePlanetariumTest, ConstructionDestruction) {
           Permutation<World, Navigation>(
               Permutation<World, Navigation>::CoordinatePermutation::YXZ)
               .Forget<OrthogonalMap>())));
-  EXPECT_CALL(*plugin_, FillPlanetarium(_, _, _))
-      .WillOnce(FillUniquePtr<2>(new MockPlanetarium));
+  EXPECT_CALL(*plugin_, NewPlanetarium(_, _))
+      .WillOnce(Return(ByMove(std::make_unique<MockPlanetarium>())));
 
   Planetarium const* planetarium = principia__PlanetariumCreate(plugin_.get(),
                                                                 {100, 200, 300},

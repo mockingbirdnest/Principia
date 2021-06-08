@@ -709,40 +709,46 @@ INSTANTIATE_TEST_CASE_P(
     SolarSystemDynamicsConvergenceTest,
     ::testing::Values(
         ConvergenceTestParameters{
-            SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN11B,
-                                                  Position<ICRS>>(),
-            /*iterations=*/8,
-            /*first_step_in_seconds=*/64},
+            .integrator =
+                SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN11B,
+                                                      Position<ICRS>>(),
+            .iterations = 8,
+            .first_step_in_seconds = 64},
         ConvergenceTestParameters{
-            SymplecticRungeKuttaNyströmIntegrator<
-                 McLachlanAtela1992Order5Optimal,
-                 Position<ICRS>>(),
-             /*iterations=*/8,
-             /*first_step_in_seconds=*/32},
+            .integrator =
+                SymplecticRungeKuttaNyströmIntegrator<
+                    McLachlanAtela1992Order5Optimal,
+                    Position<ICRS>>(),
+             .iterations = 8,
+             .first_step_in_seconds = 32},
         ConvergenceTestParameters{
-            SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                               Position<ICRS>>(),
-            /*iterations=*/6,
-            /*first_step_in_seconds=*/64},
+            .integrator =
+                SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
+                                                   Position<ICRS>>(),
+            .iterations = 6,
+            .first_step_in_seconds = 64},
         ConvergenceTestParameters{
-            SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order8,
-                                               Position<ICRS>>(),
-            /*iterations=*/6,
-            /*first_step_in_seconds=*/64},
+            .integrator =
+                SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order8,
+                                                   Position<ICRS>>(),
+            .iterations = 6,
+            .first_step_in_seconds = 64},
         ConvergenceTestParameters{
-            SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order10,
-                                               Position<ICRS>>(),
-            /*iterations=*/6,
-            /*first_step_in_seconds=*/64},
+            .integrator =
+                SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order10,
+                                                   Position<ICRS>>(),
+            .iterations = 6,
+            .first_step_in_seconds = 64},
 
         // This is our favorite integrator.  For a step of 600 s it gives a
         // position error of about 2.3 m on Miranda and takes about 2.0 s of
         // elapsed time.  For steps larger than about 680 s, the errors explode.
         ConvergenceTestParameters{
-            SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                               Position<ICRS>>(),
-            /*iterations=*/5,
-            /*first_step_in_seconds=*/75}));
+            .integrator =
+                SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+                                                   Position<ICRS>>(),
+            .iterations = 5,
+            .first_step_in_seconds = 75}));
 
 }  // namespace astronomy
 }  // namespace principia

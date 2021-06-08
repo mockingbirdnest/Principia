@@ -15,7 +15,6 @@
     <Import Project="..\third_party_zfp.props" />
   </ImportGroup>
   <ItemGroup>
-    <ClInclude Include="actions.hpp" />
     <ClInclude Include="algebra.hpp" />
     <ClInclude Include="algebra_body.hpp" />
     <ClInclude Include="almost_equals.hpp" />
@@ -45,6 +44,7 @@
     <ClInclude Include="vanishes_before_body.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\base\cpuid.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="algebra_test.cpp" />
     <ClCompile Include="almost_equals_test.cpp" />

@@ -3,58 +3,59 @@
 #include "ksp_plugin/renderer.hpp"
 
 #include "gmock/gmock.h"
+#include "physics/mock_dynamic_frame.hpp"
 #include "ksp_plugin_test/mock_celestial.hpp"
 
 namespace principia {
 namespace ksp_plugin {
 namespace internal_renderer {
 
+using physics::MockDynamicFrame;
+
+MockCelestial* const sun = new MockCelestial;
+
 class MockRenderer : public Renderer {
  public:
-  MockRenderer();
+  MockRenderer()
+      : Renderer(
+            sun,
+            std::make_unique<MockDynamicFrame<Barycentric, Navigation>>()){};
 
-  // NOTE(phl): Needed because gMock wants to copy the unique_ptr<>.
-  void SetPlottingFrame(
-      not_null<std::unique_ptr<NavigationFrame>> plotting_frame) override;
-  MOCK_METHOD1(SetPlottingFrameConstRef,
-               void(NavigationFrame const& plotting_frame));
+  MOCK_METHOD(void,
+              SetPlottingFrame,
+              (not_null<std::unique_ptr<NavigationFrame>> plotting_frame),
+              (override));
 
-  MOCK_CONST_METHOD0(GetPlottingFrame, not_null<NavigationFrame const*> ());
+  MOCK_METHOD(not_null<NavigationFrame const*>,
+              GetPlottingFrame,
+              (),
+              (const, override));
 
-  not_null<std::unique_ptr<DiscreteTrajectory<World>>>
-  RenderBarycentricTrajectoryInWorld(
-      Instant const& time,
-      DiscreteTrajectory<Barycentric>::Iterator const& begin,
-      DiscreteTrajectory<Barycentric>::Iterator const& end,
-      Position<World> const& sun_world_position,
-      Rotation<Barycentric, AliceSun> const& planetarium_rotation)
-      const override;
-  MOCK_CONST_METHOD6(
-      FillRenderedBarycentricTrajectoryInWorld,
-      void(Instant const& time,
-           DiscreteTrajectory<Barycentric>::Iterator const& begin,
-           DiscreteTrajectory<Barycentric>::Iterator const& end,
-           Position<World> const& sun_world_position,
-           Rotation<Barycentric, AliceSun> const& planetarium_rotation,
-           std::unique_ptr<DiscreteTrajectory<World>>*
-               rendered_barycentric_trajectory_in_world));
+  MOCK_METHOD(not_null<std::unique_ptr<DiscreteTrajectory<World>>>,
+              RenderBarycentricTrajectoryInWorld,
+              (Instant const& time,
+               DiscreteTrajectory<Barycentric>::Iterator const& begin,
+               DiscreteTrajectory<Barycentric>::Iterator const& end,
+               Position<World> const& sun_world_position,
+               (Rotation<Barycentric, AliceSun> const& planetarium_rotation)),
+              (const, override));
 
-  MOCK_CONST_METHOD1(
-      BarycentricToWorldSun,
-      OrthogonalMap<Barycentric, WorldSun>(
-          Rotation<Barycentric, AliceSun> const& planetarium_rotation));
-  MOCK_CONST_METHOD3(
-      PlottingToWorld,
-      RigidTransformation<Navigation, World>(
-          Instant const& time,
-          Position<World> const& sun_world_position,
-          Rotation<Barycentric, AliceSun> const& planetarium_rotation));
-  MOCK_CONST_METHOD3(
-      WorldToPlotting,
-      RigidTransformation<World, Navigation>(
-          Instant const& time,
-          Position<World> const& sun_world_position,
-          Rotation<Barycentric, AliceSun> const& planetarium_rotation));
+  MOCK_METHOD((OrthogonalMap<Barycentric, WorldSun>),
+              BarycentricToWorldSun,
+              ((Rotation<Barycentric, AliceSun> const& planetarium_rotation)),
+              (const, override));
+  MOCK_METHOD((RigidTransformation<Navigation, World>),
+              PlottingToWorld,
+              (Instant const& time,
+               Position<World> const& sun_world_position,
+               (Rotation<Barycentric, AliceSun> const& planetarium_rotation)),
+              (const, override));
+  MOCK_METHOD((RigidTransformation<World, Navigation>),
+              WorldToPlotting,
+              (Instant const& time,
+               Position<World> const& sun_world_position,
+               (Rotation<Barycentric, AliceSun> const& planetarium_rotation)),
+              (const, override));
 };
 
 }  // namespace internal_renderer

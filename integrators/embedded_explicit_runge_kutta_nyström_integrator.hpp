@@ -12,8 +12,8 @@
 #include <functional>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "base/not_null.hpp"
-#include "base/status.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
@@ -25,7 +25,6 @@ namespace integrators {
 namespace internal_embedded_explicit_runge_kutta_nyström_integrator {
 
 using base::not_null;
-using base::Status;
 using geometry::Instant;
 using numerics::FixedStrictlyLowerTriangularMatrix;
 using numerics::FixedVector;
@@ -84,7 +83,7 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
 
   class Instance : public AdaptiveStepSizeIntegrator<ODE>::Instance {
    public:
-    Status Solve(Instant const& t_final) override;
+    absl::Status Solve(Instant const& t_final) override;
     EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator()
         const override;
     not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> Clone()

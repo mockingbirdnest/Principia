@@ -1033,7 +1033,7 @@ char const* __cdecl principia__SayHello() {
 Status* __cdecl principia__SayNotFound() {
   journal::Method<journal::SayNotFound> m;
   return m.Return(ToNewStatus(
-      base::Status(base::Error::NOT_FOUND, "Not found from native C++!")));
+      absl::NotFoundError("Not found from native C++!")));
 }
 
 // |plugin| must not be null.  The caller takes ownership of the result, except

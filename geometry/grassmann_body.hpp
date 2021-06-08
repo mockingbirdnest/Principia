@@ -15,6 +15,10 @@ namespace internal_grassmann {
 
 using base::not_constructible;
 using quantities::ArcTan;
+using quantities::FusedMultiplyAdd;
+using quantities::FusedMultiplySubtract;
+using quantities::FusedNegatedMultiplyAdd;
+using quantities::FusedNegatedMultiplySubtract;
 
 template<typename Scalar, typename Frame>
 Multivector<Scalar, Frame, 1>::Multivector(R3Element<Scalar> const& coordinates)
@@ -372,6 +376,80 @@ operator/(Multivector<LScalar, Frame, rank> const& left,
           RScalar const& right) {
   return Multivector<Quotient<LScalar, RScalar>, Frame, rank>(
       left.coordinates() / right);
+}
+
+template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplyAdd(
+    Multivector<LScalar, Frame, rank> const& a,
+    RScalar const& b,
+    Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
+  return Multivector<Product<LScalar, RScalar>, Frame, rank>(
+      FusedMultiplyAdd(a.coordinates(), b, c.coordinates()));
+}
+
+template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplySubtract(
+    Multivector<LScalar, Frame, rank> const& a,
+    RScalar const& b,
+    Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
+  return Multivector<Product<LScalar, RScalar>, Frame, rank>(
+      FusedMultiplySubtract(a.coordinates(), b, c.coordinates()));
+}
+
+template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+Multivector<Product<LScalar, RScalar>, Frame, rank> FusedNegatedMultiplyAdd(
+    Multivector<LScalar, Frame, rank> const& a,
+    RScalar const& b,
+    Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
+  return Multivector<Product<LScalar, RScalar>, Frame, rank>(
+      FusedNegatedMultiplyAdd(a.coordinates(), b, c.coordinates()));
+}
+
+template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+Multivector<Product<LScalar, RScalar>, Frame, rank>
+FusedNegatedMultiplySubtract(
+    Multivector<LScalar, Frame, rank> const& a,
+    RScalar const& b,
+    Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
+  return Multivector<Product<LScalar, RScalar>, Frame, rank>(
+      FusedNegatedMultiplySubtract(a.coordinates(), b, c.coordinates()));
+}
+
+template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplyAdd(
+    LScalar const& a,
+    Multivector<RScalar, Frame, rank> const& b,
+    Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
+  return Multivector<Product<LScalar, RScalar>, Frame, rank>(
+      FusedMultiplyAdd(a, b.coordinates(), c.coordinates()));
+}
+
+template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplySubtract(
+    LScalar const& a,
+    Multivector<RScalar, Frame, rank> const& b,
+    Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
+  return Multivector<Product<LScalar, RScalar>, Frame, rank>(
+      FusedMultiplySubtract(a, b.coordinates(), c.coordinates()));
+}
+
+template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+Multivector<Product<LScalar, RScalar>, Frame, rank> FusedNegatedMultiplyAdd(
+    LScalar const& a,
+    Multivector<RScalar, Frame, rank> const& b,
+    Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
+  return Multivector<Product<LScalar, RScalar>, Frame, rank>(
+      FusedNegatedMultiplyAdd(a, b.coordinates(), c.coordinates()));
+}
+
+template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+Multivector<Product<LScalar, RScalar>, Frame, rank>
+FusedNegatedMultiplySubtract(
+    LScalar const& a,
+    Multivector<RScalar, Frame, rank> const& b,
+    Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
+  return Multivector<Product<LScalar, RScalar>, Frame, rank>(
+      FusedNegatedMultiplySubtract(a, b.coordinates(), c.coordinates()));
 }
 
 template<typename Scalar, typename Frame, int rank>

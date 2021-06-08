@@ -28,7 +28,6 @@ namespace ksp_plugin {
 namespace internal_flight_plan {
 
 using astronomy::J2000;
-using base::Error;
 using base::make_not_null_shared;
 using base::make_not_null_unique;
 using geometry::Barycentre;
@@ -99,6 +98,7 @@ class FlightPlanTest : public testing::Test {
             SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
                                                Position<Barycentric>>(),
             /*step=*/10 * Minute));
+    ephemeris_->Prolong(t0_ - 2 * π * Second);
     navigation_frame_ = std::make_unique<TestNavigationFrame>(
         ephemeris_.get(),
         ephemeris_->bodies().back());

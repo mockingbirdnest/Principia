@@ -167,13 +167,13 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
       spherical_earth,
       MasslessBody{});
   ASSERT_THAT(status_or_elements, IsOk());
-  OrbitalElements const& elements = status_or_elements.ValueOrDie();
+  OrbitalElements const& elements = status_or_elements.value();
   EXPECT_THAT(
       elements.anomalistic_period(),
       AbsoluteErrorFrom(*initial_osculating.period, Lt(510 * Micro(Second))));
   EXPECT_THAT(
       elements.nodal_period(),
-      AbsoluteErrorFrom(*initial_osculating.period, Lt(4.1 * Milli(Second))));
+      AbsoluteErrorFrom(*initial_osculating.period, Lt(4.2 * Milli(Second))));
   EXPECT_THAT(
       elements.sidereal_period(),
       AbsoluteErrorFrom(*initial_osculating.period, Lt(1.9 * Micro(Second))));
@@ -192,10 +192,10 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
                                 Lt(0.64 * Micro(ArcSecond))));
   EXPECT_THAT(elements.mean_longitude_of_ascending_node_interval().midpoint(),
               AbsoluteErrorFrom(initial_osculating.longitude_of_ascending_node,
-                                Lt(64 * ArcSecond)));
+                                Lt(66 * ArcSecond)));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
               AbsoluteErrorFrom(*initial_osculating.argument_of_periapsis,
-                                Lt(62 * ArcSecond)));
+                                Lt(74 * ArcSecond)));
 
   // Mean element stability.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().measure(),
@@ -207,7 +207,7 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
   EXPECT_THAT(elements.mean_longitude_of_ascending_node_interval().measure(),
               Lt(2.3 * ArcMinute));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().measure(),
-              Lt(2.2 * ArcMinute));
+              Lt(2.4 * ArcMinute));
 
   mathematica::Logger logger(
       SOLUTION_DIR / "mathematica" / "unperturbed_elements.generated.wl",
@@ -263,7 +263,7 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
       oblate_earth,
       MasslessBody{});
   ASSERT_THAT(status_or_elements, IsOk());
-  OrbitalElements const& elements = status_or_elements.ValueOrDie();
+  OrbitalElements const& elements = status_or_elements.value();
   EXPECT_THAT(
       elements.anomalistic_period(),
       DifferenceFrom(*initial_osculating.period, IsNear(-7.8_⑴ * Second)));
@@ -364,7 +364,7 @@ TEST_F(OrbitalElementsTest, RealPerturbation) {
       earth,
       MasslessBody{});
   ASSERT_THAT(status_or_elements, IsOk());
-  OrbitalElements const& elements = status_or_elements.ValueOrDie();
+  OrbitalElements const& elements = status_or_elements.value();
   EXPECT_THAT(
       elements.anomalistic_period(),
       DifferenceFrom(*initial_osculating.period, IsNear(-8.0_⑴ * Second)));

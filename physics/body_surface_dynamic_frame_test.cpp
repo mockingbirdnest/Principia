@@ -57,6 +57,7 @@ using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::VanishesBefore;
+using ::testing::A;
 using ::testing::Eq;
 using ::testing::InSequence;
 using ::testing::IsNull;
@@ -234,7 +235,8 @@ TEST_F(BodySurfaceDynamicFrameTest, CoriolisAcceleration) {
                                                0 * Metre / Pow<2>(Second),
                                                0 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMasslessBody(_, t))
+                ComputeGravitationalAccelerationOnMasslessBody(
+                    A<Position<ICRS> const&>(), t))
         .WillOnce(Return(Vector<Acceleration, ICRS>()));
   }
 
@@ -271,7 +273,8 @@ TEST_F(BodySurfaceDynamicFrameTest, CentrifugalAcceleration) {
                                                0 * Metre / Pow<2>(Second),
                                                0 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMasslessBody(_, t))
+                ComputeGravitationalAccelerationOnMasslessBody(
+                    A<Position<ICRS> const&>(), t))
         .WillOnce(Return(Vector<Acceleration, ICRS>()));
   }
 
@@ -312,7 +315,8 @@ TEST_F(BodySurfaceDynamicFrameTest, LinearAcceleration) {
                                                120 * Metre / Pow<2>(Second),
                                                300 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMasslessBody(_, t))
+                ComputeGravitationalAccelerationOnMasslessBody(
+                    A<Position<ICRS> const&>(), t))
         .WillOnce(Return(Vector<Acceleration, ICRS>()));
   }
 

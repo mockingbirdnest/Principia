@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "base/status_or.hpp"
+#include "absl/status/statusor.h"
 #include "geometry/interval.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/body.hpp"
@@ -15,8 +15,6 @@ namespace principia {
 namespace astronomy {
 namespace internal_orbital_elements {
 
-using base::Status;
-using base::StatusOr;
 using geometry::Instant;
 using geometry::Interval;
 using physics::Body;
@@ -38,7 +36,7 @@ class OrbitalElements {
   OrbitalElements& operator=(OrbitalElements&&) = default;
 
   template<typename PrimaryCentred>
-  static StatusOr<OrbitalElements> ForTrajectory(
+  static absl::StatusOr<OrbitalElements> ForTrajectory(
       DiscreteTrajectory<PrimaryCentred> const& trajectory,
       MassiveBody const& primary,
       Body const& secondary);
@@ -157,28 +155,28 @@ class OrbitalElements {
       DiscreteTrajectory<PrimaryCentred> const& trajectory);
 
   // |equinoctial_elements| must contain at least 2 elements.
-  static StatusOr<Time> SiderealPeriod(
+  static absl::StatusOr<Time> SiderealPeriod(
       std::vector<EquinoctialElements> const& equinoctial_elements);
 
   // |osculating| must contain at least 2 elements.
   // The resulting elements are averaged over one period, centred on
   // their |EquinoctialElements::t|.
-  static StatusOr<std::vector<EquinoctialElements>> MeanEquinoctialElements(
-      std::vector<EquinoctialElements> const& osculating,
-      Time const& period);
+  static absl::StatusOr<std::vector<EquinoctialElements>>
+  MeanEquinoctialElements(std::vector<EquinoctialElements> const& osculating,
+                          Time const& period);
 
-  static StatusOr<std::vector<ClassicalElements>> ToClassicalElements(
+  static absl::StatusOr<std::vector<ClassicalElements>> ToClassicalElements(
       std::vector<EquinoctialElements> const& equinoctial_elements);
 
   // |mean_classical_elements_| must have been computed; sets
   // |anomalistic_period_|, |nodal_period_|, and |nodal_precession_|
   // accordingly. Note that this does not compute |sidereal_period_| (our mean
   // element computation is based on it, so it gets computed earlier).
-  Status ComputePeriodsAndPrecession();
+  absl::Status ComputePeriodsAndPrecession();
 
   // |radial_distances_| and |mean_classical_elements_| must have been computed;
   // sets |radial_distance_interval_| and |mean_*_interval_| accordingly.
-  Status ComputeIntervals();
+  absl::Status ComputeIntervals();
 
   std::vector<EquinoctialElements> osculating_equinoctial_elements_;
   std::vector<Length> radial_distances_;

@@ -22,7 +22,6 @@
 
 namespace principia {
 
-using base::Error;
 using base::make_not_null_unique;
 using base::not_null;
 using geometry::AngularVelocity;

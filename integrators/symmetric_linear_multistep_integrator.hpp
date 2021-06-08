@@ -12,7 +12,7 @@
 #include <list>
 #include <vector>
 
-#include "base/status.hpp"
+#include "absl/status/status.h"
 #include "integrators/cohen_hubbard_oesterwinter.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/double_precision.hpp"
@@ -23,7 +23,6 @@ namespace integrators {
 namespace internal_symmetric_linear_multistep_integrator {
 
 using base::not_null;
-using base::Status;
 using geometry::Instant;
 using numerics::DoublePrecision;
 using numerics::FixedVector;
@@ -41,7 +40,7 @@ class SymmetricLinearMultistepIntegrator
 
   class Instance : public FixedStepSizeIntegrator<ODE>::Instance {
    public:
-    Status Solve(Instant const& t_final) override;
+    absl::Status Solve(Instant const& t_final) override;
     SymmetricLinearMultistepIntegrator const& integrator() const override;
     not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> Clone()
         const override;

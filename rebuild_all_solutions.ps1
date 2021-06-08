@@ -2,7 +2,7 @@ $ErrorActionPreference = "Stop"
 
 $msbuild = &".\Principia\find_msbuild.ps1"
 
-$dependencies = @(".\Google\glog\google-glog.sln",
+$dependencies = @(".\Google\glog\msvc\glog.sln",
                   ".\Google\googletest\googletest\msvc\gtest.sln",
                   ".\Google\googletest\googlemock\msvc\gmock.sln",
                   ".\Google\protobuf\vsprojects\protobuf.sln",
@@ -13,7 +13,7 @@ $dependencies = @(".\Google\glog\google-glog.sln",
 
 push-location -path "Google"
 foreach ($repository in @("glog", "googletest", "protobuf", "benchmark",
-                          "gipfeli", "abseil-cpp")) {
+                          "gipfeli", "abseil-cpp", "chromium")) {
   if (!(test-path -path $repository)) {
     git clone ("https://github.com/mockingbirdnest/" + $repository + ".git")
   }

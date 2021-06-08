@@ -1,0 +1,26 @@
+{
+  "solution": {
+    "path": "Principia.sln",
+    "projects": [
+      "astronomy\\astronomy.vcxproj",
+      "base\\base.vcxproj",
+      "benchmark_automation\\benchmark_automation.csproj",
+      "benchmarks\\benchmarks.vcxproj",
+      "coverage_analyser\\coverage_analyser.csproj",
+      "geometry\\geometry.vcxproj",
+      "integrators\\integrators.vcxproj",
+      "journal\\journal.vcxproj",
+      "ksp_plugin\\ksp_plugin.vcxproj",
+      "ksp_plugin_test\\ksp_plugin_test.vcxproj",
+      "mathematica\\mathematica.vcxproj",
+      "numerics\\numerics.vcxproj",
+      "parallel_test_runner\\parallel_test_runner.csproj",
+      "physics\\physics.vcxproj",
+      "quantities\\quantities.vcxproj",
+      "serialization\\serialization.vcxproj",
+      "stacktrace_decoder\\stacktrace_decoder.csproj",
+      "testing_utilities\\testing_utilities.vcxproj",
+      "tools\\tools.vcxproj"
+    ]
+  }
+}

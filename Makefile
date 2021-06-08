@@ -63,14 +63,22 @@ ifeq ($(UNAME_S),Darwin)
 endif
 
 TEST_LIBS     := $(DEP_DIR)benchmark/src/libbenchmark.a $(DEP_DIR)protobuf/src/.libs/libprotobuf.a
-LIBS          := $(DEP_DIR)protobuf/src/.libs/libprotobuf.a \
-	$(DEP_DIR)gipfeli/libgipfeli.a \
-	$(DEP_DIR)abseil-cpp/absl/strings/libabsl_strings.a \
-	$(DEP_DIR)abseil-cpp/absl/synchronization/libabsl_synchronization.a \
-	$(DEP_DIR)abseil-cpp/absl/time/libabsl_*.a \
+ABSL_LIBS     := \
+	$(DEP_DIR)abseil-cpp/absl/base/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/debugging/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/numeric/libabsl_*.a \
-	$(DEP_DIR)abseil-cpp/absl/base/libabsl_*.a \
+	$(DEP_DIR)abseil-cpp/absl/status/libabsl_*.a \
+	$(DEP_DIR)abseil-cpp/absl/strings/libabsl_*.a \
+	$(DEP_DIR)abseil-cpp/absl/synchronization/libabsl_synchronization.a \
+	$(DEP_DIR)abseil-cpp/absl/time/libabsl_*.a
+ifeq ($(UNAME_S),Linux)
+    ABSL_GROUP_LIBS = -Wl,--start-group $(ABSL_LIBS) -Wl,--end-group
+else
+    ABSL_GROUP_LIBS = $(ABSL_LIBS)
+endif
+LIBS          := $(DEP_DIR)protobuf/src/.libs/libprotobuf.a \
+	$(DEP_DIR)gipfeli/libgipfeli.a \
+	$(ABSL_GROUP_LIBS) \
 	$(DEP_DIR)zfp/build/lib/libzfp.a \
 	$(DEP_DIR)glog/.libs/libglog.a -lpthread -lc++ -lc++abi
 TEST_INCLUDES := \
@@ -112,6 +120,7 @@ ifeq ($(UNAME_S),Darwin)
 			-I$(DEP_DIR)compatibility/optional \
 			-I$(DEP_DIR)Optional \
 			-include "base/macos_allocator_replacement.hpp"
+    LIBS += -framework CoreFoundation
     SHARED_ARGS += -mmacosx-version-min=10.12 -arch x86_64 -D_LIBCPP_STD_VER=16
     SHAREDFLAG := -dynamiclib
 endif
@@ -220,7 +229,7 @@ $(PROTO_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cc
 
 ##### tools
 
-$(TOOLS_BIN): $(TOOLS_OBJECTS) $(PROTO_OBJECTS) $(NUMERICS_LIB_OBJECTS)
+$(TOOLS_BIN): $(TOOLS_OBJECTS) $(PROTO_OBJECTS) $(BASE_LIB_OBJECTS) $(NUMERICS_LIB_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
 

@@ -118,7 +118,7 @@ inline OrbitGroundTrack::EquatorCrossingLongitudes::EquatorCrossingLongitudes(
     : nominal_recurrence_(nominal_recurrence) {}
 
 template<typename PrimaryCentred, typename Inertial>
-StatusOr<OrbitGroundTrack> OrbitGroundTrack::ForTrajectory(
+absl::StatusOr<OrbitGroundTrack> OrbitGroundTrack::ForTrajectory(
     DiscreteTrajectory<PrimaryCentred> const& trajectory,
     RotatingBody<Inertial> const& primary,
     std::optional<MeanSun> const& mean_sun) {

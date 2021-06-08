@@ -1,0 +1,8 @@
+{
+  "solution": {
+    "path": "Principia.sln",
+    "projects": [
+      "ksp_plugin_adapter\\ksp_plugin_adapter.csproj",
+    ]
+  }
+}

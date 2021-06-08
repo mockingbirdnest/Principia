@@ -40,6 +40,7 @@ using testing_utilities::ComputeЧебышёвPolynomialSecondDerivative;
 using testing_utilities::ComputeLegendrePolynomialSecondDerivative;
 using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
+using testing_utilities::StatusIs;
 using testing_utilities::operator""_⑴;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
@@ -127,7 +128,7 @@ TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, Legendre) {
   auto instance = integrator.NewInstance(
       problem, append_state, tolerance_to_error_ratio, parameters);
   auto outcome = instance->Solve(t_final);
-  EXPECT_EQ(termination_condition::Done, outcome.error());
+  EXPECT_THAT(outcome, StatusIs(termination_condition::Done));
 
   double max_error{};
   Variation<double> max_derivative_error{};

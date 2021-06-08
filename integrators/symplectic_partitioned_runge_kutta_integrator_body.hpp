@@ -12,7 +12,7 @@ namespace internal_symplectic_partitioned_runge_kutta_integrator {
 using base::mod;
 
 template<typename Method, typename Position>
-Status SymplecticPartitionedRungeKuttaIntegrator<Method, Position>::
+absl::Status SymplecticPartitionedRungeKuttaIntegrator<Method, Position>::
 Instance::Solve(Instant const& t_final) {
   LOG(FATAL) << "I'm sorry Dave.  I'm afraid I can't do that.";
 }

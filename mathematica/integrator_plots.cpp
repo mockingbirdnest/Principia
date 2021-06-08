@@ -8,9 +8,9 @@
 #include <utility>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "base/bundle.hpp"
 #include "base/file.hpp"
-#include "base/status.hpp"
 #include "glog/logging.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
@@ -55,7 +55,6 @@ namespace principia {
 using base::Bundle;
 using base::not_null;
 using base::OFStream;
-using base::Status;
 using geometry::BarycentreCalculator;
 using geometry::Displacement;
 using geometry::Inertial;
@@ -200,10 +199,10 @@ class WorkErrorGraphGenerator {
   };
 
   WorkErrorGraphGenerator(
-      std::function<Status(Instant const& t,
-                           std::vector<Length> const& q,
-                           std::vector<Acceleration>& result,
-                           int* evaluations)> compute_accelerations,
+      std::function<absl::Status(Instant const& t,
+                                 std::vector<Length> const& q,
+                                 std::vector<Acceleration>& result,
+                                 int* evaluations)> compute_accelerations,
       ODE::SystemState initial_state,
       std::function<Errors(ODE::SystemState const&)> compute_errors,
       Instant const& tmax,
@@ -264,7 +263,7 @@ class WorkErrorGraphGenerator {
   }
 
  private:
-  Status Integrate(int const method_index, int const time_step_index) {
+  absl::Status Integrate(int const method_index, int const time_step_index) {
     auto const& method = methods_[method_index];
     Problem problem;
     int number_of_evaluations = 0;
@@ -306,14 +305,14 @@ class WorkErrorGraphGenerator {
     e_errors_[method_index][time_step_index] = max_e_error;
     evaluations_[method_index][time_step_index] = amortized_evaluations;
 
-    return Status::OK;
+    return absl::OkStatus();
   }
 
   std::vector<SimpleHarmonicMotionPlottedIntegrator> const methods_;
-  std::function<Status(Instant const& t,
-                       std::vector<Length> const& q,
-                       std::vector<Acceleration>& result,
-                       int* evaluations)>
+  std::function<absl::Status(Instant const& t,
+                             std::vector<Length> const& q,
+                             std::vector<Acceleration>& result,
+                             int* evaluations)>
       compute_accelerations_;
   ODE::SystemState initial_state_;
   std::function<Errors(ODE::SystemState const&)> compute_errors_;

@@ -79,5 +79,11 @@ message PolynomialInMonomialBasis {
     }
   }
   repeated Coefficient coefficient = 1;
-  optional Point origin = 2;  // Only in the affine case.
+  // Added in Gröbner.
+  oneof origin {
+    double double = 3;
+    Quantity quantity = 4;
+    Multivector multivector = 5;
+    Point point = 2;  // Was optional Point origin = 2;
+  }
 }

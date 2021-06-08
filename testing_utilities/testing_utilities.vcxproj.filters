@@ -71,9 +71,6 @@
     <ClInclude Include="matchers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="actions.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="serialization.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -129,6 +126,9 @@
     </ClCompile>
     <ClCompile Include="approximate_quantity_test.cpp">
       <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\base\cpuid.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

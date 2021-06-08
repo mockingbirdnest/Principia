@@ -7,11 +7,12 @@
 #include <memory>
 #include <vector>
 
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/synchronization/mutex.h"
-#include "base/jthread.hpp"
+#include "astronomy/epoch.hpp"
+#include "base/recurring_thread.hpp"
 #include "base/not_null.hpp"
-#include "base/status.hpp"
-#include "base/status_or.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "google/protobuf/repeated_field.h"
@@ -33,11 +34,9 @@ namespace principia {
 namespace physics {
 namespace internal_ephemeris {
 
-using base::Error;
-using base::jthread;
+using astronomy::InfinitePast;
 using base::not_null;
-using base::Status;
-using base::StatusOr;
+using base::RecurringThread;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Vector;
@@ -186,11 +185,20 @@ class Ephemeris {
   virtual FixedStepSizeIntegrator<NewtonianMotionEquation> const&
   planetary_integrator() const;
 
-  virtual Status last_severe_integration_status() const;
+  virtual absl::Status last_severe_integration_status() const;
 
   // Prolongs the ephemeris up to at least |t|.  Returns an error iff the thread
   // is stopped.  After a successful call, |t_max() >= t|.
-  virtual Status Prolong(Instant const& t) EXCLUDES(lock_);
+  virtual absl::Status Prolong(Instant const& t) EXCLUDES(lock_);
+
+  // Asks the reanimator thread to asynchronously reconstruct the past so that
+  // the |t_min()| of the ephemeris ultimately ends up at or before
+  // |desired_t_min|.
+  void RequestReanimation(Instant const& desired_t_min);
+
+  // Blocks until the |t_min()| of the ephemeris is at or before
+  // |desired_t_min|.
+  void WaitForReanimation(Instant const& desired_t_min);
 
   // Creates an instance suitable for integrating the given |trajectories| with
   // their |intrinsic_accelerations| using a fixed-step integrator parameterized
@@ -203,7 +211,7 @@ class Ephemeris {
       FixedStepParameters const& parameters);
 
   // Same as above, but returns an error status if the thread is stopped.
-  virtual StatusOr<not_null<
+  virtual absl::StatusOr<not_null<
       std::unique_ptr<typename Integrator<NewtonianMotionEquation>::Instance>>>
   StoppableNewInstance(
       std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
@@ -215,7 +223,7 @@ class Ephemeris {
   // described by |*this|.  If |t > t_max()|, calls |Prolong(t)| beforehand.
   // Prolongs the ephemeris by at most |max_ephemeris_steps|.  Returns OK if and
   // only if |*trajectory| was integrated until |t|.
-  virtual Status FlowWithAdaptiveStep(
+  virtual absl::Status FlowWithAdaptiveStep(
       not_null<DiscreteTrajectory<Frame>*> trajectory,
       IntrinsicAcceleration intrinsic_acceleration,
       Instant const& t,
@@ -223,7 +231,7 @@ class Ephemeris {
       std::int64_t max_ephemeris_steps) EXCLUDES(lock_);
 
   // Same as above, but uses a generalized integrator.
-  virtual Status FlowWithAdaptiveStep(
+  virtual absl::Status FlowWithAdaptiveStep(
       not_null<DiscreteTrajectory<Frame>*> trajectory,
       GeneralizedIntrinsicAcceleration intrinsic_acceleration,
       Instant const& t,
@@ -234,7 +242,7 @@ class Ephemeris {
   // bodies in the gravitational potential described by |*this|.  If
   // |t > t_max()|, calls |Prolong(t)| beforehand.  The trajectories and
   // integration parameters are given by the |instance|.
-  virtual Status FlowWithFixedStep(
+  virtual absl::Status FlowWithFixedStep(
       Instant const& t,
       typename Integrator<NewtonianMotionEquation>::Instance& instance)
       EXCLUDES(lock_);
@@ -285,26 +293,12 @@ class Ephemeris {
       not_null<serialization::Ephemeris*> message) const EXCLUDES(lock_);
   template<typename F = Frame,
            typename = std::enable_if_t<base::is_serializable_v<F>>>
+  // The parameter |desired_t_min| indicates that the ephemeris must be restored
+  // at a checkpoint such that, once the ephemeris is prolonged, its |t_min()|
+  // is at or before |desired_t_min|.
   static not_null<std::unique_ptr<Ephemeris>> ReadFromMessage(
+      Instant const& desired_t_min,
       serialization::Ephemeris const& message) EXCLUDES(lock_);
-
-  // A |Guard| is an RAII object that protects a critical section against
-  // changes to |t_min|.
-  class Guard final {
-   public:
-    explicit Guard(not_null<Ephemeris<Frame> const*> ephemeris);
-    ~Guard();
-
-    // Move only.  A moved-from |Guard| does not protect anything.
-    Guard(Guard&& other);
-    Guard& operator=(Guard&& other);
-    Guard(Guard const&) = delete;
-    Guard& operator=(Guard const&) = delete;
-
-   private:
-    Ephemeris<Frame> const* ephemeris_;
-    Instant t_min_;
-  };
 
  protected:
   // For mocking purposes, leaves everything uninitialized and uses the given
@@ -320,15 +314,24 @@ class Ephemeris {
   Checkpointer<serialization::Ephemeris>::Reader MakeCheckpointerReader();
 
   // Called on a stoppable thread to reconstruct the past state of the ephemeris
-  // and its trajectories.
-  Status Reanimate();
+  // and its trajectories starting in such a way that |t_min()| is at or before
+  // |desired_t_min|.  The member variable |oldest_reanimated_checkpoint_| tells
+  // the reanimator where to stop.
+  absl::Status Reanimate(Instant const desired_t_min);
+
+  // Reconstructs the past state of the ephemeris between |t_initial| and
+  // |t_final| using the given checkpoint |message|.
+  absl::Status ReanimateOneCheckpoint(
+      serialization::Ephemeris::Checkpoint const& message,
+      Instant const& t_initial,
+      Instant const& t_final);
 
   // Callbacks for the integrators.
   void AppendMassiveBodiesState(
       typename NewtonianMotionEquation::SystemState const& state)
       REQUIRES(lock_);
   template<typename ContinuousTrajectoryPtr>
-  static std::vector<Status> AppendMassiveBodiesStateToTrajectories(
+  static std::vector<absl::Status> AppendMassiveBodiesStateToTrajectories(
       typename NewtonianMotionEquation::SystemState const& state,
       std::vector<not_null<ContinuousTrajectoryPtr>> const& trajectories);
   static void AppendMasslessBodiesStateToTrajectories(
@@ -369,9 +372,11 @@ class Ephemeris {
   // Computes the accelerations due to one body, |body1| (with index |b1| in the
   // |bodies_| and |trajectories_| arrays) on massless bodies at the given
   // |positions|.  The template parameter specifies what we know about the
-  // massive body, and therefore what forces apply.
+  // massive body, and therefore what forces apply.  Returns an integer for
+  // efficiency.
   template<bool body1_is_oblate>
-  Error ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
+  std::underlying_type_t<absl::StatusCode>
+  ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
       Instant const& t,
       MassiveBody const& body1,
       std::size_t b1,
@@ -380,17 +385,16 @@ class Ephemeris {
       REQUIRES_SHARED(lock_);
 
   // Computes the accelerations between all the massive bodies in |bodies_|.
-  void ComputeMassiveBodiesGravitationalAccelerations(
+  absl::Status ComputeMassiveBodiesGravitationalAccelerations(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
-      std::vector<Vector<Acceleration, Frame>>& accelerations) const
-      REQUIRES_SHARED(lock_);
+      std::vector<Vector<Acceleration, Frame>>& accelerations) const;
 
   // Computes the acceleration exerted by the massive bodies in |bodies_| on
   // massless bodies.  The massless bodies are at the given |positions|.
   // Returns false iff a collision occurred, i.e., the massless body is inside
   // one of the |bodies_|.
-  Error ComputeMasslessBodiesGravitationalAccelerations(
+  absl::StatusCode ComputeMasslessBodiesGravitationalAccelerations(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations) const
@@ -398,7 +402,7 @@ class Ephemeris {
 
   // Flows the given ODE with an adaptive step integrator.
   template<typename ODE>
-  Status FlowODEWithAdaptiveStep(
+  absl::Status FlowODEWithAdaptiveStep(
       typename ODE::RightHandSideComputation compute_acceleration,
       not_null<DiscreteTrajectory<Frame>*> trajectory,
       Instant const& t,
@@ -440,10 +444,12 @@ class Ephemeris {
 
   not_null<
       std::unique_ptr<Checkpointer<serialization::Ephemeris>>> checkpointer_;
-  not_null<std::unique_ptr<Protector>> protector_;
+
+  // This member must only be accessed by the |reanimator_| thread.
+  Instant oldest_reanimated_checkpoint_ = InfinitePast;
 
   // The techniques and terminology follow [Lov22].
-  jthread reanimator_;
+  RecurringThread<Instant> reanimator_;
 
   // The fields above this line are fixed at construction and therefore not
   // protected.  Note that |ContinuousTrajectory| is thread-safe.  |lock_| is
@@ -451,12 +457,13 @@ class Ephemeris {
   // consistent (e.g., during Prolong).
   mutable absl::Mutex lock_;
 
+  // Parameter passed to the last call to |RequestReanimation|, if any.
+  std::optional<Instant> last_desired_t_min_ GUARDED_BY(lock_);
+
   std::unique_ptr<typename Integrator<NewtonianMotionEquation>::Instance>
       instance_ GUARDED_BY(lock_);
 
-  Status last_severe_integration_status_ GUARDED_BY(lock_);
-
-  friend class Guard;
+  absl::Status last_severe_integration_status_ GUARDED_BY(lock_);
 };
 
 }  // namespace internal_ephemeris

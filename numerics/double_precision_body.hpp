@@ -6,45 +6,111 @@
 #include <array>
 #include <cmath>
 #include <cstring>
+#include <limits>
 #include <string>
+#include <type_traits>
 
+#include "geometry/grassmann.hpp"
+#include "geometry/point.hpp"
+#include "geometry/r3_element.hpp"
 #include "geometry/serialization.hpp"
 #include "quantities/elementary_functions.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
 namespace numerics {
 namespace internal_double_precision {
 
-using geometry::DoubleOrQuantityOrPointOrMultivectorSerializer;
 using geometry::DoubleOrQuantityOrMultivectorSerializer;
+using geometry::DoubleOrQuantityOrPointOrMultivectorSerializer;
+using geometry::Multivector;
+using geometry::Point;
+using geometry::R3Element;
 using quantities::Abs;
-using quantities::FusedMultiplyAdd;
+using quantities::FusedMultiplySubtract;
+using quantities::is_quantity;
 using quantities::Quantity;
 using quantities::si::Radian;
 namespace si = quantities::si;
 
-// Assumes that |T| and |U| have a memory representation that is a sequence of
-// |double|s, and returns the conjunction of componentwise
-// |left[i]| >= |right[i]| or left[i] == 0.
+// A helper to check that the preconditions of QuickTwoSum are met.  Annoyingly
+// complicated as it needs to peel off all of our abstractions until it reaches
+// doubles.
+template<typename T, typename U, typename = void>
+struct ComponentwiseComparator;
+
 template<typename T, typename U>
-bool ComponentwiseGreaterThanOrEqualOrZero(T const& left, U const& right) {
-  static_assert(sizeof(left) == sizeof(right),
-                "Comparing types of different sizes");
-  static_assert(sizeof(left) % sizeof(double) == 0,
-                "Types are not sequences of doubles");
-  constexpr int size = sizeof(left) / sizeof(double);
-  std::array<double, size> left_doubles;
-  std::memcpy(left_doubles.data(), &left, sizeof(left));
-  std::array<double, size> right_doubles;
-  std::memcpy(right_doubles.data(), &right, sizeof(right));
-  bool result = true;
-  for (int i = 0; i < size; ++i) {
-    result &=
-        (Abs(left_doubles[i]) >= Abs(right_doubles[i]) || left_doubles[i] == 0);
+struct ComponentwiseComparator<DoublePrecision<T>, DoublePrecision<U>> {
+  static bool GreaterThanOrEqualOrZero(DoublePrecision<T> const& left,
+                                       DoublePrecision<U> const& right) {
+    // This check is incomplete: it doesn't compare the errors component.  To
+    // the best of my understanding this code is only used in tests.
+    return ComponentwiseComparator<T, U>::GreaterThanOrEqualOrZero(left.value,
+                                                                   right.value);
   }
-  return result;
-}
+};
+
+template<typename T, typename U>
+struct ComponentwiseComparator<Point<T>, U> : base::not_constructible {
+  static bool GreaterThanOrEqualOrZero(Point<T> const& left,
+                                       U const& right) {
+    // We only care about the coordinates, the geometric structure is
+    // irrelevant.
+    return ComponentwiseComparator<T, U>::GreaterThanOrEqualOrZero(
+        left - Point<T>{}, right);
+  }
+};
+
+template<typename T, typename U>
+struct ComponentwiseComparator<T, Point<U>> : base::not_constructible {
+  static bool GreaterThanOrEqualOrZero(T const& left,
+                                       Point<U> const& right) {
+    // We only care about the coordinates, the geometric structure is
+    // irrelevant.
+    return ComponentwiseComparator<T, U>::GreaterThanOrEqualOrZero(
+        left, right - Point<U>{});
+  }
+};
+
+template<typename T, typename TFrame, int trank,
+         typename U, typename UFrame, int urank>
+struct ComponentwiseComparator<Multivector<T, TFrame, trank>,
+                               Multivector<U, UFrame, urank>>
+    : base::not_constructible {
+  static bool GreaterThanOrEqualOrZero(
+      Multivector<T, TFrame, trank> const& left,
+      Multivector<U, UFrame, urank> const& right) {
+    // This doesn't handle trivectors.
+    return ComponentwiseComparator<R3Element<T>, R3Element<U>>::
+        GreaterThanOrEqualOrZero(left.coordinates(), right.coordinates());
+  }
+};
+
+template<typename T, typename U>
+struct ComponentwiseComparator<R3Element<T>, R3Element<U>>
+    : base::not_constructible {
+  static bool GreaterThanOrEqualOrZero(R3Element<T> const& left,
+                                       R3Element<U> const& right) {
+    bool result = true;
+    for (int i = 0; i < 3; ++i) {
+      result &= ComponentwiseComparator<T, U>::GreaterThanOrEqualOrZero(
+          left[i], right[i]);
+    }
+    return result;
+  }
+};
+
+template<typename T, typename U>
+struct ComponentwiseComparator<T, U,
+                               std::enable_if_t<
+                                   std::conjunction_v<is_quantity<T>,
+                                                      is_quantity<U>>>> {
+  static bool GreaterThanOrEqualOrZero(T const& left, U const& right) {
+    return Abs(left) >= Abs(right) || left == T{};
+  }
+};
+
 
 template<typename T>
 constexpr DoublePrecision<T>::DoublePrecision(T const& value)
@@ -145,10 +211,43 @@ DoublePrecision<Product<T, U>> Scale(T const & scale,
 }
 
 template<typename T, typename U>
-DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b) {
-  DoublePrecision<Product<T, U>> result(a * b);
-  result.error = FusedMultiplyAdd(a, b, -result.value);
+DoublePrecision<Product<T, U>> VeltkampDekkerProduct(T const& a, U const& b) {
+  DoublePrecision<Product<T, U>> result;
+  auto const& x = a;
+  auto const& y = b;
+  auto& z = result.value;
+  auto& zz = result.error;
+  // Split x and y as in mul12 from [Dek71, p. 241]; see also [Dek71, p. 235].
+  constexpr std::int64_t t = std::numeric_limits<double>::digits;
+  constexpr double c = 1 << (t - t / 2);
+  T const px = x * c;
+  T const hx = x - px + px;
+  T const tx = x - hx;
+  U const py = y * c;
+  U const hy = y - py + py;
+  U const ty = y - hy;
+  // Veltkamp’s 1968 algorithm, as given in [Dek71, p. 234].
+  z = x * y;
+  zz = (((hx * hy - z) + hx * ty) + tx * hy) + tx * ty;
+  // Dekker’s algorithm (5.12) would be
+  // z = (hx * hy) + (hx * ty + tx * hy);
+  // zz = (hx * hy) - z + (hx * ty + tx * hy) + tx * ty;
+  // where the parenthesized expressions are common (overall one more addition
+  // and one multiplication fewer), but it then requires an additional
+  // QuickTwoSum (5.14) for z to be the correctly-rounded product x * y,
+  // which we require, e.g., for equality comparison.
   return result;
+}
+
+template<typename T, typename U>
+DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b) {
+  if (UseHardwareFMA) {
+    DoublePrecision<Product<T, U>> result(a * b);
+    result.error = FusedMultiplySubtract(a, b, result.value);
+    return result;
+  } else {
+    return VeltkampDekkerProduct(a, b);
+  }
 }
 
 template<typename T, typename U>
@@ -156,7 +255,8 @@ FORCE_INLINE(inline)
 DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b) {
 #if _DEBUG
   using quantities::DebugString;
-  CHECK(ComponentwiseGreaterThanOrEqualOrZero(a, b))
+  using Comparator = ComponentwiseComparator<T, U>;
+  CHECK(Comparator::GreaterThanOrEqualOrZero(a, b))
       << "|" << DebugString(a) << "| < |" << DebugString(b) << "|";
 #endif
   // [HLB07].
