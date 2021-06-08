@@ -11,13 +11,30 @@ namespace internal_polynomial_evaluators {
 using quantities::Derivative;
 using quantities::Square;
 
-// The structs below are only needed because the language won't let us have (1)
-// a partial specialization of a function (2) an explicit specialization of a
-// member function template in an unspecialized class template.  Sigh.
+template<typename Value, typename Argument, int degree, bool allow_fma>
+struct EstrinEvaluator;
+template<typename Value, typename Argument, int degree, bool allow_fma>
+struct HornerEvaluator;
+
+namespace exported {
+template<typename Value, typename Argument, int degree>
+using EstrinEvaluator = internal_polynomial_evaluators::
+    EstrinEvaluator<Value, Argument, degree, /*allow_fma=*/true>;
+template<typename Value, typename Argument, int degree>
+using EstrinEvaluatorWithoutFMA = internal_polynomial_evaluators::
+    EstrinEvaluator<Value, Argument, degree, /*allow_fma=*/false>;
+template<typename Value, typename Argument, int degree>
+using HornerEvaluator = internal_polynomial_evaluators::
+    HornerEvaluator<Value, Argument, degree, /*allow_fma=*/true>;
+template<typename Value, typename Argument, int degree>
+using HornerEvaluatorWithoutFMA = internal_polynomial_evaluators::
+    HornerEvaluator<Value, Argument, degree, /*allow_fma=*/false>;
+}  // namespace exported
+
 // We use FORCE_INLINE because we have to write this recursively, but we really
 // want linear code.
 
-template<typename Value, typename Argument, int degree, bool allow_fma = true>
+template<typename Value, typename Argument, int degree, bool allow_fma>
 struct EstrinEvaluator {
   // The fully qualified name below designates the template, not the current
   // instance.
@@ -25,7 +42,7 @@ struct EstrinEvaluator {
       Value,
       Argument,
       degree,
-      internal_polynomial_evaluators::EstrinEvaluator>::Coefficients;
+      exported::EstrinEvaluator>::Coefficients;
 
   FORCE_INLINE(static) Value Evaluate(Coefficients const& coefficients,
                                       Argument const& argument);
@@ -34,11 +51,7 @@ struct EstrinEvaluator {
                      Argument const& argument);
 };
 
-template<typename Value, typename Argument, int degree>
-using EstrinEvaluatorWithoutFMA =
-    EstrinEvaluator<Value, Argument, degree, /*allow_fma=*/false>;
-
-template<typename Value, typename Argument, int degree, bool allow_fma = true>
+template<typename Value, typename Argument, int degree, bool allow_fma>
 struct HornerEvaluator {
   // The fully qualified name below designates the template, not the current
   // instance.
@@ -46,7 +59,7 @@ struct HornerEvaluator {
       Value,
       Argument,
       degree,
-      internal_polynomial_evaluators::HornerEvaluator>::Coefficients;
+      exported::HornerEvaluator>::Coefficients;
 
   FORCE_INLINE(static) Value Evaluate(Coefficients const& coefficients,
                                       Argument const& argument);
@@ -55,16 +68,12 @@ struct HornerEvaluator {
                      Argument const& argument);
 };
 
-template<typename Value, typename Argument, int degree>
-using HornerEvaluatorWithoutFMA =
-    HornerEvaluator<Value, Argument, degree, /*allow_fma=*/false>;
-
 }  // namespace internal_polynomial_evaluators
 
-using internal_polynomial_evaluators::EstrinEvaluator;
-using internal_polynomial_evaluators::EstrinEvaluatorWithoutFMA;
-using internal_polynomial_evaluators::HornerEvaluator;
-using internal_polynomial_evaluators::HornerEvaluatorWithoutFMA;
+using internal_polynomial_evaluators::exported::EstrinEvaluator;
+using internal_polynomial_evaluators::exported::EstrinEvaluatorWithoutFMA;
+using internal_polynomial_evaluators::exported::HornerEvaluator;
+using internal_polynomial_evaluators::exported::HornerEvaluatorWithoutFMA;
 
 }  // namespace numerics
 }  // namespace principia
