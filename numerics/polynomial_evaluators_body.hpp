@@ -71,7 +71,7 @@ struct InternalEstrinEvaluator {
   using ArgumentSquares = typename ArgumentSquaresGenerator::Type;
   using Coefficients =
       typename PolynomialInMonomialBasis<
-          Value, Argument, degree, exported::EstrinEvaluator>::Coefficients;
+          Value, Argument, degree, numerics::EstrinEvaluator>::Coefficients;
 
   FORCE_INLINE(static) Derivative<Value, Argument, low> Evaluate(
       Coefficients const& coefficients,
@@ -90,7 +90,7 @@ struct InternalEstrinEvaluator<Value, Argument, degree, fma, low, 1> {
   using ArgumentSquares = typename ArgumentSquaresGenerator::Type;
   using Coefficients =
       typename PolynomialInMonomialBasis<
-          Value, Argument, degree, exported::EstrinEvaluator>::Coefficients;
+          Value, Argument, degree, numerics::EstrinEvaluator>::Coefficients;
 
   FORCE_INLINE(static) Derivative<Value, Argument, low> Evaluate(
       Coefficients const& coefficients,
@@ -109,7 +109,7 @@ struct InternalEstrinEvaluator<Value, Argument, degree, fma, low, 0> {
   using ArgumentSquares = typename ArgumentSquaresGenerator::Type;
   using Coefficients =
       typename PolynomialInMonomialBasis<
-          Value, Argument, degree, exported::EstrinEvaluator>::Coefficients;
+          Value, Argument, degree, numerics::EstrinEvaluator>::Coefficients;
 
   FORCE_INLINE(static) Derivative<Value, Argument, low> Evaluate(
       Coefficients const& coefficients,
@@ -299,7 +299,7 @@ template<typename Value, typename Argument, int degree, bool fma, int low>
 struct InternalHornerEvaluator {
   using Coefficients =
       typename PolynomialInMonomialBasis<
-          Value, Argument, degree, exported::HornerEvaluator>::Coefficients;
+          Value, Argument, degree, numerics::HornerEvaluator>::Coefficients;
 
   FORCE_INLINE(static) Derivative<Value, Argument, low>
   Evaluate(Coefficients const& coefficients,
@@ -313,7 +313,7 @@ template<typename Value, typename Argument, int degree, bool fma>
 struct InternalHornerEvaluator<Value, Argument, degree, fma, degree> {
   using Coefficients =
       typename PolynomialInMonomialBasis<
-          Value, Argument, degree, exported::HornerEvaluator>::Coefficients;
+          Value, Argument, degree, numerics::HornerEvaluator>::Coefficients;
 
   FORCE_INLINE(static) Derivative<Value, Argument, degree>
   Evaluate(Coefficients const& coefficients,
