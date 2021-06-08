@@ -1333,7 +1333,7 @@ achieve that from $q$. The error of the Lagny--Schröder rational method of ord
 and that of the generalized Lagny quadratic irrational method of order $4$ below $2^{-23}$.
 It seems that Canon optimization on the latter can readily bring down its rerror below $2^{-24}$, but not much
 further.
-Both the rational and irrational methods of order $5$ have errors below $2^{-28}$; little stands to be gained
+Both the rational and quadratic irrational methods of order $5$ have errors below $2^{-28}$; little stands to be gained
 from optimization there.
 
 Conversely the computation of $r_0$ from $x$ may use a lower-order method, since it starts from $26$ bits rather
@@ -1348,12 +1348,6 @@ The constants become TODO(egg): compute those.
 
 \section{Performance considerations}
 \label{Performance}
-We obviously consider the latency of the cube root function. Its reciprocal throughput is however a somewhat artificial
-quantity, as workloads consisting solely of cube roots are rare. We thus also consider the variation in throughput of
-the cubic formula for Kepler's problem, given in appendix~\ref{ExampleGeneralizedLagnyMethods}, as a more plausible workload.
-In this context the irrational methods tend to be superior, as they put more of their work on the otherwise less-used
-division unit.
-
 While the irrational methods, being the solutions equations of the second degree, are of the form
 \[\frac{\mathfrak{a}\pm\sqrt{\mathfrak{b}}}{\mathfrak{c}}\text,\]where the letters stand for polynomial expressions, the degree of
 $\mathfrak{c}$ is much lower than that of the denominator of the rational methods; a division may thus be scheduled early, and
@@ -1389,7 +1383,8 @@ The rational method of order $5$ may be evaluated with FMA as\[
        \round{\round{\round{30q}\round{q^2}+y}\round{y^2}}}}
 {\round{\round{\round{\round{q^2}q}\round{q^2}} \round{\round{15q}\round{q^2}+\round{51y}} + \round{\round{15 \round{y^2}} \round{q^2}}}}}\text.
 \]
-The irrational method of the same order may be evaluated with similar performance on Skylake if it is rewritten as\[
+The quadratic irrational method of the same order may be evaluated with similar performance on Skylake and Kaby Lake if it is rewritten
+as\[
 \frac{q}{\tfrac{20}{\sqrt{15}}q^3-\tfrac{2}{\sqrt{15}}y}\pa{\sqrt{-q^6+\tfrac{118}{5}q^3y-y^2}+\tfrac{5}{\sqrt{15}}\pa{q^3-y}}
 \]and evaluated as\[
 ξ = \round{d
