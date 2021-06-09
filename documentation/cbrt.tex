@@ -496,10 +496,11 @@ As written in (\ref{LagnyIrrationalCubeRootIteration}), Lagny's irrational metho
 \[ξ' = \tfrac{1}{2}q'+\sqrt{\tfrac{1}{4}{q'}^2+\frac{y-{q'}^3}{3q'}}\]
 seems prohibitively computationally expensive in comparison to the rational one: it adds a
 square root on the critical path, dependent on the result of a division.
-However, rewriting it as\begin{equation}
-ξ' = \tfrac{1}{2}q'+ \frac{1/\sqrt{12}}{q'}\sqrt{4yq'-{q'}^4}\text,\label{RewrittenLagnyIrrational}
+However, rewriting\footnote{This kind of rewriting is generally effective for quadratic irrational methods;
+see the discussion in appendix~\ref{Performance}.} it as, \exempligratia,\begin{equation}
+ξ' = \pa{\sqrt{3}{q'}^2+\sqrt{4yq'-{q'}^4}}\frac{1/\sqrt{12}}{q'}\text,\label{RewrittenLagnyIrrational}
 \end{equation}
-one can evaluate it with similar\footnote{Other rewritings are preferable on some architectures; we discuss this in appendix~\ref{Performance}.} performance to the rational method.
+one can evaluate it with similar performance to the rational method.
 
 Its error is\[
 ε_ξ' = \frac{-{ε_q'}^3}{3\pa{\tfrac{1}{2}+\sqrt{\tfrac{1}{2}-2{ε_q'}^2-\tfrac{4}{3}{ε_q'}^3-\tfrac{1}{3}{ε_q'}^4}- {ε_q'}^2}} =
@@ -598,18 +599,6 @@ $Γ=\frac{1}{10}$, $κ=\frac{1}{2}$, $λ=\frac{1}{4}$, and $μ=3$. We obtain the
 $\log_2\max_{y}\abs{ε_ξ'} \approx -18.54$: this optimization gains two bits.
 The resulting $ε_ξ'$ is remarkably equioscillating, as can be seen in
 figure~\ref{figStepTwoComparison}.
-
-With the rewriting (\ref{RewrittenLagnyIrrational}), the constants $1/\sqrt{12}$ and $4$ should
-be replaced by\begin{align*}
-\sqrt{\frac{1-λ_{\mathrm{L^2C}}μ_{\mathrm{L^2C}}}{μ_{\mathrm{L^2C}}}}
-&\approx0.28853\,15115\,62316\,71905\,38451\,44194\,38406\,32914^-\\
-&\approx \hex{0.49DD\,337E\,068D\,788B\,A6BA\,D96C\,806E\,6BEC\,F^-}\\
-\intertext{and}
-\frac{1}{1-λ_{\mathrm{L^2C}}μ_{\mathrm{L^2C}}}&\approx4.00298\,73779\,31697\,18250\,67433\,26901\,80420\,6615^-\\
- &\approx \hex{4.00C3\,C7E2\,8476\,6463\,137B\,A1BD\,8503\,F64A^-}
-\end{align*}
-respectively.
-
 
 Note that a similar optimization could be applied to the rational method; however, it
 would not unconditionally be free: changing the $2$ in the denominator turns an addition
@@ -1369,7 +1358,7 @@ rational method is best evaluated as\[
 \]
 On Ivy Bridge\footnote{We thank Peter Barfuss for running some benchmarks for us on a machine with an Ivy Bridge processor.},
 the irrational method evaluated as\[
-ξ = \round{\round{\tfrac{1}{2}q'}+ \round{\round{\frac{\round{1/\sqrt{12}}}{q}}{\round{\sqrt{\round{\round{4yq}-\round{\round{q^2}\round{q^2}}}}}}}}\text,
+ξ = \round{\round{\round{\sqrt{3}\round{q^2}}+ \round{\sqrt{\round{\round{4yq}-\round{\round{q^2}\round{q^2}}}}}}\round{\frac{\round{1/\sqrt{12}}}{q}}}\text,
 \]
 \emph{mutatis mutandis} with Canon optimization, has about the same latency as the rational method.
 
