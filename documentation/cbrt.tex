@@ -917,11 +917,14 @@ We may widen this interval slightly into one that is symmetric about $0$, thus r
 with\begin{align*}
 τ&\DefineAs\roundTowardPositive{\frac{\bar ε_r}{1-\bar ε_r}\pa{1+\frac{2u}{1-u}}}\\
  &=\hex{1.B426\,BBF4\,9D1F4}\Multiply 2^{-14}\text,
-\end{align*}\marginnote{TODO(egg): Refine this value of $τ$ for the actual bound on the rounding error in $ξ$,
+\end{align*}\marginnote{TODO(egg): Refine these values of $τ$ for the actual bound on the rounding error in $ξ$,
 to be given in annex~\ref{LagnyStepTwoRounding}.}
 where $\bar ε_r$ is the bound from (\ref{FaithfulBound}) for Lagny's irrational method with Canon optimization
 in step~\ref{ThirdPrecision}, rounding to nearest in step~\ref{RoundedApproximation},
-and the method of fifth order in step~\ref{HighOrder}, allowing for $100u$ on the computation of $ξ$.
+and the method of fifth order in step~\ref{HighOrder}, allowing for $100u$ on the computation of $ξ$; if instead
+we round toward zero in step~\ref{RoundedApproximation}, we have\[
+τ=\hex{1.7C8587D10158C}\Multiply 2^{-13}\text.
+\]
 
 If this inequality holds, there may be a misrounding. The correctly-rounded result may then
 readily be computed using the ordinary cube root algorithm, described, \exempligratia, in Lagny's
