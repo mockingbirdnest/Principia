@@ -654,12 +654,12 @@ It is easy to make $ε_r'$ negligible by increasing the order of the method; the
 contribution to misrounding is then $δ\abs{ε_x}<δ\pa{\pa{1+\abs{ε_ξ}}\pa{1+2^{-17}}-1}$:
 this is why $\abs{ε_ξ}$ needed to be kept low in step~\ref{ThirdPrecision}.
 
-We now compute bounds for $ε_r'$ and $δ$ for two different methods.\marginnote{TODO(egg): the quadratic irrational method
-of order $5$ \emph{looks} costly, but who knows. It certainly would be tedious to analyse its rounding errors, as it has
-differences of inexact positive terms---those are far from cancellation though, so the method is likely still viable.}
+We now compute bounds for $ε_r'$ and $δ$ for two different methods.
 In the interest of brevity, we have not considered the generalized Lagny irrational methods here; both the rational and
-quadratic irrational methods of order $4$ have overly high truncation error, and the quadratic irrational method of
-order $5$ is costly to evaluate.
+quadratic irrational methods of order $4$ have overly high truncation error, and the irrational methods do not lend
+themselves to being written in the form (\ref{AdditiveCorrection}) without ill-conditioned (and inexact) operations in the
+expression for $Δ$.
+
 
 \subsubsection*{Fifth order rational}
 We use one iteration of the Lagny--Schröder rational method of order $5$:
