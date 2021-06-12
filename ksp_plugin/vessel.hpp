@@ -277,6 +277,8 @@ class Vessel {
   std::optional<OrbitAnalyser> orbit_analyser_;
 
   static std::atomic_bool synchronous_;
+
+  friend class VesselTest;
 };
 
 }  // namespace internal_vessel

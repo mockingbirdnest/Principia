@@ -65,7 +65,7 @@ using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 
 PileUp::PileUp(
-    std::list<not_null<Part*>>&& parts,
+    std::list<not_null<Part*>> parts,
     Instant const& t,
     Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters,
     Ephemeris<Barycentric>::FixedStepParameters fixed_step_parameters,
