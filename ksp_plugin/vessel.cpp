@@ -5,6 +5,7 @@
 #include <functional>
 #include <limits>
 #include <list>
+#include <set>
 #include <string>
 #include <vector>
 

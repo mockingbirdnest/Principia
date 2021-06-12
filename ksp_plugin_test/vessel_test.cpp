@@ -2,6 +2,7 @@
 #include "ksp_plugin/vessel.hpp"
 
 #include <limits>
+#include <list>
 #include <memory>
 #include <set>
 #include <vector>
