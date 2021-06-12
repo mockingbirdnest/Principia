@@ -363,6 +363,47 @@ void Vessel::StopPrognosticator() {
   prognosticator_.Stop();
 }
 
+void Vessel::RequestOrbitAnalysis(Time const& mission_duration) {
+  if (!orbit_analyser_.has_value()) {
+    // TODO(egg): perhaps we should get the history parameters from the plugin;
+    // on the other hand, these are probably overkill for high orbits anyway,
+    // and given that we know many things about our trajectory in the analyser,
+    // perhaps we should pick something appropriate automatically instead.  The
+    // default will do in the meantime.
+    orbit_analyser_.emplace(ephemeris_, DefaultHistoryParameters());
+  }
+  if (orbit_analyser_->last_parameters().has_value() &&
+      orbit_analyser_->last_parameters()->mission_duration !=
+          mission_duration) {
+    orbit_analyser_->Interrupt();
+  }
+  orbit_analyser_->RequestAnalysis(
+      {.first_time = psychohistory_->back().time,
+       .first_degrees_of_freedom = psychohistory_->back().degrees_of_freedom,
+       .mission_duration = mission_duration});
+}
+
+void Vessel::ClearOrbitAnalyser() {
+  orbit_analyser_.reset();
+}
+
+double Vessel::progress_of_orbit_analysis() const {
+  if (!orbit_analyser_.has_value()) {
+    return 0;
+  }
+  return orbit_analyser_->progress_of_next_analysis();
+}
+
+void Vessel::RefreshOrbitAnalysis() {
+  if (orbit_analyser_.has_value()) {
+    orbit_analyser_->RefreshAnalysis();
+  }
+}
+
+OrbitAnalyser::Analysis* Vessel::orbit_analysis() {
+  return orbit_analyser_.has_value() ? orbit_analyser_->analysis() : nullptr;
+}
+
 std::string Vessel::ShortDebugString() const {
   return name_ + " (" + guid_ + ")";
 }
@@ -484,47 +525,6 @@ void Vessel::FillContainingPileUpsFromMessage(
     part->FillContainingPileUpFromMessage(part_message,
                                           pile_up_for_serialization_index);
   }
-}
-
-void Vessel::RequestOrbitAnalysis(Time const& mission_duration) {
-  if (!orbit_analyser_.has_value()) {
-    // TODO(egg): perhaps we should get the history parameters from the plugin;
-    // on the other hand, these are probably overkill for high orbits anyway,
-    // and given that we know many things about our trajectory in the analyser,
-    // perhaps we should pick something appropriate automatically instead.  The
-    // default will do in the meantime.
-    orbit_analyser_.emplace(ephemeris_, DefaultHistoryParameters());
-  }
-  if (orbit_analyser_->last_parameters().has_value() &&
-      orbit_analyser_->last_parameters()->mission_duration !=
-          mission_duration) {
-    orbit_analyser_->Interrupt();
-  }
-  orbit_analyser_->RequestAnalysis(
-      {.first_time = psychohistory_->back().time,
-       .first_degrees_of_freedom = psychohistory_->back().degrees_of_freedom,
-       .mission_duration = mission_duration});
-}
-
-void Vessel::ClearOrbitAnalyser() {
-  orbit_analyser_.reset();
-}
-
-double Vessel::progress_of_orbit_analysis() const {
-  if (!orbit_analyser_.has_value()) {
-    return 0;
-  }
-  return orbit_analyser_->progress_of_next_analysis();
-}
-
-void Vessel::RefreshOrbitAnalysis() {
-  if (orbit_analyser_.has_value()) {
-    orbit_analyser_->RefreshAnalysis();
-  }
-}
-
-OrbitAnalyser::Analysis* Vessel::orbit_analysis() {
-  return orbit_analyser_.has_value() ? orbit_analyser_->analysis() : nullptr;
 }
 
 void Vessel::MakeAsynchronous() {

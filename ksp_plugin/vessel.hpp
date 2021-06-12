@@ -97,6 +97,7 @@ class Vessel {
   // called.
   virtual void FreeParts();
 
+  // Clears the forces and torques on all parts.
   virtual void ClearAllIntrinsicForcesAndTorques();
 
   // If the history is empty, appends a single point to it, computed as the
@@ -171,6 +172,25 @@ class Vessel {
   // Stop the asynchronous prognosticator as soon as convenient.
   void StopPrognosticator();
 
+  // Stops any analyser running for a different mission duration and triggers a
+  // new analysis.
+  void RequestOrbitAnalysis(Time const& mission_duration);
+
+  // Stops the analyser.
+  void ClearOrbitAnalyser();
+
+  // Returns a number between 0 and 1 indicating how far we are within the
+  // current analysis.
+  double progress_of_orbit_analysis() const;
+
+  // Prepares the last completed analysis so that will be returned by
+  // |orbit_analysis|.
+  // TODO(phl): This API is weird.  Why does the caller need a 2-step dance?
+  void RefreshOrbitAnalysis();
+
+  // Returns the latest completed analysis, if there is one.
+  OrbitAnalyser::Analysis* orbit_analysis();
+
   // Returns "vessel_name (GUID)".
   std::string ShortDebugString() const;
 
@@ -187,13 +207,6 @@ class Vessel {
       serialization::Vessel const& message,
       PileUp::PileUpForSerializationIndex const&
           pile_up_for_serialization_index);
-
-  void RequestOrbitAnalysis(Time const& mission_duration);
-  void ClearOrbitAnalyser();
-
-  double progress_of_orbit_analysis() const;
-  void RefreshOrbitAnalysis();
-  OrbitAnalyser::Analysis* orbit_analysis();
 
   static void MakeAsynchronous();
   static void MakeSynchronous();
