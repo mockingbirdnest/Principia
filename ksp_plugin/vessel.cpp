@@ -5,6 +5,7 @@
 #include <functional>
 #include <limits>
 #include <list>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -27,10 +28,12 @@ using base::jthread;
 using base::make_not_null_unique;
 using base::MakeStoppableThread;
 using geometry::BarycentreCalculator;
+using geometry::Bivector;
 using geometry::Position;
 using quantities::IsFinite;
 using quantities::Length;
 using quantities::Time;
+using quantities::Torque;
 using quantities::si::Metre;
 using ::std::placeholders::_1;
 
@@ -643,6 +646,35 @@ void Vessel::AttachPrediction(
     prediction_ = trajectory.get();
     psychohistory_->AttachFork(std::move(trajectory));
   }
+}
+
+bool Vessel::IsCollapsible() const {
+  PileUp* containing_pile_up = nullptr;
+  std::set<not_null<Part*>> parts;
+  for (const auto& [_, part] : parts_) {
+    // We expect parts to be piled up.
+    CHECK(part->is_piled_up());
+    // Not collapsible if any part has a force applied to it (but a torque is
+    // fine).
+    if (part->intrinsic_force() != Vector<Force, Barycentric>{}) {
+      return false;
+    }
+    parts.insert(part.get());
+    if (containing_pile_up == nullptr) {
+      containing_pile_up = part->containing_pile_up();
+    } else {
+      // All the parts should be in the same pile-up.
+      CHECK_EQ(containing_pile_up, part->containing_pile_up());
+    }
+  }
+  CHECK_NE(nullptr, containing_pile_up);
+  for (const auto part : containing_pile_up->parts()) {
+    // Not collapsible if the pile-up contains a part not in this vessel.
+    if (!parts.contains(part)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 // Run the prognostication in both synchronous and asynchronous mode in tests to

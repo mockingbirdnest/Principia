@@ -244,6 +244,10 @@ class Vessel {
   void AttachPrediction(
       not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> trajectory);
 
+  // A vessel is collapsible if it is alone in its pile-up and is in inertial
+  // motion.
+  bool IsCollapsible() const;
+
   GUID const guid_;
   std::string name_;
 
@@ -273,6 +277,8 @@ class Vessel {
   std::optional<OrbitAnalyser> orbit_analyser_;
 
   static std::atomic_bool synchronous_;
+
+  friend class VesselTest;
 };
 
 }  // namespace internal_vessel

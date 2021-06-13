@@ -2,6 +2,8 @@
 #include "ksp_plugin/vessel.hpp"
 
 #include <limits>
+#include <list>
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -30,6 +32,7 @@ namespace ksp_plugin {
 namespace internal_vessel {
 
 using base::make_not_null_unique;
+using geometry::Bivector;
 using geometry::Displacement;
 using geometry::InertiaTensor;
 using geometry::Position;
@@ -40,9 +43,11 @@ using physics::MockEphemeris;
 using physics::RigidMotion;
 using physics::RotatingBody;
 using quantities::MomentOfInertia;
+using quantities::Torque;
 using quantities::si::Degree;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
+using quantities::si::Newton;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
@@ -95,6 +100,10 @@ class VesselTest : public testing::Test {
     p2_ = p2.get();
     vessel_.AddPart(std::move(p1));
     vessel_.AddPart(std::move(p2));
+  }
+
+  bool IsCollapsible() const {
+    return vessel_.IsCollapsible();
   }
 
   MockEphemeris<Barycentric> ephemeris_;
@@ -419,6 +428,62 @@ TEST_F(VesselTest, FlightPlan) {
   EXPECT_EQ(1, vessel_.flight_plan().number_of_segments());
   vessel_.DeleteFlightPlan();
   EXPECT_FALSE(vessel_.has_flight_plan());
+}
+
+TEST_F(VesselTest, IsCollapsible) {
+  {
+    auto const pile_up =
+        std::make_shared<PileUp>(/*parts=*/std::list<not_null<Part*>>{p1_, p2_},
+                                 Instant{},
+                                 DefaultPsychohistoryParameters(),
+                                 DefaultHistoryParameters(),
+                                 &ephemeris_,
+                                 /*deletion_callback=*/nullptr);
+    p1_->set_containing_pile_up(pile_up);
+    p2_->set_containing_pile_up(pile_up);
+
+    // Same pile-up.
+    EXPECT_TRUE(IsCollapsible());
+
+    // Force.
+    p1_->apply_intrinsic_force(
+        Vector<Force, Barycentric>({1 * Newton, 0 * Newton, 0 * Newton}));
+    EXPECT_FALSE(IsCollapsible());
+
+    // Torque.
+    p1_->clear_intrinsic_force();
+    p1_->apply_intrinsic_torque(
+        Bivector<Torque, Barycentric>({0 * Newton * Metre * Radian,
+                                       1 * Newton * Metre * Radian,
+                                       0 * Newton * Metre * Radian}));
+    EXPECT_TRUE(IsCollapsible());
+  }
+
+  {
+    auto p3 = make_not_null_unique<Part>(
+        333,
+        "p3",
+        mass2_,
+        EccentricPart::origin,
+        inertia_tensor2_,
+        RigidMotion<EccentricPart, Barycentric>::MakeNonRotatingMotion(p2_dof_),
+        /*deletion_callback=*/nullptr);
+    auto const pile_up = std::make_shared<PileUp>(
+        /*parts=*/std::list<not_null<Part*>>{p1_, p2_, p3.get()},
+        Instant{},
+        DefaultPsychohistoryParameters(),
+        DefaultHistoryParameters(),
+        &ephemeris_,
+        /*deletion_callback=*/nullptr);
+    p1_->reset_containing_pile_up();
+    p2_->reset_containing_pile_up();
+    p1_->set_containing_pile_up(pile_up);
+    p2_->set_containing_pile_up(pile_up);
+    p3->set_containing_pile_up(pile_up);
+
+    // A pile-up with an extra part.
+    EXPECT_FALSE(IsCollapsible());
+  }
 }
 
 TEST_F(VesselTest, SerializationSuccess) {

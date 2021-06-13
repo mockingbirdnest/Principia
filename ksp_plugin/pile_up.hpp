@@ -91,13 +91,14 @@ using PileUpPrincipalAxes = Frame<serialization::Frame::PluginTag,
 class PileUp {
  public:
   PileUp(
-      std::list<not_null<Part*>>&& parts,
+      std::list<not_null<Part*>> parts,
       Instant const& t,
       Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters,
       Ephemeris<Barycentric>::FixedStepParameters fixed_step_parameters,
       not_null<Ephemeris<Barycentric>*> ephemeris,
       std::function<void()> deletion_callback);
 
+  // Runs the |deletion_callback| passed at construction, if not null.
   virtual ~PileUp();
 
   // This class is moveable.
