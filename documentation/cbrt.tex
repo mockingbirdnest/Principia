@@ -916,15 +916,12 @@ We may widen this interval slightly into one that is symmetric about $0$, thus r
 \[\abs{\tilde r-r_1}\leq \round{τr_0}\text,\]
 with\begin{align*}
 τ&\DefineAs\roundTowardPositive{\frac{\bar ε_r}{1-\bar ε_r}\pa{1+\frac{2u}{1-u}}}\\
- &=\hex{1.B426\,BBF4\,9D1F4}\Multiply 2^{-14}\text,
+ &=\hex{1.7C8587D10158C}\Multiply 2^{-13},
 \end{align*}\marginnote{TODO(egg): Refine these values of $τ$ for the actual bound on the rounding error in $ξ$,
 to be given in annex~\ref{LagnyStepTwoRounding}.}
 where $\bar ε_r$ is the bound from (\ref{FaithfulBound}) for Lagny's irrational method with Canon optimization
-in step~\ref{ThirdPrecision}, rounding to nearest in step~\ref{RoundedApproximation},
-and the method of fifth order in step~\ref{HighOrder}, allowing for $100u$ on the computation of $ξ$; if instead
-we round toward zero in step~\ref{RoundedApproximation}, we have\[
-τ=\hex{1.7C8587D10158C}\Multiply 2^{-13}\text.
-\]
+in step~\ref{ThirdPrecision}, rounding toward zero in step~\ref{RoundedApproximation},
+and the method of fifth order in step~\ref{HighOrder}, allowing for $100u$ on the computation of $ξ$.
 
 If this inequality holds, there may be a misrounding. The correctly-rounded result may then
 readily be computed using the ordinary cube root algorithm, described, \exempligratia, in Lagny's
@@ -1335,6 +1332,11 @@ negligible; again we use the rational method for the last step.
 Of course, besides allowing for a correctly-rounded $y-x^3$ from an $x$ with an exact square, FMA improves performance
 and rounding errors in all steps; even the slow path benefits from it, as the exact products may be computed with a
 multiplication and an FMA, $a^2_0=\round{a^2}$, $a^2_1=\round{a^2-a_0}$, instead of Veltkamp's algorithm.
+
+One notable difference comes from the evaluation of the final correction step (\ref{AdditiveCorrection}) $x+Δ$; it is clear that
+one should fuse the sum with a product in $Δ$, thus evaluating $r_0\DefineAs\round{x+Δ_1Δ_2}$. However, $x+Δ_1Δ_2$ is then
+no longer representable as the sum of two floating-point numbers. Instead, we define $r_1\DefineAs\round{x-r_0+Δ_1Δ_2}$, and
+$r\DefineAs r_0+r_1$.
 
 The constants become TODO(egg): compute those.
 
