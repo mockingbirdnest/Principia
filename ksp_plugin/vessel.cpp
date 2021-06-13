@@ -652,16 +652,13 @@ bool Vessel::IsCollapsible() const {
   PileUp* containing_pile_up = nullptr;
   std::set<not_null<Part*>> parts;
   for (const auto& [_, part] : parts_) {
+    // We expect parts to be piled up.
+    CHECK(part->is_piled_up());
     // Not collapsible if any part has a force or a torque applied to it.
     if (part->intrinsic_force() != Vector<Force, Barycentric>{}) {
       return false;
     }
     if (part->intrinsic_torque() != Bivector<Torque, Barycentric>{}) {
-      return false;
-    }
-    // Not collapsible if any part is not piled up (not even sure when that can
-    // happen).
-    if (!part->is_piled_up()) {
       return false;
     }
     parts.insert(part.get());
@@ -672,11 +669,7 @@ bool Vessel::IsCollapsible() const {
       CHECK_EQ(containing_pile_up, part->containing_pile_up());
     }
   }
-  // Not collapsible if this vessel is not in a pile-up (e.g., because it has no
-  // part).
-  if (containing_pile_up == nullptr) {
-    return false;
-  }
+  CHECK_NE(nullptr, containing_pile_up);
   for (const auto part : containing_pile_up->parts()) {
     // Not collapsible if the pile-up contains a part not in this vessel.
     if (!parts.contains(part)) {

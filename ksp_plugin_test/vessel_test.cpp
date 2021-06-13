@@ -457,15 +457,6 @@ TEST_F(VesselTest, IsCollapsible) {
                                        1 * Newton * Metre * Radian,
                                        0 * Newton * Metre * Radian}));
     EXPECT_FALSE(IsCollapsible());
-
-    // No pile-up.
-    p1_->reset_containing_pile_up();
-    EXPECT_FALSE(IsCollapsible());
-
-    // Back to normal.
-    p1_->clear_intrinsic_torque();
-    p1_->set_containing_pile_up(pile_up);
-    EXPECT_TRUE(IsCollapsible());
   }
 
   {
