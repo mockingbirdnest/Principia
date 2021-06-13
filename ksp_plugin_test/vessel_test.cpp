@@ -456,7 +456,7 @@ TEST_F(VesselTest, IsCollapsible) {
         Bivector<Torque, Barycentric>({0 * Newton * Metre * Radian,
                                        1 * Newton * Metre * Radian,
                                        0 * Newton * Metre * Radian}));
-    EXPECT_FALSE(IsCollapsible());
+    EXPECT_TRUE(IsCollapsible());
   }
 
   {

@@ -654,11 +654,9 @@ bool Vessel::IsCollapsible() const {
   for (const auto& [_, part] : parts_) {
     // We expect parts to be piled up.
     CHECK(part->is_piled_up());
-    // Not collapsible if any part has a force or a torque applied to it.
+    // Not collapsible if any part has a force applied to it (but a torque is
+    // fine).
     if (part->intrinsic_force() != Vector<Force, Barycentric>{}) {
-      return false;
-    }
-    if (part->intrinsic_torque() != Bivector<Torque, Barycentric>{}) {
       return false;
     }
     parts.insert(part.get());
