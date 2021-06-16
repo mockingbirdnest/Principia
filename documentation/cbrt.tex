@@ -365,7 +365,6 @@ For both fixed- and floating-point numbers, given $α\in\R$, we write:
 \end{itemize}
 We write the unit roundoff $u\DefineAs2^{-p}$ (for rounding to nearest), and, after
 \cite[63]{Higham2002}, $γ_n\DefineAs\frac{nu}{1-nu}$.
-We discuss other rounding modes in appendix~\ref{OtherRoundingModes}.
 
 To quote \cite{Trefethen1997}, ``If rounding errors vanished, 95\% of numerical analysis would remain''.
 While we keep track of rounding errors throughout, they are of very little importance until the last step;
@@ -652,7 +651,8 @@ The error of $r$ is thus\begin{align*}
 and that of the faithfully-rounded result $r_0$ is $ε_r\pa{1+υ}$ for some $\abs υ \le u$.
 
 It is easy to make $ε_r'$ negligible by increasing the order of the method; the main
-contribution to misrounding is then $δ\abs{ε_x}<δ\pa{\pa{1+\abs{ε_ξ}}\pa{1+2^{-17}}-1}$:
+contribution to misrounding is then $δ\abs{ε_x}<δ\pa{\pa{1+\abs{ε_ξ}}\pa{1+2^{w}}-1}$,
+where $w$ is $-16$ or $-17$ depending on the choice of rounding:
 this is why $\abs{ε_ξ}$ needed to be kept low in step~\ref{ThirdPrecision}.
 
 We now compute bounds for $ε_r'$ and $δ$ for two different methods.
@@ -1330,7 +1330,7 @@ This means that $ε_ξ'$ should ideally be somewhat less than $2^{-25}$ or $2^{-
 the manner in which $x$ is rounded. Even with Canon optimization, Lagny's irrational method cannot
 achieve that from $q$. The error of the Lagny--Schröder rational method of order $4$ reaches a below $2^{-21}$,
 and that of the generalized Lagny quadratic irrational method of order $4$ below $2^{-23}$.
-It seems that Canon optimization on the latter can readily bring down its rerror below $2^{-24}$, but not much
+It seems that Canon optimization on the latter can readily bring down its error below $2^{-24}$, but not much
 further.
 Both the rational and quadratic irrational methods of order $5$ have errors below $2^{-28}$; little stands to be gained
 from optimization there.
@@ -1405,10 +1405,6 @@ d\DefineAs\round{\frac{q}{\round{\round{q^2}\round{\round{\tfrac{20}{\sqrt{15}}}
 \label{LagnyStepTwoRounding}
 
 TODO(egg): analysis.
-\section{Other rounding modes}
-\label{OtherRoundingModes}
-
-TODO(egg): short blurb---there is not much to say here.
 
 \section{Comparison with existing implementations}
 \label{Comparison}
@@ -1455,9 +1451,8 @@ $\mathrm Γ$ in Kahan's notation, and by the rounding direction of step~\ref{Rou
 \begin{adjustwidth*}{-4cm}{}\hsize=\linewidth
 \includegraphics[width=\linewidth]{cbrt_latency_misrounding.pdf}
 \caption{Latency of several implementations of the cube root, plotted against their misrounding rates, for various architectures.
-The error bars are expanded uncertainties determined from the combined standard uncertainties and a coverage factor of $3$.\\
-$*$ The method uses FMA.\\
-$\dagger$ The method is unfaithful.}
+The error bars are expanded uncertainties determined from the combined standard uncertainties and a coverage factor of $3$.
+An asterisks marks methods that use FMA; a dagger marks unfaithful methods.}
 \end{adjustwidth*}
 \end{figure}
 
