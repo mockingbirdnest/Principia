@@ -1422,11 +1422,12 @@ is used in step~\ref{HighOrder}, a subscript $\mathrm{C}$ indicates Canon optimi
 the use of rounding to nearest in step~\ref{RoundedApproximation}, which otherwise uses directed rounding toward zero, and an
 asterisk indicates the use of FMA as described in appendix~\ref{FMA}:
 \begin{itemize}[nosep]
-\item method $3^16^1$, used by Principia from pull request \href{https://github.com/mockingbirdnest/Principia/pull/1802}{\#1802},
+\item method $3^16^1$, used by Principia\footnote{The implementation in \#1802 uses a suboptimal evaluation strategy in step~\ref{ThirdPrecision}; the latencies shown are for the evaluation strategy described in appendix~\ref{Performance} instead.}
+from pull request \href{https://github.com/mockingbirdnest/Principia/pull/1802}{\#1802},
 in 2018, until it was replaced by a correctly-rounded method;
-\item method $3^2_{\mathrm{C}}6^1$;
-\item method $3^2_{\mathrm{C}}\mathrm{N}6^1$, the most accurate faithful method without FMA;
 \item method $3^2_{\mathrm{C}}5^1$, which backs the correctly-rounded implementation without FMA;
+\item method $3^2_{\mathrm{C}}6^1$ for comparison with $3^2_{\mathrm{C}}5^1$, see the discussion of step~\ref{HighOrder};
+\item method $3^2_{\mathrm{C}}\mathrm{N}6^1$, the most accurate faithful method without FMA;
 \item method $5^24^1*$, which backs the correctly-rounded implementation with FMA;
 \item method $5^2\mathrm{N}4^1*$, the most accurate faithful method with FMA.
 \end{itemize}
@@ -1436,12 +1437,11 @@ We compare these with following pre-existing implementations of the cube root:
 C++ for the purposes of this comparison.};
 \item S.~L.~Moshier's 1984 function cbrt from the Cephes Mathematical Library;
 \item W.~Kahan's 1991 methods described in \cite[3]{KahanBindel2001} ``to serve the IEEE Double precision and VAX G formats'',
-implemented as written; since Kahan recommends that the high-order step be of fourth order in that case, and gives two fourth order methods,
-this results in two implementations, identified by the coefficient of the asymptotic error, $\mathrm Γ$ in Kahan's notation:
-\begin{itemize}[nosep]
-\item $\mathrm Γ=-1$,
-\item $\mathrm Γ=-35/3$;
-\end{itemize}\
+implemented as written; Kahan recommends that the high-order step be of fourth order in that case, and gives two fourth
+order methods; further, he does not specify how the rounding to a third of the precision should be performed,
+so we end up with four possible implementations, identified by the coefficient of the asymptotic error,
+$\mathrm Γ$ in Kahan's notation, and by the rounding direction of step~\ref{RoundedApproximation}
+($\mathrm{N}$ for nearest, toward zero otherwise);
 \item  P.~J.~Plauger's 1992 function cbrt from Dinkumware's C library, notably used by Microsoft's UCRT;
 \item Sun Microsystems, Inc.'s 1993 function cbrt from the Freely Distributable LIBM;
 \item U.~Drepper's 1997 function cbrt from the GNU C Library;
@@ -1452,9 +1452,10 @@ this results in two implementations, identified by the coefficient of the asympt
 \item njuffa's 2014 function cbrt, given in a Stack Overflow answer to a question by P.~Cuoq about a correctly-rounded cube root.
 \end{itemize}
 \begin{figure}[htb]
-\begin{adjustwidth*}{-4cm}{}
+\begin{adjustwidth*}{-4cm}{}\hsize=\linewidth
 \includegraphics[width=\linewidth]{cbrt_latency_misrounding.pdf}
-\caption{Latency on various architectures, plotted against the misrounding rate.\\
+\caption{Latency of several implementations of the cube root, plotted against their misrounding rates, for various architectures.
+The error bars are expanded uncertainties determined from the combined standard uncertainties and a coverage factor of $3$.\\
 $*$ The method uses FMA.\\
 $\dagger$ The method is unfaithful.}
 \end{adjustwidth*}
