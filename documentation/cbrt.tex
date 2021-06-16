@@ -17,6 +17,7 @@
 % REMOVE BEFORE FLIGHT: move to basestyle.
 \usepackage[all]{nowidow}
 \usepackage{tabls}
+\usepackage{changepage}
 
 %%%% Shorthands.
 \DeclareMathOperator{\bias}{\mathit{bias}}
@@ -1320,8 +1321,10 @@ $\cos\frac{1}{3}\arccos$, with which the roots of any such case may be expressed
 \section{FMA}
 \label{FMA}
 The overall strategy is different with FMA, since we need only round $x$ to half the precision ($26$~bits),
-rather than a third; this is because the expression $y-x^3$ may be computed as $\round{y-\pa{x^2}x}$,
-requiring only an exact square.
+rather than a third; this is because the expression $y-x^3$ may be computed\footnote{To the best of our knowledge,
+the first implementation of a cube root to make use of that possibility is a 2014 Stack Overflow answer by njuffa; see
+appending~\ref{Comparison}.}
+as $\round{y-\pa{x^2}x}$, requiring only an exact square.
 
 This means that $ε_ξ'$ should ideally be somewhat less than $2^{-25}$ or $2^{-26}$ depending on
 the manner in which $x$ is rounded. Even with Canon optimization, Lagny's irrational method cannot
@@ -1407,11 +1410,55 @@ TODO(egg): analysis.
 
 TODO(egg): short blurb---there is not much to say here.
 
-\section{Comparison with other faithful implementations}
+\section{Comparison with existing implementations}
+\label{Comparison}
+To our knowledge, no correctly-rounded implementations of the binary64 cube root have been published so far.
+We compare the performance and misrounding rates of some faithful methods described in this document with those
+of a number of pre-existing implementations of the cube root that we were able to find.
 
-TODO(egg): \url{https://twitter.com/eggleroy/status/988114872616484866} (probably only the frequency one,
-the maximum is noisy), compared with the FMAless faithful method so as to compare like with like; the same
-with the one by njuffa \url{https://stackoverflow.com/a/27008559} for our FMA method.
+We consider the following method among our faithful ones, where the notation $p^qr^s$ means the generalized Lagny method of
+degree $q$ and order $p$ is used in step~\ref{ThirdPrecision} and the generalized Lagny method of degree $r$ and order $s$
+is used in step~\ref{HighOrder}, a subscript $\mathrm{C}$ indicates Canon optimization, and the letter $\mathrm{N}$ indicates
+the use of rounding to nearest in step~\ref{RoundedApproximation}, which otherwise uses directed rounding toward zero, and an
+asterisk indicates the use of FMA as described in appendix~\ref{FMA}:
+\begin{itemize}[nosep]
+\item method $3^16^1$, used by Principia from pull request \href{https://github.com/mockingbirdnest/Principia/pull/1802}{\#1802},
+in 2018, until it was replaced by a correctly-rounded method;
+\item method $3^2_{\mathrm{C}}6^1$;
+\item method $3^2_{\mathrm{C}}\mathrm{N}6^1$, the most accurate faithful method without FMA;
+\item method $3^2_{\mathrm{C}}5^1$, which backs the correctly-rounded implementation without FMA;
+\item method $5^24^1*$, which backs the correctly-rounded implementation with FMA;
+\item method $5^2\mathrm{N}4^1*$, the most accurate faithful method with FMA.
+\end{itemize}
+We compare these with following pre-existing implementations of the cube root:
+\begin{itemize}[nosep]
+\item W.~Fullerton's 1977 function DCBRT from FNLIB\footnote{We thank Peter Barfuss for translating this function from FORTRAN to
+C++ for the purposes of this comparison.};
+\item S.~L.~Moshier's 1984 function cbrt from the Cephes Mathematical Library;
+\item W.~Kahan's 1991 methods described in \cite[3]{KahanBindel2001} ``to serve the IEEE Double precision and VAX G formats'',
+implemented as written; since Kahan recommends that the high-order step be of fourth order in that case, and gives two fourth order methods,
+this results in two implementations, identified by the coefficient of the asymptotic error, $\mathrm Γ$ in Kahan's notation:
+\begin{itemize}[nosep]
+\item $\mathrm Γ=-1$,
+\item $\mathrm Γ=-35/3$;
+\end{itemize}\
+\item  P.~J.~Plauger's 1992 function cbrt from Dinkumware's C library, notably used by Microsoft's UCRT;
+\item Sun Microsystems, Inc.'s 1993 function cbrt from the Freely Distributable LIBM;
+\item U.~Drepper's 1997 function cbrt from the GNU C Library;
+\item B.~Evans's 2005 modification of Sun's function cbrt, from the FreeBSD C library, also used by musl;
+\item J.~Maddock's 2006 function boost::math::cbrt<double> from the Boost Library;
+\item S.~Canon and J.~Kidder's 2008 function cbrt from Apple's Libm;
+\item Advanced Micro Devices, Inc.'s 2014 function cbrt from libclc;
+\item njuffa's 2014 function cbrt, given in a Stack Overflow answer to a question by P.~Cuoq about a correctly-rounded cube root.
+\end{itemize}
+\begin{figure}[htb]
+\begin{adjustwidth*}{-4cm}{}
+\includegraphics[width=\linewidth]{cbrt_latency_misrounding.pdf}
+\caption{Latency on various architectures, plotted against the misrounding rate.\\
+$*$ The method uses FMA.\\
+$\dagger$ The method is unfaithful.}
+\end{adjustwidth*}
+\end{figure}
 
 \emergencystretch 1em
 \end{document}
