@@ -96,8 +96,7 @@ $\cuberoot{a^3+b}$:\begin{align}
 \intertext{hereafter the \emph{(quadratic) irrational method}, and}
 \FunctionBody*{a}{a+\frac{ab}{3a^3+b}}\text, \label{LagnyRationalCubeRootIteration}
 \end{align}
-the \emph{rational method}, mentioning the existence of similar methods for arbitrarily
-higher powers.
+the \emph{rational method}, mentioning the existence of similar methods for higher powers.
 In \cite{FantetdeLagny1691b} the above methods are again given, with an outline
 of the general method for higher powers, and a mention of their applicability to
 finding roots of polynomials other than $z^p-r$.
@@ -348,6 +347,9 @@ the last digit; this allows for directed rounding.}:
 the unrounded quantity is in excess of the rounded one if the sign is $+$,
 and in default if it is $-$.
 
+The results of numerical experiments are reported with combined standard uncertainties as specified by JCGM~100:2008, 7.2.2.
+Unless otherwise noted, they are obtained by sampling a billion values uniformly at random from the set
+$\intclop{1}{8}\Intersection\text{binary64}$.
 
 We use capital Latin letters for fixed-point numbers involved in the computation, and $A>0$ for the normal floating-point number $a>0$ reinterpreted as a binary fixed-point\footnote{The implementation uses integers (obtained by multiplying the fixed-point numbers by $2^{p-1}$). For consistency with \cite{KahanBindel2001} we work with fixed-point numbers here. Since we do not multiply fixed point numbers together, the expressions are unchanged.} number with $p-1$ bits after the binary point,\begin{align}
   A &\DefineAs \bias + \Floor{\log_2 a} + \FractionalPart \pa{2^{-\Floor{\log_2 a}}a}\label{defA}\\
@@ -857,8 +859,10 @@ $1u$ worse than the one on its fifth order rational method; this is to be expect
 involves more calculations and does not benefit an exact multiplication by $16$.
 Accordingly, since truncation error is negligible before rounding error for both, one might
 expect that the fifth order method would be superior. Numerical experiments suggest otherwise:
-using the method of order $6$ leads to $4.33$  misroundings per million, whereas the method of
-order $5$ leads to $4.43$ per million.
+with Lagny's irrational method with Canon optimization in step~\ref{ThirdPrecision}
+followed by directed rounding toward zero in step~\ref{RoundedApproximation},
+using the method of order $6$ leads to $4.357(67)$  misroundings per million, whereas the method of
+order $5$ leads to $4.575(68)$ per million.
 
 The bounds on $δ$ may need to be tightened further; for instance, we have not taken any account
 of rounding errors systematically compensating each other, the error induced by $\round{y^2}$
@@ -1461,20 +1465,54 @@ $\mathrm Γ$ in Kahan's notation, and by the rounding direction of step~\ref{Rou
 \end{itemize}
 The estimates of the latencies and their uncertainties were taken by supposing that the observed cycle counts follow
 a three-parameter logarithmic normal distribution, with the latency of the benchmark loop being its terminus, the other two
-parameters defining the distribution of random slowdowns. The maximum likelihood estimate of the terminus, as well as the variance
-of that estimate, used to compute the standard uncertainty, were taken from \cite{Cohen1951}.
+parameters defining the distribution of random slowdowns. The maximum likelihood estimate of the terminus and the variance
+of that estimate were computed as described in \cite{Cohen1951}.
 The measured latency of a benchmark loop with a no-op function passed instead of the cube root was subtracted from these measurements,
 with the standard uncertainties combined under the assumption that they were uncorrelated.
 
-The misrounding rates were estimated by sampling a billion values uniformly at random in $\intclop{1}{8}\Intersection\text{binary64}$
+The misrounding rates were estimated by sampling a billion values uniformly at random from the set
+$\intclop{1}{8}\Intersection\text{binary64}$
 for methods with a misrounding rate greater than one per million, and a hundred billion values for the others.
-The misrounding rates are given in table REMOVE BEFORE FLIGHT.
+The misrounding rates are given in table~\ref{TableMisroundingRates}.
+\begin{table}[htb]
+\setmainfont[Mapping=tex-text,
+             Numbers={OldStyle, Monospaced},
+             Ligatures={TeX, Common, Discretionary},
+             SmallCapsFeatures={Letters=SmallCaps},
+             Contextuals=WordFinal,]{Linux Libertine O}
+\begin{tabular}{rlr}
+Method && Misrounding rate \\
+\hline
+Fullerton, 1977& $\dagger$  & $2.60500(14)\Multiply10^{-01}$ \\
+Moshier, 1984&              & $8.55740(89)\Multiply10^{-02}$ \\
+Kahan, 1991 & $Γ=-1$        & $2.0044(15)\Multiply10^{-03}$  \\
+\emph{ibid.}& $Γ=-1$ $\mathrm{N}$     & $9.6466(99)\Multiply10^{-04}$  \\
+\emph{ibid.}& $Γ=-35/3$     & $1.7236(42)\Multiply10^{-04}$  \\
+\emph{ibid.}& $Γ=-35/3$ $\mathrm{N}$  & $8.367(29)\Multiply10^{-05}$   \\
+Plauger, 1992& $\dagger$    & $3.02720(15)\Multiply10^{-01}$ \\
+Sun,     1993&              & $8.31642(88)\Multiply10^{-02}$ \\
+Drepper, 1997& $\dagger$    & $4.96271(16)\Multiply10^{-01}$ \\
+Sun--Evans, 2005&           & $8.33311(88)\Multiply10^{-02}$ \\
+Maddock, 2006& $\dagger$    & $4.56285(16)\Multiply10^{-01}$ \\
+Canon--Kidder, 2008&        & $8.02588(86)\Multiply10^{-02}$ \\
+AMD, 2014& $*$              & $1.6235(41)\Multiply10^{-04}$ \\
+njuffa, 2014& $*$           & $1.529(40)\Multiply10^{-06}$ \\
+Leroy, 2018 & $3^16^1$                        & $5.155(72)\Multiply10^{-06}$ \\
+Leroy, 2021 & $3^2_{\mathrm{C}}5^1$           & $4.575(68)\Multiply10^{-06}$ \\
+\emph{ibid.}& $3^2_{\mathrm{C}}6^1$           & $4.357(67)\Multiply10^{-06}$ \\
+\emph{ibid.}& $3^2_{\mathrm{C}}\mathrm{N}6^1$ & $2.417(50)\Multiply10^{-06}$ \\
+\emph{ibid.}& $5^24^1*$                       & $6.10(25)\Multiply10^{-09}$ \\
+\emph{ibid.}& $5^2\mathrm{N}6^1*$             & $2.99(18)\Multiply10^{-09}$
+\end{tabular}
+\caption{Misrounding rates of various methods for the computation of a binary64 cube root.
+An asterisk marks methods that use FMA; a dagger marks unfaithful methods.}
+\end{table}
 \begin{figure}[htb]
 \begin{adjustwidth}{}{-4cm}\hsize=\linewidth
 \includegraphics[width=\linewidth]{cbrt_latency_misrounding.pdf}
-\caption{Latency of several implementations of the cube root, plotted against their misrounding rates, for various architectures.
+\caption{Latency of several implementations of the binary64 cube root, plotted against their misrounding rates, for various architectures.
 The error bars are expanded uncertainties determined from the combined standard uncertainties and a coverage factor of $3$.
-An asterisk marks methods that use FMA; a dagger marks unfaithful methods.}
+An asterisk marks methods that use FMA; a dagger marks unfaithful methods.\label{TableMisroundingRates}}
 \end{adjustwidth}
 \end{figure}
 \vfill
