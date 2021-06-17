@@ -1352,7 +1352,25 @@ one should fuse the sum with a product in $Δ$, thus evaluating $r_0\DefineAs\ro
 no longer representable as the sum of two floating-point numbers. Instead, we define $r_1\DefineAs\round{x-r_0+Δ_1Δ_2}$, and
 $r\DefineAs r_0+r_1$.
 
-The constants become TODO(egg): compute those.
+This $r$ errs from $x+Δ_1Δ_2$ by at most $\abs{r_1u}$ (the rounding error on $r_1$), which is at most $\round{x+Δ_1Δ_2}u^2$.
+This must be factored into the error $ε_r$ of $r$ from (\ref{MisroundingError}), which becomes
+\[ε_r\DefineAs \pa{1+ε_r'+\pa{ε_r'-ε_x}δ}\pa{1+u^2}-1\text.\]
+With\begin{align*}
+Δ_1 &= \round{6x \pa{x^2} + \round{3y}}\text{ and}\\
+Δ_2 &= \round{\frac{\round{x\round{y-\pa{x^2}x}}}
+                   {\round{\round{x^3}\round{10x\pa{x^2}+16y}+\round{y^2}}}}\text,
+\end{align*}
+\marginnote{TODO(egg): Play the game of the {\xsuxfont 𒋛𒄥𒊏𒋾}; we can shave off approximately
+$\tfrac{2}{3}u$ on $Δ_1$ (and a small amount on the denominator of $Δ_2$).}
+where $x^2$, $6x$, and $10x$ are exact and $x^3$ correctly rounded thanks to the trailing $0$s of $x$, $Δ_1$ and $Δ_2$
+incur respective rounding errors of less than $γ_2$ and $\smash{\frac{1+γ_2+γ_1}{1-γ_3}-1<\frac{γ_6}{1-γ_3}}$,
+thus $δ<\frac{γ_8}{1-γ_3}$.
+
+The threshold for misrounding detection then becomes
+\[τ=\hex{1.E45E16EF5480F}\Multiply 2^{-76}\text,\]
+for the quadratic irrational method of degree $5$ in step~\ref{ThirdPrecision}, rounding toward zero in
+step~\ref{RoundedApproximation}, and the method of fifth order in step~\ref{HighOrder}, allowing for
+$100u$ on the computation of $ξ$.
 
 \section{Performance considerations}
 \label{Performance}
@@ -1427,6 +1445,14 @@ TODO(egg): analysis.
 To our knowledge, no correctly-rounded implementations of the binary64 cube root have been published so far.
 We compare the performance and misrounding rates of some faithful methods described in this document with those
 of a number of pre-existing implementations of the cube root that we were able to find.
+\begin{figure}[tb]
+\begin{adjustwidth}{-4cm}{}\hsize=\linewidth
+\includegraphics[width=\linewidth]{cbrt_latency_misrounding.pdf}
+\caption{Latency of several implementations of the binary64 cube root, plotted against their misrounding rates, for various architectures.
+The error bars are expanded uncertainties determined from the combined standard uncertainties and a coverage factor of $3$.
+An asterisk marks methods that use FMA; an obelisk marks unfaithful methods.}
+\end{adjustwidth}
+\end{figure}
 
 We consider the following method among our faithful ones, where the notation $p^qr^s$ means the generalized Lagny method of
 degree $q$ and order $p$ is used in step~\ref{ThirdPrecision} and the generalized Lagny method of degree $r$ and order $s$
@@ -1474,7 +1500,7 @@ The misrounding rates were estimated by sampling a billion values uniformly at r
 $\intclop{1}{8}\Intersection\text{binary64}$
 for methods with a misrounding rate greater than one per million, and a hundred billion values for the others.
 The misrounding rates are given in table~\ref{TableMisroundingRates}.
-\begin{table}[htb]
+\begin{table}[h!]
 \setmainfont[Mapping=tex-text,
              Numbers={OldStyle, Monospaced},
              Ligatures={TeX, Common, Discretionary},
@@ -1485,10 +1511,10 @@ Method && Misrounding rate \\
 \hline
 Fullerton, 1977& $\dagger$  & $2.60500(14)\Multiply10^{-01}$ \\
 Moshier, 1984&              & $8.55740(89)\Multiply10^{-02}$ \\
-Kahan, 1991 & $Γ=-1$        & $2.0044(15)\Multiply10^{-03}$  \\
-\emph{ibid.}& $Γ=-1$ $\mathrm{N}$     & $9.6466(99)\Multiply10^{-04}$  \\
-\emph{ibid.}& $Γ=-35/3$     & $1.7236(42)\Multiply10^{-04}$  \\
-\emph{ibid.}& $Γ=-35/3$ $\mathrm{N}$  & $8.367(29)\Multiply10^{-05}$   \\
+Kahan, 1991 & $\mathrm{Γ}=-1$        & $2.0044(15)\Multiply10^{-03}$  \\
+\emph{ibid.}& $\mathrm{Γ}=-1$ $\mathrm{N}$     & $9.6466(99)\Multiply10^{-04}$  \\
+\emph{ibid.}& $\mathrm{Γ}=-35/3$     & $1.7236(42)\Multiply10^{-04}$  \\
+\emph{ibid.}& $\mathrm{Γ}=-35/3$ $\mathrm{N}$  & $8.367(29)\Multiply10^{-05}$   \\
 Plauger, 1992& $\dagger$    & $3.02720(15)\Multiply10^{-01}$ \\
 Sun,     1993&              & $8.31642(88)\Multiply10^{-02}$ \\
 Drepper, 1997& $\dagger$    & $4.96271(16)\Multiply10^{-01}$ \\
@@ -1502,20 +1528,11 @@ Leroy, 2021 & $3^2_{\mathrm{C}}5^1$           & $4.575(68)\Multiply10^{-06}$ \\
 \emph{ibid.}& $3^2_{\mathrm{C}}6^1$           & $4.357(67)\Multiply10^{-06}$ \\
 \emph{ibid.}& $3^2_{\mathrm{C}}\mathrm{N}6^1$ & $2.417(50)\Multiply10^{-06}$ \\
 \emph{ibid.}& $5^24^1*$                       & $6.10(25)\Multiply10^{-09}$ \\
-\emph{ibid.}& $5^2\mathrm{N}6^1*$             & $2.99(18)\Multiply10^{-09}$
+\emph{ibid.}& $5^2\mathrm{N}4^1*$             & $2.99(18)\Multiply10^{-09}$
 \end{tabular}
 \caption{Misrounding rates of various methods for the computation of a binary64 cube root.
-An asterisk marks methods that use FMA; a dagger marks unfaithful methods.}
+An asterisk marks methods that use FMA; an obelisk marks unfaithful methods.\label{TableMisroundingRates}}
 \end{table}
-\begin{figure}[htb]
-\begin{adjustwidth}{}{-4cm}\hsize=\linewidth
-\includegraphics[width=\linewidth]{cbrt_latency_misrounding.pdf}
-\caption{Latency of several implementations of the binary64 cube root, plotted against their misrounding rates, for various architectures.
-The error bars are expanded uncertainties determined from the combined standard uncertainties and a coverage factor of $3$.
-An asterisk marks methods that use FMA; a dagger marks unfaithful methods.\label{TableMisroundingRates}}
-\end{adjustwidth}
-\end{figure}
-\vfill
-\pagebreak
+
 \emergencystretch 1em
 \end{document}
