@@ -1373,11 +1373,23 @@ rational method is best evaluated as\[
 \]
 On Ivy Bridge\footnote{We thank Peter Barfuss for running some benchmarks for us on a machine with an Ivy Bridge processor.},
 the irrational method evaluated as\[
-ξ = \round{\round{\round{\sqrt{3}\round{q^2}}+ \round{\sqrt{\round{\round{4yq}-\round{\round{q^2}\round{q^2}}}}}}\round{\frac{\round{1/\sqrt{12}}}{q}}}\text,
+ξ = \round{\round{\round{\round{\sqrt{3}}\round{q^2}}+ \round{\sqrt{\round{\round{4yq}-\round{\round{q^2}\round{q^2}}}}}}\round{\frac{\round{1/\sqrt{12}}}{q}}}
 \]
-\emph{mutatis mutandis} with Canon optimization, has about the same latency as the rational method.
+has about the same latency as the rational method.
+With Canon optimization, the constants $\round{\sqrt{3}}$, $4$, and $\round{1/\sqrt{12}}$ should be replaced with\begin{align*}
+\round{\frac{κ}{\sqrt{\tfrac{1}{μ}-λ}}}&=\hex{1.BBA02BAFEA9B7}\text,\\
+\round{\frac{1}{1-λμ}}&=\hex{1.0030F1F8A11DA}\Multiply2^2\text{, and}\\
+\round{\sqrt{\tfrac{1}{μ}-λ}}&=\hex{1.2774CDF81A35}\Multiply2^{-2}
+\end{align*}
+respectively.
 
-TODO(egg): Give some numbers for the rate of passage in the ``potential misrounding'' path, and its cost.
+Using Lagny's irrational method with Canon optimization in step~\ref{ThirdPrecision}, directed rounding toward zero in
+step~\ref{RoundedApproximation}, and the method of fifth order in step~\ref{HighOrder}, rate of passage in the slow ``potential
+misrounding'' path is $2.6479(52)\Multiply 10^{-04}$; the latency of that slow path is less than ten times that of the fast path,
+so that any improvement to the rate of passage in the slow path that comes at a cost of even a cycle to the latency of the fast path
+worsens average-case performance. As a result, we do not use rounding to nearest in step~\ref{RoundedApproximation}, as it replaces,
+on the critical path, a bitwise and by a sequential multiplication, subtraction, and addition.
+
 \subsection*{With FMA}
 The rational method of order $5$ may be evaluated with FMA as\[
 ξ = \round{
@@ -1448,11 +1460,11 @@ $\mathrm Γ$ in Kahan's notation, and by the rounding direction of step~\ref{Rou
 \item njuffa's 2014 function cbrt, given in a Stack Overflow answer to a question by P.~Cuoq about a correctly-rounded cube root.
 \end{itemize}
 \begin{figure}[htb]
-\begin{adjustwidth*}{-4cm}{}\hsize=\linewidth
+\begin{adjustwidth*}{}{-4cm}\hsize=\linewidth
 \includegraphics[width=\linewidth]{cbrt_latency_misrounding.pdf}
 \caption{Latency of several implementations of the cube root, plotted against their misrounding rates, for various architectures.
 The error bars are expanded uncertainties determined from the combined standard uncertainties and a coverage factor of $3$.
-An asterisks marks methods that use FMA; a dagger marks unfaithful methods.}
+An asterisk marks methods that use FMA; a dagger marks unfaithful methods.}
 \end{adjustwidth*}
 \end{figure}
 
