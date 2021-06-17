@@ -1426,7 +1426,7 @@ of a number of pre-existing implementations of the cube root that we were able t
 
 We consider the following method among our faithful ones, where the notation $p^qr^s$ means the generalized Lagny method of
 degree $q$ and order $p$ is used in step~\ref{ThirdPrecision} and the generalized Lagny method of degree $r$ and order $s$
-is used in step~\ref{HighOrder}, a subscript $\mathrm{C}$ indicates Canon optimization, and the letter $\mathrm{N}$ indicates
+is used in step~\ref{HighOrder}, a subscript $\mathrm{C}$ indicates Canon optimization, the letter $\mathrm{N}$ indicates
 the use of rounding to nearest in step~\ref{RoundedApproximation}, which otherwise uses directed rounding toward zero, and an
 asterisk indicates the use of FMA as described in appendix~\ref{FMA}:
 \begin{itemize}[nosep]
@@ -1459,14 +1459,25 @@ $\mathrm Γ$ in Kahan's notation, and by the rounding direction of step~\ref{Rou
 \item Advanced Micro Devices, Inc.'s 2014 function cbrt from libclc;
 \item njuffa's 2014 function cbrt, given in a Stack Overflow answer to a question by P.~Cuoq about a correctly-rounded cube root.
 \end{itemize}
+The estimates of the latencies and their uncertainties were taken by supposing that the observed cycle counts follow
+a three-parameter logarithmic normal distribution, with the latency of the benchmark loop being its terminus, the other two
+parameters defining the distribution of random slowdowns. The maximum likelihood estimate of the terminus, as well as the variance
+of that estimate, used to compute the standard uncertainty, were taken from \cite{Cohen1951}.
+The measured latency of a benchmark loop with a no-op function passed instead of the cube root was subtracted from these measurements,
+with the standard uncertainties combined under the assumption that they were uncorrelated.
+
+The misrounding rates were estimated by sampling a billion values uniformly at random in $\intclop{1}{8}\Intersection\text{binary64}$
+for methods with a misrounding rate greater than one per million, and a hundred billion values for the others.
+The misrounding rates are given in table REMOVE BEFORE FLIGHT.
 \begin{figure}[htb]
-\begin{adjustwidth*}{}{-4cm}\hsize=\linewidth
+\begin{adjustwidth}{}{-4cm}\hsize=\linewidth
 \includegraphics[width=\linewidth]{cbrt_latency_misrounding.pdf}
 \caption{Latency of several implementations of the cube root, plotted against their misrounding rates, for various architectures.
 The error bars are expanded uncertainties determined from the combined standard uncertainties and a coverage factor of $3$.
 An asterisk marks methods that use FMA; a dagger marks unfaithful methods.}
-\end{adjustwidth*}
+\end{adjustwidth}
 \end{figure}
-
+\vfill
+\pagebreak
 \emergencystretch 1em
 \end{document}
