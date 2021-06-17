@@ -1405,7 +1405,7 @@ respectively.
 
 Using Lagny's irrational method with Canon optimization in step~\ref{ThirdPrecision}, directed rounding toward zero in
 step~\ref{RoundedApproximation}, and the method of fifth order in step~\ref{HighOrder}, rate of passage in the slow ``potential
-misrounding'' path is $2.6479(52)\Multiply 10^{-04}$; the latency of that slow path is less than ten times that of the fast path,
+misrounding'' path is $2.6479(52)\Multiply 10^{-4}$; the latency of that slow path is less than ten times that of the fast path,
 so that any improvement to the rate of passage in the slow path that comes at a cost of even a cycle to the latency of the fast path
 worsens average-case performance. As a result, we do not use rounding to nearest in step~\ref{RoundedApproximation}, as it replaces,
 on the critical path, a bitwise and by a sequential multiplication, subtraction, and addition.
@@ -1432,6 +1432,10 @@ as\[
 where\[
 d\DefineAs\round{\frac{q}{\round{\round{q^2}\round{\round{\tfrac{20}{\sqrt{15}}}q}-\round{\round{\tfrac{2}{\sqrt{15}}}y}}}}\text.
 \]
+Using the quadratic irrational method in step~\ref{ThirdPrecision}, directed rounding toward zero in
+step~\ref{RoundedApproximation}, and the rational method of fourth order in step~\ref{HighOrder}, rate of passage in the slow ``potential
+misrounding'' path is $3.05(18)\Multiply10^{-7}$. Again this means that rounding to nearest in step~\ref{HighOrder} would be detrimental
+to the average-case performance of the correctly-rounded cube root.
 
 \section{Rounding error analysis for the second step}
 \label{LagnyStepTwoRounding}
@@ -1504,30 +1508,32 @@ The misrounding rates are given in table~\ref{TableMisroundingRates}.
              Ligatures={TeX, Common, Discretionary},
              SmallCapsFeatures={Letters=SmallCaps},
              Contextuals=WordFinal,]{Linux Libertine O}
+\begin{center}
 \begin{tabular}{rlr}
 Method && Misrounding rate \\
 \hline
-Fullerton, 1977& $\dagger$  & $2.60500(14)\Multiply10^{-01}$ \\
-Moshier, 1984&              & $8.55740(89)\Multiply10^{-02}$ \\
-Kahan, 1991 & $\mathrm{Γ}=-1$        & $2.0044(15)\Multiply10^{-03}$  \\
-\emph{ibid.}& $\mathrm{Γ}=-1$ $\mathrm{N}$     & $9.6466(99)\Multiply10^{-04}$  \\
-\emph{ibid.}& $\mathrm{Γ}=-35/3$     & $1.7236(42)\Multiply10^{-04}$  \\
-\emph{ibid.}& $\mathrm{Γ}=-35/3$ $\mathrm{N}$  & $8.367(29)\Multiply10^{-05}$   \\
-Plauger, 1992& $\dagger$    & $3.02720(15)\Multiply10^{-01}$ \\
-Sun,     1993&              & $8.31642(88)\Multiply10^{-02}$ \\
-Drepper, 1997& $\dagger$    & $4.96271(16)\Multiply10^{-01}$ \\
-Sun--Evans, 2005&           & $8.33311(88)\Multiply10^{-02}$ \\
-Maddock, 2006& $\dagger$    & $4.56285(16)\Multiply10^{-01}$ \\
-Canon--Kidder, 2008&        & $8.02588(86)\Multiply10^{-02}$ \\
-AMD, 2014& $*$              & $1.6235(41)\Multiply10^{-04}$ \\
-njuffa, 2014& $*$           & $1.529(40)\Multiply10^{-06}$ \\
-Leroy, 2018 & $3^16^1$                        & $5.155(72)\Multiply10^{-06}$ \\
-Leroy, 2021 & $3^2_{\mathrm{C}}5^1$           & $4.575(68)\Multiply10^{-06}$ \\
-\emph{ibid.}& $3^2_{\mathrm{C}}6^1$           & $4.357(67)\Multiply10^{-06}$ \\
-\emph{ibid.}& $3^2_{\mathrm{C}}\mathrm{N}6^1$ & $2.417(50)\Multiply10^{-06}$ \\
-\emph{ibid.}& $5^24^1*$                       & $6.10(25)\Multiply10^{-09}$ \\
-\emph{ibid.}& $5^2\mathrm{N}4^1*$             & $2.99(18)\Multiply10^{-09}$
+Fullerton, 1977& $\dagger$  & $2.60500(14)\Multiply10^{-1}$ \\
+Moshier, 1984&              & $8.55740(89)\Multiply10^{-2}$ \\
+Kahan, 1991 & $\mathrm{Γ}=-1$        & $2.0044(15)\Multiply10^{-3}$  \\
+\emph{ibid.}& $\mathrm{Γ}=-1$ $\mathrm{N}$     & $9.6466(99)\Multiply10^{-4}$  \\
+\emph{ibid.}& $\mathrm{Γ}=-35/3$     & $1.7236(42)\Multiply10^{-4}$  \\
+\emph{ibid.}& $\mathrm{Γ}=-35/3$ $\mathrm{N}$  & $8.367(29)\Multiply10^{-5}$   \\
+Plauger, 1992& $\dagger$    & $3.02720(15)\Multiply10^{-1}$ \\
+Sun,     1993&              & $8.31642(88)\Multiply10^{-2}$ \\
+Drepper, 1997& $\dagger$    & $4.96271(16)\Multiply10^{-1}$ \\
+Sun--Evans, 2005&           & $8.33311(88)\Multiply10^{-2}$ \\
+Maddock, 2006& $\dagger$    & $4.56285(16)\Multiply10^{-1}$ \\
+Canon--Kidder, 2008&        & $8.02588(86)\Multiply10^{-2}$ \\
+AMD, 2014& $*$              & $1.6235(41)\Multiply10^{-4}$ \\
+njuffa, 2014& $*$           & $1.529(40)\Multiply10^{-6}$ \\
+Leroy, 2018 & $3^16^1$                        & $5.155(72)\Multiply10^{-6}$ \\
+Leroy, 2021 & $3^2_{\mathrm{C}}5^1$           & $4.575(68)\Multiply10^{-6}$ \\
+\emph{ibid.}& $3^2_{\mathrm{C}}6^1$           & $4.357(67)\Multiply10^{-6}$ \\
+\emph{ibid.}& $3^2_{\mathrm{C}}\mathrm{N}6^1$ & $2.417(50)\Multiply10^{-6}$ \\
+\emph{ibid.}& $5^24^1*$                       & $6.10(25)\Multiply10^{-9}$ \\
+\emph{ibid.}& $5^2\mathrm{N}4^1*$             & $2.99(18)\Multiply10^{-9}$
 \end{tabular}
+\end{center}
 \caption{Misrounding rates of various methods for the computation of a binary64 cube root.
 An asterisk marks methods that use FMA; an obelisk marks unfaithful methods.\label{TableMisroundingRates}}
 \end{table}
