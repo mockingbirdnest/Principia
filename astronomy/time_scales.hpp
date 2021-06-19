@@ -94,6 +94,8 @@ using internal_time_scales::ParseTAI;
 using internal_time_scales::ParseTT;
 using internal_time_scales::ParseUT1;
 using internal_time_scales::ParseUTC;
+using internal_time_scales::TTDay;
+using internal_time_scales::TTSecond;
 using internal_time_scales::operator""_北斗;
 using internal_time_scales::operator""_GPS;
 using internal_time_scales::operator""_TAI;
