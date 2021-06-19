@@ -12,18 +12,19 @@
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
 #include "quantities/si.hpp"
+#include "numerics/double_precision.hpp"
 
 namespace principia {
 namespace astronomy {
 namespace internal_time_scales {
 
-using astronomy::date_time::Date;
-using astronomy::date_time::DateTime;
 using astronomy::date_time::IsJulian;
 using astronomy::date_time::JulianDate;
 using astronomy::date_time::operator""_Date;
 using astronomy::date_time::operator""_DateTime;
 using astronomy::date_time::operator""_Julian;
+using numerics::DoublePrecision;
+using numerics::TwoDifference;
 using quantities::si::Day;
 using quantities::si::Radian;
 using quantities::si::Second;
@@ -568,6 +569,44 @@ inline Instant ParseGPSTime(std::string const& s) {
 
 inline Instant Parse北斗Time(std::string const& s) {
   return operator""_北斗(s.c_str(), s.size());
+}
+
+inline Date TTDay(Instant const& t) {
+  std::int64_t mjd = std::floor((t - "MJD0"_TT) / Day);
+  // We want operations rounded toward negative infinity, but we also don’t
+  // want to fiddle with rounding modes.  The product and sum here should be
+  // exact for all reasonable times.
+  if (mjd * Day + "MJD0"_TT > t) {
+    --mjd;
+  }
+  int digits = 0;
+  for (std::int64_t mjd_most_significant_digits = mjd;
+       mjd_most_significant_digits != 0;
+       ++digits) {
+    mjd_most_significant_digits /= 10;
+  }
+  return JulianDate::MJD(mjd, digits, /*fractional_digit_count=*/0).CalendarDay();
+}
+
+inline DateTime TTSecond(Instant const& t) {
+  auto const date = TTDay(t);
+  Instant const beginning_of_day = DateTimeAsTT(DateTime::BeginningOfDay(date));
+  // Close to J2000, Sterbenz’s lemma can fail to apply to this subtraction.  We
+  // compute it exactly and round by hand.
+  DoublePrecision<quantities::Time> const time_of_day =
+      TwoDifference(t, beginning_of_day);
+  quantities::Time const time_of_day_rounded_down =
+      time_of_day.error >= 0 * Second
+          ? time_of_day.value
+          : std::bit_cast<double>(
+                std::bit_cast<std::uint64_t>(time_of_day.value / Second) - 1) *
+                Second;
+  int second_of_day = std::floor(time_of_day_rounded_down / Second);
+  return DateTime(date,
+                  date_time::Time(/*hour=*/second_of_day / 3600,
+                                  /*minute=*/second_of_day % 3600 / 60,
+                                  /*second=*/second_of_day % 60,
+                                  /*millisecond=*/0));
 }
 
 }  // namespace internal_time_scales

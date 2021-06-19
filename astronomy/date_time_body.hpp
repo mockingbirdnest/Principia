@@ -4,6 +4,7 @@
 #include "astronomy/date_time.hpp"
 
 #include <array>
+#include <iomanip>
 #include <limits>
 
 #include "base/macros.hpp"
@@ -74,53 +75,75 @@ constexpr int days_in_4_years = days_in_1_year * 4 + 1;
 constexpr int days_in_100_years = days_in_4_years * 25 - 1;
 constexpr int days_in_400_years = days_in_100_years * 4 + 1;
 
-// Given the number of days |d| since 0000-01-01 (proleptic Gregorian), returns
-// the Gregorian year.
-constexpr int gregorian_days_from_0000_01_01_to_year(int const d) {
+// Given a count of days starting at 1 on 0001-01-01 (proleptic Gregorian),
+// returns the Gregorian year.
+constexpr int gregorian_ordinal_of_year_1_to_year(int const d) {
   CONSTEXPR_CHECK(d > 0);
-
   // NOTE(egg): in order to extend this to the whole proleptic Gregorian
   // calendar (including d ≤ 0), we would need to use |mod| and a division
   // consistent with it.  However, in astronomy the proleptic Julian calendar is
   // used before 1582, and that is not allowed by ISO 8601, so for now let us
   // ignore the problem and assume that there are no dates before 1583-01-01.
-  int const modulo_400_years = (d - 1) % days_in_400_years;
+
+  int const previous_day = d - 1;
+  // The numbers modulo_n_years are cyclic counts of days starting over at 0
+  // when previous_day is the last day of years that are multiples of n, i.e.,
+  // when d is the first day of the following years.
+  int const modulo_400_years = previous_day % days_in_400_years;
   int const modulo_100_years = modulo_400_years % days_in_100_years;
   int const modulo_4_years = modulo_100_years % days_in_4_years;
 
-  int const multiples_of_400_years =
-      ((d - 1) / days_in_400_years) * 400;
-  int const multiples_of_100_years =
-      (modulo_400_years / days_in_100_years) * 100;
-  int const multiples_of_4_years =
-      (modulo_100_years / days_in_4_years) * 4;
-  int const multiples_of_1_year =
-      modulo_4_years / days_in_1_year;
+  int const cycles_of_400_years = (previous_day / days_in_400_years);
+  int const cycles_of_100_years = (modulo_400_years / days_in_100_years);
+  int const cycles_of_4_years = (modulo_100_years / days_in_4_years);
+  int const cycles_of_1_year = modulo_4_years / days_in_1_year;
 
-  return multiples_of_400_years + multiples_of_100_years +
-         multiples_of_4_years + multiples_of_1_year;
+  return 1 + cycles_of_400_years * 400 + cycles_of_100_years * 100 +
+         cycles_of_4_years * 4 + cycles_of_1_year;
 }
 
-// Given the number of days |d| since 0000-01-01 (proleptic Gregorian), returns
-// the ordinal in the current Gregorian year.
-constexpr int gregorian_days_from_0000_01_01_to_ordinal(int const d) {
+// Given a count of days starting at 1 on 0001-01-01 (proleptic Gregorian),
+// returns the ordinal in the current Gregorian year.
+constexpr int gregorian_ordinal_of_year_1_to_ordinal(int const d) {
   CONSTEXPR_CHECK(d > 0);
-  int const modulo_400_years = (d - 1) % days_in_400_years;
+  // The numbers modulo_n_years are cyclic counts of days starting over at 0 on
+  // the last day of years that are multiples of n (the 366th day if the year is
+  // a leap year); see the examples in the table below.
+  //   n=400 n=100 n=4 n=1 d as calendar date   ordinal date
+  //       1     1   1   1   0001-01-01      0001-001 (d=1)
+  //       0     0   0   0   2000-12-31      2000-366
+  //       1     1   1   1   2001-01-01      2001-001
+  //     365   365 365   0   2001-12-31      2001-365
+  //    1461  1461   0   0   2004-12-31      2004-366
+  //   36524     0   0   0   2100-12-31      2100-365
+  int const modulo_400_years = d % days_in_400_years;
+  if (modulo_400_years == 0) {
+    return 366;  // The last day of a year multiple of 400.
+  }
   int const modulo_100_years = modulo_400_years % days_in_100_years;
+  if (modulo_100_years == 0) {
+    return 365;  // The last day of a year multiple of 100 (but not 400).
+  }
   int const modulo_4_years = modulo_100_years % days_in_4_years;
+  if (modulo_4_years == 0) {
+    return 366;  // The last day of a year multiple of 4 (but not 100).
+  }
   int const modulo_1_year = modulo_4_years % days_in_1_year;
-  return modulo_1_year + 1;
+  if (modulo_1_year == 0) {
+    return 365;  // The last day of a year that is not a multiple of 4.
+  }
+  return modulo_1_year;
 }
 
-// The number of days since 0000-01-01 on the first day of |year|, in the
-// proleptic Gregorian calendar.
-// |gregorian_days_from_0000_01_01_to_year| is a left inverse of this function.
-constexpr int gregorian_days_from_0000_01_01_at_start_of_year(int const year) {
+// The value, on the first day of |year|, of the count of days starting at 1 on
+// 0001-01-01, in the proleptic Gregorian calendar.
+// |gregorian_ordinal_of_year_1_to_year| is a left inverse of this function.
+constexpr int gregorian_ordinal_of_year_1_at_start_of_year(int const year) {
   CONSTEXPR_CHECK(year > 0);
-  return 1 + (year) * 365 +
-             (year - 1) / 4 -
-             (year - 1) / 100 +
-             (year - 1) / 400;
+  return 1 + (year - 1) * 365
+           + (year - 1) / 4
+           - (year - 1) / 100
+           + (year - 1) / 400;
 }
 
 // Returns the number formed by taking |end - begin| increasingly significant
@@ -175,10 +198,10 @@ constexpr Date add_days_within_year(Date const& date, int const days) {
 // The |day|th day of some |year|.  The resulting date need not be in |year|.
 constexpr Date arbitrary_ordinal(int const year, int const day) {
   return Date::Ordinal(
-      gregorian_days_from_0000_01_01_to_year(
-          gregorian_days_from_0000_01_01_at_start_of_year(year) + day - 1),
-      gregorian_days_from_0000_01_01_to_ordinal(
-          (gregorian_days_from_0000_01_01_at_start_of_year(year) + day - 1)));
+      gregorian_ordinal_of_year_1_to_year(
+          gregorian_ordinal_of_year_1_at_start_of_year(year) + day - 1),
+      gregorian_ordinal_of_year_1_to_ordinal(
+          (gregorian_ordinal_of_year_1_at_start_of_year(year) + day - 1)));
 }
 
 // Implementation of class |Date|.
@@ -254,8 +277,8 @@ constexpr int Date::ordinal() const {
 }
 
 constexpr int Date::mjd() const {
-  return gregorian_days_from_0000_01_01_at_start_of_year(year_) + ordinal() -
-         (gregorian_days_from_0000_01_01_at_start_of_year(mjd0_yyyy) +
+  return gregorian_ordinal_of_year_1_at_start_of_year(year_) + ordinal() -
+         (gregorian_ordinal_of_year_1_at_start_of_year(mjd0_yyyy) +
           Date::YYYYMMDD(mjd0_yyyymmdd).ordinal());
 }
 
@@ -380,7 +403,7 @@ constexpr JulianDate JulianDate::MJD(
       digit_range(digits, 0, fractional_digit_count);
   auto const fraction_denominator = shift_left(1, fractional_digit_count);
   if (fraction_denominator == 1) {
-    // The only power of 10 that's not a power of 2.
+    // The only power of 10 that's not a multiple of 2.
     CONSTEXPR_CHECK(fraction_numerator == 0);
     return JulianDate(day - j2000_jd0_offset + mjd0_jd0_offset,
                       5,
@@ -406,6 +429,19 @@ constexpr std::int64_t JulianDate::fraction_numerator() const {
 
 constexpr std::int64_t JulianDate::fraction_denominator() const {
   return fraction_denominator_;
+}
+
+constexpr Date JulianDate::CalendarDay() const {
+  // The date and time t represented by this object satisfies
+  //   t - 2000-01-01T12:00:00 = day + fraction,
+  // thus
+  //   t - 2000-01-01T00:00:00 = day + fraction + 1/2.
+  // We want a result rounded toward negative infinity; integer division
+  // does that for us since the fraction is positive.
+  std::int64_t const days_from_2000_01_01T00_00_00 =
+      day_ + ((2 * fraction_numerator_ + fraction_denominator_) /
+              (2 * fraction_denominator_));
+  return arbitrary_ordinal(2000, days_from_2000_01_01T00_00_00 + 1);
 }
 
 constexpr JulianDate::JulianDate(std::int64_t day,
@@ -1000,6 +1036,13 @@ constexpr Date operator""_Date(char const* const str, std::size_t const size) {
   return DateParser::Parse(str, size);
 }
 
+inline std::ostream& operator<<(std::ostream& out, Date const& date) {
+  char const fill = out.fill();
+  return out << std::setfill('0') << std::setw(4) << date.year() << "-"
+             << std::setw(2) << date.month() << "-" << std::setw(2)
+             << date.day() << std::setfill(fill);
+}
+
 constexpr bool operator==(Time const& left, Time const& right) {
   return left.hour() == right.hour() &&
          left.minute() == right.minute() &&
@@ -1013,6 +1056,16 @@ constexpr bool operator!=(Time const& left, Time const& right) {
 
 constexpr Time operator""_Time(char const* const str, std::size_t const size) {
   return TimeParser::Parse(str, size);
+}
+
+inline std::ostream& operator<<(std::ostream& out, Time const& time) {
+  char const fill = out.fill();
+  out << std::setfill('0') << std::setw(2) << time.hour() << ":" << std::setw(2)
+      << time.minute() << ":" << std::setw(2) << time.second();
+  if (time.millisecond() > 0) {
+    out << "," << std::setw(3) << time.millisecond();
+  }
+  return out << std::setfill(fill);
 }
 
 constexpr bool operator==(DateTime const& left, DateTime const& right) {
@@ -1036,6 +1089,10 @@ constexpr DateTime operator""_DateTime(char const* const str,
   return DateTime(DateParser::Parse(str, index_of_T),
                   TimeParser::Parse(str + index_of_T + 1,
                                     size - (index_of_T + 1)));
+}
+
+inline std::ostream& operator<<(std::ostream& out, DateTime const& date_time) {
+  return out << date_time.date() << "T" << date_time.time();
 }
 
 constexpr bool IsJulian(char const* const str, std::size_t const size) {

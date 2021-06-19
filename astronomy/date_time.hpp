@@ -3,12 +3,13 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <ostream>
 
 // This file has an additional layer of namespacing for several reasons:
 //   - we are not entirely sure whether we really want to expose this API;
 //   - |astronomy::Time| for a class that represents the time of day is weird;
-//   - until we use internal namespace properly everywhere, |astronomy::Time|
-//     would clash with |quantities::Time| in some parts of |astronomy|.
+//   - |astronomy::Time| would clash with the more common |quantities::Time| in
+//     some parts of |astronomy|.
 
 namespace principia {
 namespace astronomy {
@@ -45,6 +46,11 @@ class Date final {
 
 class Time final {
  public:
+  // Checks that this represents a valid time of day as per ISO 8601, thus
+  // that the components are in the normal range, or that the object represents
+  // a time in a leap second, or that it represents the end of the day.
+  constexpr Time(int hour, int minute, int second, int millisecond);
+
   static constexpr Time hhmmss_ms(int hhmmss, int ms);
 
   constexpr int hour() const;
@@ -57,11 +63,6 @@ class Time final {
   constexpr bool is_end_of_day() const;
 
  private:
-  // Checks that this represents a valid time of day as per ISO 8601, thus
-  // that the components are in the normal range, or that the object represents
-  // a time in a leap second, or that it represents the end of the day.
-  constexpr Time(int hour, int minute, int second, int millisecond);
-
   int const hour_;
   int const minute_;
   int const second_;
@@ -72,6 +73,10 @@ class Time final {
 
 class DateTime final {
  public:
+  // Checks that |time| does not represent a leap second unless |date| is the
+  // last day of the month.
+  constexpr DateTime(Date date, Time time);
+
   static constexpr DateTime BeginningOfDay(Date const& date);
 
   constexpr Date const& date() const;
@@ -82,9 +87,6 @@ class DateTime final {
   constexpr DateTime normalized_end_of_day() const;
 
  private:
-  // Checks that |time| does not represent a leap second unless |date| is the
-  // last day of the month.
-  constexpr DateTime(Date date, Time time);
 
   Date const date_;
   Time const time_;
@@ -106,6 +108,8 @@ class JulianDate final {
   constexpr std::int64_t fraction_numerator() const;
   constexpr std::int64_t fraction_denominator() const;
 
+  constexpr Date CalendarDay() const;
+
  private:
   constexpr JulianDate(std::int64_t day,
                        std::int64_t fraction_numerator,
@@ -125,15 +129,17 @@ constexpr bool operator>(Date const& left, Date const& right);
 constexpr bool operator<=(Date const& left, Date const& right);
 constexpr bool operator>=(Date const& left, Date const& right);
 constexpr Date operator""_Date(char const* str, std::size_t size);
+std::ostream& operator<<(std::ostream& out, Date const& date);
 
 constexpr bool operator==(Time const& left, Time const& right);
 constexpr bool operator!=(Time const& left, Time const& right);
 constexpr Time operator""_Time(char const* str, std::size_t size);
+std::ostream& operator<<(std::ostream& out, Time const& time);
 
 constexpr bool operator==(DateTime const& left, DateTime const& right);
 constexpr bool operator!=(DateTime const& left, DateTime const& right);
-
 constexpr DateTime operator""_DateTime(char const* str, std::size_t size);
+std::ostream& operator<<(std::ostream& out, DateTime const& date_time);
 
 // Returns true if the string can be interpreted as a Julian date.
 constexpr bool IsJulian(char const* str, std::size_t size);

@@ -29,6 +29,7 @@ using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
+using ::testing::Ne;
 
 constexpr Instant j2000_week = "1999-W52-6T12:00:00"_TT;
 
@@ -475,6 +476,51 @@ TEST_F(TimeScalesTest, GNSS) {
   // between 21st and 22nd August). At the start epoch, GST shall be ahead of
   // UTC by thirteen (13) leap seconds.
   EXPECT_THAT("1999-08-22T00:00:13"_GPS, Eq("1999-08-22T00:00:00"_UTC));
+}
+
+TEST_F(TimeScalesTest, DateUnparsing) {
+  EXPECT_THAT(TTDay("1999-12-31T00:00:00"_TT), Eq("1999-12-31"_Date));
+  EXPECT_THAT(TTDay("2000-01-01T00:00:00"_TT), Eq("2000-01-01"_Date));
+  EXPECT_THAT(TTDay(J2000), Eq("2000-01-01"_Date));
+  EXPECT_THAT(TTDay("2000-01-01T23:59:59,999"_TT), Eq("2000-01-01"_Date));
+
+  // The floating-point division by Day turns the carriage into a pumpkin;
+  // adjustment is required.
+  constexpr double u = 0x1p-53;
+  constexpr Instant pumpkin = "2000-01-01T24:00:00"_TT;
+  EXPECT_THAT(TTDay("2000-01-02T00:00:00"_TT), Eq("2000-01-02"_Date));
+  constexpr Instant carriage =
+      ("2000-01-01T24:00:00"_TT - (pumpkin - J2000) * u);
+  static_assert(carriage != pumpkin);
+  EXPECT_THAT(TTDay(carriage), Ne(TTDay(pumpkin)));
+
+  EXPECT_THAT(TTDay("2000-01-03T00:00:00"_TT), Eq("2000-01-03"_Date));
+}
+
+TEST_F(TimeScalesTest, DateTimeUnparsing) {
+  EXPECT_THAT(TTSecond(J2000), Eq("2000-01-01T12:00:00"_DateTime));
+  EXPECT_THAT(TTSecond("MJD0"_TT), Eq("1858-11-17T00:00:00"_DateTime));
+
+  {
+    // This is far enough from J2000 that Sterbenz’s lemma applies.
+    constexpr double u = 0x1p-53;
+    constexpr Instant pumpkin = "2000-01-02T24:00:00"_TT;
+    constexpr Instant carriage =
+        ("2000-01-02T24:00:00"_TT - (pumpkin - J2000) * u);
+    static_assert(carriage != pumpkin);
+    EXPECT_THAT(TTSecond(carriage), Eq("2000-01-02T23:59:59"_DateTime));
+  }
+
+  {
+    // Here again adjustment is needed to avoid the carriage turning into a
+    // pumpkin.
+    constexpr double u = 0x1p-53;
+    constexpr Instant pumpkin = "2000-01-01T24:00:00"_TT;
+    constexpr Instant carriage =
+        ("2000-01-01T24:00:00"_TT - (pumpkin - J2000) * u);
+    static_assert(carriage != pumpkin);
+    EXPECT_THAT(TTSecond(carriage), Eq("2000-01-01T23:59:59"_DateTime));
+  }
 }
 
 }  // namespace internal_time_scales
