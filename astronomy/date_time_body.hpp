@@ -109,13 +109,13 @@ constexpr int gregorian_ordinal_of_year_1_to_ordinal(int const d) {
   // The numbers modulo_n_years are cyclic counts of days starting over at 0 on
   // the last day of years that are multiples of n (the 366th day if the year is
   // a leap year); see the examples in the table below.
-  //   n=400 n=100 n=4 n=1 d as calendar date   ordinal date
-  //       1     1   1   1   0001-01-01      0001-001 (d=1)
-  //       0     0   0   0   2000-12-31      2000-366
-  //       1     1   1   1   2001-01-01      2001-001
-  //     365   365 365   0   2001-12-31      2001-365
-  //    1461  1461   0   0   2004-12-31      2004-366
-  //   36524     0   0   0   2100-12-31      2100-365
+  //   n=400 n=100 n=4 n=1  d as calendar date  ordinal date
+  //       1     1   1   1          0001-01-01      0001-001 (d=1)
+  //       0     0   0   0          2000-12-31      2000-366
+  //       1     1   1   1          2001-01-01      2001-001
+  //     365   365 365   0          2001-12-31      2001-365
+  //    1461  1461   0   0          2004-12-31      2004-366
+  //   36524     0   0   0          2100-12-31      2100-365
   int const modulo_400_years = d % days_in_400_years;
   if (modulo_400_years == 0) {
     return 366;  // The last day of a year multiple of 400.
