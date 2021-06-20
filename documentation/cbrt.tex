@@ -18,7 +18,7 @@
 \usepackage[all]{nowidow}
 \usepackage{tabls}
 \usepackage{changepage}
-\usepackage{changebar}
+\usepackage[xetex]{changebar}
 
 %%%% Shorthands.
 \DeclareMathOperator{\bias}{\mathit{bias}}
@@ -52,7 +52,7 @@ defined in \href{https://github.com/mockingbirdnest/Principia/blob/master/numeri
 
 Our computation of the cube root uses root-finding methods that have fallen into disuse, and thus may be unfamiliar to the reader.
 
-So that there can be no confusion on the properties and names of these methods, this document comprises two parts.
+\cbstart{}To avoid\cbend{} confusion on the properties and names of these methods, this document comprises two parts.
 The first one is about a family of root-finding methods for arbitrary functions, wherein all methods
 considered for the cube root can be found. The second is about the computation of a binary64 cube root and its error
 analysis.
