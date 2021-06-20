@@ -326,7 +326,9 @@ We now turn to the computation of the cube root of in \texttt{numerics/cbrt.cpp}
 Our general approach to computing a faithfully rounded cube root of $y>0$ is the one described in \cite{KahanBindel2001}:
 \begin{enumerate}
 \item integer arithmetic is used to get a an initial quick approximation $q$ of $\cuberoot y$;
-\item a root finding method is used to improve that that to an approximation $ξ$ with a third of the precision;
+\item a root finding method is used to improve that that to an approximation $ξ$ with a \cbstart{}third\footnote{When FMA is available,
+this step and the next one use half the precision, and the last step uses a correctly-rounded $y-x^3$ instead of an
+exact $x^3$; see appendix~\ref{FMA}.}\cbend{} of the precision;
 \item $ξ$ is rounded to a third of the precision, resulting in the rounded approximation $x$ whose cube $x^3$ can be computed exactly;
 \item a single high order iteration of a root finding method is used to get the faithfully rounded result $r_0$.
 \end{enumerate} 
@@ -354,8 +356,8 @@ $\intclop{1}{8}\Intersection\text{binary64}$.
 
 We use capital Latin letters for fixed-point numbers involved in the computation, and $A>0$ for the normal floating-point number $a>0$ reinterpreted as a binary fixed-point\footnote{The implementation uses integers (obtained by multiplying the fixed-point numbers by $2^{p-1}$). For consistency with \cite{KahanBindel2001} we work with fixed-point numbers here. Since we do not multiply fixed point numbers together, the expressions are unchanged.} number with $p-1$ bits after the binary point,\begin{align}
   A &\DefineAs \bias + \Floor{\log_2 a} + \FractionalPart \pa{2^{-\Floor{\log_2 a}}a}\label{defA}\\
-    &= \bias + \Floor{\log_2 a} + 2^{-\Floor{\log_2 a}}a - 1\text,\nonumber\\
-\intertext{and \emph{vice versa},}
+    &= \bias + \Floor{\log_2 a} + 2^{-\Floor{\log_2 a}}a - 1\cbdelete{}\nonumber\\
+\intertext{\cbstart{}since $2^{-\Floor{\log_2 a}}a\in\intclop{1}{2}$, \cbend{}and \emph{vice versa},}
   a &\DefineAs 2^{\Floor A-\bias} \pa{1+\FractionalPart{A}}\label{defa}\text.
 \end{align}
 This corresponds to \cite{KahanBindel2001}'s $B+K+F$.
