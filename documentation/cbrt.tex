@@ -863,7 +863,7 @@ does not exceed $100u$.
 \subsubsection*{The unreasonable effectiveness of the sixth order rational method}
 The bound on the rounding error in the sixth order rational method is a little more than
 $1u$ worse than the one on its fifth order rational method; this is to be expected, as it
-involves more calculations and does not benefit an exact multiplication by $16$.
+involves more calculations and does not benefit \cbstart{}from \cbend{}an exact multiplication by $16$.
 Accordingly, since truncation error is negligible before rounding error for both, one might
 expect that the fifth order method would be superior. Numerical experiments suggest otherwise:
 with Lagny's irrational method with Canon optimization in step~\ref{ThirdPrecision}
@@ -893,11 +893,12 @@ If $\mathscr{I}$ contains neither of the ties, $r_0=\round{\cuberoot{y}}$:
 the faithful method returned a correct result.
 
 This criterion, slightly weakened, may be determined as follows. The difference between $r_0$ and
-the unrounded $r$ can be computed as described in \cite[224]{Dekker1971}, $r_1\DefineAs x-r_0+Δ$,
-evaluated as written (both operations are exact). The potential other candidate for
-$\round{\cuberoot{y}}$ may be computed as $\tilde r\DefineAs\round{r_0+2r_1}$, which is
-equal to $r_0$ only if $r_1$ is below a quarter-unit in the last place—in which case the small
-size of $\mathscr{I}$ ensures that it does not contain a tie.
+the unrounded $r\cbstart{}=x+Δ\cbend{}$ can be computed as described in \cite[224]{Dekker1971}, $r_1\DefineAs x-r_0+Δ$,
+evaluated as written (both operations are exact). \cbstart{}We may compute the\cbend{} potential other candidate for
+$\round{\cuberoot{y}}$ \cbdelete{}as $\tilde r\DefineAs\round{r_0+2r_1}$.\cbstart{} This value is equal\cbend{}
+to $r_0$ only if $r_1$ is below a quarter-unit in the last place—in which case the small
+size of $\mathscr{I}$ ensures that it does not contain a tie.\cbstart{} Otherwise, $\tilde r$ is the next
+representable number above or below $r_0$.\cbend{}
 
 If $\tilde r\neq r_0$, the tie of interest is $\frac{\tilde r+r_0}{2}$,
 and we must ascertain whether it lies in $\mathscr I$,\[
