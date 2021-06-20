@@ -977,15 +977,15 @@ We may do so using the algorithms of Priest and Nievergelt, specifically, using
 algorithm~10 (sum of two sum-and-roundoff expansions) followed by
 algorithm~8 (modification of Priest's renormalization) from
 \cite[427,425]{Nievergelt2004} to compute the sum of
-the double-precision numbers $y-a^3_{00}-a^3_{01}$ and $-a^3_{10}-a^3_{11}$; the
+the double-precision numbers \cbstart{}$y-\pa{a^3}_{00}-\pa{a^3}_{01}$ and $-\pa{a^3}_{10}-\pa{a^3}_{11}$\cbend{}; the
 renormalization will return an expansion with at most three parts.
 The terms $3a^2b$, $3ab^2$, and $b^3$ may then be subtracted exactly while retaining
 triple precision: they add at most three significant digits.
-The first two of these terms should be split into representable parts,\begin{align*}
-3a^2b&=2a^2_0b+a^2_0b+2a^2_1b+a^2_1b\text,\\
+The first two of these terms should be split into representable parts,\cbstart{}\begin{align*}
+3a^2b&=2\pa{a^2}_0b+\pa{a^2}_0b+2\pa{a^2}_1b+\pa{a^2}_1b\text,\\
 3ab^2&=2ab^2+ab^2\text,
 \end{align*}
-and each of these parts should be subtracted using the same algorithms.
+\cbend{}and each of these parts should be subtracted using the same algorithms.
 The sign of $ρ_{54|1}$ may then be checked.
 \vfill
 \pagebreak
