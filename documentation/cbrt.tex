@@ -18,7 +18,7 @@
 \usepackage[all]{nowidow}
 \usepackage{tabls}
 \usepackage{changepage}
-\usepackage[xetex]{changebar}
+\usepackage[xetex,outerbars]{changebar}
 
 %%%% Shorthands.
 \DeclareMathOperator{\bias}{\mathit{bias}}
@@ -109,7 +109,7 @@ f\of{z}\DefineAs z^p + c_1 z^{p-1} + \dotsb + c_{p-1} z + c_p \DefinitionOf z^p 
 \]
 with an initial approximation $a$.
 
-Separate the binomial expansion of $\pa{x+\tfrac{1}{2}a}^p$ into alternating sums of
+Separate \cbstart{}alternate terms of\cbend{} the binomial expansion of $\pa{x+\tfrac{1}{2}a}^p$ into \cbdelete{}sums of
 degree $p$ and $p-1$ in $x$,\begin{align}
 S_1\DefineAs\sum{\substack{k=0\\2\Divides k}}[p]\binom{p}{k}x^{p-k}\pa{\tfrac{1}{2}a}^k&\text{ and }
 S_2\DefineAs\sum{\substack{k=1\\2\DoesNotDivide k}}[p]\binom{p}{k}x^{p-k}\pa{\tfrac{1}{2}a}^k\text, \nonumber
