@@ -1334,7 +1334,7 @@ $\cos\frac{1}{3}\arccos$, with which the roots of any such case may be expressed
 The overall strategy is different with FMA, since we need only round $x$ to half the precision ($26$~bits),
 rather than a third; this is because the expression $y-x^3$ may be computed\footnote{To the best of our knowledge,
 the first implementation of a cube root to make use of that possibility is a 2014 Stack Overflow answer by njuffa; see
-appending~\ref{Comparison}.}
+\cbstart{}appendix~\ref{Comparison}.\cbend{}}
 as $\round{y-\pa{x^2}x}$, requiring only an exact square.
 
 This means that $ε_ξ'$ should ideally be somewhat less than $2^{-25}$ or $2^{-26}$ depending on
