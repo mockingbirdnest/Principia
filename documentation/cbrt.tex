@@ -626,7 +626,7 @@ remaining bits (except for the leading $1$) are all $0$; this is the case when t
 $1+2^{-\Floor{\frac{p}{3}}+1}-2^{1-p}$, in which case that of $x$ is $1$, so that\[
 \abs{\frac{x}{ξ}-1}\le1-\frac{1}{1+2^{-\Floor{\frac{p}{3}}+1}-2^{1-p}} < 2^{-\Floor{\frac{p}{3}}+1}=2^{-16}\text.
 \]
-For the error of $x$ as an approximation of the cube root,\[ε_x\DefineAs\frac{x}{\cuberoot{y}}-1\text,\]
+For the error of $x$ as an approximation of the cube root,\cbstart{} $ε_x\DefineAs\frac{x}{\sqrt[3]{y}}-1$,\cbend{}
 we have the bound $\abs{ε_x} < \pa{1+\abs{ε_ξ}}\pa{1+2^{-16}}-1$.
 
 \subsubsection*{Rounding to nearest}
@@ -636,6 +636,9 @@ number of bits; see \cite[235,241]{Dekker1971} in \emph{mul12}:\[
 \]
 The rounding error is then bounded by $2^{-\Floor{\frac{p}{3}}}$; we have
 $\abs{ε_x} < \pa{1+\abs{ε_ξ}}\pa{1+2^{-17}}-1$.
+
+\cbstart{}The chosen alternative will be determined by performance--accuracy trade-offs.
+This will be discussed in appendix~\ref{Performance}.\cbend{}
 
 \subsection{High order iteration}
 \label{HighOrder}
