@@ -463,7 +463,8 @@ its analysis is relegated to appendix~\ref{LagnyStepTwoRounding}. Here we
 will study only the truncation error, and thus work only with the primed quantities.
 
 \subsubsection*{Lagny's rational method}
-One way to compute $ξ'$ is Lagny's rational method,
+One way to compute $ξ'$ is Lagny's rational method\cbstart{} applied to $\cuberoot y =\cuberoot{q^3+\pa{y-q^3}}$ with the starting estimate
+$q'$\cbend{},
 \[
 ξ'=q'+\frac{q'\pa{y-{q'}^3}}{2{q'}^3+y}\text,
 \]
@@ -473,12 +474,12 @@ with the error\[
 
 With $q'=\cuberoot{y}\pa{1+ε_q'}$, we can express $ε_ξ'$ using the transformation of
 the relative error by one step of Lagny’s rational method on the cube root,\[
-ε_ξ' = \frac{2{ε_q'}^3+{ε_q'}^4}{3+6ε_q'+6{ε_q'}^2+2{ε_q'}^3}
+ε_ξ' \cbstart{}=\frac{ξ'}{\sqrt[3]{y}\pa{1+ε_q'}}-1\cbend{}= \frac{2{ε_q'}^3+{ε_q'}^4}{3+6ε_q'+6{ε_q'}^2+2{ε_q'}^3}
 = \tfrac{2}{3}{ε_q'}^3 + \BigO\of{{ε_q'}^4}\text.
 \]
 If $q'$ is computed using $Γ=Γ_{\mathrm{Kahan}}$, we get
 $\max_{y} \abs{ε_ξ'} \approx 21.96\Multiply10^{-6}$, $\log_2 \max_{y} \abs{ε_ξ'} \approx -15.47$.
-However, $Γ_{\mathrm{Kahan}}$, which minimizes $\max_{y} \abs{ε_q}$, does not
+However, $Γ_{\mathrm{Kahan}}$, which minimizes \cbstart{}$\max_{y} \abs{ε_q'}$\cbend{}, does not
 minimize $\max_{y} \abs{ε_ξ'}$. This is because while $ε_ξ'$ is monotonic as a
 function of $ε_q'$, it is not odd: positive errors are reduced more than negative
 errors are, so that the minimum is attained for a different value of $Γ$.
@@ -498,13 +499,13 @@ error is still larger, and in any case is not comparatively negligible. As a res
 Lagny's lesser-known irrational method provides us with a way to improve it.
 \subsubsection*{Lagny's irrational method}
 As written in (\ref{LagnyIrrationalCubeRootIteration}), Lagny's irrational method
-\[ξ' = \tfrac{1}{2}q'+\sqrt{\tfrac{1}{4}{q'}^2+\frac{y-{q'}^3}{3q'}}\]
+\begin{equation}ξ' = \tfrac{1}{2}q'+\sqrt{\tfrac{1}{4}{q'}^2+\frac{y-{q'}^3}{3q'}}\cbstart{}\label{IrrationalNoRewrite}\cbend{}\end{equation}
 seems prohibitively computationally expensive in comparison to the rational one: it adds a
 square root on the critical path, dependent on the result of a division.
 However, rewriting\footnote{This kind of rewriting is generally effective for quadratic irrational methods;
-see the discussion in appendix~\ref{Performance}.} it as, \exempligratia,\begin{equation}
-ξ' = \pa{\sqrt{3}{q'}^2+\sqrt{4yq'-{q'}^4}}\frac{1/\sqrt{12}}{q'}\text,\label{RewrittenLagnyIrrational}
-\end{equation}
+see the discussion in appendix~\ref{Performance}.} it as, \exempligratia,\[
+ξ' = \pa{\sqrt{3}{q'}^2+\sqrt{4yq'-{q'}^4}}\frac{1/\sqrt{12}}{q'}\text,\cbdelete{}
+\]
 one can evaluate it with similar performance to the rational method.
 
 Its error is\[
