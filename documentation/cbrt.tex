@@ -431,7 +431,7 @@ q\approx q' &= \begin{cases}
 1+\frac{k+f-\FractionalPart Γ}{3} & \text{otherwise,}
 \end{cases}
 \end{align*}
-so that $q$ is a piecewise affine function of $y$ and may be expressed as an affine function of $f$ on each piece.
+so that \cbstart{}for each $k$, $q'$ is a piecewise affine function of $f$\cbend{}.
 
 With $\cuberoot y = 2^{\frac{\Floor{Γ}+k}{3}}\cuberoot{1+f}$, we express $ε_q' \DefineAs \frac{q'}{\sqrt[3] y}-1$
 piecewise as a function of $f$ and $k$.
@@ -442,7 +442,7 @@ The values $Γ=0.1009678$ and $ε_q<3.2\%$ from \cite{KahanBindel2001} may be re
 or equivalently.\begin{align*}
 Γ_{\mathrm{Kahan}}\DefineAs\argmin_{Γ\in\R}\max_{y\in\intclop{η}{8η}}\abs{ε_q'}
 &=\argmin_{Γ\in\R}\max_{\tuple{f, k}}\abs{ε_q'}\\
-\intertext{where the maximum is taken over $\tuple{f, k}\in\intclop{0}{\FractionalPart Γ}\Cartesian\set{0}\Union\intclop{0}{1}\Cartesian\set{1,2}$,}
+\intertext{where the maximum is taken over $\tuple{f, k}\in\cbstart{}\intclop{0}{1}\Cartesian\set{0,1,2}\cbend{}$,}
 &=\argmin_{Γ\in\R}\max_{\tuple{f, k}\in\mathscr{E}\Union\mathscr{L}}\abs{ε_q'}\text,
 \end{align*}
 where $\mathscr{E}\DefineAs\set{\tuple{\FractionalPart Γ, 0}}\Union\setst{\tuple{0, k}}{k\in\set{0,1,2}}$ is the set of the endpoints of the intervals whereon $q'$ is piecewise affine, and
