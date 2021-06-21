@@ -1,5 +1,7 @@
 ﻿\documentclass[10pt, a4paper, twoside]{basestyle}
 
+\usepackage{tikz}
+
 \usepackage[Mathematics]{semtex}
 \usepackage{chngcntr}
 
@@ -920,7 +922,15 @@ evaluated as written (both operations are exact). \cbstart{}We may compute the\c
 $\round{\cuberoot{y}}$ \cbdelete{}as $\tilde r\DefineAs\round{r_0+2r_1}$.\cbstart{} This value is equal\cbend{}
 to $r_0$ only if $r_1$ is below a quarter-unit in the last place—in which case the small
 size of $\mathscr{I}$ ensures that it does not contain a tie.\cbstart{} Otherwise, $\tilde r$ is the next
-representable number above or below $r_0$.\cbend{}
+representable number above or below $r_0$.\marginfig[Detecting a potential misrounding, in the case $r_1 < 0$.]{\begin{tikzpicture}[scale=1.5]
+\draw (-1.1,0) -- (1.1,0);
+\draw (-1,-0.3) node[below] {$\tilde r$} -- (-1,0.2);
+\draw [dashed] (0,-0.3) node[below] {tie} -- (0,0.75);
+\draw (0.2,-0.1) node[below] {$r$} -- (0.2,0.6);
+\draw (1,-0.3) node[below] {$r_0=\round{r}$} -- (1,0.2);
+\draw [->] (1,0.1) -- (0.2,0.1) node[midway,above] {$r_1$};
+\draw (-0.1,0.5) -- (-0.1,0.6) -- (0.5,0.6) node[midway,above]{$\mathscr{I}$} -- (0.5,0.5);
+\end{tikzpicture}}\cbend{}
 
 If $\tilde r\neq r_0$, the tie of interest is $\frac{\tilde r+r_0}{2}$,
 and we must ascertain whether it lies in $\mathscr I$,\[
