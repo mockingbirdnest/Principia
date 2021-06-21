@@ -1412,7 +1412,7 @@ With Canon optimization, the constants $\round{\sqrt{3}}$, $4$, and $\round{1/\s
 respectively.
 
 Using Lagny's irrational method with Canon optimization in step~\ref{ThirdPrecision}, directed rounding toward zero in
-step~\ref{RoundedApproximation}, and the method of fifth order in step~\ref{HighOrder}, rate of passage in the slow ``potential
+step~\ref{RoundedApproximation}, and the method of fifth order in step~\ref{HighOrder}, \cbstart{}the \cbend{}rate of passage in the slow ``potential
 misrounding'' path is $2.6479(52)\Multiply 10^{-4}$; the latency of that slow path is less than ten times that of the fast path,
 so that any improvement to the rate of passage in the slow path that comes at a cost of even a cycle to the latency of the fast path
 worsens average-case performance. As a result, we do not use rounding to nearest in step~\ref{RoundedApproximation}, as it replaces,
@@ -1441,7 +1441,7 @@ where\[
 d\DefineAs\round{\frac{q}{\round{\round{q^2}\round{\round{\tfrac{20}{\sqrt{15}}}q}-\round{\round{\tfrac{2}{\sqrt{15}}}y}}}}\text.
 \]
 Using the quadratic irrational method in step~\ref{ThirdPrecision}, directed rounding toward zero in
-step~\ref{RoundedApproximation}, and the rational method of fourth order in step~\ref{HighOrder}, rate of passage in the slow ``potential
+step~\ref{RoundedApproximation}, and the rational method of fourth order in step~\ref{HighOrder}, \cbstart{}the \cbend{}rate of passage in the slow ``potential
 misrounding'' path is $3.05(18)\Multiply10^{-7}$. Again this means that rounding to nearest in step~\ref{HighOrder} would be detrimental
 to the average-case performance of the correctly-rounded cube root.
 
@@ -1458,46 +1458,45 @@ of a number of pre-existing implementations of the cube root that we were able t
 \begin{figure}[tb]
 \begin{adjustwidth}{-4cm}{}\hsize=\linewidth
 \includegraphics[width=\linewidth]{cbrt_latency_misrounding.pdf}
-\caption{Latency of several implementations of the binary64 cube root, plotted against their misrounding rates, for various architectures.
+\cbstart{}\caption{Latency of several implementations of the binary64 cube root, plotted against their misrounding rates, for various architectures.
 The error bars are expanded uncertainties determined from the combined standard uncertainties and a coverage factor of $3$.
-An asterisk marks methods that use FMA; an obelisk marks unfaithful methods.}
+The letters $\mathrm{FMA}$ mark methods that use FMA; an obelisk marks unfaithful methods.}\cbend{}
 \end{adjustwidth}
 \end{figure}
 
 We consider the following method among our faithful ones, where the notation $p^qr^s$ means the generalized Lagny method of
 degree $q$ and order $p$ is used in step~\ref{ThirdPrecision} and the generalized Lagny method of degree $r$ and order $s$
-is used in step~\ref{HighOrder}, a subscript $\mathrm{C}$ indicates Canon optimization, the letter $\mathrm{N}$ indicates
-the use of rounding to nearest in step~\ref{RoundedApproximation}, which otherwise uses directed rounding toward zero, and an
-asterisk indicates the use of FMA as described in appendix~\ref{FMA}:
+is used in step~\ref{HighOrder}, a subscript $\mathrm{C}$ indicates Canon optimization, the \cbstart{}letters $\mathrm{N}$ and $\mathrm{Z}$ respectively indicate the use of rounding to nearest and directed rounding toward zero in step~\ref{RoundedApproximation},
+and the letters $\mathrm{FMA}$ indicate the use of FMA as described in appendix~\ref{FMA}:\cbend{}
 \begin{itemize}[nosep]
-\item method $3^16^1$, used by Principia\footnote{The implementation in \#1802 uses a suboptimal evaluation strategy in step~\ref{ThirdPrecision}; the latencies shown are for the evaluation strategy described in appendix~\ref{Performance} instead.}
+\item method \cbstart{}$3^1\mathrm{Z}6^1$\cbend{}, used by Principia\footnote{The implementation in \#1802 uses a suboptimal evaluation strategy in step~\ref{ThirdPrecision}; the latencies shown are for the evaluation strategy described in appendix~\ref{Performance} instead.}
 from pull request \href{https://github.com/mockingbirdnest/Principia/pull/1802}{\#1802},
 in 2018, until it was replaced by a correctly-rounded method;
-\item method $3^2_{\mathrm{C}}5^1$, which backs the correctly-rounded implementation without FMA;
-\item method $3^2_{\mathrm{C}}6^1$ for comparison with $3^2_{\mathrm{C}}5^1$, see the discussion of step~\ref{HighOrder};
+\item method \cbstart{}$3^2_{\mathrm{C}}\mathrm{Z}5^1$,\cbend{} which backs the correctly-rounded implementation without FMA;
+\item method \cbstart{}$3^2_{\mathrm{C}}\mathrm{Z}6^1$\cbend{} for comparison with \cbstart{}$3^2_{\mathrm{C}}\mathrm{Z}5^1$,\cbend{} see the discussion of step~\ref{HighOrder};
 \item method $3^2_{\mathrm{C}}\mathrm{N}6^1$, the most accurate faithful method without FMA;
-\item method $5^24^1*$, which backs the correctly-rounded implementation with FMA;
-\item method $5^2\mathrm{N}4^1*$, the most accurate faithful method with FMA.
+\item method \cbstart{}$5^2\mathrm{Z}4^1\mathrm{FMA}$,\cbend{} which backs the correctly-rounded implementation with FMA;
+\item method \cbstart{}$5^2\mathrm{N}4^1\mathrm{FMA}$,\cbend{} the most accurate faithful method with FMA.
 \end{itemize}
 We compare these with following pre-existing implementations of the cube root:
 \begin{itemize}[nosep]
-\item W.~Fullerton's 1977 function DCBRT from FNLIB\footnote{We thank Peter Barfuss for translating this function from FORTRAN to
+\item W.~Fullerton's 1977 function \cbstart{}\texttt{DCBRT}\cbend{} from FNLIB\footnote{We thank Peter Barfuss for translating this function from FORTRAN to
 C++ for the purposes of this comparison.};
-\item S.~L.~Moshier's 1984 function cbrt from the Cephes Mathematical Library;
+\item S.~L.~Moshier's 1984 function \cbstart{}\texttt{cbrt}\cbend{} from the Cephes Mathematical Library;
 \item W.~Kahan's 1991 methods described in \cite[3]{KahanBindel2001} ``to serve the IEEE Double precision and VAX G formats'',
 implemented as written; Kahan recommends that the high-order step be of fourth order in that case, and gives two fourth
 order methods; further, he does not specify how the rounding to a third of the precision should be performed,
 so we end up with four possible implementations, identified by the coefficient of the asymptotic error,
 $\mathrm Γ$ in Kahan's notation, and by the rounding direction of step~\ref{RoundedApproximation}
-($\mathrm{N}$ for nearest, toward zero otherwise);
-\item  P.~J.~Plauger's 1992 function cbrt from Dinkumware's C library, notably used by Microsoft's UCRT;
-\item Sun Microsystems, Inc.'s 1993 function cbrt from the Freely Distributable LIBM;
-\item U.~Drepper's 1997 function cbrt from the GNU C Library;
-\item B.~Evans's 2005 modification of Sun's function cbrt, from the FreeBSD C library, also used by musl;
-\item J.~Maddock's 2006 function boost::math::cbrt<double> from the Boost Library;
-\item S.~Canon and J.~Kidder's 2008 function cbrt from Apple's Libm;
-\item Advanced Micro Devices, Inc.'s 2014 function cbrt from libclc;
-\item njuffa's 2014 function cbrt, given in a Stack Overflow answer to a question by P.~Cuoq about a correctly-rounded cube root.
+($\mathrm{N}$ for nearest, \cbstart{}$\mathrm{Z}$ for directed toward zero);\cbend{}
+\item  P.~J.~Plauger's 1992 function \cbstart{}\texttt{cbrt}\cbend{} from Dinkumware's C library, notably used by Microsoft's UCRT;
+\item Sun Microsystems, Inc.'s 1993 function \cbstart{}\texttt{cbrt}\cbend{} from the Freely Distributable LIBM;
+\item U.~Drepper's 1997 function \cbstart{}\texttt{cbrt}\cbend{} from the GNU C Library;
+\item B.~Evans's 2005 modification of Sun's function \cbstart{}\texttt{cbrt}\cbend{}, from the FreeBSD C library, also used by musl;
+\item J.~Maddock's 2006 function \cbstart{}\texttt{boost::math::cbrt<double>}\cbend{} from the Boost Library;
+\item S.~Canon and J.~Kidder's 2008 function \cbstart{}\texttt{cbrt}\cbend{} from Apple's Libm;
+\item Advanced Micro Devices, Inc.'s 2014 function \cbstart{}\texttt{cbrt}\cbend{} from libclc;
+\item njuffa's 2014 function \cbstart{}\texttt{cbrt}\cbend{}, given in a Stack Overflow answer to a question by P.~Cuoq about a correctly-rounded cube root.
 \end{itemize}
 The estimates of the latencies and their uncertainties were taken by supposing that the observed cycle counts follow
 a three-parameter logarithmic normal distribution, with the latency of the benchmark loop being its terminus, the other two
@@ -1522,9 +1521,9 @@ Method && Misrounding rate \\
 \hline
 Fullerton, 1977& $\dagger$  & $2.60500(14)\Multiply10^{-1}$ \\
 Moshier, 1984&              & $8.55740(89)\Multiply10^{-2}$ \\
-Kahan, 1991 & $\mathrm{Γ}=-1$        & $2.0044(15)\Multiply10^{-3}$  \\
+Kahan, 1991 & $\mathrm{Γ}=-1$ \cbstart{}$\mathrm{Z}$\cbend{}     & $2.0044(15)\Multiply10^{-3}$  \\
 \emph{ibid.}& $\mathrm{Γ}=-1$ $\mathrm{N}$     & $9.6466(99)\Multiply10^{-4}$  \\
-\emph{ibid.}& $\mathrm{Γ}=-35/3$     & $1.7236(42)\Multiply10^{-4}$  \\
+\emph{ibid.}& $\mathrm{Γ}=-35/3$ \cbstart{}$\mathrm{Z}$\cbend{}  & $1.7236(42)\Multiply10^{-4}$  \\
 \emph{ibid.}& $\mathrm{Γ}=-35/3$ $\mathrm{N}$  & $8.367(29)\Multiply10^{-5}$   \\
 Plauger, 1992& $\dagger$    & $3.02720(15)\Multiply10^{-1}$ \\
 Sun,     1993&              & $8.31642(88)\Multiply10^{-2}$ \\
@@ -1532,18 +1531,18 @@ Drepper, 1997& $\dagger$    & $4.96271(16)\Multiply10^{-1}$ \\
 Sun--Evans, 2005&           & $8.33311(88)\Multiply10^{-2}$ \\
 Maddock, 2006& $\dagger$    & $4.56285(16)\Multiply10^{-1}$ \\
 Canon--Kidder, 2008&        & $8.02588(86)\Multiply10^{-2}$ \\
-AMD, 2014& $*$              & $1.6235(41)\Multiply10^{-4}$ \\
-njuffa, 2014& $*$           & $1.529(40)\Multiply10^{-6}$ \\
-Leroy, 2018 & $3^16^1$                        & $5.155(72)\Multiply10^{-6}$ \\
-Leroy, 2021 & $3^2_{\mathrm{C}}5^1$           & $4.575(68)\Multiply10^{-6}$ \\
-\emph{ibid.}& $3^2_{\mathrm{C}}6^1$           & $4.357(67)\Multiply10^{-6}$ \\
+AMD, 2014& \cbstart{}$\mathrm{FMA}$\cbend{}              & $1.6235(41)\Multiply10^{-4}$ \\
+njuffa, 2014& \cbstart{}$\mathrm{FMA}$\cbend{}           & $1.529(40)\Multiply10^{-6}$ \\
+Leroy, 2018 & \cbstart{}$3^1\mathrm{Z}6^1$\cbend{}              & $5.155(72)\Multiply10^{-6}$ \\
+Leroy, 2021 & \cbstart{}$3^2_{\mathrm{C}}\mathrm{Z}5^1$\cbend{} & $4.575(68)\Multiply10^{-6}$ \\
+\emph{ibid.}& \cbstart{}$3^2_{\mathrm{C}}\mathrm{Z}6^1$\cbend{} & $4.357(67)\Multiply10^{-6}$ \\
 \emph{ibid.}& $3^2_{\mathrm{C}}\mathrm{N}6^1$ & $2.417(50)\Multiply10^{-6}$ \\
-\emph{ibid.}& $5^24^1*$                       & $6.10(25)\Multiply10^{-9}$ \\
-\emph{ibid.}& $5^2\mathrm{N}4^1*$             & $2.99(18)\Multiply10^{-9}$
+\emph{ibid.}& \cbstart{}$5^2\mathrm{Z}4^1\mathrm{FMA}$\cbend{}  & $6.10(25)\Multiply10^{-9}$ \\
+\emph{ibid.}& \cbstart{}$5^2\mathrm{N}4^1\mathrm{FMA}$\cbend{}  & $2.99(18)\Multiply10^{-9}$
 \end{tabular}
 \end{center}
 \caption{Misrounding rates of various methods for the computation of a binary64 cube root.
-An asterisk marks methods that use FMA; an obelisk marks unfaithful methods.\label{TableMisroundingRates}}
+The letters $\mathrm{FMA}$ mark methods that use FMA; an obelisk marks unfaithful methods.\label{TableMisroundingRates}}
 \end{table}
 
 \emergencystretch 1em
