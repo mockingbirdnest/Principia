@@ -1019,6 +1019,20 @@ The first two of these terms should be split into representable parts,\cbstart{}
 \end{align*}
 \cbend{}and each of these parts should be subtracted using the same algorithms.
 The sign of $ρ_{54|1}$ may then be checked.
+\part*{\cbstart{}Conclusion\cbend{}}
+\cbstart{}In part~\ref{Abridged}, we have described and generalized a family of root-finding methods of arbitrary order.
+In part~\ref{CubeRoot}, we have used these methods to construct nearly correct faithfully-rounded implementations
+for the binary64 cube root, and we have described how their results may be adjusted to yield a correctly-rounded implementation, which
+to our knowledge had yet to be done.
+
+Other applications of these root-finding methods are outlined in appendix~\ref{ExampleGeneralizedLagnyMethods}.
+While we only used pre-existing methods, either Lagny's or Schröder's, in the foregoing implementation of a cube root, the
+implementation with FMA, described in appendix~\ref{FMA}, makes use of the new generalized irrational methods.
+
+The implementation choices that involve performance considerations are resolved in appendix~\ref{Performance}; an
+explanation is given therein for the somewhat surprising speed of the irrational methods.
+The resulting implementations are compared with pre-existing ones in appendix~\ref{Comparison}.\cbend{}
+
 \vfill
 \pagebreak
 \appendix
