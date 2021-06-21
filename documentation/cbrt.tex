@@ -1506,7 +1506,7 @@ TODO(egg): analysis.
 To our knowledge, no correctly-rounded implementations of the binary64 cube root have been published so far.
 We compare the performance and misrounding rates of some faithful methods described in this document with those
 of a number of pre-existing implementations of the cube root that we were able to find.
-\begin{figure}[tb]
+\begin{figure}[t!]
 \begin{adjustwidth}{-4cm}{}\hsize=\linewidth
 \includegraphics[width=\linewidth]{cbrt_latency_misrounding.pdf}
 \cbstart{}\caption{Latency of several implementations of the binary64 cube root, plotted against their misrounding rates, for various architectures.
@@ -1575,7 +1575,7 @@ Maddock, 2006& $\dagger$    & $4.56285(16)\Multiply10^{-1}$ & \cbstart{}$1.41547
 Canon--Kidder, 2008&        & $8.02588(86)\Multiply10^{-2}$ \\
 AMD, 2014& \cbstart{}$\mathrm{FMA}$\cbend{}              & $1.6235(41)\Multiply10^{-4}$ \\
 njuffa, 2014& \cbstart{}$\mathrm{FMA}$\cbend{}           & $1.529(40)\Multiply10^{-6}$ \\
-\cbstart{}Brunie, 2018& $\mathrm{FMA}\dagger$            & $1.43881(12)\Multiply10^{-1}$ & $5.918(25)\Multiply10^{-5}$\cbend{}\\
+\cbstart{}Brunie, 2018& $\mathrm{FMA}$ $\dagger$            & $1.43881(12)\Multiply10^{-1}$ & $5.918(25)\Multiply10^{-5}$\cbend{}\\
 Leroy, 2018 & \cbstart{}$3^1\mathrm{Z}6^1$\cbend{}              & $5.155(72)\Multiply10^{-6}$ \\
 Leroy, 2021 & \cbstart{}$3^2_{\mathrm{C}}\mathrm{Z}5^1$\cbend{} & $4.575(68)\Multiply10^{-6}$ \\
 \emph{ibid.}& \cbstart{}$3^2_{\mathrm{C}}\mathrm{Z}6^1$\cbend{} & $4.357(67)\Multiply10^{-6}$ \\
