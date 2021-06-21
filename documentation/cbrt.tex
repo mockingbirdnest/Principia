@@ -19,6 +19,8 @@
 \usepackage{tabls}
 \usepackage{changepage}
 \usepackage[xetex,outerbars]{changebar}
+\renewcommand*{\raggedleftmarginnote}{}
+\renewcommand*{\raggedrightmarginnote}{}
 
 %%%% Shorthands.
 \DeclareMathOperator{\bias}{\mathit{bias}}
@@ -83,6 +85,9 @@ in which case the correct digit needs to be more carefully ascertained.
 In order not to interrupt the flow of reading, in both parts, we relegate to the appendices
 any miscellaneous considerations that are independent of the matter currently being discussed,
 long-winded proofs, and lists of examples.
+
+\cbstart{}For the reader's convenience, we have translated in the margin all quotations in languages other than
+English, or quoted a translation in the margin when a satisfactory one was available.\cbend{}
 \pagebreak
 
 
@@ -121,12 +126,17 @@ Let $E_{n-1}$ be the remainder of the polynomial
 division\footnote{While the rest of the method is a straightforward translation, this step bears some explanations; its description in \cite{FantetdeLagny1692} is
 % TODO(egg): Right Single Quotation Mark leads to incorrect spacing in French, so we use Apostrophe here (which
 % gets converted to Right Single Quotation Mark by the typesetting engine).  Figure out what is going on.
+\marginnote{From these two equalities, either taken separately or compared together according to the method of of more-than-determined
+problems, extract a rational value of $x$, or simply one of a convenient degree.}
 \begin{quote}\textfrench{De ces deux égalitez, ou priſes ſéparément, ou comparées enſemble ſelon la methode des problêmes plus que déterminez tirez en une valeur d'$x$ rationelle, ou ſimplement d'un degré commode.}
 \end{quote}
 It is assumed that the reader is familiar with this ``comparison according to the method of
 more-than-determined problems''.
 While the application of the root-finding method is described in painstaking detail in \cite{FantetdeLagny1733},
 which outlines the treatment of overdetermined problems, it is perhaps this remark from \cite[494]{FantetdeLagny1697} which lays it out most clearly:
+\marginnote{There is nothing new to remark on more-than-determined problems of the fourth degree. The general rule is to equate everything
+to zero, and to divide the higher equation by the lower, or the equally high one by the other, repeatedly until one finds the simplest
+remainder or divisor.}
 \begin{quote}\textfrench{Il n'y a rien de nouveau à remarquer ſur les Problemes plus que déterminez du quatriéme degré. La Regle générale eſt d'égaler tout à zero, \& de diviſer la plus haute équation par la moins élevée, ou l'également élevée l'une par l'autre, continuellement juſques à ce que l'on trouve le reſte ou le diviſeur le plus ſimple.}
 \end{quote}}
 of $E_{n+1}$ by $E_{n}$; its degree is $n-1$ for almost all $a$.
@@ -136,7 +146,9 @@ and the root of $E_{1}$ in the rational method. Its order is $p$.
 
 \section*{Multiplicity of the irrational methods}
 Lagny does not require that the polynomial division be carried out
-all the way to $E_2$, merely until one gets \foreign{\textfrench{une valeur d'$x$ \textnormal{[...]} d'un degré commode}}, by which he likely means
+all the way to $E_2$, merely until one gets
+\marginnote{\footnotesize a [...] value of $x$ [...] of a convenient degree}%
+\foreign{\textfrench{une valeur d'$x$ \textnormal{[...]} d'un degré commode}}, by which he likely means
 one that is constructible. When $f$ is a cubic, he uses the term \foreign{\textfrench{formule irrationnelle}} for $x+\frac{1}{2}a$ where
 $x$ is a root of $E_2$, but when it comes to computing the fifth root, the same term is used to refer to the case where $x$ is a root of
 $E_4$. In order to avoid confusion, we use the term \emph{quadratic irrational method} when $x$ is a root of $E_2$,
@@ -201,15 +213,20 @@ Since these special cases are better known under the names of their discoverers,
 occurences, and use the appropriate names in the remainder of this document.
 \subsection*{Names of the irrational methods}
 Halley generalized Lagny's (quadratic) irrational method for the cubic to
-arbitrary\footnote{Lagny's method is general, in that an iteration is given for any
+arbitrary\footnote{\marginnote{Translations from \cite{Halley1809}.}%
+Lagny's method is general, in that an iteration is given for any
 polynomial, albeit one whose order changes with the degree. However, while he refers to its
 results---and even corrects a misprint therein---, Halley
 did not have access to a copy of \cite{FantetdeLagny1692},
+\marginnote{These rules were communicated to me by a friend, as I have not seen the author's book}
 \begin{quote}
 Has Regulas, cum nondum librum videram, ab amico communicatas habui
 \end{quote}
 and it appears that said friend communicated only the formulæ for the cube and fifth root, as opposed to the
 general method and its proof, as Halley writes
+\marginnote{[...] but being almost wholly occupied in extracting the roots of pure powers, especially the cubic,
+[M.~De Lagney] adds but little to the extraction of the roots of affected equations; and that rather perplexed too, and
+not sufficiently demonstrated.}
 \begin{quote}
 [...] \emph{D.~de Lagney} [...] qui cum totus fere ſit in eliciendis Poteſtatum purarum radicibus,
 præfertim Cubicâ, pauca tantum eaque perplexa nec ſatis demonſtrata de affectarum radicum
@@ -218,7 +235,8 @@ extractione ſubjungit.
 or, about the quartic irrational method for the fifth root, whereon Lagny does not elaborate as
 it is a direct application of the general method,
 \begin{quote}
-Author autem nullibi inveniendi methodum ejuſve demonſtrationem concedit,
+\marginnote{But the author has no where given his method of investigation or demonstration, though it seemed most
+to require it [...].}Author autem nullibi inveniendi methodum ejuſve demonſtrationem concedit,
 etiamſi maxime deſiderari videatur [...].
 \end{quote}
 Being unaware of this generality, Halley sets out to generalize (\ref{LagnyIrrationalCubeRootIteration}) and (\ref{LagnyRationalCubeRootIteration}) to
@@ -281,7 +299,10 @@ Our foray into the history of these methods was prompted by finding the ``histor
 method, as applied to the cube root, is due to Lagny.
 
 Searching for Lagny’s work led us to the historical note \cite{Cantor1861}, wherein a note by the editors Terquem and Gerono reads
-\begin{quote}\textfrench{%
+\begin{quote}\marginnote{\footnotesize
+Naturally, in mathematics, land of incontrovertible propositions identical in every language and in every country, such encounters
+cannot fail to be somewhat frequent; nowhere are \emph{actual} plagiarisms so rare, and \emph{apparent} plagiarisms so common than in
+the exact science by excellence; but to report them is a duty, a service rendered to scientific history.}\textfrench{%
 Naturellement, en mathématiques, séjour des propositions irréfragables, identiques en toute langue, en tout pays, ces rencontres ne peuvent manquer d'être assez fréquentes; nulle part les plagiats \emph{effectifs} sont si rares, et les plagiats \emph{apparents} si communs que dans la science exacte par excellence; mais les signaler est un devoir, un service rendu à l'histoire scientifique.}
 \end{quote}
 The editors then quote a letter by Prouhet, wherein he gives a reference to \cite{FantetdeLagny1692}.
@@ -312,7 +333,8 @@ Halley's irrational method is defined as a root of $M_2$. This change of variabl
 Lagny's construction drastically simplifies the proof of the proposition.
 
 Prouhet’s letter in \cite{Cantor1861} ends with these words:
-\begin{quote}\textfrench{%
+\begin{quote}\marginnote{\footnotesize
+This is all very abridged; but who will free us from the neverending abridged methods?}\textfrench{%
 Tout cela est fort abrégé; mais qui nous délivrera des méthodes abrégées,
 qui n'en finissent pas?}\end{quote}
 
@@ -1221,7 +1243,9 @@ $\tfrac{1}{2}a+\sqrt{\sqrt{\tfrac{1}{4}a^4+\tfrac{b}{5a}}-\tfrac{1}{4}a^2}$&$-\t
 \end{center}
 \subsection{Formulæ for the resolution of Kepler's equation}
 Let $f\of E\DefineAs E - e \sin E - M$; $f\of E=0$ is Kepler's equation\footnote{From \cite[295--300]{Kepler1609}. Kepler writes of this equation:
-\begin{quote}
+\begin{quote}\marginnote{%
+It is enough for me to believe that it cannot be solved \emph{a priori}, because of the heterogeneity of the arc and the sine.
+If I am wrong, whoever will have shown me the way will be for me the great Ἀπολλώνιος.}
 Mihi ſufficit credere, ſolvi a priori non poſſe, propter arcus \& ſinus ἑτερογένειαν.
 Erranti mihi, quicunque viam monſtraverit, is erit mihi magnus Apollonius.
 \end{quote}
@@ -1385,7 +1409,10 @@ $\mathfrak{c}$ is much lower than that of the denominator of the rational method
 its result multiplied at the end, for a latency similar to that of the corresponding rational methods.
 
 This is not unlike the reason for Halley's preference for his irrational method over his rational one in \cite[140]{Halley1694}:
-\begin{quote}
+\marginnote{\footnotesize Translation from \cite{Halley1809}.\\
+And this formula is deservedly preferred before the rational one,
+which, on account of its large divisor, cannot be used without much trouble,
+in comparison of the irrational one, as manifold experience has informed me.}\begin{quote}
 Hæc vero formula merito præferenda eſt rationali, ob ingentem diviſorem, non fine magno labore tractandum; cum Lateris quadrati
 extractio multo facilius procedat, ut experientia multiplex me docuit.
 \end{quote}
