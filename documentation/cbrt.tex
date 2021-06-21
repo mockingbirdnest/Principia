@@ -1029,7 +1029,7 @@ Other applications of these root-finding methods are outlined in appendix~\ref{E
 While we only used pre-existing methods, either Lagny's or Schröder's, in the foregoing implementation of a cube root, the
 implementation with FMA, described in appendix~\ref{FMA}, makes use of the new generalized irrational methods.
 
-The implementation choices that involve performance considerations are resolved in appendix~\ref{Performance}; an
+The implementation choices that involve performance considerations are decided in appendix~\ref{Performance}; an
 explanation is given therein for the somewhat surprising speed of the irrational methods.
 The resulting implementations are compared with pre-existing ones in appendix~\ref{Comparison}.\cbend{}
 
@@ -1437,7 +1437,7 @@ This is not unlike the reason for Halley's preference for his irrational method 
 And this formula is deservedly preferred before the rational one,
 which, on account of its large divisor, cannot be used without much trouble,
 in comparison of the irrational one, as manifold experience has informed me.}\begin{quote}
-Hæc vero formula merito præferenda eſt rationali, ob ingentem diviſorem, non fine magno labore tractandum; cum Lateris quadrati
+Hæc vero formula merito præferenda eſt rationali, ob ingentem \cbstart{}di\-vi\-ſo\-rem,\cbend{} non fine magno labore tractandum; cum Lateris quadrati
 extractio multo facilius procedat, ut experientia multiplex me docuit.
 \end{quote}
 While in Halley's case the issue is not the delay in scheduling the division (hand computation by a single\cbstart{} human\cbend{}
@@ -1541,7 +1541,7 @@ so we end up with four possible implementations, identified by the coefficient o
 $\mathrm Γ$ in Kahan's notation, and by the rounding direction of step~\ref{RoundedApproximation}
 ($\mathrm{N}$ for nearest, \cbstart{}$\mathrm{Z}$ for directed toward zero);\cbend{}
 \item  P.~J.~Plauger's 1992 function \cbstart{}\texttt{cbrt}\cbend{} from Dinkumware's C library, notably used by Microsoft's UCRT;
-\item Sun Microsystems, Inc.'s 1993 function \cbstart{}\texttt{cbrt}\cbend{} from the Freely Distributable LIBM;
+\item Sun Microsystems, Inc.'s 1993 function \cbstart{}\texttt{cbrt}\cbend{} from FDLIBM;
 \item U.~Drepper's 1997 function \cbstart{}\texttt{cbrt}\cbend{} from the GNU C Library;
 \item B.~Evans's 2005 modification of Sun's function \cbstart{}\texttt{cbrt}\cbend{}, from the FreeBSD C library, also used by musl;
 \item J.~Maddock's 2006 function \cbstart{}\texttt{boost::math::cbrt<double>}\cbend{} from the Boost Library;
