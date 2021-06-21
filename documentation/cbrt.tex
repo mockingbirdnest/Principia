@@ -20,7 +20,6 @@
 \usepackage[all]{nowidow}
 \usepackage{tabls}
 \usepackage{changepage}
-\usepackage[xetex,outerbars]{changebar}
 \renewcommand*{\raggedleftmarginnote}{}
 \renewcommand*{\raggedrightmarginnote}{}
 
@@ -56,7 +55,7 @@ defined in \href{https://github.com/mockingbirdnest/Principia/blob/master/numeri
 
 Our computation of the cube root uses root-finding methods that have fallen into disuse, and thus may be unfamiliar to the reader.
 
-\cbstart{}To avoid\cbend{} confusion on the properties and names of these methods, this document comprises two parts.
+To avoid confusion on the properties and names of these methods, this document comprises two parts.
 The first one is about a family of root-finding methods for arbitrary functions, wherein all methods
 considered for the cube root can be found. The second is about the computation of a binary64 cube root and its error
 analysis.
@@ -88,8 +87,8 @@ In order not to interrupt the flow of reading, in both parts, we relegate to the
 any miscellaneous considerations that are independent of the matter currently being discussed,
 long-winded proofs, and lists of examples.
 
-\cbstart{}For the reader's convenience, we have translated in the margin all quotations in languages other than
-English, or quoted a translation in the margin when a satisfactory one was available.\cbend{}
+For the reader's convenience, we have translated in the margin all quotations in languages other than
+English, or quoted a translation in the margin when a satisfactory one was available.
 \pagebreak
 
 
@@ -116,7 +115,7 @@ f\of{z}\DefineAs z^p + c_1 z^{p-1} + \dotsb + c_{p-1} z + c_p \DefinitionOf z^p 
 \]
 with an initial approximation $a$.
 
-Separate \cbstart{}alternate terms of\cbend{} the binomial expansion of $\pa{x+\tfrac{1}{2}a}^p$ into \cbdelete{}sums of
+Separate alternate terms of the binomial expansion of $\pa{x+\tfrac{1}{2}a}^p$ into sums of
 degree $p$ and $p-1$ in $x$,\begin{align}
 S_1\DefineAs\sum{\substack{k=0\\2\Divides k}}[p]\binom{p}{k}x^{p-k}\pa{\tfrac{1}{2}a}^k&\text{ and }
 S_2\DefineAs\sum{\substack{k=1\\2\DoesNotDivide k}}[p]\binom{p}{k}x^{p-k}\pa{\tfrac{1}{2}a}^k\text, \nonumber
@@ -350,9 +349,9 @@ We now turn to the computation of the cube root of in \texttt{numerics/cbrt.cpp}
 Our general approach to computing a faithfully rounded cube root of $y>0$ is the one described in \cite{KahanBindel2001}:
 \begin{enumerate}
 \item integer arithmetic is used to get a an initial quick approximation $q$ of $\cuberoot y$;
-\item a root finding method is used to improve that that to an approximation $ξ$ with a \cbstart{}third\footnote{When FMA is available,
+\item a root finding method is used to improve that that to an approximation $ξ$ with a third\footnote{When FMA is available,
 this step and the next one use half the precision, and the last step uses a correctly-rounded $y-x^3$ instead of an
-exact $x^3$; see appendix~\ref{FMA}.}\cbend{} of the precision;
+exact $x^3$; see appendix~\ref{FMA}.} of the precision;
 \item $ξ$ is rounded to a third of the precision, resulting in the rounded approximation $x$ whose cube $x^3$ can be computed exactly;
 \item a single high order iteration of a root finding method is used to get the faithfully rounded result $r_0$.
 \end{enumerate} 
@@ -380,8 +379,8 @@ $\intclop{1}{8}\Intersection\text{binary64}$.
 
 We use capital Latin letters for fixed-point numbers involved in the computation, and $A>0$ for the normal floating-point number $a>0$ reinterpreted as a binary fixed-point\footnote{The implementation uses integers (obtained by multiplying the fixed-point numbers by $2^{p-1}$). For consistency with \cite{KahanBindel2001} we work with fixed-point numbers here. Since we do not multiply fixed point numbers together, the expressions are unchanged.} number with $p-1$ bits after the binary point,\begin{align}
   A &\DefineAs \bias + \Floor{\log_2 a} + \FractionalPart \pa{2^{-\Floor{\log_2 a}}a}\label{defA}\\
-    &= \bias + \Floor{\log_2 a} + 2^{-\Floor{\log_2 a}}a - 1\cbdelete{}\nonumber\\
-\intertext{\cbstart{}since $2^{-\Floor{\log_2 a}}a\in\intclop{1}{2}$, \cbend{}and \emph{vice versa},}
+    &= \bias + \Floor{\log_2 a} + 2^{-\Floor{\log_2 a}}a - 1\nonumber\\
+\intertext{since $2^{-\Floor{\log_2 a}}a\in\intclop{1}{2}$, and \emph{vice versa},}
   a &\DefineAs 2^{\Floor A-\bias} \pa{1+\FractionalPart{A}}\label{defa}\text.
 \end{align}
 This corresponds to \cite{KahanBindel2001}'s $B+K+F$.
@@ -455,7 +454,7 @@ q\approx q' &= \begin{cases}
 1+\frac{k+f-\FractionalPart Γ}{3} & \text{otherwise,}
 \end{cases}
 \end{align*}
-so that \cbstart{}for each $k$, $q'$ is a piecewise affine function of $f$\cbend{}.
+so that for each $k$, $q'$ is a piecewise affine function of $f$.
 
 With $\cuberoot y = 2^{\frac{\Floor{Γ}+k}{3}}\cuberoot{1+f}$, we express $ε_q' \DefineAs \frac{q'}{\sqrt[3] y}-1$
 piecewise as a function of $f$ and $k$.
@@ -466,7 +465,7 @@ The values $Γ=0.1009678$ and $ε_q<3.2\%$ from \cite{KahanBindel2001} may be re
 or equivalently.\begin{align*}
 Γ_{\mathrm{Kahan}}\DefineAs\argmin_{Γ\in\R}\max_{y\in\intclop{η}{8η}}\abs{ε_q'}
 &=\argmin_{Γ\in\R}\max_{\tuple{f, k}}\abs{ε_q'}\\
-\intertext{where the maximum is taken over $\tuple{f, k}\in\cbstart{}\intclop{0}{1}\Cartesian\set{0,1,2}\cbend{}$,}
+\intertext{where the maximum is taken over $\tuple{f, k}\in\intclop{0}{1}\Cartesian\set{0,1,2}$,}
 &=\argmin_{Γ\in\R}\max_{\tuple{f, k}\in\mathscr{E}\Union\mathscr{L}}\abs{ε_q'}\text,
 \end{align*}
 where $\mathscr{E}\DefineAs\set{\tuple{\FractionalPart Γ, 0}}\Union\setst{\tuple{0, k}}{k\in\set{0,1,2}}$ is the set of the endpoints of the intervals whereon $q'$ is piecewise affine, and
@@ -487,8 +486,8 @@ its analysis is relegated to appendix~\ref{LagnyStepTwoRounding}. Here we
 will study only the truncation error, and thus work only with the primed quantities.
 
 \subsubsection*{Lagny's rational method}
-One way to compute $ξ'$ is Lagny's rational method\cbstart{} applied to $\cuberoot y =\cuberoot{q^3+\pa{y-q^3}}$ with the starting estimate
-$q'$\cbend{},
+One way to compute $ξ'$ is Lagny's rational method applied to $\cuberoot y =\cuberoot{q^3+\pa{y-q^3}}$ with the starting estimate
+$q'$,
 \[
 ξ'=q'+\frac{q'\pa{y-{q'}^3}}{2{q'}^3+y}\text,
 \]
@@ -496,14 +495,14 @@ with the error\[
 ε_ξ' \DefineAs \frac{ξ'}{\sqrt[3] y}-1\text.
 \]
 
-\cbstart{}Substituting\cbend{} $q'=\cuberoot{y}\pa{1+ε_q'}$, we can express $ε_ξ'$ using the transformation of
+Substituting $q'=\cuberoot{y}\pa{1+ε_q'}$, we can express $ε_ξ'$ using the transformation of
 the relative error by one step of Lagny’s rational method on the cube root,\[
 ε_ξ' = \frac{2{ε_q'}^3+{ε_q'}^4}{3+6ε_q'+6{ε_q'}^2+2{ε_q'}^3}
 = \tfrac{2}{3}{ε_q'}^3 + \BigO\of{{ε_q'}^4}\text.
 \]
 If $q'$ is computed using $Γ=Γ_{\mathrm{Kahan}}$, we get
 $\max_{y} \abs{ε_ξ'} \approx 21.96\Multiply10^{-6}$, $\log_2 \max_{y} \abs{ε_ξ'} \approx -15.47$.
-However, $Γ_{\mathrm{Kahan}}$, which minimizes \cbstart{}$\max_{y} \abs{ε_q'}$\cbend{}, does not
+However, $Γ_{\mathrm{Kahan}}$, which minimizes $\max_{y} \abs{ε_q'}$, does not
 minimize $\max_{y} \abs{ε_ξ'}$. This is because while $ε_ξ'$ is monotonic as a
 function of $ε_q'$, it is not odd: positive errors are reduced more than negative
 errors are, so that the minimum is attained for a different value of $Γ$.
@@ -523,12 +522,12 @@ error is still larger, and in any case is not comparatively negligible. As a res
 Lagny's lesser-known irrational method provides us with a way to improve it.
 \subsubsection*{Lagny's irrational method}
 As written in (\ref{LagnyIrrationalCubeRootIteration}), Lagny's irrational method
-\begin{equation}ξ' = \tfrac{1}{2}q'+\sqrt{\tfrac{1}{4}{q'}^2+\frac{y-{q'}^3}{3q'}}\cbstart{}\label{IrrationalNoRewrite}\cbend{}\end{equation}
+\begin{equation}ξ' = \tfrac{1}{2}q'+\sqrt{\tfrac{1}{4}{q'}^2+\frac{y-{q'}^3}{3q'}}\label{IrrationalNoRewrite}\end{equation}
 seems prohibitively computationally expensive in comparison to the rational one: it adds a
 square root on the critical path, dependent on the result of a division.
 However, rewriting\footnote{This kind of rewriting is generally effective for quadratic irrational methods;
 see the discussion in appendix~\ref{Performance}.} it as, \exempligratia,\[
-ξ' = \pa{\sqrt{3}{q'}^2+\sqrt{4yq'-{q'}^4}}\frac{1/\sqrt{12}}{q'}\text,\cbdelete{}
+ξ' = \pa{\sqrt{3}{q'}^2+\sqrt{4yq'-{q'}^4}}\frac{1/\sqrt{12}}{q'}\text,
 \]
 one can evaluate it with similar performance to the rational method.
 
@@ -574,7 +573,7 @@ Canon later elaborated on this in \cite{Canon2018b}:
  \textit{Handwavy motivation for brevity} make $p$ a polynomial in $x_0^2y$, which is approximately $1$.
 
  % https://twitter.com/stephentyrone/status/1057789050810232834
- Specifically, if $x_0$ has relative error $e$, $\cbstart{}x_0^2\cbend{}y$ is bounded by something like $1 \pm 2e$.
+ Specifically, if $x_0$ has relative error $e$, $x_0^2y$ is bounded by something like $1 \pm 2e$.
  So, we want to find $p$ that minimizes $\abs{x/x_0 - p\of{x_0^2y}}$ on $\intclos{1-2e}{1+2e}$.
  NR\footnote{Newton--Raphson, \idest, Newton's method; Raphson described a different formulation of it in \cite{Raphson1690}.
 Lagrange notes in \volcite{8}[161]{Lagrange1867} that Raphson was likely aware of Newton's method, and thus
@@ -594,7 +593,7 @@ with $Γ$.
 
 The constants $\frac{1}{2}$, $\frac{1}{4}$, and $3$ in Lagny's irrational method may be modified with no effect on
 performance; altering the first two of these introduces rounding errors, but these need not concern us here.
-We thus write\cbstart{} (\ref{IrrationalNoRewrite}) as\cbend{}
+We thus write (\ref{IrrationalNoRewrite}) as
 \[ξ' = κq'+\sqrt{λ{q'}^2+\frac{y-{q'}^3}{μq'}}\]
 and choose $Γ$, $κ$, $λ$, and $μ$ minimizing relative error in the Чебышёв norm,\[
 \tuple{Γ_{\mathrm{L^2C}}, κ_{\mathrm{L^2C}}, λ_{\mathrm{L^2C}},μ_{\mathrm{L^2C}}}
@@ -650,7 +649,7 @@ remaining bits (except for the leading $1$) are all $0$; this is the case when t
 $1+2^{-\Floor{\frac{p}{3}}+1}-2^{1-p}$, in which case that of $x$ is $1$, so that\[
 \abs{\frac{x}{ξ}-1}\le1-\frac{1}{1+2^{-\Floor{\frac{p}{3}}+1}-2^{1-p}} < 2^{-\Floor{\frac{p}{3}}+1}=2^{-16}\text.
 \]
-For the error of $x$ as an approximation of the cube root,\cbstart{} $ε_x\DefineAs\frac{x}{\sqrt[3]{y}}-1$,\cbend{}
+For the error of $x$ as an approximation of the cube root, $ε_x\DefineAs\frac{x}{\sqrt[3]{y}}-1$,
 we have the bound $\abs{ε_x} < \pa{1+\abs{ε_ξ}}\pa{1+2^{-16}}-1$.
 
 \subsubsection*{Rounding to nearest}
@@ -661,8 +660,8 @@ number of bits; see \cite[235,241]{Dekker1971} in \emph{mul12}:\[
 The rounding error is then bounded by $2^{-\Floor{\frac{p}{3}}}$; we have
 $\abs{ε_x} < \pa{1+\abs{ε_ξ}}\pa{1+2^{-17}}-1$.
 
-\cbstart{}The chosen alternative will be determined by performance--accuracy trade-offs.
-This will be discussed in appendix~\ref{Performance}.\cbend{}
+The chosen alternative will be determined by performance--accuracy trade-offs.
+This will be discussed in appendix~\ref{Performance}.
 
 \subsection{High order iteration}
 \label{HighOrder}
@@ -816,7 +815,7 @@ Here we have $\abs{ε_r'}<2^{-100}$ if $\abs{ε_x}<2^{-14}$, so the truncation e
 negligible.
 For rounding error, the maximum bound on the error of the sums gives us a naïve bound of $γ_6$
 on the numerator, $γ_5$ on the denominator, overall
-\[δ\cbstart{}<\frac{1+γ_6+γ_1}{1-γ_5}-1\cbend{}<\frac{1+γ_{7}}{1-γ_{5}}-1<\frac{γ_{12}}{1-γ_{5}}\approx12u\text.\]
+\[δ<\frac{1+γ_6+γ_1}{1-γ_5}-1<\frac{1+γ_{7}}{1-γ_{5}}-1<\frac{γ_{12}}{1-γ_{5}}\approx12u\text.\]
 
 The following {\xsuxfont 𒋛𒄥𒊏𒀀𒌅} tighten the bounds on the
 sums in the numerator and the denominator in the same way as for the fifth order method.
@@ -887,7 +886,7 @@ does not exceed $100u$.
 \subsubsection*{The unreasonable effectiveness of the sixth order rational method}
 The bound on the rounding error in the sixth order rational method is a little more than
 $1u$ worse than the one on its fifth order rational method; this is to be expected, as it
-involves more calculations and does not benefit \cbstart{}from \cbend{}an exact multiplication by $16$.
+involves more calculations and does not benefit from an exact multiplication by $16$.
 Accordingly, since truncation error is negligible before rounding error for both, one might
 expect that the fifth order method would be superior. Numerical experiments suggest otherwise:
 with Lagny's irrational method with Canon optimization in step~\ref{ThirdPrecision}
@@ -917,11 +916,11 @@ If $\mathscr{I}$ contains neither of the ties, $r_0=\round{\cuberoot{y}}$:
 the faithful method returned a correct result.
 
 This criterion, slightly weakened, may be determined as follows. The difference between $r_0$ and
-the unrounded $r\cbstart{}=x+Δ\cbend{}$ can be computed as described in \cite[224]{Dekker1971}, $r_1\DefineAs x-r_0+Δ$,
-evaluated as written (both operations are exact). \cbstart{}We may compute the\cbend{} potential other candidate for
-$\round{\cuberoot{y}}$ \cbdelete{}as $\tilde r\DefineAs\round{r_0+2r_1}$.\cbstart{} This value is equal\cbend{}
+the unrounded $r=x+Δ$ can be computed as described in \cite[224]{Dekker1971}, $r_1\DefineAs x-r_0+Δ$,
+evaluated as written (both operations are exact). We may compute the potential other candidate for
+$\round{\cuberoot{y}}$ as $\tilde r\DefineAs\round{r_0+2r_1}$. This value is equal
 to $r_0$ only if $r_1$ is below a quarter-unit in the last place—in which case the small
-size of $\mathscr{I}$ ensures that it does not contain a tie.\cbstart{} Otherwise, $\tilde r$ is the next
+size of $\mathscr{I}$ ensures that it does not contain a tie. Otherwise, $\tilde r$ is the next
 representable number above or below $r_0$.\marginfig[Detecting a potential misrounding, in the case $r_1 < 0$.]{\begin{tikzpicture}[scale=1.5]
 \draw (-1.1,0) -- (1.1,0);
 \draw (-1,-0.3) node[below] {$\tilde r$} -- (-1,0.2);
@@ -930,7 +929,7 @@ representable number above or below $r_0$.\marginfig[Detecting a potential misro
 \draw (1,-0.3) node[below] {$r_0=\round{r}$} -- (1,0.2);
 \draw [->] (1,0.1) -- (0.2,0.1) node[midway,above] {$r_1$};
 \draw (-0.1,0.5) -- (-0.1,0.6) -- (0.5,0.6) node[midway,above]{$\mathscr{I}$} -- (0.5,0.5);
-\end{tikzpicture}}\cbend{}
+\end{tikzpicture}}
 
 If $\tilde r\neq r_0$, the tie of interest is $\frac{\tilde r+r_0}{2}$,
 and we must ascertain whether it lies in $\mathscr I$,\[
@@ -958,7 +957,7 @@ If we restrict ourselves to roundTiesToEven at runtime, we must relax the bounds
 \round{\roundTowardNegative{-\frac{\bar ε_r}{1+\bar ε_r}\pa{1+\frac{2u}{1-u}}}r_0}}{
  \round{\roundTowardPositive{\frac{\bar ε_r}{1-\bar ε_r}\pa{1+\frac{2u}{1-u}}}r_0}}\text.\]
 We may widen this interval slightly into one that is symmetric about $0$, thus requiring only one comparison
-\[\cbstart{}\abs{\frac{\tilde r-r_0}{2}-r_1}\cbend{}\leq \round{τr_0}\text,\]
+\[\abs{\frac{\tilde r-r_0}{2}-r_1}\leq \round{τr_0}\text,\]
 with\begin{align*}
 τ&\DefineAs\roundTowardPositive{\frac{\bar ε_r}{1-\bar ε_r}\pa{1+\frac{2u}{1-u}}}\\
  &=\hex{1.7C8587D10158C}\Multiply 2^{-13},
@@ -986,16 +985,16 @@ there are no halfway cases for the cube root.
 
 In the ordinary cube root method, our remainder is $ρ_{53}\DefineAs y-a^3$,
 and the next bit is $1$ if and only if the next remainder would be positive with that bit,\[
-ρ_{54|1}\DefineAs \cbstart{}y-\pa{a+b}^3 =\cbend{} ρ_{53}-3a^2b-3ab^2-b^3\geq 0\text,\]
+ρ_{54|1}\DefineAs y-\pa{a+b}^3 = ρ_{53}-3a^2b-3ab^2-b^3\geq 0\text,\]
 where $b$ is the power of two corresponding to this bit (the difference between $a$ and
 the tie).
 
 Using Veltkamp's\footnote{We have not been able to find a copy of \emph{RC-Informatie}, wherein Veltkamp's work was published;
-we follow Dekker's account thereof.} algorithm from \cite[234]{Dekker1971} to express $a^2$ as \cbstart{}$\pa{a^2}_0+\pa{a^2}_1$\cbend{} with \cbstart{}$\pa{a^2}_0=\round{a^2}$\cbend{}, the remainder is\[
-ρ_{53}=y-\cbstart{}\pa{\pa{a^2}_0+\pa{a^2}_1}a\cbend{}\text;
+we follow Dekker's account thereof.} algorithm from \cite[234]{Dekker1971} to express $a^2$ as $\pa{a^2}_0+\pa{a^2}_1$ with $\pa{a^2}_0=\round{a^2}$, the remainder is\[
+ρ_{53}=y-\pa{\pa{a^2}_0+\pa{a^2}_1}a\text;
 \]
-with two more applications of Veltkamp's algorithm\cbstart{} to the products $\pa{a^2}_0a$ and $\pa{a^2}_1a$\cbend{},\[
-ρ_{53}=y-\cbstart{}\pa{a^3}_{00}-\pa{a^3}_{01}-\pa{a^3}_{10}-\pa{a^3}_{11}\cbend{}\text,
+with two more applications of Veltkamp's algorithm to the products $\pa{a^2}_0a$ and $\pa{a^2}_1a$,\[
+ρ_{53}=y-\pa{a^3}_{00}-\pa{a^3}_{01}-\pa{a^3}_{10}-\pa{a^3}_{11}\text,
 \]
 where the first subtraction is representable by Sterbenz's lemma.
 The remainder cannot have more digits than two plus twice the number of digits computed for
@@ -1009,18 +1008,18 @@ We may do so using the algorithms of Priest and Nievergelt, specifically, using
 algorithm~10 (sum of two sum-and-roundoff expansions) followed by
 algorithm~8 (modification of Priest's renormalization) from
 \cite[427,425]{Nievergelt2004} to compute the sum of
-the double-precision numbers \cbstart{}$y-\pa{a^3}_{00}-\pa{a^3}_{01}$ and $-\pa{a^3}_{10}-\pa{a^3}_{11}$\cbend{}; the
+the double-precision numbers $y-\pa{a^3}_{00}-\pa{a^3}_{01}$ and $-\pa{a^3}_{10}-\pa{a^3}_{11}$; the
 renormalization will return an expansion with at most three parts.
 The terms $3a^2b$, $3ab^2$, and $b^3$ may then be subtracted exactly while retaining
 triple precision: they add at most three significant digits.
-The first two of these terms should be split into representable parts,\cbstart{}\begin{align*}
+The first two of these terms should be split into representable parts,\begin{align*}
 3a^2b&=2\pa{a^2}_0b+\pa{a^2}_0b+2\pa{a^2}_1b+\pa{a^2}_1b\text,\\
 3ab^2&=2ab^2+ab^2\text,
 \end{align*}
-\cbend{}and each of these parts should be subtracted using the same algorithms.
+and each of these parts should be subtracted using the same algorithms.
 The sign of $ρ_{54|1}$ may then be checked.
-\part*{\cbstart{}Conclusion\cbend{}}
-\cbstart{}In part~\ref{Abridged}, we have described and generalized a family of root-finding methods of arbitrary order.
+\part*{Conclusion}
+In part~\ref{Abridged}, we have described and generalized a family of root-finding methods of arbitrary order.
 In part~\ref{CubeRoot}, we have used these methods to construct nearly correct faithfully-rounded implementations
 for the binary64 cube root, and we have described how their results may be adjusted to yield a correctly-rounded implementation, which
 to our knowledge had yet to be done.
@@ -1031,7 +1030,7 @@ implementation with FMA, described in appendix~\ref{FMA}, makes use of the new g
 
 The implementation choices that involve performance considerations are decided in appendix~\ref{Performance}; an
 explanation is given therein for the somewhat surprising speed of the irrational methods.
-The resulting implementations are compared with pre-existing ones in appendix~\ref{Comparison}.\cbend{}
+The resulting implementations are compared with pre-existing ones in appendix~\ref{Comparison}.
 
 \vfill
 \pagebreak
@@ -1382,12 +1381,12 @@ $\cos\frac{1}{3}\arccos$, with which the roots of any such case may be expressed
 The overall strategy is different with FMA, since we need only round $x$ to half the precision ($26$~bits),
 rather than a third; this is because the expression $y-x^3$ may be computed\footnote{To the best of our knowledge,
 the first implementation of a cube root to make use of that possibility is a 2014 Stack Overflow answer by njuffa; see
-\cbstart{}appendix~\ref{Comparison}.\cbend{}}
+appendix~\ref{Comparison}.}
 as $\round{y-\pa{x^2}x}$, requiring only an exact square.
 
 This means that $ε_ξ'$ should ideally be somewhat less than $2^{-25}$ or $2^{-26}$ depending on
 the manner in which $x$ is rounded. Even with Canon optimization, Lagny's irrational method cannot
-achieve that from $q$. The error of the Lagny--Schröder rational method of order $4$ reaches\cbdelete{} below $2^{-21}$,
+achieve that from $q$. The error of the Lagny--Schröder rational method of order $4$ reaches below $2^{-21}$,
 and that of the generalized Lagny quadratic irrational method of order $4$ below $2^{-23}$.
 It seems that Canon optimization on the latter can readily bring down its error below $2^{-24}$, but not much
 further.
@@ -1437,10 +1436,10 @@ This is not unlike the reason for Halley's preference for his irrational method 
 And this formula is deservedly preferred before the rational one,
 which, on account of its large divisor, cannot be used without much trouble,
 in comparison of the irrational one, as manifold experience has informed me.}\begin{quote}
-Hæc vero formula merito præferenda eſt rationali, ob ingentem \cbstart{}di\-vi\-ſo\-rem,\cbend{} non fine magno labore tractandum; cum Lateris quadrati
+Hæc vero formula merito præferenda eſt rationali, ob ingentem di\-vi\-ſo\-rem, non fine magno labore tractandum; cum Lateris quadrati
 extractio multo facilius procedat, ut experientia multiplex me docuit.
 \end{quote}
-While in Halley's case the issue is not the delay in scheduling the division (hand computation by a single\cbstart{} human\cbend{}
+While in Halley's case the issue is not the delay in scheduling the division (hand computation by a single human
 computer is not pipelined)
 but the latency of a division by a large number, both ultimately boil down to the denominator being of smaller degree---and thus, for
 Halley, having fewer digits---in the irrational method.
@@ -1463,7 +1462,7 @@ With Canon optimization, the constants $\round{\sqrt{3}}$, $4$, and $\round{1/\s
 respectively.
 
 Using Lagny's irrational method with Canon optimization in step~\ref{ThirdPrecision}, directed rounding toward zero in
-step~\ref{RoundedApproximation}, and the method of fifth order in step~\ref{HighOrder}, \cbstart{}the \cbend{}rate of passage in the slow ``potential
+step~\ref{RoundedApproximation}, and the method of fifth order in step~\ref{HighOrder}, the rate of passage in the slow ``potential
 misrounding'' path is $2.6479(52)\Multiply 10^{-4}$; the latency of that slow path is less than ten times that of the fast path,
 so that any improvement to the rate of passage in the slow path that comes at a cost of even a cycle to the latency of the fast path
 worsens average-case performance. As a result, we do not use rounding to nearest in step~\ref{RoundedApproximation}, as it replaces,
@@ -1492,7 +1491,7 @@ where\[
 d\DefineAs\round{\frac{q}{\round{\round{q^2}\round{\round{\tfrac{20}{\sqrt{15}}}q}-\round{\round{\tfrac{2}{\sqrt{15}}}y}}}}\text.
 \]
 Using the quadratic irrational method in step~\ref{ThirdPrecision}, directed rounding toward zero in
-step~\ref{RoundedApproximation}, and the rational method of fourth order in step~\ref{HighOrder}, \cbstart{}the \cbend{}rate of passage in the slow ``potential
+step~\ref{RoundedApproximation}, and the rational method of fourth order in step~\ref{HighOrder}, the rate of passage in the slow ``potential
 misrounding'' path is $3.05(18)\Multiply10^{-7}$. Again this means that rounding to nearest in step~\ref{HighOrder} would be detrimental
 to the average-case performance of the correctly-rounded cube root.
 
@@ -1509,47 +1508,47 @@ of a number of pre-existing implementations of the cube root that we were able t
 \begin{figure}[t!]
 \begin{adjustwidth}{-4cm}{}\hsize=\linewidth
 \includegraphics[width=\linewidth]{cbrt_latency_misrounding.pdf}
-\cbstart{}\caption{Latency of several implementations of the binary64 cube root, plotted against their misrounding rates, for various architectures.
+\caption{Latency of several implementations of the binary64 cube root, plotted against their misrounding rates, for various architectures.
 The error bars are expanded uncertainties determined from the combined standard uncertainties and a coverage factor of $3$.
-The letters $\mathrm{FMA}$ mark methods that use FMA; an obelisk marks unfaithful methods.}\cbend{}
+The letters $\mathrm{FMA}$ mark methods that use FMA; an obelisk marks unfaithful methods.}
 \end{adjustwidth}
 \end{figure}
 
 We consider the following method among our faithful ones, where the notation $p^qr^s$ means the generalized Lagny method of
 degree $q$ and order $p$ is used in step~\ref{ThirdPrecision} and the generalized Lagny method of degree $r$ and order $s$
-is used in step~\ref{HighOrder}, a subscript $\mathrm{C}$ indicates Canon optimization, the \cbstart{}letters $\mathrm{N}$ and $\mathrm{Z}$ respectively indicate the use of rounding to nearest and directed rounding toward zero in step~\ref{RoundedApproximation},
-and the letters $\mathrm{FMA}$ indicate the use of FMA as described in appendix~\ref{FMA}:\cbend{}
+is used in step~\ref{HighOrder}, a subscript $\mathrm{C}$ indicates Canon optimization, the letters $\mathrm{N}$ and $\mathrm{Z}$ respectively indicate the use of rounding to nearest and directed rounding toward zero in step~\ref{RoundedApproximation},
+and the letters $\mathrm{FMA}$ indicate the use of FMA as described in appendix~\ref{FMA}:
 \begin{itemize}[nosep]
-\item method \cbstart{}$3^1\mathrm{Z}6^1$\cbend{}, used by Principia\footnote{The implementation in \#1802 uses a suboptimal evaluation strategy in step~\ref{ThirdPrecision}; the latencies shown are for the evaluation strategy described in appendix~\ref{Performance} instead.}
+\item method $3^1\mathrm{Z}6^1$, used by Principia\footnote{The implementation in \#1802 uses a suboptimal evaluation strategy in step~\ref{ThirdPrecision}; the latencies shown are for the evaluation strategy described in appendix~\ref{Performance} instead.}
 from pull request \href{https://github.com/mockingbirdnest/Principia/pull/1802}{\#1802},
 in 2018, until it was replaced by a correctly-rounded method;
-\item method \cbstart{}$3^2_{\mathrm{C}}\mathrm{Z}5^1$,\cbend{} which backs the correctly-rounded implementation without FMA;
-\item method \cbstart{}$3^2_{\mathrm{C}}\mathrm{Z}6^1$\cbend{} for comparison with \cbstart{}$3^2_{\mathrm{C}}\mathrm{Z}5^1$,\cbend{} see the discussion of step~\ref{HighOrder};
+\item method $3^2_{\mathrm{C}}\mathrm{Z}5^1$, which backs the correctly-rounded implementation without FMA;
+\item method $3^2_{\mathrm{C}}\mathrm{Z}6^1$ for comparison with $3^2_{\mathrm{C}}\mathrm{Z}5^1$, see the discussion of step~\ref{HighOrder};
 \item method $3^2_{\mathrm{C}}\mathrm{N}6^1$, the most accurate faithful method without FMA;
-\item method \cbstart{}$5^2\mathrm{Z}4^1\mathrm{FMA}$,\cbend{} which backs the correctly-rounded implementation with FMA;
-\item method \cbstart{}$5^2\mathrm{N}4^1\mathrm{FMA}$,\cbend{} the most accurate faithful method with FMA.
+\item method $5^2\mathrm{Z}4^1\mathrm{FMA}$, which backs the correctly-rounded implementation with FMA;
+\item method $5^2\mathrm{N}4^1\mathrm{FMA}$, the most accurate faithful method with FMA.
 \end{itemize}
 We compare these with following pre-existing implementations of the cube root:
 \begin{itemize}[nosep]
-\item W.~Fullerton's 1977 function \cbstart{}\texttt{DCBRT}\cbend{} from FNLIB\footnote{We thank Peter Barfuss for translating this function from FORTRAN to
+\item W.~Fullerton's 1977 function \texttt{DCBRT} from FNLIB\footnote{We thank Peter Barfuss for translating this function from FORTRAN to
 C++ for the purposes of this comparison.};
-\item S.~L.~Moshier's 1984 function \cbstart{}\texttt{cbrt}\cbend{} from the Cephes Mathematical Library;
+\item S.~L.~Moshier's 1984 function \texttt{cbrt} from the Cephes Mathematical Library;
 \item W.~Kahan's 1991 methods described in \cite[3]{KahanBindel2001} ``to serve the IEEE Double precision and VAX G formats'',
 implemented as written; Kahan recommends that the high-order step be of fourth order in that case, and gives two fourth
 order methods; further, he does not specify how the rounding to a third of the precision should be performed,
 so we end up with four possible implementations, identified by the coefficient of the asymptotic error,
 $\mathrm Γ$ in Kahan's notation, and by the rounding direction of step~\ref{RoundedApproximation}
-($\mathrm{N}$ for nearest, \cbstart{}$\mathrm{Z}$ for directed toward zero);\cbend{}
-\item  P.~J.~Plauger's 1992 function \cbstart{}\texttt{cbrt}\cbend{} from Dinkumware's C library, notably used by Microsoft's UCRT;
-\item Sun Microsystems, Inc.'s 1993 function \cbstart{}\texttt{cbrt}\cbend{} from FDLIBM;
-\item U.~Drepper's 1997 function \cbstart{}\texttt{cbrt}\cbend{} from the GNU C Library;
-\item B.~Evans's 2005 modification of Sun's function \cbstart{}\texttt{cbrt}\cbend{}, from the FreeBSD C library, also used by musl;
-\item J.~Maddock's 2006 function \cbstart{}\texttt{boost::math::cbrt<double>}\cbend{} from the Boost Library;
-\item S.~Canon and J.~Kidder's 2008 function \cbstart{}\texttt{cbrt}\cbend{} from Apple's Libm;
-\item Advanced Micro Devices, Inc.'s 2014 function \cbstart{}\texttt{cbrt}\cbend{} from libclc;
-\item njuffa's 2014 function \cbstart{}\texttt{cbrt}\cbend{}, given in a Stack Overflow answer to a question by P.~Cuoq about a correctly-rounded cube root.
-\item \cbstart{}N.~Brunie's 2018 metafunction \texttt{ml\_cbrt} from metalibm, for binary64 and AVX2. Note that this function is listed as
-unstable, rather than officially supported, in the metalibm user guide; indeed it fails to be faithful in binary64.\cbend{}
+($\mathrm{N}$ for nearest, $\mathrm{Z}$ for directed toward zero);
+\item  P.~J.~Plauger's 1992 function \texttt{cbrt} from Dinkumware's C library, notably used by Microsoft's UCRT;
+\item Sun Microsystems, Inc.'s 1993 function \texttt{cbrt} from FDLIBM;
+\item U.~Drepper's 1997 function \texttt{cbrt} from the GNU C Library;
+\item B.~Evans's 2005 modification of Sun's function \texttt{cbrt}, from the FreeBSD C library, also used by musl;
+\item J.~Maddock's 2006 function \texttt{boost::math::cbrt<double>} from the Boost Library;
+\item S.~Canon and J.~Kidder's 2008 function \texttt{cbrt} from Apple's Libm;
+\item Advanced Micro Devices, Inc.'s 2014 function \texttt{cbrt} from libclc;
+\item njuffa's 2014 function \texttt{cbrt}, given in a Stack Overflow answer to a question by P.~Cuoq about a correctly-rounded cube root.
+\item N.~Brunie's 2018 metafunction \texttt{ml\_cbrt} from metalibm, for binary64 and AVX2. Note that this function is listed as
+unstable, rather than officially supported, in the metalibm user guide; indeed it fails to be faithful in binary64.
 \end{itemize}
 \begin{table}[b!]
 \setmainfont[Mapping=tex-text,
@@ -1559,34 +1558,34 @@ unstable, rather than officially supported, in the metalibm user guide; indeed i
              Contextuals=WordFinal,]{Linux Libertine O}
 \begin{center}
 \begin{tabular}{rlrr}
-Method && Misrounding rate & \cbstart{}Unfaithful rnd.~rate\cbend{} \\
+Method && Misrounding rate & Unfaithful rnd.~rate \\
 \hline
-Fullerton, 1977& $\dagger$  & $2.60500(14)\Multiply10^{-1}$ & \cbstart{}$3.07788(55)\Multiply10^{-2}$\cbend{} \\
+Fullerton, 1977& $\dagger$  & $2.60500(14)\Multiply10^{-1}$ & $3.07788(55)\Multiply10^{-2}$ \\
 Moshier, 1984&              & $8.55740(89)\Multiply10^{-2}$ \\
-Kahan, 1991 & $\mathrm{Γ}=-1$ \cbstart{}$\mathrm{Z}$\cbend{}     & $2.0044(15)\Multiply10^{-3}$  \\
+Kahan, 1991 & $\mathrm{Γ}=-1$ $\mathrm{Z}$     & $2.0044(15)\Multiply10^{-3}$  \\
 \emph{ibid.}& $\mathrm{Γ}=-1$ $\mathrm{N}$     & $9.6466(99)\Multiply10^{-4}$  \\
-\emph{ibid.}& $\mathrm{Γ}=-35/3$ \cbstart{}$\mathrm{Z}$\cbend{}  & $1.7236(42)\Multiply10^{-4}$  \\
+\emph{ibid.}& $\mathrm{Γ}=-35/3$ $\mathrm{Z}$  & $1.7236(42)\Multiply10^{-4}$  \\
 \emph{ibid.}& $\mathrm{Γ}=-35/3$ $\mathrm{N}$  & $8.367(29)\Multiply10^{-5}$   \\
-Plauger, 1992& $\dagger$    & $3.02720(15)\Multiply10^{-1}$ & \cbstart{}$2.66855(51)\Multiply10^{-2}$\cbend{}\\
+Plauger, 1992& $\dagger$    & $3.02720(15)\Multiply10^{-1}$ & $2.66855(51)\Multiply10^{-2}$\\
 Sun,     1993&              & $8.31642(88)\Multiply10^{-2}$ \\
-Drepper, 1997& $\dagger$    & $4.96271(16)\Multiply10^{-1}$ & \cbstart{}$1.76785(13)\Multiply10^{-1}$\cbend{} \\
+Drepper, 1997& $\dagger$    & $4.96271(16)\Multiply10^{-1}$ & $1.76785(13)\Multiply10^{-1}$ \\
 Sun--Evans, 2005&           & $8.33311(88)\Multiply10^{-2}$ \\
-Maddock, 2006& $\dagger$    & $4.56285(16)\Multiply10^{-1}$ & \cbstart{}$1.41547(12)\Multiply10^{-1}$\cbend{}\\
+Maddock, 2006& $\dagger$    & $4.56285(16)\Multiply10^{-1}$ & $1.41547(12)\Multiply10^{-1}$\\
 Canon--Kidder, 2008&        & $8.02588(86)\Multiply10^{-2}$ \\
-AMD, 2014& \cbstart{}$\mathrm{FMA}$\cbend{}              & $1.6235(41)\Multiply10^{-4}$ \\
-njuffa, 2014& \cbstart{}$\mathrm{FMA}$\cbend{}           & $1.529(40)\Multiply10^{-6}$ \\
-\cbstart{}Brunie, 2018& $\mathrm{FMA}$ $\dagger$            & $1.43881(12)\Multiply10^{-1}$ & $5.918(25)\Multiply10^{-5}$\cbend{}\\
-Leroy, 2018 & \cbstart{}$3^1\mathrm{Z}6^1$\cbend{}              & $5.155(72)\Multiply10^{-6}$ \\
-Leroy, 2021 & \cbstart{}$3^2_{\mathrm{C}}\mathrm{Z}5^1$\cbend{} & $4.575(68)\Multiply10^{-6}$ \\
-\emph{ibid.}& \cbstart{}$3^2_{\mathrm{C}}\mathrm{Z}6^1$\cbend{} & $4.357(67)\Multiply10^{-6}$ \\
+AMD, 2014& $\mathrm{FMA}$              & $1.6235(41)\Multiply10^{-4}$ \\
+njuffa, 2014& $\mathrm{FMA}$           & $1.529(40)\Multiply10^{-6}$ \\
+Brunie, 2018& $\mathrm{FMA}$ $\dagger$            & $1.43881(12)\Multiply10^{-1}$ & $5.918(25)\Multiply10^{-5}$\\
+Leroy, 2018 & $3^1\mathrm{Z}6^1$              & $5.155(72)\Multiply10^{-6}$ \\
+Leroy, 2021 & $3^2_{\mathrm{C}}\mathrm{Z}5^1$ & $4.575(68)\Multiply10^{-6}$ \\
+\emph{ibid.}& $3^2_{\mathrm{C}}\mathrm{Z}6^1$ & $4.357(67)\Multiply10^{-6}$ \\
 \emph{ibid.}& $3^2_{\mathrm{C}}\mathrm{N}6^1$ & $2.417(50)\Multiply10^{-6}$ \\
-\emph{ibid.}& \cbstart{}$5^2\mathrm{Z}4^1\mathrm{FMA}$\cbend{}  & $6.10(25)\Multiply10^{-9}$ \\
-\emph{ibid.}& \cbstart{}$5^2\mathrm{N}4^1\mathrm{FMA}$\cbend{}  & $2.99(18)\Multiply10^{-9}$
+\emph{ibid.}& $5^2\mathrm{Z}4^1\mathrm{FMA}$  & $6.10(25)\Multiply10^{-9}$ \\
+\emph{ibid.}& $5^2\mathrm{N}4^1\mathrm{FMA}$  & $2.99(18)\Multiply10^{-9}$
 \end{tabular}
 \end{center}
-\cbstart{}\caption{Misrounding and unfaithful rounding rates of various methods for the computation of a binary64 cube root.
+\caption{Misrounding and unfaithful rounding rates of various methods for the computation of a binary64 cube root.
 The letters $\mathrm{FMA}$ mark methods that use FMA; an obelisk marks unfaithful methods; the $0$s are omitted
-for faithful methods in the unfaithful rounding rate column.\label{TableMisroundingRates}}\cbend{}
+for faithful methods in the unfaithful rounding rate column.\label{TableMisroundingRates}}
 \end{table}
 The estimates of the latencies and their uncertainties were taken by supposing that the observed cycle counts follow
 a three-parameter logarithmic normal distribution, with the latency of the benchmark loop being its terminus, the other two
@@ -1598,7 +1597,7 @@ with the standard uncertainties combined under the assumption that they were unc
 The misrounding and unfaithful rounding rates were estimated by sampling a billion values uniformly at random from the set
 $\intclop{1}{8}\Intersection\text{binary64}$
 for methods with a misrounding rate greater than one per million, and a hundred billion values for the others.
-\cbstart{}These rates \cbend{}are given in table~\ref{TableMisroundingRates}.
+These rates are given in table~\ref{TableMisroundingRates}.
 
 \emergencystretch 1em
 \end{document}
