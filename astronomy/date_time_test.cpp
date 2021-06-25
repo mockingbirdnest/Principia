@@ -9,6 +9,8 @@ namespace astronomy {
 namespace date_time {
 namespace internal_date_time {
 
+using ::testing::Eq;
+
 class CalendarTest : public testing::Test {};
 
 using CalendarDeathTest = CalendarTest;
@@ -43,6 +45,20 @@ TEST_F(CalendarDeathTest, InvalidJulianDate) {
   EXPECT_DEATH("MJD1234S.6"_Julian, "false");
   EXPECT_DEATH("JD2455200.6234567013888"_Julian,
                "digits <= std::numeric_limits");
+}
+
+TEST_F(CalendarTest, OrdinalDate) {
+  EXPECT_THAT("1999-365"_Date, Eq("1999-12-31"_Date));
+  EXPECT_THAT("2000-001"_Date, Eq("2000-01-01"_Date));
+  EXPECT_THAT("2000-002"_Date, Eq("2000-01-02"_Date));
+  EXPECT_THAT("2000-003"_Date, Eq("2000-01-03"_Date));
+}
+
+TEST_F(CalendarTest, WeekDate) {
+  EXPECT_THAT("1999-W52-5"_Date, Eq("1999-12-31"_Date));
+  EXPECT_THAT("1999-W52-6"_Date, Eq("2000-01-01"_Date));
+  EXPECT_THAT("1999-W52-7"_Date, Eq("2000-01-02"_Date));
+  EXPECT_THAT("2000-W01-1"_Date, Eq("2000-01-03"_Date));
 }
 
 }  // namespace internal_date_time
