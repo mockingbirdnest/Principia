@@ -154,8 +154,6 @@ class JulianDate final {
   constexpr std::int64_t fraction_numerator() const;
   constexpr std::int64_t fraction_denominator() const;
 
-  constexpr Date CalendarDay() const;
-
  private:
   constexpr JulianDate(std::int64_t day,
                        std::int64_t fraction_numerator,

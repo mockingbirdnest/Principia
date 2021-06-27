@@ -386,17 +386,6 @@ constexpr std::int64_t JulianDate::fraction_denominator() const {
   return fraction_denominator_;
 }
 
-constexpr Date JulianDate::CalendarDay() const {
-  // Calendar days start on JDs with a fractional part equal to one half.
-  // The current calendar day starts on the largest such JD no greater than
-  // |*this|.
-  if (2 * fraction_numerator_ >= fraction_denominator_) {
-    return Date::JD(day_ + 0.5);
-  } else {
-    return Date::JD(day_ - 0.5);
-  }
-}
-
 constexpr JulianDate::JulianDate(std::int64_t day,
                                  std::int64_t fraction_numerator,
                                  std::int64_t fraction_denominator)
