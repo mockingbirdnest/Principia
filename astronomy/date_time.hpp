@@ -84,10 +84,10 @@ class Date final {
                  int day,
                  date_time::Calendar const calendar);
 
-  int const year_;
-  int const month_;
-  int const day_;
-  date_time::Calendar const calendar_;
+  int year_;
+  int month_;
+  int day_;
+  date_time::Calendar calendar_;
 };
 
 class Time final {

@@ -102,6 +102,15 @@ TEST_F(CalendarTest, Output) {
               Eq("J-4712-01-02"));
 }
 
+TEST_F(CalendarTest, RoundTrip) {
+  for (Date date = Date::JD(0.5); date < "2021-06-10"_Date;
+       date = date.next_day()) {
+    std::string const date_string = (std::stringstream() << date).str();
+    EXPECT_THAT(operator""_Date(date_string.c_str(), date_string.size()),
+                Eq(date));
+  }
+}
+
 }  // namespace internal_date_time
 }  // namespace date_time
 }  // namespace astronomy

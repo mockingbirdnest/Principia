@@ -1005,9 +1005,10 @@ inline std::ostream& operator<<(std::ostream& out, Date const& date) {
   return out << (date.calendar() == Calendar::Julian ? "J"
                  : date.year() <= 1582               ? "G"
                                                      : "")
-             << std::setfill('0') << std::setw(4) << date.year() << "-"
-             << std::setw(2) << date.month() << "-" << std::setw(2)
-             << date.day() << std::setfill(fill);
+             << (date.year() < 0 ? "-" : "") << std::setfill('0')
+             << std::setw(4) << std::abs(date.year()) << "-" << std::setw(2)
+             << date.month() << "-" << std::setw(2) << date.day()
+             << std::setfill(fill);
 }
 
 constexpr bool operator==(Time const& left, Time const& right) {
