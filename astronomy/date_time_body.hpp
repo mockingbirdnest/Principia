@@ -44,7 +44,7 @@ constexpr int month_length(int const year, int const month, Calendar const calen
 
 // Result in [1, 7], 1 is Monday.
 constexpr int day_of_week_on_january_1st(int const year) {
-  // See [Meu98, p. 65].
+  // See [Mee98, p. 65].
   return mod(Date::Calendar(year, 1, 1).jd() + 1.5, 7);
 }
 
@@ -166,7 +166,7 @@ constexpr Date Date::Week(int const year, int const week, int const day) {
 }
 
 inline constexpr Date Date::JD(double jd) {
-  // The calculation and the notation follow [Meu98, p. 63].
+  // The calculation and the notation follow [Mee98, p. 63].
   // We use casting to std::int64_t as a constexpr std::trunc.  This corresponds
   // to Meeus’s INT.
   double const Z = static_cast<std::int64_t>(jd + 0.5);
@@ -215,7 +215,7 @@ constexpr int Date::ordinal() const {
 }
 
 inline constexpr double Date::jd() const {
-  // The calculation and the notation follow [Meu98, p. 60 sq.].
+  // The calculation and the notation follow [Mee98, p. 60 sq.].
   double Y = year_;
   double M = month_;
   double const D = day_;
@@ -237,7 +237,7 @@ inline constexpr double Date::jd() const {
 }
 
 constexpr int Date::mjd() const {
-  // See [Meu98, p. 63].
+  // See [Mee98, p. 63].
   return jd() - 2400'000.5;
 }
 
