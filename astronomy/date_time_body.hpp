@@ -36,7 +36,8 @@ constexpr int year_length(int const year, Calendar const calendar) {
   return is_leap_year(year, calendar) ? 366 : 365;
 }
 
-constexpr int month_length(int const year, int const month, Calendar const calendar) {
+constexpr int month_length(int const year, int const month,
+                           Calendar const calendar) {
   return (is_leap_year(year, calendar) && month == 2)
              ? 29
              : non_leap_year_month_lengths[month - 1];
@@ -96,8 +97,9 @@ constexpr std::int64_t shift_right(std::int64_t const x, int const count) {
 
 // Implementation of class |Date|.
 
-constexpr Date Date::YYYYMMDD(std::int64_t const digits,
-                              std::optional<date_time::Calendar> const calendar) {
+constexpr Date Date::YYYYMMDD(
+    std::int64_t const digits,
+    std::optional<date_time::Calendar> const calendar) {
   auto const abs_digits = digits < 0 ? -digits : digits;
   auto const sign = digits < 0 ? -1 : 1;
   CONSTEXPR_CHECK(abs_digits <= 9999'99'99);

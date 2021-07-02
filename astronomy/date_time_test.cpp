@@ -1,6 +1,8 @@
 ﻿
 #include "astronomy/date_time.hpp"
 
+#include <string>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
@@ -88,7 +90,8 @@ TEST_F(CalendarTest, Julian) {
 
 TEST_F(CalendarTest, Output) {
   EXPECT_THAT((std::stringstream() << "20000101"_Date).str(), Eq("2000-01-01"));
-  EXPECT_THAT((std::stringstream() << "+2000-001"_Date).str(), Eq("2000-01-01"));
+  EXPECT_THAT((std::stringstream() << "+2000-001"_Date).str(),
+              Eq("2000-01-01"));
   EXPECT_THAT((std::stringstream() << "J1642-12-25"_Date).str(),
               Eq("J1642-12-25"));
   EXPECT_THAT((std::stringstream() << "G1643-01-04"_Date).str(),

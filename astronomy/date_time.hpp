@@ -128,7 +128,6 @@ class DateTime final {
   constexpr DateTime normalized_end_of_day() const;
 
  private:
-
   Date const date_;
   Time const time_;
 
