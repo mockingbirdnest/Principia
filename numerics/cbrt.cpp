@@ -3,11 +3,114 @@
 
 #include <pmmintrin.h>
 
+#include <array>
 #include <cstdint>
 #include <limits>
+#include <utility>
+
+#include "numerics/double_precision.hpp"
 
 namespace principia {
 namespace numerics {
+
+// See [Nie04], algorithm 10.
+std::array<double, 4> NievergeltQuadruplyCompensatedStep(
+    DoublePrecision<double> b,
+    DoublePrecision<double> d) {
+  auto const& [b₁, b₂] = b;
+  auto const& [d₁, d₂] = d;
+  if (std::abs(d₂) >= std::abs(b₁)) {
+    std::swap(b, d);
+  }
+  if (std::abs(b₂) >= std::abs(d₁)) {
+    double const g₄ = d₂;
+    auto const [w, g₃] = TwoSum(b₂, d₁);
+    auto const [g₁, g₂] = TwoSum(b₁, w);
+    return {g₁, g₂, g₃, g₄};
+  } else {
+    auto const [w, g₄] = TwoSum(b₂, d₂);
+    auto const [u, v] = TwoSum(d₁, b₁);
+    auto const [x, g₃] = TwoSum(v, w);
+    auto const [g₁, g₂] = TwoSum(u, x);
+    return {g₁, g₂, g₃, g₄};
+  }
+}
+
+// See [Nie04], algorithm 8; note that we use 0-based indices where Nievergelt
+// uses 1-based indices.  In order to avoid allocations, we do not return a
+// vector, but instead an array of the maximum possible size.  Should it be
+// necessary to return the number of nonzero elements of the result, some sort
+// of bounded vector would probably be useful.  Note that this size is k in
+// Nievergelt’s procedure, but with our indexing it is is k + 1 at the return
+// statement.
+template<std::size_t n>
+std::array<double, n> PriestNievergeltNormalize(std::array<double, n> const f) {
+  std::array<double, n> s{};
+  int k = 0;
+  s[0] = f[0];
+  for (int j = 1; j < n; ++j) {
+    auto const [c, d] = TwoSum(s[k], f[j]);
+    s[k] = c;
+    if (d != 0) {
+      int l = k - 1;
+      k = k + 1;
+      while (l >= 0) {
+        auto const [cʹ, dʹ] = TwoSum(s[l], s[l + 1]);
+        s[l] = cʹ;
+        if (dʹ == 0) {
+          k = k - 1;
+        } else {
+          s[l + 1] = dʹ;
+        }
+        l = l - 1;
+      }
+      s[k] = d;
+    }
+  }
+  return s;
+}
+
+bool CorrectionPossiblyNeeded(double const r₀, double const r₁, double const τ) {
+  double const r̃ = r₀ + 2 * r₁;
+  // TODO(egg): Do we need the right-hand side of the conjunction here?
+  return std::abs(0.5 * (r̃ - r₀) - r₁) <= τ * r₀ && r̃ != r₀;
+}
+
+double CorrectLastBit(double const y, double const r₀, double const r₁, double const τ) {
+  double const r̃ = r₀ + 2 * r₁;
+  if (std::abs(0.5 * (r̃ - r₀) - r₁) > τ * r₀ || r̃ == r₀) {
+    return r₀;
+  }
+  // TODO(egg): Handle negative y.
+  CHECK_GT(y, 0);
+  double const a = std::min(r₀, r̃);
+  double const b = 0.5 * (std::max(r₀, r̃) - a);
+  double const b² = b * b;
+  double const b³ = b² * b;
+  DoublePrecision<double> const a² = TwoProduct(a, a);
+  auto const& [a²₀, a²₁] = a²;
+  DoublePrecision<double> const a³₀ = TwoProduct(a²₀, a);
+  DoublePrecision<double> minus_a³₁ = TwoProduct(a²₁, -a);
+  auto const& [a³₀₀, a³₀₁] = a³₀;
+  // ρ₅₃ = y - a³ = y - a³₀ - a³₁ = y - a³₀₀ - a³₀₁ - a³₁;
+  double const ρ₀ = y - a³₀₀;  // Exact.
+  // ρ₅₃ = ρ₀ - a³₀₁ - a³₁;
+  std::array<double, 4> const ρ₅₃ = PriestNievergeltNormalize(
+      NievergeltQuadruplyCompensatedStep(TwoDifference(ρ₀, a³₀₁), minus_a³₁));
+  CHECK_EQ(ρ₅₃[3], 0);
+  std::array<double, 3> ρ₅₄{ρ₅₃[0], ρ₅₃[1], ρ₅₃[2]};
+  for (double rhs : {2 * a²₀ * b, a²₀ * b, 2 * a²₁ * b, a²₁ * b,  // 3 a²b
+                     2 * a * b², a * b²,                          // 3 ab²
+                     b³}) {
+    auto const ρ = PriestNievergeltNormalize(NievergeltQuadruplyCompensatedStep(
+        TwoSum(ρ₅₄[0], ρ₅₄[1]), TwoDifference(ρ₅₄[2], rhs)));
+    CHECK_EQ(ρ[3], 0);
+    ρ₅₄ = {ρ[0], ρ[1], ρ[2]};
+  }
+  bool const ρ₅₄_positive = ρ₅₄[0] > 0 || (ρ₅₄[0] == 0 && ρ₅₄[1] > 0) ||
+                            (ρ₅₄[0] == 0 && ρ₅₄[1] == 0 && ρ₅₄[2] >= 0);
+  return ρ₅₄_positive ? std::max(r₀, r̃) : a;
+}
 
 constexpr std::uint64_t C = 0x2A9F7893782DA1CE;
 static const __m128d sign_bit =
