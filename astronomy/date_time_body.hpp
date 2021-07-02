@@ -98,7 +98,7 @@ constexpr std::int64_t shift_right(std::int64_t const x, int const count) {
 
 constexpr Date Date::YYYYMMDD(std::int64_t const digits,
                               std::optional<date_time::Calendar> const calendar) {
-  auto const abs_digits = digits < 0 ? - digits : digits;
+  auto const abs_digits = digits < 0 ? -digits : digits;
   auto const sign = digits < 0 ? -1 : 1;
   CONSTEXPR_CHECK(abs_digits <= 9999'99'99);
   return Date::Calendar(sign * digit_range(abs_digits, 4, 8),
@@ -110,7 +110,7 @@ constexpr Date Date::YYYYMMDD(std::int64_t const digits,
 constexpr Date Date::YYYYDDD(
     std::int64_t const digits,
     std::optional<date_time::Calendar> const calendar) {
-  auto const abs_digits = digits < 0 ? - digits : digits;
+  auto const abs_digits = digits < 0 ? -digits : digits;
   auto const sign = digits < 0 ? -1 : 1;
   CONSTEXPR_CHECK(digits <= 9999'999);
   return Date::Ordinal(sign * digit_range(digits, 3, 7),
@@ -126,9 +126,7 @@ constexpr Date Date::YYYYwwD(std::int64_t const digits) {
                     digit_range(digits, 0, 1));
 }
 
-constexpr Date Date::Calendar(int const year,
-                              int const month,
-                              int const day,
+constexpr Date Date::Calendar(int const year, int const month, int const day,
                               std::optional<date_time::Calendar> calendar) {
   if (!calendar.has_value()) {
     CONSTEXPR_CHECK(year >= 1583);
@@ -142,8 +140,7 @@ constexpr Date Date::Calendar(int const year,
   return Date(year, month, day, *calendar);
 }
 
-constexpr Date Date::Ordinal(int const year,
-                             int const day,
+constexpr Date Date::Ordinal(int const year, int const day,
                              std::optional<date_time::Calendar> calendar) {
   if (!calendar.has_value()) {
     CONSTEXPR_CHECK(year >= 1583);
@@ -245,9 +242,7 @@ constexpr Date Date::next_day() const {
   return Date::JD(jd() + 1);
 }
 
-constexpr Date::Date(int const year,
-                     int const month,
-                     int const day,
+constexpr Date::Date(int const year, int const month, int const day,
                      date_time::Calendar const calendar)
       : year_(year),
         month_(month),

@@ -46,15 +46,12 @@ class Date final {
   // The calendar is Gregorian by default starting in 1583; before that,
   // |calendar| is required.
   static constexpr Date Calendar(
-      int year,
-      int month,
-      int day,
+      int year, int month, int day,
       std::optional<Calendar> calendar = std::nullopt);
   // The calendar is Gregorian by default starting in 1583; before that,
   // |calendar| is required.
   static constexpr Date Ordinal(
-      int year,
-      int day,
+      int year, int day,
       std::optional<date_time::Calendar> calendar = std::nullopt);
   // Since the calendar week number is an ISO 8601 construct, the year must be
   // at least 1583, and the calendar is Gregorian.
@@ -79,9 +76,7 @@ class Date final {
   constexpr Date next_day() const;
 
  private:
-  constexpr Date(int year,
-                 int month,
-                 int day,
+  constexpr Date(int year, int month, int day,
                  date_time::Calendar const calendar);
 
   int year_;
