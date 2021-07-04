@@ -63,7 +63,7 @@ class Point final {
   Vector coordinates_;
 
   template<typename V>
-  friend Point<V> operator+(V const& translation, Point<V> const& point);
+  friend constexpr Point<V> operator+(V const& translation, Point<V> const& point);
   template<typename L, typename R>
   friend Point<Product<L, R>> FusedMultiplyAdd(L const& a, R const& b,
                                                Point<Product<L, R>> const& c);
@@ -91,10 +91,9 @@ class Point final {
   friend class geometry::BarycentreCalculator;
 };
 
-// TODO(egg): constexpr these operators.
 template<typename Vector>
-Point<Vector> operator+(Vector const& translation,
-                        Point<Vector> const& point);
+constexpr Point<Vector> operator+(Vector const& translation,
+                                  Point<Vector> const& point);
 
 template<typename L, typename R>
 Point<Product<L, R>> FusedMultiplyAdd(L const& a,

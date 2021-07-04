@@ -383,19 +383,6 @@ constexpr std::int64_t JulianDate::fraction_denominator() const {
   return fraction_denominator_;
 }
 
-constexpr Date JulianDate::CalendarDay() const {
-  // The date and time t represented by this object satisfies
-  //   t - 2000-01-01T12:00:00 = day + fraction,
-  // thus
-  //   t - 2000-01-01T00:00:00 = day + fraction + 1/2.
-  // We want a result rounded toward negative infinity; integer division
-  // does that for us since the fraction is positive.
-  std::int64_t const days_from_2000_01_01T00_00_00 =
-      day_ + ((2 * fraction_numerator_ + fraction_denominator_) /
-              (2 * fraction_denominator_));
-  return arbitrary_ordinal(2000, days_from_2000_01_01T00_00_00 + 1);
-}
-
 constexpr JulianDate::JulianDate(std::int64_t day,
                                  std::int64_t fraction_numerator,
                                  std::int64_t fraction_denominator)

@@ -79,9 +79,9 @@ Instant Parse北斗Time(std::string const& s);
 // to various granularities.
 
 // Returns the TT day containing t.
-Date TTDay(Instant const& t);
+constexpr Date TTDay(Instant const& t);
 // Returns a DateTime representing the beginning of the TT second containing t.
-DateTime TTSecond(Instant const& t);
+constexpr DateTime TTSecond(Instant const& t);
 // TODO(egg): TTMillisecond, but this is trickier because we use binary
 // floating-point.  UTC would be nice, too.
 

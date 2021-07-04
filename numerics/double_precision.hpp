@@ -61,16 +61,16 @@ DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b);
 
 // Same as |TwoProduct|, but never uses FMA.
 template<typename T, typename U>
-DoublePrecision<Product<T, U>> VeltkampDekkerProduct(T const& a, U const& b);
+constexpr DoublePrecision<Product<T, U>> VeltkampDekkerProduct(T const& a, U const& b);
 
 // Computes the exact sum of a and b.  The arguments must be such that
 // |a| >= |b| or a == 0.
 template<typename T, typename U>
-DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b);
+constexpr DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b);
 
 // Computes the exact sum of a and b.
 template<typename T, typename U>
-DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b);
+constexpr DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b);
 
 // |TwoDifference| may have any of the following signatures:
 //   1. Point × Point → Vector;
@@ -82,10 +82,10 @@ template<typename T,
          typename U,
          typename = Difference<T, Difference<T, U>>,
          typename = std::enable_if_t<!std::is_same<U, Difference<U>>::value>>
-DoublePrecision<Difference<T, U>> TwoDifference(T const& a, U const& b);
+constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a, U const& b);
 
 template<typename T, typename U, typename = Difference<Difference<T, U>, T>>
-DoublePrecision<Difference<T, U>> TwoDifference(T const& a, U const& b);
+constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a, U const& b);
 
 DoublePrecision<Angle> Mod2π(DoublePrecision<Angle> const& θ);
 

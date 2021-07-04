@@ -488,13 +488,11 @@ TEST_F(TimeScalesTest, DateUnparsing) {
   // adjustment is required.
   constexpr double u = 0x1p-53;
   constexpr Instant pumpkin = "2000-01-01T24:00:00"_TT;
-  EXPECT_THAT(TTDay("2000-01-02T00:00:00"_TT), Eq("2000-01-02"_Date));
+  static_assert(TTDay("2000-01-02T00:00:00"_TT) == "2000-01-02"_Date);
   constexpr Instant carriage =
       ("2000-01-01T24:00:00"_TT - (pumpkin - J2000) * u);
   static_assert(carriage != pumpkin);
-  EXPECT_THAT(TTDay(carriage), Ne(TTDay(pumpkin)));
-
-  EXPECT_THAT(TTDay("2000-01-03T00:00:00"_TT), Eq("2000-01-03"_Date));
+  static_assert(TTDay(carriage) != TTDay(pumpkin));
 }
 
 TEST_F(TimeScalesTest, DateTimeUnparsing) {
@@ -508,7 +506,7 @@ TEST_F(TimeScalesTest, DateTimeUnparsing) {
     constexpr Instant carriage =
         ("2000-01-02T24:00:00"_TT - (pumpkin - J2000) * u);
     static_assert(carriage != pumpkin);
-    EXPECT_THAT(TTSecond(carriage), Eq("2000-01-02T23:59:59"_DateTime));
+    static_assert(TTSecond(carriage) == "2000-01-02T23:59:59"_DateTime);
   }
 
   {
@@ -519,7 +517,7 @@ TEST_F(TimeScalesTest, DateTimeUnparsing) {
     constexpr Instant carriage =
         ("2000-01-01T24:00:00"_TT - (pumpkin - J2000) * u);
     static_assert(carriage != pumpkin);
-    EXPECT_THAT(TTSecond(carriage), Eq("2000-01-01T23:59:59"_DateTime));
+    static_assert(TTSecond(carriage) == "2000-01-01T23:59:59"_DateTime);
   }
 }
 

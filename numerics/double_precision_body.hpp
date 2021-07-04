@@ -211,7 +211,8 @@ DoublePrecision<Product<T, U>> Scale(T const & scale,
 }
 
 template<typename T, typename U>
-DoublePrecision<Product<T, U>> VeltkampDekkerProduct(T const& a, U const& b) {
+constexpr DoublePrecision<Product<T, U>> VeltkampDekkerProduct(T const& a,
+                                                               U const& b) {
   DoublePrecision<Product<T, U>> result;
   auto const& x = a;
   auto const& y = b;
@@ -251,7 +252,7 @@ DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b) {
 }
 
 template<typename T, typename U>
-FORCE_INLINE(inline)
+constexpr FORCE_INLINE(inline)
 DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b) {
 #if _DEBUG
   using quantities::DebugString;
@@ -269,7 +270,7 @@ DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b) {
 }
 
 template<typename T, typename U>
-DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b) {
+constexpr DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b) {
   // [HLB07].
   DoublePrecision<Sum<T, U>> result;
   auto& s = result.value;
@@ -282,7 +283,7 @@ DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b) {
 
 // Point × Point → Vector.
 template<typename T, typename U, typename, typename>
-DoublePrecision<Difference<T, U>> TwoDifference(T const& a, U const& b) {
+constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a, U const& b) {
   static_assert(std::is_same<T, U>::value,
                 "Template metaprogramming went wrong");
   using Point = T;
@@ -299,7 +300,7 @@ DoublePrecision<Difference<T, U>> TwoDifference(T const& a, U const& b) {
 
 // Point × Vector → Point, or Vector × Vector → Vector.
 template<typename T, typename U, typename>
-DoublePrecision<Difference<T, U>> TwoDifference(T const& a, U const& b) {
+constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a, U const& b) {
   return TwoSum(a, -b);
 }
 
