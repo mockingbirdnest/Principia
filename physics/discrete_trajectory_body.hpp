@@ -181,7 +181,7 @@ DiscreteTrajectory<Frame>::DetachFork() {
 }
 
 template<typename Frame>
-void DiscreteTrajectory<Frame>::Append(
+absl::Status DiscreteTrajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
   CHECK(this->is_root() || time > this->Fork()->time)
@@ -192,7 +192,7 @@ void DiscreteTrajectory<Frame>::Append(
     LOG(WARNING) << "Append at existing time " << time
                  << ", time range = [" << this->front().time << ", "
                  << this->back().time << "]";
-    return;
+    return absl::OkStatus();
   }
   auto it = timeline_.emplace_hint(timeline_.end(),
                                    time,
@@ -217,7 +217,6 @@ void DiscreteTrajectory<Frame>::Append(
              ++it) {
           dense_iterators.push_back(it);
         }
-        auto const start_fit = std::chrono::steady_clock::now();
         auto right_endpoints = FitHermiteSpline<Instant, Position<Frame>>(
             dense_iterators,
             [](auto&& it) -> auto&& { return it->first; },
@@ -225,17 +224,10 @@ void DiscreteTrajectory<Frame>::Append(
             [](auto&& it) -> auto&& { return it->second.velocity(); },
             downsampling_->tolerance());
         if (!right_endpoints.ok()) {
-          // We were stopped during downsampling.  |Append| does not return a
-          // status, so we do not propagate the error.  Note that the actual
-          // appending took place, only the downsampling is missing.
-          return;
+          // Note that the actual appending took place; the propagated status
+          // only reflects a lack of downsampling.
+          return right_endpoints.status();
         }
-        using namespace std::chrono_literals;
-        LOG(INFO) << "Append: FitHermiteSpline "
-                  << (std::chrono::steady_clock::now() - start_fit) / 1ms
-                  << " ms from " << dense_iterators.size()
-                  << " dense iterators to " << right_endpoints->size()
-                  << " right endpoints";
         if (right_endpoints->empty()) {
           right_endpoints->push_back(dense_iterators.end() - 1);
         }
@@ -249,6 +241,7 @@ void DiscreteTrajectory<Frame>::Append(
       }
     }
   }
+  return absl::OkStatus();
 }
 
 template<typename Frame>
