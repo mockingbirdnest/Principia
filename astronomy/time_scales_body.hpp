@@ -11,8 +11,8 @@
 #include "astronomy/epoch.hpp"
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
-#include "quantities/si.hpp"
 #include "numerics/double_precision.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace astronomy {
@@ -589,7 +589,8 @@ constexpr DateTime TTSecond(Instant const& t) {
   auto const date = TTDay(t);
   Instant const beginning_of_day = DateTimeAsTT(DateTime::BeginningOfDay(date));
   // Close to J2000, Sterbenz’s lemma can fail to apply to this subtraction.  We
-  // compute it exactly and round by hand.
+  // compute it exactly and round by hand (obtaining the preceding number by
+  // bit-casting and integer arithmetic).
   DoublePrecision<quantities::Time> const time_of_day =
       TwoDifference(t, beginning_of_day);
   quantities::Time const time_of_day_rounded_down =
@@ -598,12 +599,14 @@ constexpr DateTime TTSecond(Instant const& t) {
           : std::bit_cast<double>(
                 std::bit_cast<std::uint64_t>(time_of_day.value / Second) - 1) *
                 Second;
-  int second_of_day = static_cast<int>(time_of_day_rounded_down / Second);
-  return DateTime(date,
-                  date_time::Time(/*hour=*/second_of_day / 3600,
-                                  /*minute=*/second_of_day % 3600 / 60,
-                                  /*second=*/second_of_day % 60,
-                                  /*millisecond=*/0));
+  int const second_of_day = static_cast<int>(time_of_day_rounded_down / Second);
+  return DateTime(
+      date,
+      date_time::Time(
+          /*hour=*/second_of_day / (Day / Second),
+          /*minute=*/second_of_day % static_cast<int>(Hour / Second),
+          /*second=*/second_of_day % static_cast<int>(Minute / Second),
+          /*millisecond=*/0));
 }
 
 }  // namespace internal_time_scales
