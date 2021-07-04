@@ -173,7 +173,7 @@ inline constexpr Date Date::JD(double jd) {
   // We require that jd represent midnight, so that the fractional part of jd +
   // 0.5 must be 0.
   constexpr double F = 0;
-  double A;
+  double A = std::numeric_limits<double>::quiet_NaN();
   date_time::Calendar calendar;
   if (Z < 2299'161) {
     A = Z;
@@ -224,7 +224,7 @@ inline constexpr double Date::jd() const {
     Y = Y - 1;
     M = M + 12;
   }
-  double B;
+  double B = std::numeric_limits<double>::quiet_NaN();
   if (calendar_ == Calendar::Julian) {
      B = 0;
   } else {
