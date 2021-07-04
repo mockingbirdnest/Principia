@@ -4,6 +4,7 @@
 #include <list>
 #include <type_traits>
 
+#include "base/jthread.hpp"
 #include "base/ranges.hpp"
 #include "numerics/hermite3.hpp"
 
@@ -14,7 +15,7 @@ namespace internal_fit_hermite_spline {
 using base::Range;
 
 template<typename Argument, typename Value, typename Samples>
-std::list<typename Samples::const_iterator> FitHermiteSpline(
+absl::StatusOr<std::list<typename Samples::const_iterator>> FitHermiteSpline(
     Samples const& samples,
     std::function<Argument const&(typename Samples::value_type const&)> const&
         get_argument,
@@ -57,6 +58,7 @@ std::list<typename Samples::const_iterator> FitHermiteSpline(
     Iterator lower = begin + 1;
     Iterator upper = last;
     for (;;) {
+      RETURN_IF_STOPPED;
       auto const middle = lower + (upper - lower) / 2;
       // Note that lower ≤ middle ≤ upper.
       // If middle - lower > 0, upper - lower > 0,

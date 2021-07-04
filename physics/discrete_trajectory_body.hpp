@@ -217,17 +217,30 @@ void DiscreteTrajectory<Frame>::Append(
              ++it) {
           dense_iterators.push_back(it);
         }
+        auto const start_fit = std::chrono::steady_clock::now();
         auto right_endpoints = FitHermiteSpline<Instant, Position<Frame>>(
             dense_iterators,
             [](auto&& it) -> auto&& { return it->first; },
             [](auto&& it) -> auto&& { return it->second.position(); },
             [](auto&& it) -> auto&& { return it->second.velocity(); },
             downsampling_->tolerance());
-        if (right_endpoints.empty()) {
-          right_endpoints.push_back(dense_iterators.end() - 1);
+        if (!right_endpoints.ok()) {
+          // We were stopped during downsampling.  |Append| does not return a
+          // status, so we do not propagate the error.  Note that the actual
+          // appending took place, only the downsampling is missing.
+          return;
+        }
+        using namespace std::chrono_literals;
+        LOG(INFO) << "Append: FitHermiteSpline "
+                  << (std::chrono::steady_clock::now() - start_fit) / 1ms
+                  << " ms from " << dense_iterators.size()
+                  << " dense iterators to " << right_endpoints->size()
+                  << " right endpoints";
+        if (right_endpoints->empty()) {
+          right_endpoints->push_back(dense_iterators.end() - 1);
         }
         TimelineConstIterator left = downsampling_->start_of_dense_timeline();
-        for (const auto& it_in_dense_iterators : right_endpoints) {
+        for (const auto& it_in_dense_iterators : right_endpoints.value()) {
           TimelineConstIterator const right = *it_in_dense_iterators;
           timeline_.erase(++left, right);
           left = right;
