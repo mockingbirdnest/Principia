@@ -85,8 +85,11 @@ constexpr DateTime TTSecond(Instant const& t);
 // TODO(egg): TTMillisecond, but this is trickier because we use binary
 // floating-point.  UTC would be nice, too.
 
+constexpr Instant DateTimeAsTT(DateTime const& tt);
+
 }  // namespace internal_time_scales
 
+using internal_time_scales::DateTimeAsTT;
 using internal_time_scales::EarthRotationAngle;
 using internal_time_scales::Parse北斗Time;
 using internal_time_scales::ParseGPSTime;

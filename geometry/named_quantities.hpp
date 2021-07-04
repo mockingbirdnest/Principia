@@ -34,5 +34,10 @@ template<typename Frame>
 using InertiaTensor =
     SymmetricBilinearForm<quantities::MomentOfInertia, Frame, Bivector>;
 
+namespace internal_point {
+// We must declare this in the internal namespace where Point is defined so that
+// it is found by ADL.
+std::ostream& operator<<(std::ostream& os, const Instant& t);
+}  // namespace internal_point
 }  // namespace geometry
 }  // namespace principia

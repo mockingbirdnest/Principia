@@ -67,6 +67,7 @@
     <ClCompile Include="grassmann_test.cpp" />
     <ClCompile Include="hilbert_test.cpp" />
     <ClCompile Include="identity_test.cpp" />
+    <ClCompile Include="instant_output.cpp" />
     <ClCompile Include="pair_test.cpp" />
     <ClCompile Include="perspective_test.cpp" />
     <ClCompile Include="point_test.cpp" />
