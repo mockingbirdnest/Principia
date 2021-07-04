@@ -174,7 +174,7 @@ inline constexpr Date Date::JD(double jd) {
   // 0.5 must be 0.
   constexpr double F = 0;
   double A = std::numeric_limits<double>::quiet_NaN();
-  date_time::Calendar calendar;
+  date_time::Calendar calendar{};
   if (Z < 2299'161) {
     A = Z;
     calendar = Calendar::Julian;
