@@ -26,6 +26,8 @@ using astronomy::date_time::operator""_Julian;
 using numerics::DoublePrecision;
 using numerics::TwoDifference;
 using quantities::si::Day;
+using quantities::si::Hour;
+using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
 
