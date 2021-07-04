@@ -252,7 +252,7 @@ DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b) {
 }
 
 template<typename T, typename U>
-constexpr FORCE_INLINE(inline)
+FORCE_INLINE(constexpr)
 DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b) {
 #if _DEBUG
   using quantities::DebugString;
