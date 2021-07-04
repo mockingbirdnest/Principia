@@ -71,7 +71,7 @@ TEST_F(FitHermiteSplineTest, Sinusoid) {
           [](auto&& sample) -> auto&& { return sample.t; },
           [](auto&& sample) -> auto&& { return sample.x; },
           [](auto&& sample) -> auto&& { return sample.v; },
-          1 * Centi(Metre));
+          1 * Centi(Metre)).value();
 
   // Note that gmock doesn't do decltypes, so we can't pass a λ directly.
   // Also note that |Pointee| doesn't work with iterators, so

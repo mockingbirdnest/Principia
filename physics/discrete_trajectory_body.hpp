@@ -181,7 +181,7 @@ DiscreteTrajectory<Frame>::DetachFork() {
 }
 
 template<typename Frame>
-void DiscreteTrajectory<Frame>::Append(
+absl::Status DiscreteTrajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
   CHECK(this->is_root() || time > this->Fork()->time)
@@ -192,7 +192,7 @@ void DiscreteTrajectory<Frame>::Append(
     LOG(WARNING) << "Append at existing time " << time
                  << ", time range = [" << this->front().time << ", "
                  << this->back().time << "]";
-    return;
+    return absl::OkStatus();
   }
   auto it = timeline_.emplace_hint(timeline_.end(),
                                    time,
@@ -223,11 +223,16 @@ void DiscreteTrajectory<Frame>::Append(
             [](auto&& it) -> auto&& { return it->second.position(); },
             [](auto&& it) -> auto&& { return it->second.velocity(); },
             downsampling_->tolerance());
-        if (right_endpoints.empty()) {
-          right_endpoints.push_back(dense_iterators.end() - 1);
+        if (!right_endpoints.ok()) {
+          // Note that the actual appending took place; the propagated status
+          // only reflects a lack of downsampling.
+          return right_endpoints.status();
+        }
+        if (right_endpoints->empty()) {
+          right_endpoints->push_back(dense_iterators.end() - 1);
         }
         TimelineConstIterator left = downsampling_->start_of_dense_timeline();
-        for (const auto& it_in_dense_iterators : right_endpoints) {
+        for (const auto& it_in_dense_iterators : right_endpoints.value()) {
           TimelineConstIterator const right = *it_in_dense_iterators;
           timeline_.erase(++left, right);
           left = right;
@@ -236,6 +241,7 @@ void DiscreteTrajectory<Frame>::Append(
       }
     }
   }
+  return absl::OkStatus();
 }
 
 template<typename Frame>
