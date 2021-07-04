@@ -605,8 +605,9 @@ constexpr DateTime TTSecond(Instant const& t) {
   return DateTime(
       date,
       date_time::Time(
-          /*hour=*/second_of_day / (Day / Second),
-          /*minute=*/second_of_day % static_cast<int>(Hour / Second),
+          /*hour=*/second_of_day / (Hour / Second),
+          /*minute=*/second_of_day % static_cast<int>(Hour / Second) /
+              (Minute / Second),
           /*second=*/second_of_day % static_cast<int>(Minute / Second),
           /*millisecond=*/0));
 }
