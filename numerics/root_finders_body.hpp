@@ -12,7 +12,7 @@
 #include "geometry/sign.hpp"
 #include "glog/logging.h"
 #include "numerics/double_precision.hpp"
-#include "numerics/scale_b.h"
+#include "numerics/scale_b.hpp"
 
 namespace principia {
 namespace numerics {
