@@ -75,6 +75,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\base\cpuid.cpp" />
+    <ClCompile Include="..\geometry\instant_output.cpp" />
     <ClCompile Include="apodization_test.cpp" />
     <ClCompile Include="cbrt.cpp" />
     <ClCompile Include="cbrt_test.cpp" />

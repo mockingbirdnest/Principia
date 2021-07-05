@@ -289,6 +289,9 @@
     <ClCompile Include="fma_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\geometry\instant_output.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="xgscd.proto.txt">
