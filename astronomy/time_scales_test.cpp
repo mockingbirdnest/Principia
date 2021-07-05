@@ -72,9 +72,9 @@ TEST_F(TimeScalesDeathTest, WarWasBeginning) {
 }
 
 TEST_F(TimeScalesDeathTest, FirstUnknownUTC) {
-  EXPECT_DEATH("2021-12-31T23:59:60"_UTC, "leap_seconds.size");
-  EXPECT_DEATH("2021-12-31T24:00:00"_UTC, "leap_seconds.size");
-  EXPECT_DEATH("2022-01-01T00:00:00"_UTC, "leap_seconds.size");
+  EXPECT_DEATH("2022-06-30T23:59:60"_UTC, "leap_seconds.size");
+  EXPECT_DEATH("2022-06-30T24:00:00"_UTC, "leap_seconds.size");
+  EXPECT_DEATH("2022-07-01T00:00:00"_UTC, "leap_seconds.size");
 }
 
 TEST_F(TimeScalesDeathTest, StretchyLeaps) {
@@ -329,7 +329,7 @@ TEST_F(TimeScalesTest, LunarEclipses) {
               Lt(86 * Milli(Second)));
   EXPECT_THAT(AbsoluteError("1950-09-26T04:21:55.5"_TT,
                             "1950-09-26T04:21:26.1"_UT1),
-              Lt(15 * Milli(Second)));
+              Lt(16 * Milli(Second)));
 
   EXPECT_THAT(AbsoluteError("1951-03-23T10:37:33.2"_TT,
                             "1951-03-23T10:37:03.7"_UT1),
@@ -340,17 +340,17 @@ TEST_F(TimeScalesTest, LunarEclipses) {
 
   EXPECT_THAT(AbsoluteError("1951-09-15T12:27:06.3"_TT,
                             "1951-09-15T12:26:36.6"_UT1),
-              Lt(99 * Milli(Second)));
+              Lt(100 * Milli(Second)));
   EXPECT_THAT(AbsoluteError("1951-09-15T12:38:51.5"_TT,
                             "1951-09-15T12:38:21.8"_UT1),
-              Lt(99 * Milli(Second)));
+              Lt(100 * Milli(Second)));
 
   EXPECT_THAT(AbsoluteError("1952-02-11T00:28:39.9"_TT,
                             "1952-02-11T00:28:10.0"_UT1),
-              Lt(69 * Milli(Second)));
+              Lt(70 * Milli(Second)));
   EXPECT_THAT(AbsoluteError("1952-02-11T00:39:47.6"_TT,
                             "1952-02-11T00:39:17.7"_UT1),
-              Lt(69 * Milli(Second)));
+              Lt(70 * Milli(Second)));
 
   EXPECT_THAT(AbsoluteError("1952-08-05T19:40:29.4"_TT,
                             "1952-08-05T19:39:59.3"_UT1),
