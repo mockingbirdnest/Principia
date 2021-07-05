@@ -125,8 +125,8 @@ constexpr Point<Vector>::Point(Vector const& coordinates)
     : coordinates_(coordinates) {}
 
 template<typename Vector>
-Point<Vector> operator+(Vector const& translation,
-                        Point<Vector> const& point) {
+constexpr Point<Vector> operator+(Vector const& translation,
+                                  Point<Vector> const& point) {
   return point + translation;
 }
 

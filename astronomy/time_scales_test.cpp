@@ -29,6 +29,7 @@ using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
+using ::testing::Ne;
 
 constexpr Instant j2000_week = "1999-W52-6T12:00:00"_TT;
 
@@ -72,9 +73,9 @@ TEST_F(TimeScalesDeathTest, WarWasBeginning) {
 }
 
 TEST_F(TimeScalesDeathTest, FirstUnknownUTC) {
-  EXPECT_DEATH("2021-12-31T23:59:60"_UTC, "leap_seconds.size");
-  EXPECT_DEATH("2021-12-31T24:00:00"_UTC, "leap_seconds.size");
-  EXPECT_DEATH("2022-01-01T00:00:00"_UTC, "leap_seconds.size");
+  EXPECT_DEATH("2022-06-30T23:59:60"_UTC, "leap_seconds.size");
+  EXPECT_DEATH("2022-06-30T24:00:00"_UTC, "leap_seconds.size");
+  EXPECT_DEATH("2022-07-01T00:00:00"_UTC, "leap_seconds.size");
 }
 
 TEST_F(TimeScalesDeathTest, StretchyLeaps) {
@@ -329,7 +330,7 @@ TEST_F(TimeScalesTest, LunarEclipses) {
               Lt(86 * Milli(Second)));
   EXPECT_THAT(AbsoluteError("1950-09-26T04:21:55.5"_TT,
                             "1950-09-26T04:21:26.1"_UT1),
-              Lt(15 * Milli(Second)));
+              Lt(16 * Milli(Second)));
 
   EXPECT_THAT(AbsoluteError("1951-03-23T10:37:33.2"_TT,
                             "1951-03-23T10:37:03.7"_UT1),
@@ -340,17 +341,17 @@ TEST_F(TimeScalesTest, LunarEclipses) {
 
   EXPECT_THAT(AbsoluteError("1951-09-15T12:27:06.3"_TT,
                             "1951-09-15T12:26:36.6"_UT1),
-              Lt(99 * Milli(Second)));
+              Lt(100 * Milli(Second)));
   EXPECT_THAT(AbsoluteError("1951-09-15T12:38:51.5"_TT,
                             "1951-09-15T12:38:21.8"_UT1),
-              Lt(99 * Milli(Second)));
+              Lt(100 * Milli(Second)));
 
   EXPECT_THAT(AbsoluteError("1952-02-11T00:28:39.9"_TT,
                             "1952-02-11T00:28:10.0"_UT1),
-              Lt(69 * Milli(Second)));
+              Lt(70 * Milli(Second)));
   EXPECT_THAT(AbsoluteError("1952-02-11T00:39:47.6"_TT,
                             "1952-02-11T00:39:17.7"_UT1),
-              Lt(69 * Milli(Second)));
+              Lt(70 * Milli(Second)));
 
   EXPECT_THAT(AbsoluteError("1952-08-05T19:40:29.4"_TT,
                             "1952-08-05T19:39:59.3"_UT1),
@@ -475,6 +476,49 @@ TEST_F(TimeScalesTest, GNSS) {
   // between 21st and 22nd August). At the start epoch, GST shall be ahead of
   // UTC by thirteen (13) leap seconds.
   EXPECT_THAT("1999-08-22T00:00:13"_GPS, Eq("1999-08-22T00:00:00"_UTC));
+}
+
+TEST_F(TimeScalesTest, DateUnparsing) {
+  EXPECT_THAT(TTDay("1999-12-31T00:00:00"_TT), Eq("1999-12-31"_Date));
+  EXPECT_THAT(TTDay("2000-01-01T00:00:00"_TT), Eq("2000-01-01"_Date));
+  EXPECT_THAT(TTDay(J2000), Eq("2000-01-01"_Date));
+  EXPECT_THAT(TTDay("2000-01-01T23:59:59,999"_TT), Eq("2000-01-01"_Date));
+
+  // The floating-point division by Day turns the carriage into a pumpkin;
+  // adjustment is required.
+  constexpr double u = 0x1p-53;
+  constexpr Instant pumpkin = "2000-01-01T24:00:00"_TT;
+  static_assert(TTDay("2000-01-02T00:00:00"_TT) == "2000-01-02"_Date);
+  constexpr Instant carriage =
+      ("2000-01-01T24:00:00"_TT - (pumpkin - J2000) * u);
+  static_assert(carriage != pumpkin);
+  static_assert(TTDay(carriage) != TTDay(pumpkin));
+}
+
+TEST_F(TimeScalesTest, DateTimeUnparsing) {
+  EXPECT_THAT(TTSecond(J2000), Eq("2000-01-01T12:00:00"_DateTime));
+  EXPECT_THAT(TTSecond("MJD0"_TT), Eq("1858-11-17T00:00:00"_DateTime));
+
+  {
+    // This is far enough from J2000 that Sterbenz’s lemma applies.
+    constexpr double u = 0x1p-53;
+    constexpr Instant pumpkin = "2000-01-02T24:00:00"_TT;
+    constexpr Instant carriage =
+        ("2000-01-02T24:00:00"_TT - (pumpkin - J2000) * u);
+    static_assert(carriage != pumpkin);
+    static_assert(TTSecond(carriage) == "2000-01-02T23:59:59"_DateTime);
+  }
+
+  {
+    // Here again adjustment is needed to avoid the carriage turning into a
+    // pumpkin.
+    constexpr double u = 0x1p-53;
+    constexpr Instant pumpkin = "2000-01-01T24:00:00"_TT;
+    constexpr Instant carriage =
+        ("2000-01-01T24:00:00"_TT - (pumpkin - J2000) * u);
+    static_assert(carriage != pumpkin);
+    static_assert(TTSecond(carriage) == "2000-01-01T23:59:59"_DateTime);
+  }
 }
 
 }  // namespace internal_time_scales
