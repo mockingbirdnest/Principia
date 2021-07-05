@@ -517,8 +517,7 @@ TEST_F(TimeScalesTest, DateTimeUnparsing) {
     constexpr Instant carriage =
         ("2000-01-01T24:00:00"_TT - (pumpkin - J2000) * u);
     static_assert(carriage != pumpkin);
-    LOG(INFO)<<TTSecond(carriage);
-    //static_assert(TTSecond(carriage) == "2000-01-01T23:59:59"_DateTime);
+    static_assert(TTSecond(carriage) == "2000-01-01T23:59:59"_DateTime);
   }
 }
 

@@ -63,7 +63,8 @@ class Point final {
   Vector coordinates_;
 
   template<typename V>
-  friend constexpr Point<V> operator+(V const& translation, Point<V> const& point);
+  friend constexpr Point<V> operator+(V const& translation,
+                                      Point<V> const& point);
   template<typename L, typename R>
   friend Point<Product<L, R>> FusedMultiplyAdd(L const& a, R const& b,
                                                Point<Product<L, R>> const& c);
