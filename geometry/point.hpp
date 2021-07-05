@@ -89,6 +89,8 @@ class Point final {
 
   template<typename V, typename S>
   friend class geometry::BarycentreCalculator;
+
+  friend class InstantOutputTest;
 };
 
 template<typename Vector>
