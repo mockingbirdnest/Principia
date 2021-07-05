@@ -577,7 +577,8 @@ constexpr Date TTDay(Instant const& t) {
   // We use a cast as a constexpr version of a floor; this is only correct with
   // a positive JD, but we do not support dates before JD0.5 anyway.
   CONSTEXPR_CHECK(t >= "JD0.5"_TT);
-  std::int64_t jd_minus_half = static_cast<std::int64_t>((t - "JD0.5"_TT) / Day);
+  std::int64_t jd_minus_half =
+      static_cast<std::int64_t>((t - "JD0.5"_TT) / Day);
   // We want operations rounded toward negative infinity, but we also don’t
   // want to fiddle with rounding modes.  The product and sum here should be
   // exact for all reasonable times.

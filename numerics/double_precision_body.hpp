@@ -283,7 +283,8 @@ constexpr DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b) {
 
 // Point × Point → Vector.
 template<typename T, typename U, typename, typename>
-constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a, U const& b) {
+constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a,
+                                                          U const& b) {
   static_assert(std::is_same<T, U>::value,
                 "Template metaprogramming went wrong");
   using Point = T;
@@ -300,7 +301,8 @@ constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a, U const& b
 
 // Point × Vector → Point, or Vector × Vector → Vector.
 template<typename T, typename U, typename>
-constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a, U const& b) {
+constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a,
+                                                          U const& b) {
   return TwoSum(a, -b);
 }
 
