@@ -26,6 +26,7 @@ constexpr SourceFormat NextUp(SourceFormat const x) {
     return std::numeric_limits<SourceFormat>::denorm_min();
   }
   if (x == std::numeric_limits<SourceFormat>::infinity()) {
+    // TODO(egg): Should we be signalling the overflow exception?
     return std::numeric_limits<SourceFormat>::infinity();
   }
   if (x == -std::numeric_limits<SourceFormat>::infinity()) {
