@@ -5,7 +5,6 @@
 #include <limits>
 
 #include "numerics/log_b.hpp"
-#include "numerics/next.hpp"
 #include "numerics/scale_b.hpp"
 
 namespace principia {
