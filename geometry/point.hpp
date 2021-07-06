@@ -86,6 +86,13 @@ class Point final {
   operator>(Point<V> const& left, Point<V> const& right);
 
   template<typename V>
+  friend constexpr typename std::enable_if_t<is_quantity_v<V>, Point<V>>
+  NextUp(Point<V> x);
+  template<typename V>
+  friend constexpr typename std::enable_if_t<is_quantity_v<V>, Point<V>>
+  NextDown(Point<V> x);
+
+  template<typename V>
   friend std::string DebugString(Point<V> const& point);
 
   template<typename V, typename S>
@@ -120,6 +127,13 @@ operator>=(Point<Vector> const& left, Point<Vector> const& right);
 template<typename Vector>
 constexpr typename std::enable_if_t<is_quantity_v<Vector>, bool>
 operator>(Point<Vector> const& left, Point<Vector> const& right);
+
+template<typename Vector>
+constexpr typename std::enable_if_t<is_quantity_v<Vector>, Point<Vector>>
+NextUp(Point<Vector> x);
+template<typename Vector>
+constexpr typename std::enable_if_t<is_quantity_v<Vector>, Point<Vector>>
+NextDown(Point<Vector> x);
 
 template<typename Vector>
 std::string DebugString(Point<Vector> const& point);
