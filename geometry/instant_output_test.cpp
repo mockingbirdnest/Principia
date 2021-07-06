@@ -9,7 +9,6 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_point {
 
 using astronomy::InfiniteFuture;
 using astronomy::InfinitePast;
@@ -21,23 +20,7 @@ using quantities::Time;
 using quantities::si::Second;
 using ::testing::Eq;
 
-class InstantOutputTest : public ::testing::Test {
- protected:
-  Instant JustAfter(Instant const t) {
-    return J2000 + std::bit_cast<double>(
-                       std::bit_cast<std::uint64_t>((t - J2000) / Second) +
-                       Sign(t - J2000)) *
-                       Second;
-  }
-  Instant JustBefore(Instant const t) {
-    return J2000 + std::bit_cast<double>(
-                       std::bit_cast<std::uint64_t>((t - J2000) / Second) -
-                       Sign(t - J2000)) *
-                       Second;
-  }
-
-  static constexpr Instant negative_j2000_{-0.0 * Second};
-};
+class InstantOutputTest : public ::testing::Test {};
 
 TEST_F(InstantOutputTest, UniversalTime) {
   // Note that since we are roughly twelve hours from J2000, we expect
@@ -84,9 +67,9 @@ TEST_F(InstantOutputTest, J2000) {
   EXPECT_THAT(
       (std::stringstream() << JustAfter("2000-01-01T11:59:59"_TT)).str(),
       Eq("J2000-9.99999999999999889e-01 s (TT)"));
-  EXPECT_THAT((std::stringstream() << JustBefore(negative_j2000_)).str(),
+  EXPECT_THAT((std::stringstream() << JustBefore(J2000)).str(),
               Eq("J2000-4.94065645841246544e-324 s (TT)"));
-  EXPECT_THAT((std::stringstream() << negative_j2000_).str(),
+  EXPECT_THAT((std::stringstream() << JustAfter(JustBefore(J2000))).str(),
               Eq("J2000-0.00000000000000000e+00 s (TT)"));
   EXPECT_THAT((std::stringstream() << J2000).str(),
               Eq("J2000+0.00000000000000000e+00 s (TT)"));
@@ -136,6 +119,5 @@ TEST_F(InstantOutputTest, InfiniteFuture) {
               Eq("J2000+inf s (TT)"));
 }
 
-}  // namespace internal_point
 }  // namespace geometry
 }  // namespace principia
