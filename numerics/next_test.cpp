@@ -73,7 +73,7 @@ TEST_F(NextTest, ExtendedRealLine) {
 TEST_F(NextTest, MuchAdoAboutNothingsSignBit) {
   // Constructing negative 0s by going below 0 and back up to it.
   static_assert(NextUp(NextDown(0.0)) == 0);
-  EXPECT_THAT(Sign(NextUp(NextDown(0.0))), Eq(Sign::Positive()));
+  EXPECT_THAT(Sign(NextUp(NextDown(0.0))), Eq(Sign::Negative()));
 }
 
 }  // namespace numerics
