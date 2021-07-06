@@ -44,10 +44,14 @@
     <ClInclude Include="legendre_body.hpp" />
     <ClInclude Include="legendre_normalization_factor.mathematica.h" />
     <ClInclude Include="legendre_roots.mathematica.h" />
+    <ClInclude Include="log_b.hpp" />
+    <ClInclude Include="log_b_body.hpp" />
     <ClInclude Include="max_abs_normalized_associated_legendre_function.mathematica.h" />
     <ClInclude Include="newhall.hpp" />
     <ClInclude Include="newhall.mathematica.h" />
     <ClInclude Include="newhall_body.hpp" />
+    <ClInclude Include="next.hpp" />
+    <ClInclude Include="next_body.hpp" />
     <ClInclude Include="pid.hpp" />
     <ClInclude Include="pid_body.hpp" />
     <ClInclude Include="piecewise_poisson_series.hpp" />
@@ -64,7 +68,8 @@
     <ClInclude Include="quadrature_body.hpp" />
     <ClInclude Include="root_finders.hpp" />
     <ClInclude Include="root_finders_body.hpp" />
-    <ClInclude Include="scale_b.h" />
+    <ClInclude Include="scale_b.hpp" />
+    <ClInclude Include="scale_b_body.hpp" />
     <ClInclude Include="ulp_distance.hpp" />
     <ClInclude Include="ulp_distance_body.hpp" />
     <ClInclude Include="apodization.hpp" />
@@ -97,6 +102,7 @@
     <ClCompile Include="legendre_test.cpp" />
     <ClCompile Include="max_abs_normalized_associated_legendre_functions_test.cc" />
     <ClCompile Include="newhall_test.cpp" />
+    <ClCompile Include="next_test.cpp" />
     <ClCompile Include="pid_test.cpp" />
     <ClCompile Include="piecewise_poisson_series_test.cpp" />
     <ClCompile Include="poisson_series_basis_test.cpp" />

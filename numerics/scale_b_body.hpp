@@ -1,15 +1,13 @@
 #pragma once
 
+#include "numerics/scale_b.hpp"
+
 #include <limits>
 
 namespace principia {
 namespace numerics {
 
-// A constexpr implementation of the IEEE 754:2008 scaleB function.
-template<typename SourceFormat,
-         typename LogBFormat,
-         typename = std::enable_if_t<std::is_floating_point_v<SourceFormat> &&
-                                     std::is_integral_v<LogBFormat>>>
+template<typename SourceFormat, typename LogBFormat, typename>
 constexpr SourceFormat ScaleB(SourceFormat const x, LogBFormat const N) {
   SourceFormat result = x;
   if (N < 0) {

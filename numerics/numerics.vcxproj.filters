@@ -173,7 +173,7 @@
     <ClInclude Include="quadrature_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="scale_b.h">
+    <ClInclude Include="scale_b.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="piecewise_poisson_series.hpp">
@@ -186,6 +186,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="fma_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="next.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="log_b.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="scale_b_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="next_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="log_b_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -291,6 +306,9 @@
     </ClCompile>
     <ClCompile Include="..\geometry\instant_output.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="next_test.cpp">
+      <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

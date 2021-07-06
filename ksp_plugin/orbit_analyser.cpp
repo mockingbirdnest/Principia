@@ -119,8 +119,8 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
         parameters.extended_mission_duration.value_or(
             parameters.mission_duration),
         std::max(2 * smallest_osculating_period, parameters.mission_duration));
-    constexpr int progress_bar_steps = 0x1p10;
-    for (int n = 0; n <= progress_bar_steps; ++n) {
+    constexpr double progress_bar_steps = 0x1p10;
+    for (double n = 0; n <= progress_bar_steps; ++n) {
       Instant const t =
           parameters.first_time + n / progress_bar_steps * analysis_duration;
       if (!ephemeris_->FlowWithFixedStep(t, *instance.value()).ok()) {
