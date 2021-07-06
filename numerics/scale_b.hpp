@@ -10,7 +10,7 @@ template<typename SourceFormat,
          typename LogBFormat,
          typename = std::enable_if_t<std::is_floating_point_v<SourceFormat> &&
                                      std::is_integral_v<LogBFormat>>>
-constexpr SourceFormat ScaleB(SourceFormat const x, LogBFormat const N);
+constexpr SourceFormat ScaleB(SourceFormat x, LogBFormat N);
 
 }  // namespace numerics
 }  // namespace principia
