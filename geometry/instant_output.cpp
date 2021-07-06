@@ -29,9 +29,9 @@ std::ostream& operator<<(std::ostream& os, Instant const& t) {
     // This subtraction is exact by Sterbenz’s lemma.
     Time const remainder = t - start_of_second;
     // |remainder| being the result of a subtraction of numbers greater than or
-    // equal to 1, it is a multiple of 2u ≈ 2⏨-16; 16 fractional decimal digits
-    // suffice to unambiguously represent it (alternatively, as shown by the
-    // static_assert, 17 decimal places are necessary, of which 16 are
+    // equal to 1, it is a multiple of 2u ≈ 2×10⁻¹⁶; 16 fractional decimal
+    // digits suffice to unambiguously represent it (alternatively, as shown by
+    // the static_assert, 17 decimal places are necessary, of which 16 are
     // fractional for numbers in [1, 10[; the integer part is taken care of by
     // |tt_second|).
     static_assert(std::numeric_limits<double>::max_digits10 - 1 == 16);
