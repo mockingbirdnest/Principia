@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "base/array.hpp"
-#include "numerics/scale_b.h"
+#include "numerics/scale_b.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 

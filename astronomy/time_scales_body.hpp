@@ -12,6 +12,7 @@
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
 #include "numerics/double_precision.hpp"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -25,6 +26,7 @@ using astronomy::date_time::operator""_DateTime;
 using astronomy::date_time::operator""_Julian;
 using numerics::DoublePrecision;
 using numerics::TwoDifference;
+using quantities::NextDown;
 using quantities::si::Day;
 using quantities::si::Hour;
 using quantities::si::Minute;
@@ -592,16 +594,12 @@ constexpr DateTime TTSecond(Instant const& t) {
   auto const date = TTDay(t);
   Instant const beginning_of_day = DateTimeAsTT(DateTime::BeginningOfDay(date));
   // Close to J2000, Sterbenz’s lemma can fail to apply to this subtraction.  We
-  // compute it exactly and round by hand (obtaining the preceding number by
-  // bit-casting and integer arithmetic).
+  // compute it exactly and round by hand.
   DoublePrecision<quantities::Time> const time_of_day =
       TwoDifference(t, beginning_of_day);
   quantities::Time const time_of_day_rounded_down =
-      time_of_day.error >= 0 * Second
-          ? time_of_day.value
-          : std::bit_cast<double>(
-                std::bit_cast<std::uint64_t>(time_of_day.value / Second) - 1) *
-                Second;
+      time_of_day.error >= 0 * Second ? time_of_day.value
+                                      : NextDown(time_of_day.value);
   int const second_of_day = static_cast<int>(time_of_day_rounded_down / Second);
   return DateTime(
       date,

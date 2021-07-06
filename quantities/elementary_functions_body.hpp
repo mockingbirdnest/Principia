@@ -11,6 +11,7 @@
 #include "quantities/si.hpp"
 #include "numerics/cbrt.hpp"
 #include "numerics/fma.hpp"
+#include "numerics/next.hpp"
 
 namespace principia {
 namespace quantities {
@@ -83,6 +84,16 @@ SquareRoot<Q> Sqrt(Q const& x) {
 template<typename Q>
 CubeRoot<Q> Cbrt(Q const& x) {
   return si::Unit<CubeRoot<Q>> * numerics::Cbrt(x / si::Unit<Q>);
+}
+
+template<typename Q>
+constexpr Q NextUp(Q const& x) {
+  return si::Unit<Q> * numerics::NextUp(x / si::Unit<Q>);
+}
+
+template<typename Q>
+constexpr Q NextDown(Q const& x) {
+  return si::Unit<Q> * numerics::NextDown(x / si::Unit<Q>);
 }
 
 template<int exponent>
