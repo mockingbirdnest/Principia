@@ -9,10 +9,10 @@ namespace numerics {
 // functions.
 template<typename SourceFormat,
          typename = std::enable_if_t<std::is_floating_point_v<SourceFormat>>>
-constexpr SourceFormat NextUp(SourceFormat const x);
+constexpr SourceFormat NextUp(SourceFormat x);
 template<typename SourceFormat,
          typename = std::enable_if_t<std::is_floating_point_v<SourceFormat>>>
-constexpr SourceFormat NextDown(SourceFormat const x);
+constexpr SourceFormat NextDown(SourceFormat x);
 
 }  // namespace numerics
 }  // namespace principia

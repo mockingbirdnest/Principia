@@ -10,7 +10,7 @@ namespace numerics {
 // infinity, and 0.
 template<typename SourceFormat,
          typename = std::enable_if_t<std::is_floating_point_v<SourceFormat>>>
-constexpr SourceFormat LogB(SourceFormat const x);
+constexpr SourceFormat LogB(SourceFormat x);
 
 }  // namespace numerics
 }  // namespace principia
