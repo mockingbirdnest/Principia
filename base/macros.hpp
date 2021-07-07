@@ -168,7 +168,7 @@ inline void noreturn() { std::exit(0); }
 // fixed in Clang 9.0.0, all hail zygoloid.
 #define PRINCIPIA_MAY_SIGNAL_OVERFLOW_IN_CONSTEXPR_ARITHMETIC    \
   !((PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL) && \
-    __clang_major__ >= 9)
+    __clang_major__ < 9)
 #if PRINCIPIA_MAY_SIGNAL_OVERFLOW_IN_CONSTEXPR_ARITHMETIC
 #  define CONSTEXPR_INFINITY constexpr
 #else
