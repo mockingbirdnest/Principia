@@ -4,6 +4,7 @@
 
 #include <limits>
 
+#include "base/macros.hpp"
 #include "numerics/log_b.hpp"
 #include "numerics/scale_b.hpp"
 
@@ -54,7 +55,7 @@ constexpr SourceFormat NextUp(SourceFormat const x) {
   // |x + ulp| below results in positive infinity and signals the overflow
   // exception.  On compilers that think overflow is non-constexpr, explicitly
   // return an infinity.
-  if (x == -std::numeric_limits<SourceFormat>::max()) {
+  if (x == std::numeric_limits<SourceFormat>::max()) {
     return std::numeric_limits<SourceFormat>::infinity();
   }
 #endif
