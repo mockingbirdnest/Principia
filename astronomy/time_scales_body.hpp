@@ -578,7 +578,7 @@ inline Instant Parse北斗Time(std::string const& s) {
 constexpr Date TTDay(Instant const& t) {
   // We use a cast as a constexpr version of a floor; this is only correct with
   // a positive JD, but we do not support dates before JD0.5 anyway.
-  CONSTEXPR_CHECK(t > "JD0.5"_TT);
+  CONSTEXPR_CHECK(t >= "JD0.5"_TT);
   std::int64_t jd_minus_half =
       static_cast<std::int64_t>((t - "JD0.5"_TT) / Day);
   // We want operations rounded toward negative infinity, but we also don’t

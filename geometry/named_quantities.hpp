@@ -43,5 +43,10 @@ using InertiaTensor =
 constexpr Instant JustAfter(Instant const t) { return NextUp(t); }
 constexpr Instant JustBefore(Instant const t) { return NextDown(t); }
 
+namespace internal_point {
+// We must declare this in the internal namespace where Point is defined so that
+// it is found by ADL.
+std::ostream& operator<<(std::ostream& os, const Instant& t);
+}  // namespace internal_point
 }  // namespace geometry
 }  // namespace principia
