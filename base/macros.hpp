@@ -163,8 +163,9 @@ inline void noreturn() { std::exit(0); }
 #define CONSTEXPR_DCHECK(condition) DCHECK(condition)
 
 // Lexicographic comparison (v1, v2, v3) ≥ (w1, w2, w3).
-#define VERSION_GE(v1, v2, v3, w1, w2, w3) \
-  v1 > w1 || (v1 == w1 && v2 > w2) || (v1 == w1 && v2 == w2 && v3 >= w3)
+#define VERSION_GE(v1, v2, v3, w1, w2, w3)         \
+  ((v1) > (w1) || ((v1) == (w1) && (v2) > (w2)) || \
+   ((v1) == (w1) && (v2) == (w2) && (v3) >= (w3)))
 
 #define CLANG_VERSION_GE(major, minor, patchlevel) \
   VERSION_GE(__clang_major__,                      \
