@@ -162,13 +162,17 @@ inline void noreturn() { std::exit(0); }
 #define CONSTEXPR_CHECK(condition) CHECK(condition)
 #define CONSTEXPR_DCHECK(condition) DCHECK(condition)
 
-// Clang for some reason doesn't like FP arithmetic that yields infinities in
-// constexpr code (MSVC and GCC are fine with that).  This will be fixed in
-// Clang 9.0.0, all hail zygoloid.
-#if PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL
-#  define CONSTEXPR_INFINITY const
-#else
+// Clang for some reason doesn't like FP arithmetic that yields infinities by
+// overflow (as opposed to division by zero, which the standard explicitly
+// prohibits) in constexpr code (MSVC and GCC are fine with that).  This will be
+// fixed in Clang 9.0.0, all hail zygoloid.
+#define PRINCIPIA_MAY_SIGNAL_OVERFLOW_IN_CONSTEXPR_ARITHMETIC    \
+  !((PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL) && \
+    __clang_major__ >= 9)
+#if PRINCIPIA_MAY_SIGNAL_OVERFLOW_IN_CONSTEXPR_ARITHMETIC
 #  define CONSTEXPR_INFINITY constexpr
+#else
+#  define CONSTEXPR_INFINITY const
 #endif
 
 #if PRINCIPIA_COMPILER_MSVC
