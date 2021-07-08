@@ -8,6 +8,7 @@
 #include <optional>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
@@ -121,8 +122,8 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> DetachFork();
 
   // Appends one point to the trajectory.
-  void Append(Instant const& time,
-              DegreesOfFreedom<Frame> const& degrees_of_freedom);
+  absl::Status Append(Instant const& time,
+                      DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
   // Removes all data for times (strictly) greater than |time|, as well as all
   // child trajectories forked at times (strictly) greater than |time|.  |time|

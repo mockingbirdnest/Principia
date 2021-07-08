@@ -63,7 +63,8 @@ class Point final {
   Vector coordinates_;
 
   template<typename V>
-  friend Point<V> operator+(V const& translation, Point<V> const& point);
+  friend constexpr Point<V> operator+(V const& translation,
+                                      Point<V> const& point);
   template<typename L, typename R>
   friend Point<Product<L, R>> FusedMultiplyAdd(L const& a, R const& b,
                                                Point<Product<L, R>> const& c);
@@ -85,16 +86,22 @@ class Point final {
   operator>(Point<V> const& left, Point<V> const& right);
 
   template<typename V>
+  friend constexpr typename std::enable_if_t<is_quantity_v<V>, Point<V>>
+  NextUp(Point<V> x);
+  template<typename V>
+  friend constexpr typename std::enable_if_t<is_quantity_v<V>, Point<V>>
+  NextDown(Point<V> x);
+
+  template<typename V>
   friend std::string DebugString(Point<V> const& point);
 
   template<typename V, typename S>
   friend class geometry::BarycentreCalculator;
 };
 
-// TODO(egg): constexpr these operators.
 template<typename Vector>
-Point<Vector> operator+(Vector const& translation,
-                        Point<Vector> const& point);
+constexpr Point<Vector> operator+(Vector const& translation,
+                                  Point<Vector> const& point);
 
 template<typename L, typename R>
 Point<Product<L, R>> FusedMultiplyAdd(L const& a,
@@ -120,6 +127,13 @@ operator>=(Point<Vector> const& left, Point<Vector> const& right);
 template<typename Vector>
 constexpr typename std::enable_if_t<is_quantity_v<Vector>, bool>
 operator>(Point<Vector> const& left, Point<Vector> const& right);
+
+template<typename Vector>
+constexpr typename std::enable_if_t<is_quantity_v<Vector>, Point<Vector>>
+NextUp(Point<Vector> x);
+template<typename Vector>
+constexpr typename std::enable_if_t<is_quantity_v<Vector>, Point<Vector>>
+NextDown(Point<Vector> x);
 
 template<typename Vector>
 std::string DebugString(Point<Vector> const& point);

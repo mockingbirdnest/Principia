@@ -3,12 +3,15 @@
 
 #include <string>
 
+#include "astronomy/date_time.hpp"
 #include "geometry/named_quantities.hpp"
 
 namespace principia {
 namespace astronomy {
 namespace internal_time_scales {
 
+using astronomy::date_time::Date;
+using astronomy::date_time::DateTime;
 using geometry::Instant;
 using quantities::Angle;
 
@@ -72,8 +75,21 @@ constexpr Instant operator""_北斗(char const* str, std::size_t size);
 Instant ParseGPSTime(std::string const& s);
 Instant Parse北斗Time(std::string const& s);
 
+// The following functions effectively round their argument toward InfinitePast
+// to various granularities.
+
+// Returns the TT day containing t.
+constexpr Date TTDay(Instant const& t);
+// Returns a DateTime representing the beginning of the TT second containing t.
+constexpr DateTime TTSecond(Instant const& t);
+// TODO(egg): TTMillisecond, but this is trickier because we use binary
+// floating-point.  UTC would be nice, too.
+
+constexpr Instant DateTimeAsTT(DateTime const& tt);
+
 }  // namespace internal_time_scales
 
+using internal_time_scales::DateTimeAsTT;
 using internal_time_scales::EarthRotationAngle;
 using internal_time_scales::Parse北斗Time;
 using internal_time_scales::ParseGPSTime;
@@ -81,6 +97,8 @@ using internal_time_scales::ParseTAI;
 using internal_time_scales::ParseTT;
 using internal_time_scales::ParseUT1;
 using internal_time_scales::ParseUTC;
+using internal_time_scales::TTDay;
+using internal_time_scales::TTSecond;
 using internal_time_scales::operator""_北斗;
 using internal_time_scales::operator""_GPS;
 using internal_time_scales::operator""_TAI;

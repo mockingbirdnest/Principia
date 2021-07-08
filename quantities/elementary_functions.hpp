@@ -42,6 +42,13 @@ SquareRoot<Q> Sqrt(Q const& x);
 template<typename Q>
 CubeRoot<Q> Cbrt(Q const& x);
 
+// Not equivalent to |std::nextafter(x)|; follows IEEE 754:2008 conventions
+// instead of C++ ones.  In particular, |NextUp(-0.0) == NextUp(+0.0)|.
+template<typename Q>
+constexpr Q NextUp(Q const& x);
+template<typename Q>
+constexpr Q NextDown(Q const& x);
+
 // Equivalent to |std::pow(x, exponent)| unless -3 ≤ x ≤ 3, in which case
 // explicit specialization yields multiplications statically.
 template<int exponent, typename Q>
@@ -91,6 +98,8 @@ using internal_elementary_functions::FusedMultiplySubtract;
 using internal_elementary_functions::FusedNegatedMultiplyAdd;
 using internal_elementary_functions::FusedNegatedMultiplySubtract;
 using internal_elementary_functions::Mod;
+using internal_elementary_functions::NextDown;
+using internal_elementary_functions::NextUp;
 using internal_elementary_functions::Pow;
 using internal_elementary_functions::Sin;
 using internal_elementary_functions::Sinh;
