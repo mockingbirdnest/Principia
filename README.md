@@ -1,6 +1,6 @@
 # Principia
 
-**[Grossmann](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#grossmann), the July version of Principia, is available, with faster scene changes.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, and 1.11.2](https://bit.ly/2Ux2qfC).**
+**[Grossmann](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#grossmann), the July version of Principia, is available, with bug fixes.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, and 1.11.2](https://bit.ly/2Ux2qfC).**
 
 **For the convenience of Chinese users, downloads from 腾讯微云: [Principia Grossmann for 1.8.1—1.11.2](https://share.weiyun.com/vg1lo3Ma), [Trappist-1 for Principia](https://share.weiyun.com/5wVtWYQ).**
 
