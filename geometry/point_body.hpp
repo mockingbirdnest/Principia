@@ -9,6 +9,7 @@
 #include "base/not_constructible.hpp"
 #include "geometry/grassmann.hpp"
 #include "glog/logging.h"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -18,6 +19,8 @@ namespace internal_point {
 using base::not_constructible;
 using quantities::FusedMultiplyAdd;
 using quantities::FusedNegatedMultiplyAdd;
+using quantities::NextDown;
+using quantities::NextUp;
 using quantities::Product;
 using quantities::Quantity;
 
@@ -125,8 +128,8 @@ constexpr Point<Vector>::Point(Vector const& coordinates)
     : coordinates_(coordinates) {}
 
 template<typename Vector>
-Point<Vector> operator+(Vector const& translation,
-                        Point<Vector> const& point) {
+constexpr Point<Vector> operator+(Vector const& translation,
+                                  Point<Vector> const& point) {
   return point + translation;
 }
 
@@ -166,6 +169,18 @@ constexpr typename std::enable_if_t<is_quantity_v<Vector>, bool> operator>(
     Point<Vector> const& left,
     Point<Vector> const& right) {
   return left.coordinates_ > right.coordinates_;
+}
+
+template<typename Vector>
+constexpr typename std::enable_if_t<is_quantity_v<Vector>, Point<Vector>>
+NextUp(Point<Vector> const x) {
+  return Point<Vector>(NextUp(x.coordinates_));
+}
+
+template<typename Vector>
+constexpr typename std::enable_if_t<is_quantity_v<Vector>, Point<Vector>>
+NextDown(Point<Vector> const x) {
+  return Point<Vector>(NextDown(x.coordinates_));
 }
 
 template<typename Vector>

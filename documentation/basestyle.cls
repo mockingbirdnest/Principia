@@ -20,7 +20,6 @@
 \RequirePackage{graphicx}
 
 % Language.
-
 \RequirePackage{polyglossia}
 \setdefaultlanguage[variant=british]{english}
 \setotherlanguages{greek,german,russian,latin,french}
@@ -28,7 +27,7 @@
 % single quotes, but british typographic rules (punctuation after the quotation
 % marks).
 \RequirePackage[style=english/american]{csquotes}
-\RequirePackage[shortcuts]{extdash}
+\RequirePackage[shortcuts,nospacearound]{extdash}
 
 \newcommand{\foreign}{\emph}
 
@@ -77,6 +76,8 @@
 
 \newfontfamily\cjkfont{BabelStoneHan.ttf}
 \setCJKmainfont{BabelStoneHan.ttf}
+
+\newfontfamily\xsuxfont{Nabuninuaihsus.otf}
 
 % Layout.
 
@@ -132,6 +133,9 @@
 }%
 }
 
+\RequirePackage{enumitem}
+\renewcommand\labelitemi{---}
+
 %\makeatletter
 %\renewcommand*{\@makefnmark}{%
 %  \hbox{%
@@ -147,6 +151,7 @@
 % Latin locutions.
 \newcommand{\idest}{\emph{i.e.}}
 \newcommand{\exempligratia}{\emph{e.g.}}
+\newcommand{\sequentes}{\emph{sqq.}}
 
 % For comments in align environments
 \newcommand\commentbox[1]{\parbox{.3\linewidth}{#1}}
@@ -168,10 +173,16 @@
 
 \RequirePackage[backend=biber,firstinits=true,maxnames=100,style=alphabetic,maxalphanames=4,doi=true,isbn=false,url=false,eprint=true,labelalpha=true]{biblatex}
 
-% Allow breaking after lower and upper case letters in bibliography URLs, see
-% https://tex.stackexchange.com/a/134281.
-\setcounter{biburllcpenalty}{7000}
-\setcounter{biburlucpenalty}{8000}
+% Allow breaking in numbers and after lower and upper case letters in bibliography
+% URLs, see https://tex.stackexchange.com/a/134281.
+% We use fairly low values to avoid unsightly spacing:
+% http : / / example . com is not an improvement over http://ex-
+% ample.com.  We prefer breaking in numbers and uppercase letters, which are often
+% IDs, rather than lowercase letters, which sometimes form meaningful words, or at
+% least tokens that are not customarily broken, e.g. the protocol.
+\setcounter{biburlnumpenalty}{100}
+\setcounter{biburllcpenalty}{500}
+\setcounter{biburlucpenalty}{100}
 
 \AtEveryBibitem{\clearlist{language}}  % TODO(egg): Why are we doing this?
 

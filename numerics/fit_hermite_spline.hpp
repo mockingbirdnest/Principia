@@ -2,6 +2,7 @@
 
 #include <list>
 
+#include "absl/status/statusor.h"
 #include "geometry/hilbert.hpp"
 #include "numerics/hermite3.hpp"
 
@@ -25,7 +26,7 @@ using geometry::Hilbert;
 // that the |Hermite3| interpolation of (*itᵣ, *(samples.end() - 1)) fits
 // |samples| within |tolerance|.
 template<typename Argument, typename Value, typename Samples>
-std::list<typename Samples::const_iterator> FitHermiteSpline(
+absl::StatusOr<std::list<typename Samples::const_iterator>> FitHermiteSpline(
     Samples const& samples,
     std::function<Argument const&(typename Samples::value_type const&)> const&
         get_argument,
