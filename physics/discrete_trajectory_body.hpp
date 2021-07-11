@@ -202,46 +202,10 @@ absl::Status DiscreteTrajectory<Frame>::Append(
       << "Append out of order at " << time << ", last time is "
       << (--timeline_.end())->first;
   if (downsampling_.has_value()) {
-    if (timeline_.size() == 1) {
-      downsampling_->SetStartOfDenseTimeline(timeline_.begin(), timeline_);
-    } else {
-      this->CheckNoForksBefore(this->back().time);
-      downsampling_->increment_dense_intervals(timeline_);
-      if (downsampling_->reached_max_dense_intervals()) {
-        std::vector<TimelineConstIterator> dense_iterators;
-        // This contains points, hence one more than intervals.
-        dense_iterators.reserve(downsampling_->max_dense_intervals() + 1);
-        for (TimelineConstIterator it =
-                 downsampling_->start_of_dense_timeline();
-             it != timeline_.end();
-             ++it) {
-          dense_iterators.push_back(it);
-        }
-        auto right_endpoints = FitHermiteSpline<Instant, Position<Frame>>(
-            dense_iterators,
-            [](auto&& it) -> auto&& { return it->first; },
-            [](auto&& it) -> auto&& { return it->second.position(); },
-            [](auto&& it) -> auto&& { return it->second.velocity(); },
-            downsampling_->tolerance());
-        if (!right_endpoints.ok()) {
-          // Note that the actual appending took place; the propagated status
-          // only reflects a lack of downsampling.
-          return right_endpoints.status();
-        }
-        if (right_endpoints->empty()) {
-          right_endpoints->push_back(dense_iterators.end() - 1);
-        }
-        TimelineConstIterator left = downsampling_->start_of_dense_timeline();
-        for (const auto& it_in_dense_iterators : right_endpoints.value()) {
-          TimelineConstIterator const right = *it_in_dense_iterators;
-          timeline_.erase(++left, right);
-          left = right;
-        }
-        downsampling_->SetStartOfDenseTimeline(left, timeline_);
-      }
-    }
+    return UpdateDownsampling();
+  } else {
+    return absl::OkStatus();
   }
-  return absl::OkStatus();
 }
 
 template<typename Frame>
@@ -676,6 +640,48 @@ Hermite3<Instant, Position<Frame>> DiscreteTrajectory<Frame>::GetInterpolation(
        upper->degrees_of_freedom.position()},
       {lower->degrees_of_freedom.velocity(),
        upper->degrees_of_freedom.velocity()}};
+}
+
+template<typename Frame>
+absl::Status DiscreteTrajectory<Frame>::UpdateDownsampling() {
+  if (timeline_.size() == 1) {
+    downsampling_->SetStartOfDenseTimeline(timeline_.begin(), timeline_);
+  } else {
+    this->CheckNoForksBefore(this->back().time);
+    downsampling_->increment_dense_intervals(timeline_);
+    if (downsampling_->reached_max_dense_intervals()) {
+      std::vector<TimelineConstIterator> dense_iterators;
+      // This contains points, hence one more than intervals.
+      dense_iterators.reserve(downsampling_->max_dense_intervals() + 1);
+      for (TimelineConstIterator it = downsampling_->start_of_dense_timeline();
+           it != timeline_.end();
+           ++it) {
+        dense_iterators.push_back(it);
+      }
+      auto right_endpoints = FitHermiteSpline<Instant, Position<Frame>>(
+          dense_iterators,
+          [](auto&& it) -> auto&& { return it->first; },
+          [](auto&& it) -> auto&& { return it->second.position(); },
+          [](auto&& it) -> auto&& { return it->second.velocity(); },
+          downsampling_->tolerance());
+      if (!right_endpoints.ok()) {
+        // Note that the actual appending took place; the propagated status only
+        // reflects a lack of downsampling.
+        return right_endpoints.status();
+      }
+      if (right_endpoints->empty()) {
+        right_endpoints->push_back(dense_iterators.end() - 1);
+      }
+      TimelineConstIterator left = downsampling_->start_of_dense_timeline();
+      for (const auto& it_in_dense_iterators : right_endpoints.value()) {
+        TimelineConstIterator const right = *it_in_dense_iterators;
+        timeline_.erase(++left, right);
+        left = right;
+      }
+      downsampling_->SetStartOfDenseTimeline(left, timeline_);
+    }
+  }
+  return absl::OkStatus();
 }
 
 }  // namespace internal_discrete_trajectory

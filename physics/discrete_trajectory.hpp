@@ -264,6 +264,8 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   Hermite3<Instant, Position<Frame>> GetInterpolation(
       Iterator const& upper) const;
 
+  absl::Status UpdateDownsampling();
+
   Timeline timeline_;
 
   std::optional<Downsampling> downsampling_;
