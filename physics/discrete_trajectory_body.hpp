@@ -263,7 +263,6 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::SetDownsampling(
     std::int64_t const max_dense_intervals,
     Length const& tolerance) {
-  CHECK(this->is_root());
   CHECK(!downsampling_.has_value());
   downsampling_.emplace(
       max_dense_intervals, tolerance, timeline_.begin(), timeline_);
@@ -647,7 +646,6 @@ absl::Status DiscreteTrajectory<Frame>::UpdateDownsampling() {
   if (timeline_.size() == 1) {
     downsampling_->SetStartOfDenseTimeline(timeline_.begin(), timeline_);
   } else {
-    this->CheckNoForksBefore(this->back().time);
     downsampling_->increment_dense_intervals(timeline_);
     if (downsampling_->reached_max_dense_intervals()) {
       std::vector<TimelineConstIterator> dense_iterators;
