@@ -58,6 +58,7 @@
     <ClInclude Include="plugin.hpp" />
     <ClInclude Include="interface.hpp" />
     <ClInclude Include="renderer.hpp" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="vessel.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -107,5 +108,8 @@
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="principia.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ksp_plugin.rc" />
   </ItemGroup>
 </Project>
