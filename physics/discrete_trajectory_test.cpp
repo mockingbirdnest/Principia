@@ -37,6 +37,7 @@ using geometry::Position;
 using geometry::R3Element;
 using geometry::Vector;
 using numerics::DoublePrecision;
+using quantities::Abs;
 using quantities::AngularFrequency;
 using quantities::Cos;
 using quantities::Length;
@@ -882,6 +883,51 @@ TEST_F(DiscreteTrajectoryTest, Downsampling) {
   EXPECT_THAT(errors, Each(Lt(1 * Milli(Metre))));
   EXPECT_THAT(errors, Contains(Gt(9 * Micro(Metre))))
       << *std::max_element(errors.begin(), errors.end());
+}
+
+TEST_F(DiscreteTrajectoryTest, DownsamplingForks) {
+  // The number of dense intervals does not divide the lengths of the
+  // trajectories.
+  int const max_dense_intervals = 73;
+  Length const tolerance = 1 * Milli(Metre);
+
+  DiscreteTrajectory<World> root;
+  root.SetDownsampling(max_dense_intervals, tolerance);
+  AngularFrequency const ω = 3 * Radian / Second;
+  Length const r = 2 * Metre;
+  Time const Δt = 10 * Milli(Second);
+  Instant const t1 = t0_;
+  Instant const t2 = t0_ + 10 * Second;
+  auto const root_tmax = AppendCircularTrajectory(ω, r, Δt, t1, t2, root);
+
+  auto fork1 = root.NewForkAtLast();
+  fork1->SetDownsampling(max_dense_intervals, tolerance);
+  Instant const t3 = t2 + 10 * Second;
+  auto const fork1_tmax =
+      AppendCircularTrajectory(ω, r, Δt, root_tmax, t3, *fork1);
+
+  // A short fork with no downsampling
+  auto fork2 = fork1->NewForkAtLast();
+  fork2->SetDownsampling(max_dense_intervals, tolerance);
+  Instant const t4 = t3 + 300 * Milli(Second);
+  auto const fork2_tmax =
+      AppendCircularTrajectory(ω, r, Δt, fork1_tmax, t4, *fork2);
+
+  auto fork3 = fork2->NewForkAtLast();
+  fork3->SetDownsampling(max_dense_intervals, tolerance);
+  Instant const t5 = t4 + 10 * Second;
+  AppendCircularTrajectory(ω, r, Δt, fork2_tmax, t5, *fork3);
+
+  // Roughly 55 points per downsampled segments.
+  EXPECT_THAT(root.Size(), Eq(56));
+  EXPECT_THAT(fork1->Size(), Eq(root.Size() + 55));
+  EXPECT_THAT(fork2->Size(), Eq(fork1->Size() + 30));
+  EXPECT_THAT(fork3->Size(), Eq(fork2->Size() + 55));
+
+  for (Instant t = t0_; t <= fork3->t_max(); t += Δt) {
+    EXPECT_THAT((fork3->EvaluatePosition(t) - World::origin).Norm(),
+                AbsoluteErrorFrom(r, Lt(0.99 * Milli(Metre))));
+  }
 }
 
 TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
