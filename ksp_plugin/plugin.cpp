@@ -642,6 +642,12 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
           ephemeris_.get());
     });
   }
+
+  // Now that the composition of the vessels is known, as well as their
+  // intrinsic forces and torques, we may detect collapsibility changes.
+  for (auto const& [_, vessel] : vessels_) {
+    vessel->DetectCollapsibilityChange();
+  }
 }
 
 void Plugin::SetPartApparentRigidMotion(

@@ -100,6 +100,9 @@ class Vessel {
   // Clears the forces and torques on all parts.
   virtual void ClearAllIntrinsicForcesAndTorques();
 
+  //TODO(phl):Comment
+  virtual void DetectCollapsibilityChange();
+
   // If the history is empty, appends a single point to it, computed as the
   // barycentre of all parts.  |parts_| must not be empty.  After this call,
   // |history_| is never empty again and the psychohistory is usable.
@@ -258,11 +261,16 @@ class Vessel {
   not_null<Celestial const*> parent_;
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
 
+  // TODO(phl): Is this right?
+  bool is_collapsible_ = true;
+
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
   std::set<PartId> kept_parts_;
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
-  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_;
+  //TODO(phl):comments
+  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> prehistory_;
+  DiscreteTrajectory<Barycentric>* history_ = nullptr;
   DiscreteTrajectory<Barycentric>* psychohistory_ = nullptr;
 
   // The |prediction_| is forked off the end of the |psychohistory_|.
