@@ -96,6 +96,7 @@
     <ClInclude Include="numerics.pb.h" />
     <ClInclude Include="physics.pb.h" />
     <ClInclude Include="quantities.pb.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="testing_utilities.pb.h" />
   </ItemGroup>
   <ItemGroup>
@@ -111,5 +112,8 @@
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="serialization.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="serialization.rc" />
   </ItemGroup>
 </Project>
