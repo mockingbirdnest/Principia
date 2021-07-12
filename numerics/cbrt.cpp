@@ -138,6 +138,8 @@ double Cbrt(double const y) {
   // Step 1.  The constant Γʟ²ᴄ is the result of Canon optimization for step 2.
   constexpr double Γʟ²ᴄ = 0x0.199E'9760'9F63'9F90'626F'8B97'2B3A'6249'2p0;
   constexpr std::uint64_t C = 0x2A9F'775C'D8A7'5897;
+  // By sheer luck it turns out that ⟦(2×1023 − Γʟ²ᴄ) / 3⟧ equals
+  // ⟦⟦2×1023 − ⟦Γʟ²ᴄ⟧⟧ / 3⟧ (the right-hand side of this equality) exactly.
   static_assert(C * 0x1p-52 == (2 * 1023 - Γʟ²ᴄ) / 3);
   std::uint64_t const Y = _mm_cvtsi128_si64(_mm_castpd_si128(Y_0));
   std::uint64_t const Q = C + Y / 3;
@@ -175,6 +177,8 @@ double Cbrt(double const y) {
   }
   return r₀;
 }
+template double Cbrt<Rounding::Faifthful>(double y);
+template double Cbrt<Rounding::Correct>(double y);
 }  // namespace method_3²ᴄZ5¹
 
 namespace method_5²Z4¹FMA {
@@ -188,7 +192,9 @@ double Cbrt(double const y) {
   // than that of ξ.  This does not matter all that much here.
   constexpr double Γᴋ = 0x0.19D9'06CB'2868'81F4'88FD'38DF'E7F6'98DD'Bp0;
   constexpr std::uint64_t C = 0x2A9F'7625'3119'D328;
-  static_assert(C * 0x1p-52 == (2 * 1023 - Γᴋ) / 3);
+  // C is defined as ⟦(2×1023 − Γᴋ) / 3⟧, which happens to differs by 296 ULPs from
+  // ⟦⟦2×1023 − ⟦Γᴋ⟧⟧ / 3⟧ which we compute in this static_assert.
+  static_assert((C - 296) * 0x1p-52 == (2 * 1023 - Γᴋ) / 3);
   std::uint64_t const Y = _mm_cvtsi128_si64(_mm_castpd_si128(Y_0));
   std::uint64_t const Q = C + Y / 3;
   double const q = _mm_cvtsd_f64(_mm_castsi128_pd(_mm_cvtsi64_si128(Q)));
@@ -230,6 +236,8 @@ double Cbrt(double const y) {
   }
   return r₀;
 }
+template double Cbrt<Rounding::Faifthful>(double y);
+template double Cbrt<Rounding::Correct>(double y);
 }  // namespace method_5²Z4¹FMA
 
 double Cbrt(double const y) {
