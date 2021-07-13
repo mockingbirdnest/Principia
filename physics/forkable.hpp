@@ -199,8 +199,10 @@ class Forkable {
   // This trajectory must be a root.
   void CheckNoForksBefore(Instant const& time);
 
-  // This trajectory need not be a root.  As forks are encountered during tree
-  // traversal their pointer is nulled-out in |forks|.
+  // This trajectory need not be a root.  The entire tree rooted at this
+  // trajectory is serialized.  |forks| contains the pointers that we'll want to
+  // retrieve when reading.  As forks are encountered during tree traversal
+  // their pointer is nulled-out in |forks|.
   void WriteSubTreeToMessage(
       not_null<serialization::DiscreteTrajectory*> message,
       std::vector<Tr4jectory*>& forks) const;

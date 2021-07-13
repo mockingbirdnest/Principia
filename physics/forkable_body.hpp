@@ -481,7 +481,9 @@ void Forkable<Tr4jectory, It3rator, Traits>::WriteSubTreeToMessage(
     // Apologies for the O(N) search.
     auto const it = std::find(forks.begin(), forks.end(), child.get());
     if (it == forks.end()) {
-      continue;
+      // The caller doesn't want to track this fork, let's record this fact.
+      message->add_fork_position(
+          serialization::DiscreteTrajectory::MISSING_FORK_POSITION);
     } else {
       message->add_fork_position(it - forks.begin());
       *it = nullptr;
@@ -512,7 +514,10 @@ void Forkable<Tr4jectory, It3rator, Traits>::FillSubTreeFromMessage(
       fork->FillSubTreeFromMessage(child, forks);
       if (has_fork_position) {
         std::int32_t const fork_position = message.fork_position(index);
-        *forks[fork_position] = fork;
+        if (fork_position !=
+            serialization::DiscreteTrajectory::MISSING_FORK_POSITION) {
+          *forks[fork_position] = fork;
+        }
       }
       ++index;
     }

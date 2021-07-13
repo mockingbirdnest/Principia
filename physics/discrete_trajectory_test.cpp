@@ -734,7 +734,7 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   serialization::DiscreteTrajectory message;
   serialization::DiscreteTrajectory reference_message;
 
-  // Don't serialize |fork0| and |fork4|.
+  // Don't track |fork0|.
   massive_trajectory_->WriteToMessage(&message, {fork1, fork3, fork2});
   massive_trajectory_->WriteToMessage(&reference_message,
                                       {fork1, fork3, fork2});
@@ -742,6 +742,7 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   DiscreteTrajectory<World>* deserialized_fork1 = nullptr;
   DiscreteTrajectory<World>* deserialized_fork2 = nullptr;
   DiscreteTrajectory<World>* deserialized_fork3 = nullptr;
+  LOG(ERROR)<<message.DebugString();
   not_null<std::unique_ptr<DiscreteTrajectory<World>>> const
       deserialized_trajectory =
           DiscreteTrajectory<World>::ReadFromMessage(message,
@@ -759,11 +760,13 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   EXPECT_THAT(reference_message, EqualsProto(message));
   EXPECT_THAT(message.children_size(), Eq(2));
   EXPECT_THAT(message.zfp().timeline_size(), Eq(3));
-  EXPECT_THAT(message.children(0).trajectories_size(), Eq(2));
+  EXPECT_THAT(message.children(0).trajectories_size(), Eq(3));
   EXPECT_THAT(message.children(0).trajectories(0).children_size(), Eq(0));
-  EXPECT_THAT(message.children(0).trajectories(0).zfp().timeline_size(), Eq(1));
+  EXPECT_THAT(message.children(0).trajectories(0).zfp().timeline_size(), Eq(2));
   EXPECT_THAT(message.children(0).trajectories(1).children_size(), Eq(0));
-  EXPECT_THAT(message.children(0).trajectories(1).zfp().timeline_size(), Eq(2));
+  EXPECT_THAT(message.children(0).trajectories(1).zfp().timeline_size(), Eq(1));
+  EXPECT_THAT(message.children(0).trajectories(2).children_size(), Eq(0));
+  EXPECT_THAT(message.children(0).trajectories(2).zfp().timeline_size(), Eq(2));
   EXPECT_THAT(message.children(1).trajectories_size(), Eq(1));
   EXPECT_THAT(message.children(1).trajectories(0).children_size(), Eq(0));
   EXPECT_THAT(message.children(1).trajectories(0).zfp().timeline_size(), Eq(1));
