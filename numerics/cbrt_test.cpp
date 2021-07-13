@@ -49,7 +49,8 @@ class CubeRootTest : public ::testing::Test {
     double rounded_to_nearest;
   };
 
-  // y must lie in [1, 8[.
+  // Uses a digit-by-digit algorithm to compute the correctly-rounded cube root
+  // of y in all rounding modes.  y must lie in [1, 8[.
   static RoundedReal DigitByDigitCbrt(double y) {
     CHECK_GE(y, 1);
     CHECK_LT(y, 8);
@@ -196,12 +197,25 @@ TEST_F(CubeRootTest, Exceptions) {
 }
 
 TEST_F(CubeRootTest, BoundsOfTheRescalingRange) {
-  EXPECT_THAT(Cbrt(0x1p-225), Eq(0x1p-75));
-  EXPECT_THAT(Cbrt(0x1.0'0000'0000'0002p-225),
-              Eq(0x1p-75 * Cbrt(0x1.0'0000'0000'0002p0)));
-  EXPECT_THAT(Cbrt(0x1p237), Eq(0x1p79));
-  EXPECT_THAT(Cbrt(0x1.F'FFFF'FFFF'FFFEp236),
-              Eq(0x1p79 * Cbrt(0x1.F'FFFF'FFFF'FFFEp-1)));
+  EXPECT_THAT(method_3²ᴄZ5¹::Cbrt<Rounding::Correct>(0x1p-340),
+              Eq(0x1p-114 * Cbrt(4)));
+  EXPECT_THAT(method_3²ᴄZ5¹::Cbrt<Rounding::Correct>(0x1.0'0000'0000'0002p-340),
+              Eq(0x1p-114 * Cbrt(0x1.0'0000'0000'0002p2)));
+  EXPECT_THAT(method_3²ᴄZ5¹::Cbrt<Rounding::Correct>(0x1p341),
+              Eq(0x1p113 * Cbrt(4)));
+  EXPECT_THAT(method_3²ᴄZ5¹::Cbrt<Rounding::Correct>(0x1.0'0000'0000'0002p341),
+              Eq(0x1p113 * Cbrt(0x1.0'0000'0000'0002p2)));
+  if (CanEmitFMAInstructions) {
+    EXPECT_THAT(method_5²Z4¹FMA::Cbrt<Rounding::Correct>(0x1p-438),
+                Eq(0x1p-146));
+    EXPECT_THAT(
+        method_5²Z4¹FMA::Cbrt<Rounding::Correct>(0x1.0'0000'0000'0002p-438),
+        Eq(0x1p-146 * Cbrt(0x1.0'0000'0000'0002p0)));
+    EXPECT_THAT(method_5²Z4¹FMA::Cbrt<Rounding::Correct>(0x1p438), Eq(0x1p146));
+    EXPECT_THAT(
+        method_5²Z4¹FMA::Cbrt<Rounding::Correct>(0x1.0'0000'0000'0002p438),
+        Eq(0x1p146 * Cbrt(0x1.0'0000'0000'0002p0)));
+  }
 }
 
 TEST_F(CubeRootTest, Sign) {

@@ -137,8 +137,7 @@ namespace method_3²ᴄZ5¹ {
 // No overflow or underflow occurs in intermediate computations for
 // y ∈ [y₁, y₂].  The limiting expression is the denominator of step 4, wherein
 // the 8th power of x, which is approximately the 8th power of ∛y, appears. The
-// 3rd power of y, i.e., the 9th power of ∛y, does not overflow for
-// y ∈ [y₁, y₂].
+// the 9th power of ∛y, i.e., cube of y, does not overflow for y ∈ [y₁, y₂].
 // NOTE(egg): the σs do not rescale enough to put the least normal or greatest
 // finite magnitudes inside the non-rescaling range; for very small and very
 // large values, rescaling occurs twice.
@@ -232,7 +231,7 @@ namespace method_5²Z4¹FMA {
 
 // No overflow or underflow occurs in intermediate computations for
 // y ∈ [y₁, y₂].  Steps 2 and 4 respectively involve the 6th powers of q and x,
-// approximately the 6th power of ∛y. The 7th power of ∛y does not overflow for
+// approximately the 6th power of ∛y.  The 7th power of ∛y does not overflow for
 // y ∈ [y₁, y₂].  Here the range [y₁, y₂] is large enough that a single
 // rescaling suffices.
 constexpr double y₁ = 0x1p-438;
