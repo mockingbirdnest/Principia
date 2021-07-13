@@ -178,7 +178,7 @@ void Vessel::DetectCollapsibilityChange() {
   }
 }
 
-void Vessel::PrepareHistory(Instant const& t) {
+void Vessel::CreatePrehistoryIfNeeded(Instant const& t) {
   CHECK(!parts_.empty());
   if (prehistory_->Empty()) {
     LOG(INFO) << "Preparing history of vessel " << ShortDebugString()
@@ -525,7 +525,8 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
   } else {
     if (is_pre_grothendieck_haar) {
-      // The history is guaranteed to be non-empty because of PrepareHistory.
+      // The history is guaranteed to be non-empty because of
+      // CreatePrehistoryIfNeeded.
       auto history = DiscreteTrajectory<Barycentric>::ReadFromMessage(
           message.history(),
           /*forks=*/{&vessel->psychohistory_, &vessel->prediction_});

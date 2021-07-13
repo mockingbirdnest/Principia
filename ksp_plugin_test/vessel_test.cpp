@@ -171,7 +171,7 @@ TEST_F(VesselTest, PrepareHistory) {
       ephemeris_,
       FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.PrepareHistory(astronomy::J2000 + 1 * Second);
+  vessel_.CreatePrehistoryIfNeeded(astronomy::J2000 + 1 * Second);
 
   EXPECT_EQ(1, vessel_.psychohistory().Size());
   EXPECT_EQ(astronomy::J2000 + 1 * Second,
@@ -200,7 +200,7 @@ TEST_F(VesselTest, AdvanceTime) {
       ephemeris_,
       FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.PrepareHistory(astronomy::J2000);
+  vessel_.CreatePrehistoryIfNeeded(astronomy::J2000);
 
   p1_->AppendToHistory(
       astronomy::J2000 + 0.5 * Second,
@@ -301,7 +301,7 @@ TEST_F(VesselTest, Prediction) {
                 Return(absl::OkStatus())))
       .WillRepeatedly(Return(absl::OkStatus()));
 
-  vessel_.PrepareHistory(astronomy::J2000);
+  vessel_.CreatePrehistoryIfNeeded(astronomy::J2000);
   // Polling for the integration to happen.
   do {
     vessel_.RefreshPrediction(astronomy::J2000 + 1 * Second);
@@ -373,7 +373,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
                                                60.0 * Metre / Second,
                                                50.0 * Metre / Second}))),
                 Return(absl::OkStatus())));
-  vessel_.PrepareHistory(astronomy::J2000);
+  vessel_.CreatePrehistoryIfNeeded(astronomy::J2000);
   // Polling for the integration to happen.
   do {
     vessel_.RefreshPrediction();
@@ -412,7 +412,7 @@ TEST_F(VesselTest, FlightPlan) {
       .Times(AnyNumber());
   std::vector<not_null<MassiveBody const*>> const bodies;
   ON_CALL(ephemeris_, bodies()).WillByDefault(ReturnRef(bodies));
-  vessel_.PrepareHistory(astronomy::J2000);
+  vessel_.CreatePrehistoryIfNeeded(astronomy::J2000);
 
   EXPECT_FALSE(vessel_.has_flight_plan());
   EXPECT_CALL(
@@ -501,7 +501,7 @@ TEST_F(VesselTest, SerializationSuccess) {
       ephemeris_,
       FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.PrepareHistory(astronomy::J2000);
+  vessel_.CreatePrehistoryIfNeeded(astronomy::J2000);
 
   EXPECT_CALL(
       ephemeris_,

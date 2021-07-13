@@ -100,13 +100,15 @@ class Vessel {
   // Clears the forces and torques on all parts.
   virtual void ClearAllIntrinsicForcesAndTorques();
 
-  //TODO(phl):Comment
+  // Detects a change in the collapsibility of the vessel and creates a new fork
+  // if needed.  Must be called after the pile-ups have been collected.
   virtual void DetectCollapsibilityChange();
 
-  // If the history is empty, appends a single point to it, computed as the
+  // If the prehistory is empty, appends a single point to it, computed as the
   // barycentre of all parts.  |parts_| must not be empty.  After this call,
-  // |history_| is never empty again and the psychohistory is usable.
-  virtual void PrepareHistory(Instant const& t);
+  // |prehistory_| is never empty again and the history and psychohistory are
+  // usable.  Must be called (at least) at the creation of the vessel.
+  virtual void CreatePrehistoryIfNeeded(Instant const& t);
 
   // Disables downsampling for the history of this vessel.  This is useful when
   // the vessel collided with a celestial, as downsampling might run into
@@ -261,19 +263,27 @@ class Vessel {
   not_null<Celestial const*> parent_;
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
 
-  // TODO(phl): Is this right?
-  bool is_collapsible_ = true;
+  // When reading a pre-Grothendieck/Haar save, the existing history becomes the
+  // first (and only) segment of the |history_|.  It must be non-collapsible as
+  // we don't know anything about it.
+  bool is_collapsible_ = false;
 
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
   std::set<PartId> kept_parts_;
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
-  //TODO(phl):comments
+
+  // The |prehistory_| contains exactly one point, added by
+  // CreatePrehistoryIfNeeded.
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> prehistory_;
+
+  // The |history_| is forked off the end of the |prehistory_|, the
+  // |psychohistory_| is forked off the end of the |history_| and the
+  // |prediction_| is forked off the end of the |psychohistory_|.  The
+  // |history_| contains a number of segments which alternate it terms of the
+  // collapsibility of the vessel.
   DiscreteTrajectory<Barycentric>* history_ = nullptr;
   DiscreteTrajectory<Barycentric>* psychohistory_ = nullptr;
-
-  // The |prediction_| is forked off the end of the |psychohistory_|.
   DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
 
   RecurringThread<PrognosticatorParameters,
