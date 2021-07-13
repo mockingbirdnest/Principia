@@ -2,29 +2,46 @@
 
 namespace principia {
 namespace numerics {
+namespace internal_cbrt {
+
 // Computes ∛y, correctly rounded to nearest.
 double Cbrt(double y);
 
-// Specific methods and uncorrected rounding exposed for testing.
+// Specific methods, uncorrected rounding, and the corrector function exposed
+// for testing.
 
 enum class Rounding {
-  Faifthful,
+  Faithful,
   Correct,
 };
 
 namespace method_3²ᴄZ5¹ {
-template<Rounding rounding = Rounding::Correct>
+template<Rounding rounding>
 double Cbrt(double y);
-extern template double Cbrt<Rounding::Faifthful>(double y);
+extern template double Cbrt<Rounding::Faithful>(double y);
 extern template double Cbrt<Rounding::Correct>(double y);
 }  // namespace method_3²ᴄZ5¹
 
 namespace method_5²Z4¹FMA {
-template<Rounding rounding = Rounding::Correct>
+template<Rounding rounding>
 double Cbrt(double y);
-extern template double Cbrt<Rounding::Faifthful>(double y);
+extern template double Cbrt<Rounding::Faithful>(double y);
 extern template double Cbrt<Rounding::Correct>(double y);
 }  // namespace method_5²Z4¹FMA
+
+// Computes one bit of ∛y, rounded toward 0.
+// All arguments must be positive.
+// a is the already-computed approximation of the cube root.
+// b is the bit being computed; it must be a power of 2.
+// The least significant bit of a must be greater than b.
+// ∛y must lie in [a, a + 2b[.
+// The result is the value of ∛y ≥ a + b, i.e., the value of the bit b in the
+// binary expansion of ∛y.
+bool CbrtOneBit(double y, double a, double b);
+
+}  // namespace internal_cbrt
+
+using internal_cbrt::Cbrt;
 
 }  // namespace numerics
 }  // namespace principia

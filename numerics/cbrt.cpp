@@ -14,6 +14,7 @@
 
 namespace principia {
 namespace numerics {
+namespace internal_cbrt {
 
 using quantities::Sqrt;
 
@@ -74,8 +75,10 @@ std::array<double, n> PriestNievergeltNormalize(std::array<double, n> const f) {
   return s;
 }
 
-bool CorrectionPossiblyNeeded(double const r₀, double const r₁, double const τ) {
-  double const r̃ = r₀ + 2 * r₁;
+bool CorrectionPossiblyNeeded(double const r₀,
+                              double const r₁,
+                              double const r̃,
+                              double const τ) {
   // The order of the conjunction matters for branch predictability here.  The
   // left-hand side is almost always false: it is true only when r = r₀ + r₁ is
   // very close to a tie (for r̃ ≠ r₀) or to a representable number (for r̃ = r₀).
@@ -84,12 +87,13 @@ bool CorrectionPossiblyNeeded(double const r₀, double const r₁, double const
   return std::abs(0.5 * (r̃ - r₀) - r₁) <= τ * r₀ && r̃ != r₀;
 }
 
-double CorrectLastBit(double const y, double const r₀, double const r₁) {
-  double const r̃ = r₀ + 2 * r₁;
-  // TODO(egg): Handle negative y.
-  CHECK_GT(y, 0);
+double CorrectLastBit(double const y, double const r₀, double const r̃) {
   double const a = std::min(r₀, r̃);
   double const b = 0.5 * (std::max(r₀, r̃) - a);
+  return CbrtOneBit(y, a, b) ? std::max(r₀, r̃) : a;
+}
+
+bool CbrtOneBit(double y, double a, double b) {
   double const b² = b * b;
   double const b³ = b² * b;
   DoublePrecision<double> const a² = TwoProduct(a, a);
@@ -97,25 +101,27 @@ double CorrectLastBit(double const y, double const r₀, double const r₁) {
   DoublePrecision<double> const a³₀ = TwoProduct(a²₀, a);
   DoublePrecision<double> minus_a³₁ = TwoProduct(a²₁, -a);
   auto const& [a³₀₀, a³₀₁] = a³₀;
-  // ρ₅₃ = y - a³ = y - a³₀ - a³₁ = y - a³₀₀ - a³₀₁ - a³₁;
+  // ρ = y - a³ = y - a³₀ - a³₁ = y - a³₀₀ - a³₀₁ - a³₁;
   double const ρ₀ = y - a³₀₀;  // Exact.
-  // ρ₅₃ = ρ₀ - a³₀₁ - a³₁;
-  std::array<double, 4> const ρ₅₃ = PriestNievergeltNormalize(
+  // ρ = ρ₀ - a³₀₁ - a³₁;
+  std::array<double, 4> const ρ = PriestNievergeltNormalize(
       NievergeltQuadruplyCompensatedStep(TwoDifference(ρ₀, a³₀₁), minus_a³₁));
-  CHECK_EQ(ρ₅₃[3], 0);
-  std::array<double, 3> ρ₅₄{ρ₅₃[0], ρ₅₃[1], ρ₅₃[2]};
+  CHECK_EQ(ρ[3], 0);
+  std::array<double, 3> ρ_next{ρ[0], ρ[1], ρ[2]};
   for (double rhs : {2 * a²₀ * b, a²₀ * b, 2 * a²₁ * b, a²₁ * b,  // 3 a²b
                      2 * a * b², a * b²,                          // 3 ab²
                      b³}) {
     auto const ρ = PriestNievergeltNormalize(NievergeltQuadruplyCompensatedStep(
-        TwoSum(ρ₅₄[0], ρ₅₄[1]), TwoDifference(ρ₅₄[2], rhs)));
+        TwoSum(ρ_next[0], ρ_next[1]), TwoDifference(ρ_next[2], rhs)));
     CHECK_EQ(ρ[3], 0);
-    ρ₅₄ = {ρ[0], ρ[1], ρ[2]};
+    ρ_next = {ρ[0], ρ[1], ρ[2]};
   }
-  bool const ρ₅₄_positive = ρ₅₄[0] > 0 || (ρ₅₄[0] == 0 && ρ₅₄[1] > 0) ||
-                            (ρ₅₄[0] == 0 && ρ₅₄[1] == 0 && ρ₅₄[2] >= 0);
-  return ρ₅₄_positive ? std::max(r₀, r̃) : a;
+  bool const ρ_next_positive =
+      ρ_next[0] > 0 || (ρ_next[0] == 0 && ρ_next[1] > 0) ||
+      (ρ_next[0] == 0 && ρ_next[1] == 0 && ρ_next[2] >= 0);
+  return ρ_next_positive;
 }
+
 
 namespace masks {
 static const __m128d sign_bit =
@@ -128,6 +134,23 @@ static const __m128d round_toward_zero_26_bits =
 
 namespace method_3²ᴄZ5¹ {
 
+// No overflow or underflow occurs in intermediate computations for
+// y ∈ [y₁, y₂].  The limiting expression is the denominator of step 4, wherein
+// the 8th power of x, which is approximately the 8th power of ∛y, appears. The
+// 3rd power of y, i.e., the 9th power of ∛y, does not overflow for
+// y ∈ [y₁, y₂].
+// NOTE(egg): the σs do not rescale enough to put the least normal or greatest
+// finite magnitudes inside the non-rescaling range; for very small and very
+// large values, rescaling occurs twice.
+constexpr double y₁ = 0x1p-340;
+constexpr double σ₁ = 0x1p-227;
+constexpr double σ₁⁻³ = 1 / (σ₁ * σ₁ * σ₁);
+constexpr double y₂ = 0x1p341;
+constexpr double σ₂ = 0x1p227;
+constexpr double σ₂⁻³ = 1 / (σ₂ * σ₂ * σ₂);
+static_assert(σ₁⁻³ * y₁ == y₂);
+static_assert(σ₂⁻³ * y₂ == y₁);
+
 template<Rounding rounding>
 double Cbrt(double const y) {
   // TODO(egg): Rescaling paths.
@@ -135,6 +158,28 @@ double Cbrt(double const y) {
   __m128d const sign = _mm_and_pd(masks::sign_bit, Y_0);
   Y_0 = _mm_andnot_pd(masks::sign_bit, Y_0);
   double const abs_y = _mm_cvtsd_f64(Y_0);
+
+  if (y != y) {
+    // The usual logic will produce a qNaN when given a NaN, but will not
+    // preserve the payload and will signal overflows (q will be a nonsensical
+    // large value, and q³ will overflow).  Further, the rescaling comparisons
+    // will signal the invalid operation exception for quiet NaNs (although that
+    // would be easy to work around using the unordered compare intrinsics).
+    return y + y;
+  }
+
+  if (abs_y < y₁) {
+    if (abs_y == 0) {
+      return y;
+    }
+    return Cbrt<rounding>(y * σ₁⁻³) * σ₁;
+  } else if (abs_y > y₂) {
+    if (abs_y == std::numeric_limits<double>::infinity()) {
+      return y;
+    }
+    return Cbrt<rounding>(y * σ₂⁻³) * σ₂;
+  }
+
   // Step 1.  The constant Γʟ²ᴄ is the result of Canon optimization for step 2.
   constexpr double Γʟ²ᴄ = 0x0.199E'9760'9F63'9F90'626F'8B97'2B3A'6249'2p0;
   constexpr std::uint64_t C = 0x2A9F'775C'D8A7'5897;
@@ -168,26 +213,67 @@ double Cbrt(double const y) {
   double const Δ = numerator / denominator;
   double const r₀ = x_sign_y - Δ;
   double const r₁ = x_sign_y - r₀ - Δ;
+  double const r̃ = r₀ + 2 * r₁;
   // TODO(egg): The slow path rate given in cbrt.pdf was computed with the wrong
   // τ here, as well as an incorrect C.  The misrounding rates probably also
   // used the wrong C.
   if (rounding == Rounding::Correct &&
-      CorrectionPossiblyNeeded(r₀, r₁, /*τ=*/0x1.7C8587D10158Cp-13)) {
-    return CorrectLastBit(y, r₀, r₁);
+      CorrectionPossiblyNeeded(r₀, r₁, r̃, /*τ=*/0x1.7C8587D10158Cp-13)) {
+    return _mm_cvtsd_f64(_mm_or_pd(
+        _mm_set_sd(CorrectLastBit(abs_y, std::abs(r₀), std::abs(r̃))), sign));
   }
   return r₀;
 }
-template double Cbrt<Rounding::Faifthful>(double y);
+template double Cbrt<Rounding::Faithful>(double y);
 template double Cbrt<Rounding::Correct>(double y);
 }  // namespace method_3²ᴄZ5¹
 
 namespace method_5²Z4¹FMA {
+
+// No overflow or underflow occurs in intermediate computations for
+// y ∈ [y₁, y₂].  Steps 2 and 4 respectively involve the 6th powers of q and x,
+// approximately the 6th power of ∛y. The 7th power of ∛y does not overflow for
+// y ∈ [y₁, y₂].  Here the range [y₁, y₂] is large enough that a single
+// rescaling suffices.
+constexpr double y₁ = 0x1p-438;
+constexpr double σ₁ = 0x1p-292;
+constexpr double σ₁⁻³ = 1 / (σ₁ * σ₁ * σ₁);
+constexpr double y₂ = 0x1p438;
+constexpr double σ₂ = 0x1p292;
+constexpr double σ₂⁻³ = 1 / (σ₂ * σ₂ * σ₂);
+static_assert(σ₁⁻³ * y₁ == y₂);
+static_assert(σ₂⁻³ * y₂ == y₁);
+static_assert(σ₁⁻³ * std::numeric_limits<double>::denorm_min() > y₁);
+static_assert(σ₂⁻³ * std::numeric_limits<double>::max() < y₂);
+
 template<Rounding rounding>
 double Cbrt(double const y) {
   __m128d Y_0 = _mm_set_sd(y);
   __m128d const sign = _mm_and_pd(masks::sign_bit, Y_0);
   Y_0 = _mm_andnot_pd(masks::sign_bit, Y_0);
   double const abs_y = _mm_cvtsd_f64(Y_0);
+
+  if (y != y) {
+    // The usual logic will produce a qNaN when given a NaN, but will not
+    // preserve the payload and will signal overflows (q will be a nonsensical
+    // large value, and q³ will overflow).  Further, the rescaling comparisons
+    // will signal the invalid operation exception for quiet NaNs (although that
+    // would be easy to work around using the unordered compare intrinsics).
+    return y + y;
+  }
+
+  if (abs_y < y₁) {
+    if (abs_y == 0) {
+      return y;
+    }
+    return Cbrt<rounding>(y * σ₁⁻³) * σ₁;
+  } else if (abs_y > y₂) {
+    if (abs_y == std::numeric_limits<double>::infinity()) {
+      return y;
+    }
+    return Cbrt<rounding>(y * σ₂⁻³) * σ₂;
+  }
+
   // Step 1.  The constant Γᴋ minimizes the error of q, as in [KB01], rather
   // than that of ξ.  This does not matter all that much here.
   constexpr double Γᴋ = 0x0.19D9'06CB'2868'81F4'88FD'38DF'E7F6'98DD'Bp0;
@@ -230,19 +316,23 @@ double Cbrt(double const y) {
   double const Δ₂ = numerator / denominator;
   double const r₀ = FusedNegatedMultiplyAdd(Δ₁, Δ₂, x_sign_y);
   double const r₁ = FusedNegatedMultiplyAdd(Δ₁, Δ₂, x_sign_y - r₀);
+  double const r̃ = r₀ + 2 * r₁;
   if (rounding == Rounding::Correct &&
-      CorrectionPossiblyNeeded(r₀, r₁, /*τ=*/0x1.E45E16EF5480Fp-76)) {
-    return CorrectLastBit(y, r₀, r₁);
+      CorrectionPossiblyNeeded(r₀, r₁, r̃, /*τ=*/0x1.E45E16EF5480Fp-76)) {
+    return _mm_cvtsd_f64(_mm_or_pd(
+        _mm_set_sd(CorrectLastBit(abs_y, std::abs(r₀), std::abs(r̃))), sign));
   }
   return r₀;
 }
-template double Cbrt<Rounding::Faifthful>(double y);
+template double Cbrt<Rounding::Faithful>(double y);
 template double Cbrt<Rounding::Correct>(double y);
 }  // namespace method_5²Z4¹FMA
 
 double Cbrt(double const y) {
-  return UseHardwareFMA ? method_5²Z4¹FMA::Cbrt(y) : method_3²ᴄZ5¹::Cbrt(y);
+  return UseHardwareFMA ? method_5²Z4¹FMA::Cbrt<Rounding::Correct>(y)
+                        : method_3²ᴄZ5¹::Cbrt<Rounding::Correct>(y);
 }
 
+}  // namespace internal_cbrt
 }  // namespace numerics
 }  // namespace principia
