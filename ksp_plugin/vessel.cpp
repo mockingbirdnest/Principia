@@ -468,7 +468,8 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     std::function<void(PartId)> const& deletion_callback) {
   bool const is_pre_cesàro = message.has_psychohistory_is_authoritative();
   bool const is_pre_chasles = message.has_prediction();
-  bool const is_pre_陈景润 = !message.history().has_downsampling();
+  bool const is_pre_陈景润 = message.has_history() &&
+                            !message.history().has_downsampling();
   // TODO(phl): Decide in which version it goes.
   bool const is_pre_grothendieck_haar = !message.has_prehistory();
 

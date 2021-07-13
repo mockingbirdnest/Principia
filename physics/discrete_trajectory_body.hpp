@@ -620,7 +620,6 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     }
   }
   if (message.has_downsampling()) {
-    CHECK(this->is_root());
     downsampling_.emplace(
         Downsampling::ReadFromMessage(message.downsampling(), timeline_));
   }

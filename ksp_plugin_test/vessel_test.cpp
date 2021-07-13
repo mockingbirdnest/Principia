@@ -519,7 +519,7 @@ TEST_F(VesselTest, SerializationSuccess) {
   serialization::Vessel message;
   vessel_.WriteToMessage(&message,
                          serialization_index_for_pile_up.AsStdFunction());
-  EXPECT_TRUE(message.has_history());
+  EXPECT_TRUE(message.has_prehistory());
   EXPECT_TRUE(message.has_flight_plan());
 
   EXPECT_CALL(ephemeris_, Prolong(_)).Times(2);
