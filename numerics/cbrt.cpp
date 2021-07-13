@@ -152,7 +152,6 @@ static_assert(σ₂⁻³ * y₂ == y₁);
 
 template<Rounding rounding>
 double Cbrt(double const y) {
-  // TODO(egg): Rescaling paths.
   __m128d Y_0 = _mm_set_sd(y);
   __m128d const sign = _mm_and_pd(masks::sign_bit, Y_0);
   Y_0 = _mm_andnot_pd(masks::sign_bit, Y_0);
@@ -214,9 +213,6 @@ double Cbrt(double const y) {
   double const r₁ = x_sign_y - r₀ - Δ;
 
   double const r̃ = r₀ + 2 * r₁;
-  // TODO(egg): The slow path rate given in cbrt.pdf was computed with the wrong
-  // τ here, as well as an incorrect C.  The misrounding rates probably also
-  // used the wrong C.
   if (rounding == Rounding::Correct &&
       CorrectionPossiblyNeeded(r₀, r₁, r̃, /*τ=*/0x1.7C8587D10158Cp-13)) {
     return _mm_cvtsd_f64(_mm_or_pd(
