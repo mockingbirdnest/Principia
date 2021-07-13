@@ -212,6 +212,7 @@ double Cbrt(double const y) {
   double const Δ = numerator / denominator;
   double const r₀ = x_sign_y - Δ;
   double const r₁ = x_sign_y - r₀ - Δ;
+
   double const r̃ = r₀ + 2 * r₁;
   // TODO(egg): The slow path rate given in cbrt.pdf was computed with the wrong
   // τ here, as well as an incorrect C.  The misrounding rates probably also
@@ -315,6 +316,7 @@ double Cbrt(double const y) {
   double const Δ₂ = numerator / denominator;
   double const r₀ = FusedNegatedMultiplyAdd(Δ₁, Δ₂, x_sign_y);
   double const r₁ = FusedNegatedMultiplyAdd(Δ₁, Δ₂, x_sign_y - r₀);
+
   double const r̃ = r₀ + 2 * r₁;
   if (rounding == Rounding::Correct &&
       CorrectionPossiblyNeeded(r₀, r₁, r̃, /*τ=*/0x1.E45E16EF5480Fp-76)) {
