@@ -891,8 +891,8 @@ Accordingly, since truncation error is negligible before rounding error for both
 expect that the fifth order method would be superior. Numerical experiments suggest otherwise:
 with Lagny's irrational method with Canon optimization in step~\ref{ThirdPrecision}
 followed by directed rounding toward zero in step~\ref{RoundedApproximation},
-using the method of order $6$ leads to $4.357(67)$  misroundings per million, whereas the method of
-order $5$ leads to $4.575(68)$ per million.
+using the method of order $6$ leads to $4.337(66)$  misroundings per million, whereas the method of
+order $5$ leads to $4.564(68)$ per million.
 
 The bounds on $δ$ may need to be tightened further; for instance, we have not taken any account
 of rounding errors systematically compensating each other, the error induced by $\round{y^2}$
@@ -960,7 +960,7 @@ We may widen this interval slightly into one that is symmetric about $0$, thus r
 \[\abs{\frac{\tilde r-r_0}{2}-r_1}\leq \round{τr_0}\text,\]
 with\begin{align*}
 τ&\DefineAs\roundTowardPositive{\frac{\bar ε_r}{1-\bar ε_r}\pa{1+\frac{2u}{1-u}}}\\
- &=\hex{1.7C8587D10158C}\Multiply 2^{-13},
+ &=\hex{1.7C73DBBD9FA60}\Multiply 2^{-66},
 \end{align*}\marginnote{TODO(egg): Refine these values of $τ$ for the actual bound on the rounding error in $ξ$,
 to be given in annex~\ref{LagnyStepTwoRounding}.}
 where $\bar ε_r$ is the bound from (\ref{FaithfulBound}) for Lagny's irrational method with Canon optimization
@@ -1463,7 +1463,7 @@ respectively.
 
 Using Lagny's irrational method with Canon optimization in step~\ref{ThirdPrecision}, directed rounding toward zero in
 step~\ref{RoundedApproximation}, and the method of fifth order in step~\ref{HighOrder}, the rate of passage in the slow ``potential
-misrounding'' path is $2.6479(52)\Multiply 10^{-4}$; the latency of that slow path is less than ten times that of the fast path,
+misrounding'' path is $2.6480(52) \Multiply 10^{-4}$; the latency of that slow path is less than ten times that of the fast path,
 so that any improvement to the rate of passage in the slow path that comes at a cost of even a cycle to the latency of the fast path
 worsens average-case performance. As a result, we do not use rounding to nearest in step~\ref{RoundedApproximation}, as it replaces,
 on the critical path, a bitwise and by a sequential multiplication, subtraction, and addition.
@@ -1576,9 +1576,9 @@ AMD, 2014& $\mathrm{FMA}$              & $1.6235(41)\Multiply10^{-4}$ \\
 njuffa, 2014& $\mathrm{FMA}$           & $1.529(40)\Multiply10^{-6}$ \\
 Brunie, 2018& $\mathrm{FMA}$ $\dagger$            & $1.43881(12)\Multiply10^{-1}$ & $5.918(25)\Multiply10^{-5}$\\
 Leroy, 2018 & $3^1\mathrm{Z}6^1$              & $5.155(72)\Multiply10^{-6}$ \\
-Leroy, 2021 & $3^2_{\mathrm{C}}\mathrm{Z}5^1$ & $4.575(68)\Multiply10^{-6}$ \\
-\emph{ibid.}& $3^2_{\mathrm{C}}\mathrm{Z}6^1$ & $4.357(67)\Multiply10^{-6}$ \\
-\emph{ibid.}& $3^2_{\mathrm{C}}\mathrm{N}6^1$ & $2.417(50)\Multiply10^{-6}$ \\
+Leroy, 2021 & $3^2_{\mathrm{C}}\mathrm{Z}5^1$ & $4.564(68)\Multiply10^{-6}$ \\
+\emph{ibid.}& $3^2_{\mathrm{C}}\mathrm{Z}6^1$ & $4.337(66)\Multiply10^{-6}$ \\
+\emph{ibid.}& $3^2_{\mathrm{C}}\mathrm{N}6^1$ & $2.415(50)\Multiply10^{-6}$ \\
 \emph{ibid.}& $5^2\mathrm{Z}4^1\mathrm{FMA}$  & $6.10(25)\Multiply10^{-9}$ \\
 \emph{ibid.}& $5^2\mathrm{N}4^1\mathrm{FMA}$  & $2.99(18)\Multiply10^{-9}$
 \end{tabular}
