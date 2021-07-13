@@ -74,6 +74,9 @@
     <ClInclude Include="orbit_analyser.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp">
@@ -190,5 +193,8 @@
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="principia.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ksp_plugin.rc" />
   </ItemGroup>
 </Project>
