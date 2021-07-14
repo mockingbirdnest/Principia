@@ -322,15 +322,15 @@ DegreesOfFreedom<Frame> DiscreteTrajectory<Frame>::EvaluateDegreesOfFreedom(
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteToMessage(
     not_null<serialization::DiscreteTrajectory*> const message,
-    std::set<DiscreteTrajectory*> const& untracked,
+    std::set<DiscreteTrajectory*> const& excluded,
     std::vector<DiscreteTrajectory*> const& tracked) const {
   CHECK(this->is_root());
 
-  std::set<DiscreteTrajectory<Frame>*> mutable_untracked = untracked;
+  std::set<DiscreteTrajectory<Frame>*> mutable_excluded = excluded;
   std::vector<DiscreteTrajectory<Frame>*> mutable_tracked = tracked;
-  WriteSubTreeToMessage(message, mutable_untracked, mutable_tracked);
-  CHECK(std::all_of(mutable_untracked.begin(),
-                    mutable_untracked.end(),
+  WriteSubTreeToMessage(message, mutable_excluded, mutable_tracked);
+  CHECK(std::all_of(mutable_excluded.begin(),
+                    mutable_excluded.end(),
                     [](DiscreteTrajectory<Frame>* const fork) {
                       return fork == nullptr;
                     }));
@@ -502,10 +502,10 @@ DiscreteTrajectory<Frame>::Downsampling::ReadFromMessage(
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     not_null<serialization::DiscreteTrajectory*> const message,
-    std::set<DiscreteTrajectory*>& untracked,
+    std::set<DiscreteTrajectory*>& excluded,
     std::vector<DiscreteTrajectory*>& tracked) const {
   Forkable<DiscreteTrajectory, Iterator, DiscreteTrajectoryTraits<Frame>>::
-      WriteSubTreeToMessage(message, untracked, tracked);
+      WriteSubTreeToMessage(message, excluded, tracked);
   if (Flags::IsPresent("zfp", "off")) {
     for (auto const& [instant, degrees_of_freedom] : timeline_) {
       auto const instantaneous_degrees_of_freedom = message->add_timeline();

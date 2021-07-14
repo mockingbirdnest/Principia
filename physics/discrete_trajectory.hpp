@@ -162,12 +162,12 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
 
   // End of the implementation of the interface.
 
-  // This trajectory must be a root.  The entire tree is traversed and only the
-  // forks present in |untracked| or |tracked| are serialized.  They must be
-  // descended from this trajectory.  The forks in |tracked| will be retrieved
-  // in the same order when reading.  The pointers may be null at entry.
+  // This trajectory must be a root.  The entire tree is traversed and the forks
+  // not present in |excluded| serialized.  The forks in |tracked| will be
+  // retrieved in the same order when reading.  The pointers may be null at
+  // entry; otherwise, they must be direct or indirect forks of this trajectory.
   void WriteToMessage(not_null<serialization::DiscreteTrajectory*> message,
-                      std::set<DiscreteTrajectory*> const& untracked,
+                      std::set<DiscreteTrajectory*> const& excluded,
                       std::vector<DiscreteTrajectory*> const& tracked) const;
 
   // |forks| must have a size appropriate for the |message| being deserialized
@@ -254,7 +254,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // This trajectory need not be a root.
   void WriteSubTreeToMessage(
       not_null<serialization::DiscreteTrajectory*> message,
-      std::set<DiscreteTrajectory*>& untracked,
+      std::set<DiscreteTrajectory*>& excluded,
       std::vector<DiscreteTrajectory*>& tracked) const;
 
   void FillSubTreeFromMessage(

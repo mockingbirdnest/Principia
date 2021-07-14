@@ -472,20 +472,22 @@ CheckNoForksBefore(Instant const& time) {
 template<typename Tr4jectory, typename It3rator, typename Traits>
 void Forkable<Tr4jectory, It3rator, Traits>::WriteSubTreeToMessage(
     not_null<serialization::DiscreteTrajectory*> const message,
-    std::set<Tr4jectory*>& untracked,
+    std::set<Tr4jectory*>& excluded,
     std::vector<Tr4jectory*>& tracked) const {
   std::optional<Instant> last_instant;
   serialization::DiscreteTrajectory::Litter* litter = nullptr;
   for (auto const& [fork_time, child] : children_) {
     // Determine if this |child| needs to be serialized.
-    auto const it_untracked = untracked.find(child.get());
-    if (it_untracked == untracked.cend()) {
+    auto const it_excluded = excluded.find(child.get());
+    if (it_excluded == excluded.end()) {
       // Apologies for the O(N) search.
       auto const it_tracked =
           std::find(tracked.begin(), tracked.end(), child.get());
       if (it_tracked == tracked.end()) {
-        // The caller doesn't want to serialize this fork.  Don't traverse it.
-        continue;
+        // The caller wants to serialize this fork but doesn't want to track it,
+        // let's record this fact.
+        message->add_fork_position(
+            serialization::DiscreteTrajectory::MISSING_FORK_POSITION);
       } else {
         // The caller wants to serialize this fork and track it, let's record
         // its position in the vector.
@@ -493,11 +495,9 @@ void Forkable<Tr4jectory, It3rator, Traits>::WriteSubTreeToMessage(
         *it_tracked = nullptr;
       }
     } else {
-      // The caller wants to serialize this fork but doesn't want to track it,
-      // let's record this fact.
-      message->add_fork_position(
-          serialization::DiscreteTrajectory::MISSING_FORK_POSITION);
-      untracked.erase(it_untracked);
+      // The caller doesn't want to serialize this fork.  Don't traverse it.
+      excluded.erase(it_excluded);
+      continue;
     }
 
     if (!last_instant || fork_time != last_instant) {
@@ -506,7 +506,7 @@ void Forkable<Tr4jectory, It3rator, Traits>::WriteSubTreeToMessage(
       fork_time.WriteToMessage(litter->mutable_fork_time());
     }
     child->WriteSubTreeToMessage(litter->add_trajectories(),
-                                 untracked, tracked);
+                                 excluded, tracked);
   }
 }
 
