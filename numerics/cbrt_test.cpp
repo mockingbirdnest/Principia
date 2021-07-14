@@ -51,7 +51,7 @@ class CubeRootTest : public ::testing::Test {
 
   // Uses a digit-by-digit algorithm to compute the correctly-rounded cube root
   // of y in all rounding modes.  y must lie in [1, 8[.
-  static RoundedReal DigitByDigitCbrt(double y) {
+  static RoundedReal DigitByDigitCbrt(double const y) {
     CHECK_GE(y, 1);
     CHECK_LT(y, 8);
     double a = 1;
@@ -59,8 +59,8 @@ class CubeRootTest : public ::testing::Test {
     for (int i = 1; i < 53; ++i, b /= 2) {
       a = CbrtOneBit(y, a, b) ? a + b : a;
     }
-    bool exact = TwoProduct(a, a).error == 0 &&
-                 TwoProduct(a * a, a).error == 0 && a * a * a == y;
+    bool const exact = TwoProduct(a, a).error == 0 &&
+                       TwoProduct(a * a, a).error == 0 && a * a * a == y;
     RoundedReal result;
     result.rounded_down = a;
     result.rounded_to_nearest = CbrtOneBit(y, a, b) ? a + 2 * b : a;
@@ -120,10 +120,6 @@ class CubeRootTest : public ::testing::Test {
 
   static double FromBits(std::uint64_t const x) {
     return _mm_cvtsd_f64(_mm_castsi128_pd(_mm_cvtsi64_si128(x)));
-  }
-
-  static double ULP(double const x) {
-    return FromBits(Bits(x) + 1) - x;
   }
 
   double const quiet_dead_beef_;
