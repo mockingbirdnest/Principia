@@ -3,6 +3,7 @@
 
 #include <pmmintrin.h>
 
+#include <algorithm>
 #include <array>
 #include <cstdint>
 #include <limits>
@@ -212,7 +213,8 @@ double Cbrt(double const y) {
   double const x_sign_y = _mm_cvtsd_f64(_mm_or_pd(_mm_set_sd(x), sign));
   double const x²_sign_y = x_sign_y * x;
   double const numerator = (x³ - abs_y) * ((10 * x³ + 16 * abs_y) * x³ + y²);
-  double const denominator = x²_sign_y * ((15 * x³ + 51 * abs_y) * x³ + 15 * y²);
+  double const denominator =
+      x²_sign_y * ((15 * x³ + 51 * abs_y) * x³ + 15 * y²);
   double const Δ = numerator / denominator;
   double const r₀ = x_sign_y - Δ;
   double const r₁ = x_sign_y - r₀ - Δ;
@@ -279,8 +281,8 @@ double Cbrt(double const y) {
   // than that of ξ.  This does not matter all that much here.
   constexpr double Γᴋ = 0x0.19D9'06CB'2868'81F4'88FD'38DF'E7F6'98DD'Bp0;
   constexpr std::uint64_t C = 0x2A9F'7625'3119'D328;
-  // C is defined as ⟦(2×1023 − Γᴋ) / 3⟧, which happens to differs by 296 ULPs from
-  // ⟦⟦2×1023 − ⟦Γᴋ⟧⟧ / 3⟧ which we compute in this static_assert.
+  // C is defined as ⟦(2×1023 − Γᴋ) / 3⟧, which happens to differs by 296 ULPs
+  // from ⟦⟦2×1023 − ⟦Γᴋ⟧⟧ / 3⟧ which we compute in this static_assert.
   static_assert((C - 296) * 0x1p-52 == (2 * 1023 - Γᴋ) / 3);
   std::uint64_t const Y = _mm_cvtsi128_si64(_mm_castpd_si128(Y_0));
   std::uint64_t const Q = C + Y / 3;
@@ -302,8 +304,8 @@ double Cbrt(double const y) {
             0x1.4A7E9CB8A3491p0 * d);
 
   // Step 3.
-  double const x =
-      _mm_cvtsd_f64(_mm_and_pd(_mm_set_sd(ξ), masks::round_toward_zero_26_bits));
+  double const x = _mm_cvtsd_f64(
+      _mm_and_pd(_mm_set_sd(ξ), masks::round_toward_zero_26_bits));
 
   // Step 4, the Lagny–Schröder rational method of order 4.
   double const x² = x * x;
