@@ -471,7 +471,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   if (is_pre_cesàro) {
     auto const psychohistory =
         DiscreteTrajectory<Barycentric>::ReadFromMessage(message.history(),
-                                                         /*forks=*/{});
+                                                         /*tracked=*/{});
     // The |history_| has been created by the constructor above.  Reconstruct
     // it from the |psychohistory|.
     for (auto it = psychohistory->begin(); it != psychohistory->end();) {
@@ -492,12 +492,12 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   } else if (is_pre_chasles) {
     vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
-        /*forks=*/{&vessel->psychohistory_});
+        /*tracked=*/{&vessel->psychohistory_});
     vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
   } else {
     vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
-        /*forks=*/{&vessel->psychohistory_, &vessel->prediction_});
+        /*tracked=*/{&vessel->psychohistory_, &vessel->prediction_});
     // After Grothendieck/Haar there is no empty prediction so we must create
     // one here.
     if (vessel->prediction_ == nullptr) {

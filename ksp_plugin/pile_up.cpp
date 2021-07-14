@@ -227,7 +227,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
                      DefaultHistoryParameters(),
                      DiscreteTrajectory<Barycentric>::ReadFromMessage(
                          message.history(),
-                         /*forks=*/{}),
+                         /*tracked=*/{}),
                      /*psychohistory=*/nullptr,
                      /*angular_momentum=*/{},
                      ephemeris,
@@ -242,7 +242,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
                   message.fixed_step_parameters()),
               DiscreteTrajectory<Barycentric>::ReadFromMessage(
                   message.history(),
-                  /*forks=*/{}),
+                  /*tracked=*/{}),
               /*psychohistory=*/nullptr,
               /*angular_momentum=*/{},
               ephemeris,
@@ -263,7 +263,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
     not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history =
         DiscreteTrajectory<Barycentric>::ReadFromMessage(
             message.history(),
-            /*forks=*/{&psychohistory});
+            /*tracked=*/{&psychohistory});
     if (is_pre_frobenius) {
       pile_up = std::unique_ptr<PileUp>(
           new PileUp(

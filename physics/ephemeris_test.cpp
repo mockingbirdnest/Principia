@@ -1067,7 +1067,7 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
   EXPECT_EQ(1162, trajectory1.Size());
 
   serialization::DiscreteTrajectory message;
-  trajectory1.WriteToMessage(&message, /*forks=*/{});
+  trajectory1.WriteToMessage(&message, /*excluded=*/{}, /*tracked=*/{});
   std::string uncompressed;
   message.SerializePartialToString(&uncompressed);
   EXPECT_EQ(18'377, uncompressed.size());
@@ -1082,7 +1082,7 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
   EXPECT_GE(16'935, compressed.size());
 
   auto const trajectory2 =
-      DiscreteTrajectory<ICRS>::ReadFromMessage(message, /*forks=*/{});
+      DiscreteTrajectory<ICRS>::ReadFromMessage(message, /*tracked=*/{});
 
   Length error;
   for (Instant t = t0; t < t1; t += 10 * Second) {

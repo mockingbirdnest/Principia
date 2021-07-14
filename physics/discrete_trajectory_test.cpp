@@ -949,7 +949,7 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
   serialization::DiscreteTrajectory message;
   circle.WriteToMessage(&message, /*excluded=*/{}, /*tracked=*/{});
   auto deserialized_circle =
-      DiscreteTrajectory<World>::ReadFromMessage(message, /*forks=*/{});
+      DiscreteTrajectory<World>::ReadFromMessage(message, /*tracked=*/{});
 
   // Serialization/deserialization preserves the size, the times, and nudges the
   // positions by less than the tolerance.
