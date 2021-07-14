@@ -9,6 +9,8 @@ double Cbrt(double y);
 
 // Specific methods, uncorrected rounding, and the corrector function exposed
 // for testing.
+// See documentation/cbrt.pdf, appendix F, for the naming of the methods and the
+// misrounding rates of the unfaithful versions.
 
 enum class Rounding {
   Faithful,

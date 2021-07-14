@@ -18,6 +18,9 @@ namespace internal_cbrt {
 
 using quantities::Sqrt;
 
+// The computations in this file are described in documentation/cbrt.pdf; the
+// identifiers match the notation in that document.
+
 // See [Nie04], algorithm 10.
 std::array<double, 4> NievergeltQuadruplyCompensatedStep(
     DoublePrecision<double> b,
@@ -101,6 +104,8 @@ bool CbrtOneBit(double y, double a, double b) {
   DoublePrecision<double> const a³₀ = TwoProduct(a²₀, a);
   DoublePrecision<double> minus_a³₁ = TwoProduct(a²₁, -a);
   auto const& [a³₀₀, a³₀₁] = a³₀;
+  // In cbrt.pdf, where we are specifically considering the computation of the 54th bit,
+  // ρ is referred to as ρ₅₃, and ρ_next as ρ₅₄ˌ₁.
   // ρ = y - a³ = y - a³₀ - a³₁ = y - a³₀₀ - a³₀₁ - a³₁;
   double const ρ₀ = y - a³₀₀;  // Exact.
   // ρ = ρ₀ - a³₀₁ - a³₁;
