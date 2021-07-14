@@ -200,15 +200,17 @@ class Forkable {
   void CheckNoForksBefore(Instant const& time);
 
   // This trajectory need not be a root.  The entire tree rooted at this
-  // trajectory is serialized.  |forks| contains the pointers that we'll want to
-  // retrieve when reading.  As forks are encountered during tree traversal
-  // their pointer is nulled-out in |forks|.
+  // trajectory is traversed and only the forks present in |untracked| or
+  // |tracked| are serialized.  The forks in |tracked| will be retrieved in the
+  // same order when reading.  The pointers in |untracked| are removed, the
+  // pointers in |tracked| are nulled-out as they are used.
   void WriteSubTreeToMessage(
       not_null<serialization::DiscreteTrajectory*> message,
-      std::vector<Tr4jectory*>& forks) const;
+      std::set<Tr4jectory*>& untracked,
+      std::vector<Tr4jectory*>& tracked) const;
 
   void FillSubTreeFromMessage(serialization::DiscreteTrajectory const& message,
-                              std::vector<Tr4jectory**> const& forks);
+                              std::vector<Tr4jectory**> const& tracked);
 
  private:
   // Constructs an Iterator by wrapping the timeline iterator

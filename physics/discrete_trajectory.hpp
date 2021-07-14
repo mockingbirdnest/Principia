@@ -162,12 +162,13 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
 
   // End of the implementation of the interface.
 
-  // This trajectory must be a root.  Only the given |forks| are serialized.
-  // They must be descended from this trajectory.  The pointers in |forks| may
-  // be null at entry.
-  void WriteToMessage(
-      not_null<serialization::DiscreteTrajectory*> message,
-      std::vector<DiscreteTrajectory<Frame>*> const& forks) const;
+  // This trajectory must be a root.  The entire tree is traversed and only the
+  // forks present in |untracked| or |tracked| are serialized.  They must be
+  // descended from this trajectory.  The forks in |tracked| will be retrieved
+  // in the same order when reading.  The pointers may be null at entry.
+  void WriteToMessage(not_null<serialization::DiscreteTrajectory*> message,
+                      std::set<DiscreteTrajectory*> const& untracked,
+                      std::vector<DiscreteTrajectory*> const& tracked) const;
 
   // |forks| must have a size appropriate for the |message| being deserialized
   // and the orders of the |forks| must be consistent during serialization and
@@ -177,7 +178,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
            typename = std::enable_if_t<base::is_serializable_v<F>>>
   static not_null<std::unique_ptr<DiscreteTrajectory>> ReadFromMessage(
       serialization::DiscreteTrajectory const& message,
-      std::vector<DiscreteTrajectory<Frame>**> const& forks);
+      std::vector<DiscreteTrajectory<Frame>**> const& tracked);
 
  protected:
   using TimelineConstIterator =
@@ -253,11 +254,12 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // This trajectory need not be a root.
   void WriteSubTreeToMessage(
       not_null<serialization::DiscreteTrajectory*> message,
-      std::vector<DiscreteTrajectory<Frame>*>& forks) const;
+      std::set<DiscreteTrajectory*>& untracked,
+      std::vector<DiscreteTrajectory*>& tracked) const;
 
   void FillSubTreeFromMessage(
       serialization::DiscreteTrajectory const& message,
-      std::vector<DiscreteTrajectory<Frame>**> const& forks);
+      std::vector<DiscreteTrajectory<Frame>**> const& tracked);
 
   // Returns the Hermite interpolation for the left-open, right-closed
   // trajectory segment bounded above by |upper|.
