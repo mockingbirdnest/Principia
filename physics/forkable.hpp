@@ -204,6 +204,8 @@ class Forkable {
   // serialized.  The forks in |tracked| will be retrieved in the same order
   // when reading.  The pointers in |excluded| are removed, the pointers in
   // |tracked| are nulled-out as they are used.
+  // Note that prior to Grothendieck/Haar all forks that were not tracked were
+  // implicitly excluded (so the serialized-but-not-tracked case didn't happen).
   void WriteSubTreeToMessage(
       not_null<serialization::DiscreteTrajectory*> message,
       std::set<Tr4jectory*>& excluded,
