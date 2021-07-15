@@ -80,7 +80,7 @@ message ContinuousTrajectory {
 
 message DiscreteTrajectory {
   // A marker to indicate that a fork doesn't have it's position tracked.
-  // Added in Groethendieck/Haas.
+  // Added in Groethendieck/Haar.
   enum ForkPosition {
     MISSING_FORK_POSITION = -1;
   }
