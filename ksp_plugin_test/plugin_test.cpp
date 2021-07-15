@@ -447,6 +447,7 @@ TEST_F(PluginTest, Serialization) {
   auto const& vessel_0_psychohistory =
       vessel_0_history_b.children(0).trajectories(0);
   EXPECT_EQ(1, vessel_0_psychohistory.zfp().timeline_size());
+  EXPECT_EQ(0, vessel_0_psychohistory.children_size());
 
   EXPECT_TRUE(message.has_renderer());
   EXPECT_TRUE(message.renderer().has_plotting_frame());

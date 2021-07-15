@@ -532,8 +532,8 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     } else {
       vessel->prehistory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
           message.prehistory(),
-          /*forks=*/{&vessel->history_,
-                     &vessel->psychohistory_});
+          /*tracked=*/{&vessel->history_,
+                       &vessel->psychohistory_});
     }
     // After Grothendieck/Haar there is no empty prediction so we must create
     // one here.
