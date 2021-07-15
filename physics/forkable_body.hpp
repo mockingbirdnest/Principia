@@ -2,6 +2,7 @@
 #pragma once
 
 #include <optional>
+#include <set>
 #include <vector>
 
 #include "absl/container/inlined_vector.h"

@@ -745,7 +745,6 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   DiscreteTrajectory<World>* deserialized_fork1 = nullptr;
   DiscreteTrajectory<World>* deserialized_fork2 = nullptr;
   DiscreteTrajectory<World>* deserialized_fork3 = nullptr;
-  LOG(ERROR)<<message.DebugString();
   not_null<std::unique_ptr<DiscreteTrajectory<World>>> const
       deserialized_trajectory =
           DiscreteTrajectory<World>::ReadFromMessage(message,
