@@ -437,7 +437,6 @@ TEST_F(PluginTest, Serialization) {
   EXPECT_TRUE(message.vessel(0).vessel().has_flight_plan());
   EXPECT_TRUE(message.vessel(0).vessel().has_prehistory());
   auto const& vessel_0_prehistory = message.vessel(0).vessel().prehistory();
-  LOG(ERROR)<<vessel_0_prehistory.DebugString();
   EXPECT_EQ(1, vessel_0_prehistory.zfp().timeline_size());
   auto const& vessel_0_history_a =
       vessel_0_prehistory.children(0).trajectories(0);

@@ -450,8 +450,6 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
   prehistory_->WriteToMessage(message->mutable_prehistory(),
                               /*exclude=*/{prediction_},
                               /*tracked=*/{history_, psychohistory_});
-  LOG(ERROR)<<prehistory_->Size()<<" "<<history_->Size()<<" "
-    <<psychohistory_->Size();
   if (flight_plan_ != nullptr) {
     flight_plan_->WriteToMessage(message->mutable_flight_plan());
   }
@@ -537,8 +535,6 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
           /*forks=*/{&vessel->history_,
                      &vessel->psychohistory_});
     }
-    LOG(ERROR)<<vessel->prehistory_->Size()<<" "<<vessel->history_->Size()<<" "
-      <<vessel->psychohistory_->Size();
     // After Grothendieck/Haar there is no empty prediction so we must create
     // one here.
     if (vessel->prediction_ == nullptr) {
