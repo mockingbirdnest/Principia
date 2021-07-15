@@ -437,9 +437,18 @@ TEST_F(PluginTest, Serialization) {
   EXPECT_TRUE(message.vessel(0).vessel().has_flight_plan());
   EXPECT_TRUE(message.vessel(0).vessel().has_prehistory());
   auto const& vessel_0_prehistory = message.vessel(0).vessel().prehistory();
-  auto const& vessel_0_history =
+  LOG(ERROR)<<vessel_0_prehistory.DebugString();
+  EXPECT_EQ(1, vessel_0_prehistory.zfp().timeline_size());
+  auto const& vessel_0_history_a =
       vessel_0_prehistory.children(0).trajectories(0);
-  EXPECT_EQ(6, vessel_0_history.zfp().timeline_size());
+  EXPECT_EQ(0, vessel_0_history_a.zfp().timeline_size());
+  auto const& vessel_0_history_b =
+      vessel_0_history_a.children(0).trajectories(0);
+  EXPECT_EQ(6, vessel_0_history_b.zfp().timeline_size());
+  auto const& vessel_0_psychohistory =
+      vessel_0_history_b.children(0).trajectories(0);
+  EXPECT_EQ(1, vessel_0_psychohistory.zfp().timeline_size());
+
   EXPECT_TRUE(message.has_renderer());
   EXPECT_TRUE(message.renderer().has_plotting_frame());
   EXPECT_TRUE(message.renderer().plotting_frame().HasExtension(

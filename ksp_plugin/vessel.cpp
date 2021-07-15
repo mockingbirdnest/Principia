@@ -447,9 +447,11 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
     message->add_kept_parts(part_id);
   }
   // Starting with Gateaux we don't save the prediction, see #2685.
-  prehistory_->WriteToMessage(message->mutable_history(),
+  prehistory_->WriteToMessage(message->mutable_prehistory(),
                               /*exclude=*/{prediction_},
                               /*tracked=*/{history_, psychohistory_});
+  LOG(ERROR)<<prehistory_->Size()<<" "<<history_->Size()<<" "
+    <<psychohistory_->Size();
   if (flight_plan_ != nullptr) {
     flight_plan_->WriteToMessage(message->mutable_flight_plan());
   }
@@ -533,9 +535,10 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
       vessel->prehistory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
           message.prehistory(),
           /*forks=*/{&vessel->history_,
-                     &vessel->psychohistory_,
-                     &vessel->prediction_});
+                     &vessel->psychohistory_});
     }
+    LOG(ERROR)<<vessel->prehistory_->Size()<<" "<<vessel->history_->Size()<<" "
+      <<vessel->psychohistory_->Size();
     // After Grothendieck/Haar there is no empty prediction so we must create
     // one here.
     if (vessel->prediction_ == nullptr) {
@@ -682,6 +685,7 @@ void Vessel::AttachPrediction(
   if (trajectory->Empty()) {
     prediction_ = psychohistory_->NewForkAtLast();
   } else {
+    psychohistory_->DeleteFork(prediction_);
     prediction_ = trajectory.get();
     psychohistory_->AttachFork(std::move(trajectory));
   }
