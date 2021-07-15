@@ -712,7 +712,7 @@ TEST_F(DiscreteTrajectoryDeathTest, TrajectorySerializationError) {
     not_null<DiscreteTrajectory<World>*> const fork =
         massive_trajectory_->NewForkWithCopy(t1_);
     serialization::DiscreteTrajectory message;
-    fork->WriteToMessage(&message, /*forks=*/{});
+    fork->WriteToMessage(&message, /*excluded=*/{}, /*tracked=*/{});
   }, "is_root");
 }
 
@@ -734,10 +734,13 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   serialization::DiscreteTrajectory message;
   serialization::DiscreteTrajectory reference_message;
 
-  // Don't serialize |fork0| and |fork4|.
-  massive_trajectory_->WriteToMessage(&message, {fork1, fork3, fork2});
+  // Don't serialize |fork0|.
+  massive_trajectory_->WriteToMessage(&message,
+                                      /*excluded=*/{fork0},
+                                      /*tracked=*/{fork1, fork3, fork2});
   massive_trajectory_->WriteToMessage(&reference_message,
-                                      {fork1, fork3, fork2});
+                                      /*excluded=*/{fork0},
+                                      /*tracked=*/{fork1, fork3, fork2});
 
   DiscreteTrajectory<World>* deserialized_fork1 = nullptr;
   DiscreteTrajectory<World>* deserialized_fork2 = nullptr;
@@ -753,6 +756,7 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   EXPECT_EQ(t3_, deserialized_fork3->Fork()->time);
   message.Clear();
   deserialized_trajectory->WriteToMessage(&message,
+                                          /*excluded=*/{},
                                           {deserialized_fork1,
                                            deserialized_fork3,
                                            deserialized_fork2});
@@ -942,9 +946,9 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
   auto const circle_tmax = AppendCircularTrajectory(ω, r, Δt, t1, t2, circle);
 
   serialization::DiscreteTrajectory message;
-  circle.WriteToMessage(&message, /*forks=*/{});
+  circle.WriteToMessage(&message, /*excluded=*/{}, /*tracked=*/{});
   auto deserialized_circle =
-      DiscreteTrajectory<World>::ReadFromMessage(message, /*forks=*/{});
+      DiscreteTrajectory<World>::ReadFromMessage(message, /*tracked=*/{});
 
   // Serialization/deserialization preserves the size, the times, and nudges the
   // positions by less than the tolerance.

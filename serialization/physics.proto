@@ -79,6 +79,11 @@ message ContinuousTrajectory {
 }
 
 message DiscreteTrajectory {
+  // A marker to indicate that a fork doesn't have its position tracked.
+  // Added in Groethendieck/Haar.
+  enum ForkPosition {
+    MISSING_FORK_POSITION = -1;
+  }
   message Downsampling {
     // The instant of the iterator; absent if it is the end of the timeline.
     optional Point start_of_dense_timeline = 1;

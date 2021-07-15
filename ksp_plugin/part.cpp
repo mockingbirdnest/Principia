@@ -253,7 +253,8 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message,
   }
   rigid_motion_.WriteToMessage(message->mutable_rigid_motion());
   prehistory_->WriteToMessage(message->mutable_prehistory(),
-                              /*forks=*/{history_, psychohistory_});
+                              /*excluded=*/{},
+                              /*tracked=*/{history_, psychohistory_});
 }
 
 not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
@@ -320,7 +321,7 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
   if (is_pre_cesàro) {
     auto tail = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.prehistory(),
-        /*forks=*/{});
+        /*tracked=*/{});
     // The |prehistory_| and |history_| have been created by the constructor
     // above.  Construct the various trajectories from the |tail|.
     for (auto it = tail->begin(); it != tail->end();) {
@@ -336,7 +337,7 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     part->history_ = nullptr;
     part->prehistory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.prehistory(),
-        /*forks=*/{&part->history_, &part->psychohistory_});
+        /*tracked=*/{&part->history_, &part->psychohistory_});
   }
   return std::move(part);
 }

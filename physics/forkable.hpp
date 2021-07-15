@@ -4,6 +4,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <set>
 #include <vector>
 
 #include "absl/container/inlined_vector.h"
@@ -199,14 +200,20 @@ class Forkable {
   // This trajectory must be a root.
   void CheckNoForksBefore(Instant const& time);
 
-  // This trajectory need not be a root.  As forks are encountered during tree
-  // traversal their pointer is nulled-out in |forks|.
+  // This trajectory need not be a root.  The entire tree rooted at this
+  // trajectory is traversed and the forks not present in |excluded| are
+  // serialized.  The forks in |tracked| will be retrieved in the same order
+  // when reading.  The pointers in |excluded| are removed, the pointers in
+  // |tracked| are nulled-out as they are used.
+  // Note that prior to Grothendieck/Haar all forks that were not tracked were
+  // implicitly excluded (so the serialized-but-not-tracked case didn't happen).
   void WriteSubTreeToMessage(
       not_null<serialization::DiscreteTrajectory*> message,
-      std::vector<Tr4jectory*>& forks) const;
+      std::set<Tr4jectory*>& excluded,
+      std::vector<Tr4jectory*>& tracked) const;
 
   void FillSubTreeFromMessage(serialization::DiscreteTrajectory const& message,
-                              std::vector<Tr4jectory**> const& forks);
+                              std::vector<Tr4jectory**> const& tracked);
 
  private:
   // Constructs an Iterator by wrapping the timeline iterator
