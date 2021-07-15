@@ -257,7 +257,7 @@ TEST_F(PlanetariumTest, RealSolarSystem) {
       ParseFromBytes<serialization::DiscreteTrajectory>(
           ReadFromBinaryFile(SOLUTION_DIR / "ksp_plugin_test" /
                              "planetarium_trajectory.proto.bin")),
-      /*forks=*/{});
+      /*tracked=*/{});
 
   auto ephemeris = Ephemeris<Barycentric>::ReadFromMessage(
       InfiniteFuture,

@@ -426,14 +426,10 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
     CHECK(Contains(parts_, part_id));
     message->add_kept_parts(part_id);
   }
-  // Starting with Gateaux we don't save the prediction, see #2685.  Instead we
-  // save an empty prediction that we re-read as a prediction.  This is a bit
-  // hacky, but hopefully we can remove this hack once #2400 is solved.
-  DiscreteTrajectory<Barycentric>* empty_prediction =
-      psychohistory_->NewForkAtLast();
+  // Starting with Gateaux we don't save the prediction, see #2685.
   history_->WriteToMessage(message->mutable_history(),
-                           /*forks=*/{psychohistory_, empty_prediction});
-  psychohistory_->DeleteFork(empty_prediction);
+                           /*exclude=*/{prediction_},
+                           /*tracked=*/{psychohistory_});
   if (flight_plan_ != nullptr) {
     flight_plan_->WriteToMessage(message->mutable_flight_plan());
   }
@@ -475,7 +471,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   if (is_pre_cesàro) {
     auto const psychohistory =
         DiscreteTrajectory<Barycentric>::ReadFromMessage(message.history(),
-                                                         /*forks=*/{});
+                                                         /*tracked=*/{});
     // The |history_| has been created by the constructor above.  Reconstruct
     // it from the |psychohistory|.
     for (auto it = psychohistory->begin(); it != psychohistory->end();) {
@@ -496,12 +492,17 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   } else if (is_pre_chasles) {
     vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
-        /*forks=*/{&vessel->psychohistory_});
+        /*tracked=*/{&vessel->psychohistory_});
     vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
   } else {
     vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
-        /*forks=*/{&vessel->psychohistory_, &vessel->prediction_});
+        /*tracked=*/{&vessel->psychohistory_, &vessel->prediction_});
+    // After Grothendieck/Haar there is no empty prediction so we must create
+    // one here.
+    if (vessel->prediction_ == nullptr) {
+      vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
+    }
     // Necessary after Εὔδοξος because the ephemeris has not been prolonged
     // during deserialization.  Doesn't hurt prior to Εὔδοξος.
     ephemeris->Prolong(vessel->prediction_->back().time);
