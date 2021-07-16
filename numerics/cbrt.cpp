@@ -190,9 +190,11 @@ double Cbrt(double const y) {
   // Step 1.  The constant Γʟ²ᴄ is the result of Canon optimization for step 2.
   constexpr double Γʟ²ᴄ = 0x0.199E'9760'9F63'9F90'626F'8B97'2B3A'6249'2p0;
   constexpr std::uint64_t C = 0x2A9F'775C'D8A7'5897;
-  // By sheer luck it turns out that ⟦(2×1023 − Γʟ²ᴄ) / 3⟧ equals
-  // ⟦⟦2×1023 − ⟦Γʟ²ᴄ⟧⟧ / 3⟧ (the right-hand side of this equality) exactly.
-  static_assert(C * 0x1p-52 == (2 * 1023 - Γʟ²ᴄ) / 3);
+  // The fixed-point number C = ⟦(2×1023 − Γʟ²ᴄ) / 3⟧ is not representable as a
+  // double; frac(C) + 1 = ⟦2 − Γʟ²ᴄ / 3⟧ is, and has the same last place.
+  constexpr double frac_C_plus_1 = (C & 0x000F'FFFF'FFFF'FFFF) * 0x1p-52 + 1;
+  // By sheer luck it happens that ⟦2 − Γʟ²ᴄ / 3⟧ = ⟦2 − ⟦⟦Γʟ²ᴄ⟧ / 3⟧⟧.
+  static_assert(frac_C_plus_1 == 2 - Γʟ²ᴄ / 3);
   std::uint64_t const Y = _mm_cvtsi128_si64(_mm_castpd_si128(Y_0));
   std::uint64_t const Q = C + Y / 3;
   double const q = _mm_cvtsd_f64(_mm_castsi128_pd(_mm_cvtsi64_si128(Q)));
@@ -284,9 +286,11 @@ double Cbrt(double const y) {
   // than that of ξ.  This does not matter all that much here.
   constexpr double Γᴋ = 0x0.19D9'06CB'2868'81F4'88FD'38DF'E7F6'98DD'Bp0;
   constexpr std::uint64_t C = 0x2A9F'7625'3119'D328;
-  // C is defined as ⟦(2×1023 − Γᴋ) / 3⟧, which happens to differs by 296 ULPs
-  // from ⟦⟦2×1023 − ⟦Γᴋ⟧⟧ / 3⟧ which we compute in this static_assert.
-  static_assert((C - 296) * 0x1p-52 == (2 * 1023 - Γᴋ) / 3);
+  // The fixed-point number C = ⟦(2×1023 − Γᴋ) / 3⟧ is not representable as a
+  // double; frac(C) + 1 = ⟦2 − Γᴋ / 3⟧ is, and has the same last place.
+  constexpr double frac_C_plus_1 = (C & 0x000F'FFFF'FFFF'FFFF) * 0x1p-52 + 1;
+  // By sheer luck it happens that ⟦2 − Γᴋ / 3⟧ = ⟦2 − ⟦⟦Γᴋ⟧ / 3⟧⟧.
+  static_assert(frac_C_plus_1 == 2 - Γᴋ / 3);
   std::uint64_t const Y = _mm_cvtsi128_si64(_mm_castpd_si128(Y_0));
   std::uint64_t const Q = C + Y / 3;
   double const q = _mm_cvtsd_f64(_mm_castsi128_pd(_mm_cvtsi64_si128(Q)));
