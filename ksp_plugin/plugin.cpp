@@ -573,7 +573,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
     Instant const vessel_time =
         is_loaded(vessel) ? current_time_ - Δt : current_time_;
     if (kept_vessels_.erase(vessel) > 0) {
-      vessel->PrepareHistory(vessel_time);
+      vessel->CreatePrehistoryIfNeeded(vessel_time);
       ++it;
     } else {
       loaded_vessels_.erase(vessel);
@@ -641,6 +641,12 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
           history_parameters_,
           ephemeris_.get());
     });
+  }
+
+  // Now that the composition of the vessels is known, as well as their
+  // intrinsic forces and torques, we may detect collapsibility changes.
+  for (auto const& [_, vessel] : vessels_) {
+    vessel->DetectCollapsibilityChange();
   }
 }
 
