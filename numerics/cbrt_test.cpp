@@ -224,7 +224,7 @@ TEST_F(CubeRootTest, ParticularlyDifficultRounding) {
   //                       [1000'0000'0000'0000'0000'0000'0000'0000'0000'001…
   // with 37 0s after a 1 in the 54th bit.
   // Both faithful methods misround it.
-  RoundedReal cbrt_y = DigitByDigitCbrt(y);
+  RoundedReal const cbrt_y = DigitByDigitCbrt(y);
   EXPECT_THAT(cbrt_y.rounded_to_nearest,
               AllOf(Ne(cbrt_y.rounded_down), Eq(cbrt_y.rounded_up)));
   EXPECT_THAT(Cbrt(y), Eq(cbrt_y.rounded_to_nearest));

@@ -31,7 +31,7 @@ extern template double Cbrt<Rounding::Faithful>(double y);
 extern template double Cbrt<Rounding::Correct>(double y);
 }  // namespace method_5²Z4¹FMA
 
-// Computes one bit of ∛y, rounded toward 0.
+// Computes one additional bit of ∛y, rounded toward 0.
 // All arguments must be positive.
 // a is the already-computed approximation of the cube root.
 // b is the bit being computed; it must be a power of 2.

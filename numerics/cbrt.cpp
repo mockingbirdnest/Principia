@@ -50,7 +50,7 @@ std::array<double, 4> NievergeltQuadruplyCompensatedStep(
 // vector, but instead an array of the maximum possible size.  Should it be
 // necessary to return the number of nonzero elements of the result, some sort
 // of bounded vector would probably be useful.  Note that this size is k in
-// Nievergelt’s procedure, but with our indexing it is is k + 1 at the return
+// Nievergelt’s procedure, but with our indexing it is k + 1 at the return
 // statement.
 template<std::size_t n>
 std::array<double, n> PriestNievergeltNormalize(std::array<double, n> const f) {
@@ -93,17 +93,17 @@ bool CorrectionPossiblyNeeded(double const r₀,
 
 double CorrectLastBit(double const y, double const r₀, double const r̃) {
   double const a = std::min(r₀, r̃);
-  double const b = 0.5 * (std::max(r₀, r̃) - a);
+  double const b = 0.5 * std::abs(r₀ - r̃);
   return CbrtOneBit(y, a, b) ? std::max(r₀, r̃) : a;
 }
 
-bool CbrtOneBit(double y, double a, double b) {
+bool CbrtOneBit(double const y, double const a, double const b) {
   double const b² = b * b;
   double const b³ = b² * b;
   DoublePrecision<double> const a² = TwoProduct(a, a);
   auto const& [a²₀, a²₁] = a²;
   DoublePrecision<double> const a³₀ = TwoProduct(a²₀, a);
-  DoublePrecision<double> minus_a³₁ = TwoProduct(a²₁, -a);
+  DoublePrecision<double> const minus_a³₁ = TwoProduct(a²₁, -a);
   auto const& [a³₀₀, a³₀₁] = a³₀;
   // In cbrt.pdf, where we are specifically considering the computation of the
   // 54th bit, ρ is referred to as ρ₅₃, and ρ_next as ρ₅₄ˌ₁.
@@ -112,14 +112,17 @@ bool CbrtOneBit(double y, double a, double b) {
   // ρ = ρ₀ - a³₀₁ - a³₁;
   std::array<double, 4> const ρ = PriestNievergeltNormalize(
       NievergeltQuadruplyCompensatedStep(TwoDifference(ρ₀, a³₀₁), minus_a³₁));
-  CHECK_EQ(ρ[3], 0);
+  DCHECK_EQ(ρ[3], 0);
   std::array<double, 3> ρ_next{ρ[0], ρ[1], ρ[2]};
-  for (double rhs : {2 * a²₀ * b, a²₀ * b, 2 * a²₁ * b, a²₁ * b,  // 3 a²b
-                     2 * a * b², a * b²,                          // 3 ab²
+  double const a²₀b = a²₀ * b;
+  double const a²₁b = a²₁ * b;
+  double const ab² = a * b²;
+  for (double rhs : {2 * a²₀b, a²₀b, 2 * a²₁b, a²₁b,  // 3 a²b
+                     2 * ab², ab²,                    // 3 ab²
                      b³}) {
     auto const ρ = PriestNievergeltNormalize(NievergeltQuadruplyCompensatedStep(
         TwoSum(ρ_next[0], ρ_next[1]), TwoDifference(ρ_next[2], rhs)));
-    CHECK_EQ(ρ[3], 0);
+    DCHECK_EQ(ρ[3], 0);
     ρ_next = {ρ[0], ρ[1], ρ[2]};
   }
   bool const ρ_next_positive =
@@ -208,7 +211,7 @@ double Cbrt(double const y) {
 
   // Step 4, the Lagny–Schröder rational method of order 5.
   double const x² = x * x;
-  double const x³ = x * x * x;
+  double const x³ = x * x * x;  // Exact.
   double const y² = y * y;
   double const x_sign_y = _mm_cvtsd_f64(_mm_or_pd(_mm_set_sd(x), sign));
   double const x²_sign_y = x_sign_y * x;
@@ -221,7 +224,7 @@ double Cbrt(double const y) {
 
   double const r̃ = r₀ + 2 * r₁;
   if (rounding == Rounding::Correct &&
-      CorrectionPossiblyNeeded(r₀, r₁, r̃, /*τ=*/0x1.7C8587D10158Cp-13)) {
+      CorrectionPossiblyNeeded(r₀, r₁, r̃, /*τ=*/0x1.7C73DBBD9FA60p-66)) {
     return _mm_cvtsd_f64(_mm_or_pd(
         _mm_set_sd(CorrectLastBit(abs_y, std::abs(r₀), std::abs(r̃))), sign));
   }
@@ -308,8 +311,7 @@ double Cbrt(double const y) {
       _mm_and_pd(_mm_set_sd(ξ), masks::round_toward_zero_26_bits));
 
   // Step 4, the Lagny–Schröder rational method of order 4.
-  double const x² = x * x;
-  DCHECK_EQ(FusedMultiplySubtract(x, x, x²), 0);
+  double const x² = x * x;  // Exact.
   double const x³ = x² * x;
   double const x_sign_y = _mm_cvtsd_f64(_mm_or_pd(_mm_set_sd(x), sign));
   double const numerator = x_sign_y * FusedMultiplySubtract(x², x, abs_y);

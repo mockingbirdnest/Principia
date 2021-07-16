@@ -909,7 +909,7 @@ However, the poorer bound on the maximal error means that we must instead use th
 We have $r=\cuberoot{y}\pa{1+ε_r}$, thus\[
 \cuberoot{y}\in\intclos{\frac{r}{1+\bar ε_r}}{\frac{r}{1-\bar ε_r}}\DefinitionOf \mathscr{I}\text,
 \]
-where $\bar ε_r$ is a bound for $\bar ε_r$.
+where $\bar ε_r$ is a bound for $\abs {ε_r}$.
 Consider the \emph{ties}, \idest, the number halfway betwen $r_0=\round{r}$ and its binary64
 successor and the number halfway between $r_0$ and its predecessor.
 If $\mathscr{I}$ contains neither of the ties, $r_0=\round{\cuberoot{y}}$:
@@ -986,8 +986,9 @@ there are no halfway cases for the cube root.
 In the ordinary cube root method, our remainder is $ρ_{53}\DefineAs y-a^3$,
 and the next bit is $1$ if and only if the next remainder would be positive with that bit,\[
 ρ_{54|1}\DefineAs y-\pa{a+b}^3 = ρ_{53}-3a^2b-3ab^2-b^3\geq 0\text,\]
-where $b$ is the power of two corresponding to this bit (the difference between $a$ and
-the tie).
+where $b$ is the power of two corresponding to this bit (the difference\footnote{The tie is not representable,
+but this can instead be computed as half the distance $\abs{r_0-\tilde r}$ between $a$ and $\roundTowardPositive r$.}
+between $a$ and the tie).
 
 Using Veltkamp's\footnote{We have not been able to find a copy of \emph{RC-Informatie}, wherein Veltkamp's work was published;
 we follow Dekker's account thereof.} algorithm from \cite[234]{Dekker1971} to express $a^2$ as $\pa{a^2}_0+\pa{a^2}_1$ with $\pa{a^2}_0=\round{a^2}$, the remainder is\[
