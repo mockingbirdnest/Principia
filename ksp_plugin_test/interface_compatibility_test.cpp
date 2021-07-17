@@ -32,7 +32,7 @@ class InterfaceCompatibilityTest : public testing::Test {
                               std::string_view const encoder) {
     Plugin const* plugin = nullptr;
 
-    // Reads a plugin from a file containing only the "serialized_plugin = "
+    // Read a plugin from a file containing only the "serialized_plugin = "
     // lines, with "serialized_plugin = " dropped.
     {
       PushDeserializer* deserializer = nullptr;
@@ -65,8 +65,10 @@ class InterfaceCompatibilityTest : public testing::Test {
       PullSerializer* serializer = nullptr;
       char const* b64 = nullptr;
       for (;;) {
-        b64 = principia__SerializePlugin(
-            plugin, &serializer, preferred_compressor, preferred_encoder);
+        b64 = principia__SerializePlugin(plugin,
+                                         &serializer,
+                                         preferred_compressor,
+                                         preferred_encoder);
         if (b64 == nullptr) {
           break;
         }
