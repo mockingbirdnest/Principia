@@ -115,7 +115,7 @@ TEST_F(InterfaceCompatibilityTest, PreCohen) {
 // Use for debugging saves given by users.
 TEST_F(InterfaceCompatibilityTest, DISABLED_SECULAR_Debug) {
   CheckSaveCompatibility(
-      R"(P:\Public Mockingbird\Principia\Saves\2685\five-minute-scene-change-neptune.txt)",
+      R"(P:\Public Mockingbird\Principia\Saves\3064\PrincipiaMun60kFreeFlyBy.proto.b64)",
       /*compressor=*/"gipfeli",
       /*decoder=*/"base64");
 }
