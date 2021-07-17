@@ -1,4 +1,7 @@
 ﻿
+#include <string>
+#include <vector>
+
 #include "base/file.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
@@ -26,7 +29,6 @@ const char preferred_encoder[] = "base64";
 
 class InterfaceCompatibilityTest : public testing::Test {
  protected:
-
   void CheckSaveCompatibility(std::filesystem::path const& filename,
                               std::string_view const compressor,
                               std::string_view const encoder) {
@@ -42,7 +44,6 @@ class InterfaceCompatibilityTest : public testing::Test {
                                    : std::vector<std::string>{};
       CHECK(!lines.empty());
       LOG(ERROR) << "Deserialization starting";
-      int i = 0;
       for (std::string const& line : lines) {
         principia__DeserializePlugin(line.c_str(),
                                      &deserializer,
