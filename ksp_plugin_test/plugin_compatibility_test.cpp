@@ -73,6 +73,8 @@ class PluginCompatibilityTest : public testing::Test {
     OFStream file(filename);
     PullSerializer* serializer = nullptr;
     char const* b64 = nullptr;
+
+    LOG(ERROR) << "Serialization starting";
     for (;;) {
       b64 = principia__SerializePlugin(plugin.get(),
                                        &serializer,
