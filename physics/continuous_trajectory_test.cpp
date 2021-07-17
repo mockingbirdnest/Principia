@@ -208,9 +208,10 @@ class ContinuousTrajectoryTest : public testing::Test {
           polynomial().
           GetExtension(serialization::PolynomialInMonomialBasis::extension).
               coefficient(0).point().multivector();
-      *pre_gröbner.mutable_instant_polynomial_pair(i)->mutable_polynomial()->
-          MutableExtension(serialization::PolynomialInMonomialBasis::extension)->
-              mutable_coefficient(0)->mutable_multivector() = coefficient0;
+      *pre_gröbner.mutable_instant_polynomial_pair(i)
+           ->mutable_polynomial()->MutableExtension(
+               serialization::PolynomialInMonomialBasis::extension)
+           ->mutable_coefficient(0)->mutable_multivector() = coefficient0;
     }
     return pre_gröbner;
   }
