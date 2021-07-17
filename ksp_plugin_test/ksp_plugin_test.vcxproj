@@ -54,7 +54,6 @@
     <ClCompile Include="celestial_test.cpp" />
     <ClCompile Include="equator_relevance_threshold_test.cpp" />
     <ClCompile Include="flight_plan_test.cpp" />
-    <ClCompile Include="interface_compatibility_test.cpp" />
     <ClCompile Include="interface_external_test.cpp" />
     <ClCompile Include="interface_flight_plan_test.cpp" />
     <ClCompile Include="interface_planetarium_test.cpp" />
@@ -65,6 +64,7 @@
     <ClCompile Include="part_test.cpp" />
     <ClCompile Include="pile_up_test.cpp" />
     <ClCompile Include="planetarium_test.cpp" />
+    <ClCompile Include="plugin_compatibility_test.cpp" />
     <ClCompile Include="plugin_integration_test.cpp" />
     <ClCompile Include="plugin_test.cpp" />
     <ClCompile Include="renderer_test.cpp" />
