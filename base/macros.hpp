@@ -246,9 +246,8 @@ using internal_##package_name::declared_name
       LOG_EVERY_N_VARNAME(last_log_time, __LINE__);                          \
   bool const LOG_EVERY_N_VARNAME(Δt_elapsed, __LINE__) =                     \
       !LOG_EVERY_N_VARNAME(last_log_time, __LINE__).has_value() ||           \
-      std::chrono::steady_clock::now() -                                     \
-              *LOG_EVERY_N_VARNAME(last_log_time, __LINE__) >=               \
-          (Δt);                                                              \
+      (std::chrono::steady_clock::now() -                                    \
+       *LOG_EVERY_N_VARNAME(last_log_time, __LINE__)) >= (Δt);               \
   LOG_IF(severity, (condition) && LOG_EVERY_N_VARNAME(Δt_elapsed, __LINE__)) \
       << (LOG_EVERY_N_VARNAME(last_log_time, __LINE__) =                     \
               std::chrono::steady_clock::now(),                              \
