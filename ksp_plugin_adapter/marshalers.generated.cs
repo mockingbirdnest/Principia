@@ -342,7 +342,7 @@ internal class OrbitAnalysisMarshaler : MonoMarshaler {
 
   public override void CleanUpNativeDataImplementation(IntPtr native_data) {
     var representation = (Representation)Marshal.PtrToStructure(native_data, typeof(Representation));
-    OptionalMarshaler<int>.GetInstance(null).CleanUpNativeData(representation.primary_index);
+    OwnershipTransferMarshaler<int, OptionalMarshaler<int>>.GetInstance(null).CleanUpNativeData(representation.primary_index);
     OwnershipTransferMarshaler<OrbitalElements, OptionalMarshaler<OrbitalElements>>.GetInstance(null).CleanUpNativeData(representation.elements);
     OwnershipTransferMarshaler<OrbitRecurrence, OptionalMarshaler<OrbitRecurrence>>.GetInstance(null).CleanUpNativeData(representation.recurrence);
     OwnershipTransferMarshaler<OrbitGroundTrack, OptionalMarshaler<OrbitGroundTrack>>.GetInstance(null).CleanUpNativeData(representation.ground_track);
@@ -355,7 +355,7 @@ internal class OrbitAnalysisMarshaler : MonoMarshaler {
     }
     var representation = new Representation{
         progress_of_next_analysis = value.progress_of_next_analysis,
-        primary_index = OptionalMarshaler<int>.GetInstance(null).MarshalManagedToNative(value.primary_index),
+        primary_index = OwnershipTransferMarshaler<int, OptionalMarshaler<int>>.GetInstance(null).MarshalManagedToNative(value.primary_index),
         mission_duration = value.mission_duration,
         elements = OwnershipTransferMarshaler<OrbitalElements, OptionalMarshaler<OrbitalElements>>.GetInstance(null).MarshalManagedToNative(value.elements),
         recurrence = OwnershipTransferMarshaler<OrbitRecurrence, OptionalMarshaler<OrbitRecurrence>>.GetInstance(null).MarshalManagedToNative(value.recurrence),
@@ -370,7 +370,7 @@ internal class OrbitAnalysisMarshaler : MonoMarshaler {
     var representation = (Representation)Marshal.PtrToStructure(native_data, typeof(Representation));
     return new OrbitAnalysis{
         progress_of_next_analysis = representation.progress_of_next_analysis,
-        primary_index = OptionalMarshaler<int>.GetInstance(null).MarshalNativeToManaged(representation.primary_index) as int?,
+        primary_index = OwnershipTransferMarshaler<int, OptionalMarshaler<int>>.GetInstance(null).MarshalNativeToManaged(representation.primary_index) as int?,
         mission_duration = representation.mission_duration,
         elements = OwnershipTransferMarshaler<OrbitalElements, OptionalMarshaler<OrbitalElements>>.GetInstance(null).MarshalNativeToManaged(representation.elements) as OrbitalElements?,
         recurrence = OwnershipTransferMarshaler<OrbitRecurrence, OptionalMarshaler<OrbitRecurrence>>.GetInstance(null).MarshalNativeToManaged(representation.recurrence) as OrbitRecurrence?,

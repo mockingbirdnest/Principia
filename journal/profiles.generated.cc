@@ -479,6 +479,7 @@ serialization::OrbitAnalysis SerializeOrbitAnalysis(OrbitAnalysis const& orbit_a
   if (orbit_analysis.ground_track != nullptr) {
     *m.mutable_ground_track() = SerializeOrbitGroundTrack(*orbit_analysis.ground_track);
   }
+  m.set_primary_index_address(SerializePointer(orbit_analysis.primary_index));
   m.set_elements_address(SerializePointer(orbit_analysis.elements));
   m.set_recurrence_address(SerializePointer(orbit_analysis.recurrence));
   m.set_ground_track_address(SerializePointer(orbit_analysis.ground_track));
@@ -490,6 +491,7 @@ void InsertStatus(serialization::Status const& status_proto, Status const& statu
 }
 
 void InsertOrbitAnalysis(serialization::OrbitAnalysis const& orbit_analysis_proto, OrbitAnalysis const& orbit_analysis_object, Player::PointerMap& pointer_map) {
+  Insert(orbit_analysis_proto.primary_index_address(), orbit_analysis_object.primary_index, pointer_map);
   Insert(orbit_analysis_proto.elements_address(), orbit_analysis_object.elements, pointer_map);
   Insert(orbit_analysis_proto.recurrence_address(), orbit_analysis_object.recurrence, pointer_map);
   Insert(orbit_analysis_proto.ground_track_address(), orbit_analysis_object.ground_track, pointer_map);
