@@ -22,7 +22,8 @@
 // seemingly unrelated code in PolynomialTest.VectorSpace.
 #define PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS \
   !PRINCIPIA_COMPILER_MSVC || !(_MSC_FULL_VER == 192'930'036 || \
-                                _MSC_FULL_VER == 192'930'037)
+                                _MSC_FULL_VER == 192'930'037 || \
+                                _MSC_FULL_VER == 192'930'038)
 
 namespace principia {
 namespace numerics {

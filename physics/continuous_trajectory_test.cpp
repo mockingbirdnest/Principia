@@ -178,6 +178,44 @@ class ContinuousTrajectoryTest : public testing::Test {
     }
   }
 
+  // Fills the pre-Grassmann fields and clear the post-Grassmann fields.
+  serialization::ContinuousTrajectory MakePreGrassmann(
+      serialization::ContinuousTrajectory const& message,
+      std::optional<Instant> const& checkpoint_time) {
+    serialization::ContinuousTrajectory pre_grassmann = message;
+    EXPECT_EQ(1, pre_grassmann.checkpoint_size());
+    auto checkpoint = pre_grassmann.checkpoint(0);
+    *pre_grassmann.mutable_adjusted_tolerance() =
+        checkpoint.adjusted_tolerance();
+    pre_grassmann.set_is_unstable(checkpoint.is_unstable());
+    pre_grassmann.set_degree(checkpoint.degree());
+    pre_grassmann.set_degree_age(checkpoint.degree_age());
+    pre_grassmann.mutable_last_point()->Swap(checkpoint.mutable_last_point());
+    if (checkpoint_time.has_value()) {
+      // This is post-Fatou.
+      checkpoint_time->WriteToMessage(pre_grassmann.mutable_checkpoint_time());
+    }
+    pre_grassmann.clear_checkpoint();
+    return pre_grassmann;
+  }
+
+  // Fills the pre-Gröbner fields and clear the post-Gröbner fields.
+  serialization::ContinuousTrajectory MakePreGröbner(
+      serialization::ContinuousTrajectory const& message) {
+    serialization::ContinuousTrajectory pre_gröbner = message;
+    for (int i = 0; i < pre_gröbner.instant_polynomial_pair_size(); ++i) {
+      auto const coefficient0 = pre_gröbner.instant_polynomial_pair(i).
+          polynomial().
+          GetExtension(serialization::PolynomialInMonomialBasis::extension).
+              coefficient(0).point().multivector();
+      *pre_gröbner.mutable_instant_polynomial_pair(i)
+           ->mutable_polynomial()->MutableExtension(
+               serialization::PolynomialInMonomialBasis::extension)
+           ->mutable_coefficient(0)->mutable_multivector() = coefficient0;
+    }
+    return pre_gröbner;
+  }
+
   Instant const t0_;
 };
 
@@ -781,14 +819,7 @@ TEST_F(ContinuousTrajectoryTest, PreCohenCompatibility) {
   trajectory->WriteToMessage(&message);
 
   // Revert the message to pre-Fatou, pre-Grassmann.
-  EXPECT_EQ(1, message.checkpoint_size());
-  auto checkpoint = message.checkpoint(0);
-  *message.mutable_adjusted_tolerance() = checkpoint.adjusted_tolerance();
-  message.set_is_unstable(checkpoint.is_unstable());
-  message.set_degree(checkpoint.degree());
-  message.set_degree_age(checkpoint.degree_age());
-  message.mutable_last_point()->Swap(checkpoint.mutable_last_point());
-  message.clear_checkpoint();
+  message = MakePreGrassmann(message, /*checkpoint_time=*/std::nullopt);
 
   // Remove the polynomials and add a single Чебышёв series of the form:
   //   T₀ - 2 * T₁ + 3 * T₂  + 4 * T₃.
@@ -868,18 +899,8 @@ TEST_F(ContinuousTrajectoryTest, PreGrassmannCompatibility) {
   serialization::ContinuousTrajectory message1;
   trajectory1->WriteToMessage(&message1);
 
-  // Fill the pre-Grassmann fields and clear the post-Grassmann fields.
-  serialization::ContinuousTrajectory pre_grassmann = message1;
-  EXPECT_EQ(1, pre_grassmann.checkpoint_size());
-  auto checkpoint = pre_grassmann.checkpoint(0);
-  *pre_grassmann.mutable_adjusted_tolerance() = checkpoint.adjusted_tolerance();
-  pre_grassmann.set_is_unstable(checkpoint.is_unstable());
-  pre_grassmann.set_degree(checkpoint.degree());
-  pre_grassmann.set_degree_age(checkpoint.degree_age());
-  pre_grassmann.mutable_last_point()->Swap(checkpoint.mutable_last_point());
-  // This is post-Fatou.
-  checkpoint_time.WriteToMessage(pre_grassmann.mutable_checkpoint_time());
-  pre_grassmann.clear_checkpoint();
+  serialization::ContinuousTrajectory const pre_grassmann =
+      MakePreGrassmann(MakePreGröbner(message1), checkpoint_time);
 
   // Read from the pre-Grassmann message, write to a second message, and check
   // that we get the same result.
@@ -926,17 +947,8 @@ TEST_F(ContinuousTrajectoryTest, PreGröbnerCompatibility) {
   serialization::ContinuousTrajectory message1;
   trajectory1->WriteToMessage(&message1);
 
-  // Fill the pre-Gröbner fields and clear the post-Gröbner fields.
-  serialization::ContinuousTrajectory pre_gröbner = message1;
-  for (int i = 0; i < pre_gröbner.instant_polynomial_pair_size(); ++i) {
-    auto const coefficient0 = pre_gröbner.instant_polynomial_pair(i).
-        polynomial().
-        GetExtension(serialization::PolynomialInMonomialBasis::extension).
-            coefficient(0).point().multivector();
-    *pre_gröbner.mutable_instant_polynomial_pair(i)->mutable_polynomial()->
-        MutableExtension(serialization::PolynomialInMonomialBasis::extension)->
-            mutable_coefficient(0)->mutable_multivector() = coefficient0;
-  }
+  serialization::ContinuousTrajectory const pre_gröbner =
+      MakePreGröbner(message1);
 
   // Read from the pre-Gröbner message, write to a second message, and check
   // that we get the same result.

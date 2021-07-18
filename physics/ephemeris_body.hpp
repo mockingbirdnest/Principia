@@ -862,10 +862,17 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   // |last_points_.size() > 1|).
   ephemeris->oldest_reanimated_checkpoint_ =
       ephemeris->checkpointer_->checkpoint_at_or_before(desired_t_min);
-  LOG(INFO) << "Restoring to checkpoint at "
-            << ephemeris->oldest_reanimated_checkpoint_;
-  CHECK_OK(ephemeris->checkpointer_->ReadFromCheckpointAt(
-      ephemeris->oldest_reanimated_checkpoint_));
+  if (ephemeris->oldest_reanimated_checkpoint_ == InfinitePast) {
+    // In the pre-Grassmann compatibility case the (only) checkpoint may be
+    // after |desired_t_min|.  This also happens with old saves that are
+    // rewritten post-Grassmann.
+    CHECK_LE(ephemeris->t_min(), desired_t_min);
+  } else {
+    LOG(INFO) << "Restoring to checkpoint at "
+              << ephemeris->oldest_reanimated_checkpoint_;
+    CHECK_OK(ephemeris->checkpointer_->ReadFromCheckpointAt(
+        ephemeris->oldest_reanimated_checkpoint_));
+  }
 
   // The ephemeris will need to be prolonged and reanimated as needed when
   // deserializing the plugin.

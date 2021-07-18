@@ -1,87 +1,124 @@
 ﻿
-#include <filesystem>
-#include <fstream>
-#include <map>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "astronomy/time_scales.hpp"
-#include "base/array.hpp"
-#include "base/hexadecimal.hpp"
-#include "geometry/grassmann.hpp"
+#include "base/file.hpp"
+#include "base/not_null.hpp"
+#include "base/pull_serializer.hpp"
+#include "base/push_deserializer.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "gtest/gtest.h"
-#include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/interface.hpp"
 #include "ksp_plugin/plugin.hpp"
-#include "physics/apsides.hpp"
-#include "quantities/astronomy.hpp"
-#include "quantities/quantities.hpp"
-#include "quantities/si.hpp"
 #include "serialization/ksp_plugin.pb.h"
-#include "serialization/physics.pb.h"
 #include "testing_utilities/serialization.hpp"
 
 namespace principia {
-namespace ksp_plugin {
-namespace internal_plugin {
+namespace interface {
 
-using astronomy::TTSecond;
 using astronomy::operator""_TT;
+using astronomy::TTSecond;
 using astronomy::date_time::DateTime;
 using astronomy::date_time::operator""_DateTime;
-using base::Array;
-using base::HexadecimalEncoder;
-using base::UniqueArray;
-using geometry::Bivector;
-using geometry::Trivector;
-using geometry::Vector;
-using physics::BodyCentredNonRotatingDynamicFrame;
-using physics::ComputeApsides;
-using quantities::Length;
+using base::not_null;
+using base::OFStream;
+using base::PullSerializer;
+using base::PushDeserializer;
+using ksp_plugin::Plugin;
 using quantities::Speed;
-using quantities::si::Hour;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
-using ::testing::AllOf;
-using ::testing::AnyOf;
+using testing_utilities::ReadLinesFromBase64File;
+using testing_utilities::ReadLinesFromHexadecimalFile;
 using ::testing::ElementsAre;
 using ::testing::Eq;
-using ::testing::Gt;
 using ::testing::IsFalse;
 using ::testing::IsTrue;
-using ::testing::Lt;
+using ::testing::NotNull;
+
+const char preferred_compressor[] = "gipfeli";
+const char preferred_encoder[] = "base64";
 
 class PluginCompatibilityTest : public testing::Test {
-protected:
-  PluginCompatibilityTest() {
-    google::LogToStderr();
+ protected:
+  // Reads a plugin from a file containing only the "serialized_plugin = "
+  // lines, with "serialized_plugin = " dropped.
+  not_null<std::unique_ptr<Plugin const>> ReadPluginFromFile(
+      std::filesystem::path const& filename,
+      std::string_view const compressor,
+      std::string_view const encoder) {
+    Plugin const* plugin = nullptr;
+
+    PushDeserializer* deserializer = nullptr;
+    auto const lines =
+        encoder == "hexadecimal" ? ReadLinesFromHexadecimalFile(filename)
+        : encoder == "base64"    ? ReadLinesFromBase64File(filename)
+                                  : std::vector<std::string>{};
+    CHECK(!lines.empty());
+
+    LOG(ERROR) << "Deserialization starting";
+    for (std::string const& line : lines) {
+      principia__DeserializePlugin(line.c_str(),
+                                   &deserializer,
+                                   &plugin,
+                                   compressor.data(),
+                                   encoder.data());
+    }
+    principia__DeserializePlugin("",
+                                 &deserializer,
+                                 &plugin,
+                                 compressor.data(),
+                                 encoder.data());
+    LOG(ERROR) << "Deserialization complete";
+
+    return std::unique_ptr<Plugin const>(plugin);
   }
 
-  std::unique_ptr<Plugin const> ReadPluginFromBase64File(
-      std::filesystem::path const& filename) {
-    LOG(INFO) << "Reading file " << filename << u8"…";
-    auto const lines = testing_utilities::ReadLinesFromBase64File(filename);
-    base::PushDeserializer* deserializer = nullptr;
-    Plugin const* plugin;
-    LOG(INFO) << lines.size() << u8" lines. Deserializing…";
-    for (std::string const& line : lines) {
-      interface::principia__DeserializePlugin(line.c_str(),
-                                              &deserializer,
-                                              &plugin,
-                                              /*compressor=*/"gipfeli",
-                                              "base64");
+  // Writes a plugin to a file.
+  void WritePluginToFile(std::filesystem::path const& filename,
+                         std::string_view const compressor,
+                         std::string_view const encoder,
+                         not_null<std::unique_ptr<Plugin const>> plugin) {
+    OFStream file(filename);
+    PullSerializer* serializer = nullptr;
+    char const* b64 = nullptr;
+
+    LOG(ERROR) << "Serialization starting";
+    for (;;) {
+      b64 = principia__SerializePlugin(plugin.get(),
+                                       &serializer,
+                                       preferred_compressor,
+                                       preferred_encoder);
+      if (b64 == nullptr) {
+        break;
+      }
+      file << b64 << "\n";
+      principia__DeleteString(&b64);
     }
-    interface::principia__DeserializePlugin("",
-                                            &deserializer,
-                                            &plugin,
-                                            /*compressor=*/"gipfeli",
-                                            "base64");
-    LOG(INFO) << "Deserialization complete.";
-    return std::unique_ptr<Plugin const>(plugin);
+    LOG(ERROR) << "Serialization complete";
+
+    Plugin const* released_plugin = plugin.release();
+    principia__DeletePlugin(&released_plugin);
+  }
+
+  void CheckSaveCompatibility(std::filesystem::path const& filename,
+                              std::string_view const compressor,
+                              std::string_view const encoder) {
+    // Read a plugin from the given file.
+    auto plugin1 = ReadPluginFromFile(filename, compressor, encoder);
+
+    // Write that plugin back to another file with the preferred format.
+    WritePluginToFile(TEMP_DIR / "serialized_plugin.proto.b64",
+                      preferred_compressor,
+                      preferred_encoder,
+                      std::move(plugin1));
+
+    // Read the plugin from the new file to make sure that it's fine.
+    auto plugin2 = ReadPluginFromFile(TEMP_DIR / "serialized_plugin.proto.b64",
+                                      preferred_compressor,
+                                      preferred_encoder);
   }
 };
 
@@ -89,9 +126,16 @@ TEST_F(PluginCompatibilityTest, PreCartan) {
   // This space for rent.
 }
 
+TEST_F(PluginCompatibilityTest, PreCohen) {
+  CheckSaveCompatibility(
+      SOLUTION_DIR / "ksp_plugin_test" / "pre_cohen.proto.hex",
+      /*compressor=*/"",
+      /*decoder=*/"hexadecimal");
+}
+
 TEST_F(PluginCompatibilityTest, Reach) {
-  std::unique_ptr<Plugin const> const plugin =
-      ReadPluginFromBase64File(SOLUTION_DIR / "ksp_plugin_test" / "Reach.sfs");
+  not_null<std::unique_ptr<Plugin const>> const plugin = ReadPluginFromFile(
+      SOLUTION_DIR / "ksp_plugin_test" / "Reach.sfs", "gipfeli", "base64");
   auto const test = plugin->GetVessel("f2d77873-4776-4809-9dfb-de9e7a0620a6");
   EXPECT_THAT(test->name(), Eq("TEST"));
   EXPECT_THAT(TTSecond(test->psychohistory().front().time),
@@ -150,91 +194,15 @@ TEST_F(PluginCompatibilityTest, Reach) {
                           +2.86686518692948443e-02 * (Metre / Second),
                           +1.00404183285598275e-03 * (Metre / Second),
                           +1.39666705839172456e-01 * (Metre / Second)));
-  for (Vessel const* vessel : {test, infnity}) {
-    LOG(ERROR) << vessel->name() << ":";
-    if (vessel->has_flight_plan()) {
-      auto& flight_plan = vessel->flight_plan();
-      LOG(ERROR) << flight_plan.number_of_manœuvres() << u8" manœuvres";
-      LOG(ERROR) << "Flight plan: " << TTSecond(flight_plan.initial_time())
-                 << " .. " << TTSecond(flight_plan.actual_final_time());
-      auto adaptive_step_parameters = flight_plan.adaptive_step_parameters();
-      adaptive_step_parameters.set_max_steps(
-          std::numeric_limits<int64_t>::max());
-      flight_plan.SetAdaptiveStepParameters(
-          adaptive_step_parameters,
-          flight_plan.generalized_adaptive_step_parameters());
-      for (;;) {
-        if (flight_plan.SetDesiredFinalTime("1989-07-14T12:00:00"_TT).ok()) {
-          break;
-        }
-        LOG(ERROR) << flight_plan.actual_final_time();
-        LOG(ERROR) << "Extended to "
-                   << TTSecond(flight_plan.actual_final_time());
-      }
-      LOG(ERROR) << "Extended to " << TTSecond(flight_plan.actual_final_time());
-      for (int i = 0; i < flight_plan.number_of_manœuvres(); ++i) {
-        Instant const t = flight_plan.GetManœuvre(i).initial_time();
-        LOG(ERROR) << flight_plan.GetManœuvre(i).Δv().Norm() << " at "
-                   << TTSecond(t)
-                   << t - astronomy::internal_time_scales::DateTimeAsTT(
-                              TTSecond(t));
-        serialization::DynamicFrame frame;
-        flight_plan.GetManœuvre(i).frame()->WriteToMessage(&frame);
-        auto const& manœuvre_frame = dynamic_cast<
-            BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation> const&>(
-            *flight_plan.GetManœuvre(i).frame());
-        LOG(ERROR) << manœuvre_frame.centre()->name();
-        DiscreteTrajectory<Barycentric>::Iterator begin;
-        DiscreteTrajectory<Barycentric>::Iterator end;
-        // Loop over the preceding coast, the current burn, and the final coast
-        // if this is the last manœuvre.
-        for (int const j : (i == flight_plan.number_of_manœuvres() - 1
-                                ? std::vector{0, 1, 2}
-                                : std::vector{0, 1})) {
-          flight_plan.GetSegment(2 * i + j, begin, end);
-          for (int i = 0; i < 100; ++i) {
-            if (plugin->HasCelestial(i)) {
-              auto const& celestial = plugin->GetCelestial(i);
-              DiscreteTrajectory<Barycentric> apoapsides;
-              DiscreteTrajectory<Barycentric> periapsides;
-              ComputeApsides(celestial.trajectory(),
-                             begin,
-                             end,
-                             /*max_points=*/std::numeric_limits<int>::max(),
-                             apoapsides,
-                             periapsides);
-              for (auto const periapsis : periapsides) {
-                auto const distance =
-                    (celestial.trajectory().EvaluatePosition(periapsis.time) -
-                     periapsis.degrees_of_freedom.position())
-                        .Norm();
-                std::set<std::string_view> const gas_giants{
-                    "Jupiter", "Saturn", "Uranus", "Neptune"};
-                Length const threshold =
-                    (gas_giants.contains(celestial.body()->name()) ||
-                     (celestial.parent() != nullptr &&
-                      gas_giants.contains(celestial.parent()->body()->name())))
-                        ? 1e7 * Kilo(Metre)
-                        : 1e5 * Kilo(Metre);
-                if (distance < threshold) {
-                  LOG(ERROR) << TTSecond(periapsis.time) << ": "
-                             << distance / Kilo(Metre) << " km from "
-                             << celestial.body()->name();
-                }
-              }
-            }
-          }
-        }
-      }
-    } else {
-      LOG(ERROR) << "No flight plan.";
-    }
-    LOG(ERROR) << "Psychohistory range: "
-               << TTSecond(vessel->psychohistory().front().time) << " .. "
-               << TTSecond(vessel->psychohistory().back().time);
-  }
 }
 
-}  // namespace internal_plugin
-}  // namespace ksp_plugin
+// Use for debugging saves given by users.
+TEST_F(PluginCompatibilityTest, DISABLED_SECULAR_Debug) {
+  CheckSaveCompatibility(
+      R"(P:\Public Mockingbird\Principia\Saves\2685\five-minute-scene-change-neptune.txt)",
+      /*compressor=*/"gipfeli",
+      /*decoder=*/"base64");
+}
+
+}  // namespace interface
 }  // namespace principia
