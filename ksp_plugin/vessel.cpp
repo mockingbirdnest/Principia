@@ -640,6 +640,7 @@ void Vessel::AttachPrediction(
   if (trajectory->Empty()) {
     prediction_ = psychohistory_->NewForkAtLast();
   } else {
+    psychohistory_->DeleteFork(prediction_);
     prediction_ = trajectory.get();
     psychohistory_->AttachFork(std::move(trajectory));
   }

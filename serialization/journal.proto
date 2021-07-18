@@ -207,11 +207,12 @@ message OrbitGroundTrack {
 
 message OrbitAnalysis {
   required double progress_of_next_analysis = 1;
-  optional int32 primary_index = 2;
+  optional int32 primary_index = 2 [(is_produced) = true];
   required double mission_duration = 3;
   optional OrbitalElements elements = 4 [(is_produced) = true];
   optional OrbitRecurrence recurrence = 5 [(is_produced) = true];
   optional OrbitGroundTrack ground_track = 6 [(is_produced) = true];
+  required fixed64 primary_index_address = 10 [(address_of) = "primary_index"];
   required fixed64 elements_address = 7 [(address_of) = "elements"];
   required fixed64 recurrence_address = 8 [(address_of) = "recurrence"];
   required fixed64 ground_track_address = 9 [(address_of) = "ground_track"];
@@ -780,7 +781,8 @@ message FlightPlanGetCoastAnalysis {
     required int32 index = 6;
   }
   message Return {
-    required OrbitAnalysis result = 1;
+    required OrbitAnalysis result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Return return = 3;

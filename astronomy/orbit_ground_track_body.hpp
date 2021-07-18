@@ -34,6 +34,7 @@ std::vector<Angle> PlanetocentricLongitudes(
     DiscreteTrajectory<PrimaryCentred> const& nodes,
     RotatingBody<Inertial> const& primary) {
   std::vector<Angle> longitudes;
+  longitudes.reserve(nodes.Size());
   for (auto const& node : nodes) {
     longitudes.push_back(
         CelestialLongitude(node.degrees_of_freedom.position()) -

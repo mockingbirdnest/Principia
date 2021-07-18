@@ -1,8 +1,9 @@
 #pragma once
 
+#include "base/jthread.hpp"
+
 #include <set>
 
-#include "base/jthread.hpp"
 #include "base/macros.hpp"
 
 namespace principia {
