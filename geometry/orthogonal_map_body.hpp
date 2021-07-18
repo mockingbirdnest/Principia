@@ -106,6 +106,7 @@ OrthogonalMap<FromFrame, ToFrame>
 OrthogonalMap<FromFrame, ToFrame>::ReadFromMessage(
     serialization::OrthogonalMap const& message) {
   bool const is_pre_frege = message.has_rotation();
+  LOG_IF_EVERY_SECOND(WARNING, is_pre_frege) << "Reading pre-Frege OrthogonalMap";
   return OrthogonalMap(
       is_pre_frege
           ? Quaternion::ReadFromMessage(message.rotation().quaternion())

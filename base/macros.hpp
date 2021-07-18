@@ -241,5 +241,21 @@ template_and_result declared_name parameters;              \
 }                                                          \
 using internal_##package_name::declared_name
 
+#define LOG_IF_EVERY(severity, Δt, condition)                                \
+  static std::optional<std::chrono::steady_clock::time_point>                \
+      LOG_EVERY_N_VARNAME(last_log_time, __LINE__);                          \
+  bool const LOG_EVERY_N_VARNAME(Δt_elapsed, __LINE__) =                     \
+      !LOG_EVERY_N_VARNAME(last_log_time, __LINE__).has_value() ||           \
+      std::chrono::steady_clock::now() -                                     \
+              *LOG_EVERY_N_VARNAME(last_log_time, __LINE__) >=               \
+          (Δt);                                                              \
+  LOG_IF(severity, (condition) && LOG_EVERY_N_VARNAME(Δt_elapsed, __LINE__)) \
+      << (LOG_EVERY_N_VARNAME(last_log_time, __LINE__) =                     \
+              std::chrono::steady_clock::now(),                              \
+          "")
+
+#define LOG_IF_EVERY_SECOND(severity, condition) \
+  LOG_IF_EVERY(severity, std::chrono::seconds(1), (condition))
+
 }  // namespace base
 }  // namespace principia
