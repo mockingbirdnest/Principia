@@ -403,6 +403,11 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   bool const is_pre_cesàro = message.has_psychohistory_is_authoritative();
   bool const is_pre_chasles = message.has_prediction();
   bool const is_pre_陈景润 = !message.history().has_downsampling();
+  LOG_IF_EVERY_SECOND(WARNING, is_pre_陈景润) << "Reading pre-"
+                                              << (is_pre_cesàro    ? u8"Cesàro"
+                                                  : is_pre_chasles ? "Chasles"
+                                                                   : "陈景润")
+                                              << " Vessel";
 
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
   // information.
