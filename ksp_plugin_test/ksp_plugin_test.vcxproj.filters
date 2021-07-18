@@ -38,9 +38,6 @@
     <ClCompile Include="celestial_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="plugin_compatibility_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="plugin_integration_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
@@ -196,6 +193,9 @@
     </ClCompile>
     <ClCompile Include="..\geometry\instant_output.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="plugin_compatibility_test.cpp">
+      <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
