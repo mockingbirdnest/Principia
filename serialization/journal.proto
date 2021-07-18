@@ -780,7 +780,8 @@ message FlightPlanGetCoastAnalysis {
     required int32 index = 6;
   }
   message Return {
-    required OrbitAnalysis result = 1;
+    required OrbitAnalysis result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Return return = 3;
