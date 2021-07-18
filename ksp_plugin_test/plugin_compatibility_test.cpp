@@ -32,6 +32,10 @@ const char preferred_encoder[] = "base64";
 
 class PluginCompatibilityTest : public testing::Test {
  protected:
+  PluginCompatibilityTest() {
+    google::SetStderrLogging(google::WARNING);
+  }
+
   // Reads a plugin from a file containing only the "serialized_plugin = "
   // lines, with "serialized_plugin = " dropped.
   not_null<std::unique_ptr<Plugin const>> ReadPluginFromFile(

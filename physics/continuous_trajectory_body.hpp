@@ -396,6 +396,12 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
        message.instant_polynomial_pair(0).polynomial()
            .GetExtension(serialization::PolynomialInMonomialBasis::extension)
            .coefficient(0).has_multivector());
+  LOG_IF_EVERY_SECOND(WARNING, is_pre_gröbner)
+      << "Reading pre-"
+      << (is_pre_cohen       ? "Cohen"
+          : is_pre_fatou     ? "Fatou"
+          : is_pre_grassmann ? "Grassmann"
+                             : u8"Gröbner") << " ContinuousTrajectory";
 
   not_null<std::unique_ptr<ContinuousTrajectory<Frame>>> continuous_trajectory =
       std::make_unique<ContinuousTrajectory<Frame>>(

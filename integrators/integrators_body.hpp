@@ -565,6 +565,8 @@ AdaptiveStepSizeIntegrator<ODE_>::Parameters::ReadFromMessage(
     serialization::AdaptiveStepSizeIntegratorInstance::Parameters const&
         message) {
   bool const is_pre_cartan = !message.has_last_step_is_exact();
+  LOG_IF_EVERY_SECOND(WARNING, is_pre_cartan)
+      << "Reading pre-Cartan AdaptiveStepSizeIntegrator";
   Parameters result(Time::ReadFromMessage(message.first_time_step()),
                     message.safety_factor(),
                     message.max_steps(),
@@ -636,6 +638,8 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
   auto const& extension = message.GetExtension(
       serialization::AdaptiveStepSizeIntegratorInstance::extension);
   bool const is_pre_cartan = !extension.has_time_step();
+  LOG_IF_EVERY_SECOND(WARNING, is_pre_cartan)
+      << "Reading pre-Cartan AdaptiveStepSizeIntegrator Instance";
 
   auto const parameters =
       Parameters::ReadFromMessage(extension.parameters());
