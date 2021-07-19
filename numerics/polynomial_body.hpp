@@ -557,6 +557,9 @@ ReadFromMessage(serialization::Polynomial const& message) {
 
   bool const is_pre_gröbner = extension.origin_case() ==
     serialization::PolynomialInMonomialBasis::ORIGIN_NOT_SET;
+  LOG_IF_EVERY_SECOND(WARNING, is_pre_gröbner)
+      << u8"Reading pre-Gröbner PolynomialInMonomialBasis";
+
   Coefficients coefficients;
   TupleSerializer<Coefficients, 0>::FillFromMessage(extension, coefficients);
 

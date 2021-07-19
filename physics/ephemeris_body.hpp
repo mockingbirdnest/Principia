@@ -790,6 +790,11 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   bool const is_pre_ἐρατοσθένης = !message.has_accuracy_parameters();
   bool const is_pre_fatou = !message.has_checkpoint_time();
   bool const is_pre_grassmann = message.checkpoint_size() == 0;
+  LOG_IF_EVERY_SECOND(WARNING, is_pre_grassmann)
+      << "Reading pre-"
+      << (is_pre_ἐρατοσθένης ? u8"Ἐρατοσθένης"
+          : is_pre_fatou     ? "Fatou"
+                             : "Grassmann") << " Ephemeris";
 
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   for (auto const& body : message.body()) {
@@ -862,10 +867,17 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   // |last_points_.size() > 1|).
   ephemeris->oldest_reanimated_checkpoint_ =
       ephemeris->checkpointer_->checkpoint_at_or_before(desired_t_min);
-  LOG(INFO) << "Restoring to checkpoint at "
-            << ephemeris->oldest_reanimated_checkpoint_;
-  CHECK_OK(ephemeris->checkpointer_->ReadFromCheckpointAt(
-      ephemeris->oldest_reanimated_checkpoint_));
+  if (ephemeris->oldest_reanimated_checkpoint_ == InfinitePast) {
+    // In the pre-Grassmann compatibility case the (only) checkpoint may be
+    // after |desired_t_min|.  This also happens with old saves that are
+    // rewritten post-Grassmann.
+    CHECK_LE(ephemeris->t_min(), desired_t_min);
+  } else {
+    LOG(INFO) << "Restoring to checkpoint at "
+              << ephemeris->oldest_reanimated_checkpoint_;
+    CHECK_OK(ephemeris->checkpointer_->ReadFromCheckpointAt(
+        ephemeris->oldest_reanimated_checkpoint_));
+  }
 
   // The ephemeris will need to be prolonged and reanimated as needed when
   // deserializing the plugin.

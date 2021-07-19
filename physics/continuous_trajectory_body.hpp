@@ -357,10 +357,11 @@ void ContinuousTrajectory<Frame>::WriteToMessage(
   step_.WriteToMessage(message->mutable_step());
   tolerance_.WriteToMessage(message->mutable_tolerance());
 
-  // TODO(phl): There should be no polynomials before the oldest checkpoint, see
-  // Ephemeris::AppendMassiveBodiesState.  This has probably been true since
-  // Fatou (#2149) and possibly Burnside (#1029).  This code should be removed,
-  // but "Beware the Compatibility, my son!".
+  // There should be no polynomials before the oldest checkpoint in recent
+  // saves, see Ephemeris::AppendMassiveBodiesState.  This has probably been
+  // true since Fatou (#2149), but we maintain compatibility with older saves,
+  // see #3039.  When such an old save is rewritten, we end up with polynomials
+  // before the oldest checkpoint.
   for (auto const& pair : polynomials_) {
     Instant const& t_max = pair.t_max;
     auto const& polynomial = pair.polynomial;
@@ -390,10 +391,17 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
                                 message.has_degree() &&
                                 message.has_degree_age();
   bool const is_pre_gröbner =
-    message.instant_polynomial_pair_size() > 0 &&
-    message.instant_polynomial_pair(0).polynomial().
-        GetExtension(serialization::PolynomialInMonomialBasis::extension).
-            coefficient(0).has_multivector();
+      is_pre_grassmann ||
+      (message.instant_polynomial_pair_size() > 0 &&
+       message.instant_polynomial_pair(0).polynomial()
+           .GetExtension(serialization::PolynomialInMonomialBasis::extension)
+           .coefficient(0).has_multivector());
+  LOG_IF_EVERY_SECOND(WARNING, is_pre_gröbner)
+      << "Reading pre-"
+      << (is_pre_cohen       ? "Cohen"
+          : is_pre_fatou     ? "Fatou"
+          : is_pre_grassmann ? "Grassmann"
+                             : u8"Gröbner") << " ContinuousTrajectory";
 
   not_null<std::unique_ptr<ContinuousTrajectory<Frame>>> continuous_trajectory =
       std::make_unique<ContinuousTrajectory<Frame>>(
@@ -484,9 +492,16 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
 
   // There should always be a checkpoint, either at the end of the trajectory,
   // in the pre-Grassmann compatibility case; or at the first point of the
-  // trajectory, for modern saves (see the comment in WriteToMessage).
-  CHECK_OK(continuous_trajectory->checkpointer_->ReadFromCheckpointAtOrBefore(
-      desired_t_min));
+  // trajectory, for modern saves (see the comment in WriteToMessage).  In the
+  // pre-Grassman case the (only) checkpoint may be after |desired_t_min|, but
+  // then we should have polynomials covering that time, see #3039.
+  auto const status =
+      continuous_trajectory->checkpointer_->ReadFromCheckpointAtOrBefore(
+          desired_t_min);
+  if (!status.ok()) {
+    CHECK(absl::IsNotFound(status));
+    CHECK_LE(continuous_trajectory->t_min(), desired_t_min);
+  }
 
   return continuous_trajectory;
 }

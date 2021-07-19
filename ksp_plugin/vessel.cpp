@@ -466,6 +466,13 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
                             !message.history().has_downsampling();
   // TODO(phl): Decide in which version it goes.
   bool const is_pre_grothendieck_haar = !message.has_prehistory();
+  LOG_IF_EVERY_SECOND(WARNING, is_pre_grothendieck_haar)
+      << "Reading pre-"
+      << (is_pre_cesàro    ? u8"Cesàro"
+          : is_pre_chasles ? "Chasles"
+          : is_pre_陈景润  ? u8"陈景润"
+                           : "Grothendieck/Haar")
+      << " Vessel";
 
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
   // information.

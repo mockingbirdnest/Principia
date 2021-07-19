@@ -218,6 +218,13 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
                             message.apparent_part_degrees_of_freedom_size() > 0;
   bool const is_pre_frobenius = message.rigid_pile_up().empty() ||
                                 !message.has_angular_momentum();
+  LOG_IF_EVERY_SECOND(WARNING, is_pre_frobenius)
+      << "Reading pre-"
+      << (is_pre_cartan   ? "Cartan"
+          : is_pre_cesàro ? u8"Cesàro"
+          : is_pre_frege  ? "Frege"
+                          : "Frobenius") << " PileUp";
+
   std::unique_ptr<PileUp> pile_up;
   if (is_pre_cesàro) {
     if (is_pre_cartan) {

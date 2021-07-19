@@ -588,6 +588,8 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     serialization::DiscreteTrajectory const& message,
     std::vector<DiscreteTrajectory<Frame>**> const& tracked) {
   bool const is_pre_frobenius = !message.has_zfp();
+  LOG_IF_EVERY_SECOND(WARNING, is_pre_frobenius)
+      << "Reading pre-Frobenius PolynomialInMonomialBasis";
   if (is_pre_frobenius) {
     for (auto const& instantaneous_dof : message.timeline()) {
       Append(Instant::ReadFromMessage(instantaneous_dof.instant()),
