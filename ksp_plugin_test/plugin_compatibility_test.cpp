@@ -32,11 +32,16 @@ using ksp_plugin::Plugin;
 using quantities::Speed;
 using testing_utilities::ReadLinesFromBase64File;
 using testing_utilities::ReadLinesFromHexadecimalFile;
+using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Eq;
+using ::testing::HasSubstr;
 using ::testing::IsFalse;
 using ::testing::IsTrue;
+using ::testing::Not;
 using ::testing::NotNull;
+using ::testing::internal::CaptureStderr;
+using ::testing::internal::GetCapturedStderr;
 
 const char preferred_compressor[] = "gipfeli";
 const char preferred_encoder[] = "base64";
@@ -49,7 +54,7 @@ class PluginCompatibilityTest : public testing::Test {
 
   // Reads a plugin from a file containing only the "serialized_plugin = "
   // lines, with "serialized_plugin = " dropped.
-  not_null<std::unique_ptr<Plugin const>> ReadPluginFromFile(
+  static not_null<std::unique_ptr<Plugin const>> ReadPluginFromFile(
       std::filesystem::path const& filename,
       std::string_view const compressor,
       std::string_view const encoder) {
@@ -81,20 +86,19 @@ class PluginCompatibilityTest : public testing::Test {
   }
 
   // Writes a plugin to a file.
-  void WritePluginToFile(std::filesystem::path const& filename,
-                         std::string_view const compressor,
-                         std::string_view const encoder,
-                         not_null<std::unique_ptr<Plugin const>> plugin) {
+  static void WritePluginToFile(
+      std::filesystem::path const& filename,
+      std::string_view const compressor,
+      std::string_view const encoder,
+      not_null<std::unique_ptr<Plugin const>> plugin) {
     OFStream file(filename);
     PullSerializer* serializer = nullptr;
     char const* b64 = nullptr;
 
     LOG(ERROR) << "Serialization starting";
     for (;;) {
-      b64 = principia__SerializePlugin(plugin.get(),
-                                       &serializer,
-                                       preferred_compressor,
-                                       preferred_encoder);
+      b64 = principia__SerializePlugin(
+          plugin.get(), &serializer, preferred_compressor, preferred_encoder);
       if (b64 == nullptr) {
         break;
       }
@@ -107,13 +111,8 @@ class PluginCompatibilityTest : public testing::Test {
     principia__DeletePlugin(&released_plugin);
   }
 
-  void CheckSaveCompatibility(std::filesystem::path const& filename,
-                              std::string_view const compressor,
-                              std::string_view const encoder) {
-    // Read a plugin from the given file.
-    auto plugin1 = ReadPluginFromFile(filename, compressor, encoder);
-
-    // Write that plugin back to another file with the preferred format.
+  static void WriteAndReadBack(not_null<std::unique_ptr<Plugin const>> plugin1) {
+    // Write the plugin to new file with the preferred format.
     WritePluginToFile(TEMP_DIR / "serialized_plugin.proto.b64",
                       preferred_compressor,
                       preferred_encoder,
@@ -124,6 +123,15 @@ class PluginCompatibilityTest : public testing::Test {
                                       preferred_compressor,
                                       preferred_encoder);
   }
+
+  static void CheckSaveCompatibility(std::filesystem::path const& filename,
+                              std::string_view const compressor,
+                              std::string_view const encoder) {
+    // Read a plugin from the given file.
+    auto plugin = ReadPluginFromFile(filename, compressor, encoder);
+
+    WriteAndReadBack(std::move(plugin));
+  }
 };
 
 TEST_F(PluginCompatibilityTest, PreCartan) {
@@ -131,15 +139,29 @@ TEST_F(PluginCompatibilityTest, PreCartan) {
 }
 
 TEST_F(PluginCompatibilityTest, PreCohen) {
+  CaptureStderr();
   CheckSaveCompatibility(
-      SOLUTION_DIR / "ksp_plugin_test" / "pre_cohen.proto.hex",
+      SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3039.proto.hex",
       /*compressor=*/"",
       /*decoder=*/"hexadecimal");
+  EXPECT_THAT(
+      GetCapturedStderr(),
+      AllOf(
+          HasSubstr(
+              "pre-Cohen ContinuousTrajectory"),  // Regression test for #3039.
+          HasSubstr("pre-Cauchy"),                // The save is even older.
+          Not(HasSubstr("pre-Cartan"))            // But not *that* old.
+          ));
 }
 
 TEST_F(PluginCompatibilityTest, Reach) {
-  not_null<std::unique_ptr<Plugin const>> const plugin = ReadPluginFromFile(
-      SOLUTION_DIR / "ksp_plugin_test" / "Reach.sfs", "gipfeli", "base64");
+  CaptureStderr();
+  not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
+      SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3072.proto.b64",
+      /*compressor=*/"gipfeli",
+      /*decoder=*/"base64");
+  EXPECT_THAT(GetCapturedStderr(),
+              AllOf(HasSubstr("pre-Galileo"), Not(HasSubstr("pre-Frobenius"))));
   auto const test = plugin->GetVessel("f2d77873-4776-4809-9dfb-de9e7a0620a6");
   EXPECT_THAT(test->name(), Eq("TEST"));
   EXPECT_THAT(TTSecond(test->psychohistory().front().time),
@@ -198,6 +220,9 @@ TEST_F(PluginCompatibilityTest, Reach) {
                           +2.86686518692948443e-02 * (Metre / Second),
                           +1.00404183285598275e-03 * (Metre / Second),
                           +1.39666705839172456e-01 * (Metre / Second)));
+
+  // Make sure that we can upgrade, save, and reload.
+  WriteAndReadBack(std::move(plugin));
 }
 
 // Use for debugging saves given by users.
