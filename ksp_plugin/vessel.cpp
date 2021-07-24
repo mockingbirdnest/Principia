@@ -597,6 +597,13 @@ Checkpointer<serialization::Vessel>::Writer Vessel::MakeCheckpointerWriter() {
 }
 
 Checkpointer<serialization::Vessel>::Reader Vessel::MakeCheckpointerReader() {
+  return [this](serialization::Vessel::Checkpoint const& message) {
+    auto last_history_segment =
+        DiscreteTrajectory<Barycentric>::ReadFromMessage(message.segment(),
+                                                         /*tracked=*/{});
+    history_->AttachFork(std::move(last_history_segment));
+    return absl::OkStatus();
+  };
 }
 
 void Vessel::MakeAsynchronous() {
