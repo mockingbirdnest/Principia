@@ -144,6 +144,7 @@ OrbitalElements::OsculatingEquinoctialElements(
   DegreesOfFreedom<PrimaryCentred> const primary_dof{
       PrimaryCentred::origin, PrimaryCentred::unmoving};
   std::vector<EquinoctialElements> result;
+  result.reserve(trajectory.Size());
   for (auto const& [time, degrees_of_freedom] : trajectory) {
     auto const osculating_elements =
         KeplerOrbit<PrimaryCentred>(primary,
@@ -255,6 +256,7 @@ OrbitalElements::MeanEquinoctialElements(
     Time ʃ_qʹ_dt;
   };
   std::vector<IntegratedEquinoctialElements> integrals;
+  integrals.reserve(osculating.size());
   integrals.push_back({t_min});
   for (auto previous = osculating.begin(), it = osculating.begin() + 1;
        it != osculating.end();
@@ -275,6 +277,7 @@ OrbitalElements::MeanEquinoctialElements(
 
   // Now compute the averages.
   std::vector<EquinoctialElements> mean_elements;
+  mean_elements.reserve(integrals.size());
   int j = 0;
   for (auto const& up_to_tᵢ : integrals) {
     RETURN_IF_STOPPED;
@@ -334,6 +337,7 @@ inline absl::StatusOr<std::vector<OrbitalElements::ClassicalElements>>
 OrbitalElements::ToClassicalElements(
     std::vector<EquinoctialElements> const& equinoctial_elements) {
   std::vector<ClassicalElements> classical_elements;
+  classical_elements.reserve(equinoctial_elements.size());
   for (auto const& equinoctial : equinoctial_elements) {
     RETURN_IF_STOPPED;
     double const tg_½i = Sqrt(Pow<2>(equinoctial.p) + Pow<2>(equinoctial.q));

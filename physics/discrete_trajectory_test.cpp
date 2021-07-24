@@ -37,6 +37,7 @@ using geometry::Position;
 using geometry::R3Element;
 using geometry::Vector;
 using numerics::DoublePrecision;
+using quantities::Abs;
 using quantities::AngularFrequency;
 using quantities::Cos;
 using quantities::Length;
@@ -131,6 +132,39 @@ class DiscreteTrajectoryTest : public testing::Test {
       result.push_back(time);
     }
     return result;
+  }
+
+  DoublePrecision<Instant> AppendCircularTrajectory(
+      AngularFrequency const& ω,
+      Length const& r,
+      Time const& Δt,
+      Instant const& t1,
+      Instant const& t2,
+      DiscreteTrajectory<World>& trajectory) {
+    return AppendCircularTrajectory(
+        ω, r, Δt, DoublePrecision<Instant>(t1), t2, trajectory);
+  }
+
+  DoublePrecision<Instant> AppendCircularTrajectory(
+      AngularFrequency const& ω,
+      Length const& r,
+      Time const& Δt,
+      DoublePrecision<Instant> const& t1,
+      Instant const& t2,
+      DiscreteTrajectory<World>& trajectory) {
+    Speed const v = ω * r / Radian;
+    auto t = t1;
+    for (; t.value <= t2; t.Increment(Δt)) {
+      DegreesOfFreedom<World> const dof = {
+          World::origin + Displacement<World>{{r * Cos(ω * (t.value - t0_)),
+                                               r * Sin(ω * (t.value - t0_)),
+                                               0 * Metre}},
+          Velocity<World>{{-v * Sin(ω * (t.value - t0_)),
+                           v * Cos(ω * (t.value - t0_)),
+                           0 * Metre / Second}}};
+      trajectory.Append(t.value, dof);
+    }
+    return t;
   }
 
   Position<World> q1_, q2_, q3_, q4_;
@@ -678,7 +712,7 @@ TEST_F(DiscreteTrajectoryDeathTest, TrajectorySerializationError) {
     not_null<DiscreteTrajectory<World>*> const fork =
         massive_trajectory_->NewForkWithCopy(t1_);
     serialization::DiscreteTrajectory message;
-    fork->WriteToMessage(&message, /*forks=*/{});
+    fork->WriteToMessage(&message, /*excluded=*/{}, /*tracked=*/{});
   }, "is_root");
 }
 
@@ -700,10 +734,13 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   serialization::DiscreteTrajectory message;
   serialization::DiscreteTrajectory reference_message;
 
-  // Don't serialize |fork0| and |fork4|.
-  massive_trajectory_->WriteToMessage(&message, {fork1, fork3, fork2});
+  // Don't serialize |fork0|.
+  massive_trajectory_->WriteToMessage(&message,
+                                      /*excluded=*/{fork0},
+                                      /*tracked=*/{fork1, fork3, fork2});
   massive_trajectory_->WriteToMessage(&reference_message,
-                                      {fork1, fork3, fork2});
+                                      /*excluded=*/{fork0},
+                                      /*tracked=*/{fork1, fork3, fork2});
 
   DiscreteTrajectory<World>* deserialized_fork1 = nullptr;
   DiscreteTrajectory<World>* deserialized_fork2 = nullptr;
@@ -719,6 +756,7 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   EXPECT_EQ(t3_, deserialized_fork3->Fork()->time);
   message.Clear();
   deserialized_trajectory->WriteToMessage(&message,
+                                          /*excluded=*/{},
                                           {deserialized_fork1,
                                            deserialized_fork3,
                                            deserialized_fork2});
@@ -800,20 +838,14 @@ TEST_F(DiscreteTrajectoryTest, IteratorSuccess) {
 
 TEST_F(DiscreteTrajectoryTest, QuadrilateralCircle) {
   DiscreteTrajectory<World> circle;
+
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
   Speed const v = ω * r / Radian;
   Time const period = 2 * π * Radian / ω;
-  for (Time t; t <= period; t += period / 4) {
-    circle.Append(
-        t0_ + t,
-        {World::origin + Displacement<World>{{r * Cos(ω * t),
-                                              r * Sin(ω * t),
-                                              0 * Metre}},
-         Velocity<World>{{-v * Sin(ω * t),
-                          v * Cos(ω * t),
-                          0 * Metre / Second}}});
-  }
+  AppendCircularTrajectory(
+      ω, r, /*Δt=*/period / 4, /*t1=*/t0_, /*t2=*/t0_ + period, circle);
+
   double max_r_error = 0;
   double max_v_error = 0;
   for (Time t; t < period; t += period / 32) {
@@ -839,20 +871,12 @@ TEST_F(DiscreteTrajectoryTest, Downsampling) {
                                      /*tolerance=*/1 * Milli(Metre));
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
-  Speed const v = ω * r / Radian;
-  for (auto t = DoublePrecision<Instant>(t0_);
-       t.value <= t0_ + 10 * Second;
-       t.Increment(10 * Milli(Second))) {
-    DegreesOfFreedom<World> const dof =
-        {World::origin + Displacement<World>{{r * Cos(ω * (t.value - t0_)),
-                                              r * Sin(ω * (t.value - t0_)),
-                                              0 * Metre}},
-         Velocity<World>{{-v * Sin(ω * (t.value - t0_)),
-                          v * Cos(ω * (t.value - t0_)),
-                          0 * Metre / Second}}};
-    circle.Append(t.value, dof);
-    downsampled_circle.Append(t.value, dof);
-  }
+  Time const Δt = 10 * Milli(Second);
+  Instant const t1 = t0_;
+  Instant const t2 = t0_ + 10 * Second;
+  AppendCircularTrajectory(ω, r, Δt, t1, t2, circle);
+  AppendCircularTrajectory(ω, r, Δt, t1, t2, downsampled_circle);
+
   EXPECT_THAT(circle.Size(), Eq(1001));
   EXPECT_THAT(downsampled_circle.Size(), Eq(77));
   std::vector<Length> errors;
@@ -865,32 +889,66 @@ TEST_F(DiscreteTrajectoryTest, Downsampling) {
       << *std::max_element(errors.begin(), errors.end());
 }
 
-TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
-  DiscreteTrajectory<World> circle;
-  auto deserialized_circle = make_not_null_unique<DiscreteTrajectory<World>>();
-  circle.SetDownsampling(/*max_dense_intervals=*/50,
-                         /*tolerance=*/1 * Milli(Metre));
-  deserialized_circle->SetDownsampling(/*max_dense_intervals=*/50,
-                                       /*tolerance=*/1 * Milli(Metre));
+TEST_F(DiscreteTrajectoryTest, DownsamplingForks) {
+  // The number of dense intervals does not divide the lengths of the
+  // trajectories.
+  int const max_dense_intervals = 73;
+  Length const tolerance = 1 * Milli(Metre);
+
+  DiscreteTrajectory<World> root;
+  root.SetDownsampling(max_dense_intervals, tolerance);
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
-  Speed const v = ω * r / Radian;
-  auto t = DoublePrecision<Instant>(t0_);
-  for (; t.value <= t0_ + 5 * Second; t.Increment(10 * Milli(Second))) {
-    DegreesOfFreedom<World> const dof =
-        {World::origin + Displacement<World>{{r * Cos(ω * (t.value - t0_)),
-                                              r * Sin(ω * (t.value - t0_)),
-                                              0 * Metre}},
-         Velocity<World>{{-v * Sin(ω * (t.value - t0_)),
-                          v * Cos(ω * (t.value - t0_)),
-                          0 * Metre / Second}}};
-    circle.Append(t.value, dof);
-    deserialized_circle->Append(t.value, dof);
+  Time const Δt = 10 * Milli(Second);
+  Instant const t1 = t0_;
+  Instant const t2 = t0_ + 10 * Second;
+  auto const root_tmax = AppendCircularTrajectory(ω, r, Δt, t1, t2, root);
+
+  auto fork1 = root.NewForkAtLast();
+  fork1->SetDownsampling(max_dense_intervals, tolerance);
+  Instant const t3 = t2 + 10 * Second;
+  auto const fork1_tmax =
+      AppendCircularTrajectory(ω, r, Δt, root_tmax, t3, *fork1);
+
+  // A short fork with no downsampling
+  auto fork2 = fork1->NewForkAtLast();
+  fork2->SetDownsampling(max_dense_intervals, tolerance);
+  Instant const t4 = t3 + 300 * Milli(Second);
+  auto const fork2_tmax =
+      AppendCircularTrajectory(ω, r, Δt, fork1_tmax, t4, *fork2);
+
+  auto fork3 = fork2->NewForkAtLast();
+  fork3->SetDownsampling(max_dense_intervals, tolerance);
+  Instant const t5 = t4 + 10 * Second;
+  AppendCircularTrajectory(ω, r, Δt, fork2_tmax, t5, *fork3);
+
+  // Roughly 55 points per downsampled segments.
+  EXPECT_THAT(root.Size(), Eq(56));
+  EXPECT_THAT(fork1->Size(), Eq(root.Size() + 55));
+  EXPECT_THAT(fork2->Size(), Eq(fork1->Size() + 30));
+  EXPECT_THAT(fork3->Size(), Eq(fork2->Size() + 55));
+
+  for (Instant t = t0_; t <= fork3->t_max(); t += Δt) {
+    EXPECT_THAT((fork3->EvaluatePosition(t) - World::origin).Norm(),
+                AbsoluteErrorFrom(r, Lt(0.99 * Milli(Metre))));
   }
+}
+
+TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
+  DiscreteTrajectory<World> circle;
+  circle.SetDownsampling(/*max_dense_intervals=*/50,
+                         /*tolerance=*/1 * Milli(Metre));
+  AngularFrequency const ω = 3 * Radian / Second;
+  Length const r = 2 * Metre;
+  Time const Δt = 10 * Milli(Second);
+  Instant const t1 = t0_;
+  Instant const t2 = t0_ + 5 * Second;
+  auto const circle_tmax = AppendCircularTrajectory(ω, r, Δt, t1, t2, circle);
+
   serialization::DiscreteTrajectory message;
-  deserialized_circle->WriteToMessage(&message, /*forks=*/{});
-  deserialized_circle =
-      DiscreteTrajectory<World>::ReadFromMessage(message, /*forks=*/{});
+  circle.WriteToMessage(&message, /*excluded=*/{}, /*tracked=*/{});
+  auto deserialized_circle =
+      DiscreteTrajectory<World>::ReadFromMessage(message, /*tracked=*/{});
 
   // Serialization/deserialization preserves the size, the times, and nudges the
   // positions by less than the tolerance.
@@ -910,25 +968,15 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
 
   // Appending may result in different downsampling because the positions differ
   // a bit.
-  for (; t.value <= t0_ + 10 * Second; t.Increment(10 * Milli(Second))) {
-    DegreesOfFreedom<World> const dof =
-        {World::origin + Displacement<World>{{r * Cos(ω * (t.value - t0_)),
-                                              r * Sin(ω * (t.value - t0_)),
-                                              0 * Metre}},
-         Velocity<World>{{-v * Sin(ω * (t.value - t0_)),
-                          v * Cos(ω * (t.value - t0_)),
-                          0 * Metre / Second}}};
-    circle.Append(t.value, dof);
-    deserialized_circle->Append(t.value, dof);
-  }
+  Instant const t3 = t0_ + 10 * Second;
+  AppendCircularTrajectory(ω, r, Δt, circle_tmax, t3, circle);
+  AppendCircularTrajectory(ω, r, Δt, circle_tmax, t3, *deserialized_circle);
 
   // Despite the difference in downsampling (and therefore in size) the two
   // trajectories are still within the tolerance.
   EXPECT_THAT(circle.Size(), Eq(77));
   EXPECT_THAT(deserialized_circle->Size(), Eq(78));
-  for (auto t = DoublePrecision<Instant>(t0_);
-       t.value <= t0_ + 10 * Second;
-       t.Increment(10 * Milli(Second))) {
+  for (auto t = DoublePrecision<Instant>(t0_); t.value <= t3; t.Increment(Δt)) {
     EXPECT_THAT(deserialized_circle->EvaluatePosition(t.value),
                 AbsoluteErrorFrom(circle.EvaluatePosition(t.value),
                                   Le(0.23 * Milli(Metre))));
@@ -947,33 +995,16 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingForgetAfter) {
                                    /*tolerance=*/1 * Milli(Metre));
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
-  Speed const v = ω * r / Radian;
-  auto t = t0_;
-  for (; t <= t0_ + 10 * Second; t += 10 * Milli(Second)) {
-    DegreesOfFreedom<World> const dof =
-        {World::origin + Displacement<World>{{r * Cos(ω * (t - t0_)),
-                                              r * Sin(ω * (t - t0_)),
-                                              0 * Metre}},
-         Velocity<World>{{-v * Sin(ω * (t - t0_)),
-                          v * Cos(ω * (t - t0_)),
-                          0 * Metre / Second}}};
-    circle.Append(t, dof);
-    forgotten_circle.Append(t, dof);
-  }
-  forgotten_circle.ForgetAfter(t0_ + 5 * Second);
-  t = forgotten_circle.back().time;
-  for (t += 10 * Milli(Second); t <= t0_ + 10 * Second;
-       t += 10 * Milli(Second)) {
-    DegreesOfFreedom<World> const dof =
-        {World::origin + Displacement<World>{{r * Cos(ω * (t - t0_)),
-                                              r * Sin(ω * (t - t0_)),
-                                              0 * Metre}},
-         Velocity<World>{{-v * Sin(ω * (t - t0_)),
-                          v * Cos(ω * (t - t0_)),
-                          0 * Metre / Second}}};
-    forgotten_circle.Append(t, dof);
-  }
-  EXPECT_THAT(circle.Size(), Eq(77));
+  Time const Δt = 1.0 / 128.0 * Second;  // Yields exact times.
+  Instant const t1 = t0_;
+  Instant const t2 = t0_ + 10 * Second;
+  AppendCircularTrajectory(ω, r, Δt, t1, t2, circle);
+  AppendCircularTrajectory(ω, r, Δt, t1, t2, forgotten_circle);
+
+  forgotten_circle.ForgetAfter(t2);
+  AppendCircularTrajectory(
+      ω, r, Δt, forgotten_circle.back().time + Δt, t2, forgotten_circle);
+  EXPECT_THAT(circle.Size(), Eq(93));
   EXPECT_THAT(forgotten_circle.Size(), Eq(circle.Size()));
   std::vector<Length> errors;
   for (auto const [time, degrees_of_freedom] : forgotten_circle) {

@@ -573,7 +573,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
     Instant const vessel_time =
         is_loaded(vessel) ? current_time_ - Δt : current_time_;
     if (kept_vessels_.erase(vessel) > 0) {
-      vessel->PrepareHistory(vessel_time);
+      vessel->CreatePrehistoryIfNeeded(vessel_time);
       ++it;
     } else {
       loaded_vessels_.erase(vessel);
@@ -641,6 +641,12 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
           history_parameters_,
           ephemeris_.get());
     });
+  }
+
+  // Now that the composition of the vessels is known, as well as their
+  // intrinsic forces and torques, we may detect collapsibility changes.
+  for (auto const& [_, vessel] : vessels_) {
+    vessel->DetectCollapsibilityChange();
   }
 }
 
@@ -1453,6 +1459,8 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   plugin->UpdatePlanetariumRotation();
 
   bool const is_pre_cauchy = message.has_pre_cauchy_plotting_frame();
+  LOG_IF_EVERY_SECOND(WARNING, is_pre_cauchy) << "Reading pre-Cauchy Plugin";
+
   if (is_pre_cauchy) {
     plugin->renderer_ =
         std::make_unique<Renderer>(
@@ -1577,6 +1585,9 @@ void Plugin::ReadCelestialsFromMessages(
   int index = 0;
   for (auto const& celestial_message : celestial_messages) {
     bool const is_pre_cauchy = !celestial_message.has_ephemeris_index();
+    LOG_IF_EVERY_SECOND(WARNING, is_pre_cauchy)
+        << "Reading pre-Cauchy Celestial";
+
     auto const& body = is_pre_cauchy
                            ? bodies[index++]
                            : bodies[celestial_message.ephemeris_index()];

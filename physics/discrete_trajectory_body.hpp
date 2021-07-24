@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <list>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -202,46 +203,10 @@ absl::Status DiscreteTrajectory<Frame>::Append(
       << "Append out of order at " << time << ", last time is "
       << (--timeline_.end())->first;
   if (downsampling_.has_value()) {
-    if (timeline_.size() == 1) {
-      downsampling_->SetStartOfDenseTimeline(timeline_.begin(), timeline_);
-    } else {
-      this->CheckNoForksBefore(this->back().time);
-      downsampling_->increment_dense_intervals(timeline_);
-      if (downsampling_->reached_max_dense_intervals()) {
-        std::vector<TimelineConstIterator> dense_iterators;
-        // This contains points, hence one more than intervals.
-        dense_iterators.reserve(downsampling_->max_dense_intervals() + 1);
-        for (TimelineConstIterator it =
-                 downsampling_->start_of_dense_timeline();
-             it != timeline_.end();
-             ++it) {
-          dense_iterators.push_back(it);
-        }
-        auto right_endpoints = FitHermiteSpline<Instant, Position<Frame>>(
-            dense_iterators,
-            [](auto&& it) -> auto&& { return it->first; },
-            [](auto&& it) -> auto&& { return it->second.position(); },
-            [](auto&& it) -> auto&& { return it->second.velocity(); },
-            downsampling_->tolerance());
-        if (!right_endpoints.ok()) {
-          // Note that the actual appending took place; the propagated status
-          // only reflects a lack of downsampling.
-          return right_endpoints.status();
-        }
-        if (right_endpoints->empty()) {
-          right_endpoints->push_back(dense_iterators.end() - 1);
-        }
-        TimelineConstIterator left = downsampling_->start_of_dense_timeline();
-        for (const auto& it_in_dense_iterators : right_endpoints.value()) {
-          TimelineConstIterator const right = *it_in_dense_iterators;
-          timeline_.erase(++left, right);
-          left = right;
-        }
-        downsampling_->SetStartOfDenseTimeline(left, timeline_);
-      }
-    }
+    return UpdateDownsampling();
+  } else {
+    return absl::OkStatus();
   }
-  return absl::OkStatus();
 }
 
 template<typename Frame>
@@ -299,7 +264,6 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::SetDownsampling(
     std::int64_t const max_dense_intervals,
     Length const& tolerance) {
-  CHECK(this->is_root());
   CHECK(!downsampling_.has_value());
   downsampling_.emplace(
       max_dense_intervals, tolerance, timeline_.begin(), timeline_);
@@ -359,14 +323,20 @@ DegreesOfFreedom<Frame> DiscreteTrajectory<Frame>::EvaluateDegreesOfFreedom(
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteToMessage(
     not_null<serialization::DiscreteTrajectory*> const message,
-    std::vector<DiscreteTrajectory<Frame>*> const& forks)
-    const {
+    std::set<DiscreteTrajectory*> const& excluded,
+    std::vector<DiscreteTrajectory*> const& tracked) const {
   CHECK(this->is_root());
 
-  std::vector<DiscreteTrajectory<Frame>*> mutable_forks = forks;
-  WriteSubTreeToMessage(message, mutable_forks);
-  CHECK(std::all_of(mutable_forks.begin(),
-                    mutable_forks.end(),
+  std::set<DiscreteTrajectory<Frame>*> mutable_excluded = excluded;
+  std::vector<DiscreteTrajectory<Frame>*> mutable_tracked = tracked;
+  WriteSubTreeToMessage(message, mutable_excluded, mutable_tracked);
+  CHECK(std::all_of(mutable_excluded.begin(),
+                    mutable_excluded.end(),
+                    [](DiscreteTrajectory<Frame>* const fork) {
+                      return fork == nullptr;
+                    }));
+  CHECK(std::all_of(mutable_tracked.begin(),
+                    mutable_tracked.end(),
                     [](DiscreteTrajectory<Frame>* const fork) {
                       return fork == nullptr;
                     }));
@@ -533,9 +503,10 @@ DiscreteTrajectory<Frame>::Downsampling::ReadFromMessage(
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     not_null<serialization::DiscreteTrajectory*> const message,
-    std::vector<DiscreteTrajectory<Frame>*>& forks) const {
+    std::set<DiscreteTrajectory*>& excluded,
+    std::vector<DiscreteTrajectory*>& tracked) const {
   Forkable<DiscreteTrajectory, Iterator, DiscreteTrajectoryTraits<Frame>>::
-      WriteSubTreeToMessage(message, forks);
+      WriteSubTreeToMessage(message, excluded, tracked);
   if (Flags::IsPresent("zfp", "off")) {
     for (auto const& [instant, degrees_of_freedom] : timeline_) {
       auto const instantaneous_degrees_of_freedom = message->add_timeline();
@@ -615,8 +586,10 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
 template<typename Frame>
 void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     serialization::DiscreteTrajectory const& message,
-    std::vector<DiscreteTrajectory<Frame>**> const& forks) {
+    std::vector<DiscreteTrajectory<Frame>**> const& tracked) {
   bool const is_pre_frobenius = !message.has_zfp();
+  LOG_IF_EVERY_SECOND(WARNING, is_pre_frobenius)
+      << "Reading pre-Frobenius PolynomialInMonomialBasis";
   if (is_pre_frobenius) {
     for (auto const& instantaneous_dof : message.timeline()) {
       Append(Instant::ReadFromMessage(instantaneous_dof.instant()),
@@ -657,12 +630,11 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     }
   }
   if (message.has_downsampling()) {
-    CHECK(this->is_root());
     downsampling_.emplace(
         Downsampling::ReadFromMessage(message.downsampling(), timeline_));
   }
   Forkable<DiscreteTrajectory, Iterator, DiscreteTrajectoryTraits<Frame>>::
-      FillSubTreeFromMessage(message, forks);
+      FillSubTreeFromMessage(message, tracked);
 }
 
 template<typename Frame>
@@ -676,6 +648,47 @@ Hermite3<Instant, Position<Frame>> DiscreteTrajectory<Frame>::GetInterpolation(
        upper->degrees_of_freedom.position()},
       {lower->degrees_of_freedom.velocity(),
        upper->degrees_of_freedom.velocity()}};
+}
+
+template<typename Frame>
+absl::Status DiscreteTrajectory<Frame>::UpdateDownsampling() {
+  if (timeline_.size() == 1) {
+    downsampling_->SetStartOfDenseTimeline(timeline_.begin(), timeline_);
+  } else {
+    downsampling_->increment_dense_intervals(timeline_);
+    if (downsampling_->reached_max_dense_intervals()) {
+      std::vector<TimelineConstIterator> dense_iterators;
+      // This contains points, hence one more than intervals.
+      dense_iterators.reserve(downsampling_->max_dense_intervals() + 1);
+      for (TimelineConstIterator it = downsampling_->start_of_dense_timeline();
+           it != timeline_.end();
+           ++it) {
+        dense_iterators.push_back(it);
+      }
+      auto right_endpoints = FitHermiteSpline<Instant, Position<Frame>>(
+          dense_iterators,
+          [](auto&& it) -> auto&& { return it->first; },
+          [](auto&& it) -> auto&& { return it->second.position(); },
+          [](auto&& it) -> auto&& { return it->second.velocity(); },
+          downsampling_->tolerance());
+      if (!right_endpoints.ok()) {
+        // Note that the actual appending took place; the propagated status only
+        // reflects a lack of downsampling.
+        return right_endpoints.status();
+      }
+      if (right_endpoints->empty()) {
+        right_endpoints->push_back(dense_iterators.end() - 1);
+      }
+      TimelineConstIterator left = downsampling_->start_of_dense_timeline();
+      for (const auto& it_in_dense_iterators : right_endpoints.value()) {
+        TimelineConstIterator const right = *it_in_dense_iterators;
+        timeline_.erase(++left, right);
+        left = right;
+      }
+      downsampling_->SetStartOfDenseTimeline(left, timeline_);
+    }
+  }
+  return absl::OkStatus();
 }
 
 }  // namespace internal_discrete_trajectory

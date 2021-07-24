@@ -177,7 +177,8 @@ void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
     message->add_part_id(part->part_id());
   }
   history_->WriteToMessage(message->mutable_history(),
-                           /*forks=*/{psychohistory_});
+                           /*excluded=*/{},
+                           /*tracked=*/{psychohistory_});
   for (auto const& [part, rigid_motion] : actual_part_rigid_motion_) {
     rigid_motion.WriteToMessage(&(
         (*message->mutable_actual_part_rigid_motion())[part->part_id()]));
@@ -217,6 +218,13 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
                             message.apparent_part_degrees_of_freedom_size() > 0;
   bool const is_pre_frobenius = message.rigid_pile_up().empty() ||
                                 !message.has_angular_momentum();
+  LOG_IF_EVERY_SECOND(WARNING, is_pre_frobenius)
+      << "Reading pre-"
+      << (is_pre_cartan   ? "Cartan"
+          : is_pre_cesàro ? u8"Cesàro"
+          : is_pre_frege  ? "Frege"
+                          : "Frobenius") << " PileUp";
+
   std::unique_ptr<PileUp> pile_up;
   if (is_pre_cesàro) {
     if (is_pre_cartan) {
@@ -226,7 +234,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
                      DefaultHistoryParameters(),
                      DiscreteTrajectory<Barycentric>::ReadFromMessage(
                          message.history(),
-                         /*forks=*/{}),
+                         /*tracked=*/{}),
                      /*psychohistory=*/nullptr,
                      /*angular_momentum=*/{},
                      ephemeris,
@@ -241,7 +249,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
                   message.fixed_step_parameters()),
               DiscreteTrajectory<Barycentric>::ReadFromMessage(
                   message.history(),
-                  /*forks=*/{}),
+                  /*tracked=*/{}),
               /*psychohistory=*/nullptr,
               /*angular_momentum=*/{},
               ephemeris,
@@ -262,7 +270,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
     not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history =
         DiscreteTrajectory<Barycentric>::ReadFromMessage(
             message.history(),
-            /*forks=*/{&psychohistory});
+            /*tracked=*/{&psychohistory});
     if (is_pre_frobenius) {
       pile_up = std::unique_ptr<PileUp>(
           new PileUp(
