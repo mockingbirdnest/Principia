@@ -17,6 +17,7 @@
 #include "ksp_plugin/orbit_analyser.hpp"
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/pile_up.hpp"
+#include "physics/checkpointer.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massless_body.hpp"
@@ -31,6 +32,7 @@ using base::not_null;
 using base::RecurringThread;
 using geometry::Instant;
 using geometry::Vector;
+using physics::Checkpointer;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
@@ -260,6 +262,8 @@ class Vessel {
 
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
   std::set<PartId> kept_parts_;
+
+  Checkpointer checkpointer_;
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_;
