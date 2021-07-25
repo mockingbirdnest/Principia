@@ -187,7 +187,8 @@ TEST_F(PluginCompatibilityTest, Reach) {
         infnity->flight_plan().GetManœuvre(i).Δv().Norm());
   }
   // The flight plan only covers the inner solar system (this is probably
-  // because of ).  It also differs from https://youtu.be/7BDxZV7UD9I?t=439.
+  // because of #3035).
+  // It also differs from https://youtu.be/7BDxZV7UD9I?t=439.
   // TODO(egg): Compute the flybys and figure out what exactly is going on in
   // this flight plan.
   EXPECT_THAT(manœuvre_ignition_tt_seconds_and_Δvs,
