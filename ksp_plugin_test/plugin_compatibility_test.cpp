@@ -40,6 +40,7 @@ using ::testing::IsFalse;
 using ::testing::IsTrue;
 using ::testing::Not;
 using ::testing::NotNull;
+using ::testing::Pair;
 using ::testing::internal::CaptureStderr;
 using ::testing::internal::GetCapturedStderr;
 
@@ -179,47 +180,49 @@ TEST_F(PluginCompatibilityTest, Reach) {
               Eq("1970-08-14T08:47:05"_DateTime));
   EXPECT_THAT(infnity->has_flight_plan(), IsTrue());
   EXPECT_THAT(infnity->flight_plan().number_of_manœuvres(), Eq(16));
-  std::vector<DateTime> manœuvre_tt_seconds;
-  std::vector<Speed> manœuvre_Δvs;
+  std::vector<std::pair<DateTime, Speed>> manœuvre_ignition_tt_seconds_and_Δvs;
   for (int i = 0; i < infnity->flight_plan().number_of_manœuvres(); ++i) {
-    manœuvre_tt_seconds.push_back(
-        TTSecond(infnity->flight_plan().GetManœuvre(i).initial_time()));
-    manœuvre_Δvs.push_back(infnity->flight_plan().GetManœuvre(i).Δv().Norm());
+    manœuvre_ignition_tt_seconds_and_Δvs.emplace_back(
+        TTSecond(infnity->flight_plan().GetManœuvre(i).initial_time()),
+        infnity->flight_plan().GetManœuvre(i).Δv().Norm());
   }
-  EXPECT_THAT(manœuvre_tt_seconds,
-              ElementsAre("1970-08-14T09:34:49"_DateTime,
-                          "1970-08-15T13:59:24"_DateTime,
-                          "1970-12-22T07:48:21"_DateTime,
-                          "1971-01-08T17:36:55"_DateTime,
-                          "1971-07-02T17:16:00"_DateTime,
-                          "1971-09-06T03:27:33"_DateTime,
-                          "1972-02-13T22:47:26"_DateTime,
-                          "1972-03-25T16:30:19"_DateTime,
-                          "1972-12-24T04:09:32"_DateTime,
-                          "1973-06-04T01:59:07"_DateTime,
-                          "1973-07-09T06:07:17"_DateTime,
-                          "1973-09-10T03:59:44"_DateTime,
-                          "1974-11-20T17:34:27"_DateTime,
-                          "1975-10-07T01:29:45"_DateTime,
-                          "1975-12-29T21:27:13"_DateTime,
-                          "1977-07-28T22:47:53"_DateTime));
-  EXPECT_THAT(manœuvre_Δvs,
-              ElementsAre(+3.80488671073918022e+03 * (Metre / Second),
-                          +3.04867185471741759e-04 * (Metre / Second),
-                          +1.58521291818444873e-03 * (Metre / Second),
-                          +1.40000000034068623e-03 * (Metre / Second),
-                          +1.00000000431022681e-04 * (Metre / Second),
-                          +1.78421858738381537e-03 * (Metre / Second),
-                          +7.72606625794511597e-04 * (Metre / Second),
-                          +5.32846131747503372e-03 * (Metre / Second),
-                          +3.45000000046532824e-03 * (Metre / Second),
-                          +9.10695453328359134e-03 * (Metre / Second),
-                          +4.49510921430966881e-01 * (Metre / Second),
-                          +1.00000000431022681e-04 * (Metre / Second),
-                          +5.10549409572428781e-01 * (Metre / Second),
-                          +2.86686518692948443e-02 * (Metre / Second),
-                          +1.00404183285598275e-03 * (Metre / Second),
-                          +1.39666705839172456e-01 * (Metre / Second)));
+  // The flight plan only covers the inner solar system (this is probably
+  // because of ).  It also differs from https://youtu.be/7BDxZV7UD9I?t=439.
+  // TODO(egg): Compute the flybys and figure out what exactly is going on in
+  // this flight plan.
+  EXPECT_THAT(manœuvre_ignition_tt_seconds_and_Δvs,
+              ElementsAre(Pair("1970-08-14T09:34:49"_DateTime,
+                               +3.80488671073918022e+03 * (Metre / Second)),
+                          Pair("1970-08-15T13:59:24"_DateTime,
+                               1.58521291818444873e-03 * (Metre / Second)),
+                          Pair("1970-12-22T07:48:21"_DateTime,
+                               3.04867185471741759e-04 * (Metre / Second)),
+                          Pair("1971-01-08T17:36:55"_DateTime,
+                               1.40000000034068623e-03 * (Metre / Second)),
+                          Pair("1971-07-02T17:16:00"_DateTime,
+                               1.00000000431022681e-04 * (Metre / Second)),
+                          Pair("1971-09-06T03:27:33"_DateTime,
+                               1.78421858738381537e-03 * (Metre / Second)),
+                          Pair("1972-02-13T22:47:26"_DateTime,
+                               7.72606625794511597e-04 * (Metre / Second)),
+                          Pair("1972-03-25T16:30:19"_DateTime,
+                               5.32846131747503372e-03 * (Metre / Second)),
+                          Pair("1972-12-24T04:09:32"_DateTime,
+                               3.45000000046532824e-03 * (Metre / Second)),
+                          Pair("1973-06-04T01:59:07"_DateTime,
+                               9.10695453328359134e-03 * (Metre / Second)),
+                          Pair("1973-07-09T06:07:17"_DateTime,
+                               4.49510921430966881e-01 * (Metre / Second)),
+                          Pair("1973-09-10T03:59:44"_DateTime,
+                               1.00000000431022681e-04 * (Metre / Second)),
+                          Pair("1974-11-20T17:34:27"_DateTime,
+                               5.10549409572428781e-01 * (Metre / Second)),
+                          Pair("1975-10-07T01:29:45"_DateTime,
+                               2.86686518692948443e-02 * (Metre / Second)),
+                          Pair("1975-12-29T21:27:13"_DateTime,
+                               1.00404183285598275e-03 * (Metre / Second)),
+                          Pair("1977-07-28T22:47:53"_DateTime,
+                               1.39666705839172456e-01 * (Metre / Second))));
 
   // Make sure that we can upgrade, save, and reload.
   WriteAndReadBack(std::move(plugin));
