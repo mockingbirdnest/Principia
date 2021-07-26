@@ -98,8 +98,10 @@ class PluginCompatibilityTest : public testing::Test {
 
     LOG(ERROR) << "Serialization starting";
     for (;;) {
-      b64 = principia__SerializePlugin(
-          plugin.get(), &serializer, preferred_compressor, preferred_encoder);
+      b64 = principia__SerializePlugin(plugin.get(),
+                                       &serializer,
+                                       preferred_compressor,
+                                       preferred_encoder);
       if (b64 == nullptr) {
         break;
       }
@@ -193,7 +195,7 @@ TEST_F(PluginCompatibilityTest, Reach) {
   // this flight plan.
   EXPECT_THAT(manœuvre_ignition_tt_seconds_and_Δvs,
               ElementsAre(Pair("1970-08-14T09:34:49"_DateTime,
-                               +3.80488671073918022e+03 * (Metre / Second)),
+                               3.80488671073918022e+03 * (Metre / Second)),
                           Pair("1970-08-15T13:59:24"_DateTime,
                                1.58521291818444873e-03 * (Metre / Second)),
                           Pair("1970-12-22T07:48:21"_DateTime,
