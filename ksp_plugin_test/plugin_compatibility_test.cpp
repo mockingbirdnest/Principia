@@ -10,7 +10,6 @@
 #include "base/push_deserializer.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
-#include "google/protobuf/io/coded_stream.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/interface.hpp"
 #include "ksp_plugin/plugin.hpp"
@@ -36,8 +35,6 @@ using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::HasSubstr;
-using ::testing::IsFalse;
-using ::testing::IsTrue;
 using ::testing::Not;
 using ::testing::NotNull;
 using ::testing::Pair;
@@ -46,6 +43,40 @@ using ::testing::internal::GetCapturedStderr;
 
 const char preferred_compressor[] = "gipfeli";
 const char preferred_encoder[] = "base64";
+
+class StringLogSink : google::LogSink {
+ public:
+  StringLogSink(google::LogSeverity const minimal_severity)
+      : minimal_severity_(minimal_severity) {
+    google::AddLogSink(this);
+  }
+
+  ~StringLogSink() {
+    google::RemoveLogSink(this);
+  }
+
+  void send(google::LogSeverity const severity,
+            char const* const full_filename,
+            char const* const base_filename,
+            int const line,
+            tm const* const tm_time,
+            const char* const message,
+            size_t const message_len) override {
+    absl::MutexLock lock(&mutex_);
+    absl::StrAppend(
+        &string_,
+        ToString(severity, base_filename, line, tm_time, message, message_len));
+  }
+
+  std::string& string() {
+    return string_;
+  }
+
+ private:
+  google::LogSeverity const minimal_severity_;
+  absl::Mutex mutex_;
+  std::string string_ GUARDED_BY(mutex_);
+};
 
 class PluginCompatibilityTest : public testing::Test {
  protected:
@@ -115,7 +146,7 @@ class PluginCompatibilityTest : public testing::Test {
   }
 
   static void WriteAndReadBack(not_null<std::unique_ptr<Plugin const>> plugin1) {
-    // Write the plugin to new file with the preferred format.
+    // Write the plugin to a new file with the preferred format.
     WritePluginToFile(TEMP_DIR / "serialized_plugin.proto.b64",
                       preferred_compressor,
                       preferred_encoder,
@@ -128,8 +159,8 @@ class PluginCompatibilityTest : public testing::Test {
   }
 
   static void CheckSaveCompatibility(std::filesystem::path const& filename,
-                              std::string_view const compressor,
-                              std::string_view const encoder) {
+                                     std::string_view const compressor,
+                                     std::string_view const encoder) {
     // Read a plugin from the given file.
     auto plugin = ReadPluginFromFile(filename, compressor, encoder);
 
@@ -142,13 +173,13 @@ TEST_F(PluginCompatibilityTest, PreCartan) {
 }
 
 TEST_F(PluginCompatibilityTest, PreCohen) {
-  CaptureStderr();
+  StringLogSink log_warning(google::WARNING);
   CheckSaveCompatibility(
       SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3039.proto.hex",
       /*compressor=*/"",
       /*decoder=*/"hexadecimal");
   EXPECT_THAT(
-      GetCapturedStderr(),
+      log_warning.string(),
       AllOf(
           HasSubstr(
               "pre-Cohen ContinuousTrajectory"),  // Regression test for #3039.
@@ -158,12 +189,12 @@ TEST_F(PluginCompatibilityTest, PreCohen) {
 }
 
 TEST_F(PluginCompatibilityTest, Reach) {
-  CaptureStderr();
+  StringLogSink log_warning(google::WARNING);
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
       SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3072.proto.b64",
       /*compressor=*/"gipfeli",
       /*decoder=*/"base64");
-  EXPECT_THAT(GetCapturedStderr(),
+  EXPECT_THAT(log_warning.string(),
               AllOf(HasSubstr("pre-Galileo"), Not(HasSubstr("pre-Frobenius"))));
   auto const test = plugin->GetVessel("f2d77873-4776-4809-9dfb-de9e7a0620a6");
   EXPECT_THAT(test->name(), Eq("TEST"));
@@ -171,22 +202,21 @@ TEST_F(PluginCompatibilityTest, Reach) {
               Eq("1970-08-14T08:03:18"_DateTime));
   EXPECT_THAT(TTSecond(test->psychohistory().back().time),
               Eq("1970-08-14T08:47:05"_DateTime));
-  EXPECT_THAT(test->has_flight_plan(), IsFalse());
+  EXPECT_FALSE(test->has_flight_plan());
 
-  auto const infnity =
-      plugin->GetVessel("29142a79-7acd-47a9-a34d-f9f2a8e1b4ed");
-  EXPECT_THAT(infnity->name(), Eq("IFNITY-5.2"));
-  EXPECT_THAT(TTSecond(infnity->psychohistory().front().time),
+  auto const ifnity = plugin->GetVessel("29142a79-7acd-47a9-a34d-f9f2a8e1b4ed");
+  EXPECT_THAT(ifnity->name(), Eq("IFNITY-5.2"));
+  EXPECT_THAT(TTSecond(ifnity->psychohistory().front().time),
               Eq("1970-08-14T08:03:46"_DateTime));
-  EXPECT_THAT(TTSecond(infnity->psychohistory().back().time),
+  EXPECT_THAT(TTSecond(ifnity->psychohistory().back().time),
               Eq("1970-08-14T08:47:05"_DateTime));
-  EXPECT_THAT(infnity->has_flight_plan(), IsTrue());
-  EXPECT_THAT(infnity->flight_plan().number_of_manœuvres(), Eq(16));
+  ASSERT_TRUE(ifnity->has_flight_plan());
+  EXPECT_THAT(ifnity->flight_plan().number_of_manœuvres(), Eq(16));
   std::vector<std::pair<DateTime, Speed>> manœuvre_ignition_tt_seconds_and_Δvs;
-  for (int i = 0; i < infnity->flight_plan().number_of_manœuvres(); ++i) {
+  for (int i = 0; i < ifnity->flight_plan().number_of_manœuvres(); ++i) {
     manœuvre_ignition_tt_seconds_and_Δvs.emplace_back(
-        TTSecond(infnity->flight_plan().GetManœuvre(i).initial_time()),
-        infnity->flight_plan().GetManœuvre(i).Δv().Norm());
+        TTSecond(ifnity->flight_plan().GetManœuvre(i).initial_time()),
+        ifnity->flight_plan().GetManœuvre(i).Δv().Norm());
   }
   // The flight plan only covers the inner solar system (this is probably
   // because of #3035).
@@ -197,9 +227,9 @@ TEST_F(PluginCompatibilityTest, Reach) {
               ElementsAre(Pair("1970-08-14T09:34:49"_DateTime,
                                3.80488671073918022e+03 * (Metre / Second)),
                           Pair("1970-08-15T13:59:24"_DateTime,
-                               1.58521291818444873e-03 * (Metre / Second)),
-                          Pair("1970-12-22T07:48:21"_DateTime,
                                3.04867185471741759e-04 * (Metre / Second)),
+                          Pair("1970-12-22T07:48:21"_DateTime,
+                               1.58521291818444873e-03 * (Metre / Second)),
                           Pair("1971-01-08T17:36:55"_DateTime,
                                1.40000000034068623e-03 * (Metre / Second)),
                           Pair("1971-07-02T17:16:00"_DateTime,
