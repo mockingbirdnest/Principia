@@ -62,6 +62,9 @@ class StringLogSink : google::LogSink {
             tm const* const tm_time,
             const char* const message,
             size_t const message_len) override {
+    if (severity < minimal_severity_) {
+      return;
+    }
     absl::MutexLock lock(&mutex_);
     absl::StrAppend(
         &string_,
