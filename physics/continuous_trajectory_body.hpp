@@ -396,7 +396,7 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
        message.instant_polynomial_pair(0).polynomial()
            .GetExtension(serialization::PolynomialInMonomialBasis::extension)
            .coefficient(0).has_multivector());
-  LOG_IF_EVERY_SECOND(WARNING, is_pre_gröbner)
+  LOG_IF(WARNING, is_pre_gröbner)
       << "Reading pre-"
       << (is_pre_cohen       ? "Cohen"
           : is_pre_fatou     ? "Fatou"
