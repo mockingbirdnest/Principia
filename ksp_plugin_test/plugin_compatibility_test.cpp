@@ -1,6 +1,7 @@
 ﻿
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "astronomy/time_scales.hpp"
@@ -46,7 +47,7 @@ const char preferred_encoder[] = "base64";
 
 class StringLogSink : google::LogSink {
  public:
-  StringLogSink(google::LogSeverity const minimal_severity)
+  explicit StringLogSink(google::LogSeverity const minimal_severity)
       : minimal_severity_(minimal_severity) {
     google::AddLogSink(this);
   }
@@ -148,7 +149,8 @@ class PluginCompatibilityTest : public testing::Test {
     principia__DeletePlugin(&released_plugin);
   }
 
-  static void WriteAndReadBack(not_null<std::unique_ptr<Plugin const>> plugin1) {
+  static void WriteAndReadBack(
+      not_null<std::unique_ptr<Plugin const>> plugin1) {
     // Write the plugin to a new file with the preferred format.
     WritePluginToFile(TEMP_DIR / "serialized_plugin.proto.b64",
                       preferred_compressor,
@@ -187,10 +189,10 @@ TEST_F(PluginCompatibilityTest, PreCohen) {
           HasSubstr(
               "pre-Cohen ContinuousTrajectory"),  // Regression test for #3039.
           HasSubstr("pre-Cauchy"),                // The save is even older.
-          Not(HasSubstr("pre-Cartan"))            // But not *that* old.
-          ));
+          Not(HasSubstr("pre-Cartan"))));         // But not *that* old.
 }
 
+#if !_DEBUG
 TEST_F(PluginCompatibilityTest, Reach) {
   StringLogSink log_warning(google::WARNING);
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
@@ -263,6 +265,7 @@ TEST_F(PluginCompatibilityTest, Reach) {
   // Make sure that we can upgrade, save, and reload.
   WriteAndReadBack(std::move(plugin));
 }
+#endif
 
 // Use for debugging saves given by users.
 TEST_F(PluginCompatibilityTest, DISABLED_SECULAR_Debug) {
