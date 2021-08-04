@@ -191,6 +191,7 @@ TEST_F(PluginCompatibilityTest, PreCohen) {
           ));
 }
 
+#if !_DEBUG
 TEST_F(PluginCompatibilityTest, Reach) {
   StringLogSink log_warning(google::WARNING);
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
@@ -263,6 +264,7 @@ TEST_F(PluginCompatibilityTest, Reach) {
   // Make sure that we can upgrade, save, and reload.
   WriteAndReadBack(std::move(plugin));
 }
+#endif
 
 // Use for debugging saves given by users.
 TEST_F(PluginCompatibilityTest, DISABLED_SECULAR_Debug) {
