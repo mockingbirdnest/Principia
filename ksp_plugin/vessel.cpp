@@ -227,6 +227,7 @@ void Vessel::AdvanceTime() {
   // Squirrel away the prediction so that we can reattach it if we don't have a
   // prognostication.
   auto prediction = prediction_->DetachFork();
+  prediction_ = nullptr;
 
   // Read the wall of text below and realize that this can happen for the
   // history as well as the psychohistory, if the history of the part was
@@ -645,7 +646,9 @@ void Vessel::AttachPrediction(
   if (trajectory->Empty()) {
     prediction_ = psychohistory_->NewForkAtLast();
   } else {
-    psychohistory_->DeleteFork(prediction_);
+    if (prediction_ != nullptr) {
+      psychohistory_->DeleteFork(prediction_);
+    }
     prediction_ = trajectory.get();
     psychohistory_->AttachFork(std::move(trajectory));
   }
