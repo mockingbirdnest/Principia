@@ -108,7 +108,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   private UnityEngine.Texture target_navball_texture_;
   private bool navball_changed_ = true;
   private FlightGlobals.SpeedDisplayModes? previous_display_mode_;
-  private ReferenceFrameSelector.FrameType last_non_surface_frame_type_ =
+  private ReferenceFrameSelector.FrameType last_orbital_type_ =
       ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING;
 
   private UnityEngine.Color history_colour = XKCDColors.Lime;
@@ -435,7 +435,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     if (ready_to_draw_active_vessel_trajectory) {
       string target_id =
           FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
-      if (!plotting_frame_selector_.target_override &&
+      if (!plotting_frame_selector_.target_frame_selected &&
           target_id != null &&
           plugin_.HasVessel(target_id)) {
         // TODO(phl): It's not nice that we are overriding the target vessel
@@ -915,7 +915,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         plotting_frame_selector_.SetToSurfaceFrameOf(active_vessel.mainBody);
       }
 
-      if (plotting_frame_selector_.target_override == null &&
+      if (!plotting_frame_selector_.target_frame_selected &&
           FlightGlobals.speedDisplayMode ==
           FlightGlobals.SpeedDisplayModes.Target) {
         KSP.UI.Screens.Flight.SpeedDisplay.Instance.textTitle.text =
@@ -926,7 +926,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           FlightGlobals.SpeedDisplayModes.Orbit ||
           FlightGlobals.speedDisplayMode ==
           FlightGlobals.SpeedDisplayModes.Surface ||
-          plotting_frame_selector_.target_override) {
+          plotting_frame_selector_.target_frame_selected) {
         bool plugin_has_active_manageable_vessel =
             has_active_manageable_vessel() &&
             plugin_.HasVessel(active_vessel.id.ToString());
@@ -1723,7 +1723,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       string target_id =
           FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
       if (FlightGlobals.ActiveVessel != null &&
-          !plotting_frame_selector_.target_override &&
+          !plotting_frame_selector_.target_frame_selected &&
           target_id != null &&
           plugin_.HasVessel(target_id)) {
         RenderPredictionMarkers(target_id, sun_world_position);
@@ -1870,25 +1870,26 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     }
 
     var target_vessel = FlightGlobals.fetch.VesselTarget?.GetVessel();
-    if (FlightGlobals.speedDisplayMode ==
-        FlightGlobals.SpeedDisplayModes.Target &&
-        target_vessel != null &&
-        plugin_.HasVessel(target_vessel.id.ToString())) {
-      plugin_.SetTargetVessel(target_vessel.id.ToString(),
-                              plotting_frame_selector_.selected_celestial.
-                                  flightGlobalsIndex);
-      if (plotting_frame_selector_.target_override != target_vessel) {
-        navball_changed_ = true;
-        planetarium_camera_adjuster_.should_transfer_camera_coordinates = true;
-        plotting_frame_selector_.target_override = target_vessel;
-      }
-    } else {
-      plugin_.ClearTargetVessel();
-      if (plotting_frame_selector_.target_override != null) {
-        navball_changed_ = true;
-        planetarium_camera_adjuster_.should_transfer_camera_coordinates = true;
-        plotting_frame_selector_.target_override = null;
-      }
+    if (!plugin_.HasVessel(target_vessel.id.ToString())) {
+      target_vessel = null;
+    }
+    if (plotting_frame_selector_.target != target_vessel) {
+       plotting_frame_selector_.target = target_vessel;
+       if (plotting_frame_selector_.target_frame_selected &&
+           target_vessel == null) {
+         // The target is not longer manageable.
+         plotting_frame_selector_.UnsetTargetFrame();
+       } else if (FlightGlobals.speedDisplayMode ==
+           FlightGlobals.SpeedDisplayModes.Target &&
+           !plotting_frame_selector_.target_frame_selected) {
+         // The navball was in target mode, but the target was not known to
+         // Principia; now that it is, switch the reference frame accordingly.
+         plotting_frame_selector_.SetTargetFrame();
+       } else if (plotting_frame_selector_.target_frame_selected) {
+         // The target changed.
+         navball_changed_ = true;
+         planetarium_camera_adjuster_.should_transfer_camera_coordinates = true;
+       }
     }
 
     // Orient the ball.
@@ -1909,7 +1910,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
               ReferenceFrameSelector.FrameType.BODY_SURFACE);
           break;
         case FlightGlobals.SpeedDisplayModes.Orbit:
-          plotting_frame_selector_.SetFrameType(last_non_surface_frame_type_);
+          plotting_frame_selector_.SetFrameType(last_orbital_type_);
+          break;
+        case FlightGlobals.SpeedDisplayModes.Target:
+          if (target_vessel != null) {
+            plotting_frame_selector_.SetTargetFrame();
+          }
           break;
       }
     }
@@ -1917,8 +1923,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     if (navball_changed_ && previous_display_mode_ != null) {
       // Texture the ball.
       navball_changed_ = false;
-      if (plotting_frame_selector_.target_override) {
+      if (plotting_frame_selector_.target_frame_selected) {
         set_navball_texture(target_navball_texture_);
+        if (FlightGlobals.speedDisplayMode !=
+            FlightGlobals.SpeedDisplayModes.Target) {
+          FlightGlobals.SetSpeedMode(FlightGlobals.SpeedDisplayModes.Target);
+        }
       } else {
         // If we are targeting an unmanageable vessel, keep the navball in
         // target mode; otherwise, put it in the mode that reflects the
@@ -2139,7 +2149,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           string target_id = FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.
               ToString();
           if (FlightGlobals.ActiveVessel != null &&
-              !plotting_frame_selector_.target_override &&
+              !plotting_frame_selector_.target_frame_selected &&
               target_id != null &&
               plugin_.HasVessel(target_id)) {
             using (DisposableIterator rp2_lines_iterator =
@@ -2273,7 +2283,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
   private void RenderPredictionMarkers(string vessel_guid,
                                        XYZ sun_world_position) {
-    if (plotting_frame_selector_.target_override) {
+    if (plotting_frame_selector_.target_frame_selected) {
       plugin_.RenderedPredictionNodes(vessel_guid,
                                       sun_world_position,
                                       MapNodePool.MaxRenderedNodes,
@@ -2338,7 +2348,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
   private void RenderFlightPlanMarkers(string vessel_guid,
                                        XYZ sun_world_position) {
-    if (plotting_frame_selector_.target_override) {
+    if (plotting_frame_selector_.target_frame_selected) {
       plugin_.FlightPlanRenderedNodes(vessel_guid,
                                       sun_world_position,
                                       MapNodePool.MaxRenderedNodes,
@@ -2422,12 +2432,21 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   }
 
   private void UpdateRenderingFrame(
-      NavigationFrameParameters frame_parameters) {
-    plugin_.SetPlottingFrame(frame_parameters);
-    var frame_type =
-        (ReferenceFrameSelector.FrameType)frame_parameters.extension;
-    if (frame_type != ReferenceFrameSelector.FrameType.BODY_SURFACE) {
-      last_non_surface_frame_type_ = frame_type;
+      NavigationFrameParameters? frame_parameters,
+      Vessel target_vessel) {
+    if (target_vessel != null) {
+      // TODO(egg): We should use the analyser to pick the reference body.
+      plugin_.SetTargetVessel(
+          target_vessel.id.ToString(),
+          target_vessel.orbit.referenceBody.flightGlobalsIndex);
+    } else {
+      plugin_.SetPlottingFrame(frame_parameters.Value);
+    }
+    if (target_vessel == null &&
+        (ReferenceFrameSelector.FrameType)frame_parameters.Value.extension !=
+            ReferenceFrameSelector.FrameType.BODY_SURFACE) {
+      last_orbital_type_ =
+          (ReferenceFrameSelector.FrameType)frame_parameters.Value.extension;
     }
     navball_changed_ = true;
     reset_rsas_target_ = true;

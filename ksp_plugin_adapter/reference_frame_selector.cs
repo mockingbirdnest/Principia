@@ -26,7 +26,8 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     BODY_SURFACE = 6003,
   }
 
-  public delegate void Callback(NavigationFrameParameters frame_parameters);
+  public delegate void Callback(NavigationFrameParameters? frame_parameters,
+                                Vessel target_vessel);
 
   public ReferenceFrameSelector(ISupervisor supervisor,
                                 Callback on_change,
@@ -95,6 +96,18 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
       } else {
         frame_type = type;
       }
+    });
+  }
+
+  public void SetTargetFrame() {
+    EffectChange(() => {
+      target_frame_selected = true;
+    });
+  }
+
+  public void UnsetTargetFrame() {
+    EffectChange(() => {
+      target_frame_selected = false;
     });
   }
 
@@ -231,15 +244,17 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   }
 
   public string Name() {
-    return Name(frame_type, selected_celestial, target_override);
+    return Name(frame_type, selected_celestial,
+                target_frame_selected ? target : null);
   }
 
   public string ShortName() {
-    return ShortName(frame_type, selected_celestial, target_override);
+    return ShortName(frame_type, selected_celestial,
+                     target_frame_selected ? target : null);
   }
 
   public string ReferencePlaneDescription() {
-    if (!target_override &&
+    if (!target_frame_selected &&
         (frame_type == FrameType.BODY_CENTRED_NON_ROTATING ||
          frame_type == FrameType.BODY_SURFACE)) {
       return Localizer.Format(
@@ -247,11 +262,11 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
           selected_celestial.NameWithArticle());
     }
     string secondary =
-        target_override != null
+        target_frame_selected
             ? Localizer.Format(
                 "#Principia_ReferenceFrameSelector_ReferencePlane_Secondary_Target")
             : selected_celestial.NameWithArticle();
-    string primary = target_override != null
+    string primary = target_frame_selected
                          ? selected_celestial.NameWithArticle()
                          : selected_celestial.referenceBody.NameWithArticle();
     return Localizer.Format("#Principia_ReferenceFrameSelector_ReferencePlane",
@@ -260,7 +275,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   }
 
   public CelestialBody[] FixedBodies() {
-    if (target_override) {
+    if (target_frame_selected) {
       return new CelestialBody[]{};
     }
     switch (frame_type) {
@@ -314,8 +329,13 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   }
 
   public FrameType frame_type { get; private set; }
-  public CelestialBody selected_celestial { get; private set; }
-  public Vessel target_override { get; set; }
+  private CelestialBody selected_celestial { get; set; }
+  public Vessel target { get; set; }
+  // If the reference frames is defined by two bodies, |orienting_body| is the
+  // one that is not fixed, but instead defines the orientation.  If the
+  // reference frame is defined from a single body, |orienting_body| is null.
+  public CelestialBody orienting_body { get; private set; }
+  public bool target_frame_selected { get; private set; }
 
   protected override string Title =>
       Localizer.Format("#Principia_ReferenceFrameSelector_Title",
@@ -331,11 +351,11 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
 
       // Right-hand side: toggles for reference frame type selection.
       using (new UnityEngine.GUILayout.VerticalScope()) {
-        if (target_override) {
+        if (target_frame_selected) {
           UnityEngine.GUILayout.Label(
               Localizer.Format(
                   "#Principia_ReferenceFrameSelector_TargetFrameSelected",
-                  Description(frame_type, selected_celestial, target_override)),
+                  Description(frame_type, selected_celestial, target)),
               Style.Multiline(UnityEngine.GUI.skin.label),
               GUILayoutWidth(6));
         } else {
@@ -397,7 +417,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
                                      Description(
                                          value,
                                          selected_celestial,
-                                         target_override),
+                                         null),
                                      style,
                                      GUILayoutWidth(6),
                                      GUILayoutHeight(5))) {
@@ -414,7 +434,10 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     if (is_freshly_constructed_ ||
         frame_type != old_frame_type ||
         selected_celestial != old_selected_celestial) {
-      on_change_(FrameParameters());
+      on_change_(
+          target_frame_selected ? null
+                                : (NavigationFrameParameters?)FrameParameters(),
+          target_frame_selected ? target : null);
       is_freshly_constructed_ = false;
     }
   }
