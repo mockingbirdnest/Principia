@@ -152,7 +152,7 @@ internal static class GLLines {
     get {
       if (line_material_ == null) {
         line_material_ = new UnityEngine.Material(
-#if KSP_VERSION_1_11_2
+#if KSP_VERSION_1_12_2
             UnityEngine.Shader.Find("KSP/Particles/Additive"));
 #elif KSP_VERSION_1_7_3
             UnityEngine.Shader.Find("Particles/Additive"));
