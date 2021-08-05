@@ -108,8 +108,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   private UnityEngine.Texture target_navball_texture_;
   private bool navball_changed_ = true;
   private FlightGlobals.SpeedDisplayModes? previous_display_mode_;
-  private ReferenceFrameSelector.FrameType last_orbital_type_ =
-      ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING;
 
   private UnityEngine.Color history_colour = XKCDColors.Lime;
   private GLLines.Style history_style = GLLines.Style.Faded;
@@ -1906,11 +1904,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       // frame accordingly.
       switch (FlightGlobals.speedDisplayMode) {
         case FlightGlobals.SpeedDisplayModes.Surface:
-          plotting_frame_selector_.SetFrameType(
-              ReferenceFrameSelector.FrameType.BODY_SURFACE);
+          plotting_frame_selector_.SetToSurfaceFrame();
           break;
         case FlightGlobals.SpeedDisplayModes.Orbit:
-          plotting_frame_selector_.SetFrameType(last_orbital_type_);
+          plotting_frame_selector_.SetToOrbitalFrame();
           break;
         case FlightGlobals.SpeedDisplayModes.Target:
           if (target_vessel != null) {
@@ -2441,12 +2438,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           target_vessel.orbit.referenceBody.flightGlobalsIndex);
     } else {
       plugin_.SetPlottingFrame(frame_parameters.Value);
-    }
-    if (target_vessel == null &&
-        (ReferenceFrameSelector.FrameType)frame_parameters.Value.extension !=
-            ReferenceFrameSelector.FrameType.BODY_SURFACE) {
-      last_orbital_type_ =
-          (ReferenceFrameSelector.FrameType)frame_parameters.Value.extension;
     }
     navball_changed_ = true;
     reset_rsas_target_ = true;

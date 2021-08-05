@@ -84,17 +84,22 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     });
   }
 
-  // Sets the |frame_type| to |type| unless this would be invalid for the
-  // |selected_celestial|, in which case |frame_type| is set to
-  // |BODY_CENTRED_NON_ROTATING|.
-  public void SetFrameType(FrameType type) {
+  // Sets the frame type to the surface frame of some body; this is used when the
+  // speed display is switched to surface mode.
+  public void SetToSurfaceFrame() {
+    EffectChange(() => {
+      frame_type = FrameType.BODY_SURFACE;
+    });
+  }
+
+  public void SetToOrbitalFrame() {
     EffectChange(() => {
       if (selected_celestial.is_root() &&
-          (type == FrameType.BARYCENTRIC_ROTATING ||
-           type == FrameType.BODY_CENTRED_PARENT_DIRECTION)) {
+          (last_orbital_type_ == FrameType.BARYCENTRIC_ROTATING ||
+            last_orbital_type_ == FrameType.BODY_CENTRED_PARENT_DIRECTION)) {
         frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
       } else {
-        frame_type = type;
+        frame_type = last_orbital_type_;
       }
     });
   }
@@ -120,13 +125,13 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     });
   }
 
-  public static string Name(FrameType type,
-                            CelestialBody selected,
-                            Vessel target_override) {
-    if (target_override) {
-      return Localizer.Format("#Principia_ReferenceFrameSelector_Name_Target",
-                              selected.NameWithArticle());
-    }
+  private static string TargetFrameName(Vessel target) {
+    return Localizer.Format("#Principia_ReferenceFrameSelector_Name_Target",
+                            target.orbit.referenceBody.NameWithArticle());
+  }
+
+  private static string Name(FrameType type,
+                             CelestialBody selected) {
     switch (type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
         return Localizer.Format(
@@ -160,14 +165,14 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     }
   }
 
-  public static string ShortName(FrameType type,
-                                 CelestialBody selected,
-                                 Vessel target_override) {
-    if (target_override) {
-      return Localizer.Format(
-          "#Principia_ReferenceFrameSelector_ShortName_Target",
-          selected.name[0]);
-    }
+  private static string TargetFrameShortName(Vessel target) {
+    return Localizer.Format(
+        "#Principia_ReferenceFrameSelector_ShortName_Target",
+        target.orbit.referenceBody.name[0]);
+  }
+
+  private static string ShortName(FrameType type,
+                                  CelestialBody selected) {
     switch (type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
         return Localizer.Format(
@@ -201,15 +206,15 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     }
   }
 
-  public static string Description(FrameType type,
-                                   CelestialBody selected,
-                                   Vessel target_override) {
-    if (target_override) {
-      return Localizer.Format(
-          "#Principia_ReferenceFrameSelector_Description_Target",
-          target_override.vesselName,
-          selected.NameWithArticle());
-    }
+  private static string TargetFrameDescription(Vessel target) {
+    return Localizer.Format(
+        "#Principia_ReferenceFrameSelector_Description_Target",
+        target.vesselName,
+        target.orbit.referenceBody.NameWithArticle());
+  }
+
+  private static string Description(FrameType type,
+                                    CelestialBody selected) {
     switch (type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
         return Localizer.Format(
@@ -244,13 +249,13 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   }
 
   public string Name() {
-    return Name(frame_type, selected_celestial,
-                target_frame_selected ? target : null);
+    return target_frame_selected ? TargetFrameName(target)
+                                 : Name(frame_type, selected_celestial);
   }
 
   public string ShortName() {
-    return ShortName(frame_type, selected_celestial,
-                     target_frame_selected ? target : null);
+    return target_frame_selected ? TargetFrameShortName(target)
+                                 : ShortName(frame_type, selected_celestial);
   }
 
   public string ReferencePlaneDescription() {
@@ -355,7 +360,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
           UnityEngine.GUILayout.Label(
               Localizer.Format(
                   "#Principia_ReferenceFrameSelector_TargetFrameSelected",
-                  Description(frame_type, selected_celestial, target)),
+                  TargetFrameDescription(target)),
               Style.Multiline(UnityEngine.GUI.skin.label),
               GUILayoutWidth(6));
         } else {
@@ -416,8 +421,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     if (UnityEngine.GUILayout.Toggle(frame_type == value,
                                      Description(
                                          value,
-                                         selected_celestial,
-                                         null),
+                                         selected_celestial),
                                      style,
                                      GUILayoutWidth(6),
                                      GUILayoutHeight(5))) {
@@ -440,12 +444,17 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
           target_frame_selected ? target : null);
       is_freshly_constructed_ = false;
     }
+    if (frame_type != FrameType.BODY_SURFACE) {
+      last_orbital_type_ = frame_type;
+    }
   }
 
   private readonly Callback on_change_;
   private readonly string name_;
   private readonly Dictionary<CelestialBody, bool> expanded_;
   private bool is_freshly_constructed_;
+  private ReferenceFrameSelector.FrameType last_orbital_type_ =
+      ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING;
 }
 
 }  // namespace ksp_plugin_adapter
