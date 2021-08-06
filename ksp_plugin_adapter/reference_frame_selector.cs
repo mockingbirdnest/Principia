@@ -9,8 +9,9 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 internal static class CelestialExtensions {
-  public static bool is_leaf(this CelestialBody celestial) {
-    return celestial.orbitingBodies.Count == 0;
+  public static bool is_leaf(this CelestialBody celestial, Vessel target) {
+    return celestial.orbitingBodies.Count == 0 &&
+           target?.orbit.referenceBody != celestial;
   }
 
   public static bool is_root(this CelestialBody celestial) {
@@ -45,7 +46,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
 
     expanded_ = new Dictionary<CelestialBody, bool>();
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
-      if (!celestial.is_leaf() && !celestial.is_root()) {
+      if (!celestial.is_root()) {
         expanded_.Add(celestial, false);
       }
     }
@@ -59,7 +60,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
       for (CelestialBody celestial = selected_celestial;
            celestial.orbit != null;
            celestial = celestial.orbit.referenceBody) {
-        if (!celestial.is_leaf()) {
+        if (!celestial.is_leaf(target)) {
           expanded_[celestial] = true;
         }
       }
@@ -133,7 +134,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
 
   private static string TargetFrameName(Vessel target) {
     return Localizer.Format("#Principia_ReferenceFrameSelector_Name_Target",
-                            target.orbit.referenceBody.NameWithArticle());
+                            target.orbit.referenceBody.name);
   }
 
   private static string Name(FrameType type,
@@ -372,15 +373,21 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
                        Name());
 
   protected override void RenderWindow(int window_id) {
-    using (new UnityEngine.GUILayout.HorizontalScope()) {
-      // Left-hand side: tree view for celestial selection.
-      using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(8))) {
-        RenderSubtree(celestial : Planetarium.fetch.Sun, depth : 0);
-      }
+    using (new UnityEngine.GUILayout.VerticalScope()) {
+      UnityEngine.GUILayout.Label(
+          target_frame_selected ? TargetFrameDescription(target)
+                                : Description(frame_type, selected_celestial),
+          Style.Multiline(UnityEngine.GUI.skin.label));
+      using (new UnityEngine.GUILayout.HorizontalScope()) {
+        // Left-hand side: tree view for celestial selection.
+        using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(8))) {
+          RenderSubtree(celestial : Planetarium.fetch.Sun, depth : 0);
+        }
 
-      // Right-hand side: toggles for reference frame type selection.
-      using (new UnityEngine.GUILayout.VerticalScope()) {
-        RenderSubtreeToggleGrid(Planetarium.fetch.Sun);
+        // Right-hand side: toggles for reference frame type selection.
+        using (new UnityEngine.GUILayout.VerticalScope()) {
+          RenderSubtreeToggleGrid(Planetarium.fetch.Sun);
+        }
       }
     }
     UnityEngine.GUI.DragWindow();
@@ -391,9 +398,9 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     const int offset = 1;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       if (!celestial.is_root()) {
-        UnityEngine.GUILayout.Label("", GUILayoutWidth(offset * (depth - 1)));
+        UnityEngine.GUILayout.Space(Width(offset * (depth - 1)));
         string button_text;
-        if (celestial.is_leaf()) {
+        if (celestial.is_leaf(target)) {
           button_text = "";
         } else if (expanded_[celestial]) {
           button_text = "-";
@@ -402,17 +409,18 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
         }
         if (UnityEngine.GUILayout.Button(button_text, GUILayoutWidth(offset))) {
           Shrink();
-          if (!celestial.is_leaf()) {
+          if (!celestial.is_leaf(target)) {
             expanded_[celestial] = !expanded_[celestial];
           }
         }
       }
       UnityEngine.GUILayout.Label(celestial.name);
     }
-    if (celestial.is_root() || (!celestial.is_leaf() && expanded_[celestial])) {
+    if (celestial.is_root() ||
+        (!celestial.is_leaf(target) && expanded_[celestial])) {
       if (target?.orbit.referenceBody == celestial) {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
-          UnityEngine.GUILayout.Label("", GUILayoutWidth(offset * depth));
+          UnityEngine.GUILayout.Space(Width(offset * depth));
           UnityEngine.GUILayout.Button("", GUILayoutWidth(offset));
           UnityEngine.GUILayout.Label(
               Localizer.Format("#Principia_ReferenceFrameSelector_Target",
@@ -426,11 +434,12 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   }
 
   private void RenderSubtreeToggleGrid(CelestialBody celestial) {
+    int column_width = 2;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       if (ToggleButton(
               SelectedFrameIs(celestial, FrameType.BODY_CENTRED_NON_ROTATING),
               Localizer.Format("#Principia_ReferenceFrameSelector_Centre"),
-              GUILayoutWidth(3))) {
+              GUILayoutWidth(column_width))) {
         EffectChange(() => {
           target_frame_selected = false;
           selected_celestial = celestial;
@@ -440,7 +449,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
       if (ToggleButton(
               SelectedFrameIs(celestial, FrameType.BODY_SURFACE),
               Localizer.Format("#Principia_ReferenceFrameSelector_Surface"),
-              GUILayoutWidth(3))) {
+              GUILayoutWidth(column_width))) {
         EffectChange(() => {
           target_frame_selected = false;
           selected_celestial = celestial;
@@ -452,7 +461,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
               SelectedFrameIs(celestial,
                               FrameType.BODY_CENTRED_PARENT_DIRECTION),
               Localizer.Format("#Principia_ReferenceFrameSelector_Orbit"),
-              GUILayoutWidth(3))) {
+              GUILayoutWidth(column_width))) {
         EffectChange(() => {
           target_frame_selected = false;
           selected_celestial = celestial;
@@ -460,14 +469,16 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
         });
       }
     }
-    if (celestial.is_root() || (!celestial.is_leaf() && expanded_[celestial])) {
+    if (celestial.is_root() ||
+        (!celestial.is_leaf(target) && expanded_[celestial])) {
       if (target?.orbit.referenceBody == celestial) {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
-          UnityEngine.GUILayout.Label("", GUILayoutWidth(6));
+          UnityEngine.GUILayout.Button("", UnityEngine.GUI.skin.label, GUILayoutWidth(column_width));
+          UnityEngine.GUILayout.Button("", UnityEngine.GUI.skin.label, GUILayoutWidth(column_width));
           if (ToggleButton(
                   target_frame_selected,
                   Localizer.Format("#Principia_ReferenceFrameSelector_Orbit"),
-                  GUILayoutWidth(3))) {
+                  GUILayoutWidth(column_width))) {
             EffectChange(() => {
               target_frame_selected = true;
             });
@@ -483,21 +494,6 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   private bool SelectedFrameIs(CelestialBody celestial, FrameType type) {
     return !target_frame_selected &&
         selected_celestial == celestial && frame_type == type;
-  }
-
-  private void TypeSelector(FrameType value) {
-    var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.toggle);
-    style.fixedHeight = 0;
-    style.wordWrap = true;
-    if (UnityEngine.GUILayout.Toggle(frame_type == value,
-                                     Description(
-                                         value,
-                                         selected_celestial),
-                                     style,
-                                     GUILayoutWidth(6),
-                                     GUILayoutHeight(5))) {
-      EffectChange(() => { frame_type = value; });
-    }
   }
 
   // Runs an action that may change the frame and run on_change_ if there
