@@ -55,7 +55,7 @@ internal class MapNodePool {
     switch (type) {
       case MapObject.ObjectType.Apoapsis:
       case MapObject.ObjectType.Periapsis:
-        CelestialBody fixed_body = reference_frame.FixedBodies()[0];
+        CelestialBody fixed_body = reference_frame.Centre();
         associated_map_object = fixed_body.MapObject;
         colour = fixed_body.orbit == null
                      ? XKCDColors.SunshineYellow
@@ -67,13 +67,13 @@ internal class MapNodePool {
         break;
       case MapObject.ObjectType.AscendingNode:
       case MapObject.ObjectType.DescendingNode:
-        if (reference_frame.FixedBodies().Length == 1) {
+        if (reference_frame.Centre() != null) {
           // In one-body frames, the apsides are shown with the colour of the
           // body.
           // The nodes are with respect to the equator, rather than with respect
           // to an orbit. We show the nodes in a different (but arbitrary)
           // colour so that they can be distinguished easily.
-          associated_map_object = reference_frame.FixedBodies()[0].MapObject;
+          associated_map_object = reference_frame.Centre().MapObject;
           colour = XKCDColors.Chartreuse;
         } else {
           // In two-body frames, if apsides are shown, they are shown with the
@@ -109,7 +109,7 @@ internal class MapNodePool {
           associated_map_object = associated_map_object,
       };
       if (type == MapObject.ObjectType.Periapsis &&
-          reference_frame.FixedBodies()[0].GetAltitude(
+          reference_frame.Centre().GetAltitude(
               node_properties.world_position) < 0) {
         node_properties.object_type = MapObject.ObjectType.PatchTransition;
         node_properties.colour = XKCDColors.Orange;
@@ -213,7 +213,7 @@ internal class MapNodePool {
                   ? Localizer.Format("#Principia_MapNode_Periapsis")
                   : Localizer.Format("#Principia_MapNode_Apoapsis");
           CelestialBody celestial =
-              properties.reference_frame.FixedBodies()[0];
+              properties.reference_frame.Centre();
           Vector3d position = properties.world_position;
           double speed = properties.velocity.magnitude;
           caption.Header = Localizer.Format("#Principia_MapNode_ApsisHeader",
@@ -257,7 +257,7 @@ internal class MapNodePool {
           break;
         }
         case MapObject.ObjectType.PatchTransition: {
-          CelestialBody celestial = properties.reference_frame.FixedBodies()[0];
+          CelestialBody celestial = properties.reference_frame.Centre();
           caption.Header = Localizer.Format("#Principia_MapNode_ImpactHeader",
                                             source,
                                             celestial.name);

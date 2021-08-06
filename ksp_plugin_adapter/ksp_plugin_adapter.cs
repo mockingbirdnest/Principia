@@ -2235,7 +2235,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   private void PlotCelestialTrajectories(DisposablePlanetarium planetarium,
                                          string main_vessel_guid) {
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
-      if (plotting_frame_selector_.FixedBodies().Contains(celestial)) {
+      if (plotting_frame_selector_.FixesBody(celestial)) {
         continue;
       }
       var colour = celestial.MapObject?.uiNode?.VisualIconData.color ??
@@ -2305,10 +2305,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                    MapNodePool.NodeSource.Prediction,
                                    plotting_frame_selector_);
     } else {
-      foreach (CelestialBody celestial in
-          plotting_frame_selector_.FixedBodies()) {
+      if (plotting_frame_selector_.Centre() != null) {
+        var centre_index = plotting_frame_selector_.Centre().flightGlobalsIndex;
         plugin_.RenderedPredictionApsides(vessel_guid,
-                                          celestial.flightGlobalsIndex,
+                                          centre_index,
                                           sun_world_position,
                                           MapNodePool.MaxRenderedNodes,
                                           out DisposableIterator
@@ -2370,10 +2370,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                    MapNodePool.NodeSource.FlightPlan,
                                    plotting_frame_selector_);
     } else {
-      foreach (CelestialBody celestial in
-          plotting_frame_selector_.FixedBodies()) {
+      if (plotting_frame_selector_.Centre() != null) {
+        var centre_index = plotting_frame_selector_.Centre().flightGlobalsIndex;
         plugin_.FlightPlanRenderedApsides(vessel_guid,
-                                          celestial.flightGlobalsIndex,
+                                          centre_index,
                                           sun_world_position,
                                           MapNodePool.MaxRenderedNodes,
                                           out DisposableIterator

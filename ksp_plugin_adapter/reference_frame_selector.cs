@@ -301,17 +301,23 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     }
   }
 
-  public CelestialBody[] FixedBodies() {
+  public bool FixesBody(CelestialBody celestial) {
+    // TODO(egg): When we have the rotating-pulsating frame, this should return
+    // true for both bodies.
+    return celestial == Centre();
+  }
+
+  public CelestialBody Centre() {
     if (target_frame_selected) {
-      return new CelestialBody[]{};
+      return null;
     }
     switch (frame_type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
       case FrameType.BODY_CENTRED_PARENT_DIRECTION:
       case FrameType.BODY_SURFACE:
-        return new []{selected_celestial};
+        return selected_celestial;
       case FrameType.BARYCENTRIC_ROTATING:
-        return new CelestialBody[]{};
+        return null;
       default:
         throw Log.Fatal("Unexpected frame_type " + frame_type.ToString());
     }
