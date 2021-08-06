@@ -67,10 +67,7 @@ internal class MapNodePool {
         break;
       case MapObject.ObjectType.AscendingNode:
       case MapObject.ObjectType.DescendingNode:
-        if (reference_frame.frame_type ==
-                ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING ||
-            reference_frame.frame_type ==
-                ReferenceFrameSelector.FrameType.BODY_SURFACE) {
+        if (reference_frame.FixedBodies().Length == 1) {
           // In one-body frames, the apsides are shown with the colour of the
           // body.
           // The nodes are with respect to the equator, rather than with respect
@@ -84,7 +81,7 @@ internal class MapNodePool {
           // a vessel).
           // The nodes are with respect to the orbit of the secondary around the
           // primary. We show the nodes with the colour of the primary.
-          CelestialBody primary = reference_frame.orienting_body;
+          CelestialBody primary = reference_frame.OrientingBody();
           associated_map_object = primary.MapObject;
           colour = primary.orbit == null
                        ? XKCDColors.SunshineYellow

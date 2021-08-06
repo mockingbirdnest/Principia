@@ -1868,7 +1868,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     }
 
     var target_vessel = FlightGlobals.fetch.VesselTarget?.GetVessel();
-    if (!plugin_.HasVessel(target_vessel.id.ToString())) {
+    if (target_vessel != null && !plugin_.HasVessel(target_vessel.id.ToString())) {
       target_vessel = null;
     }
     if (plotting_frame_selector_.target != target_vessel) {
@@ -1932,8 +1932,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         // plotting frame.
         if (FlightGlobals.speedDisplayMode !=
             FlightGlobals.SpeedDisplayModes.Target) {
-          if (plotting_frame_selector_.frame_type ==
-              ReferenceFrameSelector.FrameType.BODY_SURFACE) {
+          if (plotting_frame_selector_.IsSurfaceFrame()) {
             if (FlightGlobals.speedDisplayMode !=
                 FlightGlobals.SpeedDisplayModes.Surface) {
               FlightGlobals.SetSpeedMode(
@@ -2437,6 +2436,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           target_vessel.id.ToString(),
           target_vessel.orbit.referenceBody.flightGlobalsIndex);
     } else {
+      plugin_.ClearTargetVessel();
       plugin_.SetPlottingFrame(frame_parameters.Value);
     }
     navball_changed_ = true;

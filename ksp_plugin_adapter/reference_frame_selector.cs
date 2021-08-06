@@ -88,12 +88,18 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   // speed display is switched to surface mode.
   public void SetToSurfaceFrame() {
     EffectChange(() => {
+      target_frame_selected = false;
       frame_type = FrameType.BODY_SURFACE;
     });
   }
 
+  public bool IsSurfaceFrame() {
+    return frame_type == FrameType.BODY_SURFACE;
+  }
+
   public void SetToOrbitalFrame() {
     EffectChange(() => {
+      target_frame_selected = false;
       if (selected_celestial.is_root() &&
           (last_orbital_type_ == FrameType.BARYCENTRIC_ROTATING ||
             last_orbital_type_ == FrameType.BODY_CENTRED_PARENT_DIRECTION)) {
@@ -279,6 +285,22 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
                             primary);
   }
 
+  // If the reference frames is defined by two bodies, |OrientingBody()| is the
+  // one that is not fixed, but instead defines the orientation.  If the
+  // reference frame is defined from a single body, |OrientingBody()| is null.
+  public CelestialBody OrientingBody() {
+    if (target_frame_selected) {
+      return target.orbit.referenceBody;
+    }
+    switch (frame_type) {
+      case FrameType.BARYCENTRIC_ROTATING:
+      case FrameType.BODY_CENTRED_PARENT_DIRECTION:
+        return selected_celestial.referenceBody;
+      default:
+        return null;
+    }
+  }
+
   public CelestialBody[] FixedBodies() {
     if (target_frame_selected) {
       return new CelestialBody[]{};
@@ -336,10 +358,6 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   public FrameType frame_type { get; private set; }
   private CelestialBody selected_celestial { get; set; }
   public Vessel target { get; set; }
-  // If the reference frames is defined by two bodies, |orienting_body| is the
-  // one that is not fixed, but instead defines the orientation.  If the
-  // reference frame is defined from a single body, |orienting_body| is null.
-  public CelestialBody orienting_body { get; private set; }
   public bool target_frame_selected { get; private set; }
 
   protected override string Title =>
@@ -434,10 +452,12 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   private void EffectChange(Action action) {
     var old_frame_type = frame_type;
     var old_selected_celestial = selected_celestial;
+    var target_frame_was_selected = target_frame_selected;
     action();
     if (is_freshly_constructed_ ||
         frame_type != old_frame_type ||
-        selected_celestial != old_selected_celestial) {
+        selected_celestial != old_selected_celestial ||
+        target_frame_selected != target_frame_was_selected) {
       on_change_(
           target_frame_selected ? null
                                 : (NavigationFrameParameters?)FrameParameters(),
