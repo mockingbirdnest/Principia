@@ -375,11 +375,17 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   protected override void RenderWindow(int window_id) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
       UnityEngine.GUILayout.Label(
+          Localizer.Format(
+              "#Principia_ReferenceFrameSelector_Description_Heading",
+              Name(),
+              ShortName()));
+      UnityEngine.GUILayout.Label(
           target_frame_selected ? TargetFrameDescription(target)
                                 : Description(frame_type, selected_celestial),
-          Style.Multiline(UnityEngine.GUI.skin.label));
+          Style.Multiline(UnityEngine.GUI.skin.label),
+          GUILayoutHeight(4));
       using (new UnityEngine.GUILayout.HorizontalScope()) {
-        // Left-hand side: tree view for celestial selection.
+        // Left-hand side: tree view of celestials.
         using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(8))) {
           RenderSubtree(celestial : Planetarium.fetch.Sun, depth : 0);
         }
@@ -399,17 +405,14 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       if (!celestial.is_root()) {
         UnityEngine.GUILayout.Space(Width(offset * (depth - 1)));
-        string button_text;
         if (celestial.is_leaf(target)) {
-          button_text = "";
-        } else if (expanded_[celestial]) {
-          button_text = "-";
+          UnityEngine.GUILayout.Button(
+              "", UnityEngine.GUI.skin.label, GUILayoutWidth(offset));
         } else {
-          button_text = "+";
-        }
-        if (UnityEngine.GUILayout.Button(button_text, GUILayoutWidth(offset))) {
-          Shrink();
-          if (!celestial.is_leaf(target)) {
+          string button_text = expanded_[celestial] ? "−" : "+";
+          if (UnityEngine.GUILayout.Button(
+                  button_text, GUILayoutWidth(offset))) {
+            Shrink();
             expanded_[celestial] = !expanded_[celestial];
           }
         }
@@ -524,6 +527,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
                             params UnityEngine.GUILayoutOption[] options) {
     return UnityEngine.GUILayout.Toolbar(selected: value ? 0 : -1,
                                          new string[1] {text},
+                                         Style.LitToggleButton(),
                                          options) == 0;
   }
 
