@@ -5,36 +5,6 @@ internal static class Style {
   public static UnityEngine.Color Tangent { get; } = XKCDColors.NeonYellow;
   public static UnityEngine.Color Normal { get; } = XKCDColors.AquaBlue;
   public static UnityEngine.Color Binormal { get; } = XKCDColors.PurplePink;
-  
-  private static UnityEngine.Texture2D lit_toggle_button_on_active_;
-  private static UnityEngine.Texture2D lit_toggle_button_on_hover_;
-  private static UnityEngine.Texture2D lit_toggle_button_on_normal_;
-
-  private static UnityEngine.Texture2D MakeGreen(UnityEngine.Texture2D source) {
-    var render = UnityEngine.RenderTexture.GetTemporary(
-        source.width,
-        source.height,
-        depthBuffer: 0,
-        UnityEngine.RenderTextureFormat.Default,
-        UnityEngine.RenderTextureReadWrite.Linear);
-    UnityEngine.Graphics.Blit(source, render);
-    UnityEngine.RenderTexture old_active = UnityEngine.RenderTexture.active;
-    UnityEngine.RenderTexture.active = render;
-    UnityEngine.Texture2D result = new UnityEngine.Texture2D(source.width, source.height);
-    result.ReadPixels(new UnityEngine.Rect(0, 0, render.width, render.height), 0, 0);
-    result.Apply();
-    UnityEngine.RenderTexture.active = old_active;
-    UnityEngine.RenderTexture.ReleaseTemporary(render);
-
-    UnityEngine.Color32[] pixels = result.GetPixels32();
-    for (int i = 0; i < pixels.Length; ++i) {
-      pixels[i].r = 0;
-      pixels[i].b = 0;
-    }
-    result.SetPixels32(pixels);
-    result.Apply();
-    return result;
-  }
 
   public static UnityEngine.GUIStyle LitToggleButton() {
     var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.button);
@@ -43,15 +13,7 @@ internal static class Style {
     style.normal.textColor = ultra_cool_grey_;
     style.onActive.textColor = XKCDColors.Green;
     style.onHover.textColor = XKCDColors.Green;
-    style.onNormal.textColor = XKCDColors.Green;/*
-    if (lit_toggle_button_on_active_ == null) {
-      lit_toggle_button_on_active_ = MakeGreen(style.onActive.background);
-      lit_toggle_button_on_hover_ = MakeGreen(style.onHover.background);
-      lit_toggle_button_on_normal_ = MakeGreen(style.onNormal.background);
-    }
-    style.onActive.background = lit_toggle_button_on_active_;
-    style.onHover.background = lit_toggle_button_on_hover_;
-    style.onNormal.background = lit_toggle_button_on_normal_;*/
+    style.onNormal.textColor = XKCDColors.Green;
     return style;
   }
 
