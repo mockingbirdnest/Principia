@@ -28,7 +28,8 @@ internal static class Style {
 
     UnityEngine.Color32[] pixels = result.GetPixels32();
     for (int i = 0; i < pixels.Length; ++i) {
-      pixels[i].g = byte.MaxValue;
+      pixels[i].r = 0;
+      pixels[i].b = 0;
     }
     result.SetPixels32(pixels);
     result.Apply();
@@ -37,6 +38,12 @@ internal static class Style {
 
   public static UnityEngine.GUIStyle LitToggleButton() {
     var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.button);
+    style.active.textColor = ultra_cool_grey_;
+    style.hover.textColor = ultra_cool_grey_;
+    style.normal.textColor = ultra_cool_grey_;
+    style.onActive.textColor = XKCDColors.Green;
+    style.onHover.textColor = XKCDColors.Green;
+    style.onNormal.textColor = XKCDColors.Green;/*
     if (lit_toggle_button_on_active_ == null) {
       lit_toggle_button_on_active_ = MakeGreen(style.onActive.background);
       lit_toggle_button_on_hover_ = MakeGreen(style.onHover.background);
@@ -44,7 +51,7 @@ internal static class Style {
     }
     style.onActive.background = lit_toggle_button_on_active_;
     style.onHover.background = lit_toggle_button_on_hover_;
-    style.onNormal.background = lit_toggle_button_on_normal_;
+    style.onNormal.background = lit_toggle_button_on_normal_;*/
     return style;
   }
 

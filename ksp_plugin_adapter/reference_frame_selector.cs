@@ -43,12 +43,12 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
     selected_celestial = FlightGlobals.GetHomeBody();
     is_freshly_constructed_ = true;
-
+    
     expanded_ = new Dictionary<CelestialBody, bool>();
+    pinned_ = new Dictionary<CelestialBody, bool>();
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
-      if (!celestial.is_root()) {
-        expanded_.Add(celestial, false);
-      }
+      expanded_.Add(celestial, false);
+      pinned_.Add(celestial, false);
     }
   }
 
@@ -57,13 +57,6 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
       frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
       selected_celestial =
           FlightGlobals.currentMainBody ?? FlightGlobals.GetHomeBody();
-      for (CelestialBody celestial = selected_celestial;
-           celestial.orbit != null;
-           celestial = celestial.orbit.referenceBody) {
-        if (!celestial.is_leaf(target)) {
-          expanded_[celestial] = true;
-        }
-      }
     });
   }
 
@@ -383,7 +376,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
           target_frame_selected ? TargetFrameDescription(target)
                                 : Description(frame_type, selected_celestial),
           Style.Multiline(UnityEngine.GUI.skin.label),
-          GUILayoutHeight(4));
+          GUILayoutHeight(3));
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         // Left-hand side: tree view of celestials.
         using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(8))) {
@@ -399,39 +392,71 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     UnityEngine.GUI.DragWindow();
   }
 
+  private bool AnyDescendantPinned(CelestialBody celestial) {
+    if (pinned_[celestial]) {
+      return true;
+    }
+    if (target_pinned_ && target?.orbit.referenceBody == celestial) {
+      return true;
+    }
+    foreach (CelestialBody body in celestial.orbitingBodies) {
+      if (AnyDescendantPinned(body)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   private void RenderSubtree(CelestialBody celestial, int depth) {
     // Horizontal offset between a node and its children.
     const int offset = 1;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
-      if (!celestial.is_root()) {
-        UnityEngine.GUILayout.Space(Width(offset * (depth - 1)));
-        if (celestial.is_leaf(target)) {
-          UnityEngine.GUILayout.Button(
-              "", UnityEngine.GUI.skin.label, GUILayoutWidth(offset));
-        } else {
-          string button_text = expanded_[celestial] ? "−" : "+";
-          if (UnityEngine.GUILayout.Button(
-                  button_text, GUILayoutWidth(offset))) {
-            Shrink();
-            expanded_[celestial] = !expanded_[celestial];
-          }
+      UnityEngine.GUILayout.Space(Width(offset * depth));
+      if (celestial.is_leaf(target)) {
+        UnityEngine.GUILayout.Button(
+            "", UnityEngine.GUI.skin.label, GUILayoutWidth(offset));
+      } else {
+        string button_text = expanded_[celestial] ? "−" : "+";
+        if (UnityEngine.GUILayout.Button(
+                button_text, GUILayoutWidth(offset))) {
+          Shrink();
+          expanded_[celestial] = !expanded_[celestial];
         }
       }
       UnityEngine.GUILayout.Label(celestial.name);
+      UnityEngine.GUILayout.FlexibleSpace();
+      if (celestial.is_root()) {
+        UnityEngine.GUILayout.Label("Pin");
+      } else {
+        if (UnityEngine.GUILayout.Toggle(pinned_[celestial], "") !=
+            pinned_[celestial]) {
+          pinned_[celestial] = !pinned_[celestial];
+          Shrink();
+        }
+      }
     }
-    if (celestial.is_root() ||
-        (!celestial.is_leaf(target) && expanded_[celestial])) {
-      if (target?.orbit.referenceBody == celestial) {
+    if (!celestial.is_leaf(target)) {
+      if ((expanded_[celestial] || target_pinned_) &&
+          target?.orbit.referenceBody == celestial) {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
-          UnityEngine.GUILayout.Space(Width(offset * depth));
-          UnityEngine.GUILayout.Button("", GUILayoutWidth(offset));
+          UnityEngine.GUILayout.Space(Width(offset * (depth + 1)));
+          UnityEngine.GUILayout.Button(
+              "", UnityEngine.GUI.skin.label, GUILayoutWidth(offset));
           UnityEngine.GUILayout.Label(
               Localizer.Format("#Principia_ReferenceFrameSelector_Target",
                                target.vesselName));
+          UnityEngine.GUILayout.FlexibleSpace();
+          if (UnityEngine.GUILayout.Toggle(target_pinned_, "") !=
+              target_pinned_) {
+            target_pinned_ = !target_pinned_;
+            Shrink();
+          }
         }
       }
       foreach (CelestialBody child in celestial.orbitingBodies) {
-        RenderSubtree(child, depth + 1);
+        if (expanded_[celestial] || AnyDescendantPinned(child)) {
+          RenderSubtree(child, depth + 1);
+        }
       }
     }
   }
@@ -441,7 +466,8 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       if (ToggleButton(
               SelectedFrameIs(celestial, FrameType.BODY_CENTRED_NON_ROTATING),
-              Localizer.Format("#Principia_ReferenceFrameSelector_Centre"),
+              //Localizer.Format("#Principia_ReferenceFrameSelector_Centre"),
+              ShortName(FrameType.BODY_CENTRED_NON_ROTATING, celestial),
               GUILayoutWidth(column_width))) {
         EffectChange(() => {
           target_frame_selected = false;
@@ -451,7 +477,8 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
       }
       if (ToggleButton(
               SelectedFrameIs(celestial, FrameType.BODY_SURFACE),
-              Localizer.Format("#Principia_ReferenceFrameSelector_Surface"),
+              //Localizer.Format("#Principia_ReferenceFrameSelector_Surface"),
+              ShortName(FrameType.BODY_SURFACE, celestial),
               GUILayoutWidth(column_width))) {
         EffectChange(() => {
           target_frame_selected = false;
@@ -463,7 +490,8 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
           ToggleButton(
               SelectedFrameIs(celestial,
                               FrameType.BODY_CENTRED_PARENT_DIRECTION),
-              Localizer.Format("#Principia_ReferenceFrameSelector_Orbit"),
+              //Localizer.Format("#Principia_ReferenceFrameSelector_Orbit"),
+              ShortName(FrameType.BODY_CENTRED_PARENT_DIRECTION, celestial),
               GUILayoutWidth(column_width))) {
         EffectChange(() => {
           target_frame_selected = false;
@@ -472,15 +500,16 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
         });
       }
     }
-    if (celestial.is_root() ||
-        (!celestial.is_leaf(target) && expanded_[celestial])) {
-      if (target?.orbit.referenceBody == celestial) {
+    if (!celestial.is_leaf(target)) {
+      if ((expanded_[celestial] || target_pinned_) &&
+          target?.orbit.referenceBody == celestial) {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           UnityEngine.GUILayout.Button("", UnityEngine.GUI.skin.label, GUILayoutWidth(column_width));
           UnityEngine.GUILayout.Button("", UnityEngine.GUI.skin.label, GUILayoutWidth(column_width));
           if (ToggleButton(
                   target_frame_selected,
-                  Localizer.Format("#Principia_ReferenceFrameSelector_Orbit"),
+                  //Localizer.Format("#Principia_ReferenceFrameSelector_Orbit"),
+                  TargetFrameShortName(target),
                   GUILayoutWidth(column_width))) {
             EffectChange(() => {
               target_frame_selected = true;
@@ -489,7 +518,9 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
         }
       }
       foreach (CelestialBody child in celestial.orbitingBodies) {
-        RenderSubtreeToggleGrid(child);
+        if (expanded_[celestial] || AnyDescendantPinned(child)) {
+          RenderSubtreeToggleGrid(child);
+        }
       }
     }
   }
@@ -506,6 +537,12 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     var old_selected_celestial = selected_celestial;
     var target_frame_was_selected = target_frame_selected;
     action();
+    if (is_freshly_constructed_) {
+      pinned_[selected_celestial] = true;
+      if (!selected_celestial.is_leaf(target)) {
+        expanded_[selected_celestial] = true;
+      }
+    }
     if (is_freshly_constructed_ ||
         frame_type != old_frame_type ||
         selected_celestial != old_selected_celestial ||
@@ -534,6 +571,8 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   private readonly Callback on_change_;
   private readonly string name_;
   private readonly Dictionary<CelestialBody, bool> expanded_;
+  private readonly Dictionary<CelestialBody, bool> pinned_;
+  private bool target_pinned_ = true;
   private bool is_freshly_constructed_;
   private ReferenceFrameSelector.FrameType last_orbital_type_ =
       ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING;
