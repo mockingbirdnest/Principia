@@ -1878,8 +1878,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
          // The target is not longer manageable.
          plotting_frame_selector_.UnsetTargetFrame();
        } else if (FlightGlobals.speedDisplayMode ==
-           FlightGlobals.SpeedDisplayModes.Target &&
-           !plotting_frame_selector_.target_frame_selected) {
+                      FlightGlobals.SpeedDisplayModes.Target &&
+                  !plotting_frame_selector_.target_frame_selected) {
          // The navball was in target mode, but the target was not known to
          // Principia; now that it is, switch the reference frame accordingly.
          plotting_frame_selector_.SetTargetFrame();

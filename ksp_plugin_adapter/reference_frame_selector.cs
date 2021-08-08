@@ -94,7 +94,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   }
 
   public bool IsSurfaceFrame() {
-    return frame_type == FrameType.BODY_SURFACE;
+    return !target_frame_selected && frame_type == FrameType.BODY_SURFACE;
   }
 
   public void SetToOrbitalFrame() {
@@ -296,8 +296,11 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
       case FrameType.BARYCENTRIC_ROTATING:
       case FrameType.BODY_CENTRED_PARENT_DIRECTION:
         return selected_celestial.referenceBody;
-      default:
+      case FrameType.BODY_CENTRED_NON_ROTATING:
+      case FrameType.BODY_SURFACE:
         return null;
+      default:
+        throw Log.Fatal("Unexpected frame_type " + frame_type.ToString());
     }
   }
 

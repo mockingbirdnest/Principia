@@ -67,15 +67,7 @@ internal class MapNodePool {
         break;
       case MapObject.ObjectType.AscendingNode:
       case MapObject.ObjectType.DescendingNode:
-        if (reference_frame.Centre() != null) {
-          // In one-body frames, the apsides are shown with the colour of the
-          // body.
-          // The nodes are with respect to the equator, rather than with respect
-          // to an orbit. We show the nodes in a different (but arbitrary)
-          // colour so that they can be distinguished easily.
-          associated_map_object = reference_frame.Centre().MapObject;
-          colour = XKCDColors.Chartreuse;
-        } else {
+        if (reference_frame.Centre() == null) {
           // In two-body frames, if apsides are shown, they are shown with the
           // colour of the secondary (or in XKCD chartreuse if the secondary is
           // a vessel).
@@ -84,8 +76,16 @@ internal class MapNodePool {
           CelestialBody primary = reference_frame.OrientingBody();
           associated_map_object = primary.MapObject;
           colour = primary.orbit == null
-                       ? XKCDColors.SunshineYellow
-                       : primary.orbitDriver.Renderer.nodeColor;
+                        ? XKCDColors.SunshineYellow
+                        : primary.orbitDriver.Renderer.nodeColor;
+        } else {
+          // In one-body frames, the apsides are shown with the colour of the
+          // body.
+          // The nodes are with respect to the equator, rather than with respect
+          // to an orbit. We show the nodes in a different (but arbitrary)
+          // colour so that they can be distinguished easily.
+          associated_map_object = reference_frame.Centre().MapObject;
+          colour = XKCDColors.Chartreuse;
         }
         break;
       default:
@@ -245,8 +245,8 @@ internal class MapNodePool {
         }
         case MapObject.ObjectType.ApproachIntersect: {
           double separation = 
-            (properties.reference_frame.target.GetWorldPos3D() -
-             properties.world_position).magnitude;
+              (properties.reference_frame.target.GetWorldPos3D() -
+               properties.world_position).magnitude;
           double speed = properties.velocity.magnitude;
           caption.Header = Localizer.Format("#Principia_MapNode_ApproachHeader",
                                             source,
