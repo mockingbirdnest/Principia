@@ -387,17 +387,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
         using (new UnityEngine.GUILayout.VerticalScope()) {
           RenderSubtreeToggleGrid(Planetarium.fetch.Sun);
         }
-      }/*
-      if (last_tooltip_ != "") {
-        UnityEngine.GUILayout.TextArea(
-            last_tooltip_,
-            Style.Multiline(UnityEngine.GUI.skin.label));
       }
-      if (UnityEngine.Event.current.type == UnityEngine.EventType.Repaint &&
-          last_tooltip_ != UnityEngine.GUI.tooltip) {
-        last_tooltip_ = UnityEngine.GUI.tooltip;
-        Shrink();
-      }*/
     }
     UnityEngine.GUI.DragWindow();
   }
@@ -589,7 +579,6 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
         options) ? !value : value;
   }
 
-  private string last_tooltip_ = "";
   private readonly Callback on_change_;
   private readonly string name_;
   private readonly Dictionary<CelestialBody, bool> expanded_;
