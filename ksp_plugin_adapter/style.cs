@@ -6,14 +6,22 @@ internal static class Style {
   public static UnityEngine.Color Normal { get; } = XKCDColors.AquaBlue;
   public static UnityEngine.Color Binormal { get; } = XKCDColors.PurplePink;
 
-  public static UnityEngine.GUIStyle LitToggleButton() {
+  public static UnityEngine.GUIStyle DarkToggleButton() {
     var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.button);
     style.active.textColor = ultra_cool_grey_;
     style.hover.textColor = ultra_cool_grey_;
     style.normal.textColor = ultra_cool_grey_;
+    return style;
+  }
+
+  public static UnityEngine.GUIStyle LitToggleButton() {
+    var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.button);
     style.onActive.textColor = XKCDColors.Green;
     style.onHover.textColor = XKCDColors.Green;
     style.onNormal.textColor = XKCDColors.Green;
+    style.active = style.onActive;
+    style.hover = style.onHover;
+    style.normal = style.onNormal;
     return style;
   }
 

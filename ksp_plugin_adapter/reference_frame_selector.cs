@@ -375,8 +375,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
       UnityEngine.GUILayout.Label(
           target_frame_selected ? TargetFrameDescription(target)
                                 : Description(frame_type, selected_celestial),
-          Style.Multiline(UnityEngine.GUI.skin.label),
-          GUILayoutHeight(3));
+          Style.Multiline(UnityEngine.GUI.skin.label));
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         // Left-hand side: tree view of celestials.
         using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(8))) {
@@ -387,7 +386,17 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
         using (new UnityEngine.GUILayout.VerticalScope()) {
           RenderSubtreeToggleGrid(Planetarium.fetch.Sun);
         }
+      }/*
+      if (last_tooltip_ != "") {
+        UnityEngine.GUILayout.TextArea(
+            last_tooltip_,
+            Style.Multiline(UnityEngine.GUI.skin.label));
       }
+      if (UnityEngine.Event.current.type == UnityEngine.EventType.Repaint &&
+          last_tooltip_ != UnityEngine.GUI.tooltip) {
+        last_tooltip_ = UnityEngine.GUI.tooltip;
+        Shrink();
+      }*/
     }
     UnityEngine.GUI.DragWindow();
   }
@@ -466,8 +475,11 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       if (ToggleButton(
               SelectedFrameIs(celestial, FrameType.BODY_CENTRED_NON_ROTATING),
-              //Localizer.Format("#Principia_ReferenceFrameSelector_Centre"),
-              ShortName(FrameType.BODY_CENTRED_NON_ROTATING, celestial),
+              new UnityEngine.GUIContent(
+                  ShortName(FrameType.BODY_CENTRED_NON_ROTATING, celestial),
+                  tooltip: Localizer.Format(
+                      "#Principia_ReferenceFrameSelector_Tooltip_BodyCentredNonRotating",
+                      celestial.NameWithArticle())),
               GUILayoutWidth(column_width))) {
         EffectChange(() => {
           target_frame_selected = false;
@@ -477,8 +489,11 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
       }
       if (ToggleButton(
               SelectedFrameIs(celestial, FrameType.BODY_SURFACE),
-              //Localizer.Format("#Principia_ReferenceFrameSelector_Surface"),
-              ShortName(FrameType.BODY_SURFACE, celestial),
+              new UnityEngine.GUIContent(
+                  ShortName(FrameType.BODY_SURFACE, celestial),
+                  tooltip: Localizer.Format(
+                      "#Principia_ReferenceFrameSelector_Tooltip_BodySurface",
+                      celestial.NameWithArticle())),
               GUILayoutWidth(column_width))) {
         EffectChange(() => {
           target_frame_selected = false;
@@ -490,8 +505,11 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
           ToggleButton(
               SelectedFrameIs(celestial,
                               FrameType.BODY_CENTRED_PARENT_DIRECTION),
-              //Localizer.Format("#Principia_ReferenceFrameSelector_Orbit"),
-              ShortName(FrameType.BODY_CENTRED_PARENT_DIRECTION, celestial),
+              new UnityEngine.GUIContent(
+                  ShortName(FrameType.BODY_CENTRED_PARENT_DIRECTION, celestial),
+                  tooltip: Localizer.Format(
+                      "#Principia_ReferenceFrameSelector_Tooltip_BodyCentredParentDirection",
+                      celestial.NameWithArticle())),
               GUILayoutWidth(column_width))) {
         EffectChange(() => {
           target_frame_selected = false;
@@ -508,8 +526,10 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
           UnityEngine.GUILayout.Button("", UnityEngine.GUI.skin.label, GUILayoutWidth(column_width));
           if (ToggleButton(
                   target_frame_selected,
-                  //Localizer.Format("#Principia_ReferenceFrameSelector_Orbit"),
-                  TargetFrameShortName(target),
+                  new UnityEngine.GUIContent(
+                    TargetFrameShortName(target),
+                    tooltip: Localizer.Format(
+                        "#Principia_ReferenceFrameSelector_Tooltip_Target")),
                   GUILayoutWidth(column_width))) {
             EffectChange(() => {
               target_frame_selected = true;
@@ -560,14 +580,15 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
 
   // Functionally like UnityEngine.GuiLayout.Toggle, but as a button rather than
   // a checkbox.
-  private bool ToggleButton(bool value, string text,
+  private bool ToggleButton(bool value, UnityEngine.GUIContent content,
                             params UnityEngine.GUILayoutOption[] options) {
-    return UnityEngine.GUILayout.Toolbar(selected: value ? 0 : -1,
-                                         new string[1] {text},
-                                         Style.LitToggleButton(),
-                                         options) == 0;
+    return UnityEngine.GUILayout.Button(
+        content,
+        value ? Style.LitToggleButton() : Style.DarkToggleButton(),
+        options) ? !value : value;
   }
 
+  private string last_tooltip_ = "";
   private readonly Callback on_change_;
   private readonly string name_;
   private readonly Dictionary<CelestialBody, bool> expanded_;
