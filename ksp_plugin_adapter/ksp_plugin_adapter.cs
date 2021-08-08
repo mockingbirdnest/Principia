@@ -285,14 +285,15 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           load_error);
       bad_installation_dialog_.Show();
     }
-#if KSP_VERSION_1_11_2
+#if KSP_VERSION_1_12_2
     if (!(Versioning.version_major == 1 &&
           (Versioning.version_minor == 8 && Versioning.Revision == 1) ||
           (Versioning.version_minor == 9 && Versioning.Revision == 1) ||
           (Versioning.version_minor == 10 && Versioning.Revision == 1) ||
-          (Versioning.version_minor == 11 && Versioning.Revision <= 2))) {
+          (Versioning.version_minor == 11 && Versioning.Revision <= 2) ||
+          (Versioning.version_minor == 12 && Versioning.Revision == 2))) {
       string expected_version =
-          "1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, and 1.11.2";
+          "1.8.1, 1.9.1, 1.10.1, 1.11.x, and 1.12.2";
 #elif KSP_VERSION_1_7_3
     if (!(Versioning.version_major == 1 &&
           (Versioning.version_minor == 5 && Versioning.Revision == 1) ||
@@ -1878,8 +1879,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
          // The target is not longer manageable.
          plotting_frame_selector_.UnsetTargetFrame();
        } else if (FlightGlobals.speedDisplayMode ==
-           FlightGlobals.SpeedDisplayModes.Target &&
-           !plotting_frame_selector_.target_frame_selected) {
+                      FlightGlobals.SpeedDisplayModes.Target &&
+                  !plotting_frame_selector_.target_frame_selected) {
          // The navball was in target mode, but the target was not known to
          // Principia; now that it is, switch the reference frame accordingly.
          plotting_frame_selector_.SetTargetFrame();
