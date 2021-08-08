@@ -176,6 +176,9 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
     RenderWindow(window_id);
     if (UnityEngine.Event.current.type == UnityEngine.EventType.Repaint &&
         tooltip_ != UnityEngine.GUI.tooltip) {
+      if (tooltip_ == "") {
+        tooltip_begin_ = DateTime.UtcNow;
+      }
       tooltip_ = UnityEngine.GUI.tooltip;
       var height = Style.Multiline(UnityEngine.GUI.skin.textArea).CalcHeight(
           new UnityEngine.GUIContent(tooltip_), Width(8));
@@ -188,7 +191,8 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
   }
 
   private void ShowTooltip() {
-    if (tooltip_ != "") {
+    if (tooltip_ != "" &&
+        (DateTime.UtcNow - tooltip_begin_).TotalMilliseconds > 500) {
       var tooltip_style = Style.Multiline(UnityEngine.GUI.skin.textArea);
       tooltip_style.font = UnityEngine.GUI.skin.font;
       UnityEngine.GUI.Window(
@@ -199,7 +203,7 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
           tooltip_style);
       UnityEngine.GUI.BringWindowToFront(tooltip_.GetHashCode());
     }
-   }
+  }
 
   public void Shrink() {
     rectangle_.height = 0.0f;
@@ -264,6 +268,7 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
   private bool must_centre_ = true;
   private bool show_ = false;
   private UnityEngine.Rect rectangle_;
+  private DateTime tooltip_begin_;
   private string tooltip_ = "";
   private UnityEngine.Rect tooltip_rectangle_;
 }
