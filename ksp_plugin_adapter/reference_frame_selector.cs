@@ -375,7 +375,8 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
       UnityEngine.GUILayout.Label(
           target_frame_selected ? TargetFrameDescription(target)
                                 : Description(frame_type, selected_celestial),
-          Style.Multiline(UnityEngine.GUI.skin.label));
+          Style.Multiline(UnityEngine.GUI.skin.label),
+          GUILayoutHeight(3));
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         // Left-hand side: tree view of celestials.
         using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(8))) {
