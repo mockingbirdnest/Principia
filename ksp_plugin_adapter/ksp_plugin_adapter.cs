@@ -1931,8 +1931,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         // If we are targeting an unmanageable vessel, keep the navball in
         // target mode; otherwise, put it in the mode that reflects the
         // plotting frame.
-        if (FlightGlobals.speedDisplayMode !=
-            FlightGlobals.SpeedDisplayModes.Target) {
+        if (!(FlightGlobals.speedDisplayMode ==
+                  FlightGlobals.SpeedDisplayModes.Target &&
+              plotting_frame_selector_.target == null)) {
           if (plotting_frame_selector_.IsSurfaceFrame()) {
             if (FlightGlobals.speedDisplayMode !=
                 FlightGlobals.SpeedDisplayModes.Surface) {
