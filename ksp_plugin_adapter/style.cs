@@ -16,9 +16,9 @@ internal static class Style {
 
   public static UnityEngine.GUIStyle LitToggleButton() {
     var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.button);
-    style.onActive.textColor = XKCDColors.Green;
-    style.onHover.textColor = XKCDColors.Green;
-    style.onNormal.textColor = XKCDColors.Green;
+    style.onActive.textColor = XKCDColors.Spearmint;
+    style.onHover.textColor = XKCDColors.Spearmint;
+    style.onNormal.textColor = XKCDColors.Spearmint;
     style.active = style.onActive;
     style.hover = style.onHover;
     style.normal = style.onNormal;

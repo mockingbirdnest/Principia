@@ -43,7 +43,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
     selected_celestial = FlightGlobals.GetHomeBody();
     is_freshly_constructed_ = true;
-    
+
     expanded_ = new Dictionary<CelestialBody, bool>();
     pinned_ = new Dictionary<CelestialBody, bool>();
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
@@ -430,12 +430,10 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
       UnityEngine.GUILayout.FlexibleSpace();
       if (celestial.is_root()) {
         UnityEngine.GUILayout.Label("Pin");
-      } else {
-        if (UnityEngine.GUILayout.Toggle(pinned_[celestial], "") !=
-            pinned_[celestial]) {
-          pinned_[celestial] = !pinned_[celestial];
-          Shrink();
-        }
+      } else if (UnityEngine.GUILayout.Toggle(pinned_[celestial], "") !=
+                 pinned_[celestial]) {
+        pinned_[celestial] = !pinned_[celestial];
+        Shrink();
       }
     }
     if (!celestial.is_leaf(target)) {
