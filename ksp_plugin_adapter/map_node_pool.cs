@@ -55,44 +55,37 @@ internal class MapNodePool {
     switch (type) {
       case MapObject.ObjectType.Apoapsis:
       case MapObject.ObjectType.Periapsis:
-        CelestialBody fixed_body = reference_frame.selected_celestial;
+        CelestialBody fixed_body = reference_frame.Centre();
         associated_map_object = fixed_body.MapObject;
         colour = fixed_body.orbit == null
                      ? XKCDColors.SunshineYellow
                      : fixed_body.orbitDriver.Renderer.nodeColor;
         break;
       case MapObject.ObjectType.ApproachIntersect:
-        associated_map_object = reference_frame.target_override.mapObject;
+        associated_map_object = reference_frame.target.mapObject;
         colour = XKCDColors.Chartreuse;
         break;
       case MapObject.ObjectType.AscendingNode:
       case MapObject.ObjectType.DescendingNode:
-        if (!reference_frame.target_override &&
-            (reference_frame.frame_type ==
-             ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING ||
-             reference_frame.frame_type ==
-             ReferenceFrameSelector.FrameType.BODY_SURFACE)) {
-          // In one-body frames, the apsides are shown with the colour of the
-          // body.
-          // The nodes are with respect to the equator, rather than with respect
-          // to an orbit. We show the nodes in a different (but arbitrary)
-          // colour so that they can be distinguished easily.
-          associated_map_object = reference_frame.selected_celestial.MapObject;
-          colour = XKCDColors.Chartreuse;
-        } else {
+        if (reference_frame.Centre() == null) {
           // In two-body frames, if apsides are shown, they are shown with the
           // colour of the secondary (or in XKCD chartreuse if the secondary is
           // a vessel).
           // The nodes are with respect to the orbit of the secondary around the
           // primary. We show the nodes with the colour of the primary.
-          CelestialBody primary = reference_frame.target_override
-                                      ? reference_frame.selected_celestial
-                                      : reference_frame.selected_celestial.
-                                          referenceBody;
+          CelestialBody primary = reference_frame.OrientingBody();
           associated_map_object = primary.MapObject;
           colour = primary.orbit == null
-                       ? XKCDColors.SunshineYellow
-                       : primary.orbitDriver.Renderer.nodeColor;
+                        ? XKCDColors.SunshineYellow
+                        : primary.orbitDriver.Renderer.nodeColor;
+        } else {
+          // In one-body frames, the apsides are shown with the colour of the
+          // body.
+          // The nodes are with respect to the equator, rather than with respect
+          // to an orbit. We show the nodes in a different (but arbitrary)
+          // colour so that they can be distinguished easily.
+          associated_map_object = reference_frame.Centre().MapObject;
+          colour = XKCDColors.Chartreuse;
         }
         break;
       default:
@@ -116,7 +109,7 @@ internal class MapNodePool {
           associated_map_object = associated_map_object,
       };
       if (type == MapObject.ObjectType.Periapsis &&
-          reference_frame.selected_celestial.GetAltitude(
+          reference_frame.Centre().GetAltitude(
               node_properties.world_position) < 0) {
         node_properties.object_type = MapObject.ObjectType.PatchTransition;
         node_properties.colour = XKCDColors.Orange;
@@ -220,7 +213,7 @@ internal class MapNodePool {
                   ? Localizer.Format("#Principia_MapNode_Periapsis")
                   : Localizer.Format("#Principia_MapNode_Apoapsis");
           CelestialBody celestial =
-              properties.reference_frame.selected_celestial;
+              properties.reference_frame.Centre();
           Vector3d position = properties.world_position;
           double speed = properties.velocity.magnitude;
           caption.Header = Localizer.Format("#Principia_MapNode_ApsisHeader",
@@ -251,9 +244,9 @@ internal class MapNodePool {
           break;
         }
         case MapObject.ObjectType.ApproachIntersect: {
-          Vessel target_vessel = properties.reference_frame.target_override;
-          double separation = (target_vessel.GetWorldPos3D() -
-                               properties.world_position).magnitude;
+          double separation = 
+              (properties.reference_frame.target.GetWorldPos3D() -
+               properties.world_position).magnitude;
           double speed = properties.velocity.magnitude;
           caption.Header = Localizer.Format("#Principia_MapNode_ApproachHeader",
                                             source,
@@ -264,8 +257,7 @@ internal class MapNodePool {
           break;
         }
         case MapObject.ObjectType.PatchTransition: {
-          CelestialBody celestial =
-              properties.reference_frame.selected_celestial;
+          CelestialBody celestial = properties.reference_frame.Centre();
           caption.Header = Localizer.Format("#Principia_MapNode_ImpactHeader",
                                             source,
                                             celestial.name);

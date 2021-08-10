@@ -254,7 +254,7 @@ class Vessel {
                                 DiscreteTrajectory<Barycentric>& trajectory);
 
   // Attaches the given |trajectory| to the end of the |psychohistory_| to
-  // become the new |prediction_|.
+  // become the new |prediction_|.  If |prediction_| is not null, it is deleted.
   void AttachPrediction(
       not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> trajectory);
 

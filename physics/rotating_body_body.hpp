@@ -193,8 +193,7 @@ RotatingBody<Frame>::ReadFromMessage(
     MassiveBody::Parameters const& massive_body_parameters) {
   bool is_pre_del_ferro = !message.has_min_radius() &&
                           !message.has_max_radius();
-  LOG_IF_EVERY_SECOND(WARNING, is_pre_del_ferro)
-      << "Reading pre-del Ferro RotatingBody";
+  LOG_IF(WARNING, is_pre_del_ferro) << "Reading pre-del Ferro RotatingBody";
   std::optional<Parameters> parameters;
   if (is_pre_del_ferro) {
     Length const mean_radius = Length::ReadFromMessage(message.mean_radius());
