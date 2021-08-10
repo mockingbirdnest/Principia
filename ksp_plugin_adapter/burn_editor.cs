@@ -220,7 +220,8 @@ class BurnEditor : ScalingRenderer {
     };
   }
 
-  public void ReferenceFrameChanged(NavigationFrameParameters parameters) {
+  public void ReferenceFrameChanged(NavigationFrameParameters? parameters,
+                                    Vessel target_vessel) {
     changed_reference_frame_ = true;
   }
 

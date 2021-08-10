@@ -124,11 +124,12 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
     }
     UnityEngine.GUI.skin = skin_;
     if (show_) {
-      rectangle_ = UnityEngine.GUILayout.Window(id         : this.GetHashCode(),
-                                                screenRect : rectangle_,
-                                                func       : RenderWindow,
-                                                text       : Title,
-                                                options    : options_);
+      rectangle_ = UnityEngine.GUILayout.Window(
+          id         : this.GetHashCode(),
+          screenRect : rectangle_,
+          func       : RenderWindowAndRecordTooltip,
+          text       : Title,
+          options    : options_);
 
       // The first time a window is shown, we have a moral duty to place it at
       // the centre of the screen.  This is tricky because we don't know its
@@ -146,11 +147,12 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
                 y      : (float)UnityEngine.Screen.height / 3f,
                 width  : 0,
                 height : 0),
-            func       : RenderWindow,
+            func       : RenderWindowAndRecordTooltip,
             text       : Title,
             options    : options_);
         must_centre_ = false;
       }
+      ShowTooltip();
       EnsureOnScreen();
       InputLock();
     } else {
@@ -168,6 +170,39 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
         rectangle_.y,
         -rectangle_.height + min_height_on_screen,
         UnityEngine.Screen.height - min_height_on_screen);
+  }
+
+  private void RenderWindowAndRecordTooltip(int window_id) {
+    RenderWindow(window_id);
+    if (UnityEngine.Event.current.type == UnityEngine.EventType.Repaint &&
+        tooltip_ != UnityEngine.GUI.tooltip) {
+      if (tooltip_ == "") {
+        tooltip_begin_ = DateTime.UtcNow;
+      }
+      tooltip_ = UnityEngine.GUI.tooltip;
+      var height = Style.Multiline(UnityEngine.GUI.skin.textArea).CalcHeight(
+          new UnityEngine.GUIContent(tooltip_), Width(8));
+      tooltip_rectangle_ = new UnityEngine.Rect(
+          UnityEngine.Input.mousePosition.x + Width(1) / 2,
+          UnityEngine.Screen.height -
+          (UnityEngine.Input.mousePosition.y - Width(1) / 2),
+          Width(8), height);
+    }
+  }
+
+  private void ShowTooltip() {
+    if (tooltip_ != "" &&
+        (DateTime.UtcNow - tooltip_begin_).TotalMilliseconds > 500) {
+      var tooltip_style = Style.Multiline(UnityEngine.GUI.skin.textArea);
+      tooltip_style.font = UnityEngine.GUI.skin.font;
+      UnityEngine.GUI.Window(
+          tooltip_.GetHashCode(),
+          tooltip_rectangle_,
+          (int window_id) => {},
+          tooltip_,
+          tooltip_style);
+      UnityEngine.GUI.BringWindowToFront(tooltip_.GetHashCode());
+    }
   }
 
   public void Shrink() {
@@ -233,6 +268,9 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
   private bool must_centre_ = true;
   private bool show_ = false;
   private UnityEngine.Rect rectangle_;
+  private DateTime tooltip_begin_;
+  private string tooltip_ = "";
+  private UnityEngine.Rect tooltip_rectangle_;
 }
 
 // The supervisor of a window decides when to clear input locks, when to render
