@@ -267,12 +267,11 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
       is_pre_fréchet || (message.has_pre_frenet_inertia_tensor() &&
                          !message.has_intrinsic_torque());
   bool const is_pre_galileo = !message.has_centre_of_mass();
-  LOG_IF_EVERY_SECOND(WARNING, is_pre_galileo)
-      << "Reading pre-"
-      << (is_pre_cesàro    ? u8"Cesàro"
-          : is_pre_fréchet ? u8"Fréchet"
-          : is_pre_frenet  ? "Frenet"
-                           : "Galileo") << " Part";
+  LOG_IF(WARNING, is_pre_galileo) << "Reading pre-"
+                                  << (is_pre_cesàro    ? u8"Cesàro"
+                                      : is_pre_fréchet ? u8"Fréchet"
+                                      : is_pre_frenet  ? "Frenet"
+                                                       : "Galileo") << " Part";
 
   std::unique_ptr<Part> part;
   if (is_pre_fréchet) {

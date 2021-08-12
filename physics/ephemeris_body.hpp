@@ -790,7 +790,7 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   bool const is_pre_ἐρατοσθένης = !message.has_accuracy_parameters();
   bool const is_pre_fatou = !message.has_checkpoint_time();
   bool const is_pre_grassmann = message.checkpoint_size() == 0;
-  LOG_IF_EVERY_SECOND(WARNING, is_pre_grassmann)
+  LOG_IF(WARNING, is_pre_grassmann)
       << "Reading pre-"
       << (is_pre_ἐρατοσθένης ? u8"Ἐρατοσθένης"
           : is_pre_fatou     ? "Fatou"

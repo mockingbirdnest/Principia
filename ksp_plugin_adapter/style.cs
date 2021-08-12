@@ -6,6 +6,25 @@ internal static class Style {
   public static UnityEngine.Color Normal { get; } = XKCDColors.AquaBlue;
   public static UnityEngine.Color Binormal { get; } = XKCDColors.PurplePink;
 
+  public static UnityEngine.GUIStyle DarkToggleButton() {
+    var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.button);
+    style.active.textColor = ultra_cool_grey_;
+    style.hover.textColor = ultra_cool_grey_;
+    style.normal.textColor = ultra_cool_grey_;
+    return style;
+  }
+
+  public static UnityEngine.GUIStyle LitToggleButton() {
+    var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.button);
+    style.onActive.textColor = XKCDColors.Spearmint;
+    style.onHover.textColor = XKCDColors.Spearmint;
+    style.onNormal.textColor = XKCDColors.Spearmint;
+    style.active = style.onActive;
+    style.hover = style.onHover;
+    style.normal = style.onNormal;
+    return style;
+  }
+
   public static UnityEngine.GUIStyle Info(UnityEngine.GUIStyle style) {
     var info_style = new UnityEngine.GUIStyle(style);
     info_style.focused.textColor = ultra_cool_grey_;
