@@ -106,7 +106,6 @@
     <Compile Include="boxed.cs" />
     <Compile Include="burn_editor.cs" />
     <Compile Include="collision_reporter.cs" />
-    <Compile Include="compatibility_extensions.cs" />
     <Compile Include="config_node_extensions.cs" />
     <Compile Include="config_node_parsers.cs" />
     <Compile Include="culture.cs" />
@@ -121,6 +120,7 @@
     <Compile Include="ksp_plugin_adapter.cs" />
     <Compile Include="interface.cs" />
     <Compile Include="loader.cs" />
+    <Compile Include="localizer_extensions.cs" />
     <Compile Include="logging.cs" />
     <Compile Include="main_window.cs" />
     <Compile Include="map_node_pool.cs" />

@@ -389,7 +389,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
     }
     return Localizer.Format("#Principia_OrbitAnalyser_OrbitDescription",
                             properties,
-                            primary.name);
+                            primary.NameWithoutArticle());
   }
 
   private void RenderLowestAltitude(OrbitalElements? elements,
