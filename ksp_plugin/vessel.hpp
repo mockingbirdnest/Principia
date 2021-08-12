@@ -280,7 +280,7 @@ class Vessel {
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
   std::set<PartId> kept_parts_;
 
-  Checkpointer checkpointer_;
+  not_null<std::unique_ptr<Checkpointer<serialization::Vessel>>> checkpointer_;
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
 

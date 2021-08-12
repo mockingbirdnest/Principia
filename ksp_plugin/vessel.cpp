@@ -179,7 +179,7 @@ void Vessel::DetectCollapsibilityChange() {
       // to reconstruct it, so we must serialize it in a checkpoint.  Note that
       // the last point of the history specifies the initial conditions of the
       // next (collapsible) segment.
-      checkpointer_.WriteToCheckpoint(history_->Fork()->time);
+      checkpointer_->WriteToCheckpoint(history_->Fork()->time);
     }
     auto psychohistory = psychohistory_->DetachFork();
     history_ = history_->NewForkAtLast();
@@ -589,20 +589,17 @@ void Vessel::FillContainingPileUpsFromMessage(
 
 Checkpointer<serialization::Vessel>::Writer Vessel::MakeCheckpointerWriter() {
   return [this](not_null<serialization::Vessel::Checkpoint*> const message) {
+    auto const penultimate_history_segment = history_->parent();
     auto last_history_segment = history_->DetachFork();
     last_history_segment->WriteToMessage(message->mutable_segment(),
-                                         /*excluded=*/{},
+                                         /*excluded=*/{psychohistory_},
                                          /*tracked=*/{});
-    history_->AttachFork(std::move(last_history_segment));
+    penultimate_history_segment->AttachFork(std::move(last_history_segment));
   };
 }
 
 Checkpointer<serialization::Vessel>::Reader Vessel::MakeCheckpointerReader() {
   return [this](serialization::Vessel::Checkpoint const& message) {
-    auto last_history_segment =
-        DiscreteTrajectory<Barycentric>::ReadFromMessage(message.segment(),
-                                                         /*tracked=*/{});
-    history_->AttachFork(std::move(last_history_segment));
     return absl::OkStatus();
   };
 }
