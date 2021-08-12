@@ -502,9 +502,13 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     auto const psychohistory =
         DiscreteTrajectory<Barycentric>::ReadFromMessage(message.history(),
                                                          /*tracked=*/{});
-    // The |history_| has been created by the constructor above.  Reconstruct
-    // it from the |psychohistory|.
-    for (auto it = psychohistory->begin(); it != psychohistory->end();) {
+    // The |prehistory_| has been created by the constructor above.  Reconstruct
+    // the |history_| from the |psychohistory|.
+    CHECK(!psychohistory->Empty());
+    auto it = psychohistory->begin();
+    vessel->prehistory_->Append(it->time, it->degrees_of_freedom);
+    vessel->history_ = vessel->prehistory_->NewForkAtLast();
+    for (++it; it != psychohistory->end();) {
       auto const& [time, degrees_of_freedom] = *it;
       ++it;
       if (it == psychohistory->end() &&
@@ -520,9 +524,12 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     }
     vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
   } else if (is_pre_chasles) {
-    vessel->prehistory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+    auto history = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
         /*tracked=*/{&vessel->psychohistory_});
+    vessel->prehistory_->Append(history->begin()->time,
+                                history->begin()->degrees_of_freedom);
+    vessel->prehistory_->AttachFork(std::move(history));
     vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
   } else {
     if (is_pre_grothendieck_haar) {
@@ -531,8 +538,6 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
       auto history = DiscreteTrajectory<Barycentric>::ReadFromMessage(
           message.history(),
           /*tracked=*/{&vessel->psychohistory_, &vessel->prediction_});
-      vessel->prehistory_ =
-          make_not_null_unique<DiscreteTrajectory<Barycentric>>();
       vessel->prehistory_->Append(history->begin()->time,
                                   history->begin()->degrees_of_freedom);
       vessel->prehistory_->AttachFork(std::move(history));
