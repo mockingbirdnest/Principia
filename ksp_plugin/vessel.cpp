@@ -250,6 +250,7 @@ void Vessel::AdvanceTime() {
   // Squirrel away the prediction so that we can reattach it if we don't have a
   // prognostication.
   auto prediction = prediction_->DetachFork();
+  prediction_ = nullptr;
 
   // Read the wall of text below and realize that this can happen for the
   // history as well as the psychohistory, if the history of the part was
@@ -466,7 +467,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
                             !message.history().has_downsampling();
   // TODO(phl): Decide in which version it goes.
   bool const is_pre_grothendieck_haar = !message.has_prehistory();
-  LOG_IF_EVERY_SECOND(WARNING, is_pre_grothendieck_haar)
+  LOG_IF(WARNING, is_pre_grothendieck_haar)
       << "Reading pre-"
       << (is_pre_cesàro    ? u8"Cesàro"
           : is_pre_chasles ? "Chasles"
@@ -693,7 +694,9 @@ void Vessel::AttachPrediction(
   if (trajectory->Empty()) {
     prediction_ = psychohistory_->NewForkAtLast();
   } else {
-    psychohistory_->DeleteFork(prediction_);
+    if (prediction_ != nullptr) {
+      psychohistory_->DeleteFork(prediction_);
+    }
     prediction_ = trajectory.get();
     psychohistory_->AttachFork(std::move(trajectory));
   }
