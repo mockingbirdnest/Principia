@@ -151,10 +151,10 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
           throw Log.Fatal(
               "Naming parent-direction rotating frame of root body");
         } else {
-          return Localizer.Format(
+          return L10N.ZWSPToHyphenBetweenNonCJK(Localizer.Format(
               "#Principia_ReferenceFrameSelector_Name_BodyCentredParentDirection",
               selected.NameWithoutArticle(),
-              selected.referenceBody.NameWithoutArticle());
+              selected.referenceBody.NameWithoutArticle()));
         }
       case FrameType.BODY_SURFACE:
         return Localizer.Format(
@@ -215,7 +215,15 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   }
 
   private static string NavballName(FrameType type,
-                                  CelestialBody selected) {
+                                    CelestialBody selected) {
+    // TODO(egg): I am not sure how this should generalize, so I am
+    // special-casing it here.  Revisit when we have more languages.
+    if (Localizer.CurrentLanguage == "zh-cn" &&
+        type == FrameType.BODY_CENTRED_PARENT_DIRECTION &&
+        !L10N.IsCJKV(L10N.Standalone(selected.NameWithoutArticle())) &&
+        !L10N.IsCJKV(L10N.Standalone(selected.referenceBody.NameWithoutArticle()))) {
+      return $"{selected.name[0]}{selected.referenceBody.name[0]}轨道";
+    }
     return Abbreviation(type, selected) ?? Name(type, selected);
   }
 
@@ -487,7 +495,8 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
           expanded_[celestial] = !expanded_[celestial];
         }
       }
-      UnityEngine.GUILayout.Label(celestial.NameWithoutArticle());
+      UnityEngine.GUILayout.Label(
+          L10N.Standalone(celestial.NameWithoutArticle()));
       UnityEngine.GUILayout.FlexibleSpace();
       if (celestial.is_root()) {
         UnityEngine.GUILayout.Label("Pin");
