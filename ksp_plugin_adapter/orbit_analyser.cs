@@ -322,6 +322,10 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
     if (!elements.HasValue) {
       return null;
     }
+    var primary_string = L10N.CelestialString(
+        "#Principia_OrbitAnalyser_OrbitDescriptionPrimary",
+        L10N.NameWithoutArticle,
+        primary);
     string properties = "";
     bool circular = false;
     bool equatorial = false;
@@ -369,12 +373,30 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
         if (recurrence.Value.cto == 1) {
           switch (recurrence.Value.nuo) {
             case 1:
-              properties +=
-                  Localizer.Format(
-                      "#Principia_OrbitAnalyser_OrbitDescription_Synchronous");
               if (circular && equatorial) {
-                properties = Localizer.Format(
-                    "#Principia_OrbitAnalyser_OrbitDescription_Stationary");
+                var stationary_primary_string = L10N.CelestialStringOrNull(
+                    "Principia_OrbitAnalyser_OrbitDescription_StationaryPrimary",
+                    L10N.NameWithoutArticle,
+                    primary);
+                if (stationary_primary_string != null) {
+                  primary_string = stationary_primary_string;
+                  properties = "";
+                } else {
+                  properties = Localizer.Format(
+                      "#Principia_OrbitAnalyser_OrbitDescription_Stationary");
+                }
+              } else {
+                var synchronous_primary_string = L10N.CelestialStringOrNull(
+                    "Principia_OrbitAnalyser_OrbitDescription_SynchronousPrimary",
+                    L10N.NameWithoutArticle,
+                    primary);
+                if (synchronous_primary_string != null) {
+                  primary_string = synchronous_primary_string;
+                } else {
+                  properties +=
+                      Localizer.Format(
+                          "#Principia_OrbitAnalyser_OrbitDescription_Synchronous");
+                }
               }
               break;
             case 2:
@@ -389,7 +411,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
     }
     return Localizer.Format("#Principia_OrbitAnalyser_OrbitDescription",
                             properties,
-                            primary.NameWithoutArticle());
+                            primary_string);
   }
 
   private void RenderLowestAltitude(OrbitalElements? elements,
