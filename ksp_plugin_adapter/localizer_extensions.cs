@@ -1,4 +1,6 @@
 ﻿using KSP.Localization;
+using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace principia {
@@ -41,6 +43,10 @@ internal static class L10N {
                                                  : body.displayName;
   }
 
+  public static string Initial(this CelestialBody body) {
+    return body.NameWithoutArticle()[0].ToString();
+  }
+
   public static string FormatOrNull(string template, params object[] args) {
     // Optional translations include the language name so that they do not fall
     // back to English.
@@ -49,6 +55,28 @@ internal static class L10N {
       return null;
     }
     return Localizer.Format(qualified_template, args);
+  }
+
+  private static string CelestialOverride(string template,
+                                         Func<CelestialBody, string> name,
+                                         params CelestialBody[] args) {
+    return FormatOrNull(
+        $"{template}({string.Join(",", from body in args select body.name)})",
+        from body in args select name(body));
+  }
+
+  public static string CelestialString(string template,
+                                       Func<CelestialBody, string> name,
+                                       params CelestialBody[] args) {
+    return CelestialOverride(template, name, args) ??
+        Localizer.Format(template, name, from body in args select name(body));
+  }
+
+  public static string CelestialStringOrNull(string template,
+                                             Func<CelestialBody, string> name,
+                                             params CelestialBody[] args) {
+    return CelestialOverride(template, name, args) ??
+        FormatOrNull(template, name, from body in args select name(body));
   }
 }
 
