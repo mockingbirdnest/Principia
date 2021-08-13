@@ -212,6 +212,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
     void Append(TimelineConstIterator it);
 
     void ForgetAfter(Instant const& t);
+    void ForgetBefore(Instant const& t);
 
     TimelineConstIterator start_of_dense_timeline() const;
     // |start_of_dense_timeline()->first|, for readability.

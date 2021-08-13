@@ -250,6 +250,7 @@ void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
   if (downsampling_.has_value() &&
       (first_kept_in_timeline == timeline_.end() ||
        downsampling_->first_dense_time() < first_kept_in_timeline->first)) {
+    downsampling_->ForgetBefore(time);
     // The start of the dense timeline will be invalidated.
     downsampling_->SetStartOfDenseTimeline(first_kept_in_timeline, timeline_);
   }
@@ -407,7 +408,10 @@ DiscreteTrajectory<Frame>::Downsampling::Downsampling(
     std::int64_t const max_dense_intervals,
     Length const tolerance)
     : max_dense_intervals_(max_dense_intervals),
-      tolerance_(tolerance) {}
+      tolerance_(tolerance) {
+  // This contains points, hence one more than intervals.
+  dense_iterators_.reserve(max_dense_intervals_ + 1);
+}
 
 template<typename Frame>
 std::int64_t DiscreteTrajectory<Frame>::Downsampling::max_dense_intervals()
@@ -427,8 +431,7 @@ void DiscreteTrajectory<Frame>::Downsampling::Append(
 }
 
 template<typename Frame>
-void DiscreteTrajectory<Frame>::Downsampling::ForgetAfter(
-    Instant const& t) {
+void DiscreteTrajectory<Frame>::Downsampling::ForgetAfter(Instant const& t) {
   auto const it = std::upper_bound(
       dense_iterators_.cbegin(),
       dense_iterators_.cend(),
@@ -437,6 +440,18 @@ void DiscreteTrajectory<Frame>::Downsampling::ForgetAfter(
         return left < right->first;
       });
   dense_iterators_.erase(it, dense_iterators_.cend());
+}
+
+template<typename Frame>
+void DiscreteTrajectory<Frame>::Downsampling::ForgetBefore(Instant const& t) {
+  auto const it = std::lower_bound(
+      dense_iterators_.cbegin(),
+      dense_iterators_.cend(),
+      t,
+      [](TimelineConstIterator const left, Instant const& right) {
+        return left->first < right;
+      });
+  dense_iterators_.erase(dense_iterators_.cbegin(), it);
 }
 
 template<typename Frame>
