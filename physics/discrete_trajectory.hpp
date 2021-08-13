@@ -198,6 +198,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
  private:
   using Timeline = typename DiscreteTrajectoryTraits<Frame>::Timeline;
 
+  // A helper class to manage a dense timeline.
   class Downsampling {
    public:
     Downsampling(std::int64_t max_dense_intervals,
@@ -207,11 +208,17 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
     std::int64_t max_dense_intervals() const;
     Length tolerance() const;
 
+    // Appends a point to the dense timeline.
     void Append(TimelineConstIterator it);
 
+    // Forgets the points of the dense timeline after/before t.  The semantics
+    // are the same as that of the corresponding functions of
+    // DiscreteTrajectory.
     void ForgetAfter(Instant const& t);
     void ForgetBefore(Instant const& t);
 
+    // If the dense timeline has reached its capacity, swaps it with the
+    // parameter and returns true.
     bool ExtractIfFull(std::vector<TimelineConstIterator>& dense_iterators);
 
     void WriteToMessage(
