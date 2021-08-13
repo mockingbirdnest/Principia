@@ -203,6 +203,10 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
     Downsampling(std::int64_t max_dense_intervals,
                  Length tolerance);
 
+    // Construction parameter.
+    std::int64_t max_dense_intervals() const;
+    Length tolerance() const;
+
     TimelineConstIterator start_of_dense_timeline() const;
     // |start_of_dense_timeline()->first|, for readability.
     Instant const& first_dense_time() const;
@@ -220,10 +224,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
     // debug mode.
     void increment_dense_intervals(Timeline const& timeline);
 
-    std::int64_t max_dense_intervals() const;
     bool reached_max_dense_intervals() const;
-
-    Length tolerance() const;
 
     void WriteToMessage(
         not_null<serialization::DiscreteTrajectory::Downsampling*> message,
