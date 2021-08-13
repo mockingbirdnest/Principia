@@ -444,8 +444,8 @@ bool DiscreteTrajectory<Frame>::Downsampling::ExtractIfFull(
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::Downsampling::WriteToMessage(
-    not_null<serialization::DiscreteTrajectory::Downsampling*> message,
-    Timeline const& timeline) const {
+    not_null<serialization::DiscreteTrajectory::Downsampling*> const message)
+    const {
   message->set_max_dense_intervals(max_dense_intervals_);
   tolerance_.WriteToMessage(message->mutable_tolerance());
   for (auto const it : dense_iterators_) {
@@ -458,18 +458,24 @@ typename DiscreteTrajectory<Frame>::Downsampling
 DiscreteTrajectory<Frame>::Downsampling::ReadFromMessage(
     serialization::DiscreteTrajectory::Downsampling const& message,
     Timeline const& timeline) {
-  //TODO(phl):
-  //TimelineConstIterator start_of_dense_timeline;
-  //if (message.has_start_of_dense_timeline()) {
-  //  start_of_dense_timeline = timeline.find(
-  //      Instant::ReadFromMessage(message.start_of_dense_timeline()));
-  //  CHECK(start_of_dense_timeline != timeline.end());
-  //} else {
-  //  start_of_dense_timeline = timeline.end();
-  //}
+  bool const is_pre_grotendieck_haar = message.has_start_of_dense_timeline();
   Downsampling downsampling(message.max_dense_intervals(),
                             Length::ReadFromMessage(message.tolerance()));
-  //TODO(phl):downsampling.SetStartOfDenseTimeline(start_of_dense_timeline, timeline);
+  //TODO(phl): Forks.
+  if (is_pre_grotendieck_haar) {
+    auto it = timeline.find(
+        Instant::ReadFromMessage(message.start_of_dense_timeline()));
+    CHECK(it != timeline.end());
+    for (; it != timeline.end(); ++it) {
+      downsampling.Append(it);
+    }
+  } else {
+    for (auto const& dense_time : message.dense_timeline()) {
+      auto const it = timeline.find(Instant::ReadFromMessage(dense_time));
+      CHECK(it != timeline.end());
+      downsampling.Append(it);
+    }
+  }
   return downsampling;
 }
 
@@ -551,7 +557,7 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
   }
 
   if (downsampling_.has_value()) {
-    downsampling_->WriteToMessage(message->mutable_downsampling(), timeline_);
+    downsampling_->WriteToMessage(message->mutable_downsampling());
   }
 }
 
