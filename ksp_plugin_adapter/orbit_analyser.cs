@@ -323,7 +323,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
       return null;
     }
     var primary_string = L10N.CelestialString(
-        "#Principia_OrbitAnalyser_OrbitDescriptionPrimary",
+        "#Principia_OrbitAnalyser_OrbitDescription_Primary",
         L10N.NameWithoutArticle,
         primary);
     string properties = "";
