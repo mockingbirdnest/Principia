@@ -212,6 +212,8 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
     void ForgetAfter(Instant const& t);
     void ForgetBefore(Instant const& t);
 
+    bool ExtractIfFull(std::vector<TimelineConstIterator>& dense_iterators);
+
     TimelineConstIterator start_of_dense_timeline() const;
     // |start_of_dense_timeline()->first|, for readability.
     Instant const& first_dense_time() const;
