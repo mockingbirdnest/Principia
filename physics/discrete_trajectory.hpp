@@ -266,7 +266,8 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   Hermite3<Instant, Position<Frame>> GetInterpolation(
       Iterator const& upper) const;
 
-  absl::Status UpdateDownsampling();
+  //TODO(phl):Comment
+  absl::Status UpdateDownsampling(TimelineConstIterator inserted);
 
   Timeline timeline_;
 

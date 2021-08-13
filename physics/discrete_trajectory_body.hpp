@@ -195,15 +195,15 @@ absl::Status DiscreteTrajectory<Frame>::Append(
                  << this->back().time << "]";
     return absl::OkStatus();
   }
-  auto it = timeline_.emplace_hint(timeline_.end(),
-                                   time,
-                                   degrees_of_freedom);
+  auto const it = timeline_.emplace_hint(timeline_.end(),
+                                         time,
+                                         degrees_of_freedom);
   // Decrementing |end()| is much faster than incrementing |it|.  Don't ask.
   CHECK(--timeline_.end() == it)
       << "Append out of order at " << time << ", last time is "
       << (--timeline_.end())->first;
   if (downsampling_.has_value()) {
-    return UpdateDownsampling();
+    return UpdateDownsampling(it);
   } else {
     return absl::OkStatus();
   }
@@ -643,7 +643,8 @@ Hermite3<Instant, Position<Frame>> DiscreteTrajectory<Frame>::GetInterpolation(
 }
 
 template<typename Frame>
-absl::Status DiscreteTrajectory<Frame>::UpdateDownsampling() {
+absl::Status DiscreteTrajectory<Frame>::UpdateDownsampling(
+    TimelineConstIterator const inserted) {
   if (timeline_.size() == 1) {
     downsampling_->SetStartOfDenseTimeline(timeline_.begin(), timeline_);
   } else {
