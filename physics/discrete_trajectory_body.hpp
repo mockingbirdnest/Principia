@@ -459,6 +459,19 @@ void DiscreteTrajectory<Frame>::Downsampling::ForgetBefore(Instant const& t) {
 }
 
 template<typename Frame>
+bool DiscreteTrajectory<Frame>::Downsampling::ExtractIfFull(
+    std::vector<TimelineConstIterator>& dense_iterators) {
+  CHECK(dense_iterators.empty());
+  CHECK_LE(dense_iterators_.size(), max_dense_intervals_);
+  if (dense_iterators_.size() == max_dense_intervals_) {
+    dense_iterators_.swap(dense_iterators);
+    return true;
+  } else {
+    return false;
+  }
+}
+
+template<typename Frame>
 typename DiscreteTrajectory<Frame>::TimelineConstIterator
 DiscreteTrajectory<Frame>::Downsampling::start_of_dense_timeline() const {
   return start_of_dense_timeline_;
