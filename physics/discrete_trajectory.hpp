@@ -217,8 +217,8 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
     bool ExtractIfFull(std::vector<TimelineConstIterator>& dense_iterators);
 
     void WriteToMessage(
-        not_null<serialization::DiscreteTrajectory::Downsampling*> message,
-        Timeline const& timeline) const;
+        not_null<serialization::DiscreteTrajectory::Downsampling*> message)
+        const;
     static Downsampling ReadFromMessage(
         serialization::DiscreteTrajectory::Downsampling const& message,
         Timeline const& timeline);
