@@ -201,9 +201,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   class Downsampling {
    public:
     Downsampling(std::int64_t max_dense_intervals,
-                 Length tolerance,
-                 TimelineConstIterator start_of_dense_timeline,
-                 Timeline const& timeline);
+                 Length tolerance);
 
     TimelineConstIterator start_of_dense_timeline() const;
     // |start_of_dense_timeline()->first|, for readability.
