@@ -266,8 +266,8 @@ void DiscreteTrajectory<Frame>::SetDownsampling(
     Length const& tolerance) {
   CHECK(this->is_root());
   CHECK(!downsampling_.has_value());
-  downsampling_.emplace(
-      max_dense_intervals, tolerance, timeline_.begin(), timeline_);
+  downsampling_.emplace(max_dense_intervals, tolerance);
+  downsampling_->SetStartOfDenseTimeline(timeline_.begin(), timeline_);
 }
 template<typename Frame>
 void DiscreteTrajectory<Frame>::ClearDownsampling() {
@@ -407,14 +407,9 @@ std::int64_t DiscreteTrajectory<Frame>::timeline_size() const {
 template<typename Frame>
 DiscreteTrajectory<Frame>::Downsampling::Downsampling(
     std::int64_t const max_dense_intervals,
-    Length const tolerance,
-    TimelineConstIterator const start_of_dense_timeline,
-    Timeline const& timeline)
+    Length const tolerance)
     : max_dense_intervals_(max_dense_intervals),
-      tolerance_(tolerance),
-      start_of_dense_timeline_(start_of_dense_timeline) {
-  RecountDenseIntervals(timeline);
-}
+      tolerance_(tolerance) {}
 
 template<typename Frame>
 typename DiscreteTrajectory<Frame>::TimelineConstIterator
@@ -495,10 +490,10 @@ DiscreteTrajectory<Frame>::Downsampling::ReadFromMessage(
   } else {
     start_of_dense_timeline = timeline.end();
   }
-  return Downsampling(message.max_dense_intervals(),
-                      Length::ReadFromMessage(message.tolerance()),
-                      start_of_dense_timeline,
-                      timeline);
+  Downsampling downsampling(message.max_dense_intervals(),
+                            Length::ReadFromMessage(message.tolerance()));
+  downsampling.SetStartOfDenseTimeline(start_of_dense_timeline, timeline);
+  return downsampling;
 }
 
 template<typename Frame>
