@@ -216,13 +216,9 @@ void DiscreteTrajectory<Frame>::ForgetAfter(Instant const& time) {
   // entry and all the entries that follow it.  This preserves any entry with
   // time == |time|.
   auto const first_removed_in_timeline = timeline_.upper_bound(time);
-  Instant const* const first_removed_time =
-      first_removed_in_timeline == timeline_.end()
-          ? nullptr
-          : &first_removed_in_timeline->first;
   if (downsampling_.has_value()) {
-    if (first_removed_time != nullptr &&
-        *first_removed_time <= downsampling_->first_dense_time()) {
+    if (first_removed_in_timeline != timeline_.end() &&
+        first_removed_in_timeline->first <= downsampling_->first_dense_time()) {
       // The start of the dense timeline will be invalidated.
       if (first_removed_in_timeline == timeline_.begin()) {
         // The timeline will be empty after erasing.
