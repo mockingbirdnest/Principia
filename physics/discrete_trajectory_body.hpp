@@ -412,6 +412,17 @@ DiscreteTrajectory<Frame>::Downsampling::Downsampling(
       tolerance_(tolerance) {}
 
 template<typename Frame>
+std::int64_t DiscreteTrajectory<Frame>::Downsampling::max_dense_intervals()
+    const {
+  return max_dense_intervals_;
+}
+
+template<typename Frame>
+Length DiscreteTrajectory<Frame>::Downsampling::tolerance() const {
+  return tolerance_;
+}
+
+template<typename Frame>
 typename DiscreteTrajectory<Frame>::TimelineConstIterator
 DiscreteTrajectory<Frame>::Downsampling::start_of_dense_timeline() const {
   return start_of_dense_timeline_;
@@ -447,20 +458,9 @@ void DiscreteTrajectory<Frame>::Downsampling::increment_dense_intervals(
 }
 
 template<typename Frame>
-std::int64_t DiscreteTrajectory<Frame>::Downsampling::max_dense_intervals()
-    const {
-  return max_dense_intervals_;
-}
-
-template<typename Frame>
 bool DiscreteTrajectory<Frame>::Downsampling::reached_max_dense_intervals()
     const {
   return dense_intervals_ >= max_dense_intervals_;
-}
-
-template<typename Frame>
-Length DiscreteTrajectory<Frame>::Downsampling::tolerance() const {
-  return tolerance_;
 }
 
 template<typename Frame>
