@@ -209,6 +209,10 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
     std::int64_t max_dense_intervals() const;
     Length tolerance() const;
 
+    void Append(TimelineConstIterator it);
+
+    void ForgetAfter(Instant const& t);
+
     TimelineConstIterator start_of_dense_timeline() const;
     // |start_of_dense_timeline()->first|, for readability.
     Instant const& first_dense_time() const;
@@ -241,6 +245,10 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
     std::int64_t const max_dense_intervals_;
     // The tolerance for downsampling with |FitHermiteSpline|.
     Length const tolerance_;
+
+    // Note that the iterators in this vector may belong to different maps.
+    std::vector<TimelineConstIterator> dense_iterators_;
+
     // An iterator to the first point of the timeline which is not the left
     // endpoint of a downsampled interval.  Not |timeline_.end()| if the
     // timeline is nonempty.
@@ -267,7 +275,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
       Iterator const& upper) const;
 
   //TODO(phl):Comment
-  absl::Status UpdateDownsampling(TimelineConstIterator inserted);
+  absl::Status UpdateDownsampling(TimelineConstIterator appended);
 
   Timeline timeline_;
 
