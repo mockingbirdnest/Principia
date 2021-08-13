@@ -660,7 +660,10 @@ absl::Status DiscreteTrajectory<Frame>::UpdateDownsampling(
       timeline_.erase(++left, right);
       left = right;
     }
-    downsampling_->Append(left);
+    // Re-append the dense iterators that have not been consumed.
+    for (auto it = right_endpoints->back(); it < dense_iterators.cend(); ++it) {
+      downsampling_->Append(*it);
+    }
   }
   return absl::OkStatus();
 }
