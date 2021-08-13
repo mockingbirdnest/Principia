@@ -58,25 +58,27 @@ internal static class L10N {
   }
 
   private static string CelestialOverride(string template,
-                                         Func<CelestialBody, string> name,
-                                         params CelestialBody[] args) {
+                                         string[] names,
+                                         CelestialBody[] bodies) {
     return FormatOrNull(
-        $"{template}({string.Join(",", from body in args select body.name)})",
-        from body in args select name(body));
+        $"{template}({string.Join(",", from body in bodies select body.name)})",
+        names);
   }
 
   public static string CelestialString(string template,
                                        Func<CelestialBody, string> name,
                                        params CelestialBody[] args) {
-    return CelestialOverride(template, name, args) ??
-        Localizer.Format(template, name, from body in args select name(body));
+    string[] names = (from body in args select name(body)).ToArray();
+    return CelestialOverride(template, names, args) ??
+        Localizer.Format(template, names);
   }
 
   public static string CelestialStringOrNull(string template,
                                              Func<CelestialBody, string> name,
                                              params CelestialBody[] args) {
-    return CelestialOverride(template, name, args) ??
-        FormatOrNull(template, name, from body in args select name(body));
+    string[] names = (from body in args select name(body)).ToArray();
+    return CelestialOverride(template, names, args) ??
+        FormatOrNull(template, names);
   }
 }
 
