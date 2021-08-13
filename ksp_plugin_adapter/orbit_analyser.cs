@@ -465,17 +465,28 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
     LabeledField(
         Localizer.Format("#Principia_OrbitAnalyser_Elements_NodalPrecession"),
         elements?.nodal_precession.FormatAngularFrequency());
+    string periapsis = L10N.CelestialString(
+        "#Principia_OrbitAnalyser_Elements_Periapsis",
+        L10N.NameWithArticle,
+        primary);
+    string apoapsis = L10N.CelestialString(
+        "#Principia_OrbitAnalyser_Elements_Apoapsis",
+        L10N.NameWithArticle,
+        primary);
     LabeledField(
         Localizer.Format(
-            "#Principia_OrbitAnalyser_Elements_ArgumentOfPeriapsis"),
+            "#Principia_OrbitAnalyser_Elements_ArgumentOfPeriapsis",
+            periapsis),
         elements?.mean_argument_of_periapsis.FormatAngleInterval());
     LabeledField(
         Localizer.Format(
-            "#Principia_OrbitAnalyser_Elements_MeanPeriapsisAltitude"),
+            "#Principia_OrbitAnalyser_Elements_MeanPeriapsisAltitude",
+            periapsis),
         elements?.mean_periapsis_distance.FormatLengthInterval(primary.Radius));
     LabeledField(
         Localizer.Format(
-            "#Principia_OrbitAnalyser_Elements_MeanApoapsisAltitude"),
+            "#Principia_OrbitAnalyser_Elements_MeanApoapsisAltitude",
+            apoapsis),
         elements?.mean_apoapsis_distance.FormatLengthInterval(primary.Radius));
   }
 

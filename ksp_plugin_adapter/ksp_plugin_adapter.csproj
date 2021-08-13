@@ -184,7 +184,7 @@
     <None Include="localization\en-us.cfg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="localization\sol_body_specific_names.cfg">
+    <None Include="localization\celestial_strings.cfg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="localization\zh-cn.cfg">
