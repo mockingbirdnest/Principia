@@ -265,6 +265,10 @@ void DiscreteTrajectory<Frame>::SetDownsampling(
 #endif
   CHECK(!downsampling_.has_value());
   downsampling_.emplace(max_dense_intervals, tolerance);
+  //TODO(phl):Forks
+  for (auto it = timeline_.cbegin(); it != timeline_.cend(); ++it) {
+    downsampling_->Append(it);
+  }
   downsampling_->SetStartOfDenseTimeline(timeline_.begin(), timeline_);
 }
 template<typename Frame>
@@ -500,6 +504,9 @@ void DiscreteTrajectory<Frame>::Downsampling::WriteToMessage(
   }
   message->set_max_dense_intervals(max_dense_intervals_);
   tolerance_.WriteToMessage(message->mutable_tolerance());
+  for (auto const it : dense_iterators_) {
+    it->first.WriteToMessage(message->add_dense_timeline());
+  }
 }
 
 template<typename Frame>
