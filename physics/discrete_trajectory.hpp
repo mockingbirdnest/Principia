@@ -214,25 +214,6 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
 
     bool ExtractIfFull(std::vector<TimelineConstIterator>& dense_iterators);
 
-    TimelineConstIterator start_of_dense_timeline() const;
-    // |start_of_dense_timeline()->first|, for readability.
-    Instant const& first_dense_time() const;
-    // Keeps |dense_intervals_| consistent with the new
-    // |start_of_dense_timeline_|.
-    void SetStartOfDenseTimeline(TimelineConstIterator value,
-                                 Timeline const& timeline);
-
-    // Sets |dense_intervals_| to
-    // |std::distance(start_of_dense_timeline_, timeline.end()) - 1|.  This is
-    // linear in the value of |dense_intervals_|.
-    void RecountDenseIntervals(Timeline const& timeline);
-    // Increments |dense_intervals_|.  The caller must ensure that this is
-    // equivalent to |RecountDenseIntervals(timeline)|.  This is checked in
-    // debug mode.
-    void increment_dense_intervals(Timeline const& timeline);
-
-    bool reached_max_dense_intervals() const;
-
     void WriteToMessage(
         not_null<serialization::DiscreteTrajectory::Downsampling*> message,
         Timeline const& timeline) const;
@@ -241,23 +222,13 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
         Timeline const& timeline);
 
    private:
-    // The maximal value that |dense_intervals| is allowed to reach before
-    // downsampling occurs.
+    // The maximal number of dense intervals before downsampling occurs.
     std::int64_t const max_dense_intervals_;
     // The tolerance for downsampling with |FitHermiteSpline|.
     Length const tolerance_;
 
     // Note that the iterators in this vector may belong to different maps.
     std::vector<TimelineConstIterator> dense_iterators_;
-
-    // An iterator to the first point of the timeline which is not the left
-    // endpoint of a downsampled interval.  Not |timeline_.end()| if the
-    // timeline is nonempty.
-    TimelineConstIterator start_of_dense_timeline_;
-    // |std::distance(start_of_dense_timeline, timeline_.cend()) - 1|.  Kept as
-    // an optimization for |Append| as it can be maintained by incrementing,
-    // whereas |std::distance| is linear in the value of the result.
-    std::int64_t dense_intervals_;
   };
 
   // This trajectory need not be a root.
