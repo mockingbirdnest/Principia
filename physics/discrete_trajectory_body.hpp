@@ -245,7 +245,8 @@ void DiscreteTrajectory<Frame>::SetDownsampling(
 #endif
   CHECK(!downsampling_.has_value());
   downsampling_.emplace(max_dense_intervals, tolerance);
-  //TODO(phl):Forks
+  // TODO(phl): If this trajectory is a fork, the fork point should be appended
+  // first.
   for (auto it = timeline_.cbegin(); it != timeline_.cend(); ++it) {
     downsampling_->Append(it);
   }
@@ -468,8 +469,9 @@ DiscreteTrajectory<Frame>::Downsampling::ReadFromMessage(
   bool const is_pre_grotendieck_haar = message.has_start_of_dense_timeline();
   Downsampling downsampling(message.max_dense_intervals(),
                             Length::ReadFromMessage(message.tolerance()));
-  //TODO(phl): Forks.
   if (is_pre_grotendieck_haar) {
+    // No support for forks in legacy saves, so |find| will succeed and ++ is
+    // safe.
     auto it = timeline.find(
         Instant::ReadFromMessage(message.start_of_dense_timeline()));
     CHECK(it != timeline.end());
@@ -478,6 +480,7 @@ DiscreteTrajectory<Frame>::Downsampling::ReadFromMessage(
     }
   } else {
     for (auto const& dense_time : message.dense_timeline()) {
+      // TODO(phl): This |find| won't work for the first point of a fork.
       auto const it = timeline.find(Instant::ReadFromMessage(dense_time));
       CHECK(it != timeline.end());
       downsampling.Append(it);
@@ -662,7 +665,7 @@ absl::Status DiscreteTrajectory<Frame>::UpdateDownsampling(
     TimelineConstIterator left = dense_iterators.front();
     for (const auto& it_in_dense_iterators : right_endpoints.value()) {
       TimelineConstIterator const right = *it_in_dense_iterators;
-      //TODO(phl):forks
+      // TODO(phl): Use of ++ won't work with forks.
       timeline_.erase(++left, right);
       left = right;
     }
