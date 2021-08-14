@@ -447,16 +447,9 @@ bool DiscreteTrajectory<Frame>::Downsampling::full() const {
 }
 
 template<typename Frame>
-bool DiscreteTrajectory<Frame>::Downsampling::ExtractIfFull(
-    std::vector<TimelineConstIterator>& dense_iterators) {
-  CHECK(dense_iterators.empty());
-  CHECK_LE(dense_iterators_.size(), max_dense_intervals_);
-  if (dense_iterators_.size() == max_dense_intervals_) {
-    dense_iterators_.swap(dense_iterators);
-    return true;
-  } else {
-    return false;
-  }
+std::vector<typename DiscreteTrajectory<Frame>::TimelineConstIterator>
+DiscreteTrajectory<Frame>::Downsampling::dense_iterators() {
+  return std::move(dense_iterators_);
 }
 
 template<typename Frame>
@@ -653,8 +646,8 @@ absl::Status DiscreteTrajectory<Frame>::UpdateDownsampling(
     TimelineConstIterator const appended) {
   this->CheckNoForksBefore(this->back().time);
   downsampling_->Append(appended);
-  if (std::vector<TimelineConstIterator> dense_iterators;
-      downsampling_->ExtractIfFull(dense_iterators)) {
+  if (downsampling_->full()) {
+    auto const dense_iterators = downsampling_->dense_iterators();
     auto right_endpoints = FitHermiteSpline<Instant, Position<Frame>>(
         dense_iterators,
         [](auto&& it) -> auto&& { return it->first; },
@@ -669,6 +662,8 @@ absl::Status DiscreteTrajectory<Frame>::UpdateDownsampling(
     if (right_endpoints->empty()) {
       right_endpoints->push_back(dense_iterators.end() - 1);
     }
+
+    // Poke holes in the timeline at the places given by |right_endpoints|.
     TimelineConstIterator left = dense_iterators.front();
     for (const auto& it_in_dense_iterators : right_endpoints.value()) {
       TimelineConstIterator const right = *it_in_dense_iterators;
@@ -676,6 +671,7 @@ absl::Status DiscreteTrajectory<Frame>::UpdateDownsampling(
       timeline_.erase(++left, right);
       left = right;
     }
+
     // Re-append the dense iterators that have not been consumed.
     for (auto it = right_endpoints->back(); it < dense_iterators.cend(); ++it) {
       downsampling_->Append(*it);

@@ -220,9 +220,8 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
     bool empty() const;
     bool full() const;
 
-    // If the dense timeline has reached its capacity, swaps it with the
-    // parameter and returns true.
-    bool ExtractIfFull(std::vector<TimelineConstIterator>& dense_iterators);
+    // Returns the |dense_iterators_|, giving ownership to the caller.
+    std::vector<TimelineConstIterator> dense_iterators();
 
     void WriteToMessage(
         not_null<serialization::DiscreteTrajectory::Downsampling*> message)
