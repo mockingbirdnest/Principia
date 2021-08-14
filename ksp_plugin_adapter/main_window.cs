@@ -245,9 +245,6 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
         value : display_patched_conics,
         text  : Localizer.Format(
             "#Principia_MainWindow_KspFeature_DisplayPatchedConics"));
-    Sun.Instance.sunFlare.enabled = UnityEngine.GUILayout.Toggle(
-        value : Sun.Instance.sunFlare.enabled,
-        text  : Localizer.Format("#Principia_MainWindow_KspFeature_SunFlare"));
     if (MapView.MapIsEnabled &&
         FlightGlobals.ActiveVessel?.orbitTargeter != null) {
       using (new UnityEngine.GUILayout.HorizontalScope()) {
