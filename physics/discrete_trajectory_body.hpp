@@ -211,28 +211,36 @@ absl::Status DiscreteTrajectory<Frame>::Append(
 template<typename Frame>
 void DiscreteTrajectory<Frame>::ForgetAfter(Instant const& time) {
   this->DeleteAllForksAfter(time);
+  if (downsampling_.has_value()) {
+    downsampling_->ForgetAfter(time);
+  }
 
   // Get an iterator denoting the first entry with time > |time|.  Remove that
   // entry and all the entries that follow it.  This preserves any entry with
   // time == |time|.
   auto const first_removed_in_timeline = timeline_.upper_bound(time);
   timeline_.erase(first_removed_in_timeline, timeline_.end());
-  if (downsampling_.has_value()) {
-    downsampling_->ForgetAfter(time);
+
+  if (!timeline_.empty() &&
+      downsampling_.has_value() &&
+      downsampling_->empty()) {
+    // Further points will be appended to the last remaining point, so this is
+    // where the dense timeline will begin.
+    downsampling_->Append(--timeline_.cend());
   }
 }
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
   this->CheckNoForksBefore(time);
+  if (downsampling_.has_value()) {
+    downsampling_->ForgetBefore(time);
+  }
 
   // Get an iterator denoting the first entry with time >= |time|.  Remove all
   // the entries that precede it.  This preserves any entry with time == |time|.
   auto const first_kept_in_timeline = timeline_.lower_bound(time);
   timeline_.erase(timeline_.begin(), first_kept_in_timeline);
-  if (downsampling_.has_value()) {
-    downsampling_->ForgetBefore(time);
-  }
 }
 
 template<typename Frame>
@@ -426,6 +434,16 @@ void DiscreteTrajectory<Frame>::Downsampling::ForgetBefore(Instant const& t) {
         return left->first < right;
       });
   dense_iterators_.erase(dense_iterators_.cbegin(), it);
+}
+
+template<typename Frame>
+bool DiscreteTrajectory<Frame>::Downsampling::empty() const {
+  return dense_iterators_.empty();
+}
+
+template<typename Frame>
+bool DiscreteTrajectory<Frame>::Downsampling::full() const {
+  return dense_iterators_.size() >= max_dense_intervals_;
 }
 
 template<typename Frame>
