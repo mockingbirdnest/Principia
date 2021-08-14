@@ -204,7 +204,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
     Downsampling(std::int64_t max_dense_intervals,
                  Length tolerance);
 
-    // Construction parameter.
+    // Construction parameters.
     std::int64_t max_dense_intervals() const;
     Length tolerance() const;
 
@@ -236,7 +236,8 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
     // The tolerance for downsampling with |FitHermiteSpline|.
     Length const tolerance_;
 
-    // Note that the iterators in this vector may belong to different maps.
+    // TODO(phl): Note that, with forks, the iterators in this vector may belong
+    // to different maps.
     std::vector<TimelineConstIterator> dense_iterators_;
   };
 
