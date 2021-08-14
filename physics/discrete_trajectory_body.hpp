@@ -409,6 +409,7 @@ Length DiscreteTrajectory<Frame>::Downsampling::tolerance() const {
 template<typename Frame>
 void DiscreteTrajectory<Frame>::Downsampling::Append(
     TimelineConstIterator const it) {
+  CHECK(!full());
   dense_iterators_.push_back(it);
 }
 
@@ -676,6 +677,7 @@ absl::Status DiscreteTrajectory<Frame>::UpdateDownsampling(
     for (auto it = right_endpoints->back(); it < dense_iterators.cend(); ++it) {
       downsampling_->Append(*it);
     }
+    CHECK(!downsampling_->empty());
   }
   return absl::OkStatus();
 }
