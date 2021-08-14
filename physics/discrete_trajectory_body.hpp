@@ -239,9 +239,7 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::SetDownsampling(
     std::int64_t const max_dense_intervals,
     Length const& tolerance) {
-#if 0
   CHECK(this->is_root());
-#endif
   CHECK(!downsampling_.has_value());
   downsampling_.emplace(max_dense_intervals, tolerance);
   // TODO(phl): If this trajectory is a fork, the fork point should be appended
@@ -635,9 +633,7 @@ Hermite3<Instant, Position<Frame>> DiscreteTrajectory<Frame>::GetInterpolation(
 template<typename Frame>
 absl::Status DiscreteTrajectory<Frame>::UpdateDownsampling(
     TimelineConstIterator const appended) {
-#if 0
   this->CheckNoForksBefore(this->back().time);
-#endif
   downsampling_->Append(appended);
   if (std::vector<TimelineConstIterator> dense_iterators;
       downsampling_->ExtractIfFull(dense_iterators)) {

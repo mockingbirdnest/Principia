@@ -252,6 +252,10 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   Hermite3<Instant, Position<Frame>> GetInterpolation(
       Iterator const& upper) const;
 
+  // Updates the downsampling object to reflect that a point was appended to
+  // this trajectory.
+  absl::Status UpdateDownsampling(TimelineConstIterator const appended);
+
   Timeline timeline_;
 
   std::optional<Downsampling> downsampling_;

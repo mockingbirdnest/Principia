@@ -79,11 +79,6 @@ message ContinuousTrajectory {
 }
 
 message DiscreteTrajectory {
-  // A marker to indicate that a fork doesn't have its position tracked.
-  // Added in Grothendieck/Haar.
-  enum ForkPosition {
-    MISSING_FORK_POSITION = -1;
-  }
   message Downsampling {
     required int64 max_dense_intervals = 2;
     required Quantity tolerance = 3;
