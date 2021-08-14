@@ -375,7 +375,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
             case 1:
               if (circular && equatorial) {
                 var stationary_primary_string = L10N.CelestialStringOrNull(
-                    "Principia_OrbitAnalyser_OrbitDescription_StationaryPrimary",
+                    "#Principia_OrbitAnalyser_OrbitDescription_StationaryPrimary",
                     L10N.NameWithoutArticle,
                     primary);
                 if (stationary_primary_string != null) {
@@ -387,7 +387,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
                 }
               } else {
                 var synchronous_primary_string = L10N.CelestialStringOrNull(
-                    "Principia_OrbitAnalyser_OrbitDescription_SynchronousPrimary",
+                    "#Principia_OrbitAnalyser_OrbitDescription_SynchronousPrimary",
                     L10N.NameWithoutArticle,
                     primary);
                 if (synchronous_primary_string != null) {
