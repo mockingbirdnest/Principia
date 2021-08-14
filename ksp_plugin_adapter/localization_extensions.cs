@@ -58,8 +58,8 @@ internal static class L10N {
   }
 
   private static string CelestialOverride(string template,
-                                         string[] names,
-                                         CelestialBody[] bodies) {
+                                          string[] names,
+                                          CelestialBody[] bodies) {
     return FormatOrNull(
         $"{template}({string.Join(",", from body in bodies select body.name)})",
         names);
