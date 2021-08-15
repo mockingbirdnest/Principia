@@ -243,9 +243,6 @@ void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
   // the entries that precede it.  This preserves any entry with time == |time|.
   auto const first_kept_in_timeline = timeline_.lower_bound(time);
   timeline_.erase(timeline_.begin(), first_kept_in_timeline);
-  if (downsampling_.has_value()) {
-    downsampling_->ForgetBefore(time);
-  }
 }
 
 template<typename Frame>
