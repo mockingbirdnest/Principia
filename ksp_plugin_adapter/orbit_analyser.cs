@@ -605,7 +605,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
           max_value        : double.PositiveInfinity,
           formatter        : Formatters.FormatMissionDuration,
           parser           : Formatters.TryParseMissionDuration,
-          label_width      : 2,
+          label_width      : 3,
           field_width      : 5) {
           value = 7 * 24 * 60 * 60
       };
