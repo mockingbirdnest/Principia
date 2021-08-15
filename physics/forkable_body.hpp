@@ -462,7 +462,6 @@ DeleteAllForksAfter(Instant const& time) {
 template<typename Tr4jectory, typename It3rator, typename Traits>
 void Forkable<Tr4jectory, It3rator, Traits>::
 CheckNoForksBefore(Instant const& time) {
-  CHECK(is_root()) << "CheckNoForksBefore on a nonroot trajectory";
   // Get an iterator denoting the first entry with time >= |time|.  Check that
   // there are no forks before it.  A fork with time == |time| is fine.
   auto const it = children_.lower_bound(time);

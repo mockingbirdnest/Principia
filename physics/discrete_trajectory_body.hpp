@@ -233,6 +233,7 @@ void DiscreteTrajectory<Frame>::ForgetAfter(Instant const& time) {
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
+  CHECK(this->is_root());
   this->CheckNoForksBefore(time);
   if (downsampling_.has_value()) {
     downsampling_->ForgetBefore(time);
@@ -251,13 +252,15 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::SetDownsampling(
     std::int64_t const max_dense_intervals,
     Length const& tolerance) {
-#if 0
-  CHECK(this->is_root());
-#endif
   CHECK(!downsampling_.has_value());
   downsampling_.emplace(max_dense_intervals, tolerance);
-  // TODO(phl): If this trajectory is a fork, the fork point should be appended
-  // first.
+
+  // For a fork, the fork point is taken into account for downsampling: it is
+  // always preserved, but the second point preserved after downsampling may be
+  // farther down the timeline of this trajectory.
+  if (!this->is_root()) {
+    downsampling_->Append(this->Fork().current());
+  }
   for (auto it = timeline_.cbegin(); it != timeline_.cend(); ++it) {
     downsampling_->Append(it);
   }
@@ -657,7 +660,7 @@ Hermite3<Instant, Position<Frame>> DiscreteTrajectory<Frame>::GetInterpolation(
 template<typename Frame>
 absl::Status DiscreteTrajectory<Frame>::UpdateDownsampling(
     TimelineConstIterator const appended) {
-  this->CheckNoForksBefore(this->back().time);
+  this->CheckNoForksBefore(appended->first);
   downsampling_->Append(appended);
   if (downsampling_->full()) {
     auto const dense_iterators = downsampling_->dense_iterators();

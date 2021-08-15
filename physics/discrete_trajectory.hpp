@@ -61,6 +61,9 @@ class DiscreteTrajectoryIterator
  protected:
   not_null<DiscreteTrajectoryIterator*> that() override;
   not_null<DiscreteTrajectoryIterator const*> that() const override;
+
+  template<typename>
+  friend class internal_discrete_trajectory::DiscreteTrajectory;
 };
 
 }  // namespace internal_forkable
@@ -238,8 +241,8 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
     // The tolerance for downsampling with |FitHermiteSpline|.
     Length const tolerance_;
 
-    // TODO(phl): Note that, with forks, the iterators in this vector may belong
-    // to different maps.
+    // Note that, because of forks, the iterators in this vector may belong to
+    // different maps.
     std::vector<TimelineConstIterator> dense_iterators_;
   };
 
