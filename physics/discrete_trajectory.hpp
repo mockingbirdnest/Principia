@@ -61,6 +61,9 @@ class DiscreteTrajectoryIterator
  protected:
   not_null<DiscreteTrajectoryIterator*> that() override;
   not_null<DiscreteTrajectoryIterator const*> that() const override;
+
+  template<typename>
+  friend class internal_discrete_trajectory::DiscreteTrajectory;
 };
 
 }  // namespace internal_forkable
@@ -230,7 +233,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
         const;
     static Downsampling ReadFromMessage(
         serialization::DiscreteTrajectory::Downsampling const& message,
-        Timeline const& timeline);
+        DiscreteTrajectory const& trajectory);
 
    private:
     // The maximal number of dense intervals before downsampling occurs.
@@ -238,8 +241,8 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
     // The tolerance for downsampling with |FitHermiteSpline|.
     Length const tolerance_;
 
-    // TODO(phl): Note that, with forks, the iterators in this vector may belong
-    // to different maps.
+    // Note that, because of forks, the iterators in this vector may belong to
+    // different maps.
     std::vector<TimelineConstIterator> dense_iterators_;
   };
 
@@ -260,7 +263,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
 
   // Updates the downsampling object to reflect that a point was appended to
   // this trajectory.
-  absl::Status UpdateDownsampling(TimelineConstIterator const appended);
+  absl::Status UpdateDownsampling(TimelineConstIterator appended);
 
   Timeline timeline_;
 

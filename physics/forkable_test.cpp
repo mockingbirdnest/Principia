@@ -468,12 +468,6 @@ TEST_F(ForkableTest, DeleteAllForksAfterSuccess) {
 TEST_F(ForkableDeathTest, CheckNoForksBeforeError) {
   EXPECT_DEATH({
     trajectory_.push_back(t1_);
-    not_null<FakeTrajectory*> const fork =
-        trajectory_.NewFork(trajectory_.timeline_find(t1_));
-    fork->CheckNoForksBefore(t1_);
-  }, "nonroot");
-  EXPECT_DEATH({
-    trajectory_.push_back(t1_);
     trajectory_.push_back(t2_);
     trajectory_.push_back(t3_);
     not_null<FakeTrajectory*> const fork =
