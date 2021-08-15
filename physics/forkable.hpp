@@ -196,7 +196,7 @@ class Forkable {
   // at or after the fork time of this trajectory, if any.
   void DeleteAllForksAfter(Instant const& time);
 
-  // Checks that there exist no forks for times (strictly) less than |time| in.
+  // Checks that there exist no forks for times (strictly) less than |time| in
   // the timelime of this trajectory (i.e., after its fork point if it's not a
   // root).
   void CheckNoForksBefore(Instant const& time);
