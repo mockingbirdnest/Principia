@@ -195,15 +195,15 @@ absl::Status DiscreteTrajectory<Frame>::Append(
                  << this->back().time << "]";
     return absl::OkStatus();
   }
-  auto it = timeline_.emplace_hint(timeline_.end(),
-                                   time,
-                                   degrees_of_freedom);
+  auto const it = timeline_.emplace_hint(timeline_.end(),
+                                         time,
+                                         degrees_of_freedom);
   // Decrementing |end()| is much faster than incrementing |it|.  Don't ask.
   CHECK(--timeline_.end() == it)
       << "Append out of order at " << time << ", last time is "
       << (--timeline_.end())->first;
   if (downsampling_.has_value()) {
-    return UpdateDownsampling();
+    return UpdateDownsampling(it);
   } else {
     return absl::OkStatus();
   }
@@ -212,51 +212,36 @@ absl::Status DiscreteTrajectory<Frame>::Append(
 template<typename Frame>
 void DiscreteTrajectory<Frame>::ForgetAfter(Instant const& time) {
   this->DeleteAllForksAfter(time);
+  if (downsampling_.has_value()) {
+    downsampling_->ForgetAfter(time);
+  }
 
   // Get an iterator denoting the first entry with time > |time|.  Remove that
   // entry and all the entries that follow it.  This preserves any entry with
   // time == |time|.
   auto const first_removed_in_timeline = timeline_.upper_bound(time);
-  Instant const* const first_removed_time =
-      first_removed_in_timeline == timeline_.end()
-          ? nullptr
-          : &first_removed_in_timeline->first;
-  if (downsampling_.has_value()) {
-    if (first_removed_time != nullptr &&
-        *first_removed_time <= downsampling_->first_dense_time()) {
-      // The start of the dense timeline will be invalidated.
-      if (first_removed_in_timeline == timeline_.begin()) {
-        // The timeline will be empty after erasing.
-        downsampling_->SetStartOfDenseTimeline(timeline_.end(), timeline_);
-      } else {
-        // Further points will be appended to the last remaining point, so this
-        // is where the dense timeline will begin.
-        auto last_kept_in_timeline = first_removed_in_timeline;
-        --last_kept_in_timeline;
-        downsampling_->SetStartOfDenseTimeline(last_kept_in_timeline,
-                                               timeline_);
-      }
-    }
-  }
   timeline_.erase(first_removed_in_timeline, timeline_.end());
-  if (downsampling_.has_value()) {
-    downsampling_->RecountDenseIntervals(timeline_);
+
+  if (!timeline_.empty() &&
+      downsampling_.has_value() &&
+      downsampling_->empty()) {
+    // Further points will be appended to the last remaining point, so this is
+    // where the dense timeline will begin.
+    downsampling_->Append(--timeline_.cend());
   }
 }
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
+  CHECK(this->is_root());
   this->CheckNoForksBefore(time);
+  if (downsampling_.has_value()) {
+    downsampling_->ForgetBefore(time);
+  }
 
   // Get an iterator denoting the first entry with time >= |time|.  Remove all
   // the entries that precede it.  This preserves any entry with time == |time|.
   auto const first_kept_in_timeline = timeline_.lower_bound(time);
-  if (downsampling_.has_value() &&
-      (first_kept_in_timeline == timeline_.end() ||
-       downsampling_->first_dense_time() < first_kept_in_timeline->first)) {
-    // The start of the dense timeline will be invalidated.
-    downsampling_->SetStartOfDenseTimeline(first_kept_in_timeline, timeline_);
-  }
   timeline_.erase(timeline_.begin(), first_kept_in_timeline);
 }
 
@@ -265,8 +250,17 @@ void DiscreteTrajectory<Frame>::SetDownsampling(
     std::int64_t const max_dense_intervals,
     Length const& tolerance) {
   CHECK(!downsampling_.has_value());
-  downsampling_.emplace(
-      max_dense_intervals, tolerance, timeline_.begin(), timeline_);
+  downsampling_.emplace(max_dense_intervals, tolerance);
+
+  // For a fork, the fork point is taken into account for downsampling: it is
+  // always preserved, but the second point preserved after downsampling may be
+  // farther down the timeline of this trajectory.
+  if (!this->is_root()) {
+    downsampling_->Append(this->Fork().current());
+  }
+  for (auto it = timeline_.cbegin(); it != timeline_.cend(); ++it) {
+    downsampling_->Append(it);
+  }
 }
 template<typename Frame>
 void DiscreteTrajectory<Frame>::ClearDownsampling() {
@@ -406,48 +400,11 @@ std::int64_t DiscreteTrajectory<Frame>::timeline_size() const {
 template<typename Frame>
 DiscreteTrajectory<Frame>::Downsampling::Downsampling(
     std::int64_t const max_dense_intervals,
-    Length const tolerance,
-    TimelineConstIterator const start_of_dense_timeline,
-    Timeline const& timeline)
+    Length const tolerance)
     : max_dense_intervals_(max_dense_intervals),
-      tolerance_(tolerance),
-      start_of_dense_timeline_(start_of_dense_timeline) {
-  RecountDenseIntervals(timeline);
-}
-
-template<typename Frame>
-typename DiscreteTrajectory<Frame>::TimelineConstIterator
-DiscreteTrajectory<Frame>::Downsampling::start_of_dense_timeline() const {
-  return start_of_dense_timeline_;
-}
-
-template<typename Frame>
-Instant const& DiscreteTrajectory<Frame>::Downsampling::first_dense_time()
-    const {
-  return start_of_dense_timeline_->first;
-}
-
-template<typename Frame>
-void DiscreteTrajectory<Frame>::Downsampling::SetStartOfDenseTimeline(
-    TimelineConstIterator const value,
-    Timeline const& timeline) {
-  start_of_dense_timeline_ = value;
-  RecountDenseIntervals(timeline);
-}
-
-template<typename Frame>
-void DiscreteTrajectory<Frame>::Downsampling::RecountDenseIntervals(
-    Timeline const& timeline) {
-  dense_intervals_ =
-      std::distance(start_of_dense_timeline_, timeline.end()) - 1;
-}
-
-template<typename Frame>
-void DiscreteTrajectory<Frame>::Downsampling::increment_dense_intervals(
-    Timeline const& timeline) {
-  ++dense_intervals_;
-  DCHECK_EQ(dense_intervals_,
-            std::distance(start_of_dense_timeline_, timeline.end()) - 1);
+      tolerance_(tolerance) {
+  // This contains points, hence one more than intervals.
+  dense_iterators_.reserve(max_dense_intervals_ + 1);
 }
 
 template<typename Frame>
@@ -457,47 +414,96 @@ std::int64_t DiscreteTrajectory<Frame>::Downsampling::max_dense_intervals()
 }
 
 template<typename Frame>
-bool DiscreteTrajectory<Frame>::Downsampling::reached_max_dense_intervals()
-    const {
-  return dense_intervals_ >= max_dense_intervals_;
-}
-
-template<typename Frame>
 Length DiscreteTrajectory<Frame>::Downsampling::tolerance() const {
   return tolerance_;
 }
 
 template<typename Frame>
+void DiscreteTrajectory<Frame>::Downsampling::Append(
+    TimelineConstIterator const it) {
+  CHECK(!full());
+  dense_iterators_.push_back(it);
+}
+
+template<typename Frame>
+void DiscreteTrajectory<Frame>::Downsampling::ForgetAfter(Instant const& t) {
+  auto const it = std::upper_bound(
+      dense_iterators_.cbegin(),
+      dense_iterators_.cend(),
+      t,
+      [](Instant const& left, TimelineConstIterator const right) {
+        return left < right->first;
+      });
+  dense_iterators_.erase(it, dense_iterators_.cend());
+}
+
+template<typename Frame>
+void DiscreteTrajectory<Frame>::Downsampling::ForgetBefore(Instant const& t) {
+  auto const it = std::lower_bound(
+      dense_iterators_.cbegin(),
+      dense_iterators_.cend(),
+      t,
+      [](TimelineConstIterator const left, Instant const& right) {
+        return left->first < right;
+      });
+  dense_iterators_.erase(dense_iterators_.cbegin(), it);
+}
+
+template<typename Frame>
+bool DiscreteTrajectory<Frame>::Downsampling::empty() const {
+  return dense_iterators_.empty();
+}
+
+template<typename Frame>
+bool DiscreteTrajectory<Frame>::Downsampling::full() const {
+  return dense_iterators_.size() >= max_dense_intervals_;
+}
+
+template<typename Frame>
+std::vector<typename DiscreteTrajectory<Frame>::TimelineConstIterator>
+DiscreteTrajectory<Frame>::Downsampling::dense_iterators() {
+  return std::move(dense_iterators_);
+}
+
+template<typename Frame>
 void DiscreteTrajectory<Frame>::Downsampling::WriteToMessage(
-    not_null<serialization::DiscreteTrajectory::Downsampling*> message,
-    Timeline const& timeline) const {
-  if (start_of_dense_timeline_ == timeline.end()) {
-    message->clear_start_of_dense_timeline();
-  } else {
-    first_dense_time().WriteToMessage(
-        message->mutable_start_of_dense_timeline());
-  }
+    not_null<serialization::DiscreteTrajectory::Downsampling*> const message)
+    const {
   message->set_max_dense_intervals(max_dense_intervals_);
   tolerance_.WriteToMessage(message->mutable_tolerance());
+  for (auto const it : dense_iterators_) {
+    it->first.WriteToMessage(message->add_dense_timeline());
+  }
 }
 
 template<typename Frame>
 typename DiscreteTrajectory<Frame>::Downsampling
 DiscreteTrajectory<Frame>::Downsampling::ReadFromMessage(
     serialization::DiscreteTrajectory::Downsampling const& message,
-    Timeline const& timeline) {
-  TimelineConstIterator start_of_dense_timeline;
-  if (message.has_start_of_dense_timeline()) {
-    start_of_dense_timeline = timeline.find(
+    DiscreteTrajectory const& trajectory) {
+  bool const is_pre_grotendieck_haar = message.has_start_of_dense_timeline();
+  Downsampling downsampling(message.max_dense_intervals(),
+                            Length::ReadFromMessage(message.tolerance()));
+  if (is_pre_grotendieck_haar) {
+    // No support for forks in legacy saves, so |find| will succeed and ++ is
+    // safe.
+    auto it = trajectory.timeline_.find(
         Instant::ReadFromMessage(message.start_of_dense_timeline()));
-    CHECK(start_of_dense_timeline != timeline.end());
+    CHECK(it != trajectory.timeline_.end());
+    for (; it != trajectory.timeline_.end(); ++it) {
+      downsampling.Append(it);
+    }
   } else {
-    start_of_dense_timeline = timeline.end();
+    for (auto const& dense_time : message.dense_timeline()) {
+      auto const t = Instant::ReadFromMessage(dense_time);
+      // This call to |Find| is needed because we don't know in what timeline
+      // |t| lives.
+      auto const it = trajectory.Find(t);
+      CHECK(it != trajectory.end());
+      downsampling.Append(it.current());
+    }
   }
-  return Downsampling(message.max_dense_intervals(),
-                      Length::ReadFromMessage(message.tolerance()),
-                      start_of_dense_timeline,
-                      timeline);
+  return downsampling;
 }
 
 template<typename Frame>
@@ -579,7 +585,7 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
   }
 
   if (downsampling_.has_value()) {
-    downsampling_->WriteToMessage(message->mutable_downsampling(), timeline_);
+    downsampling_->WriteToMessage(message->mutable_downsampling());
   }
 }
 
@@ -631,7 +637,7 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
   }
   if (message.has_downsampling()) {
     downsampling_.emplace(
-        Downsampling::ReadFromMessage(message.downsampling(), timeline_));
+        Downsampling::ReadFromMessage(message.downsampling(), *this));
   }
   Forkable<DiscreteTrajectory, Iterator, DiscreteTrajectoryTraits<Frame>>::
       FillSubTreeFromMessage(message, tracked);
@@ -651,42 +657,45 @@ Hermite3<Instant, Position<Frame>> DiscreteTrajectory<Frame>::GetInterpolation(
 }
 
 template<typename Frame>
-absl::Status DiscreteTrajectory<Frame>::UpdateDownsampling() {
-  if (timeline_.size() == 1) {
-    downsampling_->SetStartOfDenseTimeline(timeline_.begin(), timeline_);
-  } else {
-    downsampling_->increment_dense_intervals(timeline_);
-    if (downsampling_->reached_max_dense_intervals()) {
-      std::vector<TimelineConstIterator> dense_iterators;
-      // This contains points, hence one more than intervals.
-      dense_iterators.reserve(downsampling_->max_dense_intervals() + 1);
-      for (TimelineConstIterator it = downsampling_->start_of_dense_timeline();
-           it != timeline_.end();
-           ++it) {
-        dense_iterators.push_back(it);
-      }
-      auto right_endpoints = FitHermiteSpline<Instant, Position<Frame>>(
-          dense_iterators,
-          [](auto&& it) -> auto&& { return it->first; },
-          [](auto&& it) -> auto&& { return it->second.position(); },
-          [](auto&& it) -> auto&& { return it->second.velocity(); },
-          downsampling_->tolerance());
-      if (!right_endpoints.ok()) {
-        // Note that the actual appending took place; the propagated status only
-        // reflects a lack of downsampling.
-        return right_endpoints.status();
-      }
-      if (right_endpoints->empty()) {
-        right_endpoints->push_back(dense_iterators.end() - 1);
-      }
-      TimelineConstIterator left = downsampling_->start_of_dense_timeline();
-      for (const auto& it_in_dense_iterators : right_endpoints.value()) {
-        TimelineConstIterator const right = *it_in_dense_iterators;
-        timeline_.erase(++left, right);
-        left = right;
-      }
-      downsampling_->SetStartOfDenseTimeline(left, timeline_);
+absl::Status DiscreteTrajectory<Frame>::UpdateDownsampling(
+    TimelineConstIterator const appended) {
+  this->CheckNoForksBefore(appended->first);
+  downsampling_->Append(appended);
+  if (downsampling_->full()) {
+    auto const dense_iterators = downsampling_->dense_iterators();
+    auto right_endpoints = FitHermiteSpline<Instant, Position<Frame>>(
+        dense_iterators,
+        [](auto&& it) -> auto&& { return it->first; },
+        [](auto&& it) -> auto&& { return it->second.position(); },
+        [](auto&& it) -> auto&& { return it->second.velocity(); },
+        downsampling_->tolerance());
+    if (!right_endpoints.ok()) {
+      // Note that the actual appending took place; the propagated status only
+      // reflects a lack of downsampling.
+      return right_endpoints.status();
     }
+    if (right_endpoints->empty()) {
+      right_endpoints->push_back(dense_iterators.cend() - 1);
+    }
+
+    // Poke holes in the timeline at the places given by |right_endpoints|.
+    // Note that this code carefully avoids incrementing |dense_iterators[0]| as
+    // it may live in a different timeline than the others.
+    CHECK_LE(1, dense_iterators.size());
+    TimelineConstIterator left = dense_iterators[1];
+    for (const auto& it_in_dense_iterators : right_endpoints.value()) {
+      TimelineConstIterator const right = *it_in_dense_iterators;
+      timeline_.erase(left, right);
+      left = right;
+      ++left;
+    }
+
+    // Re-append the dense iterators that have not been consumed.
+    for (auto it = right_endpoints->back(); it < dense_iterators.cend(); ++it) {
+      downsampling_->Append(*it);
+    }
+    CHECK(!downsampling_->empty());
+    CHECK(!downsampling_->full());
   }
   return absl::OkStatus();
 }

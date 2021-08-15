@@ -61,6 +61,9 @@ class DiscreteTrajectoryIterator
  protected:
   not_null<DiscreteTrajectoryIterator*> that() override;
   not_null<DiscreteTrajectoryIterator const*> that() const override;
+
+  template<typename>
+  friend class internal_discrete_trajectory::DiscreteTrajectory;
 };
 
 }  // namespace internal_forkable
@@ -200,56 +203,47 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
  private:
   using Timeline = typename DiscreteTrajectoryTraits<Frame>::Timeline;
 
+  // A helper class to manage a dense timeline.
   class Downsampling {
    public:
     Downsampling(std::int64_t max_dense_intervals,
-                 Length tolerance,
-                 TimelineConstIterator start_of_dense_timeline,
-                 Timeline const& timeline);
+                 Length tolerance);
 
-    TimelineConstIterator start_of_dense_timeline() const;
-    // |start_of_dense_timeline()->first|, for readability.
-    Instant const& first_dense_time() const;
-    // Keeps |dense_intervals_| consistent with the new
-    // |start_of_dense_timeline_|.
-    void SetStartOfDenseTimeline(TimelineConstIterator value,
-                                 Timeline const& timeline);
-
-    // Sets |dense_intervals_| to
-    // |std::distance(start_of_dense_timeline_, timeline.end()) - 1|.  This is
-    // linear in the value of |dense_intervals_|.
-    void RecountDenseIntervals(Timeline const& timeline);
-    // Increments |dense_intervals_|.  The caller must ensure that this is
-    // equivalent to |RecountDenseIntervals(timeline)|.  This is checked in
-    // debug mode.
-    void increment_dense_intervals(Timeline const& timeline);
-
+    // Construction parameters.
     std::int64_t max_dense_intervals() const;
-    bool reached_max_dense_intervals() const;
-
     Length tolerance() const;
 
+    // Appends a point to the dense timeline.
+    void Append(TimelineConstIterator it);
+
+    // Forgets the points of the dense timeline after/before t.  The semantics
+    // are the same as that of the corresponding functions of
+    // DiscreteTrajectory.
+    void ForgetAfter(Instant const& t);
+    void ForgetBefore(Instant const& t);
+
+    bool empty() const;
+    bool full() const;
+
+    // Returns the |dense_iterators_|, giving ownership to the caller.
+    std::vector<TimelineConstIterator> dense_iterators();
+
     void WriteToMessage(
-        not_null<serialization::DiscreteTrajectory::Downsampling*> message,
-        Timeline const& timeline) const;
+        not_null<serialization::DiscreteTrajectory::Downsampling*> message)
+        const;
     static Downsampling ReadFromMessage(
         serialization::DiscreteTrajectory::Downsampling const& message,
-        Timeline const& timeline);
+        DiscreteTrajectory const& trajectory);
 
    private:
-    // The maximal value that |dense_intervals| is allowed to reach before
-    // downsampling occurs.
+    // The maximal number of dense intervals before downsampling occurs.
     std::int64_t const max_dense_intervals_;
     // The tolerance for downsampling with |FitHermiteSpline|.
     Length const tolerance_;
-    // An iterator to the first point of the timeline which is not the left
-    // endpoint of a downsampled interval.  Not |timeline_.end()| if the
-    // timeline is nonempty.
-    TimelineConstIterator start_of_dense_timeline_;
-    // |std::distance(start_of_dense_timeline, timeline_.cend()) - 1|.  Kept as
-    // an optimization for |Append| as it can be maintained by incrementing,
-    // whereas |std::distance| is linear in the value of the result.
-    std::int64_t dense_intervals_;
+
+    // Note that, because of forks, the iterators in this vector may belong to
+    // different maps.
+    std::vector<TimelineConstIterator> dense_iterators_;
   };
 
   // This trajectory need not be a root.
@@ -267,7 +261,9 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   Hermite3<Instant, Position<Frame>> GetInterpolation(
       Iterator const& upper) const;
 
-  absl::Status UpdateDownsampling();
+  // Updates the downsampling object to reflect that a point was appended to
+  // this trajectory.
+  absl::Status UpdateDownsampling(TimelineConstIterator appended);
 
   Timeline timeline_;
 
