@@ -483,25 +483,27 @@ template<typename Frame>
 typename DiscreteTrajectory<Frame>::Downsampling
 DiscreteTrajectory<Frame>::Downsampling::ReadFromMessage(
     serialization::DiscreteTrajectory::Downsampling const& message,
-    Timeline const& timeline) {
+    DiscreteTrajectory const& trajectory) {
   bool const is_pre_grotendieck_haar = message.has_start_of_dense_timeline();
   Downsampling downsampling(message.max_dense_intervals(),
                             Length::ReadFromMessage(message.tolerance()));
   if (is_pre_grotendieck_haar) {
     // No support for forks in legacy saves, so |find| will succeed and ++ is
     // safe.
-    auto it = timeline.find(
+    auto it = trajectory.timeline_.find(
         Instant::ReadFromMessage(message.start_of_dense_timeline()));
-    CHECK(it != timeline.end());
-    for (; it != timeline.end(); ++it) {
+    CHECK(it != trajectory.timeline_.end());
+    for (; it != trajectory.timeline_.end(); ++it) {
       downsampling.Append(it);
     }
   } else {
     for (auto const& dense_time : message.dense_timeline()) {
-      // TODO(phl): This |find| won't work for the first point of a fork.
-      auto const it = timeline.find(Instant::ReadFromMessage(dense_time));
-      CHECK(it != timeline.end());
-      downsampling.Append(it);
+      auto const t = Instant::ReadFromMessage(dense_time);
+      // This call to |Find| is needed because we don't know in what timeline
+      // |t| lives.
+      auto const it = trajectory.Find(t);
+      CHECK(it != trajectory.end());
+      downsampling.Append(it.current());
     }
   }
   return downsampling;
@@ -638,7 +640,7 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
   }
   if (message.has_downsampling()) {
     downsampling_.emplace(
-        Downsampling::ReadFromMessage(message.downsampling(), timeline_));
+        Downsampling::ReadFromMessage(message.downsampling(), *this));
   }
   Forkable<DiscreteTrajectory, Iterator, DiscreteTrajectoryTraits<Frame>>::
       FillSubTreeFromMessage(message, tracked);
@@ -676,16 +678,19 @@ absl::Status DiscreteTrajectory<Frame>::UpdateDownsampling(
       return right_endpoints.status();
     }
     if (right_endpoints->empty()) {
-      right_endpoints->push_back(dense_iterators.end() - 1);
+      right_endpoints->push_back(dense_iterators.cend() - 1);
     }
 
     // Poke holes in the timeline at the places given by |right_endpoints|.
-    TimelineConstIterator left = dense_iterators.front();
+    // Note that this code carefully avoids incrementing |dense_iterators[0]| as
+    // it may live in a different timeline than the others.
+    CHECK_LE(1, dense_iterators.size());
+    TimelineConstIterator left = dense_iterators[1];
     for (const auto& it_in_dense_iterators : right_endpoints.value()) {
       TimelineConstIterator const right = *it_in_dense_iterators;
-      // TODO(phl): Use of ++ won't work with forks.
-      timeline_.erase(++left, right);
+      timeline_.erase(left, right);
       left = right;
+      ++left;
     }
 
     // Re-append the dense iterators that have not been consumed.
@@ -693,6 +698,7 @@ absl::Status DiscreteTrajectory<Frame>::UpdateDownsampling(
       downsampling_->Append(*it);
     }
     CHECK(!downsampling_->empty());
+    CHECK(!downsampling_->full());
   }
   return absl::OkStatus();
 }

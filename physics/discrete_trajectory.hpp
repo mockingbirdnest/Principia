@@ -233,7 +233,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
         const;
     static Downsampling ReadFromMessage(
         serialization::DiscreteTrajectory::Downsampling const& message,
-        Timeline const& timeline);
+        DiscreteTrajectory const& trajectory);
 
    private:
     // The maximal number of dense intervals before downsampling occurs.
