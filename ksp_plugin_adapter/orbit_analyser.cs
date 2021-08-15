@@ -378,24 +378,24 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
                     "#Principia_OrbitAnalyser_OrbitDescription_StationaryPrimary",
                     L10N.NameWithoutArticle,
                     primary);
-                if (stationary_primary_string != null) {
-                  primary_string = stationary_primary_string;
-                  properties = "";
-                } else {
+                if (stationary_primary_string == null) {
                   properties = Localizer.Format(
                       "#Principia_OrbitAnalyser_OrbitDescription_Stationary");
+                } else {
+                  primary_string = stationary_primary_string;
+                  properties = "";
                 }
               } else {
                 var synchronous_primary_string = L10N.CelestialStringOrNull(
                     "#Principia_OrbitAnalyser_OrbitDescription_SynchronousPrimary",
                     L10N.NameWithoutArticle,
                     primary);
-                if (synchronous_primary_string != null) {
-                  primary_string = synchronous_primary_string;
-                } else {
+                if (synchronous_primary_string == null) {
                   properties +=
                       Localizer.Format(
                           "#Principia_OrbitAnalyser_OrbitDescription_Synchronous");
+                } else {
+                  primary_string = synchronous_primary_string;
                 }
               }
               break;
