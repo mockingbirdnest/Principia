@@ -935,7 +935,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         if (speed_display?.textTitle != null &&
             speed_display?.textSpeed != null &&
             !ferram_owns_the_speed_display) {
-          speed_display.textTitle.text = plotting_frame_selector_.ShortName();
+          speed_display.textTitle.text = plotting_frame_selector_.NavballName();
           var active_vessel_velocity =
               plugin_has_active_manageable_vessel
                   ? (Vector3d)plugin_.VesselVelocity(

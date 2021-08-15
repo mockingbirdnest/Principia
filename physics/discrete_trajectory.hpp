@@ -206,7 +206,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
     Downsampling(std::int64_t max_dense_intervals,
                  Length tolerance);
 
-    // Construction parameter.
+    // Construction parameters.
     std::int64_t max_dense_intervals() const;
     Length tolerance() const;
 
@@ -219,9 +219,11 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
     void ForgetAfter(Instant const& t);
     void ForgetBefore(Instant const& t);
 
-    // If the dense timeline has reached its capacity, swaps it with the
-    // parameter and returns true.
-    bool ExtractIfFull(std::vector<TimelineConstIterator>& dense_iterators);
+    bool empty() const;
+    bool full() const;
+
+    // Returns the |dense_iterators_|, giving ownership to the caller.
+    std::vector<TimelineConstIterator> dense_iterators();
 
     void WriteToMessage(
         not_null<serialization::DiscreteTrajectory::Downsampling*> message)
@@ -236,7 +238,8 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
     // The tolerance for downsampling with |FitHermiteSpline|.
     Length const tolerance_;
 
-    // Note that the iterators in this vector may belong to different maps.
+    // TODO(phl): Note that, with forks, the iterators in this vector may belong
+    // to different maps.
     std::vector<TimelineConstIterator> dense_iterators_;
   };
 
