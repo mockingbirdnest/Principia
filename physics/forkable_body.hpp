@@ -1,12 +1,13 @@
 ﻿
 #pragma once
 
+#include "physics/forkable.hpp"
+
 #include <optional>
 #include <set>
 #include <vector>
 
 #include "absl/container/inlined_vector.h"
-#include "physics/forkable.hpp"
 
 namespace principia {
 namespace physics {
