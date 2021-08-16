@@ -154,6 +154,12 @@ void DiscreteTrajectory<Frame>::AttachFork(
                                this_last->degrees_of_freedom);
   }
 
+  // If the downsampling starts at the fork time, make it point in the timeline
+  // of the parent.
+  if (fork->downsampling_.has_value()) {
+    fork->downsampling_->ReplaceFirstIfAt(this_last.current());
+  }
+
   // Attach |fork| to this trajectory.
   this->AttachForkToCopiedBegin(std::move(fork));
 
@@ -178,7 +184,15 @@ DiscreteTrajectory<Frame>::DetachFork() {
   CHECK(begin_it == timeline_.begin());
 
   // Detach this trajectory and tell the caller that it owns the pieces.
-  return this->DetachForkWithCopiedBegin();
+  auto detached = this->DetachForkWithCopiedBegin();
+
+  // If the downsampling starts at the fork time, make it point in the timeline
+  // of the detached object.
+  if (detached->downsampling_.has_value()) {
+    detached->downsampling_->ReplaceFirstIfAt(begin_it);
+  }
+
+  return detached;
 }
 
 template<typename Frame>
@@ -447,6 +461,15 @@ void DiscreteTrajectory<Frame>::Downsampling::ForgetBefore(Instant const& t) {
         return left->first < right;
       });
   dense_iterators_.erase(dense_iterators_.cbegin(), it);
+}
+
+template<typename Frame>
+void DiscreteTrajectory<Frame>::Downsampling::ReplaceFirstIfAt(
+    TimelineConstIterator const it) {
+  CHECK(!dense_iterators_.empty());
+  if (dense_iterators_.front()->first == it->first) {
+    dense_iterators_.front() = it;
+  }
 }
 
 template<typename Frame>

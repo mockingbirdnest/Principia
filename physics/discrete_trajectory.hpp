@@ -222,6 +222,10 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
     void ForgetAfter(Instant const& t);
     void ForgetBefore(Instant const& t);
 
+    // If the first dense iterator is at the time designated by |it|, replace it
+    // by |it|.  This is useful when attaching a fork.
+    void ReplaceFirstIfAt(TimelineConstIterator it);
+
     bool empty() const;
     bool full() const;
 

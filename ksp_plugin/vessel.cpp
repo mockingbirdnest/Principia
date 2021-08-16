@@ -534,8 +534,8 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
   } else {
     if (is_pre_grothendieck_haar) {
-      // The history is guaranteed to be non-empty because of
-      // CreatePrehistoryIfNeeded.
+      // The history is guaranteed to be non-empty because of the way
+      // CreateHistoryIfNeeded used to work.
       auto history = DiscreteTrajectory<Barycentric>::ReadFromMessage(
           message.history(),
           /*tracked=*/{&vessel->psychohistory_, &vessel->prediction_});
