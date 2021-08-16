@@ -209,19 +209,15 @@ internal class MapNodePool {
         case MapObject.ObjectType.Periapsis:
         case MapObject.ObjectType.Apoapsis: {
           CelestialBody celestial = properties.reference_frame.Centre();
-          string apsis_name = L10N.CelestialString(
-              properties.object_type == MapObject.ObjectType.Periapsis
-                  ? "#Principia_MapNode_Periapsis"
-                  : "#Principia_MapNode_Apoapsis",
-              L10N.NameWithoutArticle,
-              celestial);
           Vector3d position = properties.world_position;
           double speed = properties.velocity.magnitude;
-          caption.Header = Localizer.Format("#Principia_MapNode_ApsisHeader",
-                                            source,
-                                            apsis_name,
-                                            celestial.GetAltitude(position).
-                                                FormatN(0));
+          caption.Header = L10N.CelestialString(
+              properties.object_type == MapObject.ObjectType.Periapsis
+                  ? "#Principia_MapNode_PeriapsisHeader"
+                  : "#Principia_MapNode_ApoapsisHeader",
+              new[]{celestial},
+              source,
+              celestial.GetAltitude(position).FormatN(0));
           caption.captionLine2 =
               Localizer.Format("#Principia_MapNode_ApsisCaptionLine2",
                                speed.FormatN(0));
