@@ -530,6 +530,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
         /*tracked=*/{&vessel->psychohistory_});
     vessel->prehistory_->Append(history->begin()->time,
                                 history->begin()->degrees_of_freedom);
+    vessel->history_ = history.get();
     vessel->prehistory_->AttachFork(std::move(history));
     vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
   } else {
@@ -541,6 +542,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
           /*tracked=*/{&vessel->psychohistory_, &vessel->prediction_});
       vessel->prehistory_->Append(history->begin()->time,
                                   history->begin()->degrees_of_freedom);
+      vessel->history_ = history.get();
       vessel->prehistory_->AttachFork(std::move(history));
     } else {
       vessel->prehistory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
