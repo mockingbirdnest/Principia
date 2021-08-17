@@ -80,10 +80,18 @@ std::uint64_t SerializePointer(T* t) {
 
 }  // namespace
 
-// To remove the check, define this macro to be:
-//   auto aa = (a); auto bb = (b);
-#define PRINCIPIA_CHECK_EQ(a, b) CHECK((a) == (b))
+#define PRINCIPIA_PERFORM_RUN_CHECKS 1
 #define PRINCIPIA_SET_VERBOSE_LOGGING 1
+
+#if PRINCIPIA_PERFORM_RUN_CHECKS
+#define PRINCIPIA_CHECK_EQ(a, b) CHECK((a) == (b))
+#else
+#define PRINCIPIA_CHECK_EQ(a, b)          \
+  {                                       \
+    [[maybe_unused]] auto const aa = (a); \
+    [[maybe_unused]] auto const bb = (b); \
+  }
+#endif
 
 #include "journal/profiles.generated.cc"
 
