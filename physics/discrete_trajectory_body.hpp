@@ -253,7 +253,9 @@ void DiscreteTrajectory<Frame>::SetDownsampling(
   // TODO(phl): If this trajectory is a fork, the fork point should be appended
   // first.
   for (auto it = timeline_.cbegin(); it != timeline_.cend(); ++it) {
-    downsampling_->Append(it);
+    // When reading pre-陈景润 saves we may call this function on long
+    // trajectories, in which case we need to downsample as we go.
+    UpdateDownsampling(it);
   }
 }
 template<typename Frame>
