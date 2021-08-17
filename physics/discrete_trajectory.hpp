@@ -206,8 +206,15 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // A helper class to manage a dense timeline.
   class Downsampling {
    public:
-    Downsampling(std::int64_t max_dense_intervals,
-                 Length tolerance);
+    // |max_dense_intervals| is the maximal number of dense intervals before
+    // downsampling occurs.  |tolerance| is the tolerance for downsampling with
+    // |FitHermiteSpline|.  The function |iterator_for_time| must be able to
+    // convert a time to a timeline iterator irrespective of the fork structure
+    // (it must die if the time does not exist in the corresponding trajectory).
+    Downsampling(
+        std::int64_t max_dense_intervals,
+        Length tolerance,
+        std::function<TimelineConstIterator(Instant const&)> iterator_for_time);
 
     // Construction parameters.
     std::int64_t max_dense_intervals() const;
@@ -226,7 +233,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
     bool full() const;
 
     // Returns the |dense_iterators_|, giving ownership to the caller.
-    std::vector<TimelineConstIterator> dense_iterators();
+    std::vector<TimelineConstIterator> ExtractDenseIterators();
 
     void WriteToMessage(
         not_null<serialization::DiscreteTrajectory::Downsampling*> message)
@@ -236,13 +243,27 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
         DiscreteTrajectory const& trajectory);
 
    private:
-    // The maximal number of dense intervals before downsampling occurs.
-    std::int64_t const max_dense_intervals_;
-    // The tolerance for downsampling with |FitHermiteSpline|.
-    Length const tolerance_;
+    // Updates the first dense iterator from the start time.
+    void UpdateDenseIteratorsIfNeeded();
 
-    // Note that, because of forks, the iterators in this vector may belong to
-    // different maps.
+    // Clears the start time if there are no dense iterators.
+    void UpdateStartTimeIfNeeded();
+
+    std::int64_t const max_dense_intervals_;
+    Length const tolerance_;
+    std::function<TimelineConstIterator(Instant const&)> const
+        iterator_for_time_;
+
+    // The first time may be the fork time of the trajectory, in which case it's
+    // not in the same timeline as the other times.  Furthermore, this can
+    // change if a trajectory is attached to/detached from another trajectory.
+    // Thus, we consider the |start_time_| the source of truth and recompute the
+    // first element of |dense_iterators_| as needed using |iterator_for_time_|.
+    std::optional<Instant> start_time_;
+
+    // The iterators in this vector may belong to different maps.  The first
+    // iterator should not be used without calling
+    // |UpdateDenseIteratorsIfNeeded| first.
     std::vector<TimelineConstIterator> dense_iterators_;
   };
 
