@@ -502,7 +502,8 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
           L10N.Standalone(celestial.NameWithoutArticle()));
       UnityEngine.GUILayout.FlexibleSpace();
       if (celestial.is_root()) {
-        UnityEngine.GUILayout.Label("Pin");
+        UnityEngine.GUILayout.Label(
+            Localizer.Format("#Principia_ReferenceFrameSelector_Pin"));
       } else if (UnityEngine.GUILayout.Toggle(pinned_[celestial], "") !=
                  pinned_[celestial]) {
         pinned_[celestial] = !pinned_[celestial];
