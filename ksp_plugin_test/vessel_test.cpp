@@ -20,6 +20,7 @@
 #include "physics/rigid_motion.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/mock_ephemeris.hpp"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -43,6 +44,7 @@ using physics::MockEphemeris;
 using physics::RigidMotion;
 using physics::RotatingBody;
 using quantities::MomentOfInertia;
+using quantities::Pow;
 using quantities::Torque;
 using quantities::si::Degree;
 using quantities::si::Kilogram;
@@ -104,6 +106,11 @@ class VesselTest : public testing::Test {
 
   bool IsCollapsible() const {
     return vessel_.IsCollapsible();
+  }
+
+  void WriteCheckpointToMessage(
+      not_null<serialization::Vessel*> const message) const {
+    vessel_.checkpointer_->WriteToMessage(message->mutable_checkpoint());
   }
 
   MockEphemeris<Barycentric> ephemeris_;
@@ -484,6 +491,132 @@ TEST_F(VesselTest, IsCollapsible) {
     // A pile-up with an extra part.
     EXPECT_FALSE(IsCollapsible());
   }
+}
+
+TEST_F(VesselTest, Checkpointing) {
+  EXPECT_CALL(ephemeris_, t_max())
+      .WillRepeatedly(Return(astronomy::J2000 + 30 * Second));
+  EXPECT_CALL(
+      ephemeris_,
+      FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
+      .Times(AnyNumber());
+  EXPECT_CALL(
+      ephemeris_,
+      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 30 * Second, _, _))
+      .Times(AnyNumber());
+  vessel_.CreatePrehistoryIfNeeded(astronomy::J2000);
+
+  auto const pile_up =
+      std::make_shared<PileUp>(/*parts=*/std::list<not_null<Part*>>{p1_, p2_},
+                                Instant{},
+                                DefaultPsychohistoryParameters(),
+                                DefaultHistoryParameters(),
+                                &ephemeris_,
+                                /*deletion_callback=*/nullptr);
+  p1_->set_containing_pile_up(pile_up);
+  p2_->set_containing_pile_up(pile_up);
+
+  // Free-fall trajectory.  This creates a checkpoint because the prehistory is
+  // not collapsible.
+  Time t;
+  for (; t <= 10 * Second; t += 1 * Second) {
+    p1_->AppendToHistory(
+        astronomy::J2000 + t,
+        DegreesOfFreedom<Barycentric>(
+            Barycentric::origin +
+                Displacement<Barycentric>({t * 1 * Metre / Second,
+                                           t * 2 * Metre / Second,
+                                           t * 3 * Metre / Second}),
+            Velocity<Barycentric>({1 * Metre / Second,
+                                   2 * Metre / Second,
+                                   3 * Metre / Second})));
+    p2_->AppendToHistory(
+        astronomy::J2000 + t,
+        DegreesOfFreedom<Barycentric>(
+            Barycentric::origin +
+                Displacement<Barycentric>({t * 4 * Metre / Second,
+                                           t * 5 * Metre / Second,
+                                           t * 6 * Metre / Second}),
+            Velocity<Barycentric>({4 * Metre / Second,
+                                   5 * Metre / Second,
+                                   6 * Metre / Second})));
+  }
+
+  vessel_.DetectCollapsibilityChange();
+  vessel_.AdvanceTime();
+
+  // Apply a force.  This segment is not collapsible.
+  p1_->apply_intrinsic_force(
+      Vector<Force, Barycentric>({1 * Newton, 0 * Newton, 0 * Newton}));
+  // TODO(phl): The trajectory is not continuous and not consistent with the
+  // force because everything is hard in tests.
+  for (; t <= 25 * Second; t += 1 * Second) {
+    p1_->AppendToHistory(
+        astronomy::J2000 + t,
+        DegreesOfFreedom<Barycentric>(
+            Barycentric::origin +
+                Displacement<Barycentric>(
+                    {Pow<2>(t) * 1 * Metre / Second / Second,
+                     Pow<2>(t) * 2 * Metre / Second / Second,
+                     Pow<2>(t) * 3 * Metre / Second / Second}),
+            Velocity<Barycentric>({2 * t * 1 * Metre / Second / Second,
+                                   2 * t * 2 * Metre / Second / Second,
+                                   2 * t * 3 * Metre / Second / Second})));
+    p2_->AppendToHistory(
+        astronomy::J2000 + t,
+        DegreesOfFreedom<Barycentric>(
+            Barycentric::origin +
+                Displacement<Barycentric>(
+                    {Pow<2>(t) * 4 * Metre / Second / Second,
+                     Pow<2>(t) * 5 * Metre / Second / Second,
+                     Pow<2>(t) * 6 * Metre / Second / Second}),
+            Velocity<Barycentric>({2 * t * 4 * Metre / Second / Second,
+                                   2 * t * 5 * Metre / Second / Second,
+                                   2 * t * 6 * Metre / Second / Second})));
+  }
+
+  vessel_.DetectCollapsibilityChange();
+  vessel_.AdvanceTime();
+
+  // Remove the force.  This creates a checkpoint because we closed a non-
+  // collapsible segment.
+  p1_->clear_intrinsic_force();
+  // TODO(phl): Again, no continuity.
+  for (; t <= 30 * Second; t += 1 * Second) {
+    p1_->AppendToHistory(
+        astronomy::J2000 + t,
+        DegreesOfFreedom<Barycentric>(
+            Barycentric::origin +
+                Displacement<Barycentric>({t * 1 * Metre / Second,
+                                           t * 2 * Metre / Second,
+                                           t * 3 * Metre / Second}),
+            Velocity<Barycentric>({1 * Metre / Second,
+                                   2 * Metre / Second,
+                                   3 * Metre / Second})));
+    p2_->AppendToHistory(
+        astronomy::J2000 + t,
+        DegreesOfFreedom<Barycentric>(
+            Barycentric::origin +
+                Displacement<Barycentric>({t * 4 * Metre / Second,
+                                           t * 5 * Metre / Second,
+                                           t * 6 * Metre / Second}),
+            Velocity<Barycentric>({4 * Metre / Second,
+                                   5 * Metre / Second,
+                                   6 * Metre / Second})));
+  }
+
+  vessel_.DetectCollapsibilityChange();
+  vessel_.AdvanceTime();
+
+  serialization::Vessel message;
+  WriteCheckpointToMessage(&message);
+  CHECK_EQ(2, message.checkpoint_size());
+  CHECK_EQ(0, message.checkpoint(0).time().scalar().magnitude());
+  CHECK_EQ(0, message.checkpoint(0).segment().children_size());
+  CHECK_EQ(1, message.checkpoint(0).segment().zfp().timeline_size());
+  CHECK_EQ(10, message.checkpoint(1).time().scalar().magnitude());
+  CHECK_EQ(0, message.checkpoint(1).segment().children_size());
+  CHECK_EQ(16, message.checkpoint(1).segment().zfp().timeline_size());
 }
 
 TEST_F(VesselTest, SerializationSuccess) {

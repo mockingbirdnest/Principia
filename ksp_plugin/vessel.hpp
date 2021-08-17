@@ -17,6 +17,7 @@
 #include "ksp_plugin/orbit_analyser.hpp"
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/pile_up.hpp"
+#include "physics/checkpointer.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massless_body.hpp"
@@ -31,6 +32,7 @@ using base::not_null;
 using base::RecurringThread;
 using geometry::Instant;
 using geometry::Vector;
+using physics::Checkpointer;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
@@ -213,6 +215,13 @@ class Vessel {
       PileUp::PileUpForSerializationIndex const&
           pile_up_for_serialization_index);
 
+  // Return functions that can be passed to a |Checkpointer| to write this
+  // vessel to a checkpoint or read it back.
+  Checkpointer<serialization::Vessel>::Writer
+  MakeCheckpointerWriter();
+  Checkpointer<serialization::Vessel>::Reader
+  MakeCheckpointerReader();
+
   static void MakeAsynchronous();
   static void MakeSynchronous();
 
@@ -270,6 +279,8 @@ class Vessel {
 
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
   std::set<PartId> kept_parts_;
+
+  not_null<std::unique_ptr<Checkpointer<serialization::Vessel>>> checkpointer_;
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
 

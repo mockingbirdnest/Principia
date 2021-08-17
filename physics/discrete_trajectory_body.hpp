@@ -124,6 +124,10 @@ void DiscreteTrajectory<Frame>::AttachFork(
     not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> fork) {
   CHECK(fork->is_root());
   CHECK(!this->Empty());
+  // It is easy to mess up forks and to end up with a trajectory which is its
+  // own parent.  This check catches that problem.  It's not foolproof (there
+  // are more complicated anomalies that can arise) but it's still useful.
+  CHECK(fork.get() != this);
 
   auto& fork_timeline = fork->timeline_;
   auto const this_last = --this->end();

@@ -71,6 +71,9 @@ Vessel::Vessel(GUID guid,
             return FlowPrognostication(parameters);
           },
           20ms),  // 50 Hz.
+      checkpointer_(make_not_null_unique<Checkpointer<serialization::Vessel>>(
+          MakeCheckpointerWriter(),
+          MakeCheckpointerReader())),
       prehistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
   // Can't create the |history_|, |psychohistory_| and |prediction_| here
   // because |prehistory_| is empty;
@@ -169,7 +172,15 @@ void Vessel::DetectCollapsibilityChange() {
     // segment (but not vice-versa).  If the segment being closed is a very
     // short collapsible one (e.g., no downsampling took place) we could
     // consider merging it with its predecessor and avoiding the creation of a
-    // new segment.
+    // new segment.  The checkpointing code below would remain correct.
+
+    if (!is_collapsible_) {
+      // If the segment that is being closed is not collapsible, we have no way
+      // to reconstruct it, so we must serialize it in a checkpoint.  Note that
+      // the last point of the history specifies the initial conditions of the
+      // next (collapsible) segment.
+      checkpointer_->WriteToCheckpoint(history_->Fork()->time);
+    }
     auto psychohistory = psychohistory_->DetachFork();
     history_ = history_->NewForkAtLast();
     history_->SetDownsampling(MaxDenseIntervals, DownsamplingTolerance);
@@ -583,6 +594,23 @@ void Vessel::FillContainingPileUpsFromMessage(
   }
 }
 
+Checkpointer<serialization::Vessel>::Writer Vessel::MakeCheckpointerWriter() {
+  return [this](not_null<serialization::Vessel::Checkpoint*> const message) {
+    auto const penultimate_history_segment = history_->parent();
+    auto last_history_segment = history_->DetachFork();
+    last_history_segment->WriteToMessage(message->mutable_segment(),
+                                         /*excluded=*/{psychohistory_},
+                                         /*tracked=*/{});
+    penultimate_history_segment->AttachFork(std::move(last_history_segment));
+  };
+}
+
+Checkpointer<serialization::Vessel>::Reader Vessel::MakeCheckpointerReader() {
+  return [this](serialization::Vessel::Checkpoint const& message) {
+    return absl::OkStatus();
+  };
+}
+
 void Vessel::MakeAsynchronous() {
   synchronous_ = false;
 }
@@ -596,6 +624,9 @@ Vessel::Vessel()
       prediction_adaptive_step_parameters_(DefaultPredictionParameters()),
       parent_(testing_utilities::make_not_null<Celestial const*>()),
       ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
+      checkpointer_(make_not_null_unique<Checkpointer<serialization::Vessel>>(
+          /*reader=*/nullptr,
+          /*writer=*/nullptr)),
       prehistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       prognosticator_(nullptr, 20ms) {}
 
