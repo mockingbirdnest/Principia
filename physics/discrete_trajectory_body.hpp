@@ -178,9 +178,7 @@ DiscreteTrajectory<Frame>::DetachFork() {
   CHECK(begin_it == timeline_.begin());
 
   // Detach this trajectory and tell the caller that it owns the pieces.
-  auto detached = this->DetachForkWithCopiedBegin();
-
-  return detached;
+  return this->DetachForkWithCopiedBegin();
 }
 
 template<typename Frame>
