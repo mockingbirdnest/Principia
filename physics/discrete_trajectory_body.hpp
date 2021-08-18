@@ -269,7 +269,9 @@ void DiscreteTrajectory<Frame>::SetDownsampling(
     downsampling_->Append(this->Fork().current());
   }
   for (auto it = timeline_.cbegin(); it != timeline_.cend(); ++it) {
-    downsampling_->Append(it);
+    // When reading pre-陈景润 saves we may call this function on long
+    // trajectories, in which case we need to downsample as we go.
+    UpdateDownsampling(it);
   }
 }
 template<typename Frame>
