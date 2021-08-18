@@ -63,11 +63,12 @@ internal static class L10N {
   }
 
   public static string NameWithArticle(this CelestialBody body) {
-    return StartsWithCapitalizedDefiniteArticle(body.displayName)
-        ? body.displayName.Contains('^')
-              ? body.displayName.Split(new[]{' '}, 2)[1] + "d"
-              : body.displayName.Split(new[]{' '}, 2)[1] + "^d"
-        : body.displayName;
+    if (!StartsWithCapitalizedDefiniteArticle(body.displayName)) {
+      return body.displayName;
+    }
+    string without_literal_article = body.displayName.Split(new[]{' '}, 2)[1];
+    return body.displayName.Contains('^') ? without_literal_article + "d"
+                                          : without_literal_article + "^d";
   }
 
   private static string Initial(this CelestialBody body) {
