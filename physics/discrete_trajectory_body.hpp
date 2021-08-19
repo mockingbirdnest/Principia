@@ -500,76 +500,67 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     std::vector<DiscreteTrajectory<Frame>*>& forks) const {
   Forkable<DiscreteTrajectory, Iterator, DiscreteTrajectoryTraits<Frame>>::
       WriteSubTreeToMessage(message, forks);
-  if (Flags::IsPresent("zfp", "off")) {
-    for (auto const& [instant, degrees_of_freedom] : timeline_) {
-      auto const instantaneous_degrees_of_freedom = message->add_timeline();
-      instant.WriteToMessage(
-          instantaneous_degrees_of_freedom->mutable_instant());
-      degrees_of_freedom.WriteToMessage(
-          instantaneous_degrees_of_freedom->mutable_degrees_of_freedom());
+
+  int const timeline_size = timeline_.size();
+  auto* const zfp = message->mutable_zfp();
+  zfp->set_timeline_size(timeline_size);
+
+  // The timeline data is made dimensionless and stored in separate arrays per
+  // coordinate.  We expect strong correlations within a coordinate over time,
+  // but not between coordinates.
+  std::vector<double> t;
+  std::vector<double> qx;
+  std::vector<double> qy;
+  std::vector<double> qz;
+  std::vector<double> px;
+  std::vector<double> py;
+  std::vector<double> pz;
+  t.reserve(timeline_size);
+  qx.reserve(timeline_size);
+  qy.reserve(timeline_size);
+  qz.reserve(timeline_size);
+  px.reserve(timeline_size);
+  py.reserve(timeline_size);
+  pz.reserve(timeline_size);
+  std::optional<Instant> previous_instant;
+  Time max_Δt;
+  std::string* const zfp_timeline = zfp->mutable_timeline();
+  for (auto const& [instant, degrees_of_freedom] : timeline_) {
+    auto const q = degrees_of_freedom.position() - Frame::origin;
+    auto const p = degrees_of_freedom.velocity();
+    t.push_back((instant - Instant{}) / Second);
+    qx.push_back(q.coordinates().x / Metre);
+    qy.push_back(q.coordinates().y / Metre);
+    qz.push_back(q.coordinates().z / Metre);
+    px.push_back(p.coordinates().x / (Metre / Second));
+    py.push_back(p.coordinates().y / (Metre / Second));
+    pz.push_back(p.coordinates().z / (Metre / Second));
+    if (previous_instant.has_value()) {
+      max_Δt = std::max(max_Δt, instant - *previous_instant);
     }
-  } else {
-    int const timeline_size = timeline_.size();
-    auto* const zfp = message->mutable_zfp();
-    zfp->set_timeline_size(timeline_size);
-
-    // The timeline data is made dimensionless and stored in separate arrays per
-    // coordinate.  We expect strong correlations within a coordinate over time,
-    // but not between coordinates.
-    std::vector<double> t;
-    std::vector<double> qx;
-    std::vector<double> qy;
-    std::vector<double> qz;
-    std::vector<double> px;
-    std::vector<double> py;
-    std::vector<double> pz;
-    t.reserve(timeline_size);
-    qx.reserve(timeline_size);
-    qy.reserve(timeline_size);
-    qz.reserve(timeline_size);
-    px.reserve(timeline_size);
-    py.reserve(timeline_size);
-    pz.reserve(timeline_size);
-    std::optional<Instant> previous_instant;
-    Time max_Δt;
-    std::string* const zfp_timeline = zfp->mutable_timeline();
-    for (auto const& [instant, degrees_of_freedom] : timeline_) {
-      auto const q = degrees_of_freedom.position() - Frame::origin;
-      auto const p = degrees_of_freedom.velocity();
-      t.push_back((instant - Instant{}) / Second);
-      qx.push_back(q.coordinates().x / Metre);
-      qy.push_back(q.coordinates().y / Metre);
-      qz.push_back(q.coordinates().z / Metre);
-      px.push_back(p.coordinates().x / (Metre / Second));
-      py.push_back(p.coordinates().y / (Metre / Second));
-      pz.push_back(p.coordinates().z / (Metre / Second));
-      if (previous_instant.has_value()) {
-        max_Δt = std::max(max_Δt, instant - *previous_instant);
-      }
-      previous_instant = instant;
-    }
-
-    // Times are exact.
-    ZfpCompressor time_compressor(0);
-    // Lengths are approximated to the downsampling tolerance if downsampling is
-    // enabled, otherwise they are exact.
-    Length const length_tolerance =
-        downsampling_.has_value() ? downsampling_->tolerance() : Length();
-    ZfpCompressor length_compressor(length_tolerance / Metre);
-    // Speeds are approximated based on the length tolerance and the maximum
-    // step in the timeline.
-    ZfpCompressor const speed_compressor((length_tolerance / max_Δt) /
-                                         (Metre / Second));
-
-    ZfpCompressor::WriteVersion(message);
-    time_compressor.WriteToMessageMultidimensional<2>(t, zfp_timeline);
-    length_compressor.WriteToMessageMultidimensional<2>(qx, zfp_timeline);
-    length_compressor.WriteToMessageMultidimensional<2>(qy, zfp_timeline);
-    length_compressor.WriteToMessageMultidimensional<2>(qz, zfp_timeline);
-    speed_compressor.WriteToMessageMultidimensional<2>(px, zfp_timeline);
-    speed_compressor.WriteToMessageMultidimensional<2>(py, zfp_timeline);
-    speed_compressor.WriteToMessageMultidimensional<2>(pz, zfp_timeline);
+    previous_instant = instant;
   }
+
+  // Times are exact.
+  ZfpCompressor time_compressor(0);
+  // Lengths are approximated to the downsampling tolerance if downsampling is
+  // enabled, otherwise they are exact.
+  Length const length_tolerance =
+      downsampling_.has_value() ? downsampling_->tolerance() : Length();
+  ZfpCompressor length_compressor(length_tolerance / Metre);
+  // Speeds are approximated based on the length tolerance and the maximum
+  // step in the timeline.
+  ZfpCompressor const speed_compressor((length_tolerance / max_Δt) /
+                                        (Metre / Second));
+
+  ZfpCompressor::WriteVersion(message);
+  time_compressor.WriteToMessageMultidimensional<2>(t, zfp_timeline);
+  length_compressor.WriteToMessageMultidimensional<2>(qx, zfp_timeline);
+  length_compressor.WriteToMessageMultidimensional<2>(qy, zfp_timeline);
+  length_compressor.WriteToMessageMultidimensional<2>(qz, zfp_timeline);
+  speed_compressor.WriteToMessageMultidimensional<2>(px, zfp_timeline);
+  speed_compressor.WriteToMessageMultidimensional<2>(py, zfp_timeline);
+  speed_compressor.WriteToMessageMultidimensional<2>(pz, zfp_timeline);
 
   if (downsampling_.has_value()) {
     downsampling_->WriteToMessage(message->mutable_downsampling());
@@ -582,7 +573,7 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     std::vector<DiscreteTrajectory<Frame>**> const& forks) {
   bool const is_pre_frobenius = !message.has_zfp();
   LOG_IF(WARNING, is_pre_frobenius)
-      << "Reading pre-Frobenius PolynomialInMonomialBasis";
+      << "Reading pre-Frobenius DiscreteTrajectory";
   if (is_pre_frobenius) {
     for (auto const& instantaneous_dof : message.timeline()) {
       Append(Instant::ReadFromMessage(instantaneous_dof.instant()),
