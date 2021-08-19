@@ -892,12 +892,17 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
     deserialized_circle->Append(t.value, dof);
   }
   serialization::DiscreteTrajectory message;
-  deserialized_circle->WriteToMessage(&message, /*forks=*/{}, /*exact=*/{});
+  deserialized_circle->WriteToMessage(
+      &message,
+      /*forks=*/{},
+      /*exact=*/{circle.LowerBound(t0_ + 2 * Second),
+                 circle.LowerBound(t0_ + 3 * Second)});
   deserialized_circle =
       DiscreteTrajectory<World>::ReadFromMessage(message, /*forks=*/{});
 
   // Serialization/deserialization preserves the size, the times, and nudges the
-  // positions by less than the tolerance.
+  // positions by less than the tolerance.  It also preserve the degrees of
+  // freedom at the "exact" iterators.
   EXPECT_THAT(circle.Size(), Eq(39));
   EXPECT_THAT(deserialized_circle->Size(), circle.Size());
   for (auto it1 = circle.begin(), it2 = deserialized_circle->begin();
@@ -911,6 +916,18 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
                 AbsoluteErrorFrom(it1->degrees_of_freedom.velocity(),
                                   Lt(1.1 * Milli(Metre) / Second)));
   }
+  EXPECT_NE(
+      deserialized_circle->LowerBound(t0_ + 1 * Second)->degrees_of_freedom,
+      circle.LowerBound(t0_ + 1 * Second)->degrees_of_freedom);
+  EXPECT_EQ(
+      deserialized_circle->LowerBound(t0_ + 2 * Second)->degrees_of_freedom,
+      circle.LowerBound(t0_ + 2 * Second)->degrees_of_freedom);
+  EXPECT_EQ(
+      deserialized_circle->LowerBound(t0_ + 3 * Second)->degrees_of_freedom,
+      circle.LowerBound(t0_ + 3 * Second)->degrees_of_freedom);
+  EXPECT_NE(
+      deserialized_circle->LowerBound(t0_ + 4 * Second)->degrees_of_freedom,
+      circle.LowerBound(t0_ + 4 * Second)->degrees_of_freedom);
 
   // Appending may result in different downsampling because the positions differ
   // a bit.
