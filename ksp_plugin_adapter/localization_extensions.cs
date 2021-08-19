@@ -54,6 +54,13 @@ internal static class L10N {
     return qualifiers == "" ? s : $"{s}^{qualifiers}";
   }
 
+  // Returns the localized name with the appropriate Lingoona grammatical tags.
+  // Note that for bodies that may have an article (the Moon, la Terre), the
+  // article is absent, and instead the gender is indicated in lowercase
+  // (Moon^n, Terre^f), so that an article may be requested using a placeholder
+  // of the form <<A:1>>.
+  // Bodies that may not have an article (Saturn, Vénus) have an uppercase
+  // gender tag (Saturn^N, Vénus^F).
   public static string Name(this CelestialBody body) {
     string name = LingoonaUnqualified(body.displayName);
     string qualifiers = LingoonaQualifiers(body.displayName);

@@ -256,7 +256,7 @@ internal class MapNodePool {
           CelestialBody celestial = properties.reference_frame.Centre();
           caption.Header = Localizer.Format("#Principia_MapNode_ImpactHeader",
                                             source,
-                                            celestial.name);
+                                            celestial.Name());
           caption.captionLine1 = "";
           caption.captionLine2 = "";
           break;
