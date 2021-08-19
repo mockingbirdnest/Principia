@@ -163,15 +163,15 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   }
 
   private static string TargetFrameAbbreviation(Vessel target) {
-    return L10N.FormatOrNull(
+    return L10N.CelestialStringOrNull(
         "#Principia_ReferenceFrameSelector_Abbreviation_Target",
-        target.orbit.referenceBody.name[0]);
+        new[]{target.orbit.referenceBody});
   }
 
   private static string TargetFrameNavballName(Vessel target) {
-    return TargetFrameAbbreviation(target) ?? L10N.FormatOrNull(
+    return TargetFrameAbbreviation(target) ?? L10N.CelestialStringOrNull(
         "#Principia_ReferenceFrameSelector_NavballName_Target",
-        target.orbit.referenceBody.name[0]) ?? TargetFrameName(target);
+        new[]{target.orbit.referenceBody}) ?? TargetFrameName(target);
   }
 
   private static string TargetFrameSelectorText(Vessel target) {
