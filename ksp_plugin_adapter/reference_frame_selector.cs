@@ -280,19 +280,19 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
         return Localizer.Format(
             "#Principia_ReferenceFrameSelector_Tooltip_BodyCentredNonRotating",
             name,
-            selected.NameWithArticle());
+            selected.Name());
       case FrameType.BARYCENTRIC_ROTATING:
         return "DEPRECATED";
       case FrameType.BODY_CENTRED_PARENT_DIRECTION:
         return Localizer.Format(
             "#Principia_ReferenceFrameSelector_Tooltip_BodyCentredParentDirection",
             name,
-            selected.NameWithArticle());
+            selected.Name());
       case FrameType.BODY_SURFACE:
         return Localizer.Format(
             "#Principia_ReferenceFrameSelector_Tooltip_BodySurface",
             name,
-            selected.NameWithArticle());
+            selected.Name());
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
     }
@@ -303,7 +303,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     return Localizer.Format(
         "#Principia_ReferenceFrameSelector_Description_Target",
         target.vesselName,
-        target.orbit.referenceBody.NameWithArticle());
+        target.orbit.referenceBody.Name());
   }
 
   private static string Description(FrameType type,
@@ -354,16 +354,16 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
          frame_type == FrameType.BODY_SURFACE)) {
       return Localizer.Format(
           "#Principia_ReferenceFrameSelector_ReferencePlane_Centred",
-          selected_celestial.NameWithArticle());
+          selected_celestial.Name());
     }
     string secondary =
         target_frame_selected
             ? Localizer.Format(
                 "#Principia_ReferenceFrameSelector_ReferencePlane_Secondary_Target")
-            : selected_celestial.NameWithArticle();
+            : selected_celestial.Name();
     string primary = target_frame_selected
-                         ? selected_celestial.NameWithArticle()
-                         : selected_celestial.referenceBody.NameWithArticle();
+                         ? selected_celestial.Name()
+                         : selected_celestial.referenceBody.Name();
     return Localizer.Format("#Principia_ReferenceFrameSelector_ReferencePlane",
                             secondary,
                             primary);
