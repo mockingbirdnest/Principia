@@ -148,6 +148,7 @@ class Forkable {
   bool Empty() const;
 
  protected:
+  using Timeline = typename Traits::Timeline;
   using TimelineConstIterator = typename Traits::TimelineConstIterator;
 
   // The API that must be implemented by subclasses.
@@ -206,7 +207,8 @@ class Forkable {
       std::vector<Tr4jectory*>& forks) const;
 
   void FillSubTreeFromMessage(serialization::DiscreteTrajectory const& message,
-                              std::vector<Tr4jectory**> const& forks);
+                              std::vector<Tr4jectory**> const& forks,
+                              Timeline const& exact);
 
  private:
   // Constructs an Iterator by wrapping the timeline iterator

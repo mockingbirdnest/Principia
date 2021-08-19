@@ -313,7 +313,8 @@ DegreesOfFreedom<Frame> DiscreteTrajectory<Frame>::EvaluateDegreesOfFreedom(
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteToMessage(
     not_null<serialization::DiscreteTrajectory*> const message,
-    std::vector<DiscreteTrajectory<Frame>*> const& forks)
+    std::vector<DiscreteTrajectory<Frame>*> const& forks,
+    std::vector<Iterator> const& exact)
     const {
   CHECK(this->is_root());
 
@@ -324,6 +325,13 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
                     [](DiscreteTrajectory<Frame>* const fork) {
                       return fork == nullptr;
                     }));
+
+  for (auto const& it : exact) {
+    auto* const serialized_exact = message->add_exact();
+    it->time.WriteToMessage(serialized_exact->mutable_instant());
+    it->degrees_of_freedom.WriteToMessage(
+        serialized_exact->mutable_degrees_of_freedom());
+  }
 }
 
 template<typename Frame>
@@ -332,13 +340,23 @@ not_null<std::unique_ptr<DiscreteTrajectory<Frame>>>
 DiscreteTrajectory<Frame>::ReadFromMessage(
     serialization::DiscreteTrajectory const& message,
     std::vector<DiscreteTrajectory<Frame>**> const& forks) {
+  // We use a Timeline as a convenient container for the exact points.
+  Timeline exact;
+  for (auto const& instantaneous_degrees_of_freedom : message.exact()) {
+    auto const t =
+        Instant::ReadFromMessage(instantaneous_degrees_of_freedom.instant());
+    auto const degrees_of_freedom = DegreesOfFreedom<Frame>::ReadFromMessage(
+        instantaneous_degrees_of_freedom.degrees_of_freedom());
+    exact.emplace_hint(exact.end(), t, degrees_of_freedom);
+  }
+
   auto trajectory = make_not_null_unique<DiscreteTrajectory>();
   CHECK(std::all_of(forks.begin(),
                     forks.end(),
                     [](DiscreteTrajectory<Frame>** const fork) {
                       return fork != nullptr && *fork == nullptr;
                     }));
-  trajectory->FillSubTreeFromMessage(message, forks);
+  trajectory->FillSubTreeFromMessage(message, forks, exact);
   return trajectory;
 }
 
@@ -570,7 +588,8 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
 template<typename Frame>
 void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     serialization::DiscreteTrajectory const& message,
-    std::vector<DiscreteTrajectory<Frame>**> const& forks) {
+    std::vector<DiscreteTrajectory<Frame>**> const& forks,
+    Timeline const& exact) {
   bool const is_pre_frobenius = !message.has_zfp();
   LOG_IF(WARNING, is_pre_frobenius)
       << "Reading pre-Frobenius DiscreteTrajectory";
@@ -610,7 +629,15 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
       Velocity<Frame> const p({px[i] * (Metre / Second),
                                py[i] * (Metre / Second),
                                pz[i] * (Metre / Second)});
-      Append(Instant() + t[i] * Second, DegreesOfFreedom<Frame>(q, p));
+
+      // See if this is a point whose degrees of freedom must be restored
+      // exactly.
+      Instant const time = Instant() + t[i] * Second;
+      if (auto it = exact.find(time); it == exact.cend()) {
+        Append(time, DegreesOfFreedom<Frame>(q, p));
+      } else {
+        Append(time, it->second);
+      }
     }
   }
   if (message.has_downsampling()) {
@@ -619,7 +646,7 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
         Downsampling::ReadFromMessage(message.downsampling(), timeline_));
   }
   Forkable<DiscreteTrajectory, Iterator, DiscreteTrajectoryTraits<Frame>>::
-      FillSubTreeFromMessage(message, forks);
+      FillSubTreeFromMessage(message, forks, exact);
 }
 
 template<typename Frame>

@@ -60,6 +60,9 @@ class DiscreteTrajectoryIterator
  protected:
   not_null<DiscreteTrajectoryIterator*> that() override;
   not_null<DiscreteTrajectoryIterator const*> that() const override;
+
+  template<typename F>
+  friend class internal_discrete_trajectory::DiscreteTrajectory;
 };
 
 }  // namespace internal_forkable
@@ -164,10 +167,12 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
 
   // This trajectory must be a root.  Only the given |forks| are serialized.
   // They must be descended from this trajectory.  The pointers in |forks| may
-  // be null at entry.
+  // be null at entry.  The points denoted by |exact| are written and re-read
+  // exactly and are not affected by any errors introduced by zfp compression.
   void WriteToMessage(
       not_null<serialization::DiscreteTrajectory*> message,
-      std::vector<DiscreteTrajectory<Frame>*> const& forks) const;
+      std::vector<DiscreteTrajectory<Frame>*> const& forks,
+      std::vector<Iterator> const& exact) const;
 
   // |forks| must have a size appropriate for the |message| being deserialized
   // and the orders of the |forks| must be consistent during serialization and
@@ -248,7 +253,8 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
 
   void FillSubTreeFromMessage(
       serialization::DiscreteTrajectory const& message,
-      std::vector<DiscreteTrajectory<Frame>**> const& forks);
+      std::vector<DiscreteTrajectory<Frame>**> const& forks,
+      Timeline const& exact);
 
   // Returns the Hermite interpolation for the left-open, right-closed
   // trajectory segment bounded above by |upper|.

@@ -678,7 +678,7 @@ TEST_F(DiscreteTrajectoryDeathTest, TrajectorySerializationError) {
     not_null<DiscreteTrajectory<World>*> const fork =
         massive_trajectory_->NewForkWithCopy(t1_);
     serialization::DiscreteTrajectory message;
-    fork->WriteToMessage(&message, /*forks=*/{});
+    fork->WriteToMessage(&message, /*forks=*/{}, /*exact=*/{});
   }, "is_root");
 }
 
@@ -701,9 +701,12 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   serialization::DiscreteTrajectory reference_message;
 
   // Don't serialize |fork0| and |fork4|.
-  massive_trajectory_->WriteToMessage(&message, {fork1, fork3, fork2});
+  massive_trajectory_->WriteToMessage(&message,
+                                      {fork1, fork3, fork2},
+                                      /*exact=*/{});
   massive_trajectory_->WriteToMessage(&reference_message,
-                                      {fork1, fork3, fork2});
+                                      {fork1, fork3, fork2},
+                                      /*exact=*/{});
 
   DiscreteTrajectory<World>* deserialized_fork1 = nullptr;
   DiscreteTrajectory<World>* deserialized_fork2 = nullptr;
@@ -721,7 +724,8 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   deserialized_trajectory->WriteToMessage(&message,
                                           {deserialized_fork1,
                                            deserialized_fork3,
-                                           deserialized_fork2});
+                                           deserialized_fork2},
+                                          /*exact=*/{});
   EXPECT_THAT(reference_message, EqualsProto(message));
   EXPECT_THAT(message.children_size(), Eq(2));
   EXPECT_THAT(message.zfp().timeline_size(), Eq(3));
@@ -888,7 +892,7 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
     deserialized_circle->Append(t.value, dof);
   }
   serialization::DiscreteTrajectory message;
-  deserialized_circle->WriteToMessage(&message, /*forks=*/{});
+  deserialized_circle->WriteToMessage(&message, /*forks=*/{}, /*exact=*/{});
   deserialized_circle =
       DiscreteTrajectory<World>::ReadFromMessage(message, /*forks=*/{});
 
