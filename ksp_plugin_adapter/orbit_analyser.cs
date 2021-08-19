@@ -278,7 +278,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
         } else {
           duration_in_revolutions = Localizer.Format(
               "#Principia_OrbitAnalyser_Warning_NoElements2",
-              primary.NameWithArticle());
+              primary.Name());
         }
         multiline_style = Style.Warning(multiline_style);
       }
@@ -291,7 +291,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
               : Localizer.Format(
                   "#Principia_OrbitAnalyser_AnalysisDescription",
                   predicted_vessel.vesselName,
-                  primary.NameWithArticle(),
+                  primary.Name(),
                   mission_duration.FormatDuration(show_seconds: false),
                   duration_in_revolutions);
 

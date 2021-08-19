@@ -30,7 +30,7 @@ internal static class L10N {
   }
 
   public static string StandaloneName(this CelestialBody celestial) {
-    return Standalone(celestial.NameWithoutArticle());
+    return Standalone(celestial.Name());
   }
 
   private static bool StartsWithCapitalizedDefiniteArticle(string s) {
@@ -54,27 +54,28 @@ internal static class L10N {
     return qualifiers == "" ? s : $"{s}^{qualifiers}";
   }
 
-  private static string NameWithoutArticle(this CelestialBody body) {
-    return StartsWithCapitalizedDefiniteArticle(body.displayName)
-        ? LingoonaQualify(
-              body.displayName.Split(new[]{' '}, 2)[1],
-              LingoonaQualifiers(body.displayName).Replace("d", ""))
-        : body.displayName;
-  }
-
-  public static string NameWithArticle(this CelestialBody body) {
-    if (!StartsWithCapitalizedDefiniteArticle(body.displayName)) {
-      return body.displayName;
+  public static string Name(this CelestialBody body) {
+    string name = LingoonaUnqualified(body.displayName);
+    string qualifiers = LingoonaQualifiers(body.displayName);
+    if (qualifiers == "") {
+      // Stock English has everything as a neuter name (^N).
+      // For mods that did not try tagging grammar (which is hardly a problem
+      // in English since stock strings do not add articles), tag as neuter name
+      // (and switch to neuter noun below if we see an article).
+      qualifiers = "N";
     }
-    string without_literal_article = body.displayName.Split(new[]{' '}, 2)[1];
-    return body.displayName.Contains('^') ? without_literal_article + "d"
-                                          : without_literal_article + "^d";
+    if (StartsWithCapitalizedDefiniteArticle(body.displayName)) {
+      name = name.Split(new[]{' '}, 2)[1];
+      // Lowercase the gender, allowing for articles.
+      qualifiers = char.ToLower(qualifiers[0]) + qualifiers.Substring(1);
+    }
+    return LingoonaQualify(name, qualifiers);
   }
 
   private static string Initial(this CelestialBody body) {
     return IsCJKV(LingoonaUnqualified(body.displayName))
         ? body.displayName
-        : body.NameWithoutArticle()[0].ToString();
+        : body.Name()[0].ToString();
   }
 
   public static string FormatOrNull(string template, params object[] args) {
@@ -100,9 +101,7 @@ internal static class L10N {
                                        params object[] args) {
     string[] names =
       (from body in bodies
-       from name in new[]{NameWithArticle(body),
-                          NameWithoutArticle(body),
-                          Initial(body)}
+       from name in new[]{body.Name(), body.Initial()}
        select name).Concat(from arg in args select arg.ToString()).ToArray();
     return CelestialOverride(template, names, bodies) ??
         Localizer.Format(template, names);
@@ -113,9 +112,7 @@ internal static class L10N {
                                              params object[] args) {
     string[] names =
       (from body in bodies
-       from name in new[]{NameWithArticle(body),
-                          NameWithoutArticle(body),
-                          Initial(body)}
+       from name in new[]{body.Name(), body.Initial()}
        select name).Concat(from arg in args select arg.ToString()).ToArray();
     return CelestialOverride(template, names, bodies) ??
         FormatOrNull(template, names);
