@@ -253,7 +253,8 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message,
   }
   rigid_motion_.WriteToMessage(message->mutable_rigid_motion());
   prehistory_->WriteToMessage(message->mutable_prehistory(),
-                              /*forks=*/{history_, psychohistory_});
+                              /*forks=*/{history_, psychohistory_},
+                              /*exact=*/{});
 }
 
 not_null<std::unique_ptr<Part>> Part::ReadFromMessage(

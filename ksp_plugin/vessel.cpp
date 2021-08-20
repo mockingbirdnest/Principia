@@ -389,7 +389,8 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
   DiscreteTrajectory<Barycentric>* empty_prediction =
       psychohistory_->NewForkAtLast();
   history_->WriteToMessage(message->mutable_history(),
-                           /*forks=*/{psychohistory_, empty_prediction});
+                           /*forks=*/{psychohistory_, empty_prediction},
+                           /*exact=*/{});
   psychohistory_->DeleteFork(empty_prediction);
   if (flight_plan_ != nullptr) {
     flight_plan_->WriteToMessage(message->mutable_flight_plan());

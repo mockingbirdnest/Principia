@@ -60,9 +60,6 @@ class DiscreteTrajectoryIterator
  protected:
   not_null<DiscreteTrajectoryIterator*> that() override;
   not_null<DiscreteTrajectoryIterator const*> that() const override;
-
-  template<typename F>
-  friend class internal_discrete_trajectory::DiscreteTrajectory;
 };
 
 }  // namespace internal_forkable
