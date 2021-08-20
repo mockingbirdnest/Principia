@@ -1068,7 +1068,7 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
 
   serialization::DiscreteTrajectory message;
   trajectory1.WriteToMessage(&message,
-                             /*excluded=*/{}, /*tracked=*/{}}, /*exact=*/{});
+                             /*excluded=*/{}, /*tracked=*/{}, /*exact=*/{});
   std::string uncompressed;
   message.SerializePartialToString(&uncompressed);
   EXPECT_EQ(24'394, uncompressed.size());

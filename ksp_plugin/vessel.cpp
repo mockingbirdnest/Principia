@@ -601,7 +601,8 @@ Checkpointer<serialization::Vessel>::Writer Vessel::MakeCheckpointerWriter() {
     auto last_history_segment = history_->DetachFork();
     last_history_segment->WriteToMessage(message->mutable_segment(),
                                          /*excluded=*/{psychohistory_},
-                                         /*tracked=*/{});
+                                         /*tracked=*/{},
+                                         /*exact=*/{psychohistory_->Fork()});
     penultimate_history_segment->AttachFork(std::move(last_history_segment));
   };
 }
