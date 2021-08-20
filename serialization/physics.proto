@@ -101,6 +101,8 @@ message DiscreteTrajectory {
   repeated int32 fork_position = 3;
   // Added in 陈景润.
   optional Downsampling downsampling = 4;
+  // Added in Haar.
+  repeated InstantaneousDegreesOfFreedom exact = 6;
 
   // Added in Frobenius.
   message Zfp {
