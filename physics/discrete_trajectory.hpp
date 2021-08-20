@@ -170,9 +170,12 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // not present in |excluded| serialized.  The forks in |tracked| will be
   // retrieved in the same order when reading.  The pointers may be null at
   // entry; otherwise, they must be direct or indirect forks of this trajectory.
+  // The points denoted by |exact| are written and re-read exactly and are not
+  // affected by any errors introduced by zfp compression.
   void WriteToMessage(not_null<serialization::DiscreteTrajectory*> message,
                       std::set<DiscreteTrajectory*> const& excluded,
-                      std::vector<DiscreteTrajectory*> const& tracked) const;
+                      std::vector<DiscreteTrajectory*> const& tracked,
+                      std::vector<Iterator> const& exact) const;
 
   // |forks| must have a size appropriate for the |message| being deserialized
   // and the orders of the |forks| must be consistent during serialization and
@@ -275,7 +278,8 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
 
   void FillSubTreeFromMessage(
       serialization::DiscreteTrajectory const& message,
-      std::vector<DiscreteTrajectory<Frame>**> const& tracked);
+      std::vector<DiscreteTrajectory<Frame>**> const& tracked,
+      Timeline const& exact);
 
   // Returns the Hermite interpolation for the left-open, right-closed
   // trajectory segment bounded above by |upper|.

@@ -712,7 +712,8 @@ TEST_F(DiscreteTrajectoryDeathTest, TrajectorySerializationError) {
     not_null<DiscreteTrajectory<World>*> const fork =
         massive_trajectory_->NewForkWithCopy(t1_);
     serialization::DiscreteTrajectory message;
-    fork->WriteToMessage(&message, /*excluded=*/{}, /*tracked=*/{});
+        fork->WriteToMessage(&message,
+                             /*excluded=*/{}, /*tracked=*/{}, /*exact=*/{});
   }, "is_root");
 }
 
@@ -737,10 +738,12 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   // Don't serialize |fork0|.
   massive_trajectory_->WriteToMessage(&message,
                                       /*excluded=*/{fork0},
-                                      /*tracked=*/{fork1, fork3, fork2});
+                                      /*tracked=*/{fork1, fork3, fork2},
+                                      /*exact=*/{});
   massive_trajectory_->WriteToMessage(&reference_message,
                                       /*excluded=*/{fork0},
-                                      /*tracked=*/{fork1, fork3, fork2});
+                                      /*tracked=*/{fork1, fork3, fork2},
+                                      /*exact=*/{});
 
   DiscreteTrajectory<World>* deserialized_fork1 = nullptr;
   DiscreteTrajectory<World>* deserialized_fork2 = nullptr;
@@ -757,9 +760,10 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   message.Clear();
   deserialized_trajectory->WriteToMessage(&message,
                                           /*excluded=*/{},
-                                          {deserialized_fork1,
-                                           deserialized_fork3,
-                                           deserialized_fork2});
+                                          /*tracked=*/{deserialized_fork1,
+                                                       deserialized_fork3,
+                                                       deserialized_fork2},
+                                          /*exact=*/{});
   EXPECT_THAT(reference_message, EqualsProto(message));
   EXPECT_THAT(message.children_size(), Eq(2));
   EXPECT_THAT(message.zfp().timeline_size(), Eq(3));
@@ -946,12 +950,17 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
   auto const circle_tmax = AppendCircularTrajectory(ω, r, Δt, t1, t2, circle);
 
   serialization::DiscreteTrajectory message;
-  circle.WriteToMessage(&message, /*excluded=*/{}, /*tracked=*/{});
+  circle.WriteToMessage(&message,
+                        /*excluded=*/{},
+                        /*tracked=*/{},
+                        /*exact=*/{circle.LowerBound(t0_ + 2 * Second),
+                                   circle.LowerBound(t0_ + 3 * Second)});
   auto deserialized_circle =
       DiscreteTrajectory<World>::ReadFromMessage(message, /*tracked=*/{});
 
   // Serialization/deserialization preserves the size, the times, and nudges the
-  // positions by less than the tolerance.
+  // positions by less than the tolerance.  It also preserve the degrees of
+  // freedom at the "exact" iterators.
   EXPECT_THAT(circle.Size(), Eq(39));
   EXPECT_THAT(deserialized_circle->Size(), circle.Size());
   for (auto it1 = circle.begin(), it2 = deserialized_circle->begin();
@@ -965,6 +974,18 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
                 AbsoluteErrorFrom(it1->degrees_of_freedom.velocity(),
                                   Lt(1.1 * Milli(Metre) / Second)));
   }
+  EXPECT_NE(
+      deserialized_circle->LowerBound(t0_ + 1 * Second)->degrees_of_freedom,
+      circle.LowerBound(t0_ + 1 * Second)->degrees_of_freedom);
+  EXPECT_EQ(
+      deserialized_circle->LowerBound(t0_ + 2 * Second)->degrees_of_freedom,
+      circle.LowerBound(t0_ + 2 * Second)->degrees_of_freedom);
+  EXPECT_EQ(
+      deserialized_circle->LowerBound(t0_ + 3 * Second)->degrees_of_freedom,
+      circle.LowerBound(t0_ + 3 * Second)->degrees_of_freedom);
+  EXPECT_NE(
+      deserialized_circle->LowerBound(t0_ + 4 * Second)->degrees_of_freedom,
+      circle.LowerBound(t0_ + 4 * Second)->degrees_of_freedom);
 
   // Appending may result in different downsampling because the positions differ
   // a bit.

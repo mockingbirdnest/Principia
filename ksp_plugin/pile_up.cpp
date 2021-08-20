@@ -178,7 +178,8 @@ void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
   }
   history_->WriteToMessage(message->mutable_history(),
                            /*excluded=*/{},
-                           /*tracked=*/{psychohistory_});
+                           /*tracked=*/{psychohistory_},
+                           /*exact=*/{});
   for (auto const& [part, rigid_motion] : actual_part_rigid_motion_) {
     rigid_motion.WriteToMessage(&(
         (*message->mutable_actual_part_rigid_motion())[part->part_id()]));

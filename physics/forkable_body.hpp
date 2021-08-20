@@ -514,7 +514,8 @@ void Forkable<Tr4jectory, It3rator, Traits>::WriteSubTreeToMessage(
 template<typename Tr4jectory, typename It3rator, typename Traits>
 void Forkable<Tr4jectory, It3rator, Traits>::FillSubTreeFromMessage(
     serialization::DiscreteTrajectory const& message,
-    std::vector<Tr4jectory**> const& tracked) {
+    std::vector<Tr4jectory**> const& tracked,
+    Timeline const& exact) {
   // There were no fork positions prior to Буняковский.
   bool const has_fork_position = message.fork_position_size() > 0;
   std::int32_t index = 0;
@@ -524,7 +525,7 @@ void Forkable<Tr4jectory, It3rator, Traits>::FillSubTreeFromMessage(
     for (serialization::DiscreteTrajectory const& child :
              litter.trajectories()) {
       not_null<Tr4jectory*> fork = NewFork(timeline_find(fork_time));
-      fork->FillSubTreeFromMessage(child, tracked);
+      fork->FillSubTreeFromMessage(child, tracked, exact);
       if (has_fork_position) {
         CHECK_LT(index, message.fork_position_size());
         std::int32_t const fork_position = message.fork_position(index);

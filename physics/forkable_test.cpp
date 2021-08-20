@@ -21,7 +21,8 @@ using quantities::si::Second;
 using ::testing::ElementsAre;
 
 struct FakeTrajectoryTraits : not_constructible {
-  using TimelineConstIterator = std::list<Instant>::const_iterator;
+  using Timeline = std::list<Instant>;
+  using TimelineConstIterator = Timeline::const_iterator;
   static Instant const& time(TimelineConstIterator const it);
 };
 

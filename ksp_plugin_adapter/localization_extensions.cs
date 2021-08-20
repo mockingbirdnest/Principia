@@ -8,6 +8,7 @@ namespace ksp_plugin_adapter {
 
 internal static class L10N {
   private const string english_us_ = "en-us";
+  private const string french_ = "fr-fr";
 
   public static bool IsCJKV(string text) {
     return Regex.IsMatch(
@@ -28,23 +29,60 @@ internal static class L10N {
     return Localizer.Format("#Principia_GrammaticalForm_Standalone", name);
   }
 
-  public static string NameWithoutArticle(this CelestialBody body) {
-    // This will need to be adjusted when we add support for other languages
-    // with articles.
-    return (Localizer.CurrentLanguage == english_us_ &&
-            body.displayName.StartsWith("The ")) ? body.name : body.displayName;
+  public static string StandaloneName(this CelestialBody celestial) {
+    return Standalone(celestial.Name());
   }
 
-  public static string NameWithArticle(this CelestialBody body) {
-    // TODO(egg): should we apped ^d instead of prepending "the"?  Certainly
-    // we would need to do that for other languages.
-    return (Localizer.CurrentLanguage == english_us_ &&
-            body.displayName.StartsWith("The ")) ? "the " + body.name
-                                                 : body.displayName;
+  private static bool StartsWithCapitalizedDefiniteArticle(string s) {
+    return (Localizer.CurrentLanguage == english_us_ && s.StartsWith("The ")) ||
+           (Localizer.CurrentLanguage == french_ &&
+            (s.StartsWith("La ") || s.StartsWith("Le ")));
   }
 
-  public static string Initial(this CelestialBody body) {
-    return body.NameWithoutArticle()[0].ToString();
+  private static string LingoonaUnqualified(string s) {
+    return s.Split(new[]{'^'}, 2)[0];
+  }
+
+  private static string LingoonaQualifiers(string s) {
+    if (!s.Contains('^')) {
+      return "";
+    }
+    return s.Split(new[]{'^'}, 2)[1];
+  }
+
+  private static string LingoonaQualify(string s, string qualifiers) {
+    return qualifiers == "" ? s : $"{s}^{qualifiers}";
+  }
+
+  // Returns the localized name with the appropriate Lingoona grammatical tags.
+  // Note that for bodies that may have an article (the Moon, la Terre), the
+  // article is absent, and instead the gender is indicated in lowercase
+  // (Moon^n, Terre^f), so that an article may be requested using a placeholder
+  // of the form <<A:1>>.
+  // Bodies that may not have an article (Saturn, Vénus) have an uppercase
+  // gender tag (Saturn^N, Vénus^F).
+  public static string Name(this CelestialBody body) {
+    string name = LingoonaUnqualified(body.displayName);
+    string qualifiers = LingoonaQualifiers(body.displayName);
+    if (qualifiers == "") {
+      // Stock English has everything as a neuter name (^N).
+      // For mods that did not try tagging grammar (which is hardly a problem
+      // in English since stock strings do not add articles), tag as neuter name
+      // (and switch to neuter noun below if we see an article).
+      qualifiers = "N";
+    }
+    if (StartsWithCapitalizedDefiniteArticle(body.displayName)) {
+      name = name.Split(new[]{' '}, 2)[1];
+      // Lowercase the gender, allowing for articles.
+      qualifiers = char.ToLower(qualifiers[0]) + qualifiers.Substring(1);
+    }
+    return LingoonaQualify(name, qualifiers);
+  }
+
+  private static string Initial(this CelestialBody body) {
+    return IsCJKV(LingoonaUnqualified(body.displayName))
+        ? body.displayName
+        : body.Name()[0].ToString();
   }
 
   public static string FormatOrNull(string template, params object[] args) {
@@ -66,18 +104,24 @@ internal static class L10N {
   }
 
   public static string CelestialString(string template,
-                                       Func<CelestialBody, string> name,
-                                       params CelestialBody[] args) {
-    string[] names = (from body in args select name(body)).ToArray();
-    return CelestialOverride(template, names, args) ??
+                                       CelestialBody[] bodies,
+                                       params object[] args) {
+    string[] names =
+      (from body in bodies
+       from name in new[]{body.Name(), body.Initial()}
+       select name).Concat(from arg in args select arg.ToString()).ToArray();
+    return CelestialOverride(template, names, bodies) ??
         Localizer.Format(template, names);
   }
 
   public static string CelestialStringOrNull(string template,
-                                             Func<CelestialBody, string> name,
-                                             params CelestialBody[] args) {
-    string[] names = (from body in args select name(body)).ToArray();
-    return CelestialOverride(template, names, args) ??
+                                             CelestialBody[] bodies,
+                                             params object[] args) {
+    string[] names =
+      (from body in bodies
+       from name in new[]{body.Name(), body.Initial()}
+       select name).Concat(from arg in args select arg.ToString()).ToArray();
+    return CelestialOverride(template, names, bodies) ??
         FormatOrNull(template, names);
   }
 }

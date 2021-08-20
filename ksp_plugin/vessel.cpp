@@ -461,7 +461,8 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
   // Starting with Gateaux we don't save the prediction, see #2685.
   prehistory_->WriteToMessage(message->mutable_prehistory(),
                               /*exclude=*/{prediction_},
-                              /*tracked=*/{history_, psychohistory_});
+                              /*tracked=*/{history_, psychohistory_},
+                              /*exact=*/{});
   if (flight_plan_ != nullptr) {
     flight_plan_->WriteToMessage(message->mutable_flight_plan());
   }
