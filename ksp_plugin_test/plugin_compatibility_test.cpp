@@ -84,8 +84,13 @@ class StringLogSink : google::LogSink {
 
 class PluginCompatibilityTest : public testing::Test {
  protected:
-  PluginCompatibilityTest() {
+  PluginCompatibilityTest()
+      : stderrthreshold_(FLAGS_stderrthreshold) {
     google::SetStderrLogging(google::WARNING);
+  }
+
+  ~PluginCompatibilityTest() override {
+    google::SetStderrLogging(stderrthreshold_);
   }
 
   // Reads a plugin from a file containing only the "serialized_plugin = "
@@ -171,6 +176,8 @@ class PluginCompatibilityTest : public testing::Test {
 
     WriteAndReadBack(std::move(plugin));
   }
+
+  int const stderrthreshold_;
 };
 
 TEST_F(PluginCompatibilityTest, PreCartan) {
