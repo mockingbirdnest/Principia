@@ -500,18 +500,20 @@ bool Forkable<Tr4jectory, It3rator, Traits>::WriteSubTreeToMessage(
   std::optional<Instant> last_instant;
   serialization::DiscreteTrajectory::Child* serialized_child = nullptr;
   for (auto const& [fork_time, child] : children_) {
-    if (!last_instant || fork_time != last_instant) {
-      last_instant = fork_time;
-      serialized_child = message->add_children();
-      fork_time.WriteToMessage(serialized_child->mutable_fork_time());
-    }
 
-    // We don't know if this child need to be included in the serialization, so
-    // we write it to a temporary object and swap if needed.
+    // We don't know if this child needs to be included in the serialization, so
+    // we write it to a temporary object and swap if appropriate.
     serialization::DiscreteTrajectory candidate_trajectory;
     bool const included = child->WriteSubTreeToMessage(
         &candidate_trajectory, excluded, tracked);
     if (included) {
+      // If this is the first included child at this fork time, create the
+      // |Child| message.
+      if (!last_instant || fork_time != last_instant) {
+        last_instant = fork_time;
+        serialized_child = message->add_children();
+        fork_time.WriteToMessage(serialized_child->mutable_fork_time());
+      }
       candidate_trajectory.Swap(serialized_child->add_trajectories());
     }
   }
