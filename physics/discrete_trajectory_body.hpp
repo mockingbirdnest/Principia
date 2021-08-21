@@ -329,22 +329,22 @@ DegreesOfFreedom<Frame> DiscreteTrajectory<Frame>::EvaluateDegreesOfFreedom(
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteToMessage(
     not_null<serialization::DiscreteTrajectory*> const message,
-    std::set<DiscreteTrajectory*> const& excluded,
-    std::vector<DiscreteTrajectory*> const& tracked,
+    std::set<DiscreteTrajectory const*> const& excluded,
+    std::vector<DiscreteTrajectory const*> const& tracked,
     std::vector<Iterator> const& exact) const {
   CHECK(this->is_root());
 
-  std::set<DiscreteTrajectory<Frame>*> mutable_excluded = excluded;
-  std::vector<DiscreteTrajectory<Frame>*> mutable_tracked = tracked;
+  std::set<DiscreteTrajectory<Frame> const*> mutable_excluded = excluded;
+  std::vector<DiscreteTrajectory<Frame> const*> mutable_tracked = tracked;
   WriteSubTreeToMessage(message, mutable_excluded, mutable_tracked);
   CHECK(std::all_of(mutable_excluded.begin(),
                     mutable_excluded.end(),
-                    [](DiscreteTrajectory<Frame>* const fork) {
+                    [](DiscreteTrajectory<Frame> const* const fork) {
                       return fork == nullptr;
                     }));
   CHECK(std::all_of(mutable_tracked.begin(),
                     mutable_tracked.end(),
-                    [](DiscreteTrajectory<Frame>* const fork) {
+                    [](DiscreteTrajectory<Frame> const* const fork) {
                       return fork == nullptr;
                     }));
 
@@ -528,7 +528,9 @@ typename DiscreteTrajectory<Frame>::Downsampling
 DiscreteTrajectory<Frame>::Downsampling::ReadFromMessage(
     serialization::DiscreteTrajectory::Downsampling const& message,
     DiscreteTrajectory const& trajectory) {
-  bool const is_pre_grotendieck_haar = message.has_start_of_dense_timeline();
+  bool const is_pre_grothendieck_haar = message.has_start_of_dense_timeline();
+  LOG_IF(WARNING, is_pre_grothendieck_haar)
+      << "Reading pre-Grothendieck/Haar Downsampling";
   Downsampling downsampling(message.max_dense_intervals(),
                             Length::ReadFromMessage(message.tolerance()),
                             [&trajectory](Instant const& t){
@@ -536,7 +538,7 @@ DiscreteTrajectory<Frame>::Downsampling::ReadFromMessage(
                               CHECK(it != trajectory.end());
                               return it.current();
                             });
-  if (is_pre_grotendieck_haar) {
+  if (is_pre_grothendieck_haar) {
     // No support for forks in legacy saves, so |find| will succeed and ++ is
     // safe.
     auto it = trajectory.timeline_.find(
@@ -569,12 +571,16 @@ void DiscreteTrajectory<Frame>::Downsampling::UpdateStartTimeIfNeeded() {
 }
 
 template<typename Frame>
-void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
+bool DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     not_null<serialization::DiscreteTrajectory*> const message,
-    std::set<DiscreteTrajectory*>& excluded,
-    std::vector<DiscreteTrajectory*>& tracked) const {
-  Forkable<DiscreteTrajectory, Iterator, DiscreteTrajectoryTraits<Frame>>::
-      WriteSubTreeToMessage(message, excluded, tracked);
+    std::set<DiscreteTrajectory const*>& excluded,
+    std::vector<DiscreteTrajectory const*>& tracked) const {
+  bool const included =
+      Forkable<DiscreteTrajectory, Iterator, DiscreteTrajectoryTraits<Frame>>::
+          WriteSubTreeToMessage(message, excluded, tracked);
+  if (!included) {
+    return false;
+  }
 
   int const timeline_size = timeline_.size();
   auto* const zfp = message->mutable_zfp();
@@ -640,6 +646,7 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
   if (downsampling_.has_value()) {
     downsampling_->WriteToMessage(message->mutable_downsampling());
   }
+  return true;
 }
 
 template<typename Frame>

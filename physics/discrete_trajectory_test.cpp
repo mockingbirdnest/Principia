@@ -736,31 +736,37 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   serialization::DiscreteTrajectory reference_message;
 
   // Don't serialize |fork0|.
-  massive_trajectory_->WriteToMessage(&message,
-                                      /*excluded=*/{fork0},
-                                      /*tracked=*/{fork1, fork3, fork2},
-                                      /*exact=*/{});
-  massive_trajectory_->WriteToMessage(&reference_message,
-                                      /*excluded=*/{fork0},
-                                      /*tracked=*/{fork1, fork3, fork2},
-                                      /*exact=*/{});
+  massive_trajectory_->WriteToMessage(
+      &message,
+      /*excluded=*/{fork0},
+      /*tracked=*/{massive_trajectory_.get(), fork1, fork3, fork2},
+      /*exact=*/{});
+  massive_trajectory_->WriteToMessage(
+      &reference_message,
+      /*excluded=*/{fork0},
+      /*tracked=*/{massive_trajectory_.get(), fork1, fork3, fork2},
+      /*exact=*/{});
 
+  DiscreteTrajectory<World>* deserialized_root = nullptr;
   DiscreteTrajectory<World>* deserialized_fork1 = nullptr;
   DiscreteTrajectory<World>* deserialized_fork2 = nullptr;
   DiscreteTrajectory<World>* deserialized_fork3 = nullptr;
   not_null<std::unique_ptr<DiscreteTrajectory<World>>> const
       deserialized_trajectory =
           DiscreteTrajectory<World>::ReadFromMessage(message,
-                                                     {&deserialized_fork1,
+                                                     {&deserialized_root,
+                                                      &deserialized_fork1,
                                                       &deserialized_fork3,
                                                       &deserialized_fork2});
+  EXPECT_EQ(deserialized_trajectory.get(), deserialized_root);
   EXPECT_EQ(t2_, deserialized_fork1->Fork()->time);
   EXPECT_EQ(t2_, deserialized_fork2->Fork()->time);
   EXPECT_EQ(t3_, deserialized_fork3->Fork()->time);
   message.Clear();
   deserialized_trajectory->WriteToMessage(&message,
                                           /*excluded=*/{},
-                                          /*tracked=*/{deserialized_fork1,
+                                          /*tracked=*/{deserialized_root,
+                                                       deserialized_fork1,
                                                        deserialized_fork3,
                                                        deserialized_fork2},
                                           /*exact=*/{});
