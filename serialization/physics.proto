@@ -97,11 +97,12 @@ message DiscreteTrajectory {
     required Point instant = 1;
     required Pair degrees_of_freedom = 2;
   }
-  message Child {
+  // All the trajectories forked at a given time.
+  message Brood {
     required Point fork_time = 1;
     repeated DiscreteTrajectory trajectories = 2;
   }
-  repeated Child children = 1;
+  repeated Brood children = 1;
   repeated InstantaneousDegreesOfFreedom timeline = 2;
   // Pre Grothendieck/Haar.
   repeated int32 fork_position = 3;
