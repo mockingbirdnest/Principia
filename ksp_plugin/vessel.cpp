@@ -74,8 +74,7 @@ Vessel::Vessel(GUID guid,
       checkpointer_(make_not_null_unique<Checkpointer<serialization::Vessel>>(
           MakeCheckpointerWriter(),
           MakeCheckpointerReader())),
-      history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
-      present_(history_.get()) {
+      history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
   // Can't create the |psychohistory_| and |prediction_| here because
   // |history_| is empty;
 }
@@ -209,6 +208,7 @@ void Vessel::CreateHistoryIfNeeded(Instant const& t) {
     CHECK(psychohistory_ == nullptr);
     history_->SetDownsampling(MaxDenseIntervals, DownsamplingTolerance);
     history_->Append(t, calculator.Get());
+    present_ = history_.get();
     psychohistory_ = history_->NewForkAtLast();
     prediction_ = psychohistory_->NewForkAtLast();
   }
@@ -271,11 +271,11 @@ void Vessel::AdvanceTime() {
   // history as well as the psychohistory, if the history of the part was
   // obtained using an adaptive step integrator, which is the case during a
   // burn.  See #2931.
-  history_->DeleteFork(psychohistory_);
+  present_->DeleteFork(psychohistory_);
   AppendToVesselTrajectory(&Part::history_begin,
                            &Part::history_end,
-                           *history_);
-  psychohistory_ = history_->NewForkAtLast();
+                           *present_);
+  psychohistory_ = present_->NewForkAtLast();
 
   // The reason why we may want to skip the start of the psychohistory is
   // subtle.  Say that we have a vessel A with points at t₀, t₀ + 10 s,
@@ -549,11 +549,6 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     if (vessel->prediction_ == nullptr) {
       vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
     }
-    // Prior to Grothendieck/Haar there is |present_| so we have to recompute
-    // it.
-    if (vessel->present_ == nullptr) {
-      vessel->prediction_ = vessel->psychohistory_->parent();
-    }
     // Necessary after Εὔδοξος because the ephemeris has not been prolonged
     // during deserialization.  Doesn't hurt prior to Εὔδοξος.
     ephemeris->Prolong(vessel->prediction_->back().time);
@@ -562,6 +557,12 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   if (is_pre_陈景润) {
     vessel->history_->SetDownsampling(MaxDenseIntervals,
                                       DownsamplingTolerance);
+  }
+
+  // Prior to Grothendieck/Haar there is no |present_| so we have to recompute
+  // it.
+  if (vessel->present_ == nullptr) {
+    vessel->present_ = vessel->psychohistory_->parent();
   }
 
   if (message.has_flight_plan()) {
