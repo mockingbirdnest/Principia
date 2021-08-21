@@ -179,17 +179,17 @@ void Vessel::DetectCollapsibilityChange() {
       // to reconstruct it, so we must serialize it in a checkpoint.  Note that
       // the last point of the history specifies the initial conditions of the
       // next (collapsible) segment.
-      if (present_ == history_.get()) {
-        checkpointer_->WriteToCheckpoint(present_->begin()->time);
+      if (backstory_ == history_.get()) {
+        checkpointer_->WriteToCheckpoint(backstory_->begin()->time);
       } else {
-        checkpointer_->WriteToCheckpoint(present_->Fork()->time);
+        checkpointer_->WriteToCheckpoint(backstory_->Fork()->time);
       }
     }
     auto psychohistory = psychohistory_->DetachFork();
-    present_ = history_->NewForkAtLast();
-    present_->SetDownsampling(MaxDenseIntervals,
+    backstory_ = history_->NewForkAtLast();
+    backstory_->SetDownsampling(MaxDenseIntervals,
                               DownsamplingTolerance);
-    present_->AttachFork(std::move(psychohistory));
+    backstory_->AttachFork(std::move(psychohistory));
     is_collapsible_ = becomes_collapsible;
   }
 }
@@ -208,7 +208,7 @@ void Vessel::CreateHistoryIfNeeded(Instant const& t) {
     CHECK(psychohistory_ == nullptr);
     history_->SetDownsampling(MaxDenseIntervals, DownsamplingTolerance);
     history_->Append(t, calculator.Get());
-    present_ = history_.get();
+    backstory_ = history_.get();
     psychohistory_ = history_->NewForkAtLast();
     prediction_ = psychohistory_->NewForkAtLast();
   }
@@ -271,11 +271,11 @@ void Vessel::AdvanceTime() {
   // history as well as the psychohistory, if the history of the part was
   // obtained using an adaptive step integrator, which is the case during a
   // burn.  See #2931.
-  present_->DeleteFork(psychohistory_);
+  backstory_->DeleteFork(psychohistory_);
   AppendToVesselTrajectory(&Part::history_begin,
                            &Part::history_end,
-                           *present_);
-  psychohistory_ = present_->NewForkAtLast();
+                           *backstory_);
+  psychohistory_ = backstory_->NewForkAtLast();
 
   // The reason why we may want to skip the start of the psychohistory is
   // subtle.  Say that we have a vessel A with points at t₀, t₀ + 10 s,
@@ -465,7 +465,7 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
   // Starting with Gateaux we don't save the prediction, see #2685.
   history_->WriteToMessage(message->mutable_history(),
                            /*exclude=*/{prediction_},
-                           /*tracked=*/{present_, psychohistory_},
+                           /*tracked=*/{backstory_, psychohistory_},
                            /*exact=*/{});
   if (flight_plan_ != nullptr) {
     flight_plan_->WriteToMessage(message->mutable_flight_plan());
@@ -541,7 +541,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   } else {
     vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
-        /*tracked=*/{&vessel->present_,
+        /*tracked=*/{&vessel->backstory_,
                      &vessel->psychohistory_,
                      &vessel->prediction_});
     // After Grothendieck/Haar there is no empty prediction so we must create
@@ -559,10 +559,10 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
                                       DownsamplingTolerance);
   }
 
-  // Prior to Grothendieck/Haar there is no |present_| so we have to recompute
+  // Prior to Grothendieck/Haar there is no |backstory_| so we have to recompute
   // it.
-  if (vessel->present_ == nullptr) {
-    vessel->present_ = vessel->psychohistory_->parent();
+  if (vessel->backstory_ == nullptr) {
+    vessel->backstory_ = vessel->psychohistory_->parent();
   }
 
   if (message.has_flight_plan()) {
@@ -585,7 +585,7 @@ void Vessel::FillContainingPileUpsFromMessage(
 
 Checkpointer<serialization::Vessel>::Writer Vessel::MakeCheckpointerWriter() {
   return [this](not_null<serialization::Vessel::Checkpoint*> const message) {
-    present_->WriteToMessage(message->mutable_segment(),
+    backstory_->WriteToMessage(message->mutable_segment(),
                               /*excluded=*/{psychohistory_},
                               /*tracked=*/{},
                               /*exact=*/{psychohistory_->Fork()});

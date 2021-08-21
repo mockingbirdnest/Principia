@@ -291,7 +291,7 @@ class Vessel {
   // The last (most recent) segment of the |history_| prior to the
   // |psychohistory_|.  May be identical to |history_|, therefore not always a
   // fork.  Always identical to |psychohistory_->parent()|.
-  DiscreteTrajectory<Barycentric>* present_ = nullptr;
+  DiscreteTrajectory<Barycentric>* backstory_ = nullptr;
 
   // The |psychohistory_| is forked off the end of the |history_| and the
   // |prediction_| is forked off the end of the |psychohistory_|.
