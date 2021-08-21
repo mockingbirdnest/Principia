@@ -81,8 +81,8 @@ message ContinuousTrajectory {
 message DiscreteTrajectory {
   // A marker to indicate that a fork doesn't have its position tracked.
   // Added in Grothendieck/Haar.
-  enum ForkPosition {
-    MISSING_FORK_POSITION = -1;
+  enum TrackedPosition {
+    MISSING_TRACKED_POSITION = -1;
   }
   message Downsampling {
     required int64 max_dense_intervals = 2;
@@ -97,13 +97,17 @@ message DiscreteTrajectory {
     required Point instant = 1;
     required Pair degrees_of_freedom = 2;
   }
-  message Litter {
+  // All the trajectories forked at a given time.
+  message Brood {
     required Point fork_time = 1;
     repeated DiscreteTrajectory trajectories = 2;
   }
-  repeated Litter children = 1;
+  repeated Brood children = 1;
   repeated InstantaneousDegreesOfFreedom timeline = 2;
+  // Pre Grothendieck/Haar.
   repeated int32 fork_position = 3;
+  // Added in Grothendieck/Haar.
+  optional int32 tracked_position = 7;  // Required.
   // Added in 陈景润.
   optional Downsampling downsampling = 4;
   // Added in Haar.
