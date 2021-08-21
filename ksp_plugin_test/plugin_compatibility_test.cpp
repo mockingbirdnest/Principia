@@ -177,7 +177,7 @@ class PluginCompatibilityTest : public testing::Test {
     WriteAndReadBack(std::move(plugin));
   }
 
-  int stderrthreshold_;
+  int const stderrthreshold_;
 };
 
 TEST_F(PluginCompatibilityTest, PreCartan) {
