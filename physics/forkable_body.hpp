@@ -476,7 +476,7 @@ void Forkable<Tr4jectory, It3rator, Traits>::WriteSubTreeToMessage(
     std::set<Tr4jectory*>& excluded,
     std::vector<Tr4jectory*>& tracked) const {
   std::optional<Instant> last_instant;
-  serialization::DiscreteTrajectory::Litter* litter = nullptr;
+  serialization::DiscreteTrajectory::Child* serialized_child = nullptr;
   for (auto const& [fork_time, child] : children_) {
     // Determine if this |child| needs to be serialized.
     auto const it_excluded = excluded.find(child.get());
@@ -503,10 +503,10 @@ void Forkable<Tr4jectory, It3rator, Traits>::WriteSubTreeToMessage(
 
     if (!last_instant || fork_time != last_instant) {
       last_instant = fork_time;
-      litter = message->add_children();
-      fork_time.WriteToMessage(litter->mutable_fork_time());
+      serialized_child = message->add_children();
+      fork_time.WriteToMessage(serialized_child->mutable_fork_time());
     }
-    child->WriteSubTreeToMessage(litter->add_trajectories(),
+    child->WriteSubTreeToMessage(serialized_child->add_trajectories(),
                                  excluded, tracked);
   }
 }
@@ -519,11 +519,11 @@ void Forkable<Tr4jectory, It3rator, Traits>::FillSubTreeFromMessage(
   // There were no fork positions prior to Буняковский.
   bool const has_fork_position = message.fork_position_size() > 0;
   std::int32_t index = 0;
-  for (serialization::DiscreteTrajectory::Litter const& litter :
+  for (serialization::DiscreteTrajectory::Child const& child :
            message.children()) {
-    Instant const fork_time = Instant::ReadFromMessage(litter.fork_time());
+    Instant const fork_time = Instant::ReadFromMessage(child.fork_time());
     for (serialization::DiscreteTrajectory const& child :
-             litter.trajectories()) {
+             child.trajectories()) {
       not_null<Tr4jectory*> fork = NewFork(timeline_find(fork_time));
       fork->FillSubTreeFromMessage(child, tracked, exact);
       if (has_fork_position) {
