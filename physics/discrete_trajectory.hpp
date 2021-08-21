@@ -173,8 +173,8 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // The points denoted by |exact| are written and re-read exactly and are not
   // affected by any errors introduced by zfp compression.
   void WriteToMessage(not_null<serialization::DiscreteTrajectory*> message,
-                      std::set<DiscreteTrajectory*> const& excluded,
-                      std::vector<DiscreteTrajectory*> const& tracked,
+                      std::set<DiscreteTrajectory const*> const& excluded,
+                      std::vector<DiscreteTrajectory const*> const& tracked,
                       std::vector<Iterator> const& exact) const;
 
   // |forks| must have a size appropriate for the |message| being deserialized
@@ -270,11 +270,12 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
     std::vector<TimelineConstIterator> dense_iterators_;
   };
 
-  // This trajectory need not be a root.
-  void WriteSubTreeToMessage(
+  // This trajectory need not be a root.  Returnst false if this trajectory is
+  // excluded.
+  bool WriteSubTreeToMessage(
       not_null<serialization::DiscreteTrajectory*> message,
-      std::set<DiscreteTrajectory*>& excluded,
-      std::vector<DiscreteTrajectory*>& tracked) const;
+      std::set<DiscreteTrajectory const*>& excluded,
+      std::vector<DiscreteTrajectory const*>& tracked) const;
 
   void FillSubTreeFromMessage(
       serialization::DiscreteTrajectory const& message,

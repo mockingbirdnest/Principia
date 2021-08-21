@@ -209,10 +209,11 @@ class Forkable {
   // |tracked| are nulled-out as they are used.
   // Note that prior to Grothendieck/Haar all forks that were not tracked were
   // implicitly excluded (so the serialized-but-not-tracked case didn't happen).
-  void WriteSubTreeToMessage(
+  // Returns false if this trajectory is excluded.
+  bool WriteSubTreeToMessage(
       not_null<serialization::DiscreteTrajectory*> message,
-      std::set<Tr4jectory*>& excluded,
-      std::vector<Tr4jectory*>& tracked) const;
+      std::set<Tr4jectory const*>& excluded,
+      std::vector<Tr4jectory const*>& tracked) const;
 
   void FillSubTreeFromMessage(serialization::DiscreteTrajectory const& message,
                               std::vector<Tr4jectory**> const& tracked,
