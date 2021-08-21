@@ -23,7 +23,8 @@
 #define PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS \
   !PRINCIPIA_COMPILER_MSVC || !(_MSC_FULL_VER == 192'930'036 || \
                                 _MSC_FULL_VER == 192'930'037 || \
-                                _MSC_FULL_VER == 192'930'038)
+                                _MSC_FULL_VER == 192'930'038 || \
+                                _MSC_FULL_VER == 192'930'133)
 
 namespace principia {
 namespace numerics {
