@@ -61,7 +61,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Legal", "Legal", "{4B25658F
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ksp_plugin_adapter", "ksp_plugin_adapter\ksp_plugin_adapter.csproj", "{E75B3F05-D64F-4AFE-9493-2F94A9B37510}"
 	ProjectSection(ProjectDependencies) = postProject
-		{A3F94607-2666-408F-AF98-0E47D61C98BB} = {A3F94607-2666-408F-AF98-0E47D61C98BB}
+		{873680B3-2406-4A30-9EE7-569E9B9DA661} = {873680B3-2406-4A30-9EE7-569E9B9DA661}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ksp_plugin", "ksp_plugin\ksp_plugin.vcxproj", "{A3F94607-2666-408F-AF98-0E47D61C98BB}"
@@ -72,7 +72,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ksp_plugin", "ksp_plugin\ks
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ksp_plugin_test", "ksp_plugin_test\ksp_plugin_test.vcxproj", "{A942ADF0-62F4-435C-85B2-934D5B666DB8}"
 	ProjectSection(ProjectDependencies) = postProject
-		{A3F94607-2666-408F-AF98-0E47D61C98BB} = {A3F94607-2666-408F-AF98-0E47D61C98BB}
+		{873680B3-2406-4A30-9EE7-569E9B9DA661} = {873680B3-2406-4A30-9EE7-569E9B9DA661}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "base", "base\base.vcxproj", "{7E7CC89A-FC65-409C-A975-9C3A6A50786B}"
@@ -126,6 +126,7 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "journal", "journal\journal.vcxproj", "{972E4E09-3B2C-4A23-9338-74D97D589207}"
 	ProjectSection(ProjectDependencies) = postProject
 		{5C482C18-BBAE-484D-A211-A25C86370061} = {5C482C18-BBAE-484D-A211-A25C86370061}
+		{873680B3-2406-4A30-9EE7-569E9B9DA661} = {873680B3-2406-4A30-9EE7-569E9B9DA661}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tools", "tools\tools.vcxproj", "{873680B3-2406-4A30-9EE7-569E9B9DA661}"
