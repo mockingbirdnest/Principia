@@ -6,13 +6,9 @@
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
   <Import Project="..\third_party_zfp.props" />
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <CustomBuildStep>
-      <Command>$(PrincipiaGenerateProfilesCommand)</Command>
-    </CustomBuildStep>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup>
     <CustomBuildStep>
+      <Command>$(PrincipiaGenerateProfilesCommand)</Command>
       <Message>$([System.String]::Format($(PrincipiaGenerateProfilesMessage), $(SolutionDir)))</Message>
       <Outputs>$(PrincipiaGenerateProfilesOutputs)</Outputs>
       <Inputs>$(PrincipiaGenerateProfiles)</Inputs>
