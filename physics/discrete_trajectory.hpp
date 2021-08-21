@@ -270,7 +270,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
     std::vector<TimelineConstIterator> dense_iterators_;
   };
 
-  // This trajectory need not be a root.  Returnst false if this trajectory is
+  // This trajectory need not be a root.  Returns false if this trajectory is
   // excluded.
   bool WriteSubTreeToMessage(
       not_null<serialization::DiscreteTrajectory*> message,
