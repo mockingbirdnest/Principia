@@ -332,8 +332,6 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
     std::set<DiscreteTrajectory const*> const& excluded,
     std::vector<DiscreteTrajectory const*> const& tracked,
     std::vector<Iterator> const& exact) const {
-  CHECK(this->is_root());
-
   std::set<DiscreteTrajectory<Frame> const*> mutable_excluded = excluded;
   std::vector<DiscreteTrajectory<Frame> const*> mutable_tracked = tracked;
   WriteSubTreeToMessage(message, mutable_excluded, mutable_tracked);

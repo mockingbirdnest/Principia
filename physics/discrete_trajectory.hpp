@@ -166,8 +166,8 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
 
   // End of the implementation of the interface.
 
-  // This trajectory must be a root.  The entire tree is traversed and the forks
-  // not present in |excluded| serialized.  The forks in |tracked| will be
+  // The entire tree rooted at this trajectory is traversed and the forks not
+  // present in |excluded| are serialized.  The forks in |tracked| will be
   // retrieved in the same order when reading.  The pointers may be null at
   // entry; otherwise, they must be direct or indirect forks of this trajectory.
   // The points denoted by |exact| are written and re-read exactly and are not
