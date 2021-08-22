@@ -477,14 +477,13 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   bool const is_pre_chasles = message.has_prediction();
   bool const is_pre_陈景润 = !message.history().has_downsampling();
   // TODO(phl): Decide in which version it goes.
-  bool const is_pre_grothendieck_haar =
-      !message.history().has_tracked_position();
-  LOG_IF(WARNING, is_pre_grothendieck_haar)
+  bool const is_pre_zermelo = !message.history().has_tracked_position();
+  LOG_IF(WARNING, is_pre_zermelo)
       << "Reading pre-"
       << (is_pre_cesàro    ? u8"Cesàro"
           : is_pre_chasles ? "Chasles"
           : is_pre_陈景润   ? u8"陈景润"
-                           : "Grothendieck/Haar")
+                           : "Zermelo")
       << " Vessel";
 
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
@@ -540,7 +539,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
         /*tracked=*/{&vessel->psychohistory_});
     vessel->backstory_ = vessel->psychohistory_->parent();
     vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
-  } else if (is_pre_grothendieck_haar) {
+  } else if (is_pre_zermelo) {
     vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
         /*tracked=*/{&vessel->psychohistory_,

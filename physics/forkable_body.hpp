@@ -525,11 +525,11 @@ void Forkable<Tr4jectory, It3rator, Traits>::FillSubTreeFromMessage(
     serialization::DiscreteTrajectory const& message,
     std::vector<Tr4jectory**> const& tracked,
     Timeline const& exact) {
-  bool const is_pre_grothendieck_haar = !message.has_tracked_position();
-  LOG_IF(WARNING, is_pre_grothendieck_haar)
-      << "Reading pre-Grothendieck/Haar Forkable";
+  bool const is_pre_zermelo = !message.has_tracked_position();
+  LOG_IF(WARNING, is_pre_zermelo)
+      << "Reading pre-Zermelo Forkable";
 
-  if (!is_pre_grothendieck_haar) {
+  if (!is_pre_zermelo) {
     std::int32_t const tracked_position = message.tracked_position();
     if (tracked_position !=
         serialization::DiscreteTrajectory::MISSING_TRACKED_POSITION) {
@@ -540,7 +540,7 @@ void Forkable<Tr4jectory, It3rator, Traits>::FillSubTreeFromMessage(
   // There were no fork positions prior to Буняковский, but we don't maintain
   // compatibility that far back.
   bool const has_fork_position = message.fork_position_size() > 0;
-  CHECK(is_pre_grothendieck_haar || !has_fork_position)
+  CHECK(is_pre_zermelo || !has_fork_position)
       << message.DebugString();
 
   std::int32_t index = 0;

@@ -176,7 +176,7 @@ message Vessel {
   optional bool psychohistory_is_authoritative = 17;  // Pre-Cesàro.
   optional DiscreteTrajectory prediction = 18;  // Pre-Chasles.
   optional FlightPlan flight_plan = 4;
-  repeated Checkpoint checkpoint = 21;  // Added in Grothendieck/Haar.
+  repeated Checkpoint checkpoint = 21;  // Added in Zermelo.
 
   // Pre-Буняковский.
   reserved 2, 3, 5;
@@ -190,7 +190,7 @@ message Vessel {
            "prediction_fork_time";
   // Pre-Cesàro.
   reserved "psychohistory";
-  // Grothendieck/Haar failed attempt.
+  // Zermelo failed attempt.
   reserved 20;
   reserved "prehistory";
 }
