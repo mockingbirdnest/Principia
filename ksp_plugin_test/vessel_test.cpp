@@ -612,11 +612,15 @@ TEST_F(VesselTest, Checkpointing) {
   WriteCheckpointToMessage(&message);
   CHECK_EQ(2, message.checkpoint_size());
   CHECK_EQ(0, message.checkpoint(0).time().scalar().magnitude());
-  CHECK_EQ(0, message.checkpoint(0).segment().children_size());
-  CHECK_EQ(1, message.checkpoint(0).segment().zfp().timeline_size());
+  CHECK_EQ(0, message.checkpoint(0).non_collapsible_segment().children_size());
+  CHECK_EQ(
+      1,
+      message.checkpoint(0).non_collapsible_segment().zfp().timeline_size());
   CHECK_EQ(25, message.checkpoint(1).time().scalar().magnitude());
-  CHECK_EQ(0, message.checkpoint(1).segment().children_size());
-  CHECK_EQ(16, message.checkpoint(1).segment().zfp().timeline_size());
+  CHECK_EQ(0, message.checkpoint(1).non_collapsible_segment().children_size());
+  CHECK_EQ(
+      16,
+      message.checkpoint(1).non_collapsible_segment().zfp().timeline_size());
 }
 
 TEST_F(VesselTest, SerializationSuccess) {
