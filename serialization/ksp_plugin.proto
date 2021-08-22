@@ -163,7 +163,9 @@ message Renderer {
 message Vessel {
   message Checkpoint {
     required Point time = 1;
-    required DiscreteTrajectory segment = 2;
+    required DiscreteTrajectory non_collapsible_segment = 2;
+    required Ephemeris.FixedStepParameters
+        collapsible_fixed_step_parameters = 3;
   }
   required string guid = 13;
   required string name = 19;

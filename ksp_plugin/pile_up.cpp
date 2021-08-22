@@ -113,6 +113,11 @@ std::list<not_null<Part*>> const& PileUp::parts() const {
   return parts_;
 }
 
+Ephemeris<Barycentric>::FixedStepParameters const&
+PileUp::fixed_step_parameters() const {
+  return fixed_step_parameters_;
+}
+
 void PileUp::SetPartApparentRigidMotion(
     not_null<Part*> const part,
     RigidMotion<RigidPart, Apparent> const& rigid_motion) {

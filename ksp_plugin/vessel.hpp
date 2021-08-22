@@ -241,6 +241,9 @@ class Vessel {
   Checkpointer<serialization::Vessel>::Reader
   MakeCheckpointerReader();
 
+  absl::Status ReanimateOneCheckpoint(
+      serialization::Vessel::Checkpoint const& message);
+
   // Runs the integrator to compute the |prognostication_| based on the given
   // parameters.
   absl::StatusOr<std::unique_ptr<DiscreteTrajectory<Barycentric>>>
