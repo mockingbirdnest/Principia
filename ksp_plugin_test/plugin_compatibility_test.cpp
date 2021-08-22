@@ -288,7 +288,8 @@ TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
   // changes.
   EXPECT_THAT(log_warning.string(),
               Not(HasSubstr("pre-Gröbner")));
-  auto const& orbiter = *plugin->GetVessel("e180ca12-492f-45bf-a194-4c5255aec8a0");
+  auto const& orbiter =
+      *plugin->GetVessel("e180ca12-492f-45bf-a194-4c5255aec8a0");
   EXPECT_THAT(orbiter.name(), Eq("Mercury Orbiter 1"));
   auto const begin = orbiter.psychohistory().begin();
   EXPECT_THAT(begin->time,
