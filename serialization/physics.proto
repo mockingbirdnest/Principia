@@ -104,7 +104,7 @@ message DiscreteTrajectory {
   }
   repeated Brood children = 1;
   repeated InstantaneousDegreesOfFreedom timeline = 2;
-  // Pre Zermelo.
+  // Pre-Zermelo.
   repeated int32 fork_position = 3;
   // Added in Zermelo.
   optional int32 tracked_position = 7;  // Required.
