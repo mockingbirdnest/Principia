@@ -40,6 +40,8 @@
     <ClInclude Include="solar_system_factory_body.hpp" />
     <ClInclude Include="statistics.hpp" />
     <ClInclude Include="statistics_body.hpp" />
+    <ClInclude Include="trajectory_factories.hpp" />
+    <ClInclude Include="trajectory_factories_body.hpp" />
     <ClInclude Include="vanishes_before.hpp" />
     <ClInclude Include="vanishes_before_body.hpp" />
   </ItemGroup>
