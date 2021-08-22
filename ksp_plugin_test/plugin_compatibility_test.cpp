@@ -15,6 +15,7 @@
 #include "ksp_plugin/interface.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "serialization/ksp_plugin.pb.h"
+#include "testing_utilities/is_near.hpp"
 #include "testing_utilities/serialization.hpp"
 
 namespace principia {
@@ -30,6 +31,9 @@ using base::PullSerializer;
 using base::PushDeserializer;
 using ksp_plugin::Plugin;
 using quantities::Speed;
+using quantities::si::Kilo;
+using testing_utilities::operator""_⑴;
+using testing_utilities::IsNear;
 using testing_utilities::ReadLinesFromBase64File;
 using testing_utilities::ReadLinesFromHexadecimalFile;
 using ::testing::AllOf;
@@ -273,6 +277,85 @@ TEST_F(PluginCompatibilityTest, Reach) {
   WriteAndReadBack(std::move(plugin));
 }
 #endif
+
+TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
+  StringLogSink log_warning(google::WARNING);
+  not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
+      R"(P:\Public Mockingbird\Principia\Saves\1119\1119.proto.b64)",
+      /*compressor=*/"gipfeli",
+      /*decoder=*/"base64");
+  // TODO(phl): Check that we mention a compatibility path here once something
+  // changes.
+  EXPECT_THAT(log_warning.string(),
+              Not(HasSubstr("pre-Gröbner")));
+  auto const& orbiter = *plugin->GetVessel("e180ca12-492f-45bf-a194-4c5255aec8a0");
+  EXPECT_THAT(orbiter.name(), Eq("Mercury Orbiter 1"));
+  auto const begin = orbiter.psychohistory().begin();
+  EXPECT_THAT(begin->time,
+              Eq("1966-05-10T00:14:03"_TT + 0.0879862308502197 * Second));
+  EXPECT_THAT(begin->degrees_of_freedom,
+              Eq(DegreesOfFreedom<Barycentric>(
+                  Barycentric::origin + Displacement<Barycentric>(
+                                            {-9.83735958466250000e+10 * Metre,
+                                             -1.05659916408781250e+11 * Metre,
+                                             -4.58171358797500000e+10 * Metre}),
+                  Velocity<Barycentric>(
+                      {+2.18567382812500000e+04 * (Metre / Second),
+                       -1.76616533203125000e+04 * (Metre / Second),
+                       -7.76112133789062500e+03 * (Metre / Second)}))));
+
+  auto const& mercury = plugin->GetCelestial(2);
+  EXPECT_THAT(mercury.body()->name(), Eq("Mercury"));
+
+  plugin->RequestReanimation(begin->time);
+
+  while (mercury.trajectory().t_min() > begin->time) {
+    absl::SleepFor(absl::Milliseconds(1));
+  }
+
+  // The history goes back far enough that we are still on our way to Mercury at
+  // the beginning.
+  EXPECT_THAT((begin->degrees_of_freedom.position() -
+               mercury.trajectory().EvaluatePosition(begin->time)).Norm(),
+              IsNear(176'400'999_⑴ * Kilo(Metre)));
+  EXPECT_THAT(begin->time,
+              Eq("1966-05-10T00:14:03"_TT + 0.0879862308502197 * Second));
+  EXPECT_THAT(begin->degrees_of_freedom,
+              Eq(DegreesOfFreedom<Barycentric>(
+                  Barycentric::origin + Displacement<Barycentric>(
+                                            {-9.83735958466250000e+10 * Metre,
+                                             -1.05659916408781250e+11 * Metre,
+                                             -4.58171358797500000e+10 * Metre}),
+                  Velocity<Barycentric>(
+                      {+2.18567382812500000e+04 * (Metre / Second),
+                       -1.76616533203125000e+04 * (Metre / Second),
+                       -7.76112133789062500e+03 * (Metre / Second)}))));
+
+  // We arrive in late August.  Check the state in the beginning of September.
+  // TODO(egg): Move the expected values for this initial state to a header in
+  // astronomy, and use that to look for the Лидов–古在 mechanism.
+  auto const it = orbiter.psychohistory().LowerBound("1966-09-01T00:00:00"_TT);
+  EXPECT_THAT(it->time,
+              Eq("1966-09-01T00:16:55"_TT + 0.2571494579315186 * Second));
+  EXPECT_THAT(it->degrees_of_freedom,
+              Eq(DegreesOfFreedom<Barycentric>(
+                  Barycentric::origin + Displacement<Barycentric>(
+                                            {-2.40627773705000000e+10 * Metre,
+                                             +3.52445087251250000e+10 * Metre,
+                                             +2.13640458684375000e+10 * Metre}),
+                  Velocity<Barycentric>(
+                      {-5.19594188203811646e+04 * (Metre / Second),
+                       -2.23741500134468079e+04 * (Metre / Second),
+                       -7.15344990825653076e+03 * (Metre / Second)}))));
+  EXPECT_THAT((it->degrees_of_freedom.position() -
+               mercury.trajectory().EvaluatePosition(it->time))
+                  .Norm(),
+              IsNear(19'163_⑴ * Kilo(Metre)));
+
+  // Make sure that we can upgrade, save, and reload.
+  WriteAndReadBack(std::move(plugin));
+}
+
 
 // Use for debugging saves given by users.
 TEST_F(PluginCompatibilityTest, DISABLED_SECULAR_Debug) {
