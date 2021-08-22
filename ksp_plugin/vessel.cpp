@@ -476,11 +476,15 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   bool const is_pre_cesàro = message.has_psychohistory_is_authoritative();
   bool const is_pre_chasles = message.has_prediction();
   bool const is_pre_陈景润 = !message.history().has_downsampling();
-  LOG_IF(WARNING, is_pre_陈景润)
-      << "Reading pre-"
-      << (is_pre_cesàro    ? u8"Cesàro"
-          : is_pre_chasles ? "Chasles"
-                           : u8"陈景润")
+  // TODO(phl): Decide in which version it goes.
+  bool const is_pre_grothendieck_haar =
+      !message.history().has_tracked_position();
+  LOG_IF(WARNING, is_pre_grothendieck_haar)
+       << "Reading pre-"
+       << (is_pre_cesàro    ? u8"Cesàro"
+           : is_pre_chasles ? "Chasles"
+           : is_pre_陈景润   ? u8"陈景润"
+                            : "Grothendieck/Haar")
       << " Vessel";
 
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
@@ -511,8 +515,8 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     auto const psychohistory =
         DiscreteTrajectory<Barycentric>::ReadFromMessage(message.history(),
                                                          /*tracked=*/{});
-    // The |prehistory_| has been created by the constructor above.  Reconstruct
-    // the |history_| from the |psychohistory|.
+    // The |history_| has been created by the constructor above.  Reconstruct
+    // it from the |psychohistory|.
     CHECK(!psychohistory->Empty());
     for (auto it = psychohistory->begin(); it != psychohistory->end();) {
       auto const& [time, degrees_of_freedom] = *it;
@@ -528,37 +532,35 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     if (message.psychohistory_is_authoritative()) {
       vessel->psychohistory_ = vessel->history_->NewForkAtLast();
     }
+    vessel->backstory_ = vessel->psychohistory_->parent();
     vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
   } else if (is_pre_chasles) {
     vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
         /*tracked=*/{&vessel->psychohistory_});
+    vessel->backstory_ = vessel->psychohistory_->parent();
     vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
+  } else if (is_pre_grothendieck_haar) {
+    vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+        message.history(),
+        /*tracked=*/{&vessel->psychohistory_,
+                     &vessel->prediction_});
+    vessel->backstory_ = vessel->psychohistory_->parent();
   } else {
     vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
         /*tracked=*/{&vessel->backstory_,
-                     &vessel->psychohistory_,
-                     &vessel->prediction_});
-    // After Grothendieck/Haar there is no empty prediction so we must create
-    // one here.
-    if (vessel->prediction_ == nullptr) {
-      vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
-    }
-    // Necessary after Εὔδοξος because the ephemeris has not been prolonged
-    // during deserialization.  Doesn't hurt prior to Εὔδοξος.
-    ephemeris->Prolong(vessel->prediction_->back().time);
+                     &vessel->psychohistory_});
+    vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
   }
+
+  // Necessary after Εὔδοξος because the ephemeris has not been prolonged
+  // during deserialization.  Doesn't hurt prior to Εὔδοξος.
+  ephemeris->Prolong(vessel->prediction_->back().time);
 
   if (is_pre_陈景润) {
     vessel->history_->SetDownsampling(MaxDenseIntervals,
                                       DownsamplingTolerance);
-  }
-
-  // Prior to Grothendieck/Haar there is no |backstory_| so we have to recompute
-  // it.
-  if (vessel->backstory_ == nullptr) {
-    vessel->backstory_ = vessel->psychohistory_->parent();
   }
 
   if (message.has_flight_plan()) {

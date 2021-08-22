@@ -435,9 +435,17 @@ TEST_F(PluginTest, Serialization) {
   EXPECT_EQ(1, message.vessel_size());
   EXPECT_EQ(SolarSystemFactory::Earth, message.vessel(0).parent_index());
   EXPECT_TRUE(message.vessel(0).vessel().has_flight_plan());
+
   EXPECT_TRUE(message.vessel(0).vessel().has_history());
-  auto const& vessel_0_prehistory = message.vessel(0).vessel().history();
-  EXPECT_EQ(7, vessel_0_prehistory.zfp().timeline_size());
+  auto const& vessel_0_history = message.vessel(0).vessel().history();
+  EXPECT_EQ(1, vessel_0_history.zfp().timeline_size());
+  auto const& vessel_0_backstory =
+      vessel_0_history.children(0).trajectories(0);
+  EXPECT_EQ(6, vessel_0_backstory.zfp().timeline_size());
+  auto const& vessel_0_psychohistory =
+      vessel_0_backstory.children(0).trajectories(0);
+  EXPECT_EQ(1, vessel_0_psychohistory.zfp().timeline_size());
+  EXPECT_EQ(0, vessel_0_psychohistory.children_size());
 
   EXPECT_TRUE(message.has_renderer());
   EXPECT_TRUE(message.renderer().has_plotting_frame());
