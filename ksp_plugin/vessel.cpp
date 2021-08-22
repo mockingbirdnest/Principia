@@ -177,13 +177,9 @@ void Vessel::DetectCollapsibilityChange() {
     if (!is_collapsible_) {
       // If the segment that is being closed is not collapsible, we have no way
       // to reconstruct it, so we must serialize it in a checkpoint.  Note that
-      // the last point of the history specifies the initial conditions of the
+      // the last point of the backstory specifies the initial conditions of the
       // next (collapsible) segment.
-      if (backstory_ == history_.get()) {
-        checkpointer_->WriteToCheckpoint(backstory_->begin()->time);
-      } else {
-        checkpointer_->WriteToCheckpoint(backstory_->Fork()->time);
-      }
+      checkpointer_->WriteToCheckpoint(backstory_->back().time);
     }
     auto psychohistory = psychohistory_->DetachFork();
     backstory_ = history_->NewForkAtLast();
@@ -585,10 +581,19 @@ void Vessel::FillContainingPileUpsFromMessage(
 
 Checkpointer<serialization::Vessel>::Writer Vessel::MakeCheckpointerWriter() {
   return [this](not_null<serialization::Vessel::Checkpoint*> const message) {
-    backstory_->WriteToMessage(message->mutable_segment(),
-                              /*excluded=*/{psychohistory_},
-                              /*tracked=*/{},
-                              /*exact=*/{psychohistory_->Fork()});
+    if (backstory_ == history_.get()) {
+      history_->WriteToMessage(message->mutable_segment(),
+                               /*excluded=*/{psychohistory_},
+                               /*tracked=*/{},
+                               /*exact=*/{psychohistory_->Fork()});
+    } else {
+      auto backstory = backstory_->DetachFork();
+      backstory->WriteToMessage(message->mutable_segment(),
+                                /*excluded=*/{psychohistory_},
+                                /*tracked=*/{},
+                                /*exact=*/{psychohistory_->Fork()});
+      history_->AttachFork(std::move(backstory));
+    }
   };
 }
 

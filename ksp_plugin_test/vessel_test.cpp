@@ -614,7 +614,7 @@ TEST_F(VesselTest, Checkpointing) {
   CHECK_EQ(0, message.checkpoint(0).time().scalar().magnitude());
   CHECK_EQ(0, message.checkpoint(0).segment().children_size());
   CHECK_EQ(1, message.checkpoint(0).segment().zfp().timeline_size());
-  CHECK_EQ(10, message.checkpoint(1).time().scalar().magnitude());
+  CHECK_EQ(25, message.checkpoint(1).time().scalar().magnitude());
   CHECK_EQ(0, message.checkpoint(1).segment().children_size());
   CHECK_EQ(16, message.checkpoint(1).segment().zfp().timeline_size());
 }
