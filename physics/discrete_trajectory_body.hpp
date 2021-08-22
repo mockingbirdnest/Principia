@@ -528,9 +528,9 @@ typename DiscreteTrajectory<Frame>::Downsampling
 DiscreteTrajectory<Frame>::Downsampling::ReadFromMessage(
     serialization::DiscreteTrajectory::Downsampling const& message,
     DiscreteTrajectory const& trajectory) {
-  bool const is_pre_grothendieck_haar = message.has_start_of_dense_timeline();
-  LOG_IF(WARNING, is_pre_grothendieck_haar)
-      << "Reading pre-Grothendieck/Haar Downsampling";
+  bool const is_pre_zermelo = message.has_start_of_dense_timeline();
+  LOG_IF(WARNING, is_pre_zermelo)
+      << "Reading pre-Zermelo Downsampling";
   Downsampling downsampling(message.max_dense_intervals(),
                             Length::ReadFromMessage(message.tolerance()),
                             [&trajectory](Instant const& t){
@@ -538,7 +538,7 @@ DiscreteTrajectory<Frame>::Downsampling::ReadFromMessage(
                               CHECK(it != trajectory.end());
                               return it.current();
                             });
-  if (is_pre_grothendieck_haar) {
+  if (is_pre_zermelo) {
     // No support for forks in legacy saves, so |find| will succeed and ++ is
     // safe.
     auto it = trajectory.timeline_.find(

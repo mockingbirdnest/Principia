@@ -272,7 +272,7 @@ class Vessel {
   not_null<Celestial const*> parent_;
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
 
-  // When reading a pre-Grothendieck/Haar save, the existing history must be
+  // When reading a pre-Zermelo save, the existing history must be
   // non-collapsible as we don't know anything about it.
   bool is_collapsible_ = false;
 
