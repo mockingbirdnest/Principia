@@ -485,7 +485,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
           : is_pre_chasles ? "Chasles"
           : is_pre_陈景润   ? u8"陈景润"
                            : "Grothendieck/Haar")
-     << " Vessel";
+      << " Vessel";
 
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
   // information.
