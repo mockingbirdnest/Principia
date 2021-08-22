@@ -215,13 +215,6 @@ class Vessel {
       PileUp::PileUpForSerializationIndex const&
           pile_up_for_serialization_index);
 
-  // Return functions that can be passed to a |Checkpointer| to write this
-  // vessel to a checkpoint or read it back.
-  Checkpointer<serialization::Vessel>::Writer
-  MakeCheckpointerWriter();
-  Checkpointer<serialization::Vessel>::Reader
-  MakeCheckpointerReader();
-
   static void MakeAsynchronous();
   static void MakeSynchronous();
 
@@ -240,6 +233,13 @@ class Vessel {
 
   using TrajectoryIterator =
       DiscreteTrajectory<Barycentric>::Iterator (Part::*)();
+
+  // Return functions that can be passed to a |Checkpointer| to write this
+  // vessel to a checkpoint or read it back.
+  Checkpointer<serialization::Vessel>::Writer
+  MakeCheckpointerWriter();
+  Checkpointer<serialization::Vessel>::Reader
+  MakeCheckpointerReader();
 
   // Runs the integrator to compute the |prognostication_| based on the given
   // parameters.

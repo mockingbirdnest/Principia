@@ -581,6 +581,25 @@ void Vessel::FillContainingPileUpsFromMessage(
   }
 }
 
+void Vessel::MakeAsynchronous() {
+  synchronous_ = false;
+}
+
+void Vessel::MakeSynchronous() {
+  synchronous_ = true;
+}
+
+Vessel::Vessel()
+    : body_(),
+      prediction_adaptive_step_parameters_(DefaultPredictionParameters()),
+      parent_(testing_utilities::make_not_null<Celestial const*>()),
+      ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
+      checkpointer_(make_not_null_unique<Checkpointer<serialization::Vessel>>(
+          /*reader=*/nullptr,
+          /*writer=*/nullptr)),
+      history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
+      prognosticator_(nullptr, 20ms) {}
+
 Checkpointer<serialization::Vessel>::Writer Vessel::MakeCheckpointerWriter() {
   return [this](not_null<serialization::Vessel::Checkpoint*> const message) {
     if (backstory_ == history_.get()) {
@@ -604,25 +623,6 @@ Checkpointer<serialization::Vessel>::Reader Vessel::MakeCheckpointerReader() {
     return absl::OkStatus();
   };
 }
-
-void Vessel::MakeAsynchronous() {
-  synchronous_ = false;
-}
-
-void Vessel::MakeSynchronous() {
-  synchronous_ = true;
-}
-
-Vessel::Vessel()
-    : body_(),
-      prediction_adaptive_step_parameters_(DefaultPredictionParameters()),
-      parent_(testing_utilities::make_not_null<Celestial const*>()),
-      ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
-      checkpointer_(make_not_null_unique<Checkpointer<serialization::Vessel>>(
-          /*reader=*/nullptr,
-          /*writer=*/nullptr)),
-      history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
-      prognosticator_(nullptr, 20ms) {}
 
 absl::StatusOr<std::unique_ptr<DiscreteTrajectory<Barycentric>>>
 Vessel::FlowPrognostication(
