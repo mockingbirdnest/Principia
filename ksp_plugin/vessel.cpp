@@ -184,7 +184,7 @@ void Vessel::DetectCollapsibilityChange() {
     auto psychohistory = psychohistory_->DetachFork();
     backstory_ = history_->NewForkAtLast();
     backstory_->SetDownsampling(MaxDenseIntervals,
-                              DownsamplingTolerance);
+                                DownsamplingTolerance);
     backstory_->AttachFork(std::move(psychohistory));
     is_collapsible_ = becomes_collapsible;
   }
@@ -480,12 +480,12 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   bool const is_pre_grothendieck_haar =
       !message.history().has_tracked_position();
   LOG_IF(WARNING, is_pre_grothendieck_haar)
-       << "Reading pre-"
-       << (is_pre_cesàro    ? u8"Cesàro"
-           : is_pre_chasles ? "Chasles"
-           : is_pre_陈景润   ? u8"陈景润"
-                            : "Grothendieck/Haar")
-      << " Vessel";
+      << "Reading pre-"
+      << (is_pre_cesàro    ? u8"Cesàro"
+          : is_pre_chasles ? "Chasles"
+          : is_pre_陈景润   ? u8"陈景润"
+                           : "Grothendieck/Haar")
+     << " Vessel";
 
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
   // information.
@@ -552,6 +552,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
         /*tracked=*/{&vessel->backstory_,
                      &vessel->psychohistory_});
     vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
+    // TODO(phl): Need to restore is_collapsible_ somehow.
   }
 
   // Necessary after Εὔδοξος because the ephemeris has not been prolonged
