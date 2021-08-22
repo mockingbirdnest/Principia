@@ -183,7 +183,7 @@
     <PrincipiaGenerateProfiles>$(OutDir)tools.exe</PrincipiaGenerateProfiles>
     <PrincipiaGenerateProfilesCommand>"$(PrincipiaGenerateProfiles)" generate_profiles</PrincipiaGenerateProfilesCommand>
     <PrincipiaGenerateProfilesMessage>Generating C#/C++ files for {0}</PrincipiaGenerateProfilesMessage>
-    <PrincipiaGenerateProfilesOutputs>interface.generated.h;..\journal\player.generated.cc;..\journal\profiles.generated.h;..\journal\profiles.generated.cc;..\ksp_plugin_adapter\interface.generated.cs</PrincipiaGenerateProfilesOutputs>
+    <PrincipiaGenerateProfilesOutputs>..\ksp_plugin\interface.generated.h;..\journal\player.generated.cc;..\journal\profiles.generated.h;..\journal\profiles.generated.cc;..\ksp_plugin_adapter\interface.generated.cs</PrincipiaGenerateProfilesOutputs>
   </PropertyGroup>
 
   <ItemDefinitionGroup Condition="$(ProjectName)==serialization">
