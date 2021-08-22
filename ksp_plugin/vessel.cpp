@@ -74,9 +74,9 @@ Vessel::Vessel(GUID guid,
       checkpointer_(make_not_null_unique<Checkpointer<serialization::Vessel>>(
           MakeCheckpointerWriter(),
           MakeCheckpointerReader())),
-      prehistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
-  // Can't create the |history_|, |psychohistory_| and |prediction_| here
-  // because |prehistory_| is empty;
+      history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
+  // Can't create the |psychohistory_| and |prediction_| here because
+  // |history_| is empty;
 }
 
 Vessel::~Vessel() {
@@ -177,21 +177,22 @@ void Vessel::DetectCollapsibilityChange() {
     if (!is_collapsible_) {
       // If the segment that is being closed is not collapsible, we have no way
       // to reconstruct it, so we must serialize it in a checkpoint.  Note that
-      // the last point of the history specifies the initial conditions of the
+      // the last point of the backstory specifies the initial conditions of the
       // next (collapsible) segment.
-      checkpointer_->WriteToCheckpoint(history_->Fork()->time);
+      checkpointer_->WriteToCheckpoint(backstory_->back().time);
     }
     auto psychohistory = psychohistory_->DetachFork();
-    history_ = history_->NewForkAtLast();
-    history_->SetDownsampling(MaxDenseIntervals, DownsamplingTolerance);
-    history_->AttachFork(std::move(psychohistory));
+    backstory_ = history_->NewForkAtLast();
+    backstory_->SetDownsampling(MaxDenseIntervals,
+                                DownsamplingTolerance);
+    backstory_->AttachFork(std::move(psychohistory));
     is_collapsible_ = becomes_collapsible;
   }
 }
 
-void Vessel::CreatePrehistoryIfNeeded(Instant const& t) {
+void Vessel::CreateHistoryIfNeeded(Instant const& t) {
   CHECK(!parts_.empty());
-  if (prehistory_->Empty()) {
+  if (history_->Empty()) {
     LOG(INFO) << "Preparing history of vessel " << ShortDebugString()
               << " at " << t;
     BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
@@ -200,11 +201,10 @@ void Vessel::CreatePrehistoryIfNeeded(Instant const& t) {
           part.rigid_motion()({RigidPart::origin, RigidPart::unmoving}),
           part.mass());
     });
-    prehistory_->Append(t, calculator.Get());
-    CHECK(history_ == nullptr);
     CHECK(psychohistory_ == nullptr);
-    history_ = prehistory_->NewForkAtLast();
     history_->SetDownsampling(MaxDenseIntervals, DownsamplingTolerance);
+    history_->Append(t, calculator.Get());
+    backstory_ = history_.get();
     psychohistory_ = history_->NewForkAtLast();
     prediction_ = psychohistory_->NewForkAtLast();
   }
@@ -267,11 +267,11 @@ void Vessel::AdvanceTime() {
   // history as well as the psychohistory, if the history of the part was
   // obtained using an adaptive step integrator, which is the case during a
   // burn.  See #2931.
-  history_->DeleteFork(psychohistory_);
+  backstory_->DeleteFork(psychohistory_);
   AppendToVesselTrajectory(&Part::history_begin,
                            &Part::history_end,
-                           *history_);
-  psychohistory_ = history_->NewForkAtLast();
+                           *backstory_);
+  psychohistory_ = backstory_->NewForkAtLast();
 
   // The reason why we may want to skip the start of the psychohistory is
   // subtle.  Say that we have a vessel A with points at t₀, t₀ + 10 s,
@@ -459,10 +459,10 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
     message->add_kept_parts(part_id);
   }
   // Starting with Gateaux we don't save the prediction, see #2685.
-  prehistory_->WriteToMessage(message->mutable_prehistory(),
-                              /*exclude=*/{prediction_},
-                              /*tracked=*/{history_, psychohistory_},
-                              /*exact=*/{});
+  history_->WriteToMessage(message->mutable_history(),
+                           /*exclude=*/{prediction_},
+                           /*tracked=*/{backstory_, psychohistory_},
+                           /*exact=*/{});
   if (flight_plan_ != nullptr) {
     flight_plan_->WriteToMessage(message->mutable_flight_plan());
   }
@@ -475,15 +475,15 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     std::function<void(PartId)> const& deletion_callback) {
   bool const is_pre_cesàro = message.has_psychohistory_is_authoritative();
   bool const is_pre_chasles = message.has_prediction();
-  bool const is_pre_陈景润 = message.has_history() &&
-                            !message.history().has_downsampling();
+  bool const is_pre_陈景润 = !message.history().has_downsampling();
   // TODO(phl): Decide in which version it goes.
-  bool const is_pre_grothendieck_haar = !message.has_prehistory();
+  bool const is_pre_grothendieck_haar =
+      !message.history().has_tracked_position();
   LOG_IF(WARNING, is_pre_grothendieck_haar)
       << "Reading pre-"
       << (is_pre_cesàro    ? u8"Cesàro"
           : is_pre_chasles ? "Chasles"
-          : is_pre_陈景润  ? u8"陈景润"
+          : is_pre_陈景润   ? u8"陈景润"
                            : "Grothendieck/Haar")
       << " Vessel";
 
@@ -515,13 +515,10 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     auto const psychohistory =
         DiscreteTrajectory<Barycentric>::ReadFromMessage(message.history(),
                                                          /*tracked=*/{});
-    // The |prehistory_| has been created by the constructor above.  Reconstruct
-    // the |history_| from the |psychohistory|.
+    // The |history_| has been created by the constructor above.  Reconstruct
+    // it from the |psychohistory|.
     CHECK(!psychohistory->Empty());
-    auto it = psychohistory->begin();
-    vessel->prehistory_->Append(it->time, it->degrees_of_freedom);
-    vessel->history_ = vessel->prehistory_->NewForkAtLast();
-    for (++it; it != psychohistory->end();) {
+    for (auto it = psychohistory->begin(); it != psychohistory->end();) {
       auto const& [time, degrees_of_freedom] = *it;
       ++it;
       if (it == psychohistory->end() &&
@@ -535,42 +532,32 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     if (message.psychohistory_is_authoritative()) {
       vessel->psychohistory_ = vessel->history_->NewForkAtLast();
     }
+    vessel->backstory_ = vessel->psychohistory_->parent();
     vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
   } else if (is_pre_chasles) {
-    auto history = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+    vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
         /*tracked=*/{&vessel->psychohistory_});
-    vessel->prehistory_->Append(history->begin()->time,
-                                history->begin()->degrees_of_freedom);
-    vessel->history_ = history.get();
-    vessel->prehistory_->AttachFork(std::move(history));
+    vessel->backstory_ = vessel->psychohistory_->parent();
     vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
+  } else if (is_pre_grothendieck_haar) {
+    vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+        message.history(),
+        /*tracked=*/{&vessel->psychohistory_,
+                     &vessel->prediction_});
+    vessel->backstory_ = vessel->psychohistory_->parent();
   } else {
-    if (is_pre_grothendieck_haar) {
-      // The history is guaranteed to be non-empty because of the way
-      // CreateHistoryIfNeeded used to work.
-      auto history = DiscreteTrajectory<Barycentric>::ReadFromMessage(
-          message.history(),
-          /*tracked=*/{&vessel->psychohistory_, &vessel->prediction_});
-      vessel->prehistory_->Append(history->begin()->time,
-                                  history->begin()->degrees_of_freedom);
-      vessel->history_ = history.get();
-      vessel->prehistory_->AttachFork(std::move(history));
-    } else {
-      vessel->prehistory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
-          message.prehistory(),
-          /*tracked=*/{&vessel->history_,
-                       &vessel->psychohistory_});
-    }
-    // After Grothendieck/Haar there is no empty prediction so we must create
-    // one here.
-    if (vessel->prediction_ == nullptr) {
-      vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
-    }
-    // Necessary after Εὔδοξος because the ephemeris has not been prolonged
-    // during deserialization.  Doesn't hurt prior to Εὔδοξος.
-    ephemeris->Prolong(vessel->prediction_->back().time);
+    vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+        message.history(),
+        /*tracked=*/{&vessel->backstory_,
+                     &vessel->psychohistory_});
+    vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
+    // TODO(phl): Need to restore is_collapsible_ somehow.
   }
+
+  // Necessary after Εὔδοξος because the ephemeris has not been prolonged
+  // during deserialization.  Doesn't hurt prior to Εὔδοξος.
+  ephemeris->Prolong(vessel->prediction_->back().time);
 
   if (is_pre_陈景润) {
     vessel->history_->SetDownsampling(MaxDenseIntervals,
@@ -597,13 +584,19 @@ void Vessel::FillContainingPileUpsFromMessage(
 
 Checkpointer<serialization::Vessel>::Writer Vessel::MakeCheckpointerWriter() {
   return [this](not_null<serialization::Vessel::Checkpoint*> const message) {
-    auto const penultimate_history_segment = history_->parent();
-    auto last_history_segment = history_->DetachFork();
-    last_history_segment->WriteToMessage(message->mutable_segment(),
-                                         /*excluded=*/{psychohistory_},
-                                         /*tracked=*/{},
-                                         /*exact=*/{psychohistory_->Fork()});
-    penultimate_history_segment->AttachFork(std::move(last_history_segment));
+    if (backstory_ == history_.get()) {
+      history_->WriteToMessage(message->mutable_segment(),
+                               /*excluded=*/{psychohistory_},
+                               /*tracked=*/{},
+                               /*exact=*/{psychohistory_->Fork()});
+    } else {
+      auto backstory = backstory_->DetachFork();
+      backstory->WriteToMessage(message->mutable_segment(),
+                                /*excluded=*/{psychohistory_},
+                                /*tracked=*/{},
+                                /*exact=*/{psychohistory_->Fork()});
+      history_->AttachFork(std::move(backstory));
+    }
   };
 }
 
@@ -629,7 +622,7 @@ Vessel::Vessel()
       checkpointer_(make_not_null_unique<Checkpointer<serialization::Vessel>>(
           /*reader=*/nullptr,
           /*writer=*/nullptr)),
-      prehistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
+      history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       prognosticator_(nullptr, 20ms) {}
 
 absl::StatusOr<std::unique_ptr<DiscreteTrajectory<Barycentric>>>

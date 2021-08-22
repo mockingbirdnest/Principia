@@ -220,6 +220,7 @@ Checkpointer<Message>::ReadFromMessage(
 template<typename Message>
 void Checkpointer<Message>::WriteToCheckpointLocked(Instant const& t) {
   lock_.AssertHeld();
+  CHECK(!checkpoints_.contains(t)) << t;
   auto const it = checkpoints_.emplace_hint(
       checkpoints_.end(), t, typename Message::Checkpoint());
   lock_.Unlock();

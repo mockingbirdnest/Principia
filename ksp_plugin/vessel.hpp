@@ -106,11 +106,11 @@ class Vessel {
   // if needed.  Must be called after the pile-ups have been collected.
   virtual void DetectCollapsibilityChange();
 
-  // If the prehistory is empty, appends a single point to it, computed as the
+  // If the history is empty, appends a single point to it, computed as the
   // barycentre of all parts.  |parts_| must not be empty.  After this call,
-  // |prehistory_| is never empty again and the history and psychohistory are
-  // usable.  Must be called (at least) at the creation of the vessel.
-  virtual void CreatePrehistoryIfNeeded(Instant const& t);
+  // |history_| is never empty again and the psychohistory is usable.  Must be
+  // called (at least) after the creation of the vessel.
+  virtual void CreateHistoryIfNeeded(Instant const& t);
 
   // Disables downsampling for the history of this vessel.  This is useful when
   // the vessel collided with a celestial, as downsampling might run into
@@ -272,9 +272,8 @@ class Vessel {
   not_null<Celestial const*> parent_;
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
 
-  // When reading a pre-Grothendieck/Haar save, the existing history becomes the
-  // first (and only) segment of the |history_|.  It must be non-collapsible as
-  // we don't know anything about it.
+  // When reading a pre-Grothendieck/Haar save, the existing history must be
+  // non-collapsible as we don't know anything about it.
   bool is_collapsible_ = false;
 
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
@@ -284,16 +283,18 @@ class Vessel {
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
 
-  // The |prehistory_| contains exactly one point, added by
-  // CreatePrehistoryIfNeeded.
-  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> prehistory_;
+  // The |history_| is empty until the first call to CreateHistoryIfNeeded.
+  // It is made of a series of forks, alternatively non-collapsible and
+  // collapsible.
+  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_;
 
-  // The |history_| is forked off the end of the |prehistory_|, the
-  // |psychohistory_| is forked off the end of the |history_| and the
-  // |prediction_| is forked off the end of the |psychohistory_|.  The
-  // |history_| contains a number of segments which alternate it terms of the
-  // collapsibility of the vessel.
-  DiscreteTrajectory<Barycentric>* history_ = nullptr;
+  // The last (most recent) segment of the |history_| prior to the
+  // |psychohistory_|.  May be identical to |history_|, therefore not always a
+  // fork.  Always identical to |psychohistory_->parent()|.
+  DiscreteTrajectory<Barycentric>* backstory_ = nullptr;
+
+  // The |psychohistory_| is forked off the end of the |history_| and the
+  // |prediction_| is forked off the end of the |psychohistory_|.
   DiscreteTrajectory<Barycentric>* psychohistory_ = nullptr;
   DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
 

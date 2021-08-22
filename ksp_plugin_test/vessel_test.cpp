@@ -178,7 +178,7 @@ TEST_F(VesselTest, PrepareHistory) {
       ephemeris_,
       FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.CreatePrehistoryIfNeeded(astronomy::J2000 + 1 * Second);
+  vessel_.CreateHistoryIfNeeded(astronomy::J2000 + 1 * Second);
 
   EXPECT_EQ(1, vessel_.psychohistory().Size());
   EXPECT_EQ(astronomy::J2000 + 1 * Second,
@@ -207,7 +207,7 @@ TEST_F(VesselTest, AdvanceTime) {
       ephemeris_,
       FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.CreatePrehistoryIfNeeded(astronomy::J2000);
+  vessel_.CreateHistoryIfNeeded(astronomy::J2000);
 
   p1_->AppendToHistory(
       astronomy::J2000 + 0.5 * Second,
@@ -308,7 +308,7 @@ TEST_F(VesselTest, Prediction) {
                 Return(absl::OkStatus())))
       .WillRepeatedly(Return(absl::OkStatus()));
 
-  vessel_.CreatePrehistoryIfNeeded(astronomy::J2000);
+  vessel_.CreateHistoryIfNeeded(astronomy::J2000);
   // Polling for the integration to happen.
   do {
     vessel_.RefreshPrediction(astronomy::J2000 + 1 * Second);
@@ -380,7 +380,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
                                                60.0 * Metre / Second,
                                                50.0 * Metre / Second}))),
                 Return(absl::OkStatus())));
-  vessel_.CreatePrehistoryIfNeeded(astronomy::J2000);
+  vessel_.CreateHistoryIfNeeded(astronomy::J2000);
   // Polling for the integration to happen.
   do {
     vessel_.RefreshPrediction();
@@ -419,7 +419,7 @@ TEST_F(VesselTest, FlightPlan) {
       .Times(AnyNumber());
   std::vector<not_null<MassiveBody const*>> const bodies;
   ON_CALL(ephemeris_, bodies()).WillByDefault(ReturnRef(bodies));
-  vessel_.CreatePrehistoryIfNeeded(astronomy::J2000);
+  vessel_.CreateHistoryIfNeeded(astronomy::J2000);
 
   EXPECT_FALSE(vessel_.has_flight_plan());
   EXPECT_CALL(
@@ -504,7 +504,7 @@ TEST_F(VesselTest, Checkpointing) {
       ephemeris_,
       FlowWithAdaptiveStep(_, _, astronomy::J2000 + 30 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.CreatePrehistoryIfNeeded(astronomy::J2000);
+  vessel_.CreateHistoryIfNeeded(astronomy::J2000);
 
   auto const pile_up =
       std::make_shared<PileUp>(/*parts=*/std::list<not_null<Part*>>{p1_, p2_},
@@ -614,7 +614,7 @@ TEST_F(VesselTest, Checkpointing) {
   CHECK_EQ(0, message.checkpoint(0).time().scalar().magnitude());
   CHECK_EQ(0, message.checkpoint(0).segment().children_size());
   CHECK_EQ(1, message.checkpoint(0).segment().zfp().timeline_size());
-  CHECK_EQ(10, message.checkpoint(1).time().scalar().magnitude());
+  CHECK_EQ(25, message.checkpoint(1).time().scalar().magnitude());
   CHECK_EQ(0, message.checkpoint(1).segment().children_size());
   CHECK_EQ(16, message.checkpoint(1).segment().zfp().timeline_size());
 }
@@ -634,7 +634,7 @@ TEST_F(VesselTest, SerializationSuccess) {
       ephemeris_,
       FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.CreatePrehistoryIfNeeded(astronomy::J2000);
+  vessel_.CreateHistoryIfNeeded(astronomy::J2000);
 
   EXPECT_CALL(
       ephemeris_,
@@ -652,7 +652,7 @@ TEST_F(VesselTest, SerializationSuccess) {
   serialization::Vessel message;
   vessel_.WriteToMessage(&message,
                          serialization_index_for_pile_up.AsStdFunction());
-  EXPECT_TRUE(message.has_prehistory());
+  EXPECT_TRUE(message.has_history());
   EXPECT_TRUE(message.has_flight_plan());
 
   EXPECT_CALL(ephemeris_, Prolong(_)).Times(2);
