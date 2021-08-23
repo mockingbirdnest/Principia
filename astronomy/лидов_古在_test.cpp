@@ -74,6 +74,7 @@ class Лидов古在Test : public ::testing::Test {
       mercury_frame_;
 };
 
+#if !_DEBUG
 TEST_F(Лидов古在Test, MercuryOrbiter1) {
   DiscreteTrajectory<ICRS> icrs_trajectory;
   icrs_trajectory.Append(MercuryOrbiter1119InitialTime,
@@ -155,6 +156,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter1) {
   EXPECT_THAT(c₂.min, IsNear(-0.24_⑴));
   EXPECT_THAT(c₂.max, IsNear(-0.079_⑴));
 }
+#endif
 
 }  // namespace astronomy
 }  // namespace principia
