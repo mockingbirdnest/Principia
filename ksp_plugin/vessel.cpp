@@ -581,30 +581,6 @@ void Vessel::FillContainingPileUpsFromMessage(
   }
 }
 
-Checkpointer<serialization::Vessel>::Writer Vessel::MakeCheckpointerWriter() {
-  return [this](not_null<serialization::Vessel::Checkpoint*> const message) {
-    if (backstory_ == history_.get()) {
-      history_->WriteToMessage(message->mutable_segment(),
-                               /*excluded=*/{psychohistory_},
-                               /*tracked=*/{},
-                               /*exact=*/{psychohistory_->Fork()});
-    } else {
-      auto backstory = backstory_->DetachFork();
-      backstory->WriteToMessage(message->mutable_segment(),
-                                /*excluded=*/{psychohistory_},
-                                /*tracked=*/{},
-                                /*exact=*/{psychohistory_->Fork()});
-      history_->AttachFork(std::move(backstory));
-    }
-  };
-}
-
-Checkpointer<serialization::Vessel>::Reader Vessel::MakeCheckpointerReader() {
-  return [this](serialization::Vessel::Checkpoint const& message) {
-    return absl::OkStatus();
-  };
-}
-
 void Vessel::MakeAsynchronous() {
   synchronous_ = false;
 }
@@ -623,6 +599,70 @@ Vessel::Vessel()
           /*writer=*/nullptr)),
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       prognosticator_(nullptr, 20ms) {}
+
+Checkpointer<serialization::Vessel>::Writer Vessel::MakeCheckpointerWriter() {
+  return [this](not_null<serialization::Vessel::Checkpoint*> const message) {
+    if (backstory_ == history_.get()) {
+      history_->WriteToMessage(message->mutable_non_collapsible_segment(),
+                               /*excluded=*/{psychohistory_},
+                               /*tracked=*/{},
+                               /*exact=*/{psychohistory_->Fork()});
+    } else {
+      auto backstory = backstory_->DetachFork();
+      backstory->WriteToMessage(message->mutable_non_collapsible_segment(),
+                                /*excluded=*/{psychohistory_},
+                                /*tracked=*/{},
+                                /*exact=*/{psychohistory_->Fork()});
+      history_->AttachFork(std::move(backstory));
+    }
+
+    // Here the containing pile-up is the one for the collapsible segment.
+    ForSomePart([message](Part& first_part) {
+      first_part.containing_pile_up()->fixed_step_parameters().WriteToMessage(
+          message->mutable_collapsible_fixed_step_parameters());
+    });
+  };
+}
+
+Checkpointer<serialization::Vessel>::Reader Vessel::MakeCheckpointerReader() {
+  return [this](serialization::Vessel::Checkpoint const& message) {
+    return absl::OkStatus();
+  };
+}
+
+absl::Status Vessel::ReanimateOneCheckpoint(
+    serialization::Vessel::Checkpoint const& message) {
+  // Restore the non-collapsible segment that was fully saved.
+  auto non_collapsible_segment =
+      DiscreteTrajectory<Barycentric>::ReadFromMessage(
+          message.non_collapsible_segment(),
+          /*tracked=*/{});
+  auto const collapsible_fixed_step_parameters =
+      Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
+          message.collapsible_fixed_step_parameters());
+  CHECK(!non_collapsible_segment->Empty());
+
+  // Construct a new collapsible segment at the end of the non-collapsible
+  // segment and integrate it until the start time of the history.
+  Instant const& t_initial = non_collapsible_segment->back().time;
+  Instant const& t_final = history_->begin()->time;
+  auto const collapsible_segment = non_collapsible_segment->NewForkAtLast();
+  auto fixed_instance =
+      ephemeris_->NewInstance({collapsible_segment},
+                              Ephemeris<Barycentric>::NoIntrinsicAccelerations,
+                              collapsible_fixed_step_parameters);
+  auto const status = ephemeris_->FlowWithFixedStep(t_final, *fixed_instance);
+  RETURN_IF_ERROR(status);
+
+  // Attach the existing |history_| at the end of the collapsible segment and
+  // make the whole enchilada the new |history_|.  If integration reached the
+  // start of the existing |history_|, attaching will drop the duplicated point.
+  // If not, we'll have very close points near the stich.
+  non_collapsible_segment->AttachFork(std::move(history_));
+  history_ = std::move(non_collapsible_segment);
+
+  return absl::OkStatus();
+}
 
 absl::StatusOr<std::unique_ptr<DiscreteTrajectory<Barycentric>>>
 Vessel::FlowPrognostication(
