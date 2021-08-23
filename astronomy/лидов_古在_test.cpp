@@ -116,7 +116,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter1) {
     double const ε = 1 - Pow<2>(elements.eccentricity);
     double const cos²_i = Pow<2>(Cos(elements.inclination));
     double const sin²_i = Pow<2>(Sin(elements.inclination));
-    double const sin²_ω = Pow<2>(Sin(elements.inclination));
+    double const sin²_ω = Pow<2>(Sin(elements.argument_of_periapsis));
     c₁.Include(ε * cos²_i);
     c₂.Include((1 - ε) * (2.0 / 5.0 - sin²_i * sin²_ω));
     logger.Append("t", elements.time, mathematica::ExpressIn(Second));
@@ -145,16 +145,19 @@ TEST_F(Лидов古在Test, MercuryOrbiter1) {
   EXPECT_THAT(elements.mean_semimajor_axis_interval().max,
               IsNear(14'910.3_⑴ * Kilo(Metre)));
 
-  // The integral c₁ is preserved quite well: we have a fairly clean exchange
-  // between inclination and eccentricity.
+  // The integral c₁ is preserved quite well: we have an exchange between
+  // inclination and eccentricity.
   EXPECT_THAT(c₁.min, IsNear(0.042_⑴));
   EXPECT_THAT(c₁.max, IsNear(0.050_⑴));
 
-  // The integral c₂ is messier.
-  // TODO(egg): Why is that?  It is not the inhomogeneity of the gravitational
-  // potential of Mercury, changing that has no appreciable effect here.
-  EXPECT_THAT(c₂.min, IsNear(-0.24_⑴));
-  EXPECT_THAT(c₂.max, IsNear(-0.079_⑴));
+  // The integral c₂ is also conserved: the long-term evolution of the orbital
+  // elements is as described in [Лид61].
+  EXPECT_THAT(c₂.min, IsNear(-0.091_⑴));
+  EXPECT_THAT(c₂.max, IsNear(-0.083_⑴));
+
+  // TODO(egg): The above are integrals of motion only when averaging over an
+  // orbit of the perturbing body (so here, over the orbit of Mercury); see what
+  // things look like under a moving average.
 }
 #endif
 
