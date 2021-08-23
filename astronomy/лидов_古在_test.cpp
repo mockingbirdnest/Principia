@@ -45,6 +45,8 @@ using testing_utilities::operator""_⑴;
 using quantities::si::Degree;
 using testing_utilities::IsNear;
 
+// A test that showcases the eccentricity-inclination exchange mechanism
+// described in [Лид61] and [Koz62].  We follow the treatment in [Лид61].
 class Лидов古在Test : public ::testing::Test {
  protected:
   using MercuryCentredInertial =
