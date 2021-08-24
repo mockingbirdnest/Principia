@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "astronomy/time_scales.hpp"
+#include "astronomy/mercury_orbiter.hpp"
 #include "base/file.hpp"
 #include "base/not_null.hpp"
 #include "base/pull_serializer.hpp"
@@ -22,6 +23,8 @@ namespace principia {
 namespace interface {
 
 using astronomy::operator""_TT;
+using astronomy::MercuryOrbiterInitialDegreesOfFreedom;
+using astronomy::MercuryOrbiterInitialTime;
 using astronomy::TTSecond;
 using astronomy::date_time::DateTime;
 using astronomy::date_time::operator""_DateTime;
@@ -333,24 +336,12 @@ TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
                        -7.76112133789062500e+03 * (Metre / Second)}))));
 
   // We arrive in late August.  Check the state in the beginning of September.
-  // TODO(egg): Move the expected values for this initial state to a header in
-  // astronomy, and use that to look for the Лидов–古在 mechanism.
   auto const it = orbiter.psychohistory().LowerBound("1966-09-01T00:00:00"_TT);
-  EXPECT_THAT(it->time,
-              Eq("1966-09-01T00:16:55"_TT + 0.2571494579315186 * Second));
+  EXPECT_THAT(it->time, Eq(MercuryOrbiterInitialTime));
   EXPECT_THAT(it->degrees_of_freedom,
-              Eq(DegreesOfFreedom<Barycentric>(
-                  Barycentric::origin + Displacement<Barycentric>(
-                                            {-2.40627773705000000e+10 * Metre,
-                                             +3.52445087251250000e+10 * Metre,
-                                             +2.13640458684375000e+10 * Metre}),
-                  Velocity<Barycentric>(
-                      {-5.19594188203811646e+04 * (Metre / Second),
-                       -2.23741500134468079e+04 * (Metre / Second),
-                       -7.15344990825653076e+03 * (Metre / Second)}))));
+              Eq(MercuryOrbiterInitialDegreesOfFreedom<Barycentric>));
   EXPECT_THAT((it->degrees_of_freedom.position() -
-               mercury.trajectory().EvaluatePosition(it->time))
-                  .Norm(),
+               mercury.trajectory().EvaluatePosition(it->time)).Norm(),
               IsNear(19'163_⑴ * Kilo(Metre)));
 
   // Make sure that we can upgrade, save, and reload.

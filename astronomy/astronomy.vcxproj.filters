@@ -267,6 +267,9 @@
     <ClInclude Include="orbit_ground_track_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="mercury_orbiter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lunar_eclipse_test.cpp">
@@ -334,6 +337,9 @@
     </ClCompile>
     <ClCompile Include="..\geometry\instant_output.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="лидов_古在_test.cpp">
+      <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
