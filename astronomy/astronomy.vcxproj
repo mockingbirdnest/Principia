@@ -100,7 +100,7 @@
     <ClInclude Include="experimental_eop_c02.generated.h" />
     <ClInclude Include="frames.hpp" />
     <ClInclude Include="fortran_astrodynamics_toolkit_body.hpp" />
-    <ClInclude Include="butcher_mercury_orbiter_1119.hpp" />
+    <ClInclude Include="mercury_orbiter.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\base\bundle.cpp" />

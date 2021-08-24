@@ -1,12 +1,11 @@
 ﻿
 #include <memory>
 
-#include "astronomy/butcher_mercury_orbiter_1119.hpp"
+#include "astronomy/mercury_orbiter.hpp"
 #include "astronomy/orbital_elements.hpp"
 #include "astronomy/frames.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "ksp_plugin/integrators.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/solar_system.hpp"
 #include "mathematica/mathematica.hpp"
@@ -33,17 +32,21 @@ using physics::MasslessBody;
 using physics::SolarSystem;
 using physics::Trajectory;
 using quantities::Cos;
+using quantities::Length;
 using quantities::Pow;
 using quantities::Sin;
+using quantities::si::Degree;
+using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
-using quantities::si::Kilo;
 using quantities::si::Second;
 using testing_utilities::operator""_⑴;
-using quantities::si::Degree;
 using testing_utilities::IsNear;
+
+constexpr std::int64_t MaxDenseIntervals = 10'000;
+constexpr Length DownsamplingTolerance = 10 * Metre;
 
 // A test that showcases the eccentricity-inclination exchange mechanism
 // described in [Лид61] and [Koz62].  We follow the treatment in [Лид61].
@@ -65,7 +68,13 @@ class Лидов古在Test : public ::testing::Test {
                                                    Position<ICRS>>(),
                 /*step=*/10 * Minute))),
         mercury_(*solar_system_1950_.massive_body(*ephemeris_, "Mercury")),
-        mercury_frame_(ephemeris_.get(), &mercury_) {}
+        mercury_frame_(ephemeris_.get(), &mercury_) {
+    google::SetStderrLogging(google::INFO);
+  }
+
+  ~Лидов古在Test() override {
+    google::SetStderrLogging(FLAGS_stderrthreshold);
+  }
 
   SolarSystem<ICRS> solar_system_1950_;
   not_null<std::unique_ptr<Ephemeris<ICRS>>> ephemeris_;
@@ -75,12 +84,11 @@ class Лидов古在Test : public ::testing::Test {
 };
 
 #if !_DEBUG
-TEST_F(Лидов古在Test, MercuryOrbiter1) {
+TEST_F(Лидов古在Test, MercuryOrbiter) {
   DiscreteTrajectory<ICRS> icrs_trajectory;
-  icrs_trajectory.Append(MercuryOrbiter1119InitialTime,
-                         MercuryOrbiter1119InitialDegreesOfFreedom<ICRS>);
-  icrs_trajectory.SetDownsampling(ksp_plugin::MaxDenseIntervals,
-                                  ksp_plugin::DownsamplingTolerance);
+  icrs_trajectory.Append(MercuryOrbiterInitialTime,
+                         MercuryOrbiterInitialDegreesOfFreedom<ICRS>);
+  icrs_trajectory.SetDownsampling(MaxDenseIntervals, DownsamplingTolerance);
   auto const instance = ephemeris_->NewInstance(
       {&icrs_trajectory},
       Ephemeris<ICRS>::NoIntrinsicAccelerations,
@@ -90,24 +98,29 @@ TEST_F(Лидов古在Test, MercuryOrbiter1) {
   for (int year = 1967; year < 1980; ++year) {
     Instant const t = DateTimeAsTT(date_time::DateTime::BeginningOfDay(
         date_time::Date::Ordinal(year, 1)));
-    LOG(ERROR) << "Flowing to " << t;
+    LOG(INFO) << "Flowing to " << t;
     auto const status = ephemeris_->FlowWithFixedStep(t, *instance);
     if (!status.ok()) {
-      LOG(ERROR) << status << " at " << icrs_trajectory.back().time;
+      LOG(INFO) << status << " at " << icrs_trajectory.back().time;
       break;
     }
   }
+  mathematica::Logger logger(
+      SOLUTION_DIR / "mathematica" / u"лидов_古在.generated.wl",
+                             /*make_unique=*/false);
 
   DiscreteTrajectory<MercuryCentredInertial> mercury_centred_trajectory;
   for (auto const& [t, dof] : icrs_trajectory) {
     mercury_centred_trajectory.Append(t,
                                       mercury_frame_.ToThisFrameAtTime(t)(dof));
+    logger.Append(
+        "q",
+        mercury_centred_trajectory.back().degrees_of_freedom.position(),
+        mathematica::ExpressIn(Metre));
   }
 
   OrbitalElements const elements = OrbitalElements::ForTrajectory(
       mercury_centred_trajectory, mercury_, MasslessBody{}).value();
-  mathematica::Logger logger(SOLUTION_DIR / "mathematica" / "1119.generated.wl",
-                             /*make_unique=*/false);
   // The constants c₁ and c₂ are defined in [Лид61], equations (58) and (59)
   // respectively.
   Interval<double> c₁;

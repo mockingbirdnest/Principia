@@ -267,7 +267,7 @@
     <ClInclude Include="orbit_ground_track_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="butcher_mercury_orbiter_1119.hpp">
+    <ClInclude Include="mercury_orbiter.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

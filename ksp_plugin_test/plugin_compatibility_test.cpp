@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "astronomy/time_scales.hpp"
-#include "astronomy/butcher_mercury_orbiter_1119.hpp"
+#include "astronomy/mercury_orbiter.hpp"
 #include "base/file.hpp"
 #include "base/not_null.hpp"
 #include "base/pull_serializer.hpp"
@@ -23,8 +23,8 @@ namespace principia {
 namespace interface {
 
 using astronomy::operator""_TT;
-using astronomy::MercuryOrbiter1119InitialDegreesOfFreedom;
-using astronomy::MercuryOrbiter1119InitialTime;
+using astronomy::MercuryOrbiterInitialDegreesOfFreedom;
+using astronomy::MercuryOrbiterInitialTime;
 using astronomy::TTSecond;
 using astronomy::date_time::DateTime;
 using astronomy::date_time::operator""_DateTime;
@@ -337,9 +337,9 @@ TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
 
   // We arrive in late August.  Check the state in the beginning of September.
   auto const it = orbiter.psychohistory().LowerBound("1966-09-01T00:00:00"_TT);
-  EXPECT_THAT(it->time, Eq(MercuryOrbiter1119InitialTime));
+  EXPECT_THAT(it->time, Eq(MercuryOrbiterInitialTime));
   EXPECT_THAT(it->degrees_of_freedom,
-              Eq(MercuryOrbiter1119InitialDegreesOfFreedom<Barycentric>));
+              Eq(MercuryOrbiterInitialDegreesOfFreedom<Barycentric>));
   EXPECT_THAT((it->degrees_of_freedom.position() -
                mercury.trajectory().EvaluatePosition(it->time)).Norm(),
               IsNear(19'163_⑴ * Kilo(Metre)));
