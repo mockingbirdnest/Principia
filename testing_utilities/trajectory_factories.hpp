@@ -22,7 +22,7 @@ using quantities::Length;
 using quantities::Time;
 
 template<typename Frame>
-not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> MakeCircularTrajectory(
+not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> NewCircularTrajectory(
     AngularFrequency const& ω,
     Length const& r,
     Time const& Δt,
@@ -30,7 +30,7 @@ not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> MakeCircularTrajectory(
     Instant const& t2);
 
 template<typename Frame>
-not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> MakeCircularTrajectory(
+not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> NewCircularTrajectory(
     AngularFrequency const& ω,
     Length const& r,
     Time const& Δt,
@@ -45,7 +45,7 @@ void AppendTrajectory(DiscreteTrajectory<Frame> const& from,
 }  // namespace internal_trajectory_factories
 
 using internal_trajectory_factories::AppendTrajectory;
-using internal_trajectory_factories::MakeCircularTrajectory;
+using internal_trajectory_factories::NewCircularTrajectory;
 
 }  // namespace testing_utilities
 }  // namespace principia
