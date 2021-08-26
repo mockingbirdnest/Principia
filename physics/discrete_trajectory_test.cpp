@@ -815,13 +815,13 @@ TEST_F(DiscreteTrajectoryTest, QuadrilateralCircle) {
 
   double max_r_error = 0;
   double max_v_error = 0;
-  for (Time t; t < period; t += period / 32) {
+  for (Instant t = t0_; t <= circle->back().time; t += period / 32) {
     auto const degrees_of_freedom_interpolated =
-        circle->EvaluateDegreesOfFreedom(t0_ + t);
+        circle->EvaluateDegreesOfFreedom(t);
     auto const& q_interpolated = degrees_of_freedom_interpolated.position();
     auto const& v_interpolated = degrees_of_freedom_interpolated.velocity();
-    EXPECT_THAT(circle->EvaluatePosition(t0_ + t), Eq(q_interpolated));
-    EXPECT_THAT(circle->EvaluateVelocity(t0_ + t), Eq(v_interpolated));
+    EXPECT_THAT(circle->EvaluatePosition(t), Eq(q_interpolated));
+    EXPECT_THAT(circle->EvaluateVelocity(t), Eq(v_interpolated));
     max_r_error = std::max(
         max_r_error, RelativeError(r, (q_interpolated - World::origin).Norm()));
     max_v_error =
@@ -959,7 +959,7 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingForgetAfter) {
   AppendTrajectory(*NewCircularTrajectory<World>(
                        ω, r, Δt, forgotten_circle.back().time + Δt, t2),
                    /*to=*/forgotten_circle);
-  EXPECT_THAT(circle.Size(), Eq(93));
+  EXPECT_THAT(circle.Size(), Eq(92));
   EXPECT_THAT(forgotten_circle.Size(), Eq(circle.Size()));
   std::vector<Length> errors;
   for (auto const [time, degrees_of_freedom] : forgotten_circle) {
