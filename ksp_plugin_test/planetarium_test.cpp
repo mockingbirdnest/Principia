@@ -24,6 +24,7 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/serialization.hpp"
+#include "testing_utilities/trajectory_factories.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
@@ -66,6 +67,7 @@ using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
+using testing_utilities::NewCircularTrajectory;
 using testing_utilities::ReadFromBinaryFile;
 using testing_utilities::VanishesBefore;
 using ::testing::_;
@@ -121,27 +123,6 @@ class PlanetariumTest : public ::testing::Test {
         .WillRepeatedly(Return(Barycentric::origin));
   }
 
-  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>>
-  NewCircularTrajectory(Time const& period,
-                        Time const& step,
-                        Time const& last) {
-    auto discrete_trajectory =
-        make_not_null_unique<DiscreteTrajectory<Barycentric>>();
-    for (Time t; t <= last; t += step) {
-      Angle const ɑ = 2 * π * t * Radian / period;
-      DegreesOfFreedom<Barycentric> const degrees_of_freedom(
-          Barycentric::origin +
-              Displacement<Barycentric>({10 * Metre * Sin(ɑ),
-                                         10 * Metre * Cos(ɑ),
-                                         0 * Metre}),
-          Velocity<Barycentric>({(20 * π / period) * Metre * Cos(ɑ),
-                                 -(20 * π / period) * Metre * Sin(ɑ),
-                                 0 * Metre / Second}));
-      discrete_trajectory->Append(t0_ + t, degrees_of_freedom);
-    }
-    return discrete_trajectory;
-  }
-
   Instant const t0_;
   Perspective<Navigation, Camera> const perspective_;
   MockDynamicFrame<Barycentric, Navigation> plotting_frame_;
@@ -152,9 +133,12 @@ class PlanetariumTest : public ::testing::Test {
 };
 
 TEST_F(PlanetariumTest, PlotMethod0) {
-  auto const discrete_trajectory = NewCircularTrajectory(/*period=*/10 * Second,
-                                                         /*step=*/1 * Second,
-                                                         /*last=*/10 * Second);
+  auto const discrete_trajectory =
+      NewCircularTrajectory<Barycentric>(/*period=*/10 * Second,
+                                         /*r=*/10 * Metre,
+                                         /*Δt=*/1 * Second,
+                                         /*t1=*/t0_,
+                                         /*t2=*/t0_ + 11 * Second);
 
   // No dark area, infinite acuity, wide field of view.
   Planetarium::Parameters parameters(
@@ -173,9 +157,9 @@ TEST_F(PlanetariumTest, PlotMethod0) {
   // meet in front of the camera and are separated by a hole behind the planet.
   EXPECT_THAT(rp2_lines, SizeIs(2));
   EXPECT_THAT(rp2_lines[0].front().x() - rp2_lines[1].back().x(),
-              VanishesBefore(1 * Metre, 6));
+              VanishesBefore(1 * Metre, 2));
   EXPECT_THAT(rp2_lines[0].back().x() - rp2_lines[1].front().x(),
-              AlmostEquals(10.0 / Sqrt(399.0) * Metre, 47, 94));
+              AlmostEquals(-10.0 / Sqrt(399.0) * Metre, 4, 94));
 
   for (auto const& rp2_line : rp2_lines) {
     for (auto const& rp2_point : rp2_line) {
@@ -193,9 +177,11 @@ TEST_F(PlanetariumTest, PlotMethod1) {
   // A quarter of a circular trajectory around the origin, with many small
   // segments.
   auto const discrete_trajectory =
-      NewCircularTrajectory(/*period=*/100'000 * Second,
-                            /*step=*/1 * Second,
-                            /*last=*/25'000 * Second);
+      NewCircularTrajectory<Barycentric>(/*period=*/100'000 * Second,
+                                         /*r=*/10 * Metre,
+                                         /*Δt=*/1 * Second,
+                                         /*t1=*/t0_,
+                                         /*t2=*/t0_ + 25'000 * Second);
 
   // No dark area, human visual acuity, wide field of view.
   Planetarium::Parameters parameters(
@@ -224,9 +210,11 @@ TEST_F(PlanetariumTest, PlotMethod2) {
   // A quarter of a circular trajectory around the origin, with many small
   // segments.
   auto const discrete_trajectory =
-      NewCircularTrajectory(/*period=*/100'000 * Second,
-                            /*step=*/1 * Second,
-                            /*last=*/25'000 * Second);
+      NewCircularTrajectory<Barycentric>(/*period=*/100'000 * Second,
+                                         /*r=*/10 * Metre,
+                                         /*Δt=*/1 * Second,
+                                         /*t1=*/t0_,
+                                         /*t2=*/t0_ + 25'000 * Second);
 
   // No dark area, human visual acuity, wide field of view.
   Planetarium::Parameters parameters(
