@@ -915,25 +915,30 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingForks) {
   Time const Δt = 10 * Milli(Second);
   Instant const t1 = t0_;
   Instant const t2 = t0_ + 10 * Second;
-  auto const root_tmax = AppendCircularTrajectory(ω, r, Δt, t1, t2, root);
+  AppendTrajectory(*NewCircularTrajectory<World>(ω, r, Δt, t1, t2),
+                   /*to=*/root);
+  auto const root_tmax = root.back().time;
 
   auto fork1 = root.NewForkAtLast();
   fork1->SetDownsampling(max_dense_intervals, tolerance);
   Instant const t3 = t2 + 10 * Second;
-  auto const fork1_tmax =
-      AppendCircularTrajectory(ω, r, Δt, root_tmax, t3, *fork1);
+  AppendTrajectory(*NewCircularTrajectory<World>(ω, r, Δt, root_tmax + Δt, t3),
+                   /*to=*/*fork1);
+  auto const fork1_tmax = fork1->back().time;
 
   // A short fork with no downsampling
   auto fork2 = fork1->NewForkAtLast();
   fork2->SetDownsampling(max_dense_intervals, tolerance);
   Instant const t4 = t3 + 300 * Milli(Second);
-  auto const fork2_tmax =
-      AppendCircularTrajectory(ω, r, Δt, fork1_tmax, t4, *fork2);
+  AppendTrajectory(*NewCircularTrajectory<World>(ω, r, Δt, fork1_tmax + Δt, t4),
+                   /*to=*/*fork2);
+  auto const fork2_tmax = fork2->back().time;
 
   auto fork3 = fork2->NewForkAtLast();
   fork3->SetDownsampling(max_dense_intervals, tolerance);
   Instant const t5 = t4 + 10 * Second;
-  AppendCircularTrajectory(ω, r, Δt, fork2_tmax, t5, *fork3);
+  AppendTrajectory(*NewCircularTrajectory<World>(ω, r, Δt, fork2_tmax + Δt, t5),
+                   /*to=*/*fork3);
 
   // Roughly 55 points per downsampled segments.
   EXPECT_THAT(root.Size(), Eq(56));
