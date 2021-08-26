@@ -3,11 +3,13 @@
 #include "testing_utilities/trajectory_factories.hpp"
 
 #include "geometry/frame.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace testing_utilities {
@@ -15,6 +17,7 @@ namespace testing_utilities {
 using geometry::Frame;
 using geometry::Handedness;
 using geometry::Inertial;
+using geometry::InnerProduct;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Velocity;
@@ -34,8 +37,8 @@ TEST_F(TrajectoryFactoriesTest, MakeCircularTrajectory) {
   auto const trajectory = MakeCircularTrajectory<World>(
       /*ω=*/3 * Radian / Second,
       /*r=*/2 * Metre,
-      /*Δt=*/0.1 * Second, /*t1=*/
-      Instant{} + 4 * Second,
+      /*Δt=*/0.1 * Second,
+      /*t1=*/Instant{} + 4 * Second,
       /*t2=*/Instant{} + 42 * Second);
 
   for (auto const& [time, degrees_of_freedom] : *trajectory) {
@@ -44,7 +47,12 @@ TEST_F(TrajectoryFactoriesTest, MakeCircularTrajectory) {
 
     EXPECT_THAT((position - World::origin).Norm(),
                 AlmostEquals(2 * Metre, 0, 1));
+    EXPECT_THAT(InnerProduct(position - World::origin, velocity),
+                VanishesBefore(1 * Metre * Metre / Second, 0, 8));
   }
+  EXPECT_EQ(Instant{} + 4 * Second, trajectory->begin()->time);
+  EXPECT_EQ(Instant{} + 42 * Second, trajectory->back().time);
+  EXPECT_EQ(381, trajectory->Size());
 }
 
 }  // namespace testing_utilities
