@@ -860,11 +860,8 @@ TEST_F(DiscreteTrajectoryTest, Downsampling) {
 
 TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
   DiscreteTrajectory<World> circle;
-  auto deserialized_circle = make_not_null_unique<DiscreteTrajectory<World>>();
   circle.SetDownsampling(/*max_dense_intervals=*/50,
                          /*tolerance=*/1 * Milli(Metre));
-  deserialized_circle->SetDownsampling(/*max_dense_intervals=*/50,
-                                       /*tolerance=*/1 * Milli(Metre));
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
   Time const Δt = 10 * Milli(Second);
@@ -875,12 +872,11 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
   auto const circle_tmax = circle.back().time;
 
   serialization::DiscreteTrajectory message;
-  deserialized_circle->WriteToMessage(
-      &message,
-      /*forks=*/{},
-      /*exact=*/{circle.LowerBound(t0_ + 2 * Second),
-                 circle.LowerBound(t0_ + 3 * Second)});
-  deserialized_circle =
+  circle.WriteToMessage(&message,
+                        /*forks=*/{},
+                        /*exact=*/{circle.LowerBound(t0_ + 2 * Second),
+                                   circle.LowerBound(t0_ + 3 * Second)});
+  auto deserialized_circle =
       DiscreteTrajectory<World>::ReadFromMessage(message, /*forks=*/{});
 
   // Serialization/deserialization preserves the size, the times, and nudges the
