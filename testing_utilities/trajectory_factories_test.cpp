@@ -33,8 +33,8 @@ class TrajectoryFactoriesTest : public ::testing::Test {
                       serialization::Frame::TEST>;
 };
 
-TEST_F(TrajectoryFactoriesTest, MakeCircularTrajectory) {
-  auto const trajectory = MakeCircularTrajectory<World>(
+TEST_F(TrajectoryFactoriesTest, NewCircularTrajectory) {
+  auto const trajectory = NewCircularTrajectory<World>(
       /*ω=*/3 * Radian / Second,
       /*r=*/2 * Metre,
       /*Δt=*/0.1 * Second,

@@ -20,23 +20,23 @@ using quantities::Speed;
 using quantities::si::Radian;
 
 template<typename Frame>
-not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> MakeCircularTrajectory(
+not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> NewCircularTrajectory(
     AngularFrequency const& ω,
     Length const& r,
     Time const& Δt,
     Instant const& t1,
     Instant const& t2) {
   DoublePrecision<Instant> t_max;
-  return MakeCircularTrajectory<Frame>(ω,
-                                       r,
-                                       Δt,
-                                       DoublePrecision<Instant>(t1),
-                                       DoublePrecision<Instant>(t2),
-                                       t_max);
+  return NewCircularTrajectory<Frame>(ω,
+                                      r,
+                                      Δt,
+                                      DoublePrecision<Instant>(t1),
+                                      DoublePrecision<Instant>(t2),
+                                      t_max);
 }
 
 template<typename Frame>
-not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> MakeCircularTrajectory(
+not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> NewCircularTrajectory(
     AngularFrequency const& ω,
     Length const& r,
     Time const& Δt,
