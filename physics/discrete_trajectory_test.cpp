@@ -37,7 +37,6 @@ using geometry::Point;
 using geometry::Position;
 using geometry::R3Element;
 using geometry::Vector;
-using numerics::DoublePrecision;
 using quantities::Abs;
 using quantities::AngularFrequency;
 using quantities::Cos;
@@ -927,12 +926,14 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
   // trajectories are still within the tolerance.
   EXPECT_THAT(circle.Size(), Eq(77));
   EXPECT_THAT(deserialized_circle->Size(), Eq(78));
-  for (auto t = DoublePrecision<Instant>(t0_); t.value <= t3; t.Increment(Δt)) {
-    EXPECT_THAT(deserialized_circle->EvaluatePosition(t.value),
-                AbsoluteErrorFrom(circle.EvaluatePosition(t.value),
-                                  Le(0.23 * Milli(Metre))));
-    EXPECT_THAT(deserialized_circle->EvaluateVelocity(t.value),
-                AbsoluteErrorFrom(circle.EvaluateVelocity(t.value),
+  for (Instant t = t0_;
+       t <= std::min(circle.back().time, deserialized_circle->back().time);
+       t += Δt) {
+    EXPECT_THAT(
+        deserialized_circle->EvaluatePosition(t),
+        AbsoluteErrorFrom(circle.EvaluatePosition(t), Le(0.23 * Milli(Metre))));
+    EXPECT_THAT(deserialized_circle->EvaluateVelocity(t),
+                AbsoluteErrorFrom(circle.EvaluateVelocity(t),
                                   Le(5.7 * Milli(Metre) / Second)));
   }
 }
