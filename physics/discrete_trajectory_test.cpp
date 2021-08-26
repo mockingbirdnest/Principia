@@ -37,7 +37,6 @@ using geometry::Point;
 using geometry::Position;
 using geometry::R3Element;
 using geometry::Vector;
-using numerics::DoublePrecision;
 using quantities::Abs;
 using quantities::AngularFrequency;
 using quantities::Cos;
@@ -135,39 +134,6 @@ class DiscreteTrajectoryTest : public testing::Test {
       result.push_back(time);
     }
     return result;
-  }
-
-  DoublePrecision<Instant> AppendCircularTrajectory(
-      AngularFrequency const& ω,
-      Length const& r,
-      Time const& Δt,
-      Instant const& t1,
-      Instant const& t2,
-      DiscreteTrajectory<World>& trajectory) {
-    return AppendCircularTrajectory(
-        ω, r, Δt, DoublePrecision<Instant>(t1), t2, trajectory);
-  }
-
-  DoublePrecision<Instant> AppendCircularTrajectory(
-      AngularFrequency const& ω,
-      Length const& r,
-      Time const& Δt,
-      DoublePrecision<Instant> const& t1,
-      Instant const& t2,
-      DiscreteTrajectory<World>& trajectory) {
-    Speed const v = ω * r / Radian;
-    auto t = t1;
-    for (; t.value <= t2; t.Increment(Δt)) {
-      DegreesOfFreedom<World> const dof = {
-          World::origin + Displacement<World>{{r * Cos(ω * (t.value - t0_)),
-                                               r * Sin(ω * (t.value - t0_)),
-                                               0 * Metre}},
-          Velocity<World>{{-v * Sin(ω * (t.value - t0_)),
-                           v * Cos(ω * (t.value - t0_)),
-                           0 * Metre / Second}}};
-      trajectory.Append(t.value, dof);
-    }
-    return t;
   }
 
   Position<World> q1_, q2_, q3_, q4_;
@@ -1017,12 +983,14 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
   // trajectories are still within the tolerance.
   EXPECT_THAT(circle.Size(), Eq(77));
   EXPECT_THAT(deserialized_circle->Size(), Eq(78));
-  for (auto t = DoublePrecision<Instant>(t0_); t.value <= t3; t.Increment(Δt)) {
-    EXPECT_THAT(deserialized_circle->EvaluatePosition(t.value),
-                AbsoluteErrorFrom(circle.EvaluatePosition(t.value),
-                                  Le(0.23 * Milli(Metre))));
-    EXPECT_THAT(deserialized_circle->EvaluateVelocity(t.value),
-                AbsoluteErrorFrom(circle.EvaluateVelocity(t.value),
+  for (Instant t = t0_;
+       t <= std::min(circle.back().time, deserialized_circle->back().time);
+       t += Δt) {
+    EXPECT_THAT(
+        deserialized_circle->EvaluatePosition(t),
+        AbsoluteErrorFrom(circle.EvaluatePosition(t), Le(0.23 * Milli(Metre))));
+    EXPECT_THAT(deserialized_circle->EvaluateVelocity(t),
+                AbsoluteErrorFrom(circle.EvaluateVelocity(t),
                                   Le(5.7 * Milli(Metre) / Second)));
   }
 }
