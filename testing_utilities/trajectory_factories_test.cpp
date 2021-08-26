@@ -50,9 +50,11 @@ TEST_F(TrajectoryFactoriesTest, NewCircularTrajectory) {
     EXPECT_THAT(InnerProduct(position - World::origin, velocity),
                 VanishesBefore(1 * Metre * Metre / Second, 0, 8));
   }
-  EXPECT_EQ(Instant{} + 4 * Second, trajectory->begin()->time);
-  EXPECT_EQ(Instant{} + 42 * Second, trajectory->back().time);
-  EXPECT_EQ(381, trajectory->Size());
+  EXPECT_THAT(trajectory->begin()->time,
+              AlmostEquals(Instant{} + 4 * Second, 0));
+  EXPECT_THAT(trajectory->back().time,
+              AlmostEquals(Instant{} + 41.9 * Second, 46));
+  EXPECT_EQ(380, trajectory->Size());
 }
 
 }  // namespace testing_utilities

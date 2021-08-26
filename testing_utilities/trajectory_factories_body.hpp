@@ -26,39 +26,34 @@ not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> NewCircularTrajectory(
     Time const& Δt,
     Instant const& t1,
     Instant const& t2) {
-  DoublePrecision<Instant> t_max;
-  return NewCircularTrajectory<Frame>(ω,
-                                      r,
-                                      Δt,
-                                      DoublePrecision<Instant>(t1),
-                                      DoublePrecision<Instant>(t2),
-                                      t_max);
+  static Instant const t0;
+  Speed const v = ω * r / Radian;
+  auto trajectory = make_not_null_unique<DiscreteTrajectory<Frame>>();
+  for (auto t = t1; t < t2; t += Δt) {
+    DegreesOfFreedom<Frame> const dof = {
+        Frame::origin + Displacement<Frame>{{r * Cos(ω * (t - t0)),
+                                             r * Sin(ω * (t - t0)),
+                                             Length{}}},
+        Velocity<Frame>{{-v * Sin(ω * (t - t0)),
+                         v * Cos(ω * (t - t0)),
+                         Speed{}}}};
+    trajectory->Append(t, dof);
+  }
+  return std::move(trajectory);
 }
 
 template<typename Frame>
 not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> NewCircularTrajectory(
-    AngularFrequency const& ω,
+    Time const& period,
     Length const& r,
     Time const& Δt,
-    DoublePrecision<Instant> const& t1,
-    DoublePrecision<Instant> const& t2,
-    DoublePrecision<Instant>& t_max) {
-  static Instant const t0;
-  Speed const v = ω * r / Radian;
-  auto trajectory = make_not_null_unique<DiscreteTrajectory<Frame>>();
-  auto t = t1;
-  for (; t.value <= t2.value; t.Increment(Δt)) {
-    DegreesOfFreedom<Frame> const dof = {
-        Frame::origin + Displacement<Frame>{{r * Cos(ω * (t.value - t0)),
-                                             r * Sin(ω * (t.value - t0)),
-                                             Length{}}},
-        Velocity<Frame>{{-v * Sin(ω * (t.value - t0)),
-                         v * Cos(ω * (t.value - t0)),
-                         Speed{}}}};
-    trajectory->Append(t.value, dof);
-  }
-  t_max = t;
-  return std::move(trajectory);
+    Instant const& t1,
+    Instant const& t2) {
+  return NewCircularTrajectory<Frame>(/*ω=*/2 * π * Radian / period,
+                                      r,
+                                      Δt,
+                                      t1,
+                                      t2);
 }
 
 template<typename Frame>
