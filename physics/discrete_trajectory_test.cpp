@@ -37,7 +37,6 @@ using geometry::Point;
 using geometry::Position;
 using geometry::R3Element;
 using geometry::Vector;
-using quantities::Abs;
 using quantities::AngularFrequency;
 using quantities::Cos;
 using quantities::Length;
