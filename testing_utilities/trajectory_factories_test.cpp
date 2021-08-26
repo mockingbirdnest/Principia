@@ -38,8 +38,8 @@ TEST_F(TrajectoryFactoriesTest, NewCircularTrajectory) {
       /*ω=*/3 * Radian / Second,
       /*r=*/2 * Metre,
       /*Δt=*/0.1 * Second,
-      /*t1=*/Instant{} + 4 * Second,
-      /*t2=*/Instant{} + 42 * Second);
+      /*t1=*/Instant() + 4 * Second,
+      /*t2=*/Instant() + 42 * Second);
 
   for (auto const& [time, degrees_of_freedom] : *trajectory) {
     Position<World> const& position = degrees_of_freedom.position();
@@ -51,9 +51,9 @@ TEST_F(TrajectoryFactoriesTest, NewCircularTrajectory) {
                 VanishesBefore(1 * Metre * Metre / Second, 0, 8));
   }
   EXPECT_THAT(trajectory->begin()->time,
-              AlmostEquals(Instant{} + 4 * Second, 0));
+              AlmostEquals(Instant() + 4 * Second, 0));
   EXPECT_THAT(trajectory->back().time,
-              AlmostEquals(Instant{} + 41.9 * Second, 46));
+              AlmostEquals(Instant() + 41.9 * Second, 46));
   EXPECT_EQ(380, trajectory->Size());
 }
 
