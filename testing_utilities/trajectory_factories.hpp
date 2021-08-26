@@ -44,7 +44,7 @@ void AppendTrajectory(DiscreteTrajectory<Frame> const& from,
 
 }  // namespace internal_trajectory_factories
 
-//using internal_trajectory_factories::AppendTrajectory;
+using internal_trajectory_factories::AppendTrajectory;
 using internal_trajectory_factories::MakeCircularTrajectory;
 
 }  // namespace testing_utilities
