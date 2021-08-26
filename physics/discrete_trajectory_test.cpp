@@ -867,19 +867,13 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
                                        /*tolerance=*/1 * Milli(Metre));
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
-  Speed const v = ω * r / Radian;
-  auto t = DoublePrecision<Instant>(t0_);
-  for (; t.value <= t0_ + 5 * Second; t.Increment(10 * Milli(Second))) {
-    DegreesOfFreedom<World> const dof =
-        {World::origin + Displacement<World>{{r * Cos(ω * (t.value - t0_)),
-                                              r * Sin(ω * (t.value - t0_)),
-                                              0 * Metre}},
-         Velocity<World>{{-v * Sin(ω * (t.value - t0_)),
-                          v * Cos(ω * (t.value - t0_)),
-                          0 * Metre / Second}}};
-    circle.Append(t.value, dof);
-    deserialized_circle->Append(t.value, dof);
-  }
+  Time const Δt = 10 * Milli(Second);
+  Instant const t1 = t0_;
+  Instant const t2 = t0_ + 5 * Second;
+  AppendTrajectory(*NewCircularTrajectory<World>(ω, r, Δt, t1, t2),
+                   /*to=*/circle);
+  auto const circle_tmax = circle.back().time;
+
   serialization::DiscreteTrajectory message;
   deserialized_circle->WriteToMessage(
       &message,
@@ -920,17 +914,13 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
 
   // Appending may result in different downsampling because the positions differ
   // a bit.
-  for (; t.value <= t0_ + 10 * Second; t.Increment(10 * Milli(Second))) {
-    DegreesOfFreedom<World> const dof =
-        {World::origin + Displacement<World>{{r * Cos(ω * (t.value - t0_)),
-                                              r * Sin(ω * (t.value - t0_)),
-                                              0 * Metre}},
-         Velocity<World>{{-v * Sin(ω * (t.value - t0_)),
-                          v * Cos(ω * (t.value - t0_)),
-                          0 * Metre / Second}}};
-    circle.Append(t.value, dof);
-    deserialized_circle->Append(t.value, dof);
-  }
+  Instant const t3 = t0_ + 10 * Second;
+  AppendTrajectory(
+      *NewCircularTrajectory<World>(ω, r, Δt, circle_tmax + Δt, t3),
+      /*to=*/circle);
+  AppendTrajectory(
+      *NewCircularTrajectory<World>(ω, r, Δt, circle_tmax + Δt, t3),
+      /*to=*/*deserialized_circle);
 
   // Despite the difference in downsampling (and therefore in size) the two
   // trajectories are still within the tolerance.
