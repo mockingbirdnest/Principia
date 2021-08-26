@@ -22,6 +22,7 @@
 #include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/numerics_matchers.hpp"
+#include "testing_utilities/trajectory_factories.hpp"
 
 namespace principia {
 namespace physics {
@@ -49,8 +50,10 @@ using quantities::si::Milli;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AbsoluteErrorFrom;
+using testing_utilities::AppendTrajectory;
 using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
+using testing_utilities::NewCircularTrajectory;
 using testing_utilities::RelativeError;
 using testing_utilities::operator""_⑴;
 using ::std::placeholders::_1;
@@ -803,30 +806,22 @@ TEST_F(DiscreteTrajectoryTest, IteratorSuccess) {
 }
 
 TEST_F(DiscreteTrajectoryTest, QuadrilateralCircle) {
-  DiscreteTrajectory<World> circle;
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
   Speed const v = ω * r / Radian;
   Time const period = 2 * π * Radian / ω;
-  for (Time t; t <= period; t += period / 4) {
-    circle.Append(
-        t0_ + t,
-        {World::origin + Displacement<World>{{r * Cos(ω * t),
-                                              r * Sin(ω * t),
-                                              0 * Metre}},
-         Velocity<World>{{-v * Sin(ω * t),
-                          v * Cos(ω * t),
-                          0 * Metre / Second}}});
-  }
+  auto const circle = NewCircularTrajectory<World>(
+      ω, r, /*Δt=*/period / 4, /*t1=*/t0_, /*t2=*/t0_ + period);
+
   double max_r_error = 0;
   double max_v_error = 0;
   for (Time t; t < period; t += period / 32) {
     auto const degrees_of_freedom_interpolated =
-        circle.EvaluateDegreesOfFreedom(t0_ + t);
+        circle->EvaluateDegreesOfFreedom(t0_ + t);
     auto const& q_interpolated = degrees_of_freedom_interpolated.position();
     auto const& v_interpolated = degrees_of_freedom_interpolated.velocity();
-    EXPECT_THAT(circle.EvaluatePosition(t0_ + t), Eq(q_interpolated));
-    EXPECT_THAT(circle.EvaluateVelocity(t0_ + t), Eq(v_interpolated));
+    EXPECT_THAT(circle->EvaluatePosition(t0_ + t), Eq(q_interpolated));
+    EXPECT_THAT(circle->EvaluateVelocity(t0_ + t), Eq(v_interpolated));
     max_r_error = std::max(
         max_r_error, RelativeError(r, (q_interpolated - World::origin).Norm()));
     max_v_error =
@@ -843,20 +838,14 @@ TEST_F(DiscreteTrajectoryTest, Downsampling) {
                                      /*tolerance=*/1 * Milli(Metre));
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
-  Speed const v = ω * r / Radian;
-  for (auto t = DoublePrecision<Instant>(t0_);
-       t.value <= t0_ + 10 * Second;
-       t.Increment(10 * Milli(Second))) {
-    DegreesOfFreedom<World> const dof =
-        {World::origin + Displacement<World>{{r * Cos(ω * (t.value - t0_)),
-                                              r * Sin(ω * (t.value - t0_)),
-                                              0 * Metre}},
-         Velocity<World>{{-v * Sin(ω * (t.value - t0_)),
-                          v * Cos(ω * (t.value - t0_)),
-                          0 * Metre / Second}}};
-    circle.Append(t.value, dof);
-    downsampled_circle.Append(t.value, dof);
-  }
+  Time const Δt = 10 * Milli(Second);
+  Instant const t1 = t0_;
+  Instant const t2 = t0_ + 10 * Second;
+  AppendTrajectory(*NewCircularTrajectory<World>(ω, r, Δt, t1, t2),
+                   /*to=*/circle);
+  AppendTrajectory(*NewCircularTrajectory<World>(ω, r, Δt, t1, t2),
+                   /*to=*/downsampled_circle);
+
   EXPECT_THAT(circle.Size(), Eq(1001));
   EXPECT_THAT(downsampled_circle.Size(), Eq(77));
   std::vector<Length> errors;
