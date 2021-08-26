@@ -1039,12 +1039,15 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingForgetAfter) {
   Time const Δt = 1.0 / 128.0 * Second;  // Yields exact times.
   Instant const t1 = t0_;
   Instant const t2 = t0_ + 10 * Second;
-  AppendCircularTrajectory(ω, r, Δt, t1, t2, circle);
-  AppendCircularTrajectory(ω, r, Δt, t1, t2, forgotten_circle);
+  AppendTrajectory(*NewCircularTrajectory<World>(ω, r, Δt, t1, t2),
+                   /*to=*/circle);
+  AppendTrajectory(*NewCircularTrajectory<World>(ω, r, Δt, t1, t2),
+                   /*to=*/forgotten_circle);
 
   forgotten_circle.ForgetAfter(t2);
-  AppendCircularTrajectory(
-      ω, r, Δt, forgotten_circle.back().time + Δt, t2, forgotten_circle);
+  AppendTrajectory(*NewCircularTrajectory<World>(
+                       ω, r, Δt, forgotten_circle.back().time + Δt, t2),
+                   /*to=*/forgotten_circle);
   EXPECT_THAT(circle.Size(), Eq(93));
   EXPECT_THAT(forgotten_circle.Size(), Eq(circle.Size()));
   std::vector<Length> errors;
