@@ -961,7 +961,9 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
   Time const Δt = 10 * Milli(Second);
   Instant const t1 = t0_;
   Instant const t2 = t0_ + 5 * Second;
-  auto const circle_tmax = AppendCircularTrajectory(ω, r, Δt, t1, t2, circle);
+  AppendTrajectory(*NewCircularTrajectory<World>(ω, r, Δt, t1, t2),
+                   /*to=*/circle);
+  auto const circle_tmax = circle.back().time;
 
   serialization::DiscreteTrajectory message;
   circle.WriteToMessage(&message,
@@ -1004,8 +1006,12 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
   // Appending may result in different downsampling because the positions differ
   // a bit.
   Instant const t3 = t0_ + 10 * Second;
-  AppendCircularTrajectory(ω, r, Δt, circle_tmax, t3, circle);
-  AppendCircularTrajectory(ω, r, Δt, circle_tmax, t3, *deserialized_circle);
+  AppendTrajectory(
+      *NewCircularTrajectory<World>(ω, r, Δt, circle_tmax + Δt, t3),
+      /*to=*/circle);
+  AppendTrajectory(
+      *NewCircularTrajectory<World>(ω, r, Δt, circle_tmax + Δt, t3),
+      /*to=*/*deserialized_circle);
 
   // Despite the difference in downsampling (and therefore in size) the two
   // trajectories are still within the tolerance.
