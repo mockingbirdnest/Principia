@@ -100,6 +100,7 @@
     <ClInclude Include="experimental_eop_c02.generated.h" />
     <ClInclude Include="frames.hpp" />
     <ClInclude Include="fortran_astrodynamics_toolkit_body.hpp" />
+    <ClInclude Include="mercury_orbiter.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\base\bundle.cpp" />
@@ -123,6 +124,7 @@
     <ClCompile Include="lunar_eclipse_test.cpp" />
     <ClCompile Include="mercury_perihelion_test.cpp" />
     <ClCompile Include="trappist_dynamics_test.cpp" />
+    <ClCompile Include="лидов_古在_test.cpp" />
     <ClCompile Include="молния_orbit_test.cpp" />
   </ItemGroup>
 </Project>
