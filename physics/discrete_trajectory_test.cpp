@@ -37,7 +37,6 @@ using geometry::Point;
 using geometry::Position;
 using geometry::R3Element;
 using geometry::Vector;
-using quantities::Abs;
 using quantities::AngularFrequency;
 using quantities::Cos;
 using quantities::Length;
@@ -933,12 +932,11 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
 
   serialization::DiscreteTrajectory message;
   circle.WriteToMessage(&message,
-                        /*excluded=*/{},
-                        /*tracked=*/{},
+                        /*forks=*/{},
                         /*exact=*/{circle.LowerBound(t0_ + 2 * Second),
                                    circle.LowerBound(t0_ + 3 * Second)});
   auto deserialized_circle =
-      DiscreteTrajectory<World>::ReadFromMessage(message, /*tracked=*/{});
+      DiscreteTrajectory<World>::ReadFromMessage(message, /*forks=*/{});
 
   // Serialization/deserialization preserves the size, the times, and nudges the
   // positions by less than the tolerance.  It also preserve the degrees of
