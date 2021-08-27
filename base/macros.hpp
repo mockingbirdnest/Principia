@@ -241,5 +241,11 @@ template_and_result declared_name parameters;              \
 }                                                          \
 using internal_##package_name::declared_name
 
+#if OS_WIN
+#define PATH_ENCODING(string) u##string
+#else
+#define PATH_ENCODING(string) u8##string
+#endif
+
 }  // namespace base
 }  // namespace principia
