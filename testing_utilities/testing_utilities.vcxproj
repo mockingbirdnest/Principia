@@ -40,11 +40,14 @@
     <ClInclude Include="solar_system_factory_body.hpp" />
     <ClInclude Include="statistics.hpp" />
     <ClInclude Include="statistics_body.hpp" />
+    <ClInclude Include="trajectory_factories.hpp" />
+    <ClInclude Include="trajectory_factories_body.hpp" />
     <ClInclude Include="vanishes_before.hpp" />
     <ClInclude Include="vanishes_before_body.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\base\cpuid.cpp" />
+    <ClCompile Include="..\geometry\instant_output.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="algebra_test.cpp" />
     <ClCompile Include="almost_equals_test.cpp" />
@@ -54,6 +57,7 @@
     <ClCompile Include="numerics_test.cpp" />
     <ClCompile Include="solar_system_factory_test.cpp" />
     <ClCompile Include="statistics_test.cpp" />
+    <ClCompile Include="trajectory_factories_test.cpp" />
     <ClCompile Include="vanishes_before_test.cpp" />
   </ItemGroup>
 </Project>
