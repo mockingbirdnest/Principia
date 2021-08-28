@@ -251,7 +251,6 @@ Ephemeris<Frame>::Ephemeris(
 
   IntegrationProblem<NewtonianMotionEquation> problem;
   problem.equation = MakeMassiveBodiesNewtonianMotionEquation();
-  reanimator_.Start();
 
   typename NewtonianMotionEquation::SystemState& state = problem.initial_state;
   state.time = DoublePrecision<Instant>(initial_time);
@@ -360,6 +359,8 @@ absl::Status Ephemeris<Frame>::last_severe_integration_status() const {
 
 template<typename Frame>
 void Ephemeris<Frame>::RequestReanimation(Instant const& desired_t_min) {
+  reanimator_.Start();
+
   bool must_restart;
   {
     absl::MutexLock l(&lock_);
