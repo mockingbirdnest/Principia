@@ -494,6 +494,12 @@ TEST_F(VesselTest, IsCollapsible) {
 }
 
 TEST_F(VesselTest, Checkpointing) {
+  MockFunction<int(not_null<PileUp const*>)>
+      serialization_index_for_pile_up;
+  EXPECT_CALL(serialization_index_for_pile_up, Call(_))
+      .Times(2)
+      .WillRepeatedly(Return(0));
+
   EXPECT_CALL(ephemeris_, t_max())
       .WillRepeatedly(Return(astronomy::J2000 + 30 * Second));
   EXPECT_CALL(
@@ -609,16 +615,19 @@ TEST_F(VesselTest, Checkpointing) {
   vessel_.AdvanceTime();
 
   serialization::Vessel message;
-  WriteCheckpointToMessage(&message);
-  CHECK_EQ(2, message.checkpoint_size());
-  CHECK_EQ(0, message.checkpoint(0).time().scalar().magnitude());
-  CHECK_EQ(0, message.checkpoint(0).non_collapsible_segment().children_size());
-  CHECK_EQ(
+  vessel_.WriteToMessage(&message,
+                         serialization_index_for_pile_up.AsStdFunction());
+  EXPECT_TRUE(message.has_is_collapsible());
+  EXPECT_TRUE(message.is_collapsible());
+  EXPECT_EQ(2, message.checkpoint_size());
+  EXPECT_EQ(0, message.checkpoint(0).time().scalar().magnitude());
+  EXPECT_EQ(0, message.checkpoint(0).non_collapsible_segment().children_size());
+  EXPECT_EQ(
       1,
       message.checkpoint(0).non_collapsible_segment().zfp().timeline_size());
-  CHECK_EQ(25, message.checkpoint(1).time().scalar().magnitude());
-  CHECK_EQ(0, message.checkpoint(1).non_collapsible_segment().children_size());
-  CHECK_EQ(
+  EXPECT_EQ(25, message.checkpoint(1).time().scalar().magnitude());
+  EXPECT_EQ(0, message.checkpoint(1).non_collapsible_segment().children_size());
+  EXPECT_EQ(
       16,
       message.checkpoint(1).non_collapsible_segment().zfp().timeline_size());
 }

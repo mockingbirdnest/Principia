@@ -473,6 +473,8 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
   if (flight_plan_ != nullptr) {
     flight_plan_->WriteToMessage(message->mutable_flight_plan());
   }
+  message->set_is_collapsible(is_collapsible_);
+  checkpointer_->WriteToMessage(message->mutable_checkpoint());
 }
 
 not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
@@ -484,7 +486,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   bool const is_pre_chasles = message.has_prediction();
   bool const is_pre_陈景润 = !message.history().has_downsampling();
   // TODO(phl): Decide in which version it goes.
-  bool const is_pre_zermelo = !message.history().has_tracked_position();
+  bool const is_pre_zermelo = !message.has_is_collapsible();
   LOG_IF(WARNING, is_pre_zermelo)
       << "Reading pre-"
       << (is_pre_cesàro    ? u8"Cesàro"
@@ -559,7 +561,12 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
         /*tracked=*/{&vessel->backstory_,
                      &vessel->psychohistory_});
     vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
-    // TODO(phl): Need to restore is_collapsible_ somehow.
+    vessel->is_collapsible_ = message.is_collapsible();
+    vessel->checkpointer_ =
+        Checkpointer<serialization::Vessel>::ReadFromMessage(
+            vessel->MakeCheckpointerWriter(),
+            vessel->MakeCheckpointerReader(),
+            message.checkpoint());
   }
 
   // Necessary after Εὔδοξος because the ephemeris has not been prolonged
