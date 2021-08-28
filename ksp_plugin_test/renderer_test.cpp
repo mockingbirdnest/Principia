@@ -1,4 +1,4 @@
-
+﻿
 #include "ksp_plugin/renderer.hpp"
 
 #include "base/not_null.hpp"
@@ -18,6 +18,7 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
+#include "testing_utilities/trajectory_factories.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -42,6 +43,7 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
+using testing_utilities::NewLinearTrajectory;
 using ::testing::Ref;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -54,24 +56,6 @@ class RendererTest : public ::testing::Test {
             &celestial_,
             std::make_unique<MockDynamicFrame<Barycentric, Navigation>>()),
         dynamic_frame_(renderer_.GetPlottingFrame()) {}
-
-  // TODO(phl): There is a similar function in ContinuousTrajectoryTest and
-  // possibly in other places.  It would be good to factor this out.
-  template<typename Frame>
-  void FillTrajectory(
-      Instant const& time,
-      Time const& step,
-      int const number_of_steps,
-      std::function<Position<Frame>(Instant const& t)> const& position_function,
-      std::function<Velocity<Frame>(Instant const& t)> const& velocity_function,
-      DiscreteTrajectory<Frame>& trajectory) {
-    for (int i = 0; i < number_of_steps; ++i) {
-      Instant const ti = time + i * step;
-      trajectory.Append(ti,
-                        DegreesOfFreedom<Frame>(position_function(ti),
-                                                velocity_function(ti)));
-    }
-  }
 
   Instant const t0_;
   MockCelestial const celestial_;
@@ -87,18 +71,14 @@ TEST_F(RendererTest, TargetVessel) {
       .WillRepeatedly(Return(&celestial_trajectory));
 
   MockVessel vessel;
-  DiscreteTrajectory<Barycentric> vessel_trajectory;
-  FillTrajectory<Barycentric>(
-      /*time=*/t0_,
-      /*step=*/1 * Second,
-      /*number_of_steps=*/1,
-      /*position_function=*/
-          [](Instant const& t) { return Barycentric::origin; },
-      /*velocity_function=*/
-          [](Instant const& t) { return Barycentric::unmoving; },
-      vessel_trajectory);
+  auto const vessel_trajectory = NewLinearTrajectory(
+    /*v=*/Barycentric::unmoving,
+    /*Δt=*/1 * Second,
+    /*t1=*/t0_,
+    /*t2=*/t0_ + 1 * Second);
+
   EXPECT_CALL(vessel, prediction())
-      .WillRepeatedly(ReturnRef(vessel_trajectory));
+      .WillRepeatedly(ReturnRef(*vessel_trajectory));
 
   renderer_.SetTargetVessel(&vessel, &celestial_, &ephemeris);
   EXPECT_TRUE(renderer_.HasTargetVessel());
@@ -114,24 +94,15 @@ TEST_F(RendererTest, TargetVessel) {
 }
 
 TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithoutTargetVessel) {
-  DiscreteTrajectory<Barycentric> trajectory_to_render;
-  FillTrajectory<Barycentric>(
-      /*time=*/t0_,
-      /*step=*/1 * Second,
-      /*number_of_steps=*/10,
-      /*position_function=*/
-          [this](Instant const& t) {
-            return Barycentric::origin +
-                   (t - t0_) * Velocity<Barycentric>({6 * Metre / Second,
-                                                      5 * Metre / Second,
-                                                      4 * Metre / Second});
-          },
-      /*velocity_function=*/
-          [](Instant const& t) {
-            return Velocity<Barycentric>(
-                {6 * Metre / Second, 5 * Metre / Second, 4 * Metre / Second});
-          },
-      trajectory_to_render);
+  auto const vx = 6 * Metre / Second;
+  auto const vy = 5 * Metre / Second;
+  auto const vz = 4 * Metre / Second;
+  Velocity<Barycentric> const v({vx, vy, vz});
+  auto const trajectory_to_render = NewLinearTrajectory(
+      v,
+      /*Δt=*/1 * Second,
+      /*t1=*/t0_,
+      /*t2=*/t0_ + 10 * Second);
 
   RigidMotion<Barycentric, Navigation> rigid_motion(
       RigidTransformation<Barycentric, Navigation>::Identity(),
@@ -144,25 +115,21 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithoutTargetVessel) {
 
   auto const rendered_trajectory =
       renderer_.RenderBarycentricTrajectoryInPlotting(
-          trajectory_to_render.begin(),
-          trajectory_to_render.end());
+          trajectory_to_render->begin(),
+          trajectory_to_render->end());
 
   EXPECT_EQ(10, rendered_trajectory->Size());
   int index = 0;
   for (auto const& [time, degrees_of_freedom] : *rendered_trajectory) {
     EXPECT_EQ(t0_ + index * Second, time);
-    EXPECT_THAT(
-        degrees_of_freedom,
-        Componentwise(
-            AlmostEquals(Navigation::origin +
-                             Displacement<Navigation>({6 * index * Metre,
-                                                       5 * index * Metre,
-                                                       4 * index * Metre}),
-                         0),
-            AlmostEquals(Velocity<Navigation>({6 * Metre / Second,
-                                               5 * Metre / Second,
-                                               4 * Metre / Second}),
-                         0)));
+    EXPECT_THAT(degrees_of_freedom,
+                Componentwise(
+                    AlmostEquals(Navigation::origin + Displacement<Navigation>(
+                                                          {vx * (time - t0_),
+                                                           vy * (time - t0_),
+                                                           vz * (time - t0_)}),
+                                 0),
+                    AlmostEquals(Velocity<Navigation>({vx, vy, vz}), 0)));
     ++index;
   }
 }
@@ -173,47 +140,23 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithTargetVessel) {
   EXPECT_CALL(ephemeris, trajectory(_))
       .WillRepeatedly(Return(&celestial_trajectory));
 
-  DiscreteTrajectory<Barycentric> trajectory_to_render;
-  FillTrajectory<Barycentric>(
-      /*time=*/t0_,
-      /*step=*/1 * Second,
-      /*number_of_steps=*/10,
-      /*position_function=*/
-          [this](Instant const& t) {
-            return Barycentric::origin +
-                   (t - t0_) * Velocity<Barycentric>({6 * Metre / Second,
-                                                      5 * Metre / Second,
-                                                      4 * Metre / Second});
-          },
-      /*velocity_function=*/
-          [](Instant const& t) {
-            return Velocity<Barycentric>(
-                {6 * Metre / Second, 5 * Metre / Second, 4 * Metre / Second});
-          },
-      trajectory_to_render);
+  auto const trajectory_to_render = NewLinearTrajectory(
+      /*v=*/Velocity<Barycentric>(
+          {6 * Metre / Second, 5 * Metre / Second, 4 * Metre / Second}),
+      /*Δt=*/1 * Second,
+      /*t1=*/t0_,
+      /*t2=*/t0_ + 10 * Second);
 
   // The prediction is shorter than the |trajectory_to_render|.
   MockVessel vessel;
-  DiscreteTrajectory<Barycentric> vessel_trajectory;
-  FillTrajectory<Barycentric>(
-      /*time=*/t0_ + 3 * Second,
-      /*step=*/1 * Second,
-      /*number_of_steps=*/5,
-      /*position_function=*/
-      [this](Instant const& t) {
-        return Barycentric::origin +
-               (t - t0_) * Velocity<Barycentric>({1 * Metre / Second,
-                                                  2 * Metre / Second,
-                                                  3 * Metre / Second});
-      },
-      /*velocity_function=*/
-      [](Instant const& t) {
-        return Velocity<Barycentric>(
-            {1 * Metre / Second, 2 * Metre / Second, 3 * Metre / Second});
-      },
-      vessel_trajectory);
+  auto const vessel_trajectory = NewLinearTrajectory(
+      /*v=*/Velocity<Barycentric>(
+          {1 * Metre / Second, 2 * Metre / Second, 3 * Metre / Second}),
+      /*Δt=*/1 * Second,
+      /*t1=*/t0_ + 3 * Second,
+      /*t2=*/t0_ + 8 * Second);
   EXPECT_CALL(vessel, prediction())
-      .WillRepeatedly(ReturnRef(vessel_trajectory));
+      .WillRepeatedly(ReturnRef(*vessel_trajectory));
 
   for (Instant t = t0_ + 3 * Second; t < t0_ + 8 * Second; t += 1 * Second) {
     EXPECT_CALL(celestial_trajectory, EvaluateDegreesOfFreedom(t))
@@ -226,8 +169,8 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithTargetVessel) {
   renderer_.SetTargetVessel(&vessel, &celestial_, &ephemeris);
   auto const rendered_trajectory =
       renderer_.RenderBarycentricTrajectoryInPlotting(
-          trajectory_to_render.begin(),
-          trajectory_to_render.end());
+          trajectory_to_render->begin(),
+          trajectory_to_render->end());
 
   EXPECT_EQ(5, rendered_trajectory->Size());
   int index = 3;
@@ -244,24 +187,12 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithTargetVessel) {
 }
 
 TEST_F(RendererTest, RenderPlottingTrajectoryInWorldWithoutTargetVessel) {
-  DiscreteTrajectory<Navigation> trajectory_to_render;
-  FillTrajectory<Navigation>(
-      /*time=*/t0_,
-      /*step=*/1 * Second,
-      /*number_of_steps=*/10,
-      /*position_function=*/
-          [this](Instant const& t) {
-            return Navigation::origin +
-                   (t - t0_) * Velocity<Navigation>({6 * Metre / Second,
-                                                     5 * Metre / Second,
-                                                     4 * Metre / Second});
-          },
-      /*velocity_function=*/
-          [](Instant const& t) {
-            return Velocity<Navigation>(
-                {6 * Metre / Second, 5 * Metre / Second, 4 * Metre / Second});
-          },
-      trajectory_to_render);
+  auto const trajectory_to_render = NewLinearTrajectory(
+      /*v=*/Velocity<Navigation>(
+          {6 * Metre / Second, 5 * Metre / Second, 4 * Metre / Second}),
+      /*Δt=*/1 * Second,
+      /*t1=*/t0_,
+      /*t2=*/t0_ + 10 * Second);
 
   Instant const rendering_time = t0_ + 5 * Second;
   Position<World> const sun_world_position =
@@ -282,8 +213,8 @@ TEST_F(RendererTest, RenderPlottingTrajectoryInWorldWithoutTargetVessel) {
 
   auto const rendered_trajectory =
       renderer_.RenderPlottingTrajectoryInWorld(rendering_time,
-                                                trajectory_to_render.begin(),
-                                                trajectory_to_render.end(),
+                                                trajectory_to_render->begin(),
+                                                trajectory_to_render->end(),
                                                 sun_world_position,
                                                 planetarium_rotation);
 
