@@ -14,10 +14,20 @@ namespace internal_trajectory_factories {
 
 using base::not_null;
 using geometry::Instant;
+using geometry::Velocity;
 using physics::DiscreteTrajectory;
 using quantities::AngularFrequency;
 using quantities::Length;
 using quantities::Time;
+
+// A linear trajectory with constant velocity, going through the origin at
+// t = 0.  The first point is at time |t1|, the last point at a time < |t2|.
+template<typename Frame>
+not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> NewLinearTrajectory(
+    Velocity<Frame> const& v,
+    Time const& Δt,
+    Instant const& t1,
+    Instant const& t2);
 
 // A circular trajectory in the plane XY, centred at the origin.  The first
 // point is at time |t1|, the last point at a time < |t2|.
@@ -44,6 +54,7 @@ void AppendTrajectory(DiscreteTrajectory<Frame> const& from,
 
 using internal_trajectory_factories::AppendTrajectory;
 using internal_trajectory_factories::NewCircularTrajectory;
+using internal_trajectory_factories::NewLinearTrajectory;
 
 }  // namespace testing_utilities
 }  // namespace principia
