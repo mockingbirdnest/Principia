@@ -20,6 +20,21 @@ using quantities::Speed;
 using quantities::si::Radian;
 
 template<typename Frame>
+not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> NewLinearTrajectory(
+    Velocity<Frame> const& v,
+    Time const& Δt,
+    Instant const& t1,
+    Instant const& t2) {
+  static Instant const t0;
+  auto trajectory = make_not_null_unique<DiscreteTrajectory<Frame>>();
+  for (auto t = t1; t < t2; t += Δt) {
+    DegreesOfFreedom<Frame> const dof = {Frame::origin + v * (t - t0), v};
+    trajectory->Append(t, dof);
+  }
+  return std::move(trajectory);
+}
+
+template<typename Frame>
 not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> NewCircularTrajectory(
     AngularFrequency const& ω,
     Length const& r,
