@@ -10,6 +10,7 @@
 
 #include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
+#include "astronomy/epoch.hpp"
 #include "base/jthread.hpp"
 #include "base/recurring_thread.hpp"
 #include "ksp_plugin/celestial.hpp"
@@ -28,6 +29,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_vessel {
 
+using astronomy::InfinitePast;
 using base::not_null;
 using base::RecurringThread;
 using geometry::Instant;
@@ -104,18 +106,18 @@ class Vessel {
 
   // Detects a change in the collapsibility of the vessel and creates a new fork
   // if needed.  Must be called after the pile-ups have been collected.
-  virtual void DetectCollapsibilityChange();
+  virtual void DetectCollapsibilityChange() EXCLUDES(lock_);
 
   // If the history is empty, appends a single point to it, computed as the
   // barycentre of all parts.  |parts_| must not be empty.  After this call,
   // |history_| is never empty again and the psychohistory is usable.  Must be
   // called (at least) after the creation of the vessel.
-  virtual void CreateHistoryIfNeeded(Instant const& t);
+  virtual void CreateHistoryIfNeeded(Instant const& t) EXCLUDES(lock_);
 
   // Disables downsampling for the history of this vessel.  This is useful when
   // the vessel collided with a celestial, as downsampling might run into
   // trouble.
-  virtual void DisableDownsampling();
+  virtual void DisableDownsampling() EXCLUDES(lock_);
 
   // Returns the part with the given ID.  Such a part must have been added using
   // |AddPart|.
@@ -151,7 +153,7 @@ class Vessel {
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
           flight_plan_adaptive_step_parameters,
       Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
-          flight_plan_generalized_adaptive_step_parameters);
+          flight_plan_generalized_adaptive_step_parameters) EXCLUDES(lock_);
 
   // Deletes the |flight_plan_|.  Performs no action unless |has_flight_plan()|.
   virtual void DeleteFlightPlan();
@@ -165,7 +167,7 @@ class Vessel {
   // performed.
   // If |history_->back().time| is greater than the current desired final time,
   // the flight plan length is kept; otherwise, the desired final time is kept.
-  absl::Status RebaseFlightPlan(Mass const& initial_mass);
+  absl::Status RebaseFlightPlan(Mass const& initial_mass) EXCLUDES(lock_);
 
   // Tries to replace the current prediction with a more recently computed one.
   // No guarantees that this happens.  No guarantees regarding the end time of
@@ -204,7 +206,8 @@ class Vessel {
   // The vessel must satisfy |is_initialized()|.
   virtual void WriteToMessage(not_null<serialization::Vessel*> message,
                               PileUp::SerializationIndexForPileUp const&
-                                  serialization_index_for_pile_up) const;
+                                  serialization_index_for_pile_up) const
+      EXCLUDES(lock_);
   static not_null<std::unique_ptr<Vessel>> ReadFromMessage(
       serialization::Vessel const& message,
       not_null<Celestial const*> parent,
@@ -241,8 +244,13 @@ class Vessel {
   Checkpointer<serialization::Vessel>::Reader
   MakeCheckpointerReader();
 
+  absl::Status Reanimate(Instant const desired_t_min) EXCLUDES(lock_);
+
+  // |t_initial| is the time of the checkpoint, which is the end of the non-
+  // collapsible segment.
   absl::Status ReanimateOneCheckpoint(
-      serialization::Vessel::Checkpoint const& message);
+      serialization::Vessel::Checkpoint const& message,
+      Instant const& t_initial) EXCLUDES(lock_);
 
   // Runs the integrator to compute the |prognostication_| based on the given
   // parameters.
@@ -275,6 +283,8 @@ class Vessel {
   not_null<Celestial const*> parent_;
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
 
+  mutable absl::Mutex lock_;
+
   // When reading a pre-Zermelo save, the existing history must be
   // non-collapsible as we don't know anything about it.
   bool is_collapsible_ = false;
@@ -284,12 +294,17 @@ class Vessel {
 
   not_null<std::unique_ptr<Checkpointer<serialization::Vessel>>> checkpointer_;
 
+  // This member must only be accessed by the |reanimator_| thread, or before
+  // the |reanimator_| thread is started.
+  Instant oldest_reanimated_checkpoint_ = InfinitePast;
+
   // See the comments in pile_up.hpp for an explanation of the terminology.
 
   // The |history_| is empty until the first call to CreateHistoryIfNeeded.
   // It is made of a series of forks, alternatively non-collapsible and
   // collapsible.
-  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_;
+  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_
+      GUARDED_BY(lock_);
 
   // The last (most recent) segment of the |history_| prior to the
   // |psychohistory_|.  May be identical to |history_|, therefore not always a

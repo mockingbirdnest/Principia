@@ -166,6 +166,8 @@ void Vessel::ClearAllIntrinsicForcesAndTorques() {
 void Vessel::DetectCollapsibilityChange() {
   bool const becomes_collapsible = IsCollapsible();
   if (is_collapsible_ != becomes_collapsible) {
+    absl::ReaderMutexLock l(&lock_);
+
     // If collapsibility changes, we create a new history segment.  This ensures
     // that downsampling does not change collapsibility boundaries.
     // NOTE(phl): It is always correct to mark as non-collapsible a collapsible
@@ -191,6 +193,7 @@ void Vessel::DetectCollapsibilityChange() {
 }
 
 void Vessel::CreateHistoryIfNeeded(Instant const& t) {
+  absl::ReaderMutexLock l(&lock_);
   CHECK(!parts_.empty());
   if (history_->Empty()) {
     LOG(INFO) << "Preparing history of vessel " << ShortDebugString()
@@ -211,6 +214,7 @@ void Vessel::CreateHistoryIfNeeded(Instant const& t) {
 }
 
 void Vessel::DisableDownsampling() {
+  absl::ReaderMutexLock l(&lock_);
   history_->ClearDownsampling();
 }
 
@@ -311,6 +315,7 @@ void Vessel::CreateFlightPlan(
         flight_plan_adaptive_step_parameters,
     Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
         flight_plan_generalized_adaptive_step_parameters) {
+  absl::ReaderMutexLock l(&lock_);
   auto const history_back = history_->back();
   flight_plan_ = std::make_unique<FlightPlan>(
       initial_mass,
@@ -327,6 +332,7 @@ void Vessel::DeleteFlightPlan() {
 }
 
 absl::Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
+  absl::ReaderMutexLock l(&lock_);
   CHECK(has_flight_plan());
   Instant const new_initial_time = history_->back().time;
   int first_manœuvre_kept = 0;
@@ -446,6 +452,7 @@ std::string Vessel::ShortDebugString() const {
 void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
                             PileUp::SerializationIndexForPileUp const&
                                 serialization_index_for_pile_up) const {
+  absl::ReaderMutexLock l(&lock_);
   message->set_guid(guid_);
   message->set_name(name_);
   body_.WriteToMessage(message->mutable_body());
@@ -510,6 +517,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     vessel->kept_parts_.insert(part_id);
   }
 
+  absl::MutexLock l(&vessel->lock_);
   if (is_pre_cesàro) {
     auto const psychohistory =
         DiscreteTrajectory<Barycentric>::ReadFromMessage(message.history(),
@@ -602,6 +610,7 @@ Vessel::Vessel()
 
 Checkpointer<serialization::Vessel>::Writer Vessel::MakeCheckpointerWriter() {
   return [this](not_null<serialization::Vessel::Checkpoint*> const message) {
+    lock_.AssertReaderHeld();
     if (backstory_ == history_.get()) {
       history_->WriteToMessage(message->mutable_non_collapsible_segment(),
                                /*excluded=*/{psychohistory_},
@@ -630,8 +639,40 @@ Checkpointer<serialization::Vessel>::Reader Vessel::MakeCheckpointerReader() {
   };
 }
 
+absl::Status Vessel::Reanimate(Instant const desired_t_min) {
+  // This method is very similar to Ephemeris::Reanimate.  See the comments
+  // there for some of the subtle points.
+  static_assert(base::is_serializable_v<Barycentric>);
+  std::set<Instant> checkpoints;
+
+  {
+    absl::ReaderMutexLock l(&lock_);
+
+    Instant const oldest_checkpoint_to_reanimate =
+        checkpointer_->checkpoint_at_or_before(desired_t_min);
+    checkpoints = checkpointer_->all_checkpoints_between(
+        oldest_checkpoint_to_reanimate, oldest_reanimated_checkpoint_);
+
+    // The |oldest_reanimated_checkpoint_| has already been reanimated before,
+    // we don't need it below.
+    checkpoints.erase(oldest_reanimated_checkpoint_);
+  }
+
+  for (auto it = checkpoints.crbegin(); it != checkpoints.crend(); ++it) {
+    Instant const& checkpoint = *it;
+    RETURN_IF_ERROR(checkpointer_->ReadFromCheckpointAt(
+        checkpoint,
+        [this, t_initial = checkpoint](
+            serialization::Vessel::Checkpoint const& message) {
+          return ReanimateOneCheckpoint(message, t_initial);
+        }));
+  }
+  return absl::OkStatus();
+}
+
 absl::Status Vessel::ReanimateOneCheckpoint(
-    serialization::Vessel::Checkpoint const& message) {
+    serialization::Vessel::Checkpoint const& message,
+    Instant const& t_initial) {
   // Restore the non-collapsible segment that was fully saved.
   auto non_collapsible_segment =
       DiscreteTrajectory<Barycentric>::ReadFromMessage(
@@ -643,9 +684,17 @@ absl::Status Vessel::ReanimateOneCheckpoint(
   CHECK(!non_collapsible_segment->Empty());
 
   // Construct a new collapsible segment at the end of the non-collapsible
-  // segment and integrate it until the start time of the history.
-  Instant const& t_initial = non_collapsible_segment->back().time;
-  Instant const& t_final = history_->begin()->time;
+  // segment and integrate it until the start time of the history.  We cannot
+  // hold the lock during the integration, so this code would race if there were
+  // two threads changing the start of the |history_| concurrently.  That
+  // doesn't happen because there is a single reanimator.
+  CHECK_EQ(t_initial, non_collapsible_segment->back().time);
+  Instant t_final;
+  {
+    absl::ReaderMutexLock l(&lock_);
+    t_final = history_->begin()->time;
+  }
+
   auto const collapsible_segment = non_collapsible_segment->NewForkAtLast();
   auto fixed_instance =
       ephemeris_->NewInstance({collapsible_segment},
@@ -658,8 +707,13 @@ absl::Status Vessel::ReanimateOneCheckpoint(
   // make the whole enchilada the new |history_|.  If integration reached the
   // start of the existing |history_|, attaching will drop the duplicated point.
   // If not, we'll have very close points near the stich.
-  non_collapsible_segment->AttachFork(std::move(history_));
-  history_ = std::move(non_collapsible_segment);
+  {
+    absl::MutexLock l(&lock_);
+    CHECK_EQ(t_final, history_->begin()->time);
+    non_collapsible_segment->AttachFork(std::move(history_));
+    history_ = std::move(non_collapsible_segment);
+    oldest_reanimated_checkpoint_ = t_initial;
+  }
 
   return absl::OkStatus();
 }
