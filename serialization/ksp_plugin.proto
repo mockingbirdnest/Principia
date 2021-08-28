@@ -178,6 +178,7 @@ message Vessel {
   optional bool psychohistory_is_authoritative = 17;  // Pre-Cesàro.
   optional DiscreteTrajectory prediction = 18;  // Pre-Chasles.
   optional FlightPlan flight_plan = 4;
+  optional bool is_collapsible = 22;  // Added in Zermelo.
   repeated Checkpoint checkpoint = 21;  // Added in Zermelo.
 
   // Pre-Буняковский.
