@@ -932,7 +932,8 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
 
   serialization::DiscreteTrajectory message;
   circle.WriteToMessage(&message,
-                        /*forks=*/{},
+                        /*excluded=*/{},
+                        /*tracked=*/{},
                         /*exact=*/{circle.LowerBound(t0_ + 2 * Second),
                                    circle.LowerBound(t0_ + 3 * Second)});
   auto deserialized_circle =
