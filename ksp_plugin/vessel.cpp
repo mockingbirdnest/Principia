@@ -466,7 +466,7 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
     message->add_kept_parts(part_id);
   }
   // Starting with Gateaux we don't save the prediction, see #2685.
-  history_->WriteToMessage(/*exclude=*/{prediction_},
+  history_->WriteToMessage(/*excluded=*/{prediction_},
                            /*tracked=*/{backstory_, psychohistory_},
                            /*exact=*/{},
                            message->mutable_history());
