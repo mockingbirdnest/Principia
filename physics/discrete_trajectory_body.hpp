@@ -346,7 +346,7 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
 
   std::set<DiscreteTrajectory<Frame> const*> mutable_excluded = excluded;
   std::vector<DiscreteTrajectory<Frame> const*> mutable_tracked = tracked;
-  WriteSubTreeToMessage(mutable_excluded, mutable_tracked, message);
+  WriteSubTreeToMessage(after_time, mutable_excluded, mutable_tracked, message);
   CHECK(std::all_of(mutable_excluded.begin(),
                     mutable_excluded.end(),
                     [](DiscreteTrajectory<Frame> const* const fork) {
@@ -582,12 +582,13 @@ void DiscreteTrajectory<Frame>::Downsampling::UpdateStartTimeIfNeeded() {
 
 template<typename Frame>
 bool DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
+    Instant const& after_time,
     std::set<DiscreteTrajectory const*>& excluded,
     std::vector<DiscreteTrajectory const*>& tracked,
     not_null<serialization::DiscreteTrajectory*> const message) const {
   bool const included =
       Forkable<DiscreteTrajectory, Iterator, DiscreteTrajectoryTraits<Frame>>::
-          WriteSubTreeToMessage(excluded, tracked, message);
+          WriteSubTreeToMessage(after_time, excluded, tracked, message);
   if (!included) {
     return false;
   }

@@ -282,6 +282,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // This trajectory need not be a root.  Returns false if this trajectory is
   // excluded.
   bool WriteSubTreeToMessage(
+      Instant const& after_time,
       std::set<DiscreteTrajectory const*>& excluded,
       std::vector<DiscreteTrajectory const*>& tracked,
       not_null<serialization::DiscreteTrajectory*> message) const;

@@ -211,6 +211,7 @@ class Forkable {
   // implicitly excluded (so the serialized-but-not-tracked case didn't happen).
   // Returns false if this trajectory is excluded.
   bool WriteSubTreeToMessage(
+      Instant const& after_time,
       std::set<Tr4jectory const*>& excluded,
       std::vector<Tr4jectory const*>& tracked,
       not_null<serialization::DiscreteTrajectory*> message) const;
