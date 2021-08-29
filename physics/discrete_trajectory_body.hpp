@@ -638,8 +638,8 @@ bool DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
       }
       previous_instant = time;
     }
-    zfp->set_timeline_size(timeline_size);
   }
+  zfp->set_timeline_size(timeline_size);
 
   // Times are exact.
   ZfpCompressor time_compressor(0);
