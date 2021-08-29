@@ -519,6 +519,7 @@ DiscreteTrajectory<Frame>::Downsampling::ExtractDenseIterators() {
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::Downsampling::WriteToMessage(
+    Instant const& after_time,
     not_null<serialization::DiscreteTrajectory::Downsampling*> const message)
     const {
   message->set_max_dense_intervals(max_dense_intervals_);
@@ -528,7 +529,10 @@ void DiscreteTrajectory<Frame>::Downsampling::WriteToMessage(
     // const.
     start_time_.value().WriteToMessage(message->add_dense_timeline());
     for (int i = 1; i < dense_iterators_.size(); ++i) {
-      dense_iterators_[i]->first.WriteToMessage(message->add_dense_timeline());
+      Instant const& time = dense_iterators_[i]->first;
+      if (time >= after_time) {
+        time.WriteToMessage(message->add_dense_timeline());
+      }
     }
   }
 }
@@ -617,20 +621,22 @@ bool DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
   std::optional<Instant> previous_instant;
   Time max_Δt;
   std::string* const zfp_timeline = zfp->mutable_timeline();
-  for (auto const& [instant, degrees_of_freedom] : timeline_) {
-    auto const q = degrees_of_freedom.position() - Frame::origin;
-    auto const p = degrees_of_freedom.velocity();
-    t.push_back((instant - Instant{}) / Second);
-    qx.push_back(q.coordinates().x / Metre);
-    qy.push_back(q.coordinates().y / Metre);
-    qz.push_back(q.coordinates().z / Metre);
-    px.push_back(p.coordinates().x / (Metre / Second));
-    py.push_back(p.coordinates().y / (Metre / Second));
-    pz.push_back(p.coordinates().z / (Metre / Second));
-    if (previous_instant.has_value()) {
-      max_Δt = std::max(max_Δt, instant - *previous_instant);
+  for (auto const& [time, degrees_of_freedom] : timeline_) {
+    if (time >= after_time) {
+      auto const q = degrees_of_freedom.position() - Frame::origin;
+      auto const p = degrees_of_freedom.velocity();
+      t.push_back((time - Instant{}) / Second);
+      qx.push_back(q.coordinates().x / Metre);
+      qy.push_back(q.coordinates().y / Metre);
+      qz.push_back(q.coordinates().z / Metre);
+      px.push_back(p.coordinates().x / (Metre / Second));
+      py.push_back(p.coordinates().y / (Metre / Second));
+      pz.push_back(p.coordinates().z / (Metre / Second));
+      if (previous_instant.has_value()) {
+        max_Δt = std::max(max_Δt, time - *previous_instant);
+      }
+      previous_instant = time;
     }
-    previous_instant = instant;
   }
 
   // Times are exact.
@@ -655,7 +661,7 @@ bool DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
   speed_compressor.WriteToMessageMultidimensional<2>(pz, zfp_timeline);
 
   if (downsampling_.has_value()) {
-    downsampling_->WriteToMessage(message->mutable_downsampling());
+    downsampling_->WriteToMessage(after_time, message->mutable_downsampling());
   }
   return true;
 }

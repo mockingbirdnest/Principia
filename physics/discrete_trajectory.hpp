@@ -248,6 +248,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
     std::vector<TimelineConstIterator> ExtractDenseIterators();
 
     void WriteToMessage(
+        Instant const& after_time,
         not_null<serialization::DiscreteTrajectory::Downsampling*> message)
         const;
     static Downsampling ReadFromMessage(
