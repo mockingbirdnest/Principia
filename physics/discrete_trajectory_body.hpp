@@ -597,9 +597,8 @@ bool DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     return false;
   }
 
-  int const timeline_size = timeline_.size();
+  int timeline_size = timeline_.size();
   auto* const zfp = message->mutable_zfp();
-  zfp->set_timeline_size(timeline_size);
 
   // The timeline data is made dimensionless and stored in separate arrays per
   // coordinate.  We expect strong correlations within a coordinate over time,
@@ -622,7 +621,9 @@ bool DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
   Time max_Δt;
   std::string* const zfp_timeline = zfp->mutable_timeline();
   for (auto const& [time, degrees_of_freedom] : timeline_) {
-    if (time >= after_time) {
+    if (time < after_time) {
+      --timeline_size;
+    } else {
       auto const q = degrees_of_freedom.position() - Frame::origin;
       auto const p = degrees_of_freedom.velocity();
       t.push_back((time - Instant{}) / Second);
@@ -637,6 +638,7 @@ bool DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
       }
       previous_instant = time;
     }
+    zfp->set_timeline_size(timeline_size);
   }
 
   // Times are exact.

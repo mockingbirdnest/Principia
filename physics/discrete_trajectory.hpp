@@ -177,7 +177,10 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
       std::vector<DiscreteTrajectory const*> const& tracked,
       std::vector<Iterator> const& exact,
       not_null<serialization::DiscreteTrajectory*> message) const;
-  //TODO(phl):comment
+  // Same as above, but only serializes the forks, points and downsampling data
+  // with time greater than or equal to |after_time|.  Note that the client must
+  // ensure that the forks in |excluded| and |tracked| are after the given time.
+  // It is always possible to track this object itself.
   void WriteToMessage(
     Instant const& after_time,
     std::set<DiscreteTrajectory const*> const& excluded,

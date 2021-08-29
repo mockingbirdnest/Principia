@@ -674,7 +674,7 @@ TEST_F(DiscreteTrajectoryTest, ForgetBeforeEmpty) {
   EXPECT_TRUE(massive_trajectory_->Empty());
 }
 
-TEST_F(DiscreteTrajectoryDeathTest, TrajectorySerializationError) {
+TEST_F(DiscreteTrajectoryDeathTest, SerializationError) {
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, d1_);
     not_null<DiscreteTrajectory<World>*> const fork =
@@ -685,7 +685,7 @@ TEST_F(DiscreteTrajectoryDeathTest, TrajectorySerializationError) {
   }, "is_root");
 }
 
-TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
+TEST_F(DiscreteTrajectoryTest, SerializationSuccess) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
   massive_trajectory_->Append(t3_, d3_);
@@ -703,7 +703,6 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   serialization::DiscreteTrajectory message;
   serialization::DiscreteTrajectory reference_message;
 
-  // Don't serialize |fork0|.
   massive_trajectory_->WriteToMessage(
       /*excluded=*/{fork0},
       /*tracked=*/{massive_trajectory_.get(), fork1, fork3, fork2},
@@ -749,6 +748,113 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   EXPECT_THAT(message.children(1).trajectories_size(), Eq(1));
   EXPECT_THAT(message.children(1).trajectories(0).children_size(), Eq(0));
   EXPECT_THAT(message.children(1).trajectories(0).zfp().timeline_size(), Eq(1));
+}
+
+TEST_F(DiscreteTrajectoryTest, SerializationAfterTime) {
+  massive_trajectory_->Append(t1_, d1_);
+  massive_trajectory_->Append(t2_, d2_);
+  massive_trajectory_->Append(t3_, d3_);
+  not_null<DiscreteTrajectory<World>*> const fork0 =
+      massive_trajectory_->NewForkWithCopy(t2_);
+  fork0->Append(t4_, d4_);
+  not_null<DiscreteTrajectory<World>*> const fork1 =
+      massive_trajectory_->NewForkWithCopy(t2_);
+  not_null<DiscreteTrajectory<World>*> const fork2 =
+      massive_trajectory_->NewForkWithCopy(t2_);
+  fork2->Append(t4_, d4_);
+  not_null<DiscreteTrajectory<World>*> const fork3 =
+      massive_trajectory_->NewForkWithCopy(t3_);
+  fork3->Append(t4_, d4_);
+
+  {
+    serialization::DiscreteTrajectory message;
+    DiscreteTrajectory<World>* deserialized_root = nullptr;
+    DiscreteTrajectory<World>* deserialized_fork1 = nullptr;
+    DiscreteTrajectory<World>* deserialized_fork2 = nullptr;
+    DiscreteTrajectory<World>* deserialized_fork3 = nullptr;
+    massive_trajectory_->WriteToMessage(
+        /*after_time=*/t1_,
+        /*excluded=*/{fork0},
+        /*tracked=*/{massive_trajectory_.get(), fork1, fork2, fork3},
+        /*exact=*/{},
+        &message);
+
+    not_null<std::unique_ptr<DiscreteTrajectory<World>>> const
+        deserialized_trajectory =
+            DiscreteTrajectory<World>::ReadFromMessage(message,
+                                                       {&deserialized_root,
+                                                        &deserialized_fork1,
+                                                        &deserialized_fork2,
+                                                        &deserialized_fork3});
+    EXPECT_EQ(t1_, deserialized_trajectory->begin()->time);
+    EXPECT_EQ(deserialized_trajectory.get(), deserialized_root);
+    EXPECT_EQ(t2_, deserialized_fork1->Fork()->time);
+    EXPECT_EQ(t2_, deserialized_fork2->Fork()->time);
+    EXPECT_EQ(t3_, deserialized_fork3->Fork()->time);
+  }
+  {
+    serialization::DiscreteTrajectory message;
+    DiscreteTrajectory<World>* deserialized_root = nullptr;
+    DiscreteTrajectory<World>* deserialized_fork1 = nullptr;
+    DiscreteTrajectory<World>* deserialized_fork2 = nullptr;
+    DiscreteTrajectory<World>* deserialized_fork3 = nullptr;
+    massive_trajectory_->WriteToMessage(
+        /*after_time=*/t2_,
+        /*excluded=*/{fork0},
+        /*tracked=*/{massive_trajectory_.get(), fork1, fork2, fork3},
+        /*exact=*/{},
+        &message);
+
+    not_null<std::unique_ptr<DiscreteTrajectory<World>>> const
+        deserialized_trajectory =
+            DiscreteTrajectory<World>::ReadFromMessage(message,
+                                                       {&deserialized_root,
+                                                        &deserialized_fork1,
+                                                        &deserialized_fork2,
+                                                        &deserialized_fork3});
+    EXPECT_EQ(t2_, deserialized_trajectory->begin()->time);
+    EXPECT_EQ(deserialized_trajectory.get(), deserialized_root);
+    EXPECT_EQ(t2_, deserialized_fork1->Fork()->time);
+    EXPECT_EQ(t2_, deserialized_fork2->Fork()->time);
+    EXPECT_EQ(t3_, deserialized_fork3->Fork()->time);
+  }
+  {
+    serialization::DiscreteTrajectory message;
+    DiscreteTrajectory<World>* deserialized_root = nullptr;
+    DiscreteTrajectory<World>* deserialized_fork3 = nullptr;
+    massive_trajectory_->WriteToMessage(
+        /*after_time=*/t3_,
+        /*excluded=*/{},
+        /*tracked=*/{massive_trajectory_.get(), fork3},
+        /*exact=*/{},
+        &message);
+
+    not_null<std::unique_ptr<DiscreteTrajectory<World>>> const
+        deserialized_trajectory =
+            DiscreteTrajectory<World>::ReadFromMessage(message,
+                                                       {&deserialized_root,
+                                                        &deserialized_fork3});
+    EXPECT_EQ(t3_, deserialized_trajectory->begin()->time);
+    EXPECT_EQ(deserialized_trajectory.get(), deserialized_root);
+    EXPECT_EQ(t3_, deserialized_fork3->Fork()->time);
+  }
+  {
+    serialization::DiscreteTrajectory message;
+    DiscreteTrajectory<World>* deserialized_root = nullptr;
+    massive_trajectory_->WriteToMessage(
+        /*after_time=*/t4_,
+        /*excluded=*/{},
+        /*tracked=*/{massive_trajectory_.get()},
+        /*exact=*/{},
+        &message);
+
+    not_null<std::unique_ptr<DiscreteTrajectory<World>>> const
+        deserialized_trajectory =
+            DiscreteTrajectory<World>::ReadFromMessage(message,
+                                                       {&deserialized_root});
+    EXPECT_TRUE(deserialized_trajectory->Empty());
+    EXPECT_EQ(deserialized_trajectory.get(), deserialized_root);
+  }
 }
 
 TEST_F(DiscreteTrajectoryDeathTest, LastError) {
