@@ -252,10 +252,10 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message,
         serialization_index_for_pile_up(containing_pile_up_.get()));
   }
   rigid_motion_.WriteToMessage(message->mutable_rigid_motion());
-  prehistory_->WriteToMessage(message->mutable_prehistory(),
-                              /*excluded=*/{},
+  prehistory_->WriteToMessage(/*excluded=*/{},
                               /*tracked=*/{history_, psychohistory_},
-                              /*exact=*/{});
+                              /*exact=*/{},
+                              message->mutable_prehistory());
 }
 
 not_null<std::unique_ptr<Part>> Part::ReadFromMessage(

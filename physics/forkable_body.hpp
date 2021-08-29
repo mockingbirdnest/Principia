@@ -472,9 +472,10 @@ CheckNoForksBefore(Instant const& time) {
 
 template<typename Tr4jectory, typename It3rator, typename Traits>
 bool Forkable<Tr4jectory, It3rator, Traits>::WriteSubTreeToMessage(
-    not_null<serialization::DiscreteTrajectory*> const message,
+    Instant const& after_time,
     std::set<Tr4jectory const*>& excluded,
-    std::vector<Tr4jectory const*>& tracked) const {
+    std::vector<Tr4jectory const*>& tracked,
+    not_null<serialization::DiscreteTrajectory*> const message) const {
   // Determine if this object needs to be serialized.
   auto const it_excluded = excluded.find(&*that());
   if (it_excluded == excluded.end()) {
@@ -500,21 +501,23 @@ bool Forkable<Tr4jectory, It3rator, Traits>::WriteSubTreeToMessage(
   std::optional<Instant> last_instant;
   serialization::DiscreteTrajectory::Brood* brood = nullptr;
   for (auto const& [fork_time, child] : children_) {
-    // We don't know if this child needs to be included in the serialization, so
-    // we write it to a temporary object and swap if appropriate.
-    serialization::DiscreteTrajectory candidate_trajectory;
-    bool const included = child->WriteSubTreeToMessage(
-        &candidate_trajectory, excluded, tracked);
+    if (fork_time >= after_time) {
+      // We don't know if this child needs to be included in the serialization,
+      // so we write it to a temporary object and swap if appropriate.
+      serialization::DiscreteTrajectory candidate_trajectory;
+      bool const included = child->WriteSubTreeToMessage(
+          after_time, excluded, tracked, &candidate_trajectory);
 
-    if (included) {
-      // If this is the first included child at this fork time, create the
-      // |Brood| message.
-      if (!last_instant || fork_time != last_instant) {
-        last_instant = fork_time;
-        brood = message->add_children();
-        fork_time.WriteToMessage(brood->mutable_fork_time());
+      if (included) {
+        // If this is the first included child at this fork time, create the
+        // |Brood| message.
+        if (!last_instant || fork_time != last_instant) {
+          last_instant = fork_time;
+          brood = message->add_children();
+          fork_time.WriteToMessage(brood->mutable_fork_time());
+        }
+        candidate_trajectory.Swap(brood->add_trajectories());
       }
-      candidate_trajectory.Swap(brood->add_trajectories());
     }
   }
   return true;

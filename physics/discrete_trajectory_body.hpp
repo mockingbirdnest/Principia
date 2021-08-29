@@ -328,15 +328,25 @@ DegreesOfFreedom<Frame> DiscreteTrajectory<Frame>::EvaluateDegreesOfFreedom(
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteToMessage(
-    not_null<serialization::DiscreteTrajectory*> const message,
     std::set<DiscreteTrajectory const*> const& excluded,
     std::vector<DiscreteTrajectory const*> const& tracked,
-    std::vector<Iterator> const& exact) const {
+    std::vector<Iterator> const& exact,
+    not_null<serialization::DiscreteTrajectory*> const message) const {
+  WriteToMessage(InfinitePast, excluded, tracked, exact, message);
+}
+
+template<typename Frame>
+void DiscreteTrajectory<Frame>::WriteToMessage(
+    Instant const& after_time,
+    std::set<DiscreteTrajectory const*> const& excluded,
+    std::vector<DiscreteTrajectory const*> const& tracked,
+    std::vector<Iterator> const& exact,
+    not_null<serialization::DiscreteTrajectory*> const message) const {
   CHECK(this->is_root());
 
   std::set<DiscreteTrajectory<Frame> const*> mutable_excluded = excluded;
   std::vector<DiscreteTrajectory<Frame> const*> mutable_tracked = tracked;
-  WriteSubTreeToMessage(message, mutable_excluded, mutable_tracked);
+  WriteSubTreeToMessage(after_time, mutable_excluded, mutable_tracked, message);
   CHECK(std::all_of(mutable_excluded.begin(),
                     mutable_excluded.end(),
                     [](DiscreteTrajectory<Frame> const* const fork) {
@@ -509,6 +519,7 @@ DiscreteTrajectory<Frame>::Downsampling::ExtractDenseIterators() {
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::Downsampling::WriteToMessage(
+    Instant const& after_time,
     not_null<serialization::DiscreteTrajectory::Downsampling*> const message)
     const {
   message->set_max_dense_intervals(max_dense_intervals_);
@@ -518,7 +529,10 @@ void DiscreteTrajectory<Frame>::Downsampling::WriteToMessage(
     // const.
     start_time_.value().WriteToMessage(message->add_dense_timeline());
     for (int i = 1; i < dense_iterators_.size(); ++i) {
-      dense_iterators_[i]->first.WriteToMessage(message->add_dense_timeline());
+      Instant const& time = dense_iterators_[i]->first;
+      if (time >= after_time) {
+        time.WriteToMessage(message->add_dense_timeline());
+      }
     }
   }
 }
@@ -572,19 +586,19 @@ void DiscreteTrajectory<Frame>::Downsampling::UpdateStartTimeIfNeeded() {
 
 template<typename Frame>
 bool DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
-    not_null<serialization::DiscreteTrajectory*> const message,
+    Instant const& after_time,
     std::set<DiscreteTrajectory const*>& excluded,
-    std::vector<DiscreteTrajectory const*>& tracked) const {
+    std::vector<DiscreteTrajectory const*>& tracked,
+    not_null<serialization::DiscreteTrajectory*> const message) const {
   bool const included =
       Forkable<DiscreteTrajectory, Iterator, DiscreteTrajectoryTraits<Frame>>::
-          WriteSubTreeToMessage(message, excluded, tracked);
+          WriteSubTreeToMessage(after_time, excluded, tracked, message);
   if (!included) {
     return false;
   }
 
-  int const timeline_size = timeline_.size();
+  int timeline_size = timeline_.size();
   auto* const zfp = message->mutable_zfp();
-  zfp->set_timeline_size(timeline_size);
 
   // The timeline data is made dimensionless and stored in separate arrays per
   // coordinate.  We expect strong correlations within a coordinate over time,
@@ -606,21 +620,26 @@ bool DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
   std::optional<Instant> previous_instant;
   Time max_Δt;
   std::string* const zfp_timeline = zfp->mutable_timeline();
-  for (auto const& [instant, degrees_of_freedom] : timeline_) {
-    auto const q = degrees_of_freedom.position() - Frame::origin;
-    auto const p = degrees_of_freedom.velocity();
-    t.push_back((instant - Instant{}) / Second);
-    qx.push_back(q.coordinates().x / Metre);
-    qy.push_back(q.coordinates().y / Metre);
-    qz.push_back(q.coordinates().z / Metre);
-    px.push_back(p.coordinates().x / (Metre / Second));
-    py.push_back(p.coordinates().y / (Metre / Second));
-    pz.push_back(p.coordinates().z / (Metre / Second));
-    if (previous_instant.has_value()) {
-      max_Δt = std::max(max_Δt, instant - *previous_instant);
+  for (auto const& [time, degrees_of_freedom] : timeline_) {
+    if (time < after_time) {
+      --timeline_size;
+    } else {
+      auto const q = degrees_of_freedom.position() - Frame::origin;
+      auto const p = degrees_of_freedom.velocity();
+      t.push_back((time - Instant{}) / Second);
+      qx.push_back(q.coordinates().x / Metre);
+      qy.push_back(q.coordinates().y / Metre);
+      qz.push_back(q.coordinates().z / Metre);
+      px.push_back(p.coordinates().x / (Metre / Second));
+      py.push_back(p.coordinates().y / (Metre / Second));
+      pz.push_back(p.coordinates().z / (Metre / Second));
+      if (previous_instant.has_value()) {
+        max_Δt = std::max(max_Δt, time - *previous_instant);
+      }
+      previous_instant = time;
     }
-    previous_instant = instant;
   }
+  zfp->set_timeline_size(timeline_size);
 
   // Times are exact.
   ZfpCompressor time_compressor(0);
@@ -644,7 +663,7 @@ bool DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
   speed_compressor.WriteToMessageMultidimensional<2>(pz, zfp_timeline);
 
   if (downsampling_.has_value()) {
-    downsampling_->WriteToMessage(message->mutable_downsampling());
+    downsampling_->WriteToMessage(after_time, message->mutable_downsampling());
   }
   return true;
 }

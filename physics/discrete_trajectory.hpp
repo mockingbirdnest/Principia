@@ -172,10 +172,22 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // entry; otherwise, they must be direct or indirect forks of this trajectory.
   // The points denoted by |exact| are written and re-read exactly and are not
   // affected by any errors introduced by zfp compression.
-  void WriteToMessage(not_null<serialization::DiscreteTrajectory*> message,
-                      std::set<DiscreteTrajectory const*> const& excluded,
-                      std::vector<DiscreteTrajectory const*> const& tracked,
-                      std::vector<Iterator> const& exact) const;
+  void WriteToMessage(
+      std::set<DiscreteTrajectory const*> const& excluded,
+      std::vector<DiscreteTrajectory const*> const& tracked,
+      std::vector<Iterator> const& exact,
+      not_null<serialization::DiscreteTrajectory*> message) const;
+  // Same as above, but only serializes the forks, points and downsampling data
+  // with time greater than or equal to |after_time|.  Note that the client must
+  // ensure that the forks in |excluded| and |tracked| are after the given time.
+  // It is always possible to track this object itself.
+  void WriteToMessage(
+    Instant const& after_time,
+    std::set<DiscreteTrajectory const*> const& excluded,
+    std::vector<DiscreteTrajectory const*> const& tracked,
+    std::vector<Iterator> const& exact,
+    not_null<serialization::DiscreteTrajectory*> message) const;
+
 
   // |forks| must have a size appropriate for the |message| being deserialized
   // and the orders of the |forks| must be consistent during serialization and
@@ -239,6 +251,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
     std::vector<TimelineConstIterator> ExtractDenseIterators();
 
     void WriteToMessage(
+        Instant const& after_time,
         not_null<serialization::DiscreteTrajectory::Downsampling*> message)
         const;
     static Downsampling ReadFromMessage(
@@ -273,9 +286,10 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // This trajectory need not be a root.  Returns false if this trajectory is
   // excluded.
   bool WriteSubTreeToMessage(
-      not_null<serialization::DiscreteTrajectory*> message,
+      Instant const& after_time,
       std::set<DiscreteTrajectory const*>& excluded,
-      std::vector<DiscreteTrajectory const*>& tracked) const;
+      std::vector<DiscreteTrajectory const*>& tracked,
+      not_null<serialization::DiscreteTrajectory*> message) const;
 
   void FillSubTreeFromMessage(
       serialization::DiscreteTrajectory const& message,

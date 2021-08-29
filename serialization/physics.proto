@@ -103,6 +103,7 @@ message DiscreteTrajectory {
     repeated DiscreteTrajectory trajectories = 2;
   }
   repeated Brood children = 1;
+  // Pre-Frobenius.
   repeated InstantaneousDegreesOfFreedom timeline = 2;
   // Pre-Zermelo.
   repeated int32 fork_position = 3;
