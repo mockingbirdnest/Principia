@@ -680,8 +680,8 @@ TEST_F(DiscreteTrajectoryDeathTest, TrajectorySerializationError) {
     not_null<DiscreteTrajectory<World>*> const fork =
         massive_trajectory_->NewForkWithCopy(t1_);
     serialization::DiscreteTrajectory message;
-        fork->WriteToMessage(&message,
-                             /*excluded=*/{}, /*tracked=*/{}, /*exact=*/{});
+        fork->WriteToMessage(/*excluded=*/{}, /*tracked=*/{}, /*exact=*/{},
+                             &message);
   }, "is_root");
 }
 
@@ -705,15 +705,15 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
 
   // Don't serialize |fork0|.
   massive_trajectory_->WriteToMessage(
-      &message,
       /*excluded=*/{fork0},
       /*tracked=*/{massive_trajectory_.get(), fork1, fork3, fork2},
-      /*exact=*/{});
+      /*exact=*/{},
+      &message);
   massive_trajectory_->WriteToMessage(
-      &reference_message,
       /*excluded=*/{fork0},
       /*tracked=*/{massive_trajectory_.get(), fork1, fork3, fork2},
-      /*exact=*/{});
+      /*exact=*/{},
+      &reference_message);
 
   DiscreteTrajectory<World>* deserialized_root = nullptr;
   DiscreteTrajectory<World>* deserialized_fork1 = nullptr;
@@ -731,13 +731,13 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   EXPECT_EQ(t2_, deserialized_fork2->Fork()->time);
   EXPECT_EQ(t3_, deserialized_fork3->Fork()->time);
   message.Clear();
-  deserialized_trajectory->WriteToMessage(&message,
-                                          /*excluded=*/{},
+  deserialized_trajectory->WriteToMessage(/*excluded=*/{},
                                           /*tracked=*/{deserialized_root,
                                                        deserialized_fork1,
                                                        deserialized_fork3,
                                                        deserialized_fork2},
-                                          /*exact=*/{});
+                                          /*exact=*/{},
+                                          &message);
   EXPECT_THAT(reference_message, EqualsProto(message));
   EXPECT_THAT(message.children_size(), Eq(2));
   EXPECT_THAT(message.zfp().timeline_size(), Eq(3));
@@ -931,11 +931,11 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
   auto const circle_tmax = circle.back().time;
 
   serialization::DiscreteTrajectory message;
-  circle.WriteToMessage(&message,
-                        /*excluded=*/{},
+  circle.WriteToMessage(/*excluded=*/{},
                         /*tracked=*/{},
                         /*exact=*/{circle.LowerBound(t0_ + 2 * Second),
-                                   circle.LowerBound(t0_ + 3 * Second)});
+                                   circle.LowerBound(t0_ + 3 * Second)},
+                        &message);
   auto deserialized_circle =
       DiscreteTrajectory<World>::ReadFromMessage(message, /*forks=*/{});
 

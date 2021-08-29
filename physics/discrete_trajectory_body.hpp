@@ -328,10 +328,20 @@ DegreesOfFreedom<Frame> DiscreteTrajectory<Frame>::EvaluateDegreesOfFreedom(
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteToMessage(
-    not_null<serialization::DiscreteTrajectory*> const message,
     std::set<DiscreteTrajectory const*> const& excluded,
     std::vector<DiscreteTrajectory const*> const& tracked,
-    std::vector<Iterator> const& exact) const {
+    std::vector<Iterator> const& exact,
+    not_null<serialization::DiscreteTrajectory*> const message) const {
+  WriteToMessage(InfinitePast, excluded, tracked, exact, message);
+}
+
+template<typename Frame>
+void DiscreteTrajectory<Frame>::WriteToMessage(
+    Instant const& after_time,
+    std::set<DiscreteTrajectory const*> const& excluded,
+    std::vector<DiscreteTrajectory const*> const& tracked,
+    std::vector<Iterator> const& exact,
+    not_null<serialization::DiscreteTrajectory*> const message) const {
   CHECK(this->is_root());
 
   std::set<DiscreteTrajectory<Frame> const*> mutable_excluded = excluded;

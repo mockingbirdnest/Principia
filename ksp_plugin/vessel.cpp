@@ -466,10 +466,10 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
     message->add_kept_parts(part_id);
   }
   // Starting with Gateaux we don't save the prediction, see #2685.
-  history_->WriteToMessage(message->mutable_history(),
-                           /*exclude=*/{prediction_},
+  history_->WriteToMessage(/*exclude=*/{prediction_},
                            /*tracked=*/{backstory_, psychohistory_},
-                           /*exact=*/{});
+                           /*exact=*/{},
+                           message->mutable_history());
   if (flight_plan_ != nullptr) {
     flight_plan_->WriteToMessage(message->mutable_flight_plan());
   }
@@ -619,16 +619,16 @@ Checkpointer<serialization::Vessel>::Writer Vessel::MakeCheckpointerWriter() {
   return [this](not_null<serialization::Vessel::Checkpoint*> const message) {
     lock_.AssertReaderHeld();
     if (backstory_ == history_.get()) {
-      history_->WriteToMessage(message->mutable_non_collapsible_segment(),
-                               /*excluded=*/{psychohistory_},
+      history_->WriteToMessage(/*excluded=*/{psychohistory_},
                                /*tracked=*/{},
-                               /*exact=*/{psychohistory_->Fork()});
+                               /*exact=*/{psychohistory_->Fork()},
+                               message->mutable_non_collapsible_segment());
     } else {
       auto backstory = backstory_->DetachFork();
-      backstory->WriteToMessage(message->mutable_non_collapsible_segment(),
-                                /*excluded=*/{psychohistory_},
+      backstory->WriteToMessage(/*excluded=*/{psychohistory_},
                                 /*tracked=*/{},
-                                /*exact=*/{psychohistory_->Fork()});
+                                /*exact=*/{psychohistory_->Fork()},
+                                message->mutable_non_collapsible_segment());
       history_->AttachFork(std::move(backstory));
     }
 
