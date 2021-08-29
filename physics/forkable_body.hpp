@@ -472,9 +472,9 @@ CheckNoForksBefore(Instant const& time) {
 
 template<typename Tr4jectory, typename It3rator, typename Traits>
 bool Forkable<Tr4jectory, It3rator, Traits>::WriteSubTreeToMessage(
-    not_null<serialization::DiscreteTrajectory*> const message,
     std::set<Tr4jectory const*>& excluded,
-    std::vector<Tr4jectory const*>& tracked) const {
+    std::vector<Tr4jectory const*>& tracked,
+    not_null<serialization::DiscreteTrajectory*> const message) const {
   // Determine if this object needs to be serialized.
   auto const it_excluded = excluded.find(&*that());
   if (it_excluded == excluded.end()) {
@@ -504,7 +504,7 @@ bool Forkable<Tr4jectory, It3rator, Traits>::WriteSubTreeToMessage(
     // we write it to a temporary object and swap if appropriate.
     serialization::DiscreteTrajectory candidate_trajectory;
     bool const included = child->WriteSubTreeToMessage(
-        &candidate_trajectory, excluded, tracked);
+        excluded, tracked, &candidate_trajectory);
 
     if (included) {
       // If this is the first included child at this fork time, create the
