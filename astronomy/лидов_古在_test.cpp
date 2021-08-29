@@ -107,7 +107,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
   }
   mathematica::Logger logger(
       SOLUTION_DIR / "mathematica" /
-          PRINCIPIA_PATH_ENCODING("лидов_古在.generated.wl"),
+          PRINCIPIA_UNICODE_PATH("лидов_古在.generated.wl"),
       /*make_unique=*/false);
 
   DiscreteTrajectory<MercuryCentredInertial> mercury_centred_trajectory;

@@ -150,9 +150,9 @@ inline void noreturn() { std::exit(0); }
 
 // Unicode.
 #if OS_WIN
-#  define UNICODE_PATH(x) u ## x
+#  define PRINCIPIA_UNICODE_PATH(x) u ## x
 #else
-#  define UNICODE_PATH(x) u8 ## x
+#  define PRINCIPIA_UNICODE_PATH(x) u8 ## x
 #endif
 
 #define NAMED(expression) u8 ## #expression << ": " << (expression)
@@ -240,12 +240,6 @@ namespace internal_##package_name {                        \
 template_and_result declared_name parameters;              \
 }                                                          \
 using internal_##package_name::declared_name
-
-#if OS_WIN
-#define PRINCIPIA_PATH_ENCODING(string) u##string
-#else
-#define PRINCIPIA_PATH_ENCODING(string) u8##string
-#endif
 
 }  // namespace base
 }  // namespace principia
