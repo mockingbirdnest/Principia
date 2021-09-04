@@ -202,6 +202,9 @@ class Forkable {
   // root).
   void CheckNoForksBefore(Instant const& time);
 
+  //TODO(phl):comment
+  void Prepend(Tr4jectory&& trajectory);
+
   // This trajectory need not be a root.  The entire tree rooted at this
   // trajectory is traversed and the forks not present in |excluded| are
   // serialized.  The forks in |tracked| will be retrieved in the same order

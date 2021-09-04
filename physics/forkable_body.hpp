@@ -471,6 +471,69 @@ CheckNoForksBefore(Instant const& time) {
 }
 
 template<typename Tr4jectory, typename It3rator, typename Traits>
+void Forkable<Tr4jectory, It3rator, Traits>::Prepend(Tr4jectory&& trajectory) {
+  CHECK(is_root());
+
+  It3rator it;  // In |trajectory|.
+  if (Empty()) {
+    it = trajectory.end();
+  } else {
+    Instant const begin_time = Traits::time(begin().current_);
+    // |it| designates the first point of |trajectory| that is at or after the
+    // beginning of this trajectory.
+    it = trajectory.LowerBound(begin_time);
+  }
+  if (it == trajectory.begin()) {
+    // |trajectory| is entirely in the future with respect to this trajectory.
+    // Nothing to do.
+    return;
+  }
+
+  // Move |it| to designate a point in |trajectory| which is strictly before
+  // the first point of this trajectory.
+  --it;
+  // This is the trajectory whose timeline is suitable for prepending to this
+  // trajectory.
+  Tr4jectory& trajectory_to_prepend =
+      const_cast<Tr4jectory&>(*it.ancestry_.back());
+  // Remove all the forks that are at or after the first point of this
+  // trajectory.  That may include entire subtrees.
+  trajectory_to_prepend.DeleteAllForksAfter(it->time);
+  // Transfer the end of the timeline of |trajectory_to_prepend| to the
+  // beginning of the timeline of this trajectory.
+  for (TimelineConstIterator it2 = trajectory_to_prepend.timeline_begin();
+        it2 != it.current_;
+        ++it2) {
+    auto const [_, inserted] = timeline_.insert(*it2);
+    CHECK(inserted) << Traits::time(it2);
+  }
+
+  // Adjust the remaining forks of |trajectory_to_prepend| to point in the
+  // timeline and children of this trajectory.
+  for (auto& [time, child] : trajectory_to_prepend.children_) {
+    auto timeline_it = timeline_.find(time);
+    CHECK(timeline_it != timeline_.end()) << time;
+    child->position_in_parent_timeline_ = timeline_it;
+    auto const [child_it, inserted] =
+        children_->insert(time, std::move(child));
+    child_it->second->position_in_parent_children_ = child_it;
+  }
+
+  // Clear and delete |trajectory_to_prepend|.
+  trajectory_to_prepend.timeline_clear();
+  trajectory_to_prepend.children_.clear();
+  if (!trajectory_to_prepend.is_root()) {
+    // If needed, attach this trajectory as a fork of the parent of
+    // |trajectory_to_prepend|.
+    auto const parent = trajectory_to_prepend.parent_;
+    parent->DeleteFork(&trajectory_to_prepend);
+    timeline_.insert(*(--parent->timeline_end()));
+    parent->AttachForkToCopiedBegin(
+        not_null<std::unique_ptr<Tr4jectory>>(this));
+  }
+}
+
+template<typename Tr4jectory, typename It3rator, typename Traits>
 bool Forkable<Tr4jectory, It3rator, Traits>::WriteSubTreeToMessage(
     Instant const& after_time,
     std::set<Tr4jectory const*>& excluded,
