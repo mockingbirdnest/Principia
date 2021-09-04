@@ -494,14 +494,14 @@ void Forkable<Tr4jectory, It3rator, Traits>::Prepend(Tr4jectory&& trajectory) {
   --it;
   // This is the trajectory whose timeline is suitable for prepending to this
   // trajectory.
-  Tr4jectory& trajectory_to_prepend =
-      const_cast<Tr4jectory&>(*it.ancestry_.back());
+  Tr4jectory* trajectory_to_prepend =
+      const_cast<Tr4jectory*>(&*it.ancestry_.back());
   // Remove all the forks that are at or after the first point of this
   // trajectory.  That may include entire subtrees.
-  trajectory_to_prepend.DeleteAllForksAfter(it->time);
+  trajectory_to_prepend->DeleteAllForksAfter(Traits::time(it.current_));
   // Transfer the end of the timeline of |trajectory_to_prepend| to the
   // beginning of the timeline of this trajectory.
-  for (TimelineConstIterator it2 = trajectory_to_prepend.timeline_begin();
+  for (TimelineConstIterator it2 = trajectory_to_prepend->timeline_begin();
         it2 != it.current_;
         ++it2) {
     auto const [_, inserted] = timeline_insert(*it2);
@@ -510,26 +510,22 @@ void Forkable<Tr4jectory, It3rator, Traits>::Prepend(Tr4jectory&& trajectory) {
 
   // Adjust the remaining forks of |trajectory_to_prepend| to point in the
   // timeline and children of this trajectory.
-  for (auto& [time, child] : trajectory_to_prepend.children_) {
+  for (auto& [time, child] : trajectory_to_prepend->children_) {
     auto timeline_it = timeline_find(time);
     CHECK(timeline_it != timeline_end()) << time;
     child->position_in_parent_timeline_ = timeline_it;
-    auto const [child_it, inserted] =
-        children_->insert(time, std::move(child));
+    auto child_it = children_.emplace(time, std::move(child));
     child_it->second->position_in_parent_children_ = child_it;
   }
 
-  // Clear and delete |trajectory_to_prepend|.
-  trajectory_to_prepend.timeline_clear();
-  trajectory_to_prepend.children_.clear();
-  if (!trajectory_to_prepend.is_root()) {
+  if (!trajectory_to_prepend->is_root()) {
     // If needed, attach this trajectory as a fork of the parent of
     // |trajectory_to_prepend|.
-    auto const parent = trajectory_to_prepend.parent_;
-    parent->DeleteFork(&trajectory_to_prepend);
+    auto const parent = trajectory_to_prepend->parent_;
+    parent->DeleteFork(trajectory_to_prepend);
     timeline_insert(*(--parent->timeline_end()));
-    parent->AttachForkToCopiedBegin(
-        not_null<std::unique_ptr<Tr4jectory>>(this));
+    std::unique_ptr<Tr4jectory> owned_this(static_cast<Tr4jectory*>(this));
+    parent->AttachForkToCopiedBegin(std::move(owned_this));
   }
 }
 

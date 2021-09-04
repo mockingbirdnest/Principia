@@ -69,6 +69,8 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
       DeleteAllForksAfter;
   using Forkable<FakeTrajectory, Iterator, FakeTrajectoryTraits>::
       CheckNoForksBefore;
+  using Forkable<FakeTrajectory, Iterator, FakeTrajectoryTraits>::
+      Prepend;
 
   virtual std::pair<TimelineConstIterator, bool> timeline_insert(
     const typename TimelineConstIterator::value_type& value) override;
@@ -790,6 +792,25 @@ TEST_F(ForkableTest, FrontBack) {
 
   EXPECT_EQ(t1_, fork2->front().time);
   EXPECT_EQ(t5_, fork2->back().time);
+}
+
+TEST_F(ForkableTest, Prepend) {
+  // No overlap between the timelines.
+  {
+    FakeTrajectory trajectory1;
+
+    trajectory1.push_back(t0_);
+    trajectory1.push_back(t1_);
+    trajectory1.push_back(t2_);
+    not_null<FakeTrajectory*> const fork1 =
+        trajectory1.NewFork(trajectory1.timeline_find(t2_));
+    fork1->push_back(t3_);
+    fork1->push_back(t4_);
+
+    FakeTrajectory trajectory2;
+    trajectory2.push_back(t5_);
+    trajectory2.Prepend(std::move(trajectory1));
+  }
 }
 
 }  // namespace internal_forkable
