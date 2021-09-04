@@ -159,6 +159,9 @@ class Forkable {
   virtual not_null<Tr4jectory const*> that() const = 0;
 
   // STL-like operations.
+  virtual std::pair<TimelineConstIterator, bool> timeline_insert(
+    const typename TimelineConstIterator::value_type& value) = 0;
+
   virtual TimelineConstIterator timeline_begin() const = 0;
   virtual TimelineConstIterator timeline_end() const = 0;
   virtual TimelineConstIterator timeline_find(Instant const& time) const = 0;

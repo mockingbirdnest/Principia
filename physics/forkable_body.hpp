@@ -504,15 +504,15 @@ void Forkable<Tr4jectory, It3rator, Traits>::Prepend(Tr4jectory&& trajectory) {
   for (TimelineConstIterator it2 = trajectory_to_prepend.timeline_begin();
         it2 != it.current_;
         ++it2) {
-    auto const [_, inserted] = timeline_.insert(*it2);
+    auto const [_, inserted] = timeline_insert(*it2);
     CHECK(inserted) << Traits::time(it2);
   }
 
   // Adjust the remaining forks of |trajectory_to_prepend| to point in the
   // timeline and children of this trajectory.
   for (auto& [time, child] : trajectory_to_prepend.children_) {
-    auto timeline_it = timeline_.find(time);
-    CHECK(timeline_it != timeline_.end()) << time;
+    auto timeline_it = timeline_find(time);
+    CHECK(timeline_it != timeline_end()) << time;
     child->position_in_parent_timeline_ = timeline_it;
     auto const [child_it, inserted] =
         children_->insert(time, std::move(child));
@@ -527,7 +527,7 @@ void Forkable<Tr4jectory, It3rator, Traits>::Prepend(Tr4jectory&& trajectory) {
     // |trajectory_to_prepend|.
     auto const parent = trajectory_to_prepend.parent_;
     parent->DeleteFork(&trajectory_to_prepend);
-    timeline_.insert(*(--parent->timeline_end()));
+    timeline_insert(*(--parent->timeline_end()));
     parent->AttachForkToCopiedBegin(
         not_null<std::unique_ptr<Tr4jectory>>(this));
   }

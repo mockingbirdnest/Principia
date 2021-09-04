@@ -70,6 +70,8 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
   using Forkable<FakeTrajectory, Iterator, FakeTrajectoryTraits>::
       CheckNoForksBefore;
 
+  virtual std::pair<TimelineConstIterator, bool> timeline_insert(
+    const typename TimelineConstIterator::value_type& value) override;
   TimelineConstIterator timeline_begin() const override;
   TimelineConstIterator timeline_end() const override;
   TimelineConstIterator timeline_find(Instant const& time) const override;
@@ -122,6 +124,14 @@ void FakeTrajectory::push_front(Instant const& time) {
 
 void FakeTrajectory::push_back(Instant const& time) {
   timeline_.push_back(time);
+}
+
+std::pair<FakeTrajectory::TimelineConstIterator, bool>
+FakeTrajectory::timeline_insert(
+    const typename FakeTrajectory::TimelineConstIterator::value_type& time) {
+  // Keep the list sorted.
+  auto it = std::lower_bound(timeline_.begin(), timeline_.end(), time);
+  return {timeline_.insert(it, time), true};
 }
 
 FakeTrajectory::TimelineConstIterator FakeTrajectory::timeline_begin() const {
