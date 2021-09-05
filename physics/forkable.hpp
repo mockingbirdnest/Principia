@@ -118,23 +118,23 @@ class Forkable {
   // |trajectory|.
   void DeleteFork(Tr4jectory*& trajectory);
 
-  // Prepends |trajectory| to this trajectory.  The algorithm proceeds as
-  // follows, where t is the start of the timeline of this trajectory:
-  // 1. Locate the most-forked timeline of |trajectory| that contains a point
+  // Prepends |prefix| to |suffix|, which must be a root.  |prefix_root| must be
+  // the root of |prefix|.  The algorithm proceeds as follows, where t is the
+  // start of the timeline of |suffix|:
+  // 1. Locate the most-forked timeline of |prefix| that contains a point
   //    (strictly) before t.  Call the trajectory containing that timeline T.
   // 2. Prepend the beginning (strictly before t) of the timeline of T to the
-  //    timeline of this trajectory.
-  // 3. Attach the forks (strictly) before t to this trajectory.
+  //    timeline of |suffix|.
+  // 3. Attach the forks (strictly) before t to |suffix|.
   // 4. If T is a root, delete the entire tree rooted at T.
-  // 5. Otherwise, attach this trajectory as a fork of the parent of T instead
-  //    of T and delete T.
+  // 5. Otherwise, attach |suffix| as a fork of the parent of T instead of T and
+  //    delete T.
   // When returning from this method, it is generally not safe to touch any part
-  // of the tree containing |trajectory|, unless the client knows a lot about
+  // of the tree rooted at |prefix_root|, unless the client knows a lot about
   // the structure of the various trajectories (that's the case in tests).
-  // This trajectory is still a valid pointer, but it may now be owned by the
-  // parent of T.  The only pointer that the client might assume to own is
-  // this->root().
-  //TODO(phl):comments
+  // |suffix.get()| and all its forks are still valid pointers.
+  // The returned value is the root of the result, and may either be
+  // |prefix_root| or |suffix|.
   static not_null<std::unique_ptr<Tr4jectory>> Prepend(
     not_null<std::unique_ptr<Tr4jectory>> prefix_root,
     Tr4jectory const& prefix,
@@ -183,7 +183,6 @@ class Forkable {
   // STL-like operations.
   virtual std::pair<TimelineConstIterator, bool> timeline_insert(
     const typename TimelineConstIterator::value_type& value) = 0;
-
   virtual TimelineConstIterator timeline_begin() const = 0;
   virtual TimelineConstIterator timeline_end() const = 0;
   virtual TimelineConstIterator timeline_find(Instant const& time) const = 0;

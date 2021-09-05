@@ -404,6 +404,13 @@ DiscreteTrajectory<Frame>::that() const {
 }
 
 template<typename Frame>
+std::pair<typename DiscreteTrajectory<Frame>::TimelineConstIterator, bool>
+DiscreteTrajectory<Frame>::timeline_insert(
+    const typename TimelineConstIterator::value_type& value) {
+  return timeline_.insert(value);
+}
+
+template<typename Frame>
 typename DiscreteTrajectory<Frame>::TimelineConstIterator
 DiscreteTrajectory<Frame>::timeline_begin() const {
   return timeline_.begin();
