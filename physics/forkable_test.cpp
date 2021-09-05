@@ -795,7 +795,8 @@ TEST_F(ForkableTest, FrontBack) {
 }
 
 TEST_F(ForkableTest, Prepend) {
-  // No overlap between the timelines, prepending a fork.
+  // No overlap between the timelines, prepending a fork.  This trajectory
+  // becomes a fork, the fork cannot be denoted anymore.
   {
     FakeTrajectory trajectory1;
 
@@ -814,28 +815,35 @@ TEST_F(ForkableTest, Prepend) {
     // Cannot touch fork1.
     EXPECT_THAT(Times(&trajectory1), ElementsAre(t0_, t1_, t2_));
     EXPECT_THAT(Times(trajectory2), ElementsAre(t0_, t1_, t2_, t3_, t4_, t5_));
+    EXPECT_TRUE(trajectory1.is_root());
+    EXPECT_EQ(trajectory2->parent(), &trajectory1);
   }
-  // No overlap between the timelines, prepending a root with a fork.
+  // No overlap between the timelines, prepending a root with a fork.  This
+  // trajectory becomes a root, the old root cannot be denoted anymore, the fork
+  // remains.
   {
-    FakeTrajectory trajectory1;
+    FakeTrajectory* trajectory1 = new FakeTrajectory;
 
-    trajectory1.push_back(t0_);
-    trajectory1.push_back(t1_);
-    trajectory1.push_back(t2_);
+    trajectory1->push_back(t0_);
+    trajectory1->push_back(t1_);
+    trajectory1->push_back(t2_);
     not_null<FakeTrajectory*> const fork1 =
-        trajectory1.NewFork(trajectory1.timeline_find(t2_));
+        trajectory1->NewFork(trajectory1->timeline_find(t2_));
     fork1->push_back(t3_);
     fork1->push_back(t4_);
 
     FakeTrajectory* trajectory2 = new FakeTrajectory;
     trajectory2->push_back(t5_);
-    trajectory2->Prepend(std::move(trajectory1));
+    trajectory2->Prepend(std::move(*trajectory1));
 
     // Cannot touch trajectory1.
     EXPECT_THAT(Times(fork1), ElementsAre(t0_, t1_, t2_, t3_, t4_));
     EXPECT_THAT(Times(trajectory2), ElementsAre(t0_, t1_, t2_, t5_));
+    EXPECT_TRUE(trajectory2->is_root());
+    EXPECT_EQ(fork1->parent(), trajectory2);
   }
-  // Overlap with the fork timeline, prepending a fork.
+  // This trajectory overlaps with the fork timeline, prepending a fork.  This
+  // trajectory becomes a fork, the fork cannot be denoted anymore.
   {
     FakeTrajectory trajectory1;
 
@@ -855,8 +863,139 @@ TEST_F(ForkableTest, Prepend) {
     // Cannot touch fork1.
     EXPECT_THAT(Times(&trajectory1), ElementsAre(t0_, t1_, t2_));
     EXPECT_THAT(Times(trajectory2), ElementsAre(t0_, t1_, t2_, t3_, t4_, t5_));
+    EXPECT_TRUE(trajectory1.is_root());
+    EXPECT_EQ(trajectory2->parent(), &trajectory1);
   }
-  // Overlap with the fork timeline, prepending a root with a fork.
+  // This trajectory overlaps with the fork timeline, prepending a root with a
+  // fork.  This trajectory becomes a root, the old root cannot be denoted
+  // anymore, the fork remains.
+  {
+    FakeTrajectory* trajectory1 = new FakeTrajectory;
+
+    trajectory1->push_back(t0_);
+    trajectory1->push_back(t1_);
+    trajectory1->push_back(t2_);
+    not_null<FakeTrajectory*> const fork1 =
+        trajectory1->NewFork(trajectory1->timeline_find(t2_));
+    fork1->push_back(t3_);
+    fork1->push_back(t4_);
+
+    FakeTrajectory* trajectory2 = new FakeTrajectory;
+    trajectory2->push_back(t4_);
+    trajectory2->push_back(t5_);
+    trajectory2->Prepend(std::move(*trajectory1));
+
+    // Cannot touch trajectory1.
+    EXPECT_THAT(Times(fork1), ElementsAre(t0_, t1_, t2_, t3_, t4_));
+    EXPECT_THAT(Times(trajectory2), ElementsAre(t0_, t1_, t2_, t4_, t5_));
+    EXPECT_TRUE(trajectory2->is_root());
+    EXPECT_EQ(fork1->parent(), trajectory2);
+  }
+  // This trajectory starts at the fork time, prepending a fork.  This
+  // trajectory becomes a root, the old trajectories cannot be denoted anymore,
+  // the fork remains.
+  {
+    FakeTrajectory* trajectory1 = new FakeTrajectory;
+
+    trajectory1->push_back(t0_);
+    trajectory1->push_back(t1_);
+    trajectory1->push_back(t2_);
+    not_null<FakeTrajectory*> const fork1 =
+        trajectory1->NewFork(trajectory1->timeline_find(t2_));
+    fork1->push_back(t3_);
+    fork1->push_back(t4_);
+
+    FakeTrajectory trajectory2;
+    trajectory2.push_back(t2_);
+    trajectory2.push_back(t3_);
+    trajectory2.push_back(t4_);
+    trajectory2.push_back(t5_);
+    trajectory2.Prepend(std::move(*fork1));
+
+    // Cannot touch fork1 or trajectory1.
+    EXPECT_THAT(Times(&trajectory2), ElementsAre(t0_, t1_, t2_, t3_, t4_, t5_));
+    EXPECT_TRUE(trajectory2.is_root());
+  }
+  // This trajectory starts at the fork time, prepending a root.  This
+  // trajectory becomes a root, the old trajectories cannot be denoted anymore,
+  // the fork remains.
+  {
+    FakeTrajectory* trajectory1 = new FakeTrajectory;
+
+    trajectory1->push_back(t0_);
+    trajectory1->push_back(t1_);
+    trajectory1->push_back(t2_);
+    not_null<FakeTrajectory*> const fork1 =
+        trajectory1->NewFork(trajectory1->timeline_find(t2_));
+    fork1->push_back(t3_);
+    fork1->push_back(t4_);
+
+    FakeTrajectory trajectory2;
+    trajectory2.push_back(t2_);
+    trajectory2.push_back(t3_);
+    trajectory2.push_back(t4_);
+    trajectory2.push_back(t5_);
+    trajectory2.Prepend(std::move(*trajectory1));
+
+    // Cannot touch fork1 or trajectory1.
+    EXPECT_THAT(Times(&trajectory2), ElementsAre(t0_, t1_, t2_, t3_, t4_, t5_));
+    EXPECT_TRUE(trajectory2.is_root());
+  }
+  // This trajectory overlaps with the root timeline, prepending a fork.  This
+  // trajectory becomes a root, the old trajectories cannot be denoted anymore,
+  // the fork remains.
+  {
+    FakeTrajectory* trajectory1 = new FakeTrajectory;
+
+    trajectory1->push_back(t0_);
+    trajectory1->push_back(t1_);
+    trajectory1->push_back(t2_);
+    not_null<FakeTrajectory*> const fork1 =
+        trajectory1->NewFork(trajectory1->timeline_find(t2_));
+    fork1->push_back(t3_);
+    fork1->push_back(t4_);
+
+    FakeTrajectory trajectory2;
+    trajectory2.push_back(t1_);
+    trajectory2.push_back(t2_);
+    trajectory2.push_back(t3_);
+    trajectory2.push_back(t4_);
+    trajectory2.push_back(t5_);
+    trajectory2.Prepend(std::move(*fork1));
+
+    // Cannot touch fork1 or trajectory1.
+    EXPECT_THAT(Times(&trajectory2), ElementsAre(t0_, t1_, t2_, t3_, t4_, t5_));
+    EXPECT_TRUE(trajectory2.is_root());
+  }
+  // This trajectory overlaps with the root timeline, prepending a root with a
+  // fork.  This trajectory becomes a root, the old trajectories cannot be
+  // denoted anymore, the fork remains.
+  {
+    FakeTrajectory* trajectory1 = new FakeTrajectory;
+
+    trajectory1->push_back(t0_);
+    trajectory1->push_back(t1_);
+    trajectory1->push_back(t2_);
+    not_null<FakeTrajectory*> const fork1 =
+        trajectory1->NewFork(trajectory1->timeline_find(t2_));
+    fork1->push_back(t3_);
+    fork1->push_back(t4_);
+
+    FakeTrajectory trajectory2;
+    trajectory2.push_back(t1_);
+    trajectory2.push_back(t2_);
+    trajectory2.push_back(t3_);
+    trajectory2.push_back(t4_);
+    trajectory2.push_back(t5_);
+    trajectory2.Prepend(std::move(*trajectory1));
+
+    // Cannot touch fork1 or trajectory1.
+    EXPECT_THAT(Times(&trajectory2), ElementsAre(t0_, t1_, t2_, t3_, t4_, t5_));
+    EXPECT_TRUE(trajectory2.is_root());
+  }
+  // This trajectory overlaps with the fork timeline and has a fork, prepending
+  // a fork.  This trajectory becomes a fork, the fork that was prepended cannot
+  // be denoted anymore, all other trajectories remain.
   {
     FakeTrajectory trajectory1;
 
@@ -870,12 +1009,47 @@ TEST_F(ForkableTest, Prepend) {
 
     FakeTrajectory* trajectory2 = new FakeTrajectory;
     trajectory2->push_back(t4_);
-    trajectory2->push_back(t5_);
-    trajectory2->Prepend(std::move(trajectory1));
+    not_null<FakeTrajectory*> const fork2 =
+        trajectory2->NewFork(trajectory2->timeline_find(t4_));
+    fork2->push_back(t5_);
+    trajectory2->Prepend(std::move(*fork1));
 
-    // Cannot touch trajectory1.
+    // Cannot touch fork1.
+    EXPECT_THAT(Times(&trajectory1), ElementsAre(t0_, t1_, t2_));
+    EXPECT_THAT(Times(trajectory2), ElementsAre(t0_, t1_, t2_, t3_, t4_));
+    EXPECT_THAT(Times(fork2), ElementsAre(t0_, t1_, t2_, t3_, t4_, t5_));
+    EXPECT_TRUE(trajectory1.is_root());
+    EXPECT_EQ(fork2->parent(), trajectory2);
+    EXPECT_EQ(trajectory2->parent(), &trajectory1);
+  }
+  // This trajectory overlaps with the fork timeline and has a fork, prepending
+  // a root.  This trajectory becomes a root, both forks are attached to it, the
+  // old root cannot be denoted anymore.
+  {
+    FakeTrajectory* trajectory1 = new FakeTrajectory;
+
+    trajectory1->push_back(t0_);
+    trajectory1->push_back(t1_);
+    trajectory1->push_back(t2_);
+    not_null<FakeTrajectory*> const fork1 =
+        trajectory1->NewFork(trajectory1->timeline_find(t2_));
+    fork1->push_back(t3_);
+    fork1->push_back(t4_);
+
+    FakeTrajectory trajectory2;
+    trajectory2.push_back(t4_);
+    not_null<FakeTrajectory*> const fork2 =
+        trajectory2.NewFork(trajectory2.timeline_find(t4_));
+    fork2->push_back(t5_);
+    trajectory2.Prepend(std::move(*trajectory1));
+
+    // Cannot touch fork1.
+    EXPECT_THAT(Times(&trajectory2), ElementsAre(t0_, t1_, t2_, t4_));
     EXPECT_THAT(Times(fork1), ElementsAre(t0_, t1_, t2_, t3_, t4_));
-    EXPECT_THAT(Times(trajectory2), ElementsAre(t0_, t1_, t2_, t4_, t5_));
+    EXPECT_THAT(Times(fork2), ElementsAre(t0_, t1_, t2_, t4_, t5_));
+    EXPECT_TRUE(trajectory2.is_root());
+    EXPECT_EQ(fork1->parent(), &trajectory2);
+    EXPECT_EQ(fork2->parent(), &trajectory2);
   }
 }
 

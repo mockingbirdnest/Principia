@@ -541,9 +541,14 @@ void Forkable<Tr4jectory, It3rator, Traits>::Prepend(Tr4jectory&& trajectory) {
     child->position_in_parent_timeline_ = timeline_it;
     auto child_it = children_.emplace(time, std::move(child));
     child_it->second->position_in_parent_children_ = child_it;
+    child_it->second->parent_ = that();
   }
 
-  if (!trajectory_to_prepend->is_root()) {
+  // In all cases, |trajectory_to_prepend| gets deleted because it may now
+  // contain moved-from pointers to children.
+  if (trajectory_to_prepend->is_root()) {
+    delete trajectory_to_prepend;
+  } else {
     // If needed, attach this trajectory as a fork of the parent of
     // |trajectory_to_prepend|.
     auto const parent = trajectory_to_prepend->parent_;
