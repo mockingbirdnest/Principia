@@ -1158,7 +1158,6 @@ TEST_F(ForkableTest, Prepend) {
     EXPECT_THAT(Times(&trajectory2), IsEmpty());
     EXPECT_TRUE(trajectory2.is_root());
   }
-
 }
 
 }  // namespace internal_forkable

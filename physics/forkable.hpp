@@ -118,6 +118,24 @@ class Forkable {
   // |trajectory|.
   void DeleteFork(Tr4jectory*& trajectory);
 
+  // Prepends |trajectory| to this trajectory.  The algorithm proceeds as
+  // follows, where t is the start of the timeline of this trajectory:
+  // 1. Locate the most-forked timeline of |trajectory| that contains a point
+  //    (strictly) before t.  Call the trajectory containing that timeline T.
+  // 2. Prepend the beginning (strictly before t) of the timeline of T to the
+  //    timeline of this trajectory.
+  // 3. Attach the forks (strictly) before t to this trajectory.
+  // 4. If T is a root, delete the entire tree rooted at T.
+  // 5. Otherwise, attach this trajectory as a fork of the parent of T instead
+  //    of T and delete T.
+  // When returning from this method, it is generally not safe to touch any part
+  // of the tree containing |trajectory|, unless the client knows a lot about
+  // the structure of the various trajectories (that's the case in tests).
+  // This trajectory is still a valid pointer, but it may now be owned by the
+  // parent of T.  The only pointer that the client might assume to own is
+  // this->root().
+  void Prepend(Tr4jectory&& trajectory);
+
   // Returns true if this is a root trajectory.
   bool is_root() const;
 
@@ -182,7 +200,9 @@ class Forkable {
   // |timeline_it| may be at end if it denotes the fork time of this object.
   not_null<Tr4jectory*> NewFork(TimelineConstIterator const& timeline_it);
 
-  //TODO(phl):comment
+  // |fork| must be a non-empty root and its first point must be after the last
+  // point of this object.  |fork| is attached to this object as a child at the
+  // end of the timeline.
   void AttachFork(not_null<std::unique_ptr<Tr4jectory>> fork);
 
   // |fork| must be a non-empty root and its first point must be at the same
@@ -207,9 +227,6 @@ class Forkable {
   // the timelime of this trajectory (i.e., after its fork point if it's not a
   // root).
   void CheckNoForksBefore(Instant const& time);
-
-  //TODO(phl):comment
-  void Prepend(Tr4jectory&& trajectory);
 
   // This trajectory need not be a root.  The entire tree rooted at this
   // trajectory is traversed and the forks not present in |excluded| are
