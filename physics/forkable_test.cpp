@@ -2,6 +2,7 @@
 #include "physics/forkable.hpp"
 
 #include <list>
+#include <utility>
 #include <vector>
 
 #include "base/not_constructible.hpp"
@@ -73,8 +74,8 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
   using Forkable<FakeTrajectory, Iterator, FakeTrajectoryTraits>::
       Prepend;
 
-  virtual std::pair<TimelineConstIterator, bool> timeline_insert(
-    const typename TimelineConstIterator::value_type& value) override;
+  std::pair<TimelineConstIterator, bool> timeline_insert(
+      const typename TimelineConstIterator::value_type& value) override;
   TimelineConstIterator timeline_begin() const override;
   TimelineConstIterator timeline_end() const override;
   TimelineConstIterator timeline_find(Instant const& time) const override;
@@ -1247,7 +1248,6 @@ TEST_F(ForkableTest, Prepend) {
     EXPECT_TRUE(result->is_root());
     EXPECT_EQ(result.get(), unowned_trajectory2);
   }
-
 }
 
 }  // namespace internal_forkable

@@ -7,6 +7,7 @@
 #include <memory>
 #include <optional>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "absl/status/status.h"
@@ -207,8 +208,8 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   not_null<DiscreteTrajectory*> that() override;
   not_null<DiscreteTrajectory const*> that() const override;
 
-  virtual std::pair<TimelineConstIterator, bool> timeline_insert(
-    const typename TimelineConstIterator::value_type& value) override;
+  std::pair<TimelineConstIterator, bool> timeline_insert(
+      const typename TimelineConstIterator::value_type& value) override;
   TimelineConstIterator timeline_begin() const override;
   TimelineConstIterator timeline_end() const override;
   TimelineConstIterator timeline_find(Instant const& time) const override;
