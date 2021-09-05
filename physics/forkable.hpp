@@ -5,6 +5,7 @@
 #include <memory>
 #include <optional>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "absl/container/inlined_vector.h"
@@ -118,6 +119,28 @@ class Forkable {
   // |trajectory|.
   void DeleteFork(Tr4jectory*& trajectory);
 
+  // Prepends |prefix| to |suffix|, which must be a root.  |prefix_root| must be
+  // the root of |prefix|.  The algorithm proceeds as follows, where t is the
+  // start of the timeline of |suffix|:
+  // 1. Locate the most-forked timeline of |prefix| that contains a point
+  //    (strictly) before t.  Call the trajectory containing that timeline T.
+  // 2. Prepend the beginning (strictly before t) of the timeline of T to the
+  //    timeline of |suffix|.
+  // 3. Attach the forks (strictly) before t to |suffix|.
+  // 4. If T is a root, delete the entire tree rooted at T.
+  // 5. Otherwise, attach |suffix| as a fork of the parent of T instead of T and
+  //    delete T.
+  // When returning from this method, it is generally not safe to touch any part
+  // of the tree rooted at |prefix_root|, unless the client knows a lot about
+  // the structure of the various trajectories (that's the case in tests).
+  // |suffix.get()| and all its forks are still valid pointers.
+  // The returned value is the root of the result, and may either be
+  // |prefix_root| or |suffix|.
+  static not_null<std::unique_ptr<Tr4jectory>> Prepend(
+    not_null<std::unique_ptr<Tr4jectory>> prefix_root,
+    Tr4jectory const& prefix,
+    not_null<std::unique_ptr<Tr4jectory>> suffix);
+
   // Returns true if this is a root trajectory.
   bool is_root() const;
 
@@ -159,6 +182,8 @@ class Forkable {
   virtual not_null<Tr4jectory const*> that() const = 0;
 
   // STL-like operations.
+  virtual std::pair<TimelineConstIterator, bool> timeline_insert(
+      const typename TimelineConstIterator::value_type& value) = 0;
   virtual TimelineConstIterator timeline_begin() const = 0;
   virtual TimelineConstIterator timeline_end() const = 0;
   virtual TimelineConstIterator timeline_find(Instant const& time) const = 0;
@@ -178,6 +203,11 @@ class Forkable {
   // trajectory.  Deleting the parent trajectory deletes all child trajectories.
   // |timeline_it| may be at end if it denotes the fork time of this object.
   not_null<Tr4jectory*> NewFork(TimelineConstIterator const& timeline_it);
+
+  // |fork| must be a non-empty root and its first point must be after the last
+  // point of this object.  |fork| is attached to this object as a child at the
+  // end of the timeline.
+  void AttachFork(not_null<std::unique_ptr<Tr4jectory>> fork);
 
   // |fork| must be a non-empty root and its first point must be at the same
   // time as the last point of this object.  |fork| is attached to this object

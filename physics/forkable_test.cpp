@@ -2,6 +2,7 @@
 #include "physics/forkable.hpp"
 
 #include <list>
+#include <utility>
 #include <vector>
 
 #include "base/not_constructible.hpp"
@@ -19,6 +20,7 @@ using base::not_constructible;
 using geometry::Instant;
 using quantities::si::Second;
 using ::testing::ElementsAre;
+using ::testing::IsEmpty;
 
 struct FakeTrajectoryTraits : not_constructible {
   using Timeline = std::list<Instant>;
@@ -69,7 +71,11 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
       DeleteAllForksAfter;
   using Forkable<FakeTrajectory, Iterator, FakeTrajectoryTraits>::
       CheckNoForksBefore;
+  using Forkable<FakeTrajectory, Iterator, FakeTrajectoryTraits>::
+      Prepend;
 
+  std::pair<TimelineConstIterator, bool> timeline_insert(
+      const typename TimelineConstIterator::value_type& value) override;
   TimelineConstIterator timeline_begin() const override;
   TimelineConstIterator timeline_end() const override;
   TimelineConstIterator timeline_find(Instant const& time) const override;
@@ -122,6 +128,14 @@ void FakeTrajectory::push_front(Instant const& time) {
 
 void FakeTrajectory::push_back(Instant const& time) {
   timeline_.push_back(time);
+}
+
+std::pair<FakeTrajectory::TimelineConstIterator, bool>
+FakeTrajectory::timeline_insert(
+    const typename FakeTrajectory::TimelineConstIterator::value_type& time) {
+  // Keep the list sorted.
+  auto it = std::lower_bound(timeline_.begin(), timeline_.end(), time);
+  return {timeline_.insert(it, time), true};
 }
 
 FakeTrajectory::TimelineConstIterator FakeTrajectory::timeline_begin() const {
@@ -780,6 +794,460 @@ TEST_F(ForkableTest, FrontBack) {
 
   EXPECT_EQ(t1_, fork2->front().time);
   EXPECT_EQ(t5_, fork2->back().time);
+}
+
+TEST_F(ForkableTest, Prepend) {
+  // No overlap between the timelines, prepending a fork.  This trajectory
+  // becomes a fork, the fork cannot be denoted anymore.
+  {
+    auto trajectory1 = make_not_null_unique<FakeTrajectory>();
+    auto const unowned_trajectory1 = trajectory1.get();
+    trajectory1->push_back(t0_);
+    trajectory1->push_back(t1_);
+    trajectory1->push_back(t2_);
+    not_null<FakeTrajectory*> const fork1 =
+        trajectory1->NewFork(trajectory1->timeline_find(t2_));
+    fork1->push_back(t3_);
+    fork1->push_back(t4_);
+
+    auto trajectory2 = make_not_null_unique<FakeTrajectory>();
+    auto const unowned_trajectory2 = trajectory2.get();
+    trajectory2->push_back(t5_);
+
+    auto const& prefix = *fork1;
+    auto result = FakeTrajectory::Prepend(std::move(trajectory1),
+                                          prefix,
+                                          std::move(trajectory2));
+
+    // Cannot touch fork1.
+    EXPECT_THAT(Times(result.get()), ElementsAre(t0_, t1_, t2_));
+    EXPECT_THAT(Times(unowned_trajectory2),
+                ElementsAre(t0_, t1_, t2_, t3_, t4_, t5_));
+    EXPECT_TRUE(result->is_root());
+    EXPECT_EQ(result.get(), unowned_trajectory1);
+    EXPECT_EQ(unowned_trajectory2->parent(), result.get());
+  }
+  // No overlap between the timelines, prepending a root with a fork.  This
+  // trajectory becomes a root, the old root cannot be denoted anymore, the fork
+  // remains.
+  {
+    auto trajectory1 = make_not_null_unique<FakeTrajectory>();
+    trajectory1->push_back(t0_);
+    trajectory1->push_back(t1_);
+    trajectory1->push_back(t2_);
+    not_null<FakeTrajectory*> const fork1 =
+        trajectory1->NewFork(trajectory1->timeline_find(t2_));
+    fork1->push_back(t3_);
+    fork1->push_back(t4_);
+
+    auto trajectory2 = make_not_null_unique<FakeTrajectory>();
+    auto const unowned_trajectory2 = trajectory2.get();
+    trajectory2->push_back(t5_);
+
+    auto const& prefix = *trajectory1;
+    auto result = FakeTrajectory::Prepend(std::move(trajectory1),
+                                          prefix,
+                                          std::move(trajectory2));
+
+    // Cannot touch trajectory1.
+    EXPECT_THAT(Times(result.get()), ElementsAre(t0_, t1_, t2_, t5_));
+    EXPECT_THAT(Times(fork1), ElementsAre(t0_, t1_, t2_, t3_, t4_));
+    EXPECT_TRUE(result->is_root());
+    EXPECT_EQ(result.get(), unowned_trajectory2);
+    EXPECT_EQ(fork1->parent(), result.get());
+  }
+  // No overlap between the timelines, no forks.  This trajectory becomes a
+  // root, the old root cannot be denoted anymore.
+  {
+    auto trajectory1 = make_not_null_unique<FakeTrajectory>();
+    trajectory1->push_back(t0_);
+    trajectory1->push_back(t1_);
+    trajectory1->push_back(t2_);
+
+    auto trajectory2 = make_not_null_unique<FakeTrajectory>();
+    auto const unowned_trajectory2 = trajectory2.get();
+    trajectory2->push_back(t5_);
+
+    auto const& prefix = *trajectory1;
+    auto result = FakeTrajectory::Prepend(std::move(trajectory1),
+                                          prefix,
+                                          std::move(trajectory2));
+
+    // Cannot touch trajectory1.
+    EXPECT_THAT(Times(result.get()), ElementsAre(t0_, t1_, t2_, t5_));
+    EXPECT_TRUE(result->is_root());
+    EXPECT_EQ(result.get(), unowned_trajectory2);
+  }
+  // This trajectory is in the past of the trajectory being prepended.  Nothing
+  // happens, but the trajectory being prepended is moved from.
+  {
+    auto trajectory1 = make_not_null_unique<FakeTrajectory>();
+    trajectory1->push_back(t2_);
+    trajectory1->push_back(t3_);
+    trajectory1->push_back(t4_);
+    not_null<FakeTrajectory*> const fork1 =
+        trajectory1->NewFork(trajectory1->timeline_find(t4_));
+    fork1->push_back(t5_);
+
+    auto trajectory2 = make_not_null_unique<FakeTrajectory>();
+    auto const unowned_trajectory2 = trajectory2.get();
+    trajectory2->push_back(t0_);
+    trajectory2->push_back(t1_);
+    trajectory2->push_back(t2_);
+
+    auto const& prefix = *trajectory1;
+    auto result = FakeTrajectory::Prepend(std::move(trajectory1),
+                                          prefix,
+                                          std::move(trajectory2));
+
+    // Cannot touch fork1 or trajectory1.
+    EXPECT_THAT(Times(result.get()), ElementsAre(t0_, t1_, t2_));
+    EXPECT_TRUE(result->is_root());
+    EXPECT_EQ(result.get(), unowned_trajectory2);
+  }
+  // This trajectory overlaps with the fork timeline, prepending a fork.  This
+  // trajectory becomes a fork, the fork cannot be denoted anymore.
+  {
+    auto trajectory1 = make_not_null_unique<FakeTrajectory>();
+    auto const unowned_trajectory1 = trajectory1.get();
+    trajectory1->push_back(t0_);
+    trajectory1->push_back(t1_);
+    trajectory1->push_back(t2_);
+    not_null<FakeTrajectory*> const fork1 =
+        trajectory1->NewFork(trajectory1->timeline_find(t2_));
+    fork1->push_back(t3_);
+    fork1->push_back(t4_);
+
+    auto trajectory2 = make_not_null_unique<FakeTrajectory>();
+    auto const unowned_trajectory2 = trajectory2.get();
+    trajectory2->push_back(t4_);
+    trajectory2->push_back(t5_);
+
+    auto const& prefix = *fork1;
+    auto result = FakeTrajectory::Prepend(std::move(trajectory1),
+                                          prefix,
+                                          std::move(trajectory2));
+
+    // Cannot touch fork1.
+    EXPECT_THAT(Times(result.get()), ElementsAre(t0_, t1_, t2_));
+    EXPECT_THAT(Times(unowned_trajectory2),
+                ElementsAre(t0_, t1_, t2_, t3_, t4_, t5_));
+    EXPECT_TRUE(result->is_root());
+    EXPECT_EQ(result.get(), unowned_trajectory1);
+    EXPECT_EQ(unowned_trajectory2->parent(), result.get());
+  }
+  // This trajectory overlaps with the fork timeline, prepending a root with a
+  // fork.  This trajectory becomes a root, the old root cannot be denoted
+  // anymore, the fork remains.
+  {
+    auto trajectory1 = make_not_null_unique<FakeTrajectory>();
+    trajectory1->push_back(t0_);
+    trajectory1->push_back(t1_);
+    trajectory1->push_back(t2_);
+    not_null<FakeTrajectory*> const fork1 =
+        trajectory1->NewFork(trajectory1->timeline_find(t2_));
+    fork1->push_back(t3_);
+    fork1->push_back(t4_);
+
+    auto trajectory2 = make_not_null_unique<FakeTrajectory>();
+    auto const unowned_trajectory2 = trajectory2.get();
+    trajectory2->push_back(t4_);
+    trajectory2->push_back(t5_);
+
+    auto const& prefix = *trajectory1;
+    auto result = FakeTrajectory::Prepend(std::move(trajectory1),
+                                          prefix,
+                                          std::move(trajectory2));
+
+    // Cannot touch trajectory1.
+    EXPECT_THAT(Times(result.get()), ElementsAre(t0_, t1_, t2_, t4_, t5_));
+    EXPECT_THAT(Times(fork1), ElementsAre(t0_, t1_, t2_, t3_, t4_));
+    EXPECT_TRUE(result->is_root());
+    EXPECT_EQ(result.get(), unowned_trajectory2);
+    EXPECT_EQ(fork1->parent(), result.get());
+  }
+  // This trajectory starts at the fork time, prepending a fork.  This
+  // trajectory becomes a root, the old trajectories cannot be denoted anymore,
+  // the fork remains.
+  {
+    auto trajectory1 = make_not_null_unique<FakeTrajectory>();
+    trajectory1->push_back(t0_);
+    trajectory1->push_back(t1_);
+    trajectory1->push_back(t2_);
+    not_null<FakeTrajectory*> const fork1 =
+        trajectory1->NewFork(trajectory1->timeline_find(t2_));
+    fork1->push_back(t3_);
+    fork1->push_back(t4_);
+
+    auto trajectory2 = make_not_null_unique<FakeTrajectory>();
+    auto const unowned_trajectory2 = trajectory2.get();
+    trajectory2->push_back(t2_);
+    trajectory2->push_back(t3_);
+    trajectory2->push_back(t4_);
+    trajectory2->push_back(t5_);
+
+    auto const& prefix = *fork1;
+    auto result = FakeTrajectory::Prepend(std::move(trajectory1),
+                                          prefix,
+                                          std::move(trajectory2));
+
+    // Cannot touch fork1 or trajectory1.
+    EXPECT_THAT(Times(result.get()), ElementsAre(t0_, t1_, t2_, t3_, t4_, t5_));
+    EXPECT_TRUE(result->is_root());
+    EXPECT_EQ(result.get(), unowned_trajectory2);
+  }
+  // This trajectory starts at the fork time, prepending a root.  This
+  // trajectory becomes a root, the old trajectories cannot be denoted anymore,
+  // the fork remains.
+  {
+    auto trajectory1 = make_not_null_unique<FakeTrajectory>();
+    trajectory1->push_back(t0_);
+    trajectory1->push_back(t1_);
+    trajectory1->push_back(t2_);
+    not_null<FakeTrajectory*> const fork1 =
+        trajectory1->NewFork(trajectory1->timeline_find(t2_));
+    fork1->push_back(t3_);
+    fork1->push_back(t4_);
+
+    auto trajectory2 = make_not_null_unique<FakeTrajectory>();
+    auto const unowned_trajectory2 = trajectory2.get();
+    trajectory2->push_back(t2_);
+    trajectory2->push_back(t3_);
+    trajectory2->push_back(t4_);
+    trajectory2->push_back(t5_);
+
+    auto const& prefix = *trajectory1;
+    auto result = FakeTrajectory::Prepend(std::move(trajectory1),
+                                          prefix,
+                                          std::move(trajectory2));
+
+    // Cannot touch fork1 or trajectory1.
+    EXPECT_THAT(Times(result.get()), ElementsAre(t0_, t1_, t2_, t3_, t4_, t5_));
+    EXPECT_TRUE(result->is_root());
+    EXPECT_EQ(result.get(), unowned_trajectory2);
+  }
+  // This trajectory overlaps with the root timeline, prepending a fork.  This
+  // trajectory becomes a root, the old trajectories cannot be denoted anymore,
+  // the fork remains.
+  {
+    auto trajectory1 = make_not_null_unique<FakeTrajectory>();
+    trajectory1->push_back(t0_);
+    trajectory1->push_back(t1_);
+    trajectory1->push_back(t2_);
+    not_null<FakeTrajectory*> const fork1 =
+        trajectory1->NewFork(trajectory1->timeline_find(t2_));
+    fork1->push_back(t3_);
+    fork1->push_back(t4_);
+
+    auto trajectory2 = make_not_null_unique<FakeTrajectory>();
+    auto const unowned_trajectory2 = trajectory2.get();
+    trajectory2->push_back(t1_);
+    trajectory2->push_back(t2_);
+    trajectory2->push_back(t3_);
+    trajectory2->push_back(t4_);
+    trajectory2->push_back(t5_);
+
+    auto const& prefix = *fork1;
+    auto result = FakeTrajectory::Prepend(std::move(trajectory1),
+                                          prefix,
+                                          std::move(trajectory2));
+
+    // Cannot touch fork1 or trajectory1.
+    EXPECT_THAT(Times(result.get()), ElementsAre(t0_, t1_, t2_, t3_, t4_, t5_));
+    EXPECT_TRUE(result->is_root());
+    EXPECT_EQ(result.get(), unowned_trajectory2);
+  }
+  // This trajectory overlaps with the root timeline, prepending a root with a
+  // fork.  This trajectory becomes a root, the old trajectories cannot be
+  // denoted anymore.
+  {
+    auto trajectory1 = make_not_null_unique<FakeTrajectory>();
+    trajectory1->push_back(t0_);
+    trajectory1->push_back(t1_);
+    trajectory1->push_back(t2_);
+    not_null<FakeTrajectory*> const fork1 =
+        trajectory1->NewFork(trajectory1->timeline_find(t2_));
+    fork1->push_back(t3_);
+    fork1->push_back(t4_);
+
+    auto trajectory2 = make_not_null_unique<FakeTrajectory>();
+    auto const unowned_trajectory2 = trajectory2.get();
+    trajectory2->push_back(t1_);
+    trajectory2->push_back(t2_);
+    trajectory2->push_back(t3_);
+    trajectory2->push_back(t4_);
+    trajectory2->push_back(t5_);
+
+    auto const& prefix = *trajectory1;
+    auto result = FakeTrajectory::Prepend(std::move(trajectory1),
+                                          prefix,
+                                          std::move(trajectory2));
+
+    // Cannot touch fork1 or trajectory1.
+    EXPECT_THAT(Times(result.get()), ElementsAre(t0_, t1_, t2_, t3_, t4_, t5_));
+    EXPECT_TRUE(result->is_root());
+    EXPECT_EQ(result.get(), unowned_trajectory2);
+  }
+  // This trajectory overlaps with the root timeline, no forks.  This trajectory
+  // becomes a root, the old root cannot be denoted anymore.
+  {
+    auto trajectory1 = make_not_null_unique<FakeTrajectory>();
+    trajectory1->push_back(t0_);
+    trajectory1->push_back(t1_);
+    trajectory1->push_back(t2_);
+
+    auto trajectory2 = make_not_null_unique<FakeTrajectory>();
+    auto const unowned_trajectory2 = trajectory2.get();
+    trajectory2->push_back(t1_);
+    trajectory2->push_back(t2_);
+    trajectory2->push_back(t3_);
+    trajectory2->push_back(t4_);
+    trajectory2->push_back(t5_);
+
+    auto const& prefix = *trajectory1;
+    auto result = FakeTrajectory::Prepend(std::move(trajectory1),
+                                          prefix,
+                                          std::move(trajectory2));
+
+    // Cannot touch trajectory1.
+    EXPECT_THAT(Times(result.get()), ElementsAre(t0_, t1_, t2_, t3_, t4_, t5_));
+    EXPECT_TRUE(result->is_root());
+    EXPECT_EQ(result.get(), unowned_trajectory2);
+  }
+  // This trajectory overlaps with the fork timeline and has a fork, prepending
+  // a fork.  This trajectory becomes a fork, the fork that was prepended cannot
+  // be denoted anymore, all other trajectories remain.
+  {
+    auto trajectory1 = make_not_null_unique<FakeTrajectory>();
+    auto const unowned_trajectory1 = trajectory1.get();
+    trajectory1->push_back(t0_);
+    trajectory1->push_back(t1_);
+    trajectory1->push_back(t2_);
+    not_null<FakeTrajectory*> const fork1 =
+        trajectory1->NewFork(trajectory1->timeline_find(t2_));
+    fork1->push_back(t3_);
+    fork1->push_back(t4_);
+
+    auto trajectory2 = make_not_null_unique<FakeTrajectory>();
+    auto const unowned_trajectory2 = trajectory2.get();
+    trajectory2->push_back(t4_);
+    not_null<FakeTrajectory*> const fork2 =
+        trajectory2->NewFork(trajectory2->timeline_find(t4_));
+    fork2->push_back(t5_);
+
+    auto const& prefix = *fork1;
+    auto result = FakeTrajectory::Prepend(std::move(trajectory1),
+                                          prefix,
+                                          std::move(trajectory2));
+
+    // Cannot touch fork1.
+    EXPECT_THAT(Times(result.get()), ElementsAre(t0_, t1_, t2_));
+    EXPECT_THAT(Times(unowned_trajectory2),
+                ElementsAre(t0_, t1_, t2_, t3_, t4_));
+    EXPECT_THAT(Times(fork2), ElementsAre(t0_, t1_, t2_, t3_, t4_, t5_));
+    EXPECT_TRUE(result->is_root());
+    EXPECT_EQ(result.get(), unowned_trajectory1);
+    EXPECT_EQ(fork2->parent(), unowned_trajectory2);
+    EXPECT_EQ(unowned_trajectory2->parent(), unowned_trajectory1);
+  }
+  // This trajectory overlaps with the fork timeline and has a fork, prepending
+  // a root.  This trajectory becomes a root, both forks are attached to it, the
+  // old root cannot be denoted anymore.
+  {
+    auto trajectory1 = make_not_null_unique<FakeTrajectory>();
+    trajectory1->push_back(t0_);
+    trajectory1->push_back(t1_);
+    trajectory1->push_back(t2_);
+    not_null<FakeTrajectory*> const fork1 =
+        trajectory1->NewFork(trajectory1->timeline_find(t2_));
+    fork1->push_back(t3_);
+    fork1->push_back(t4_);
+
+    auto trajectory2 = make_not_null_unique<FakeTrajectory>();
+    auto const unowned_trajectory2 = trajectory2.get();
+    trajectory2->push_back(t4_);
+    not_null<FakeTrajectory*> const fork2 =
+        trajectory2->NewFork(trajectory2->timeline_find(t4_));
+    fork2->push_back(t5_);
+
+    auto const& prefix = *trajectory1;
+    auto result = FakeTrajectory::Prepend(std::move(trajectory1),
+                                          prefix,
+                                          std::move(trajectory2));
+
+    // Cannot touch fork1.
+    EXPECT_THAT(Times(result.get()), ElementsAre(t0_, t1_, t2_, t4_));
+    EXPECT_THAT(Times(fork1), ElementsAre(t0_, t1_, t2_, t3_, t4_));
+    EXPECT_THAT(Times(fork2), ElementsAre(t0_, t1_, t2_, t4_, t5_));
+    EXPECT_TRUE(result->is_root());
+    EXPECT_EQ(result.get(), unowned_trajectory2);
+    EXPECT_EQ(fork1->parent(), unowned_trajectory2);
+    EXPECT_EQ(fork2->parent(), unowned_trajectory2);
+  }
+  // This trajectory being prepended is empty.  Nothing happens, but that
+  // trajectory is moved from.
+  {
+    auto trajectory1 = make_not_null_unique<FakeTrajectory>();
+
+    auto trajectory2 = make_not_null_unique<FakeTrajectory>();
+    auto const unowned_trajectory2 = trajectory2.get();
+    trajectory2->push_back(t0_);
+    trajectory2->push_back(t1_);
+    trajectory2->push_back(t2_);
+
+    auto const& prefix = *trajectory1;
+    auto result = FakeTrajectory::Prepend(std::move(trajectory1),
+                                          prefix,
+                                          std::move(trajectory2));
+
+    // Cannot touch trajectory1.
+    EXPECT_THAT(Times(result.get()), ElementsAre(t0_, t1_, t2_));
+    EXPECT_TRUE(result->is_root());
+    EXPECT_EQ(result.get(), unowned_trajectory2);
+  }
+  // This trajectory is empty.  It receives the timeline and forks of the
+  // trajectory being prepended.
+  {
+    auto trajectory1 = make_not_null_unique<FakeTrajectory>();
+    trajectory1->push_back(t0_);
+    trajectory1->push_back(t1_);
+    trajectory1->push_back(t2_);
+    not_null<FakeTrajectory*> const fork1 =
+        trajectory1->NewFork(trajectory1->timeline_find(t2_));
+    fork1->push_back(t3_);
+    fork1->push_back(t4_);
+
+    auto trajectory2 = make_not_null_unique<FakeTrajectory>();
+    auto const unowned_trajectory2 = trajectory2.get();
+
+    auto const& prefix = *trajectory1;
+    auto result = FakeTrajectory::Prepend(std::move(trajectory1),
+                                          prefix,
+                                          std::move(trajectory2));
+
+    // Cannot touch trajectory1.
+    EXPECT_THAT(Times(result.get()), ElementsAre(t0_, t1_, t2_));
+    EXPECT_THAT(Times(fork1), ElementsAre(t0_, t1_, t2_, t3_, t4_));
+    EXPECT_TRUE(result->is_root());
+    EXPECT_EQ(result.get(), unowned_trajectory2);
+    EXPECT_EQ(fork1->parent(), unowned_trajectory2);
+  }
+  {
+    auto trajectory1 = make_not_null_unique<FakeTrajectory>();
+
+    auto trajectory2 = make_not_null_unique<FakeTrajectory>();
+    auto const unowned_trajectory2 = trajectory2.get();
+
+    auto const& prefix = *trajectory1;
+    auto result = FakeTrajectory::Prepend(std::move(trajectory1),
+                                          prefix,
+                                          std::move(trajectory2));
+
+    // Cannot touch trajectory1.
+    EXPECT_THAT(Times(result.get()), IsEmpty());
+    EXPECT_TRUE(result->is_root());
+    EXPECT_EQ(result.get(), unowned_trajectory2);
+  }
 }
 
 }  // namespace internal_forkable

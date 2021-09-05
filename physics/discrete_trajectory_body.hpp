@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "astronomy/epoch.hpp"
@@ -401,6 +402,13 @@ template<typename Frame>
 not_null<DiscreteTrajectory<Frame> const*>
 DiscreteTrajectory<Frame>::that() const {
   return this;
+}
+
+template<typename Frame>
+std::pair<typename DiscreteTrajectory<Frame>::TimelineConstIterator, bool>
+DiscreteTrajectory<Frame>::timeline_insert(
+    const typename TimelineConstIterator::value_type& value) {
+  return timeline_.insert(value);
 }
 
 template<typename Frame>

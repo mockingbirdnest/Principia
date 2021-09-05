@@ -143,6 +143,75 @@ DeleteFork(Tr4jectory*& trajectory) {
 }
 
 template<typename Tr4jectory, typename It3rator, typename Traits>
+not_null<std::unique_ptr<Tr4jectory>>
+Forkable<Tr4jectory, It3rator, Traits>::Prepend(
+    not_null<std::unique_ptr<Tr4jectory>> prefix_root,
+    Tr4jectory const& prefix,
+    not_null<std::unique_ptr<Tr4jectory>> suffix) {
+  CHECK(prefix_root->is_root());
+  CHECK_EQ(&*prefix_root, &*prefix.root());
+  CHECK(suffix->is_root());
+
+  It3rator it;  // In |prefix|.
+  if (suffix->Empty()) {
+    it = prefix.end();
+  } else {
+    Instant const suffix_begin_time = Traits::time(suffix->begin().current_);
+    // |it| designates the first point of |prefix| that is at or after the
+    // beginning of |suffix|.
+    it = prefix.LowerBound(suffix_begin_time);
+  }
+  if (it == prefix.begin()) {
+    // |prefix| is entirely in the future with respect to |suffix|.  Nothing to
+    // do.
+    return suffix;
+  }
+
+  // Move |it| to designate a point in |prefix| which is strictly before the
+  // first point of |suffix|.
+  --it;
+  // The trajectory whose timeline is suitable for prepending to |suffix|.
+  Tr4jectory* trajectory_to_prepend =
+      const_cast<Tr4jectory*>(&*it.ancestry_.back());
+  // Remove all the forks that are at or after the first point of |suffix|.
+  // That may include entire subtrees.
+  trajectory_to_prepend->DeleteAllForksAfter(Traits::time(it.current_));
+  // Transfer the end of the timeline of |trajectory_to_prepend| to the
+  // beginning of the timeline of |suffix|.
+  for (TimelineConstIterator it2 = trajectory_to_prepend->timeline_begin();
+       it2 != trajectory_to_prepend->timeline_end() &&
+           Traits::time(it2) <= Traits::time(it.current_);
+       ++it2) {
+    auto const [_, inserted] = suffix->timeline_insert(*it2);
+    CHECK(inserted) << Traits::time(it2);
+  }
+
+  // Adjust the remaining forks of |trajectory_to_prepend| to point in the
+  // timeline and children of |suffix|.
+  for (auto& [time, child] : trajectory_to_prepend->children_) {
+    auto timeline_it = suffix->timeline_find(time);
+    CHECK(timeline_it != suffix->timeline_end()) << time;
+    child->position_in_parent_timeline_ = timeline_it;
+    auto child_it = suffix->children_.emplace(time, std::move(child));
+    child_it->second->position_in_parent_children_ = child_it;
+    child_it->second->parent_ = suffix.get();
+  }
+
+  // In all cases, |trajectory_to_prepend| gets deleted because it may now
+  // contain moved-from pointers to children.
+  if (trajectory_to_prepend->is_root()) {
+    return suffix;
+  } else {
+    // If needed, attach |suffix| as a fork of the parent of
+    // |trajectory_to_prepend|.
+    auto const parent = trajectory_to_prepend->parent_;
+    parent->DeleteFork(trajectory_to_prepend);
+    parent->AttachFork(std::move(suffix));
+    return prefix_root;
+  }
+}
+
+template<typename Tr4jectory, typename It3rator, typename Traits>
 bool Forkable<Tr4jectory, It3rator, Traits>::is_root() const {
   return parent_ == nullptr;
 }
@@ -385,6 +454,30 @@ not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator, Traits>::NewFork(
   child_forkable->position_in_parent_timeline_ = timeline_it;
 
   return child_forkable.get();
+}
+
+template<typename Tr4jectory, typename It3rator, typename Traits>
+void Forkable<Tr4jectory, It3rator, Traits>::AttachFork(
+    not_null<std::unique_ptr<Tr4jectory>> fork) {
+  CHECK(fork->is_root());
+  CHECK(!timeline_empty());
+  auto this_timeline_end = timeline_end();
+  Instant const this_timeline_back = Traits::time(--this_timeline_end);
+  if (!fork->timeline_empty()) {
+    auto const fork_timeline_begin = fork->timeline_begin();
+    CHECK_LT(this_timeline_back, Traits::time(fork_timeline_begin));
+  }
+
+  // Insert |fork| in the |children_| of this object.
+  auto const child_it = children_.emplace_hint(children_.end(),
+                                               this_timeline_back,
+                                               std::move(fork));
+
+  // Set the pointer into this object.  Note that |fork| is no longer usable.
+  child_it->second->parent_ = that();
+  child_it->second->position_in_parent_children_ = child_it;
+  child_it->second->position_in_parent_timeline_ = timeline_end();
+  --*child_it->second->position_in_parent_timeline_;
 }
 
 template<typename Tr4jectory, typename It3rator, typename Traits>
