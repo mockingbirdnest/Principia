@@ -795,7 +795,7 @@ TEST_F(ForkableTest, FrontBack) {
 }
 
 TEST_F(ForkableTest, Prepend) {
-  // No overlap between the timelines.
+  // No overlap between the timelines, prepending a fork.
   {
     FakeTrajectory trajectory1;
 
@@ -807,10 +807,30 @@ TEST_F(ForkableTest, Prepend) {
     fork1->push_back(t3_);
     fork1->push_back(t4_);
 
-    FakeTrajectory trajectory2;
-    trajectory2.push_back(t5_);
-    trajectory2.Prepend(std::move(trajectory1));
+    FakeTrajectory* trajectory2 = new FakeTrajectory;
+    trajectory2->push_back(t5_);
+    trajectory2->Prepend(std::move(*fork1));
+
+    // Cannot touch fork1.
+    EXPECT_THAT(Times(&trajectory1), ElementsAre(t0_, t1_, t2_));
+    EXPECT_THAT(Times(trajectory2), ElementsAre(t0_, t1_, t2_, t3_, t4_, t5_));
   }
+  // No overlap between the timelines, prepending a root with a fork.
+  //{
+  //  FakeTrajectory trajectory1;
+
+  //  trajectory1.push_back(t0_);
+  //  trajectory1.push_back(t1_);
+  //  trajectory1.push_back(t2_);
+  //  not_null<FakeTrajectory*> const fork1 =
+  //      trajectory1.NewFork(trajectory1.timeline_find(t2_));
+  //  fork1->push_back(t3_);
+  //  fork1->push_back(t4_);
+
+  //  FakeTrajectory* trajectory2 = new FakeTrajectory;
+  //  trajectory2->push_back(t5_);
+  //  trajectory2->Prepend(std::move(*fork1));
+  //}
 }
 
 }  // namespace internal_forkable
