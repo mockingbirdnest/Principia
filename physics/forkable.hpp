@@ -134,7 +134,11 @@ class Forkable {
   // This trajectory is still a valid pointer, but it may now be owned by the
   // parent of T.  The only pointer that the client might assume to own is
   // this->root().
-  void Prepend(Tr4jectory&& trajectory);
+  //TODO(phl):comments
+  static not_null<std::unique_ptr<Tr4jectory>> Prepend(
+    not_null<std::unique_ptr<Tr4jectory>> prefix_root,
+    Tr4jectory const& prefix,
+    not_null<std::unique_ptr<Tr4jectory>> suffix);
 
   // Returns true if this is a root trajectory.
   bool is_root() const;
