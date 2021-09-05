@@ -149,19 +149,19 @@ Forkable<Tr4jectory, It3rator, Traits>::Prepend(
     Tr4jectory const& prefix,
     not_null<std::unique_ptr<Tr4jectory>> suffix) {
   CHECK(prefix_root->is_root());
-  CHECK_EQ(prefix_root.get(), prefix.root());
+  CHECK_EQ(&*prefix_root, &*prefix.root());
   CHECK(suffix->is_root());
 
   It3rator it;  // In |prefix|.
   if (suffix->Empty()) {
-    it = prefix->end();
+    it = prefix.end();
   } else {
     Instant const suffix_begin_time = Traits::time(suffix->begin().current_);
     // |it| designates the first point of |prefix| that is at or after the
     // beginning of |suffix|.
-    it = prefix->LowerBound(suffix_begin_time);
+    it = prefix.LowerBound(suffix_begin_time);
   }
-  if (it == prefix->begin()) {
+  if (it == prefix.begin()) {
     // |prefix| is entirely in the future with respect to |suffix|.  Nothing to
     // do.
     return suffix;
@@ -190,11 +190,11 @@ Forkable<Tr4jectory, It3rator, Traits>::Prepend(
   // timeline and children of |suffix|.
   for (auto& [time, child] : trajectory_to_prepend->children_) {
     auto timeline_it = suffix->timeline_find(time);
-    CHECK(timeline_it != timeline_end()) << time;
+    CHECK(timeline_it != suffix->timeline_end()) << time;
     child->position_in_parent_timeline_ = timeline_it;
-    auto child_it = children_.emplace(time, std::move(child));
+    auto child_it = suffix->children_.emplace(time, std::move(child));
     child_it->second->position_in_parent_children_ = child_it;
-    child_it->second->parent_ = that();
+    child_it->second->parent_ = suffix.get();
   }
 
   // In all cases, |trajectory_to_prepend| gets deleted because it may now
@@ -206,8 +206,7 @@ Forkable<Tr4jectory, It3rator, Traits>::Prepend(
     // |trajectory_to_prepend|.
     auto const parent = trajectory_to_prepend->parent_;
     parent->DeleteFork(trajectory_to_prepend);
-    std::unique_ptr<Tr4jectory> owned_this(static_cast<Tr4jectory*>(this));
-    parent->AttachFork(std::move(owned_this));
+    parent->AttachFork(std::move(suffix));
     return prefix_root;
   }
 }
