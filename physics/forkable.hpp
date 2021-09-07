@@ -68,6 +68,10 @@ class ForkableIterator {
   It3rator& operator++();
   It3rator& operator--();
 
+  // Equivalent to applying operator-- to this iterator decrement times, but
+  // possibly faster.
+  It3rator& operator-=(std::int64_t decrement);
+
  protected:
   // The API that must be implemented by subclasses.
   // Must return |this| of the proper type.

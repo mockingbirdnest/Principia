@@ -559,6 +559,69 @@ TEST_F(ForkableTest, IteratorDecrementMultipleForksSuccess) {
   EXPECT_EQ(it, fork3->begin());
 }
 
+TEST_F(ForkableTest, IteratorSubtract) {
+  trajectory_.push_back(t1_);
+  trajectory_.push_back(t2_);
+  auto fork1 = trajectory_.NewFork(trajectory_.timeline_find(t2_));
+  fork1->push_back(t3_);
+  fork1->push_back(t4_);
+  auto fork2 = fork1->NewFork(fork1->timeline_find(t3_));
+  auto fork3 = fork1->NewFork(fork1->timeline_find(t4_));
+  fork2->push_back(t4_);
+  fork2->push_back(t5_);
+  fork3->push_back(t5_);
+  {
+    auto it = fork2->end();
+    it -= 1;
+    EXPECT_EQ(t5_, *it.current());
+  }
+  {
+    auto it = fork2->end();
+    it -= 2;
+    EXPECT_EQ(t4_, *it.current());
+  }
+  {
+    auto it = fork2->end();
+    it -= 3;
+    EXPECT_EQ(t3_, *it.current());
+  }
+  {
+    auto it = fork2->end();
+    it -= 4;
+    EXPECT_EQ(t2_, *it.current());
+  }
+  {
+    auto it = fork2->end();
+    it -= 5;
+    EXPECT_EQ(t1_, *it.current());
+  }
+  {
+    auto it = fork3->end();
+    it -= 1;
+    EXPECT_EQ(t5_, *it.current());
+  }
+  {
+    auto it = fork3->end();
+    it -= 2;
+    EXPECT_EQ(t4_, *it.current());
+  }
+  {
+    auto it = fork3->end();
+    it -= 3;
+    EXPECT_EQ(t3_, *it.current());
+  }
+  {
+    auto it = fork3->end();
+    it -= 4;
+    EXPECT_EQ(t2_, *it.current());
+  }
+  {
+    auto it = fork3->end();
+    it -= 5;
+    EXPECT_EQ(t1_, *it.current());
+  }
+}
+
 TEST_F(ForkableDeathTest, IteratorIncrementError) {
   EXPECT_DEATH({
     auto it = trajectory_.begin();
