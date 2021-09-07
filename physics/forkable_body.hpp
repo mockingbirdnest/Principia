@@ -103,6 +103,27 @@ It3rator& ForkableIterator<Tr4jectory, It3rator, Traits>::operator--() {
 }
 
 template<typename Tr4jectory, typename It3rator, typename Traits>
+It3rator& ForkableIterator<Tr4jectory, It3rator, Traits>::operator-=(
+    std::int64_t const decrement) {
+  for (std::int64_t left_to_decrement = decrement; left_to_decrement > 0;) {
+    not_null<Tr4jectory const*> ancestor = ancestry_.back();
+    if (current_ == ancestor->timeline_end()) {
+      if (ancestor->timeline_size() <= left_to_decrement) {
+        current_ = ancestor->timeline_begin();
+        left_to_decrement -= ancestor->timeline_size();
+      } else {
+        std::advance(current_, -left_to_decrement);
+        left_to_decrement = 0;
+      }
+    } else {
+      operator--();
+      --left_to_decrement;
+    }
+  }
+  return *that();
+}
+
+template<typename Tr4jectory, typename It3rator, typename Traits>
 typename ForkableIterator<Tr4jectory, It3rator, Traits>::
 TimelineConstIterator const&
 ForkableIterator<Tr4jectory, It3rator, Traits>::current() const {
@@ -417,8 +438,15 @@ std::int64_t Forkable<Tr4jectory, It3rator, Traits>::Size() const {
   Tr4jectory const* parent = ancestor->parent_;
   while (parent != nullptr) {
     if (!parent->timeline_empty()) {
-      size += std::distance(parent->timeline_begin(),
-                            *ancestor->position_in_parent_timeline_) + 1;
+      auto position_in_parent_timeline =
+          *ancestor->position_in_parent_timeline_;
+      // Optimize the case where the fork is at the last point.
+      if (++position_in_parent_timeline == parent->timeline_end()) {
+        size += parent->timeline_size();
+      } else {
+        size += std::distance(parent->timeline_begin(),
+                              position_in_parent_timeline);
+      }
     }
     ancestor = parent;
     parent = ancestor->parent_;
