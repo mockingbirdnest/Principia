@@ -6,8 +6,6 @@
 #include <map>
 #include <memory>
 #include <optional>
-#include <set>
-#include <utility>
 #include <vector>
 
 #include "absl/status/status.h"
@@ -62,9 +60,6 @@ class DiscreteTrajectoryIterator
  protected:
   not_null<DiscreteTrajectoryIterator*> that() override;
   not_null<DiscreteTrajectoryIterator const*> that() const override;
-
-  template<typename>
-  friend class internal_discrete_trajectory::DiscreteTrajectory;
 };
 
 }  // namespace internal_forkable
@@ -174,28 +169,14 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
 
   // End of the implementation of the interface.
 
-  // This trajectory must be a root.  The entire tree is traversed and the forks
-  // not present in |excluded| serialized.  The forks in |tracked| will be
-  // retrieved in the same order when reading.  The pointers may be null at
-  // entry; otherwise, they must be direct or indirect forks of this trajectory.
-  // The points denoted by |exact| are written and re-read exactly and are not
-  // affected by any errors introduced by zfp compression.
+  // This trajectory must be a root.  Only the given |forks| are serialized.
+  // They must be descended from this trajectory.  The pointers in |forks| may
+  // be null at entry.  The points denoted by |exact| are written and re-read
+  // exactly and are not affected by any errors introduced by zfp compression.
   void WriteToMessage(
-      std::set<DiscreteTrajectory const*> const& excluded,
-      std::vector<DiscreteTrajectory const*> const& tracked,
-      std::vector<Iterator> const& exact,
-      not_null<serialization::DiscreteTrajectory*> message) const;
-  // Same as above, but only serializes the forks, points and downsampling data
-  // with time greater than or equal to |after_time|.  Note that the client must
-  // ensure that the forks in |excluded| and |tracked| are after the given time.
-  // It is always possible to track this object itself.
-  void WriteToMessage(
-    Instant const& after_time,
-    std::set<DiscreteTrajectory const*> const& excluded,
-    std::vector<DiscreteTrajectory const*> const& tracked,
-    std::vector<Iterator> const& exact,
-    not_null<serialization::DiscreteTrajectory*> message) const;
-
+      not_null<serialization::DiscreteTrajectory*> message,
+      std::vector<DiscreteTrajectory<Frame>*> const& forks,
+      std::vector<Iterator> const& exact) const;
 
   // |forks| must have a size appropriate for the |message| being deserialized
   // and the orders of the |forks| must be consistent during serialization and
@@ -205,7 +186,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
            typename = std::enable_if_t<base::is_serializable_v<F>>>
   static not_null<std::unique_ptr<DiscreteTrajectory>> ReadFromMessage(
       serialization::DiscreteTrajectory const& message,
-      std::vector<DiscreteTrajectory<Frame>**> const& tracked);
+      std::vector<DiscreteTrajectory<Frame>**> const& forks);
 
  protected:
   using TimelineConstIterator =
@@ -215,8 +196,6 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   not_null<DiscreteTrajectory*> that() override;
   not_null<DiscreteTrajectory const*> that() const override;
 
-  std::pair<TimelineConstIterator, bool> timeline_insert(
-      const typename TimelineConstIterator::value_type& value) override;
   TimelineConstIterator timeline_begin() const override;
   TimelineConstIterator timeline_end() const override;
   TimelineConstIterator timeline_find(Instant const& time) const override;
@@ -231,12 +210,8 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // A helper class to manage a dense timeline.
   class Downsampling {
    public:
-    // The function |iterator_for_time| must be able to convert a time to a
-    // timeline iterator irrespective of the fork structure (it must die if the
-    // time does not exist in the corresponding trajectory).
-    Downsampling(
-        DownsamplingParameters const& downsampling_parameters,
-        std::function<TimelineConstIterator(Instant const&)> iterator_for_time);
+    explicit Downsampling(
+        DownsamplingParameters const& downsampling_parameters);
 
     // Construction parameters.
     std::int64_t max_dense_intervals() const;
@@ -255,51 +230,31 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
     bool full() const;
 
     // Returns the |dense_iterators_|, giving ownership to the caller.
-    std::vector<TimelineConstIterator> ExtractDenseIterators();
+    std::vector<TimelineConstIterator> dense_iterators();
 
     void WriteToMessage(
-        Instant const& after_time,
         not_null<serialization::DiscreteTrajectory::Downsampling*> message)
         const;
     static Downsampling ReadFromMessage(
         serialization::DiscreteTrajectory::Downsampling const& message,
-        DiscreteTrajectory const& trajectory);
+        Timeline const& timeline);
 
    private:
-    // Updates the first dense iterator from the start time.
-    void UpdateDenseIteratorsIfNeeded();
-
-    // Clears the start time if there are no dense iterators.
-    void UpdateStartTimeIfNeeded();
-
     DownsamplingParameters const downsampling_parameters_;
-    std::function<TimelineConstIterator(Instant const&)> const
-        iterator_for_time_;
 
-    // The first time may be the fork time of the trajectory, in which case it's
-    // not in the same timeline as the other times.  Furthermore, this can
-    // change if a trajectory is attached to/detached from another trajectory.
-    // Thus, we consider the |start_time_| the source of truth and recompute the
-    // first element of |dense_iterators_| as needed using |iterator_for_time_|.
-    std::optional<Instant> start_time_;
-
-    // The iterators in this vector may belong to different maps.  The first
-    // iterator should not be used without calling
-    // |UpdateDenseIteratorsIfNeeded| first.
+    // TODO(phl): Note that, with forks, the iterators in this vector may belong
+    // to different maps.
     std::vector<TimelineConstIterator> dense_iterators_;
   };
 
-  // This trajectory need not be a root.  Returns false if this trajectory is
-  // excluded.
-  bool WriteSubTreeToMessage(
-      Instant const& after_time,
-      std::set<DiscreteTrajectory const*>& excluded,
-      std::vector<DiscreteTrajectory const*>& tracked,
-      not_null<serialization::DiscreteTrajectory*> message) const;
+  // This trajectory need not be a root.
+  void WriteSubTreeToMessage(
+      not_null<serialization::DiscreteTrajectory*> message,
+      std::vector<DiscreteTrajectory<Frame>*>& forks) const;
 
   void FillSubTreeFromMessage(
       serialization::DiscreteTrajectory const& message,
-      std::vector<DiscreteTrajectory<Frame>**> const& tracked,
+      std::vector<DiscreteTrajectory<Frame>**> const& forks,
       Timeline const& exact);
 
   // Returns the Hermite interpolation for the left-open, right-closed
