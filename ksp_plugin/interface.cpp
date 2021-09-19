@@ -737,7 +737,7 @@ void __cdecl principia__InitializeHistoryParameters(
       {plugin, downsampling_parameters, fixed_step_parameters});
   CHECK_NOTNULL(plugin);
   plugin->InitializeHistoryParameters(
-      MakeDownsamplingParamaters(downsampling_parameters),
+      MakeDownsamplingParameters(downsampling_parameters),
       MakeFixedStepParameters(fixed_step_parameters));
   return m.Return();
 }

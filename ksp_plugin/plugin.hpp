@@ -130,7 +130,9 @@ class Plugin {
       Ephemeris<Barycentric>::AccuracyParameters const& accuracy_parameters,
       Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters);
   virtual void InitializeHistoryParameters(
-      Ephemeris<Barycentric>::FixedStepParameters const& parameters);
+      DiscreteTrajectory<Barycentric>::DownsamplingParameters const&
+          downsampling_parameters,
+      Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters);
   virtual void InitializePsychohistoryParameters(
       Ephemeris<Barycentric>::AdaptiveStepParameters const& parameters);
   // No setter for the default prediction parameters, as that default is always
@@ -512,7 +514,9 @@ class Plugin {
   std::unique_ptr<Ephemeris<Barycentric>> ephemeris_;
 
   // The parameters for computing the various trajectories.
-  Ephemeris<Barycentric>::FixedStepParameters history_parameters_;
+  DiscreteTrajectory<Barycentric>::DownsamplingParameters
+      history_downsampling_parameters_;
+  Ephemeris<Barycentric>::FixedStepParameters history_fixed_step_parameters_;
   Ephemeris<Barycentric>::AdaptiveStepParameters psychohistory_parameters_;
 
   // The thread pool for advancing vessels.

@@ -26,6 +26,14 @@ using integrators::methods::Quinlan1999Order8A;
 using quantities::si::Minute;
 using quantities::si::Second;
 
+DiscreteTrajectory<Barycentric>::DownsamplingParameters
+DefaultDownsamplingParameters() {
+  return DiscreteTrajectory<Barycentric>::DownsamplingParameters{
+      .max_dense_intervals = 10'000,
+      .tolerance = 10 * Metre,
+  };
+}
+
 Ephemeris<Barycentric>::AccuracyParameters
 DefaultEphemerisAccuracyParameters() {
   return Ephemeris<Barycentric>::AccuracyParameters(
