@@ -169,7 +169,7 @@ void Vessel::PrepareHistory(Instant const& t) {
           part.mass());
     });
     CHECK(psychohistory_ == nullptr);
-    history_->SetDownsampling(MaxDenseIntervals, DownsamplingTolerance);
+    history_->SetDownsampling(DefaultDownsamplingParameters());
     history_->Append(t, calculator.Get());
     psychohistory_ = history_->NewForkAtLast();
     prediction_ = psychohistory_->NewForkAtLast();
@@ -470,8 +470,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   }
 
   if (is_pre_陈景润) {
-    vessel->history_->SetDownsampling(MaxDenseIntervals,
-                                      DownsamplingTolerance);
+    vessel->history_->SetDownsampling(DefaultDownsamplingParameters());
   }
 
   if (message.has_flight_plan()) {
