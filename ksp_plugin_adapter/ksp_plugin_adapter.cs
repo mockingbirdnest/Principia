@@ -2491,6 +2491,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         numerics_blueprint.GetAtMostOneNode("history");
     if (history_parameters != null) {
       plugin.InitializeHistoryParameters(
+          ConfigNodeParsers.NewConfigurationDownsamplingParameters(
+              history_parameters),
           ConfigNodeParsers.NewConfigurationFixedStepParameters(
               history_parameters));
     }
