@@ -84,6 +84,11 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
                                            DiscreteTrajectoryTraits<Frame>>,
                            public Trajectory<Frame> {
  public:
+  struct DownsamplingParameters {
+    std::int64_t max_dense_intervals;
+    Length tolerance;
+  };
+
   using Iterator = DiscreteTrajectoryIterator<Frame>;
 
   DiscreteTrajectory() = default;
