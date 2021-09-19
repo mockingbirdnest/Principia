@@ -150,9 +150,9 @@ inline void noreturn() { std::exit(0); }
 
 // Unicode.
 #if OS_WIN
-#  define UNICODE_PATH(x) u ## x
+#  define PRINCIPIA_UNICODE_PATH(x) u ## x
 #else
-#  define UNICODE_PATH(x) u8 ## x
+#  define PRINCIPIA_UNICODE_PATH(x) u8 ## x
 #endif
 
 #define NAMED(expression) u8 ## #expression << ": " << (expression)

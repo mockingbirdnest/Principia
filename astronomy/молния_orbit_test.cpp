@@ -136,7 +136,8 @@ TEST_F(МолнияOrbitTest, DISABLED_Satellite) {
   }
 
   mathematica::Logger logger(
-      SOLUTION_DIR / "mathematica" / UNICODE_PATH("молния_orbit.generated.wl"),
+      SOLUTION_DIR / "mathematica" /
+          PRINCIPIA_UNICODE_PATH("молния_orbit.generated.wl"),
       /*make_unique=*/false);
 
   std::vector<Angle> longitudes_of_ascending_nodes;
