@@ -6,7 +6,9 @@
 #include <algorithm>
 #include <list>
 #include <map>
+#include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "astronomy/epoch.hpp"
@@ -123,6 +125,10 @@ void DiscreteTrajectory<Frame>::AttachFork(
     not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> fork) {
   CHECK(fork->is_root());
   CHECK(!this->Empty());
+  // It is easy to mess up forks and to end up with a trajectory which is its
+  // own parent.  This check catches that problem.  It's not foolproof (there
+  // are more complicated anomalies that can arise) but it's still useful.
+  CHECK(fork.get() != this);
 
   auto& fork_timeline = fork->timeline_;
   auto const this_last = --this->end();
@@ -232,6 +238,7 @@ void DiscreteTrajectory<Frame>::ForgetAfter(Instant const& time) {
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
+  CHECK(this->is_root());
   this->CheckNoForksBefore(time);
   if (downsampling_.has_value()) {
     downsampling_->ForgetBefore(time);
@@ -245,13 +252,21 @@ void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::SetDownsampling(
-    std::int64_t const max_dense_intervals,
-    Length const& tolerance) {
-  CHECK(this->is_root());
+    DownsamplingParameters const& downsampling_parameters) {
   CHECK(!downsampling_.has_value());
-  downsampling_.emplace(max_dense_intervals, tolerance);
-  // TODO(phl): If this trajectory is a fork, the fork point should be appended
-  // first.
+  downsampling_.emplace(downsampling_parameters,
+                        [this](Instant const& t) {
+                          auto const it = this->Find(t);
+                          CHECK(it != this->end());
+                          return it.current();
+                        });
+
+  // For a fork, the fork point is taken into account for downsampling: it is
+  // always preserved, but the second point preserved after downsampling may be
+  // farther down the timeline of this trajectory.
+  if (!this->is_root()) {
+    downsampling_->Append(this->Fork().current());
+  }
   for (auto it = timeline_.cbegin(); it != timeline_.cend(); ++it) {
     // When reading pre-陈景润 saves we may call this function on long
     // trajectories, in which case we need to downsample as we go.
@@ -312,17 +327,33 @@ DegreesOfFreedom<Frame> DiscreteTrajectory<Frame>::EvaluateDegreesOfFreedom(
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteToMessage(
-    not_null<serialization::DiscreteTrajectory*> const message,
-    std::vector<DiscreteTrajectory<Frame>*> const& forks,
-    std::vector<Iterator> const& exact)
-    const {
+    std::set<DiscreteTrajectory const*> const& excluded,
+    std::vector<DiscreteTrajectory const*> const& tracked,
+    std::vector<Iterator> const& exact,
+    not_null<serialization::DiscreteTrajectory*> const message) const {
+  WriteToMessage(InfinitePast, excluded, tracked, exact, message);
+}
+
+template<typename Frame>
+void DiscreteTrajectory<Frame>::WriteToMessage(
+    Instant const& after_time,
+    std::set<DiscreteTrajectory const*> const& excluded,
+    std::vector<DiscreteTrajectory const*> const& tracked,
+    std::vector<Iterator> const& exact,
+    not_null<serialization::DiscreteTrajectory*> const message) const {
   CHECK(this->is_root());
 
-  std::vector<DiscreteTrajectory<Frame>*> mutable_forks = forks;
-  WriteSubTreeToMessage(message, mutable_forks);
-  CHECK(std::all_of(mutable_forks.begin(),
-                    mutable_forks.end(),
-                    [](DiscreteTrajectory<Frame>* const fork) {
+  std::set<DiscreteTrajectory<Frame> const*> mutable_excluded = excluded;
+  std::vector<DiscreteTrajectory<Frame> const*> mutable_tracked = tracked;
+  WriteSubTreeToMessage(after_time, mutable_excluded, mutable_tracked, message);
+  CHECK(std::all_of(mutable_excluded.begin(),
+                    mutable_excluded.end(),
+                    [](DiscreteTrajectory<Frame> const* const fork) {
+                      return fork == nullptr;
+                    }));
+  CHECK(std::all_of(mutable_tracked.begin(),
+                    mutable_tracked.end(),
+                    [](DiscreteTrajectory<Frame> const* const fork) {
                       return fork == nullptr;
                     }));
 
@@ -372,6 +403,13 @@ DiscreteTrajectory<Frame>::that() const {
 }
 
 template<typename Frame>
+std::pair<typename DiscreteTrajectory<Frame>::TimelineConstIterator, bool>
+DiscreteTrajectory<Frame>::timeline_insert(
+    const typename TimelineConstIterator::value_type& value) {
+  return timeline_.insert(value);
+}
+
+template<typename Frame>
 typename DiscreteTrajectory<Frame>::TimelineConstIterator
 DiscreteTrajectory<Frame>::timeline_begin() const {
   return timeline_.begin();
@@ -407,34 +445,38 @@ std::int64_t DiscreteTrajectory<Frame>::timeline_size() const {
 
 template<typename Frame>
 DiscreteTrajectory<Frame>::Downsampling::Downsampling(
-    std::int64_t const max_dense_intervals,
-    Length const tolerance)
-    : max_dense_intervals_(max_dense_intervals),
-      tolerance_(tolerance) {
+    DownsamplingParameters const& downsampling_parameters,
+    std::function<TimelineConstIterator(Instant const&)> iterator_for_time)
+    : downsampling_parameters_(downsampling_parameters),
+      iterator_for_time_(std::move(iterator_for_time)) {
   // This contains points, hence one more than intervals.
-  dense_iterators_.reserve(max_dense_intervals_ + 1);
+  dense_iterators_.reserve(max_dense_intervals() + 1);
 }
 
 template<typename Frame>
 std::int64_t DiscreteTrajectory<Frame>::Downsampling::max_dense_intervals()
     const {
-  return max_dense_intervals_;
+  return downsampling_parameters_.max_dense_intervals;
 }
 
 template<typename Frame>
 Length DiscreteTrajectory<Frame>::Downsampling::tolerance() const {
-  return tolerance_;
+  return downsampling_parameters_.tolerance;
 }
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::Downsampling::Append(
     TimelineConstIterator const it) {
   CHECK(!full());
+  if (empty()) {
+    start_time_ = it->first;
+  }
   dense_iterators_.push_back(it);
 }
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::Downsampling::ForgetAfter(Instant const& t) {
+  UpdateDenseIteratorsIfNeeded();
   auto const it = std::upper_bound(
       dense_iterators_.cbegin(),
       dense_iterators_.cend(),
@@ -443,10 +485,12 @@ void DiscreteTrajectory<Frame>::Downsampling::ForgetAfter(Instant const& t) {
         return left < right->first;
       });
   dense_iterators_.erase(it, dense_iterators_.cend());
+  UpdateStartTimeIfNeeded();
 }
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::Downsampling::ForgetBefore(Instant const& t) {
+  UpdateDenseIteratorsIfNeeded();
   auto const it = std::lower_bound(
       dense_iterators_.cbegin(),
       dense_iterators_.cend(),
@@ -455,6 +499,7 @@ void DiscreteTrajectory<Frame>::Downsampling::ForgetBefore(Instant const& t) {
         return left->first < right;
       });
   dense_iterators_.erase(dense_iterators_.cbegin(), it);
+  UpdateStartTimeIfNeeded();
 }
 
 template<typename Frame>
@@ -464,23 +509,35 @@ bool DiscreteTrajectory<Frame>::Downsampling::empty() const {
 
 template<typename Frame>
 bool DiscreteTrajectory<Frame>::Downsampling::full() const {
-  return dense_iterators_.size() >= max_dense_intervals_;
+  return dense_iterators_.size() >= max_dense_intervals();
 }
 
 template<typename Frame>
 std::vector<typename DiscreteTrajectory<Frame>::TimelineConstIterator>
-DiscreteTrajectory<Frame>::Downsampling::dense_iterators() {
-  return std::move(dense_iterators_);
+DiscreteTrajectory<Frame>::Downsampling::ExtractDenseIterators() {
+  UpdateDenseIteratorsIfNeeded();
+  auto returned_dense_iterators = std::move(dense_iterators_);
+  UpdateStartTimeIfNeeded();
+  return std::move(returned_dense_iterators);
 }
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::Downsampling::WriteToMessage(
+    Instant const& after_time,
     not_null<serialization::DiscreteTrajectory::Downsampling*> const message)
     const {
-  message->set_max_dense_intervals(max_dense_intervals_);
-  tolerance_.WriteToMessage(message->mutable_tolerance());
-  for (auto const it : dense_iterators_) {
-    it->first.WriteToMessage(message->add_dense_timeline());
+  message->set_max_dense_intervals(max_dense_intervals());
+  tolerance().WriteToMessage(message->mutable_tolerance());
+  if (!empty()) {
+    // We can't call UpdateDenseIteratorsIfNeeded here because this method is
+    // const.
+    start_time_.value().WriteToMessage(message->add_dense_timeline());
+    for (int i = 1; i < dense_iterators_.size(); ++i) {
+      Instant const& time = dense_iterators_[i]->first;
+      if (time >= after_time) {
+        time.WriteToMessage(message->add_dense_timeline());
+      }
+    }
   }
 }
 
@@ -488,40 +545,64 @@ template<typename Frame>
 typename DiscreteTrajectory<Frame>::Downsampling
 DiscreteTrajectory<Frame>::Downsampling::ReadFromMessage(
     serialization::DiscreteTrajectory::Downsampling const& message,
-    Timeline const& timeline) {
-  bool const is_pre_grotendieck_haar = message.has_start_of_dense_timeline();
-  Downsampling downsampling(message.max_dense_intervals(),
-                            Length::ReadFromMessage(message.tolerance()));
-  if (is_pre_grotendieck_haar) {
+    DiscreteTrajectory const& trajectory) {
+  bool const is_pre_zermelo = message.has_start_of_dense_timeline();
+  LOG_IF(WARNING, is_pre_zermelo)
+      << "Reading pre-Zermelo Downsampling";
+  Downsampling downsampling({message.max_dense_intervals(),
+                             Length::ReadFromMessage(message.tolerance())},
+                            [&trajectory](Instant const& t){
+                              auto const it = trajectory.Find(t);
+                              CHECK(it != trajectory.end());
+                              return it.current();
+                            });
+  if (is_pre_zermelo) {
     // No support for forks in legacy saves, so |find| will succeed and ++ is
     // safe.
-    auto it = timeline.find(
+    auto it = trajectory.timeline_.find(
         Instant::ReadFromMessage(message.start_of_dense_timeline()));
-    CHECK(it != timeline.end());
-    for (; it != timeline.end(); ++it) {
+    CHECK(it != trajectory.timeline_.end());
+    for (; it != trajectory.timeline_.end(); ++it) {
       downsampling.Append(it);
     }
   } else {
     for (auto const& dense_time : message.dense_timeline()) {
-      // TODO(phl): This |find| won't work for the first point of a fork.
-      auto const it = timeline.find(Instant::ReadFromMessage(dense_time));
-      CHECK(it != timeline.end());
-      downsampling.Append(it);
+      auto const t = Instant::ReadFromMessage(dense_time);
+      downsampling.Append(downsampling.iterator_for_time_(t));
     }
   }
   return downsampling;
 }
 
 template<typename Frame>
-void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
-    not_null<serialization::DiscreteTrajectory*> const message,
-    std::vector<DiscreteTrajectory<Frame>*>& forks) const {
-  Forkable<DiscreteTrajectory, Iterator, DiscreteTrajectoryTraits<Frame>>::
-      WriteSubTreeToMessage(message, forks);
+void DiscreteTrajectory<Frame>::Downsampling::UpdateDenseIteratorsIfNeeded() {
+  if (!dense_iterators_.empty()) {
+    dense_iterators_[0] = iterator_for_time_(start_time_.value());
+  }
+}
 
-  int const timeline_size = timeline_.size();
+template<typename Frame>
+void DiscreteTrajectory<Frame>::Downsampling::UpdateStartTimeIfNeeded() {
+  if (dense_iterators_.empty()) {
+    start_time_.reset();
+  }
+}
+
+template<typename Frame>
+bool DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
+    Instant const& after_time,
+    std::set<DiscreteTrajectory const*>& excluded,
+    std::vector<DiscreteTrajectory const*>& tracked,
+    not_null<serialization::DiscreteTrajectory*> const message) const {
+  bool const included =
+      Forkable<DiscreteTrajectory, Iterator, DiscreteTrajectoryTraits<Frame>>::
+          WriteSubTreeToMessage(after_time, excluded, tracked, message);
+  if (!included) {
+    return false;
+  }
+
+  int timeline_size = timeline_.size();
   auto* const zfp = message->mutable_zfp();
-  zfp->set_timeline_size(timeline_size);
 
   // The timeline data is made dimensionless and stored in separate arrays per
   // coordinate.  We expect strong correlations within a coordinate over time,
@@ -543,21 +624,26 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
   std::optional<Instant> previous_instant;
   Time max_Δt;
   std::string* const zfp_timeline = zfp->mutable_timeline();
-  for (auto const& [instant, degrees_of_freedom] : timeline_) {
-    auto const q = degrees_of_freedom.position() - Frame::origin;
-    auto const p = degrees_of_freedom.velocity();
-    t.push_back((instant - Instant{}) / Second);
-    qx.push_back(q.coordinates().x / Metre);
-    qy.push_back(q.coordinates().y / Metre);
-    qz.push_back(q.coordinates().z / Metre);
-    px.push_back(p.coordinates().x / (Metre / Second));
-    py.push_back(p.coordinates().y / (Metre / Second));
-    pz.push_back(p.coordinates().z / (Metre / Second));
-    if (previous_instant.has_value()) {
-      max_Δt = std::max(max_Δt, instant - *previous_instant);
+  for (auto const& [time, degrees_of_freedom] : timeline_) {
+    if (time < after_time) {
+      --timeline_size;
+    } else {
+      auto const q = degrees_of_freedom.position() - Frame::origin;
+      auto const p = degrees_of_freedom.velocity();
+      t.push_back((time - Instant{}) / Second);
+      qx.push_back(q.coordinates().x / Metre);
+      qy.push_back(q.coordinates().y / Metre);
+      qz.push_back(q.coordinates().z / Metre);
+      px.push_back(p.coordinates().x / (Metre / Second));
+      py.push_back(p.coordinates().y / (Metre / Second));
+      pz.push_back(p.coordinates().z / (Metre / Second));
+      if (previous_instant.has_value()) {
+        max_Δt = std::max(max_Δt, time - *previous_instant);
+      }
+      previous_instant = time;
     }
-    previous_instant = instant;
   }
+  zfp->set_timeline_size(timeline_size);
 
   // Times are exact.
   ZfpCompressor time_compressor(0);
@@ -581,14 +667,15 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
   speed_compressor.WriteToMessageMultidimensional<2>(pz, zfp_timeline);
 
   if (downsampling_.has_value()) {
-    downsampling_->WriteToMessage(message->mutable_downsampling());
+    downsampling_->WriteToMessage(after_time, message->mutable_downsampling());
   }
+  return true;
 }
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     serialization::DiscreteTrajectory const& message,
-    std::vector<DiscreteTrajectory<Frame>**> const& forks,
+    std::vector<DiscreteTrajectory<Frame>**> const& tracked,
     Timeline const& exact) {
   bool const is_pre_frobenius = !message.has_zfp();
   LOG_IF(WARNING, is_pre_frobenius)
@@ -641,12 +728,11 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     }
   }
   if (message.has_downsampling()) {
-    CHECK(this->is_root());
     downsampling_.emplace(
-        Downsampling::ReadFromMessage(message.downsampling(), timeline_));
+        Downsampling::ReadFromMessage(message.downsampling(), *this));
   }
   Forkable<DiscreteTrajectory, Iterator, DiscreteTrajectoryTraits<Frame>>::
-      FillSubTreeFromMessage(message, forks, exact);
+      FillSubTreeFromMessage(message, tracked, exact);
 }
 
 template<typename Frame>
@@ -665,10 +751,10 @@ Hermite3<Instant, Position<Frame>> DiscreteTrajectory<Frame>::GetInterpolation(
 template<typename Frame>
 absl::Status DiscreteTrajectory<Frame>::UpdateDownsampling(
     TimelineConstIterator const appended) {
-  this->CheckNoForksBefore(this->back().time);
+  this->CheckNoForksBefore(appended->first);
   downsampling_->Append(appended);
   if (downsampling_->full()) {
-    auto const dense_iterators = downsampling_->dense_iterators();
+    auto const dense_iterators = downsampling_->ExtractDenseIterators();
     auto right_endpoints = FitHermiteSpline<Instant, Position<Frame>>(
         dense_iterators,
         [](auto&& it) -> auto&& { return it->first; },
@@ -681,16 +767,19 @@ absl::Status DiscreteTrajectory<Frame>::UpdateDownsampling(
       return right_endpoints.status();
     }
     if (right_endpoints->empty()) {
-      right_endpoints->push_back(dense_iterators.end() - 1);
+      right_endpoints->push_back(dense_iterators.cend() - 1);
     }
 
     // Poke holes in the timeline at the places given by |right_endpoints|.
-    TimelineConstIterator left = dense_iterators.front();
+    // Note that this code carefully avoids incrementing |dense_iterators[0]| as
+    // it may live in a different timeline than the others.
+    CHECK_LE(1, dense_iterators.size());
+    TimelineConstIterator left = dense_iterators[1];
     for (const auto& it_in_dense_iterators : right_endpoints.value()) {
       TimelineConstIterator const right = *it_in_dense_iterators;
-      // TODO(phl): Use of ++ won't work with forks.
-      timeline_.erase(++left, right);
+      timeline_.erase(left, right);
       left = right;
+      ++left;
     }
 
     // Re-append the dense iterators that have not been consumed.
@@ -698,6 +787,7 @@ absl::Status DiscreteTrajectory<Frame>::UpdateDownsampling(
       downsampling_->Append(*it);
     }
     CHECK(!downsampling_->empty());
+    CHECK(!downsampling_->full());
   }
   return absl::OkStatus();
 }
