@@ -85,7 +85,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
   DiscreteTrajectory<ICRS> icrs_trajectory;
   icrs_trajectory.Append(MercuryOrbiterInitialTime,
                          MercuryOrbiterInitialDegreesOfFreedom<ICRS>);
-  icrs_trajectory.SetDownsampling({.max_dense_intervals = * / 10'000,
+  icrs_trajectory.SetDownsampling({.max_dense_intervals = 10'000,
                                    .tolerance = 10 * Metre});
   auto const instance = ephemeris_->NewInstance(
       {&icrs_trajectory},
