@@ -49,16 +49,14 @@ internal static class ConfigNodeParsers {
   }
 
   public static ConfigurationDownsamplingParameters
-      NewConfigurationDownsamplingParameters(ConfigNode node)
-  {
+      NewConfigurationDownsamplingParameters(ConfigNode node) {
     return new ConfigurationDownsamplingParameters{
-      max_dense_intervals =
-          node.GetUniqueValue("downsampling_max_dense_intervals"),
-      tolerance = node.GetUniqueValue("downsampling_tolerance")
+        max_dense_intervals = node.GetUniqueValue("max_dense_intervals"),
+        tolerance = node.GetUniqueValue("tolerance")
     };
   }
 
-      public static ConfigurationFixedStepParameters
+  public static ConfigurationFixedStepParameters
       NewConfigurationFixedStepParameters(ConfigNode node) {
     return new ConfigurationFixedStepParameters{
         fixed_step_size_integrator =
