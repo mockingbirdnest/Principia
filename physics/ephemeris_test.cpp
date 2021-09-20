@@ -1052,8 +1052,8 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
 
   MasslessBody probe;
   DiscreteTrajectory<ICRS> trajectory1;
-  trajectory1.SetDownsampling(/*max_dense_intervals=*/10'000,
-                              /*tolerance=*/10 * Metre);
+  trajectory1.SetDownsampling({.max_dense_intervals = * / 10'000,
+                               .tolerance = 10 * Metre});
   trajectory1.Append(t0, DegreesOfFreedom<ICRS>(q0, p0));
 
   auto instance = ephemeris->NewInstance(

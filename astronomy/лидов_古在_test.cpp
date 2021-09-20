@@ -45,9 +45,6 @@ using quantities::si::Second;
 using testing_utilities::operator""_⑴;
 using testing_utilities::IsNear;
 
-constexpr std::int64_t MaxDenseIntervals = 10'000;
-constexpr Length DownsamplingTolerance = 10 * Metre;
-
 // A test that showcases the eccentricity-inclination exchange mechanism
 // described in [Лид61] and [Koz62].  We follow the treatment in [Лид61].
 class Лидов古在Test : public ::testing::Test {
@@ -88,7 +85,8 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
   DiscreteTrajectory<ICRS> icrs_trajectory;
   icrs_trajectory.Append(MercuryOrbiterInitialTime,
                          MercuryOrbiterInitialDegreesOfFreedom<ICRS>);
-  icrs_trajectory.SetDownsampling(MaxDenseIntervals, DownsamplingTolerance);
+  icrs_trajectory.SetDownsampling({.max_dense_intervals = * / 10'000,
+                                   .tolerance = 10 * Metre});
   auto const instance = ephemeris_->NewInstance(
       {&icrs_trajectory},
       Ephemeris<ICRS>::NoIntrinsicAccelerations,
