@@ -86,7 +86,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
  public:
   // |max_dense_intervals| is the maximal number of dense intervals before
   // downsampling occurs.  |tolerance| is the tolerance for downsampling with
-  // |FitHermiteSpline|.  The function |iterator_for_time| must be able to
+  // |FitHermiteSpline|.
   struct DownsamplingParameters {
     std::int64_t max_dense_intervals;
     Length tolerance;
