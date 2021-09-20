@@ -126,12 +126,13 @@ class Plugin {
       serialization::GravityModel::Body const& gravity_model,
       serialization::InitialState::Keplerian::Body const& initial_state);
 
+  virtual void InitializeDownsamplingParameters(
+      DiscreteTrajectory<Barycentric>::DownsamplingParameters const&
+          downsampling_parameters);
   virtual void InitializeEphemerisParameters(
       Ephemeris<Barycentric>::AccuracyParameters const& accuracy_parameters,
       Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters);
   virtual void InitializeHistoryParameters(
-      DiscreteTrajectory<Barycentric>::DownsamplingParameters const&
-          downsampling_parameters,
       Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters);
   virtual void InitializePsychohistoryParameters(
       Ephemeris<Barycentric>::AdaptiveStepParameters const& parameters);

@@ -164,6 +164,13 @@ void Plugin::InsertCelestialJacobiKeplerian(
   }
 }
 
+void Plugin::InitializeDownsamplingParameters(
+    DiscreteTrajectory<Barycentric>::DownsamplingParameters const&
+        downsampling_parameters) {
+  CHECK(initializing_);
+  history_downsampling_parameters_ = downsampling_parameters;
+}
+
 void Plugin::InitializeEphemerisParameters(
     Ephemeris<Barycentric>::AccuracyParameters const& accuracy_parameters,
     Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters) {
@@ -173,11 +180,8 @@ void Plugin::InitializeEphemerisParameters(
 }
 
 void Plugin::InitializeHistoryParameters(
-    DiscreteTrajectory<Barycentric>::DownsamplingParameters const&
-        downsampling_parameters,
     Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters) {
   CHECK(initializing_);
-  history_downsampling_parameters_ = downsampling_parameters;
   history_fixed_step_parameters_ = fixed_step_parameters;
 }
 

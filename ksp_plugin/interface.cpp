@@ -716,6 +716,17 @@ void __cdecl principia__InitGoogleLogging() {
   }
 }
 
+void __cdecl principia__InitializeDownsamplingParameters(
+    Plugin* const plugin,
+    ConfigurationDownsamplingParameters const& downsampling_parameters) {
+  journal::Method<journal::InitializeDownsamplingParameters> m(
+      {plugin, downsampling_parameters});
+  CHECK_NOTNULL(plugin);
+  plugin->InitializeDownsamplingParameters(
+      MakeDownsamplingParameters(downsampling_parameters));
+  return m.Return();
+}
+
 void __cdecl principia__InitializeEphemerisParameters(
     Plugin* const plugin,
     ConfigurationAccuracyParameters const& accuracy_parameters,
@@ -731,13 +742,11 @@ void __cdecl principia__InitializeEphemerisParameters(
 
 void __cdecl principia__InitializeHistoryParameters(
     Plugin* const plugin,
-    ConfigurationDownsamplingParameters const& downsampling_parameters,
     ConfigurationFixedStepParameters const& fixed_step_parameters) {
   journal::Method<journal::InitializeHistoryParameters> m(
-      {plugin, downsampling_parameters, fixed_step_parameters});
+      {plugin, fixed_step_parameters});
   CHECK_NOTNULL(plugin);
   plugin->InitializeHistoryParameters(
-      MakeDownsamplingParameters(downsampling_parameters),
       MakeFixedStepParameters(fixed_step_parameters));
   return m.Return();
 }
