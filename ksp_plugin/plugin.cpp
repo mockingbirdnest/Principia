@@ -113,7 +113,8 @@ using ::operator<<;
 Plugin::Plugin(std::string const& game_epoch,
                std::string const& solar_system_epoch,
                Angle const& planetarium_rotation)
-    : history_parameters_(DefaultHistoryParameters()),
+    : history_downsampling_parameters_(DefaultDownsamplingParameters()),
+      history_fixed_step_parameters_(DefaultHistoryParameters()),
       psychohistory_parameters_(DefaultPsychohistoryParameters()),
       vessel_thread_pool_(
           /*pool_size=*/2 * std::thread::hardware_concurrency()),
@@ -163,6 +164,13 @@ void Plugin::InsertCelestialJacobiKeplerian(
   }
 }
 
+void Plugin::InitializeDownsamplingParameters(
+    DiscreteTrajectory<Barycentric>::DownsamplingParameters const&
+        downsampling_parameters) {
+  CHECK(initializing_);
+  history_downsampling_parameters_ = downsampling_parameters;
+}
+
 void Plugin::InitializeEphemerisParameters(
     Ephemeris<Barycentric>::AccuracyParameters const& accuracy_parameters,
     Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters) {
@@ -172,9 +180,9 @@ void Plugin::InitializeEphemerisParameters(
 }
 
 void Plugin::InitializeHistoryParameters(
-    Ephemeris<Barycentric>::FixedStepParameters const& parameters) {
+    Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters) {
   CHECK(initializing_);
-  history_parameters_ = parameters;
+  history_fixed_step_parameters_ = fixed_step_parameters;
 }
 
 void Plugin::InitializePsychohistoryParameters(
@@ -573,7 +581,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
     Instant const vessel_time =
         is_loaded(vessel) ? current_time_ - Δt : current_time_;
     if (kept_vessels_.erase(vessel) > 0) {
-      vessel->PrepareHistory(vessel_time);
+      vessel->PrepareHistory(vessel_time, history_downsampling_parameters_);
       ++it;
     } else {
       loaded_vessels_.erase(vessel);
@@ -638,7 +646,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
           pile_ups_,
           vessel_time,
           psychohistory_parameters_,
-          history_parameters_,
+          history_fixed_step_parameters_,
           ephemeris_.get());
     });
   }
@@ -1348,7 +1356,9 @@ void Plugin::WriteToMessage(
 
   ephemeris_->WriteToMessage(message->mutable_ephemeris());
 
-  history_parameters_.WriteToMessage(message->mutable_history_parameters());
+  // |history_downsampling_parameters_| is not persisted.
+  history_fixed_step_parameters_.WriteToMessage(
+      message->mutable_history_parameters());
   psychohistory_parameters_.WriteToMessage(
       message->mutable_psychohistory_parameters());
 
@@ -1520,7 +1530,8 @@ Plugin::Plugin(
     Ephemeris<Barycentric>::FixedStepParameters history_parameters,
     Ephemeris<Barycentric>::AdaptiveStepParameters
         psychohistory_parameters)
-    : history_parameters_(std::move(history_parameters)),
+    : history_downsampling_parameters_(DefaultDownsamplingParameters()),
+      history_fixed_step_parameters_(std::move(history_parameters)),
       psychohistory_parameters_(std::move(psychohistory_parameters)),
       vessel_thread_pool_(
           /*pool_size=*/2 * std::thread::hardware_concurrency()) {}

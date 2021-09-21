@@ -833,8 +833,8 @@ TEST_F(DiscreteTrajectoryTest, QuadrilateralCircle) {
 TEST_F(DiscreteTrajectoryTest, Downsampling) {
   DiscreteTrajectory<World> circle;
   DiscreteTrajectory<World> downsampled_circle;
-  downsampled_circle.SetDownsampling(/*max_dense_intervals=*/50,
-                                     /*tolerance=*/1 * Milli(Metre));
+  downsampled_circle.SetDownsampling({.max_dense_intervals = 50,
+                                      .tolerance = 1 * Milli(Metre)});
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
   Time const Δt = 10 * Milli(Second);
@@ -859,8 +859,8 @@ TEST_F(DiscreteTrajectoryTest, Downsampling) {
 
 TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
   DiscreteTrajectory<World> circle;
-  circle.SetDownsampling(/*max_dense_intervals=*/50,
-                         /*tolerance=*/1 * Milli(Metre));
+  circle.SetDownsampling({.max_dense_intervals = 50,
+                          .tolerance = 1 * Milli(Metre)});
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
   Time const Δt = 10 * Milli(Second);
@@ -936,10 +936,10 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
 TEST_F(DiscreteTrajectoryTest, DownsamplingForgetAfter) {
   DiscreteTrajectory<World> circle;
   DiscreteTrajectory<World> forgotten_circle;
-  circle.SetDownsampling(/*max_dense_intervals=*/50,
-                         /*tolerance=*/1 * Milli(Metre));
-  forgotten_circle.SetDownsampling(/*max_dense_intervals=*/50,
-                                   /*tolerance=*/1 * Milli(Metre));
+  circle.SetDownsampling({.max_dense_intervals = 50,
+                          .tolerance = 1 * Milli(Metre)});
+  forgotten_circle.SetDownsampling({.max_dense_intervals = 50,
+                                    .tolerance = 1 * Milli(Metre)});
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
   Time const Δt = 1.0 / 128.0 * Second;  // Yields exact times.

@@ -84,6 +84,14 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
                                            DiscreteTrajectoryTraits<Frame>>,
                            public Trajectory<Frame> {
  public:
+  // |max_dense_intervals| is the maximal number of dense intervals before
+  // downsampling occurs.  |tolerance| is the tolerance for downsampling with
+  // |FitHermiteSpline|.
+  struct DownsamplingParameters {
+    std::int64_t max_dense_intervals;
+    Length tolerance;
+  };
+
   using Iterator = DiscreteTrajectoryIterator<Frame>;
 
   DiscreteTrajectory() = default;
@@ -141,8 +149,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // when |Append|ing, ensuring that |EvaluatePosition| returns a result within
   // |tolerance| of the missing points.  |max_dense_intervals| is the largest
   // number of points that can be added before removal is considered.
-  void SetDownsampling(std::int64_t max_dense_intervals,
-                       Length const& tolerance);
+  void SetDownsampling(DownsamplingParameters const& downsampling_parameters);
 
   // Clear the downsampling parameters.  From now on, all points appended to the
   // trajectory are going to be retained.
@@ -203,8 +210,8 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // A helper class to manage a dense timeline.
   class Downsampling {
    public:
-    Downsampling(std::int64_t max_dense_intervals,
-                 Length tolerance);
+    explicit Downsampling(
+        DownsamplingParameters const& downsampling_parameters);
 
     // Construction parameters.
     std::int64_t max_dense_intervals() const;
@@ -233,10 +240,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
         Timeline const& timeline);
 
    private:
-    // The maximal number of dense intervals before downsampling occurs.
-    std::int64_t const max_dense_intervals_;
-    // The tolerance for downsampling with |FitHermiteSpline|.
-    Length const tolerance_;
+    DownsamplingParameters const downsampling_parameters_;
 
     // TODO(phl): Note that, with forks, the iterators in this vector may belong
     // to different maps.
@@ -260,7 +264,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
 
   // Updates the downsampling object to reflect that a point was appended to
   // this trajectory.
-  absl::Status UpdateDownsampling(TimelineConstIterator const appended);
+  absl::Status UpdateDownsampling(TimelineConstIterator appended);
 
   Timeline timeline_;
 

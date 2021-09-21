@@ -245,11 +245,10 @@ void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::SetDownsampling(
-    std::int64_t const max_dense_intervals,
-    Length const& tolerance) {
+    DownsamplingParameters const& downsampling_parameters) {
   CHECK(this->is_root());
   CHECK(!downsampling_.has_value());
-  downsampling_.emplace(max_dense_intervals, tolerance);
+  downsampling_.emplace(downsampling_parameters);
   // TODO(phl): If this trajectory is a fork, the fork point should be appended
   // first.
   for (auto it = timeline_.cbegin(); it != timeline_.cend(); ++it) {
@@ -407,23 +406,21 @@ std::int64_t DiscreteTrajectory<Frame>::timeline_size() const {
 
 template<typename Frame>
 DiscreteTrajectory<Frame>::Downsampling::Downsampling(
-    std::int64_t const max_dense_intervals,
-    Length const tolerance)
-    : max_dense_intervals_(max_dense_intervals),
-      tolerance_(tolerance) {
+    DownsamplingParameters const& downsampling_parameters)
+    : downsampling_parameters_(downsampling_parameters) {
   // This contains points, hence one more than intervals.
-  dense_iterators_.reserve(max_dense_intervals_ + 1);
+  dense_iterators_.reserve(max_dense_intervals() + 1);
 }
 
 template<typename Frame>
 std::int64_t DiscreteTrajectory<Frame>::Downsampling::max_dense_intervals()
     const {
-  return max_dense_intervals_;
+  return downsampling_parameters_.max_dense_intervals;
 }
 
 template<typename Frame>
 Length DiscreteTrajectory<Frame>::Downsampling::tolerance() const {
-  return tolerance_;
+  return downsampling_parameters_.tolerance;
 }
 
 template<typename Frame>
@@ -464,7 +461,7 @@ bool DiscreteTrajectory<Frame>::Downsampling::empty() const {
 
 template<typename Frame>
 bool DiscreteTrajectory<Frame>::Downsampling::full() const {
-  return dense_iterators_.size() >= max_dense_intervals_;
+  return dense_iterators_.size() >= max_dense_intervals();
 }
 
 template<typename Frame>
@@ -477,8 +474,8 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::Downsampling::WriteToMessage(
     not_null<serialization::DiscreteTrajectory::Downsampling*> const message)
     const {
-  message->set_max_dense_intervals(max_dense_intervals_);
-  tolerance_.WriteToMessage(message->mutable_tolerance());
+  message->set_max_dense_intervals(max_dense_intervals());
+  tolerance().WriteToMessage(message->mutable_tolerance());
   for (auto const it : dense_iterators_) {
     it->first.WriteToMessage(message->add_dense_timeline());
   }
@@ -490,8 +487,8 @@ DiscreteTrajectory<Frame>::Downsampling::ReadFromMessage(
     serialization::DiscreteTrajectory::Downsampling const& message,
     Timeline const& timeline) {
   bool const is_pre_grotendieck_haar = message.has_start_of_dense_timeline();
-  Downsampling downsampling(message.max_dense_intervals(),
-                            Length::ReadFromMessage(message.tolerance()));
+  Downsampling downsampling({message.max_dense_intervals(),
+                             Length::ReadFromMessage(message.tolerance())});
   if (is_pre_grotendieck_haar) {
     // No support for forks in legacy saves, so |find| will succeed and ++ is
     // safe.

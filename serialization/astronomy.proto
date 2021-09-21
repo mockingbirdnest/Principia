@@ -87,6 +87,10 @@ message InitialState {
 }
 
 message NumericsBlueprint {
+  message Downsampling {
+    required int64 max_dense_intervals = 1;
+    required string tolerance = 2;
+  }
   message Ephemeris {
     required FixedStepSizeIntegrator.Kind integrator = 1;
     required string step = 2;
@@ -102,6 +106,7 @@ message NumericsBlueprint {
     required string length_integration_tolerance = 2;
     required string speed_integration_tolerance = 3;
   }
+  optional Downsampling downsampling = 4;
   required Ephemeris ephemeris = 1;
   required History history = 2;
   required Psychohistory psychohistory = 3;

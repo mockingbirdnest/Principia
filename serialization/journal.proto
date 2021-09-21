@@ -72,6 +72,11 @@ message ConfigurationAccuracyParameters {
   required string geopotential_tolerance = 2;
 }
 
+message ConfigurationDownsamplingParameters {
+  required string max_dense_intervals = 1;
+  required string tolerance = 2;
+}
+
 message ConfigurationFixedStepParameters {
   // Must be the name of one of the values of FixedStepSizeIntegrator.Kind.
   required string fixed_step_size_integrator = 1;
@@ -219,7 +224,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5177.
+  extensions 5000 to 5999;  // Last used: 5178.
 }
 
 message AdvanceTime {
@@ -1262,6 +1267,17 @@ message HasVessel {
   optional Return return = 3;
 }
 
+message InitializeDownsamplingParameters {
+  extend Method {
+    optional InitializeDownsamplingParameters extension = 5178;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required ConfigurationDownsamplingParameters downsampling_parameters = 2;
+  }
+  optional In in = 1;
+}
+
 message InitializeEphemerisParameters {
   extend Method {
     optional InitializeEphemerisParameters extension = 5148;
@@ -1280,7 +1296,7 @@ message InitializeHistoryParameters {
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    required ConfigurationFixedStepParameters parameters = 2;
+    required ConfigurationFixedStepParameters fixed_step_parameters = 2;
   }
   optional In in = 1;
 }
