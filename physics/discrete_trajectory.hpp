@@ -156,6 +156,9 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // number of points that can be added before removal is considered.
   void SetDownsampling(DownsamplingParameters const& downsampling_parameters);
 
+  // Same as above, but uses the parameters of the given |trajectory|.
+  void SetDownsampling(DiscreteTrajectory<Frame> const& trajectory);
+
   // Clear the downsampling parameters.  From now on, all points appended to the
   // trajectory are going to be retained.
   void ClearDownsampling();
@@ -239,6 +242,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
         std::function<TimelineConstIterator(Instant const&)> iterator_for_time);
 
     // Construction parameters.
+    DownsamplingParameters const& downsampling_parameters() const;
     std::int64_t max_dense_intervals() const;
     Length tolerance() const;
 

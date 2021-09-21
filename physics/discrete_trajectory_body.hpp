@@ -273,7 +273,16 @@ void DiscreteTrajectory<Frame>::SetDownsampling(
     UpdateDownsampling(it);
   }
 }
+
 template<typename Frame>
+void DiscreteTrajectory<Frame>::SetDownsampling(
+    DiscreteTrajectory<Frame> const& trajectory) {
+  if (trajectory.downsampling_.has_value()) {
+    SetDownsampling(trajectory.downsampling_->downsampling_parameters());
+  }
+}
+
+ template<typename Frame>
 void DiscreteTrajectory<Frame>::ClearDownsampling() {
   downsampling_.reset();
 }
@@ -451,6 +460,12 @@ DiscreteTrajectory<Frame>::Downsampling::Downsampling(
       iterator_for_time_(std::move(iterator_for_time)) {
   // This contains points, hence one more than intervals.
   dense_iterators_.reserve(max_dense_intervals() + 1);
+}
+
+template<typename Frame>
+typename DiscreteTrajectory<Frame>::DownsamplingParameters const&
+DiscreteTrajectory<Frame>::Downsampling::downsampling_parameters() const {
+  return downsampling_parameters_;
 }
 
 template<typename Frame>

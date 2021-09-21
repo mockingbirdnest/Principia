@@ -515,7 +515,8 @@ TEST_F(VesselTest, Checkpointing) {
       ephemeris_,
       FlowWithAdaptiveStep(_, _, astronomy::J2000 + 30 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.CreateHistoryIfNeeded(astronomy::J2000);
+  vessel_.CreateHistoryIfNeeded(astronomy::J2000,
+                                DefaultDownsamplingParameters());
 
   auto const pile_up =
       std::make_shared<PileUp>(/*parts=*/std::list<not_null<Part*>>{p1_, p2_},

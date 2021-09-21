@@ -185,8 +185,7 @@ void Vessel::DetectCollapsibilityChange() {
     }
     auto psychohistory = psychohistory_->DetachFork();
     backstory_ = history_->NewForkAtLast();
-    backstory_->SetDownsampling(MaxDenseIntervals,
-                                DownsamplingTolerance);
+    backstory_->SetDownsampling(*history_);
     backstory_->AttachFork(std::move(psychohistory));
     is_collapsible_ = becomes_collapsible;
   }
@@ -194,10 +193,6 @@ void Vessel::DetectCollapsibilityChange() {
 
 void Vessel::CreateHistoryIfNeeded(
     Instant const& t,
-    DiscreteTrajectory<Barycentric>::DownsamplingParameters const&
-        downsampling_parameters) {
-  absl::ReaderMutexLock l(&lock_);
-    Instant const& t, ,
     DiscreteTrajectory<Barycentric>::DownsamplingParameters const&
         downsampling_parameters) {
   CHECK(!parts_.empty());

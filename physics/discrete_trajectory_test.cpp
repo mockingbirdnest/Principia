@@ -980,7 +980,7 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingForks) {
   Length const tolerance = 1 * Milli(Metre);
 
   DiscreteTrajectory<World> root;
-  root.SetDownsampling(max_dense_intervals, tolerance);
+  root.SetDownsampling({max_dense_intervals, tolerance});
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
   Time const Δt = 10 * Milli(Second);
@@ -991,7 +991,7 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingForks) {
   auto const root_tmax = root.back().time;
 
   auto fork1 = root.NewForkAtLast();
-  fork1->SetDownsampling(max_dense_intervals, tolerance);
+  fork1->SetDownsampling({max_dense_intervals, tolerance});
   Instant const t3 = t2 + 10 * Second;
   AppendTrajectory(*NewCircularTrajectory<World>(ω, r, Δt, root_tmax + Δt, t3),
                    /*to=*/*fork1);
@@ -999,14 +999,14 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingForks) {
 
   // A short fork with no downsampling
   auto fork2 = fork1->NewForkAtLast();
-  fork2->SetDownsampling(max_dense_intervals, tolerance);
+  fork2->SetDownsampling({max_dense_intervals, tolerance});
   Instant const t4 = t3 + 300 * Milli(Second);
   AppendTrajectory(*NewCircularTrajectory<World>(ω, r, Δt, fork1_tmax + Δt, t4),
                    /*to=*/*fork2);
   auto const fork2_tmax = fork2->back().time;
 
   auto fork3 = fork2->NewForkAtLast();
-  fork3->SetDownsampling(max_dense_intervals, tolerance);
+  fork3->SetDownsampling({max_dense_intervals, tolerance});
   Instant const t5 = t4 + 10 * Second;
   AppendTrajectory(*NewCircularTrajectory<World>(ω, r, Δt, fork2_tmax + Δt, t5),
                    /*to=*/*fork3);
