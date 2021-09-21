@@ -21,6 +21,7 @@ using interface::BodyParameters;
 using interface::Burn;
 using interface::ConfigurationAccuracyParameters;
 using interface::ConfigurationAdaptiveStepParameters;
+using interface::ConfigurationDownsamplingParameters;
 using interface::ConfigurationFixedStepParameters;
 using interface::EquatorialCrossings;
 using interface::FlightPlanAdaptiveStepParameters;

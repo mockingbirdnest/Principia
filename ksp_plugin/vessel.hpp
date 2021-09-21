@@ -112,7 +112,10 @@ class Vessel {
   // barycentre of all parts.  |parts_| must not be empty.  After this call,
   // |history_| is never empty again and the psychohistory is usable.  Must be
   // called (at least) after the creation of the vessel.
-  virtual void CreateHistoryIfNeeded(Instant const& t) EXCLUDES(lock_);
+  virtual void CreateHistoryIfNeeded(
+      Instant const& t,
+      DiscreteTrajectory<Barycentric>::DownsamplingParameters const&
+          downsampling_parameters) EXCLUDES(lock_);
 
   // Disables downsampling for the history of this vessel.  This is useful when
   // the vessel collided with a celestial, as downsampling might run into

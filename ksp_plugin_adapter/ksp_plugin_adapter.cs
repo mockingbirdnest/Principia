@@ -2477,6 +2477,15 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     if (numerics_blueprint == null) {
       return;
     }
+
+    ConfigNode downsampling_parameters =
+        numerics_blueprint.GetAtMostOneNode("downsampling");
+    if (downsampling_parameters != null) {
+      plugin.InitializeDownsamplingParameters(
+          ConfigNodeParsers.NewConfigurationDownsamplingParameters(
+              downsampling_parameters));
+    }
+
     ConfigNode ephemeris_parameters =
         numerics_blueprint.GetAtMostOneNode("ephemeris");
     if (ephemeris_parameters != null) {

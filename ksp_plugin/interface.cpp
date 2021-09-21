@@ -49,6 +49,7 @@
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/part.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
@@ -101,6 +102,7 @@ using ksp_plugin::TypedIterator;
 using ksp_plugin::VesselSet;
 using ksp_plugin::World;
 using physics::DegreesOfFreedom;
+using physics::DiscreteTrajectory;
 using physics::FrameField;
 using physics::MassiveBody;
 using physics::OblateBody;
@@ -162,6 +164,14 @@ Ephemeris<Barycentric>::AdaptiveStepParameters MakeAdaptiveStepParameters(
       /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
       ParseQuantity<Length>(parameters.length_integration_tolerance),
       ParseQuantity<Speed>(parameters.speed_integration_tolerance));
+}
+
+DiscreteTrajectory<Barycentric>::DownsamplingParameters
+MakeDownsamplingParameters(
+    ConfigurationDownsamplingParameters const& parameters) {
+  return DiscreteTrajectory<Barycentric>::DownsamplingParameters(
+      std::stoi(parameters.max_dense_intervals),
+      ParseQuantity<Length>(parameters.tolerance));
 }
 
 Ephemeris<Barycentric>::FixedStepParameters MakeFixedStepParameters(
@@ -706,6 +716,17 @@ void __cdecl principia__InitGoogleLogging() {
   }
 }
 
+void __cdecl principia__InitializeDownsamplingParameters(
+    Plugin* const plugin,
+    ConfigurationDownsamplingParameters const& downsampling_parameters) {
+  journal::Method<journal::InitializeDownsamplingParameters> m(
+      {plugin, downsampling_parameters});
+  CHECK_NOTNULL(plugin);
+  plugin->InitializeDownsamplingParameters(
+      MakeDownsamplingParameters(downsampling_parameters));
+  return m.Return();
+}
+
 void __cdecl principia__InitializeEphemerisParameters(
     Plugin* const plugin,
     ConfigurationAccuracyParameters const& accuracy_parameters,
@@ -721,11 +742,12 @@ void __cdecl principia__InitializeEphemerisParameters(
 
 void __cdecl principia__InitializeHistoryParameters(
     Plugin* const plugin,
-    ConfigurationFixedStepParameters const& parameters) {
+    ConfigurationFixedStepParameters const& fixed_step_parameters) {
   journal::Method<journal::InitializeHistoryParameters> m(
-      {plugin, parameters});
+      {plugin, fixed_step_parameters});
   CHECK_NOTNULL(plugin);
-  plugin->InitializeHistoryParameters(MakeFixedStepParameters(parameters));
+  plugin->InitializeHistoryParameters(
+      MakeFixedStepParameters(fixed_step_parameters));
   return m.Return();
 }
 

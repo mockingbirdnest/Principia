@@ -252,11 +252,9 @@ void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::SetDownsampling(
-    std::int64_t const max_dense_intervals,
-    Length const& tolerance) {
+    DownsamplingParameters const& downsampling_parameters) {
   CHECK(!downsampling_.has_value());
-  downsampling_.emplace(max_dense_intervals,
-                        tolerance,
+  downsampling_.emplace(downsampling_parameters,
                         [this](Instant const& t) {
                           auto const it = this->Find(t);
                           CHECK(it != this->end());
@@ -447,25 +445,23 @@ std::int64_t DiscreteTrajectory<Frame>::timeline_size() const {
 
 template<typename Frame>
 DiscreteTrajectory<Frame>::Downsampling::Downsampling(
-    std::int64_t const max_dense_intervals,
-    Length const tolerance,
+    DownsamplingParameters const& downsampling_parameters,
     std::function<TimelineConstIterator(Instant const&)> iterator_for_time)
-    : max_dense_intervals_(max_dense_intervals),
-      tolerance_(tolerance),
+    : downsampling_parameters_(downsampling_parameters),
       iterator_for_time_(std::move(iterator_for_time)) {
   // This contains points, hence one more than intervals.
-  dense_iterators_.reserve(max_dense_intervals_ + 1);
+  dense_iterators_.reserve(max_dense_intervals() + 1);
 }
 
 template<typename Frame>
 std::int64_t DiscreteTrajectory<Frame>::Downsampling::max_dense_intervals()
     const {
-  return max_dense_intervals_;
+  return downsampling_parameters_.max_dense_intervals;
 }
 
 template<typename Frame>
 Length DiscreteTrajectory<Frame>::Downsampling::tolerance() const {
-  return tolerance_;
+  return downsampling_parameters_.tolerance;
 }
 
 template<typename Frame>
@@ -513,7 +509,7 @@ bool DiscreteTrajectory<Frame>::Downsampling::empty() const {
 
 template<typename Frame>
 bool DiscreteTrajectory<Frame>::Downsampling::full() const {
-  return dense_iterators_.size() >= max_dense_intervals_;
+  return dense_iterators_.size() >= max_dense_intervals();
 }
 
 template<typename Frame>
@@ -530,8 +526,8 @@ void DiscreteTrajectory<Frame>::Downsampling::WriteToMessage(
     Instant const& after_time,
     not_null<serialization::DiscreteTrajectory::Downsampling*> const message)
     const {
-  message->set_max_dense_intervals(max_dense_intervals_);
-  tolerance_.WriteToMessage(message->mutable_tolerance());
+  message->set_max_dense_intervals(max_dense_intervals());
+  tolerance().WriteToMessage(message->mutable_tolerance());
   if (!empty()) {
     // We can't call UpdateDenseIteratorsIfNeeded here because this method is
     // const.
@@ -553,8 +549,8 @@ DiscreteTrajectory<Frame>::Downsampling::ReadFromMessage(
   bool const is_pre_zermelo = message.has_start_of_dense_timeline();
   LOG_IF(WARNING, is_pre_zermelo)
       << "Reading pre-Zermelo Downsampling";
-  Downsampling downsampling(message.max_dense_intervals(),
-                            Length::ReadFromMessage(message.tolerance()),
+  Downsampling downsampling({message.max_dense_intervals(),
+                             Length::ReadFromMessage(message.tolerance())},
                             [&trajectory](Instant const& t){
                               auto const it = trajectory.Find(t);
                               CHECK(it != trajectory.end());

@@ -89,6 +89,14 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
                                            DiscreteTrajectoryTraits<Frame>>,
                            public Trajectory<Frame> {
  public:
+  // |max_dense_intervals| is the maximal number of dense intervals before
+  // downsampling occurs.  |tolerance| is the tolerance for downsampling with
+  // |FitHermiteSpline|.
+  struct DownsamplingParameters {
+    std::int64_t max_dense_intervals;
+    Length tolerance;
+  };
+
   using Iterator = DiscreteTrajectoryIterator<Frame>;
 
   DiscreteTrajectory() = default;
@@ -146,8 +154,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // when |Append|ing, ensuring that |EvaluatePosition| returns a result within
   // |tolerance| of the missing points.  |max_dense_intervals| is the largest
   // number of points that can be added before removal is considered.
-  void SetDownsampling(std::int64_t max_dense_intervals,
-                       Length const& tolerance);
+  void SetDownsampling(DownsamplingParameters const& downsampling_parameters);
 
   // Clear the downsampling parameters.  From now on, all points appended to the
   // trajectory are going to be retained.
@@ -224,14 +231,11 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // A helper class to manage a dense timeline.
   class Downsampling {
    public:
-    // |max_dense_intervals| is the maximal number of dense intervals before
-    // downsampling occurs.  |tolerance| is the tolerance for downsampling with
-    // |FitHermiteSpline|.  The function |iterator_for_time| must be able to
-    // convert a time to a timeline iterator irrespective of the fork structure
-    // (it must die if the time does not exist in the corresponding trajectory).
+    // The function |iterator_for_time| must be able to convert a time to a
+    // timeline iterator irrespective of the fork structure (it must die if the
+    // time does not exist in the corresponding trajectory).
     Downsampling(
-        std::int64_t max_dense_intervals,
-        Length tolerance,
+        DownsamplingParameters const& downsampling_parameters,
         std::function<TimelineConstIterator(Instant const&)> iterator_for_time);
 
     // Construction parameters.
@@ -268,8 +272,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
     // Clears the start time if there are no dense iterators.
     void UpdateStartTimeIfNeeded();
 
-    std::int64_t const max_dense_intervals_;
-    Length const tolerance_;
+    DownsamplingParameters const downsampling_parameters_;
     std::function<TimelineConstIterator(Instant const&)> const
         iterator_for_time_;
 

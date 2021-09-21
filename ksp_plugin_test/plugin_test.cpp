@@ -159,7 +159,7 @@ class TestablePlugin : public Plugin {
         mock_ephemeris_(owned_mock_ephemeris_.get()) {}
 
   Time const& Δt() const {
-    return history_parameters_.step();
+    return history_fixed_step_parameters_.step();
   }
 
   MockEphemeris<Barycentric>& mock_ephemeris() const {
