@@ -39,6 +39,7 @@ using ::std::placeholders::_1;
 
 using namespace std::chrono_literals;
 
+// TODO(phl): Move this to the DownsamplingParameters.
 constexpr std::int64_t max_points_in_conclusion = 20'000;
 
 bool operator!=(Vessel::PrognosticatorParameters const& left,
