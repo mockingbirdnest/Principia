@@ -169,9 +169,9 @@ Ephemeris<Barycentric>::AdaptiveStepParameters MakeAdaptiveStepParameters(
 DiscreteTrajectory<Barycentric>::DownsamplingParameters
 MakeDownsamplingParameters(
     ConfigurationDownsamplingParameters const& parameters) {
-  return DiscreteTrajectory<Barycentric>::DownsamplingParameters(
+  return DiscreteTrajectory<Barycentric>::DownsamplingParameters{
       std::stoi(parameters.max_dense_intervals),
-      ParseQuantity<Length>(parameters.tolerance));
+      ParseQuantity<Length>(parameters.tolerance)};
 }
 
 Ephemeris<Barycentric>::FixedStepParameters MakeFixedStepParameters(
