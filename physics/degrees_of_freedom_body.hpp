@@ -1,10 +1,10 @@
 ﻿
 #pragma once
 
+#include "physics/degrees_of_freedom.hpp"
+
 #include <string>
 #include <vector>
-
-#include "physics/degrees_of_freedom.hpp"
 
 namespace principia {
 namespace physics {
