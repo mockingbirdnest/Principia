@@ -7,6 +7,7 @@
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "physics/degrees_of_freedom.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -15,6 +16,7 @@
 namespace principia {
 namespace testing_utilities {
 
+using geometry::Displacement;
 using geometry::Frame;
 using geometry::Handedness;
 using geometry::Inertial;
@@ -22,6 +24,8 @@ using geometry::InnerProduct;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Velocity;
+using physics::DegreesOfFreedom;
+using quantities::Pow;
 using quantities::Sqrt;
 using quantities::si::Metre;
 using quantities::si::Radian;
@@ -37,8 +41,12 @@ class TrajectoryFactoriesTest : public ::testing::Test {
 
 TEST_F(TrajectoryFactoriesTest, NewLinearTrajectory) {
   auto const trajectory = NewLinearTrajectory<World>(
-      /*v=*/Velocity<World>(
-          {6 * Metre / Second, 5 * Metre / Second, 4 * Metre / Second}),
+      /*degrees_of_freedom=*/
+      DegreesOfFreedom<World>(
+          World::origin +
+              Displacement<World>({30 * Metre, 40 * Metre, 50 * Metre}),
+          Velocity<World>(
+              {6 * Metre / Second, 5 * Metre / Second, 4 * Metre / Second})),
       /*Δt=*/0.1 * Second,
       /*t1=*/Instant() + 4 * Second,
       /*t2=*/Instant() + 42 * Second);
@@ -47,9 +55,12 @@ TEST_F(TrajectoryFactoriesTest, NewLinearTrajectory) {
     Position<World> const& position = degrees_of_freedom.position();
     Velocity<World> const& velocity = degrees_of_freedom.velocity();
 
-    EXPECT_THAT(
-        (position - World::origin).Norm(),
-        AlmostEquals((time - Instant()) * Sqrt(77) * Metre / Second, 0, 1));
+    EXPECT_THAT((position - World::origin).Norm(),
+                AlmostEquals(Sqrt(5000 + 1160 * (time - Instant()) / Second +
+                                  77 * Pow<2>((time - Instant()) / Second)) *
+                                 Metre,
+                             0,
+                             1));
     EXPECT_THAT(velocity.Norm(), AlmostEquals(Sqrt(77) * Metre / Second, 0, 0));
   }
   EXPECT_THAT(trajectory->begin()->time,
