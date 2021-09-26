@@ -282,7 +282,7 @@ void DiscreteTrajectory<Frame>::SetDownsampling(
   }
 }
 
- template<typename Frame>
+template<typename Frame>
 void DiscreteTrajectory<Frame>::ClearDownsampling() {
   downsampling_.reset();
 }

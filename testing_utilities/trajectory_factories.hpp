@@ -3,7 +3,9 @@
 #include <memory>
 
 #include "base/not_null.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -14,17 +16,39 @@ namespace internal_trajectory_factories {
 
 using base::not_null;
 using geometry::Instant;
+using geometry::Vector;
 using geometry::Velocity;
+using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
+using quantities::Acceleration;
 using quantities::AngularFrequency;
 using quantities::Length;
 using quantities::Time;
 
-// A linear trajectory with constant velocity, going through the origin at
-// t = 0.  The first point is at time |t1|, the last point at a time < |t2|.
+// A linear trajectory with constant velocity, going through
+// |degrees_of_freedom.position()| at t = 0.  The first point is at time |t1|,
+// the last point at a time < |t2|.
+template<typename Frame>
+not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> NewLinearTrajectory(
+    DegreesOfFreedom<Frame> const& degrees_of_freedom,
+    Time const& Δt,
+    Instant const& t1,
+    Instant const& t2);
+// Same as above, going through the origin at t = 0.
 template<typename Frame>
 not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> NewLinearTrajectory(
     Velocity<Frame> const& v,
+    Time const& Δt,
+    Instant const& t1,
+    Instant const& t2);
+
+// A trajectory with a uniform acceleration, having the specified
+// |degrees_of_freedom| at t = 0.  The first point is at time |t1|, the last
+// point at a time < |t2|.
+template<typename Frame>
+not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> NewAcceleratedTrajectory(
+    DegreesOfFreedom<Frame> const& degrees_of_freedom,
+    Vector<Acceleration, Frame> const& acceleration,
     Time const& Δt,
     Instant const& t1,
     Instant const& t2);
@@ -53,6 +77,7 @@ void AppendTrajectory(DiscreteTrajectory<Frame> const& from,
 }  // namespace internal_trajectory_factories
 
 using internal_trajectory_factories::AppendTrajectory;
+using internal_trajectory_factories::NewAcceleratedTrajectory;
 using internal_trajectory_factories::NewCircularTrajectory;
 using internal_trajectory_factories::NewLinearTrajectory;
 

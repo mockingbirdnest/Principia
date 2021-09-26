@@ -10,6 +10,7 @@
 #include "absl/status/status.h"
 #include "astronomy/epoch.hpp"
 #include "base/not_null.hpp"
+#include "geometry/barycentre_calculator.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "gmock/gmock.h"
@@ -27,12 +28,14 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/matchers.hpp"
+#include "testing_utilities/trajectory_factories.hpp"
 
 namespace principia {
 namespace ksp_plugin {
 namespace internal_vessel {
 
 using base::make_not_null_unique;
+using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::Displacement;
 using geometry::InertiaTensor;
@@ -55,6 +58,8 @@ using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::EqualsProto;
+using testing_utilities::NewAcceleratedTrajectory;
+using testing_utilities::NewLinearTrajectory;
 using ::testing::AnyNumber;
 using ::testing::DoAll;
 using ::testing::ElementsAre;
@@ -70,7 +75,7 @@ class VesselTest : public testing::Test {
               RotatingBody<Barycentric>::Parameters(
                   /*mean_radius=*/1 * Metre,
                   /*reference_angle=*/0 * Degree,
-                  /*reference_instant=*/astronomy::J2000,
+                  /*reference_instant=*/t0_,
                   /*angular_frequency=*/1 * Radian / Second,
                   /*right_ascension_of_pole=*/0 * Degree,
                   /*declination_of_pole=*/90 * Degree)),
@@ -104,6 +109,13 @@ class VesselTest : public testing::Test {
     vessel_.AddPart(std::move(p2));
   }
 
+  void AppendToPartHistory(DiscreteTrajectory<Barycentric> const& trajectory,
+                           Part& part) {
+    for (auto const& [time, degrees_of_freedom] : trajectory) {
+      part.AppendToHistory(time, degrees_of_freedom);
+    }
+  }
+
   bool IsCollapsible() const {
     return vessel_.IsCollapsible();
   }
@@ -123,8 +135,6 @@ class VesselTest : public testing::Test {
   InertiaTensor<RigidPart> inertia_tensor1_;
   InertiaTensor<RigidPart> inertia_tensor2_;
 
-  // Centre of mass of |p1_| and |p2_| in |Barycentric|, in SI units:
-  //   {13 / 3, 4, 11 / 3} {130 / 3, 40, 110 / 3}
   DegreesOfFreedom<Barycentric> const p1_dof_ = DegreesOfFreedom<Barycentric>(
       Barycentric::origin +
           Displacement<Barycentric>({1 * Metre, 2 * Metre, 3 * Metre}),
@@ -136,6 +146,7 @@ class VesselTest : public testing::Test {
       Velocity<Barycentric>(
           {60 * Metre / Second, 50 * Metre / Second, 40 * Metre / Second}));
 
+  Instant const t0_;
   Part* p1_;
   Part* p2_;
   Vessel vessel_;
@@ -169,269 +180,204 @@ TEST_F(VesselTest, KeepAndFreeParts) {
 
 TEST_F(VesselTest, PrepareHistory) {
   EXPECT_CALL(ephemeris_, t_max())
-      .WillRepeatedly(Return(astronomy::J2000 + 2 * Second));
-  EXPECT_CALL(
-      ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
+      .WillRepeatedly(Return(t0_ + 2 * Second));
+  EXPECT_CALL(ephemeris_,
+              FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
       .Times(AnyNumber());
-  EXPECT_CALL(
-      ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _))
+  EXPECT_CALL(ephemeris_,
+              FlowWithAdaptiveStep(_, _, t0_ + 2 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.CreateHistoryIfNeeded(astronomy::J2000 + 1 * Second,
+  vessel_.CreateHistoryIfNeeded(t0_ + 1 * Second,
                                 DefaultDownsamplingParameters());
 
+  auto const expected_dof = Barycentre<DegreesOfFreedom<Barycentric>, Mass>(
+      {p1_dof_, p2_dof_}, {mass1_, mass2_});
+
   EXPECT_EQ(1, vessel_.psychohistory().Size());
-  EXPECT_EQ(astronomy::J2000 + 1 * Second,
+  EXPECT_EQ(t0_ + 1 * Second,
             vessel_.psychohistory().back().time);
   EXPECT_THAT(
       vessel_.psychohistory().back().degrees_of_freedom,
-      Componentwise(AlmostEquals(Barycentric::origin +
-                                      Displacement<Barycentric>(
-                                          {13.0 / 3.0 * Metre,
-                                          4.0 * Metre,
-                                          11.0 / 3.0 * Metre}), 0),
-                    AlmostEquals(Velocity<Barycentric>(
-                                      {130.0 / 3.0 * Metre / Second,
-                                      40.0 * Metre / Second,
-                                      110.0 / 3.0 * Metre / Second}), 8)));
+      Componentwise(AlmostEquals(expected_dof.position(), 0),
+                    AlmostEquals(expected_dof.velocity(), 8)));
 }
 
 TEST_F(VesselTest, AdvanceTime) {
   EXPECT_CALL(ephemeris_, t_max())
-      .WillRepeatedly(Return(astronomy::J2000 + 2 * Second));
-  EXPECT_CALL(
-      ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
+      .WillRepeatedly(Return(t0_ + 2 * Second));
+  EXPECT_CALL(ephemeris_,
+              FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
       .Times(AnyNumber());
-  EXPECT_CALL(
-      ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _))
+  EXPECT_CALL(ephemeris_,
+              FlowWithAdaptiveStep(_, _, t0_ + 2 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.CreateHistoryIfNeeded(astronomy::J2000,
+  vessel_.CreateHistoryIfNeeded(t0_,
                                 DefaultDownsamplingParameters());
 
-  p1_->AppendToHistory(
-      astronomy::J2000 + 0.5 * Second,
-      DegreesOfFreedom<Barycentric>(
-          Barycentric::origin + Displacement<Barycentric>(
-                                    {1.1 * Metre, 2.1 * Metre, 3.1 * Metre}),
-          Velocity<Barycentric>({10.1 * Metre / Second,
-                                 20.1 * Metre / Second,
-                                 30.1 * Metre / Second})));
-  p1_->AppendToHistory(
-      astronomy::J2000 + 1.0 * Second,
-      DegreesOfFreedom<Barycentric>(
-          Barycentric::origin + Displacement<Barycentric>(
-                                    {1.2 * Metre, 2.2 * Metre, 3.2 * Metre}),
-          Velocity<Barycentric>({10.2 * Metre / Second,
-                                 20.2 * Metre / Second,
-                                 30.2 * Metre / Second})));
-  p2_->AppendToHistory(
-      astronomy::J2000 + 0.5 * Second,
-      DegreesOfFreedom<Barycentric>(
-          Barycentric::origin + Displacement<Barycentric>(
-                                    {6.1 * Metre, 5.1 * Metre, 4.1 * Metre}),
-          Velocity<Barycentric>({60.1 * Metre / Second,
-                                 50.1 * Metre / Second,
-                                 40.1 * Metre / Second})));
-  p2_->AppendToHistory(
-      astronomy::J2000 + 1.0 * Second,
-      DegreesOfFreedom<Barycentric>(
-          Barycentric::origin + Displacement<Barycentric>(
-                                    {6.2 * Metre, 5.2 * Metre, 4.2 * Metre}),
-          Velocity<Barycentric>({60.2 * Metre / Second,
-                                 50.2 * Metre / Second,
-                                 40.2 * Metre / Second})));
+  AppendToPartHistory(*NewLinearTrajectory(p1_dof_,
+                                           /*Δt=*/0.5 * Second,
+                                           /*t1=*/t0_ + 0.5 * Second,
+                                           /*t2=*/t0_ + 1.5 * Second),
+                      *p1_);
+  AppendToPartHistory(*NewLinearTrajectory(p2_dof_,
+                                           /*Δt=*/0.5 * Second,
+                                           /*t1=*/t0_ + 0.5 * Second,
+                                           /*t2=*/t0_ + 1.5 * Second),
+                      *p2_);
 
   vessel_.AdvanceTime();
 
+  auto const expected_vessel_psychohistory =
+      NewLinearTrajectory(Barycentre<DegreesOfFreedom<Barycentric>, Mass>(
+                              {p1_dof_, p2_dof_}, {mass1_, mass2_}),
+                          /*Δt=*/0.5 * Second,
+                          /*t1=*/t0_,
+                          /*t2=*/t0_ + 1.1 * Second);
+
   EXPECT_EQ(3, vessel_.psychohistory().Size());
-  auto it = vessel_.psychohistory().begin();
-  ++it;
-  EXPECT_EQ(astronomy::J2000 + 0.5 * Second, it->time);
-  EXPECT_THAT(it->degrees_of_freedom,
-              Componentwise(AlmostEquals(Barycentric::origin +
-                                         Displacement<Barycentric>(
-                                             {13.3 / 3.0 * Metre,
-                                              4.1 * Metre,
-                                              11.3 / 3.0 * Metre}), 2),
-                    AlmostEquals(Velocity<Barycentric>(
-                                      {130.3 / 3.0 * Metre / Second,
-                                       40.1 * Metre / Second,
-                                       110.3 / 3.0 * Metre / Second}), 1)));
-  ++it;
-  EXPECT_EQ(astronomy::J2000 + 1.0 * Second, it->time);
-  EXPECT_THAT(it->degrees_of_freedom,
-              Componentwise(AlmostEquals(Barycentric::origin +
-                                         Displacement<Barycentric>(
-                                             {13.6 / 3.0 * Metre,
-                                              4.2 * Metre,
-                                              11.6 / 3.0 * Metre}), 1),
-                    AlmostEquals(Velocity<Barycentric>(
-                                      {130.6 / 3.0 * Metre / Second,
-                                       40.2 * Metre / Second,
-                                       110.6 / 3.0 * Metre / Second}), 0)));
+  for (auto it1 = vessel_.psychohistory().begin(),
+            it2 = expected_vessel_psychohistory->begin();
+       it1 != vessel_.psychohistory().end() &&
+       it2 != expected_vessel_psychohistory->end();
+       ++it1, ++it2) {
+    EXPECT_EQ(it1->time, it2->time);
+    EXPECT_THAT(
+        it1->degrees_of_freedom,
+        Componentwise(AlmostEquals(it2->degrees_of_freedom.position(), 0, 1),
+                      AlmostEquals(it2->degrees_of_freedom.velocity(), 0, 8)));
+  }
 }
 
 TEST_F(VesselTest, Prediction) {
   EXPECT_CALL(ephemeris_, t_min_locked())
-      .WillRepeatedly(Return(astronomy::J2000));
+      .WillRepeatedly(Return(t0_));
   EXPECT_CALL(ephemeris_, t_max())
-      .WillRepeatedly(Return(astronomy::J2000 + 2 * Second));
+      .WillRepeatedly(Return(t0_ + 2 * Second));
+
+  // The call to fill the prognostication until t_max.
+  auto const expected_vessel_prediction =
+    NewLinearTrajectory(Barycentre<DegreesOfFreedom<Barycentric>, Mass>(
+                            {p1_dof_, p2_dof_}, {mass1_, mass2_}),
+                        /*Δt=*/0.5 * Second,
+                        /*t1=*/t0_,
+                        /*t2=*/t0_ + 2 * Second);
+  EXPECT_CALL(ephemeris_,
+              FlowWithAdaptiveStep(_, _, t0_ + 2 * Second, _, _))
+      .WillOnce(DoAll(
+          AppendPointsToDiscreteTrajectory(expected_vessel_prediction.get()),
+          Return(absl::OkStatus())))
+      .WillRepeatedly(Return(absl::OkStatus()));
+
+  // The call to extend the exphemeris.  Irrelevant since we won't be looking at
+  // these points.
   EXPECT_CALL(
       ephemeris_,
       FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
-      .WillOnce(
-          DoAll(AppendToDiscreteTrajectory(
-                    astronomy::J2000 + 1.0 * Second,
-                    DegreesOfFreedom<Barycentric>(
-                        Barycentric::origin +
-                            Displacement<Barycentric>(
-                                {15.0 / 3.0 * Metre, 6.0 * Metre, 5.0 * Metre}),
-                        Velocity<Barycentric>({150.0 / 3.0 * Metre / Second,
-                                               60.0 * Metre / Second,
-                                               50.0 * Metre / Second}))),
-                Return(absl::OkStatus())))
-      .WillRepeatedly(Return(absl::OkStatus()));
-  EXPECT_CALL(
-      ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _))
-      .WillOnce(
-          DoAll(AppendToDiscreteTrajectory(
-                    astronomy::J2000 + 1.0 * Second,
-                    DegreesOfFreedom<Barycentric>(
-                        Barycentric::origin +
-                            Displacement<Barycentric>(
-                                {14.0 / 3.0 * Metre, 5.0 * Metre, 4.0 * Metre}),
-                        Velocity<Barycentric>({140.0 / 3.0 * Metre / Second,
-                                               50.0 * Metre / Second,
-                                               40.0 * Metre / Second}))),
-                Return(absl::OkStatus())))
       .WillRepeatedly(Return(absl::OkStatus()));
 
-  vessel_.CreateHistoryIfNeeded(astronomy::J2000,
+  vessel_.CreateHistoryIfNeeded(t0_,
                                 DefaultDownsamplingParameters());
   // Polling for the integration to happen.
   do {
-    vessel_.RefreshPrediction(astronomy::J2000 + 1 * Second);
+    vessel_.RefreshPrediction(t0_ + 1 * Second);
     using namespace std::chrono_literals;
     std::this_thread::sleep_for(100ms);
-  } while (vessel_.prediction().back().time == astronomy::J2000);
+  } while (vessel_.prediction().back().time == t0_);
 
-  EXPECT_EQ(2, vessel_.prediction().Size());
-  auto it = vessel_.prediction().begin();
-  EXPECT_EQ(astronomy::J2000, it->time);
-  EXPECT_THAT(
-      it->degrees_of_freedom,
-      Componentwise(AlmostEquals(Barycentric::origin +
-                                      Displacement<Barycentric>(
-                                          {13.0 / 3.0 * Metre,
-                                           4.0 * Metre,
-                                           11.0 / 3.0 * Metre}), 0),
-                    AlmostEquals(Velocity<Barycentric>(
-                                      {130.0 / 3.0 * Metre / Second,
-                                       40.0 * Metre / Second,
-                                       110.0 / 3.0 * Metre / Second}), 8)));
-  ++it;
-  EXPECT_EQ(astronomy::J2000 + 1.0 * Second, it->time);
-  EXPECT_THAT(
-      it->degrees_of_freedom,
-      Componentwise(AlmostEquals(Barycentric::origin +
-                                      Displacement<Barycentric>(
-                                          {14.0 / 3.0 * Metre,
-                                           5.0 * Metre,
-                                           4.0 * Metre}), 0),
-                    AlmostEquals(Velocity<Barycentric>(
-                                      {140.0 / 3.0 * Metre / Second,
-                                       50.0 * Metre / Second,
-                                       40.0 * Metre / Second}), 0)));
+  EXPECT_EQ(3, vessel_.prediction().Size());
+  for (auto it1 = vessel_.prediction().begin(),
+            it2 = expected_vessel_prediction->begin();
+       it1 != vessel_.prediction().end() &&
+       it2 != expected_vessel_prediction->end();
+       ++it1, ++it2) {
+    EXPECT_EQ(it1->time, it2->time);
+    EXPECT_THAT(
+        it1->degrees_of_freedom,
+        Componentwise(AlmostEquals(it2->degrees_of_freedom.position(), 0, 0),
+                      AlmostEquals(it2->degrees_of_freedom.velocity(), 0, 8)));
+  }
 }
 
 TEST_F(VesselTest, PredictBeyondTheInfinite) {
   EXPECT_CALL(ephemeris_, t_min_locked())
-      .WillRepeatedly(Return(astronomy::J2000));
+      .WillRepeatedly(Return(t0_));
   EXPECT_CALL(ephemeris_, t_max())
-      .WillRepeatedly(Return(astronomy::J2000 + 0.5 * Second));
-  EXPECT_CALL(
-      ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 0.5 * Second, _, _))
-      .WillRepeatedly(
-          DoAll(AppendToDiscreteTrajectory(
-                    astronomy::J2000 + 0.5 * Second,
-                    DegreesOfFreedom<Barycentric>(
-                        Barycentric::origin +
-                            Displacement<Barycentric>({14.0 / 3.0 * Metre,
-                                                       5.0 * Metre,
-                                                       4.0 * Metre}),
-                        Velocity<Barycentric>({140.0 / 3.0 * Metre / Second,
-                                               50.0 * Metre / Second,
-                                               40.0 * Metre / Second}))),
-                Return(absl::OkStatus())));
-  EXPECT_CALL(
-      ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
-      .WillRepeatedly(
-          DoAll(AppendToDiscreteTrajectory(
-                    astronomy::J2000 + 1.0 * Second,
-                    DegreesOfFreedom<Barycentric>(
-                        Barycentric::origin +
-                            Displacement<Barycentric>({5.0 * Metre,
-                                                       6.0 * Metre,
-                                                       5.0 * Metre}),
-                        Velocity<Barycentric>({50.0 * Metre / Second,
-                                               60.0 * Metre / Second,
-                                               50.0 * Metre / Second}))),
-                Return(absl::OkStatus())));
-  vessel_.CreateHistoryIfNeeded(astronomy::J2000,
+      .WillRepeatedly(Return(t0_ + 5 * Second));
+
+  // The call to fill the prognostication until t_max.
+  auto const expected_vessel_prediction1 = NewLinearTrajectory(
+      Barycentre<DegreesOfFreedom<Barycentric>, Mass>({p1_dof_, p2_dof_},
+                                                      {mass1_, mass2_}),
+      /*Δt=*/0.5 * Second,
+      /*t1=*/t0_,
+      /*t2=*/t0_ + 5.5 * Second);
+  EXPECT_CALL(ephemeris_,
+              FlowWithAdaptiveStep(_, _, t0_ + 5 * Second, _, _))
+      .WillOnce(DoAll(
+          AppendPointsToDiscreteTrajectory(expected_vessel_prediction1.get()),
+          Return(absl::OkStatus())))
+      .WillRepeatedly(Return(absl::OkStatus()));
+
+  // The call to extend the exphemeris by many points.
+  auto const expected_vessel_prediction2 = NewLinearTrajectory(
+      Barycentre<DegreesOfFreedom<Barycentric>, Mass>({p1_dof_, p2_dof_},
+                                                      {mass1_, mass2_}),
+      /*Δt=*/0.5 * Second,
+      /*t1=*/t0_ + 5.5 * Second,
+      /*t2=*/t0_ + FlightPlan::max_ephemeris_steps_per_frame * Second);
+  EXPECT_CALL(ephemeris_,
+              FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
+      .WillOnce(DoAll(
+          AppendPointsToDiscreteTrajectory(expected_vessel_prediction2.get()),
+          Return(absl::OkStatus())))
+      .WillRepeatedly(Return(absl::OkStatus()));
+
+  vessel_.CreateHistoryIfNeeded(t0_,
                                 DefaultDownsamplingParameters());
   // Polling for the integration to happen.
   do {
     vessel_.RefreshPrediction();
     using namespace std::chrono_literals;
     std::this_thread::sleep_for(100ms);
-  } while (vessel_.prediction().Size() != 3);
+  } while (vessel_.prediction().Size() <
+           expected_vessel_prediction1->Size() +
+               expected_vessel_prediction2->Size());
 
-  auto it = vessel_.prediction().begin();
-  ++it;
-  EXPECT_EQ(astronomy::J2000 + 0.5 * Second, it->time);
-  ++it;
-  EXPECT_EQ(astronomy::J2000 + 1.0 * Second, it->time);
-  EXPECT_THAT(
-      it->degrees_of_freedom,
-      Componentwise(AlmostEquals(Barycentric::origin +
-                                      Displacement<Barycentric>(
-                                          {5.0 * Metre,
-                                           6.0 * Metre,
-                                           5.0 * Metre}), 0),
-                    AlmostEquals(Velocity<Barycentric>(
-                                      {50.0 * Metre / Second,
-                                       60.0 * Metre / Second,
-                                       50.0 * Metre / Second}), 0)));
+  auto it = expected_vessel_prediction1->begin();
+  for (auto const& [time, degrees_of_freedom] : vessel_.prediction()) {
+    EXPECT_EQ(time, it->time);
+    EXPECT_THAT(
+        degrees_of_freedom,
+        Componentwise(AlmostEquals(it->degrees_of_freedom.position(), 0, 0),
+                      AlmostEquals(it->degrees_of_freedom.velocity(), 0, 8)));
+    if (it->time == t0_ + 5 * Second) {
+      it = expected_vessel_prediction2->begin();
+    } else {
+      ++it;
+    }
+  }
 }
 
 TEST_F(VesselTest, FlightPlan) {
   EXPECT_CALL(ephemeris_, t_max())
-      .WillRepeatedly(Return(astronomy::J2000 + 2 * Second));
-  EXPECT_CALL(
-      ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
+      .WillRepeatedly(Return(t0_ + 2 * Second));
+  EXPECT_CALL(ephemeris_,
+              FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
       .Times(AnyNumber());
-  EXPECT_CALL(
-      ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _))
+  EXPECT_CALL(ephemeris_,
+              FlowWithAdaptiveStep(_, _, t0_ + 2 * Second, _, _))
       .Times(AnyNumber());
   std::vector<not_null<MassiveBody const*>> const bodies;
   ON_CALL(ephemeris_, bodies()).WillByDefault(ReturnRef(bodies));
-  vessel_.CreateHistoryIfNeeded(astronomy::J2000,
+  vessel_.CreateHistoryIfNeeded(t0_,
                                 DefaultDownsamplingParameters());
 
   EXPECT_FALSE(vessel_.has_flight_plan());
   EXPECT_CALL(
       ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 3 * Second, _, _))
+      FlowWithAdaptiveStep(_, _, t0_ + 3 * Second, _, _))
       .WillOnce(Return(absl::OkStatus()));
-  vessel_.CreateFlightPlan(astronomy::J2000 + 3.0 * Second,
+  vessel_.CreateFlightPlan(t0_ + 3.0 * Second,
                            10 * Kilogram,
                            DefaultPredictionParameters(),
                            DefaultBurnParameters());
@@ -528,64 +474,38 @@ TEST_F(VesselTest, Checkpointing) {
   p1_->set_containing_pile_up(pile_up);
   p2_->set_containing_pile_up(pile_up);
 
-  // Free-fall trajectory.  This creates a checkpoint because the prehistory is
-  // not collapsible.
-  Time t;
-  for (; t <= 10 * Second; t += 1 * Second) {
-    p1_->AppendToHistory(
-        astronomy::J2000 + t,
-        DegreesOfFreedom<Barycentric>(
-            Barycentric::origin +
-                Displacement<Barycentric>({t * 1 * Metre / Second,
-                                           t * 2 * Metre / Second,
-                                           t * 3 * Metre / Second}),
-            Velocity<Barycentric>({1 * Metre / Second,
-                                   2 * Metre / Second,
-                                   3 * Metre / Second})));
-    p2_->AppendToHistory(
-        astronomy::J2000 + t,
-        DegreesOfFreedom<Barycentric>(
-            Barycentric::origin +
-                Displacement<Barycentric>({t * 4 * Metre / Second,
-                                           t * 5 * Metre / Second,
-                                           t * 6 * Metre / Second}),
-            Velocity<Barycentric>({4 * Metre / Second,
-                                   5 * Metre / Second,
-                                   6 * Metre / Second})));
-  }
+  // Free-fall trajectory.  This creates a checkpoint because the history is not
+  // collapsible at the beginning.
+  AppendToPartHistory(*NewLinearTrajectory(p1_dof_,
+                                           /*Δt=*/1 * Second,
+                                           /*t1=*/t0_ + 0.5 * Second,
+                                           /*t2=*/t0_ + 11 * Second),
+                      *p1_);
+  AppendToPartHistory(*NewLinearTrajectory(p2_dof_,
+                                           /*Δt=*/1 * Second,
+                                           /*t1=*/t0_ + 0.5 * Second,
+                                           /*t2=*/t0_ + 11 * Second),
+                      *p2_);
 
   vessel_.DetectCollapsibilityChange();
   vessel_.AdvanceTime();
 
   // Apply a force.  This segment is not collapsible.
-  p1_->apply_intrinsic_force(
-      Vector<Force, Barycentric>({1 * Newton, 0 * Newton, 0 * Newton}));
-  // TODO(phl): The trajectory is not continuous and not consistent with the
-  // force because everything is hard in tests.
-  for (; t <= 25 * Second; t += 1 * Second) {
-    p1_->AppendToHistory(
-        astronomy::J2000 + t,
-        DegreesOfFreedom<Barycentric>(
-            Barycentric::origin +
-                Displacement<Barycentric>(
-                    {Pow<2>(t) * 1 * Metre / Second / Second,
-                     Pow<2>(t) * 2 * Metre / Second / Second,
-                     Pow<2>(t) * 3 * Metre / Second / Second}),
-            Velocity<Barycentric>({2 * t * 1 * Metre / Second / Second,
-                                   2 * t * 2 * Metre / Second / Second,
-                                   2 * t * 3 * Metre / Second / Second})));
-    p2_->AppendToHistory(
-        astronomy::J2000 + t,
-        DegreesOfFreedom<Barycentric>(
-            Barycentric::origin +
-                Displacement<Barycentric>(
-                    {Pow<2>(t) * 4 * Metre / Second / Second,
-                     Pow<2>(t) * 5 * Metre / Second / Second,
-                     Pow<2>(t) * 6 * Metre / Second / Second}),
-            Velocity<Barycentric>({2 * t * 4 * Metre / Second / Second,
-                                   2 * t * 5 * Metre / Second / Second,
-                                   2 * t * 6 * Metre / Second / Second})));
-  }
+  auto const p1_force =
+      Vector<Force, Barycentric>({1 * Newton, 0 * Newton, 0 * Newton});
+  p1_->apply_intrinsic_force(p1_force);
+  AppendToPartHistory(
+      *NewAcceleratedTrajectory(p1_dof_,
+                                /*acceleration=*/p1_force / mass1_,
+                                /*Δt=*/1 * Second,
+                                /*t1=*/t0_ + 11 * Second,
+                                /*t2=*/t0_ + 26 * Second),
+      *p1_);
+  AppendToPartHistory(*NewLinearTrajectory(p2_dof_,
+                                           /*Δt=*/1 * Second,
+                                           /*t1=*/t0_ + 11 * Second,
+                                           /*t2=*/t0_ + 26 * Second),
+                      *p2_);
 
   vessel_.DetectCollapsibilityChange();
   vessel_.AdvanceTime();
@@ -593,29 +513,16 @@ TEST_F(VesselTest, Checkpointing) {
   // Remove the force.  This creates a checkpoint because we closed a non-
   // collapsible segment.
   p1_->clear_intrinsic_force();
-  // TODO(phl): Again, no continuity.
-  for (; t <= 30 * Second; t += 1 * Second) {
-    p1_->AppendToHistory(
-        astronomy::J2000 + t,
-        DegreesOfFreedom<Barycentric>(
-            Barycentric::origin +
-                Displacement<Barycentric>({t * 1 * Metre / Second,
-                                           t * 2 * Metre / Second,
-                                           t * 3 * Metre / Second}),
-            Velocity<Barycentric>({1 * Metre / Second,
-                                   2 * Metre / Second,
-                                   3 * Metre / Second})));
-    p2_->AppendToHistory(
-        astronomy::J2000 + t,
-        DegreesOfFreedom<Barycentric>(
-            Barycentric::origin +
-                Displacement<Barycentric>({t * 4 * Metre / Second,
-                                           t * 5 * Metre / Second,
-                                           t * 6 * Metre / Second}),
-            Velocity<Barycentric>({4 * Metre / Second,
-                                   5 * Metre / Second,
-                                   6 * Metre / Second})));
-  }
+  AppendToPartHistory(*NewLinearTrajectory(p1_dof_,
+                                           /*Δt=*/1 * Second,
+                                           /*t1=*/t0_ + 26 * Second,
+                                           /*t2=*/t0_ + 31 * Second),
+                      *p1_);
+  AppendToPartHistory(*NewLinearTrajectory(p2_dof_,
+                                           /*Δt=*/1 * Second,
+                                           /*t1=*/t0_ + 26 * Second,
+                                           /*t2=*/t0_ + 31 * Second),
+                      *p2_);
 
   vessel_.DetectCollapsibilityChange();
   vessel_.AdvanceTime();
@@ -644,27 +551,24 @@ TEST_F(VesselTest, SerializationSuccess) {
   EXPECT_CALL(serialization_index_for_pile_up, Call(_)).Times(0);
 
   EXPECT_CALL(ephemeris_, t_max())
-      .WillRepeatedly(Return(astronomy::J2000 + 2 * Second));
-  EXPECT_CALL(
-      ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
+      .WillRepeatedly(Return(t0_ + 2 * Second));
+  EXPECT_CALL(ephemeris_,
+              FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
       .Times(AnyNumber());
-  EXPECT_CALL(
-      ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 2 * Second, _, _))
+  EXPECT_CALL(ephemeris_,
+              FlowWithAdaptiveStep(_, _, t0_ + 2 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.CreateHistoryIfNeeded(astronomy::J2000,
+  vessel_.CreateHistoryIfNeeded(t0_,
                                 DefaultDownsamplingParameters());
 
-  EXPECT_CALL(
-      ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 3 * Second, _, _))
+  EXPECT_CALL(ephemeris_,
+              FlowWithAdaptiveStep(_, _, t0_ + 3 * Second, _, _))
       .WillRepeatedly(Return(absl::OkStatus()));
 
   std::vector<not_null<MassiveBody const*>> const bodies;
   ON_CALL(ephemeris_, bodies()).WillByDefault(ReturnRef(bodies));
 
-  vessel_.CreateFlightPlan(astronomy::J2000 + 3.0 * Second,
+  vessel_.CreateFlightPlan(t0_ + 3.0 * Second,
                            10 * Kilogram,
                            DefaultPredictionParameters(),
                            DefaultBurnParameters());
