@@ -90,18 +90,18 @@ TEST_F(TrajectoryFactoriesTest, NewAcceleratedTrajectory) {
     Position<World> const& position = degrees_of_freedom.position();
     Velocity<World> const& velocity = degrees_of_freedom.velocity();
 
-    EXPECT_THAT(
-        (position - World::origin).Norm(),
-        AlmostEquals((time - Instant()) *
-                         Sqrt(1 + 2 * (time - Instant()) / Second +
-                              29 / 4 * Pow<2>((time - Instant()) / Second)) *
-                         Metre / Second,
-                     0, 1));
+    EXPECT_THAT((position - World::origin).Norm(),
+                AlmostEquals(
+                    (time - Instant()) *
+                        Sqrt(1 + 2 * (time - Instant()) / Second +
+                             29.0 / 4.0 * Pow<2>((time - Instant()) / Second)) *
+                        Metre / Second,
+                    0, 2));
     EXPECT_THAT(velocity.Norm(),
                 AlmostEquals(Sqrt(1 + 4 * (time - Instant()) / Second +
                                   29 * Pow<2>((time - Instant()) / Second)) *
                                  Metre / Second,
-                             0, 0));
+                             0, 1));
   }
   EXPECT_THAT(trajectory->begin()->time,
               AlmostEquals(Instant() + 4 * Second, 0));

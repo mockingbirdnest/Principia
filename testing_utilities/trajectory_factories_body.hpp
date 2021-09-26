@@ -58,7 +58,8 @@ not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> NewAcceleratedTrajectory(
   for (auto t = t1; t < t2; t += Δt) {
     auto const velocity =
         degrees_of_freedom.velocity() + acceleration * (t - t0);
-    auto const position = degrees_of_freedom.position() + velocity * (t - t0) +
+    auto const position = degrees_of_freedom.position() +
+                          degrees_of_freedom.velocity() * (t - t0) +
                           acceleration * Pow<2>(t - t0) * 0.5;
     trajectory->Append(t, DegreesOfFreedom<Frame>(position, velocity));
   }
