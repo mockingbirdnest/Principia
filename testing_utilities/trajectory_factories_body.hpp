@@ -15,6 +15,7 @@ using geometry::Displacement;
 using geometry::Velocity;
 using physics::DegreesOfFreedom;
 using quantities::Cos;
+using quantities::Pow;
 using quantities::Sin;
 using quantities::Speed;
 using quantities::si::Radian;
@@ -43,6 +44,25 @@ not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> NewLinearTrajectory(
     Instant const& t2) {
   return NewLinearTrajectory(
       DegreesOfFreedom<Frame>(Frame::origin, v), Δt, t1, t2);
+}
+
+template<typename Frame>
+not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> NewAcceleratedTrajectory(
+    DegreesOfFreedom<Frame> const& degrees_of_freedom,
+    Vector<Acceleration, Frame> const& acceleration,
+    Time const& Δt,
+    Instant const& t1,
+    Instant const& t2) {
+  static Instant const t0;
+  auto trajectory = make_not_null_unique<DiscreteTrajectory<Frame>>();
+  for (auto t = t1; t < t2; t += Δt) {
+    auto const velocity =
+        degrees_of_freedom.velocity() + acceleration * (t - t0);
+    auto const position = degrees_of_freedom.position() + velocity * (t - t0) +
+                          acceleration * Pow<2>(t - t0) * 0.5;
+    trajectory->Append(t, DegreesOfFreedom<Frame>(position, velocity));
+  }
+  return trajectory;
 }
 
 template<typename Frame>

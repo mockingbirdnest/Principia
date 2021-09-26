@@ -23,8 +23,10 @@ using geometry::Inertial;
 using geometry::InnerProduct;
 using geometry::Instant;
 using geometry::Position;
+using geometry::Vector;
 using geometry::Velocity;
 using physics::DegreesOfFreedom;
+using quantities::Acceleration;
 using quantities::Pow;
 using quantities::Sqrt;
 using quantities::si::Metre;
@@ -59,9 +61,47 @@ TEST_F(TrajectoryFactoriesTest, NewLinearTrajectory) {
                 AlmostEquals(Sqrt(5000 + 1160 * (time - Instant()) / Second +
                                   77 * Pow<2>((time - Instant()) / Second)) *
                                  Metre,
-                             0,
-                             1));
+                             0, 1));
     EXPECT_THAT(velocity.Norm(), AlmostEquals(Sqrt(77) * Metre / Second, 0, 0));
+  }
+  EXPECT_THAT(trajectory->begin()->time,
+              AlmostEquals(Instant() + 4 * Second, 0));
+  EXPECT_THAT(trajectory->back().time,
+              AlmostEquals(Instant() + 41.9 * Second, 46));
+  EXPECT_EQ(380, trajectory->Size());
+}
+
+TEST_F(TrajectoryFactoriesTest, NewAcceleratedTrajectory) {
+  auto const trajectory = NewAcceleratedTrajectory<World>(
+      /*degrees_of_freedom=*/
+      DegreesOfFreedom<World>(
+          World::origin,
+          Velocity<World>(
+              {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})),
+      /*acceleration=*/
+      Vector<Acceleration, World>({2 * Metre / Second / Second,
+                                   3 * Metre / Second / Second,
+                                   4 * Metre / Second / Second}),
+      /*Δt=*/0.1 * Second,
+      /*t1=*/Instant() + 4 * Second,
+      /*t2=*/Instant() + 42 * Second);
+
+  for (auto const& [time, degrees_of_freedom] : *trajectory) {
+    Position<World> const& position = degrees_of_freedom.position();
+    Velocity<World> const& velocity = degrees_of_freedom.velocity();
+
+    EXPECT_THAT(
+        (position - World::origin).Norm(),
+        AlmostEquals((time - Instant()) *
+                         Sqrt(1 + 2 * (time - Instant()) / Second +
+                              29 / 4 * Pow<2>((time - Instant()) / Second)) *
+                         Metre / Second,
+                     0, 1));
+    EXPECT_THAT(velocity.Norm(),
+                AlmostEquals(Sqrt(1 + 4 * (time - Instant()) / Second +
+                                  29 * Pow<2>((time - Instant()) / Second)) *
+                                 Metre / Second,
+                             0, 0));
   }
   EXPECT_THAT(trajectory->begin()->time,
               AlmostEquals(Instant() + 4 * Second, 0));
