@@ -463,16 +463,14 @@ TEST_F(VesselTest, Checkpointing) {
       .WillRepeatedly(Return(0));
 
   EXPECT_CALL(ephemeris_, t_max())
-      .WillRepeatedly(Return(astronomy::J2000 + 30 * Second));
-  EXPECT_CALL(
-      ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
+      .WillRepeatedly(Return(t0_ + 30 * Second));
+  EXPECT_CALL(ephemeris_,
+              FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
       .Times(AnyNumber());
-  EXPECT_CALL(
-      ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 30 * Second, _, _))
+  EXPECT_CALL(ephemeris_,
+              FlowWithAdaptiveStep(_, _, t0_ + 30 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.CreateHistoryIfNeeded(astronomy::J2000,
+  vessel_.CreateHistoryIfNeeded(t0_,
                                 DefaultDownsamplingParameters());
 
   auto const pile_up =
@@ -489,12 +487,12 @@ TEST_F(VesselTest, Checkpointing) {
   // collapsible at the beginning.
   AppendToPartHistory(*NewLinearTrajectory(p1_dof_,
                                            /*Δt=*/1 * Second,
-                                           /*t1=*/t0_ + 0.5 * Second,
+                                           /*t1=*/t0_ + 1 * Second,
                                            /*t2=*/t0_ + 11 * Second),
                       *p1_);
   AppendToPartHistory(*NewLinearTrajectory(p2_dof_,
                                            /*Δt=*/1 * Second,
-                                           /*t1=*/t0_ + 0.5 * Second,
+                                           /*t1=*/t0_ + 1 * Second,
                                            /*t2=*/t0_ + 11 * Second),
                       *p2_);
 
@@ -601,5 +599,68 @@ TEST_F(VesselTest, SerializationSuccess) {
   EXPECT_THAT(message, EqualsProto(second_message));
 }
 
+TEST_F(VesselTest, Conclusion) {
+  // Must be large enough that truncation happens.
+  // TODO(phl): Don't hard-wire numbers.
+  constexpr std::int64_t number_of_points = 100'000;
+
+  MockFunction<int(not_null<PileUp const*>)>
+      serialization_index_for_pile_up;
+  EXPECT_CALL(serialization_index_for_pile_up, Call(_))
+      .Times(2)
+      .WillRepeatedly(Return(0));
+
+  EXPECT_CALL(ephemeris_, t_max())
+      .WillRepeatedly(Return(t0_ + 30 * Second));
+  EXPECT_CALL(ephemeris_,
+              FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
+      .Times(AnyNumber());
+  EXPECT_CALL(ephemeris_,
+              FlowWithAdaptiveStep(_, _, t0_ + 30 * Second, _, _))
+      .Times(AnyNumber());
+  vessel_.CreateHistoryIfNeeded(t0_,
+                                DefaultDownsamplingParameters());
+
+  auto const pile_up =
+      std::make_shared<PileUp>(/*parts=*/std::list<not_null<Part*>>{p1_, p2_},
+                                Instant{},
+                                DefaultPsychohistoryParameters(),
+                                DefaultHistoryParameters(),
+                                &ephemeris_,
+                                /*deletion_callback=*/nullptr);
+  p1_->set_containing_pile_up(pile_up);
+  p2_->set_containing_pile_up(pile_up);
+
+  // A long trajectory for each part.
+  AppendToPartHistory(*NewCircularTrajectory<Barycentric>(
+                          /*period=*/20 * Second,
+                          /*r=*/101 * Metre,
+                          /*Δt=*/1 * Second,
+                          /*t1=*/t0_ + 1 * Second,
+                          /*t2=*/t0_ + number_of_points * Second),
+                      *p1_);
+  AppendToPartHistory(*NewCircularTrajectory<Barycentric>(
+                          /*period=*/20 * Second,
+                          /*r=*/102 * Metre,
+                          /*Δt=*/1 * Second,
+                          /*t1=*/t0_ + 1 * Second,
+                          /*t2=*/t0_ + number_of_points * Second),
+                      *p2_);
+
+  vessel_.DetectCollapsibilityChange();
+  vessel_.AdvanceTime();
+
+  serialization::Vessel message;
+  vessel_.WriteToMessage(&message,
+                         serialization_index_for_pile_up.AsStdFunction());
+
+  LOG(ERROR)<<message.history().DebugString();
+
+  auto const v = Vessel::ReadFromMessage(
+      message, &celestial_, &ephemeris_, /*deletion_callback=*/nullptr);
+  EXPECT_EQ(t0_ + 30'000 * Second, v->psychohistory().begin()->time);
+}
+
+}  // namespace internal_vessel
 }  // namespace ksp_plugin
 }  // namespace principia

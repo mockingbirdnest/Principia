@@ -39,8 +39,8 @@ using ::std::placeholders::_1;
 
 using namespace std::chrono_literals;
 
-// TODO(phl): Move this to the DownsamplingParameters.
-constexpr std::int64_t max_points_in_conclusion = 20'000;
+// TODO(phl): Move this to some kind of parameters.
+constexpr std::int64_t max_points_in_conclusion = 12'000;
 
 bool operator!=(Vessel::PrognosticatorParameters const& left,
                 Vessel::PrognosticatorParameters const& right) {
@@ -484,8 +484,8 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
   // serialize.  Construct an iterator that is at most
   // |max_points_in_conclusion| points away from the end.  This can be
   // |history_->begin()|.
-  auto conclusion = history_->end();
-  conclusion -= std::min(max_points_in_conclusion, history_->Size());
+  auto conclusion = backstory_->end();
+  conclusion -= std::min(max_points_in_conclusion, backstory_->Size());
 
   // Starting with Gateaux we don't save the prediction, see #2685.  Instead we
   // just save its first point and re-read as if it was the whole prediction.
