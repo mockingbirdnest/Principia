@@ -126,7 +126,6 @@ internal static class Formatters {
   public static bool TryParseMissionDuration(string str, out double seconds) {
     seconds = 0;
     if (PrincipiaTimeSpan.TryParse(str,
-                                   with_seconds: false,
                                    out PrincipiaTimeSpan ts)) {
       seconds = ts.total_seconds;
       return true;

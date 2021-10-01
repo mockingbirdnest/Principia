@@ -325,7 +325,6 @@ class BurnEditor : ScalingRenderer {
   internal bool TryParsePreviousCoastDuration(string text, out double value) {
     value = 0;
     if (!PrincipiaTimeSpan.TryParse(text,
-                                    with_seconds: true,
                                     out PrincipiaTimeSpan ts)) {
       return false;
     }
