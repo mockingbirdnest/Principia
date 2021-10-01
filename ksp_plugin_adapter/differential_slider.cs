@@ -61,10 +61,10 @@ internal class DifferentialSlider : ScalingRenderer {
   public double value {
     get => value_ ?? 0.0;
     set {
-      if (!value_.HasValue || value_ != value) {
-        value_ = value;
-        formatted_value_ = formatter_(value_.Value);
-      }
+      value_ = value;
+      // Reformat systematically, even if the value has not changed numerically,
+      // as it may have been edited all the same (e.g., remove zeroes).
+      formatted_value_ = formatter_(value_.Value);
     }
   }
 
