@@ -93,22 +93,23 @@ class PrincipiaTimeSpan {
                               out PrincipiaTimeSpan time_span) {
     time_span = new PrincipiaTimeSpan(double.NaN);
     // Using a technology that is customarily used to parse HTML.
-    string pattern = @"^[+]?\s*(?<days>\d+)\s*" +
+    string pattern = @"^[+]?\s*(?:(?<days>\d+)\s*" +
                      day_symbol +
-                     @"\s*" +
-                     @"(?:(?<hours>\d+)\s*h\s*" +
-                     @"(?:(?<minutes>\d+)\s*min\s*"+
-                     @"(?:(?<seconds>[0-9.,']+)\s*s)?)?)?$";
+                     @"\s*)?" +
+                     @"(?:(?<hours>\d+)\s*h\s*)?" +
+                     @"(?:(?<minutes>\d+)\s*min\s*)?" +
+                     @"(?:(?<seconds>[0-9.,']+)\s*s\s*)?$";
     var regex = new Regex(pattern);
     var match = regex.Match(text);
     if (!match.Success) {
       return false;
     }
 
-    string days = match.Groups["days"].Value;
+    var days_group = match.Groups["days"];
     var hours_group = match.Groups["hours"];
     var minutes_group = match.Groups["minutes"];
     var seconds_group = match.Groups["seconds"];
+    string days = days_group.Success ? days_group.Value : "0";
     string hours = hours_group.Success ? hours_group.Value : "0";
     string minutes = minutes_group.Success ? minutes_group.Value : "0";
     string seconds = seconds_group.Success ? seconds_group.Value : "0";

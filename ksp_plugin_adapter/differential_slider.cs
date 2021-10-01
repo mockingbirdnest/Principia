@@ -63,8 +63,10 @@ internal class DifferentialSlider : ScalingRenderer {
     set {
       if (!value_.HasValue || value_ != value) {
         value_ = value;
-        formatted_value_ = formatter_(value_.Value);
       }
+      // Reformat systematically, even if the value has not changed numerically,
+      // as it may have been edited all the same (e.g., remove zeroes).
+      formatted_value_ = formatter_(value_.Value);
     }
   }
 
