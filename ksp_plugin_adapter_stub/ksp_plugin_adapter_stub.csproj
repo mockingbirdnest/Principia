@@ -83,9 +83,7 @@
     <Compile Include="..\ksp_plugin_adapter\window_renderer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ksp_plugin_adapter_stub.dll.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Include="ksp_plugin_adapter_stub.dll.config" />
     <None Include="localization\en-us.cfg" />
     <None Include="localization\fr-fr.cfg" />
     <None Include="localization\zh-cn.cfg" />
@@ -99,10 +97,10 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <Target Name="Rename" AfterTargets="AfterBuild">
-    <Move SourceFiles="$(TargetPath)" DestinationFiles="$(OutDir)$(ProjectName)$(TargetExt)" />
-    <Message Text="Renamed $(TargetPath) to $(OutDir)$(ProjectName)$(TargetExt)" Importance="high" />
-    <Move SourceFiles="$(OutDir)$(TargetName).pdb" DestinationFiles="$(OutDir)$(ProjectName).pdb" />
-    <Message Text="Renamed $(OutDir)$(TargetName).pdb to $(OutDir)$(ProjectName).pdb" Importance="high" />
+  <Target Name="Rename" AfterTargets="AfterBuild" Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Move SourceFiles="$(TargetPath)" DestinationFiles="$(ProjectDir)$(ProjectName)$(TargetExt)" />
+    <Message Text="Renamed $(TargetPath) to $(ProjectDir)$(ProjectName)$(TargetExt)" Importance="high" />
+    <Move SourceFiles="$(OutDir)$(TargetName).pdb" DestinationFiles="$(ProjectDir)$(ProjectName).pdb" />
+    <Message Text="Renamed $(OutDir)$(TargetName).pdb to $(ProjectDir)$(ProjectName).pdb" Importance="high" />
   </Target>
 </Project>
