@@ -2240,7 +2240,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       if (plotting_frame_selector_.FixesBody(celestial)) {
         continue;
       }
-      var colour = celestial.MapObject?.uiNode?.VisualIconData.color ??
+      var colour = celestial.orbitDriver?.Renderer?.orbitColor ??
                    XKCDColors.SunshineYellow;
       if (colour.a != 1) {
         // When zoomed into a planetary system, the trajectory of the
