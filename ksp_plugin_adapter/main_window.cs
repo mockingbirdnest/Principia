@@ -259,7 +259,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
         if (target_celestial != null) {
           UnityEngine.GUILayout.Label(
               Localizer.Format("#Principia_MainWindow_TargetCelestial_Name",
-                               target_celestial.name),
+                               target_celestial.Name()),
               UnityEngine.GUILayout.ExpandWidth(true));
           if (UnityEngine.GUILayout.Button(
               Localizer.Format("#Principia_MainWindow_TargetCelestial_Clear"),
