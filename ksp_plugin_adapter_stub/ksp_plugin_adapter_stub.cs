@@ -18,9 +18,11 @@ public partial class PrincipiaPluginAdapterStub : ScenarioModule,
   [KSPField(isPersistant = true)]
   private readonly Dialog dll_stub_executed_ = new Dialog(persist_state: false);
 
+#pragma warning disable 67
   public event Action LockClearing;
   public event Action WindowsDisposal;
   public event Action WindowsRendering;
+#pragma warning restore 67
 
   PrincipiaPluginAdapterStub() {
     dll_stub_executed_.message =
