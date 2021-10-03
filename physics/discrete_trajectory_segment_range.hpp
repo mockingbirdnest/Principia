@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <list>
 #include <memory>
 
@@ -14,13 +15,19 @@ namespace internal_discrete_trajectory_segment_range {
 using geometry::Instant;
 using physics::DegreesOfFreedom;
 
+// A range of segments in a DiscreteTrajectory, iterator upon using |Iterator|.
+// Convenient for range-based loops.
 template<typename Iterator>
 class DiscreteTrajectorySegmentRange {
  public:
   DiscreteTrajectorySegmentRange() = default;
+  DiscreteTrajectorySegmentRange(Iterator begin, Iterator end);
 
   Iterator begin() const;
   Iterator end() const;
+
+  bool empty() const;
+  std::int64_t size() const;
 
  private:
   Iterator begin_;
@@ -31,7 +38,10 @@ class DiscreteTrajectorySegmentRange {
 
 template<typename Iterator>
 using DiscreteTrajectorySegmentRange =
-    internal_discrete_trajectory_segment_range::DiscreteTrajectorySegmentRange;
+    internal_discrete_trajectory_segment_range::
+    DiscreteTrajectorySegmentRange<Iterator>;
 
 }  // namespace physics
 }  // namespace principia
+
+#include "physics/discrete_trajectory_segment_range_body.hpp"
