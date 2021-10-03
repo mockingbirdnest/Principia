@@ -2,6 +2,7 @@
 
 #include <list>
 #include <memory>
+#include <vector>
 
 #include "absl/container/btree_map.h"
 #include "base/not_null.hpp"
@@ -59,6 +60,7 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
   iterator upper_bound(Instant const& t) const;
 
   SegmentRange segments() const;
+  // TODO(phl): In C++20 this should be a reverse_view on segments.
   ReverseSegmentRange rsegments() const;
 
   SegmentIterator NewSegment();

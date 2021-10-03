@@ -43,5 +43,5 @@ template<typename Frame>
 using DiscreteTrajectoryIterator =
     internal_discrete_trajectory_iterator::DiscreteTrajectoryIterator;
 
-}  // namespace principia
 }  // namespace physics
+}  // namespace principia
