@@ -1,5 +1,7 @@
 #include "physics/discrete_trajectory_segment_range.hpp"
 
+#include <vector>
+
 #include "gtest/gtest.h"
 
 namespace principia {

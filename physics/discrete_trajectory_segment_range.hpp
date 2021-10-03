@@ -1,19 +1,10 @@
 #pragma once
 
 #include <cstdint>
-#include <list>
-#include <memory>
-
-#include "absl/container/btree_map.h"
-#include "geometry/named_quantities.hpp"
-#include "physics/degrees_of_freedom.hpp"
 
 namespace principia {
 namespace physics {
 namespace internal_discrete_trajectory_segment_range {
-
-using geometry::Instant;
-using physics::DegreesOfFreedom;
 
 // A range of segments in a DiscreteTrajectory, iterator upon using |Iterator|.
 // Convenient for range-based loops.

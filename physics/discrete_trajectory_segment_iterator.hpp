@@ -1,11 +1,6 @@
 #pragma once
 
-#include <list>
-#include <memory>
-
 #include "absl/container/btree_map.h"
-#include "geometry/named_quantities.hpp"
-#include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_types.hpp"
 
 namespace principia {
@@ -15,9 +10,6 @@ template<typename Frame>
 class DiscreteTrajectorySegment;
 
 namespace internal_discrete_trajectory_segment_iterator {
-
-using geometry::Instant;
-using physics::DegreesOfFreedom;
 
 template<typename Frame>
 class DiscreteTrajectorySegmentIterator {
@@ -35,7 +27,11 @@ class DiscreteTrajectorySegmentIterator {
  private:
   using Segments = internal_discrete_trajectory_types::Segments<Frame>;
 
-  Segments::const_iterator segment_;
+  explicit DiscreteTrajectorySegmentIterator(Segments::const_iterator iterator);
+
+  Segments::const_iterator iterator_;
+
+  friend class DiscreteTrajectorySegmentIteratorTest;
 };
 
 }  // namespace internal_discrete_trajectory_segment_iterator
@@ -43,7 +39,10 @@ class DiscreteTrajectorySegmentIterator {
 template<typename Frame>
 using DiscreteTrajectorySegmentIterator =
     internal_discrete_trajectory_segment_iterator::
-        DiscreteTrajectorySegmentIterator;
+    DiscreteTrajectorySegmentIterator<Frame>;
 
 }  // namespace physics
 }  // namespace principia
+
+#include "physics/discrete_trajectory_segment_iterator_body.hpp"
+#

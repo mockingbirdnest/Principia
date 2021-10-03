@@ -2,6 +2,8 @@
 
 #include "physics/discrete_trajectory_segment_range.hpp"
 
+#include <iterator>
+
 namespace principia {
 namespace physics {
 namespace internal_discrete_trajectory_segment_range {
