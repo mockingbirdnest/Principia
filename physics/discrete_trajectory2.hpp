@@ -30,37 +30,46 @@ using physics::DegreesOfFreedom;
 template<typename Frame>
 class DiscreteTrajectory2 : public Trajectory<Frame> {
  public:
+  using Iterator = DiscreteTrajectoryIterator<Frame>;
+  using SegmentIterator = DiscreteTrajectorySegmentIterator<Frame>;
+
   DiscreteTrajectory2() = default;
 
-  DiscreteTrajectoryIterator begin() const;
-  DiscreteTrajectoryIterator end() const;
+  // Moveable.
+  DiscreteTrajectory2(DiscreteTrajectory2&&) = default;
+  DiscreteTrajectory2& operator=(DiscreteTrajectory2&&) = default;
+  DiscreteTrajectory2(const DiscreteTrajectory2&) = delete;
+  DiscreteTrajectory2& operator=(const DiscreteTrajectory2&) = delete;
 
-  DiscreteTrajectoryIterator rbegin() const;
-  DiscreteTrajectoryIterator rend() const;
+    Iterator begin() const;
+  Iterator end() const;
 
-  DiscreteTrajectoryIterator find(Instant const& t) const;
+  Iterator rbegin() const;
+  Iterator rend() const;
 
-  DiscreteTrajectoryIterator lower_bound(Instant const& t) const;
-  DiscreteTrajectoryIterator upper_bound(Instant const& t) const;
+  Iterator find(Instant const& t) const;
 
-  DiscreteTrajectorySegmentIterator segments_begin() const;
-  DiscreteTrajectorySegmentIterator segments_end() const;
+  Iterator lower_bound(Instant const& t) const;
+  Iterator upper_bound(Instant const& t) const;
 
-  DiscreteTrajectorySegmentIterator segments_rbegin() const;
-  DiscreteTrajectorySegmentIterator segments_rend() const;
+  SegmentIterator segments_begin() const;
+  SegmentIterator segments_end() const;
 
-  DiscreteTrajectorySegmentIterator NewSegment();
+  SegmentIterator segments_rbegin() const;
+  SegmentIterator segments_rend() const;
 
-  DiscreteTrajectory DetachSegments(DiscreteTrajectoryIterator begin);
-  DiscreteTrajectorySegmentIterator AttachSegments(
+  SegmentIterator NewSegment();
+
+  DiscreteTrajectory DetachSegments(Iterator begin);
+  SegmentIterator AttachSegments(
       DiscreteTrajectory&& trajectory);
-  void DeleteSegments(DiscreteTrajectoryIterator begin);
+  void DeleteSegments(Iterator begin);
 
   void ForgetAfter(Instant const& t);
-  void ForgetAfter(DiscreteTrajectoryIterator begin);
+  void ForgetAfter(Iterator begin);
 
   void ForgetBefore(Instant const& t);
-  void ForgetBefore(DiscreteTrajectoryIterator end);
+  void ForgetBefore(Iterator end);
 
   void Append(Instant const& t,
               DegreesOfFreedom<Frame> const& degrees_of_freedom);
@@ -72,14 +81,13 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
 
   void WriteToMessage(
       not_null<serialization::DiscreteTrajectory*> message,
-      std::vector<DiscreteTrajectorySegmentIterator> const& tracked,
-      std::vector<DiscreteTrajectoryIterator> const& exact) const;
+      std::vector<SegmentIterator> const& tracked,
+      std::vector<Iterator> const& exact) const;
   void WriteToMessage(
       not_null<serialization::DiscreteTrajectory*> message,
-      DiscreteTrajectoryIterator begin,
-      DiscreteTrajectoryIterator end,
-      std::vector<DiscreteTrajectorySegmentIterator> const& tracked,
-      std::vector<DiscreteTrajectoryIterator> const& exact) const;
+      Iterator begin, Iterator end,
+      std::vector<SegmentIterator> const& tracked,
+      std::vector<Iterator> const& exact) const;
 
   template<typename F = Frame,
            typename = std::enable_if_t<base::is_serializable_v<F>>>

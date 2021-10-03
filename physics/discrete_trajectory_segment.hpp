@@ -20,6 +20,13 @@ class DiscreteTrajectorySegment {
  public:
   DiscreteTrajectorySegment() = default;
 
+  // Moveable.
+  DiscreteTrajectorySegment(DiscreteTrajectorySegment&&) = default;
+  DiscreteTrajectorySegment& operator=(DiscreteTrajectorySegment&&) = default;
+  DiscreteTrajectorySegment(const DiscreteTrajectorySegment&) = delete;
+  DiscreteTrajectorySegment& operator=(const DiscreteTrajectorySegment&) =
+      delete;
+
   DiscreteTrajectoryIterator<Frame> begin() const;
   DiscreteTrajectoryIterator<Frame> end() const;
 
