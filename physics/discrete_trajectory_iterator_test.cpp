@@ -9,6 +9,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/discrete_trajectory_types.hpp"
+#include "physics/fake_discrete_trajectory.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -21,30 +22,6 @@ using physics::DegreesOfFreedom;
 using quantities::Time;
 using quantities::si::Second;
 
-// Fake the segment and trajectory classes to avoid complicated dependencies.
-template<typename Frame>
-class DiscreteTrajectorySegment {
- public:
-  DiscreteTrajectorySegmentIterator<Frame> self;
-  internal_discrete_trajectory_types::Timeline<Frame> timeline;
-
-  DiscreteTrajectoryIterator<Frame> begin() const {
-    return DiscreteTrajectoryIterator<Frame>(
-        DiscreteTrajectorySegmentIterator<Frame>(self), timeline.begin());
-  }
-
-  DiscreteTrajectoryIterator<Frame> end() const {
-    return DiscreteTrajectoryIterator<Frame>(
-        DiscreteTrajectorySegmentIterator<Frame>(self), timeline.end());
-  }
-};
-
-template<typename Frame>
-class DiscreteTrajectory {
- public:
-  internal_discrete_trajectory_types::Segments<Frame> segments;
-};
-
 class DiscreteTrajectoryIteratorTest : public ::testing::Test {
  protected:
   using World = Frame<enum class WorldTag>;
@@ -52,12 +29,11 @@ class DiscreteTrajectoryIteratorTest : public ::testing::Test {
   using Segments = internal_discrete_trajectory_types::Segments<World>;
   using Timeline = internal_discrete_trajectory_types::Timeline<World>;
 
-  Timeline::value_type MakeTimelineValueType(Time const& t) {
-    static const DegreesOfFreedom<World> unmoving_origin(World::origin,
-                                                         World::unmoving);
-    return {t0_ + t, unmoving_origin};
+  void FillSegment(Segments::iterator const it, Timeline const& timeline) {
+    **it = DiscreteTrajectorySegment<World>{
+        .self = DiscreteTrajectorySegmentIterator<World>(it),
+        .timeline = timeline};
   }
-
   DiscreteTrajectoryIterator<World> MakeIterator(
       Segments::const_iterator const segment,
       Timeline::const_iterator const point) {
@@ -65,10 +41,11 @@ class DiscreteTrajectoryIteratorTest : public ::testing::Test {
         DiscreteTrajectorySegmentIterator<World>(segment), point);
   }
 
-  void FillSegment(Segments::iterator const it, Timeline const& timeline) {
-    **it = DiscreteTrajectorySegment<World>{
-        .self = DiscreteTrajectorySegmentIterator<World>(it),
-        .timeline = timeline};
+
+  Timeline::value_type MakeTimelineValueType(Time const& t) {
+    static const DegreesOfFreedom<World> unmoving_origin(World::origin,
+                                                         World::unmoving);
+    return {t0_ + t, unmoving_origin};
   }
 
   Instant const t0_;
