@@ -5,13 +5,39 @@
 
 #include "geometry/frame.hpp"
 #include "gtest/gtest.h"
+#include "physics/discrete_trajectory_segment.hpp"
 #include "physics/discrete_trajectory_types.hpp"
-#include "physics/fake_discrete_trajectory.hpp"
 
 namespace principia {
 namespace physics {
 
 using geometry::Frame;
+
+namespace {
+
+// Fake the segment class to avoid complicated dependencies.
+template<typename Frame>
+class FakeDiscreteTrajectorySegment : public DiscreteTrajectorySegment<Frame> {
+ public:
+  FakeDiscreteTrajectorySegment(std::vector<int> const& segment);
+
+  virtual std::int64_t size() const override;
+
+ private:
+  std::vector<int> segment_;
+};
+
+template<typename Frame>
+FakeDiscreteTrajectorySegment<Frame>::FakeDiscreteTrajectorySegment(
+    std::vector<int> const& segment)
+    : segment_(segment) {}
+
+template<typename Frame>
+std::int64_t FakeDiscreteTrajectorySegment<Frame>::size() const {
+  return segment_.size();
+}
+
+}  // namespace
 
 class DiscreteTrajectorySegmentIteratorTest : public ::testing::Test {
  protected:
@@ -19,13 +45,6 @@ class DiscreteTrajectorySegmentIteratorTest : public ::testing::Test {
 
   using Segments = internal_discrete_trajectory_types::Segments<World>;
 
-  Segments::value_type NewSegment(std::int64_t size) {
-    auto result = std::make_unique<DiscreteTrajectorySegment<World>>();
-    for (int i = 0; i < size; ++i) {
-      result->timeline.emplace();
-    }
-    return result;
-  }
   DiscreteTrajectorySegmentIterator<World> MakeIterator(
       Segments::const_iterator const iterator) {
     return DiscreteTrajectorySegmentIterator<World>(iterator);
@@ -34,9 +53,15 @@ class DiscreteTrajectorySegmentIteratorTest : public ::testing::Test {
 
 TEST_F(DiscreteTrajectorySegmentIteratorTest, Basic) {
   Segments segments;
-  segments.push_back(NewSegment(5));
-  segments.push_back(NewSegment(1));
-  segments.push_back(NewSegment(3));
+  segments.push_back(
+      std::make_unique<FakeDiscreteTrajectorySegment<World>>(
+          std::vector{2, 3, 5, 7, 11}));
+  segments.push_back(
+      std::make_unique<FakeDiscreteTrajectorySegment<World>>(
+          std::vector{13}));
+  segments.push_back(
+      std::make_unique<FakeDiscreteTrajectorySegment<World>>(
+          std::vector{17, 19, 23}));
 
   {
     auto iterator = MakeIterator(segments.begin());

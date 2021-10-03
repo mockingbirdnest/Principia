@@ -39,7 +39,7 @@ class DiscreteTrajectorySegment {
   DiscreteTrajectoryIterator<Frame> upper_bound(Instant const& t) const;
 
   bool empty() const;
-  std::int64_t size() const;
+  virtual std::int64_t size() const;
 
  private:
   using Timeline = internal_discrete_trajectory_types::Timeline<Frame>;
@@ -59,7 +59,6 @@ class DiscreteTrajectorySegment {
   absl::btree_set<Instant> dense_points_;
 
   friend class physics::DiscreteTrajectoryIteratorTest;
-  friend class physics::DiscreteTrajectorySegmentIteratorTest;
 };
 
 }  // namespace internal_discrete_trajectory_segment
