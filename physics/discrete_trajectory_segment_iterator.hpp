@@ -9,6 +9,9 @@ namespace physics {
 template<typename Frame>
 class DiscreteTrajectorySegment;
 
+class DiscreteTrajectoryIteratorTest;
+class DiscreteTrajectorySegmentIteratorTest;
+
 namespace internal_discrete_trajectory_segment_iterator {
 
 template<typename Frame>
@@ -31,6 +34,9 @@ class DiscreteTrajectorySegmentIterator {
 
   Segments::const_iterator iterator_;
 
+  template<typename F>
+  friend class DiscreteTrajectorySegment;
+  friend class DiscreteTrajectoryIteratorTest;
   friend class DiscreteTrajectorySegmentIteratorTest;
 };
 

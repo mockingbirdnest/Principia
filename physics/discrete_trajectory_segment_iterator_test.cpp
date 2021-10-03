@@ -3,45 +3,48 @@
 #include <memory>
 #include <vector>
 
+#include "geometry/frame.hpp"
 #include "gtest/gtest.h"
 #include "physics/discrete_trajectory_types.hpp"
 
 namespace principia {
 namespace physics {
 
+using geometry::Frame;
+
 // Fake the segment class to avoid complicated dependencies.
+namespace {
 template<typename Frame>
 class DiscreteTrajectorySegment {
  public:
   std::vector<int> segment;
 };
-
-namespace internal_discrete_trajectory_segment_iterator {
+}
 
 class DiscreteTrajectorySegmentIteratorTest : public ::testing::Test {
  protected:
-  using Frame = void;
+  using World = Frame<enum class WorldTag>;
 
-  using Segments = internal_discrete_trajectory_types::Segments<Frame>;
+  using Segments = internal_discrete_trajectory_types::Segments<World>;
 
-  DiscreteTrajectorySegmentIterator<Frame> MakeIterator(
-    Segments::const_iterator const iterator) {
-    return DiscreteTrajectorySegmentIterator<Frame>(iterator);
+  DiscreteTrajectorySegmentIterator<World> MakeIterator(
+      Segments::const_iterator const iterator) {
+    return DiscreteTrajectorySegmentIterator<World>(iterator);
   }
 };
 
 TEST_F(DiscreteTrajectorySegmentIteratorTest, Basic) {
-  DiscreteTrajectorySegment<Frame> const primes1{{2, 3, 5, 7, 11}};
-  DiscreteTrajectorySegment<Frame> const primes2{{13}};
-  DiscreteTrajectorySegment<Frame> const primes3{{17, 19, 23}};
+  DiscreteTrajectorySegment<World> const primes1{{2, 3, 5, 7, 11}};
+  DiscreteTrajectorySegment<World> const primes2{{13}};
+  DiscreteTrajectorySegment<World> const primes3{{17, 19, 23}};
 
   Segments segments;
   segments.push_back(
-      std::make_unique<DiscreteTrajectorySegment<Frame>>(primes1));
+      std::make_unique<DiscreteTrajectorySegment<World>>(primes1));
   segments.push_back(
-      std::make_unique<DiscreteTrajectorySegment<Frame>>(primes2));
+      std::make_unique<DiscreteTrajectorySegment<World>>(primes2));
   segments.push_back(
-      std::make_unique<DiscreteTrajectorySegment<Frame>>(primes3));
+      std::make_unique<DiscreteTrajectorySegment<World>>(primes3));
 
   {
     auto iterator = MakeIterator(segments.begin());
@@ -66,6 +69,5 @@ TEST_F(DiscreteTrajectorySegmentIteratorTest, Basic) {
   }
 }
 
-}  // namespace internal_discrete_trajectory_segment_iterator
 }  // namespace physics
 }  // namespace principia

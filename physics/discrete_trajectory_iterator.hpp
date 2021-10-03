@@ -27,21 +27,34 @@ class DiscreteTrajectoryIterator {
   DiscreteTrajectoryIterator operator++(int);
   DiscreteTrajectoryIterator operator--(int);
 
-  typename DiscreteTrajectory<Frame>::value_type const& operator*() const;
-  typename DiscreteTrajectory<Frame>::value_type const* operator->() const;
+  typename
+  internal_discrete_trajectory_types::Timeline<Frame>::value_type const&
+  operator*() const;
+  typename
+  internal_discrete_trajectory_types::Timeline<Frame>::value_type const*
+  operator->() const;
 
  private:
   using Timeline = internal_discrete_trajectory_types::Timeline<Frame>;
 
-  DiscreteTrajectorySegmentIterator segment_;
+  DiscreteTrajectoryIterator(DiscreteTrajectorySegmentIterator<Frame> segment,
+                             Timeline::const_iterator point);
+
+  DiscreteTrajectorySegmentIterator<Frame> segment_;
   Timeline::const_iterator point_;
+
+  template<typename F>
+  friend class DiscreteTrajectorySegment;
+  friend class DiscreteTrajectoryIteratorTest;
 };
 
 }  // namespace internal_discrete_trajectory_iterator
 
 template<typename Frame>
 using DiscreteTrajectoryIterator =
-    internal_discrete_trajectory_iterator::DiscreteTrajectoryIterator;
+    internal_discrete_trajectory_iterator::DiscreteTrajectoryIterator<Frame>;
 
 }  // namespace physics
 }  // namespace principia
+
+#include "physics/discrete_trajectory_iterator_body.hpp"
