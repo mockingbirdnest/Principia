@@ -191,6 +191,21 @@
     <ClInclude Include="mechanical_system_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="discrete_trajectory_segment.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="discrete_trajectory_iterator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="discrete_trajectory_segment_iterator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="discrete_trajectory2.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="discrete_trajectory_types.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
