@@ -35,6 +35,7 @@
     <ClInclude Include="discrete_trajectory_iterator.hpp" />
     <ClInclude Include="discrete_trajectory_segment.hpp" />
     <ClInclude Include="discrete_trajectory_segment_iterator.hpp" />
+    <ClInclude Include="discrete_trajectory_segment_range.hpp" />
     <ClInclude Include="discrete_trajectory_types.hpp" />
     <ClInclude Include="mechanical_system.hpp" />
     <ClInclude Include="mechanical_system_body.hpp" />

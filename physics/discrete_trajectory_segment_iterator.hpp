@@ -45,5 +45,5 @@ using DiscreteTrajectorySegmentIterator =
     internal_discrete_trajectory_segment_iterator::
         DiscreteTrajectorySegmentIterator;
 
-}  // namespace principia
 }  // namespace physics
+}  // namespace principia

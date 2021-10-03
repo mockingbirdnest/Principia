@@ -62,5 +62,5 @@ template<typename Frame>
 using DiscreteTrajectorySegment =
     internal_discrete_trajectory_segment::DiscreteTrajectorySegment;
 
-}  // namespace principia
 }  // namespace physics
+}  // namespace principia

@@ -206,6 +206,9 @@
     <ClInclude Include="discrete_trajectory_types.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="discrete_trajectory_segment_range.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">

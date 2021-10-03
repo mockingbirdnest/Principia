@@ -29,5 +29,5 @@ template<typename Frame>
 using Timeline = absl::btree_map<Instant, DegreesOfFreedom<Frame>>;
 
 }  // namespace internal_discrete_trajectory_types
-}  // namespace principia
 }  // namespace physics
+}  // namespace principia
