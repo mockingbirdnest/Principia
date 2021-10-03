@@ -31,6 +31,12 @@
     <ClInclude Include="body_surface_frame_field_body.hpp" />
     <ClInclude Include="checkpointer.hpp" />
     <ClInclude Include="checkpointer_body.hpp" />
+    <ClInclude Include="discrete_trajectory2.hpp" />
+    <ClInclude Include="discrete_trajectory_iterator.hpp" />
+    <ClInclude Include="discrete_trajectory_segment.hpp" />
+    <ClInclude Include="discrete_trajectory_segment_iterator.hpp" />
+    <ClInclude Include="discrete_trajectory_segment_range.hpp" />
+    <ClInclude Include="discrete_trajectory_types.hpp" />
     <ClInclude Include="mechanical_system.hpp" />
     <ClInclude Include="mechanical_system_body.hpp" />
     <ClInclude Include="continuous_trajectory_body.hpp" />
