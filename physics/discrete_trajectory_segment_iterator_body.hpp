@@ -31,20 +31,20 @@ DiscreteTrajectorySegmentIterator<Frame>::operator--(int) {
 }
 
 template<typename Frame>
-DiscreteTrajectorySegment<Frame> const&
+internal_discrete_trajectory_segment::DiscreteTrajectorySegment<Frame> const&
 DiscreteTrajectorySegmentIterator<Frame>::operator*() const {
   return **iterator_;
 }
 
 template<typename Frame>
-DiscreteTrajectorySegment<Frame> const*
+internal_discrete_trajectory_segment::DiscreteTrajectorySegment<Frame> const*
 DiscreteTrajectorySegmentIterator<Frame>::operator->() const {
   return iterator_->get();
 }
 
 template<typename Frame>
 DiscreteTrajectorySegmentIterator<Frame>::DiscreteTrajectorySegmentIterator(
-    Segments::const_iterator iterator)
+    typename Segments::const_iterator iterator)
     : iterator_(iterator) {}
 
 }  // namespace internal_discrete_trajectory_segment_iterator

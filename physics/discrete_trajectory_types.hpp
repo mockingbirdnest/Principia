@@ -12,8 +12,13 @@
 namespace principia {
 namespace physics {
 
+//FORWARD_DECLARE_FROM(discrete_trajectory_segment,
+//                     TEMPLATE(typename Frame) class,
+//                     DiscreteTrajectorySegment);
+namespace internal_discrete_trajectory_segment {
 template<typename Frame>
 class DiscreteTrajectorySegment;
+}
 
 namespace internal_discrete_trajectory_types {
 
@@ -23,7 +28,8 @@ using physics::DegreesOfFreedom;
 // The use of an unique_ptr here makes it possible to only depend on a forward
 // declaration of DiscreteTrajectorySegment.
 template<typename Frame>
-using Segments = std::list<std::unique_ptr<DiscreteTrajectorySegment<Frame>>>;
+using Segments = std::list<std::unique_ptr<
+    internal_discrete_trajectory_segment::DiscreteTrajectorySegment<Frame>>>;
 
 template<typename Frame>
 using Timeline = absl::btree_map<Instant, DegreesOfFreedom<Frame>>;

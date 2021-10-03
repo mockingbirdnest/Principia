@@ -38,13 +38,11 @@ class DiscreteTrajectoryIterator {
   using Timeline = internal_discrete_trajectory_types::Timeline<Frame>;
 
   DiscreteTrajectoryIterator(DiscreteTrajectorySegmentIterator<Frame> segment,
-                             Timeline::const_iterator point);
+                             typename Timeline::const_iterator point);
 
   DiscreteTrajectorySegmentIterator<Frame> segment_;
-  Timeline::const_iterator point_;
+  typename Timeline::const_iterator point_;
 
-  template<typename F>
-  friend class DiscreteTrajectorySegment;
   friend class DiscreteTrajectoryIteratorTest;
 };
 

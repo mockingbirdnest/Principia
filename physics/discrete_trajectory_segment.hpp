@@ -38,6 +38,9 @@ class DiscreteTrajectorySegment {
   DiscreteTrajectoryIterator<Frame> lower_bound(Instant const& t) const;
   DiscreteTrajectoryIterator<Frame> upper_bound(Instant const& t) const;
 
+  bool empty() const;
+  std::int64_t size() const;
+
  private:
   using Timeline = internal_discrete_trajectory_types::Timeline<Frame>;
 
@@ -45,22 +48,25 @@ class DiscreteTrajectorySegment {
               DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
   void ForgetAfter(Instant const& t);
-  void ForgetAfter(Timeline::const_iterator begin);
+  void ForgetAfter(typename Timeline::const_iterator begin);
 
   void ForgetBefore(Instant const& t);
-  void ForgetBefore(Timeline::const_iterator end);
+  void ForgetBefore(typename Timeline::const_iterator end);
 
-  DiscreteTrajectorySegmentIterator<Frame> that_;
+  DiscreteTrajectorySegmentIterator<Frame> self_;
 
   Timeline timeline_;
   absl::btree_set<Instant> dense_points_;
+
+  friend class physics::DiscreteTrajectoryIteratorTest;
+  friend class physics::DiscreteTrajectorySegmentIteratorTest;
 };
 
 }  // namespace internal_discrete_trajectory_segment
 
 template<typename Frame>
 using DiscreteTrajectorySegment =
-    internal_discrete_trajectory_segment::DiscreteTrajectorySegment;
+    internal_discrete_trajectory_segment::DiscreteTrajectorySegment<Frame>;
 
 }  // namespace physics
 }  // namespace principia

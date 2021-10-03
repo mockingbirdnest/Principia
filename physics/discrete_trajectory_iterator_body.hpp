@@ -43,13 +43,13 @@ DiscreteTrajectoryIterator<Frame>::operator--(int) {
 }
 
 template<typename Frame>
-internal_discrete_trajectory_types::Timeline<Frame>::value_type const&
+typename internal_discrete_trajectory_types::Timeline<Frame>::value_type const&
 DiscreteTrajectoryIterator<Frame>::operator*() const {
   return *point_;
 }
 
 template<typename Frame>
-internal_discrete_trajectory_types::Timeline<Frame>::value_type const*
+typename internal_discrete_trajectory_types::Timeline<Frame>::value_type const*
 DiscreteTrajectoryIterator<Frame>::operator->() const {
   return &*point_;
 }
@@ -57,7 +57,7 @@ DiscreteTrajectoryIterator<Frame>::operator->() const {
 template<typename Frame>
 DiscreteTrajectoryIterator<Frame>::DiscreteTrajectoryIterator(
     DiscreteTrajectorySegmentIterator<Frame> const segment,
-    Timeline::const_iterator const point)
+    typename Timeline::const_iterator const point)
     : segment_(segment),
       point_(point) {}
 

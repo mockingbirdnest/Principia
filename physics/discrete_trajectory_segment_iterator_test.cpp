@@ -40,24 +40,24 @@ TEST_F(DiscreteTrajectorySegmentIteratorTest, Basic) {
 
   {
     auto iterator = MakeIterator(segments.begin());
-    EXPECT_EQ(5, iterator->size()());
+    EXPECT_EQ(5, iterator->size());
     auto const current = ++iterator;
-    EXPECT_EQ(1, iterator->size()());
-    EXPECT_EQ(1, current->size()());
+    EXPECT_EQ(1, iterator->size());
+    EXPECT_EQ(1, current->size());
     auto const previous = iterator++;
-    EXPECT_EQ(3, iterator->size()());
-    EXPECT_EQ(1, previous->size()());
+    EXPECT_EQ(3, iterator->size());
+    EXPECT_EQ(1, previous->size());
   }
   {
     auto iterator = MakeIterator(segments.end());
     --iterator;
-    EXPECT_EQ(3, (*iterator).size()());
+    EXPECT_EQ(3, (*iterator).size());
     auto const current = --iterator;
-    EXPECT_EQ(1, (*iterator).size()());
-    EXPECT_EQ(1, (*current).size()());
+    EXPECT_EQ(1, (*iterator).size());
+    EXPECT_EQ(1, (*current).size());
     auto const previous = iterator--;
-    EXPECT_EQ(5, (*iterator).size()());
-    EXPECT_EQ(1, (*previous).size()());
+    EXPECT_EQ(5, (*iterator).size());
+    EXPECT_EQ(1, (*previous).size());
   }
 }
 
