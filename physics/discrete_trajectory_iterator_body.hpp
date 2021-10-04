@@ -1,16 +1,31 @@
 #include "physics/discrete_trajectory_iterator.hpp"
 
+#include "geometry/named_quantities.hpp"
+
 namespace principia {
 namespace physics {
 namespace internal_discrete_trajectory_iterator {
 
+using geometry::Instant;
+
 template<typename Frame>
 DiscreteTrajectoryIterator<Frame>&
 DiscreteTrajectoryIterator<Frame>::operator++() {
-  ++point_;
-  if (point_ == segment_->end().point_) {
-    ++segment_;
-    point_ = segment_->begin().point_;
+  Instant const previous_time = point_->first;
+  for (;;) {
+    ++point_;
+    if (point_ == segment_->end().point_) {
+      ++segment_;
+      //TODO(phl): segment is end?
+      point_ = segment_->begin().point_;
+
+      // Skip duplicated points at the beginning of the timeline.
+      if (point_->first != previous_time) {
+        break;
+      }
+    } else {
+      break;
+    }
   }
   return *this;
 }
@@ -18,11 +33,22 @@ DiscreteTrajectoryIterator<Frame>::operator++() {
 template<typename Frame>
 DiscreteTrajectoryIterator<Frame>&
 DiscreteTrajectoryIterator<Frame>::operator--() {
-  if (point_ == segment_->begin().point_) {
-    --segment_;
-    point_ = segment_->end().point_;
+  Instant const previous_time = point_->first;
+  for (;;) {
+    if (point_ == segment_->begin().point_) {
+      //TODO(phl): segment is begin?
+      --segment_;
+      point_ = --segment_->end().point_;
+
+      // Skip duplicated points at the end of the timeline.
+      if (point_->first != previous_time) {
+        break;
+      }
+    } else {
+      --point_;
+      break;
+    }
   }
-  --point_;
   return *this;
 }
 

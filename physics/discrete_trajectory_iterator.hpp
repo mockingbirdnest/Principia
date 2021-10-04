@@ -40,6 +40,9 @@ class DiscreteTrajectoryIterator {
   DiscreteTrajectoryIterator(DiscreteTrajectorySegmentIterator<Frame> segment,
                              typename Timeline::const_iterator point);
 
+  // |point_| is always an iterator in the timeline of the segment denoted by
+  // |segment_|.
+  // TODO(phl): Figure out what to do with empty segments.
   DiscreteTrajectorySegmentIterator<Frame> segment_;
   typename Timeline::const_iterator point_;
 

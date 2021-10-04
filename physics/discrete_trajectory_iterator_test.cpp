@@ -103,7 +103,8 @@ TEST_F(DiscreteTrajectoryIteratorTest, Basic) {
                             MakeTimelineValueType(7 * Second),
                             MakeTimelineValueType(11 * Second)});
   FillSegment(it2, Timeline{MakeTimelineValueType(13 * Second)});
-  FillSegment(it3, Timeline{MakeTimelineValueType(17 * Second),
+  FillSegment(it3, Timeline{MakeTimelineValueType(13 * Second),  // Duplicated.
+                            MakeTimelineValueType(17 * Second),
                             MakeTimelineValueType(19 * Second),
                             MakeTimelineValueType(23 * Second)});
 
@@ -115,6 +116,7 @@ TEST_F(DiscreteTrajectoryIteratorTest, Basic) {
   EXPECT_CALL(mock3, begin()).WillRepeatedly(Return(MakeBegin(it3)));
   EXPECT_CALL(mock3, end()).WillRepeatedly(Return(MakeEnd(it3)));
 
+  // Iteration in one segment.
   {
     auto segment = segments.begin();
     auto iterator = MakeBegin(segment);
@@ -138,6 +140,8 @@ TEST_F(DiscreteTrajectoryIteratorTest, Basic) {
     EXPECT_EQ(t0_ + 17 * Second, (*iterator).first);
     EXPECT_EQ(t0_ + 19 * Second, (*previous).first);
   }
+
+  // Iteration across segments.
   {
     auto segment = segments.begin();
     auto iterator = MakeBegin(segment);
