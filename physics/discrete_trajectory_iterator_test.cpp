@@ -47,6 +47,45 @@ class DiscreteTrajectoryIteratorTest : public ::testing::Test {
   using Segments = internal_discrete_trajectory_types::Segments<World>;
   using Timeline = internal_discrete_trajectory_types::Timeline<World>;
 
+  DiscreteTrajectoryIteratorTest() {
+    // Set up a fake trajectory with 3 segments.  After construction, the mocks
+    // are owned by |segments_|.
+    auto owned_mock1 = std::make_unique<FakeDiscreteTrajectorySegment<World>>();
+    auto owned_mock2 = std::make_unique<FakeDiscreteTrajectorySegment<World>>();
+    auto owned_mock3 = std::make_unique<FakeDiscreteTrajectorySegment<World>>();
+    auto const& mock1 = *owned_mock1;
+    auto const& mock2 = *owned_mock2;
+    auto const& mock3 = *owned_mock3;
+
+    segments_.push_back(std::move(owned_mock1));
+    auto const it1 = --segments_.end();
+    segments_.push_back(std::move(owned_mock2));
+    auto const it2 = --segments_.end();
+    segments_.push_back(std::move(owned_mock3));
+    auto const it3 = --segments_.end();
+
+    FillSegment(it1,
+                Timeline{MakeTimelineValueType(2 * Second),
+                         MakeTimelineValueType(3 * Second),
+                         MakeTimelineValueType(5 * Second),
+                         MakeTimelineValueType(7 * Second),
+                         MakeTimelineValueType(11 * Second)});
+    FillSegment(it2, Timeline{MakeTimelineValueType(13 * Second)});
+    FillSegment(it3,
+                Timeline{MakeTimelineValueType(13 * Second),  // Duplicated.
+                         MakeTimelineValueType(17 * Second),
+                         MakeTimelineValueType(19 * Second),
+                         MakeTimelineValueType(23 * Second)});
+
+    // This must happen *after* the segments have been set up.
+    EXPECT_CALL(mock1, begin()).WillRepeatedly(Return(MakeBegin(it1)));
+    EXPECT_CALL(mock1, end()).WillRepeatedly(Return(MakeEnd(it1)));
+    EXPECT_CALL(mock2, begin()).WillRepeatedly(Return(MakeBegin(it2)));
+    EXPECT_CALL(mock2, end()).WillRepeatedly(Return(MakeEnd(it2)));
+    EXPECT_CALL(mock3, begin()).WillRepeatedly(Return(MakeBegin(it3)));
+    EXPECT_CALL(mock3, end()).WillRepeatedly(Return(MakeEnd(it3)));
+  }
+
   FakeDiscreteTrajectorySegment<World>* DownCast(
       std::unique_ptr<DiscreteTrajectorySegment<World>> const& segment) {
     return dynamic_cast<FakeDiscreteTrajectorySegment<World>*>(segment.get());
@@ -78,94 +117,59 @@ class DiscreteTrajectoryIteratorTest : public ::testing::Test {
     return {t0_ + t, unmoving_origin};
   }
 
+  Segments segments_;
   Instant const t0_;
 };
 
-TEST_F(DiscreteTrajectoryIteratorTest, Basic) {
-  auto owned_mock1 = std::make_unique<FakeDiscreteTrajectorySegment<World>>();
-  auto owned_mock2 = std::make_unique<FakeDiscreteTrajectorySegment<World>>();
-  auto owned_mock3 = std::make_unique<FakeDiscreteTrajectorySegment<World>>();
-  auto const& mock1 = *owned_mock1;
-  auto const& mock2 = *owned_mock2;
-  auto const& mock3 = *owned_mock3;
+TEST_F(DiscreteTrajectoryIteratorTest, ForwardOneSegment) {
+  auto segment = segments_.begin();
+  auto iterator = MakeBegin(segment);
+  EXPECT_EQ(t0_ + 2 * Second, iterator->first);
+  auto const current = ++iterator;
+  EXPECT_EQ(t0_ + 3 * Second, iterator->first);
+  EXPECT_EQ(t0_ + 3 * Second, current->first);
+  auto const previous = iterator++;
+  EXPECT_EQ(t0_ + 5 * Second, iterator->first);
+  EXPECT_EQ(t0_ + 3 * Second, previous->first);
+}
 
-  Segments segments;
-  segments.push_back(std::move(owned_mock1));
-  auto const it1 = --segments.end();
-  segments.push_back(std::move(owned_mock2));
-  auto const it2 = --segments.end();
-  segments.push_back(std::move(owned_mock3));
-  auto const it3 = --segments.end();
+TEST_F(DiscreteTrajectoryIteratorTest, BackwardOneSegment) {
+  auto segment = --segments_.end();
+  auto iterator = MakeEnd(segment);
+  --iterator;
+  EXPECT_EQ(t0_ + 23 * Second, (*iterator).first);
+  auto const current = --iterator;
+  EXPECT_EQ(t0_ + 19 * Second, (*iterator).first);
+  EXPECT_EQ(t0_ + 19 * Second, (*current).first);
+  auto const previous = iterator--;
+  EXPECT_EQ(t0_ + 17 * Second, (*iterator).first);
+  EXPECT_EQ(t0_ + 19 * Second, (*previous).first);
+}
 
-  FillSegment(it1, Timeline{MakeTimelineValueType(2 * Second),
-                            MakeTimelineValueType(3 * Second),
-                            MakeTimelineValueType(5 * Second),
-                            MakeTimelineValueType(7 * Second),
-                            MakeTimelineValueType(11 * Second)});
-  FillSegment(it2, Timeline{MakeTimelineValueType(13 * Second)});
-  FillSegment(it3, Timeline{MakeTimelineValueType(13 * Second),  // Duplicated.
-                            MakeTimelineValueType(17 * Second),
-                            MakeTimelineValueType(19 * Second),
-                            MakeTimelineValueType(23 * Second)});
-
-  // This must happen *after* the segments have been set up.
-  EXPECT_CALL(mock1, begin()).WillRepeatedly(Return(MakeBegin(it1)));
-  EXPECT_CALL(mock1, end()).WillRepeatedly(Return(MakeEnd(it1)));
-  EXPECT_CALL(mock2, begin()).WillRepeatedly(Return(MakeBegin(it2)));
-  EXPECT_CALL(mock2, end()).WillRepeatedly(Return(MakeEnd(it2)));
-  EXPECT_CALL(mock3, begin()).WillRepeatedly(Return(MakeBegin(it3)));
-  EXPECT_CALL(mock3, end()).WillRepeatedly(Return(MakeEnd(it3)));
-
-  // Iteration in one segment.
-  {
-    auto segment = segments.begin();
-    auto iterator = MakeBegin(segment);
-    EXPECT_EQ(t0_ + 2 * Second, iterator->first);
-    auto const current = ++iterator;
-    EXPECT_EQ(t0_ + 3 * Second, iterator->first);
-    EXPECT_EQ(t0_ + 3 * Second, current->first);
-    auto const previous = iterator++;
-    EXPECT_EQ(t0_ + 5 * Second, iterator->first);
-    EXPECT_EQ(t0_ + 3 * Second, previous->first);
-  }
-  {
-    auto segment = --segments.end();
-    auto iterator = MakeEnd(segment);
-    --iterator;
-    EXPECT_EQ(t0_ + 23 * Second, (*iterator).first);
-    auto const current = --iterator;
-    EXPECT_EQ(t0_ + 19 * Second, (*iterator).first);
-    EXPECT_EQ(t0_ + 19 * Second, (*current).first);
-    auto const previous = iterator--;
-    EXPECT_EQ(t0_ + 17 * Second, (*iterator).first);
-    EXPECT_EQ(t0_ + 19 * Second, (*previous).first);
-  }
-
-  // Iteration across segments.
-  {
-    auto segment = segments.begin();
-    auto iterator = MakeBegin(segment);
-    for (int i = 0; i < 4; ++i) {
-      ++iterator;
-    }
-    EXPECT_EQ(t0_ + 11 * Second, iterator->first);
+TEST_F(DiscreteTrajectoryIteratorTest, ForwardAcrossSegments) {
+  auto segment = segments_.begin();
+  auto iterator = MakeBegin(segment);
+  for (int i = 0; i < 4; ++i) {
     ++iterator;
-    EXPECT_EQ(t0_ + 13 * Second, iterator->first);
-    ++iterator;
-    EXPECT_EQ(t0_ + 17 * Second, iterator->first);
   }
-  {
-    auto segment = --segments.end();
-    auto iterator = MakeEnd(segment);
-    for (int i = 0; i < 3; ++i) {
-      --iterator;
-    }
-    EXPECT_EQ(t0_ + 17 * Second, (*iterator).first);
+  EXPECT_EQ(t0_ + 11 * Second, iterator->first);
+  ++iterator;
+  EXPECT_EQ(t0_ + 13 * Second, iterator->first);
+  ++iterator;
+  EXPECT_EQ(t0_ + 17 * Second, iterator->first);
+}
+
+TEST_F(DiscreteTrajectoryIteratorTest, BackwardAcrossSegments) {
+  auto segment = --segments_.end();
+  auto iterator = MakeEnd(segment);
+  for (int i = 0; i < 3; ++i) {
     --iterator;
-    EXPECT_EQ(t0_ + 13 * Second, (*iterator).first);
-    --iterator;
-    EXPECT_EQ(t0_ + 11 * Second, (*iterator).first);
   }
+  EXPECT_EQ(t0_ + 17 * Second, (*iterator).first);
+  --iterator;
+  EXPECT_EQ(t0_ + 13 * Second, (*iterator).first);
+  --iterator;
+  EXPECT_EQ(t0_ + 11 * Second, (*iterator).first);
 }
 
 }  // namespace physics
