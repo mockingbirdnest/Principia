@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 #include "absl/container/btree_map.h"
 #include "absl/container/btree_set.h"
 #include "geometry/named_quantities.hpp"
@@ -19,6 +21,7 @@ template<typename Frame>
 class DiscreteTrajectorySegment {
  public:
   DiscreteTrajectorySegment() = default;
+  virtual ~DiscreteTrajectorySegment() = default;
 
   // Moveable.
   DiscreteTrajectorySegment(DiscreteTrajectorySegment&&) = default;
@@ -68,3 +71,5 @@ using DiscreteTrajectorySegment =
 
 }  // namespace physics
 }  // namespace principia
+
+#include "physics/discrete_trajectory_segment_body.hpp"

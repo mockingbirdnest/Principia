@@ -4,41 +4,19 @@
 #include <vector>
 
 #include "geometry/frame.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "physics/discrete_trajectory_segment.hpp"
 #include "physics/discrete_trajectory_types.hpp"
+#include "physics/mock_discrete_trajectory_segment.hpp"
 
 namespace principia {
 namespace physics {
 
 using geometry::Frame;
+using ::testing::Return;
 
-namespace {
-
-// Fake the segment class to avoid complicated dependencies.
-template<typename Frame>
-class FakeDiscreteTrajectorySegment : public DiscreteTrajectorySegment<Frame> {
- public:
-  FakeDiscreteTrajectorySegment(std::vector<int> const& segment);
-
-  virtual std::int64_t size() const override;
-
- private:
-  std::vector<int> segment_;
-};
-
-template<typename Frame>
-FakeDiscreteTrajectorySegment<Frame>::FakeDiscreteTrajectorySegment(
-    std::vector<int> const& segment)
-    : segment_(segment) {}
-
-template<typename Frame>
-std::int64_t FakeDiscreteTrajectorySegment<Frame>::size() const {
-  return segment_.size();
-}
-
-}  // namespace
-
+// We use a mock segment in this test to avoid having to go through a
+// complicated setup just to test the iterator.
 class DiscreteTrajectorySegmentIteratorTest : public ::testing::Test {
  protected:
   using World = Frame<enum class WorldTag>;
@@ -52,16 +30,21 @@ class DiscreteTrajectorySegmentIteratorTest : public ::testing::Test {
 };
 
 TEST_F(DiscreteTrajectorySegmentIteratorTest, Basic) {
+  auto owned_mock1 = std::make_unique<MockDiscreteTrajectorySegment<World>>();
+  auto owned_mock2 = std::make_unique<MockDiscreteTrajectorySegment<World>>();
+  auto owned_mock3 = std::make_unique<MockDiscreteTrajectorySegment<World>>();
+  auto const& mock1 = *owned_mock1;
+  auto const& mock2 = *owned_mock2;
+  auto const& mock3 = *owned_mock3;
+
   Segments segments;
-  segments.push_back(
-      std::make_unique<FakeDiscreteTrajectorySegment<World>>(
-          std::vector{2, 3, 5, 7, 11}));
-  segments.push_back(
-      std::make_unique<FakeDiscreteTrajectorySegment<World>>(
-          std::vector{13}));
-  segments.push_back(
-      std::make_unique<FakeDiscreteTrajectorySegment<World>>(
-          std::vector{17, 19, 23}));
+  segments.push_back(std::move(owned_mock1));
+  segments.push_back(std::move(owned_mock2));
+  segments.push_back(std::move(owned_mock3));
+
+  EXPECT_CALL(mock1, size()).WillRepeatedly(Return(5));
+  EXPECT_CALL(mock2, size()).WillRepeatedly(Return(1));
+  EXPECT_CALL(mock3, size()).WillRepeatedly(Return(3));
 
   {
     auto iterator = MakeIterator(segments.begin());

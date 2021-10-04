@@ -35,6 +35,7 @@
     <ClInclude Include="discrete_trajectory_iterator.hpp" />
     <ClInclude Include="discrete_trajectory_iterator_body.hpp" />
     <ClInclude Include="discrete_trajectory_segment.hpp" />
+    <ClInclude Include="discrete_trajectory_segment_body.hpp" />
     <ClInclude Include="discrete_trajectory_segment_iterator.hpp" />
     <ClInclude Include="discrete_trajectory_segment_iterator_body.hpp" />
     <ClInclude Include="discrete_trajectory_segment_range.hpp" />
@@ -54,6 +55,7 @@
     <ClInclude Include="euler_solver_body.hpp" />
     <ClInclude Include="geopotential.hpp" />
     <ClInclude Include="geopotential_body.hpp" />
+    <ClInclude Include="mock_discrete_trajectory_segment.hpp" />
     <ClInclude Include="protector.hpp" />
     <ClInclude Include="hierarchical_system.hpp" />
     <ClInclude Include="hierarchical_system_body.hpp" />
