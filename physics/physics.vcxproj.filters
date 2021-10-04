@@ -215,6 +215,9 @@
     <ClInclude Include="discrete_trajectory_segment_iterator_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="discrete_trajectory_iterator_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
@@ -317,6 +320,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="discrete_trajectory_segment_iterator_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="discrete_trajectory_iterator_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

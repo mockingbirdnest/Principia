@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "absl/container/btree_map.h"
+#include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"

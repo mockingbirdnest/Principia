@@ -27,8 +27,8 @@ class DiscreteTrajectorySegment {
   DiscreteTrajectorySegment& operator=(const DiscreteTrajectorySegment&) =
       delete;
 
-  DiscreteTrajectoryIterator<Frame> begin() const;
-  DiscreteTrajectoryIterator<Frame> end() const;
+  virtual DiscreteTrajectoryIterator<Frame> begin() const;
+  virtual DiscreteTrajectoryIterator<Frame> end() const;
 
   DiscreteTrajectoryIterator<Frame> rbegin() const;
   DiscreteTrajectoryIterator<Frame> rend() const;
@@ -63,9 +63,8 @@ class DiscreteTrajectorySegment {
 
 }  // namespace internal_discrete_trajectory_segment
 
-template<typename Frame>
 using DiscreteTrajectorySegment =
-    internal_discrete_trajectory_segment::DiscreteTrajectorySegment<Frame>;
+    internal_discrete_trajectory_segment::DiscreteTrajectorySegment;
 
 }  // namespace physics
 }  // namespace principia

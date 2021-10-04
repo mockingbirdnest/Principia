@@ -7,9 +7,10 @@
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/discrete_trajectory2.hpp"
+#include "physics/discrete_trajectory_segment.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/discrete_trajectory_types.hpp"
-#include "physics/fake_discrete_trajectory.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -23,24 +24,29 @@ using quantities::Time;
 using quantities::si::Second;
 
 class DiscreteTrajectoryIteratorTest : public ::testing::Test {
- protected:
+ public:
   using World = Frame<enum class WorldTag>;
 
   using Segments = internal_discrete_trajectory_types::Segments<World>;
   using Timeline = internal_discrete_trajectory_types::Timeline<World>;
 
-  void FillSegment(Segments::iterator const it, Timeline const& timeline) {
-    **it = DiscreteTrajectorySegment<World>{
-        .self = DiscreteTrajectorySegmentIterator<World>(it),
-        .timeline = timeline};
-  }
-  DiscreteTrajectoryIterator<World> MakeIterator(
+  static DiscreteTrajectoryIterator<World> MakeIterator(
       Segments::const_iterator const segment,
       Timeline::const_iterator const point) {
     return DiscreteTrajectoryIterator<World>(
         DiscreteTrajectorySegmentIterator<World>(segment), point);
   }
 
+ protected:
+  FakeDiscreteTrajectorySegment<World>* DownCast(
+      std::unique_ptr<DiscreteTrajectorySegment<World>> const& segment) {
+    return dynamic_cast<FakeDiscreteTrajectorySegment<World>*>(segment.get());
+  }
+
+  void FillSegment(Segments::iterator const it, Timeline const& timeline) {
+    **it = FakeDiscreteTrajectorySegment<World>(
+        DiscreteTrajectorySegmentIterator<World>(it), timeline);
+  }
 
   Timeline::value_type MakeTimelineValueType(Time const& t) {
     static const DegreesOfFreedom<World> unmoving_origin(World::origin,
@@ -51,8 +57,46 @@ class DiscreteTrajectoryIteratorTest : public ::testing::Test {
   Instant const t0_;
 };
 
+namespace {
+
+// Fake the segment and trajectory classes to avoid complicated dependencies.
+template<typename Frame>
+class FakeDiscreteTrajectorySegment : public DiscreteTrajectorySegment<Frame> {
+ public:
+  FakeDiscreteTrajectorySegment(
+      DiscreteTrajectorySegmentIterator<Frame> self,
+      internal_discrete_trajectory_types::Timeline<Frame> timeline)
+      : self_(self), timeline_(timeline) {}
+
+  internal_discrete_trajectory_types::Timeline<Frame> const& timeline() const {
+    return timeline_;
+  }
+
+  DiscreteTrajectoryIterator<Frame> begin() const override {
+    return DiscretreTrajectoryIteratorTest::MakeIterator(self_,
+                                                         timeline_.begin());
+  }
+
+  DiscreteTrajectoryIterator<Frame> end() const override {
+    return DiscretreTrajectoryIteratorTest::MakeIterator(self_,
+                                                         timeline_.end());
+  }
+
+ private:
+  DiscreteTrajectorySegmentIterator<Frame> self_;
+  internal_discrete_trajectory_types::Timeline<Frame> timeline_;
+};
+
+template<typename Frame>
+class FakeDiscreteTrajectory : public DiscreteTrajectory2<Frame> {
+ public:
+  internal_discrete_trajectory_types::Segments<Frame> segments;
+};
+
+}  // namespace
+
 TEST_F(DiscreteTrajectoryIteratorTest, Basic) {
-  DiscreteTrajectory<World> trajectory;
+  FakeDiscreteTrajectory<World> trajectory;
   for (int i = 0; i < 3; ++i) {
     trajectory.segments.push_back(
         std::make_unique<DiscreteTrajectorySegment<World>>());
@@ -71,7 +115,8 @@ TEST_F(DiscreteTrajectoryIteratorTest, Basic) {
 
   {
     auto segment = trajectory.segments.begin();
-    auto iterator = MakeIterator(segment, (*segment)->timeline.begin());
+    auto iterator =
+        MakeIterator(segment, DownCast(*segment)->timeline().begin());
     EXPECT_EQ(t0_ + 2 * Second, iterator->first);
     auto const current = ++iterator;
     EXPECT_EQ(t0_ + 3 * Second, iterator->first);
@@ -82,7 +127,7 @@ TEST_F(DiscreteTrajectoryIteratorTest, Basic) {
   }
   {
     auto segment = --trajectory.segments.end();
-    auto iterator = MakeIterator(segment, (*segment)->timeline.end());
+    auto iterator = MakeIterator(segment, DownCast(*segment)->timeline().end());
     --iterator;
     EXPECT_EQ(t0_ + 23 * Second, (*iterator).first);
     auto const current = --iterator;
@@ -94,7 +139,8 @@ TEST_F(DiscreteTrajectoryIteratorTest, Basic) {
   }
   {
     auto segment = trajectory.segments.begin();
-    auto iterator = MakeIterator(segment, (*segment)->timeline.begin());
+    auto iterator =
+        MakeIterator(segment, DownCast(*segment)->timeline().begin());
     for (int i = 0; i < 4; ++i) {
       ++iterator;
     }
@@ -106,7 +152,7 @@ TEST_F(DiscreteTrajectoryIteratorTest, Basic) {
   }
   {
     auto segment = --trajectory.segments.end();
-    auto iterator = MakeIterator(segment, (*segment)->timeline.end());
+    auto iterator = MakeIterator(segment, DownCast(*segment)->timeline().end());
     for (int i = 0; i < 3; ++i) {
       --iterator;
     }
