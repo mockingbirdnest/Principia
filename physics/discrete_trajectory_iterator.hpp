@@ -1,5 +1,8 @@
 #pragma once
 
+#include <optional>
+#include <variant>
+
 #include "absl/container/btree_map.h"
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -34,17 +37,40 @@ class DiscreteTrajectoryIterator {
   internal_discrete_trajectory_types::Timeline<Frame>::value_type const*
   operator->() const;
 
+  bool operator==(DiscreteTrajectoryIterator const& other) const;
+  bool operator!=(DiscreteTrajectoryIterator const& other) const;
+
  private:
   using Timeline = internal_discrete_trajectory_types::Timeline<Frame>;
 
+  //TODO(phl):comment
+  struct AtSegmentBegin {};
+  struct AtSegmentRBegin {};
+  using LazyTimelineConstIterator =
+      std::variant<AtSegmentBegin,
+                   AtSegmentRBegin,
+                   typename Timeline::const_iterator>;
+
   DiscreteTrajectoryIterator(DiscreteTrajectorySegmentIterator<Frame> segment,
                              typename Timeline::const_iterator point);
+
+  LazyTimelineConstIterator NormalizeAtSegmentBegin(
+      LazyTimelineConstIterator point) const;
+  LazyTimelineConstIterator NormalizeAtSegmentRBegin(
+      LazyTimelineConstIterator point) const;
+
+  static typename Timeline::const_iterator& iterator(
+      LazyTimelineConstIterator& point);
+  static typename Timeline::const_iterator const& iterator(
+      LazyTimelineConstIterator const& point);
 
   // |point_| is always an iterator in the timeline of the segment denoted by
   // |segment_|.
   // TODO(phl): Figure out what to do with empty segments.
   DiscreteTrajectorySegmentIterator<Frame> segment_;
-  typename Timeline::const_iterator point_;
+  LazyTimelineConstIterator point_;
+
+  std::optional<Instant> previous_time_;
 
   friend class DiscreteTrajectoryIteratorTest;
 };
