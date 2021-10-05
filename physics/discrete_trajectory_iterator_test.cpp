@@ -78,12 +78,12 @@ class DiscreteTrajectoryIteratorTest : public ::testing::Test {
                          MakeTimelineValueType(23 * Second)});
 
     // This must happen *after* the segments have been set up.
-    EXPECT_CALL(mock1, begin()).WillRepeatedly(Return(MakeBegin(it1)));
-    EXPECT_CALL(mock1, end()).WillRepeatedly(Return(MakeEnd(it1)));
-    EXPECT_CALL(mock2, begin()).WillRepeatedly(Return(MakeBegin(it2)));
-    EXPECT_CALL(mock2, end()).WillRepeatedly(Return(MakeEnd(it2)));
-    EXPECT_CALL(mock3, begin()).WillRepeatedly(Return(MakeBegin(it3)));
-    EXPECT_CALL(mock3, end()).WillRepeatedly(Return(MakeEnd(it3)));
+    EXPECT_CALL(mock1, timeline_begin()).WillRepeatedly(Return(MakeBegin(it1)));
+    EXPECT_CALL(mock1, timeline_end()).WillRepeatedly(Return(MakeEnd(it1)));
+    EXPECT_CALL(mock2, timeline_begin()).WillRepeatedly(Return(MakeBegin(it2)));
+    EXPECT_CALL(mock2, timeline_end()).WillRepeatedly(Return(MakeEnd(it2)));
+    EXPECT_CALL(mock3, timeline_begin()).WillRepeatedly(Return(MakeBegin(it3)));
+    EXPECT_CALL(mock3, timeline_end()).WillRepeatedly(Return(MakeEnd(it3)));
   }
 
   FakeDiscreteTrajectorySegment<World>* DownCast(
@@ -97,18 +97,14 @@ class DiscreteTrajectoryIteratorTest : public ::testing::Test {
     segment->timeline = timeline;
   }
 
-  DiscreteTrajectoryIterator<World> MakeBegin(
+  internal_discrete_trajectory_types::Timeline<World>::const_iterator MakeBegin(
       Segments::const_iterator const it) {
-    return DiscreteTrajectoryIterator<World>(
-        DiscreteTrajectorySegmentIterator<World>(it),
-        DownCast(*it)->timeline.begin());
+    return DownCast(*it)->timeline.begin();
   }
 
-  DiscreteTrajectoryIterator<World> MakeEnd(
+  internal_discrete_trajectory_types::Timeline<World>::const_iterator MakeEnd(
       Segments::const_iterator const it) {
-    return DiscreteTrajectoryIterator<World>(
-        DiscreteTrajectorySegmentIterator<World>(it),
-        DownCast(*it)->timeline.end());
+    return DownCast(*it)->timeline.end();
   }
 
   Timeline::value_type MakeTimelineValueType(Time const& t) {

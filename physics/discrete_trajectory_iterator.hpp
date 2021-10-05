@@ -52,12 +52,12 @@ class DiscreteTrajectoryIterator {
                    typename Timeline::const_iterator>;
 
   DiscreteTrajectoryIterator(DiscreteTrajectorySegmentIterator<Frame> segment,
-                             typename Timeline::const_iterator point);
+                             LazyTimelineConstIterator point);
 
-  LazyTimelineConstIterator NormalizeAtSegmentBegin(
-      LazyTimelineConstIterator point) const;
-  LazyTimelineConstIterator NormalizeAtSegmentRBegin(
-      LazyTimelineConstIterator point) const;
+  void NormalizeAtSegmentBegin(LazyTimelineConstIterator& point,
+                               Instant& time) const;
+  void NormalizeAtSegmentRBegin(LazyTimelineConstIterator& point,
+                                Instant& time) const;
 
   static typename Timeline::const_iterator& iterator(
       LazyTimelineConstIterator& point);
@@ -67,10 +67,12 @@ class DiscreteTrajectoryIterator {
   // |point_| is always an iterator in the timeline of the segment denoted by
   // |segment_|.
   // TODO(phl): Figure out what to do with empty segments.
-  DiscreteTrajectorySegmentIterator<Frame> segment_;
+  typename internal_discrete_trajectory_types::Segments<Frame>::const_iterator
+      segment_;
   LazyTimelineConstIterator point_;
 
-  std::optional<Instant> previous_time_;
+  //TODO(phl):optional?
+  Instant previous_time_;
 
   friend class DiscreteTrajectoryIteratorTest;
 };

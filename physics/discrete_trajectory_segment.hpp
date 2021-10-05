@@ -30,8 +30,8 @@ class DiscreteTrajectorySegment {
   DiscreteTrajectorySegment& operator=(const DiscreteTrajectorySegment&) =
       delete;
 
-  virtual DiscreteTrajectoryIterator<Frame> begin() const;
-  virtual DiscreteTrajectoryIterator<Frame> end() const;
+  DiscreteTrajectoryIterator<Frame> begin() const;
+  DiscreteTrajectoryIterator<Frame> end() const;
 
   DiscreteTrajectoryIterator<Frame> rbegin() const;
   DiscreteTrajectoryIterator<Frame> rend() const;
@@ -44,9 +44,11 @@ class DiscreteTrajectorySegment {
   bool empty() const;
   virtual std::int64_t size() const;
 
- private:
+ protected:
+  // For mocking.
   using Timeline = internal_discrete_trajectory_types::Timeline<Frame>;
 
+ private:
   void Append(Instant const& t,
               DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
@@ -55,6 +57,9 @@ class DiscreteTrajectorySegment {
 
   void ForgetBefore(Instant const& t);
   void ForgetBefore(typename Timeline::const_iterator end);
+
+  virtual typename Timeline::const_iterator timeline_begin() const;
+  virtual typename Timeline::const_iterator timeline_end() const;
 
   DiscreteTrajectorySegmentIterator<Frame> self_;
 

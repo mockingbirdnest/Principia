@@ -14,8 +14,14 @@ class MockDiscreteTrajectorySegment : public DiscreteTrajectorySegment<Frame> {
  public:
   MockDiscreteTrajectorySegment() = default;
 
-  MOCK_METHOD(DiscreteTrajectoryIterator<Frame>, begin, (), (const override));
-  MOCK_METHOD(DiscreteTrajectoryIterator<Frame>, end, (), (const override));
+  MOCK_METHOD((typename internal_discrete_trajectory_types::Timeline<Frame>::
+                  const_iterator),
+              timeline_begin, (),
+              (const override));
+  MOCK_METHOD((typename internal_discrete_trajectory_types::Timeline<Frame>::
+                  const_iterator),
+              timeline_end, (),
+              (const override));
 
   MOCK_METHOD(std::int64_t, size, (), (const override));
 };
