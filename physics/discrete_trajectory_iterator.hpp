@@ -58,6 +58,8 @@ class DiscreteTrajectoryIterator {
                                Instant& time) const;
   void NormalizeAtSegmentRBegin(LazyTimelineConstIterator& point,
                                 Instant& time) const;
+  void NormalizeAtSegmentTips(LazyTimelineConstIterator& point,
+                              Instant& time) const;
 
   bool AtBegin() const;
 

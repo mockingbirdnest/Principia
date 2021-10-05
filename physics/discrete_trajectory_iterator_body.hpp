@@ -65,22 +65,18 @@ DiscreteTrajectoryIterator<Frame>::operator--(int) {
 template<typename Frame>
 typename internal_discrete_trajectory_types::Timeline<Frame>::value_type const&
 DiscreteTrajectoryIterator<Frame>::operator*() const {
-  //TODO(phl):Do both
   auto point = point_;
   Instant time;
-  NormalizeAtSegmentBegin(point, time);
-  NormalizeAtSegmentRBegin(point, time);
+  NormalizeAtSegmentTips(point, time);
   return *iterator(point);
 }
 
 template<typename Frame>
 typename internal_discrete_trajectory_types::Timeline<Frame>::value_type const*
 DiscreteTrajectoryIterator<Frame>::operator->() const {
-  //TODO(phl):Do both
   auto point = point_;
   Instant time;
-  NormalizeAtSegmentBegin(point, time);
-  NormalizeAtSegmentRBegin(point, time);
+  NormalizeAtSegmentTips(point, time);
   if (time == previous_time_) {
     DiscreteTrajectoryIterator it(segment_, point);
     ++it;
@@ -118,6 +114,19 @@ void DiscreteTrajectoryIterator<Frame>::NormalizeAtSegmentRBegin(
   if (!std::holds_alternative<AtSegmentBegin>(point)) {
     time = iterator(point)->first;
   }
+}
+
+template<typename Frame>
+void DiscreteTrajectoryIterator<Frame>::NormalizeAtSegmentTips(
+    LazyTimelineConstIterator& point,
+    Instant& time) const {
+  if (std::holds_alternative<AtSegmentBegin>(point)) {
+    point = segment_->timeline_begin();
+  }
+  if (std::holds_alternative<AtSegmentRBegin>(point)) {
+    point = --segment_->timeline_end();
+  }
+  time = iterator(point)->first;
 }
 
 template<typename Frame>
