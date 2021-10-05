@@ -54,14 +54,20 @@ class DiscreteTrajectoryIterator {
   DiscreteTrajectoryIterator(DiscreteTrajectorySegmentIterator<Frame> segment,
                              LazyTimelineConstIterator point);
 
-  void NormalizeAtSegmentBegin(LazyTimelineConstIterator& point,
-                               Instant& time) const;
-  void NormalizeAtSegmentRBegin(LazyTimelineConstIterator& point,
-                                Instant& time) const;
-  void NormalizeAtSegmentTips(LazyTimelineConstIterator& point,
-                              Instant& time) const;
+  void NormalizeAtSegmentBegin(
+      DiscreteTrajectorySegmentIterator<Frame> const& segment,
+      LazyTimelineConstIterator& point,
+      Instant& time) const;
+  void NormalizeAtSegmentRBegin(
+      DiscreteTrajectorySegmentIterator<Frame> const& segment,
+      LazyTimelineConstIterator& point,
+      Instant& time) const;
+  void NormalizeAtSegmentTips(
+      DiscreteTrajectorySegmentIterator<Frame> const& segment,
+      LazyTimelineConstIterator& point,
+      Instant& time) const;
 
-  bool AtBegin() const;
+  bool IsAtSegmentBegin() const;
 
   static typename Timeline::const_iterator& iterator(
       LazyTimelineConstIterator& point);
