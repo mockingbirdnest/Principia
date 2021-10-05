@@ -78,12 +78,18 @@ class DiscreteTrajectoryIteratorTest : public ::testing::Test {
                          MakeTimelineValueType(23 * Second)});
 
     // This must happen *after* the segments have been set up.
-    EXPECT_CALL(mock1, timeline_begin()).WillRepeatedly(Return(MakeBegin(it1)));
-    EXPECT_CALL(mock1, timeline_end()).WillRepeatedly(Return(MakeEnd(it1)));
-    EXPECT_CALL(mock2, timeline_begin()).WillRepeatedly(Return(MakeBegin(it2)));
-    EXPECT_CALL(mock2, timeline_end()).WillRepeatedly(Return(MakeEnd(it2)));
-    EXPECT_CALL(mock3, timeline_begin()).WillRepeatedly(Return(MakeBegin(it3)));
-    EXPECT_CALL(mock3, timeline_end()).WillRepeatedly(Return(MakeEnd(it3)));
+    EXPECT_CALL(mock1, timeline_begin())
+        .WillRepeatedly(Return(timeline_begin(it1)));
+    EXPECT_CALL(mock1, timeline_end())
+        .WillRepeatedly(Return(timeline_end(it1)));
+    EXPECT_CALL(mock2, timeline_begin())
+        .WillRepeatedly(Return(timeline_begin(it2)));
+    EXPECT_CALL(mock2, timeline_end())
+        .WillRepeatedly(Return(timeline_end(it2)));
+    EXPECT_CALL(mock3, timeline_begin())
+        .WillRepeatedly(Return(timeline_begin(it3)));
+    EXPECT_CALL(mock3, timeline_end())
+        .WillRepeatedly(Return(timeline_end(it3)));
   }
 
   FakeDiscreteTrajectorySegment<World>* DownCast(
@@ -97,13 +103,26 @@ class DiscreteTrajectoryIteratorTest : public ::testing::Test {
     segment->timeline = timeline;
   }
 
-  internal_discrete_trajectory_types::Timeline<World>::const_iterator MakeBegin(
+  DiscreteTrajectoryIterator<World> MakeBegin(
       Segments::const_iterator const it) {
+    return DiscreteTrajectoryIterator<World>(
+        DiscreteTrajectorySegmentIterator<World>(it),
+        timeline_begin(it));
+  }
+
+  DiscreteTrajectoryIterator<World> MakeEnd(Segments::const_iterator it) {
+    return DiscreteTrajectoryIterator<World>(
+        DiscreteTrajectorySegmentIterator<World>(++it),
+        DiscreteTrajectoryIterator<World>::AtSegmentBegin{});
+  }
+
+  internal_discrete_trajectory_types::Timeline<World>::const_iterator
+  timeline_begin(Segments::const_iterator const it) {
     return DownCast(*it)->timeline.begin();
   }
 
-  internal_discrete_trajectory_types::Timeline<World>::const_iterator MakeEnd(
-      Segments::const_iterator const it) {
+  internal_discrete_trajectory_types::Timeline<World>::const_iterator
+  timeline_end(Segments::const_iterator const it) {
     return DownCast(*it)->timeline.end();
   }
 

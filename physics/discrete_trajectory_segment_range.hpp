@@ -27,10 +27,8 @@ class DiscreteTrajectorySegmentRange {
 
 }  // namespace internal_discrete_trajectory_segment_range
 
-template<typename Iterator>
-using DiscreteTrajectorySegmentRange =
-    internal_discrete_trajectory_segment_range::
-    DiscreteTrajectorySegmentRange<Iterator>;
+using internal_discrete_trajectory_segment_range::
+      DiscreteTrajectorySegmentRange;
 
 }  // namespace physics
 }  // namespace principia

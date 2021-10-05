@@ -1,22 +1,21 @@
 #pragma once
 
-#include "physics/discrete_trajectory_segment.hpp"
-
 #include "glog/logging.h"
+#include "physics/discrete_trajectory_segment.hpp"
 
 namespace principia {
 namespace physics {
 namespace internal_discrete_trajectory_segment {
 
 template<typename Frame>
-DiscreteTrajectoryIterator<Frame> DiscreteTrajectorySegment<Frame>::begin()
-    const {
+typename DiscreteTrajectorySegment<Frame>::Timeline::const_iterator
+DiscreteTrajectorySegment<Frame>::timeline_begin() const {
   LOG(FATAL) << "NYI";
 }
 
 template<typename Frame>
-DiscreteTrajectoryIterator<Frame> DiscreteTrajectorySegment<Frame>::end()
-    const {
+typename DiscreteTrajectorySegment<Frame>::Timeline::const_iterator
+DiscreteTrajectorySegment<Frame>::timeline_end() const {
   LOG(FATAL) << "NYI";
 }
 

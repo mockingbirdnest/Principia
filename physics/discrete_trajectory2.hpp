@@ -114,9 +114,7 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
 
 }  // namespace internal_discrete_trajectory
 
-template<typename Frame>
-using DiscreteTrajectory2 =
-    internal_discrete_trajectory::DiscreteTrajectory2<Frame>;
+using internal_discrete_trajectory::DiscreteTrajectory2;
 
 }  // namespace physics
 }  // namespace principia

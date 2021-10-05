@@ -59,6 +59,8 @@ class DiscreteTrajectoryIterator {
   void NormalizeAtSegmentRBegin(LazyTimelineConstIterator& point,
                                 Instant& time) const;
 
+  bool AtBegin() const;
+
   static typename Timeline::const_iterator& iterator(
       LazyTimelineConstIterator& point);
   static typename Timeline::const_iterator const& iterator(
@@ -67,8 +69,7 @@ class DiscreteTrajectoryIterator {
   // |point_| is always an iterator in the timeline of the segment denoted by
   // |segment_|.
   // TODO(phl): Figure out what to do with empty segments.
-  typename internal_discrete_trajectory_types::Segments<Frame>::const_iterator
-      segment_;
+  DiscreteTrajectorySegmentIterator<Frame> segment_;
   LazyTimelineConstIterator point_;
 
   //TODO(phl):optional?
@@ -79,9 +80,7 @@ class DiscreteTrajectoryIterator {
 
 }  // namespace internal_discrete_trajectory_iterator
 
-template<typename Frame>
-using DiscreteTrajectoryIterator =
-    internal_discrete_trajectory_iterator::DiscreteTrajectoryIterator<Frame>;
+using internal_discrete_trajectory_iterator::DiscreteTrajectoryIterator;
 
 }  // namespace physics
 }  // namespace principia

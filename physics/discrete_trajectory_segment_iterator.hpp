@@ -45,10 +45,8 @@ class DiscreteTrajectorySegmentIterator {
 
 }  // namespace internal_discrete_trajectory_segment_iterator
 
-template<typename Frame>
-using DiscreteTrajectorySegmentIterator =
-    internal_discrete_trajectory_segment_iterator::
-    DiscreteTrajectorySegmentIterator<Frame>;
+using internal_discrete_trajectory_segment_iterator::
+      DiscreteTrajectorySegmentIterator;
 
 }  // namespace physics
 }  // namespace principia

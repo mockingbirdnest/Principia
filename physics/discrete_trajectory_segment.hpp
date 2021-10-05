@@ -66,13 +66,15 @@ class DiscreteTrajectorySegment {
   Timeline timeline_;
   absl::btree_set<Instant> dense_points_;
 
+  template<typename F>
+  friend class internal_discrete_trajectory_iterator::
+      DiscreteTrajectoryIterator;
   friend class physics::DiscreteTrajectoryIteratorTest;
 };
 
 }  // namespace internal_discrete_trajectory_segment
 
-using DiscreteTrajectorySegment =
-    internal_discrete_trajectory_segment::DiscreteTrajectorySegment;
+using internal_discrete_trajectory_segment::DiscreteTrajectorySegment;
 
 }  // namespace physics
 }  // namespace principia

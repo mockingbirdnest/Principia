@@ -15,7 +15,7 @@ DiscreteTrajectoryIterator<Frame>::operator++() {
   auto& point = iterator(point_);
   for (;;) {
     ++point;
-    if (point == iterator(segment_->timeline_end())) {
+    if (point == segment_->timeline_end()) {
       ++segment_;
       point_ = AtSegmentBegin{};
       break;
@@ -30,13 +30,13 @@ template<typename Frame>
 DiscreteTrajectoryIterator<Frame>&
 DiscreteTrajectoryIterator<Frame>::operator--() {
   NormalizeAtSegmentRBegin(point_, previous_time_);
-  auto& point = iterator(point_);
   for (;;) {
-    if (point == iterator(segment_->timeline_begin())) {
+    if (AtBegin()) {
       --segment_;
       point_ = AtSegmentRBegin{};
       break;
     } else {
+      auto& point = iterator(point_);
       --point;
       if (point->first != previous_time_) {
         break;
@@ -81,6 +81,11 @@ DiscreteTrajectoryIterator<Frame>::operator->() const {
   Instant time;
   NormalizeAtSegmentBegin(point, time);
   NormalizeAtSegmentRBegin(point, time);
+  if (time == previous_time_) {
+    DiscreteTrajectoryIterator it(segment_, point);
+    ++it;
+    point = it.point_;
+  }
   return &*iterator(point);
 }
 
@@ -108,7 +113,7 @@ void DiscreteTrajectoryIterator<Frame>::NormalizeAtSegmentRBegin(
     LazyTimelineConstIterator& point,
     Instant& time) const {
   if (std::holds_alternative<AtSegmentRBegin>(point)) {
-    point = segment_->timeline_end();
+    point = --segment_->timeline_end();
   }
   if (!std::holds_alternative<AtSegmentBegin>(point)) {
     time = iterator(point)->first;
@@ -120,6 +125,13 @@ typename DiscreteTrajectoryIterator<Frame>::Timeline::const_iterator&
 DiscreteTrajectoryIterator<Frame>::iterator(
     LazyTimelineConstIterator& point) {
   return std::get<typename Timeline::const_iterator>(point);
+}
+
+template<typename Frame>
+bool DiscreteTrajectoryIterator<Frame>::AtBegin() const {
+  return std::holds_alternative<AtSegmentBegin>(point_) ||
+         (std::holds_alternative<typename Timeline::const_iterator>(point_) &&
+          iterator(point_) == segment_->timeline_begin());
 }
 
 template<typename Frame>
