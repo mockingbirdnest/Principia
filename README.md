@@ -1,6 +1,6 @@
 # Principia
 
-**[Hadamar](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#hadamard), the October version of Principia, is available with UI fixes.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2](https://bit.ly/3itb0VK).**
+**[Hadamard](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#hadamard), the October version of Principia, is available with UI fixes.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2](https://bit.ly/3itb0VK).**
 
 **For the convenience of Chinese users, downloads from 腾讯微云: [Principia Hadamard for 1.8.1—1.12.2](https://share.weiyun.com/qXuSrxCQ), [Trappist-1 for Principia](https://share.weiyun.com/5wVtWYQ).**
 
