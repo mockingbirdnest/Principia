@@ -2,6 +2,7 @@
 
 #include "absl/container/btree_map.h"
 #include "base/macros.hpp"
+#include "base/not_null.hpp"
 #include "physics/discrete_trajectory_types.hpp"
 
 namespace principia {
@@ -15,6 +16,8 @@ class DiscreteTrajectoryIteratorTest;
 class DiscreteTrajectorySegmentIteratorTest;
 
 namespace internal_discrete_trajectory_segment_iterator {
+
+using base::not_null;
 
 template<typename Frame>
 class DiscreteTrajectorySegmentIterator {
@@ -34,9 +37,10 @@ class DiscreteTrajectorySegmentIterator {
  private:
   using Segments = internal_discrete_trajectory_types::Segments<Frame>;
 
-  explicit DiscreteTrajectorySegmentIterator(
-      typename Segments::const_iterator iterator);
-
+  DiscreteTrajectorySegmentIterator(not_null<Segments const*> segments,
+                                    typename Segments::const_iterator iterator);
+  // Not not_null<> to be default-constructible.
+  Segments const* segments_ = nullptr;
   typename Segments::const_iterator iterator_;
 
   friend class DiscreteTrajectoryIteratorTest;

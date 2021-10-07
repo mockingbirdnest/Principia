@@ -21,13 +21,13 @@ DiscreteTrajectorySegmentIterator<Frame>::operator--() {
 template<typename Frame>
 DiscreteTrajectorySegmentIterator<Frame>
 DiscreteTrajectorySegmentIterator<Frame>::operator++(int) {
-  return DiscreteTrajectorySegmentIterator(iterator_++);
+  return DiscreteTrajectorySegmentIterator(segments_, iterator_++);
 }
 
 template<typename Frame>
 DiscreteTrajectorySegmentIterator<Frame>
 DiscreteTrajectorySegmentIterator<Frame>::operator--(int) {
-  return DiscreteTrajectorySegmentIterator(iterator_--);
+  return DiscreteTrajectorySegmentIterator(segments_, iterator_--);
 }
 
 template<typename Frame>
@@ -44,8 +44,10 @@ DiscreteTrajectorySegmentIterator<Frame>::operator->() const {
 
 template<typename Frame>
 DiscreteTrajectorySegmentIterator<Frame>::DiscreteTrajectorySegmentIterator(
+    not_null<Segments const*> const segments,
     typename Segments::const_iterator iterator)
-    : iterator_(iterator) {}
+    : segments_(segments),
+      iterator_(iterator) {}
 
 }  // namespace internal_discrete_trajectory_segment_iterator
 }  // namespace physics

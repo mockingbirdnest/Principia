@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "absl/container/btree_map.h"
+#include "base/macros.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
 
@@ -12,13 +13,9 @@
 namespace principia {
 namespace physics {
 
-//FORWARD_DECLARE_FROM(discrete_trajectory_segment,
-//                     TEMPLATE(typename Frame) class,
-//                     DiscreteTrajectorySegment);
-namespace internal_discrete_trajectory_segment {
-template<typename Frame>
-class DiscreteTrajectorySegment;
-}
+FORWARD_DECLARE_FROM(discrete_trajectory_segment,
+                     TEMPLATE(typename Frame) class,
+                     DiscreteTrajectorySegment);
 
 namespace internal_discrete_trajectory_types {
 

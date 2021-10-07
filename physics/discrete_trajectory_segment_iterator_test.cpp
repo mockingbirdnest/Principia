@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -12,6 +13,8 @@
 namespace principia {
 namespace physics {
 
+using base::check_not_null;
+using base::not_null;
 using geometry::Frame;
 using ::testing::Return;
 
@@ -24,8 +27,9 @@ class DiscreteTrajectorySegmentIteratorTest : public ::testing::Test {
   using Segments = internal_discrete_trajectory_types::Segments<World>;
 
   DiscreteTrajectorySegmentIterator<World> MakeIterator(
+      not_null<Segments const*> const segments,
       Segments::const_iterator const iterator) {
-    return DiscreteTrajectorySegmentIterator<World>(iterator);
+    return DiscreteTrajectorySegmentIterator<World>(segments, iterator);
   }
 };
 
@@ -47,7 +51,7 @@ TEST_F(DiscreteTrajectorySegmentIteratorTest, Basic) {
   EXPECT_CALL(mock3, size()).WillRepeatedly(Return(3));
 
   {
-    auto iterator = MakeIterator(segments.begin());
+    auto iterator = MakeIterator(check_not_null(&segments), segments.begin());
     EXPECT_EQ(5, iterator->size());
     auto const current = ++iterator;
     EXPECT_EQ(1, iterator->size());
@@ -57,7 +61,7 @@ TEST_F(DiscreteTrajectorySegmentIteratorTest, Basic) {
     EXPECT_EQ(1, previous->size());
   }
   {
-    auto iterator = MakeIterator(segments.end());
+    auto iterator = MakeIterator(check_not_null(&segments), segments.end());
     --iterator;
     EXPECT_EQ(3, (*iterator).size());
     auto const current = --iterator;

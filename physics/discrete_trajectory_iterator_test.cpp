@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
@@ -18,6 +19,7 @@
 namespace principia {
 namespace physics {
 
+using base::check_not_null;
 using geometry::Frame;
 using geometry::Instant;
 using physics::DegreesOfFreedom;
@@ -99,20 +101,23 @@ class DiscreteTrajectoryIteratorTest : public ::testing::Test {
 
   void FillSegment(Segments::iterator const it, Timeline const& timeline) {
     auto* const segment = DownCast(*it);
-    segment->self = DiscreteTrajectorySegmentIterator<World>(it);
+    segment->self = DiscreteTrajectorySegmentIterator<World>(
+        check_not_null(&segments_), it);
     segment->timeline = timeline;
   }
 
   DiscreteTrajectoryIterator<World> MakeBegin(
       Segments::const_iterator const it) {
     return DiscreteTrajectoryIterator<World>(
-        DiscreteTrajectorySegmentIterator<World>(it),
+        DiscreteTrajectorySegmentIterator<World>(
+        check_not_null(&segments_), it),
         timeline_begin(it));
   }
 
   DiscreteTrajectoryIterator<World> MakeEnd(Segments::const_iterator it) {
     return DiscreteTrajectoryIterator<World>(
-        DiscreteTrajectorySegmentIterator<World>(++it),
+        DiscreteTrajectorySegmentIterator<World>(check_not_null(&segments_),
+                                                 ++it),
         DiscreteTrajectoryIterator<World>::AtSegmentBegin{});
   }
 
