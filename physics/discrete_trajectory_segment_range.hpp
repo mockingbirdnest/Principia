@@ -8,6 +8,8 @@ namespace internal_discrete_trajectory_segment_range {
 
 // A range of segments in a DiscreteTrajectory, iterator upon using |Iterator|.
 // Convenient for range-based loops.
+// TODO(phl): Move to base or use the Ranges library if it turns out that this
+// class doesn't need to know more about trajectories.
 template<typename Iterator>
 class DiscreteTrajectorySegmentRange {
  public:
