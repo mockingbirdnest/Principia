@@ -191,6 +191,12 @@
     <ClInclude Include="mechanical_system_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="discrete_trajectory_segment_range.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="discrete_trajectory_segment_range_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
@@ -288,6 +294,9 @@
     </ClCompile>
     <ClCompile Include="..\geometry\instant_output.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="discrete_trajectory_segment_range_test.cpp">
+      <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
