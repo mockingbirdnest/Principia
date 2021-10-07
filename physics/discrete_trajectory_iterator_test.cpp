@@ -1,7 +1,7 @@
 #include "physics/discrete_trajectory_iterator.hpp"
 
 #include <memory>
-#include <vector>
+#include <optional>
 
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
@@ -118,7 +118,7 @@ class DiscreteTrajectoryIteratorTest : public ::testing::Test {
     return DiscreteTrajectoryIterator<World>(
         DiscreteTrajectorySegmentIterator<World>(check_not_null(&segments_),
                                                  ++it),
-        DiscreteTrajectoryIterator<World>::AtSegmentBegin{});
+        std::nullopt);
   }
 
   internal_discrete_trajectory_types::Timeline<World>::const_iterator

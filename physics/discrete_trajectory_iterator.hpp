@@ -1,7 +1,6 @@
 #pragma once
 
 #include <optional>
-#include <variant>
 
 #include "absl/container/btree_map.h"
 #include "geometry/named_quantities.hpp"
@@ -44,42 +43,25 @@ class DiscreteTrajectoryIterator {
   using Timeline = internal_discrete_trajectory_types::Timeline<Frame>;
 
   //TODO(phl):comment
-  struct AtSegmentBegin {};
-  struct AtSegmentRBegin {};
-  using LazyTimelineConstIterator =
-      std::variant<AtSegmentBegin,
-                   AtSegmentRBegin,
-                   typename Timeline::const_iterator>;
+  using OptionalTimelineConstIterator =
+      std::optional<typename Timeline::const_iterator>;
+
 
   DiscreteTrajectoryIterator(DiscreteTrajectorySegmentIterator<Frame> segment,
-                             LazyTimelineConstIterator point);
+                             OptionalTimelineConstIterator point);
 
-  bool IsAtSegmentBegin() const;
-  bool IsAtSegmentRBegin() const;
-
-  static void NormalizeAtSegmentBegin(
-      DiscreteTrajectorySegmentIterator<Frame> const& segment,
-      LazyTimelineConstIterator& point,
-      Instant& time);
-  static void NormalizeAtSegmentRBegin(
-      DiscreteTrajectorySegmentIterator<Frame> const& segment,
-      LazyTimelineConstIterator& point,
-      Instant& time);
-  static void NormalizeAtSegmentTips(
-      DiscreteTrajectorySegmentIterator<Frame> const& segment,
-      LazyTimelineConstIterator& point,
-      Instant& time);
+  static bool is_at_end(OptionalTimelineConstIterator point);
 
   static typename Timeline::const_iterator& iterator(
-      LazyTimelineConstIterator& point);
+      OptionalTimelineConstIterator& point);
   static typename Timeline::const_iterator const& iterator(
-      LazyTimelineConstIterator const& point);
+      OptionalTimelineConstIterator const& point);
 
   // |point_| is always an iterator in the timeline of the segment denoted by
   // |segment_|.
   // TODO(phl): Figure out what to do with empty segments.
   DiscreteTrajectorySegmentIterator<Frame> segment_;
-  LazyTimelineConstIterator point_;
+  OptionalTimelineConstIterator point_;
 
   //TODO(phl):optional?
   Instant previous_time_;

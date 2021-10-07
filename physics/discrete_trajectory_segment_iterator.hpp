@@ -8,9 +8,9 @@
 namespace principia {
 namespace physics {
 
-FORWARD_DECLARE_FROM(discrete_trajectory_segment,
+FORWARD_DECLARE_FROM(discrete_trajectory_iterator,
                      TEMPLATE(typename Frame) class,
-                     DiscreteTrajectorySegment);
+                     DiscreteTrajectoryIterator);
 
 class DiscreteTrajectoryIteratorTest;
 class DiscreteTrajectorySegmentIteratorTest;
@@ -34,15 +34,24 @@ class DiscreteTrajectorySegmentIterator {
   internal_discrete_trajectory_segment::DiscreteTrajectorySegment<Frame> const*
   operator->() const;
 
+  bool operator==(DiscreteTrajectorySegmentIterator const& other) const;
+  bool operator!=(DiscreteTrajectorySegmentIterator const& other) const;
+
  private:
   using Segments = internal_discrete_trajectory_types::Segments<Frame>;
 
   DiscreteTrajectorySegmentIterator(not_null<Segments const*> segments,
                                     typename Segments::const_iterator iterator);
+
+  DiscreteTrajectorySegmentIterator begin() const;
+  DiscreteTrajectorySegmentIterator end() const;
+
   // Not not_null<> to be default-constructible.
   Segments const* segments_ = nullptr;
   typename Segments::const_iterator iterator_;
 
+  template<typename Frame>
+  friend class DiscreteTrajectoryIterator;
   friend class DiscreteTrajectoryIteratorTest;
   friend class DiscreteTrajectorySegmentIteratorTest;
 };
