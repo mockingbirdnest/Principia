@@ -66,4 +66,3 @@ using internal_discrete_trajectory_segment_iterator::
 }  // namespace principia
 
 #include "physics/discrete_trajectory_segment_iterator_body.hpp"
-#
