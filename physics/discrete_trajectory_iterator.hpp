@@ -42,10 +42,9 @@ class DiscreteTrajectoryIterator {
  private:
   using Timeline = internal_discrete_trajectory_types::Timeline<Frame>;
 
-  //TODO(phl):comment
+  // Optional because we cannot construct a point iterator in the end segment.
   using OptionalTimelineConstIterator =
       std::optional<typename Timeline::const_iterator>;
-
 
   DiscreteTrajectoryIterator(DiscreteTrajectorySegmentIterator<Frame> segment,
                              OptionalTimelineConstIterator point);
@@ -58,13 +57,14 @@ class DiscreteTrajectoryIterator {
       OptionalTimelineConstIterator const& point);
 
   // |point_| is always an iterator in the timeline of the segment denoted by
-  // |segment_|.
-  // TODO(phl): Figure out what to do with empty segments.
+  // |segment_|.  When |segment_| is at the end of its list, |point_| is
+  // nullopt.
   DiscreteTrajectorySegmentIterator<Frame> segment_;
   OptionalTimelineConstIterator point_;
 
-  //TODO(phl):optional?
-  Instant previous_time_;
+  // The last time that was seen by the iterator.  Used to skip over repeated
+  // times.
+  std::optional<Instant> previous_time_;
 
   friend class DiscreteTrajectoryIteratorTest;
 };

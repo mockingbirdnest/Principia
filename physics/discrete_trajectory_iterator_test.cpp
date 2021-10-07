@@ -29,14 +29,14 @@ using ::testing::Return;
 
 namespace {
 
-//TODO(phl):comment.
+// A trajectory that holds a real timeline, where we mock multiple methods to
+// return data from that timeline.
 template<typename Frame>
 class FakeDiscreteTrajectorySegment
     : public MockDiscreteTrajectorySegment<Frame> {
  public:
   FakeDiscreteTrajectorySegment() = default;
 
-  DiscreteTrajectorySegmentIterator<Frame> self;
   internal_discrete_trajectory_types::Timeline<Frame> timeline;
 };
 
@@ -101,8 +101,6 @@ class DiscreteTrajectoryIteratorTest : public ::testing::Test {
 
   void FillSegment(Segments::iterator const it, Timeline const& timeline) {
     auto* const segment = DownCast(*it);
-    segment->self = DiscreteTrajectorySegmentIterator<World>(
-        check_not_null(&segments_), it);
     segment->timeline = timeline;
   }
 
@@ -121,6 +119,12 @@ class DiscreteTrajectoryIteratorTest : public ::testing::Test {
         std::nullopt);
   }
 
+  Timeline::value_type MakeTimelineValueType(Time const& t) {
+    static const DegreesOfFreedom<World> unmoving_origin(World::origin,
+                                                         World::unmoving);
+    return {t0_ + t, unmoving_origin};
+  }
+
   internal_discrete_trajectory_types::Timeline<World>::const_iterator
   timeline_begin(Segments::const_iterator const it) {
     return DownCast(*it)->timeline.begin();
@@ -129,12 +133,6 @@ class DiscreteTrajectoryIteratorTest : public ::testing::Test {
   internal_discrete_trajectory_types::Timeline<World>::const_iterator
   timeline_end(Segments::const_iterator const it) {
     return DownCast(*it)->timeline.end();
-  }
-
-  Timeline::value_type MakeTimelineValueType(Time const& t) {
-    static const DegreesOfFreedom<World> unmoving_origin(World::origin,
-                                                         World::unmoving);
-    return {t0_ + t, unmoving_origin};
   }
 
   Segments segments_;
@@ -190,6 +188,31 @@ TEST_F(DiscreteTrajectoryIteratorTest, BackwardAcrossSegments) {
   EXPECT_EQ(t0_ + 13 * Second, (*iterator).first);
   --iterator;
   EXPECT_EQ(t0_ + 11 * Second, (*iterator).first);
+}
+
+TEST_F(DiscreteTrajectoryIteratorTest, Equality) {
+  // Construct two iterators that denote the time 13 * Second but in different
+  // segments.
+  auto it1 = MakeEnd(--segments_.end());
+  for (int i = 0; i < 3; ++i) {
+    --it1;
+  }
+  EXPECT_EQ(t0_ + 17 * Second, (*it1).first);
+  --it1;
+  EXPECT_EQ(t0_ + 13 * Second, (*it1).first);
+
+  auto it2 = MakeBegin(segments_.begin());
+  for (int i = 0; i < 4; ++i) {
+    ++it2;
+  }
+  EXPECT_EQ(t0_ + 11 * Second, it2->first);
+  ++it2;
+  EXPECT_EQ(t0_ + 13 * Second, it2->first);
+
+  EXPECT_EQ(it1, it2);
+  EXPECT_NE(it1, MakeBegin(segments_.begin()));
+  EXPECT_NE(it2, MakeEnd(--segments_.end()));
+  EXPECT_NE(MakeBegin(segments_.begin()), MakeEnd(--segments_.end()));
 }
 
 }  // namespace physics
