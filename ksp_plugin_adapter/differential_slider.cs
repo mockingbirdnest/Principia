@@ -80,6 +80,7 @@ internal class DifferentialSlider : ScalingRenderer {
     }
   }
 
+  // TODO(phl): Remove and use value instead.
   public void ResetValue(double new_value) {
     value_ = null;
     value = new_value;
