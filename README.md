@@ -1,5 +1,7 @@
 # Principia
 
+![⚠️](https://place-hold.it/10/f00000/000000&text=) _If you downloaded Hadamard before October 8, 23:10 UTC, you probably have a buggy version (see [#3144](https://github.com/mockingbirdnest/Principia/issues/3144)). Please download it again. If you have the correct version, the version string in the Principia UI says `2021100611-Hadamard-0-g5a4626303afea27800d7ef283ce66c54f98be3c8`. We apologize for the inconvenience._ ![⚠️](https://place-hold.it/10/f00000/000000&text=)
+
 **[Hadamard](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#hadamard), the October version of Principia, is available with UI fixes.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2](https://bit.ly/3itb0VK).**
 
 **For the convenience of Chinese users, downloads from 腾讯微云: [Principia Hadamard for 1.8.1—1.12.2](https://share.weiyun.com/qXuSrxCQ), [Trappist-1 for Principia](https://share.weiyun.com/5wVtWYQ).**
