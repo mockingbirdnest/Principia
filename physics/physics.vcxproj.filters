@@ -212,6 +212,15 @@
     <ClInclude Include="discrete_trajectory_segment_range_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="discrete_trajectory_segment_iterator_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="discrete_trajectory_segment_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mock_discrete_trajectory_segment.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
@@ -311,6 +320,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="discrete_trajectory_segment_range_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="discrete_trajectory_segment_iterator_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

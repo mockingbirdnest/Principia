@@ -33,15 +33,13 @@ class DiscreteTrajectoryIterator {
  private:
   using Timeline = internal_discrete_trajectory_types::Timeline<Frame>;
 
-  DiscreteTrajectorySegmentIterator segment_;
+  DiscreteTrajectorySegmentIterator<Frame> segment_;
   Timeline::const_iterator point_;
 };
 
 }  // namespace internal_discrete_trajectory_iterator
 
-template<typename Frame>
-using DiscreteTrajectoryIterator =
-    internal_discrete_trajectory_iterator::DiscreteTrajectoryIterator;
+using internal_discrete_trajectory_iterator::DiscreteTrajectoryIterator;
 
 }  // namespace physics
 }  // namespace principia
