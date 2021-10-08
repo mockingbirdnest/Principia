@@ -58,6 +58,7 @@ internal class DifferentialSlider : ScalingRenderer {
     set => max_value_ = value;
   }
 
+  // Set from the UI.
   public double value {
     get => value_ ?? 0.0;
     set {
@@ -65,6 +66,17 @@ internal class DifferentialSlider : ScalingRenderer {
       // Reformat systematically, even if the value has not changed numerically,
       // as it may have been edited all the same (e.g., remove zeroes).
       formatted_value_ = formatter_(value_.Value);
+    }
+  }
+
+  // Set from programmatic data, e.g., data obtained from C++.  Does nothing if
+  // the value has not changed to avoid messing with UI input.
+  public double value_if_different {
+    set {
+      if (!value_.HasValue || value_ != value) {
+        value_ = value;
+        formatted_value_ = formatter_(value_.Value);
+      }
     }
   }
 
