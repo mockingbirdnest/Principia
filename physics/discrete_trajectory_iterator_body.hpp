@@ -62,7 +62,7 @@ DiscreteTrajectoryIterator<Frame>::operator--() {
 
 template<typename Frame>
 DiscreteTrajectoryIterator<Frame>
-DiscreteTrajectoryIterator<Frame>::operator++(int) {
+DiscreteTrajectoryIterator<Frame>::operator++(int) {  // NOLINT
   auto const initial = *this;
   ++*this;
   return initial;
@@ -70,7 +70,7 @@ DiscreteTrajectoryIterator<Frame>::operator++(int) {
 
 template<typename Frame>
 DiscreteTrajectoryIterator<Frame>
-DiscreteTrajectoryIterator<Frame>::operator--(int) {
+DiscreteTrajectoryIterator<Frame>::operator--(int) {  // NOLINT
   auto const initial = *this;
   --*this;
   return initial;
