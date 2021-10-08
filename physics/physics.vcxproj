@@ -41,6 +41,7 @@
     <ClInclude Include="discrete_trajectory_segment_range.hpp" />
     <ClInclude Include="discrete_trajectory_segment_range_body.hpp" />
     <ClInclude Include="discrete_trajectory_types.hpp" />
+    <ClInclude Include="discrete_trajectory_segment_range_body.hpp" />
     <ClInclude Include="mechanical_system.hpp" />
     <ClInclude Include="mechanical_system_body.hpp" />
     <ClInclude Include="continuous_trajectory_body.hpp" />

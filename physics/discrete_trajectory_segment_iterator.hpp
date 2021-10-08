@@ -11,6 +11,12 @@ namespace physics {
 FORWARD_DECLARE_FROM(discrete_trajectory_iterator,
                      TEMPLATE(typename Frame) class,
                      DiscreteTrajectoryIterator);
+FORWARD_DECLARE_FROM(discrete_trajectory_segment,
+                     TEMPLATE(typename Frame) class,
+                     DiscreteTrajectorySegment);
+
+class DiscreteTrajectoryIteratorTest;
+class DiscreteTrajectorySegmentIteratorTest;
 
 class DiscreteTrajectoryIteratorTest;
 class DiscreteTrajectorySegmentIteratorTest;
@@ -33,6 +39,9 @@ class DiscreteTrajectorySegmentIterator {
   operator*() const;
   internal_discrete_trajectory_segment::DiscreteTrajectorySegment<Frame> const*
   operator->() const;
+
+  bool operator==(DiscreteTrajectorySegmentIterator const& other) const;
+  bool operator!=(DiscreteTrajectorySegmentIterator const& other) const;
 
   bool operator==(DiscreteTrajectorySegmentIterator const& other) const;
   bool operator!=(DiscreteTrajectorySegmentIterator const& other) const;
@@ -65,4 +74,3 @@ using internal_discrete_trajectory_segment_iterator::
 }  // namespace principia
 
 #include "physics/discrete_trajectory_segment_iterator_body.hpp"
-#

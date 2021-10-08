@@ -20,13 +20,13 @@ DiscreteTrajectorySegmentIterator<Frame>::operator--() {
 
 template<typename Frame>
 DiscreteTrajectorySegmentIterator<Frame>
-DiscreteTrajectorySegmentIterator<Frame>::operator++(int) {
+DiscreteTrajectorySegmentIterator<Frame>::operator++(int) {  // NOLINT
   return DiscreteTrajectorySegmentIterator(segments_, iterator_++);
 }
 
 template<typename Frame>
 DiscreteTrajectorySegmentIterator<Frame>
-DiscreteTrajectorySegmentIterator<Frame>::operator--(int) {
+DiscreteTrajectorySegmentIterator<Frame>::operator--(int) {  // NOLINT
   return DiscreteTrajectorySegmentIterator(segments_, iterator_--);
 }
 
