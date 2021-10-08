@@ -67,8 +67,8 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
 
   SegmentIterator NewSegment();
 
-  DiscreteTrajectory<Frame> DetachSegments(iterator begin);
-  SegmentIterator AttachSegments(DiscreteTrajectory<Frame>&& trajectory);
+  DiscreteTrajectory2 DetachSegments(iterator begin);
+  SegmentIterator AttachSegments(DiscreteTrajectory2&& trajectory);
   void DeleteSegments(iterator begin);
 
   void ForgetAfter(Instant const& t);
@@ -100,16 +100,14 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
 
   template<typename F = Frame,
            typename = std::enable_if_t<base::is_serializable_v<F>>>
-  static not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> ReadFromMessage(
+  static not_null<std::unique_ptr<DiscreteTrajectory2>> ReadFromMessage(
       serialization::DiscreteTrajectory const& message,
-      std::vector<DiscreteTrajectory<Frame>**> const& tracked);
+      std::vector<DiscreteTrajectory2**> const& tracked);
 
  private:
   using Segments = internal_discrete_trajectory_types::Segments<Frame>;
 
   Segments segments_;
-
-  friend class DiscreteTrajectoryIteratorTest;
 };
 
 }  // namespace internal_discrete_trajectory

@@ -18,9 +18,6 @@ FORWARD_DECLARE_FROM(discrete_trajectory_segment,
 class DiscreteTrajectoryIteratorTest;
 class DiscreteTrajectorySegmentIteratorTest;
 
-class DiscreteTrajectoryIteratorTest;
-class DiscreteTrajectorySegmentIteratorTest;
-
 namespace internal_discrete_trajectory_segment_iterator {
 
 using base::not_null;
@@ -35,10 +32,8 @@ class DiscreteTrajectorySegmentIterator {
   DiscreteTrajectorySegmentIterator operator++(int);
   DiscreteTrajectorySegmentIterator operator--(int);
 
-  internal_discrete_trajectory_segment::DiscreteTrajectorySegment<Frame> const&
-  operator*() const;
-  internal_discrete_trajectory_segment::DiscreteTrajectorySegment<Frame> const*
-  operator->() const;
+  DiscreteTrajectorySegment<Frame> const& operator*() const;
+  DiscreteTrajectorySegment<Frame> const* operator->() const;
 
   bool operator==(DiscreteTrajectorySegmentIterator const& other) const;
   bool operator!=(DiscreteTrajectorySegmentIterator const& other) const;

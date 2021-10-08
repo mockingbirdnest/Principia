@@ -1,3 +1,5 @@
+#pragma once
+
 #include "physics/discrete_trajectory_iterator.hpp"
 
 #include "geometry/named_quantities.hpp"
