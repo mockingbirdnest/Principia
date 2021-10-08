@@ -58,7 +58,9 @@ class DiscreteTrajectoryIterator {
 
   // |point_| is always an iterator in the timeline of the segment denoted by
   // |segment_|.  When |segment_| is at the end of its list, |point_| is
-  // nullopt.
+  // nullopt.  It is possible to have repeated times in a segment or across
+  // segments and the iterator will skip them, so that they will appear as a
+  // single point to clients.
   DiscreteTrajectorySegmentIterator<Frame> segment_;
   OptionalTimelineConstIterator point_;
 

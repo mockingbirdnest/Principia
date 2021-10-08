@@ -43,9 +43,6 @@ class DiscreteTrajectorySegmentIterator {
   bool operator==(DiscreteTrajectorySegmentIterator const& other) const;
   bool operator!=(DiscreteTrajectorySegmentIterator const& other) const;
 
-  bool operator==(DiscreteTrajectorySegmentIterator const& other) const;
-  bool operator!=(DiscreteTrajectorySegmentIterator const& other) const;
-
  private:
   using Segments = internal_discrete_trajectory_types::Segments<Frame>;
 
