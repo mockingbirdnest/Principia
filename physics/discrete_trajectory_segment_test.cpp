@@ -101,5 +101,10 @@ TEST_F(DiscreteTrajectorySegmentTest, LowerBoundUpperBound) {
   }
 }
 
+TEST_F(DiscreteTrajectorySegmentTest, EmptySize) {
+  EXPECT_FALSE(segment_->empty());
+  EXPECT_EQ(5, segment_->size());
+}
+
 }  // namespace physics
 }  // namespace principia
