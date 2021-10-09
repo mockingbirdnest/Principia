@@ -27,9 +27,9 @@ template<typename Frame>
 class DiscreteTrajectorySegmentIterator {
  public:
   using difference_type = std::int64_t;
-  using value_type = DiscreteTrajectorySegment<Frame>;
   using pointer = value_type const*;
   using reference = value_type const&;
+  using value_type = DiscreteTrajectorySegment<Frame>;
 
   DiscreteTrajectorySegmentIterator() = default;
 
