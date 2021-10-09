@@ -74,5 +74,32 @@ TEST_F(DiscreteTrajectorySegmentTest, Find) {
   }
 }
 
+TEST_F(DiscreteTrajectorySegmentTest, LowerBoundUpperBound) {
+  {
+    auto const it = segment_->lower_bound(t0_ + 5 * Second);
+    EXPECT_EQ(t0_ + 5 * Second, it->first);
+  }
+  {
+    auto const it = segment_->lower_bound(t0_ + 6 * Second);
+    EXPECT_EQ(t0_ + 7 * Second, it->first);
+  }
+  {
+    auto const it = segment_->lower_bound(t0_ + 12 * Second);
+    EXPECT_TRUE(it == segment_->end());
+  }
+  {
+    auto const it = segment_->upper_bound(t0_ + 5 * Second);
+    EXPECT_EQ(t0_ + 7 * Second, it->first);
+  }
+  {
+    auto const it = segment_->upper_bound(t0_ + 6 * Second);
+    EXPECT_EQ(t0_ + 7 * Second, it->first);
+  }
+  {
+    auto const it = segment_->upper_bound(t0_ + 11 * Second);
+    EXPECT_TRUE(it == segment_->end());
+  }
+}
+
 }  // namespace physics
 }  // namespace principia
