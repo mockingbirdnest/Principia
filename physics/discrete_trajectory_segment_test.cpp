@@ -44,7 +44,7 @@ class DiscreteTrajectorySegmentTest : public ::testing::Test {
 
 TEST_F(DiscreteTrajectorySegmentTest, Extremities) {
   {
-    auto it = segment_->begin();
+    auto const it = segment_->begin();
     EXPECT_EQ(t0_ + 2 * Second, it->first);
   }
   {
@@ -53,13 +53,24 @@ TEST_F(DiscreteTrajectorySegmentTest, Extremities) {
     EXPECT_EQ(t0_ + 11 * Second, it->first);
   }
   {
-    auto it = segment_->rbegin();
+    auto const it = segment_->rbegin();
     EXPECT_EQ(t0_ + 11 * Second, it->first);
   }
   {
     auto it = segment_->rend();
     --it;
     EXPECT_EQ(t0_ + 2 * Second, it->first);
+  }
+}
+
+TEST_F(DiscreteTrajectorySegmentTest, Find) {
+  {
+    auto const it = segment_->find(t0_ + 5 * Second);
+    EXPECT_EQ(t0_ + 5 * Second, it->first);
+  }
+  {
+    auto const it = segment_->find(t0_ + 6 * Second);
+    EXPECT_TRUE(it == segment_->end());
   }
 }
 

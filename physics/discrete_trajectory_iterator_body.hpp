@@ -13,7 +13,7 @@ using geometry::Instant;
 template<typename Frame>
 DiscreteTrajectoryIterator<Frame>&
 DiscreteTrajectoryIterator<Frame>::operator++() {
-  CHECK(!is_at_end(point_));
+  CHECK(!is_at_trajectory_end(point_));
   auto& point = iterator(point_);
   for (;;) {
     if (point == --segment_->timeline_end()) {
@@ -38,7 +38,7 @@ DiscreteTrajectoryIterator<Frame>::operator++() {
 template<typename Frame>
 DiscreteTrajectoryIterator<Frame>&
 DiscreteTrajectoryIterator<Frame>::operator--() {
-  if (is_at_end(point_)) {
+  if (is_at_trajectory_end(point_)) {
     segment_ = --segment_.end();
     point_ = --segment_->timeline_end();
   } else {
@@ -79,23 +79,23 @@ DiscreteTrajectoryIterator<Frame>::operator--(int) {  // NOLINT
 template<typename Frame>
 typename internal_discrete_trajectory_types::Timeline<Frame>::value_type const&
 DiscreteTrajectoryIterator<Frame>::operator*() const {
-  CHECK(!is_at_end(point_));
+  CHECK(!is_at_segment_end(*this));
   return *iterator(point_);
 }
 
 template<typename Frame>
 typename internal_discrete_trajectory_types::Timeline<Frame>::value_type const*
 DiscreteTrajectoryIterator<Frame>::operator->() const {
-  CHECK(!is_at_end(point_));
+  CHECK(!is_at_segment_end(*this));
   return &*iterator(point_);
 }
 
 template<typename Frame>
 bool DiscreteTrajectoryIterator<Frame>::operator==(
     DiscreteTrajectoryIterator const& other) const {
-  if (is_at_end(point_)) {
-    return segment_ == other.segment_ && is_at_end(other.point_);
-  } else if (is_at_end(other.point_)) {
+  if (is_at_segment_end(*this)) {
+    return segment_ == other.segment_ && is_at_segment_end(other);
+  } else if (is_at_segment_end(other)) {
     return false;
   } else {
     return iterator(point_)->first == iterator(other.point_)->first;
@@ -116,7 +116,13 @@ DiscreteTrajectoryIterator<Frame>::DiscreteTrajectoryIterator(
       point_(point) {}
 
 template<typename Frame>
-bool DiscreteTrajectoryIterator<Frame>::is_at_end(
+bool DiscreteTrajectoryIterator<Frame>::is_at_segment_end(
+    DiscreteTrajectoryIterator const it) {
+  return !it.point_.has_value() || it.point_ == it.segment_->timeline_end();
+}
+
+template<typename Frame>
+bool DiscreteTrajectoryIterator<Frame>::is_at_trajectory_end(
     OptionalTimelineConstIterator const point) {
   return !point.has_value();
 }
