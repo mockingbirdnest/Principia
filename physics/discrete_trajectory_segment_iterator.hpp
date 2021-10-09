@@ -17,6 +17,7 @@ FORWARD_DECLARE_FROM(discrete_trajectory_segment,
 
 class DiscreteTrajectoryIteratorTest;
 class DiscreteTrajectorySegmentIteratorTest;
+class DiscreteTrajectorySegmentTest;
 
 namespace internal_discrete_trajectory_segment_iterator {
 
@@ -25,6 +26,11 @@ using base::not_null;
 template<typename Frame>
 class DiscreteTrajectorySegmentIterator {
  public:
+  using difference_type = std::int64_t;
+  using value_type = DiscreteTrajectorySegment<Frame>;
+  using pointer = value_type const*;
+  using reference = value_type const&;
+
   DiscreteTrajectorySegmentIterator() = default;
 
   DiscreteTrajectorySegmentIterator& operator++();
@@ -32,8 +38,8 @@ class DiscreteTrajectorySegmentIterator {
   DiscreteTrajectorySegmentIterator operator++(int);
   DiscreteTrajectorySegmentIterator operator--(int);
 
-  DiscreteTrajectorySegment<Frame> const& operator*() const;
-  DiscreteTrajectorySegment<Frame> const* operator->() const;
+  reference operator*() const;
+  pointer operator->() const;
 
   bool operator==(DiscreteTrajectorySegmentIterator const& other) const;
   bool operator!=(DiscreteTrajectorySegmentIterator const& other) const;
@@ -51,10 +57,11 @@ class DiscreteTrajectorySegmentIterator {
   Segments const* segments_ = nullptr;
   typename Segments::const_iterator iterator_;
 
-  template<typename Frame>
+  template<typename F>
   friend class DiscreteTrajectoryIterator;
   friend class DiscreteTrajectoryIteratorTest;
   friend class DiscreteTrajectorySegmentIteratorTest;
+  friend class DiscreteTrajectorySegmentTest;
 };
 
 }  // namespace internal_discrete_trajectory_segment_iterator

@@ -331,5 +331,8 @@
     <ClCompile Include="discrete_trajectory_iterator_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="discrete_trajectory_segment_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

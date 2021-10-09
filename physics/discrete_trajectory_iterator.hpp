@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <optional>
 
 #include "absl/container/btree_map.h"
@@ -11,8 +12,9 @@
 namespace principia {
 namespace physics {
 
-template<typename Frame>
-class DiscreteTrajectory;
+FORWARD_DECLARE_FROM(discrete_trajectory_segment,
+                     TEMPLATE(typename Frame) class,
+                     DiscreteTrajectorySegment);
 
 namespace internal_discrete_trajectory_iterator {
 
@@ -22,6 +24,12 @@ using physics::DegreesOfFreedom;
 template<typename Frame>
 class DiscreteTrajectoryIterator {
  public:
+  using difference_type = std::int64_t;
+  using value_type =
+      typename internal_discrete_trajectory_types::Timeline<Frame>::value_type;
+  using pointer = value_type const*;
+  using reference = value_type const&;
+
   DiscreteTrajectoryIterator() = default;
 
   DiscreteTrajectoryIterator& operator++();
@@ -29,12 +37,8 @@ class DiscreteTrajectoryIterator {
   DiscreteTrajectoryIterator operator++(int);
   DiscreteTrajectoryIterator operator--(int);
 
-  typename
-  internal_discrete_trajectory_types::Timeline<Frame>::value_type const&
-  operator*() const;
-  typename
-  internal_discrete_trajectory_types::Timeline<Frame>::value_type const*
-  operator->() const;
+  reference operator*() const;
+  pointer operator->() const;
 
   bool operator==(DiscreteTrajectoryIterator const& other) const;
   bool operator!=(DiscreteTrajectoryIterator const& other) const;
@@ -68,6 +72,8 @@ class DiscreteTrajectoryIterator {
   // times.
   std::optional<Instant> previous_time_;
 
+  template<typename F>
+  friend class DiscreteTrajectorySegment;
   friend class DiscreteTrajectoryIteratorTest;
 };
 
