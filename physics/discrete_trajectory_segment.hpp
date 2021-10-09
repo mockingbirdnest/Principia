@@ -12,6 +12,9 @@
 
 namespace principia {
 namespace physics {
+
+class DiscreteTrajectoryIteratorTest;
+
 namespace internal_discrete_trajectory_segment {
 
 using geometry::Instant;
@@ -69,7 +72,7 @@ class DiscreteTrajectorySegment {
   template<typename F>
   friend class internal_discrete_trajectory_iterator::
       DiscreteTrajectoryIterator;
-  friend class physics::DiscreteTrajectoryIteratorTest;
+  friend class DiscreteTrajectoryIteratorTest;
 };
 
 }  // namespace internal_discrete_trajectory_segment

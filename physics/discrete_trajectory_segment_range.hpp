@@ -2,10 +2,6 @@
 
 #include <cstdint>
 
-#include "absl/container/btree_map.h"
-#include "geometry/named_quantities.hpp"
-#include "physics/degrees_of_freedom.hpp"
-
 namespace principia {
 namespace physics {
 namespace internal_discrete_trajectory_segment_range {

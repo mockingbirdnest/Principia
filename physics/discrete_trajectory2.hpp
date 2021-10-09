@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "absl/container/btree_map.h"
+#include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -18,8 +19,9 @@
 namespace principia {
 namespace physics {
 
-template<typename Frame>
-class DiscreteTrajectorySegment;
+FORWARD_DECLARE_FROM(discrete_trajectory_segment,
+                     TEMPLATE(typename Frame) class,
+                     DiscreteTrajectorySegment);
 
 namespace internal_discrete_trajectory {
 
@@ -65,8 +67,8 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
 
   SegmentIterator NewSegment();
 
-  DiscreteTrajectory DetachSegments(iterator begin);
-  SegmentIterator AttachSegments(DiscreteTrajectory&& trajectory);
+  DiscreteTrajectory2 DetachSegments(iterator begin);
+  SegmentIterator AttachSegments(DiscreteTrajectory2&& trajectory);
   void DeleteSegments(iterator begin);
 
   void ForgetAfter(Instant const& t);
@@ -77,6 +79,9 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
 
   void Append(Instant const& t,
               DegreesOfFreedom<Frame> const& degrees_of_freedom);
+
+  Instant t_min() const override;
+  Instant t_max() const override;
 
   Position<Frame> EvaluatePosition(Instant const& time) const override;
   Velocity<Frame> EvaluateVelocity(Instant const& time) const override;
@@ -95,9 +100,9 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
 
   template<typename F = Frame,
            typename = std::enable_if_t<base::is_serializable_v<F>>>
-  static not_null<std::unique_ptr<DiscreteTrajectory>> ReadFromMessage(
+  static not_null<std::unique_ptr<DiscreteTrajectory2>> ReadFromMessage(
       serialization::DiscreteTrajectory const& message,
-      std::vector<DiscreteTrajectory<Frame>**> const& tracked);
+      std::vector<DiscreteTrajectory2**> const& tracked);
 
  private:
   using Segments = internal_discrete_trajectory_types::Segments<Frame>;
@@ -107,8 +112,7 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
 
 }  // namespace internal_discrete_trajectory
 
-template<typename Frame>
-using DiscreteTrajectory2 = internal_discrete_trajectory::DiscreteTrajectory2;
+using internal_discrete_trajectory::DiscreteTrajectory2;
 
 }  // namespace physics
 }  // namespace principia

@@ -33,13 +33,14 @@
     <ClInclude Include="checkpointer_body.hpp" />
     <ClInclude Include="discrete_trajectory2.hpp" />
     <ClInclude Include="discrete_trajectory_iterator.hpp" />
+    <ClInclude Include="discrete_trajectory_iterator_body.hpp" />
     <ClInclude Include="discrete_trajectory_segment.hpp" />
     <ClInclude Include="discrete_trajectory_segment_body.hpp" />
     <ClInclude Include="discrete_trajectory_segment_iterator.hpp" />
     <ClInclude Include="discrete_trajectory_segment_iterator_body.hpp" />
     <ClInclude Include="discrete_trajectory_segment_range.hpp" />
-    <ClInclude Include="discrete_trajectory_types.hpp" />
     <ClInclude Include="discrete_trajectory_segment_range_body.hpp" />
+    <ClInclude Include="discrete_trajectory_types.hpp" />
     <ClInclude Include="mechanical_system.hpp" />
     <ClInclude Include="mechanical_system_body.hpp" />
     <ClInclude Include="continuous_trajectory_body.hpp" />
@@ -102,6 +103,7 @@
     <ClCompile Include="body_surface_frame_field_test.cpp" />
     <ClCompile Include="body_test.cpp" />
     <ClCompile Include="checkpointer_test.cpp" />
+    <ClCompile Include="discrete_trajectory_iterator_test.cpp" />
     <ClCompile Include="discrete_trajectory_segment_iterator_test.cpp" />
     <ClCompile Include="discrete_trajectory_segment_range_test.cpp" />
     <ClCompile Include="mechanical_system_test.cpp" />
