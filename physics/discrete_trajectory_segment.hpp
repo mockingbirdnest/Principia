@@ -59,6 +59,7 @@ class DiscreteTrajectorySegment {
   iterator lower_bound(Instant const& t) const;
   iterator upper_bound(Instant const& t) const;
 
+  // TODO(phl): We probably don't want empty segments.
   bool empty() const;
   virtual std::int64_t size() const;
 

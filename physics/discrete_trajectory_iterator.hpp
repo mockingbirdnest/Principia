@@ -53,8 +53,7 @@ class DiscreteTrajectoryIterator {
   DiscreteTrajectoryIterator(DiscreteTrajectorySegmentIterator<Frame> segment,
                              OptionalTimelineConstIterator point);
 
-  static bool is_at_segment_end(DiscreteTrajectoryIterator it);
-  static bool is_at_trajectory_end(OptionalTimelineConstIterator point);
+  static bool is_at_end(OptionalTimelineConstIterator point);
 
   static typename Timeline::const_iterator& iterator(
       OptionalTimelineConstIterator& point);

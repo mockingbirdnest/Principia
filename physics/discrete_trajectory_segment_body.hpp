@@ -22,8 +22,14 @@ DiscreteTrajectorySegment<Frame>::begin() const {
 template<typename Frame>
 typename DiscreteTrajectorySegment<Frame>::iterator
 DiscreteTrajectorySegment<Frame>::end() const {
-  // TODO(phl): or begin of next segment?
-  return iterator(self_, timeline_.end());
+  // TODO(phl): We probably don't want empty segments.
+  if (timeline_.empty()) {
+    return iterator(self_, timeline_.begin());
+  } else {
+    // The decrement/increment ensures that we normalize the end iterator to the
+    // next segment or to the end of the trajectory.
+    return ++iterator(self_, --timeline_.end());
+  }
 }
 
 template<typename Frame>
@@ -41,19 +47,34 @@ DiscreteTrajectorySegment<Frame>::rend() const {
 template<typename Frame>
 typename DiscreteTrajectorySegment<Frame>::iterator
 DiscreteTrajectorySegment<Frame>::find(Instant const& t) const {
-  return iterator(self_, timeline_.find(t));
+  auto const it = timeline_.find(t);
+  if (it == timeline_.end()) {
+    return end();
+  } else {
+    return iterator(self_, it);
+  }
 }
 
 template<typename Frame>
 typename DiscreteTrajectorySegment<Frame>::iterator
 DiscreteTrajectorySegment<Frame>::lower_bound(Instant const& t) const {
-  return iterator(self_, timeline_.lower_bound(t));
+  auto const it = timeline_.lower_bound(t);
+  if (it == timeline_.end()) {
+    return end();
+  } else {
+    return iterator(self_, it);
+  }
 }
 
 template<typename Frame>
 typename DiscreteTrajectorySegment<Frame>::iterator
 DiscreteTrajectorySegment<Frame>::upper_bound(Instant const& t) const {
-  return iterator(self_, timeline_.upper_bound(t));
+  auto const it = timeline_.upper_bound(t);
+  if (it == timeline_.end()) {
+    return end();
+  } else {
+    return iterator(self_, it);
+  }
 }
 
 template<typename Frame>
