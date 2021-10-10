@@ -7,10 +7,12 @@
 #include "absl/container/btree_set.h"
 #include "absl/status/status.h"
 #include "geometry/named_quantities.hpp"
+#include "numerics/hermite3.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_iterator.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/discrete_trajectory_types.hpp"
+#include "physics/trajectory.hpp"
 
 namespace principia {
 
@@ -28,10 +30,13 @@ class DiscreteTrajectorySegmentTest;
 namespace internal_discrete_trajectory_segment {
 
 using geometry::Instant;
+using geometry::Position;
+using geometry::Velocity;
+using numerics::Hermite3;
 using physics::DegreesOfFreedom;
 
 template<typename Frame>
-class DiscreteTrajectorySegment {
+class DiscreteTrajectorySegment : public Trajectory<Frame> {
   using Timeline = internal_discrete_trajectory_types::Timeline<Frame>;
 
  public:
@@ -61,14 +66,22 @@ class DiscreteTrajectorySegment {
   reverse_iterator rbegin() const;
   reverse_iterator rend() const;
 
+  // TODO(phl): We probably don't want empty segments.
+  bool empty() const;
+  virtual std::int64_t size() const;
+
   iterator find(Instant const& t) const;
 
   iterator lower_bound(Instant const& t) const;
   iterator upper_bound(Instant const& t) const;
 
-  // TODO(phl): We probably don't want empty segments.
-  bool empty() const;
-  virtual std::int64_t size() const;
+  Instant t_min() const override;
+  Instant t_max() const override;
+
+  Position<Frame> EvaluatePosition(Instant const& t) const override;
+  Velocity<Frame> EvaluateVelocity(Instant const& t) const override;
+  DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
+      Instant const& t) const override;
 
  private:
   absl::Status Append(Instant const& t,
@@ -83,6 +96,11 @@ class DiscreteTrajectorySegment {
   // ending at |end| (2nd overload).
   void ForgetBefore(Instant const& t);
   void ForgetBefore(typename Timeline::const_iterator end);
+
+  // Returns the Hermite interpolation for the left-open, right-closed
+  // trajectory segment bounded above by |upper|.
+  Hermite3<Instant, Position<Frame>> GetInterpolation(
+      typename Timeline::const_iterator const& upper) const;
 
   virtual typename Timeline::const_iterator timeline_begin() const;
   virtual typename Timeline::const_iterator timeline_end() const;
