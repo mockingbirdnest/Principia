@@ -6,6 +6,14 @@
 #include "physics/discrete_trajectory_types.hpp"
 
 namespace principia {
+
+namespace testing_utilities {
+namespace internal_discrete_trajectory_factories {
+template<typename Frame>
+class DiscreteTrajectoryFactoriesFriend;
+}  // namespace internal_discrete_trajectory_factories
+}  // namespace testing_utilities
+
 namespace physics {
 
 FORWARD_DECLARE_FROM(discrete_trajectory_iterator,
@@ -58,10 +66,15 @@ class DiscreteTrajectorySegmentIterator {
   typename Segments::const_iterator iterator_;
 
   template<typename F>
-  friend class DiscreteTrajectoryIterator;
-  friend class DiscreteTrajectoryIteratorTest;
-  friend class DiscreteTrajectorySegmentIteratorTest;
-  friend class DiscreteTrajectorySegmentTest;
+  friend class physics::DiscreteTrajectoryIterator;
+
+  // For testing.
+  friend class physics::DiscreteTrajectoryIteratorTest;
+  friend class physics::DiscreteTrajectorySegmentIteratorTest;
+  friend class physics::DiscreteTrajectorySegmentTest;
+  template<typename F>
+  friend class testing_utilities::internal_discrete_trajectory_factories::
+  DiscreteTrajectoryFactoriesFriend;
 };
 
 }  // namespace internal_discrete_trajectory_segment_iterator

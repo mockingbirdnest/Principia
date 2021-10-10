@@ -73,8 +73,8 @@ class DiscreteTrajectoryIterator {
   std::optional<Instant> previous_time_;
 
   template<typename F>
-  friend class DiscreteTrajectorySegment;
-  friend class DiscreteTrajectoryIteratorTest;
+  friend class physics::DiscreteTrajectorySegment;
+  friend class physics::DiscreteTrajectoryIteratorTest;
 };
 
 }  // namespace internal_discrete_trajectory_iterator

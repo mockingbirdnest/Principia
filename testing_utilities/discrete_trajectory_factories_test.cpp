@@ -40,7 +40,7 @@ class DiscreteTrajectoryFactoriesTest : public ::testing::Test {
 };
 
 TEST_F(DiscreteTrajectoryFactoriesTest, NewLinearTrajectorySegment) {
-  auto const segment = NewLinearTrajectorySegment<World>(
+  auto const segments = NewLinearTrajectorySegment<World>(
       /*degrees_of_freedom=*/
       DegreesOfFreedom<World>(
           World::origin +
@@ -50,8 +50,9 @@ TEST_F(DiscreteTrajectoryFactoriesTest, NewLinearTrajectorySegment) {
       /*Δt=*/0.1 * Second,
       /*t1=*/Instant() + 4 * Second,
       /*t2=*/Instant() + 42 * Second);
+  auto const& segment = *segments->front();
 
-  for (auto const& [time, degrees_of_freedom] : *segment) {
+  for (auto const& [time, degrees_of_freedom] : segment) {
     Position<World> const& position = degrees_of_freedom.position();
     Velocity<World> const& velocity = degrees_of_freedom.velocity();
 
@@ -63,22 +64,23 @@ TEST_F(DiscreteTrajectoryFactoriesTest, NewLinearTrajectorySegment) {
                              1));
     EXPECT_THAT(velocity.Norm(), AlmostEquals(Sqrt(77) * Metre / Second, 0, 0));
   }
-  EXPECT_THAT(segment->begin()->first,
+  EXPECT_THAT(segment.begin()->first,
               AlmostEquals(Instant() + 4 * Second, 0));
-  EXPECT_THAT(segment->rbegin()->first,
+  EXPECT_THAT(segment.rbegin()->first,
               AlmostEquals(Instant() + 41.9 * Second, 46));
-  EXPECT_EQ(380, segment->size());
+  EXPECT_EQ(380, segment.size());
 }
 
 TEST_F(DiscreteTrajectoryFactoriesTest, NewCircularTrajectorySegment) {
-  auto const segment = NewCircularTrajectorySegment<World>(
+  auto const segments = NewCircularTrajectorySegment<World>(
       /*ω=*/3 * Radian / Second,
       /*r=*/2 * Metre,
       /*Δt=*/0.1 * Second,
       /*t1=*/Instant() + 4 * Second,
       /*t2=*/Instant() + 42 * Second);
+  auto const& segment = *segments->front();
 
-  for (auto const& [time, degrees_of_freedom] : *segment) {
+  for (auto const& [time, degrees_of_freedom] : segment) {
     Position<World> const& position = degrees_of_freedom.position();
     Velocity<World> const& velocity = degrees_of_freedom.velocity();
 
@@ -87,11 +89,11 @@ TEST_F(DiscreteTrajectoryFactoriesTest, NewCircularTrajectorySegment) {
     EXPECT_THAT(InnerProduct(position - World::origin, velocity),
                 VanishesBefore(1 * Metre * Metre / Second, 0, 8));
   }
-  EXPECT_THAT(segment->begin()->first,
+  EXPECT_THAT(segment.begin()->first,
               AlmostEquals(Instant() + 4 * Second, 0));
-  EXPECT_THAT(segment->rbegin()->first,
+  EXPECT_THAT(segment.rbegin()->first,
               AlmostEquals(Instant() + 41.9 * Second, 46));
-  EXPECT_EQ(380, segment->size());
+  EXPECT_EQ(380, segment.size());
 }
 
 }  // namespace testing_utilities
