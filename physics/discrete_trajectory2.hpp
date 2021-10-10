@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iterator>
 #include <list>
 #include <memory>
 #include <vector>
@@ -34,6 +35,11 @@ using physics::DegreesOfFreedom;
 template<typename Frame>
 class DiscreteTrajectory2 : public Trajectory<Frame> {
  public:
+  using key_type =
+      typename internal_discrete_trajectory_types::Timeline<Frame>::key_type;
+  using value_type =
+      typename internal_discrete_trajectory_types::Timeline<Frame>::value_type;
+
   using iterator = DiscreteTrajectoryIterator<Frame>;
   using reverse_iterator = std::reverse_iterator<iterator>;
   using SegmentIterator = DiscreteTrajectorySegmentIterator<Frame>;

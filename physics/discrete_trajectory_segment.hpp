@@ -1,9 +1,11 @@
 #pragma once
 
 #include <cstdint>
+#include <iterator>
 
 #include "absl/container/btree_map.h"
 #include "absl/container/btree_set.h"
+#include "absl/status/status.h"
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_iterator.hpp"
@@ -14,6 +16,7 @@ namespace principia {
 namespace physics {
 
 class DiscreteTrajectoryIteratorTest;
+class DiscreteTrajectorySegmentTest;
 
 namespace internal_discrete_trajectory_segment {
 
@@ -22,8 +25,20 @@ using physics::DegreesOfFreedom;
 
 template<typename Frame>
 class DiscreteTrajectorySegment {
+  using Timeline = internal_discrete_trajectory_types::Timeline<Frame>;
+
  public:
+  using key_type = typename Timeline::key_type;
+  using value_type = typename Timeline::value_type;
+
+  using iterator = DiscreteTrajectoryIterator<Frame>;
+  using reverse_iterator = std::reverse_iterator<iterator>;
+
+  // TODO(phl): Decide which constructors should be public.
   DiscreteTrajectorySegment() = default;
+  explicit DiscreteTrajectorySegment(
+      DiscreteTrajectorySegmentIterator<Frame> self);
+
   virtual ~DiscreteTrajectorySegment() = default;
 
   // Moveable.
@@ -33,27 +48,24 @@ class DiscreteTrajectorySegment {
   DiscreteTrajectorySegment& operator=(const DiscreteTrajectorySegment&) =
       delete;
 
-  DiscreteTrajectoryIterator<Frame> begin() const;
-  DiscreteTrajectoryIterator<Frame> end() const;
+  iterator begin() const;
+  iterator end() const;
 
-  DiscreteTrajectoryIterator<Frame> rbegin() const;
-  DiscreteTrajectoryIterator<Frame> rend() const;
+  reverse_iterator rbegin() const;
+  reverse_iterator rend() const;
 
-  DiscreteTrajectoryIterator<Frame> find(Instant const& t) const;
+  iterator find(Instant const& t) const;
 
-  DiscreteTrajectoryIterator<Frame> lower_bound(Instant const& t) const;
-  DiscreteTrajectoryIterator<Frame> upper_bound(Instant const& t) const;
+  iterator lower_bound(Instant const& t) const;
+  iterator upper_bound(Instant const& t) const;
 
+  // TODO(phl): We probably don't want empty segments.
   bool empty() const;
   virtual std::int64_t size() const;
 
- protected:
-  // For mocking.
-  using Timeline = internal_discrete_trajectory_types::Timeline<Frame>;
-
  private:
-  void Append(Instant const& t,
-              DegreesOfFreedom<Frame> const& degrees_of_freedom);
+  absl::Status Append(Instant const& t,
+                      DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
   void ForgetAfter(Instant const& t);
   void ForgetAfter(typename Timeline::const_iterator begin);
@@ -73,6 +85,7 @@ class DiscreteTrajectorySegment {
   friend class internal_discrete_trajectory_iterator::
       DiscreteTrajectoryIterator;
   friend class DiscreteTrajectoryIteratorTest;
+  friend class DiscreteTrajectorySegmentTest;
 };
 
 }  // namespace internal_discrete_trajectory_segment
