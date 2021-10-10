@@ -22,6 +22,21 @@ using quantities::AngularFrequency;
 using quantities::Length;
 using quantities::Time;
 
+// A helper class to avoid having to declare friendship for all the individual
+// functions in this file.
+template<typename Frame>
+class DiscreteTrajectoryFactoriesFriend {
+ public:
+  static absl::Status Append(Instant const& t,
+                             DegreesOfFreedom<Frame> const& degrees_of_freedom,
+                             DiscreteTrajectorySegment<Frame>& segment);
+
+  static DiscreteTrajectorySegment<Frame>
+  MakeDiscreteTrajectorySegment(
+      Segments<Frame> const& segments,
+      typename Segments<Frame>::const_iterator iterator);
+};
+
 // All the functions below return a list of a single segment.
 // TODO(phl): Revise this API as needed once we have all the pieces for the new-
 // style discrete trajectories.

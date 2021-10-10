@@ -24,21 +24,6 @@ using quantities::Sin;
 using quantities::Speed;
 using quantities::si::Radian;
 
-// A helper class to avoid having to declare friendship for all the individual
-// functions in this file.
-template<typename Frame>
-class DiscreteTrajectoryFactoriesFriend {
- public:
-  static absl::Status Append(Instant const& t,
-                             DegreesOfFreedom<Frame> const& degrees_of_freedom,
-                             DiscreteTrajectorySegment<Frame>& segment);
-
-  static DiscreteTrajectorySegment<Frame>
-  MakeDiscreteTrajectorySegment(
-      Segments<Frame> const& segments,
-      typename Segments<Frame>::const_iterator iterator);
-};
-
 template<typename Frame>
 absl::Status DiscreteTrajectoryFactoriesFriend<Frame>::Append(
     Instant const& t,
