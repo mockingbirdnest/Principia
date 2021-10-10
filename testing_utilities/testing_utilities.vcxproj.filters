@@ -101,6 +101,12 @@
     <ClInclude Include="trajectory_factories_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="discrete_trajectory_factories.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="discrete_trajectory_factories_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="almost_equals_test.cpp">
@@ -141,6 +147,9 @@
     </ClCompile>
     <ClCompile Include="..\geometry\instant_output.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="discrete_trajectory_factories_test.cpp">
+      <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -23,6 +23,8 @@
     <ClInclude Include="approximate_quantity_body.hpp" />
     <ClInclude Include="componentwise.hpp" />
     <ClInclude Include="componentwise_body.hpp" />
+    <ClInclude Include="discrete_trajectory_factories.hpp" />
+    <ClInclude Include="discrete_trajectory_factories_body.hpp" />
     <ClInclude Include="numerics_matchers.hpp" />
     <ClInclude Include="numerics_matchers_body.hpp" />
     <ClInclude Include="integration.hpp" />
@@ -53,6 +55,7 @@
     <ClCompile Include="almost_equals_test.cpp" />
     <ClCompile Include="approximate_quantity_test.cpp" />
     <ClCompile Include="componentwise_test.cpp" />
+    <ClCompile Include="discrete_trajectory_factories_test.cpp" />
     <ClCompile Include="is_near_test.cpp" />
     <ClCompile Include="numerics_test.cpp" />
     <ClCompile Include="solar_system_factory_test.cpp" />
