@@ -97,12 +97,12 @@ DiscreteTrajectorySegment<Frame>::upper_bound(Instant const& t) const {
 
 template<typename Frame>
 Instant DiscreteTrajectorySegment<Frame>::t_min() const {
-  return empty() ? InfiniteFuture : timeline_.crbegin()->first;
+  return empty() ? InfiniteFuture : timeline_.cbegin()->first;
 }
 
 template<typename Frame>
 Instant DiscreteTrajectorySegment<Frame>::t_max() const {
-  return empty() ? InfinitePast : timeline_.cbegin()->first;
+  return empty() ? InfinitePast : timeline_.crbegin()->first;
 }
 
 template<typename Frame>

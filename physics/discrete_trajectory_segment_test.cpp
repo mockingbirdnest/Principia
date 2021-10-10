@@ -19,12 +19,14 @@ namespace physics {
 using base::check_not_null;
 using geometry::Frame;
 using geometry::Instant;
+using quantities::Abs;
 using quantities::AngularFrequency;
 using quantities::Length;
 using quantities::Time;
 using quantities::si::Metre;
 using quantities::si::Micro;
 using quantities::si::Milli;
+using quantities::si::Nano;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AppendTrajectorySegment;
@@ -173,12 +175,14 @@ TEST_F(DiscreteTrajectorySegmentTest, Evaluate) {
 
   EXPECT_THAT(segment.size(), Eq(1001));
   std::vector<Length> errors;
-  for (auto const& [time, degrees_of_freedom] : segment) {
-    errors.push_back((degrees_of_freedom.position() - World::origin).Norm() -
-                     r);
+  for (Instant t = segment.t_min();
+       t <= segment.t_max();
+       t += 1 * Milli(Second)) {
+    errors.push_back(
+        Abs((segment.EvaluatePosition(t) - World::origin).Norm() - r));
   }
-  EXPECT_THAT(errors, Each(Lt(1 * Milli(Metre))));
-  EXPECT_THAT(errors, Contains(Gt(9 * Micro(Metre))))
+  EXPECT_THAT(errors, Each(Lt(5 * Nano(Metre))));
+  EXPECT_THAT(errors, Contains(Gt(4 * Nano(Metre))))
       << *std::max_element(errors.begin(), errors.end());
 }
 
