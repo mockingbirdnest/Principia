@@ -1,18 +1,45 @@
-#pragma once
+﻿#pragma once
 
 #include <cstdint>
 #include <iterator>
+#include <memory>
+#include <optional>
 
 #include "absl/container/btree_map.h"
 #include "absl/container/btree_set.h"
 #include "absl/status/status.h"
+#include "base/macros.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_iterator.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/discrete_trajectory_types.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
+
+namespace testing_utilities {
+FORWARD_DECLARE_FUNCTION_FROM(
+    discrete_trajectory_factories,
+    TEMPLATE(typename Frame)
+    base::not_null<std::unique_ptr<physics::DiscreteTrajectorySegment<Frame>>>,
+    NewLinearTrajectorySegment,
+    (physics::DegreesOfFreedom<Frame> const& degrees_of_freedom,
+     quantities::Time const& Δt,
+     geometry::Instant const& t1,
+     geometry::Instant const& t2));
+FORWARD_DECLARE_FUNCTION_FROM(
+    discrete_trajectory_factories,
+    TEMPLATE(typename Frame)
+    base::not_null<std::unique_ptr<physics::DiscreteTrajectorySegment<Frame>>>,
+    NewCircularTrajectorySegment,
+    (quantities::AngularFrequency const& ω,
+     quantities::Length const& r,
+     quantities::Time const& Δt,
+     geometry::Instant const& t1,
+     geometry::Instant const& t2));
+}  // namespace testing_utilities
+
 namespace physics {
 
 class DiscreteTrajectoryIteratorTest;
@@ -84,8 +111,25 @@ class DiscreteTrajectorySegment {
   template<typename F>
   friend class internal_discrete_trajectory_iterator::
       DiscreteTrajectoryIterator;
+
+  // For testing.
   friend class DiscreteTrajectoryIteratorTest;
   friend class DiscreteTrajectorySegmentTest;
+  template<typename F>
+  friend base::not_null<std::unique_ptr<DiscreteTrajectorySegment<F>>>
+  testing_utilities::internal_discrete_trajectory_factories::
+  NewLinearTrajectorySegment(DegreesOfFreedom<F> const& degrees_of_freedom,
+                             quantities::Time const& Δt,
+                             Instant const& t1,
+                             Instant const& t2);
+  template<typename F>
+  friend base::not_null<std::unique_ptr<DiscreteTrajectorySegment<F>>>
+  testing_utilities::internal_discrete_trajectory_factories::
+  NewCircularTrajectorySegment(quantities::AngularFrequency const& ω,
+                               quantities::Length const& r,
+                               quantities::Time const& Δt,
+                               Instant const& t1,
+                               Instant const& t2);
 };
 
 }  // namespace internal_discrete_trajectory_segment
