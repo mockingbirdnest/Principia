@@ -81,12 +81,12 @@ NewCircularTrajectorySegment(Time const& period,
                              Instant const& t2);
 
 template<typename Frame>
-void AppendTrajectorySegments(Segments<Frame> const& from,
-                              Segments<Frame>& to);
+void AppendTrajectorySegment(DiscreteTrajectorySegment<Frame> const& from,
+                             DiscreteTrajectorySegment<Frame>& to);
 
 }  // namespace internal_discrete_trajectory_factories
 
-using internal_discrete_trajectory_factories::AppendTrajectorySegments;
+using internal_discrete_trajectory_factories::AppendTrajectorySegment;
 using internal_discrete_trajectory_factories::NewCircularTrajectorySegment;
 using internal_discrete_trajectory_factories::NewLinearTrajectorySegment;
 

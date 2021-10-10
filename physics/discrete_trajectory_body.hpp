@@ -15,6 +15,7 @@
 #include "base/zfp_compressor.hpp"
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
+#include "numerics/fit_hermite_spline.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 

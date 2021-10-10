@@ -1,4 +1,4 @@
-#include "physics/discrete_trajectory_segment.hpp"
+﻿#include "physics/discrete_trajectory_segment.hpp"
 
 #include <memory>
 
@@ -8,7 +8,10 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/discrete_trajectory_types.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/discrete_trajectory_factories.hpp"
 
 namespace principia {
 namespace physics {
@@ -16,7 +19,21 @@ namespace physics {
 using base::check_not_null;
 using geometry::Frame;
 using geometry::Instant;
+using quantities::AngularFrequency;
+using quantities::Length;
+using quantities::Time;
+using quantities::si::Metre;
+using quantities::si::Micro;
+using quantities::si::Milli;
+using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::AppendTrajectorySegment;
+using testing_utilities::NewCircularTrajectorySegment;
+using ::testing::Contains;
+using ::testing::Each;
+using ::testing::Eq;
+using ::testing::Gt;
+using ::testing::Lt;
 
 class DiscreteTrajectorySegmentTest : public ::testing::Test {
  protected:
@@ -42,6 +59,13 @@ class DiscreteTrajectorySegmentTest : public ::testing::Test {
 
   void ForgetBefore(Instant const& t) {
     segment_->ForgetBefore(t);
+  }
+
+  void SetDownsampling(
+      internal_discrete_trajectory_types::DownsamplingParameters const&
+          downsampling_parameters,
+      DiscreteTrajectorySegment<World>& segment) {
+    segment.SetDownsampling(downsampling_parameters);
   }
 
   DiscreteTrajectorySegment<World>* segment_;
@@ -142,6 +166,35 @@ TEST_F(DiscreteTrajectorySegmentTest, ForgetBeforeNonexisting) {
 TEST_F(DiscreteTrajectorySegmentTest, ForgetBeforeTheBeginning) {
   ForgetBefore(t0_ + 1 * Second);
   EXPECT_EQ(t0_ + 2 * Second, segment_->begin()->first);
+}
+
+TEST_F(DiscreteTrajectorySegmentTest, Downsampling) {
+  DiscreteTrajectorySegment<World> circle;
+  DiscreteTrajectorySegment<World> downsampled_circle;
+  SetDownsampling({.max_dense_intervals = 50, .tolerance = 1 * Milli(Metre)},
+                  downsampled_circle);
+  AngularFrequency const ω = 3 * Radian / Second;
+  Length const r = 2 * Metre;
+  Time const Δt = 10 * Milli(Second);
+  Instant const t1 = t0_;
+  Instant const t2 = t0_ + 10 * Second;
+  AppendTrajectorySegment(
+      *NewCircularTrajectorySegment<World>(ω, r, Δt, t1, t2)->front(),
+      /*to=*/circle);
+  AppendTrajectorySegment(
+      *NewCircularTrajectorySegment<World>(ω, r, Δt, t1, t2)->front(),
+      /*to=*/downsampled_circle);
+
+  EXPECT_THAT(circle.size(), Eq(1001));
+  EXPECT_THAT(downsampled_circle.size(), Eq(77));
+  std::vector<Length> errors;
+  for (auto const& [time, degrees_of_freedom] : circle) {
+    errors.push_back((downsampled_circle.EvaluatePosition(time) -
+                      degrees_of_freedom.position()).Norm());
+  }
+  EXPECT_THAT(errors, Each(Lt(1 * Milli(Metre))));
+  EXPECT_THAT(errors, Contains(Gt(9 * Micro(Metre))))
+      << *std::max_element(errors.begin(), errors.end());
 }
 
 }  // namespace physics
