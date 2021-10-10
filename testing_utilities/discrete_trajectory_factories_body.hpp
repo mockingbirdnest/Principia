@@ -134,8 +134,8 @@ NewCircularTrajectorySegment(Time const& period,
 template<typename Frame>
 void AppendTrajectorySegments(Segments<Frame> const& from,
                               Segments<Frame>& to) {
-  for (auto const& [t, dof] : from) {
-    to.Append(t, dof);
+  for (auto const& [t, dof] : *from.front()) {
+    DiscreteTrajectoryFactoriesFriend<Frame>::Append(t, dof, to.rbegin());
   }
 }
 

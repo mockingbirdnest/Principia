@@ -2,19 +2,15 @@
 
 #include <cstdint>
 #include <iterator>
-#include <memory>
-#include <optional>
 
 #include "absl/container/btree_map.h"
 #include "absl/container/btree_set.h"
 #include "absl/status/status.h"
-#include "base/macros.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_iterator.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/discrete_trajectory_types.hpp"
-#include "quantities/quantities.hpp"
 
 namespace principia {
 
