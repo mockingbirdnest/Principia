@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <cstdint>
 #include <iterator>
@@ -13,6 +13,13 @@
 #include "physics/discrete_trajectory_types.hpp"
 
 namespace principia {
+
+namespace testing_utilities {
+FORWARD_DECLARE_FROM(discrete_trajectory_factories,
+                     TEMPLATE(typename Frame) class,
+                     DiscreteTrajectoryFactoriesFriend);
+}  // namespace testing_utilities
+
 namespace physics {
 
 class DiscreteTrajectoryIteratorTest;
@@ -106,8 +113,12 @@ class DiscreteTrajectorySegment {
   template<typename F>
   friend class internal_discrete_trajectory_iterator::
       DiscreteTrajectoryIterator;
-  friend class DiscreteTrajectoryIteratorTest;
-  friend class DiscreteTrajectorySegmentTest;
+
+  // For testing.
+  friend class physics::DiscreteTrajectoryIteratorTest;
+  friend class physics::DiscreteTrajectorySegmentTest;
+  template<typename F>
+  friend class testing_utilities::DiscreteTrajectoryFactoriesFriend;
 };
 
 }  // namespace internal_discrete_trajectory_segment
