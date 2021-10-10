@@ -67,9 +67,13 @@ class DiscreteTrajectorySegment {
   absl::Status Append(Instant const& t,
                       DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
+  // Removes all points with a time greater than or equal to |t| (1st overload)
+  // or starting at |begin| (2nd overload).
   void ForgetAfter(Instant const& t);
   void ForgetAfter(typename Timeline::const_iterator begin);
 
+  // Removes all points with a time strictly less than |t| (1st overload) or
+  // ending at |end| (2nd overload).
   void ForgetBefore(Instant const& t);
   void ForgetBefore(typename Timeline::const_iterator end);
 

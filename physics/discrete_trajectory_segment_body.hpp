@@ -111,18 +111,30 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
 }
 
 template<typename Frame>
-void DiscreteTrajectorySegment<Frame>::ForgetAfter(Instant const& t) {}
+void DiscreteTrajectorySegment<Frame>::ForgetAfter(Instant const& t) {
+  ForgetAfter(timeline_.lower_bound(t));
+  // TODO(phl): Downsampling.
+}
 
 template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::ForgetAfter(
-    typename Timeline::const_iterator const begin) {}
+    typename Timeline::const_iterator const begin) {
+  timeline_.erase(begin, timeline_.end());
+  // TODO(phl): Downsampling.
+}
 
 template<typename Frame>
-void DiscreteTrajectorySegment<Frame>::ForgetBefore(Instant const& t) {}
+void DiscreteTrajectorySegment<Frame>::ForgetBefore(Instant const& t) {
+  ForgetBefore(timeline_.lower_bound(t));
+  // TODO(phl): Downsampling.
+}
 
 template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::ForgetBefore(
-    typename Timeline::const_iterator const end) {}
+    typename Timeline::const_iterator const end) {
+  timeline_.erase(timeline_.begin(), end);
+  // TODO(phl): Downsampling.
+}
 
 template<typename Frame>
 typename DiscreteTrajectorySegment<Frame>::Timeline::const_iterator

@@ -36,6 +36,14 @@ class DiscreteTrajectorySegmentTest : public ::testing::Test {
     segment_->Append(t0_ + 11 * Second, unmoving_origin_);
   }
 
+  void ForgetAfter(Instant const& t) {
+    segment_->ForgetAfter(t);
+  }
+
+  void ForgetBefore(Instant const& t) {
+    segment_->ForgetBefore(t);
+  }
+
   DiscreteTrajectorySegment<World>* segment_;
   internal_discrete_trajectory_types::Segments<World> segments_;
   Instant const t0_;
@@ -104,6 +112,36 @@ TEST_F(DiscreteTrajectorySegmentTest, LowerBoundUpperBound) {
 TEST_F(DiscreteTrajectorySegmentTest, EmptySize) {
   EXPECT_FALSE(segment_->empty());
   EXPECT_EQ(5, segment_->size());
+}
+
+TEST_F(DiscreteTrajectorySegmentTest, ForgetAfterExisting) {
+  ForgetAfter(t0_ + 5 * Second);
+  EXPECT_EQ(t0_ + 3 * Second, segment_->rbegin()->first);
+}
+
+TEST_F(DiscreteTrajectorySegmentTest, ForgetAfterNonexisting) {
+  ForgetAfter(t0_ + 6 * Second);
+  EXPECT_EQ(t0_ + 5 * Second, segment_->rbegin()->first);
+}
+
+TEST_F(DiscreteTrajectorySegmentTest, ForgetAfterPastTheEnd) {
+  ForgetAfter(t0_ + 29 * Second);
+  EXPECT_EQ(t0_ + 11 * Second, segment_->rbegin()->first);
+}
+
+TEST_F(DiscreteTrajectorySegmentTest, ForgetBeforeExisting) {
+  ForgetBefore(t0_ + 7 * Second);
+  EXPECT_EQ(t0_ + 7 * Second, segment_->begin()->first);
+}
+
+TEST_F(DiscreteTrajectorySegmentTest, ForgetBeforeNonexisting) {
+  ForgetBefore(t0_ + 6 * Second);
+  EXPECT_EQ(t0_ + 7 * Second, segment_->begin()->first);
+}
+
+TEST_F(DiscreteTrajectorySegmentTest, ForgetBeforeTheBeginning) {
+  ForgetBefore(t0_ + 1 * Second);
+  EXPECT_EQ(t0_ + 2 * Second, segment_->begin()->first);
 }
 
 }  // namespace physics
