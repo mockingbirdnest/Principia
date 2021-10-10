@@ -11,6 +11,7 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/discrete_trajectory_factories.hpp"
 
 namespace principia {
 namespace physics {
@@ -26,6 +27,10 @@ using quantities::si::Micro;
 using quantities::si::Milli;
 using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::AppendTrajectorySegment;
+using testing_utilities::NewCircularTrajectorySegment;
+using testing_utilities::NewEmptyTrajectorySegment;
+using ::testing::Contains;
 using ::testing::Each;
 using ::testing::Eq;
 using ::testing::Gt;
@@ -158,22 +163,19 @@ TEST_F(DiscreteTrajectorySegmentTest, ForgetBeforeTheBeginning) {
 }
 
 TEST_F(DiscreteTrajectorySegmentTest, Evaluate) {
-  DiscreteTrajectorySegment<World> circle;
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
   Time const Δt = 10 * Milli(Second);
   Instant const t1 = t0_;
   Instant const t2 = t0_ + 10 * Second;
-  AppendTrajectorySegment(
-      *NewCircularTrajectorySegment<World>(ω, r, Δt, t1, t2)->front(),
-      /*to=*/circle);
+  auto circle = NewCircularTrajectorySegment<World>(ω, r, Δt, t1, t2);
+  auto& segment = **circle->cbegin();
 
-  EXPECT_THAT(circle.size(), Eq(1001));
-  EXPECT_THAT(downsampled_circle.size(), Eq(77));
+  EXPECT_THAT(segment.size(), Eq(1001));
   std::vector<Length> errors;
-  for (auto const& [time, degrees_of_freedom] : circle) {
-    errors.push_back((downsampled_circle.EvaluatePosition(time) -
-                      degrees_of_freedom.position()).Norm());
+  for (auto const& [time, degrees_of_freedom] : segment) {
+    errors.push_back((degrees_of_freedom.position() - World::origin).Norm() -
+                     r);
   }
   EXPECT_THAT(errors, Each(Lt(1 * Milli(Metre))));
   EXPECT_THAT(errors, Contains(Gt(9 * Micro(Metre))))
