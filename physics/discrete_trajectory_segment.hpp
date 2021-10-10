@@ -2,9 +2,9 @@
 
 #include <cstdint>
 #include <iterator>
+#include <optional>
 
 #include "absl/container/btree_map.h"
-#include "absl/container/btree_set.h"
 #include "absl/status/status.h"
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -64,6 +64,9 @@ class DiscreteTrajectorySegment {
   virtual std::int64_t size() const;
 
  private:
+  using DownsamplingParameters =
+      internal_discrete_trajectory_types::DownsamplingParameters;
+
   absl::Status Append(Instant const& t,
                       DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
@@ -77,13 +80,28 @@ class DiscreteTrajectorySegment {
   void ForgetBefore(Instant const& t);
   void ForgetBefore(typename Timeline::const_iterator end);
 
+  // This segment must not be already downsampling.  Occasionally removes
+  // intermediate points from the segment when |Append|ing, ensuring that
+  // positions remain within the desired tolerance.
+  void SetDownsampling(DownsamplingParameters const& downsampling_parameters);
+
+  // Clear the downsampling parameters.  From now on, all points appended to the
+  // segment are going to be retained.
+  void ClearDownsampling();
+
+  //TODO(phl): comment
+  absl::Status DownsampleIfNeeded();
+
   virtual typename Timeline::const_iterator timeline_begin() const;
   virtual typename Timeline::const_iterator timeline_end() const;
 
-  DiscreteTrajectorySegmentIterator<Frame> self_;
+  std::optional<DownsamplingParameters> downsampling_parameters_;
 
+  DiscreteTrajectorySegmentIterator<Frame> self_;
   Timeline timeline_;
-  absl::btree_set<Instant> dense_points_;
+
+  //TODO(phl):comment
+  std::int64_t number_of_dense_intervals_ = 0;
 
   template<typename F>
   friend class internal_discrete_trajectory_iterator::
