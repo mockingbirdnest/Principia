@@ -2,9 +2,11 @@
 
 #include <memory>
 
+#include "absl/status/status.h"
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/discrete_trajectory_segment.hpp"
 #include "physics/discrete_trajectory_types.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -17,6 +19,7 @@ using base::not_null;
 using geometry::Instant;
 using geometry::Velocity;
 using physics::DegreesOfFreedom;
+using physics::DiscreteTrajectorySegment;
 using physics::internal_discrete_trajectory_types::Segments;
 using quantities::AngularFrequency;
 using quantities::Length;
