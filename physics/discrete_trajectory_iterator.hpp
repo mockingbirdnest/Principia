@@ -25,10 +25,10 @@ template<typename Frame>
 class DiscreteTrajectoryIterator {
  public:
   using difference_type = std::int64_t;
-  using pointer = value_type const*;
-  using reference = value_type const&;
   using value_type =
       typename internal_discrete_trajectory_types::Timeline<Frame>::value_type;
+  using pointer = value_type const*;
+  using reference = value_type const&;
 
   DiscreteTrajectoryIterator() = default;
 
