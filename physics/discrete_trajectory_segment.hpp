@@ -109,7 +109,9 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   // segment are going to be retained.
   void ClearDownsampling();
 
-  //TODO(phl): comment
+  // Called by |Append| after appending a point to this segment.  If
+  // appropriate, performs downsampling and deletes some of the points of the
+  // segment.
   absl::Status DownsampleIfNeeded();
 
   // Returns the Hermite interpolation for the left-open, right-closed
@@ -125,7 +127,8 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   DiscreteTrajectorySegmentIterator<Frame> self_;
   Timeline timeline_;
 
-  //TODO(phl):comment
+  // The number of points at the end of the segment that are part of a "dense"
+  // span, i.e., have not been subjected to downsampling yet.
   std::int64_t number_of_dense_points_ = 0;
 
   template<typename F>
