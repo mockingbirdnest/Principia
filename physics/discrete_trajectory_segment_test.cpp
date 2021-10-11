@@ -35,6 +35,7 @@ using quantities::si::Second;
 using testing_utilities::AppendTrajectorySegment;
 using testing_utilities::IsNear;
 using testing_utilities::NewCircularTrajectorySegment;
+using testing_utilities::NewEmptyTrajectorySegment;
 using testing_utilities::operator""_⑴;
 using ::testing::Eq;
 
@@ -198,10 +199,10 @@ TEST_F(DiscreteTrajectorySegmentTest, Evaluate) {
 }
 
 TEST_F(DiscreteTrajectorySegmentTest, Downsampling) {
-  DiscreteTrajectorySegment<World> circle;
-  DiscreteTrajectorySegment<World> downsampled_circle;
+  auto const circle = NewEmptyTrajectorySegment<World>();
+  auto const downsampled_circle = NewEmptyTrajectorySegment<World>();
   SetDownsampling({.max_dense_intervals = 50, .tolerance = 1 * Milli(Metre)},
-                  downsampled_circle);
+                  *downsampled_circle->front());
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
   Time const Δt = 10 * Milli(Second);
@@ -209,25 +210,27 @@ TEST_F(DiscreteTrajectorySegmentTest, Downsampling) {
   Instant const t2 = t0_ + 10 * Second;
   AppendTrajectorySegment(
       *NewCircularTrajectorySegment<World>(ω, r, Δt, t1, t2)->front(),
-      /*to=*/circle);
+      /*to=*/*circle->front());
   AppendTrajectorySegment(
       *NewCircularTrajectorySegment<World>(ω, r, Δt, t1, t2)->front(),
-      /*to=*/downsampled_circle);
+      /*to=*/*downsampled_circle->front());
 
-  EXPECT_THAT(circle.size(), Eq(1001));
-  EXPECT_THAT(downsampled_circle.size(), Eq(77));
+  EXPECT_THAT(circle->front()->size(), Eq(1001));
+  EXPECT_THAT(downsampled_circle->front()->size(), Eq(77));
   std::vector<Length> position_errors;
   std::vector<Speed> velocity_errors;
-  for (auto const& [time, degrees_of_freedom] : circle) {
-    position_errors.push_back((downsampled_circle.EvaluatePosition(time) -
-                               degrees_of_freedom.position()).Norm());
-    velocity_errors.push_back((downsampled_circle.EvaluateVelocity(time) -
-                               degrees_of_freedom.velocity()).Norm());
+  for (auto const& [time, degrees_of_freedom] : *circle->front()) {
+    position_errors.push_back(
+        (downsampled_circle->front()->EvaluatePosition(time) -
+         degrees_of_freedom.position()).Norm());
+    velocity_errors.push_back(
+        (downsampled_circle->front()->EvaluateVelocity(time) -
+         degrees_of_freedom.velocity()).Norm());
   }
   EXPECT_THAT(*std::max_element(position_errors.begin(), position_errors.end()),
-              IsNear(4.2_⑴ * Nano(Metre)));
+              IsNear(0.98_⑴ * Milli(Metre)));
   EXPECT_THAT(*std::max_element(velocity_errors.begin(), velocity_errors.end()),
-              IsNear(10.4_⑴ * Nano(Metre / Second)));
+              IsNear(14_⑴ * Milli(Metre / Second)));
 }
 
 }  // namespace physics

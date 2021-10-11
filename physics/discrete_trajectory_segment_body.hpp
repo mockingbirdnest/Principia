@@ -182,8 +182,8 @@ void DiscreteTrajectorySegment<Frame>::ForgetAfter(
     typename Timeline::const_iterator const begin) {
   std::int64_t number_of_points_to_remove =
       std::distance(begin, timeline_.cend());
-  number_of_dense_intervals_ =
-      std::max(0LL, number_of_dense_intervals_ - number_of_points_to_remove);
+  number_of_dense_points_ =
+      std::max(0LL, number_of_dense_points_ - number_of_points_to_remove);
 
   timeline_.erase(begin, timeline_.cend());
 }
@@ -198,8 +198,8 @@ void DiscreteTrajectorySegment<Frame>::ForgetBefore(
     typename Timeline::const_iterator const end) {
   std::int64_t number_of_points_to_remove =
       std::distance(timeline_.cbegin(), end);
-  number_of_dense_intervals_ =
-      std::max(0LL, number_of_dense_intervals_ - number_of_points_to_remove);
+  number_of_dense_points_ =
+      std::max(0LL, number_of_dense_points_ - number_of_points_to_remove);
 
   timeline_.erase(timeline_.cbegin(), end);
 }
@@ -210,7 +210,7 @@ void DiscreteTrajectorySegment<Frame>::SetDownsampling(
   // TODO(phl): Do we need this precondition?
   CHECK(!downsampling_parameters_.has_value());
   downsampling_parameters_ = downsampling_parameters;
-  number_of_dense_intervals_ = 0;
+  number_of_dense_points_ = timeline_.empty() ? 0 : 1;
 }
 
 template<typename Frame>
@@ -220,16 +220,16 @@ void DiscreteTrajectorySegment<Frame>::ClearDownsampling() {
 
 template<typename Frame>
 absl::Status DiscreteTrajectorySegment<Frame>::DownsampleIfNeeded() {
-  ++number_of_dense_intervals_;
-  if (number_of_dense_intervals_ >=
+  ++number_of_dense_points_;
+  // Points, hence one more than intervals.
+  if (number_of_dense_points_ >
       downsampling_parameters_->max_dense_intervals) {
-    // This contains points, hence one more than intervals.
     using ConstIterators = std::vector<typename Timeline::const_iterator>;
-    ConstIterators dense_iterators(number_of_dense_intervals_ + 1);
+    ConstIterators dense_iterators(number_of_dense_points_);
     CHECK_LE(dense_iterators.size(), timeline_.size());
     auto it = timeline_.crbegin();
     for (int i = dense_iterators.size() - 1; i >= 0; --i) {
-      dense_iterators[i] = it.base();
+      dense_iterators[i] = std::prev(it.base());
       ++it;
     }
 
@@ -247,19 +247,28 @@ absl::Status DiscreteTrajectorySegment<Frame>::DownsampleIfNeeded() {
     }
 
     if (right_endpoints->empty()) {
-      number_of_dense_intervals_ = 0;
+      number_of_dense_points_ = timeline_.empty() ? 0 : 1;
       return absl::OkStatus();
     }
 
-    // Poke holes in the timeline at the places given by |right_endpoints|.
-    typename Timeline::const_iterator left = dense_iterators.front();
-    for (const auto& it_in_dense_iterators : right_endpoints.value()) {
-      typename Timeline::const_iterator const right = *it_in_dense_iterators;
-      timeline_.erase(++left, right);
-      left = right;
+    // Obtain the times for the right endpoints.  This is necessary because we
+    // cannot use iterators for erasing points, as they would get invalidated
+    // after the first erasure.
+    std::vector<Instant> right_endpoints_times;
+    right_endpoints_times.reserve(right_endpoints.value().size());
+    for (auto const& it_in_dense_iterators : right_endpoints.value()) {
+      right_endpoints_times.push_back((*it_in_dense_iterators)->first);
     }
 
-    number_of_dense_intervals_ = std::distance(left, timeline_.cend()) - 1;
+    // Poke holes in the timeline at the places given by
+    // |right_endpoints_times|.  This requires two lookups per erasure.
+    auto left_it = dense_iterators.front();
+    for (Instant const& right : right_endpoints_times) {
+      ++left_it;
+      auto const right_it = timeline_.find(right);
+      left_it = timeline_.erase(left_it, right_it);
+    }
+    number_of_dense_points_ = std::distance(left_it, timeline_.cend());
   }
   return absl::OkStatus();
 }

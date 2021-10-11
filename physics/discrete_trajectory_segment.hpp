@@ -126,7 +126,7 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   Timeline timeline_;
 
   //TODO(phl):comment
-  std::int64_t number_of_dense_intervals_ = 0;
+  std::int64_t number_of_dense_points_ = 0;
 
   template<typename F>
   friend class internal_discrete_trajectory_iterator::
