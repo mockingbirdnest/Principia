@@ -193,7 +193,7 @@ void DiscreteTrajectorySegment<Frame>::ForgetBefore(
 template<typename Frame>
 Hermite3<Instant, Position<Frame>>
 DiscreteTrajectorySegment<Frame>::GetInterpolation(
-    typename Timeline::const_iterator const& upper) const {
+    typename Timeline::const_iterator const upper) const {
   CHECK(upper != timeline_.cbegin());
   auto const lower = std::prev(upper);
   auto const& [lower_time, lower_degrees_of_freedom] = *lower;

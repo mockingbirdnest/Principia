@@ -27,15 +27,12 @@ using quantities::Length;
 using quantities::Speed;
 using quantities::Time;
 using quantities::si::Metre;
-using quantities::si::Micro;
 using quantities::si::Milli;
 using quantities::si::Nano;
 using quantities::si::Radian;
 using quantities::si::Second;
-using testing_utilities::AppendTrajectorySegment;
 using testing_utilities::IsNear;
 using testing_utilities::NewCircularTrajectorySegment;
-using testing_utilities::NewEmptyTrajectorySegment;
 using testing_utilities::operator""_⑴;
 using ::testing::Eq;
 
