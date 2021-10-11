@@ -46,6 +46,11 @@ class DiscreteTrajectoryFactoriesFriend {
 // TODO(phl): Must return unique_ptr because copying Segments is a bad idea due
 // to the pointers within iterators.
 
+// An empty trajectory.  Convenient for initializations.
+template<typename Frame>
+not_null<std::unique_ptr<Segments<Frame>>>
+NewEmptyTrajectorySegment();
+
 // A linear trajectory with constant velocity, going through
 // |degrees_of_freedom.position()| at t = 0.  The first point is at time |t1|,
 // the last point at a time < |t2|.
@@ -88,6 +93,7 @@ void AppendTrajectorySegment(DiscreteTrajectorySegment<Frame> const& from,
 
 using internal_discrete_trajectory_factories::AppendTrajectorySegment;
 using internal_discrete_trajectory_factories::NewCircularTrajectorySegment;
+using internal_discrete_trajectory_factories::NewEmptyTrajectorySegment;
 using internal_discrete_trajectory_factories::NewLinearTrajectorySegment;
 
 }  // namespace testing_utilities
