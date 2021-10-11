@@ -1,6 +1,7 @@
-#include "physics/discrete_trajectory_segment.hpp"
+﻿#include "physics/discrete_trajectory_segment.hpp"
 
 #include <memory>
+#include <vector>
 
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
@@ -8,7 +9,12 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/discrete_trajectory_types.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
+#include "testing_utilities/discrete_trajectory_factories.hpp"
+#include "testing_utilities/is_near.hpp"
 
 namespace principia {
 namespace physics {
@@ -16,7 +22,20 @@ namespace physics {
 using base::check_not_null;
 using geometry::Frame;
 using geometry::Instant;
+using quantities::Abs;
+using quantities::AngularFrequency;
+using quantities::Length;
+using quantities::Speed;
+using quantities::Time;
+using quantities::si::Metre;
+using quantities::si::Milli;
+using quantities::si::Nano;
+using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::IsNear;
+using testing_utilities::NewCircularTrajectorySegment;
+using testing_utilities::operator""_⑴;
+using ::testing::Eq;
 
 class DiscreteTrajectorySegmentTest : public ::testing::Test {
  protected:
@@ -142,6 +161,32 @@ TEST_F(DiscreteTrajectorySegmentTest, ForgetBeforeNonexisting) {
 TEST_F(DiscreteTrajectorySegmentTest, ForgetBeforeTheBeginning) {
   ForgetBefore(t0_ + 1 * Second);
   EXPECT_EQ(t0_ + 2 * Second, segment_->begin()->first);
+}
+
+TEST_F(DiscreteTrajectorySegmentTest, Evaluate) {
+  AngularFrequency const ω = 3 * Radian / Second;
+  Length const r = 2 * Metre;
+  Time const Δt = 10 * Milli(Second);
+  Instant const t1 = t0_;
+  Instant const t2 = t0_ + 10 * Second;
+  auto circle = NewCircularTrajectorySegment<World>(ω, r, Δt, t1, t2);
+  auto& segment = **circle->cbegin();
+
+  EXPECT_THAT(segment.size(), Eq(1001));
+  std::vector<Length> position_errors;
+  std::vector<Speed> velocity_errors;
+  for (Instant t = segment.t_min();
+       t <= segment.t_max();
+       t += 1 * Milli(Second)) {
+    position_errors.push_back(
+        Abs((segment.EvaluatePosition(t) - World::origin).Norm() - r));
+    velocity_errors.push_back(
+        Abs(segment.EvaluateVelocity(t).Norm() - r * ω / Radian));
+  }
+  EXPECT_THAT(*std::max_element(position_errors.begin(), position_errors.end()),
+              IsNear(4.2_⑴ * Nano(Metre)));
+  EXPECT_THAT(*std::max_element(velocity_errors.begin(), velocity_errors.end()),
+              IsNear(10.4_⑴ * Nano(Metre / Second)));
 }
 
 }  // namespace physics

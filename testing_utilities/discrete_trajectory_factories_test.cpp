@@ -39,6 +39,12 @@ class DiscreteTrajectoryFactoriesTest : public ::testing::Test {
                       serialization::Frame::TEST>;
 };
 
+TEST_F(DiscreteTrajectoryFactoriesTest, NewEmptyTrajectorySegment) {
+  auto const segments = NewEmptyTrajectorySegment<World>();
+  auto const& segment = *segments->front();
+  EXPECT_TRUE(segment.empty());
+}
+
 TEST_F(DiscreteTrajectoryFactoriesTest, NewLinearTrajectorySegment) {
   auto const segments = NewLinearTrajectorySegment<World>(
       /*degrees_of_freedom=*/
