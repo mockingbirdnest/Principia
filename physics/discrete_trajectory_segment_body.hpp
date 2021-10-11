@@ -262,7 +262,7 @@ absl::Status DiscreteTrajectorySegment<Frame>::DownsampleIfNeeded() {
     }
 
     // Poke holes in the timeline at the places given by
-    // |right_endpoints_times|.  This requires two lookups per erasure.
+    // |right_endpoints_times|.  This requires one lookup per erasure.
     auto left_it = dense_iterators.front();
     for (Instant const& right : right_endpoints_times) {
       ++left_it;
