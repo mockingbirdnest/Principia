@@ -1,6 +1,7 @@
 ﻿#include "physics/discrete_trajectory_segment.hpp"
 
 #include <memory>
+#include <vector>
 
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
