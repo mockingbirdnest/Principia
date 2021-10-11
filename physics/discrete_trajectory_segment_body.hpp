@@ -224,6 +224,7 @@ absl::Status DiscreteTrajectorySegment<Frame>::DownsampleIfNeeded() {
   // Points, hence one more than intervals.
   if (number_of_dense_points_ >
       downsampling_parameters_->max_dense_intervals) {
+    // Obtain iterators for all the dense points of the segment.
     using ConstIterators = std::vector<typename Timeline::const_iterator>;
     ConstIterators dense_iterators(number_of_dense_points_);
     CHECK_LE(dense_iterators.size(), timeline_.size());
