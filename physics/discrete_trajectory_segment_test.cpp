@@ -32,6 +32,7 @@ using quantities::si::Milli;
 using quantities::si::Nano;
 using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::AppendTrajectorySegment;
 using testing_utilities::IsNear;
 using testing_utilities::NewCircularTrajectorySegment;
 using testing_utilities::operator""_⑴;
@@ -215,14 +216,18 @@ TEST_F(DiscreteTrajectorySegmentTest, Downsampling) {
 
   EXPECT_THAT(circle.size(), Eq(1001));
   EXPECT_THAT(downsampled_circle.size(), Eq(77));
-  std::vector<Length> errors;
+  std::vector<Length> position_errors;
+  std::vector<Speed> velocity_errors;
   for (auto const& [time, degrees_of_freedom] : circle) {
-    errors.push_back((downsampled_circle.EvaluatePosition(time) -
-                      degrees_of_freedom.position()).Norm());
+    position_errors.push_back((downsampled_circle.EvaluatePosition(time) -
+                               degrees_of_freedom.position()).Norm());
+    velocity_errors.push_back((downsampled_circle.EvaluateVelocity(time) -
+                               degrees_of_freedom.velocity()).Norm());
   }
-  EXPECT_THAT(errors, Each(Lt(1 * Milli(Metre))));
-  EXPECT_THAT(errors, Contains(Gt(9 * Micro(Metre))))
-      << *std::max_element(errors.begin(), errors.end());
+  EXPECT_THAT(*std::max_element(position_errors.begin(), position_errors.end()),
+              IsNear(4.2_⑴ * Nano(Metre)));
+  EXPECT_THAT(*std::max_element(velocity_errors.begin(), velocity_errors.end()),
+              IsNear(10.4_⑴ * Nano(Metre / Second)));
 }
 
 }  // namespace physics
