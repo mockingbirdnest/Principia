@@ -11,7 +11,9 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/discrete_trajectory_factories.hpp"
+#include "testing_utilities/is_near.hpp"
 
 namespace principia {
 namespace physics {
@@ -22,6 +24,7 @@ using geometry::Instant;
 using quantities::Abs;
 using quantities::AngularFrequency;
 using quantities::Length;
+using quantities::Speed;
 using quantities::Time;
 using quantities::si::Metre;
 using quantities::si::Micro;
@@ -30,13 +33,11 @@ using quantities::si::Nano;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AppendTrajectorySegment;
+using testing_utilities::IsNear;
 using testing_utilities::NewCircularTrajectorySegment;
 using testing_utilities::NewEmptyTrajectorySegment;
-using ::testing::Contains;
-using ::testing::Each;
+using testing_utilities::operator""_⑴;
 using ::testing::Eq;
-using ::testing::Gt;
-using ::testing::Lt;
 
 class DiscreteTrajectorySegmentTest : public ::testing::Test {
  protected:
@@ -174,16 +175,20 @@ TEST_F(DiscreteTrajectorySegmentTest, Evaluate) {
   auto& segment = **circle->cbegin();
 
   EXPECT_THAT(segment.size(), Eq(1001));
-  std::vector<Length> errors;
+  std::vector<Length> position_errors;
+  std::vector<Speed> velocity_errors;
   for (Instant t = segment.t_min();
        t <= segment.t_max();
        t += 1 * Milli(Second)) {
-    errors.push_back(
+    position_errors.push_back(
         Abs((segment.EvaluatePosition(t) - World::origin).Norm() - r));
+    velocity_errors.push_back(
+        Abs(segment.EvaluateVelocity(t).Norm() - r * ω / Radian));
   }
-  EXPECT_THAT(errors, Each(Lt(5 * Nano(Metre))));
-  EXPECT_THAT(errors, Contains(Gt(4 * Nano(Metre))))
-      << *std::max_element(errors.begin(), errors.end());
+  EXPECT_THAT(*std::max_element(position_errors.begin(), position_errors.end()),
+              IsNear(4.2_⑴ * Nano(Metre)));
+  EXPECT_THAT(*std::max_element(velocity_errors.begin(), velocity_errors.end()),
+              IsNear(10.4_⑴ * Nano(Metre / Second)));
 }
 
 }  // namespace physics
