@@ -4,6 +4,8 @@
 
 #include <algorithm>
 #include <iterator>
+#include <list>
+#include <vector>
 
 #include "astronomy/epoch.hpp"
 #include "geometry/named_quantities.hpp"
