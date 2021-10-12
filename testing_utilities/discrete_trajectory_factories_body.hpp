@@ -47,7 +47,7 @@ not_null<std::unique_ptr<Segments<Frame>>>
 NewEmptyTrajectorySegment() {
   auto segments = std::make_unique<Segments<Frame>>(1);
   auto const it = segments->begin();
-  *it = std::make_unique<DiscreteTrajectorySegment<Frame>>(
+  *it = DiscreteTrajectorySegment<Frame>(
       DiscreteTrajectoryFactoriesFriend<Frame>::MakeDiscreteTrajectorySegment(
           *segments, it));
   return segments;
@@ -90,7 +90,7 @@ NewCircularTrajectorySegment(AngularFrequency const& ω,
                              Instant const& t2) {
   static Instant const t0;
   auto segments = NewEmptyTrajectorySegment<Frame>();
-  auto& segment = **segments->cbegin();
+  auto& segment = *segments->begin();
   Speed const v = ω * r / Radian;
   for (auto t = t1; t < t2; t += Δt) {
     DegreesOfFreedom<Frame> const dof = {

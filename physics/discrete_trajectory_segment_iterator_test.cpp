@@ -42,9 +42,9 @@ TEST_F(DiscreteTrajectorySegmentIteratorTest, Basic) {
   auto const& mock3 = *owned_mock3;
 
   Segments segments;
-  segments.push_back(std::move(owned_mock1));
-  segments.push_back(std::move(owned_mock2));
-  segments.push_back(std::move(owned_mock3));
+  segments.push_back(std::move(*owned_mock1));
+  segments.push_back(std::move(*owned_mock2));
+  segments.push_back(std::move(*owned_mock3));
 
   EXPECT_CALL(mock1, size()).WillRepeatedly(Return(5));
   EXPECT_CALL(mock2, size()).WillRepeatedly(Return(1));

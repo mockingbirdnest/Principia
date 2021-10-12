@@ -59,11 +59,11 @@ class DiscreteTrajectoryIteratorTest : public ::testing::Test {
     auto const& mock2 = *owned_mock2;
     auto const& mock3 = *owned_mock3;
 
-    segments_.push_back(std::move(owned_mock1));
+    segments_.push_back(std::move(*owned_mock1));
     auto const it1 = --segments_.end();
-    segments_.push_back(std::move(owned_mock2));
+    segments_.push_back(std::move(*owned_mock2));
     auto const it2 = --segments_.end();
-    segments_.push_back(std::move(owned_mock3));
+    segments_.push_back(std::move(*owned_mock3));
     auto const it3 = --segments_.end();
 
     FillSegment(it1,
@@ -95,8 +95,13 @@ class DiscreteTrajectoryIteratorTest : public ::testing::Test {
   }
 
   FakeDiscreteTrajectorySegment<World>* DownCast(
-      std::unique_ptr<DiscreteTrajectorySegment<World>> const& segment) {
-    return dynamic_cast<FakeDiscreteTrajectorySegment<World>*>(segment.get());
+      DiscreteTrajectorySegment<World>& segment) {
+    return dynamic_cast<FakeDiscreteTrajectorySegment<World>*>(&segment);
+  }
+
+  FakeDiscreteTrajectorySegment<World> const* DownCast(
+      DiscreteTrajectorySegment<World> const& segment) {
+    return dynamic_cast<FakeDiscreteTrajectorySegment<World> const*>(&segment);
   }
 
   void FillSegment(Segments::iterator const it, Timeline const& timeline) {

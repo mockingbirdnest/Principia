@@ -33,13 +33,13 @@ DiscreteTrajectorySegmentIterator<Frame>::operator--(int) {  // NOLINT
 template<typename Frame>
 internal_discrete_trajectory_segment::DiscreteTrajectorySegment<Frame> const&
 DiscreteTrajectorySegmentIterator<Frame>::operator*() const {
-  return **iterator_;
+  return *iterator_;
 }
 
 template<typename Frame>
 internal_discrete_trajectory_segment::DiscreteTrajectorySegment<Frame> const*
 DiscreteTrajectorySegmentIterator<Frame>::operator->() const {
-  return iterator_->get();
+  return &*iterator_;
 }
 
 template<typename Frame>
