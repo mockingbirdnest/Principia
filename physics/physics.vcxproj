@@ -32,6 +32,7 @@
     <ClInclude Include="checkpointer.hpp" />
     <ClInclude Include="checkpointer_body.hpp" />
     <ClInclude Include="discrete_trajectory2.hpp" />
+    <ClInclude Include="discrete_trajectory2_body.hpp" />
     <ClInclude Include="discrete_trajectory_iterator.hpp" />
     <ClInclude Include="discrete_trajectory_iterator_body.hpp" />
     <ClInclude Include="discrete_trajectory_segment.hpp" />

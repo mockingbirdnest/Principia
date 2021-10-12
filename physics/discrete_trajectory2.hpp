@@ -24,7 +24,7 @@ FORWARD_DECLARE_FROM(discrete_trajectory_segment,
                      TEMPLATE(typename Frame) class,
                      DiscreteTrajectorySegment);
 
-namespace internal_discrete_trajectory {
+namespace internal_discrete_trajectory2 {
 
 using base::not_null;
 using geometry::Instant;
@@ -116,9 +116,11 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
   Segments segments_;
 };
 
-}  // namespace internal_discrete_trajectory
+}  // namespace internal_discrete_trajectory2
 
-using internal_discrete_trajectory::DiscreteTrajectory2;
+using internal_discrete_trajectory2::DiscreteTrajectory2;
 
 }  // namespace physics
 }  // namespace principia
+
+#include "physics/discrete_trajectory2_body.hpp"
