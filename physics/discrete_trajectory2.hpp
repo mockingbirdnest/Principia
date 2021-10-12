@@ -113,7 +113,12 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
  private:
   using Segments = internal_discrete_trajectory_types::Segments<Frame>;
 
-  Segments segments_;
+  // We need a level of indirection here to make sure that the pointer to
+  // Segments in the DiscreteTrajectorySegmentIterator remain valid.
+  std::unique_ptr<Segments> segments_;
+
+  //TODO(phl):right? left?
+  absl::btree_map<Instant, Segments::const_iterator> segment_by_right_endpoint_;
 };
 
 }  // namespace internal_discrete_trajectory2
