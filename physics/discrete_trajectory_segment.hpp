@@ -2,9 +2,9 @@
 
 #include <cstdint>
 #include <iterator>
+#include <optional>
 
 #include "absl/container/btree_map.h"
-#include "absl/container/btree_set.h"
 #include "absl/status/status.h"
 #include "geometry/named_quantities.hpp"
 #include "numerics/hermite3.hpp"
@@ -84,6 +84,9 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
       Instant const& t) const override;
 
  private:
+  using DownsamplingParameters =
+      internal_discrete_trajectory_types::DownsamplingParameters;
+
   absl::Status Append(Instant const& t,
                       DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
@@ -97,6 +100,20 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   void ForgetBefore(Instant const& t);
   void ForgetBefore(typename Timeline::const_iterator end);
 
+  // This segment must have 0 or 1 points.  Occasionally removes intermediate
+  // points from the segment when |Append|ing, ensuring that positions remain
+  // within the desired tolerance.
+  void SetDownsampling(DownsamplingParameters const& downsampling_parameters);
+
+  // Clear the downsampling parameters.  From now on, all points appended to the
+  // segment are going to be retained.
+  void ClearDownsampling();
+
+  // Called by |Append| after appending a point to this segment.  If
+  // appropriate, performs downsampling and deletes some of the points of the
+  // segment.
+  absl::Status DownsampleIfNeeded();
+
   // Returns the Hermite interpolation for the left-open, right-closed
   // trajectory segment bounded above by |upper|.
   Hermite3<Instant, Position<Frame>> GetInterpolation(
@@ -105,10 +122,14 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   virtual typename Timeline::const_iterator timeline_begin() const;
   virtual typename Timeline::const_iterator timeline_end() const;
 
-  DiscreteTrajectorySegmentIterator<Frame> self_;
+  std::optional<DownsamplingParameters> downsampling_parameters_;
 
+  DiscreteTrajectorySegmentIterator<Frame> self_;
   Timeline timeline_;
-  absl::btree_set<Instant> dense_points_;
+
+  // The number of points at the end of the segment that are part of a "dense"
+  // span, i.e., have not been subjected to downsampling yet.
+  std::int64_t number_of_dense_points_ = 0;
 
   template<typename F>
   friend class internal_discrete_trajectory_iterator::
