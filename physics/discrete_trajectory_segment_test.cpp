@@ -277,9 +277,6 @@ TEST_F(DiscreteTrajectorySegmentTest, DownsamplingForgetAfter) {
 
   // Check that the two trajectories are identical.
   for (auto const [t, degrees_of_freedom] : *forgotten_circle->front()) {
-    if (circle->front()->find(t)==circle->front()->end()) {
-      LOG(ERROR)<<t;
-    }
     position_errors.push_back(
         (circle->front()->find(t)->second.position() -
          degrees_of_freedom.position()).Norm());
