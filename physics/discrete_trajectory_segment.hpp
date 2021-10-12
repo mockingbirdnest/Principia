@@ -100,9 +100,9 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   void ForgetBefore(Instant const& t);
   void ForgetBefore(typename Timeline::const_iterator end);
 
-  // This segment must not be already downsampling.  Occasionally removes
-  // intermediate points from the segment when |Append|ing, ensuring that
-  // positions remain within the desired tolerance.
+  // This segment must have 0 or 1 points.  Occasionally removes intermediate
+  // points from the segment when |Append|ing, ensuring that positions remain
+  // within the desired tolerance.
   void SetDownsampling(DownsamplingParameters const& downsampling_parameters);
 
   // Clear the downsampling parameters.  From now on, all points appended to the

@@ -209,8 +209,9 @@ void DiscreteTrajectorySegment<Frame>::ForgetBefore(
 template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::SetDownsampling(
     DownsamplingParameters const& downsampling_parameters) {
-  // TODO(phl): Do we need this precondition?
-  CHECK(!downsampling_parameters_.has_value());
+  // The semantics of changing downsampling on a segment that has 2 points or
+  // more are unclear.  Let's not do that.
+  CHECK_LE(timeline_.size(), 1);
   downsampling_parameters_ = downsampling_parameters;
   number_of_dense_points_ = timeline_.empty() ? 0 : 1;
 }
