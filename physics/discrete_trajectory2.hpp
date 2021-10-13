@@ -118,8 +118,7 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
 
   // We need a level of indirection here to make sure that the pointer to
   // Segments in the DiscreteTrajectorySegmentIterator remain valid when the
-  // DiscreteTrajectory moves.
-  //TODO(phl):never empty
+  // DiscreteTrajectory moves.  This field is never null and never empty.
   not_null<std::unique_ptr<Segments>> segments_;
 
   //TODO(phl): Use --upper_bound(t) to access, check for t_min/t_max;
