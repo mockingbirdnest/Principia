@@ -30,9 +30,9 @@ using quantities::Time;
 template<typename Frame>
 class DiscreteTrajectoryFactoriesFriend {
  public:
-  //static absl::Status Append(Instant const& t,
-  //                           DegreesOfFreedom<Frame> const& degrees_of_freedom,
-  //                           DiscreteTrajectorySegment<Frame>& segment);
+  static absl::Status Append(Instant const& t,
+                             DegreesOfFreedom<Frame> const& degrees_of_freedom,
+                             DiscreteTrajectorySegment<Frame>& segment);
 
   //static DiscreteTrajectorySegment<Frame>
   //MakeDiscreteTrajectorySegment(
@@ -75,7 +75,7 @@ NewCircularTrajectoryTimeline(Time const& period,
                               Instant const& t2);
 
 template<typename Frame>
-void AppendTrajectoryTimeline(DiscreteTrajectorySegment<Frame> const& from,
+void AppendTrajectoryTimeline(Timeline<Frame> const& from,
                               DiscreteTrajectorySegment<Frame>& to);
 
 }  // namespace internal_discrete_trajectory_factories

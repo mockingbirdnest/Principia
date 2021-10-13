@@ -24,14 +24,14 @@ using quantities::Sin;
 using quantities::Speed;
 using quantities::si::Radian;
 
-//template<typename Frame>
-//absl::Status DiscreteTrajectoryFactoriesFriend<Frame>::Append(
-//    Instant const& t,
-//    DegreesOfFreedom<Frame> const& degrees_of_freedom,
-//    DiscreteTrajectorySegment<Frame>& segment) {
-//  return segment.Append(t, degrees_of_freedom);
-//}
-//
+template<typename Frame>
+absl::Status DiscreteTrajectoryFactoriesFriend<Frame>::Append(
+    Instant const& t,
+    DegreesOfFreedom<Frame> const& degrees_of_freedom,
+    DiscreteTrajectorySegment<Frame>& segment) {
+  return segment.Append(t, degrees_of_freedom);
+}
+
 //template<typename Frame>
 //DiscreteTrajectorySegment<Frame>
 //DiscreteTrajectoryFactoriesFriend<Frame>::MakeDiscreteTrajectorySegment(
@@ -106,8 +106,8 @@ NewCircularTrajectoryTimeline(Time const& period,
 }
 
 template<typename Frame>
-void AppendTrajectorySegment(DiscreteTrajectorySegment<Frame> const& from,
-                             DiscreteTrajectorySegment<Frame>& to) {
+void AppendTrajectoryTimeline(Timeline<Frame> const& from,
+                              DiscreteTrajectorySegment<Frame>& to) {
   for (auto const& [t, degrees_of_freedom] : from) {
     DiscreteTrajectoryFactoriesFriend<Frame>::Append(t, degrees_of_freedom, to);
   }
