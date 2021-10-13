@@ -48,7 +48,7 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
   using ReverseSegmentRange =
       DiscreteTrajectorySegmentRange<ReverseSegmentIterator>;
 
-  DiscreteTrajectory2() = default;
+  DiscreteTrajectory2();
 
   // Moveable.
   DiscreteTrajectory2(DiscreteTrajectory2&&) = default;
@@ -89,10 +89,10 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
   Instant t_min() const override;
   Instant t_max() const override;
 
-  Position<Frame> EvaluatePosition(Instant const& time) const override;
-  Velocity<Frame> EvaluateVelocity(Instant const& time) const override;
+  Position<Frame> EvaluatePosition(Instant const& t) const override;
+  Velocity<Frame> EvaluateVelocity(Instant const& t) const override;
   DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
-      Instant const& time) const override;
+      Instant const& t) const override;
 
   void WriteToMessage(
       not_null<serialization::DiscreteTrajectory*> message,
@@ -113,12 +113,17 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
  private:
   using Segments = internal_discrete_trajectory_types::Segments<Frame>;
 
-  // We need a level of indirection here to make sure that the pointer to
-  // Segments in the DiscreteTrajectorySegmentIterator remain valid.
-  std::unique_ptr<Segments> segments_;
+  DiscreteTrajectorySegment<Frame>& FindSegment(Instant const& t);
+  DiscreteTrajectorySegment<Frame> const& FindSegment(Instant const& t) const;
 
-  //TODO(phl):right? left?
-  absl::btree_map<Instant, Segments::const_iterator> segment_by_right_endpoint_;
+  // We need a level of indirection here to make sure that the pointer to
+  // Segments in the DiscreteTrajectorySegmentIterator remain valid when the
+  // DiscreteTrajectory moves.
+  //TODO(phl):never empty
+  not_null<std::unique_ptr<Segments>> segments_;
+
+  //TODO(phl): Use --upper_bound(t) to access, check for t_min/t_max;
+  absl::btree_map<Instant, Segments::const_iterator> segment_by_left_endpoint_;
 };
 
 }  // namespace internal_discrete_trajectory2
