@@ -25,6 +25,7 @@ FORWARD_DECLARE_FROM(discrete_trajectory_factories,
 namespace physics {
 
 class DiscreteTrajectoryIteratorTest;
+class DiscreteTrajectorySegmentIteratorTest;
 class DiscreteTrajectorySegmentTest;
 
 namespace internal_discrete_trajectory_segment {
@@ -137,6 +138,7 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
 
   // For testing.
   friend class physics::DiscreteTrajectoryIteratorTest;
+  friend class physics::DiscreteTrajectorySegmentIteratorTest;
   friend class physics::DiscreteTrajectorySegmentTest;
   template<typename F>
   friend class testing_utilities::DiscreteTrajectoryFactoriesFriend;

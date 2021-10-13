@@ -1,7 +1,6 @@
 #pragma once
 
 #include <list>
-#include <memory>
 
 #include "absl/container/btree_map.h"
 #include "base/macros.hpp"
@@ -32,10 +31,8 @@ struct DownsamplingParameters {
   Length tolerance;
 };
 
-// The use of an unique_ptr here makes it possible to only depend on a forward
-// declaration of DiscreteTrajectorySegment.
 template<typename Frame>
-using Segments = std::list<std::unique_ptr<DiscreteTrajectorySegment<Frame>>>;
+using Segments = std::list<DiscreteTrajectorySegment<Frame>>;
 
 template<typename Frame>
 using Timeline = absl::btree_map<Instant, DegreesOfFreedom<Frame>>;
