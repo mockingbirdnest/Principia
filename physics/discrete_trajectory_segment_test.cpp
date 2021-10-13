@@ -48,7 +48,7 @@ class DiscreteTrajectorySegmentTest : public ::testing::Test {
   using Segments = internal_discrete_trajectory_types::Segments<World>;
 
   DiscreteTrajectorySegmentTest()
-      : segments_(MakeSegments()) {
+      : segments_(MakeSegments(1)) {
     segment_ = &*segments_->begin();
 
     segment_->Append(t0_ + 2 * Second, unmoving_origin_);
@@ -56,15 +56,6 @@ class DiscreteTrajectorySegmentTest : public ::testing::Test {
     segment_->Append(t0_ + 5 * Second, unmoving_origin_);
     segment_->Append(t0_ + 7 * Second, unmoving_origin_);
     segment_->Append(t0_ + 11 * Second, unmoving_origin_);
-  }
-
-  // Constructs a list of one segment which is properly initialized.
-  static not_null<std::unique_ptr<Segments>> MakeSegments() {
-    auto segments = make_not_null_unique<Segments>(1);
-    auto it = segments->begin();
-    *it = DiscreteTrajectorySegment<World>(
-        DiscreteTrajectorySegmentIterator<World>(segments.get(), it));
-    return segments;
   }
 
   void ForgetAfter(Instant const& t) {
@@ -85,6 +76,17 @@ class DiscreteTrajectorySegmentTest : public ::testing::Test {
           downsampling_parameters,
       DiscreteTrajectorySegment<World>& segment) {
     segment.SetDownsampling(downsampling_parameters);
+  }
+
+  // Constructs a list of |n| segments which are properly initialized.
+  // TODO(phl): Move to a central place.
+  static not_null<std::unique_ptr<Segments>> MakeSegments(const int n) {
+    auto segments = make_not_null_unique<Segments>(n);
+    for (auto it = segments->begin(); it != segments->end(); ++it) {
+      *it = DiscreteTrajectorySegment<World>(
+          DiscreteTrajectorySegmentIterator<World>(segments.get(), it));
+    }
+    return segments;
   }
 
   DiscreteTrajectorySegment<World>* segment_;
@@ -188,7 +190,7 @@ TEST_F(DiscreteTrajectorySegmentTest, ForgetBeforeTheBeginning) {
 }
 
 TEST_F(DiscreteTrajectorySegmentTest, Evaluate) {
-  auto const segments = MakeSegments();
+  auto const segments = MakeSegments(1);
   auto& circle = *segments->begin();
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
@@ -216,8 +218,8 @@ TEST_F(DiscreteTrajectorySegmentTest, Evaluate) {
 }
 
 TEST_F(DiscreteTrajectorySegmentTest, Downsampling) {
-  auto const circle_segments = MakeSegments();
-  auto const downsampled_circle_segments = MakeSegments();
+  auto const circle_segments = MakeSegments(1);
+  auto const downsampled_circle_segments = MakeSegments(1);
   auto& circle = *circle_segments->begin();
   auto& downsampled_circle = *downsampled_circle_segments->begin();
   SetDownsampling({.max_dense_intervals = 50, .tolerance = 1 * Milli(Metre)},
@@ -253,8 +255,8 @@ TEST_F(DiscreteTrajectorySegmentTest, Downsampling) {
 }
 
 TEST_F(DiscreteTrajectorySegmentTest, DownsamplingForgetAfter) {
-  auto const circle_segments = MakeSegments();
-  auto const forgotten_circle_segments = MakeSegments();
+  auto const circle_segments = MakeSegments(1);
+  auto const forgotten_circle_segments = MakeSegments(1);
   auto& circle = *circle_segments->begin();
   auto& forgotten_circle = *forgotten_circle_segments->begin();
   SetDownsampling({.max_dense_intervals = 50, .tolerance = 1 * Milli(Metre)},

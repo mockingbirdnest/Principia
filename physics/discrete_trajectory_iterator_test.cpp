@@ -12,7 +12,6 @@
 #include "physics/discrete_trajectory_segment.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/discrete_trajectory_types.hpp"
-#include "physics/mock_discrete_trajectory_segment.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -20,6 +19,8 @@ namespace principia {
 namespace physics {
 
 using base::check_not_null;
+using base::make_not_null_unique;
+using base::not_null;
 using geometry::Frame;
 using geometry::Instant;
 using physics::DegreesOfFreedom;
@@ -27,125 +28,71 @@ using quantities::Time;
 using quantities::si::Second;
 using ::testing::Return;
 
-namespace {
-
-// A trajectory that holds a real timeline, where we mock multiple methods to
-// return data from that timeline.
-template<typename Frame>
-class FakeDiscreteTrajectorySegment
-    : public MockDiscreteTrajectorySegment<Frame> {
- public:
-  FakeDiscreteTrajectorySegment() = default;
-
-  internal_discrete_trajectory_types::Timeline<Frame> timeline;
-};
-
-}  // namespace
-
 class DiscreteTrajectoryIteratorTest : public ::testing::Test {
  protected:
   using World = Frame<enum class WorldTag>;
-
   using Segments = internal_discrete_trajectory_types::Segments<World>;
-  using Timeline = internal_discrete_trajectory_types::Timeline<World>;
 
-  DiscreteTrajectoryIteratorTest() {
-    // Set up a fake trajectory with 3 segments.  After construction, the mocks
-    // are owned by |segments_|.
-    auto owned_mock1 = std::make_unique<FakeDiscreteTrajectorySegment<World>>();
-    auto owned_mock2 = std::make_unique<FakeDiscreteTrajectorySegment<World>>();
-    auto owned_mock3 = std::make_unique<FakeDiscreteTrajectorySegment<World>>();
-    auto const& mock1 = *owned_mock1;
-    auto const& mock2 = *owned_mock2;
-    auto const& mock3 = *owned_mock3;
+  DiscreteTrajectoryIteratorTest()
+      : segments_(MakeSegments(3)) {
+    auto it = segments_->begin();
+    {
+      auto& segment1 = *it;
+      segment1.Append(t0_ + 2 * Second, unmoving_origin_);
+      segment1.Append(t0_ + 3 * Second, unmoving_origin_);
+      segment1.Append(t0_ + 5 * Second, unmoving_origin_);
+      segment1.Append(t0_ + 7 * Second, unmoving_origin_);
+      segment1.Append(t0_ + 11 * Second, unmoving_origin_);
+    }
 
-    segments_.push_back(std::move(*owned_mock1));
-    auto const it1 = --segments_.end();
-    segments_.push_back(std::move(*owned_mock2));
-    auto const it2 = --segments_.end();
-    segments_.push_back(std::move(*owned_mock3));
-    auto const it3 = --segments_.end();
+    ++it;
+    {
+      auto& segment2 = *it;
+      segment2.Append(t0_ + 13 * Second, unmoving_origin_);
+    }
 
-    FillSegment(it1,
-                Timeline{MakeTimelineValueType(2 * Second),
-                         MakeTimelineValueType(3 * Second),
-                         MakeTimelineValueType(5 * Second),
-                         MakeTimelineValueType(7 * Second),
-                         MakeTimelineValueType(11 * Second)});
-    FillSegment(it2, Timeline{MakeTimelineValueType(13 * Second)});
-    FillSegment(it3,
-                Timeline{MakeTimelineValueType(13 * Second),  // Duplicated.
-                         MakeTimelineValueType(17 * Second),
-                         MakeTimelineValueType(19 * Second),
-                         MakeTimelineValueType(23 * Second)});
-
-    // This must happen *after* the segments have been set up.
-    EXPECT_CALL(mock1, timeline_begin())
-        .WillRepeatedly(Return(timeline_begin(it1)));
-    EXPECT_CALL(mock1, timeline_end())
-        .WillRepeatedly(Return(timeline_end(it1)));
-    EXPECT_CALL(mock2, timeline_begin())
-        .WillRepeatedly(Return(timeline_begin(it2)));
-    EXPECT_CALL(mock2, timeline_end())
-        .WillRepeatedly(Return(timeline_end(it2)));
-    EXPECT_CALL(mock3, timeline_begin())
-        .WillRepeatedly(Return(timeline_begin(it3)));
-    EXPECT_CALL(mock3, timeline_end())
-        .WillRepeatedly(Return(timeline_end(it3)));
-  }
-
-  FakeDiscreteTrajectorySegment<World>* DownCast(
-      DiscreteTrajectorySegment<World>& segment) {
-    return dynamic_cast<FakeDiscreteTrajectorySegment<World>*>(&segment);
-  }
-
-  FakeDiscreteTrajectorySegment<World> const* DownCast(
-      DiscreteTrajectorySegment<World> const& segment) {
-    return dynamic_cast<FakeDiscreteTrajectorySegment<World> const*>(&segment);
-  }
-
-  void FillSegment(Segments::iterator const it, Timeline const& timeline) {
-    auto* const segment = DownCast(*it);
-    segment->timeline = timeline;
+    ++it;
+    {
+      auto& segment3 = *it;
+      segment3.Append(t0_ + 13 * Second, unmoving_origin_);
+      segment3.Append(t0_ + 17 * Second, unmoving_origin_);
+      segment3.Append(t0_ + 19 * Second, unmoving_origin_);
+      segment3.Append(t0_ + 23 * Second, unmoving_origin_);
+    }
   }
 
   DiscreteTrajectoryIterator<World> MakeBegin(
       Segments::const_iterator const it) {
     return DiscreteTrajectoryIterator<World>(
-        DiscreteTrajectorySegmentIterator<World>(
-        check_not_null(&segments_), it),
-        timeline_begin(it));
+        DiscreteTrajectorySegmentIterator<World>(segments_.get(), it),
+        it->timeline_begin());
   }
 
   DiscreteTrajectoryIterator<World> MakeEnd(Segments::const_iterator it) {
     return DiscreteTrajectoryIterator<World>(
-        DiscreteTrajectorySegmentIterator<World>(check_not_null(&segments_),
-                                                 ++it),
+        DiscreteTrajectorySegmentIterator<World>(segments_.get(), ++it),
         std::nullopt);
   }
 
-  Timeline::value_type MakeTimelineValueType(Time const& t) {
-    static const DegreesOfFreedom<World> unmoving_origin(World::origin,
-                                                         World::unmoving);
-    return {t0_ + t, unmoving_origin};
+  // Constructs a list of |n| segments which are properly initialized.
+  // TODO(phl): Move to a central place.
+  static not_null<std::unique_ptr<Segments>> MakeSegments(const int n) {
+    auto segments = make_not_null_unique<Segments>(n);
+    for (auto it = segments->begin(); it != segments->end(); ++it) {
+      *it = DiscreteTrajectorySegment<World>(
+          DiscreteTrajectorySegmentIterator<World>(segments.get(), it));
+    }
+    return segments;
   }
 
-  internal_discrete_trajectory_types::Timeline<World>::const_iterator
-  timeline_begin(Segments::const_iterator const it) {
-    return DownCast(*it)->timeline.begin();
-  }
-
-  internal_discrete_trajectory_types::Timeline<World>::const_iterator
-  timeline_end(Segments::const_iterator const it) {
-    return DownCast(*it)->timeline.end();
-  }
-
-  Segments segments_;
+  not_null<std::unique_ptr<Segments>> segments_;
   Instant const t0_;
+  DegreesOfFreedom<World> const unmoving_origin_{World::origin,
+                                                 World::unmoving};
 };
 
 TEST_F(DiscreteTrajectoryIteratorTest, ForwardOneSegment) {
-  auto segment = segments_.begin();
+  auto segment = segments_->begin();
   auto iterator = MakeBegin(segment);
   EXPECT_EQ(t0_ + 2 * Second, iterator->first);
   auto const current = ++iterator;
@@ -157,7 +104,7 @@ TEST_F(DiscreteTrajectoryIteratorTest, ForwardOneSegment) {
 }
 
 TEST_F(DiscreteTrajectoryIteratorTest, BackwardOneSegment) {
-  auto segment = --segments_.end();
+  auto segment = --segments_->end();
   auto iterator = MakeEnd(segment);
   --iterator;
   EXPECT_EQ(t0_ + 23 * Second, (*iterator).first);
@@ -170,7 +117,7 @@ TEST_F(DiscreteTrajectoryIteratorTest, BackwardOneSegment) {
 }
 
 TEST_F(DiscreteTrajectoryIteratorTest, ForwardAcrossSegments) {
-  auto segment = segments_.begin();
+  auto segment = segments_->begin();
   auto iterator = MakeBegin(segment);
   for (int i = 0; i < 4; ++i) {
     ++iterator;
@@ -183,7 +130,7 @@ TEST_F(DiscreteTrajectoryIteratorTest, ForwardAcrossSegments) {
 }
 
 TEST_F(DiscreteTrajectoryIteratorTest, BackwardAcrossSegments) {
-  auto segment = --segments_.end();
+  auto segment = --segments_->end();
   auto iterator = MakeEnd(segment);
   for (int i = 0; i < 3; ++i) {
     --iterator;
@@ -198,7 +145,7 @@ TEST_F(DiscreteTrajectoryIteratorTest, BackwardAcrossSegments) {
 TEST_F(DiscreteTrajectoryIteratorTest, Equality) {
   // Construct two iterators that denote the time 13 * Second but in different
   // segments.
-  auto it1 = MakeEnd(--segments_.end());
+  auto it1 = MakeEnd(--segments_->end());
   for (int i = 0; i < 3; ++i) {
     --it1;
   }
@@ -206,7 +153,7 @@ TEST_F(DiscreteTrajectoryIteratorTest, Equality) {
   --it1;
   EXPECT_EQ(t0_ + 13 * Second, (*it1).first);
 
-  auto it2 = MakeBegin(segments_.begin());
+  auto it2 = MakeBegin(segments_->begin());
   for (int i = 0; i < 4; ++i) {
     ++it2;
   }
@@ -215,9 +162,9 @@ TEST_F(DiscreteTrajectoryIteratorTest, Equality) {
   EXPECT_EQ(t0_ + 13 * Second, it2->first);
 
   EXPECT_EQ(it1, it2);
-  EXPECT_NE(it1, MakeBegin(segments_.begin()));
-  EXPECT_NE(it2, MakeEnd(--segments_.end()));
-  EXPECT_NE(MakeBegin(segments_.begin()), MakeEnd(--segments_.end()));
+  EXPECT_NE(it1, MakeBegin(segments_->begin()));
+  EXPECT_NE(it2, MakeEnd(--segments_->end()));
+  EXPECT_NE(MakeBegin(segments_->begin()), MakeEnd(--segments_->end()));
 }
 
 }  // namespace physics
