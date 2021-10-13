@@ -33,11 +33,6 @@ class DiscreteTrajectoryFactoriesFriend {
   static absl::Status Append(Instant const& t,
                              DegreesOfFreedom<Frame> const& degrees_of_freedom,
                              DiscreteTrajectorySegment<Frame>& segment);
-
-  //static DiscreteTrajectorySegment<Frame>
-  //MakeDiscreteTrajectorySegment(
-  //    Segments<Frame> const& segments,
-  //    typename Segments<Frame>::const_iterator iterator);
 };
 
 // A linear trajectory with constant velocity, going through

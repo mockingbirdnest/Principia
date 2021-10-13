@@ -32,16 +32,6 @@ absl::Status DiscreteTrajectoryFactoriesFriend<Frame>::Append(
   return segment.Append(t, degrees_of_freedom);
 }
 
-//template<typename Frame>
-//DiscreteTrajectorySegment<Frame>
-//DiscreteTrajectoryFactoriesFriend<Frame>::MakeDiscreteTrajectorySegment(
-//    Segments<Frame> const& segments,
-//    typename Segments<Frame>::const_iterator const iterator) {
-//  return DiscreteTrajectorySegment<Frame>(
-//      DiscreteTrajectorySegmentIterator<Frame>(check_not_null(&segments),
-//                                               iterator));
-//}
-
 template<typename Frame>
 Timeline<Frame>
 NewLinearTrajectoryTimeline(DegreesOfFreedom<Frame> const& degrees_of_freedom,

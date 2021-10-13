@@ -8,8 +8,8 @@
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "physics/discrete_trajectory_segment.hpp"
 #include "physics/discrete_trajectory_types.hpp"
-#include "physics/mock_discrete_trajectory_segment.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -29,7 +29,8 @@ class DiscreteTrajectorySegmentIteratorTest : public ::testing::Test {
   using World = Frame<enum class WorldTag>;
   using Segments = internal_discrete_trajectory_types::Segments<World>;
 
-  DiscreteTrajectorySegmentIteratorTest() : segments_(MakeSegments(3)) {
+  DiscreteTrajectorySegmentIteratorTest()
+      : segments_(MakeSegments(3)) {
     auto it = segments_->begin();
     {
       auto& segment1 = *it;
