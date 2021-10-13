@@ -20,7 +20,8 @@
 namespace principia {
 namespace physics {
 
-using base::check_not_null;
+using base::make_not_null_unique;
+using base::not_null;
 using geometry::Frame;
 using geometry::Instant;
 using quantities::Abs;
@@ -34,10 +35,9 @@ using quantities::si::Nano;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
-using testing_utilities::AppendTrajectorySegment;
+using testing_utilities::AppendTrajectoryTimeline;
 using testing_utilities::IsNear;
-using testing_utilities::NewCircularTrajectorySegment;
-using testing_utilities::NewEmptyTrajectorySegment;
+using testing_utilities::NewCircularTrajectoryTimeline;
 using testing_utilities::operator""_⑴;
 using ::testing::Eq;
 
@@ -45,12 +45,11 @@ class DiscreteTrajectorySegmentTest : public ::testing::Test {
  protected:
   using World = Frame<enum class WorldTag>;
 
-  DiscreteTrajectorySegmentTest() : segments_(1) {
-    auto const it = segments_.begin();
-    *it = std::make_unique<DiscreteTrajectorySegment<World>>(
-        DiscreteTrajectorySegmentIterator<World>(check_not_null(&segments_),
-                                                 it));
-    segment_ = segments_.cbegin()->get();
+  using Segments = internal_discrete_trajectory_types::Segments<World>;
+
+  DiscreteTrajectorySegmentTest()
+      : segments_(MakeSegments(1)) {
+    segment_ = &*segments_->begin();
 
     segment_->Append(t0_ + 2 * Second, unmoving_origin_);
     segment_->Append(t0_ + 3 * Second, unmoving_origin_);
@@ -79,8 +78,19 @@ class DiscreteTrajectorySegmentTest : public ::testing::Test {
     segment.SetDownsampling(downsampling_parameters);
   }
 
+  // Constructs a list of |n| segments which are properly initialized.
+  // TODO(phl): Move to a central place.
+  static not_null<std::unique_ptr<Segments>> MakeSegments(const int n) {
+    auto segments = make_not_null_unique<Segments>(n);
+    for (auto it = segments->begin(); it != segments->end(); ++it) {
+      *it = DiscreteTrajectorySegment<World>(
+          DiscreteTrajectorySegmentIterator<World>(segments.get(), it));
+    }
+    return segments;
+  }
+
   DiscreteTrajectorySegment<World>* segment_;
-  internal_discrete_trajectory_types::Segments<World> segments_;
+  not_null<std::unique_ptr<Segments>> segments_;
   Instant const t0_;
   DegreesOfFreedom<World> unmoving_origin_{World::origin, World::unmoving};
 };
@@ -180,24 +190,26 @@ TEST_F(DiscreteTrajectorySegmentTest, ForgetBeforeTheBeginning) {
 }
 
 TEST_F(DiscreteTrajectorySegmentTest, Evaluate) {
+  auto const segments = MakeSegments(1);
+  auto& circle = *segments->begin();
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
   Time const Δt = 10 * Milli(Second);
   Instant const t1 = t0_;
   Instant const t2 = t0_ + 10 * Second;
-  auto circle = NewCircularTrajectorySegment<World>(ω, r, Δt, t1, t2);
-  auto& segment = **circle->cbegin();
+  AppendTrajectoryTimeline(
+      NewCircularTrajectoryTimeline<World>(ω, r, Δt, t1, t2), /*to=*/circle);
 
-  EXPECT_THAT(segment.size(), Eq(1001));
+  EXPECT_THAT(circle.size(), Eq(1001));
   std::vector<Length> position_errors;
   std::vector<Speed> velocity_errors;
-  for (Instant t = segment.t_min();
-       t <= segment.t_max();
+  for (Instant t = circle.t_min();
+       t <= circle.t_max();
        t += 1 * Milli(Second)) {
     position_errors.push_back(
-        Abs((segment.EvaluatePosition(t) - World::origin).Norm() - r));
+        Abs((circle.EvaluatePosition(t) - World::origin).Norm() - r));
     velocity_errors.push_back(
-        Abs(segment.EvaluateVelocity(t).Norm() - r * ω / Radian));
+        Abs(circle.EvaluateVelocity(t).Norm() - r * ω / Radian));
   }
   EXPECT_THAT(*std::max_element(position_errors.begin(), position_errors.end()),
               IsNear(4.2_⑴ * Nano(Metre)));
@@ -206,32 +218,34 @@ TEST_F(DiscreteTrajectorySegmentTest, Evaluate) {
 }
 
 TEST_F(DiscreteTrajectorySegmentTest, Downsampling) {
-  auto const circle = NewEmptyTrajectorySegment<World>();
-  auto const downsampled_circle = NewEmptyTrajectorySegment<World>();
+  auto const circle_segments = MakeSegments(1);
+  auto const downsampled_circle_segments = MakeSegments(1);
+  auto& circle = *circle_segments->begin();
+  auto& downsampled_circle = *downsampled_circle_segments->begin();
   SetDownsampling({.max_dense_intervals = 50, .tolerance = 1 * Milli(Metre)},
-                  *downsampled_circle->front());
+                  downsampled_circle);
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
   Time const Δt = 10 * Milli(Second);
   Instant const t1 = t0_;
   Instant const t2 = t0_ + 10 * Second;
-  AppendTrajectorySegment(
-      *NewCircularTrajectorySegment<World>(ω, r, Δt, t1, t2)->front(),
-      /*to=*/*circle->front());
-  AppendTrajectorySegment(
-      *NewCircularTrajectorySegment<World>(ω, r, Δt, t1, t2)->front(),
-      /*to=*/*downsampled_circle->front());
+  AppendTrajectoryTimeline(
+      NewCircularTrajectoryTimeline<World>(ω, r, Δt, t1, t2),
+      /*to=*/circle);
+  AppendTrajectoryTimeline(
+      NewCircularTrajectoryTimeline<World>(ω, r, Δt, t1, t2),
+      /*to=*/downsampled_circle);
 
-  EXPECT_THAT(circle->front()->size(), Eq(1001));
-  EXPECT_THAT(downsampled_circle->front()->size(), Eq(77));
+  EXPECT_THAT(circle.size(), Eq(1001));
+  EXPECT_THAT(downsampled_circle.size(), Eq(77));
   std::vector<Length> position_errors;
   std::vector<Speed> velocity_errors;
-  for (auto const& [time, degrees_of_freedom] : *circle->front()) {
+  for (auto const& [time, degrees_of_freedom] : circle) {
     position_errors.push_back(
-        (downsampled_circle->front()->EvaluatePosition(time) -
+        (downsampled_circle.EvaluatePosition(time) -
          degrees_of_freedom.position()).Norm());
     velocity_errors.push_back(
-        (downsampled_circle->front()->EvaluateVelocity(time) -
+        (downsampled_circle.EvaluateVelocity(time) -
          degrees_of_freedom.velocity()).Norm());
   }
   EXPECT_THAT(*std::max_element(position_errors.begin(), position_errors.end()),
@@ -241,12 +255,14 @@ TEST_F(DiscreteTrajectorySegmentTest, Downsampling) {
 }
 
 TEST_F(DiscreteTrajectorySegmentTest, DownsamplingForgetAfter) {
-  auto const circle = NewEmptyTrajectorySegment<World>();
-  auto const forgotten_circle = NewEmptyTrajectorySegment<World>();
+  auto const circle_segments = MakeSegments(1);
+  auto const forgotten_circle_segments = MakeSegments(1);
+  auto& circle = *circle_segments->begin();
+  auto& forgotten_circle = *forgotten_circle_segments->begin();
   SetDownsampling({.max_dense_intervals = 50, .tolerance = 1 * Milli(Metre)},
-                  *circle->front());
+                  circle);
   SetDownsampling({.max_dense_intervals = 50, .tolerance = 1 * Milli(Metre)},
-                  *forgotten_circle->front());
+                  forgotten_circle);
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
   Time const Δt = 1.0 / 128.0 * Second;  // Yields exact times.
@@ -255,33 +271,32 @@ TEST_F(DiscreteTrajectorySegmentTest, DownsamplingForgetAfter) {
   Instant const t3 = t0_ + 10 * Second;
 
   // Construct two identical trajectories with downsampling.
-  AppendTrajectorySegment(
-      *NewCircularTrajectorySegment<World>(ω, r, Δt, t1, t3)->front(),
-      /*to=*/*circle->front());
-  AppendTrajectorySegment(
-      *NewCircularTrajectorySegment<World>(ω, r, Δt, t1, t3)->front(),
-      /*to=*/*forgotten_circle->front());
+  AppendTrajectoryTimeline(
+      NewCircularTrajectoryTimeline<World>(ω, r, Δt, t1, t3),
+      /*to=*/circle);
+  AppendTrajectoryTimeline(
+      NewCircularTrajectoryTimeline<World>(ω, r, Δt, t1, t3),
+      /*to=*/forgotten_circle);
 
   // Forget one of the trajectories in the middle, and append new points.
-  Instant const restart_time =
-      forgotten_circle->front()->lower_bound(t2)->first;
-  ForgetAfter(t2, *forgotten_circle->front());
-  AppendTrajectorySegment(
-      *NewCircularTrajectorySegment<World>(ω, r, Δt, restart_time, t3)->front(),
-      /*to=*/*forgotten_circle->front());
+  Instant const restart_time = forgotten_circle.lower_bound(t2)->first;
+  ForgetAfter(t2, forgotten_circle);
+  AppendTrajectoryTimeline(
+      NewCircularTrajectoryTimeline<World>(ω, r, Δt, restart_time, t3),
+      /*to=*/forgotten_circle);
 
-  EXPECT_THAT(circle->front()->size(), Eq(92));
-  EXPECT_THAT(forgotten_circle->front()->size(), Eq(circle->front()->size()));
+  EXPECT_THAT(circle.size(), Eq(92));
+  EXPECT_THAT(forgotten_circle.size(), Eq(circle.size()));
   std::vector<Length> position_errors;
   std::vector<Speed> velocity_errors;
 
   // Check that the two trajectories are identical.
-  for (auto const [t, degrees_of_freedom] : *forgotten_circle->front()) {
+  for (auto const [t, degrees_of_freedom] : forgotten_circle) {
     position_errors.push_back(
-        (circle->front()->find(t)->second.position() -
+        (circle.find(t)->second.position() -
          degrees_of_freedom.position()).Norm());
     velocity_errors.push_back(
-        (circle->front()->find(t)->second.velocity() -
+        (circle.find(t)->second.velocity() -
          degrees_of_freedom.velocity()).Norm());
   }
   EXPECT_THAT(*std::max_element(position_errors.begin(), position_errors.end()),
