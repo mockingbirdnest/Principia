@@ -20,7 +20,7 @@ using geometry::Instant;
 using geometry::Velocity;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectorySegment;
-using physics::internal_discrete_trajectory_types::Segments;
+using physics::internal_discrete_trajectory_types::Timeline;
 using quantities::AngularFrequency;
 using quantities::Length;
 using quantities::Time;
@@ -30,71 +30,59 @@ using quantities::Time;
 template<typename Frame>
 class DiscreteTrajectoryFactoriesFriend {
  public:
-  static absl::Status Append(Instant const& t,
-                             DegreesOfFreedom<Frame> const& degrees_of_freedom,
-                             DiscreteTrajectorySegment<Frame>& segment);
+  //static absl::Status Append(Instant const& t,
+  //                           DegreesOfFreedom<Frame> const& degrees_of_freedom,
+  //                           DiscreteTrajectorySegment<Frame>& segment);
 
-  static DiscreteTrajectorySegment<Frame>
-  MakeDiscreteTrajectorySegment(
-      Segments<Frame> const& segments,
-      typename Segments<Frame>::const_iterator iterator);
+  //static DiscreteTrajectorySegment<Frame>
+  //MakeDiscreteTrajectorySegment(
+  //    Segments<Frame> const& segments,
+  //    typename Segments<Frame>::const_iterator iterator);
 };
-
-// All the functions below return a list of a single segment.
-// TODO(phl): Revise this API as needed once we have all the pieces for the new-
-// style discrete trajectories.
-// TODO(phl): Must return unique_ptr because copying Segments is a bad idea due
-// to the pointers within iterators.
-
-// An empty trajectory.  Convenient for initializations.
-template<typename Frame>
-not_null<std::unique_ptr<Segments<Frame>>>
-NewEmptyTrajectorySegment();
 
 // A linear trajectory with constant velocity, going through
 // |degrees_of_freedom.position()| at t = 0.  The first point is at time |t1|,
 // the last point at a time < |t2|.
 template<typename Frame>
-not_null<std::unique_ptr<Segments<Frame>>>
-NewLinearTrajectorySegment(DegreesOfFreedom<Frame> const& degrees_of_freedom,
-                           Time const& Δt,
-                           Instant const& t1,
-                           Instant const& t2);
+Timeline<Frame>
+NewLinearTrajectoryTimeline(DegreesOfFreedom<Frame> const& degrees_of_freedom,
+                            Time const& Δt,
+                            Instant const& t1,
+                            Instant const& t2);
 // Same as above, going through the origin at t = 0.
 template<typename Frame>
-not_null<std::unique_ptr<Segments<Frame>>>
-NewLinearTrajectorySegment(Velocity<Frame> const& v,
-                           Time const& Δt,
-                           Instant const& t1,
-                           Instant const& t2);
+Timeline<Frame>
+NewLinearTrajectoryTimeline(Velocity<Frame> const& v,
+                            Time const& Δt,
+                            Instant const& t1,
+                            Instant const& t2);
 
 // A circular trajectory in the plane XY, centred at the origin.  The first
 // point is at time |t1|, the last point at a time < |t2|.
 template<typename Frame>
-not_null<std::unique_ptr<Segments<Frame>>>
-NewCircularTrajectorySegment(AngularFrequency const& ω,
-                             Length const& r,
-                             Time const& Δt,
-                             Instant const& t1,
-                             Instant const& t2);
+Timeline<Frame>
+NewCircularTrajectoryTimeline(AngularFrequency const& ω,
+                              Length const& r,
+                              Time const& Δt,
+                              Instant const& t1,
+                              Instant const& t2);
 template<typename Frame>
-not_null<std::unique_ptr<Segments<Frame>>>
-NewCircularTrajectorySegment(Time const& period,
-                             Length const& r,
-                             Time const& Δt,
-                             Instant const& t1,
-                             Instant const& t2);
+Timeline<Frame>
+NewCircularTrajectoryTimeline(Time const& period,
+                              Length const& r,
+                              Time const& Δt,
+                              Instant const& t1,
+                              Instant const& t2);
 
 template<typename Frame>
-void AppendTrajectorySegment(DiscreteTrajectorySegment<Frame> const& from,
-                             DiscreteTrajectorySegment<Frame>& to);
+void AppendTrajectoryTimeline(DiscreteTrajectorySegment<Frame> const& from,
+                              DiscreteTrajectorySegment<Frame>& to);
 
 }  // namespace internal_discrete_trajectory_factories
 
-using internal_discrete_trajectory_factories::AppendTrajectorySegment;
-using internal_discrete_trajectory_factories::NewCircularTrajectorySegment;
-using internal_discrete_trajectory_factories::NewEmptyTrajectorySegment;
-using internal_discrete_trajectory_factories::NewLinearTrajectorySegment;
+using internal_discrete_trajectory_factories::AppendTrajectoryTimeline;
+using internal_discrete_trajectory_factories::NewCircularTrajectoryTimeline;
+using internal_discrete_trajectory_factories::NewLinearTrajectoryTimeline;
 
 }  // namespace testing_utilities
 }  // namespace principia

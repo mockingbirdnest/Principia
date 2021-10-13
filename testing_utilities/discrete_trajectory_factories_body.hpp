@@ -24,73 +24,59 @@ using quantities::Sin;
 using quantities::Speed;
 using quantities::si::Radian;
 
-template<typename Frame>
-absl::Status DiscreteTrajectoryFactoriesFriend<Frame>::Append(
-    Instant const& t,
-    DegreesOfFreedom<Frame> const& degrees_of_freedom,
-    DiscreteTrajectorySegment<Frame>& segment) {
-  return segment.Append(t, degrees_of_freedom);
-}
+//template<typename Frame>
+//absl::Status DiscreteTrajectoryFactoriesFriend<Frame>::Append(
+//    Instant const& t,
+//    DegreesOfFreedom<Frame> const& degrees_of_freedom,
+//    DiscreteTrajectorySegment<Frame>& segment) {
+//  return segment.Append(t, degrees_of_freedom);
+//}
+//
+//template<typename Frame>
+//DiscreteTrajectorySegment<Frame>
+//DiscreteTrajectoryFactoriesFriend<Frame>::MakeDiscreteTrajectorySegment(
+//    Segments<Frame> const& segments,
+//    typename Segments<Frame>::const_iterator const iterator) {
+//  return DiscreteTrajectorySegment<Frame>(
+//      DiscreteTrajectorySegmentIterator<Frame>(check_not_null(&segments),
+//                                               iterator));
+//}
 
 template<typename Frame>
-DiscreteTrajectorySegment<Frame>
-DiscreteTrajectoryFactoriesFriend<Frame>::MakeDiscreteTrajectorySegment(
-    Segments<Frame> const& segments,
-    typename Segments<Frame>::const_iterator const iterator) {
-  return DiscreteTrajectorySegment<Frame>(
-      DiscreteTrajectorySegmentIterator<Frame>(check_not_null(&segments),
-                                               iterator));
-}
-
-template<typename Frame>
-not_null<std::unique_ptr<Segments<Frame>>>
-NewEmptyTrajectorySegment() {
-  auto segments = std::make_unique<Segments<Frame>>(1);
-  auto const it = segments->begin();
-  *it = DiscreteTrajectorySegment<Frame>(
-      DiscreteTrajectoryFactoriesFriend<Frame>::MakeDiscreteTrajectorySegment(
-          *segments, it));
-  return segments;
-}
-
-template<typename Frame>
-not_null<std::unique_ptr<Segments<Frame>>>
-NewLinearTrajectorySegment(DegreesOfFreedom<Frame> const& degrees_of_freedom,
-                           Time const& Δt,
-                           Instant const& t1,
-                           Instant const& t2) {
+Timeline<Frame>
+NewLinearTrajectoryTimeline(DegreesOfFreedom<Frame> const& degrees_of_freedom,
+                            Time const& Δt,
+                            Instant const& t1,
+                            Instant const& t2) {
   static Instant const t0;
-  auto segments = NewEmptyTrajectorySegment<Frame>();
-  auto& segment = **segments->cbegin();
+  Timeline<Frame> timeline;
   for (auto t = t1; t < t2; t += Δt) {
     auto const velocity = degrees_of_freedom.velocity();
     auto const position = degrees_of_freedom.position() + velocity * (t - t0);
-    DiscreteTrajectoryFactoriesFriend<Frame>::Append(
-        t, DegreesOfFreedom<Frame>(position, velocity), segment);
+    timeline.emplace(t, DegreesOfFreedom<Frame>(position, velocity));
   }
-  return segments;
+  return timeline;
 }
 
 template<typename Frame>
-not_null<std::unique_ptr<Segments<Frame>>>
-NewLinearTrajectorySegment(Velocity<Frame> const& v,
+Timeline<Frame>
+NewLinearTrajectoryTimeline(Velocity<Frame> const& v,
                            Time const& Δt,
                            Instant const& t1,
                            Instant const& t2) {
-  return NewLinearTrajectory(
+  return NewLinearTrajectoryTimeline(
       DegreesOfFreedom<Frame>(Frame::origin, v), Δt, t1, t2);
 }
 
 template<typename Frame>
-not_null<std::unique_ptr<Segments<Frame>>>
-NewCircularTrajectorySegment(AngularFrequency const& ω,
+Timeline<Frame>
+NewCircularTrajectoryTimeline(AngularFrequency const& ω,
                              Length const& r,
                              Time const& Δt,
                              Instant const& t1,
                              Instant const& t2) {
   static Instant const t0;
-  auto segments = NewEmptyTrajectorySegment<Frame>();
-  auto& segment = *segments->begin();
+  Timeline<Frame> timeline;
   Speed const v = ω * r / Radian;
   for (auto t = t1; t < t2; t += Δt) {
     DegreesOfFreedom<Frame> const dof = {
@@ -100,14 +86,14 @@ NewCircularTrajectorySegment(AngularFrequency const& ω,
         Velocity<Frame>{{-v * Sin(ω * (t - t0)),
                          v * Cos(ω * (t - t0)),
                          Speed{}}}};
-    DiscreteTrajectoryFactoriesFriend<Frame>::Append(t, dof, segment);
+    timeline.emplace(t, dof);
   }
-  return segments;
+  return timeline;
 }
 
 template<typename Frame>
-not_null<std::unique_ptr<Segments<Frame>>>
-NewCircularTrajectorySegment(Time const& period,
+Timeline<Frame>
+NewCircularTrajectoryTimeline(Time const& period,
                              Length const& r,
                              Time const& Δt,
                              Instant const& t1,
