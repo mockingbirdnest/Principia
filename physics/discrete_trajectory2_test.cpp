@@ -16,7 +16,7 @@ class DiscreteTrajectory2Test : public ::testing::Test {
   DiscreteTrajectory2<World> trajectory_;
 };
 
-TEST_F(DiscreteTrajectory2Test) {
+TEST_F(DiscreteTrajectory2Test, No) {
 
 }
 

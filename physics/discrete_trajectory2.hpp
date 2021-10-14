@@ -11,6 +11,7 @@
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_iterator.hpp"
+#include "physics/discrete_trajectory_segment.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/discrete_trajectory_segment_range.hpp"
 #include "physics/discrete_trajectory_types.hpp"
@@ -122,7 +123,8 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
   not_null<std::unique_ptr<Segments>> segments_;
 
   //TODO(phl): Use --upper_bound(t) to access, check for t_min/t_max;
-  absl::btree_map<Instant, Segments::const_iterator> segment_by_left_endpoint_;
+  absl::btree_map<Instant,
+                  typename Segments::const_iterator> segment_by_left_endpoint_;
 };
 
 }  // namespace internal_discrete_trajectory2

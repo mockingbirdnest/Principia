@@ -125,12 +125,12 @@ void DiscreteTrajectory2<Frame>::Append(
 
 template<typename Frame>
 Instant DiscreteTrajectory2<Frame>::t_min() const {
-  return segments_->front()->t_min();
+  return segments_->front().t_min();
 }
 
 template<typename Frame>
 Instant DiscreteTrajectory2<Frame>::t_max() const {
-  return segments_->front()->t_max();
+  return segments_->front().t_max();
 }
 
 template<typename Frame>
@@ -179,7 +179,7 @@ DiscreteTrajectorySegment<Frame>& DiscreteTrajectory2<Frame>::FindSegment(
     Instant const& t) {
   CHECK_LE(t_min(), t);
   CHECK_LE(t, t_max());
-  return *--segment_by_left_endpoint_.upper_bound(t);
+  return *((--segment_by_left_endpoint_.upper_bound(t))->second);
 }
 
 template<typename Frame>
@@ -187,7 +187,7 @@ DiscreteTrajectorySegment<Frame> const& DiscreteTrajectory2<Frame>::FindSegment(
     Instant const& t) const {
   CHECK_LE(t_min(), t);
   CHECK_LE(t, t_max());
-  return *--segment_by_left_endpoint_.upper_bound(t);
+  return *((--segment_by_left_endpoint_.upper_bound(t))->second);
 }
 
 }  // namespace internal_discrete_trajectory2

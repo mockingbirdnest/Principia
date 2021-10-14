@@ -56,7 +56,6 @@
     <ClInclude Include="euler_solver_body.hpp" />
     <ClInclude Include="geopotential.hpp" />
     <ClInclude Include="geopotential_body.hpp" />
-    <ClInclude Include="mock_discrete_trajectory_segment.hpp" />
     <ClInclude Include="protector.hpp" />
     <ClInclude Include="hierarchical_system.hpp" />
     <ClInclude Include="hierarchical_system_body.hpp" />

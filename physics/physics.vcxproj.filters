@@ -218,9 +218,6 @@
     <ClInclude Include="discrete_trajectory_iterator_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="mock_discrete_trajectory_segment.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="discrete_trajectory_segment_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
