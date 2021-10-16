@@ -22,13 +22,13 @@ DiscreteTrajectory2<Frame>::DiscreteTrajectory2()
 template<typename Frame>
 typename DiscreteTrajectory2<Frame>::iterator
 DiscreteTrajectory2<Frame>::begin() const {
-  return segments_->front()->begin();
+  return segments_->front().begin();
 }
 
 template<typename Frame>
 typename DiscreteTrajectory2<Frame>::iterator
 DiscreteTrajectory2<Frame>::end() const {
-  return segments_->back()->end();
+  return segments_->back().end();
 }
 
 template<typename Frame>
