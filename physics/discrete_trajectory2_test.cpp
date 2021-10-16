@@ -7,6 +7,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
+#include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/discrete_trajectory_factories.hpp"
 
@@ -19,10 +20,10 @@ using geometry::Instant;
 using geometry::Velocity;
 using quantities::si::Metre;
 using quantities::si::Second;
+using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::NewLinearTrajectoryTimeline;
 using ::testing::ElementsAre;
-using ::testing::Eq;
 
 class DiscreteTrajectory2Test : public ::testing::Test {
  protected:
@@ -258,6 +259,44 @@ TEST_F(DiscreteTrajectory2Test, UpperBound) {
     auto const it = trajectory.upper_bound(t0_ + 14.2 * Second);
     EXPECT_TRUE(it == trajectory.end());
   }
+}
+
+TEST_F(DiscreteTrajectory2Test, Segments) {
+  auto const trajectory = MakeTrajectory();
+  std::vector<Instant> begin;
+  std::vector<Instant> rbegin;
+  for (auto const& sit : trajectory.segments()) {
+    begin.push_back(sit.begin()->first);
+    rbegin.push_back(sit.rbegin()->first);
+  }
+  EXPECT_THAT(
+      begin,
+      ElementsAre(t0_, t0_ + 4 * Second, t0_ + 9 * Second));
+  EXPECT_THAT(
+      rbegin,
+      ElementsAre(t0_ + 4 * Second, t0_ + 9 * Second, t0_ + 14 * Second));
+}
+
+TEST_F(DiscreteTrajectory2Test, TMinTMaxEvaluate) {
+  auto const trajectory = MakeTrajectory();
+  EXPECT_EQ(t0_, trajectory.t_min());
+  EXPECT_EQ(t0_ + 14 * Second, trajectory.t_max());
+  EXPECT_THAT(trajectory.EvaluateDegreesOfFreedom(t0_ + 3.14 * Second),
+      Componentwise(AlmostEquals(
+                        World::origin + Displacement<World>({3.14 * Metre,
+                                                             0 * Metre,
+                                                             0 * Metre}), 0),
+                    AlmostEquals(Velocity<World>({1 * Metre / Second,
+                                                  0 * Metre / Second,
+                                                  0 * Metre / Second}), 0)));
+  EXPECT_THAT(trajectory.EvaluateDegreesOfFreedom(t0_ + 6.78 * Second),
+      Componentwise(AlmostEquals(
+                        World::origin + Displacement<World>({4 * Metre,
+                                                             1.78 * Metre,
+                                                             0 * Metre}), 1),
+                    AlmostEquals(Velocity<World>({0 * Metre / Second,
+                                        1 * Metre / Second,
+                                        0 * Metre / Second}), 0)));
 }
 
 }  // namespace physics

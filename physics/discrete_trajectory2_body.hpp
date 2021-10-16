@@ -14,8 +14,8 @@ template<typename Frame>
 DiscreteTrajectory2<Frame>::DiscreteTrajectory2()
     : segments_(make_not_null_unique<Segments>(1)) {
   auto const sit = segments_->begin();
-  *sit = DiscreteTrajectorySegment<Frame>(
-      DiscreteTrajectorySegmentIterator<Frame>(segments_.get(), sit));
+  *sit =
+      DiscreteTrajectorySegment<Frame>(SegmentIterator(segments_.get(), sit));
   segment_by_left_endpoint_.emplace(InfinitePast, sit);
 }
 
@@ -102,13 +102,16 @@ DiscreteTrajectory2<Frame>::upper_bound(Instant const& t) const {
 template<typename Frame>
 typename DiscreteTrajectory2<Frame>::SegmentRange
 DiscreteTrajectory2<Frame>::segments() const {
-  return SegmentRange(segments_->begin(), segments_->end());
+  return SegmentRange(SegmentIterator(
+                          segments_.get(), segments_->begin()),
+                      SegmentIterator(
+                          segments_.get(), segments_->end()));
 }
 
 template<typename Frame>
 typename DiscreteTrajectory2<Frame>::ReverseSegmentRange
 DiscreteTrajectory2<Frame>::rsegments() const {
-  return ReverseSegmentRange(segments_->rbegin(), segments_->rend());
+  // TODO(phl): Implement.
 }
 
 template<typename Frame>
@@ -121,8 +124,7 @@ DiscreteTrajectory2<Frame>::NewSegment() {
   auto const& new_segment = segments_->emplace_back();
   auto const new_segment_sit = --segments_->end();
   *new_segment_sit = DiscreteTrajectorySegment<Frame>(
-      DiscreteTrajectorySegmentIterator<Frame>(segments_.get(),
-                                               new_segment_sit));
+      SegmentIterator(segments_.get(), new_segment_sit));
 
   auto const& [last_time, last_degrees_of_freedom] = *last_segment.rbegin();
   new_segment_sit->Append(last_time, last_degrees_of_freedom);
@@ -135,34 +137,42 @@ DiscreteTrajectory2<Frame>::NewSegment() {
 template<typename Frame>
 typename DiscreteTrajectory2<Frame>::DiscreteTrajectory2
 DiscreteTrajectory2<Frame>::DetachSegments(iterator begin) {
-  return DiscreteTrajectory2();
+  // TODO(phl): Implement.
 }
 
 template<typename Frame>
 typename DiscreteTrajectory2<Frame>::SegmentIterator
 DiscreteTrajectory2<Frame>::AttachSegments(
     DiscreteTrajectory2&& trajectory) {
-  return SegmentIterator();
+  // TODO(phl): Implement.
 }
 
 template<typename Frame>
-void DiscreteTrajectory2<Frame>::DeleteSegments(iterator begin) {}
+void DiscreteTrajectory2<Frame>::DeleteSegments(iterator begin) {
+  // TODO(phl): Implement.
+}
 
 template<typename Frame>
 void DiscreteTrajectory2<Frame>::ForgetAfter(Instant const& t) {
+  // TODO(phl): Drop segments as needed.
   return FindSegment(t)->ForgetAfter(t);
 }
 
 template<typename Frame>
-void DiscreteTrajectory2<Frame>::ForgetAfter(iterator begin) {}
+void DiscreteTrajectory2<Frame>::ForgetAfter(iterator begin) {
+  // TODO(phl): Implement.
+}
 
 template<typename Frame>
 void DiscreteTrajectory2<Frame>::ForgetBefore(Instant const& t) {
+  // TODO(phl): Drop segments as needed.
   return FindSegment(t)->ForgetBefore(t);
 }
 
 template<typename Frame>
-void DiscreteTrajectory2<Frame>::ForgetBefore(iterator end) {}
+void DiscreteTrajectory2<Frame>::ForgetBefore(iterator end) {
+  // TODO(phl): Implement.
+}
 
 template<typename Frame>
 void DiscreteTrajectory2<Frame>::Append(
@@ -211,7 +221,9 @@ template<typename Frame>
 void DiscreteTrajectory2<Frame>::WriteToMessage(
     not_null<serialization::DiscreteTrajectory*> message,
     std::vector<SegmentIterator> const& tracked,
-    std::vector<iterator> const& exact) const {}
+    std::vector<iterator> const& exact) const {
+  // TODO(phl): Implement.
+}
 
 template<typename Frame>
 void DiscreteTrajectory2<Frame>::WriteToMessage(
@@ -219,7 +231,9 @@ void DiscreteTrajectory2<Frame>::WriteToMessage(
     iterator begin,
     iterator end,
     std::vector<SegmentIterator> const& tracked,
-    std::vector<iterator> const& exact) const {}
+    std::vector<iterator> const& exact) const {
+  // TODO(phl): Implement.
+}
 
 template<typename Frame>
 template<typename F, typename>
@@ -227,7 +241,7 @@ not_null<std::unique_ptr<DiscreteTrajectory2<Frame>>>
 DiscreteTrajectory2<Frame>::ReadFromMessage(
     serialization::DiscreteTrajectory const& message,
     std::vector<DiscreteTrajectory2**> const& tracked) {
-  return not_null<std::unique_ptr<DiscreteTrajectory2>>();
+  // TODO(phl): Implement.
 }
 
 template<typename Frame>
