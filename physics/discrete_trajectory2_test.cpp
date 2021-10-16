@@ -175,9 +175,27 @@ TEST_F(DiscreteTrajectory2Test, Find) {
 TEST_F(DiscreteTrajectory2Test, LowerBound) {
   auto const trajectory = MakeTrajectory();
   {
-    auto const it = trajectory.lower_bound(t0_ + 3.1 * Second);
+    auto const it = trajectory.lower_bound(t0_ + 3.9 * Second);
     auto const& [t, degrees_of_freedom] = *it;
     EXPECT_EQ(t, t0_ + 4 * Second);
+    EXPECT_EQ(degrees_of_freedom.position(),
+              World::origin + Displacement<World>({4 * Metre,
+                                                   0 * Metre,
+                                                   0 * Metre}));
+  }
+  {
+    auto const it = trajectory.lower_bound(t0_ + 4 * Second);
+    auto const& [t, degrees_of_freedom] = *it;
+    EXPECT_EQ(t, t0_ + 4 * Second);
+    EXPECT_EQ(degrees_of_freedom.position(),
+              World::origin + Displacement<World>({4 * Metre,
+                                                   0 * Metre,
+                                                   0 * Metre}));
+  }
+  {
+    auto const it = trajectory.lower_bound(t0_ + 4.1 * Second);
+    auto const& [t, degrees_of_freedom] = *it;
+    EXPECT_EQ(t, t0_ + 5 * Second);
     EXPECT_EQ(degrees_of_freedom.position(),
               World::origin + Displacement<World>({4 * Metre,
                                                    0 * Metre,
@@ -194,6 +212,50 @@ TEST_F(DiscreteTrajectory2Test, LowerBound) {
   }
   {
     auto const it = trajectory.lower_bound(t0_ + 14.2 * Second);
+    EXPECT_TRUE(it == trajectory.end());
+  }
+}
+
+TEST_F(DiscreteTrajectory2Test, UpperBound) {
+  auto const trajectory = MakeTrajectory();
+  {
+    auto const it = trajectory.upper_bound(t0_ + 3.9 * Second);
+    auto const& [t, degrees_of_freedom] = *it;
+    EXPECT_EQ(t, t0_ + 4 * Second);
+    EXPECT_EQ(degrees_of_freedom.position(),
+              World::origin + Displacement<World>({4 * Metre,
+                                                   0 * Metre,
+                                                   0 * Metre}));
+  }
+  {
+    auto const it = trajectory.upper_bound(t0_ + 4 * Second);
+    auto const& [t, degrees_of_freedom] = *it;
+    EXPECT_EQ(t, t0_ + 5 * Second);
+    EXPECT_EQ(degrees_of_freedom.position(),
+              World::origin + Displacement<World>({4 * Metre,
+                                                   0 * Metre,
+                                                   0 * Metre}));
+  }
+  {
+    auto const it = trajectory.upper_bound(t0_ + 4.1 * Second);
+    auto const& [t, degrees_of_freedom] = *it;
+    EXPECT_EQ(t, t0_ + 5 * Second);
+    EXPECT_EQ(degrees_of_freedom.position(),
+              World::origin + Displacement<World>({4 * Metre,
+                                                   0 * Metre,
+                                                   0 * Metre}));
+  }
+  {
+    auto const it = trajectory.upper_bound(t0_ + 13 * Second);
+    auto const& [t, degrees_of_freedom] = *it;
+    EXPECT_EQ(t, t0_ + 14 * Second);
+    EXPECT_EQ(degrees_of_freedom.position(),
+              World::origin + Displacement<World>({4 * Metre,
+                                                   4 * Metre,
+                                                   4 * Metre}));
+  }
+  {
+    auto const it = trajectory.upper_bound(t0_ + 14.2 * Second);
     EXPECT_TRUE(it == trajectory.end());
   }
 }
