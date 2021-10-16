@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <iterator>
 #include <list>
@@ -125,8 +125,11 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
   // DiscreteTrajectory moves.  This field is never null and never empty.
   not_null<std::unique_ptr<Segments>> segments_;
 
-  //TODO(phl): Use --upper_bound(t) to access, check for t_min/t_max;
-  // Sentinel at -oo?
+  // This list is never empty.  For an empty trajectory, there is a sentinel
+  // with time -∞ denoting the single segment of the trajectory.  As soon as a
+  // point is appended to the trajectory, the sentinel is removed and a bona
+  // fide entry replaces it.  To access the segment for time t, use
+  // |--upper_bound(t)|.
   absl::btree_map<Instant,
                   typename Segments::iterator> segment_by_left_endpoint_;
 };
