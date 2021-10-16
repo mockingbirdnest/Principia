@@ -3,6 +3,7 @@
 #include "absl/container/btree_map.h"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
+#include "physics/discrete_trajectory_segment_range.hpp"
 #include "physics/discrete_trajectory_types.hpp"
 
 namespace principia {
@@ -60,8 +61,10 @@ class DiscreteTrajectorySegmentIterator {
   DiscreteTrajectorySegmentIterator(not_null<Segments const*> segments,
                                     typename Segments::const_iterator iterator);
 
-  DiscreteTrajectorySegmentIterator begin() const;
-  DiscreteTrajectorySegmentIterator end() const;
+  bool is_begin() const;
+  bool is_end() const;
+  DiscreteTrajectorySegmentRange<DiscreteTrajectorySegmentIterator>
+  segments() const;
 
   // Not not_null<> to be default-constructible.
   Segments const* segments_ = nullptr;
