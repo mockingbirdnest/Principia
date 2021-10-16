@@ -172,5 +172,31 @@ TEST_F(DiscreteTrajectory2Test, Find) {
   }
 }
 
+TEST_F(DiscreteTrajectory2Test, LowerBound) {
+  auto const trajectory = MakeTrajectory();
+  {
+    auto const it = trajectory.lower_bound(t0_ + 3.1 * Second);
+    auto const& [t, degrees_of_freedom] = *it;
+    EXPECT_EQ(t, t0_ + 4 * Second);
+    EXPECT_EQ(degrees_of_freedom.position(),
+              World::origin + Displacement<World>({4 * Metre,
+                                                   0 * Metre,
+                                                   0 * Metre}));
+  }
+  {
+    auto const it = trajectory.lower_bound(t0_ + 13 * Second);
+    auto const& [t, degrees_of_freedom] = *it;
+    EXPECT_EQ(t, t0_ + 13 * Second);
+    EXPECT_EQ(degrees_of_freedom.position(),
+              World::origin + Displacement<World>({4 * Metre,
+                                                   4 * Metre,
+                                                   3 * Metre}));
+  }
+  {
+    auto const it = trajectory.lower_bound(t0_ + 14.2 * Second);
+    EXPECT_TRUE(it == trajectory.end());
+  }
+}
+
 }  // namespace physics
 }  // namespace principia
