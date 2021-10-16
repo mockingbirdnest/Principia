@@ -52,7 +52,7 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   explicit DiscreteTrajectorySegment(
       DiscreteTrajectorySegmentIterator<Frame> self);
 
-  virtual ~DiscreteTrajectorySegment() = default;
+  ~DiscreteTrajectorySegment() = default;
 
   // Moveable.
   DiscreteTrajectorySegment(DiscreteTrajectorySegment&&) = default;
@@ -69,7 +69,7 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
 
   // TODO(phl): We probably don't want empty segments.
   bool empty() const;
-  virtual std::int64_t size() const;
+  std::int64_t size() const;
 
   iterator find(Instant const& t) const;
 
@@ -120,8 +120,9 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   Hermite3<Instant, Position<Frame>> GetInterpolation(
       typename Timeline::const_iterator upper) const;
 
-  virtual typename Timeline::const_iterator timeline_begin() const;
-  virtual typename Timeline::const_iterator timeline_end() const;
+  typename Timeline::const_iterator timeline_begin() const;
+  typename Timeline::const_iterator timeline_end() const;
+  bool timeline_empty() const;
 
   std::optional<DownsamplingParameters> downsampling_parameters_;
 

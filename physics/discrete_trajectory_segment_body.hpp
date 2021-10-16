@@ -305,6 +305,11 @@ DiscreteTrajectorySegment<Frame>::timeline_end() const {
   return timeline_.cend();
 }
 
+template<typename Frame>
+bool DiscreteTrajectorySegment<Frame>::timeline_empty() const {
+  return timeline_.empty();
+}
+
 }  // namespace internal_discrete_trajectory_segment
 }  // namespace physics
 }  // namespace principia

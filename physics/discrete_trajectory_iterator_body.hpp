@@ -113,7 +113,11 @@ DiscreteTrajectoryIterator<Frame>::DiscreteTrajectoryIterator(
     DiscreteTrajectorySegmentIterator<Frame> const segment,
     OptionalTimelineConstIterator const point)
     : segment_(segment),
-      point_(point) {}
+      point_(point) {
+  if (segment_ == segment_.end() || segment_->timeline_empty()) {
+    point_.reset();
+  }
+}
 
 template<typename Frame>
 bool DiscreteTrajectoryIterator<Frame>::is_at_end(
