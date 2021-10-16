@@ -61,17 +61,20 @@ class DiscreteTrajectoryIteratorTest : public ::testing::Test {
     }
   }
 
-  DiscreteTrajectoryIterator<World> MakeBegin(
-      Segments::const_iterator const it) {
-    return DiscreteTrajectoryIterator<World>(
-        DiscreteTrajectorySegmentIterator<World>(segments_.get(), it),
-        it->timeline_begin());
+  void Append(Segments::iterator const it,
+              Instant const& t,
+              DegreesOfFreedom<World> const& degrees_of_freedom) {
+    it->Append(t, degrees_of_freedom);
   }
 
-  DiscreteTrajectoryIterator<World> MakeEnd(Segments::const_iterator it) {
-    return DiscreteTrajectoryIterator<World>(
-        DiscreteTrajectorySegmentIterator<World>(segments_.get(), ++it),
-        std::nullopt);
+  DiscreteTrajectoryIterator<World> MakeBegin(
+      Segments::const_iterator const it) {
+    return it->begin();
+  }
+
+  DiscreteTrajectoryIterator<World> MakeEnd(
+      Segments::const_iterator const it) {
+    return it->end();
   }
 
   // Constructs a list of |n| segments which are properly initialized.
@@ -199,6 +202,14 @@ TEST_F(DiscreteTrajectoryIteratorTest, SegmentEnd) {
     ++iterator;
   }
   EXPECT_TRUE(iterator != segment1->end());
+}
+
+// Checkt that rbegin() works if the next segment is empty.
+TEST_F(DiscreteTrajectoryIteratorTest, EmptyLastSegment) {
+  auto segments = MakeSegments(2);
+  auto segment = segments->begin();
+  Append(segment, t0_, unmoving_origin_);
+  EXPECT_EQ(t0_, segment->rbegin()->first);
 }
 
 }  // namespace physics

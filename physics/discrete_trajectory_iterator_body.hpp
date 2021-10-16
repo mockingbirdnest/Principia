@@ -19,7 +19,7 @@ DiscreteTrajectoryIterator<Frame>::operator++() {
   for (;;) {
     if (point == --segment_->timeline_end()) {
       ++segment_;
-      if (segment_ == segment_.end()) {
+      if (segment_ == segment_.end() || segment_->timeline_empty()) {
         point_.reset();
         break;
       } else {
@@ -38,23 +38,26 @@ DiscreteTrajectoryIterator<Frame>::operator++() {
 template<typename Frame>
 DiscreteTrajectoryIterator<Frame>&
 DiscreteTrajectoryIterator<Frame>::operator--() {
-  if (is_at_end(point_)) {
+  bool const point_is_at_end = is_at_end(point_);
+  if (point_is_at_end) {
+    // Move the iterator to the end of the last segment.
     segment_ = --segment_.end();
-    point_ = --segment_->timeline_end();
-  } else {
-    auto& point = iterator(point_);
-    Instant const previous_time = point->first;
-    for (;;) {
-      if (point == segment_->timeline_begin()) {
-        CHECK(segment_ != segment_.begin());
-        --segment_;
-        point = --segment_->timeline_end();
-      } else {
-        --point;
-      }
-      if (point->first != previous_time) {
-        break;
-      }
+    point_ = segment_->timeline_end();
+    // Now proceed with the decrement.
+  }
+  auto& point = iterator(point_);
+  std::optional<Instant> const previous_time =
+      point_is_at_end ? std::nullopt : std::make_optional(point->first);
+  for (;;) {
+    if (point == segment_->timeline_begin()) {
+      CHECK(segment_ != segment_.begin());
+      --segment_;
+      point = --segment_->timeline_end();
+    } else {
+      --point;
+    }
+    if (point->first != previous_time) {
+      break;
     }
   }
   return *this;
