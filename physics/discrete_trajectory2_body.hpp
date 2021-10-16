@@ -55,7 +55,12 @@ bool DiscreteTrajectory2<Frame>::empty() const {
 
 template<typename Frame>
 std::int64_t DiscreteTrajectory2<Frame>::size() const {
-  return std::int64_t();
+  std::int64_t size = 1;
+  for (auto const& segment : *segments_) {
+    size += segment.size();
+  }
+  size -= segments_->size();  // The junction points.
+  return size;
 }
 
 template<typename Frame>

@@ -128,5 +128,19 @@ TEST_F(DiscreteTrajectory2Test, IterateBackward) {
                           t0_));
 }
 
+TEST_F(DiscreteTrajectory2Test, Empty) {
+  DiscreteTrajectory2<World> trajectory;
+  EXPECT_TRUE(trajectory.empty());
+  trajectory = MakeTrajectory();
+  EXPECT_FALSE(trajectory.empty());
+}
+
+TEST_F(DiscreteTrajectory2Test, Size) {
+  DiscreteTrajectory2<World> trajectory;
+  EXPECT_EQ(0, trajectory.size());
+  trajectory = MakeTrajectory();
+  EXPECT_EQ(15, trajectory.size());
+}
+
 }  // namespace physics
 }  // namespace principia
