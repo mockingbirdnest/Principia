@@ -13,10 +13,10 @@ using base::make_not_null_unique;
 template<typename Frame>
 DiscreteTrajectory2<Frame>::DiscreteTrajectory2()
     : segments_(make_not_null_unique<Segments>(1)) {
-  auto const it = segments_->begin();
-  *it = DiscreteTrajectorySegment<Frame>(
-      DiscreteTrajectorySegmentIterator<Frame>(segments_.get(), it));
-  segment_by_left_endpoint_.emplace(InfinitePast, it);
+  auto const sit = segments_->begin();
+  *sit = DiscreteTrajectorySegment<Frame>(
+      DiscreteTrajectorySegmentIterator<Frame>(segments_.get(), sit));
+  segment_by_left_endpoint_.emplace(InfinitePast, sit);
 }
 
 template<typename Frame>
@@ -66,19 +66,37 @@ std::int64_t DiscreteTrajectory2<Frame>::size() const {
 template<typename Frame>
 typename DiscreteTrajectory2<Frame>::iterator
 DiscreteTrajectory2<Frame>::find(Instant const& t) const {
-  return FindSegment(t).find(t);
+  auto const sit = FindSegment(t);
+  auto const it = sit->find(t);
+  if (it == sit->end()) {
+    return end();
+  } else {
+    return it;
+  }
 }
 
 template<typename Frame>
 typename DiscreteTrajectory2<Frame>::iterator
 DiscreteTrajectory2<Frame>::lower_bound(Instant const& t) const {
-  return FindSegment(t).lower_bound(t);
+  auto const sit = FindSegment(t);
+  auto const it = sit->lower_bound(t);
+  if (it == sit->end()) {
+    return end();
+  } else {
+    return it;
+  }
 }
 
 template<typename Frame>
 typename DiscreteTrajectory2<Frame>::iterator
 DiscreteTrajectory2<Frame>::upper_bound(Instant const& t) const {
-  return FindSegment(t).upper_bound(t);
+  auto const sit = FindSegment(t);
+  auto const it = sit->upper_bound(t);
+  if (it == sit->end()) {
+    return end();
+  } else {
+    return it;
+  }
 }
 
 template<typename Frame>
@@ -101,17 +119,17 @@ DiscreteTrajectory2<Frame>::NewSegment() {
       << "Cannot create a new segment after an empty one";
 
   auto const& new_segment = segments_->emplace_back();
-  auto const new_segment_it = --segments_->end();
-  *new_segment_it = DiscreteTrajectorySegment<Frame>(
+  auto const new_segment_sit = --segments_->end();
+  *new_segment_sit = DiscreteTrajectorySegment<Frame>(
       DiscreteTrajectorySegmentIterator<Frame>(segments_.get(),
-                                               new_segment_it));
+                                               new_segment_sit));
 
   auto const& [last_time, last_degrees_of_freedom] = *last_segment.rbegin();
-  new_segment_it->Append(last_time, last_degrees_of_freedom);
+  new_segment_sit->Append(last_time, last_degrees_of_freedom);
   segment_by_left_endpoint_.emplace_hint(
-      segment_by_left_endpoint_.end(), last_time, new_segment_it);
+      segment_by_left_endpoint_.end(), last_time, new_segment_sit);
 
-  return SegmentIterator(segments_.get(), new_segment_it);
+  return SegmentIterator(segments_.get(), new_segment_sit);
 }
 
 template<typename Frame>
@@ -132,7 +150,7 @@ void DiscreteTrajectory2<Frame>::DeleteSegments(iterator begin) {}
 
 template<typename Frame>
 void DiscreteTrajectory2<Frame>::ForgetAfter(Instant const& t) {
-  return FindSegment(t).ForgetAfter(t);
+  return FindSegment(t)->ForgetAfter(t);
 }
 
 template<typename Frame>
@@ -140,7 +158,7 @@ void DiscreteTrajectory2<Frame>::ForgetAfter(iterator begin) {}
 
 template<typename Frame>
 void DiscreteTrajectory2<Frame>::ForgetBefore(Instant const& t) {
-  return FindSegment(t).ForgetBefore(t);
+  return FindSegment(t)->ForgetBefore(t);
 }
 
 template<typename Frame>
@@ -150,7 +168,15 @@ template<typename Frame>
 void DiscreteTrajectory2<Frame>::Append(
     Instant const& t,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
-  FindSegment(t).Append(t, degrees_of_freedom);
+  auto sit = FindSegment(t);
+  // If this is the first point appended to this trajectory, insert a proper
+  // left endpoint and remove the sentinel.
+  if (empty()) {
+    segment_by_left_endpoint_.emplace_hint(
+        segment_by_left_endpoint_.end(), t, sit);
+    segment_by_left_endpoint_.erase(segment_by_left_endpoint_.begin());
+  }
+  sit->Append(t, degrees_of_freedom);
 }
 
 template<typename Frame>
@@ -166,19 +192,19 @@ Instant DiscreteTrajectory2<Frame>::t_max() const {
 template<typename Frame>
 Position<Frame> DiscreteTrajectory2<Frame>::EvaluatePosition(
     Instant const& t) const {
-  return FindSegment(t).EvaluatePosition(t);
+  return FindSegment(t)->EvaluatePosition(t);
 }
 
 template<typename Frame>
 Velocity<Frame> DiscreteTrajectory2<Frame>::EvaluateVelocity(
     Instant const& t) const {
-  return FindSegment(t).EvaluateVelocity(t);
+  return FindSegment(t)->EvaluateVelocity(t);
 }
 
 template<typename Frame>
 DegreesOfFreedom<Frame> DiscreteTrajectory2<Frame>::EvaluateDegreesOfFreedom(
     Instant const& t) const {
-  return FindSegment(t).EvaluateDegreesOfFreedom(t);
+  return FindSegment(t)->EvaluateDegreesOfFreedom(t);
 }
 
 template<typename Frame>
@@ -205,25 +231,21 @@ DiscreteTrajectory2<Frame>::ReadFromMessage(
 }
 
 template<typename Frame>
-DiscreteTrajectorySegment<Frame>& DiscreteTrajectory2<Frame>::FindSegment(
+typename DiscreteTrajectory2<Frame>::Segments::iterator
+DiscreteTrajectory2<Frame>::FindSegment(
     Instant const& t) {
-  auto const it = --segment_by_left_endpoint_.upper_bound(t);
-  CHECK(it != segment_by_left_endpoint_.begin() ||
-        segment_by_left_endpoint_.size() == 1)
-      << "Time " << t << " in the sentinel segment out of "
-      << segment_by_left_endpoint_.size() << " segments";
-  return *(it->second);
+  auto it = segment_by_left_endpoint_.upper_bound(t);
+  CHECK(it != segment_by_left_endpoint_.begin()) << "No segment covering " << t;
+  return (--it)->second;
 }
 
 template<typename Frame>
-DiscreteTrajectorySegment<Frame> const& DiscreteTrajectory2<Frame>::FindSegment(
+typename DiscreteTrajectory2<Frame>::Segments::const_iterator
+DiscreteTrajectory2<Frame>::FindSegment(
     Instant const& t) const {
-  auto const it = --segment_by_left_endpoint_.upper_bound(t);
-  CHECK(it != segment_by_left_endpoint_.begin() ||
-        segment_by_left_endpoint_.size() == 1)
-      << "Time " << t << " in the sentinel segment out of "
-      << segment_by_left_endpoint_.size() << " segments";
-  return *(it->second);
+  auto it = segment_by_left_endpoint_.upper_bound(t);
+  CHECK(it != segment_by_left_endpoint_.begin()) << "No segment covering " << t;
+  return (--it)->second;
 }
 
 }  // namespace internal_discrete_trajectory2

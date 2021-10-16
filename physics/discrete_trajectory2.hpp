@@ -117,8 +117,8 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
  private:
   using Segments = internal_discrete_trajectory_types::Segments<Frame>;
 
-  DiscreteTrajectorySegment<Frame>& FindSegment(Instant const& t);
-  DiscreteTrajectorySegment<Frame> const& FindSegment(Instant const& t) const;
+  typename Segments::iterator FindSegment(Instant const& t);
+  typename Segments::const_iterator FindSegment(Instant const& t) const;
 
   // We need a level of indirection here to make sure that the pointer to
   // Segments in the DiscreteTrajectorySegmentIterator remain valid when the

@@ -7,18 +7,22 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
+#include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/discrete_trajectory_factories.hpp"
 
 namespace principia {
 namespace physics {
 
+using geometry::Displacement;
 using geometry::Frame;
 using geometry::Instant;
 using geometry::Velocity;
 using quantities::si::Metre;
 using quantities::si::Second;
+using testing_utilities::Componentwise;
 using testing_utilities::NewLinearTrajectoryTimeline;
 using ::testing::ElementsAre;
+using ::testing::Eq;
 
 class DiscreteTrajectory2Test : public ::testing::Test {
  protected:
@@ -140,6 +144,32 @@ TEST_F(DiscreteTrajectory2Test, Size) {
   EXPECT_EQ(0, trajectory.size());
   trajectory = MakeTrajectory();
   EXPECT_EQ(15, trajectory.size());
+}
+
+TEST_F(DiscreteTrajectory2Test, Find) {
+  auto const trajectory = MakeTrajectory();
+  {
+    auto const it = trajectory.find(t0_ + 3 * Second);
+    auto const& [t, degrees_of_freedom] = *it;
+    EXPECT_EQ(t, t0_ + 3 * Second);
+    EXPECT_EQ(degrees_of_freedom.position(),
+              World::origin + Displacement<World>({3 * Metre,
+                                                   0 * Metre,
+                                                   0 * Metre}));
+  }
+  {
+    auto const it = trajectory.find(t0_ + 13 * Second);
+    auto const& [t, degrees_of_freedom] = *it;
+    EXPECT_EQ(t, t0_ + 13 * Second);
+    EXPECT_EQ(degrees_of_freedom.position(),
+              World::origin + Displacement<World>({4 * Metre,
+                                                   4 * Metre,
+                                                   3 * Metre}));
+  }
+  {
+    auto const it = trajectory.find(t0_ + 3.14 * Second);
+    EXPECT_TRUE(it == trajectory.end());
+  }
 }
 
 }  // namespace physics
