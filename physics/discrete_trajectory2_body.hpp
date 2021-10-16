@@ -97,6 +97,9 @@ DiscreteTrajectory2<Frame>::NewSegment() {
 
   auto const& new_segment = segments_->emplace_back();
   auto const new_segment_it = --segments_->end();
+  *new_segment_it = DiscreteTrajectorySegment<Frame>(
+      DiscreteTrajectorySegmentIterator<Frame>(segments_.get(),
+                                               new_segment_it));
 
   auto const& [last_time, last_degrees_of_freedom] = *last_segment.rbegin();
   new_segment_it->Append(last_time, last_degrees_of_freedom);

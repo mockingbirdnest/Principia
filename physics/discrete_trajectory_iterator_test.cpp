@@ -167,5 +167,27 @@ TEST_F(DiscreteTrajectoryIteratorTest, Equality) {
   EXPECT_NE(MakeBegin(segments_->begin()), MakeEnd(--segments_->end()));
 }
 
+// Empty segments may exist in a transient manner, we must be able to iterate
+// over them.
+TEST_F(DiscreteTrajectoryIteratorTest, EmptySegment) {
+  auto segments = MakeSegments(1);
+  {
+    int count = 0;
+    for (auto const& point : segments->front()) {
+      ++count;
+    }
+    EXPECT_EQ(0, count);
+  }
+  {
+    int count = 0;
+    for (auto it = segments->front().rbegin();
+         it != segments->front().rend();
+         ++it) {
+      ++count;
+    }
+    EXPECT_EQ(0, count);
+  }
+}
+
 }  // namespace physics
 }  // namespace principia
