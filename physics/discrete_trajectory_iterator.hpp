@@ -68,10 +68,6 @@ class DiscreteTrajectoryIterator {
   DiscreteTrajectorySegmentIterator<Frame> segment_;
   OptionalTimelineConstIterator point_;
 
-  // The last time that was seen by the iterator.  Used to skip over repeated
-  // times.
-  std::optional<Instant> previous_time_;
-
   template<typename F>
   friend class physics::DiscreteTrajectorySegment;
   friend class physics::DiscreteTrajectoryIteratorTest;

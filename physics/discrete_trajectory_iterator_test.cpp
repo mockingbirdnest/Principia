@@ -188,5 +188,18 @@ TEST_F(DiscreteTrajectoryIteratorTest, EmptySegment) {
     EXPECT_EQ(0, count);
   }
 }
+
+// Check that repeated points don't cause confusion regarding the end of a
+// segment.
+TEST_F(DiscreteTrajectoryIteratorTest, SegmentEnd) {
+  auto segment0 = segments_->begin();
+  auto segment1 = std::next(segment0);
+  auto iterator = segment0->begin();
+  for (int i = 0; i < 5; ++i) {
+    ++iterator;
+  }
+  EXPECT_TRUE(iterator != segment1->end());
+}
+
 }  // namespace physics
 }  // namespace principia

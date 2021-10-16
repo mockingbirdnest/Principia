@@ -15,6 +15,7 @@ DiscreteTrajectoryIterator<Frame>&
 DiscreteTrajectoryIterator<Frame>::operator++() {
   CHECK(!is_at_end(point_));
   auto& point = iterator(point_);
+  Instant const previous_time = point->first;
   for (;;) {
     if (point == --segment_->timeline_end()) {
       ++segment_;
@@ -27,8 +28,7 @@ DiscreteTrajectoryIterator<Frame>::operator++() {
     } else {
       ++point;
     }
-    if (point->first != previous_time_) {
-      previous_time_ = point->first;
+    if (point->first != previous_time) {
       break;
     }
   }
@@ -43,6 +43,7 @@ DiscreteTrajectoryIterator<Frame>::operator--() {
     point_ = --segment_->timeline_end();
   } else {
     auto& point = iterator(point_);
+    Instant const previous_time = point->first;
     for (;;) {
       if (point == segment_->timeline_begin()) {
         CHECK(segment_ != segment_.begin());
@@ -51,8 +52,7 @@ DiscreteTrajectoryIterator<Frame>::operator--() {
       } else {
         --point;
       }
-      if (point->first != previous_time_) {
-        previous_time_ = point->first;
+      if (point->first != previous_time) {
         break;
       }
     }
