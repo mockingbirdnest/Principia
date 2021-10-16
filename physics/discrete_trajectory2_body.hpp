@@ -1,16 +1,23 @@
 #pragma once
 
+#include "astronomy/epoch.hpp"
 #include "physics/discrete_trajectory2.hpp"
 
 namespace principia {
 namespace physics {
 namespace internal_discrete_trajectory2 {
 
+using astronomy::InfinitePast;
 using base::make_not_null_unique;
 
 template<typename Frame>
 DiscreteTrajectory2<Frame>::DiscreteTrajectory2()
-    : segments_(make_not_null_unique<Segments>(1)) {}
+    : segments_(make_not_null_unique<Segments>(1)) {
+  auto const it = segments_->begin();
+  *it = DiscreteTrajectorySegment<Frame>(
+      DiscreteTrajectorySegmentIterator<Frame>(segments_.get(), it));
+  segment_by_left_endpoint_.emplace(InfinitePast, it);
+}
 
 template<typename Frame>
 typename DiscreteTrajectory2<Frame>::iterator
@@ -34,6 +41,21 @@ template<typename Frame>
 typename DiscreteTrajectory2<Frame>::reverse_iterator
 DiscreteTrajectory2<Frame>::rend() const {
   return reverse_iterator(begin());
+}
+
+template<typename Frame>
+bool DiscreteTrajectory2<Frame>::empty() const {
+  for (auto const& segment : *segments_) {
+    if (!segment.empty()) {
+      return false;
+    }
+  }
+  return true;
+}
+
+template<typename Frame>
+std::int64_t DiscreteTrajectory2<Frame>::size() const {
+  return std::int64_t();
 }
 
 template<typename Frame>
@@ -69,15 +91,15 @@ DiscreteTrajectory2<Frame>::rsegments() const {
 template<typename Frame>
 typename DiscreteTrajectory2<Frame>::SegmentIterator
 DiscreteTrajectory2<Frame>::NewSegment() {
-  auto& last_segment = *segments_->back();
-  CHECK(!last_segment.empty());
+  auto& last_segment = segments_->back();
+  CHECK(!last_segment.empty())
+      << "Cannot create a new segment after an empty one";
 
-  auto const& new_segment = segments_->emplace_back(
-      std::make_unique<DiscreteTrajectorySegment<Frame>>());
-  auto const new_segment_it = --segments_.end();
+  auto const& new_segment = segments_->emplace_back();
+  auto const new_segment_it = --segments_->end();
 
-  auto const& [last_time, last_degrees_of_freedom] = last_segment->rbegin();
-  new_segment->Append(last_time, last_degrees_of_freedom);
+  auto const& [last_time, last_degrees_of_freedom] = *last_segment.rbegin();
+  new_segment_it->Append(last_time, last_degrees_of_freedom);
   segment_by_left_endpoint_.emplace_hint(
       segment_by_left_endpoint_.end(), last_time, new_segment_it);
 
@@ -120,7 +142,7 @@ template<typename Frame>
 void DiscreteTrajectory2<Frame>::Append(
     Instant const& t,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
-  return FindSegment(t).Append(t, degrees_of_freedom);
+  FindSegment(t).Append(t, degrees_of_freedom);
 }
 
 template<typename Frame>
@@ -130,7 +152,7 @@ Instant DiscreteTrajectory2<Frame>::t_min() const {
 
 template<typename Frame>
 Instant DiscreteTrajectory2<Frame>::t_max() const {
-  return segments_->front().t_max();
+  return segments_->back().t_max();
 }
 
 template<typename Frame>
@@ -177,17 +199,23 @@ DiscreteTrajectory2<Frame>::ReadFromMessage(
 template<typename Frame>
 DiscreteTrajectorySegment<Frame>& DiscreteTrajectory2<Frame>::FindSegment(
     Instant const& t) {
-  CHECK_LE(t_min(), t);
-  CHECK_LE(t, t_max());
-  return *((--segment_by_left_endpoint_.upper_bound(t))->second);
+  auto const it = --segment_by_left_endpoint_.upper_bound(t);
+  CHECK(it != segment_by_left_endpoint_.begin() ||
+        segment_by_left_endpoint_.size() == 1)
+      << "Time " << t << " in the sentinel segment out of "
+      << segment_by_left_endpoint_.size() << " segments";
+  return *(it->second);
 }
 
 template<typename Frame>
 DiscreteTrajectorySegment<Frame> const& DiscreteTrajectory2<Frame>::FindSegment(
     Instant const& t) const {
-  CHECK_LE(t_min(), t);
-  CHECK_LE(t, t_max());
-  return *((--segment_by_left_endpoint_.upper_bound(t))->second);
+  auto const it = --segment_by_left_endpoint_.upper_bound(t);
+  CHECK(it != segment_by_left_endpoint_.begin() ||
+        segment_by_left_endpoint_.size() == 1)
+      << "Time " << t << " in the sentinel segment out of "
+      << segment_by_left_endpoint_.size() << " segments";
+  return *(it->second);
 }
 
 }  // namespace internal_discrete_trajectory2

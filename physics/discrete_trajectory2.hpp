@@ -63,6 +63,9 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
   reverse_iterator rbegin() const;
   reverse_iterator rend() const;
 
+  bool empty() const;
+  std::int64_t size() const;
+
   iterator find(Instant const& t) const;
 
   iterator lower_bound(Instant const& t) const;
@@ -123,8 +126,9 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
   not_null<std::unique_ptr<Segments>> segments_;
 
   //TODO(phl): Use --upper_bound(t) to access, check for t_min/t_max;
+  // Sentinel at -oo?
   absl::btree_map<Instant,
-                  typename Segments::const_iterator> segment_by_left_endpoint_;
+                  typename Segments::iterator> segment_by_left_endpoint_;
 };
 
 }  // namespace internal_discrete_trajectory2
