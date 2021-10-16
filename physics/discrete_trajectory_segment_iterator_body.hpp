@@ -62,15 +62,20 @@ DiscreteTrajectorySegmentIterator<Frame>::DiscreteTrajectorySegmentIterator(
       iterator_(iterator) {}
 
 template<typename Frame>
-DiscreteTrajectorySegmentIterator<Frame>
-DiscreteTrajectorySegmentIterator<Frame>::begin() const {
-  return DiscreteTrajectorySegmentIterator(segments_, segments_->begin());
+bool DiscreteTrajectorySegmentIterator<Frame>::is_begin() const {
+  return iterator_ == segments_->begin();
 }
 
 template<typename Frame>
-DiscreteTrajectorySegmentIterator<Frame>
-DiscreteTrajectorySegmentIterator<Frame>::end() const {
-  return DiscreteTrajectorySegmentIterator(segments_, segments_->end());
+bool DiscreteTrajectorySegmentIterator<Frame>::is_end() const {
+  return iterator_ == segments_->end();
+}
+
+template<typename Frame>
+DiscreteTrajectorySegmentRange<DiscreteTrajectorySegmentIterator<Frame>>
+DiscreteTrajectorySegmentIterator<Frame>::segments() const {
+  return {DiscreteTrajectorySegmentIterator(segments_, segments_->begin()),
+          DiscreteTrajectorySegmentIterator(segments_, segments_->end())};
 }
 
 }  // namespace internal_discrete_trajectory_segment_iterator
