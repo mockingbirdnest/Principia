@@ -94,19 +94,19 @@ TEST_F(DiscreteTrajectory2Test, IterateForward) {
   EXPECT_THAT(times,
               ElementsAre(t0_,
                           t0_ + 1 * Second,
-                          t0_+ 2 * Second,
-                          t0_+ 3 * Second,
-                          t0_+ 4 * Second,
-                          t0_+ 5 * Second,
-                          t0_+ 6 * Second,
-                          t0_+ 7 * Second,
-                          t0_+ 8 * Second,
-                          t0_+ 9 * Second,
-                          t0_+ 10 * Second,
-                          t0_+ 11 * Second,
-                          t0_+ 12 * Second,
-                          t0_+ 13 * Second,
-                          t0_+ 14 * Second));
+                          t0_ + 2 * Second,
+                          t0_ + 3 * Second,
+                          t0_ + 4 * Second,
+                          t0_ + 5 * Second,
+                          t0_ + 6 * Second,
+                          t0_ + 7 * Second,
+                          t0_ + 8 * Second,
+                          t0_ + 9 * Second,
+                          t0_ + 10 * Second,
+                          t0_ + 11 * Second,
+                          t0_ + 12 * Second,
+                          t0_ + 13 * Second,
+                          t0_ + 14 * Second));
 }
 
 TEST_F(DiscreteTrajectory2Test, IterateBackward) {
