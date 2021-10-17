@@ -1,5 +1,6 @@
 ﻿#include "physics/discrete_trajectory_segment.hpp"
 
+#include <algorithm>
 #include <memory>
 #include <vector>
 
@@ -16,6 +17,8 @@
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/discrete_trajectory_factories.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/matchers.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace physics {
@@ -23,6 +26,8 @@ namespace physics {
 using base::make_not_null_unique;
 using base::not_null;
 using geometry::Frame;
+using geometry::Handedness;
+using geometry::Inertial;
 using geometry::Instant;
 using quantities::Abs;
 using quantities::AngularFrequency;
@@ -34,16 +39,23 @@ using quantities::si::Milli;
 using quantities::si::Nano;
 using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::AlmostEquals;
 using testing_utilities::AppendTrajectoryTimeline;
+using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
 using testing_utilities::NewCircularTrajectoryTimeline;
 using testing_utilities::operator""_⑴;
 using ::testing::Eq;
+using ::testing::Le;
+using ::testing::Lt;
 
 class DiscreteTrajectorySegmentTest : public ::testing::Test {
  protected:
-  using World = Frame<enum class WorldTag>;
+  using World = Frame<serialization::Frame::TestTag,
+                      Inertial,
+                      Handedness::Right,
+                      serialization::Frame::TEST>;
 
   using Segments = internal_discrete_trajectory_types::Segments<World>;
 
@@ -78,13 +90,18 @@ class DiscreteTrajectorySegmentTest : public ::testing::Test {
     segment.SetDownsampling(downsampling_parameters);
   }
 
+  static DiscreteTrajectorySegmentIterator<World> MakeIterator(
+      not_null<Segments const*> const segments,
+      typename Segments::const_iterator iterator) {
+    return DiscreteTrajectorySegmentIterator<World>(segments, iterator);
+  }
+
   // Constructs a list of |n| segments which are properly initialized.
   // TODO(phl): Move to a central place.
   static not_null<std::unique_ptr<Segments>> MakeSegments(const int n) {
     auto segments = make_not_null_unique<Segments>(n);
     for (auto it = segments->begin(); it != segments->end(); ++it) {
-      *it = DiscreteTrajectorySegment<World>(
-          DiscreteTrajectorySegmentIterator<World>(segments.get(), it));
+      *it = DiscreteTrajectorySegment<World>(MakeIterator(segments.get(), it));
     }
     return segments;
   }
@@ -303,6 +320,126 @@ TEST_F(DiscreteTrajectorySegmentTest, DownsamplingForgetAfter) {
               AlmostEquals(0 * Metre, 0));
   EXPECT_THAT(*std::max_element(velocity_errors.begin(), velocity_errors.end()),
               AlmostEquals(0 * Metre / Second, 0));
+}
+
+TEST_F(DiscreteTrajectorySegmentTest, SerializationWithDownsampling) {
+  auto const circle_segments = MakeSegments(1);
+  auto& circle = *circle_segments->begin();
+  SetDownsampling({.max_dense_intervals = 50, .tolerance = 1 * Milli(Metre)},
+                  circle);
+  AngularFrequency const ω = 3 * Radian / Second;
+  Length const r = 2 * Metre;
+  Time const Δt = 10 * Milli(Second);
+  Instant const t1 = t0_;
+  Instant const t2 = t0_ + 5 * Second;
+  AppendTrajectoryTimeline(
+      NewCircularTrajectoryTimeline<World>(ω, r, Δt, t1, t2),
+      /*to=*/circle);
+  auto const circle_t_max = circle.t_max();
+
+  serialization::DiscreteTrajectorySegment message;
+  circle.WriteToMessage(&message,
+                        /*exact=*/{circle.lower_bound(t0_ + 2 * Second),
+                                   circle.lower_bound(t0_ + 3 * Second)});
+
+  auto const deserialized_circle_segments = MakeSegments(1);
+  auto& deserialized_circle = *deserialized_circle_segments->begin();
+  deserialized_circle =
+      DiscreteTrajectorySegment<World>::ReadFromMessage(
+          message,
+          /*self=*/MakeIterator(deserialized_circle_segments.get(),
+                                deserialized_circle_segments->cbegin()));
+
+  // Serialization/deserialization preserves the size, the times, and nudges the
+  // positions by less than the tolerance.  It also preserve the degrees of
+  // freedom at the "exact" iterators.
+  EXPECT_THAT(circle.size(), Eq(39));
+  EXPECT_THAT(deserialized_circle.size(), circle.size());
+  for (auto it1 = circle.begin(), it2 = deserialized_circle.begin();
+       it1 != circle.end();
+       ++it1, ++it2) {
+    auto const& [t1, degrees_of_freedom1] = *it1;
+    auto const& [t2, degrees_of_freedom2] = *it2;
+    EXPECT_EQ(t1, t2);
+    EXPECT_THAT(degrees_of_freedom2.position(),
+                AbsoluteErrorFrom(degrees_of_freedom1.position(),
+                                  Lt(0.22 * Milli(Metre))));
+    EXPECT_THAT(degrees_of_freedom2.velocity(),
+                AbsoluteErrorFrom(degrees_of_freedom1.velocity(),
+                                  Lt(1.1 * Milli(Metre) / Second)));
+  }
+  EXPECT_NE(deserialized_circle.lower_bound(t0_ + 1 * Second)->second,
+            circle.lower_bound(t0_ + 1 * Second)->second);
+  EXPECT_EQ(deserialized_circle.lower_bound(t0_ + 2 * Second)->second,
+            circle.lower_bound(t0_ + 2 * Second)->second);
+  EXPECT_EQ(deserialized_circle.lower_bound(t0_ + 3 * Second)->second,
+            circle.lower_bound(t0_ + 3 * Second)->second);
+  EXPECT_NE(deserialized_circle.lower_bound(t0_ + 4 * Second)->second,
+            circle.lower_bound(t0_ + 4 * Second)->second);
+
+  // Appending may result in different downsampling because the positions differ
+  // a bit.
+  Instant const t3 = t0_ + 10 * Second;
+  AppendTrajectoryTimeline(
+      NewCircularTrajectoryTimeline<World>(ω, r, Δt, circle_t_max + Δt, t3),
+      /*to=*/circle);
+  AppendTrajectoryTimeline(
+      NewCircularTrajectoryTimeline<World>(ω, r, Δt, circle_t_max + Δt, t3),
+      /*to=*/deserialized_circle);
+
+  // Despite the difference in downsampling (and therefore in size) the two
+  // trajectories are still within the tolerance.
+  EXPECT_THAT(circle.size(), Eq(77));
+  EXPECT_THAT(deserialized_circle.size(), Eq(78));
+  for (Instant t = t0_;
+       t <= std::min(circle.rbegin()->first,
+                     deserialized_circle.rbegin()->first);
+       t += Δt) {
+    EXPECT_THAT(
+        deserialized_circle.EvaluatePosition(t),
+        AbsoluteErrorFrom(circle.EvaluatePosition(t), Le(0.23 * Milli(Metre))));
+    EXPECT_THAT(deserialized_circle.EvaluateVelocity(t),
+                AbsoluteErrorFrom(circle.EvaluateVelocity(t),
+                                  Le(5.7 * Milli(Metre) / Second)));
+  }
+}
+
+TEST_F(DiscreteTrajectorySegmentTest, SerializationRoundTrip) {
+  auto const circle_segments = MakeSegments(1);
+  auto& circle = *circle_segments->begin();
+  SetDownsampling({.max_dense_intervals = 50, .tolerance = 1 * Milli(Metre)},
+                  circle);
+  AngularFrequency const ω = 3 * Radian / Second;
+  Length const r = 2 * Metre;
+  Time const Δt = 10 * Milli(Second);
+  Instant const t1 = t0_;
+  Instant const t2 = t0_ + 5 * Second;
+  AppendTrajectoryTimeline(
+      NewCircularTrajectoryTimeline<World>(ω, r, Δt, t1, t2),
+      /*to=*/circle);
+  auto const circle_t_max = circle.t_max();
+
+  serialization::DiscreteTrajectorySegment message1;
+  circle.WriteToMessage(
+      &message1,
+      /*exact=*/{circle.lower_bound(t0_ + 2 * Second),
+                 circle.lower_bound(t0_ + 3 * Second)});
+
+  auto const deserialized_circle_segments = MakeSegments(1);
+  auto& deserialized_circle = *deserialized_circle_segments->begin();
+  deserialized_circle =
+      DiscreteTrajectorySegment<World>::ReadFromMessage(
+          message1,
+          /*self=*/MakeIterator(deserialized_circle_segments.get(),
+                                deserialized_circle_segments->cbegin()));
+
+  serialization::DiscreteTrajectorySegment message2;
+  deserialized_circle.WriteToMessage(
+      &message2,
+      /*exact=*/{circle.lower_bound(t0_ + 2 * Second),
+                 circle.lower_bound(t0_ + 3 * Second)});
+
+  EXPECT_THAT(message2, EqualsProto(message1));
 }
 
 }  // namespace physics

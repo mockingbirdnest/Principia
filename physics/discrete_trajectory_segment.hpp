@@ -3,9 +3,11 @@
 #include <cstdint>
 #include <iterator>
 #include <optional>
+#include <vector>
 
 #include "absl/container/btree_map.h"
 #include "absl/status/status.h"
+#include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "numerics/hermite3.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -13,6 +15,7 @@
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/discrete_trajectory_types.hpp"
 #include "physics/trajectory.hpp"
+#include "serialization/physics.pb.h"
 
 namespace principia {
 
@@ -34,6 +37,7 @@ class DiscreteTrajectorySegmentTest;
 
 namespace internal_discrete_trajectory_segment {
 
+using base::not_null;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Velocity;
@@ -88,6 +92,17 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
       Instant const& t) const override;
 
+  // The points denoted by |exact| are written and re-read exactly and are not
+  // affected by any errors introduced by zfp compression.
+  void WriteToMessage(
+      not_null<serialization::DiscreteTrajectorySegment*> message,
+      std::vector<iterator> const& exact) const;
+  template<typename F = Frame,
+           typename = std::enable_if_t<base::is_serializable_v<F>>>
+  static DiscreteTrajectorySegment ReadFromMessage(
+      serialization::DiscreteTrajectorySegment const& message,
+      DiscreteTrajectorySegmentIterator<Frame> self);
+
  private:
   using DownsamplingParameters =
       internal_discrete_trajectory_types::DownsamplingParameters;
@@ -134,12 +149,12 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
 
   std::optional<DownsamplingParameters> downsampling_parameters_;
 
-  DiscreteTrajectorySegmentIterator<Frame> self_;
-  Timeline timeline_;
-
   // The number of points at the end of the segment that are part of a "dense"
   // span, i.e., have not been subjected to downsampling yet.
   std::int64_t number_of_dense_points_ = 0;
+
+  DiscreteTrajectorySegmentIterator<Frame> self_;
+  Timeline timeline_;
 
   template<typename F>
   friend class physics::DiscreteTrajectory2;

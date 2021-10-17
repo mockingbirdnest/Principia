@@ -1,16 +1,20 @@
-#pragma once
+﻿#pragma once
 
 #include "physics/discrete_trajectory_segment.hpp"
 
 #include <algorithm>
 #include <iterator>
 #include <list>
+#include <string>
 #include <vector>
 
 #include "astronomy/epoch.hpp"
+#include "base/zfp_compressor.hpp"
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
 #include "numerics/fit_hermite_spline.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace physics {
@@ -18,8 +22,14 @@ namespace internal_discrete_trajectory_segment {
 
 using astronomy::InfiniteFuture;
 using astronomy::InfinitePast;
+using base::ZfpCompressor;
+using geometry::Displacement;
 using geometry::Position;
 using numerics::FitHermiteSpline;
+using quantities::Length;
+using quantities::Time;
+using quantities::si::Metre;
+using quantities::si::Second;
 
 template<typename Frame>
 DiscreteTrajectorySegment<Frame>::DiscreteTrajectorySegment(
@@ -148,6 +158,164 @@ DiscreteTrajectorySegment<Frame>::EvaluateDegreesOfFreedom(
   CHECK_GT(t_max(), t);
   auto const interpolation = GetInterpolation(it);
   return {interpolation.Evaluate(t), interpolation.EvaluateDerivative(t)};
+}
+
+template<typename Frame>
+void DiscreteTrajectorySegment<Frame>::WriteToMessage(
+    not_null<serialization::DiscreteTrajectorySegment*> message,
+    std::vector<iterator> const& exact) const {
+  if (downsampling_parameters_.has_value()) {
+    auto* const serialized_downsampling_parameters =
+        message->mutable_downsampling_parameters();
+    serialized_downsampling_parameters->set_max_dense_intervals(
+        downsampling_parameters_->max_dense_intervals);
+    downsampling_parameters_->tolerance.WriteToMessage(
+        serialized_downsampling_parameters->mutable_tolerance());
+  }
+  message->set_number_of_dense_points(number_of_dense_points_);
+
+  for (auto const it : exact) {
+    auto const& [t, degrees_of_freedom] = *it;
+    auto* const serialized_exact = message->add_exact();
+    t.WriteToMessage(serialized_exact->mutable_instant());
+    degrees_of_freedom.WriteToMessage(
+        serialized_exact->mutable_degrees_of_freedom());
+  }
+
+  std::int32_t const timeline_size = timeline_.size();
+  auto* const zfp = message->mutable_zfp();
+  zfp->set_timeline_size(timeline_size);
+
+  // The timeline data is made dimensionless and stored in separate arrays per
+  // coordinate.  We expect strong correlations within a coordinate over time,
+  // but not between coordinates.
+  std::vector<double> t;
+  std::vector<double> qx;
+  std::vector<double> qy;
+  std::vector<double> qz;
+  std::vector<double> px;
+  std::vector<double> py;
+  std::vector<double> pz;
+  t.reserve(timeline_size);
+  qx.reserve(timeline_size);
+  qy.reserve(timeline_size);
+  qz.reserve(timeline_size);
+  px.reserve(timeline_size);
+  py.reserve(timeline_size);
+  pz.reserve(timeline_size);
+  std::optional<Instant> previous_instant;
+  Time max_Δt;
+  std::string* const zfp_timeline = zfp->mutable_timeline();
+  for (auto const& [instant, degrees_of_freedom] : timeline_) {
+    auto const q = degrees_of_freedom.position() - Frame::origin;
+    auto const p = degrees_of_freedom.velocity();
+    t.push_back((instant - Instant{}) / Second);
+    qx.push_back(q.coordinates().x / Metre);
+    qy.push_back(q.coordinates().y / Metre);
+    qz.push_back(q.coordinates().z / Metre);
+    px.push_back(p.coordinates().x / (Metre / Second));
+    py.push_back(p.coordinates().y / (Metre / Second));
+    pz.push_back(p.coordinates().z / (Metre / Second));
+    if (previous_instant.has_value()) {
+      max_Δt = std::max(max_Δt, instant - *previous_instant);
+    }
+    previous_instant = instant;
+  }
+
+  // Times are exact.
+  ZfpCompressor time_compressor(0);
+  // Lengths are approximated to the downsampling tolerance if downsampling is
+  // enabled, otherwise they are exact.
+  Length const length_tolerance = downsampling_parameters_.has_value()
+                                      ? downsampling_parameters_->tolerance
+                                      : Length();
+  ZfpCompressor length_compressor(length_tolerance / Metre);
+  // Speeds are approximated based on the length tolerance and the maximum
+  // step in the timeline.
+  ZfpCompressor const speed_compressor((length_tolerance / max_Δt) /
+                                        (Metre / Second));
+
+  ZfpCompressor::WriteVersion(message);
+  time_compressor.WriteToMessageMultidimensional<2>(t, zfp_timeline);
+  length_compressor.WriteToMessageMultidimensional<2>(qx, zfp_timeline);
+  length_compressor.WriteToMessageMultidimensional<2>(qy, zfp_timeline);
+  length_compressor.WriteToMessageMultidimensional<2>(qz, zfp_timeline);
+  speed_compressor.WriteToMessageMultidimensional<2>(px, zfp_timeline);
+  speed_compressor.WriteToMessageMultidimensional<2>(py, zfp_timeline);
+  speed_compressor.WriteToMessageMultidimensional<2>(pz, zfp_timeline);
+}
+
+template<typename Frame>
+template<typename F, typename>
+DiscreteTrajectorySegment<Frame>
+DiscreteTrajectorySegment<Frame>::ReadFromMessage(
+    serialization::DiscreteTrajectorySegment const& message,
+    DiscreteTrajectorySegmentIterator<Frame> const self) {
+  DiscreteTrajectorySegment<Frame> segment(self);
+
+  // Construct a map for efficient lookup of the exact points.
+  Timeline exact;
+  for (auto const& instantaneous_degrees_of_freedom : message.exact()) {
+    exact.emplace_hint(
+        exact.end(),
+        Instant::ReadFromMessage(instantaneous_degrees_of_freedom.instant()),
+        DegreesOfFreedom<Frame>::ReadFromMessage(
+            instantaneous_degrees_of_freedom.degrees_of_freedom()));
+  }
+
+  // Decompress the timeline before restoring the downsampling parameters to
+  // avoid re-downsampling.
+  ZfpCompressor decompressor;
+  ZfpCompressor::ReadVersion(message);
+
+  int const timeline_size = message.zfp().timeline_size();
+  std::vector<double> t(timeline_size);
+  std::vector<double> qx(timeline_size);
+  std::vector<double> qy(timeline_size);
+  std::vector<double> qz(timeline_size);
+  std::vector<double> px(timeline_size);
+  std::vector<double> py(timeline_size);
+  std::vector<double> pz(timeline_size);
+  std::string_view zfp_timeline(message.zfp().timeline().data(),
+                                message.zfp().timeline().size());
+
+  decompressor.ReadFromMessageMultidimensional<2>(t, zfp_timeline);
+  decompressor.ReadFromMessageMultidimensional<2>(qx, zfp_timeline);
+  decompressor.ReadFromMessageMultidimensional<2>(qy, zfp_timeline);
+  decompressor.ReadFromMessageMultidimensional<2>(qz, zfp_timeline);
+  decompressor.ReadFromMessageMultidimensional<2>(px, zfp_timeline);
+  decompressor.ReadFromMessageMultidimensional<2>(py, zfp_timeline);
+  decompressor.ReadFromMessageMultidimensional<2>(pz, zfp_timeline);
+
+  for (int i = 0; i < timeline_size; ++i) {
+    Position<Frame> const q =
+        Frame::origin +
+        Displacement<Frame>({qx[i] * Metre, qy[i] * Metre, qz[i] * Metre});
+    Velocity<Frame> const p({px[i] * (Metre / Second),
+                             py[i] * (Metre / Second),
+                             pz[i] * (Metre / Second)});
+
+    // See if this is a point whose degrees of freedom must be restored
+    // exactly.
+    Instant const time = Instant() + t[i] * Second;
+    if (auto it = exact.find(time); it == exact.cend()) {
+      segment.Append(time, DegreesOfFreedom<Frame>(q, p));
+    } else {
+      segment.Append(time, it->second);
+    }
+  }
+
+  // Finally, restore the downsampling information.
+  if (message.has_downsampling_parameters()) {
+    segment.downsampling_parameters_ = DownsamplingParameters{
+        .max_dense_intervals =
+            message.downsampling_parameters().max_dense_intervals(),
+        .tolerance = Length::ReadFromMessage(
+            message.downsampling_parameters().tolerance())};
+  }
+  segment.number_of_dense_points_ = message.number_of_dense_points();
+
+  return segment;
 }
 
 template<typename Frame>
