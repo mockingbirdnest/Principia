@@ -346,8 +346,8 @@ TEST_F(DiscreteTrajectorySegmentTest, SerializationWithDownsampling) {
   deserialized_circle =
       DiscreteTrajectorySegment<World>::ReadFromMessage(
           message,
-          MakeIterator(deserialized_circle_segments.get(),
-                       deserialized_circle_segments->cbegin()));
+          /*self=*/MakeIterator(deserialized_circle_segments.get(),
+                                deserialized_circle_segments->cbegin()));
 
   // Serialization/deserialization preserves the size, the times, and nudges the
   // positions by less than the tolerance.  It also preserve the degrees of
@@ -429,8 +429,8 @@ TEST_F(DiscreteTrajectorySegmentTest, SerializationRoundTrip) {
   deserialized_circle =
       DiscreteTrajectorySegment<World>::ReadFromMessage(
           message1,
-          MakeIterator(deserialized_circle_segments.get(),
-                       deserialized_circle_segments->cbegin()));
+          /*self=*/MakeIterator(deserialized_circle_segments.get(),
+                                deserialized_circle_segments->cbegin()));
 
   serialization::DiscreteTrajectorySegment message2;
   deserialized_circle.WriteToMessage(

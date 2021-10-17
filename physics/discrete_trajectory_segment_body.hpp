@@ -262,8 +262,8 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
             instantaneous_degrees_of_freedom.degrees_of_freedom()));
   }
 
-  // Decompress the timeline before the downsampling parameters to avoid re-
-  // downsampling.
+  // Decompress the timeline before restoring the downsampling parameters to
+  // avoid re-downsampling.
   ZfpCompressor decompressor;
   ZfpCompressor::ReadVersion(message);
 
