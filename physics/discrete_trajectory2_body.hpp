@@ -151,17 +151,16 @@ DiscreteTrajectory2<Frame>::DetachSegments(SegmentIterator const begin) {
                              *segments_,
                              begin.iterator(), segments_->end());
 
-  // Iterate through the detached segments to re-establish the time-to-segment
-  // mapping and trim the one for this trajectory.
+  // Iterate through the detached segments to move the time-to-segment mapping
+  // to the detached trajectory.
   auto endpoint_it = segment_by_left_endpoint_.end();
   for (auto sit = detached.segments_->rbegin();
        sit != detached.segments_->rend();
        ++sit) {
     --endpoint_it;
-    Instant const t = endpoint_it->first;
-    detached.segment_by_left_endpoint_.emplace(t, std::prev(sit.base()));
+    detached.segment_by_left_endpoint_.insert(
+        segment_by_left_endpoint_.extract(endpoint_it));
   }
-  segment_by_left_endpoint_.erase(endpoint_it, segment_by_left_endpoint_.end());
 
   // Reset the self pointers of the new segments.
   for (auto sit = detached.segments_->begin();
@@ -177,7 +176,43 @@ template<typename Frame>
 typename DiscreteTrajectory2<Frame>::SegmentIterator
 DiscreteTrajectory2<Frame>::AttachSegments(
     DiscreteTrajectory2&& trajectory) {
-  // TODO(phl): Implement.
+  CHECK(!trajectory.empty());
+  // NOTE(phl): This check might be too strict, we might want to allow LT as the
+  // time comparison, and to adjust the first point of trajectory as needed.
+  // We'll see if the clients need that.
+  CHECK_EQ(rbegin()->first, trajectory.begin()->first)
+      << "Mismatching times when attaching segments";
+  CHECK_EQ(rbegin()->second, trajectory.begin()->second)
+      << "Mismatching degrees of freedom when attaching segments";
+
+  if (empty()) {
+    *this = DiscreteTrajectory2(uninitialized);
+  }
+
+  // The |end| iterator keeps pointing at the end after the splice.  Instead,
+  // we track the iterator to the last segment.
+  auto const last_before_splice = --segments_->end();
+
+  // Move the attached segments to the end of this trajectory.
+  segments_->splice(segments_->end(),
+                    *trajectory.segments_);
+
+  auto const end_before_splice = std::next(last_before_splice);
+  auto const rbegin_before_splice = std::reverse_iterator(end_before_splice);
+
+  auto endpoint_it = trajectory.segment_by_left_endpoint_.end();
+  for (auto sit = segments_->rbegin(); sit != rbegin_before_splice; ++sit) {
+    --endpoint_it;
+    segment_by_left_endpoint_.insert(
+        trajectory.segment_by_left_endpoint_.extract(endpoint_it));
+  }
+
+  // Reset the self pointers of the new segments.
+  for (auto sit = end_before_splice; sit != segments_->end(); ++sit) {
+    sit->SetSelf(SegmentIterator(segments_.get(), sit));
+  }
+
+  return SegmentIterator(segments_.get(), end_before_splice);
 }
 
 template<typename Frame>
