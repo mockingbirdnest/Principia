@@ -161,16 +161,24 @@ void DiscreteTrajectory2<Frame>::DeleteSegments(SegmentIterator const begin) {
 template<typename Frame>
 void DiscreteTrajectory2<Frame>::ForgetAfter(Instant const& t) {
   auto const sit = FindSegment(t);
-  segments_->erase(std::next(sit), segments_->end());
   sit->ForgetAfter(t);
-  LOG(ERROR)<<sit->size();
+  // Here |sit| designates a segment starting at or after |t|.  If |t| is
+  // exactly at the beginning of the segment, |ForgetAfter| above will leave it
+  // empty.  In that case we drop the segment entirely.  Note that this
+  // situation doesn't arise for |ForgetBefore| because of the way |FindSegment|
+  // works.
+  if (sit->empty()) {
+    segments_->erase(sit, segments_->end());
+  } else {
+    segments_->erase(std::next(sit), segments_->end());
+  }
 }
 
 template<typename Frame>
 void DiscreteTrajectory2<Frame>::ForgetBefore(Instant const& t) {
   auto const sit = FindSegment(t);
-  segments_->erase(segments_->begin(), sit);
   sit->ForgetBefore(t);
+  segments_->erase(segments_->begin(), sit);
 }
 
 template<typename Frame>

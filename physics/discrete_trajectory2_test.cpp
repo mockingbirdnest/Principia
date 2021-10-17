@@ -317,7 +317,7 @@ TEST_F(DiscreteTrajectory2Test, ForgetAfter) {
   EXPECT_EQ(t0_ + 6 * Second, trajectory.rbegin()->first);
 
   trajectory.ForgetAfter(t0_ + 4 * Second);
-  EXPECT_EQ(2, trajectory.segments().size());  // TODO(phl): Weird.
+  EXPECT_EQ(1, trajectory.segments().size());
   EXPECT_EQ(t0_, trajectory.begin()->first);
   EXPECT_EQ(t0_ + 4 * Second, trajectory.rbegin()->first);
 }
