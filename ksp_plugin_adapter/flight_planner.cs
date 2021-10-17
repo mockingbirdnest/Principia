@@ -77,7 +77,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
       plugin.FlightPlanCreate(vessel_guid,
                               plugin.CurrentTime() + 3600,
                               predicted_vessel.GetTotalMass());
-      final_time_.value = plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
+      final_time_.value_if_different =
+          plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
       Shrink();
     }
     UnityEngine.GUI.DragWindow();
@@ -107,7 +108,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
       if (vessel_guid != null &&
           plugin.FlightPlanExists(vessel_guid)) {
         burn_editors_ = new List<BurnEditor>();
-        final_time_.value = plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
+        final_time_.value_if_different =
+            plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
         for (int i = 0;
              i < plugin.FlightPlanNumberOfManoeuvres(vessel_guid);
              ++i) {
@@ -154,7 +156,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
       }
       // Always refresh the final time from C++ as it may have changed because
       // the last burn changed.
-      final_time_.value = plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
+      final_time_.value_if_different =
+          plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
 
       FlightPlanAdaptiveStepParameters parameters =
           plugin.FlightPlanGetAdaptiveStepParameters(vessel_guid);
