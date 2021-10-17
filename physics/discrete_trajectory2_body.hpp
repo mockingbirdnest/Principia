@@ -114,7 +114,10 @@ DiscreteTrajectory2<Frame>::segments() const {
 template<typename Frame>
 typename DiscreteTrajectory2<Frame>::ReverseSegmentRange
 DiscreteTrajectory2<Frame>::rsegments() const {
-  // TODO(phl): Implement.
+  return ReverseSegmentRange(std::reverse_iterator(SegmentIterator(
+                                 segments_.get(), segments_->end())),
+                             std::reverse_iterator(SegmentIterator(
+                                 segments_.get(), segments_->begin())));
 }
 
 template<typename Frame>

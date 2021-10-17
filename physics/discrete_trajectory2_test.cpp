@@ -277,6 +277,22 @@ TEST_F(DiscreteTrajectory2Test, Segments) {
       ElementsAre(t0_ + 4 * Second, t0_ + 9 * Second, t0_ + 14 * Second));
 }
 
+TEST_F(DiscreteTrajectory2Test, RSegments) {
+  auto const trajectory = MakeTrajectory();
+  std::vector<Instant> begin;
+  std::vector<Instant> rbegin;
+  for (auto const& sit : trajectory.rsegments()) {
+    begin.push_back(sit.begin()->first);
+    rbegin.push_back(sit.rbegin()->first);
+  }
+  EXPECT_THAT(
+      begin,
+      ElementsAre(t0_ + 9 * Second, t0_ + 4 * Second, t0_));
+  EXPECT_THAT(
+      rbegin,
+      ElementsAre(t0_ + 14 * Second, t0_ + 9 * Second, t0_ + 4 * Second));
+}
+
 TEST_F(DiscreteTrajectory2Test, TMinTMaxEvaluate) {
   auto const trajectory = MakeTrajectory();
   EXPECT_EQ(t0_, trajectory.t_min());

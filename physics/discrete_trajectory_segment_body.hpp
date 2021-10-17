@@ -237,7 +237,7 @@ absl::Status DiscreteTrajectorySegment<Frame>::DownsampleIfNeeded() {
       ++it;
     }
 
-    absl::StatusOr<std::list<ConstIterators::const_iterator>>
+    absl::StatusOr<std::list<typename ConstIterators::const_iterator>>
         right_endpoints = FitHermiteSpline<Instant, Position<Frame>>(
             dense_iterators,
             [](auto&& it) -> auto&& { return it->first; },
