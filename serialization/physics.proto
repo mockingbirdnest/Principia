@@ -83,9 +83,9 @@ message DiscreteTrajectory {
     required int64 max_dense_intervals = 2;
     required Quantity tolerance = 3;
     // The instant of the iterator; absent if it is the end of the timeline.
-    // Pre Grothendieck/Haar.
+    // Pre Haar.
     optional Point start_of_dense_timeline = 1;
-    // Added in Grothendieck/Haar.
+    // Added in Haar.
     repeated Point dense_timeline = 4;
   }
   message InstantaneousDegreesOfFreedom {
