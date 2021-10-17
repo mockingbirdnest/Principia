@@ -8,6 +8,7 @@
 #include "absl/container/btree_map.h"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
+#include "base/tags.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_iterator.hpp"
@@ -28,6 +29,7 @@ FORWARD_DECLARE_FROM(discrete_trajectory_segment,
 namespace internal_discrete_trajectory2 {
 
 using base::not_null;
+using base::uninitialized_t;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Velocity;
@@ -113,6 +115,10 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
 
  private:
   using Segments = internal_discrete_trajectory_types::Segments<Frame>;
+
+  // This constructor leaves the list of segments empty (but allocated) as well
+  // as the time-to-segment mapping.
+  explicit DiscreteTrajectory2(uninitialized_t);
 
   typename Segments::iterator FindSegment(Instant const& t);
   typename Segments::const_iterator FindSegment(Instant const& t) const;

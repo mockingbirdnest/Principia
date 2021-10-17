@@ -12,6 +12,7 @@ namespace internal_discrete_trajectory2 {
 
 using astronomy::InfinitePast;
 using base::make_not_null_unique;
+using base::uninitialized;
 
 template<typename Frame>
 DiscreteTrajectory2<Frame>::DiscreteTrajectory2()
@@ -143,7 +144,33 @@ DiscreteTrajectory2<Frame>::NewSegment() {
 template<typename Frame>
 typename DiscreteTrajectory2<Frame>::DiscreteTrajectory2
 DiscreteTrajectory2<Frame>::DetachSegments(SegmentIterator const begin) {
-  // TODO(phl): Implement.
+  DiscreteTrajectory2 detached(uninitialized);
+
+  // Move the detached segments to the new trajectory.
+  detached.segments_->splice(detached.segments_->end(),
+                             *segments_,
+                             begin.iterator(), segments_->end());
+
+  // Iterate through the detached segments to re-establish the time-to-segment
+  // mapping and trim the one for this trajectory.
+  auto endpoint_it = segment_by_left_endpoint_.end();
+  for (auto sit = detached.segments_->rbegin();
+       sit != detached.segments_->rend();
+       ++sit) {
+    --endpoint_it;
+    Instant const t = endpoint_it->first;
+    detached.segment_by_left_endpoint_.emplace(t, std::prev(sit.base()));
+  }
+  segment_by_left_endpoint_.erase(endpoint_it, segment_by_left_endpoint_.end());
+
+  // Reset the self pointers of the new segments.
+  for (auto sit = detached.segments_->begin();
+       sit != detached.segments_->end();
+       ++sit) {
+    sit->SetSelf(SegmentIterator(detached.segments_.get(), sit));
+  }
+
+  return detached;
 }
 
 template<typename Frame>
@@ -250,6 +277,10 @@ DiscreteTrajectory2<Frame>::ReadFromMessage(
     std::vector<DiscreteTrajectory2**> const& tracked) {
   // TODO(phl): Implement.
 }
+
+template<typename Frame>
+DiscreteTrajectory2<Frame>::DiscreteTrajectory2(uninitialized_t)
+    : segments_(make_not_null_unique<Segments>()) {}
 
 template<typename Frame>
 typename DiscreteTrajectory2<Frame>::Segments::iterator

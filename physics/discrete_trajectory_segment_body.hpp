@@ -151,6 +151,12 @@ DiscreteTrajectorySegment<Frame>::EvaluateDegreesOfFreedom(
 }
 
 template<typename Frame>
+void DiscreteTrajectorySegment<Frame>::SetSelf(
+    DiscreteTrajectorySegmentIterator<Frame> const self) {
+  self_ = self;
+}
+
+template<typename Frame>
 absl::Status DiscreteTrajectorySegment<Frame>::Append(
     Instant const& t,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {

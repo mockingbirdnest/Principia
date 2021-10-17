@@ -293,6 +293,58 @@ TEST_F(DiscreteTrajectory2Test, RSegments) {
       ElementsAre(t0_ + 14 * Second, t0_ + 9 * Second, t0_ + 4 * Second));
 }
 
+TEST_F(DiscreteTrajectory2Test, DetachSegments) {
+  auto trajectory1 = MakeTrajectory();
+  auto const first_segment = trajectory1.segments().begin();
+  auto const second_segment = std::next(first_segment);
+  auto trajectory2 = trajectory1.DetachSegments(second_segment);
+  EXPECT_EQ(1, trajectory1.segments().size());
+  EXPECT_EQ(2, trajectory2.segments().size());
+  EXPECT_EQ(t0_, trajectory1.begin()->first);
+  EXPECT_EQ(t0_ + 4 * Second, trajectory1.rbegin()->first);
+  EXPECT_EQ(t0_ + 4 * Second, trajectory2.begin()->first);
+  EXPECT_EQ(t0_ + 14 * Second, trajectory2.rbegin()->first);
+
+  // Check that the trajectories are minimally usable (in particular, as far as
+  // the time-to-segment mapping is concerned).
+  {
+    auto const it = trajectory1.lower_bound(t0_ + 3.9 * Second);
+    auto const& [t, degrees_of_freedom] = *it;
+    EXPECT_EQ(t, t0_ + 4 * Second);
+    EXPECT_EQ(degrees_of_freedom.position(),
+              World::origin + Displacement<World>({4 * Metre,
+                                                   0 * Metre,
+                                                   0 * Metre}));
+  }
+  {
+    auto const it = trajectory1.lower_bound(t0_ + 4 * Second);
+    auto const& [t, degrees_of_freedom] = *it;
+    EXPECT_EQ(t, t0_ + 4 * Second);
+    EXPECT_EQ(degrees_of_freedom.position(),
+              World::origin + Displacement<World>({4 * Metre,
+                                                   0 * Metre,
+                                                   0 * Metre}));
+  }
+  {
+    auto const it = trajectory2.lower_bound(t0_ + 4 * Second);
+    auto const& [t, degrees_of_freedom] = *it;
+    EXPECT_EQ(t, t0_ + 4 * Second);
+    EXPECT_EQ(degrees_of_freedom.position(),
+              World::origin + Displacement<World>({4 * Metre,
+                                                   0 * Metre,
+                                                   0 * Metre}));
+  }
+  {
+    auto const it = trajectory2.lower_bound(t0_ + 4.1 * Second);
+    auto const& [t, degrees_of_freedom] = *it;
+    EXPECT_EQ(t, t0_ + 5 * Second);
+    EXPECT_EQ(degrees_of_freedom.position(),
+              World::origin + Displacement<World>({4 * Metre,
+                                                   0 * Metre,
+                                                   0 * Metre}));
+  }
+}
+
 TEST_F(DiscreteTrajectory2Test, DeleteSegments) {
   auto trajectory = MakeTrajectory();
   auto const first_segment = trajectory.segments().begin();

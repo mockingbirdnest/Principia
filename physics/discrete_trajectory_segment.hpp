@@ -92,6 +92,10 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   using DownsamplingParameters =
       internal_discrete_trajectory_types::DownsamplingParameters;
 
+  // Changes the |self_| iterator.  Only for use when attaching/detaching
+  // segments.
+  void SetSelf(DiscreteTrajectorySegmentIterator<Frame> self);
+
   absl::Status Append(Instant const& t,
                       DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
