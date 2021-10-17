@@ -48,6 +48,7 @@ TEST_F(DiscreteTrajectoryFactoriesTest, NewLinearTrajectoryTimeline) {
           Velocity<World>(
               {6 * Metre / Second, 5 * Metre / Second, 4 * Metre / Second})),
       /*Δt=*/0.1 * Second,
+      /*t0=*/Instant(),
       /*t1=*/Instant() + 4 * Second,
       /*t2=*/Instant() + 42 * Second);
 

@@ -1,7 +1,10 @@
 #pragma once
 
-#include "astronomy/epoch.hpp"
 #include "physics/discrete_trajectory2.hpp"
+
+#include <vector>
+
+#include "astronomy/epoch.hpp"
 
 namespace principia {
 namespace physics {
