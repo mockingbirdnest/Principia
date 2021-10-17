@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "physics/discrete_trajectory_segment.hpp"
 
@@ -8,9 +8,12 @@
 #include <vector>
 
 #include "astronomy/epoch.hpp"
+#include "base/zfp_compressor.hpp"
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
 #include "numerics/fit_hermite_spline.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace physics {
@@ -18,8 +21,13 @@ namespace internal_discrete_trajectory_segment {
 
 using astronomy::InfiniteFuture;
 using astronomy::InfinitePast;
+using base::ZfpCompressor;
 using geometry::Position;
 using numerics::FitHermiteSpline;
+using quantities::Length;
+using quantities::Time;
+using quantities::si::Metre;
+using quantities::si::Second;
 
 template<typename Frame>
 DiscreteTrajectorySegment<Frame>::DiscreteTrajectorySegment(
@@ -148,6 +156,90 @@ DiscreteTrajectorySegment<Frame>::EvaluateDegreesOfFreedom(
   CHECK_GT(t_max(), t);
   auto const interpolation = GetInterpolation(it);
   return {interpolation.Evaluate(t), interpolation.EvaluateDerivative(t)};
+}
+
+template<typename Frame>
+void DiscreteTrajectorySegment<Frame>::WriteToMessage(
+    not_null<serialization::DiscreteTrajectorySegment*> message) const {
+  if (downsampling_parameters_.has_value()) {
+    auto* const downsampling_parameters_message =
+        message->mutable_downsampling_parameters();
+    downsampling_parameters_message->set_max_dense_intervals(
+        downsampling_parameters_->max_dense_intervals);
+    downsampling_parameters_->tolerance.WriteToMessage(
+        downsampling_parameters_message->mutable_tolerance());
+  }
+  message->set_number_of_dense_points(number_of_dense_points_);
+
+  std::int32_t const timeline_size = timeline_.size();
+  auto* const zfp = message->mutable_zfp();
+  zfp->set_timeline_size(timeline_size);
+
+  // The timeline data is made dimensionless and stored in separate arrays per
+  // coordinate.  We expect strong correlations within a coordinate over time,
+  // but not between coordinates.
+  std::vector<double> t;
+  std::vector<double> qx;
+  std::vector<double> qy;
+  std::vector<double> qz;
+  std::vector<double> px;
+  std::vector<double> py;
+  std::vector<double> pz;
+  t.reserve(timeline_size);
+  qx.reserve(timeline_size);
+  qy.reserve(timeline_size);
+  qz.reserve(timeline_size);
+  px.reserve(timeline_size);
+  py.reserve(timeline_size);
+  pz.reserve(timeline_size);
+  std::optional<Instant> previous_instant;
+  Time max_Δt;
+  std::string* const zfp_timeline = zfp->mutable_timeline();
+  for (auto const& [instant, degrees_of_freedom] : timeline_) {
+    auto const q = degrees_of_freedom.position() - Frame::origin;
+    auto const p = degrees_of_freedom.velocity();
+    t.push_back((instant - Instant{}) / Second);
+    qx.push_back(q.coordinates().x / Metre);
+    qy.push_back(q.coordinates().y / Metre);
+    qz.push_back(q.coordinates().z / Metre);
+    px.push_back(p.coordinates().x / (Metre / Second));
+    py.push_back(p.coordinates().y / (Metre / Second));
+    pz.push_back(p.coordinates().z / (Metre / Second));
+    if (previous_instant.has_value()) {
+      max_Δt = std::max(max_Δt, instant - *previous_instant);
+    }
+    previous_instant = instant;
+  }
+
+  // Times are exact.
+  ZfpCompressor time_compressor(0);
+  // Lengths are approximated to the downsampling tolerance if downsampling is
+  // enabled, otherwise they are exact.
+  Length const length_tolerance = downsampling_parameters_.has_value()
+                                      ? downsampling_parameters_->tolerance()
+                                      : Length();
+  ZfpCompressor length_compressor(length_tolerance / Metre);
+  // Speeds are approximated based on the length tolerance and the maximum
+  // step in the timeline.
+  ZfpCompressor const speed_compressor((length_tolerance / max_Δt) /
+                                        (Metre / Second));
+
+  ZfpCompressor::WriteVersion(message);
+  time_compressor.WriteToMessageMultidimensional<2>(t, zfp_timeline);
+  length_compressor.WriteToMessageMultidimensional<2>(qx, zfp_timeline);
+  length_compressor.WriteToMessageMultidimensional<2>(qy, zfp_timeline);
+  length_compressor.WriteToMessageMultidimensional<2>(qz, zfp_timeline);
+  speed_compressor.WriteToMessageMultidimensional<2>(px, zfp_timeline);
+  speed_compressor.WriteToMessageMultidimensional<2>(py, zfp_timeline);
+  speed_compressor.WriteToMessageMultidimensional<2>(pz, zfp_timeline);
+}
+
+template<typename Frame>
+template<typename F, typename>
+DiscreteTrajectorySegment<Frame>
+DiscreteTrajectorySegment<Frame>::ReadFromMessage(
+    serialization::DiscreteTrajectorySegment const& message) {
+  return DiscreteTrajectorySegment();
 }
 
 template<typename Frame>

@@ -114,6 +114,23 @@ message DiscreteTrajectory {
   optional Zfp zfp = 5;
 }
 
+// Added in Ζήνων.
+message DiscreteTrajectorySegment {
+  message DownsamplingParameters {
+    required int64 max_dense_intervals = 1;
+    required Quantity tolerance = 2;
+  }
+  message Zfp {
+    required int32 codec_version = 1;
+    required int32 library_version = 2;
+    required bytes timeline = 3;
+    required int32 timeline_size = 4;
+  }
+  optional DownsamplingParameters downsampling_parameters = 1;
+  required Zfp zfp = 2;
+  required int64 number_of_dense_points = 3;
+}
+
 message DynamicFrame {
   extensions 6000 to 6999;  // Last used: 6003.
 }

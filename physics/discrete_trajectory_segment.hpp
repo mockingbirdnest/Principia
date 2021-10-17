@@ -6,6 +6,7 @@
 
 #include "absl/container/btree_map.h"
 #include "absl/status/status.h"
+#include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "numerics/hermite3.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -13,6 +14,7 @@
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/discrete_trajectory_types.hpp"
 #include "physics/trajectory.hpp"
+#include "serialization/physics.pb.h"
 
 namespace principia {
 
@@ -34,6 +36,7 @@ class DiscreteTrajectorySegmentTest;
 
 namespace internal_discrete_trajectory_segment {
 
+using base::not_null;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Velocity;
@@ -87,6 +90,13 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   Velocity<Frame> EvaluateVelocity(Instant const& t) const override;
   DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
       Instant const& t) const override;
+
+  void WriteToMessage(
+      not_null<serialization::DiscreteTrajectorySegment*> message) const;
+  template<typename F = Frame,
+           typename = std::enable_if_t<base::is_serializable_v<F>>>
+  static DiscreteTrajectorySegment ReadFromMessage(
+      serialization::DiscreteTrajectorySegment const& message);
 
  private:
   using DownsamplingParameters =
