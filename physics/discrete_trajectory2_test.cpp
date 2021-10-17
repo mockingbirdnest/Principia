@@ -293,6 +293,35 @@ TEST_F(DiscreteTrajectory2Test, RSegments) {
       ElementsAre(t0_ + 14 * Second, t0_ + 9 * Second, t0_ + 4 * Second));
 }
 
+TEST_F(DiscreteTrajectory2Test, DeleteSegments) {
+  auto trajectory = MakeTrajectory();
+  auto const first_segment = trajectory.segments().begin();
+  auto const second_segment = std::next(first_segment);
+  trajectory.DeleteSegments(second_segment);
+  EXPECT_EQ(1, trajectory.segments().size());
+  EXPECT_EQ(t0_, trajectory.begin()->first);
+  EXPECT_EQ(t0_ + 4 * Second, trajectory.rbegin()->first);
+}
+
+TEST_F(DiscreteTrajectory2Test, ForgetAfter) {
+  auto trajectory = MakeTrajectory();
+
+  trajectory.ForgetAfter(t0_ + 12 * Second);
+  EXPECT_EQ(3, trajectory.segments().size());
+  EXPECT_EQ(t0_, trajectory.begin()->first);
+  EXPECT_EQ(t0_ + 11 * Second, trajectory.rbegin()->first);
+
+  trajectory.ForgetAfter(t0_ + 6.1 * Second);
+  EXPECT_EQ(2, trajectory.segments().size());
+  EXPECT_EQ(t0_, trajectory.begin()->first);
+  EXPECT_EQ(t0_ + 6 * Second, trajectory.rbegin()->first);
+
+  trajectory.ForgetAfter(t0_ + 4 * Second);
+  EXPECT_EQ(2, trajectory.segments().size());  // TODO(phl): Weird.
+  EXPECT_EQ(t0_, trajectory.begin()->first);
+  EXPECT_EQ(t0_ + 4 * Second, trajectory.rbegin()->first);
+}
+
 TEST_F(DiscreteTrajectory2Test, TMinTMaxEvaluate) {
   auto const trajectory = MakeTrajectory();
   EXPECT_EQ(t0_, trajectory.t_min());

@@ -142,7 +142,7 @@ DiscreteTrajectory2<Frame>::NewSegment() {
 
 template<typename Frame>
 typename DiscreteTrajectory2<Frame>::DiscreteTrajectory2
-DiscreteTrajectory2<Frame>::DetachSegments(iterator begin) {
+DiscreteTrajectory2<Frame>::DetachSegments(SegmentIterator const begin) {
   // TODO(phl): Implement.
 }
 
@@ -154,30 +154,22 @@ DiscreteTrajectory2<Frame>::AttachSegments(
 }
 
 template<typename Frame>
-void DiscreteTrajectory2<Frame>::DeleteSegments(iterator begin) {
-  // TODO(phl): Implement.
+void DiscreteTrajectory2<Frame>::DeleteSegments(SegmentIterator const begin) {
+  segments_->erase(begin.iterator(), segments_->end());
 }
 
 template<typename Frame>
 void DiscreteTrajectory2<Frame>::ForgetAfter(Instant const& t) {
-  // TODO(phl): Drop segments as needed.
-  return FindSegment(t)->ForgetAfter(t);
-}
-
-template<typename Frame>
-void DiscreteTrajectory2<Frame>::ForgetAfter(iterator begin) {
-  // TODO(phl): Implement.
+  auto const sit = FindSegment(t);
+  segments_->erase(std::next(sit), segments_->end());
+  sit->ForgetAfter(t);
+  LOG(ERROR)<<sit->size();
 }
 
 template<typename Frame>
 void DiscreteTrajectory2<Frame>::ForgetBefore(Instant const& t) {
   // TODO(phl): Drop segments as needed.
   return FindSegment(t)->ForgetBefore(t);
-}
-
-template<typename Frame>
-void DiscreteTrajectory2<Frame>::ForgetBefore(iterator end) {
-  // TODO(phl): Implement.
 }
 
 template<typename Frame>

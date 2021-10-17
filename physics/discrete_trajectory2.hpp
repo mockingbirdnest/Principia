@@ -77,15 +77,12 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
 
   SegmentIterator NewSegment();
 
-  DiscreteTrajectory2 DetachSegments(iterator begin);
+  DiscreteTrajectory2 DetachSegments(SegmentIterator begin);
   SegmentIterator AttachSegments(DiscreteTrajectory2&& trajectory);
-  void DeleteSegments(iterator begin);
+  void DeleteSegments(SegmentIterator begin);
 
   void ForgetAfter(Instant const& t);
-  void ForgetAfter(iterator begin);
-
   void ForgetBefore(Instant const& t);
-  void ForgetBefore(iterator end);
 
   void Append(Instant const& t,
               DegreesOfFreedom<Frame> const& degrees_of_freedom);
