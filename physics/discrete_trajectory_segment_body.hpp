@@ -22,6 +22,7 @@ namespace internal_discrete_trajectory_segment {
 using astronomy::InfiniteFuture;
 using astronomy::InfinitePast;
 using base::ZfpCompressor;
+using geometry::Displacement;
 using geometry::Position;
 using numerics::FitHermiteSpline;
 using quantities::Length;
@@ -225,7 +226,7 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
   // Lengths are approximated to the downsampling tolerance if downsampling is
   // enabled, otherwise they are exact.
   Length const length_tolerance = downsampling_parameters_.has_value()
-                                      ? downsampling_parameters_->tolerance()
+                                      ? downsampling_parameters_->tolerance
                                       : Length();
   ZfpCompressor length_compressor(length_tolerance / Metre);
   // Speeds are approximated based on the length tolerance and the maximum
@@ -256,9 +257,9 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
   for (auto const& instantaneous_degrees_of_freedom : message.exact()) {
     exact.emplace_hint(
         exact.end(),
-        Instant::ReadFromMessage(instantaneous_degrees_of_freedom.instant(),
+        Instant::ReadFromMessage(instantaneous_degrees_of_freedom.instant()),
         DegreesOfFreedom<Frame>::ReadFromMessage(
-            instantaneous_degrees_of_freedom.degrees_of_freedom())));
+            instantaneous_degrees_of_freedom.degrees_of_freedom()));
   }
 
   // Decompress the timeline before the downsampling parameters to avoid re-
@@ -297,9 +298,9 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
     // exactly.
     Instant const time = Instant() + t[i] * Second;
     if (auto it = exact.find(time); it == exact.cend()) {
-      Append(time, DegreesOfFreedom<Frame>(q, p));
+      segment.Append(time, DegreesOfFreedom<Frame>(q, p));
     } else {
-      Append(time, it->second);
+      segment.Append(time, it->second);
     }
   }
 
@@ -308,7 +309,8 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
     segment.downsampling_parameters_ = DownsamplingParameters{
         .max_dense_intervals =
             message.downsampling_parameters().max_dense_intervals(),
-        .tolerance = message.downsampling_parameters().tolerance()};
+        .tolerance = Length::ReadFromMessage(
+            message.downsampling_parameters().tolerance())};
   }
   segment.number_of_dense_points_ = message.number_of_dense_points();
 
