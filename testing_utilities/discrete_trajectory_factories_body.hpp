@@ -36,9 +36,9 @@ template<typename Frame>
 Timeline<Frame>
 NewLinearTrajectoryTimeline(DegreesOfFreedom<Frame> const& degrees_of_freedom,
                             Time const& Δt,
+                            Instant const& t0,
                             Instant const& t1,
                             Instant const& t2) {
-  static Instant const t0;
   Timeline<Frame> timeline;
   for (auto t = t1; t < t2; t += Δt) {
     auto const velocity = degrees_of_freedom.velocity();
@@ -50,12 +50,21 @@ NewLinearTrajectoryTimeline(DegreesOfFreedom<Frame> const& degrees_of_freedom,
 
 template<typename Frame>
 Timeline<Frame>
+NewLinearTrajectoryTimeline(DegreesOfFreedom<Frame> const& degrees_of_freedom,
+                            Time const& Δt,
+                            Instant const& t1,
+                            Instant const& t2) {
+  return NewLinearTrajectoryTimeline(degrees_of_freedom, Δt, /*t0=*/t1, t1, t2);
+}
+
+template<typename Frame>
+Timeline<Frame>
 NewLinearTrajectoryTimeline(Velocity<Frame> const& v,
                            Time const& Δt,
                            Instant const& t1,
                            Instant const& t2) {
   return NewLinearTrajectoryTimeline(
-      DegreesOfFreedom<Frame>(Frame::origin, v), Δt, t1, t2);
+      DegreesOfFreedom<Frame>(Frame::origin, v), Δt, /*t0=*/t1, t1, t2);
 }
 
 template<typename Frame>

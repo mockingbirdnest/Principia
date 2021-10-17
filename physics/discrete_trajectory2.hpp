@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <iterator>
 #include <list>
@@ -11,6 +11,7 @@
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_iterator.hpp"
+#include "physics/discrete_trajectory_segment.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/discrete_trajectory_segment_range.hpp"
 #include "physics/discrete_trajectory_types.hpp"
@@ -24,7 +25,7 @@ FORWARD_DECLARE_FROM(discrete_trajectory_segment,
                      TEMPLATE(typename Frame) class,
                      DiscreteTrajectorySegment);
 
-namespace internal_discrete_trajectory {
+namespace internal_discrete_trajectory2 {
 
 using base::not_null;
 using geometry::Instant;
@@ -48,7 +49,7 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
   using ReverseSegmentRange =
       DiscreteTrajectorySegmentRange<ReverseSegmentIterator>;
 
-  DiscreteTrajectory2() = default;
+  DiscreteTrajectory2();
 
   // Moveable.
   DiscreteTrajectory2(DiscreteTrajectory2&&) = default;
@@ -61,6 +62,9 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
 
   reverse_iterator rbegin() const;
   reverse_iterator rend() const;
+
+  bool empty() const;
+  std::int64_t size() const;
 
   iterator find(Instant const& t) const;
 
@@ -89,10 +93,10 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
   Instant t_min() const override;
   Instant t_max() const override;
 
-  Position<Frame> EvaluatePosition(Instant const& time) const override;
-  Velocity<Frame> EvaluateVelocity(Instant const& time) const override;
+  Position<Frame> EvaluatePosition(Instant const& t) const override;
+  Velocity<Frame> EvaluateVelocity(Instant const& t) const override;
   DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
-      Instant const& time) const override;
+      Instant const& t) const override;
 
   void WriteToMessage(
       not_null<serialization::DiscreteTrajectory*> message,
@@ -113,12 +117,28 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
  private:
   using Segments = internal_discrete_trajectory_types::Segments<Frame>;
 
-  Segments segments_;
+  typename Segments::iterator FindSegment(Instant const& t);
+  typename Segments::const_iterator FindSegment(Instant const& t) const;
+
+  // We need a level of indirection here to make sure that the pointer to
+  // Segments in the DiscreteTrajectorySegmentIterator remain valid when the
+  // DiscreteTrajectory moves.  This field is never null and never empty.
+  not_null<std::unique_ptr<Segments>> segments_;
+
+  // This list is never empty.  For an empty trajectory, there is a sentinel
+  // with time -∞ denoting the single segment of the trajectory.  As soon as a
+  // point is appended to the trajectory, the sentinel is removed and a bona
+  // fide entry replaces it.  To access the segment for time t, use
+  // |--upper_bound(t)|.
+  absl::btree_map<Instant,
+                  typename Segments::iterator> segment_by_left_endpoint_;
 };
 
-}  // namespace internal_discrete_trajectory
+}  // namespace internal_discrete_trajectory2
 
-using internal_discrete_trajectory::DiscreteTrajectory2;
+using internal_discrete_trajectory2::DiscreteTrajectory2;
 
 }  // namespace physics
 }  // namespace principia
+
+#include "physics/discrete_trajectory2_body.hpp"

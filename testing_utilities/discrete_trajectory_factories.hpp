@@ -36,15 +36,23 @@ class DiscreteTrajectoryFactoriesFriend {
 };
 
 // A linear trajectory with constant velocity, going through
-// |degrees_of_freedom.position()| at t = 0.  The first point is at time |t1|,
+// |degrees_of_freedom.position()| at t = t0.  The first point is at time |t1|,
 // the last point at a time < |t2|.
+template<typename Frame>
+Timeline<Frame>
+NewLinearTrajectoryTimeline(DegreesOfFreedom<Frame> const& degrees_of_freedom,
+                            Time const& Δt,
+                            Instant const& t0,
+                            Instant const& t1,
+                            Instant const& t2);
+// Same as above, going through |degrees_of_freedom.position()| at t = t1.
 template<typename Frame>
 Timeline<Frame>
 NewLinearTrajectoryTimeline(DegreesOfFreedom<Frame> const& degrees_of_freedom,
                             Time const& Δt,
                             Instant const& t1,
                             Instant const& t2);
-// Same as above, going through the origin at t = 0.
+// Same as above, going through the origin at t = t1.
 template<typename Frame>
 Timeline<Frame>
 NewLinearTrajectoryTimeline(Velocity<Frame> const& v,

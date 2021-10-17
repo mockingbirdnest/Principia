@@ -218,10 +218,10 @@
     <ClInclude Include="discrete_trajectory_iterator_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="mock_discrete_trajectory_segment.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="discrete_trajectory_segment_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="discrete_trajectory2_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -332,6 +332,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="discrete_trajectory_segment_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="discrete_trajectory2_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -32,6 +32,7 @@
     <ClInclude Include="checkpointer.hpp" />
     <ClInclude Include="checkpointer_body.hpp" />
     <ClInclude Include="discrete_trajectory2.hpp" />
+    <ClInclude Include="discrete_trajectory2_body.hpp" />
     <ClInclude Include="discrete_trajectory_iterator.hpp" />
     <ClInclude Include="discrete_trajectory_iterator_body.hpp" />
     <ClInclude Include="discrete_trajectory_segment.hpp" />
@@ -55,7 +56,6 @@
     <ClInclude Include="euler_solver_body.hpp" />
     <ClInclude Include="geopotential.hpp" />
     <ClInclude Include="geopotential_body.hpp" />
-    <ClInclude Include="mock_discrete_trajectory_segment.hpp" />
     <ClInclude Include="protector.hpp" />
     <ClInclude Include="hierarchical_system.hpp" />
     <ClInclude Include="hierarchical_system_body.hpp" />
@@ -103,6 +103,7 @@
     <ClCompile Include="body_surface_frame_field_test.cpp" />
     <ClCompile Include="body_test.cpp" />
     <ClCompile Include="checkpointer_test.cpp" />
+    <ClCompile Include="discrete_trajectory2_test.cpp" />
     <ClCompile Include="discrete_trajectory_iterator_test.cpp" />
     <ClCompile Include="discrete_trajectory_segment_iterator_test.cpp" />
     <ClCompile Include="discrete_trajectory_segment_range_test.cpp" />

@@ -24,6 +24,10 @@ FORWARD_DECLARE_FROM(discrete_trajectory_factories,
 
 namespace physics {
 
+FORWARD_DECLARE_FROM(discrete_trajectory2,
+                     TEMPLATE(typename Frame) class,
+                     DiscreteTrajectory2);
+
 class DiscreteTrajectoryIteratorTest;
 class DiscreteTrajectorySegmentIteratorTest;
 class DiscreteTrajectorySegmentTest;
@@ -134,8 +138,9 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   std::int64_t number_of_dense_points_ = 0;
 
   template<typename F>
-  friend class internal_discrete_trajectory_iterator::
-      DiscreteTrajectoryIterator;
+  friend class physics::DiscreteTrajectory2;
+  template<typename F>
+  friend class physics::DiscreteTrajectoryIterator;
 
   // For testing.
   friend class physics::DiscreteTrajectoryIteratorTest;
