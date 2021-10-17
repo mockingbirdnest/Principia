@@ -322,6 +322,25 @@ TEST_F(DiscreteTrajectory2Test, ForgetAfter) {
   EXPECT_EQ(t0_ + 4 * Second, trajectory.rbegin()->first);
 }
 
+TEST_F(DiscreteTrajectory2Test, ForgetBefore) {
+  auto trajectory = MakeTrajectory();
+
+  trajectory.ForgetBefore(t0_ + 3 * Second);
+  EXPECT_EQ(3, trajectory.segments().size());
+  EXPECT_EQ(t0_ + 3 * Second, trajectory.begin()->first);
+  EXPECT_EQ(t0_ + 14 * Second, trajectory.rbegin()->first);
+
+  trajectory.ForgetBefore(t0_ + 6.1 * Second);
+  EXPECT_EQ(2, trajectory.segments().size());
+  EXPECT_EQ(t0_ + 7 * Second, trajectory.begin()->first);
+  EXPECT_EQ(t0_ + 14 * Second, trajectory.rbegin()->first);
+
+  trajectory.ForgetBefore(t0_ + 9 * Second);
+  EXPECT_EQ(1, trajectory.segments().size());
+  EXPECT_EQ(t0_ + 9 * Second, trajectory.begin()->first);
+  EXPECT_EQ(t0_ + 14 * Second, trajectory.rbegin()->first);
+}
+
 TEST_F(DiscreteTrajectory2Test, TMinTMaxEvaluate) {
   auto const trajectory = MakeTrajectory();
   EXPECT_EQ(t0_, trajectory.t_min());

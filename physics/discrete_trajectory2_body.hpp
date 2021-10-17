@@ -168,8 +168,9 @@ void DiscreteTrajectory2<Frame>::ForgetAfter(Instant const& t) {
 
 template<typename Frame>
 void DiscreteTrajectory2<Frame>::ForgetBefore(Instant const& t) {
-  // TODO(phl): Drop segments as needed.
-  return FindSegment(t)->ForgetBefore(t);
+  auto const sit = FindSegment(t);
+  segments_->erase(segments_->begin(), sit);
+  sit->ForgetBefore(t);
 }
 
 template<typename Frame>
