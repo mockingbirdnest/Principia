@@ -16,6 +16,7 @@
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/discrete_trajectory_factories.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
@@ -40,6 +41,7 @@ using quantities::si::Second;
 using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::AlmostEquals;
 using testing_utilities::AppendTrajectoryTimeline;
+using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
 using testing_utilities::NewCircularTrajectoryTimeline;
 using testing_utilities::operator""_⑴;
@@ -319,7 +321,7 @@ TEST_F(DiscreteTrajectorySegmentTest, DownsamplingForgetAfter) {
               AlmostEquals(0 * Metre / Second, 0));
 }
 
-TEST_F(DiscreteTrajectorySegmentTest, Serialization) {
+TEST_F(DiscreteTrajectorySegmentTest, SerializationWithDownsampling) {
   auto const circle_segments = MakeSegments(1);
   auto& circle = *circle_segments->begin();
   SetDownsampling({.max_dense_intervals = 50, .tolerance = 1 * Milli(Metre)},
@@ -399,6 +401,44 @@ TEST_F(DiscreteTrajectorySegmentTest, Serialization) {
                 AbsoluteErrorFrom(circle.EvaluateVelocity(t),
                                   Le(5.7 * Milli(Metre) / Second)));
   }
+}
+
+TEST_F(DiscreteTrajectorySegmentTest, SerializationRoundTrip) {
+  auto const circle_segments = MakeSegments(1);
+  auto& circle = *circle_segments->begin();
+  SetDownsampling({.max_dense_intervals = 50, .tolerance = 1 * Milli(Metre)},
+                  circle);
+  AngularFrequency const ω = 3 * Radian / Second;
+  Length const r = 2 * Metre;
+  Time const Δt = 10 * Milli(Second);
+  Instant const t1 = t0_;
+  Instant const t2 = t0_ + 5 * Second;
+  AppendTrajectoryTimeline(
+      NewCircularTrajectoryTimeline<World>(ω, r, Δt, t1, t2),
+      /*to=*/circle);
+  auto const circle_t_max = circle.t_max();
+
+  serialization::DiscreteTrajectorySegment message1;
+  circle.WriteToMessage(
+      &message1,
+      /*exact=*/{circle.lower_bound(t0_ + 2 * Second),
+                 circle.lower_bound(t0_ + 3 * Second)});
+
+  auto const deserialized_circle_segments = MakeSegments(1);
+  auto& deserialized_circle = *deserialized_circle_segments->begin();
+  deserialized_circle =
+      DiscreteTrajectorySegment<World>::ReadFromMessage(
+          message1,
+          MakeIterator(deserialized_circle_segments.get(),
+                       deserialized_circle_segments->cbegin()));
+
+  serialization::DiscreteTrajectorySegment message2;
+  deserialized_circle.WriteToMessage(
+      &message2,
+      /*exact=*/{circle.lower_bound(t0_ + 2 * Second),
+                 circle.lower_bound(t0_ + 3 * Second)});
+
+  EXPECT_THAT(message2, EqualsProto(message1));
 }
 
 }  // namespace physics
