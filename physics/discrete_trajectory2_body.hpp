@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "physics/discrete_trajectory2.hpp"
 
@@ -317,7 +317,46 @@ not_null<std::unique_ptr<DiscreteTrajectory2<Frame>>>
 DiscreteTrajectory2<Frame>::ReadFromMessage(
     serialization::DiscreteTrajectory const& message,
     std::vector<SegmentIterator*> const& tracked) {
-  // TODO(phl): Implement.
+  DiscreteTrajectory2 trajectory(uninitialized);
+
+  bool const is_pre_ζήνων = message.segment_size() == 0;
+  if (is_pre_ζήνων) {
+    // TODO(phl): Implement.
+    LOG(FATAL) << "Pre-Ζήνων compatibility NYI";
+  }
+
+  // First restore the segment themselves.  This vector will be used to restore
+  // the tracked segments.
+  std::vector<SegmentIterator> segment_iterators;
+  segment_iterators.reserve(message.segment_size());
+  for (auto const& serialized_segment : message.segment()) {
+    trajectory.segments_->emplace_back();
+    auto const sit = SegmentIterator(trajectory.segments_.get(),
+                                     --trajectory.segment_->end());
+    *sit = DiscreteTrajectorySegment<Frame>::ReadFromMessage(serialized_segment,
+                                                             sit);
+    segment_iterators.push_back(sit);
+  }
+
+  // Restore the tracked segments.
+  CHECK_EQ(tracked.size(), message.tracked_position_size());
+  for (int i = 0; i < message.tracked_position_size(); ++i) {
+    int const tracked_position = message.tracked_position(i);
+    CHECK_NE(serialization::DiscreteTrajectory::MISSING_TRACKED_POSITION,
+             tracked_position);
+    *tracked[i] = segment_iterators[tracked_position];
+  }
+
+  // Finally restore the left endpoints.
+  auto sit = trajectory.segments_->begin();
+  for (auto const& serialized_t : message.left_endpoint()) {
+    auto const t = Instant::ReadFromMessage(serialized_t);
+    trajectory.segment_by_left_endpoint_.emplace_hint(
+        trajectory.segment_by_left_endpoint_.end(), t, sit);
+    ++sit;
+  }
+
+  return trajectory;
 }
 
 template<typename Frame>
