@@ -151,23 +151,10 @@ DiscreteTrajectory2<Frame>::DetachSegments(SegmentIterator const begin) {
                              *segments_,
                              begin.iterator(), segments_->end());
 
-  // Iterate through the detached segments to move the time-to-segment mapping
-  // to the detached trajectory.
-  auto endpoint_it = segment_by_left_endpoint_.end();
-  for (auto sit = detached.segments_->rbegin();
-       sit != detached.segments_->rend();
-       ++sit) {
-    --endpoint_it;
-    detached.segment_by_left_endpoint_.insert(
-        segment_by_left_endpoint_.extract(endpoint_it));
-  }
-
-  // Reset the self pointers of the new segments.
-  for (auto sit = detached.segments_->begin();
-       sit != detached.segments_->end();
-       ++sit) {
-    sit->SetSelf(SegmentIterator(detached.segments_.get(), sit));
-  }
+  AdjustAfterSplicing(/*from=*/*this,
+                      /*to=*/detached,
+                      /*to_segments_begin=*/detached.segments_->begin(),
+                      /*to_segments_rend=*/detached.segments_->rend());
 
   return detached;
 }
@@ -200,17 +187,10 @@ DiscreteTrajectory2<Frame>::AttachSegments(
   auto const end_before_splice = std::next(last_before_splice);
   auto const rbegin_before_splice = std::reverse_iterator(end_before_splice);
 
-  auto endpoint_it = trajectory.segment_by_left_endpoint_.end();
-  for (auto sit = segments_->rbegin(); sit != rbegin_before_splice; ++sit) {
-    --endpoint_it;
-    segment_by_left_endpoint_.insert(
-        trajectory.segment_by_left_endpoint_.extract(endpoint_it));
-  }
-
-  // Reset the self pointers of the new segments.
-  for (auto sit = end_before_splice; sit != segments_->end(); ++sit) {
-    sit->SetSelf(SegmentIterator(segments_.get(), sit));
-  }
+  AdjustAfterSplicing(/*from=*/trajectory,
+                      /*to=*/*this,
+                      /*to_segments_begin=*/end_before_splice,
+                      /*to_segments_rend=*/rbegin_before_splice);
 
   return SegmentIterator(segments_.get(), end_before_splice);
 }
@@ -333,6 +313,28 @@ DiscreteTrajectory2<Frame>::FindSegment(
   auto it = segment_by_left_endpoint_.upper_bound(t);
   CHECK(it != segment_by_left_endpoint_.begin()) << "No segment covering " << t;
   return (--it)->second;
+}
+
+template<typename Frame>
+void DiscreteTrajectory2<Frame>::AdjustAfterSplicing(
+    DiscreteTrajectory2& from,
+    DiscreteTrajectory2& to,
+    typename Segments::iterator to_segments_begin,
+    std::reverse_iterator<typename Segments::iterator> to_segments_rend) {
+
+  // Iterate through the target segments to move the time-to-segment mapping
+  // from |from| to |to|.
+  auto endpoint_it = from.segment_by_left_endpoint_.end();
+  for (auto sit = to.segments_->rbegin(); sit != to_segments_rend; ++sit) {
+    --endpoint_it;
+    to.segment_by_left_endpoint_.insert(
+        from.segment_by_left_endpoint_.extract(endpoint_it));
+  }
+
+  // Reset the self pointers of the new segments.
+  for (auto sit = to_segments_begin; sit != to.segments_->end(); ++sit) {
+    sit->SetSelf(SegmentIterator(to.segments_.get(), sit));
+  }
 }
 
 }  // namespace internal_discrete_trajectory2

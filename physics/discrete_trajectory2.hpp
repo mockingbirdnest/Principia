@@ -123,6 +123,15 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
   typename Segments::iterator FindSegment(Instant const& t);
   typename Segments::const_iterator FindSegment(Instant const& t) const;
 
+  // Updates the segments self-pointers and the time-to-segment mapping after
+  // segments have been spliced from |from| to |to|.  The iterators indicate the
+  // segments to fix-up.
+  static void AdjustAfterSplicing(
+      DiscreteTrajectory2& from,
+      DiscreteTrajectory2& to,
+      typename Segments::iterator to_segments_begin,
+      std::reverse_iterator<typename Segments::iterator> to_segments_rend);
+
   // We need a level of indirection here to make sure that the pointer to
   // Segments in the DiscreteTrajectorySegmentIterator remain valid when the
   // DiscreteTrajectory moves.  This field is never null and never empty.
