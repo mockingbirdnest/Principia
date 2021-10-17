@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "astronomy/epoch.hpp"
 
 namespace principia {
@@ -271,17 +272,43 @@ void DiscreteTrajectory2<Frame>::WriteToMessage(
     not_null<serialization::DiscreteTrajectory*> message,
     std::vector<SegmentIterator> const& tracked,
     std::vector<iterator> const& exact) const {
-  // TODO(phl): Implement.
-}
+  // Construct a map to efficiently find if a segment must be tracked.
+  absl::flat_hash_map<typename Segments::const_iterator, int> sit_to_position;
+  for (int i = 0; i < tracked.size(); ++i) {
+    sit_to_position.emplace(tracked[i], i);
+  }
 
-template<typename Frame>
-void DiscreteTrajectory2<Frame>::WriteToMessage(
-    not_null<serialization::DiscreteTrajectory*> message,
-    iterator begin,
-    iterator end,
-    std::vector<SegmentIterator> const& tracked,
-    std::vector<iterator> const& exact) const {
-  // TODO(phl): Implement.
+  // Initialize the tracked positions to be able to recognize if some are
+  // missing.
+  message->mutable_tracked_position()->Resize(
+      tracked.size(),
+      serialization::DiscreteTrajectory::MISSING_TRACKED_POSITION);
+
+  // The position of a segment in the repeated field |segment|.
+  int segment_position = 0;
+  for (auto sit = segments_->begin();
+       sit != segments_->end();
+       ++sit, ++segment_position) {
+    sit->WriteToMessage(message->add_segment(), exact);
+
+    if (auto const position_it = sit_to_position.find(sit);
+        position_it != sit_to_position.end()) {
+      // The field |tracked_position| is indexed by the indices in |tracked|.
+      // Its value is the position of a tracked segment in the field |segment|.
+      message->set_tracked_position(position_it->second) = segment_position;
+    }
+  }
+
+  for (auto const& [t, _] : segment_by_left_endpoint_) {
+    t.WriteToMessage(message->add_left_endpoint());
+  }
+
+  // Check that all the segments in |tracked| were mapped.
+  // NOTE(phl): This might be too strong a constraint in Entwurf.
+  for (auto const tracked_position : message->tracked_position()) {
+    CHECK_NE(serialization::DiscreteTrajectory::MISSING_TRACKED_POSITION,
+             tracked_position);
+  }
 }
 
 template<typename Frame>
@@ -289,7 +316,7 @@ template<typename F, typename>
 not_null<std::unique_ptr<DiscreteTrajectory2<Frame>>>
 DiscreteTrajectory2<Frame>::ReadFromMessage(
     serialization::DiscreteTrajectory const& message,
-    std::vector<DiscreteTrajectory2**> const& tracked) {
+    std::vector<SegmentIterator*> const& tracked) {
   // TODO(phl): Implement.
 }
 

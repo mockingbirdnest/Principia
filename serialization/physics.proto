@@ -112,6 +112,17 @@ message DiscreteTrajectory {
     required int32 timeline_size = 4;
   }
   optional Zfp zfp = 5;
+
+  // All the declarations above are pre-Ζήνων.  All the declarations below were
+  // added in Ζήνων.
+
+  // A marker to indicate that a segment doesn't have its position tracked.
+  enum TrackedPosition {
+    MISSING_TRACKED_POSITION = -1;
+  }
+  repeated DiscreteTrajectorySegment segment = 7;
+  repeated Point left_endpoint = 8;
+  repeated int32 tracked_position = 9;
 }
 
 // Added in Ζήνων.

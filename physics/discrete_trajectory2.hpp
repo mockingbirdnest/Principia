@@ -101,17 +101,11 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
       not_null<serialization::DiscreteTrajectory*> message,
       std::vector<SegmentIterator> const& tracked,
       std::vector<iterator> const& exact) const;
-  void WriteToMessage(
-      not_null<serialization::DiscreteTrajectory*> message,
-      iterator begin, iterator end,
-      std::vector<SegmentIterator> const& tracked,
-      std::vector<iterator> const& exact) const;
-
   template<typename F = Frame,
            typename = std::enable_if_t<base::is_serializable_v<F>>>
   static not_null<std::unique_ptr<DiscreteTrajectory2>> ReadFromMessage(
       serialization::DiscreteTrajectory const& message,
-      std::vector<DiscreteTrajectory2**> const& tracked);
+      std::vector<SegmentIterator*> const& tracked);
 
  private:
   using Segments = internal_discrete_trajectory_types::Segments<Frame>;
