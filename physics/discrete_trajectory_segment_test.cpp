@@ -1,5 +1,6 @@
 ﻿#include "physics/discrete_trajectory_segment.hpp"
 
+#include <algorithm>
 #include <memory>
 #include <vector>
 
