@@ -29,7 +29,8 @@ class DiscreteTrajectory2Test : public ::testing::Test {
  protected:
   using World = Frame<enum class WorldTag>;
 
-  // Constructs a trajectory with three 5-second segments starting at |t0|.
+  // Constructs a trajectory with three 5-second segments starting at |t0| and
+  // the given |degrees_of_freedom|.
   DiscreteTrajectory2<World> MakeTrajectory(
       Instant const& t0,
       DegreesOfFreedom<World> const& degrees_of_freedom) {
