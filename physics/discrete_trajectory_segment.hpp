@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <iterator>
 #include <optional>
+#include <vector>
 
 #include "absl/container/btree_map.h"
 #include "absl/status/status.h"
