@@ -66,6 +66,8 @@ class DiscreteTrajectorySegmentIterator {
   DiscreteTrajectorySegmentRange<DiscreteTrajectorySegmentIterator>
   segments() const;
 
+  typename Segments::const_iterator iterator() const;
+
   // Not not_null<> to be default-constructible.
   Segments const* segments_ = nullptr;
   typename Segments::const_iterator iterator_;

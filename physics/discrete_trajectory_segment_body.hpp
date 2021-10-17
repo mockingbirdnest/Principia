@@ -151,6 +151,12 @@ DiscreteTrajectorySegment<Frame>::EvaluateDegreesOfFreedom(
 }
 
 template<typename Frame>
+void DiscreteTrajectorySegment<Frame>::SetSelf(
+    DiscreteTrajectorySegmentIterator<Frame> const self) {
+  self_ = self;
+}
+
+template<typename Frame>
 absl::Status DiscreteTrajectorySegment<Frame>::Append(
     Instant const& t,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
@@ -237,7 +243,7 @@ absl::Status DiscreteTrajectorySegment<Frame>::DownsampleIfNeeded() {
       ++it;
     }
 
-    absl::StatusOr<std::list<ConstIterators::const_iterator>>
+    absl::StatusOr<std::list<typename ConstIterators::const_iterator>>
         right_endpoints = FitHermiteSpline<Instant, Position<Frame>>(
             dense_iterators,
             [](auto&& it) -> auto&& { return it->first; },

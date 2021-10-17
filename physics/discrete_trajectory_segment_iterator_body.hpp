@@ -78,6 +78,12 @@ DiscreteTrajectorySegmentIterator<Frame>::segments() const {
           DiscreteTrajectorySegmentIterator(segments_, segments_->end())};
 }
 
+template<typename Frame>
+typename DiscreteTrajectorySegmentIterator<Frame>::Segments::const_iterator
+DiscreteTrajectorySegmentIterator<Frame>::iterator() const {
+  return iterator_;
+}
+
 }  // namespace internal_discrete_trajectory_segment_iterator
 }  // namespace physics
 }  // namespace principia

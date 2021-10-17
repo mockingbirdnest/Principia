@@ -12,6 +12,7 @@ namespace internal_discrete_trajectory2 {
 
 using astronomy::InfinitePast;
 using base::make_not_null_unique;
+using base::uninitialized;
 
 template<typename Frame>
 DiscreteTrajectory2<Frame>::DiscreteTrajectory2()
@@ -114,7 +115,10 @@ DiscreteTrajectory2<Frame>::segments() const {
 template<typename Frame>
 typename DiscreteTrajectory2<Frame>::ReverseSegmentRange
 DiscreteTrajectory2<Frame>::rsegments() const {
-  // TODO(phl): Implement.
+  return ReverseSegmentRange(std::reverse_iterator(SegmentIterator(
+                                 segments_.get(), segments_->end())),
+                             std::reverse_iterator(SegmentIterator(
+                                 segments_.get(), segments_->begin())));
 }
 
 template<typename Frame>
@@ -139,42 +143,84 @@ DiscreteTrajectory2<Frame>::NewSegment() {
 
 template<typename Frame>
 typename DiscreteTrajectory2<Frame>::DiscreteTrajectory2
-DiscreteTrajectory2<Frame>::DetachSegments(iterator begin) {
-  // TODO(phl): Implement.
+DiscreteTrajectory2<Frame>::DetachSegments(SegmentIterator const begin) {
+  DiscreteTrajectory2 detached(uninitialized);
+
+  // Move the detached segments to the new trajectory.
+  detached.segments_->splice(detached.segments_->end(),
+                             *segments_,
+                             begin.iterator(), segments_->end());
+
+  AdjustAfterSplicing(/*from=*/*this,
+                      /*to=*/detached,
+                      /*to_segments_begin=*/detached.segments_->begin(),
+                      /*to_segments_rend=*/detached.segments_->rend());
+
+  return detached;
 }
 
 template<typename Frame>
 typename DiscreteTrajectory2<Frame>::SegmentIterator
 DiscreteTrajectory2<Frame>::AttachSegments(
     DiscreteTrajectory2&& trajectory) {
-  // TODO(phl): Implement.
+  CHECK(!trajectory.empty());
+  // NOTE(phl): This check might be too strict, we might want to allow LT as the
+  // time comparison, and to adjust the first point of trajectory as needed.
+  // We'll see if the clients need that.
+  CHECK_EQ(rbegin()->first, trajectory.begin()->first)
+      << "Mismatching times when attaching segments";
+  CHECK_EQ(rbegin()->second, trajectory.begin()->second)
+      << "Mismatching degrees of freedom when attaching segments";
+
+  if (empty()) {
+    *this = DiscreteTrajectory2(uninitialized);
+  }
+
+  // The |end| iterator keeps pointing at the end after the splice.  Instead,
+  // we track the iterator to the last segment.
+  auto const last_before_splice = --segments_->end();
+
+  // Move the attached segments to the end of this trajectory.
+  segments_->splice(segments_->end(),
+                    *trajectory.segments_);
+
+  auto const end_before_splice = std::next(last_before_splice);
+  auto const rbegin_before_splice = std::reverse_iterator(end_before_splice);
+
+  AdjustAfterSplicing(/*from=*/trajectory,
+                      /*to=*/*this,
+                      /*to_segments_begin=*/end_before_splice,
+                      /*to_segments_rend=*/rbegin_before_splice);
+
+  return SegmentIterator(segments_.get(), end_before_splice);
 }
 
 template<typename Frame>
-void DiscreteTrajectory2<Frame>::DeleteSegments(iterator begin) {
-  // TODO(phl): Implement.
+void DiscreteTrajectory2<Frame>::DeleteSegments(SegmentIterator const begin) {
+  segments_->erase(begin.iterator(), segments_->end());
 }
 
 template<typename Frame>
 void DiscreteTrajectory2<Frame>::ForgetAfter(Instant const& t) {
-  // TODO(phl): Drop segments as needed.
-  return FindSegment(t)->ForgetAfter(t);
-}
-
-template<typename Frame>
-void DiscreteTrajectory2<Frame>::ForgetAfter(iterator begin) {
-  // TODO(phl): Implement.
+  auto const sit = FindSegment(t);
+  sit->ForgetAfter(t);
+  // Here |sit| designates a segment starting at or after |t|.  If |t| is
+  // exactly at the beginning of the segment, |ForgetAfter| above will leave it
+  // empty.  In that case we drop the segment entirely.  Note that this
+  // situation doesn't arise for |ForgetBefore| because of the way |FindSegment|
+  // works.
+  if (sit->empty()) {
+    segments_->erase(sit, segments_->end());
+  } else {
+    segments_->erase(std::next(sit), segments_->end());
+  }
 }
 
 template<typename Frame>
 void DiscreteTrajectory2<Frame>::ForgetBefore(Instant const& t) {
-  // TODO(phl): Drop segments as needed.
-  return FindSegment(t)->ForgetBefore(t);
-}
-
-template<typename Frame>
-void DiscreteTrajectory2<Frame>::ForgetBefore(iterator end) {
-  // TODO(phl): Implement.
+  auto const sit = FindSegment(t);
+  sit->ForgetBefore(t);
+  segments_->erase(segments_->begin(), sit);
 }
 
 template<typename Frame>
@@ -248,6 +294,10 @@ DiscreteTrajectory2<Frame>::ReadFromMessage(
 }
 
 template<typename Frame>
+DiscreteTrajectory2<Frame>::DiscreteTrajectory2(uninitialized_t)
+    : segments_(make_not_null_unique<Segments>()) {}
+
+template<typename Frame>
 typename DiscreteTrajectory2<Frame>::Segments::iterator
 DiscreteTrajectory2<Frame>::FindSegment(
     Instant const& t) {
@@ -263,6 +313,28 @@ DiscreteTrajectory2<Frame>::FindSegment(
   auto it = segment_by_left_endpoint_.upper_bound(t);
   CHECK(it != segment_by_left_endpoint_.begin()) << "No segment covering " << t;
   return (--it)->second;
+}
+
+template<typename Frame>
+void DiscreteTrajectory2<Frame>::AdjustAfterSplicing(
+    DiscreteTrajectory2& from,
+    DiscreteTrajectory2& to,
+    typename Segments::iterator to_segments_begin,
+    std::reverse_iterator<typename Segments::iterator> to_segments_rend) {
+
+  // Iterate through the target segments to move the time-to-segment mapping
+  // from |from| to |to|.
+  auto endpoint_it = from.segment_by_left_endpoint_.end();
+  for (auto sit = to.segments_->rbegin(); sit != to_segments_rend; ++sit) {
+    --endpoint_it;
+    to.segment_by_left_endpoint_.insert(
+        from.segment_by_left_endpoint_.extract(endpoint_it));
+  }
+
+  // Reset the self pointers of the new segments.
+  for (auto sit = to_segments_begin; sit != to.segments_->end(); ++sit) {
+    sit->SetSelf(SegmentIterator(to.segments_.get(), sit));
+  }
 }
 
 }  // namespace internal_discrete_trajectory2
