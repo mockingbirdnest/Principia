@@ -91,12 +91,16 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
       Instant const& t) const override;
 
+  // The points denoted by |exact| are written and re-read exactly and are not
+  // affected by any errors introduced by zfp compression.
   void WriteToMessage(
-      not_null<serialization::DiscreteTrajectorySegment*> message) const;
+      not_null<serialization::DiscreteTrajectorySegment*> message,
+      std::vector<iterator> const& exact) const;
   template<typename F = Frame,
            typename = std::enable_if_t<base::is_serializable_v<F>>>
   static DiscreteTrajectorySegment ReadFromMessage(
-      serialization::DiscreteTrajectorySegment const& message);
+      serialization::DiscreteTrajectorySegment const& message,
+      DiscreteTrajectorySegmentIterator<Frame> self);
 
  private:
   using DownsamplingParameters =
@@ -144,12 +148,12 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
 
   std::optional<DownsamplingParameters> downsampling_parameters_;
 
-  DiscreteTrajectorySegmentIterator<Frame> self_;
-  Timeline timeline_;
-
   // The number of points at the end of the segment that are part of a "dense"
   // span, i.e., have not been subjected to downsampling yet.
   std::int64_t number_of_dense_points_ = 0;
+
+  DiscreteTrajectorySegmentIterator<Frame> self_;
+  Timeline timeline_;
 
   template<typename F>
   friend class physics::DiscreteTrajectory2;

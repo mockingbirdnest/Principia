@@ -160,16 +160,25 @@ DiscreteTrajectorySegment<Frame>::EvaluateDegreesOfFreedom(
 
 template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::WriteToMessage(
-    not_null<serialization::DiscreteTrajectorySegment*> message) const {
+    not_null<serialization::DiscreteTrajectorySegment*> message,
+    std::vector<iterator> const& exact) const {
   if (downsampling_parameters_.has_value()) {
-    auto* const downsampling_parameters_message =
+    auto* const serialized_downsampling_parameters =
         message->mutable_downsampling_parameters();
-    downsampling_parameters_message->set_max_dense_intervals(
+    serialized_downsampling_parameters->set_max_dense_intervals(
         downsampling_parameters_->max_dense_intervals);
     downsampling_parameters_->tolerance.WriteToMessage(
-        downsampling_parameters_message->mutable_tolerance());
+        serialized_downsampling_parameters->mutable_tolerance());
   }
   message->set_number_of_dense_points(number_of_dense_points_);
+
+  for (auto const it : exact) {
+    auto const& [t, degrees_of_freedom] = *it;
+    auto* const serialized_exact = message->add_exact();
+    t.WriteToMessage(serialized_exact->mutable_instant());
+    degrees_of_freedom.WriteToMessage(
+        serialized_exact->mutable_degrees_of_freedom());
+  }
 
   std::int32_t const timeline_size = timeline_.size();
   auto* const zfp = message->mutable_zfp();
@@ -238,8 +247,72 @@ template<typename Frame>
 template<typename F, typename>
 DiscreteTrajectorySegment<Frame>
 DiscreteTrajectorySegment<Frame>::ReadFromMessage(
-    serialization::DiscreteTrajectorySegment const& message) {
-  return DiscreteTrajectorySegment();
+    serialization::DiscreteTrajectorySegment const& message,
+    DiscreteTrajectorySegmentIterator<Frame> const self) {
+  DiscreteTrajectorySegment<Frame> segment(self);
+
+  // Construct a map for efficient lookup of the exact points.
+  Timeline exact;
+  for (auto const& instantaneous_degrees_of_freedom : message.exact()) {
+    exact.emplace_hint(
+        exact.end(),
+        Instant::ReadFromMessage(instantaneous_degrees_of_freedom.instant(),
+        DegreesOfFreedom<Frame>::ReadFromMessage(
+            instantaneous_degrees_of_freedom.degrees_of_freedom())));
+  }
+
+  // Decompress the timeline before the downsampling parameters to avoid re-
+  // downsampling.
+  ZfpCompressor decompressor;
+  ZfpCompressor::ReadVersion(message);
+
+  int const timeline_size = message.zfp().timeline_size();
+  std::vector<double> t(timeline_size);
+  std::vector<double> qx(timeline_size);
+  std::vector<double> qy(timeline_size);
+  std::vector<double> qz(timeline_size);
+  std::vector<double> px(timeline_size);
+  std::vector<double> py(timeline_size);
+  std::vector<double> pz(timeline_size);
+  std::string_view zfp_timeline(message.zfp().timeline().data(),
+                                message.zfp().timeline().size());
+
+  decompressor.ReadFromMessageMultidimensional<2>(t, zfp_timeline);
+  decompressor.ReadFromMessageMultidimensional<2>(qx, zfp_timeline);
+  decompressor.ReadFromMessageMultidimensional<2>(qy, zfp_timeline);
+  decompressor.ReadFromMessageMultidimensional<2>(qz, zfp_timeline);
+  decompressor.ReadFromMessageMultidimensional<2>(px, zfp_timeline);
+  decompressor.ReadFromMessageMultidimensional<2>(py, zfp_timeline);
+  decompressor.ReadFromMessageMultidimensional<2>(pz, zfp_timeline);
+
+  for (int i = 0; i < timeline_size; ++i) {
+    Position<Frame> const q =
+        Frame::origin +
+        Displacement<Frame>({qx[i] * Metre, qy[i] * Metre, qz[i] * Metre});
+    Velocity<Frame> const p({px[i] * (Metre / Second),
+                             py[i] * (Metre / Second),
+                             pz[i] * (Metre / Second)});
+
+    // See if this is a point whose degrees of freedom must be restored
+    // exactly.
+    Instant const time = Instant() + t[i] * Second;
+    if (auto it = exact.find(time); it == exact.cend()) {
+      Append(time, DegreesOfFreedom<Frame>(q, p));
+    } else {
+      Append(time, it->second);
+    }
+  }
+
+  // Finally, restore the downsampling information.
+  if (message.has_downsampling_parameters()) {
+    segment.downsampling_parameters_ = DownsamplingParameters{
+        .max_dense_intervals =
+            message.downsampling_parameters().max_dense_intervals(),
+        .tolerance = message.downsampling_parameters().tolerance()};
+  }
+  segment.number_of_dense_points_ = message.number_of_dense_points();
+
+  return segment;
 }
 
 template<typename Frame>
