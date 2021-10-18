@@ -46,6 +46,8 @@ using physics::DegreesOfFreedom;
 
 template<typename Frame>
 class DiscreteTrajectorySegment : public Trajectory<Frame> {
+  using DownsamplingParameters =
+      internal_discrete_trajectory_types::DownsamplingParameters;
   using Timeline = internal_discrete_trajectory_types::Timeline<Frame>;
 
  public:
@@ -92,6 +94,15 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
       Instant const& t) const override;
 
+  // This segment must have 0 or 1 points.  Occasionally removes intermediate
+  // points from the segment when |Append|ing, ensuring that positions remain
+  // within the desired tolerance.
+  void SetDownsampling(DownsamplingParameters const& downsampling_parameters);
+
+  // Clear the downsampling parameters.  From now on, all points appended to the
+  // segment are going to be retained.
+  void ClearDownsampling();
+
   // The points denoted by |exact| are written and re-read exactly and are not
   // affected by any errors introduced by zfp compression.
   void WriteToMessage(
@@ -104,9 +115,6 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
       DiscreteTrajectorySegmentIterator<Frame> self);
 
  private:
-  using DownsamplingParameters =
-      internal_discrete_trajectory_types::DownsamplingParameters;
-
   // Changes the |self_| iterator.  Only for use when attaching/detaching
   // segments.
   void SetSelf(DiscreteTrajectorySegmentIterator<Frame> self);
@@ -123,15 +131,6 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   // ending at |end| (2nd overload).
   void ForgetBefore(Instant const& t);
   void ForgetBefore(typename Timeline::const_iterator end);
-
-  // This segment must have 0 or 1 points.  Occasionally removes intermediate
-  // points from the segment when |Append|ing, ensuring that positions remain
-  // within the desired tolerance.
-  void SetDownsampling(DownsamplingParameters const& downsampling_parameters);
-
-  // Clear the downsampling parameters.  From now on, all points appended to the
-  // segment are going to be retained.
-  void ClearDownsampling();
 
   // Called by |Append| after appending a point to this segment.  If
   // appropriate, performs downsampling and deletes some of the points of the

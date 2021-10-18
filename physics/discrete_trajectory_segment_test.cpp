@@ -83,13 +83,6 @@ class DiscreteTrajectorySegmentTest : public ::testing::Test {
     segment_->ForgetBefore(t);
   }
 
-  void SetDownsampling(
-      internal_discrete_trajectory_types::DownsamplingParameters const&
-          downsampling_parameters,
-      DiscreteTrajectorySegment<World>& segment) {
-    segment.SetDownsampling(downsampling_parameters);
-  }
-
   static DiscreteTrajectorySegmentIterator<World> MakeIterator(
       not_null<Segments const*> const segments,
       typename Segments::const_iterator iterator) {
@@ -276,10 +269,10 @@ TEST_F(DiscreteTrajectorySegmentTest, DownsamplingForgetAfter) {
   auto const forgotten_circle_segments = MakeSegments(1);
   auto& circle = *circle_segments->begin();
   auto& forgotten_circle = *forgotten_circle_segments->begin();
-  SetDownsampling({.max_dense_intervals = 50, .tolerance = 1 * Milli(Metre)},
-                  circle);
-  SetDownsampling({.max_dense_intervals = 50, .tolerance = 1 * Milli(Metre)},
-                  forgotten_circle);
+  circle.SetDownsampling(
+      {.max_dense_intervals = 50, .tolerance = 1 * Milli(Metre)});
+  forgotten_circle.SetDownsampling(
+      {.max_dense_intervals = 50, .tolerance = 1 * Milli(Metre)});
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
   Time const Δt = 1.0 / 128.0 * Second;  // Yields exact times.
@@ -325,8 +318,8 @@ TEST_F(DiscreteTrajectorySegmentTest, DownsamplingForgetAfter) {
 TEST_F(DiscreteTrajectorySegmentTest, SerializationWithDownsampling) {
   auto const circle_segments = MakeSegments(1);
   auto& circle = *circle_segments->begin();
-  SetDownsampling({.max_dense_intervals = 50, .tolerance = 1 * Milli(Metre)},
-                  circle);
+  circle.SetDownsampling(
+      {.max_dense_intervals = 50, .tolerance = 1 * Milli(Metre)});
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
   Time const Δt = 10 * Milli(Second);
@@ -407,8 +400,8 @@ TEST_F(DiscreteTrajectorySegmentTest, SerializationWithDownsampling) {
 TEST_F(DiscreteTrajectorySegmentTest, SerializationRoundTrip) {
   auto const circle_segments = MakeSegments(1);
   auto& circle = *circle_segments->begin();
-  SetDownsampling({.max_dense_intervals = 50, .tolerance = 1 * Milli(Metre)},
-                  circle);
+  circle.SetDownsampling(
+      {.max_dense_intervals = 50, .tolerance = 1 * Milli(Metre)});
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
   Time const Δt = 10 * Milli(Second);

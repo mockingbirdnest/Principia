@@ -161,6 +161,21 @@ DiscreteTrajectorySegment<Frame>::EvaluateDegreesOfFreedom(
 }
 
 template<typename Frame>
+void DiscreteTrajectorySegment<Frame>::SetDownsampling(
+    DownsamplingParameters const& downsampling_parameters) {
+  // The semantics of changing downsampling on a segment that has 2 points or
+  // more are unclear.  Let's not do that.
+  CHECK_LE(timeline_.size(), 1);
+  downsampling_parameters_ = downsampling_parameters;
+  number_of_dense_points_ = timeline_.empty() ? 0 : 1;
+}
+
+template<typename Frame>
+void DiscreteTrajectorySegment<Frame>::ClearDownsampling() {
+  downsampling_parameters_ = std::nullopt;
+}
+
+template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::WriteToMessage(
     not_null<serialization::DiscreteTrajectorySegment*> message,
     std::vector<iterator> const& exact) const {
@@ -174,6 +189,7 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
   }
   message->set_number_of_dense_points(number_of_dense_points_);
 
+  // TODO(phl): Make the extremities exact.
   for (auto const it : exact) {
     auto const& [t, degrees_of_freedom] = *it;
     auto* const serialized_exact = message->add_exact();
@@ -378,21 +394,6 @@ void DiscreteTrajectorySegment<Frame>::ForgetBefore(
       std::max(0LL, number_of_dense_points_ - number_of_points_to_remove);
 
   timeline_.erase(timeline_.cbegin(), end);
-}
-
-template<typename Frame>
-void DiscreteTrajectorySegment<Frame>::SetDownsampling(
-    DownsamplingParameters const& downsampling_parameters) {
-  // The semantics of changing downsampling on a segment that has 2 points or
-  // more are unclear.  Let's not do that.
-  CHECK_LE(timeline_.size(), 1);
-  downsampling_parameters_ = downsampling_parameters;
-  number_of_dense_points_ = timeline_.empty() ? 0 : 1;
-}
-
-template<typename Frame>
-void DiscreteTrajectorySegment<Frame>::ClearDownsampling() {
-  downsampling_parameters_ = std::nullopt;
 }
 
 template<typename Frame>
