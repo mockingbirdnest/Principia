@@ -478,19 +478,40 @@ TEST_F(DiscreteTrajectory2Test, TMinTMaxEvaluate) {
                                         0 * Metre / Second}), 0)));
 }
 
-//TODO(phl): tracked, exact
 TEST_F(DiscreteTrajectory2Test, SerializationRoundTrip) {
   auto const trajectory = MakeTrajectory();
+  auto const trajectory_first_segment = trajectory.segments().begin();
+  auto const trajectory_second_segment = std::next(trajectory_first_segment);
 
   serialization::DiscreteTrajectory message1;
-  trajectory.WriteToMessage(&message1, /*tracked=*/{}, /*exact=*/{});
+  trajectory.WriteToMessage(&message1,
+                            /*tracked=*/{trajectory_second_segment},
+                            /*exact=*/
+                            {trajectory.lower_bound(t0_ + 2 * Second),
+                             trajectory.lower_bound(t0_ + 3 * Second)});
 
+  DiscreteTrajectorySegmentIterator<World> deserialized_second_segment;
   auto const deserialized_trajectory =
-      DiscreteTrajectory2<World>::ReadFromMessage(message1, /*tracked=*/{});
+      DiscreteTrajectory2<World>::ReadFromMessage(
+          message1, /*tracked=*/{&deserialized_second_segment});
+
+  // Check that the tracked segment was properly retrieved.
+  EXPECT_EQ(t0_ + 4 * Second, deserialized_second_segment->begin()->first);
+  EXPECT_EQ(t0_ + 9 * Second, deserialized_second_segment->rbegin()->first);
+
+  // Check that the exact points are exact.
+  EXPECT_EQ(deserialized_trajectory.lower_bound(t0_ + 2 * Second)->second,
+            trajectory.lower_bound(t0_ + 2 * Second)->second);
+  EXPECT_EQ(deserialized_trajectory.lower_bound(t0_ + 3 * Second)->second,
+            trajectory.lower_bound(t0_ + 3 * Second)->second);
 
   serialization::DiscreteTrajectory message2;
   deserialized_trajectory.WriteToMessage(
-      &message2, /*tracked=*/{}, /*exact=*/{});
+      &message2,
+      /*tracked=*/{deserialized_second_segment},
+      /*exact=*/
+      {deserialized_trajectory.lower_bound(t0_ + 2 * Second),
+       deserialized_trajectory.lower_bound(t0_ + 3 * Second)});
 
   EXPECT_THAT(message2, EqualsProto(message1));
 }

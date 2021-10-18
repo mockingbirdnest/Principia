@@ -273,12 +273,12 @@ void DiscreteTrajectory2<Frame>::WriteToMessage(
     std::vector<SegmentIterator> const& tracked,
     std::vector<iterator> const& exact) const {
   // Construct a map to efficiently find if a segment must be tracked.  The
-  // keys are the iterators in |tracked|, the values are the corresponding
-  // indices.
+  // keys are pointers to segments in |tracked|, the values are the
+  // corresponding indices.
   absl::flat_hash_map<DiscreteTrajectorySegment<Frame> const*, int>
-      ptr_to_position;
+      segment_to_position;
   for (int i = 0; i < tracked.size(); ++i) {
-    ptr_to_position.emplace(&*tracked[i], i);
+    segment_to_position.emplace(&*tracked[i], i);
   }
 
   // Initialize the tracked positions to be able to recognize if some are
@@ -294,8 +294,8 @@ void DiscreteTrajectory2<Frame>::WriteToMessage(
        ++sit, ++segment_position) {
     sit->WriteToMessage(message->add_segment(), exact);
 
-    if (auto const position_it = ptr_to_position.find(&*sit);
-        position_it != ptr_to_position.end()) {
+    if (auto const position_it = segment_to_position.find(&*sit);
+        position_it != segment_to_position.end()) {
       // The field |tracked_position| is indexed by the indices in |tracked|.
       // Its value is the position of a tracked segment in the field |segment|.
       message->set_tracked_position(position_it->second, segment_position);
