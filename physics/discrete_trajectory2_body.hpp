@@ -272,10 +272,13 @@ void DiscreteTrajectory2<Frame>::WriteToMessage(
     not_null<serialization::DiscreteTrajectory*> message,
     std::vector<SegmentIterator> const& tracked,
     std::vector<iterator> const& exact) const {
-  // Construct a map to efficiently find if a segment must be tracked.
-  absl::flat_hash_map<typename Segments::const_iterator, int> sit_to_position;
+  // Construct a map to efficiently find if a segment must be tracked.  The
+  // keys are the iterators in |tracked|, the values are the corresponding
+  // indices.
+  absl::flat_hash_map<DiscreteTrajectorySegment<Frame> const*, int>
+      ptr_to_position;
   for (int i = 0; i < tracked.size(); ++i) {
-    sit_to_position.emplace(tracked[i], i);
+    ptr_to_position.emplace(&*tracked[i], i);
   }
 
   // Initialize the tracked positions to be able to recognize if some are
@@ -291,11 +294,11 @@ void DiscreteTrajectory2<Frame>::WriteToMessage(
        ++sit, ++segment_position) {
     sit->WriteToMessage(message->add_segment(), exact);
 
-    if (auto const position_it = sit_to_position.find(sit);
-        position_it != sit_to_position.end()) {
+    if (auto const position_it = ptr_to_position.find(&*sit);
+        position_it != ptr_to_position.end()) {
       // The field |tracked_position| is indexed by the indices in |tracked|.
       // Its value is the position of a tracked segment in the field |segment|.
-      message->set_tracked_position(position_it->second) = segment_position;
+      message->set_tracked_position(position_it->second, segment_position);
     }
   }
 
@@ -313,7 +316,7 @@ void DiscreteTrajectory2<Frame>::WriteToMessage(
 
 template<typename Frame>
 template<typename F, typename>
-not_null<std::unique_ptr<DiscreteTrajectory2<Frame>>>
+DiscreteTrajectory2<Frame>
 DiscreteTrajectory2<Frame>::ReadFromMessage(
     serialization::DiscreteTrajectory const& message,
     std::vector<SegmentIterator*> const& tracked) {
@@ -325,17 +328,17 @@ DiscreteTrajectory2<Frame>::ReadFromMessage(
     LOG(FATAL) << "Pre-Ζήνων compatibility NYI";
   }
 
-  // First restore the segment themselves.  This vector will be used to restore
+  // First restore the segments themselves.  This vector will be used to restore
   // the tracked segments.
   std::vector<SegmentIterator> segment_iterators;
   segment_iterators.reserve(message.segment_size());
   for (auto const& serialized_segment : message.segment()) {
     trajectory.segments_->emplace_back();
-    auto const sit = SegmentIterator(trajectory.segments_.get(),
-                                     --trajectory.segment_->end());
+    auto const sit = --trajectory.segments_->end();
+    auto const self = SegmentIterator(trajectory.segments_.get(), sit);
     *sit = DiscreteTrajectorySegment<Frame>::ReadFromMessage(serialized_segment,
-                                                             sit);
-    segment_iterators.push_back(sit);
+                                                             self);
+    segment_iterators.push_back(self);
   }
 
   // Restore the tracked segments.

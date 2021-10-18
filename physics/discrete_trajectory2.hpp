@@ -103,7 +103,7 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
       std::vector<iterator> const& exact) const;
   template<typename F = Frame,
            typename = std::enable_if_t<base::is_serializable_v<F>>>
-  static not_null<std::unique_ptr<DiscreteTrajectory2>> ReadFromMessage(
+  static DiscreteTrajectory2 ReadFromMessage(
       serialization::DiscreteTrajectory const& message,
       std::vector<SegmentIterator*> const& tracked);
 

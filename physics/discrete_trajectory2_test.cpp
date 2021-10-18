@@ -7,27 +7,36 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
+#include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/discrete_trajectory_factories.hpp"
+#include "testing_utilities/matchers.hpp"
 
 namespace principia {
 namespace physics {
 
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::Handedness;
+using geometry::Inertial;
 using geometry::Instant;
 using geometry::Velocity;
 using quantities::si::Metre;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
+using testing_utilities::EqualsProto;
 using testing_utilities::NewLinearTrajectoryTimeline;
 using ::testing::ElementsAre;
 
 class DiscreteTrajectory2Test : public ::testing::Test {
  protected:
-  using World = Frame<enum class WorldTag>;
+  using World = Frame<serialization::Frame::TestTag,
+                      Inertial,
+                      Handedness::Right,
+                      serialization::Frame::TEST>;
+
 
   // Constructs a trajectory with three 5-second segments starting at |t0| and
   // the given |degrees_of_freedom|.
@@ -467,6 +476,23 @@ TEST_F(DiscreteTrajectory2Test, TMinTMaxEvaluate) {
                     AlmostEquals(Velocity<World>({0 * Metre / Second,
                                         1 * Metre / Second,
                                         0 * Metre / Second}), 0)));
+}
+
+//TODO(phl): tracked, exact
+TEST_F(DiscreteTrajectory2Test, SerializationRoundTrip) {
+  auto const trajectory = MakeTrajectory();
+
+  serialization::DiscreteTrajectory message1;
+  trajectory.WriteToMessage(&message1, /*tracked=*/{}, /*exact=*/{});
+
+  auto const deserialized_trajectory =
+      DiscreteTrajectory2<World>::ReadFromMessage(message1, /*tracked=*/{});
+
+  serialization::DiscreteTrajectory message2;
+  deserialized_trajectory.WriteToMessage(
+      &message2, /*tracked=*/{}, /*exact=*/{});
+
+  EXPECT_THAT(message2, EqualsProto(message1));
 }
 
 }  // namespace physics
