@@ -7,27 +7,36 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
+#include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/discrete_trajectory_factories.hpp"
+#include "testing_utilities/matchers.hpp"
 
 namespace principia {
 namespace physics {
 
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::Handedness;
+using geometry::Inertial;
 using geometry::Instant;
 using geometry::Velocity;
 using quantities::si::Metre;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
+using testing_utilities::EqualsProto;
 using testing_utilities::NewLinearTrajectoryTimeline;
 using ::testing::ElementsAre;
 
 class DiscreteTrajectory2Test : public ::testing::Test {
  protected:
-  using World = Frame<enum class WorldTag>;
+  using World = Frame<serialization::Frame::TestTag,
+                      Inertial,
+                      Handedness::Right,
+                      serialization::Frame::TEST>;
+
 
   // Constructs a trajectory with three 5-second segments starting at |t0| and
   // the given |degrees_of_freedom|.
@@ -467,6 +476,44 @@ TEST_F(DiscreteTrajectory2Test, TMinTMaxEvaluate) {
                     AlmostEquals(Velocity<World>({0 * Metre / Second,
                                         1 * Metre / Second,
                                         0 * Metre / Second}), 0)));
+}
+
+TEST_F(DiscreteTrajectory2Test, SerializationRoundTrip) {
+  auto const trajectory = MakeTrajectory();
+  auto const trajectory_first_segment = trajectory.segments().begin();
+  auto const trajectory_second_segment = std::next(trajectory_first_segment);
+
+  serialization::DiscreteTrajectory message1;
+  trajectory.WriteToMessage(&message1,
+                            /*tracked=*/{trajectory_second_segment},
+                            /*exact=*/
+                            {trajectory.lower_bound(t0_ + 2 * Second),
+                             trajectory.lower_bound(t0_ + 3 * Second)});
+
+  DiscreteTrajectorySegmentIterator<World> deserialized_second_segment;
+  auto const deserialized_trajectory =
+      DiscreteTrajectory2<World>::ReadFromMessage(
+          message1, /*tracked=*/{&deserialized_second_segment});
+
+  // Check that the tracked segment was properly retrieved.
+  EXPECT_EQ(t0_ + 4 * Second, deserialized_second_segment->begin()->first);
+  EXPECT_EQ(t0_ + 9 * Second, deserialized_second_segment->rbegin()->first);
+
+  // Check that the exact points are exact.
+  EXPECT_EQ(deserialized_trajectory.lower_bound(t0_ + 2 * Second)->second,
+            trajectory.lower_bound(t0_ + 2 * Second)->second);
+  EXPECT_EQ(deserialized_trajectory.lower_bound(t0_ + 3 * Second)->second,
+            trajectory.lower_bound(t0_ + 3 * Second)->second);
+
+  serialization::DiscreteTrajectory message2;
+  deserialized_trajectory.WriteToMessage(
+      &message2,
+      /*tracked=*/{deserialized_second_segment},
+      /*exact=*/
+      {deserialized_trajectory.lower_bound(t0_ + 2 * Second),
+       deserialized_trajectory.lower_bound(t0_ + 3 * Second)});
+
+  EXPECT_THAT(message2, EqualsProto(message1));
 }
 
 }  // namespace physics

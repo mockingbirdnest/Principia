@@ -1,9 +1,10 @@
-#pragma once
+﻿#pragma once
 
 #include "physics/discrete_trajectory2.hpp"
 
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "astronomy/epoch.hpp"
 
 namespace principia {
@@ -271,26 +272,94 @@ void DiscreteTrajectory2<Frame>::WriteToMessage(
     not_null<serialization::DiscreteTrajectory*> message,
     std::vector<SegmentIterator> const& tracked,
     std::vector<iterator> const& exact) const {
-  // TODO(phl): Implement.
-}
+  // Construct a map to efficiently find if a segment must be tracked.  The
+  // keys are pointers to segments in |tracked|, the values are the
+  // corresponding indices.
+  absl::flat_hash_map<DiscreteTrajectorySegment<Frame> const*, int>
+      segment_to_position;
+  for (int i = 0; i < tracked.size(); ++i) {
+    segment_to_position.emplace(&*tracked[i], i);
+  }
 
-template<typename Frame>
-void DiscreteTrajectory2<Frame>::WriteToMessage(
-    not_null<serialization::DiscreteTrajectory*> message,
-    iterator begin,
-    iterator end,
-    std::vector<SegmentIterator> const& tracked,
-    std::vector<iterator> const& exact) const {
-  // TODO(phl): Implement.
+  // Initialize the tracked positions to be able to recognize if some are
+  // missing.
+  message->mutable_tracked_position()->Resize(
+      tracked.size(),
+      serialization::DiscreteTrajectory::MISSING_TRACKED_POSITION);
+
+  // The position of a segment in the repeated field |segment|.
+  int segment_position = 0;
+  for (auto sit = segments_->begin();
+       sit != segments_->end();
+       ++sit, ++segment_position) {
+    sit->WriteToMessage(message->add_segment(), exact);
+
+    if (auto const position_it = segment_to_position.find(&*sit);
+        position_it != segment_to_position.end()) {
+      // The field |tracked_position| is indexed by the indices in |tracked|.
+      // Its value is the position of a tracked segment in the field |segment|.
+      message->set_tracked_position(position_it->second, segment_position);
+    }
+  }
+
+  for (auto const& [t, _] : segment_by_left_endpoint_) {
+    t.WriteToMessage(message->add_left_endpoint());
+  }
+
+  // Check that all the segments in |tracked| were mapped.
+  // NOTE(phl): This might be too strong a constraint in Entwurf.
+  for (auto const tracked_position : message->tracked_position()) {
+    CHECK_NE(serialization::DiscreteTrajectory::MISSING_TRACKED_POSITION,
+             tracked_position);
+  }
 }
 
 template<typename Frame>
 template<typename F, typename>
-not_null<std::unique_ptr<DiscreteTrajectory2<Frame>>>
+DiscreteTrajectory2<Frame>
 DiscreteTrajectory2<Frame>::ReadFromMessage(
     serialization::DiscreteTrajectory const& message,
-    std::vector<DiscreteTrajectory2**> const& tracked) {
-  // TODO(phl): Implement.
+    std::vector<SegmentIterator*> const& tracked) {
+  DiscreteTrajectory2 trajectory(uninitialized);
+
+  bool const is_pre_ζήνων = message.segment_size() == 0;
+  if (is_pre_ζήνων) {
+    // TODO(phl): Implement.
+    LOG(FATAL) << "Pre-Ζήνων compatibility NYI";
+  }
+
+  // First restore the segments themselves.  This vector will be used to restore
+  // the tracked segments.
+  std::vector<SegmentIterator> segment_iterators;
+  segment_iterators.reserve(message.segment_size());
+  for (auto const& serialized_segment : message.segment()) {
+    trajectory.segments_->emplace_back();
+    auto const sit = --trajectory.segments_->end();
+    auto const self = SegmentIterator(trajectory.segments_.get(), sit);
+    *sit = DiscreteTrajectorySegment<Frame>::ReadFromMessage(serialized_segment,
+                                                             self);
+    segment_iterators.push_back(self);
+  }
+
+  // Restore the tracked segments.
+  CHECK_EQ(tracked.size(), message.tracked_position_size());
+  for (int i = 0; i < message.tracked_position_size(); ++i) {
+    int const tracked_position = message.tracked_position(i);
+    CHECK_NE(serialization::DiscreteTrajectory::MISSING_TRACKED_POSITION,
+             tracked_position);
+    *tracked[i] = segment_iterators[tracked_position];
+  }
+
+  // Finally restore the left endpoints.
+  auto sit = trajectory.segments_->begin();
+  for (auto const& serialized_t : message.left_endpoint()) {
+    auto const t = Instant::ReadFromMessage(serialized_t);
+    trajectory.segment_by_left_endpoint_.emplace_hint(
+        trajectory.segment_by_left_endpoint_.end(), t, sit);
+    ++sit;
+  }
+
+  return trajectory;
 }
 
 template<typename Frame>
