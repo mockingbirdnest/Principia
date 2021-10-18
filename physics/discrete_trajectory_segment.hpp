@@ -132,6 +132,12 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   void ForgetBefore(Instant const& t);
   void ForgetBefore(typename Timeline::const_iterator end);
 
+  //TODO(phl):comment, implement.
+  void SetDownsamplingUnconditionally(
+      DownsamplingParameters const& downsampling_parameters);
+
+  void SetStartOfDenseTimeline(Instant const& t);
+
   // Called by |Append| after appending a point to this segment.  If
   // appropriate, performs downsampling and deletes some of the points of the
   // segment.

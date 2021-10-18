@@ -108,6 +108,8 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
       std::vector<SegmentIterator*> const& tracked);
 
  private:
+  using DownsamplingParameters =
+      internal_discrete_trajectory_types::DownsamplingParameters;
   using Segments = internal_discrete_trajectory_types::Segments<Frame>;
 
   // This constructor leaves the list of segments empty (but allocated) as well
@@ -125,6 +127,15 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
       DiscreteTrajectory2& to,
       typename Segments::iterator to_segments_begin,
       std::reverse_iterator<typename Segments::iterator> to_segments_rend);
+
+  //TODO(phl):comment
+  static void ReadFromPreΖήνωνMessage(
+      serialization::DiscreteTrajectory::Downsampling const& message,
+      DownsamplingParameters& downsampling_parameters,
+      Instant& start_of_dense_timeline);
+
+  static void ReadFromPreΖήνωνMessage(
+      serialization::DiscreteTrajectory const& message);
 
   // We need a level of indirection here to make sure that the pointer to
   // Segments in the DiscreteTrajectorySegmentIterator remain valid when the

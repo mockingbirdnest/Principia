@@ -6,6 +6,7 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "astronomy/epoch.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace physics {
@@ -14,6 +15,7 @@ namespace internal_discrete_trajectory2 {
 using astronomy::InfinitePast;
 using base::make_not_null_unique;
 using base::uninitialized;
+using quantities::Length;
 
 template<typename Frame>
 DiscreteTrajectory2<Frame>::DiscreteTrajectory2()
@@ -359,6 +361,7 @@ DiscreteTrajectory2<Frame>::ReadFromMessage(
     ++sit;
   }
 
+  // TODO(phl): Check data structures consistency here.
   return trajectory;
 }
 
@@ -404,6 +407,86 @@ void DiscreteTrajectory2<Frame>::AdjustAfterSplicing(
   for (auto sit = to_segments_begin; sit != to.segments_->end(); ++sit) {
     sit->SetSelf(SegmentIterator(to.segments_.get(), sit));
   }
+}
+
+template<typename Frame>
+void DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
+    serialization::DiscreteTrajectory::Downsampling const& message,
+    DownsamplingParameters& downsampling_parameters,
+    Instant& start_of_dense_timeline) {
+  bool const is_pre_haar = message.has_start_of_dense_timeline();
+  LOG_IF(WARNING, is_pre_haar)
+      << "Reading pre-Haar DiscreteTrajectory.Downsampling";
+
+  downsampling_parameters = {
+      .max_dense_intervals = message.max_dense_intervals(),
+      .tolerance = Length::ReadFromMessage(message.tolerance())};
+  if (is_pre_haar) {
+    start_of_dense_timeline =
+        Instant::ReadFromMessage(message.start_of_dense_timeline());
+  } else {
+    start_of_dense_timeline =
+        Instant::ReadFromMessage(message.dense_timeline(0));
+  }
+}
+
+template<typename Frame>
+void DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
+    serialization::DiscreteTrajectory const& message) {
+  bool const is_pre_frobenius = !message.has_zfp();
+  LOG_IF(WARNING, is_pre_frobenius)
+      << "Reading pre-Frobenius DiscreteTrajectory";
+
+  DownsamplingParameters downsampling_parameters;
+  Instant start_of_dense_timeline;
+
+  DiscreteTrajectory2 trajectory(uninitialized);
+  trajectory.segments_->emplace_back();
+  auto const sit = --trajectory.segments_->end();
+  auto const self = SegmentIterator(trajectory.segments_.get(), sit);
+  if (is_pre_frobenius) {
+    *sit = DiscreteTrajectorySegment<Frame>(self);
+    for (auto const& instantaneous_dof : message.timeline()) {
+      sit->Append(Instant::ReadFromMessage(instantaneous_dof.instant()),
+                  DegreesOfFreedom<Frame>::ReadFromMessage(
+                      instantaneous_dof.degrees_of_freedom()));
+    }
+    if (message.has_downsampling()) {
+      DownsamplingParameters downsampling_parameters;
+      Instant start_of_dense_timeline;
+      ReadFromPreΖήνωνMessage(message.downsampling(),
+                              downsampling_parameters,
+                              start_of_dense_timeline);
+      //TODO(phl): Methods.
+      sit->SetDownsamplingUnconditionally(downsampling_parameters);
+      sit->SetStartOfDenseTimeline(start_of_dense_timeline);
+    }
+  } else {
+    serialization::DiscreteTrajectorySegment serialized_segment;
+    *serialized_segment.mutable_zfp() = message.zfp();
+    *serialized_segment.mutable_exact() = message.exact();
+
+    DownsamplingParameters downsampling_parameters;
+    Instant start_of_dense_timeline;
+    if (message.has_downsampling()) {
+      ReadFromPreΖήνωνMessage(message.downsampling(),
+                              downsampling_parameters,
+                              start_of_dense_timeline);
+      auto* const serialized_downsampling_parameters =
+          serialized_segment.mutable_downsampling_parameters();
+      serialized_downsampling_parameters->set_max_dense_intervals(
+          downsampling_parameters.max_dense_intervals);
+      downsampling_parameters.tolerance.WriteToMessage(
+          serialized_downsampling_parameters->mutable_tolerance());
+    }
+    *sit = DiscreteTrajectorySegment<Frame>::ReadFromMessage(serialized_segment,
+                                                             self);
+    if (message.has_downsampling()) {
+      sit->SetStartOfDenseTimeline(start_of_dense_timeline);
+    }
+  }
+
+  //TODO(phl): Recurse.
 }
 
 }  // namespace internal_discrete_trajectory2
