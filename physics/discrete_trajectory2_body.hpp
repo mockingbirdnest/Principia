@@ -438,14 +438,14 @@ void DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
   LOG_IF(WARNING, is_pre_frobenius)
       << "Reading pre-Frobenius DiscreteTrajectory";
 
-  DownsamplingParameters downsampling_parameters;
-  Instant start_of_dense_timeline;
-
   DiscreteTrajectory2 trajectory(uninitialized);
   trajectory.segments_->emplace_back();
   auto const sit = --trajectory.segments_->end();
   auto const self = SegmentIterator(trajectory.segments_.get(), sit);
   if (is_pre_frobenius) {
+    // Pre-Frobenius saves don't use ZFP so we reconstruct them by appending
+    // points to the segment.  Note that this must happens before restoring the
+    // downsampling parameters to avoid re-downsampling.
     *sit = DiscreteTrajectorySegment<Frame>(self);
     for (auto const& instantaneous_dof : message.timeline()) {
       sit->Append(Instant::ReadFromMessage(instantaneous_dof.instant()),
@@ -462,6 +462,10 @@ void DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
       sit->SetStartOfDenseTimeline(start_of_dense_timeline);
     }
   } else {
+    // Starting with Frobenius we use ZFP so the easiest is to build a
+    // serialized segment from the fields of the legacy message and read from
+    // that serialized segment.  Note that restoring the number of dense points
+    // can only happen once we have reconstructed the timeline.
     serialization::DiscreteTrajectorySegment serialized_segment;
     *serialized_segment.mutable_zfp() = message.zfp();
     *serialized_segment.mutable_exact() = message.exact();
