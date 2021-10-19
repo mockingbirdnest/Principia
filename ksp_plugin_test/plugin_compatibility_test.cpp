@@ -374,8 +374,8 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
   auto& psychohistory =
       const_cast<DiscreteTrajectory<Barycentric>&>(vessel.psychohistory());
   auto const history = psychohistory.root();
-  EXPECT_EQ(435927, history->Size());
-  EXPECT_EQ(435929, psychohistory.Size());
+  EXPECT_EQ(435'927, history->Size());
+  EXPECT_EQ(435'929, psychohistory.Size());
 
   // Serialize the history and psychohistory to a temporary file.
   {
@@ -395,8 +395,8 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
     DiscreteTrajectory<Barycentric>* psychohistory = nullptr;
     auto const history = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message, /*forks=*/{&psychohistory});
-    EXPECT_EQ(435927, history->Size());
-    EXPECT_EQ(435929, psychohistory->Size());
+    EXPECT_EQ(435'927, history->Size());
+    EXPECT_EQ(435'929, psychohistory->Size());
   }
 
   // Make sure that we can upgrade, save, and reload.
