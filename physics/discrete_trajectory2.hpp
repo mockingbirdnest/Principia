@@ -136,11 +136,13 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
 
   static void ReadFromPreΖήνωνMessage(
       serialization::DiscreteTrajectory::Brood const& message,
+      std::vector<SegmentIterator*> const& tracked,
       value_type const& fork_point,
       DiscreteTrajectory2& trajectory);
 
   static void ReadFromPreΖήνωνMessage(
       serialization::DiscreteTrajectory const& message,
+      std::vector<SegmentIterator*> const& tracked,
       DiscreteTrajectory2& trajectory);
 
   // We need a level of indirection here to make sure that the pointer to

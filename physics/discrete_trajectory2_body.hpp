@@ -326,9 +326,8 @@ DiscreteTrajectory2<Frame>::ReadFromMessage(
 
   bool const is_pre_ζήνων = message.segment_size() == 0;
   if (is_pre_ζήνων) {
-    ReadFromPreΖήνωνMessage(message, trajectory);
-    // TODO(phl): Implement.
-    LOG(FATAL) << "Pre-Ζήνων compatibility NYI";
+    ReadFromPreΖήνωνMessage(message, tracked, trajectory);
+    return trajectory;
   }
 
   // First restore the segments themselves.  This vector will be used to restore
@@ -434,6 +433,7 @@ void DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
 template<typename Frame>
 void DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
     serialization::DiscreteTrajectory::Brood const& message,
+    std::vector<SegmentIterator*> const& tracked,
     value_type const& fork_point,
     DiscreteTrajectory2& trajectory) {
   CHECK_EQ(fork_point.first, Instant::ReadFromMessage(message.fork_time()))
@@ -444,7 +444,7 @@ void DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
   // Keep an iterator to the last segment to be able to set the replicated
   // point.
   auto sit = --trajectory.segments_->end();
-  ReadFromPreΖήνωνMessage(message.trajectories(0), trajectory);
+  ReadFromPreΖήνωνMessage(message.trajectories(0), tracked, trajectory);
   ++sit;
   sit->SetForkPoint(fork_point);
 }
@@ -452,6 +452,7 @@ void DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
 template<typename Frame>
 void DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
     serialization::DiscreteTrajectory const& message,
+    std::vector<SegmentIterator*> const& tracked,
     DiscreteTrajectory2& trajectory) {
   bool const is_pre_frobenius = !message.has_zfp();
   LOG_IF(WARNING, is_pre_frobenius)
@@ -510,12 +511,26 @@ void DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
 
   // Restore the (single) child as the next segment.
   if (message.children_size() == 1) {
-    ReadFromPreΖήνωνMessage(message.children(0), *sit->rbegin(), trajectory);
+    ReadFromPreΖήνωνMessage(message.children(0),
+                            tracked,
+                            *sit->rbegin(),
+                            trajectory);
   } else if (message.children_size() > 1) {
     LOG(FATAL) << "Cannot read trajectory with " << message.children_size()
                << " children";
   }
-  //TODO(phl):fork position
+
+  // There were no fork positions prior to Буняковский.
+  bool const has_fork_position = message.fork_position_size() > 0;
+  if (has_fork_position) {
+    CHECK_EQ(1, message.fork_position_size())
+        << "Cannot read trajectory with " << message.fork_position_size()
+        << " fork positions";
+    int const fork_position = message.fork_position(0);
+    *tracked[fork_position] = self;
+  }
+
+  //TODO(phl):Left endpoints
 }
 
 }  // namespace internal_discrete_trajectory2
