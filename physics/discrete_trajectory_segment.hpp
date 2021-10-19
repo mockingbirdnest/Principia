@@ -141,6 +141,9 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   // timeline.  Used for compatibility deserialization.
   void SetStartOfDenseTimeline(Instant const& t);
 
+  //TODO(phl):comment
+  void SetForkPoint(value_type const& point);
+
   // Called by |Append| after appending a point to this segment.  If
   // appropriate, performs downsampling and deletes some of the points of the
   // segment.

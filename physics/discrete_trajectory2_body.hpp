@@ -326,7 +326,7 @@ DiscreteTrajectory2<Frame>::ReadFromMessage(
 
   bool const is_pre_ζήνων = message.segment_size() == 0;
   if (is_pre_ζήνων) {
-    ReadFromPreΖήνωνMessage(message);
+    ReadFromPreΖήνωνMessage(message, trajectory);
     // TODO(phl): Implement.
     LOG(FATAL) << "Pre-Ζήνων compatibility NYI";
   }
@@ -433,12 +433,30 @@ void DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
 
 template<typename Frame>
 void DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
-    serialization::DiscreteTrajectory const& message) {
+    serialization::DiscreteTrajectory::Brood const& message,
+    value_type const& fork_point,
+    DiscreteTrajectory2& trajectory) {
+  CHECK_EQ(fork_point.first, Instant::ReadFromMessage(message.fork_time()))
+      << "Cannot read trajectory with a fork not at end of segment";
+  CHECK_EQ(1, message.trajectories_size())
+      << "Cannot read trajectory with multiple forks";
+
+  // Keep an iterator to the last segment to be able to set the replicated
+  // point.
+  auto sit = --trajectory.segments_->end();
+  ReadFromPreΖήνωνMessage(message.trajectories(0), trajectory);
+  ++sit;
+  sit->SetForkPoint(fork_point);
+}
+
+template<typename Frame>
+void DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
+    serialization::DiscreteTrajectory const& message,
+    DiscreteTrajectory2& trajectory) {
   bool const is_pre_frobenius = !message.has_zfp();
   LOG_IF(WARNING, is_pre_frobenius)
       << "Reading pre-Frobenius DiscreteTrajectory";
 
-  DiscreteTrajectory2 trajectory(uninitialized);
   trajectory.segments_->emplace_back();
   auto const sit = --trajectory.segments_->end();
   auto const self = SegmentIterator(trajectory.segments_.get(), sit);
@@ -490,7 +508,14 @@ void DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
     }
   }
 
-  //TODO(phl): Recurse.
+  // Restore the (single) child as the next segment.
+  if (message.children_size() == 1) {
+    ReadFromPreΖήνωνMessage(message.children(0), *sit->rbegin(), trajectory);
+  } else if (message.children_size() > 1) {
+    LOG(FATAL) << "Cannot read trajectory with " << message.children_size()
+               << " children";
+  }
+  //TODO(phl):fork position
 }
 
 }  // namespace internal_discrete_trajectory2

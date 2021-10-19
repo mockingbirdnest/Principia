@@ -411,6 +411,14 @@ void DiscreteTrajectorySegment<Frame>::SetStartOfDenseTimeline(
 }
 
 template<typename Frame>
+void DiscreteTrajectorySegment<Frame>::SetForkPoint(value_type const& point) {
+  auto const it =
+      timeline_.emplace_hint(timeline_.begin(), point.first, point.second);
+  CHECK(it == timeline_.begin())
+      << "Inconsistent fork point at time " << point.first;
+}
+
+template<typename Frame>
 absl::Status DiscreteTrajectorySegment<Frame>::DownsampleIfNeeded() {
   ++number_of_dense_points_;
   // Points, hence one more than intervals.

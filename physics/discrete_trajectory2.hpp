@@ -135,7 +135,13 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
       Instant& start_of_dense_timeline);
 
   static void ReadFromPreΖήνωνMessage(
-      serialization::DiscreteTrajectory const& message);
+      serialization::DiscreteTrajectory::Brood const& message,
+      value_type const& fork_point,
+      DiscreteTrajectory2& trajectory);
+
+  static void ReadFromPreΖήνωνMessage(
+      serialization::DiscreteTrajectory const& message,
+      DiscreteTrajectory2& trajectory);
 
   // We need a level of indirection here to make sure that the pointer to
   // Segments in the DiscreteTrajectorySegmentIterator remain valid when the
