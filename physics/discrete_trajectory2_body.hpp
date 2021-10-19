@@ -326,6 +326,7 @@ DiscreteTrajectory2<Frame>::ReadFromMessage(
 
   bool const is_pre_ζήνων = message.segment_size() == 0;
   if (is_pre_ζήνων) {
+    ReadFromPreΖήνωνMessage(message);
     // TODO(phl): Implement.
     LOG(FATAL) << "Pre-Ζήνων compatibility NYI";
   }
@@ -457,7 +458,6 @@ void DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
       ReadFromPreΖήνωνMessage(message.downsampling(),
                               downsampling_parameters,
                               start_of_dense_timeline);
-      //TODO(phl): Methods.
       sit->SetDownsamplingUnconditionally(downsampling_parameters);
       sit->SetStartOfDenseTimeline(start_of_dense_timeline);
     }

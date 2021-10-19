@@ -132,10 +132,13 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   void ForgetBefore(Instant const& t);
   void ForgetBefore(typename Timeline::const_iterator end);
 
-  //TODO(phl):comment, implement.
+  // Same as |SetDownsampling|, but can be used on a nontrivial segment.  Used
+  // for compatibility deserialization.
   void SetDownsamplingUnconditionally(
       DownsamplingParameters const& downsampling_parameters);
 
+  // Computes |number_of_dense_points_| based on the start of the dense
+  // timeline.  Used for compatibility deserialization.
   void SetStartOfDenseTimeline(Instant const& t);
 
   // Called by |Append| after appending a point to this segment.  If

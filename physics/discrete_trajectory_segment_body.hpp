@@ -397,6 +397,20 @@ void DiscreteTrajectorySegment<Frame>::ForgetBefore(
 }
 
 template<typename Frame>
+void DiscreteTrajectorySegment<Frame>::SetDownsamplingUnconditionally(
+    DownsamplingParameters const& downsampling_parameters) {
+  downsampling_parameters_ = downsampling_parameters;
+}
+
+template<typename Frame>
+void DiscreteTrajectorySegment<Frame>::SetStartOfDenseTimeline(
+    Instant const& t) {
+  auto const it = find(t);
+  CHECK(it != end()) << "Cannot find time " << t << " in timeline";
+  number_of_dense_points_ = std::distance(it, end());
+}
+
+template<typename Frame>
 absl::Status DiscreteTrajectorySegment<Frame>::DownsampleIfNeeded() {
   ++number_of_dense_points_;
   // Points, hence one more than intervals.
