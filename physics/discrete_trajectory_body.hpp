@@ -486,10 +486,12 @@ typename DiscreteTrajectory<Frame>::Downsampling
 DiscreteTrajectory<Frame>::Downsampling::ReadFromMessage(
     serialization::DiscreteTrajectory::Downsampling const& message,
     Timeline const& timeline) {
-  bool const is_pre_grotendieck_haar = message.has_start_of_dense_timeline();
+  bool const is_pre_haar = message.has_start_of_dense_timeline();
+  LOG_IF(WARNING, is_pre_haar)
+      << "Reading pre-Haar DiscreteTrajectory.Downsampling";
   Downsampling downsampling({message.max_dense_intervals(),
                              Length::ReadFromMessage(message.tolerance())});
-  if (is_pre_grotendieck_haar) {
+  if (is_pre_haar) {
     // No support for forks in legacy saves, so |find| will succeed and ++ is
     // safe.
     auto it = timeline.find(
