@@ -88,11 +88,11 @@ message DiscreteTrajectory {
     // Added in Haar.
     repeated Point dense_timeline = 4;
   }
-  message Litter {
+  message Brood {
     required Point fork_time = 1;
     repeated DiscreteTrajectory trajectories = 2;
   }
-  repeated Litter children = 1;
+  repeated Brood children = 1;
   repeated DiscreteTrajectorySegment.InstantaneousDegreesOfFreedom timeline = 2;
   repeated int32 fork_position = 3;
   // Added in 陈景润.
