@@ -6,15 +6,19 @@
 
 #include "astronomy/time_scales.hpp"
 #include "astronomy/mercury_orbiter.hpp"
+#include "base/array.hpp"
 #include "base/file.hpp"
 #include "base/not_null.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
+#include "base/serialization.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/interface.hpp"
 #include "ksp_plugin/plugin.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "serialization/ksp_plugin.pb.h"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/serialization.hpp"
@@ -30,15 +34,20 @@ using astronomy::date_time::DateTime;
 using astronomy::date_time::operator""_DateTime;
 using base::not_null;
 using base::OFStream;
+using base::ParseFromBytes;
 using base::PullSerializer;
 using base::PushDeserializer;
+using ksp_plugin::Barycentric;
 using ksp_plugin::Plugin;
+using physics::DiscreteTrajectory;
 using quantities::Speed;
 using quantities::si::Kilo;
 using testing_utilities::operator""_⑴;
 using testing_utilities::IsNear;
+using testing_utilities::ReadFromBinaryFile;
 using testing_utilities::ReadLinesFromBase64File;
 using testing_utilities::ReadLinesFromHexadecimalFile;
+using testing_utilities::WriteToBinaryFile;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Eq;
@@ -287,10 +296,8 @@ TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
       R"(P:\Public Mockingbird\Principia\Saves\1119\1119.proto.b64)",
       /*compressor=*/"gipfeli",
       /*decoder=*/"base64");
-  // TODO(phl): Check that we mention a compatibility path here once something
-  // changes.
   EXPECT_THAT(log_warning.string(),
-              Not(HasSubstr("pre-Gröbner")));
+              AllOf(HasSubstr("pre-Haar"), Not(HasSubstr("pre-Gröbner"))));
   auto const& orbiter =
       *plugin->GetVessel("e180ca12-492f-45bf-a194-4c5255aec8a0");
   EXPECT_THAT(orbiter.name(), Eq("Mercury Orbiter 1"));
@@ -348,6 +355,51 @@ TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
   WriteAndReadBack(std::move(plugin));
 }
 
+TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
+  StringLogSink log_warning(google::WARNING);
+  not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
+      R"(P:\Public Mockingbird\Principia\Saves\3136\3136.proto.b64)",
+      /*compressor=*/"gipfeli",
+      /*decoder=*/"base64");
+  // TODO(phl): Check that we mention a compatibility path here once something
+  // changes.
+  EXPECT_THAT(log_warning.string(),
+              Not(HasSubstr("pre-Haar")));
+
+  // The vessel with the longest history.
+  auto const& vessel =
+      *plugin->GetVessel("77ddea45-47ee-48c0-aee9-d55cdb35ffcd");
+  auto& psychohistory =
+      const_cast<DiscreteTrajectory<Barycentric>&>(vessel.psychohistory());
+  auto const history = psychohistory.root();
+  EXPECT_EQ(435'927, history->Size());
+  EXPECT_EQ(435'929, psychohistory.Size());
+
+  // Serialize the history and psychohistory to a temporary file.
+  {
+    serialization::DiscreteTrajectory message;
+    history->WriteToMessage(&message, /*forks=*/{&psychohistory}, /*exact=*/{});
+    auto const serialized_message = base::SerializeAsBytes(message);
+    WriteToBinaryFile(TEMP_DIR / "trajectory_3136.proto.bin",
+                      serialized_message.get());
+  }
+
+  // Deserialize the temporary file to make sure that it's valid.
+  {
+    auto const serialized_message =
+        ReadFromBinaryFile(TEMP_DIR / "trajectory_3136.proto.bin");
+    auto const message =
+        ParseFromBytes<serialization::DiscreteTrajectory>(serialized_message);
+    DiscreteTrajectory<Barycentric>* psychohistory = nullptr;
+    auto const history = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+        message, /*forks=*/{&psychohistory});
+    EXPECT_EQ(435'927, history->Size());
+    EXPECT_EQ(435'929, psychohistory->Size());
+  }
+
+  // Make sure that we can upgrade, save, and reload.
+  WriteAndReadBack(std::move(plugin));
+}
 
 // Use for debugging saves given by users.
 TEST_F(PluginCompatibilityTest, DISABLED_SECULAR_Debug) {
