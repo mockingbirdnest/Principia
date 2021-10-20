@@ -525,21 +525,29 @@ TEST_F(DiscreteTrajectory2Test, SerializationRoundTrip) {
   EXPECT_THAT(message2, EqualsProto(message1));
 }
 
-TEST_F(DiscreteTrajectory2Test, SerializationPreHaarCompatibility) {
+TEST_F(DiscreteTrajectory2Test, SerializationPreΖήνωνCompatibility) {
   StringLogSink log_warning(google::WARNING);
   auto const serialized_message = ReadFromBinaryFile(
       R"(P:\Public Mockingbird\Principia\Saves\3136\trajectory_3136.proto.bin)");  // NOLINT
-  auto const message =
+  auto const message1 =
       ParseFromBytes<serialization::DiscreteTrajectory>(serialized_message);
   DiscreteTrajectory2<World>::SegmentIterator psychohistory;
   auto const history = DiscreteTrajectory2<World>::ReadFromMessage(
-      message, /*tracked=*/{&psychohistory});
+      message1, /*tracked=*/{&psychohistory});
   EXPECT_THAT(log_warning.string(),
               AllOf(HasSubstr("pre-Ζήνων"), Not(HasSubstr("pre-Haar"))));
 
-  // Note that the sizes don't have the same semantics as pre-Haar.
+  // Note that the sizes don't have the same semantics as pre-Haar.  The
+  // history now counts all segments.  The psychohistory has a duplicated point
+  // at the beginning.
   EXPECT_EQ(435'929, history.size());
-  EXPECT_EQ(2, psychohistory->size());
+  EXPECT_EQ(3, psychohistory->size());
+
+  // Serialize the trajectory in the Ζήνων format.
+  serialization::DiscreteTrajectory message2;
+  history.WriteToMessage(&message2,
+                         /*tracked=*/{psychohistory},
+                         /*exact=*/{});
 }
 
 }  // namespace physics

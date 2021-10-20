@@ -134,7 +134,7 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
       DownsamplingParameters& downsampling_parameters,
       Instant& start_of_dense_timeline);
 
-  static void ReadFromPreΖήνωνMessage(
+  static SegmentIterator ReadFromPreΖήνωνMessage(
       serialization::DiscreteTrajectory::Brood const& message,
       std::vector<SegmentIterator*> const& tracked,
       value_type const& fork_point,

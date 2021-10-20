@@ -432,7 +432,8 @@ void DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
 }
 
 template<typename Frame>
-void DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
+DiscreteTrajectorySegmentIterator<Frame>
+DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
     serialization::DiscreteTrajectory::Brood const& message,
     std::vector<SegmentIterator*> const& tracked,
     value_type const& fork_point,
@@ -448,6 +449,8 @@ void DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
   ReadFromPreΖήνωνMessage(message.trajectories(0), tracked, trajectory);
   ++sit;
   sit->SetForkPoint(fork_point);
+
+  return SegmentIterator(trajectory.segments_.get(), sit);
 }
 
 template<typename Frame>
@@ -512,23 +515,23 @@ void DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
 
   // Restore the (single) child as the next segment.
   if (message.children_size() == 1) {
-    ReadFromPreΖήνωνMessage(message.children(0),
-                            tracked,
-                            *sit->rbegin(),
-                            trajectory);
+    auto const child = ReadFromPreΖήνωνMessage(message.children(0),
+                                               tracked,
+                                               *sit->rbegin(),
+                                               trajectory);
+
+    // There were no fork positions prior to Буняковский.
+    bool const has_fork_position = message.fork_position_size() > 0;
+    if (has_fork_position) {
+      CHECK_EQ(1, message.fork_position_size())
+          << "Cannot read trajectory with " << message.fork_position_size()
+          << " fork positions";
+      int const fork_position = message.fork_position(0);
+      *tracked[fork_position] = child;
+    }
   } else if (message.children_size() > 1) {
     LOG(FATAL) << "Cannot read trajectory with " << message.children_size()
                << " children";
-  }
-
-  // There were no fork positions prior to Буняковский.
-  bool const has_fork_position = message.fork_position_size() > 0;
-  if (has_fork_position) {
-    CHECK_EQ(1, message.fork_position_size())
-        << "Cannot read trajectory with " << message.fork_position_size()
-        << " fork positions";
-    int const fork_position = message.fork_position(0);
-    *tracked[fork_position] = self;
   }
 
   //TODO(phl):Left endpoints
