@@ -22,6 +22,7 @@
 #include "serialization/ksp_plugin.pb.h"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/serialization.hpp"
+#include "testing_utilities/string_log_sink.hpp"
 
 namespace principia {
 namespace interface {
@@ -47,6 +48,7 @@ using testing_utilities::IsNear;
 using testing_utilities::ReadFromBinaryFile;
 using testing_utilities::ReadLinesFromBase64File;
 using testing_utilities::ReadLinesFromHexadecimalFile;
+using testing_utilities::StringLogSink;
 using testing_utilities::WriteToBinaryFile;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
@@ -60,43 +62,6 @@ using ::testing::internal::GetCapturedStderr;
 
 const char preferred_compressor[] = "gipfeli";
 const char preferred_encoder[] = "base64";
-
-class StringLogSink : google::LogSink {
- public:
-  explicit StringLogSink(google::LogSeverity const minimal_severity)
-      : minimal_severity_(minimal_severity) {
-    google::AddLogSink(this);
-  }
-
-  ~StringLogSink() {
-    google::RemoveLogSink(this);
-  }
-
-  void send(google::LogSeverity const severity,
-            char const* const full_filename,
-            char const* const base_filename,
-            int const line,
-            tm const* const tm_time,
-            const char* const message,
-            size_t const message_len) override {
-    if (severity < minimal_severity_) {
-      return;
-    }
-    absl::MutexLock lock(&mutex_);
-    absl::StrAppend(
-        &string_,
-        ToString(severity, base_filename, line, tm_time, message, message_len));
-  }
-
-  std::string& string() {
-    return string_;
-  }
-
- private:
-  google::LogSeverity const minimal_severity_;
-  absl::Mutex mutex_;
-  std::string string_ GUARDED_BY(mutex_);
-};
 
 class PluginCompatibilityTest : public testing::Test {
  protected:
