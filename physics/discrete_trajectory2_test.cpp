@@ -536,8 +536,10 @@ TEST_F(DiscreteTrajectory2Test, SerializationPreHaarCompatibility) {
       message, /*tracked=*/{&psychohistory});
   EXPECT_THAT(log_warning.string(),
               AllOf(HasSubstr("pre-Ζήνων"), Not(HasSubstr("pre-Haar"))));
-  EXPECT_EQ(435'927, history.size());
-  EXPECT_EQ(435'929, psychohistory->size());
+
+  // Note that the sizes don't have the same semantics as pre-Haar.
+  EXPECT_EQ(435'929, history.size());
+  EXPECT_EQ(2, psychohistory->size());
 }
 
 }  // namespace physics
