@@ -14,6 +14,7 @@
 #include "testing_utilities/discrete_trajectory_factories.hpp"
 #include "testing_utilities/matchers.hpp"
 #include "testing_utilities/serialization.hpp"
+#include "testing_utilities/string_log_sink.hpp"
 
 namespace principia {
 namespace physics {
@@ -32,6 +33,7 @@ using testing_utilities::Componentwise;
 using testing_utilities::EqualsProto;
 using testing_utilities::NewLinearTrajectoryTimeline;
 using testing_utilities::ReadFromBinaryFile;
+using testing_utilities::StringLogSink;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::HasSubstr;
@@ -524,16 +526,16 @@ TEST_F(DiscreteTrajectory2Test, SerializationRoundTrip) {
 }
 
 TEST_F(DiscreteTrajectory2Test, SerializationPreHaarCompatibility) {
-  //StringLogSink log_warning(google::WARNING);
+  StringLogSink log_warning(google::WARNING);
   auto const serialized_message = ReadFromBinaryFile(
-      R"(P:\Public Mockingbird\Principia\Saves\3136\trajectory_3136.proto.bin)");
-  //EXPECT_THAT(log_warning.string(),
-  //            AllOf(HasSubstr("pre-Ζήνων"), Not(HasSubstr("pre-Haar"))));
+      R"(P:\Public Mockingbird\Principia\Saves\3136\trajectory_3136.proto.bin)");  // NOLINT
   auto const message =
       ParseFromBytes<serialization::DiscreteTrajectory>(serialized_message);
   DiscreteTrajectory2<World>::SegmentIterator psychohistory;
   auto const history = DiscreteTrajectory2<World>::ReadFromMessage(
       message, /*tracked=*/{&psychohistory});
+  EXPECT_THAT(log_warning.string(),
+              AllOf(HasSubstr("pre-Ζήνων"), Not(HasSubstr("pre-Haar"))));
   EXPECT_EQ(435'927, history.size());
   EXPECT_EQ(435'929, psychohistory->size());
 }

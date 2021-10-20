@@ -337,5 +337,8 @@
     <ClCompile Include="discrete_trajectory2_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\testing_utilities\string_log_sink.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
