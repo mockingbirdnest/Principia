@@ -232,8 +232,8 @@ TEST_F(DiscreteTrajectorySegmentTest, Downsampling) {
   auto const downsampled_circle_segments = MakeSegments(1);
   auto& circle = *circle_segments->begin();
   auto& downsampled_circle = *downsampled_circle_segments->begin();
-  SetDownsampling({.max_dense_intervals = 50, .tolerance = 1 * Milli(Metre)},
-                  downsampled_circle);
+  downsampled_circle.SetDownsampling(
+      {.max_dense_intervals = 50, .tolerance = 1 * Milli(Metre)});
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
   Time const Δt = 10 * Milli(Second);

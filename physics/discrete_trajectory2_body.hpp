@@ -326,6 +326,7 @@ DiscreteTrajectory2<Frame>::ReadFromMessage(
 
   bool const is_pre_ζήνων = message.segment_size() == 0;
   if (is_pre_ζήνων) {
+    LOG_IF(WARNING, is_pre_ζήνων) << "Reading pre-Ζήνων DiscreteTrajectory";
     ReadFromPreΖήνωνMessage(message, tracked, trajectory);
     return trajectory;
   }

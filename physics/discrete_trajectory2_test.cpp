@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "base/serialization.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
@@ -12,10 +13,12 @@
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/discrete_trajectory_factories.hpp"
 #include "testing_utilities/matchers.hpp"
+#include "testing_utilities/serialization.hpp"
 
 namespace principia {
 namespace physics {
 
+using base::ParseFromBytes;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Handedness;
@@ -28,7 +31,11 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::EqualsProto;
 using testing_utilities::NewLinearTrajectoryTimeline;
+using testing_utilities::ReadFromBinaryFile;
+using ::testing::AllOf;
 using ::testing::ElementsAre;
+using ::testing::HasSubstr;
+using ::testing::Not;
 
 class DiscreteTrajectory2Test : public ::testing::Test {
  protected:
@@ -514,6 +521,21 @@ TEST_F(DiscreteTrajectory2Test, SerializationRoundTrip) {
        deserialized_trajectory.lower_bound(t0_ + 3 * Second)});
 
   EXPECT_THAT(message2, EqualsProto(message1));
+}
+
+TEST_F(DiscreteTrajectory2Test, SerializationPreHaarCompatibility) {
+  //StringLogSink log_warning(google::WARNING);
+  auto const serialized_message = ReadFromBinaryFile(
+      R"(P:\Public Mockingbird\Principia\Saves\3136\trajectory_3136.proto.bin)");
+  //EXPECT_THAT(log_warning.string(),
+  //            AllOf(HasSubstr("pre-Ζήνων"), Not(HasSubstr("pre-Haar"))));
+  auto const message =
+      ParseFromBytes<serialization::DiscreteTrajectory>(serialized_message);
+  DiscreteTrajectory2<World>::SegmentIterator psychohistory;
+  auto const history = DiscreteTrajectory2<World>::ReadFromMessage(
+      message, /*tracked=*/{&psychohistory});
+  EXPECT_EQ(435'927, history.size());
+  EXPECT_EQ(435'929, psychohistory->size());
 }
 
 }  // namespace physics
