@@ -50,6 +50,7 @@
     <ClCompile Include="..\numerics\elliptic_functions.cpp" />
     <ClCompile Include="..\numerics\elliptic_integrals.cpp" />
     <ClCompile Include="..\physics\protector.cpp" />
+    <ClCompile Include="..\testing_utilities\string_log_sink.cpp" />
     <ClCompile Include="benchmark.cpp" />
     <ClCompile Include="celestial_test.cpp" />
     <ClCompile Include="equator_relevance_threshold_test.cpp" />

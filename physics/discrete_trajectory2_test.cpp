@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "astronomy/time_scales.hpp"
 #include "base/serialization.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
@@ -19,6 +20,7 @@
 namespace principia {
 namespace physics {
 
+using astronomy::operator""_TT;
 using base::ParseFromBytes;
 using geometry::Displacement;
 using geometry::Frame;
@@ -36,6 +38,7 @@ using testing_utilities::ReadFromBinaryFile;
 using testing_utilities::StringLogSink;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
+using ::testing::Eq;
 using ::testing::HasSubstr;
 using ::testing::Not;
 
@@ -542,6 +545,28 @@ TEST_F(DiscreteTrajectory2Test, SerializationPreΖήνωνCompatibility) {
   // at the beginning.
   EXPECT_EQ(435'929, history.size());
   EXPECT_EQ(3, psychohistory->size());
+
+  // Evaluate a point in each of the two segments.
+  EXPECT_THAT(
+      history.EvaluateDegreesOfFreedom("1957-10-04T19:28:34"_TT),
+      Eq(DegreesOfFreedom<World>(
+          World::origin +
+              Displacement<World>({+1.47513683827317657e+11 * Metre,
+                                   +2.88696086355042419e+10 * Metre,
+                                   +1.24740082262952404e+10 * Metre}),
+          Velocity<World>({-6.28845231836519179e+03 * (Metre / Second),
+                           +2.34046542233168329e+04 * (Metre / Second),
+                           +4.64410011408655919e+03 * (Metre / Second)}))));
+  EXPECT_THAT(
+      psychohistory->EvaluateDegreesOfFreedom("1958-10-07T09:38:30"_TT),
+      Eq(DegreesOfFreedom<World>(
+          World::origin +
+              Displacement<World>({+1.45814173315801941e+11 * Metre,
+                                   +3.45409490426372147e+10 * Metre,
+                                   +1.49445864962450924e+10 * Metre}),
+          Velocity<World>({-8.70708379504568074e+03 * (Metre / Second),
+                           +2.61488327506437054e+04 * (Metre / Second),
+                           +1.90319283138508908e+04 * (Metre / Second)}))));
 
   // Serialize the trajectory in the Ζήνων format.
   serialization::DiscreteTrajectory message2;

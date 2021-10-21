@@ -340,6 +340,28 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
   EXPECT_EQ(435'927, history->Size());
   EXPECT_EQ(435'929, psychohistory.Size());
 
+  // Evaluate a point in each of the two segments.
+  EXPECT_THAT(history->EvaluateDegreesOfFreedom("1957-10-04T19:28:34"_TT),
+              Eq(DegreesOfFreedom<Barycentric>(
+                  Barycentric::origin + Displacement<Barycentric>(
+                                            {+1.47513683827317657e+11 * Metre,
+                                             +2.88696086355042419e+10 * Metre,
+                                             +1.24740082262952404e+10 * Metre}),
+                  Velocity<Barycentric>(
+                      {-6.28845231836519179e+03 * (Metre / Second),
+                       +2.34046542233168329e+04 * (Metre / Second),
+                       +4.64410011408655919e+03 * (Metre / Second)}))));
+  EXPECT_THAT(psychohistory.EvaluateDegreesOfFreedom("1958-10-07T09:38:30"_TT),
+              Eq(DegreesOfFreedom<Barycentric>(
+                  Barycentric::origin + Displacement<Barycentric>(
+                                            {+1.45814173315801941e+11 * Metre,
+                                             +3.45409490426372147e+10 * Metre,
+                                             +1.49445864962450924e+10 * Metre}),
+                  Velocity<Barycentric>(
+                      {-8.70708379504568074e+03 * (Metre / Second),
+                       +2.61488327506437054e+04 * (Metre / Second),
+                       +1.90319283138508908e+04 * (Metre / Second)}))));
+
   // Serialize the history and psychohistory to a temporary file.
   {
     serialization::DiscreteTrajectory message;

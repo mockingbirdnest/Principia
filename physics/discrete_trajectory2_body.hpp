@@ -534,7 +534,8 @@ void DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
                << " children";
   }
 
-  //TODO(phl):Left endpoints
+  // Finally, set the time-to-segment map.
+  trajectory.segment_by_left_endpoint_.emplace(sit->begin()->first, sit);
 }
 
 }  // namespace internal_discrete_trajectory2
