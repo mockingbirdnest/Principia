@@ -149,10 +149,12 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
       value_type const& fork_point,
       DiscreteTrajectory2& trajectory);
 
-  // Reads a pre-Ζήνων trajectory, updating the tracked segments as needed.
+  // Reads a pre-Ζήνων trajectory, updating the tracked segments as needed.  If
+  // this is not the root of the trajectory, fork_point is set.
   static void ReadFromPreΖήνωνMessage(
       serialization::DiscreteTrajectory const& message,
       std::vector<SegmentIterator*> const& tracked,
+      std::optional<value_type> const& fork_point,
       DiscreteTrajectory2& trajectory);
 
   // We need a level of indirection here to make sure that the pointer to

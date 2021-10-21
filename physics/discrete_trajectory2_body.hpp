@@ -329,7 +329,8 @@ DiscreteTrajectory2<Frame>::ReadFromMessage(
   bool const is_pre_ζήνων = message.segment_size() == 0;
   if (is_pre_ζήνων) {
     LOG_IF(WARNING, is_pre_ζήνων) << "Reading pre-Ζήνων DiscreteTrajectory";
-    ReadFromPreΖήνωνMessage(message, tracked, trajectory);
+    ReadFromPreΖήνωνMessage(
+        message, tracked, /*fork_point=*/std::nullopt, trajectory);
     CHECK_OK(trajectory.IsConsistent());
     return trajectory;
   }
@@ -501,12 +502,12 @@ DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
   CHECK_EQ(1, message.trajectories_size())
       << "Cannot read trajectory with multiple forks";
 
-  // Keep an iterator to the last segment to be able to set the replicated
-  // point.
+  // Keep an iterator to the last segment to be able to return a segment
+  // iterator.
   auto sit = --trajectory.segments_->end();
-  ReadFromPreΖήνωνMessage(message.trajectories(0), tracked, trajectory);
+  ReadFromPreΖήνωνMessage(
+      message.trajectories(0), tracked, fork_point, trajectory);
   ++sit;
-  sit->SetForkPoint(fork_point);
 
   return SegmentIterator(trajectory.segments_.get(), sit);
 }
@@ -515,6 +516,7 @@ template<typename Frame>
 void DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
     serialization::DiscreteTrajectory const& message,
     std::vector<SegmentIterator*> const& tracked,
+    std::optional<value_type> const& fork_point,
     DiscreteTrajectory2& trajectory) {
   bool const is_pre_frobenius = !message.has_zfp();
   LOG_IF(WARNING, is_pre_frobenius)
@@ -571,12 +573,18 @@ void DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
     }
   }
 
+  // Create the duplicated point if needed.
+  if (fork_point.has_value()) {
+    sit->SetForkPoint(fork_point.value());
+  }
+
   // Restore the (single) child as the next segment.
   if (message.children_size() == 1) {
-    auto const child = ReadFromPreΖήνωνMessage(message.children(0),
-                                               tracked,
-                                               *sit->rbegin(),
-                                               trajectory);
+    auto const child =
+        ReadFromPreΖήνωνMessage(message.children(0),
+                                tracked,
+                                /*fork_point=*/*sit->rbegin(),
+                                trajectory);
 
     // There were no fork positions prior to Буняковский.
     bool const has_fork_position = message.fork_position_size() > 0;
