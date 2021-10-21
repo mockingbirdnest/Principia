@@ -5,7 +5,9 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/strings/str_cat.h"
 #include "astronomy/epoch.hpp"
+#include "base/status_utilities.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -328,6 +330,7 @@ DiscreteTrajectory2<Frame>::ReadFromMessage(
   if (is_pre_ζήνων) {
     LOG_IF(WARNING, is_pre_ζήνων) << "Reading pre-Ζήνων DiscreteTrajectory";
     ReadFromPreΖήνωνMessage(message, tracked, trajectory);
+    CHECK_OK(trajectory.IsConsistent());
     return trajectory;
   }
 
@@ -362,7 +365,7 @@ DiscreteTrajectory2<Frame>::ReadFromMessage(
     ++sit;
   }
 
-  // TODO(phl): Check data structures consistency here.
+  CHECK_OK(trajectory.IsConsistent());
   return trajectory;
 }
 
@@ -386,6 +389,61 @@ DiscreteTrajectory2<Frame>::FindSegment(
   auto it = segment_by_left_endpoint_.upper_bound(t);
   CHECK(it != segment_by_left_endpoint_.begin()) << "No segment covering " << t;
   return (--it)->second;
+}
+
+template<typename Frame>
+absl::Status DiscreteTrajectory2<Frame>::IsConsistent() const {
+  if (segments_->size() != segment_by_left_endpoint_.size()) {
+    return absl::InternalError(absl::StrCat("Size mismatch ",
+                                            segments_->size(),
+                                            " and ",
+                                            segment_by_left_endpoint_.size()));
+  }
+  {
+    int i = 0;
+    auto it1 = segments_->cbegin();
+    auto it2 = segment_by_left_endpoint_.cbegin();
+    for (; it1 != segments_->cend(); ++it1, ++it2, ++i) {
+      if (it1->begin()->first != it2->first) {
+        return absl::InternalError(
+            absl::StrCat("Times mismatch ",
+                         DebugString(it1->begin()->first),
+                         " and ",
+                         DebugString(it2->first),
+                         " for segment #",
+                         i));
+      } else if (it1 != it2->second) {
+        return absl::InternalError(absl::StrCat("Iterator mismatch ",
+                                                " for segment #",
+                                                i));
+      }
+    }
+  }
+  {
+    int i = 0;
+    for (auto it = segments_->cbegin();
+         it != std::prev(segments_->cend());
+         ++it, ++i) {
+      if (it->rbegin()->first != std::next(it)->begin()->first) {
+        return absl::InternalError(
+            absl::StrCat("Duplicated time mismatch ",
+                         DebugString(it->rbegin()->first),
+                         " and ",
+                         DebugString(std::next(it)->begin()->first),
+                         " for segment #",
+                         i));
+      } else if (it->rbegin()->second != std::next(it)->begin()->second) {
+        return absl::InternalError(
+            absl::StrCat("Duplicated degrees of freedom mismatch ",
+                         DebugString(it->rbegin()->second),
+                         " and ",
+                         DebugString(std::next(it)->begin()->second),
+                         " for segment #",
+                         i));
+      }
+    }
+  }
+  return absl::OkStatus();
 }
 
 template<typename Frame>

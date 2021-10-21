@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "absl/container/btree_map.h"
+#include "absl/status/status.h"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "base/tags.hpp"
@@ -118,6 +119,9 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
 
   typename Segments::iterator FindSegment(Instant const& t);
   typename Segments::const_iterator FindSegment(Instant const& t) const;
+
+  //TODO(phl): comment.
+  absl::Status IsConsistent() const;
 
   // Updates the segments self-pointers and the time-to-segment mapping after
   // segments have been spliced from |from| to |to|.  The iterators indicate the
