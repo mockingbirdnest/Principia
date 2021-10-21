@@ -128,18 +128,24 @@ class DiscreteTrajectory2 : public Trajectory<Frame> {
       typename Segments::iterator to_segments_begin,
       std::reverse_iterator<typename Segments::iterator> to_segments_rend);
 
-  //TODO(phl):comment
+  // Reads a pre-Ζήνων downsampling message and return the downsampling
+  // parameters and the start of the dense timeline.  The latter will have to be
+  // converted to a number of points based on the deserialized timeline.
   static void ReadFromPreΖήνωνMessage(
       serialization::DiscreteTrajectory::Downsampling const& message,
       DownsamplingParameters& downsampling_parameters,
       Instant& start_of_dense_timeline);
 
+  // Reads a set of pre-Ζήνων children.  Checks that there is only one child,
+  // and that it is at the end of the preceding segment.  Append a segment to
+  // the trajectory and returns an iterator to that segment.
   static SegmentIterator ReadFromPreΖήνωνMessage(
       serialization::DiscreteTrajectory::Brood const& message,
       std::vector<SegmentIterator*> const& tracked,
       value_type const& fork_point,
       DiscreteTrajectory2& trajectory);
 
+  // Reads a pre-Ζήνων trajectory, updating the tracked segments as needed.
   static void ReadFromPreΖήνωνMessage(
       serialization::DiscreteTrajectory const& message,
       std::vector<SegmentIterator*> const& tracked,
