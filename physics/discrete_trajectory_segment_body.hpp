@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/container/btree_set.h"
 #include "astronomy/epoch.hpp"
 #include "base/zfp_compressor.hpp"
 #include "geometry/named_quantities.hpp"
@@ -161,6 +162,21 @@ DiscreteTrajectorySegment<Frame>::EvaluateDegreesOfFreedom(
 }
 
 template<typename Frame>
+void DiscreteTrajectorySegment<Frame>::SetDownsampling(
+    DownsamplingParameters const& downsampling_parameters) {
+  // The semantics of changing downsampling on a segment that has 2 points or
+  // more are unclear.  Let's not do that.
+  CHECK_LE(timeline_.size(), 1);
+  downsampling_parameters_ = downsampling_parameters;
+  number_of_dense_points_ = timeline_.empty() ? 0 : 1;
+}
+
+template<typename Frame>
+void DiscreteTrajectorySegment<Frame>::ClearDownsampling() {
+  downsampling_parameters_ = std::nullopt;
+}
+
+template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::WriteToMessage(
     not_null<serialization::DiscreteTrajectorySegment*> message,
     std::vector<iterator> const& exact) const {
@@ -174,8 +190,24 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
   }
   message->set_number_of_dense_points(number_of_dense_points_);
 
+  // Convert the |exact| vector into a set, and add the extremities.  This
+  // ensures that we don't have redundancies.  The set is sorted by time to
+  // guarantee that serialization is reproducible.
+  auto time_comparator = [](value_type const* const left,
+                            value_type const* const right) {
+    return left->first < right->first;
+  };
+  absl::btree_set<value_type const*,
+                  decltype(time_comparator)> exact_set(time_comparator);
   for (auto const it : exact) {
-    auto const& [t, degrees_of_freedom] = *it;
+    exact_set.insert(&*it);
+  }
+  exact_set.insert(&*timeline_.cbegin());
+  exact_set.insert(&*timeline_.crbegin());
+
+  // Serialize the exact points.
+  for (auto const* ptr : exact_set) {
+    auto const& [t, degrees_of_freedom] = *ptr;
     auto* const serialized_exact = message->add_exact();
     t.WriteToMessage(serialized_exact->mutable_instant());
     degrees_of_freedom.WriteToMessage(
@@ -257,7 +289,7 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
   Timeline exact;
   for (auto const& instantaneous_degrees_of_freedom : message.exact()) {
     exact.emplace_hint(
-        exact.end(),
+        exact.cend(),
         Instant::ReadFromMessage(instantaneous_degrees_of_freedom.instant()),
         DegreesOfFreedom<Frame>::ReadFromMessage(
             instantaneous_degrees_of_freedom.degrees_of_freedom()));
@@ -381,18 +413,25 @@ void DiscreteTrajectorySegment<Frame>::ForgetBefore(
 }
 
 template<typename Frame>
-void DiscreteTrajectorySegment<Frame>::SetDownsampling(
+void DiscreteTrajectorySegment<Frame>::SetDownsamplingUnconditionally(
     DownsamplingParameters const& downsampling_parameters) {
-  // The semantics of changing downsampling on a segment that has 2 points or
-  // more are unclear.  Let's not do that.
-  CHECK_LE(timeline_.size(), 1);
   downsampling_parameters_ = downsampling_parameters;
-  number_of_dense_points_ = timeline_.empty() ? 0 : 1;
 }
 
 template<typename Frame>
-void DiscreteTrajectorySegment<Frame>::ClearDownsampling() {
-  downsampling_parameters_ = std::nullopt;
+void DiscreteTrajectorySegment<Frame>::SetStartOfDenseTimeline(
+    Instant const& t) {
+  auto const it = find(t);
+  CHECK(it != end()) << "Cannot find time " << t << " in timeline";
+  number_of_dense_points_ = std::distance(it, end());
+}
+
+template<typename Frame>
+void DiscreteTrajectorySegment<Frame>::SetForkPoint(value_type const& point) {
+  auto const it =
+      timeline_.emplace_hint(timeline_.begin(), point.first, point.second);
+  CHECK(it == timeline_.begin())
+      << "Inconsistent fork point at time " << point.first;
 }
 
 template<typename Frame>

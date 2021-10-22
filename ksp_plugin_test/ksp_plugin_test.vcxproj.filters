@@ -197,6 +197,9 @@
     <ClCompile Include="plugin_compatibility_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\testing_utilities\string_log_sink.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mock_plugin.hpp">

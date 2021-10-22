@@ -5,7 +5,10 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/strings/str_cat.h"
 #include "astronomy/epoch.hpp"
+#include "base/status_utilities.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace physics {
@@ -14,6 +17,7 @@ namespace internal_discrete_trajectory2 {
 using astronomy::InfinitePast;
 using base::make_not_null_unique;
 using base::uninitialized;
+using quantities::Length;
 
 template<typename Frame>
 DiscreteTrajectory2<Frame>::DiscreteTrajectory2()
@@ -324,12 +328,15 @@ DiscreteTrajectory2<Frame>::ReadFromMessage(
 
   bool const is_pre_ζήνων = message.segment_size() == 0;
   if (is_pre_ζήνων) {
-    // TODO(phl): Implement.
-    LOG(FATAL) << "Pre-Ζήνων compatibility NYI";
+    LOG_IF(WARNING, is_pre_ζήνων) << "Reading pre-Ζήνων DiscreteTrajectory";
+    ReadFromPreΖήνωνMessage(
+        message, tracked, /*fork_point=*/std::nullopt, trajectory);
+    CHECK_OK(trajectory.ValidateConsistency());
+    return trajectory;
   }
 
-  // First restore the segments themselves.  This vector will be used to restore
-  // the tracked segments.
+  // First restore the segments themselves.  |segment_iterators| will be used to
+  // restore the tracked segments.
   std::vector<SegmentIterator> segment_iterators;
   segment_iterators.reserve(message.segment_size());
   for (auto const& serialized_segment : message.segment()) {
@@ -359,6 +366,7 @@ DiscreteTrajectory2<Frame>::ReadFromMessage(
     ++sit;
   }
 
+  CHECK_OK(trajectory.ValidateConsistency());
   return trajectory;
 }
 
@@ -385,6 +393,66 @@ DiscreteTrajectory2<Frame>::FindSegment(
 }
 
 template<typename Frame>
+absl::Status DiscreteTrajectory2<Frame>::ValidateConsistency() const {
+  if (segments_->size() != segment_by_left_endpoint_.size()) {
+    return absl::InternalError(absl::StrCat("Size mismatch ",
+                                            segments_->size(),
+                                            " and ",
+                                            segment_by_left_endpoint_.size()));
+  }
+  {
+    int i = 0;
+    auto it1 = segments_->cbegin();
+    auto it2 = segment_by_left_endpoint_.cbegin();
+    for (; it1 != segments_->cend(); ++it1, ++it2, ++i) {
+      if (it1->begin()->first != it2->first) {
+        return absl::InternalError(
+            absl::StrCat("Times mismatch ",
+                         DebugString(it1->begin()->first),
+                         " and ",
+                         DebugString(it2->first),
+                         " for segment #",
+                         i));
+      } else if (it1 != it2->second) {
+        return absl::InternalError(absl::StrCat("Iterator mismatch ",
+                                                " for segment #",
+                                                i));
+      }
+    }
+  }
+  {
+    int i = 0;
+    for (auto sit = segments_->cbegin();
+         sit != std::prev(segments_->cend());
+         ++sit, ++i) {
+      // Great care is required here because the DiscreteTrajectoryIterator will
+      // "helpfully" paper over differences in degrees of freedom as long as the
+      // times match.  We must look at the endpoints of the timeline explicitly.
+      auto const timeline_rbegin = --sit->timeline_end();
+      auto const timeline_begin = std::next(sit)->timeline_begin();
+      if (timeline_rbegin->first != timeline_begin->first) {
+        return absl::InternalError(
+            absl::StrCat("Duplicated time mismatch ",
+                         DebugString(timeline_rbegin->first),
+                         " and ",
+                         DebugString(timeline_begin->first),
+                         " for segment #",
+                         i));
+      } else if (timeline_rbegin->second != timeline_begin->second) {
+        return absl::InternalError(
+            absl::StrCat("Duplicated degrees of freedom mismatch ",
+                         DebugString(timeline_rbegin->second),
+                         " and ",
+                         DebugString(timeline_begin->second),
+                         " for segment #",
+                         i));
+      }
+    }
+  }
+  return absl::OkStatus();
+}
+
+template<typename Frame>
 void DiscreteTrajectory2<Frame>::AdjustAfterSplicing(
     DiscreteTrajectory2& from,
     DiscreteTrajectory2& to,
@@ -404,6 +472,141 @@ void DiscreteTrajectory2<Frame>::AdjustAfterSplicing(
   for (auto sit = to_segments_begin; sit != to.segments_->end(); ++sit) {
     sit->SetSelf(SegmentIterator(to.segments_.get(), sit));
   }
+}
+
+template<typename Frame>
+void DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
+    serialization::DiscreteTrajectory::Downsampling const& message,
+    DownsamplingParameters& downsampling_parameters,
+    Instant& start_of_dense_timeline) {
+  bool const is_pre_haar = message.has_start_of_dense_timeline();
+  LOG_IF(WARNING, is_pre_haar)
+      << "Reading pre-Haar DiscreteTrajectory.Downsampling";
+
+  downsampling_parameters = {
+      .max_dense_intervals = message.max_dense_intervals(),
+      .tolerance = Length::ReadFromMessage(message.tolerance())};
+  if (is_pre_haar) {
+    start_of_dense_timeline =
+        Instant::ReadFromMessage(message.start_of_dense_timeline());
+  } else {
+    start_of_dense_timeline =
+        Instant::ReadFromMessage(message.dense_timeline(0));
+  }
+}
+
+template<typename Frame>
+DiscreteTrajectorySegmentIterator<Frame>
+DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
+    serialization::DiscreteTrajectory::Brood const& message,
+    std::vector<SegmentIterator*> const& tracked,
+    value_type const& fork_point,
+    DiscreteTrajectory2& trajectory) {
+  CHECK_EQ(fork_point.first, Instant::ReadFromMessage(message.fork_time()))
+      << "Cannot read trajectory with a fork not at end of segment";
+  CHECK_EQ(1, message.trajectories_size())
+      << "Cannot read trajectory with multiple forks";
+
+  // Keep an iterator to the last segment to be able to return a segment
+  // iterator.
+  auto sit = --trajectory.segments_->end();
+  ReadFromPreΖήνωνMessage(
+      message.trajectories(0), tracked, fork_point, trajectory);
+  ++sit;
+
+  return SegmentIterator(trajectory.segments_.get(), sit);
+}
+
+template<typename Frame>
+void DiscreteTrajectory2<Frame>::ReadFromPreΖήνωνMessage(
+    serialization::DiscreteTrajectory const& message,
+    std::vector<SegmentIterator*> const& tracked,
+    std::optional<value_type> const& fork_point,
+    DiscreteTrajectory2& trajectory) {
+  bool const is_pre_frobenius = !message.has_zfp();
+  LOG_IF(WARNING, is_pre_frobenius)
+      << "Reading pre-Frobenius DiscreteTrajectory";
+
+  trajectory.segments_->emplace_back();
+  auto const sit = --trajectory.segments_->end();
+  auto const self = SegmentIterator(trajectory.segments_.get(), sit);
+  if (is_pre_frobenius) {
+    // Pre-Frobenius saves don't use ZFP so we reconstruct them by appending
+    // points to the segment.  Note that this must happens before restoring the
+    // downsampling parameters to avoid re-downsampling.
+    *sit = DiscreteTrajectorySegment<Frame>(self);
+    for (auto const& instantaneous_dof : message.timeline()) {
+      sit->Append(Instant::ReadFromMessage(instantaneous_dof.instant()),
+                  DegreesOfFreedom<Frame>::ReadFromMessage(
+                      instantaneous_dof.degrees_of_freedom()));
+    }
+    if (message.has_downsampling()) {
+      DownsamplingParameters downsampling_parameters;
+      Instant start_of_dense_timeline;
+      ReadFromPreΖήνωνMessage(message.downsampling(),
+                              downsampling_parameters,
+                              start_of_dense_timeline);
+      sit->SetDownsamplingUnconditionally(downsampling_parameters);
+      sit->SetStartOfDenseTimeline(start_of_dense_timeline);
+    }
+  } else {
+    // Starting with Frobenius we use ZFP so the easiest is to build a
+    // serialized segment from the fields of the legacy message and read from
+    // that serialized segment.  Note that restoring the number of dense points
+    // can only happen once we have reconstructed the timeline.
+    serialization::DiscreteTrajectorySegment serialized_segment;
+    *serialized_segment.mutable_zfp() = message.zfp();
+    *serialized_segment.mutable_exact() = message.exact();
+
+    DownsamplingParameters downsampling_parameters;
+    Instant start_of_dense_timeline;
+    if (message.has_downsampling()) {
+      ReadFromPreΖήνωνMessage(message.downsampling(),
+                              downsampling_parameters,
+                              start_of_dense_timeline);
+      auto* const serialized_downsampling_parameters =
+          serialized_segment.mutable_downsampling_parameters();
+      serialized_downsampling_parameters->set_max_dense_intervals(
+          downsampling_parameters.max_dense_intervals);
+      downsampling_parameters.tolerance.WriteToMessage(
+          serialized_downsampling_parameters->mutable_tolerance());
+    }
+    *sit = DiscreteTrajectorySegment<Frame>::ReadFromMessage(serialized_segment,
+                                                             self);
+    if (message.has_downsampling()) {
+      sit->SetStartOfDenseTimeline(start_of_dense_timeline);
+    }
+  }
+
+  // Create the duplicated point if needed.
+  if (fork_point.has_value()) {
+    sit->SetForkPoint(fork_point.value());
+  }
+
+  // Restore the (single) child as the next segment.
+  if (message.children_size() == 1) {
+    auto const child =
+        ReadFromPreΖήνωνMessage(message.children(0),
+                                tracked,
+                                /*fork_point=*/*sit->rbegin(),
+                                trajectory);
+
+    // There were no fork positions prior to Буняковский.
+    bool const has_fork_position = message.fork_position_size() > 0;
+    if (has_fork_position) {
+      CHECK_EQ(1, message.fork_position_size())
+          << "Cannot read trajectory with " << message.fork_position_size()
+          << " fork positions";
+      int const fork_position = message.fork_position(0);
+      *tracked[fork_position] = child;
+    }
+  } else if (message.children_size() > 1) {
+    LOG(FATAL) << "Cannot read trajectory with " << message.children_size()
+               << " children";
+  }
+
+  // Finally, set the time-to-segment map.
+  trajectory.segment_by_left_endpoint_.emplace(sit->begin()->first, sit);
 }
 
 }  // namespace internal_discrete_trajectory2

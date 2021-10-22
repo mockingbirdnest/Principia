@@ -1,34 +1,63 @@
 ﻿#include "physics/discrete_trajectory2.hpp"
 
+#include <string>
 #include <vector>
 
+#include "astronomy/time_scales.hpp"
+#include "base/serialization.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/discrete_trajectory_factories.hpp"
+#include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
+#include "testing_utilities/serialization.hpp"
+#include "testing_utilities/string_log_sink.hpp"
 
 namespace principia {
 namespace physics {
 
+using astronomy::operator""_TT;
+using base::ParseFromBytes;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Handedness;
 using geometry::Inertial;
 using geometry::Instant;
 using geometry::Velocity;
+using quantities::AngularFrequency;
+using quantities::Length;
+using quantities::Time;
 using quantities::si::Metre;
+using quantities::si::Micro;
+using quantities::si::Milli;
+using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::operator""_⑴;
+using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::AlmostEquals;
+using testing_utilities::AppendTrajectoryTimeline;
 using testing_utilities::Componentwise;
 using testing_utilities::EqualsProto;
+using testing_utilities::IsNear;
+using testing_utilities::NewCircularTrajectoryTimeline;
 using testing_utilities::NewLinearTrajectoryTimeline;
+using testing_utilities::ReadFromBinaryFile;
+using testing_utilities::StringLogSink;
+using ::testing::AllOf;
 using ::testing::ElementsAre;
+using ::testing::Eq;
+using ::testing::HasSubstr;
+using ::testing::Not;
 
 class DiscreteTrajectory2Test : public ::testing::Test {
  protected:
@@ -514,6 +543,112 @@ TEST_F(DiscreteTrajectory2Test, SerializationRoundTrip) {
        deserialized_trajectory.lower_bound(t0_ + 3 * Second)});
 
   EXPECT_THAT(message2, EqualsProto(message1));
+}
+
+TEST_F(DiscreteTrajectory2Test, SerializationExactEndpoints) {
+  DiscreteTrajectory2<World> trajectory;
+  AngularFrequency const ω = 3 * Radian / Second;
+  Length const r = 2 * Metre;
+  Time const Δt = 1.0 / 3.0 * Milli(Second);
+  Instant const t1 = t0_;
+  Instant const t2 = t0_ + 1000.0 / 7.0 * Second;
+  Instant const t3 = t0_ + 2000.0 / 11.0 * Second;
+  // Downsampling is required for ZFP compression.
+  DiscreteTrajectorySegment<World>::DownsamplingParameters const
+      downsampling_parameters{.max_dense_intervals = 100,
+                              .tolerance = 5 * Milli(Metre)};
+
+  auto sit = trajectory.segments().begin();
+  sit->SetDownsampling(downsampling_parameters);
+  AppendTrajectoryTimeline(
+      NewCircularTrajectoryTimeline<World>(ω, r, Δt, t1, t2),
+      trajectory);
+  sit = trajectory.NewSegment();
+  sit->SetDownsampling(downsampling_parameters);
+  AppendTrajectoryTimeline(
+      NewCircularTrajectoryTimeline<World>(2 * ω, 2 * r, Δt, t2, t3),
+      trajectory);
+
+  auto const degrees_of_freedom1 =
+      trajectory.EvaluateDegreesOfFreedom(t1 + 100 * Second);
+  auto const degrees_of_freedom2 =
+      trajectory.EvaluateDegreesOfFreedom(t2 + 20 * Second);
+
+  serialization::DiscreteTrajectory message;
+  trajectory.WriteToMessage(&message, /*tracked=*/{}, /*exact=*/{});
+
+  // Deserialization would fail if the endpoints were nudged by ZFP compression.
+  auto const deserialized_trajectory =
+      DiscreteTrajectory2<World>::ReadFromMessage(message, /*tracked=*/{});
+
+  auto const deserialized_degrees_of_freedom1 =
+      deserialized_trajectory.EvaluateDegreesOfFreedom(t1 + 100 * Second);
+  auto const deserialized_degrees_of_freedom2 =
+      deserialized_trajectory.EvaluateDegreesOfFreedom(t2 + 20 * Second);
+
+  // These checks verify that ZFP compression actually happened (so we observe
+  // small errors on the degrees of freedom).
+  EXPECT_THAT(
+      (deserialized_degrees_of_freedom1.position() - World::origin).Norm(),
+      AbsoluteErrorFrom((degrees_of_freedom1.position() - World::origin).Norm(),
+                        IsNear(0.24_⑴*Milli(Metre))));
+  EXPECT_THAT(deserialized_degrees_of_freedom1.velocity().Norm(),
+              AbsoluteErrorFrom(degrees_of_freedom1.velocity().Norm(),
+                                IsNear(1.5_⑴ * Micro(Metre) / Second)));
+  EXPECT_THAT(
+      (deserialized_degrees_of_freedom2.position() - World::origin).Norm(),
+      AbsoluteErrorFrom((degrees_of_freedom2.position() - World::origin).Norm(),
+                        IsNear(0.16_⑴*Milli(Metre))));
+  EXPECT_THAT(deserialized_degrees_of_freedom2.velocity().Norm(),
+              AbsoluteErrorFrom(degrees_of_freedom2.velocity().Norm(),
+                                IsNear(0.39_⑴ * Metre / Second)));
+}
+
+TEST_F(DiscreteTrajectory2Test, DISABLED_SerializationPreΖήνωνCompatibility) {
+  StringLogSink log_warning(google::WARNING);
+  auto const serialized_message = ReadFromBinaryFile(
+      R"(P:\Public Mockingbird\Principia\Saves\3136\trajectory_3136.proto.bin)");  // NOLINT
+  auto const message1 =
+      ParseFromBytes<serialization::DiscreteTrajectory>(serialized_message);
+  DiscreteTrajectory2<World>::SegmentIterator psychohistory;
+  auto const history = DiscreteTrajectory2<World>::ReadFromMessage(
+      message1, /*tracked=*/{&psychohistory});
+  EXPECT_THAT(log_warning.string(),
+              AllOf(HasSubstr("pre-Ζήνων"), Not(HasSubstr("pre-Haar"))));
+
+  // Note that the sizes don't have the same semantics as pre-Ζήνων.  The
+  // history now counts all segments.  The psychohistory has a duplicated point
+  // at the beginning.
+  EXPECT_EQ(435'929, history.size());
+  EXPECT_EQ(3, psychohistory->size());
+
+  // Evaluate a point in each of the two segments.
+  EXPECT_THAT(
+      history.EvaluateDegreesOfFreedom("1957-10-04T19:28:34"_TT),
+      Eq(DegreesOfFreedom<World>(
+          World::origin +
+              Displacement<World>({+1.47513683827317657e+11 * Metre,
+                                   +2.88696086355042419e+10 * Metre,
+                                   +1.24740082262952404e+10 * Metre}),
+          Velocity<World>({-6.28845231836519179e+03 * (Metre / Second),
+                           +2.34046542233168329e+04 * (Metre / Second),
+                           +4.64410011408655919e+03 * (Metre / Second)}))));
+  EXPECT_THAT(
+      psychohistory->EvaluateDegreesOfFreedom("1958-10-07T09:38:30"_TT),
+      Eq(DegreesOfFreedom<World>(
+          World::origin +
+              Displacement<World>({+1.45814173315801941e+11 * Metre,
+                                   +3.45409490426372147e+10 * Metre,
+                                   +1.49445864962450924e+10 * Metre}),
+          Velocity<World>({-8.70708379504568074e+03 * (Metre / Second),
+                           +2.61488327506437054e+04 * (Metre / Second),
+                           +1.90319283138508908e+04 * (Metre / Second)}))));
+
+  // Serialize the trajectory in the Ζήνων format.
+  serialization::DiscreteTrajectory message2;
+  history.WriteToMessage(&message2,
+                         /*tracked=*/{psychohistory},
+                         /*exact=*/{});
 }
 
 }  // namespace physics

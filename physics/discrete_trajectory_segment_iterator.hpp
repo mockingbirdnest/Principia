@@ -39,8 +39,8 @@ class DiscreteTrajectorySegmentIterator {
  public:
   using difference_type = std::int64_t;
   using value_type = DiscreteTrajectorySegment<Frame>;
-  using pointer = value_type const*;
-  using reference = value_type const&;
+  using pointer = value_type*;
+  using reference = value_type&;
 
   DiscreteTrajectorySegmentIterator() = default;
 
@@ -58,19 +58,19 @@ class DiscreteTrajectorySegmentIterator {
  private:
   using Segments = internal_discrete_trajectory_types::Segments<Frame>;
 
-  DiscreteTrajectorySegmentIterator(not_null<Segments const*> segments,
-                                    typename Segments::const_iterator iterator);
+  DiscreteTrajectorySegmentIterator(not_null<Segments*> segments,
+                                    typename Segments::iterator iterator);
 
   bool is_begin() const;
   bool is_end() const;
   DiscreteTrajectorySegmentRange<DiscreteTrajectorySegmentIterator>
   segments() const;
 
-  typename Segments::const_iterator iterator() const;
+  typename Segments::iterator iterator() const;
 
   // Not not_null<> to be default-constructible.
-  Segments const* segments_ = nullptr;
-  typename Segments::const_iterator iterator_;
+  Segments* segments_ = nullptr;
+  typename Segments::iterator iterator_;
 
   template<typename F>
   friend class physics::DiscreteTrajectory2;

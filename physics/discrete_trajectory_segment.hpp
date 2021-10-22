@@ -55,6 +55,9 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   using iterator = DiscreteTrajectoryIterator<Frame>;
   using reverse_iterator = std::reverse_iterator<iterator>;
 
+  using DownsamplingParameters =
+      internal_discrete_trajectory_types::DownsamplingParameters;
+
   // TODO(phl): Decide which constructors should be public.
   DiscreteTrajectorySegment() = default;
   explicit DiscreteTrajectorySegment(
@@ -92,6 +95,15 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
       Instant const& t) const override;
 
+  // This segment must have 0 or 1 points.  Occasionally removes intermediate
+  // points from the segment when |Append|ing, ensuring that positions remain
+  // within the desired tolerance.
+  void SetDownsampling(DownsamplingParameters const& downsampling_parameters);
+
+  // Clear the downsampling parameters.  From now on, all points appended to the
+  // segment are going to be retained.
+  void ClearDownsampling();
+
   // The points denoted by |exact| are written and re-read exactly and are not
   // affected by any errors introduced by zfp compression.
   void WriteToMessage(
@@ -104,9 +116,6 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
       DiscreteTrajectorySegmentIterator<Frame> self);
 
  private:
-  using DownsamplingParameters =
-      internal_discrete_trajectory_types::DownsamplingParameters;
-
   // Changes the |self_| iterator.  Only for use when attaching/detaching
   // segments.
   void SetSelf(DiscreteTrajectorySegmentIterator<Frame> self);
@@ -124,14 +133,18 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   void ForgetBefore(Instant const& t);
   void ForgetBefore(typename Timeline::const_iterator end);
 
-  // This segment must have 0 or 1 points.  Occasionally removes intermediate
-  // points from the segment when |Append|ing, ensuring that positions remain
-  // within the desired tolerance.
-  void SetDownsampling(DownsamplingParameters const& downsampling_parameters);
+  // Same as |SetDownsampling|, but can be used on a nontrivial segment.  Used
+  // for compatibility deserialization.
+  void SetDownsamplingUnconditionally(
+      DownsamplingParameters const& downsampling_parameters);
 
-  // Clear the downsampling parameters.  From now on, all points appended to the
-  // segment are going to be retained.
-  void ClearDownsampling();
+  // Computes |number_of_dense_points_| based on the start of the dense
+  // timeline.  Used for compatibility deserialization.
+  void SetStartOfDenseTimeline(Instant const& t);
+
+  // Inserts the given point at the beggining of the timeline.  Used for
+  // compatibility deserialization.
+  void SetForkPoint(value_type const& point);
 
   // Called by |Append| after appending a point to this segment.  If
   // appropriate, performs downsampling and deletes some of the points of the

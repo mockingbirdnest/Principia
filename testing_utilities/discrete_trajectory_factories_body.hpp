@@ -112,6 +112,14 @@ void AppendTrajectoryTimeline(Timeline<Frame> const& from,
   }
 }
 
+template<typename Frame>
+void AppendTrajectoryTimeline(Timeline<Frame> const& from,
+  DiscreteTrajectory2<Frame>& to) {
+  for (auto const& [t, degrees_of_freedom] : from) {
+    to.Append(t, degrees_of_freedom);
+  }
+}
+
 }  // namespace internal_discrete_trajectory_factories
 }  // namespace testing_utilities
 }  // namespace principia

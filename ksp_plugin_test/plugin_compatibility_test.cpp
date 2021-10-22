@@ -22,6 +22,7 @@
 #include "serialization/ksp_plugin.pb.h"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/serialization.hpp"
+#include "testing_utilities/string_log_sink.hpp"
 
 namespace principia {
 namespace interface {
@@ -47,6 +48,7 @@ using testing_utilities::IsNear;
 using testing_utilities::ReadFromBinaryFile;
 using testing_utilities::ReadLinesFromBase64File;
 using testing_utilities::ReadLinesFromHexadecimalFile;
+using testing_utilities::StringLogSink;
 using testing_utilities::WriteToBinaryFile;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
@@ -60,43 +62,6 @@ using ::testing::internal::GetCapturedStderr;
 
 const char preferred_compressor[] = "gipfeli";
 const char preferred_encoder[] = "base64";
-
-class StringLogSink : google::LogSink {
- public:
-  explicit StringLogSink(google::LogSeverity const minimal_severity)
-      : minimal_severity_(minimal_severity) {
-    google::AddLogSink(this);
-  }
-
-  ~StringLogSink() {
-    google::RemoveLogSink(this);
-  }
-
-  void send(google::LogSeverity const severity,
-            char const* const full_filename,
-            char const* const base_filename,
-            int const line,
-            tm const* const tm_time,
-            const char* const message,
-            size_t const message_len) override {
-    if (severity < minimal_severity_) {
-      return;
-    }
-    absl::MutexLock lock(&mutex_);
-    absl::StrAppend(
-        &string_,
-        ToString(severity, base_filename, line, tm_time, message, message_len));
-  }
-
-  std::string& string() {
-    return string_;
-  }
-
- private:
-  google::LogSeverity const minimal_severity_;
-  absl::Mutex mutex_;
-  std::string string_ GUARDED_BY(mutex_);
-};
 
 class PluginCompatibilityTest : public testing::Test {
  protected:
@@ -374,6 +339,28 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
   auto const history = psychohistory.root();
   EXPECT_EQ(435'927, history->Size());
   EXPECT_EQ(435'929, psychohistory.Size());
+
+  // Evaluate a point in each of the two segments.
+  EXPECT_THAT(history->EvaluateDegreesOfFreedom("1957-10-04T19:28:34"_TT),
+              Eq(DegreesOfFreedom<Barycentric>(
+                  Barycentric::origin + Displacement<Barycentric>(
+                                            {+1.47513683827317657e+11 * Metre,
+                                             +2.88696086355042419e+10 * Metre,
+                                             +1.24740082262952404e+10 * Metre}),
+                  Velocity<Barycentric>(
+                      {-6.28845231836519179e+03 * (Metre / Second),
+                       +2.34046542233168329e+04 * (Metre / Second),
+                       +4.64410011408655919e+03 * (Metre / Second)}))));
+  EXPECT_THAT(psychohistory.EvaluateDegreesOfFreedom("1958-10-07T09:38:30"_TT),
+              Eq(DegreesOfFreedom<Barycentric>(
+                  Barycentric::origin + Displacement<Barycentric>(
+                                            {+1.45814173315801941e+11 * Metre,
+                                             +3.45409490426372147e+10 * Metre,
+                                             +1.49445864962450924e+10 * Metre}),
+                  Velocity<Barycentric>(
+                      {-8.70708379504568074e+03 * (Metre / Second),
+                       +2.61488327506437054e+04 * (Metre / Second),
+                       +1.90319283138508908e+04 * (Metre / Second)}))));
 
   // Serialize the history and psychohistory to a temporary file.
   {

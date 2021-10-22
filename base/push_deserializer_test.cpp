@@ -66,8 +66,7 @@ class PushDeserializerTest : public ::testing::Test {
         make_not_null_unique<DiscreteTrajectory>();
     // Build a biggish protobuf for serialization.
     for (int i = 0; i < 100; ++i) {
-      DiscreteTrajectory::InstantaneousDegreesOfFreedom* idof =
-          result->add_timeline();
+      auto* const idof = result->add_timeline();
       Point* instant = idof->mutable_instant();
       Quantity* scalar = instant->mutable_scalar();
       scalar->set_dimensions(3);
