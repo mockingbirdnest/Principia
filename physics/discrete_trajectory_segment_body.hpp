@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/container/flat_hash_set.h"
 #include "astronomy/epoch.hpp"
 #include "base/zfp_compressor.hpp"
 #include "geometry/named_quantities.hpp"
@@ -189,9 +190,18 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
   }
   message->set_number_of_dense_points(number_of_dense_points_);
 
-  // TODO(phl): Make the extremities exact.
+  // Convert the |exact| vector into a set, and add the extremities.  This
+  // ensures that we don't have redundancies.
+  absl::flat_hash_set<value_type const*> exact_set;
   for (auto const it : exact) {
-    auto const& [t, degrees_of_freedom] = *it;
+    exact_set.insert(&*it);
+  }
+  exact_set.insert(&*timeline_.cbegin());
+  exact_set.insert(&*timeline_.crbegin());
+
+  // Serialize the exact points.
+  for (auto const* ptr : exact_set) {
+    auto const& [t, degrees_of_freedom] = *ptr;
     auto* const serialized_exact = message->add_exact();
     t.WriteToMessage(serialized_exact->mutable_instant());
     degrees_of_freedom.WriteToMessage(
@@ -272,8 +282,7 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
   // Construct a map for efficient lookup of the exact points.
   Timeline exact;
   for (auto const& instantaneous_degrees_of_freedom : message.exact()) {
-    exact.emplace_hint(
-        exact.end(),
+    exact.emplace(
         Instant::ReadFromMessage(instantaneous_degrees_of_freedom.instant()),
         DegreesOfFreedom<Frame>::ReadFromMessage(
             instantaneous_degrees_of_freedom.degrees_of_freedom()));
