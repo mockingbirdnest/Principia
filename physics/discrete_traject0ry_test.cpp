@@ -1,4 +1,4 @@
-﻿#include "physics/discrete_trajectory2.hpp"
+﻿#include "physics/discrete_traject0ry.hpp"
 
 #include <string>
 #include <vector>
@@ -59,7 +59,7 @@ using ::testing::Eq;
 using ::testing::HasSubstr;
 using ::testing::Not;
 
-class DiscreteTrajectory2Test : public ::testing::Test {
+class DiscreteTraject0ryTest : public ::testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
                       Inertial,
@@ -69,10 +69,10 @@ class DiscreteTrajectory2Test : public ::testing::Test {
 
   // Constructs a trajectory with three 5-second segments starting at |t0| and
   // the given |degrees_of_freedom|.
-  DiscreteTrajectory2<World> MakeTrajectory(
+  DiscreteTraject0ry<World> MakeTrajectory(
       Instant const& t0,
       DegreesOfFreedom<World> const& degrees_of_freedom) {
-    DiscreteTrajectory2<World> trajectory;
+    DiscreteTraject0ry<World> trajectory;
     std::optional<DegreesOfFreedom<World>> last_degrees_of_freedom;
 
     for (auto const& [t, degrees_of_freedom] :
@@ -116,7 +116,7 @@ class DiscreteTrajectory2Test : public ::testing::Test {
     return trajectory;
   }
 
-  DiscreteTrajectory2<World> MakeTrajectory() {
+  DiscreteTraject0ry<World> MakeTrajectory() {
     Velocity<World> const v1({1 * Metre / Second,
                               0 * Metre / Second,
                               0 * Metre / Second});
@@ -126,11 +126,11 @@ class DiscreteTrajectory2Test : public ::testing::Test {
   Instant const t0_;
 };
 
-TEST_F(DiscreteTrajectory2Test, Make) {
+TEST_F(DiscreteTraject0ryTest, Make) {
   auto const trajectory = MakeTrajectory();
 }
 
-TEST_F(DiscreteTrajectory2Test, IterateForward) {
+TEST_F(DiscreteTraject0ryTest, IterateForward) {
   auto const trajectory = MakeTrajectory();
   std::vector<Instant> times;
   for (auto const& [t, _] : trajectory) {
@@ -154,7 +154,7 @@ TEST_F(DiscreteTrajectory2Test, IterateForward) {
                           t0_ + 14 * Second));
 }
 
-TEST_F(DiscreteTrajectory2Test, IterateBackward) {
+TEST_F(DiscreteTraject0ryTest, IterateBackward) {
   auto const trajectory = MakeTrajectory();
   std::vector<Instant> times;
   for (auto it = trajectory.rbegin(); it != trajectory.rend(); ++it) {
@@ -178,21 +178,21 @@ TEST_F(DiscreteTrajectory2Test, IterateBackward) {
                           t0_));
 }
 
-TEST_F(DiscreteTrajectory2Test, Empty) {
-  DiscreteTrajectory2<World> trajectory;
+TEST_F(DiscreteTraject0ryTest, Empty) {
+  DiscreteTraject0ry<World> trajectory;
   EXPECT_TRUE(trajectory.empty());
   trajectory = MakeTrajectory();
   EXPECT_FALSE(trajectory.empty());
 }
 
-TEST_F(DiscreteTrajectory2Test, Size) {
-  DiscreteTrajectory2<World> trajectory;
+TEST_F(DiscreteTraject0ryTest, Size) {
+  DiscreteTraject0ry<World> trajectory;
   EXPECT_EQ(0, trajectory.size());
   trajectory = MakeTrajectory();
   EXPECT_EQ(15, trajectory.size());
 }
 
-TEST_F(DiscreteTrajectory2Test, Find) {
+TEST_F(DiscreteTraject0ryTest, Find) {
   auto const trajectory = MakeTrajectory();
   {
     auto const it = trajectory.find(t0_ + 3 * Second);
@@ -218,7 +218,7 @@ TEST_F(DiscreteTrajectory2Test, Find) {
   }
 }
 
-TEST_F(DiscreteTrajectory2Test, LowerBound) {
+TEST_F(DiscreteTraject0ryTest, LowerBound) {
   auto const trajectory = MakeTrajectory();
   {
     auto const it = trajectory.lower_bound(t0_ + 3.9 * Second);
@@ -262,7 +262,7 @@ TEST_F(DiscreteTrajectory2Test, LowerBound) {
   }
 }
 
-TEST_F(DiscreteTrajectory2Test, UpperBound) {
+TEST_F(DiscreteTraject0ryTest, UpperBound) {
   auto const trajectory = MakeTrajectory();
   {
     auto const it = trajectory.upper_bound(t0_ + 3.9 * Second);
@@ -306,7 +306,7 @@ TEST_F(DiscreteTrajectory2Test, UpperBound) {
   }
 }
 
-TEST_F(DiscreteTrajectory2Test, Segments) {
+TEST_F(DiscreteTraject0ryTest, Segments) {
   auto const trajectory = MakeTrajectory();
   std::vector<Instant> begin;
   std::vector<Instant> rbegin;
@@ -322,7 +322,7 @@ TEST_F(DiscreteTrajectory2Test, Segments) {
       ElementsAre(t0_ + 4 * Second, t0_ + 9 * Second, t0_ + 14 * Second));
 }
 
-TEST_F(DiscreteTrajectory2Test, RSegments) {
+TEST_F(DiscreteTraject0ryTest, RSegments) {
   auto const trajectory = MakeTrajectory();
   std::vector<Instant> begin;
   std::vector<Instant> rbegin;
@@ -338,7 +338,7 @@ TEST_F(DiscreteTrajectory2Test, RSegments) {
       ElementsAre(t0_ + 14 * Second, t0_ + 9 * Second, t0_ + 4 * Second));
 }
 
-TEST_F(DiscreteTrajectory2Test, DetachSegments) {
+TEST_F(DiscreteTraject0ryTest, DetachSegments) {
   auto trajectory1 = MakeTrajectory();
   auto const first_segment = trajectory1.segments().begin();
   auto const second_segment = std::next(first_segment);
@@ -390,7 +390,7 @@ TEST_F(DiscreteTrajectory2Test, DetachSegments) {
   }
 }
 
-TEST_F(DiscreteTrajectory2Test, AttachSegments) {
+TEST_F(DiscreteTraject0ryTest, AttachSegments) {
   auto trajectory1 = MakeTrajectory();
   auto trajectory2 = MakeTrajectory(
       t0_ + 14 * Second,
@@ -437,7 +437,7 @@ TEST_F(DiscreteTrajectory2Test, AttachSegments) {
   }
 }
 
-TEST_F(DiscreteTrajectory2Test, DeleteSegments) {
+TEST_F(DiscreteTraject0ryTest, DeleteSegments) {
   auto trajectory = MakeTrajectory();
   auto const first_segment = trajectory.segments().begin();
   auto const second_segment = std::next(first_segment);
@@ -447,7 +447,7 @@ TEST_F(DiscreteTrajectory2Test, DeleteSegments) {
   EXPECT_EQ(t0_ + 4 * Second, trajectory.rbegin()->first);
 }
 
-TEST_F(DiscreteTrajectory2Test, ForgetAfter) {
+TEST_F(DiscreteTraject0ryTest, ForgetAfter) {
   auto trajectory = MakeTrajectory();
 
   trajectory.ForgetAfter(t0_ + 12 * Second);
@@ -466,7 +466,7 @@ TEST_F(DiscreteTrajectory2Test, ForgetAfter) {
   EXPECT_EQ(t0_ + 4 * Second, trajectory.rbegin()->first);
 }
 
-TEST_F(DiscreteTrajectory2Test, ForgetBefore) {
+TEST_F(DiscreteTraject0ryTest, ForgetBefore) {
   auto trajectory = MakeTrajectory();
 
   trajectory.ForgetBefore(t0_ + 3 * Second);
@@ -485,7 +485,7 @@ TEST_F(DiscreteTrajectory2Test, ForgetBefore) {
   EXPECT_EQ(t0_ + 14 * Second, trajectory.rbegin()->first);
 }
 
-TEST_F(DiscreteTrajectory2Test, TMinTMaxEvaluate) {
+TEST_F(DiscreteTraject0ryTest, TMinTMaxEvaluate) {
   auto const trajectory = MakeTrajectory();
   EXPECT_EQ(t0_, trajectory.t_min());
   EXPECT_EQ(t0_ + 14 * Second, trajectory.t_max());
@@ -507,7 +507,7 @@ TEST_F(DiscreteTrajectory2Test, TMinTMaxEvaluate) {
                                         0 * Metre / Second}), 0)));
 }
 
-TEST_F(DiscreteTrajectory2Test, SerializationRoundTrip) {
+TEST_F(DiscreteTraject0ryTest, SerializationRoundTrip) {
   auto const trajectory = MakeTrajectory();
   auto const trajectory_first_segment = trajectory.segments().begin();
   auto const trajectory_second_segment = std::next(trajectory_first_segment);
@@ -521,7 +521,7 @@ TEST_F(DiscreteTrajectory2Test, SerializationRoundTrip) {
 
   DiscreteTrajectorySegmentIterator<World> deserialized_second_segment;
   auto const deserialized_trajectory =
-      DiscreteTrajectory2<World>::ReadFromMessage(
+      DiscreteTraject0ry<World>::ReadFromMessage(
           message1, /*tracked=*/{&deserialized_second_segment});
 
   // Check that the tracked segment was properly retrieved.
@@ -545,8 +545,8 @@ TEST_F(DiscreteTrajectory2Test, SerializationRoundTrip) {
   EXPECT_THAT(message2, EqualsProto(message1));
 }
 
-TEST_F(DiscreteTrajectory2Test, SerializationExactEndpoints) {
-  DiscreteTrajectory2<World> trajectory;
+TEST_F(DiscreteTraject0ryTest, SerializationExactEndpoints) {
+  DiscreteTraject0ry<World> trajectory;
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
   Time const Δt = 1.0 / 3.0 * Milli(Second);
@@ -579,7 +579,7 @@ TEST_F(DiscreteTrajectory2Test, SerializationExactEndpoints) {
 
   // Deserialization would fail if the endpoints were nudged by ZFP compression.
   auto const deserialized_trajectory =
-      DiscreteTrajectory2<World>::ReadFromMessage(message, /*tracked=*/{});
+      DiscreteTraject0ry<World>::ReadFromMessage(message, /*tracked=*/{});
 
   auto const deserialized_degrees_of_freedom1 =
       deserialized_trajectory.EvaluateDegreesOfFreedom(t1 + 100 * Second);
@@ -604,14 +604,14 @@ TEST_F(DiscreteTrajectory2Test, SerializationExactEndpoints) {
                                 IsNear(0.39_⑴ * Metre / Second)));
 }
 
-TEST_F(DiscreteTrajectory2Test, DISABLED_SerializationPreΖήνωνCompatibility) {
+TEST_F(DiscreteTraject0ryTest, DISABLED_SerializationPreΖήνωνCompatibility) {
   StringLogSink log_warning(google::WARNING);
   auto const serialized_message = ReadFromBinaryFile(
       R"(P:\Public Mockingbird\Principia\Saves\3136\trajectory_3136.proto.bin)");  // NOLINT
   auto const message1 =
       ParseFromBytes<serialization::DiscreteTrajectory>(serialized_message);
-  DiscreteTrajectory2<World>::SegmentIterator psychohistory;
-  auto const history = DiscreteTrajectory2<World>::ReadFromMessage(
+  DiscreteTraject0ry<World>::SegmentIterator psychohistory;
+  auto const history = DiscreteTraject0ry<World>::ReadFromMessage(
       message1, /*tracked=*/{&psychohistory});
   EXPECT_THAT(log_warning.string(),
               AllOf(HasSubstr("pre-Ζήνων"), Not(HasSubstr("pre-Haar"))));

@@ -200,7 +200,7 @@
     <ClInclude Include="discrete_trajectory_segment_iterator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="discrete_trajectory2.hpp">
+    <ClInclude Include="discrete_traject0ry.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="discrete_trajectory_types.hpp">
@@ -221,7 +221,7 @@
     <ClInclude Include="discrete_trajectory_segment_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="discrete_trajectory2_body.hpp">
+    <ClInclude Include="discrete_traject0ry_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -334,7 +334,7 @@
     <ClCompile Include="discrete_trajectory_segment_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="discrete_trajectory2_test.cpp">
+    <ClCompile Include="discrete_traject0ry_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="..\testing_utilities\string_log_sink.cpp">
