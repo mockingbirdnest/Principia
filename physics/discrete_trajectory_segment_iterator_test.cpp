@@ -22,8 +22,6 @@ using geometry::Instant;
 using quantities::si::Second;
 using ::testing::Return;
 
-// We use a mock segment in this test to avoid having to go through a
-// complicated setup just to test the iterator.
 class DiscreteTrajectorySegmentIteratorTest : public ::testing::Test {
  protected:
   using World = Frame<enum class WorldTag>;
@@ -57,8 +55,8 @@ class DiscreteTrajectorySegmentIteratorTest : public ::testing::Test {
   }
 
   DiscreteTrajectorySegmentIterator<World> MakeIterator(
-      not_null<Segments const*> const segments,
-      Segments::const_iterator const iterator) {
+      not_null<Segments*> const segments,
+      Segments::iterator const iterator) {
     return DiscreteTrajectorySegmentIterator<World>(segments, iterator);
   }
 

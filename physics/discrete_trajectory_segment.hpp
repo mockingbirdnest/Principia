@@ -46,8 +46,6 @@ using physics::DegreesOfFreedom;
 
 template<typename Frame>
 class DiscreteTrajectorySegment : public Trajectory<Frame> {
-  using DownsamplingParameters =
-      internal_discrete_trajectory_types::DownsamplingParameters;
   using Timeline = internal_discrete_trajectory_types::Timeline<Frame>;
 
  public:
@@ -56,6 +54,9 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
 
   using iterator = DiscreteTrajectoryIterator<Frame>;
   using reverse_iterator = std::reverse_iterator<iterator>;
+
+  using DownsamplingParameters =
+      internal_discrete_trajectory_types::DownsamplingParameters;
 
   // TODO(phl): Decide which constructors should be public.
   DiscreteTrajectorySegment() = default;

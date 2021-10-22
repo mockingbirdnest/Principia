@@ -31,13 +31,13 @@ DiscreteTrajectorySegmentIterator<Frame>::operator--(int) {  // NOLINT
 }
 
 template<typename Frame>
-internal_discrete_trajectory_segment::DiscreteTrajectorySegment<Frame> const&
+typename DiscreteTrajectorySegmentIterator<Frame>::reference
 DiscreteTrajectorySegmentIterator<Frame>::operator*() const {
   return *iterator_;
 }
 
 template<typename Frame>
-internal_discrete_trajectory_segment::DiscreteTrajectorySegment<Frame> const*
+typename DiscreteTrajectorySegmentIterator<Frame>::pointer
 DiscreteTrajectorySegmentIterator<Frame>::operator->() const {
   return &*iterator_;
 }
@@ -56,8 +56,8 @@ bool DiscreteTrajectorySegmentIterator<Frame>::operator!=(
 
 template<typename Frame>
 DiscreteTrajectorySegmentIterator<Frame>::DiscreteTrajectorySegmentIterator(
-    not_null<Segments const*> const segments,
-    typename Segments::const_iterator iterator)
+    not_null<Segments*> const segments,
+    typename Segments::iterator iterator)
     : segments_(segments),
       iterator_(iterator) {}
 
@@ -79,7 +79,7 @@ DiscreteTrajectorySegmentIterator<Frame>::segments() const {
 }
 
 template<typename Frame>
-typename DiscreteTrajectorySegmentIterator<Frame>::Segments::const_iterator
+typename DiscreteTrajectorySegmentIterator<Frame>::Segments::iterator
 DiscreteTrajectorySegmentIterator<Frame>::iterator() const {
   return iterator_;
 }

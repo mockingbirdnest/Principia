@@ -84,8 +84,8 @@ class DiscreteTrajectorySegmentTest : public ::testing::Test {
   }
 
   static DiscreteTrajectorySegmentIterator<World> MakeIterator(
-      not_null<Segments const*> const segments,
-      typename Segments::const_iterator iterator) {
+      not_null<Segments*> const segments,
+      typename Segments::iterator iterator) {
     return DiscreteTrajectorySegmentIterator<World>(segments, iterator);
   }
 
@@ -341,7 +341,7 @@ TEST_F(DiscreteTrajectorySegmentTest, SerializationWithDownsampling) {
       DiscreteTrajectorySegment<World>::ReadFromMessage(
           message,
           /*self=*/MakeIterator(deserialized_circle_segments.get(),
-                                deserialized_circle_segments->cbegin()));
+                                deserialized_circle_segments->begin()));
 
   // Serialization/deserialization preserves the size, the times, and nudges the
   // positions by less than the tolerance.  It also preserve the degrees of
@@ -424,7 +424,7 @@ TEST_F(DiscreteTrajectorySegmentTest, SerializationRoundTrip) {
       DiscreteTrajectorySegment<World>::ReadFromMessage(
           message1,
           /*self=*/MakeIterator(deserialized_circle_segments.get(),
-                                deserialized_circle_segments->cbegin()));
+                                deserialized_circle_segments->begin()));
 
   serialization::DiscreteTrajectorySegment message2;
   deserialized_circle.WriteToMessage(
