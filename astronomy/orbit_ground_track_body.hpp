@@ -35,8 +35,7 @@ std::vector<Angle> PlanetocentricLongitudes(
     RotatingBody<Inertial> const& primary) {
   std::vector<Angle> longitudes;
   longitudes.reserve(nodes.size());
-  for (auto const& node : nodes) {
-    auto const& [time, degrees_of_freedom] = node;
+  for (auto const& [time, degrees_of_freedom] : nodes) {
     longitudes.push_back(CelestialLongitude(degrees_of_freedom.position()) -
                          primary.AngleAt(time) - π / 2 * Radian);
   }
