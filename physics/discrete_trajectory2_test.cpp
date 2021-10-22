@@ -615,7 +615,7 @@ TEST_F(DiscreteTrajectory2Test, SerializationPreΖήνωνCompatibility) {
   EXPECT_THAT(log_warning.string(),
               AllOf(HasSubstr("pre-Ζήνων"), Not(HasSubstr("pre-Haar"))));
 
-  // Note that the sizes don't have the same semantics as pre-Haar.  The
+  // Note that the sizes don't have the same semantics as pre-Ζήνων.  The
   // history now counts all segments.  The psychohistory has a duplicated point
   // at the beginning.
   EXPECT_EQ(435'929, history.size());

@@ -331,7 +331,7 @@ DiscreteTrajectory2<Frame>::ReadFromMessage(
     LOG_IF(WARNING, is_pre_ζήνων) << "Reading pre-Ζήνων DiscreteTrajectory";
     ReadFromPreΖήνωνMessage(
         message, tracked, /*fork_point=*/std::nullopt, trajectory);
-    CHECK_OK(trajectory.IsConsistent());
+    CHECK_OK(trajectory.ValidateConsistency());
     return trajectory;
   }
 
@@ -366,7 +366,7 @@ DiscreteTrajectory2<Frame>::ReadFromMessage(
     ++sit;
   }
 
-  CHECK_OK(trajectory.IsConsistent());
+  CHECK_OK(trajectory.ValidateConsistency());
   return trajectory;
 }
 
@@ -393,7 +393,7 @@ DiscreteTrajectory2<Frame>::FindSegment(
 }
 
 template<typename Frame>
-absl::Status DiscreteTrajectory2<Frame>::IsConsistent() const {
+absl::Status DiscreteTrajectory2<Frame>::ValidateConsistency() const {
   if (segments_->size() != segment_by_left_endpoint_.size()) {
     return absl::InternalError(absl::StrCat("Size mismatch ",
                                             segments_->size(),
