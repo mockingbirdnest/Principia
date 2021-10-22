@@ -1,5 +1,6 @@
 ﻿#include "physics/discrete_trajectory2.hpp"
 
+#include <string>
 #include <vector>
 
 #include "astronomy/time_scales.hpp"
