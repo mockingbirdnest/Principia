@@ -1,5 +1,6 @@
 ﻿#include "physics/discrete_traject0ry.hpp"
 
+#include <string>
 #include <vector>
 
 #include "astronomy/time_scales.hpp"
@@ -603,7 +604,7 @@ TEST_F(DiscreteTraject0ryTest, SerializationExactEndpoints) {
                                 IsNear(0.39_⑴ * Metre / Second)));
 }
 
-TEST_F(DiscreteTraject0ryTest, SerializationPreΖήνωνCompatibility) {
+TEST_F(DiscreteTraject0ryTest, DISABLED_SerializationPreΖήνωνCompatibility) {
   StringLogSink log_warning(google::WARNING);
   auto const serialized_message = ReadFromBinaryFile(
       R"(P:\Public Mockingbird\Principia\Saves\3136\trajectory_3136.proto.bin)");  // NOLINT
