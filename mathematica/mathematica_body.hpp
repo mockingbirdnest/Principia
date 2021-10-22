@@ -461,13 +461,13 @@ std::string ToMathematica(UnboundedVector<Scalar> const& vector,
   return Apply("List", elements);
 }
 
-template<typename R, typename, typename, typename OptionalExpressIn>
-std::string ToMathematica(R const ref,
+template<typename T1, typename T2, typename OptionalExpressIn>
+std::string ToMathematica(std::pair<T1, T2> const& pair,
                           OptionalExpressIn express_in) {
   return Apply("List",
                std::vector<std::string>{
-                   ToMathematica(ref.time, express_in),
-                   ToMathematica(ref.degrees_of_freedom, express_in)});
+                   ToMathematica(pair.first, express_in),
+                   ToMathematica(pair.second, express_in)});
 }
 
 template<typename V, typename A, int d,

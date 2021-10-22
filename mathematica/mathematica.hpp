@@ -6,6 +6,7 @@
 #include <string>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "astronomy/orbital_elements.hpp"
@@ -221,11 +222,9 @@ template<typename Scalar, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(UnboundedVector<Scalar> const& vector,
                           OptionalExpressIn express_in = std::nullopt);
 
-template<typename R,
-         typename = std::void_t<decltype(std::declval<R>().time)>,
-         typename = std::void_t<decltype(std::declval<R>().degrees_of_freedom)>,
+template<typename T1, typename T2,
          typename OptionalExpressIn = std::nullopt_t>
-std::string ToMathematica(R ref,
+std::string ToMathematica(std::pair<T1, T2> const& pair,
                           OptionalExpressIn express_in = std::nullopt);
 
 template<typename V, typename A, int d,
