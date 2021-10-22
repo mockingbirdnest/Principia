@@ -1,5 +1,7 @@
 #include "testing_utilities/string_log_sink.hpp"
 
+#include <string>
+
 namespace principia {
 namespace testing_utilities {
 
