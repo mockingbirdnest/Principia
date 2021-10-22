@@ -32,10 +32,10 @@ using quantities::si::Second;
 // n-point finite difference formulæ on the positions to produce a trajectory
 // with consistent velocities.
 template<int n>
-not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>> ComputeVelocities(
-    DiscreteTrajectory<ITRS> const& arc) {
-  auto result = make_not_null_unique<DiscreteTrajectory<ITRS>>();
-  CHECK_GE(arc.Size(), n);
+not_null<std::unique_ptr<DiscreteTraject0ry<ITRS>>> ComputeVelocities(
+    DiscreteTraject0ry<ITRS> const& arc) {
+  auto result = make_not_null_unique<DiscreteTraject0ry<ITRS>>();
+  CHECK_GE(arc.size(), n);
   std::array<Instant, n> times;
   std::array<Position<ITRS>, n> positions;
   auto it = arc.begin();
@@ -43,13 +43,14 @@ not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>> ComputeVelocities(
     // TODO(egg): we should check when reading the file that the times are
     // equally spaced at the interval declared in columns 25-38 of SP3
     // line two.
-    times[k] = it->time;
-    positions[k] = it->degrees_of_freedom.position();
+    auto const& [time, degrees_of_freedom] = *it;
+    times[k] = time;
+    positions[k] = degrees_of_freedom.position();
   }
   // We use a central difference formula wherever possible, so we keep
   // |offset| at (n - 1) / 2 except at the beginning and end of the arc.
   int offset = 0;
-  for (int i = 0; i < arc.Size(); ++i) {
+  for (int i = 0; i < arc.size(); ++i) {
     result->Append(
         times[offset],
         {positions[offset],
@@ -64,14 +65,15 @@ not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>> ComputeVelocities(
     } else {
       std::move(positions.begin() + 1, positions.end(), positions.begin());
       std::move(times.begin() + 1, times.end(), times.begin());
-      times.back() = it->time;
-      positions.back()  = it->degrees_of_freedom.position();
+      auto const& [time, degrees_of_freedom] = *it;
+      times.back() = time;
+      positions.back()  = degrees_of_freedom.position();
       ++it;
     }
   }
   // Note that having the right number of calls to |Append| does not guarantee
   // this, as appending at an existing time merely emits a warning.
-  CHECK_EQ(result->Size(), arc.Size());
+  CHECK_EQ(result->size(), arc.size());
   return result;
 }
 
@@ -193,7 +195,7 @@ StandardProduct3::StandardProduct3(
                             std::forward_as_tuple());
         CHECK(inserted) << "Duplicate satellite identifier " << id << ": "
                         << full_location;
-        it->second.push_back(make_not_null_unique<DiscreteTrajectory<ITRS>>());
+        it->second.push_back(make_not_null_unique<DiscreteTraject0ry<ITRS>>());
         satellites_.push_back(id);
       } else {
         CHECK_EQ(columns(c, c + 2), "  0") << full_location;
@@ -330,9 +332,9 @@ StandardProduct3::StandardProduct3(
       // from the check.
       CHECK_EQ(id, satellites_[i]) << location;
 
-      std::vector<not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>>>& orbit =
+      std::vector<not_null<std::unique_ptr<DiscreteTraject0ry<ITRS>>>>& orbit =
           it->second;
-      DiscreteTrajectory<ITRS>& arc = *orbit.back();
+      DiscreteTraject0ry<ITRS>& arc = *orbit.back();
 
       Position<ITRS> const position =
           Displacement<ITRS>({float_columns(5, 18) * Kilo(Metre),
@@ -375,8 +377,8 @@ StandardProduct3::StandardProduct3(
 
       // Bad or absent positional and velocity values are to be set to 0.000000.
       if (position == ITRS::origin || velocity == ITRS::unmoving) {
-        if (!arc.Empty()) {
-          orbit.push_back(make_not_null_unique<DiscreteTrajectory<ITRS>>());
+        if (!arc.empty()) {
+          orbit.push_back(make_not_null_unique<DiscreteTraject0ry<ITRS>>());
         }
       } else {
         arc.Append(epoch, {position, velocity});
@@ -390,7 +392,7 @@ StandardProduct3::StandardProduct3(
   for (auto& [id, orbit] : orbits_) {
     // Do not leave a final empty trajectory if the orbit ends with missing
     // data.
-    if (orbit.back()->Empty()) {
+    if (orbit.back()->empty()) {
       orbit.pop_back();
     }
   }
@@ -403,7 +405,7 @@ StandardProduct3::StandardProduct3(
             arc = ComputeVelocities<n>(*arc); \
             break
 
-        switch (arc->Size()) {
+        switch (arc->size()) {
           COMPUTE_VELOCITIES_CASE(1);
           COMPUTE_VELOCITIES_CASE(2);
           COMPUTE_VELOCITIES_CASE(3);
@@ -439,7 +441,7 @@ StandardProduct3::satellites() const {
   return satellites_;
 }
 
-std::vector<not_null<DiscreteTrajectory<ITRS> const*>> const&
+std::vector<not_null<DiscreteTraject0ry<ITRS> const*>> const&
 StandardProduct3::orbit(SatelliteIdentifier const& id) const {
   return FindOrDie(const_orbits_, id);
 }

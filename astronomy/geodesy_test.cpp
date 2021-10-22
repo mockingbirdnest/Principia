@@ -7,6 +7,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/body_surface_dynamic_frame.hpp"
+#include "physics/discrete_traject0ry.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
@@ -32,7 +33,7 @@ using integrators::methods::QuinlanTremaine1990Order12;
 using physics::BodySurfaceDynamicFrame;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
+using physics::DiscreteTraject0ry;
 using physics::Ephemeris;
 using physics::KeplerianElements;
 using physics::KeplerOrbit;
@@ -107,33 +108,29 @@ TEST_F(GeodesyTest, DISABLED_LAGEOS2) {
   StandardProduct3::SatelliteIdentifier const lageos2_id{
       StandardProduct3::SatelliteGroup::General, 52};
 
-  CHECK_EQ(initial_ilrsa.orbit(lageos2_id).front()->front().time,
-           initial_ilrsb.orbit(lageos2_id).front()->front().time);
+  CHECK_EQ(initial_ilrsa.orbit(lageos2_id).front()->begin()->first,
+           initial_ilrsb.orbit(lageos2_id).front()->begin()->first);
 
-  Instant const initial_time =
-      initial_ilrsa.orbit(lageos2_id).front()->front().time;
-  DegreesOfFreedom<ITRS> const initial_dof_ilrsa =
-      initial_ilrsa.orbit(lageos2_id).front()->front().degrees_of_freedom;
+  auto const& [initial_time, initial_dof_ilrsa] =
+      *initial_ilrsa.orbit(lageos2_id).front()->begin();
 
-  DegreesOfFreedom<ITRS> const initial_dof_ilrsb =
-      initial_ilrsb.orbit(lageos2_id).front()->front().degrees_of_freedom;
+  auto const& [_, initial_dof_ilrsb] =
+      *initial_ilrsb.orbit(lageos2_id).front()->begin();
 
-  Instant const final_time =
-      final_ilrsa.orbit(lageos2_id).front()->front().time;
-  DegreesOfFreedom<ITRS> const expected_final_dof =
-      final_ilrsa.orbit(lageos2_id).front()->front().degrees_of_freedom;
+  auto const& [final_time, expected_final_dof] =
+      *final_ilrsa.orbit(lageos2_id).front()->begin();
 
   ephemeris_->Prolong(final_time);
 
-  DiscreteTrajectory<ICRS> primary_lageos2_trajectory;
+  DiscreteTraject0ry<ICRS> primary_lageos2_trajectory;
   primary_lageos2_trajectory.Append(
       initial_time, itrs_.FromThisFrameAtTime(initial_time)(initial_dof_ilrsa));
-  DiscreteTrajectory<ICRS> secondary_lageos2_trajectory;
+  DiscreteTraject0ry<ICRS> secondary_lageos2_trajectory;
   secondary_lageos2_trajectory.Append(
       initial_time, itrs_.FromThisFrameAtTime(initial_time)(initial_dof_ilrsb));
   auto flow_lageos2 =
       [this, final_time](
-          DiscreteTrajectory<ICRS>& lageos2_trajectory) -> absl::Status {
+          DiscreteTraject0ry<ICRS>& lageos2_trajectory) -> absl::Status {
         return ephemeris_->FlowWithAdaptiveStep(
             &lageos2_trajectory,
             Ephemeris<ICRS>::NoIntrinsicAcceleration,
@@ -155,13 +152,13 @@ TEST_F(GeodesyTest, DISABLED_LAGEOS2) {
     return flow_lageos2(secondary_lageos2_trajectory);
   });
   bundle.Join();
-  EXPECT_THAT(primary_lageos2_trajectory.back().time, Eq(final_time));
-  EXPECT_THAT(secondary_lageos2_trajectory.back().time, Eq(final_time));
+  EXPECT_THAT(primary_lageos2_trajectory.rbegin()->first, Eq(final_time));
+  EXPECT_THAT(secondary_lageos2_trajectory.rbegin()->first, Eq(final_time));
 
   auto const primary_actual_final_dof = itrs_.ToThisFrameAtTime(final_time)(
-      primary_lageos2_trajectory.back().degrees_of_freedom);
+      primary_lageos2_trajectory.rbegin()->second);
   auto const secondary_actual_final_dof = itrs_.ToThisFrameAtTime(final_time)(
-      secondary_lageos2_trajectory.back().degrees_of_freedom);
+      secondary_lageos2_trajectory.rbegin()->second);
 
   // Absolute error in position.
   EXPECT_THAT(AbsoluteError(primary_actual_final_dof.position(),
