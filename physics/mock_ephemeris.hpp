@@ -47,13 +47,13 @@ class MockEphemeris : public Ephemeris<Frame> {
       not_null<std::unique_ptr<
           typename Integrator<NewtonianMotionEquation>::Instance>>,
       NewInstance,
-      (std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
+      (std::vector<not_null<DiscreteTraject0ry<Frame>*>> const& trajectories,
        IntrinsicAccelerations const& intrinsic_accelerations,
        FixedStepParameters const& parameters),
       (override));
   MOCK_METHOD(absl::Status,
               FlowWithAdaptiveStep,
-              (not_null<DiscreteTrajectory<Frame>*> trajectory,
+              (not_null<DiscreteTraject0ry<Frame>*> trajectory,
                IntrinsicAcceleration intrinsic_acceleration,
                Instant const& t,
                AdaptiveStepParameters const& parameters,
@@ -73,7 +73,7 @@ class MockEphemeris : public Ephemeris<Frame> {
 
   MOCK_METHOD((Vector<Acceleration, Frame>),
               ComputeGravitationalAccelerationOnMasslessBody,
-              (not_null<DiscreteTrajectory<Frame>*> trajectory,
+              (not_null<DiscreteTraject0ry<Frame>*> trajectory,
                Instant const& t),
               (const, override));
 
@@ -118,21 +118,21 @@ ACTION_P2(AppendToDiscreteTrajectories, time, degrees_of_freedom) {
   }
 }
 
-ACTION_P(AppendToDiscreteTrajectory, degrees_of_freedom) {
+ACTION_P(AppendToDiscreteTraject0ry, degrees_of_freedom) {
   arg0->Append(arg2, degrees_of_freedom);
 }
 
-ACTION_P2(AppendToDiscreteTrajectory, time, degrees_of_freedom) {
+ACTION_P2(AppendToDiscreteTraject0ry, time, degrees_of_freedom) {
   arg0->Append(time, degrees_of_freedom);
 }
 
-ACTION_P3(AppendToDiscreteTrajectory, trajectory, time, degrees_of_freedom) {
+ACTION_P3(AppendToDiscreteTraject0ry, trajectory, time, degrees_of_freedom) {
   // The extra level of indirection is useful for tests that get a pointer to a
   // trajectory and squirrel it away using |SaveArg<N>|.
   (*trajectory)->Append(time, degrees_of_freedom);
 }
 
-ACTION_P(AppendPointsToDiscreteTrajectory, trajectory) {
+ACTION_P(AppendPointsToDiscreteTraject0ry, trajectory) {
   for (auto const& [time, degrees_of_freedom] : *trajectory) {
     arg0->Append(time, degrees_of_freedom);
   }
