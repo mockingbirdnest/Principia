@@ -335,8 +335,8 @@ DiscreteTrajectory2<Frame>::ReadFromMessage(
     return trajectory;
   }
 
-  // First restore the segments themselves.  This vector will be used to restore
-  // the tracked segments.
+  // First restore the segments themselves.  |segment_iterators| will be used to
+  // restore the tracked segments.
   std::vector<SegmentIterator> segment_iterators;
   segment_iterators.reserve(message.segment_size());
   for (auto const& serialized_segment : message.segment()) {
@@ -422,23 +422,28 @@ absl::Status DiscreteTrajectory2<Frame>::IsConsistent() const {
   }
   {
     int i = 0;
-    for (auto it = segments_->cbegin();
-         it != std::prev(segments_->cend());
-         ++it, ++i) {
-      if (it->rbegin()->first != std::next(it)->begin()->first) {
+    for (auto sit = segments_->cbegin();
+         sit != std::prev(segments_->cend());
+         ++sit, ++i) {
+      // Great care is required here because the DiscreteTrajectoryIterator will
+      // "helpfully" paper over differences in degrees of freedom as long as the
+      // times match.  We must look at the endpoints of the timeline explicitly.
+      auto const timeline_rbegin = --sit->timeline_end();
+      auto const timeline_begin = std::next(sit)->timeline_begin();
+      if (timeline_rbegin->first != timeline_begin->first) {
         return absl::InternalError(
             absl::StrCat("Duplicated time mismatch ",
-                         DebugString(it->rbegin()->first),
+                         DebugString(timeline_rbegin->first),
                          " and ",
-                         DebugString(std::next(it)->begin()->first),
+                         DebugString(timeline_begin->first),
                          " for segment #",
                          i));
-      } else if (it->rbegin()->second != std::next(it)->begin()->second) {
+      } else if (timeline_rbegin->second != timeline_begin->second) {
         return absl::InternalError(
             absl::StrCat("Duplicated degrees of freedom mismatch ",
-                         DebugString(it->rbegin()->second),
+                         DebugString(timeline_rbegin->second),
                          " and ",
-                         DebugString(std::next(it)->begin()->second),
+                         DebugString(timeline_begin->second),
                          " for segment #",
                          i));
       }

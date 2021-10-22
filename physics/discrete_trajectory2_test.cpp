@@ -8,12 +8,17 @@
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/discrete_trajectory_factories.hpp"
+#include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/serialization.hpp"
 #include "testing_utilities/string_log_sink.hpp"
 
@@ -28,11 +33,22 @@ using geometry::Handedness;
 using geometry::Inertial;
 using geometry::Instant;
 using geometry::Velocity;
+using quantities::AngularFrequency;
+using quantities::Length;
+using quantities::Time;
 using quantities::si::Metre;
+using quantities::si::Micro;
+using quantities::si::Milli;
+using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::operator""_⑴;
+using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::AlmostEquals;
+using testing_utilities::AppendTrajectoryTimeline;
 using testing_utilities::Componentwise;
 using testing_utilities::EqualsProto;
+using testing_utilities::IsNear;
+using testing_utilities::NewCircularTrajectoryTimeline;
 using testing_utilities::NewLinearTrajectoryTimeline;
 using testing_utilities::ReadFromBinaryFile;
 using testing_utilities::StringLogSink;
@@ -526,6 +542,65 @@ TEST_F(DiscreteTrajectory2Test, SerializationRoundTrip) {
        deserialized_trajectory.lower_bound(t0_ + 3 * Second)});
 
   EXPECT_THAT(message2, EqualsProto(message1));
+}
+
+TEST_F(DiscreteTrajectory2Test, SerializationExactEndpoints) {
+  DiscreteTrajectory2<World> trajectory;
+  AngularFrequency const ω = 3 * Radian / Second;
+  Length const r = 2 * Metre;
+  Time const Δt = 1.0 / 3.0 * Milli(Second);
+  Instant const t1 = t0_;
+  Instant const t2 = t0_ + 1000.0 / 7.0 * Second;
+  Instant const t3 = t0_ + 2000.0 / 11.0 * Second;
+  // Downsampling is required for ZFP compression.
+  DiscreteTrajectorySegment<World>::DownsamplingParameters const
+      downsampling_parameters{.max_dense_intervals = 100,
+                              .tolerance = 5 * Milli(Metre)};
+
+  auto sit = trajectory.segments().begin();
+  sit->SetDownsampling(downsampling_parameters);
+  AppendTrajectoryTimeline(
+      NewCircularTrajectoryTimeline<World>(ω, r, Δt, t1, t2),
+      trajectory);
+  sit = trajectory.NewSegment();
+  sit->SetDownsampling(downsampling_parameters);
+  AppendTrajectoryTimeline(
+      NewCircularTrajectoryTimeline<World>(2 * ω, 2 * r, Δt, t2, t3),
+      trajectory);
+
+  auto const degrees_of_freedom1 =
+      trajectory.EvaluateDegreesOfFreedom(t1 + 100 * Second);
+  auto const degrees_of_freedom2 =
+      trajectory.EvaluateDegreesOfFreedom(t2 + 20 * Second);
+
+  serialization::DiscreteTrajectory message;
+  trajectory.WriteToMessage(&message, /*tracked=*/{}, /*exact=*/{});
+
+  // Deserialization would fail if the endpoints were nudged by ZFP compression.
+  auto const deserialized_trajectory =
+      DiscreteTrajectory2<World>::ReadFromMessage(message, /*tracked=*/{});
+
+  auto const deserialized_degrees_of_freedom1 =
+      deserialized_trajectory.EvaluateDegreesOfFreedom(t1 + 100 * Second);
+  auto const deserialized_degrees_of_freedom2 =
+      deserialized_trajectory.EvaluateDegreesOfFreedom(t2 + 20 * Second);
+
+  // These checks verify that ZFP compression actually happened (so we observe
+  // small errors on the degrees of freedom).
+  EXPECT_THAT(
+      (deserialized_degrees_of_freedom1.position() - World::origin).Norm(),
+      AbsoluteErrorFrom((degrees_of_freedom1.position() - World::origin).Norm(),
+                        IsNear(0.24_⑴*Milli(Metre))));
+  EXPECT_THAT(deserialized_degrees_of_freedom1.velocity().Norm(),
+              AbsoluteErrorFrom(degrees_of_freedom1.velocity().Norm(),
+                                IsNear(1.5_⑴ * Micro(Metre) / Second)));
+  EXPECT_THAT(
+      (deserialized_degrees_of_freedom2.position() - World::origin).Norm(),
+      AbsoluteErrorFrom((degrees_of_freedom2.position() - World::origin).Norm(),
+                        IsNear(0.16_⑴*Milli(Metre))));
+  EXPECT_THAT(deserialized_degrees_of_freedom2.velocity().Norm(),
+              AbsoluteErrorFrom(degrees_of_freedom2.velocity().Norm(),
+                                IsNear(0.39_⑴ * Metre / Second)));
 }
 
 TEST_F(DiscreteTrajectory2Test, SerializationPreΖήνωνCompatibility) {
