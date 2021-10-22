@@ -22,7 +22,7 @@
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_traject0ry.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -52,7 +52,7 @@ using numerics::UnboundedLowerTriangularMatrix;
 using numerics::UnboundedUpperTriangularMatrix;
 using numerics::UnboundedVector;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
+using physics::DiscreteTraject0ry;
 using quantities::Infinity;
 using quantities::Length;
 using quantities::Speed;
@@ -204,7 +204,7 @@ TEST_F(MathematicaTest, ToMathematica) {
     EXPECT_EQ(ToMathematica(std::tuple{1.0, 2.0}), ToMathematica(v2));
   }
   {
-    DiscreteTrajectory<F> trajectory;
+    DiscreteTraject0ry<F> trajectory;
     trajectory.Append(
         Instant(),
         DegreesOfFreedom<F>(
@@ -213,9 +213,9 @@ TEST_F(MathematicaTest, ToMathematica) {
             Velocity<F>({-1.0 * Metre / Second,
                          -5.0 * Metre / Second,
                          8.0 * Metre / Second})));
-    EXPECT_EQ(ToMathematica(std::tuple{trajectory.front().time,
-                                       trajectory.front().degrees_of_freedom}),
-              ToMathematica(trajectory.front()));
+    EXPECT_EQ(ToMathematica(std::pair{trajectory.begin()->first,
+                                      trajectory.begin()->second}),
+              ToMathematica(*trajectory.begin()));
   }
   {
     OrbitalElements::EquinoctialElements elements{
@@ -339,7 +339,7 @@ TEST_F(MathematicaTest, ExpressIn) {
               ToMathematica(v, ExpressIn(Metre, Second)));
   }
   {
-    DiscreteTrajectory<F> trajectory;
+    DiscreteTraject0ry<F> trajectory;
     trajectory.Append(
         Instant(),
         DegreesOfFreedom<F>(
@@ -352,7 +352,7 @@ TEST_F(MathematicaTest, ExpressIn) {
         ToMathematica(std::tuple{0.0,
                                  std::tuple{std::tuple{2.0, 3.0, -4.0},
                                             std::tuple{-1.0, -5.0, 8.0}}}),
-        ToMathematica(trajectory.front(), ExpressIn(Metre, Second)));
+        ToMathematica(*trajectory.begin(), ExpressIn(Metre, Second)));
   }
   {
     OrbitalElements::EquinoctialElements elements{
