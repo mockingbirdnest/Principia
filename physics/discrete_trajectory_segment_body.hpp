@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "absl/container/flat_hash_set.h"
+#include "absl/container/btree_set.h"
 #include "astronomy/epoch.hpp"
 #include "base/zfp_compressor.hpp"
 #include "geometry/named_quantities.hpp"
@@ -191,8 +191,14 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
   message->set_number_of_dense_points(number_of_dense_points_);
 
   // Convert the |exact| vector into a set, and add the extremities.  This
-  // ensures that we don't have redundancies.
-  absl::flat_hash_set<value_type const*> exact_set;
+  // ensures that we don't have redundancies.  The set is sorted by time to
+  // guarantee that serialization is reproducible.
+  auto time_comparator = [](value_type const* const left,
+                            value_type const* const right) {
+    return left->first < right->first;
+  };
+  absl::btree_set<value_type const*,
+                  decltype(time_comparator)> exact_set(time_comparator);
   for (auto const it : exact) {
     exact_set.insert(&*it);
   }
@@ -282,7 +288,8 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
   // Construct a map for efficient lookup of the exact points.
   Timeline exact;
   for (auto const& instantaneous_degrees_of_freedom : message.exact()) {
-    exact.emplace(
+    exact.emplace_hint(
+        exact.cend(),
         Instant::ReadFromMessage(instantaneous_degrees_of_freedom.instant()),
         DegreesOfFreedom<Frame>::ReadFromMessage(
             instantaneous_degrees_of_freedom.degrees_of_freedom()));
