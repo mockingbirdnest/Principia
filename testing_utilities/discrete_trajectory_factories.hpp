@@ -6,6 +6,7 @@
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/discrete_trajectory2.hpp"
 #include "physics/discrete_trajectory_segment.hpp"
 #include "physics/discrete_trajectory_types.hpp"
 #include "quantities/named_quantities.hpp"
@@ -19,6 +20,7 @@ using base::not_null;
 using geometry::Instant;
 using geometry::Velocity;
 using physics::DegreesOfFreedom;
+using physics::DiscreteTrajectory2;
 using physics::DiscreteTrajectorySegment;
 using physics::internal_discrete_trajectory_types::Timeline;
 using quantities::AngularFrequency;
@@ -80,6 +82,10 @@ NewCircularTrajectoryTimeline(Time const& period,
 template<typename Frame>
 void AppendTrajectoryTimeline(Timeline<Frame> const& from,
                               DiscreteTrajectorySegment<Frame>& to);
+
+template<typename Frame>
+void AppendTrajectoryTimeline(Timeline<Frame> const& from,
+                              DiscreteTrajectory2<Frame>& to);
 
 }  // namespace internal_discrete_trajectory_factories
 
