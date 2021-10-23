@@ -438,7 +438,8 @@ absl::Status DiscreteTraject0ry<Frame>::ValidateConsistency() const {
                          DebugString(timeline_begin->time),
                          " for segment #",
                          i));
-      } else if (timeline_rbegin->degrees_of_freedom != timeline_begin->degrees_of_freedom) {
+      } else if (timeline_rbegin->degrees_of_freedom !=
+                 timeline_begin->degrees_of_freedom) {
         return absl::InternalError(
             absl::StrCat("Duplicated degrees of freedom mismatch ",
                          DebugString(timeline_rbegin->degrees_of_freedom),
