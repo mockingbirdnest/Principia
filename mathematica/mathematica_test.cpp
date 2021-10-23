@@ -213,8 +213,8 @@ TEST_F(MathematicaTest, ToMathematica) {
             Velocity<F>({-1.0 * Metre / Second,
                          -5.0 * Metre / Second,
                          8.0 * Metre / Second})));
-    EXPECT_EQ(ToMathematica(std::pair{trajectory.begin()->first,
-                                      trajectory.begin()->second}),
+    EXPECT_EQ(ToMathematica(std::pair{trajectory.front().first,
+                                      trajectory.front().second}),
               ToMathematica(*trajectory.begin()));
   }
   {
