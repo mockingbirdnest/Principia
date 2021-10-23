@@ -112,13 +112,13 @@ TEST_F(GeodesyTest, DISABLED_LAGEOS2) {
            initial_ilrsb.orbit(lageos2_id).front()->front().first);
 
   auto const& [initial_time, initial_dof_ilrsa] =
-      *initial_ilrsa.orbit(lageos2_id).front()->begin();
+      initial_ilrsa.orbit(lageos2_id).front()->front();
 
   auto const& [_, initial_dof_ilrsb] =
-      *initial_ilrsb.orbit(lageos2_id).front()->begin();
+      initial_ilrsb.orbit(lageos2_id).front()->front();
 
   auto const& [final_time, expected_final_dof] =
-      *final_ilrsa.orbit(lageos2_id).front()->begin();
+      final_ilrsa.orbit(lageos2_id).front()->front();
 
   ephemeris_->Prolong(final_time);
 
