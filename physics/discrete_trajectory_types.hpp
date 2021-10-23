@@ -40,9 +40,9 @@ struct value_type {
   DegreesOfFreedom<Frame> degrees_of_freedom;
 };
 
-struct Precedes {
-  Precedes() = default;
-  using is_transparent = std::true_type;
+struct Earlier {
+  Earlier() = default;
+  using is_transparent = void;
   template<typename Frame>
   bool operator()(value_type<Frame> const& left,
                   value_type<Frame> const& right) const {
@@ -62,7 +62,7 @@ template<typename Frame>
 using Segments = std::list<DiscreteTrajectorySegment<Frame>>;
 
 template<typename Frame>
-using Timeline = absl::btree_set<value_type<Frame>, Precedes>;
+using Timeline = absl::btree_set<value_type<Frame>, Earlier>;
 
 }  // namespace internal_discrete_trajectory_types
 }  // namespace physics
