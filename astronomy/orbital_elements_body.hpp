@@ -65,8 +65,8 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
         "trajectory does not span one sidereal period: sidereal period is " +
             DebugString(orbital_elements.sidereal_period_) +
             ", trajectory spans " +
-            DebugString(trajectory.back().first -
-                        trajectory.front().first));
+            DebugString(trajectory.rbegin()->first -
+                        trajectory.begin()->first));
   }
   auto mean_classical_elements =
       ToClassicalElements(orbital_elements.mean_equinoctial_elements_);

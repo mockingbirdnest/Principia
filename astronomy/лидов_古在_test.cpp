@@ -101,7 +101,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
     LOG(INFO) << "Flowing to " << t;
     auto const status = ephemeris_->FlowWithFixedStep(t, *instance);
     if (!status.ok()) {
-      LOG(INFO) << status << " at " << icrs_trajectory.back().first;
+      LOG(INFO) << status << " at " << icrs_trajectory.rbegin()->first;
       break;
     }
   }
@@ -116,7 +116,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
                                       mercury_frame_.ToThisFrameAtTime(t)(dof));
     logger.Append(
         "q",
-        mercury_centred_trajectory.back().second.position(),
+        mercury_centred_trajectory.rbegin()->second.position(),
         mathematica::ExpressIn(Metre));
   }
 

@@ -16,9 +16,6 @@ class DiscreteTrajectorySegmentRange {
   DiscreteTrajectorySegmentRange() = default;
   DiscreteTrajectorySegmentRange(Iterator begin, Iterator end);
 
-  typename Iterator::reference front() const;
-  typename Iterator::reference back() const;
-
   Iterator begin() const;
   Iterator end() const;
 
