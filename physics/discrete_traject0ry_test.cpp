@@ -132,8 +132,8 @@ TEST_F(DiscreteTraject0ryTest, Make) {
 
 TEST_F(DiscreteTraject0ryTest, BackFront) {
   auto const trajectory = MakeTrajectory();
-  EXPECT_EQ(t0_, trajectory.front().first);
-  EXPECT_EQ(t0_ + 14 * Second, trajectory.back().first);
+  EXPECT_EQ(t0_, trajectory.front().time);
+  EXPECT_EQ(t0_ + 14 * Second, trajectory.back().time);
 }
 
 TEST_F(DiscreteTraject0ryTest, IterateForward) {

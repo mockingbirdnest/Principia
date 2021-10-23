@@ -106,8 +106,8 @@ class DiscreteTrajectorySegmentTest : public ::testing::Test {
 };
 
 TEST_F(DiscreteTrajectorySegmentTest, BackFront) {
-  EXPECT_EQ(t0_ + 2 * Second, segment_->front().first);
-  EXPECT_EQ(t0_ + 11 * Second, segment_->back().first);
+  EXPECT_EQ(t0_ + 2 * Second, segment_->front().time);
+  EXPECT_EQ(t0_ + 11 * Second, segment_->back().time);
 }
 
 TEST_F(DiscreteTrajectorySegmentTest, Extremities) {

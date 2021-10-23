@@ -64,9 +64,9 @@ TEST_F(DiscreteTrajectoryFactoriesTest, NewLinearTrajectoryTimeline) {
                              1));
     EXPECT_THAT(velocity.Norm(), AlmostEquals(Sqrt(77) * Metre / Second, 0, 0));
   }
-  EXPECT_THAT(timeline.begin()->first,
+  EXPECT_THAT(timeline.begin()->time,
               AlmostEquals(Instant() + 4 * Second, 0));
-  EXPECT_THAT(timeline.rbegin()->first,
+  EXPECT_THAT(timeline.rbegin()->time,
               AlmostEquals(Instant() + 41.9 * Second, 46));
   EXPECT_EQ(380, timeline.size());
 }
@@ -88,9 +88,9 @@ TEST_F(DiscreteTrajectoryFactoriesTest, NewCircularTrajectoryTimeline) {
     EXPECT_THAT(InnerProduct(position - World::origin, velocity),
                 VanishesBefore(1 * Metre * Metre / Second, 0, 8));
   }
-  EXPECT_THAT(timeline.begin()->first,
+  EXPECT_THAT(timeline.begin()->time,
               AlmostEquals(Instant() + 4 * Second, 0));
-  EXPECT_THAT(timeline.rbegin()->first,
+  EXPECT_THAT(timeline.rbegin()->time,
               AlmostEquals(Instant() + 41.9 * Second, 46));
   EXPECT_EQ(380, timeline.size());
 }
