@@ -14,7 +14,6 @@
 #include "mathematica/mathematica.hpp"
 #include "numerics/polynomial.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
-#include "physics/discrete_traject0ry.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/solar_system.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
@@ -36,7 +35,7 @@ using numerics::EstrinEvaluator;
 using numerics::PolynomialInMonomialBasis;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::BodySurfaceDynamicFrame;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::MasslessBody;
 using physics::RotatingBody;
@@ -144,18 +143,18 @@ class OrbitAnalysisTest : public ::testing::Test {
 
   // Returns a GCRS trajectory obtained by stitching together the trajectories
   // of |sp3_orbit.satellites| in |sp3_orbit.files|.
-  not_null<std::unique_ptr<DiscreteTraject0ry<GCRS>>> EarthCentredTrajectory(
+  not_null<std::unique_ptr<DiscreteTrajectory<GCRS>>> EarthCentredTrajectory(
       SP3Orbit const& sp3_orbit) {
     BodyCentredNonRotatingDynamicFrame<ICRS, GCRS> gcrs{ephemeris_.get(),
                                                         &earth_};
     BodySurfaceDynamicFrame<ICRS, ITRS> itrs{ephemeris_.get(), &earth_};
 
-    auto result = make_not_null_unique<DiscreteTraject0ry<GCRS>>();
+    auto result = make_not_null_unique<DiscreteTrajectory<GCRS>>();
     for (auto const& file : sp3_orbit.files.names) {
       StandardProduct3 sp3(
           SOLUTION_DIR / "astronomy" / "standard_product_3" / file,
           sp3_orbit.files.dialect);
-      std::vector<not_null<DiscreteTraject0ry<ITRS> const*>> const& orbit =
+      std::vector<not_null<DiscreteTrajectory<ITRS> const*>> const& orbit =
           sp3.orbit(sp3_orbit.satellite);
       CHECK_EQ(orbit.size(), 1);
       auto const& arc = *orbit.front();
