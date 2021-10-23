@@ -97,26 +97,26 @@ class DiscreteTrajectoryIteratorTest : public ::testing::Test {
 TEST_F(DiscreteTrajectoryIteratorTest, ForwardOneSegment) {
   auto segment = segments_->begin();
   auto iterator = MakeBegin(segment);
-  EXPECT_EQ(t0_ + 2 * Second, iterator->first);
+  EXPECT_EQ(t0_ + 2 * Second, iterator->time);
   auto const current = ++iterator;
-  EXPECT_EQ(t0_ + 3 * Second, iterator->first);
-  EXPECT_EQ(t0_ + 3 * Second, current->first);
+  EXPECT_EQ(t0_ + 3 * Second, iterator->time);
+  EXPECT_EQ(t0_ + 3 * Second, current->time);
   auto const previous = iterator++;
-  EXPECT_EQ(t0_ + 5 * Second, iterator->first);
-  EXPECT_EQ(t0_ + 3 * Second, previous->first);
+  EXPECT_EQ(t0_ + 5 * Second, iterator->time);
+  EXPECT_EQ(t0_ + 3 * Second, previous->time);
 }
 
 TEST_F(DiscreteTrajectoryIteratorTest, BackwardOneSegment) {
   auto segment = --segments_->end();
   auto iterator = MakeEnd(segment);
   --iterator;
-  EXPECT_EQ(t0_ + 23 * Second, (*iterator).first);
+  EXPECT_EQ(t0_ + 23 * Second, (*iterator).time);
   auto const current = --iterator;
-  EXPECT_EQ(t0_ + 19 * Second, (*iterator).first);
-  EXPECT_EQ(t0_ + 19 * Second, (*current).first);
+  EXPECT_EQ(t0_ + 19 * Second, (*iterator).time);
+  EXPECT_EQ(t0_ + 19 * Second, (*current).time);
   auto const previous = iterator--;
-  EXPECT_EQ(t0_ + 17 * Second, (*iterator).first);
-  EXPECT_EQ(t0_ + 19 * Second, (*previous).first);
+  EXPECT_EQ(t0_ + 17 * Second, (*iterator).time);
+  EXPECT_EQ(t0_ + 19 * Second, (*previous).time);
 }
 
 TEST_F(DiscreteTrajectoryIteratorTest, ForwardAcrossSegments) {
@@ -125,11 +125,11 @@ TEST_F(DiscreteTrajectoryIteratorTest, ForwardAcrossSegments) {
   for (int i = 0; i < 4; ++i) {
     ++iterator;
   }
-  EXPECT_EQ(t0_ + 11 * Second, iterator->first);
+  EXPECT_EQ(t0_ + 11 * Second, iterator->time);
   ++iterator;
-  EXPECT_EQ(t0_ + 13 * Second, iterator->first);
+  EXPECT_EQ(t0_ + 13 * Second, iterator->time);
   ++iterator;
-  EXPECT_EQ(t0_ + 17 * Second, iterator->first);
+  EXPECT_EQ(t0_ + 17 * Second, iterator->time);
 }
 
 TEST_F(DiscreteTrajectoryIteratorTest, BackwardAcrossSegments) {
@@ -138,11 +138,11 @@ TEST_F(DiscreteTrajectoryIteratorTest, BackwardAcrossSegments) {
   for (int i = 0; i < 3; ++i) {
     --iterator;
   }
-  EXPECT_EQ(t0_ + 17 * Second, (*iterator).first);
+  EXPECT_EQ(t0_ + 17 * Second, (*iterator).time);
   --iterator;
-  EXPECT_EQ(t0_ + 13 * Second, (*iterator).first);
+  EXPECT_EQ(t0_ + 13 * Second, (*iterator).time);
   --iterator;
-  EXPECT_EQ(t0_ + 11 * Second, (*iterator).first);
+  EXPECT_EQ(t0_ + 11 * Second, (*iterator).time);
 }
 
 TEST_F(DiscreteTrajectoryIteratorTest, Equality) {
@@ -152,17 +152,17 @@ TEST_F(DiscreteTrajectoryIteratorTest, Equality) {
   for (int i = 0; i < 3; ++i) {
     --it1;
   }
-  EXPECT_EQ(t0_ + 17 * Second, (*it1).first);
+  EXPECT_EQ(t0_ + 17 * Second, (*it1).time);
   --it1;
-  EXPECT_EQ(t0_ + 13 * Second, (*it1).first);
+  EXPECT_EQ(t0_ + 13 * Second, (*it1).time);
 
   auto it2 = MakeBegin(segments_->begin());
   for (int i = 0; i < 4; ++i) {
     ++it2;
   }
-  EXPECT_EQ(t0_ + 11 * Second, it2->first);
+  EXPECT_EQ(t0_ + 11 * Second, it2->time);
   ++it2;
-  EXPECT_EQ(t0_ + 13 * Second, it2->first);
+  EXPECT_EQ(t0_ + 13 * Second, it2->time);
 
   EXPECT_EQ(it1, it2);
   EXPECT_NE(it1, MakeBegin(segments_->begin()));
@@ -209,7 +209,7 @@ TEST_F(DiscreteTrajectoryIteratorTest, EmptyLastSegment) {
   auto segments = MakeSegments(2);
   auto segment = segments->begin();
   Append(segment, t0_, unmoving_origin_);
-  EXPECT_EQ(t0_, segment->rbegin()->first);
+  EXPECT_EQ(t0_, segment->rbegin()->time);
 }
 
 }  // namespace physics

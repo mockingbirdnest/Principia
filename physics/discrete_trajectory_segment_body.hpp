@@ -115,20 +115,20 @@ DiscreteTrajectorySegment<Frame>::upper_bound(Instant const& t) const {
 
 template<typename Frame>
 Instant DiscreteTrajectorySegment<Frame>::t_min() const {
-  return empty() ? InfiniteFuture : timeline_.cbegin()->first;
+  return empty() ? InfiniteFuture : timeline_.cbegin()->time;
 }
 
 template<typename Frame>
 Instant DiscreteTrajectorySegment<Frame>::t_max() const {
-  return empty() ? InfinitePast : timeline_.crbegin()->first;
+  return empty() ? InfinitePast : timeline_.crbegin()->time;
 }
 
 template<typename Frame>
 Position<Frame> DiscreteTrajectorySegment<Frame>::EvaluatePosition(
     Instant const& t) const {
   auto const it = timeline_.lower_bound(t);
-  if (it->first == t) {
-    return it->second.position();
+  if (it->time == t) {
+    return it->degrees_of_freedom.position();
   }
   CHECK_LT(t_min(), t);
   CHECK_GT(t_max(), t);
@@ -139,8 +139,8 @@ template<typename Frame>
 Velocity<Frame> DiscreteTrajectorySegment<Frame>::EvaluateVelocity(
     Instant const& t) const {
   auto const it = timeline_.lower_bound(t);
-  if (it->first == t) {
-    return it->second.velocity();
+  if (it->time == t) {
+    return it->degrees_of_freedom.velocity();
   }
   CHECK_LT(t_min(), t);
   CHECK_GT(t_max(), t);
@@ -152,8 +152,8 @@ DegreesOfFreedom<Frame>
 DiscreteTrajectorySegment<Frame>::EvaluateDegreesOfFreedom(
     Instant const& t) const {
   auto const it = timeline_.lower_bound(t);
-  if (it->first == t) {
-    return it->second;
+  if (it->time == t) {
+    return it->degrees_of_freedom;
   }
   CHECK_LT(t_min(), t);
   CHECK_GT(t_max(), t);
@@ -195,7 +195,7 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
   // guarantee that serialization is reproducible.
   auto time_comparator = [](value_type const* const left,
                             value_type const* const right) {
-    return left->first < right->first;
+    return left->time < right->time;
   };
   absl::btree_set<value_type const*,
                   decltype(time_comparator)> exact_set(time_comparator);
@@ -333,7 +333,7 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
     if (auto it = exact.find(time); it == exact.cend()) {
       segment.Append(time, DegreesOfFreedom<Frame>(q, p));
     } else {
-      segment.Append(time, it->second);
+      segment.Append(time, it->degrees_of_freedom);
     }
   }
 
@@ -360,10 +360,10 @@ template<typename Frame>
 absl::Status DiscreteTrajectorySegment<Frame>::Append(
     Instant const& t,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
-  if (!timeline_.empty() && timeline_.cbegin()->first == t) {
+  if (!timeline_.empty() && timeline_.cbegin()->time == t) {
     LOG(WARNING) << "Append at existing time " << t << ", time range = ["
-                 << timeline_.cbegin()->first << ", "
-                 << timeline_.crbegin()->first << "]";
+                 << timeline_.cbegin()->time << ", "
+                 << timeline_.crbegin()->time << "]";
     return absl::OkStatus();
   }
   auto it = timeline_.emplace_hint(timeline_.cend(),
@@ -371,7 +371,7 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
                                    degrees_of_freedom);
   CHECK(++it == timeline_.end())
       << "Append out of order at " << t << ", last time is "
-      << timeline_.crbegin()->first;
+      << timeline_.crbegin()->time;
 
   if (downsampling_parameters_.has_value()) {
     return DownsampleIfNeeded();
@@ -428,10 +428,10 @@ void DiscreteTrajectorySegment<Frame>::SetStartOfDenseTimeline(
 
 template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::SetForkPoint(value_type const& point) {
-  auto const it =
-      timeline_.emplace_hint(timeline_.begin(), point.first, point.second);
+  auto const it = timeline_.emplace_hint(
+      timeline_.begin(), point.time, point.degrees_of_freedom);
   CHECK(it == timeline_.begin())
-      << "Inconsistent fork point at time " << point.first;
+      << "Inconsistent fork point at time " << point.time;
 }
 
 template<typename Frame>
@@ -453,9 +453,9 @@ absl::Status DiscreteTrajectorySegment<Frame>::DownsampleIfNeeded() {
     absl::StatusOr<std::list<typename ConstIterators::const_iterator>>
         right_endpoints = FitHermiteSpline<Instant, Position<Frame>>(
             dense_iterators,
-            [](auto&& it) -> auto&& { return it->first; },
-            [](auto&& it) -> auto&& { return it->second.position(); },
-            [](auto&& it) -> auto&& { return it->second.velocity(); },
+            [](auto&& it) -> auto&& { return it->time; },
+            [](auto&& it) -> auto&& { return it->degrees_of_freedom.position(); },
+            [](auto&& it) -> auto&& { return it->degrees_of_freedom.velocity(); },
             downsampling_parameters_->tolerance);
     if (!right_endpoints.ok()) {
       // Note that the actual appending took place; the propagated status only
@@ -470,11 +470,11 @@ absl::Status DiscreteTrajectorySegment<Frame>::DownsampleIfNeeded() {
 
     // Obtain the times for the right endpoints.  This is necessary because we
     // cannot use iterators for erasing points, as they would get invalidated
-    // after the first erasure.
+    // after the.time erasure.
     std::vector<Instant> right_endpoints_times;
     right_endpoints_times.reserve(right_endpoints.value().size());
     for (auto const& it_in_dense_iterators : right_endpoints.value()) {
-      right_endpoints_times.push_back((*it_in_dense_iterators)->first);
+      right_endpoints_times.push_back((*it_in_dense_iterators)->time);
     }
 
     // Poke holes in the timeline at the places given by
