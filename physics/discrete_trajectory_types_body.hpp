@@ -15,11 +15,13 @@ bool Earlier::operator()(value_type<Frame> const& left,
                          value_type<Frame> const& right) const {
   return left.time < right.time;
 }
+
 template<typename Frame>
 bool Earlier::operator()(Instant const& left,
                          value_type<Frame> const& right) const {
   return left < right.time;
 }
+
 template<typename Frame>
 bool Earlier::operator()(value_type<Frame> const& left,
                          Instant const& right) const {
