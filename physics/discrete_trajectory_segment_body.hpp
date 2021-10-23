@@ -466,8 +466,12 @@ absl::Status DiscreteTrajectorySegment<Frame>::DownsampleIfNeeded() {
         right_endpoints = FitHermiteSpline<Instant, Position<Frame>>(
             dense_iterators,
             [](auto&& it) -> auto&& { return it->time; },
-            [](auto&& it) -> auto&& { return it->degrees_of_freedom.position(); },
-            [](auto&& it) -> auto&& { return it->degrees_of_freedom.velocity(); },
+            [](auto&& it) -> auto&& {
+              return it->degrees_of_freedom.position();
+            },
+            [](auto&& it) -> auto&& {
+              return it->degrees_of_freedom.velocity();
+            },
             downsampling_parameters_->tolerance);
     if (!right_endpoints.ok()) {
       // Note that the actual appending took place; the propagated status only
