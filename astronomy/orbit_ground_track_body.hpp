@@ -149,7 +149,7 @@ absl::StatusOr<OrbitGroundTrack> OrbitGroundTrack::ForTrajectory(
       PlanetocentricLongitudes(descending_nodes, primary);
   ground_track.first_descending_pass_before_first_ascending_pass_ =
       !ascending_nodes.empty() && !descending_nodes.empty() &&
-      descending_nodes.begin()->first < ascending_nodes.begin()->first;
+      descending_nodes.front().first < ascending_nodes.front().first;
   return ground_track;
 }
 
