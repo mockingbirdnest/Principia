@@ -338,7 +338,7 @@ Instant Ephemeris<Frame>::t_min() const {
 
 template<typename Frame>
 Instant Ephemeris<Frame>::t_max() const {
-  Instant t_max = bodies_to_trajectories_.begin()->second->t_max();
+  Instant t_max = bodies_to_trajectories_.front().second->t_max();
   for (auto const& [_, trajectory] : bodies_to_trajectories_) {
     t_max = std::min(t_max, trajectory->t_max());
   }
@@ -1122,7 +1122,7 @@ Instant Ephemeris<Frame>::instance_time() const {
 template<typename Frame>
 Instant Ephemeris<Frame>::t_min_locked() const {
   lock_.AssertReaderHeld();
-  Instant t_min = bodies_to_trajectories_.begin()->second->t_min();
+  Instant t_min = bodies_to_trajectories_.front().second->t_min();
   for (auto const& [_, trajectory] : bodies_to_trajectories_) {
     t_min = std::max(t_min, trajectory->t_min());
   }
