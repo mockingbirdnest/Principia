@@ -6,7 +6,7 @@
 #include "geometry/interval.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/body.hpp"
-#include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_traject0ry.hpp"
 #include "physics/massive_body.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -18,7 +18,7 @@ namespace internal_orbital_elements {
 using geometry::Instant;
 using geometry::Interval;
 using physics::Body;
-using physics::DiscreteTrajectory;
+using physics::DiscreteTraject0ry;
 using physics::MassiveBody;
 using quantities::Angle;
 using quantities::AngularFrequency;
@@ -37,7 +37,7 @@ class OrbitalElements {
 
   template<typename PrimaryCentred>
   static absl::StatusOr<OrbitalElements> ForTrajectory(
-      DiscreteTrajectory<PrimaryCentred> const& trajectory,
+      DiscreteTraject0ry<PrimaryCentred> const& trajectory,
       MassiveBody const& primary,
       Body const& secondary);
 
@@ -146,13 +146,13 @@ class OrbitalElements {
 
   template<typename PrimaryCentred>
   static std::vector<EquinoctialElements> OsculatingEquinoctialElements(
-      DiscreteTrajectory<PrimaryCentred> const& trajectory,
+      DiscreteTraject0ry<PrimaryCentred> const& trajectory,
       MassiveBody const& primary,
       Body const& secondary);
 
   template<typename PrimaryCentred>
   static std::vector<Length> RadialDistances(
-      DiscreteTrajectory<PrimaryCentred> const& trajectory);
+      DiscreteTraject0ry<PrimaryCentred> const& trajectory);
 
   // |equinoctial_elements| must contain at least 2 elements.
   static absl::StatusOr<Time> SiderealPeriod(
