@@ -34,28 +34,23 @@ struct DownsamplingParameters {
 template<typename Frame>
 struct value_type {
   value_type(Instant const& time,
-             DegreesOfFreedom<Frame> const& degrees_of_freedom)
-      : time(time), degrees_of_freedom(degrees_of_freedom) {}
+             DegreesOfFreedom<Frame> const& degrees_of_freedom);
   Instant time;
   DegreesOfFreedom<Frame> degrees_of_freedom;
 };
 
 struct Earlier {
-  Earlier() = default;
   using is_transparent = void;
+
+  Earlier() = default;
+
   template<typename Frame>
   bool operator()(value_type<Frame> const& left,
-                  value_type<Frame> const& right) const {
-    return left.time < right.time;
-  }
+                  value_type<Frame> const& right) const;
   template<typename Frame>
-  bool operator()(Instant const& left, value_type<Frame> const& right) const {
-    return left < right.time;
-  }
+  bool operator()(Instant const& left, value_type<Frame> const& right) const;
   template<typename Frame>
-  bool operator()(value_type<Frame> const& left, Instant const& right) const {
-    return left.time < right;
-  }
+  bool operator()(value_type<Frame> const& left, Instant const& right) const;
 };
 
 template<typename Frame>
@@ -67,3 +62,5 @@ using Timeline = absl::btree_set<value_type<Frame>, Earlier>;
 }  // namespace internal_discrete_trajectory_types
 }  // namespace physics
 }  // namespace principia
+
+#include "physics/discrete_trajectory_types_body.hpp"
