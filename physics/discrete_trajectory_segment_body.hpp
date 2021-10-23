@@ -470,7 +470,7 @@ absl::Status DiscreteTrajectorySegment<Frame>::DownsampleIfNeeded() {
 
     // Obtain the times for the right endpoints.  This is necessary because we
     // cannot use iterators for erasing points, as they would get invalidated
-    // after the.time erasure.
+    // after the first erasure.
     std::vector<Instant> right_endpoints_times;
     right_endpoints_times.reserve(right_endpoints.value().size());
     for (auto const& it_in_dense_iterators : right_endpoints.value()) {

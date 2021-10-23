@@ -361,14 +361,18 @@ TEST_F(DiscreteTrajectorySegmentTest, SerializationWithDownsampling) {
                 AbsoluteErrorFrom(degrees_of_freedom1.velocity(),
                                   Lt(1.1 * Milli(Metre) / Second)));
   }
-  EXPECT_NE(deserialized_circle.lower_bound(t0_ + 1 * Second)->degrees_of_freedom,
-            circle.lower_bound(t0_ + 1 * Second)->degrees_of_freedom);
-  EXPECT_EQ(deserialized_circle.lower_bound(t0_ + 2 * Second)->degrees_of_freedom,
-            circle.lower_bound(t0_ + 2 * Second)->degrees_of_freedom);
-  EXPECT_EQ(deserialized_circle.lower_bound(t0_ + 3 * Second)->degrees_of_freedom,
-            circle.lower_bound(t0_ + 3 * Second)->degrees_of_freedom);
-  EXPECT_NE(deserialized_circle.lower_bound(t0_ + 4 * Second)->degrees_of_freedom,
-            circle.lower_bound(t0_ + 4 * Second)->degrees_of_freedom);
+  EXPECT_NE(
+      deserialized_circle.lower_bound(t0_ + 1 * Second)->degrees_of_freedom,
+      circle.lower_bound(t0_ + 1 * Second)->degrees_of_freedom);
+  EXPECT_EQ(
+      deserialized_circle.lower_bound(t0_ + 2 * Second)->degrees_of_freedom,
+      circle.lower_bound(t0_ + 2 * Second)->degrees_of_freedom);
+  EXPECT_EQ(
+      deserialized_circle.lower_bound(t0_ + 3 * Second)->degrees_of_freedom,
+      circle.lower_bound(t0_ + 3 * Second)->degrees_of_freedom);
+  EXPECT_NE(
+      deserialized_circle.lower_bound(t0_ + 4 * Second)->degrees_of_freedom,
+      circle.lower_bound(t0_ + 4 * Second)->degrees_of_freedom);
 
   // Appending may result in different downsampling because the positions differ
   // a bit.
