@@ -76,7 +76,7 @@ PileUp::PileUp(
       ephemeris_(ephemeris),
       adaptive_step_parameters_(std::move(adaptive_step_parameters)),
       fixed_step_parameters_(std::move(fixed_step_parameters)),
-      history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
+      history_(make_not_null_unique<DiscreteTraject0ry<Barycentric>>()),
       deletion_callback_(std::move(deletion_callback)) {
   LOG(INFO) << "Constructing pile up at " << this;
   MechanicalSystem<Barycentric, NonRotatingPileUp> mechanical_system;
@@ -232,7 +232,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
           new PileUp(std::move(parts),
                      DefaultPsychohistoryParameters(),
                      DefaultHistoryParameters(),
-                     DiscreteTrajectory<Barycentric>::ReadFromMessage(
+                     DiscreteTraject0ry<Barycentric>::ReadFromMessage(
                          message.history(),
                          /*forks=*/{}),
                      /*psychohistory=*/nullptr,
@@ -247,7 +247,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
                   message.adaptive_step_parameters()),
               Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
                   message.fixed_step_parameters()),
-              DiscreteTrajectory<Barycentric>::ReadFromMessage(
+              DiscreteTraject0ry<Barycentric>::ReadFromMessage(
                   message.history(),
                   /*forks=*/{}),
               /*psychohistory=*/nullptr,
@@ -266,9 +266,9 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
       pile_up->psychohistory_ = pile_up->history_->NewForkAtLast();
     }
   } else {
-    DiscreteTrajectory<Barycentric>* psychohistory = nullptr;
-    not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history =
-        DiscreteTrajectory<Barycentric>::ReadFromMessage(
+    DiscreteTraject0ry<Barycentric>* psychohistory = nullptr;
+    not_null<std::unique_ptr<DiscreteTraject0ry<Barycentric>>> history =
+        DiscreteTraject0ry<Barycentric>::ReadFromMessage(
             message.history(),
             /*forks=*/{&psychohistory});
     if (is_pre_frobenius) {
@@ -364,8 +364,8 @@ PileUp::PileUp(
     std::list<not_null<Part*>>&& parts,
     Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters,
     Ephemeris<Barycentric>::FixedStepParameters fixed_step_parameters,
-    not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history,
-    DiscreteTrajectory<Barycentric>* const psychohistory,
+    not_null<std::unique_ptr<DiscreteTraject0ry<Barycentric>>> history,
+    DiscreteTraject0ry<Barycentric>* const psychohistory,
     Bivector<AngularMomentum, NonRotatingPileUp> const& angular_momentum,
     not_null<Ephemeris<Barycentric>*> const ephemeris,
     std::function<void()> deletion_callback)
@@ -631,7 +631,7 @@ void PileUp::NudgeParts() const {
 }
 
 template<PileUp::AppendToPartTrajectory append_to_part_trajectory>
-void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
+void PileUp::AppendToPart(DiscreteTraject0ry<Barycentric>::iterator it) const {
   auto const& pile_up_dof = it->degrees_of_freedom;
   RigidMotion<Barycentric, NonRotatingPileUp> const barycentric_to_pile_up(
       RigidTransformation<Barycentric, NonRotatingPileUp>(

@@ -16,7 +16,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "integrators/integrators.hpp"
-#include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_traject0ry.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/euler_solver.hpp"
 #include "physics/massless_body.hpp"
@@ -45,7 +45,7 @@ using geometry::NonRotating;
 using geometry::RigidTransformation;
 using geometry::Vector;
 using integrators::Integrator;
-using physics::DiscreteTrajectory;
+using physics::DiscreteTraject0ry;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
 using physics::EulerSolver;
@@ -149,8 +149,8 @@ class PileUp {
       std::list<not_null<Part*>>&& parts,
       Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters,
       Ephemeris<Barycentric>::FixedStepParameters fixed_step_parameters,
-      not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history,
-      DiscreteTrajectory<Barycentric>* psychohistory,
+      not_null<std::unique_ptr<DiscreteTraject0ry<Barycentric>>> history,
+      DiscreteTraject0ry<Barycentric>* psychohistory,
       Bivector<AngularMomentum, NonRotatingPileUp> const& angular_momentum,
       not_null<Ephemeris<Barycentric>*> ephemeris,
       std::function<void()> deletion_callback);
@@ -180,7 +180,7 @@ class PileUp {
   void NudgeParts() const;
 
   template<AppendToPartTrajectory append_to_part_trajectory>
-  void AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const;
+  void AppendToPart(DiscreteTraject0ry<Barycentric>::iterator it) const;
 
   // Wrapped in a |unique_ptr| to be moveable.
   not_null<std::unique_ptr<absl::Mutex>> lock_;
@@ -204,7 +204,7 @@ class PileUp {
   // integrated with a fixed step using |fixed_instance_|, except in the
   // presence of intrinsic acceleration.  It is authoritative in the sense that
   // it is never going to change.
-  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_;
+  not_null<std::unique_ptr<DiscreteTraject0ry<Barycentric>>> history_;
 
   // The |psychohistory_| is the recent past trajectory of the pile-up.  Since
   // we need to draw something between the last point of the |history_| and the
@@ -214,7 +214,7 @@ class PileUp {
   // match the |history_| that we'll ultimately compute.  The name comes from
   // the fact that we are trying to predict the future, but since we are not as
   // good as Hari Seldon we only do it over a short period of time.
-  DiscreteTrajectory<Barycentric>* psychohistory_ = nullptr;
+  DiscreteTraject0ry<Barycentric>* psychohistory_ = nullptr;
 
   // The angular momentum of the pile up with respect to its centre of mass.
   Bivector<AngularMomentum, NonRotatingPileUp> angular_momentum_;
