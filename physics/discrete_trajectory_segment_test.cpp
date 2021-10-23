@@ -394,8 +394,7 @@ TEST_F(DiscreteTrajectorySegmentTest, SerializationWithDownsampling) {
   EXPECT_THAT(circle.size(), Eq(77));
   EXPECT_THAT(deserialized_circle.size(), Eq(78));
   for (Instant t = t0_;
-       t <= std::min(circle.rbegin()->time,
-                     deserialized_circle.rbegin()->time);
+       t <= std::min(circle.rbegin()->time, deserialized_circle.rbegin()->time);
        t += Δt) {
     EXPECT_THAT(
         deserialized_circle.EvaluatePosition(t),
