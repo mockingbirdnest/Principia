@@ -12,7 +12,6 @@
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
-#include "physics/discrete_traject0ry.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/mock_continuous_trajectory.hpp"
 #include "physics/mock_ephemeris.hpp"
@@ -453,7 +452,7 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ConstructFromOneBody) {
   // A discrete trajectory that remains motionless at the barycentre.  Since
   // both bodies don't have the same mass, this means it has an intrinsic
   // acceleration.
-  DiscreteTraject0ry<ICRS> barycentre_trajectory;
+  DiscreteTrajectory<ICRS> barycentre_trajectory;
   for (Time t; t <= period_; t += period_ / 16) {
     auto const big_dof =
         ephemeris_->trajectory(big_)->EvaluateDegreesOfFreedom(t0_ + t);
