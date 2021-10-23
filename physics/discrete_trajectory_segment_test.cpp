@@ -105,6 +105,11 @@ class DiscreteTrajectorySegmentTest : public ::testing::Test {
   DegreesOfFreedom<World> unmoving_origin_{World::origin, World::unmoving};
 };
 
+TEST_F(DiscreteTrajectorySegmentTest, BackFront) {
+  EXPECT_EQ(t0_ + 2 * Second, segment_->front().first);
+  EXPECT_EQ(t0_ + 11 * Second, segment_->back().first);
+}
+
 TEST_F(DiscreteTrajectorySegmentTest, Extremities) {
   {
     auto const it = segment_->begin();
