@@ -10,7 +10,6 @@
 #include "gtest/gtest.h"
 #include "mathematica/mathematica.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
-#include "physics/discrete_traject0ry.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/solar_system.hpp"
@@ -35,7 +34,7 @@ using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using integrators::methods::QuinlanTremaine1990Order12;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::KeplerianElements;
 using physics::KeplerOrbit;
@@ -77,7 +76,7 @@ class OrbitalElementsTest : public ::testing::Test {
 
   // Completes |initial_osculating_elements| and returns a GCRS trajectory
   // obtained by flowing the corresponding initial conditions in |ephemeris|.
-  static not_null<std::unique_ptr<DiscreteTraject0ry<GCRS>>>
+  static not_null<std::unique_ptr<DiscreteTrajectory<GCRS>>>
   EarthCentredTrajectory(
       KeplerianElements<GCRS>& initial_osculating_elements,
       Instant const& initial_time,
@@ -86,7 +85,7 @@ class OrbitalElementsTest : public ::testing::Test {
     MassiveBody const& earth = FindEarthOrDie(ephemeris);
     ephemeris.Prolong(final_time);
     BodyCentredNonRotatingDynamicFrame<ICRS, GCRS> gcrs{&ephemeris, &earth};
-    DiscreteTraject0ry<ICRS> icrs_trajectory;
+    DiscreteTrajectory<ICRS> icrs_trajectory;
     KeplerOrbit<GCRS> initial_osculating_orbit{earth,
                                                MasslessBody{},
                                                initial_osculating_elements,
@@ -110,7 +109,7 @@ class OrbitalElementsTest : public ::testing::Test {
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second
         },
         /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max());
-    auto result = make_not_null_unique<DiscreteTraject0ry<GCRS>>();
+    auto result = make_not_null_unique<DiscreteTrajectory<GCRS>>();
     for (auto const& [time, degrees_of_freedom] : icrs_trajectory) {
       result->Append(time, gcrs.ToThisFrameAtTime(time)(degrees_of_freedom));
     }

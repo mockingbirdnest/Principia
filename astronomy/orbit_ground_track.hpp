@@ -7,7 +7,7 @@
 #include "astronomy/orbit_recurrence.hpp"
 #include "astronomy/orbital_elements.hpp"
 #include "geometry/interval.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/rotating_body.hpp"
 
 namespace principia {
@@ -16,7 +16,7 @@ namespace internal_orbit_ground_track {
 
 using geometry::Instant;
 using geometry::Interval;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using physics::RotatingBody;
 using quantities::Angle;
 using quantities::AngularFrequency;
@@ -67,7 +67,7 @@ class OrbitGroundTrack {
   // sun-synchronicity is analysed.
   template<typename PrimaryCentred, typename Inertial>
   static absl::StatusOr<OrbitGroundTrack> ForTrajectory(
-      DiscreteTraject0ry<PrimaryCentred> const& trajectory,
+      DiscreteTrajectory<PrimaryCentred> const& trajectory,
       RotatingBody<Inertial> const& primary,
       std::optional<MeanSun> const& mean_sun);
 

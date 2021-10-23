@@ -32,13 +32,13 @@ using quantities::si::Radian;
 
 template<typename PrimaryCentred>
 absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
-    DiscreteTraject0ry<PrimaryCentred> const& trajectory,
+    DiscreteTrajectory<PrimaryCentred> const& trajectory,
     MassiveBody const& primary,
     Body const& secondary) {
   OrbitalElements orbital_elements;
-  if (trajectory.size() < 2) {
+  if (trajectory.Size() < 2) {
     return absl::InvalidArgumentError(
-        "trajectory.size() is " + std::to_string(trajectory.size()));
+        "trajectory.Size() is " + std::to_string(trajectory.Size()));
   }
   orbital_elements.osculating_equinoctial_elements_ =
       OsculatingEquinoctialElements(trajectory, primary, secondary);
@@ -65,8 +65,8 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
         "trajectory does not span one sidereal period: sidereal period is " +
             DebugString(orbital_elements.sidereal_period_) +
             ", trajectory spans " +
-            DebugString(trajectory.rbegin()->first -
-                        trajectory.begin()->first));
+            DebugString(trajectory.back().time -
+                        trajectory.front().time));
   }
   auto mean_classical_elements =
       ToClassicalElements(orbital_elements.mean_equinoctial_elements_);
@@ -138,13 +138,13 @@ inline Interval<Length> OrbitalElements::radial_distance_interval() const {
 template<typename PrimaryCentred>
 std::vector<OrbitalElements::EquinoctialElements>
 OrbitalElements::OsculatingEquinoctialElements(
-    DiscreteTraject0ry<PrimaryCentred> const& trajectory,
+    DiscreteTrajectory<PrimaryCentred> const& trajectory,
     MassiveBody const& primary,
     Body const& secondary) {
   DegreesOfFreedom<PrimaryCentred> const primary_dof{
       PrimaryCentred::origin, PrimaryCentred::unmoving};
   std::vector<EquinoctialElements> result;
-  result.reserve(trajectory.size());
+  result.reserve(trajectory.Size());
   for (auto const& [time, degrees_of_freedom] : trajectory) {
     auto const osculating_elements =
         KeplerOrbit<PrimaryCentred>(primary,
@@ -175,9 +175,9 @@ OrbitalElements::OsculatingEquinoctialElements(
 
 template<typename PrimaryCentred>
 std::vector<Length> OrbitalElements::RadialDistances(
-    DiscreteTraject0ry<PrimaryCentred> const& trajectory) {
+    DiscreteTrajectory<PrimaryCentred> const& trajectory) {
   std::vector<Length> radial_distances;
-  radial_distances.reserve(trajectory.size());
+  radial_distances.reserve(trajectory.Size());
   DegreesOfFreedom<PrimaryCentred> const primary_dof{PrimaryCentred::origin,
                                                      PrimaryCentred::unmoving};
   for (auto const& [time, degrees_of_freedom] : trajectory) {
