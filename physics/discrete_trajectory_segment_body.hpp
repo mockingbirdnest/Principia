@@ -38,18 +38,6 @@ DiscreteTrajectorySegment<Frame>::DiscreteTrajectorySegment(
     : self_(self) {}
 
 template<typename Frame>
-typename DiscreteTrajectorySegment<Frame>::reference
-DiscreteTrajectorySegment<Frame>::front() const {
-  return *begin();
-}
-
-template<typename Frame>
-typename DiscreteTrajectorySegment<Frame>::reference
-DiscreteTrajectorySegment<Frame>::back() const {
-  return *rbegin();
-}
-
-template<typename Frame>
 typename DiscreteTrajectorySegment<Frame>::iterator
 DiscreteTrajectorySegment<Frame>::begin() const {
   return iterator(self_, timeline_.begin());

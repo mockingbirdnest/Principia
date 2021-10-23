@@ -53,7 +53,6 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   using value_type = typename Timeline::value_type;
 
   using iterator = DiscreteTrajectoryIterator<Frame>;
-  using reference = value_type const&;
   using reverse_iterator = std::reverse_iterator<iterator>;
 
   using DownsamplingParameters =
@@ -72,9 +71,6 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   DiscreteTrajectorySegment(const DiscreteTrajectorySegment&) = delete;
   DiscreteTrajectorySegment& operator=(const DiscreteTrajectorySegment&) =
       delete;
-
-  reference front() const;
-  reference back() const;
 
   iterator begin() const;
   iterator end() const;
@@ -109,8 +105,7 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   void ClearDownsampling();
 
   // The points denoted by |exact| are written and re-read exactly and are not
-  // affected by any errors introduced by zfp compression.  The endpoints of a
-  // segment are always exact.
+  // affected by any errors introduced by zfp compression.
   void WriteToMessage(
       not_null<serialization::DiscreteTrajectorySegment*> message,
       std::vector<iterator> const& exact) const;
