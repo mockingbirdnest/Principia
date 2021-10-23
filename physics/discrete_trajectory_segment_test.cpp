@@ -106,35 +106,35 @@ class DiscreteTrajectorySegmentTest : public ::testing::Test {
 };
 
 TEST_F(DiscreteTrajectorySegmentTest, BackFront) {
-  EXPECT_EQ(t0_ + 2 * Second, segment_->front().first);
-  EXPECT_EQ(t0_ + 11 * Second, segment_->back().first);
+  EXPECT_EQ(t0_ + 2 * Second, segment_->front().time);
+  EXPECT_EQ(t0_ + 11 * Second, segment_->back().time);
 }
 
 TEST_F(DiscreteTrajectorySegmentTest, Extremities) {
   {
     auto const it = segment_->begin();
-    EXPECT_EQ(t0_ + 2 * Second, it->first);
+    EXPECT_EQ(t0_ + 2 * Second, it->time);
   }
   {
     auto it = segment_->end();
     --it;
-    EXPECT_EQ(t0_ + 11 * Second, it->first);
+    EXPECT_EQ(t0_ + 11 * Second, it->time);
   }
   {
     auto const it = segment_->rbegin();
-    EXPECT_EQ(t0_ + 11 * Second, it->first);
+    EXPECT_EQ(t0_ + 11 * Second, it->time);
   }
   {
     auto it = segment_->rend();
     --it;
-    EXPECT_EQ(t0_ + 2 * Second, it->first);
+    EXPECT_EQ(t0_ + 2 * Second, it->time);
   }
 }
 
 TEST_F(DiscreteTrajectorySegmentTest, Find) {
   {
     auto const it = segment_->find(t0_ + 5 * Second);
-    EXPECT_EQ(t0_ + 5 * Second, it->first);
+    EXPECT_EQ(t0_ + 5 * Second, it->time);
   }
   {
     auto const it = segment_->find(t0_ + 6 * Second);
@@ -145,11 +145,11 @@ TEST_F(DiscreteTrajectorySegmentTest, Find) {
 TEST_F(DiscreteTrajectorySegmentTest, LowerBoundUpperBound) {
   {
     auto const it = segment_->lower_bound(t0_ + 5 * Second);
-    EXPECT_EQ(t0_ + 5 * Second, it->first);
+    EXPECT_EQ(t0_ + 5 * Second, it->time);
   }
   {
     auto const it = segment_->lower_bound(t0_ + 6 * Second);
-    EXPECT_EQ(t0_ + 7 * Second, it->first);
+    EXPECT_EQ(t0_ + 7 * Second, it->time);
   }
   {
     auto const it = segment_->lower_bound(t0_ + 12 * Second);
@@ -157,11 +157,11 @@ TEST_F(DiscreteTrajectorySegmentTest, LowerBoundUpperBound) {
   }
   {
     auto const it = segment_->upper_bound(t0_ + 5 * Second);
-    EXPECT_EQ(t0_ + 7 * Second, it->first);
+    EXPECT_EQ(t0_ + 7 * Second, it->time);
   }
   {
     auto const it = segment_->upper_bound(t0_ + 6 * Second);
-    EXPECT_EQ(t0_ + 7 * Second, it->first);
+    EXPECT_EQ(t0_ + 7 * Second, it->time);
   }
   {
     auto const it = segment_->upper_bound(t0_ + 11 * Second);
@@ -176,32 +176,32 @@ TEST_F(DiscreteTrajectorySegmentTest, EmptySize) {
 
 TEST_F(DiscreteTrajectorySegmentTest, ForgetAfterExisting) {
   ForgetAfter(t0_ + 5 * Second);
-  EXPECT_EQ(t0_ + 3 * Second, segment_->rbegin()->first);
+  EXPECT_EQ(t0_ + 3 * Second, segment_->rbegin()->time);
 }
 
 TEST_F(DiscreteTrajectorySegmentTest, ForgetAfterNonexisting) {
   ForgetAfter(t0_ + 6 * Second);
-  EXPECT_EQ(t0_ + 5 * Second, segment_->rbegin()->first);
+  EXPECT_EQ(t0_ + 5 * Second, segment_->rbegin()->time);
 }
 
 TEST_F(DiscreteTrajectorySegmentTest, ForgetAfterPastTheEnd) {
   ForgetAfter(t0_ + 29 * Second);
-  EXPECT_EQ(t0_ + 11 * Second, segment_->rbegin()->first);
+  EXPECT_EQ(t0_ + 11 * Second, segment_->rbegin()->time);
 }
 
 TEST_F(DiscreteTrajectorySegmentTest, ForgetBeforeExisting) {
   ForgetBefore(t0_ + 7 * Second);
-  EXPECT_EQ(t0_ + 7 * Second, segment_->begin()->first);
+  EXPECT_EQ(t0_ + 7 * Second, segment_->begin()->time);
 }
 
 TEST_F(DiscreteTrajectorySegmentTest, ForgetBeforeNonexisting) {
   ForgetBefore(t0_ + 6 * Second);
-  EXPECT_EQ(t0_ + 7 * Second, segment_->begin()->first);
+  EXPECT_EQ(t0_ + 7 * Second, segment_->begin()->time);
 }
 
 TEST_F(DiscreteTrajectorySegmentTest, ForgetBeforeTheBeginning) {
   ForgetBefore(t0_ + 1 * Second);
-  EXPECT_EQ(t0_ + 2 * Second, segment_->begin()->first);
+  EXPECT_EQ(t0_ + 2 * Second, segment_->begin()->time);
 }
 
 TEST_F(DiscreteTrajectorySegmentTest, Evaluate) {
@@ -294,7 +294,7 @@ TEST_F(DiscreteTrajectorySegmentTest, DownsamplingForgetAfter) {
       /*to=*/forgotten_circle);
 
   // Forget one of the trajectories in the middle, and append new points.
-  Instant const restart_time = forgotten_circle.lower_bound(t2)->first;
+  Instant const restart_time = forgotten_circle.lower_bound(t2)->time;
   ForgetAfter(t2, forgotten_circle);
   AppendTrajectoryTimeline(
       NewCircularTrajectoryTimeline<World>(ω, r, Δt, restart_time, t3),
@@ -308,10 +308,10 @@ TEST_F(DiscreteTrajectorySegmentTest, DownsamplingForgetAfter) {
   // Check that the two trajectories are identical.
   for (auto const [t, degrees_of_freedom] : forgotten_circle) {
     position_errors.push_back(
-        (circle.find(t)->second.position() -
+        (circle.find(t)->degrees_of_freedom.position() -
          degrees_of_freedom.position()).Norm());
     velocity_errors.push_back(
-        (circle.find(t)->second.velocity() -
+        (circle.find(t)->degrees_of_freedom.velocity() -
          degrees_of_freedom.velocity()).Norm());
   }
   EXPECT_THAT(*std::max_element(position_errors.begin(), position_errors.end()),
@@ -366,14 +366,18 @@ TEST_F(DiscreteTrajectorySegmentTest, SerializationWithDownsampling) {
                 AbsoluteErrorFrom(degrees_of_freedom1.velocity(),
                                   Lt(1.1 * Milli(Metre) / Second)));
   }
-  EXPECT_NE(deserialized_circle.lower_bound(t0_ + 1 * Second)->second,
-            circle.lower_bound(t0_ + 1 * Second)->second);
-  EXPECT_EQ(deserialized_circle.lower_bound(t0_ + 2 * Second)->second,
-            circle.lower_bound(t0_ + 2 * Second)->second);
-  EXPECT_EQ(deserialized_circle.lower_bound(t0_ + 3 * Second)->second,
-            circle.lower_bound(t0_ + 3 * Second)->second);
-  EXPECT_NE(deserialized_circle.lower_bound(t0_ + 4 * Second)->second,
-            circle.lower_bound(t0_ + 4 * Second)->second);
+  EXPECT_NE(
+      deserialized_circle.lower_bound(t0_ + 1 * Second)->degrees_of_freedom,
+      circle.lower_bound(t0_ + 1 * Second)->degrees_of_freedom);
+  EXPECT_EQ(
+      deserialized_circle.lower_bound(t0_ + 2 * Second)->degrees_of_freedom,
+      circle.lower_bound(t0_ + 2 * Second)->degrees_of_freedom);
+  EXPECT_EQ(
+      deserialized_circle.lower_bound(t0_ + 3 * Second)->degrees_of_freedom,
+      circle.lower_bound(t0_ + 3 * Second)->degrees_of_freedom);
+  EXPECT_NE(
+      deserialized_circle.lower_bound(t0_ + 4 * Second)->degrees_of_freedom,
+      circle.lower_bound(t0_ + 4 * Second)->degrees_of_freedom);
 
   // Appending may result in different downsampling because the positions differ
   // a bit.
@@ -390,8 +394,7 @@ TEST_F(DiscreteTrajectorySegmentTest, SerializationWithDownsampling) {
   EXPECT_THAT(circle.size(), Eq(77));
   EXPECT_THAT(deserialized_circle.size(), Eq(78));
   for (Instant t = t0_;
-       t <= std::min(circle.rbegin()->first,
-                     deserialized_circle.rbegin()->first);
+       t <= std::min(circle.rbegin()->time, deserialized_circle.rbegin()->time);
        t += Δt) {
     EXPECT_THAT(
         deserialized_circle.EvaluatePosition(t),

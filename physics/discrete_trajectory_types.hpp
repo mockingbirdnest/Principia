@@ -2,7 +2,7 @@
 
 #include <list>
 
-#include "absl/container/btree_map.h"
+#include "absl/container/btree_set.h"
 #include "base/macros.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -32,11 +32,35 @@ struct DownsamplingParameters {
 };
 
 template<typename Frame>
+struct value_type {
+  value_type(Instant const& time,
+             DegreesOfFreedom<Frame> const& degrees_of_freedom);
+  Instant time;
+  DegreesOfFreedom<Frame> degrees_of_freedom;
+};
+
+struct Earlier {
+  using is_transparent = void;
+
+  Earlier() = default;
+
+  template<typename Frame>
+  bool operator()(value_type<Frame> const& left,
+                  value_type<Frame> const& right) const;
+  template<typename Frame>
+  bool operator()(Instant const& left, value_type<Frame> const& right) const;
+  template<typename Frame>
+  bool operator()(value_type<Frame> const& left, Instant const& right) const;
+};
+
+template<typename Frame>
 using Segments = std::list<DiscreteTrajectorySegment<Frame>>;
 
 template<typename Frame>
-using Timeline = absl::btree_map<Instant, DegreesOfFreedom<Frame>>;
+using Timeline = absl::btree_set<value_type<Frame>, Earlier>;
 
 }  // namespace internal_discrete_trajectory_types
 }  // namespace physics
 }  // namespace principia
+
+#include "physics/discrete_trajectory_types_body.hpp"
