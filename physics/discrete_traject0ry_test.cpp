@@ -130,6 +130,12 @@ TEST_F(DiscreteTraject0ryTest, Make) {
   auto const trajectory = MakeTrajectory();
 }
 
+TEST_F(DiscreteTraject0ryTest, BackFront) {
+  auto const trajectory = MakeTrajectory();
+  EXPECT_EQ(t0_, trajectory.front().first);
+  EXPECT_EQ(t0_ + 14 * Second, trajectory.back().first);
+}
+
 TEST_F(DiscreteTraject0ryTest, IterateForward) {
   auto const trajectory = MakeTrajectory();
   std::vector<Instant> times;

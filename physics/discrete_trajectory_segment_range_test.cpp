@@ -12,6 +12,9 @@ TEST(DiscreteTrajectorySegmentRangeTest, Basic) {
   DiscreteTrajectorySegmentRange<std::vector<int>::const_iterator> range(
       primes.begin(), primes.end());
 
+  EXPECT_EQ(2, range.front());
+  EXPECT_EQ(23, range.back());
+
   int sum = 0;
   int product = 1;
   for (int const prime : range) {

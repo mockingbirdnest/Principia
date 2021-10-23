@@ -29,6 +29,18 @@ DiscreteTraject0ry<Frame>::DiscreteTraject0ry()
 }
 
 template<typename Frame>
+typename DiscreteTraject0ry<Frame>::reference
+DiscreteTraject0ry<Frame>::front() const {
+  return *begin();
+}
+
+template<typename Frame>
+typename DiscreteTraject0ry<Frame>::reference
+DiscreteTraject0ry<Frame>::back() const {
+  return *rbegin();
+}
+
+template<typename Frame>
 typename DiscreteTraject0ry<Frame>::iterator
 DiscreteTraject0ry<Frame>::begin() const {
   return segments_->front().begin();

@@ -45,6 +45,7 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
       typename internal_discrete_trajectory_types::Timeline<Frame>::value_type;
 
   using iterator = DiscreteTrajectoryIterator<Frame>;
+  using reference = value_type const&;
   using reverse_iterator = std::reverse_iterator<iterator>;
   using SegmentIterator = DiscreteTrajectorySegmentIterator<Frame>;
   using ReverseSegmentIterator = std::reverse_iterator<SegmentIterator>;
@@ -59,6 +60,9 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
   DiscreteTraject0ry& operator=(DiscreteTraject0ry&&) = default;
   DiscreteTraject0ry(const DiscreteTraject0ry&) = delete;
   DiscreteTraject0ry& operator=(const DiscreteTraject0ry&) = delete;
+
+  reference front() const;
+  reference back() const;
 
   iterator begin() const;
   iterator end() const;
