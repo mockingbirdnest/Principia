@@ -468,10 +468,10 @@ Ephemeris<Frame>::StoppableNewInstance(
   };
 
   CHECK(!trajectories.empty());
-  auto const& [trajectory_last_time, _] = *(*trajectories.begin())->rbegin();
+  auto const& [trajectory_last_time, _] = (*trajectories.begin())->back();
   problem.initial_state.time = DoublePrecision<Instant>(trajectory_last_time);
   for (auto const& trajectory : trajectories) {
-    auto const& [last_time, last_degrees_of_freedom] = *trajectory->rbegin();
+    auto const& [last_time, last_degrees_of_freedom] = trajectory->back();
     CHECK_EQ(last_time, trajectory_last_time);
     problem.initial_state.positions.emplace_back(
         last_degrees_of_freedom.position());
@@ -1347,7 +1347,7 @@ absl::Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
     ODEAdaptiveStepParameters<ODE> const& parameters,
     std::int64_t max_ephemeris_steps) {
   auto const& [trajectory_last_time,
-               trajectory_last_degrees_of_freedom] = *trajectory->rbegin();
+               trajectory_last_degrees_of_freedom] = trajectory->back();
   if (trajectory_last_time == t) {
     return absl::OkStatus();
   }

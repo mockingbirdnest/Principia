@@ -15,6 +15,18 @@ DiscreteTrajectorySegmentRange<Iterator>::DiscreteTrajectorySegmentRange(
     : begin_(begin), end_(end) {}
 
 template<typename Iterator>
+typename Iterator::reference
+DiscreteTrajectorySegmentRange<Iterator>::front() const {
+  return *begin();
+}
+
+template<typename Iterator>
+typename Iterator::reference
+DiscreteTrajectorySegmentRange<Iterator>::back() const {
+  return *(--end());
+}
+
+template<typename Iterator>
 Iterator DiscreteTrajectorySegmentRange<Iterator>::begin() const {
   return begin_;
 }

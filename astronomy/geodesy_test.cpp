@@ -108,17 +108,17 @@ TEST_F(GeodesyTest, DISABLED_LAGEOS2) {
   StandardProduct3::SatelliteIdentifier const lageos2_id{
       StandardProduct3::SatelliteGroup::General, 52};
 
-  CHECK_EQ(initial_ilrsa.orbit(lageos2_id).front()->begin()->first,
-           initial_ilrsb.orbit(lageos2_id).front()->begin()->first);
+  CHECK_EQ(initial_ilrsa.orbit(lageos2_id).front()->front().first,
+           initial_ilrsb.orbit(lageos2_id).front()->front().first);
 
   auto const& [initial_time, initial_dof_ilrsa] =
-      *initial_ilrsa.orbit(lageos2_id).front()->begin();
+      initial_ilrsa.orbit(lageos2_id).front()->front();
 
   auto const& [_, initial_dof_ilrsb] =
-      *initial_ilrsb.orbit(lageos2_id).front()->begin();
+      initial_ilrsb.orbit(lageos2_id).front()->front();
 
   auto const& [final_time, expected_final_dof] =
-      *final_ilrsa.orbit(lageos2_id).front()->begin();
+      final_ilrsa.orbit(lageos2_id).front()->front();
 
   ephemeris_->Prolong(final_time);
 
@@ -152,13 +152,13 @@ TEST_F(GeodesyTest, DISABLED_LAGEOS2) {
     return flow_lageos2(secondary_lageos2_trajectory);
   });
   bundle.Join();
-  EXPECT_THAT(primary_lageos2_trajectory.rbegin()->first, Eq(final_time));
-  EXPECT_THAT(secondary_lageos2_trajectory.rbegin()->first, Eq(final_time));
+  EXPECT_THAT(primary_lageos2_trajectory.back().first, Eq(final_time));
+  EXPECT_THAT(secondary_lageos2_trajectory.back().first, Eq(final_time));
 
   auto const primary_actual_final_dof = itrs_.ToThisFrameAtTime(final_time)(
-      primary_lageos2_trajectory.rbegin()->second);
+      primary_lageos2_trajectory.back().second);
   auto const secondary_actual_final_dof = itrs_.ToThisFrameAtTime(final_time)(
-      secondary_lageos2_trajectory.rbegin()->second);
+      secondary_lageos2_trajectory.back().second);
 
   // Absolute error in position.
   EXPECT_THAT(AbsoluteError(primary_actual_final_dof.position(),
