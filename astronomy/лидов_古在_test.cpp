@@ -7,6 +7,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/discrete_traject0ry.hpp"
 #include "physics/solar_system.hpp"
 #include "mathematica/mathematica.hpp"
 #include "testing_utilities/matchers.hpp"
@@ -85,9 +86,9 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
   DiscreteTraject0ry<ICRS> icrs_trajectory;
   icrs_trajectory.Append(MercuryOrbiterInitialTime,
                          MercuryOrbiterInitialDegreesOfFreedom<ICRS>);
-  auto& segment = icrs_trajectory.segments().front();
-  segment.SetDownsampling({.max_dense_intervals = 10'000,
-                           .tolerance = 10 * Metre});
+  auto& icrs_segment = icrs_trajectory.segments().front();
+  icrs_segment.SetDownsampling({.max_dense_intervals = 10'000,
+                                .tolerance = 10 * Metre});
   auto const instance = ephemeris_->NewInstance(
       {&icrs_trajectory},
       Ephemeris<ICRS>::NoIntrinsicAccelerations,
