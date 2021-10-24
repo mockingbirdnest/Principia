@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
 #include "base/jthread.hpp"
 #include "base/status_utilities.hpp"
 #include "physics/kepler_orbit.hpp"
@@ -32,13 +33,13 @@ using quantities::si::Radian;
 
 template<typename PrimaryCentred>
 absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
-    DiscreteTrajectory<PrimaryCentred> const& trajectory,
+    DiscreteTraject0ry<PrimaryCentred> const& trajectory,
     MassiveBody const& primary,
     Body const& secondary) {
   OrbitalElements orbital_elements;
-  if (trajectory.Size() < 2) {
+  if (trajectory.size() < 2) {
     return absl::InvalidArgumentError(
-        "trajectory.Size() is " + std::to_string(trajectory.Size()));
+        absl::StrCat("trajectory.Size() is ", trajectory.size()));
   }
   orbital_elements.osculating_equinoctial_elements_ =
       OsculatingEquinoctialElements(trajectory, primary, secondary);
@@ -138,13 +139,13 @@ inline Interval<Length> OrbitalElements::radial_distance_interval() const {
 template<typename PrimaryCentred>
 std::vector<OrbitalElements::EquinoctialElements>
 OrbitalElements::OsculatingEquinoctialElements(
-    DiscreteTrajectory<PrimaryCentred> const& trajectory,
+    DiscreteTraject0ry<PrimaryCentred> const& trajectory,
     MassiveBody const& primary,
     Body const& secondary) {
   DegreesOfFreedom<PrimaryCentred> const primary_dof{
       PrimaryCentred::origin, PrimaryCentred::unmoving};
   std::vector<EquinoctialElements> result;
-  result.reserve(trajectory.Size());
+  result.reserve(trajectory.size());
   for (auto const& [time, degrees_of_freedom] : trajectory) {
     auto const osculating_elements =
         KeplerOrbit<PrimaryCentred>(primary,
@@ -175,9 +176,9 @@ OrbitalElements::OsculatingEquinoctialElements(
 
 template<typename PrimaryCentred>
 std::vector<Length> OrbitalElements::RadialDistances(
-    DiscreteTrajectory<PrimaryCentred> const& trajectory) {
+    DiscreteTraject0ry<PrimaryCentred> const& trajectory) {
   std::vector<Length> radial_distances;
-  radial_distances.reserve(trajectory.Size());
+  radial_distances.reserve(trajectory.size());
   DegreesOfFreedom<PrimaryCentred> const primary_dof{PrimaryCentred::origin,
                                                      PrimaryCentred::unmoving};
   for (auto const& [time, degrees_of_freedom] : trajectory) {
