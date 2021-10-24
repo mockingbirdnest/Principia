@@ -234,10 +234,20 @@ void DiscreteTraject0ry<Frame>::ForgetAfter(Instant const& t) {
 }
 
 template<typename Frame>
+void DiscreteTraject0ry<Frame>::ForgetAfter(iterator const it) {
+  ForgetAfter(it->time);
+}
+
+template<typename Frame>
 void DiscreteTraject0ry<Frame>::ForgetBefore(Instant const& t) {
   auto const sit = FindSegment(t);
   sit->ForgetBefore(t);
   segments_->erase(segments_->begin(), sit);
+}
+
+template<typename Frame>
+void DiscreteTraject0ry<Frame>::ForgetBefore(iterator const it) {
+  ForgetBefore(it->time);
 }
 
 template<typename Frame>

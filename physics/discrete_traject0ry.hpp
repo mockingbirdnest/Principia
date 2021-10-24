@@ -89,7 +89,9 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
   void DeleteSegments(SegmentIterator begin);
 
   void ForgetAfter(Instant const& t);
+  void ForgetAfter(iterator it);
   void ForgetBefore(Instant const& t);
+  void ForgetBefore(iterator it);
 
   void Append(Instant const& t,
               DegreesOfFreedom<Frame> const& degrees_of_freedom);
