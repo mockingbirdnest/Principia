@@ -242,7 +242,9 @@ template<typename Frame>
 void DiscreteTraject0ry<Frame>::ForgetBefore(Instant const& t) {
   auto const sit = FindSegment(t);
   sit->ForgetBefore(t);
-  segments_->erase(segments_->begin(), sit);
+  for (auto s = segments_->begin(); s != sit; ++s) {
+    s->ForgetBefore(t);
+  }
 }
 
 template<typename Frame>
