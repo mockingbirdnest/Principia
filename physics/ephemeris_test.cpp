@@ -980,36 +980,36 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
   for (auto it1 = apoapsides1.begin(), it2 = apoapsides2.begin();
        it1 != apoapsides1.end() && it2 != apoapsides2.end();
        ++it1, ++it2) {
-    Instant const time = it1->time;
-    all_times.emplace(time);
+    auto const& [time1, degrees_of_freedom1] = *it1;
+    auto const& [time2, degrees_of_freedom2] = *it2;
+    all_times.emplace(time1);
     Displacement<ICRS> const displacement =
-        it1->degrees_of_freedom.position() -
-        it2->degrees_of_freedom.position();
+        degrees_of_freedom1.position() - degrees_of_freedom2.position();
     EXPECT_LT(AbsoluteError(displacement.Norm(), (1 + e) * a),
               1.9e-5 * fitting_tolerance);
     if (previous_time) {
-      EXPECT_LT(AbsoluteError(time - *previous_time, T),
+      EXPECT_LT(AbsoluteError(time1 - *previous_time, T),
                 0.11 * fitting_tolerance / v_apoapsis);
     }
-    previous_time = time;
+    previous_time = time1;
   }
 
   previous_time = std::nullopt;
   for (auto it1 = periapsides1.begin(), it2 = periapsides2.begin();
        it1 != periapsides1.end() && it2 != periapsides2.end();
        ++it1, ++it2) {
-    Instant const time = it1->time;
-    all_times.emplace(time);
+    auto const& [time1, degrees_of_freedom1] = *it1;
+    auto const& [time2, degrees_of_freedom2] = *it2;
+    all_times.emplace(time1);
     Displacement<ICRS> const displacement =
-        it1->degrees_of_freedom.position() -
-        it2->degrees_of_freedom.position();
+        degrees_of_freedom1.position() - degrees_of_freedom2.position();
     EXPECT_LT(AbsoluteError(displacement.Norm(), (1 - e) * a),
               5.3e-3 * fitting_tolerance);
     if (previous_time) {
-      EXPECT_LT(AbsoluteError(time - *previous_time, T),
+      EXPECT_LT(AbsoluteError(time1 - *previous_time, T),
                 2.1 * fitting_tolerance / v_periapsis);
     }
-    previous_time = time;
+    previous_time = time1;
   }
 
   previous_time = std::nullopt;

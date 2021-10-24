@@ -264,12 +264,20 @@ TEST_F(ApsidesTest, ComputeNodes) {
        ++ascending_it,
        ++south_descending_it,
        ++descending_it) {
-    EXPECT_THAT(south_ascending_it->degrees_of_freedom,
-                Eq(descending_it->degrees_of_freedom));
-    EXPECT_THAT(south_ascending_it->time, Eq(descending_it->time));
-    EXPECT_THAT(south_descending_it->degrees_of_freedom,
-                Eq(ascending_it->degrees_of_freedom));
-    EXPECT_THAT(south_descending_it->time, Eq(ascending_it->time));
+    const auto& [ascending_time,
+                 ascending_degrees_of_freedom] = *ascending_it;
+    const auto& [south_ascending_time,
+                 south_ascending_degrees_of_freedom] = *south_ascending_it;
+    const auto& [descending_time,
+                 descending_degrees_of_freedom] = *descending_it;
+    const auto& [south_descending_time,
+                 south_descending_degrees_of_freedom] = *south_descending_it;
+    EXPECT_THAT(south_ascending_degrees_of_freedom,
+                Eq(descending_degrees_of_freedom));
+    EXPECT_THAT(south_ascending_time, Eq(descending_time));
+    EXPECT_THAT(south_descending_degrees_of_freedom,
+                Eq(ascending_degrees_of_freedom));
+    EXPECT_THAT(south_descending_time, Eq(ascending_time));
   }
 }
 
