@@ -88,8 +88,12 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
   SegmentIterator AttachSegments(DiscreteTraject0ry&& trajectory);
   void DeleteSegments(SegmentIterator begin);
 
+  // Deletes the point at times in [t, end[.  Drops empty segment.
   void ForgetAfter(Instant const& t);
   void ForgetAfter(iterator it);
+
+  // Deletes the points at times in [begin, t[.  Preserves empty segments and
+  // doesn't invalidate any segment iterator.
   void ForgetBefore(Instant const& t);
   void ForgetBefore(iterator it);
 
