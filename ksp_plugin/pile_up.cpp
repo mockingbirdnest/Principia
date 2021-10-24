@@ -213,7 +213,8 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
 
   bool const is_pre_cartan = !message.has_adaptive_step_parameters() ||
                              !message.has_fixed_step_parameters();
-  bool const is_pre_cesàro = message.history().children().empty();
+  bool const is_pre_cesàro = message.history().children().empty() &&
+                             message.history().segment_size() == 0;
   bool const is_pre_frege = message.actual_part_degrees_of_freedom_size() > 0 ||
                             message.apparent_part_degrees_of_freedom_size() > 0;
   bool const is_pre_frobenius = message.rigid_pile_up().empty() ||
@@ -585,7 +586,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
 
 absl::Status PileUp::AdvanceTime(Instant const& t) {
   absl::Status status;
-  auto const history_last = --history_->end();
+  Instant const history_last = history_->back().time;
   if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
     // Remove the fork.
     trajectory_.DeleteSegments(psychohistory_);
@@ -638,13 +639,15 @@ absl::Status PileUp::AdvanceTime(Instant const& t) {
   // anymore.
   auto const history_end = history_->end();
   auto const psychohistory_end = psychohistory_->end();
-  for (auto it = std::next(history_last); it != history_end; ++it) {
+  for (auto it = trajectory_.upper_bound(history_last);
+       it != history_end;
+       ++it) {
     AppendToPart<&Part::AppendToHistory>(it);
   }
   for (auto it = history_end; it != psychohistory_end; ++it) {
     AppendToPart<&Part::AppendToPsychohistory>(it);
   }
-  trajectory_.ForgetBefore(psychohistory_->front().time);//TODO(phl):correct?
+  trajectory_.ForgetBefore(psychohistory_->front().time);
 
   return status;
 }
