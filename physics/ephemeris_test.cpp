@@ -982,6 +982,7 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
        ++it1, ++it2) {
     auto const& [time1, degrees_of_freedom1] = *it1;
     auto const& [time2, degrees_of_freedom2] = *it2;
+    EXPECT_EQ(time1, time2);
     all_times.emplace(time1);
     Displacement<ICRS> const displacement =
         degrees_of_freedom1.position() - degrees_of_freedom2.position();
@@ -1000,6 +1001,7 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
        ++it1, ++it2) {
     auto const& [time1, degrees_of_freedom1] = *it1;
     auto const& [time2, degrees_of_freedom2] = *it2;
+    EXPECT_EQ(time1, time2);
     all_times.emplace(time1);
     Displacement<ICRS> const displacement =
         degrees_of_freedom1.position() - degrees_of_freedom2.position();

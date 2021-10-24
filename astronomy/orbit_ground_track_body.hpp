@@ -47,9 +47,8 @@ std::vector<Angle> PlanetocentricLongitudes(
 template<typename Iterator>
 Angle MeanSolarTime(Iterator const& it,
                     OrbitGroundTrack::MeanSun const& mean_sun) {
-  auto const& [time, degrees_of_freedom] = *it;
-  Time const t = time - mean_sun.epoch;
-  return π * Radian + CelestialLongitude(degrees_of_freedom.position()) -
+  Time const t = it->time - mean_sun.epoch;
+  return π * Radian + CelestialLongitude(it->degrees_of_freedom.position()) -
          (mean_sun.mean_longitude_at_epoch +
           (2 * π * Radian * t / mean_sun.year));
 }
