@@ -76,7 +76,7 @@ PileUp::PileUp(
       ephemeris_(ephemeris),
       adaptive_step_parameters_(std::move(adaptive_step_parameters)),
       fixed_step_parameters_(std::move(fixed_step_parameters)),
-      history_(make_not_null_unique<DiscreteTraject0ry<Barycentric>>()),
+      history_(trajectory_.segments().begin()),
       deletion_callback_(std::move(deletion_callback)) {
   LOG(INFO) << "Constructing pile up at " << this;
   MechanicalSystem<Barycentric, NonRotatingPileUp> mechanical_system;
@@ -85,7 +85,7 @@ PileUp::PileUp(
         part->rigid_motion(), part->mass(), part->inertia_tensor());
   }
   auto const barycentre = mechanical_system.centre_of_mass();
-  history_->Append(t, barycentre);
+  trajectory_.Append(t, barycentre);
 
   angular_momentum_ = mechanical_system.AngularMomentum();
 
@@ -97,7 +97,7 @@ PileUp::PileUp(
   }
   MakeEulerSolver(mechanical_system.InertiaTensor(), t);
 
-  psychohistory_ = history_->NewForkAtLast();
+  psychohistory_ = trajectory_.NewSegment();
 
   RecomputeFromParts();
 }
@@ -176,9 +176,9 @@ void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
   for (not_null<Part*> const part : parts_) {
     message->add_part_id(part->part_id());
   }
-  history_->WriteToMessage(message->mutable_history(),
-                           /*forks=*/{psychohistory_},
-                           /*exact=*/{});
+  trajectory_.WriteToMessage(message->mutable_history(),
+                             /*forks=*/{history_, psychohistory_},
+                             /*exact=*/{});
   for (auto const& [part, rigid_motion] : actual_part_rigid_motion_) {
     rigid_motion.WriteToMessage(&(
         (*message->mutable_actual_part_rigid_motion())[part->part_id()]));
@@ -218,12 +218,14 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
                             message.apparent_part_degrees_of_freedom_size() > 0;
   bool const is_pre_frobenius = message.rigid_pile_up().empty() ||
                                 !message.has_angular_momentum();
+  bool const is_pre_ζήνων = message.history().segment_size() == 0;
   LOG_IF(WARNING, is_pre_frobenius)
       << "Reading pre-"
       << (is_pre_cartan   ? "Cartan"
           : is_pre_cesàro ? u8"Cesàro"
           : is_pre_frege  ? "Frege"
-                          : "Frobenius") << " PileUp";
+          : is_pre_ζήνων  ? "Frobenius"
+                          : u8"pre-Ζήνων") << " PileUp";
 
   std::unique_ptr<PileUp> pile_up;
   if (is_pre_cesàro) {
@@ -235,7 +237,8 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
                      DiscreteTraject0ry<Barycentric>::ReadFromMessage(
                          message.history(),
                          /*forks=*/{}),
-                     /*psychohistory=*/nullptr,
+                     /*history=*/std::nullopt,
+                     /*psychohistory=*/std::nullopt,
                      /*angular_momentum=*/{},
                      ephemeris,
                      std::move(deletion_callback)));
@@ -250,28 +253,34 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
               DiscreteTraject0ry<Barycentric>::ReadFromMessage(
                   message.history(),
                   /*forks=*/{}),
-              /*psychohistory=*/nullptr,
+              /*history=*/std::nullopt,
+              /*psychohistory=*/std::nullopt,
               /*angular_momentum=*/{},
               ephemeris,
               std::move(deletion_callback)));
     }
     // Fork a psychohistory for compatibility if there is a non-authoritative
     // point.
-    if (pile_up->history_->Size() == 2) {
-      Instant const history_begin_time = pile_up->history_->front().time;
+    if (pile_up->history_->size() == 2) {
+      DiscreteTraject0ry<Barycentric> psychohistory;
+      auto const history_second_point = std::next(pile_up->history_->begin());
+      for (auto it = history_second_point;
+           it != pile_up->history_->end();
+           ++it) {
+        psychohistory.Append(it->time, it->degrees_of_freedom);
+      }
+      pile_up->trajectory_.ForgetAfter(history_second_point);
       pile_up->psychohistory_ =
-          pile_up->history_->NewForkWithCopy(history_begin_time);
-      pile_up->history_->ForgetAfter(history_begin_time);
+          pile_up->trajectory_.AttachSegments(std::move(psychohistory));
     } else {
-      pile_up->psychohistory_ = pile_up->history_->NewForkAtLast();
+      pile_up->psychohistory_ = pile_up->trajectory_.NewSegment();
     }
   } else {
-    DiscreteTraject0ry<Barycentric>* psychohistory = nullptr;
-    not_null<std::unique_ptr<DiscreteTraject0ry<Barycentric>>> history =
-        DiscreteTraject0ry<Barycentric>::ReadFromMessage(
-            message.history(),
-            /*forks=*/{&psychohistory});
     if (is_pre_frobenius) {
+      DiscreteTrajectorySegmentIterator<Barycentric> psychohistory;
+      auto trajectory = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
+          message.history(),
+          /*forks=*/{&psychohistory});
       pile_up = std::unique_ptr<PileUp>(
           new PileUp(
               std::move(parts),
@@ -279,12 +288,17 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
                   message.adaptive_step_parameters()),
               Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
                   message.fixed_step_parameters()),
-              std::move(history),
+              std::move(trajectory),
+              /*history=*/std::nullopt,
               psychohistory,
               /*angular_momentum=*/{},
               ephemeris,
               std::move(deletion_callback)));
-    } else {
+    } else if (is_pre_ζήνων) {
+      DiscreteTrajectorySegmentIterator<Barycentric> psychohistory;
+      auto trajectory = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
+          message.history(),
+          /*forks=*/{&psychohistory});
       pile_up = std::unique_ptr<PileUp>(
           new PileUp(
               std::move(parts),
@@ -292,7 +306,28 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
                   message.adaptive_step_parameters()),
               Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
                   message.fixed_step_parameters()),
-              std::move(history),
+              std::move(trajectory),
+              /*history=*/std::nullopt,
+              psychohistory,
+              Bivector<AngularMomentum, NonRotatingPileUp>::ReadFromMessage(
+                  message.angular_momentum()),
+              ephemeris,
+              std::move(deletion_callback)));
+    } else {
+      DiscreteTrajectorySegmentIterator<Barycentric> history;
+      DiscreteTrajectorySegmentIterator<Barycentric> psychohistory;
+      auto trajectory = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
+          message.history(),
+          /*forks=*/{&history, &psychohistory});
+      pile_up = std::unique_ptr<PileUp>(
+          new PileUp(
+              std::move(parts),
+              Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
+                  message.adaptive_step_parameters()),
+              Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
+                  message.fixed_step_parameters()),
+              std::move(trajectory),
+              history,
               psychohistory,
               Bivector<AngularMomentum, NonRotatingPileUp>::ReadFromMessage(
                   message.angular_momentum()),
@@ -364,8 +399,9 @@ PileUp::PileUp(
     std::list<not_null<Part*>>&& parts,
     Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters,
     Ephemeris<Barycentric>::FixedStepParameters fixed_step_parameters,
-    not_null<std::unique_ptr<DiscreteTraject0ry<Barycentric>>> history,
-    DiscreteTraject0ry<Barycentric>* const psychohistory,
+    DiscreteTraject0ry<Barycentric> trajectory,
+    std::optional<DiscreteTrajectorySegmentIterator<Barycentric>> history,
+    std::optional<DiscreteTrajectorySegmentIterator<Barycentric>> psychohistory,
     Bivector<AngularMomentum, NonRotatingPileUp> const& angular_momentum,
     not_null<Ephemeris<Barycentric>*> const ephemeris,
     std::function<void()> deletion_callback)
@@ -374,10 +410,18 @@ PileUp::PileUp(
       ephemeris_(ephemeris),
       adaptive_step_parameters_(std::move(adaptive_step_parameters)),
       fixed_step_parameters_(std::move(fixed_step_parameters)),
-      history_(std::move(history)),
-      psychohistory_(psychohistory),
+      trajectory_(std::move(trajectory)),
       angular_momentum_(angular_momentum),
-      deletion_callback_(std::move(deletion_callback)) {}
+      deletion_callback_(std::move(deletion_callback)) {
+  if (history.has_value()) {
+    history_ = history.value();
+  } else {
+    history_ = trajectory_.segments().begin();
+  }
+  if (psychohistory.has_value()) {
+    psychohistory_ = psychohistory.value();
+  }
+}
 
 void PileUp::MakeEulerSolver(
     InertiaTensor<NonRotatingPileUp> const& inertia_tensor,
@@ -540,28 +584,26 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
 }
 
 absl::Status PileUp::AdvanceTime(Instant const& t) {
-  CHECK_NOTNULL(psychohistory_);
-
   absl::Status status;
   auto const history_last = --history_->end();
   if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
     // Remove the fork.
-    history_->DeleteFork(psychohistory_);
+    trajectory_.DeleteSegments(psychohistory_);
     if (fixed_instance_ == nullptr) {
       fixed_instance_ = ephemeris_->NewInstance(
-          {history_.get()},
+          {&trajectory_},
           Ephemeris<Barycentric>::NoIntrinsicAccelerations,
           fixed_step_parameters_);
     }
     CHECK_LT(history_->back().time, t);
     status = ephemeris_->FlowWithFixedStep(t, *fixed_instance_);
-    psychohistory_ = history_->NewForkAtLast();
+    psychohistory_ = trajectory_.NewSegment();
     if (history_->back().time < t) {
       // Do not clear the |fixed_instance_| here, we will use it for the next
       // fixed-step integration.
       status.Update(
           ephemeris_->FlowWithAdaptiveStep(
-              psychohistory_,
+              &trajectory_,
               Ephemeris<Barycentric>::NoIntrinsicAcceleration,
               t,
               adaptive_step_parameters_,
@@ -574,40 +616,35 @@ absl::Status PileUp::AdvanceTime(Instant const& t) {
     // We make the |psychohistory_|, if any, authoritative, i.e. append it to
     // the end of the |history_|. We integrate on top of it, and it gets
     // appended authoritatively to the part tails.
-    auto const psychohistory_end = psychohistory_->end();
-    auto it = psychohistory_->Fork();
-    for (++it; it != psychohistory_end; ++it) {
-      history_->Append(it->time, it->degrees_of_freedom);
+    auto const psychohistory_trajectory =
+        trajectory_.DetachSegments(psychohistory_);
+    for (auto const& [time, degrees_of_freedom] : psychohistory_trajectory) {
+      trajectory_.Append(time, degrees_of_freedom);
     }
-    history_->DeleteFork(psychohistory_);
 
     auto const intrinsic_acceleration =
         [a = intrinsic_force_ / mass_](Instant const& t) { return a; };
     status = ephemeris_->FlowWithAdaptiveStep(
-                 history_.get(),
+                 &trajectory_,
                  intrinsic_acceleration,
                  t,
                  adaptive_step_parameters_,
                  Ephemeris<Barycentric>::unlimited_max_ephemeris_steps);
-    psychohistory_ = history_->NewForkAtLast();
+    psychohistory_ = trajectory_.NewSegment();
   }
-
-  CHECK_NOTNULL(psychohistory_);
 
   // Append the |history_| to the parts' history and the |psychohistory_| to the
   // parts' psychohistory.  Drop the history of the pile-up, we won't need it
   // anymore.
   auto const history_end = history_->end();
   auto const psychohistory_end = psychohistory_->end();
-  auto it = history_last;
-  for (++it; it != history_end; ++it) {
+  for (auto it = std::next(history_last); it != history_end; ++it) {
     AppendToPart<&Part::AppendToHistory>(it);
   }
-  it = psychohistory_->Fork();
-  for (++it; it != psychohistory_end; ++it) {
+  for (auto it = history_end; it != psychohistory_end; ++it) {
     AppendToPart<&Part::AppendToPsychohistory>(it);
   }
-  history_->ForgetBefore(psychohistory_->Fork()->time);
+  trajectory_.ForgetBefore(psychohistory_->front().time);//TODO(phl):correct?
 
   return status;
 }
