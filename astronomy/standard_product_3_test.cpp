@@ -27,7 +27,7 @@ using integrators::methods::QuinlanTremaine1990Order12;
 using physics::BodySurfaceDynamicFrame;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
+using physics::DiscreteTraject0ry;
 using physics::Ephemeris;
 using physics::RotatingBody;
 using physics::SolarSystem;
@@ -362,11 +362,11 @@ TEST_P(StandardProduct3DynamicsTest, PerturbedKeplerian) {
   EXPECT_THAT(sp3.version(), Eq(GetParam().version));
   EXPECT_THAT(sp3.file_has_velocities(), Eq(GetParam().file_has_velocities));
   for (auto const& satellite : sp3.satellites()) {
-    for (not_null<DiscreteTrajectory<ITRS> const*> const arc :
+    for (not_null<DiscreteTraject0ry<ITRS> const*> const arc :
          sp3.orbit(satellite)) {
       auto it = arc->begin();
       for (int i = 0;; ++i) {
-        DiscreteTrajectory<ICRS> integrated_arc;
+        DiscreteTraject0ry<ICRS> integrated_arc;
         ephemeris_->Prolong(it->time);
         integrated_arc.Append(
             it->time,

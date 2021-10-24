@@ -25,7 +25,7 @@ using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::Quinlan1999Order8A;
 using integrators::methods::QuinlanTremaine1990Order12;
 using physics::BodyCentredNonRotatingDynamicFrame;
-using physics::DiscreteTrajectory;
+using physics::DiscreteTraject0ry;
 using physics::Ephemeris;
 using physics::MassiveBody;
 using physics::MasslessBody;
@@ -82,11 +82,12 @@ class Лидов古在Test : public ::testing::Test {
 
 #if !_DEBUG
 TEST_F(Лидов古在Test, MercuryOrbiter) {
-  DiscreteTrajectory<ICRS> icrs_trajectory;
+  DiscreteTraject0ry<ICRS> icrs_trajectory;
   icrs_trajectory.Append(MercuryOrbiterInitialTime,
                          MercuryOrbiterInitialDegreesOfFreedom<ICRS>);
-  icrs_trajectory.SetDownsampling({.max_dense_intervals = 10'000,
-                                   .tolerance = 10 * Metre});
+  auto& segment = icrs_trajectory.segments().front();
+  segment.SetDownsampling({.max_dense_intervals = 10'000,
+                           .tolerance = 10 * Metre});
   auto const instance = ephemeris_->NewInstance(
       {&icrs_trajectory},
       Ephemeris<ICRS>::NoIntrinsicAccelerations,
@@ -108,7 +109,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
           PRINCIPIA_UNICODE_PATH("лидов_古在.generated.wl"),
       /*make_unique=*/false);
 
-  DiscreteTrajectory<MercuryCentredInertial> mercury_centred_trajectory;
+  DiscreteTraject0ry<MercuryCentredInertial> mercury_centred_trajectory;
   for (auto const& [t, dof] : icrs_trajectory) {
     mercury_centred_trajectory.Append(t,
                                       mercury_frame_.ToThisFrameAtTime(t)(dof));

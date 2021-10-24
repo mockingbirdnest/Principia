@@ -31,14 +31,14 @@ Angle CelestialLongitude(Position<PrimaryCentred> const& q) {
 // The resulting angles are neither normalized nor unwound.
 template<typename PrimaryCentred, typename Inertial>
 std::vector<Angle> PlanetocentricLongitudes(
-    DiscreteTrajectory<PrimaryCentred> const& nodes,
+    DiscreteTraject0ry<PrimaryCentred> const& nodes,
     RotatingBody<Inertial> const& primary) {
   std::vector<Angle> longitudes;
-  longitudes.reserve(nodes.Size());
-  for (auto const& node : nodes) {
+  longitudes.reserve(nodes.size());
+  for (auto const& [time, degrees_of_freedom] : nodes) {
     longitudes.push_back(
-        CelestialLongitude(node.degrees_of_freedom.position()) -
-        primary.AngleAt(node.time) - π / 2 * Radian);
+        CelestialLongitude(degrees_of_freedom.position()) -
+        primary.AngleAt(time) - π / 2 * Radian);
   }
   return longitudes;
 }
@@ -55,7 +55,7 @@ Angle MeanSolarTime(Iterator const& it,
 
 template<typename PrimaryCentred>
 Interval<Angle> MeanSolarTimesOfNodes(
-    DiscreteTrajectory<PrimaryCentred> const& nodes,
+    DiscreteTraject0ry<PrimaryCentred> const& nodes,
     OrbitGroundTrack::MeanSun const& mean_sun) {
   Interval<Angle> mean_solar_times;
   std::optional<Angle> mean_solar_time;
@@ -120,24 +120,25 @@ inline OrbitGroundTrack::EquatorCrossingLongitudes::EquatorCrossingLongitudes(
 
 template<typename PrimaryCentred, typename Inertial>
 absl::StatusOr<OrbitGroundTrack> OrbitGroundTrack::ForTrajectory(
-    DiscreteTrajectory<PrimaryCentred> const& trajectory,
+    DiscreteTraject0ry<PrimaryCentred> const& trajectory,
     RotatingBody<Inertial> const& primary,
     std::optional<MeanSun> const& mean_sun) {
-  DiscreteTrajectory<PrimaryCentred> ascending_nodes;
-  DiscreteTrajectory<PrimaryCentred> descending_nodes;
+  DiscreteTraject0ry<PrimaryCentred> ascending_nodes;
+  DiscreteTraject0ry<PrimaryCentred> descending_nodes;
   OrbitGroundTrack ground_track;
-  RETURN_IF_ERROR(ComputeNodes(trajectory.begin(),
+  RETURN_IF_ERROR(ComputeNodes(trajectory,
+                               trajectory.begin(),
                                trajectory.end(),
                                Vector<double, PrimaryCentred>({0, 0, 1}),
                                /*max_points=*/std::numeric_limits<int>::max(),
                                ascending_nodes,
                                descending_nodes));
   if (mean_sun.has_value()) {
-    if (!ascending_nodes.Empty()) {
+    if (!ascending_nodes.empty()) {
       ground_track.mean_solar_times_of_ascending_nodes_ =
           MeanSolarTimesOfNodes(ascending_nodes, *mean_sun);
     }
-    if (!descending_nodes.Empty()) {
+    if (!descending_nodes.empty()) {
       ground_track.mean_solar_times_of_descending_nodes_ =
           MeanSolarTimesOfNodes(descending_nodes, *mean_sun);
     }
@@ -147,7 +148,7 @@ absl::StatusOr<OrbitGroundTrack> OrbitGroundTrack::ForTrajectory(
   ground_track.longitudes_of_equator_crossings_of_descending_passes_ =
       PlanetocentricLongitudes(descending_nodes, primary);
   ground_track.first_descending_pass_before_first_ascending_pass_ =
-      !ascending_nodes.Empty() && !descending_nodes.Empty() &&
+      !ascending_nodes.empty() && !descending_nodes.empty() &&
       descending_nodes.front().time < ascending_nodes.front().time;
   return ground_track;
 }
