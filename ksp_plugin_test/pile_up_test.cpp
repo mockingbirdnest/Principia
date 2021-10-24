@@ -97,7 +97,7 @@ class TestablePileUp : public PileUp {
     return intrinsic_force_;
   }
 
-  not_null<DiscreteTrajectory<Barycentric>*> psychohistory() const {
+  DiscreteTrajectorySegmentIterator<Barycentric> psychohistory() const {
     return psychohistory_;
   }
 
