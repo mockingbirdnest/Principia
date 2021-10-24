@@ -468,7 +468,7 @@ Ephemeris<Frame>::StoppableNewInstance(
   };
 
   CHECK(!trajectories.empty());
-  auto const& [trajectory_last_time, _] = (*trajectories.begin())->back();
+  auto const trajectory_last_time = (*trajectories.begin())->back().time;
   problem.initial_state.time = DoublePrecision<Instant>(trajectory_last_time);
   for (auto const& trajectory : trajectories) {
     auto const& [last_time, last_degrees_of_freedom] = trajectory->back();
@@ -590,7 +590,7 @@ Ephemeris<Frame>::ComputeGravitationalAccelerationOnMasslessBody(
     not_null<DiscreteTraject0ry<Frame>*> const trajectory,
     Instant const& t) const {
   auto const it = trajectory->find(t);
-  auto const& [_, degrees_of_freedom] = *it;
+  DegreesOfFreedom<Frame> const& degrees_of_freedom = it->degrees_of_freedom;
   return ComputeGravitationalAccelerationOnMasslessBody(
              degrees_of_freedom.position(), t);
 }

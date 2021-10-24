@@ -36,8 +36,9 @@ std::vector<Angle> PlanetocentricLongitudes(
   std::vector<Angle> longitudes;
   longitudes.reserve(nodes.size());
   for (auto const& [time, degrees_of_freedom] : nodes) {
-    longitudes.push_back(CelestialLongitude(degrees_of_freedom.position()) -
-                         primary.AngleAt(time) - π / 2 * Radian);
+    longitudes.push_back(
+        CelestialLongitude(degrees_of_freedom.position()) -
+        primary.AngleAt(time) - π / 2 * Radian);
   }
   return longitudes;
 }
@@ -46,9 +47,8 @@ std::vector<Angle> PlanetocentricLongitudes(
 template<typename Iterator>
 Angle MeanSolarTime(Iterator const& it,
                     OrbitGroundTrack::MeanSun const& mean_sun) {
-  auto const& [time, degrees_of_freedom] = *it;
-  Time const t = time - mean_sun.epoch;
-  return π * Radian + CelestialLongitude(degrees_of_freedom.position()) -
+  Time const t = it->time - mean_sun.epoch;
+  return π * Radian + CelestialLongitude(it->degrees_of_freedom.position()) -
          (mean_sun.mean_longitude_at_epoch +
           (2 * π * Radian * t / mean_sun.year));
 }
@@ -149,7 +149,7 @@ absl::StatusOr<OrbitGroundTrack> OrbitGroundTrack::ForTrajectory(
       PlanetocentricLongitudes(descending_nodes, primary);
   ground_track.first_descending_pass_before_first_ascending_pass_ =
       !ascending_nodes.empty() && !descending_nodes.empty() &&
-      descending_nodes.front().first < ascending_nodes.front().first;
+      descending_nodes.front().time < ascending_nodes.front().time;
   return ground_track;
 }
 

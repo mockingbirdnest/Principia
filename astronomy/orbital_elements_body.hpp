@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
 #include "base/jthread.hpp"
 #include "base/status_utilities.hpp"
 #include "physics/kepler_orbit.hpp"
@@ -38,7 +39,7 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
   OrbitalElements orbital_elements;
   if (trajectory.size() < 2) {
     return absl::InvalidArgumentError(
-        "trajectory.size() is " + std::to_string(trajectory.size()));
+        absl::StrCat("trajectory.Size() is ", trajectory.size()));
   }
   orbital_elements.osculating_equinoctial_elements_ =
       OsculatingEquinoctialElements(trajectory, primary, secondary);
@@ -65,8 +66,8 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
         "trajectory does not span one sidereal period: sidereal period is " +
             DebugString(orbital_elements.sidereal_period_) +
             ", trajectory spans " +
-            DebugString(trajectory.back().first -
-                        trajectory.front().first));
+            DebugString(trajectory.back().time -
+                        trajectory.front().time));
   }
   auto mean_classical_elements =
       ToClassicalElements(orbital_elements.mean_equinoctial_elements_);

@@ -108,17 +108,21 @@ TEST_F(GeodesyTest, DISABLED_LAGEOS2) {
   StandardProduct3::SatelliteIdentifier const lageos2_id{
       StandardProduct3::SatelliteGroup::General, 52};
 
-  CHECK_EQ(initial_ilrsa.orbit(lageos2_id).front()->front().first,
-           initial_ilrsb.orbit(lageos2_id).front()->front().first);
+  CHECK_EQ(initial_ilrsa.orbit(lageos2_id).front()->front().time,
+           initial_ilrsb.orbit(lageos2_id).front()->front().time);
 
-  auto const& [initial_time, initial_dof_ilrsa] =
-      initial_ilrsa.orbit(lageos2_id).front()->front();
+  Instant const initial_time =
+      initial_ilrsa.orbit(lageos2_id).front()->front().time;
+  DegreesOfFreedom<ITRS> const initial_dof_ilrsa =
+      initial_ilrsa.orbit(lageos2_id).front()->front().degrees_of_freedom;
 
-  auto const& [_, initial_dof_ilrsb] =
-      initial_ilrsb.orbit(lageos2_id).front()->front();
+  DegreesOfFreedom<ITRS> const initial_dof_ilrsb =
+      initial_ilrsb.orbit(lageos2_id).front()->front().degrees_of_freedom;
 
-  auto const& [final_time, expected_final_dof] =
-      final_ilrsa.orbit(lageos2_id).front()->front();
+  Instant const final_time =
+      final_ilrsa.orbit(lageos2_id).front()->front().time;
+  DegreesOfFreedom<ITRS> const expected_final_dof =
+      final_ilrsa.orbit(lageos2_id).front()->front().degrees_of_freedom;
 
   ephemeris_->Prolong(final_time);
 
@@ -152,13 +156,13 @@ TEST_F(GeodesyTest, DISABLED_LAGEOS2) {
     return flow_lageos2(secondary_lageos2_trajectory);
   });
   bundle.Join();
-  EXPECT_THAT(primary_lageos2_trajectory.back().first, Eq(final_time));
-  EXPECT_THAT(secondary_lageos2_trajectory.back().first, Eq(final_time));
+  EXPECT_THAT(primary_lageos2_trajectory.back().time, Eq(final_time));
+  EXPECT_THAT(secondary_lageos2_trajectory.back().time, Eq(final_time));
 
   auto const primary_actual_final_dof = itrs_.ToThisFrameAtTime(final_time)(
-      primary_lageos2_trajectory.back().second);
+      primary_lageos2_trajectory.back().degrees_of_freedom);
   auto const secondary_actual_final_dof = itrs_.ToThisFrameAtTime(final_time)(
-      secondary_lageos2_trajectory.back().second);
+      secondary_lageos2_trajectory.back().degrees_of_freedom);
 
   // Absolute error in position.
   EXPECT_THAT(AbsoluteError(primary_actual_final_dof.position(),

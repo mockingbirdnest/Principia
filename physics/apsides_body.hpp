@@ -132,14 +132,15 @@ void ComputeApsides(Trajectory<Frame> const& reference,
 }
 
 template<typename Frame, typename Predicate>
-absl::Status ComputeNodes(DiscreteTraject0ry<Frame> const& trajectory,
-                          typename DiscreteTraject0ry<Frame>::iterator begin,
-                          typename DiscreteTraject0ry<Frame>::iterator end,
-                          Vector<double, Frame> const& north,
-                          int const max_points,
-                          DiscreteTraject0ry<Frame>& ascending,
-                          DiscreteTraject0ry<Frame>& descending,
-                          Predicate predicate) {
+absl::Status ComputeNodes(
+    DiscreteTraject0ry<Frame> const& trajectory,
+    typename DiscreteTraject0ry<Frame>::iterator const begin,
+    typename DiscreteTraject0ry<Frame>::iterator const end,
+    Vector<double, Frame> const& north,
+    int const max_points,
+    DiscreteTraject0ry<Frame>& ascending,
+    DiscreteTraject0ry<Frame>& descending,
+    Predicate predicate) {
   static_assert(
       std::is_convertible<decltype(predicate(
                               std::declval<DegreesOfFreedom<Frame>>())),

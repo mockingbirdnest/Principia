@@ -132,8 +132,8 @@ TEST_F(DiscreteTraject0ryTest, Make) {
 
 TEST_F(DiscreteTraject0ryTest, BackFront) {
   auto const trajectory = MakeTrajectory();
-  EXPECT_EQ(t0_, trajectory.front().first);
-  EXPECT_EQ(t0_ + 14 * Second, trajectory.back().first);
+  EXPECT_EQ(t0_, trajectory.front().time);
+  EXPECT_EQ(t0_ + 14 * Second, trajectory.back().time);
 }
 
 TEST_F(DiscreteTraject0ryTest, IterateForward) {
@@ -164,7 +164,7 @@ TEST_F(DiscreteTraject0ryTest, IterateBackward) {
   auto const trajectory = MakeTrajectory();
   std::vector<Instant> times;
   for (auto it = trajectory.rbegin(); it != trajectory.rend(); ++it) {
-    times.push_back(it->first);
+    times.push_back(it->time);
   }
   EXPECT_THAT(times,
               ElementsAre(t0_ + 14 * Second,
@@ -317,8 +317,8 @@ TEST_F(DiscreteTraject0ryTest, Segments) {
   std::vector<Instant> begin;
   std::vector<Instant> rbegin;
   for (auto const& sit : trajectory.segments()) {
-    begin.push_back(sit.begin()->first);
-    rbegin.push_back(sit.rbegin()->first);
+    begin.push_back(sit.begin()->time);
+    rbegin.push_back(sit.rbegin()->time);
   }
   EXPECT_THAT(
       begin,
@@ -333,8 +333,8 @@ TEST_F(DiscreteTraject0ryTest, RSegments) {
   std::vector<Instant> begin;
   std::vector<Instant> rbegin;
   for (auto const& sit : trajectory.rsegments()) {
-    begin.push_back(sit.begin()->first);
-    rbegin.push_back(sit.rbegin()->first);
+    begin.push_back(sit.begin()->time);
+    rbegin.push_back(sit.rbegin()->time);
   }
   EXPECT_THAT(
       begin,
@@ -351,10 +351,10 @@ TEST_F(DiscreteTraject0ryTest, DetachSegments) {
   auto trajectory2 = trajectory1.DetachSegments(second_segment);
   EXPECT_EQ(1, trajectory1.segments().size());
   EXPECT_EQ(2, trajectory2.segments().size());
-  EXPECT_EQ(t0_, trajectory1.begin()->first);
-  EXPECT_EQ(t0_ + 4 * Second, trajectory1.rbegin()->first);
-  EXPECT_EQ(t0_ + 4 * Second, trajectory2.begin()->first);
-  EXPECT_EQ(t0_ + 14 * Second, trajectory2.rbegin()->first);
+  EXPECT_EQ(t0_, trajectory1.begin()->time);
+  EXPECT_EQ(t0_ + 4 * Second, trajectory1.rbegin()->time);
+  EXPECT_EQ(t0_ + 4 * Second, trajectory2.begin()->time);
+  EXPECT_EQ(t0_ + 14 * Second, trajectory2.rbegin()->time);
 
   // Check that the trajectories are minimally usable (in particular, as far as
   // the time-to-segment mapping is concerned).
@@ -409,8 +409,8 @@ TEST_F(DiscreteTraject0ryTest, AttachSegments) {
                            1 * Metre / Second})));
   trajectory1.AttachSegments(std::move(trajectory2));
   EXPECT_EQ(6, trajectory1.segments().size());
-  EXPECT_EQ(t0_, trajectory1.begin()->first);
-  EXPECT_EQ(t0_ + 28 * Second, trajectory1.rbegin()->first);
+  EXPECT_EQ(t0_, trajectory1.begin()->time);
+  EXPECT_EQ(t0_ + 28 * Second, trajectory1.rbegin()->time);
 
   // Check that the trajectories are minimally usable (in particular, as far as
   // the time-to-segment mapping is concerned).
@@ -449,8 +449,8 @@ TEST_F(DiscreteTraject0ryTest, DeleteSegments) {
   auto const second_segment = std::next(first_segment);
   trajectory.DeleteSegments(second_segment);
   EXPECT_EQ(1, trajectory.segments().size());
-  EXPECT_EQ(t0_, trajectory.begin()->first);
-  EXPECT_EQ(t0_ + 4 * Second, trajectory.rbegin()->first);
+  EXPECT_EQ(t0_, trajectory.begin()->time);
+  EXPECT_EQ(t0_ + 4 * Second, trajectory.rbegin()->time);
 }
 
 TEST_F(DiscreteTraject0ryTest, ForgetAfter) {
@@ -458,18 +458,18 @@ TEST_F(DiscreteTraject0ryTest, ForgetAfter) {
 
   trajectory.ForgetAfter(t0_ + 12 * Second);
   EXPECT_EQ(3, trajectory.segments().size());
-  EXPECT_EQ(t0_, trajectory.begin()->first);
-  EXPECT_EQ(t0_ + 11 * Second, trajectory.rbegin()->first);
+  EXPECT_EQ(t0_, trajectory.begin()->time);
+  EXPECT_EQ(t0_ + 11 * Second, trajectory.rbegin()->time);
 
   trajectory.ForgetAfter(t0_ + 6.1 * Second);
   EXPECT_EQ(2, trajectory.segments().size());
-  EXPECT_EQ(t0_, trajectory.begin()->first);
-  EXPECT_EQ(t0_ + 6 * Second, trajectory.rbegin()->first);
+  EXPECT_EQ(t0_, trajectory.begin()->time);
+  EXPECT_EQ(t0_ + 6 * Second, trajectory.rbegin()->time);
 
   trajectory.ForgetAfter(t0_ + 4 * Second);
   EXPECT_EQ(1, trajectory.segments().size());
-  EXPECT_EQ(t0_, trajectory.begin()->first);
-  EXPECT_EQ(t0_ + 4 * Second, trajectory.rbegin()->first);
+  EXPECT_EQ(t0_, trajectory.begin()->time);
+  EXPECT_EQ(t0_ + 4 * Second, trajectory.rbegin()->time);
 }
 
 TEST_F(DiscreteTraject0ryTest, ForgetBefore) {
@@ -477,18 +477,18 @@ TEST_F(DiscreteTraject0ryTest, ForgetBefore) {
 
   trajectory.ForgetBefore(t0_ + 3 * Second);
   EXPECT_EQ(3, trajectory.segments().size());
-  EXPECT_EQ(t0_ + 3 * Second, trajectory.begin()->first);
-  EXPECT_EQ(t0_ + 14 * Second, trajectory.rbegin()->first);
+  EXPECT_EQ(t0_ + 3 * Second, trajectory.begin()->time);
+  EXPECT_EQ(t0_ + 14 * Second, trajectory.rbegin()->time);
 
   trajectory.ForgetBefore(t0_ + 6.1 * Second);
   EXPECT_EQ(2, trajectory.segments().size());
-  EXPECT_EQ(t0_ + 7 * Second, trajectory.begin()->first);
-  EXPECT_EQ(t0_ + 14 * Second, trajectory.rbegin()->first);
+  EXPECT_EQ(t0_ + 7 * Second, trajectory.begin()->time);
+  EXPECT_EQ(t0_ + 14 * Second, trajectory.rbegin()->time);
 
   trajectory.ForgetBefore(t0_ + 9 * Second);
   EXPECT_EQ(1, trajectory.segments().size());
-  EXPECT_EQ(t0_ + 9 * Second, trajectory.begin()->first);
-  EXPECT_EQ(t0_ + 14 * Second, trajectory.rbegin()->first);
+  EXPECT_EQ(t0_ + 9 * Second, trajectory.begin()->time);
+  EXPECT_EQ(t0_ + 14 * Second, trajectory.rbegin()->time);
 }
 
 TEST_F(DiscreteTraject0ryTest, TMinTMaxEvaluate) {
@@ -531,14 +531,16 @@ TEST_F(DiscreteTraject0ryTest, SerializationRoundTrip) {
           message1, /*tracked=*/{&deserialized_second_segment});
 
   // Check that the tracked segment was properly retrieved.
-  EXPECT_EQ(t0_ + 4 * Second, deserialized_second_segment->begin()->first);
-  EXPECT_EQ(t0_ + 9 * Second, deserialized_second_segment->rbegin()->first);
+  EXPECT_EQ(t0_ + 4 * Second, deserialized_second_segment->begin()->time);
+  EXPECT_EQ(t0_ + 9 * Second, deserialized_second_segment->rbegin()->time);
 
   // Check that the exact points are exact.
-  EXPECT_EQ(deserialized_trajectory.lower_bound(t0_ + 2 * Second)->second,
-            trajectory.lower_bound(t0_ + 2 * Second)->second);
-  EXPECT_EQ(deserialized_trajectory.lower_bound(t0_ + 3 * Second)->second,
-            trajectory.lower_bound(t0_ + 3 * Second)->second);
+  EXPECT_EQ(
+      deserialized_trajectory.lower_bound(t0_ + 2 * Second)->degrees_of_freedom,
+      trajectory.lower_bound(t0_ + 2 * Second)->degrees_of_freedom);
+  EXPECT_EQ(
+      deserialized_trajectory.lower_bound(t0_ + 3 * Second)->degrees_of_freedom,
+      trajectory.lower_bound(t0_ + 3 * Second)->degrees_of_freedom);
 
   serialization::DiscreteTrajectory message2;
   deserialized_trajectory.WriteToMessage(

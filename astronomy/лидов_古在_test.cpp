@@ -86,9 +86,9 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
   DiscreteTraject0ry<ICRS> icrs_trajectory;
   icrs_trajectory.Append(MercuryOrbiterInitialTime,
                          MercuryOrbiterInitialDegreesOfFreedom<ICRS>);
-  auto const ircs_segment = icrs_trajectory.segments().begin();
-  ircs_segment->SetDownsampling({.max_dense_intervals = 10'000,
-                                 .tolerance = 10 * Metre});
+  auto& icrs_segment = icrs_trajectory.segments().front();
+  icrs_segment.SetDownsampling({.max_dense_intervals = 10'000,
+                                .tolerance = 10 * Metre});
   auto const instance = ephemeris_->NewInstance(
       {&icrs_trajectory},
       Ephemeris<ICRS>::NoIntrinsicAccelerations,
@@ -101,7 +101,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
     LOG(INFO) << "Flowing to " << t;
     auto const status = ephemeris_->FlowWithFixedStep(t, *instance);
     if (!status.ok()) {
-      LOG(INFO) << status << " at " << icrs_trajectory.back().first;
+      LOG(INFO) << status << " at " << icrs_trajectory.back().time;
       break;
     }
   }
@@ -116,7 +116,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
                                       mercury_frame_.ToThisFrameAtTime(t)(dof));
     logger.Append(
         "q",
-        mercury_centred_trajectory.back().second.position(),
+        mercury_centred_trajectory.back().degrees_of_freedom.position(),
         mathematica::ExpressIn(Metre));
   }
 

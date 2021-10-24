@@ -48,6 +48,7 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using ::testing::Eq;
+using ::testing::SizeIs;
 
 class ApsidesTest : public ::testing::Test {
  protected:
@@ -56,7 +57,7 @@ class ApsidesTest : public ::testing::Test {
 
 #if !defined(_DEBUG)
 
-TEST_F(ApsidesTest, ComputeApsidesDiscreteTraject0ry) {
+TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
   Instant const t0;
   GravitationalParameter const μ = SolarGravitationalParameter;
   auto const b = new MassiveBody(μ);
@@ -238,8 +239,8 @@ TEST_F(ApsidesTest, ComputeNodes) {
     previous_time = time;
   }
 
-  EXPECT_THAT(ascending_nodes.size(), Eq(10));
-  EXPECT_THAT(descending_nodes.size(), Eq(10));
+  EXPECT_THAT(ascending_nodes, SizeIs(10));
+  EXPECT_THAT(descending_nodes, SizeIs(10));
 
   DiscreteTraject0ry<World> south_ascending_nodes;
   DiscreteTraject0ry<World> south_descending_nodes;
@@ -251,8 +252,8 @@ TEST_F(ApsidesTest, ComputeNodes) {
                /*max_points=*/std::numeric_limits<int>::max(),
                south_ascending_nodes,
                south_descending_nodes);
-  EXPECT_THAT(south_ascending_nodes.size(), Eq(10));
-  EXPECT_THAT(south_descending_nodes.size(), Eq(10));
+  EXPECT_THAT(south_ascending_nodes, SizeIs(10));
+  EXPECT_THAT(south_descending_nodes, SizeIs(10));
 
   for (auto south_ascending_it  = south_ascending_nodes.begin(),
             ascending_it        = ascending_nodes.begin(),
@@ -263,20 +264,12 @@ TEST_F(ApsidesTest, ComputeNodes) {
        ++ascending_it,
        ++south_descending_it,
        ++descending_it) {
-    const auto& [ascending_time,
-                 ascending_degrees_of_freedom] = *ascending_it;
-    const auto& [south_ascending_time,
-                 south_ascending_degrees_of_freedom] = *south_ascending_it;
-    const auto& [descending_time,
-                 descending_degrees_of_freedom] = *descending_it;
-    const auto& [south_descending_time,
-                 south_descending_degrees_of_freedom] = *south_descending_it;
-    EXPECT_THAT(south_ascending_degrees_of_freedom,
-                Eq(descending_degrees_of_freedom));
-    EXPECT_THAT(south_ascending_time, Eq(descending_time));
-    EXPECT_THAT(south_descending_degrees_of_freedom,
-                Eq(ascending_degrees_of_freedom));
-    EXPECT_THAT(south_descending_time, Eq(ascending_time));
+    EXPECT_THAT(south_ascending_it->degrees_of_freedom,
+                Eq(descending_it->degrees_of_freedom));
+    EXPECT_THAT(south_ascending_it->time, Eq(descending_it->time));
+    EXPECT_THAT(south_descending_it->degrees_of_freedom,
+                Eq(ascending_it->degrees_of_freedom));
+    EXPECT_THAT(south_descending_it->time, Eq(ascending_it->time));
   }
 }
 

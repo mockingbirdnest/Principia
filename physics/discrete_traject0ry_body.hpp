@@ -184,9 +184,9 @@ DiscreteTraject0ry<Frame>::AttachSegments(
   // NOTE(phl): This check might be too strict, we might want to allow LT as the
   // time comparison, and to adjust the first point of trajectory as needed.
   // We'll see if the clients need that.
-  CHECK_EQ(rbegin()->first, trajectory.begin()->first)
+  CHECK_EQ(rbegin()->time, trajectory.begin()->time)
       << "Mismatching times when attaching segments";
-  CHECK_EQ(rbegin()->second, trajectory.begin()->second)
+  CHECK_EQ(rbegin()->degrees_of_freedom, trajectory.begin()->degrees_of_freedom)
       << "Mismatching degrees of freedom when attaching segments";
 
   if (empty()) {
@@ -417,10 +417,10 @@ absl::Status DiscreteTraject0ry<Frame>::ValidateConsistency() const {
     auto it1 = segments_->cbegin();
     auto it2 = segment_by_left_endpoint_.cbegin();
     for (; it1 != segments_->cend(); ++it1, ++it2, ++i) {
-      if (it1->begin()->first != it2->first) {
+      if (it1->begin()->time != it2->first) {
         return absl::InternalError(
             absl::StrCat("Times mismatch ",
-                         DebugString(it1->begin()->first),
+                         DebugString(it1->begin()->time),
                          " and ",
                          DebugString(it2->first),
                          " for segment #",
@@ -442,20 +442,21 @@ absl::Status DiscreteTraject0ry<Frame>::ValidateConsistency() const {
       // times match.  We must look at the endpoints of the timeline explicitly.
       auto const timeline_rbegin = --sit->timeline_end();
       auto const timeline_begin = std::next(sit)->timeline_begin();
-      if (timeline_rbegin->first != timeline_begin->first) {
+      if (timeline_rbegin->time != timeline_begin->time) {
         return absl::InternalError(
             absl::StrCat("Duplicated time mismatch ",
-                         DebugString(timeline_rbegin->first),
+                         DebugString(timeline_rbegin->time),
                          " and ",
-                         DebugString(timeline_begin->first),
+                         DebugString(timeline_begin->time),
                          " for segment #",
                          i));
-      } else if (timeline_rbegin->second != timeline_begin->second) {
+      } else if (timeline_rbegin->degrees_of_freedom !=
+                 timeline_begin->degrees_of_freedom) {
         return absl::InternalError(
             absl::StrCat("Duplicated degrees of freedom mismatch ",
-                         DebugString(timeline_rbegin->second),
+                         DebugString(timeline_rbegin->degrees_of_freedom),
                          " and ",
-                         DebugString(timeline_begin->second),
+                         DebugString(timeline_begin->degrees_of_freedom),
                          " for segment #",
                          i));
       }
@@ -514,7 +515,7 @@ DiscreteTraject0ry<Frame>::ReadFromPreΖήνωνMessage(
     std::vector<SegmentIterator*> const& tracked,
     value_type const& fork_point,
     DiscreteTraject0ry& trajectory) {
-  CHECK_EQ(fork_point.first, Instant::ReadFromMessage(message.fork_time()))
+  CHECK_EQ(fork_point.time, Instant::ReadFromMessage(message.fork_time()))
       << "Cannot read trajectory with a fork not at end of segment";
   CHECK_EQ(1, message.trajectories_size())
       << "Cannot read trajectory with multiple forks";
@@ -618,7 +619,7 @@ void DiscreteTraject0ry<Frame>::ReadFromPreΖήνωνMessage(
   }
 
   // Finally, set the time-to-segment map.
-  trajectory.segment_by_left_endpoint_.emplace(sit->begin()->first, sit);
+  trajectory.segment_by_left_endpoint_.emplace(sit->begin()->time, sit);
 }
 
 }  // namespace internal_discrete_traject0ry

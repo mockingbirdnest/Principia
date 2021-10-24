@@ -250,7 +250,7 @@ TEST_P(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
   EXPECT_OK(ephemeris.FlowWithAdaptiveStep(
       &trajectory,
       Ephemeris<ICRS>::NoIntrinsicAcceleration,
-      trajectory.back().first,
+      trajectory.back().time,
       Ephemeris<ICRS>::AdaptiveStepParameters(
           EmbeddedExplicitRungeKuttaNyströmIntegrator<
               DormandالمكاوىPrince1986RKN434FM,
@@ -447,10 +447,10 @@ TEST_P(EphemerisTest, EarthProbe) {
               AlmostEquals(1.00 * period * v_earth, 633, 635));
   EXPECT_THAT(earth_positions[100].coordinates().y, Eq(q_earth));
 
-  Length const q_probe = (trajectory.back().second.position() -
+  Length const q_probe = (trajectory.back().degrees_of_freedom.position() -
                           ICRS::origin).coordinates().y;
   Speed const v_probe =
-      trajectory.back().second.velocity().coordinates().x;
+      trajectory.back().degrees_of_freedom.velocity().coordinates().x;
   std::vector<Displacement<ICRS>> probe_positions;
   for (auto const& [time, degrees_of_freedom] : trajectory) {
     probe_positions.push_back(degrees_of_freedom.position() - ICRS::origin);
@@ -472,7 +472,7 @@ TEST_P(EphemerisTest, EarthProbe) {
               Eq(q_probe));
 
   Instant const old_t_max = ephemeris.t_max();
-  EXPECT_THAT(trajectory.back().first, Lt(old_t_max));
+  EXPECT_THAT(trajectory.back().time, Lt(old_t_max));
   EXPECT_THAT(ephemeris.FlowWithAdaptiveStep(
                   &trajectory,
                   intrinsic_acceleration,
@@ -487,7 +487,7 @@ TEST_P(EphemerisTest, EarthProbe) {
                   /*max_ephemeris_steps=*/0),
               StatusIs(absl::StatusCode::kDeadlineExceeded));
   EXPECT_THAT(ephemeris.t_max(), Eq(old_t_max));
-  EXPECT_THAT(trajectory.back().first, Eq(old_t_max));
+  EXPECT_THAT(trajectory.back().time, Eq(old_t_max));
 }
 
 // The Earth and two massless probes, similar to the previous test but flowing
@@ -580,13 +580,15 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
   EXPECT_THAT(earth_positions[100].coordinates().y, Eq(q_earth));
 
   Length const q_probe1 =
-      (trajectory1.back().second.position() - ICRS::origin).coordinates().y;
+      (trajectory1.back().degrees_of_freedom.position() -
+       ICRS::origin).coordinates().y;
   Length const q_probe2 =
-      (trajectory2.back().second.position() - ICRS::origin).coordinates().y;
+      (trajectory2.back().degrees_of_freedom.position() -
+       ICRS::origin).coordinates().y;
   Speed const v_probe1 =
-      trajectory1.back().second.velocity().coordinates().x;
+      trajectory1.back().degrees_of_freedom.velocity().coordinates().x;
   Speed const v_probe2 =
-      trajectory2.back().second.velocity().coordinates().x;
+      trajectory2.back().degrees_of_freedom.velocity().coordinates().x;
   std::vector<Displacement<ICRS>> probe1_positions;
   std::vector<Displacement<ICRS>> probe2_positions;
   for (auto const& [time, degrees_of_freedom] : trajectory1) {
@@ -980,10 +982,10 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
        ++it1, ++it2) {
     auto const& [time1, degrees_of_freedom1] = *it1;
     auto const& [time2, degrees_of_freedom2] = *it2;
+    EXPECT_EQ(time1, time2);
     all_times.emplace(time1);
     Displacement<ICRS> const displacement =
-        degrees_of_freedom1.position() -
-        degrees_of_freedom2.position();
+        degrees_of_freedom1.position() - degrees_of_freedom2.position();
     EXPECT_LT(AbsoluteError(displacement.Norm(), (1 + e) * a),
               1.9e-5 * fitting_tolerance);
     if (previous_time) {
@@ -999,10 +1001,10 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
        ++it1, ++it2) {
     auto const& [time1, degrees_of_freedom1] = *it1;
     auto const& [time2, degrees_of_freedom2] = *it2;
+    EXPECT_EQ(time1, time2);
     all_times.emplace(time1);
     Displacement<ICRS> const displacement =
-        degrees_of_freedom1.position() -
-        degrees_of_freedom2.position();
+        degrees_of_freedom1.position() - degrees_of_freedom2.position();
     EXPECT_LT(AbsoluteError(displacement.Norm(), (1 - e) * a),
               5.3e-3 * fitting_tolerance);
     if (previous_time) {
@@ -1026,7 +1028,7 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
 // This trajectory is similar to the second trajectory in the first save in
 // #2400.  It exhibits oscillations with a period close to 5600 s and its
 // downsampling period alternates between 120 and 130 s.
-TEST(EphemerisTestNoFixture, DiscreteTraject0ryCompression) {
+TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
   SolarSystem<ICRS> solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
@@ -1052,9 +1054,9 @@ TEST(EphemerisTestNoFixture, DiscreteTraject0ryCompression) {
 
   MasslessBody probe;
   DiscreteTraject0ry<ICRS> trajectory1;
-  auto const segment1 = trajectory1.segments().begin();
-  segment1->SetDownsampling({.max_dense_intervals = 10'000,
-                             .tolerance = 10 * Metre});
+  auto& segment1 = trajectory1.segments().front();
+  segment1.SetDownsampling({.max_dense_intervals = 10'000,
+                            .tolerance = 10 * Metre});
   trajectory1.Append(t0, DegreesOfFreedom<ICRS>(q0, p0));
 
   auto instance = ephemeris->NewInstance(

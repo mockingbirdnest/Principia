@@ -224,6 +224,9 @@
     <ClInclude Include="discrete_traject0ry_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="discrete_trajectory_types_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">

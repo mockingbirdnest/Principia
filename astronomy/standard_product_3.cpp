@@ -43,9 +43,8 @@ not_null<std::unique_ptr<DiscreteTraject0ry<ITRS>>> ComputeVelocities(
     // TODO(egg): we should check when reading the file that the times are
     // equally spaced at the interval declared in columns 25-38 of SP3
     // line two.
-    auto const& [time, degrees_of_freedom] = *it;
-    times[k] = time;
-    positions[k] = degrees_of_freedom.position();
+    times[k] = it->time;
+    positions[k] = it->degrees_of_freedom.position();
   }
   // We use a central difference formula wherever possible, so we keep
   // |offset| at (n - 1) / 2 except at the beginning and end of the arc.
@@ -65,9 +64,8 @@ not_null<std::unique_ptr<DiscreteTraject0ry<ITRS>>> ComputeVelocities(
     } else {
       std::move(positions.begin() + 1, positions.end(), positions.begin());
       std::move(times.begin() + 1, times.end(), times.begin());
-      auto const& [time, degrees_of_freedom] = *it;
-      times.back() = time;
-      positions.back()  = degrees_of_freedom.position();
+      times.back() = it->time;
+      positions.back()  = it->degrees_of_freedom.position();
       ++it;
     }
   }

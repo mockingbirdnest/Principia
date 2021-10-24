@@ -118,21 +118,21 @@ ACTION_P2(AppendToDiscreteTrajectories, time, degrees_of_freedom) {
   }
 }
 
-ACTION_P(AppendToDiscreteTraject0ry, degrees_of_freedom) {
+ACTION_P(AppendToDiscreteTrajectory, degrees_of_freedom) {
   arg0->Append(arg2, degrees_of_freedom);
 }
 
-ACTION_P2(AppendToDiscreteTraject0ry, time, degrees_of_freedom) {
+ACTION_P2(AppendToDiscreteTrajectory, time, degrees_of_freedom) {
   arg0->Append(time, degrees_of_freedom);
 }
 
-ACTION_P3(AppendToDiscreteTraject0ry, trajectory, time, degrees_of_freedom) {
+ACTION_P3(AppendToDiscreteTrajectory, trajectory, time, degrees_of_freedom) {
   // The extra level of indirection is useful for tests that get a pointer to a
   // trajectory and squirrel it away using |SaveArg<N>|.
   (*trajectory)->Append(time, degrees_of_freedom);
 }
 
-ACTION_P(AppendPointsToDiscreteTraject0ry, trajectory) {
+ACTION_P(AppendPointsToDiscreteTrajectory, trajectory) {
   for (auto const& [time, degrees_of_freedom] : *trajectory) {
     arg0->Append(time, degrees_of_freedom);
   }

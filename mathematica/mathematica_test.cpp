@@ -213,9 +213,9 @@ TEST_F(MathematicaTest, ToMathematica) {
             Velocity<F>({-1.0 * Metre / Second,
                          -5.0 * Metre / Second,
                          8.0 * Metre / Second})));
-    EXPECT_EQ(ToMathematica(std::pair{trajectory.front().first,
-                                      trajectory.front().second}),
-              ToMathematica(*trajectory.begin()));
+    EXPECT_EQ(ToMathematica(std::tuple{trajectory.front().time,
+                                       trajectory.front().degrees_of_freedom}),
+              ToMathematica(trajectory.front()));
   }
   {
     OrbitalElements::EquinoctialElements elements{
@@ -352,7 +352,7 @@ TEST_F(MathematicaTest, ExpressIn) {
         ToMathematica(std::tuple{0.0,
                                  std::tuple{std::tuple{2.0, 3.0, -4.0},
                                             std::tuple{-1.0, -5.0, 8.0}}}),
-        ToMathematica(*trajectory.begin(), ExpressIn(Metre, Second)));
+        ToMathematica(trajectory.front(), ExpressIn(Metre, Second)));
   }
   {
     OrbitalElements::EquinoctialElements elements{
