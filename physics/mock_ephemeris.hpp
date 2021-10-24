@@ -47,13 +47,13 @@ class MockEphemeris : public Ephemeris<Frame> {
       not_null<std::unique_ptr<
           typename Integrator<NewtonianMotionEquation>::Instance>>,
       NewInstance,
-      (std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
+      (std::vector<not_null<DiscreteTraject0ry<Frame>*>> const& trajectories,
        IntrinsicAccelerations const& intrinsic_accelerations,
        FixedStepParameters const& parameters),
       (override));
   MOCK_METHOD(absl::Status,
               FlowWithAdaptiveStep,
-              (not_null<DiscreteTrajectory<Frame>*> trajectory,
+              (not_null<DiscreteTraject0ry<Frame>*> trajectory,
                IntrinsicAcceleration intrinsic_acceleration,
                Instant const& t,
                AdaptiveStepParameters const& parameters,
@@ -73,7 +73,7 @@ class MockEphemeris : public Ephemeris<Frame> {
 
   MOCK_METHOD((Vector<Acceleration, Frame>),
               ComputeGravitationalAccelerationOnMasslessBody,
-              (not_null<DiscreteTrajectory<Frame>*> trajectory,
+              (not_null<DiscreteTraject0ry<Frame>*> trajectory,
                Instant const& t),
               (const, override));
 
