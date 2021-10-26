@@ -143,13 +143,12 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
   absl::Status ValidateConsistency() const;
 
   // Updates the segments self-pointers and the time-to-segment mapping after
-  // segments have been spliced from |from| to |to|.  The iterators indicate the
+  // segments have been spliced from |from| to |to|.  The iterator indicates the
   // segments to fix-up.
   static void AdjustAfterSplicing(
       DiscreteTraject0ry& from,
       DiscreteTraject0ry& to,
-      typename Segments::iterator to_segments_begin,
-      std::reverse_iterator<typename Segments::iterator> to_segments_rend);
+      typename Segments::iterator to_segments_begin);
 
   // Reads a pre-Ζήνων downsampling message and return the downsampling
   // parameters and the start of the dense timeline.  The latter will have to be
@@ -181,13 +180,11 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
   // DiscreteTrajectory moves.  This field is never null and never empty.
   not_null<std::unique_ptr<Segments>> segments_;
 
-  // This list is never empty.  For an empty trajectory, there is a sentinel
-  // with time -∞ denoting the single segment of the trajectory.  As soon as a
-  // point is appended to the trajectory, the sentinel is removed and a bona
-  // fide entry replaces it.  To access the segment for time t, use
-  // |--upper_bound(t)|.
-  //TODO(phl):Comment empty iff the entire trajectory is empty
-  // Always the "most forked".
+  // Maps time |t| to the last segment that start at time |t|.  Does not contain
+  // entries for empty segments (at the beginning of the trajectory) or for
+  // 1-point segments that are not the last at their time.  Empty iff the entire
+  // trajectory is empty.  Always updated using |insert_or_assign| to override
+  // any preexisting segment with the same endpoint.
   SegmentByLeftEndpoint segment_by_left_endpoint_;
 };
 
