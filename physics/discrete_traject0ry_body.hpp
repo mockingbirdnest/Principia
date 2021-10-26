@@ -181,8 +181,7 @@ DiscreteTraject0ry<Frame>::DetachSegments(SegmentIterator const begin) {
 
   AdjustAfterSplicing(/*from=*/*this,
                       /*to=*/detached,
-                      /*to_segments_begin=*/detached.segments_->begin(),
-                      /*to_segments_rend=*/detached.segments_->rend());
+                      /*to_segments_begin=*/detached.segments_->begin());
 
   return detached;
 }
@@ -213,12 +212,9 @@ DiscreteTraject0ry<Frame>::AttachSegments(
                     *trajectory.segments_);
 
   auto const end_before_splice = std::next(last_before_splice);
-  auto const rbegin_before_splice = std::reverse_iterator(end_before_splice);
-
   AdjustAfterSplicing(/*from=*/trajectory,
                       /*to=*/*this,
-                      /*to_segments_begin=*/end_before_splice,
-                      /*to_segments_rend=*/rbegin_before_splice);
+                      /*to_segments_begin=*/end_before_splice);
 
   return SegmentIterator(segments_.get(), end_before_splice);
 }
@@ -276,9 +272,9 @@ void DiscreteTraject0ry<Frame>::ForgetBefore(Instant const& t) {
   segment_by_left_endpoint_.erase(segment_by_left_endpoint_.begin(),
                                   std::next(leit));
   // Recreate an entry for |sit| with its new left endpoint.
-  segment_by_left_endpoint_.emplace_hint(segment_by_left_endpoint_.begin(),
-                                         sit->front().time,
-                                         sit);
+  segment_by_left_endpoint_.insert_or_assign(segment_by_left_endpoint_.begin(),
+                                             sit->front().time,
+                                             sit);
 }
 
 template<typename Frame>
@@ -296,7 +292,7 @@ void DiscreteTraject0ry<Frame>::Append(
     // If this is the first point appended to this trajectory, insert it in the
     // time-to-segment map.
     sit = --segments_->end();
-    leit = segment_by_left_endpoint_.emplace_hint(
+    leit = segment_by_left_endpoint_.insert_or_assign(
         segment_by_left_endpoint_.end(), t, sit);
   } else {
     // The segment is expected to always have a point copied from its
@@ -425,7 +421,7 @@ DiscreteTraject0ry<Frame>::ReadFromMessage(
   auto sit = trajectory.segments_->begin();
   for (auto const& serialized_t : message.left_endpoint()) {
     auto const t = Instant::ReadFromMessage(serialized_t);
-    trajectory.segment_by_left_endpoint_.emplace_hint(
+    trajectory.segment_by_left_endpoint_.insert_or_assign(
         trajectory.segment_by_left_endpoint_.end(), t, sit);
     ++sit;
   }
@@ -466,7 +462,6 @@ DiscreteTraject0ry<Frame>::FindSegment(
 
 template<typename Frame>
 absl::Status DiscreteTraject0ry<Frame>::ValidateConsistency() const {
-  //TODO(phl):fix
   if (segments_->size() < segment_by_left_endpoint_.size()) {
     return absl::InternalError(absl::StrCat("Size mismatch ",
                                             segments_->size(),
@@ -557,23 +552,37 @@ template<typename Frame>
 void DiscreteTraject0ry<Frame>::AdjustAfterSplicing(
     DiscreteTraject0ry& from,
     DiscreteTraject0ry& to,
-    typename Segments::iterator to_segments_begin,
-    std::reverse_iterator<typename Segments::iterator> to_segments_rend) {
-  //TODO(phl):incorrect
-  //TODO(phl):may need to create entries for 1-point segments.
-  // Iterate through the target segments to move the time-to-segment mapping
-  // from |from| to |to|.
-  auto endpoint_it = from.segment_by_left_endpoint_.end();
-  for (auto sit = to.segments_->rbegin(); sit != to_segments_rend; ++sit) {
-    --endpoint_it;
-    to.segment_by_left_endpoint_.insert(
-        from.segment_by_left_endpoint_.extract(endpoint_it));
-  }
-
-  // Reset the self pointers of the new segments.
+    typename Segments::iterator to_segments_begin) {
+  // Reset the self pointers of the new segments.  This is necessary for
+  // iterating over them.
   for (auto sit = to_segments_begin; sit != to.segments_->end(); ++sit) {
     sit->SetSelf(SegmentIterator(to.segments_.get(), sit));
   }
+
+  // Copy the time-to-segment entries on or after the time of |to_segment_begin|
+  // from |from| to |to|.  We are sure to copy all the entries we need because
+  // it includes the last segment that starts at that time.
+  auto from_leit = from.FindSegment(to_segments_begin->front().time);
+  for (auto leit = from_leit;
+       leit != from.segment_by_left_endpoint_.end();
+       ++leit) {
+    to.segment_by_left_endpoint_.insert_or_assign(
+        to.segment_by_left_endpoint_.end(), leit->first, leit->second);
+  }
+
+  // Erase from |from| the entries that we just copied.  We may erase too much
+  // if |from| now ends with a 1-point segment that was not in the map, so we
+  // insert it again.
+  from.segment_by_left_endpoint_.erase(from_leit,
+                                       from.segment_by_left_endpoint_.end());
+  if (!from.empty()) {
+    auto const last_segment = --from.segments_->end();
+    from.segment_by_left_endpoint_.insert_or_assign(
+        from.segment_by_left_endpoint_.end(),
+        last_segment->front().time,
+        last_segment);
+  }
+
 }
 
 template<typename Frame>
