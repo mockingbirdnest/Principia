@@ -122,6 +122,8 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
   using DownsamplingParameters =
       internal_discrete_trajectory_types::DownsamplingParameters;
   using Segments = internal_discrete_trajectory_types::Segments<Frame>;
+  using SegmentByLeftEndpoint =
+      absl::btree_map<Instant, typename Segments::iterator>;
 
   // This constructor leaves the list of segments empty (but allocated) as well
   // as the time-to-segment mapping.
@@ -132,8 +134,9 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
   // segment is never returned, unless it is the last one (because it's upper
   // bound is assumed to be +∞).  Returns segments_->end() if the trajectory is
   // empty().  Fails if t is before the first time of the trajectory.
-  typename Segments::iterator FindSegment(Instant const& t);
-  typename Segments::const_iterator FindSegment(Instant const& t) const;
+  typename SegmentByLeftEndpoint::iterator FindSegment(Instant const& t);
+  typename SegmentByLeftEndpoint::const_iterator
+  FindSegment(Instant const& t) const;
 
   // Checks if this objects is in a consistent state, and returns an error
   // status with a relevant message if it isn't.
@@ -185,8 +188,7 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
   // |--upper_bound(t)|.
   //TODO(phl):Comment empty iff the entire trajectory is empty
   // Always the "most forked".
-  absl::btree_map<Instant,
-                  typename Segments::iterator> segment_by_left_endpoint_;
+  SegmentByLeftEndpoint segment_by_left_endpoint_;
 };
 
 }  // namespace internal_discrete_traject0ry
