@@ -127,6 +127,11 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
   // as the time-to-segment mapping.
   explicit DiscreteTraject0ry(uninitialized_t);
 
+  // Returns an iterator to a segment with extremities t1 and t2 such that
+  // t ∈ [t1, t2[.  For the last segment, t2 is assumed to be +∞.  A 1-point
+  // segment is never returned, unless it is the last one (because it's upper
+  // bound is assumed to be +∞).  Returns segments_->end() if the trajectory is
+  // empty().  Fails if t is before the first time of the trajectory.
   typename Segments::iterator FindSegment(Instant const& t);
   typename Segments::const_iterator FindSegment(Instant const& t) const;
 
@@ -178,6 +183,8 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
   // point is appended to the trajectory, the sentinel is removed and a bona
   // fide entry replaces it.  To access the segment for time t, use
   // |--upper_bound(t)|.
+  //TODO(phl):Comment empty iff the entire trajectory is empty
+  // Always the "most forked".
   absl::btree_map<Instant,
                   typename Segments::iterator> segment_by_left_endpoint_;
 };
