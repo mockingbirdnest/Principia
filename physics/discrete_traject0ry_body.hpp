@@ -21,12 +21,7 @@ using quantities::Length;
 
 template<typename Frame>
 DiscreteTraject0ry<Frame>::DiscreteTraject0ry()
-    : segments_(make_not_null_unique<Segments>(1)) {
-  auto const sit = segments_->begin();
-  *sit =
-      DiscreteTrajectorySegment<Frame>(SegmentIterator(segments_.get(), sit));
-  segment_by_left_endpoint_.emplace(InfinitePast, sit);
-}
+    : segments_(make_not_null_unique<Segments>(1)) {}
 
 template<typename Frame>
 typename DiscreteTraject0ry<Frame>::reference
@@ -142,17 +137,24 @@ template<typename Frame>
 typename DiscreteTraject0ry<Frame>::SegmentIterator
 DiscreteTraject0ry<Frame>::NewSegment() {
   auto& last_segment = segments_->back();
-  CHECK(!last_segment.empty())
-      << "Cannot create a new segment after an empty one";
 
   auto const& new_segment = segments_->emplace_back();
   auto const new_segment_sit = --segments_->end();
   *new_segment_sit = DiscreteTrajectorySegment<Frame>(
       SegmentIterator(segments_.get(), new_segment_sit));
 
+  // It is only possible to insert a segment after an empty segment if the
+  // entire trajectory is empty.
+  if (last_segment.empty()) {
+    CHECK(segment_by_left_endpoint_.empty())
+        << "Time to segment map has " << segment_by_left_endpoint_.size()
+        << " elements";
+    return;
+  }
+
   auto const& [last_time, last_degrees_of_freedom] = *last_segment.rbegin();
   new_segment_sit->Append(last_time, last_degrees_of_freedom);
-  segment_by_left_endpoint_.emplace_hint(
+  segment_by_left_endpoint_.insert_or_assign(
       segment_by_left_endpoint_.end(), last_time, new_segment_sit);
 
   return SegmentIterator(segments_.get(), new_segment_sit);
@@ -222,15 +224,15 @@ void DiscreteTraject0ry<Frame>::ForgetAfter(Instant const& t) {
   auto const sit = FindSegment(t);
   sit->ForgetAfter(t);
   // Here |sit| designates a segment starting at or after |t|.  If |t| is
-  // exactly at the beginning of the segment, |ForgetAfter| above will leave it
-  // empty.  In that case we drop the segment entirely.  Note that this
-  // situation doesn't arise for |ForgetBefore| because of the way |FindSegment|
-  // works.
+  // exactly at the beginning of the segment,
+  // |DiscreteTrajectorySegment::ForgetAfter| will leave it empty.  In that
+  // case we drop the segment entirely.
   if (sit->empty()) {
     segments_->erase(sit, segments_->end());
   } else {
     segments_->erase(std::next(sit), segments_->end());
   }
+  //TODO(phl):segment_by_left_endpoint_
 }
 
 template<typename Frame>
@@ -241,10 +243,24 @@ void DiscreteTraject0ry<Frame>::ForgetAfter(iterator const it) {
 template<typename Frame>
 void DiscreteTraject0ry<Frame>::ForgetBefore(Instant const& t) {
   auto const sit = FindSegment(t);
+  if (sit == segments_->end()) {
+    return;
+  }
+
+  // This call never makes the segment |*sit| empty.
   sit->ForgetBefore(t);
   for (auto s = segments_->begin(); s != sit; ++s) {
+    // This call may either make the segment |*s| empty or leave it with a
+    // single point matching |sit->front()|.
     s->ForgetBefore(t);
   }
+
+  // Find the entry corresponding to |sit| and erase all the previous entries.
+  // These are entries for now-empty segments or for 1-point segments.
+  //TODO(phl): Have a method for this?
+  //TODO(phl): Change entry for sit.
+  auto const it = std::prev(segment_by_left_endpoint_.upper_bound(t));
+  segment_by_left_endpoint_.erase(segment_by_left_endpoint_.begin(), it);
 }
 
 template<typename Frame>
@@ -257,12 +273,15 @@ void DiscreteTraject0ry<Frame>::Append(
     Instant const& t,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
   auto sit = FindSegment(t);
-  // If this is the first point appended to this trajectory, insert a proper
-  // left endpoint and remove the sentinel.
-  if (empty()) {
+  if (sit == segments_->end()) {
+    // If this is the first point appended to this trajectory, insert its left
+    // endpoint.
     segment_by_left_endpoint_.emplace_hint(
         segment_by_left_endpoint_.end(), t, sit);
-    segment_by_left_endpoint_.erase(segment_by_left_endpoint_.begin());
+  } else {
+    // The segment is expected to always have a point copied from its
+    // predecessor.
+    CHECK(!sit->empty()) << "Empty segment at " << t;
   }
   sit->Append(t, degrees_of_freedom);
 }
@@ -402,6 +421,9 @@ template<typename Frame>
 typename DiscreteTraject0ry<Frame>::Segments::iterator
 DiscreteTraject0ry<Frame>::FindSegment(
     Instant const& t) {
+  if (segment_by_left_endpoint_.empty()) {
+    return segments_.end();
+  }
   auto it = segment_by_left_endpoint_.upper_bound(t);
   CHECK(it != segment_by_left_endpoint_.begin()) << "No segment covering " << t;
   return (--it)->second;
@@ -411,6 +433,9 @@ template<typename Frame>
 typename DiscreteTraject0ry<Frame>::Segments::const_iterator
 DiscreteTraject0ry<Frame>::FindSegment(
     Instant const& t) const {
+  if (segment_by_left_endpoint_.empty()) {
+    return segments_.cend();
+  }
   auto it = segment_by_left_endpoint_.upper_bound(t);
   CHECK(it != segment_by_left_endpoint_.begin()) << "No segment covering " << t;
   return (--it)->second;
@@ -631,7 +656,8 @@ void DiscreteTraject0ry<Frame>::ReadFromPreΖήνωνMessage(
   }
 
   // Finally, set the time-to-segment map.
-  trajectory.segment_by_left_endpoint_.emplace(sit->begin()->time, sit);
+  trajectory.segment_by_left_endpoint_.insert_or_assign(sit->begin()->time,
+                                                        sit);
 }
 
 }  // namespace internal_discrete_traject0ry
