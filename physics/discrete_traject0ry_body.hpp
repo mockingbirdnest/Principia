@@ -366,8 +366,18 @@ void DiscreteTraject0ry<Frame>::WriteToMessage(
     }
   }
 
-  for (auto const& [t, _] : segment_by_left_endpoint_) {
-    t.WriteToMessage(message->add_left_endpoint());
+  // Write the left endpoints by scanning them in parallel with the segments.
+  int i = 0;
+  auto sit1 = segments_->begin();
+  for (auto const& [t, sit2] : segment_by_left_endpoint_) {
+    while (sit1 != sit2) {
+      ++sit1;
+      ++i;
+    }
+    auto* const segment_by_left_endpoint =
+        message->add_segment_by_left_endpoint();
+    t.WriteToMessage(segment_by_left_endpoint->mutable_left_endpoint());
+    segment_by_left_endpoint->set_segment(i);
   }
 
   // Check that all the segments in |tracked| were mapped.
