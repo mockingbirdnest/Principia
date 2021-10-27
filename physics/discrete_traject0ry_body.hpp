@@ -428,12 +428,18 @@ DiscreteTraject0ry<Frame>::ReadFromMessage(
   }
 
   // Finally restore the left endpoints.
+  int i = 0;
   auto sit = trajectory.segments_->begin();
-  for (auto const& serialized_t : message.left_endpoint()) {
-    auto const t = Instant::ReadFromMessage(serialized_t);
+  for (auto const& segment_by_left_endpoint :
+       message.segment_by_left_endpoint()) {
+    auto const t =
+        Instant::ReadFromMessage(segment_by_left_endpoint.left_endpoint());
+    while (segment_by_left_endpoint.segment() != i) {
+      ++sit;
+      ++i;
+    }
     trajectory.segment_by_left_endpoint_.insert_or_assign(
         trajectory.segment_by_left_endpoint_.end(), t, sit);
-    ++sit;
   }
 
   CHECK_OK(trajectory.ValidateConsistency());
@@ -506,8 +512,7 @@ absl::Status DiscreteTraject0ry<Frame>::ValidateConsistency() const {
     int i = 0;
     auto sit1 = segments_->cbegin();
     for (auto leit = segment_by_left_endpoint_.cbegin();
-         leit != segment_by_left_endpoint_.cend();
-         ++leit, ++i) {
+         leit != segment_by_left_endpoint_.cend();) {
       auto const sit2 = leit->second;
       if (sit2->empty()) {
         return absl::InternalError(
@@ -515,6 +520,7 @@ absl::Status DiscreteTraject0ry<Frame>::ValidateConsistency() const {
       } else if (sit1 == sit2) {
         ++sit1;
         ++leit;
+        ++i;
       } else if (sit1->empty() || sit1->size() == 1) {
         ++sit1;
       } else {
@@ -727,9 +733,10 @@ void DiscreteTraject0ry<Frame>::ReadFromPreΖήνωνMessage(
   }
 
   // Finally, set the time-to-segment map.
-  //TODO(phl):Incorrect?
-  trajectory.segment_by_left_endpoint_.insert_or_assign(sit->begin()->time,
-                                                        sit);
+  if (!sit->empty()) {
+    trajectory.segment_by_left_endpoint_.insert_or_assign(sit->begin()->time,
+                                                          sit);
+  }
 }
 
 }  // namespace internal_discrete_traject0ry
