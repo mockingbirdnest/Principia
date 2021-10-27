@@ -58,9 +58,8 @@ DiscreteTrajectorySegment<Frame>::begin() const {
 template<typename Frame>
 typename DiscreteTrajectorySegment<Frame>::iterator
 DiscreteTrajectorySegment<Frame>::end() const {
-  // TODO(phl): We probably don't want empty segments.
   if (timeline_.empty()) {
-    return iterator(self_, timeline_.begin());
+    return iterator(self_, timeline_.end());
   } else {
     // The decrement/increment ensures that we normalize the end iterator to the
     // next segment or to the end of the trajectory.
