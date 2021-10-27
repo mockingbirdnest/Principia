@@ -155,9 +155,11 @@ DiscreteTraject0ry<Frame>::NewSegment() {
   // entire trajectory is empty.
   if (last_segment.empty()) {
     CHECK(segment_by_left_endpoint_.empty())
-        << "Time to segment map has " << segment_by_left_endpoint_.size()
-        << " elements";
+        << "Inserting after an empty segment but the trajectory is not empty, "
+        << "its time-to-segment map has " << segment_by_left_endpoint_.size()
+        << " entries";
   } else {
+    // Duplicate the last point of the previous segment.
     auto const& [last_time, last_degrees_of_freedom] = *last_segment.rbegin();
     new_segment_sit->Append(last_time, last_degrees_of_freedom);
     // The use of |insert_or_assign| ensure that we override any entry with the
@@ -242,7 +244,7 @@ void DiscreteTraject0ry<Frame>::ForgetAfter(Instant const& t) {
   } else {
     segments_->erase(std::next(sit), segments_->end());
     segment_by_left_endpoint_.erase(std::next(leit),
-                                     segment_by_left_endpoint_.end());
+                                    segment_by_left_endpoint_.end());
   }
 }
 
@@ -458,8 +460,7 @@ DiscreteTraject0ry<Frame>::FindSegment(
     return segment_by_left_endpoint_.end();
   }
   auto it = segment_by_left_endpoint_.upper_bound(t);
-  CHECK(it != segment_by_left_endpoint_.begin())
-      << "No segment covering " << t;
+  CHECK(it != segment_by_left_endpoint_.begin()) << "No segment covering " << t;
   return --it;
 }
 
@@ -471,8 +472,7 @@ DiscreteTraject0ry<Frame>::FindSegment(
     return segment_by_left_endpoint_.cend();
   }
   auto it = segment_by_left_endpoint_.upper_bound(t);
-  CHECK(it != segment_by_left_endpoint_.begin())
-      << "No segment covering " << t;
+  CHECK(it != segment_by_left_endpoint_.begin()) << "No segment covering " << t;
   return --it;
 }
 
