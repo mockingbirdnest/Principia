@@ -161,56 +161,50 @@ RigidMotion<RigidPart, Barycentric> const& Part::rigid_motion() const {
   return rigid_motion_;
 }
 
-DiscreteTrajectory<Barycentric>::Iterator Part::history_begin() {
-  // Make sure that we skip the point of the prehistory.
-  auto it = history_->Fork();
-  return ++it;
+DiscreteTraject0ry<Barycentric>::iterator Part::history_begin() {
+  return history_->begin();
 }
 
-DiscreteTrajectory<Barycentric>::Iterator Part::history_end() {
+DiscreteTraject0ry<Barycentric>::iterator Part::history_end() {
   return history_->end();
 }
 
-DiscreteTrajectory<Barycentric>::Iterator Part::psychohistory_begin() {
-  if (psychohistory_ == nullptr) {
-    psychohistory_ = history_->NewForkAtLast();
+DiscreteTraject0ry<Barycentric>::iterator Part::psychohistory_begin() {
+  if (!psychohistory_.has_value()) {
+    psychohistory_ = trajectory_.NewSegment();
   }
+  // TODO(phl): This used to say:
   // Make sure that we skip the fork, which may be the point of the prehistory.
-  auto it = psychohistory_->Fork();
-  return ++it;
+  return psychohistory_.value()->begin();
 }
 
-DiscreteTrajectory<Barycentric>::Iterator Part::psychohistory_end() {
-  if (psychohistory_ == nullptr) {
-    psychohistory_ = history_->NewForkAtLast();
+DiscreteTraject0ry<Barycentric>::iterator Part::psychohistory_end() {
+  if (!psychohistory_.has_value()) {
+    psychohistory_ = trajectory_.NewSegment();
   }
-  return psychohistory_->end();
+  return psychohistory_.value()->end();
 }
 
 void Part::AppendToHistory(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-  if (psychohistory_ != nullptr) {
-    history_->DeleteFork(psychohistory_);
+  if (psychohistory_.has_value()) {
+    trajectory_.DeleteSegments(psychohistory_.value());
   }
-  history_->Append(time, degrees_of_freedom);
+  trajectory_.Append(time, degrees_of_freedom);
 }
 
 void Part::AppendToPsychohistory(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-  if (psychohistory_ == nullptr) {
-    psychohistory_ = history_->NewForkAtLast();
+  if (!psychohistory_.has_value()) {
+    psychohistory_ = trajectory_.NewSegment();
   }
-  psychohistory_->Append(time, degrees_of_freedom);
+  trajectory_.Append(time, degrees_of_freedom);
 }
 
 void Part::ClearHistory() {
-  if (psychohistory_ != nullptr) {
-    history_->DeleteFork(psychohistory_);
-  }
-  prehistory_->DeleteFork(history_);
-  history_ = prehistory_->NewForkAtLast();
+  trajectory_ = DiscreteTraject0ry<Barycentric>();
 }
 
 void Part::set_containing_pile_up(
@@ -252,9 +246,9 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message,
         serialization_index_for_pile_up(containing_pile_up_.get()));
   }
   rigid_motion_.WriteToMessage(message->mutable_rigid_motion());
-  prehistory_->WriteToMessage(message->mutable_prehistory(),
-                              /*forks=*/{history_, psychohistory_},
-                              /*exact=*/{});
+  trajectory_.WriteToMessage(message->mutable_prehistory(),
+                             /*tracked=*/{history_, psychohistory_.value()},
+                             /*exact=*/{});
 }
 
 not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
@@ -267,6 +261,7 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
       is_pre_fréchet || (message.has_pre_frenet_inertia_tensor() &&
                          !message.has_intrinsic_torque());
   bool const is_pre_galileo = !message.has_centre_of_mass();
+  bool const is_pre_ζήνων = message.prehistory().segment_size() == 0;
   LOG_IF(WARNING, is_pre_galileo) << "Reading pre-"
                                   << (is_pre_cesàro    ? u8"Cesàro"
                                       : is_pre_fréchet ? u8"Fréchet"
@@ -324,25 +319,33 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
   }
 
   if (is_pre_cesàro) {
-    auto tail = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+    auto tail = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
         message.prehistory(),
-        /*forks=*/{});
-    // The |prehistory_| and |history_| have been created by the constructor
-    // above.  Construct the various trajectories from the |tail|.
-    for (auto it = tail->begin(); it != tail->end();) {
+        /*tracked=*/{});
+    // The |history_| has been created by the constructor above.  Construct the
+    // various trajectories from the |tail|.
+    for (auto it = tail.begin(); it != tail.end();) {
       auto const& [time, degrees_of_freedom] = *it;
       ++it;
-      if (it == tail->end() && !message.tail_is_authoritative()) {
+      if (it == tail.end() && !message.tail_is_authoritative()) {
         part->AppendToPsychohistory(time, degrees_of_freedom);
       } else {
         part->AppendToHistory(time, degrees_of_freedom);
       }
     }
-  } else {
-    part->history_ = nullptr;
-    part->prehistory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+  } else if (is_pre_ζήνων) {
+    DiscreteTrajectorySegmentIterator<Barycentric> psychohistory;
+    auto prehistory = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
         message.prehistory(),
-        /*forks=*/{&part->history_, &part->psychohistory_});
+        /*tracked=*/{&part->history_, &psychohistory});
+    part->psychohistory_ = psychohistory;
+    part->trajectory_ = prehistory.DetachSegments(part->history_);
+  } else {
+    DiscreteTrajectorySegmentIterator<Barycentric> psychohistory;
+    part->trajectory_ = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
+        message.prehistory(),
+        /*tracked=*/{&part->history_, &psychohistory});
+    part->psychohistory_ = psychohistory;
   }
   return std::move(part);
 }
@@ -378,12 +381,9 @@ Part::Part(PartId const part_id,
       mass_(mass),
       inertia_tensor_(inertia_tensor),
       rigid_motion_(std::move(rigid_motion)),
-      prehistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       subset_node_(make_not_null_unique<Subset<Part>::Node>()),
       deletion_callback_(std::move(deletion_callback)) {
-  prehistory_->Append(astronomy::InfinitePast,
-                      {Barycentric::origin, Barycentric::unmoving});
-  history_ = prehistory_->NewForkAtLast();
+  history_ = trajectory_.NewSegment();
 }
 
 RigidMotion<RigidPart, EccentricPart> Part::MakeRigidToEccentricMotion(
