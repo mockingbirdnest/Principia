@@ -109,8 +109,12 @@ message DiscreteTrajectory {
   enum TrackedPosition {
     MISSING_TRACKED_POSITION = -1;
   }
+  message SegmentByLeftEndpoint {
+    required Point left_endpoint = 1;
+    required int32 segment = 2;
+  }
   repeated DiscreteTrajectorySegment segment = 7;
-  repeated Point left_endpoint = 8;
+  repeated SegmentByLeftEndpoint segment_by_left_endpoint = 8;
   repeated int32 tracked_position = 9;
 }
 

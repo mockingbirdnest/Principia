@@ -23,9 +23,8 @@ template<typename Frame>
 DiscreteTraject0ry<Frame>::DiscreteTraject0ry()
     : segments_(make_not_null_unique<Segments>(1)) {
   auto const sit = segments_->begin();
-  *sit =
-      DiscreteTrajectorySegment<Frame>(SegmentIterator(segments_.get(), sit));
-  segment_by_left_endpoint_.emplace(InfinitePast, sit);
+  auto const self = SegmentIterator(segments_.get(), sit);
+  *sit = DiscreteTrajectorySegment<Frame>(self);
 }
 
 template<typename Frame>
@@ -66,12 +65,7 @@ DiscreteTraject0ry<Frame>::rend() const {
 
 template<typename Frame>
 bool DiscreteTraject0ry<Frame>::empty() const {
-  for (auto const& segment : *segments_) {
-    if (!segment.empty()) {
-      return false;
-    }
-  }
-  return true;
+  return segment_by_left_endpoint_.empty();
 }
 
 template<typename Frame>
@@ -87,37 +81,46 @@ std::int64_t DiscreteTraject0ry<Frame>::size() const {
 template<typename Frame>
 typename DiscreteTraject0ry<Frame>::iterator
 DiscreteTraject0ry<Frame>::find(Instant const& t) const {
-  auto const sit = FindSegment(t);
+  auto const leit = FindSegment(t);
+  if (leit == segment_by_left_endpoint_.cend()) {
+    return end();
+  }
+  auto const sit = leit->second;
   auto const it = sit->find(t);
   if (it == sit->end()) {
     return end();
-  } else {
-    return it;
   }
+  return it;
 }
 
 template<typename Frame>
 typename DiscreteTraject0ry<Frame>::iterator
 DiscreteTraject0ry<Frame>::lower_bound(Instant const& t) const {
-  auto const sit = FindSegment(t);
+  auto const leit = FindSegment(t);
+  if (leit == segment_by_left_endpoint_.cend()) {
+    return end();
+  }
+  auto const sit = leit->second;
   auto const it = sit->lower_bound(t);
   if (it == sit->end()) {
     return end();
-  } else {
-    return it;
   }
+  return it;
 }
 
 template<typename Frame>
 typename DiscreteTraject0ry<Frame>::iterator
 DiscreteTraject0ry<Frame>::upper_bound(Instant const& t) const {
-  auto const sit = FindSegment(t);
+  auto const leit = FindSegment(t);
+  if (leit == segment_by_left_endpoint_.cend()) {
+    return end();
+  }
+  auto const sit = leit->second;
   auto const it = sit->upper_bound(t);
   if (it == sit->end()) {
     return end();
-  } else {
-    return it;
   }
+  return it;
 }
 
 template<typename Frame>
@@ -142,20 +145,31 @@ template<typename Frame>
 typename DiscreteTraject0ry<Frame>::SegmentIterator
 DiscreteTraject0ry<Frame>::NewSegment() {
   auto& last_segment = segments_->back();
-  CHECK(!last_segment.empty())
-      << "Cannot create a new segment after an empty one";
 
   auto const& new_segment = segments_->emplace_back();
   auto const new_segment_sit = --segments_->end();
-  *new_segment_sit = DiscreteTrajectorySegment<Frame>(
-      SegmentIterator(segments_.get(), new_segment_sit));
+  auto const new_self = SegmentIterator(segments_.get(), new_segment_sit);
+  *new_segment_sit = DiscreteTrajectorySegment<Frame>(new_self);
 
-  auto const& [last_time, last_degrees_of_freedom] = *last_segment.rbegin();
-  new_segment_sit->Append(last_time, last_degrees_of_freedom);
-  segment_by_left_endpoint_.emplace_hint(
-      segment_by_left_endpoint_.end(), last_time, new_segment_sit);
+  // It is only possible to insert a segment after an empty segment if the
+  // entire trajectory is empty.
+  if (last_segment.empty()) {
+    CHECK(segment_by_left_endpoint_.empty())
+        << "Inserting after an empty segment but the trajectory is not empty, "
+        << "its time-to-segment map has " << segment_by_left_endpoint_.size()
+        << " entries";
+  } else {
+    // Duplicate the last point of the previous segment.
+    auto const& [last_time, last_degrees_of_freedom] = *last_segment.rbegin();
+    new_segment_sit->Append(last_time, last_degrees_of_freedom);
+    // The use of |insert_or_assign| ensure that we override any entry with the
+    // same left endpoint.
+    segment_by_left_endpoint_.insert_or_assign(
+        segment_by_left_endpoint_.end(), last_time, new_segment_sit);
+  }
 
-  return SegmentIterator(segments_.get(), new_segment_sit);
+  DCHECK_OK(ConsistencyStatus());
+  return new_self;
 }
 
 template<typename Frame>
@@ -170,9 +184,9 @@ DiscreteTraject0ry<Frame>::DetachSegments(SegmentIterator const begin) {
 
   AdjustAfterSplicing(/*from=*/*this,
                       /*to=*/detached,
-                      /*to_segments_begin=*/detached.segments_->begin(),
-                      /*to_segments_rend=*/detached.segments_->rend());
+                      /*to_segments_begin=*/detached.segments_->begin());
 
+  DCHECK_OK(ConsistencyStatus());
   return detached;
 }
 
@@ -202,57 +216,119 @@ DiscreteTraject0ry<Frame>::AttachSegments(
                     *trajectory.segments_);
 
   auto const end_before_splice = std::next(last_before_splice);
-  auto const rbegin_before_splice = std::reverse_iterator(end_before_splice);
-
   AdjustAfterSplicing(/*from=*/trajectory,
                       /*to=*/*this,
-                      /*to_segments_begin=*/end_before_splice,
-                      /*to_segments_rend=*/rbegin_before_splice);
+                      /*to_segments_begin=*/end_before_splice);
 
+  DCHECK_OK(ConsistencyStatus());
   return SegmentIterator(segments_.get(), end_before_splice);
 }
 
 template<typename Frame>
 void DiscreteTraject0ry<Frame>::DeleteSegments(SegmentIterator const begin) {
   segments_->erase(begin.iterator(), segments_->end());
+  if (segments_->empty()) {
+    segment_by_left_endpoint_.clear();
+  } else {
+    auto const last_segment = --segments_->end();
+    if (last_segment->empty()) {
+      segment_by_left_endpoint_.clear();
+    } else {
+      // If there remains a non-empty segment, update the time-to-segment map
+      // with for its time, and delete the rest.
+      auto const& [leit, _] = segment_by_left_endpoint_.insert_or_assign(
+          last_segment->front().time, last_segment);
+      segment_by_left_endpoint_.erase(std::next(leit),
+                                      segment_by_left_endpoint_.end());
+    }
+  }
+
+  DCHECK_OK(ConsistencyStatus());
 }
 
 template<typename Frame>
 void DiscreteTraject0ry<Frame>::ForgetAfter(Instant const& t) {
-  auto const sit = FindSegment(t);
+  auto const leit = FindSegment(t);
+  if (leit == segment_by_left_endpoint_.end()) {
+    return;
+  }
+  auto const sit = leit->second;
   sit->ForgetAfter(t);
   // Here |sit| designates a segment starting at or after |t|.  If |t| is
-  // exactly at the beginning of the segment, |ForgetAfter| above will leave it
-  // empty.  In that case we drop the segment entirely.  Note that this
-  // situation doesn't arise for |ForgetBefore| because of the way |FindSegment|
-  // works.
+  // exactly at the beginning of the segment,
+  // |DiscreteTrajectorySegment::ForgetAfter| will leave it empty.  In that
+  // case we drop the segment entirely.
   if (sit->empty()) {
     segments_->erase(sit, segments_->end());
+    segment_by_left_endpoint_.erase(leit, segment_by_left_endpoint_.end());
   } else {
     segments_->erase(std::next(sit), segments_->end());
+    segment_by_left_endpoint_.erase(std::next(leit),
+                                    segment_by_left_endpoint_.end());
   }
+
+  DCHECK_OK(ConsistencyStatus());
+}
+
+template<typename Frame>
+void DiscreteTraject0ry<Frame>::ForgetAfter(iterator const it) {
+  ForgetAfter(it->time);
 }
 
 template<typename Frame>
 void DiscreteTraject0ry<Frame>::ForgetBefore(Instant const& t) {
-  auto const sit = FindSegment(t);
+  auto const leit = FindSegment(t);
+  if (leit == segment_by_left_endpoint_.end()) {
+    return;
+  }
+  auto const sit = leit->second;
+  // This call never makes the segment |*sit| empty.
   sit->ForgetBefore(t);
-  segments_->erase(segments_->begin(), sit);
+  for (auto s = segments_->begin(); s != sit; ++s) {
+    // This call may either make the segment |*s| empty or leave it with a
+    // single point matching |sit->front()|.
+    s->ForgetBefore(t);
+  }
+
+  // Erase all the entries before and including |leit|.  These are entries for
+  // now-empty segments or for 1-point segments, and the segment which we may
+  // just have truncated.
+  segment_by_left_endpoint_.erase(segment_by_left_endpoint_.begin(),
+                                  std::next(leit));
+  // Recreate an entry for |sit| with its new left endpoint.
+  segment_by_left_endpoint_.insert_or_assign(segment_by_left_endpoint_.begin(),
+                                             sit->front().time,
+                                             sit);
+
+  DCHECK_OK(ConsistencyStatus());
+}
+
+template<typename Frame>
+void DiscreteTraject0ry<Frame>::ForgetBefore(iterator const it) {
+  ForgetBefore(it->time);
 }
 
 template<typename Frame>
 void DiscreteTraject0ry<Frame>::Append(
     Instant const& t,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
-  auto sit = FindSegment(t);
-  // If this is the first point appended to this trajectory, insert a proper
-  // left endpoint and remove the sentinel.
-  if (empty()) {
-    segment_by_left_endpoint_.emplace_hint(
+  auto leit = FindSegment(t);
+  typename Segments::iterator sit;
+  if (leit == segment_by_left_endpoint_.end()) {
+    // If this is the first point appended to this trajectory, insert it in the
+    // time-to-segment map.
+    sit = --segments_->end();
+    leit = segment_by_left_endpoint_.insert_or_assign(
         segment_by_left_endpoint_.end(), t, sit);
-    segment_by_left_endpoint_.erase(segment_by_left_endpoint_.begin());
+  } else {
+    // The segment is expected to always have a point copied from its
+    // predecessor.
+    sit = leit->second;
+    CHECK(!sit->empty()) << "Empty segment at " << t;
   }
   sit->Append(t, degrees_of_freedom);
+
+  DCHECK_OK(ConsistencyStatus());
 }
 
 template<typename Frame>
@@ -268,19 +344,19 @@ Instant DiscreteTraject0ry<Frame>::t_max() const {
 template<typename Frame>
 Position<Frame> DiscreteTraject0ry<Frame>::EvaluatePosition(
     Instant const& t) const {
-  return FindSegment(t)->EvaluatePosition(t);
+  return FindSegment(t)->second->EvaluatePosition(t);
 }
 
 template<typename Frame>
 Velocity<Frame> DiscreteTraject0ry<Frame>::EvaluateVelocity(
     Instant const& t) const {
-  return FindSegment(t)->EvaluateVelocity(t);
+  return FindSegment(t)->second->EvaluateVelocity(t);
 }
 
 template<typename Frame>
 DegreesOfFreedom<Frame> DiscreteTraject0ry<Frame>::EvaluateDegreesOfFreedom(
     Instant const& t) const {
-  return FindSegment(t)->EvaluateDegreesOfFreedom(t);
+  return FindSegment(t)->second->EvaluateDegreesOfFreedom(t);
 }
 
 template<typename Frame>
@@ -318,8 +394,18 @@ void DiscreteTraject0ry<Frame>::WriteToMessage(
     }
   }
 
-  for (auto const& [t, _] : segment_by_left_endpoint_) {
-    t.WriteToMessage(message->add_left_endpoint());
+  // Write the left endpoints by scanning them in parallel with the segments.
+  int i = 0;
+  auto sit1 = segments_->begin();
+  for (auto const& [t, sit2] : segment_by_left_endpoint_) {
+    while (sit1 != sit2) {
+      ++sit1;
+      ++i;
+    }
+    auto* const segment_by_left_endpoint =
+        message->add_segment_by_left_endpoint();
+    t.WriteToMessage(segment_by_left_endpoint->mutable_left_endpoint());
+    segment_by_left_endpoint->set_segment(i);
   }
 
   // Check that all the segments in |tracked| were mapped.
@@ -343,7 +429,7 @@ DiscreteTraject0ry<Frame>::ReadFromMessage(
     LOG_IF(WARNING, is_pre_ζήνων) << "Reading pre-Ζήνων DiscreteTrajectory";
     ReadFromPreΖήνωνMessage(
         message, tracked, /*fork_point=*/std::nullopt, trajectory);
-    CHECK_OK(trajectory.ValidateConsistency());
+    CHECK_OK(trajectory.ConsistencyStatus());
     return trajectory;
   }
 
@@ -370,15 +456,21 @@ DiscreteTraject0ry<Frame>::ReadFromMessage(
   }
 
   // Finally restore the left endpoints.
+  int i = 0;
   auto sit = trajectory.segments_->begin();
-  for (auto const& serialized_t : message.left_endpoint()) {
-    auto const t = Instant::ReadFromMessage(serialized_t);
-    trajectory.segment_by_left_endpoint_.emplace_hint(
+  for (auto const& segment_by_left_endpoint :
+       message.segment_by_left_endpoint()) {
+    auto const t =
+        Instant::ReadFromMessage(segment_by_left_endpoint.left_endpoint());
+    while (segment_by_left_endpoint.segment() != i) {
+      ++sit;
+      ++i;
+    }
+    trajectory.segment_by_left_endpoint_.insert_or_assign(
         trajectory.segment_by_left_endpoint_.end(), t, sit);
-    ++sit;
   }
 
-  CHECK_OK(trajectory.ValidateConsistency());
+  CHECK_OK(trajectory.ConsistencyStatus());
   return trajectory;
 }
 
@@ -387,48 +479,81 @@ DiscreteTraject0ry<Frame>::DiscreteTraject0ry(uninitialized_t)
     : segments_(make_not_null_unique<Segments>()) {}
 
 template<typename Frame>
-typename DiscreteTraject0ry<Frame>::Segments::iterator
+typename DiscreteTraject0ry<Frame>::SegmentByLeftEndpoint::iterator
 DiscreteTraject0ry<Frame>::FindSegment(
     Instant const& t) {
+  if (segment_by_left_endpoint_.empty()) {
+    return segment_by_left_endpoint_.end();
+  }
   auto it = segment_by_left_endpoint_.upper_bound(t);
   CHECK(it != segment_by_left_endpoint_.begin()) << "No segment covering " << t;
-  return (--it)->second;
+  return --it;
 }
 
 template<typename Frame>
-typename DiscreteTraject0ry<Frame>::Segments::const_iterator
+typename DiscreteTraject0ry<Frame>::SegmentByLeftEndpoint::const_iterator
 DiscreteTraject0ry<Frame>::FindSegment(
     Instant const& t) const {
+  if (segment_by_left_endpoint_.empty()) {
+    return segment_by_left_endpoint_.cend();
+  }
   auto it = segment_by_left_endpoint_.upper_bound(t);
   CHECK(it != segment_by_left_endpoint_.begin()) << "No segment covering " << t;
-  return (--it)->second;
+  return --it;
 }
 
 template<typename Frame>
-absl::Status DiscreteTraject0ry<Frame>::ValidateConsistency() const {
-  if (segments_->size() != segment_by_left_endpoint_.size()) {
+absl::Status DiscreteTraject0ry<Frame>::ConsistencyStatus() const {
+  if (segments_->size() < segment_by_left_endpoint_.size()) {
     return absl::InternalError(absl::StrCat("Size mismatch ",
                                             segments_->size(),
                                             " and ",
                                             segment_by_left_endpoint_.size()));
   }
+  if (segment_by_left_endpoint_.empty()) {
+    int i = 0;
+    for (auto const& segment : *segments_) {
+      if (!segment.empty()) {
+        return absl::InternalError(absl::StrCat(
+            "Segment #", i,
+            " is not empty but is not in the time-to-segment map"));
+      }
+      ++i;
+    }
+  }
   {
     int i = 0;
-    auto it1 = segments_->cbegin();
-    auto it2 = segment_by_left_endpoint_.cbegin();
-    for (; it1 != segments_->cend(); ++it1, ++it2, ++i) {
-      if (it1->begin()->time != it2->first) {
+    for (auto const& [left_endpoint, sit] : segment_by_left_endpoint_) {
+      if (sit->empty()) {
+      } else if (left_endpoint != sit->front().time) {
+        absl::StrCat("Times mismatch ",
+                      DebugString(left_endpoint),
+                      " and ",
+                      DebugString(sit->front().time),
+                      " between segment #", i, " and the time-to-segment map");
+      }
+    }
+  }
+  {
+    int i = 0;
+    auto sit1 = segments_->cbegin();
+    for (auto leit = segment_by_left_endpoint_.cbegin();
+         leit != segment_by_left_endpoint_.cend();) {
+      auto const sit2 = leit->second;
+      if (sit2->empty()) {
         return absl::InternalError(
-            absl::StrCat("Times mismatch ",
-                         DebugString(it1->begin()->time),
-                         " and ",
-                         DebugString(it2->first),
-                         " for segment #",
-                         i));
-      } else if (it1 != it2->second) {
-        return absl::InternalError(absl::StrCat("Iterator mismatch ",
-                                                " for segment #",
-                                                i));
+            absl::StrCat("Empty segment for time-to-segment entry #", i));
+      } else if (sit1 == sit2) {
+        ++sit1;
+        ++leit;
+        ++i;
+      } else if (sit1->empty() || sit1->size() == 1) {
+        ++sit1;
+      } else {
+        return absl::InternalError(
+            absl::StrCat("Mismatch for time-to-segment entry #", i,
+                         " at times ", DebugString(sit1->front().time),
+                         " and ", DebugString(sit2->front().time)));
       }
     }
   }
@@ -440,25 +565,27 @@ absl::Status DiscreteTraject0ry<Frame>::ValidateConsistency() const {
       // Great care is required here because the DiscreteTrajectoryIterator will
       // "helpfully" paper over differences in degrees of freedom as long as the
       // times match.  We must look at the endpoints of the timeline explicitly.
-      auto const timeline_rbegin = --sit->timeline_end();
-      auto const timeline_begin = std::next(sit)->timeline_begin();
-      if (timeline_rbegin->time != timeline_begin->time) {
-        return absl::InternalError(
-            absl::StrCat("Duplicated time mismatch ",
-                         DebugString(timeline_rbegin->time),
-                         " and ",
-                         DebugString(timeline_begin->time),
-                         " for segment #",
-                         i));
-      } else if (timeline_rbegin->degrees_of_freedom !=
-                 timeline_begin->degrees_of_freedom) {
-        return absl::InternalError(
-            absl::StrCat("Duplicated degrees of freedom mismatch ",
-                         DebugString(timeline_rbegin->degrees_of_freedom),
-                         " and ",
-                         DebugString(timeline_begin->degrees_of_freedom),
-                         " for segment #",
-                         i));
+      if (!sit->timeline_empty()) {
+        auto const timeline_rbegin = --sit->timeline_end();
+        auto const timeline_begin = std::next(sit)->timeline_begin();
+        if (timeline_rbegin->time != timeline_begin->time) {
+          return absl::InternalError(
+              absl::StrCat("Duplicated time mismatch ",
+                           DebugString(timeline_rbegin->time),
+                           " and ",
+                           DebugString(timeline_begin->time),
+                           " for segment #",
+                           i));
+        } else if (timeline_rbegin->degrees_of_freedom !=
+                   timeline_begin->degrees_of_freedom) {
+          return absl::InternalError(
+              absl::StrCat("Duplicated degrees of freedom mismatch ",
+                           DebugString(timeline_rbegin->degrees_of_freedom),
+                           " and ",
+                           DebugString(timeline_begin->degrees_of_freedom),
+                           " for segment #",
+                           i));
+        }
       }
     }
   }
@@ -469,21 +596,37 @@ template<typename Frame>
 void DiscreteTraject0ry<Frame>::AdjustAfterSplicing(
     DiscreteTraject0ry& from,
     DiscreteTraject0ry& to,
-    typename Segments::iterator to_segments_begin,
-    std::reverse_iterator<typename Segments::iterator> to_segments_rend) {
-
-  // Iterate through the target segments to move the time-to-segment mapping
-  // from |from| to |to|.
-  auto endpoint_it = from.segment_by_left_endpoint_.end();
-  for (auto sit = to.segments_->rbegin(); sit != to_segments_rend; ++sit) {
-    --endpoint_it;
-    to.segment_by_left_endpoint_.insert(
-        from.segment_by_left_endpoint_.extract(endpoint_it));
-  }
-
-  // Reset the self pointers of the new segments.
+    typename Segments::iterator to_segments_begin) {
+  // Reset the self pointers of the new segments.  This is necessary for
+  // iterating over them.
   for (auto sit = to_segments_begin; sit != to.segments_->end(); ++sit) {
     sit->SetSelf(SegmentIterator(to.segments_.get(), sit));
+  }
+
+  // Copy the time-to-segment entries on or after the time of |to_segment_begin|
+  // from |from| to |to|.  We are sure to copy all the entries we need because
+  // it includes the last segment that starts at that time.
+  auto from_leit = from.FindSegment(to_segments_begin->front().time);
+  for (auto leit = from_leit;
+       leit != from.segment_by_left_endpoint_.end();
+       ++leit) {
+    to.segment_by_left_endpoint_.insert_or_assign(
+        to.segment_by_left_endpoint_.end(), leit->first, leit->second);
+  }
+
+  // Erase from |from| the entries that we just copied.  We may erase too much
+  // if |from| now ends with a 1-point segment that was not in the map, so we
+  // insert it again.
+  from.segment_by_left_endpoint_.erase(from_leit,
+                                       from.segment_by_left_endpoint_.end());
+  if (!from.segments_->empty()) {
+    auto const last_segment = --from.segments_->end();
+    if (!last_segment->empty()) {
+      from.segment_by_left_endpoint_.insert_or_assign(
+          from.segment_by_left_endpoint_.end(),
+          last_segment->front().time,
+          last_segment);
+    }
   }
 }
 
@@ -619,7 +762,10 @@ void DiscreteTraject0ry<Frame>::ReadFromPreΖήνωνMessage(
   }
 
   // Finally, set the time-to-segment map.
-  trajectory.segment_by_left_endpoint_.emplace(sit->begin()->time, sit);
+  if (!sit->empty()) {
+    trajectory.segment_by_left_endpoint_.insert_or_assign(sit->begin()->time,
+                                                          sit);
+  }
 }
 
 }  // namespace internal_discrete_traject0ry

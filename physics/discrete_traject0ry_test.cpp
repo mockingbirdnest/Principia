@@ -481,14 +481,43 @@ TEST_F(DiscreteTraject0ryTest, ForgetBefore) {
   EXPECT_EQ(t0_ + 14 * Second, trajectory.rbegin()->time);
 
   trajectory.ForgetBefore(t0_ + 6.1 * Second);
-  EXPECT_EQ(2, trajectory.segments().size());
+  EXPECT_EQ(3, trajectory.segments().size());
   EXPECT_EQ(t0_ + 7 * Second, trajectory.begin()->time);
   EXPECT_EQ(t0_ + 14 * Second, trajectory.rbegin()->time);
 
   trajectory.ForgetBefore(t0_ + 9 * Second);
-  EXPECT_EQ(1, trajectory.segments().size());
+  EXPECT_EQ(3, trajectory.segments().size());
   EXPECT_EQ(t0_ + 9 * Second, trajectory.begin()->time);
   EXPECT_EQ(t0_ + 14 * Second, trajectory.rbegin()->time);
+
+  // The trajectory now has empty segments, so let's check that we can properly
+  // iterate over those.
+  {
+    std::vector<Instant> times;
+    for (auto const& [t, _] : trajectory) {
+      times.push_back(t);
+    }
+    EXPECT_THAT(times,
+                ElementsAre(t0_ + 9 * Second,
+                            t0_ + 10 * Second,
+                            t0_ + 11 * Second,
+                            t0_ + 12 * Second,
+                            t0_ + 13 * Second,
+                            t0_ + 14 * Second));
+  }
+  {
+    std::vector<Instant> times;
+    for (auto it = trajectory.rbegin(); it != trajectory.rend(); ++it) {
+      times.push_back(it->time);
+    }
+    EXPECT_THAT(times,
+                ElementsAre(t0_ + 14 * Second,
+                            t0_ + 13 * Second,
+                            t0_ + 12 * Second,
+                            t0_ + 11 * Second,
+                            t0_ + 10 * Second,
+                            t0_ + 9 * Second));
+  }
 }
 
 TEST_F(DiscreteTraject0ryTest, TMinTMaxEvaluate) {
