@@ -168,6 +168,7 @@ DiscreteTraject0ry<Frame>::NewSegment() {
         segment_by_left_endpoint_.end(), last_time, new_segment_sit);
   }
 
+  DCHECK_OK(ConsistencyStatus());
   return new_self;
 }
 
@@ -185,6 +186,7 @@ DiscreteTraject0ry<Frame>::DetachSegments(SegmentIterator const begin) {
                       /*to=*/detached,
                       /*to_segments_begin=*/detached.segments_->begin());
 
+  DCHECK_OK(ConsistencyStatus());
   return detached;
 }
 
@@ -218,12 +220,30 @@ DiscreteTraject0ry<Frame>::AttachSegments(
                       /*to=*/*this,
                       /*to_segments_begin=*/end_before_splice);
 
+  DCHECK_OK(ConsistencyStatus());
   return SegmentIterator(segments_.get(), end_before_splice);
 }
 
 template<typename Frame>
 void DiscreteTraject0ry<Frame>::DeleteSegments(SegmentIterator const begin) {
   segments_->erase(begin.iterator(), segments_->end());
+  if (segments_->empty()) {
+    segment_by_left_endpoint_.clear();
+  } else {
+    auto const last_segment = --segments_->end();
+    if (last_segment->empty()) {
+      segment_by_left_endpoint_.clear();
+    } else {
+      // If there remains a non-empty segment, update the time-to-segment map
+      // with for its time, and delete the rest.
+      auto const& [leit, _] = segment_by_left_endpoint_.insert_or_assign(
+          last_segment->front().time, last_segment);
+      segment_by_left_endpoint_.erase(std::next(leit),
+                                      segment_by_left_endpoint_.end());
+    }
+  }
+
+  DCHECK_OK(ConsistencyStatus());
 }
 
 template<typename Frame>
@@ -246,6 +266,8 @@ void DiscreteTraject0ry<Frame>::ForgetAfter(Instant const& t) {
     segment_by_left_endpoint_.erase(std::next(leit),
                                     segment_by_left_endpoint_.end());
   }
+
+  DCHECK_OK(ConsistencyStatus());
 }
 
 template<typename Frame>
@@ -277,6 +299,8 @@ void DiscreteTraject0ry<Frame>::ForgetBefore(Instant const& t) {
   segment_by_left_endpoint_.insert_or_assign(segment_by_left_endpoint_.begin(),
                                              sit->front().time,
                                              sit);
+
+  DCHECK_OK(ConsistencyStatus());
 }
 
 template<typename Frame>
@@ -303,6 +327,8 @@ void DiscreteTraject0ry<Frame>::Append(
     CHECK(!sit->empty()) << "Empty segment at " << t;
   }
   sit->Append(t, degrees_of_freedom);
+
+  DCHECK_OK(ConsistencyStatus());
 }
 
 template<typename Frame>
@@ -403,7 +429,7 @@ DiscreteTraject0ry<Frame>::ReadFromMessage(
     LOG_IF(WARNING, is_pre_ζήνων) << "Reading pre-Ζήνων DiscreteTrajectory";
     ReadFromPreΖήνωνMessage(
         message, tracked, /*fork_point=*/std::nullopt, trajectory);
-    CHECK_OK(trajectory.ValidateConsistency());
+    CHECK_OK(trajectory.ConsistencyStatus());
     return trajectory;
   }
 
@@ -444,7 +470,7 @@ DiscreteTraject0ry<Frame>::ReadFromMessage(
         trajectory.segment_by_left_endpoint_.end(), t, sit);
   }
 
-  CHECK_OK(trajectory.ValidateConsistency());
+  CHECK_OK(trajectory.ConsistencyStatus());
   return trajectory;
 }
 
@@ -477,7 +503,7 @@ DiscreteTraject0ry<Frame>::FindSegment(
 }
 
 template<typename Frame>
-absl::Status DiscreteTraject0ry<Frame>::ValidateConsistency() const {
+absl::Status DiscreteTraject0ry<Frame>::ConsistencyStatus() const {
   if (segments_->size() < segment_by_left_endpoint_.size()) {
     return absl::InternalError(absl::StrCat("Size mismatch ",
                                             segments_->size(),
@@ -539,25 +565,27 @@ absl::Status DiscreteTraject0ry<Frame>::ValidateConsistency() const {
       // Great care is required here because the DiscreteTrajectoryIterator will
       // "helpfully" paper over differences in degrees of freedom as long as the
       // times match.  We must look at the endpoints of the timeline explicitly.
-      auto const timeline_rbegin = --sit->timeline_end();
-      auto const timeline_begin = std::next(sit)->timeline_begin();
-      if (timeline_rbegin->time != timeline_begin->time) {
-        return absl::InternalError(
-            absl::StrCat("Duplicated time mismatch ",
-                         DebugString(timeline_rbegin->time),
-                         " and ",
-                         DebugString(timeline_begin->time),
-                         " for segment #",
-                         i));
-      } else if (timeline_rbegin->degrees_of_freedom !=
-                 timeline_begin->degrees_of_freedom) {
-        return absl::InternalError(
-            absl::StrCat("Duplicated degrees of freedom mismatch ",
-                         DebugString(timeline_rbegin->degrees_of_freedom),
-                         " and ",
-                         DebugString(timeline_begin->degrees_of_freedom),
-                         " for segment #",
-                         i));
+      if (!sit->timeline_empty()) {
+        auto const timeline_rbegin = --sit->timeline_end();
+        auto const timeline_begin = std::next(sit)->timeline_begin();
+        if (timeline_rbegin->time != timeline_begin->time) {
+          return absl::InternalError(
+              absl::StrCat("Duplicated time mismatch ",
+                           DebugString(timeline_rbegin->time),
+                           " and ",
+                           DebugString(timeline_begin->time),
+                           " for segment #",
+                           i));
+        } else if (timeline_rbegin->degrees_of_freedom !=
+                   timeline_begin->degrees_of_freedom) {
+          return absl::InternalError(
+              absl::StrCat("Duplicated degrees of freedom mismatch ",
+                           DebugString(timeline_rbegin->degrees_of_freedom),
+                           " and ",
+                           DebugString(timeline_begin->degrees_of_freedom),
+                           " for segment #",
+                           i));
+        }
       }
     }
   }
@@ -591,12 +619,14 @@ void DiscreteTraject0ry<Frame>::AdjustAfterSplicing(
   // insert it again.
   from.segment_by_left_endpoint_.erase(from_leit,
                                        from.segment_by_left_endpoint_.end());
-  if (!from.empty()) {
+  if (!from.segments_->empty()) {
     auto const last_segment = --from.segments_->end();
-    from.segment_by_left_endpoint_.insert_or_assign(
-        from.segment_by_left_endpoint_.end(),
-        last_segment->front().time,
-        last_segment);
+    if (!last_segment->empty()) {
+      from.segment_by_left_endpoint_.insert_or_assign(
+          from.segment_by_left_endpoint_.end(),
+          last_segment->front().time,
+          last_segment);
+    }
   }
 }
 
