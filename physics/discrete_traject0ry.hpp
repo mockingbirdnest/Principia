@@ -88,12 +88,13 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
   SegmentIterator AttachSegments(DiscreteTraject0ry&& trajectory);
   void DeleteSegments(SegmentIterator begin);
 
-  // Deletes the point at times in [t, end[.  Drops empty segment.
+  // Deletes the trajectory points with a time in [t, end[.  Drops the segments
+  // that are empty as a result.
   void ForgetAfter(Instant const& t);
   void ForgetAfter(iterator it);
 
-  // Deletes the points at times in [begin, t[.  Preserves empty segments and
-  // doesn't invalidate any segment iterator.
+  // Deletes the trajectory points with a time in [begin, t[.  Preserves empty
+  // segments and doesn't invalidate any segment iterator.
   void ForgetBefore(Instant const& t);
   void ForgetBefore(iterator it);
 
@@ -131,9 +132,10 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
 
   // Returns an iterator to a segment with extremities t1 and t2 such that
   // t ∈ [t1, t2[.  For the last segment, t2 is assumed to be +∞.  A 1-point
-  // segment is never returned, unless it is the last one (because it's upper
-  // bound is assumed to be +∞).  Returns segments_->end() if the trajectory is
-  // empty().  Fails if t is before the first time of the trajectory.
+  // segment is never returned, unless it is the last one (because its upper
+  // bound is assumed to be +∞).  Returns segment_by_left_endpoint_->end() iff
+  // the trajectory is empty().  Fails if t is before the first time of the
+  // trajectory.
   typename SegmentByLeftEndpoint::iterator FindSegment(Instant const& t);
   typename SegmentByLeftEndpoint::const_iterator
   FindSegment(Instant const& t) const;
