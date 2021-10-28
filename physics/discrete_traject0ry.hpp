@@ -123,26 +123,34 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
   using DownsamplingParameters =
       internal_discrete_trajectory_types::DownsamplingParameters;
   using Segments = internal_discrete_trajectory_types::Segments<Frame>;
+  using SegmentByLeftEndpoint =
+      absl::btree_map<Instant, typename Segments::iterator>;
 
   // This constructor leaves the list of segments empty (but allocated) as well
   // as the time-to-segment mapping.
   explicit DiscreteTraject0ry(uninitialized_t);
 
-  typename Segments::iterator FindSegment(Instant const& t);
-  typename Segments::const_iterator FindSegment(Instant const& t) const;
+  // Returns an iterator to a segment with extremities t1 and t2 such that
+  // t ∈ [t1, t2[.  For the last segment, t2 is assumed to be +∞.  A 1-point
+  // segment is never returned, unless it is the last one (because its upper
+  // bound is assumed to be +∞).  Returns segment_by_left_endpoint_->end() iff
+  // the trajectory is empty().  Fails if t is before the first time of the
+  // trajectory.
+  typename SegmentByLeftEndpoint::iterator FindSegment(Instant const& t);
+  typename SegmentByLeftEndpoint::const_iterator
+  FindSegment(Instant const& t) const;
 
   // Checks if this objects is in a consistent state, and returns an error
   // status with a relevant message if it isn't.
   absl::Status ValidateConsistency() const;
 
   // Updates the segments self-pointers and the time-to-segment mapping after
-  // segments have been spliced from |from| to |to|.  The iterators indicate the
+  // segments have been spliced from |from| to |to|.  The iterator indicates the
   // segments to fix-up.
   static void AdjustAfterSplicing(
       DiscreteTraject0ry& from,
       DiscreteTraject0ry& to,
-      typename Segments::iterator to_segments_begin,
-      std::reverse_iterator<typename Segments::iterator> to_segments_rend);
+      typename Segments::iterator to_segments_begin);
 
   // Reads a pre-Ζήνων downsampling message and return the downsampling
   // parameters and the start of the dense timeline.  The latter will have to be
@@ -174,13 +182,12 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
   // DiscreteTrajectory moves.  This field is never null and never empty.
   not_null<std::unique_ptr<Segments>> segments_;
 
-  // This list is never empty.  For an empty trajectory, there is a sentinel
-  // with time -∞ denoting the single segment of the trajectory.  As soon as a
-  // point is appended to the trajectory, the sentinel is removed and a bona
-  // fide entry replaces it.  To access the segment for time t, use
-  // |--upper_bound(t)|.
-  absl::btree_map<Instant,
-                  typename Segments::iterator> segment_by_left_endpoint_;
+  // Maps time |t| to the last segment that start at time |t|.  Does not contain
+  // entries for empty segments (at the beginning of the trajectory) or for
+  // 1-point segments that are not the last at their time.  Empty iff the entire
+  // trajectory is empty.  Always updated using |insert_or_assign| to override
+  // any preexisting segment with the same endpoint.
+  SegmentByLeftEndpoint segment_by_left_endpoint_;
 };
 
 }  // namespace internal_discrete_traject0ry
