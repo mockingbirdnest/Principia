@@ -205,7 +205,8 @@ class PileUp {
   // angular velocity of a part remains constant.
   Bivector<AngularMomentum, NonRotatingPileUp> angular_momentum_change_;
 
-  //TODO(phl):comment
+  // The trajectory of the pile-up, composed of (at most) two segments, the
+  // history and the psychohistory.
   DiscreteTraject0ry<Barycentric> trajectory_;
 
   // The |history_| is the past trajectory of the pile-up.  It is normally

@@ -264,13 +264,10 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
     // point.
     if (pile_up->history_->size() == 2) {
       DiscreteTraject0ry<Barycentric> psychohistory;
-      auto const history_second_point = std::next(pile_up->history_->begin());
-      for (auto it = history_second_point;
-           it != pile_up->history_->end();
-           ++it) {
-        psychohistory.Append(it->time, it->degrees_of_freedom);
+      for (auto const [time, degrees_of_freedom] : *pile_up->history_) {
+        psychohistory.Append(time, degrees_of_freedom);
       }
-      pile_up->trajectory_.ForgetAfter(history_second_point);
+      pile_up->trajectory_.ForgetAfter(std::next(pile_up->history_->begin()));
       pile_up->psychohistory_ =
           pile_up->trajectory_.AttachSegments(std::move(psychohistory));
     } else {
