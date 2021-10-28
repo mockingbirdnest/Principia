@@ -710,7 +710,8 @@ TEST_F(PileUpTest, SerializationCompatibility) {
 
   // Clear the children to simulate pre-Cesàro serialization.
   message.mutable_history()->clear_children();
-  EXPECT_EQ(1, message.history().zfp().timeline_size());
+  EXPECT_EQ(1, message.history().segment(0).zfp().timeline_size());
+  EXPECT_EQ(1, message.history().segment(1).zfp().timeline_size());
 
   auto const part_id_to_part = [this](PartId const part_id) {
     if (part_id == part_id1_) {
