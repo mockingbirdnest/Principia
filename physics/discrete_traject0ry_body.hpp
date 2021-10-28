@@ -598,7 +598,6 @@ void DiscreteTraject0ry<Frame>::AdjustAfterSplicing(
         last_segment->front().time,
         last_segment);
   }
-
 }
 
 template<typename Frame>
