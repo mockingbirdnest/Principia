@@ -97,7 +97,7 @@ class TestablePileUp : public PileUp {
     return intrinsic_force_;
   }
 
-  not_null<DiscreteTrajectory<Barycentric>*> psychohistory() const {
+  DiscreteTrajectorySegmentIterator<Barycentric> psychohistory() const {
     return psychohistory_;
   }
 
@@ -665,7 +665,9 @@ TEST_F(PileUpTest, Serialization) {
   EXPECT_EQ(2, message.part_id_size());
   EXPECT_EQ(part_id1_, message.part_id(0));
   EXPECT_EQ(part_id2_, message.part_id(1));
-  EXPECT_EQ(1, message.history().zfp().timeline_size());
+  EXPECT_EQ(2, message.history().segment_size());
+  EXPECT_EQ(1, message.history().segment(0).zfp().timeline_size());
+  EXPECT_EQ(1, message.history().segment(1).zfp().timeline_size());
   EXPECT_EQ(2, message.actual_part_rigid_motion().size());
   EXPECT_TRUE(message.apparent_part_rigid_motion().empty());
 
@@ -708,7 +710,8 @@ TEST_F(PileUpTest, SerializationCompatibility) {
 
   // Clear the children to simulate pre-Cesàro serialization.
   message.mutable_history()->clear_children();
-  EXPECT_EQ(1, message.history().zfp().timeline_size());
+  EXPECT_EQ(1, message.history().segment(0).zfp().timeline_size());
+  EXPECT_EQ(1, message.history().segment(1).zfp().timeline_size());
 
   auto const part_id_to_part = [this](PartId const part_id) {
     if (part_id == part_id1_) {
