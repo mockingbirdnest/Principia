@@ -168,7 +168,7 @@ DiscreteTraject0ry<Frame>::NewSegment() {
         segment_by_left_endpoint_.end(), last_time, new_segment_sit);
   }
 
-  DCHECK_OK(ValidateConsistency());
+  DCHECK_OK(ConsistencyStatus());
   return new_self;
 }
 
@@ -186,7 +186,7 @@ DiscreteTraject0ry<Frame>::DetachSegments(SegmentIterator const begin) {
                       /*to=*/detached,
                       /*to_segments_begin=*/detached.segments_->begin());
 
-  DCHECK_OK(ValidateConsistency());
+  DCHECK_OK(ConsistencyStatus());
   return detached;
 }
 
@@ -220,7 +220,7 @@ DiscreteTraject0ry<Frame>::AttachSegments(
                       /*to=*/*this,
                       /*to_segments_begin=*/end_before_splice);
 
-  DCHECK_OK(ValidateConsistency());
+  DCHECK_OK(ConsistencyStatus());
   return SegmentIterator(segments_.get(), end_before_splice);
 }
 
@@ -243,7 +243,7 @@ void DiscreteTraject0ry<Frame>::DeleteSegments(SegmentIterator const begin) {
     }
   }
 
-  DCHECK_OK(ValidateConsistency());
+  DCHECK_OK(ConsistencyStatus());
 }
 
 template<typename Frame>
@@ -267,7 +267,7 @@ void DiscreteTraject0ry<Frame>::ForgetAfter(Instant const& t) {
                                     segment_by_left_endpoint_.end());
   }
 
-  DCHECK_OK(ValidateConsistency());
+  DCHECK_OK(ConsistencyStatus());
 }
 
 template<typename Frame>
@@ -300,7 +300,7 @@ void DiscreteTraject0ry<Frame>::ForgetBefore(Instant const& t) {
                                              sit->front().time,
                                              sit);
 
-  DCHECK_OK(ValidateConsistency());
+  DCHECK_OK(ConsistencyStatus());
 }
 
 template<typename Frame>
@@ -328,7 +328,7 @@ void DiscreteTraject0ry<Frame>::Append(
   }
   sit->Append(t, degrees_of_freedom);
 
-  DCHECK_OK(ValidateConsistency());
+  DCHECK_OK(ConsistencyStatus());
 }
 
 template<typename Frame>
@@ -429,7 +429,7 @@ DiscreteTraject0ry<Frame>::ReadFromMessage(
     LOG_IF(WARNING, is_pre_ζήνων) << "Reading pre-Ζήνων DiscreteTrajectory";
     ReadFromPreΖήνωνMessage(
         message, tracked, /*fork_point=*/std::nullopt, trajectory);
-    CHECK_OK(trajectory.ValidateConsistency());
+    CHECK_OK(trajectory.ConsistencyStatus());
     return trajectory;
   }
 
@@ -470,7 +470,7 @@ DiscreteTraject0ry<Frame>::ReadFromMessage(
         trajectory.segment_by_left_endpoint_.end(), t, sit);
   }
 
-  CHECK_OK(trajectory.ValidateConsistency());
+  CHECK_OK(trajectory.ConsistencyStatus());
   return trajectory;
 }
 
@@ -503,7 +503,7 @@ DiscreteTraject0ry<Frame>::FindSegment(
 }
 
 template<typename Frame>
-absl::Status DiscreteTraject0ry<Frame>::ValidateConsistency() const {
+absl::Status DiscreteTraject0ry<Frame>::ConsistencyStatus() const {
   if (segments_->size() < segment_by_left_endpoint_.size()) {
     return absl::InternalError(absl::StrCat("Size mismatch ",
                                             segments_->size(),
@@ -628,7 +628,6 @@ void DiscreteTraject0ry<Frame>::AdjustAfterSplicing(
           last_segment);
     }
   }
-
 }
 
 template<typename Frame>

@@ -140,9 +140,9 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
   typename SegmentByLeftEndpoint::const_iterator
   FindSegment(Instant const& t) const;
 
-  // Checks if this objects is in a consistent state, and returns an error
+  // Determines if this objects is in a consistent state, and returns an error
   // status with a relevant message if it isn't.
-  absl::Status ValidateConsistency() const;
+  absl::Status ConsistencyStatus() const;
 
   // Updates the segments self-pointers and the time-to-segment mapping after
   // segments have been spliced from |from| to |to|.  The iterator indicates the
