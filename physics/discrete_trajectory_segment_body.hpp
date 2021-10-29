@@ -213,8 +213,10 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
   for (auto const it : exact) {
     exact_set.insert(&*it);
   }
-  exact_set.insert(&*timeline_.cbegin());
-  exact_set.insert(&*timeline_.crbegin());
+  if (!timeline_.empty()) {
+    exact_set.insert(&*timeline_.cbegin());
+    exact_set.insert(&*timeline_.crbegin());
+  }
 
   // Serialize the exact points.
   for (auto const* ptr : exact_set) {
