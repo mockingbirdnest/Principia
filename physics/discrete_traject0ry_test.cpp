@@ -446,11 +446,12 @@ TEST_F(DiscreteTraject0ryTest, AttachSegments) {
 TEST_F(DiscreteTraject0ryTest, DeleteSegments) {
   auto trajectory = MakeTrajectory();
   auto const first_segment = trajectory.segments().begin();
-  auto const second_segment = std::next(first_segment);
+  auto second_segment = std::next(first_segment);
   trajectory.DeleteSegments(second_segment);
   EXPECT_EQ(1, trajectory.segments().size());
   EXPECT_EQ(t0_, trajectory.begin()->time);
   EXPECT_EQ(t0_ + 4 * Second, trajectory.rbegin()->time);
+  EXPECT_TRUE(second_segment == trajectory.segments().end());
 }
 
 TEST_F(DiscreteTraject0ryTest, ForgetAfter) {
@@ -546,22 +547,30 @@ TEST_F(DiscreteTraject0ryTest, SerializationRoundTrip) {
   auto const trajectory = MakeTrajectory();
   auto const trajectory_first_segment = trajectory.segments().begin();
   auto const trajectory_second_segment = std::next(trajectory_first_segment);
+  auto const trajectory_past_the_end = trajectory.segments().end();
 
   serialization::DiscreteTrajectory message1;
   trajectory.WriteToMessage(&message1,
-                            /*tracked=*/{trajectory_second_segment},
+                            /*tracked=*/{trajectory_second_segment,
+                                         trajectory_past_the_end},
                             /*exact=*/
                             {trajectory.lower_bound(t0_ + 2 * Second),
                              trajectory.lower_bound(t0_ + 3 * Second)});
 
   DiscreteTrajectorySegmentIterator<World> deserialized_second_segment;
+  DiscreteTrajectorySegmentIterator<World> deserialized_past_the_end;
   auto const deserialized_trajectory =
       DiscreteTraject0ry<World>::ReadFromMessage(
-          message1, /*tracked=*/{&deserialized_second_segment});
+          message1, /*tracked=*/{&deserialized_second_segment,
+                                 &deserialized_past_the_end});
 
   // Check that the tracked segment was properly retrieved.
   EXPECT_EQ(t0_ + 4 * Second, deserialized_second_segment->begin()->time);
   EXPECT_EQ(t0_ + 9 * Second, deserialized_second_segment->rbegin()->time);
+
+  // Check that the past-the-end iterator was properly set.
+  EXPECT_TRUE(deserialized_past_the_end ==
+              deserialized_trajectory.segments().end());
 
   // Check that the exact points are exact.
   EXPECT_EQ(
@@ -574,7 +583,8 @@ TEST_F(DiscreteTraject0ryTest, SerializationRoundTrip) {
   serialization::DiscreteTrajectory message2;
   deserialized_trajectory.WriteToMessage(
       &message2,
-      /*tracked=*/{deserialized_second_segment},
+      /*tracked=*/{deserialized_second_segment,
+                   deserialized_past_the_end},
       /*exact=*/
       {deserialized_trajectory.lower_bound(t0_ + 2 * Second),
        deserialized_trajectory.lower_bound(t0_ + 3 * Second)});

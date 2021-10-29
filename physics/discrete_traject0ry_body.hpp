@@ -225,7 +225,7 @@ DiscreteTraject0ry<Frame>::AttachSegments(
 }
 
 template<typename Frame>
-void DiscreteTraject0ry<Frame>::DeleteSegments(SegmentIterator const begin) {
+void DiscreteTraject0ry<Frame>::DeleteSegments(SegmentIterator& begin) {
   segments_->erase(begin.iterator(), segments_->end());
   if (segments_->empty()) {
     segment_by_left_endpoint_.clear();
@@ -242,6 +242,8 @@ void DiscreteTraject0ry<Frame>::DeleteSegments(SegmentIterator const begin) {
                                       segment_by_left_endpoint_.end());
     }
   }
+  // Make sure that the client doesn't try to use the invalid iterator.
+  begin = segments().end();
 
   DCHECK_OK(ConsistencyStatus());
 }
@@ -370,7 +372,9 @@ void DiscreteTraject0ry<Frame>::WriteToMessage(
   absl::flat_hash_map<DiscreteTrajectorySegment<Frame> const*, int>
       segment_to_position;
   for (int i = 0; i < tracked.size(); ++i) {
-    segment_to_position.emplace(&*tracked[i], i);
+    if (tracked[i] != segments().end()) {
+      segment_to_position.emplace(&*tracked[i], i);
+    }
   }
 
   // Initialize the tracked positions to be able to recognize if some are
@@ -406,13 +410,6 @@ void DiscreteTraject0ry<Frame>::WriteToMessage(
         message->add_segment_by_left_endpoint();
     t.WriteToMessage(segment_by_left_endpoint->mutable_left_endpoint());
     segment_by_left_endpoint->set_segment(i);
-  }
-
-  // Check that all the segments in |tracked| were mapped.
-  // NOTE(phl): This might be too strong a constraint in Entwurf.
-  for (auto const tracked_position : message->tracked_position()) {
-    CHECK_NE(serialization::DiscreteTrajectory::MISSING_TRACKED_POSITION,
-             tracked_position);
   }
 }
 
@@ -450,9 +447,12 @@ DiscreteTraject0ry<Frame>::ReadFromMessage(
   CHECK_EQ(tracked.size(), message.tracked_position_size());
   for (int i = 0; i < message.tracked_position_size(); ++i) {
     int const tracked_position = message.tracked_position(i);
-    CHECK_NE(serialization::DiscreteTrajectory::MISSING_TRACKED_POSITION,
-             tracked_position);
-    *tracked[i] = segment_iterators[tracked_position];
+    if (tracked_position ==
+        serialization::DiscreteTrajectory::MISSING_TRACKED_POSITION) {
+      *tracked[i] = trajectory.segments().end();
+    } else {
+      *tracked[i] = segment_iterators[tracked_position];
+    }
   }
 
   // Finally restore the left endpoints.
