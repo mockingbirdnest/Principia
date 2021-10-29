@@ -170,26 +170,26 @@ DiscreteTraject0ry<Barycentric>::iterator Part::history_end() {
 }
 
 DiscreteTraject0ry<Barycentric>::iterator Part::psychohistory_begin() {
-  if (!psychohistory_.has_value()) {
+  if (psychohistory_ == trajectory_.segments().end()) {
     psychohistory_ = trajectory_.NewSegment();
   }
   // TODO(phl): This used to say:
   // Make sure that we skip the fork, which may be the point of the prehistory.
-  return psychohistory_.value()->begin();
+  return psychohistory_->begin();
 }
 
 DiscreteTraject0ry<Barycentric>::iterator Part::psychohistory_end() {
-  if (!psychohistory_.has_value()) {
+  if (psychohistory_ == trajectory_.segments().end()) {
     psychohistory_ = trajectory_.NewSegment();
   }
-  return psychohistory_.value()->end();
+  return psychohistory_->end();
 }
 
 void Part::AppendToHistory(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-  if (psychohistory_.has_value()) {
-    trajectory_.DeleteSegments(psychohistory_.value());
+  if (psychohistory_ != trajectory_.segments().end()) {
+    trajectory_.DeleteSegments(psychohistory_);
   }
   trajectory_.Append(time, degrees_of_freedom);
 }
@@ -197,7 +197,7 @@ void Part::AppendToHistory(
 void Part::AppendToPsychohistory(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-  if (!psychohistory_.has_value()) {
+  if (psychohistory_ == trajectory_.segments().end()) {
     psychohistory_ = trajectory_.NewSegment();
   }
   trajectory_.Append(time, degrees_of_freedom);
@@ -247,7 +247,7 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message,
   }
   rigid_motion_.WriteToMessage(message->mutable_rigid_motion());
   trajectory_.WriteToMessage(message->mutable_prehistory(),
-                             /*tracked=*/{history_, psychohistory_.value()},
+                             /*tracked=*/{history_, psychohistory_},
                              /*exact=*/{});
 }
 
@@ -262,11 +262,13 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
                          !message.has_intrinsic_torque());
   bool const is_pre_galileo = !message.has_centre_of_mass();
   bool const is_pre_ζήνων = message.prehistory().segment_size() == 0;
-  LOG_IF(WARNING, is_pre_galileo) << "Reading pre-"
-                                  << (is_pre_cesàro    ? u8"Cesàro"
-                                      : is_pre_fréchet ? u8"Fréchet"
-                                      : is_pre_frenet  ? "Frenet"
-                                                       : "Galileo") << " Part";
+  LOG_IF(WARNING, is_pre_ζήνων)
+      << "Reading pre-"
+      << (is_pre_cesàro    ? u8"Cesàro"
+          : is_pre_fréchet ? u8"Fréchet"
+          : is_pre_frenet  ? "Frenet"
+          : is_pre_galileo ? "Galileo"
+                            : u8"Ζήνων") << " Part";
 
   std::unique_ptr<Part> part;
   if (is_pre_fréchet) {
@@ -334,18 +336,14 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
       }
     }
   } else if (is_pre_ζήνων) {
-    DiscreteTrajectorySegmentIterator<Barycentric> psychohistory;
     auto prehistory = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
         message.prehistory(),
-        /*tracked=*/{&part->history_, &psychohistory});
-    part->psychohistory_ = psychohistory;
+        /*tracked=*/{&part->history_, &part->psychohistory_});
     part->trajectory_ = prehistory.DetachSegments(part->history_);
   } else {
-    DiscreteTrajectorySegmentIterator<Barycentric> psychohistory;
     part->trajectory_ = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
         message.prehistory(),
-        /*tracked=*/{&part->history_, &psychohistory});
-    part->psychohistory_ = psychohistory;
+        /*tracked=*/{&part->history_, &part->psychohistory_});
   }
   return std::move(part);
 }
@@ -381,10 +379,10 @@ Part::Part(PartId const part_id,
       mass_(mass),
       inertia_tensor_(inertia_tensor),
       rigid_motion_(std::move(rigid_motion)),
+      history_(trajectory_.segments().begin()),
+      psychohistory_(trajectory_.segments().end()),
       subset_node_(make_not_null_unique<Subset<Part>::Node>()),
-      deletion_callback_(std::move(deletion_callback)) {
-  history_ = trajectory_.NewSegment();
-}
+      deletion_callback_(std::move(deletion_callback)) {}
 
 RigidMotion<RigidPart, EccentricPart> Part::MakeRigidToEccentricMotion(
     Position<EccentricPart> const& centre_of_mass) {

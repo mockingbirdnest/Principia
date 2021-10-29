@@ -208,7 +208,7 @@ class Part final {
 
   // The |psychohistory_| is destroyed by |AppendToHistory| and is recreated
   // as needed by |AppendToPsychohistory|.
-  std::optional<DiscreteTrajectorySegmentIterator<Barycentric>> psychohistory_;
+  DiscreteTrajectorySegmentIterator<Barycentric> psychohistory_;
 
   // We will use union-find algorithms on |Part|s.
   not_null<std::unique_ptr<Subset<Part>::Node>> const subset_node_;
