@@ -598,8 +598,8 @@ TEST_F(DiscreteTraject0ryTest, SerializationExactEndpoints) {
   Length const r = 2 * Metre;
   Time const Δt = 1.0 / 3.0 * Milli(Second);
   Instant const t1 = t0_;
-  Instant const t2 = t0_ + 1000.0 / 7.0 * Second;
-  Instant const t3 = t0_ + 2000.0 / 11.0 * Second;
+  Instant const t2 = t0_ + 100.0 / 7.0 * Second;
+  Instant const t3 = t0_ + 200.0 / 11.0 * Second;
   // Downsampling is required for ZFP compression.
   DiscreteTrajectorySegment<World>::DownsamplingParameters const
       downsampling_parameters{.max_dense_intervals = 100,
@@ -617,9 +617,9 @@ TEST_F(DiscreteTraject0ryTest, SerializationExactEndpoints) {
       trajectory);
 
   auto const degrees_of_freedom1 =
-      trajectory.EvaluateDegreesOfFreedom(t1 + 100 * Second);
+      trajectory.EvaluateDegreesOfFreedom(t1 + 10 * Second);
   auto const degrees_of_freedom2 =
-      trajectory.EvaluateDegreesOfFreedom(t2 + 20 * Second);
+      trajectory.EvaluateDegreesOfFreedom(t2 + 2 * Second);
 
   serialization::DiscreteTrajectory message;
   trajectory.WriteToMessage(&message, /*tracked=*/{}, /*exact=*/{});
@@ -629,26 +629,26 @@ TEST_F(DiscreteTraject0ryTest, SerializationExactEndpoints) {
       DiscreteTraject0ry<World>::ReadFromMessage(message, /*tracked=*/{});
 
   auto const deserialized_degrees_of_freedom1 =
-      deserialized_trajectory.EvaluateDegreesOfFreedom(t1 + 100 * Second);
+      deserialized_trajectory.EvaluateDegreesOfFreedom(t1 + 10 * Second);
   auto const deserialized_degrees_of_freedom2 =
-      deserialized_trajectory.EvaluateDegreesOfFreedom(t2 + 20 * Second);
+      deserialized_trajectory.EvaluateDegreesOfFreedom(t2 + 2 * Second);
 
   // These checks verify that ZFP compression actually happened (so we observe
   // small errors on the degrees of freedom).
   EXPECT_THAT(
       (deserialized_degrees_of_freedom1.position() - World::origin).Norm(),
       AbsoluteErrorFrom((degrees_of_freedom1.position() - World::origin).Norm(),
-                        IsNear(0.24_⑴*Milli(Metre))));
+                        IsNear(0.27_⑴*Milli(Metre))));
   EXPECT_THAT(deserialized_degrees_of_freedom1.velocity().Norm(),
               AbsoluteErrorFrom(degrees_of_freedom1.velocity().Norm(),
-                                IsNear(1.5_⑴ * Micro(Metre) / Second)));
+                                IsNear(82_⑴ * Milli(Metre) / Second)));
   EXPECT_THAT(
       (deserialized_degrees_of_freedom2.position() - World::origin).Norm(),
       AbsoluteErrorFrom((degrees_of_freedom2.position() - World::origin).Norm(),
-                        IsNear(0.16_⑴*Milli(Metre))));
+                        IsNear(0.19_⑴*Milli(Metre))));
   EXPECT_THAT(deserialized_degrees_of_freedom2.velocity().Norm(),
               AbsoluteErrorFrom(degrees_of_freedom2.velocity().Norm(),
-                                IsNear(0.39_⑴ * Metre / Second)));
+                                IsNear(0.36_⑴ * Metre / Second)));
 }
 
 TEST_F(DiscreteTraject0ryTest, DISABLED_SerializationPreΖήνωνCompatibility) {
