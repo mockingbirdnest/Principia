@@ -482,8 +482,9 @@ TEST_F(DiscreteTraject0ryTest, ForgetAfter) {
   EXPECT_EQ(t0_, trajectory.begin()->time);
   EXPECT_EQ(t0_ + 4 * Second, trajectory.rbegin()->time);
 
-  trajectory.ForgetAfter(t0_ - 99 * Second);
+  trajectory.ForgetAfter(t0_);
   EXPECT_TRUE(trajectory.empty());
+  EXPECT_EQ(1, trajectory.segments().size());
 }
 
 TEST_F(DiscreteTraject0ryTest, ForgetBefore) {
