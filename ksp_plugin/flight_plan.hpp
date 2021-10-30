@@ -11,7 +11,8 @@
 #include "ksp_plugin/manœuvre.hpp"
 #include "ksp_plugin/orbit_analyser.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/ephemeris.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -25,7 +26,8 @@ using base::not_null;
 using geometry::Instant;
 using integrators::AdaptiveStepSizeIntegrator;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
+using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectorySegmentIterator;
 using physics::Ephemeris;
 using quantities::Length;
 using quantities::Mass;
@@ -113,11 +115,11 @@ class FlightPlan {
   // |index| must be in [0, number_of_segments()[.  Sets the iterators to denote
   // the given trajectory.
   virtual void GetSegment(int index,
-                          DiscreteTrajectory<Barycentric>::Iterator& begin,
-                          DiscreteTrajectory<Barycentric>::Iterator& end) const;
+                          DiscreteTraject0ry<Barycentric>::iterator& begin,
+                          DiscreteTraject0ry<Barycentric>::iterator& end) const;
   virtual void GetAllSegments(
-      DiscreteTrajectory<Barycentric>::Iterator& begin,
-      DiscreteTrajectory<Barycentric>::Iterator& end) const;
+      DiscreteTraject0ry<Barycentric>::iterator& begin,
+      DiscreteTraject0ry<Barycentric>::iterator& end) const;
 
   // |coast_index| must be in [0, number_of_manœuvres()].
   virtual OrbitAnalyser::Analysis* analysis(int coast_index);
@@ -150,13 +152,15 @@ class FlightPlan {
 
   // Flows the given |segment| for the duration of |manœuvre| using its
   // intrinsic acceleration.
-  absl::Status BurnSegment(NavigationManœuvre const& manœuvre,
-                           not_null<DiscreteTrajectory<Barycentric>*> segment);
+  absl::Status BurnSegment(
+      NavigationManœuvre const& manœuvre,
+      DiscreteTrajectorySegmentIterator<Barycentric> segment);
 
   // Flows the given |segment| until |desired_final_time| with no intrinsic
   // acceleration.
-  absl::Status CoastSegment(Instant const& desired_final_time,
-                            not_null<DiscreteTrajectory<Barycentric>*> segment);
+  absl::Status CoastSegment(
+      Instant const& desired_final_time,
+      DiscreteTrajectorySegmentIterator<Barycentric> segment);
 
   // Computes new trajectories and appends them to |segments_|.  This updates
   // the last coast of |segments_| and then appends one coast and one burn for
@@ -202,14 +206,13 @@ class FlightPlan {
   Instant initial_time_;
   DegreesOfFreedom<Barycentric> initial_degrees_of_freedom_;
   Instant desired_final_time_;
-  // The root of the flight plan.  Contains a single point, not part of
-  // |segments_|.  Owns all the |segments_|.
-  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> root_;
+
+  //TODO(phl):Comment
+  DiscreteTraject0ry<Barycentric> trajectory_;
 
   // Never empty; Starts and ends with a coast; coasts and burns alternate.
-  // Each trajectory is a fork of the previous one.
-  std::vector<not_null<DiscreteTrajectory<Barycentric>*>> segments_;
-  // The last |anomalous_segments_| of |segments_| are anomalous, i.e. they
+  std::vector<DiscreteTrajectorySegmentIterator<Barycentric>> segments_;
+  // The last |anomalous_segments_| of |segments_| are anomalous, i.e., they
   // either end prematurely or follow an anomalous trajectory; in the latter
   // case they are empty.
   int anomalous_segments_ = 0;

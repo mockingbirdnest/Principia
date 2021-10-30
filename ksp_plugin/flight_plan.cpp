@@ -54,18 +54,16 @@ FlightPlan::FlightPlan(
       initial_time_(initial_time),
       initial_degrees_of_freedom_(std::move(initial_degrees_of_freedom)),
       desired_final_time_(desired_final_time),
-      root_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       ephemeris_(ephemeris),
       adaptive_step_parameters_(std::move(adaptive_step_parameters)),
       generalized_adaptive_step_parameters_(
           std::move(generalized_adaptive_step_parameters)) {
   CHECK(desired_final_time_ >= initial_time_);
 
-  // Set the (single) point of the root.
-  root_->Append(initial_time_, initial_degrees_of_freedom_);
+  // Set the first point of the first coasting trajectory.
+  trajectory_.Append(initial_time_, initial_degrees_of_freedom_);
+  segments_.emplace_back(trajectory_.segments().front());
 
-  // Create a fork for the first coasting trajectory.
-  segments_.emplace_back(root_->NewForkWithoutCopy(initial_time_));
   coast_analysers_.push_back(make_not_null_unique<OrbitAnalyser>(
       ephemeris_, DefaultHistoryParameters()));
   CHECK(manœuvres_.empty());
@@ -202,18 +200,18 @@ int FlightPlan::number_of_segments() const {
 
 void FlightPlan::GetSegment(
     int const index,
-    DiscreteTrajectory<Barycentric>::Iterator& begin,
-    DiscreteTrajectory<Barycentric>::Iterator& end) const {
+    DiscreteTraject0ry<Barycentric>::iterator& begin,
+    DiscreteTraject0ry<Barycentric>::iterator& end) const {
   CHECK_LE(0, index);
   CHECK_LT(index, number_of_segments());
-  begin = segments_[index]->Fork();
+  begin = segments_[index]->begin();
   end = segments_[index]->end();
 }
 
 void FlightPlan::GetAllSegments(
-    DiscreteTrajectory<Barycentric>::Iterator& begin,
-    DiscreteTrajectory<Barycentric>::Iterator& end) const {
-  begin = segments_.back()->Find(segments_.front()->Fork()->time);
+    DiscreteTraject0ry<Barycentric>::iterator& begin,
+    DiscreteTraject0ry<Barycentric>::iterator& end) const {
+  begin = segments_.front()->begin();
   end = segments_.back()->end();
   CHECK(begin != end);
 }
@@ -314,7 +312,6 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
 
 FlightPlan::FlightPlan()
     : initial_degrees_of_freedom_(Barycentric::origin, Barycentric::unmoving),
-      root_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
       adaptive_step_parameters_(
           EmbeddedExplicitRungeKuttaNyströmIntegrator<
@@ -343,7 +340,7 @@ absl::Status FlightPlan::RecomputeAllSegments() {
 
 absl::Status FlightPlan::BurnSegment(
     NavigationManœuvre const& manœuvre,
-    not_null<DiscreteTrajectory<Barycentric>*> const segment) {
+    DiscreteTrajectorySegmentIterator<Barycentric> const segment) {
   Instant const final_time = manœuvre.final_time();
   if (manœuvre.initial_time() < final_time) {
     // Make sure that the ephemeris covers the entire segment, reanimating and
@@ -376,7 +373,7 @@ absl::Status FlightPlan::BurnSegment(
 
 absl::Status FlightPlan::CoastSegment(
     Instant const& desired_final_time,
-    not_null<DiscreteTrajectory<Barycentric>*> const segment) {
+    DiscreteTrajectorySegmentIterator<Barycentric> const segment) {
   // Make sure that the ephemeris covers the entire segment, reanimating and
   // waiting if necessary.
   Instant const starting_time = segment->back().time;
@@ -413,12 +410,12 @@ absl::Status FlightPlan::ComputeSegments(
         anomalous_segments_ = 1;
         anomalous_status_ = status;
       }
+      auto const& [first_time, first_degrees_of_freedom] = coast->front();
       coast_analysers_[it - manœuvres_.begin()]->RequestAnalysis(
-          {.first_time = coast->Fork()->time,
-           .first_degrees_of_freedom = coast->Fork()->degrees_of_freedom,
-           .mission_duration = coast->back().time - coast->Fork()->time,
-           .extended_mission_duration =
-               desired_final_time_ - coast->Fork()->time});
+          {.first_time = first_time,
+           .first_degrees_of_freedom = first_degrees_of_freedom,
+           .mission_duration = coast->back().time - first_time,
+           .extended_mission_duration = desired_final_time_ - first_time});
     }
 
     AddLastSegment();
@@ -442,12 +439,12 @@ absl::Status FlightPlan::ComputeSegments(
     // having to extend the flight plan by hand.
     desired_final_time_ =
         std::max(desired_final_time_, segments_.back()->t_max());
+    auto const& [first_time, first_degrees_of_freedom] =
+        segments_.back()->front();
     coast_analysers_.back()->RequestAnalysis(
-        {.first_time = segments_.back()->Fork()->time,
-         .first_degrees_of_freedom =
-             segments_.back()->Fork()->degrees_of_freedom,
-         .mission_duration =
-             desired_final_time_ - segments_.back()->Fork()->time});
+        {.first_time = first_time,
+         .first_degrees_of_freedom = first_degrees_of_freedom,
+         .mission_duration = desired_final_time_ - first_time});
     absl::Status const status =
         CoastSegment(desired_final_time_, segments_.back());
     if (!status.ok()) {
@@ -460,23 +457,22 @@ absl::Status FlightPlan::ComputeSegments(
 }
 
 void FlightPlan::AddLastSegment() {
-  segments_.emplace_back(segments_.back()->NewForkAtLast());
+  segments_.emplace_back(trajectory_.NewSegment());
   if (anomalous_segments_ > 0) {
     ++anomalous_segments_;
   }
 }
 
 void FlightPlan::ResetLastSegment() {
-  segments_.back()->ForgetAfter(segments_.back()->Fork()->time);
+  segments_.back()->ForgetAfter(segments_.back()->begin());
   if (anomalous_segments_ == 1) {
     anomalous_segments_ = 0;
   }
 }
 
 void FlightPlan::PopLastSegment() {
-  DiscreteTrajectory<Barycentric>* trajectory = segments_.back();
-  CHECK(!trajectory->is_root());
-  trajectory->parent()->DeleteFork(trajectory);
+  auto last_segment = segments_.back();
+  trajectory_.DeleteSegments(last_segment);
   segments_.pop_back();
   if (anomalous_segments_ > 0) {
     --anomalous_segments_;
