@@ -86,7 +86,7 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
 
   DiscreteTraject0ry DetachSegments(SegmentIterator begin);
   SegmentIterator AttachSegments(DiscreteTraject0ry&& trajectory);
-  void DeleteSegments(SegmentIterator begin);
+  void DeleteSegments(SegmentIterator& begin);
 
   // Deletes the trajectory points with a time in [t, end[.  Drops the segments
   // that are empty as a result.
