@@ -53,10 +53,8 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod0(
     DiscreteTraject0ry<Barycentric>::iterator const end,
     Instant const& now,
     bool const /*reverse*/) const {
-  auto const plottable_begin =
-      trajectory.lower_bound(plotting_frame_->t_min());
-  auto const plottable_end =
-      trajectory.lower_bound(plotting_frame_->t_max());
+  auto const plottable_begin = trajectory.lower_bound(plotting_frame_->t_min());
+  auto const plottable_end = trajectory.lower_bound(plotting_frame_->t_max());
   auto const plottable_spheres = ComputePlottableSpheres(now);
   auto const plottable_segments = ComputePlottableSegments(plottable_spheres,
                                                            plottable_begin,

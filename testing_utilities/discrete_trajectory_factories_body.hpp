@@ -60,9 +60,9 @@ NewLinearTrajectoryTimeline(DegreesOfFreedom<Frame> const& degrees_of_freedom,
 template<typename Frame>
 Timeline<Frame>
 NewLinearTrajectoryTimeline(Velocity<Frame> const& v,
-                           Time const& Δt,
-                           Instant const& t1,
-                           Instant const& t2) {
+                            Time const& Δt,
+                            Instant const& t1,
+                            Instant const& t2) {
   return NewLinearTrajectoryTimeline(
       DegreesOfFreedom<Frame>(Frame::origin, v), Δt, /*t0=*/t1, t1, t2);
 }
@@ -70,10 +70,10 @@ NewLinearTrajectoryTimeline(Velocity<Frame> const& v,
 template<typename Frame>
 Timeline<Frame>
 NewCircularTrajectoryTimeline(AngularFrequency const& ω,
-                             Length const& r,
-                             Time const& Δt,
-                             Instant const& t1,
-                             Instant const& t2) {
+                              Length const& r,
+                              Time const& Δt,
+                              Instant const& t1,
+                              Instant const& t2) {
   static Instant const t0;
   Timeline<Frame> timeline;
   Speed const v = ω * r / Radian;
@@ -93,15 +93,15 @@ NewCircularTrajectoryTimeline(AngularFrequency const& ω,
 template<typename Frame>
 Timeline<Frame>
 NewCircularTrajectoryTimeline(Time const& period,
-                             Length const& r,
-                             Time const& Δt,
-                             Instant const& t1,
-                             Instant const& t2) {
-  return NewCircularTrajectory<Frame>(/*ω=*/2 * π * Radian / period,
-                                      r,
-                                      Δt,
-                                      t1,
-                                      t2);
+                              Length const& r,
+                              Time const& Δt,
+                              Instant const& t1,
+                              Instant const& t2) {
+  return NewCircularTrajectoryTimeline<Frame>(/*ω=*/2 * π * Radian / period,
+                                              r,
+                                              Δt,
+                                              t1,
+                                              t2);
 }
 
 template<typename Frame>
@@ -114,7 +114,7 @@ void AppendTrajectoryTimeline(Timeline<Frame> const& from,
 
 template<typename Frame>
 void AppendTrajectoryTimeline(Timeline<Frame> const& from,
-  DiscreteTraject0ry<Frame>& to) {
+                              DiscreteTraject0ry<Frame>& to) {
   for (auto const& [t, degrees_of_freedom] : from) {
     to.Append(t, degrees_of_freedom);
   }
