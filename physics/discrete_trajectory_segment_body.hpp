@@ -92,6 +92,13 @@ std::int64_t DiscreteTrajectorySegment<Frame>::size() const {
 }
 
 template<typename Frame>
+void DiscreteTrajectorySegment<Frame>::clear() {
+  downsampling_parameters_.reset();
+  number_of_dense_points_ = 0;
+  timeline_.clear();
+}
+
+template<typename Frame>
 typename DiscreteTrajectorySegment<Frame>::iterator
 DiscreteTrajectorySegment<Frame>::find(Instant const& t) const {
   auto const it = timeline_.find(t);
@@ -213,8 +220,10 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
   for (auto const it : exact) {
     exact_set.insert(&*it);
   }
-  exact_set.insert(&*timeline_.cbegin());
-  exact_set.insert(&*timeline_.crbegin());
+  if (!timeline_.empty()) {
+    exact_set.insert(&*timeline_.cbegin());
+    exact_set.insert(&*timeline_.crbegin());
+  }
 
   // Serialize the exact points.
   for (auto const* ptr : exact_set) {
