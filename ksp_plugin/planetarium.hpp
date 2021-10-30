@@ -11,7 +11,7 @@
 #include "geometry/sphere.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_traject0ry.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
 #include "quantities/quantities.hpp"
@@ -31,7 +31,7 @@ using geometry::Segment;
 using geometry::Segments;
 using geometry::Sphere;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
+using physics::DiscreteTraject0ry;
 using physics::Ephemeris;
 using physics::RigidMotion;
 using physics::Trajectory;
@@ -70,16 +70,18 @@ class Planetarium {
   // A no-op method that just returns all the points in the trajectory defined
   // by |begin| and |end|.
   RP2Lines<Length, Camera> PlotMethod0(
-      DiscreteTrajectory<Barycentric>::Iterator const& begin,
-      DiscreteTrajectory<Barycentric>::Iterator const& end,
+      DiscreteTraject0ry<Barycentric> const& trajectory,
+      DiscreteTraject0ry<Barycentric>::iterator begin,
+      DiscreteTraject0ry<Barycentric>::iterator end,
       Instant const& now,
       bool reverse) const;
 
   // A method that coalesces segments until they are larger than the angular
   // resolution.
   RP2Lines<Length, Camera> PlotMethod1(
-      DiscreteTrajectory<Barycentric>::Iterator const& begin,
-      DiscreteTrajectory<Barycentric>::Iterator const& end,
+      DiscreteTraject0ry<Barycentric> const& trajectory,
+      DiscreteTraject0ry<Barycentric>::iterator begin,
+      DiscreteTraject0ry<Barycentric>::iterator end,
       Instant const& now,
       bool reverse) const;
 
@@ -87,8 +89,9 @@ class Planetarium {
   // using an adaptive step size to keep the error between the straight segments
   // and the actual spline below and close to the angular resolution.
   RP2Lines<Length, Camera> PlotMethod2(
-      DiscreteTrajectory<Barycentric>::Iterator const& begin,
-      DiscreteTrajectory<Barycentric>::Iterator const& end,
+      Trajectory<Barycentric> const& trajectory,
+      DiscreteTraject0ry<Barycentric>::iterator begin,
+      DiscreteTraject0ry<Barycentric>::iterator end,
       Instant const& now,
       bool reverse) const;
 
@@ -110,8 +113,8 @@ class Planetarium {
   // are not hidden by the |plottable_spheres|.
   Segments<Navigation> ComputePlottableSegments(
       const std::vector<Sphere<Navigation>>& plottable_spheres,
-      DiscreteTrajectory<Barycentric>::Iterator const& begin,
-      DiscreteTrajectory<Barycentric>::Iterator const& end) const;
+      DiscreteTraject0ry<Barycentric>::iterator begin,
+      DiscreteTraject0ry<Barycentric>::iterator end) const;
 
   Parameters const parameters_;
   Perspective<Navigation, Camera> const perspective_;
