@@ -269,9 +269,14 @@ void DiscreteTraject0ry<Frame>::ForgetAfter(Instant const& t) {
   // Here |sit| designates a segment starting at or after |t|.  If |t| is
   // exactly at the beginning of the segment,
   // |DiscreteTrajectorySegment::ForgetAfter| will leave it empty.  In that
-  // case we drop the segment entirely.
+  // case we drop the segment entirely, unless it is the only one in the
+  // trajectory.
   if (sit->empty()) {
-    segments_->erase(sit, segments_->end());
+    if (sit == segments_->begin()) {
+      segments_->erase(std::next(sit), segments_->end());
+    } else {
+      segments_->erase(sit, segments_->end());
+    }
     segment_by_left_endpoint_.erase(leit, segment_by_left_endpoint_.end());
   } else {
     segments_->erase(std::next(sit), segments_->end());
@@ -284,7 +289,9 @@ void DiscreteTraject0ry<Frame>::ForgetAfter(Instant const& t) {
 
 template<typename Frame>
 void DiscreteTraject0ry<Frame>::ForgetAfter(iterator const it) {
-  ForgetAfter(it->time);
+  if (it != end()) {
+    ForgetAfter(it->time);
+  }
 }
 
 template<typename Frame>
@@ -321,7 +328,11 @@ void DiscreteTraject0ry<Frame>::ForgetBefore(Instant const& t) {
 
 template<typename Frame>
 void DiscreteTraject0ry<Frame>::ForgetBefore(iterator const it) {
-  ForgetBefore(it->time);
+  if (it == end()) {
+    clear();
+  } else {
+    ForgetBefore(it->time);
+  }
 }
 
 template<typename Frame>
@@ -576,7 +587,7 @@ absl::Status DiscreteTraject0ry<Frame>::ConsistencyStatus() const {
       }
     }
   }
-  {
+  if (!segments_->empty()) {
     int i = 0;
     for (auto sit = segments_->cbegin();
          sit != std::prev(segments_->cend());

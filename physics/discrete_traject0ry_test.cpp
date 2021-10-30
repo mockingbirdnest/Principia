@@ -467,6 +467,9 @@ TEST_F(DiscreteTraject0ryTest, DeleteSegments) {
 TEST_F(DiscreteTraject0ryTest, ForgetAfter) {
   auto trajectory = MakeTrajectory();
 
+  trajectory.ForgetAfter(trajectory.end());
+  EXPECT_EQ(3, trajectory.segments().size());
+
   trajectory.ForgetAfter(t0_ + 12 * Second);
   EXPECT_EQ(3, trajectory.segments().size());
   EXPECT_EQ(t0_, trajectory.begin()->time);
@@ -482,8 +485,9 @@ TEST_F(DiscreteTraject0ryTest, ForgetAfter) {
   EXPECT_EQ(t0_, trajectory.begin()->time);
   EXPECT_EQ(t0_ + 4 * Second, trajectory.rbegin()->time);
 
-  trajectory.ForgetAfter(t0_ - 99 * Second);
+  trajectory.ForgetAfter(t0_);
   EXPECT_TRUE(trajectory.empty());
+  EXPECT_EQ(1, trajectory.segments().size());
 }
 
 TEST_F(DiscreteTraject0ryTest, ForgetBefore) {
@@ -534,6 +538,9 @@ TEST_F(DiscreteTraject0ryTest, ForgetBefore) {
   }
 
   trajectory.ForgetBefore(t0_ + 99 * Second);
+  EXPECT_TRUE(trajectory.empty());
+
+  trajectory.ForgetBefore(trajectory.end());
   EXPECT_TRUE(trajectory.empty());
 }
 
