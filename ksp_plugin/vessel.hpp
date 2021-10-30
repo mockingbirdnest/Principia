@@ -17,7 +17,9 @@
 #include "ksp_plugin/orbit_analyser.hpp"
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/pile_up.hpp"
-#include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory_segment.hpp"
+#include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massless_body.hpp"
 #include "quantities/named_quantities.hpp"
@@ -32,7 +34,9 @@ using base::RecurringThread;
 using geometry::Instant;
 using geometry::Vector;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
+using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectorySegment;
+using physics::DiscreteTrajectorySegmentIterator;
 using physics::Ephemeris;
 using physics::MasslessBody;
 using physics::RotatingBody;
@@ -104,7 +108,7 @@ class Vessel {
   // |history_| is never empty again and the psychohistory is usable.
   virtual void PrepareHistory(
       Instant const& t,
-      DiscreteTrajectory<Barycentric>::DownsamplingParameters const&
+      DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters const&
           downsampling_parameters);
 
   // Disables downsampling for the history of this vessel.  This is useful when
@@ -121,8 +125,8 @@ class Vessel {
   // Calls |action| on all parts.
   virtual void ForAllParts(std::function<void(Part&)> action) const;
 
-  virtual DiscreteTrajectory<Barycentric> const& psychohistory() const;
-  virtual DiscreteTrajectory<Barycentric> const& prediction() const;
+  virtual DiscreteTrajectorySegmentIterator<Barycentric> psychohistory() const;
+  virtual DiscreteTrajectorySegmentIterator<Barycentric> prediction() const;
 
   virtual void set_prediction_adaptive_step_parameters(
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
@@ -215,24 +219,24 @@ class Vessel {
                          PrognosticatorParameters const& right);
 
   using TrajectoryIterator =
-      DiscreteTrajectory<Barycentric>::Iterator (Part::*)();
+      DiscreteTraject0ry<Barycentric>::iterator (Part::*)();
 
   // Runs the integrator to compute the |prognostication_| based on the given
   // parameters.
-  absl::StatusOr<std::unique_ptr<DiscreteTrajectory<Barycentric>>>
+  absl::StatusOr<std::unique_ptr<DiscreteTraject0ry<Barycentric>>>
   FlowPrognostication(PrognosticatorParameters prognosticator_parameters);
 
-  // Appends to |trajectory| the centre of mass of the trajectories of the parts
-  // denoted by |part_trajectory_begin| and |part_trajectory_end|.  Only the
-  // points that are strictly after the fork time of the trajectory are used.
-  void AppendToVesselTrajectory(TrajectoryIterator part_trajectory_begin,
-                                TrajectoryIterator part_trajectory_end,
-                                DiscreteTrajectory<Barycentric>& trajectory);
+  // Appends to |trajectory_| the centre of mass of the trajectories of the
+  // parts denoted by |part_trajectory_begin| and |part_trajectory_end|.  Only
+  // the points that are strictly after the start of the |segment| are used.
+  void AppendToVesselTrajectory(
+      TrajectoryIterator part_trajectory_begin,
+      TrajectoryIterator part_trajectory_end,
+      DiscreteTrajectorySegment<Barycentric> const& segment);
 
   // Attaches the given |trajectory| to the end of the |psychohistory_| to
   // become the new |prediction_|.  If |prediction_| is not null, it is deleted.
-  void AttachPrediction(
-      not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> trajectory);
+  void AttachPrediction(DiscreteTraject0ry<Barycentric>&& trajectory);
 
   GUID const guid_;
   std::string name_;
@@ -247,16 +251,18 @@ class Vessel {
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
   std::set<PartId> kept_parts_;
 
+  //TODO(phl):comment
+  DiscreteTraject0ry<Barycentric> trajectory_;
+
   // See the comments in pile_up.hpp for an explanation of the terminology.
-  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_;
-  DiscreteTrajectory<Barycentric>* psychohistory_ = nullptr;
+  DiscreteTrajectorySegmentIterator<Barycentric> history_;
+  DiscreteTrajectorySegmentIterator<Barycentric> psychohistory_;
 
   // The |prediction_| is forked off the end of the |psychohistory_|.
-  DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
+  DiscreteTrajectorySegmentIterator<Barycentric> prediction_;
 
   RecurringThread<PrognosticatorParameters,
-                  std::unique_ptr<DiscreteTrajectory<Barycentric>>>
-      prognosticator_;
+                  DiscreteTraject0ry<Barycentric>> prognosticator_;
 
   std::unique_ptr<FlightPlan> flight_plan_;
 
