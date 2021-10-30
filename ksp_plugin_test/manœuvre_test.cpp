@@ -1,17 +1,26 @@
 ﻿
 #include "ksp_plugin/manœuvre.hpp"
 
+#include "base/not_null.hpp"
 #include "geometry/frame.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
+#include "geometry/orthogonal_map.hpp"
+#include "geometry/rotation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/frames.hpp"
 #include "physics/continuous_trajectory.hpp"
-#include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_traject0ry.hpp"
+#include "physics/dynamic_frame.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_dynamic_frame.hpp"
 #include "physics/mock_ephemeris.hpp"
+#include "physics/rigid_motion.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/numbers.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/uk.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
@@ -22,24 +31,35 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_manœuvre {
 
+using base::not_null;
 using base::make_not_null_unique;
 using geometry::AngularVelocity;
 using geometry::Arbitrary;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Handedness;
+using geometry::Instant;
+using geometry::OrthogonalMap;
 using geometry::RigidTransformation;
+using geometry::Rotation;
+using geometry::Vector;
 using geometry::Velocity;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
+using physics::DiscreteTraject0ry;
+using physics::Frenet;
 using physics::MassiveBody;
 using physics::MockDynamicFrame;
 using physics::MockEphemeris;
+using physics::RigidMotion;
+using quantities::Force;
 using quantities::GravitationalParameter;
+using quantities::Mass;
 using quantities::Pow;
+using quantities::Speed;
+using quantities::Sqrt;
+using quantities::Variation;
 using quantities::si::Kilo;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
@@ -80,7 +100,7 @@ class ManœuvreTest : public ::testing::Test {
 
   Instant const t0_;
   StrictMock<MockDynamicFrame<World, Rendering>> const* mock_dynamic_frame_;
-  DiscreteTrajectory<World> discrete_trajectory_;
+  DiscreteTraject0ry<World> discrete_trajectory_;
   DegreesOfFreedom<World> const dof_ = {
       World::origin + Displacement<World>({1 * Metre, 9 * Metre, 5 * Metre}),
       Velocity<World>(
@@ -144,7 +164,7 @@ TEST_F(ManœuvreTest, TimedBurn) {
               FrenetFrame(manœuvre.initial_time(), rendering_dof_))
       .WillOnce(
           Return(Rotation<Frenet<Rendering>, Rendering>::Identity()));
-  manœuvre.set_coasting_trajectory(&discrete_trajectory_);
+  manœuvre.set_coasting_trajectory(discrete_trajectory_.segments().begin());
   auto const acceleration = manœuvre.InertialIntrinsicAcceleration();
   EXPECT_EQ(
       0 * Metre / Pow<2>(Second),
@@ -207,7 +227,7 @@ TEST_F(ManœuvreTest, TargetΔv) {
               FrenetFrame(manœuvre.initial_time(), rendering_dof_))
       .WillOnce(
           Return(Rotation<Frenet<Rendering>, Rendering>::Identity()));
-  manœuvre.set_coasting_trajectory(&discrete_trajectory_);
+  manœuvre.set_coasting_trajectory(discrete_trajectory_.segments().begin());
   auto const acceleration = manœuvre.InertialIntrinsicAcceleration();
   EXPECT_EQ(
       0 * Metre / Pow<2>(Second),
@@ -292,7 +312,8 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
               FrenetFrame(first_manœuvre.initial_time(), rendering_dof_))
       .WillOnce(
           Return(Rotation<Frenet<Rendering>, Rendering>::Identity()));
-  first_manœuvre.set_coasting_trajectory(&discrete_trajectory_);
+  first_manœuvre.set_coasting_trajectory(
+      discrete_trajectory_.segments().begin());
   auto const first_acceleration =
       first_manœuvre.InertialIntrinsicAcceleration();
   EXPECT_THAT(
@@ -338,7 +359,8 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
               FrenetFrame(second_manœuvre.initial_time(), rendering_dof_))
       .WillOnce(
           Return(Rotation<Frenet<Rendering>, Rendering>::Identity()));
-  second_manœuvre.set_coasting_trajectory(&discrete_trajectory_);
+  second_manœuvre.set_coasting_trajectory(
+      discrete_trajectory_.segments().begin());
   auto const second_acceleration =
       second_manœuvre.InertialIntrinsicAcceleration();
   EXPECT_THAT(second_acceleration(second_manœuvre.initial_time()).Norm(),
@@ -430,6 +452,5 @@ TEST_F(ManœuvreTest, Serialization) {
   EXPECT_EQ(t0_, manœuvre_read.time_of_half_Δv());
 }
 
-}  // namespace internal_manœuvre
 }  // namespace ksp_plugin
 }  // namespace principia
