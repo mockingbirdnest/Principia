@@ -15,6 +15,8 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/rigid_motion.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -34,7 +36,8 @@ using geometry::Position;
 using geometry::Vector;
 using geometry::Velocity;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
+using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectorySegmentIterator;
 using physics::RigidMotion;
 using quantities::Force;
 using quantities::Mass;
@@ -113,10 +116,10 @@ class Part final {
   // Return iterators to the beginning and end of the history and psychohistory
   // of the part, respectively.  Either trajectory may be empty, but they are
   // not both empty.
-  DiscreteTrajectory<Barycentric>::Iterator history_begin();
-  DiscreteTrajectory<Barycentric>::Iterator history_end();
-  DiscreteTrajectory<Barycentric>::Iterator psychohistory_begin();
-  DiscreteTrajectory<Barycentric>::Iterator psychohistory_end();
+  DiscreteTraject0ry<Barycentric>::iterator history_begin();
+  DiscreteTraject0ry<Barycentric>::iterator history_end();
+  DiscreteTraject0ry<Barycentric>::iterator psychohistory_begin();
+  DiscreteTraject0ry<Barycentric>::iterator psychohistory_end();
 
   // Appends a point to the history or psychohistory of this part.  These
   // temporarily hold the trajectory of the part and are constructed by
@@ -195,18 +198,17 @@ class Part final {
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
 
-  // The |prehistory_| always has a single point at time -∞.  It sole purpose is
-  // to make it convenient to hook the |psychohistory_| even if there is no
-  // point in the |history_| (it's not possible to fork-at-last an empty root
-  // trajectory, but it works for a non-root).
-  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> prehistory_;
-  // The |history_| is nearly always not null, except in some transient
-  // situations.  It's a fork of the |prehistory_|.
-  DiscreteTrajectory<Barycentric>* history_ = nullptr;
+  // The trajectory of the part, composed of (at most) two segments, the
+  // history and the psychohistory.
+  DiscreteTraject0ry<Barycentric> trajectory_;
+
+  // The |history_| is nearly always present, except in some transient
+  // situations.
+  DiscreteTrajectorySegmentIterator<Barycentric> history_;
+
   // The |psychohistory_| is destroyed by |AppendToHistory| and is recreated
-  // as needed by |AppendToPsychohistory| or by |tail|.  That's because
-  // |NewForkAtLast| is relatively expensive so we only call it when necessary.
-  DiscreteTrajectory<Barycentric>* psychohistory_ = nullptr;
+  // as needed by |AppendToPsychohistory|.
+  DiscreteTrajectorySegmentIterator<Barycentric> psychohistory_;
 
   // We will use union-find algorithms on |Part|s.
   not_null<std::unique_ptr<Subset<Part>::Node>> const subset_node_;
