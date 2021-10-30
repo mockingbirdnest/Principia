@@ -6,7 +6,7 @@
 #include "geometry/named_quantities.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "quantities/named_quantities.hpp"
@@ -22,7 +22,7 @@ using geometry::OrthogonalMap;
 using geometry::Vector;
 using geometry::Velocity;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
+using physics::DiscreteTrajectorySegmentIterator;
 using physics::DynamicFrame;
 using physics::Ephemeris;
 using physics::Frenet;
@@ -125,11 +125,11 @@ class Manœuvre {
   // Returns true if and only if [initial_time, final_time] ⊆ ]begin, end[.
   bool FitsBetween(Instant const& begin, Instant const& end) const;
 
-  // Sets the trajectory at the end of which the manœuvre takes place.  Must be
-  // called before any of the functions below.  |trajectory| must have a point
-  // at |initial_time()|.
+  // Sets the trajectory segment at the end of which the manœuvre takes place.
+  // Must be called before any of the functions below.  |trajectory| must have a
+  // point at |initial_time()|.
   void set_coasting_trajectory(
-      not_null<DiscreteTrajectory<InertialFrame> const*> trajectory);
+      DiscreteTrajectorySegmentIterator<InertialFrame> trajectory);
 
   // This manœuvre must be inertially fixed.
   virtual Vector<double, InertialFrame> InertialDirection() const;
@@ -174,7 +174,7 @@ class Manœuvre {
   Mass initial_mass_;
   Burn construction_burn_;  // As given at construction.
   Burn burn_;  // All optionals filled.
-  DiscreteTrajectory<InertialFrame> const* coasting_trajectory_ = nullptr;
+  DiscreteTrajectorySegmentIterator<InertialFrame> coasting_trajectory_;
 };
 
 }  // namespace internal_manœuvre
