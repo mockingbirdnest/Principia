@@ -62,7 +62,7 @@ FlightPlan::FlightPlan(
 
   // Set the first point of the first coasting trajectory.
   trajectory_.Append(initial_time_, initial_degrees_of_freedom_);
-  segments_.emplace_back(trajectory_.segments().front());
+  segments_.emplace_back(trajectory_.segments().begin());
 
   coast_analysers_.push_back(make_not_null_unique<OrbitAnalyser>(
       ephemeris_, DefaultHistoryParameters()));
@@ -353,14 +353,14 @@ absl::Status FlightPlan::BurnSegment(
 
     if (manœuvre.is_inertially_fixed()) {
       return ephemeris_->FlowWithAdaptiveStep(
-                             segment,
+                             &trajectory_,
                              manœuvre.InertialIntrinsicAcceleration(),
                              final_time,
                              adaptive_step_parameters_,
                              max_ephemeris_steps_per_frame);
     } else {
       return ephemeris_->FlowWithAdaptiveStep(
-                             segment,
+                             &trajectory_,
                              manœuvre.FrenetIntrinsicAcceleration(),
                              final_time,
                              generalized_adaptive_step_parameters_,
@@ -383,7 +383,7 @@ absl::Status FlightPlan::CoastSegment(
   }
 
   return ephemeris_->FlowWithAdaptiveStep(
-                         segment,
+                         &trajectory_,
                          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
                          desired_final_time,
                          adaptive_step_parameters_,
@@ -464,7 +464,8 @@ void FlightPlan::AddLastSegment() {
 }
 
 void FlightPlan::ResetLastSegment() {
-  segments_.back()->ForgetAfter(segments_.back()->begin());
+  auto const last_segment = segments_.back();
+  trajectory_.ForgetAfter(std::next(last_segment->begin()));
   if (anomalous_segments_ == 1) {
     anomalous_segments_ = 0;
   }
