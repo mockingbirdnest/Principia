@@ -73,6 +73,9 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
   bool empty() const;
   std::int64_t size() const;
 
+  // Doesn't invalidate iterators to the first segment.
+  void clear();
+
   iterator find(Instant const& t) const;
 
   iterator lower_bound(Instant const& t) const;
@@ -134,8 +137,8 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
   // t ∈ [t1, t2[.  For the last segment, t2 is assumed to be +∞.  A 1-point
   // segment is never returned, unless it is the last one (because its upper
   // bound is assumed to be +∞).  Returns segment_by_left_endpoint_->end() iff
-  // the trajectory is empty().  Fails if t is before the first time of the
-  // trajectory.
+  // t is before the first time of the trajectory or if the trajectory is
+  // empty().
   typename SegmentByLeftEndpoint::iterator FindSegment(Instant const& t);
   typename SegmentByLeftEndpoint::const_iterator
   FindSegment(Instant const& t) const;

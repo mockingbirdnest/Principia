@@ -86,6 +86,8 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   bool empty() const;
   std::int64_t size() const;
 
+  void clear();
+
   iterator find(Instant const& t) const;
 
   iterator lower_bound(Instant const& t) const;

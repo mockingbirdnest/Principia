@@ -266,6 +266,11 @@ TEST_F(DiscreteTraject0ryTest, LowerBound) {
     auto const it = trajectory.lower_bound(t0_ + 14.2 * Second);
     EXPECT_TRUE(it == trajectory.end());
   }
+  {
+    auto const it = trajectory.lower_bound(t0_ - 99 * Second);
+    auto const& [t, _] = *it;
+    EXPECT_EQ(t, t0_);
+  }
 }
 
 TEST_F(DiscreteTraject0ryTest, UpperBound) {
@@ -309,6 +314,11 @@ TEST_F(DiscreteTraject0ryTest, UpperBound) {
   {
     auto const it = trajectory.upper_bound(t0_ + 14.2 * Second);
     EXPECT_TRUE(it == trajectory.end());
+  }
+  {
+    auto const it = trajectory.upper_bound(t0_ - 99 * Second);
+    auto const& [t, _] = *it;
+    EXPECT_EQ(t, t0_);
   }
 }
 
@@ -446,7 +456,7 @@ TEST_F(DiscreteTraject0ryTest, AttachSegments) {
 TEST_F(DiscreteTraject0ryTest, DeleteSegments) {
   auto trajectory = MakeTrajectory();
   auto const first_segment = trajectory.segments().begin();
-  auto const second_segment = std::next(first_segment);
+  auto second_segment = std::next(first_segment);
   trajectory.DeleteSegments(second_segment);
   EXPECT_EQ(1, trajectory.segments().size());
   EXPECT_EQ(t0_, trajectory.begin()->time);
@@ -470,6 +480,9 @@ TEST_F(DiscreteTraject0ryTest, ForgetAfter) {
   EXPECT_EQ(1, trajectory.segments().size());
   EXPECT_EQ(t0_, trajectory.begin()->time);
   EXPECT_EQ(t0_ + 4 * Second, trajectory.rbegin()->time);
+
+  trajectory.ForgetAfter(t0_ - 99 * Second);
+  EXPECT_TRUE(trajectory.empty());
 }
 
 TEST_F(DiscreteTraject0ryTest, ForgetBefore) {
@@ -518,6 +531,9 @@ TEST_F(DiscreteTraject0ryTest, ForgetBefore) {
                             t0_ + 10 * Second,
                             t0_ + 9 * Second));
   }
+
+  trajectory.ForgetBefore(t0_ + 99 * Second);
+  EXPECT_TRUE(trajectory.empty());
 }
 
 TEST_F(DiscreteTraject0ryTest, TMinTMaxEvaluate) {

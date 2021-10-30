@@ -92,6 +92,13 @@ std::int64_t DiscreteTrajectorySegment<Frame>::size() const {
 }
 
 template<typename Frame>
+void DiscreteTrajectorySegment<Frame>::clear() {
+  downsampling_parameters_.reset();
+  number_of_dense_points_ = 0;
+  timeline_.clear();
+}
+
+template<typename Frame>
 typename DiscreteTrajectorySegment<Frame>::iterator
 DiscreteTrajectorySegment<Frame>::find(Instant const& t) const {
   auto const it = timeline_.find(t);
