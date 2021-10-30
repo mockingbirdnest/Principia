@@ -223,7 +223,7 @@ class Vessel {
 
   // Runs the integrator to compute the |prognostication_| based on the given
   // parameters.
-  absl::StatusOr<std::unique_ptr<DiscreteTraject0ry<Barycentric>>>
+  absl::StatusOr<DiscreteTraject0ry<Barycentric>>
   FlowPrognostication(PrognosticatorParameters prognosticator_parameters);
 
   // Appends to |trajectory_| the centre of mass of the trajectories of the

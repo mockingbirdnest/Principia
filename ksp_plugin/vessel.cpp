@@ -335,7 +335,7 @@ absl::Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
 void Vessel::RefreshPrediction() {
   // The |prognostication| is a root trajectory which is computed asynchronously
   // and may be used as a prediction;
-  std::unique_ptr<DiscreteTraject0ry<Barycentric>> prognostication;
+  std::optional<DiscreteTraject0ry<Barycentric>> prognostication;
 
   // Note that we know that |RefreshPrediction| is called on the main thread,
   // therefore the ephemeris currently covers the last time of the
@@ -353,10 +353,10 @@ void Vessel::RefreshPrediction() {
   } else {
     prognosticator_.Put(std::move(prognosticator_parameters));
     prognosticator_.Start();
-    prognostication = prognosticator_.Get().value_or(nullptr);
+    prognostication = prognosticator_.Get();
   }
-  if (prognostication != nullptr) {
-    AttachPrediction(std::move(prognostication));
+  if (prognostication.has_value()) {
+    AttachPrediction(std::move(prognostication).value());
   }
 }
 
@@ -393,9 +393,10 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
   // hacky, but hopefully we can remove this hack once #2400 is solved.
   DiscreteTraject0ry<Barycentric>* empty_prediction =
       psychohistory_->NewForkAtLast();
-  history_->WriteToMessage(message->mutable_history(),
-                           /*forks=*/{psychohistory_, empty_prediction},
-                           /*exact=*/{});
+  trajectory_.WriteToMessage(
+      message->mutable_history(),
+      /*forks=*/{history_, psychohistory_, empty_prediction},
+      /*exact=*/{});
   psychohistory_->DeleteFork(empty_prediction);
   if (flight_plan_ != nullptr) {
     flight_plan_->WriteToMessage(message->mutable_flight_plan());
@@ -555,16 +556,16 @@ Vessel::Vessel()
       prediction_(trajectory_.segments().end()),
       prognosticator_(nullptr, 20ms) {}
 
-absl::StatusOr<std::unique_ptr<DiscreteTraject0ry<Barycentric>>>
+absl::StatusOr<DiscreteTraject0ry<Barycentric>>
 Vessel::FlowPrognostication(
     PrognosticatorParameters prognosticator_parameters) {
-  auto prognostication = std::make_unique<DiscreteTraject0ry<Barycentric>>();
-  prognostication->Append(
+  DiscreteTraject0ry<Barycentric> prognostication;
+  prognostication.Append(
       prognosticator_parameters.first_time,
       prognosticator_parameters.first_degrees_of_freedom);
   absl::Status status;
   status = ephemeris_->FlowWithAdaptiveStep(
-      prognostication.get(),
+      &prognostication,
       Ephemeris<Barycentric>::NoIntrinsicAcceleration,
       ephemeris_->t_max(),
       prognosticator_parameters.adaptive_step_parameters,
@@ -573,7 +574,7 @@ Vessel::FlowPrognostication(
   if (reached_t_max) {
     // This will prolong the ephemeris by |max_ephemeris_steps_per_frame|.
     status = ephemeris_->FlowWithAdaptiveStep(
-        prognostication.get(),
+        &prognostication,
         Ephemeris<Barycentric>::NoIntrinsicAcceleration,
         InfiniteFuture,
         prognosticator_parameters.adaptive_step_parameters,
@@ -581,7 +582,7 @@ Vessel::FlowPrognostication(
   }
   LOG_IF_EVERY_N(INFO, !status.ok(), 50)
       << "Prognostication from " << prognosticator_parameters.first_time
-      << " finished at " << prognostication->back().time << " with "
+      << " finished at " << prognostication.back().time << " with "
       << status.ToString() << " for " << ShortDebugString();
   if (absl::IsCancelled(status)) {
     return status;
