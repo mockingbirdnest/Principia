@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ksp_plugin/frames.hpp"
-#include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_trajectory_segment.hpp"
 #include "physics/ephemeris.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -10,14 +10,14 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_integrators {
 
-using physics::DiscreteTrajectory;
+using physics::DiscreteTrajectorySegment;
 using physics::Ephemeris;
 using quantities::Length;
 using quantities::si::Metre;
 using quantities::si::Milli;
 
 // Parameters for downsampling after fixed-step integration.
-DiscreteTrajectory<Barycentric>::DownsamplingParameters
+DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters
 DefaultDownsamplingParameters();
 
 // Factories for parameters used to control integration.
