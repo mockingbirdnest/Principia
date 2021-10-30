@@ -443,5 +443,17 @@ TEST_F(DiscreteTrajectorySegmentTest, SerializationRoundTrip) {
   EXPECT_THAT(message2, EqualsProto(message1));
 }
 
+TEST_F(DiscreteTrajectorySegmentTest, SerializationEmpty) {
+  DiscreteTrajectorySegment<World> segment;
+  serialization::DiscreteTrajectorySegment message;
+  segment.WriteToMessage(&message, /*exact=*/{});
+  auto const deserialized_segments = MakeSegments(1);
+  auto& deserialized_segment = *deserialized_segments->begin();
+  deserialized_segment = DiscreteTrajectorySegment<World>::ReadFromMessage(
+      message,
+      /*self=*/MakeIterator(deserialized_segments.get(),
+                            deserialized_segments->begin()));
+}
+
 }  // namespace physics
 }  // namespace principia
