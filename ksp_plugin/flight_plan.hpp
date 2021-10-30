@@ -207,7 +207,8 @@ class FlightPlan {
   DegreesOfFreedom<Barycentric> initial_degrees_of_freedom_;
   Instant desired_final_time_;
 
-  //TODO(phl):Comment
+  // The trajectory of the part, composed of any number of segments,
+  // alternatively coasts and burns.
   DiscreteTraject0ry<Barycentric> trajectory_;
 
   // Never empty; Starts and ends with a coast; coasts and burns alternate.
