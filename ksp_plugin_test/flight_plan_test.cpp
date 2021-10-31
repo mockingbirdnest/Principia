@@ -5,6 +5,8 @@
 #include <vector>
 
 #include "astronomy/epoch.hpp"
+#include "base/not_null.hpp"
+#include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
@@ -13,9 +15,12 @@
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_traject0ry.hpp"
+#include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/rotating_body.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 #include "serialization/ksp_plugin.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
@@ -25,13 +30,14 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_flight_plan {
 
 using astronomy::J2000;
+using base::not_null;
 using base::make_not_null_shared;
 using base::make_not_null_unique;
 using geometry::Barycentre;
 using geometry::Displacement;
+using geometry::Instant;
 using geometry::Position;
 using geometry::Velocity;
 using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
@@ -42,13 +48,17 @@ using integrators::methods::Fine1987RKNG34;
 using integrators::methods::QuinlanTremaine1990Order12;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
+using physics::DiscreteTraject0ry;
+using physics::Ephemeris;
 using physics::Frenet;
 using physics::MassiveBody;
 using physics::RotatingBody;
 using quantities::Force;
+using quantities::Length;
+using quantities::Mass;
 using quantities::Pow;
 using quantities::SpecificImpulse;
+using quantities::Speed;
 using quantities::Sqrt;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
@@ -185,7 +195,7 @@ class FlightPlanTest : public testing::Test {
   Instant const t0_;
   std::unique_ptr<TestNavigationFrame> navigation_frame_;
   std::unique_ptr<Ephemeris<Barycentric>> ephemeris_;
-  DiscreteTrajectory<Barycentric> root_;
+  DiscreteTraject0ry<Barycentric> root_;
   std::unique_ptr<FlightPlan> flight_plan_;
 };
 
@@ -232,10 +242,10 @@ TEST_F(FlightPlanTest, Singular) {
           /*max_steps=*/1,
           /*length_integration_tolerance=*/1 * Metre,
           /*speed_integration_tolerance=*/1 * Metre / Second));
-  DiscreteTrajectory<Barycentric>::Iterator begin;
-  DiscreteTrajectory<Barycentric>::Iterator end;
+  DiscreteTraject0ry<Barycentric>::iterator begin;
+  DiscreteTraject0ry<Barycentric>::iterator end;
   flight_plan_->GetSegment(0, begin, end);
-  DiscreteTrajectory<Barycentric>::Iterator back = end;
+  DiscreteTraject0ry<Barycentric>::iterator back = end;
   --back;
   EXPECT_THAT(AbsoluteError(singularity, back->time), Lt(1e-4 * Second));
   // Attempting to put a burn past the singularity fails.
@@ -370,8 +380,8 @@ TEST_F(FlightPlanTest, Segments) {
   EXPECT_EQ(5, flight_plan_->number_of_segments());
 
   std::vector<Instant> times;
-  DiscreteTrajectory<Barycentric>::Iterator begin;
-  DiscreteTrajectory<Barycentric>::Iterator end;
+  DiscreteTraject0ry<Barycentric>::iterator begin;
+  DiscreteTraject0ry<Barycentric>::iterator end;
 
   int last_times_size = times.size();
   Instant last_t = t0_ - 2 * π * Second;
@@ -389,8 +399,8 @@ TEST_F(FlightPlanTest, Segments) {
 }
 
 TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
-  DiscreteTrajectory<Barycentric>::Iterator begin;
-  DiscreteTrajectory<Barycentric>::Iterator end;
+  DiscreteTraject0ry<Barycentric>::iterator begin;
+  DiscreteTraject0ry<Barycentric>::iterator end;
   flight_plan_->SetDesiredFinalTime(t0_ + 42 * Second);
   EXPECT_OK(flight_plan_->Insert(MakeFirstBurn(), 0));
   EXPECT_OK(flight_plan_->Insert(MakeSecondBurn(), 1));
@@ -461,9 +471,9 @@ TEST_F(FlightPlanTest, GuidedBurn) {
   auto unguided_burn = MakeFirstBurn();
   unguided_burn.thrust /= 10;
   EXPECT_OK(flight_plan_->Insert(std::move(unguided_burn), 0));
-  DiscreteTrajectory<Barycentric>::Iterator begin;
-  DiscreteTrajectory<Barycentric>::Iterator end;
-  DiscreteTrajectory<Barycentric>::Iterator last;
+  DiscreteTraject0ry<Barycentric>::iterator begin;
+  DiscreteTraject0ry<Barycentric>::iterator end;
+  DiscreteTraject0ry<Barycentric>::iterator last;
   flight_plan_->GetAllSegments(begin, end);
   last = --end;
   Speed const unguided_final_speed =
@@ -600,6 +610,5 @@ TEST_F(FlightPlanTest, Insertion) {
   EXPECT_THAT(inserted_out_of_order, EqualsProto(inserted_in_order));
 }
 
-}  // namespace internal_flight_plan
 }  // namespace ksp_plugin
 }  // namespace principia
