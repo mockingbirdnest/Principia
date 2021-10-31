@@ -112,10 +112,18 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
   DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
       Instant const& t) const override;
 
+  //TODO(phl):comment
   void WriteToMessage(
       not_null<serialization::DiscreteTrajectory*> message,
       std::vector<SegmentIterator> const& tracked,
       std::vector<iterator> const& exact) const;
+  void WriteToMessage(
+      not_null<serialization::DiscreteTrajectory*> message,
+      iterator begin,
+      iterator end,
+      std::vector<SegmentIterator> const& tracked,
+      std::vector<iterator> const& exact) const;
+
   template<typename F = Frame,
            typename = std::enable_if_t<base::is_serializable_v<F>>>
   static DiscreteTraject0ry ReadFromMessage(

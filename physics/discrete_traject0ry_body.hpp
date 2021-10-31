@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_cat.h"
 #include "astronomy/epoch.hpp"
 #include "base/status_utilities.hpp"
@@ -14,6 +15,7 @@ namespace principia {
 namespace physics {
 namespace internal_discrete_traject0ry {
 
+using astronomy::InfiniteFuture;
 using astronomy::InfinitePast;
 using base::make_not_null_unique;
 using base::uninitialized;
@@ -438,6 +440,100 @@ void DiscreteTraject0ry<Frame>::WriteToMessage(
         message->add_segment_by_left_endpoint();
     t.WriteToMessage(segment_by_left_endpoint->mutable_left_endpoint());
     segment_by_left_endpoint->set_segment(i);
+  }
+}
+
+template<typename Frame>
+void DiscreteTraject0ry<Frame>::WriteToMessage(
+    not_null<serialization::DiscreteTrajectory*> message,
+    iterator const begin,
+    iterator const end,
+    std::vector<SegmentIterator> const& tracked,
+    std::vector<iterator> const& exact) const {
+  // Construct a map to efficiently find if a segment must be tracked.  The
+  // keys are pointers to segments in |tracked|, the values are the
+  // corresponding indices.
+  absl::flat_hash_map<DiscreteTrajectorySegment<Frame> const*, int>
+      segment_to_position;
+  for (int i = 0; i < tracked.size(); ++i) {
+    if (tracked[i] != segments().end()) {
+      segment_to_position.emplace(&*tracked[i], i);
+    }
+  }
+
+  // Initialize the tracked positions to be able to recognize if some are
+  // missing.
+  message->mutable_tracked_position()->Resize(
+      tracked.size(),
+      serialization::DiscreteTrajectory::MISSING_TRACKED_POSITION);
+
+  // Convert to instants the iterators that define the range to write.  This is
+  // necessary to do lookups in each segment to obtain segment-specific
+  // iterators.
+  Instant const begin_time = begin == end() ? InfiniteFuture : begin->time;
+  Instant const end_time = end == end() ? InfiniteFuture : end->time;
+
+  // The set of segments that intersect the range to write.
+  absl::flat_hash_set<
+      DiscreteTrajectorySegment<Frame> const*> intersecting_segments;
+  bool intersect_range = false;
+
+  // The position of a segment in the repeated field |segment|.
+  int segment_position = 0;
+  for (auto sit = segments_->begin();
+       sit != segments_->end();
+       ++sit, ++segment_position) {
+    // Look up in |*sit| the instants that define the range to write.  |find|
+    // returns the past-the-end-of-segment iterator if the instant is not found.
+    auto const begin_time_it = sit->find(begin_time);
+    auto const end_time_it = sit->find(end_time);
+
+    // If the |begin_time| is in |*sit|, this is the first segment to intersect
+    // the range to write.
+    if (begin_time_it != sit->end()) {
+      CHECK(!intersect_range);
+      intersect_range = true;
+    }
+
+    if (intersect_range) {
+      intersecting_segments.insert(&*sit);
+    }
+    sit->WriteToMessage(
+        message->add_segment(), begin_time_it, end_time_it, exact);
+
+    if (auto const position_it = segment_to_position.find(&*sit);
+        position_it != segment_to_position.end()) {
+      // The field |tracked_position| is indexed by the indices in |tracked|.
+      // Its value is the position of a tracked segment in the field |segment|.
+      message->set_tracked_position(position_it->second, segment_position);
+    }
+
+    // If the |end_time| is in |*sit|, this is the last segment to intersect the
+    // range to write.  Skip all the remaining segments.
+    if (end_time_it != sit->end()) {
+      CHECK(intersect_range);
+      break;
+    }
+  }
+
+  // Write the left endpoints by scanning them in parallel with the segments.
+  int i = 0;
+  auto sit1 = segments_->begin();
+  for (auto const& [t, sit2] : segment_by_left_endpoint_) {
+    while (sit1 != sit2) {
+      ++sit1;
+      ++i;
+    }
+    // Skip the segments that don't intersect the range to write, as we pretend
+    // that they are empty.  Adjust the left endpoint to account for the segment
+    // that may have been truncated on the left.
+    if (intersecting_segments.contains(&*sit2)) {
+      auto* const segment_by_left_endpoint =
+          message->add_segment_by_left_endpoint();
+      Instant const left_endpoint = std::max(t, begin_time);
+      t.WriteToMessage(segment_by_left_endpoint->mutable_left_endpoint());
+      segment_by_left_endpoint->set_segment(i);
+    }
   }
 }
 

@@ -116,6 +116,13 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   void WriteToMessage(
       not_null<serialization::DiscreteTrajectorySegment*> message,
       std::vector<iterator> const& exact) const;
+  //TODO(phl):comment
+  void WriteToMessage(
+      not_null<serialization::DiscreteTrajectorySegment*> message,
+      iterator begin,
+      iterator end,
+      std::vector<iterator> const& exact) const;
+
   template<typename F = Frame,
            typename = std::enable_if_t<base::is_serializable_v<F>>>
   static DiscreteTrajectorySegment ReadFromMessage(
