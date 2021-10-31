@@ -204,7 +204,8 @@ void Part::AppendToPsychohistory(
 }
 
 void Part::ClearHistory() {
-  trajectory_ = DiscreteTraject0ry<Barycentric>();
+  trajectory_.clear();
+  psychohistory_ = trajectory_.segments().end();
 }
 
 void Part::set_containing_pile_up(
