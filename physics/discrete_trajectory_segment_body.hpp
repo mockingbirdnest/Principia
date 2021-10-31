@@ -304,16 +304,24 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
     iterator const end,
     std::vector<iterator> const& exact) const {
   typename Timeline::const_iterator const timeline_begin =
-      begin == end() ? timeline_.cend()
-                     : DiscreteTrajectoryIterator::iterator(begin.iterator_);
+      begin == this->end() ? timeline_.cend()
+                           : iterator::iterator(begin.point_);
   typename Timeline::const_iterator const timeline_end =
-      end == end() ? timeline_.cend()
-                   : DiscreteTrajectoryIterator::iterator(end.iterator_);
-  std::int32_t const timeline_size =
-      timeline_begin == timeline_.cbegin() && timeline_end == timeline_.cend()
-          ? timeline_.size()
-          : std::distance(timeline_begin, timeline_end);
-  WriteToMessage(message, timeline_begin, timeline_end, timeline_size, exact);
+      end == this->end() ? timeline_.cend()
+                         : iterator::iterator(end.point_);
+  bool const covers_entire_segment =
+      timeline_begin == timeline_.cbegin() && timeline_end == timeline_.cend();
+  std::int64_t const timeline_size =
+      covers_entire_segment ? timeline_.size()
+                            : std::distance(timeline_begin, timeline_end);
+  std::int64_t const number_of_points_to_skip_at_end =
+      covers_entire_segment ? 0 : std::distance(timeline_end, timeline_.end());
+  WriteToMessage(message,
+                 timeline_begin,
+                 timeline_end,
+                 timeline_size,
+                 number_of_points_to_skip_at_end,
+                 exact);
 }
 
 template<typename Frame>
@@ -571,7 +579,8 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
     not_null<serialization::DiscreteTrajectorySegment*> message,
     typename Timeline::const_iterator const timeline_begin,
     typename Timeline::const_iterator const timeline_end,
-    std::int32_t const timeline_size,
+    std::int64_t const timeline_size,
+    std::int64_t const number_of_points_to_skip_at_end,
     std::vector<iterator> const& exact) const {
   if (downsampling_parameters_.has_value()) {
     auto* const serialized_downsampling_parameters =
@@ -581,7 +590,8 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
     downsampling_parameters_->tolerance.WriteToMessage(
         serialized_downsampling_parameters->mutable_tolerance());
   }
-  message->set_number_of_dense_points(number_of_dense_points_);
+  message->set_number_of_dense_points(
+      std::max(0LL, number_of_dense_points_ - number_of_points_to_skip_at_end));
 
   // Convert the |exact| vector into a set, and add the extremities.  This
   // ensures that we don't have redundancies.  The set is sorted by time to

@@ -116,7 +116,8 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   void WriteToMessage(
       not_null<serialization::DiscreteTrajectorySegment*> message,
       std::vector<iterator> const& exact) const;
-  //TODO(phl):comment
+  // Same as above, but only the points defined by [begin, end[ are written.
+  // The iterators must have been obtained by operations on this segment.
   void WriteToMessage(
       not_null<serialization::DiscreteTrajectorySegment*> message,
       iterator begin,
@@ -174,12 +175,17 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   typename Timeline::const_iterator timeline_end() const;
   bool timeline_empty() const;
 
-  //TODO(phl):comment, pass the # of points dropped.
+  // Implementation of serialization.  The caller is expected to pass consistent
+  // parameters.  |timeline_begin| and |timeline_end| define the range to write.
+  // |timeline_size| is the distance from |timeline_begin| to |timeline_end|.
+  // |number_of_points_to_skip_at_end| is the distance between |timeline_end|
+  // and the true |end| of the timeline.
   void WriteToMessage(
       not_null<serialization::DiscreteTrajectorySegment*> message,
       typename Timeline::const_iterator timeline_begin,
       typename Timeline::const_iterator timeline_end,
-      std::int32_t timeline_size,
+      std::int64_t timeline_size,
+      std::int64_t number_of_points_to_skip_at_end,
       std::vector<iterator> const& exact) const;
 
   std::optional<DownsamplingParameters> downsampling_parameters_;
