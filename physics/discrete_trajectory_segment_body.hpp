@@ -298,6 +298,25 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
+void DiscreteTrajectorySegment<Frame>::WriteToMessage(
+    not_null<serialization::DiscreteTrajectorySegment*> message,
+    iterator const begin,
+    iterator const end,
+    std::vector<iterator> const& exact) const {
+  typename Timeline::const_iterator const timeline_begin =
+      begin == end() ? timeline_.cend()
+                     : DiscreteTrajectoryIterator::iterator(begin.iterator_);
+  typename Timeline::const_iterator const timeline_end =
+      end == end() ? timeline_.cend()
+                   : DiscreteTrajectoryIterator::iterator(end.iterator_);
+  std::int32_t const timeline_size =
+      timeline_begin == timeline_.cbegin() && timeline_end == timeline_.cend()
+          ? timeline_.size()
+          : std::distance(timeline_begin, timeline_end);
+  WriteToMessage(message, timeline_begin, timeline_end, timeline_size, exact);
+}
+
+template<typename Frame>
 template<typename F, typename>
 DiscreteTrajectorySegment<Frame>
 DiscreteTrajectorySegment<Frame>::ReadFromMessage(
@@ -545,6 +564,112 @@ DiscreteTrajectorySegment<Frame>::timeline_end() const {
 template<typename Frame>
 bool DiscreteTrajectorySegment<Frame>::timeline_empty() const {
   return timeline_.empty();
+}
+
+template<typename Frame>
+void DiscreteTrajectorySegment<Frame>::WriteToMessage(
+    not_null<serialization::DiscreteTrajectorySegment*> message,
+    typename Timeline::const_iterator const timeline_begin,
+    typename Timeline::const_iterator const timeline_end,
+    std::int32_t const timeline_size,
+    std::vector<iterator> const& exact) const {
+  if (downsampling_parameters_.has_value()) {
+    auto* const serialized_downsampling_parameters =
+        message->mutable_downsampling_parameters();
+    serialized_downsampling_parameters->set_max_dense_intervals(
+        downsampling_parameters_->max_dense_intervals);
+    downsampling_parameters_->tolerance.WriteToMessage(
+        serialized_downsampling_parameters->mutable_tolerance());
+  }
+  message->set_number_of_dense_points(number_of_dense_points_);
+
+  // Convert the |exact| vector into a set, and add the extremities.  This
+  // ensures that we don't have redundancies.  The set is sorted by time to
+  // guarantee that serialization is reproducible.
+  auto time_comparator = [](value_type const* const left,
+                            value_type const* const right) {
+    return left->time < right->time;
+  };
+  absl::btree_set<value_type const*,
+                  decltype(time_comparator)> exact_set(time_comparator);
+  for (auto const it : exact) {
+    exact_set.insert(&*it);
+  }
+  if (timeline_size > 0) {
+    exact_set.insert(&*timeline_begin);
+    exact_set.insert(&*std::prev(timeline_end));
+  }
+
+  // Serialize the exact points.
+  for (auto const* ptr : exact_set) {
+    auto const& [t, degrees_of_freedom] = *ptr;
+    auto* const serialized_exact = message->add_exact();
+    t.WriteToMessage(serialized_exact->mutable_instant());
+    degrees_of_freedom.WriteToMessage(
+        serialized_exact->mutable_degrees_of_freedom());
+  }
+
+  auto* const zfp = message->mutable_zfp();
+  zfp->set_timeline_size(timeline_size);
+
+  // The timeline data is made dimensionless and stored in separate arrays per
+  // coordinate.  We expect strong correlations within a coordinate over time,
+  // but not between coordinates.
+  std::vector<double> t;
+  std::vector<double> qx;
+  std::vector<double> qy;
+  std::vector<double> qz;
+  std::vector<double> px;
+  std::vector<double> py;
+  std::vector<double> pz;
+  t.reserve(timeline_size);
+  qx.reserve(timeline_size);
+  qy.reserve(timeline_size);
+  qz.reserve(timeline_size);
+  px.reserve(timeline_size);
+  py.reserve(timeline_size);
+  pz.reserve(timeline_size);
+  std::optional<Instant> previous_instant;
+  Time max_Δt;
+  std::string* const zfp_timeline = zfp->mutable_timeline();
+  for (auto it = timeline_begin; it != timeline_end; ++it) {
+    auto const& [instant, degrees_of_freedom] = *it;
+    auto const q = degrees_of_freedom.position() - Frame::origin;
+    auto const p = degrees_of_freedom.velocity();
+    t.push_back((instant - Instant{}) / Second);
+    qx.push_back(q.coordinates().x / Metre);
+    qy.push_back(q.coordinates().y / Metre);
+    qz.push_back(q.coordinates().z / Metre);
+    px.push_back(p.coordinates().x / (Metre / Second));
+    py.push_back(p.coordinates().y / (Metre / Second));
+    pz.push_back(p.coordinates().z / (Metre / Second));
+    if (previous_instant.has_value()) {
+      max_Δt = std::max(max_Δt, instant - *previous_instant);
+    }
+    previous_instant = instant;
+  }
+
+  // Times are exact.
+  ZfpCompressor time_compressor(0);
+  // Lengths are approximated to the downsampling tolerance if downsampling is
+  // enabled, otherwise they are exact.
+  Length const length_tolerance = downsampling_parameters_.has_value()
+                                      ? downsampling_parameters_->tolerance
+                                      : Length();
+  ZfpCompressor length_compressor(length_tolerance / Metre);
+  // Speeds are approximated based on the length tolerance and the maximum
+  // step in the timeline.
+  ZfpCompressor const speed_compressor((length_tolerance / max_Δt) /
+                                        (Metre / Second));
+
+  ZfpCompressor::WriteVersion(message);
+  time_compressor.WriteToMessageMultidimensional<2>(t, zfp_timeline);
+  length_compressor.WriteToMessageMultidimensional<2>(qx, zfp_timeline);
+  length_compressor.WriteToMessageMultidimensional<2>(qy, zfp_timeline);
+  length_compressor.WriteToMessageMultidimensional<2>(qz, zfp_timeline);
+  speed_compressor.WriteToMessageMultidimensional<2>(px, zfp_timeline);
+  speed_compressor.WriteToMessageMultidimensional<2>(py, zfp_timeline);
+  speed_compressor.WriteToMessageMultidimensional<2>(pz, zfp_timeline);
 }
 
 }  // namespace internal_discrete_trajectory_segment

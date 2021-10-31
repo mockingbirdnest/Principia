@@ -174,6 +174,14 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   typename Timeline::const_iterator timeline_end() const;
   bool timeline_empty() const;
 
+  //TODO(phl):comment, pass the # of points dropped.
+  void WriteToMessage(
+      not_null<serialization::DiscreteTrajectorySegment*> message,
+      typename Timeline::const_iterator timeline_begin,
+      typename Timeline::const_iterator timeline_end,
+      std::int32_t timeline_size,
+      std::vector<iterator> const& exact) const;
+
   std::optional<DownsamplingParameters> downsampling_parameters_;
 
   // The number of points at the end of the segment that are part of a "dense"
