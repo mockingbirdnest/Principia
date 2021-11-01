@@ -399,51 +399,7 @@ void DiscreteTraject0ry<Frame>::WriteToMessage(
     not_null<serialization::DiscreteTrajectory*> message,
     std::vector<SegmentIterator> const& tracked,
     std::vector<iterator> const& exact) const {
-  // Construct a map to efficiently find if a segment must be tracked.  The
-  // keys are pointers to segments in |tracked|, the values are the
-  // corresponding indices.
-  absl::flat_hash_map<DiscreteTrajectorySegment<Frame> const*, int>
-      segment_to_position;
-  for (int i = 0; i < tracked.size(); ++i) {
-    if (tracked[i] != segments().end()) {
-      segment_to_position.emplace(&*tracked[i], i);
-    }
-  }
-
-  // Initialize the tracked positions to be able to recognize if some are
-  // missing.
-  message->mutable_tracked_position()->Resize(
-      tracked.size(),
-      serialization::DiscreteTrajectory::MISSING_TRACKED_POSITION);
-
-  // The position of a segment in the repeated field |segment|.
-  int segment_position = 0;
-  for (auto sit = segments_->begin();
-       sit != segments_->end();
-       ++sit, ++segment_position) {
-    sit->WriteToMessage(message->add_segment(), exact);
-
-    if (auto const position_it = segment_to_position.find(&*sit);
-        position_it != segment_to_position.end()) {
-      // The field |tracked_position| is indexed by the indices in |tracked|.
-      // Its value is the position of a tracked segment in the field |segment|.
-      message->set_tracked_position(position_it->second, segment_position);
-    }
-  }
-
-  // Write the left endpoints by scanning them in parallel with the segments.
-  int i = 0;
-  auto sit1 = segments_->begin();
-  for (auto const& [t, sit2] : segment_by_left_endpoint_) {
-    while (sit1 != sit2) {
-      ++sit1;
-      ++i;
-    }
-    auto* const segment_by_left_endpoint =
-        message->add_segment_by_left_endpoint();
-    t.WriteToMessage(segment_by_left_endpoint->mutable_left_endpoint());
-    segment_by_left_endpoint->set_segment(i);
-  }
+  WriteToMessage(message, begin(), end(), tracked, exact);
 }
 
 template<typename Frame>
