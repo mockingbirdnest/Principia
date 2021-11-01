@@ -470,8 +470,10 @@ void DiscreteTraject0ry<Frame>::WriteToMessage(
   // Convert to instants the iterators that define the range to write.  This is
   // necessary to do lookups in each segment to obtain segment-specific
   // iterators.
-  Instant const begin_time = begin == end() ? InfiniteFuture : begin->time;
-  Instant const end_time = end == end() ? InfiniteFuture : end->time;
+  Instant const begin_time = begin == this->end() ? InfiniteFuture
+                                                  : begin->time;
+  Instant const end_time = end == this->end() ? InfiniteFuture
+                                              : end->time;
 
   // The set of segments that intersect the range to write.
   absl::flat_hash_set<
