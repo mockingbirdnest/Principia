@@ -2,6 +2,7 @@
 
 #include "physics/discrete_traject0ry.hpp"
 
+#include <algorithm>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
