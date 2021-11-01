@@ -487,19 +487,16 @@ void DiscreteTraject0ry<Frame>::WriteToMessage(
        ++sit, ++segment_position) {
     // Look up in |*sit| the instants that define the range to write.  |find|
     // returns the past-the-end-of-segment iterator if the instant is not found.
-    auto const begin_time_it = sit->find(begin_time);
-    auto const end_time_it = sit->find(end_time);
+    //TODO(phl):comment
+    auto const begin_time_it = sit->lower_bound(begin_time);
+    auto const end_time_it = sit->upper_bound(end_time);
 
-    // If the |begin_time| is in |*sit|, this is the first segment to intersect
-    // the range to write.
-    if (begin_time_it != sit->end()) {
-      CHECK(!intersect_range);
-      intersect_range = true;
-    }
-
+    // If |begin_time| is in |*sit|, that segment intersects the range to write.
+    intersect_range = begit_time_it != sit->end();
     if (intersect_range) {
       intersecting_segments.insert(&*sit);
     }
+
     sit->WriteToMessage(
         message->add_segment(), begin_time_it, end_time_it, exact);
 
@@ -510,10 +507,10 @@ void DiscreteTraject0ry<Frame>::WriteToMessage(
       message->set_tracked_position(position_it->second, segment_position);
     }
 
-    // If the |end_time| is in |*sit|, this is the last segment to intersect the
+    // If |end_time| is in |*sit|, this is the last segment to intersect the
     // range to write.  Skip all the remaining segments.
-    if (end_time_it != sit->end()) {
-      CHECK(intersect_range);
+    //TODO(phl):correct?
+    if (intersect_range && end_time_it != sit->end()) {
       break;
     }
   }

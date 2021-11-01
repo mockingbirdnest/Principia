@@ -194,6 +194,7 @@ void DiscreteTrajectorySegment<Frame>::ClearDownsampling() {
   downsampling_parameters_ = std::nullopt;
 }
 
+//TODO(phl): Rewrite.
 template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::WriteToMessage(
     not_null<serialization::DiscreteTrajectorySegment*> message,
