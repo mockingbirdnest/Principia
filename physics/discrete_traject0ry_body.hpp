@@ -305,11 +305,14 @@ void DiscreteTraject0ry<Frame>::ForgetBefore(Instant const& t) {
   auto const sit = leit->second;
   // This call may make the segment |*sit| empty if |t| is after the end of
   // |*sit|.
+  // NOTE(phl): This declaration is necessary because MSVC corrupts |t| during
+  // the call below.
+  Instant const t_saved = t;
   sit->ForgetBefore(t);
   for (auto s = segments_->begin(); s != sit; ++s) {
     // This call may either make the segment |*s| empty or leave it with a
     // single point matching |sit->front()|.
-    s->ForgetBefore(t);
+    s->ForgetBefore(t_saved);
   }
 
   // Erase all the entries before and including |leit|.  These are entries for
@@ -485,18 +488,30 @@ void DiscreteTraject0ry<Frame>::WriteToMessage(
   for (auto sit = segments_->begin();
        sit != segments_->end();
        ++sit, ++segment_position) {
-    // Look up in |*sit| the instants that define the range to write.  |find|
-    // returns the past-the-end-of-segment iterator if the instant is not found.
-    //TODO(phl):comment
+    // Look up in |*sit| the instants that define the range to write.
+    // |lower_bound| and |upper_bound| return the past-the-end-of-segment
+    // iterator if no point exists after the given time, i.e., for the segments
+    // that precede the intersection.
     auto const begin_time_it = sit->lower_bound(begin_time);
-    auto const end_time_it = sit->upper_bound(end_time);
+    auto const end_time_it = sit->lower_bound(end_time);
 
-    // If |begin_time| is in |*sit|, that segment intersects the range to write.
-    intersect_range = begit_time_it != sit->end();
+    // If the above iterators determine an empty range, and we have already seen
+    // a segment that intersects the range to write, we are past the
+    // intersection.  Skip all the remaining segments.
+    if (intersect_range && begin_time_it == end_time_it) {
+      break;
+    }
+
+    // If |*sit| contains a point at or after |begin_time|, that segment
+    // intersects the range to write.
+    intersect_range = begin_time_it != sit->end();
+
     if (intersect_range) {
       intersecting_segments.insert(&*sit);
     }
 
+    // Note that we execute this call for the segments that precede the
+    // intersection in order to write the correct structure of (empty) segments.
     sit->WriteToMessage(
         message->add_segment(), begin_time_it, end_time_it, exact);
 
@@ -505,13 +520,6 @@ void DiscreteTraject0ry<Frame>::WriteToMessage(
       // The field |tracked_position| is indexed by the indices in |tracked|.
       // Its value is the position of a tracked segment in the field |segment|.
       message->set_tracked_position(position_it->second, segment_position);
-    }
-
-    // If |end_time| is in |*sit|, this is the last segment to intersect the
-    // range to write.  Skip all the remaining segments.
-    //TODO(phl):correct?
-    if (intersect_range && end_time_it != sit->end()) {
-      break;
     }
   }
 
@@ -530,7 +538,8 @@ void DiscreteTraject0ry<Frame>::WriteToMessage(
       auto* const segment_by_left_endpoint =
           message->add_segment_by_left_endpoint();
       Instant const left_endpoint = std::max(t, begin_time);
-      t.WriteToMessage(segment_by_left_endpoint->mutable_left_endpoint());
+      left_endpoint.WriteToMessage(
+          segment_by_left_endpoint->mutable_left_endpoint());
       segment_by_left_endpoint->set_segment(i);
     }
   }

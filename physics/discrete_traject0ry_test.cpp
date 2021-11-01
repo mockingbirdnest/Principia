@@ -687,8 +687,8 @@ TEST_F(DiscreteTraject0ryTest, SerializationRange) {
       /*exact=*/{});
 
   serialization::DiscreteTrajectory message2;
-  trajectory2.ForgetBefore(trajectory1.upper_bound(t0_ + 6 * Second));
-  trajectory2.ForgetAfter(trajectory1.upper_bound(t0_ + 12 * Second));
+  trajectory2.ForgetBefore(trajectory2.upper_bound(t0_ + 6 * Second));
+  trajectory2.ForgetAfter(trajectory2.upper_bound(t0_ + 12 * Second));
   trajectory2.WriteToMessage(&message2,
                              /*tracked=*/{},
                              /*exact=*/{});
