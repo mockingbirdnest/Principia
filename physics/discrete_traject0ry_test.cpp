@@ -693,6 +693,8 @@ TEST_F(DiscreteTraject0ryTest, SerializationRange) {
                              /*tracked=*/{},
                              /*exact=*/{});
 
+  // Writing a range of the trajectory is equivalent to forgetting and writing
+  // the result.
   EXPECT_THAT(message1, EqualsProto(message2));
 }
 

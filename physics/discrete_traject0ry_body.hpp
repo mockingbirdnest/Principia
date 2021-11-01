@@ -458,10 +458,9 @@ void DiscreteTraject0ry<Frame>::WriteToMessage(
       break;
     }
 
-    // If |*sit| contains a point at or after |begin_time|, that segment
-    // intersects the range to write.
+    // If |*sit| contains a point at or after |begin_time|, it intersects the
+    // range to write.
     intersect_range = begin_time_it != sit->end();
-
     if (intersect_range) {
       intersecting_segments.insert(&*sit);
     }
