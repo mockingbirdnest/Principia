@@ -674,6 +674,30 @@ TEST_F(DiscreteTraject0ryTest, SerializationExactEndpoints) {
                                 IsNear(0.36_⑴ * Metre / Second)));
 }
 
+TEST_F(DiscreteTraject0ryTest, SerializationRange) {
+  auto const trajectory1 = MakeTrajectory();
+  auto trajectory2 = MakeTrajectory();
+
+  serialization::DiscreteTrajectory message1;
+  trajectory1.WriteToMessage(
+      &message1,
+      /*begin=*/trajectory1.upper_bound(t0_ + 6 * Second),
+      /*end=*/trajectory1.upper_bound(t0_ + 12 * Second),
+      /*tracked=*/{},
+      /*exact=*/{});
+
+  serialization::DiscreteTrajectory message2;
+  trajectory2.ForgetBefore(trajectory2.upper_bound(t0_ + 6 * Second));
+  trajectory2.ForgetAfter(trajectory2.upper_bound(t0_ + 12 * Second));
+  trajectory2.WriteToMessage(&message2,
+                             /*tracked=*/{},
+                             /*exact=*/{});
+
+  // Writing a range of the trajectory is equivalent to forgetting and writing
+  // the result.
+  EXPECT_THAT(message1, EqualsProto(message2));
+}
+
 TEST_F(DiscreteTraject0ryTest, DISABLED_SerializationPreΖήνωνCompatibility) {
   StringLogSink log_warning(google::WARNING);
   auto const serialized_message = ReadFromBinaryFile(
