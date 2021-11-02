@@ -87,6 +87,13 @@ template<typename Frame>
 void AppendTrajectoryTimeline(Timeline<Frame> const& from,
                               DiscreteTraject0ry<Frame>& to);
 
+template<typename Frame>
+void AppendTrajectoryTimeline(
+    Timeline<Frame> const& from,
+    std::function<void(
+        Instant const& time,
+        DegreesOfFreedom<Frame> const& degrees_of_freedom)> const& append_to);
+
 }  // namespace internal_discrete_trajectory_factories
 
 using internal_discrete_trajectory_factories::AppendTrajectoryTimeline;
