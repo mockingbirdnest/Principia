@@ -391,13 +391,13 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
   // Starting with Gateaux we don't save the prediction, see #2685.  Instead we
   // save an empty prediction that we re-read as a prediction.  This is a bit
   // hacky, but hopefully we can remove this hack once #2400 is solved.
-  DiscreteTraject0ry<Barycentric>* empty_prediction =
-      psychohistory_->NewForkAtLast();
+  //TODO(phl):comment
   trajectory_.WriteToMessage(
       message->mutable_history(),
-      /*forks=*/{history_, psychohistory_, empty_prediction},
+      /*begin=*/trajectory_.begin(),
+      /*end=*/std::next(prediction_->begin()),
+      /*forks=*/{history_, psychohistory_, prediction_},
       /*exact=*/{});
-  psychohistory_->DeleteFork(empty_prediction);
   if (flight_plan_ != nullptr) {
     flight_plan_->WriteToMessage(message->mutable_flight_plan());
   }
@@ -411,10 +411,13 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   bool const is_pre_cesàro = message.has_psychohistory_is_authoritative();
   bool const is_pre_chasles = message.has_prediction();
   bool const is_pre_陈景润 = !message.history().has_downsampling();
-  LOG_IF(WARNING, is_pre_陈景润)
-      << "Reading pre-" << (is_pre_cesàro    ? u8"Cesàro"
-                            : is_pre_chasles ? "Chasles"
-                                             : u8"陈景润") << " Vessel";
+  bool const is_pre_ζήνων = message.history().segment_size() == 0;
+  LOG_IF(WARNING, is_pre_ζήνων)
+      << "Reading pre-"
+      << (is_pre_cesàro    ? u8"Cesàro"
+          : is_pre_chasles ? "Chasles"
+          : is_pre_陈景润   ? u8"陈景润"
+                           : u8"Ζήνων") << " Vessel";
 
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
   // information.
@@ -446,32 +449,41 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
                                                          /*forks=*/{});
     // The |history_| has been created by the constructor above.  Reconstruct
     // it from the |psychohistory|.
-    for (auto it = psychohistory->begin(); it != psychohistory->end();) {
+    for (auto it = psychohistory.begin(); it != psychohistory.end();) {
       auto const& [time, degrees_of_freedom] = *it;
       ++it;
-      if (it == psychohistory->end() &&
+      if (it == psychohistory.end() &&
           !message.psychohistory_is_authoritative()) {
-        vessel->psychohistory_ = vessel->history_->NewForkAtLast();
-        vessel->psychohistory_->Append(time, degrees_of_freedom);
-      } else {
-        vessel->history_->Append(time, degrees_of_freedom);
+        vessel->psychohistory_ = vessel->trajectory_.NewSegment();
       }
+      vessel->trajectory_.Append(time, degrees_of_freedom);
     }
     if (message.psychohistory_is_authoritative()) {
-      vessel->psychohistory_ = vessel->history_->NewForkAtLast();
+      vessel->psychohistory_ = vessel->trajectory_.NewSegment();
     }
-    vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
+    vessel->prediction_ = vessel->trajectory_.NewSegment();
   } else if (is_pre_chasles) {
-    vessel->history_ = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
+    vessel->trajectory_ = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
         message.history(),
         /*forks=*/{&vessel->psychohistory_});
-    vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
-  } else {
-    vessel->history_ = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
+    vessel->history_ = vessel->trajectory_.segments().begin();
+    vessel->prediction_ = vessel->trajectory_.NewSegment();
+  } else if (is_pre_ζήνων) {
+    vessel->trajectory_ = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
         message.history(),
         /*forks=*/{&vessel->psychohistory_, &vessel->prediction_});
+    vessel->history_ = vessel->trajectory_.segments().begin();
     // Necessary after Εὔδοξος because the ephemeris has not been prolonged
     // during deserialization.  Doesn't hurt prior to Εὔδοξος.
+    ephemeris->Prolong(vessel->prediction_->back().time);
+  } else {
+    vessel->trajectory_ = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
+        message.history(),
+        /*forks=*/{&vessel->history_,
+                   &vessel->psychohistory_,
+                   &vessel->prediction_});
+    // Necessary after Εὔδοξος because the ephemeris has not been prolonged
+    // during deserialization.
     ephemeris->Prolong(vessel->prediction_->back().time);
   }
 
