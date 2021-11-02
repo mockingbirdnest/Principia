@@ -362,7 +362,7 @@ void Vessel::RefreshPrediction() {
 
 void Vessel::RefreshPrediction(Instant const& time) {
   RefreshPrediction();
-  trajectory_.ForgetAfter(time);
+  trajectory_.ForgetAfter(trajectory_.upper_bound(time));
 }
 
 void Vessel::StopPrognosticator() {
