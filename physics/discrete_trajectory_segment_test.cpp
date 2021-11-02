@@ -83,6 +83,11 @@ class DiscreteTrajectorySegmentTest : public ::testing::Test {
     segment_->ForgetBefore(t);
   }
 
+  void ForgetBefore(Instant const& t,
+                    DiscreteTrajectorySegment<World>& segment) {
+    segment.ForgetBefore(t);
+  }
+
   static DiscreteTrajectorySegmentIterator<World> MakeIterator(
       not_null<Segments*> const segments,
       typename Segments::iterator iterator) {
@@ -453,6 +458,44 @@ TEST_F(DiscreteTrajectorySegmentTest, SerializationEmpty) {
       message,
       /*self=*/MakeIterator(deserialized_segments.get(),
                             deserialized_segments->begin()));
+}
+
+TEST_F(DiscreteTrajectorySegmentTest, SerializationRange) {
+  auto const circle1_segments = MakeSegments(1);
+  auto const circle2_segments = MakeSegments(1);
+  auto& circle1 = *circle1_segments->begin();
+  auto& circle2 = *circle2_segments->begin();
+  circle1.SetDownsampling(
+      {.max_dense_intervals = 50, .tolerance = 1 * Milli(Metre)});
+  circle2.SetDownsampling(
+      {.max_dense_intervals = 50, .tolerance = 1 * Milli(Metre)});
+  AngularFrequency const ω = 3 * Radian / Second;
+  Length const r = 2 * Metre;
+  Time const Δt = 10 * Milli(Second);
+  Instant const t1 = t0_;
+  Instant const t2 = t0_ + 5 * Second;
+  AppendTrajectoryTimeline(
+      NewCircularTrajectoryTimeline<World>(ω, r, Δt, t1, t2),
+      /*to=*/circle1);
+  AppendTrajectoryTimeline(
+      NewCircularTrajectoryTimeline<World>(ω, r, Δt, t1, t2),
+      /*to=*/circle2);
+
+  serialization::DiscreteTrajectorySegment message1;
+  circle1.WriteToMessage(&message1,
+                         /*begin=*/circle1.upper_bound(t0_ + 1 * Second),
+                         /*end=*/circle1.upper_bound(t0_ + 3 * Second),
+                         /*exact=*/{});
+
+  serialization::DiscreteTrajectorySegment message2;
+  ForgetBefore(circle2.upper_bound(t0_ + 1 * Second)->time, circle2);
+  ForgetAfter(circle2.upper_bound(t0_ + 3 * Second)->time, circle2);
+  circle2.WriteToMessage(&message2,
+                         /*exact=*/{});
+
+  // Writing a range of the segment is equivalent to forgetting and writing the
+  // result.
+  EXPECT_THAT(message1, EqualsProto(message2));
 }
 
 }  // namespace physics
