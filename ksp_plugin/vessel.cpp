@@ -200,6 +200,10 @@ void Vessel::ForAllParts(std::function<void(Part&)> action) const {
   }
 }
 
+DiscreteTrajectorySegmentIterator<Barycentric> Vessel::history() const {
+  return history_;
+}
+
 DiscreteTrajectorySegmentIterator<Barycentric> Vessel::psychohistory() const {
   return psychohistory_;
 }

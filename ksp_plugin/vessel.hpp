@@ -125,6 +125,7 @@ class Vessel {
   // Calls |action| on all parts.
   virtual void ForAllParts(std::function<void(Part&)> action) const;
 
+  virtual DiscreteTrajectorySegmentIterator<Barycentric> history() const;
   virtual DiscreteTrajectorySegmentIterator<Barycentric> psychohistory() const;
   virtual DiscreteTrajectorySegmentIterator<Barycentric> prediction() const;
 

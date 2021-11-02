@@ -201,6 +201,7 @@ TEST_F(VesselTest, AdvanceTime) {
   AppendTrajectoryTimeline<Barycentric>(
       NewLinearTrajectoryTimeline<Barycentric>(p1_dof_,
                                                /*Δt=*/0.5 * Second,
+                                               /*t0=*/t0_,
                                                /*t1=*/t0_ + 0.5 * Second,
                                                /*t2=*/t0_ + 1.5 * Second),
       [this](Instant const& time,
@@ -210,6 +211,7 @@ TEST_F(VesselTest, AdvanceTime) {
   AppendTrajectoryTimeline<Barycentric>(
       NewLinearTrajectoryTimeline<Barycentric>(p2_dof_,
                                                /*Δt=*/0.5 * Second,
+                                               /*t0=*/t0_,
                                                /*t1=*/t0_ + 0.5 * Second,
                                                /*t2=*/t0_ + 1.5 * Second),
       [this](Instant const& time,
@@ -226,8 +228,8 @@ TEST_F(VesselTest, AdvanceTime) {
       /*t1=*/t0_,
       /*t2=*/t0_ + 1.1 * Second);
 
-  EXPECT_EQ(3, vessel_.psychohistory()->size());
-  auto it1 = vessel_.psychohistory()->begin();
+  EXPECT_EQ(3, vessel_.history()->size() + vessel_.psychohistory()->size() - 1);
+  auto it1 = vessel_.history()->begin();
   auto it2 = expected_vessel_psychohistory.begin();
   for (;
        it1 != vessel_.psychohistory()->end() &&
