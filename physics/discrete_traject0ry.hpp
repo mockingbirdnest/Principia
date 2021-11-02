@@ -112,10 +112,22 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
   DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
       Instant const& t) const override;
 
+  // The segments in |tracked| are restored at deserialization.  The points
+  // denoted by |exact| are written and re-read exactly and are not affected by
+  // any errors introduced by zfp compression.  The endpoints of each segment
+  // are always exact.
   void WriteToMessage(
       not_null<serialization::DiscreteTrajectory*> message,
       std::vector<SegmentIterator> const& tracked,
       std::vector<iterator> const& exact) const;
+  // Same as above, but only the points defined by [begin, end[ are written.
+  void WriteToMessage(
+      not_null<serialization::DiscreteTrajectory*> message,
+      iterator begin,
+      iterator end,
+      std::vector<SegmentIterator> const& tracked,
+      std::vector<iterator> const& exact) const;
+
   template<typename F = Frame,
            typename = std::enable_if_t<base::is_serializable_v<F>>>
   static DiscreteTraject0ry ReadFromMessage(
