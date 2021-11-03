@@ -162,12 +162,16 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithTargetVessel) {
   DiscreteTraject0ry<Barycentric> vessel_trajectory;
   AppendTrajectoryTimeline(
       NewLinearTrajectoryTimeline(
-          /*v=*/Velocity<Barycentric>(
-              {1 * Metre / Second, 2 * Metre / Second, 3 * Metre / Second}),
+          DegreesOfFreedom<Barycentric>(
+              Barycentric::origin,
+              Velocity<Barycentric>({1 * Metre / Second,
+                                     2 * Metre / Second,
+                                     3 * Metre / Second})),
           /*Δt=*/1 * Second,
+          /*t0=*/t0_,
           /*t1=*/t0_ + 3 * Second,
           /*t2=*/t0_ + 8 * Second),
-      vessel_trajectory);
+      /*to=*/vessel_trajectory);
   EXPECT_CALL(vessel, prediction())
       .WillRepeatedly(Return(vessel_trajectory.segments().begin()));
 
@@ -208,7 +212,7 @@ TEST_F(RendererTest, RenderPlottingTrajectoryInWorldWithoutTargetVessel) {
           /*Δt=*/1 * Second,
           /*t1=*/t0_,
           /*t2=*/t0_ + 10 * Second),
-      trajectory_to_render);
+      /*to=*/trajectory_to_render);
 
   Instant const rendering_time = t0_ + 5 * Second;
   Position<World> const sun_world_position =
