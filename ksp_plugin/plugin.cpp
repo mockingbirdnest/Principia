@@ -165,7 +165,7 @@ void Plugin::InsertCelestialJacobiKeplerian(
 }
 
 void Plugin::InitializeDownsamplingParameters(
-    DiscreteTrajectory<Barycentric>::DownsamplingParameters const&
+    DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters const&
         downsampling_parameters) {
   CHECK(initializing_);
   history_downsampling_parameters_ = downsampling_parameters;
@@ -789,7 +789,7 @@ void Plugin::CatchUpLaggingVessels(VesselSet& collided_vessels) {
 
   // Update the vessels.
   for (auto const& [_, vessel] : vessels_) {
-    if (vessel->psychohistory().back().time < current_time_) {
+    if (vessel->psychohistory()->back().time < current_time_) {
       if (Contains(collided_vessels, vessel.get())) {
         vessel->DisableDownsampling();
       }
@@ -856,7 +856,7 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
     vessel->set_parent(parent);
   }
   RelativeDegreesOfFreedom<Barycentric> const barycentric_result =
-      vessel->psychohistory().back().degrees_of_freedom -
+      vessel->psychohistory()->back().degrees_of_freedom -
       vessel->parent()->current_degrees_of_freedom(current_time_);
   RelativeDegreesOfFreedom<AliceSun> const result =
       PlanetariumRotation()(barycentric_result);
@@ -902,14 +902,14 @@ void Plugin::UpdatePrediction(std::vector<GUID> const& vessel_guids) const {
   }
   Vessel* target_vessel = nullptr;
 
-  // If there is a target vessel, ensure that the prediction of the |vessels| is
-  // not longer than that of the target vessel.  This is necessary to build the
-  // targeting frame.
+  // If there is a target vessel, ensure that the prediction of the
+  // |predicted_vessels| is not longer than that of the target vessel.  This is
+  // necessary to build the targeting frame.
   if (renderer_->HasTargetVessel()) {
     target_vessel = &renderer_->GetTargetVessel();
     target_vessel->RefreshPrediction();
     for (auto const vessel : predicted_vessels) {
-      vessel->RefreshPrediction(target_vessel->prediction().back().time);
+      vessel->RefreshPrediction(target_vessel->prediction()->back().time);
     }
   } else {
     for (auto const vessel : predicted_vessels) {
@@ -939,15 +939,17 @@ void Plugin::CreateFlightPlan(GUID const& vessel_guid,
 
 void Plugin::ComputeAndRenderApsides(
     Index const celestial_index,
-    DiscreteTrajectory<Barycentric>::Iterator const& begin,
-    DiscreteTrajectory<Barycentric>::Iterator const& end,
+    DiscreteTraject0ry<Barycentric> const& trajectory,
+    DiscreteTraject0ry<Barycentric>::iterator const& begin,
+    DiscreteTraject0ry<Barycentric>::iterator const& end,
     Position<World> const& sun_world_position,
     int const max_points,
-    std::unique_ptr<DiscreteTrajectory<World>>& apoapsides,
-    std::unique_ptr<DiscreteTrajectory<World>>& periapsides) const {
-  DiscreteTrajectory<Barycentric> apoapsides_trajectory;
-  DiscreteTrajectory<Barycentric> periapsides_trajectory;
+    DiscreteTraject0ry<World>& apoapsides,
+    DiscreteTraject0ry<World>& periapsides) const {
+  DiscreteTraject0ry<Barycentric> apoapsides_trajectory;
+  DiscreteTraject0ry<Barycentric> periapsides_trajectory;
   ComputeApsides(FindOrDie(celestials_, celestial_index)->trajectory(),
+                 trajectory,
                  begin,
                  end,
                  max_points,
@@ -968,16 +970,18 @@ void Plugin::ComputeAndRenderApsides(
 }
 
 void Plugin::ComputeAndRenderClosestApproaches(
-    DiscreteTrajectory<Barycentric>::Iterator const& begin,
-    DiscreteTrajectory<Barycentric>::Iterator const& end,
+    DiscreteTraject0ry<Barycentric> const& trajectory,
+    DiscreteTraject0ry<Barycentric>::iterator const& begin,
+    DiscreteTraject0ry<Barycentric>::iterator const& end,
     Position<World> const& sun_world_position,
     int const max_points,
-    std::unique_ptr<DiscreteTrajectory<World>>& closest_approaches) const {
+    DiscreteTraject0ry<World>& closest_approaches) const {
   CHECK(renderer_->HasTargetVessel());
 
-  DiscreteTrajectory<Barycentric> apoapsides_trajectory;
-  DiscreteTrajectory<Barycentric> periapsides_trajectory;
+  DiscreteTraject0ry<Barycentric> apoapsides_trajectory;
+  DiscreteTraject0ry<Barycentric> periapsides_trajectory;
   ComputeApsides(renderer_->GetTargetVessel().prediction(),
+                 trajectory,
                  begin,
                  end,
                  max_points,
@@ -993,12 +997,12 @@ void Plugin::ComputeAndRenderClosestApproaches(
 }
 
 void Plugin::ComputeAndRenderNodes(
-    DiscreteTrajectory<Barycentric>::Iterator const& begin,
-    DiscreteTrajectory<Barycentric>::Iterator const& end,
+    DiscreteTraject0ry<Barycentric>::iterator const& begin,
+    DiscreteTraject0ry<Barycentric>::iterator const& end,
     Position<World> const& sun_world_position,
     int const max_points,
-    std::unique_ptr<DiscreteTrajectory<World>>& ascending,
-    std::unique_ptr<DiscreteTrajectory<World>>& descending) const {
+    DiscreteTraject0ry<World>& ascending,
+    DiscreteTraject0ry<World>& descending) const {
   auto const trajectory_in_plotting =
       renderer_->RenderBarycentricTrajectoryInPlotting(begin, end);
 
@@ -1019,11 +1023,12 @@ void Plugin::ComputeAndRenderNodes(
     return (dof.position() - Navigation::origin).Norm() < threshold;
   };
 
-  DiscreteTrajectory<Navigation> ascending_trajectory;
-  DiscreteTrajectory<Navigation> descending_trajectory;
+  DiscreteTraject0ry<Navigation> ascending_trajectory;
+  DiscreteTraject0ry<Navigation> descending_trajectory;
   // The so-called North is orthogonal to the plane of the trajectory.
-  ComputeNodes(trajectory_in_plotting->begin(),
-               trajectory_in_plotting->end(),
+  ComputeNodes(trajectory_in_plotting,
+               trajectory_in_plotting.begin(),
+               trajectory_in_plotting.end(),
                Vector<double, Navigation>({0, 0, 1}),
                max_points,
                ascending_trajectory,
@@ -1269,7 +1274,7 @@ Velocity<World> Plugin::UnmanageableVesselVelocity(
 
 Velocity<World> Plugin::VesselVelocity(GUID const& vessel_guid) const {
   Vessel const& vessel = *FindOrDie(vessels_, vessel_guid);
-  auto const back = vessel.psychohistory().back();
+  auto const back = vessel.psychohistory()->back();
   return VesselVelocity(back.time, back.degrees_of_freedom);
 }
 

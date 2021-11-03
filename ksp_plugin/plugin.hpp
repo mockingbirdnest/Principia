@@ -29,7 +29,8 @@
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/body.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory_segment.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/frame_field.hpp"
@@ -67,7 +68,8 @@ using integrators::FixedStepSizeIntegrator;
 using integrators::AdaptiveStepSizeIntegrator;
 using physics::Body;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
+using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectorySegment;
 using physics::DynamicFrame;
 using physics::Ephemeris;
 using physics::FrameField;
@@ -127,7 +129,7 @@ class Plugin {
       serialization::InitialState::Keplerian::Body const& initial_state);
 
   virtual void InitializeDownsamplingParameters(
-      DiscreteTrajectory<Barycentric>::DownsamplingParameters const&
+      DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters const&
           downsampling_parameters);
   virtual void InitializeEphemerisParameters(
       Ephemeris<Barycentric>::AccuracyParameters const& accuracy_parameters,
@@ -345,31 +347,33 @@ class Plugin {
   // respect to the celestial with index |celestial_index|.
   virtual void ComputeAndRenderApsides(
       Index celestial_index,
-      DiscreteTrajectory<Barycentric>::Iterator const& begin,
-      DiscreteTrajectory<Barycentric>::Iterator const& end,
+      DiscreteTraject0ry<Barycentric> const& trajectory,
+      DiscreteTraject0ry<Barycentric>::iterator const& begin,
+      DiscreteTraject0ry<Barycentric>::iterator const& end,
       Position<World> const& sun_world_position,
       int max_points,
-      std::unique_ptr<DiscreteTrajectory<World>>& apoapsides,
-      std::unique_ptr<DiscreteTrajectory<World>>& periapsides) const;
+      DiscreteTraject0ry<World>& apoapsides,
+      DiscreteTraject0ry<World>& periapsides) const;
 
   // Computes the closest approaches of the trajectory defined by |begin| and
   // |end| with respect to the trajectory of the targetted vessel.
   virtual void ComputeAndRenderClosestApproaches(
-      DiscreteTrajectory<Barycentric>::Iterator const& begin,
-      DiscreteTrajectory<Barycentric>::Iterator const& end,
+      DiscreteTraject0ry<Barycentric> const& trajectory,
+      DiscreteTraject0ry<Barycentric>::iterator const& begin,
+      DiscreteTraject0ry<Barycentric>::iterator const& end,
       Position<World> const& sun_world_position,
       int max_points,
-      std::unique_ptr<DiscreteTrajectory<World>>& closest_approaches) const;
+      DiscreteTraject0ry<World>& closest_approaches) const;
 
   // Computes the nodes of the trajectory defined by |begin| and |end| with
   // respect to plane of the trajectory of the targetted vessel.
   virtual void ComputeAndRenderNodes(
-      DiscreteTrajectory<Barycentric>::Iterator const& begin,
-      DiscreteTrajectory<Barycentric>::Iterator const& end,
+      DiscreteTraject0ry<Barycentric>::iterator const& begin,
+      DiscreteTraject0ry<Barycentric>::iterator const& end,
       Position<World> const& sun_world_position,
       int max_points,
-      std::unique_ptr<DiscreteTrajectory<World>>& ascending,
-      std::unique_ptr<DiscreteTrajectory<World>>& descending) const;
+      DiscreteTraject0ry<World>& ascending,
+      DiscreteTraject0ry<World>& descending) const;
 
   virtual bool HasCelestial(Index index) const;
   virtual Celestial const& GetCelestial(Index index) const;
@@ -515,7 +519,7 @@ class Plugin {
   std::unique_ptr<Ephemeris<Barycentric>> ephemeris_;
 
   // The parameters for computing the various trajectories.
-  DiscreteTrajectory<Barycentric>::DownsamplingParameters
+  DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters
       history_downsampling_parameters_;
   Ephemeris<Barycentric>::FixedStepParameters history_fixed_step_parameters_;
   Ephemeris<Barycentric>::AdaptiveStepParameters psychohistory_parameters_;
