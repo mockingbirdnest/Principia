@@ -337,8 +337,8 @@ absl::Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
 }
 
 void Vessel::RefreshPrediction() {
-  // The |prognostication| is a root trajectory which is computed asynchronously
-  // and may be used as a prediction;
+  // The |prognostication| is a trajectory which is computed asynchronously and
+  // may be used as a prediction;
   std::optional<DiscreteTraject0ry<Barycentric>> prognostication;
 
   // Note that we know that |RefreshPrediction| is called on the main thread,
