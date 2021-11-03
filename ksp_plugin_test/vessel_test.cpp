@@ -14,7 +14,10 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/celestial.hpp"
+#include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/integrators.hpp"
+#include "physics/degrees_of_freedom.hpp"
+#include "physics/discrete_traject0ry.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/rotating_body.hpp"
@@ -24,24 +27,28 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
+#include "testing_utilities/discrete_trajectory_factories.hpp"
 #include "testing_utilities/matchers.hpp"
-#include "testing_utilities/trajectory_factories.hpp"
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_vessel {
 
+using base::not_null;
 using base::make_not_null_unique;
 using geometry::Barycentre;
 using geometry::Displacement;
 using geometry::InertiaTensor;
+using geometry::Instant;
 using geometry::Position;
 using geometry::R3x3Matrix;
 using geometry::Velocity;
+using physics::DegreesOfFreedom;
+using physics::DiscreteTraject0ry;
 using physics::MassiveBody;
 using physics::MockEphemeris;
 using physics::RigidMotion;
 using physics::RotatingBody;
+using quantities::Mass;
 using quantities::MomentOfInertia;
 using quantities::si::Degree;
 using quantities::si::Kilogram;
@@ -51,7 +58,8 @@ using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::EqualsProto;
-using testing_utilities::NewLinearTrajectory;
+using testing_utilities::AppendTrajectoryTimeline;
+using testing_utilities::NewLinearTrajectoryTimeline;
 using ::testing::AnyNumber;
 using ::testing::DoAll;
 using ::testing::ElementsAre;
@@ -99,13 +107,6 @@ class VesselTest : public testing::Test {
     p2_ = p2.get();
     vessel_.AddPart(std::move(p1));
     vessel_.AddPart(std::move(p2));
-  }
-
-  void AppendToPartHistory(DiscreteTrajectory<Barycentric> const& trajectory,
-                           Part& part) {
-    for (auto const& [time, degrees_of_freedom] : trajectory) {
-      part.AppendToHistory(time, degrees_of_freedom);
-    }
   }
 
   MockEphemeris<Barycentric> ephemeris_;
@@ -176,11 +177,11 @@ TEST_F(VesselTest, PrepareHistory) {
   auto const expected_dof = Barycentre<DegreesOfFreedom<Barycentric>, Mass>(
       {p1_dof_, p2_dof_}, {mass1_, mass2_});
 
-  EXPECT_EQ(1, vessel_.psychohistory().Size());
+  EXPECT_EQ(1, vessel_.psychohistory()->size());
   EXPECT_EQ(t0_ + 1 * Second,
-            vessel_.psychohistory().back().time);
+            vessel_.psychohistory()->back().time);
   EXPECT_THAT(
-      vessel_.psychohistory().back().degrees_of_freedom,
+      vessel_.psychohistory()->back().degrees_of_freedom,
       Componentwise(AlmostEquals(expected_dof.position(), 0),
                     AlmostEquals(expected_dof.velocity(), 8)));
 }
@@ -197,31 +198,42 @@ TEST_F(VesselTest, AdvanceTime) {
   vessel_.PrepareHistory(t0_,
                          DefaultDownsamplingParameters());
 
-  AppendToPartHistory(*NewLinearTrajectory(p1_dof_,
-                                           /*Δt=*/0.5 * Second,
-                                           /*t1=*/t0_ + 0.5 * Second,
-                                           /*t2=*/t0_ + 1.5 * Second),
-                      *p1_);
-  AppendToPartHistory(*NewLinearTrajectory(p2_dof_,
-                                           /*Δt=*/0.5 * Second,
-                                           /*t1=*/t0_ + 0.5 * Second,
-                                           /*t2=*/t0_ + 1.5 * Second),
-                      *p2_);
+  AppendTrajectoryTimeline<Barycentric>(
+      NewLinearTrajectoryTimeline<Barycentric>(p1_dof_,
+                                               /*Δt=*/0.5 * Second,
+                                               /*t0=*/t0_,
+                                               /*t1=*/t0_ + 0.5 * Second,
+                                               /*t2=*/t0_ + 1.5 * Second),
+      [this](Instant const& time,
+             DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+        p1_->AppendToHistory(time, degrees_of_freedom);
+      });
+  AppendTrajectoryTimeline<Barycentric>(
+      NewLinearTrajectoryTimeline<Barycentric>(p2_dof_,
+                                               /*Δt=*/0.5 * Second,
+                                               /*t0=*/t0_,
+                                               /*t1=*/t0_ + 0.5 * Second,
+                                               /*t2=*/t0_ + 1.5 * Second),
+      [this](Instant const& time,
+             DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+        p2_->AppendToHistory(time, degrees_of_freedom);
+      });
 
   vessel_.AdvanceTime();
 
-  auto const expected_vessel_psychohistory =
-      NewLinearTrajectory(Barycentre<DegreesOfFreedom<Barycentric>, Mass>(
-                              {p1_dof_, p2_dof_}, {mass1_, mass2_}),
-                          /*Δt=*/0.5 * Second,
-                          /*t1=*/t0_,
-                          /*t2=*/t0_ + 1.1 * Second);
+  auto const expected_vessel_psychohistory = NewLinearTrajectoryTimeline(
+      Barycentre<DegreesOfFreedom<Barycentric>, Mass>({p1_dof_, p2_dof_},
+                                                      {mass1_, mass2_}),
+      /*Δt=*/0.5 * Second,
+      /*t1=*/t0_,
+      /*t2=*/t0_ + 1.1 * Second);
 
-  EXPECT_EQ(3, vessel_.psychohistory().Size());
-  for (auto it1 = vessel_.psychohistory().begin(),
-            it2 = expected_vessel_psychohistory->begin();
-       it1 != vessel_.psychohistory().end() &&
-       it2 != expected_vessel_psychohistory->end();
+  EXPECT_EQ(3, vessel_.history()->size() + vessel_.psychohistory()->size() - 1);
+  auto it1 = vessel_.history()->begin();
+  auto it2 = expected_vessel_psychohistory.begin();
+  for (;
+       it1 != vessel_.psychohistory()->end() &&
+       it2 != expected_vessel_psychohistory.end();
        ++it1, ++it2) {
     EXPECT_EQ(it1->time, it2->time);
     EXPECT_THAT(
@@ -238,16 +250,16 @@ TEST_F(VesselTest, Prediction) {
       .WillRepeatedly(Return(t0_ + 2 * Second));
 
   // The call to fill the prognostication until t_max.
-  auto const expected_vessel_prediction =
-    NewLinearTrajectory(Barycentre<DegreesOfFreedom<Barycentric>, Mass>(
-                            {p1_dof_, p2_dof_}, {mass1_, mass2_}),
-                        /*Δt=*/0.5 * Second,
-                        /*t1=*/t0_,
-                        /*t2=*/t0_ + 2 * Second);
+  auto const expected_vessel_prediction = NewLinearTrajectoryTimeline(
+      Barycentre<DegreesOfFreedom<Barycentric>, Mass>({p1_dof_, p2_dof_},
+                                                      {mass1_, mass2_}),
+      /*Δt=*/0.5 * Second,
+      /*t1=*/t0_,
+      /*t2=*/t0_ + 2 * Second);
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 2 * Second, _, _))
       .WillOnce(DoAll(
-          AppendPointsToDiscreteTrajectory(expected_vessel_prediction.get()),
+          AppendPointsToDiscreteTrajectory(&expected_vessel_prediction),
           Return(absl::OkStatus())))
       .WillRepeatedly(Return(absl::OkStatus()));
 
@@ -265,13 +277,14 @@ TEST_F(VesselTest, Prediction) {
     vessel_.RefreshPrediction(t0_ + 1 * Second);
     using namespace std::chrono_literals;
     std::this_thread::sleep_for(100ms);
-  } while (vessel_.prediction().back().time == t0_);
+  } while (vessel_.prediction()->back().time == t0_);
 
-  EXPECT_EQ(3, vessel_.prediction().Size());
-  for (auto it1 = vessel_.prediction().begin(),
-            it2 = expected_vessel_prediction->begin();
-       it1 != vessel_.prediction().end() &&
-       it2 != expected_vessel_prediction->end();
+  EXPECT_EQ(3, vessel_.prediction()->size());
+  auto it1 = vessel_.prediction()->begin();
+  auto it2 = expected_vessel_prediction.begin();
+  for (;
+       it1 != vessel_.prediction()->end() &&
+       it2 != expected_vessel_prediction.end();
        ++it1, ++it2) {
     EXPECT_EQ(it1->time, it2->time);
     EXPECT_THAT(
@@ -288,7 +301,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
       .WillRepeatedly(Return(t0_ + 5 * Second));
 
   // The call to fill the prognostication until t_max.
-  auto const expected_vessel_prediction1 = NewLinearTrajectory(
+  auto const expected_vessel_prediction1 = NewLinearTrajectoryTimeline(
       Barycentre<DegreesOfFreedom<Barycentric>, Mass>({p1_dof_, p2_dof_},
                                                       {mass1_, mass2_}),
       /*Δt=*/0.5 * Second,
@@ -297,12 +310,12 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 5 * Second, _, _))
       .WillOnce(DoAll(
-          AppendPointsToDiscreteTrajectory(expected_vessel_prediction1.get()),
+          AppendPointsToDiscreteTrajectory(&expected_vessel_prediction1),
           Return(absl::OkStatus())))
       .WillRepeatedly(Return(absl::OkStatus()));
 
   // The call to extend the exphemeris by many points.
-  auto const expected_vessel_prediction2 = NewLinearTrajectory(
+  auto const expected_vessel_prediction2 = NewLinearTrajectoryTimeline(
       Barycentre<DegreesOfFreedom<Barycentric>, Mass>({p1_dof_, p2_dof_},
                                                       {mass1_, mass2_}),
       /*Δt=*/0.5 * Second,
@@ -311,7 +324,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
       .WillOnce(DoAll(
-          AppendPointsToDiscreteTrajectory(expected_vessel_prediction2.get()),
+          AppendPointsToDiscreteTrajectory(&expected_vessel_prediction2),
           Return(absl::OkStatus())))
       .WillRepeatedly(Return(absl::OkStatus()));
 
@@ -322,19 +335,19 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
     vessel_.RefreshPrediction();
     using namespace std::chrono_literals;
     std::this_thread::sleep_for(100ms);
-  } while (vessel_.prediction().Size() <
-           expected_vessel_prediction1->Size() +
-               expected_vessel_prediction2->Size());
+  } while (vessel_.prediction()->size() <
+           expected_vessel_prediction1.size() +
+               expected_vessel_prediction2.size());
 
-  auto it = expected_vessel_prediction1->begin();
-  for (auto const& [time, degrees_of_freedom] : vessel_.prediction()) {
+  auto it = expected_vessel_prediction1.begin();
+  for (auto const& [time, degrees_of_freedom] : *vessel_.prediction()) {
     EXPECT_EQ(time, it->time);
     EXPECT_THAT(
         degrees_of_freedom,
         Componentwise(AlmostEquals(it->degrees_of_freedom.position(), 0, 0),
                       AlmostEquals(it->degrees_of_freedom.velocity(), 0, 8)));
     if (it->time == t0_ + 5 * Second) {
-      it = expected_vessel_prediction2->begin();
+      it = expected_vessel_prediction2.begin();
     } else {
       ++it;
     }
@@ -416,6 +429,5 @@ TEST_F(VesselTest, SerializationSuccess) {
   EXPECT_THAT(message, EqualsProto(second_message));
 }
 
-}  // namespace internal_vessel
 }  // namespace ksp_plugin
 }  // namespace principia

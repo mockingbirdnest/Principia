@@ -120,6 +120,17 @@ void AppendTrajectoryTimeline(Timeline<Frame> const& from,
   }
 }
 
+template<typename Frame>
+void AppendTrajectoryTimeline(
+    Timeline<Frame> const& from,
+    std::function<void(
+        Instant const& time,
+        DegreesOfFreedom<Frame> const& degrees_of_freedom)> const& append_to) {
+  for (auto const& [t, degrees_of_freedom] : from) {
+    append_to(t, degrees_of_freedom);
+  }
+}
+
 }  // namespace internal_discrete_trajectory_factories
 }  // namespace testing_utilities
 }  // namespace principia
