@@ -46,6 +46,9 @@
 
 namespace principia {
 namespace ksp_plugin {
+
+class TestablePlugin;
+
 namespace internal_plugin {
 
 using base::not_null;
