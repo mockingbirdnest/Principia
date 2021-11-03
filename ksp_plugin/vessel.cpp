@@ -393,14 +393,12 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
     message->add_kept_parts(part_id);
   }
   // Starting with Gateaux we don't save the prediction, see #2685.  Instead we
-  // save an empty prediction that we re-read as a prediction.  This is a bit
-  // hacky, but hopefully we can remove this hack once #2400 is solved.
-  //TODO(phl):comment
+  // just save its first point and re-read as if it was the whole prediction.
   trajectory_.WriteToMessage(
       message->mutable_history(),
       /*begin=*/trajectory_.begin(),
       /*end=*/std::next(prediction_->begin()),
-      /*forks=*/{history_, psychohistory_, prediction_},
+      /*tracked=*/{history_, psychohistory_, prediction_},
       /*exact=*/{});
   if (flight_plan_ != nullptr) {
     flight_plan_->WriteToMessage(message->mutable_flight_plan());
@@ -469,13 +467,13 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   } else if (is_pre_chasles) {
     vessel->trajectory_ = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
         message.history(),
-        /*forks=*/{&vessel->psychohistory_});
+        /*tracked=*/{&vessel->psychohistory_});
     vessel->history_ = vessel->trajectory_.segments().begin();
     vessel->prediction_ = vessel->trajectory_.NewSegment();
   } else if (is_pre_ζήνων) {
     vessel->trajectory_ = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
         message.history(),
-        /*forks=*/{&vessel->psychohistory_, &vessel->prediction_});
+        /*tracked=*/{&vessel->psychohistory_, &vessel->prediction_});
     vessel->history_ = vessel->trajectory_.segments().begin();
     // Necessary after Εὔδοξος because the ephemeris has not been prolonged
     // during deserialization.  Doesn't hurt prior to Εὔδοξος.
@@ -483,9 +481,9 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   } else {
     vessel->trajectory_ = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
         message.history(),
-        /*forks=*/{&vessel->history_,
-                   &vessel->psychohistory_,
-                   &vessel->prediction_});
+        /*tracked=*/{&vessel->history_,
+                     &vessel->psychohistory_,
+                     &vessel->prediction_});
     // Necessary after Εὔδοξος because the ephemeris has not been prolonged
     // during deserialization.
     ephemeris->Prolong(vessel->prediction_->back().time);

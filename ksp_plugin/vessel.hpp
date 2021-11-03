@@ -252,14 +252,15 @@ class Vessel {
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
   std::set<PartId> kept_parts_;
 
-  //TODO(phl):comment
+  // The vessel trajectory is made of the history (always present) and (most of
+  // the time) the psychohistory and prediction.  The prediction is periodically
+  // recomputed by the prognosticator.
   DiscreteTraject0ry<Barycentric> trajectory_;
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
   DiscreteTrajectorySegmentIterator<Barycentric> history_;
   DiscreteTrajectorySegmentIterator<Barycentric> psychohistory_;
 
-  // The |prediction_| is forked off the end of the |psychohistory_|.
   DiscreteTrajectorySegmentIterator<Barycentric> prediction_;
 
   RecurringThread<PrognosticatorParameters,
