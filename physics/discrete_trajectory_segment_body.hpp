@@ -582,6 +582,8 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
   ZfpCompressor const speed_compressor((length_tolerance / max_Δt) /
                                         (Metre / Second));
 
+  LOG(ERROR)<<"L: "<<length_tolerance<<" S: "<<length_tolerance / max_Δt;
+
   ZfpCompressor::WriteVersion(message);
   time_compressor.WriteToMessageMultidimensional<2>(t, zfp_timeline);
   length_compressor.WriteToMessageMultidimensional<2>(qx, zfp_timeline);

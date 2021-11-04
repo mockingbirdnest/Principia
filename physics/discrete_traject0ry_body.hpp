@@ -442,6 +442,7 @@ void DiscreteTraject0ry<Frame>::WriteToMessage(
 
   // The position of a segment in the repeated field |segment|.
   int segment_position = 0;
+  LOG(ERROR)<<">DT";
   for (auto sit = segments_->begin();
        sit != segments_->end();
        ++sit, ++segment_position) {
@@ -468,8 +469,10 @@ void DiscreteTraject0ry<Frame>::WriteToMessage(
 
     // Note that we execute this call for the segments that precede the
     // intersection in order to write the correct structure of (empty) segments.
+    LOG(ERROR)<<">DTS";
     sit->WriteToMessage(
         message->add_segment(), begin_time_it, end_time_it, exact);
+    LOG(ERROR)<<"<DTS";
 
     if (auto const position_it = segment_to_position.find(&*sit);
         position_it != segment_to_position.end()) {
@@ -478,6 +481,7 @@ void DiscreteTraject0ry<Frame>::WriteToMessage(
       message->set_tracked_position(position_it->second, segment_position);
     }
   }
+  LOG(ERROR)<<"<DT";
 
   // Write the left endpoints by scanning them in parallel with the segments.
   int i = 0;
