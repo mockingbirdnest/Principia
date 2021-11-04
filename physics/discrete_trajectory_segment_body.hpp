@@ -555,7 +555,6 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
     auto const& [instant, degrees_of_freedom] = *it;
     auto const q = degrees_of_freedom.position() - Frame::origin;
     auto const p = degrees_of_freedom.velocity();
-    LOG(ERROR)<<instant<<" "<<q<<" "<<p;
     t.push_back((instant - Instant{}) / Second);
     qx.push_back(q.coordinates().x / Metre);
     qy.push_back(q.coordinates().y / Metre);
