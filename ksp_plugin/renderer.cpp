@@ -74,52 +74,52 @@ Vessel const& Renderer::GetTargetVessel() const {
   return *target_->vessel;
 }
 
-not_null<std::unique_ptr<DiscreteTrajectory<World>>>
+DiscreteTraject0ry<World>
 Renderer::RenderBarycentricTrajectoryInWorld(
     Instant const& time,
-    DiscreteTrajectory<Barycentric>::Iterator const& begin,
-    DiscreteTrajectory<Barycentric>::Iterator const& end,
+    DiscreteTraject0ry<Barycentric>::iterator const& begin,
+    DiscreteTraject0ry<Barycentric>::iterator const& end,
     Position<World> const& sun_world_position,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   auto const trajectory_in_plotting_frame =
       RenderBarycentricTrajectoryInPlotting(begin, end);
   auto trajectory_in_world =
       RenderPlottingTrajectoryInWorld(time,
-                                      trajectory_in_plotting_frame->begin(),
-                                      trajectory_in_plotting_frame->end(),
+                                      trajectory_in_plotting_frame.begin(),
+                                      trajectory_in_plotting_frame.end(),
                                       sun_world_position,
                                       planetarium_rotation);
   return trajectory_in_world;
 }
 
-not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
+DiscreteTraject0ry<Navigation>
 Renderer::RenderBarycentricTrajectoryInPlotting(
-    DiscreteTrajectory<Barycentric>::Iterator const& begin,
-    DiscreteTrajectory<Barycentric>::Iterator const& end) const {
-  auto trajectory = make_not_null_unique<DiscreteTrajectory<Navigation>>();
+    DiscreteTraject0ry<Barycentric>::iterator const& begin,
+    DiscreteTraject0ry<Barycentric>::iterator const& end) const {
+  DiscreteTraject0ry<Navigation> trajectory;
   for (auto it = begin; it != end; ++it) {
     auto const& [time, degrees_of_freedom] = *it;
     if (target_) {
-      auto const& prediction = target_->vessel->prediction();
-      if (time < prediction.t_min()) {
+      auto const prediction = target_->vessel->prediction();
+      if (time < prediction->t_min()) {
         continue;
-      } else if (time > prediction.t_max()) {
+      } else if (time > prediction->t_max()) {
         break;
       }
     }
-    trajectory->Append(time, BarycentricToPlotting(time)(degrees_of_freedom));
+    trajectory.Append(time, BarycentricToPlotting(time)(degrees_of_freedom));
   }
   return trajectory;
 }
 
-not_null<std::unique_ptr<DiscreteTrajectory<World>>>
+DiscreteTraject0ry<World>
 Renderer::RenderPlottingTrajectoryInWorld(
     Instant const& time,
-    DiscreteTrajectory<Navigation>::Iterator const& begin,
-    DiscreteTrajectory<Navigation>::Iterator const& end,
+    DiscreteTraject0ry<Navigation>::iterator const& begin,
+    DiscreteTraject0ry<Navigation>::iterator const& end,
     Position<World> const& sun_world_position,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  auto trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
+  DiscreteTraject0ry<World> trajectory;
 
   //   Dinanzi a me non fuor cose create
   //   se non etterne, e io etterno duro.
@@ -160,7 +160,7 @@ Renderer::RenderPlottingTrajectoryInWorld(
             geometry::Permutation<Navigation,
                                   World>::CoordinatePermutation::YXZ)(
             navigation_degrees_of_freedom.velocity())};
-    trajectory->Append(time, world_degrees_of_freedom);
+    trajectory.Append(time, world_degrees_of_freedom);
   }
   return trajectory;
 }
@@ -205,7 +205,7 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
 OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
     Vessel const& vessel,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  auto const back = vessel.psychohistory().back();
+  auto const back = vessel.psychohistory()->back();
   DegreesOfFreedom<Barycentric> const& barycentric_degrees_of_freedom =
       back.degrees_of_freedom;
   DegreesOfFreedom<Navigation> const plotting_frame_degrees_of_freedom =
@@ -224,7 +224,7 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
     Vessel const& vessel,
     NavigationFrame const& navigation_frame,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  auto const back = vessel.psychohistory().back();
+  auto const back = vessel.psychohistory()->back();
   auto const to_navigation = navigation_frame.ToThisFrameAtTime(back.time);
   auto const from_navigation = to_navigation.orthogonal_map().Inverse();
   auto const frenet_frame =
@@ -315,7 +315,7 @@ Renderer::Target::Target(
           make_not_null_unique<
               BodyCentredBodyDirectionDynamicFrame<Barycentric, Navigation>>(
               ephemeris,
-              [this]() -> auto& { return this->vessel->prediction(); },
+              [this]() -> auto& { return *this->vessel->prediction(); },
               celestial->body())) {}
 
 }  // namespace internal_renderer
