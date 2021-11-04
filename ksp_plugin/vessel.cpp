@@ -490,7 +490,8 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   }
 
   if (is_pre_陈景润) {
-    vessel->history_->SetDownsampling(DefaultDownsamplingParameters());
+    vessel->history_->SetDownsamplingUnconditionally(
+        DefaultDownsamplingParameters());
   }
 
   if (message.has_flight_plan()) {

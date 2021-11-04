@@ -38,6 +38,12 @@ DiscreteTrajectorySegment<Frame>::DiscreteTrajectorySegment(
     : self_(self) {}
 
 template<typename Frame>
+void DiscreteTrajectorySegment<Frame>::SetDownsamplingUnconditionally(
+    DownsamplingParameters const& downsampling_parameters) {
+  downsampling_parameters_ = downsampling_parameters;
+}
+
+template<typename Frame>
 typename DiscreteTrajectorySegment<Frame>::reference
 DiscreteTrajectorySegment<Frame>::front() const {
   return *begin();
@@ -369,12 +375,6 @@ void DiscreteTrajectorySegment<Frame>::ForgetBefore(
 }
 
 template<typename Frame>
-void DiscreteTrajectorySegment<Frame>::SetDownsamplingUnconditionally(
-    DownsamplingParameters const& downsampling_parameters) {
-  downsampling_parameters_ = downsampling_parameters;
-}
-
-template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::SetStartOfDenseTimeline(
     Instant const& t) {
   auto const it = find(t);
@@ -555,6 +555,7 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
     auto const& [instant, degrees_of_freedom] = *it;
     auto const q = degrees_of_freedom.position() - Frame::origin;
     auto const p = degrees_of_freedom.velocity();
+    LOG(ERROR)<<instant<<" "<<q<<" "<<p;
     t.push_back((instant - Instant{}) / Second);
     qx.push_back(q.coordinates().x / Metre);
     qy.push_back(q.coordinates().y / Metre);
