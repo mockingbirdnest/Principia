@@ -431,10 +431,7 @@ TEST_F(PluginTest, Serialization) {
 
   serialization::Plugin message;
   plugin->WriteToMessage(&message);
-  plugin = Plugin::ReadFromMessage(message);
-  serialization::Plugin second_message;
-  plugin->WriteToMessage(&second_message);
-  EXPECT_THAT(message, EqualsProto(second_message));
+
   EXPECT_EQ(SolarSystemFactory::LastMajorBody - SolarSystemFactory::Sun + 1,
             message.celestial_size());
 
@@ -459,6 +456,19 @@ TEST_F(PluginTest, Serialization) {
             message.renderer().plotting_frame().GetExtension(
                 serialization::BodyCentredNonRotatingDynamicFrame::extension).
                     centre());
+
+  plugin = Plugin::ReadFromMessage(message);
+  serialization::Plugin second_message;
+  plugin->WriteToMessage(&second_message);
+
+  // The zfp serialization is not idempotent because we exactly preserve the
+  // bounds of each segment.  Ignore it for the purposes of comparing the
+  // messages.
+  message.mutable_vessel(0)->mutable_vessel()
+      ->mutable_history()->mutable_segment(0)->clear_zfp();
+  second_message.mutable_vessel(0)->mutable_vessel()
+      ->mutable_history()->mutable_segment(0)->clear_zfp();
+  EXPECT_THAT(message, EqualsProto(second_message));
 }
 
 TEST_F(PluginTest, Initialization) {
