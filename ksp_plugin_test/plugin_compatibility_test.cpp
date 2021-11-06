@@ -18,7 +18,7 @@
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/interface.hpp"
 #include "ksp_plugin/plugin.hpp"
-#include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_traject0ry.hpp"
 #include "serialization/ksp_plugin.pb.h"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/serialization.hpp"
@@ -40,7 +40,7 @@ using base::PullSerializer;
 using base::PushDeserializer;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Plugin;
-using physics::DiscreteTrajectory;
+using physics::DiscreteTraject0ry;
 using quantities::Speed;
 using quantities::si::Kilo;
 using testing_utilities::operator""_⑴;
@@ -57,6 +57,7 @@ using ::testing::HasSubstr;
 using ::testing::Not;
 using ::testing::NotNull;
 using ::testing::Pair;
+using ::testing::SizeIs;
 using ::testing::internal::CaptureStderr;
 using ::testing::internal::GetCapturedStderr;
 
@@ -191,17 +192,17 @@ TEST_F(PluginCompatibilityTest, Reach) {
               AllOf(HasSubstr("pre-Galileo"), Not(HasSubstr("pre-Frobenius"))));
   auto const test = plugin->GetVessel("f2d77873-4776-4809-9dfb-de9e7a0620a6");
   EXPECT_THAT(test->name(), Eq("TEST"));
-  EXPECT_THAT(TTSecond(test->psychohistory().front().time),
+  EXPECT_THAT(TTSecond(test->history()->front().time),
               Eq("1970-08-14T08:03:18"_DateTime));
-  EXPECT_THAT(TTSecond(test->psychohistory().back().time),
+  EXPECT_THAT(TTSecond(test->psychohistory()->back().time),
               Eq("1970-08-14T08:47:05"_DateTime));
   EXPECT_FALSE(test->has_flight_plan());
 
   auto const ifnity = plugin->GetVessel("29142a79-7acd-47a9-a34d-f9f2a8e1b4ed");
   EXPECT_THAT(ifnity->name(), Eq("IFNITY-5.2"));
-  EXPECT_THAT(TTSecond(ifnity->psychohistory().front().time),
+  EXPECT_THAT(TTSecond(ifnity->history()->front().time),
               Eq("1970-08-14T08:03:46"_DateTime));
-  EXPECT_THAT(TTSecond(ifnity->psychohistory().back().time),
+  EXPECT_THAT(TTSecond(ifnity->psychohistory()->back().time),
               Eq("1970-08-14T08:47:05"_DateTime));
   ASSERT_TRUE(ifnity->has_flight_plan());
   EXPECT_THAT(ifnity->flight_plan().number_of_manœuvres(), Eq(16));
@@ -262,11 +263,11 @@ TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
       /*compressor=*/"gipfeli",
       /*decoder=*/"base64");
   EXPECT_THAT(log_warning.string(),
-              AllOf(HasSubstr("pre-Haar"), Not(HasSubstr("pre-Gröbner"))));
+              AllOf(HasSubstr("pre-Haar"), Not(HasSubstr(u8"pre-Gröbner"))));
   auto const& orbiter =
       *plugin->GetVessel("e180ca12-492f-45bf-a194-4c5255aec8a0");
   EXPECT_THAT(orbiter.name(), Eq("Mercury Orbiter 1"));
-  auto const begin = orbiter.psychohistory().begin();
+  auto const begin = orbiter.history()->begin();
   EXPECT_THAT(begin->time,
               Eq("1966-05-10T00:14:03"_TT + 0.0879862308502197 * Second));
   EXPECT_THAT(begin->degrees_of_freedom,
@@ -308,7 +309,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
                        -7.76112133789062500e+03 * (Metre / Second)}))));
 
   // We arrive in late August.  Check the state in the beginning of September.
-  auto const it = orbiter.psychohistory().LowerBound("1966-09-01T00:00:00"_TT);
+  auto const it = orbiter.trajectory().lower_bound("1966-09-01T00:00:00"_TT);
   EXPECT_THAT(it->time, Eq(MercuryOrbiterInitialTime));
   EXPECT_THAT(it->degrees_of_freedom,
               Eq(MercuryOrbiterInitialDegreesOfFreedom<Barycentric>));
@@ -326,19 +327,16 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
       R"(P:\Public Mockingbird\Principia\Saves\3136\3136.proto.b64)",
       /*compressor=*/"gipfeli",
       /*decoder=*/"base64");
-  // TODO(phl): Check that we mention a compatibility path here once something
-  // changes.
   EXPECT_THAT(log_warning.string(),
-              Not(HasSubstr("pre-Haar")));
+              AllOf(HasSubstr(u8"pre-Ζήνων"), Not(HasSubstr("pre-Haar"))));
 
   // The vessel with the longest history.
   auto const& vessel =
       *plugin->GetVessel("77ddea45-47ee-48c0-aee9-d55cdb35ffcd");
-  auto& psychohistory =
-      const_cast<DiscreteTrajectory<Barycentric>&>(vessel.psychohistory());
-  auto const history = psychohistory.root();
-  EXPECT_EQ(435'927, history->Size());
-  EXPECT_EQ(435'929, psychohistory.Size());
+  auto history = vessel.history();
+  auto psychohistory = vessel.psychohistory();
+  EXPECT_THAT(*history, SizeIs(435'927));
+  EXPECT_THAT(*psychohistory, SizeIs(3));
 
   // Evaluate a point in each of the two segments.
   EXPECT_THAT(history->EvaluateDegreesOfFreedom("1957-10-04T19:28:34"_TT),
@@ -351,7 +349,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
                       {-6.28845231836519179e+03 * (Metre / Second),
                        +2.34046542233168329e+04 * (Metre / Second),
                        +4.64410011408655919e+03 * (Metre / Second)}))));
-  EXPECT_THAT(psychohistory.EvaluateDegreesOfFreedom("1958-10-07T09:38:30"_TT),
+  EXPECT_THAT(psychohistory->EvaluateDegreesOfFreedom("1958-10-07T09:38:30"_TT),
               Eq(DegreesOfFreedom<Barycentric>(
                   Barycentric::origin + Displacement<Barycentric>(
                                             {+1.45814173315801941e+11 * Metre,
@@ -365,7 +363,8 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
   // Serialize the history and psychohistory to a temporary file.
   {
     serialization::DiscreteTrajectory message;
-    history->WriteToMessage(&message, /*forks=*/{&psychohistory}, /*exact=*/{});
+    vessel.trajectory().WriteToMessage(
+        &message, /*tracked=*/{history, psychohistory}, /*exact=*/{});
     auto const serialized_message = base::SerializeAsBytes(message);
     WriteToBinaryFile(TEMP_DIR / "trajectory_3136.proto.bin",
                       serialized_message.get());
@@ -377,11 +376,10 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
         ReadFromBinaryFile(TEMP_DIR / "trajectory_3136.proto.bin");
     auto const message =
         ParseFromBytes<serialization::DiscreteTrajectory>(serialized_message);
-    DiscreteTrajectory<Barycentric>* psychohistory = nullptr;
-    auto const history = DiscreteTrajectory<Barycentric>::ReadFromMessage(
-        message, /*forks=*/{&psychohistory});
-    EXPECT_EQ(435'927, history->Size());
-    EXPECT_EQ(435'929, psychohistory->Size());
+    auto const trajectory = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
+        message, /*tracked=*/{&history, &psychohistory});
+    EXPECT_THAT(*history, SizeIs(435'927));
+    EXPECT_THAT(*psychohistory, SizeIs(3));
   }
 
   // Make sure that we can upgrade, save, and reload.

@@ -511,7 +511,7 @@ DiscreteTraject0ry<Frame>::ReadFromMessage(
 
   bool const is_pre_ζήνων = message.segment_size() == 0;
   if (is_pre_ζήνων) {
-    LOG_IF(WARNING, is_pre_ζήνων) << "Reading pre-Ζήνων DiscreteTrajectory";
+    LOG_IF(WARNING, is_pre_ζήνων) << u8"Reading pre-Ζήνων DiscreteTrajectory";
     ReadFromPreΖήνωνMessage(
         message, tracked, /*fork_point=*/std::nullopt, trajectory);
     CHECK_OK(trajectory.ConsistencyStatus());
