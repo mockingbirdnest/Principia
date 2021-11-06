@@ -49,7 +49,8 @@
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/part.hpp"
-#include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory_segment.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
@@ -102,7 +103,8 @@ using ksp_plugin::TypedIterator;
 using ksp_plugin::VesselSet;
 using ksp_plugin::World;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
+using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectorySegment;
 using physics::FrameField;
 using physics::MassiveBody;
 using physics::OblateBody;
@@ -166,10 +168,10 @@ Ephemeris<Barycentric>::AdaptiveStepParameters MakeAdaptiveStepParameters(
       ParseQuantity<Speed>(parameters.speed_integration_tolerance));
 }
 
-DiscreteTrajectory<Barycentric>::DownsamplingParameters
+DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters
 MakeDownsamplingParameters(
     ConfigurationDownsamplingParameters const& parameters) {
-  return DiscreteTrajectory<Barycentric>::DownsamplingParameters{
+  return DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters{
       std::stoi(parameters.max_dense_intervals),
       ParseQuantity<Length>(parameters.tolerance)};
 }

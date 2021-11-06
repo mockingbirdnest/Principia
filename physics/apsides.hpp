@@ -20,7 +20,7 @@ using geometry::Vector;
 // one point for each apsis.
 template<typename Frame>
 void ComputeApsides(Trajectory<Frame> const& reference,
-                    DiscreteTraject0ry<Frame> const& trajectory,
+                    Trajectory<Frame> const& trajectory,
                     typename DiscreteTraject0ry<Frame>::iterator begin,
                     typename DiscreteTraject0ry<Frame>::iterator end,
                     int max_points,
@@ -33,7 +33,7 @@ void ComputeApsides(Trajectory<Frame> const& reference,
 // |north| side to |descending|.
 // Nodes for which |predicate| returns false are excluded.
 template<typename Frame, typename Predicate = ConstantFunction<bool>>
-absl::Status ComputeNodes(DiscreteTraject0ry<Frame> const& trajectory,
+absl::Status ComputeNodes(Trajectory<Frame> const& trajectory,
                           typename DiscreteTraject0ry<Frame>::iterator begin,
                           typename DiscreteTraject0ry<Frame>::iterator end,
                           Vector<double, Frame> const& north,

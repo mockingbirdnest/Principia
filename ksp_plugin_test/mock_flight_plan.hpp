@@ -52,11 +52,9 @@ class MockFlightPlan : public FlightPlan {
 
   MOCK_METHOD(int, number_of_segments, (), (const, override));
 
-  MOCK_METHOD(void,
+  MOCK_METHOD(DiscreteTrajectorySegmentIterator<Barycentric>,
               GetSegment,
-              (int index,
-               DiscreteTrajectory<Barycentric>::Iterator& begin,
-               DiscreteTrajectory<Barycentric>::Iterator& end),
+              (int index),
               (const, override));
 };
 

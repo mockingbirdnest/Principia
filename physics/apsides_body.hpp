@@ -29,7 +29,7 @@ using quantities::Variation;
 
 template<typename Frame>
 void ComputeApsides(Trajectory<Frame> const& reference,
-                    DiscreteTraject0ry<Frame> const& trajectory,
+                    Trajectory<Frame> const& trajectory,
                     typename DiscreteTraject0ry<Frame>::iterator const begin,
                     typename DiscreteTraject0ry<Frame>::iterator const end,
                     int const max_points,
@@ -133,7 +133,7 @@ void ComputeApsides(Trajectory<Frame> const& reference,
 
 template<typename Frame, typename Predicate>
 absl::Status ComputeNodes(
-    DiscreteTraject0ry<Frame> const& trajectory,
+    Trajectory<Frame> const& trajectory,
     typename DiscreteTraject0ry<Frame>::iterator const begin,
     typename DiscreteTraject0ry<Frame>::iterator const end,
     Vector<double, Frame> const& north,

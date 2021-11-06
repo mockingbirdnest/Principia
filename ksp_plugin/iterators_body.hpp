@@ -53,7 +53,7 @@ template<typename Interchange>
 Interchange TypedIterator<DiscreteTraject0ry<World>>::Get(
     std::function<Interchange(
         DiscreteTraject0ry<World>::iterator const&)> const& convert) const {
-  CHECK(iterator_ != trajectory_->end());
+  CHECK(iterator_ != trajectory_.end());
   return convert(iterator_);
 }
 

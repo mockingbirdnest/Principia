@@ -198,22 +198,15 @@ int FlightPlan::number_of_segments() const {
   return segments_.size();
 }
 
-void FlightPlan::GetSegment(
-    int const index,
-    DiscreteTraject0ry<Barycentric>::iterator& begin,
-    DiscreteTraject0ry<Barycentric>::iterator& end) const {
+DiscreteTrajectorySegmentIterator<Barycentric> FlightPlan::GetSegment(
+    int const index) const {
   CHECK_LE(0, index);
   CHECK_LT(index, number_of_segments());
-  begin = segments_[index]->begin();
-  end = segments_[index]->end();
+  return segments_[index];
 }
 
-void FlightPlan::GetAllSegments(
-    DiscreteTraject0ry<Barycentric>::iterator& begin,
-    DiscreteTraject0ry<Barycentric>::iterator& end) const {
-  begin = segments_.front()->begin();
-  end = segments_.back()->end();
-  CHECK(begin != end);
+DiscreteTraject0ry<Barycentric> const& FlightPlan::GetAllSegments() const {
+  return trajectory_;
 }
 
 OrbitAnalyser::Analysis* FlightPlan::analysis(int coast_index) {

@@ -6,14 +6,14 @@
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin/renderer.hpp"
-#include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_traject0ry.hpp"
 
 namespace principia {
 namespace interface {
 
 using ksp_plugin::Renderer;
 using ksp_plugin::TypedIterator;
-using physics::DiscreteTrajectory;
+using physics::DiscreteTraject0ry;
 
 namespace {
 
@@ -45,21 +45,22 @@ void __cdecl principia__RenderedPredictionApsides(
       {plugin, vessel_guid, celestial_index, sun_world_position, max_points},
       {apoapsides, periapsides});
   CHECK_NOTNULL(plugin);
-  auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
-  std::unique_ptr<DiscreteTrajectory<World>> rendered_apoapsides;
-  std::unique_ptr<DiscreteTrajectory<World>> rendered_periapsides;
+  auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
+  DiscreteTraject0ry<World> rendered_apoapsides;
+  DiscreteTraject0ry<World> rendered_periapsides;
   plugin->ComputeAndRenderApsides(celestial_index,
-                                  prediction.Fork(),
-                                  prediction.end(),
+                                  *prediction,
+                                  prediction->begin(),
+                                  prediction->end(),
                                   FromXYZ<Position<World>>(sun_world_position),
                                   max_points,
                                   rendered_apoapsides,
                                   rendered_periapsides);
-  *apoapsides = new TypedIterator<DiscreteTrajectory<World>>(
-      check_not_null(std::move(rendered_apoapsides)),
+  *apoapsides = new TypedIterator<DiscreteTraject0ry<World>>(
+      std::move(rendered_apoapsides),
       plugin);
-  *periapsides = new TypedIterator<DiscreteTrajectory<World>>(
-      check_not_null(std::move(rendered_periapsides)),
+  *periapsides = new TypedIterator<DiscreteTraject0ry<World>>(
+      std::move(rendered_periapsides),
       plugin);
   return m.Return();
 }
@@ -74,16 +75,17 @@ void __cdecl principia__RenderedPredictionClosestApproaches(
       {plugin, vessel_guid, sun_world_position, max_points},
       {closest_approaches});
   CHECK_NOTNULL(plugin);
-  auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
-  std::unique_ptr<DiscreteTrajectory<World>> rendered_closest_approaches;
+  auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
+  DiscreteTraject0ry<World> rendered_closest_approaches;
   plugin->ComputeAndRenderClosestApproaches(
-      prediction.Fork(),
-      prediction.end(),
+      *prediction,
+      prediction->begin(),
+      prediction->end(),
       FromXYZ<Position<World>>(sun_world_position),
       max_points,
       rendered_closest_approaches);
-  *closest_approaches = new TypedIterator<DiscreteTrajectory<World>>(
-      check_not_null(std::move(rendered_closest_approaches)),
+  *closest_approaches = new TypedIterator<DiscreteTraject0ry<World>>(
+      std::move(rendered_closest_approaches),
       plugin);
   return m.Return();
 }
@@ -98,20 +100,20 @@ void __cdecl principia__RenderedPredictionNodes(Plugin const* const plugin,
       {plugin, vessel_guid, sun_world_position, max_points},
       {ascending, descending});
   CHECK_NOTNULL(plugin);
-  auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
-  std::unique_ptr<DiscreteTrajectory<World>> rendered_ascending;
-  std::unique_ptr<DiscreteTrajectory<World>> rendered_descending;
-  plugin->ComputeAndRenderNodes(prediction.Fork(),
-                                prediction.end(),
+  auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
+  DiscreteTraject0ry<World> rendered_ascending;
+  DiscreteTraject0ry<World> rendered_descending;
+  plugin->ComputeAndRenderNodes(prediction->begin(),
+                                prediction->end(),
                                 FromXYZ<Position<World>>(sun_world_position),
                                 max_points,
                                 rendered_ascending,
                                 rendered_descending);
-  *ascending = new TypedIterator<DiscreteTrajectory<World>>(
-      check_not_null(std::move(rendered_ascending)),
+  *ascending = new TypedIterator<DiscreteTraject0ry<World>>(
+      std::move(rendered_ascending),
       plugin);
-  *descending = new TypedIterator<DiscreteTrajectory<World>>(
-      check_not_null(std::move(rendered_descending)),
+  *descending = new TypedIterator<DiscreteTraject0ry<World>>(
+      std::move(rendered_descending),
       plugin);
   return m.Return();
 }

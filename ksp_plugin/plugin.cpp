@@ -939,7 +939,7 @@ void Plugin::CreateFlightPlan(GUID const& vessel_guid,
 
 void Plugin::ComputeAndRenderApsides(
     Index const celestial_index,
-    DiscreteTraject0ry<Barycentric> const& trajectory,
+    Trajectory<Barycentric> const& trajectory,
     DiscreteTraject0ry<Barycentric>::iterator const& begin,
     DiscreteTraject0ry<Barycentric>::iterator const& end,
     Position<World> const& sun_world_position,
@@ -970,7 +970,7 @@ void Plugin::ComputeAndRenderApsides(
 }
 
 void Plugin::ComputeAndRenderClosestApproaches(
-    DiscreteTraject0ry<Barycentric> const& trajectory,
+    Trajectory<Barycentric> const& trajectory,
     DiscreteTraject0ry<Barycentric>::iterator const& begin,
     DiscreteTraject0ry<Barycentric>::iterator const& end,
     Position<World> const& sun_world_position,

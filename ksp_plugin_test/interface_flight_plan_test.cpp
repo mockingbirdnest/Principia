@@ -21,7 +21,7 @@
 #include "ksp_plugin_test/mock_renderer.hpp"
 #include "ksp_plugin_test/mock_vessel.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
-#include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_traject0ry.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_continuous_trajectory.hpp"
@@ -60,7 +60,7 @@ using ksp_plugin::Navigation;
 using ksp_plugin::NavigationManœuvre;
 using ksp_plugin::WorldSun;
 using physics::BodyCentredNonRotatingDynamicFrame;
-using physics::DiscreteTrajectory;
+using physics::DiscreteTraject0ry;
 using physics::DynamicFrame;
 using physics::Frenet;
 using physics::MassiveBody;
@@ -349,30 +349,29 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   EXPECT_EQ(12, principia__FlightPlanNumberOfSegments(plugin_.get(),
                                                       vessel_guid));
 
-  auto rendered_trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
-  rendered_trajectory->Append(
+  DiscreteTraject0ry<World> rendered_trajectory;
+  rendered_trajectory.Append(
       t0_, DegreesOfFreedom<World>(World::origin, World::unmoving));
-  rendered_trajectory->Append(
+  rendered_trajectory.Append(
       t0_ + 1 * Second,
       DegreesOfFreedom<World>(
           World::origin +
               Displacement<World>({0 * Metre, 1 * Metre, 2 * Metre}),
           World::unmoving));
-  rendered_trajectory->Append(
+  rendered_trajectory.Append(
       t0_ + 2 * Second,
       DegreesOfFreedom<World>(
           World::origin +
               Displacement<World>({0 * Metre, 2 * Metre, 4 * Metre}),
           World::unmoving));
-  auto segment = make_not_null_unique<DiscreteTrajectory<Barycentric>>();
+  DiscreteTraject0ry<Barycentric> segment;
   DegreesOfFreedom<Barycentric> immobile_origin{Barycentric::origin,
                                                 Barycentric::unmoving};
-  segment->Append(t0_, immobile_origin);
-  segment->Append(t0_ + 1 * Second, immobile_origin);
-  segment->Append(t0_ + 2 * Second, immobile_origin);
-  EXPECT_CALL(flight_plan, GetSegment(3, _, _))
-      .WillOnce(DoAll(SetArgReferee<1>(segment->begin()),
-                      SetArgReferee<2>(segment->end())));
+  segment.Append(t0_, immobile_origin);
+  segment.Append(t0_ + 1 * Second, immobile_origin);
+  segment.Append(t0_ + 2 * Second, immobile_origin);
+  EXPECT_CALL(flight_plan, GetSegment(3))
+      .WillOnce(Return(segment.segments().begin()));
   EXPECT_CALL(renderer, RenderBarycentricTrajectoryInWorld(_, _, _, _, _))
       .WillOnce(Return(ByMove(std::move(rendered_trajectory))));
   auto* const iterator =
