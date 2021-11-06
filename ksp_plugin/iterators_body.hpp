@@ -42,46 +42,44 @@ int TypedIterator<Container>::Size() const {
   return container_.size();
 }
 
-inline TypedIterator<DiscreteTrajectory<World>>::TypedIterator(
-    not_null<std::unique_ptr<DiscreteTrajectory<World>>> trajectory,
+inline TypedIterator<DiscreteTraject0ry<World>>::TypedIterator(
+    DiscreteTraject0ry<World> trajectory,
     not_null<Plugin const*> const plugin)
     : trajectory_(std::move(trajectory)),
-      iterator_(trajectory_->begin()),
-      plugin_(plugin) {
-  CHECK(trajectory_->is_root());
-}
+      iterator_(trajectory_.begin()),
+      plugin_(plugin) {}
 
 template<typename Interchange>
-Interchange TypedIterator<DiscreteTrajectory<World>>::Get(
+Interchange TypedIterator<DiscreteTraject0ry<World>>::Get(
     std::function<Interchange(
-        DiscreteTrajectory<World>::Iterator const&)> const& convert) const {
+        DiscreteTraject0ry<World>::iterator const&)> const& convert) const {
   CHECK(iterator_ != trajectory_->end());
   return convert(iterator_);
 }
 
-inline bool TypedIterator<DiscreteTrajectory<World>>::AtEnd() const {
-  return iterator_ == trajectory_->end();
+inline bool TypedIterator<DiscreteTraject0ry<World>>::AtEnd() const {
+  return iterator_ == trajectory_.end();
 }
 
-inline void TypedIterator<DiscreteTrajectory<World>>::Increment() {
+inline void TypedIterator<DiscreteTraject0ry<World>>::Increment() {
   ++iterator_;
 }
 
-inline void TypedIterator<DiscreteTrajectory<World>>::Reset() {
-  iterator_ = trajectory_->begin();
+inline void TypedIterator<DiscreteTraject0ry<World>>::Reset() {
+  iterator_ = trajectory_.begin();
 }
 
-inline int TypedIterator<DiscreteTrajectory<World>>::Size() const {
-  return trajectory_->Size();
+inline int TypedIterator<DiscreteTraject0ry<World>>::Size() const {
+  return trajectory_.size();
 }
 
-inline DiscreteTrajectory<World>::Iterator TypedIterator<
-    DiscreteTrajectory<World>>::iterator() const {
+inline DiscreteTraject0ry<World>::iterator TypedIterator<
+    DiscreteTraject0ry<World>>::iterator() const {
   return iterator_;
 }
 
 inline not_null<Plugin const*> TypedIterator<
-    DiscreteTrajectory<World>>::plugin() const {
+    DiscreteTraject0ry<World>>::plugin() const {
   return plugin_;
 }
 
