@@ -262,7 +262,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
       /*compressor=*/"gipfeli",
       /*decoder=*/"base64");
   EXPECT_THAT(log_warning.string(),
-              AllOf(HasSubstr("pre-Haar"), Not(HasSubstr("pre-Gröbner"))));
+              AllOf(HasSubstr("pre-Haar"), Not(HasSubstr(u8"pre-Gröbner"))));
   auto const& orbiter =
       *plugin->GetVessel("e180ca12-492f-45bf-a194-4c5255aec8a0");
   EXPECT_THAT(orbiter.name(), Eq("Mercury Orbiter 1"));
@@ -326,10 +326,8 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
       R"(P:\Public Mockingbird\Principia\Saves\3136\3136.proto.b64)",
       /*compressor=*/"gipfeli",
       /*decoder=*/"base64");
-  // TODO(phl): Check that we mention a compatibility path here once something
-  // changes.
   EXPECT_THAT(log_warning.string(),
-              Not(HasSubstr("pre-Haar")));
+              AllOf(HasSubstr(u8"pre-Ζήνων"), Not(HasSubstr("pre-Haar"))));
 
   // The vessel with the longest history.
   auto const& vessel =
@@ -337,7 +335,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
   auto history = vessel.history();
   auto psychohistory = vessel.psychohistory();
   EXPECT_EQ(435'927, history->size());
-  EXPECT_EQ(435'929, psychohistory->size());
+  EXPECT_EQ(3, psychohistory->size());
 
   // Evaluate a point in each of the two segments.
   EXPECT_THAT(history->EvaluateDegreesOfFreedom("1957-10-04T19:28:34"_TT),
@@ -365,7 +363,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
   {
     serialization::DiscreteTrajectory message;
     vessel.trajectory().WriteToMessage(
-        &message, /*tracked=*/{&history, &psychohistory}, /*exact=*/{});
+        &message, /*tracked=*/{history, psychohistory}, /*exact=*/{});
     auto const serialized_message = base::SerializeAsBytes(message);
     WriteToBinaryFile(TEMP_DIR / "trajectory_3136.proto.bin",
                       serialized_message.get());
@@ -380,7 +378,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
     auto const trajectory = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
         message, /*tracked=*/{&history, &psychohistory});
     EXPECT_EQ(435'927, history->size());
-    EXPECT_EQ(435'929, psychohistory->size());
+    EXPECT_EQ(3, psychohistory->size());
   }
 
   // Make sure that we can upgrade, save, and reload.
