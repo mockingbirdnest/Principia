@@ -38,6 +38,12 @@ DiscreteTrajectorySegment<Frame>::DiscreteTrajectorySegment(
     : self_(self) {}
 
 template<typename Frame>
+void DiscreteTrajectorySegment<Frame>::SetDownsamplingUnconditionally(
+    DownsamplingParameters const& downsampling_parameters) {
+  downsampling_parameters_ = downsampling_parameters;
+}
+
+template<typename Frame>
 typename DiscreteTrajectorySegment<Frame>::reference
 DiscreteTrajectorySegment<Frame>::front() const {
   return *begin();
@@ -366,12 +372,6 @@ void DiscreteTrajectorySegment<Frame>::ForgetBefore(
       std::max(0LL, number_of_dense_points_ - number_of_points_to_remove);
 
   timeline_.erase(timeline_.cbegin(), end);
-}
-
-template<typename Frame>
-void DiscreteTrajectorySegment<Frame>::SetDownsamplingUnconditionally(
-    DownsamplingParameters const& downsampling_parameters) {
-  downsampling_parameters_ = downsampling_parameters;
 }
 
 template<typename Frame>
