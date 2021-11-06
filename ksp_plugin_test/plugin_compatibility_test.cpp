@@ -57,6 +57,7 @@ using ::testing::HasSubstr;
 using ::testing::Not;
 using ::testing::NotNull;
 using ::testing::Pair;
+using ::testing::SizeIs;
 using ::testing::internal::CaptureStderr;
 using ::testing::internal::GetCapturedStderr;
 
@@ -334,8 +335,8 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
       *plugin->GetVessel("77ddea45-47ee-48c0-aee9-d55cdb35ffcd");
   auto history = vessel.history();
   auto psychohistory = vessel.psychohistory();
-  EXPECT_EQ(435'927, history->size());
-  EXPECT_EQ(3, psychohistory->size());
+  EXPECT_THAT(*history, SizeIs(435'927));
+  EXPECT_THAT(*psychohistory, SizeIs(3));
 
   // Evaluate a point in each of the two segments.
   EXPECT_THAT(history->EvaluateDegreesOfFreedom("1957-10-04T19:28:34"_TT),
@@ -377,8 +378,8 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
         ParseFromBytes<serialization::DiscreteTrajectory>(serialized_message);
     auto const trajectory = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
         message, /*tracked=*/{&history, &psychohistory});
-    EXPECT_EQ(435'927, history->size());
-    EXPECT_EQ(3, psychohistory->size());
+    EXPECT_THAT(*history, SizeIs(435'927));
+    EXPECT_THAT(*psychohistory, SizeIs(3));
   }
 
   // Make sure that we can upgrade, save, and reload.
