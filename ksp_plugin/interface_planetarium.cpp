@@ -119,19 +119,17 @@ Iterator* __cdecl principia__PlanetariumPlotFlightPlanSegment(
   CHECK_NOTNULL(planetarium);
   Vessel const& vessel = *plugin->GetVessel(vessel_guid);
   CHECK(vessel.has_flight_plan()) << vessel_guid;
-  DiscreteTraject0ry<Barycentric>::iterator segment_begin;
-  DiscreteTraject0ry<Barycentric>::iterator segment_end;
-  vessel.flight_plan().GetSegment(index, segment_begin, segment_end);
+  auto const segment = vessel.flight_plan().GetSegment(index);
   RP2Lines<Length, Camera> rp2_lines;
   // TODO(egg): this is ugly; we should centralize rendering.
   // If this is a burn and we cannot render the beginning of the burn, we
   // render none of it, otherwise we try to render the Frenet trihedron at the
   // start and we fail.
   if (index % 2 == 0 ||
-      segment_begin == segment_end ||
-      segment_begin->time >= plugin->renderer().GetPlottingFrame()->t_min()) {
-    rp2_lines = planetarium->PlotMethod2(segment_begin,
-                                         segment_end,
+      segment->empty() ||
+      segment->front().time >= plugin->renderer().GetPlottingFrame()->t_min()) {
+    rp2_lines = planetarium->PlotMethod2(*segment,
+                                         segment->begin(), segment->end(),
                                          plugin->CurrentTime(),
                                          /*reverse=*/false);
   }
@@ -147,9 +145,10 @@ Iterator* __cdecl principia__PlanetariumPlotPrediction(
                                                          vessel_guid});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
-  auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
-  auto const rp2_lines = planetarium->PlotMethod2(prediction.Fork(),
-                                                  prediction.end(),
+  auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
+  auto const rp2_lines = planetarium->PlotMethod2(*prediction,
+                                                  prediction->begin(),
+                                                  prediction->end(),
                                                   plugin->CurrentTime(),
                                                   /*reverse=*/false);
   return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
@@ -170,12 +169,15 @@ Iterator* __cdecl principia__PlanetariumPlotPsychohistory(
   if (plugin->renderer().HasTargetVessel()) {
     return m.Return(new TypedIterator<RP2Lines<Length, Camera>>({}));
   } else {
-    auto const& psychohistory = plugin->GetVessel(vessel_guid)->psychohistory();
+    auto const vessel = plugin->GetVessel(vessel_guid);
+    auto const& trajectory = vessel->trajectory();
+    auto const& psychohistory = vessel->psychohistory();
     auto const rp2_lines =
         planetarium->PlotMethod2(
-            psychohistory.LowerBound(plugin->CurrentTime() -
+            trajectory,
+            trajectory.lower_bound(plugin->CurrentTime() -
                                      max_history_length * Second),
-            psychohistory.end(),
+            psychohistory->end(),
             plugin->CurrentTime(),
             /*reverse=*/true);
     return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
@@ -247,7 +249,7 @@ principia__PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
     return m.Return(new TypedIterator<RP2Lines<Length, Camera>>({}));
   } else {
     auto const& vessel = *plugin->GetVessel(vessel_guid);
-    Instant const prediction_final_time = vessel.prediction().t_max();
+    Instant const prediction_final_time = vessel.prediction()->t_max();
     Instant const final_time =
         vessel.has_flight_plan()
             ? std::max(vessel.flight_plan().actual_final_time(),
