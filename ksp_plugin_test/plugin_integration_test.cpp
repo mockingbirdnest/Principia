@@ -252,7 +252,7 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
             psychohistory->end(),
             sun_world_position,
             plugin_->PlanetariumRotation());
-    EXPECT_THAT(rendered_trajectory.size(), AllOf(Ge(61), Le(4261)));
+    EXPECT_THAT(rendered_trajectory.size(), AllOf(Ge(61), Le(4262)));
     Position<World> const earth_world_position =
         sun_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
                                  SolarSystemFactory::Earth).displacement());
@@ -362,7 +362,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
             psychohistory->end(),
             sun_world_position,
             plugin_->PlanetariumRotation());
-    EXPECT_EQ(4321, rendered_trajectory.size());
+    EXPECT_THAT(rendered_trajectory.size(), AllOf(Ge(4321), Le(9414)));
     Position<World> const earth_world_position =
         sun_world_position +
         alice_sun_to_world(
