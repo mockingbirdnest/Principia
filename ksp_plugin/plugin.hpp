@@ -38,6 +38,7 @@
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/rotating_body.hpp"
+#include "physics/trajectory.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
@@ -82,6 +83,7 @@ using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::RigidMotion;
 using physics::RotatingBody;
+using physics::Trajectory;
 using quantities::Angle;
 using quantities::Force;
 using quantities::Length;
@@ -350,7 +352,7 @@ class Plugin {
   // respect to the celestial with index |celestial_index|.
   virtual void ComputeAndRenderApsides(
       Index celestial_index,
-      DiscreteTraject0ry<Barycentric> const& trajectory,
+      Trajectory<Barycentric> const& trajectory,
       DiscreteTraject0ry<Barycentric>::iterator const& begin,
       DiscreteTraject0ry<Barycentric>::iterator const& end,
       Position<World> const& sun_world_position,
@@ -361,7 +363,7 @@ class Plugin {
   // Computes the closest approaches of the trajectory defined by |begin| and
   // |end| with respect to the trajectory of the targetted vessel.
   virtual void ComputeAndRenderClosestApproaches(
-      DiscreteTraject0ry<Barycentric> const& trajectory,
+      Trajectory<Barycentric> const& trajectory,
       DiscreteTraject0ry<Barycentric>::iterator const& begin,
       DiscreteTraject0ry<Barycentric>::iterator const& end,
       Position<World> const& sun_world_position,
