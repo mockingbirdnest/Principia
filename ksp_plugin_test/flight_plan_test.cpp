@@ -242,10 +242,8 @@ TEST_F(FlightPlanTest, Singular) {
           /*max_steps=*/1,
           /*length_integration_tolerance=*/1 * Metre,
           /*speed_integration_tolerance=*/1 * Metre / Second));
-  DiscreteTraject0ry<Barycentric>::iterator begin;
-  DiscreteTraject0ry<Barycentric>::iterator end;
-  flight_plan_->GetSegment(0, begin, end);
-  DiscreteTraject0ry<Barycentric>::iterator back = end;
+  auto const segment0 = flight_plan_->GetSegment(0);
+  DiscreteTraject0ry<Barycentric>::iterator back = segment0->end();
   --back;
   EXPECT_THAT(AbsoluteError(singularity, back->time), Lt(1e-4 * Second));
   // Attempting to put a burn past the singularity fails.
@@ -290,15 +288,15 @@ TEST_F(FlightPlanTest, Singular) {
       StatusIs(integrators::termination_condition::VanishingStepSize));
   EXPECT_EQ(0, flight_plan_->number_of_anomalous_manœuvres());
 
-  flight_plan_->GetSegment(1, begin, end);
-  back = end;
+  auto segment1 = flight_plan_->GetSegment(1);
+  back = segment1->end();
   --back;
   EXPECT_THAT(back->time, Lt(singularity));
-  EXPECT_NE(begin, back);
-  flight_plan_->GetSegment(2, begin, end);
-  back = end;
+  EXPECT_NE(segment1->begin(), back);
+  auto segment2 = flight_plan_->GetSegment(2);
+  back = segment2->end();
   --back;
-  EXPECT_EQ(begin, back);
+  EXPECT_EQ(segment2->begin(), back);
 
   // The singularity occurs after the burn: we're boosting away from the
   // singularity, so we reach the singularity in more than π / 2√2 s, after the
@@ -316,16 +314,16 @@ TEST_F(FlightPlanTest, Singular) {
       StatusIs(integrators::termination_condition::VanishingStepSize));
   EXPECT_EQ(0, flight_plan_->number_of_anomalous_manœuvres());
 
-  flight_plan_->GetSegment(1, begin, end);
-  back = end;
+  segment1 = flight_plan_->GetSegment(1);
+  back = segment1->end();
   --back;
   EXPECT_THAT(back->time, Eq(t0_ + 0.5 * Second + (1 - 1 / e) / 10 * Second));
-  EXPECT_NE(begin, back);
-  flight_plan_->GetSegment(2, begin, end);
-  back = end;
+  EXPECT_NE(segment1->begin(), back);
+  segment2 = flight_plan_->GetSegment(2);
+  back = segment2->end();
   --back;
   EXPECT_THAT(back->time, AllOf(Gt(singularity), Lt(t0_ + 2 * Second)));
-  EXPECT_NE(begin, back);
+  EXPECT_NE(segment2->begin(), back);
 }
 
 TEST_F(FlightPlanTest, Append) {
@@ -380,15 +378,11 @@ TEST_F(FlightPlanTest, Segments) {
   EXPECT_EQ(5, flight_plan_->number_of_segments());
 
   std::vector<Instant> times;
-  DiscreteTraject0ry<Barycentric>::iterator begin;
-  DiscreteTraject0ry<Barycentric>::iterator end;
-
   int last_times_size = times.size();
   Instant last_t = t0_ - 2 * π * Second;
   for (int i = 0; i < flight_plan_->number_of_segments(); ++i) {
-    flight_plan_->GetSegment(i, begin, end);
-    for (auto it = begin; it != end; ++it) {
-      Instant const& t = it->time;
+    auto const segment_i = flight_plan_->GetSegment(i);
+    for (auto const& [t, _] : *segment_i) {
       EXPECT_LE(last_t, t);
       EXPECT_LE(t, t0_ + 42 * Second);
       times.push_back(t);
@@ -399,15 +393,12 @@ TEST_F(FlightPlanTest, Segments) {
 }
 
 TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
-  DiscreteTraject0ry<Barycentric>::iterator begin;
-  DiscreteTraject0ry<Barycentric>::iterator end;
   flight_plan_->SetDesiredFinalTime(t0_ + 42 * Second);
   EXPECT_OK(flight_plan_->Insert(MakeFirstBurn(), 0));
   EXPECT_OK(flight_plan_->Insert(MakeSecondBurn(), 1));
   EXPECT_EQ(5, flight_plan_->number_of_segments());
-  flight_plan_->GetSegment(4, begin, end);
-  --end;
-  EXPECT_EQ(t0_ + 42 * Second, end->time);
+  auto segment4 = flight_plan_->GetSegment(4);
+  EXPECT_EQ(t0_ + 42 * Second, segment4->back().time);
 
   auto const adaptive_step_parameters =
       flight_plan_->adaptive_step_parameters();
@@ -439,9 +430,8 @@ TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
                                           generalized_adaptive_step_parameters);
 
   EXPECT_EQ(5, flight_plan_->number_of_segments());
-  flight_plan_->GetSegment(4, begin, end);
-  --end;
-  EXPECT_EQ(t0_ + 42 * Second, end->time);
+  segment4 = flight_plan_->GetSegment(4);
+  EXPECT_EQ(t0_ + 42 * Second, segment4->back().time);
 
   // Increase |max_steps|.  It works.
   EXPECT_OK(flight_plan_->SetAdaptiveStepParameters(
@@ -461,9 +451,8 @@ TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
           /*speed_integration_tolerance=*/1 * Milli(Metre) / Second)));
 
   EXPECT_EQ(5, flight_plan_->number_of_segments());
-  flight_plan_->GetSegment(4, begin, end);
-  --end;
-  EXPECT_EQ(t0_ + 42 * Second, end->time);
+  segment4 = flight_plan_->GetSegment(4);
+  EXPECT_EQ(t0_ + 42 * Second, segment4->back().time);
 }
 
 TEST_F(FlightPlanTest, GuidedBurn) {
@@ -471,20 +460,15 @@ TEST_F(FlightPlanTest, GuidedBurn) {
   auto unguided_burn = MakeFirstBurn();
   unguided_burn.thrust /= 10;
   EXPECT_OK(flight_plan_->Insert(std::move(unguided_burn), 0));
-  DiscreteTraject0ry<Barycentric>::iterator begin;
-  DiscreteTraject0ry<Barycentric>::iterator end;
-  DiscreteTraject0ry<Barycentric>::iterator last;
-  flight_plan_->GetAllSegments(begin, end);
-  last = --end;
+  auto const& trajectory = flight_plan_->GetAllSegments();
   Speed const unguided_final_speed =
-      last->degrees_of_freedom.velocity().Norm();
+      trajectory.back().degrees_of_freedom.velocity().Norm();
   auto guided_burn = MakeFirstBurn();
   guided_burn.thrust /= 10;
   guided_burn.is_inertially_fixed = false;
   EXPECT_OK(flight_plan_->Replace(std::move(guided_burn), /*index=*/0));
-  flight_plan_->GetAllSegments(begin, end);
-  last = --end;
-  Speed const guided_final_speed = last->degrees_of_freedom.velocity().Norm();
+  Speed const guided_final_speed =
+      trajectory.back().degrees_of_freedom.velocity().Norm();
   EXPECT_THAT(guided_final_speed, IsNear(1.40_⑴ * unguided_final_speed));
 }
 
