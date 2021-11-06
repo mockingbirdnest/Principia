@@ -853,8 +853,13 @@ void DiscreteTraject0ry<Frame>::ReadFromPreΖήνωνMessage(
 
   // Finally, set the time-to-segment map.
   if (!sit->empty()) {
-    trajectory.segment_by_left_endpoint_.insert_or_assign(sit->begin()->time,
-                                                          sit);
+    // This is the *only* place where we must use |emplace|, not
+    // |insert_or_assign|.  The reason is that this happens when returning from
+    // the recursivity (see to the call to ReadFromPreΖήνωνMessage) so segments
+    // are processed in reverse order.  Therefore, a segment that is the last at
+    // its time will be processed *before* any 1-point segments with the same
+    // time, and must be the one stored in the map.
+    trajectory.segment_by_left_endpoint_.emplace(sit->begin()->time, sit);
   }
 }
 
