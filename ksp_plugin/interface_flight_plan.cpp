@@ -13,7 +13,7 @@
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/body_surface_dynamic_frame.hpp"
-#include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_traject0ry.hpp"
 #include "physics/ephemeris.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/si.hpp"
@@ -40,7 +40,7 @@ using physics::BarycentricRotatingDynamicFrame;
 using physics::BodyCentredBodyDirectionDynamicFrame;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::BodySurfaceDynamicFrame;
-using physics::DiscreteTrajectory;
+using physics::DiscreteTraject0ry;
 using physics::Ephemeris;
 using physics::Frenet;
 using quantities::Speed;
@@ -404,21 +404,21 @@ void __cdecl principia__FlightPlanRenderedApsides(
       {plugin, vessel_guid, celestial_index, sun_world_position, max_points},
       {apoapsides, periapsides});
   CHECK_NOTNULL(plugin);
-  DiscreteTrajectory<Barycentric>::Iterator begin;
-  DiscreteTrajectory<Barycentric>::Iterator end;
+  DiscreteTraject0ry<Barycentric>::iterator begin;
+  DiscreteTraject0ry<Barycentric>::iterator end;
   GetFlightPlan(*plugin, vessel_guid).GetAllSegments(begin, end);
-  std::unique_ptr<DiscreteTrajectory<World>> rendered_apoapsides;
-  std::unique_ptr<DiscreteTrajectory<World>> rendered_periapsides;
+  std::unique_ptr<DiscreteTraject0ry<World>> rendered_apoapsides;
+  std::unique_ptr<DiscreteTraject0ry<World>> rendered_periapsides;
   plugin->ComputeAndRenderApsides(celestial_index,
                                   begin, end,
                                   FromXYZ<Position<World>>(sun_world_position),
                                   max_points,
                                   rendered_apoapsides,
                                   rendered_periapsides);
-  *apoapsides = new TypedIterator<DiscreteTrajectory<World>>(
+  *apoapsides = new TypedIterator<DiscreteTraject0ry<World>>(
       check_not_null(std::move(rendered_apoapsides)),
       plugin);
-  *periapsides = new TypedIterator<DiscreteTrajectory<World>>(
+  *periapsides = new TypedIterator<DiscreteTraject0ry<World>>(
       check_not_null(std::move(rendered_periapsides)),
       plugin);
   return m.Return();
@@ -434,17 +434,17 @@ void __cdecl principia__FlightPlanRenderedClosestApproaches(
       {plugin, vessel_guid, sun_world_position, max_points},
       {closest_approaches});
   CHECK_NOTNULL(plugin);
-  DiscreteTrajectory<Barycentric>::Iterator begin;
-  DiscreteTrajectory<Barycentric>::Iterator end;
+  DiscreteTraject0ry<Barycentric>::iterator begin;
+  DiscreteTraject0ry<Barycentric>::iterator end;
   GetFlightPlan(*plugin, vessel_guid).GetAllSegments(begin, end);
-  std::unique_ptr<DiscreteTrajectory<World>> rendered_closest_approaches;
+  std::unique_ptr<DiscreteTraject0ry<World>> rendered_closest_approaches;
   plugin->ComputeAndRenderClosestApproaches(
       begin,
       end,
       FromXYZ<Position<World>>(sun_world_position),
       max_points,
       rendered_closest_approaches);
-  *closest_approaches = new TypedIterator<DiscreteTrajectory<World>>(
+  *closest_approaches = new TypedIterator<DiscreteTraject0ry<World>>(
       check_not_null(std::move(rendered_closest_approaches)),
       plugin);
   return m.Return();
@@ -460,20 +460,20 @@ void __cdecl principia__FlightPlanRenderedNodes(Plugin const* const plugin,
       {plugin, vessel_guid, sun_world_position, max_points},
       {ascending, descending});
   CHECK_NOTNULL(plugin);
-  DiscreteTrajectory<Barycentric>::Iterator begin;
-  DiscreteTrajectory<Barycentric>::Iterator end;
+  DiscreteTraject0ry<Barycentric>::iterator begin;
+  DiscreteTraject0ry<Barycentric>::iterator end;
   GetFlightPlan(*plugin, vessel_guid).GetAllSegments(begin, end);
-  std::unique_ptr<DiscreteTrajectory<World>> rendered_ascending;
-  std::unique_ptr<DiscreteTrajectory<World>> rendered_descending;
+  std::unique_ptr<DiscreteTraject0ry<World>> rendered_ascending;
+  std::unique_ptr<DiscreteTraject0ry<World>> rendered_descending;
   plugin->ComputeAndRenderNodes(begin, end,
                                 FromXYZ<Position<World>>(sun_world_position),
                                 max_points,
                                 rendered_ascending,
                                 rendered_descending);
-  *ascending = new TypedIterator<DiscreteTrajectory<World>>(
+  *ascending = new TypedIterator<DiscreteTraject0ry<World>>(
       check_not_null(std::move(rendered_ascending)),
       plugin);
-  *descending = new TypedIterator<DiscreteTrajectory<World>>(
+  *descending = new TypedIterator<DiscreteTraject0ry<World>>(
       check_not_null(std::move(rendered_descending)),
       plugin);
   return m.Return();
@@ -489,8 +489,8 @@ Iterator* __cdecl principia__FlightPlanRenderedSegment(
                                                          sun_world_position,
                                                          index});
   CHECK_NOTNULL(plugin);
-  DiscreteTrajectory<Barycentric>::Iterator begin;
-  DiscreteTrajectory<Barycentric>::Iterator end;
+  DiscreteTraject0ry<Barycentric>::iterator begin;
+  DiscreteTraject0ry<Barycentric>::iterator end;
   GetFlightPlan(*plugin, vessel_guid).GetSegment(index, begin, end);
   auto rendered_trajectory =
       plugin->renderer().RenderBarycentricTrajectoryInWorld(
@@ -507,7 +507,7 @@ Iterator* __cdecl principia__FlightPlanRenderedSegment(
     // start and we fail.
     rendered_trajectory->ForgetAfter(astronomy::InfinitePast);
   }
-  return m.Return(new TypedIterator<DiscreteTrajectory<World>>(
+  return m.Return(new TypedIterator<DiscreteTraject0ry<World>>(
       std::move(rendered_trajectory),
       plugin));
 }

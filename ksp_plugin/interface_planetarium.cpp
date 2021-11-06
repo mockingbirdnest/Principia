@@ -16,7 +16,7 @@
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/renderer.hpp"
-#include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_traject0ry.hpp"
 #include "physics/rigid_motion.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -36,7 +36,7 @@ using ksp_plugin::Navigation;
 using ksp_plugin::Planetarium;
 using ksp_plugin::Renderer;
 using ksp_plugin::TypedIterator;
-using physics::DiscreteTrajectory;
+using physics::DiscreteTraject0ry;
 using quantities::Length;
 using quantities::si::ArcMinute;
 using quantities::si::Kilo;
@@ -119,8 +119,8 @@ Iterator* __cdecl principia__PlanetariumPlotFlightPlanSegment(
   CHECK_NOTNULL(planetarium);
   Vessel const& vessel = *plugin->GetVessel(vessel_guid);
   CHECK(vessel.has_flight_plan()) << vessel_guid;
-  DiscreteTrajectory<Barycentric>::Iterator segment_begin;
-  DiscreteTrajectory<Barycentric>::Iterator segment_end;
+  DiscreteTraject0ry<Barycentric>::iterator segment_begin;
+  DiscreteTraject0ry<Barycentric>::iterator segment_end;
   vessel.flight_plan().GetSegment(index, segment_begin, segment_end);
   RP2Lines<Length, Camera> rp2_lines;
   // TODO(egg): this is ugly; we should centralize rendering.
