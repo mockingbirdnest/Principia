@@ -112,14 +112,10 @@ class FlightPlan {
   // Returns the number of trajectories in this object.
   virtual int number_of_segments() const;
 
-  // |index| must be in [0, number_of_segments()[.  Sets the iterators to denote
-  // the given trajectory.
-  virtual void GetSegment(int index,
-                          DiscreteTraject0ry<Barycentric>::iterator& begin,
-                          DiscreteTraject0ry<Barycentric>::iterator& end) const;
-  virtual void GetAllSegments(
-      DiscreteTraject0ry<Barycentric>::iterator& begin,
-      DiscreteTraject0ry<Barycentric>::iterator& end) const;
+  // |index| must be in [0, number_of_segments()[.
+  virtual DiscreteTrajectorySegmentIterator<Barycentric>
+  GetSegment(int index) const;
+  virtual DiscreteTraject0ry<Barycentric> const& GetAllSegments() const;
 
   // |coast_index| must be in [0, number_of_manœuvres()].
   virtual OrbitAnalyser::Analysis* analysis(int coast_index);
