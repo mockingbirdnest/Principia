@@ -63,6 +63,7 @@ using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using testing_utilities::SolarSystemFactory;
 using testing_utilities::operator""_⑴;
+using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Ge;
 using ::testing::Gt;
@@ -241,15 +242,17 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
             { 0.1 * AstronomicalUnit / Hour,
              -1.0 * AstronomicalUnit / Hour,
               0.0 * AstronomicalUnit / Hour}) * (t - initial_time);
-    auto const psychohistory =
-        plugin_->GetVessel(vessel_guid)->psychohistory();
+    auto const& vessel = *plugin_->GetVessel(vessel_guid);
+    auto const history =vessel.history();
+    auto const psychohistory =vessel.psychohistory();
     auto const rendered_trajectory =
         plugin_->renderer().RenderBarycentricTrajectoryInWorld(
             plugin_->CurrentTime(),
-            psychohistory->begin(),
+            history->begin(),
             psychohistory->end(),
             sun_world_position,
             plugin_->PlanetariumRotation());
+    EXPECT_THAT(rendered_trajectory.size(), AllOf(Ge(61), Le(4261)));
     Position<World> const earth_world_position =
         sun_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
                                  SolarSystemFactory::Earth).displacement());
@@ -359,6 +362,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
             psychohistory->end(),
             sun_world_position,
             plugin_->PlanetariumRotation());
+    EXPECT_EQ(4321, rendered_trajectory.size());
     Position<World> const earth_world_position =
         sun_world_position +
         alice_sun_to_world(
