@@ -612,12 +612,16 @@ absl::Status PileUp::AdvanceTime(Instant const& t) {
     // time we go through this function.  It will be re-created as needed.
     fixed_instance_ = nullptr;
     // We make the |psychohistory_|, if any, authoritative, i.e. append it to
-    // the end of the |history_|. We integrate on top of it, and it gets
-    // appended authoritatively to the part tails.
+    // the end of the |history_|.  We integrate on top of it.  Note how we skip
+    // the first point of the psychohistory, which is already present in the
+    // |trajectory_|.
     auto const psychohistory_trajectory =
         trajectory_.DetachSegments(psychohistory_);
-    for (auto const& [time, degrees_of_freedom] : psychohistory_trajectory) {
-      trajectory_.Append(time, degrees_of_freedom);
+    CHECK(!psychohistory_trajectory.empty());
+    for (auto it = std::next(psychohistory_trajectory.begin());
+         it != psychohistory_trajectory.end();
+         ++it) {
+      trajectory_.Append(it->time, it->degrees_of_freedom);
     }
 
     auto const intrinsic_acceleration =
