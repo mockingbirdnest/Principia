@@ -25,7 +25,7 @@
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_traject0ry.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massless_body.hpp"
 #include "quantities/astronomy.hpp"
@@ -87,7 +87,7 @@ namespace physics {
 
 namespace {
 
-using Flow = void(not_null<DiscreteTrajectory<Barycentric>*> const trajectory,
+using Flow = void(not_null<DiscreteTraject0ry<Barycentric>*> const trajectory,
                   Instant const& t,
                   Ephemeris<Barycentric>& ephemeris);
 
@@ -204,7 +204,7 @@ void BM_EphemerisLEOProbe(benchmark::State& state) {
     state.PauseTiming();
     // A probe in low earth orbit.
     MasslessBody probe;
-    DiscreteTrajectory<Barycentric> trajectory;
+    DiscreteTraject0ry<Barycentric> trajectory;
     DegreesOfFreedom<Barycentric> const earth_degrees_of_freedom =
         at_спутник_1_launch->degrees_of_freedom(
             SolarSystemFactory::name(SolarSystemFactory::Earth));
@@ -239,7 +239,7 @@ void BM_EphemerisLEOProbe(benchmark::State& state) {
                            EvaluatePosition(final_time) -
                    trajectory.back().degrees_of_freedom.position()).
                        Norm();
-    steps = trajectory.Size();
+    steps = trajectory.size();
     state.ResumeTiming();
   }
   std::stringstream ss;
@@ -274,7 +274,7 @@ void BM_EphemerisTranslunarSpaceProbe(benchmark::State& state) {
     state.PauseTiming();
     // A probe orbiting the Earth beyond the orbit of the Moon.
     MasslessBody probe;
-    DiscreteTrajectory<Barycentric> trajectory;
+    DiscreteTraject0ry<Barycentric> trajectory;
     DegreesOfFreedom<Barycentric> const earth_degrees_of_freedom =
         at_спутник_1_launch->degrees_of_freedom(
             SolarSystemFactory::name(SolarSystemFactory::Earth));
@@ -309,7 +309,7 @@ void BM_EphemerisTranslunarSpaceProbe(benchmark::State& state) {
                            EvaluatePosition(final_time) -
                    trajectory.back().degrees_of_freedom.position()).
                        Norm();
-    steps = trajectory.Size();
+    steps = trajectory.size();
     state.ResumeTiming();
   }
   std::stringstream ss;
@@ -340,7 +340,7 @@ void BM_EphemerisMultithreadingBenchmark(benchmark::State& state) {
       at_спутник_1_launch->degrees_of_freedom(earth_name);
 
   MasslessBody probe;
-  std::list<DiscreteTrajectory<Barycentric>> trajectories;
+  std::list<DiscreteTraject0ry<Barycentric>> trajectories;
   for (int i = 0; i < state.range(0); ++i) {
     KeplerianElements<Barycentric> elements;
     elements.eccentricity = 0;
@@ -426,7 +426,7 @@ void EphemerisL4ProbeBenchmark(Time const integration_duration,
     Identity<ICRS, Barycentric> to_barycentric;
     Identity<Barycentric, ICRS> from_barycentric;
     MasslessBody probe;
-    auto trajectory = std::make_unique<DiscreteTrajectory<Barycentric>>();
+    auto trajectory = std::make_unique<DiscreteTraject0ry<Barycentric>>();
     DegreesOfFreedom<Barycentric> const sun_degrees_of_freedom =
         at_спутник_1_launch->degrees_of_freedom(
             SolarSystemFactory::name(SolarSystemFactory::Sun));
@@ -476,7 +476,7 @@ void EphemerisL4ProbeBenchmark(Time const integration_duration,
   }
 
   while (state.KeepRunning()) {
-    not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> trajectory =
+    not_null<std::unique_ptr<DiscreteTraject0ry<Barycentric>>> trajectory =
         make_l4_probe_trajectory();
     state.PauseTiming();
 
@@ -496,7 +496,7 @@ void EphemerisL4ProbeBenchmark(Time const integration_duration,
              SolarSystemFactory::name(
                  SolarSystemFactory::Earth)).EvaluatePosition(final_time) -
          trajectory->back().degrees_of_freedom.position()).Norm();
-    steps = trajectory->Size();
+    steps = trajectory->size();
     state.ResumeTiming();
   }
   std::stringstream ss;
@@ -538,7 +538,7 @@ void BM_EphemerisStartup(benchmark::State& state) {
 }
 
 void FlowEphemerisWithAdaptiveStep(
-    not_null<DiscreteTrajectory<Barycentric>*> const trajectory,
+    not_null<DiscreteTraject0ry<Barycentric>*> const trajectory,
     Instant const& t,
     Ephemeris<Barycentric>& ephemeris) {
   CHECK_OK(ephemeris.FlowWithAdaptiveStep(
@@ -556,7 +556,7 @@ void FlowEphemerisWithAdaptiveStep(
 }
 
 void FlowEphemerisWithFixedStepSLMS(
-    not_null<DiscreteTrajectory<Barycentric>*> const trajectory,
+    not_null<DiscreteTraject0ry<Barycentric>*> const trajectory,
     Instant const& t,
     Ephemeris<Barycentric>& ephemeris) {
   auto const instance = ephemeris.NewInstance(
@@ -570,7 +570,7 @@ void FlowEphemerisWithFixedStepSLMS(
 }
 
 void FlowEphemerisWithFixedStepSRKN(
-    not_null<DiscreteTrajectory<Barycentric>*> const trajectory,
+    not_null<DiscreteTraject0ry<Barycentric>*> const trajectory,
     Instant const& t,
     Ephemeris<Barycentric>& ephemeris) {
   auto const instance = ephemeris.NewInstance(

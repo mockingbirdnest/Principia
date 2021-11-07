@@ -16,6 +16,7 @@
 #include "physics/apsides.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/body_surface_dynamic_frame.hpp"
+#include "physics/discrete_traject0ry.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
@@ -78,7 +79,7 @@ class ApsidesBenchmark : public benchmark::Fixture {
     ephemeris_->Prolong(begin->time);
 
     BodySurfaceDynamicFrame<ICRS, ITRS> const itrs(ephemeris_, earth_);
-    ilrsa_lageos2_trajectory_icrs_ = new DiscreteTrajectory<ICRS>;
+    ilrsa_lageos2_trajectory_icrs_ = new DiscreteTraject0ry<ICRS>;
     ilrsa_lageos2_trajectory_icrs_->Append(
         begin->time,
         itrs.FromThisFrameAtTime(begin->time)(begin->degrees_of_freedom));
@@ -97,7 +98,7 @@ class ApsidesBenchmark : public benchmark::Fixture {
 
     BodyCentredNonRotatingDynamicFrame<ICRS, GCRS> const gcrs(ephemeris_,
                                                               earth_);
-    ilrsa_lageos2_trajectory_gcrs_ = new DiscreteTrajectory<GCRS>;
+    ilrsa_lageos2_trajectory_gcrs_ = new DiscreteTraject0ry<GCRS>;
     for (auto const& [time, degrees_of_freedom] :
          *ilrsa_lageos2_trajectory_icrs_) {
       ilrsa_lageos2_trajectory_gcrs_->Append(
@@ -116,8 +117,8 @@ class ApsidesBenchmark : public benchmark::Fixture {
   static Ephemeris<ICRS>* ephemeris_;
   static OblateBody<ICRS> const* earth_;
   static ContinuousTrajectory<ICRS> const* earth_trajectory_;
-  static DiscreteTrajectory<ICRS>* ilrsa_lageos2_trajectory_icrs_;
-  static DiscreteTrajectory<GCRS>* ilrsa_lageos2_trajectory_gcrs_;
+  static DiscreteTraject0ry<ICRS>* ilrsa_lageos2_trajectory_icrs_;
+  static DiscreteTraject0ry<GCRS>* ilrsa_lageos2_trajectory_gcrs_;
 };
 
 SolarSystem<ICRS>* ApsidesBenchmark::solar_system_2010_ = nullptr;
@@ -125,38 +126,40 @@ Ephemeris<ICRS>* ApsidesBenchmark::ephemeris_ = nullptr;
 OblateBody<ICRS> const* ApsidesBenchmark::ApsidesBenchmark::earth_ = nullptr;
 ContinuousTrajectory<ICRS> const*
     ApsidesBenchmark::ApsidesBenchmark::earth_trajectory_ = nullptr;
-DiscreteTrajectory<ICRS>* ApsidesBenchmark::ilrsa_lageos2_trajectory_icrs_ =
+DiscreteTraject0ry<ICRS>* ApsidesBenchmark::ilrsa_lageos2_trajectory_icrs_ =
     nullptr;
-DiscreteTrajectory<GCRS>* ApsidesBenchmark::ilrsa_lageos2_trajectory_gcrs_ =
+DiscreteTraject0ry<GCRS>* ApsidesBenchmark::ilrsa_lageos2_trajectory_gcrs_ =
     nullptr;
 
 BENCHMARK_F(ApsidesBenchmark, ComputeApsides)(benchmark::State& state) {
   for (auto _ : state) {
-    DiscreteTrajectory<ICRS> apoapsides;
-    DiscreteTrajectory<ICRS> periapsides;
+    DiscreteTraject0ry<ICRS> apoapsides;
+    DiscreteTraject0ry<ICRS> periapsides;
     ComputeApsides(*earth_trajectory_,
+                   *ilrsa_lageos2_trajectory_icrs_,
                    ilrsa_lageos2_trajectory_icrs_->begin(),
                    ilrsa_lageos2_trajectory_icrs_->end(),
                    /*max_points=*/std::numeric_limits<int>::max(),
                    apoapsides,
                    periapsides);
-    CHECK_EQ(2364, apoapsides.Size());
-    CHECK_EQ(2365, periapsides.Size());
+    CHECK_EQ(2364, apoapsides.size());
+    CHECK_EQ(2365, periapsides.size());
   }
 }
 
 BENCHMARK_F(ApsidesBenchmark, ComputeNodes)(benchmark::State& state) {
   for (auto _ : state) {
-    DiscreteTrajectory<GCRS> ascending;
-    DiscreteTrajectory<GCRS> descending;
-    ComputeNodes(ilrsa_lageos2_trajectory_gcrs_->begin(),
+    DiscreteTraject0ry<GCRS> ascending;
+    DiscreteTraject0ry<GCRS> descending;
+    ComputeNodes(*ilrsa_lageos2_trajectory_gcrs_,
+                 ilrsa_lageos2_trajectory_gcrs_->begin(),
                  ilrsa_lageos2_trajectory_gcrs_->end(),
                  Vector<double, GCRS>({0, 0, 1}),
                  /*max_points=*/std::numeric_limits<int>::max(),
                  ascending,
                  descending);
-    CHECK_EQ(2365, ascending.Size());
-    CHECK_EQ(2365, descending.Size());
+    CHECK_EQ(2365, ascending.size());
+    CHECK_EQ(2365, descending.size());
   }
 }
 
