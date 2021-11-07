@@ -64,11 +64,13 @@ using testing_utilities::RelativeError;
 using testing_utilities::SolarSystemFactory;
 using testing_utilities::operator""_⑴;
 using ::testing::AllOf;
+using ::testing::AnyOf;
 using ::testing::Eq;
 using ::testing::Ge;
 using ::testing::Gt;
 using ::testing::Le;
 using ::testing::Lt;
+using ::testing::SizeIs;
 
 namespace {
 
@@ -243,8 +245,8 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
              -1.0 * AstronomicalUnit / Hour,
               0.0 * AstronomicalUnit / Hour}) * (t - initial_time);
     auto const& vessel = *plugin_->GetVessel(vessel_guid);
-    auto const history =vessel.history();
-    auto const psychohistory =vessel.psychohistory();
+    auto const history = vessel.history();
+    auto const psychohistory = vessel.psychohistory();
     auto const rendered_trajectory =
         plugin_->renderer().RenderBarycentricTrajectoryInWorld(
             plugin_->CurrentTime(),
@@ -252,7 +254,7 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
             psychohistory->end(),
             sun_world_position,
             plugin_->PlanetariumRotation());
-    EXPECT_THAT(rendered_trajectory.size(), AllOf(Ge(61), Le(4261)));
+    EXPECT_THAT(rendered_trajectory, SizeIs(AllOf(Ge(61), Le(4262))));
     Position<World> const earth_world_position =
         sun_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
                                  SolarSystemFactory::Earth).displacement());
@@ -352,36 +354,33 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
           { 0.1 * AstronomicalUnit / Hour,
            -1.0 * AstronomicalUnit / Hour,
             0.0 * AstronomicalUnit / Hour}) * (t - initial_time);
-    auto const& vessel = *plugin_->GetVessel(vessel_guid);
-    auto const history =vessel.history();
-    auto const psychohistory =vessel.psychohistory();
-    auto const rendered_trajectory =
-        plugin_->renderer().RenderBarycentricTrajectoryInWorld(
-            plugin_->CurrentTime(),
-            history->begin(),
-            psychohistory->end(),
-            sun_world_position,
-            plugin_->PlanetariumRotation());
-    EXPECT_EQ(4321, rendered_trajectory.size());
-    Position<World> const earth_world_position =
-        sun_world_position +
-        alice_sun_to_world(
-            plugin_->CelestialFromParent(SolarSystemFactory::Earth)
-                .displacement());
-    Position<World> const moon_world_position =
-        earth_world_position +
-        alice_sun_to_world(
-            plugin_->CelestialFromParent(SolarSystemFactory::Moon)
-                .displacement());
-    Length const earth_moon =
-        (moon_world_position - earth_world_position).Norm();
-    for (auto const& [time, degrees_of_freedom] : rendered_trajectory) {
-      Position<World> const position = degrees_of_freedom.position();
-      Length const satellite_earth = (position - earth_world_position).Norm();
-      Length const satellite_moon = (position - moon_world_position).Norm();
-      EXPECT_THAT(RelativeError(earth_moon, satellite_earth), Lt(0.0907));
-      EXPECT_THAT(RelativeError(earth_moon, satellite_moon), Lt(0.131));
-      EXPECT_THAT(RelativeError(satellite_moon, satellite_earth), Lt(0.148));
+  auto const& vessel = *plugin_->GetVessel(vessel_guid);
+  auto const history = vessel.history();
+  auto const psychohistory = vessel.psychohistory();
+  auto const rendered_trajectory =
+      plugin_->renderer().RenderBarycentricTrajectoryInWorld(
+          plugin_->CurrentTime(),
+          history->begin(),
+          psychohistory->end(),
+          sun_world_position,
+          plugin_->PlanetariumRotation());
+  EXPECT_THAT(rendered_trajectory, SizeIs(AnyOf(4321, 9414)));
+  Position<World> const earth_world_position =
+      sun_world_position +
+      alice_sun_to_world(plugin_->CelestialFromParent(SolarSystemFactory::Earth)
+                             .displacement());
+  Position<World> const moon_world_position =
+      earth_world_position +
+      alice_sun_to_world(plugin_->CelestialFromParent(SolarSystemFactory::Moon)
+                             .displacement());
+  Length const earth_moon = (moon_world_position - earth_world_position).Norm();
+  for (auto const& [time, degrees_of_freedom] : rendered_trajectory) {
+    Position<World> const position = degrees_of_freedom.position();
+    Length const satellite_earth = (position - earth_world_position).Norm();
+    Length const satellite_moon = (position - moon_world_position).Norm();
+    EXPECT_THAT(RelativeError(earth_moon, satellite_earth), Lt(0.0907));
+    EXPECT_THAT(RelativeError(earth_moon, satellite_moon), Lt(0.131));
+    EXPECT_THAT(RelativeError(satellite_moon, satellite_earth), Lt(0.148));
   }
   // Check that there are no spikes in the rendered trajectory, i.e., that three
   // consecutive points form a sufficiently flat triangle.  This tests issue

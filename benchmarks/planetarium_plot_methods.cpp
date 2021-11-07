@@ -8,6 +8,7 @@
 #include "astronomy/time_scales.hpp"
 #include "benchmark/benchmark.h"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/discrete_traject0ry.hpp"
 #include "physics/solar_system.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 
@@ -36,7 +37,7 @@ using ksp_plugin::NavigationFrame;
 using ksp_plugin::Planetarium;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
+using physics::DiscreteTraject0ry;
 using physics::Ephemeris;
 using physics::KeplerianElements;
 using physics::KeplerOrbit;
@@ -155,7 +156,7 @@ class Satellites {
                                            *goes_8_instance));
   }
 
-  DiscreteTrajectory<Barycentric> const& goes_8_trajectory() const {
+  DiscreteTraject0ry<Barycentric> const& goes_8_trajectory() const {
     return goes_8_trajectory_;
   }
 
@@ -191,7 +192,7 @@ class Satellites {
   not_null<std::unique_ptr<Ephemeris<Barycentric>>> const ephemeris_;
   not_null<MassiveBody const*> const earth_;
   not_null<std::unique_ptr<NavigationFrame>> const earth_centred_inertial_;
-  DiscreteTrajectory<Barycentric> goes_8_trajectory_;
+  DiscreteTraject0ry<Barycentric> goes_8_trajectory_;
 };
 
 }  // namespace
@@ -206,7 +207,8 @@ void RunBenchmark(benchmark::State& state,
   // This is the time of a lunar eclipse in January 2000.
   constexpr Instant now = "2000-01-21T04:41:30,5"_TT;
   while (state.KeepRunning()) {
-    lines = planetarium.PlotMethod2(satellites.goes_8_trajectory().begin(),
+    lines = planetarium.PlotMethod2(satellites.goes_8_trajectory(),
+                                    satellites.goes_8_trajectory().begin(),
                                     satellites.goes_8_trajectory().end(),
                                     now,
                                     /*reverse=*/false);
