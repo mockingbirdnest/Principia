@@ -207,16 +207,23 @@ typename DiscreteTraject0ry<Frame>::SegmentIterator
 DiscreteTraject0ry<Frame>::AttachSegments(
     DiscreteTraject0ry&& trajectory) {
   CHECK(!trajectory.empty());
-  // NOTE(phl): This check might be too strict, we might want to allow LT as the
-  // time comparison, and to adjust the first point of trajectory as needed.
-  // We'll see if the clients need that.
-  CHECK_EQ(rbegin()->time, trajectory.begin()->time)
-      << "Mismatching times when attaching segments";
-  CHECK_EQ(rbegin()->degrees_of_freedom, trajectory.begin()->degrees_of_freedom)
-      << "Mismatching degrees of freedom when attaching segments";
 
   if (empty()) {
     *this = DiscreteTraject0ry(uninitialized);
+  } else if (back().time == trajectory.front().time) {
+    CHECK_EQ(back().degrees_of_freedom, trajectory.front().degrees_of_freedom)
+        << "Mismatching degrees of freedom when attaching segments";
+  } else {
+    // If the points are not matching, prepend a matching point to |trajectory|
+    // and update the time-to-segment map.
+    CHECK_LT(back().time, trajectory.front().time)
+        << "Mismatching times when attaching segments";
+    trajectory.segments_->begin()->Prepend(back().time,
+                                           back().degrees_of_freedom);
+    auto const leit = trajectory.segment_by_left_endpoint_.cbegin();
+    auto const sit = leit->second;
+    trajectory.segment_by_left_endpoint_.erase(leit);
+    trajectory.segment_by_left_endpoint_.emplace(back().time, sit);
   }
 
   // The |end| iterator keeps pointing at the end after the splice.  Instead,
