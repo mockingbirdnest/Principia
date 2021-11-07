@@ -6,7 +6,7 @@
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment.hpp"
 #include "physics/discrete_trajectory_types.hpp"
 #include "quantities/named_quantities.hpp"
@@ -20,7 +20,7 @@ using base::not_null;
 using geometry::Instant;
 using geometry::Velocity;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using physics::DiscreteTrajectorySegment;
 using physics::internal_discrete_trajectory_types::Timeline;
 using quantities::AngularFrequency;
@@ -85,7 +85,7 @@ void AppendTrajectoryTimeline(Timeline<Frame> const& from,
 
 template<typename Frame>
 void AppendTrajectoryTimeline(Timeline<Frame> const& from,
-                              DiscreteTraject0ry<Frame>& to);
+                              DiscreteTrajectory<Frame>& to);
 
 template<typename Frame>
 void AppendTrajectoryTimeline(

@@ -431,7 +431,7 @@ template<typename Frame>
 not_null<std::unique_ptr<typename Integrator<
     typename Ephemeris<Frame>::NewtonianMotionEquation>::Instance>>
 Ephemeris<Frame>::NewInstance(
-    std::vector<not_null<DiscreteTraject0ry<Frame>*>> const& trajectories,
+    std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
     IntrinsicAccelerations const& intrinsic_accelerations,
     FixedStepParameters const& parameters) {
   return StoppableNewInstance(trajectories, intrinsic_accelerations, parameters)
@@ -442,7 +442,7 @@ template<typename Frame>
 absl::StatusOr<not_null<std::unique_ptr<typename Integrator<
     typename Ephemeris<Frame>::NewtonianMotionEquation>::Instance>>>
 Ephemeris<Frame>::StoppableNewInstance(
-    std::vector<not_null<DiscreteTraject0ry<Frame>*>> const& trajectories,
+    std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
     IntrinsicAccelerations const& intrinsic_accelerations,
     FixedStepParameters const& parameters) {
   IntegrationProblem<NewtonianMotionEquation> problem;
@@ -497,7 +497,7 @@ Ephemeris<Frame>::StoppableNewInstance(
 
 template<typename Frame>
 absl::Status Ephemeris<Frame>::FlowWithAdaptiveStep(
-    not_null<DiscreteTraject0ry<Frame>*> const trajectory,
+    not_null<DiscreteTrajectory<Frame>*> const trajectory,
     IntrinsicAcceleration intrinsic_acceleration,
     Instant const& t,
     AdaptiveStepParameters const& parameters,
@@ -527,7 +527,7 @@ absl::Status Ephemeris<Frame>::FlowWithAdaptiveStep(
 
 template<typename Frame>
 absl::Status Ephemeris<Frame>::FlowWithAdaptiveStep(
-    not_null<DiscreteTraject0ry<Frame>*> trajectory,
+    not_null<DiscreteTrajectory<Frame>*> trajectory,
     GeneralizedIntrinsicAcceleration intrinsic_acceleration,
     Instant const& t,
     GeneralizedAdaptiveStepParameters const& parameters,
@@ -587,7 +587,7 @@ Ephemeris<Frame>::ComputeGravitationalAccelerationOnMasslessBody(
 template<typename Frame>
 Vector<Acceleration, Frame>
 Ephemeris<Frame>::ComputeGravitationalAccelerationOnMasslessBody(
-    not_null<DiscreteTraject0ry<Frame>*> const trajectory,
+    not_null<DiscreteTrajectory<Frame>*> const trajectory,
     Instant const& t) const {
   auto const it = trajectory->find(t);
   DegreesOfFreedom<Frame> const& degrees_of_freedom = it->degrees_of_freedom;
@@ -680,10 +680,10 @@ Ephemeris<Frame>::ComputeGravitationalAccelerationOnMassiveBody(
 template<typename Frame>
 void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
                                       not_null<MassiveBody const*> const body2,
-                                      DiscreteTraject0ry<Frame>& apoapsides1,
-                                      DiscreteTraject0ry<Frame>& periapsides1,
-                                      DiscreteTraject0ry<Frame>& apoapsides2,
-                                      DiscreteTraject0ry<Frame>& periapsides2) {
+                                      DiscreteTrajectory<Frame>& apoapsides1,
+                                      DiscreteTrajectory<Frame>& periapsides1,
+                                      DiscreteTrajectory<Frame>& apoapsides2,
+                                      DiscreteTrajectory<Frame>& periapsides2) {
   not_null<ContinuousTrajectory<Frame> const*> const body1_trajectory =
       trajectory(body1);
   not_null<ContinuousTrajectory<Frame> const*> const body2_trajectory =
@@ -1086,7 +1086,7 @@ Ephemeris<Frame>::AppendMassiveBodiesStateToTrajectories(
 template<typename Frame>
 void Ephemeris<Frame>::AppendMasslessBodiesStateToTrajectories(
     typename NewtonianMotionEquation::SystemState const& state,
-    std::vector<not_null<DiscreteTraject0ry<Frame>*>> const& trajectories) {
+    std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories) {
   Instant const time = state.time.value;
   int index = 0;
   for (auto& trajectory : trajectories) {
@@ -1342,7 +1342,7 @@ template<typename Frame>
 template<typename ODE>
 absl::Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
     typename ODE::RightHandSideComputation compute_acceleration,
-    not_null<DiscreteTraject0ry<Frame>*> trajectory,
+    not_null<DiscreteTrajectory<Frame>*> trajectory,
     Instant const& t,
     ODEAdaptiveStepParameters<ODE> const& parameters,
     std::int64_t max_ephemeris_steps) {
@@ -1352,7 +1352,7 @@ absl::Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
     return absl::OkStatus();
   }
 
-  std::vector<not_null<DiscreteTraject0ry<Frame>*>> const trajectories =
+  std::vector<not_null<DiscreteTrajectory<Frame>*>> const trajectories =
       {trajectory};
   // The |min| is here to prevent us from spending too much time computing the
   // ephemeris.  The |max| is here to ensure that we always try to integrate

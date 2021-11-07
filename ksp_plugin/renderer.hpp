@@ -12,7 +12,7 @@
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/vessel.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
@@ -29,7 +29,7 @@ using geometry::OrthogonalMap;
 using geometry::Position;
 using geometry::RigidTransformation;
 using geometry::Rotation;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::Frenet;
 using physics::RigidMotion;
@@ -72,29 +72,29 @@ class Renderer {
   // and others in this class, |sun_world_position| is the current position of
   // the sun in |World| space as returned by |Planetarium.fetch.Sun.position|;
   // it is used to define the relation between |WorldSun| and |World|.
-  virtual DiscreteTraject0ry<World>
+  virtual DiscreteTrajectory<World>
   RenderBarycentricTrajectoryInWorld(
       Instant const& time,
-      DiscreteTraject0ry<Barycentric>::iterator const& begin,
-      DiscreteTraject0ry<Barycentric>::iterator const& end,
+      DiscreteTrajectory<Barycentric>::iterator const& begin,
+      DiscreteTrajectory<Barycentric>::iterator const& end,
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
   // Returns a trajectory in the current plotting frame corresponding to the
   // trajectory defined by |begin| and |end|.  If there is a target vessel, its
   // prediction must not be empty.
-  virtual DiscreteTraject0ry<Navigation>
+  virtual DiscreteTrajectory<Navigation>
   RenderBarycentricTrajectoryInPlotting(
-      DiscreteTraject0ry<Barycentric>::iterator const& begin,
-      DiscreteTraject0ry<Barycentric>::iterator const& end) const;
+      DiscreteTrajectory<Barycentric>::iterator const& begin,
+      DiscreteTrajectory<Barycentric>::iterator const& end) const;
 
   // Returns a trajectory in |World| corresponding to the trajectory defined by
   // |begin| and |end| in the current plotting frame.
-  virtual DiscreteTraject0ry<World>
+  virtual DiscreteTrajectory<World>
   RenderPlottingTrajectoryInWorld(
       Instant const& time,
-      DiscreteTraject0ry<Navigation>::iterator const& begin,
-      DiscreteTraject0ry<Navigation>::iterator const& end,
+      DiscreteTrajectory<Navigation>::iterator const& begin,
+      DiscreteTrajectory<Navigation>::iterator const& end,
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 

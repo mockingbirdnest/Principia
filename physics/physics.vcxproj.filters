@@ -188,9 +188,6 @@
     <ClInclude Include="discrete_trajectory_segment_iterator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="discrete_traject0ry.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="discrete_trajectory_types.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -209,10 +206,13 @@
     <ClInclude Include="discrete_trajectory_segment_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="discrete_traject0ry_body.hpp">
+    <ClInclude Include="discrete_trajectory_types_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="discrete_trajectory_types_body.hpp">
+    <ClInclude Include="discrete_trajectory.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="discrete_trajectory_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -319,11 +319,11 @@
     <ClCompile Include="discrete_trajectory_segment_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="discrete_traject0ry_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\testing_utilities\string_log_sink.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="discrete_trajectory_test.cpp">
+      <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

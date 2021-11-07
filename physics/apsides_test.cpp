@@ -90,7 +90,7 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
                                 Pow<3>(r_norm * Pow<2>(v_norm) - 2 * μ)));
   Length const a = -r_norm * μ / (r_norm * Pow<2>(v_norm) - 2 * μ);
 
-  DiscreteTraject0ry<World> trajectory;
+  DiscreteTrajectory<World> trajectory;
   trajectory.Append(t0, DegreesOfFreedom<World>(World::origin + r, v));
 
   ephemeris.FlowWithAdaptiveStep(
@@ -106,8 +106,8 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
           1e-3 * Metre / Second),
       Ephemeris<World>::unlimited_max_ephemeris_steps);
 
-  DiscreteTraject0ry<World> apoapsides;
-  DiscreteTraject0ry<World> periapsides;
+  DiscreteTrajectory<World> apoapsides;
+  DiscreteTrajectory<World> periapsides;
   ComputeApsides(*ephemeris.trajectory(b),
                  trajectory,
                  trajectory.begin(),
@@ -184,7 +184,7 @@ TEST_F(ApsidesTest, ComputeNodes) {
       *ephemeris.bodies()[0], MasslessBody{}, elements, t0};
   elements = orbit.elements_at_epoch();
 
-  DiscreteTraject0ry<World> trajectory;
+  DiscreteTrajectory<World> trajectory;
   trajectory.Append(t0, initial_state[0] + orbit.StateVectors(t0));
 
   ephemeris.FlowWithAdaptiveStep(
@@ -202,8 +202,8 @@ TEST_F(ApsidesTest, ComputeNodes) {
 
   Vector<double, World> const north({0, 0, 1});
 
-  DiscreteTraject0ry<World> ascending_nodes;
-  DiscreteTraject0ry<World> descending_nodes;
+  DiscreteTrajectory<World> ascending_nodes;
+  DiscreteTrajectory<World> descending_nodes;
   ComputeNodes(trajectory,
                trajectory.begin(),
                trajectory.end(),
@@ -242,8 +242,8 @@ TEST_F(ApsidesTest, ComputeNodes) {
   EXPECT_THAT(ascending_nodes, SizeIs(10));
   EXPECT_THAT(descending_nodes, SizeIs(10));
 
-  DiscreteTraject0ry<World> south_ascending_nodes;
-  DiscreteTraject0ry<World> south_descending_nodes;
+  DiscreteTrajectory<World> south_ascending_nodes;
+  DiscreteTrajectory<World> south_descending_nodes;
   Vector<double, World> const mostly_south({1, 1, -1});
   ComputeNodes(trajectory,
                trajectory.begin(),

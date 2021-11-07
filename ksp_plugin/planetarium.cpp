@@ -48,9 +48,9 @@ Planetarium::Planetarium(
       plotting_frame_(plotting_frame) {}
 
 RP2Lines<Length, Camera> Planetarium::PlotMethod0(
-    DiscreteTraject0ry<Barycentric> const& trajectory,
-    DiscreteTraject0ry<Barycentric>::iterator const begin,
-    DiscreteTraject0ry<Barycentric>::iterator const end,
+    DiscreteTrajectory<Barycentric> const& trajectory,
+    DiscreteTrajectory<Barycentric>::iterator const begin,
+    DiscreteTrajectory<Barycentric>::iterator const end,
     Instant const& now,
     bool const /*reverse*/) const {
   auto const plottable_begin = trajectory.lower_bound(plotting_frame_->t_min());
@@ -97,9 +97,9 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod0(
 }
 
 RP2Lines<Length, Camera> Planetarium::PlotMethod1(
-    DiscreteTraject0ry<Barycentric> const& trajectory,
-    DiscreteTraject0ry<Barycentric>::iterator const begin,
-    DiscreteTraject0ry<Barycentric>::iterator const end,
+    DiscreteTrajectory<Barycentric> const& trajectory,
+    DiscreteTrajectory<Barycentric>::iterator const begin,
+    DiscreteTrajectory<Barycentric>::iterator const end,
     Instant const& now,
     bool const reverse) const {
   Length const focal_plane_tolerance =
@@ -136,8 +136,8 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod1(
 
 RP2Lines<Length, Camera> Planetarium::PlotMethod2(
     Trajectory<Barycentric> const& trajectory,
-    DiscreteTraject0ry<Barycentric>::iterator const begin,
-    DiscreteTraject0ry<Barycentric>::iterator const end,
+    DiscreteTrajectory<Barycentric>::iterator const begin,
+    DiscreteTrajectory<Barycentric>::iterator const end,
     Instant const& now,
     bool const reverse) const {
   if (begin == end) {
@@ -278,8 +278,8 @@ std::vector<Sphere<Navigation>> Planetarium::ComputePlottableSpheres(
 
 Segments<Navigation> Planetarium::ComputePlottableSegments(
     const std::vector<Sphere<Navigation>>& plottable_spheres,
-    DiscreteTraject0ry<Barycentric>::iterator const begin,
-    DiscreteTraject0ry<Barycentric>::iterator const end) const {
+    DiscreteTrajectory<Barycentric>::iterator const begin,
+    DiscreteTrajectory<Barycentric>::iterator const end) const {
   Segments<Navigation> all_segments;
   if (begin == end) {
     return all_segments;

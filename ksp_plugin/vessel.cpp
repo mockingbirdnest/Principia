@@ -200,7 +200,7 @@ void Vessel::ForAllParts(std::function<void(Part&)> action) const {
   }
 }
 
-DiscreteTraject0ry<Barycentric> const& Vessel::trajectory() const {
+DiscreteTrajectory<Barycentric> const& Vessel::trajectory() const {
   return trajectory_;
 }
 
@@ -343,7 +343,7 @@ absl::Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
 void Vessel::RefreshPrediction() {
   // The |prognostication| is a trajectory which is computed asynchronously and
   // may be used as a prediction;
-  std::optional<DiscreteTraject0ry<Barycentric>> prognostication;
+  std::optional<DiscreteTrajectory<Barycentric>> prognostication;
 
   // Note that we know that |RefreshPrediction| is called on the main thread,
   // therefore the ephemeris currently covers the last time of the
@@ -451,7 +451,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
 
   if (is_pre_cesàro) {
     auto const psychohistory =
-        DiscreteTraject0ry<Barycentric>::ReadFromMessage(message.history(),
+        DiscreteTrajectory<Barycentric>::ReadFromMessage(message.history(),
                                                          /*forks=*/{});
     // The |history_| has been created by the constructor above.  Reconstruct
     // it from the |psychohistory|.
@@ -469,13 +469,13 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     }
     vessel->prediction_ = vessel->trajectory_.NewSegment();
   } else if (is_pre_chasles) {
-    vessel->trajectory_ = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
+    vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
         /*tracked=*/{&vessel->psychohistory_});
     vessel->history_ = vessel->trajectory_.segments().begin();
     vessel->prediction_ = vessel->trajectory_.NewSegment();
   } else if (is_pre_ζήνων) {
-    vessel->trajectory_ = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
+    vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
         /*tracked=*/{&vessel->psychohistory_, &vessel->prediction_});
     vessel->history_ = vessel->trajectory_.segments().begin();
@@ -483,7 +483,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     // during deserialization.  Doesn't hurt prior to Εὔδοξος.
     ephemeris->Prolong(vessel->prediction_->back().time);
   } else {
-    vessel->trajectory_ = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
+    vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
         /*tracked=*/{&vessel->history_,
                      &vessel->psychohistory_,
@@ -575,10 +575,10 @@ Vessel::Vessel()
       prediction_(trajectory_.segments().end()),
       prognosticator_(nullptr, 20ms) {}
 
-absl::StatusOr<DiscreteTraject0ry<Barycentric>>
+absl::StatusOr<DiscreteTrajectory<Barycentric>>
 Vessel::FlowPrognostication(
     PrognosticatorParameters prognosticator_parameters) {
-  DiscreteTraject0ry<Barycentric> prognostication;
+  DiscreteTrajectory<Barycentric> prognostication;
   prognostication.Append(
       prognosticator_parameters.first_time,
       prognosticator_parameters.first_degrees_of_freedom);
@@ -617,8 +617,8 @@ void Vessel::AppendToVesselTrajectory(
     TrajectoryIterator const part_trajectory_end,
     DiscreteTrajectorySegment<Barycentric> const& segment) {
   CHECK(!parts_.empty());
-  std::vector<DiscreteTraject0ry<Barycentric>::iterator> its;
-  std::vector<DiscreteTraject0ry<Barycentric>::iterator> ends;
+  std::vector<DiscreteTrajectory<Barycentric>::iterator> its;
+  std::vector<DiscreteTrajectory<Barycentric>::iterator> ends;
   its.reserve(parts_.size());
   ends.reserve(parts_.size());
   for (auto const& [_, part] : parts_) {
@@ -666,7 +666,7 @@ void Vessel::AppendToVesselTrajectory(
   }
 }
 
-void Vessel::AttachPrediction(DiscreteTraject0ry<Barycentric>&& trajectory) {
+void Vessel::AttachPrediction(DiscreteTrajectory<Barycentric>&& trajectory) {
   trajectory.ForgetBefore(psychohistory_->back().time);
   if (trajectory.empty()) {
     prediction_ = trajectory_.NewSegment();

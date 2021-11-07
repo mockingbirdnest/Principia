@@ -18,7 +18,7 @@
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/interface.hpp"
 #include "ksp_plugin/plugin.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "serialization/ksp_plugin.pb.h"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/serialization.hpp"
@@ -40,7 +40,7 @@ using base::PullSerializer;
 using base::PushDeserializer;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Plugin;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using quantities::Speed;
 using quantities::si::Kilo;
 using testing_utilities::operator""_⑴;
@@ -376,7 +376,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
         ReadFromBinaryFile(TEMP_DIR / "trajectory_3136.proto.bin");
     auto const message =
         ParseFromBytes<serialization::DiscreteTrajectory>(serialized_message);
-    auto const trajectory = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
+    auto const trajectory = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message, /*tracked=*/{&history, &psychohistory});
     EXPECT_THAT(*history, SizeIs(435'927));
     EXPECT_THAT(*psychohistory, SizeIs(3));

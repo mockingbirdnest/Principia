@@ -17,7 +17,7 @@
 #include "ksp_plugin/orbit_analyser.hpp"
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/pile_up.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/ephemeris.hpp"
@@ -34,7 +34,7 @@ using base::RecurringThread;
 using geometry::Instant;
 using geometry::Vector;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using physics::DiscreteTrajectorySegment;
 using physics::DiscreteTrajectorySegmentIterator;
 using physics::Ephemeris;
@@ -125,7 +125,7 @@ class Vessel {
   // Calls |action| on all parts.
   virtual void ForAllParts(std::function<void(Part&)> action) const;
 
-  virtual DiscreteTraject0ry<Barycentric> const& trajectory() const;
+  virtual DiscreteTrajectory<Barycentric> const& trajectory() const;
   virtual DiscreteTrajectorySegmentIterator<Barycentric> history() const;
   virtual DiscreteTrajectorySegmentIterator<Barycentric> psychohistory() const;
   virtual DiscreteTrajectorySegmentIterator<Barycentric> prediction() const;
@@ -221,11 +221,11 @@ class Vessel {
                          PrognosticatorParameters const& right);
 
   using TrajectoryIterator =
-      DiscreteTraject0ry<Barycentric>::iterator (Part::*)();
+      DiscreteTrajectory<Barycentric>::iterator (Part::*)();
 
   // Runs the integrator to compute the |prognostication_| based on the given
   // parameters.
-  absl::StatusOr<DiscreteTraject0ry<Barycentric>>
+  absl::StatusOr<DiscreteTrajectory<Barycentric>>
   FlowPrognostication(PrognosticatorParameters prognosticator_parameters);
 
   // Appends to |trajectory_| the centre of mass of the trajectories of the
@@ -238,7 +238,7 @@ class Vessel {
 
   // Attaches the given |trajectory| to the end of the |psychohistory_| to
   // become the new |prediction_|.  If |prediction_| is not null, it is deleted.
-  void AttachPrediction(DiscreteTraject0ry<Barycentric>&& trajectory);
+  void AttachPrediction(DiscreteTrajectory<Barycentric>&& trajectory);
 
   GUID const guid_;
   std::string name_;
@@ -256,7 +256,7 @@ class Vessel {
   // The vessel trajectory is made of the history (always present) and (most of
   // the time) the psychohistory and prediction.  The prediction is periodically
   // recomputed by the prognosticator.
-  DiscreteTraject0ry<Barycentric> trajectory_;
+  DiscreteTrajectory<Barycentric> trajectory_;
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
   DiscreteTrajectorySegmentIterator<Barycentric> history_;
@@ -265,7 +265,7 @@ class Vessel {
   DiscreteTrajectorySegmentIterator<Barycentric> prediction_;
 
   RecurringThread<PrognosticatorParameters,
-                  DiscreteTraject0ry<Barycentric>> prognosticator_;
+                  DiscreteTrajectory<Barycentric>> prognosticator_;
 
   std::unique_ptr<FlightPlan> flight_plan_;
 

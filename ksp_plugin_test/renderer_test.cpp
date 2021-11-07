@@ -10,7 +10,7 @@
 #include "ksp_plugin_test/mock_celestial.hpp"
 #include "ksp_plugin_test/mock_vessel.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/mock_continuous_trajectory.hpp"
 #include "physics/mock_dynamic_frame.hpp"
 #include "physics/mock_ephemeris.hpp"
@@ -35,7 +35,7 @@ using geometry::RigidTransformation;
 using geometry::Rotation;
 using geometry::Velocity;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using physics::MockContinuousTrajectory;
 using physics::MockDynamicFrame;
 using physics::MockEphemeris;
@@ -74,7 +74,7 @@ TEST_F(RendererTest, TargetVessel) {
       .WillRepeatedly(Return(&celestial_trajectory));
 
   MockVessel vessel;
-  DiscreteTraject0ry<Barycentric> vessel_trajectory;
+  DiscreteTrajectory<Barycentric> vessel_trajectory;
   AppendTrajectoryTimeline(
       NewLinearTrajectoryTimeline(/*v=*/Barycentric::unmoving,
                                   /*Δt=*/1 * Second,
@@ -103,7 +103,7 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithoutTargetVessel) {
   auto const vy = 5 * Metre / Second;
   auto const vz = 4 * Metre / Second;
   Velocity<Barycentric> const v({vx, vy, vz});
-  DiscreteTraject0ry<Barycentric> trajectory_to_render;
+  DiscreteTrajectory<Barycentric> trajectory_to_render;
   AppendTrajectoryTimeline(
       NewLinearTrajectoryTimeline(v,
                                   /*Δt=*/1 * Second,
@@ -147,7 +147,7 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithTargetVessel) {
   EXPECT_CALL(ephemeris, trajectory(_))
       .WillRepeatedly(Return(&celestial_trajectory));
 
-  DiscreteTraject0ry<Barycentric> trajectory_to_render;
+  DiscreteTrajectory<Barycentric> trajectory_to_render;
   AppendTrajectoryTimeline(
       NewLinearTrajectoryTimeline(
           /*v=*/Velocity<Barycentric>(
@@ -159,7 +159,7 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithTargetVessel) {
 
   // The prediction is shorter than the |trajectory_to_render|.
   MockVessel vessel;
-  DiscreteTraject0ry<Barycentric> vessel_trajectory;
+  DiscreteTrajectory<Barycentric> vessel_trajectory;
   AppendTrajectoryTimeline(
       NewLinearTrajectoryTimeline(
           DegreesOfFreedom<Barycentric>(
@@ -204,7 +204,7 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithTargetVessel) {
 }
 
 TEST_F(RendererTest, RenderPlottingTrajectoryInWorldWithoutTargetVessel) {
-  DiscreteTraject0ry<Navigation> trajectory_to_render;
+  DiscreteTrajectory<Navigation> trajectory_to_render;
   AppendTrajectoryTimeline(
       NewLinearTrajectoryTimeline(
           /*v=*/Velocity<Navigation>(

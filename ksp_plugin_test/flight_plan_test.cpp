@@ -15,7 +15,7 @@
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/rotating_body.hpp"
@@ -48,7 +48,7 @@ using integrators::methods::Fine1987RKNG34;
 using integrators::methods::QuinlanTremaine1990Order12;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::Frenet;
 using physics::MassiveBody;
@@ -195,7 +195,7 @@ class FlightPlanTest : public testing::Test {
   Instant const t0_;
   std::unique_ptr<TestNavigationFrame> navigation_frame_;
   std::unique_ptr<Ephemeris<Barycentric>> ephemeris_;
-  DiscreteTraject0ry<Barycentric> root_;
+  DiscreteTrajectory<Barycentric> root_;
   std::unique_ptr<FlightPlan> flight_plan_;
 };
 
@@ -243,7 +243,7 @@ TEST_F(FlightPlanTest, Singular) {
           /*length_integration_tolerance=*/1 * Metre,
           /*speed_integration_tolerance=*/1 * Metre / Second));
   auto const segment0 = flight_plan_->GetSegment(0);
-  DiscreteTraject0ry<Barycentric>::iterator back = segment0->end();
+  DiscreteTrajectory<Barycentric>::iterator back = segment0->end();
   --back;
   EXPECT_THAT(AbsoluteError(singularity, back->time), Lt(1e-4 * Second));
   // Attempting to put a burn past the singularity fails.

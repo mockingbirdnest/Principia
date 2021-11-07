@@ -7,7 +7,7 @@
 #include <functional>
 
 #include "base/not_null.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
@@ -17,7 +17,7 @@ namespace internal_manœuvre {
 using base::check_not_null;
 using geometry::NormalizeOrZero;
 using geometry::Rotation;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using physics::RigidMotion;
 using quantities::Acceleration;
 using quantities::Sqrt;
@@ -210,7 +210,7 @@ Manœuvre<InertialFrame, Frame>::FrenetIntrinsicAcceleration() const {
 template<typename InertialFrame, typename Frame>
 OrthogonalMap<Frenet<Frame>, InertialFrame>
     Manœuvre<InertialFrame, Frame>::FrenetFrame() const {
-  typename DiscreteTraject0ry<InertialFrame>::iterator const it =
+  typename DiscreteTrajectory<InertialFrame>::iterator const it =
       coasting_trajectory_->find(initial_time());
   CHECK(it != coasting_trajectory_->end());
   return ComputeFrenetFrame(initial_time(), it->degrees_of_freedom);

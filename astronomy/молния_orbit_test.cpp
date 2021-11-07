@@ -12,7 +12,7 @@
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "mathematica/mathematica.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massless_body.hpp"
 #include "physics/oblate_body.hpp"
@@ -37,7 +37,7 @@ using geometry::Position;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::Quinlan1999Order8A;
 using integrators::methods::QuinlanTremaine1990Order12;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::KeplerOrbit;
 using physics::KeplerianElements;
@@ -118,7 +118,7 @@ TEST_F(МолнияOrbitTest, DISABLED_Satellite) {
       *earth_body, satellite, initial_elements, J2000);
   auto const satellite_state_vectors = initial_orbit.StateVectors(J2000);
 
-  DiscreteTraject0ry<ICRS> trajectory;
+  DiscreteTrajectory<ICRS> trajectory;
   trajectory.Append(J2000, earth_degrees_of_freedom + satellite_state_vectors);
   auto const instance = ephemeris_->NewInstance(
       {&trajectory},

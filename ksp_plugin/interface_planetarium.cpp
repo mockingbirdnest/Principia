@@ -16,7 +16,7 @@
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/renderer.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/rigid_motion.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -36,7 +36,7 @@ using ksp_plugin::Navigation;
 using ksp_plugin::Planetarium;
 using ksp_plugin::Renderer;
 using ksp_plugin::TypedIterator;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using quantities::Length;
 using quantities::si::ArcMinute;
 using quantities::si::Kilo;

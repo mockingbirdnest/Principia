@@ -22,7 +22,7 @@
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -52,7 +52,7 @@ using numerics::UnboundedLowerTriangularMatrix;
 using numerics::UnboundedUpperTriangularMatrix;
 using numerics::UnboundedVector;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using quantities::Infinity;
 using quantities::Length;
 using quantities::Speed;
@@ -204,7 +204,7 @@ TEST_F(MathematicaTest, ToMathematica) {
     EXPECT_EQ(ToMathematica(std::tuple{1.0, 2.0}), ToMathematica(v2));
   }
   {
-    DiscreteTraject0ry<F> trajectory;
+    DiscreteTrajectory<F> trajectory;
     trajectory.Append(
         Instant(),
         DegreesOfFreedom<F>(
@@ -339,7 +339,7 @@ TEST_F(MathematicaTest, ExpressIn) {
               ToMathematica(v, ExpressIn(Metre, Second)));
   }
   {
-    DiscreteTraject0ry<F> trajectory;
+    DiscreteTrajectory<F> trajectory;
     trajectory.Append(
         Instant(),
         DegreesOfFreedom<F>(

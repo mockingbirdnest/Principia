@@ -114,7 +114,7 @@ void AppendTrajectoryTimeline(Timeline<Frame> const& from,
 
 template<typename Frame>
 void AppendTrajectoryTimeline(Timeline<Frame> const& from,
-                              DiscreteTraject0ry<Frame>& to) {
+                              DiscreteTrajectory<Frame>& to) {
   for (auto const& [t, degrees_of_freedom] : from) {
     to.Append(t, degrees_of_freedom);
   }

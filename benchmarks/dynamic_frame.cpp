@@ -24,7 +24,7 @@
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
@@ -87,13 +87,13 @@ std::vector<std::pair<Position<Barycentric>, Position<Barycentric>>>
 ApplyDynamicFrame(
     not_null<Body const*> const body,
     not_null<DynamicFrame<Barycentric, Rendering>*> const dynamic_frame,
-    DiscreteTraject0ry<Barycentric>::iterator const& begin,
-    DiscreteTraject0ry<Barycentric>::iterator const& end) {
+    DiscreteTrajectory<Barycentric>::iterator const& begin,
+    DiscreteTrajectory<Barycentric>::iterator const& end) {
   std::vector<std::pair<Position<Barycentric>,
                         Position<Barycentric>>> result;
 
   // Compute the trajectory in the rendering frame.
-  DiscreteTraject0ry<Rendering> intermediate_trajectory;
+  DiscreteTrajectory<Rendering> intermediate_trajectory;
   for (auto it = begin; it != end; ++it) {
     auto const& [time, degrees_of_freedom] = *it;
     intermediate_trajectory.Append(
@@ -103,9 +103,9 @@ ApplyDynamicFrame(
 
   // Render the trajectory at current time in |Rendering|.
   Instant const& current_time = intermediate_trajectory.back().time;
-  DiscreteTraject0ry<Rendering>::iterator initial_it =
+  DiscreteTrajectory<Rendering>::iterator initial_it =
       intermediate_trajectory.begin();
-  DiscreteTraject0ry<Rendering>::iterator const intermediate_end =
+  DiscreteTrajectory<Rendering>::iterator const intermediate_end =
       intermediate_trajectory.end();
   auto to_rendering_frame_at_current_time =
       dynamic_frame->FromThisFrameAtTime(current_time).rigid_transformation();
@@ -153,8 +153,8 @@ void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
       Velocity<Barycentric>({0 * si::Unit<Speed>,
                              100 * Kilo(Metre) / Second,
                              0 * si::Unit<Speed>});
-  DiscreteTraject0ry<Barycentric> probe_trajectory;
-  FillLinearTrajectory<Barycentric, DiscreteTraject0ry>(probe_initial_position,
+  DiscreteTrajectory<Barycentric> probe_trajectory;
+  FillLinearTrajectory<Barycentric, DiscreteTrajectory>(probe_initial_position,
                                                         probe_velocity,
                                                         solar_system.epoch(),
                                                         Δt,
@@ -203,8 +203,8 @@ void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
       Velocity<Barycentric>({0 * si::Unit<Speed>,
                              100 * Kilo(Metre) / Second,
                              0 * si::Unit<Speed>});
-  DiscreteTraject0ry<Barycentric> probe_trajectory;
-  FillLinearTrajectory<Barycentric, DiscreteTraject0ry>(probe_initial_position,
+  DiscreteTrajectory<Barycentric> probe_trajectory;
+  FillLinearTrajectory<Barycentric, DiscreteTrajectory>(probe_initial_position,
                                                         probe_velocity,
                                                         solar_system.epoch(),
                                                         Δt,

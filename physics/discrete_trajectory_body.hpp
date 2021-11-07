@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 
 #include <algorithm>
 #include <vector>
@@ -14,7 +14,7 @@
 
 namespace principia {
 namespace physics {
-namespace internal_discrete_traject0ry {
+namespace internal_discrete_trajectory {
 
 using astronomy::InfiniteFuture;
 using astronomy::InfinitePast;
@@ -23,7 +23,7 @@ using base::uninitialized;
 using quantities::Length;
 
 template<typename Frame>
-DiscreteTraject0ry<Frame>::DiscreteTraject0ry()
+DiscreteTrajectory<Frame>::DiscreteTrajectory()
     : segments_(make_not_null_unique<Segments>(1)) {
   auto const sit = segments_->begin();
   auto const self = SegmentIterator(segments_.get(), sit);
@@ -31,48 +31,48 @@ DiscreteTraject0ry<Frame>::DiscreteTraject0ry()
 }
 
 template<typename Frame>
-typename DiscreteTraject0ry<Frame>::reference
-DiscreteTraject0ry<Frame>::front() const {
+typename DiscreteTrajectory<Frame>::reference
+DiscreteTrajectory<Frame>::front() const {
   return *begin();
 }
 
 template<typename Frame>
-typename DiscreteTraject0ry<Frame>::reference
-DiscreteTraject0ry<Frame>::back() const {
+typename DiscreteTrajectory<Frame>::reference
+DiscreteTrajectory<Frame>::back() const {
   return *rbegin();
 }
 
 template<typename Frame>
-typename DiscreteTraject0ry<Frame>::iterator
-DiscreteTraject0ry<Frame>::begin() const {
+typename DiscreteTrajectory<Frame>::iterator
+DiscreteTrajectory<Frame>::begin() const {
   return segments_->front().begin();
 }
 
 template<typename Frame>
-typename DiscreteTraject0ry<Frame>::iterator
-DiscreteTraject0ry<Frame>::end() const {
+typename DiscreteTrajectory<Frame>::iterator
+DiscreteTrajectory<Frame>::end() const {
   return segments_->back().end();
 }
 
 template<typename Frame>
-typename DiscreteTraject0ry<Frame>::reverse_iterator
-DiscreteTraject0ry<Frame>::rbegin() const {
+typename DiscreteTrajectory<Frame>::reverse_iterator
+DiscreteTrajectory<Frame>::rbegin() const {
   return reverse_iterator(end());
 }
 
 template<typename Frame>
-typename DiscreteTraject0ry<Frame>::reverse_iterator
-DiscreteTraject0ry<Frame>::rend() const {
+typename DiscreteTrajectory<Frame>::reverse_iterator
+DiscreteTrajectory<Frame>::rend() const {
   return reverse_iterator(begin());
 }
 
 template<typename Frame>
-bool DiscreteTraject0ry<Frame>::empty() const {
+bool DiscreteTrajectory<Frame>::empty() const {
   return segment_by_left_endpoint_.empty();
 }
 
 template<typename Frame>
-std::int64_t DiscreteTraject0ry<Frame>::size() const {
+std::int64_t DiscreteTrajectory<Frame>::size() const {
   std::int64_t size = 1;
   for (auto const& segment : *segments_) {
     size += segment.size();
@@ -82,15 +82,15 @@ std::int64_t DiscreteTraject0ry<Frame>::size() const {
 }
 
 template<typename Frame>
-void DiscreteTraject0ry<Frame>::clear() {
+void DiscreteTrajectory<Frame>::clear() {
   segments_->erase(std::next(segments_->begin()), segments_->end());
   segments_->front().clear();
   segment_by_left_endpoint_.clear();
 }
 
 template<typename Frame>
-typename DiscreteTraject0ry<Frame>::iterator
-DiscreteTraject0ry<Frame>::find(Instant const& t) const {
+typename DiscreteTrajectory<Frame>::iterator
+DiscreteTrajectory<Frame>::find(Instant const& t) const {
   auto const leit = FindSegment(t);
   if (leit == segment_by_left_endpoint_.cend()) {
     return end();
@@ -104,8 +104,8 @@ DiscreteTraject0ry<Frame>::find(Instant const& t) const {
 }
 
 template<typename Frame>
-typename DiscreteTraject0ry<Frame>::iterator
-DiscreteTraject0ry<Frame>::lower_bound(Instant const& t) const {
+typename DiscreteTrajectory<Frame>::iterator
+DiscreteTrajectory<Frame>::lower_bound(Instant const& t) const {
   auto const leit = FindSegment(t);
   if (leit == segment_by_left_endpoint_.cend()) {
     // This includes an empty trajectory.
@@ -120,8 +120,8 @@ DiscreteTraject0ry<Frame>::lower_bound(Instant const& t) const {
 }
 
 template<typename Frame>
-typename DiscreteTraject0ry<Frame>::iterator
-DiscreteTraject0ry<Frame>::upper_bound(Instant const& t) const {
+typename DiscreteTrajectory<Frame>::iterator
+DiscreteTrajectory<Frame>::upper_bound(Instant const& t) const {
   auto const leit = FindSegment(t);
   if (leit == segment_by_left_endpoint_.cend()) {
     // This includes an empty trajectory.
@@ -136,8 +136,8 @@ DiscreteTraject0ry<Frame>::upper_bound(Instant const& t) const {
 }
 
 template<typename Frame>
-typename DiscreteTraject0ry<Frame>::SegmentRange
-DiscreteTraject0ry<Frame>::segments() const {
+typename DiscreteTrajectory<Frame>::SegmentRange
+DiscreteTrajectory<Frame>::segments() const {
   return SegmentRange(SegmentIterator(
                           segments_.get(), segments_->begin()),
                       SegmentIterator(
@@ -145,8 +145,8 @@ DiscreteTraject0ry<Frame>::segments() const {
 }
 
 template<typename Frame>
-typename DiscreteTraject0ry<Frame>::ReverseSegmentRange
-DiscreteTraject0ry<Frame>::rsegments() const {
+typename DiscreteTrajectory<Frame>::ReverseSegmentRange
+DiscreteTrajectory<Frame>::rsegments() const {
   return ReverseSegmentRange(std::reverse_iterator(SegmentIterator(
                                  segments_.get(), segments_->end())),
                              std::reverse_iterator(SegmentIterator(
@@ -154,8 +154,8 @@ DiscreteTraject0ry<Frame>::rsegments() const {
 }
 
 template<typename Frame>
-typename DiscreteTraject0ry<Frame>::SegmentIterator
-DiscreteTraject0ry<Frame>::NewSegment() {
+typename DiscreteTrajectory<Frame>::SegmentIterator
+DiscreteTrajectory<Frame>::NewSegment() {
   auto& last_segment = segments_->back();
 
   auto const& new_segment = segments_->emplace_back();
@@ -185,9 +185,9 @@ DiscreteTraject0ry<Frame>::NewSegment() {
 }
 
 template<typename Frame>
-typename DiscreteTraject0ry<Frame>::DiscreteTraject0ry
-DiscreteTraject0ry<Frame>::DetachSegments(SegmentIterator const begin) {
-  DiscreteTraject0ry detached(uninitialized);
+typename DiscreteTrajectory<Frame>::DiscreteTrajectory
+DiscreteTrajectory<Frame>::DetachSegments(SegmentIterator const begin) {
+  DiscreteTrajectory detached(uninitialized);
 
   // Move the detached segments to the new trajectory.
   detached.segments_->splice(detached.segments_->end(),
@@ -203,13 +203,13 @@ DiscreteTraject0ry<Frame>::DetachSegments(SegmentIterator const begin) {
 }
 
 template<typename Frame>
-typename DiscreteTraject0ry<Frame>::SegmentIterator
-DiscreteTraject0ry<Frame>::AttachSegments(
-    DiscreteTraject0ry&& trajectory) {
+typename DiscreteTrajectory<Frame>::SegmentIterator
+DiscreteTrajectory<Frame>::AttachSegments(
+    DiscreteTrajectory&& trajectory) {
   CHECK(!trajectory.empty());
 
   if (empty()) {
-    *this = DiscreteTraject0ry(uninitialized);
+    *this = DiscreteTrajectory(uninitialized);
   } else if (back().time == trajectory.front().time) {
     CHECK_EQ(back().degrees_of_freedom, trajectory.front().degrees_of_freedom)
         << "Mismatching degrees of freedom when attaching segments";
@@ -244,7 +244,7 @@ DiscreteTraject0ry<Frame>::AttachSegments(
 }
 
 template<typename Frame>
-void DiscreteTraject0ry<Frame>::DeleteSegments(SegmentIterator& begin) {
+void DiscreteTrajectory<Frame>::DeleteSegments(SegmentIterator& begin) {
   segments_->erase(begin.iterator(), segments_->end());
   if (segments_->empty()) {
     segment_by_left_endpoint_.clear();
@@ -268,7 +268,7 @@ void DiscreteTraject0ry<Frame>::DeleteSegments(SegmentIterator& begin) {
 }
 
 template<typename Frame>
-void DiscreteTraject0ry<Frame>::ForgetAfter(Instant const& t) {
+void DiscreteTrajectory<Frame>::ForgetAfter(Instant const& t) {
   auto const leit = FindSegment(t);
   if (leit == segment_by_left_endpoint_.end()) {
     clear();
@@ -298,14 +298,14 @@ void DiscreteTraject0ry<Frame>::ForgetAfter(Instant const& t) {
 }
 
 template<typename Frame>
-void DiscreteTraject0ry<Frame>::ForgetAfter(iterator const it) {
+void DiscreteTrajectory<Frame>::ForgetAfter(iterator const it) {
   if (it != end()) {
     ForgetAfter(it->time);
   }
 }
 
 template<typename Frame>
-void DiscreteTraject0ry<Frame>::ForgetBefore(Instant const& t) {
+void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& t) {
   auto const leit = FindSegment(t);
   if (leit == segment_by_left_endpoint_.end()) {
     return;
@@ -340,7 +340,7 @@ void DiscreteTraject0ry<Frame>::ForgetBefore(Instant const& t) {
 }
 
 template<typename Frame>
-void DiscreteTraject0ry<Frame>::ForgetBefore(iterator const it) {
+void DiscreteTrajectory<Frame>::ForgetBefore(iterator const it) {
   if (it == end()) {
     clear();
   } else {
@@ -349,7 +349,7 @@ void DiscreteTraject0ry<Frame>::ForgetBefore(iterator const it) {
 }
 
 template<typename Frame>
-void DiscreteTraject0ry<Frame>::Append(
+void DiscreteTrajectory<Frame>::Append(
     Instant const& t,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
   typename Segments::iterator sit;
@@ -375,35 +375,35 @@ void DiscreteTraject0ry<Frame>::Append(
 }
 
 template<typename Frame>
-Instant DiscreteTraject0ry<Frame>::t_min() const {
+Instant DiscreteTrajectory<Frame>::t_min() const {
   return segments_->front().t_min();
 }
 
 template<typename Frame>
-Instant DiscreteTraject0ry<Frame>::t_max() const {
+Instant DiscreteTrajectory<Frame>::t_max() const {
   return segments_->back().t_max();
 }
 
 template<typename Frame>
-Position<Frame> DiscreteTraject0ry<Frame>::EvaluatePosition(
+Position<Frame> DiscreteTrajectory<Frame>::EvaluatePosition(
     Instant const& t) const {
   return FindSegment(t)->second->EvaluatePosition(t);
 }
 
 template<typename Frame>
-Velocity<Frame> DiscreteTraject0ry<Frame>::EvaluateVelocity(
+Velocity<Frame> DiscreteTrajectory<Frame>::EvaluateVelocity(
     Instant const& t) const {
   return FindSegment(t)->second->EvaluateVelocity(t);
 }
 
 template<typename Frame>
-DegreesOfFreedom<Frame> DiscreteTraject0ry<Frame>::EvaluateDegreesOfFreedom(
+DegreesOfFreedom<Frame> DiscreteTrajectory<Frame>::EvaluateDegreesOfFreedom(
     Instant const& t) const {
   return FindSegment(t)->second->EvaluateDegreesOfFreedom(t);
 }
 
 template<typename Frame>
-void DiscreteTraject0ry<Frame>::WriteToMessage(
+void DiscreteTrajectory<Frame>::WriteToMessage(
     not_null<serialization::DiscreteTrajectory*> message,
     std::vector<SegmentIterator> const& tracked,
     std::vector<iterator> const& exact) const {
@@ -411,7 +411,7 @@ void DiscreteTraject0ry<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
-void DiscreteTraject0ry<Frame>::WriteToMessage(
+void DiscreteTrajectory<Frame>::WriteToMessage(
     not_null<serialization::DiscreteTrajectory*> message,
     iterator const begin,
     iterator const end,
@@ -510,11 +510,11 @@ void DiscreteTraject0ry<Frame>::WriteToMessage(
 
 template<typename Frame>
 template<typename F, typename>
-DiscreteTraject0ry<Frame>
-DiscreteTraject0ry<Frame>::ReadFromMessage(
+DiscreteTrajectory<Frame>
+DiscreteTrajectory<Frame>::ReadFromMessage(
     serialization::DiscreteTrajectory const& message,
     std::vector<SegmentIterator*> const& tracked) {
-  DiscreteTraject0ry trajectory(uninitialized);
+  DiscreteTrajectory trajectory(uninitialized);
 
   bool const is_pre_ζήνων = message.segment_size() == 0;
   if (is_pre_ζήνων) {
@@ -570,12 +570,12 @@ DiscreteTraject0ry<Frame>::ReadFromMessage(
 }
 
 template<typename Frame>
-DiscreteTraject0ry<Frame>::DiscreteTraject0ry(uninitialized_t)
+DiscreteTrajectory<Frame>::DiscreteTrajectory(uninitialized_t)
     : segments_(make_not_null_unique<Segments>()) {}
 
 template<typename Frame>
-typename DiscreteTraject0ry<Frame>::SegmentByLeftEndpoint::iterator
-DiscreteTraject0ry<Frame>::FindSegment(
+typename DiscreteTrajectory<Frame>::SegmentByLeftEndpoint::iterator
+DiscreteTrajectory<Frame>::FindSegment(
     Instant const& t) {
   auto it = segment_by_left_endpoint_.upper_bound(t);
   if (it == segment_by_left_endpoint_.begin()) {
@@ -587,8 +587,8 @@ DiscreteTraject0ry<Frame>::FindSegment(
 }
 
 template<typename Frame>
-typename DiscreteTraject0ry<Frame>::SegmentByLeftEndpoint::const_iterator
-DiscreteTraject0ry<Frame>::FindSegment(
+typename DiscreteTrajectory<Frame>::SegmentByLeftEndpoint::const_iterator
+DiscreteTrajectory<Frame>::FindSegment(
     Instant const& t) const {
   auto it = segment_by_left_endpoint_.upper_bound(t);
   if (it == segment_by_left_endpoint_.begin()) {
@@ -600,7 +600,7 @@ DiscreteTraject0ry<Frame>::FindSegment(
 }
 
 template<typename Frame>
-absl::Status DiscreteTraject0ry<Frame>::ConsistencyStatus() const {
+absl::Status DiscreteTrajectory<Frame>::ConsistencyStatus() const {
   if (segments_->size() < segment_by_left_endpoint_.size()) {
     return absl::InternalError(absl::StrCat("Size mismatch ",
                                             segments_->size(),
@@ -690,9 +690,9 @@ absl::Status DiscreteTraject0ry<Frame>::ConsistencyStatus() const {
 }
 
 template<typename Frame>
-void DiscreteTraject0ry<Frame>::AdjustAfterSplicing(
-    DiscreteTraject0ry& from,
-    DiscreteTraject0ry& to,
+void DiscreteTrajectory<Frame>::AdjustAfterSplicing(
+    DiscreteTrajectory& from,
+    DiscreteTrajectory& to,
     typename Segments::iterator to_segments_begin) {
   // Reset the self pointers of the new segments.  This is necessary for
   // iterating over them.
@@ -728,7 +728,7 @@ void DiscreteTraject0ry<Frame>::AdjustAfterSplicing(
 }
 
 template<typename Frame>
-void DiscreteTraject0ry<Frame>::ReadFromPreΖήνωνMessage(
+void DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
     serialization::DiscreteTrajectory::Downsampling const& message,
     DownsamplingParameters& downsampling_parameters,
     Instant& start_of_dense_timeline) {
@@ -750,11 +750,11 @@ void DiscreteTraject0ry<Frame>::ReadFromPreΖήνωνMessage(
 
 template<typename Frame>
 DiscreteTrajectorySegmentIterator<Frame>
-DiscreteTraject0ry<Frame>::ReadFromPreΖήνωνMessage(
+DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
     serialization::DiscreteTrajectory::Brood const& message,
     std::vector<SegmentIterator*> const& tracked,
     value_type const& fork_point,
-    DiscreteTraject0ry& trajectory) {
+    DiscreteTrajectory& trajectory) {
   CHECK_EQ(fork_point.time, Instant::ReadFromMessage(message.fork_time()))
       << "Cannot read trajectory with a fork not at end of segment";
   CHECK_EQ(1, message.trajectories_size())
@@ -771,11 +771,11 @@ DiscreteTraject0ry<Frame>::ReadFromPreΖήνωνMessage(
 }
 
 template<typename Frame>
-void DiscreteTraject0ry<Frame>::ReadFromPreΖήνωνMessage(
+void DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
     serialization::DiscreteTrajectory const& message,
     std::vector<SegmentIterator*> const& tracked,
     std::optional<value_type> const& fork_point,
-    DiscreteTraject0ry& trajectory) {
+    DiscreteTrajectory& trajectory) {
   bool const is_pre_frobenius = !message.has_zfp();
   LOG_IF(WARNING, is_pre_frobenius)
       << "Reading pre-Frobenius DiscreteTrajectory";
@@ -870,6 +870,6 @@ void DiscreteTraject0ry<Frame>::ReadFromPreΖήνωνMessage(
   }
 }
 
-}  // namespace internal_discrete_traject0ry
+}  // namespace internal_discrete_trajectory
 }  // namespace physics
 }  // namespace principia

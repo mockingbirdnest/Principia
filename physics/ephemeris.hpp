@@ -21,7 +21,7 @@
 #include "physics/checkpointer.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/geopotential.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
@@ -206,7 +206,7 @@ class Ephemeris {
   virtual not_null<
       std::unique_ptr<typename Integrator<NewtonianMotionEquation>::Instance>>
   NewInstance(
-      std::vector<not_null<DiscreteTraject0ry<Frame>*>> const& trajectories,
+      std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
       IntrinsicAccelerations const& intrinsic_accelerations,
       FixedStepParameters const& parameters);
 
@@ -214,7 +214,7 @@ class Ephemeris {
   virtual absl::StatusOr<not_null<
       std::unique_ptr<typename Integrator<NewtonianMotionEquation>::Instance>>>
   StoppableNewInstance(
-      std::vector<not_null<DiscreteTraject0ry<Frame>*>> const& trajectories,
+      std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
       IntrinsicAccelerations const& intrinsic_accelerations,
       FixedStepParameters const& parameters);
 
@@ -224,7 +224,7 @@ class Ephemeris {
   // Prolongs the ephemeris by at most |max_ephemeris_steps|.  Returns OK if and
   // only if |*trajectory| was integrated until |t|.
   virtual absl::Status FlowWithAdaptiveStep(
-      not_null<DiscreteTraject0ry<Frame>*> trajectory,
+      not_null<DiscreteTrajectory<Frame>*> trajectory,
       IntrinsicAcceleration intrinsic_acceleration,
       Instant const& t,
       AdaptiveStepParameters const& parameters,
@@ -232,7 +232,7 @@ class Ephemeris {
 
   // Same as above, but uses a generalized integrator.
   virtual absl::Status FlowWithAdaptiveStep(
-      not_null<DiscreteTraject0ry<Frame>*> trajectory,
+      not_null<DiscreteTrajectory<Frame>*> trajectory,
       GeneralizedIntrinsicAcceleration intrinsic_acceleration,
       Instant const& t,
       GeneralizedAdaptiveStepParameters const& parameters,
@@ -259,7 +259,7 @@ class Ephemeris {
   // |trajectory|.
   virtual Vector<Acceleration, Frame>
   ComputeGravitationalAccelerationOnMasslessBody(
-      not_null<DiscreteTraject0ry<Frame>*> trajectory,
+      not_null<DiscreteTrajectory<Frame>*> trajectory,
       Instant const& t) const EXCLUDES(lock_);
 
   // Returns the gravitational acceleration on the massive |body| at time |t|.
@@ -275,10 +275,10 @@ class Ephemeris {
   // identical (are similarly for |periapsides1| and |periapsides2|).
   virtual void ComputeApsides(not_null<MassiveBody const*> body1,
                               not_null<MassiveBody const*> body2,
-                              DiscreteTraject0ry<Frame>& apoapsides1,
-                              DiscreteTraject0ry<Frame>& periapsides1,
-                              DiscreteTraject0ry<Frame>& apoapsides2,
-                              DiscreteTraject0ry<Frame>& periapsides2);
+                              DiscreteTrajectory<Frame>& apoapsides1,
+                              DiscreteTrajectory<Frame>& periapsides1,
+                              DiscreteTrajectory<Frame>& apoapsides2,
+                              DiscreteTrajectory<Frame>& periapsides2);
 
   // Returns the index of the given body in the serialization produced by
   // |WriteToMessage| and read by the |Read...| functions.  This index is not
@@ -336,7 +336,7 @@ class Ephemeris {
       std::vector<not_null<ContinuousTrajectoryPtr>> const& trajectories);
   static void AppendMasslessBodiesStateToTrajectories(
       typename NewtonianMotionEquation::SystemState const& state,
-      std::vector<not_null<DiscreteTraject0ry<Frame>*>> const& trajectories);
+      std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories);
 
   // Returns an equation suitable for the massive bodies contained in this
   // ephemeris.
@@ -404,7 +404,7 @@ class Ephemeris {
   template<typename ODE>
   absl::Status FlowODEWithAdaptiveStep(
       typename ODE::RightHandSideComputation compute_acceleration,
-      not_null<DiscreteTraject0ry<Frame>*> trajectory,
+      not_null<DiscreteTrajectory<Frame>*> trajectory,
       Instant const& t,
       ODEAdaptiveStepParameters<ODE> const& parameters,
       std::int64_t max_ephemeris_steps) EXCLUDES(lock_);

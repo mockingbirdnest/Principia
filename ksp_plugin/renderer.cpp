@@ -74,11 +74,11 @@ Vessel const& Renderer::GetTargetVessel() const {
   return *target_->vessel;
 }
 
-DiscreteTraject0ry<World>
+DiscreteTrajectory<World>
 Renderer::RenderBarycentricTrajectoryInWorld(
     Instant const& time,
-    DiscreteTraject0ry<Barycentric>::iterator const& begin,
-    DiscreteTraject0ry<Barycentric>::iterator const& end,
+    DiscreteTrajectory<Barycentric>::iterator const& begin,
+    DiscreteTrajectory<Barycentric>::iterator const& end,
     Position<World> const& sun_world_position,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   auto const trajectory_in_plotting_frame =
@@ -92,11 +92,11 @@ Renderer::RenderBarycentricTrajectoryInWorld(
   return trajectory_in_world;
 }
 
-DiscreteTraject0ry<Navigation>
+DiscreteTrajectory<Navigation>
 Renderer::RenderBarycentricTrajectoryInPlotting(
-    DiscreteTraject0ry<Barycentric>::iterator const& begin,
-    DiscreteTraject0ry<Barycentric>::iterator const& end) const {
-  DiscreteTraject0ry<Navigation> trajectory;
+    DiscreteTrajectory<Barycentric>::iterator const& begin,
+    DiscreteTrajectory<Barycentric>::iterator const& end) const {
+  DiscreteTrajectory<Navigation> trajectory;
   for (auto it = begin; it != end; ++it) {
     auto const& [time, degrees_of_freedom] = *it;
     if (target_) {
@@ -112,14 +112,14 @@ Renderer::RenderBarycentricTrajectoryInPlotting(
   return trajectory;
 }
 
-DiscreteTraject0ry<World>
+DiscreteTrajectory<World>
 Renderer::RenderPlottingTrajectoryInWorld(
     Instant const& time,
-    DiscreteTraject0ry<Navigation>::iterator const& begin,
-    DiscreteTraject0ry<Navigation>::iterator const& end,
+    DiscreteTrajectory<Navigation>::iterator const& begin,
+    DiscreteTrajectory<Navigation>::iterator const& end,
     Position<World> const& sun_world_position,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  DiscreteTraject0ry<World> trajectory;
+  DiscreteTrajectory<World> trajectory;
 
   //   Dinanzi a me non fuor cose create
   //   se non etterne, e io etterno duro.

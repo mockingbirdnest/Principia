@@ -27,7 +27,7 @@ FORWARD_DECLARE_FROM(discrete_trajectory_segment,
                      TEMPLATE(typename Frame) class,
                      DiscreteTrajectorySegment);
 
-namespace internal_discrete_traject0ry {
+namespace internal_discrete_trajectory {
 
 using base::not_null;
 using base::uninitialized_t;
@@ -37,7 +37,7 @@ using geometry::Velocity;
 using physics::DegreesOfFreedom;
 
 template<typename Frame>
-class DiscreteTraject0ry : public Trajectory<Frame> {
+class DiscreteTrajectory : public Trajectory<Frame> {
  public:
   using key_type =
       typename internal_discrete_trajectory_types::Timeline<Frame>::key_type;
@@ -53,13 +53,13 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
   using ReverseSegmentRange =
       DiscreteTrajectorySegmentRange<ReverseSegmentIterator>;
 
-  DiscreteTraject0ry();
+  DiscreteTrajectory();
 
   // Moveable.
-  DiscreteTraject0ry(DiscreteTraject0ry&&) = default;
-  DiscreteTraject0ry& operator=(DiscreteTraject0ry&&) = default;
-  DiscreteTraject0ry(const DiscreteTraject0ry&) = delete;
-  DiscreteTraject0ry& operator=(const DiscreteTraject0ry&) = delete;
+  DiscreteTrajectory(DiscreteTrajectory&&) = default;
+  DiscreteTrajectory& operator=(DiscreteTrajectory&&) = default;
+  DiscreteTrajectory(const DiscreteTrajectory&) = delete;
+  DiscreteTrajectory& operator=(const DiscreteTrajectory&) = delete;
 
   reference front() const;
   reference back() const;
@@ -87,8 +87,8 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
 
   SegmentIterator NewSegment();
 
-  DiscreteTraject0ry DetachSegments(SegmentIterator begin);
-  SegmentIterator AttachSegments(DiscreteTraject0ry&& trajectory);
+  DiscreteTrajectory DetachSegments(SegmentIterator begin);
+  SegmentIterator AttachSegments(DiscreteTrajectory&& trajectory);
   void DeleteSegments(SegmentIterator& begin);
 
   // Deletes the trajectory points with a time in [t, end[.  Drops the segments
@@ -130,7 +130,7 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
 
   template<typename F = Frame,
            typename = std::enable_if_t<base::is_serializable_v<F>>>
-  static DiscreteTraject0ry ReadFromMessage(
+  static DiscreteTrajectory ReadFromMessage(
       serialization::DiscreteTrajectory const& message,
       std::vector<SegmentIterator*> const& tracked);
 
@@ -143,7 +143,7 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
 
   // This constructor leaves the list of segments empty (but allocated) as well
   // as the time-to-segment mapping.
-  explicit DiscreteTraject0ry(uninitialized_t);
+  explicit DiscreteTrajectory(uninitialized_t);
 
   // Returns an iterator to a segment with extremities t1 and t2 such that
   // t ∈ [t1, t2[.  For the last segment, t2 is assumed to be +∞.  A 1-point
@@ -163,8 +163,8 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
   // segments have been spliced from |from| to |to|.  The iterator indicates the
   // segments to fix-up.
   static void AdjustAfterSplicing(
-      DiscreteTraject0ry& from,
-      DiscreteTraject0ry& to,
+      DiscreteTrajectory& from,
+      DiscreteTrajectory& to,
       typename Segments::iterator to_segments_begin);
 
   // Reads a pre-Ζήνων downsampling message and return the downsampling
@@ -182,7 +182,7 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
       serialization::DiscreteTrajectory::Brood const& message,
       std::vector<SegmentIterator*> const& tracked,
       value_type const& fork_point,
-      DiscreteTraject0ry& trajectory);
+      DiscreteTrajectory& trajectory);
 
   // Reads a pre-Ζήνων trajectory, updating the tracked segments as needed.  If
   // this is not the root of the trajectory, fork_point is set.
@@ -190,7 +190,7 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
       serialization::DiscreteTrajectory const& message,
       std::vector<SegmentIterator*> const& tracked,
       std::optional<value_type> const& fork_point,
-      DiscreteTraject0ry& trajectory);
+      DiscreteTrajectory& trajectory);
 
   // We need a level of indirection here to make sure that the pointer to
   // Segments in the DiscreteTrajectorySegmentIterator remain valid when the
@@ -205,11 +205,11 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
   SegmentByLeftEndpoint segment_by_left_endpoint_;
 };
 
-}  // namespace internal_discrete_traject0ry
+}  // namespace internal_discrete_trajectory
 
-using internal_discrete_traject0ry::DiscreteTraject0ry;
+using internal_discrete_trajectory::DiscreteTrajectory;
 
 }  // namespace physics
 }  // namespace principia
 
-#include "physics/discrete_traject0ry_body.hpp"
+#include "physics/discrete_trajectory_body.hpp"

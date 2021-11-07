@@ -9,7 +9,7 @@
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 
 namespace principia {
 namespace astronomy {
@@ -19,7 +19,7 @@ using base::not_null;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Velocity;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 
 // A representation of data in the extended standard product 3 orbit format.
 // Specification:
@@ -111,7 +111,7 @@ class StandardProduct3 {
 
   // Each orbit may consist of several arcs, separated by missing data.
   // The arcs are non-overlapping, and are ordered chronologically.
-  std::vector<not_null<DiscreteTraject0ry<ITRS> const*>> const& orbit(
+  std::vector<not_null<DiscreteTrajectory<ITRS> const*>> const& orbit(
       SatelliteIdentifier const& id) const;
 
   Version version() const;
@@ -124,13 +124,13 @@ class StandardProduct3 {
  private:
   std::vector<SatelliteIdentifier> satellites_;
   std::map<SatelliteIdentifier,
-           std::vector<not_null<std::unique_ptr<DiscreteTraject0ry<ITRS>>>>>
+           std::vector<not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>>>>
       orbits_;
   // |orbits_| is the same as |const_orbits_|, but with non-owning pointers to
   // constant trajectories; this allows us to return references to these vectors
   // from |StandardProduct3::orbit|.
   std::map<SatelliteIdentifier,
-           std::vector<not_null<DiscreteTraject0ry<ITRS> const*>>>
+           std::vector<not_null<DiscreteTrajectory<ITRS> const*>>>
       const_orbits_;
   Version version_;
 

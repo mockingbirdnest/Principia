@@ -228,7 +228,7 @@ TEST_P(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
       Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 100));
 
   MasslessBody probe;
-  DiscreteTraject0ry<ICRS> trajectory;
+  DiscreteTrajectory<ICRS> trajectory;
   trajectory.Append(
       t0_,
       DegreesOfFreedom<ICRS>(
@@ -392,7 +392,7 @@ TEST_P(EphemerisTest, EarthProbe) {
       Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 100));
 
   MasslessBody probe;
-  DiscreteTraject0ry<ICRS> trajectory;
+  DiscreteTrajectory<ICRS> trajectory;
   trajectory.Append(t0_,
                     DegreesOfFreedom<ICRS>(
                         earth_position + Vector<Length, ICRS>(
@@ -517,7 +517,7 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
       Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 100));
 
   MasslessBody probe1;
-  DiscreteTraject0ry<ICRS> trajectory1;
+  DiscreteTrajectory<ICRS> trajectory1;
   trajectory1.Append(t0_,
                      DegreesOfFreedom<ICRS>(
                          earth_position + Vector<Length, ICRS>(
@@ -531,7 +531,7 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
   };
 
   MasslessBody probe2;
-  DiscreteTraject0ry<ICRS> trajectory2;
+  DiscreteTrajectory<ICRS> trajectory2;
   trajectory2.Append(t0_,
                      DegreesOfFreedom<ICRS>(
                          earth_position + Vector<Length, ICRS>(
@@ -696,7 +696,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
       Ephemeris<ICRS>::FixedStepParameters(integrator(), duration / 100));
 
   // The elephant's initial position and velocity.
-  DiscreteTraject0ry<ICRS> trajectory;
+  DiscreteTrajectory<ICRS> trajectory;
   trajectory.Append(t0_,
                     DegreesOfFreedom<ICRS>(
                         earth_position + Vector<Length, ICRS>(
@@ -777,7 +777,7 @@ TEST_P(EphemerisTest, CollisionDetection) {
       Ephemeris<ICRS>::FixedStepParameters(integrator(), short_duration / 100));
 
   // The apple's initial position and velocity.
-  DiscreteTraject0ry<ICRS> trajectory;
+  DiscreteTrajectory<ICRS> trajectory;
   trajectory.Append(
       t0_,
       DegreesOfFreedom<ICRS>(
@@ -958,10 +958,10 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
       solar_system.massive_body(*ephemeris, big_name);
   MassiveBody const* const small =
       solar_system.massive_body(*ephemeris, small_name);
-  DiscreteTraject0ry<ICRS> apoapsides1;
-  DiscreteTraject0ry<ICRS> apoapsides2;
-  DiscreteTraject0ry<ICRS> periapsides1;
-  DiscreteTraject0ry<ICRS> periapsides2;
+  DiscreteTrajectory<ICRS> apoapsides1;
+  DiscreteTrajectory<ICRS> apoapsides2;
+  DiscreteTrajectory<ICRS> periapsides1;
+  DiscreteTrajectory<ICRS> periapsides2;
   ephemeris->ComputeApsides(big,
                             small,
                             apoapsides1,
@@ -1053,7 +1053,7 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
                            200.2551546021678 * Metre / Second});
 
   MasslessBody probe;
-  DiscreteTraject0ry<ICRS> trajectory1;
+  DiscreteTrajectory<ICRS> trajectory1;
   auto& segment1 = trajectory1.segments().front();
   segment1.SetDownsampling({.max_dense_intervals = 10'000,
                             .tolerance = 10 * Metre});
@@ -1085,7 +1085,7 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
   EXPECT_GE(17'149, compressed.size());
 
   auto const trajectory2 =
-      DiscreteTraject0ry<ICRS>::ReadFromMessage(message, /*forks=*/{});
+      DiscreteTrajectory<ICRS>::ReadFromMessage(message, /*forks=*/{});
 
   Length error;
   for (Instant t = t0; t < t1; t += 10 * Second) {

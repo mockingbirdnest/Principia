@@ -7,7 +7,7 @@
 
 #include "ksp_plugin/integrators.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/kepler_orbit.hpp"
 
 namespace principia {
@@ -19,7 +19,7 @@ using base::MakeStoppableThread;
 using geometry::Frame;
 using geometry::NonRotating;
 using physics::BodyCentredNonRotatingDynamicFrame;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using physics::KeplerOrbit;
 using physics::MasslessBody;
 using quantities::IsFinite;
@@ -83,7 +83,7 @@ double OrbitAnalyser::progress_of_next_analysis() const {
 
 absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
   Analysis analysis{parameters.first_time};
-  DiscreteTraject0ry<Barycentric> trajectory;
+  DiscreteTrajectory<Barycentric> trajectory;
   trajectory.segments().front().SetDownsampling(
       DefaultDownsamplingParameters());
   trajectory.Append(parameters.first_time, parameters.first_degrees_of_freedom);
@@ -108,7 +108,7 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
     }
   }
   if (primary != nullptr) {
-    std::vector<not_null<DiscreteTraject0ry<Barycentric>*>> trajectories = {
+    std::vector<not_null<DiscreteTrajectory<Barycentric>*>> trajectories = {
         &trajectory};
     auto instance = ephemeris_->StoppableNewInstance(
         trajectories,
@@ -140,7 +140,7 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
     // are being computed.
 
     using PrimaryCentred = Frame<enum class PrimaryCentredTag, NonRotating>;
-    DiscreteTraject0ry<PrimaryCentred> primary_centred_trajectory;
+    DiscreteTrajectory<PrimaryCentred> primary_centred_trajectory;
     BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred>
         body_centred(ephemeris_, primary);
     for (auto const& [time, degrees_of_freedom] : trajectory) {

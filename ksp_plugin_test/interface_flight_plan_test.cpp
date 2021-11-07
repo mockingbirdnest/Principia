@@ -21,7 +21,7 @@
 #include "ksp_plugin_test/mock_renderer.hpp"
 #include "ksp_plugin_test/mock_vessel.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_continuous_trajectory.hpp"
@@ -60,7 +60,7 @@ using ksp_plugin::Navigation;
 using ksp_plugin::NavigationManœuvre;
 using ksp_plugin::WorldSun;
 using physics::BodyCentredNonRotatingDynamicFrame;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using physics::DynamicFrame;
 using physics::Frenet;
 using physics::MassiveBody;
@@ -349,7 +349,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   EXPECT_EQ(12, principia__FlightPlanNumberOfSegments(plugin_.get(),
                                                       vessel_guid));
 
-  DiscreteTraject0ry<World> rendered_trajectory;
+  DiscreteTrajectory<World> rendered_trajectory;
   rendered_trajectory.Append(
       t0_, DegreesOfFreedom<World>(World::origin, World::unmoving));
   rendered_trajectory.Append(
@@ -364,7 +364,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
           World::origin +
               Displacement<World>({0 * Metre, 2 * Metre, 4 * Metre}),
           World::unmoving));
-  DiscreteTraject0ry<Barycentric> segment;
+  DiscreteTrajectory<Barycentric> segment;
   DegreesOfFreedom<Barycentric> immobile_origin{Barycentric::origin,
                                                 Barycentric::unmoving};
   segment.Append(t0_, immobile_origin);

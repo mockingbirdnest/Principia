@@ -1,4 +1,4 @@
-﻿#include "physics/discrete_traject0ry.hpp"
+﻿#include "physics/discrete_trajectory.hpp"
 
 #include <string>
 #include <vector>
@@ -69,10 +69,10 @@ class DiscreteTraject0ryTest : public ::testing::Test {
 
   // Constructs a trajectory with three 5-second segments starting at |t0| and
   // the given |degrees_of_freedom|.
-  DiscreteTraject0ry<World> MakeTrajectory(
+  DiscreteTrajectory<World> MakeTrajectory(
       Instant const& t0,
       DegreesOfFreedom<World> const& degrees_of_freedom) {
-    DiscreteTraject0ry<World> trajectory;
+    DiscreteTrajectory<World> trajectory;
     std::optional<DegreesOfFreedom<World>> last_degrees_of_freedom;
 
     for (auto const& [t, degrees_of_freedom] :
@@ -116,7 +116,7 @@ class DiscreteTraject0ryTest : public ::testing::Test {
     return trajectory;
   }
 
-  DiscreteTraject0ry<World> MakeTrajectory() {
+  DiscreteTrajectory<World> MakeTrajectory() {
     Velocity<World> const v1({1 * Metre / Second,
                               0 * Metre / Second,
                               0 * Metre / Second});
@@ -185,14 +185,14 @@ TEST_F(DiscreteTraject0ryTest, IterateBackward) {
 }
 
 TEST_F(DiscreteTraject0ryTest, Empty) {
-  DiscreteTraject0ry<World> trajectory;
+  DiscreteTrajectory<World> trajectory;
   EXPECT_TRUE(trajectory.empty());
   trajectory = MakeTrajectory();
   EXPECT_FALSE(trajectory.empty());
 }
 
 TEST_F(DiscreteTraject0ryTest, Size) {
-  DiscreteTraject0ry<World> trajectory;
+  DiscreteTrajectory<World> trajectory;
   EXPECT_EQ(0, trajectory.size());
   trajectory = MakeTrajectory();
   EXPECT_EQ(15, trajectory.size());
@@ -609,7 +609,7 @@ TEST_F(DiscreteTraject0ryTest, SerializationRoundTrip) {
   DiscreteTrajectorySegmentIterator<World> deserialized_second_segment;
   DiscreteTrajectorySegmentIterator<World> deserialized_past_the_end;
   auto const deserialized_trajectory =
-      DiscreteTraject0ry<World>::ReadFromMessage(
+      DiscreteTrajectory<World>::ReadFromMessage(
           message1, /*tracked=*/{&deserialized_second_segment,
                                  &deserialized_past_the_end});
 
@@ -642,7 +642,7 @@ TEST_F(DiscreteTraject0ryTest, SerializationRoundTrip) {
 }
 
 TEST_F(DiscreteTraject0ryTest, SerializationExactEndpoints) {
-  DiscreteTraject0ry<World> trajectory;
+  DiscreteTrajectory<World> trajectory;
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
   Time const Δt = 1.0 / 3.0 * Milli(Second);
@@ -675,7 +675,7 @@ TEST_F(DiscreteTraject0ryTest, SerializationExactEndpoints) {
 
   // Deserialization would fail if the endpoints were nudged by ZFP compression.
   auto const deserialized_trajectory =
-      DiscreteTraject0ry<World>::ReadFromMessage(message, /*tracked=*/{});
+      DiscreteTrajectory<World>::ReadFromMessage(message, /*tracked=*/{});
 
   auto const deserialized_degrees_of_freedom1 =
       deserialized_trajectory.EvaluateDegreesOfFreedom(t1 + 10 * Second);
@@ -730,8 +730,8 @@ TEST_F(DiscreteTraject0ryTest, DISABLED_SerializationPreΖήνωνCompatibility)
       R"(P:\Public Mockingbird\Principia\Saves\3136\trajectory_3136.proto.bin)");  // NOLINT
   auto const message1 =
       ParseFromBytes<serialization::DiscreteTrajectory>(serialized_message);
-  DiscreteTraject0ry<World>::SegmentIterator psychohistory;
-  auto const history = DiscreteTraject0ry<World>::ReadFromMessage(
+  DiscreteTrajectory<World>::SegmentIterator psychohistory;
+  auto const history = DiscreteTrajectory<World>::ReadFromMessage(
       message1, /*tracked=*/{&psychohistory});
   EXPECT_THAT(log_warning.string(),
               AllOf(HasSubstr("pre-Ζήνων"), Not(HasSubstr("pre-Haar"))));
