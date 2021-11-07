@@ -406,7 +406,7 @@ TEST_F(DiscreteTraject0ryTest, DetachSegments) {
   }
 }
 
-TEST_F(DiscreteTraject0ryTest, AttachSegments) {
+TEST_F(DiscreteTraject0ryTest, AttachSegmentsMatching) {
   auto trajectory1 = MakeTrajectory();
   auto trajectory2 = MakeTrajectory(
       t0_ + 14 * Second,
@@ -451,6 +451,32 @@ TEST_F(DiscreteTraject0ryTest, AttachSegments) {
                                                    4 * Metre,
                                                    5 * Metre}));
   }
+}
+
+TEST_F(DiscreteTraject0ryTest, AttachSegmentsMismatching) {
+  auto trajectory1 = MakeTrajectory();
+  auto trajectory2 = MakeTrajectory(
+      t0_ + 15 * Second,
+      DegreesOfFreedom<World>(
+          World::origin + Displacement<World>({5 * Metre,
+                                               5 * Metre,
+                                               5 * Metre}),
+          Velocity<World>({0 * Metre / Second,
+                           0 * Metre / Second,
+                           1 * Metre / Second})));
+  trajectory1.AttachSegments(std::move(trajectory2));
+  EXPECT_EQ(6, trajectory1.segments().size());
+  EXPECT_EQ(t0_, trajectory1.begin()->time);
+  EXPECT_EQ(t0_ + 29 * Second, trajectory1.rbegin()->time);
+
+  EXPECT_EQ(trajectory1.EvaluatePosition(t0_ + 14 * Second),
+            World::origin + Displacement<World>({4 * Metre,
+                                                 4 * Metre,
+                                                 4 * Metre}));
+  EXPECT_EQ(trajectory1.EvaluatePosition(t0_ + 15 * Second),
+            World::origin + Displacement<World>({5 * Metre,
+                                                 5 * Metre,
+                                                 5 * Metre}));
 }
 
 TEST_F(DiscreteTraject0ryTest, DeleteSegments) {

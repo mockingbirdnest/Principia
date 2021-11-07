@@ -319,6 +319,16 @@ void DiscreteTrajectorySegment<Frame>::SetSelf(
 }
 
 template<typename Frame>
+void DiscreteTrajectorySegment<Frame>::Prepend(
+    Instant const& t,
+    DegreesOfFreedom<Frame> const& degrees_of_freedom) {
+  CHECK(!timeline_.empty() || t < timeline_.cbegin()->time)
+      << "Prepend out of order at " << t << ", first time is "
+      << timeline_.cbegin()->time;
+  timeline_.emplace_hint(timeline_.cbegin(), t, degrees_of_freedom);
+}
+
+template<typename Frame>
 absl::Status DiscreteTrajectorySegment<Frame>::Append(
     Instant const& t,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {

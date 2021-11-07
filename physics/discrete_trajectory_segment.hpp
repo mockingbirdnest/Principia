@@ -140,6 +140,9 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   // segments.
   void SetSelf(DiscreteTrajectorySegmentIterator<Frame> self);
 
+  void Prepend(Instant const& t,
+               DegreesOfFreedom<Frame> const& degrees_of_freedom);
+
   absl::Status Append(Instant const& t,
                       DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
