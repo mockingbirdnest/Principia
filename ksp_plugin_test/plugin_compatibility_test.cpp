@@ -42,7 +42,9 @@ using ksp_plugin::Barycentric;
 using ksp_plugin::Plugin;
 using physics::DiscreteTraject0ry;
 using quantities::Speed;
+using quantities::si::Degree;
 using quantities::si::Kilo;
+using quantities::si::Second;
 using testing_utilities::operator""_⑴;
 using testing_utilities::IsNear;
 using testing_utilities::ReadFromBinaryFile;
@@ -381,6 +383,28 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
     EXPECT_THAT(*history, SizeIs(435'927));
     EXPECT_THAT(*psychohistory, SizeIs(3));
   }
+
+  // Make sure that we can upgrade, save, and reload.
+  WriteAndReadBack(std::move(plugin));
+}
+
+TEST_F(PluginCompatibilityTest, DISABLED_Egg) {
+  StringLogSink log_warning(google::WARNING);
+  not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
+      R"(P:\Public Mockingbird\Principia\Saves\3136\3136b.proto.b64)",
+      /*compressor=*/"gipfeli",
+      /*decoder=*/"base64");
+  EXPECT_THAT(log_warning.string(),
+              AllOf(HasSubstr(u8"pre-Ζήνων"), Not(HasSubstr("pre-Haar"))));
+
+  auto& mutable_plugin = const_cast<Plugin&>(*plugin);
+
+  // This would fail if segment iterators were invalidated during part
+  // deserialization.
+  mutable_plugin.AdvanceTime(
+      mutable_plugin.GameEpoch() + 133218.91123694609 * Second,
+      295.52698460805016 * Degree);
+  mutable_plugin.CatchUpVessel("1e07aaa2-d1f8-4f6d-8b32-495b46109d98");
 
   // Make sure that we can upgrade, save, and reload.
   WriteAndReadBack(std::move(plugin));
