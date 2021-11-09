@@ -337,10 +337,17 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
       }
     }
   } else if (is_pre_ζήνων) {
+    DiscreteTrajectorySegmentIterator<Barycentric> history;
+    DiscreteTrajectorySegmentIterator<Barycentric> psychohistory;
     auto prehistory = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.prehistory(),
-        /*tracked=*/{&part->history_, &part->psychohistory_});
-    part->trajectory_ = prehistory.DetachSegments(part->history_);
+        /*tracked=*/{&history, &psychohistory});
+    // We want to get rid of the prehistory segment, so the easiest is to detach
+    // the history and psychohistory.  We must take care of the segment
+    // iterators as they get invalidated in this case.
+    part->trajectory_ = prehistory.DetachSegments(history);
+    part->history_ = part->trajectory_.segments().begin();
+    part->psychohistory_ = std::next(part->history_);
   } else {
     part->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.prehistory(),
