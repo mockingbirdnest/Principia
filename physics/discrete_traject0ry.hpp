@@ -87,6 +87,8 @@ class DiscreteTraject0ry : public Trajectory<Frame> {
 
   SegmentIterator NewSegment();
 
+  // All the point and segment iterators in the attached/detached segments are
+  // invalidated.
   DiscreteTraject0ry DetachSegments(SegmentIterator begin);
   SegmentIterator AttachSegments(DiscreteTraject0ry&& trajectory);
   void DeleteSegments(SegmentIterator& begin);
