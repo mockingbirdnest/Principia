@@ -95,12 +95,6 @@
     <ClInclude Include="numerics_matchers_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="trajectory_factories.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="trajectory_factories_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="discrete_trajectory_factories.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -144,9 +138,6 @@
     </ClCompile>
     <ClCompile Include="..\base\cpuid.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="trajectory_factories_test.cpp">
-      <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="..\geometry\instant_output.cpp">
       <Filter>Source Files</Filter>
