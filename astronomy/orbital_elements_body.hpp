@@ -33,7 +33,7 @@ using quantities::si::Radian;
 
 template<typename PrimaryCentred>
 absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
-    DiscreteTraject0ry<PrimaryCentred> const& trajectory,
+    DiscreteTrajectory<PrimaryCentred> const& trajectory,
     MassiveBody const& primary,
     Body const& secondary) {
   OrbitalElements orbital_elements;
@@ -139,7 +139,7 @@ inline Interval<Length> OrbitalElements::radial_distance_interval() const {
 template<typename PrimaryCentred>
 std::vector<OrbitalElements::EquinoctialElements>
 OrbitalElements::OsculatingEquinoctialElements(
-    DiscreteTraject0ry<PrimaryCentred> const& trajectory,
+    DiscreteTrajectory<PrimaryCentred> const& trajectory,
     MassiveBody const& primary,
     Body const& secondary) {
   DegreesOfFreedom<PrimaryCentred> const primary_dof{
@@ -176,7 +176,7 @@ OrbitalElements::OsculatingEquinoctialElements(
 
 template<typename PrimaryCentred>
 std::vector<Length> OrbitalElements::RadialDistances(
-    DiscreteTraject0ry<PrimaryCentred> const& trajectory) {
+    DiscreteTrajectory<PrimaryCentred> const& trajectory) {
   std::vector<Length> radial_distances;
   radial_distances.reserve(trajectory.size());
   DegreesOfFreedom<PrimaryCentred> const primary_dof{PrimaryCentred::origin,

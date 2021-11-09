@@ -940,14 +940,14 @@ void Plugin::CreateFlightPlan(GUID const& vessel_guid,
 void Plugin::ComputeAndRenderApsides(
     Index const celestial_index,
     Trajectory<Barycentric> const& trajectory,
-    DiscreteTraject0ry<Barycentric>::iterator const& begin,
-    DiscreteTraject0ry<Barycentric>::iterator const& end,
+    DiscreteTrajectory<Barycentric>::iterator const& begin,
+    DiscreteTrajectory<Barycentric>::iterator const& end,
     Position<World> const& sun_world_position,
     int const max_points,
-    DiscreteTraject0ry<World>& apoapsides,
-    DiscreteTraject0ry<World>& periapsides) const {
-  DiscreteTraject0ry<Barycentric> apoapsides_trajectory;
-  DiscreteTraject0ry<Barycentric> periapsides_trajectory;
+    DiscreteTrajectory<World>& apoapsides,
+    DiscreteTrajectory<World>& periapsides) const {
+  DiscreteTrajectory<Barycentric> apoapsides_trajectory;
+  DiscreteTrajectory<Barycentric> periapsides_trajectory;
   ComputeApsides(FindOrDie(celestials_, celestial_index)->trajectory(),
                  trajectory,
                  begin,
@@ -971,15 +971,15 @@ void Plugin::ComputeAndRenderApsides(
 
 void Plugin::ComputeAndRenderClosestApproaches(
     Trajectory<Barycentric> const& trajectory,
-    DiscreteTraject0ry<Barycentric>::iterator const& begin,
-    DiscreteTraject0ry<Barycentric>::iterator const& end,
+    DiscreteTrajectory<Barycentric>::iterator const& begin,
+    DiscreteTrajectory<Barycentric>::iterator const& end,
     Position<World> const& sun_world_position,
     int const max_points,
-    DiscreteTraject0ry<World>& closest_approaches) const {
+    DiscreteTrajectory<World>& closest_approaches) const {
   CHECK(renderer_->HasTargetVessel());
 
-  DiscreteTraject0ry<Barycentric> apoapsides_trajectory;
-  DiscreteTraject0ry<Barycentric> periapsides_trajectory;
+  DiscreteTrajectory<Barycentric> apoapsides_trajectory;
+  DiscreteTrajectory<Barycentric> periapsides_trajectory;
   ComputeApsides(*renderer_->GetTargetVessel().prediction(),
                  trajectory,
                  begin,
@@ -997,12 +997,12 @@ void Plugin::ComputeAndRenderClosestApproaches(
 }
 
 void Plugin::ComputeAndRenderNodes(
-    DiscreteTraject0ry<Barycentric>::iterator const& begin,
-    DiscreteTraject0ry<Barycentric>::iterator const& end,
+    DiscreteTrajectory<Barycentric>::iterator const& begin,
+    DiscreteTrajectory<Barycentric>::iterator const& end,
     Position<World> const& sun_world_position,
     int const max_points,
-    DiscreteTraject0ry<World>& ascending,
-    DiscreteTraject0ry<World>& descending) const {
+    DiscreteTrajectory<World>& ascending,
+    DiscreteTrajectory<World>& descending) const {
   auto const trajectory_in_plotting =
       renderer_->RenderBarycentricTrajectoryInPlotting(begin, end);
 
@@ -1023,8 +1023,8 @@ void Plugin::ComputeAndRenderNodes(
     return (dof.position() - Navigation::origin).Norm() < threshold;
   };
 
-  DiscreteTraject0ry<Navigation> ascending_trajectory;
-  DiscreteTraject0ry<Navigation> descending_trajectory;
+  DiscreteTrajectory<Navigation> ascending_trajectory;
+  DiscreteTrajectory<Navigation> descending_trajectory;
   // The so-called North is orthogonal to the plane of the trajectory.
   ComputeNodes(trajectory_in_plotting,
                trajectory_in_plotting.begin(),

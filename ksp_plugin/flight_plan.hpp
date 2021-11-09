@@ -11,7 +11,7 @@
 #include "ksp_plugin/manœuvre.hpp"
 #include "ksp_plugin/orbit_analyser.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/ephemeris.hpp"
 #include "quantities/named_quantities.hpp"
@@ -26,7 +26,7 @@ using base::not_null;
 using geometry::Instant;
 using integrators::AdaptiveStepSizeIntegrator;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using physics::DiscreteTrajectorySegmentIterator;
 using physics::Ephemeris;
 using quantities::Length;
@@ -115,7 +115,7 @@ class FlightPlan {
   // |index| must be in [0, number_of_segments()[.
   virtual DiscreteTrajectorySegmentIterator<Barycentric>
   GetSegment(int index) const;
-  virtual DiscreteTraject0ry<Barycentric> const& GetAllSegments() const;
+  virtual DiscreteTrajectory<Barycentric> const& GetAllSegments() const;
 
   // |coast_index| must be in [0, number_of_manœuvres()].
   virtual OrbitAnalyser::Analysis* analysis(int coast_index);
@@ -205,7 +205,7 @@ class FlightPlan {
 
   // The trajectory of the part, composed of any number of segments,
   // alternatively coasts and burns.
-  DiscreteTraject0ry<Barycentric> trajectory_;
+  DiscreteTrajectory<Barycentric> trajectory_;
 
   // Never empty; Starts and ends with a coast; coasts and burns alternate.
   std::vector<DiscreteTrajectorySegmentIterator<Barycentric>> segments_;

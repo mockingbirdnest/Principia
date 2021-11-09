@@ -13,7 +13,7 @@
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/body_surface_dynamic_frame.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/si.hpp"
@@ -40,7 +40,7 @@ using physics::BarycentricRotatingDynamicFrame;
 using physics::BodyCentredBodyDirectionDynamicFrame;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::BodySurfaceDynamicFrame;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::Frenet;
 using quantities::Speed;
@@ -406,8 +406,8 @@ void __cdecl principia__FlightPlanRenderedApsides(
   CHECK_NOTNULL(plugin);
   auto const& flight_plan =
       GetFlightPlan(*plugin, vessel_guid).GetAllSegments();
-  DiscreteTraject0ry<World> rendered_apoapsides;
-  DiscreteTraject0ry<World> rendered_periapsides;
+  DiscreteTrajectory<World> rendered_apoapsides;
+  DiscreteTrajectory<World> rendered_periapsides;
   plugin->ComputeAndRenderApsides(celestial_index,
                                   flight_plan,
                                   flight_plan.begin(), flight_plan.end(),
@@ -415,10 +415,10 @@ void __cdecl principia__FlightPlanRenderedApsides(
                                   max_points,
                                   rendered_apoapsides,
                                   rendered_periapsides);
-  *apoapsides = new TypedIterator<DiscreteTraject0ry<World>>(
+  *apoapsides = new TypedIterator<DiscreteTrajectory<World>>(
       std::move(rendered_apoapsides),
       plugin);
-  *periapsides = new TypedIterator<DiscreteTraject0ry<World>>(
+  *periapsides = new TypedIterator<DiscreteTrajectory<World>>(
       std::move(rendered_periapsides),
       plugin);
   return m.Return();
@@ -436,14 +436,14 @@ void __cdecl principia__FlightPlanRenderedClosestApproaches(
   CHECK_NOTNULL(plugin);
   auto const& flight_plan =
       GetFlightPlan(*plugin, vessel_guid).GetAllSegments();
-  DiscreteTraject0ry<World> rendered_closest_approaches;
+  DiscreteTrajectory<World> rendered_closest_approaches;
   plugin->ComputeAndRenderClosestApproaches(
       flight_plan,
       flight_plan.begin(), flight_plan.end(),
       FromXYZ<Position<World>>(sun_world_position),
       max_points,
       rendered_closest_approaches);
-  *closest_approaches = new TypedIterator<DiscreteTraject0ry<World>>(
+  *closest_approaches = new TypedIterator<DiscreteTrajectory<World>>(
       std::move(rendered_closest_approaches),
       plugin);
   return m.Return();
@@ -461,17 +461,17 @@ void __cdecl principia__FlightPlanRenderedNodes(Plugin const* const plugin,
   CHECK_NOTNULL(plugin);
   auto const& flight_plan =
       GetFlightPlan(*plugin, vessel_guid).GetAllSegments();
-  DiscreteTraject0ry<World> rendered_ascending;
-  DiscreteTraject0ry<World> rendered_descending;
+  DiscreteTrajectory<World> rendered_ascending;
+  DiscreteTrajectory<World> rendered_descending;
   plugin->ComputeAndRenderNodes(flight_plan.begin(), flight_plan.end(),
                                 FromXYZ<Position<World>>(sun_world_position),
                                 max_points,
                                 rendered_ascending,
                                 rendered_descending);
-  *ascending = new TypedIterator<DiscreteTraject0ry<World>>(
+  *ascending = new TypedIterator<DiscreteTrajectory<World>>(
       std::move(rendered_ascending),
       plugin);
-  *descending = new TypedIterator<DiscreteTraject0ry<World>>(
+  *descending = new TypedIterator<DiscreteTrajectory<World>>(
       std::move(rendered_descending),
       plugin);
   return m.Return();
@@ -503,7 +503,7 @@ Iterator* __cdecl principia__FlightPlanRenderedSegment(
     // start and we fail.
     rendered_trajectory.clear();
   }
-  return m.Return(new TypedIterator<DiscreteTraject0ry<World>>(
+  return m.Return(new TypedIterator<DiscreteTrajectory<World>>(
       std::move(rendered_trajectory),
       plugin));
 }

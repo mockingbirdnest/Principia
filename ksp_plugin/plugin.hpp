@@ -29,7 +29,7 @@
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/body.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
@@ -72,7 +72,7 @@ using integrators::FixedStepSizeIntegrator;
 using integrators::AdaptiveStepSizeIntegrator;
 using physics::Body;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using physics::DiscreteTrajectorySegment;
 using physics::DynamicFrame;
 using physics::Ephemeris;
@@ -353,32 +353,32 @@ class Plugin {
   virtual void ComputeAndRenderApsides(
       Index celestial_index,
       Trajectory<Barycentric> const& trajectory,
-      DiscreteTraject0ry<Barycentric>::iterator const& begin,
-      DiscreteTraject0ry<Barycentric>::iterator const& end,
+      DiscreteTrajectory<Barycentric>::iterator const& begin,
+      DiscreteTrajectory<Barycentric>::iterator const& end,
       Position<World> const& sun_world_position,
       int max_points,
-      DiscreteTraject0ry<World>& apoapsides,
-      DiscreteTraject0ry<World>& periapsides) const;
+      DiscreteTrajectory<World>& apoapsides,
+      DiscreteTrajectory<World>& periapsides) const;
 
   // Computes the closest approaches of the trajectory defined by |begin| and
   // |end| with respect to the trajectory of the targetted vessel.
   virtual void ComputeAndRenderClosestApproaches(
       Trajectory<Barycentric> const& trajectory,
-      DiscreteTraject0ry<Barycentric>::iterator const& begin,
-      DiscreteTraject0ry<Barycentric>::iterator const& end,
+      DiscreteTrajectory<Barycentric>::iterator const& begin,
+      DiscreteTrajectory<Barycentric>::iterator const& end,
       Position<World> const& sun_world_position,
       int max_points,
-      DiscreteTraject0ry<World>& closest_approaches) const;
+      DiscreteTrajectory<World>& closest_approaches) const;
 
   // Computes the nodes of the trajectory defined by |begin| and |end| with
   // respect to plane of the trajectory of the targetted vessel.
   virtual void ComputeAndRenderNodes(
-      DiscreteTraject0ry<Barycentric>::iterator const& begin,
-      DiscreteTraject0ry<Barycentric>::iterator const& end,
+      DiscreteTrajectory<Barycentric>::iterator const& begin,
+      DiscreteTrajectory<Barycentric>::iterator const& end,
       Position<World> const& sun_world_position,
       int max_points,
-      DiscreteTraject0ry<World>& ascending,
-      DiscreteTraject0ry<World>& descending) const;
+      DiscreteTrajectory<World>& ascending,
+      DiscreteTrajectory<World>& descending) const;
 
   virtual bool HasCelestial(Index index) const;
   virtual Celestial const& GetCelestial(Index index) const;

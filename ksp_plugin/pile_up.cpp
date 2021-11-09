@@ -235,7 +235,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
           new PileUp(std::move(parts),
                      DefaultPsychohistoryParameters(),
                      DefaultHistoryParameters(),
-                     DiscreteTraject0ry<Barycentric>::ReadFromMessage(
+                     DiscreteTrajectory<Barycentric>::ReadFromMessage(
                          message.history(),
                          /*forks=*/{}),
                      /*history=*/std::nullopt,
@@ -251,7 +251,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
                   message.adaptive_step_parameters()),
               Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
                   message.fixed_step_parameters()),
-              DiscreteTraject0ry<Barycentric>::ReadFromMessage(
+              DiscreteTrajectory<Barycentric>::ReadFromMessage(
                   message.history(),
                   /*forks=*/{}),
               /*history=*/std::nullopt,
@@ -263,7 +263,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
     // Fork a psychohistory for compatibility if there is a non-authoritative
     // point.
     if (pile_up->history_->size() == 2) {
-      DiscreteTraject0ry<Barycentric> psychohistory;
+      DiscreteTrajectory<Barycentric> psychohistory;
       for (auto const [time, degrees_of_freedom] : *pile_up->history_) {
         psychohistory.Append(time, degrees_of_freedom);
       }
@@ -276,7 +276,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
   } else {
     if (is_pre_frobenius) {
       DiscreteTrajectorySegmentIterator<Barycentric> psychohistory;
-      auto trajectory = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
+      auto trajectory = DiscreteTrajectory<Barycentric>::ReadFromMessage(
           message.history(),
           /*forks=*/{&psychohistory});
       pile_up = std::unique_ptr<PileUp>(
@@ -294,7 +294,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
               std::move(deletion_callback)));
     } else if (is_pre_ζήνων) {
       DiscreteTrajectorySegmentIterator<Barycentric> psychohistory;
-      auto trajectory = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
+      auto trajectory = DiscreteTrajectory<Barycentric>::ReadFromMessage(
           message.history(),
           /*forks=*/{&psychohistory});
       pile_up = std::unique_ptr<PileUp>(
@@ -314,7 +314,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
     } else {
       DiscreteTrajectorySegmentIterator<Barycentric> history;
       DiscreteTrajectorySegmentIterator<Barycentric> psychohistory;
-      auto trajectory = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
+      auto trajectory = DiscreteTrajectory<Barycentric>::ReadFromMessage(
           message.history(),
           /*forks=*/{&history, &psychohistory});
       pile_up = std::unique_ptr<PileUp>(
@@ -397,7 +397,7 @@ PileUp::PileUp(
     std::list<not_null<Part*>>&& parts,
     Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters,
     Ephemeris<Barycentric>::FixedStepParameters fixed_step_parameters,
-    DiscreteTraject0ry<Barycentric> trajectory,
+    DiscreteTrajectory<Barycentric> trajectory,
     std::optional<DiscreteTrajectorySegmentIterator<Barycentric>> history,
     std::optional<DiscreteTrajectorySegmentIterator<Barycentric>> psychohistory,
     Bivector<AngularMomentum, NonRotatingPileUp> const& angular_momentum,
@@ -672,7 +672,7 @@ void PileUp::NudgeParts() const {
 }
 
 template<PileUp::AppendToPartTrajectory append_to_part_trajectory>
-void PileUp::AppendToPart(DiscreteTraject0ry<Barycentric>::iterator it) const {
+void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::iterator it) const {
   auto const& pile_up_dof = it->degrees_of_freedom;
   RigidMotion<Barycentric, NonRotatingPileUp> const barycentric_to_pile_up(
       RigidTransformation<Barycentric, NonRotatingPileUp>(

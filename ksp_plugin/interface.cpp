@@ -49,7 +49,7 @@
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/part.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/solar_system.hpp"
@@ -103,7 +103,7 @@ using ksp_plugin::TypedIterator;
 using ksp_plugin::VesselSet;
 using ksp_plugin::World;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using physics::DiscreteTrajectorySegment;
 using physics::FrameField;
 using physics::MassiveBody;

@@ -14,7 +14,7 @@
 #include "geometry/perspective.hpp"
 #include "geometry/rotation.hpp"
 #include "gtest/gtest.h"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_continuous_trajectory.hpp"
@@ -55,7 +55,7 @@ using geometry::Sign;
 using geometry::Signature;
 using geometry::Vector;
 using geometry::Velocity;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::MassiveBody;
 using physics::MockContinuousTrajectory;
@@ -141,7 +141,7 @@ class PlanetariumTest : public ::testing::Test {
 };
 
 TEST_F(PlanetariumTest, PlotMethod0) {
-  DiscreteTraject0ry<Barycentric> discrete_trajectory;
+  DiscreteTrajectory<Barycentric> discrete_trajectory;
   AppendTrajectoryTimeline(/*from=*/NewCircularTrajectoryTimeline<Barycentric>(
                                         /*period=*/10 * Second,
                                         /*r=*/10 * Metre,
@@ -187,7 +187,7 @@ TEST_F(PlanetariumTest, PlotMethod0) {
 TEST_F(PlanetariumTest, PlotMethod1) {
   // A quarter of a circular trajectory around the origin, with many small
   // segments.
-  DiscreteTraject0ry<Barycentric> discrete_trajectory;
+  DiscreteTrajectory<Barycentric> discrete_trajectory;
   AppendTrajectoryTimeline(/*from=*/NewCircularTrajectoryTimeline<Barycentric>(
                                         /*period=*/100'000 * Second,
                                         /*r=*/10 * Metre,
@@ -223,7 +223,7 @@ TEST_F(PlanetariumTest, PlotMethod1) {
 TEST_F(PlanetariumTest, PlotMethod2) {
   // A quarter of a circular trajectory around the origin, with many small
   // segments.
-  DiscreteTraject0ry<Barycentric> discrete_trajectory;
+  DiscreteTrajectory<Barycentric> discrete_trajectory;
   AppendTrajectoryTimeline(/*from=*/NewCircularTrajectoryTimeline<Barycentric>(
                                         /*period=*/100'000 * Second,
                                         /*r=*/10 * Metre,
@@ -259,7 +259,7 @@ TEST_F(PlanetariumTest, PlotMethod2) {
 #if !defined(_DEBUG)
 TEST_F(PlanetariumTest, RealSolarSystem) {
   auto const discrete_trajectory =
-      DiscreteTraject0ry<Barycentric>::ReadFromMessage(
+      DiscreteTrajectory<Barycentric>::ReadFromMessage(
           ParseFromBytes<serialization::DiscreteTrajectory>(
               ReadFromBinaryFile(SOLUTION_DIR / "ksp_plugin_test" /
                                  "planetarium_trajectory.proto.bin")),

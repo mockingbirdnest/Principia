@@ -17,7 +17,7 @@
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/rotating_body.hpp"
@@ -43,7 +43,7 @@ using geometry::Position;
 using geometry::R3x3Matrix;
 using geometry::Velocity;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using physics::MassiveBody;
 using physics::MockEphemeris;
 using physics::RigidMotion;

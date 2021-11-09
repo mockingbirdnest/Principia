@@ -11,7 +11,7 @@
 #include "gtest/gtest.h"
 #include "ksp_plugin/frames.hpp"
 #include "physics/continuous_trajectory.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_dynamic_frame.hpp"
@@ -47,7 +47,7 @@ using geometry::Vector;
 using geometry::Velocity;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using physics::Frenet;
 using physics::MassiveBody;
 using physics::MockDynamicFrame;
@@ -100,7 +100,7 @@ class ManœuvreTest : public ::testing::Test {
 
   Instant const t0_;
   StrictMock<MockDynamicFrame<World, Rendering>> const* mock_dynamic_frame_;
-  DiscreteTraject0ry<World> discrete_trajectory_;
+  DiscreteTrajectory<World> discrete_trajectory_;
   DegreesOfFreedom<World> const dof_ = {
       World::origin + Displacement<World>({1 * Metre, 9 * Metre, 5 * Metre}),
       Velocity<World>(

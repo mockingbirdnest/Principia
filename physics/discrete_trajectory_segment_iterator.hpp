@@ -16,9 +16,9 @@ FORWARD_DECLARE_FROM(discrete_trajectory_factories,
 
 namespace physics {
 
-FORWARD_DECLARE_FROM(discrete_traject0ry,
+FORWARD_DECLARE_FROM(discrete_trajectory,
                      TEMPLATE(typename Frame) class,
-                     DiscreteTraject0ry);
+                     DiscreteTrajectory);
 FORWARD_DECLARE_FROM(discrete_trajectory_iterator,
                      TEMPLATE(typename Frame) class,
                      DiscreteTrajectoryIterator);
@@ -73,7 +73,7 @@ class DiscreteTrajectorySegmentIterator {
   typename Segments::iterator iterator_;
 
   template<typename F>
-  friend class physics::DiscreteTraject0ry;
+  friend class physics::DiscreteTrajectory;
   template<typename F>
   friend class physics::DiscreteTrajectoryIterator;
 

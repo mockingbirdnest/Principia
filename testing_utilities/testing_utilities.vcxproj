@@ -43,8 +43,6 @@
     <ClInclude Include="statistics.hpp" />
     <ClInclude Include="statistics_body.hpp" />
     <ClInclude Include="string_log_sink.hpp" />
-    <ClInclude Include="trajectory_factories.hpp" />
-    <ClInclude Include="trajectory_factories_body.hpp" />
     <ClInclude Include="vanishes_before.hpp" />
     <ClInclude Include="vanishes_before_body.hpp" />
   </ItemGroup>
@@ -62,7 +60,6 @@
     <ClCompile Include="solar_system_factory_test.cpp" />
     <ClCompile Include="statistics_test.cpp" />
     <ClCompile Include="string_log_sink.cpp" />
-    <ClCompile Include="trajectory_factories_test.cpp" />
     <ClCompile Include="vanishes_before_test.cpp" />
   </ItemGroup>
 </Project>

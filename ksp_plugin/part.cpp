@@ -161,15 +161,15 @@ RigidMotion<RigidPart, Barycentric> const& Part::rigid_motion() const {
   return rigid_motion_;
 }
 
-DiscreteTraject0ry<Barycentric>::iterator Part::history_begin() {
+DiscreteTrajectory<Barycentric>::iterator Part::history_begin() {
   return history_->begin();
 }
 
-DiscreteTraject0ry<Barycentric>::iterator Part::history_end() {
+DiscreteTrajectory<Barycentric>::iterator Part::history_end() {
   return history_->end();
 }
 
-DiscreteTraject0ry<Barycentric>::iterator Part::psychohistory_begin() {
+DiscreteTrajectory<Barycentric>::iterator Part::psychohistory_begin() {
   if (psychohistory_ == trajectory_.segments().end()) {
     psychohistory_ = trajectory_.NewSegment();
   }
@@ -178,7 +178,7 @@ DiscreteTraject0ry<Barycentric>::iterator Part::psychohistory_begin() {
   return psychohistory_->begin();
 }
 
-DiscreteTraject0ry<Barycentric>::iterator Part::psychohistory_end() {
+DiscreteTrajectory<Barycentric>::iterator Part::psychohistory_end() {
   if (psychohistory_ == trajectory_.segments().end()) {
     psychohistory_ = trajectory_.NewSegment();
   }
@@ -322,7 +322,7 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
   }
 
   if (is_pre_cesàro) {
-    auto tail = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
+    auto tail = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.prehistory(),
         /*tracked=*/{});
     // The |history_| has been created by the constructor above.  Construct the
@@ -339,7 +339,7 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
   } else if (is_pre_ζήνων) {
     DiscreteTrajectorySegmentIterator<Barycentric> history;
     DiscreteTrajectorySegmentIterator<Barycentric> psychohistory;
-    auto prehistory = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
+    auto prehistory = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.prehistory(),
         /*tracked=*/{&history, &psychohistory});
     // We want to get rid of the prehistory segment, so the easiest is to detach
@@ -349,7 +349,7 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     part->history_ = part->trajectory_.segments().begin();
     part->psychohistory_ = std::next(part->history_);
   } else {
-    part->trajectory_ = DiscreteTraject0ry<Barycentric>::ReadFromMessage(
+    part->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.prehistory(),
         /*tracked=*/{&part->history_, &part->psychohistory_});
   }

@@ -205,7 +205,7 @@ DiscreteTrajectorySegmentIterator<Barycentric> FlightPlan::GetSegment(
   return segments_[index];
 }
 
-DiscreteTraject0ry<Barycentric> const& FlightPlan::GetAllSegments() const {
+DiscreteTrajectory<Barycentric> const& FlightPlan::GetAllSegments() const {
   return trajectory_;
 }
 

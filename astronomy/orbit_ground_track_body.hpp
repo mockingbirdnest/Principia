@@ -31,7 +31,7 @@ Angle CelestialLongitude(Position<PrimaryCentred> const& q) {
 // The resulting angles are neither normalized nor unwound.
 template<typename PrimaryCentred, typename Inertial>
 std::vector<Angle> PlanetocentricLongitudes(
-    DiscreteTraject0ry<PrimaryCentred> const& nodes,
+    DiscreteTrajectory<PrimaryCentred> const& nodes,
     RotatingBody<Inertial> const& primary) {
   std::vector<Angle> longitudes;
   longitudes.reserve(nodes.size());
@@ -55,7 +55,7 @@ Angle MeanSolarTime(Iterator const& it,
 
 template<typename PrimaryCentred>
 Interval<Angle> MeanSolarTimesOfNodes(
-    DiscreteTraject0ry<PrimaryCentred> const& nodes,
+    DiscreteTrajectory<PrimaryCentred> const& nodes,
     OrbitGroundTrack::MeanSun const& mean_sun) {
   Interval<Angle> mean_solar_times;
   std::optional<Angle> mean_solar_time;
@@ -120,11 +120,11 @@ inline OrbitGroundTrack::EquatorCrossingLongitudes::EquatorCrossingLongitudes(
 
 template<typename PrimaryCentred, typename Inertial>
 absl::StatusOr<OrbitGroundTrack> OrbitGroundTrack::ForTrajectory(
-    DiscreteTraject0ry<PrimaryCentred> const& trajectory,
+    DiscreteTrajectory<PrimaryCentred> const& trajectory,
     RotatingBody<Inertial> const& primary,
     std::optional<MeanSun> const& mean_sun) {
-  DiscreteTraject0ry<PrimaryCentred> ascending_nodes;
-  DiscreteTraject0ry<PrimaryCentred> descending_nodes;
+  DiscreteTrajectory<PrimaryCentred> ascending_nodes;
+  DiscreteTrajectory<PrimaryCentred> descending_nodes;
   OrbitGroundTrack ground_track;
   RETURN_IF_ERROR(ComputeNodes(trajectory,
                                trajectory.begin(),

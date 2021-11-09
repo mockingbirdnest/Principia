@@ -12,7 +12,7 @@
 #include "journal/profiles.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "physics/apsides.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 
 namespace principia {
 namespace interface {
@@ -27,7 +27,7 @@ using ksp_plugin::Vessel;
 using ksp_plugin::WorldSun;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::ComputeApsides;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using physics::OblateBody;
 using physics::RigidMotion;
 using physics::RigidTransformation;
@@ -285,7 +285,7 @@ Status* __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
   }
   auto const body_centred_inertial =
       plugin->NewBodyCentredNonRotatingNavigationFrame(central_body_index);
-  DiscreteTraject0ry<Navigation> coast;
+  DiscreteTrajectory<Navigation> coast;
   for (auto const& [time, degrees_of_freedom] :
        *flight_plan.GetSegment(segment_index)) {
     coast.Append(
@@ -314,15 +314,15 @@ Status* __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
   Position<Navigation> reference_position =
       from_world_body_centred_inertial.rigid_transformation()(
           FromXYZ<Position<World>>(world_body_centred_reference_position));
-  DiscreteTraject0ry<Navigation> immobile_reference;
+  DiscreteTrajectory<Navigation> immobile_reference;
   immobile_reference.Append(coast.front().time,
                             {reference_position, Navigation::unmoving});
   if (coast.size() > 1) {
     immobile_reference.Append(coast.back().time,
                               {reference_position, Navigation::unmoving});
   }
-  DiscreteTraject0ry<Navigation> apoapsides;
-  DiscreteTraject0ry<Navigation> periapsides;
+  DiscreteTrajectory<Navigation> apoapsides;
+  DiscreteTrajectory<Navigation> periapsides;
   ComputeApsides(/*reference=*/immobile_reference,
                  coast,
                  coast.begin(), coast.end(),

@@ -16,7 +16,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "integrators/integrators.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/euler_solver.hpp"
@@ -46,7 +46,7 @@ using geometry::NonRotating;
 using geometry::RigidTransformation;
 using geometry::Vector;
 using integrators::Integrator;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using physics::DiscreteTrajectorySegmentIterator;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
@@ -152,7 +152,7 @@ class PileUp {
       std::list<not_null<Part*>>&& parts,
       Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters,
       Ephemeris<Barycentric>::FixedStepParameters fixed_step_parameters,
-      DiscreteTraject0ry<Barycentric> trajectory,
+      DiscreteTrajectory<Barycentric> trajectory,
       std::optional<DiscreteTrajectorySegmentIterator<Barycentric>> history,
       std::optional<DiscreteTrajectorySegmentIterator<Barycentric>>
           psychohistory,
@@ -185,7 +185,7 @@ class PileUp {
   void NudgeParts() const;
 
   template<AppendToPartTrajectory append_to_part_trajectory>
-  void AppendToPart(DiscreteTraject0ry<Barycentric>::iterator it) const;
+  void AppendToPart(DiscreteTrajectory<Barycentric>::iterator it) const;
 
   // Wrapped in a |unique_ptr| to be moveable.
   not_null<std::unique_ptr<absl::Mutex>> lock_;
@@ -207,7 +207,7 @@ class PileUp {
 
   // The trajectory of the pile-up, composed of (at most) two segments, the
   // history and the psychohistory.
-  DiscreteTraject0ry<Barycentric> trajectory_;
+  DiscreteTrajectory<Barycentric> trajectory_;
 
   // The |history_| is the past trajectory of the pile-up.  It is normally
   // integrated with a fixed step using |fixed_instance_|, except in the

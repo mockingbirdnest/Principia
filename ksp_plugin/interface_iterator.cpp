@@ -10,7 +10,7 @@
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/plugin.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -25,7 +25,7 @@ using ksp_plugin::TypedIterator;
 using ksp_plugin::VesselSet;
 using ksp_plugin::World;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using quantities::Length;
 
 bool __cdecl principia__IteratorAtEnd(Iterator const* const iterator) {
@@ -44,9 +44,9 @@ QP __cdecl principia__IteratorGetDiscreteTrajectoryQP(
   journal::Method<journal::IteratorGetDiscreteTrajectoryQP> m({iterator});
   CHECK_NOTNULL(iterator);
   auto const typed_iterator = check_not_null(
-      dynamic_cast<TypedIterator<DiscreteTraject0ry<World>> const*>(iterator));
+      dynamic_cast<TypedIterator<DiscreteTrajectory<World>> const*>(iterator));
   return m.Return(typed_iterator->Get<QP>(
-      [](DiscreteTraject0ry<World>::iterator const& iterator) -> QP {
+      [](DiscreteTrajectory<World>::iterator const& iterator) -> QP {
         return ToQP(iterator->degrees_of_freedom);
       }));
 }
@@ -56,10 +56,10 @@ double __cdecl principia__IteratorGetDiscreteTrajectoryTime(
   journal::Method<journal::IteratorGetDiscreteTrajectoryTime> m({iterator});
   CHECK_NOTNULL(iterator);
   auto const typed_iterator = check_not_null(
-      dynamic_cast<TypedIterator<DiscreteTraject0ry<World>> const*>(iterator));
+      dynamic_cast<TypedIterator<DiscreteTrajectory<World>> const*>(iterator));
   auto const plugin = typed_iterator->plugin();
   return m.Return(typed_iterator->Get<double>(
-      [plugin](DiscreteTraject0ry<World>::iterator const& iterator) -> double {
+      [plugin](DiscreteTrajectory<World>::iterator const& iterator) -> double {
         return ToGameTime(*plugin, iterator->time);
       }));
 }
@@ -69,9 +69,9 @@ XYZ __cdecl principia__IteratorGetDiscreteTrajectoryXYZ(
   journal::Method<journal::IteratorGetDiscreteTrajectoryXYZ> m({iterator});
   CHECK_NOTNULL(iterator);
   auto const typed_iterator = check_not_null(
-      dynamic_cast<TypedIterator<DiscreteTraject0ry<World>> const*>(iterator));
+      dynamic_cast<TypedIterator<DiscreteTrajectory<World>> const*>(iterator));
   return m.Return(typed_iterator->Get<XYZ>(
-      [](DiscreteTraject0ry<World>::iterator const& iterator) -> XYZ {
+      [](DiscreteTrajectory<World>::iterator const& iterator) -> XYZ {
         return ToXYZ(iterator->degrees_of_freedom.position());
       }));
 }

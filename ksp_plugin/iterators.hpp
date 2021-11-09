@@ -5,13 +5,13 @@
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/plugin.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 
 namespace principia {
 namespace ksp_plugin {
 
 using base::not_null;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 
 // A wrapper for a container and an iterator into that container.
 class Iterator {
@@ -47,11 +47,11 @@ class TypedIterator : public Iterator {
   typename Container::const_iterator iterator_;
 };
 
-// A specialization for |DiscreteTraject0ry<World>|.
+// A specialization for |DiscreteTrajectory<World>|.
 template<>
-class TypedIterator<DiscreteTraject0ry<World>> : public Iterator {
+class TypedIterator<DiscreteTrajectory<World>> : public Iterator {
  public:
-  TypedIterator(DiscreteTraject0ry<World> trajectory,
+  TypedIterator(DiscreteTrajectory<World> trajectory,
                 not_null<Plugin const*> plugin);
 
   // Obtains the element denoted by this iterator and converts it to some
@@ -59,19 +59,19 @@ class TypedIterator<DiscreteTraject0ry<World>> : public Iterator {
   template<typename Interchange>
   Interchange Get(
       std::function<Interchange(
-          DiscreteTraject0ry<World>::iterator const&)> const& convert) const;
+          DiscreteTrajectory<World>::iterator const&)> const& convert) const;
 
   bool AtEnd() const override;
   void Increment() override;
   void Reset() override;
   int Size() const override;
 
-  DiscreteTraject0ry<World>::iterator iterator() const;
+  DiscreteTrajectory<World>::iterator iterator() const;
   not_null<Plugin const*> plugin() const;
 
  private:
-  DiscreteTraject0ry<World> trajectory_;
-  DiscreteTraject0ry<World>::iterator iterator_;
+  DiscreteTrajectory<World> trajectory_;
+  DiscreteTrajectory<World>::iterator iterator_;
   not_null<Plugin const*> plugin_;
 };
 

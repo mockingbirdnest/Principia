@@ -32,9 +32,9 @@ using quantities::si::Second;
 // n-point finite difference formulæ on the positions to produce a trajectory
 // with consistent velocities.
 template<int n>
-not_null<std::unique_ptr<DiscreteTraject0ry<ITRS>>> ComputeVelocities(
-    DiscreteTraject0ry<ITRS> const& arc) {
-  auto result = make_not_null_unique<DiscreteTraject0ry<ITRS>>();
+not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>> ComputeVelocities(
+    DiscreteTrajectory<ITRS> const& arc) {
+  auto result = make_not_null_unique<DiscreteTrajectory<ITRS>>();
   CHECK_GE(arc.size(), n);
   std::array<Instant, n> times;
   std::array<Position<ITRS>, n> positions;
@@ -193,7 +193,7 @@ StandardProduct3::StandardProduct3(
                             std::forward_as_tuple());
         CHECK(inserted) << "Duplicate satellite identifier " << id << ": "
                         << full_location;
-        it->second.push_back(make_not_null_unique<DiscreteTraject0ry<ITRS>>());
+        it->second.push_back(make_not_null_unique<DiscreteTrajectory<ITRS>>());
         satellites_.push_back(id);
       } else {
         CHECK_EQ(columns(c, c + 2), "  0") << full_location;
@@ -330,9 +330,9 @@ StandardProduct3::StandardProduct3(
       // from the check.
       CHECK_EQ(id, satellites_[i]) << location;
 
-      std::vector<not_null<std::unique_ptr<DiscreteTraject0ry<ITRS>>>>& orbit =
+      std::vector<not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>>>& orbit =
           it->second;
-      DiscreteTraject0ry<ITRS>& arc = *orbit.back();
+      DiscreteTrajectory<ITRS>& arc = *orbit.back();
 
       Position<ITRS> const position =
           Displacement<ITRS>({float_columns(5, 18) * Kilo(Metre),
@@ -376,7 +376,7 @@ StandardProduct3::StandardProduct3(
       // Bad or absent positional and velocity values are to be set to 0.000000.
       if (position == ITRS::origin || velocity == ITRS::unmoving) {
         if (!arc.empty()) {
-          orbit.push_back(make_not_null_unique<DiscreteTraject0ry<ITRS>>());
+          orbit.push_back(make_not_null_unique<DiscreteTrajectory<ITRS>>());
         }
       } else {
         arc.Append(epoch, {position, velocity});
@@ -439,7 +439,7 @@ StandardProduct3::satellites() const {
   return satellites_;
 }
 
-std::vector<not_null<DiscreteTraject0ry<ITRS> const*>> const&
+std::vector<not_null<DiscreteTrajectory<ITRS> const*>> const&
 StandardProduct3::orbit(SatelliteIdentifier const& id) const {
   return FindOrDie(const_orbits_, id);
 }

@@ -18,7 +18,7 @@
 #include "mathematica/mathematica.hpp"
 #include "physics/apsides.hpp"
 #include "physics/body_surface_dynamic_frame.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massless_body.hpp"
 #include "physics/oblate_body.hpp"
@@ -57,7 +57,7 @@ using physics::BodySurfaceDynamicFrame;
 using physics::ComputeApsides;
 using physics::ComputeNodes;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::KeplerianElements;
 using physics::KeplerOrbit;
@@ -363,7 +363,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                 IsNear(4.7e-13_⑴));
   }
 
-  DiscreteTraject0ry<ICRS> trajectory;
+  DiscreteTrajectory<ICRS> trajectory;
   trajectory.Append(J2000, initial_state);
   auto const instance = ephemeris_->NewInstance(
       {&trajectory},
@@ -377,7 +377,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
 
   // To find the nodes, we need to convert the trajectory to a reference frame
   // whose xy plane is the Moon's equator.
-  DiscreteTraject0ry<LunarSurface> surface_trajectory;
+  DiscreteTrajectory<LunarSurface> surface_trajectory;
   for (auto const& [time, degrees_of_freedom] : trajectory) {
     surface_trajectory.Append(
         time, lunar_frame_.ToThisFrameAtTime(time)(degrees_of_freedom));
@@ -413,8 +413,8 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                   mathematica::ExpressIn(Metre));
   }
 
-  DiscreteTraject0ry<LunarSurface> ascending_nodes;
-  DiscreteTraject0ry<LunarSurface> descending_nodes;
+  DiscreteTrajectory<LunarSurface> ascending_nodes;
+  DiscreteTrajectory<LunarSurface> descending_nodes;
   ComputeNodes(surface_trajectory,
                surface_trajectory.begin(),
                surface_trajectory.end(),
@@ -423,8 +423,8 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                ascending_nodes,
                descending_nodes);
 
-  DiscreteTraject0ry<ICRS> apoapsides;
-  DiscreteTraject0ry<ICRS> periapsides;
+  DiscreteTrajectory<ICRS> apoapsides;
+  DiscreteTrajectory<ICRS> periapsides;
   ComputeApsides(*ephemeris_->trajectory(moon_),
                  trajectory,
                  trajectory.begin(),
@@ -435,12 +435,12 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
 
   struct Nodes {
     std::string_view const name;
-    DiscreteTraject0ry<LunarSurface> const& trajectory;
+    DiscreteTrajectory<LunarSurface> const& trajectory;
   };
 
   struct Apsides {
     std::string_view const name;
-    DiscreteTraject0ry<ICRS> const& trajectory;
+    DiscreteTrajectory<ICRS> const& trajectory;
   };
 
   std::vector<double> descending_node_eccentricities;

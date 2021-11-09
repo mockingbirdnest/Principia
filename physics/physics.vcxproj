@@ -31,8 +31,8 @@
     <ClInclude Include="body_surface_frame_field_body.hpp" />
     <ClInclude Include="checkpointer.hpp" />
     <ClInclude Include="checkpointer_body.hpp" />
-    <ClInclude Include="discrete_traject0ry.hpp" />
-    <ClInclude Include="discrete_traject0ry_body.hpp" />
+    <ClInclude Include="discrete_trajectory.hpp" />
+    <ClInclude Include="discrete_trajectory_body.hpp" />
     <ClInclude Include="discrete_trajectory_iterator.hpp" />
     <ClInclude Include="discrete_trajectory_iterator_body.hpp" />
     <ClInclude Include="discrete_trajectory_segment.hpp" />
@@ -49,8 +49,6 @@
     <ClInclude Include="continuous_trajectory.hpp" />
     <ClInclude Include="degrees_of_freedom.hpp" />
     <ClInclude Include="degrees_of_freedom_body.hpp" />
-    <ClInclude Include="discrete_trajectory.hpp" />
-    <ClInclude Include="discrete_trajectory_body.hpp" />
     <ClInclude Include="dynamic_frame.hpp" />
     <ClInclude Include="dynamic_frame_body.hpp" />
     <ClInclude Include="euler_solver.hpp" />
@@ -70,8 +68,6 @@
     <ClInclude Include="rigid_motion_body.hpp" />
     <ClInclude Include="ephemeris.hpp" />
     <ClInclude Include="ephemeris_body.hpp" />
-    <ClInclude Include="forkable.hpp" />
-    <ClInclude Include="forkable_body.hpp" />
     <ClInclude Include="frame_field.hpp" />
     <ClInclude Include="frame_field_body.hpp" />
     <ClInclude Include="massive_body.hpp" />
@@ -105,15 +101,14 @@
     <ClCompile Include="body_surface_frame_field_test.cpp" />
     <ClCompile Include="body_test.cpp" />
     <ClCompile Include="checkpointer_test.cpp" />
-    <ClCompile Include="discrete_traject0ry_test.cpp" />
     <ClCompile Include="discrete_trajectory_iterator_test.cpp" />
     <ClCompile Include="discrete_trajectory_segment_iterator_test.cpp" />
     <ClCompile Include="discrete_trajectory_segment_range_test.cpp" />
     <ClCompile Include="discrete_trajectory_segment_test.cpp" />
+    <ClCompile Include="discrete_trajectory_test.cpp" />
     <ClCompile Include="mechanical_system_test.cpp" />
     <ClCompile Include="continuous_trajectory_test.cpp" />
     <ClCompile Include="degrees_of_freedom_test.cpp" />
-    <ClCompile Include="discrete_trajectory_test.cpp" />
     <ClCompile Include="dynamic_frame_test.cpp" />
     <ClCompile Include="euler_solver_test.cpp" />
     <ClCompile Include="geopotential_test.cpp" />
@@ -124,7 +119,6 @@
     <ClCompile Include="protector_test.cpp" />
     <ClCompile Include="rigid_motion_test.cpp" />
     <ClCompile Include="ephemeris_test.cpp" />
-    <ClCompile Include="forkable_test.cpp" />
     <ClCompile Include="solar_system_test.cpp" />
   </ItemGroup>
 </Project>

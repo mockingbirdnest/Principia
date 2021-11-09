@@ -30,11 +30,11 @@ using quantities::Variation;
 template<typename Frame>
 void ComputeApsides(Trajectory<Frame> const& reference,
                     Trajectory<Frame> const& trajectory,
-                    typename DiscreteTraject0ry<Frame>::iterator const begin,
-                    typename DiscreteTraject0ry<Frame>::iterator const end,
+                    typename DiscreteTrajectory<Frame>::iterator const begin,
+                    typename DiscreteTrajectory<Frame>::iterator const end,
                     int const max_points,
-                    DiscreteTraject0ry<Frame>& apoapsides,
-                    DiscreteTraject0ry<Frame>& periapsides) {
+                    DiscreteTrajectory<Frame>& apoapsides,
+                    DiscreteTrajectory<Frame>& periapsides) {
   std::optional<Instant> previous_time;
   std::optional<DegreesOfFreedom<Frame>> previous_degrees_of_freedom;
   std::optional<Square<Length>> previous_squared_distance;
@@ -134,12 +134,12 @@ void ComputeApsides(Trajectory<Frame> const& reference,
 template<typename Frame, typename Predicate>
 absl::Status ComputeNodes(
     Trajectory<Frame> const& trajectory,
-    typename DiscreteTraject0ry<Frame>::iterator const begin,
-    typename DiscreteTraject0ry<Frame>::iterator const end,
+    typename DiscreteTrajectory<Frame>::iterator const begin,
+    typename DiscreteTrajectory<Frame>::iterator const end,
     Vector<double, Frame> const& north,
     int const max_points,
-    DiscreteTraject0ry<Frame>& ascending,
-    DiscreteTraject0ry<Frame>& descending,
+    DiscreteTrajectory<Frame>& ascending,
+    DiscreteTrajectory<Frame>& descending,
     Predicate predicate) {
   static_assert(
       std::is_convertible<decltype(predicate(

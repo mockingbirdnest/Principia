@@ -6,14 +6,14 @@
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin/renderer.hpp"
-#include "physics/discrete_traject0ry.hpp"
+#include "physics/discrete_trajectory.hpp"
 
 namespace principia {
 namespace interface {
 
 using ksp_plugin::Renderer;
 using ksp_plugin::TypedIterator;
-using physics::DiscreteTraject0ry;
+using physics::DiscreteTrajectory;
 
 namespace {
 
@@ -46,8 +46,8 @@ void __cdecl principia__RenderedPredictionApsides(
       {apoapsides, periapsides});
   CHECK_NOTNULL(plugin);
   auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
-  DiscreteTraject0ry<World> rendered_apoapsides;
-  DiscreteTraject0ry<World> rendered_periapsides;
+  DiscreteTrajectory<World> rendered_apoapsides;
+  DiscreteTrajectory<World> rendered_periapsides;
   plugin->ComputeAndRenderApsides(celestial_index,
                                   *prediction,
                                   prediction->begin(),
@@ -56,10 +56,10 @@ void __cdecl principia__RenderedPredictionApsides(
                                   max_points,
                                   rendered_apoapsides,
                                   rendered_periapsides);
-  *apoapsides = new TypedIterator<DiscreteTraject0ry<World>>(
+  *apoapsides = new TypedIterator<DiscreteTrajectory<World>>(
       std::move(rendered_apoapsides),
       plugin);
-  *periapsides = new TypedIterator<DiscreteTraject0ry<World>>(
+  *periapsides = new TypedIterator<DiscreteTrajectory<World>>(
       std::move(rendered_periapsides),
       plugin);
   return m.Return();
@@ -76,7 +76,7 @@ void __cdecl principia__RenderedPredictionClosestApproaches(
       {closest_approaches});
   CHECK_NOTNULL(plugin);
   auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
-  DiscreteTraject0ry<World> rendered_closest_approaches;
+  DiscreteTrajectory<World> rendered_closest_approaches;
   plugin->ComputeAndRenderClosestApproaches(
       *prediction,
       prediction->begin(),
@@ -84,7 +84,7 @@ void __cdecl principia__RenderedPredictionClosestApproaches(
       FromXYZ<Position<World>>(sun_world_position),
       max_points,
       rendered_closest_approaches);
-  *closest_approaches = new TypedIterator<DiscreteTraject0ry<World>>(
+  *closest_approaches = new TypedIterator<DiscreteTrajectory<World>>(
       std::move(rendered_closest_approaches),
       plugin);
   return m.Return();
@@ -101,18 +101,18 @@ void __cdecl principia__RenderedPredictionNodes(Plugin const* const plugin,
       {ascending, descending});
   CHECK_NOTNULL(plugin);
   auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
-  DiscreteTraject0ry<World> rendered_ascending;
-  DiscreteTraject0ry<World> rendered_descending;
+  DiscreteTrajectory<World> rendered_ascending;
+  DiscreteTrajectory<World> rendered_descending;
   plugin->ComputeAndRenderNodes(prediction->begin(),
                                 prediction->end(),
                                 FromXYZ<Position<World>>(sun_world_position),
                                 max_points,
                                 rendered_ascending,
                                 rendered_descending);
-  *ascending = new TypedIterator<DiscreteTraject0ry<World>>(
+  *ascending = new TypedIterator<DiscreteTrajectory<World>>(
       std::move(rendered_ascending),
       plugin);
-  *descending = new TypedIterator<DiscreteTraject0ry<World>>(
+  *descending = new TypedIterator<DiscreteTrajectory<World>>(
       std::move(rendered_descending),
       plugin);
   return m.Return();
