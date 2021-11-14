@@ -10,7 +10,6 @@
 
 #include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
-#include "astronomy/epoch.hpp"
 #include "base/jthread.hpp"
 #include "base/recurring_thread.hpp"
 #include "ksp_plugin/celestial.hpp"
@@ -31,7 +30,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_vessel {
 
-using astronomy::InfinitePast;
 using base::not_null;
 using base::RecurringThread;
 using geometry::Instant;
@@ -55,8 +53,7 @@ class Vessel {
   using Manœuvres = std::vector<
       not_null<std::unique_ptr<Manœuvre<Barycentric, Navigation> const>>>;
 
-  // Constructs a vessel whose parent is initially |*parent|.  No transfer of
-  // ownership.
+  // Constructs a vessel whose parent is initially |*parent|.
   Vessel(GUID guid,
          std::string name,
          not_null<Celestial const*> parent,
@@ -108,17 +105,18 @@ class Vessel {
   // Clears the forces and torques on all parts.
   virtual void ClearAllIntrinsicForcesAndTorques();
 
-  // Detects a change in the collapsibility of the vessel and creates a new fork
-  // if needed.  Must be called after the pile-ups have been collected.
+  // Detects a change in the collapsibility of the vessel and creates a new
+  // trajectory segment if needed.  Must be called after the pile-ups have been
+  // collected.
   virtual void DetectCollapsibilityChange() EXCLUDES(lock_);
 
   // If the history is empty, appends a single point to it, computed as the
   // barycentre of all parts.  |parts_| must not be empty.  After this call,
   // |history_| is never empty again and the psychohistory is usable.  Must be
-  // called (at least) after the creation of the vessel.
+  // called (at least once) after the creation of the vessel.
   virtual void CreateHistoryIfNeeded(
       Instant const& t,
-      DiscreteTrajectory<Barycentric>::DownsamplingParameters const&
+      DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters const&
           downsampling_parameters) EXCLUDES(lock_);
 
   // Disables downsampling for the history of this vessel.  This is useful when
