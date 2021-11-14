@@ -19,7 +19,9 @@
 #include "base/serialization.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/named_quantities.hpp"
+#include "geometry/orthogonal_map.hpp"
 #include "geometry/permutation.hpp"
+#include "geometry/rotation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -28,6 +30,7 @@
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "physics/continuous_trajectory.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_dynamic_frame.hpp"
@@ -46,7 +49,6 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_plugin {
 
 using astronomy::ICRS;
 using astronomy::ParseTT;
@@ -56,11 +58,17 @@ using base::not_null;
 using base::SerializeAsBytes;
 using geometry::AngularVelocity;
 using geometry::Bivector;
+using geometry::Displacement;
 using geometry::Identity;
+using geometry::Instant;
 using geometry::OddPermutation;
+using geometry::OrthogonalMap;
 using geometry::Permutation;
 using geometry::RigidTransformation;
+using geometry::Rotation;
 using geometry::Trivector;
+using geometry::Vector;
+using geometry::Velocity;
 using integrators::IntegrationProblem;
 using integrators::MockFixedStepSizeIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
@@ -72,10 +80,12 @@ using physics::KeplerOrbit;
 using physics::MassiveBody;
 using physics::MockDynamicFrame;
 using physics::MockEphemeris;
+using physics::RelativeDegreesOfFreedom;
 using physics::RigidMotion;
 using physics::SolarSystem;
 using quantities::Abs;
 using quantities::Acceleration;
+using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::ArcTan;
 using quantities::Cos;
@@ -84,12 +94,15 @@ using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Sin;
 using quantities::Sqrt;
+using quantities::Time;
 using quantities::astronomy::AstronomicalUnit;
 using quantities::si::Day;
 using quantities::si::Degree;
 using quantities::si::Hour;
 using quantities::si::Kilo;
 using quantities::si::Kilogram;
+using quantities::si::Metre;
+using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Newton;
 using quantities::si::Radian;
@@ -418,10 +431,7 @@ TEST_F(PluginTest, Serialization) {
 
   serialization::Plugin message;
   plugin->WriteToMessage(&message);
-  plugin = Plugin::ReadFromMessage(message);
-  serialization::Plugin second_message;
-  plugin->WriteToMessage(&second_message);
-  EXPECT_THAT(message, EqualsProto(second_message));
+
   EXPECT_EQ(SolarSystemFactory::LastMajorBody - SolarSystemFactory::Sun + 1,
             message.celestial_size());
 
@@ -438,15 +448,7 @@ TEST_F(PluginTest, Serialization) {
 
   EXPECT_TRUE(message.vessel(0).vessel().has_history());
   auto const& vessel_0_history = message.vessel(0).vessel().history();
-  EXPECT_EQ(1, vessel_0_history.zfp().timeline_size());
-  auto const& vessel_0_backstory =
-      vessel_0_history.children(0).trajectories(0);
-  EXPECT_EQ(6, vessel_0_backstory.zfp().timeline_size());
-  auto const& vessel_0_psychohistory =
-      vessel_0_backstory.children(0).trajectories(0);
-  EXPECT_EQ(1, vessel_0_psychohistory.zfp().timeline_size());
-  EXPECT_EQ(0, vessel_0_psychohistory.children_size());
-
+  EXPECT_EQ(7, vessel_0_history.segment(0).zfp().timeline_size());
   EXPECT_TRUE(message.has_renderer());
   EXPECT_TRUE(message.renderer().has_plotting_frame());
   EXPECT_TRUE(message.renderer().plotting_frame().HasExtension(
@@ -455,6 +457,19 @@ TEST_F(PluginTest, Serialization) {
             message.renderer().plotting_frame().GetExtension(
                 serialization::BodyCentredNonRotatingDynamicFrame::extension).
                     centre());
+
+  plugin = Plugin::ReadFromMessage(message);
+  serialization::Plugin second_message;
+  plugin->WriteToMessage(&second_message);
+
+  // The zfp serialization is not idempotent because we exactly preserve the
+  // bounds of each segment.  Ignore it for the purposes of comparing the
+  // messages.
+  message.mutable_vessel(0)->mutable_vessel()
+      ->mutable_history()->mutable_segment(0)->clear_zfp();
+  second_message.mutable_vessel(0)->mutable_vessel()
+      ->mutable_history()->mutable_segment(0)->clear_zfp();
+  EXPECT_THAT(message, EqualsProto(second_message));
 }
 
 TEST_F(PluginTest, Initialization) {
@@ -974,6 +989,5 @@ TEST_F(PluginTest, Frenet) {
       AlmostEquals(alice_sun_to_world(satellite_initial_velocity_), 7, 83));
 }
 
-}  // namespace internal_plugin
 }  // namespace ksp_plugin
 }  // namespace principia

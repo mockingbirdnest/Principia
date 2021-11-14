@@ -84,7 +84,8 @@ double OrbitAnalyser::progress_of_next_analysis() const {
 absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
   Analysis analysis{parameters.first_time};
   DiscreteTrajectory<Barycentric> trajectory;
-  trajectory.SetDownsampling(DefaultDownsamplingParameters());
+  trajectory.segments().front().SetDownsampling(
+      DefaultDownsamplingParameters());
   trajectory.Append(parameters.first_time, parameters.first_degrees_of_freedom);
 
   RotatingBody<Barycentric> const* primary = nullptr;

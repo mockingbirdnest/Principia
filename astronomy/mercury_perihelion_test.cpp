@@ -12,7 +12,6 @@
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "mathematica/mathematica.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
@@ -33,7 +32,6 @@ using geometry::Position;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::QuinlanTremaine1990Order12;
 using physics::ContinuousTrajectory;
-using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::KeplerianElements;
 using physics::KeplerOrbit;

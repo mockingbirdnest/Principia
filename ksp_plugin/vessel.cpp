@@ -74,9 +74,11 @@ Vessel::Vessel(GUID guid,
       checkpointer_(make_not_null_unique<Checkpointer<serialization::Vessel>>(
           MakeCheckpointerWriter(),
           MakeCheckpointerReader())),
-      history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
-  // Can't create the |psychohistory_| and |prediction_| here because
-  // |history_| is empty;
+      history_(trajectory_.segments().begin()),
+      psychohistory_(trajectory_.segments().end()),
+      prediction_(trajectory_.segments().end()) {
+  // Can't create the |psychohistory_| and |prediction_| here because |history_|
+  // is empty;
 }
 
 Vessel::~Vessel() {
@@ -193,10 +195,10 @@ void Vessel::DetectCollapsibilityChange() {
 
 void Vessel::CreateHistoryIfNeeded(
     Instant const& t,
-    DiscreteTrajectory<Barycentric>::DownsamplingParameters const&
+    DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters const&
         downsampling_parameters) {
   CHECK(!parts_.empty());
-  if (history_->Empty()) {
+  if (trajectory_.empty()) {
     LOG(INFO) << "Preparing history of vessel " << ShortDebugString()
               << " at " << t;
     BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
@@ -205,12 +207,12 @@ void Vessel::CreateHistoryIfNeeded(
           part.rigid_motion()({RigidPart::origin, RigidPart::unmoving}),
           part.mass());
     });
-    CHECK(psychohistory_ == nullptr);
+    CHECK(psychohistory_ == trajectory_.segments().end());
     history_->SetDownsampling(downsampling_parameters);
-    history_->Append(t, calculator.Get());
+    trajectory_.Append(t, calculator.Get());
     backstory_ = history_.get();
-    psychohistory_ = history_->NewForkAtLast();
-    prediction_ = psychohistory_->NewForkAtLast();
+    psychohistory_ = trajectory_.NewSegment();
+    prediction_ = trajectory_.NewSegment();
   }
 }
 
@@ -234,12 +236,20 @@ void Vessel::ForAllParts(std::function<void(Part&)> action) const {
   }
 }
 
-DiscreteTrajectory<Barycentric> const& Vessel::psychohistory() const {
-  return *psychohistory_;
+DiscreteTrajectory<Barycentric> const& Vessel::trajectory() const {
+  return trajectory_;
 }
 
-DiscreteTrajectory<Barycentric> const& Vessel::prediction() const {
-  return *prediction_;
+DiscreteTrajectorySegmentIterator<Barycentric> Vessel::history() const {
+  return history_;
+}
+
+DiscreteTrajectorySegmentIterator<Barycentric> Vessel::psychohistory() const {
+  return psychohistory_;
+}
+
+DiscreteTrajectorySegmentIterator<Barycentric> Vessel::prediction() const {
+  return prediction_;
 }
 
 void Vessel::set_prediction_adaptive_step_parameters(
@@ -265,18 +275,18 @@ bool Vessel::has_flight_plan() const {
 void Vessel::AdvanceTime() {
   // Squirrel away the prediction so that we can reattach it if we don't have a
   // prognostication.
-  auto prediction = prediction_->DetachFork();
-  prediction_ = nullptr;
+  auto prediction = trajectory_.DetachSegments(prediction_);
+  prediction_ = trajectory_.segments().end();
 
   // Read the wall of text below and realize that this can happen for the
   // history as well as the psychohistory, if the history of the part was
   // obtained using an adaptive step integrator, which is the case during a
   // burn.  See #2931.
-  backstory_->DeleteFork(psychohistory_);
+  trajectory_.DeleteSegments(psychohistory_);
   AppendToVesselTrajectory(&Part::history_begin,
                            &Part::history_end,
                            *backstory_);
-  psychohistory_ = backstory_->NewForkAtLast();
+  psychohistory_ = trajectory_.NewSegment();
 
   // The reason why we may want to skip the start of the psychohistory is
   // subtle.  Say that we have a vessel A with points at t₀, t₀ + 10 s,
@@ -369,9 +379,9 @@ absl::Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
 }
 
 void Vessel::RefreshPrediction() {
-  // The |prognostication| is a root trajectory which is computed asynchronously
-  // and may be used as a prediction;
-  std::unique_ptr<DiscreteTrajectory<Barycentric>> prognostication;
+  // The |prognostication| is a trajectory which is computed asynchronously and
+  // may be used as a prediction;
+  std::optional<DiscreteTrajectory<Barycentric>> prognostication;
 
   // Note that we know that |RefreshPrediction| is called on the main thread,
   // therefore the ephemeris currently covers the last time of the
@@ -389,16 +399,16 @@ void Vessel::RefreshPrediction() {
   } else {
     prognosticator_.Put(std::move(prognosticator_parameters));
     prognosticator_.Start();
-    prognostication = prognosticator_.Get().value_or(nullptr);
+    prognostication = prognosticator_.Get();
   }
-  if (prognostication != nullptr) {
-    AttachPrediction(std::move(prognostication));
+  if (prognostication.has_value()) {
+    AttachPrediction(std::move(prognostication).value());
   }
 }
 
 void Vessel::RefreshPrediction(Instant const& time) {
   RefreshPrediction();
-  prediction_->ForgetAfter(time);
+  trajectory_.ForgetAfter(trajectory_.upper_bound(time));
 }
 
 void Vessel::StopPrognosticator() {
@@ -466,11 +476,14 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
     CHECK(Contains(parts_, part_id));
     message->add_kept_parts(part_id);
   }
-  // Starting with Gateaux we don't save the prediction, see #2685.
-  history_->WriteToMessage(/*excluded=*/{prediction_},
-                           /*tracked=*/{backstory_, psychohistory_},
-                           /*exact=*/{},
-                           message->mutable_history());
+  // Starting with Gateaux we don't save the prediction, see #2685.  Instead we
+  // just save its first point and re-read as if it was the whole prediction.
+  trajectory_.WriteToMessage(
+      message->mutable_history(),
+      /*begin=*/trajectory_.begin(),
+      /*end=*/std::next(prediction_->begin()),
+      /*tracked=*/{history_, backstory_, psychohistory_, prediction_},
+      /*exact=*/{});
   if (flight_plan_ != nullptr) {
     flight_plan_->WriteToMessage(message->mutable_flight_plan());
   }
@@ -486,15 +499,15 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   bool const is_pre_cesàro = message.has_psychohistory_is_authoritative();
   bool const is_pre_chasles = message.has_prediction();
   bool const is_pre_陈景润 = !message.history().has_downsampling();
-  // TODO(phl): Decide in which version it goes.
+  bool const is_pre_ζήνων = message.history().segment_size() == 0;
   bool const is_pre_zermelo = !message.has_is_collapsible();
   LOG_IF(WARNING, is_pre_zermelo)
       << "Reading pre-"
       << (is_pre_cesàro    ? u8"Cesàro"
           : is_pre_chasles ? "Chasles"
           : is_pre_陈景润   ? u8"陈景润"
-                           : "Zermelo")
-      << " Vessel";
+          : is_pre_ζήνων   ? u8"Ζήνων"
+                           : "Zermelo") << " Vessel";
 
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
   // information.
@@ -527,29 +540,31 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
                                                          /*tracked=*/{});
     // The |history_| has been created by the constructor above.  Reconstruct
     // it from the |psychohistory|.
-    CHECK(!psychohistory->Empty());
-    for (auto it = psychohistory->begin(); it != psychohistory->end();) {
+    for (auto it = psychohistory.begin(); it != psychohistory.end();) {
       auto const& [time, degrees_of_freedom] = *it;
       ++it;
-      if (it == psychohistory->end() &&
+      if (it == psychohistory.end() &&
           !message.psychohistory_is_authoritative()) {
-        vessel->psychohistory_ = vessel->history_->NewForkAtLast();
-        vessel->psychohistory_->Append(time, degrees_of_freedom);
-      } else {
-        vessel->history_->Append(time, degrees_of_freedom);
+        vessel->psychohistory_ = vessel->trajectory_.NewSegment();
       }
+      vessel->trajectory_.Append(time, degrees_of_freedom);
     }
     if (message.psychohistory_is_authoritative()) {
-      vessel->psychohistory_ = vessel->history_->NewForkAtLast();
+      vessel->psychohistory_ = vessel->trajectory_.NewSegment();
     }
     vessel->backstory_ = vessel->psychohistory_->parent();
-    vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
+    vessel->prediction_ = vessel->trajectory_.NewSegment();
   } else if (is_pre_chasles) {
-    vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+    vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
         /*tracked=*/{&vessel->psychohistory_});
-    vessel->backstory_ = vessel->psychohistory_->parent();
-    vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
+    vessel->history_ = vessel->trajectory_.segments().begin();
+    vessel->prediction_ = vessel->trajectory_.NewSegment();
+  } else if (is_pre_ζήνων) {
+    vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+        message.history(),
+        /*tracked=*/{&vessel->psychohistory_, &vessel->prediction_});
+    vessel->history_ = vessel->trajectory_.segments().begin();
   } else if (is_pre_zermelo) {
     vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
@@ -557,11 +572,12 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
                      &vessel->prediction_});
     vessel->backstory_ = vessel->psychohistory_->parent();
   } else {
-    vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+    vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
-        /*tracked=*/{&vessel->backstory_,
-                     &vessel->psychohistory_});
-    vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
+        /*tracked=*/{&vessel->history_,
+                     &vessel->backstory_,
+                     &vessel->psychohistory_,
+                     &vessel->prediction_});
     vessel->is_collapsible_ = message.is_collapsible();
     vessel->checkpointer_ =
         Checkpointer<serialization::Vessel>::ReadFromMessage(
@@ -569,13 +585,13 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
             vessel->MakeCheckpointerReader(),
             message.checkpoint());
   }
-
   // Necessary after Εὔδοξος because the ephemeris has not been prolonged
-  // during deserialization.  Doesn't hurt prior to Εὔδοξος.
+  // during deserialization.
   ephemeris->Prolong(vessel->prediction_->back().time);
 
   if (is_pre_陈景润) {
-    vessel->history_->SetDownsampling(DefaultDownsamplingParameters());
+    vessel->history_->SetDownsamplingUnconditionally(
+        DefaultDownsamplingParameters());
   }
 
   if (message.has_flight_plan()) {
@@ -725,16 +741,26 @@ absl::Status Vessel::ReanimateOneCheckpoint(
   return absl::OkStatus();
 }
 
-absl::StatusOr<std::unique_ptr<DiscreteTrajectory<Barycentric>>>
+Vessel::Vessel()
+    : body_(),
+      prediction_adaptive_step_parameters_(DefaultPredictionParameters()),
+      parent_(testing_utilities::make_not_null<Celestial const*>()),
+      ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
+      history_(trajectory_.segments().begin()),
+      psychohistory_(trajectory_.segments().end()),
+      prediction_(trajectory_.segments().end()),
+      prognosticator_(nullptr, 20ms) {}
+
+absl::StatusOr<DiscreteTrajectory<Barycentric>>
 Vessel::FlowPrognostication(
     PrognosticatorParameters prognosticator_parameters) {
-  auto prognostication = std::make_unique<DiscreteTrajectory<Barycentric>>();
-  prognostication->Append(
+  DiscreteTrajectory<Barycentric> prognostication;
+  prognostication.Append(
       prognosticator_parameters.first_time,
       prognosticator_parameters.first_degrees_of_freedom);
   absl::Status status;
   status = ephemeris_->FlowWithAdaptiveStep(
-      prognostication.get(),
+      &prognostication,
       Ephemeris<Barycentric>::NoIntrinsicAcceleration,
       ephemeris_->t_max(),
       prognosticator_parameters.adaptive_step_parameters,
@@ -743,7 +769,7 @@ Vessel::FlowPrognostication(
   if (reached_t_max) {
     // This will prolong the ephemeris by |max_ephemeris_steps_per_frame|.
     status = ephemeris_->FlowWithAdaptiveStep(
-        prognostication.get(),
+        &prognostication,
         Ephemeris<Barycentric>::NoIntrinsicAcceleration,
         InfiniteFuture,
         prognosticator_parameters.adaptive_step_parameters,
@@ -751,7 +777,7 @@ Vessel::FlowPrognostication(
   }
   LOG_IF_EVERY_N(INFO, !status.ok(), 50)
       << "Prognostication from " << prognosticator_parameters.first_time
-      << " finished at " << prognostication->back().time << " with "
+      << " finished at " << prognostication.back().time << " with "
       << status.ToString() << " for " << ShortDebugString();
   if (absl::IsCancelled(status)) {
     return status;
@@ -765,10 +791,10 @@ Vessel::FlowPrognostication(
 void Vessel::AppendToVesselTrajectory(
     TrajectoryIterator const part_trajectory_begin,
     TrajectoryIterator const part_trajectory_end,
-    DiscreteTrajectory<Barycentric>& trajectory) {
+    DiscreteTrajectorySegment<Barycentric> const& segment) {
   CHECK(!parts_.empty());
-  std::vector<DiscreteTrajectory<Barycentric>::Iterator> its;
-  std::vector<DiscreteTrajectory<Barycentric>::Iterator> ends;
+  std::vector<DiscreteTrajectory<Barycentric>::iterator> its;
+  std::vector<DiscreteTrajectory<Barycentric>::iterator> ends;
   its.reserve(parts_.size());
   ends.reserve(parts_.size());
   for (auto const& [_, part] : parts_) {
@@ -778,7 +804,7 @@ void Vessel::AppendToVesselTrajectory(
 
   // We cannot append a point before this time, see the comments in AdvanceTime.
   Instant const last_time =
-      trajectory.Empty() ? InfinitePast : trajectory.back().time;
+      segment.empty() ? InfinitePast : segment.back().time;
 
   // Loop over the times of the trajectory.
   for (;;) {
@@ -811,22 +837,20 @@ void Vessel::AppendToVesselTrajectory(
     if (can_be_appended) {
       DegreesOfFreedom<Barycentric> const vessel_degrees_of_freedom =
           calculator.Get();
-      trajectory.Append(first_time, vessel_degrees_of_freedom);
+      trajectory_.Append(first_time, vessel_degrees_of_freedom);
     }
   }
 }
 
-void Vessel::AttachPrediction(
-    not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> trajectory) {
-  trajectory->ForgetBefore(psychohistory_->back().time);
-  if (trajectory->Empty()) {
-    prediction_ = psychohistory_->NewForkAtLast();
+void Vessel::AttachPrediction(DiscreteTrajectory<Barycentric>&& trajectory) {
+  trajectory.ForgetBefore(psychohistory_->back().time);
+  if (trajectory.empty()) {
+    prediction_ = trajectory_.NewSegment();
   } else {
-    if (prediction_ != nullptr) {
-      psychohistory_->DeleteFork(prediction_);
+    if (prediction_ != trajectory_.segments().end()) {
+      trajectory_.DeleteSegments(prediction_);
     }
-    prediction_ = trajectory.get();
-    psychohistory_->AttachFork(std::move(trajectory));
+    prediction_ = trajectory_.AttachSegments(std::move(trajectory));
   }
 }
 

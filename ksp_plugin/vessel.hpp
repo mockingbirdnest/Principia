@@ -20,6 +20,8 @@
 #include "ksp_plugin/pile_up.hpp"
 #include "physics/checkpointer.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_trajectory_segment.hpp"
+#include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massless_body.hpp"
 #include "quantities/named_quantities.hpp"
@@ -37,6 +39,8 @@ using geometry::Vector;
 using physics::Checkpointer;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
+using physics::DiscreteTrajectorySegment;
+using physics::DiscreteTrajectorySegmentIterator;
 using physics::Ephemeris;
 using physics::MasslessBody;
 using physics::RotatingBody;
@@ -131,8 +135,10 @@ class Vessel {
   // Calls |action| on all parts.
   virtual void ForAllParts(std::function<void(Part&)> action) const;
 
-  virtual DiscreteTrajectory<Barycentric> const& psychohistory() const;
-  virtual DiscreteTrajectory<Barycentric> const& prediction() const;
+  virtual DiscreteTrajectory<Barycentric> const& trajectory() const;
+  virtual DiscreteTrajectorySegmentIterator<Barycentric> history() const;
+  virtual DiscreteTrajectorySegmentIterator<Barycentric> psychohistory() const;
+  virtual DiscreteTrajectorySegmentIterator<Barycentric> prediction() const;
 
   virtual void set_prediction_adaptive_step_parameters(
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
@@ -238,7 +244,7 @@ class Vessel {
                          PrognosticatorParameters const& right);
 
   using TrajectoryIterator =
-      DiscreteTrajectory<Barycentric>::Iterator (Part::*)();
+      DiscreteTrajectory<Barycentric>::iterator (Part::*)();
 
   // Return functions that can be passed to a |Checkpointer| to write this
   // vessel to a checkpoint or read it back.
@@ -257,20 +263,20 @@ class Vessel {
 
   // Runs the integrator to compute the |prognostication_| based on the given
   // parameters.
-  absl::StatusOr<std::unique_ptr<DiscreteTrajectory<Barycentric>>>
+  absl::StatusOr<DiscreteTrajectory<Barycentric>>
   FlowPrognostication(PrognosticatorParameters prognosticator_parameters);
 
-  // Appends to |trajectory| the centre of mass of the trajectories of the parts
-  // denoted by |part_trajectory_begin| and |part_trajectory_end|.  Only the
-  // points that are strictly after the fork time of the trajectory are used.
-  void AppendToVesselTrajectory(TrajectoryIterator part_trajectory_begin,
-                                TrajectoryIterator part_trajectory_end,
-                                DiscreteTrajectory<Barycentric>& trajectory);
+  // Appends to |trajectory_| the centre of mass of the trajectories of the
+  // parts denoted by |part_trajectory_begin| and |part_trajectory_end|.  Only
+  // the points that are strictly after the start of the |segment| are used.
+  void AppendToVesselTrajectory(
+      TrajectoryIterator part_trajectory_begin,
+      TrajectoryIterator part_trajectory_end,
+      DiscreteTrajectorySegment<Barycentric> const& segment);
 
   // Attaches the given |trajectory| to the end of the |psychohistory_| to
   // become the new |prediction_|.  If |prediction_| is not null, it is deleted.
-  void AttachPrediction(
-      not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> trajectory);
+  void AttachPrediction(DiscreteTrajectory<Barycentric>&& trajectory);
 
   // A vessel is collapsible if it is alone in its pile-up and is in inertial
   // motion.
@@ -295,6 +301,11 @@ class Vessel {
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
   std::set<PartId> kept_parts_;
 
+  // The vessel trajectory is made of the history (always present) and (most of
+  // the time) the psychohistory and prediction.  The prediction is periodically
+  // recomputed by the prognosticator.
+  DiscreteTrajectory<Barycentric> trajectory_;
+
   not_null<std::unique_ptr<Checkpointer<serialization::Vessel>>> checkpointer_;
 
   // This member must only be accessed by the |reanimator_| thread, or before
@@ -302,11 +313,10 @@ class Vessel {
   Instant oldest_reanimated_checkpoint_ = InfinitePast;
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
-
   // The |history_| is empty until the first call to CreateHistoryIfNeeded.
   // It is made of a series of forks, alternatively non-collapsible and
   // collapsible.
-  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_
+  DiscreteTrajectorySegmentIterator<Barycentric> history_
       GUARDED_BY(lock_);
 
   // The last (most recent) segment of the |history_| prior to the
@@ -316,12 +326,11 @@ class Vessel {
 
   // The |psychohistory_| is forked off the end of the |history_| and the
   // |prediction_| is forked off the end of the |psychohistory_|.
-  DiscreteTrajectory<Barycentric>* psychohistory_ = nullptr;
-  DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
+  DiscreteTrajectorySegmentIterator<Barycentric> psychohistory_;
+  DiscreteTrajectorySegmentIterator<Barycentric> prediction_;
 
   RecurringThread<PrognosticatorParameters,
-                  std::unique_ptr<DiscreteTrajectory<Barycentric>>>
-      prognosticator_;
+                  DiscreteTrajectory<Barycentric>> prognosticator_;
 
   std::unique_ptr<FlightPlan> flight_plan_;
 

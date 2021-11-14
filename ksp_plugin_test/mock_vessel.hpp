@@ -22,11 +22,11 @@ class MockVessel : public Vessel {
               (not_null<Celestial const*> parent),
               (override));
 
-  MOCK_METHOD(DiscreteTrajectory<Barycentric> const&,
+  MOCK_METHOD(DiscreteTrajectorySegmentIterator<Barycentric>,
               psychohistory,
               (),
               (const, override));
-  MOCK_METHOD(DiscreteTrajectory<Barycentric> const&,
+  MOCK_METHOD(DiscreteTrajectorySegmentIterator<Barycentric>,
               prediction,
               (),
               (const, override));

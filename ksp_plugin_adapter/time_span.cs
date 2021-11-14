@@ -90,30 +90,29 @@ class PrincipiaTimeSpan {
   public double total_seconds => seconds_;
 
   public static bool TryParse(string text,
-                              bool with_seconds,
                               out PrincipiaTimeSpan time_span) {
     time_span = new PrincipiaTimeSpan(double.NaN);
     // Using a technology that is customarily used to parse HTML.
-    string pattern = @"^[+]?\s*(\d+)\s*" +
+    string pattern = @"^[+]?\s*(?:(?<days>\d+)\s*" +
                      day_symbol +
-                     @"\s*(\d+)\s*h\s*(\d+)\s*min";
-    if (with_seconds) {
-      pattern += @"\s*([0-9.,']+)\s*s$";
-    } else {
-      pattern += @"$";
-    }
+                     @"\s*)?" +
+                     @"(?:(?<hours>\d+)\s*h\s*)?" +
+                     @"(?:(?<minutes>\d+)\s*min\s*)?" +
+                     @"(?:(?<seconds>[0-9.,']+)\s*s\s*)?$";
     var regex = new Regex(pattern);
     var match = regex.Match(text);
     if (!match.Success) {
       return false;
     }
-    string days = match.Groups[1].Value;
-    string hours = match.Groups[2].Value;
-    string minutes = match.Groups[3].Value;
-    string seconds = "0";
-    if (with_seconds) {
-      seconds = match.Groups[4].Value;
-    }
+
+    var days_group = match.Groups["days"];
+    var hours_group = match.Groups["hours"];
+    var minutes_group = match.Groups["minutes"];
+    var seconds_group = match.Groups["seconds"];
+    string days = days_group.Success ? days_group.Value : "0";
+    string hours = hours_group.Success ? hours_group.Value : "0";
+    string minutes = minutes_group.Success ? minutes_group.Value : "0";
+    string seconds = seconds_group.Success ? seconds_group.Value : "0";
     if (!int.TryParse(days, out int d) ||
         !int.TryParse(hours, out int h) ||
         !int.TryParse(minutes, out int min) ||

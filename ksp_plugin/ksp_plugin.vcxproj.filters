@@ -160,9 +160,6 @@
     <ClCompile Include="equator_relevance_threshold.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\physics\protector.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="orbit_analyser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

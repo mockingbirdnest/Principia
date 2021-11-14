@@ -151,7 +151,8 @@ class BurnEditor : ScalingRenderer {
       changed |= Δv_binormal_.Render(enabled : !anomalous);
       {
         var render_time_base = time_base;
-        previous_coast_duration_.value = initial_time_ - render_time_base;
+        previous_coast_duration_.value_if_different =
+            initial_time_ - render_time_base;
 
         // The duration of the previous coast is always enabled as it can make
         // a manœuvre non-anomalous.
@@ -325,7 +326,6 @@ class BurnEditor : ScalingRenderer {
   internal bool TryParsePreviousCoastDuration(string text, out double value) {
     value = 0;
     if (!PrincipiaTimeSpan.TryParse(text,
-                                    with_seconds: true,
                                     out PrincipiaTimeSpan ts)) {
       return false;
     }

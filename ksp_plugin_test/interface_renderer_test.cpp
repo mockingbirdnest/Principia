@@ -10,7 +10,6 @@
 #include "ksp_plugin_test/mock_plugin.hpp"
 #include "ksp_plugin_test/mock_renderer.hpp"
 #include "ksp_plugin_test/mock_vessel.hpp"
-#include "physics/discrete_trajectory.hpp"
 #include "physics/mock_dynamic_frame.hpp"
 #include "quantities/si.hpp"
 
@@ -26,7 +25,6 @@ using ksp_plugin::MockPlugin;
 using ksp_plugin::MockRenderer;
 using ksp_plugin::MockVessel;
 using ksp_plugin::Navigation;
-using physics::DiscreteTrajectory;
 using physics::MockDynamicFrame;
 using quantities::si::Metre;
 using ::testing::ByMove;

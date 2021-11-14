@@ -6,10 +6,10 @@ namespace ksp_plugin_adapter {
 
 internal class MainWindow : VesselSupervisedWindowRenderer {
   // Update this section before each release.
-  private const string next_release_name = "Hadamard";
-  private const int next_release_lunation_number = 269;
+  private const string next_release_name = "Hamilton";
+  private const int next_release_lunation_number = 271;
   private readonly DateTimeOffset next_release_date_ =
-      new DateTimeOffset(2021, 10, 06, 11, 04, 00, TimeSpan.Zero);
+      new DateTimeOffset(2021, 12, 04, 07, 43, 00, TimeSpan.Zero);
 
   public MainWindow(PrincipiaPluginAdapter adapter,
                     FlightPlanner flight_planner,
@@ -259,7 +259,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
         if (target_celestial != null) {
           UnityEngine.GUILayout.Label(
               Localizer.Format("#Principia_MainWindow_TargetCelestial_Name",
-                               target_celestial.name),
+                               target_celestial.Name()),
               UnityEngine.GUILayout.ExpandWidth(true));
           if (UnityEngine.GUILayout.Button(
               Localizer.Format("#Principia_MainWindow_TargetCelestial_Clear"),

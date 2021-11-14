@@ -10,9 +10,12 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/named_quantities.hpp"
+#include "geometry/orthogonal_map.hpp"
 #include "geometry/perspective.hpp"
 #include "geometry/rotation.hpp"
 #include "gtest/gtest.h"
+#include "physics/discrete_trajectory.hpp"
+#include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_continuous_trajectory.hpp"
 #include "physics/mock_dynamic_frame.hpp"
@@ -23,16 +26,16 @@
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/discrete_trajectory_factories.hpp"
 #include "testing_utilities/serialization.hpp"
-#include "testing_utilities/trajectory_factories.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_planetarium {
 
 using astronomy::InfinitePast;
 using astronomy::InfiniteFuture;
+using base::not_null;
 using base::make_not_null_unique;
 using base::ParseFromBytes;
 using geometry::AngularVelocity;
@@ -42,7 +45,9 @@ using geometry::DeduceSignReversingOrientation;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Handedness;
+using geometry::Instant;
 using geometry::LinearMap;
+using geometry::OrthogonalMap;
 using geometry::Perspective;
 using geometry::RigidTransformation;
 using geometry::Rotation;
@@ -50,6 +55,8 @@ using geometry::Sign;
 using geometry::Signature;
 using geometry::Vector;
 using geometry::Velocity;
+using physics::DiscreteTrajectory;
+using physics::Ephemeris;
 using physics::MassiveBody;
 using physics::MockContinuousTrajectory;
 using physics::MockDynamicFrame;
@@ -67,7 +74,8 @@ using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
-using testing_utilities::NewCircularTrajectory;
+using testing_utilities::AppendTrajectoryTimeline;
+using testing_utilities::NewCircularTrajectoryTimeline;
 using testing_utilities::ReadFromBinaryFile;
 using testing_utilities::VanishesBefore;
 using ::testing::_;
@@ -133,12 +141,14 @@ class PlanetariumTest : public ::testing::Test {
 };
 
 TEST_F(PlanetariumTest, PlotMethod0) {
-  auto const discrete_trajectory =
-      NewCircularTrajectory<Barycentric>(/*period=*/10 * Second,
-                                         /*r=*/10 * Metre,
-                                         /*Δt=*/1 * Second,
-                                         /*t1=*/t0_,
-                                         /*t2=*/t0_ + 11 * Second);
+  DiscreteTrajectory<Barycentric> discrete_trajectory;
+  AppendTrajectoryTimeline(/*from=*/NewCircularTrajectoryTimeline<Barycentric>(
+                                        /*period=*/10 * Second,
+                                        /*r=*/10 * Metre,
+                                        /*Δt=*/1 * Second,
+                                        /*t1=*/t0_,
+                                        /*t2=*/t0_ + 11 * Second),
+                           /*to=*/discrete_trajectory);
 
   // No dark area, infinite acuity, wide field of view.
   Planetarium::Parameters parameters(
@@ -148,8 +158,9 @@ TEST_F(PlanetariumTest, PlotMethod0) {
   Planetarium planetarium(
       parameters, perspective_, &ephemeris_, &plotting_frame_);
   auto const rp2_lines =
-      planetarium.PlotMethod0(discrete_trajectory->begin(),
-                              discrete_trajectory->end(),
+      planetarium.PlotMethod0(discrete_trajectory,
+                              discrete_trajectory.begin(),
+                              discrete_trajectory.end(),
                               t0_ + 10 * Second,
                               /*reverse=*/false);
 
@@ -176,12 +187,14 @@ TEST_F(PlanetariumTest, PlotMethod0) {
 TEST_F(PlanetariumTest, PlotMethod1) {
   // A quarter of a circular trajectory around the origin, with many small
   // segments.
-  auto const discrete_trajectory =
-      NewCircularTrajectory<Barycentric>(/*period=*/100'000 * Second,
-                                         /*r=*/10 * Metre,
-                                         /*Δt=*/1 * Second,
-                                         /*t1=*/t0_,
-                                         /*t2=*/t0_ + 25'000 * Second);
+  DiscreteTrajectory<Barycentric> discrete_trajectory;
+  AppendTrajectoryTimeline(/*from=*/NewCircularTrajectoryTimeline<Barycentric>(
+                                        /*period=*/100'000 * Second,
+                                        /*r=*/10 * Metre,
+                                        /*Δt=*/1 * Second,
+                                        /*t1=*/t0_,
+                                        /*t2=*/t0_ + 25'000 * Second),
+                           /*to=*/discrete_trajectory);
 
   // No dark area, human visual acuity, wide field of view.
   Planetarium::Parameters parameters(
@@ -191,8 +204,9 @@ TEST_F(PlanetariumTest, PlotMethod1) {
   Planetarium planetarium(
       parameters, perspective_, &ephemeris_, &plotting_frame_);
   auto const rp2_lines =
-      planetarium.PlotMethod1(discrete_trajectory->begin(),
-                              discrete_trajectory->end(),
+      planetarium.PlotMethod1(discrete_trajectory,
+                              discrete_trajectory.begin(),
+                              discrete_trajectory.end(),
                               t0_ + 10 * Second,
                               /*reverse=*/false);
 
@@ -209,12 +223,14 @@ TEST_F(PlanetariumTest, PlotMethod1) {
 TEST_F(PlanetariumTest, PlotMethod2) {
   // A quarter of a circular trajectory around the origin, with many small
   // segments.
-  auto const discrete_trajectory =
-      NewCircularTrajectory<Barycentric>(/*period=*/100'000 * Second,
-                                         /*r=*/10 * Metre,
-                                         /*Δt=*/1 * Second,
-                                         /*t1=*/t0_,
-                                         /*t2=*/t0_ + 25'000 * Second);
+  DiscreteTrajectory<Barycentric> discrete_trajectory;
+  AppendTrajectoryTimeline(/*from=*/NewCircularTrajectoryTimeline<Barycentric>(
+                                        /*period=*/100'000 * Second,
+                                        /*r=*/10 * Metre,
+                                        /*Δt=*/1 * Second,
+                                        /*t1=*/t0_,
+                                        /*t2=*/t0_ + 25'000 * Second),
+                           /*to=*/discrete_trajectory);
 
   // No dark area, human visual acuity, wide field of view.
   Planetarium::Parameters parameters(
@@ -224,8 +240,9 @@ TEST_F(PlanetariumTest, PlotMethod2) {
   Planetarium planetarium(
       parameters, perspective_, &ephemeris_, &plotting_frame_);
   auto const rp2_lines =
-      planetarium.PlotMethod2(discrete_trajectory->begin(),
-                              discrete_trajectory->end(),
+      planetarium.PlotMethod2(discrete_trajectory,
+                              discrete_trajectory.begin(),
+                              discrete_trajectory.end(),
                               t0_ + 10 * Second,
                               /*reverse=*/false);
 
@@ -241,11 +258,12 @@ TEST_F(PlanetariumTest, PlotMethod2) {
 
 #if !defined(_DEBUG)
 TEST_F(PlanetariumTest, RealSolarSystem) {
-  auto discrete_trajectory = DiscreteTrajectory<Barycentric>::ReadFromMessage(
-      ParseFromBytes<serialization::DiscreteTrajectory>(
-          ReadFromBinaryFile(SOLUTION_DIR / "ksp_plugin_test" /
-                             "planetarium_trajectory.proto.bin")),
-      /*tracked=*/{});
+  auto const discrete_trajectory =
+      DiscreteTrajectory<Barycentric>::ReadFromMessage(
+          ParseFromBytes<serialization::DiscreteTrajectory>(
+              ReadFromBinaryFile(SOLUTION_DIR / "ksp_plugin_test" /
+                                 "planetarium_trajectory.proto.bin")),
+          /*tracked=*/{});
 
   auto ephemeris = Ephemeris<Barycentric>::ReadFromMessage(
       InfiniteFuture,
@@ -265,7 +283,7 @@ TEST_F(PlanetariumTest, RealSolarSystem) {
               ReadFromBinaryFile(SOLUTION_DIR / "ksp_plugin_test" /
                                  "planetarium_to_camera.proto.bin")));
 
-  EXPECT_EQ(23423, discrete_trajectory->Size());
+  EXPECT_EQ(23423, discrete_trajectory.size());
 
   Planetarium::Parameters parameters(
       /*sphere_radius_multiplier=*/1,
@@ -277,9 +295,10 @@ TEST_F(PlanetariumTest, RealSolarSystem) {
                           ephemeris.get(),
                           plotting_frame.get());
   auto const rp2_lines =
-      planetarium.PlotMethod2(discrete_trajectory->begin(),
-                              discrete_trajectory->end(),
-                              discrete_trajectory->back().time,
+      planetarium.PlotMethod2(discrete_trajectory,
+                              discrete_trajectory.begin(),
+                              discrete_trajectory.end(),
+                              discrete_trajectory.back().time,
                               /*reverse=*/false);
 
   EXPECT_EQ(2, rp2_lines.size());
@@ -288,6 +307,5 @@ TEST_F(PlanetariumTest, RealSolarSystem) {
 }
 #endif
 
-}  // namespace internal_planetarium
 }  // namespace ksp_plugin
 }  // namespace principia

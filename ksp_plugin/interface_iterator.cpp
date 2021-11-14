@@ -46,7 +46,7 @@ QP __cdecl principia__IteratorGetDiscreteTrajectoryQP(
   auto const typed_iterator = check_not_null(
       dynamic_cast<TypedIterator<DiscreteTrajectory<World>> const*>(iterator));
   return m.Return(typed_iterator->Get<QP>(
-      [](DiscreteTrajectory<World>::Iterator const& iterator) -> QP {
+      [](DiscreteTrajectory<World>::iterator const& iterator) -> QP {
         return ToQP(iterator->degrees_of_freedom);
       }));
 }
@@ -59,7 +59,7 @@ double __cdecl principia__IteratorGetDiscreteTrajectoryTime(
       dynamic_cast<TypedIterator<DiscreteTrajectory<World>> const*>(iterator));
   auto const plugin = typed_iterator->plugin();
   return m.Return(typed_iterator->Get<double>(
-      [plugin](DiscreteTrajectory<World>::Iterator const& iterator) -> double {
+      [plugin](DiscreteTrajectory<World>::iterator const& iterator) -> double {
         return ToGameTime(*plugin, iterator->time);
       }));
 }
@@ -71,7 +71,7 @@ XYZ __cdecl principia__IteratorGetDiscreteTrajectoryXYZ(
   auto const typed_iterator = check_not_null(
       dynamic_cast<TypedIterator<DiscreteTrajectory<World>> const*>(iterator));
   return m.Return(typed_iterator->Get<XYZ>(
-      [](DiscreteTrajectory<World>::Iterator const& iterator) -> XYZ {
+      [](DiscreteTrajectory<World>::iterator const& iterator) -> XYZ {
         return ToXYZ(iterator->degrees_of_freedom.position());
       }));
 }

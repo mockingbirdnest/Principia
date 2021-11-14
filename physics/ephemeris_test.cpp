@@ -969,47 +969,49 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
                             apoapsides2,
                             periapsides2);
 
-  EXPECT_EQ(apoapsides1.Size(), apoapsides2.Size());
-  EXPECT_EQ(periapsides1.Size(), periapsides2.Size());
+  EXPECT_EQ(apoapsides1.size(), apoapsides2.size());
+  EXPECT_EQ(periapsides1.size(), periapsides2.size());
 
-  EXPECT_EQ(10, apoapsides1.Size());
-  EXPECT_EQ(10, periapsides1.Size());
+  EXPECT_EQ(10, apoapsides1.size());
+  EXPECT_EQ(10, periapsides1.size());
 
   std::optional<Instant> previous_time;
   std::set<Instant> all_times;
   for (auto it1 = apoapsides1.begin(), it2 = apoapsides2.begin();
        it1 != apoapsides1.end() && it2 != apoapsides2.end();
        ++it1, ++it2) {
-    Instant const time = it1->time;
-    all_times.emplace(time);
+    auto const& [time1, degrees_of_freedom1] = *it1;
+    auto const& [time2, degrees_of_freedom2] = *it2;
+    EXPECT_EQ(time1, time2);
+    all_times.emplace(time1);
     Displacement<ICRS> const displacement =
-        it1->degrees_of_freedom.position() -
-        it2->degrees_of_freedom.position();
+        degrees_of_freedom1.position() - degrees_of_freedom2.position();
     EXPECT_LT(AbsoluteError(displacement.Norm(), (1 + e) * a),
               1.9e-5 * fitting_tolerance);
     if (previous_time) {
-      EXPECT_LT(AbsoluteError(time - *previous_time, T),
+      EXPECT_LT(AbsoluteError(time1 - *previous_time, T),
                 0.11 * fitting_tolerance / v_apoapsis);
     }
-    previous_time = time;
+    previous_time = time1;
   }
 
   previous_time = std::nullopt;
   for (auto it1 = periapsides1.begin(), it2 = periapsides2.begin();
        it1 != periapsides1.end() && it2 != periapsides2.end();
        ++it1, ++it2) {
-    Instant const time = it1->time;
-    all_times.emplace(time);
+    auto const& [time1, degrees_of_freedom1] = *it1;
+    auto const& [time2, degrees_of_freedom2] = *it2;
+    EXPECT_EQ(time1, time2);
+    all_times.emplace(time1);
     Displacement<ICRS> const displacement =
-        it1->degrees_of_freedom.position() -
-        it2->degrees_of_freedom.position();
+        degrees_of_freedom1.position() - degrees_of_freedom2.position();
     EXPECT_LT(AbsoluteError(displacement.Norm(), (1 - e) * a),
               5.3e-3 * fitting_tolerance);
     if (previous_time) {
-      EXPECT_LT(AbsoluteError(time - *previous_time, T),
+      EXPECT_LT(AbsoluteError(time1 - *previous_time, T),
                 2.1 * fitting_tolerance / v_periapsis);
     }
-    previous_time = time;
+    previous_time = time1;
   }
 
   previous_time = std::nullopt;
@@ -1052,8 +1054,9 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
 
   MasslessBody probe;
   DiscreteTrajectory<ICRS> trajectory1;
-  trajectory1.SetDownsampling({.max_dense_intervals = 10'000,
-                               .tolerance = 10 * Metre});
+  auto& segment1 = trajectory1.segments().front();
+  segment1.SetDownsampling({.max_dense_intervals = 10'000,
+                            .tolerance = 10 * Metre});
   trajectory1.Append(t0, DegreesOfFreedom<ICRS>(q0, p0));
 
   auto instance = ephemeris->NewInstance(
@@ -1064,14 +1067,14 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
                                              Position<ICRS>>(),
           10 * Second));
   EXPECT_OK(ephemeris->FlowWithFixedStep(t1, *instance));
-  EXPECT_EQ(1162, trajectory1.Size());
+  EXPECT_EQ(1162, trajectory1.size());
 
   serialization::DiscreteTrajectory message;
   trajectory1.WriteToMessage(/*excluded=*/{}, /*tracked=*/{}, /*exact=*/{},
                              &message);
   std::string uncompressed;
   message.SerializePartialToString(&uncompressed);
-  EXPECT_EQ(24'405, uncompressed.size());
+  EXPECT_EQ(18'696, uncompressed.size());
 
   std::string compressed;
   auto compressor = google::compression::NewGipfeliCompressor();
@@ -1079,8 +1082,8 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
 
   // We want a change detector, but the actual compressed size varies depending
   // on the exact numerical values, and therefore on the mathematical library.
-  EXPECT_LE(18'836, compressed.size());
-  EXPECT_GE(18'836, compressed.size());
+  EXPECT_LE(17'149, compressed.size());
+  EXPECT_GE(17'149, compressed.size());
 
   auto const trajectory2 =
       DiscreteTrajectory<ICRS>::ReadFromMessage(message, /*tracked=*/{});
@@ -1089,7 +1092,7 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
   for (Instant t = t0; t < t1; t += 10 * Second) {
     error = std::max(
         error,
-        (trajectory1.EvaluatePosition(t) - trajectory2->EvaluatePosition(t))
+        (trajectory1.EvaluatePosition(t) - trajectory2.EvaluatePosition(t))
             .Norm());
   }
   EXPECT_THAT(error, IsNear(3.3_⑴ * Metre));
@@ -1098,7 +1101,7 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
       TEMP_DIR / "discrete_trajectory_compression.generated.wl",
       /*make_unique=*/false);
   logger.Set("trajectory1", trajectory1.begin(), trajectory1.end());
-  logger.Set("trajectory2", trajectory2->begin(), trajectory2->end());
+  logger.Set("trajectory2", trajectory2.begin(), trajectory2.end());
 }
 
 TEST(EphemerisTestNoFixture, Reanimator) {

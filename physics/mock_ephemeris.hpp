@@ -126,15 +126,16 @@ ACTION_P2(AppendToDiscreteTrajectory, time, degrees_of_freedom) {
   arg0->Append(time, degrees_of_freedom);
 }
 
-// TODO(phl): Remove "2" once the other actions are gone.
-ACTION_P2(AppendToDiscreteTrajectory2, trajectory, degrees_of_freedom) {
-  (*trajectory)->Append(arg0, degrees_of_freedom);
-}
-
 ACTION_P3(AppendToDiscreteTrajectory, trajectory, time, degrees_of_freedom) {
   // The extra level of indirection is useful for tests that get a pointer to a
   // trajectory and squirrel it away using |SaveArg<N>|.
   (*trajectory)->Append(time, degrees_of_freedom);
+}
+
+ACTION_P(AppendPointsToDiscreteTrajectory, trajectory) {
+  for (auto const& [time, degrees_of_freedom] : *trajectory) {
+    arg0->Append(time, degrees_of_freedom);
+  }
 }
 
 }  // namespace principia

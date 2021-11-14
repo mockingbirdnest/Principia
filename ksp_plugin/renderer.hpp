@@ -72,29 +72,29 @@ class Renderer {
   // and others in this class, |sun_world_position| is the current position of
   // the sun in |World| space as returned by |Planetarium.fetch.Sun.position|;
   // it is used to define the relation between |WorldSun| and |World|.
-  virtual not_null<std::unique_ptr<DiscreteTrajectory<World>>>
+  virtual DiscreteTrajectory<World>
   RenderBarycentricTrajectoryInWorld(
       Instant const& time,
-      DiscreteTrajectory<Barycentric>::Iterator const& begin,
-      DiscreteTrajectory<Barycentric>::Iterator const& end,
+      DiscreteTrajectory<Barycentric>::iterator const& begin,
+      DiscreteTrajectory<Barycentric>::iterator const& end,
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
   // Returns a trajectory in the current plotting frame corresponding to the
   // trajectory defined by |begin| and |end|.  If there is a target vessel, its
   // prediction must not be empty.
-  virtual not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
+  virtual DiscreteTrajectory<Navigation>
   RenderBarycentricTrajectoryInPlotting(
-      DiscreteTrajectory<Barycentric>::Iterator const& begin,
-      DiscreteTrajectory<Barycentric>::Iterator const& end) const;
+      DiscreteTrajectory<Barycentric>::iterator const& begin,
+      DiscreteTrajectory<Barycentric>::iterator const& end) const;
 
   // Returns a trajectory in |World| corresponding to the trajectory defined by
   // |begin| and |end| in the current plotting frame.
-  virtual not_null<std::unique_ptr<DiscreteTrajectory<World>>>
+  virtual DiscreteTrajectory<World>
   RenderPlottingTrajectoryInWorld(
       Instant const& time,
-      DiscreteTrajectory<Navigation>::Iterator const& begin,
-      DiscreteTrajectory<Navigation>::Iterator const& end,
+      DiscreteTrajectory<Navigation>::iterator const& begin,
+      DiscreteTrajectory<Navigation>::iterator const& end,
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 

@@ -1,810 +1,873 @@
-﻿
-#pragma once
+﻿#pragma once
 
 #include "physics/discrete_trajectory.hpp"
 
 #include <algorithm>
-#include <list>
-#include <map>
-#include <set>
-#include <string>
-#include <utility>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+#include "absl/strings/str_cat.h"
 #include "astronomy/epoch.hpp"
-#include "base/flags.hpp"
-#include "base/not_null.hpp"
-#include "base/zfp_compressor.hpp"
-#include "geometry/named_quantities.hpp"
-#include "glog/logging.h"
-#include "numerics/fit_hermite_spline.hpp"
+#include "base/status_utilities.hpp"
 #include "quantities/quantities.hpp"
-#include "quantities/si.hpp"
 
 namespace principia {
 namespace physics {
-namespace internal_forkable {
-
-using geometry::Instant;
-
-template<typename Frame>
-Instant const& DiscreteTrajectoryTraits<Frame>::time(
-    TimelineConstIterator const it) {
-  return it->first;
-}
-
-template<typename Frame>
-DiscreteTrajectoryIterator<Frame>::reference::reference(
-    typename DiscreteTrajectoryTraits<Frame>::TimelineConstIterator it)
-    : time(it->first), degrees_of_freedom(it->second) {}
-
-template<typename Frame>
-typename DiscreteTrajectoryIterator<Frame>::reference
-DiscreteTrajectoryIterator<Frame>::operator*() const {
-  auto const& it = this->current();
-  return reference(it);
-}
-
-template<typename Frame>
-std::optional<typename DiscreteTrajectoryIterator<Frame>::reference>
-    DiscreteTrajectoryIterator<Frame>::operator->() const {
-  auto const& it = this->current();
-  return std::make_optional<reference>(it);
-}
-
-template<typename Frame>
-not_null<DiscreteTrajectoryIterator<Frame>*>
-DiscreteTrajectoryIterator<Frame>::that() {
-  return this;
-}
-
-template<typename Frame>
-not_null<DiscreteTrajectoryIterator<Frame> const*>
-DiscreteTrajectoryIterator<Frame>::that() const {
-  return this;
-}
-
-}  // namespace internal_forkable
-
 namespace internal_discrete_trajectory {
 
 using astronomy::InfiniteFuture;
 using astronomy::InfinitePast;
-using base::Flags;
 using base::make_not_null_unique;
-using base::ZfpCompressor;
-using geometry::Displacement;
-using numerics::FitHermiteSpline;
-using quantities::Time;
-using quantities::si::Metre;
-using quantities::si::Second;
+using base::uninitialized;
+using quantities::Length;
 
 template<typename Frame>
-not_null<DiscreteTrajectory<Frame>*>
-DiscreteTrajectory<Frame>::NewForkWithCopy(Instant const& time) {
-  // May be at |timeline_end()| if |time| is the fork time of this object.
-  auto timeline_it = timeline_.find(time);
-  CHECK(timeline_it != timeline_end() ||
-        (!this->is_root() && time == this->Fork()->time))
-      << "NewForkWithCopy at nonexistent time " << time;
+DiscreteTrajectory<Frame>::DiscreteTrajectory()
+    : segments_(make_not_null_unique<Segments>(1)) {
+  auto const sit = segments_->begin();
+  auto const self = SegmentIterator(segments_.get(), sit);
+  *sit = DiscreteTrajectorySegment<Frame>(self);
+}
 
-  auto const fork = this->NewFork(timeline_it);
+template<typename Frame>
+typename DiscreteTrajectory<Frame>::reference
+DiscreteTrajectory<Frame>::front() const {
+  return *begin();
+}
 
-  // Copy the tail of the trajectory in the child object.
-  if (timeline_it != timeline_.end()) {
-    fork->timeline_.insert(++timeline_it, timeline_.end());
+template<typename Frame>
+typename DiscreteTrajectory<Frame>::reference
+DiscreteTrajectory<Frame>::back() const {
+  return *rbegin();
+}
+
+template<typename Frame>
+typename DiscreteTrajectory<Frame>::iterator
+DiscreteTrajectory<Frame>::begin() const {
+  return segments_->front().begin();
+}
+
+template<typename Frame>
+typename DiscreteTrajectory<Frame>::iterator
+DiscreteTrajectory<Frame>::end() const {
+  return segments_->back().end();
+}
+
+template<typename Frame>
+typename DiscreteTrajectory<Frame>::reverse_iterator
+DiscreteTrajectory<Frame>::rbegin() const {
+  return reverse_iterator(end());
+}
+
+template<typename Frame>
+typename DiscreteTrajectory<Frame>::reverse_iterator
+DiscreteTrajectory<Frame>::rend() const {
+  return reverse_iterator(begin());
+}
+
+template<typename Frame>
+bool DiscreteTrajectory<Frame>::empty() const {
+  return segment_by_left_endpoint_.empty();
+}
+
+template<typename Frame>
+std::int64_t DiscreteTrajectory<Frame>::size() const {
+  std::int64_t size = 1;
+  for (auto const& segment : *segments_) {
+    size += segment.size();
   }
-  return fork;
+  size -= segments_->size();  // The junction points.
+  return size;
 }
 
 template<typename Frame>
-not_null<DiscreteTrajectory<Frame>*>
-DiscreteTrajectory<Frame>::NewForkWithoutCopy(Instant const& time) {
-  // May be at |timeline_end()| if |time| is the fork time of this object.
-  auto timeline_it = timeline_.find(time);
-  CHECK(timeline_it != timeline_end() ||
-        (!this->is_root() && time == this->Fork()->time))
-      << "NewForkWithoutCopy at nonexistent time " << time;
-
-  return this->NewFork(timeline_it);
+void DiscreteTrajectory<Frame>::clear() {
+  segments_->erase(std::next(segments_->begin()), segments_->end());
+  segments_->front().clear();
+  segment_by_left_endpoint_.clear();
 }
 
 template<typename Frame>
-not_null<DiscreteTrajectory<Frame>*>
-DiscreteTrajectory<Frame>::NewForkAtLast() {
-  auto end = timeline_.end();
-  if (timeline_.empty()) {
-    return this->NewFork(end);
-  } else {
-    return this->NewFork(--end);
+typename DiscreteTrajectory<Frame>::iterator
+DiscreteTrajectory<Frame>::find(Instant const& t) const {
+  auto const leit = FindSegment(t);
+  if (leit == segment_by_left_endpoint_.cend()) {
+    return end();
   }
+  auto const sit = leit->second;
+  auto const it = sit->find(t);
+  if (it == sit->end()) {
+    return end();
+  }
+  return it;
 }
 
 template<typename Frame>
-void DiscreteTrajectory<Frame>::AttachFork(
-    not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> fork) {
-  CHECK(fork->is_root());
-  CHECK(!this->Empty());
-  // It is easy to mess up forks and to end up with a trajectory which is its
-  // own parent.  This check catches that problem.  It's not foolproof (there
-  // are more complicated anomalies that can arise) but it's still useful.
-  CHECK(fork.get() != this);
+typename DiscreteTrajectory<Frame>::iterator
+DiscreteTrajectory<Frame>::lower_bound(Instant const& t) const {
+  auto const leit = FindSegment(t);
+  if (leit == segment_by_left_endpoint_.cend()) {
+    // This includes an empty trajectory.
+    return begin();
+  }
+  auto const sit = leit->second;
+  auto const it = sit->lower_bound(t);
+  if (it == sit->end()) {
+    return end();
+  }
+  return it;
+}
 
-  auto& fork_timeline = fork->timeline_;
-  auto const this_last = --this->end();
+template<typename Frame>
+typename DiscreteTrajectory<Frame>::iterator
+DiscreteTrajectory<Frame>::upper_bound(Instant const& t) const {
+  auto const leit = FindSegment(t);
+  if (leit == segment_by_left_endpoint_.cend()) {
+    // This includes an empty trajectory.
+    return begin();
+  }
+  auto const sit = leit->second;
+  auto const it = sit->upper_bound(t);
+  if (it == sit->end()) {
+    return end();
+  }
+  return it;
+}
 
-  // Determine if |fork| already has a point matching the end of this
-  // trajectory.
-  bool must_prepend;
-  if (fork_timeline.empty()) {
-    must_prepend = true;
+template<typename Frame>
+typename DiscreteTrajectory<Frame>::SegmentRange
+DiscreteTrajectory<Frame>::segments() const {
+  return SegmentRange(SegmentIterator(
+                          segments_.get(), segments_->begin()),
+                      SegmentIterator(
+                          segments_.get(), segments_->end()));
+}
+
+template<typename Frame>
+typename DiscreteTrajectory<Frame>::ReverseSegmentRange
+DiscreteTrajectory<Frame>::rsegments() const {
+  return ReverseSegmentRange(std::reverse_iterator(SegmentIterator(
+                                 segments_.get(), segments_->end())),
+                             std::reverse_iterator(SegmentIterator(
+                                 segments_.get(), segments_->begin())));
+}
+
+template<typename Frame>
+typename DiscreteTrajectory<Frame>::SegmentIterator
+DiscreteTrajectory<Frame>::NewSegment() {
+  auto& last_segment = segments_->back();
+
+  auto const& new_segment = segments_->emplace_back();
+  auto const new_segment_sit = --segments_->end();
+  auto const new_self = SegmentIterator(segments_.get(), new_segment_sit);
+  *new_segment_sit = DiscreteTrajectorySegment<Frame>(new_self);
+
+  // It is only possible to insert a segment after an empty segment if the
+  // entire trajectory is empty.
+  if (last_segment.empty()) {
+    CHECK(segment_by_left_endpoint_.empty())
+        << "Inserting after an empty segment but the trajectory is not empty, "
+        << "its time-to-segment map has " << segment_by_left_endpoint_.size()
+        << " entries";
   } else {
-    CHECK_LE(this_last->time, fork_timeline.begin()->first);
-    auto const it = fork_timeline.find(this_last->time);
-    if (it == fork_timeline.end()) {
-      must_prepend = true;
+    // Duplicate the last point of the previous segment.
+    auto const& [last_time, last_degrees_of_freedom] = *last_segment.rbegin();
+    new_segment_sit->Append(last_time, last_degrees_of_freedom);
+    // The use of |insert_or_assign| ensure that we override any entry with the
+    // same left endpoint.
+    segment_by_left_endpoint_.insert_or_assign(
+        segment_by_left_endpoint_.end(), last_time, new_segment_sit);
+  }
+
+  DCHECK_OK(ConsistencyStatus());
+  return new_self;
+}
+
+template<typename Frame>
+typename DiscreteTrajectory<Frame>::DiscreteTrajectory
+DiscreteTrajectory<Frame>::DetachSegments(SegmentIterator const begin) {
+  DiscreteTrajectory detached(uninitialized);
+
+  // Move the detached segments to the new trajectory.
+  detached.segments_->splice(detached.segments_->end(),
+                             *segments_,
+                             begin.iterator(), segments_->end());
+
+  AdjustAfterSplicing(/*from=*/*this,
+                      /*to=*/detached,
+                      /*to_segments_begin=*/detached.segments_->begin());
+
+  DCHECK_OK(ConsistencyStatus());
+  return detached;
+}
+
+template<typename Frame>
+typename DiscreteTrajectory<Frame>::SegmentIterator
+DiscreteTrajectory<Frame>::AttachSegments(
+    DiscreteTrajectory&& trajectory) {
+  CHECK(!trajectory.empty());
+
+  if (empty()) {
+    *this = DiscreteTrajectory(uninitialized);
+  } else if (back().time == trajectory.front().time) {
+    CHECK_EQ(back().degrees_of_freedom, trajectory.front().degrees_of_freedom)
+        << "Mismatching degrees of freedom when attaching segments";
+  } else {
+    // If the points are not matching, prepend a matching point to |trajectory|
+    // and update the time-to-segment map.
+    CHECK_LT(back().time, trajectory.front().time)
+        << "Mismatching times when attaching segments";
+    trajectory.segments_->begin()->Prepend(back().time,
+                                           back().degrees_of_freedom);
+    auto const leit = trajectory.segment_by_left_endpoint_.cbegin();
+    auto const sit = leit->second;
+    trajectory.segment_by_left_endpoint_.erase(leit);
+    trajectory.segment_by_left_endpoint_.emplace(back().time, sit);
+  }
+
+  // The |end| iterator keeps pointing at the end after the splice.  Instead,
+  // we track the iterator to the last segment.
+  auto const last_before_splice = --segments_->end();
+
+  // Move the attached segments to the end of this trajectory.
+  segments_->splice(segments_->end(),
+                    *trajectory.segments_);
+
+  auto const end_before_splice = std::next(last_before_splice);
+  AdjustAfterSplicing(/*from=*/trajectory,
+                      /*to=*/*this,
+                      /*to_segments_begin=*/end_before_splice);
+
+  DCHECK_OK(ConsistencyStatus());
+  return SegmentIterator(segments_.get(), end_before_splice);
+}
+
+template<typename Frame>
+void DiscreteTrajectory<Frame>::DeleteSegments(SegmentIterator& begin) {
+  segments_->erase(begin.iterator(), segments_->end());
+  if (segments_->empty()) {
+    segment_by_left_endpoint_.clear();
+  } else {
+    auto const last_segment = --segments_->end();
+    if (last_segment->empty()) {
+      segment_by_left_endpoint_.clear();
     } else {
-      CHECK(it == fork_timeline.begin())
-          << it->first << " " << this_last->time;
-      must_prepend = false;
+      // If there remains a non-empty segment, update the time-to-segment map
+      // with for its time, and delete the rest.
+      auto const& [leit, _] = segment_by_left_endpoint_.insert_or_assign(
+          last_segment->front().time, last_segment);
+      segment_by_left_endpoint_.erase(std::next(leit),
+                                      segment_by_left_endpoint_.end());
     }
   }
+  // Make sure that the client doesn't try to use the invalid iterator.
+  begin = segments().end();
 
-  // If needed, prepend to |fork| a copy of the last point of this trajectory.
-  // This ensures that |fork| and this trajectory start and end, respectively,
-  // with points at the same time (but possibly distinct degrees of freedom).
-  if (must_prepend) {
-    fork_timeline.emplace_hint(fork_timeline.begin(),
-                               this_last->time,
-                               this_last->degrees_of_freedom);
-  }
-
-  // Attach |fork| to this trajectory.
-  this->AttachForkToCopiedBegin(std::move(fork));
-
-  // Remove the first point of |fork| now that it is properly attached to its
-  // parent: that point is either redundant (if it was prepended above) or wrong
-  // (because we "trust" this trajectory more than |fork|).  The children that
-  // might have been forked at the deleted point were relocated by
-  // AttachForkToCopiedBegin.
-  fork_timeline.erase(fork_timeline.begin());
+  DCHECK_OK(ConsistencyStatus());
 }
 
 template<typename Frame>
-not_null<std::unique_ptr<DiscreteTrajectory<Frame>>>
-DiscreteTrajectory<Frame>::DetachFork() {
-  CHECK(!this->is_root());
-
-  // Insert a new point in the timeline for the fork time.  It should go at the
-  // beginning of the timeline.
-  auto const fork_it = this->Fork();
-  auto const begin_it = timeline_.emplace_hint(
-      timeline_.begin(), fork_it->time, fork_it->degrees_of_freedom);
-  CHECK(begin_it == timeline_.begin());
-
-  // Detach this trajectory and tell the caller that it owns the pieces.
-  return this->DetachForkWithCopiedBegin();
-}
-
-template<typename Frame>
-absl::Status DiscreteTrajectory<Frame>::Append(
-    Instant const& time,
-    DegreesOfFreedom<Frame> const& degrees_of_freedom) {
-  CHECK(this->is_root() || time > this->Fork()->time)
-       << "Append at " << time << " which is before fork time "
-       << this->Fork()->time;
-
-  if (!timeline_.empty() && timeline_.cbegin()->first == time) {
-    LOG(WARNING) << "Append at existing time " << time
-                 << ", time range = [" << this->front().time << ", "
-                 << this->back().time << "]";
-    return absl::OkStatus();
+void DiscreteTrajectory<Frame>::ForgetAfter(Instant const& t) {
+  auto const leit = FindSegment(t);
+  if (leit == segment_by_left_endpoint_.end()) {
+    clear();
+    return;
   }
-  auto const it = timeline_.emplace_hint(timeline_.end(),
-                                         time,
-                                         degrees_of_freedom);
-  // Decrementing |end()| is much faster than incrementing |it|.  Don't ask.
-  CHECK(--timeline_.end() == it)
-      << "Append out of order at " << time << ", last time is "
-      << (--timeline_.end())->first;
-  if (downsampling_.has_value()) {
-    return UpdateDownsampling(it);
+  auto const sit = leit->second;
+  sit->ForgetAfter(t);
+  // Here |sit| designates a segment starting at or after |t|.  If |t| is
+  // exactly at the beginning of the segment,
+  // |DiscreteTrajectorySegment::ForgetAfter| will leave it empty.  In that
+  // case we drop the segment entirely, unless it is the only one in the
+  // trajectory.
+  if (sit->empty()) {
+    if (sit == segments_->begin()) {
+      segments_->erase(std::next(sit), segments_->end());
+    } else {
+      segments_->erase(sit, segments_->end());
+    }
+    segment_by_left_endpoint_.erase(leit, segment_by_left_endpoint_.end());
   } else {
-    return absl::OkStatus();
+    segments_->erase(std::next(sit), segments_->end());
+    segment_by_left_endpoint_.erase(std::next(leit),
+                                    segment_by_left_endpoint_.end());
+  }
+
+  DCHECK_OK(ConsistencyStatus());
+}
+
+template<typename Frame>
+void DiscreteTrajectory<Frame>::ForgetAfter(iterator const it) {
+  if (it != end()) {
+    ForgetAfter(it->time);
   }
 }
 
 template<typename Frame>
-void DiscreteTrajectory<Frame>::ForgetAfter(Instant const& time) {
-  this->DeleteAllForksAfter(time);
-  if (downsampling_.has_value()) {
-    downsampling_->ForgetAfter(time);
+void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& t) {
+  auto const leit = FindSegment(t);
+  if (leit == segment_by_left_endpoint_.end()) {
+    return;
+  }
+  auto const sit = leit->second;
+  // This call may make the segment |*sit| empty if |t| is after the end of
+  // |*sit|.
+  // NOTE(phl): This declaration is necessary because MSVC corrupts |t| during
+  // the call below.
+  Instant const t_saved = t;
+  sit->ForgetBefore(t);
+  for (auto s = segments_->begin(); s != sit; ++s) {
+    // This call may either make the segment |*s| empty or leave it with a
+    // single point matching |sit->front()|.
+    s->ForgetBefore(t_saved);
   }
 
-  // Get an iterator denoting the first entry with time > |time|.  Remove that
-  // entry and all the entries that follow it.  This preserves any entry with
-  // time == |time|.
-  auto const first_removed_in_timeline = timeline_.upper_bound(time);
-  timeline_.erase(first_removed_in_timeline, timeline_.end());
+  // Erase all the entries before and including |leit|.  These are entries for
+  // now-empty segments or for 1-point segments, and the segment which we may
+  // just have truncated.
+  segment_by_left_endpoint_.erase(segment_by_left_endpoint_.begin(),
+                                  std::next(leit));
+  // It |*sit| is not empty, recreate an entry with its new left endpoint.
+  if (!sit->empty()) {
+    segment_by_left_endpoint_.insert_or_assign(
+        segment_by_left_endpoint_.begin(),
+        sit->front().time,
+        sit);
+  }
 
-  if (!timeline_.empty() &&
-      downsampling_.has_value() &&
-      downsampling_->empty()) {
-    // Further points will be appended to the last remaining point, so this is
-    // where the dense timeline will begin.
-    downsampling_->Append(--timeline_.cend());
+  DCHECK_OK(ConsistencyStatus());
+}
+
+template<typename Frame>
+void DiscreteTrajectory<Frame>::ForgetBefore(iterator const it) {
+  if (it == end()) {
+    clear();
+  } else {
+    ForgetBefore(it->time);
   }
 }
 
 template<typename Frame>
-void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
-  CHECK(this->is_root());
-  this->CheckNoForksBefore(time);
-  if (downsampling_.has_value()) {
-    downsampling_->ForgetBefore(time);
+void DiscreteTrajectory<Frame>::Append(
+    Instant const& t,
+    DegreesOfFreedom<Frame> const& degrees_of_freedom) {
+  typename Segments::iterator sit;
+  if (segment_by_left_endpoint_.empty()) {
+    // If this is the first point appended to this trajectory, insert it in the
+    // time-to-segment map.
+    sit = --segments_->end();
+    segment_by_left_endpoint_.insert_or_assign(
+        segment_by_left_endpoint_.end(), t, sit);
+  } else {
+    auto const leit = FindSegment(t);
+    CHECK(leit != segment_by_left_endpoint_.end())
+        << "Append at " << t << " before the beginning of the trajectory at "
+        << front().time;
+    // The segment is expected to always have a point copied from its
+    // predecessor.
+    sit = leit->second;
+    CHECK(!sit->empty()) << "Empty segment at " << t;
   }
+  sit->Append(t, degrees_of_freedom);
 
-  // Get an iterator denoting the first entry with time >= |time|.  Remove all
-  // the entries that precede it.  This preserves any entry with time == |time|.
-  auto const first_kept_in_timeline = timeline_.lower_bound(time);
-  timeline_.erase(timeline_.begin(), first_kept_in_timeline);
-}
-
-template<typename Frame>
-void DiscreteTrajectory<Frame>::SetDownsampling(
-    DownsamplingParameters const& downsampling_parameters) {
-  CHECK(!downsampling_.has_value());
-  downsampling_.emplace(downsampling_parameters,
-                        [this](Instant const& t) {
-                          auto const it = this->Find(t);
-                          CHECK(it != this->end());
-                          return it.current();
-                        });
-
-  // For a fork, the fork point is taken into account for downsampling: it is
-  // always preserved, but the second point preserved after downsampling may be
-  // farther down the timeline of this trajectory.
-  if (!this->is_root()) {
-    downsampling_->Append(this->Fork().current());
-  }
-  for (auto it = timeline_.cbegin(); it != timeline_.cend(); ++it) {
-    // When reading pre-陈景润 saves we may call this function on long
-    // trajectories, in which case we need to downsample as we go.
-    UpdateDownsampling(it);
-  }
-}
-
-template<typename Frame>
-void DiscreteTrajectory<Frame>::SetDownsampling(
-    DiscreteTrajectory<Frame> const& trajectory) {
-  if (trajectory.downsampling_.has_value()) {
-    SetDownsampling(trajectory.downsampling_->downsampling_parameters());
-  }
-}
-
- template<typename Frame>
-void DiscreteTrajectory<Frame>::ClearDownsampling() {
-  downsampling_.reset();
+  DCHECK_OK(ConsistencyStatus());
 }
 
 template<typename Frame>
 Instant DiscreteTrajectory<Frame>::t_min() const {
-  return this->Empty() ? InfiniteFuture : this->front().time;
+  return segments_->front().t_min();
 }
 
 template<typename Frame>
 Instant DiscreteTrajectory<Frame>::t_max() const {
-  return this->Empty() ? InfinitePast : this->back().time;
+  return segments_->back().t_max();
 }
 
 template<typename Frame>
 Position<Frame> DiscreteTrajectory<Frame>::EvaluatePosition(
-    Instant const& time) const {
-  auto const iter = this->LowerBound(time);
-  if (iter->time == time) {
-    return iter->degrees_of_freedom.position();
-  }
-  CHECK_LT(t_min(), time);
-  CHECK_GT(t_max(), time);
-  return GetInterpolation(iter).Evaluate(time);
+    Instant const& t) const {
+  return FindSegment(t)->second->EvaluatePosition(t);
 }
 
 template<typename Frame>
 Velocity<Frame> DiscreteTrajectory<Frame>::EvaluateVelocity(
-    Instant const& time) const {
-  auto const iter = this->LowerBound(time);
-  if (iter->time == time) {
-    return iter->degrees_of_freedom.velocity();
-  }
-  CHECK_LT(t_min(), time);
-  CHECK_GT(t_max(), time);
-  return GetInterpolation(iter).EvaluateDerivative(time);
+    Instant const& t) const {
+  return FindSegment(t)->second->EvaluateVelocity(t);
 }
 
 template<typename Frame>
 DegreesOfFreedom<Frame> DiscreteTrajectory<Frame>::EvaluateDegreesOfFreedom(
-    Instant const& time) const {
-  auto const iter = this->LowerBound(time);
-  if (iter->time == time) {
-    return iter->degrees_of_freedom;
-  }
-  CHECK_LT(t_min(), time);
-  CHECK_GT(t_max(), time);
-  auto const interpolation = GetInterpolation(iter);
-  return {interpolation.Evaluate(time), interpolation.EvaluateDerivative(time)};
+    Instant const& t) const {
+  return FindSegment(t)->second->EvaluateDegreesOfFreedom(t);
 }
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteToMessage(
-    std::set<DiscreteTrajectory const*> const& excluded,
-    std::vector<DiscreteTrajectory const*> const& tracked,
-    std::vector<Iterator> const& exact,
-    not_null<serialization::DiscreteTrajectory*> const message) const {
-  WriteToMessage(InfinitePast, excluded, tracked, exact, message);
+    not_null<serialization::DiscreteTrajectory*> message,
+    std::vector<SegmentIterator> const& tracked,
+    std::vector<iterator> const& exact) const {
+  WriteToMessage(message, begin(), end(), tracked, exact);
 }
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteToMessage(
-    Instant const& after_time,
-    std::set<DiscreteTrajectory const*> const& excluded,
-    std::vector<DiscreteTrajectory const*> const& tracked,
-    std::vector<Iterator> const& exact,
-    not_null<serialization::DiscreteTrajectory*> const message) const {
-  CHECK(this->is_root());
+    not_null<serialization::DiscreteTrajectory*> message,
+    iterator const begin,
+    iterator const end,
+    std::vector<SegmentIterator> const& tracked,
+    std::vector<iterator> const& exact) const {
+  // Construct a map to efficiently find if a segment must be tracked.  The
+  // keys are pointers to segments in |tracked|, the values are the
+  // corresponding indices.
+  absl::flat_hash_map<DiscreteTrajectorySegment<Frame> const*, int>
+      segment_to_position;
+  for (int i = 0; i < tracked.size(); ++i) {
+    if (tracked[i] != segments().end()) {
+      segment_to_position.emplace(&*tracked[i], i);
+    }
+  }
 
-  std::set<DiscreteTrajectory<Frame> const*> mutable_excluded = excluded;
-  std::vector<DiscreteTrajectory<Frame> const*> mutable_tracked = tracked;
-  WriteSubTreeToMessage(after_time, mutable_excluded, mutable_tracked, message);
-  CHECK(std::all_of(mutable_excluded.begin(),
-                    mutable_excluded.end(),
-                    [](DiscreteTrajectory<Frame> const* const fork) {
-                      return fork == nullptr;
-                    }));
-  CHECK(std::all_of(mutable_tracked.begin(),
-                    mutable_tracked.end(),
-                    [](DiscreteTrajectory<Frame> const* const fork) {
-                      return fork == nullptr;
-                    }));
+  // Initialize the tracked positions to be able to recognize if some are
+  // missing.
+  message->mutable_tracked_position()->Resize(
+      tracked.size(),
+      serialization::DiscreteTrajectory::MISSING_TRACKED_POSITION);
 
-  for (auto const& it : exact) {
-    auto* const serialized_exact = message->add_exact();
-    it->time.WriteToMessage(serialized_exact->mutable_instant());
-    it->degrees_of_freedom.WriteToMessage(
-        serialized_exact->mutable_degrees_of_freedom());
+  // Convert to instants the iterators that define the range to write.  This is
+  // necessary to do lookups in each segment to obtain segment-specific
+  // iterators.
+  Instant const begin_time = begin == this->end() ? InfiniteFuture
+                                                  : begin->time;
+  Instant const end_time = end == this->end() ? InfiniteFuture
+                                              : end->time;
+
+  // The set of segments that intersect the range to write.
+  absl::flat_hash_set<
+      DiscreteTrajectorySegment<Frame> const*> intersecting_segments;
+  bool intersect_range = false;
+
+  // The position of a segment in the repeated field |segment|.
+  int segment_position = 0;
+  for (auto sit = segments_->begin();
+       sit != segments_->end();
+       ++sit, ++segment_position) {
+    // Look up in |*sit| the instants that define the range to write.
+    // |lower_bound| and |upper_bound| return the past-the-end-of-segment
+    // iterator if no point exists after the given time, i.e., for the segments
+    // that precede the intersection.
+    auto const begin_time_it = sit->lower_bound(begin_time);
+    auto const end_time_it = sit->lower_bound(end_time);
+
+    // If the above iterators determine an empty range, and we have already seen
+    // a segment that intersects the range to write, we are past the
+    // intersection.  Skip all the remaining segments.
+    if (intersect_range && begin_time_it == end_time_it) {
+      break;
+    }
+
+    // If |*sit| contains a point at or after |begin_time|, it intersects the
+    // range to write.
+    intersect_range = begin_time_it != sit->end();
+    if (intersect_range) {
+      intersecting_segments.insert(&*sit);
+    }
+
+    // Note that we execute this call for the segments that precede the
+    // intersection in order to write the correct structure of (empty) segments.
+    sit->WriteToMessage(
+        message->add_segment(), begin_time_it, end_time_it, exact);
+
+    if (auto const position_it = segment_to_position.find(&*sit);
+        position_it != segment_to_position.end()) {
+      // The field |tracked_position| is indexed by the indices in |tracked|.
+      // Its value is the position of a tracked segment in the field |segment|.
+      message->set_tracked_position(position_it->second, segment_position);
+    }
+  }
+
+  // Write the left endpoints by scanning them in parallel with the segments.
+  int i = 0;
+  auto sit1 = segments_->begin();
+  for (auto const& [t, sit2] : segment_by_left_endpoint_) {
+    while (sit1 != sit2) {
+      ++sit1;
+      ++i;
+    }
+    // Skip the segments that don't intersect the range to write, as we pretend
+    // that they are empty.  Adjust the left endpoint to account for the segment
+    // that may have been truncated on the left.
+    if (intersecting_segments.contains(&*sit2)) {
+      auto* const segment_by_left_endpoint =
+          message->add_segment_by_left_endpoint();
+      Instant const left_endpoint = std::max(t, begin_time);
+      left_endpoint.WriteToMessage(
+          segment_by_left_endpoint->mutable_left_endpoint());
+      segment_by_left_endpoint->set_segment(i);
+    }
   }
 }
 
 template<typename Frame>
-template<typename, typename>
-not_null<std::unique_ptr<DiscreteTrajectory<Frame>>>
+template<typename F, typename>
+DiscreteTrajectory<Frame>
 DiscreteTrajectory<Frame>::ReadFromMessage(
     serialization::DiscreteTrajectory const& message,
-    std::vector<DiscreteTrajectory<Frame>**> const& forks) {
-  // We use a Timeline as a convenient container for the exact points.
-  Timeline exact;
-  for (auto const& instantaneous_degrees_of_freedom : message.exact()) {
-    auto const t =
-        Instant::ReadFromMessage(instantaneous_degrees_of_freedom.instant());
-    auto const degrees_of_freedom = DegreesOfFreedom<Frame>::ReadFromMessage(
-        instantaneous_degrees_of_freedom.degrees_of_freedom());
-    exact.emplace_hint(exact.end(), t, degrees_of_freedom);
+    std::vector<SegmentIterator*> const& tracked) {
+  DiscreteTrajectory trajectory(uninitialized);
+
+  bool const is_pre_ζήνων = message.segment_size() == 0;
+  if (is_pre_ζήνων) {
+    LOG_IF(WARNING, is_pre_ζήνων) << u8"Reading pre-Ζήνων DiscreteTrajectory";
+    ReadFromPreΖήνωνMessage(
+        message, tracked, /*fork_point=*/std::nullopt, trajectory);
+    CHECK_OK(trajectory.ConsistencyStatus());
+    return trajectory;
   }
 
-  auto trajectory = make_not_null_unique<DiscreteTrajectory>();
-  CHECK(std::all_of(forks.begin(),
-                    forks.end(),
-                    [](DiscreteTrajectory<Frame>** const fork) {
-                      return fork != nullptr && *fork == nullptr;
-                    }));
-  trajectory->FillSubTreeFromMessage(message, forks, exact);
+  // First restore the segments themselves.  |segment_iterators| will be used to
+  // restore the tracked segments.
+  std::vector<SegmentIterator> segment_iterators;
+  segment_iterators.reserve(message.segment_size());
+  for (auto const& serialized_segment : message.segment()) {
+    trajectory.segments_->emplace_back();
+    auto const sit = --trajectory.segments_->end();
+    auto const self = SegmentIterator(trajectory.segments_.get(), sit);
+    *sit = DiscreteTrajectorySegment<Frame>::ReadFromMessage(serialized_segment,
+                                                             self);
+    segment_iterators.push_back(self);
+  }
+
+  // Restore the tracked segments.
+  CHECK_EQ(tracked.size(), message.tracked_position_size());
+  for (int i = 0; i < message.tracked_position_size(); ++i) {
+    int const tracked_position = message.tracked_position(i);
+    if (tracked_position ==
+        serialization::DiscreteTrajectory::MISSING_TRACKED_POSITION) {
+      *tracked[i] = trajectory.segments().end();
+    } else {
+      *tracked[i] = segment_iterators[tracked_position];
+    }
+  }
+
+  // Finally restore the left endpoints.
+  int i = 0;
+  auto sit = trajectory.segments_->begin();
+  for (auto const& segment_by_left_endpoint :
+       message.segment_by_left_endpoint()) {
+    auto const t =
+        Instant::ReadFromMessage(segment_by_left_endpoint.left_endpoint());
+    while (segment_by_left_endpoint.segment() != i) {
+      ++sit;
+      ++i;
+    }
+    trajectory.segment_by_left_endpoint_.insert_or_assign(
+        trajectory.segment_by_left_endpoint_.end(), t, sit);
+  }
+
+  CHECK_OK(trajectory.ConsistencyStatus());
   return trajectory;
 }
 
 template<typename Frame>
-not_null<DiscreteTrajectory<Frame>*> DiscreteTrajectory<Frame>::that() {
-  return this;
-}
+DiscreteTrajectory<Frame>::DiscreteTrajectory(uninitialized_t)
+    : segments_(make_not_null_unique<Segments>()) {}
 
 template<typename Frame>
-not_null<DiscreteTrajectory<Frame> const*>
-DiscreteTrajectory<Frame>::that() const {
-  return this;
-}
-
-template<typename Frame>
-std::pair<typename DiscreteTrajectory<Frame>::TimelineConstIterator, bool>
-DiscreteTrajectory<Frame>::timeline_insert(
-    const typename TimelineConstIterator::value_type& value) {
-  return timeline_.insert(value);
-}
-
-template<typename Frame>
-typename DiscreteTrajectory<Frame>::TimelineConstIterator
-DiscreteTrajectory<Frame>::timeline_begin() const {
-  return timeline_.begin();
-}
-
-template<typename Frame>
-typename DiscreteTrajectory<Frame>::TimelineConstIterator
-DiscreteTrajectory<Frame>::timeline_end() const {
-  return timeline_.end();
-}
-
-template<typename Frame>
-typename DiscreteTrajectory<Frame>::TimelineConstIterator
-DiscreteTrajectory<Frame>::timeline_find(Instant const& time) const {
-  return timeline_.find(time);
-}
-
-template<typename Frame>
-typename DiscreteTrajectory<Frame>::TimelineConstIterator
-DiscreteTrajectory<Frame>::timeline_lower_bound(Instant const& time) const {
-  return timeline_.lower_bound(time);
-}
-
-template<typename Frame>
-bool DiscreteTrajectory<Frame>::timeline_empty() const {
-  return timeline_.empty();
-}
-
-template<typename Frame>
-std::int64_t DiscreteTrajectory<Frame>::timeline_size() const {
-  return timeline_.size();
-}
-
-template<typename Frame>
-DiscreteTrajectory<Frame>::Downsampling::Downsampling(
-    DownsamplingParameters const& downsampling_parameters,
-    std::function<TimelineConstIterator(Instant const&)> iterator_for_time)
-    : downsampling_parameters_(downsampling_parameters),
-      iterator_for_time_(std::move(iterator_for_time)) {
-  // This contains points, hence one more than intervals.
-  dense_iterators_.reserve(max_dense_intervals() + 1);
-}
-
-template<typename Frame>
-typename DiscreteTrajectory<Frame>::DownsamplingParameters const&
-DiscreteTrajectory<Frame>::Downsampling::downsampling_parameters() const {
-  return downsampling_parameters_;
-}
-
-template<typename Frame>
-std::int64_t DiscreteTrajectory<Frame>::Downsampling::max_dense_intervals()
-    const {
-  return downsampling_parameters_.max_dense_intervals;
-}
-
-template<typename Frame>
-Length DiscreteTrajectory<Frame>::Downsampling::tolerance() const {
-  return downsampling_parameters_.tolerance;
-}
-
-template<typename Frame>
-void DiscreteTrajectory<Frame>::Downsampling::Append(
-    TimelineConstIterator const it) {
-  CHECK(!full());
-  if (empty()) {
-    start_time_ = it->first;
-  }
-  dense_iterators_.push_back(it);
-}
-
-template<typename Frame>
-void DiscreteTrajectory<Frame>::Downsampling::ForgetAfter(Instant const& t) {
-  UpdateDenseIteratorsIfNeeded();
-  auto const it = std::upper_bound(
-      dense_iterators_.cbegin(),
-      dense_iterators_.cend(),
-      t,
-      [](Instant const& left, TimelineConstIterator const right) {
-        return left < right->first;
-      });
-  dense_iterators_.erase(it, dense_iterators_.cend());
-  UpdateStartTimeIfNeeded();
-}
-
-template<typename Frame>
-void DiscreteTrajectory<Frame>::Downsampling::ForgetBefore(Instant const& t) {
-  UpdateDenseIteratorsIfNeeded();
-  auto const it = std::lower_bound(
-      dense_iterators_.cbegin(),
-      dense_iterators_.cend(),
-      t,
-      [](TimelineConstIterator const left, Instant const& right) {
-        return left->first < right;
-      });
-  dense_iterators_.erase(dense_iterators_.cbegin(), it);
-  UpdateStartTimeIfNeeded();
-}
-
-template<typename Frame>
-bool DiscreteTrajectory<Frame>::Downsampling::empty() const {
-  return dense_iterators_.empty();
-}
-
-template<typename Frame>
-bool DiscreteTrajectory<Frame>::Downsampling::full() const {
-  return dense_iterators_.size() >= max_dense_intervals();
-}
-
-template<typename Frame>
-std::vector<typename DiscreteTrajectory<Frame>::TimelineConstIterator>
-DiscreteTrajectory<Frame>::Downsampling::ExtractDenseIterators() {
-  UpdateDenseIteratorsIfNeeded();
-  auto returned_dense_iterators = std::move(dense_iterators_);
-  UpdateStartTimeIfNeeded();
-  return std::move(returned_dense_iterators);
-}
-
-template<typename Frame>
-void DiscreteTrajectory<Frame>::Downsampling::WriteToMessage(
-    Instant const& after_time,
-    not_null<serialization::DiscreteTrajectory::Downsampling*> const message)
-    const {
-  message->set_max_dense_intervals(max_dense_intervals());
-  tolerance().WriteToMessage(message->mutable_tolerance());
-  if (!empty()) {
-    // We can't call UpdateDenseIteratorsIfNeeded here because this method is
-    // const.
-    start_time_.value().WriteToMessage(message->add_dense_timeline());
-    for (int i = 1; i < dense_iterators_.size(); ++i) {
-      Instant const& time = dense_iterators_[i]->first;
-      if (time >= after_time) {
-        time.WriteToMessage(message->add_dense_timeline());
-      }
-    }
-  }
-}
-
-template<typename Frame>
-typename DiscreteTrajectory<Frame>::Downsampling
-DiscreteTrajectory<Frame>::Downsampling::ReadFromMessage(
-    serialization::DiscreteTrajectory::Downsampling const& message,
-    DiscreteTrajectory const& trajectory) {
-  bool const is_pre_zermelo = message.has_start_of_dense_timeline();
-  LOG_IF(WARNING, is_pre_zermelo)
-      << "Reading pre-Zermelo Downsampling";
-  Downsampling downsampling({message.max_dense_intervals(),
-                             Length::ReadFromMessage(message.tolerance())},
-                            [&trajectory](Instant const& t){
-                              auto const it = trajectory.Find(t);
-                              CHECK(it != trajectory.end());
-                              return it.current();
-                            });
-  if (is_pre_zermelo) {
-    // No support for forks in legacy saves, so |find| will succeed and ++ is
-    // safe.
-    auto it = trajectory.timeline_.find(
-        Instant::ReadFromMessage(message.start_of_dense_timeline()));
-    CHECK(it != trajectory.timeline_.end());
-    for (; it != trajectory.timeline_.end(); ++it) {
-      downsampling.Append(it);
-    }
+typename DiscreteTrajectory<Frame>::SegmentByLeftEndpoint::iterator
+DiscreteTrajectory<Frame>::FindSegment(
+    Instant const& t) {
+  auto it = segment_by_left_endpoint_.upper_bound(t);
+  if (it == segment_by_left_endpoint_.begin()) {
+    // This includes an empty trajectory.
+    return segment_by_left_endpoint_.end();
   } else {
-    for (auto const& dense_time : message.dense_timeline()) {
-      auto const t = Instant::ReadFromMessage(dense_time);
-      downsampling.Append(downsampling.iterator_for_time_(t));
-    }
-  }
-  return downsampling;
-}
-
-template<typename Frame>
-void DiscreteTrajectory<Frame>::Downsampling::UpdateDenseIteratorsIfNeeded() {
-  if (!dense_iterators_.empty()) {
-    dense_iterators_[0] = iterator_for_time_(start_time_.value());
+    return --it;
   }
 }
 
 template<typename Frame>
-void DiscreteTrajectory<Frame>::Downsampling::UpdateStartTimeIfNeeded() {
-  if (dense_iterators_.empty()) {
-    start_time_.reset();
+typename DiscreteTrajectory<Frame>::SegmentByLeftEndpoint::const_iterator
+DiscreteTrajectory<Frame>::FindSegment(
+    Instant const& t) const {
+  auto it = segment_by_left_endpoint_.upper_bound(t);
+  if (it == segment_by_left_endpoint_.begin()) {
+    // This includes an empty trajectory.
+    return segment_by_left_endpoint_.cend();
+  } else {
+    return --it;
   }
 }
 
 template<typename Frame>
-bool DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
-    Instant const& after_time,
-    std::set<DiscreteTrajectory const*>& excluded,
-    std::vector<DiscreteTrajectory const*>& tracked,
-    not_null<serialization::DiscreteTrajectory*> const message) const {
-  bool const included =
-      Forkable<DiscreteTrajectory, Iterator, DiscreteTrajectoryTraits<Frame>>::
-          WriteSubTreeToMessage(after_time, excluded, tracked, message);
-  if (!included) {
-    return false;
+absl::Status DiscreteTrajectory<Frame>::ConsistencyStatus() const {
+  if (segments_->size() < segment_by_left_endpoint_.size()) {
+    return absl::InternalError(absl::StrCat("Size mismatch ",
+                                            segments_->size(),
+                                            " and ",
+                                            segment_by_left_endpoint_.size()));
   }
-
-  int timeline_size = timeline_.size();
-  auto* const zfp = message->mutable_zfp();
-
-  // The timeline data is made dimensionless and stored in separate arrays per
-  // coordinate.  We expect strong correlations within a coordinate over time,
-  // but not between coordinates.
-  std::vector<double> t;
-  std::vector<double> qx;
-  std::vector<double> qy;
-  std::vector<double> qz;
-  std::vector<double> px;
-  std::vector<double> py;
-  std::vector<double> pz;
-  t.reserve(timeline_size);
-  qx.reserve(timeline_size);
-  qy.reserve(timeline_size);
-  qz.reserve(timeline_size);
-  px.reserve(timeline_size);
-  py.reserve(timeline_size);
-  pz.reserve(timeline_size);
-  std::optional<Instant> previous_instant;
-  Time max_Δt;
-  std::string* const zfp_timeline = zfp->mutable_timeline();
-  for (auto const& [time, degrees_of_freedom] : timeline_) {
-    if (time < after_time) {
-      --timeline_size;
-    } else {
-      auto const q = degrees_of_freedom.position() - Frame::origin;
-      auto const p = degrees_of_freedom.velocity();
-      t.push_back((time - Instant{}) / Second);
-      qx.push_back(q.coordinates().x / Metre);
-      qy.push_back(q.coordinates().y / Metre);
-      qz.push_back(q.coordinates().z / Metre);
-      px.push_back(p.coordinates().x / (Metre / Second));
-      py.push_back(p.coordinates().y / (Metre / Second));
-      pz.push_back(p.coordinates().z / (Metre / Second));
-      if (previous_instant.has_value()) {
-        max_Δt = std::max(max_Δt, time - *previous_instant);
+  if (segment_by_left_endpoint_.empty()) {
+    int i = 0;
+    for (auto const& segment : *segments_) {
+      if (!segment.empty()) {
+        return absl::InternalError(absl::StrCat(
+            "Segment #", i,
+            " is not empty but is not in the time-to-segment map"));
       }
-      previous_instant = time;
+      ++i;
     }
   }
-  zfp->set_timeline_size(timeline_size);
-
-  // Times are exact.
-  ZfpCompressor time_compressor(0);
-  // Lengths are approximated to the downsampling tolerance if downsampling is
-  // enabled, otherwise they are exact.
-  Length const length_tolerance =
-      downsampling_.has_value() ? downsampling_->tolerance() : Length();
-  ZfpCompressor length_compressor(length_tolerance / Metre);
-  // Speeds are approximated based on the length tolerance and the maximum
-  // step in the timeline.
-  ZfpCompressor const speed_compressor((length_tolerance / max_Δt) /
-                                        (Metre / Second));
-
-  ZfpCompressor::WriteVersion(message);
-  time_compressor.WriteToMessageMultidimensional<2>(t, zfp_timeline);
-  length_compressor.WriteToMessageMultidimensional<2>(qx, zfp_timeline);
-  length_compressor.WriteToMessageMultidimensional<2>(qy, zfp_timeline);
-  length_compressor.WriteToMessageMultidimensional<2>(qz, zfp_timeline);
-  speed_compressor.WriteToMessageMultidimensional<2>(px, zfp_timeline);
-  speed_compressor.WriteToMessageMultidimensional<2>(py, zfp_timeline);
-  speed_compressor.WriteToMessageMultidimensional<2>(pz, zfp_timeline);
-
-  if (downsampling_.has_value()) {
-    downsampling_->WriteToMessage(after_time, message->mutable_downsampling());
+  {
+    int i = 0;
+    for (auto const& [left_endpoint, sit] : segment_by_left_endpoint_) {
+      if (sit->empty()) {
+      } else if (left_endpoint != sit->front().time) {
+        absl::StrCat("Times mismatch ",
+                      DebugString(left_endpoint),
+                      " and ",
+                      DebugString(sit->front().time),
+                      " between segment #", i, " and the time-to-segment map");
+      }
+    }
   }
-  return true;
+  {
+    int i = 0;
+    auto sit1 = segments_->cbegin();
+    for (auto leit = segment_by_left_endpoint_.cbegin();
+         leit != segment_by_left_endpoint_.cend();) {
+      auto const sit2 = leit->second;
+      if (sit2->empty()) {
+        return absl::InternalError(
+            absl::StrCat("Empty segment for time-to-segment entry #", i));
+      } else if (sit1 == sit2) {
+        ++sit1;
+        ++leit;
+        ++i;
+      } else if (sit1->empty() || sit1->size() == 1) {
+        ++sit1;
+      } else {
+        return absl::InternalError(
+            absl::StrCat("Mismatch for time-to-segment entry #", i,
+                         " at times ", DebugString(sit1->front().time),
+                         " and ", DebugString(sit2->front().time)));
+      }
+    }
+  }
+  if (!segments_->empty()) {
+    int i = 0;
+    for (auto sit = segments_->cbegin();
+         sit != std::prev(segments_->cend());
+         ++sit, ++i) {
+      // Great care is required here because the DiscreteTrajectoryIterator will
+      // "helpfully" paper over differences in degrees of freedom as long as the
+      // times match.  We must look at the endpoints of the timeline explicitly.
+      if (!sit->timeline_empty()) {
+        auto const timeline_rbegin = --sit->timeline_end();
+        auto const timeline_begin = std::next(sit)->timeline_begin();
+        if (timeline_rbegin->time != timeline_begin->time) {
+          return absl::InternalError(
+              absl::StrCat("Duplicated time mismatch ",
+                           DebugString(timeline_rbegin->time),
+                           " and ",
+                           DebugString(timeline_begin->time),
+                           " for segment #",
+                           i));
+        } else if (timeline_rbegin->degrees_of_freedom !=
+                   timeline_begin->degrees_of_freedom) {
+          return absl::InternalError(
+              absl::StrCat("Duplicated degrees of freedom mismatch ",
+                           DebugString(timeline_rbegin->degrees_of_freedom),
+                           " and ",
+                           DebugString(timeline_begin->degrees_of_freedom),
+                           " for segment #",
+                           i));
+        }
+      }
+    }
+  }
+  return absl::OkStatus();
 }
 
 template<typename Frame>
-void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
+void DiscreteTrajectory<Frame>::AdjustAfterSplicing(
+    DiscreteTrajectory& from,
+    DiscreteTrajectory& to,
+    typename Segments::iterator to_segments_begin) {
+  // Reset the self pointers of the new segments.  This is necessary for
+  // iterating over them.
+  for (auto sit = to_segments_begin; sit != to.segments_->end(); ++sit) {
+    sit->SetSelf(SegmentIterator(to.segments_.get(), sit));
+  }
+
+  // Copy the time-to-segment entries on or after the time of |to_segment_begin|
+  // from |from| to |to|.  We are sure to copy all the entries we need because
+  // it includes the last segment that starts at that time.
+  auto from_leit = from.FindSegment(to_segments_begin->front().time);
+  for (auto leit = from_leit;
+       leit != from.segment_by_left_endpoint_.end();
+       ++leit) {
+    to.segment_by_left_endpoint_.insert_or_assign(
+        to.segment_by_left_endpoint_.end(), leit->first, leit->second);
+  }
+
+  // Erase from |from| the entries that we just copied.  We may erase too much
+  // if |from| now ends with a 1-point segment that was not in the map, so we
+  // insert it again.
+  from.segment_by_left_endpoint_.erase(from_leit,
+                                       from.segment_by_left_endpoint_.end());
+  if (!from.segments_->empty()) {
+    auto const last_segment = --from.segments_->end();
+    if (!last_segment->empty()) {
+      from.segment_by_left_endpoint_.insert_or_assign(
+          from.segment_by_left_endpoint_.end(),
+          last_segment->front().time,
+          last_segment);
+    }
+  }
+}
+
+template<typename Frame>
+void DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
+    serialization::DiscreteTrajectory::Downsampling const& message,
+    DownsamplingParameters& downsampling_parameters,
+    Instant& start_of_dense_timeline) {
+  bool const is_pre_haar = message.has_start_of_dense_timeline();
+  LOG_IF(WARNING, is_pre_haar)
+      << "Reading pre-Haar DiscreteTrajectory.Downsampling";
+
+  downsampling_parameters = {
+      .max_dense_intervals = message.max_dense_intervals(),
+      .tolerance = Length::ReadFromMessage(message.tolerance())};
+  if (is_pre_haar) {
+    start_of_dense_timeline =
+        Instant::ReadFromMessage(message.start_of_dense_timeline());
+  } else {
+    start_of_dense_timeline =
+        Instant::ReadFromMessage(message.dense_timeline(0));
+  }
+}
+
+template<typename Frame>
+DiscreteTrajectorySegmentIterator<Frame>
+DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
+    serialization::DiscreteTrajectory::Brood const& message,
+    std::vector<SegmentIterator*> const& tracked,
+    value_type const& fork_point,
+    DiscreteTrajectory& trajectory) {
+  CHECK_EQ(fork_point.time, Instant::ReadFromMessage(message.fork_time()))
+      << "Cannot read trajectory with a fork not at end of segment";
+  CHECK_EQ(1, message.trajectories_size())
+      << "Cannot read trajectory with multiple forks";
+
+  // Keep an iterator to the last segment to be able to return a segment
+  // iterator.
+  auto sit = --trajectory.segments_->end();
+  ReadFromPreΖήνωνMessage(
+      message.trajectories(0), tracked, fork_point, trajectory);
+  ++sit;
+
+  return SegmentIterator(trajectory.segments_.get(), sit);
+}
+
+template<typename Frame>
+void DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
     serialization::DiscreteTrajectory const& message,
-    std::vector<DiscreteTrajectory<Frame>**> const& tracked,
-    Timeline const& exact) {
+    std::vector<SegmentIterator*> const& tracked,
+    std::optional<value_type> const& fork_point,
+    DiscreteTrajectory& trajectory) {
   bool const is_pre_frobenius = !message.has_zfp();
   LOG_IF(WARNING, is_pre_frobenius)
       << "Reading pre-Frobenius DiscreteTrajectory";
+
+  trajectory.segments_->emplace_back();
+  auto const sit = --trajectory.segments_->end();
+  auto const self = SegmentIterator(trajectory.segments_.get(), sit);
   if (is_pre_frobenius) {
+    // Pre-Frobenius saves don't use ZFP so we reconstruct them by appending
+    // points to the segment.  Note that this must happens before restoring the
+    // downsampling parameters to avoid re-downsampling.
+    *sit = DiscreteTrajectorySegment<Frame>(self);
     for (auto const& instantaneous_dof : message.timeline()) {
-      Append(Instant::ReadFromMessage(instantaneous_dof.instant()),
-             DegreesOfFreedom<Frame>::ReadFromMessage(
-                 instantaneous_dof.degrees_of_freedom()));
+      sit->Append(Instant::ReadFromMessage(instantaneous_dof.instant()),
+                  DegreesOfFreedom<Frame>::ReadFromMessage(
+                      instantaneous_dof.degrees_of_freedom()));
+    }
+    if (message.has_downsampling()) {
+      DownsamplingParameters downsampling_parameters;
+      Instant start_of_dense_timeline;
+      ReadFromPreΖήνωνMessage(message.downsampling(),
+                              downsampling_parameters,
+                              start_of_dense_timeline);
+      sit->SetDownsamplingUnconditionally(downsampling_parameters);
+      sit->SetStartOfDenseTimeline(start_of_dense_timeline);
     }
   } else {
-    ZfpCompressor decompressor;
-    ZfpCompressor::ReadVersion(message);
+    // Starting with Frobenius we use ZFP so the easiest is to build a
+    // serialized segment from the fields of the legacy message and read from
+    // that serialized segment.  Note that restoring the number of dense points
+    // can only happen once we have reconstructed the timeline.
+    serialization::DiscreteTrajectorySegment serialized_segment;
+    *serialized_segment.mutable_zfp() = message.zfp();
+    *serialized_segment.mutable_exact() = message.exact();
 
-    int const timeline_size = message.zfp().timeline_size();
-    std::vector<double> t(timeline_size);
-    std::vector<double> qx(timeline_size);
-    std::vector<double> qy(timeline_size);
-    std::vector<double> qz(timeline_size);
-    std::vector<double> px(timeline_size);
-    std::vector<double> py(timeline_size);
-    std::vector<double> pz(timeline_size);
-    std::string_view zfp_timeline(message.zfp().timeline().data(),
-                                  message.zfp().timeline().size());
-
-    decompressor.ReadFromMessageMultidimensional<2>(t, zfp_timeline);
-    decompressor.ReadFromMessageMultidimensional<2>(qx, zfp_timeline);
-    decompressor.ReadFromMessageMultidimensional<2>(qy, zfp_timeline);
-    decompressor.ReadFromMessageMultidimensional<2>(qz, zfp_timeline);
-    decompressor.ReadFromMessageMultidimensional<2>(px, zfp_timeline);
-    decompressor.ReadFromMessageMultidimensional<2>(py, zfp_timeline);
-    decompressor.ReadFromMessageMultidimensional<2>(pz, zfp_timeline);
-
-    for (int i = 0; i < timeline_size; ++i) {
-      Position<Frame> const q =
-          Frame::origin +
-          Displacement<Frame>({qx[i] * Metre, qy[i] * Metre, qz[i] * Metre});
-      Velocity<Frame> const p({px[i] * (Metre / Second),
-                               py[i] * (Metre / Second),
-                               pz[i] * (Metre / Second)});
-
-      // See if this is a point whose degrees of freedom must be restored
-      // exactly.
-      Instant const time = Instant() + t[i] * Second;
-      if (auto it = exact.find(time); it == exact.cend()) {
-        Append(time, DegreesOfFreedom<Frame>(q, p));
-      } else {
-        Append(time, it->second);
-      }
+    DownsamplingParameters downsampling_parameters;
+    Instant start_of_dense_timeline;
+    if (message.has_downsampling()) {
+      ReadFromPreΖήνωνMessage(message.downsampling(),
+                              downsampling_parameters,
+                              start_of_dense_timeline);
+      auto* const serialized_downsampling_parameters =
+          serialized_segment.mutable_downsampling_parameters();
+      serialized_downsampling_parameters->set_max_dense_intervals(
+          downsampling_parameters.max_dense_intervals);
+      downsampling_parameters.tolerance.WriteToMessage(
+          serialized_downsampling_parameters->mutable_tolerance());
+    }
+    *sit = DiscreteTrajectorySegment<Frame>::ReadFromMessage(serialized_segment,
+                                                             self);
+    if (message.has_downsampling()) {
+      sit->SetStartOfDenseTimeline(start_of_dense_timeline);
     }
   }
-  if (message.has_downsampling()) {
-    downsampling_.emplace(
-        Downsampling::ReadFromMessage(message.downsampling(), *this));
+
+  // Create the duplicated point if needed.
+  if (fork_point.has_value()) {
+    sit->SetForkPoint(fork_point.value());
   }
-  Forkable<DiscreteTrajectory, Iterator, DiscreteTrajectoryTraits<Frame>>::
-      FillSubTreeFromMessage(message, tracked, exact);
-}
 
-template<typename Frame>
-Hermite3<Instant, Position<Frame>> DiscreteTrajectory<Frame>::GetInterpolation(
-    Iterator const& upper) const {
-  CHECK(upper != this->begin());
-  auto const lower = --Iterator{upper};
-  return Hermite3<Instant, Position<Frame>>{
-      {lower->time, upper->time},
-      {lower->degrees_of_freedom.position(),
-       upper->degrees_of_freedom.position()},
-      {lower->degrees_of_freedom.velocity(),
-       upper->degrees_of_freedom.velocity()}};
-}
+  // Restore the (single) child as the next segment.
+  if (message.children_size() == 1) {
+    auto const child =
+        ReadFromPreΖήνωνMessage(message.children(0),
+                                tracked,
+                                /*fork_point=*/*sit->rbegin(),
+                                trajectory);
 
-template<typename Frame>
-absl::Status DiscreteTrajectory<Frame>::UpdateDownsampling(
-    TimelineConstIterator const appended) {
-  this->CheckNoForksBefore(appended->first);
-  downsampling_->Append(appended);
-  if (downsampling_->full()) {
-    auto const dense_iterators = downsampling_->ExtractDenseIterators();
-    auto right_endpoints = FitHermiteSpline<Instant, Position<Frame>>(
-        dense_iterators,
-        [](auto&& it) -> auto&& { return it->first; },
-        [](auto&& it) -> auto&& { return it->second.position(); },
-        [](auto&& it) -> auto&& { return it->second.velocity(); },
-        downsampling_->tolerance());
-    if (!right_endpoints.ok()) {
-      // Note that the actual appending took place; the propagated status only
-      // reflects a lack of downsampling.
-      return right_endpoints.status();
+    // There were no fork positions prior to Буняковский.
+    bool const has_fork_position = message.fork_position_size() > 0;
+    if (has_fork_position) {
+      CHECK_EQ(1, message.fork_position_size())
+          << "Cannot read trajectory with " << message.fork_position_size()
+          << " fork positions";
+      int const fork_position = message.fork_position(0);
+      *tracked[fork_position] = child;
     }
-    if (right_endpoints->empty()) {
-      right_endpoints->push_back(dense_iterators.cend() - 1);
-    }
-
-    // Poke holes in the timeline at the places given by |right_endpoints|.
-    // Note that this code carefully avoids incrementing |dense_iterators[0]| as
-    // it may live in a different timeline than the others.
-    CHECK_LE(1, dense_iterators.size());
-    TimelineConstIterator left = dense_iterators[1];
-    for (const auto& it_in_dense_iterators : right_endpoints.value()) {
-      TimelineConstIterator const right = *it_in_dense_iterators;
-      timeline_.erase(left, right);
-      left = right;
-      ++left;
-    }
-
-    // Re-append the dense iterators that have not been consumed.
-    for (auto it = right_endpoints->back(); it < dense_iterators.cend(); ++it) {
-      downsampling_->Append(*it);
-    }
-    CHECK(!downsampling_->empty());
-    CHECK(!downsampling_->full());
+  } else if (message.children_size() > 1) {
+    LOG(FATAL) << "Cannot read trajectory with " << message.children_size()
+               << " children";
   }
-  return absl::OkStatus();
+
+  // Finally, set the time-to-segment map.
+  if (!sit->empty()) {
+    // This is the *only* place where we must use |emplace|, not
+    // |insert_or_assign|.  The reason is that this happens when returning from
+    // the recursivity (see to the call to ReadFromPreΖήνωνMessage) so segments
+    // are processed in reverse order.  Therefore, a segment that is the last at
+    // its time will be processed *before* any 1-point segments with the same
+    // time, and must be the one stored in the map.
+    trajectory.segment_by_left_endpoint_.emplace(sit->begin()->time, sit);
+  }
 }
 
 }  // namespace internal_discrete_trajectory
