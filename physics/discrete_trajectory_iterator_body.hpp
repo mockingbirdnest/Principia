@@ -2,12 +2,14 @@
 
 #include "physics/discrete_trajectory_iterator.hpp"
 
+#include "astronomy/epoch.hpp"
 #include "geometry/named_quantities.hpp"
 
 namespace principia {
 namespace physics {
 namespace internal_discrete_trajectory_iterator {
 
+using astronomy::InfiniteFuture;
 using geometry::Instant;
 
 template<typename Frame>
@@ -154,6 +156,42 @@ typename DiscreteTrajectoryIterator<Frame>::reference
 }
 
 template<typename Frame>
+DiscreteTrajectoryIterator<Frame> DiscreteTrajectoryIterator<Frame>::operator-(
+    typename DiscreteTrajectoryIterator<Frame>::difference_type const n) const {
+  auto mutable_it = *this;
+  return mutable_it -= n;
+}
+
+template<typename Frame>
+typename DiscreteTrajectoryIterator<Frame>::difference_type
+DiscreteTrajectoryIterator<Frame>::operator-(
+    DiscreteTrajectoryIterator<Frame> const right) const {
+  auto const left = *this;
+  auto it = right;
+  Instant const left_time =
+      is_at_end(left.point_) ? InfiniteFuture : left->time;
+  difference_type m = 0;
+  while (it != left) {
+    CHECK(!is_at_end(it.point_));
+    auto& point = iterator(it.point_);
+    auto const& segment = it.segment_;
+    // We know that operator++ never leaves |point_| at |timeline_begin()|.
+    // Therefore, to detect that we are in a new segment, we must check for
+    // the second point of the segment.
+    if (segment->timeline_size() >= 2 &&
+        std::prev(segment->timeline_end())->time <= left_time &&
+        point == std::next(segment->timeline_begin())) {
+      point = std::prev(segment->timeline_end());
+      m += segment->timeline_size() - 2;
+    } else {
+      ++it;
+      ++m;
+    }
+  }
+  return m;
+}
+
+template<typename Frame>
 bool DiscreteTrajectoryIterator<Frame>::operator==(
     DiscreteTrajectoryIterator const other) const {
   if (is_at_end(point_)) {
@@ -261,14 +299,6 @@ DiscreteTrajectoryIterator<Frame> operator+(
     DiscreteTrajectoryIterator<Frame> const it) {
   auto mutable_it = it;
   return mutable_it += n;
-}
-
-template<typename Frame>
-DiscreteTrajectoryIterator<Frame> operator-(
-    DiscreteTrajectoryIterator<Frame> const it,
-    typename DiscreteTrajectoryIterator<Frame>::difference_type const n) {
-  auto mutable_it = it;
-  return mutable_it -= n;
 }
 
 }  // namespace internal_discrete_trajectory_iterator

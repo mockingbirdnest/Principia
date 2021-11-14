@@ -44,6 +44,11 @@ class DiscreteTrajectoryIterator {
   DiscreteTrajectoryIterator& operator-=(difference_type n);
   reference operator[](difference_type n) const;
 
+  // The operator+ are outside of this class because one of them cannot be a
+  // member.
+  DiscreteTrajectoryIterator operator-(difference_type n) const;
+  difference_type operator-(DiscreteTrajectoryIterator right) const;
+
   bool operator==(DiscreteTrajectoryIterator other) const;
   bool operator!=(DiscreteTrajectoryIterator other) const;
   bool operator<(DiscreteTrajectoryIterator other) const;
@@ -77,19 +82,6 @@ class DiscreteTrajectoryIterator {
   OptionalTimelineConstIterator point_;
 
   template<typename F>
-  friend DiscreteTrajectoryIterator<F> operator+(
-      DiscreteTrajectoryIterator<F> it,
-      typename DiscreteTrajectoryIterator<F>::difference_type n);
-  template<typename F>
-  friend DiscreteTrajectoryIterator<F> operator+(
-      typename DiscreteTrajectoryIterator<F>::difference_type n,
-      DiscreteTrajectoryIterator<F> it);
-  template<typename F>
-  friend DiscreteTrajectoryIterator<F> operator-(
-      DiscreteTrajectoryIterator<F> it,
-      typename DiscreteTrajectoryIterator<F>::difference_type n);
-
-  template<typename F>
   friend class physics::DiscreteTrajectorySegment;
   friend class physics::DiscreteTrajectoryIteratorTest;
 };
@@ -102,10 +94,6 @@ template<typename Frame>
 DiscreteTrajectoryIterator<Frame> operator+(
     typename DiscreteTrajectoryIterator<Frame>::difference_type n,
     DiscreteTrajectoryIterator<Frame> it);
-template<typename Frame>
-DiscreteTrajectoryIterator<Frame> operator-(
-    DiscreteTrajectoryIterator<Frame> it,
-    typename DiscreteTrajectoryIterator<Frame>::difference_type n);
 
 }  // namespace internal_discrete_trajectory_iterator
 
