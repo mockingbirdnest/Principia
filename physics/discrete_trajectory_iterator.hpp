@@ -42,12 +42,6 @@ class DiscreteTrajectoryIterator {
 
   DiscreteTrajectoryIterator& operator+=(difference_type n);
   DiscreteTrajectoryIterator& operator-=(difference_type n);
-  friend DiscreteTrajectoryIterator operator+(DiscreteTrajectoryIterator it,
-                                              difference_type n);
-  friend DiscreteTrajectoryIterator operator+(difference_type n,
-                                              DiscreteTrajectoryIterator it);
-  friend DiscreteTrajectoryIterator operator-(DiscreteTrajectoryIterator it,
-                                              difference_type n);
   reference operator[](difference_type n) const;
 
   bool operator==(DiscreteTrajectoryIterator other) const;
@@ -81,6 +75,19 @@ class DiscreteTrajectoryIterator {
   // single point to clients.
   DiscreteTrajectorySegmentIterator<Frame> segment_;
   OptionalTimelineConstIterator point_;
+
+  template<typename F>
+  friend DiscreteTrajectoryIterator<F> operator+(
+      DiscreteTrajectoryIterator<F> it,
+      typename DiscreteTrajectoryIterator<F>::difference_type n);
+  template<typename F>
+  friend DiscreteTrajectoryIterator<F> operator+(
+      typename DiscreteTrajectoryIterator<F>::difference_type n,
+      DiscreteTrajectoryIterator<F> it);
+  template<typename F>
+  friend DiscreteTrajectoryIterator<F> operator-(
+      DiscreteTrajectoryIterator<F> it,
+      typename DiscreteTrajectoryIterator<F>::difference_type n);
 
   template<typename F>
   friend class physics::DiscreteTrajectorySegment;

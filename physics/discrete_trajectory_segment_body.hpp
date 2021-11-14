@@ -16,6 +16,7 @@
 #include "numerics/fit_hermite_spline.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "discrete_trajectory_segment.hpp"
 
 namespace principia {
 namespace physics {
@@ -491,6 +492,11 @@ DiscreteTrajectorySegment<Frame>::timeline_end() const {
 template<typename Frame>
 bool DiscreteTrajectorySegment<Frame>::timeline_empty() const {
   return timeline_.empty();
+}
+
+template<typename Frame>
+std::int64_t DiscreteTrajectorySegment<Frame>::timeline_size() const {
+  return timeline_.size();
 }
 
 template<typename Frame>

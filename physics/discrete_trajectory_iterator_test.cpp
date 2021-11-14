@@ -170,6 +170,69 @@ TEST_F(DiscreteTrajectoryIteratorTest, Equality) {
   EXPECT_NE(MakeBegin(segments_->begin()), MakeEnd(--segments_->end()));
 }
 
+TEST_F(DiscreteTrajectoryIteratorTest, RandomAccess) {
+  {
+    auto segment = segments_->begin();
+    auto iterator = MakeBegin(segment);
+    iterator += 4;
+    EXPECT_EQ(t0_ + 11 * Second, iterator->time);
+    iterator += 3;
+    EXPECT_EQ(t0_ + 19 * Second, iterator->time);
+    iterator += -2;
+    EXPECT_EQ(t0_ + 13 * Second, iterator->time);
+    iterator += 0;
+    EXPECT_EQ(t0_ + 13 * Second, iterator->time);
+  }
+  {
+    auto segment = segments_->begin();
+    auto iterator = MakeBegin(segment);
+    ++iterator;
+    iterator += 0;
+    EXPECT_EQ(t0_ + 3 * Second, iterator->time);
+    iterator += 6;
+    EXPECT_EQ(t0_ + 19 * Second, iterator->time);
+    iterator += -5;
+    EXPECT_EQ(t0_ + 5 * Second, iterator->time);
+    iterator += 3;
+    EXPECT_EQ(t0_ + 13 * Second, iterator->time);
+  }
+  {
+    auto iterator = MakeEnd(--segments_->end());
+    iterator -= 4;
+    EXPECT_EQ(t0_ + 13 * Second, iterator->time);
+    iterator -= -3;
+    EXPECT_EQ(t0_ + 23 * Second, iterator->time);
+    iterator -= 2;
+    EXPECT_EQ(t0_ + 17 * Second, iterator->time);
+    iterator -= 0;
+    EXPECT_EQ(t0_ + 17 * Second, iterator->time);
+  }
+  {
+    auto iterator = MakeEnd(--segments_->end());
+    --iterator;
+    --iterator;
+    iterator -= 0;
+    EXPECT_EQ(t0_ + 19 * Second, iterator->time);
+    iterator -= 6;
+    EXPECT_EQ(t0_ + 3 * Second, iterator->time);
+    iterator -= -5;
+    EXPECT_EQ(t0_ + 17 * Second, iterator->time);
+    iterator -= 1;
+    EXPECT_EQ(t0_ + 13 * Second, iterator->time);
+  }
+  {
+    auto segment = segments_->begin();
+    auto iterator = MakeBegin(segment);
+    ++iterator;
+    ++iterator;
+    EXPECT_EQ(t0_ + 3 * Second, (iterator - 1)->time);
+    EXPECT_EQ(t0_ + 19 * Second, (iterator + 5)->time);
+    EXPECT_EQ(t0_ + 13 * Second, (3 + iterator)->time);
+    EXPECT_EQ(t0_ + 7 * Second, iterator[1].time);
+    EXPECT_EQ(t0_ + 2 * Second, iterator[-2].time);
+  }
+}
+
 // Empty segments may exist in a transient manner, we must be able to iterate
 // over them.
 TEST_F(DiscreteTrajectoryIteratorTest, EmptySegment) {
