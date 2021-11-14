@@ -10,6 +10,7 @@
 
 #include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
+#include "astronomy/epoch.hpp"
 #include "base/jthread.hpp"
 #include "base/recurring_thread.hpp"
 #include "ksp_plugin/celestial.hpp"
@@ -30,6 +31,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_vessel {
 
+using astronomy::InfinitePast;
 using base::not_null;
 using base::RecurringThread;
 using geometry::Instant;
@@ -318,9 +320,9 @@ class Vessel {
       GUARDED_BY(lock_);
 
   // The last (most recent) segment of the |history_| prior to the
-  // |psychohistory_|.  May be identical to |history_|, therefore not always a
-  // fork.  Always identical to |psychohistory_->parent()|.
-  DiscreteTrajectory<Barycentric>* backstory_ = nullptr;
+  // |psychohistory_|.  May be identical to |history_|.  Always identical to
+  // |std::prev(psychohistory_)|.
+  DiscreteTrajectorySegmentIterator<Barycentric> backstory_;
 
   // The |psychohistory_| is forked off the end of the |history_| and the
   // |prediction_| is forked off the end of the |psychohistory_|.

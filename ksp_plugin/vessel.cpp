@@ -75,6 +75,7 @@ Vessel::Vessel(GUID guid,
           MakeCheckpointerWriter(),
           MakeCheckpointerReader())),
       history_(trajectory_.segments().begin()),
+      backstory_(history_),
       psychohistory_(trajectory_.segments().end()),
       prediction_(trajectory_.segments().end()) {
   // Can't create the |psychohistory_| and |prediction_| here because |history_|
@@ -185,10 +186,10 @@ void Vessel::DetectCollapsibilityChange() {
       // next (collapsible) segment.
       checkpointer_->WriteToCheckpoint(backstory_->back().time);
     }
-    auto psychohistory = psychohistory_->DetachFork();
-    backstory_ = history_->NewForkAtLast();
-    backstory_->SetDownsampling(*history_);
-    backstory_->AttachFork(std::move(psychohistory));
+    auto psychohistory = trajectory_.DetachSegments(psychohistory_);
+    backstory_ = trajectory_.NewSegment();
+    backstory_->SetDownsampling(history_->downsampling_parameters());
+    psychohistory_ = trajectory_.AttachSegments(std::move(psychohistory));
     is_collapsible_ = becomes_collapsible;
   }
 }
@@ -210,7 +211,7 @@ void Vessel::CreateHistoryIfNeeded(
     CHECK(psychohistory_ == trajectory_.segments().end());
     history_->SetDownsampling(downsampling_parameters);
     trajectory_.Append(t, calculator.Get());
-    backstory_ = history_.get();
+    backstory_ = history_;
     psychohistory_ = trajectory_.NewSegment();
     prediction_ = trajectory_.NewSegment();
   }
@@ -552,25 +553,28 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     if (message.psychohistory_is_authoritative()) {
       vessel->psychohistory_ = vessel->trajectory_.NewSegment();
     }
-    vessel->backstory_ = vessel->psychohistory_->parent();
+    vessel->backstory_ = std::prev(vessel->psychohistory_);
     vessel->prediction_ = vessel->trajectory_.NewSegment();
   } else if (is_pre_chasles) {
     vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
         /*tracked=*/{&vessel->psychohistory_});
     vessel->history_ = vessel->trajectory_.segments().begin();
+    vessel->backstory_ = std::prev(vessel->psychohistory_);
     vessel->prediction_ = vessel->trajectory_.NewSegment();
   } else if (is_pre_ζήνων) {
     vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
         /*tracked=*/{&vessel->psychohistory_, &vessel->prediction_});
     vessel->history_ = vessel->trajectory_.segments().begin();
+    vessel->backstory_ = std::prev(vessel->psychohistory_);
   } else if (is_pre_zermelo) {
-    vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+    vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
-        /*tracked=*/{&vessel->psychohistory_,
+        /*tracked=*/{&vessel->history_,
+                     &vessel->psychohistory_,
                      &vessel->prediction_});
-    vessel->backstory_ = vessel->psychohistory_->parent();
+    vessel->backstory_ = std::prev(vessel->psychohistory_);
   } else {
     vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
@@ -585,6 +589,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
             vessel->MakeCheckpointerReader(),
             message.checkpoint());
   }
+
   // Necessary after Εὔδοξος because the ephemeris has not been prolonged
   // during deserialization.
   ephemeris->Prolong(vessel->prediction_->back().time);
@@ -628,7 +633,10 @@ Vessel::Vessel()
       checkpointer_(make_not_null_unique<Checkpointer<serialization::Vessel>>(
           /*reader=*/nullptr,
           /*writer=*/nullptr)),
-      history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
+      history_(trajectory_.segments().begin()),
+      backstory_(history_),
+      psychohistory_(trajectory_.segments().end()),
+      prediction_(trajectory_.segments().end()),
       prognosticator_(nullptr, 20ms) {}
 
 Checkpointer<serialization::Vessel>::Writer Vessel::MakeCheckpointerWriter() {
@@ -740,16 +748,6 @@ absl::Status Vessel::ReanimateOneCheckpoint(
 
   return absl::OkStatus();
 }
-
-Vessel::Vessel()
-    : body_(),
-      prediction_adaptive_step_parameters_(DefaultPredictionParameters()),
-      parent_(testing_utilities::make_not_null<Celestial const*>()),
-      ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
-      history_(trajectory_.segments().begin()),
-      psychohistory_(trajectory_.segments().end()),
-      prediction_(trajectory_.segments().end()),
-      prognosticator_(nullptr, 20ms) {}
 
 absl::StatusOr<DiscreteTrajectory<Barycentric>>
 Vessel::FlowPrognostication(
