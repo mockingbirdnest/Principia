@@ -17,7 +17,7 @@ DiscreteTrajectoryIterator<Frame>::operator++() {
   auto& point = iterator(point_);
   Instant const previous_time = point->time;
   do {
-    if (point == --segment_->timeline_end()) {
+    if (point == std::prev(segment_->timeline_end())) {
       do {
         ++segment_;
       } while (!segment_.is_end() && segment_->timeline_empty());
@@ -41,7 +41,7 @@ DiscreteTrajectoryIterator<Frame>::operator--() {
   bool const point_is_at_end = is_at_end(point_);
   if (point_is_at_end) {
     // Move the iterator to the end of the last segment.
-    segment_ = --segment_.segments().end();
+    segment_ = std::prev(segment_.segments().end());
     point_ = segment_->timeline_end();
     // Now proceed with the decrement.
   }
@@ -52,7 +52,7 @@ DiscreteTrajectoryIterator<Frame>::operator--() {
     if (point == segment_->timeline_begin()) {
       CHECK(!segment_.is_begin());
       --segment_;
-      point = --segment_->timeline_end();
+      point = std::prev(segment_->timeline_end());
     } else {
       --point;
     }
@@ -77,22 +77,85 @@ DiscreteTrajectoryIterator<Frame>::operator--(int) {  // NOLINT
 }
 
 template<typename Frame>
-typename internal_discrete_trajectory_types::Timeline<Frame>::value_type const&
+typename DiscreteTrajectoryIterator<Frame>::reference
 DiscreteTrajectoryIterator<Frame>::operator*() const {
   CHECK(!is_at_end(point_));
   return *iterator(point_);
 }
 
 template<typename Frame>
-typename internal_discrete_trajectory_types::Timeline<Frame>::value_type const*
+typename DiscreteTrajectoryIterator<Frame>::pointer
 DiscreteTrajectoryIterator<Frame>::operator->() const {
   CHECK(!is_at_end(point_));
   return &*iterator(point_);
 }
 
 template<typename Frame>
+DiscreteTrajectoryIterator<Frame>&
+DiscreteTrajectoryIterator<Frame>::operator+=(difference_type const n) {
+  if (n < 0) {
+    return *this -= (-n);
+  } else {
+    difference_type m = n;
+    while (m > 0) {
+      CHECK(!is_at_end(point_));
+      auto& point = iterator(point_);
+      // We know that operator++ never leaves |point_| at |timeline_begin()|.
+      // Therefore, to detect that we are in a new segment, we must check for
+      // the second point of the segment.
+      if (segment_->timeline_size() >= 2 &&
+          segment_->timeline_size() <= m + 2 &&
+          point == std::next(segment_->timeline_begin())) {
+        point = std::prev(segment_->timeline_end());
+        m -= segment_->timeline_size() - 2;
+      } else {
+        ++*this;
+        --m;
+      }
+    }
+    return *this;
+  }
+}
+
+template<typename Frame>
+DiscreteTrajectoryIterator<Frame>&
+DiscreteTrajectoryIterator<Frame>::operator-=(difference_type const n) {
+  if (n < 0) {
+    return *this += (-n);
+  } else {
+    difference_type m = n;
+    if (m > 0 && is_at_end(point_)) {
+      --*this;
+      --m;
+    }
+    while (m > 0) {
+      auto& point = iterator(point_);
+      // We know that operator-- never leaves |point_| at
+      // |std::prev(timeline_end())|.  Therefore, to detect that we are in a new
+      // segment, we must check for the second-to-last point of the segment.
+      if (segment_->timeline_size() >= 2 &&
+          segment_->timeline_size() <= m + 2 &&
+          point == std::prev(std::prev(segment_->timeline_end()))) {
+        point = segment_->timeline_begin();
+        m -= segment_->timeline_size() - 2;
+      } else {
+        --*this;
+        --m;
+      }
+    }
+    return *this;
+  }
+}
+
+template<typename Frame>
+typename DiscreteTrajectoryIterator<Frame>::reference
+ DiscreteTrajectoryIterator<Frame>::operator[](difference_type const n) const {
+  return reference();
+}
+
+template<typename Frame>
 bool DiscreteTrajectoryIterator<Frame>::operator==(
-    DiscreteTrajectoryIterator const& other) const {
+    DiscreteTrajectoryIterator const other) const {
   if (is_at_end(point_)) {
     return segment_ == other.segment_ && is_at_end(other.point_);
   } else if (is_at_end(other.point_)) {
@@ -104,8 +167,32 @@ bool DiscreteTrajectoryIterator<Frame>::operator==(
 
 template<typename Frame>
 bool DiscreteTrajectoryIterator<Frame>::operator!=(
-    DiscreteTrajectoryIterator const& other) const {
+    DiscreteTrajectoryIterator const other) const {
   return !operator==(other);
+}
+
+template<typename Frame>
+bool DiscreteTrajectoryIterator<Frame>::operator<(
+    DiscreteTrajectoryIterator const other) const {
+  return false;
+}
+
+template<typename Frame>
+bool DiscreteTrajectoryIterator<Frame>::operator>(
+    DiscreteTrajectoryIterator const other) const {
+  return false;
+}
+
+template<typename Frame>
+bool DiscreteTrajectoryIterator<Frame>::operator<=(
+    DiscreteTrajectoryIterator const other) const {
+  return false;
+}
+
+template<typename Frame>
+bool DiscreteTrajectoryIterator<Frame>::operator>=(
+    DiscreteTrajectoryIterator const other) const {
+  return false;
 }
 
 template<typename Frame>
