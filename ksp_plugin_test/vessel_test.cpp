@@ -186,8 +186,8 @@ TEST_F(VesselTest, PrepareHistory) {
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 2 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.PrepareHistory(t0_ + 1 * Second,
-                         DefaultDownsamplingParameters());
+  vessel_.CreateHistoryIfNeeded(t0_ + 1 * Second,
+                                DefaultDownsamplingParameters());
 
   auto const expected_dof = Barycentre<DegreesOfFreedom<Barycentric>, Mass>(
       {p1_dof_, p2_dof_}, {mass1_, mass2_});
@@ -210,8 +210,8 @@ TEST_F(VesselTest, AdvanceTime) {
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 2 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.PrepareHistory(t0_,
-                         DefaultDownsamplingParameters());
+  vessel_.CreateHistoryIfNeeded(t0_,
+                                DefaultDownsamplingParameters());
 
   AppendTrajectoryTimeline<Barycentric>(
       NewLinearTrajectoryTimeline<Barycentric>(p1_dof_,
@@ -285,8 +285,8 @@ TEST_F(VesselTest, Prediction) {
       FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
       .WillRepeatedly(Return(absl::OkStatus()));
 
-  vessel_.PrepareHistory(t0_,
-                         DefaultDownsamplingParameters());
+  vessel_.CreateHistoryIfNeeded(t0_,
+                                DefaultDownsamplingParameters());
   // Polling for the integration to happen.
   do {
     vessel_.RefreshPrediction(t0_ + 1 * Second);
@@ -343,8 +343,8 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
           Return(absl::OkStatus())))
       .WillRepeatedly(Return(absl::OkStatus()));
 
-  vessel_.PrepareHistory(t0_,
-                         DefaultDownsamplingParameters());
+  vessel_.CreateHistoryIfNeeded(t0_,
+                                DefaultDownsamplingParameters());
   // Polling for the integration to happen.
   do {
     vessel_.RefreshPrediction();
@@ -380,8 +380,8 @@ TEST_F(VesselTest, FlightPlan) {
       .Times(AnyNumber());
   std::vector<not_null<MassiveBody const*>> const bodies;
   ON_CALL(ephemeris_, bodies()).WillByDefault(ReturnRef(bodies));
-  vessel_.PrepareHistory(t0_,
-                         DefaultDownsamplingParameters());
+  vessel_.CreateHistoryIfNeeded(t0_,
+                                DefaultDownsamplingParameters());
 
   EXPECT_FALSE(vessel_.has_flight_plan());
   EXPECT_CALL(
@@ -485,64 +485,38 @@ TEST_F(VesselTest, Checkpointing) {
   p1_->set_containing_pile_up(pile_up);
   p2_->set_containing_pile_up(pile_up);
 
-  // Free-fall trajectory.  This creates a checkpoint because the prehistory is
-  // not collapsible.
-  Time t;
-  for (; t <= 10 * Second; t += 1 * Second) {
-    p1_->AppendToHistory(
-        astronomy::J2000 + t,
-        DegreesOfFreedom<Barycentric>(
-            Barycentric::origin +
-                Displacement<Barycentric>({t * 1 * Metre / Second,
-                                           t * 2 * Metre / Second,
-                                           t * 3 * Metre / Second}),
-            Velocity<Barycentric>({1 * Metre / Second,
-                                   2 * Metre / Second,
-                                   3 * Metre / Second})));
-    p2_->AppendToHistory(
-        astronomy::J2000 + t,
-        DegreesOfFreedom<Barycentric>(
-            Barycentric::origin +
-                Displacement<Barycentric>({t * 4 * Metre / Second,
-                                           t * 5 * Metre / Second,
-                                           t * 6 * Metre / Second}),
-            Velocity<Barycentric>({4 * Metre / Second,
-                                   5 * Metre / Second,
-                                   6 * Metre / Second})));
-  }
+  // Free-fall trajectory.  This creates a checkpoint because the history is not
+  // collapsible at the beginning.
+  AppendToPartHistory(*NewLinearTrajectory(p1_dof_,
+                                           /*Δt=*/1 * Second,
+                                           /*t1=*/t0_ + 0.5 * Second,
+                                           /*t2=*/t0_ + 11 * Second),
+                      *p1_);
+  AppendToPartHistory(*NewLinearTrajectory(p2_dof_,
+                                           /*Δt=*/1 * Second,
+                                           /*t1=*/t0_ + 0.5 * Second,
+                                           /*t2=*/t0_ + 11 * Second),
+                      *p2_);
 
   vessel_.DetectCollapsibilityChange();
   vessel_.AdvanceTime();
 
   // Apply a force.  This segment is not collapsible.
-  p1_->apply_intrinsic_force(
-      Vector<Force, Barycentric>({1 * Newton, 0 * Newton, 0 * Newton}));
-  // TODO(phl): The trajectory is not continuous and not consistent with the
-  // force because everything is hard in tests.
-  for (; t <= 25 * Second; t += 1 * Second) {
-    p1_->AppendToHistory(
-        astronomy::J2000 + t,
-        DegreesOfFreedom<Barycentric>(
-            Barycentric::origin +
-                Displacement<Barycentric>(
-                    {Pow<2>(t) * 1 * Metre / Second / Second,
-                     Pow<2>(t) * 2 * Metre / Second / Second,
-                     Pow<2>(t) * 3 * Metre / Second / Second}),
-            Velocity<Barycentric>({2 * t * 1 * Metre / Second / Second,
-                                   2 * t * 2 * Metre / Second / Second,
-                                   2 * t * 3 * Metre / Second / Second})));
-    p2_->AppendToHistory(
-        astronomy::J2000 + t,
-        DegreesOfFreedom<Barycentric>(
-            Barycentric::origin +
-                Displacement<Barycentric>(
-                    {Pow<2>(t) * 4 * Metre / Second / Second,
-                     Pow<2>(t) * 5 * Metre / Second / Second,
-                     Pow<2>(t) * 6 * Metre / Second / Second}),
-            Velocity<Barycentric>({2 * t * 4 * Metre / Second / Second,
-                                   2 * t * 5 * Metre / Second / Second,
-                                   2 * t * 6 * Metre / Second / Second})));
-  }
+  auto const p1_force =
+      Vector<Force, Barycentric>({1 * Newton, 0 * Newton, 0 * Newton});
+  p1_->apply_intrinsic_force(p1_force);
+  AppendToPartHistory(
+      *NewAcceleratedTrajectory(p1_dof_,
+                                /*acceleration=*/p1_force / mass1_,
+                                /*Δt=*/1 * Second,
+                                /*t1=*/t0_ + 11 * Second,
+                                /*t2=*/t0_ + 26 * Second),
+      *p1_);
+  AppendToPartHistory(*NewLinearTrajectory(p2_dof_,
+                                           /*Δt=*/1 * Second,
+                                           /*t1=*/t0_ + 11 * Second,
+                                           /*t2=*/t0_ + 26 * Second),
+                      *p2_);
 
   vessel_.DetectCollapsibilityChange();
   vessel_.AdvanceTime();
@@ -550,29 +524,16 @@ TEST_F(VesselTest, Checkpointing) {
   // Remove the force.  This creates a checkpoint because we closed a non-
   // collapsible segment.
   p1_->clear_intrinsic_force();
-  // TODO(phl): Again, no continuity.
-  for (; t <= 30 * Second; t += 1 * Second) {
-    p1_->AppendToHistory(
-        astronomy::J2000 + t,
-        DegreesOfFreedom<Barycentric>(
-            Barycentric::origin +
-                Displacement<Barycentric>({t * 1 * Metre / Second,
-                                           t * 2 * Metre / Second,
-                                           t * 3 * Metre / Second}),
-            Velocity<Barycentric>({1 * Metre / Second,
-                                   2 * Metre / Second,
-                                   3 * Metre / Second})));
-    p2_->AppendToHistory(
-        astronomy::J2000 + t,
-        DegreesOfFreedom<Barycentric>(
-            Barycentric::origin +
-                Displacement<Barycentric>({t * 4 * Metre / Second,
-                                           t * 5 * Metre / Second,
-                                           t * 6 * Metre / Second}),
-            Velocity<Barycentric>({4 * Metre / Second,
-                                   5 * Metre / Second,
-                                   6 * Metre / Second})));
-  }
+  AppendToPartHistory(*NewLinearTrajectory(p1_dof_,
+                                           /*Δt=*/1 * Second,
+                                           /*t1=*/t0_ + 26 * Second,
+                                           /*t2=*/t0_ + 31 * Second),
+                      *p1_);
+  AppendToPartHistory(*NewLinearTrajectory(p2_dof_,
+                                           /*Δt=*/1 * Second,
+                                           /*t1=*/t0_ + 26 * Second,
+                                           /*t2=*/t0_ + 31 * Second),
+                      *p2_);
 
   vessel_.DetectCollapsibilityChange();
   vessel_.AdvanceTime();
@@ -608,8 +569,8 @@ TEST_F(VesselTest, SerializationSuccess) {
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 2 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.PrepareHistory(t0_,
-                         DefaultDownsamplingParameters());
+  vessel_.CreateHistoryIfNeeded(t0_,
+                                DefaultDownsamplingParameters());
 
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 3 * Second, _, _))
