@@ -642,19 +642,12 @@ Vessel::Vessel()
 Checkpointer<serialization::Vessel>::Writer Vessel::MakeCheckpointerWriter() {
   return [this](not_null<serialization::Vessel::Checkpoint*> const message) {
     lock_.AssertReaderHeld();
-    if (backstory_ == history_.get()) {
-      history_->WriteToMessage(/*excluded=*/{psychohistory_},
+    // Note that the extremities of the |backstory_| are implicitly exact.
+    trajectory_.WriteToMessage(message->mutable_non_collapsible_segment(),
+                               backstory_->begin(),
+                               backstory_->end(),
                                /*tracked=*/{},
-                               /*exact=*/{psychohistory_->Fork()},
-                               message->mutable_non_collapsible_segment());
-    } else {
-      auto backstory = backstory_->DetachFork();
-      backstory->WriteToMessage(/*excluded=*/{psychohistory_},
-                                /*tracked=*/{},
-                                /*exact=*/{psychohistory_->Fork()},
-                                message->mutable_non_collapsible_segment());
-      history_->AttachFork(std::move(backstory));
-    }
+                               /*exact=*/{});
 
     // Here the containing pile-up is the one for the collapsible segment.
     ForSomePart([message](Part& first_part) {
@@ -705,6 +698,7 @@ absl::Status Vessel::ReanimateOneCheckpoint(
     serialization::Vessel::Checkpoint const& message,
     Instant const& t_initial) {
   // Restore the non-collapsible segment that was fully saved.
+  //TODO(phl):not a segment
   auto non_collapsible_segment =
       DiscreteTrajectory<Barycentric>::ReadFromMessage(
           message.non_collapsible_segment(),
@@ -712,23 +706,23 @@ absl::Status Vessel::ReanimateOneCheckpoint(
   auto const collapsible_fixed_step_parameters =
       Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
           message.collapsible_fixed_step_parameters());
-  CHECK(!non_collapsible_segment->Empty());
+  CHECK(!non_collapsible_segment.empty());
 
   // Construct a new collapsible segment at the end of the non-collapsible
   // segment and integrate it until the start time of the history.  We cannot
   // hold the lock during the integration, so this code would race if there were
   // two threads changing the start of the |history_| concurrently.  That
   // doesn't happen because there is a single reanimator.
-  CHECK_EQ(t_initial, non_collapsible_segment->back().time);
+  CHECK_EQ(t_initial, non_collapsible_segment.back().time);
   Instant t_final;
   {
     absl::ReaderMutexLock l(&lock_);
     t_final = history_->begin()->time;
   }
 
-  auto const collapsible_segment = non_collapsible_segment->NewForkAtLast();
+  auto const collapsible_segment = non_collapsible_segment.NewSegment();
   auto fixed_instance =
-      ephemeris_->NewInstance({collapsible_segment},
+      ephemeris_->NewInstance({&non_collapsible_segment},
                               Ephemeris<Barycentric>::NoIntrinsicAccelerations,
                               collapsible_fixed_step_parameters);
   auto const status = ephemeris_->FlowWithFixedStep(t_final, *fixed_instance);
