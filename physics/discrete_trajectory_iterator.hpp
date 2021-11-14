@@ -40,8 +40,22 @@ class DiscreteTrajectoryIterator {
   reference operator*() const;
   pointer operator->() const;
 
-  bool operator==(DiscreteTrajectoryIterator const& other) const;
-  bool operator!=(DiscreteTrajectoryIterator const& other) const;
+  DiscreteTrajectoryIterator& operator+=(difference_type n);
+  DiscreteTrajectoryIterator& operator-=(difference_type n);
+  friend DiscreteTrajectoryIterator operator+(DiscreteTrajectoryIterator it,
+                                              difference_type n);
+  friend DiscreteTrajectoryIterator operator+(difference_type n,
+                                              DiscreteTrajectoryIterator it);
+  friend DiscreteTrajectoryIterator operator-(DiscreteTrajectoryIterator it,
+                                              difference_type n);
+  reference operator[](difference_type n) const;
+
+  bool operator==(DiscreteTrajectoryIterator other) const;
+  bool operator!=(DiscreteTrajectoryIterator other) const;
+  bool operator<(DiscreteTrajectoryIterator other) const;
+  bool operator>(DiscreteTrajectoryIterator other) const;
+  bool operator<=(DiscreteTrajectoryIterator other) const;
+  bool operator>=(DiscreteTrajectoryIterator other) const;
 
  private:
   using Timeline = internal_discrete_trajectory_types::Timeline<Frame>;
