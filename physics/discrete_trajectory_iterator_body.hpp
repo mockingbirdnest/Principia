@@ -98,6 +98,10 @@ DiscreteTrajectoryIterator<Frame>::operator+=(difference_type const n) {
   if (n < 0) {
     return *this -= (-n);
   } else {
+    // This loop attempts to skip entire segments.  To do this, it relies on
+    // how operator++ moves through the trajectory.  If this was to change this
+    // function might become less efficient, but it would not become incorrect
+    // (it would fall back to vanilla increments).
     difference_type m = n;
     while (m > 0) {
       CHECK(!is_at_end(point_));
@@ -130,6 +134,10 @@ DiscreteTrajectoryIterator<Frame>::operator-=(difference_type const n) {
       --*this;
       --m;
     }
+    // This loop attempts to skip entire segments.  To do this, it relies on
+    // how operator-- moves through the trajectory.  If this was to change this
+    // function might become less efficient, but it would not become incorrect
+    // (it would fall back to vanilla decrements).
     while (m > 0) {
       auto& point = iterator(point_);
       // We know that operator-- never leaves |point_| at
@@ -170,14 +178,13 @@ DiscreteTrajectoryIterator<Frame>::operator-(
   auto it = right;
   Instant const left_time =
       is_at_end(left.point_) ? InfiniteFuture : left->time;
+
+  // This code is similar to operator+=.
   difference_type m = 0;
   while (it != left) {
     CHECK(!is_at_end(it.point_));
     auto& point = iterator(it.point_);
     auto const& segment = it.segment_;
-    // We know that operator++ never leaves |point_| at |timeline_begin()|.
-    // Therefore, to detect that we are in a new segment, we must check for
-    // the second point of the segment.
     if (segment->timeline_size() >= 2 &&
         std::prev(segment->timeline_end())->time <= left_time &&
         point == std::next(segment->timeline_begin())) {
