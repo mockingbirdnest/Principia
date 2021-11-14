@@ -79,11 +79,6 @@ message ContinuousTrajectory {
 }
 
 message DiscreteTrajectory {
-  // A marker to indicate that a fork doesn't have its position tracked.
-  // Added in Zermelo.
-  enum TrackedPosition {
-    MISSING_TRACKED_POSITION = -1;
-  }
   message Downsampling {
     required int64 max_dense_intervals = 2;
     required Quantity tolerance = 3;
@@ -100,8 +95,6 @@ message DiscreteTrajectory {
   repeated Brood children = 1;
   repeated DiscreteTrajectorySegment.InstantaneousDegreesOfFreedom timeline = 2;
   repeated int32 fork_position = 3;
-  // Added in Zermelo.
-  optional int32 tracked_position = 7;  // Required.
   // Added in 陈景润.
   optional Downsampling downsampling = 4;
   // Added in Frobenius.
