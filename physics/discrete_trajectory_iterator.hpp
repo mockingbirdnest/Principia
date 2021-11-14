@@ -87,6 +87,19 @@ class DiscreteTrajectoryIterator {
   friend class physics::DiscreteTrajectoryIteratorTest;
 };
 
+template<typename Frame>
+DiscreteTrajectoryIterator<Frame> operator+(
+    DiscreteTrajectoryIterator<Frame> it,
+    typename DiscreteTrajectoryIterator<Frame>::difference_type n);
+template<typename Frame>
+DiscreteTrajectoryIterator<Frame> operator+(
+    typename DiscreteTrajectoryIterator<Frame>::difference_type n,
+    DiscreteTrajectoryIterator<Frame> it);
+template<typename Frame>
+DiscreteTrajectoryIterator<Frame> operator-(
+    DiscreteTrajectoryIterator<Frame> it,
+    typename DiscreteTrajectoryIterator<Frame>::difference_type n);
+
 }  // namespace internal_discrete_trajectory_iterator
 
 using internal_discrete_trajectory_iterator::DiscreteTrajectoryIterator;

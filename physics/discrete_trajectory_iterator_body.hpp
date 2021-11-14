@@ -150,7 +150,7 @@ DiscreteTrajectoryIterator<Frame>::operator-=(difference_type const n) {
 template<typename Frame>
 typename DiscreteTrajectoryIterator<Frame>::reference
  DiscreteTrajectoryIterator<Frame>::operator[](difference_type const n) const {
-  return reference();
+  return *(*this + n);
 }
 
 template<typename Frame>
@@ -174,25 +174,37 @@ bool DiscreteTrajectoryIterator<Frame>::operator!=(
 template<typename Frame>
 bool DiscreteTrajectoryIterator<Frame>::operator<(
     DiscreteTrajectoryIterator const other) const {
-  return false;
+  if (is_at_end(point_)) {
+    return false;
+  } else if (is_at_end(other.point_)) {
+    return true;
+  } else {
+    return point_->time < other.point_->time;
+  }
 }
 
 template<typename Frame>
 bool DiscreteTrajectoryIterator<Frame>::operator>(
     DiscreteTrajectoryIterator const other) const {
-  return false;
+  if (is_at_end(other.point_)) {
+    return false;
+  } else if (is_at_end(point_)) {
+    return true;
+  } else {
+    return point_->time > other.point_->time;
+  }
 }
 
 template<typename Frame>
 bool DiscreteTrajectoryIterator<Frame>::operator<=(
     DiscreteTrajectoryIterator const other) const {
-  return false;
+  return !operator>(other);
 }
 
 template<typename Frame>
 bool DiscreteTrajectoryIterator<Frame>::operator>=(
     DiscreteTrajectoryIterator const other) const {
-  return false;
+  return !operator<(other);
 }
 
 template<typename Frame>
@@ -233,6 +245,30 @@ DiscreteTrajectoryIterator<Frame>::iterator(
     OptionalTimelineConstIterator const& point) {
   DCHECK(point.has_value());
   return point.value();
+}
+
+template<typename Frame>
+DiscreteTrajectoryIterator<Frame> operator+(
+    DiscreteTrajectoryIterator<Frame> const it,
+    typename DiscreteTrajectoryIterator<Frame>::difference_type const n) {
+  auto mutable_it = it;
+  return mutable_it += n;
+}
+
+template<typename Frame>
+DiscreteTrajectoryIterator<Frame> operator+(
+    typename DiscreteTrajectoryIterator<Frame>::difference_type const n,
+    DiscreteTrajectoryIterator<Frame> const it) {
+  auto mutable_it = it;
+  return mutable_it += n;
+}
+
+template<typename Frame>
+DiscreteTrajectoryIterator<Frame> operator-(
+    DiscreteTrajectoryIterator<Frame> const it,
+    typename DiscreteTrajectoryIterator<Frame>::difference_type const n) {
+  auto mutable_it = it;
+  return mutable_it -= n;
 }
 
 }  // namespace internal_discrete_trajectory_iterator
