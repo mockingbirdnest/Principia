@@ -494,6 +494,11 @@ bool DiscreteTrajectorySegment<Frame>::timeline_empty() const {
 }
 
 template<typename Frame>
+std::int64_t DiscreteTrajectorySegment<Frame>::timeline_size() const {
+  return timeline_.size();
+}
+
+template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::WriteToMessage(
     not_null<serialization::DiscreteTrajectorySegment*> message,
     typename Timeline::const_iterator const timeline_begin,

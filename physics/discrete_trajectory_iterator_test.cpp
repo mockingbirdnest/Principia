@@ -170,6 +170,100 @@ TEST_F(DiscreteTrajectoryIteratorTest, Equality) {
   EXPECT_NE(MakeBegin(segments_->begin()), MakeEnd(--segments_->end()));
 }
 
+TEST_F(DiscreteTrajectoryIteratorTest, RandomAccess) {
+  auto const begin = MakeBegin(segments_->begin());
+  auto const end = MakeEnd(--segments_->end());
+  {
+    auto iterator = begin;
+    iterator += 4;
+    EXPECT_EQ(t0_ + 11 * Second, iterator->time);
+    iterator += 3;
+    EXPECT_EQ(t0_ + 19 * Second, iterator->time);
+    iterator += -2;
+    EXPECT_EQ(t0_ + 13 * Second, iterator->time);
+    iterator += 0;
+    EXPECT_EQ(t0_ + 13 * Second, iterator->time);
+    iterator += 4;
+    EXPECT_TRUE(iterator == end);
+  }
+  {
+    auto iterator = begin;
+    ++iterator;
+    iterator += 0;
+    EXPECT_EQ(t0_ + 3 * Second, iterator->time);
+    iterator += 6;
+    EXPECT_EQ(t0_ + 19 * Second, iterator->time);
+    iterator += -5;
+    EXPECT_EQ(t0_ + 5 * Second, iterator->time);
+    iterator += 3;
+    EXPECT_EQ(t0_ + 13 * Second, iterator->time);
+    iterator += 4;
+    EXPECT_TRUE(iterator == end);
+  }
+  {
+    auto iterator = MakeEnd(--segments_->end());
+    iterator -= 4;
+    EXPECT_EQ(t0_ + 13 * Second, iterator->time);
+    iterator -= -3;
+    EXPECT_EQ(t0_ + 23 * Second, iterator->time);
+    iterator -= 2;
+    EXPECT_EQ(t0_ + 17 * Second, iterator->time);
+    iterator -= 0;
+    EXPECT_EQ(t0_ + 17 * Second, iterator->time);
+    iterator -= 6;
+    EXPECT_TRUE(iterator == begin);
+  }
+  {
+    auto iterator = MakeEnd(--segments_->end());
+    --iterator;
+    --iterator;
+    iterator -= 0;
+    EXPECT_EQ(t0_ + 19 * Second, iterator->time);
+    iterator -= 6;
+    EXPECT_EQ(t0_ + 3 * Second, iterator->time);
+    iterator -= -5;
+    EXPECT_EQ(t0_ + 17 * Second, iterator->time);
+    iterator -= 1;
+    EXPECT_EQ(t0_ + 13 * Second, iterator->time);
+    iterator -= 5;
+    EXPECT_TRUE(iterator == begin);
+  }
+  {
+    auto iterator = begin;
+    ++iterator;
+    ++iterator;
+    EXPECT_EQ(t0_ + 3 * Second, (iterator - 1)->time);
+    EXPECT_EQ(t0_ + 19 * Second, (iterator + 5)->time);
+    EXPECT_EQ(t0_ + 13 * Second, (3 + iterator)->time);
+    EXPECT_EQ(t0_ + 7 * Second, iterator[1].time);
+    EXPECT_EQ(t0_ + 2 * Second, iterator[-2].time);
+  }
+  {
+    auto iterator1 = begin;
+    ++iterator1;
+    auto const iterator2 = iterator1 + 6;
+    EXPECT_EQ(6, iterator2 - iterator1);
+    EXPECT_EQ(0, iterator2 - iterator2);
+    auto const iterator3 = end;
+    EXPECT_EQ(2, iterator3 - iterator2);
+    EXPECT_EQ(8, iterator3 - iterator1);
+  }
+  {
+    EXPECT_LT(begin + 3, begin + 4);
+    EXPECT_LT(begin + 4, end);
+    EXPECT_LE(begin + 4, begin + 4);
+    EXPECT_LE(begin + 3, begin + 4);
+    EXPECT_LE(begin + 4, end);
+    EXPECT_LE(end, end);
+    EXPECT_GE(begin + 4, begin + 4);
+    EXPECT_GE(begin + 4, begin + 3);
+    EXPECT_GE(end, begin + 4);
+    EXPECT_GE(end, end);
+    EXPECT_GT(begin + 4, begin + 3);
+    EXPECT_GT(end, begin + 4);
+  }
+}
+
 // Empty segments may exist in a transient manner, we must be able to iterate
 // over them.
 TEST_F(DiscreteTrajectoryIteratorTest, EmptySegment) {

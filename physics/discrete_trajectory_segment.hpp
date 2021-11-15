@@ -177,6 +177,7 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   typename Timeline::const_iterator timeline_begin() const;
   typename Timeline::const_iterator timeline_end() const;
   bool timeline_empty() const;
+  std::int64_t timeline_size() const;
 
   // Implementation of serialization.  The caller is expected to pass consistent
   // parameters.  |timeline_begin| and |timeline_end| define the range to write.
