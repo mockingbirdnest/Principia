@@ -224,7 +224,7 @@ bool DiscreteTrajectoryIterator<Frame>::operator<(
   } else if (is_at_end(other.point_)) {
     return true;
   } else {
-    return point_->time < other.point_->time;
+    return iterator(point_)->time < iterator(other.point_)->time;
   }
 }
 
@@ -236,7 +236,7 @@ bool DiscreteTrajectoryIterator<Frame>::operator>(
   } else if (is_at_end(point_)) {
     return true;
   } else {
-    return point_->time > other.point_->time;
+    return iterator(point_)->time > iterator(other.point_)->time;
   }
 }
 

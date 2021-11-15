@@ -248,6 +248,20 @@ TEST_F(DiscreteTrajectoryIteratorTest, RandomAccess) {
     EXPECT_EQ(2, iterator3 - iterator2);
     EXPECT_EQ(8, iterator3 - iterator1);
   }
+  {
+    EXPECT_LT(begin + 3, begin + 4);
+    EXPECT_LT(begin + 4, end);
+    EXPECT_LE(begin + 4, begin + 4);
+    EXPECT_LE(begin + 3, begin + 4);
+    EXPECT_LE(begin + 4, end);
+    EXPECT_LE(end, end);
+    EXPECT_GE(begin + 4, begin + 4);
+    EXPECT_GE(begin + 4, begin + 3);
+    EXPECT_GE(end, begin + 4);
+    EXPECT_GE(end, end);
+    EXPECT_GT(begin + 4, begin + 3);
+    EXPECT_GT(end, begin + 4);
+  }
 }
 
 // Empty segments may exist in a transient manner, we must be able to iterate
