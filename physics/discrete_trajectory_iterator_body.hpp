@@ -159,7 +159,7 @@ DiscreteTrajectoryIterator<Frame>::operator-=(difference_type const n) {
 
 template<typename Frame>
 typename DiscreteTrajectoryIterator<Frame>::reference
- DiscreteTrajectoryIterator<Frame>::operator[](difference_type const n) const {
+DiscreteTrajectoryIterator<Frame>::operator[](difference_type const n) const {
   return *(*this + n);
 }
 
