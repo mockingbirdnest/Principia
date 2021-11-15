@@ -16,7 +16,6 @@
 #include "numerics/fit_hermite_spline.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
-#include "discrete_trajectory_segment.hpp"
 
 namespace principia {
 namespace physics {
