@@ -61,7 +61,9 @@ class Vessel {
          not_null<Celestial const*> parent,
          not_null<Ephemeris<Barycentric>*> ephemeris,
          Ephemeris<Barycentric>::AdaptiveStepParameters
-             prediction_adaptive_step_parameters);
+             prediction_adaptive_step_parameters,
+         DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters const&
+             downsampling_parameters);
 
   Vessel(Vessel const&) = delete;
   Vessel(Vessel&&) = delete;
@@ -116,10 +118,7 @@ class Vessel {
   // barycentre of all parts.  |parts_| must not be empty.  After this call,
   // |history_| is never empty again and the psychohistory is usable.  Must be
   // called (at least once) after the creation of the vessel.
-  virtual void CreateHistoryIfNeeded(
-      Instant const& t,
-      DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters const&
-          downsampling_parameters) EXCLUDES(lock_);
+  virtual void CreateHistoryIfNeeded(Instant const& t) EXCLUDES(lock_);
 
   // Disables downsampling for the history of this vessel.  This is useful when
   // the vessel collided with a celestial, as downsampling might run into
@@ -291,7 +290,10 @@ class Vessel {
   // The parent body for the 2-body approximation.
   not_null<Celestial const*> parent_;
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
+  DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters const
+      downsampling_parameters_;
 
+  //TODO(phl):Verify locking.
   mutable absl::Mutex lock_;
 
   // When reading a pre-Zermelo save, the existing history must be

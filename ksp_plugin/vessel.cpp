@@ -56,12 +56,15 @@ bool operator!=(Vessel::PrognosticatorParameters const& left,
              right.adaptive_step_parameters.speed_integration_tolerance();
 }
 
-Vessel::Vessel(GUID guid,
-               std::string name,
-               not_null<Celestial const*> const parent,
-               not_null<Ephemeris<Barycentric>*> const ephemeris,
-               Ephemeris<Barycentric>::AdaptiveStepParameters
-                   prediction_adaptive_step_parameters)
+Vessel::Vessel(
+    GUID guid,
+    std::string name,
+    not_null<Celestial const*> const parent,
+    not_null<Ephemeris<Barycentric>*> const ephemeris,
+    Ephemeris<Barycentric>::AdaptiveStepParameters
+        prediction_adaptive_step_parameters,
+    DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters const&
+        downsampling_parameters)
     : guid_(std::move(guid)),
       name_(std::move(name)),
       body_(),
@@ -69,6 +72,7 @@ Vessel::Vessel(GUID guid,
           std::move(prediction_adaptive_step_parameters)),
       parent_(parent),
       ephemeris_(ephemeris),
+      downsampling_parameters_(downsampling_parameters),
       prognosticator_(
           [this](PrognosticatorParameters const& parameters) {
             return FlowPrognostication(parameters);
@@ -191,16 +195,13 @@ void Vessel::DetectCollapsibilityChange() {
     }
     auto psychohistory = trajectory_.DetachSegments(psychohistory_);
     backstory_ = trajectory_.NewSegment();
-    backstory_->SetDownsampling(history_->downsampling_parameters());
+    backstory_->SetDownsampling(downsampling_parameters_);
     psychohistory_ = trajectory_.AttachSegments(std::move(psychohistory));
     is_collapsible_ = becomes_collapsible;
   }
 }
 
-void Vessel::CreateHistoryIfNeeded(
-    Instant const& t,
-    DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters const&
-        downsampling_parameters) {
+void Vessel::CreateHistoryIfNeeded(Instant const& t) {
   CHECK(!parts_.empty());
   if (trajectory_.empty()) {
     LOG(INFO) << "Preparing history of vessel " << ShortDebugString()
@@ -212,7 +213,7 @@ void Vessel::CreateHistoryIfNeeded(
           part.mass());
     });
     CHECK(psychohistory_ == trajectory_.segments().end());
-    history_->SetDownsampling(downsampling_parameters);
+    history_->SetDownsampling(downsampling_parameters_);
     trajectory_.Append(t, calculator.Get());
     backstory_ = history_;
     psychohistory_ = trajectory_.NewSegment();
