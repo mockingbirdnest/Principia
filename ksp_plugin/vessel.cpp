@@ -40,7 +40,7 @@ using ::std::placeholders::_1;
 using namespace std::chrono_literals;
 
 // TODO(phl): Move this to some kind of parameters.
-constexpr std::int64_t max_points_in_conclusion = 12'000;
+constexpr std::int64_t max_points_to_serialize = 12'000;
 
 bool operator!=(Vessel::PrognosticatorParameters const& left,
                 Vessel::PrognosticatorParameters const& right) {
@@ -480,18 +480,18 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
     CHECK(Contains(parts_, part_id));
     message->add_kept_parts(part_id);
   }
-  // The conclusion is the last part of the |history_|, the one that we
-  // serialize.  Construct an iterator that is at most
-  // |max_points_in_conclusion| points away from the end.  This can be
-  // |history_->begin()|.
-  auto conclusion = backstory_->end();
-  conclusion -= std::min(max_points_in_conclusion, backstory_->Size());
+
+  // We serialize at most the last |max_points_to_serialize| of the part of the
+  // trajectory that ends at the |backstory_|.
+  std::int64_t const backstory_size = backstory_->end() - trajectory_.begin();
+  std::int64_t const serialized_points =
+      std::min(max_points_to_serialize, backstory_size);
 
   // Starting with Gateaux we don't save the prediction, see #2685.  Instead we
   // just save its first point and re-read as if it was the whole prediction.
   trajectory_.WriteToMessage(
       message->mutable_history(),
-      /*begin=*/trajectory_.begin(),
+      /*begin=*/backstory_->end() - serialized_points,
       /*end=*/std::next(prediction_->begin()),
       /*tracked=*/{history_, backstory_, psychohistory_, prediction_},
       /*exact=*/{});
@@ -599,7 +599,6 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
             vessel->MakeCheckpointerReader(),
             message.checkpoint());
   }
-  vessel->backstory_ = vessel->psychohistory_->parent();
 
   // Necessary after Εὔδοξος because the ephemeris has not been prolonged
   // during deserialization.
