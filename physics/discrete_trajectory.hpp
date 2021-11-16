@@ -104,6 +104,9 @@ class DiscreteTrajectory : public Trajectory<Frame> {
   void Append(Instant const& t,
               DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
+  //TODO(phl):comment
+  void Merge(DiscreteTrajectory<Frame> const& trajectory);
+
   Instant t_min() const override;
   Instant t_max() const override;
 

@@ -329,30 +329,6 @@ void DiscreteTrajectorySegment<Frame>::Prepend(
 }
 
 template<typename Frame>
-absl::Status DiscreteTrajectorySegment<Frame>::Append(
-    Instant const& t,
-    DegreesOfFreedom<Frame> const& degrees_of_freedom) {
-  if (!timeline_.empty() && timeline_.cbegin()->time == t) {
-    LOG(WARNING) << "Append at existing time " << t << ", time range = ["
-                 << timeline_.cbegin()->time << ", "
-                 << timeline_.crbegin()->time << "]";
-    return absl::OkStatus();
-  }
-  auto it = timeline_.emplace_hint(timeline_.cend(),
-                                   t,
-                                   degrees_of_freedom);
-  CHECK(++it == timeline_.end())
-      << "Append out of order at " << t << ", last time is "
-      << timeline_.crbegin()->time;
-
-  if (downsampling_parameters_.has_value()) {
-    return DownsampleIfNeeded();
-  } else {
-    return absl::OkStatus();
-  }
-}
-
-template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::ForgetAfter(Instant const& t) {
   ForgetAfter(timeline_.lower_bound(t));
 }
@@ -382,6 +358,47 @@ void DiscreteTrajectorySegment<Frame>::ForgetBefore(
       std::max(0LL, number_of_dense_points_ - number_of_points_to_remove);
 
   timeline_.erase(timeline_.cbegin(), end);
+}
+
+template<typename Frame>
+absl::Status DiscreteTrajectorySegment<Frame>::Append(
+    Instant const& t,
+    DegreesOfFreedom<Frame> const& degrees_of_freedom) {
+  if (!timeline_.empty() && timeline_.cbegin()->time == t) {
+    LOG(WARNING) << "Append at existing time " << t << ", time range = ["
+                 << timeline_.cbegin()->time << ", "
+                 << timeline_.crbegin()->time << "]";
+    return absl::OkStatus();
+  }
+  auto it = timeline_.emplace_hint(timeline_.cend(),
+                                   t,
+                                   degrees_of_freedom);
+  CHECK(++it == timeline_.end())
+      << "Append out of order at " << t << ", last time is "
+      << timeline_.crbegin()->time;
+
+  if (downsampling_parameters_.has_value()) {
+    return DownsampleIfNeeded();
+  } else {
+    return absl::OkStatus();
+  }
+}
+
+template<typename Frame>
+void DiscreteTrajectorySegment<Frame>::Merge(
+    DiscreteTrajectorySegment<Frame> const& segment) {
+  CHECK(segment.downsampling_parameters_ == downsampling_parameters_);
+  if (segment.timeline_.empty()) {
+    return;
+  } else if (!timeline_.empty()) {
+    // TODO(phl): We might need to have CHECK_LE here and to check that the
+    // points match.
+    CHECK_LT(std::prev(timeline_.cend())->time,
+             segment.timeline_.cbegin()->time);
+  }
+  //TODO(phl):Move?
+  timeline_.insert(segment.timeline_.cbegin(), segment.timeline_.cend());
+  number_of_dense_points_ = segment.number_of_dense_points_;
 }
 
 template<typename Frame>

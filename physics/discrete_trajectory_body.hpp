@@ -375,6 +375,21 @@ void DiscreteTrajectory<Frame>::Append(
 }
 
 template<typename Frame>
+void DiscreteTrajectory<Frame>::Merge(
+    DiscreteTrajectory<Frame> const& trajectory) {
+  auto sit_s = trajectory.segments_.begin();
+  auto sit_t = segments_.begin();
+  while (sit_s != trajectory.segments_.end()) {
+    if (!sit_s->empty()) {
+      sit_t->Merge(*sit_s);
+      //TODO(phl):left endpoints;
+    }
+    ++sit_s;
+    ++sit_t;
+  }
+}
+
+template<typename Frame>
 Instant DiscreteTrajectory<Frame>::t_min() const {
   return segments_->front().t_min();
 }
