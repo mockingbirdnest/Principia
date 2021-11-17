@@ -502,6 +502,27 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     vessel->flight_plan_ = FlightPlan::ReadFromMessage(message.flight_plan(),
                                                        ephemeris);
   }
+
+  LOG(ERROR) << "Vessel: " << vessel->name() << " " << message.ByteSizeLong()
+             << " bytes"
+             << "\n  Hist: " << vessel->history_->size() << " points from "
+             << vessel->history_->front().time << " to "
+             << vessel->history_->back().time
+             << "\n  Psy: " << vessel->psychohistory_->size() << " points from "
+             << vessel->psychohistory_->front().time << " to "
+             << vessel->psychohistory_->back().time
+             << "\n  Pred: " << vessel->prediction_->size() << " points from "
+             << vessel->prediction_->front().time << " to "
+             << vessel->prediction_->back().time;
+
+  if (vessel->name() == "0255 neptune 5") {
+    auto history = message.history();
+    for (auto& s : *history.mutable_segment()) {
+      s.clear_zfp();
+    }
+    LOG(ERROR) << history.DebugString();
+  }
+
   return vessel;
 }
 

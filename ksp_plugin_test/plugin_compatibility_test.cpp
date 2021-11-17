@@ -412,8 +412,14 @@ TEST_F(PluginCompatibilityTest, DISABLED_Egg) {
 
 // Use for debugging saves given by users.
 TEST_F(PluginCompatibilityTest, DISABLED_SECULAR_Debug) {
-  CheckSaveCompatibility(
-      R"(P:\Public Mockingbird\Principia\Saves\2685\five-minute-scene-change-neptune.txt)",
+#if 0
+   not_null<std::unique_ptr<Plugin const>> plugin1 = ReadPluginFromFile(
+      R"(P:\Public Mockingbird\Principia\Saves\3203\0 - 1961.proto.b64)",
+      /*compressor=*/"gipfeli",
+      /*decoder=*/"base64");
+#endif
+   not_null<std::unique_ptr<Plugin const>> plugin2 = ReadPluginFromFile(
+      R"(P:\Public Mockingbird\Principia\Saves\3203\wip.proto.b64)",
       /*compressor=*/"gipfeli",
       /*decoder=*/"base64");
 }
