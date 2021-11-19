@@ -416,7 +416,8 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     std::function<void(PartId)> const& deletion_callback) {
   bool const is_pre_cesàro = message.has_psychohistory_is_authoritative();
   bool const is_pre_chasles = message.has_prediction();
-  bool const is_pre_陈景润 = !message.history().has_downsampling();
+  bool const is_pre_陈景润 = !message.history().has_downsampling() &&
+                             message.history().segment_size() == 0;
   bool const is_pre_ζήνων = message.history().segment_size() == 0;
   LOG_IF(WARNING, is_pre_ζήνων)
       << "Reading pre-"
