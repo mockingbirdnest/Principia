@@ -503,7 +503,6 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     vessel->flight_plan_ = FlightPlan::ReadFromMessage(message.flight_plan(),
                                                        ephemeris);
   }
-
   return vessel;
 }
 
