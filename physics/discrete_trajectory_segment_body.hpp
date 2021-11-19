@@ -434,8 +434,7 @@ absl::Status DiscreteTrajectorySegment<Frame>::DownsampleIfNeeded() {
     }
 
     if (right_endpoints->empty()) {
-      number_of_dense_points_ = timeline_.empty() ? 0 : 1;
-      return absl::OkStatus();
+      right_endpoints->push_back(std::prev(dense_iterators.end()));
     }
 
     // Obtain the times for the right endpoints.  This is necessary because we
