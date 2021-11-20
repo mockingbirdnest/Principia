@@ -89,7 +89,7 @@ void BM_DiscreteTrajectoryFront(benchmark::State& state) {
   auto const& segment = trajectory.segments().back();
 
   for (auto _ : state) {
-    segment.front();
+    benchmark::DoNotOptimize(segment.front());
   }
 }
 void BM_DiscreteTrajectoryBack(benchmark::State& state) {
@@ -102,7 +102,7 @@ void BM_DiscreteTrajectoryBack(benchmark::State& state) {
   auto const& segment = trajectory.segments().back();
 
   for (auto _ : state) {
-    segment.back();
+    benchmark::DoNotOptimize(segment.back());
   }
 }
 
@@ -116,7 +116,7 @@ void BM_DiscreteTrajectoryBegin(benchmark::State& state) {
   auto const& segment = trajectory.segments().back();
 
   for (auto _ : state) {
-    segment.begin();
+    benchmark::DoNotOptimize(segment.begin());
   }
 }
 
