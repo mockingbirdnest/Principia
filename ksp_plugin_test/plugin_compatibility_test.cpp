@@ -330,7 +330,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
       /*compressor=*/"gipfeli",
       /*decoder=*/"base64");
   EXPECT_THAT(log_warning.string(),
-              AllOf(HasSubstr(u8"pre-Ζήνων"), Not(HasSubstr("pre-Haar"))));
+              AllOf(HasSubstr("pre-Hamilton"), Not(HasSubstr("pre-Haar"))));
 
   // The vessel with the longest history.
   auto const& vessel =
@@ -395,7 +395,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Egg) {
       /*compressor=*/"gipfeli",
       /*decoder=*/"base64");
   EXPECT_THAT(log_warning.string(),
-              AllOf(HasSubstr(u8"pre-Ζήνων"), Not(HasSubstr("pre-Haar"))));
+              AllOf(HasSubstr("pre-Hamilton"), Not(HasSubstr("pre-Haar"))));
 
   auto& mutable_plugin = const_cast<Plugin&>(*plugin);
 
