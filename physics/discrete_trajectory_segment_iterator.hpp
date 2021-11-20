@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iterator>
+
 #include "absl/container/btree_map.h"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
@@ -41,6 +43,7 @@ class DiscreteTrajectorySegmentIterator {
   using value_type = DiscreteTrajectorySegment<Frame>;
   using pointer = value_type*;
   using reference = value_type&;
+  using iterator_category = std::bidirectional_iterator_tag ;
 
   DiscreteTrajectorySegmentIterator() = default;
 
