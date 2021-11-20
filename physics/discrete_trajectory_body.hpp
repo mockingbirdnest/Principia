@@ -516,10 +516,11 @@ DiscreteTrajectory<Frame>::ReadFromMessage(
     std::vector<SegmentIterator*> const& tracked) {
   DiscreteTrajectory trajectory(uninitialized);
 
-  bool const is_pre_ζήνων = message.segment_size() == 0;
-  if (is_pre_ζήνων) {
-    LOG_IF(WARNING, is_pre_ζήνων) << u8"Reading pre-Ζήνων DiscreteTrajectory";
-    ReadFromPreΖήνωνMessage(
+  bool const is_pre_hamilton = message.segment_size() == 0;
+  if (is_pre_hamilton) {
+    LOG_IF(WARNING, is_pre_hamilton)
+        << "Reading pre-Hamilton DiscreteTrajectory";
+    ReadFromPreHamiltonMessage(
         message, tracked, /*fork_point=*/std::nullopt, trajectory);
     CHECK_OK(trajectory.ConsistencyStatus());
     return trajectory;
@@ -728,7 +729,7 @@ void DiscreteTrajectory<Frame>::AdjustAfterSplicing(
 }
 
 template<typename Frame>
-void DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
+void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
     serialization::DiscreteTrajectory::Downsampling const& message,
     DownsamplingParameters& downsampling_parameters,
     Instant& start_of_dense_timeline) {
@@ -750,7 +751,7 @@ void DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
 
 template<typename Frame>
 DiscreteTrajectorySegmentIterator<Frame>
-DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
+DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
     serialization::DiscreteTrajectory::Brood const& message,
     std::vector<SegmentIterator*> const& tracked,
     value_type const& fork_point,
@@ -763,7 +764,7 @@ DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
   // Keep an iterator to the last segment to be able to return a segment
   // iterator.
   auto sit = --trajectory.segments_->end();
-  ReadFromPreΖήνωνMessage(
+  ReadFromPreHamiltonMessage(
       message.trajectories(0), tracked, fork_point, trajectory);
   ++sit;
 
@@ -771,7 +772,7 @@ DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
 }
 
 template<typename Frame>
-void DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
+void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
     serialization::DiscreteTrajectory const& message,
     std::vector<SegmentIterator*> const& tracked,
     std::optional<value_type> const& fork_point,
@@ -796,9 +797,9 @@ void DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
     if (message.has_downsampling()) {
       DownsamplingParameters downsampling_parameters;
       Instant start_of_dense_timeline;
-      ReadFromPreΖήνωνMessage(message.downsampling(),
-                              downsampling_parameters,
-                              start_of_dense_timeline);
+      ReadFromPreHamiltonMessage(message.downsampling(),
+                                 downsampling_parameters,
+                                 start_of_dense_timeline);
       sit->SetDownsamplingUnconditionally(downsampling_parameters);
       sit->SetStartOfDenseTimeline(start_of_dense_timeline);
     }
@@ -814,9 +815,9 @@ void DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
     DownsamplingParameters downsampling_parameters;
     Instant start_of_dense_timeline;
     if (message.has_downsampling()) {
-      ReadFromPreΖήνωνMessage(message.downsampling(),
-                              downsampling_parameters,
-                              start_of_dense_timeline);
+      ReadFromPreHamiltonMessage(message.downsampling(),
+                                 downsampling_parameters,
+                                 start_of_dense_timeline);
       auto* const serialized_downsampling_parameters =
           serialized_segment.mutable_downsampling_parameters();
       serialized_downsampling_parameters->set_max_dense_intervals(
@@ -838,11 +839,10 @@ void DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
 
   // Restore the (single) child as the next segment.
   if (message.children_size() == 1) {
-    auto const child =
-        ReadFromPreΖήνωνMessage(message.children(0),
-                                tracked,
-                                /*fork_point=*/*sit->rbegin(),
-                                trajectory);
+    auto const child = ReadFromPreHamiltonMessage(message.children(0),
+                                                  tracked,
+                                                  /*fork_point=*/*sit->rbegin(),
+                                                  trajectory);
 
     // There were no fork positions prior to Буняковский.
     bool const has_fork_position = message.fork_position_size() > 0;
@@ -862,10 +862,10 @@ void DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
   if (!sit->empty()) {
     // This is the *only* place where we must use |emplace|, not
     // |insert_or_assign|.  The reason is that this happens when returning from
-    // the recursivity (see to the call to ReadFromPreΖήνωνMessage) so segments
-    // are processed in reverse order.  Therefore, a segment that is the last at
-    // its time will be processed *before* any 1-point segments with the same
-    // time, and must be the one stored in the map.
+    // the recursivity (see to the call to ReadFromPreHamiltonMessage) so
+    // segments are processed in reverse order.  Therefore, a segment that is
+    // the last at its time will be processed *before* any 1-point segments with
+    // the same time, and must be the one stored in the map.
     trajectory.segment_by_left_endpoint_.emplace(sit->begin()->time, sit);
   }
 }

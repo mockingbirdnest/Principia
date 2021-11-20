@@ -418,13 +418,13 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   bool const is_pre_chasles = message.has_prediction();
   bool const is_pre_陈景润 = !message.history().has_downsampling() &&
                              message.history().segment_size() == 0;
-  bool const is_pre_ζήνων = message.history().segment_size() == 0;
-  LOG_IF(WARNING, is_pre_ζήνων)
+  bool const is_pre_hamilton = message.history().segment_size() == 0;
+  LOG_IF(WARNING, is_pre_hamilton)
       << "Reading pre-"
       << (is_pre_cesàro    ? u8"Cesàro"
           : is_pre_chasles ? "Chasles"
           : is_pre_陈景润   ? u8"陈景润"
-                           : u8"Ζήνων") << " Vessel";
+                           : "Hamilton") << " Vessel";
 
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
   // information.
@@ -475,7 +475,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
         /*tracked=*/{&vessel->psychohistory_});
     vessel->history_ = vessel->trajectory_.segments().begin();
     vessel->prediction_ = vessel->trajectory_.NewSegment();
-  } else if (is_pre_ζήνων) {
+  } else if (is_pre_hamilton) {
     vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
         /*tracked=*/{&vessel->psychohistory_, &vessel->prediction_});

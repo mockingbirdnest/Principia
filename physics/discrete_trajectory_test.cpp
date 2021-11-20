@@ -724,7 +724,7 @@ TEST_F(DiscreteTrajectoryTest, SerializationRange) {
   EXPECT_THAT(message1, EqualsProto(message2));
 }
 
-TEST_F(DiscreteTrajectoryTest, DISABLED_SerializationPreΖήνωνCompatibility) {
+TEST_F(DiscreteTrajectoryTest, DISABLED_SerializationPreHamiltonCompatibility) {
   StringLogSink log_warning(google::WARNING);
   auto const serialized_message = ReadFromBinaryFile(
       R"(P:\Public Mockingbird\Principia\Saves\3136\trajectory_3136.proto.bin)");  // NOLINT
@@ -734,9 +734,9 @@ TEST_F(DiscreteTrajectoryTest, DISABLED_SerializationPreΖήνωνCompatibility)
   auto const history = DiscreteTrajectory<World>::ReadFromMessage(
       message1, /*tracked=*/{&psychohistory});
   EXPECT_THAT(log_warning.string(),
-              AllOf(HasSubstr("pre-Ζήνων"), Not(HasSubstr("pre-Haar"))));
+              AllOf(HasSubstr("pre-Hamilton"), Not(HasSubstr("pre-Haar"))));
 
-  // Note that the sizes don't have the same semantics as pre-Ζήνων.  The
+  // Note that the sizes don't have the same semantics as pre-Hamilton.  The
   // history now counts all segments.  The psychohistory has a duplicated point
   // at the beginning.
   EXPECT_EQ(435'929, history.size());
@@ -764,7 +764,7 @@ TEST_F(DiscreteTrajectoryTest, DISABLED_SerializationPreΖήνωνCompatibility)
                            +2.61488327506437054e+04 * (Metre / Second),
                            +1.90319283138508908e+04 * (Metre / Second)}))));
 
-  // Serialize the trajectory in the Ζήνων format.
+  // Serialize the trajectory in the Hamilton format.
   serialization::DiscreteTrajectory message2;
   history.WriteToMessage(&message2,
                          /*tracked=*/{psychohistory},
