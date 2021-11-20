@@ -18,6 +18,7 @@ namespace internal_discrete_trajectory_factories {
 
 using base::not_null;
 using geometry::Instant;
+using geometry::Position;
 using geometry::Velocity;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
@@ -36,6 +37,14 @@ class DiscreteTrajectoryFactoriesFriend {
                              DegreesOfFreedom<Frame> const& degrees_of_freedom,
                              DiscreteTrajectorySegment<Frame>& segment);
 };
+
+// A motionless trajectory at the given position.
+template<typename Frame>
+Timeline<Frame>
+NewMotionlessTrajectoryTimeline(Position<Frame> const& position,
+                                Time const& Δt,
+                                Instant const& t1,
+                                Instant const& t2);
 
 // A linear trajectory with constant velocity, going through
 // |degrees_of_freedom.position()| at t = t0.  The first point is at time |t1|,
@@ -99,6 +108,7 @@ void AppendTrajectoryTimeline(
 using internal_discrete_trajectory_factories::AppendTrajectoryTimeline;
 using internal_discrete_trajectory_factories::NewCircularTrajectoryTimeline;
 using internal_discrete_trajectory_factories::NewLinearTrajectoryTimeline;
+using internal_discrete_trajectory_factories::NewMotionlessTrajectoryTimeline;
 
 }  // namespace testing_utilities
 }  // namespace principia
