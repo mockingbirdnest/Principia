@@ -364,7 +364,8 @@ void DiscreteTrajectorySegment<Frame>::ForgetAfter(
   std::int64_t number_of_points_to_remove =
       std::distance(begin, timeline_.cend());
   number_of_dense_points_ =
-      std::max(0LL, number_of_dense_points_ - number_of_points_to_remove);
+      std::max<std::int64_t>(
+          0, number_of_dense_points_ - number_of_points_to_remove);
 
   timeline_.erase(begin, timeline_.cend());
 }
@@ -380,7 +381,8 @@ void DiscreteTrajectorySegment<Frame>::ForgetBefore(
   std::int64_t number_of_points_to_remove =
       std::distance(timeline_.cbegin(), end);
   number_of_dense_points_ =
-      std::max(0LL, number_of_dense_points_ - number_of_points_to_remove);
+      std::max<std::int64_t>(
+          0, number_of_dense_points_ - number_of_points_to_remove);
 
   timeline_.erase(timeline_.cbegin(), end);
 }
