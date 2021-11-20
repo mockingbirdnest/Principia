@@ -798,8 +798,8 @@ void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
       DownsamplingParameters downsampling_parameters;
       Instant start_of_dense_timeline;
       ReadFromPreHamiltonMessage(message.downsampling(),
-                              downsampling_parameters,
-                              start_of_dense_timeline);
+                                 downsampling_parameters,
+                                 start_of_dense_timeline);
       sit->SetDownsamplingUnconditionally(downsampling_parameters);
       sit->SetStartOfDenseTimeline(start_of_dense_timeline);
     }
@@ -816,8 +816,8 @@ void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
     Instant start_of_dense_timeline;
     if (message.has_downsampling()) {
       ReadFromPreHamiltonMessage(message.downsampling(),
-                              downsampling_parameters,
-                              start_of_dense_timeline);
+                                 downsampling_parameters,
+                                 start_of_dense_timeline);
       auto* const serialized_downsampling_parameters =
           serialized_segment.mutable_downsampling_parameters();
       serialized_downsampling_parameters->set_max_dense_intervals(
@@ -839,11 +839,10 @@ void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
 
   // Restore the (single) child as the next segment.
   if (message.children_size() == 1) {
-    auto const child =
-        ReadFromPreHamiltonMessage(message.children(0),
-                                tracked,
-                                /*fork_point=*/*sit->rbegin(),
-                                trajectory);
+    auto const child = ReadFromPreHamiltonMessage(message.children(0),
+                                                  tracked,
+                                                  /*fork_point=*/*sit->rbegin(),
+                                                  trajectory);
 
     // There were no fork positions prior to Буняковский.
     bool const has_fork_position = message.fork_position_size() > 0;
@@ -863,10 +862,10 @@ void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
   if (!sit->empty()) {
     // This is the *only* place where we must use |emplace|, not
     // |insert_or_assign|.  The reason is that this happens when returning from
-    // the recursivity (see to the call to ReadFromPreHamiltonMessage) so segments
-    // are processed in reverse order.  Therefore, a segment that is the last at
-    // its time will be processed *before* any 1-point segments with the same
-    // time, and must be the one stored in the map.
+    // the recursivity (see to the call to ReadFromPreHamiltonMessage) so
+    // segments are processed in reverse order.  Therefore, a segment that is
+    // the last at its time will be processed *before* any 1-point segments with
+    // the same time, and must be the one stored in the map.
     trajectory.segment_by_left_endpoint_.emplace(sit->begin()->time, sit);
   }
 }
