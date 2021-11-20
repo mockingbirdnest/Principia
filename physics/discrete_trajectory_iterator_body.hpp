@@ -13,13 +13,14 @@ using astronomy::InfiniteFuture;
 using geometry::Instant;
 
 template<typename Frame>
-DiscreteTrajectoryIterator<Frame>&
+FORCE_INLINE(inline) DiscreteTrajectoryIterator<Frame>&
 DiscreteTrajectoryIterator<Frame>::operator++() {
   CHECK(!is_at_end(point_));
   auto& point = iterator(point_);
   Instant const previous_time = point->time;
   do {
-    if (point == std::prev(segment_->timeline_end())) {
+    ++point;
+    if (point == segment_->timeline_end()) {
       do {
         ++segment_;
       } while (!segment_.is_end() && segment_->timeline_empty());
@@ -30,15 +31,13 @@ DiscreteTrajectoryIterator<Frame>::operator++() {
       } else {
         point = segment_->timeline_begin();
       }
-    } else {
-      ++point;
     }
   } while (point->time == previous_time);
   return *this;
 }
 
 template<typename Frame>
-DiscreteTrajectoryIterator<Frame>&
+FORCE_INLINE(inline) DiscreteTrajectoryIterator<Frame>&
 DiscreteTrajectoryIterator<Frame>::operator--() {
   bool const point_is_at_end = is_at_end(point_);
   if (point_is_at_end) {
@@ -48,16 +47,14 @@ DiscreteTrajectoryIterator<Frame>::operator--() {
     // Now proceed with the decrement.
   }
   auto& point = iterator(point_);
-  std::optional<Instant> const previous_time =
-      point_is_at_end ? std::nullopt : std::make_optional(point->time);
+  Instant const previous_time = point_is_at_end ? InfiniteFuture : point->time;
   do {
     if (point == segment_->timeline_begin()) {
       CHECK(!segment_.is_begin());
       --segment_;
-      point = std::prev(segment_->timeline_end());
-    } else {
-      --point;
+      point = segment_->timeline_end();
     }
+    --point;
   } while (point->time == previous_time);
   return *this;
 }

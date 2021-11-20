@@ -46,13 +46,13 @@ void DiscreteTrajectorySegment<Frame>::SetDownsamplingUnconditionally(
 template<typename Frame>
 typename DiscreteTrajectorySegment<Frame>::reference
 DiscreteTrajectorySegment<Frame>::front() const {
-  return *begin();
+  return *timeline_.begin();
 }
 
 template<typename Frame>
 typename DiscreteTrajectorySegment<Frame>::reference
 DiscreteTrajectorySegment<Frame>::back() const {
-  return *rbegin();
+  return *std::prev(timeline_.end());
 }
 
 template<typename Frame>
@@ -68,7 +68,8 @@ DiscreteTrajectorySegment<Frame>::end() const {
     return iterator(self_, timeline_.end());
   } else {
     // The decrement/increment ensures that we normalize the end iterator to the
-    // next segment or to the end of the trajectory.
+    // next segment or to the end of the trajectory.  This is relatively
+    // expensive, taking 25-30 ns.
     return ++iterator(self_, --timeline_.end());
   }
 }
