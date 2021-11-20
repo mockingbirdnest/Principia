@@ -33,6 +33,15 @@ absl::Status DiscreteTrajectoryFactoriesFriend<Frame>::Append(
 }
 
 template<typename Frame>
+Timeline<Frame> NewMotionlessTrajectoryTimeline(Position<Frame> const& position,
+                                                Time const& Δt,
+                                                Instant const& t1,
+                                                Instant const& t2) {
+  return NewLinearTrajectoryTimeline(
+      DegreesOfFreedom<Frame>(position, Velocity<Frame>()), Δt, t1, t2);
+}
+
+template<typename Frame>
 Timeline<Frame>
 NewLinearTrajectoryTimeline(DegreesOfFreedom<Frame> const& degrees_of_freedom,
                             Time const& Δt,
