@@ -8,6 +8,7 @@
 #include "astronomy/time_scales.hpp"
 #include "benchmark/benchmark.h"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/solar_system.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 
@@ -206,7 +207,8 @@ void RunBenchmark(benchmark::State& state,
   // This is the time of a lunar eclipse in January 2000.
   constexpr Instant now = "2000-01-21T04:41:30,5"_TT;
   while (state.KeepRunning()) {
-    lines = planetarium.PlotMethod2(satellites.goes_8_trajectory().begin(),
+    lines = planetarium.PlotMethod2(satellites.goes_8_trajectory(),
+                                    satellites.goes_8_trajectory().begin(),
                                     satellites.goes_8_trajectory().end(),
                                     now,
                                     /*reverse=*/false);

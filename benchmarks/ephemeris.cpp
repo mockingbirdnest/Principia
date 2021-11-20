@@ -239,7 +239,7 @@ void BM_EphemerisLEOProbe(benchmark::State& state) {
                            EvaluatePosition(final_time) -
                    trajectory.back().degrees_of_freedom.position()).
                        Norm();
-    steps = trajectory.Size();
+    steps = trajectory.size();
     state.ResumeTiming();
   }
   std::stringstream ss;
@@ -309,7 +309,7 @@ void BM_EphemerisTranslunarSpaceProbe(benchmark::State& state) {
                            EvaluatePosition(final_time) -
                    trajectory.back().degrees_of_freedom.position()).
                        Norm();
-    steps = trajectory.Size();
+    steps = trajectory.size();
     state.ResumeTiming();
   }
   std::stringstream ss;
@@ -496,7 +496,7 @@ void EphemerisL4ProbeBenchmark(Time const integration_duration,
              SolarSystemFactory::name(
                  SolarSystemFactory::Earth)).EvaluatePosition(final_time) -
          trajectory->back().degrees_of_freedom.position()).Norm();
-    steps = trajectory->Size();
+    steps = trajectory->size();
     state.ResumeTiming();
   }
   std::stringstream ss;

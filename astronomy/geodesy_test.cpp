@@ -7,6 +7,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/body_surface_dynamic_frame.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"

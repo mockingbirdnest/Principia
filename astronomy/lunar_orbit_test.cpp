@@ -415,7 +415,8 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
 
   DiscreteTrajectory<LunarSurface> ascending_nodes;
   DiscreteTrajectory<LunarSurface> descending_nodes;
-  ComputeNodes(surface_trajectory.begin(),
+  ComputeNodes(surface_trajectory,
+               surface_trajectory.begin(),
                surface_trajectory.end(),
                /*north=*/Vector<double, LunarSurface>({0, 0, 1}),
                /*max_points=*/std::numeric_limits<int>::max(),
@@ -425,6 +426,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   DiscreteTrajectory<ICRS> apoapsides;
   DiscreteTrajectory<ICRS> periapsides;
   ComputeApsides(*ephemeris_->trajectory(moon_),
+                 trajectory,
                  trajectory.begin(),
                  trajectory.end(),
                  /*max_points=*/std::numeric_limits<int>::max(),
@@ -530,7 +532,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   {
     EccentricityVectorRange actual_period_ends;
     for (int orbit = 0;
-         orbit < descending_nodes.Size();
+         orbit < descending_nodes.size();
          orbit += orbits_per_period) {
       auto& actual = actual_period_ends;
       auto const e = descending_node_eccentricities[orbit];

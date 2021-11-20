@@ -161,9 +161,6 @@
     <ClCompile Include="..\ksp_plugin\equator_relevance_threshold.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\physics\protector.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="orbit_analyser_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
@@ -196,6 +193,9 @@
     </ClCompile>
     <ClCompile Include="plugin_compatibility_test.cpp">
       <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\testing_utilities\string_log_sink.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

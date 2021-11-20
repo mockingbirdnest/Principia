@@ -374,28 +374,30 @@ TEST_P(StandardProduct3DynamicsTest, PerturbedKeplerian) {
         if (++it == arc->end()) {
           break;
         }
-      ephemeris_->FlowWithAdaptiveStep(
-            &integrated_arc,
-            Ephemeris<ICRS>::NoIntrinsicAcceleration,
-            it->time,
-            Ephemeris<ICRS>::AdaptiveStepParameters(
-                EmbeddedExplicitRungeKuttaNyströmIntegrator<
-                    DormandالمكاوىPrince1986RKN434FM,
-                    Position<ICRS>>(),
-                std::numeric_limits<std::int64_t>::max(),
-                /*length_integration_tolerance=*/1 * Milli(Metre),
-                /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
-            /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max());
-      DegreesOfFreedom<ICRS> actual =
-          integrated_arc.back().degrees_of_freedom;
-      DegreesOfFreedom<ICRS> expected =
-          itrs_.FromThisFrameAtTime(it->time)(it->degrees_of_freedom);
-      EXPECT_THAT(AbsoluteError(expected.position(), actual.position()),
-                  Lt(25 * Metre))
-          << "orbit of satellite " << satellite << " flowing from point " << i;
-      EXPECT_THAT(AbsoluteError(expected.velocity(), actual.velocity()),
-                  Lt(1 * Deci(Metre) / Second))
-          << "orbit of satellite " << satellite << " flowing from point " << i;
+        ephemeris_->FlowWithAdaptiveStep(
+              &integrated_arc,
+              Ephemeris<ICRS>::NoIntrinsicAcceleration,
+              it->time,
+              Ephemeris<ICRS>::AdaptiveStepParameters(
+                  EmbeddedExplicitRungeKuttaNyströmIntegrator<
+                      DormandالمكاوىPrince1986RKN434FM,
+                      Position<ICRS>>(),
+                  std::numeric_limits<std::int64_t>::max(),
+                  /*length_integration_tolerance=*/1 * Milli(Metre),
+                  /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
+              /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max());
+        DegreesOfFreedom<ICRS> actual =
+            integrated_arc.back().degrees_of_freedom;
+        DegreesOfFreedom<ICRS> expected =
+            itrs_.FromThisFrameAtTime(it->time)(it->degrees_of_freedom);
+        EXPECT_THAT(AbsoluteError(expected.position(), actual.position()),
+                    Lt(25 * Metre))
+            << "orbit of satellite " << satellite << " flowing from point "
+            << i;
+        EXPECT_THAT(AbsoluteError(expected.velocity(), actual.velocity()),
+                    Lt(1 * Deci(Metre) / Second))
+            << "orbit of satellite " << satellite << " flowing from point "
+            << i;
       }
     }
   }

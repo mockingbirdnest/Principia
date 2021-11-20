@@ -10,6 +10,7 @@
 #include "gtest/gtest.h"
 #include "mathematica/mathematica.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/solar_system.hpp"

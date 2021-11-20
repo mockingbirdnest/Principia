@@ -30,6 +30,7 @@
 #include "physics/body.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_trajectory_segment.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/frame_field.hpp"
@@ -37,6 +38,7 @@
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/rotating_body.hpp"
+#include "physics/trajectory.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
@@ -45,6 +47,9 @@
 
 namespace principia {
 namespace ksp_plugin {
+
+class TestablePlugin;
+
 namespace internal_plugin {
 
 using base::not_null;
@@ -68,6 +73,7 @@ using integrators::AdaptiveStepSizeIntegrator;
 using physics::Body;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
+using physics::DiscreteTrajectorySegment;
 using physics::DynamicFrame;
 using physics::Ephemeris;
 using physics::FrameField;
@@ -77,6 +83,7 @@ using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::RigidMotion;
 using physics::RotatingBody;
+using physics::Trajectory;
 using quantities::Angle;
 using quantities::Force;
 using quantities::Length;
@@ -127,7 +134,7 @@ class Plugin {
       serialization::InitialState::Keplerian::Body const& initial_state);
 
   virtual void InitializeDownsamplingParameters(
-      DiscreteTrajectory<Barycentric>::DownsamplingParameters const&
+      DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters const&
           downsampling_parameters);
   virtual void InitializeEphemerisParameters(
       Ephemeris<Barycentric>::AccuracyParameters const& accuracy_parameters,
@@ -345,31 +352,33 @@ class Plugin {
   // respect to the celestial with index |celestial_index|.
   virtual void ComputeAndRenderApsides(
       Index celestial_index,
-      DiscreteTrajectory<Barycentric>::Iterator const& begin,
-      DiscreteTrajectory<Barycentric>::Iterator const& end,
+      Trajectory<Barycentric> const& trajectory,
+      DiscreteTrajectory<Barycentric>::iterator const& begin,
+      DiscreteTrajectory<Barycentric>::iterator const& end,
       Position<World> const& sun_world_position,
       int max_points,
-      std::unique_ptr<DiscreteTrajectory<World>>& apoapsides,
-      std::unique_ptr<DiscreteTrajectory<World>>& periapsides) const;
+      DiscreteTrajectory<World>& apoapsides,
+      DiscreteTrajectory<World>& periapsides) const;
 
   // Computes the closest approaches of the trajectory defined by |begin| and
   // |end| with respect to the trajectory of the targetted vessel.
   virtual void ComputeAndRenderClosestApproaches(
-      DiscreteTrajectory<Barycentric>::Iterator const& begin,
-      DiscreteTrajectory<Barycentric>::Iterator const& end,
+      Trajectory<Barycentric> const& trajectory,
+      DiscreteTrajectory<Barycentric>::iterator const& begin,
+      DiscreteTrajectory<Barycentric>::iterator const& end,
       Position<World> const& sun_world_position,
       int max_points,
-      std::unique_ptr<DiscreteTrajectory<World>>& closest_approaches) const;
+      DiscreteTrajectory<World>& closest_approaches) const;
 
   // Computes the nodes of the trajectory defined by |begin| and |end| with
   // respect to plane of the trajectory of the targetted vessel.
   virtual void ComputeAndRenderNodes(
-      DiscreteTrajectory<Barycentric>::Iterator const& begin,
-      DiscreteTrajectory<Barycentric>::Iterator const& end,
+      DiscreteTrajectory<Barycentric>::iterator const& begin,
+      DiscreteTrajectory<Barycentric>::iterator const& end,
       Position<World> const& sun_world_position,
       int max_points,
-      std::unique_ptr<DiscreteTrajectory<World>>& ascending,
-      std::unique_ptr<DiscreteTrajectory<World>>& descending) const;
+      DiscreteTrajectory<World>& ascending,
+      DiscreteTrajectory<World>& descending) const;
 
   virtual bool HasCelestial(Index index) const;
   virtual Celestial const& GetCelestial(Index index) const;
@@ -515,7 +524,7 @@ class Plugin {
   std::unique_ptr<Ephemeris<Barycentric>> ephemeris_;
 
   // The parameters for computing the various trajectories.
-  DiscreteTrajectory<Barycentric>::DownsamplingParameters
+  DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters
       history_downsampling_parameters_;
   Ephemeris<Barycentric>::FixedStepParameters history_fixed_step_parameters_;
   Ephemeris<Barycentric>::AdaptiveStepParameters psychohistory_parameters_;

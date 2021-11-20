@@ -87,8 +87,8 @@ std::vector<std::pair<Position<Barycentric>, Position<Barycentric>>>
 ApplyDynamicFrame(
     not_null<Body const*> const body,
     not_null<DynamicFrame<Barycentric, Rendering>*> const dynamic_frame,
-    DiscreteTrajectory<Barycentric>::Iterator const& begin,
-    DiscreteTrajectory<Barycentric>::Iterator const& end) {
+    DiscreteTrajectory<Barycentric>::iterator const& begin,
+    DiscreteTrajectory<Barycentric>::iterator const& end) {
   std::vector<std::pair<Position<Barycentric>,
                         Position<Barycentric>>> result;
 
@@ -103,9 +103,9 @@ ApplyDynamicFrame(
 
   // Render the trajectory at current time in |Rendering|.
   Instant const& current_time = intermediate_trajectory.back().time;
-  DiscreteTrajectory<Rendering>::Iterator initial_it =
+  DiscreteTrajectory<Rendering>::iterator initial_it =
       intermediate_trajectory.begin();
-  DiscreteTrajectory<Rendering>::Iterator const intermediate_end =
+  DiscreteTrajectory<Rendering>::iterator const intermediate_end =
       intermediate_trajectory.end();
   auto to_rendering_frame_at_current_time =
       dynamic_frame->FromThisFrameAtTime(current_time).rigid_transformation();

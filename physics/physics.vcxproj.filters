@@ -65,18 +65,6 @@
     <ClInclude Include="mock_ephemeris.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="forkable.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="forkable_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="discrete_trajectory.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="discrete_trajectory_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="rotating_body.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -191,10 +179,40 @@
     <ClInclude Include="mechanical_system_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="discrete_trajectory_segment.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="discrete_trajectory_iterator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="discrete_trajectory_segment_iterator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="discrete_trajectory_types.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="discrete_trajectory_segment_range.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="discrete_trajectory_segment_range_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="discrete_trajectory_segment_iterator_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="discrete_trajectory_iterator_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="discrete_trajectory_segment_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="discrete_trajectory_types_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="discrete_trajectory.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="discrete_trajectory_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -209,12 +227,6 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="ephemeris_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="forkable_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="discrete_trajectory_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="solar_system_test.cpp">
@@ -296,6 +308,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="discrete_trajectory_segment_range_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="discrete_trajectory_segment_iterator_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="discrete_trajectory_iterator_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="discrete_trajectory_segment_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\testing_utilities\string_log_sink.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="discrete_trajectory_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -7,6 +7,7 @@
 #include <functional>
 
 #include "base/not_null.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
@@ -16,6 +17,7 @@ namespace internal_manœuvre {
 using base::check_not_null;
 using geometry::NormalizeOrZero;
 using geometry::Rotation;
+using physics::DiscreteTrajectory;
 using physics::RigidMotion;
 using quantities::Acceleration;
 using quantities::Sqrt;
@@ -170,7 +172,7 @@ bool Manœuvre<InertialFrame, Frame>::FitsBetween(Instant const& begin,
 
 template<typename InertialFrame, typename Frame>
 void Manœuvre<InertialFrame, Frame>::set_coasting_trajectory(
-    not_null<DiscreteTrajectory<InertialFrame> const*> const trajectory) {
+    DiscreteTrajectorySegmentIterator<InertialFrame> const trajectory) {
   coasting_trajectory_ = trajectory;
 }
 
@@ -208,9 +210,8 @@ Manœuvre<InertialFrame, Frame>::FrenetIntrinsicAcceleration() const {
 template<typename InertialFrame, typename Frame>
 OrthogonalMap<Frenet<Frame>, InertialFrame>
     Manœuvre<InertialFrame, Frame>::FrenetFrame() const {
-  CHECK_NOTNULL(coasting_trajectory_);
-  typename DiscreteTrajectory<InertialFrame>::Iterator const it =
-      coasting_trajectory_->Find(initial_time());
+  typename DiscreteTrajectory<InertialFrame>::iterator const it =
+      coasting_trajectory_->find(initial_time());
   CHECK(it != coasting_trajectory_->end());
   return ComputeFrenetFrame(initial_time(), it->degrees_of_freedom);
 }

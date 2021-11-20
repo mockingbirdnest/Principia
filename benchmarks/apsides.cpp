@@ -16,6 +16,7 @@
 #include "physics/apsides.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/body_surface_dynamic_frame.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
@@ -135,13 +136,14 @@ BENCHMARK_F(ApsidesBenchmark, ComputeApsides)(benchmark::State& state) {
     DiscreteTrajectory<ICRS> apoapsides;
     DiscreteTrajectory<ICRS> periapsides;
     ComputeApsides(*earth_trajectory_,
+                   *ilrsa_lageos2_trajectory_icrs_,
                    ilrsa_lageos2_trajectory_icrs_->begin(),
                    ilrsa_lageos2_trajectory_icrs_->end(),
                    /*max_points=*/std::numeric_limits<int>::max(),
                    apoapsides,
                    periapsides);
-    CHECK_EQ(2364, apoapsides.Size());
-    CHECK_EQ(2365, periapsides.Size());
+    CHECK_EQ(2364, apoapsides.size());
+    CHECK_EQ(2365, periapsides.size());
   }
 }
 
@@ -149,14 +151,15 @@ BENCHMARK_F(ApsidesBenchmark, ComputeNodes)(benchmark::State& state) {
   for (auto _ : state) {
     DiscreteTrajectory<GCRS> ascending;
     DiscreteTrajectory<GCRS> descending;
-    ComputeNodes(ilrsa_lageos2_trajectory_gcrs_->begin(),
+    ComputeNodes(*ilrsa_lageos2_trajectory_gcrs_,
+                 ilrsa_lageos2_trajectory_gcrs_->begin(),
                  ilrsa_lageos2_trajectory_gcrs_->end(),
                  Vector<double, GCRS>({0, 0, 1}),
                  /*max_points=*/std::numeric_limits<int>::max(),
                  ascending,
                  descending);
-    CHECK_EQ(2365, ascending.Size());
-    CHECK_EQ(2365, descending.Size());
+    CHECK_EQ(2365, ascending.size());
+    CHECK_EQ(2365, descending.size());
   }
 }
 

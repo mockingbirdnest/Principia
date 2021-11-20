@@ -29,8 +29,9 @@ using quantities::Variation;
 
 template<typename Frame>
 void ComputeApsides(Trajectory<Frame> const& reference,
-                    typename DiscreteTrajectory<Frame>::Iterator const begin,
-                    typename DiscreteTrajectory<Frame>::Iterator const end,
+                    Trajectory<Frame> const& trajectory,
+                    typename DiscreteTrajectory<Frame>::iterator const begin,
+                    typename DiscreteTrajectory<Frame>::iterator const end,
                     int const max_points,
                     DiscreteTrajectory<Frame>& apoapsides,
                     DiscreteTrajectory<Frame>& periapsides) {
@@ -112,13 +113,13 @@ void ComputeApsides(Trajectory<Frame> const& reference,
       // 3rd-degree polynomial would yield |squared_distance_approximation|, so
       // we shouldn't be far from the truth.
       DegreesOfFreedom<Frame> const apsis_degrees_of_freedom =
-          begin.trajectory()->EvaluateDegreesOfFreedom(apsis_time);
+          trajectory.EvaluateDegreesOfFreedom(apsis_time);
       if (Sign(squared_distance_derivative).is_negative()) {
         apoapsides.Append(apsis_time, apsis_degrees_of_freedom);
       } else {
         periapsides.Append(apsis_time, apsis_degrees_of_freedom);
       }
-      if (apoapsides.Size() >= max_points && periapsides.Size() >= max_points) {
+      if (apoapsides.size() >= max_points && periapsides.size() >= max_points) {
         break;
       }
     }
@@ -131,13 +132,15 @@ void ComputeApsides(Trajectory<Frame> const& reference,
 }
 
 template<typename Frame, typename Predicate>
-absl::Status ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
-                          typename DiscreteTrajectory<Frame>::Iterator end,
-                          Vector<double, Frame> const& north,
-                          int const max_points,
-                          DiscreteTrajectory<Frame>& ascending,
-                          DiscreteTrajectory<Frame>& descending,
-                          Predicate predicate) {
+absl::Status ComputeNodes(
+    Trajectory<Frame> const& trajectory,
+    typename DiscreteTrajectory<Frame>::iterator const begin,
+    typename DiscreteTrajectory<Frame>::iterator const end,
+    Vector<double, Frame> const& north,
+    int const max_points,
+    DiscreteTrajectory<Frame>& ascending,
+    DiscreteTrajectory<Frame>& descending,
+    Predicate predicate) {
   static_assert(
       std::is_convertible<decltype(predicate(
                               std::declval<DegreesOfFreedom<Frame>>())),
@@ -185,7 +188,7 @@ absl::Status ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
       }
 
       DegreesOfFreedom<Frame> const node_degrees_of_freedom =
-          begin.trajectory()->EvaluateDegreesOfFreedom(node_time);
+          trajectory.EvaluateDegreesOfFreedom(node_time);
       if (predicate(node_degrees_of_freedom)) {
         if (Sign(InnerProduct(north, Vector<double, Frame>({0, 0, 1}))) ==
             Sign(z_speed)) {
@@ -195,7 +198,7 @@ absl::Status ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
         } else {
           descending.Append(node_time, node_degrees_of_freedom);
         }
-        if (ascending.Size() >= max_points && descending.Size() >= max_points) {
+        if (ascending.size() >= max_points && descending.size() >= max_points) {
           break;
         }
       }

@@ -19,6 +19,7 @@ absl::Status const& GetStatus(absl::StatusOr<T> const& s) {
 }  // namespace internal_status_utilities
 
 #define CHECK_OK(value) CHECK_EQ((value), ::absl::OkStatus())
+#define DCHECK_OK(value) DCHECK_EQ((value), ::absl::OkStatus())
 #define EXPECT_OK(value) \
   EXPECT_THAT((value), ::principia::testing_utilities::IsOk());
 

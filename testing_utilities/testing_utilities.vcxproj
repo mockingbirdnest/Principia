@@ -23,6 +23,8 @@
     <ClInclude Include="approximate_quantity_body.hpp" />
     <ClInclude Include="componentwise.hpp" />
     <ClInclude Include="componentwise_body.hpp" />
+    <ClInclude Include="discrete_trajectory_factories.hpp" />
+    <ClInclude Include="discrete_trajectory_factories_body.hpp" />
     <ClInclude Include="numerics_matchers.hpp" />
     <ClInclude Include="numerics_matchers_body.hpp" />
     <ClInclude Include="integration.hpp" />
@@ -40,8 +42,7 @@
     <ClInclude Include="solar_system_factory_body.hpp" />
     <ClInclude Include="statistics.hpp" />
     <ClInclude Include="statistics_body.hpp" />
-    <ClInclude Include="trajectory_factories.hpp" />
-    <ClInclude Include="trajectory_factories_body.hpp" />
+    <ClInclude Include="string_log_sink.hpp" />
     <ClInclude Include="vanishes_before.hpp" />
     <ClInclude Include="vanishes_before_body.hpp" />
   </ItemGroup>
@@ -53,11 +54,12 @@
     <ClCompile Include="almost_equals_test.cpp" />
     <ClCompile Include="approximate_quantity_test.cpp" />
     <ClCompile Include="componentwise_test.cpp" />
+    <ClCompile Include="discrete_trajectory_factories_test.cpp" />
     <ClCompile Include="is_near_test.cpp" />
     <ClCompile Include="numerics_test.cpp" />
     <ClCompile Include="solar_system_factory_test.cpp" />
     <ClCompile Include="statistics_test.cpp" />
-    <ClCompile Include="trajectory_factories_test.cpp" />
+    <ClCompile Include="string_log_sink.cpp" />
     <ClCompile Include="vanishes_before_test.cpp" />
   </ItemGroup>
 </Project>

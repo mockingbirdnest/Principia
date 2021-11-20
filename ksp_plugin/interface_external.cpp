@@ -12,6 +12,7 @@
 #include "journal/profiles.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "physics/apsides.hpp"
+#include "physics/discrete_trajectory.hpp"
 
 namespace principia {
 namespace interface {
@@ -282,16 +283,14 @@ Status* __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
                                     std::to_string(manoeuvre_index) + " of " +
                                     vessel.ShortDebugString())));
   }
-  DiscreteTrajectory<Barycentric>::Iterator coast_begin;
-  DiscreteTrajectory<Barycentric>::Iterator coast_end;
-  flight_plan.GetSegment(segment_index, coast_begin, coast_end);
   auto const body_centred_inertial =
       plugin->NewBodyCentredNonRotatingNavigationFrame(central_body_index);
   DiscreteTrajectory<Navigation> coast;
-  for (auto it = coast_begin; it != coast_end; ++it) {
-    coast.Append(it->time,
-                 body_centred_inertial->ToThisFrameAtTime(it->time)(
-                     it->degrees_of_freedom));
+  for (auto const& [time, degrees_of_freedom] :
+       *flight_plan.GetSegment(segment_index)) {
+    coast.Append(
+        time,
+        body_centred_inertial->ToThisFrameAtTime(time)(degrees_of_freedom));
   }
 
   Instant const current_time = plugin->CurrentTime();
@@ -318,19 +317,19 @@ Status* __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
   DiscreteTrajectory<Navigation> immobile_reference;
   immobile_reference.Append(coast.front().time,
                             {reference_position, Navigation::unmoving});
-  if (coast.Size() > 1) {
+  if (coast.size() > 1) {
     immobile_reference.Append(coast.back().time,
                               {reference_position, Navigation::unmoving});
   }
   DiscreteTrajectory<Navigation> apoapsides;
   DiscreteTrajectory<Navigation> periapsides;
   ComputeApsides(/*reference=*/immobile_reference,
-                 coast.begin(),
-                 coast.end(),
+                 coast,
+                 coast.begin(), coast.end(),
                  /*max_points=*/std::numeric_limits<int>::max(),
                  apoapsides,
                  periapsides);
-  if (periapsides.Empty()) {
+  if (periapsides.empty()) {
     bool const begin_is_nearest =
         (coast.front().degrees_of_freedom.position() -
          reference_position).Norm²() <
@@ -368,20 +367,21 @@ Status* __cdecl principia__ExternalVesselGetPosition(
             absl::StrCat("No vessel with GUID ", vessel_guid))));
   }
   auto const& vessel = *plugin->GetVessel(vessel_guid);
-  auto const& trajectory = vessel.psychohistory();
+  auto const history = vessel.history();
+  auto const psychohistory = vessel.psychohistory();
   Instant const t = FromGameTime(*plugin, time);
-  if (t < trajectory.t_min() || t > trajectory.t_max()) {
+  if (t < history->t_min() || t > psychohistory->t_max()) {
     return m.Return(ToNewStatus(
         absl::OutOfRangeError(
             (std::stringstream{}
              << "|time| " << t << " does not lie within the domain ["
-             << trajectory.t_min() << ", " << trajectory.t_max()
-             << "] of the psychohistory of "
+             << history->t_min() << ", " << psychohistory->t_max()
+             << "] of the history/psychohistory of "
              << vessel.ShortDebugString()).str())));
   }
   auto const from_solar_system_barycentre =
       plugin->renderer().BarycentricToWorldSun(plugin->PlanetariumRotation())(
-          trajectory.EvaluatePosition(t) - Barycentric::origin);
+          vessel.trajectory().EvaluatePosition(t) - Barycentric::origin);
   *position = ToXYZ(from_solar_system_barycentre.coordinates() / Metre);
   return m.Return(OK());
 }

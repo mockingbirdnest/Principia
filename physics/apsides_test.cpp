@@ -48,6 +48,7 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using ::testing::Eq;
+using ::testing::SizeIs;
 
 class ApsidesTest : public ::testing::Test {
  protected:
@@ -108,6 +109,7 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
   DiscreteTrajectory<World> apoapsides;
   DiscreteTrajectory<World> periapsides;
   ComputeApsides(*ephemeris.trajectory(b),
+                 trajectory,
                  trajectory.begin(),
                  trajectory.end(),
                  /*max_points=*/std::numeric_limits<int>::max(),
@@ -202,7 +204,8 @@ TEST_F(ApsidesTest, ComputeNodes) {
 
   DiscreteTrajectory<World> ascending_nodes;
   DiscreteTrajectory<World> descending_nodes;
-  ComputeNodes(trajectory.begin(),
+  ComputeNodes(trajectory,
+               trajectory.begin(),
                trajectory.end(),
                north,
                /*max_points=*/std::numeric_limits<int>::max(),
@@ -236,20 +239,21 @@ TEST_F(ApsidesTest, ComputeNodes) {
     previous_time = time;
   }
 
-  EXPECT_THAT(ascending_nodes.Size(), Eq(10));
-  EXPECT_THAT(descending_nodes.Size(), Eq(10));
+  EXPECT_THAT(ascending_nodes, SizeIs(10));
+  EXPECT_THAT(descending_nodes, SizeIs(10));
 
   DiscreteTrajectory<World> south_ascending_nodes;
   DiscreteTrajectory<World> south_descending_nodes;
   Vector<double, World> const mostly_south({1, 1, -1});
-  ComputeNodes(trajectory.begin(),
+  ComputeNodes(trajectory,
+               trajectory.begin(),
                trajectory.end(),
                mostly_south,
                /*max_points=*/std::numeric_limits<int>::max(),
                south_ascending_nodes,
                south_descending_nodes);
-  EXPECT_THAT(south_ascending_nodes.Size(), Eq(10));
-  EXPECT_THAT(south_descending_nodes.Size(), Eq(10));
+  EXPECT_THAT(south_ascending_nodes, SizeIs(10));
+  EXPECT_THAT(south_descending_nodes, SizeIs(10));
 
   for (auto south_ascending_it  = south_ascending_nodes.begin(),
             ascending_it        = ascending_nodes.begin(),

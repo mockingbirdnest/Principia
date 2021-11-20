@@ -15,25 +15,27 @@ using base::ConstantFunction;
 using base::Identically;
 using geometry::Vector;
 
-// Computes the apsides with respect to |reference| for the discrete trajectory
-// segment given by |begin| and |end|.  Appends to the given trajectories one
-// point for each apsis.
+// Computes the apsides with respect to |reference| for the section given by
+// |begin| and |end| of |trajectory|.  Appends to the given output trajectories
+// one point for each apsis.
 template<typename Frame>
 void ComputeApsides(Trajectory<Frame> const& reference,
-                    typename DiscreteTrajectory<Frame>::Iterator begin,
-                    typename DiscreteTrajectory<Frame>::Iterator end,
+                    Trajectory<Frame> const& trajectory,
+                    typename DiscreteTrajectory<Frame>::iterator begin,
+                    typename DiscreteTrajectory<Frame>::iterator end,
                     int max_points,
                     DiscreteTrajectory<Frame>& apoapsides,
                     DiscreteTrajectory<Frame>& periapsides);
 
-// Computes the crossings of the discrete trajectory segment given by |begin|
-// and |end| with the xy plane.  Appends the crossings that go towards the
+// Computes the crossings of the section given by |begin| and |end| of
+// |trajectory| with the xy plane.  Appends the crossings that go towards the
 // |north| side of the xy plane to |ascending|, and those that go away from the
 // |north| side to |descending|.
 // Nodes for which |predicate| returns false are excluded.
 template<typename Frame, typename Predicate = ConstantFunction<bool>>
-absl::Status ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
-                          typename DiscreteTrajectory<Frame>::Iterator end,
+absl::Status ComputeNodes(Trajectory<Frame> const& trajectory,
+                          typename DiscreteTrajectory<Frame>::iterator begin,
+                          typename DiscreteTrajectory<Frame>::iterator end,
                           Vector<double, Frame> const& north,
                           int max_points,
                           DiscreteTrajectory<Frame>& ascending,

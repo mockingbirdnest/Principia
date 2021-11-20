@@ -35,7 +35,7 @@ template<int n>
 not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>> ComputeVelocities(
     DiscreteTrajectory<ITRS> const& arc) {
   auto result = make_not_null_unique<DiscreteTrajectory<ITRS>>();
-  CHECK_GE(arc.Size(), n);
+  CHECK_GE(arc.size(), n);
   std::array<Instant, n> times;
   std::array<Position<ITRS>, n> positions;
   auto it = arc.begin();
@@ -49,7 +49,7 @@ not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>> ComputeVelocities(
   // We use a central difference formula wherever possible, so we keep
   // |offset| at (n - 1) / 2 except at the beginning and end of the arc.
   int offset = 0;
-  for (int i = 0; i < arc.Size(); ++i) {
+  for (int i = 0; i < arc.size(); ++i) {
     result->Append(
         times[offset],
         {positions[offset],
@@ -71,7 +71,7 @@ not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>> ComputeVelocities(
   }
   // Note that having the right number of calls to |Append| does not guarantee
   // this, as appending at an existing time merely emits a warning.
-  CHECK_EQ(result->Size(), arc.Size());
+  CHECK_EQ(result->size(), arc.size());
   return result;
 }
 
@@ -375,7 +375,7 @@ StandardProduct3::StandardProduct3(
 
       // Bad or absent positional and velocity values are to be set to 0.000000.
       if (position == ITRS::origin || velocity == ITRS::unmoving) {
-        if (!arc.Empty()) {
+        if (!arc.empty()) {
           orbit.push_back(make_not_null_unique<DiscreteTrajectory<ITRS>>());
         }
       } else {
@@ -390,7 +390,7 @@ StandardProduct3::StandardProduct3(
   for (auto& [id, orbit] : orbits_) {
     // Do not leave a final empty trajectory if the orbit ends with missing
     // data.
-    if (orbit.back()->Empty()) {
+    if (orbit.back()->empty()) {
       orbit.pop_back();
     }
   }
@@ -403,7 +403,7 @@ StandardProduct3::StandardProduct3(
             arc = ComputeVelocities<n>(*arc); \
             break
 
-        switch (arc->Size()) {
+        switch (arc->size()) {
           COMPUTE_VELOCITIES_CASE(1);
           COMPUTE_VELOCITIES_CASE(2);
           COMPUTE_VELOCITIES_CASE(3);

@@ -25,6 +25,7 @@
     <ClCompile Include="..\numerics\fast_sin_cos_2π.cpp" />
     <ClCompile Include="..\physics\protector.cpp" />
     <ClCompile Include="apsides.cpp" />
+    <ClCompile Include="discrete_trajectory.cpp" />
     <ClCompile Include="dynamic_frame.cpp" />
     <ClCompile Include="elliptic_integrals_benchmark.cpp" />
     <ClCompile Include="elliptic_functions_benchmark.cpp" />

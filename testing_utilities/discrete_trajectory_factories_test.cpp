@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "testing_utilities/trajectory_factories.hpp"
+#include "testing_utilities/discrete_trajectory_factories.hpp"
 
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -31,7 +31,7 @@ using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
 
-class TrajectoryFactoriesTest : public ::testing::Test {
+class DiscreteTrajectoryFactoriesTest : public ::testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
                       Inertial,
@@ -39,8 +39,32 @@ class TrajectoryFactoriesTest : public ::testing::Test {
                       serialization::Frame::TEST>;
 };
 
-TEST_F(TrajectoryFactoriesTest, NewLinearTrajectory) {
-  auto const trajectory = NewLinearTrajectory<World>(
+TEST_F(DiscreteTrajectoryFactoriesTest, NewMotionlessTrajectoryTimeline) {
+  auto const timeline = NewMotionlessTrajectoryTimeline<World>(
+      /*position=*/
+      World::origin + Displacement<World>({30 * Metre, 40 * Metre, 50 * Metre}),
+      /*Δt=*/0.1 * Second,
+      /*t1=*/Instant() + 4 * Second,
+      /*t2=*/Instant() + 42 * Second);
+
+  for (auto const& [time, degrees_of_freedom] : timeline) {
+    Position<World> const& position = degrees_of_freedom.position();
+    Velocity<World> const& velocity = degrees_of_freedom.velocity();
+
+    EXPECT_THAT((position - World::origin).Norm(),
+                AlmostEquals(Sqrt(5000) * Metre, 0));
+    EXPECT_THAT(velocity.Norm(),
+                AlmostEquals(0 * Metre / Second, 0));
+  }
+  EXPECT_THAT(timeline.begin()->time,
+              AlmostEquals(Instant() + 4 * Second, 0));
+  EXPECT_THAT(timeline.rbegin()->time,
+              AlmostEquals(Instant() + 41.9 * Second, 46));
+  EXPECT_EQ(380, timeline.size());
+}
+
+TEST_F(DiscreteTrajectoryFactoriesTest, NewLinearTrajectoryTimeline) {
+  auto const timeline = NewLinearTrajectoryTimeline<World>(
       /*degrees_of_freedom=*/
       DegreesOfFreedom<World>(
           World::origin +
@@ -48,10 +72,11 @@ TEST_F(TrajectoryFactoriesTest, NewLinearTrajectory) {
           Velocity<World>(
               {6 * Metre / Second, 5 * Metre / Second, 4 * Metre / Second})),
       /*Δt=*/0.1 * Second,
+      /*t0=*/Instant(),
       /*t1=*/Instant() + 4 * Second,
       /*t2=*/Instant() + 42 * Second);
 
-  for (auto const& [time, degrees_of_freedom] : *trajectory) {
+  for (auto const& [time, degrees_of_freedom] : timeline) {
     Position<World> const& position = degrees_of_freedom.position();
     Velocity<World> const& velocity = degrees_of_freedom.velocity();
 
@@ -63,22 +88,22 @@ TEST_F(TrajectoryFactoriesTest, NewLinearTrajectory) {
                              1));
     EXPECT_THAT(velocity.Norm(), AlmostEquals(Sqrt(77) * Metre / Second, 0, 0));
   }
-  EXPECT_THAT(trajectory->begin()->time,
+  EXPECT_THAT(timeline.begin()->time,
               AlmostEquals(Instant() + 4 * Second, 0));
-  EXPECT_THAT(trajectory->back().time,
+  EXPECT_THAT(timeline.rbegin()->time,
               AlmostEquals(Instant() + 41.9 * Second, 46));
-  EXPECT_EQ(380, trajectory->Size());
+  EXPECT_EQ(380, timeline.size());
 }
 
-TEST_F(TrajectoryFactoriesTest, NewCircularTrajectory) {
-  auto const trajectory = NewCircularTrajectory<World>(
+TEST_F(DiscreteTrajectoryFactoriesTest, NewCircularTrajectoryTimeline) {
+  auto const timeline = NewCircularTrajectoryTimeline<World>(
       /*ω=*/3 * Radian / Second,
       /*r=*/2 * Metre,
       /*Δt=*/0.1 * Second,
       /*t1=*/Instant() + 4 * Second,
       /*t2=*/Instant() + 42 * Second);
 
-  for (auto const& [time, degrees_of_freedom] : *trajectory) {
+  for (auto const& [time, degrees_of_freedom] : timeline) {
     Position<World> const& position = degrees_of_freedom.position();
     Velocity<World> const& velocity = degrees_of_freedom.velocity();
 
@@ -87,11 +112,11 @@ TEST_F(TrajectoryFactoriesTest, NewCircularTrajectory) {
     EXPECT_THAT(InnerProduct(position - World::origin, velocity),
                 VanishesBefore(1 * Metre * Metre / Second, 0, 8));
   }
-  EXPECT_THAT(trajectory->begin()->time,
+  EXPECT_THAT(timeline.begin()->time,
               AlmostEquals(Instant() + 4 * Second, 0));
-  EXPECT_THAT(trajectory->back().time,
+  EXPECT_THAT(timeline.rbegin()->time,
               AlmostEquals(Instant() + 41.9 * Second, 46));
-  EXPECT_EQ(380, trajectory->Size());
+  EXPECT_EQ(380, timeline.size());
 }
 
 }  // namespace testing_utilities

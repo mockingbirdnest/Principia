@@ -51,7 +51,7 @@ class TypedIterator : public Iterator {
 template<>
 class TypedIterator<DiscreteTrajectory<World>> : public Iterator {
  public:
-  TypedIterator(not_null<std::unique_ptr<DiscreteTrajectory<World>>> trajectory,
+  TypedIterator(DiscreteTrajectory<World> trajectory,
                 not_null<Plugin const*> plugin);
 
   // Obtains the element denoted by this iterator and converts it to some
@@ -59,19 +59,19 @@ class TypedIterator<DiscreteTrajectory<World>> : public Iterator {
   template<typename Interchange>
   Interchange Get(
       std::function<Interchange(
-          DiscreteTrajectory<World>::Iterator const&)> const& convert) const;
+          DiscreteTrajectory<World>::iterator const&)> const& convert) const;
 
   bool AtEnd() const override;
   void Increment() override;
   void Reset() override;
   int Size() const override;
 
-  DiscreteTrajectory<World>::Iterator iterator() const;
+  DiscreteTrajectory<World>::iterator iterator() const;
   not_null<Plugin const*> plugin() const;
 
  private:
-  not_null<std::unique_ptr<DiscreteTrajectory<World>>> trajectory_;
-  DiscreteTrajectory<World>::Iterator iterator_;
+  DiscreteTrajectory<World> trajectory_;
+  DiscreteTrajectory<World>::iterator iterator_;
   not_null<Plugin const*> plugin_;
 };
 

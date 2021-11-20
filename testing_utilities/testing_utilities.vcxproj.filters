@@ -95,11 +95,14 @@
     <ClInclude Include="numerics_matchers_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="trajectory_factories.hpp">
+    <ClInclude Include="discrete_trajectory_factories.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="trajectory_factories_body.hpp">
+    <ClInclude Include="discrete_trajectory_factories_body.hpp">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="string_log_sink.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -136,10 +139,13 @@
     <ClCompile Include="..\base\cpuid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="trajectory_factories_test.cpp">
+    <ClCompile Include="..\geometry\instant_output.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="discrete_trajectory_factories_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\geometry\instant_output.cpp">
+    <ClCompile Include="string_log_sink.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
