@@ -3,6 +3,8 @@
 
 #include "physics/discrete_trajectory.hpp"
 
+#include <vector>
+
 #include "astronomy/epoch.hpp"
 #include "base/not_null.hpp"
 #include "benchmark/benchmark.h"
