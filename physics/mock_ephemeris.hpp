@@ -6,6 +6,7 @@
 #include "gmock/gmock.h"
 #include "integrators/mock_integrators.hpp"
 #include "physics/ephemeris.hpp"
+#include "testing_utilities/matchers.hpp"
 
 namespace principia {
 namespace physics {
@@ -108,33 +109,33 @@ using internal_ephemeris::MockEphemeris;
 
 ACTION_P(AppendToDiscreteTrajectories, degrees_of_freedom) {
   for (auto const& trajectory : arg0) {
-    trajectory->Append(arg2, degrees_of_freedom);
+    EXPECT_OK(trajectory->Append(arg2, degrees_of_freedom));
   }
 }
 
 ACTION_P2(AppendToDiscreteTrajectories, time, degrees_of_freedom) {
   for (auto const& trajectory : arg0) {
-    trajectory->Append(time, degrees_of_freedom);
+    EXPECT_OK(trajectory->Append(time, degrees_of_freedom));
   }
 }
 
 ACTION_P(AppendToDiscreteTrajectory, degrees_of_freedom) {
-  arg0->Append(arg2, degrees_of_freedom);
+  EXPECT_OK(arg0->Append(arg2, degrees_of_freedom));
 }
 
 ACTION_P2(AppendToDiscreteTrajectory, time, degrees_of_freedom) {
-  arg0->Append(time, degrees_of_freedom);
+  EXPECT_OK(arg0->Append(time, degrees_of_freedom));
 }
 
 ACTION_P3(AppendToDiscreteTrajectory, trajectory, time, degrees_of_freedom) {
   // The extra level of indirection is useful for tests that get a pointer to a
   // trajectory and squirrel it away using |SaveArg<N>|.
-  (*trajectory)->Append(time, degrees_of_freedom);
+  EXPECT_OK((*trajectory)->Append(time, degrees_of_freedom));
 }
 
 ACTION_P(AppendPointsToDiscreteTrajectory, trajectory) {
   for (auto const& [time, degrees_of_freedom] : *trajectory) {
-    arg0->Append(time, degrees_of_freedom);
+    EXPECT_OK(arg0->Append(time, degrees_of_freedom));
   }
 }
 

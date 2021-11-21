@@ -335,7 +335,8 @@ absl::Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
        i < original_flight_plan->number_of_manœuvres();
        ++i) {
     auto const& manœuvre = original_flight_plan->GetManœuvre(i);
-    flight_plan_->Insert(manœuvre.burn(), i - first_manœuvre_kept);
+    flight_plan_->Insert(manœuvre.burn(), i - first_manœuvre_kept)
+        .IgnoreError();
   }
   return absl::OkStatus();
 }
@@ -463,7 +464,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
           !message.psychohistory_is_authoritative()) {
         vessel->psychohistory_ = vessel->trajectory_.NewSegment();
       }
-      vessel->trajectory_.Append(time, degrees_of_freedom);
+      vessel->trajectory_.Append(time, degrees_of_freedom).IgnoreError();
     }
     if (message.psychohistory_is_authoritative()) {
       vessel->psychohistory_ = vessel->trajectory_.NewSegment();
@@ -482,7 +483,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     vessel->history_ = vessel->trajectory_.segments().begin();
     // Necessary after Εὔδοξος because the ephemeris has not been prolonged
     // during deserialization.  Doesn't hurt prior to Εὔδοξος.
-    ephemeris->Prolong(vessel->prediction_->back().time);
+    ephemeris->Prolong(vessel->prediction_->back().time).IgnoreError();
   } else {
     vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
@@ -491,7 +492,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
                      &vessel->prediction_});
     // Necessary after Εὔδοξος because the ephemeris has not been prolonged
     // during deserialization.
-    ephemeris->Prolong(vessel->prediction_->back().time);
+    ephemeris->Prolong(vessel->prediction_->back().time).IgnoreError();
   }
 
   if (is_pre_陈景润) {
@@ -582,7 +583,7 @@ Vessel::FlowPrognostication(
   DiscreteTrajectory<Barycentric> prognostication;
   prognostication.Append(
       prognosticator_parameters.first_time,
-      prognosticator_parameters.first_degrees_of_freedom);
+      prognosticator_parameters.first_degrees_of_freedom).IgnoreError();
   absl::Status status;
   status = ephemeris_->FlowWithAdaptiveStep(
       &prognostication,
@@ -662,7 +663,7 @@ void Vessel::AppendToVesselTrajectory(
     if (can_be_appended) {
       DegreesOfFreedom<Barycentric> const vessel_degrees_of_freedom =
           calculator.Get();
-      trajectory_.Append(first_time, vessel_degrees_of_freedom);
+      trajectory_.Append(first_time, vessel_degrees_of_freedom).IgnoreError();
     }
   }
 }

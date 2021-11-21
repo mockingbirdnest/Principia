@@ -761,7 +761,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
 
   current_time_ = t;
   planetarium_rotation_ = planetarium_rotation;
-  ephemeris_->Prolong(current_time_);
+  ephemeris_->Prolong(current_time_).IgnoreError();
   UpdatePlanetariumRotation();
   loaded_vessels_.clear();
 }
@@ -866,7 +866,7 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
 RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
     Index const celestial_index) const {
   CHECK(!initializing_);
-  ephemeris_->Prolong(current_time_);
+  ephemeris_->Prolong(current_time_).IgnoreError();
   Celestial const& celestial = *FindOrDie(celestials_, celestial_index);
   CHECK(celestial.has_parent())
       << "Body at index " << celestial_index << " is the sun";
@@ -1033,7 +1033,7 @@ void Plugin::ComputeAndRenderNodes(
                max_points,
                ascending_trajectory,
                descending_trajectory,
-               show_node);
+               show_node).IgnoreError();
 
   ascending = renderer_->RenderPlottingTrajectoryInWorld(
                   current_time_,
@@ -1178,7 +1178,7 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
       Instant const& current_time = plugin_->current_time_;
       auto const& planetarium_rotation = plugin_->PlanetariumRotation();
       auto const& renderer = plugin_->renderer();
-      plugin_->ephemeris_->Prolong(current_time);
+      plugin_->ephemeris_->Prolong(current_time).IgnoreError();
 
       Position<Navigation> const q_in_plotting =
           renderer.WorldToPlotting(current_time,
@@ -1309,7 +1309,7 @@ void Plugin::WriteToMessage(
   if (system_fingerprint_ != 0) {
     message->set_system_fingerprint(system_fingerprint_);
   }
-  ephemeris_->Prolong(current_time_);
+  ephemeris_->Prolong(current_time_).IgnoreError();
   std::map<not_null<Celestial const*>, Index const> celestial_to_index;
   for (auto const& [index, owned_celestial] : celestials_) {
     celestial_to_index.emplace(owned_celestial.get(), index);
@@ -1426,8 +1426,8 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
       Ephemeris<Barycentric>::ReadFromMessage(/*using_checkpoint_at_or_before=*/
                                               plugin->current_time_,
                                               message.ephemeris());
-  plugin->ephemeris_->Prolong(plugin->game_epoch_);
-  plugin->ephemeris_->Prolong(plugin->current_time_);
+  plugin->ephemeris_->Prolong(plugin->game_epoch_).IgnoreError();
+  plugin->ephemeris_->Prolong(plugin->current_time_).IgnoreError();
   CHECK_LE(plugin->ephemeris_->t_min(), plugin->current_time_);
 
   ReadCelestialsFromMessages(*plugin->ephemeris_,

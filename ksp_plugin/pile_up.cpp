@@ -622,7 +622,7 @@ absl::Status PileUp::AdvanceTime(Instant const& t) {
     for (auto it = std::next(psychohistory_trajectory.begin());
          it != psychohistory_trajectory.end();
          ++it) {
-      trajectory_.Append(it->time, it->degrees_of_freedom);
+      trajectory_.Append(it->time, it->degrees_of_freedom).IgnoreError();
     }
 
     auto const intrinsic_acceleration =

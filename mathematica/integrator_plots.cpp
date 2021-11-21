@@ -11,6 +11,7 @@
 #include "absl/status/status.h"
 #include "base/bundle.hpp"
 #include "base/file.hpp"
+#include "base/status_utilities.hpp"
 #include "glog/logging.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
@@ -239,7 +240,7 @@ class WorkErrorGraphGenerator {
                              time_step_index));
       }
     }
-    bundle.Join();
+    CHECK_OK(bundle.Join());
 
     std::vector<std::string> q_error_data;
     std::vector<std::string> v_error_data;
@@ -286,7 +287,7 @@ class WorkErrorGraphGenerator {
     auto const instance =
         method.integrator.NewInstance(problem, append_state, Δt);
 
-    instance->Solve(tmax_);
+    CHECK_OK(instance->Solve(tmax_));
     // Log both the actual number of evaluations and a theoretical number
     // that ignores any startup costs; that theoretical number is the one
     // used for plotting.
