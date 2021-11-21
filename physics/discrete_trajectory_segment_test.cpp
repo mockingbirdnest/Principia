@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "base/status_utilities.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
@@ -65,11 +66,11 @@ class DiscreteTrajectorySegmentTest : public ::testing::Test {
       : segments_(MakeSegments(1)) {
     segment_ = &*segments_->begin();
 
-    segment_->Append(t0_ + 2 * Second, unmoving_origin_);
-    segment_->Append(t0_ + 3 * Second, unmoving_origin_);
-    segment_->Append(t0_ + 5 * Second, unmoving_origin_);
-    segment_->Append(t0_ + 7 * Second, unmoving_origin_);
-    segment_->Append(t0_ + 11 * Second, unmoving_origin_);
+    EXPECT_OK(segment_->Append(t0_ + 2 * Second, unmoving_origin_));
+    EXPECT_OK(segment_->Append(t0_ + 3 * Second, unmoving_origin_));
+    EXPECT_OK(segment_->Append(t0_ + 5 * Second, unmoving_origin_));
+    EXPECT_OK(segment_->Append(t0_ + 7 * Second, unmoving_origin_));
+    EXPECT_OK(segment_->Append(t0_ + 11 * Second, unmoving_origin_));
   }
 
   void ForgetAfter(Instant const& t) {

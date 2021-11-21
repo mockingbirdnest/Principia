@@ -294,9 +294,9 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
     // exactly.
     Instant const time = Instant() + t[i] * Second;
     if (auto it = exact.find(time); it == exact.cend()) {
-      segment.Append(time, DegreesOfFreedom<Frame>(q, p));
+      segment.Append(time, DegreesOfFreedom<Frame>(q, p)).IgnoreError();
     } else {
-      segment.Append(time, it->degrees_of_freedom);
+      segment.Append(time, it->degrees_of_freedom).IgnoreError();
     }
   }
 

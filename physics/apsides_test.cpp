@@ -6,6 +6,7 @@
 #include <optional>
 #include <vector>
 
+#include "base/status_utilities.hpp"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
@@ -91,9 +92,10 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
   Length const a = -r_norm * μ / (r_norm * Pow<2>(v_norm) - 2 * μ);
 
   DiscreteTrajectory<World> trajectory;
-  trajectory.Append(t0, DegreesOfFreedom<World>(World::origin + r, v));
+  EXPECT_OK(trajectory.Append(t0,
+                              DegreesOfFreedom<World>(World::origin + r, v)));
 
-  ephemeris.FlowWithAdaptiveStep(
+  EXPECT_OK(ephemeris.FlowWithAdaptiveStep(
       &trajectory,
       Ephemeris<World>::NoIntrinsicAcceleration,
       t0 + 10 * JulianYear,
@@ -104,7 +106,7 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
           std::numeric_limits<std::int64_t>::max(),
           1e-3 * Metre,
           1e-3 * Metre / Second),
-      Ephemeris<World>::unlimited_max_ephemeris_steps);
+      Ephemeris<World>::unlimited_max_ephemeris_steps));
 
   DiscreteTrajectory<World> apoapsides;
   DiscreteTrajectory<World> periapsides;
@@ -185,9 +187,9 @@ TEST_F(ApsidesTest, ComputeNodes) {
   elements = orbit.elements_at_epoch();
 
   DiscreteTrajectory<World> trajectory;
-  trajectory.Append(t0, initial_state[0] + orbit.StateVectors(t0));
+  EXPECT_OK(trajectory.Append(t0, initial_state[0] + orbit.StateVectors(t0)));
 
-  ephemeris.FlowWithAdaptiveStep(
+  EXPECT_OK(ephemeris.FlowWithAdaptiveStep(
       &trajectory,
       Ephemeris<World>::NoIntrinsicAcceleration,
       t0 + 10 * JulianYear,
@@ -198,19 +200,19 @@ TEST_F(ApsidesTest, ComputeNodes) {
           std::numeric_limits<std::int64_t>::max(),
           1e-3 * Metre,
           1e-3 * Metre / Second),
-      Ephemeris<World>::unlimited_max_ephemeris_steps);
+      Ephemeris<World>::unlimited_max_ephemeris_steps));
 
   Vector<double, World> const north({0, 0, 1});
 
   DiscreteTrajectory<World> ascending_nodes;
   DiscreteTrajectory<World> descending_nodes;
-  ComputeNodes(trajectory,
-               trajectory.begin(),
-               trajectory.end(),
-               north,
-               /*max_points=*/std::numeric_limits<int>::max(),
-               ascending_nodes,
-               descending_nodes);
+  EXPECT_OK(ComputeNodes(trajectory,
+                         trajectory.begin(),
+                         trajectory.end(),
+                         north,
+                         /*max_points=*/std::numeric_limits<int>::max(),
+                         ascending_nodes,
+                         descending_nodes));
 
   std::optional<Instant> previous_time;
   for (auto const& [time, degrees_of_freedom] : ascending_nodes) {
@@ -245,13 +247,13 @@ TEST_F(ApsidesTest, ComputeNodes) {
   DiscreteTrajectory<World> south_ascending_nodes;
   DiscreteTrajectory<World> south_descending_nodes;
   Vector<double, World> const mostly_south({1, 1, -1});
-  ComputeNodes(trajectory,
-               trajectory.begin(),
-               trajectory.end(),
-               mostly_south,
-               /*max_points=*/std::numeric_limits<int>::max(),
-               south_ascending_nodes,
-               south_descending_nodes);
+  EXPECT_OK(ComputeNodes(trajectory,
+                         trajectory.begin(),
+                         trajectory.end(),
+                         mostly_south,
+                         /*max_points=*/std::numeric_limits<int>::max(),
+                         south_ascending_nodes,
+                         south_descending_nodes));
   EXPECT_THAT(south_ascending_nodes, SizeIs(10));
   EXPECT_THAT(south_descending_nodes, SizeIs(10));
 

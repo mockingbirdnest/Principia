@@ -4,6 +4,7 @@
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
+#include "base/status_utilities.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
@@ -370,7 +371,7 @@ TEST_F(BodyTest, SolarNoon) {
           SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
                                              Position<ICRS>>(),
           /*step=*/10 * Minute));
-  ephemeris->Prolong("2010-10-01T12:00:00"_UTC);
+  EXPECT_OK(ephemeris->Prolong("2010-10-01T12:00:00"_UTC));
 
   auto const earth = solar_system_j2000.rotating_body(*ephemeris, "Earth");
   auto const sun = solar_system_j2000.rotating_body(*ephemeris, "Sun");

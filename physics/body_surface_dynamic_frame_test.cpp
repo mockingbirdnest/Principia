@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "astronomy/frames.hpp"
+#include "base/status_utilities.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
@@ -126,7 +127,7 @@ class BodySurfaceDynamicFrameTest : public ::testing::Test {
     mock_frame_ = std::make_unique<BodySurfaceDynamicFrame<ICRS, MockFrame>>(
         &mock_ephemeris_, &centre_);
 
-    ephemeris_->Prolong(t0_ + 2 * period_);
+    EXPECT_OK(ephemeris_->Prolong(t0_ + 2 * period_));
     big_frame_ = std::make_unique<BodySurfaceDynamicFrame<ICRS, BigSmallFrame>>(
         ephemeris_.get(), big_);
   }

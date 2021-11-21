@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "base/status_utilities.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
@@ -32,25 +33,25 @@ class DiscreteTrajectorySegmentIteratorTest : public ::testing::Test {
     auto it = segments_->begin();
     {
       auto& segment1 = *it;
-      segment1.Append(t0_ + 2 * Second, unmoving_origin_);
-      segment1.Append(t0_ + 3 * Second, unmoving_origin_);
-      segment1.Append(t0_ + 5 * Second, unmoving_origin_);
-      segment1.Append(t0_ + 7 * Second, unmoving_origin_);
-      segment1.Append(t0_ + 11 * Second, unmoving_origin_);
+      EXPECT_OK(segment1.Append(t0_ + 2 * Second, unmoving_origin_));
+      EXPECT_OK(segment1.Append(t0_ + 3 * Second, unmoving_origin_));
+      EXPECT_OK(segment1.Append(t0_ + 5 * Second, unmoving_origin_));
+      EXPECT_OK(segment1.Append(t0_ + 7 * Second, unmoving_origin_));
+      EXPECT_OK(segment1.Append(t0_ + 11 * Second, unmoving_origin_));
     }
 
     ++it;
     {
       auto& segment2 = *it;
-      segment2.Append(t0_ + 13 * Second, unmoving_origin_);
+      EXPECT_OK(segment2.Append(t0_ + 13 * Second, unmoving_origin_));
     }
 
     ++it;
     {
       auto& segment3 = *it;
-      segment3.Append(t0_ + 13 * Second, unmoving_origin_);
-      segment3.Append(t0_ + 17 * Second, unmoving_origin_);
-      segment3.Append(t0_ + 19 * Second, unmoving_origin_);
+      EXPECT_OK(segment3.Append(t0_ + 13 * Second, unmoving_origin_));
+      EXPECT_OK(segment3.Append(t0_ + 17 * Second, unmoving_origin_));
+      EXPECT_OK(segment3.Append(t0_ + 19 * Second, unmoving_origin_));
     }
   }
 

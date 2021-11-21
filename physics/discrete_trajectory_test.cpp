@@ -5,6 +5,7 @@
 
 #include "astronomy/time_scales.hpp"
 #include "base/serialization.hpp"
+#include "base/status_utilities.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
@@ -81,7 +82,7 @@ class DiscreteTrajectoryTest : public ::testing::Test {
                                      /*t1=*/t0,
                                      /*t2=*/t0 + 5 * Second)) {
       last_degrees_of_freedom = degrees_of_freedom;
-      trajectory.Append(t, degrees_of_freedom);
+      EXPECT_OK(trajectory.Append(t, degrees_of_freedom));
     }
 
     trajectory.NewSegment();
@@ -96,7 +97,7 @@ class DiscreteTrajectoryTest : public ::testing::Test {
                                      /*t1=*/t0 + 5 * Second,
                                      /*t2=*/t0 + 10 * Second)) {
       last_degrees_of_freedom = degrees_of_freedom;
-      trajectory.Append(t, degrees_of_freedom);
+      EXPECT_OK(trajectory.Append(t, degrees_of_freedom));
     }
 
     trajectory.NewSegment();
@@ -110,7 +111,7 @@ class DiscreteTrajectoryTest : public ::testing::Test {
                                      /*Δt=*/1 * Second,
                                      /*t1=*/t0 + 10 * Second,
                                      /*t2=*/t0 + 15 * Second)) {
-      trajectory.Append(t, degrees_of_freedom);
+      EXPECT_OK(trajectory.Append(t, degrees_of_freedom));
     }
 
     return trajectory;

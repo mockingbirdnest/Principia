@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "astronomy/frames.hpp"
+#include "base/status_utilities.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -100,7 +101,7 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
         small_initial_state_(solar_system_.degrees_of_freedom(small)),
         small_gravitational_parameter_(
             solar_system_.gravitational_parameter(small)) {
-    ephemeris_->Prolong(t0_ + 2 * period_);
+    EXPECT_OK(ephemeris_->Prolong(t0_ + 2 * period_));
     big_frame_ =
         std::make_unique<BodyCentredNonRotatingDynamicFrame<ICRS, Big>>(
             ephemeris_.get(), solar_system_.massive_body(*ephemeris_, big));

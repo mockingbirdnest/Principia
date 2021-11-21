@@ -2,6 +2,7 @@
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "testing_utilities/matchers.hpp"
 
 namespace principia {
 namespace base {

@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "astronomy/frames.hpp"
+#include "base/status_utilities.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -116,7 +117,7 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
         std::make_unique<BarycentricRotatingDynamicFrame<ICRS, MockFrame>>(
             &mock_ephemeris_, big_, small_);
 
-    ephemeris_->Prolong(t0_ + 2 * period_);
+    EXPECT_OK(ephemeris_->Prolong(t0_ + 2 * period_));
     big_small_frame_ =
         std::make_unique<BarycentricRotatingDynamicFrame<ICRS, BigSmallFrame>>(
             ephemeris_.get(), big_, small_);

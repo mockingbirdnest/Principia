@@ -12,6 +12,7 @@
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "base/macros.hpp"
+#include "base/status_utilities.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "gipfeli/gipfeli.h"
@@ -193,18 +194,18 @@ TEST_P(EphemerisTest, ProlongSpecialCases) {
   EXPECT_EQ(astronomy::InfiniteFuture, ephemeris.t_min());
 
   EXPECT_TRUE(ephemeris.empty());
-  ephemeris.Prolong(t0_ + period);
+  EXPECT_OK(ephemeris.Prolong(t0_ + period));
   EXPECT_FALSE(ephemeris.empty());
   EXPECT_EQ(t0_, ephemeris.t_min());
   EXPECT_LE(t0_ + period, ephemeris.t_max());
   Instant const t_max = ephemeris.t_max();
 
-  ephemeris.Prolong(t0_ + period / 2);
+  EXPECT_OK(ephemeris.Prolong(t0_ + period / 2));
   EXPECT_EQ(t_max, ephemeris.t_max());
 
   Instant const last_t =
       Barycentre<Instant, double>({t0_ + period, t_max}, {0.5, 0.5});
-  ephemeris.Prolong(last_t);
+  ephemeris.Prolong(last_t).IgnoreError();
   EXPECT_EQ(t_max, ephemeris.t_max());
 }
 
@@ -229,11 +230,11 @@ TEST_P(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
 
   MasslessBody probe;
   DiscreteTrajectory<ICRS> trajectory;
-  trajectory.Append(
+  EXPECT_OK(trajectory.Append(
       t0_,
       DegreesOfFreedom<ICRS>(
           earth_position + Displacement<ICRS>({0 * Metre, distance, 0 * Metre}),
-          Velocity<ICRS>({velocity, velocity, velocity})));
+          Velocity<ICRS>({velocity, velocity, velocity}))));
 
   EXPECT_OK(ephemeris.FlowWithAdaptiveStep(
       &trajectory,
@@ -280,7 +281,7 @@ TEST_P(EphemerisTest, EarthMoon) {
                                /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 100));
 
-  ephemeris.Prolong(t0_ + period);
+  EXPECT_OK(ephemeris.Prolong(t0_ + period));
 
   ContinuousTrajectory<ICRS> const& earth_trajectory =
       *ephemeris.trajectory(earth);
@@ -333,7 +334,7 @@ TEST_P(EphemerisTest, Moon) {
                                /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 100));
 
-  ephemeris.Prolong(t0_ + period);
+  EXPECT_OK(ephemeris.Prolong(t0_ + period));
 
   ContinuousTrajectory<ICRS> const& moon_trajectory =
       *ephemeris.trajectory(moon);
@@ -393,11 +394,12 @@ TEST_P(EphemerisTest, EarthProbe) {
 
   MasslessBody probe;
   DiscreteTrajectory<ICRS> trajectory;
-  trajectory.Append(t0_,
-                    DegreesOfFreedom<ICRS>(
-                        earth_position + Vector<Length, ICRS>(
-                                             {0 * Metre, distance, 0 * Metre}),
-                        earth_velocity));
+  EXPECT_OK(trajectory.Append(
+      t0_,
+      DegreesOfFreedom<ICRS>(
+          earth_position +
+              Vector<Length, ICRS>({0 * Metre, distance, 0 * Metre}),
+          earth_velocity)));
   auto const intrinsic_acceleration = [earth, distance](Instant const& t) {
     return Vector<Acceleration, ICRS>(
         {0 * si::Unit<Acceleration>,
@@ -405,7 +407,7 @@ TEST_P(EphemerisTest, EarthProbe) {
          0 * si::Unit<Acceleration>});
   };
 
-  ephemeris.FlowWithAdaptiveStep(
+  EXPECT_OK(ephemeris.FlowWithAdaptiveStep(
       &trajectory,
       intrinsic_acceleration,
       t0_ + period,
@@ -416,7 +418,7 @@ TEST_P(EphemerisTest, EarthProbe) {
           max_steps,
           1e-9 * Metre,
           2.6e-15 * Metre / Second),
-      Ephemeris<ICRS>::unlimited_max_ephemeris_steps);
+      Ephemeris<ICRS>::unlimited_max_ephemeris_steps));
 
   ContinuousTrajectory<ICRS> const& earth_trajectory =
       *ephemeris.trajectory(earth);
@@ -518,11 +520,12 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
 
   MasslessBody probe1;
   DiscreteTrajectory<ICRS> trajectory1;
-  trajectory1.Append(t0_,
-                     DegreesOfFreedom<ICRS>(
-                         earth_position + Vector<Length, ICRS>(
-                             {0 * Metre, distance_1, 0 * Metre}),
-                         earth_velocity));
+  EXPECT_OK(trajectory1.Append(
+      t0_,
+      DegreesOfFreedom<ICRS>(
+          earth_position +
+              Vector<Length, ICRS>({0 * Metre, distance_1, 0 * Metre}),
+          earth_velocity)));
   auto const intrinsic_acceleration1 = [earth, distance_1](Instant const& t) {
     return Vector<Acceleration, ICRS>(
         {0 * si::Unit<Acceleration>,
@@ -532,11 +535,12 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
 
   MasslessBody probe2;
   DiscreteTrajectory<ICRS> trajectory2;
-  trajectory2.Append(t0_,
-                     DegreesOfFreedom<ICRS>(
-                         earth_position + Vector<Length, ICRS>(
-                             {0 * Metre, -distance_2, 0 * Metre}),
-                         earth_velocity));
+  EXPECT_OK(trajectory2.Append(
+      t0_,
+      DegreesOfFreedom<ICRS>(
+          earth_position +
+              Vector<Length, ICRS>({0 * Metre, -distance_2, 0 * Metre}),
+          earth_velocity)));
   auto const intrinsic_acceleration2 = [earth, distance_2](Instant const& t) {
     return Vector<Acceleration, ICRS>(
         {0 * si::Unit<Acceleration>,
@@ -626,7 +630,7 @@ TEST_P(EphemerisTest, Serialization) {
       /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
                                /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 100));
-  ephemeris.Prolong(t0_ + period);
+  EXPECT_OK(ephemeris.Prolong(t0_ + period));
 
   EXPECT_EQ(0, ephemeris.serialization_index_for_body(earth));
   EXPECT_EQ(1, ephemeris.serialization_index_for_body(moon));
@@ -640,7 +644,7 @@ TEST_P(EphemerisTest, Serialization) {
       /*desired_t_min=*/InfiniteFuture,
       message);
   // After deserialization, the client must prolong as needed.
-  ephemeris_read->Prolong(ephemeris.t_max());
+  EXPECT_OK(ephemeris_read->Prolong(ephemeris.t_max()));
 
   MassiveBody const* const earth_read = ephemeris_read->bodies()[0];
   MassiveBody const* const moon_read = ephemeris_read->bodies()[1];
@@ -654,7 +658,7 @@ TEST_P(EphemerisTest, Serialization) {
   for (Instant time = ephemeris.t_min();
        time <= ephemeris.t_max();
        time += (ephemeris.t_max() - ephemeris.t_min()) / 100) {
-    ephemeris_read->Prolong(time);
+    EXPECT_OK(ephemeris_read->Prolong(time));
     EXPECT_EQ(
         ephemeris.trajectory(earth)->EvaluateDegreesOfFreedom(time),
         ephemeris_read->trajectory(earth_read)->EvaluateDegreesOfFreedom(time));
@@ -697,13 +701,14 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
 
   // The elephant's initial position and velocity.
   DiscreteTrajectory<ICRS> trajectory;
-  trajectory.Append(t0_,
-                    DegreesOfFreedom<ICRS>(
-                        earth_position + Vector<Length, ICRS>(
-                            {0 * Metre, 0 * Metre, TerrestrialPolarRadius}),
-                        earth_velocity));
+  EXPECT_OK(trajectory.Append(
+      t0_,
+      DegreesOfFreedom<ICRS>(
+          earth_position + Vector<Length, ICRS>(
+                               {0 * Metre, 0 * Metre, TerrestrialPolarRadius}),
+          earth_velocity)));
 
-  ephemeris.FlowWithAdaptiveStep(
+  EXPECT_OK(ephemeris.FlowWithAdaptiveStep(
       &trajectory,
       Ephemeris<ICRS>::NoIntrinsicAcceleration,
       t0_ + duration,
@@ -714,7 +719,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
           max_steps,
           1e-9 * Metre,
           2.6e-15 * Metre / Second),
-      Ephemeris<ICRS>::unlimited_max_ephemeris_steps);
+      Ephemeris<ICRS>::unlimited_max_ephemeris_steps));
 
   std::vector<Displacement<ICRS>> elephant_positions;
   std::vector<Vector<Acceleration, ICRS>> elephant_accelerations;
@@ -778,13 +783,13 @@ TEST_P(EphemerisTest, CollisionDetection) {
 
   // The apple's initial position and velocity.
   DiscreteTrajectory<ICRS> trajectory;
-  trajectory.Append(
+  EXPECT_OK(trajectory.Append(
       t0_,
       DegreesOfFreedom<ICRS>(
           earth_position +
               Vector<Length, ICRS>(
                   {0 * Metre, 0 * Metre, earth_mean_radius + 10 * Metre}),
-          earth_velocity));
+          earth_velocity)));
   auto const instance = ephemeris.NewInstance(
       {&trajectory},
       Ephemeris<ICRS>::NoIntrinsicAccelerations,
@@ -860,7 +865,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
       /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
                                /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(integrator(), duration / 100));
-  ephemeris.Prolong(t0_ + duration);
+  EXPECT_OK(ephemeris.Prolong(t0_ + duration));
 
   Vector<Acceleration, ICRS> actual_acceleration0 =
       ephemeris.ComputeGravitationalAccelerationOnMassiveBody(b0, t0_);
@@ -952,7 +957,7 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
           SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order4Optimal,
                                                 Position<ICRS>>(),
           /*step=*/10 * Milli(Second)));
-  ephemeris->Prolong(t0 + 10 * T);
+  EXPECT_OK(ephemeris->Prolong(t0 + 10 * T));
 
   MassiveBody const* const big =
       solar_system.massive_body(*ephemeris, big_name);
@@ -1057,7 +1062,7 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
   auto& segment1 = trajectory1.segments().front();
   segment1.SetDownsampling({.max_dense_intervals = 10'000,
                             .tolerance = 10 * Metre});
-  trajectory1.Append(t0, DegreesOfFreedom<ICRS>(q0, p0));
+  EXPECT_OK(trajectory1.Append(t0, DegreesOfFreedom<ICRS>(q0, p0)));
 
   auto instance = ephemeris->NewInstance(
       {&trajectory1},
@@ -1121,7 +1126,7 @@ TEST(EphemerisTestNoFixture, Reanimator) {
           SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
                                              Position<ICRS>>(),
           /*step=*/10 * Minute});
-  ephemeris1->Prolong(t_final);
+  EXPECT_OK(ephemeris1->Prolong(t_final));
   EXPECT_EQ(t_initial, ephemeris1->t_min());
   EXPECT_LE(t_final, ephemeris1->t_max());
 
@@ -1139,7 +1144,7 @@ TEST(EphemerisTestNoFixture, Reanimator) {
   LOG(ERROR) << "Waiting until Herbert West is done...";
   ephemeris2->WaitForReanimation(t_initial);
   LOG(ERROR) << "Herbert West is finally done.";
-  ephemeris2->Prolong(t_final);
+  EXPECT_OK(ephemeris2->Prolong(t_final));
 
   // Check that the two ephemerides have the exact same trajectories.
   EXPECT_EQ(ephemeris1->t_min(), ephemeris2->t_min());
