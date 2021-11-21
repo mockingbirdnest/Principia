@@ -20,7 +20,7 @@
 namespace principia {
 namespace physics {
 
-using astronomy::InfiniteFuture;
+using geometry::InfiniteFuture;
 using base::make_not_null_unique;
 using base::not_null;
 using geometry::Barycentre;

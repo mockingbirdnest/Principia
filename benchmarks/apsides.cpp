@@ -27,7 +27,7 @@ namespace principia {
 
 using astronomy::GCRS;
 using astronomy::ICRS;
-using astronomy::InfiniteFuture;
+using geometry::InfiniteFuture;
 using astronomy::ITRS;
 using astronomy::StandardProduct3;
 using base::dynamic_cast_not_null;

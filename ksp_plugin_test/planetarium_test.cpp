@@ -33,8 +33,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using astronomy::InfinitePast;
-using astronomy::InfiniteFuture;
 using base::not_null;
 using base::make_not_null_unique;
 using base::ParseFromBytes;
@@ -45,6 +43,8 @@ using geometry::DeduceSignReversingOrientation;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Handedness;
+using geometry::InfinitePast;
+using geometry::InfiniteFuture;
 using geometry::Instant;
 using geometry::LinearMap;
 using geometry::OrthogonalMap;
