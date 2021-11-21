@@ -2,12 +2,12 @@
 
 #include "testing_utilities/discrete_trajectory_factories.hpp"
 
+#include "base/status_utilities.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_segment.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
-#include "testing_utilities/matchers.hpp"
 
 namespace principia {
 namespace testing_utilities {
@@ -118,7 +118,7 @@ template<typename Frame>
 void AppendTrajectoryTimeline(Timeline<Frame> const& from,
                               DiscreteTrajectorySegment<Frame>& to) {
   for (auto const& [t, degrees_of_freedom] : from) {
-    EXPECT_OK(DiscreteTrajectoryFactoriesFriend<Frame>::Append(
+    CHECK_OK(DiscreteTrajectoryFactoriesFriend<Frame>::Append(
         t, degrees_of_freedom, to));
   }
 }
@@ -127,7 +127,7 @@ template<typename Frame>
 void AppendTrajectoryTimeline(Timeline<Frame> const& from,
                               DiscreteTrajectory<Frame>& to) {
   for (auto const& [t, degrees_of_freedom] : from) {
-    EXPECT_OK(to.Append(t, degrees_of_freedom));
+    CHECK_OK(to.Append(t, degrees_of_freedom));
   }
 }
 

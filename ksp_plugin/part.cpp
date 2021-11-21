@@ -191,7 +191,7 @@ void Part::AppendToHistory(
   if (psychohistory_ != trajectory_.segments().end()) {
     trajectory_.DeleteSegments(psychohistory_);
   }
-  trajectory_.Append(time, degrees_of_freedom);
+  trajectory_.Append(time, degrees_of_freedom).IgnoreError();
 }
 
 void Part::AppendToPsychohistory(
@@ -200,7 +200,7 @@ void Part::AppendToPsychohistory(
   if (psychohistory_ == trajectory_.segments().end()) {
     psychohistory_ = trajectory_.NewSegment();
   }
-  trajectory_.Append(time, degrees_of_freedom);
+  trajectory_.Append(time, degrees_of_freedom).IgnoreError();
 }
 
 void Part::ClearHistory() {

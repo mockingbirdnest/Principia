@@ -107,7 +107,9 @@ Renderer::RenderBarycentricTrajectoryInPlotting(
         break;
       }
     }
-    trajectory.Append(time, BarycentricToPlotting(time)(degrees_of_freedom));
+    trajectory.Append(time,
+                      BarycentricToPlotting(time)(degrees_of_freedom))
+        .IgnoreError();
   }
   return trajectory;
 }

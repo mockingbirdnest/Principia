@@ -175,7 +175,7 @@ void Vessel::PrepareHistory(
     });
     CHECK(psychohistory_ == trajectory_.segments().end());
     history_->SetDownsampling(downsampling_parameters);
-    trajectory_.Append(t, calculator.Get());
+    trajectory_.Append(t, calculator.Get()).IgnoreError();
     psychohistory_ = trajectory_.NewSegment();
     prediction_ = trajectory_.NewSegment();
   }

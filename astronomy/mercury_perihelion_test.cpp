@@ -21,6 +21,7 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
@@ -131,7 +132,7 @@ SolarSystem<ICRS> MercuryPerihelionTest::solar_system_1950_(
 std::unique_ptr<Ephemeris<ICRS>> MercuryPerihelionTest::ephemeris_;
 
 TEST_F(MercuryPerihelionTest, Year1950) {
-  ephemeris_->Prolong(t_1950_);
+  EXPECT_OK(ephemeris_->Prolong(t_1950_));
 
   auto const& sun_trajectory =
       solar_system_1950_.trajectory(*ephemeris_, "Sun");
@@ -171,7 +172,7 @@ TEST_F(MercuryPerihelionTest, Year1950) {
 
 #if !defined(_DEBUG)
 TEST_F(MercuryPerihelionTest, Year1960) {
-  ephemeris_->Prolong(t_1960_);
+  EXPECT_OK(ephemeris_->Prolong(t_1960_));
 
   auto const& sun_trajectory =
       solar_system_1950_.trajectory(*ephemeris_, "Sun");
@@ -210,7 +211,7 @@ TEST_F(MercuryPerihelionTest, Year1960) {
 }
 
 TEST_F(MercuryPerihelionTest, DISABLED_Year2050) {
-  ephemeris_->Prolong(t_2050_);
+  EXPECT_OK(ephemeris_->Prolong(t_2050_));
 
   auto const& sun_trajectory =
       solar_system_1950_.trajectory(*ephemeris_, "Sun");

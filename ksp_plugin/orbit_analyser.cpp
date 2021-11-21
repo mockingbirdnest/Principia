@@ -55,7 +55,9 @@ void OrbitAnalyser::RequestAnalysis(Parameters const& parameters) {
   if (analyser_idle_) {
     analyser_idle_ = false;
     analyser_ = MakeStoppableThread(
-        [this](Parameters parameters) { AnalyseOrbit(parameters); },
+        [this](Parameters parameters) {
+          AnalyseOrbit(parameters).IgnoreError();
+        },
         parameters);
   }
 }
@@ -86,7 +88,8 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
   DiscreteTrajectory<Barycentric> trajectory;
   trajectory.segments().front().SetDownsampling(
       DefaultDownsamplingParameters());
-  trajectory.Append(parameters.first_time, parameters.first_degrees_of_freedom);
+  trajectory.Append(parameters.first_time, parameters.first_degrees_of_freedom)
+      .IgnoreError();
 
   RotatingBody<Barycentric> const* primary = nullptr;
   auto smallest_osculating_period = Infinity<Time>;
@@ -146,7 +149,9 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
     for (auto const& [time, degrees_of_freedom] : trajectory) {
       RETURN_IF_STOPPED;
       primary_centred_trajectory.Append(
-          time, body_centred.ToThisFrameAtTime(time)(degrees_of_freedom));
+          time,
+          body_centred.ToThisFrameAtTime(time)(degrees_of_freedom))
+          .IgnoreError();
     }
     analysis.primary_ = primary;
     auto elements = OrbitalElements::ForTrajectory(

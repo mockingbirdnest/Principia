@@ -24,6 +24,7 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/statistics.hpp"
 
@@ -119,7 +120,8 @@ TEST_F(МолнияOrbitTest, DISABLED_Satellite) {
   auto const satellite_state_vectors = initial_orbit.StateVectors(J2000);
 
   DiscreteTrajectory<ICRS> trajectory;
-  trajectory.Append(J2000, earth_degrees_of_freedom + satellite_state_vectors);
+  EXPECT_OK(trajectory.Append(
+      J2000, earth_degrees_of_freedom + satellite_state_vectors));
   auto const instance = ephemeris_->NewInstance(
       {&trajectory},
       Ephemeris<ICRS>::NoIntrinsicAccelerations,
@@ -132,7 +134,7 @@ TEST_F(МолнияOrbitTest, DISABLED_Satellite) {
   for (Instant t = J2000 + integration_step / 2.0;
        t <= J2000 + integration_duration;
        t += integration_step / 2.0) {
-    ephemeris_->FlowWithFixedStep(t, *instance);
+    EXPECT_OK(ephemeris_->FlowWithFixedStep(t, *instance));
   }
 
   mathematica::Logger logger(

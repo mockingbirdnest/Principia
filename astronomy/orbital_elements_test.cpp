@@ -84,7 +84,7 @@ class OrbitalElementsTest : public ::testing::Test {
       Instant const& final_time,
       Ephemeris<ICRS>& ephemeris) {
     MassiveBody const& earth = FindEarthOrDie(ephemeris);
-    ephemeris.Prolong(final_time);
+    EXPECT_OK(ephemeris.Prolong(final_time));
     BodyCentredNonRotatingDynamicFrame<ICRS, GCRS> gcrs{&ephemeris, &earth};
     DiscreteTrajectory<ICRS> icrs_trajectory;
     KeplerOrbit<GCRS> initial_osculating_orbit{earth,
@@ -92,12 +92,12 @@ class OrbitalElementsTest : public ::testing::Test {
                                                initial_osculating_elements,
                                                initial_time};
     initial_osculating_elements = initial_osculating_orbit.elements_at_epoch();
-    icrs_trajectory.Append(
+    EXPECT_OK(icrs_trajectory.Append(
         initial_time,
         gcrs.FromThisFrameAtTime(initial_time)(
             DegreesOfFreedom<GCRS>{GCRS::origin, GCRS::unmoving} +
-            initial_osculating_orbit.StateVectors(initial_time)));
-    ephemeris.FlowWithAdaptiveStep(
+            initial_osculating_orbit.StateVectors(initial_time))));
+    EXPECT_OK(ephemeris.FlowWithAdaptiveStep(
         &icrs_trajectory,
         Ephemeris<ICRS>::NoIntrinsicAcceleration,
         final_time,
@@ -109,10 +109,11 @@ class OrbitalElementsTest : public ::testing::Test {
             /*length_integration_tolerance=*/1 * Milli(Metre),
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second
         },
-        /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max());
+        /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max()));
     auto result = make_not_null_unique<DiscreteTrajectory<GCRS>>();
     for (auto const& [time, degrees_of_freedom] : icrs_trajectory) {
-      result->Append(time, gcrs.ToThisFrameAtTime(time)(degrees_of_freedom));
+      EXPECT_OK(result->Append(
+          time, gcrs.ToThisFrameAtTime(time)(degrees_of_freedom)));
     }
     return result;
   }
