@@ -185,7 +185,7 @@ DiscreteTrajectory<Frame>::NewSegment() {
 }
 
 template<typename Frame>
-typename DiscreteTrajectory<Frame>::DiscreteTrajectory
+DiscreteTrajectory<Frame>
 DiscreteTrajectory<Frame>::DetachSegments(SegmentIterator const begin) {
   DiscreteTrajectory detached(uninitialized);
 
