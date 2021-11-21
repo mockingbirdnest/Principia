@@ -565,7 +565,7 @@ class Plugin {
   zombie_prediction_adaptive_step_parameters_;
 
   friend class NavballFrameField;
-  friend class TestablePlugin;
+  friend class ksp_plugin::TestablePlugin;
 };
 
 }  // namespace internal_plugin
