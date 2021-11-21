@@ -4,7 +4,6 @@
 #include <memory>
 
 #include "astronomy/frames.hpp"
-#include "base/status_utilities.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
@@ -24,6 +23,7 @@
 #include "serialization/geometry.pb.h"
 #include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 

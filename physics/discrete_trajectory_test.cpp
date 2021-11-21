@@ -5,7 +5,6 @@
 
 #include "astronomy/time_scales.hpp"
 #include "base/serialization.hpp"
-#include "base/status_utilities.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"

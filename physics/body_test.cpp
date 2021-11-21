@@ -4,7 +4,6 @@
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
-#include "base/status_utilities.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
@@ -23,6 +22,7 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/matchers.hpp"
 
 namespace principia {
 namespace physics {

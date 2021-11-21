@@ -4,7 +4,6 @@
 #include <optional>
 
 #include "base/not_null.hpp"
-#include "base/status_utilities.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
@@ -15,6 +14,7 @@
 #include "physics/discrete_trajectory_types.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/matchers.hpp"
 
 namespace principia {
 namespace physics {

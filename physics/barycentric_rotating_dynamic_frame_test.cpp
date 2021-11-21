@@ -4,7 +4,6 @@
 #include <memory>
 
 #include "astronomy/frames.hpp"
-#include "base/status_utilities.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -24,6 +23,7 @@
 #include "serialization/geometry.pb.h"
 #include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {

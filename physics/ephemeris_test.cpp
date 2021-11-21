@@ -12,7 +12,6 @@
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "base/macros.hpp"
-#include "base/status_utilities.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "gipfeli/gipfeli.h"

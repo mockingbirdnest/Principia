@@ -7,7 +7,6 @@
 #include <limits>
 #include <vector>
 
-#include "base/status_utilities.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"

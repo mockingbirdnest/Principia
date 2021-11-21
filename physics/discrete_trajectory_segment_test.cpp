@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "base/not_null.hpp"
-#include "base/status_utilities.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"

@@ -6,7 +6,6 @@
 #include <optional>
 #include <vector>
 
-#include "base/status_utilities.hpp"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
@@ -16,6 +15,7 @@
 #include "physics/kepler_orbit.hpp"
 #include "quantities/astronomy.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/matchers.hpp"
 
 namespace principia {
 namespace physics {
