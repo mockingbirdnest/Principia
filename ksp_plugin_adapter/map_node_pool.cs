@@ -197,10 +197,10 @@ internal class MapNodePool {
       string source;
       switch (properties.source) {
         case NodeSource.FlightPlan:
-          source = Localizer.Format("#Principia_MapNode_Planned");
+          source = L10N.CacheFormat("#Principia_MapNode_Planned");
           break;
         case NodeSource.Prediction:
-          source = Localizer.Format("#Principia_MapNode_Predicted");
+          source = L10N.CacheFormat("#Principia_MapNode_Predicted");
           break;
         default:
           throw Log.Fatal($"Unexpected node source {properties.source}");
@@ -219,7 +219,7 @@ internal class MapNodePool {
               source,
               celestial.GetAltitude(position).FormatN(0));
           caption.captionLine2 =
-              Localizer.Format("#Principia_MapNode_ApsisCaptionLine2",
+              L10N.CacheFormat("#Principia_MapNode_ApsisCaptionLine2",
                                speed.FormatN(0));
           break;
         }
@@ -227,14 +227,14 @@ internal class MapNodePool {
         case MapObject.ObjectType.DescendingNode: {
           string node_name =
               properties.object_type == MapObject.ObjectType.AscendingNode
-                  ? Localizer.Format("#Principia_MapNode_AscendingNode")
-                  : Localizer.Format("#Principia_MapNode_DescendingNode");
+                  ? L10N.CacheFormat("#Principia_MapNode_AscendingNode")
+                  : L10N.CacheFormat("#Principia_MapNode_DescendingNode");
           string plane = properties.reference_frame.ReferencePlaneDescription();
-          caption.Header = Localizer.Format("#Principia_MapNode_NodeHeader",
+          caption.Header = L10N.CacheFormat("#Principia_MapNode_NodeHeader",
                                             source,
                                             node_name,
                                             plane);
-          caption.captionLine2 = Localizer.Format(
+          caption.captionLine2 = L10N.CacheFormat(
               "#Principia_MapNode_NodeCaptionLine2",
               properties.velocity.z.FormatN(0));
           break;
@@ -244,17 +244,17 @@ internal class MapNodePool {
               (properties.reference_frame.target.GetWorldPos3D() -
                properties.world_position).magnitude;
           double speed = properties.velocity.magnitude;
-          caption.Header = Localizer.Format("#Principia_MapNode_ApproachHeader",
+          caption.Header = L10N.CacheFormat("#Principia_MapNode_ApproachHeader",
                                             source,
                                             separation.FormatN(0));
-          caption.captionLine2 = Localizer.Format(
+          caption.captionLine2 = L10N.CacheFormat(
               "#Principia_MapNode_ApproachCaptionLine2",
               speed.FormatN(0));
           break;
         }
         case MapObject.ObjectType.PatchTransition: {
           CelestialBody celestial = properties.reference_frame.Centre();
-          caption.Header = Localizer.Format("#Principia_MapNode_ImpactHeader",
+          caption.Header = L10N.CacheFormat("#Principia_MapNode_ImpactHeader",
                                             source,
                                             celestial.Name());
           caption.captionLine1 = "";

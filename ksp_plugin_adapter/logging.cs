@@ -7,10 +7,10 @@ namespace ksp_plugin_adapter {
 
 internal static class Log {
   internal static string[] severity_names = {
-      Localizer.Format("#Principia_Logging_Info"),
-      Localizer.Format("#Principia_Logging_Warning"),
-      Localizer.Format("#Principia_Logging_Error"),
-      Localizer.Format("#Principia_Logging_Fatal")
+      L10N.CacheFormat("#Principia_Logging_Info"),
+      L10N.CacheFormat("#Principia_Logging_Warning"),
+      L10N.CacheFormat("#Principia_Logging_Error"),
+      L10N.CacheFormat("#Principia_Logging_Fatal")
   };
 
   internal static void InitGoogleLogging() {

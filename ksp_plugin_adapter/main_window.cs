@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using KSP.Localization;
 
 namespace principia {
@@ -145,13 +146,13 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     using (new UnityEngine.GUILayout.VerticalScope()) {
       if (!adapter_.PluginRunning()) {
         UnityEngine.GUILayout.Label(
-            text : Localizer.Format("#Principia_MainWindow_PluginNotStarted"),
+            text : L10N.CacheFormat("#Principia_MainWindow_PluginNotStarted"),
             style : Style.Warning(UnityEngine.GUI.skin.label));
       }
       if (DateTimeOffset.Now > next_release_date_) {
         if (Versioning.version_minor <= 7) {
           UnityEngine.GUILayout.TextArea(
-              Localizer.Format(
+              L10N.CacheFormat(
                   "#Principia_MainWindow_NewMoonAnnouncementWithKspDeprecation",
                   next_release_lunation_number,
                   next_release_name,
@@ -159,7 +160,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
               style : Style.Multiline(UnityEngine.GUI.skin.textArea));
         } else {
           UnityEngine.GUILayout.TextArea(
-              Localizer.Format("#Principia_MainWindow_NewMoonAnnouncement",
+              L10N.CacheFormat("#Principia_MainWindow_NewMoonAnnouncement",
                                next_release_lunation_number,
                                next_release_name ),
               style: Style.Multiline(UnityEngine.GUI.skin.textArea));
@@ -177,25 +178,25 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           selecting_active_vessel_target = UnityEngine.GUILayout.Toggle(
               selecting_active_vessel_target,
-              Localizer.Format("#Principia_MainWindow_TargetVessel_Select"));
+              L10N.CacheFormat("#Principia_MainWindow_TargetVessel_Select"));
           if (selecting_active_vessel_target) {
             selecting_target_celestial_ = false;
           }
           if (FlightGlobals.fetch.VesselTarget?.GetVessel()) {
             UnityEngine.GUILayout.Label(
-                Localizer.Format("#Principia_MainWindow_TargetVessel_Name",
+                L10N.CacheFormat("#Principia_MainWindow_TargetVessel_Name",
                                  FlightGlobals.fetch.VesselTarget.GetVessel().
                                      vesselName),
                 UnityEngine.GUILayout.ExpandWidth(true));
             if (UnityEngine.GUILayout.Button(
-                    Localizer.Format(
+                    L10N.CacheFormat(
                         "#Principia_MainWindow_TargetVessel_Clear"),
                     GUILayoutWidth(2))) {
               selecting_active_vessel_target = false;
               FlightGlobals.fetch.SetVesselTarget(null);
             }
             if (UnityEngine.GUILayout.Button(
-                    Localizer.Format(
+                    L10N.CacheFormat(
                         "#Principia_MainWindow_TargetVessel_SwitchTo"))) {
               var focus_object =
                   new KSP.UI.Screens.Mapview.MapContextMenuOptions.FocusObject(
@@ -224,16 +225,16 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
         }
         RenderToggleableSection(
             name   :
-            Localizer.Format("#Principia_MainWindow_PredictionSettings"),
+            L10N.CacheFormat("#Principia_MainWindow_PredictionSettings"),
             show   : ref show_prediction_settings_,
             render : RenderPredictionSettings);
       }
       RenderToggleableSection(
-          name   : Localizer.Format("#Principia_MainWindow_KspFeatures"),
+          name   : L10N.CacheFormat("#Principia_MainWindow_KspFeatures"),
           show   : ref show_ksp_features_,
           render : RenderKSPFeatures);
       RenderToggleableSection(
-          name   : Localizer.Format("#Principia_MainWindow_LoggingSettings"),
+          name   : L10N.CacheFormat("#Principia_MainWindow_LoggingSettings"),
           show   : ref show_logging_settings_,
           render : RenderLoggingSettings);
     }
@@ -243,14 +244,14 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
   private void RenderKSPFeatures() {
     display_patched_conics = UnityEngine.GUILayout.Toggle(
         value : display_patched_conics,
-        text  : Localizer.Format(
+        text  : L10N.CacheFormat(
             "#Principia_MainWindow_KspFeature_DisplayPatchedConics"));
     if (MapView.MapIsEnabled &&
         FlightGlobals.ActiveVessel?.orbitTargeter != null) {
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         selecting_target_celestial_ = UnityEngine.GUILayout.Toggle(
             selecting_target_celestial_,
-            Localizer.Format("#Principia_MainWindow_TargetCelestial_Select"));
+            L10N.CacheFormat("#Principia_MainWindow_TargetCelestial_Select"));
         if (selecting_target_celestial_) {
           selecting_active_vessel_target = false;
         }
@@ -258,11 +259,11 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
             FlightGlobals.fetch.VesselTarget as CelestialBody;
         if (target_celestial != null) {
           UnityEngine.GUILayout.Label(
-              Localizer.Format("#Principia_MainWindow_TargetCelestial_Name",
+              L10N.CacheFormat("#Principia_MainWindow_TargetCelestial_Name",
                                target_celestial.Name()),
               UnityEngine.GUILayout.ExpandWidth(true));
           if (UnityEngine.GUILayout.Button(
-              Localizer.Format("#Principia_MainWindow_TargetCelestial_Clear"),
+              L10N.CacheFormat("#Principia_MainWindow_TargetCelestial_Clear"),
               GUILayoutWidth(2))) {
             selecting_target_celestial_ = false;
             FlightGlobals.fetch.SetVesselTarget(null);
@@ -277,7 +278,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
   private void RenderLoggingSettings() {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(
-          text : Localizer.Format(
+          text : L10N.CacheFormat(
               "#Principia_MainWindow_LoggingSettings_VerboseLevel"));
       if (UnityEngine.GUILayout.Button(text    : "←",
                                        options : GUILayoutWidth(2))) {
@@ -298,15 +299,15 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Space(column_width);
       UnityEngine.GUILayout.Label(
-          text    : Localizer.Format(
+          text    : L10N.CacheFormat(
               "#Principia_MainWindow_LoggingSettings_LogOption"),
           options : gui_layout_column_width);
       UnityEngine.GUILayout.Label(
-          text    : Localizer.Format(
+          text    : L10N.CacheFormat(
               "#Principia_MainWindow_LoggingSettings_StderrOption"),
           options : gui_layout_column_width);
       UnityEngine.GUILayout.Label(
-          text    : Localizer.Format(
+          text    : L10N.CacheFormat(
               "#Principia_MainWindow_LoggingSettings_FlushOption"),
           options : gui_layout_column_width);
     }
@@ -368,15 +369,15 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       must_record_journal_ = UnityEngine.GUILayout.Toggle(
           value   : must_record_journal_,
-          text    : Localizer.Format(
+          text    : L10N.CacheFormat(
               "#Principia_MainWindow_LoggingSettings_RecordJournal"));
       UnityEngine.GUILayout.Label(
-          Localizer.Format(
+          L10N.CacheFormat(
               "#Principia_MainWindow_LoggingSettings_RecordJournalResult",
               journaling_
-                  ? Localizer.Format(
+                  ? L10N.CacheFormat(
                       "#Principia_MainWindow_LoggingSettings_JournalingStatus_ON")
-                  : Localizer.Format(
+                  : L10N.CacheFormat(
                       "#Principia_MainWindow_LoggingSettings_JournalingStatus_OFF")),
           style : Style.Info(
               Style.RightAligned(
@@ -388,6 +389,8 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
       journaling_ = false;
       Interface.ActivateRecorder(false);
     }
+    UnityEngine.GUILayout.Label($"L10N cache misses: {L10N.cache_miss_counter}");
+    UnityEngine.GUILayout.Label($"L10N cache size: {L10N.cache_.Count()}, {L10N.cache_by_time_.Count()}");
   }
 
   private void RenderPredictionSettings() {
@@ -418,7 +421,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     // TODO(egg): make the speed tolerance independent.
     if (RenderSelector(prediction_length_tolerances_,
                        ref prediction_length_tolerance_index_,
-                       Localizer.Format(
+                       L10N.CacheFormat(
                            "#Principia_PredictionSettings_ToleranceLabel"),
                        "{0:0.0e0} m",
                        enabled: adaptive_step_parameters.HasValue)) {
@@ -435,7 +438,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     }
     if (RenderSelector(prediction_steps_,
                        ref prediction_steps_index_,
-                       Localizer.Format("#Principia_PredictionSettings_Steps"),
+                       L10N.CacheFormat("#Principia_PredictionSettings_Steps"),
                        "{0:0.00e0}",
                        enabled: adaptive_step_parameters.HasValue)) {
       AdaptiveStepParameters new_adaptive_step_parameters =
@@ -462,7 +465,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
                                   options : GUILayoutWidth(6));
       if (UnityEngine.GUILayout.Button(
               text    : index == 0
-                            ? Localizer.Format(
+                            ? L10N.CacheFormat(
                                 "#Principia_DiscreteSelector_Min")
                             : "-",
               options : GUILayoutWidth(2)) &&
@@ -479,7 +482,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
           options : GUILayoutWidth(3));
       if (UnityEngine.GUILayout.Button(
               text    : index == array.Length - 1
-                            ? Localizer.Format(
+                            ? L10N.CacheFormat(
                                 "#Principia_DiscreteSelector_Max")
                             : "+",
               options : GUILayoutWidth(2)) &&
@@ -516,7 +519,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
 
   private DifferentialSlider history_length_ = new DifferentialSlider(
       label            :
-          Localizer.Format("#Principia_MainWindow_HistoryLength"),
+          L10N.CacheFormat("#Principia_MainWindow_HistoryLength"),
       unit             : null,
       log10_lower_rate : 0,
       log10_upper_rate : 7,
