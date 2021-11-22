@@ -128,7 +128,7 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
           id         : this.GetHashCode(),
           screenRect : rectangle_,
           func       : RenderWindowAndRecordTooltip,
-          text       : Title,
+          text       : $"{Title} ({render_time_μs_:F0} μs)",
           options    : options_);
 
       // The first time a window is shown, we have a moral duty to place it at
@@ -148,7 +148,7 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
                 width  : 0,
                 height : 0),
             func       : RenderWindowAndRecordTooltip,
-            text       : Title,
+            text       : $"{Title} ({render_time_μs_:F0} μs)",
             options    : options_);
         must_centre_ = false;
       }
@@ -173,6 +173,7 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
   }
 
   private void RenderWindowAndRecordTooltip(int window_id) {
+    DateTime render_start = DateTime.Now;
     RenderWindow(window_id);
     if (UnityEngine.Event.current.type == UnityEngine.EventType.Repaint &&
         tooltip_ != UnityEngine.GUI.tooltip) {
@@ -188,6 +189,9 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
           (UnityEngine.Input.mousePosition.y - Width(1) / 2),
           Width(8), height);
     }
+    render_time_μs_ =
+        render_time_μs_ * (499.0 / 500) +
+        (DateTime.Now - render_start).TotalMilliseconds * 1000 / 500;
   }
 
   private void ShowTooltip() {
@@ -271,6 +275,7 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
   private DateTime tooltip_begin_;
   private string tooltip_ = "";
   private UnityEngine.Rect tooltip_rectangle_;
+  private double render_time_μs_;
 }
 
 // The supervisor of a window decides when to clear input locks, when to render
