@@ -541,7 +541,7 @@ TEST_F(FlightPlanTest, Issue2331) {
                                        inertially_fixed};
 
   // This call used to check-fail.
-  EXPECT_OK( flight_plan.Replace(burn2, 0));
+  EXPECT_OK(flight_plan.Replace(burn2, 0));
 }
 
 TEST_F(FlightPlanTest, Serialization) {
