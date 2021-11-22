@@ -20,7 +20,6 @@
 namespace principia {
 namespace physics {
 
-using geometry::InfiniteFuture;
 using base::make_not_null_unique;
 using base::not_null;
 using geometry::Barycentre;
@@ -28,6 +27,7 @@ using geometry::Displacement;
 using geometry::Frame;
 using geometry::Handedness;
 using geometry::Inertial;
+using geometry::InfiniteFuture;
 using geometry::Instant;
 using geometry::Velocity;
 using ksp_plugin::World;

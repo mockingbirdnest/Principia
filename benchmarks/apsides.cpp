@@ -27,11 +27,11 @@ namespace principia {
 
 using astronomy::GCRS;
 using astronomy::ICRS;
-using geometry::InfiniteFuture;
 using astronomy::ITRS;
 using astronomy::StandardProduct3;
 using base::dynamic_cast_not_null;
 using base::not_null;
+using geometry::InfiniteFuture;
 using geometry::Position;
 using geometry::Vector;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
