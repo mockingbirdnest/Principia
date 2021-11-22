@@ -36,6 +36,7 @@ using quantities::si::Tonne;
 using testing_utilities::Componentwise;
 using testing_utilities::IsNear;
 using testing_utilities::SolarSystemFactory;
+using testing_utilities::StatusIs;
 using testing_utilities::operator""_⑴;
 using ::testing::AllOf;
 using ::testing::Eq;
@@ -81,7 +82,7 @@ class InterfaceExternalTest : public ::testing::Test {
 
 TEST_F(InterfaceExternalTest, GetNearestPlannedCoastDegreesOfFreedom) {
   plugin_.CreateFlightPlan(
-      vessel_guid, plugin_.CurrentTime() + 24 * Hour, 1 * Tonne);
+      vessel_guid, plugin_.CurrentTime() + 6 * Hour, 1 * Tonne);
   NavigationManœuvre::Intensity intensity;
   intensity.Δv = Velocity<Frenet<Navigation>>({1000 * Metre / Second,
                                                0 * Metre / Second,

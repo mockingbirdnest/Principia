@@ -271,10 +271,11 @@ TEST_F(FlightPlanTest, Singular) {
       StatusIs(integrators::termination_condition::VanishingStepSize));
   EXPECT_EQ(2, flight_plan_->number_of_anomalous_manœuvres());
 
-  // Check that RemoveLast returns the proper statuses.
+  // Check that Remove returns the proper statuses.
   EXPECT_THAT(flight_plan_->Remove(1),
               StatusIs(integrators::termination_condition::VanishingStepSize));
-  EXPECT_OK(flight_plan_->Remove(0));
+  EXPECT_THAT(flight_plan_->Remove(0),
+              StatusIs(integrators::termination_condition::VanishingStepSize));
 
   // The singularity occurs during the burn: we're boosting towards the
   // singularity, so we reach the singularity in less than π / 2√2 s, before the
@@ -540,7 +541,7 @@ TEST_F(FlightPlanTest, Issue2331) {
                                        inertially_fixed};
 
   // This call used to check-fail.
- EXPECT_OK( flight_plan.Replace(burn2, 0));
+  EXPECT_OK( flight_plan.Replace(burn2, 0));
 }
 
 TEST_F(FlightPlanTest, Serialization) {
