@@ -43,7 +43,7 @@ class DiscreteTrajectorySegmentIterator {
   using value_type = DiscreteTrajectorySegment<Frame>;
   using pointer = value_type*;
   using reference = value_type&;
-  using iterator_category = std::bidirectional_iterator_tag ;
+  using iterator_category = std::bidirectional_iterator_tag;
 
   DiscreteTrajectorySegmentIterator() = default;
 
