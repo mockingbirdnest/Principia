@@ -14,6 +14,11 @@
 namespace principia {
 namespace testing_utilities {
 
+// This is not defined in base/status_utilities.hpp to avoid pulling gmock in
+// non-test code.
+#define EXPECT_OK(value) \
+  EXPECT_THAT((value), ::principia::testing_utilities::IsOk());
+
 MATCHER_P(EqualsProto,
           expected,
           std::string(negation ? "is not" : "is") + " equal to:\n" +

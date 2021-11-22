@@ -160,11 +160,11 @@ class OrbitAnalysisTest : public ::testing::Test {
       CHECK_EQ(orbit.size(), 1);
       auto const& arc = *orbit.front();
       for (auto const& [time, degrees_of_freedom] : arc) {
-        ephemeris_->Prolong(time);
-        result->Append(
+        EXPECT_OK(ephemeris_->Prolong(time));
+        EXPECT_OK(result->Append(
             time,
             gcrs.ToThisFrameAtTime(time)(
-                itrs.FromThisFrameAtTime(time)(degrees_of_freedom)));
+                itrs.FromThisFrameAtTime(time)(degrees_of_freedom))));
       }
     }
     return result;

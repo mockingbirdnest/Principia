@@ -21,6 +21,7 @@
 #include "physics/solar_system.hpp"
 #include "physics/rigid_motion.hpp"
 #include "quantities/astronomy.hpp"
+#include "testing_utilities/matchers.hpp"
 
 namespace principia {
 
@@ -214,7 +215,7 @@ TEST_F(KSPSystemTest, KerbalSystem) {
 #endif
 
   LOG(INFO) << "Starting integration";
-  ephemeris_->Prolong(a_century_hence);
+  EXPECT_OK(ephemeris_->Prolong(a_century_hence));
   LOG(INFO) << "Integration done";
 
   std::map<not_null<MassiveBody const*>, Length> last_separations;
@@ -384,7 +385,7 @@ TEST_P(KSPSystemConvergenceTest, DISABLED_Convergence) {
         /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
                                  /*geopotential_tolerance=*/0x1p-24},
         Ephemeris<KSP>::FixedStepParameters(integrator(), step));
-    ephemeris->Prolong(solar_system_.epoch() + integration_duration);
+    EXPECT_OK(ephemeris->Prolong(solar_system_.epoch() + integration_duration));
     auto const end = std::chrono::system_clock::now();
     durations.push_back(end - start);
 

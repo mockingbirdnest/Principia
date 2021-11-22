@@ -23,6 +23,7 @@
 #include "serialization/geometry.pb.h"
 #include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
@@ -114,7 +115,7 @@ class BodyCentredBodyDirectionDynamicFrameTest : public ::testing::Test {
         std::make_unique<BodyCentredBodyDirectionDynamicFrame<ICRS, MockFrame>>(
             &mock_ephemeris_, big_, small_);
 
-    ephemeris_->Prolong(t0_ + 2 * period_);
+    EXPECT_OK(ephemeris_->Prolong(t0_ + 2 * period_));
     big_small_frame_ = std::make_unique<
         BodyCentredBodyDirectionDynamicFrame<ICRS, BigSmallFrame>>(
         ephemeris_.get(), big_, small_);
@@ -466,7 +467,7 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ConstructFromOneBody) {
              small_->gravitational_parameter()});
     EXPECT_THAT(barycentre.velocity().Norm(),
                 VanishesBefore(1 * Kilo(Metre) / Second, 0, 50));
-    barycentre_trajectory.Append(t0_ + t, barycentre);
+    EXPECT_OK(barycentre_trajectory.Append(t0_ + t, barycentre));
   }
   BodyCentredBodyDirectionDynamicFrame<ICRS, BigSmallFrame>
       barycentric_from_discrete{

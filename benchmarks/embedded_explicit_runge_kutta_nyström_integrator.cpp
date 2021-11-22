@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "base/status_utilities.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -118,7 +119,7 @@ void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
                                                append_state,
                                                tolerance_to_error_ratio,
                                                parameters);
-  instance->Solve(t_final);
+  CHECK_OK(instance->Solve(t_final));
 
   state.PauseTiming();
   q_error = Length();
@@ -177,7 +178,7 @@ void SolveHarmonicOscillatorAndComputeError3D(
                                                append_state,
                                                tolerance_to_error_ratio,
                                                parameters);
-  instance->Solve(t_final);
+  CHECK_OK(instance->Solve(t_final));
 
   state.PauseTiming();
   q_error = Length();

@@ -38,7 +38,7 @@ inline absl::Status BaseRecurringThread::RepeatedlyRunAction() {
     wakeup_time = std::chrono::steady_clock::now() + period_;
     RETURN_IF_STOPPED;
 
-    RunAction();
+    RunAction().IgnoreError();
 
     RETURN_IF_STOPPED;
   }

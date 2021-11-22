@@ -23,6 +23,7 @@
 #include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
@@ -126,7 +127,7 @@ class BodySurfaceDynamicFrameTest : public ::testing::Test {
     mock_frame_ = std::make_unique<BodySurfaceDynamicFrame<ICRS, MockFrame>>(
         &mock_ephemeris_, &centre_);
 
-    ephemeris_->Prolong(t0_ + 2 * period_);
+    EXPECT_OK(ephemeris_->Prolong(t0_ + 2 * period_));
     big_frame_ = std::make_unique<BodySurfaceDynamicFrame<ICRS, BigSmallFrame>>(
         ephemeris_.get(), big_);
   }

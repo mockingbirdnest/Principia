@@ -25,6 +25,7 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 
@@ -282,7 +283,7 @@ TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
           SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
                                              Position<ICRS>>(),
           /*step=*/10 * Minute));
-  ephemeris->Prolong(ten_years_later.epoch());
+  EXPECT_OK(ephemeris->Prolong(ten_years_later.epoch()));
 
   // NOTE(phl):
   // For Mercury and Venus the separation is about the order of magnitude we'd
@@ -568,7 +569,7 @@ TEST(MarsTest, Phobos) {
           SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
                                              Position<ICRS>>(),
           /*step=*/10 * Minute));
-  ephemeris->Prolong(J2000 + 1 * JulianYear);
+  EXPECT_OK(ephemeris->Prolong(J2000 + 1 * JulianYear));
 
   ContinuousTrajectory<ICRS> const& mars_trajectory =
       solar_system_at_j2000.trajectory(*ephemeris, "Mars");
@@ -660,7 +661,8 @@ TEST_P(SolarSystemDynamicsConvergenceTest, DISABLED_Convergence) {
         /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
                                  /*geopotential_tolerance=*/0x1p-24},
         Ephemeris<ICRS>::FixedStepParameters(integrator(), step));
-    ephemeris->Prolong(solar_system_at_j2000.epoch() + integration_duration);
+    EXPECT_OK(ephemeris->Prolong(solar_system_at_j2000.epoch() +
+                                 integration_duration));
     auto const end = std::chrono::system_clock::now();
     durations.push_back(end - start);
 

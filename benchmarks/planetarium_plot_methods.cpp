@@ -6,6 +6,7 @@
 #include <algorithm>
 
 #include "astronomy/time_scales.hpp"
+#include "base/status_utilities.hpp"
 #include "benchmark/benchmark.h"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -141,13 +142,13 @@ class Satellites {
     goes_8_elements.mean_anomaly = 121.5613 * Degree;
     goes_8_elements.mean_motion = 1.00264613 * (2 * π * Radian / Day);
 
-    ephemeris_->Prolong(goes_8_epoch);
+    CHECK_OK(ephemeris_->Prolong(goes_8_epoch));
     KeplerOrbit<Barycentric> const goes_8_orbit(
         *earth_, MasslessBody{}, goes_8_elements, goes_8_epoch);
-    goes_8_trajectory_.Append(
+    CHECK_OK(goes_8_trajectory_.Append(
         goes_8_epoch,
         ephemeris_->trajectory(earth_)->EvaluateDegreesOfFreedom(goes_8_epoch) +
-            goes_8_orbit.StateVectors(goes_8_epoch));
+            goes_8_orbit.StateVectors(goes_8_epoch)));
     auto goes_8_instance = ephemeris_->NewInstance(
         {&goes_8_trajectory_},
         Ephemeris<Barycentric>::NoIntrinsicAccelerations,

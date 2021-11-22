@@ -72,7 +72,7 @@ DiscreteTrajectory<World> MakeTrajectory(Timeline<World> const& timeline,
       t_split = std::nullopt;
       trajectory.NewSegment();
     }
-    trajectory.Append(t, degrees_of_freedom);
+    CHECK_OK(trajectory.Append(t, degrees_of_freedom));
   }
   return trajectory;
 }

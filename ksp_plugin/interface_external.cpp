@@ -290,7 +290,8 @@ Status* __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
        *flight_plan.GetSegment(segment_index)) {
     coast.Append(
         time,
-        body_centred_inertial->ToThisFrameAtTime(time)(degrees_of_freedom));
+        body_centred_inertial->ToThisFrameAtTime(time)(degrees_of_freedom))
+        .IgnoreError();
   }
 
   Instant const current_time = plugin->CurrentTime();
@@ -315,11 +316,13 @@ Status* __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
       from_world_body_centred_inertial.rigid_transformation()(
           FromXYZ<Position<World>>(world_body_centred_reference_position));
   DiscreteTrajectory<Navigation> immobile_reference;
-  immobile_reference.Append(coast.front().time,
-                            {reference_position, Navigation::unmoving});
+  immobile_reference.Append(
+      coast.front().time,
+      {reference_position, Navigation::unmoving}).IgnoreError();
   if (coast.size() > 1) {
-    immobile_reference.Append(coast.back().time,
-                              {reference_position, Navigation::unmoving});
+    immobile_reference.Append(
+        coast.back().time,
+        {reference_position, Navigation::unmoving}).IgnoreError();
   }
   DiscreteTrajectory<Navigation> apoapsides;
   DiscreteTrajectory<Navigation> periapsides;

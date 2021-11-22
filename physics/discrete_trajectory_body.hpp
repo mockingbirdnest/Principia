@@ -173,7 +173,7 @@ DiscreteTrajectory<Frame>::NewSegment() {
   } else {
     // Duplicate the last point of the previous segment.
     auto const& [last_time, last_degrees_of_freedom] = *last_segment.rbegin();
-    new_segment_sit->Append(last_time, last_degrees_of_freedom);
+    new_segment_sit->Append(last_time, last_degrees_of_freedom).IgnoreError();
     // The use of |insert_or_assign| ensure that we override any entry with the
     // same left endpoint.
     segment_by_left_endpoint_.insert_or_assign(
@@ -349,7 +349,7 @@ void DiscreteTrajectory<Frame>::ForgetBefore(iterator const it) {
 }
 
 template<typename Frame>
-void DiscreteTrajectory<Frame>::Append(
+absl::Status DiscreteTrajectory<Frame>::Append(
     Instant const& t,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
   typename Segments::iterator sit;
@@ -369,9 +369,10 @@ void DiscreteTrajectory<Frame>::Append(
     sit = leit->second;
     CHECK(!sit->empty()) << "Empty segment at " << t;
   }
-  sit->Append(t, degrees_of_freedom);
+  RETURN_IF_ERROR(sit->Append(t, degrees_of_freedom));
 
   DCHECK_OK(ConsistencyStatus());
+  return absl::OkStatus();
 }
 
 template<typename Frame>
@@ -624,11 +625,13 @@ absl::Status DiscreteTrajectory<Frame>::ConsistencyStatus() const {
     for (auto const& [left_endpoint, sit] : segment_by_left_endpoint_) {
       if (sit->empty()) {
       } else if (left_endpoint != sit->front().time) {
-        absl::StrCat("Times mismatch ",
-                      DebugString(left_endpoint),
-                      " and ",
-                      DebugString(sit->front().time),
-                      " between segment #", i, " and the time-to-segment map");
+        return absl::InternalError(
+            absl::StrCat("Times mismatch ",
+                          DebugString(left_endpoint),
+                          " and ",
+                          DebugString(sit->front().time),
+                          " between segment #", i,
+                          " and the time-to-segment map"));
       }
     }
   }
@@ -792,7 +795,7 @@ void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
     for (auto const& instantaneous_dof : message.timeline()) {
       sit->Append(Instant::ReadFromMessage(instantaneous_dof.instant()),
                   DegreesOfFreedom<Frame>::ReadFromMessage(
-                      instantaneous_dof.degrees_of_freedom()));
+                      instantaneous_dof.degrees_of_freedom())).IgnoreError();
     }
     if (message.has_downsampling()) {
       DownsamplingParameters downsampling_parameters;
