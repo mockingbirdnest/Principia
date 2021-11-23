@@ -8,6 +8,7 @@
 #include "astronomy/frames.hpp"
 #include "benchmark/benchmark.h"
 #include "base/not_null.hpp"
+#include "base/status_utilities.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
@@ -76,9 +77,8 @@ void FillLinearTrajectory(Position<F> const& initial,
   for (int i = 0; i < steps; ++i) {
     Time const iΔt = i * Δt;
     Displacement<F> const displacement_i = velocity * iΔt;
-    trajectory.Append(t0 + iΔt,
-                      DegreesOfFreedom<F>(initial + displacement_i,
-                                          velocity));
+    CHECK_OK(trajectory.Append(
+        t0 + iΔt, DegreesOfFreedom<F>(initial + displacement_i, velocity)));
   }
 }
 
@@ -96,9 +96,9 @@ ApplyDynamicFrame(
   DiscreteTrajectory<Rendering> intermediate_trajectory;
   for (auto it = begin; it != end; ++it) {
     auto const& [time, degrees_of_freedom] = *it;
-    intermediate_trajectory.Append(
+    CHECK_OK(intermediate_trajectory.Append(
         time,
-        dynamic_frame->ToThisFrameAtTime(time)(degrees_of_freedom));
+        dynamic_frame->ToThisFrameAtTime(time)(degrees_of_freedom)));
   }
 
   // Render the trajectory at current time in |Rendering|.
@@ -138,7 +138,7 @@ void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
           SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order5Optimal,
                                                 Position<Barycentric>>(),
           /*step=*/45 * Minute));
-  ephemeris->Prolong(solar_system.epoch() + steps * Δt);
+  CHECK_OK(ephemeris->Prolong(solar_system.epoch() + steps * Δt));
 
   not_null<MassiveBody const*> const earth =
       solar_system.massive_body(*ephemeris, "Earth");
@@ -187,7 +187,7 @@ void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
           SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order5Optimal,
                                                 Position<Barycentric>>(),
           /*step=*/45 * Minute));
-  ephemeris->Prolong(solar_system.epoch() + steps * Δt);
+  CHECK_OK(ephemeris->Prolong(solar_system.epoch() + steps * Δt));
 
   not_null<MassiveBody const*> const earth =
       solar_system.massive_body(*ephemeris, "Earth");

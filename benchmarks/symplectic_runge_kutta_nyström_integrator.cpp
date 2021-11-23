@@ -10,6 +10,7 @@
 
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
+#include "base/status_utilities.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -94,7 +95,7 @@ void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
   auto const instance = integrator.NewInstance(problem, append_state, step);
 
   state.ResumeTiming();
-  instance->Solve(t_final);
+  CHECK_OK(instance->Solve(t_final));
   state.PauseTiming();
 
   q_error = Length();
@@ -148,7 +149,7 @@ void SolveHarmonicOscillatorAndComputeError3D(benchmark::State& state,
   auto const instance = integrator.NewInstance(problem, append_state, step);
 
   state.ResumeTiming();
-  instance->Solve(t_final);
+  CHECK_OK(instance->Solve(t_final));
   state.PauseTiming();
 
   q_error = Length();

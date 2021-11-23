@@ -8,18 +8,18 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_cat.h"
-#include "astronomy/epoch.hpp"
 #include "base/status_utilities.hpp"
+#include "geometry/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
 namespace physics {
 namespace internal_discrete_trajectory {
 
-using astronomy::InfiniteFuture;
-using astronomy::InfinitePast;
 using base::make_not_null_unique;
 using base::uninitialized;
+using geometry::InfiniteFuture;
+using geometry::InfinitePast;
 using quantities::Length;
 
 template<typename Frame>
@@ -173,7 +173,7 @@ DiscreteTrajectory<Frame>::NewSegment() {
   } else {
     // Duplicate the last point of the previous segment.
     auto const& [last_time, last_degrees_of_freedom] = *last_segment.rbegin();
-    new_segment_sit->Append(last_time, last_degrees_of_freedom);
+    new_segment_sit->Append(last_time, last_degrees_of_freedom).IgnoreError();
     // The use of |insert_or_assign| ensure that we override any entry with the
     // same left endpoint.
     segment_by_left_endpoint_.insert_or_assign(
@@ -185,7 +185,7 @@ DiscreteTrajectory<Frame>::NewSegment() {
 }
 
 template<typename Frame>
-typename DiscreteTrajectory<Frame>::DiscreteTrajectory
+DiscreteTrajectory<Frame>
 DiscreteTrajectory<Frame>::DetachSegments(SegmentIterator const begin) {
   DiscreteTrajectory detached(uninitialized);
 
@@ -349,7 +349,7 @@ void DiscreteTrajectory<Frame>::ForgetBefore(iterator const it) {
 }
 
 template<typename Frame>
-void DiscreteTrajectory<Frame>::Append(
+absl::Status DiscreteTrajectory<Frame>::Append(
     Instant const& t,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
   typename Segments::iterator sit;
@@ -369,9 +369,10 @@ void DiscreteTrajectory<Frame>::Append(
     sit = leit->second;
     CHECK(!sit->empty()) << "Empty segment at " << t;
   }
-  sit->Append(t, degrees_of_freedom);
+  RETURN_IF_ERROR(sit->Append(t, degrees_of_freedom));
 
   DCHECK_OK(ConsistencyStatus());
+  return absl::OkStatus();
 }
 
 template<typename Frame>
@@ -531,10 +532,11 @@ DiscreteTrajectory<Frame>::ReadFromMessage(
     std::vector<SegmentIterator*> const& tracked) {
   DiscreteTrajectory trajectory(uninitialized);
 
-  bool const is_pre_ζήνων = message.segment_size() == 0;
-  if (is_pre_ζήνων) {
-    LOG_IF(WARNING, is_pre_ζήνων) << u8"Reading pre-Ζήνων DiscreteTrajectory";
-    ReadFromPreΖήνωνMessage(
+  bool const is_pre_hamilton = message.segment_size() == 0;
+  if (is_pre_hamilton) {
+    LOG_IF(WARNING, is_pre_hamilton)
+        << "Reading pre-Hamilton DiscreteTrajectory";
+    ReadFromPreHamiltonMessage(
         message, tracked, /*fork_point=*/std::nullopt, trajectory);
     CHECK_OK(trajectory.ConsistencyStatus());
     return trajectory;
@@ -638,11 +640,13 @@ absl::Status DiscreteTrajectory<Frame>::ConsistencyStatus() const {
     for (auto const& [left_endpoint, sit] : segment_by_left_endpoint_) {
       if (sit->empty()) {
       } else if (left_endpoint != sit->front().time) {
-        absl::StrCat("Times mismatch ",
-                      DebugString(left_endpoint),
-                      " and ",
-                      DebugString(sit->front().time),
-                      " between segment #", i, " and the time-to-segment map");
+        return absl::InternalError(
+            absl::StrCat("Times mismatch ",
+                          DebugString(left_endpoint),
+                          " and ",
+                          DebugString(sit->front().time),
+                          " between segment #", i,
+                          " and the time-to-segment map"));
       }
     }
   }
@@ -743,7 +747,7 @@ void DiscreteTrajectory<Frame>::AdjustAfterSplicing(
 }
 
 template<typename Frame>
-void DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
+void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
     serialization::DiscreteTrajectory::Downsampling const& message,
     DownsamplingParameters& downsampling_parameters,
     Instant& start_of_dense_timeline) {
@@ -765,7 +769,7 @@ void DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
 
 template<typename Frame>
 DiscreteTrajectorySegmentIterator<Frame>
-DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
+DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
     serialization::DiscreteTrajectory::Brood const& message,
     std::vector<SegmentIterator*> const& tracked,
     value_type const& fork_point,
@@ -778,7 +782,7 @@ DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
   // Keep an iterator to the last segment to be able to return a segment
   // iterator.
   auto sit = --trajectory.segments_->end();
-  ReadFromPreΖήνωνMessage(
+  ReadFromPreHamiltonMessage(
       message.trajectories(0), tracked, fork_point, trajectory);
   ++sit;
 
@@ -786,7 +790,7 @@ DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
 }
 
 template<typename Frame>
-void DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
+void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
     serialization::DiscreteTrajectory const& message,
     std::vector<SegmentIterator*> const& tracked,
     std::optional<value_type> const& fork_point,
@@ -806,14 +810,14 @@ void DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
     for (auto const& instantaneous_dof : message.timeline()) {
       sit->Append(Instant::ReadFromMessage(instantaneous_dof.instant()),
                   DegreesOfFreedom<Frame>::ReadFromMessage(
-                      instantaneous_dof.degrees_of_freedom()));
+                      instantaneous_dof.degrees_of_freedom())).IgnoreError();
     }
     if (message.has_downsampling()) {
       DownsamplingParameters downsampling_parameters;
       Instant start_of_dense_timeline;
-      ReadFromPreΖήνωνMessage(message.downsampling(),
-                              downsampling_parameters,
-                              start_of_dense_timeline);
+      ReadFromPreHamiltonMessage(message.downsampling(),
+                                 downsampling_parameters,
+                                 start_of_dense_timeline);
       sit->SetDownsamplingUnconditionally(downsampling_parameters);
       sit->SetStartOfDenseTimeline(start_of_dense_timeline);
     }
@@ -829,9 +833,9 @@ void DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
     DownsamplingParameters downsampling_parameters;
     Instant start_of_dense_timeline;
     if (message.has_downsampling()) {
-      ReadFromPreΖήνωνMessage(message.downsampling(),
-                              downsampling_parameters,
-                              start_of_dense_timeline);
+      ReadFromPreHamiltonMessage(message.downsampling(),
+                                 downsampling_parameters,
+                                 start_of_dense_timeline);
       auto* const serialized_downsampling_parameters =
           serialized_segment.mutable_downsampling_parameters();
       serialized_downsampling_parameters->set_max_dense_intervals(
@@ -853,11 +857,10 @@ void DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
 
   // Restore the (single) child as the next segment.
   if (message.children_size() == 1) {
-    auto const child =
-        ReadFromPreΖήνωνMessage(message.children(0),
-                                tracked,
-                                /*fork_point=*/*sit->rbegin(),
-                                trajectory);
+    auto const child = ReadFromPreHamiltonMessage(message.children(0),
+                                                  tracked,
+                                                  /*fork_point=*/*sit->rbegin(),
+                                                  trajectory);
 
     // There were no fork positions prior to Буняковский.
     bool const has_fork_position = message.fork_position_size() > 0;
@@ -877,10 +880,10 @@ void DiscreteTrajectory<Frame>::ReadFromPreΖήνωνMessage(
   if (!sit->empty()) {
     // This is the *only* place where we must use |emplace|, not
     // |insert_or_assign|.  The reason is that this happens when returning from
-    // the recursivity (see to the call to ReadFromPreΖήνωνMessage) so segments
-    // are processed in reverse order.  Therefore, a segment that is the last at
-    // its time will be processed *before* any 1-point segments with the same
-    // time, and must be the one stored in the map.
+    // the recursivity (see to the call to ReadFromPreHamiltonMessage) so
+    // segments are processed in reverse order.  Therefore, a segment that is
+    // the last at its time will be processed *before* any 1-point segments with
+    // the same time, and must be the one stored in the map.
     trajectory.segment_by_left_endpoint_.emplace(sit->begin()->time, sit);
   }
 }

@@ -6,10 +6,13 @@ namespace principia {
 namespace physics {
 namespace internal_discrete_trajectory_segment_iterator {
 
+// Note the use of DCHECK, not DCHECK_NOTNULL, below, because the latter does
+// not go away when compiled in non-debug mode (don't ask).
+
 template<typename Frame>
 DiscreteTrajectorySegmentIterator<Frame>&
 DiscreteTrajectorySegmentIterator<Frame>::operator++() {
-  CHECK_NOTNULL(segments_);
+  DCHECK(segments_ != nullptr);
   ++iterator_;
   return *this;
 }
@@ -17,7 +20,7 @@ DiscreteTrajectorySegmentIterator<Frame>::operator++() {
 template<typename Frame>
 DiscreteTrajectorySegmentIterator<Frame>&
 DiscreteTrajectorySegmentIterator<Frame>::operator--() {
-  CHECK_NOTNULL(segments_);
+  DCHECK(segments_ != nullptr);
   --iterator_;
   return *this;
 }
@@ -25,35 +28,35 @@ DiscreteTrajectorySegmentIterator<Frame>::operator--() {
 template<typename Frame>
 DiscreteTrajectorySegmentIterator<Frame>
 DiscreteTrajectorySegmentIterator<Frame>::operator++(int) {  // NOLINT
-  CHECK_NOTNULL(segments_);
+  DCHECK(segments_ != nullptr);
   return DiscreteTrajectorySegmentIterator(segments_, iterator_++);
 }
 
 template<typename Frame>
 DiscreteTrajectorySegmentIterator<Frame>
 DiscreteTrajectorySegmentIterator<Frame>::operator--(int) {  // NOLINT
-  CHECK_NOTNULL(segments_);
+  DCHECK(segments_ != nullptr);
   return DiscreteTrajectorySegmentIterator(segments_, iterator_--);
 }
 
 template<typename Frame>
 typename DiscreteTrajectorySegmentIterator<Frame>::reference
 DiscreteTrajectorySegmentIterator<Frame>::operator*() const {
-  CHECK_NOTNULL(segments_);
+  DCHECK(segments_ != nullptr);
   return *iterator_;
 }
 
 template<typename Frame>
 typename DiscreteTrajectorySegmentIterator<Frame>::pointer
 DiscreteTrajectorySegmentIterator<Frame>::operator->() const {
-  CHECK_NOTNULL(segments_);
+  DCHECK(segments_ != nullptr);
   return &*iterator_;
 }
 
 template<typename Frame>
 bool DiscreteTrajectorySegmentIterator<Frame>::operator==(
     DiscreteTrajectorySegmentIterator const& other) const {
-  CHECK_NOTNULL(segments_);
+  DCHECK(segments_ != nullptr);
   return segments_ == other.segments_ && iterator_ == other.iterator_;
 }
 
@@ -72,20 +75,20 @@ DiscreteTrajectorySegmentIterator<Frame>::DiscreteTrajectorySegmentIterator(
 
 template<typename Frame>
 bool DiscreteTrajectorySegmentIterator<Frame>::is_begin() const {
-  CHECK_NOTNULL(segments_);
+  DCHECK(segments_ != nullptr);
   return iterator_ == segments_->begin();
 }
 
 template<typename Frame>
 bool DiscreteTrajectorySegmentIterator<Frame>::is_end() const {
-  CHECK_NOTNULL(segments_);
+  DCHECK(segments_ != nullptr);
   return iterator_ == segments_->end();
 }
 
 template<typename Frame>
 DiscreteTrajectorySegmentRange<DiscreteTrajectorySegmentIterator<Frame>>
 DiscreteTrajectorySegmentIterator<Frame>::segments() const {
-  CHECK_NOTNULL(segments_);
+  DCHECK(segments_ != nullptr);
   return {DiscreteTrajectorySegmentIterator(segments_, segments_->begin()),
           DiscreteTrajectorySegmentIterator(segments_, segments_->end())};
 }

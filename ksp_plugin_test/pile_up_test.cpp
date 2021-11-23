@@ -627,7 +627,7 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
   Velocity<Barycentric> const old_velocity =
       p1_.rigid_motion()({RigidPart::origin, RigidPart::unmoving}).velocity();
 
-  pile_up.AdvanceTime(astronomy::J2000 + 1.5 * fixed_step);
+  EXPECT_OK(pile_up.AdvanceTime(astronomy::J2000 + 1.5 * fixed_step));
   pile_up.NudgeParts();
   EXPECT_THAT(
       p1_.rigid_motion()({RigidPart::origin, RigidPart::unmoving}).velocity(),
@@ -638,7 +638,7 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
                                              504 * Metre / Pow<2>(Second)}};
   p1_.apply_intrinsic_force(p1_.mass() * a);
   pile_up.RecomputeFromParts();
-  pile_up.AdvanceTime(astronomy::J2000 + 2 * fixed_step);
+  EXPECT_OK(pile_up.AdvanceTime(astronomy::J2000 + 2 * fixed_step));
   pile_up.NudgeParts();
   EXPECT_THAT(
       p1_.rigid_motion()({RigidPart::origin, RigidPart::unmoving}).velocity(),
@@ -739,7 +739,7 @@ TEST_F(PileUpTest, SerializationCompatibility) {
                                      140.0 * Metre / Second,
                                      310.0 / 3.0 * Metre / Second}))),
           Return(absl::OkStatus())));
-  p->DeformAndAdvanceTime(astronomy::J2000 + 1 * Second);
+  EXPECT_OK(p->DeformAndAdvanceTime(astronomy::J2000 + 1 * Second));
 }
 
 }  // namespace internal_pile_up

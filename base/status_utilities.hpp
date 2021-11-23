@@ -20,8 +20,6 @@ absl::Status const& GetStatus(absl::StatusOr<T> const& s) {
 
 #define CHECK_OK(value) CHECK_EQ((value), ::absl::OkStatus())
 #define DCHECK_OK(value) DCHECK_EQ((value), ::absl::OkStatus())
-#define EXPECT_OK(value) \
-  EXPECT_THAT((value), ::principia::testing_utilities::IsOk());
 
 #define RETURN_IF_ERROR(expr)                                                \
   do {                                                                       \

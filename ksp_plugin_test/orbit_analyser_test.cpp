@@ -11,6 +11,7 @@
 #include "physics/solar_system.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/matchers.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -93,7 +94,7 @@ TEST_F(OrbitAnalyserTest, TinyAnalysis) {
   auto const& arc =
       *topex_poséidon_.orbit(
           {StandardProduct3::SatelliteGroup::General, 1}).front();
-  ephemeris_->Prolong(arc.begin()->time);
+  EXPECT_OK(ephemeris_->Prolong(arc.begin()->time));
   analyser.RequestAnalysis(
       {.first_time = arc.begin()->time,
        .first_degrees_of_freedom = itrs_.FromThisFrameAtTime(arc.begin()->time)(
@@ -113,7 +114,7 @@ TEST_F(OrbitAnalyserTest, TOPEXPoséidon) {
   auto const& arc =
       *topex_poséidon_.orbit(
           {StandardProduct3::SatelliteGroup::General, 1}).front();
-  ephemeris_->Prolong(arc.begin()->time);
+  EXPECT_OK(ephemeris_->Prolong(arc.begin()->time));
   analyser.RequestAnalysis(
       {.first_time = arc.begin()->time,
        .first_degrees_of_freedom = itrs_.FromThisFrameAtTime(arc.begin()->time)(

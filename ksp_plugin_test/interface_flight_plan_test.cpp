@@ -31,6 +31,7 @@
 #include "quantities/constants.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/matchers.hpp"
 
 namespace principia {
 namespace interface {
@@ -350,26 +351,26 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                                                       vessel_guid));
 
   DiscreteTrajectory<World> rendered_trajectory;
-  rendered_trajectory.Append(
-      t0_, DegreesOfFreedom<World>(World::origin, World::unmoving));
-  rendered_trajectory.Append(
+  EXPECT_OK(rendered_trajectory.Append(
+      t0_, DegreesOfFreedom<World>(World::origin, World::unmoving)));
+  EXPECT_OK(rendered_trajectory.Append(
       t0_ + 1 * Second,
       DegreesOfFreedom<World>(
           World::origin +
               Displacement<World>({0 * Metre, 1 * Metre, 2 * Metre}),
-          World::unmoving));
-  rendered_trajectory.Append(
+          World::unmoving)));
+  EXPECT_OK(rendered_trajectory.Append(
       t0_ + 2 * Second,
       DegreesOfFreedom<World>(
           World::origin +
               Displacement<World>({0 * Metre, 2 * Metre, 4 * Metre}),
-          World::unmoving));
+          World::unmoving)));
   DiscreteTrajectory<Barycentric> segment;
   DegreesOfFreedom<Barycentric> immobile_origin{Barycentric::origin,
                                                 Barycentric::unmoving};
-  segment.Append(t0_, immobile_origin);
-  segment.Append(t0_ + 1 * Second, immobile_origin);
-  segment.Append(t0_ + 2 * Second, immobile_origin);
+  EXPECT_OK(segment.Append(t0_, immobile_origin));
+  EXPECT_OK(segment.Append(t0_ + 1 * Second, immobile_origin));
+  EXPECT_OK(segment.Append(t0_ + 2 * Second, immobile_origin));
   EXPECT_CALL(flight_plan, GetSegment(3))
       .WillOnce(Return(segment.segments().begin()));
   EXPECT_CALL(renderer, RenderBarycentricTrajectoryInWorld(_, _, _, _, _))
