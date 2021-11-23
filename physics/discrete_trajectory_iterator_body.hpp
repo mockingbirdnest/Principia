@@ -9,7 +9,7 @@ namespace principia {
 namespace physics {
 namespace internal_discrete_trajectory_iterator {
 
-using astronomy::InfiniteFuture;
+using geometry::InfiniteFuture;
 using geometry::Instant;
 
 template<typename Frame>

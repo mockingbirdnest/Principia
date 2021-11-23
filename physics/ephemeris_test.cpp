@@ -9,11 +9,11 @@
 #include <thread>
 #include <vector>
 
-#include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "base/macros.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
+#include "geometry/named_quantities.hpp"
 #include "gipfeli/gipfeli.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -48,12 +48,13 @@ namespace physics {
 namespace internal_ephemeris {
 
 using astronomy::ICRS;
-using astronomy::InfiniteFuture;
 using base::not_null;
 using geometry::Barycentre;
 using geometry::AngularVelocity;
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::InfiniteFuture;
+using geometry::InfinitePast;
 using geometry::Rotation;
 using geometry::Velocity;
 using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
@@ -189,8 +190,8 @@ TEST_P(EphemerisTest, ProlongSpecialCases) {
       Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 100));
   EXPECT_THAT(ephemeris.planetary_integrator(), Ref(integrator()));
 
-  EXPECT_EQ(astronomy::InfinitePast, ephemeris.t_max());
-  EXPECT_EQ(astronomy::InfiniteFuture, ephemeris.t_min());
+  EXPECT_EQ(InfinitePast, ephemeris.t_max());
+  EXPECT_EQ(InfiniteFuture, ephemeris.t_min());
 
   EXPECT_TRUE(ephemeris.empty());
   EXPECT_OK(ephemeris.Prolong(t0_ + period));

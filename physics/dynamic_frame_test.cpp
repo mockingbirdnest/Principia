@@ -12,12 +12,12 @@ namespace principia {
 namespace physics {
 namespace internal_dynamic_frame {
 
-using astronomy::InfiniteFuture;
-using astronomy::InfinitePast;
 using geometry::AngularVelocity;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Inertial;
+using geometry::InfiniteFuture;
+using geometry::InfinitePast;
 using geometry::InnerProduct;
 using geometry::OrthogonalMap;
 using geometry::Position;

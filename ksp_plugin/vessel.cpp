@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "astronomy/epoch.hpp"
 #include "base/map_util.hpp"
+#include "geometry/named_quantities.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/pile_up.hpp"
 #include "quantities/si.hpp"
@@ -19,14 +19,14 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_vessel {
 
-using astronomy::InfiniteFuture;
-using astronomy::InfinitePast;
 using base::Contains;
 using base::FindOrDie;
 using base::jthread;
 using base::make_not_null_unique;
 using base::MakeStoppableThread;
 using geometry::BarycentreCalculator;
+using geometry::InfiniteFuture;
+using geometry::InfinitePast;
 using geometry::Position;
 using quantities::IsFinite;
 using quantities::Length;

@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "absl/container/btree_set.h"
-#include "astronomy/epoch.hpp"
 #include "base/zfp_compressor.hpp"
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
@@ -21,10 +20,10 @@ namespace principia {
 namespace physics {
 namespace internal_discrete_trajectory_segment {
 
-using astronomy::InfiniteFuture;
-using astronomy::InfinitePast;
 using base::ZfpCompressor;
 using geometry::Displacement;
+using geometry::InfiniteFuture;
+using geometry::InfinitePast;
 using geometry::Position;
 using numerics::FitHermiteSpline;
 using quantities::Length;

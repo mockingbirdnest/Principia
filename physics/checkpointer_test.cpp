@@ -1,7 +1,7 @@
 #include "physics/checkpointer.hpp"
 
-#include "astronomy/epoch.hpp"
 #include "base/status_utilities.hpp"
+#include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "testing_utilities/matchers.hpp"
@@ -9,8 +9,8 @@
 namespace principia {
 namespace physics {
 
-using astronomy::InfinitePast;
 using base::not_null;
+using geometry::InfinitePast;
 using geometry::Instant;
 using quantities::si::Second;
 using testing_utilities::StatusIs;

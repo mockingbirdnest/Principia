@@ -8,18 +8,18 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_cat.h"
-#include "astronomy/epoch.hpp"
 #include "base/status_utilities.hpp"
+#include "geometry/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
 namespace physics {
 namespace internal_discrete_trajectory {
 
-using astronomy::InfiniteFuture;
-using astronomy::InfinitePast;
 using base::make_not_null_unique;
 using base::uninitialized;
+using geometry::InfiniteFuture;
+using geometry::InfinitePast;
 using quantities::Length;
 
 template<typename Frame>
