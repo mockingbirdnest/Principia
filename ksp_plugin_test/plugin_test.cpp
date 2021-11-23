@@ -322,7 +322,6 @@ TEST_F(PluginDeathTest, SerializationError) {
 TEST_F(PluginTest, Serialization) {
   GUID const satellite = "satellite";
   PartId const part_id = 666;
-  Time const step = DefaultHistoryParameters().step();
 
   // We need an actual |Plugin| here rather than a |TestablePlugin|, since
   // that's what |ReadFromMessage| returns.

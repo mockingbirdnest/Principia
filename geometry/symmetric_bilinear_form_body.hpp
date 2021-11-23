@@ -184,8 +184,6 @@ typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
   static constexpr int max_iterations = 16;
   static constexpr double ε = std::numeric_limits<double>::epsilon() / 128;
 
-  static Scalar const zero{};
-
   // [GV13], Algorithm 8.5.2.
   R3x3Matrix<Scalar> A = matrix_;
   Scalar const A_frobenius_norm = A.FrobeniusNorm();

@@ -212,7 +212,6 @@ double Cbrt(double const y) {
       _mm_and_pd(_mm_set_sd(ξ), masks::round_toward_zero_17_bits));
 
   // Step 4, the Lagny–Schröder rational method of order 5.
-  double const x² = x * x;
   double const x³ = x * x * x;  // Exact.
   double const y² = y * y;
   double const x_sign_y = _mm_cvtsd_f64(_mm_or_pd(_mm_set_sd(x), sign));

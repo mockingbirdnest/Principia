@@ -1,5 +1,3 @@
-#pragma once
-
 #include "base/recurring_thread.hpp"
 
 #include "gtest/gtest.h"

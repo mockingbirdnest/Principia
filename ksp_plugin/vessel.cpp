@@ -63,17 +63,15 @@ Vessel::Vessel(GUID guid,
           std::move(prediction_adaptive_step_parameters)),
       parent_(parent),
       ephemeris_(ephemeris),
+      history_(trajectory_.segments().begin()),
+      psychohistory_(trajectory_.segments().end()),
+      prediction_(trajectory_.segments().end()),
       prognosticator_(
           [this](PrognosticatorParameters const& parameters) {
             return FlowPrognostication(parameters);
           },
-          20ms),  // 50 Hz.
-      history_(trajectory_.segments().begin()),
-      psychohistory_(trajectory_.segments().end()),
-      prediction_(trajectory_.segments().end()) {
-  // Can't create the |psychohistory_| and |prediction_| here because |history_|
-  // is empty;
-}
+          20ms)  // 50 Hz.
+{}
 
 Vessel::~Vessel() {
   LOG(INFO) << "Destroying vessel " << ShortDebugString();

@@ -102,10 +102,6 @@ class PileUp {
 
   virtual ~PileUp();
 
-  // This class is moveable.
-  PileUp(PileUp&& pile_up) = default;
-  PileUp& operator=(PileUp&& pile_up) = default;
-
   std::list<not_null<Part*>> const& parts() const;
 
   // Set the rigid motion for the given |part|.  This rigid motion is *apparent*
