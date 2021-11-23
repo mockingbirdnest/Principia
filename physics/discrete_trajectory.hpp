@@ -88,7 +88,7 @@ class DiscreteTrajectory : public Trajectory<Frame> {
   SegmentIterator NewSegment();
 
   DiscreteTrajectory DetachSegments(SegmentIterator begin);
-  SegmentIterator AttachSegments(DiscreteTrajectory&& trajectory);
+  SegmentIterator AttachSegments(DiscreteTrajectory trajectory);
   void DeleteSegments(SegmentIterator& begin);
 
   // Deletes the trajectory points with a time in [t, end[.  Drops the segments
@@ -106,7 +106,7 @@ class DiscreteTrajectory : public Trajectory<Frame> {
                       DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
   //TODO(phl):comment
-  void Merge(DiscreteTrajectory<Frame> const& trajectory);
+  void Merge(DiscreteTrajectory<Frame> trajectory);
 
   Instant t_min() const override;
   Instant t_max() const override;

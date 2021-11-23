@@ -204,8 +204,7 @@ DiscreteTrajectory<Frame>::DetachSegments(SegmentIterator const begin) {
 
 template<typename Frame>
 typename DiscreteTrajectory<Frame>::SegmentIterator
-DiscreteTrajectory<Frame>::AttachSegments(
-    DiscreteTrajectory&& trajectory) {
+DiscreteTrajectory<Frame>::AttachSegments(DiscreteTrajectory trajectory) {
   CHECK(!trajectory.empty());
 
   if (empty()) {
@@ -376,17 +375,26 @@ absl::Status DiscreteTrajectory<Frame>::Append(
 }
 
 template<typename Frame>
-void DiscreteTrajectory<Frame>::Merge(
-    DiscreteTrajectory<Frame> const& trajectory) {
-  auto sit_s = trajectory.segments_.begin();
-  auto sit_t = segments_.begin();
-  while (sit_s != trajectory.segments_.end()) {
-    if (!sit_s->empty()) {
-      sit_t->Merge(*sit_s);
-      //TODO(phl):left endpoints;
+void DiscreteTrajectory<Frame>::Merge(DiscreteTrajectory<Frame> trajectory) {
+  auto sit_s = trajectory.segments_->begin();  // Source iterator.
+  auto sit_t = segments_->begin();  // Target iterator.
+  //TODO(phl):left endpoints;
+  for (;;) {
+    if (sit_s != trajectory.segments_.end() && sit_t != segments_.end()) {
+      sit_t->Merge(std::move(*sit_s));
+      ++sit_s;
+      ++sit_t;
+    } else if (sit_s != trajectory.segments_.end()) {
+      // No more segments in the target.
+      segments_->splice(segments_->end(),
+                        trajectory.segments_,
+                        sit_s,
+                        trajectory.segments_->end());
+      break;
+    } else {
+      // No more segments in the source, or both lists done.
+      break;
     }
-    ++sit_s;
-    ++sit_t;
   }
 }
 

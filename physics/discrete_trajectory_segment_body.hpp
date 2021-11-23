@@ -388,7 +388,7 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
 
 template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::Merge(
-    DiscreteTrajectorySegment<Frame> const& segment) {
+    DiscreteTrajectorySegment<Frame> segment) {
   CHECK(segment.downsampling_parameters_ == downsampling_parameters_);
   if (segment.timeline_.empty()) {
     return;
@@ -398,8 +398,7 @@ void DiscreteTrajectorySegment<Frame>::Merge(
     CHECK_LT(std::prev(timeline_.cend())->time,
              segment.timeline_.cbegin()->time);
   }
-  //TODO(phl):Move?
-  timeline_.insert(segment.timeline_.cbegin(), segment.timeline_.cend());
+  timeline_.merge(std::move(segment.timeline_));
   number_of_dense_points_ = segment.number_of_dense_points_;
 }
 

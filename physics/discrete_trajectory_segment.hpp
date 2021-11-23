@@ -157,7 +157,7 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
                       DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
   //TODO(phl):comment
-  void Merge(DiscreteTrajectorySegment<Frame> const& segment);
+  void Merge(DiscreteTrajectorySegment<Frame> segment);
 
   // Computes |number_of_dense_points_| based on the start of the dense
   // timeline.  Used for compatibility deserialization.
