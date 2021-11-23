@@ -433,7 +433,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionNoSecular) {
   // A perfect calculator for the frequencies of the series.
   int ω_index = 0;
   auto angular_frequency_calculator =
-      [&series, t_min, t_max, &ω_index, &ωs](
+      [t_min, t_max, &ω_index, &ωs](
           auto const& residual) -> std::optional<AngularFrequency> {
     for (int i = 0; i <= 100; ++i) {
       EXPECT_THAT(
@@ -503,7 +503,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
   // A perfect calculator for the frequencies of the series.
   int ω_index = 0;
   auto angular_frequency_calculator =
-      [&series, t_min, t_max, &ω_index, &ωs](
+      [t_min, t_max, &ω_index, &ωs](
           auto const& residual) -> std::optional<AngularFrequency> {
     for (int i = 0; i <= 100; ++i) {
       EXPECT_THAT(Abs(residual(t_min + i * (t_max - t_min) / 100)),
