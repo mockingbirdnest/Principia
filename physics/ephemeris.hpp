@@ -10,7 +10,6 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/synchronization/mutex.h"
-#include "astronomy/epoch.hpp"
 #include "base/recurring_thread.hpp"
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
@@ -34,9 +33,9 @@ namespace principia {
 namespace physics {
 namespace internal_ephemeris {
 
-using astronomy::InfinitePast;
 using base::not_null;
 using base::RecurringThread;
+using geometry::InfinitePast;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Vector;

@@ -10,12 +10,12 @@
 namespace principia {
 namespace geometry {
 
-using astronomy::InfiniteFuture;
-using astronomy::InfinitePast;
 using astronomy::J2000;
 using astronomy::operator""_TT;
 using astronomy::operator""_UT1;
 using astronomy::operator""_UTC;
+using geometry::InfiniteFuture;
+using geometry::InfinitePast;
 using quantities::Time;
 using quantities::si::Second;
 using ::testing::Eq;

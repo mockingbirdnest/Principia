@@ -219,7 +219,7 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Symplecticity) {
 
   auto const instance =
       GetParam().integrator.NewInstance(problem, append_state, step);
-  instance->Solve(t_final);
+  EXPECT_OK(instance->Solve(t_final));
 
   std::size_t const length = solution.size();
   std::vector<Energy> energy_error(length);
@@ -285,7 +285,7 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Convergence) {
   for (int i = 0; i < step_sizes; ++i, step /= step_reduction) {
     auto const instance =
         GetParam().integrator.NewInstance(problem, append_state, step);
-    instance->Solve(t_final);
+    EXPECT_OK(instance->Solve(t_final));
     Time const t = final_state.time.value - t_initial;
     Length const& q = final_state.positions[0].value;
     Speed const& v = final_state.velocities[0].value;
@@ -354,7 +354,7 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Termination) {
 
   auto const instance =
       GetParam().integrator.NewInstance(problem, append_state, step);
-  instance->Solve(t_final);
+  EXPECT_OK(instance->Solve(t_final));
 
   EXPECT_EQ(steps, solution.size());
   EXPECT_THAT(solution.back().time.value,
@@ -398,7 +398,7 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, LongIntegration) {
 
   auto const instance =
       GetParam().integrator.NewInstance(problem, append_state, step);
-  instance->Solve(t_final);
+  EXPECT_OK(instance->Solve(t_final));
 
   EXPECT_EQ(steps, solution.size());
   Length q_error;

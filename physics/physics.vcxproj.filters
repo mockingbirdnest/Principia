@@ -319,9 +319,6 @@
     <ClCompile Include="discrete_trajectory_segment_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\testing_utilities\string_log_sink.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="discrete_trajectory_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>

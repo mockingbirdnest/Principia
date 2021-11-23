@@ -134,7 +134,7 @@ void BM_EphemerisKSPSystem(benchmark::State& state) {
             /*step=*/35 * Minute));
 
     state.ResumeTiming();
-    ephemeris->Prolong(final_time);
+    CHECK_OK(ephemeris->Prolong(final_time));
     state.PauseTiming();
     error = (at_origin->trajectory(
                  *ephemeris,
@@ -166,7 +166,7 @@ void BM_EphemerisSolarSystem(benchmark::State& state) {
             EphemerisParameters());
 
     state.ResumeTiming();
-    ephemeris->Prolong(final_time);
+    CHECK_OK(ephemeris->Prolong(final_time));
     state.PauseTiming();
     error = (at_спутник_1_launch->trajectory(
                  *ephemeris,
@@ -198,7 +198,7 @@ void BM_EphemerisLEOProbe(benchmark::State& state) {
               accuracy),
           EphemerisParameters());
 
-  ephemeris->Prolong(final_time);
+  CHECK_OK(ephemeris->Prolong(final_time));
 
   while (state.KeepRunning()) {
     state.PauseTiming();
@@ -216,12 +216,11 @@ void BM_EphemerisLEOProbe(benchmark::State& state) {
                      earth_probe_displacement.Norm());
     Velocity<Barycentric> const earth_probe_velocity(
         {0 * Metre / Second, earth_probe_speed, 0 * Metre / Second});
-    trajectory.Append(at_спутник_1_launch->epoch(),
-                      DegreesOfFreedom<Barycentric>(
-                          earth_degrees_of_freedom.position() +
-                              earth_probe_displacement,
-                          earth_degrees_of_freedom.velocity() +
-                              earth_probe_velocity));
+    CHECK_OK(trajectory.Append(
+        at_спутник_1_launch->epoch(),
+        DegreesOfFreedom<Barycentric>(
+            earth_degrees_of_freedom.position() + earth_probe_displacement,
+            earth_degrees_of_freedom.velocity() + earth_probe_velocity)));
 
     state.ResumeTiming();
     flow(&trajectory, final_time, *ephemeris);
@@ -268,7 +267,7 @@ void BM_EphemerisTranslunarSpaceProbe(benchmark::State& state) {
               accuracy),
           EphemerisParameters());
 
-  ephemeris->Prolong(final_time);
+  CHECK_OK(ephemeris->Prolong(final_time));
 
   while (state.KeepRunning()) {
     state.PauseTiming();
@@ -286,12 +285,11 @@ void BM_EphemerisTranslunarSpaceProbe(benchmark::State& state) {
                      earth_probe_displacement.Norm());
     Velocity<Barycentric> const earth_probe_velocity(
         {0 * Metre / Second, earth_probe_speed, 0 * Metre / Second});
-    trajectory.Append(at_спутник_1_launch->epoch(),
-                      DegreesOfFreedom<Barycentric>(
-                          earth_degrees_of_freedom.position() +
-                              earth_probe_displacement,
-                          earth_degrees_of_freedom.velocity() +
-                              earth_probe_velocity));
+    CHECK_OK(trajectory.Append(
+        at_спутник_1_launch->epoch(),
+        DegreesOfFreedom<Barycentric>(
+            earth_degrees_of_freedom.position() + earth_probe_displacement,
+            earth_degrees_of_freedom.velocity() + earth_probe_velocity)));
 
     state.ResumeTiming();
     flow(&trajectory, final_time, *ephemeris);
@@ -353,8 +351,8 @@ void BM_EphemerisMultithreadingBenchmark(benchmark::State& state) {
         *earth_massive_body, probe, elements, epoch);
     trajectories.emplace_back();
     auto& trajectory = trajectories.back();
-    trajectory.Append(epoch,
-                      earth_degrees_of_freedom + orbit.StateVectors(epoch));
+    CHECK_OK(trajectory.Append(
+        epoch, earth_degrees_of_freedom + orbit.StateVectors(epoch)));
   }
 
   ThreadPool<void> pool(/*pool_size=*/state.range(1));
@@ -382,7 +380,7 @@ void BM_EphemerisMultithreadingBenchmark(benchmark::State& state) {
     std::vector<std::future<void>> futures;
     for (auto& instance : instances) {
       futures.push_back(pool.Add([&ephemeris, &instance, final_time]() {
-        ephemeris->FlowWithFixedStep(final_time, *instance);
+        CHECK_OK(ephemeris->FlowWithFixedStep(final_time, *instance));
       }));
     }
     for (auto const& future : futures) {
@@ -419,7 +417,7 @@ void EphemerisL4ProbeBenchmark(Time const integration_duration,
               accuracy),
           EphemerisParameters());
 
-  ephemeris->Prolong(final_time);
+  CHECK_OK(ephemeris->Prolong(final_time));
 
   auto make_l4_probe_trajectory = [&ephemeris, &at_спутник_1_launch]() {
     // A probe near the L4 point of the Sun-Earth system.
@@ -458,13 +456,13 @@ void EphemerisL4ProbeBenchmark(Time const integration_duration,
         from_barycentric(earth_degrees_of_freedom.velocity() -
                          sun_degrees_of_freedom.velocity()));
     Velocity<Ecliptic> const sun_l4_velocity = l4_rotation(sun_earth_velocity);
-    trajectory->Append(
+    CHECK_OK(trajectory->Append(
         at_спутник_1_launch->epoch(),
         DegreesOfFreedom<Barycentric>(
             sun_degrees_of_freedom.position() +
                 to_barycentric(ecliptic_to_equatorial(sun_l4_displacement)),
             sun_degrees_of_freedom.velocity() +
-                to_barycentric(ecliptic_to_equatorial(sun_l4_velocity))));
+                to_barycentric(ecliptic_to_equatorial(sun_l4_velocity)))));
     return trajectory;
   };
 
@@ -566,7 +564,7 @@ void FlowEphemerisWithFixedStepSLMS(
           SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
                                              Position<Barycentric>>(),
           /*step=*/10 * Second));
-  ephemeris.FlowWithFixedStep(t, *instance);
+  CHECK_OK(ephemeris.FlowWithFixedStep(t, *instance));
 }
 
 void FlowEphemerisWithFixedStepSRKN(
@@ -580,7 +578,7 @@ void FlowEphemerisWithFixedStepSRKN(
           SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order5Optimal,
                                                 Position<Barycentric>>(),
           /*step=*/10 * Second));
-  ephemeris.FlowWithFixedStep(t, *instance);
+  CHECK_OK(ephemeris.FlowWithFixedStep(t, *instance));
 }
 
 BENCHMARK(BM_EphemerisMultithreadingBenchmark)

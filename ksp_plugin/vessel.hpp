@@ -10,9 +10,9 @@
 
 #include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
-#include "astronomy/epoch.hpp"
 #include "base/jthread.hpp"
 #include "base/recurring_thread.hpp"
+#include "geometry/named_quantities.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/orbit_analyser.hpp"
@@ -31,9 +31,9 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_vessel {
 
-using astronomy::InfinitePast;
 using base::not_null;
 using base::RecurringThread;
+using geometry::InfinitePast;
 using geometry::Instant;
 using geometry::Vector;
 using physics::Checkpointer;

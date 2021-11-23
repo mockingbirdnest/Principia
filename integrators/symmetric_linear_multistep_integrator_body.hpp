@@ -320,7 +320,7 @@ Instance::StartupSolve(Instant const& t_final) {
   startup_instance->Solve(
       std::min(current_state.time.value +
                    (order - previous_steps_.size()) * step + step / 2.0,
-               t_final));
+               t_final)).IgnoreError();
 
   CHECK_LE(previous_steps_.size(), order);
 }
@@ -380,7 +380,7 @@ Instance::FillStepFromSystemState(ODE const& equation,
   // it, not to advance an integrator.
   equation.compute_acceleration(step.time.value,
                                 positions,
-                                step.accelerations);
+                                step.accelerations).IgnoreError();
 }
 
 template<typename Method, typename Position>

@@ -59,7 +59,7 @@ using ::testing::Eq;
 using ::testing::HasSubstr;
 using ::testing::Not;
 
-class DiscreteTraject0ryTest : public ::testing::Test {
+class DiscreteTrajectoryTest : public ::testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
                       Inertial,
@@ -81,7 +81,7 @@ class DiscreteTraject0ryTest : public ::testing::Test {
                                      /*t1=*/t0,
                                      /*t2=*/t0 + 5 * Second)) {
       last_degrees_of_freedom = degrees_of_freedom;
-      trajectory.Append(t, degrees_of_freedom);
+      EXPECT_OK(trajectory.Append(t, degrees_of_freedom));
     }
 
     trajectory.NewSegment();
@@ -96,7 +96,7 @@ class DiscreteTraject0ryTest : public ::testing::Test {
                                      /*t1=*/t0 + 5 * Second,
                                      /*t2=*/t0 + 10 * Second)) {
       last_degrees_of_freedom = degrees_of_freedom;
-      trajectory.Append(t, degrees_of_freedom);
+      EXPECT_OK(trajectory.Append(t, degrees_of_freedom));
     }
 
     trajectory.NewSegment();
@@ -110,7 +110,7 @@ class DiscreteTraject0ryTest : public ::testing::Test {
                                      /*Δt=*/1 * Second,
                                      /*t1=*/t0 + 10 * Second,
                                      /*t2=*/t0 + 15 * Second)) {
-      trajectory.Append(t, degrees_of_freedom);
+      EXPECT_OK(trajectory.Append(t, degrees_of_freedom));
     }
 
     return trajectory;
@@ -126,17 +126,17 @@ class DiscreteTraject0ryTest : public ::testing::Test {
   Instant const t0_;
 };
 
-TEST_F(DiscreteTraject0ryTest, Make) {
+TEST_F(DiscreteTrajectoryTest, Make) {
   auto const trajectory = MakeTrajectory();
 }
 
-TEST_F(DiscreteTraject0ryTest, BackFront) {
+TEST_F(DiscreteTrajectoryTest, BackFront) {
   auto const trajectory = MakeTrajectory();
   EXPECT_EQ(t0_, trajectory.front().time);
   EXPECT_EQ(t0_ + 14 * Second, trajectory.back().time);
 }
 
-TEST_F(DiscreteTraject0ryTest, IterateForward) {
+TEST_F(DiscreteTrajectoryTest, IterateForward) {
   auto const trajectory = MakeTrajectory();
   std::vector<Instant> times;
   for (auto const& [t, _] : trajectory) {
@@ -160,7 +160,7 @@ TEST_F(DiscreteTraject0ryTest, IterateForward) {
                           t0_ + 14 * Second));
 }
 
-TEST_F(DiscreteTraject0ryTest, IterateBackward) {
+TEST_F(DiscreteTrajectoryTest, IterateBackward) {
   auto const trajectory = MakeTrajectory();
   std::vector<Instant> times;
   for (auto it = trajectory.rbegin(); it != trajectory.rend(); ++it) {
@@ -184,21 +184,21 @@ TEST_F(DiscreteTraject0ryTest, IterateBackward) {
                           t0_));
 }
 
-TEST_F(DiscreteTraject0ryTest, Empty) {
+TEST_F(DiscreteTrajectoryTest, Empty) {
   DiscreteTrajectory<World> trajectory;
   EXPECT_TRUE(trajectory.empty());
   trajectory = MakeTrajectory();
   EXPECT_FALSE(trajectory.empty());
 }
 
-TEST_F(DiscreteTraject0ryTest, Size) {
+TEST_F(DiscreteTrajectoryTest, Size) {
   DiscreteTrajectory<World> trajectory;
   EXPECT_EQ(0, trajectory.size());
   trajectory = MakeTrajectory();
   EXPECT_EQ(15, trajectory.size());
 }
 
-TEST_F(DiscreteTraject0ryTest, Find) {
+TEST_F(DiscreteTrajectoryTest, Find) {
   auto const trajectory = MakeTrajectory();
   {
     auto const it = trajectory.find(t0_ + 3 * Second);
@@ -224,7 +224,7 @@ TEST_F(DiscreteTraject0ryTest, Find) {
   }
 }
 
-TEST_F(DiscreteTraject0ryTest, LowerBound) {
+TEST_F(DiscreteTrajectoryTest, LowerBound) {
   auto const trajectory = MakeTrajectory();
   {
     auto const it = trajectory.lower_bound(t0_ + 3.9 * Second);
@@ -273,7 +273,7 @@ TEST_F(DiscreteTraject0ryTest, LowerBound) {
   }
 }
 
-TEST_F(DiscreteTraject0ryTest, UpperBound) {
+TEST_F(DiscreteTrajectoryTest, UpperBound) {
   auto const trajectory = MakeTrajectory();
   {
     auto const it = trajectory.upper_bound(t0_ + 3.9 * Second);
@@ -322,7 +322,7 @@ TEST_F(DiscreteTraject0ryTest, UpperBound) {
   }
 }
 
-TEST_F(DiscreteTraject0ryTest, Segments) {
+TEST_F(DiscreteTrajectoryTest, Segments) {
   auto const trajectory = MakeTrajectory();
   std::vector<Instant> begin;
   std::vector<Instant> rbegin;
@@ -338,7 +338,7 @@ TEST_F(DiscreteTraject0ryTest, Segments) {
       ElementsAre(t0_ + 4 * Second, t0_ + 9 * Second, t0_ + 14 * Second));
 }
 
-TEST_F(DiscreteTraject0ryTest, RSegments) {
+TEST_F(DiscreteTrajectoryTest, RSegments) {
   auto const trajectory = MakeTrajectory();
   std::vector<Instant> begin;
   std::vector<Instant> rbegin;
@@ -354,7 +354,7 @@ TEST_F(DiscreteTraject0ryTest, RSegments) {
       ElementsAre(t0_ + 14 * Second, t0_ + 9 * Second, t0_ + 4 * Second));
 }
 
-TEST_F(DiscreteTraject0ryTest, DetachSegments) {
+TEST_F(DiscreteTrajectoryTest, DetachSegments) {
   auto trajectory1 = MakeTrajectory();
   auto const first_segment = trajectory1.segments().begin();
   auto const second_segment = std::next(first_segment);
@@ -406,7 +406,7 @@ TEST_F(DiscreteTraject0ryTest, DetachSegments) {
   }
 }
 
-TEST_F(DiscreteTraject0ryTest, AttachSegmentsMatching) {
+TEST_F(DiscreteTrajectoryTest, AttachSegmentsMatching) {
   auto trajectory1 = MakeTrajectory();
   auto trajectory2 = MakeTrajectory(
       t0_ + 14 * Second,
@@ -453,7 +453,7 @@ TEST_F(DiscreteTraject0ryTest, AttachSegmentsMatching) {
   }
 }
 
-TEST_F(DiscreteTraject0ryTest, AttachSegmentsMismatching) {
+TEST_F(DiscreteTrajectoryTest, AttachSegmentsMismatching) {
   auto trajectory1 = MakeTrajectory();
   auto trajectory2 = MakeTrajectory(
       t0_ + 15 * Second,
@@ -479,7 +479,7 @@ TEST_F(DiscreteTraject0ryTest, AttachSegmentsMismatching) {
                                                  5 * Metre}));
 }
 
-TEST_F(DiscreteTraject0ryTest, DeleteSegments) {
+TEST_F(DiscreteTrajectoryTest, DeleteSegments) {
   auto trajectory = MakeTrajectory();
   auto const first_segment = trajectory.segments().begin();
   auto second_segment = std::next(first_segment);
@@ -490,7 +490,7 @@ TEST_F(DiscreteTraject0ryTest, DeleteSegments) {
   EXPECT_TRUE(second_segment == trajectory.segments().end());
 }
 
-TEST_F(DiscreteTraject0ryTest, ForgetAfter) {
+TEST_F(DiscreteTrajectoryTest, ForgetAfter) {
   auto trajectory = MakeTrajectory();
 
   trajectory.ForgetAfter(trajectory.end());
@@ -516,7 +516,7 @@ TEST_F(DiscreteTraject0ryTest, ForgetAfter) {
   EXPECT_EQ(1, trajectory.segments().size());
 }
 
-TEST_F(DiscreteTraject0ryTest, ForgetBefore) {
+TEST_F(DiscreteTrajectoryTest, ForgetBefore) {
   auto trajectory = MakeTrajectory();
 
   trajectory.ForgetBefore(t0_ + 3 * Second);
@@ -570,7 +570,7 @@ TEST_F(DiscreteTraject0ryTest, ForgetBefore) {
   EXPECT_TRUE(trajectory.empty());
 }
 
-TEST_F(DiscreteTraject0ryTest, TMinTMaxEvaluate) {
+TEST_F(DiscreteTrajectoryTest, TMinTMaxEvaluate) {
   auto const trajectory = MakeTrajectory();
   EXPECT_EQ(t0_, trajectory.t_min());
   EXPECT_EQ(t0_ + 14 * Second, trajectory.t_max());
@@ -592,7 +592,7 @@ TEST_F(DiscreteTraject0ryTest, TMinTMaxEvaluate) {
                                         0 * Metre / Second}), 0)));
 }
 
-TEST_F(DiscreteTraject0ryTest, SerializationRoundTrip) {
+TEST_F(DiscreteTrajectoryTest, SerializationRoundTrip) {
   auto const trajectory = MakeTrajectory();
   auto const trajectory_first_segment = trajectory.segments().begin();
   auto const trajectory_second_segment = std::next(trajectory_first_segment);
@@ -641,7 +641,7 @@ TEST_F(DiscreteTraject0ryTest, SerializationRoundTrip) {
   EXPECT_THAT(message2, EqualsProto(message1));
 }
 
-TEST_F(DiscreteTraject0ryTest, SerializationExactEndpoints) {
+TEST_F(DiscreteTrajectoryTest, SerializationExactEndpoints) {
   DiscreteTrajectory<World> trajectory;
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
@@ -687,20 +687,20 @@ TEST_F(DiscreteTraject0ryTest, SerializationExactEndpoints) {
   EXPECT_THAT(
       (deserialized_degrees_of_freedom1.position() - World::origin).Norm(),
       AbsoluteErrorFrom((degrees_of_freedom1.position() - World::origin).Norm(),
-                        IsNear(0.27_⑴*Milli(Metre))));
+                        IsNear(0.022_⑴*Milli(Metre))));
   EXPECT_THAT(deserialized_degrees_of_freedom1.velocity().Norm(),
               AbsoluteErrorFrom(degrees_of_freedom1.velocity().Norm(),
-                                IsNear(82_⑴ * Milli(Metre) / Second)));
+                                IsNear(5.8_⑴ * Milli(Metre) / Second)));
   EXPECT_THAT(
       (deserialized_degrees_of_freedom2.position() - World::origin).Norm(),
       AbsoluteErrorFrom((degrees_of_freedom2.position() - World::origin).Norm(),
-                        IsNear(0.19_⑴*Milli(Metre))));
+                        IsNear(0.47_⑴*Milli(Metre))));
   EXPECT_THAT(deserialized_degrees_of_freedom2.velocity().Norm(),
               AbsoluteErrorFrom(degrees_of_freedom2.velocity().Norm(),
-                                IsNear(0.36_⑴ * Metre / Second)));
+                                IsNear(1.5_⑴ * Milli(Metre) / Second)));
 }
 
-TEST_F(DiscreteTraject0ryTest, SerializationRange) {
+TEST_F(DiscreteTrajectoryTest, SerializationRange) {
   auto const trajectory1 = MakeTrajectory();
   auto trajectory2 = MakeTrajectory();
 
@@ -724,7 +724,7 @@ TEST_F(DiscreteTraject0ryTest, SerializationRange) {
   EXPECT_THAT(message1, EqualsProto(message2));
 }
 
-TEST_F(DiscreteTraject0ryTest, DISABLED_SerializationPreΖήνωνCompatibility) {
+TEST_F(DiscreteTrajectoryTest, DISABLED_SerializationPreHamiltonCompatibility) {
   StringLogSink log_warning(google::WARNING);
   auto const serialized_message = ReadFromBinaryFile(
       R"(P:\Public Mockingbird\Principia\Saves\3136\trajectory_3136.proto.bin)");  // NOLINT
@@ -734,9 +734,9 @@ TEST_F(DiscreteTraject0ryTest, DISABLED_SerializationPreΖήνωνCompatibility)
   auto const history = DiscreteTrajectory<World>::ReadFromMessage(
       message1, /*tracked=*/{&psychohistory});
   EXPECT_THAT(log_warning.string(),
-              AllOf(HasSubstr("pre-Ζήνων"), Not(HasSubstr("pre-Haar"))));
+              AllOf(HasSubstr("pre-Hamilton"), Not(HasSubstr("pre-Haar"))));
 
-  // Note that the sizes don't have the same semantics as pre-Ζήνων.  The
+  // Note that the sizes don't have the same semantics as pre-Hamilton.  The
   // history now counts all segments.  The psychohistory has a duplicated point
   // at the beginning.
   EXPECT_EQ(435'929, history.size());
@@ -764,7 +764,7 @@ TEST_F(DiscreteTraject0ryTest, DISABLED_SerializationPreΖήνωνCompatibility)
                            +2.61488327506437054e+04 * (Metre / Second),
                            +1.90319283138508908e+04 * (Metre / Second)}))));
 
-  // Serialize the trajectory in the Ζήνων format.
+  // Serialize the trajectory in the Hamilton format.
   serialization::DiscreteTrajectory message2;
   history.WriteToMessage(&message2,
                          /*tracked=*/{psychohistory},

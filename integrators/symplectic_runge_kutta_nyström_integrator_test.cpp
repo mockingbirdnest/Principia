@@ -571,14 +571,14 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, TimeReversibility) {
     problem.initial_state = {{q_initial}, {v_initial}, t_initial};
     auto const instance =
         GetParam().integrator.NewInstance(problem, append_state, step);
-    instance->Solve(t_final);
+    EXPECT_OK(instance->Solve(t_final));
   }
 
   {
     problem.initial_state = final_state;
     auto const instance =
         GetParam().integrator.NewInstance(problem, append_state, -step);
-    instance->Solve(t_initial);
+    EXPECT_OK(instance->Solve(t_initial));
   }
 
   EXPECT_EQ(t_initial, final_state.time.value);
@@ -626,7 +626,7 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Symplecticity) {
 
   auto const instance =
       GetParam().integrator.NewInstance(problem, append_state, step);
-  instance->Solve(t_final);
+  EXPECT_OK(instance->Solve(t_final));
 
   std::size_t const length = solution.size();
   std::vector<Energy> energy_error(length);
@@ -693,7 +693,7 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Convergence) {
   for (int i = 0; i < step_sizes; ++i, step /= step_reduction) {
     auto const instance =
         GetParam().integrator.NewInstance(problem, append_state, step);
-    instance->Solve(t_final);
+    EXPECT_OK(instance->Solve(t_final));
     Time const t = final_state.time.value - t_initial;
     Length const& q = final_state.positions[0].value;
     Speed const& v = final_state.velocities[0].value;
@@ -761,7 +761,7 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Termination) {
 
   auto const instance =
       GetParam().integrator.NewInstance(problem, append_state, step);
-  instance->Solve(t_final);
+  EXPECT_OK(instance->Solve(t_final));
 
   EXPECT_EQ(steps, solution.size());
   EXPECT_THAT(solution.back().time.value,
@@ -815,7 +815,7 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, LongIntegration) {
 
   auto const instance =
       GetParam().integrator.NewInstance(problem, append_state, step);
-  instance->Solve(t_final);
+  EXPECT_OK(instance->Solve(t_final));
 
   EXPECT_EQ(steps, solution.size());
   switch (GetParam().composition) {

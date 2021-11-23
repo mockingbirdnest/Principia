@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <iterator>
 #include <list>
 #include <map>
 #include <memory>
@@ -85,7 +86,7 @@ PileUp::PileUp(
         part->rigid_motion(), part->mass(), part->inertia_tensor());
   }
   auto const barycentre = mechanical_system.centre_of_mass();
-  trajectory_.Append(t, barycentre);
+  trajectory_.Append(t, barycentre).IgnoreError();
 
   angular_momentum_ = mechanical_system.AngularMomentum();
 
@@ -224,14 +225,14 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
                             message.apparent_part_degrees_of_freedom_size() > 0;
   bool const is_pre_frobenius = message.rigid_pile_up().empty() ||
                                 !message.has_angular_momentum();
-  bool const is_pre_ζήνων = message.history().segment_size() == 0;
-  LOG_IF(WARNING, is_pre_ζήνων)
+  bool const is_pre_hamilton = message.history().segment_size() == 0;
+  LOG_IF(WARNING, is_pre_hamilton)
       << "Reading pre-"
       << (is_pre_cartan      ? "Cartan"
           : is_pre_cesàro    ? u8"Cesàro"
           : is_pre_frege     ? "Frege"
           : is_pre_frobenius ? "Frobenius"
-                             : u8"Ζήνων") << " PileUp";
+                             : "Hamilton") << " PileUp";
 
   std::unique_ptr<PileUp> pile_up;
   if (is_pre_cesàro) {
@@ -270,7 +271,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
     if (pile_up->history_->size() == 2) {
       DiscreteTrajectory<Barycentric> psychohistory;
       for (auto const [time, degrees_of_freedom] : *pile_up->history_) {
-        psychohistory.Append(time, degrees_of_freedom);
+        psychohistory.Append(time, degrees_of_freedom).IgnoreError();
       }
       pile_up->trajectory_.ForgetAfter(std::next(pile_up->history_->begin()));
       pile_up->psychohistory_ =
@@ -297,7 +298,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
               /*angular_momentum=*/{},
               ephemeris,
               std::move(deletion_callback)));
-    } else if (is_pre_ζήνων) {
+    } else if (is_pre_hamilton) {
       DiscreteTrajectorySegmentIterator<Barycentric> psychohistory;
       auto trajectory = DiscreteTrajectory<Barycentric>::ReadFromMessage(
           message.history(),
@@ -626,7 +627,7 @@ absl::Status PileUp::AdvanceTime(Instant const& t) {
     for (auto it = std::next(psychohistory_trajectory.begin());
          it != psychohistory_trajectory.end();
          ++it) {
-      trajectory_.Append(it->time, it->degrees_of_freedom);
+      trajectory_.Append(it->time, it->degrees_of_freedom).IgnoreError();
     }
 
     auto const intrinsic_acceleration =

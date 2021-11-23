@@ -84,8 +84,8 @@ class Лидов古在Test : public ::testing::Test {
 #if !_DEBUG
 TEST_F(Лидов古在Test, MercuryOrbiter) {
   DiscreteTrajectory<ICRS> icrs_trajectory;
-  icrs_trajectory.Append(MercuryOrbiterInitialTime,
-                         MercuryOrbiterInitialDegreesOfFreedom<ICRS>);
+  EXPECT_OK(icrs_trajectory.Append(
+      MercuryOrbiterInitialTime, MercuryOrbiterInitialDegreesOfFreedom<ICRS>));
   auto& icrs_segment = icrs_trajectory.segments().front();
   icrs_segment.SetDownsampling({.max_dense_intervals = 10'000,
                                 .tolerance = 10 * Metre});
@@ -112,8 +112,8 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
 
   DiscreteTrajectory<MercuryCentredInertial> mercury_centred_trajectory;
   for (auto const& [t, dof] : icrs_trajectory) {
-    mercury_centred_trajectory.Append(t,
-                                      mercury_frame_.ToThisFrameAtTime(t)(dof));
+    EXPECT_OK(mercury_centred_trajectory.Append(
+        t, mercury_frame_.ToThisFrameAtTime(t)(dof)));
     logger.Append(
         "q",
         mercury_centred_trajectory.back().degrees_of_freedom.position(),

@@ -420,7 +420,7 @@ absl::Status Ephemeris<Frame>::Prolong(Instant const& t) {
   // after the first integration.
   absl::MutexLock l(&lock_);
   while (t_max() < t) {
-    instance_->Solve(t_final);
+    instance_->Solve(t_final).IgnoreError();
     RETURN_IF_STOPPED;
     t_final += fixed_step_parameters_.step_;
   }
@@ -485,7 +485,7 @@ Ephemeris<Frame>::StoppableNewInstance(
 
   // The construction of the instance may evaluate the degrees of freedom of the
   // bodies.
-  Prolong(trajectory_last_time + parameters.step_);
+  Prolong(trajectory_last_time + parameters.step_).IgnoreError();
   RETURN_IF_STOPPED;
 
   // NOTE(phl): For some reason the May 2021 version of absl wants an explicit
@@ -564,7 +564,7 @@ absl::Status Ephemeris<Frame>::FlowWithFixedStep(
     Instant const& t,
     typename Integrator<NewtonianMotionEquation>::Instance& instance) {
   if (empty() || t > t_max()) {
-    Prolong(t);
+    Prolong(t).IgnoreError();
     RETURN_IF_STOPPED;
   }
   if (instance.time() == DoublePrecision<Instant>(t)) {
@@ -728,11 +728,13 @@ void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
       DegreesOfFreedom<Frame> const apsis2_degrees_of_freedom =
           body2_trajectory->EvaluateDegreesOfFreedom(apsis_time);
       if (Sign(squared_distance_derivative).is_negative()) {
-        apoapsides1.Append(apsis_time, apsis1_degrees_of_freedom);
-        apoapsides2.Append(apsis_time, apsis2_degrees_of_freedom);
+        apoapsides1.Append(apsis_time, apsis1_degrees_of_freedom).IgnoreError();
+        apoapsides2.Append(apsis_time, apsis2_degrees_of_freedom).IgnoreError();
       } else {
-        periapsides1.Append(apsis_time, apsis1_degrees_of_freedom);
-        periapsides2.Append(apsis_time, apsis2_degrees_of_freedom);
+        periapsides1.Append(apsis_time,
+                            apsis1_degrees_of_freedom).IgnoreError();
+        periapsides2.Append(apsis_time,
+                            apsis2_degrees_of_freedom).IgnoreError();
       }
     }
 
@@ -1094,7 +1096,7 @@ void Ephemeris<Frame>::AppendMasslessBodiesStateToTrajectories(
     trajectory->Append(
         time,
         DegreesOfFreedom<Frame>(state.positions[index].value,
-                                state.velocities[index].value));
+                                state.velocities[index].value)).IgnoreError();
     ++index;
   }
 }
@@ -1364,7 +1366,7 @@ absl::Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
                             max_ephemeris_steps * fixed_step_parameters_.step(),
                         trajectory_last_time + fixed_step_parameters_.step()),
                t);
-  Prolong(t_final);
+  Prolong(t_final).IgnoreError();
   RETURN_IF_STOPPED;
 
   IntegrationProblem<ODE> problem;

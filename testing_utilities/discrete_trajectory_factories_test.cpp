@@ -39,6 +39,30 @@ class DiscreteTrajectoryFactoriesTest : public ::testing::Test {
                       serialization::Frame::TEST>;
 };
 
+TEST_F(DiscreteTrajectoryFactoriesTest, NewMotionlessTrajectoryTimeline) {
+  auto const timeline = NewMotionlessTrajectoryTimeline<World>(
+      /*position=*/
+      World::origin + Displacement<World>({30 * Metre, 40 * Metre, 50 * Metre}),
+      /*Δt=*/0.1 * Second,
+      /*t1=*/Instant() + 4 * Second,
+      /*t2=*/Instant() + 42 * Second);
+
+  for (auto const& [time, degrees_of_freedom] : timeline) {
+    Position<World> const& position = degrees_of_freedom.position();
+    Velocity<World> const& velocity = degrees_of_freedom.velocity();
+
+    EXPECT_THAT((position - World::origin).Norm(),
+                AlmostEquals(Sqrt(5000) * Metre, 0));
+    EXPECT_THAT(velocity.Norm(),
+                AlmostEquals(0 * Metre / Second, 0));
+  }
+  EXPECT_THAT(timeline.begin()->time,
+              AlmostEquals(Instant() + 4 * Second, 0));
+  EXPECT_THAT(timeline.rbegin()->time,
+              AlmostEquals(Instant() + 41.9 * Second, 46));
+  EXPECT_EQ(380, timeline.size());
+}
+
 TEST_F(DiscreteTrajectoryFactoriesTest, NewLinearTrajectoryTimeline) {
   auto const timeline = NewLinearTrajectoryTimeline<World>(
       /*degrees_of_freedom=*/

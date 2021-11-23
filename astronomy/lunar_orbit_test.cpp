@@ -31,6 +31,7 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/statistics.hpp"
 
@@ -329,7 +330,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
       LunarSurface::origin + Displacement<LunarSurface>({x0, y0, z0}),
       Velocity<LunarSurface>({u0, v0, w0})};
 
-  ephemeris_->Prolong(J2000);
+  EXPECT_OK(ephemeris_->Prolong(J2000));
   DegreesOfFreedom<ICRS> const initial_state =
       lunar_frame_.FromThisFrameAtTime(J2000)(lunar_initial_state);
 
@@ -364,7 +365,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   }
 
   DiscreteTrajectory<ICRS> trajectory;
-  trajectory.Append(J2000, initial_state);
+  EXPECT_OK(trajectory.Append(J2000, initial_state));
   auto const instance = ephemeris_->NewInstance(
       {&trajectory},
       Ephemeris<ICRS>::NoIntrinsicAccelerations,
@@ -373,14 +374,15 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                                              Position<ICRS>>(),
           integration_step));
 
-  ephemeris_->FlowWithFixedStep(J2000 + GetParam().periods * period, *instance);
+  EXPECT_OK(ephemeris_->FlowWithFixedStep(J2000 + GetParam().periods * period,
+                                          *instance));
 
   // To find the nodes, we need to convert the trajectory to a reference frame
   // whose xy plane is the Moon's equator.
   DiscreteTrajectory<LunarSurface> surface_trajectory;
   for (auto const& [time, degrees_of_freedom] : trajectory) {
-    surface_trajectory.Append(
-        time, lunar_frame_.ToThisFrameAtTime(time)(degrees_of_freedom));
+    EXPECT_OK(surface_trajectory.Append(
+        time, lunar_frame_.ToThisFrameAtTime(time)(degrees_of_freedom)));
   }
 
   for (Instant t = J2000; t <= J2000 + 2 * period; t += period / 50'000) {
@@ -415,13 +417,13 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
 
   DiscreteTrajectory<LunarSurface> ascending_nodes;
   DiscreteTrajectory<LunarSurface> descending_nodes;
-  ComputeNodes(surface_trajectory,
-               surface_trajectory.begin(),
-               surface_trajectory.end(),
-               /*north=*/Vector<double, LunarSurface>({0, 0, 1}),
-               /*max_points=*/std::numeric_limits<int>::max(),
-               ascending_nodes,
-               descending_nodes);
+  EXPECT_OK(ComputeNodes(surface_trajectory,
+                         surface_trajectory.begin(),
+                         surface_trajectory.end(),
+                         /*north=*/Vector<double, LunarSurface>({0, 0, 1}),
+                         /*max_points=*/std::numeric_limits<int>::max(),
+                         ascending_nodes,
+                         descending_nodes));
 
   DiscreteTrajectory<ICRS> apoapsides;
   DiscreteTrajectory<ICRS> periapsides;

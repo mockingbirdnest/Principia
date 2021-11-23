@@ -9,6 +9,7 @@
 #include "astronomy/stabilize_ksp.hpp"
 #include "astronomy/solar_system_fingerprints.hpp"
 #include "base/file.hpp"
+#include "base/status_utilities.hpp"
 #include "mathematica/mathematica.hpp"
 
 namespace principia {
@@ -54,7 +55,7 @@ void LocalErrorAnalyser<Frame>::WriteLocalErrors(
       /*accuracy_parameters=*/{fitting_tolerance_,
                                /*geopotential_tolerance=*/0x1p-24},
       typename Ephemeris<Frame>::FixedStepParameters(integrator_, step_));
-  reference_ephemeris->Prolong(solar_system_->epoch());
+  CHECK_OK(reference_ephemeris->Prolong(solar_system_->epoch()));
   std::vector<std::vector<Length>> errors;
   for (Instant t0 = solar_system_->epoch(),
                t = t0 + granularity;
@@ -62,8 +63,8 @@ void LocalErrorAnalyser<Frame>::WriteLocalErrors(
        t0 = t, t += granularity) {
     std::unique_ptr<Ephemeris<Frame>> refined_ephemeris =
         ForkEphemeris(*reference_ephemeris, t0, fine_integrator, fine_step);
-    reference_ephemeris->Prolong(t);
-    refined_ephemeris->Prolong(t);
+    CHECK_OK(reference_ephemeris->Prolong(t));
+    CHECK_OK(refined_ephemeris->Prolong(t));
     LOG_EVERY_N(INFO, 10) << "Prolonged to "
                           << (t - solar_system_->epoch()) / Day << " days.";
 

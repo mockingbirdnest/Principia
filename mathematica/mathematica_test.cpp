@@ -25,6 +25,7 @@
 #include "physics/discrete_trajectory.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/matchers.hpp"
 
 namespace principia {
 namespace mathematica {
@@ -205,14 +206,14 @@ TEST_F(MathematicaTest, ToMathematica) {
   }
   {
     DiscreteTrajectory<F> trajectory;
-    trajectory.Append(
+    EXPECT_OK(trajectory.Append(
         Instant(),
         DegreesOfFreedom<F>(
             F::origin +
                 Displacement<F>({2.0 * Metre, 3.0 * Metre, -4.0 * Metre}),
             Velocity<F>({-1.0 * Metre / Second,
                          -5.0 * Metre / Second,
-                         8.0 * Metre / Second})));
+                         8.0 * Metre / Second}))));
     EXPECT_EQ(ToMathematica(std::tuple{trajectory.front().time,
                                        trajectory.front().degrees_of_freedom}),
               ToMathematica(trajectory.front()));
@@ -340,14 +341,14 @@ TEST_F(MathematicaTest, ExpressIn) {
   }
   {
     DiscreteTrajectory<F> trajectory;
-    trajectory.Append(
+    EXPECT_OK(trajectory.Append(
         Instant(),
         DegreesOfFreedom<F>(
             F::origin +
                 Displacement<F>({2.0 * Metre, 3.0 * Metre, -4.0 * Metre}),
             Velocity<F>({-1.0 * Metre / Second,
                          -5.0 * Metre / Second,
-                         8.0 * Metre / Second})));
+                         8.0 * Metre / Second}))));
     EXPECT_EQ(
         ToMathematica(std::tuple{0.0,
                                  std::tuple{std::tuple{2.0, 3.0, -4.0},

@@ -17,6 +17,7 @@
 #include "base/file.hpp"
 #include "base/get_line.hpp"
 #include "base/hexadecimal.hpp"
+#include "base/status_utilities.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
@@ -248,9 +249,9 @@ void FillPositions(Ephemeris<Barycentric> const& ephemeris,
 void ProduceCenturyPlots(Ephemeris<Barycentric>& ephemeris) {
   for (int i = 1; i < (a_century_hence - ksp_epoch) / JulianYear; ++i) {
     LOG(INFO) << "year " << i;
-    ephemeris.Prolong(ksp_epoch + i * JulianYear);
+    CHECK_OK(ephemeris.Prolong(ksp_epoch + i * JulianYear));
   }
-  ephemeris.Prolong(a_century_hence);
+  CHECK_OK(ephemeris.Prolong(a_century_hence));
 
   std::map<Celestial, std::vector<Length>> extremal_separations;
   std::map<Celestial, std::vector<Time>> times_from_epoch;
@@ -421,7 +422,7 @@ void PlotPredictableYears() {
       step);
 
   for (int i = 1; i <= 5; ++i) {
-    ephemeris->Prolong(ksp_epoch + i * JulianYear);
+    CHECK_OK(ephemeris->Prolong(ksp_epoch + i * JulianYear));
     LOG(INFO) << "Prolonged to year " << i;
   }
 
@@ -484,23 +485,23 @@ void AnalyseGlobalError() {
     Bundle bundle;
     if (reference_ephemeris != nullptr) {
       bundle.Add([&reference_ephemeris = *reference_ephemeris, t]() {
-        reference_ephemeris.Prolong(t);
+        CHECK_OK(reference_ephemeris.Prolong(t));
         return absl::OkStatus();
       });
     }
     if (refined_ephemeris != nullptr) {
       bundle.Add([&refined_ephemeris = *refined_ephemeris, t]() {
-        refined_ephemeris.Prolong(t);
+        CHECK_OK(refined_ephemeris.Prolong(t));
         return absl::OkStatus();
       });
     }
     for (auto const& ephemeris : perturbed_ephemerides) {
       bundle.Add([ephemeris = ephemeris.get(), t]() {
-        ephemeris->Prolong(t);
+        CHECK_OK(ephemeris->Prolong(t));
         return absl::OkStatus();
       });
     }
-    bundle.Join();
+    CHECK_OK(bundle.Join());
     LOG(INFO) << "year " << year;
 
     if (refined_ephemeris != nullptr) {
@@ -561,7 +562,7 @@ void StatisticallyAnalyseStability() {
 
   std::map<not_null<Ephemeris<Barycentric>*>, bool> numerically_unsound;
   for (auto const& ephemeris : perturbed_ephemerides) {
-    ephemeris->Prolong(ksp_epoch);
+    CHECK_OK(ephemeris->Prolong(ksp_epoch));
     numerically_unsound[ephemeris.get()] = false;
   }
   int total_breakdowns = 0;
@@ -601,8 +602,8 @@ void StatisticallyAnalyseStability() {
                 SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
                                                       Position<Barycentric>>(),
                 step / 2));
-        ephemeris->Prolong(t);
-        refined.Prolong(t);
+        CHECK_OK(ephemeris->Prolong(t));
+        CHECK_OK(refined.Prolong(t));
         Length numerical_error;
         Celestial most_erroneous_moon;
         ComputeHighestMoonError(refined,
@@ -618,7 +619,7 @@ void StatisticallyAnalyseStability() {
         return absl::OkStatus();
       });
     }
-    bundle.Join();
+    CHECK_OK(bundle.Join());
     LOG(INFO) << "year " << year;
 
     int yearly_breakdowns = 0;

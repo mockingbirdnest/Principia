@@ -29,6 +29,7 @@ using geometry::Frame;
 using geometry::Handedness;
 using geometry::Inertial;
 using geometry::Instant;
+using geometry::Velocity;
 using quantities::Abs;
 using quantities::AngularFrequency;
 using quantities::Length;
@@ -45,6 +46,7 @@ using testing_utilities::AppendTrajectoryTimeline;
 using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
 using testing_utilities::NewCircularTrajectoryTimeline;
+using testing_utilities::NewLinearTrajectoryTimeline;
 using testing_utilities::operator""_⑴;
 using ::testing::Eq;
 using ::testing::Le;
@@ -63,11 +65,11 @@ class DiscreteTrajectorySegmentTest : public ::testing::Test {
       : segments_(MakeSegments(1)) {
     segment_ = &*segments_->begin();
 
-    segment_->Append(t0_ + 2 * Second, unmoving_origin_);
-    segment_->Append(t0_ + 3 * Second, unmoving_origin_);
-    segment_->Append(t0_ + 5 * Second, unmoving_origin_);
-    segment_->Append(t0_ + 7 * Second, unmoving_origin_);
-    segment_->Append(t0_ + 11 * Second, unmoving_origin_);
+    EXPECT_OK(segment_->Append(t0_ + 2 * Second, unmoving_origin_));
+    EXPECT_OK(segment_->Append(t0_ + 3 * Second, unmoving_origin_));
+    EXPECT_OK(segment_->Append(t0_ + 5 * Second, unmoving_origin_));
+    EXPECT_OK(segment_->Append(t0_ + 7 * Second, unmoving_origin_));
+    EXPECT_OK(segment_->Append(t0_ + 11 * Second, unmoving_origin_));
   }
 
   void ForgetAfter(Instant const& t) {
@@ -237,7 +239,7 @@ TEST_F(DiscreteTrajectorySegmentTest, Evaluate) {
               IsNear(10.4_⑴ * Nano(Metre / Second)));
 }
 
-TEST_F(DiscreteTrajectorySegmentTest, Downsampling) {
+TEST_F(DiscreteTrajectorySegmentTest, DownsamplingCircle) {
   auto const circle_segments = MakeSegments(1);
   auto const downsampled_circle_segments = MakeSegments(1);
   auto& circle = *circle_segments->begin();
@@ -272,6 +274,45 @@ TEST_F(DiscreteTrajectorySegmentTest, Downsampling) {
               IsNear(0.98_⑴ * Milli(Metre)));
   EXPECT_THAT(*std::max_element(velocity_errors.begin(), velocity_errors.end()),
               IsNear(14_⑴ * Milli(Metre / Second)));
+}
+
+TEST_F(DiscreteTrajectorySegmentTest, DownsamplingStraightLine) {
+  auto const line_segments = MakeSegments(1);
+  auto const downsampled_line_segments = MakeSegments(1);
+  auto& line = *line_segments->begin();
+  auto& downsampled_line = *downsampled_line_segments->begin();
+  downsampled_line.SetDownsampling(
+      {.max_dense_intervals = 50, .tolerance = 1 * Milli(Metre)});
+  auto const v = Velocity<World>({1 * Metre / Second,
+                                  2 * Metre / Second,
+                                  3 * Metre / Second});
+  Time const Δt = 10 * Milli(Second);
+  Instant const t1 = t0_;
+  Instant const t2 = t0_ + 10 * Second;
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline<World>(v, Δt, t1, t2),
+      /*to=*/line);
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline<World>(v, Δt, t1, t2),
+      /*to=*/downsampled_line);
+
+  EXPECT_THAT(line.size(), Eq(1001));
+  // In the test3200 release this used to have 1001 points, see #3203.
+  EXPECT_THAT(downsampled_line.size(), Eq(21));
+  std::vector<Length> position_errors;
+  std::vector<Speed> velocity_errors;
+  for (auto const& [time, degrees_of_freedom] : line) {
+    position_errors.push_back(
+        (downsampled_line.EvaluatePosition(time) -
+         degrees_of_freedom.position()).Norm());
+    velocity_errors.push_back(
+        (downsampled_line.EvaluateVelocity(time) -
+         degrees_of_freedom.velocity()).Norm());
+  }
+  EXPECT_THAT(*std::max_element(position_errors.begin(), position_errors.end()),
+              IsNear(3.6e-15_⑴ * Metre));
+  EXPECT_THAT(*std::max_element(velocity_errors.begin(), velocity_errors.end()),
+              IsNear(1.1e-14_⑴ * Metre / Second));
 }
 
 TEST_F(DiscreteTrajectorySegmentTest, DownsamplingForgetAfter) {

@@ -66,7 +66,9 @@ endif
 TEST_LIBS     := $(DEP_DIR)benchmark/src/libbenchmark.a $(DEP_DIR)protobuf/src/.libs/libprotobuf.a
 ABSL_LIBS     := \
 	$(DEP_DIR)abseil-cpp/absl/base/libabsl_*.a \
+	$(DEP_DIR)abseil-cpp/absl/container/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/debugging/libabsl_*.a \
+	$(DEP_DIR)abseil-cpp/absl/hash/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/numeric/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/status/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/strings/libabsl_*.a \

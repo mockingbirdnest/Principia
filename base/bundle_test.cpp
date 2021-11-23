@@ -4,7 +4,6 @@
 #include <atomic>
 #include <vector>
 
-#include "base/status_utilities.hpp"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "testing_utilities/matchers.hpp"
@@ -36,7 +35,7 @@ TEST_F(BundleDeathTest, AddAfterJoin) {
           return absl::OkStatus();
         });
       }
-      bundle_.Join();
+      bundle_.Join().IgnoreError();
       bundle_.Add([]() {
         std::this_thread::sleep_for(10ms);
         return absl::OkStatus();
