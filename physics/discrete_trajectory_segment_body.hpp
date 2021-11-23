@@ -389,17 +389,30 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
 template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::Merge(
     DiscreteTrajectorySegment<Frame> segment) {
-  CHECK(segment.downsampling_parameters_ == downsampling_parameters_);
+  //TODO(phl): How does downsampling work?  The parameters state are those of
+  // the end so that we can keep Appending.
   if (segment.timeline_.empty()) {
     return;
-  } else if (!timeline_.empty()) {
-    // TODO(phl): We might need to have CHECK_LE here and to check that the
+  } else if (timeline_.empty()) {
+    downsampling_parameters_ = segment.downsampling_parameters_;
+    timeline_ = std::move(segment.timeline_);
+    number_of_dense_points_ = segment.number_of_dense_points_;
+  } else if (std::prev(timeline_.cend())->time <
+             segment.timeline_.cbegin()->time) {
+    downsampling_parameters_ = segment.downsampling_parameters_;
+    timeline_.merge(segment.timeline_);
+    number_of_dense_points_ = segment.number_of_dense_points_;
+  } else if (std::prev(segment.timeline_.cend())->time <
+             timeline_.cbegin()->time) {
+    timeline_.merge(segment.timeline_);
+  } else {
+    // TODO(phl): We might need to have to check <= above and to verify that the
     // points match.
-    CHECK_LT(std::prev(timeline_.cend())->time,
-             segment.timeline_.cbegin()->time);
+    LOG(FATAL) << "Overlapping merge: [" << segment.timeline_.cbegin()->time
+               << ", " << std::prev(segment.timeline_.cend())->time
+               << "] into [" << timeline_.cbegin()->time << ", "
+               << std::prev(timeline_.cend())->time << "]";
   }
-  timeline_.merge(std::move(segment.timeline_));
-  number_of_dense_points_ = segment.number_of_dense_points_;
 }
 
 template<typename Frame>

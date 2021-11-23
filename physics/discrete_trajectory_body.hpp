@@ -380,14 +380,14 @@ void DiscreteTrajectory<Frame>::Merge(DiscreteTrajectory<Frame> trajectory) {
   auto sit_t = segments_->begin();  // Target iterator.
   //TODO(phl):left endpoints;
   for (;;) {
-    if (sit_s != trajectory.segments_.end() && sit_t != segments_.end()) {
+    if (sit_s != trajectory.segments_->end() && sit_t != segments_->end()) {
       sit_t->Merge(std::move(*sit_s));
       ++sit_s;
       ++sit_t;
-    } else if (sit_s != trajectory.segments_.end()) {
+    } else if (sit_s != trajectory.segments_->end()) {
       // No more segments in the target.
       segments_->splice(segments_->end(),
-                        trajectory.segments_,
+                        *trajectory.segments_,
                         sit_s,
                         trajectory.segments_->end());
       break;
