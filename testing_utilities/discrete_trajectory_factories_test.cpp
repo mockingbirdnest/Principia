@@ -1,5 +1,4 @@
-﻿#pragma once
-
+﻿
 #include "testing_utilities/discrete_trajectory_factories.hpp"
 
 #include "geometry/frame.hpp"

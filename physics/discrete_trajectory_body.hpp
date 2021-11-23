@@ -158,7 +158,7 @@ typename DiscreteTrajectory<Frame>::SegmentIterator
 DiscreteTrajectory<Frame>::NewSegment() {
   auto& last_segment = segments_->back();
 
-  auto const& new_segment = segments_->emplace_back();
+  segments_->emplace_back();
   auto const new_segment_sit = --segments_->end();
   auto const new_self = SegmentIterator(segments_.get(), new_segment_sit);
   *new_segment_sit = DiscreteTrajectorySegment<Frame>(new_self);

@@ -464,7 +464,6 @@ TEST_F(DiscreteTrajectorySegmentTest, SerializationRoundTrip) {
   AppendTrajectoryTimeline(
       NewCircularTrajectoryTimeline<World>(ω, r, Δt, t1, t2),
       /*to=*/circle);
-  auto const circle_t_max = circle.t_max();
 
   serialization::DiscreteTrajectorySegment message1;
   circle.WriteToMessage(
