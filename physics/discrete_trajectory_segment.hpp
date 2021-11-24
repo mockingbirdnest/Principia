@@ -143,9 +143,6 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   void Prepend(Instant const& t,
                DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
-  absl::Status Append(Instant const& t,
-                      DegreesOfFreedom<Frame> const& degrees_of_freedom);
-
   // Removes all points with a time greater than or equal to |t| (1st overload)
   // or starting at |begin| (2nd overload).
   void ForgetAfter(Instant const& t);
@@ -155,6 +152,14 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   // ending at |end| (2nd overload).
   void ForgetBefore(Instant const& t);
   void ForgetBefore(typename Timeline::const_iterator end);
+
+  absl::Status Append(Instant const& t,
+                      DegreesOfFreedom<Frame> const& degrees_of_freedom);
+
+  // Merges the points from the given |segment| into this object.  The two
+  // segments must have nonoverlapping times.  The downsampling state of the
+  // result is that of the latest segment (with the largest times).
+  void Merge(DiscreteTrajectorySegment<Frame> segment);
 
   // Computes |number_of_dense_points_| based on the start of the dense
   // timeline.  Used for compatibility deserialization.
