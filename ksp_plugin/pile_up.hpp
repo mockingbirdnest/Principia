@@ -103,10 +103,6 @@ class PileUp {
   // Runs the |deletion_callback| passed at construction, if not null.
   virtual ~PileUp();
 
-  // This class is moveable.
-  PileUp(PileUp&& pile_up) = default;
-  PileUp& operator=(PileUp&& pile_up) = default;
-
   std::list<not_null<Part*>> const& parts() const;
   Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters()
       const;

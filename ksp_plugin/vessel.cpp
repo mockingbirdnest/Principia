@@ -83,10 +83,7 @@ Vessel::Vessel(
       history_(trajectory_.segments().begin()),
       backstory_(history_),
       psychohistory_(trajectory_.segments().end()),
-      prediction_(trajectory_.segments().end()) {
-  // Can't create the |psychohistory_| and |prediction_| here because |history_|
-  // is empty;
-}
+      prediction_(trajectory_.segments().end()) {}
 
 Vessel::~Vessel() {
   LOG(INFO) << "Destroying vessel " << ShortDebugString();

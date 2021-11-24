@@ -54,8 +54,6 @@ TEST_F(PoissonSeriesBasisTest, AperiodicScalar) {
                                   /*degree=*/2>::Basis(t1_, t2_);
   EXPECT_EQ(3, aperiodic.size());
 
-  Instant const t1 = t0_ + 2 * Second;
-
   EXPECT_EQ(1, aperiodic[0](t2_));
   EXPECT_EQ(1, aperiodic[1](t2_));
   EXPECT_EQ(1, aperiodic[2](t2_));

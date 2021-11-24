@@ -199,7 +199,6 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
   Descriptor const* message_type = descriptor->message_type();
   std::string const& message_type_name = message_type->name();
 
-  FieldOptions const& options = descriptor->options();
   field_cs_type_[descriptor] = message_type_name + "[]";
   if (Contains(cs_custom_marshaler_name_, message_type)) {
     field_cs_custom_marshaler_[descriptor] =

@@ -83,7 +83,7 @@ TEST_F(PIDTest, Geometry) {
 
   // Merely a compilation test.
   FunkyPID pid(kp, ki, kd);
-  auto i = pid.ComputeControlVariable(F::origin, F::origin, Instant());
+  pid.ComputeControlVariable(F::origin, F::origin, Instant());
 }
 
 }  // namespace numerics
