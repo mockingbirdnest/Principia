@@ -156,7 +156,9 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   absl::Status Append(Instant const& t,
                       DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
-  //TODO(phl):comment
+  // Merges the points from the given |segment| into this object.  The two
+  // segments must have nonoverlapping times.  The downsampling state of the
+  // result is that of the latest segment (with the largest times).
   void Merge(DiscreteTrajectorySegment<Frame> segment);
 
   // Computes |number_of_dense_points_| based on the start of the dense

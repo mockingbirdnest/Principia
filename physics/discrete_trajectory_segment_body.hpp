@@ -389,8 +389,6 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
 template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::Merge(
     DiscreteTrajectorySegment<Frame> segment) {
-  //TODO(phl): How does downsampling work?  The parameters state are those of
-  // the end so that we can keep Appending.
   if (segment.timeline_.empty()) {
     return;
   } else if (timeline_.empty()) {
