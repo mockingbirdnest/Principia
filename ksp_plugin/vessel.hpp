@@ -29,6 +29,9 @@
 
 namespace principia {
 namespace ksp_plugin {
+
+class VesselTest;
+
 namespace internal_vessel {
 
 using base::not_null;
@@ -290,6 +293,7 @@ class Vessel {
   // The parent body for the 2-body approximation.
   not_null<Celestial const*> parent_;
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
+  // TODO(phl): Serialize this field.
   DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters const
       downsampling_parameters_;
 
@@ -340,7 +344,7 @@ class Vessel {
 
   static std::atomic_bool synchronous_;
 
-  friend class VesselTest;
+  friend class ksp_plugin::VesselTest;
 };
 
 }  // namespace internal_vessel

@@ -521,13 +521,15 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
 
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
   // information.
+  // TODO(phl): serialized/deserialize the downsampling parameters.
   auto vessel = make_not_null_unique<Vessel>(
       message.guid(),
       message.name(),
       parent,
       ephemeris,
       Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
-          message.prediction_adaptive_step_parameters()));
+          message.prediction_adaptive_step_parameters()),
+      DefaultDownsamplingParameters());
   for (auto const& serialized_part : message.parts()) {
     PartId const part_id = serialized_part.part_id();
     auto part =
@@ -707,46 +709,49 @@ absl::Status Vessel::ReanimateOneCheckpoint(
     serialization::Vessel::Checkpoint const& message,
     Instant const& t_initial) {
   // Restore the non-collapsible segment that was fully saved.
-  //TODO(phl):not a segment
-  auto non_collapsible_segment =
+  auto reanimated_trajectory =
       DiscreteTrajectory<Barycentric>::ReadFromMessage(
           message.non_collapsible_segment(),
           /*tracked=*/{});
   auto const collapsible_fixed_step_parameters =
       Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
           message.collapsible_fixed_step_parameters());
-  CHECK(!non_collapsible_segment.empty());
+  CHECK(!reanimated_trajectory.empty());
 
   // Construct a new collapsible segment at the end of the non-collapsible
   // segment and integrate it until the start time of the history.  We cannot
   // hold the lock during the integration, so this code would race if there were
   // two threads changing the start of the |history_| concurrently.  That
   // doesn't happen because there is a single reanimator.
-  CHECK_EQ(t_initial, non_collapsible_segment.back().time);
+  CHECK_EQ(t_initial, reanimated_trajectory.back().time);
   Instant t_final;
   {
     absl::ReaderMutexLock l(&lock_);
     t_final = history_->begin()->time;
   }
 
-  auto const collapsible_segment = non_collapsible_segment.NewSegment();
+  auto const collapsible_segment = reanimated_trajectory.NewSegment();
   auto fixed_instance =
-      ephemeris_->NewInstance({&non_collapsible_segment},
+      ephemeris_->NewInstance({&reanimated_trajectory},
                               Ephemeris<Barycentric>::NoIntrinsicAccelerations,
                               collapsible_fixed_step_parameters);
   auto const status = ephemeris_->FlowWithFixedStep(t_final, *fixed_instance);
   RETURN_IF_ERROR(status);
 
-  // Attach the existing |history_| at the end of the collapsible segment and
-  // make the whole enchilada the new |history_|.  If integration reached the
-  // start of the existing |history_|, attaching will drop the duplicated point.
-  // If not, we'll have very close points near the stich.
+  // Merge the reanimated trajectory into the vessel trajectory and set the
+  // |history_| to denote the first nonempty segment.
   {
     absl::MutexLock l(&lock_);
-    CHECK_EQ(t_final, history_->begin()->time);
-    non_collapsible_segment->AttachFork(std::move(history_));
-    history_ = std::move(non_collapsible_segment);
+    trajectory_.Merge(std::move(reanimated_trajectory));
     oldest_reanimated_checkpoint_ = t_initial;
+    for (auto sit = trajectory_.segments().begin();
+         sit != trajectory_.segments().end();
+         ++sit) {
+      if (!sit->empty()) {
+        history_ = sit;
+        break;
+      }
+    }
   }
 
   return absl::OkStatus();

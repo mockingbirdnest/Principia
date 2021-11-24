@@ -38,12 +38,14 @@ namespace ksp_plugin {
 using base::not_null;
 using base::make_not_null_unique;
 using geometry::Barycentre;
+using geometry::Bivector;
 using geometry::Displacement;
 using geometry::InertiaTensor;
 using geometry::InfiniteFuture;
 using geometry::Instant;
 using geometry::Position;
 using geometry::R3x3Matrix;
+using geometry::Vector;
 using geometry::Velocity;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
@@ -51,6 +53,7 @@ using physics::MassiveBody;
 using physics::MockEphemeris;
 using physics::RigidMotion;
 using physics::RotatingBody;
+using quantities::Force;
 using quantities::Mass;
 using quantities::MomentOfInertia;
 using quantities::Pow;
@@ -92,7 +95,8 @@ class VesselTest : public testing::Test {
                 "vessel",
                 &celestial_,
                 &ephemeris_,
-                DefaultPredictionParameters()) {
+                DefaultPredictionParameters(),
+                DefaultDownsamplingParameters()) {
     auto p1 = make_not_null_unique<Part>(
         part_id1_,
         "p1",
@@ -186,8 +190,7 @@ TEST_F(VesselTest, PrepareHistory) {
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 2 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.CreateHistoryIfNeeded(t0_ + 1 * Second,
-                                DefaultDownsamplingParameters());
+  vessel_.CreateHistoryIfNeeded(t0_ + 1 * Second);
 
   auto const expected_dof = Barycentre<DegreesOfFreedom<Barycentric>, Mass>(
       {p1_dof_, p2_dof_}, {mass1_, mass2_});
@@ -210,8 +213,7 @@ TEST_F(VesselTest, AdvanceTime) {
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 2 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.CreateHistoryIfNeeded(t0_,
-                                DefaultDownsamplingParameters());
+  vessel_.CreateHistoryIfNeeded(t0_);
 
   AppendTrajectoryTimeline<Barycentric>(
       NewLinearTrajectoryTimeline<Barycentric>(p1_dof_,
@@ -285,8 +287,7 @@ TEST_F(VesselTest, Prediction) {
       FlowWithAdaptiveStep(_, _, InfiniteFuture, _, _))
       .WillRepeatedly(Return(absl::OkStatus()));
 
-  vessel_.CreateHistoryIfNeeded(t0_,
-                                DefaultDownsamplingParameters());
+  vessel_.CreateHistoryIfNeeded(t0_);
   // Polling for the integration to happen.
   do {
     vessel_.RefreshPrediction(t0_ + 1 * Second);
@@ -343,8 +344,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
           Return(absl::OkStatus())))
       .WillRepeatedly(Return(absl::OkStatus()));
 
-  vessel_.CreateHistoryIfNeeded(t0_,
-                                DefaultDownsamplingParameters());
+  vessel_.CreateHistoryIfNeeded(t0_);
   // Polling for the integration to happen.
   do {
     vessel_.RefreshPrediction();
@@ -380,8 +380,7 @@ TEST_F(VesselTest, FlightPlan) {
       .Times(AnyNumber());
   std::vector<not_null<MassiveBody const*>> const bodies;
   ON_CALL(ephemeris_, bodies()).WillByDefault(ReturnRef(bodies));
-  vessel_.CreateHistoryIfNeeded(t0_,
-                                DefaultDownsamplingParameters());
+  vessel_.CreateHistoryIfNeeded(t0_);
 
   EXPECT_FALSE(vessel_.has_flight_plan());
   EXPECT_CALL(
@@ -465,13 +464,12 @@ TEST_F(VesselTest, Checkpointing) {
   EXPECT_CALL(ephemeris_, t_max())
       .WillRepeatedly(Return(t0_ + 30 * Second));
   EXPECT_CALL(ephemeris_,
-              FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
+              FlowWithAdaptiveStep(_, _, InfiniteFuture, _, _))
       .Times(AnyNumber());
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 30 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.CreateHistoryIfNeeded(t0_,
-                                DefaultDownsamplingParameters());
+  vessel_.CreateHistoryIfNeeded(t0_);
 
   auto const pile_up =
       std::make_shared<PileUp>(/*parts=*/std::list<not_null<Part*>>{p1_, p2_},
@@ -567,8 +565,7 @@ TEST_F(VesselTest, SerializationSuccess) {
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 2 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.CreateHistoryIfNeeded(t0_,
-                                DefaultDownsamplingParameters());
+  vessel_.CreateHistoryIfNeeded(t0_);
 
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 3 * Second, _, _))
@@ -613,13 +610,12 @@ TEST_F(VesselTest, Conclusion) {
   EXPECT_CALL(ephemeris_, t_max())
       .WillRepeatedly(Return(t0_ + 30 * Second));
   EXPECT_CALL(ephemeris_,
-              FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
+              FlowWithAdaptiveStep(_, _, InfiniteFuture, _, _))
       .Times(AnyNumber());
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 30 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.CreateHistoryIfNeeded(t0_,
-                                DefaultDownsamplingParameters());
+  vessel_.CreateHistoryIfNeeded(t0_);
 
   auto const pile_up =
       std::make_shared<PileUp>(/*parts=*/std::list<not_null<Part*>>{p1_, p2_},
