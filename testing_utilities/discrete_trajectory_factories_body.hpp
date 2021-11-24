@@ -21,6 +21,7 @@ using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectorySegment;
 using physics::DiscreteTrajectorySegmentIterator;
 using quantities::Cos;
+using quantities::Pow;
 using quantities::Sin;
 using quantities::Speed;
 using quantities::si::Radian;
@@ -75,6 +76,26 @@ NewLinearTrajectoryTimeline(Velocity<Frame> const& v,
                             Instant const& t2) {
   return NewLinearTrajectoryTimeline(
       DegreesOfFreedom<Frame>(Frame::origin, v), Δt, /*t0=*/t1, t1, t2);
+}
+
+template<typename Frame>
+Timeline<Frame> NewAcceleratedTrajectoryTimeline(
+    DegreesOfFreedom<Frame> const& degrees_of_freedom,
+    Vector<Acceleration, Frame> const& acceleration,
+    Time const& Δt,
+    Instant const& t1,
+    Instant const& t2) {
+  static Instant const t0;
+  Timeline<Frame> timeline;
+  for (auto t = t1; t < t2; t += Δt) {
+    auto const velocity =
+        degrees_of_freedom.velocity() + acceleration * (t - t0);
+    auto const position = degrees_of_freedom.position() +
+                          degrees_of_freedom.velocity() * (t - t0) +
+                          acceleration * Pow<2>(t - t0) * 0.5;
+    timeline.emplace(t, DegreesOfFreedom<Frame>(position, velocity));
+  }
+  return timeline;
 }
 
 template<typename Frame>

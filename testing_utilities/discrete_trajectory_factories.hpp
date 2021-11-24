@@ -19,11 +19,13 @@ namespace internal_discrete_trajectory_factories {
 using base::not_null;
 using geometry::Instant;
 using geometry::Position;
+using geometry::Vector;
 using geometry::Velocity;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::DiscreteTrajectorySegment;
 using physics::internal_discrete_trajectory_types::Timeline;
+using quantities::Acceleration;
 using quantities::AngularFrequency;
 using quantities::Length;
 using quantities::Time;
@@ -71,6 +73,17 @@ NewLinearTrajectoryTimeline(Velocity<Frame> const& v,
                             Instant const& t1,
                             Instant const& t2);
 
+// A trajectory with a uniform acceleration, having the specified
+// |degrees_of_freedom| at t = 0.  The first point is at time |t1|, the last
+// point at a time < |t2|.
+template<typename Frame>
+Timeline<Frame> NewAcceleratedTrajectoryTimeline(
+    DegreesOfFreedom<Frame> const& degrees_of_freedom,
+    Vector<Acceleration, Frame> const& acceleration,
+    Time const& Δt,
+    Instant const& t1,
+    Instant const& t2);
+
 // A circular trajectory in the plane XY, centred at the origin.  The first
 // point is at time |t1|, the last point at a time < |t2|.
 template<typename Frame>
@@ -106,6 +119,7 @@ void AppendTrajectoryTimeline(
 }  // namespace internal_discrete_trajectory_factories
 
 using internal_discrete_trajectory_factories::AppendTrajectoryTimeline;
+using internal_discrete_trajectory_factories::NewAcceleratedTrajectoryTimeline;
 using internal_discrete_trajectory_factories::NewCircularTrajectoryTimeline;
 using internal_discrete_trajectory_factories::NewLinearTrajectoryTimeline;
 using internal_discrete_trajectory_factories::NewMotionlessTrajectoryTimeline;
