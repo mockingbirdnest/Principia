@@ -571,28 +571,52 @@ TEST_F(DiscreteTrajectoryTest, ForgetBefore) {
 }
 
 TEST_F(DiscreteTrajectoryTest, Merge) {
-  auto trajectory1 = MakeTrajectory();
-  auto trajectory2 = MakeTrajectory();
+  {
+    auto trajectory1 = MakeTrajectory();
+    auto trajectory2 = MakeTrajectory();
 
-  //TODO(phl):Test the other direction.
-  trajectory1.ForgetAfter(t0_ + 6 * Second);
-  trajectory2.ForgetBefore(t0_ + 6 * Second);
+    trajectory1.ForgetAfter(t0_ + 6 * Second);
+    trajectory2.ForgetBefore(t0_ + 6 * Second);
 
-  trajectory1.Merge(std::move(trajectory2));
+    trajectory1.Merge(std::move(trajectory2));
 
-  EXPECT_EQ(3, trajectory1.segments().size());
-  auto sit = trajectory1.segments().begin();
-  EXPECT_EQ(5, sit->size());
-  EXPECT_EQ(t0_, sit->front().time);
-  EXPECT_EQ(t0_ + 4 * Second, sit->back().time);
-  ++sit;
-  EXPECT_EQ(6, sit->size());
-  EXPECT_EQ(t0_ + 4 * Second, sit->front().time);
-  EXPECT_EQ(t0_ + 9 * Second, sit->back().time);
-  ++sit;
-  EXPECT_EQ(6, sit->size());
-  EXPECT_EQ(t0_ + 9 * Second, sit->front().time);
-  EXPECT_EQ(t0_ + 14 * Second, sit->back().time);
+    EXPECT_EQ(3, trajectory1.segments().size());
+    auto sit = trajectory1.segments().begin();
+    EXPECT_EQ(5, sit->size());
+    EXPECT_EQ(t0_, sit->front().time);
+    EXPECT_EQ(t0_ + 4 * Second, sit->back().time);
+    ++sit;
+    EXPECT_EQ(6, sit->size());
+    EXPECT_EQ(t0_ + 4 * Second, sit->front().time);
+    EXPECT_EQ(t0_ + 9 * Second, sit->back().time);
+    ++sit;
+    EXPECT_EQ(6, sit->size());
+    EXPECT_EQ(t0_ + 9 * Second, sit->front().time);
+    EXPECT_EQ(t0_ + 14 * Second, sit->back().time);
+  }
+  {
+    auto trajectory1 = MakeTrajectory();
+    auto trajectory2 = MakeTrajectory();
+
+    trajectory1.ForgetAfter(t0_ + 6 * Second);
+    trajectory2.ForgetBefore(t0_ + 6 * Second);
+
+    trajectory2.Merge(std::move(trajectory1));
+
+    EXPECT_EQ(3, trajectory2.segments().size());
+    auto sit = trajectory2.segments().begin();
+    EXPECT_EQ(5, sit->size());
+    EXPECT_EQ(t0_, sit->front().time);
+    EXPECT_EQ(t0_ + 4 * Second, sit->back().time);
+    ++sit;
+    EXPECT_EQ(6, sit->size());
+    EXPECT_EQ(t0_ + 4 * Second, sit->front().time);
+    EXPECT_EQ(t0_ + 9 * Second, sit->back().time);
+    ++sit;
+    EXPECT_EQ(6, sit->size());
+    EXPECT_EQ(t0_ + 9 * Second, sit->front().time);
+    EXPECT_EQ(t0_ + 14 * Second, sit->back().time);
+  }
 }
 
 TEST_F(DiscreteTrajectoryTest, TMinTMaxEvaluate) {

@@ -378,24 +378,53 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::Merge(DiscreteTrajectory<Frame> trajectory) {
   auto sit_s = trajectory.segments_->begin();  // Source iterator.
   auto sit_t = segments_->begin();  // Target iterator.
-  //TODO(phl):left endpoints;
   for (;;) {
     if (sit_s != trajectory.segments_->end() && sit_t != segments_->end()) {
+      // Record the existing left endpoint to update the time-to-segment map as
+      // needed.
+      const std::optional<Instant> left_endpoint =
+          sit_t->empty() ? std::nullopt
+                         : std::make_optional(sit_t->front().time);
+
+      // Merge corresponding segments.
       sit_t->Merge(std::move(*sit_s));
+
+      // If the left endpoint has changed, remove its entry from the time-to-
+      // segment map.  Insert a new entry if the segment is not empty.
+      if (left_endpoint.has_value() &&
+          sit_t->front().time < left_endpoint.value()) {
+        segment_by_left_endpoint_.erase(left_endpoint.value());
+      }
+      if (!sit_t->empty()) {
+        segment_by_left_endpoint_.insert_or_assign(sit_t->front().time, sit_t);
+      }
+
       ++sit_s;
       ++sit_t;
     } else if (sit_s != trajectory.segments_->end()) {
-      // No more segments in the target.
+      // No more segments in the target.  We splice the segments of the source.
+
+      // The |end| iterator keeps pointing at the end after the splice.
+      // Instead, we track the iterator to the last segment.
+      auto const last_before_splice = --segments_->end();
+
       segments_->splice(segments_->end(),
                         *trajectory.segments_,
                         sit_s,
                         trajectory.segments_->end());
+
+      auto const end_before_splice = std::next(last_before_splice);
+      AdjustAfterSplicing(/*from=*/trajectory,
+                          /*to=*/*this,
+                          /*to_segments_begin=*/end_before_splice);
       break;
     } else {
       // No more segments in the source, or both lists done.
       break;
     }
   }
+
+  DCHECK_OK(ConsistencyStatus());
 }
 
 template<typename Frame>
