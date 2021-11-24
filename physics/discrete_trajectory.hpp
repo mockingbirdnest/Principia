@@ -105,7 +105,17 @@ class DiscreteTrajectory : public Trajectory<Frame> {
   absl::Status Append(Instant const& t,
                       DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
-  //TODO(phl):comment
+  // Merges |trajectory| (the source) into this object (the target).  The
+  // operation processes pairs of segments taken from each trajectory and
+  // proceeds as follows:
+  // 1. If the source segment is empty (or missing), leave the target segment
+  //    unchanged.
+  // 2. If the target segment is empty (or missing), move the source segment
+  //    into the target.  This includes its downsampling state.
+  // 3. If both segments are nonempty, they must be nonoverlapping.  The points
+  //    from the source segment are inserted in the target segment (possibly
+  //    before the beginning of that segment).  The downsampling state of the
+  //    result is that of the latest segment (the one with the largest times).
   void Merge(DiscreteTrajectory<Frame> trajectory);
 
   Instant t_min() const override;
