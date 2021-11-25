@@ -564,16 +564,69 @@ TEST_F(VesselTest, Checkpointing) {
   EXPECT_TRUE(message.has_is_collapsible());
   EXPECT_TRUE(message.is_collapsible());
   EXPECT_EQ(2, message.checkpoint_size());
-  EXPECT_EQ(0, message.checkpoint(0).time().scalar().magnitude());
-  EXPECT_EQ(0, message.checkpoint(0).non_collapsible_segment().children_size());
-  EXPECT_EQ(
-      1,
-      message.checkpoint(0).non_collapsible_segment().zfp().timeline_size());
-  EXPECT_EQ(25, message.checkpoint(1).time().scalar().magnitude());
-  EXPECT_EQ(0, message.checkpoint(1).non_collapsible_segment().children_size());
-  EXPECT_EQ(
-      16,
-      message.checkpoint(1).non_collapsible_segment().zfp().timeline_size());
+  {
+    auto const& checkpoint = message.checkpoint(0);
+    EXPECT_EQ(0, checkpoint.time().scalar().magnitude());
+    EXPECT_EQ(3, checkpoint.non_collapsible_segment().segment_size());
+    auto const& segment0 = checkpoint.non_collapsible_segment().segment(0);
+    EXPECT_EQ(1, segment0.number_of_dense_points());
+    EXPECT_EQ(1, segment0.zfp().timeline_size());
+    EXPECT_EQ(0, segment0.exact(0).instant().scalar().magnitude());
+    auto const& segment1 = checkpoint.non_collapsible_segment().segment(1);
+    // TODO(phl): Why 0 here?
+    EXPECT_EQ(0, segment1.number_of_dense_points());
+    EXPECT_EQ(1, segment1.zfp().timeline_size());
+    EXPECT_EQ(0, segment1.exact(0).instant().scalar().magnitude());
+    auto const& segment2 = checkpoint.non_collapsible_segment().segment(2);
+    EXPECT_EQ(0, segment2.number_of_dense_points());
+    EXPECT_EQ(1, segment2.zfp().timeline_size());
+    EXPECT_EQ(0, segment2.exact(0).instant().scalar().magnitude());
+    EXPECT_EQ(
+        1,
+        checkpoint.non_collapsible_segment().segment_by_left_endpoint_size());
+    auto const& segment_by_left_endpoint0 =
+        checkpoint.non_collapsible_segment().segment_by_left_endpoint(0);
+    EXPECT_EQ(
+        0, segment_by_left_endpoint0.left_endpoint().scalar().magnitude());
+    EXPECT_EQ(2, segment_by_left_endpoint0.segment());
+  }
+  {
+    auto const& checkpoint = message.checkpoint(1);
+    EXPECT_EQ(25, checkpoint.time().scalar().magnitude());
+    EXPECT_EQ(5, checkpoint.non_collapsible_segment().segment_size());
+    auto const& segment0 = checkpoint.non_collapsible_segment().segment(0);
+    EXPECT_EQ(0, segment0.number_of_dense_points());
+    EXPECT_EQ(0, segment0.zfp().timeline_size());
+    auto const& segment1 = checkpoint.non_collapsible_segment().segment(1);
+    EXPECT_EQ(1, segment1.number_of_dense_points());
+    EXPECT_EQ(1, segment1.zfp().timeline_size());
+    EXPECT_EQ(10, segment1.exact(0).instant().scalar().magnitude());
+    auto const& segment2 = checkpoint.non_collapsible_segment().segment(2);
+    EXPECT_EQ(16, segment2.number_of_dense_points());
+    EXPECT_EQ(16, segment2.zfp().timeline_size());
+    EXPECT_EQ(10, segment2.exact(0).instant().scalar().magnitude());
+    auto const& segment3 = checkpoint.non_collapsible_segment().segment(3);
+    EXPECT_EQ(0, segment3.number_of_dense_points());
+    EXPECT_EQ(1, segment3.zfp().timeline_size());
+    EXPECT_EQ(25, segment3.exact(0).instant().scalar().magnitude());
+    auto const& segment4 = checkpoint.non_collapsible_segment().segment(4);
+    EXPECT_EQ(0, segment4.number_of_dense_points());
+    EXPECT_EQ(1, segment4.zfp().timeline_size());
+    EXPECT_EQ(25, segment4.exact(0).instant().scalar().magnitude());
+    EXPECT_EQ(
+        2,
+        checkpoint.non_collapsible_segment().segment_by_left_endpoint_size());
+    auto const& segment_by_left_endpoint0 =
+        checkpoint.non_collapsible_segment().segment_by_left_endpoint(0);
+    EXPECT_EQ(
+        10, segment_by_left_endpoint0.left_endpoint().scalar().magnitude());
+    EXPECT_EQ(2, segment_by_left_endpoint0.segment());
+    auto const& segment_by_left_endpoint1 =
+        checkpoint.non_collapsible_segment().segment_by_left_endpoint(1);
+    EXPECT_EQ(
+        25, segment_by_left_endpoint1.left_endpoint().scalar().magnitude());
+    EXPECT_EQ(4, segment_by_left_endpoint1.segment());
+  }
 }
 
 TEST_F(VesselTest, SerializationSuccess) {
