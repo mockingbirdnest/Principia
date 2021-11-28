@@ -9,6 +9,7 @@
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
@@ -35,6 +36,7 @@ using quantities::si::Tonne;
 using testing_utilities::Componentwise;
 using testing_utilities::IsNear;
 using testing_utilities::SolarSystemFactory;
+using testing_utilities::StatusIs;
 using testing_utilities::operator""_⑴;
 using ::testing::AllOf;
 using ::testing::Eq;
@@ -80,7 +82,7 @@ class InterfaceExternalTest : public ::testing::Test {
 
 TEST_F(InterfaceExternalTest, GetNearestPlannedCoastDegreesOfFreedom) {
   plugin_.CreateFlightPlan(
-      vessel_guid, plugin_.CurrentTime() + 24 * Hour, 1 * Tonne);
+      vessel_guid, plugin_.CurrentTime() + 6 * Hour, 1 * Tonne);
   NavigationManœuvre::Intensity intensity;
   intensity.Δv = Velocity<Frenet<Navigation>>({1000 * Metre / Second,
                                                0 * Metre / Second,
@@ -95,7 +97,7 @@ TEST_F(InterfaceExternalTest, GetNearestPlannedCoastDegreesOfFreedom) {
       plugin_.NewBodyCentredNonRotatingNavigationFrame(
           SolarSystemFactory::Earth),
       /*is_inertially_fixed=*/false};
-  vessel_->flight_plan().Insert(std::move(burn), 0);
+  EXPECT_OK(vessel_->flight_plan().Insert(std::move(burn), 0));
   QP result;
   auto const to_world =
       plugin_.renderer().BarycentricToWorld(plugin_.PlanetariumRotation());

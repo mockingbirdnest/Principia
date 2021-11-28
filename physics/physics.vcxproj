@@ -91,7 +91,6 @@
     <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="..\numerics\elliptic_functions.cpp" />
     <ClCompile Include="..\numerics\elliptic_integrals.cpp" />
-    <ClCompile Include="..\testing_utilities\string_log_sink.cpp" />
     <ClCompile Include="analytical_series_test.cpp" />
     <ClCompile Include="apsides_test.cpp" />
     <ClCompile Include="barycentric_rotating_dynamic_frame_test.cpp" />

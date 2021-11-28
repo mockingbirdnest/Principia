@@ -112,7 +112,6 @@ constexpr Date Date::YYYYMMDD(
 constexpr Date Date::YYYYDDD(
     std::int64_t const digits,
     std::optional<date_time::Calendar> const calendar) {
-  auto const abs_digits = digits < 0 ? -digits : digits;
   auto const sign = digits < 0 ? -1 : 1;
   CONSTEXPR_CHECK(digits <= 9999'999);
   return Date::Ordinal(sign * digit_range(digits, 3, 7),

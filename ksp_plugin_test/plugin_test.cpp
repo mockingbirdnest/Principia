@@ -193,7 +193,7 @@ class TestablePlugin : public Plugin {
   void EndInitialization() override {
     Plugin::EndInitialization();
     // Extend the continuous trajectories of the ephemeris.
-    ephemeris_->Prolong(current_time_ + 10 * Hour);
+    EXPECT_OK(ephemeris_->Prolong(current_time_ + 10 * Hour));
     for (auto const& body : ephemeris_->bodies()) {
       ContinuousTrajectory<Barycentric>* const trajectory =
           const_cast<ContinuousTrajectory<Barycentric>*>(
@@ -322,7 +322,6 @@ TEST_F(PluginDeathTest, SerializationError) {
 TEST_F(PluginTest, Serialization) {
   GUID const satellite = "satellite";
   PartId const part_id = 666;
-  Time const step = DefaultHistoryParameters().step();
 
   // We need an actual |Plugin| here rather than a |TestablePlugin|, since
   // that's what |ReadFromMessage| returns.

@@ -10,9 +10,9 @@
 #include <utility>
 #include <vector>
 
-#include "astronomy/epoch.hpp"
 #include "base/status_utilities.hpp"
 #include "geometry/interval.hpp"
+#include "geometry/named_quantities.hpp"
 #include "glog/stl_logging.h"
 #include "numerics/newhall.hpp"
 #include "numerics/ulp_distance.hpp"
@@ -23,9 +23,10 @@ namespace principia {
 namespace physics {
 namespace internal_continuous_trajectory {
 
-using astronomy::InfiniteFuture;
 using base::dynamic_cast_not_null;
 using base::make_not_null_unique;
+using geometry::InfiniteFuture;
+using geometry::InfinitePast;
 using geometry::Interval;
 using numerics::EstrinEvaluator;
 using numerics::PoissonSeries;
@@ -622,7 +623,7 @@ Instant ContinuousTrajectory<Frame>::t_min_locked() const {
   lock_.AssertReaderHeld();
 #endif
   if (polynomials_.empty()) {
-    return astronomy::InfiniteFuture;
+    return InfiniteFuture;
   }
   return *first_time_;
 }
@@ -633,7 +634,7 @@ Instant ContinuousTrajectory<Frame>::t_max_locked() const {
   lock_.AssertReaderHeld();
 #endif
   if (polynomials_.empty()) {
-    return astronomy::InfinitePast;
+    return InfinitePast;
   }
   return polynomials_.crbegin()->t_max;
 }

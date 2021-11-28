@@ -15,6 +15,7 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
@@ -89,7 +90,7 @@ class LunarEclipseTest : public ::testing::Test {
                                Sign const moon_offset_sign,
                                ApproximateQuantity<Angle> const& angular_error,
                                ApproximateQuantity<Time> const& time_error) {
-    ephemeris_->Prolong(current_time + bisection_interval);
+    EXPECT_OK(ephemeris_->Prolong(current_time + bisection_interval));
     auto const sun = solar_system_1950_.massive_body(*ephemeris_, "Sun");
     auto const earth = solar_system_1950_.massive_body(*ephemeris_, "Earth");
     auto const moon = solar_system_1950_.massive_body(*ephemeris_, "Moon");
@@ -152,7 +153,7 @@ class LunarEclipseTest : public ::testing::Test {
       Sign const moon_offset_sign,
       ApproximateQuantity<Angle> const& angular_error,
       ApproximateQuantity<Time> const& time_error) {
-    ephemeris_->Prolong(current_time + bisection_interval);
+    EXPECT_OK(ephemeris_->Prolong(current_time + bisection_interval));
     auto const sun = solar_system_1950_.massive_body(*ephemeris_, "Sun");
     auto const earth = solar_system_1950_.massive_body(*ephemeris_, "Earth");
     auto const moon = solar_system_1950_.massive_body(*ephemeris_, "Moon");

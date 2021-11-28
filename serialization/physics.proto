@@ -109,8 +109,8 @@ message DiscreteTrajectory {
   // Added in Haar.
   repeated DiscreteTrajectorySegment.InstantaneousDegreesOfFreedom exact = 6;
 
-  // All the declarations above are pre-Ζήνων.  All the declarations below were
-  // added in Ζήνων.
+  // All the declarations above are pre-Hamilton.  All the declarations below
+  // were added in Hamilton.
 
   // A marker to indicate that a segment doesn't have its position tracked.
   enum TrackedPosition {
@@ -125,8 +125,8 @@ message DiscreteTrajectory {
   repeated int32 tracked_position = 9;
 }
 
-// Added in Ζήνων.  Note that some nested messages are shared with the pre-Ζήνων
-// DiscreteTrajectory and must therefore remain compatible.
+// Added in Hamilton.  Note that some nested messages are shared with the
+// pre-Hamilton DiscreteTrajectory and must therefore remain compatible.
 message DiscreteTrajectorySegment {
   message DownsamplingParameters {
     required int64 max_dense_intervals = 1;

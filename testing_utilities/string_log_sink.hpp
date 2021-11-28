@@ -12,19 +12,19 @@ namespace testing_utilities {
 
 class StringLogSink : google::LogSink {
  public:
-  explicit StringLogSink(google::LogSeverity const minimal_severity);
+  inline explicit StringLogSink(google::LogSeverity const minimal_severity);
 
-  ~StringLogSink();
+  inline ~StringLogSink();
 
-  void send(google::LogSeverity const severity,
-            char const* const full_filename,
-            char const* const base_filename,
-            int const line,
-            tm const* const tm_time,
-            const char* const message,
-            std::size_t const message_len) override;
+  inline void send(google::LogSeverity const severity,
+                   char const* const full_filename,
+                   char const* const base_filename,
+                   int const line,
+                   tm const* const tm_time,
+                   const char* const message,
+                   std::size_t const message_len) override;
 
-  std::string& string();
+  inline std::string& string();
 
  private:
   google::LogSeverity const minimal_severity_;
@@ -34,3 +34,5 @@ class StringLogSink : google::LogSink {
 
 }  // namespace testing_utilities
 }  // namespace principia
+
+#include "testing_utilities/string_log_sink_body.hpp"

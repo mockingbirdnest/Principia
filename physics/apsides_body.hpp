@@ -115,9 +115,9 @@ void ComputeApsides(Trajectory<Frame> const& reference,
       DegreesOfFreedom<Frame> const apsis_degrees_of_freedom =
           trajectory.EvaluateDegreesOfFreedom(apsis_time);
       if (Sign(squared_distance_derivative).is_negative()) {
-        apoapsides.Append(apsis_time, apsis_degrees_of_freedom);
+        apoapsides.Append(apsis_time, apsis_degrees_of_freedom).IgnoreError();
       } else {
-        periapsides.Append(apsis_time, apsis_degrees_of_freedom);
+        periapsides.Append(apsis_time, apsis_degrees_of_freedom).IgnoreError();
       }
       if (apoapsides.size() >= max_points && periapsides.size() >= max_points) {
         break;
@@ -194,9 +194,9 @@ absl::Status ComputeNodes(
             Sign(z_speed)) {
           // |north| is up and we are going up, or |north| is down and we are
           // going down.
-          ascending.Append(node_time, node_degrees_of_freedom);
+          ascending.Append(node_time, node_degrees_of_freedom).IgnoreError();
         } else {
-          descending.Append(node_time, node_degrees_of_freedom);
+          descending.Append(node_time, node_degrees_of_freedom).IgnoreError();
         }
         if (ascending.size() >= max_points && descending.size() >= max_points) {
           break;

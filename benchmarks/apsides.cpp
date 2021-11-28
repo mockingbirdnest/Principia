@@ -7,6 +7,7 @@
 #include "astronomy/frames.hpp"
 #include "astronomy/standard_product_3.hpp"
 #include "base/not_null.hpp"
+#include "base/status_utilities.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
@@ -26,11 +27,11 @@ namespace principia {
 
 using astronomy::GCRS;
 using astronomy::ICRS;
-using astronomy::InfiniteFuture;
 using astronomy::ITRS;
 using astronomy::StandardProduct3;
 using base::dynamic_cast_not_null;
 using base::not_null;
+using geometry::InfiniteFuture;
 using geometry::Position;
 using geometry::Vector;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
@@ -76,14 +77,14 @@ class ApsidesBenchmark : public benchmark::Fixture {
     auto const ilrsa_lageos2_trajectory_itrs =
         ilrsa_lageos2_sp3.orbit(lageos2_id).front();
     auto const begin = ilrsa_lageos2_trajectory_itrs->begin();
-    ephemeris_->Prolong(begin->time);
+    CHECK_OK(ephemeris_->Prolong(begin->time));
 
     BodySurfaceDynamicFrame<ICRS, ITRS> const itrs(ephemeris_, earth_);
     ilrsa_lageos2_trajectory_icrs_ = new DiscreteTrajectory<ICRS>;
-    ilrsa_lageos2_trajectory_icrs_->Append(
+    CHECK_OK(ilrsa_lageos2_trajectory_icrs_->Append(
         begin->time,
-        itrs.FromThisFrameAtTime(begin->time)(begin->degrees_of_freedom));
-    ephemeris_->FlowWithAdaptiveStep(
+        itrs.FromThisFrameAtTime(begin->time)(begin->degrees_of_freedom)));
+    CHECK_OK(ephemeris_->FlowWithAdaptiveStep(
         ilrsa_lageos2_trajectory_icrs_,
         Ephemeris<ICRS>::NoIntrinsicAcceleration,
         begin->time + 1 * JulianYear,
@@ -94,15 +95,15 @@ class ApsidesBenchmark : public benchmark::Fixture {
             std::numeric_limits<std::int64_t>::max(),
             /*length_integration_tolerance=*/1 * Milli(Metre),
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
-        /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max());
+        /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max()));
 
     BodyCentredNonRotatingDynamicFrame<ICRS, GCRS> const gcrs(ephemeris_,
                                                               earth_);
     ilrsa_lageos2_trajectory_gcrs_ = new DiscreteTrajectory<GCRS>;
     for (auto const& [time, degrees_of_freedom] :
          *ilrsa_lageos2_trajectory_icrs_) {
-      ilrsa_lageos2_trajectory_gcrs_->Append(
-          time, gcrs.ToThisFrameAtTime(time)(degrees_of_freedom));
+      CHECK_OK(ilrsa_lageos2_trajectory_gcrs_->Append(
+          time, gcrs.ToThisFrameAtTime(time)(degrees_of_freedom)));
     }
   }
 
@@ -151,13 +152,13 @@ BENCHMARK_F(ApsidesBenchmark, ComputeNodes)(benchmark::State& state) {
   for (auto _ : state) {
     DiscreteTrajectory<GCRS> ascending;
     DiscreteTrajectory<GCRS> descending;
-    ComputeNodes(*ilrsa_lageos2_trajectory_gcrs_,
-                 ilrsa_lageos2_trajectory_gcrs_->begin(),
-                 ilrsa_lageos2_trajectory_gcrs_->end(),
-                 Vector<double, GCRS>({0, 0, 1}),
-                 /*max_points=*/std::numeric_limits<int>::max(),
-                 ascending,
-                 descending);
+    CHECK_OK(ComputeNodes(*ilrsa_lageos2_trajectory_gcrs_,
+                          ilrsa_lageos2_trajectory_gcrs_->begin(),
+                          ilrsa_lageos2_trajectory_gcrs_->end(),
+                          Vector<double, GCRS>({0, 0, 1}),
+                          /*max_points=*/std::numeric_limits<int>::max(),
+                          ascending,
+                          descending));
     CHECK_EQ(2365, ascending.size());
     CHECK_EQ(2365, descending.size());
   }

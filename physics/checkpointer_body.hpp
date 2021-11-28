@@ -8,15 +8,15 @@
 #include <vector>
 #include <utility>
 
-#include "astronomy/epoch.hpp"
 #include "base/status_utilities.hpp"
+#include "geometry/named_quantities.hpp"
 
 namespace principia {
 namespace physics {
 namespace internal_checkpointer {
 
-using astronomy::InfiniteFuture;
-using astronomy::InfinitePast;
+using geometry::InfiniteFuture;
+using geometry::InfinitePast;
 
 template<typename Message>
 Checkpointer<Message>::Checkpointer(Writer writer, Reader reader)

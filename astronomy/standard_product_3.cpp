@@ -10,6 +10,7 @@
 #include "absl/strings/str_cat.h"
 #include "astronomy/time_scales.hpp"
 #include "base/map_util.hpp"
+#include "base/status_utilities.hpp"
 #include "glog/logging.h"
 #include "numerics/finite_difference.hpp"
 
@@ -50,13 +51,12 @@ not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>> ComputeVelocities(
   // |offset| at (n - 1) / 2 except at the beginning and end of the arc.
   int offset = 0;
   for (int i = 0; i < arc.size(); ++i) {
-    result->Append(
-        times[offset],
-        {positions[offset],
-         FiniteDifference(
-             /*values=*/positions,
-             /*step=*/(times[n - 1] - times[0]) / (n - 1),
-             offset)});
+    CHECK_OK(result->Append(times[offset],
+                            {positions[offset],
+                             FiniteDifference(
+                                 /*values=*/positions,
+                                 /*step=*/(times[n - 1] - times[0]) / (n - 1),
+                                 offset)}));
     // At every iteration, either |offset| advances, or the |positions|
     // window shifts and |it| advances.
     if (offset < (n - 1) / 2 || it == arc.end()) {
@@ -379,7 +379,7 @@ StandardProduct3::StandardProduct3(
           orbit.push_back(make_not_null_unique<DiscreteTrajectory<ITRS>>());
         }
       } else {
-        arc.Append(epoch, {position, velocity});
+        CHECK_OK(arc.Append(epoch, {position, velocity}));
       }
     }
   }
