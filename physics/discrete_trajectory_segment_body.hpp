@@ -306,8 +306,9 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
             message.downsampling_parameters().max_dense_intervals(),
         .tolerance = Length::ReadFromMessage(
             message.downsampling_parameters().tolerance())};
+    CHECK(message.has_number_of_dense_points());
+    segment.number_of_dense_points_ = message.number_of_dense_points();
   }
-  segment.number_of_dense_points_ = message.number_of_dense_points();
 
   return segment;
 }
@@ -541,11 +542,11 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
         downsampling_parameters_->max_dense_intervals);
     downsampling_parameters_->tolerance.WriteToMessage(
         serialized_downsampling_parameters->mutable_tolerance());
+    message->set_number_of_dense_points(std::min(
+        timeline_size,
+        std::max<std::int64_t>(
+            0, number_of_dense_points_ - number_of_points_to_skip_at_end)));
   }
-  message->set_number_of_dense_points(std::min(
-      timeline_size,
-      std::max<std::int64_t>(
-          0, number_of_dense_points_ - number_of_points_to_skip_at_end)));
 
   // Convert the |exact| vector into a set, and add the extremities.  This
   // ensures that we don't have redundancies.  The set is sorted by time to

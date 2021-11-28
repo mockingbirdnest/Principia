@@ -573,12 +573,13 @@ TEST_F(VesselTest, Checkpointing) {
     EXPECT_EQ(1, segment0.zfp().timeline_size());
     EXPECT_EQ(0, segment0.exact(0).instant().scalar().magnitude());
     auto const& segment1 = checkpoint.non_collapsible_segment().segment(1);
-    // TODO(phl): Why 0 here?
-    EXPECT_EQ(0, segment1.number_of_dense_points());
+    // The |number_of_dense_points| is 0 for the psychohistory and the
+    // prediction because they are not subject to downsampling.
+    EXPECT_FALSE(segment1.has_number_of_dense_points());
     EXPECT_EQ(1, segment1.zfp().timeline_size());
     EXPECT_EQ(0, segment1.exact(0).instant().scalar().magnitude());
     auto const& segment2 = checkpoint.non_collapsible_segment().segment(2);
-    EXPECT_EQ(0, segment2.number_of_dense_points());
+    EXPECT_FALSE(segment2.has_number_of_dense_points());
     EXPECT_EQ(1, segment2.zfp().timeline_size());
     EXPECT_EQ(0, segment2.exact(0).instant().scalar().magnitude());
     EXPECT_EQ(
@@ -606,11 +607,11 @@ TEST_F(VesselTest, Checkpointing) {
     EXPECT_EQ(16, segment2.zfp().timeline_size());
     EXPECT_EQ(10, segment2.exact(0).instant().scalar().magnitude());
     auto const& segment3 = checkpoint.non_collapsible_segment().segment(3);
-    EXPECT_EQ(0, segment3.number_of_dense_points());
+    EXPECT_FALSE(segment3.has_number_of_dense_points());
     EXPECT_EQ(1, segment3.zfp().timeline_size());
     EXPECT_EQ(25, segment3.exact(0).instant().scalar().magnitude());
     auto const& segment4 = checkpoint.non_collapsible_segment().segment(4);
-    EXPECT_EQ(0, segment4.number_of_dense_points());
+    EXPECT_FALSE(segment4.has_number_of_dense_points());
     EXPECT_EQ(1, segment4.zfp().timeline_size());
     EXPECT_EQ(25, segment4.exact(0).instant().scalar().magnitude());
     EXPECT_EQ(
