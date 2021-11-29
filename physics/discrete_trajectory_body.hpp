@@ -3,9 +3,9 @@
 #include "physics/discrete_trajectory.hpp"
 
 #include <algorithm>
+#include <unordered_map>
 #include <vector>
 
-#include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_cat.h"
 #include "base/status_utilities.hpp"
@@ -472,8 +472,9 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
     std::vector<iterator> const& exact) const {
   // Construct a map to efficiently find if a segment must be tracked.  The
   // keys are pointers to segments in |tracked|, the values are the
-  // corresponding indices.
-  absl::flat_hash_map<DiscreteTrajectorySegment<Frame> const*, int>
+  // corresponding indices.  Note that multiple tracked segments may turn out to
+  // be identical.
+  std::unordered_multimap<DiscreteTrajectorySegment<Frame> const*, int>
       segment_to_position;
   for (int i = 0; i < tracked.size(); ++i) {
     if (tracked[i] != segments().end()) {
@@ -531,8 +532,11 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
     sit->WriteToMessage(
         message->add_segment(), begin_time_it, end_time_it, exact);
 
-    if (auto const position_it = segment_to_position.find(&*sit);
-        position_it != segment_to_position.end()) {
+    const auto [position_begin, position_end] =
+        segment_to_position.equal_range(&*sit);
+    for (auto position_it = position_begin;
+         position_it != position_end;
+         ++position_it) {
       // The field |tracked_position| is indexed by the indices in |tracked|.
       // Its value is the position of a tracked segment in the field |segment|.
       message->set_tracked_position(position_it->second, segment_position);
