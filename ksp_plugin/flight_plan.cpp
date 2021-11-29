@@ -61,13 +61,13 @@ FlightPlan::FlightPlan(
   CHECK(desired_final_time_ >= initial_time_);
 
   // Set the first point of the first coasting trajectory.
-  trajectory_.Append(initial_time_, initial_degrees_of_freedom_);
+  trajectory_.Append(initial_time_, initial_degrees_of_freedom_).IgnoreError();
   segments_.emplace_back(trajectory_.segments().begin());
 
   coast_analysers_.push_back(make_not_null_unique<OrbitAnalyser>(
       ephemeris_, DefaultHistoryParameters()));
   CHECK(manœuvres_.empty());
-  ComputeSegments(manœuvres_.begin(), manœuvres_.end());
+  ComputeSegments(manœuvres_.begin(), manœuvres_.end()).IgnoreError();
 }
 
 Instant FlightPlan::initial_time() const {
@@ -293,7 +293,8 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
   // We need to forcefully prolong, otherwise we might exceed the ephemeris
   // step limit while recomputing the segments and make the flight plan
   // anomalous for no good reason.
-  flight_plan->ephemeris_->Prolong(flight_plan->desired_final_time_);
+  flight_plan->ephemeris_->Prolong(flight_plan->desired_final_time_)
+      .IgnoreError();
   absl::Status const status = flight_plan->RecomputeAllSegments();
   LOG_IF(INFO, flight_plan->anomalous_segments_ > 0)
       << "Loading a flight plan with " << flight_plan->anomalous_segments_

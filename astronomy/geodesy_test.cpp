@@ -12,6 +12,7 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
@@ -124,14 +125,16 @@ TEST_F(GeodesyTest, DISABLED_LAGEOS2) {
   DegreesOfFreedom<ITRS> const expected_final_dof =
       final_ilrsa.orbit(lageos2_id).front()->front().degrees_of_freedom;
 
-  ephemeris_->Prolong(final_time);
+  EXPECT_OK(ephemeris_->Prolong(final_time));
 
   DiscreteTrajectory<ICRS> primary_lageos2_trajectory;
-  primary_lageos2_trajectory.Append(
-      initial_time, itrs_.FromThisFrameAtTime(initial_time)(initial_dof_ilrsa));
+  EXPECT_OK(primary_lageos2_trajectory.Append(
+      initial_time,
+      itrs_.FromThisFrameAtTime(initial_time)(initial_dof_ilrsa)));
   DiscreteTrajectory<ICRS> secondary_lageos2_trajectory;
-  secondary_lageos2_trajectory.Append(
-      initial_time, itrs_.FromThisFrameAtTime(initial_time)(initial_dof_ilrsb));
+  EXPECT_OK(secondary_lageos2_trajectory.Append(
+      initial_time,
+      itrs_.FromThisFrameAtTime(initial_time)(initial_dof_ilrsb)));
   auto flow_lageos2 =
       [this, final_time](
           DiscreteTrajectory<ICRS>& lageos2_trajectory) -> absl::Status {
@@ -155,7 +158,7 @@ TEST_F(GeodesyTest, DISABLED_LAGEOS2) {
   bundle.Add([&flow_lageos2, &secondary_lageos2_trajectory]() {
     return flow_lageos2(secondary_lageos2_trajectory);
   });
-  bundle.Join();
+  EXPECT_OK(bundle.Join());
   EXPECT_THAT(primary_lageos2_trajectory.back().time, Eq(final_time));
   EXPECT_THAT(secondary_lageos2_trajectory.back().time, Eq(final_time));
 

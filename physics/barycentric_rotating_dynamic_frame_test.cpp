@@ -23,6 +23,7 @@
 #include "serialization/geometry.pb.h"
 #include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
@@ -116,7 +117,7 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
         std::make_unique<BarycentricRotatingDynamicFrame<ICRS, MockFrame>>(
             &mock_ephemeris_, big_, small_);
 
-    ephemeris_->Prolong(t0_ + 2 * period_);
+    EXPECT_OK(ephemeris_->Prolong(t0_ + 2 * period_));
     big_small_frame_ =
         std::make_unique<BarycentricRotatingDynamicFrame<ICRS, BigSmallFrame>>(
             ephemeris_.get(), big_, small_);

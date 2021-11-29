@@ -88,7 +88,7 @@ class DiscreteTrajectory : public Trajectory<Frame> {
   SegmentIterator NewSegment();
 
   DiscreteTrajectory DetachSegments(SegmentIterator begin);
-  SegmentIterator AttachSegments(DiscreteTrajectory&& trajectory);
+  SegmentIterator AttachSegments(DiscreteTrajectory trajectory);
   void DeleteSegments(SegmentIterator& begin);
 
   // Deletes the trajectory points with a time in [t, end[.  Drops the segments
@@ -101,8 +101,22 @@ class DiscreteTrajectory : public Trajectory<Frame> {
   void ForgetBefore(Instant const& t);
   void ForgetBefore(iterator it);
 
-  void Append(Instant const& t,
-              DegreesOfFreedom<Frame> const& degrees_of_freedom);
+  // Return an error if downsampling was aborted.
+  absl::Status Append(Instant const& t,
+                      DegreesOfFreedom<Frame> const& degrees_of_freedom);
+
+  // Merges |trajectory| (the source) into this object (the target).  The
+  // operation processes pairs of segments taken from each trajectory and
+  // proceeds as follows:
+  // 1. If the source segment is empty (or missing), leave the target segment
+  //    unchanged.
+  // 2. If the target segment is empty (or missing), move the source segment
+  //    into the target.  This includes its downsampling state.
+  // 3. If both segments are nonempty, they must be nonoverlapping.  The points
+  //    from the source segment are inserted in the target segment (possibly
+  //    before the beginning of that segment).  The downsampling state of the
+  //    result is that of the latest segment (the one with the largest times).
+  void Merge(DiscreteTrajectory<Frame> trajectory);
 
   Instant t_min() const override;
   Instant t_max() const override;
@@ -167,26 +181,26 @@ class DiscreteTrajectory : public Trajectory<Frame> {
       DiscreteTrajectory& to,
       typename Segments::iterator to_segments_begin);
 
-  // Reads a pre-Ζήνων downsampling message and return the downsampling
+  // Reads a pre-Hamilton downsampling message and return the downsampling
   // parameters and the start of the dense timeline.  The latter will have to be
   // converted to a number of points based on the deserialized timeline.
-  static void ReadFromPreΖήνωνMessage(
+  static void ReadFromPreHamiltonMessage(
       serialization::DiscreteTrajectory::Downsampling const& message,
       DownsamplingParameters& downsampling_parameters,
       Instant& start_of_dense_timeline);
 
-  // Reads a set of pre-Ζήνων children.  Checks that there is only one child,
+  // Reads a set of pre-Hamilton children.  Checks that there is only one child,
   // and that it is at the end of the preceding segment.  Append a segment to
   // the trajectory and returns an iterator to that segment.
-  static SegmentIterator ReadFromPreΖήνωνMessage(
+  static SegmentIterator ReadFromPreHamiltonMessage(
       serialization::DiscreteTrajectory::Brood const& message,
       std::vector<SegmentIterator*> const& tracked,
       value_type const& fork_point,
       DiscreteTrajectory& trajectory);
 
-  // Reads a pre-Ζήνων trajectory, updating the tracked segments as needed.  If
-  // this is not the root of the trajectory, fork_point is set.
-  static void ReadFromPreΖήνωνMessage(
+  // Reads a pre-Hamilton trajectory, updating the tracked segments as needed.
+  // If this is not the root of the trajectory, fork_point is set.
+  static void ReadFromPreHamiltonMessage(
       serialization::DiscreteTrajectory const& message,
       std::vector<SegmentIterator*> const& tracked,
       std::optional<value_type> const& fork_point,

@@ -250,7 +250,7 @@ class KSPResonanceTest : public ::testing::Test {
 
 TEST_F(KSPResonanceTest, MSVC_ONLY_TEST(Stock)) {
   auto const ephemeris = MakeEphemeris();
-  ephemeris->Prolong(short_term_);
+  EXPECT_OK(ephemeris->Prolong(short_term_));
   EXPECT_OK(ephemeris->last_severe_integration_status());
 
   auto const periods_at_epoch =
@@ -280,7 +280,7 @@ TEST_F(KSPResonanceTest, MSVC_ONLY_TEST(Stock)) {
   EXPECT_THAT(RelativeError(periods_at_short_term.at(pol_),
                             expected_periods_.at(pol_)), IsNear(4.2e-3_⑴));
 
-  ephemeris->Prolong(mid_term_);
+  EXPECT_OK(ephemeris->Prolong(mid_term_));
   EXPECT_OK(ephemeris->last_severe_integration_status());
   auto const periods_at_mid_term =
       ComputePeriods(*ephemeris,
@@ -305,7 +305,7 @@ TEST_F(KSPResonanceTest, MSVC_ONLY_TEST(Corrected)) {
   StabilizeKSP(solar_system_);
 
   auto const ephemeris = MakeEphemeris();
-  ephemeris->Prolong(short_term_);
+  EXPECT_OK(ephemeris->Prolong(short_term_));
   EXPECT_OK(ephemeris->last_severe_integration_status());
 
   auto const periods_at_epoch =
@@ -335,7 +335,7 @@ TEST_F(KSPResonanceTest, MSVC_ONLY_TEST(Corrected)) {
   EXPECT_THAT(RelativeError(periods_at_short_term.at(pol_),
                             expected_periods_.at(pol_)), IsNear(22e-3_⑴));
 
-  ephemeris->Prolong(mid_term_);
+  EXPECT_OK(ephemeris->Prolong(mid_term_));
   EXPECT_OK(ephemeris->last_severe_integration_status());
   auto const periods_at_mid_term =
       ComputePeriods(*ephemeris,
@@ -351,7 +351,7 @@ TEST_F(KSPResonanceTest, MSVC_ONLY_TEST(Corrected)) {
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(pol_),
                             expected_periods_.at(pol_)), IsNear(9.5e-3_⑴));
 
-  ephemeris->Prolong(long_term_);
+  EXPECT_OK(ephemeris->Prolong(long_term_));
   EXPECT_OK(ephemeris->last_severe_integration_status());
   auto const periods_at_long_term =
       ComputePeriods(*ephemeris,

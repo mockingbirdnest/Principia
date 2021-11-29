@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "astronomy/epoch.hpp"
 #include "base/map_util.hpp"
+#include "geometry/named_quantities.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/pile_up.hpp"
 #include "quantities/si.hpp"
@@ -19,14 +19,14 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_vessel {
 
-using astronomy::InfiniteFuture;
-using astronomy::InfinitePast;
 using base::Contains;
 using base::FindOrDie;
 using base::jthread;
 using base::make_not_null_unique;
 using base::MakeStoppableThread;
 using geometry::BarycentreCalculator;
+using geometry::InfiniteFuture;
+using geometry::InfinitePast;
 using geometry::Position;
 using quantities::IsFinite;
 using quantities::Length;
@@ -63,17 +63,15 @@ Vessel::Vessel(GUID guid,
           std::move(prediction_adaptive_step_parameters)),
       parent_(parent),
       ephemeris_(ephemeris),
+      history_(trajectory_.segments().begin()),
+      psychohistory_(trajectory_.segments().end()),
+      prediction_(trajectory_.segments().end()),
       prognosticator_(
           [this](PrognosticatorParameters const& parameters) {
             return FlowPrognostication(parameters);
           },
-          20ms),  // 50 Hz.
-      history_(trajectory_.segments().begin()),
-      psychohistory_(trajectory_.segments().end()),
-      prediction_(trajectory_.segments().end()) {
-  // Can't create the |psychohistory_| and |prediction_| here because |history_|
-  // is empty;
-}
+          20ms)  // 50 Hz.
+{}
 
 Vessel::~Vessel() {
   LOG(INFO) << "Destroying vessel " << ShortDebugString();
@@ -175,7 +173,7 @@ void Vessel::PrepareHistory(
     });
     CHECK(psychohistory_ == trajectory_.segments().end());
     history_->SetDownsampling(downsampling_parameters);
-    trajectory_.Append(t, calculator.Get());
+    trajectory_.Append(t, calculator.Get()).IgnoreError();
     psychohistory_ = trajectory_.NewSegment();
     prediction_ = trajectory_.NewSegment();
   }
@@ -335,7 +333,8 @@ absl::Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
        i < original_flight_plan->number_of_manœuvres();
        ++i) {
     auto const& manœuvre = original_flight_plan->GetManœuvre(i);
-    flight_plan_->Insert(manœuvre.burn(), i - first_manœuvre_kept);
+    flight_plan_->Insert(manœuvre.burn(), i - first_manœuvre_kept)
+        .IgnoreError();
   }
   return absl::OkStatus();
 }
@@ -416,14 +415,15 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     std::function<void(PartId)> const& deletion_callback) {
   bool const is_pre_cesàro = message.has_psychohistory_is_authoritative();
   bool const is_pre_chasles = message.has_prediction();
-  bool const is_pre_陈景润 = !message.history().has_downsampling();
-  bool const is_pre_ζήνων = message.history().segment_size() == 0;
-  LOG_IF(WARNING, is_pre_ζήνων)
+  bool const is_pre_陈景润 = !message.history().has_downsampling() &&
+                             message.history().segment_size() == 0;
+  bool const is_pre_hamilton = message.history().segment_size() == 0;
+  LOG_IF(WARNING, is_pre_hamilton)
       << "Reading pre-"
       << (is_pre_cesàro    ? u8"Cesàro"
           : is_pre_chasles ? "Chasles"
           : is_pre_陈景润   ? u8"陈景润"
-                           : u8"Ζήνων") << " Vessel";
+                           : "Hamilton") << " Vessel";
 
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
   // information.
@@ -462,7 +462,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
           !message.psychohistory_is_authoritative()) {
         vessel->psychohistory_ = vessel->trajectory_.NewSegment();
       }
-      vessel->trajectory_.Append(time, degrees_of_freedom);
+      vessel->trajectory_.Append(time, degrees_of_freedom).IgnoreError();
     }
     if (message.psychohistory_is_authoritative()) {
       vessel->psychohistory_ = vessel->trajectory_.NewSegment();
@@ -474,14 +474,14 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
         /*tracked=*/{&vessel->psychohistory_});
     vessel->history_ = vessel->trajectory_.segments().begin();
     vessel->prediction_ = vessel->trajectory_.NewSegment();
-  } else if (is_pre_ζήνων) {
+  } else if (is_pre_hamilton) {
     vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
         /*tracked=*/{&vessel->psychohistory_, &vessel->prediction_});
     vessel->history_ = vessel->trajectory_.segments().begin();
     // Necessary after Εὔδοξος because the ephemeris has not been prolonged
     // during deserialization.  Doesn't hurt prior to Εὔδοξος.
-    ephemeris->Prolong(vessel->prediction_->back().time);
+    ephemeris->Prolong(vessel->prediction_->back().time).IgnoreError();
   } else {
     vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
@@ -490,7 +490,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
                      &vessel->prediction_});
     // Necessary after Εὔδοξος because the ephemeris has not been prolonged
     // during deserialization.
-    ephemeris->Prolong(vessel->prediction_->back().time);
+    ephemeris->Prolong(vessel->prediction_->back().time).IgnoreError();
   }
 
   if (is_pre_陈景润) {
@@ -581,7 +581,7 @@ Vessel::FlowPrognostication(
   DiscreteTrajectory<Barycentric> prognostication;
   prognostication.Append(
       prognosticator_parameters.first_time,
-      prognosticator_parameters.first_degrees_of_freedom);
+      prognosticator_parameters.first_degrees_of_freedom).IgnoreError();
   absl::Status status;
   status = ephemeris_->FlowWithAdaptiveStep(
       &prognostication,
@@ -661,7 +661,7 @@ void Vessel::AppendToVesselTrajectory(
     if (can_be_appended) {
       DegreesOfFreedom<Barycentric> const vessel_degrees_of_freedom =
           calculator.Get();
-      trajectory_.Append(first_time, vessel_degrees_of_freedom);
+      trajectory_.Append(first_time, vessel_degrees_of_freedom).IgnoreError();
     }
   }
 }

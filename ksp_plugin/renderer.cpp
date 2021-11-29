@@ -107,7 +107,9 @@ Renderer::RenderBarycentricTrajectoryInPlotting(
         break;
       }
     }
-    trajectory.Append(time, BarycentricToPlotting(time)(degrees_of_freedom));
+    trajectory.Append(time,
+                      BarycentricToPlotting(time)(degrees_of_freedom))
+        .IgnoreError();
   }
   return trajectory;
 }
@@ -160,7 +162,7 @@ Renderer::RenderPlottingTrajectoryInWorld(
             geometry::Permutation<Navigation,
                                   World>::CoordinatePermutation::YXZ)(
             navigation_degrees_of_freedom.velocity())};
-    trajectory.Append(time, world_degrees_of_freedom);
+    trajectory.Append(time, world_degrees_of_freedom).IgnoreError();
   }
   return trajectory;
 }

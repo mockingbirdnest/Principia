@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <iterator>
 #include <optional>
 
 #include "absl/container/btree_map.h"
@@ -29,6 +30,7 @@ class DiscreteTrajectoryIterator {
       typename internal_discrete_trajectory_types::Timeline<Frame>::value_type;
   using pointer = value_type const*;
   using reference = value_type const&;
+  using iterator_category = std::random_access_iterator_tag;
 
   DiscreteTrajectoryIterator() = default;
 

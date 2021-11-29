@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "absl/container/btree_set.h"
-#include "astronomy/epoch.hpp"
 #include "base/zfp_compressor.hpp"
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
@@ -21,10 +20,10 @@ namespace principia {
 namespace physics {
 namespace internal_discrete_trajectory_segment {
 
-using astronomy::InfiniteFuture;
-using astronomy::InfinitePast;
 using base::ZfpCompressor;
 using geometry::Displacement;
+using geometry::InfiniteFuture;
+using geometry::InfinitePast;
 using geometry::Position;
 using numerics::FitHermiteSpline;
 using quantities::Length;
@@ -46,13 +45,13 @@ void DiscreteTrajectorySegment<Frame>::SetDownsamplingUnconditionally(
 template<typename Frame>
 typename DiscreteTrajectorySegment<Frame>::reference
 DiscreteTrajectorySegment<Frame>::front() const {
-  return *begin();
+  return *timeline_.begin();
 }
 
 template<typename Frame>
 typename DiscreteTrajectorySegment<Frame>::reference
 DiscreteTrajectorySegment<Frame>::back() const {
-  return *rbegin();
+  return *std::prev(timeline_.end());
 }
 
 template<typename Frame>
@@ -68,7 +67,8 @@ DiscreteTrajectorySegment<Frame>::end() const {
     return iterator(self_, timeline_.end());
   } else {
     // The decrement/increment ensures that we normalize the end iterator to the
-    // next segment or to the end of the trajectory.
+    // next segment or to the end of the trajectory.  This is relatively
+    // expensive, taking 25-30 ns.
     return ++iterator(self_, --timeline_.end());
   }
 }
@@ -293,9 +293,9 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
     // exactly.
     Instant const time = Instant() + t[i] * Second;
     if (auto it = exact.find(time); it == exact.cend()) {
-      segment.Append(time, DegreesOfFreedom<Frame>(q, p));
+      segment.Append(time, DegreesOfFreedom<Frame>(q, p)).IgnoreError();
     } else {
-      segment.Append(time, it->degrees_of_freedom);
+      segment.Append(time, it->degrees_of_freedom).IgnoreError();
     }
   }
 
@@ -329,6 +329,40 @@ void DiscreteTrajectorySegment<Frame>::Prepend(
 }
 
 template<typename Frame>
+void DiscreteTrajectorySegment<Frame>::ForgetAfter(Instant const& t) {
+  ForgetAfter(timeline_.lower_bound(t));
+}
+
+template<typename Frame>
+void DiscreteTrajectorySegment<Frame>::ForgetAfter(
+    typename Timeline::const_iterator const begin) {
+  std::int64_t number_of_points_to_remove =
+      std::distance(begin, timeline_.cend());
+  number_of_dense_points_ =
+      std::max<std::int64_t>(
+          0, number_of_dense_points_ - number_of_points_to_remove);
+
+  timeline_.erase(begin, timeline_.cend());
+}
+
+template<typename Frame>
+void DiscreteTrajectorySegment<Frame>::ForgetBefore(Instant const& t) {
+  ForgetBefore(timeline_.lower_bound(t));
+}
+
+template<typename Frame>
+void DiscreteTrajectorySegment<Frame>::ForgetBefore(
+    typename Timeline::const_iterator const end) {
+  std::int64_t number_of_points_to_remove =
+      std::distance(timeline_.cbegin(), end);
+  number_of_dense_points_ =
+      std::max<std::int64_t>(
+          0, number_of_dense_points_ - number_of_points_to_remove);
+
+  timeline_.erase(timeline_.cbegin(), end);
+}
+
+template<typename Frame>
 absl::Status DiscreteTrajectorySegment<Frame>::Append(
     Instant const& t,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
@@ -353,35 +387,30 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
 }
 
 template<typename Frame>
-void DiscreteTrajectorySegment<Frame>::ForgetAfter(Instant const& t) {
-  ForgetAfter(timeline_.lower_bound(t));
-}
-
-template<typename Frame>
-void DiscreteTrajectorySegment<Frame>::ForgetAfter(
-    typename Timeline::const_iterator const begin) {
-  std::int64_t number_of_points_to_remove =
-      std::distance(begin, timeline_.cend());
-  number_of_dense_points_ =
-      std::max(0LL, number_of_dense_points_ - number_of_points_to_remove);
-
-  timeline_.erase(begin, timeline_.cend());
-}
-
-template<typename Frame>
-void DiscreteTrajectorySegment<Frame>::ForgetBefore(Instant const& t) {
-  ForgetBefore(timeline_.lower_bound(t));
-}
-
-template<typename Frame>
-void DiscreteTrajectorySegment<Frame>::ForgetBefore(
-    typename Timeline::const_iterator const end) {
-  std::int64_t number_of_points_to_remove =
-      std::distance(timeline_.cbegin(), end);
-  number_of_dense_points_ =
-      std::max(0LL, number_of_dense_points_ - number_of_points_to_remove);
-
-  timeline_.erase(timeline_.cbegin(), end);
+void DiscreteTrajectorySegment<Frame>::Merge(
+    DiscreteTrajectorySegment<Frame> segment) {
+  if (segment.timeline_.empty()) {
+    return;
+  } else if (timeline_.empty()) {
+    downsampling_parameters_ = segment.downsampling_parameters_;
+    timeline_ = std::move(segment.timeline_);
+    number_of_dense_points_ = segment.number_of_dense_points_;
+  } else if (std::prev(timeline_.cend())->time <
+             segment.timeline_.cbegin()->time) {
+    downsampling_parameters_ = segment.downsampling_parameters_;
+    timeline_.merge(segment.timeline_);
+    number_of_dense_points_ = segment.number_of_dense_points_;
+  } else if (std::prev(segment.timeline_.cend())->time <
+             timeline_.cbegin()->time) {
+    timeline_.merge(segment.timeline_);
+  } else {
+    // TODO(phl): We might need to have to check <= above and to verify that the
+    // points match.
+    LOG(FATAL) << "Overlapping merge: [" << segment.timeline_.cbegin()->time
+               << ", " << std::prev(segment.timeline_.cend())->time
+               << "] into [" << timeline_.cbegin()->time << ", "
+               << std::prev(timeline_.cend())->time << "]";
+  }
 }
 
 template<typename Frame>
@@ -434,8 +463,7 @@ absl::Status DiscreteTrajectorySegment<Frame>::DownsampleIfNeeded() {
     }
 
     if (right_endpoints->empty()) {
-      number_of_dense_points_ = timeline_.empty() ? 0 : 1;
-      return absl::OkStatus();
+      right_endpoints->push_back(std::prev(dense_iterators.end()));
     }
 
     // Obtain the times for the right endpoints.  This is necessary because we
@@ -515,7 +543,8 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
         serialized_downsampling_parameters->mutable_tolerance());
   }
   message->set_number_of_dense_points(
-      std::max(0LL, number_of_dense_points_ - number_of_points_to_skip_at_end));
+      std::max<std::int64_t>(
+          0, number_of_dense_points_ - number_of_points_to_skip_at_end));
 
   // Convert the |exact| vector into a set, and add the extremities.  This
   // ensures that we don't have redundancies.  The set is sorted by time to

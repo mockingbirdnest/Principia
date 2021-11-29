@@ -27,6 +27,7 @@
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/make_not_null.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
@@ -157,7 +158,7 @@ TEST_F(ManœuvreTest, TimedBurn) {
   EXPECT_EQ(t0_ + 1 * Second, manœuvre.final_time());
   EXPECT_EQ(t0_ + (2 - Sqrt(2)) * Second, manœuvre.time_of_half_Δv());
 
-  discrete_trajectory_.Append(manœuvre.initial_time(), dof_);
+  EXPECT_OK(discrete_trajectory_.Append(manœuvre.initial_time(), dof_));
   EXPECT_CALL(*mock_dynamic_frame_, ToThisFrameAtTime(manœuvre.initial_time()))
       .WillOnce(Return(rigid_motion_));
   EXPECT_CALL(*mock_dynamic_frame_,
@@ -220,7 +221,7 @@ TEST_F(ManœuvreTest, TargetΔv) {
   EXPECT_EQ(t0_ + (2 / Sqrt(e) - 2 / e) * Second, manœuvre.final_time());
   EXPECT_EQ(t0_, manœuvre.time_of_half_Δv());
 
-  discrete_trajectory_.Append(manœuvre.initial_time(), dof_);
+  EXPECT_OK(discrete_trajectory_.Append(manœuvre.initial_time(), dof_));
   EXPECT_CALL(*mock_dynamic_frame_, ToThisFrameAtTime(manœuvre.initial_time()))
       .WillOnce(Return(rigid_motion_));
   EXPECT_CALL(*mock_dynamic_frame_,
@@ -304,7 +305,7 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   // Accelerations from Figure 4-4. Ascent Trajectory Acceleration Comparison.
   // Final acceleration from Table 4-2. Comparison of Significant Trajectory
   // Events.
-  discrete_trajectory_.Append(first_manœuvre.initial_time(), dof_);
+  EXPECT_OK(discrete_trajectory_.Append(first_manœuvre.initial_time(), dof_));
   EXPECT_CALL(*mock_dynamic_frame_,
               ToThisFrameAtTime(first_manœuvre.initial_time()))
       .WillOnce(Return(rigid_motion_));
@@ -351,7 +352,7 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   // Accelerations from Figure 4-9. Injection Phase Acceleration Comparison.
   // Final acceleration from Table 4-2. Comparison of Significant Trajectory
   // Events.
-  discrete_trajectory_.Append(second_manœuvre.initial_time(), dof_);
+  EXPECT_OK(discrete_trajectory_.Append(second_manœuvre.initial_time(), dof_));
   EXPECT_CALL(*mock_dynamic_frame_,
               ToThisFrameAtTime(second_manœuvre.initial_time()))
       .WillOnce(Return(rigid_motion_));

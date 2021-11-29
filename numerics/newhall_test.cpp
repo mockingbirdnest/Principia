@@ -777,10 +777,10 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_2_17) {
 }
 
 TEST_F(NewhallTest, Affine) {
-  auto instant_function = [this](Instant const t) -> Instant {
+  auto instant_function = [](Instant const t) -> Instant {
     return t;
   };
-  auto double_function = [this](Instant const t) -> double {
+  auto double_function = [](Instant const t) -> double {
     return 1;
   };
 

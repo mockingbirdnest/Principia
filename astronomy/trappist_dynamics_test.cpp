@@ -37,6 +37,7 @@
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/matchers.hpp"
 
 namespace principia {
 
@@ -297,7 +298,7 @@ void Population::ComputeAllFitnesses() {
         return absl::OkStatus();
       });
     }
-    bundle.Join();
+    EXPECT_OK(bundle.Join());
   }
 
   file_ << "------ Generation " << absl::StrCat(generation_) << "\n";
@@ -564,7 +565,7 @@ std::vector<double> EvaluatePopulation(Population const& population,
       return absl::OkStatus();
     });
   }
-  bundle.Join();
+  EXPECT_OK(bundle.Join());
   return log_pdf;
 }
 
@@ -1108,7 +1109,7 @@ class TrappistDynamicsTest : public ::testing::Test {
             SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
                                                Position<Sky>>(),
             /*step=*/30 * Minute));
-    ephemeris->Prolong(system.epoch() + 1000 * Day);
+    EXPECT_OK(ephemeris->Prolong(system.epoch() + 1000 * Day));
 
     // For some combinations we get an apocalyse.  In this case the dispersion
     // is infinite.
@@ -1152,7 +1153,7 @@ constexpr char TrappistDynamicsTest::star_name[];
 #if !defined(_DEBUG)
 TEST_F(TrappistDynamicsTest, MathematicaPeriods) {
   Instant const a_century_later = system_.epoch() + 100 * JulianYear;
-  ephemeris_->Prolong(a_century_later);
+  EXPECT_OK(ephemeris_->Prolong(a_century_later));
 
   auto const& star = system_.massive_body(*ephemeris_, star_name);
   auto const& star_trajectory = ephemeris_->trajectory(star);
@@ -1201,7 +1202,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_MathematicaTransits) {
                                                       Position<Sky>>(),
                 /*step=*/45 * Minute))}) {
     Instant const a_century_later = system_.epoch() + 100 * JulianYear;
-    ephemeris->Prolong(a_century_later);
+    EXPECT_OK(ephemeris->Prolong(a_century_later));
 
     TransitsByPlanet computations;
 
@@ -1226,7 +1227,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_MathematicaTransits) {
 
 TEST_F(TrappistDynamicsTest, MathematicaAlignments) {
   Instant const a_century_later = system_.epoch() + 100 * JulianYear;
-  ephemeris_->Prolong(a_century_later);
+  EXPECT_OK(ephemeris_->Prolong(a_century_later));
 
   mathematica::Logger logger(TEMP_DIR / "trappist_alignments.generated.wl",
                              /*make_unique=*/false);
@@ -1259,7 +1260,7 @@ TEST_F(TrappistDynamicsTest, MathematicaAlignments) {
 
 TEST_F(TrappistDynamicsTest, PlanetBPlanetDAlignment) {
   Instant const a_century_later = system_.epoch() + 100 * JulianYear;
-  ephemeris_->Prolong(a_century_later);
+  EXPECT_OK(ephemeris_->Prolong(a_century_later));
 
   auto const& star = system_.massive_body(*ephemeris_, star_name);
   auto const& star_trajectory = ephemeris_->trajectory(star);
@@ -1415,7 +1416,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_SECULAR_Optimization) {
         return absl::OkStatus();
       });
     }
-    bundle.Join();
+    EXPECT_OK(bundle.Join());
   }
   {
     // Next, let's build a population of minor variants of the Great Old One,

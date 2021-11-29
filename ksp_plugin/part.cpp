@@ -191,7 +191,7 @@ void Part::AppendToHistory(
   if (psychohistory_ != trajectory_.segments().end()) {
     trajectory_.DeleteSegments(psychohistory_);
   }
-  trajectory_.Append(time, degrees_of_freedom);
+  trajectory_.Append(time, degrees_of_freedom).IgnoreError();
 }
 
 void Part::AppendToPsychohistory(
@@ -200,7 +200,7 @@ void Part::AppendToPsychohistory(
   if (psychohistory_ == trajectory_.segments().end()) {
     psychohistory_ = trajectory_.NewSegment();
   }
-  trajectory_.Append(time, degrees_of_freedom);
+  trajectory_.Append(time, degrees_of_freedom).IgnoreError();
 }
 
 void Part::ClearHistory() {
@@ -262,14 +262,14 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
       is_pre_fréchet || (message.has_pre_frenet_inertia_tensor() &&
                          !message.has_intrinsic_torque());
   bool const is_pre_galileo = !message.has_centre_of_mass();
-  bool const is_pre_ζήνων = message.prehistory().segment_size() == 0;
-  LOG_IF(WARNING, is_pre_ζήνων)
+  bool const is_pre_hamilton = message.prehistory().segment_size() == 0;
+  LOG_IF(WARNING, is_pre_hamilton)
       << "Reading pre-"
       << (is_pre_cesàro    ? u8"Cesàro"
           : is_pre_fréchet ? u8"Fréchet"
           : is_pre_frenet  ? "Frenet"
           : is_pre_galileo ? "Galileo"
-                            : u8"Ζήνων") << " Part";
+                           : "Hamilton") << " Part";
 
   std::unique_ptr<Part> part;
   if (is_pre_fréchet) {
@@ -336,7 +336,7 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
         part->AppendToHistory(time, degrees_of_freedom);
       }
     }
-  } else if (is_pre_ζήνων) {
+  } else if (is_pre_hamilton) {
     DiscreteTrajectorySegmentIterator<Barycentric> history;
     DiscreteTrajectorySegmentIterator<Barycentric> psychohistory;
     auto prehistory = DiscreteTrajectory<Barycentric>::ReadFromMessage(

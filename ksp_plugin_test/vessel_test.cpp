@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "absl/status/status.h"
-#include "astronomy/epoch.hpp"
 #include "base/not_null.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/named_quantities.hpp"
@@ -38,6 +37,7 @@ using base::make_not_null_unique;
 using geometry::Barycentre;
 using geometry::Displacement;
 using geometry::InertiaTensor;
+using geometry::InfiniteFuture;
 using geometry::Instant;
 using geometry::Position;
 using geometry::R3x3Matrix;
@@ -166,7 +166,7 @@ TEST_F(VesselTest, PrepareHistory) {
   EXPECT_CALL(ephemeris_, t_max())
       .WillRepeatedly(Return(t0_ + 2 * Second));
   EXPECT_CALL(ephemeris_,
-              FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
+              FlowWithAdaptiveStep(_, _, InfiniteFuture, _, _))
       .Times(AnyNumber());
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 2 * Second, _, _))
@@ -190,7 +190,7 @@ TEST_F(VesselTest, AdvanceTime) {
   EXPECT_CALL(ephemeris_, t_max())
       .WillRepeatedly(Return(t0_ + 2 * Second));
   EXPECT_CALL(ephemeris_,
-              FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
+              FlowWithAdaptiveStep(_, _, InfiniteFuture, _, _))
       .Times(AnyNumber());
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 2 * Second, _, _))
@@ -267,7 +267,7 @@ TEST_F(VesselTest, Prediction) {
   // these points.
   EXPECT_CALL(
       ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
+      FlowWithAdaptiveStep(_, _, InfiniteFuture, _, _))
       .WillRepeatedly(Return(absl::OkStatus()));
 
   vessel_.PrepareHistory(t0_,
@@ -322,7 +322,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
       /*t1=*/t0_ + 5.5 * Second,
       /*t2=*/t0_ + FlightPlan::max_ephemeris_steps_per_frame * Second);
   EXPECT_CALL(ephemeris_,
-              FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
+              FlowWithAdaptiveStep(_, _, InfiniteFuture, _, _))
       .WillOnce(DoAll(
           AppendPointsToDiscreteTrajectory(&expected_vessel_prediction2),
           Return(absl::OkStatus())))
@@ -358,7 +358,7 @@ TEST_F(VesselTest, FlightPlan) {
   EXPECT_CALL(ephemeris_, t_max())
       .WillRepeatedly(Return(t0_ + 2 * Second));
   EXPECT_CALL(ephemeris_,
-              FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
+              FlowWithAdaptiveStep(_, _, InfiniteFuture, _, _))
       .Times(AnyNumber());
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 2 * Second, _, _))
@@ -392,7 +392,7 @@ TEST_F(VesselTest, SerializationSuccess) {
   EXPECT_CALL(ephemeris_, t_max())
       .WillRepeatedly(Return(t0_ + 2 * Second));
   EXPECT_CALL(ephemeris_,
-              FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
+              FlowWithAdaptiveStep(_, _, InfiniteFuture, _, _))
       .Times(AnyNumber());
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 2 * Second, _, _))
