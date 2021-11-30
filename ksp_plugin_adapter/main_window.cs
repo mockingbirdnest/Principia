@@ -389,8 +389,6 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
       journaling_ = false;
       Interface.ActivateRecorder(false);
     }
-    UnityEngine.GUILayout.Label($"L10N cache misses: {L10N.cache_miss_counter}");
-    UnityEngine.GUILayout.Label($"L10N cache size: {L10N.cache_.Count()}, {L10N.cache_by_time_.Count()}");
   }
 
   private void RenderPredictionSettings() {

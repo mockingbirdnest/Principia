@@ -143,12 +143,10 @@ internal static class L10N {
                                   Func<string> compute_value) {
     var entry = key_only;
     if (cache_.TryGetValue(entry, out StringCacheEntry actual)) {
-      ++cache_hit_counter;
       entry.value = actual.value;
       cache_.Remove(actual);
       cache_by_time_.Remove(actual);
     } else {
-      ++cache_miss_counter;
       entry.value = compute_value();
       if (cache_.Count >= max_cache_length) {
         var evicted = cache_by_time_.First();
@@ -182,13 +180,11 @@ internal static class L10N {
     public string value { get; set; }
     public long timestamp { get; set; }
   }
-  
-  public static ulong cache_hit_counter = 0;
-  public static ulong cache_miss_counter = 0;
+
   private const int max_cache_length = 1024;
-  public static HashSet<StringCacheEntry> cache_ =
+  private static HashSet<StringCacheEntry> cache_ =
       new HashSet<StringCacheEntry>();
-  public static SortedSet<StringCacheEntry> cache_by_time_ =
+  private static SortedSet<StringCacheEntry> cache_by_time_ =
       new SortedSet<StringCacheEntry>(Comparer<StringCacheEntry>.Create(
           (x, y) => {
             var time_comparison = x.timestamp.CompareTo(y.timestamp);
