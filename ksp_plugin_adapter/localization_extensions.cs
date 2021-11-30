@@ -117,9 +117,9 @@ internal static class L10N {
       (from body in bodies
        from name in new[]{body.Name(), body.Initial()}
        select name).Concat(from arg in args select arg.ToString()).ToArray();
-    return GetCached(new StringCacheEntry(template, names),
-                     () => CelestialOverride(template, names, bodies) ??
-                           Localizer.Format(template, names));
+    return lru_cache_.Get(new LRUCache.Entry(template, names),
+                          () => CelestialOverride(template, names, bodies) ??
+                                Localizer.Format(template, names));
   }
 
   public static string CelestialStringOrNull(string template,
@@ -129,68 +129,17 @@ internal static class L10N {
       (from body in bodies
        from name in new[]{body.Name(), body.Initial()}
        select name).Concat(from arg in args select arg.ToString()).ToArray();
-    return GetCached(new StringCacheEntry(template, names),
-                     () => CelestialOverride(template, names, bodies) ??
-                           FormatOrNull(template, names));
+    return lru_cache_.Get(new LRUCache.Entry(template, names),
+                          () => CelestialOverride(template, names, bodies) ??
+                                FormatOrNull(template, names));
   }
 
   public static string CacheFormat(string name, params object[] args) {
-    return GetCached(new StringCacheEntry(name, args),
-                     () => Localizer.Format(name, args));
+    return lru_cache_.Get(new LRUCache.Entry(name, args),
+                          () => Localizer.Format(name, args));
   }
 
-  private static string GetCached(StringCacheEntry key_only,
-                                  Func<string> compute_value) {
-    var entry = key_only;
-    if (cache_.TryGetValue(entry, out StringCacheEntry actual)) {
-      entry.value = actual.value;
-      cache_.Remove(actual);
-      cache_by_time_.Remove(actual);
-    } else {
-      entry.value = compute_value();
-      if (cache_.Count >= max_cache_length) {
-        var evicted = cache_by_time_.First();
-        cache_.Remove(evicted);
-        cache_by_time_.Remove(evicted);
-      }
-    }
-    cache_.Add(entry);
-    cache_by_time_.Add(entry);
-    return entry.value;
-  }
-
-  public struct StringCacheEntry : IEquatable<StringCacheEntry> {
-    public StringCacheEntry(string name, object[] args) {
-      string unit_separator = "\x1F";
-      key = name + unit_separator +
-          string.Join(unit_separator, from arg in args select arg.ToString());
-      value = null;
-      timestamp = System.Diagnostics.Stopwatch.GetTimestamp();
-    }
-
-    public bool Equals(StringCacheEntry other) {
-      return key == other.key;
-    }
-
-    public override int GetHashCode() {
-      return key.GetHashCode();
-    }
-
-    public string key { get; set; }
-    public string value { get; set; }
-    public long timestamp { get; set; }
-  }
-
-  private const int max_cache_length = 1024;
-  private static HashSet<StringCacheEntry> cache_ =
-      new HashSet<StringCacheEntry>();
-  private static SortedSet<StringCacheEntry> cache_by_time_ =
-      new SortedSet<StringCacheEntry>(Comparer<StringCacheEntry>.Create(
-          (x, y) => {
-            var time_comparison = x.timestamp.CompareTo(y.timestamp);
-            return time_comparison != 0 ? time_comparison
-                                        : x.key.CompareTo(y.key);
-          }));
+  private static LRUCache lru_cache_ = new LRUCache();
   private static Dictionary<CelestialBody, string> names_ =
       new Dictionary<CelestialBody, string>();
   private static Dictionary<CelestialBody, string> initials_ =
