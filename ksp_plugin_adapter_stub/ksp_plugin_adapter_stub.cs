@@ -26,7 +26,7 @@ public partial class PrincipiaPluginAdapterStub : ScenarioModule,
 
   PrincipiaPluginAdapterStub() {
     dll_stub_executed_.message =
-        L10N.CacheFormat("#Principia_DLLStubExecuted");
+        Localizer.Format("#Principia_DLLStubExecuted");
     dll_stub_executed_.Show();
   }
 
