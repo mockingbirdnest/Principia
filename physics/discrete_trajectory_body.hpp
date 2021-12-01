@@ -879,6 +879,7 @@ void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
           downsampling_parameters.max_dense_intervals);
       downsampling_parameters.tolerance.WriteToMessage(
           serialized_downsampling_parameters->mutable_tolerance());
+      serialized_segment.set_number_of_dense_points(0);  // Overridden later.
     }
     *sit = DiscreteTrajectorySegment<Frame>::ReadFromMessage(serialized_segment,
                                                              self);
