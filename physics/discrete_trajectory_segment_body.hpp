@@ -353,11 +353,12 @@ void DiscreteTrajectorySegment<Frame>::ForgetBefore(Instant const& t) {
 template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::ForgetBefore(
     typename Timeline::const_iterator const end) {
-  std::int64_t number_of_points_to_remove =
+  std::int64_t const number_of_points_to_remove =
       std::distance(timeline_.cbegin(), end);
-  number_of_dense_points_ =
-      std::max<std::int64_t>(
-          0, number_of_dense_points_ - number_of_points_to_remove);
+  std::int64_t const number_of_dense_points_to_remove = std::max<std::int64_t>(
+      0,
+      number_of_points_to_remove + number_of_dense_points_ - timeline_.size());
+  number_of_dense_points_ -= number_of_dense_points_to_remove;
 
   timeline_.erase(timeline_.cbegin(), end);
 }
