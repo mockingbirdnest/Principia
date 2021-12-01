@@ -301,7 +301,7 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
 
   // Finally, restore the downsampling information.
   CHECK_EQ(message.has_downsampling_parameters(),
-           message.has_number_of_dense_points)
+           message.has_number_of_dense_points())
       << message.DebugString();
   if (message.has_downsampling_parameters()) {
     segment.downsampling_parameters_ = DownsamplingParameters{
