@@ -866,6 +866,7 @@ void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
     serialization::DiscreteTrajectorySegment serialized_segment;
     *serialized_segment.mutable_zfp() = message.zfp();
     *serialized_segment.mutable_exact() = message.exact();
+    serialized_segment.set_number_of_dense_points(0);  // Overridden later.
 
     DownsamplingParameters downsampling_parameters;
     Instant start_of_dense_timeline;
