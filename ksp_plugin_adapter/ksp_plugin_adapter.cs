@@ -280,7 +280,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       bad_installation_dialog_.Hide();
     } else {
       is_bad_installation_ = true;
-      bad_installation_dialog_.message = Localizer.Format(
+      bad_installation_dialog_.message = L10N.CacheFormat(
           "#Principia_DLLFailedToLoad",
           load_error);
       bad_installation_dialog_.Show();
@@ -330,7 +330,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     orbit_analyser_ = new CurrentOrbitAnalyser(this, PredictedVessel);
     plotting_frame_selector_ = new ReferenceFrameSelector(this,
       UpdateRenderingFrame,
-      Localizer.Format("#Principia_PlottingFrame"));
+      L10N.CacheFormat("#Principia_PlottingFrame"));
     main_window_ = new MainWindow(this,
                                   flight_planner_,
                                   orbit_analyser_,
@@ -918,7 +918,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           FlightGlobals.speedDisplayMode ==
           FlightGlobals.SpeedDisplayModes.Target) {
         KSP.UI.Screens.Flight.SpeedDisplay.Instance.textTitle.text =
-            Localizer.Format("#Principia_SpeedDisplayModeTarget");
+            L10N.CacheFormat("#Principia_SpeedDisplayModeTarget");
       }
 
       if (FlightGlobals.speedDisplayMode ==
@@ -944,7 +944,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                       new QP{q = (XYZ)active_vessel.orbit.pos,
                           p = (XYZ)active_vessel.orbit.vel},
                       active_vessel.orbit.referenceBody.flightGlobalsIndex);
-          speed_display.textSpeed.text = Localizer.Format(
+          speed_display.textSpeed.text = L10N.CacheFormat(
               "#Principia_SpeedDisplayText",
               active_vessel_velocity.magnitude.ToString("F1"));
         }
