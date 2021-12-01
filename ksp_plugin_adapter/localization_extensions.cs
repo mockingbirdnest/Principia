@@ -117,7 +117,7 @@ internal static class L10N {
       (from body in bodies
        from name in new[]{body.Name(), body.Initial()}
        select name).Concat(from arg in args select arg.ToString()).ToArray();
-    return lru_cache_.Get(new LRUCache.Entry(template, names),
+    return lru_cache_.Get(template, names,
                           () => CelestialOverride(template, names, bodies) ??
                                 Localizer.Format(template, names));
   }
@@ -129,13 +129,13 @@ internal static class L10N {
       (from body in bodies
        from name in new[]{body.Name(), body.Initial()}
        select name).Concat(from arg in args select arg.ToString()).ToArray();
-    return lru_cache_.Get(new LRUCache.Entry(template, names),
+    return lru_cache_.Get(template, names,
                           () => CelestialOverride(template, names, bodies) ??
                                 FormatOrNull(template, names));
   }
 
   public static string CacheFormat(string name, params object[] args) {
-    return lru_cache_.Get(new LRUCache.Entry(name, args),
+    return lru_cache_.Get(name, args,
                           () => Localizer.Format(name, args));
   }
 
