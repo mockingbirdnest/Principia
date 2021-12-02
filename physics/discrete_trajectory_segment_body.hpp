@@ -300,6 +300,9 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
   }
 
   // Finally, restore the downsampling information.
+  CHECK_EQ(message.has_downsampling_parameters(),
+           message.has_number_of_dense_points())
+      << message.DebugString();
   if (message.has_downsampling_parameters()) {
     segment.downsampling_parameters_ = DownsamplingParameters{
         .max_dense_intervals =
@@ -354,11 +357,12 @@ void DiscreteTrajectorySegment<Frame>::ForgetBefore(Instant const& t) {
 template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::ForgetBefore(
     typename Timeline::const_iterator const end) {
-  std::int64_t number_of_points_to_remove =
+  std::int64_t const number_of_points_to_remove =
       std::distance(timeline_.cbegin(), end);
-  number_of_dense_points_ =
-      std::max<std::int64_t>(
-          0, number_of_dense_points_ - number_of_points_to_remove);
+  std::int64_t const number_of_dense_points_to_remove = std::max<std::int64_t>(
+      0,
+      number_of_points_to_remove + number_of_dense_points_ - timeline_.size());
+  number_of_dense_points_ -= number_of_dense_points_to_remove;
 
   timeline_.erase(timeline_.cbegin(), end);
 }

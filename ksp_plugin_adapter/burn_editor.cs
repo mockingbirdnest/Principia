@@ -17,26 +17,26 @@ class BurnEditor : ScalingRenderer {
     this.index = index;
     get_burn_at_index_ = get_burn_at_index;
     Δv_tangent_ = new DifferentialSlider(
-        label            : Localizer.Format("#Principia_BurnEditor_ΔvTangent"),
-        unit             : Localizer.Format("#Principia_BurnEditor_SpeedUnit"),
+        label            : L10N.CacheFormat("#Principia_BurnEditor_ΔvTangent"),
+        unit             : L10N.CacheFormat("#Principia_BurnEditor_SpeedUnit"),
         log10_lower_rate : log10_Δv_lower_rate,
         log10_upper_rate : log10_Δv_upper_rate,
         text_colour      : Style.Tangent);
     Δv_normal_ = new DifferentialSlider(
-        label            : Localizer.Format("#Principia_BurnEditor_ΔvNormal"),
-        unit             : Localizer.Format("#Principia_BurnEditor_SpeedUnit"),
+        label            : L10N.CacheFormat("#Principia_BurnEditor_ΔvNormal"),
+        unit             : L10N.CacheFormat("#Principia_BurnEditor_SpeedUnit"),
         log10_lower_rate : log10_Δv_lower_rate,
         log10_upper_rate : log10_Δv_upper_rate,
         text_colour      : Style.Normal);
     Δv_binormal_ = new DifferentialSlider(
-        label            : Localizer.Format("#Principia_BurnEditor_ΔvBinormal"),
-        unit             : Localizer.Format("#Principia_BurnEditor_SpeedUnit"),
+        label            : L10N.CacheFormat("#Principia_BurnEditor_ΔvBinormal"),
+        unit             : L10N.CacheFormat("#Principia_BurnEditor_SpeedUnit"),
         log10_lower_rate : log10_Δv_lower_rate,
         log10_upper_rate : log10_Δv_upper_rate,
         text_colour      : Style.Binormal);
     previous_coast_duration_ = new DifferentialSlider(
         label            :
-            Localizer.Format("#Principia_BurnEditor_InitialTime"),
+            L10N.CacheFormat("#Principia_BurnEditor_InitialTime"),
         unit             : null,
         log10_lower_rate : log10_time_lower_rate,
         log10_upper_rate : log10_time_upper_rate,
@@ -52,7 +52,7 @@ class BurnEditor : ScalingRenderer {
     reference_frame_selector_ = new ReferenceFrameSelector(
         adapter_,
         ReferenceFrameChanged,
-        Localizer.Format("#Principia_BurnEditor_ManœuvringFrame"));
+        L10N.CacheFormat("#Principia_BurnEditor_ManœuvringFrame"));
     reference_frame_selector_.SetFrameParameters(
         adapter_.plotting_frame_selector_.FrameParameters());
     ComputeEngineCharacteristics();
@@ -78,7 +78,7 @@ class BurnEditor : ScalingRenderer {
         return minimized ? Event.Minimized : Event.Maximized;
       }
       UnityEngine.GUILayout.Label(
-          minimized ? Localizer.Format("#Principia_BurnEditor_MinimizedHeader",
+          minimized ? L10N.CacheFormat("#Principia_BurnEditor_MinimizedHeader",
                                        header,
                                        Δv().ToString("0.000"))
                     : header);
@@ -86,12 +86,12 @@ class BurnEditor : ScalingRenderer {
       if (!minimized &&
           !reference_frame_selector_.FrameParameters().Equals(
               adapter_.plotting_frame_selector_.FrameParameters())) {
-        info = Localizer.Format(
+        info = L10N.CacheFormat(
             "#Principia_BurnEditor_Info_InconsistentFrames");
       }
       UnityEngine.GUILayout.Label(info, Style.Info(UnityEngine.GUI.skin.label));
       if (UnityEngine.GUILayout.Button(
-              Localizer.Format("#Principia_BurnEditor_Delete"),
+              L10N.CacheFormat("#Principia_BurnEditor_Delete"),
               GUILayoutWidth(2))) {
         return Event.Deleted;
       }
@@ -117,17 +117,17 @@ class BurnEditor : ScalingRenderer {
       } else {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           if (UnityEngine.GUILayout.Button(
-              Localizer.Format("#Principia_BurnEditor_ActiveEngines"))) {
+              L10N.CacheFormat("#Principia_BurnEditor_ActiveEngines"))) {
             engine_warning_ = "";
             ComputeEngineCharacteristics();
             changed = true;
           } else if (UnityEngine.GUILayout.Button(
-              Localizer.Format("#Principia_BurnEditor_ActiveRCS"))) {
+              L10N.CacheFormat("#Principia_BurnEditor_ActiveRCS"))) {
             engine_warning_ = "";
             ComputeRCSCharacteristics();
             changed = true;
           } else if (UnityEngine.GUILayout.Button(
-              Localizer.Format("#Principia_BurnEditor_InstantImpulse"))) {
+              L10N.CacheFormat("#Principia_BurnEditor_InstantImpulse"))) {
             engine_warning_ = "";
             UseTheForceLuke();
             changed = true;
@@ -138,7 +138,7 @@ class BurnEditor : ScalingRenderer {
       if (is_inertially_fixed_ !=
           UnityEngine.GUILayout.Toggle(
               is_inertially_fixed_,
-              Localizer.Format("#Principia_BurnEditor_InertiallyFixed"))) {
+              L10N.CacheFormat("#Principia_BurnEditor_InertiallyFixed"))) {
         changed = true;
         is_inertially_fixed_ = !is_inertially_fixed_;
       }
@@ -163,19 +163,19 @@ class BurnEditor : ScalingRenderer {
       }
       UnityEngine.GUILayout.Label(
           index == 0
-              ? Localizer.Format(
+              ? L10N.CacheFormat(
                   "#Principia_BurnEditor_TimeBase_StartOfFlightPlan")
-              : Localizer.Format("#Principia_BurnEditor_TimeBase_EndOfManœuvre",
+              : L10N.CacheFormat("#Principia_BurnEditor_TimeBase_EndOfManœuvre",
                                  index),
           style : new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label){
               alignment = UnityEngine.TextAnchor.UpperLeft
           });
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         UnityEngine.GUILayout.Label(
-            Localizer.Format("#Principia_BurnEditor_Δv",
+            L10N.CacheFormat("#Principia_BurnEditor_Δv",
                              Δv().ToString("0.000")),
             GUILayoutWidth(8));
-        UnityEngine.GUILayout.Label(Localizer.Format(
+        UnityEngine.GUILayout.Label(L10N.CacheFormat(
                                         "#Principia_BurnEditor_Duration",
                                         duration_.ToString("0.0")));
       }
@@ -259,7 +259,7 @@ class BurnEditor : ScalingRenderer {
     // If there are no engines, fall back onto RCS.
     if (thrust_in_kilonewtons_ == 0) {
       engine_warning_ +=
-          Localizer.Format("#Principia_BurnEditor_Warning_NoActiveEngines");
+          L10N.CacheFormat("#Principia_BurnEditor_Warning_NoActiveEngines");
       ComputeRCSCharacteristics();
     }
   }
@@ -296,7 +296,7 @@ class BurnEditor : ScalingRenderer {
     // If RCS provides no thrust, model a virtually instant burn.
     if (thrust_in_kilonewtons_ == 0) {
       engine_warning_ +=
-          Localizer.Format("#Principia_BurnEditor_Warning_NoActiveRCS");
+          L10N.CacheFormat("#Principia_BurnEditor_Warning_NoActiveRCS");
       UseTheForceLuke();
     }
   }
