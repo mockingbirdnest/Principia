@@ -69,6 +69,7 @@ using testing_utilities::Componentwise;
 using testing_utilities::EqualsProto;
 using testing_utilities::AppendTrajectoryTimeline;
 using testing_utilities::NewAcceleratedTrajectoryTimeline;
+using testing_utilities::NewCircularTrajectoryTimeline;
 using testing_utilities::NewLinearTrajectoryTimeline;
 using ::testing::AnyNumber;
 using ::testing::DoAll;
@@ -674,9 +675,7 @@ TEST_F(VesselTest, SerializationSuccess) {
   EXPECT_THAT(message, EqualsProto(second_message));
 }
 
-// TODO(phl): See if we can make something with this test.
-#if 0
-TEST_F(VesselTest, Conclusion) {
+TEST_F(VesselTest, TailSerialization) {
   // Must be large enough that truncation happens.
   // TODO(phl): Don't hard-wire numbers.
   constexpr std::int64_t number_of_points = 100'000;
@@ -708,20 +707,28 @@ TEST_F(VesselTest, Conclusion) {
   p2_->set_containing_pile_up(pile_up);
 
   // A long trajectory for each part.
-  AppendToPartHistory(*NewCircularTrajectory<Barycentric>(
-                          /*period=*/20 * Second,
-                          /*r=*/101 * Metre,
-                          /*Δt=*/1 * Second,
-                          /*t1=*/t0_ + 1 * Second,
-                          /*t2=*/t0_ + number_of_points * Second),
-                      *p1_);
-  AppendToPartHistory(*NewCircularTrajectory<Barycentric>(
-                          /*period=*/20 * Second,
-                          /*r=*/102 * Metre,
-                          /*Δt=*/1 * Second,
-                          /*t1=*/t0_ + 1 * Second,
-                          /*t2=*/t0_ + number_of_points * Second),
-                      *p2_);
+  AppendTrajectoryTimeline<Barycentric>(
+      NewCircularTrajectoryTimeline<Barycentric>(
+          /*period=*/20 * Second,
+          /*r=*/101 * Metre,
+          /*Δt=*/1 * Second,
+          /*t1=*/t0_ + 1 * Second,
+          /*t2=*/t0_ + number_of_points * Second),
+      [this](Instant const& time,
+             DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+        p1_->AppendToHistory(time, degrees_of_freedom);
+      });
+  AppendTrajectoryTimeline<Barycentric>(
+      NewCircularTrajectoryTimeline<Barycentric>(
+          /*period=*/20 * Second,
+          /*r=*/102 * Metre,
+          /*Δt=*/1 * Second,
+          /*t1=*/t0_ + 1 * Second,
+          /*t2=*/t0_ + number_of_points * Second),
+      [this](Instant const& time,
+             DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+        p2_->AppendToHistory(time, degrees_of_freedom);
+      });
 
   vessel_.DetectCollapsibilityChange();
   vessel_.AdvanceTime();
@@ -730,13 +737,40 @@ TEST_F(VesselTest, Conclusion) {
   vessel_.WriteToMessage(&message,
                          serialization_index_for_pile_up.AsStdFunction());
 
-  LOG(ERROR)<<message.history().DebugString();
+  EXPECT_EQ(4, message.history().segment_size());
+  {
+    auto const& segment0 = message.history().segment(0);
+    EXPECT_EQ(0, segment0.number_of_dense_points());
+    EXPECT_EQ(0, segment0.zfp().timeline_size());
+  }
+  {
+    auto const& segment1 = message.history().segment(1);
+    EXPECT_EQ(79, segment1.number_of_dense_points());
+    EXPECT_EQ(t0_ + 4'553 * Second,
+              Instant::ReadFromMessage(segment1.exact(0).instant()));
+    EXPECT_EQ(t0_ + (number_of_points - 1) * Second,
+              Instant::ReadFromMessage(segment1.exact(1).instant()));
+    EXPECT_EQ(12'000, segment1.zfp().timeline_size());
+  }
+  {
+    auto const& segment2 = message.history().segment(2);
+    EXPECT_EQ(0, segment2.number_of_dense_points());
+    EXPECT_EQ(1, segment2.zfp().timeline_size());
+  }
+  {
+    auto const& segment3 = message.history().segment(3);
+    EXPECT_EQ(0, segment3.number_of_dense_points());
+    EXPECT_EQ(1, segment3.zfp().timeline_size());
+  }
 
   auto const v = Vessel::ReadFromMessage(
       message, &celestial_, &ephemeris_, /*deletion_callback=*/nullptr);
-  EXPECT_EQ(t0_ + 30'000 * Second, v->psychohistory().begin()->time);
+  EXPECT_TRUE(v->history()->empty());
+  EXPECT_EQ(t0_ + 4'553 * Second, v->psychohistory()->front().time);
+  LOG(ERROR) << v->psychohistory()->front().time - t0_;
+  EXPECT_EQ(t0_ + (number_of_points - 1) * Second,
+            v->psychohistory()->back().time);
 }
-#endif
 
 }  // namespace ksp_plugin
 }  // namespace principia
