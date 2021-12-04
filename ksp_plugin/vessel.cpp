@@ -653,9 +653,9 @@ Vessel::Vessel()
 Checkpointer<serialization::Vessel>::Writer Vessel::MakeCheckpointerWriter() {
   return [this](not_null<serialization::Vessel::Checkpoint*> const message) {
     lock_.AssertReaderHeld();
-    // Note that the extremities of the |backstory_| are implicitly exact.  Note
-    // that |backstory_->end()| might cause serialization of a 1-point
-    // psychohistory or prediction (at the last time of the backstory).
+    // The extremities of the |backstory_| are implicitly exact.  Note that
+    // |backstory_->end()| might cause serialization of a 1-point psychohistory
+    // or prediction (at the last time of the backstory).
     trajectory_.WriteToMessage(message->mutable_non_collapsible_segment(),
                                backstory_->begin(),
                                backstory_->end(),
