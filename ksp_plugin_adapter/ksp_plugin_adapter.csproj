@@ -122,6 +122,7 @@
     <Compile Include="loader.cs" />
     <Compile Include="localization_extensions.cs" />
     <Compile Include="logging.cs" />
+    <Compile Include="lru_cache.cs" />
     <Compile Include="main_window.cs" />
     <Compile Include="map_node_pool.cs" />
     <Compile Include="marshalers.generated.cs" />

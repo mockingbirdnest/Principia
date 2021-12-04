@@ -1,5 +1,6 @@
 ﻿using KSP.Localization;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -26,7 +27,7 @@ internal static class L10N {
   }
 
   public static string Standalone(string name) {
-    return Localizer.Format("#Principia_GrammaticalForm_Standalone", name);
+    return L10N.CacheFormat("#Principia_GrammaticalForm_Standalone", name);
   }
 
   public static string StandaloneName(this CelestialBody celestial) {
@@ -62,6 +63,9 @@ internal static class L10N {
   // Bodies that may not have an article (Saturn, Vénus) have an uppercase
   // gender tag (Saturn^N, Vénus^F).
   public static string Name(this CelestialBody body) {
+    if (names_.TryGetValue(body, out string result)) {
+      return result;
+    }
     string name = LingoonaUnqualified(body.displayName);
     string qualifiers = LingoonaQualifiers(body.displayName);
     if (qualifiers == "") {
@@ -76,23 +80,26 @@ internal static class L10N {
       // Lowercase the gender, allowing for articles.
       qualifiers = char.ToLower(qualifiers[0]) + qualifiers.Substring(1);
     }
-    return LingoonaQualify(name, qualifiers);
+    return names_[body] = LingoonaQualify(name, qualifiers);
   }
 
   private static string Initial(this CelestialBody body) {
-    return IsCJKV(LingoonaUnqualified(body.displayName))
+    if (initials_.TryGetValue(body, out string result)) {
+      return result;
+    }
+    return initials_[body] = IsCJKV(LingoonaUnqualified(body.displayName))
         ? body.displayName
         : body.Name()[0].ToString();
   }
 
-  public static string FormatOrNull(string template, params object[] args) {
+  private static string FormatOrNull(string template, params object[] args) {
     // Optional translations include the language name so that they do not fall
     // back to English.
     string qualified_template = $"{template}.{Localizer.CurrentLanguage}";
     if (!Localizer.Tags.ContainsKey(qualified_template)) {
       return null;
     }
-    return Localizer.Format(qualified_template, args);
+    return L10N.CacheFormat(qualified_template, args);
   }
 
   private static string CelestialOverride(string template,
@@ -110,8 +117,9 @@ internal static class L10N {
       (from body in bodies
        from name in new[]{body.Name(), body.Initial()}
        select name).Concat(from arg in args select arg.ToString()).ToArray();
-    return CelestialOverride(template, names, bodies) ??
-        Localizer.Format(template, names);
+    return lru_cache_.Get(template, names,
+                          () => CelestialOverride(template, names, bodies) ??
+                                Localizer.Format(template, names));
   }
 
   public static string CelestialStringOrNull(string template,
@@ -121,9 +129,21 @@ internal static class L10N {
       (from body in bodies
        from name in new[]{body.Name(), body.Initial()}
        select name).Concat(from arg in args select arg.ToString()).ToArray();
-    return CelestialOverride(template, names, bodies) ??
-        FormatOrNull(template, names);
+    return lru_cache_.Get(template, names,
+                          () => CelestialOverride(template, names, bodies) ??
+                                FormatOrNull(template, names));
   }
+
+  public static string CacheFormat(string name, params object[] args) {
+    return lru_cache_.Get(name, args,
+                          () => Localizer.Format(name, args));
+  }
+
+  private static LRUCache lru_cache_ = new LRUCache();
+  private static Dictionary<CelestialBody, string> names_ =
+      new Dictionary<CelestialBody, string>();
+  private static Dictionary<CelestialBody, string> initials_ =
+      new Dictionary<CelestialBody, string>();
 }
 
 }

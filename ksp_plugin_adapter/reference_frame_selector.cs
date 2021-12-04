@@ -175,13 +175,13 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   }
 
   private static string TargetFrameSelectorText(Vessel target) {
-    return TargetFrameAbbreviation(target) ?? Localizer.Format(
+    return TargetFrameAbbreviation(target) ?? L10N.CacheFormat(
         "#Principia_ReferenceFrameSelector_SelectorText_Target");
   }
 
   private static string TargetFrameSelectorTooltip(Vessel target) {
     string name = TargetFrameName(target);
-    return Localizer.Format(
+    return L10N.CacheFormat(
         "#Principia_ReferenceFrameSelector_Tooltip_Target",
         name);
   }
@@ -259,15 +259,15 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     }
     switch (type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
-        return Localizer.Format(
+        return L10N.CacheFormat(
             "#Principia_ReferenceFrameSelector_SelectorText_BodyCentredNonRotating");
       case FrameType.BARYCENTRIC_ROTATING:
         return "DEPRECATED";
       case FrameType.BODY_CENTRED_PARENT_DIRECTION:
-        return Localizer.Format(
+        return L10N.CacheFormat(
             "#Principia_ReferenceFrameSelector_SelectorText_BodyCentredParentDirection");
       case FrameType.BODY_SURFACE:
-        return Localizer.Format(
+        return L10N.CacheFormat(
             "#Principia_ReferenceFrameSelector_SelectorText_BodySurface");
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
@@ -279,19 +279,19 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     string name = Name(type, selected);
     switch (type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
-        return Localizer.Format(
+        return L10N.CacheFormat(
             "#Principia_ReferenceFrameSelector_Tooltip_BodyCentredNonRotating",
             name,
             selected.Name());
       case FrameType.BARYCENTRIC_ROTATING:
         return "DEPRECATED";
       case FrameType.BODY_CENTRED_PARENT_DIRECTION:
-        return Localizer.Format(
+        return L10N.CacheFormat(
             "#Principia_ReferenceFrameSelector_Tooltip_BodyCentredParentDirection",
             name,
             selected.Name());
       case FrameType.BODY_SURFACE:
-        return Localizer.Format(
+        return L10N.CacheFormat(
             "#Principia_ReferenceFrameSelector_Tooltip_BodySurface",
             name,
             selected.Name());
@@ -302,7 +302,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   }
 
   private static string TargetFrameDescription(Vessel target) {
-    return Localizer.Format(
+    return L10N.CacheFormat(
         "#Principia_ReferenceFrameSelector_Description_Target",
         target.vesselName,
         target.orbit.referenceBody.Name());
@@ -354,19 +354,19 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     if (!target_frame_selected &&
         (frame_type == FrameType.BODY_CENTRED_NON_ROTATING ||
          frame_type == FrameType.BODY_SURFACE)) {
-      return Localizer.Format(
+      return L10N.CacheFormat(
           "#Principia_ReferenceFrameSelector_ReferencePlane_Centred",
           selected_celestial.Name());
     }
     string secondary =
         target_frame_selected
-            ? Localizer.Format(
+            ? L10N.CacheFormat(
                 "#Principia_ReferenceFrameSelector_ReferencePlane_Secondary_Target")
             : selected_celestial.Name();
     string primary = target_frame_selected
                          ? selected_celestial.Name()
                          : selected_celestial.referenceBody.Name();
-    return Localizer.Format("#Principia_ReferenceFrameSelector_ReferencePlane",
+    return L10N.CacheFormat("#Principia_ReferenceFrameSelector_ReferencePlane",
                             secondary,
                             primary);
   }
@@ -443,7 +443,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
 
   public void RenderButton() {
     if (UnityEngine.GUILayout.Button(
-        Localizer.Format("#Principia_ReferenceFrameSelector_ToggleButton",
+        L10N.CacheFormat("#Principia_ReferenceFrameSelector_ToggleButton",
                          name_,
                          Name()))) {
       Toggle();
@@ -456,14 +456,14 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   public bool target_frame_selected { get; private set; }
 
   protected override string Title =>
-      Localizer.Format("#Principia_ReferenceFrameSelector_Title",
+      L10N.CacheFormat("#Principia_ReferenceFrameSelector_Title",
                        name_,
                        Name());
 
   protected override void RenderWindow(int window_id) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
       UnityEngine.GUILayout.Label(
-          Localizer.Format(
+          L10N.CacheFormat(
               "#Principia_ReferenceFrameSelector_Description_Heading",
               Name(),
               Abbreviation()));
@@ -522,7 +522,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
       UnityEngine.GUILayout.FlexibleSpace();
       if (celestial.is_root()) {
         UnityEngine.GUILayout.Label(
-            Localizer.Format("#Principia_ReferenceFrameSelector_Pin"));
+            L10N.CacheFormat("#Principia_ReferenceFrameSelector_Pin"));
       } else if (UnityEngine.GUILayout.Toggle(pinned_[celestial], "") !=
                  pinned_[celestial]) {
         pinned_[celestial] = !pinned_[celestial];
@@ -537,7 +537,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
           UnityEngine.GUILayout.Button(
               "", UnityEngine.GUI.skin.label, GUILayoutWidth(offset));
           UnityEngine.GUILayout.Label(
-              Localizer.Format("#Principia_ReferenceFrameSelector_Target",
+              L10N.CacheFormat("#Principia_ReferenceFrameSelector_Target",
                                target.vesselName));
           UnityEngine.GUILayout.FlexibleSpace();
           if (UnityEngine.GUILayout.Toggle(target_pinned_, "") !=

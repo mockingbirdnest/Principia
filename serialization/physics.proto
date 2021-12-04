@@ -143,7 +143,7 @@ message DiscreteTrajectorySegment {
     required int32 timeline_size = 4;
   }
   optional DownsamplingParameters downsampling_parameters = 1;
-  required int32 number_of_dense_points = 2;
+  optional int32 number_of_dense_points = 2;
   repeated InstantaneousDegreesOfFreedom exact = 3;
   required Zfp zfp = 4;
 }
