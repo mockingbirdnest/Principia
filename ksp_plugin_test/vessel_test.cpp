@@ -732,6 +732,9 @@ TEST_F(VesselTest, TailSerialization) {
 
   vessel_.DetectCollapsibilityChange();
   vessel_.AdvanceTime();
+  EXPECT_EQ(12'569,
+            std::distance(vessel_.history()->begin(),
+                          vessel_.psychohistory()->begin()));
 
   serialization::Vessel message;
   vessel_.WriteToMessage(&message,
@@ -739,11 +742,13 @@ TEST_F(VesselTest, TailSerialization) {
 
   EXPECT_EQ(4, message.history().segment_size());
   {
+    // Non-collapsible segment of the history, entirely excluded.
     auto const& segment0 = message.history().segment(0);
     EXPECT_EQ(0, segment0.number_of_dense_points());
     EXPECT_EQ(0, segment0.zfp().timeline_size());
   }
   {
+    // Collapsible segment of the history (backstory), truncated to the left.
     auto const& segment1 = message.history().segment(1);
     EXPECT_EQ(79, segment1.number_of_dense_points());
     EXPECT_EQ(t0_ + 4'553 * Second,
@@ -753,11 +758,13 @@ TEST_F(VesselTest, TailSerialization) {
     EXPECT_EQ(12'000, segment1.zfp().timeline_size());
   }
   {
+    // Psychohistory, only one point.
     auto const& segment2 = message.history().segment(2);
     EXPECT_EQ(0, segment2.number_of_dense_points());
     EXPECT_EQ(1, segment2.zfp().timeline_size());
   }
   {
+    // Prediction, excluded except for its first point.
     auto const& segment3 = message.history().segment(3);
     EXPECT_EQ(0, segment3.number_of_dense_points());
     EXPECT_EQ(1, segment3.zfp().timeline_size());
@@ -766,10 +773,9 @@ TEST_F(VesselTest, TailSerialization) {
   auto const v = Vessel::ReadFromMessage(
       message, &celestial_, &ephemeris_, /*deletion_callback=*/nullptr);
   EXPECT_TRUE(v->history()->empty());
-  EXPECT_EQ(t0_ + 4'553 * Second, v->psychohistory()->front().time);
-  LOG(ERROR) << v->psychohistory()->front().time - t0_;
-  EXPECT_EQ(t0_ + (number_of_points - 1) * Second,
-            v->psychohistory()->back().time);
+  auto const backstory = std::next(v->trajectory().segments().begin());
+  EXPECT_EQ(t0_ + 4'553 * Second, backstory->front().time);
+  EXPECT_EQ(t0_ + (number_of_points - 1) * Second, backstory->back().time);
 }
 
 }  // namespace ksp_plugin
