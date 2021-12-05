@@ -134,6 +134,15 @@ internal static class L10N {
                                 FormatOrNull(template, names));
   }
 
+  public static string CacheFormat(string name) {
+    return lru_cache_.Get(name, () => Localizer.Format(name));
+  }
+
+  public static string CacheFormat(string name, params string[] args) {
+    return lru_cache_.Get(name, args,
+                          () => Localizer.Format(name, args));
+  }
+
   public static string CacheFormat(string name, params object[] args) {
     return lru_cache_.Get(name, args,
                           () => Localizer.Format(name, args));

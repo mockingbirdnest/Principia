@@ -8,7 +8,15 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 class LRUCache {
+  public string Get(string name, Func<string> compute_value) {
+    return Get(name, new string[]{}, compute_value);
+  }
+
   public string Get(string name, object[] args, Func<string> compute_value) {
+    return Get(name, (from arg in args select arg.ToString()).ToArray(), compute_value);
+  }
+
+  public string Get(string name, string[] args, Func<string> compute_value) {
     string key = MakeKey(name, args);
     Entry entry;
     if (cache_.TryGetValue(key, out entry)) {
@@ -30,10 +38,9 @@ class LRUCache {
     return entry.value;
   }
 
-  public string MakeKey(string name, object[] args) {
+  public string MakeKey(string name, string[] args) {
     string unit_separator = "\x1F";
-    return name + unit_separator +
-        string.Join(unit_separator, from arg in args select arg.ToString());
+    return name + unit_separator + string.Join(unit_separator, args);
   }
 
   private class Entry {
