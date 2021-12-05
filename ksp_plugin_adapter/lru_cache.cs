@@ -12,10 +12,6 @@ class LRUCache {
     return Get(name, new string[]{}, compute_value);
   }
 
-  public string Get(string name, object[] args, Func<string> compute_value) {
-    return Get(name, (from arg in args select arg.ToString()).ToArray(), compute_value);
-  }
-
   public string Get(string name, string[] args, Func<string> compute_value) {
     string key = MakeKey(name, args);
     Entry entry;
@@ -36,6 +32,10 @@ class LRUCache {
     }
     cache_by_time_.Add(entry);
     return entry.value;
+  }
+
+  public string Get(string name, object[] args, Func<string> compute_value) {
+    return Get(name, (from arg in args select arg.ToString()).ToArray(), compute_value);
   }
 
   public string MakeKey(string name, string[] args) {
