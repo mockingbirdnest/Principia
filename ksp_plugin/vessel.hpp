@@ -297,7 +297,7 @@ class Vessel {
   DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters const
       downsampling_parameters_;
 
-  // TODO(phl):Verify locking.
+  // TODO(phl): Verify locking.
   mutable absl::Mutex lock_;
 
   // When reading a pre-Zermelo save, the existing history must be
