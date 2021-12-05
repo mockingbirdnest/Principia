@@ -675,6 +675,7 @@ TEST_F(VesselTest, SerializationSuccess) {
   EXPECT_THAT(message, EqualsProto(second_message));
 }
 
+#if !defined(_DEBUG)
 TEST_F(VesselTest, TailSerialization) {
   // Must be large enough that truncation happens.
   // TODO(phl): Don't hard-wire numbers.
@@ -777,6 +778,7 @@ TEST_F(VesselTest, TailSerialization) {
   EXPECT_EQ(t0_ + 4'553 * Second, backstory->front().time);
   EXPECT_EQ(t0_ + (number_of_points - 1) * Second, backstory->back().time);
 }
+#endif
 
 }  // namespace ksp_plugin
 }  // namespace principia
