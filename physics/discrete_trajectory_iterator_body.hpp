@@ -106,7 +106,7 @@ DiscreteTrajectoryIterator<Frame>::operator+=(difference_type const n) {
       // We know that operator++ never leaves |point_| at |timeline_begin()|.
       // Therefore, to detect that we are in a new segment, we must check for
       // the second point of the segment.
-      if (segment_->timeline_size() >= 2 &&
+      if (segment_->timeline_size() > 2 &&
           segment_->timeline_size() <= m + 2 &&
           point == std::next(segment_->timeline_begin())) {
         point = std::prev(segment_->timeline_end());
@@ -140,7 +140,7 @@ DiscreteTrajectoryIterator<Frame>::operator-=(difference_type const n) {
       // We know that operator-- never leaves |point_| at
       // |std::prev(timeline_end())|.  Therefore, to detect that we are in a new
       // segment, we must check for the second-to-last point of the segment.
-      if (segment_->timeline_size() >= 2 &&
+      if (segment_->timeline_size() > 2 &&
           segment_->timeline_size() <= m + 2 &&
           point == std::prev(std::prev(segment_->timeline_end()))) {
         point = segment_->timeline_begin();
