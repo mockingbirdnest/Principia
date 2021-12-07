@@ -309,6 +309,7 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
             message.downsampling_parameters().max_dense_intervals(),
         .tolerance = Length::ReadFromMessage(
             message.downsampling_parameters().tolerance())};
+    CHECK(message.has_number_of_dense_points());
     segment.number_of_dense_points_ = message.number_of_dense_points();
   }
 

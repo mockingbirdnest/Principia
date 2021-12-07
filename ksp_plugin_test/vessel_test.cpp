@@ -38,12 +38,14 @@ namespace ksp_plugin {
 using base::not_null;
 using base::make_not_null_unique;
 using geometry::Barycentre;
+using geometry::Bivector;
 using geometry::Displacement;
 using geometry::InertiaTensor;
 using geometry::InfiniteFuture;
 using geometry::Instant;
 using geometry::Position;
 using geometry::R3x3Matrix;
+using geometry::Vector;
 using geometry::Velocity;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
@@ -51,6 +53,7 @@ using physics::MassiveBody;
 using physics::MockEphemeris;
 using physics::RigidMotion;
 using physics::RotatingBody;
+using quantities::Force;
 using quantities::Mass;
 using quantities::MomentOfInertia;
 using quantities::Pow;
@@ -65,6 +68,8 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::EqualsProto;
 using testing_utilities::AppendTrajectoryTimeline;
+using testing_utilities::NewAcceleratedTrajectoryTimeline;
+using testing_utilities::NewCircularTrajectoryTimeline;
 using testing_utilities::NewLinearTrajectoryTimeline;
 using ::testing::AnyNumber;
 using ::testing::DoAll;
@@ -92,7 +97,8 @@ class VesselTest : public testing::Test {
                 "vessel",
                 &celestial_,
                 &ephemeris_,
-                DefaultPredictionParameters()) {
+                DefaultPredictionParameters(),
+                DefaultDownsamplingParameters()) {
     auto p1 = make_not_null_unique<Part>(
         part_id1_,
         "p1",
@@ -186,8 +192,7 @@ TEST_F(VesselTest, PrepareHistory) {
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 2 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.CreateHistoryIfNeeded(t0_ + 1 * Second,
-                                DefaultDownsamplingParameters());
+  vessel_.CreateHistoryIfNeeded(t0_ + 1 * Second);
 
   auto const expected_dof = Barycentre<DegreesOfFreedom<Barycentric>, Mass>(
       {p1_dof_, p2_dof_}, {mass1_, mass2_});
@@ -210,8 +215,7 @@ TEST_F(VesselTest, AdvanceTime) {
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 2 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.CreateHistoryIfNeeded(t0_,
-                                DefaultDownsamplingParameters());
+  vessel_.CreateHistoryIfNeeded(t0_);
 
   AppendTrajectoryTimeline<Barycentric>(
       NewLinearTrajectoryTimeline<Barycentric>(p1_dof_,
@@ -285,8 +289,7 @@ TEST_F(VesselTest, Prediction) {
       FlowWithAdaptiveStep(_, _, InfiniteFuture, _, _))
       .WillRepeatedly(Return(absl::OkStatus()));
 
-  vessel_.CreateHistoryIfNeeded(t0_,
-                                DefaultDownsamplingParameters());
+  vessel_.CreateHistoryIfNeeded(t0_);
   // Polling for the integration to happen.
   do {
     vessel_.RefreshPrediction(t0_ + 1 * Second);
@@ -343,8 +346,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
           Return(absl::OkStatus())))
       .WillRepeatedly(Return(absl::OkStatus()));
 
-  vessel_.CreateHistoryIfNeeded(t0_,
-                                DefaultDownsamplingParameters());
+  vessel_.CreateHistoryIfNeeded(t0_);
   // Polling for the integration to happen.
   do {
     vessel_.RefreshPrediction();
@@ -380,8 +382,7 @@ TEST_F(VesselTest, FlightPlan) {
       .Times(AnyNumber());
   std::vector<not_null<MassiveBody const*>> const bodies;
   ON_CALL(ephemeris_, bodies()).WillByDefault(ReturnRef(bodies));
-  vessel_.CreateHistoryIfNeeded(t0_,
-                                DefaultDownsamplingParameters());
+  vessel_.CreateHistoryIfNeeded(t0_);
 
   EXPECT_FALSE(vessel_.has_flight_plan());
   EXPECT_CALL(
@@ -463,17 +464,14 @@ TEST_F(VesselTest, Checkpointing) {
       .WillRepeatedly(Return(0));
 
   EXPECT_CALL(ephemeris_, t_max())
-      .WillRepeatedly(Return(astronomy::J2000 + 30 * Second));
-  EXPECT_CALL(
-      ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _))
+      .WillRepeatedly(Return(t0_ + 30 * Second));
+  EXPECT_CALL(ephemeris_,
+              FlowWithAdaptiveStep(_, _, InfiniteFuture, _, _))
       .Times(AnyNumber());
-  EXPECT_CALL(
-      ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 30 * Second, _, _))
+  EXPECT_CALL(ephemeris_,
+              FlowWithAdaptiveStep(_, _, t0_ + 30 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.CreateHistoryIfNeeded(astronomy::J2000,
-                                DefaultDownsamplingParameters());
+  vessel_.CreateHistoryIfNeeded(t0_);
 
   auto const pile_up =
       std::make_shared<PileUp>(/*parts=*/std::list<not_null<Part*>>{p1_, p2_},
@@ -487,16 +485,24 @@ TEST_F(VesselTest, Checkpointing) {
 
   // Free-fall trajectory.  This creates a checkpoint because the history is not
   // collapsible at the beginning.
-  AppendToPartHistory(*NewLinearTrajectory(p1_dof_,
-                                           /*Δt=*/1 * Second,
-                                           /*t1=*/t0_ + 0.5 * Second,
-                                           /*t2=*/t0_ + 11 * Second),
-                      *p1_);
-  AppendToPartHistory(*NewLinearTrajectory(p2_dof_,
-                                           /*Δt=*/1 * Second,
-                                           /*t1=*/t0_ + 0.5 * Second,
-                                           /*t2=*/t0_ + 11 * Second),
-                      *p2_);
+  AppendTrajectoryTimeline<Barycentric>(
+      NewLinearTrajectoryTimeline<Barycentric>(p1_dof_,
+                                               /*Δt=*/1 * Second,
+                                               /*t1=*/t0_ + 1 * Second,
+                                               /*t2=*/t0_ + 11 * Second),
+      [this](Instant const& time,
+             DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+        p1_->AppendToHistory(time, degrees_of_freedom);
+      });
+  AppendTrajectoryTimeline<Barycentric>(
+      NewLinearTrajectoryTimeline<Barycentric>(p2_dof_,
+                                               /*Δt=*/1 * Second,
+                                               /*t1=*/t0_ + 1 * Second,
+                                               /*t2=*/t0_ + 11 * Second),
+      [this](Instant const& time,
+             DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+        p2_->AppendToHistory(time, degrees_of_freedom);
+      });
 
   vessel_.DetectCollapsibilityChange();
   vessel_.AdvanceTime();
@@ -505,18 +511,25 @@ TEST_F(VesselTest, Checkpointing) {
   auto const p1_force =
       Vector<Force, Barycentric>({1 * Newton, 0 * Newton, 0 * Newton});
   p1_->apply_intrinsic_force(p1_force);
-  AppendToPartHistory(
-      *NewAcceleratedTrajectory(p1_dof_,
-                                /*acceleration=*/p1_force / mass1_,
-                                /*Δt=*/1 * Second,
-                                /*t1=*/t0_ + 11 * Second,
-                                /*t2=*/t0_ + 26 * Second),
-      *p1_);
-  AppendToPartHistory(*NewLinearTrajectory(p2_dof_,
-                                           /*Δt=*/1 * Second,
-                                           /*t1=*/t0_ + 11 * Second,
-                                           /*t2=*/t0_ + 26 * Second),
-                      *p2_);
+  AppendTrajectoryTimeline<Barycentric>(
+      NewAcceleratedTrajectoryTimeline(p1_dof_,
+                                       /*acceleration=*/p1_force / mass1_,
+                                       /*Δt=*/1 * Second,
+                                       /*t1=*/t0_ + 11 * Second,
+                                       /*t2=*/t0_ + 26 * Second),
+      [this](Instant const& time,
+             DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+        p1_->AppendToHistory(time, degrees_of_freedom);
+      });
+  AppendTrajectoryTimeline<Barycentric>(
+      NewLinearTrajectoryTimeline<Barycentric>(p2_dof_,
+                                               /*Δt=*/1 * Second,
+                                               /*t1=*/t0_ + 11 * Second,
+                                               /*t2=*/t0_ + 26 * Second),
+      [this](Instant const& time,
+             DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+        p2_->AppendToHistory(time, degrees_of_freedom);
+      });
 
   vessel_.DetectCollapsibilityChange();
   vessel_.AdvanceTime();
@@ -524,16 +537,24 @@ TEST_F(VesselTest, Checkpointing) {
   // Remove the force.  This creates a checkpoint because we closed a non-
   // collapsible segment.
   p1_->clear_intrinsic_force();
-  AppendToPartHistory(*NewLinearTrajectory(p1_dof_,
-                                           /*Δt=*/1 * Second,
-                                           /*t1=*/t0_ + 26 * Second,
-                                           /*t2=*/t0_ + 31 * Second),
-                      *p1_);
-  AppendToPartHistory(*NewLinearTrajectory(p2_dof_,
-                                           /*Δt=*/1 * Second,
-                                           /*t1=*/t0_ + 26 * Second,
-                                           /*t2=*/t0_ + 31 * Second),
-                      *p2_);
+  AppendTrajectoryTimeline<Barycentric>(
+      NewLinearTrajectoryTimeline<Barycentric>(p1_dof_,
+                                               /*Δt=*/1 * Second,
+                                               /*t1=*/t0_ + 26 * Second,
+                                               /*t2=*/t0_ + 31 * Second),
+      [this](Instant const& time,
+             DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+        p1_->AppendToHistory(time, degrees_of_freedom);
+      });
+  AppendTrajectoryTimeline<Barycentric>(
+      NewLinearTrajectoryTimeline<Barycentric>(p2_dof_,
+                                               /*Δt=*/1 * Second,
+                                               /*t1=*/t0_ + 26 * Second,
+                                               /*t2=*/t0_ + 31 * Second),
+      [this](Instant const& time,
+             DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+        p2_->AppendToHistory(time, degrees_of_freedom);
+      });
 
   vessel_.DetectCollapsibilityChange();
   vessel_.AdvanceTime();
@@ -544,16 +565,70 @@ TEST_F(VesselTest, Checkpointing) {
   EXPECT_TRUE(message.has_is_collapsible());
   EXPECT_TRUE(message.is_collapsible());
   EXPECT_EQ(2, message.checkpoint_size());
-  EXPECT_EQ(0, message.checkpoint(0).time().scalar().magnitude());
-  EXPECT_EQ(0, message.checkpoint(0).non_collapsible_segment().children_size());
-  EXPECT_EQ(
-      1,
-      message.checkpoint(0).non_collapsible_segment().zfp().timeline_size());
-  EXPECT_EQ(25, message.checkpoint(1).time().scalar().magnitude());
-  EXPECT_EQ(0, message.checkpoint(1).non_collapsible_segment().children_size());
-  EXPECT_EQ(
-      16,
-      message.checkpoint(1).non_collapsible_segment().zfp().timeline_size());
+  {
+    auto const& checkpoint = message.checkpoint(0);
+    EXPECT_EQ(0, checkpoint.time().scalar().magnitude());
+    EXPECT_EQ(3, checkpoint.non_collapsible_segment().segment_size());
+    auto const& segment0 = checkpoint.non_collapsible_segment().segment(0);
+    EXPECT_EQ(1, segment0.number_of_dense_points());
+    EXPECT_EQ(1, segment0.zfp().timeline_size());
+    EXPECT_EQ(0, segment0.exact(0).instant().scalar().magnitude());
+    auto const& segment1 = checkpoint.non_collapsible_segment().segment(1);
+    // The |number_of_dense_points| is 0 for the psychohistory and the
+    // prediction because they are not subject to downsampling.
+    EXPECT_FALSE(segment1.has_number_of_dense_points());
+    EXPECT_EQ(1, segment1.zfp().timeline_size());
+    EXPECT_EQ(0, segment1.exact(0).instant().scalar().magnitude());
+    auto const& segment2 = checkpoint.non_collapsible_segment().segment(2);
+    EXPECT_FALSE(segment2.has_number_of_dense_points());
+    EXPECT_EQ(1, segment2.zfp().timeline_size());
+    EXPECT_EQ(0, segment2.exact(0).instant().scalar().magnitude());
+    EXPECT_EQ(
+        1,
+        checkpoint.non_collapsible_segment().segment_by_left_endpoint_size());
+    auto const& segment_by_left_endpoint0 =
+        checkpoint.non_collapsible_segment().segment_by_left_endpoint(0);
+    EXPECT_EQ(
+        0, segment_by_left_endpoint0.left_endpoint().scalar().magnitude());
+    EXPECT_EQ(2, segment_by_left_endpoint0.segment());
+  }
+  {
+    auto const& checkpoint = message.checkpoint(1);
+    EXPECT_EQ(25, checkpoint.time().scalar().magnitude());
+    EXPECT_EQ(5, checkpoint.non_collapsible_segment().segment_size());
+    auto const& segment0 = checkpoint.non_collapsible_segment().segment(0);
+    EXPECT_EQ(0, segment0.number_of_dense_points());
+    EXPECT_EQ(0, segment0.zfp().timeline_size());
+    auto const& segment1 = checkpoint.non_collapsible_segment().segment(1);
+    EXPECT_EQ(1, segment1.number_of_dense_points());
+    EXPECT_EQ(1, segment1.zfp().timeline_size());
+    EXPECT_EQ(10, segment1.exact(0).instant().scalar().magnitude());
+    auto const& segment2 = checkpoint.non_collapsible_segment().segment(2);
+    EXPECT_EQ(16, segment2.number_of_dense_points());
+    EXPECT_EQ(16, segment2.zfp().timeline_size());
+    EXPECT_EQ(10, segment2.exact(0).instant().scalar().magnitude());
+    auto const& segment3 = checkpoint.non_collapsible_segment().segment(3);
+    EXPECT_FALSE(segment3.has_number_of_dense_points());
+    EXPECT_EQ(1, segment3.zfp().timeline_size());
+    EXPECT_EQ(25, segment3.exact(0).instant().scalar().magnitude());
+    auto const& segment4 = checkpoint.non_collapsible_segment().segment(4);
+    EXPECT_FALSE(segment4.has_number_of_dense_points());
+    EXPECT_EQ(1, segment4.zfp().timeline_size());
+    EXPECT_EQ(25, segment4.exact(0).instant().scalar().magnitude());
+    EXPECT_EQ(
+        2,
+        checkpoint.non_collapsible_segment().segment_by_left_endpoint_size());
+    auto const& segment_by_left_endpoint0 =
+        checkpoint.non_collapsible_segment().segment_by_left_endpoint(0);
+    EXPECT_EQ(
+        10, segment_by_left_endpoint0.left_endpoint().scalar().magnitude());
+    EXPECT_EQ(2, segment_by_left_endpoint0.segment());
+    auto const& segment_by_left_endpoint1 =
+        checkpoint.non_collapsible_segment().segment_by_left_endpoint(1);
+    EXPECT_EQ(
+        25, segment_by_left_endpoint1.left_endpoint().scalar().magnitude());
+    EXPECT_EQ(4, segment_by_left_endpoint1.segment());
+  }
 }
 
 TEST_F(VesselTest, SerializationSuccess) {
@@ -569,8 +644,7 @@ TEST_F(VesselTest, SerializationSuccess) {
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 2 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.CreateHistoryIfNeeded(t0_,
-                                DefaultDownsamplingParameters());
+  vessel_.CreateHistoryIfNeeded(t0_);
 
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 3 * Second, _, _))
@@ -600,6 +674,111 @@ TEST_F(VesselTest, SerializationSuccess) {
                     serialization_index_for_pile_up.AsStdFunction());
   EXPECT_THAT(message, EqualsProto(second_message));
 }
+
+#if !defined(_DEBUG)
+TEST_F(VesselTest, TailSerialization) {
+  // Must be large enough that truncation happens.
+  // TODO(phl): Don't hard-wire numbers.
+  constexpr std::int64_t number_of_points = 100'000;
+
+  MockFunction<int(not_null<PileUp const*>)>
+      serialization_index_for_pile_up;
+  EXPECT_CALL(serialization_index_for_pile_up, Call(_))
+      .Times(2)
+      .WillRepeatedly(Return(0));
+
+  EXPECT_CALL(ephemeris_, t_max())
+      .WillRepeatedly(Return(t0_ + 30 * Second));
+  EXPECT_CALL(ephemeris_,
+              FlowWithAdaptiveStep(_, _, InfiniteFuture, _, _))
+      .Times(AnyNumber());
+  EXPECT_CALL(ephemeris_,
+              FlowWithAdaptiveStep(_, _, t0_ + 30 * Second, _, _))
+      .Times(AnyNumber());
+  vessel_.CreateHistoryIfNeeded(t0_);
+
+  auto const pile_up =
+      std::make_shared<PileUp>(/*parts=*/std::list<not_null<Part*>>{p1_, p2_},
+                                Instant{},
+                                DefaultPsychohistoryParameters(),
+                                DefaultHistoryParameters(),
+                                &ephemeris_,
+                                /*deletion_callback=*/nullptr);
+  p1_->set_containing_pile_up(pile_up);
+  p2_->set_containing_pile_up(pile_up);
+
+  // A long trajectory for each part.
+  AppendTrajectoryTimeline<Barycentric>(
+      NewCircularTrajectoryTimeline<Barycentric>(
+          /*period=*/20 * Second,
+          /*r=*/101 * Metre,
+          /*Δt=*/1 * Second,
+          /*t1=*/t0_ + 1 * Second,
+          /*t2=*/t0_ + number_of_points * Second),
+      [this](Instant const& time,
+             DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+        p1_->AppendToHistory(time, degrees_of_freedom);
+      });
+  AppendTrajectoryTimeline<Barycentric>(
+      NewCircularTrajectoryTimeline<Barycentric>(
+          /*period=*/20 * Second,
+          /*r=*/102 * Metre,
+          /*Δt=*/1 * Second,
+          /*t1=*/t0_ + 1 * Second,
+          /*t2=*/t0_ + number_of_points * Second),
+      [this](Instant const& time,
+             DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+        p2_->AppendToHistory(time, degrees_of_freedom);
+      });
+
+  vessel_.DetectCollapsibilityChange();
+  vessel_.AdvanceTime();
+  EXPECT_EQ(12'569,
+            std::distance(vessel_.history()->begin(),
+                          vessel_.psychohistory()->begin()));
+
+  serialization::Vessel message;
+  vessel_.WriteToMessage(&message,
+                         serialization_index_for_pile_up.AsStdFunction());
+
+  EXPECT_EQ(4, message.history().segment_size());
+  {
+    // Non-collapsible segment of the history, entirely excluded.
+    auto const& segment0 = message.history().segment(0);
+    EXPECT_EQ(0, segment0.number_of_dense_points());
+    EXPECT_EQ(0, segment0.zfp().timeline_size());
+  }
+  {
+    // Collapsible segment of the history (backstory), truncated to the left.
+    auto const& segment1 = message.history().segment(1);
+    EXPECT_EQ(79, segment1.number_of_dense_points());
+    EXPECT_EQ(t0_ + 4'553 * Second,
+              Instant::ReadFromMessage(segment1.exact(0).instant()));
+    EXPECT_EQ(t0_ + (number_of_points - 1) * Second,
+              Instant::ReadFromMessage(segment1.exact(1).instant()));
+    EXPECT_EQ(12'000, segment1.zfp().timeline_size());
+  }
+  {
+    // Psychohistory, only one point.
+    auto const& segment2 = message.history().segment(2);
+    EXPECT_EQ(0, segment2.number_of_dense_points());
+    EXPECT_EQ(1, segment2.zfp().timeline_size());
+  }
+  {
+    // Prediction, excluded except for its first point.
+    auto const& segment3 = message.history().segment(3);
+    EXPECT_EQ(0, segment3.number_of_dense_points());
+    EXPECT_EQ(1, segment3.zfp().timeline_size());
+  }
+
+  auto const v = Vessel::ReadFromMessage(
+      message, &celestial_, &ephemeris_, /*deletion_callback=*/nullptr);
+  EXPECT_TRUE(v->history()->empty());
+  auto const backstory = std::next(v->trajectory().segments().begin());
+  EXPECT_EQ(t0_ + 4'553 * Second, backstory->front().time);
+  EXPECT_EQ(t0_ + (number_of_points - 1) * Second, backstory->back().time);
+}
+#endif
 
 }  // namespace ksp_plugin
 }  // namespace principia
