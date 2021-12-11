@@ -710,6 +710,8 @@ absl::Status Vessel::Reanimate(Instant const desired_t_min) {
 absl::Status Vessel::ReanimateOneCheckpoint(
     serialization::Vessel::Checkpoint const& message,
     Instant const& t_initial) {
+  LOG(ERROR) << "Restoring to checkpoint at " << t_initial;
+
   // Restore the non-collapsible segment that was fully saved.
   auto reanimated_trajectory =
       DiscreteTrajectory<Barycentric>::ReadFromMessage(

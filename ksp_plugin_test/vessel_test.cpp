@@ -780,5 +780,142 @@ TEST_F(VesselTest, TailSerialization) {
 }
 #endif
 
+TEST_F(VesselTest, Reanimator) {
+  // Must be large enough that truncation happens.
+  // TODO(phl): Don't hard-wire numbers.
+  constexpr std::int64_t number_of_points = 100'000;
+  constexpr std::int64_t number_of_checkpoints = 100;
+
+  MockFunction<int(not_null<PileUp const*>)>
+      serialization_index_for_pile_up;
+  EXPECT_CALL(serialization_index_for_pile_up, Call(_))
+      .Times(2)
+      .WillRepeatedly(Return(0));
+
+  EXPECT_CALL(ephemeris_, t_max())
+      .WillRepeatedly(Return(t0_ + 30 * Second));
+  EXPECT_CALL(ephemeris_,
+              Prolong(_))
+      .WillRepeatedly(Return(absl::OkStatus()));
+  EXPECT_CALL(ephemeris_,
+              FlowWithAdaptiveStep(_, _, InfiniteFuture, _, _))
+      .Times(AnyNumber());
+  EXPECT_CALL(ephemeris_,
+              FlowWithAdaptiveStep(_, _, t0_ + 30 * Second, _, _))
+      .Times(AnyNumber());
+  vessel_.CreateHistoryIfNeeded(t0_);
+
+  auto const pile_up =
+      std::make_shared<PileUp>(/*parts=*/std::list<not_null<Part*>>{p1_, p2_},
+                                Instant{},
+                                DefaultPsychohistoryParameters(),
+                                DefaultHistoryParameters(),
+                                &ephemeris_,
+                                /*deletion_callback=*/nullptr);
+  p1_->set_containing_pile_up(pile_up);
+  p2_->set_containing_pile_up(pile_up);
+
+  for (int i = 0; i < number_of_checkpoints; ++i) {
+    // Free-fall trajectory.
+    p1_->clear_intrinsic_force();
+    p2_->clear_intrinsic_force();
+    AppendTrajectoryTimeline<Barycentric>(
+        NewLinearTrajectoryTimeline<Barycentric>(
+            p1_dof_,
+            /*Δt=*/1 * Second,
+            /*t1=*/t0_ + 100 * i * Second,
+            /*t2=*/t0_ + (100 * i + 30) * Second),
+        [this](Instant const& time,
+               DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+          p1_->AppendToHistory(time, degrees_of_freedom);
+        });
+    AppendTrajectoryTimeline<Barycentric>(
+        NewLinearTrajectoryTimeline<Barycentric>(
+            p2_dof_,
+            /*Δt=*/1 * Second,
+            /*t1=*/t0_ + 100 * i * Second,
+            /*t2=*/t0_ + (100 * i + 30) * Second),
+        [this](Instant const& time,
+               DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+          p2_->AppendToHistory(time, degrees_of_freedom);
+        });
+
+    vessel_.DetectCollapsibilityChange();
+    vessel_.AdvanceTime();
+
+    // Apply a force to either part or both.
+    auto const p1_force =
+        i % 2 == 1
+            ? Vector<Force, Barycentric>({i * Newton, 0 * Newton, 0 * Newton})
+            : Vector<Force, Barycentric>();
+    auto const p2_force =
+        i % 3 == 1
+            ? Vector<Force, Barycentric>({0 * Newton, i * Newton, 0 * Newton})
+            : Vector<Force, Barycentric>();
+    p1_->apply_intrinsic_force(p1_force);
+    p2_->apply_intrinsic_force(p2_force);
+    AppendTrajectoryTimeline<Barycentric>(
+        NewAcceleratedTrajectoryTimeline(p1_dof_,
+                                         /*acceleration=*/p1_force / mass1_,
+                                         /*Δt=*/1 * Second,
+                                         /*t1=*/t0_ + (100 * i + 30) * Second,
+                                         /*t2=*/t0_ + 100 * (i + 1) * Second),
+        [this](Instant const& time,
+               DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+          p1_->AppendToHistory(time, degrees_of_freedom);
+        });
+    AppendTrajectoryTimeline<Barycentric>(
+        NewAcceleratedTrajectoryTimeline<Barycentric>(
+            p2_dof_,
+            /*acceleration=*/p2_force / mass2_,
+            /*Δt=*/1 * Second,
+            /*t1=*/t0_ + (100 * i + 30) * Second,
+            /*t2=*/t0_ + 100 * (i + 1) * Second),
+        [this](Instant const& time,
+               DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+          p2_->AppendToHistory(time, degrees_of_freedom);
+        });
+
+    vessel_.DetectCollapsibilityChange();
+    vessel_.AdvanceTime();
+  }
+
+  // Remove the forces.
+  p1_->clear_intrinsic_force();
+  p2_->clear_intrinsic_force();
+  AppendTrajectoryTimeline<Barycentric>(
+      NewLinearTrajectoryTimeline<Barycentric>(
+          p1_dof_,
+          /*Δt=*/1 * Second,
+          /*t1=*/t0_ + 100 * number_of_checkpoints * Second,
+          /*t2=*/t0_ +
+              (100 * number_of_checkpoints + number_of_points) * Second),
+      [this](Instant const& time,
+             DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+        p1_->AppendToHistory(time, degrees_of_freedom);
+      });
+  AppendTrajectoryTimeline<Barycentric>(
+      NewLinearTrajectoryTimeline<Barycentric>(
+          p2_dof_,
+          /*Δt=*/1 * Second,
+          /*t1=*/t0_ + 100 * number_of_checkpoints * Second,
+          /*t2=*/t0_ +
+              (100 * number_of_checkpoints + number_of_points) * Second),
+      [this](Instant const& time,
+             DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+        p2_->AppendToHistory(time, degrees_of_freedom);
+      });
+
+  vessel_.DetectCollapsibilityChange();
+  vessel_.AdvanceTime();
+
+  serialization::Vessel message;
+  vessel_.WriteToMessage(&message,
+                         serialization_index_for_pile_up.AsStdFunction());
+
+  auto const vessel_read = Vessel::ReadFromMessage(
+      message, &celestial_, &ephemeris_, /*deletion_callback=*/nullptr);
+}
+
 }  // namespace ksp_plugin
 }  // namespace principia
