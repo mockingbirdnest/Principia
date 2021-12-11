@@ -912,9 +912,21 @@ TEST_F(VesselTest, Reanimator) {
   serialization::Vessel message;
   vessel_.WriteToMessage(&message,
                          serialization_index_for_pile_up.AsStdFunction());
+  LOG(ERROR) << message.ByteSizeLong();
 
   auto const vessel_read = Vessel::ReadFromMessage(
       message, &celestial_, &ephemeris_, /*deletion_callback=*/nullptr);
+
+  // Reanimate the vessel that we just read.
+  LOG(ERROR) << vessel_read->trajectory().t_min();
+  vessel_read->RequestReanimation(t0_);
+
+  // Wait for reanimation to happen.
+  LOG(ERROR) << "Waiting until Herbert West is done...";
+  vessel_read->WaitForReanimation(t0_);
+  LOG(ERROR) << "Herbert West is finally done.";
+
+  //TODO(phl): Check that everything is good.
 }
 
 }  // namespace ksp_plugin

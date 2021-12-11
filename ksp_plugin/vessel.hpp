@@ -157,6 +157,14 @@ class Vessel {
   // psychohistory.  Clears the parts' history and psychohistory.
   virtual void AdvanceTime();
 
+  // Asks the reanimator thread to asynchronously reconstruct the past so that
+  // the |t_min()| of the vessel ultimately ends up at or before
+  // |desired_t_min|.
+  void RequestReanimation(Instant const& desired_t_min);
+
+  // Blocks until the |t_min()| of the vessel is at or before |desired_t_min|.
+  void WaitForReanimation(Instant const& desired_t_min);
+
   // Creates a |flight_plan_| at the end of history using the given parameters.
   virtual void CreateFlightPlan(
       Instant const& final_time,
@@ -297,6 +305,9 @@ class Vessel {
   DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters const
       downsampling_parameters_;
 
+  // The techniques and terminology follow [Lov22].
+  RecurringThread<Instant> reanimator_;
+
   // TODO(phl): Verify locking.
   mutable absl::Mutex lock_;
 
@@ -317,6 +328,9 @@ class Vessel {
   // This member must only be accessed by the |reanimator_| thread, or before
   // the |reanimator_| thread is started.
   Instant oldest_reanimated_checkpoint_ = InfinitePast;
+
+  // Parameter passed to the last call to |RequestReanimation|, if any.
+  std::optional<Instant> last_desired_t_min_ GUARDED_BY(lock_);
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
   // The |history_| is empty until the first call to CreateHistoryIfNeeded.

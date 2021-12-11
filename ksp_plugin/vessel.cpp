@@ -72,6 +72,11 @@ Vessel::Vessel(
       parent_(parent),
       ephemeris_(ephemeris),
       downsampling_parameters_(downsampling_parameters),
+      reanimator_(
+          [this](Instant const& desired_t_min) {
+            return Reanimate(desired_t_min);
+          },
+          20ms),  // 50 Hz.
       prognosticator_(
           [this](PrognosticatorParameters const& parameters) {
             return FlowPrognostication(parameters);
@@ -89,6 +94,7 @@ Vessel::~Vessel() {
   LOG(INFO) << "Destroying vessel " << ShortDebugString();
   // Ask the prognosticator to shut down.  This may take a while.
   StopPrognosticator();
+  reanimator_.Stop();
 }
 
 GUID const& Vessel::guid() const {
@@ -187,6 +193,7 @@ void Vessel::DetectCollapsibilityChange() {
       // to reconstruct it, so we must serialize it in a checkpoint.  Note that
       // the last point of the backstory specifies the initial conditions of the
       // next (collapsible) segment.
+      LOG(ERROR) << "WriteToCheckpoint "<<backstory_->back().time;
       checkpointer_->WriteToCheckpoint(backstory_->back().time);
     }
     auto psychohistory = trajectory_.DetachSegments(psychohistory_);
@@ -318,6 +325,46 @@ void Vessel::AdvanceTime() {
   for (auto const& [_, part] : parts_) {
     part->ClearHistory();
   }
+}
+
+void Vessel::RequestReanimation(Instant const& desired_t_min) {
+  reanimator_.Start();
+#if 0
+
+  bool must_restart;
+  {
+    absl::MutexLock l(&lock_);
+
+    // If the reanimator is asked to do significantly less work (as defined by
+    // the time between checkpoints) than it is currently doing, interrupt it.
+    // Note that this is fundamentally racy: for instance the reanimator may not
+    // have picked the last input given by Put.  But it helps if the user was
+    // doing a very long reanimation and wants to shorten it.
+    must_restart = last_desired_t_min_.has_value() &&
+                   last_desired_t_min_.value() + max_time_between_checkpoints <
+                       desired_t_min;
+    LOG_IF(WARNING, must_restart)
+        << "Restarting reanimator because desired t_min went from "
+        << last_desired_t_min_.value() << " to " << desired_t_min;
+    last_desired_t_min_ = desired_t_min;
+  }
+
+  // Don't hold the lock while restarting, the reanimator needs it.
+  if (must_restart) {
+    reanimator_.Restart();
+  }
+#endif
+  reanimator_.Put(desired_t_min);
+}
+
+void Vessel::WaitForReanimation(Instant const& desired_t_min) {
+  auto desired_t_min_reached = [this, desired_t_min]() {
+    lock_.AssertReaderHeld();
+    return trajectory_.t_min() <= desired_t_min;
+  };
+
+  absl::ReaderMutexLock l(&lock_);
+  lock_.Await(absl::Condition(&desired_t_min_reached));
 }
 
 void Vessel::CreateFlightPlan(
@@ -614,6 +661,9 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     vessel->flight_plan_ = FlightPlan::ReadFromMessage(message.flight_plan(),
                                                        ephemeris);
   }
+  //TODO(phl):Wrong
+  vessel->oldest_reanimated_checkpoint_ = vessel->trajectory().t_min();
+
   return vessel;
 }
 
@@ -641,6 +691,7 @@ Vessel::Vessel()
       prediction_adaptive_step_parameters_(DefaultPredictionParameters()),
       parent_(testing_utilities::make_not_null<Celestial const*>()),
       ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
+      reanimator_(/*action=*/nullptr, 0ms),
       checkpointer_(make_not_null_unique<Checkpointer<serialization::Vessel>>(
           /*reader=*/nullptr,
           /*writer=*/nullptr)),
@@ -681,6 +732,7 @@ absl::Status Vessel::Reanimate(Instant const desired_t_min) {
   // there for some of the subtle points.
   static_assert(base::is_serializable_v<Barycentric>);
   std::set<Instant> checkpoints;
+  LOG(ERROR) << "Reanimating until "<<desired_t_min;
 
   {
     absl::ReaderMutexLock l(&lock_);
@@ -695,8 +747,10 @@ absl::Status Vessel::Reanimate(Instant const desired_t_min) {
     checkpoints.erase(oldest_reanimated_checkpoint_);
   }
 
+  LOG(ERROR)<<checkpoints.size();
   for (auto it = checkpoints.crbegin(); it != checkpoints.crend(); ++it) {
     Instant const& checkpoint = *it;
+    LOG(ERROR) << "Checkpoint "<<checkpoint;
     RETURN_IF_ERROR(checkpointer_->ReadFromCheckpointAt(
         checkpoint,
         [this, t_initial = checkpoint](
