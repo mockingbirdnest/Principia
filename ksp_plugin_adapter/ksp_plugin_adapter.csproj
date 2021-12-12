@@ -191,6 +191,7 @@
     <None Include="localization\fr-fr.cfg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="localization\ru-ru.cfg" />
     <None Include="localization\zh-cn.cfg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
