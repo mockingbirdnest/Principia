@@ -758,6 +758,7 @@ absl::Status Vessel::Reanimate(Instant const desired_t_min) {
           return ReanimateOneCheckpoint(message, t_initial);
         }));
   }
+  LOG(ERROR) << "Done";
   return absl::OkStatus();
 }
 
@@ -794,6 +795,7 @@ absl::Status Vessel::ReanimateOneCheckpoint(
                               Ephemeris<Barycentric>::NoIntrinsicAccelerations,
                               collapsible_fixed_step_parameters);
   auto const status = ephemeris_->FlowWithFixedStep(t_final, *fixed_instance);
+  LOG(ERROR)<<status;
   RETURN_IF_ERROR(status);
 
   // Merge the reanimated trajectory into the vessel trajectory and set the
