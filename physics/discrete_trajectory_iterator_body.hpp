@@ -182,7 +182,7 @@ DiscreteTrajectoryIterator<Frame>::operator-(
     CHECK(!is_at_end(it.point_));
     auto& point = iterator(it.point_);
     auto const& segment = it.segment_;
-    if (segment->timeline_size() >= 2 &&
+    if (segment->timeline_size() > 2 &&
         std::prev(segment->timeline_end())->time <= left_time &&
         point == std::next(segment->timeline_begin())) {
       point = std::prev(segment->timeline_end());
