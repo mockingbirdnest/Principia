@@ -328,11 +328,11 @@ void Vessel::CreateFlightPlan(
     Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
         flight_plan_generalized_adaptive_step_parameters) {
   absl::ReaderMutexLock l(&lock_);
-  auto const history_back = history_->back();
+  auto const flight_plan_start = backstory_->back();
   flight_plan_ = std::make_unique<FlightPlan>(
       initial_mass,
-      /*initial_time=*/history_back.time,
-      /*initial_degrees_of_freedom=*/history_back.degrees_of_freedom,
+      /*initial_time=*/flight_plan_start.time,
+      /*initial_degrees_of_freedom=*/flight_plan_start.degrees_of_freedom,
       final_time,
       ephemeris_,
       flight_plan_adaptive_step_parameters,
