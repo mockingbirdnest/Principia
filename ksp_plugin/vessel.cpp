@@ -226,7 +226,8 @@ void Vessel::CreateHistoryIfNeeded(Instant const& t) {
 
 void Vessel::DisableDownsampling() {
   absl::ReaderMutexLock l(&lock_);
-  history_->ClearDownsampling();
+  // TODO(phl): Clear downsampling_parameters_.
+  backstory_->ClearDownsampling();
 }
 
 not_null<Part*> Vessel::part(PartId const id) const {
@@ -375,11 +376,11 @@ void Vessel::CreateFlightPlan(
     Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
         flight_plan_generalized_adaptive_step_parameters) {
   absl::ReaderMutexLock l(&lock_);
-  auto const history_back = history_->back();
+  auto const flight_plan_start = backstory_->back();
   flight_plan_ = std::make_unique<FlightPlan>(
       initial_mass,
-      /*initial_time=*/history_back.time,
-      /*initial_degrees_of_freedom=*/history_back.degrees_of_freedom,
+      /*initial_time=*/flight_plan_start.time,
+      /*initial_degrees_of_freedom=*/flight_plan_start.degrees_of_freedom,
       final_time,
       ephemeris_,
       flight_plan_adaptive_step_parameters,
@@ -393,7 +394,7 @@ void Vessel::DeleteFlightPlan() {
 absl::Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
   absl::ReaderMutexLock l(&lock_);
   CHECK(has_flight_plan());
-  Instant const new_initial_time = history_->back().time;
+  Instant const new_initial_time = backstory_->back().time;
   int first_manœuvre_kept = 0;
   for (int i = 0; i < flight_plan_->number_of_manœuvres(); ++i) {
     auto const& manœuvre = flight_plan_->GetManœuvre(i);
