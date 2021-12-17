@@ -219,7 +219,8 @@ void Vessel::CreateHistoryIfNeeded(Instant const& t) {
 
 void Vessel::DisableDownsampling() {
   absl::ReaderMutexLock l(&lock_);
-  history_->ClearDownsampling();
+  // TODO(phl): Clear downsampling_parameters_.
+  backstory_->ClearDownsampling();
 }
 
 not_null<Part*> Vessel::part(PartId const id) const {
@@ -346,7 +347,7 @@ void Vessel::DeleteFlightPlan() {
 absl::Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
   absl::ReaderMutexLock l(&lock_);
   CHECK(has_flight_plan());
-  Instant const new_initial_time = history_->back().time;
+  Instant const new_initial_time = backstory_->back().time;
   int first_manœuvre_kept = 0;
   for (int i = 0; i < flight_plan_->number_of_manœuvres(); ++i) {
     auto const& manœuvre = flight_plan_->GetManœuvre(i);
