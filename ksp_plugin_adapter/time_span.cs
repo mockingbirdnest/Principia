@@ -123,10 +123,11 @@ class PrincipiaTimeSpan {
                          out double s)) {
       return false;
     }
-    time_span = new PrincipiaTimeSpan(d * date_time_formatter.Day +
-                                      h * date_time_formatter.Hour +
-                                      min * date_time_formatter.Minute +
-                                      s);
+    time_span = new PrincipiaTimeSpan(
+        Convert.ToDouble(d) * date_time_formatter.Day +
+        Convert.ToDouble(h) * date_time_formatter.Hour +
+        Convert.ToDouble(min) * date_time_formatter.Minute +
+        s);
     return true;
   }
 
