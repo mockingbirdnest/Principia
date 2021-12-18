@@ -17,6 +17,8 @@
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/integrators.hpp"
+#include "ksp_plugin/plugin.hpp"
+#include "ksp_plugin_test/plugin_io.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/massive_body.hpp"
@@ -47,6 +49,7 @@ using geometry::Position;
 using geometry::R3x3Matrix;
 using geometry::Vector;
 using geometry::Velocity;
+using interface::ReadPluginFromFile;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::MassiveBody;
@@ -781,152 +784,32 @@ TEST_F(VesselTest, TailSerialization) {
 #endif
 
 TEST_F(VesselTest, Reanimator) {
-  // Must be large enough that truncation happens.
-  // TODO(phl): Don't hard-wire numbers.
-  constexpr std::int64_t number_of_points = 100'000;
-  constexpr std::int64_t number_of_checkpoints = 100;
+  not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
+      R"(C:\Users\phl.mantegna\Desktop\entwurf.proto.b64)",
+      /*compressor=*/"gipfeli",
+      /*decoder=*/"base64");
 
-  MockFunction<int(not_null<PileUp const*>)>
-      serialization_index_for_pile_up;
-  EXPECT_CALL(serialization_index_for_pile_up, Call(_))
-      .Times(2)
-      .WillRepeatedly(Return(0));
-
-  EXPECT_CALL(ephemeris_, t_max())
-      .WillRepeatedly(Return(t0_ + 30 * Second));
-  EXPECT_CALL(ephemeris_,
-              Prolong(_))
-      .WillRepeatedly(Return(absl::OkStatus()));
-  EXPECT_CALL(ephemeris_,
-              FlowWithAdaptiveStep(_, _, InfiniteFuture, _, _))
-      .Times(AnyNumber());
-  EXPECT_CALL(ephemeris_,
-              FlowWithAdaptiveStep(_, _, t0_ + 30 * Second, _, _))
-      .Times(AnyNumber());
-  vessel_.CreateHistoryIfNeeded(t0_);
-
-  auto const pile_up =
-      std::make_shared<PileUp>(/*parts=*/std::list<not_null<Part*>>{p1_, p2_},
-                                Instant{},
-                                DefaultPsychohistoryParameters(),
-                                DefaultHistoryParameters(),
-                                &ephemeris_,
-                                /*deletion_callback=*/nullptr);
-  p1_->set_containing_pile_up(pile_up);
-  p2_->set_containing_pile_up(pile_up);
-
-  for (int i = 0; i < number_of_checkpoints; ++i) {
-    // Free-fall trajectory.
-    p1_->clear_intrinsic_force();
-    p2_->clear_intrinsic_force();
-    AppendTrajectoryTimeline<Barycentric>(
-        NewLinearTrajectoryTimeline<Barycentric>(
-            p1_dof_,
-            /*Δt=*/1 * Second,
-            /*t1=*/t0_ + 100 * i * Second,
-            /*t2=*/t0_ + (100 * i + 30) * Second),
-        [this](Instant const& time,
-               DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-          p1_->AppendToHistory(time, degrees_of_freedom);
-        });
-    AppendTrajectoryTimeline<Barycentric>(
-        NewLinearTrajectoryTimeline<Barycentric>(
-            p2_dof_,
-            /*Δt=*/1 * Second,
-            /*t1=*/t0_ + 100 * i * Second,
-            /*t2=*/t0_ + (100 * i + 30) * Second),
-        [this](Instant const& time,
-               DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-          p2_->AppendToHistory(time, degrees_of_freedom);
-        });
-
-    vessel_.DetectCollapsibilityChange();
-    vessel_.AdvanceTime();
-
-    // Apply a force to either part or both.
-    auto const p1_force =
-        i % 2 == 1
-            ? Vector<Force, Barycentric>({i * Newton, 0 * Newton, 0 * Newton})
-            : Vector<Force, Barycentric>();
-    auto const p2_force =
-        i % 3 == 1
-            ? Vector<Force, Barycentric>({0 * Newton, i * Newton, 0 * Newton})
-            : Vector<Force, Barycentric>();
-    p1_->apply_intrinsic_force(p1_force);
-    p2_->apply_intrinsic_force(p2_force);
-    AppendTrajectoryTimeline<Barycentric>(
-        NewAcceleratedTrajectoryTimeline(p1_dof_,
-                                         /*acceleration=*/p1_force / mass1_,
-                                         /*Δt=*/1 * Second,
-                                         /*t1=*/t0_ + (100 * i + 30) * Second,
-                                         /*t2=*/t0_ + 100 * (i + 1) * Second),
-        [this](Instant const& time,
-               DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-          p1_->AppendToHistory(time, degrees_of_freedom);
-        });
-    AppendTrajectoryTimeline<Barycentric>(
-        NewAcceleratedTrajectoryTimeline<Barycentric>(
-            p2_dof_,
-            /*acceleration=*/p2_force / mass2_,
-            /*Δt=*/1 * Second,
-            /*t1=*/t0_ + (100 * i + 30) * Second,
-            /*t2=*/t0_ + 100 * (i + 1) * Second),
-        [this](Instant const& time,
-               DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-          p2_->AppendToHistory(time, degrees_of_freedom);
-        });
-
-    vessel_.DetectCollapsibilityChange();
-    vessel_.AdvanceTime();
+  auto const vessel = plugin->GetVessel("2d8d4b86-c80a-4aca-8886-8b9cff0953aa");
+  EXPECT_EQ("Entwurf", vessel->name());
+  // TODO(phl): Probably incorrect, probably confused by empty segments.
+  EXPECT_EQ(11'958, vessel->trajectory().size());
+  EXPECT_EQ(t0_ + 21'047'221.7658279724 * Second,
+            vessel->trajectory().front().time);
+  EXPECT_EQ(t0_ + 22'848'117.5886942074 * Second,
+            vessel->psychohistory()->back().time);
+  for (auto const& segment : vessel->trajectory().segments()) {
+    LOG(ERROR) << segment.size();
+    if (!segment.empty()) {
+      LOG(ERROR) << segment.front().time << " "<<segment.back().time;
+    }
   }
-
-  // Remove the forces.
-  p1_->clear_intrinsic_force();
-  p2_->clear_intrinsic_force();
-  AppendTrajectoryTimeline<Barycentric>(
-      NewLinearTrajectoryTimeline<Barycentric>(
-          p1_dof_,
-          /*Δt=*/1 * Second,
-          /*t1=*/t0_ + 100 * number_of_checkpoints * Second,
-          /*t2=*/t0_ +
-              (100 * number_of_checkpoints + number_of_points) * Second),
-      [this](Instant const& time,
-             DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-        p1_->AppendToHistory(time, degrees_of_freedom);
-      });
-  AppendTrajectoryTimeline<Barycentric>(
-      NewLinearTrajectoryTimeline<Barycentric>(
-          p2_dof_,
-          /*Δt=*/1 * Second,
-          /*t1=*/t0_ + 100 * number_of_checkpoints * Second,
-          /*t2=*/t0_ +
-              (100 * number_of_checkpoints + number_of_points) * Second),
-      [this](Instant const& time,
-             DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-        p2_->AppendToHistory(time, degrees_of_freedom);
-      });
-
-  vessel_.DetectCollapsibilityChange();
-  vessel_.AdvanceTime();
-
-  serialization::Vessel message;
-  vessel_.WriteToMessage(&message,
-                         serialization_index_for_pile_up.AsStdFunction());
-  LOG(ERROR) << message.ByteSizeLong();
-
-  auto const vessel_read = Vessel::ReadFromMessage(
-      message, &celestial_, &ephemeris_, /*deletion_callback=*/nullptr);
-
-  // Reanimate the vessel that we just read.
-  LOG(ERROR) << vessel_read->trajectory().t_min();
-  vessel_read->RequestReanimation(t0_);
 
   // Wait for reanimation to happen.
   LOG(ERROR) << "Waiting until Herbert West is done...";
-  vessel_read->WaitForReanimation(t0_);
+  vessel->WaitForReanimation(t0_);
   LOG(ERROR) << "Herbert West is finally done.";
 
-  //TODO(phl): Check that everything is good.
+  // TODO(phl): Check that everything is good.
 }
 
 }  // namespace ksp_plugin
