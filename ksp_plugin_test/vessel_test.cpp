@@ -791,8 +791,7 @@ TEST_F(VesselTest, Reanimator) {
 
   auto const vessel = plugin->GetVessel("2d8d4b86-c80a-4aca-8886-8b9cff0953aa");
   EXPECT_EQ("Entwurf", vessel->name());
-  // TODO(phl): Probably incorrect, probably confused by empty segments.
-  EXPECT_EQ(11'958, vessel->trajectory().size());
+  EXPECT_EQ(12'001, vessel->trajectory().size());
   EXPECT_EQ(t0_ + 21'047'221.7658279724 * Second,
             vessel->trajectory().front().time);
   EXPECT_EQ(t0_ + 22'848'117.5886942074 * Second,
