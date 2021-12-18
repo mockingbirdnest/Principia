@@ -768,7 +768,8 @@ absl::Status Vessel::ReanimateOneCheckpoint(
     Instant const& t_initial) {
   LOG(ERROR) << "Restoring to checkpoint at " << t_initial;
 
-  // Restore the non-collapsible segment that was fully saved.
+  // Restore the non-collapsible segment that was fully saved.  It was the
+  // backstory when the checkpoint was taken.
   auto reanimated_trajectory =
       DiscreteTrajectory<Barycentric>::ReadFromMessage(
           message.non_collapsible_segment(),
@@ -787,14 +788,21 @@ absl::Status Vessel::ReanimateOneCheckpoint(
   Instant t_final;
   {
     absl::ReaderMutexLock l(&lock_);
-    t_final = history_->begin()->time;
+    t_final = trajectory_.begin()->time;
   }
+  CHECK_LE(t_initial, t_final);
 
   auto const collapsible_segment = reanimated_trajectory.NewSegment();
+
+  // Make sure that the ephemeris covers the times that we are going to
+  // reanimate.
+  ephemeris_->RequestReanimation(t_initial);
+  ephemeris_->WaitForReanimation(t_initial);
   auto fixed_instance =
       ephemeris_->NewInstance({&reanimated_trajectory},
                               Ephemeris<Barycentric>::NoIntrinsicAccelerations,
                               collapsible_fixed_step_parameters);
+
   auto const status = ephemeris_->FlowWithFixedStep(t_final, *fixed_instance);
   LOG(ERROR)<<status;
   RETURN_IF_ERROR(status);

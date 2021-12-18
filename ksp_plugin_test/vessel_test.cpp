@@ -797,12 +797,17 @@ TEST_F(VesselTest, Reanimator) {
             vessel->trajectory().front().time);
   EXPECT_EQ(t0_ + 22'848'117.5886942074 * Second,
             vessel->psychohistory()->back().time);
+#if 0
   for (auto const& segment : vessel->trajectory().segments()) {
     LOG(ERROR) << segment.size();
     if (!segment.empty()) {
       LOG(ERROR) << segment.front().time << " "<<segment.back().time;
     }
   }
+#endif
+
+  // Reanimate the vessel that we just read.
+  vessel->RequestReanimation(t0_);
 
   // Wait for reanimation to happen.
   LOG(ERROR) << "Waiting until Herbert West is done...";
