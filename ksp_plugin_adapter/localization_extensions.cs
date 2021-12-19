@@ -142,9 +142,10 @@ internal static class L10N {
     // Nested <<>> rules don’t work prior to Lingoona 1.7.0 (2021-07-07).
     // We need them for some of the more advanced grammatical constructs.
     // We manually replace <<X:n>> placeholders and leave the result to
-    // Lingoona, which allows placeholders inside <<>> rules, and is enough for
-    // our purposes.  <<X:n>> placeholders are substituted untransformed, so the
-    // behaviour is consistent with what Lingoona 1.7.0 or later would do.
+    // Lingoona. This allows for some substitution inside <<>> rules, and is
+    // enough for our purposes.  <<X:n>> placeholders are substituted
+    // untransformed, so the behaviour is consistent with what Lingoona 1.7.0 or
+    // later would do.
     return lru_cache_.Get(
         name, args,
         () => {
