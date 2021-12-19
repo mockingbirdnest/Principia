@@ -62,6 +62,7 @@ using quantities::MomentOfInertia;
 using quantities::Pow;
 using quantities::Torque;
 using quantities::si::Degree;
+using quantities::si::Kilo;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Milli;
@@ -785,7 +786,6 @@ TEST_F(VesselTest, TailSerialization) {
   EXPECT_EQ(t0_ + 4'553 * Second, backstory->front().time);
   EXPECT_EQ(t0_ + (number_of_points - 1) * Second, backstory->back().time);
 }
-#endif
 
 TEST_F(VesselTest, Reanimator) {
   google::LogToStderr();
@@ -813,25 +813,22 @@ TEST_F(VesselTest, Reanimator) {
   EXPECT_EQ(t0_ + 16.0799999999997461 * Second,
             vessel->trajectory().front().time);
 
+  // Check that the resulting trajectory is reasonably continuous.
   std::optional<Instant> last_t;
   std::optional<DegreesOfFreedom<Barycentric>> last_degrees_of_freedom;
   for (auto const& [t, degrees_of_freedom] : vessel->trajectory()) {
     if (last_t.has_value()) {
-      //EXPECT_THAT(t - last_t.value(), AllOf(Ge(1 * Milli(Second)), Le(160 * Second)));
+      EXPECT_THAT(t - last_t.value(),
+                  AllOf(Ge(19.9 * Milli(Second)), Le(200 * Second)));
+      EXPECT_THAT((degrees_of_freedom.position() -
+                   last_degrees_of_freedom->position()).Norm(),
+                  AllOf(Ge(138 * Metre), Le(1390 * Kilo(Metre))));
     }
     last_t = t;
+    last_degrees_of_freedom = degrees_of_freedom;
   }
-#if 1
-  for (auto const& segment : vessel->trajectory().segments()) {
-    LOG(ERROR) << segment.size();
-    if (!segment.empty()) {
-      LOG(ERROR) << segment.front().time << " "<<segment.back().time;
-    }
-  }
-#endif
-
-  // TODO(phl): Check that everything is good.
 }
+#endif
 
 }  // namespace ksp_plugin
 }  // namespace principia
