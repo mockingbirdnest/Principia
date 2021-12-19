@@ -717,7 +717,7 @@ Checkpointer<serialization::Vessel>::Writer Vessel::MakeCheckpointerWriter() {
     trajectory_.WriteToMessage(message->mutable_non_collapsible_segment(),
                                backstory_->begin(),
                                backstory_->end(),
-                               /*tracked=*/{},
+                               /*tracked=*/{backstory_},
                                /*exact=*/{});
 
     // Here the containing pile-up is the one for the collapsible segment.
@@ -773,10 +773,11 @@ absl::Status Vessel::ReanimateOneCheckpoint(
 
   // Restore the non-collapsible segment that was fully saved.  It was the
   // backstory when the checkpoint was taken.
+  DiscreteTrajectorySegmentIterator<Barycentric> reanimated_backstory;
   auto reanimated_trajectory =
       DiscreteTrajectory<Barycentric>::ReadFromMessage(
           message.non_collapsible_segment(),
-          /*tracked=*/{});
+          /*tracked=*/{&reanimated_backstory});
   auto const collapsible_fixed_step_parameters =
       Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
           message.collapsible_fixed_step_parameters());
@@ -784,7 +785,7 @@ absl::Status Vessel::ReanimateOneCheckpoint(
   std::int64_t const reanimated_trajectory_size = reanimated_trajectory.size();
 
   // Construct a new collapsible segment at the end of the non-collapsible
-  // segment and integrate it until the start time of the history.  We cannot
+  // backstory and integrate it until the start time of the history.  We cannot
   // hold the lock during the integration, so this code would race if there were
   // two threads changing the start of the |trajectory_| concurrently.  That
   // doesn't happen because there is a single reanimator.
@@ -796,6 +797,8 @@ absl::Status Vessel::ReanimateOneCheckpoint(
   }
   CHECK_LE(t_initial, t_final);
 
+  ++reanimated_backstory;
+  reanimated_trajectory.DeleteSegments(reanimated_backstory);
   auto const collapsible_segment = reanimated_trajectory.NewSegment();
 
   // Make sure that the ephemeris covers the times that we are going to
