@@ -391,6 +391,8 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
   }
 }
 
+#define PRINCIPIA_MERGE_STRICT_CONSISTENCY 0
+
 template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::Merge(
     DiscreteTrajectorySegment<Frame> segment) {
@@ -404,6 +406,7 @@ void DiscreteTrajectorySegment<Frame>::Merge(
                  std::pair{std::prev(timeline_.cend()),
                            segment.timeline_.cbegin()};
              this_crbegin->time <= segment_cbegin->time) {
+#if PRINCIPIA_MERGE_STRICT_CONSISTENCY
     CHECK(this_crbegin->time < segment_cbegin->time ||
           this_crbegin->degrees_of_freedom ==
               segment_cbegin->degrees_of_freedom)
@@ -413,7 +416,8 @@ void DiscreteTrajectorySegment<Frame>::Merge(
         << ", " << std::prev(timeline_.cend())->time
         << "], degrees_of_freedom "
         << this_crbegin->degrees_of_freedom << " and "
-        << segment_cbegin->degrees_of_freedom << "don't match";
+        << segment_cbegin->degrees_of_freedom << " don't match";
+#endif
     downsampling_parameters_ = segment.downsampling_parameters_;
     timeline_.merge(segment.timeline_);
     number_of_dense_points_ = segment.number_of_dense_points_;
@@ -421,6 +425,7 @@ void DiscreteTrajectorySegment<Frame>::Merge(
                  std::pair{std::prev(segment.timeline_.cend()),
                            timeline_.cbegin()};
              segment_crbegin->time <= this_cbegin->time) {
+#if PRINCIPIA_MERGE_STRICT_CONSISTENCY
     CHECK(segment_crbegin->time < this_cbegin->time ||
           segment_crbegin->degrees_of_freedom ==
               this_cbegin->degrees_of_freedom)
@@ -430,7 +435,8 @@ void DiscreteTrajectorySegment<Frame>::Merge(
         << ", " << std::prev(timeline_.cend())->time
         << "], degrees_of_freedom "
         << segment_crbegin->degrees_of_freedom << " and "
-        << this_cbegin->degrees_of_freedom << "don't match";
+        << this_cbegin->degrees_of_freedom << " don't match";
+#endif
     timeline_.merge(segment.timeline_);
   } else {
     LOG(FATAL) << "Overlapping merge: [" << segment.timeline_.cbegin()->time
@@ -439,6 +445,8 @@ void DiscreteTrajectorySegment<Frame>::Merge(
                << ", " << std::prev(timeline_.cend())->time << "]";
   }
 }
+
+#undef PRINCIPIA_MERGE_STRICT_CONSISTENCY
 
 template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::SetStartOfDenseTimeline(
