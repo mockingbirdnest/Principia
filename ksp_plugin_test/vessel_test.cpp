@@ -64,6 +64,7 @@ using quantities::Torque;
 using quantities::si::Degree;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
+using quantities::si::Milli;
 using quantities::si::Newton;
 using quantities::si::Radian;
 using quantities::si::Second;
@@ -74,9 +75,12 @@ using testing_utilities::AppendTrajectoryTimeline;
 using testing_utilities::NewAcceleratedTrajectoryTimeline;
 using testing_utilities::NewCircularTrajectoryTimeline;
 using testing_utilities::NewLinearTrajectoryTimeline;
+using ::testing::AllOf;
 using ::testing::AnyNumber;
 using ::testing::DoAll;
 using ::testing::ElementsAre;
+using ::testing::Ge;
+using ::testing::Le;
 using ::testing::MockFunction;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -797,14 +801,6 @@ TEST_F(VesselTest, Reanimator) {
             vessel->trajectory().front().time);
   EXPECT_EQ(t0_ + 22'848'117.5886942074 * Second,
             vessel->psychohistory()->back().time);
-#if 0
-  for (auto const& segment : vessel->trajectory().segments()) {
-    LOG(ERROR) << segment.size();
-    if (!segment.empty()) {
-      LOG(ERROR) << segment.front().time << " "<<segment.back().time;
-    }
-  }
-#endif
 
   // Reanimate the vessel that we just read.
   vessel->RequestReanimation(t0_);
@@ -813,6 +809,26 @@ TEST_F(VesselTest, Reanimator) {
   LOG(ERROR) << "Waiting until Herbert West is done...";
   vessel->WaitForReanimation(t0_);
   LOG(ERROR) << "Herbert West is finally done.";
+
+  EXPECT_EQ(t0_ + 16.0799999999997461 * Second,
+            vessel->trajectory().front().time);
+
+  std::optional<Instant> last_t;
+  std::optional<DegreesOfFreedom<Barycentric>> last_degrees_of_freedom;
+  for (auto const& [t, degrees_of_freedom] : vessel->trajectory()) {
+    if (last_t.has_value()) {
+      //EXPECT_THAT(t - last_t.value(), AllOf(Ge(1 * Milli(Second)), Le(160 * Second)));
+    }
+    last_t = t;
+  }
+#if 1
+  for (auto const& segment : vessel->trajectory().segments()) {
+    LOG(ERROR) << segment.size();
+    if (!segment.empty()) {
+      LOG(ERROR) << segment.front().time << " "<<segment.back().time;
+    }
+  }
+#endif
 
   // TODO(phl): Check that everything is good.
 }
