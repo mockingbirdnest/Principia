@@ -784,6 +784,7 @@ TEST_F(VesselTest, TailSerialization) {
 #endif
 
 TEST_F(VesselTest, Reanimator) {
+  google::LogToStderr();
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
       R"(C:\Users\phl.mantegna\Desktop\entwurf.proto.b64)",
       /*compressor=*/"gipfeli",

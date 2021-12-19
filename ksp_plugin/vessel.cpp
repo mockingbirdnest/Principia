@@ -193,7 +193,8 @@ void Vessel::DetectCollapsibilityChange() {
       // to reconstruct it, so we must serialize it in a checkpoint.  Note that
       // the last point of the backstory specifies the initial conditions of the
       // next (collapsible) segment.
-      LOG(ERROR) << "WriteToCheckpoint "<<backstory_->back().time;
+      LOG(ERROR) << "Writing " << ShortDebugString()
+                 << " to checkpoint at: " << backstory_->back().time;
       checkpointer_->WriteToCheckpoint(backstory_->back().time);
     }
     auto psychohistory = trajectory_.DetachSegments(psychohistory_);
@@ -733,7 +734,7 @@ absl::Status Vessel::Reanimate(Instant const desired_t_min) {
   // there for some of the subtle points.
   static_assert(base::is_serializable_v<Barycentric>);
   std::set<Instant> checkpoints;
-  LOG(ERROR) << "Reanimating until "<<desired_t_min;
+  LOG(INFO) << "Reanimating until " << desired_t_min;
 
   {
     absl::ReaderMutexLock l(&lock_);
@@ -748,10 +749,8 @@ absl::Status Vessel::Reanimate(Instant const desired_t_min) {
     checkpoints.erase(oldest_reanimated_checkpoint_);
   }
 
-  LOG(ERROR)<<checkpoints.size();
   for (auto it = checkpoints.crbegin(); it != checkpoints.crend(); ++it) {
     Instant const& checkpoint = *it;
-    LOG(ERROR) << "Checkpoint "<<checkpoint;
     RETURN_IF_ERROR(checkpointer_->ReadFromCheckpointAt(
         checkpoint,
         [this, t_initial = checkpoint](
@@ -759,14 +758,13 @@ absl::Status Vessel::Reanimate(Instant const desired_t_min) {
           return ReanimateOneCheckpoint(message, t_initial);
         }));
   }
-  LOG(ERROR) << "Done";
   return absl::OkStatus();
 }
 
 absl::Status Vessel::ReanimateOneCheckpoint(
     serialization::Vessel::Checkpoint const& message,
     Instant const& t_initial) {
-  LOG(ERROR) << "Restoring to checkpoint at " << t_initial;
+  LOG(INFO) << "Restoring to checkpoint at " << t_initial;
 
   // Restore the non-collapsible segment that was fully saved.  It was the
   // backstory when the checkpoint was taken.
@@ -778,11 +776,12 @@ absl::Status Vessel::ReanimateOneCheckpoint(
       Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
           message.collapsible_fixed_step_parameters());
   CHECK(!reanimated_trajectory.empty());
+  std::int64_t const reanimated_trajectory_size = reanimated_trajectory.size();
 
   // Construct a new collapsible segment at the end of the non-collapsible
   // segment and integrate it until the start time of the history.  We cannot
   // hold the lock during the integration, so this code would race if there were
-  // two threads changing the start of the |history_| concurrently.  That
+  // two threads changing the start of the |trajectory_| concurrently.  That
   // doesn't happen because there is a single reanimator.
   CHECK_EQ(t_initial, reanimated_trajectory.back().time);
   Instant t_final;
@@ -804,8 +803,12 @@ absl::Status Vessel::ReanimateOneCheckpoint(
                               collapsible_fixed_step_parameters);
 
   auto const status = ephemeris_->FlowWithFixedStep(t_final, *fixed_instance);
-  LOG(ERROR)<<status;
   RETURN_IF_ERROR(status);
+
+  LOG(INFO) << "Burn from " << reanimated_trajectory.front().time << " to "
+            << t_initial << " (" << reanimated_trajectory_size
+            << " points), coast to " << t_final << " ("
+            << collapsible_segment->size() << " points)";
 
   // Merge the reanimated trajectory into the vessel trajectory and set the
   // |history_| to denote the first nonempty segment.
@@ -813,6 +816,7 @@ absl::Status Vessel::ReanimateOneCheckpoint(
     absl::MutexLock l(&lock_);
     trajectory_.Merge(std::move(reanimated_trajectory));
     oldest_reanimated_checkpoint_ = t_initial;
+    //TODO(phl): This code is horrible.
     for (auto sit = trajectory_.segments().begin();
          sit != trajectory_.segments().end();
          ++sit) {
