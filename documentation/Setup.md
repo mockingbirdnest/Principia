@@ -12,7 +12,7 @@ tool for our own use, so if you use a different edition, just do
 and test the mod.
 
 These instructions use the git Powershell provided by [GitHub for Windows](https://windows.github.com/).
-We assume a working installation of Kerbal Space Program version 1.8.1 is found in `<KSP directory>`.
+We assume a working installation of Kerbal Space Program version 1.12.2 is found in `<KSP directory>`.
 
 The repository is found at https://github.com/mockingbirdnest/Principia.git.
 Pick a directory `<root>` in which you will install Principia and its
@@ -23,7 +23,7 @@ This directory should not contain any of the following subfolders:
 - `Google`.
 
 This project depends upon:
-- the KSP assembly `Assembly-CSharp.dll`, found in `<KSP directory>\KSP_x64_Data\Managed`;
+- the KSP assemblies `Assembly-CSharp.dll` and `Assembly-CSharp-firstpass.dll`, found in `<KSP directory>\KSP_x64_Data\Managed`;
 - the Unity assemblies `UnityEngine.CoreModule.dll`, `UnityEngine.dll`, `UnityEngine.ImageConversionModule.dll`, `UnityEngine.IMGUIMode.dll`, `UnityEngine.InputLegacyModule.dll`, `UnityEngine.PhysicsModule.dll`, `UnityEngine.TextRenderingModule.dll` and `UnityEngine.UI.dll`, found in
   `<KSP directory>\KSP_x64_Data\Managed`;
 - our [fork](https://github.com/mockingbirdnest/glog) of the Google glog
@@ -47,7 +47,7 @@ In `<root>`, run `git clone https://github.com/mockingbirdnest/Principia.git`.
 
 ### KSP and Unity assemblies
 
-In order to build for KSP 1.8.1, copy the corresponding KSP 1.8.1 assemblies to `<root>\KSP Assemblies\1.8.1`
+In order to build for KSP 1.12.2, copy the corresponding KSP 1.12.2 assemblies to `<root>\KSP Assemblies\1.12.2`
 
 ### Building
 

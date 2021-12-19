@@ -139,13 +139,35 @@ internal static class L10N {
   }
 
   public static string CacheFormat(string name, params string[] args) {
-    return lru_cache_.Get(name, args,
-                          () => Localizer.Format(name, args));
+    // Nested <<>> rules don’t work prior to Lingoona 1.7.0 (2021-07-07).
+    // We need them for some of the more advanced grammatical constructs.
+    // We manually replace <<X:n>> placeholders and leave the result to
+    // Lingoona, which allows placeholders inside <<>> rules, and is enough for
+    // our purposes.  <<X:n>> placeholders are substituted untransformed, so the
+    // behaviour is consistent with what Lingoona 1.7.0 or later would do.
+    return lru_cache_.Get(
+        name, args,
+        () => {
+          string template = Localizer.GetStringByTag(name);
+          // KSP substitutes arguments that are themselves localization keys,
+          // e.g., the names of the default vessels.
+          var resolved_args = new List<string>();
+          foreach (var arg in args) {
+            // KSP treats nulls as empty strings here (but not in the overload
+            // that takes objects).
+            resolved_args.Add(
+                arg == null ? "" : (Localizer.Tags.GetValueOrNull(arg) ?? arg));
+          }
+          for (int n = 1; n <= resolved_args.Count; ++n) {
+            template.Replace($"<<X:{n}>>", resolved_args[n - 1]);
+          }
+          return Lingoona.Grammar.useGrammar(template, resolved_args)
+              .Replace("\\n", "\n").Replace("\\\"", "\"").Replace("\\t", "\t");
+        });
   }
 
   public static string CacheFormat(string name, params object[] args) {
-    return lru_cache_.Get(name, args,
-                          () => Localizer.Format(name, args));
+    return CacheFormat(name, (from arg in args select arg.ToString()).ToArray());
   }
 
   private static LRUCache lru_cache_ = new LRUCache();
