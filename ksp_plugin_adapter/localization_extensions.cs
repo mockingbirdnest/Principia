@@ -161,8 +161,11 @@ internal static class L10N {
           for (int n = 1; n <= resolved_args.Count; ++n) {
             template.Replace($"<<X:{n}>>", resolved_args[n - 1]);
           }
+          // These escapes are handled by KSP *after* formatting, contrary to
+          // the \u ones and the ｢｣ for {}, which are handled when the Localizer
+          // loads the tags.
           return Lingoona.Grammar.useGrammar(template, resolved_args)
-              .Replace("\\n", "\n").Replace("\\\"", "\"").Replace("\\t", "\t");
+              .Replace(@"\n", "\n").Replace(@"\""", "\"").Replace(@"\t", "\t");
         });
   }
 
