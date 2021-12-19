@@ -318,23 +318,21 @@ class Vessel {
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
   std::set<PartId> kept_parts_;
 
-  // The vessel trajectory is made of the history (always present) and (most of
-  // the time) the psychohistory and prediction.  The prediction is periodically
-  // recomputed by the prognosticator.
+  // The vessel trajectory is made of a number of history segments ending at the
+  // backstory and (most of the time) the psychohistory and prediction.  The
+  // prediction is periodically recomputed by the prognosticator.
   DiscreteTrajectory<Barycentric> trajectory_;
 
   not_null<std::unique_ptr<Checkpointer<serialization::Vessel>>> checkpointer_;
 
-  // This member must only be accessed by the |reanimator_| thread, or before
-  // the |reanimator_| thread is started.
-  Instant oldest_reanimated_checkpoint_ = InfinitePast;
+  Instant oldest_reanimated_checkpoint_ = InfinitePast GUARDED_BY(lock_);
 
   // Parameter passed to the last call to |RequestReanimation|, if any.
   std::optional<Instant> last_desired_t_min_ GUARDED_BY(lock_);
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
   // The |history_| is empty until the first call to CreateHistoryIfNeeded.
-  // It is made of a series of forks, alternatively non-collapsible and
+  // It is made of a series of segments, alternatively non-collapsible and
   // collapsible.
   DiscreteTrajectorySegmentIterator<Barycentric> history_
       GUARDED_BY(lock_);
