@@ -644,16 +644,45 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
                      &vessel->psychohistory_,
                      &vessel->prediction_});
     vessel->is_collapsible_ = message.is_collapsible();
+
+    //TODO(phl):Horrible patch.
+    serialization::Vessel patched_message = message;
+    bool is_first = true;
+    if (vessel->guid_ == "2d8d4b86-c80a-4aca-8886-8b9cff0953aa") {
+      for (auto& checkpoint : *patched_message.mutable_checkpoint()) {
+        auto& non_collapsible_segment =
+            *checkpoint.mutable_non_collapsible_segment();
+        if (is_first) {
+          is_first = false;
+          non_collapsible_segment.add_tracked_position(0);
+          continue;
+        }
+        for (int i = 0; i < non_collapsible_segment.segment_size(); ++i) {
+          if (non_collapsible_segment
+                  .segment(i)
+                  .zfp()
+                  .timeline_size() == 1) {
+            non_collapsible_segment.add_tracked_position(i + 1);
+            break;
+          }
+        }
+        //LOG(ERROR) << checkpoint.DebugString();
+      }
+    }
+
     vessel->checkpointer_ =
         Checkpointer<serialization::Vessel>::ReadFromMessage(
             vessel->MakeCheckpointerWriter(),
             vessel->MakeCheckpointerReader(),
-            message.checkpoint());
+            patched_message.checkpoint());
   }
 
   // Necessary after Εὔδοξος because the ephemeris has not been prolonged
   // during deserialization.
   ephemeris->Prolong(vessel->prediction_->back().time).IgnoreError();
+
+  LOG(ERROR) << vessel->name_
+             << " "<<vessel->guid_;
 
   if (is_pre_陈景润) {
     vessel->history_->SetDownsamplingUnconditionally(
