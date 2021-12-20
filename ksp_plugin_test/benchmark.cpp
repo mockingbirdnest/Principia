@@ -22,7 +22,6 @@ using base::PullSerializer;
 using base::PushDeserializer;
 using geometry::Instant;
 using interface::principia__AdvanceTime;
-using interface::principia__DeletePlugin;
 using interface::principia__FutureCatchUpVessel;
 using interface::principia__FutureWaitForVesselToCatchUp;
 using interface::principia__IteratorDelete;
