@@ -429,7 +429,9 @@ void DiscreteTrajectory<Frame>::Merge(DiscreteTrajectory<Frame> trajectory) {
 
 template<typename Frame>
 Instant DiscreteTrajectory<Frame>::t_min() const {
-  CHECK(!empty());
+  if (empty()) {
+    return InfiniteFuture;
+  }
   for (auto sit = segments_->begin();; ++sit) {
     if (!sit->empty()) {
       return sit->t_min();
@@ -439,7 +441,9 @@ Instant DiscreteTrajectory<Frame>::t_min() const {
 
 template<typename Frame>
 Instant DiscreteTrajectory<Frame>::t_max() const {
-  CHECK(!empty());
+  if (empty()) {
+    return InfinitePast;
+  }
   return segments_->back().t_max();
 }
 
