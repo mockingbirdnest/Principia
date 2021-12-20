@@ -1,5 +1,8 @@
 #include "ksp_plugin_test/plugin_io.hpp"
 
+#include <string>
+#include <vector>
+
 #include "base/file.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
@@ -52,10 +55,10 @@ not_null<std::unique_ptr<Plugin const>> ReadPluginFromFile(
     bytes_processed += line.size();
   }
   principia__DeserializePlugin("",
-                                &deserializer,
-                                &plugin,
-                                compressor.data(),
-                                encoder.data());
+                               &deserializer,
+                               &plugin,
+                               compressor.data(),
+                               encoder.data());
   LOG(ERROR) << "Deserialization complete";
 
   return std::unique_ptr<Plugin const>(plugin);
