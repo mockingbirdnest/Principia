@@ -10,6 +10,7 @@
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
 #include "ksp_plugin/interface.hpp"
+#include "ksp_plugin_test/plugin_io.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/ksp_plugin.pb.h"
 #include "testing_utilities/serialization.hpp"
@@ -21,12 +22,11 @@ using base::PullSerializer;
 using base::PushDeserializer;
 using geometry::Instant;
 using interface::principia__AdvanceTime;
-using interface::principia__DeletePlugin;
-using interface::principia__DeserializePlugin;
 using interface::principia__FutureCatchUpVessel;
 using interface::principia__FutureWaitForVesselToCatchUp;
 using interface::principia__IteratorDelete;
 using interface::principia__SerializePlugin;
+using interface::ReadPluginFromFile;
 using quantities::Frequency;
 using quantities::Time;
 using quantities::si::Hertz;
@@ -35,32 +35,6 @@ using testing_utilities::ReadFromBinaryFile;
 using testing_utilities::ReadLinesFromHexadecimalFile;
 
 namespace ksp_plugin {
-
-// The caller takes ownership of the result, but it's inconvenient to express
-// with |std::unique_ptr|.
-std::unique_ptr<Plugin const> DeserializePluginFromLines(
-    std::vector<std::string> const& lines,
-    char const* const compressor,
-    char const* const encoder,
-    int& bytes_processed) {
-  PushDeserializer* deserializer = nullptr;
-  Plugin const* plugin = nullptr;
-  int l = 1;
-  for (auto const& line : lines) {
-    principia__DeserializePlugin(line.c_str(),
-                                 &deserializer,
-                                 &plugin,
-                                 compressor,
-                                 encoder);
-    bytes_processed += line.size() >> 1;
-  }
-  principia__DeserializePlugin("",
-                               &deserializer,
-                               &plugin,
-                               compressor,
-                               encoder);
-  return std::unique_ptr<Plugin const>(plugin);
-}
 
 void BM_PluginIntegrationBenchmark(benchmark::State& state) {
   auto const plugin = Plugin::ReadFromMessage(
@@ -100,16 +74,12 @@ void BM_PluginSerializationBenchmark(benchmark::State& state) {
   char const encoder[] = "hexadecimal";
 
   // First, construct a plugin by reading a file.
-  auto const gipfeli_plugin(
-      ReadLinesFromHexadecimalFile(
-          SOLUTION_DIR / "ksp_plugin_test" / "large_plugin.proto.gipfeli.hex"));
-  int bytes_processed = 0;
-  auto const plugin = DeserializePluginFromLines(gipfeli_plugin,
-                                                 compressor,
-                                                 encoder,
-                                                 bytes_processed);
+  auto const plugin = ReadPluginFromFile(
+      SOLUTION_DIR / "ksp_plugin_test" / "large_plugin.proto.gipfeli.hex",
+      compressor,
+      encoder);
 
-  bytes_processed = 0;
+  std::int64_t bytes_processed = 0;
   for (auto _ : state) {
     PullSerializer* serializer = nullptr;
     char const* serialization = nullptr;
@@ -121,7 +91,7 @@ void BM_PluginSerializationBenchmark(benchmark::State& state) {
       if (serialization == nullptr) {
         break;
       }
-      bytes_processed += std::strlen(serialization) >> 1;
+      bytes_processed += std::strlen(serialization);
       delete serialization;
     }
   }
@@ -132,17 +102,15 @@ void BM_PluginSerializationBenchmark(benchmark::State& state) {
 void BM_PluginDeserializationBenchmark(benchmark::State& state) {
   char const compressor[] = "gipfeli";
   char const encoder[] = "hexadecimal";
-  auto const gipfeli_plugin(
-      ReadLinesFromHexadecimalFile(
-          SOLUTION_DIR / "ksp_plugin_test" / "large_plugin.proto.gipfeli.hex"));
 
-  int bytes_processed = 0;
+  std::int64_t bytes_processed = 0;
   for (auto _ : state) {
     PushDeserializer* deserializer = nullptr;
-    auto const plugin = DeserializePluginFromLines(gipfeli_plugin,
-                                                   compressor,
-                                                   encoder,
-                                                   bytes_processed);
+    auto const plugin = ReadPluginFromFile(
+        SOLUTION_DIR / "ksp_plugin_test" / "large_plugin.proto.gipfeli.hex",
+        compressor,
+        encoder,
+        bytes_processed);
     benchmark::DoNotOptimize(plugin);
   }
   state.SetBytesProcessed(bytes_processed);
