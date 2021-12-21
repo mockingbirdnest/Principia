@@ -1,8 +1,10 @@
 # Principia
 
+![⚠️](https://place-hold.it/10/f00000/000000&text=) _If you downloaded Hamilton before December 5, 21:49 UTC, you probably have a buggy version (see [#3226](https://github.com/mockingbirdnest/Principia/issues/3226)). Please download it again. If you have the correct version, the version string in the Principia UI says `2021120408-Hamilton-0-gd0f59ca12318ef52bff4ee83615a2e1851f719a1`. We apologize for the inconvenience._ ![⚠️](https://place-hold.it/10/f00000/000000&text=)
+
 **[Hamilton](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#hamilton), the December version of Principia, is available with performance improvements and bug fixes.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2](https://bit.ly/3G8Bq8v).**
 
-**For the convenience of Chinese users, downloads from 腾讯微云: [Principia Hadamard for 1.8.1—1.12.2](https://share.weiyun.com/IkGKJ1Vs), [Trappist-1 for Principia](https://share.weiyun.com/5wVtWYQ).**
+**For the convenience of Chinese users, downloads from 腾讯微云: [Principia Hamilton for 1.8.1—1.12.2](https://share.weiyun.com/9g8iiSMd), [Trappist-1 for Principia](https://share.weiyun.com/5wVtWYQ).**
 
 Principia is a mod for Kerbal Space Program (KSP) which implements N-body and extended body gravitation.  Instead of being within the sphere of influence of a single celestial body at any point in time, your vessels are influenced by all the celestials.  This makes it possible to implement missions that are more complex and more realistic than in the stock game, especially if used in conjunction with a mod like RealSolarSystem which has real-life celestials.
 

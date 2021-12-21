@@ -391,6 +391,11 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
   }
 }
 
+// Ideally, the segment constructed by reanimation should end with exactly the
+// same time and degrees of freedom as the start of the non-collapsible segment.
+// Unfortunately, we believe that numerical inaccuracies are introduced by the
+// computations that go through parts, and this introduces small errors.
+// TODO(egg): Change Vessel to use PileUp directly and not go through Part.
 #define PRINCIPIA_MERGE_STRICT_CONSISTENCY 0
 
 template<typename Frame>

@@ -10,6 +10,7 @@ namespace principia {
 namespace physics {
 
 using base::not_null;
+using geometry::InfiniteFuture;
 using geometry::InfinitePast;
 using geometry::Instant;
 using quantities::si::Second;
@@ -133,6 +134,11 @@ TEST_F(CheckpointerTest, ReadFromCheckpointAtOrBefore) {
   Instant const t3 = t2 + 11 * Second;
   EXPECT_CALL(writer_, Call(_)).WillOnce(SetPayload(3));
   checkpointer_.WriteToCheckpoint(t3);
+
+  EXPECT_EQ(t1, checkpointer_.checkpoint_at_or_after(t1));
+  EXPECT_EQ(t3, checkpointer_.checkpoint_at_or_after(t2 + 1 * Second));
+  EXPECT_EQ(InfiniteFuture,
+            checkpointer_.checkpoint_at_or_after(t3 + 1 * Second));
 
   EXPECT_EQ(InfinitePast,
             checkpointer_.checkpoint_at_or_before(Instant() + 1 * Second));

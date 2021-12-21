@@ -1,5 +1,8 @@
 #include "ksp_plugin_test/plugin_io.hpp"
 
+#include <string>
+#include <vector>
+
 #include "base/file.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
@@ -23,6 +26,15 @@ not_null<std::unique_ptr<Plugin const>> ReadPluginFromFile(
     std::filesystem::path const& filename,
     std::string_view const compressor,
     std::string_view const encoder) {
+  std::int64_t bytes_processed;
+  return ReadPluginFromFile(filename, compressor, encoder, bytes_processed);
+}
+
+not_null<std::unique_ptr<Plugin const>> ReadPluginFromFile(
+    std::filesystem::path const& filename,
+    std::string_view const compressor,
+    std::string_view const encoder,
+    std::int64_t& bytes_processed) {
   Plugin const* plugin = nullptr;
 
   PushDeserializer* deserializer = nullptr;
@@ -33,18 +45,20 @@ not_null<std::unique_ptr<Plugin const>> ReadPluginFromFile(
   CHECK(!lines.empty());
 
   LOG(ERROR) << "Deserialization starting";
+  bytes_processed = 0;
   for (std::string const& line : lines) {
     principia__DeserializePlugin(line.c_str(),
                                  &deserializer,
                                  &plugin,
                                  compressor.data(),
                                  encoder.data());
+    bytes_processed += line.size();
   }
   principia__DeserializePlugin("",
-                                &deserializer,
-                                &plugin,
-                                compressor.data(),
-                                encoder.data());
+                               &deserializer,
+                               &plugin,
+                               compressor.data(),
+                               encoder.data());
   LOG(ERROR) << "Deserialization complete";
 
   return std::unique_ptr<Plugin const>(plugin);
@@ -54,19 +68,31 @@ void WritePluginToFile(std::filesystem::path const& filename,
                        std::string_view const compressor,
                        std::string_view const encoder,
                        not_null<std::unique_ptr<Plugin const>> plugin) {
+  std::int64_t bytes_processed;
+  WritePluginToFile(
+      filename, compressor, encoder, std::move(plugin), bytes_processed);
+}
+
+void WritePluginToFile(std::filesystem::path const& filename,
+                       std::string_view const compressor,
+                       std::string_view const encoder,
+                       not_null<std::unique_ptr<Plugin const>> plugin,
+                       std::int64_t& bytes_processed) {
   OFStream file(filename);
   PullSerializer* serializer = nullptr;
   char const* b64 = nullptr;
 
   LOG(ERROR) << "Serialization starting";
+  bytes_processed = 0;
   for (;;) {
     b64 = principia__SerializePlugin(plugin.get(),
-                                      &serializer,
-                                      preferred_compressor,
-                                      preferred_encoder);
+                                     &serializer,
+                                     preferred_compressor,
+                                     preferred_encoder);
     if (b64 == nullptr) {
       break;
     }
+    bytes_processed += std::strlen(b64);
     file << b64 << "\n";
     principia__DeleteString(&b64);
   }

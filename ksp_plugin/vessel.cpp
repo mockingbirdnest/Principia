@@ -742,7 +742,8 @@ Checkpointer<serialization::Vessel>::Writer Vessel::MakeCheckpointerWriter() {
     lock_.AssertReaderHeld();
     // The extremities of the |backstory_| are implicitly exact.  Note that
     // |backstory_->end()| might cause serialization of a 1-point psychohistory
-    // or prediction (at the last time of the backstory).
+    // or prediction (at the last time of the backstory).  To figure things out
+    // when reading we must track the |backstory_|.
     trajectory_.WriteToMessage(message->mutable_non_collapsible_segment(),
                                backstory_->begin(),
                                backstory_->end(),

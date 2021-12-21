@@ -14,8 +14,6 @@ namespace internal_plugin_io {
 using base::not_null;
 using ksp_plugin::Plugin;
 
-// TODO(phl): Use these functions in benchmark.cpp.
-
 // Reads a plugin from a file containing only the "serialized_plugin = " lines,
 // with "serialized_plugin = " dropped.
 not_null<std::unique_ptr<Plugin const>> ReadPluginFromFile(
@@ -23,11 +21,25 @@ not_null<std::unique_ptr<Plugin const>> ReadPluginFromFile(
     std::string_view compressor,
     std::string_view encoder);
 
-  // Writes a plugin to a file.
+// Same as above, but records the number of bytes read from the file.
+not_null<std::unique_ptr<Plugin const>> ReadPluginFromFile(
+    std::filesystem::path const& filename,
+    std::string_view compressor,
+    std::string_view encoder,
+    std::int64_t& bytes_processed);
+
+// Writes a plugin to a file.
 void WritePluginToFile(std::filesystem::path const& filename,
                        std::string_view compressor,
                        std::string_view encoder,
                        not_null<std::unique_ptr<Plugin const>> plugin);
+
+// Same as above, but records the number of bytes written to the file.
+void WritePluginToFile(std::filesystem::path const& filename,
+                       std::string_view compressor,
+                       std::string_view encoder,
+                       not_null<std::unique_ptr<Plugin const>> plugin,
+                       std::int64_t& bytes_processed);
 
 }  // namespace internal_plugin_io
 
