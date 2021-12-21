@@ -390,6 +390,13 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
   }
 }
 
+// Ideally, the segment constructed by reanimation should end with exactly the
+// same time and degrees of freedom as the start of the non-collapsible segment.
+// Unfortunately, we believe that numerical inaccuracies are introduced by the
+// computations that go through parts, and this introduces small errors.
+// TODO(egg): Change Vessel to use PileUp directly and not go through Part.
+#define PRINCIPIA_MERGE_STRICT_CONSISTENCY 0
+
 template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::Merge(
     DiscreteTrajectorySegment<Frame> segment) {
@@ -399,23 +406,51 @@ void DiscreteTrajectorySegment<Frame>::Merge(
     downsampling_parameters_ = segment.downsampling_parameters_;
     timeline_ = std::move(segment.timeline_);
     number_of_dense_points_ = segment.number_of_dense_points_;
-  } else if (std::prev(timeline_.cend())->time <
-             segment.timeline_.cbegin()->time) {
+  } else if (auto const [this_crbegin, segment_cbegin] =
+                 std::pair{std::prev(timeline_.cend()),
+                           segment.timeline_.cbegin()};
+             this_crbegin->time <= segment_cbegin->time) {
+#if PRINCIPIA_MERGE_STRICT_CONSISTENCY
+    CHECK(this_crbegin->time < segment_cbegin->time ||
+          this_crbegin->degrees_of_freedom ==
+              segment_cbegin->degrees_of_freedom)
+        << "Inconsistent merge: [" << segment.timeline_.cbegin()->time
+        << ", " << std::prev(segment.timeline_.cend())->time
+        << "] into [" << timeline_.cbegin()->time
+        << ", " << std::prev(timeline_.cend())->time
+        << "], degrees_of_freedom "
+        << this_crbegin->degrees_of_freedom << " and "
+        << segment_cbegin->degrees_of_freedom << " don't match";
+#endif
     downsampling_parameters_ = segment.downsampling_parameters_;
     timeline_.merge(segment.timeline_);
     number_of_dense_points_ = segment.number_of_dense_points_;
-  } else if (std::prev(segment.timeline_.cend())->time <
-             timeline_.cbegin()->time) {
+  } else if (auto const [segment_crbegin, this_cbegin] =
+                 std::pair{std::prev(segment.timeline_.cend()),
+                           timeline_.cbegin()};
+             segment_crbegin->time <= this_cbegin->time) {
+#if PRINCIPIA_MERGE_STRICT_CONSISTENCY
+    CHECK(segment_crbegin->time < this_cbegin->time ||
+          segment_crbegin->degrees_of_freedom ==
+              this_cbegin->degrees_of_freedom)
+        << "Inconsistent merge: [" << segment.timeline_.cbegin()->time
+        << ", " << std::prev(segment.timeline_.cend())->time
+        << "] into [" << timeline_.cbegin()->time
+        << ", " << std::prev(timeline_.cend())->time
+        << "], degrees_of_freedom "
+        << segment_crbegin->degrees_of_freedom << " and "
+        << this_cbegin->degrees_of_freedom << " don't match";
+#endif
     timeline_.merge(segment.timeline_);
   } else {
-    // TODO(phl): We might need to have to check <= above and to verify that the
-    // points match.
     LOG(FATAL) << "Overlapping merge: [" << segment.timeline_.cbegin()->time
                << ", " << std::prev(segment.timeline_.cend())->time
-               << "] into [" << timeline_.cbegin()->time << ", "
-               << std::prev(timeline_.cend())->time << "]";
+               << "] into [" << timeline_.cbegin()->time
+               << ", " << std::prev(timeline_.cend())->time << "]";
   }
 }
+
+#undef PRINCIPIA_MERGE_STRICT_CONSISTENCY
 
 template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::SetStartOfDenseTimeline(

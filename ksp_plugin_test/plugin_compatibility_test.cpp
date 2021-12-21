@@ -7,10 +7,7 @@
 #include "astronomy/time_scales.hpp"
 #include "astronomy/mercury_orbiter.hpp"
 #include "base/array.hpp"
-#include "base/file.hpp"
 #include "base/not_null.hpp"
-#include "base/pull_serializer.hpp"
-#include "base/push_deserializer.hpp"
 #include "base/serialization.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
@@ -18,6 +15,7 @@
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/interface.hpp"
 #include "ksp_plugin/plugin.hpp"
+#include "ksp_plugin_test/plugin_io.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "serialization/ksp_plugin.pb.h"
 #include "testing_utilities/is_near.hpp"
@@ -34,10 +32,7 @@ using astronomy::TTSecond;
 using astronomy::date_time::DateTime;
 using astronomy::date_time::operator""_DateTime;
 using base::not_null;
-using base::OFStream;
 using base::ParseFromBytes;
-using base::PullSerializer;
-using base::PushDeserializer;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Plugin;
 using physics::DiscreteTrajectory;
@@ -48,8 +43,6 @@ using quantities::si::Second;
 using testing_utilities::operator""_⑴;
 using testing_utilities::IsNear;
 using testing_utilities::ReadFromBinaryFile;
-using testing_utilities::ReadLinesFromBase64File;
-using testing_utilities::ReadLinesFromHexadecimalFile;
 using testing_utilities::StringLogSink;
 using testing_utilities::WriteToBinaryFile;
 using ::testing::AllOf;
@@ -75,67 +68,6 @@ class PluginCompatibilityTest : public testing::Test {
 
   ~PluginCompatibilityTest() override {
     google::SetStderrLogging(stderrthreshold_);
-  }
-
-  // Reads a plugin from a file containing only the "serialized_plugin = "
-  // lines, with "serialized_plugin = " dropped.
-  static not_null<std::unique_ptr<Plugin const>> ReadPluginFromFile(
-      std::filesystem::path const& filename,
-      std::string_view const compressor,
-      std::string_view const encoder) {
-    Plugin const* plugin = nullptr;
-
-    PushDeserializer* deserializer = nullptr;
-    auto const lines =
-        encoder == "hexadecimal" ? ReadLinesFromHexadecimalFile(filename)
-        : encoder == "base64"    ? ReadLinesFromBase64File(filename)
-                                  : std::vector<std::string>{};
-    CHECK(!lines.empty());
-
-    LOG(ERROR) << "Deserialization starting";
-    for (std::string const& line : lines) {
-      principia__DeserializePlugin(line.c_str(),
-                                   &deserializer,
-                                   &plugin,
-                                   compressor.data(),
-                                   encoder.data());
-    }
-    principia__DeserializePlugin("",
-                                 &deserializer,
-                                 &plugin,
-                                 compressor.data(),
-                                 encoder.data());
-    LOG(ERROR) << "Deserialization complete";
-
-    return std::unique_ptr<Plugin const>(plugin);
-  }
-
-  // Writes a plugin to a file.
-  static void WritePluginToFile(
-      std::filesystem::path const& filename,
-      std::string_view const compressor,
-      std::string_view const encoder,
-      not_null<std::unique_ptr<Plugin const>> plugin) {
-    OFStream file(filename);
-    PullSerializer* serializer = nullptr;
-    char const* b64 = nullptr;
-
-    LOG(ERROR) << "Serialization starting";
-    for (;;) {
-      b64 = principia__SerializePlugin(plugin.get(),
-                                       &serializer,
-                                       preferred_compressor,
-                                       preferred_encoder);
-      if (b64 == nullptr) {
-        break;
-      }
-      file << b64 << "\n";
-      principia__DeleteString(&b64);
-    }
-    LOG(ERROR) << "Serialization complete";
-
-    Plugin const* released_plugin = plugin.release();
-    principia__DeletePlugin(&released_plugin);
   }
 
   static void WriteAndReadBack(
