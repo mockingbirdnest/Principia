@@ -68,6 +68,9 @@
       <HintPath>..\..\KSP Assemblies\1.12.2\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>..\..\KSP Assemblies\1.12.2\Assembly-CSharp-firstpass.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="UnityEngine">
       <HintPath>..\..\KSP Assemblies\1.12.2\UnityEngine.dll</HintPath>
@@ -195,7 +198,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

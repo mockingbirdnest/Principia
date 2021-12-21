@@ -194,6 +194,9 @@
     <ClCompile Include="plugin_compatibility_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="plugin_io.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mock_plugin.hpp">
@@ -215,6 +218,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="fake_plugin.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plugin_io.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

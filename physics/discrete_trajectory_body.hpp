@@ -73,11 +73,18 @@ bool DiscreteTrajectory<Frame>::empty() const {
 
 template<typename Frame>
 std::int64_t DiscreteTrajectory<Frame>::size() const {
-  std::int64_t size = 1;
-  for (auto const& segment : *segments_) {
-    size += segment.size();
+  if (empty()) {
+    return 0;
   }
-  size -= segments_->size();  // The junction points.
+  std::int64_t size = 1;
+  std::int64_t nonempty_segments = 0;
+  for (auto const& segment : *segments_) {
+    if (!segment.empty()) {
+      ++nonempty_segments;
+      size += segment.size();
+    }
+  }
+  size -= nonempty_segments;  // The junction points.
   return size;
 }
 
@@ -429,11 +436,21 @@ void DiscreteTrajectory<Frame>::Merge(DiscreteTrajectory<Frame> trajectory) {
 
 template<typename Frame>
 Instant DiscreteTrajectory<Frame>::t_min() const {
-  return segments_->front().t_min();
+  if (empty()) {
+    return InfiniteFuture;
+  }
+  for (auto sit = segments_->begin();; ++sit) {
+    if (!sit->empty()) {
+      return sit->t_min();
+    }
+  }
 }
 
 template<typename Frame>
 Instant DiscreteTrajectory<Frame>::t_max() const {
+  if (empty()) {
+    return InfinitePast;
+  }
   return segments_->back().t_max();
 }
 
