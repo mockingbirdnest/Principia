@@ -525,18 +525,21 @@ TEST_F(DiscreteTrajectoryTest, ForgetBefore) {
   EXPECT_EQ(t0_ + 3 * Second, trajectory.begin()->time);
   EXPECT_EQ(t0_ + 14 * Second, trajectory.rbegin()->time);
   EXPECT_EQ(t0_ + 3 * Second, trajectory.t_min());
+  EXPECT_EQ(12, trajectory.size());
 
   trajectory.ForgetBefore(t0_ + 6.1 * Second);
   EXPECT_EQ(3, trajectory.segments().size());
   EXPECT_EQ(t0_ + 7 * Second, trajectory.begin()->time);
   EXPECT_EQ(t0_ + 14 * Second, trajectory.rbegin()->time);
   EXPECT_EQ(t0_ + 7 * Second, trajectory.t_min());
+  EXPECT_EQ(8, trajectory.size());
 
   trajectory.ForgetBefore(t0_ + 9 * Second);
   EXPECT_EQ(3, trajectory.segments().size());
   EXPECT_EQ(t0_ + 9 * Second, trajectory.begin()->time);
   EXPECT_EQ(t0_ + 14 * Second, trajectory.rbegin()->time);
   EXPECT_EQ(t0_ + 9 * Second, trajectory.t_min());
+  EXPECT_EQ(6, trajectory.size());
 
   // The trajectory now has empty segments, so let's check that we can properly
   // iterate over those.
@@ -570,10 +573,12 @@ TEST_F(DiscreteTrajectoryTest, ForgetBefore) {
   trajectory.ForgetBefore(t0_ + 99 * Second);
   EXPECT_TRUE(trajectory.empty());
   EXPECT_EQ(InfiniteFuture, trajectory.t_min());
+  EXPECT_EQ(0, trajectory.size());
 
   trajectory.ForgetBefore(trajectory.end());
   EXPECT_TRUE(trajectory.empty());
   EXPECT_EQ(InfiniteFuture, trajectory.t_min());
+  EXPECT_EQ(0, trajectory.size());
 }
 
 TEST_F(DiscreteTrajectoryTest, Merge) {
