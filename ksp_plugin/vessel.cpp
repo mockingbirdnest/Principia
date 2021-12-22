@@ -355,15 +355,28 @@ void Vessel::RequestReanimation(Instant const& desired_t_min) {
   if (must_restart) {
     reanimator_.Restart();
   }
+
+  // Consume the reanimated trajectories and merge them into this trajectory.
+  // This is the only place where the reanimation becomes externally visible,
+  // thereby ensuring that the trajectory doesn't change, say, while clients
+  // iterate over it.
+  {
+    absl::MutexLock l(&lock_);
+    while (!reanimated_trajectories_.empty()) {
+      trajectory_.Merge(std::move(reanimated_trajectories_.front()));
+      reanimated_trajectories_.pop();
+    }
+    if (DesiredTMinReachedOrFullyReanimated(desired_t_min)) {
+      return;
+    }
+  }
+
   reanimator_.Put(desired_t_min);
 }
 
 void Vessel::WaitForReanimation(Instant const& desired_t_min) {
   auto desired_t_min_reached_or_fully_reanimated = [this, desired_t_min]() {
-    lock_.AssertReaderHeld();
-    return trajectory_.t_min() <= desired_t_min ||
-               oldest_reanimated_checkpoint_ ==
-               checkpointer_->oldest_checkpoint();
+    return DesiredTMinReachedOrFullyReanimated(desired_t_min);
   };
 
   absl::ReaderMutexLock l(&lock_);
@@ -849,13 +862,15 @@ absl::Status Vessel::ReanimateOneCheckpoint(
             << " points), coast to " << t_final << " ("
             << collapsible_segment->size() << " points)";
 
-  // Merge the reanimated trajectory into the vessel trajectory and set the
-  // |history_| to denote the first nonempty segment.
+  // Push the reanimated trajectory into the queue where it will be consumed by
+  // RequestReanimation.
   {
     absl::MutexLock l(&lock_);
-    trajectory_.Merge(std::move(reanimated_trajectory));
+    reanimated_trajectories_.push(std::move(reanimated_trajectory));
     oldest_reanimated_checkpoint_ = t_initial;
-    //TODO(phl): This code is horrible.
+#if 0
+    //TODO(phl): This code is horrible. It sets the
+    // |history_| to denote the first nonempty segment.
     for (auto sit = trajectory_.segments().begin();
          sit != trajectory_.segments().end();
          ++sit) {
@@ -864,13 +879,20 @@ absl::Status Vessel::ReanimateOneCheckpoint(
         break;
       }
     }
+#endif
   }
 
   return absl::OkStatus();
 }
 
-absl::StatusOr<DiscreteTrajectory<Barycentric>>
-Vessel::FlowPrognostication(
+bool Vessel::DesiredTMinReachedOrFullyReanimated(
+    Instant const& desired_t_min) const {
+  lock_.AssertReaderHeld();
+  return trajectory_.t_min() <= desired_t_min ||
+         oldest_reanimated_checkpoint_ == checkpointer_->oldest_checkpoint();
+}
+
+absl::StatusOr<DiscreteTrajectory<Barycentric>> Vessel::FlowPrognostication(
     PrognosticatorParameters prognosticator_parameters) {
   DiscreteTrajectory<Barycentric> prognostication;
   prognostication.Append(

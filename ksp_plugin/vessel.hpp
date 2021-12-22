@@ -4,6 +4,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <queue>
 #include <set>
 #include <string>
 #include <vector>
@@ -271,6 +272,11 @@ class Vessel {
       serialization::Vessel::Checkpoint const& message,
       Instant const& t_initial) EXCLUDES(lock_);
 
+  // Returns true if the reanimation reached |desired_t_min|, or if the vessel
+  // is fully reanimated.
+  bool DesiredTMinReachedOrFullyReanimated(Instant const& desired_t_min) const
+      SHARED_LOCKS_REQUIRED(lock_);
+
   // Runs the integrator to compute the |prognostication_| based on the given
   // parameters.
   absl::StatusOr<DiscreteTrajectory<Barycentric>>
@@ -305,9 +311,6 @@ class Vessel {
   DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters const
       downsampling_parameters_;
 
-  // The techniques and terminology follow [Lov22].
-  RecurringThread<Instant> reanimator_;
-
   // TODO(phl): Verify locking.
   mutable absl::Mutex lock_;
 
@@ -325,10 +328,18 @@ class Vessel {
 
   not_null<std::unique_ptr<Checkpointer<serialization::Vessel>>> checkpointer_;
 
-  Instant oldest_reanimated_checkpoint_ = InfinitePast GUARDED_BY(lock_);
+  Instant oldest_reanimated_checkpoint_ GUARDED_BY(lock_) = InfinitePast;
 
   // Parameter passed to the last call to |RequestReanimation|, if any.
   std::optional<Instant> last_desired_t_min_ GUARDED_BY(lock_);
+
+  // The techniques and terminology follow [Lov22].
+  RecurringThread<Instant> reanimator_;
+
+  // The trajectories that have been reanimated are put in this queue by
+  // ReanimateOneCheckpoint and consumed by RequestReanimation.
+  std::queue<DiscreteTrajectory<Barycentric>> reanimated_trajectories_
+      GUARDED_BY(lock_);
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
   // The |history_| is empty until the first call to CreateHistoryIfNeeded.
@@ -342,8 +353,8 @@ class Vessel {
   // |std::prev(psychohistory_)|.
   DiscreteTrajectorySegmentIterator<Barycentric> backstory_;
 
-  // The |psychohistory_| is forked off the end of the |history_| and the
-  // |prediction_| is forked off the end of the |psychohistory_|.
+  // The |psychohistory_| is the segment following the |backstory_| and the
+  // |prediction_| is the segment following the |psychohistory_|.
   DiscreteTrajectorySegmentIterator<Barycentric> psychohistory_;
   DiscreteTrajectorySegmentIterator<Barycentric> prediction_;
 
