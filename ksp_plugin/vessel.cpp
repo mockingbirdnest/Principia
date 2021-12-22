@@ -178,8 +178,6 @@ void Vessel::ClearAllIntrinsicForcesAndTorques() {
 void Vessel::DetectCollapsibilityChange() {
   bool const becomes_collapsible = IsCollapsible();
   if (is_collapsible_ != becomes_collapsible) {
-    absl::ReaderMutexLock l(&lock_);
-
     // If collapsibility changes, we create a new history segment.  This ensures
     // that downsampling does not change collapsibility boundaries.
     // NOTE(phl): It is always correct to mark as non-collapsible a collapsible
@@ -226,7 +224,6 @@ void Vessel::CreateHistoryIfNeeded(Instant const& t) {
 }
 
 void Vessel::DisableDownsampling() {
-  absl::ReaderMutexLock l(&lock_);
   // TODO(phl): Clear downsampling_parameters_.
   backstory_->ClearDownsampling();
 }
@@ -332,26 +329,23 @@ void Vessel::AdvanceTime() {
 void Vessel::RequestReanimation(Instant const& desired_t_min) {
   reanimator_.Start();
 
-  bool must_restart;
-  {
-    absl::MutexLock l(&lock_);
+  // No locking here because vessel reanimation is only invoked from the main
+  // thread.
 
-    // If the reanimator is asked to do significantly less work (in terms of
-    // checkpoints to reanimate) than it is currently doing, interrupt it.  Note
-    // that this is fundamentally racy: for instance the reanimator may not have
-    // picked the last input given by Put.  But it helps if the user was doing a
-    // very long reanimation and wants to shorten it.
-    must_restart =
-        last_desired_t_min_.has_value() &&
-        checkpointer_->checkpoint_at_or_before(last_desired_t_min_.value()) <
-            checkpointer_->checkpoint_at_or_before(desired_t_min);
-    LOG_IF(WARNING, must_restart)
-        << "Restarting reanimator because desired t_min went from "
-        << last_desired_t_min_.value() << " to " << desired_t_min;
-    last_desired_t_min_ = desired_t_min;
-  }
+  // If the reanimator is asked to do significantly less work (in terms of
+  // checkpoints to reanimate) than it is currently doing, interrupt it.  Note
+  // that this is fundamentally racy: for instance the reanimator may not have
+  // picked the last input given by Put.  But it helps if the user was doing a
+  // very long reanimation and wants to shorten it.
+  bool const must_restart =
+      last_desired_t_min_.has_value() &&
+      checkpointer_->checkpoint_at_or_before(last_desired_t_min_.value()) <
+          checkpointer_->checkpoint_at_or_before(desired_t_min);
+  LOG_IF(WARNING, must_restart)
+      << "Restarting reanimator because desired t_min went from "
+      << last_desired_t_min_.value() << " to " << desired_t_min;
+  last_desired_t_min_ = desired_t_min;
 
-  // Don't hold the lock while restarting, the reanimator needs it.
   if (must_restart) {
     reanimator_.Restart();
   }
@@ -390,7 +384,6 @@ void Vessel::CreateFlightPlan(
         flight_plan_adaptive_step_parameters,
     Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
         flight_plan_generalized_adaptive_step_parameters) {
-  absl::ReaderMutexLock l(&lock_);
   auto const flight_plan_start = backstory_->back();
   flight_plan_ = std::make_unique<FlightPlan>(
       initial_mass,
@@ -407,7 +400,6 @@ void Vessel::DeleteFlightPlan() {
 }
 
 absl::Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
-  absl::ReaderMutexLock l(&lock_);
   CHECK(has_flight_plan());
   Instant const new_initial_time = backstory_->back().time;
   int first_manœuvre_kept = 0;
@@ -528,7 +520,6 @@ std::string Vessel::ShortDebugString() const {
 void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
                             PileUp::SerializationIndexForPileUp const&
                                 serialization_index_for_pile_up) const {
-  absl::ReaderMutexLock l(&lock_);
   message->set_guid(guid_);
   message->set_name(name_);
   body_.WriteToMessage(message->mutable_body());
@@ -608,7 +599,6 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     vessel->kept_parts_.insert(part_id);
   }
 
-  absl::MutexLock l(&vessel->lock_);
   if (is_pre_cesàro) {
     auto const psychohistory =
         DiscreteTrajectory<Barycentric>::ReadFromMessage(message.history(),
@@ -787,6 +777,7 @@ absl::Status Vessel::Reanimate(Instant const desired_t_min) {
 
   {
     absl::ReaderMutexLock l(&lock_);
+    CHECK(reanimated_trajectories_.empty());
 
     Instant const oldest_checkpoint_to_reanimate =
         checkpointer_->checkpoint_at_or_before(desired_t_min);
@@ -798,22 +789,33 @@ absl::Status Vessel::Reanimate(Instant const desired_t_min) {
     checkpoints.erase(oldest_reanimated_checkpoint_);
   }
 
+  // No locking, because the trajectory never goes back in time, except of
+  // course in the reanimator.
+  Instant t_final = trajectory_.begin()->time;
+
   for (auto it = checkpoints.crbegin(); it != checkpoints.crend(); ++it) {
     Instant const& checkpoint = *it;
     RETURN_IF_ERROR(checkpointer_->ReadFromCheckpointAt(
         checkpoint,
-        [this, t_initial = checkpoint](
-            serialization::Vessel::Checkpoint const& message) {
-          return ReanimateOneCheckpoint(message, t_initial);
+        [this, t_initial = checkpoint, &t_final](
+            serialization::Vessel::Checkpoint const& message) -> absl::Status {
+          auto const status_or_t_final =
+              ReanimateOneCheckpoint(message, t_initial, t_final);
+          RETURN_IF_ERROR(status_or_t_final);
+          t_final = status_or_t_final.value();
+          return absl::OkStatus();
         }));
   }
   return absl::OkStatus();
 }
 
-absl::Status Vessel::ReanimateOneCheckpoint(
+absl::StatusOr<Instant> Vessel::ReanimateOneCheckpoint(
     serialization::Vessel::Checkpoint const& message,
-    Instant const& t_initial) {
-  LOG(INFO) << "Restoring to checkpoint at " << t_initial;
+    Instant const& t_initial,
+    Instant const& t_final) {
+  CHECK_LE(t_initial, t_final);
+  LOG(INFO) << "Restoring to checkpoint at " << t_initial << " until "
+            << t_final;
 
   // Restore the non-collapsible segment that was fully saved.  It was the
   // backstory when the checkpoint was taken.
@@ -826,21 +828,13 @@ absl::Status Vessel::ReanimateOneCheckpoint(
       Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
           message.collapsible_fixed_step_parameters());
   CHECK(!reanimated_trajectory.empty());
+  CHECK_EQ(t_initial, reanimated_trajectory.back().time);
+  Instant const reanimated_trajectory_t_initial =
+      reanimated_trajectory.front().time;
   std::int64_t const reanimated_trajectory_size = reanimated_trajectory.size();
 
   // Construct a new collapsible segment at the end of the non-collapsible
-  // backstory and integrate it until the start time of the history.  We cannot
-  // hold the lock during the integration, so this code would race if there were
-  // two threads changing the start of the |trajectory_| concurrently.  That
-  // doesn't happen because there is a single reanimator.
-  CHECK_EQ(t_initial, reanimated_trajectory.back().time);
-  Instant t_final;
-  {
-    absl::ReaderMutexLock l(&lock_);
-    t_final = trajectory_.begin()->time;
-  }
-  CHECK_LE(t_initial, t_final);
-
+  // backstory and integrate it until |t_final|.
   ++reanimated_backstory;
   reanimated_trajectory.DeleteSegments(reanimated_backstory);
   auto const collapsible_segment = reanimated_trajectory.NewSegment();
@@ -862,6 +856,7 @@ absl::Status Vessel::ReanimateOneCheckpoint(
             << " points), coast to " << t_final << " ("
             << collapsible_segment->size() << " points)";
 
+
   // Push the reanimated trajectory into the queue where it will be consumed by
   // RequestReanimation.
   {
@@ -882,7 +877,7 @@ absl::Status Vessel::ReanimateOneCheckpoint(
 #endif
   }
 
-  return absl::OkStatus();
+  return reanimated_trajectory_t_initial;
 }
 
 bool Vessel::DesiredTMinReachedOrFullyReanimated(
