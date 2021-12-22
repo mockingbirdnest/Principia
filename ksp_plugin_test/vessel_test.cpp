@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "absl/status/status.h"
+#include "astronomy/time_scales.hpp"
 #include "base/not_null.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/named_quantities.hpp"
@@ -37,6 +38,7 @@
 namespace principia {
 namespace ksp_plugin {
 
+using astronomy::operator""_TT;
 using base::not_null;
 using base::make_not_null_unique;
 using geometry::Barycentre;
@@ -874,11 +876,11 @@ TEST_F(VesselTest, Reanimator2) {
 TEST_F(VesselTest, Reanimator3) {
   google::LogToStderr();
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
-      R"(C:\Users\phl.mantegna\Desktop\launch to circular orbit.proto.b64)",
+      R"(C:\Users\phl.mantegna\Desktop\duna orbit.proto.b64)",
       /*compressor=*/"gipfeli",
       /*decoder=*/"base64");
 
-  auto const vessel = plugin->GetVessel("cf8c720f-2f7c-4864-8247-881d596382d8");
+  auto const vessel = plugin->GetVessel("56e8608a-fec2-4aff-82a6-14a74793fe50");
   EXPECT_EQ("Entwurf", vessel->name());
   EXPECT_EQ(12'002, vessel->trajectory().size());
   EXPECT_EQ(t0_ + 15'530'991.0027490929 * Second,
@@ -887,11 +889,11 @@ TEST_F(VesselTest, Reanimator3) {
             vessel->psychohistory()->back().time);
 
   // Reanimate the vessel that we just read.
-  vessel->RequestReanimation(t0_);
+  vessel->RequestReanimation("2000-05-03T12:27:57,000"_TT + 0.8040285333991051*Second);
 
   // Wait for reanimation to happen.
   LOG(ERROR) << "Waiting until Herbert West is done...";
-  vessel->WaitForReanimation(t0_);
+  vessel->WaitForReanimation("2000-05-03T12:27:57,000"_TT + 0.8040285333991051*Second);
   LOG(ERROR) << "Herbert West is finally done.";
 
   EXPECT_EQ(t0_ + 449.9199999998807584 * Second,

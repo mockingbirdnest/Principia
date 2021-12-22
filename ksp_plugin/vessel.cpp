@@ -695,7 +695,8 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   }
 
   // A checkpoint that is covered by the trajectory that was explicitly stored
-  // is considered reanimated.
+  // is considered reanimated.  Note that the reanimator thread has not started
+  // yet.
   vessel->oldest_reanimated_checkpoint_ =
       vessel->checkpointer_->checkpoint_at_or_after(
           vessel->trajectory().t_min());
