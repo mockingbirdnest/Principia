@@ -775,9 +775,14 @@ absl::Status Vessel::Reanimate(Instant const desired_t_min) {
   std::set<Instant> checkpoints;
   LOG(INFO) << "Reanimating until " << desired_t_min;
 
+  Instant t_final;
   {
     absl::ReaderMutexLock l(&lock_);
-    CHECK(reanimated_trajectories_.empty());
+    if (reanimated_trajectories_.empty()) {
+      t_final = trajectory_.begin()->time;
+    } else {
+      t_final = reanimated_trajectories_.back().front().time;
+    }
 
     Instant const oldest_checkpoint_to_reanimate =
         checkpointer_->checkpoint_at_or_before(desired_t_min);
