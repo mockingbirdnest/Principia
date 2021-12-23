@@ -52,6 +52,7 @@ using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
 using testing_utilities::NewCircularTrajectoryTimeline;
 using testing_utilities::NewLinearTrajectoryTimeline;
+using testing_utilities::NewMotionlessTrajectoryTimeline;
 using testing_utilities::ReadFromBinaryFile;
 using testing_utilities::StringLogSink;
 using ::testing::AllOf;
@@ -627,6 +628,17 @@ TEST_F(DiscreteTrajectoryTest, Merge) {
     EXPECT_EQ(6, sit->size());
     EXPECT_EQ(t0_ + 9 * Second, sit->front().time);
     EXPECT_EQ(t0_ + 14 * Second, sit->back().time);
+  }
+  {
+    auto trajectory1 = MakeTrajectory();
+    auto trajectory2 = MakeTrajectory();
+
+    trajectory1.ForgetAfter(t0_ + 9 * Second);
+    // This trajectory starts with a 1-point segment.  Merge used to fail the
+    // consistency check because the time-to-segment map was losing an entry.
+    trajectory2.ForgetBefore(t0_ + 9 * Second);
+
+    trajectory2.Merge(std::move(trajectory1));
   }
 }
 
