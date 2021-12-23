@@ -52,7 +52,6 @@ using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
 using testing_utilities::NewCircularTrajectoryTimeline;
 using testing_utilities::NewLinearTrajectoryTimeline;
-using testing_utilities::NewMotionlessTrajectoryTimeline;
 using testing_utilities::ReadFromBinaryFile;
 using testing_utilities::StringLogSink;
 using ::testing::AllOf;
