@@ -794,10 +794,6 @@ absl::Status Vessel::Reanimate(Instant const desired_t_min) {
     checkpoints.erase(oldest_reanimated_checkpoint_);
   }
 
-  // No locking, because the trajectory never goes back in time, except of
-  // course in the reanimator.
-  Instant t_final = trajectory_.begin()->time;
-
   for (auto it = checkpoints.crbegin(); it != checkpoints.crend(); ++it) {
     Instant const& checkpoint = *it;
     RETURN_IF_ERROR(checkpointer_->ReadFromCheckpointAt(
