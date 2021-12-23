@@ -747,7 +747,7 @@ absl::Status DiscreteTrajectory<Frame>::ConsistencyStatus() const {
                          " and ", DebugString(sit2->front().time)));
       }
     }
-    if (sit1 != segments_->cend()) {
+    if (sit1 != segments_->cend() && !sit1->empty()) {
         return absl::InternalError(
             absl::StrCat("Segment at time ", DebugString(sit1->front().time),
                          " missing in the time-to-segment map of size ",
