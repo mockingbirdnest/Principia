@@ -187,7 +187,7 @@ DiscreteTrajectory<Frame>::NewSegment() {
         segment_by_left_endpoint_.end(), last_time, new_segment_sit);
   }
 
-  DCHECK_OK(ConsistencyStatus());
+  CHECK_OK(ConsistencyStatus());
   return new_self;
 }
 
@@ -205,7 +205,7 @@ DiscreteTrajectory<Frame>::DetachSegments(SegmentIterator const begin) {
                       /*to=*/detached,
                       /*to_segments_begin=*/detached.segments_->begin());
 
-  DCHECK_OK(ConsistencyStatus());
+  CHECK_OK(ConsistencyStatus());
   return detached;
 }
 
@@ -245,7 +245,7 @@ DiscreteTrajectory<Frame>::AttachSegments(DiscreteTrajectory trajectory) {
                       /*to=*/*this,
                       /*to_segments_begin=*/end_before_splice);
 
-  DCHECK_OK(ConsistencyStatus());
+  CHECK_OK(ConsistencyStatus());
   return SegmentIterator(segments_.get(), end_before_splice);
 }
 
@@ -270,7 +270,7 @@ void DiscreteTrajectory<Frame>::DeleteSegments(SegmentIterator& begin) {
   // Make sure that the client doesn't try to use the invalid iterator.
   begin = segments().end();
 
-  DCHECK_OK(ConsistencyStatus());
+  CHECK_OK(ConsistencyStatus());
 }
 
 template<typename Frame>
@@ -300,7 +300,7 @@ void DiscreteTrajectory<Frame>::ForgetAfter(Instant const& t) {
                                     segment_by_left_endpoint_.end());
   }
 
-  DCHECK_OK(ConsistencyStatus());
+  CHECK_OK(ConsistencyStatus());
 }
 
 template<typename Frame>
@@ -342,7 +342,7 @@ void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& t) {
         sit);
   }
 
-  DCHECK_OK(ConsistencyStatus());
+  CHECK_OK(ConsistencyStatus());
 }
 
 template<typename Frame>
@@ -396,12 +396,18 @@ void DiscreteTrajectory<Frame>::Merge(DiscreteTrajectory<Frame> trajectory) {
       // Merge corresponding segments.
       sit_t->Merge(std::move(*sit_s));
 
-      // If the left endpoint has changed, remove its entry from the time-to-
-      // segment map.  Insert a new entry if the segment is not empty.
+      // If the left endpoint of |sit_t| has changed, remove its entry from the
+      // time-to- segment map, if any.
       if (left_endpoint.has_value() &&
           sit_t->front().time < left_endpoint.value()) {
-        segment_by_left_endpoint_.erase(left_endpoint.value());
+        auto const it = segment_by_left_endpoint_.find(left_endpoint.value());
+        if (it != segment_by_left_endpoint_.end() && it->second == sit_t) {
+          segment_by_left_endpoint_.erase(left_endpoint.value());
+        }
       }
+      // sInsert a new entry in the time-to-segment map if the segment is not
+      // empty.  This entry will be overridden by any future entry at the same
+      // time, thereby enforcing the invariants of the time-to-segment map.
       if (!sit_t->empty()) {
         segment_by_left_endpoint_.insert_or_assign(sit_t->front().time, sit_t);
       }
@@ -431,7 +437,7 @@ void DiscreteTrajectory<Frame>::Merge(DiscreteTrajectory<Frame> trajectory) {
     }
   }
 
-  DCHECK_OK(ConsistencyStatus());
+  CHECK_OK(ConsistencyStatus());
 }
 
 template<typename Frame>
@@ -725,6 +731,12 @@ absl::Status DiscreteTrajectory<Frame>::ConsistencyStatus() const {
                          " at times ", DebugString(sit1->front().time),
                          " and ", DebugString(sit2->front().time)));
       }
+    }
+    if (sit1 != segments_->cend()) {
+        return absl::InternalError(
+            absl::StrCat("Segment at time ", DebugString(sit1->front().time),
+                         " missing in the time-to-segment map of size ",
+                         segment_by_left_endpoint_.size()));
     }
   }
   if (!segments_->empty()) {
