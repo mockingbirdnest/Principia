@@ -397,7 +397,7 @@ void DiscreteTrajectory<Frame>::Merge(DiscreteTrajectory<Frame> trajectory) {
       sit_t->Merge(std::move(*sit_s));
 
       // If the left endpoint of |sit_t| has changed, remove its entry from the
-      // time-to- segment map, if any.
+      // time-to-segment map, if any.
       if (left_endpoint.has_value() &&
           sit_t->front().time < left_endpoint.value()) {
         auto const it = segment_by_left_endpoint_.find(left_endpoint.value());
@@ -405,8 +405,8 @@ void DiscreteTrajectory<Frame>::Merge(DiscreteTrajectory<Frame> trajectory) {
           segment_by_left_endpoint_.erase(left_endpoint.value());
         }
       }
-      // sInsert a new entry in the time-to-segment map if the segment is not
-      // empty.  This entry will be overridden by any future entry at the same
+      // Insert a new entry in the time-to-segment map if the segment is not
+      // empty.  This entry will be overwritten by any future entry at the same
       // time, thereby enforcing the invariants of the time-to-segment map.
       if (!sit_t->empty()) {
         segment_by_left_endpoint_.insert_or_assign(sit_t->front().time, sit_t);
