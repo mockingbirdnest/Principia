@@ -191,8 +191,8 @@ void Vessel::DetectCollapsibilityChange() {
       // to reconstruct it, so we must serialize it in a checkpoint.  Note that
       // the last point of the backstory specifies the initial conditions of the
       // next (collapsible) segment.
-      LOG(ERROR) << "Writing " << ShortDebugString()
-                 << " to checkpoint at: " << backstory_->back().time;
+      LOG(INFO) << "Writing " << ShortDebugString()
+                << " to checkpoint at: " << backstory_->back().time;
       checkpointer_->WriteToCheckpoint(backstory_->back().time);
     }
     auto psychohistory = trajectory_.DetachSegments(psychohistory_);
@@ -648,31 +648,6 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
                      &vessel->prediction_});
     vessel->is_collapsible_ = message.is_collapsible();
 
-    //TODO(phl):Horrible patch.
-    serialization::Vessel patched_message = message;
-    bool is_first = true;
-    if (vessel->guid_ == "2d8d4b86-c80a-4aca-8886-8b9cff0953aa") {
-      for (auto& checkpoint : *patched_message.mutable_checkpoint()) {
-        auto& non_collapsible_segment =
-            *checkpoint.mutable_non_collapsible_segment();
-        if (is_first) {
-          is_first = false;
-          non_collapsible_segment.add_tracked_position(0);
-          continue;
-        }
-        for (int i = 0; i < non_collapsible_segment.segment_size(); ++i) {
-          if (non_collapsible_segment
-                  .segment(i)
-                  .zfp()
-                  .timeline_size() == 1) {
-            non_collapsible_segment.add_tracked_position(i + 1);
-            break;
-          }
-        }
-        //LOG(ERROR) << checkpoint.DebugString();
-      }
-    }
-
     vessel->checkpointer_ =
         Checkpointer<serialization::Vessel>::ReadFromMessage(
             vessel->MakeCheckpointerWriter(),
@@ -683,9 +658,6 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   // Necessary after Εὔδοξος because the ephemeris has not been prolonged
   // during deserialization.
   ephemeris->Prolong(vessel->prediction_->back().time).IgnoreError();
-
-  LOG(ERROR) << vessel->name_
-             << " "<<vessel->guid_;
 
   if (is_pre_陈景润) {
     vessel->history_->SetDownsamplingUnconditionally(
@@ -864,18 +836,6 @@ absl::StatusOr<Instant> Vessel::ReanimateOneCheckpoint(
     absl::MutexLock l(&lock_);
     reanimated_trajectories_.push(std::move(reanimated_trajectory));
     oldest_reanimated_checkpoint_ = t_initial;
-#if 0
-    //TODO(phl): This code is horrible. It sets the
-    // |history_| to denote the first nonempty segment.
-    for (auto sit = trajectory_.segments().begin();
-         sit != trajectory_.segments().end();
-         ++sit) {
-      if (!sit->empty()) {
-        history_ = sit;
-        break;
-      }
-    }
-#endif
   }
 
   return reanimated_trajectory_t_initial;
