@@ -124,8 +124,8 @@ class Vessel {
   // called (at least once) after the creation of the vessel.
   virtual void CreateHistoryIfNeeded(Instant const& t);
 
-  // Disables downsampling for the history of this vessel.  This is useful when
-  // the vessel collided with a celestial, as downsampling might run into
+  // Disables downsampling for the backstory of this vessel.  This is useful
+  // when the vessel collided with a celestial, as downsampling might run into
   // trouble.
   virtual void DisableDownsampling();
 
@@ -310,8 +310,7 @@ class Vessel {
   // The parent body for the 2-body approximation.
   not_null<Celestial const*> parent_;
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
-  // TODO(phl): Serialize this field.
-  DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters const
+  std::optional<DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters>
       downsampling_parameters_;
 
   mutable absl::Mutex lock_;

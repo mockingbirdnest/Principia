@@ -197,7 +197,9 @@ void Vessel::DetectCollapsibilityChange() {
     }
     auto psychohistory = trajectory_.DetachSegments(psychohistory_);
     backstory_ = trajectory_.NewSegment();
-    backstory_->SetDownsampling(downsampling_parameters_);
+    if (downsampling_parameters_.has_value()) {
+      backstory_->SetDownsampling(downsampling_parameters_.value());
+    }
     psychohistory_ = trajectory_.AttachSegments(std::move(psychohistory));
     is_collapsible_ = becomes_collapsible;
   }
@@ -215,7 +217,9 @@ void Vessel::CreateHistoryIfNeeded(Instant const& t) {
           part.mass());
     });
     CHECK(psychohistory_ == trajectory_.segments().end());
-    history_->SetDownsampling(downsampling_parameters_);
+    if (downsampling_parameters_.has_value()) {
+      history_->SetDownsampling(downsampling_parameters_.value());
+    }
     trajectory_.Append(t, calculator.Get()).IgnoreError();
     backstory_ = history_;
     psychohistory_ = trajectory_.NewSegment();
@@ -224,8 +228,9 @@ void Vessel::CreateHistoryIfNeeded(Instant const& t) {
 }
 
 void Vessel::DisableDownsampling() {
-  // TODO(phl): Clear downsampling_parameters_.
   backstory_->ClearDownsampling();
+  // From now on, no downsampling will happen.
+  downsampling_parameters_ = std::nullopt;
 }
 
 not_null<Part*> Vessel::part(PartId const id) const {
@@ -517,6 +522,14 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
   body_.WriteToMessage(message->mutable_body());
   prediction_adaptive_step_parameters_.WriteToMessage(
       message->mutable_prediction_adaptive_step_parameters());
+  if (downsampling_parameters_.has_value()) {
+    auto* const serialized_downsampling_parameters =
+        message->mutable_downsampling_parameters();
+    serialized_downsampling_parameters->set_max_dense_intervals(
+        downsampling_parameters_->max_dense_intervals);
+    downsampling_parameters_->tolerance.WriteToMessage(
+        serialized_downsampling_parameters->mutable_tolerance());
+  }
   for (auto const& [_, part] : parts_) {
     part->WriteToMessage(message->add_parts(), serialization_index_for_pile_up);
   }
@@ -567,7 +580,6 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
 
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
   // information.
-  // TODO(phl): serialized/deserialize the downsampling parameters.
   auto vessel = make_not_null_unique<Vessel>(
       message.guid(),
       message.name(),
@@ -611,6 +623,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     }
     vessel->backstory_ = std::prev(vessel->psychohistory_);
     vessel->prediction_ = vessel->trajectory_.NewSegment();
+    vessel->downsampling_parameters_ = DefaultDownsamplingParameters();
   } else if (is_pre_chasles) {
     vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
@@ -618,12 +631,14 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     vessel->history_ = vessel->trajectory_.segments().begin();
     vessel->backstory_ = std::prev(vessel->psychohistory_);
     vessel->prediction_ = vessel->trajectory_.NewSegment();
+    vessel->downsampling_parameters_ = DefaultDownsamplingParameters();
   } else if (is_pre_hamilton) {
     vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
         /*tracked=*/{&vessel->psychohistory_, &vessel->prediction_});
     vessel->history_ = vessel->trajectory_.segments().begin();
     vessel->backstory_ = std::prev(vessel->psychohistory_);
+    vessel->downsampling_parameters_ = DefaultDownsamplingParameters();
   } else if (is_pre_zermelo) {
     vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
@@ -631,6 +646,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
                      &vessel->psychohistory_,
                      &vessel->prediction_});
     vessel->backstory_ = std::prev(vessel->psychohistory_);
+    vessel->downsampling_parameters_ = DefaultDownsamplingParameters();
   } else {
     vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
@@ -645,6 +661,16 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
             vessel->MakeCheckpointerWriter(),
             vessel->MakeCheckpointerReader(),
             message.checkpoint());
+    if (message.has_downsampling_parameters()) {
+      vessel->downsampling_parameters_ =
+          DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters{
+              .max_dense_intervals =
+                  message.downsampling_parameters().max_dense_intervals(),
+              .tolerance = Length::ReadFromMessage(
+                  message.downsampling_parameters().tolerance())};
+    } else {
+      vessel->downsampling_parameters_ = std::nullopt;
+    }
   }
 
   // Necessary after Εὔδοξος because the ephemeris has not been prolonged
