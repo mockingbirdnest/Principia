@@ -350,16 +350,8 @@ void Vessel::RequestReanimation(Instant const& desired_t_min) {
     reanimator_.Restart();
   }
 
-  // Consume the reanimated trajectories and merge them into this trajectory.
-  // This is the only place where the reanimation becomes externally visible,
-  // thereby ensuring that the trajectory doesn't change, say, while clients
-  // iterate over it.
   {
     absl::MutexLock l(&lock_);
-    while (!reanimated_trajectories_.empty()) {
-      trajectory_.Merge(std::move(reanimated_trajectories_.front()));
-      reanimated_trajectories_.pop();
-    }
     if (DesiredTMinReachedOrFullyReanimated(desired_t_min)) {
       return;
     }
@@ -652,7 +644,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
         Checkpointer<serialization::Vessel>::ReadFromMessage(
             vessel->MakeCheckpointerWriter(),
             vessel->MakeCheckpointerReader(),
-            patched_message.checkpoint());
+            message.checkpoint());
   }
 
   // Necessary after Εὔδοξος because the ephemeris has not been prolonged
@@ -842,8 +834,17 @@ absl::StatusOr<Instant> Vessel::ReanimateOneCheckpoint(
 }
 
 bool Vessel::DesiredTMinReachedOrFullyReanimated(
-    Instant const& desired_t_min) const {
+    Instant const& desired_t_min) {
   lock_.AssertReaderHeld();
+
+  // Consume the reanimated trajectories and merge them into this trajectory.
+  // This is the only place where the reanimation becomes externally visible,
+  // thereby ensuring that the trajectory doesn't change, say, while clients
+  // iterate over it.
+  while (!reanimated_trajectories_.empty()) {
+    trajectory_.Merge(std::move(reanimated_trajectories_.front()));
+    reanimated_trajectories_.pop();
+  }
   return trajectory_.t_min() <= desired_t_min ||
          oldest_reanimated_checkpoint_ == checkpointer_->oldest_checkpoint();
 }
