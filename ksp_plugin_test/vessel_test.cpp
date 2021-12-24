@@ -792,49 +792,7 @@ TEST_F(VesselTest, TailSerialization) {
 TEST_F(VesselTest, Reanimator) {
   google::LogToStderr();
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
-      R"(C:\Users\phl.mantegna\Desktop\entwurf.proto.b64)",
-      /*compressor=*/"gipfeli",
-      /*decoder=*/"base64");
-
-  auto const vessel = plugin->GetVessel("2d8d4b86-c80a-4aca-8886-8b9cff0953aa");
-  EXPECT_EQ("Entwurf", vessel->name());
-  EXPECT_EQ(12'001, vessel->trajectory().size());
-  EXPECT_EQ(t0_ + 21'047'221.7658279724 * Second,
-            vessel->trajectory().front().time);
-  EXPECT_EQ(t0_ + 22'848'117.5886942074 * Second,
-            vessel->psychohistory()->back().time);
-
-  // Reanimate the vessel that we just read.
-  vessel->RequestReanimation(t0_);
-
-  // Wait for reanimation to happen.
-  LOG(ERROR) << "Waiting until Herbert West is done...";
-  vessel->WaitForReanimation(t0_);
-  LOG(ERROR) << "Herbert West is finally done.";
-
-  EXPECT_EQ(t0_ + 16.0799999999997461 * Second,
-            vessel->trajectory().front().time);
-
-  // Check that the resulting trajectory is reasonably continuous.
-  std::optional<Instant> last_t;
-  std::optional<DegreesOfFreedom<Barycentric>> last_degrees_of_freedom;
-  for (auto const& [t, degrees_of_freedom] : vessel->trajectory()) {
-    if (last_t.has_value()) {
-      EXPECT_THAT(t - last_t.value(),
-                  AllOf(Ge(19.9 * Milli(Second)), Le(200 * Second)));
-      EXPECT_THAT((degrees_of_freedom.position() -
-                   last_degrees_of_freedom->position()).Norm(),
-                  AllOf(Ge(138 * Metre), Le(1390 * Kilo(Metre))));
-    }
-    last_t = t;
-    last_degrees_of_freedom = degrees_of_freedom;
-  }
-}
-
-TEST_F(VesselTest, Reanimator2) {
-  google::LogToStderr();
-  not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
-      R"(C:\Users\phl.mantegna\Desktop\reentry.proto.b64)",
+      SOLUTION_DIR / "ksp_plugin_test" / "reentry.proto.b64",
       /*compressor=*/"gipfeli",
       /*decoder=*/"base64");
 
@@ -866,56 +824,13 @@ TEST_F(VesselTest, Reanimator2) {
                   AllOf(Ge(19.9 * Milli(Second)), Le(180 * Second)));
       EXPECT_THAT((degrees_of_freedom.position() -
                    last_degrees_of_freedom->position()).Norm(),
-                  AllOf(Ge(138 * Metre), Le(1390 * Kilo(Metre))));
+                  AllOf(Ge(142 * Metre), Le(1337 * Kilo(Metre))));
     }
     last_t = t;
     last_degrees_of_freedom = degrees_of_freedom;
   }
 }
 
-TEST_F(VesselTest, Reanimator3) {
-  google::LogToStderr();
-  not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
-      R"(C:\Users\phl.mantegna\Desktop\duna orbit.proto.b64)",
-      /*compressor=*/"gipfeli",
-      /*decoder=*/"base64");
-
-  auto const vessel = plugin->GetVessel("56e8608a-fec2-4aff-82a6-14a74793fe50");
-  EXPECT_EQ("Entwurf", vessel->name());
-  EXPECT_EQ(12'002, vessel->trajectory().size());
-  EXPECT_EQ(t0_ + 15'530'991.0027490929 * Second,
-            vessel->trajectory().front().time);
-  EXPECT_EQ(t0_ + 16'017'570.0424453486 * Second,
-            vessel->psychohistory()->back().time);
-
-  // Reanimate the vessel that we just read.
-  vessel->RequestReanimation("2000-05-03T12:27:57,000"_TT + 0.8040285333991051*Second);
-
-  // Wait for reanimation to happen.
-  LOG(ERROR) << "Waiting until Herbert West is done...";
-  vessel->WaitForReanimation("2000-05-03T12:27:57,000"_TT + 0.8040285333991051*Second);
-  LOG(ERROR) << "Herbert West is finally done.";
-
-  EXPECT_EQ(t0_ + 449.9199999998807584 * Second,
-            vessel->trajectory().front().time);
-
-  // Check that the resulting trajectory is reasonably continuous.
-#if 0
-  std::optional<Instant> last_t;
-  std::optional<DegreesOfFreedom<Barycentric>> last_degrees_of_freedom;
-  for (auto const& [t, degrees_of_freedom] : vessel->trajectory()) {
-    if (last_t.has_value()) {
-      EXPECT_THAT(t - last_t.value(),
-                  AllOf(Ge(19.9 * Milli(Second)), Le(180 * Second)));
-      EXPECT_THAT((degrees_of_freedom.position() -
-                   last_degrees_of_freedom->position()).Norm(),
-                  AllOf(Ge(138 * Metre), Le(1390 * Kilo(Metre))));
-    }
-    last_t = t;
-    last_degrees_of_freedom = degrees_of_freedom;
-  }
-#endif
-}
 #endif
 
 }  // namespace ksp_plugin

@@ -86,6 +86,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="3 vessels.proto.bin" />
+    <None Include="reentry.proto.b64" />
     <None Include="simple_plugin.proto.bin" />
     <None Include="simple_plugin.proto.hex" />
   </ItemGroup>
