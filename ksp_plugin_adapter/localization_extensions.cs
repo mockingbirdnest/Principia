@@ -147,14 +147,6 @@ internal static class L10N {
   }
 
   private static string Format(string name, params string[] args) {
-    // Nested <<>> rules don’t work prior to Lingoona 1.7.0 (2021-07-07).
-    // We need them for some of the more advanced grammatical constructs.
-    // We manually replace <<X:n>> placeholders and leave the result to
-    // Lingoona. This allows for some substitution inside <<>> rules, and is
-    // enough for our purposes.  <<X:n>> placeholders are substituted
-    // untransformed, so the behaviour is consistent with what Lingoona 1.7.0 or
-    // later would do.
-    string template = Localizer.GetStringByTag(name);
     // KSP substitutes arguments that are themselves localization keys,
     // e.g., the names of the default vessels.
     var resolved_args = new List<string>();
@@ -164,13 +156,23 @@ internal static class L10N {
       resolved_args.Add(
           arg == null ? "" : (Localizer.Tags.GetValueOrNull(arg) ?? arg));
     }
+
+    // Nested <<>> rules don’t work prior to Lingoona 1.7.0 (2021-07-07).
+    // We need them for some of the more advanced grammatical constructs.
+    // We manually replace <<X:n>> placeholders and leave the result to
+    // Lingoona. This allows for some substitution inside <<>> rules, and is
+    // enough for our purposes.  <<X:n>> placeholders are substituted
+    // untransformed, so the behaviour is consistent with what Lingoona 1.7.0 or
+    // later would do.
+    string template = Localizer.GetStringByTag(name);
     for (int n = 1; n <= resolved_args.Count; ++n) {
       template.Replace($"<<X:{n}>>", resolved_args[n - 1]);
     }
+
+    Lingoona.Grammar.setLanguage(UILanguage());
     // These escapes are handled by KSP *after* formatting, contrary to
     // the \u ones and the ｢｣ for {}, which are handled when the Localizer
     // loads the tags.
-    Lingoona.Grammar.setLanguage(UILanguage());
     var result = Lingoona.Grammar.useGrammar(template, resolved_args)
         .Replace(@"\n", "\n").Replace(@"\""", "\"").Replace(@"\t", "\t");
     Lingoona.Grammar.setLanguage(Localizer.CurrentLanguage);
