@@ -35,8 +35,8 @@ internal static class L10N {
   }
 
   private static bool StartsWithCapitalizedDefiniteArticle(string s) {
-    return (Localizer.CurrentLanguage == english_us_ && s.StartsWith("The ")) ||
-           (Localizer.CurrentLanguage == french_ &&
+    return (UILanguage() == english_us_ && s.StartsWith("The ")) ||
+           (UILanguage() == french_ &&
             (s.StartsWith("La ") || s.StartsWith("Le ")));
   }
 
@@ -92,10 +92,14 @@ internal static class L10N {
         : body.Name()[0].ToString();
   }
 
+  private static string UILanguage() {
+    return CacheFormat("#Principia_UILanguage");
+  }
+
   private static string FormatOrNull(string template, params object[] args) {
     // Optional translations include the language name so that they do not fall
     // back to English.
-    string qualified_template = $"{template}.{Localizer.CurrentLanguage}";
+    string qualified_template = $"{template}.{UILanguage()}";
     if (!Localizer.Tags.ContainsKey(qualified_template)) {
       return null;
     }
@@ -119,7 +123,7 @@ internal static class L10N {
        select name).Concat(from arg in args select arg.ToString()).ToArray();
     return lru_cache_.Get(template, names,
                           () => CelestialOverride(template, names, bodies) ??
-                                Localizer.Format(template, names));
+                                Format(template, names));
   }
 
   public static string CelestialStringOrNull(string template,
@@ -139,6 +143,10 @@ internal static class L10N {
   }
 
   public static string CacheFormat(string name, params string[] args) {
+    return lru_cache_.Get(name, args, () => Format(name, args));
+  }
+
+  private static string Format(string name, params string[] args) {
     // Nested <<>> rules don’t work prior to Lingoona 1.7.0 (2021-07-07).
     // We need them for some of the more advanced grammatical constructs.
     // We manually replace <<X:n>> placeholders and leave the result to
@@ -146,28 +154,24 @@ internal static class L10N {
     // enough for our purposes.  <<X:n>> placeholders are substituted
     // untransformed, so the behaviour is consistent with what Lingoona 1.7.0 or
     // later would do.
-    return lru_cache_.Get(
-        name, args,
-        () => {
-          string template = Localizer.GetStringByTag(name);
-          // KSP substitutes arguments that are themselves localization keys,
-          // e.g., the names of the default vessels.
-          var resolved_args = new List<string>();
-          foreach (var arg in args) {
-            // KSP treats nulls as empty strings here (but not in the overload
-            // that takes objects).
-            resolved_args.Add(
-                arg == null ? "" : (Localizer.Tags.GetValueOrNull(arg) ?? arg));
-          }
-          for (int n = 1; n <= resolved_args.Count; ++n) {
-            template.Replace($"<<X:{n}>>", resolved_args[n - 1]);
-          }
-          // These escapes are handled by KSP *after* formatting, contrary to
-          // the \u ones and the ｢｣ for {}, which are handled when the Localizer
-          // loads the tags.
-          return Lingoona.Grammar.useGrammar(template, resolved_args)
-              .Replace(@"\n", "\n").Replace(@"\""", "\"").Replace(@"\t", "\t");
-        });
+    string template = Localizer.GetStringByTag(name);
+    // KSP substitutes arguments that are themselves localization keys,
+    // e.g., the names of the default vessels.
+    var resolved_args = new List<string>();
+    foreach (var arg in args) {
+      // KSP treats nulls as empty strings here (but not in the overload
+      // that takes objects).
+      resolved_args.Add(
+          arg == null ? "" : (Localizer.Tags.GetValueOrNull(arg) ?? arg));
+    }
+    for (int n = 1; n <= resolved_args.Count; ++n) {
+      template.Replace($"<<X:{n}>>", resolved_args[n - 1]);
+    }
+    // These escapes are handled by KSP *after* formatting, contrary to
+    // the \u ones and the ｢｣ for {}, which are handled when the Localizer
+    // loads the tags.
+    return Lingoona.Grammar.useGrammar(template, resolved_args)
+        .Replace(@"\n", "\n").Replace(@"\""", "\"").Replace(@"\t", "\t");
   }
 
   public static string CacheFormat(string name, params object[] args) {
