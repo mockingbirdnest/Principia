@@ -202,7 +202,7 @@ TEST_F(VesselTest, PrepareHistory) {
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 2 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.CreateHistoryIfNeeded(t0_ + 1 * Second);
+  vessel_.CreateTrajectoryIfNeeded(t0_ + 1 * Second);
 
   auto const expected_dof = Barycentre<DegreesOfFreedom<Barycentric>, Mass>(
       {p1_dof_, p2_dof_}, {mass1_, mass2_});
@@ -225,7 +225,7 @@ TEST_F(VesselTest, AdvanceTime) {
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 2 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.CreateHistoryIfNeeded(t0_);
+  vessel_.CreateTrajectoryIfNeeded(t0_);
 
   AppendTrajectoryTimeline<Barycentric>(
       NewLinearTrajectoryTimeline<Barycentric>(p1_dof_,
@@ -257,8 +257,8 @@ TEST_F(VesselTest, AdvanceTime) {
       /*t1=*/t0_,
       /*t2=*/t0_ + 1.1 * Second);
 
-  EXPECT_EQ(3, vessel_.history()->size() + vessel_.psychohistory()->size() - 1);
-  auto it1 = vessel_.history()->begin();
+  EXPECT_EQ(3, vessel_.trajectory().size());
+  auto it1 = vessel_.trajectory().begin();
   auto it2 = expected_vessel_psychohistory.begin();
   for (;
        it1 != vessel_.psychohistory()->end() &&
@@ -299,7 +299,7 @@ TEST_F(VesselTest, Prediction) {
       FlowWithAdaptiveStep(_, _, InfiniteFuture, _, _))
       .WillRepeatedly(Return(absl::OkStatus()));
 
-  vessel_.CreateHistoryIfNeeded(t0_);
+  vessel_.CreateTrajectoryIfNeeded(t0_);
   // Polling for the integration to happen.
   do {
     vessel_.RefreshPrediction(t0_ + 1 * Second);
@@ -356,7 +356,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
           Return(absl::OkStatus())))
       .WillRepeatedly(Return(absl::OkStatus()));
 
-  vessel_.CreateHistoryIfNeeded(t0_);
+  vessel_.CreateTrajectoryIfNeeded(t0_);
   // Polling for the integration to happen.
   do {
     vessel_.RefreshPrediction();
@@ -392,7 +392,7 @@ TEST_F(VesselTest, FlightPlan) {
       .Times(AnyNumber());
   std::vector<not_null<MassiveBody const*>> const bodies;
   ON_CALL(ephemeris_, bodies()).WillByDefault(ReturnRef(bodies));
-  vessel_.CreateHistoryIfNeeded(t0_);
+  vessel_.CreateTrajectoryIfNeeded(t0_);
 
   EXPECT_FALSE(vessel_.has_flight_plan());
   EXPECT_CALL(
@@ -481,7 +481,7 @@ TEST_F(VesselTest, Checkpointing) {
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 30 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.CreateHistoryIfNeeded(t0_);
+  vessel_.CreateTrajectoryIfNeeded(t0_);
 
   auto const pile_up =
       std::make_shared<PileUp>(/*parts=*/std::list<not_null<Part*>>{p1_, p2_},
@@ -654,7 +654,7 @@ TEST_F(VesselTest, SerializationSuccess) {
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 2 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.CreateHistoryIfNeeded(t0_);
+  vessel_.CreateTrajectoryIfNeeded(t0_);
 
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 3 * Second, _, _))
@@ -705,7 +705,7 @@ TEST_F(VesselTest, TailSerialization) {
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 30 * Second, _, _))
       .Times(AnyNumber());
-  vessel_.CreateHistoryIfNeeded(t0_);
+  vessel_.CreateTrajectoryIfNeeded(t0_);
 
   auto const pile_up =
       std::make_shared<PileUp>(/*parts=*/std::list<not_null<Part*>>{p1_, p2_},
@@ -744,7 +744,7 @@ TEST_F(VesselTest, TailSerialization) {
   vessel_.DetectCollapsibilityChange();
   vessel_.AdvanceTime();
   EXPECT_EQ(12'569,
-            std::distance(vessel_.history()->begin(),
+            std::distance(vessel_.trajectory().begin(),
                           vessel_.psychohistory()->begin()));
 
   serialization::Vessel message;
@@ -783,7 +783,7 @@ TEST_F(VesselTest, TailSerialization) {
 
   auto const v = Vessel::ReadFromMessage(
       message, &celestial_, &ephemeris_, /*deletion_callback=*/nullptr);
-  EXPECT_TRUE(v->history()->empty());
+  EXPECT_TRUE(v->trajectory().segments().begin()->empty());
   auto const backstory = std::next(v->trajectory().segments().begin());
   EXPECT_EQ(t0_ + 4'553 * Second, backstory->front().time);
   EXPECT_EQ(t0_ + (number_of_points - 1) * Second, backstory->back().time);

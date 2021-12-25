@@ -126,7 +126,7 @@ TEST_F(PluginCompatibilityTest, Reach) {
               AllOf(HasSubstr("pre-Galileo"), Not(HasSubstr("pre-Frobenius"))));
   auto const test = plugin->GetVessel("f2d77873-4776-4809-9dfb-de9e7a0620a6");
   EXPECT_THAT(test->name(), Eq("TEST"));
-  EXPECT_THAT(TTSecond(test->history()->front().time),
+  EXPECT_THAT(TTSecond(test->trajectory().front().time),
               Eq("1970-08-14T08:03:18"_DateTime));
   EXPECT_THAT(TTSecond(test->psychohistory()->back().time),
               Eq("1970-08-14T08:47:05"_DateTime));
@@ -134,7 +134,7 @@ TEST_F(PluginCompatibilityTest, Reach) {
 
   auto const ifnity = plugin->GetVessel("29142a79-7acd-47a9-a34d-f9f2a8e1b4ed");
   EXPECT_THAT(ifnity->name(), Eq("IFNITY-5.2"));
-  EXPECT_THAT(TTSecond(ifnity->history()->front().time),
+  EXPECT_THAT(TTSecond(ifnity->trajectory().front().time),
               Eq("1970-08-14T08:03:46"_DateTime));
   EXPECT_THAT(TTSecond(ifnity->psychohistory()->back().time),
               Eq("1970-08-14T08:47:05"_DateTime));
@@ -201,7 +201,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
   auto const& orbiter =
       *plugin->GetVessel("e180ca12-492f-45bf-a194-4c5255aec8a0");
   EXPECT_THAT(orbiter.name(), Eq("Mercury Orbiter 1"));
-  auto const begin = orbiter.history()->begin();
+  auto const begin = orbiter.trajectory().begin();
   EXPECT_THAT(begin->time,
               Eq("1966-05-10T00:14:03"_TT + 0.0879862308502197 * Second));
   EXPECT_THAT(begin->degrees_of_freedom,
@@ -267,13 +267,14 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
   // The vessel with the longest history.
   auto const& vessel =
       *plugin->GetVessel("77ddea45-47ee-48c0-aee9-d55cdb35ffcd");
-  auto history = vessel.history();
+  auto const& trajectory = vessel.trajectory();
+  auto history = trajectory.segments().begin();
   auto psychohistory = vessel.psychohistory();
-  EXPECT_THAT(*history, SizeIs(435'927));
+  EXPECT_THAT(trajectory, SizeIs(435'927));
   EXPECT_THAT(*psychohistory, SizeIs(3));
 
   // Evaluate a point in each of the two segments.
-  EXPECT_THAT(history->EvaluateDegreesOfFreedom("1957-10-04T19:28:34"_TT),
+  EXPECT_THAT(trajectory.EvaluateDegreesOfFreedom("1957-10-04T19:28:34"_TT),
               Eq(DegreesOfFreedom<Barycentric>(
                   Barycentric::origin + Displacement<Barycentric>(
                                             {+1.47513683827317657e+11 * Metre,

@@ -85,8 +85,7 @@ Vessel::Vessel(
       checkpointer_(make_not_null_unique<Checkpointer<serialization::Vessel>>(
           MakeCheckpointerWriter(),
           MakeCheckpointerReader())),
-      history_(trajectory_.segments().begin()),
-      backstory_(history_),
+      backstory_(trajectory_.segments().begin()),
       psychohistory_(trajectory_.segments().end()),
       prediction_(trajectory_.segments().end()) {}
 
@@ -205,7 +204,7 @@ void Vessel::DetectCollapsibilityChange() {
   }
 }
 
-void Vessel::CreateHistoryIfNeeded(Instant const& t) {
+void Vessel::CreateTrajectoryIfNeeded(Instant const& t) {
   CHECK(!parts_.empty());
   if (trajectory_.empty()) {
     LOG(INFO) << "Preparing history of vessel " << ShortDebugString()
@@ -218,10 +217,9 @@ void Vessel::CreateHistoryIfNeeded(Instant const& t) {
     });
     CHECK(psychohistory_ == trajectory_.segments().end());
     if (downsampling_parameters_.has_value()) {
-      history_->SetDownsampling(downsampling_parameters_.value());
+      backstory_->SetDownsampling(downsampling_parameters_.value());
     }
     trajectory_.Append(t, calculator.Get()).IgnoreError();
-    backstory_ = history_;
     psychohistory_ = trajectory_.NewSegment();
     prediction_ = trajectory_.NewSegment();
   }
@@ -250,10 +248,6 @@ void Vessel::ForAllParts(std::function<void(Part&)> action) const {
 
 DiscreteTrajectory<Barycentric> const& Vessel::trajectory() const {
   return trajectory_;
-}
-
-DiscreteTrajectorySegmentIterator<Barycentric> Vessel::history() const {
-  return history_;
 }
 
 DiscreteTrajectorySegmentIterator<Barycentric> Vessel::psychohistory() const {
@@ -550,7 +544,7 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
       message->mutable_history(),
       /*begin=*/backstory_->end() - serialized_points,
       /*end=*/std::next(prediction_->begin()),
-      /*tracked=*/{history_, backstory_, psychohistory_, prediction_},
+      /*tracked=*/{backstory_, psychohistory_, prediction_},
       /*exact=*/{});
   if (flight_plan_ != nullptr) {
     flight_plan_->WriteToMessage(message->mutable_flight_plan());
@@ -607,7 +601,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     auto const psychohistory =
         DiscreteTrajectory<Barycentric>::ReadFromMessage(message.history(),
                                                          /*tracked=*/{});
-    // The |history_| has been created by the constructor above.  Reconstruct
+    // The |backstory_| has been created by the constructor above.  Reconstruct
     // it from the |psychohistory|.
     for (auto it = psychohistory.begin(); it != psychohistory.end();) {
       auto const& [time, degrees_of_freedom] = *it;
@@ -628,21 +622,22 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
         /*tracked=*/{&vessel->psychohistory_});
-    vessel->history_ = vessel->trajectory_.segments().begin();
-    vessel->backstory_ = std::prev(vessel->psychohistory_);
+    vessel->backstory_ = vessel->trajectory_.segments().begin();
+    CHECK(vessel->backstory_ == std::prev(vessel->psychohistory_));
     vessel->prediction_ = vessel->trajectory_.NewSegment();
     vessel->downsampling_parameters_ = DefaultDownsamplingParameters();
   } else if (is_pre_hamilton) {
     vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
         /*tracked=*/{&vessel->psychohistory_, &vessel->prediction_});
-    vessel->history_ = vessel->trajectory_.segments().begin();
-    vessel->backstory_ = std::prev(vessel->psychohistory_);
+    vessel->backstory_ = vessel->trajectory_.segments().begin();
+    CHECK(vessel->backstory_ == std::prev(vessel->psychohistory_));
     vessel->downsampling_parameters_ = DefaultDownsamplingParameters();
   } else if (is_pre_zermelo) {
+    DiscreteTrajectorySegmentIterator<Barycentric> history;
     vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
-        /*tracked=*/{&vessel->history_,
+        /*tracked=*/{&history,
                      &vessel->psychohistory_,
                      &vessel->prediction_});
     vessel->backstory_ = std::prev(vessel->psychohistory_);
@@ -650,8 +645,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   } else {
     vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
-        /*tracked=*/{&vessel->history_,
-                     &vessel->backstory_,
+        /*tracked=*/{&vessel->backstory_,
                      &vessel->psychohistory_,
                      &vessel->prediction_});
     vessel->is_collapsible_ = message.is_collapsible();
@@ -678,7 +672,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   ephemeris->Prolong(vessel->prediction_->back().time).IgnoreError();
 
   if (is_pre_陈景润) {
-    vessel->history_->SetDownsamplingUnconditionally(
+    vessel->backstory_->SetDownsamplingUnconditionally(
         DefaultDownsamplingParameters());
   }
 
@@ -725,8 +719,7 @@ Vessel::Vessel()
       checkpointer_(make_not_null_unique<Checkpointer<serialization::Vessel>>(
           /*reader=*/nullptr,
           /*writer=*/nullptr)),
-      history_(trajectory_.segments().begin()),
-      backstory_(history_),
+      backstory_(trajectory_.segments().begin()),
       psychohistory_(trajectory_.segments().end()),
       prediction_(trajectory_.segments().end()),
       prognosticator_(nullptr, 20ms) {}

@@ -118,11 +118,11 @@ class Vessel {
   // collected.
   virtual void DetectCollapsibilityChange();
 
-  // If the history is empty, appends a single point to it, computed as the
+  // If the trajectory is empty, appends a single point to it, computed as the
   // barycentre of all parts.  |parts_| must not be empty.  After this call,
-  // |history_| is never empty again and the psychohistory is usable.  Must be
-  // called (at least once) after the creation of the vessel.
-  virtual void CreateHistoryIfNeeded(Instant const& t);
+  // |trajectory_| is never empty again and the psychohistory is usable.  Must
+  // be called (at least once) after the creation of the vessel.
+  virtual void CreateTrajectoryIfNeeded(Instant const& t);
 
   // Disables downsampling for the backstory of this vessel.  This is useful
   // when the vessel collided with a celestial, as downsampling might run into
@@ -139,7 +139,6 @@ class Vessel {
   virtual void ForAllParts(std::function<void(Part&)> action) const;
 
   virtual DiscreteTrajectory<Barycentric> const& trajectory() const;
-  virtual DiscreteTrajectorySegmentIterator<Barycentric> history() const;
   virtual DiscreteTrajectorySegmentIterator<Barycentric> psychohistory() const;
   virtual DiscreteTrajectorySegmentIterator<Barycentric> prediction() const;
 
@@ -342,12 +341,6 @@ class Vessel {
   // ReanimateOneCheckpoint and consumed by RequestReanimation.
   std::queue<DiscreteTrajectory<Barycentric>> reanimated_trajectories_
       GUARDED_BY(lock_);
-
-  // See the comments in pile_up.hpp for an explanation of the terminology.
-  // The |history_| is empty until the first call to CreateHistoryIfNeeded.
-  // It is made of a series of segments, alternatively non-collapsible and
-  // collapsible.
-  DiscreteTrajectorySegmentIterator<Barycentric> history_;
 
   // The last (most recent) segment of the |history_| prior to the
   // |psychohistory_|.  May be identical to |history_|.  Always identical to
