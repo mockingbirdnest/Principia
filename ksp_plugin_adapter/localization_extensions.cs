@@ -170,8 +170,11 @@ internal static class L10N {
     // These escapes are handled by KSP *after* formatting, contrary to
     // the \u ones and the ｢｣ for {}, which are handled when the Localizer
     // loads the tags.
-    return Lingoona.Grammar.useGrammar(template, resolved_args)
+    Lingoona.Grammar.setLanguage(UILanguage());
+    var result = Lingoona.Grammar.useGrammar(template, resolved_args)
         .Replace(@"\n", "\n").Replace(@"\""", "\"").Replace(@"\t", "\t");
+    Lingoona.Grammar.setLanguage(Localizer.CurrentLanguage);
+    return result;
   }
 
   public static string CacheFormat(string name, params object[] args) {
