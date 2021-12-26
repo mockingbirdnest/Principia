@@ -2,15 +2,6 @@
 namespace ksp_plugin_adapter {
 
 internal static class Style {
-  static Style() {
-    horizontal_line_style_ =
-        new UnityEngine.GUIStyle(UnityEngine.GUI.skin.horizontalSlider);
-    horizontal_line_style_.fixedHeight /= 5;
-    horizontal_line_style_.normal.background = ultra_cool_grey_texture;
-    line_spacing_style_ = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label);
-    line_spacing_style_.fixedHeight /= 5;
-  }
-
   public static UnityEngine.Color Tangent { get; } = XKCDColors.NeonYellow;
   public static UnityEngine.Color Normal { get; } = XKCDColors.AquaBlue;
   public static UnityEngine.Color Binormal { get; } = XKCDColors.PurplePink;
@@ -70,10 +61,20 @@ internal static class Style {
   }
 
   public static void HorizontalLine() {
+    if (horizontal_line_style_ == null) {
+      horizontal_line_style_ =
+          new UnityEngine.GUIStyle(UnityEngine.GUI.skin.horizontalSlider);
+      horizontal_line_style_.fixedHeight /= 5;
+      horizontal_line_style_.normal.background = ultra_cool_grey_texture;
+    }
     UnityEngine.GUILayout.Label("", horizontal_line_style_);
   }
 
   public static void LineSpacing() {
+    if (line_spacing_style_ == null) {
+      line_spacing_style_ = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label);
+      line_spacing_style_.fixedHeight /= 5;
+    }
     UnityEngine.GUILayout.Label("", line_spacing_style_);
   }
 
@@ -96,8 +97,8 @@ internal static class Style {
   // It is very important to use *static* styles for these elements.  If we use
   // local variables at the place of use, the stupid Unity ends up burning 9 kiB
   // for each horizontal line we display.  See #3064.
-  private static readonly UnityEngine.GUIStyle horizontal_line_style_;
-  private static readonly UnityEngine.GUIStyle line_spacing_style_;
+  private static UnityEngine.GUIStyle horizontal_line_style_;
+  private static UnityEngine.GUIStyle line_spacing_style_;
 }
 
 }  // namespace ksp_plugin_adapter

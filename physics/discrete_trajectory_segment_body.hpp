@@ -245,6 +245,14 @@ DiscreteTrajectorySegment<Frame>
 DiscreteTrajectorySegment<Frame>::ReadFromMessage(
     serialization::DiscreteTrajectorySegment const& message,
     DiscreteTrajectorySegmentIterator<Frame> const self) {
+  // Note that while is_pre_hardy means that the save is pre-Hardy,
+  // !is_pre_hardy does not mean it is Hardy or later; a pre-Hardy segment with
+  // downsampling will have both fields present.
+  bool is_pre_hardy = !message.has_downsampling_parameters() &&
+                      message.has_number_of_dense_points();
+  LOG_IF(WARNING, is_pre_hardy)
+      << "Reading pre-Hardy DiscreteTrajectorySegment";
+
   DiscreteTrajectorySegment<Frame> segment(self);
 
   // Construct a map for efficient lookup of the exact points.
@@ -300,9 +308,11 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
   }
 
   // Finally, restore the downsampling information.
-  CHECK_EQ(message.has_downsampling_parameters(),
-           message.has_number_of_dense_points())
-      << message.DebugString();
+  if (!is_pre_hardy) {
+    CHECK_EQ(message.has_downsampling_parameters(),
+             message.has_number_of_dense_points())
+        << message.DebugString();
+  }
   if (message.has_downsampling_parameters()) {
     segment.downsampling_parameters_ = DownsamplingParameters{
         .max_dense_intervals =
