@@ -45,6 +45,10 @@ std::ostream& operator<<(std::ostream& os, Instant const& t) {
   return os << "J2000" << from_j2000 << " (TT)";
 }
 
+std::string DebugString(const Instant& t) {
+  return (std::stringstream() << t).str();
+}
+
 }  // namespace internal_point
 }  // namespace geometry
 }  // namespace principia
