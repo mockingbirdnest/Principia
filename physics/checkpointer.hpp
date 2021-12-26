@@ -58,6 +58,10 @@ class Checkpointer {
   // ever created.
   Instant newest_checkpoint() const EXCLUDES(lock_);
 
+  // Returns the checkpoint at or immediately after |t|, or +∞ if no such
+  // checkpoint exists.
+  Instant checkpoint_at_or_after(Instant const& t) const EXCLUDES(lock_);
+
   // Returns the checkpoint at or immediately before |t|, or -∞ if no such
   // checkpoint exists.
   Instant checkpoint_at_or_before(Instant const& t) const EXCLUDES(lock_);

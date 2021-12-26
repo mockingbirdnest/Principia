@@ -42,6 +42,17 @@ Instant Checkpointer<Message>::newest_checkpoint() const {
 }
 
 template<typename Message>
+Instant Checkpointer<Message>::checkpoint_at_or_after(Instant const& t) const {
+  absl::ReaderMutexLock l(&lock_);
+  // |it| denotes an entry equal to or greater than |t| (or end).
+  auto const it = checkpoints_.lower_bound(t);
+  if (it == checkpoints_.cend()) {
+    return InfiniteFuture;
+  }
+  return it->first;
+}
+
+template<typename Message>
 Instant Checkpointer<Message>::checkpoint_at_or_before(Instant const& t) const {
   absl::ReaderMutexLock l(&lock_);
   // |it| denotes an entry strictly greater than |t| (or end).

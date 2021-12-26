@@ -65,6 +65,7 @@
     <ClCompile Include="planetarium_test.cpp" />
     <ClCompile Include="plugin_compatibility_test.cpp" />
     <ClCompile Include="plugin_integration_test.cpp" />
+    <ClCompile Include="plugin_io.cpp" />
     <ClCompile Include="plugin_test.cpp" />
     <ClCompile Include="renderer_test.cpp" />
     <ClCompile Include="fake_plugin.cpp" />
@@ -77,6 +78,7 @@
     <ClInclude Include="mock_planetarium.hpp" />
     <ClInclude Include="mock_plugin.hpp" />
     <ClInclude Include="fake_plugin.hpp" />
+    <ClInclude Include="plugin_io.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mock_renderer.hpp" />
