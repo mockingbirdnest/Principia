@@ -250,7 +250,9 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
   // downsampling will have both fields present.
   bool is_pre_hardy = !message.has_downsampling_parameters() &&
                       message.has_number_of_dense_points();
-  LOG_IF(WARNING, is_pre_hardy) << "Reading pre-Hardy DiscreteTrajectorySegment";
+  LOG_IF(WARNING, is_pre_hardy)
+      << "Reading pre-Hardy DiscreteTrajectorySegment";
+
   DiscreteTrajectorySegment<Frame> segment(self);
 
   // Construct a map for efficient lookup of the exact points.
