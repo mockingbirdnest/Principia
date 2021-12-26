@@ -760,13 +760,19 @@ absl::Status DiscreteTrajectory<Frame>::ConsistencyStatus() const {
                            i));
         } else if (timeline_rbegin->degrees_of_freedom !=
                    timeline_begin->degrees_of_freedom) {
-          return absl::InternalError(
-              absl::StrCat("Duplicated degrees of freedom mismatch ",
-                           DebugString(timeline_rbegin->degrees_of_freedom),
-                           " and ",
-                           DebugString(timeline_begin->degrees_of_freedom),
-                           " for segment #",
-                           i));
+          bool const left_nan = timeline_rbegin->degrees_of_freedom !=
+                                timeline_rbegin->degrees_of_freedom;
+          bool const right_nan = timeline_begin->degrees_of_freedom !=
+                                 timeline_begin->degrees_of_freedom;
+          if (!(left_nan && right_nan)) {
+            return absl::InternalError(
+                absl::StrCat("Duplicated degrees of freedom mismatch ",
+                             DebugString(timeline_rbegin->degrees_of_freedom),
+                             " and ",
+                             DebugString(timeline_begin->degrees_of_freedom),
+                             " for segment #",
+                             i));
+          }
         }
       }
     }
