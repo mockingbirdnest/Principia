@@ -343,6 +343,18 @@ TEST_F(PluginCompatibilityTest, DISABLED_Egg) {
   WriteAndReadBack(std::move(plugin));
 }
 
+TEST_F(PluginCompatibilityTest, PreHardy) {
+  StringLogSink log_warning(google::WARNING);
+  CheckSaveCompatibility(
+      SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3244.proto.b64",
+      /*compressor=*/"gipfeli",
+      /*decoder=*/"base64");
+  // Regression test for #3244.
+  EXPECT_THAT(log_warning.string(),
+              AllOf(HasSubstr("pre-Hardy DiscreteTrajectorySegment"),
+                    Not(HasSubstr("pre-Hamilton"))));
+}
+
 // Use for debugging saves given by users.
 TEST_F(PluginCompatibilityTest, DISABLED_SECULAR_Debug) {
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(

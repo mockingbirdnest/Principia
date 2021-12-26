@@ -1627,6 +1627,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       foreach (Vessel vessel in FlightGlobals.Vessels.Where(
           v => is_manageable(v) && !v.packed)) {
         foreach (Part part in vessel.parts) {
+          if (part.atmDensity <= 0) {
+            continue;
+          }
           Part physical_parent = closest_physical_parent(part);
           if (part.bodyLiftLocalVector != UnityEngine.Vector3.zero ||
               part.dragVector != UnityEngine.Vector3.zero) {
