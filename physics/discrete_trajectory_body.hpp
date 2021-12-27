@@ -752,9 +752,9 @@ absl::Status DiscreteTrajectory<Frame>::ConsistencyStatus() const {
         auto const& [right_time, right_dof] = *std::next(sit)->timeline_begin();
         if (left_time != right_time) {
           return absl::InternalError(absl::StrCat("Duplicated time mismatch ",
-                                                  left_time,
+                                                  DebugString(left_time),
                                                   " and ",
-                                                  right_time,
+                                                  DebugString(right_time),
                                                   " for segment #",
                                                   i));
         } else if (left_dof != right_dof) {
