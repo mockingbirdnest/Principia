@@ -431,8 +431,15 @@ void DiscreteTrajectory<Frame>::Merge(DiscreteTrajectory<Frame> trajectory) {
                           /*to=*/*this,
                           /*to_segments_begin=*/end_before_splice);
       break;
+    } else if (sit_t != segments_->end()) {
+      // No more segments in the source.  Make sure that we restore the time-to-
+      // segment map for the segments that follows the last one in the source.
+      if (!sit_t->empty()) {
+        segment_by_left_endpoint_.insert_or_assign(sit_t->front().time, sit_t);
+      }
+      ++sit_t;
     } else {
-      // No more segments in the source, or both lists done.
+      // Both lists done.
       break;
     }
   }
