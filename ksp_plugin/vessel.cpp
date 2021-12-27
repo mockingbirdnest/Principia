@@ -681,12 +681,57 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
                                                        ephemeris);
   }
 
-  // A checkpoint that is covered by the trajectory that was explicitly stored
-  // is considered reanimated.  Note that the reanimator thread has not started
-  // yet.
-  vessel->oldest_reanimated_checkpoint_ =
+  // Figure out which was the last checkpoint to be "reanimated" by reading the
+  // end of the trajectory from the serialized form.  Interestingly enough, that
+  // checkpoint (that is, the non-collapsible segment) may overlap the beginning
+  // of the trajectory that we just deserialized, in which case we must rebuild
+  // the front part of the non-collapsible segment to make sure that the
+  // trajectory doesn't start in the middle of a non-collapsible segment (the
+  // integration of the preceding collapsible segment would not end at the right
+  // time if it did).
+  Instant const checkpoint =
       vessel->checkpointer_->checkpoint_at_or_after(
           vessel->trajectory().t_min());
+  for (auto const& s : vessel->trajectory().segments()) {
+    LOG(ERROR)<<s.size();
+    if (!s.empty()) {
+      LOG(ERROR)<<s.front().time<<" "<<s.back().time;
+      LOG(ERROR)<<s.front().time-Instant{}<<" "<<s.back().time-Instant{};
+    }
+  }
+
+  if (checkpoint != InfiniteFuture) {
+    CHECK_OK(vessel->checkpointer_->ReadFromCheckpointAt(
+        checkpoint,
+        [checkpoint, &vessel](
+            serialization::Vessel::Checkpoint const& message) {
+          // This code is similar to the one in ReanimateOneCheckpoint except
+          // that (1) we never need to reconstruct a collapsible segment; (2) we
+          // may actually have to truncate the non-collapsible segment obtained
+          // from the checkpoint.
+          LOG(INFO) << "Restoring to initial checkpoint at " << checkpoint;
+
+          DiscreteTrajectorySegmentIterator<Barycentric> unused;
+          auto reanimated_trajectory =
+              DiscreteTrajectory<Barycentric>::ReadFromMessage(
+                  message.non_collapsible_segment(),
+                  /*tracked=*/{&unused});
+          for (auto& s : reanimated_trajectory.segments()) {
+            LOG(ERROR) << s.size();
+            if (!s.empty()) {
+              LOG(ERROR) << s.front().time << " "<<s.back().time;
+              }
+          }
+          CHECK(!reanimated_trajectory.empty());
+          CHECK_EQ(checkpoint, reanimated_trajectory.back().time);
+          reanimated_trajectory.ForgetAfter(vessel->trajectory().t_min());
+          if (!reanimated_trajectory.empty()) {
+            vessel->trajectory_.Merge(std::move(reanimated_trajectory));
+          }
+          return absl::OkStatus();
+        }));
+  }
+  vessel->oldest_reanimated_checkpoint_ = checkpoint;
 
   return vessel;
 }
