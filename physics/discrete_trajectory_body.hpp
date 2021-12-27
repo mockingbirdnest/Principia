@@ -760,7 +760,7 @@ absl::Status DiscreteTrajectory<Frame>::ConsistencyStatus() const {
         } else if (left_dof != right_dof) {
           bool const left_is_nan = left_dof != left_dof;
           bool const right_is_nan = right_dof != right_dof;
-          if (!(left_nan && right_nan)) {
+          if (!(left_is_nan && right_is_nan)) {
             return absl::InternalError(
                 absl::StrCat("Duplicated degrees of freedom mismatch ",
                              DebugString(left_dof),
