@@ -159,7 +159,7 @@ class Renderer {
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
-  virtual Rotation<CameraReference, World> CameraReferenceRotation(
+  virtual Rotation<CameraReference, CelestialSphere> CameraReferenceRotation(
       Instant const& time,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 

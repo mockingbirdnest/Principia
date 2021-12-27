@@ -278,17 +278,17 @@ RigidTransformation<World, Navigation> Renderer::WorldToPlotting(
          WorldToBarycentric(time, sun_world_position, planetarium_rotation);
 }
 
-Rotation<CameraReference, World> Renderer::CameraReferenceRotation(
+Rotation<CameraReference, CelestialSphere> Renderer::CameraReferenceRotation(
     Instant const& time,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  Permutation<CameraReference, Navigation> const celestial_mirror(
+  Permutation<Barycentric, CelestialSphere> const celestial_mirror(
+      OddPermutation::XZY);
+  Permutation<CameraReference, Navigation> const camera_mirror(
       OddPermutation::XZY);
   auto const result =
-      OrthogonalMap<WorldSun, World>::Identity() *
-      sun_looking_glass.Inverse().Forget<OrthogonalMap>() *
-      planetarium_rotation.Forget<OrthogonalMap>() *
+      celestial_mirror.Forget<OrthogonalMap>() *
       GetPlottingFrame()->FromThisFrameAtTime(time).orthogonal_map() *
-      celestial_mirror.Forget<OrthogonalMap>();
+      camera_mirror.Forget<OrthogonalMap>();
   return result.AsRotation();
 }
 
