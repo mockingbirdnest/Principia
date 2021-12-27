@@ -792,16 +792,16 @@ TEST_F(VesselTest, TailSerialization) {
 TEST_F(VesselTest, Reanimator) {
   google::LogToStderr();
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
-      SOLUTION_DIR / "ksp_plugin_test" / "reentry.proto.b64",
+      SOLUTION_DIR / "ksp_plugin_test" / "reanimation test.proto.b64",
       /*compressor=*/"gipfeli",
       /*decoder=*/"base64");
 
-  auto const vessel = plugin->GetVessel("56e8608a-fec2-4aff-82a6-14a74793fe50");
+  auto const vessel = plugin->GetVessel("bd00adbd-2666-4172-8e5e-12862bad4562");
   EXPECT_EQ("Entwurf", vessel->name());
-  EXPECT_EQ(12'002, vessel->trajectory().size());
-  EXPECT_EQ(t0_ + 15'530'991.0027490929 * Second,
+  EXPECT_EQ(12'249, vessel->trajectory().size());
+  EXPECT_EQ("2000-07-01T16:10:47"_TT + 0.9988134149461985 * Second,
             vessel->trajectory().front().time);
-  EXPECT_EQ(t0_ + 16'017'570.0424453486 * Second,
+  EXPECT_EQ("2000-07-20T08:36:10"_TT + 0.6724631488323212 * Second,
             vessel->psychohistory()->back().time);
 
   // Reanimate the vessel that we just read.
@@ -812,7 +812,7 @@ TEST_F(VesselTest, Reanimator) {
   vessel->WaitForReanimation(t0_);
   LOG(ERROR) << "Herbert West is finally done.";
 
-  EXPECT_EQ(t0_ + 449.9199999998807584 * Second,
+  EXPECT_EQ("2000-01-01T12:00:30"_TT + 0.1399999999994463 * Second,
             vessel->trajectory().front().time);
 
   // Check that the resulting trajectory is reasonably continuous.
@@ -821,10 +821,10 @@ TEST_F(VesselTest, Reanimator) {
   for (auto const& [t, degrees_of_freedom] : vessel->trajectory()) {
     if (last_t.has_value()) {
       EXPECT_THAT(t - last_t.value(),
-                  AllOf(Ge(19.9 * Milli(Second)), Le(180 * Second)));
+                  AllOf(Ge(19.9 * Milli(Second)), Le(200 * Second)));
       EXPECT_THAT((degrees_of_freedom.position() -
                    last_degrees_of_freedom->position()).Norm(),
-                  AllOf(Ge(142 * Metre), Le(1337 * Kilo(Metre))));
+                  AllOf(Ge(136 * Metre), Le(1458 * Kilo(Metre))));
     }
     last_t = t;
     last_degrees_of_freedom = degrees_of_freedom;

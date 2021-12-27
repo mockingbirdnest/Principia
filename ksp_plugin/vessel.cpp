@@ -692,14 +692,6 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   Instant const checkpoint =
       vessel->checkpointer_->checkpoint_at_or_after(
           vessel->trajectory().t_min());
-  for (auto const& s : vessel->trajectory().segments()) {
-    LOG(ERROR)<<s.size();
-    if (!s.empty()) {
-      LOG(ERROR)<<s.front().time<<" "<<s.back().time;
-      LOG(ERROR)<<s.front().time-Instant{}<<" "<<s.back().time-Instant{};
-    }
-  }
-
   if (checkpoint != InfiniteFuture) {
     CHECK_OK(vessel->checkpointer_->ReadFromCheckpointAt(
         checkpoint,
@@ -709,19 +701,14 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
           // that (1) we never need to reconstruct a collapsible segment; (2) we
           // may actually have to truncate the non-collapsible segment obtained
           // from the checkpoint.
-          LOG(INFO) << "Restoring to initial checkpoint at " << checkpoint;
+          LOG(INFO) << "Restoring " << vessel->ShortDebugString()
+                    << " to initial checkpoint at " << checkpoint;
 
           DiscreteTrajectorySegmentIterator<Barycentric> unused;
           auto reanimated_trajectory =
               DiscreteTrajectory<Barycentric>::ReadFromMessage(
                   message.non_collapsible_segment(),
                   /*tracked=*/{&unused});
-          for (auto& s : reanimated_trajectory.segments()) {
-            LOG(ERROR) << s.size();
-            if (!s.empty()) {
-              LOG(ERROR) << s.front().time << " "<<s.back().time;
-              }
-          }
           CHECK(!reanimated_trajectory.empty());
           CHECK_EQ(checkpoint, reanimated_trajectory.back().time);
           reanimated_trajectory.ForgetAfter(vessel->trajectory().t_min());
@@ -800,7 +787,8 @@ absl::Status Vessel::Reanimate(Instant const desired_t_min) {
   // there for some of the subtle points.
   static_assert(base::is_serializable_v<Barycentric>);
   std::set<Instant> checkpoints;
-  LOG(INFO) << "Reanimating until " << desired_t_min;
+  LOG(INFO) << "Reanimating " << ShortDebugString() << " until "
+            << desired_t_min;
 
   Instant t_final;
   {
@@ -842,8 +830,8 @@ absl::StatusOr<Instant> Vessel::ReanimateOneCheckpoint(
     Instant const& t_initial,
     Instant const& t_final) {
   CHECK_LE(t_initial, t_final);
-  LOG(INFO) << "Restoring to checkpoint at " << t_initial << " until "
-            << t_final;
+  LOG(INFO) << "Restoring " << ShortDebugString() << " to checkpoint at "
+            << t_initial << " until " << t_final;
 
   // Restore the non-collapsible segment that was fully saved.  It was the
   // backstory when the checkpoint was taken.

@@ -239,7 +239,7 @@
     <None Include="3 vessels.proto.bin">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="reentry.proto.b64">
+    <None Include="reanimation test.proto.b64">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
