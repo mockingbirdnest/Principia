@@ -2,6 +2,7 @@
 #pragma once
 
 #include <limits>
+#include <string>
 #include <type_traits>
 
 #include "base/macros.hpp"
