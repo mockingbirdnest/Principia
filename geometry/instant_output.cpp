@@ -1,5 +1,6 @@
 ﻿
 #include <limits>
+#include <string>
 #include <string_view>
 
 #include "absl/strings/str_format.h"
@@ -43,6 +44,10 @@ std::ostream& operator<<(std::ostream& os, Instant const& t) {
   }
   // The operator<< on the Time prints the requisite sign.
   return os << "J2000" << from_j2000 << " (TT)";
+}
+
+std::string DebugString(const Instant& t) {
+  return (std::stringstream() << t).str();
 }
 
 }  // namespace internal_point

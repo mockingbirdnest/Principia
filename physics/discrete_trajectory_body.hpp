@@ -783,25 +783,27 @@ absl::Status DiscreteTrajectory<Frame>::ConsistencyStatus() const {
       // "helpfully" paper over differences in degrees of freedom as long as the
       // times match.  We must look at the endpoints of the timeline explicitly.
       if (!sit->timeline_empty()) {
-        auto const timeline_rbegin = --sit->timeline_end();
-        auto const timeline_begin = std::next(sit)->timeline_begin();
-        if (timeline_rbegin->time != timeline_begin->time) {
-          return absl::InternalError(
-              absl::StrCat("Duplicated time mismatch ",
-                           DebugString(timeline_rbegin->time),
-                           " and ",
-                           DebugString(timeline_begin->time),
-                           " for segment #",
-                           i));
-        } else if (timeline_rbegin->degrees_of_freedom !=
-                   timeline_begin->degrees_of_freedom) {
-          return absl::InternalError(
-              absl::StrCat("Duplicated degrees of freedom mismatch ",
-                           DebugString(timeline_rbegin->degrees_of_freedom),
-                           " and ",
-                           DebugString(timeline_begin->degrees_of_freedom),
-                           " for segment #",
-                           i));
+        auto const& [left_time, left_dof] = *--sit->timeline_end();
+        auto const& [right_time, right_dof] = *std::next(sit)->timeline_begin();
+        if (left_time != right_time) {
+          return absl::InternalError(absl::StrCat("Duplicated time mismatch ",
+                                                  DebugString(left_time),
+                                                  " and ",
+                                                  DebugString(right_time),
+                                                  " for segment #",
+                                                  i));
+        } else if (left_dof != right_dof) {
+          bool const left_is_nan = left_dof != left_dof;
+          bool const right_is_nan = right_dof != right_dof;
+          if (!(left_is_nan && right_is_nan)) {
+            return absl::InternalError(
+                absl::StrCat("Duplicated degrees of freedom mismatch ",
+                             DebugString(left_dof),
+                             " and ",
+                             DebugString(right_dof),
+                             " for segment #",
+                             i));
+          }
         }
       }
     }
