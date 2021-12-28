@@ -280,8 +280,21 @@ void DiscreteTrajectory<Frame>::ForgetAfter(Instant const& t) {
     clear();
     return;
   }
-  auto const sit = leit->second;
+
+  // |FindSegment| gives us the most recent segment comprising |t|.  If |t| is
+  // exactly at the beginning of a segment, it is possible that there would be
+  // 1-point segments at |t| before that segment.  Let's find them and include
+  // them in the forgetting.
+  auto sit = leit->second;
+  while (sit != segments_->begin()) {
+    auto previous_sit = std::prev(sit);
+    if (previous_sit->empty() || previous_sit->front().time != t) {
+      break;
+    }
+    sit = previous_sit;
+  }
   sit->ForgetAfter(t);
+
   // Here |sit| designates a segment starting at or after |t|.  If |t| is
   // exactly at the beginning of the segment,
   // |DiscreteTrajectorySegment::ForgetAfter| will leave it empty.  In that
@@ -431,8 +444,15 @@ void DiscreteTrajectory<Frame>::Merge(DiscreteTrajectory<Frame> trajectory) {
                           /*to=*/*this,
                           /*to_segments_begin=*/end_before_splice);
       break;
+    } else if (sit_t != segments_->end()) {
+      // No more segments in the source.  Make sure that we restore the time-to-
+      // segment map for the segments that follows the last one in the source.
+      if (!sit_t->empty()) {
+        segment_by_left_endpoint_.insert_or_assign(sit_t->front().time, sit_t);
+      }
+      ++sit_t;
     } else {
-      // No more segments in the source, or both lists done.
+      // Both lists done.
       break;
     }
   }
@@ -763,25 +783,27 @@ absl::Status DiscreteTrajectory<Frame>::ConsistencyStatus() const {
       // "helpfully" paper over differences in degrees of freedom as long as the
       // times match.  We must look at the endpoints of the timeline explicitly.
       if (!sit->timeline_empty()) {
-        auto const timeline_rbegin = --sit->timeline_end();
-        auto const timeline_begin = std::next(sit)->timeline_begin();
-        if (timeline_rbegin->time != timeline_begin->time) {
-          return absl::InternalError(
-              absl::StrCat("Duplicated time mismatch ",
-                           DebugString(timeline_rbegin->time),
-                           " and ",
-                           DebugString(timeline_begin->time),
-                           " for segment #",
-                           i));
-        } else if (timeline_rbegin->degrees_of_freedom !=
-                   timeline_begin->degrees_of_freedom) {
-          return absl::InternalError(
-              absl::StrCat("Duplicated degrees of freedom mismatch ",
-                           DebugString(timeline_rbegin->degrees_of_freedom),
-                           " and ",
-                           DebugString(timeline_begin->degrees_of_freedom),
-                           " for segment #",
-                           i));
+        auto const& [left_time, left_dof] = *--sit->timeline_end();
+        auto const& [right_time, right_dof] = *std::next(sit)->timeline_begin();
+        if (left_time != right_time) {
+          return absl::InternalError(absl::StrCat("Duplicated time mismatch ",
+                                                  DebugString(left_time),
+                                                  " and ",
+                                                  DebugString(right_time),
+                                                  " for segment #",
+                                                  i));
+        } else if (left_dof != right_dof) {
+          bool const left_is_nan = left_dof != left_dof;
+          bool const right_is_nan = right_dof != right_dof;
+          if (!(left_is_nan && right_is_nan)) {
+            return absl::InternalError(
+                absl::StrCat("Duplicated degrees of freedom mismatch ",
+                             DebugString(left_dof),
+                             " and ",
+                             DebugString(right_dof),
+                             " for segment #",
+                             i));
+          }
         }
       }
     }
