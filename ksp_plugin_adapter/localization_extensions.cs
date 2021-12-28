@@ -166,7 +166,7 @@ internal static class L10N {
     // later would do.
     string template = Localizer.GetStringByTag(name);
     for (int n = 1; n <= resolved_args.Count; ++n) {
-      template.Replace($"<<X:{n}>>", resolved_args[n - 1]);
+      template = template.Replace($"<<X:{n}>>", resolved_args[n - 1]);
     }
 
     Lingoona.Grammar.setLanguage(UILanguage());

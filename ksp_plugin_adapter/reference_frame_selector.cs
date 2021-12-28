@@ -445,7 +445,8 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     if (UnityEngine.GUILayout.Button(
         L10N.CacheFormat("#Principia_ReferenceFrameSelector_ToggleButton",
                          name_,
-                         Name()))) {
+                         Name(),
+                         NavballName()))) {
       Toggle();
     }
   }
@@ -458,7 +459,8 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   protected override string Title =>
       L10N.CacheFormat("#Principia_ReferenceFrameSelector_Title",
                        name_,
-                       Name());
+                       Name(),
+                       NavballName());
 
   protected override void RenderWindow(int window_id) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
