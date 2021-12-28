@@ -39,7 +39,7 @@ using ::std::placeholders::_1;
 using namespace std::chrono_literals;
 
 // TODO(phl): Move this to some kind of parameters.
-constexpr std::int64_t max_points_to_serialize = 12'000;
+constexpr std::int64_t max_points_to_serialize = 20'000;
 
 bool operator!=(Vessel::PrognosticatorParameters const& left,
                 Vessel::PrognosticatorParameters const& right) {
