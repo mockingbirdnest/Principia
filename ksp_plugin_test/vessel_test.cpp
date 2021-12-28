@@ -689,7 +689,7 @@ TEST_F(VesselTest, SerializationSuccess) {
 TEST_F(VesselTest, TailSerialization) {
   // Must be large enough that truncation happens.
   // TODO(phl): Don't hard-wire numbers.
-  constexpr std::int64_t number_of_points = 100'000;
+  constexpr std::int64_t number_of_points = 200'000;
 
   MockFunction<int(not_null<PileUp const*>)>
       serialization_index_for_pile_up;
@@ -743,7 +743,7 @@ TEST_F(VesselTest, TailSerialization) {
 
   vessel_.DetectCollapsibilityChange();
   vessel_.AdvanceTime();
-  EXPECT_EQ(12'569,
+  EXPECT_EQ(25'139,
             std::distance(vessel_.trajectory().begin(),
                           vessel_.psychohistory()->begin()));
 
@@ -761,12 +761,12 @@ TEST_F(VesselTest, TailSerialization) {
   {
     // Collapsible segment of the history (backstory), truncated to the left.
     auto const& segment1 = message.history().segment(1);
-    EXPECT_EQ(79, segment1.number_of_dense_points());
-    EXPECT_EQ(t0_ + 4'553 * Second,
+    EXPECT_EQ(159, segment1.number_of_dense_points());
+    EXPECT_EQ("2000-01-01T23:25:13"_TT,
               Instant::ReadFromMessage(segment1.exact(0).instant()));
     EXPECT_EQ(t0_ + (number_of_points - 1) * Second,
               Instant::ReadFromMessage(segment1.exact(1).instant()));
-    EXPECT_EQ(12'000, segment1.zfp().timeline_size());
+    EXPECT_EQ(20'000, segment1.zfp().timeline_size());
   }
   {
     // Psychohistory, only one point.
@@ -785,7 +785,7 @@ TEST_F(VesselTest, TailSerialization) {
       message, &celestial_, &ephemeris_, /*deletion_callback=*/nullptr);
   EXPECT_TRUE(v->trajectory().segments().begin()->empty());
   auto const backstory = std::next(v->trajectory().segments().begin());
-  EXPECT_EQ(t0_ + 4'553 * Second, backstory->front().time);
+  EXPECT_EQ("2000-01-01T23:25:13"_TT, backstory->front().time);
   EXPECT_EQ(t0_ + (number_of_points - 1) * Second, backstory->back().time);
 }
 
