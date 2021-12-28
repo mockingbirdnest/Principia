@@ -4,6 +4,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <queue>
 #include <set>
 #include <string>
 #include <vector>
@@ -115,18 +116,18 @@ class Vessel {
   // Detects a change in the collapsibility of the vessel and creates a new
   // trajectory segment if needed.  Must be called after the pile-ups have been
   // collected.
-  virtual void DetectCollapsibilityChange() EXCLUDES(lock_);
+  virtual void DetectCollapsibilityChange();
 
-  // If the history is empty, appends a single point to it, computed as the
+  // If the trajectory is empty, appends a single point to it, computed as the
   // barycentre of all parts.  |parts_| must not be empty.  After this call,
-  // |history_| is never empty again and the psychohistory is usable.  Must be
-  // called (at least once) after the creation of the vessel.
-  virtual void CreateHistoryIfNeeded(Instant const& t) EXCLUDES(lock_);
+  // |trajectory_| is never empty again and the psychohistory is usable.  Must
+  // be called (at least once) after the creation of the vessel.
+  virtual void CreateTrajectoryIfNeeded(Instant const& t);
 
-  // Disables downsampling for the history of this vessel.  This is useful when
-  // the vessel collided with a celestial, as downsampling might run into
+  // Disables downsampling for the backstory of this vessel.  This is useful
+  // when the vessel collided with a celestial, as downsampling might run into
   // trouble.
-  virtual void DisableDownsampling() EXCLUDES(lock_);
+  virtual void DisableDownsampling();
 
   // Returns the part with the given ID.  Such a part must have been added using
   // |AddPart|.
@@ -138,7 +139,6 @@ class Vessel {
   virtual void ForAllParts(std::function<void(Part&)> action) const;
 
   virtual DiscreteTrajectory<Barycentric> const& trajectory() const;
-  virtual DiscreteTrajectorySegmentIterator<Barycentric> history() const;
   virtual DiscreteTrajectorySegmentIterator<Barycentric> psychohistory() const;
   virtual DiscreteTrajectorySegmentIterator<Barycentric> prediction() const;
 
@@ -157,6 +157,14 @@ class Vessel {
   // psychohistory.  Clears the parts' history and psychohistory.
   virtual void AdvanceTime();
 
+  // Asks the reanimator thread to asynchronously reconstruct the past so that
+  // the |t_min()| of the vessel ultimately ends up at or before
+  // |desired_t_min|.
+  void RequestReanimation(Instant const& desired_t_min) EXCLUDES(lock_);
+
+  // Blocks until the |t_min()| of the vessel is at or before |desired_t_min|.
+  void WaitForReanimation(Instant const& desired_t_min) EXCLUDES(lock_);
+
   // Creates a |flight_plan_| at the end of history using the given parameters.
   virtual void CreateFlightPlan(
       Instant const& final_time,
@@ -164,7 +172,7 @@ class Vessel {
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
           flight_plan_adaptive_step_parameters,
       Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
-          flight_plan_generalized_adaptive_step_parameters) EXCLUDES(lock_);
+          flight_plan_generalized_adaptive_step_parameters);
 
   // Deletes the |flight_plan_|.  Performs no action unless |has_flight_plan()|.
   virtual void DeleteFlightPlan();
@@ -178,7 +186,7 @@ class Vessel {
   // performed.
   // If |history_->back().time| is greater than the current desired final time,
   // the flight plan length is kept; otherwise, the desired final time is kept.
-  absl::Status RebaseFlightPlan(Mass const& initial_mass) EXCLUDES(lock_);
+  absl::Status RebaseFlightPlan(Mass const& initial_mass);
 
   // Tries to replace the current prediction with a more recently computed one.
   // No guarantees that this happens.  No guarantees regarding the end time of
@@ -217,8 +225,7 @@ class Vessel {
   // The vessel must satisfy |is_initialized()|.
   virtual void WriteToMessage(not_null<serialization::Vessel*> message,
                               PileUp::SerializationIndexForPileUp const&
-                                  serialization_index_for_pile_up) const
-      EXCLUDES(lock_);
+                                  serialization_index_for_pile_up) const;
   static not_null<std::unique_ptr<Vessel>> ReadFromMessage(
       serialization::Vessel const& message,
       not_null<Celestial const*> parent,
@@ -258,10 +265,19 @@ class Vessel {
   absl::Status Reanimate(Instant const desired_t_min) EXCLUDES(lock_);
 
   // |t_initial| is the time of the checkpoint, which is the end of the non-
-  // collapsible segment.
-  absl::Status ReanimateOneCheckpoint(
+  // collapsible segment.  |t_final| is the start of the trajectory or of the
+  // next reanimated segment.  Returns the start of this reanimated segment,
+  // which will be the |t_final| of the next iteration.
+  absl::StatusOr<Instant> ReanimateOneCheckpoint(
       serialization::Vessel::Checkpoint const& message,
-      Instant const& t_initial) EXCLUDES(lock_);
+      Instant const& t_initial,
+      Instant const& t_final) EXCLUDES(lock_);
+
+  // Merges any reanimated trajectories found in the queue and returns true if
+  // the reanimation reached |desired_t_min|, or if the vessel is fully
+  // reanimated.
+  bool DesiredTMinReachedOrFullyReanimated(Instant const& desired_t_min)
+      SHARED_LOCKS_REQUIRED(lock_);
 
   // Runs the integrator to compute the |prognostication_| based on the given
   // parameters.
@@ -293,11 +309,9 @@ class Vessel {
   // The parent body for the 2-body approximation.
   not_null<Celestial const*> parent_;
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
-  // TODO(phl): Serialize this field.
-  DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters const
+  std::optional<DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters>
       downsampling_parameters_;
 
-  // TODO(phl): Verify locking.
   mutable absl::Mutex lock_;
 
   // When reading a pre-Zermelo save, the existing history must be
@@ -307,22 +321,25 @@ class Vessel {
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
   std::set<PartId> kept_parts_;
 
-  // The vessel trajectory is made of the history (always present) and (most of
-  // the time) the psychohistory and prediction.  The prediction is periodically
-  // recomputed by the prognosticator.
+  // The vessel trajectory is made of a number of history segments ending at the
+  // backstory and (most of the time) the psychohistory and prediction.  The
+  // prediction is periodically recomputed by the prognosticator.  Only grows
+  // "backwards" under |lock_|.
   DiscreteTrajectory<Barycentric> trajectory_;
 
   not_null<std::unique_ptr<Checkpointer<serialization::Vessel>>> checkpointer_;
 
-  // This member must only be accessed by the |reanimator_| thread, or before
-  // the |reanimator_| thread is started.
-  Instant oldest_reanimated_checkpoint_ = InfinitePast;
+  Instant oldest_reanimated_checkpoint_ GUARDED_BY(lock_) = InfinitePast;
 
-  // See the comments in pile_up.hpp for an explanation of the terminology.
-  // The |history_| is empty until the first call to CreateHistoryIfNeeded.
-  // It is made of a series of forks, alternatively non-collapsible and
-  // collapsible.
-  DiscreteTrajectorySegmentIterator<Barycentric> history_
+  // The techniques and terminology follow [Lov22].
+  RecurringThread<Instant> reanimator_;
+
+  // Parameter passed to the last call to |RequestReanimation|, if any.
+  std::optional<Instant> last_desired_t_min_;
+
+  // The trajectories that have been reanimated are put in this queue by
+  // ReanimateOneCheckpoint and consumed by RequestReanimation.
+  std::queue<DiscreteTrajectory<Barycentric>> reanimated_trajectories_
       GUARDED_BY(lock_);
 
   // The last (most recent) segment of the |history_| prior to the
@@ -330,8 +347,8 @@ class Vessel {
   // |std::prev(psychohistory_)|.
   DiscreteTrajectorySegmentIterator<Barycentric> backstory_;
 
-  // The |psychohistory_| is forked off the end of the |history_| and the
-  // |prediction_| is forked off the end of the |psychohistory_|.
+  // The |psychohistory_| is the segment following the |backstory_| and the
+  // |prediction_| is the segment following the |psychohistory_|.
   DiscreteTrajectorySegmentIterator<Barycentric> psychohistory_;
   DiscreteTrajectorySegmentIterator<Barycentric> prediction_;
 

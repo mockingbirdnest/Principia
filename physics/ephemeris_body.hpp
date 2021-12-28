@@ -245,7 +245,7 @@ Ephemeris<Frame>::Ephemeris(
           [this](Instant const& desired_t_min) {
             return Reanimate(desired_t_min);
           },
-          50ms) {
+          20ms) {  // 50 Hz.
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 

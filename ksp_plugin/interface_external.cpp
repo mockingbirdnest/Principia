@@ -370,15 +370,15 @@ Status* __cdecl principia__ExternalVesselGetPosition(
             absl::StrCat("No vessel with GUID ", vessel_guid))));
   }
   auto const& vessel = *plugin->GetVessel(vessel_guid);
-  auto const history = vessel.history();
+  auto const& trajectory = vessel.trajectory();
   auto const psychohistory = vessel.psychohistory();
   Instant const t = FromGameTime(*plugin, time);
-  if (t < history->t_min() || t > psychohistory->t_max()) {
+  if (t < trajectory.t_min() || t > psychohistory->t_max()) {
     return m.Return(ToNewStatus(
         absl::OutOfRangeError(
             (std::stringstream{}
              << "|time| " << t << " does not lie within the domain ["
-             << history->t_min() << ", " << psychohistory->t_max()
+             << trajectory.t_min() << ", " << psychohistory->t_max()
              << "] of the history/psychohistory of "
              << vessel.ShortDebugString()).str())));
   }

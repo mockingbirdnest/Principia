@@ -180,6 +180,8 @@ message Vessel {
   optional FlightPlan flight_plan = 4;
   optional bool is_collapsible = 22;  // Added in Zermelo.
   repeated Checkpoint checkpoint = 21;  // Added in Zermelo.
+  optional DiscreteTrajectorySegment.DownsamplingParameters
+      downsampling_parameters = 23;  // Added in Zermelo.
 
   // Pre-Буняковский.
   reserved 2, 3, 5;
