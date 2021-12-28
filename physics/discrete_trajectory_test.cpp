@@ -649,6 +649,20 @@ TEST_F(DiscreteTrajectoryTest, Merge) {
 
     trajectory2.Merge(std::move(trajectory1));
   }
+  {
+    // This used to fail a consistency check because the segments of the target
+    // that follow the end of the source were not processed, and the time-to-
+    // segment map was left inconsistent.
+    auto trajectory1 = MakeTrajectory();
+    auto trajectory2 = MakeTrajectory();
+
+    trajectory1.ForgetBefore(t0_ + 4 * Second);
+    auto sit = std::next(trajectory1.segments().begin());
+    trajectory1.DeleteSegments(sit);
+    trajectory2.ForgetBefore(t0_ + 4 * Second);
+
+    trajectory2.Merge(std::move(trajectory1));
+  }
 }
 
 TEST_F(DiscreteTrajectoryTest, TMinTMaxEvaluate) {
