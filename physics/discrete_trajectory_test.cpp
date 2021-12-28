@@ -492,29 +492,39 @@ TEST_F(DiscreteTrajectoryTest, DeleteSegments) {
 }
 
 TEST_F(DiscreteTrajectoryTest, ForgetAfter) {
-  auto trajectory = MakeTrajectory();
+  {
+    auto trajectory = MakeTrajectory();
 
-  trajectory.ForgetAfter(trajectory.end());
-  EXPECT_EQ(3, trajectory.segments().size());
+    trajectory.ForgetAfter(trajectory.end());
+    EXPECT_EQ(3, trajectory.segments().size());
 
-  trajectory.ForgetAfter(t0_ + 12 * Second);
-  EXPECT_EQ(3, trajectory.segments().size());
-  EXPECT_EQ(t0_, trajectory.begin()->time);
-  EXPECT_EQ(t0_ + 11 * Second, trajectory.rbegin()->time);
+    trajectory.ForgetAfter(t0_ + 12 * Second);
+    EXPECT_EQ(3, trajectory.segments().size());
+    EXPECT_EQ(t0_, trajectory.begin()->time);
+    EXPECT_EQ(t0_ + 11 * Second, trajectory.rbegin()->time);
 
-  trajectory.ForgetAfter(t0_ + 6.1 * Second);
-  EXPECT_EQ(2, trajectory.segments().size());
-  EXPECT_EQ(t0_, trajectory.begin()->time);
-  EXPECT_EQ(t0_ + 6 * Second, trajectory.rbegin()->time);
+    trajectory.ForgetAfter(t0_ + 6.1 * Second);
+    EXPECT_EQ(2, trajectory.segments().size());
+    EXPECT_EQ(t0_, trajectory.begin()->time);
+    EXPECT_EQ(t0_ + 6 * Second, trajectory.rbegin()->time);
 
-  trajectory.ForgetAfter(t0_ + 4 * Second);
-  EXPECT_EQ(1, trajectory.segments().size());
-  EXPECT_EQ(t0_, trajectory.begin()->time);
-  EXPECT_EQ(t0_ + 4 * Second, trajectory.rbegin()->time);
+    trajectory.ForgetAfter(t0_ + 4 * Second);
+    EXPECT_EQ(1, trajectory.segments().size());
+    EXPECT_EQ(t0_, trajectory.begin()->time);
+    EXPECT_EQ(t0_ + 4 * Second, trajectory.rbegin()->time);
 
-  trajectory.ForgetAfter(t0_);
-  EXPECT_TRUE(trajectory.empty());
-  EXPECT_EQ(1, trajectory.segments().size());
+    trajectory.ForgetAfter(t0_);
+    EXPECT_TRUE(trajectory.empty());
+    EXPECT_EQ(1, trajectory.segments().size());
+  }
+  {
+    // This used to fail because ForgetAfter would leave a 1-point segment at
+    // t0_ + 9 * Second which was not in the time-to-segment map.
+    auto trajectory = MakeTrajectory();
+
+    trajectory.ForgetBefore(t0_ + 9 * Second);
+    trajectory.ForgetAfter(t0_ + 9 * Second);
+  }
 }
 
 TEST_F(DiscreteTrajectoryTest, ForgetBefore) {
