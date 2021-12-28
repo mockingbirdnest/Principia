@@ -280,8 +280,21 @@ void DiscreteTrajectory<Frame>::ForgetAfter(Instant const& t) {
     clear();
     return;
   }
-  auto const sit = leit->second;
+
+  // |FindSegment| gives us the most recent segment comprising |t|.  If |t| is
+  // exactly at the beginning of a segment, it is possible that there would be
+  // 1-point segments at |t| before that segment.  Let's find them and include
+  // them in the forgetting.
+  auto sit = leit->second;
+  while (sit != segments_->begin()) {
+    auto previous_sit = std::prev(sit);
+    if (previous_sit->empty() || previous_sit->front().time != t) {
+      break;
+    }
+    sit = previous_sit;
+  }
   sit->ForgetAfter(t);
+
   // Here |sit| designates a segment starting at or after |t|.  If |t| is
   // exactly at the beginning of the segment,
   // |DiscreteTrajectorySegment::ForgetAfter| will leave it empty.  In that
