@@ -408,8 +408,17 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
       /*end=*/std::next(prediction_->begin()),
       /*tracked=*/{history_, psychohistory_, prediction_},
       /*exact=*/{});
-  if (flight_plan_ != nullptr) {
-    flight_plan_->WriteToMessage(message->mutable_flight_plan());
+  if (std::holds_alternative<serialization::FlightPlan>(flight_plan_)) {
+    *message->mutable_flight_plan() =
+        std::get<serialization::FlightPlan>(flight_plan_);
+  } else if (std::holds_alternative<std::unique_ptr<FlightPlan>>(
+                 flight_plan_)) {
+    auto& flight_plan = std::get<std::unique_ptr<FlightPlan>>(flight_plan_);
+    if (flight_plan != nullptr) {
+      flight_plan->WriteToMessage(message->mutable_flight_plan());
+    }
+  } else {
+    LOG(FATAL) << "Unexpected flight plan variant " << flight_plan_.index();
   }
 }
 
