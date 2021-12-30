@@ -6,6 +6,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <variant>
 #include <vector>
 
 #include "absl/status/status.h"
@@ -240,6 +241,8 @@ class Vessel {
   // become the new |prediction_|.  If |prediction_| is not null, it is deleted.
   void AttachPrediction(DiscreteTrajectory<Barycentric>&& trajectory);
 
+  bool has_deserialized_flight_plan() const;
+
   GUID const guid_;
   std::string name_;
 
@@ -267,7 +270,8 @@ class Vessel {
   RecurringThread<PrognosticatorParameters,
                   DiscreteTrajectory<Barycentric>> prognosticator_;
 
-  std::unique_ptr<FlightPlan> flight_plan_;
+  std::variant<std::unique_ptr<FlightPlan>,
+               serialization::FlightPlan> flight_plan_;
 
   std::optional<OrbitAnalyser> orbit_analyser_;
 
