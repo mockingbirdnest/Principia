@@ -520,7 +520,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   }
 
   if (message.has_flight_plan()) {
-    // After हरीश चंद्र we deserialize the flight plan lazily.
+    // Starting with हरीश चंद्र we deserialize the flight plan lazily.
     vessel->flight_plan_
         .emplace<serialization::FlightPlan>(message.flight_plan());
   }
