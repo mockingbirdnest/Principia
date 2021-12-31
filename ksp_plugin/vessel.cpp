@@ -232,8 +232,7 @@ bool Vessel::has_flight_plan() const {
 
 FlightPlan& Vessel::flight_plan() const {
   CHECK(has_deserialized_flight_plan());
-  auto& flight_plan =
-      *std::get<std::unique_ptr<FlightPlan>>(flight_plan_);
+  auto& flight_plan = *std::get<std::unique_ptr<FlightPlan>>(flight_plan_);
   return flight_plan;
 }
 
