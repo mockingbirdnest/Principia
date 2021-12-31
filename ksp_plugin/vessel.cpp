@@ -225,6 +225,11 @@ Vessel::prediction_adaptive_step_parameters() const {
   return prediction_adaptive_step_parameters_;
 }
 
+bool Vessel::has_flight_plan() const {
+  return has_deserialized_flight_plan() ||
+         std::holds_alternative<serialization::FlightPlan>(flight_plan_);
+}
+
 FlightPlan& Vessel::flight_plan() const {
   CHECK(has_deserialized_flight_plan());
   auto& flight_plan =
@@ -232,9 +237,11 @@ FlightPlan& Vessel::flight_plan() const {
   return flight_plan;
 }
 
-bool Vessel::has_flight_plan() const {
-  return has_deserialized_flight_plan() ||
-         std::holds_alternative<serialization::FlightPlan>(flight_plan_);
+void Vessel::ReadFlightPlanFromMessage() {
+  if (std::holds_alternative<serialization::FlightPlan>(flight_plan_)) {
+    auto const& message = std::get<serialization::FlightPlan>(flight_plan_);
+    flight_plan_ = FlightPlan::ReadFromMessage(message, ephemeris_);
+  }
 }
 
 void Vessel::AdvanceTime() {
@@ -513,8 +520,9 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   }
 
   if (message.has_flight_plan()) {
-    vessel->flight_plan_ = FlightPlan::ReadFromMessage(message.flight_plan(),
-                                                       ephemeris);
+    // After हरीश चंद्र we deserialize the flight plan lazily.
+    vessel->flight_plan_
+        .emplace<serialization::FlightPlan>(message.flight_plan());
   }
   return vessel;
 }

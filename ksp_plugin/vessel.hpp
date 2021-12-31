@@ -137,9 +137,19 @@ class Vessel {
   virtual Ephemeris<Barycentric>::AdaptiveStepParameters const&
   prediction_adaptive_step_parameters() const;
 
-  // Requires |has_flight_plan()|.
-  virtual FlightPlan& flight_plan() const;
+  // Returns true iff the vessel has a flight plan, deserialized or not.  Never
+  // fails.
   virtual bool has_flight_plan() const;
+
+  // If the flight plan has been deserialized, returns it.  Fails if there is no
+  // flight plan or the flight plan has no been deserialized.
+  virtual FlightPlan& flight_plan() const;
+
+  // Deserializes the flight plan if it is held lazily by this object.  Does
+  // nothing if there is no such flight plan.  If |has_flight_plan| returns
+  // true, calling this method ensures that the flight plan may later be
+  // accessed by |fligh_plan|.  This method is idempotent.
+  void ReadFlightPlanFromMessage();
 
   // Extends the history and psychohistory of this vessel by computing the
   // centre of mass of its parts at every point in their history and
