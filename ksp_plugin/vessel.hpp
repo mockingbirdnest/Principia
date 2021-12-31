@@ -142,7 +142,7 @@ class Vessel {
   virtual bool has_flight_plan() const;
 
   // If the flight plan has been deserialized, returns it.  Fails if there is no
-  // flight plan or the flight plan has no been deserialized.
+  // flight plan or the flight plan has not been deserialized.
   virtual FlightPlan& flight_plan() const;
 
   // Deserializes the flight plan if it is held lazily by this object.  Does
@@ -251,6 +251,7 @@ class Vessel {
   // become the new |prediction_|.  If |prediction_| is not null, it is deleted.
   void AttachPrediction(DiscreteTrajectory<Barycentric>&& trajectory);
 
+  // Returns true if this object holds a non-null deserialized flight plan.
   bool has_deserialized_flight_plan() const;
 
   GUID const guid_;

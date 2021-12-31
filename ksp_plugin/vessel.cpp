@@ -310,7 +310,7 @@ void Vessel::CreateFlightPlan(
 }
 
 void Vessel::DeleteFlightPlan() {
-  flight_plan_.emplace<std::unique_ptr<FlightPlan>>(nullptr);
+  flight_plan_.emplace<std::unique_ptr<FlightPlan>>();
 }
 
 absl::Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
