@@ -1294,6 +1294,11 @@ Rotation<Barycentric, AliceSun> const& Plugin::PlanetariumRotation() const {
   return *cached_planetarium_rotation_;
 }
 
+Rotation<CameraCompensatedReference, CameraReference> const&
+Plugin::CameraCompensation() const {
+  return *camera_compensation_;
+}
+
 Renderer& Plugin::renderer() {
   return *renderer_;
 }
@@ -1574,6 +1579,10 @@ void Plugin::UpdatePlanetariumRotation() {
           Bivector<double, PlanetariumFrame>({0, 0, 1}),
           DefinesFrame<AliceSun>{}) *
       to_planetarium;
+  camera_compensation_ = Rotation<CameraCompensatedReference, CameraReference>(
+      -planetarium_rotation_,
+      Bivector<double, CameraReference>({0, 1, 0}),
+      DefinesFrame<CameraCompensatedReference>{});
 }
 
 Velocity<World> Plugin::VesselVelocity(

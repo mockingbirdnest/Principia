@@ -443,6 +443,8 @@ class Plugin {
   // this change of basis is all that's required to convert relative velocities
   // or displacements between simultaneous events.
   virtual Rotation<Barycentric, AliceSun> const& PlanetariumRotation() const;
+  virtual Rotation<CameraCompensatedReference, CameraReference> const&
+  CameraCompensation() const;
 
   virtual Renderer& renderer();
   virtual Renderer const& renderer() const;
@@ -534,6 +536,8 @@ class Plugin {
 
   Angle planetarium_rotation_;
   std::optional<Rotation<Barycentric, AliceSun>> cached_planetarium_rotation_;
+  std::optional<Rotation<CameraCompensatedReference, CameraReference>>
+      camera_compensation_;
   // The game epoch in real time.
   Instant game_epoch_;
   // The current in-game universal time.

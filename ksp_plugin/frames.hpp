@@ -99,6 +99,17 @@ using CameraReference = Frame<serialization::Frame::PluginTag,
                               Handedness::Left,
                               serialization::Frame::CAMERA_REFERENCE>;
 
+// |CameraReference|, rotated about its y axis by the angle of the planetarium
+// rotation.  KSP compensates for the planetarium rotation so that the
+// orientation of the camera remains inertially fixed regardless of whether
+// World is rotating; we must undo this compensation in order for the camera to
+// be fixed in |CameraReference|.
+using CameraCompensatedReference =
+    Frame<serialization::Frame::PluginTag,
+          Arbitrary,
+          Handedness::Left,
+          serialization::Frame::CAMERA_COMPENSATED_REFERENCE>;
+
 // A nonrotating referencence frame comoving with the sun with the same axes as
 // |AliceWorld|. Since it is nonrotating (though not inertial), differences
 // between velocities are consistent with those in an inertial reference frame.
@@ -162,6 +173,7 @@ using internal_frames::ApparentWorld;
 using internal_frames::Barycentric;
 using internal_frames::BodyWorld;
 using internal_frames::Camera;
+using internal_frames::CameraCompensatedReference;
 using internal_frames::CameraReference;
 using internal_frames::CelestialSphere;
 using internal_frames::EccentricPart;
