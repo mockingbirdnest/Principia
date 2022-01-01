@@ -26,6 +26,7 @@ JOURNAL_LIB_TRANSLATION_UNITS          := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TR
 MATHEMATICA_LIB_TRANSLATION_UNITS      := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS), $(wildcard mathematica/*.cpp))
 NUMERICS_LIB_TRANSLATION_UNITS         := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS), $(wildcard numerics/*.cpp))
 PHYSICS_LIB_TRANSLATION_UNITS          := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS), $(wildcard physics/*.cpp))
+PLUGIN_TEST_LIB_TRANSLATION_UNITS      := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS), $(wildcard ksp_plugin_test/*.cpp))
 PROTO_FILES                            := $(wildcard */*.proto)
 PROTO_TRANSLATION_UNITS                := $(PROTO_FILES:.proto=.pb.cc)
 PROTO_HEADERS                          := $(PROTO_FILES:.proto=.pb.h)
@@ -202,6 +203,7 @@ JOURNAL_LIB_OBJECTS          := $(addprefix $(OBJ_DIRECTORY), $(JOURNAL_LIB_TRAN
 MATHEMATICA_LIB_OBJECTS      := $(addprefix $(OBJ_DIRECTORY), $(MATHEMATICA_LIB_TRANSLATION_UNITS:.cpp=.o))
 NUMERICS_LIB_OBJECTS         := $(addprefix $(OBJ_DIRECTORY), $(NUMERICS_LIB_TRANSLATION_UNITS:.cpp=.o)) $(VERSION_OBJECTS)
 PHYSICS_LIB_OBJECTS          := $(addprefix $(OBJ_DIRECTORY), $(PHYSICS_LIB_TRANSLATION_UNITS:.cpp=.o))
+PLUGIN_TEST_LIB_OBJECTS      := $(addprefix $(OBJ_DIRECTORY), $(PLUGIN_TEST_LIB_TRANSLATION_UNITS:.cpp=.o))
 TEST_OBJECTS                 := $(addprefix $(OBJ_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=.o))
 FAKE_OR_MOCK_OBJECTS         := $(addprefix $(OBJ_DIRECTORY), $(FAKE_OR_MOCK_TRANSLATION_UNITS:.cpp=.o))
 
@@ -268,7 +270,7 @@ $(PLUGIN_INDEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_INDEPENDENT_TEST_BINS) : $(GMOC
 # NOTE(egg): this assumes that only the plugin-dependent tests need to be linked
 # against mock objects.  The classes further up that are big enough to be mocked
 # are likely to be highly templatized, so this will probably hold for a while.
-$(PRINCIPIA_TEST_BIN) $(PLUGIN_DEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_DEPENDENT_TEST_BINS) : $(FAKE_OR_MOCK_OBJECTS) $(GMOCK_OBJECTS) $(GMOCK_MAIN_OBJECT) $(KSP_PLUGIN) $(ASTRONOMY_LIB_OBJECTS) $(MATHEMATICA_LIB_OBJECTS) $(PHYSICS_LIB_OBJECTS) $(BASE_LIB_OBJECTS) $(NUMERICS_LIB_OBJECTS) $(GEOMETRY_LIB_OBJECTS)
+$(PRINCIPIA_TEST_BIN) $(PLUGIN_DEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_DEPENDENT_TEST_BINS) : $(FAKE_OR_MOCK_OBJECTS) $(GMOCK_OBJECTS) $(GMOCK_MAIN_OBJECT) $(KSP_PLUGIN) $(ASTRONOMY_LIB_OBJECTS) $(MATHEMATICA_LIB_OBJECTS) $(PHYSICS_LIB_OBJECTS) $(BASE_LIB_OBJECTS) $(NUMERICS_LIB_OBJECTS) $(GEOMETRY_LIB_OBJECTS) $(PLUGIN_TEST_LIB_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) $(LIBS) -lpthread -o $@
 

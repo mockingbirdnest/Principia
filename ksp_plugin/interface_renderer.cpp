@@ -145,7 +145,8 @@ WXYZ __cdecl principia__CameraReferenceRotation(Plugin* const plugin) {
   return m.Return(
       ToWXYZ(GetRenderer(plugin)
                  .CameraReferenceRotation(plugin->CurrentTime(),
-                                          plugin->PlanetariumRotation())
+                                          plugin->PlanetariumRotation(),
+                                          plugin->CameraCompensation())
                  .quaternion()));
 }
 
