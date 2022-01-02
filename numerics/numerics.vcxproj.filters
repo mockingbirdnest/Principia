@@ -316,6 +316,9 @@
     <ClCompile Include="next_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="matrix_computations_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="xgscd.proto.txt">
