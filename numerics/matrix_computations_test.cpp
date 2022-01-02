@@ -5,6 +5,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "numerics/fixed_arrays.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -20,8 +21,18 @@ class MatrixComputationsTest : public ::testing::Test {
  protected:
 };
 
+template<typename Scalar>
+using FixedVector4 = FixedVector<Scalar, 4>;
+template<typename Scalar>
+using FixedLowerTriangularMatrix4 = FixedLowerTriangularMatrix<Scalar, 4>;
+template<typename Scalar>
+using FixedUpperTriangularMatrix4 = FixedUpperTriangularMatrix<Scalar, 4>;
+
 using MatrixTypes =
-    ::testing::Types<std::tuple<UnboundedVector<double>,
+    ::testing::Types<std::tuple<FixedVector4<double>,
+                                FixedLowerTriangularMatrix4<double>,
+                                FixedUpperTriangularMatrix4<double>>,
+                     std::tuple<UnboundedVector<double>,
                                 UnboundedLowerTriangularMatrix<double>,
                                 UnboundedUpperTriangularMatrix<double>>>;
 
@@ -71,28 +82,30 @@ TYPED_TEST(MatrixComputationsTest, BackSubstitution) {
   using Vector = typename std::tuple_element<0, TypeParam>::type;
   using UpperTriangularMatrix = typename std::tuple_element<2, TypeParam>::type;
 
-  UpperTriangularMatrix const m3({1, 3, -2,
-                                     4,  7,
-                                         5});
-  Vector const b3({1, 1, -4});
-  Vector const x3_expected({-111.0 / 20.0, 33.0 / 20.0, -4.0 / 5.0});
+  UpperTriangularMatrix const m4({1, 3, -2,  6,
+                                     4,  7, -1,
+                                         5,  3,
+                                             2});
+  Vector const b4({1, 1, -4, 4});
+  Vector const x4_expected({-111.0 / 4.0, 17.0 / 4.0, -2.0, 2.0});
 
-  auto const x3_actual = BackSubstitution(m3, b3);
-  EXPECT_THAT(x3_actual, AlmostEquals(x3_expected, 1));
+  auto const x4_actual = BackSubstitution(m4, b4);
+  EXPECT_THAT(x4_actual, AlmostEquals(x4_expected, 1));
 }
 
 TYPED_TEST(MatrixComputationsTest, ForwardSubstitution) {
   using Vector = typename std::tuple_element<0, TypeParam>::type;
   using LowerTriangularMatrix = typename std::tuple_element<1, TypeParam>::type;
 
-  LowerTriangularMatrix const m3({1,
-                                  3, -2,
-                                  4,  7, 5});
-  Vector const b3({1, 1, -4});
-  Vector const x3_expected({1, 1, -3});
+  LowerTriangularMatrix const m4({ 1,
+                                   3, -2,
+                                   4,  7, 5,
+                                  -6,  9, 1, 2});
+  Vector const b4({1, 1, -4, 4});
+  Vector const x4_expected({1, 1, -3, 2});
 
-  auto const x3_actual = ForwardSubstitution(m3, b3);
-  EXPECT_THAT(x3_actual, AlmostEquals(x3_expected, 0));
+  auto const x4_actual = ForwardSubstitution(m4, b4);
+  EXPECT_THAT(x4_actual, AlmostEquals(x4_expected, 0));
 }
 
 }  // namespace numerics
