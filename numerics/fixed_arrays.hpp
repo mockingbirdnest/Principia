@@ -202,6 +202,20 @@ class FixedUpperTriangularMatrix final {
   std::array<Scalar, dimension> data_;
 };
 
+template<typename Scalar, int size>
+std::ostream& operator<<(std::ostream& out,
+                         FixedVector<Scalar, size> const& vector);
+
+template<typename Scalar, int rows>
+std::ostream& operator<<(
+    std::ostream& out,
+    FixedLowerTriangularMatrix<Scalar, rows> const& matrix);
+
+template<typename Scalar, int columns>
+std::ostream& operator<<(
+    std::ostream& out,
+    FixedUpperTriangularMatrix<Scalar, columns> const& matrix);
+
 }  // namespace internal_fixed_arrays
 
 using internal_fixed_arrays::FixedLowerTriangularMatrix;
