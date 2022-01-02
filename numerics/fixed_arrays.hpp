@@ -102,12 +102,11 @@ FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
     FixedMatrix<ScalarLeft, rows, columns> const& left,
     FixedVector<ScalarRight, columns> const& right);
 
-template<typename Scalar, int rows>
+template<typename Scalar, int rows_>
 class FixedStrictlyLowerTriangularMatrix final {
  public:
-  // TODO(phl): Use the |rows_| style.
-  static constexpr int size = rows;
-  static constexpr int dimension = rows * (rows - 1) / 2;
+  static constexpr int size = rows_;
+  static constexpr int dimension = rows_ * (rows_ - 1) / 2;
 
   constexpr FixedStrictlyLowerTriangularMatrix();
   explicit FixedStrictlyLowerTriangularMatrix(uninitialized_t);
@@ -153,11 +152,62 @@ class FixedLowerTriangularMatrix final {
   std::array<Scalar, dimension> data_;
 };
 
+template<typename Scalar, int columns_>
+class FixedUpperTriangularMatrix final {
+ public:
+  static constexpr int columns = columns_;
+  static constexpr int dimension = columns * (columns + 1) / 2;
+
+  constexpr FixedUpperTriangularMatrix();
+  explicit FixedUpperTriangularMatrix(uninitialized_t);
+
+  // The |data| must be in row-major format.
+  constexpr FixedUpperTriangularMatrix(
+      std::array<Scalar, dimension> const& data);
+
+  bool operator==(FixedUpperTriangularMatrix const& right) const;
+
+  // A helper class for indexing column-major data in a human-friendly manner.
+  template<typename Matrix>
+  class Row {
+   public:
+    Scalar& operator[](int column);
+    Scalar const& operator[](int column) const;
+
+   private:
+    explicit Row(Matrix& matrix, int row);
+
+    // We need to remove the const because, when this class is instantiated with
+    // 'FixedUpperTriangularMatrix const', the first operator[], not the second,
+    // is picked by overload resolution.
+    std::remove_const_t<Matrix>& matrix_;
+    int row_;
+
+    template<typename S, int c>
+    friend class FixedUpperTriangularMatrix;
+  };
+
+  // For  0 ≤ i ≤ j < columns, the entry a_ij is accessed as |a[i][j]|.
+  // if i and j do not satisfy these conditions, the expression |a[i][j]| is
+  // erroneous.
+  Row<FixedUpperTriangularMatrix> operator[](int row);
+  Row<FixedUpperTriangularMatrix const> operator[](int row) const;
+
+ private:
+  // For ease of writing matrices in tests, the input data is received in row-
+  // major format.  This translates a trapezoidal slice to make it column-major.
+  static std::array<Scalar, dimension> Transpose(
+      std::array<Scalar, dimension> const& data);
+
+  std::array<Scalar, dimension> data_;
+};
+
 }  // namespace internal_fixed_arrays
 
 using internal_fixed_arrays::FixedLowerTriangularMatrix;
 using internal_fixed_arrays::FixedMatrix;
 using internal_fixed_arrays::FixedStrictlyLowerTriangularMatrix;
+using internal_fixed_arrays::FixedUpperTriangularMatrix;
 using internal_fixed_arrays::FixedVector;
 
 }  // namespace numerics
