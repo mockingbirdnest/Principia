@@ -16,6 +16,8 @@
   </ImportGroup>
   <ItemGroup>
     <ClInclude Include="apodization_body.hpp" />
+    <ClInclude Include="matrix_computations.hpp" />
+    <ClInclude Include="matrix_computations_body.hpp" />
     <ClInclude Include="combinatorics.hpp" />
     <ClInclude Include="combinatorics_body.hpp" />
     <ClInclude Include="cbrt.hpp" />

@@ -3,6 +3,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "numerics/matrix_computations.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "testing_utilities/almost_equals.hpp"
 

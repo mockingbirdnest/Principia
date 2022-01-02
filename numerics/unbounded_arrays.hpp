@@ -171,31 +171,6 @@ class UnboundedUpperTriangularMatrix final {
   friend class Row;
 };
 
-// If A is the upper half of a symmetric positive definite matrix, returns R so
-// that A = ᵗR R.
-template<typename Scalar>
-UnboundedUpperTriangularMatrix<SquareRoot<Scalar>> CholeskyDecomposition(
-    UnboundedUpperTriangularMatrix<Scalar> const& A);
-
-// If A is the upper half of a symmetric matrix, returns R and D so that
-// that A = ᵗR D R.  The diagonal matrix is represented as a vector.
-template<typename Scalar>
-void ᵗRDRDecomposition(UnboundedUpperTriangularMatrix<Scalar> const& A,
-                       UnboundedUpperTriangularMatrix<double>& R,
-                       UnboundedVector<Scalar>& D);
-
-// Returns x such that U x = b.
-template<typename LScalar, typename RScalar>
-UnboundedVector<Quotient<RScalar, LScalar>> BackSubstitution(
-    UnboundedUpperTriangularMatrix<LScalar> const& U,
-    UnboundedVector<RScalar> const& b);
-
-// Return x such that L x = b.
-template<typename LScalar, typename RScalar>
-UnboundedVector<Quotient<RScalar, LScalar>> ForwardSubstitution(
-    UnboundedLowerTriangularMatrix<LScalar> const& L,
-    UnboundedVector<RScalar> const& b);
-
 template<typename Scalar>
 std::ostream& operator<<(std::ostream& out,
                          UnboundedVector<Scalar> const& vector);
@@ -210,10 +185,6 @@ std::ostream& operator<<(std::ostream& out,
 
 }  // namespace internal_unbounded_arrays
 
-using internal_unbounded_arrays::BackSubstitution;
-using internal_unbounded_arrays::CholeskyDecomposition;
-using internal_unbounded_arrays::ForwardSubstitution;
-using internal_unbounded_arrays::ᵗRDRDecomposition;
 using internal_unbounded_arrays::UnboundedLowerTriangularMatrix;
 using internal_unbounded_arrays::UnboundedUpperTriangularMatrix;
 using internal_unbounded_arrays::UnboundedVector;
