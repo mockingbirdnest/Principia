@@ -102,6 +102,10 @@ class UnboundedLowerTriangularMatrix final {
 template<typename Scalar>
 class UnboundedUpperTriangularMatrix final {
  public:
+  using Element = Scalar;
+  template<typename S>
+  using Self = UnboundedUpperTriangularMatrix<S>;
+
   explicit UnboundedUpperTriangularMatrix(int columns);
   UnboundedUpperTriangularMatrix(int columns, uninitialized_t);
 

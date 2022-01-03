@@ -10,12 +10,26 @@ namespace internal_arrays {
 using quantities::Quotient;
 using quantities::SquareRoot;
 
+template<typename T>
+struct CholeskyGenerator;
+
+template<typename Scalar, template<typename S> typename UpperTriangularMatrix>
+struct CholeskyGenerator<UpperTriangularMatrix<Scalar>> {
+  using type = UpperTriangularMatrix<SquareRoot<Scalar>>;
+};
+
+template<typename Scalar, int columns,
+         template<typename S, int c> typename UpperTriangularMatrix>
+struct CholeskyGenerator<UpperTriangularMatrix<Scalar, columns>> {
+  using type = UpperTriangularMatrix<SquareRoot<Scalar>, columns>;
+};
+
+
 // If A is the upper half of a symmetric positive definite matrix, returns R so
 // that A = ᵗR R.
-template<typename Scalar,
-         template<typename S> typename UpperTriangularMatrix>
-UpperTriangularMatrix<SquareRoot<Scalar>> CholeskyDecomposition(
-    UpperTriangularMatrix<Scalar> const& A);
+template<typename UpperTriangularMatrix>
+typename CholeskyGenerator<UpperTriangularMatrix>::type
+CholeskyDecomposition(UpperTriangularMatrix const& A);
 
 // If A is the upper half of a symmetric matrix, returns R and D so that
 // A = ᵗR D R.  The diagonal matrix is represented as a vector.
