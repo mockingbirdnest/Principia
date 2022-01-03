@@ -329,6 +329,8 @@ class Vessel {
 
   not_null<std::unique_ptr<Checkpointer<serialization::Vessel>>> checkpointer_;
 
+  // Vessels that are constructed de novo won't ever need reanimation, so all
+  // the checkpoints are animate at birth.
   Instant oldest_reanimated_checkpoint_ GUARDED_BY(lock_) = InfinitePast;
 
   // The techniques and terminology follow [Lov22].

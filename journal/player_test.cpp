@@ -1,8 +1,10 @@
 ﻿
 #include "journal/player.hpp"
 
+#include <chrono>
 #include <list>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "benchmark/benchmark.h"
@@ -16,6 +18,8 @@
 
 namespace principia {
 namespace journal {
+
+using namespace std::chrono_literals;
 
 void BM_PlayForReal(benchmark::State& state) {
   while (state.KeepRunning()) {
@@ -88,7 +92,7 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   // An example of how journaling may be used for debugging.  You must set
   // |path| and fill the |method_in| and |method_out_return| protocol buffers.
   std::string path =
-      R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20210811-183504)";  // NOLINT
+      R"(\\CHILDERIC\Users\Public\Public Mockingbird\Principia\Journals\JOURNAL.20220102-152418)";  // NOLINT
   Player player(path);
   int count = 0;
   while (player.Play(count)) {
@@ -122,6 +126,9 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   LOG(ERROR) << "Running unpaired method:\n" << method_in.DebugString();
   CHECK(RunIfAppropriate<FreeVesselsAndPartsAndCollectPileUps>(
       method_in, method_out_return, player));
+#endif
+#if 0
+  std::this_thread::sleep_for(10s);
 #endif
 }
 
