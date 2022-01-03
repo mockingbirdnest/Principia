@@ -190,9 +190,24 @@ void Vessel::DetectCollapsibilityChange() {
       // to reconstruct it, so we must serialize it in a checkpoint.  Note that
       // the last point of the backstory specifies the initial conditions of the
       // next (collapsible) segment.
+      Instant const checkpoint = backstory_->back().time;
       LOG(INFO) << "Writing " << ShortDebugString()
-                << " to checkpoint at: " << backstory_->back().time;
-      checkpointer_->WriteToCheckpoint(backstory_->back().time);
+                << " to checkpoint at: " << checkpoint;
+      checkpointer_->WriteToCheckpoint(checkpoint);
+
+      // If there are no checkpoints in the current trajectory (this would
+      // happen if we restored the last part of trajectory and it didn't overlap
+      // with a checkpoint and no reanimation happened) then the
+      // |oldest_reanimated_checkpoint_| need to be updated to reflect the newly
+      // created checkpoint.
+      {
+        absl::MutexLock l(&lock_);
+        if (oldest_reanimated_checkpoint_ == InfiniteFuture) {
+          oldest_reanimated_checkpoint_ = checkpoint;
+        } else {
+          CHECK_LT(oldest_reanimated_checkpoint_, checkpoint);
+        }
+      }
     }
     auto psychohistory = trajectory_.DetachSegments(psychohistory_);
     backstory_ = trajectory_.NewSegment();

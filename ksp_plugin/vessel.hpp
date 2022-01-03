@@ -37,7 +37,7 @@ namespace internal_vessel {
 
 using base::not_null;
 using base::RecurringThread;
-using geometry::InfinitePast;
+using geometry::InfiniteFuture;
 using geometry::Instant;
 using geometry::Vector;
 using physics::Checkpointer;
@@ -329,7 +329,7 @@ class Vessel {
 
   not_null<std::unique_ptr<Checkpointer<serialization::Vessel>>> checkpointer_;
 
-  Instant oldest_reanimated_checkpoint_ GUARDED_BY(lock_) = InfinitePast;
+  Instant oldest_reanimated_checkpoint_ GUARDED_BY(lock_) = InfiniteFuture;
 
   // The techniques and terminology follow [Lov22].
   RecurringThread<Instant> reanimator_;
