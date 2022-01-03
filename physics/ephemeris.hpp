@@ -445,7 +445,9 @@ class Ephemeris {
       std::unique_ptr<Checkpointer<serialization::Ephemeris>>> checkpointer_;
 
   // This member must only be accessed by the |reanimator_| thread, or before
-  // the |reanimator_| thread is started.
+  // the |reanimator_| thread is started.  An ephemeris that is constructed de
+  // novo won't ever need reanimation, so all the checkpoints are animate at
+  // birth.
   Instant oldest_reanimated_checkpoint_ = InfinitePast;
 
   // The techniques and terminology follow [Lov22].

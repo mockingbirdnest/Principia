@@ -37,7 +37,7 @@ namespace internal_vessel {
 
 using base::not_null;
 using base::RecurringThread;
-using geometry::InfiniteFuture;
+using geometry::InfinitePast;
 using geometry::Instant;
 using geometry::Vector;
 using physics::Checkpointer;
@@ -329,7 +329,9 @@ class Vessel {
 
   not_null<std::unique_ptr<Checkpointer<serialization::Vessel>>> checkpointer_;
 
-  Instant oldest_reanimated_checkpoint_ GUARDED_BY(lock_) = InfiniteFuture;
+  // Vessel that are constructed de novo won't ever need reanimation, so all the
+  // checkpoints are animate at birth.
+  Instant oldest_reanimated_checkpoint_ GUARDED_BY(lock_) = InfinitePast;
 
   // The techniques and terminology follow [Lov22].
   RecurringThread<Instant> reanimator_;
