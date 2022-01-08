@@ -2239,13 +2239,21 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
   private void PlotCelestialTrajectories(DisposablePlanetarium planetarium,
                                          string main_vessel_guid) {
+    // TODO(egg): use that angular resolution in the planetarium too.
+    const double degree = Math.PI / 180;
+    UnityEngine.Camera camera = PlanetariumCamera.Camera;
+    // The angle subtended by the pixel closest to the centre of the viewport.
+    double tan_angular_resolution =
+        Math.Tan(camera.fieldOfView * degree / 2) / (camera.pixelHeight / 2);
     PlotSubtreeTrajectories(planetarium, main_vessel_guid,
-                            Planetarium.fetch.Sun);
+                            Planetarium.fetch.Sun,
+                            tan_angular_resolution);
   }
 
   private void PlotSubtreeTrajectories(DisposablePlanetarium planetarium,
                                        string main_vessel_guid,
-                                       CelestialBody root) {
+                                       CelestialBody root,
+                                       double tan_angular_resolution) {
     var colour = root.orbitDriver?.Renderer?.orbitColor ??
                   XKCDColors.SunshineYellow;
     var camera_world_position = ScaledSpace.ScaledToLocalSpace(
@@ -2278,15 +2286,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         }
       }
     }
-    // TODO(egg): Consider getting that from the planetarium (though it may make
-    // more sense to compute it in C# based on the screen resolution, and to use
-    // that in the planetarium).
-    const double degree = Math.PI / 180;
-    const double arcminute = degree / 60;
-    double tan_angular_resolution = Math.Tan(0.4 * arcminute);
     foreach (CelestialBody child in root.orbitingBodies) {
-      if (child.orbit.ApR / min_distance_from_camera > tan_angular_resolution) {
-        PlotSubtreeTrajectories(planetarium, main_vessel_guid, child);
+      // Plot the trajectory of an orbiting body if it could be separated from
+      // that of its parent by a pixel of empty space, instead of merely making
+      // the line wider.
+      if (child.orbit.ApR / min_distance_from_camera > 2 * tan_angular_resolution) {
+        PlotSubtreeTrajectories(planetarium, main_vessel_guid, child,
+                                tan_angular_resolution);
       }
     }
   }
