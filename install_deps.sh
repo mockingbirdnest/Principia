@@ -16,7 +16,7 @@ for repo in protobuf glog googletest gipfeli abseil-cpp compatibility benchmark 
   pushd "$repo"
   git checkout master
   git pull
-  
+
   # Azure pipelines define this variable for us.
   AGENT_OS=$(uname -s)
 
@@ -40,9 +40,9 @@ for repo in protobuf glog googletest gipfeli abseil-cpp compatibility benchmark 
   # from <type_traits>, which are C++17 additions on which we heavily rely.
   # Luckily, the <type_traits> definitions are gated on _LIBCPP_STD_VER > 14, while the
   # <filesystem> usage is gated on _LIBCPP_STD_VER >= 17.  We can therefore get the
-  # former without the latter by setting _LIBCPP_STD_VER to 16 ∈ ]14, 17[.  
+  # former without the latter by setting _LIBCPP_STD_VER to 16 ∈ ]14, 17[.
   PRINCIPIA_MACOS_CXX_FLAGS="-D_LIBCPP_STD_VER=16"
-  PRINCIPIA_MACOS_VERSION_MIN="10.12"
+  PRINCIPIA_MACOS_VERSION_MIN="10.14"
   # End pipeline variables.
 
   # Task group Make.

@@ -125,7 +125,7 @@ ifeq ($(UNAME_S),Darwin)
 			-I$(DEP_DIR)Optional \
 			-include "base/macos_allocator_replacement.hpp"
     LIBS += -framework CoreFoundation
-    SHARED_ARGS += -mmacosx-version-min=10.12 -arch x86_64 -D_LIBCPP_STD_VER=16
+    SHARED_ARGS += -mmacosx-version-min=10.14 -arch x86_64 -D_LIBCPP_STD_VER=16
     SHAREDFLAG := -dynamiclib
 endif
 
