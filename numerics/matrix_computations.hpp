@@ -24,13 +24,13 @@ struct CholeskyGenerator<UpperTriangularMatrix<Scalar, columns>> {
   using type = UpperTriangularMatrix<SquareRoot<Scalar>, columns>;
 };
 
-template<typename T1, typename T2>
+template<typename V, typename U>
 struct ᵗRDRGenerator;
 
 template<typename Scalar,
          template<typename S> typename Vector,
          template<typename S> typename UpperTriangularMatrix>
-struct ᵗRDRGenerator<UpperTriangularMatrix<Scalar>, Vector<Scalar>> {
+struct ᵗRDRGenerator<Vector<Scalar>, UpperTriangularMatrix<Scalar>> {
   struct type {
     UpperTriangularMatrix<double> R;
     Vector<Scalar> D;
@@ -40,12 +40,30 @@ struct ᵗRDRGenerator<UpperTriangularMatrix<Scalar>, Vector<Scalar>> {
 template<typename Scalar, int columns,
          template<typename S, int c> typename Vector,
          template<typename S, int c> typename UpperTriangularMatrix>
-struct ᵗRDRGenerator<UpperTriangularMatrix<Scalar, columns>,
-                     Vector<Scalar, columns>> {
+struct ᵗRDRGenerator<Vector<Scalar, columns>,
+                     UpperTriangularMatrix<Scalar, columns>> {
   struct type {
     UpperTriangularMatrix<double, columns> R;
     Vector<Scalar, columns>& D;
   };
+};
+
+template<typename M, typename V>
+struct SubstitutionGenerator;
+
+template<typename LScalar, typename RScalar,
+         template<typename S> typename Matrix,
+         template<typename S> typename Vector>
+struct SubstitutionGenerator<Matrix<LScalar>, Vector<RScalar>> {
+  using type = Vector<Quotient<RScalar, LScalar>>;
+};
+
+template<typename LScalar, typename RScalar, int dimension,
+         template<typename S, int d> typename Matrix,
+         template<typename S, int d> typename Vector>
+struct SubstitutionGenerator<Matrix<LScalar, dimension>,
+                             Vector<RScalar, dimension>> {
+  using type = Vector<Quotient<RScalar, LScalar>, dimension>;
 };
 
 
@@ -62,20 +80,16 @@ typename ᵗRDRGenerator<Vector, UpperTriangularMatrix>::type
 ᵗRDRDecomposition(UpperTriangularMatrix const& A);
 
 // Returns x such that U x = b.
-template<typename LScalar, typename RScalar,
-         template<typename S> typename UpperTriangularMatrix,
-         template<typename S> typename Vector>
-Vector<Quotient<RScalar, LScalar>> BackSubstitution(
-    UpperTriangularMatrix<LScalar> const& U,
-    Vector<RScalar> const& b);
+template<typename UpperTriangularMatrix, typename Vector>
+typename SubstitutionGenerator<UpperTriangularMatrix, Vector>::type
+BackSubstitution(UpperTriangularMatrix const& U,
+                 Vector const& b);
 
 // Return x such that L x = b.
-template<typename LScalar, typename RScalar,
-         template<typename S> typename LowerTriangularMatrix,
-         template<typename S> typename Vector>
-Vector<Quotient<RScalar, LScalar>> ForwardSubstitution(
-    LowerTriangularMatrix<LScalar> const& L,
-    Vector<RScalar> const& b);
+template<typename LowerTriangularMatrix, typename Vector>
+typename SubstitutionGenerator<LowerTriangularMatrix, Vector>::type
+ForwardSubstitution(LowerTriangularMatrix const& L,
+                    Vector const& b);
 
 }  // namespace internal_arrays
 
