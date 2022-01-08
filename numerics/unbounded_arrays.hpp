@@ -101,6 +101,7 @@ class UnboundedLowerTriangularMatrix final {
 
 template<typename Scalar>
 class UnboundedUpperTriangularMatrix final {
+ public:
   explicit UnboundedUpperTriangularMatrix(int columns);
   UnboundedUpperTriangularMatrix(int columns, uninitialized_t);
 

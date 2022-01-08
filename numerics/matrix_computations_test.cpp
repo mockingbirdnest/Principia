@@ -64,9 +64,7 @@ TYPED_TEST(MatrixComputationsTest, ᵗRDRDecomposition) {
                                         1});
   Vector d4_expected({1, 1.0 / 12.0, 1.0 / 180.0, 1.0 / 2800.0});
 
-  UpperTriangularMatrix r4_actual(4);
-  Vector d4_actual(4);
-  ᵗRDRDecomposition(hilbert4, r4_actual, d4_actual);
+  const auto [r4_actual, d4_actual] = ᵗRDRDecomposition<Vector>(hilbert4);
   EXPECT_THAT(d4_actual, AlmostEquals(d4_expected, 1615));
   EXPECT_THAT(r4_actual, AlmostEquals(r4_expected, 23));
 }
