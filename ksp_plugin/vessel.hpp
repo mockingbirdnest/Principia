@@ -6,6 +6,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <variant>
 #include <vector>
 
 #include "absl/status/status.h"
@@ -136,9 +137,19 @@ class Vessel {
   virtual Ephemeris<Barycentric>::AdaptiveStepParameters const&
   prediction_adaptive_step_parameters() const;
 
-  // Requires |has_flight_plan()|.
-  virtual FlightPlan& flight_plan() const;
+  // Returns true iff the vessel has a flight plan, deserialized or not.  Never
+  // fails.
   virtual bool has_flight_plan() const;
+
+  // If the flight plan has been deserialized, returns it.  Fails if there is no
+  // flight plan or the flight plan has not been deserialized.
+  virtual FlightPlan& flight_plan() const;
+
+  // Deserializes the flight plan if it is held lazily by this object.  Does
+  // nothing if there is no such flight plan.  If |has_flight_plan| returns
+  // true, calling this method ensures that the flight plan may later be
+  // accessed by |fligh_plan|.  This method is idempotent.
+  void ReadFlightPlanFromMessage();
 
   // Extends the history and psychohistory of this vessel by computing the
   // centre of mass of its parts at every point in their history and
@@ -240,6 +251,9 @@ class Vessel {
   // become the new |prediction_|.  If |prediction_| is not null, it is deleted.
   void AttachPrediction(DiscreteTrajectory<Barycentric>&& trajectory);
 
+  // Returns true if this object holds a non-null deserialized flight plan.
+  bool has_deserialized_flight_plan() const;
+
   GUID const guid_;
   std::string name_;
 
@@ -267,7 +281,8 @@ class Vessel {
   RecurringThread<PrognosticatorParameters,
                   DiscreteTrajectory<Barycentric>> prognosticator_;
 
-  std::unique_ptr<FlightPlan> flight_plan_;
+  std::variant<std::unique_ptr<FlightPlan>,
+               serialization::FlightPlan> flight_plan_;
 
   std::optional<OrbitAnalyser> orbit_analyser_;
 
