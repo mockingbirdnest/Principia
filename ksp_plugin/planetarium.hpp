@@ -101,7 +101,8 @@ class Planetarium {
       Instant const& first_time,
       Instant const& last_time,
       Instant const& now,
-      bool reverse) const;
+      bool reverse,
+      Length* minimal_distance = nullptr) const;
 
  private:
   // Computes the coordinates of the spheres that represent the |ephemeris_|

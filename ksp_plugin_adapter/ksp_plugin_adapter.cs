@@ -2255,18 +2255,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       min_distance_from_camera =
           (root.position - camera_world_position).magnitude;
     } else {
-      // TODO(egg): Figure that out while plotting instead of taking the current
-      // distance.
-      var camera_world_position = ScaledSpace.ScaledToLocalSpace(
-          PlanetariumCamera.fetch.transform.position);
-      min_distance_from_camera =
-          (root.position - camera_world_position).magnitude;
       using (DisposableIterator rp2_lines_iterator =
              planetarium.PlanetariumPlotCelestialTrajectoryForPsychohistory(
                  plugin_,
                  root.flightGlobalsIndex,
                  main_vessel_guid,
-                 main_window_.history_length)) {
+                 main_window_.history_length,
+                 out min_distance_from_camera)) {
         GLLines.PlotRP2Lines(rp2_lines_iterator, colour, GLLines.Style.Faded);
       }
       if (main_vessel_guid != null) {
@@ -2275,12 +2270,17 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                 PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
                     plugin_,
                     root.flightGlobalsIndex,
-                    main_vessel_guid)) {
+                    main_vessel_guid,
+                    out double min_distance_for_flight_plan)) {
+          min_distance_from_camera =
+              Math.Min(min_distance_from_camera, min_distance_for_flight_plan);
           GLLines.PlotRP2Lines(rp2_lines_iterator, colour, GLLines.Style.Solid);
         }
       }
     }
-    // TODO(egg): Get that from the planetarium.
+    // TODO(egg): Consider getting that from the planetarium (though it may make
+    // more sense to compute it in C# based on the screen resolution, and to use
+    // that in the planetarium).
     const double degree = Math.PI / 180;
     const double arcminute = degree / 60;
     double tan_angular_resolution = Math.Tan(0.4 * arcminute);

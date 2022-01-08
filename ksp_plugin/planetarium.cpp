@@ -19,8 +19,10 @@ using geometry::RP2Line;
 using geometry::Sign;
 using geometry::Velocity;
 using physics::MassiveBody;
+using quantities::Infinity;
 using quantities::Pow;
 using quantities::Sin;
+using quantities::Square;
 using quantities::Sqrt;
 using quantities::Tan;
 using quantities::Time;
@@ -155,13 +157,15 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
     Instant const& first_time,
     Instant const& last_time,
     Instant const& now,
-    bool const reverse) const {
+    bool const reverse,
+    Length* minimal_distance) const {
   RP2Lines<Length, Camera> lines;
   auto const plottable_spheres = ComputePlottableSpheres(now);
   double const tan²_angular_resolution =
       Pow<2>(parameters_.tan_angular_resolution_);
   auto const final_time = reverse ? first_time : last_time;
   auto previous_time = reverse ? last_time : first_time;
+  Square<Length> minimal_squared_distance = Infinity<Square<Length>>;
 
   Sign const direction = reverse ? Sign::Negative() : Sign::Positive();
   if (direction * (final_time - previous_time) <= Time{}) {
@@ -222,6 +226,12 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
     } while (estimated_tan²_error > tan²_angular_resolution);
     ++steps_accepted;
 
+    if (minimal_distance != nullptr) {
+      minimal_squared_distance =
+          std::min(minimal_squared_distance,
+                   perspective_.SquaredDistanceFromCamera(position));
+    }
+
     // TODO(egg): also limit to field of view.
     auto const segment_behind_focal_plane =
         perspective_.SegmentBehindFocalPlane(
@@ -247,6 +257,9 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
       lines.back().push_back(perspective_(segment.second));
       last_endpoint = segment.second;
     }
+  }
+  if (minimal_distance != nullptr) {
+    *minimal_distance = Sqrt(minimal_squared_distance);
   }
   return lines;
 }

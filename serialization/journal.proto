@@ -1819,12 +1819,16 @@ message PlanetariumPlotCelestialTrajectoryForPsychohistory {
     optional string vessel_guid = 4;
     required double max_history_length = 5;
   }
+  message Out {
+    required double minimal_distance_from_camera = 1;
+  }
   message Return {
     required fixed64 rp2_lines = 1 [(pointer_to) = "Iterator",
                                     (disposable) = "DisposableIterator",
                                     (is_produced) = true];
   }
   optional In in = 1;
+  optional Out out = 2;
   optional Return return = 3;
 }
 
@@ -1840,12 +1844,16 @@ message PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan {
     required int32 celestial_index = 3;
     required string vessel_guid = 4;
   }
+  message Out {
+    required double minimal_distance_from_camera = 1;
+  }
   message Return {
     required fixed64 rp2_lines = 1 [(pointer_to) = "Iterator",
                                     (disposable) = "DisposableIterator",
                                     (is_produced) = true];
   }
   optional In in = 1;
+  optional Out out = 2;
   optional Return return = 3;
 }
 
