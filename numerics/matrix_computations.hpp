@@ -24,6 +24,30 @@ struct CholeskyGenerator<UpperTriangularMatrix<Scalar, columns>> {
   using type = UpperTriangularMatrix<SquareRoot<Scalar>, columns>;
 };
 
+template<typename T1, typename T2>
+struct ᵗRDRGenerator;
+
+template<typename Scalar,
+         template<typename S> typename Vector,
+         template<typename S> typename UpperTriangularMatrix>
+struct ᵗRDRGenerator<UpperTriangularMatrix<Scalar>, Vector<Scalar>> {
+  struct type {
+    UpperTriangularMatrix<double> R;
+    Vector<Scalar> D;
+  };
+};
+
+template<typename Scalar, int columns,
+         template<typename S, int c> typename Vector,
+         template<typename S, int c> typename UpperTriangularMatrix>
+struct ᵗRDRGenerator<UpperTriangularMatrix<Scalar, columns>,
+                     Vector<Scalar, columns>> {
+  struct type {
+    UpperTriangularMatrix<double, columns> R;
+    Vector<Scalar, columns>& D;
+  };
+};
+
 
 // If A is the upper half of a symmetric positive definite matrix, returns R so
 // that A = ᵗR R.
@@ -33,12 +57,9 @@ CholeskyDecomposition(UpperTriangularMatrix const& A);
 
 // If A is the upper half of a symmetric matrix, returns R and D so that
 // A = ᵗR D R.  The diagonal matrix is represented as a vector.
-template<typename Scalar,
-         template<typename S> typename UpperTriangularMatrix,
-         template<typename S> typename Vector>
-void ᵗRDRDecomposition(UpperTriangularMatrix<Scalar> const& A,
-                       UpperTriangularMatrix<double>& R,
-                       Vector<Scalar>& D);
+template<typename Vector, typename UpperTriangularMatrix>
+typename ᵗRDRGenerator<Vector, UpperTriangularMatrix>::type
+ᵗRDRDecomposition(UpperTriangularMatrix const& A);
 
 // Returns x such that U x = b.
 template<typename LScalar, typename RScalar,
