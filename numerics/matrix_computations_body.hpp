@@ -15,12 +15,12 @@ using quantities::Pow;
 using quantities::Sqrt;
 
 // [Hig02], Algorithm 10.2.
-template<typename Scalar,
-         template<typename S> typename UpperTriangularMatrix>
-UpperTriangularMatrix<SquareRoot<Scalar>> CholeskyDecomposition(
-    UpperTriangularMatrix<Scalar> const& A) {
-  UpperTriangularMatrix<SquareRoot<Scalar>> R(A.columns(),
-                                                       uninitialized);
+template<typename UpperTriangularMatrix>
+typename CholeskyGenerator<UpperTriangularMatrix>::Result
+CholeskyDecomposition(UpperTriangularMatrix const& A) {
+  using G = CholeskyGenerator<UpperTriangularMatrix>;
+  using Scalar = G::Scalar;
+  typename G::Result R(A.columns(), uninitialized);
   for (int j = 0; j < A.columns(); ++j) {
     for (int i = 0; i < j; ++i) {
       Scalar Σrₖᵢrₖⱼ{};
@@ -40,12 +40,14 @@ UpperTriangularMatrix<SquareRoot<Scalar>> CholeskyDecomposition(
 }
 
 // [KM13], formulæ (10) and (11).
-template<typename Scalar,
-         template<typename S> typename UpperTriangularMatrix,
-         template<typename S> typename Vector>
-void ᵗRDRDecomposition(UpperTriangularMatrix<Scalar> const& A,
-                       UpperTriangularMatrix<double>& R,
-                       Vector<Scalar>& D) {
+template<typename Vector, typename UpperTriangularMatrix>
+typename ᵗRDRGenerator<Vector, UpperTriangularMatrix>::Result
+ᵗRDRDecomposition(UpperTriangularMatrix const& A) {
+  using G = CholeskyGenerator<UpperTriangularMatrix>;
+  using Scalar = G::Scalar;
+  typename G::Result result;
+  auto& R = result.R;
+  auto& D = result.D;
   for (int i = 0; i < A.columns(); ++i) {
     Scalar Σrₖᵢ²dₖ{};
     for (int k = 0; k < i; ++k) {
@@ -61,16 +63,16 @@ void ᵗRDRDecomposition(UpperTriangularMatrix<Scalar> const& A,
     }
     R[i][i] = 1;
   }
+  return result;
 }
 
 // [Hig02], Algorithm 8.1.
-template<typename LScalar, typename RScalar,
-         template<typename S> typename UpperTriangularMatrix,
-         template<typename S> typename Vector>
-Vector<Quotient<RScalar, LScalar>> BackSubstitution(
-    UpperTriangularMatrix<LScalar> const& U,
-    Vector<RScalar> const& b) {
-  Vector<Quotient<RScalar, LScalar>> x(b.size(), uninitialized);
+template<typename UpperTriangularMatrix, typename Vector>
+typename SubstitutionGenerator<UpperTriangularMatrix, Vector>::Result
+BackSubstitution(UpperTriangularMatrix const& U,
+                 Vector const& b) {
+  typename SubstitutionGenerator<UpperTriangularMatrix, Vector>::Result
+  x(b.size(), uninitialized);
   int const n = b.size() - 1;
   x[n] = b[n] / U[n][n];
   for (int i = n - 1; i >= 0; --i) {
@@ -86,13 +88,12 @@ Vector<Quotient<RScalar, LScalar>> BackSubstitution(
 // [Hig02] says: "We will not state the analogous algorithm for solving a lower
 // triangular system, forward substitution."  So we follow
 // https://en.wikipedia.org/wiki/Triangular_matrix#Forward_substitution.
-template<typename LScalar, typename RScalar,
-         template<typename S> typename LowerTriangularMatrix,
-         template<typename S> typename Vector>
-Vector<Quotient<RScalar, LScalar>> ForwardSubstitution(
-    LowerTriangularMatrix<LScalar> const& L,
-    Vector<RScalar> const& b) {
-  Vector<Quotient<RScalar, LScalar>> x(b.size(), uninitialized);
+template<typename LowerTriangularMatrix, typename Vector>
+typename SubstitutionGenerator<LowerTriangularMatrix, Vector>::Result
+ForwardSubstitution(LowerTriangularMatrix const& L,
+                    Vector const& b) {
+  typename SubstitutionGenerator<LowerTriangularMatrix, Vector>::Result
+  x(b.size(), uninitialized);
   x[0] = b[0] / L[0][0];
   for (int i = 1; i < b.size(); ++i) {
     auto s = b[i];

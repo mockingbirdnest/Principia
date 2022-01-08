@@ -158,10 +158,6 @@ class FixedUpperTriangularMatrix final {
   static constexpr int columns = columns_;
   static constexpr int dimension = columns * (columns + 1) / 2;
 
-  using Element = Scalar;
-  template<typename S>
-  using Self = FixedUpperTriangularMatrix<S, columns_>;
-
   constexpr FixedUpperTriangularMatrix();
   explicit FixedUpperTriangularMatrix(uninitialized_t);
 
