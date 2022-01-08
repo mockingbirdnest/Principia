@@ -2248,20 +2248,20 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                        CelestialBody root) {
     var colour = root.orbitDriver?.Renderer?.orbitColor ??
                   XKCDColors.SunshineYellow;
-    double min_distance_from_camera;
-    if (plotting_frame_selector_.FixesBody(root)) {
-      var camera_world_position = ScaledSpace.ScaledToLocalSpace(
-          PlanetariumCamera.fetch.transform.position);
-      min_distance_from_camera =
-          (root.position - camera_world_position).magnitude;
-    } else {
+    var camera_world_position = ScaledSpace.ScaledToLocalSpace(
+        PlanetariumCamera.fetch.transform.position);
+    double min_distance_from_camera =
+        (root.position - camera_world_position).magnitude;
+    if (!plotting_frame_selector_.FixesBody(root)) {
       using (DisposableIterator rp2_lines_iterator =
              planetarium.PlanetariumPlotCelestialTrajectoryForPsychohistory(
                  plugin_,
                  root.flightGlobalsIndex,
                  main_vessel_guid,
                  main_window_.history_length,
-                 out min_distance_from_camera)) {
+                 out double min_past_distance)) {
+        min_distance_from_camera =
+            Math.Min(min_distance_from_camera, min_past_distance);
         GLLines.PlotRP2Lines(rp2_lines_iterator, colour, GLLines.Style.Faded);
       }
       if (main_vessel_guid != null) {
@@ -2271,9 +2271,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                     plugin_,
                     root.flightGlobalsIndex,
                     main_vessel_guid,
-                    out double min_distance_for_flight_plan)) {
+                    out double min_future_distance)) {
           min_distance_from_camera =
-              Math.Min(min_distance_from_camera, min_distance_for_flight_plan);
+              Math.Min(min_distance_from_camera, min_future_distance);
           GLLines.PlotRP2Lines(rp2_lines_iterator, colour, GLLines.Style.Solid);
         }
       }
@@ -2285,7 +2285,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     const double arcminute = degree / 60;
     double tan_angular_resolution = Math.Tan(0.4 * arcminute);
     foreach (CelestialBody child in root.orbitingBodies) {
-      if (child.orbit.ApR / min_distance_from_camera > 3 * tan_angular_resolution) {
+      if (child.orbit.ApR / min_distance_from_camera > tan_angular_resolution) {
         PlotSubtreeTrajectories(planetarium, main_vessel_guid, child);
       }
     }

@@ -207,6 +207,7 @@ Iterator* __cdecl principia__PlanetariumPlotCelestialTrajectoryForPsychohistory(
 
   // Do not plot the past when there is a target vessel as it is misleading.
   if (plugin->renderer().HasTargetVessel()) {
+    *minimal_distance_from_camera = std::numeric_limits<double>::infinity();
     return m.Return(new TypedIterator<RP2Lines<Length, Camera>>({}));
   } else {
     auto const& celestial_trajectory =
@@ -253,6 +254,7 @@ principia__PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
 
   // Do not plot the past when there is a target vessel as it is misleading.
   if (plugin->renderer().HasTargetVessel()) {
+    *minimal_distance_from_camera = std::numeric_limits<double>::infinity();
     return m.Return(new TypedIterator<RP2Lines<Length, Camera>>({}));
   } else {
     auto const& vessel = *plugin->GetVessel(vessel_guid);

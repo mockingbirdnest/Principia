@@ -165,7 +165,10 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
       Pow<2>(parameters_.tan_angular_resolution_);
   auto const final_time = reverse ? first_time : last_time;
   auto previous_time = reverse ? last_time : first_time;
-  Square<Length> minimal_squared_distance = Infinity<Square<Length>>;
+
+  if (minimal_distance != nullptr) {
+    *minimal_distance = Infinity<Length>;
+  }
 
   Sign const direction = reverse ? Sign::Negative() : Sign::Positive();
   if (direction * (final_time - previous_time) <= Time{}) {
@@ -187,6 +190,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
   std::optional<DegreesOfFreedom<Barycentric>>
       degrees_of_freedom_in_barycentric;
   Position<Navigation> position;
+  Square<Length> minimal_squared_distance = Infinity<Square<Length>>;
 
   std::optional<Position<Navigation>> last_endpoint;
 
@@ -226,12 +230,6 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
     } while (estimated_tan²_error > tan²_angular_resolution);
     ++steps_accepted;
 
-    if (minimal_distance != nullptr) {
-      minimal_squared_distance =
-          std::min(minimal_squared_distance,
-                   perspective_.SquaredDistanceFromCamera(position));
-    }
-
     // TODO(egg): also limit to field of view.
     auto const segment_behind_focal_plane =
         perspective_.SegmentBehindFocalPlane(
@@ -244,6 +242,12 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
 
     if (!segment_behind_focal_plane) {
       continue;
+    }
+
+    if (minimal_distance != nullptr) {
+      minimal_squared_distance =
+          std::min(minimal_squared_distance,
+                   perspective_.SquaredDistanceFromCamera(position));
     }
 
     auto const visible_segments = perspective_.VisibleSegments(
