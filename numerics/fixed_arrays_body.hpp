@@ -173,6 +173,54 @@ FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
   return FixedVector<Product<ScalarLeft, ScalarRight>, rows>(std::move(result));
 }
 
+template<typename Scalar, int size>
+std::ostream& operator<<(std::ostream& out,
+                         FixedVector<Scalar, size> const& vector) {
+  std::stringstream s;
+  for (int i = 0; i < size; ++i) {
+    s << (i == 0 ? "{" : "") << vector.data_[i]
+      << (i == size - 1 ? "}" : ", ");
+  }
+  out << s.str();
+  return out;
+}
+
+template<typename Scalar, int rows>
+std::ostream& operator<<(
+    std::ostream& out,
+    FixedLowerTriangularMatrix<Scalar, rows> const& matrix) {
+  out << "rows: " << matrix.rows << "\n";
+  for (int i = 0; i < matrix.rows; ++i) {
+    out << "{";
+    for (int j = 0; j <= i; ++j) {
+      out << matrix[i][j];
+      if (j < i) {
+        out << ", ";
+      }
+    }
+    out << "}\n";
+  }
+  return out;
+}
+
+template<typename Scalar, int columns>
+std::ostream& operator<<(
+    std::ostream& out,
+    FixedUpperTriangularMatrix<Scalar, columns> const& matrix) {
+  out << "columns: " << matrix.columns() << "\n";
+  for (int i = 0; i < matrix.columns(); ++i) {
+    out << "{";
+    for (int j = i; j < matrix.columns(); ++j) {
+      if (j > i) {
+        out << ", ";
+      }
+      out << matrix[i][j];
+    }
+    out << "}\n";
+  }
+  return out;
+}
+
 template<typename Scalar, int rows_>
 constexpr FixedStrictlyLowerTriangularMatrix<Scalar, rows_>::
     FixedStrictlyLowerTriangularMatrix()

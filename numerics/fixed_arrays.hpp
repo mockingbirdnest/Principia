@@ -45,6 +45,9 @@ class FixedVector final {
   friend FixedVector<Product<L, R>, r> operator*(
       FixedMatrix<L, r, c> const& left,
       FixedVector<R, c> const& right);
+  template<typename S, int s>
+  friend std::ostream& operator<<(std::ostream& out,
+                                  FixedVector<S, s> const& vector);
 };
 
 template<typename Scalar, int rows, int columns>
