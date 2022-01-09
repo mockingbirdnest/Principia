@@ -14,13 +14,26 @@ using base::uninitialized;
 using quantities::Pow;
 using quantities::Sqrt;
 
+template<typename Scalar_, template<typename S> typename UpperTriangularMatrix>
+auto CholeskyGenerator<UpperTriangularMatrix<Scalar_>>::Make(
+    UpperTriangularMatrix<Scalar> const& u) -> Result {
+  return Result(u.columns(), uninitialized);
+}
+
+template<typename Scalar_, int columns,
+         template<typename S, int c> typename UpperTriangularMatrix>
+auto CholeskyGenerator<UpperTriangularMatrix<Scalar_, columns>>::Make(
+    UpperTriangularMatrix<Scalar, columns> const& u) -> Result {
+  return Result(uninitialized);
+}
+
 // [Hig02], Algorithm 10.2.
 template<typename UpperTriangularMatrix>
 typename CholeskyGenerator<UpperTriangularMatrix>::Result
 CholeskyDecomposition(UpperTriangularMatrix const& A) {
   using G = CholeskyGenerator<UpperTriangularMatrix>;
   using Scalar = G::Scalar;
-  typename G::Result R(A.columns(), uninitialized);
+  typename G::Result R = G::Make(A);
   for (int j = 0; j < A.columns(); ++j) {
     for (int i = 0; i < j; ++i) {
       Scalar Σrₖᵢrₖⱼ{};

@@ -17,6 +17,7 @@ template<typename Scalar_, template<typename S> typename UpperTriangularMatrix>
 struct CholeskyGenerator<UpperTriangularMatrix<Scalar_>> {
   using Scalar = Scalar_;
   using Result = UpperTriangularMatrix<SquareRoot<Scalar>>;
+  static Result Make(UpperTriangularMatrix<Scalar> const& u);
 };
 
 template<typename Scalar_, int columns,
@@ -24,6 +25,7 @@ template<typename Scalar_, int columns,
 struct CholeskyGenerator<UpperTriangularMatrix<Scalar_, columns>> {
   using Scalar = Scalar_;
   using Result = UpperTriangularMatrix<SquareRoot<Scalar>, columns>;
+  static Result Make(UpperTriangularMatrix<Scalar, columns> const& u);
 };
 
 template<typename V, typename U>
