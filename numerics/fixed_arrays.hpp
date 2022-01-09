@@ -158,8 +158,8 @@ class FixedLowerTriangularMatrix final {
 template<typename Scalar, int columns_>
 class FixedUpperTriangularMatrix final {
  public:
-  static constexpr int columns = columns_;
-  static constexpr int dimension = columns * (columns + 1) / 2;
+  static constexpr int columns() { return columns_; }
+  static constexpr int dimension = columns_ * (columns_ + 1) / 2;
 
   constexpr FixedUpperTriangularMatrix();
   explicit FixedUpperTriangularMatrix(uninitialized_t);

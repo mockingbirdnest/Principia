@@ -354,7 +354,7 @@ template<typename Scalar, int columns_>
 auto FixedUpperTriangularMatrix<Scalar, columns_>::Transpose(
     std::array<Scalar, dimension> const& data)
     -> std::array<Scalar, dimension> {
-  std::array<Scalar, columns * columns> full;
+  std::array<Scalar, columns_ * columns_> full;
   int index = 0;
   for (int row = 0; row < columns_; ++row) {
     for (int column = row; column < columns_; ++column) {
