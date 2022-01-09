@@ -108,7 +108,7 @@ FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
 template<typename Scalar, int rows_>
 class FixedStrictlyLowerTriangularMatrix final {
  public:
-  static constexpr int size = rows_;
+  static constexpr int rows = rows_;
   static constexpr int dimension = rows_ * (rows_ - 1) / 2;
 
   constexpr FixedStrictlyLowerTriangularMatrix();
