@@ -15,16 +15,35 @@ using quantities::Pow;
 using quantities::Sqrt;
 
 template<typename Scalar_, template<typename S> typename UpperTriangularMatrix>
-auto CholeskyGenerator<UpperTriangularMatrix<Scalar_>>::Make(
+auto CholeskyGenerator<UpperTriangularMatrix<Scalar_>>::Uninitialized(
     UpperTriangularMatrix<Scalar> const& u) -> Result {
   return Result(u.columns(), uninitialized);
 }
 
 template<typename Scalar_, int columns,
          template<typename S, int c> typename UpperTriangularMatrix>
-auto CholeskyGenerator<UpperTriangularMatrix<Scalar_, columns>>::Make(
+auto CholeskyGenerator<UpperTriangularMatrix<Scalar_, columns>>::Uninitialized(
     UpperTriangularMatrix<Scalar, columns> const& u) -> Result {
   return Result(uninitialized);
+}
+
+template<typename Scalar_,
+         template<typename S> typename Vector,
+         template<typename S> typename UpperTriangularMatrix>
+auto ᵗRDRGenerator<Vector<Scalar_>, UpperTriangularMatrix<Scalar_>>::
+Uninitialized(UpperTriangularMatrix<Scalar> const& u) -> Result {
+  return {UpperTriangularMatrix<double>(u.columns(), uninitialized),
+          Vector<Scalar>(u.columns(), uninitialized)};
+}
+
+template<typename Scalar_, int columns,
+         template<typename S, int c> typename Vector,
+         template<typename S, int c> typename UpperTriangularMatrix>
+auto ᵗRDRGenerator<Vector<Scalar_, columns>,
+                   UpperTriangularMatrix<Scalar_, columns>>::
+Uninitialized(UpperTriangularMatrix<Scalar, columns> const& u) -> Result {
+  return {UpperTriangularMatrix<double, columns>(uninitialized),
+          Vector<Scalar, columns>(uninitialized)};
 }
 
 // [Hig02], Algorithm 10.2.
@@ -33,7 +52,7 @@ typename CholeskyGenerator<UpperTriangularMatrix>::Result
 CholeskyDecomposition(UpperTriangularMatrix const& A) {
   using G = CholeskyGenerator<UpperTriangularMatrix>;
   using Scalar = G::Scalar;
-  typename G::Result R = G::Make(A);
+  typename G::Result R = G::Uninitialized(A);
   for (int j = 0; j < A.columns(); ++j) {
     for (int i = 0; i < j; ++i) {
       Scalar Σrₖᵢrₖⱼ{};
@@ -58,7 +77,7 @@ typename ᵗRDRGenerator<Vector, UpperTriangularMatrix>::Result
 ᵗRDRDecomposition(UpperTriangularMatrix const& A) {
   using G = ᵗRDRGenerator<Vector, UpperTriangularMatrix>;
   using Scalar = G::Scalar;
-  typename G::Result result;
+  typename G::Result result = G::Uninitialized(A);
   auto& R = result.R;
   auto& D = result.D;
   for (int i = 0; i < A.columns(); ++i) {

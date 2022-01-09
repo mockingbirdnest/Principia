@@ -49,7 +49,6 @@ TYPED_TEST(MatrixComputationsTest, CholeskyDecomposition) {
   EXPECT_THAT(r4_actual, AlmostEquals(r4_expected, 245));
 }
 
-#if 0
 TYPED_TEST(MatrixComputationsTest, ᵗRDRDecomposition) {
   using Vector = typename std::tuple_element<0, TypeParam>::type;
   using UpperTriangularMatrix = typename std::tuple_element<2, TypeParam>::type;
@@ -70,6 +69,7 @@ TYPED_TEST(MatrixComputationsTest, ᵗRDRDecomposition) {
   EXPECT_THAT(r4_actual, AlmostEquals(r4_expected, 23));
 }
 
+#if 0
 TYPED_TEST(MatrixComputationsTest, BackSubstitution) {
   using Vector = typename std::tuple_element<0, TypeParam>::type;
   using UpperTriangularMatrix = typename std::tuple_element<2, TypeParam>::type;
