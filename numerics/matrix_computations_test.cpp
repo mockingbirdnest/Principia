@@ -69,7 +69,6 @@ TYPED_TEST(MatrixComputationsTest, ᵗRDRDecomposition) {
   EXPECT_THAT(r4_actual, AlmostEquals(r4_expected, 23));
 }
 
-#if 0
 TYPED_TEST(MatrixComputationsTest, BackSubstitution) {
   using Vector = typename std::tuple_element<0, TypeParam>::type;
   using UpperTriangularMatrix = typename std::tuple_element<2, TypeParam>::type;
@@ -82,7 +81,7 @@ TYPED_TEST(MatrixComputationsTest, BackSubstitution) {
   Vector const x4_expected({-111.0 / 4.0, 17.0 / 4.0, -2.0, 2.0});
 
   auto const x4_actual = BackSubstitution(m4, b4);
-  EXPECT_THAT(x4_actual, AlmostEquals(x4_expected, 1));
+  EXPECT_THAT(x4_actual, AlmostEquals(x4_expected, 0));
 }
 
 TYPED_TEST(MatrixComputationsTest, ForwardSubstitution) {
@@ -99,6 +98,6 @@ TYPED_TEST(MatrixComputationsTest, ForwardSubstitution) {
   auto const x4_actual = ForwardSubstitution(m4, b4);
   EXPECT_THAT(x4_actual, AlmostEquals(x4_expected, 0));
 }
-#endif
+
 }  // namespace numerics
 }  // namespace principia

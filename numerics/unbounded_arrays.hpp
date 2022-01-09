@@ -78,6 +78,7 @@ class UnboundedLowerTriangularMatrix final {
 
   UnboundedUpperTriangularMatrix<Scalar> Transpose() const;
 
+  int columns() const;
   int rows() const;
   int dimension() const;
 

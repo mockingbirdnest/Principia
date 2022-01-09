@@ -36,10 +36,10 @@ class FixedVector final {
 
   explicit operator std::vector<Scalar>() const;
 
-  static constexpr int size = size_;
+  static constexpr int size() { return size_; }
 
  private:
-  std::array<Scalar, size> data_;
+  std::array<Scalar, size_> data_;
 
   template<typename L, typename R, int r, int c>
   friend FixedVector<Product<L, R>, r> operator*(

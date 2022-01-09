@@ -64,6 +64,7 @@ template<typename LScalar, typename RScalar,
          template<typename S> typename Vector>
 struct SubstitutionGenerator<Matrix<LScalar>, Vector<RScalar>> {
   using Result = Vector<Quotient<RScalar, LScalar>>;
+  static Result Uninitialized(Matrix<LScalar> const& m);
 };
 
 template<typename LScalar, typename RScalar, int dimension,
@@ -72,6 +73,7 @@ template<typename LScalar, typename RScalar, int dimension,
 struct SubstitutionGenerator<Matrix<LScalar, dimension>,
                              Vector<RScalar, dimension>> {
   using Result = Vector<Quotient<RScalar, LScalar>, dimension>;
+  static Result Uninitialized(Matrix<LScalar, dimension> const& m);
 };
 
 

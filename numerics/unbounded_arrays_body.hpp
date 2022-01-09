@@ -140,6 +140,11 @@ UnboundedLowerTriangularMatrix<Scalar>::Transpose() const {
 }
 
 template<typename Scalar>
+int UnboundedLowerTriangularMatrix<Scalar>::columns() const {
+  return rows_;
+}
+
+template<typename Scalar>
 int UnboundedLowerTriangularMatrix<Scalar>::rows() const {
   return rows_;
 }

@@ -46,13 +46,30 @@ Uninitialized(UpperTriangularMatrix<Scalar, columns> const& u) -> Result {
           Vector<Scalar, columns>(uninitialized)};
 }
 
+template<typename LScalar, typename RScalar,
+         template<typename S> typename Matrix,
+         template<typename S> typename Vector>
+auto SubstitutionGenerator<Matrix<LScalar>, Vector<RScalar>>::Uninitialized(
+    Matrix<LScalar> const& m) -> Result {
+  return Result(m.columns(), uninitialized);
+}
+
+template<typename LScalar, typename RScalar, int dimension,
+         template<typename S, int d> typename Matrix,
+         template<typename S, int d> typename Vector>
+auto SubstitutionGenerator<Matrix<LScalar, dimension>,
+                           Vector<RScalar, dimension>>::Uninitialized(
+    Matrix<LScalar, dimension> const& m) -> Result {
+  return Result(uninitialized);
+}
+
 // [Hig02], Algorithm 10.2.
 template<typename UpperTriangularMatrix>
 typename CholeskyGenerator<UpperTriangularMatrix>::Result
 CholeskyDecomposition(UpperTriangularMatrix const& A) {
   using G = CholeskyGenerator<UpperTriangularMatrix>;
   using Scalar = G::Scalar;
-  typename G::Result R = G::Uninitialized(A);
+  auto R = G::Uninitialized(A);
   for (int j = 0; j < A.columns(); ++j) {
     for (int i = 0; i < j; ++i) {
       Scalar Σrₖᵢrₖⱼ{};
@@ -77,7 +94,7 @@ typename ᵗRDRGenerator<Vector, UpperTriangularMatrix>::Result
 ᵗRDRDecomposition(UpperTriangularMatrix const& A) {
   using G = ᵗRDRGenerator<Vector, UpperTriangularMatrix>;
   using Scalar = G::Scalar;
-  typename G::Result result = G::Uninitialized(A);
+  auto result = G::Uninitialized(A);
   auto& R = result.R;
   auto& D = result.D;
   for (int i = 0; i < A.columns(); ++i) {
@@ -103,9 +120,9 @@ template<typename UpperTriangularMatrix, typename Vector>
 typename SubstitutionGenerator<UpperTriangularMatrix, Vector>::Result
 BackSubstitution(UpperTriangularMatrix const& U,
                  Vector const& b) {
-  typename SubstitutionGenerator<UpperTriangularMatrix, Vector>::Result
-  x(b.size(), uninitialized);
-  int const n = b.size() - 1;
+  using G = SubstitutionGenerator<UpperTriangularMatrix, Vector>;
+  auto x = G::Uninitialized(U);
+  int const n = x.size() - 1;
   x[n] = b[n] / U[n][n];
   for (int i = n - 1; i >= 0; --i) {
     auto s = b[i];
@@ -124,8 +141,8 @@ template<typename LowerTriangularMatrix, typename Vector>
 typename SubstitutionGenerator<LowerTriangularMatrix, Vector>::Result
 ForwardSubstitution(LowerTriangularMatrix const& L,
                     Vector const& b) {
-  typename SubstitutionGenerator<LowerTriangularMatrix, Vector>::Result
-  x(b.size(), uninitialized);
+  using G = SubstitutionGenerator<LowerTriangularMatrix, Vector>;
+  auto x = G::Uninitialized(L);
   x[0] = b[0] / L[0][0];
   for (int i = 1; i < b.size(); ++i) {
     auto s = b[i];

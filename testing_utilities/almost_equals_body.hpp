@@ -293,7 +293,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   }
   std::int64_t max_distance = -1;
   int max_i = -1;
-  for (int i = 0; i < expected_.size; ++i) {
+  for (int i = 0; i < expected_.size(); ++i) {
     int const distance = NormalizedNaNULPDistance(DoubleValue(actual[i]),
                                                   DoubleValue(expected_[i]));
     if (distance > max_distance) {
