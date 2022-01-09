@@ -2239,12 +2239,16 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
   private void PlotCelestialTrajectories(DisposablePlanetarium planetarium,
                                          string main_vessel_guid) {
-    // TODO(egg): use that angular resolution in the planetarium too.
     const double degree = Math.PI / 180;
     UnityEngine.Camera camera = PlanetariumCamera.Camera;
+    float vertical_fov = camera.fieldOfView;
+    float horizontal_fov =
+        UnityEngine.Camera.VerticalToHorizontalFieldOfView(
+            vertical_fov, camera.aspect);
     // The angle subtended by the pixel closest to the centre of the viewport.
-    double tan_angular_resolution =
-        Math.Tan(camera.fieldOfView * degree / 2) / (camera.pixelHeight / 2);
+    double tan_angular_resolution = Math.Min(
+            Math.Tan(vertical_fov * degree / 2) / (camera.pixelHeight / 2),
+            Math.Tan(horizontal_fov * degree / 2) / (camera.pixelWidth / 2));
     PlotSubtreeTrajectories(planetarium, main_vessel_guid,
                             Planetarium.fetch.Sun,
                             tan_angular_resolution);
@@ -2255,7 +2259,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                        CelestialBody root,
                                        double tan_angular_resolution) {
     var colour = root.orbitDriver?.Renderer?.orbitColor ??
-                  XKCDColors.SunshineYellow;
+        XKCDColors.SunshineYellow;
     var camera_world_position = ScaledSpace.ScaledToLocalSpace(
         PlanetariumCamera.fetch.transform.position);
     double min_distance_from_camera =

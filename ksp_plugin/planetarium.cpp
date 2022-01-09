@@ -158,7 +158,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
     Instant const& last_time,
     Instant const& now,
     bool const reverse,
-    Length* minimal_distance) const {
+    Length* const minimal_distance) const {
   RP2Lines<Length, Camera> lines;
   auto const plottable_spheres = ComputePlottableSpheres(now);
   double const tan²_angular_resolution =
