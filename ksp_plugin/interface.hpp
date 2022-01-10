@@ -73,6 +73,13 @@ std::unique_ptr<T> TakeOwnership(T** pointer);
 template<typename T>
 std::unique_ptr<T[]> TakeOwnershipArray(T** pointer);
 
+extern "C"
+struct UnityVector3 {
+  float x;
+  float y;
+  float z;
+};
+
 #include "ksp_plugin/interface.generated.h"
 
 extern "C" PRINCIPIA_DLL

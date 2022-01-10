@@ -39,6 +39,7 @@ using interface::Origin;
 using interface::QP;
 using interface::QPRW;
 using interface::Status;
+using interface::UnityVector3;
 using interface::WXYZ;
 using interface::XY;
 using interface::XYZ;

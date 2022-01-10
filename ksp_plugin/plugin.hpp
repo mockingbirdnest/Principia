@@ -390,7 +390,8 @@ class Plugin {
 
   virtual not_null<std::unique_ptr<Planetarium>> NewPlanetarium(
       Planetarium::Parameters const& parameters,
-      Perspective<Navigation, Camera> const& perspective) const;
+      Perspective<Navigation, Camera> const& perspective,
+      geometry::RigidTransformation<Navigation, World> const& plotting_to_world) const;
 
   virtual not_null<std::unique_ptr<NavigationFrame>>
   NewBarycentricRotatingNavigationFrame(Index primary_index,

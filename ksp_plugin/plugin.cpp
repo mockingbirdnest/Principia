@@ -1076,12 +1076,14 @@ void Plugin::ClearOrbitAnalysersOfVesselsOtherThan(Vessel const& vessel) {
 
 not_null<std::unique_ptr<Planetarium>> Plugin::NewPlanetarium(
     Planetarium::Parameters const& parameters,
-    Perspective<Navigation, Camera> const& perspective)
+    Perspective<Navigation, Camera> const& perspective,
+    RigidTransformation<Navigation, World> const& plotting_to_world)
     const {
   return make_not_null_unique<Planetarium>(parameters,
                                            perspective,
                                            ephemeris_.get(),
-                                           renderer_->GetPlottingFrame());
+                                           renderer_->GetPlottingFrame(),
+                                           plotting_to_world);
 }
 
 not_null<std::unique_ptr<NavigationFrame>>

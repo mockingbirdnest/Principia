@@ -95,7 +95,10 @@ Planetarium* __cdecl principia__PlanetariumCreate(
       world_to_plotting_affine_map * camera_to_world_affine_map,
       focal * Metre);
 
-  return m.Return(plugin->NewPlanetarium(parameters, perspective).release());
+  return m.Return(plugin->NewPlanetarium(
+      parameters,
+      perspective,
+      world_to_plotting_affine_map.Inverse()).release());
 }
 
 void __cdecl principia__PlanetariumDelete(
@@ -278,6 +281,75 @@ principia__PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
                                  &minimal_distance);
     *minimal_distance_from_camera = minimal_distance / Metre;
     return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
+  }
+}
+
+// Returns an iterator for the rendered future trajectory of the celestial with
+// the given index; the trajectory goes as far as the furthest of the final time
+// of the prediction or that of the flight plan.
+void __cdecl principia__PlanetariumGetCelestialVertices(
+    Planetarium const* const planetarium,
+    Plugin const* const plugin,
+    int const celestial_index,
+    char const* const vessel_guid,
+    double const inverse_scale_factor,
+    XYZ const offset,
+    UnityVector3* const vertices,
+    int const vertices_size,
+    double* const minimal_distance_from_camera,
+    int* const vertex_count) {
+  journal::Method<journal::PlanetariumGetCelestialVertices> m(
+      {planetarium,
+       plugin,
+       celestial_index,
+       vessel_guid,
+       inverse_scale_factor,
+       offset,
+       vertices,
+       vertices_size},
+      {minimal_distance_from_camera, vertex_count});
+  CHECK_NOTNULL(plugin);
+  CHECK_NOTNULL(planetarium);
+  *vertex_count = 0;
+
+  // Do not plot the past when there is a target vessel as it is misleading.
+  if (plugin->renderer().HasTargetVessel()) {
+    *minimal_distance_from_camera = std::numeric_limits<double>::infinity();
+    return m.Return();
+  } else {
+    auto const& vessel = *plugin->GetVessel(vessel_guid);
+    Instant const prediction_final_time = vessel.prediction()->t_max();
+    Instant const final_time =
+        vessel.has_flight_plan()
+            ? std::max(vessel.flight_plan().actual_final_time(),
+                       prediction_final_time)
+            : prediction_final_time;
+    auto const& celestial_trajectory =
+        plugin->GetCelestial(celestial_index).trajectory();
+    // No need to request reanimation here because the current time of the
+    // plugin is necessarily covered.
+    Length minimal_distance;
+    planetarium->PlotMethod3(
+        celestial_trajectory,
+        /*first_time=*/plugin->CurrentTime(),
+        /*last_time=*/final_time,
+        /*now=*/plugin->CurrentTime(),
+        /*reverse=*/false,
+        [inverse_scale_factor, offset = FromXYZ(offset), vertices, vertex_count](
+            Position<World> const& q) {
+          auto const scaled_coords =
+              ((q - World::origin) / Metre).coordinates() *
+                  inverse_scale_factor +
+              offset;
+          vertices[*vertex_count] = {static_cast<float>(scaled_coords.x),
+                                     static_cast<float>(scaled_coords.y),
+                                     static_cast<float>(scaled_coords.z)};
+          ++*vertex_count;
+        },
+        vertices_size,
+        &minimal_distance);
+    *minimal_distance_from_camera = minimal_distance / Metre;
+    return m.Return();
   }
 }
 

@@ -25,6 +25,8 @@ using geometry::Displacement;
 using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Perspective;
+using geometry::Position;
+using geometry::RigidTransformation;
 using geometry::RP2Lines;
 using geometry::RP2Point;
 using geometry::Segment;
@@ -65,7 +67,8 @@ class Planetarium {
   Planetarium(Parameters const& parameters,
               Perspective<Navigation, Camera> perspective,
               not_null<Ephemeris<Barycentric> const*> ephemeris,
-              not_null<NavigationFrame const*> plotting_frame);
+              not_null<NavigationFrame const*> plotting_frame,
+              RigidTransformation<Navigation, World> const& plotting_to_world);
 
   // A no-op method that just returns all the points in the trajectory defined
   // by |begin| and |end|.
@@ -104,6 +107,16 @@ class Planetarium {
       bool reverse,
       Length* minimal_distance = nullptr) const;
 
+  void PlotMethod3(
+      Trajectory<Barycentric> const& trajectory,
+      Instant const& first_time,
+      Instant const& last_time,
+      Instant const& now,
+      bool reverse,
+      std::function<void(Position<World> const&)> add_point,
+      int max_steps,
+      Length* minimal_distance = nullptr) const;
+
  private:
   // Computes the coordinates of the spheres that represent the |ephemeris_|
   // bodies.  These coordinates are in the |plotting_frame_| at time |now|.
@@ -118,6 +131,8 @@ class Planetarium {
       DiscreteTrajectory<Barycentric>::iterator end) const;
 
   Parameters const parameters_;
+  // TODO(egg): Consider distinguishing this copy of World.
+  RigidTransformation<Navigation, World> const plotting_to_world_;
   Perspective<Navigation, Camera> const perspective_;
   not_null<Ephemeris<Barycentric> const*> const ephemeris_;
   not_null<NavigationFrame const*> const plotting_frame_;

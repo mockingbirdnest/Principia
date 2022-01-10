@@ -43,11 +43,13 @@ Planetarium::Planetarium(
     Parameters const& parameters,
     Perspective<Navigation, Camera> perspective,
     not_null<Ephemeris<Barycentric> const*> const ephemeris,
-    not_null<NavigationFrame const*> const plotting_frame)
+    not_null<NavigationFrame const*> const plotting_frame,
+    RigidTransformation<Navigation, World> const& plotting_to_world)
     : parameters_(parameters),
       perspective_(std::move(perspective)),
       ephemeris_(ephemeris),
-      plotting_frame_(plotting_frame) {}
+      plotting_frame_(plotting_frame),
+      plotting_to_world_(plotting_to_world) {}
 
 RP2Lines<Length, Camera> Planetarium::PlotMethod0(
     DiscreteTrajectory<Barycentric> const& trajectory,
@@ -266,6 +268,101 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
     *minimal_distance = Sqrt(minimal_squared_distance);
   }
   return lines;
+}
+
+void Planetarium::PlotMethod3(
+    Trajectory<Barycentric> const& trajectory,
+    Instant const& first_time,
+    Instant const& last_time,
+    Instant const& now,
+    bool reverse,
+    std::function<void(Position<World> const&)> add_point,
+    int const max_steps,
+    Length* minimal_distance) const {
+  double const tan²_angular_resolution =
+      Pow<2>(parameters_.tan_angular_resolution_);
+  auto const final_time = reverse ? first_time : last_time;
+  auto previous_time = reverse ? last_time : first_time;
+
+  if (minimal_distance != nullptr) {
+    *minimal_distance = Infinity<Length>;
+  }
+
+  Sign const direction = reverse ? Sign::Negative() : Sign::Positive();
+  if (direction * (final_time - previous_time) <= Time{}) {
+    return;
+  }
+  RigidMotion<Barycentric, Navigation> to_plotting_frame_at_t =
+      plotting_frame_->ToThisFrameAtTime(previous_time);
+  DegreesOfFreedom<Navigation> const initial_degrees_of_freedom =
+      to_plotting_frame_at_t(
+          trajectory.EvaluateDegreesOfFreedom(previous_time));
+  Position<Navigation> previous_position =
+      initial_degrees_of_freedom.position();
+  Velocity<Navigation> previous_velocity =
+      initial_degrees_of_freedom.velocity();
+  Time Δt = final_time - previous_time;
+
+  Instant t;
+  double estimated_tan²_error;
+  std::optional<DegreesOfFreedom<Barycentric>>
+      degrees_of_freedom_in_barycentric;
+  Position<Navigation> position;
+  Square<Length> minimal_squared_distance = Infinity<Square<Length>>;
+
+  std::optional<Position<Navigation>> last_endpoint;
+
+  int steps_accepted = 0;
+
+  goto estimate_tan²_error;
+
+  while (steps_accepted < max_steps &&
+         direction * (previous_time - final_time) < Time{}) {
+    do {
+      // One square root because we have squared errors, another one because the
+      // errors are quadratic in time (in other words, two square roots because
+      // the squared errors are quartic in time).
+      // A safety factor prevents catastrophic retries.
+      Δt *= 0.9 * Sqrt(Sqrt(tan²_angular_resolution / estimated_tan²_error));
+    estimate_tan²_error:
+      t = previous_time + Δt;
+      if (direction * (t - final_time) > Time{}) {
+        t = final_time;
+        Δt = t - previous_time;
+      }
+      Position<Navigation> const extrapolated_position =
+          previous_position + previous_velocity * Δt;
+      to_plotting_frame_at_t = plotting_frame_->ToThisFrameAtTime(t);
+      degrees_of_freedom_in_barycentric =
+          trajectory.EvaluateDegreesOfFreedom(t);
+      position = to_plotting_frame_at_t.rigid_transformation()(
+                     degrees_of_freedom_in_barycentric->position());
+
+      // The quadratic term of the error between the linear interpolation and
+      // the actual function is maximized halfway through the segment, so it is
+      // 1/2 (Δt/2)² f″(t-Δt) = (1/2 Δt² f″(t-Δt)) / 4; the squared error is
+      // thus (1/2 Δt² f″(t-Δt))² / 16.
+      estimated_tan²_error =
+          perspective_.Tan²AngularDistance(extrapolated_position, position) /
+          16;
+    } while (estimated_tan²_error > tan²_angular_resolution);
+    ++steps_accepted;
+
+    previous_time = t;
+    previous_position = position;
+    previous_velocity =
+        to_plotting_frame_at_t(*degrees_of_freedom_in_barycentric).velocity();
+
+    add_point(plotting_to_world_(position));
+    if (minimal_distance != nullptr) {
+      minimal_squared_distance =
+          std::min(minimal_squared_distance,
+                   perspective_.SquaredDistanceFromCamera(position));
+    }
+  }
+  if (minimal_distance != nullptr) {
+    *minimal_distance = Sqrt(minimal_squared_distance);
+  }
 }
 
 std::vector<Sphere<Navigation>> Planetarium::ComputePlottableSpheres(

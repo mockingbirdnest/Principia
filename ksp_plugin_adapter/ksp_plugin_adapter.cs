@@ -2161,7 +2161,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
               GLLines.PlotRP2Lines(rp2_lines_iterator,
                                    target_history_colour,
                                    target_history_style);
-            }
+            }// TODO COMMENT ALL PAST CELESTIAL PLOTTING, ADD MESH PATH
             using (DisposableIterator rp2_lines_iterator =
                 planetarium.PlanetariumPlotPrediction(
                     plugin_,
@@ -2249,6 +2249,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     double tan_angular_resolution = Math.Min(
             Math.Tan(vertical_fov * degree / 2) / (camera.pixelHeight / 2),
             Math.Tan(horizontal_fov * degree / 2) / (camera.pixelWidth / 2));
+    MainWindow.trace = $"{UnityEngine.Camera.current.name}, {PlanetariumCamera.Camera.name} {ScaledSpace.LocalToScaledSpace(Vector3d.zero)}";
     PlotSubtreeTrajectories(planetarium, main_vessel_guid,
                             Planetarium.fetch.Sun,
                             tan_angular_resolution);
@@ -2265,7 +2266,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     double min_distance_from_camera =
         (root.position - camera_world_position).magnitude;
     if (!plotting_frame_selector_.FixesBody(root)) {
-      using (DisposableIterator rp2_lines_iterator =
+      /*using (DisposableIterator rp2_lines_iterator =
              planetarium.PlanetariumPlotCelestialTrajectoryForPsychohistory(
                  plugin_,
                  root.flightGlobalsIndex,
@@ -2275,18 +2276,49 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         min_distance_from_camera =
             Math.Min(min_distance_from_camera, min_past_distance);
         GLLines.PlotRP2Lines(rp2_lines_iterator, colour, GLLines.Style.Faded);
-      }
+      }*/
       if (main_vessel_guid != null) {
-        using (DisposableIterator rp2_lines_iterator =
-            planetarium.
-                PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
-                    plugin_,
-                    root.flightGlobalsIndex,
-                    main_vessel_guid,
-                    out double min_future_distance)) {
-          min_distance_from_camera =
-              Math.Min(min_distance_from_camera, min_future_distance);
-          GLLines.PlotRP2Lines(rp2_lines_iterator, colour, GLLines.Style.Solid);
+        if (MainWindow.use_meshes) {
+          unsafe {
+            var vertices = new UnityEngine.Vector3[10_000];
+            int vertex_count;
+            fixed (UnityEngine.Vector3* vertices_data = vertices) {
+              planetarium.PlanetariumGetCelestialVertices(
+                  plugin_,
+                  root.flightGlobalsIndex,
+                  main_vessel_guid,
+                  ScaledSpace.InverseScaleFactor,
+                  (XYZ)ScaledSpace.LocalToScaledSpace(Vector3d.zero),
+                  (IntPtr)vertices_data,
+                  vertices.Length,
+                  out double min_future_distance,
+                  out vertex_count);
+            }
+            var mesh = new UnityEngine.Mesh();
+            mesh.vertices = vertices;
+            var indices = new int[vertex_count];
+            var colours = new UnityEngine.Color[vertex_count];
+            for (int i = 0; i < vertex_count; ++i) {
+              indices[i] = i;
+              colours[i] = colour;
+            }
+            mesh.colors = colours;
+            MainWindow.trace += $"{vertex_count} vertices for {root.name}";
+            mesh.SetIndices(indices, UnityEngine.MeshTopology.LineStrip, submesh: 0);
+            UnityEngine.Graphics.DrawMeshNow(mesh, UnityEngine.Vector3.zero, UnityEngine.Quaternion.identity);
+          }
+        } else {
+          using (DisposableIterator rp2_lines_iterator =
+              planetarium.
+                  PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
+                      plugin_,
+                      root.flightGlobalsIndex,
+                      main_vessel_guid,
+                      out double min_future_distance)) {
+            min_distance_from_camera =
+                Math.Min(min_distance_from_camera, min_future_distance);
+            GLLines.PlotRP2Lines(rp2_lines_iterator, colour, GLLines.Style.Solid);
+          }
         }
       }
     }
