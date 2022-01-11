@@ -191,9 +191,13 @@ void Vessel::DetectCollapsibilityChange() {
       // the last point of the backstory specifies the initial conditions of the
       // next (collapsible) segment.
       Instant const checkpoint = backstory_->back().time;
-      LOG(INFO) << "Writing " << ShortDebugString()
-                << " to checkpoint at: " << checkpoint;
-      checkpointer_->WriteToCheckpoint(checkpoint);
+      // This test is needed because in some cornercases we might try to create
+      // multiple checkpoints at the same time.  See #3280.
+      if (checkpointer_->newest_checkpoint() < checkpoint) {
+        LOG(INFO) << "Writing " << ShortDebugString()
+                  << " to checkpoint at: " << checkpoint;
+        checkpointer_->WriteToCheckpoint(checkpoint);
+      }
 
       // If there are no checkpoints in the current trajectory (this would
       // happen if we restored the last part of trajectory and it didn't overlap
