@@ -191,9 +191,13 @@ void Vessel::DetectCollapsibilityChange() {
       // the last point of the backstory specifies the initial conditions of the
       // next (collapsible) segment.
       Instant const checkpoint = backstory_->back().time;
-      LOG(INFO) << "Writing " << ShortDebugString()
-                << " to checkpoint at: " << checkpoint;
-      checkpointer_->WriteToCheckpoint(checkpoint);
+      // This test is needed because in some cornercases we might try to create
+      // multiple checkpoints at the same time.  See #3280.
+      if (checkpointer_->newest_checkpoint() < checkpoint) {
+        LOG(INFO) << "Writing " << ShortDebugString()
+                  << " to checkpoint at: " << checkpoint;
+        checkpointer_->WriteToCheckpoint(checkpoint);
+      }
 
       // If there are no checkpoints in the current trajectory (this would
       // happen if we restored the last part of trajectory and it didn't overlap
@@ -547,11 +551,18 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
     message->add_kept_parts(part_id);
   }
 
-  // We serialize at most the last |max_points_to_serialize| of the part of the
-  // trajectory that ends at the |backstory_|.
-  std::int64_t const backstory_size = backstory_->end() - trajectory_.begin();
+  // If the vessel is collapsible, we serialize at most the last
+  // |max_points_to_serialize| of the part of the trajectory that ends at the
+  // |backstory_|.  If it is not, however, we must serialize at least the entire
+  // |backstory_| otherwise we'd lose the beginning of a non-collapsible
+  // segment.
+  std::int64_t const history_size = backstory_->end() - trajectory_.begin();
+  std::int64_t const max_points_to_serialize_present_in_history =
+      std::min(max_points_to_serialize, history_size);
   std::int64_t const serialized_points =
-      std::min(max_points_to_serialize, backstory_size);
+      is_collapsible_ ? max_points_to_serialize_present_in_history
+                      : std::max(max_points_to_serialize_present_in_history,
+                                 backstory_->size());
 
   // Starting with Gateaux we don't save the prediction, see #2685.  Instead we
   // just save its first point and re-read as if it was the whole prediction.
