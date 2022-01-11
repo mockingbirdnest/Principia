@@ -19,8 +19,10 @@ using geometry::RP2Line;
 using geometry::Sign;
 using geometry::Velocity;
 using physics::MassiveBody;
+using quantities::Infinity;
 using quantities::Pow;
 using quantities::Sin;
+using quantities::Square;
 using quantities::Sqrt;
 using quantities::Tan;
 using quantities::Time;
@@ -155,13 +157,18 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
     Instant const& first_time,
     Instant const& last_time,
     Instant const& now,
-    bool const reverse) const {
+    bool const reverse,
+    Length* const minimal_distance) const {
   RP2Lines<Length, Camera> lines;
   auto const plottable_spheres = ComputePlottableSpheres(now);
   double const tan²_angular_resolution =
       Pow<2>(parameters_.tan_angular_resolution_);
   auto const final_time = reverse ? first_time : last_time;
   auto previous_time = reverse ? last_time : first_time;
+
+  if (minimal_distance != nullptr) {
+    *minimal_distance = Infinity<Length>;
+  }
 
   Sign const direction = reverse ? Sign::Negative() : Sign::Positive();
   if (direction * (final_time - previous_time) <= Time{}) {
@@ -183,6 +190,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
   std::optional<DegreesOfFreedom<Barycentric>>
       degrees_of_freedom_in_barycentric;
   Position<Navigation> position;
+  Square<Length> minimal_squared_distance = Infinity<Square<Length>>;
 
   std::optional<Position<Navigation>> last_endpoint;
 
@@ -236,6 +244,12 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
       continue;
     }
 
+    if (minimal_distance != nullptr) {
+      minimal_squared_distance =
+          std::min(minimal_squared_distance,
+                   perspective_.SquaredDistanceFromCamera(position));
+    }
+
     auto const visible_segments = perspective_.VisibleSegments(
                                       *segment_behind_focal_plane,
                                       plottable_spheres);
@@ -247,6 +261,9 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
       lines.back().push_back(perspective_(segment.second));
       last_endpoint = segment.second;
     }
+  }
+  if (minimal_distance != nullptr) {
+    *minimal_distance = Sqrt(minimal_squared_distance);
   }
   return lines;
 }

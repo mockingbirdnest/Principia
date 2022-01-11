@@ -2,6 +2,7 @@
 #include "ksp_plugin/interface.hpp"
 
 #include <algorithm>
+#include <limits>
 
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
@@ -193,18 +194,21 @@ Iterator* __cdecl principia__PlanetariumPlotCelestialTrajectoryForPsychohistory(
     Plugin const* const plugin,
     int const celestial_index,
     char const* const vessel_guid,
-    double const max_history_length) {
+    double const max_history_length,
+    double* const minimal_distance_from_camera) {
   journal::Method<journal::PlanetariumPlotCelestialTrajectoryForPsychohistory>
       m({planetarium,
          plugin,
          celestial_index,
          vessel_guid,
-         max_history_length});
+         max_history_length},
+        {minimal_distance_from_camera});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
 
   // Do not plot the past when there is a target vessel as it is misleading.
   if (plugin->renderer().HasTargetVessel()) {
+    *minimal_distance_from_camera = std::numeric_limits<double>::infinity();
     return m.Return(new TypedIterator<RP2Lines<Length, Camera>>({}));
   } else {
     auto const& celestial_trajectory =
@@ -219,12 +223,15 @@ Iterator* __cdecl principia__PlanetariumPlotCelestialTrajectoryForPsychohistory(
 
     Instant const first_time =
         std::max(desired_first_time, celestial_trajectory.t_min());
+    Length minimal_distance;
     auto const rp2_lines =
         planetarium->PlotMethod2(celestial_trajectory,
                                  first_time,
                                  /*last_time=*/plugin->CurrentTime(),
                                  /*now=*/plugin->CurrentTime(),
-                                 /*reverse=*/true);
+                                 /*reverse=*/true,
+                                 &minimal_distance);
+    *minimal_distance_from_camera = minimal_distance / Metre;
     return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
   }
 }
@@ -237,15 +244,18 @@ principia__PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
     int const celestial_index,
-    char const* const vessel_guid) {
+    char const* const vessel_guid,
+    double* const minimal_distance_from_camera) {
   journal::Method<
       journal::PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan>
-      m({planetarium, plugin, celestial_index, vessel_guid});
+      m({planetarium, plugin, celestial_index, vessel_guid},
+        {minimal_distance_from_camera});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
 
   // Do not plot the past when there is a target vessel as it is misleading.
   if (plugin->renderer().HasTargetVessel()) {
+    *minimal_distance_from_camera = std::numeric_limits<double>::infinity();
     return m.Return(new TypedIterator<RP2Lines<Length, Camera>>({}));
   } else {
     auto const& vessel = *plugin->GetVessel(vessel_guid);
@@ -259,12 +269,15 @@ principia__PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
         plugin->GetCelestial(celestial_index).trajectory();
     // No need to request reanimation here because the current time of the
     // plugin is necessarily covered.
+    Length minimal_distance;
     auto const rp2_lines =
         planetarium->PlotMethod2(celestial_trajectory,
                                  /*first_time=*/plugin->CurrentTime(),
                                  /*last_time=*/final_time,
                                  /*now=*/plugin->CurrentTime(),
-                                 /*reverse=*/false);
+                                 /*reverse=*/false,
+                                 &minimal_distance);
+    *minimal_distance_from_camera = minimal_distance / Metre;
     return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
   }
 }
