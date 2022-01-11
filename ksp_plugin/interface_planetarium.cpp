@@ -2,6 +2,7 @@
 #include "ksp_plugin/interface.hpp"
 
 #include <algorithm>
+#include <limits>
 
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
