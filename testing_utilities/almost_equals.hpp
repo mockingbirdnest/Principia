@@ -14,6 +14,7 @@
 #include "geometry/r3_element.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "gmock/gmock.h"
+#include "numerics/fixed_arrays.hpp"
 #include "numerics/unbounded_arrays.hpp"
 
 namespace principia {
@@ -74,6 +75,17 @@ class AlmostEqualsMatcher final {
   template<typename Vector>
   bool MatchAndExplain(geometry::Point<Vector> const& actual,
                        testing::MatchResultListener* listener) const;
+  template<typename Scalar, int size>
+  bool MatchAndExplain(numerics::FixedVector<Scalar, size> const& actual,
+                       testing::MatchResultListener* listener) const;
+  template<typename Scalar, int rows>
+  bool MatchAndExplain(
+      numerics::FixedLowerTriangularMatrix<Scalar, rows> const& actual,
+      testing::MatchResultListener* listener) const;
+  template<typename Scalar, int columns>
+  bool MatchAndExplain(
+      numerics::FixedUpperTriangularMatrix<Scalar, columns> const& actual,
+      testing::MatchResultListener* listener) const;
   template<typename Scalar>
   bool MatchAndExplain(numerics::UnboundedVector<Scalar> const& actual,
                        testing::MatchResultListener* listener) const;

@@ -16,6 +16,8 @@
   </ImportGroup>
   <ItemGroup>
     <ClInclude Include="apodization_body.hpp" />
+    <ClInclude Include="matrix_computations.hpp" />
+    <ClInclude Include="matrix_computations_body.hpp" />
     <ClInclude Include="combinatorics.hpp" />
     <ClInclude Include="combinatorics_body.hpp" />
     <ClInclude Include="cbrt.hpp" />
@@ -100,6 +102,7 @@
     <ClCompile Include="frequency_analysis_test.cpp" />
     <ClCompile Include="hermite3_test.cpp" />
     <ClCompile Include="legendre_test.cpp" />
+    <ClCompile Include="matrix_computations_test.cpp" />
     <ClCompile Include="max_abs_normalized_associated_legendre_functions_test.cc" />
     <ClCompile Include="newhall_test.cpp" />
     <ClCompile Include="next_test.cpp" />
