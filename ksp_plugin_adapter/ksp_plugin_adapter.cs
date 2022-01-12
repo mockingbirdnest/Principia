@@ -2256,6 +2256,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                             tan_angular_resolution);
   }
 
+  private Dictionary<CelestialBody, UnityEngine.Mesh> celestial_trajectories_ = new Dictionary<CelestialBody, UnityEngine.Mesh>();
+
   private void PlotSubtreeTrajectories(DisposablePlanetarium planetarium,
                                        string main_vessel_guid,
                                        CelestialBody root,
@@ -2281,6 +2283,15 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       if (main_vessel_guid != null) {
         if (MainWindow.use_meshes) {
           unsafe {
+            UnityEngine.Mesh mesh;
+            if (MainWindow.reuse_meshes) {
+              if (!celestial_trajectories_.TryGetValue(root, out mesh)) {
+                mesh = new UnityEngine.Mesh();
+                celestial_trajectories_[root] = mesh;
+              }
+            } else {
+              mesh = new UnityEngine.Mesh();
+            }
             var vertices = new UnityEngine.Vector3[10_000];
             int vertex_count;
             fixed (UnityEngine.Vector3* vertices_data = vertices) {
@@ -2295,19 +2306,21 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                   out double min_future_distance,
                   out vertex_count);
             }
-            var mesh = new UnityEngine.Mesh();
             mesh.vertices = vertices;
             var indices = new int[vertex_count];
+            for (int i = 0; i < vertex_count; ++i) {
+              indices[i] = i;
+            }
             var colours = new UnityEngine.Color[vertices.Length];
             for (int i = 0; i < colours.Length; ++i) {
               colours[i] = colour;
             }
-            for (int i = 0; i < vertex_count; ++i) {
-              indices[i] = i;
-            }
             mesh.colors = colours;
             MainWindow.trace += $"{vertex_count} vertices for {root.name}";
             mesh.SetIndices(indices, UnityEngine.MeshTopology.LineStrip, submesh: 0);
+            if (MainWindow.reuse_meshes) {
+              mesh.RecalculateBounds();
+            }
             if (MainWindow.now) {
               UnityEngine.Graphics.DrawMeshNow(mesh, UnityEngine.Vector3.zero, UnityEngine.Quaternion.identity);
             } else {
