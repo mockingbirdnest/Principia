@@ -870,7 +870,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     if (map_renderer_ == null) {
       map_renderer_ = PlanetariumCamera.Camera.gameObject.
           AddComponent<RenderingActions>();
-      map_renderer_.post_render = RenderTrajectories;
+      map_renderer_.pre_cull = () => {if (MainWindow.pre_cull) RenderTrajectories();};
+      map_renderer_.post_render = () => {if (!MainWindow.pre_cull) RenderTrajectories();};
     }
 
     if (galaxy_cube_rotator_ == null) {
@@ -2305,7 +2306,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             mesh.colors = colours;
             MainWindow.trace += $"{vertex_count} vertices for {root.name}";
             mesh.SetIndices(indices, UnityEngine.MeshTopology.LineStrip, submesh: 0);
-            UnityEngine.Graphics.DrawMeshNow(mesh, UnityEngine.Vector3.zero, UnityEngine.Quaternion.identity);
+            if (MainWindow.now) {
+              UnityEngine.Graphics.DrawMeshNow(mesh, UnityEngine.Vector3.zero, UnityEngine.Quaternion.identity);
+            } else {
+              UnityEngine.Graphics.DrawMesh(mesh, UnityEngine.Vector3.zero, UnityEngine.Quaternion.identity, GLLines.line_material, MainWindow.layer, PlanetariumCamera.Camera);
+            }
           }
         } else {
           using (DisposableIterator rp2_lines_iterator =

@@ -150,7 +150,7 @@ internal static class GLLines {
 
   private static UnityEngine.Material line_material_;
 
-  private static UnityEngine.Material line_material {
+  public static UnityEngine.Material line_material {
     get {
       if (line_material_ == null) {
         line_material_ = new UnityEngine.Material(

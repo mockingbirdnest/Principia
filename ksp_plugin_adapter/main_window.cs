@@ -274,23 +274,21 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
       selecting_target_celestial_ = false;
     }
   }
-
+  
   public static bool use_meshes = false;
+  public static bool pre_cull = false;
+  public static bool now = true;
+  public static int layer = 9;
   public static string trace = "";
-  public static int x,y,z;
 
   private void RenderLoggingSettings() {
     use_meshes = UnityEngine.GUILayout.Toggle(use_meshes, "Use meshes");
+    pre_cull = UnityEngine.GUILayout.Toggle(pre_cull, "Pre-cull");
+    now = UnityEngine.GUILayout.Toggle(now, "Now");
+    if (int.TryParse(UnityEngine.GUILayout.TextArea(layer.ToString()), out int result)) {
+      layer = result;
+    }
     UnityEngine.GUILayout.Label(trace);
-    if (int.TryParse(UnityEngine.GUILayout.TextArea(x.ToString()), out int nx)) {
-      x = nx;
-    }
-    if (int.TryParse(UnityEngine.GUILayout.TextArea(y.ToString()), out int ny)) {
-      y = ny;
-    }
-    if (int.TryParse(UnityEngine.GUILayout.TextArea(z.ToString()), out int nz)) {
-      z = nz;
-    }
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(
           text : L10N.CacheFormat(
