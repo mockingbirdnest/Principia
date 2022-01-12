@@ -135,7 +135,7 @@ class UnboundedUpperTriangularMatrix final {
     explicit Row(Matrix& matrix, int row);
 
     // We need to remove the const because, when this class is instantiated with
-    // 'UnboundedUpperTriangularMatrix const', the first operator[], not the
+    // |UnboundedUpperTriangularMatrix const|, the first operator[], not the
     // second, is picked by overload resolution.
     std::remove_const_t<Matrix>& matrix_;
     int row_;

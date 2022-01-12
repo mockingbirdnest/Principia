@@ -15,6 +15,64 @@ using quantities::Pow;
 using quantities::Sqrt;
 
 template<typename Scalar_, template<typename S> typename UpperTriangularMatrix>
+struct CholeskyGenerator<UpperTriangularMatrix<Scalar_>> {
+  using Scalar = Scalar_;
+  using Result = UpperTriangularMatrix<SquareRoot<Scalar>>;
+  static Result Uninitialized(UpperTriangularMatrix<Scalar> const& u);
+};
+
+template<typename Scalar_, int columns,
+         template<typename S, int c> typename UpperTriangularMatrix>
+struct CholeskyGenerator<UpperTriangularMatrix<Scalar_, columns>> {
+  using Scalar = Scalar_;
+  using Result = UpperTriangularMatrix<SquareRoot<Scalar>, columns>;
+  static Result Uninitialized(UpperTriangularMatrix<Scalar, columns> const& u);
+};
+
+template<typename Scalar_,
+         template<typename S> typename Vector,
+         template<typename S> typename UpperTriangularMatrix>
+struct ᵗRDRGenerator<Vector<Scalar_>, UpperTriangularMatrix<Scalar_>> {
+  using Scalar = Scalar_;
+  struct Result {
+    UpperTriangularMatrix<double> R;
+    Vector<Scalar> D;
+  };
+  static Result Uninitialized(UpperTriangularMatrix<Scalar> const& u);
+};
+
+template<typename Scalar_, int columns,
+         template<typename S, int c> typename Vector,
+         template<typename S, int c> typename UpperTriangularMatrix>
+struct ᵗRDRGenerator<Vector<Scalar_, columns>,
+                     UpperTriangularMatrix<Scalar_, columns>> {
+  using Scalar = Scalar_;
+  struct Result {
+    UpperTriangularMatrix<double, columns> R;
+    Vector<Scalar, columns> D;
+  };
+  static Result Uninitialized(UpperTriangularMatrix<Scalar, columns> const& u);
+};
+
+template<typename LScalar, typename RScalar,
+         template<typename S> typename Matrix,
+         template<typename S> typename Vector>
+struct SubstitutionGenerator<Matrix<LScalar>, Vector<RScalar>> {
+  using Result = Vector<Quotient<RScalar, LScalar>>;
+  static Result Uninitialized(Matrix<LScalar> const& m);
+};
+
+template<typename LScalar, typename RScalar, int dimension,
+         template<typename S, int d> typename Matrix,
+         template<typename S, int d> typename Vector>
+struct SubstitutionGenerator<Matrix<LScalar, dimension>,
+                             Vector<RScalar, dimension>> {
+  using Result = Vector<Quotient<RScalar, LScalar>, dimension>;
+  static Result Uninitialized(Matrix<LScalar, dimension> const& m);
+};
+
+
+template<typename Scalar_, template<typename S> typename UpperTriangularMatrix>
 auto CholeskyGenerator<UpperTriangularMatrix<Scalar_>>::Uninitialized(
     UpperTriangularMatrix<Scalar> const& u) -> Result {
   return Result(u.columns(), uninitialized);
