@@ -277,14 +277,14 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
   
   public static bool use_meshes = false;
   public static bool pre_cull = false;
-  public static bool now = true;
+  public static bool now = false;
   public static int layer = 9;
   public static string trace = "";
 
   private void RenderLoggingSettings() {
     use_meshes = UnityEngine.GUILayout.Toggle(use_meshes, "Use meshes");
-    pre_cull = UnityEngine.GUILayout.Toggle(pre_cull, "Pre-cull");
-    now = UnityEngine.GUILayout.Toggle(now, "Now");
+    now = UnityEngine.GUILayout.Toggle(now, "Now post-render");
+    pre_cull = !now;
     if (int.TryParse(UnityEngine.GUILayout.TextArea(layer.ToString()), out int result)) {
       layer = result;
     }

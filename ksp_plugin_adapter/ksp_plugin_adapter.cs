@@ -2298,10 +2298,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             var mesh = new UnityEngine.Mesh();
             mesh.vertices = vertices;
             var indices = new int[vertex_count];
-            var colours = new UnityEngine.Color[vertex_count];
+            var colours = new UnityEngine.Color[vertices.Length];
+            for (int i = 0; i < colours.Length; ++i) {
+              colours[i] = colour;
+            }
             for (int i = 0; i < vertex_count; ++i) {
               indices[i] = i;
-              colours[i] = colour;
             }
             mesh.colors = colours;
             MainWindow.trace += $"{vertex_count} vertices for {root.name}";
