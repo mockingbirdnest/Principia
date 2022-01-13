@@ -126,7 +126,7 @@ template<typename UpperTriangularMatrix>
 typename CholeskyGenerator<UpperTriangularMatrix>::Result
 CholeskyDecomposition(UpperTriangularMatrix const& A) {
   using G = CholeskyGenerator<UpperTriangularMatrix>;
-  using Scalar = G::Scalar;
+  using Scalar = typename G::Scalar;
   auto R = G::Uninitialized(A);
   for (int j = 0; j < A.columns(); ++j) {
     for (int i = 0; i < j; ++i) {
@@ -151,7 +151,7 @@ template<typename Vector, typename UpperTriangularMatrix>
 typename ᵗRDRGenerator<Vector, UpperTriangularMatrix>::Result
 ᵗRDRDecomposition(UpperTriangularMatrix const& A) {
   using G = ᵗRDRGenerator<Vector, UpperTriangularMatrix>;
-  using Scalar = G::Scalar;
+  using Scalar = typename G::Scalar;
   auto result = G::Uninitialized(A);
   auto& R = result.R;
   auto& D = result.D;
