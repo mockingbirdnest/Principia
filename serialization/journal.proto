@@ -1781,6 +1781,8 @@ message PlanetariumCreate {
     required XYZ xyz_camera_position_in_world = 6;
     required double focal = 7;
     required double field_of_view = 8;
+    required double inverse_scale_factor = 9;
+    required XYZ offset = 10;
   }
   message Return {
     required fixed64 result = 1 [(pointer_to) = "Planetarium",
@@ -1857,9 +1859,9 @@ message PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan {
   optional Return return = 3;
 }
 
-message PlanetariumGetCelestialVertices {
+message PlanetariumGetCelestialFutureTrajectoryVertices {
   extend Method {
-    optional PlanetariumGetCelestialVertices extension = 5999;
+    optional PlanetariumGetCelestialFutureTrajectoryVertices extension = 5999;
   }
   message In {
     required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
@@ -1868,9 +1870,7 @@ message PlanetariumGetCelestialVertices {
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
     required int32 celestial_index = 3;
     required string vessel_guid = 4;
-    required double inverse_scale_factor = 5;
-    required XYZ offset = 6;
-    required fixed64 vertices = 7 [(pointer_to) = "UnityVector3"];
+    required fixed64 vertices = 7 [(pointer_to) = "ScaledSpacePoint"];
     required int32 vertices_size = 8;
   }
   message Out {

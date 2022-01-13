@@ -56,6 +56,7 @@ using ksp_plugin::PileUp;
 using ksp_plugin::PileUpFuture;
 using ksp_plugin::Planetarium;
 using ksp_plugin::Plugin;
+using ksp_plugin::ScaledSpacePoint;
 using ksp_plugin::Vessel;
 using ksp_plugin::World;
 using physics::DegreesOfFreedom;
@@ -72,13 +73,6 @@ template<typename T>
 std::unique_ptr<T> TakeOwnership(T** pointer);
 template<typename T>
 std::unique_ptr<T[]> TakeOwnershipArray(T** pointer);
-
-extern "C"
-struct UnityVector3 {
-  float x;
-  float y;
-  float z;
-};
 
 #include "ksp_plugin/interface.generated.h"
 

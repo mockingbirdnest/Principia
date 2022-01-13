@@ -242,7 +242,7 @@ Iterator* __cdecl principia__PlanetariumPlotCelestialTrajectoryForPsychohistory(
 // the given index; the trajectory goes as far as the furthest of the final time
 // of the prediction or that of the flight plan.
 Iterator* __cdecl
-principia__PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
+principia__PlanetariumGetCelestialPastTrajectoryVertices(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
     int const celestial_index,
@@ -287,7 +287,7 @@ principia__PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
 // Returns an iterator for the rendered future trajectory of the celestial with
 // the given index; the trajectory goes as far as the furthest of the final time
 // of the prediction or that of the flight plan.
-void __cdecl principia__PlanetariumGetCelestialVertices(
+void __cdecl principia__PlanetariumGetCelestialFutureTrajectoryVertices(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
     int const celestial_index,
@@ -298,7 +298,7 @@ void __cdecl principia__PlanetariumGetCelestialVertices(
     int const vertices_size,
     double* const minimal_distance_from_camera,
     int* const vertex_count) {
-  journal::Method<journal::PlanetariumGetCelestialVertices> m(
+  journal::Method<journal::PlanetariumGetCelestialFutureTrajectoryVertices> m(
       {planetarium,
        plugin,
        celestial_index,

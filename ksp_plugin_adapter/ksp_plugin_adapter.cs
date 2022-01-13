@@ -2295,7 +2295,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             var vertices = new UnityEngine.Vector3[10_000];
             int vertex_count;
             fixed (UnityEngine.Vector3* vertices_data = vertices) {
-              planetarium.PlanetariumGetCelestialVertices(
+              planetarium.PlanetariumGetCelestialFutureTrajectoryVertices(
                   plugin_,
                   root.flightGlobalsIndex,
                   main_vessel_guid,

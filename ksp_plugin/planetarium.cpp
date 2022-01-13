@@ -15,6 +15,7 @@ namespace ksp_plugin {
 namespace internal_planetarium {
 
 using geometry::Position;
+using geometry::R3Element;
 using geometry::RP2Line;
 using geometry::Sign;
 using geometry::Velocity;
@@ -44,12 +45,16 @@ Planetarium::Planetarium(
     Perspective<Navigation, Camera> perspective,
     not_null<Ephemeris<Barycentric> const*> const ephemeris,
     not_null<NavigationFrame const*> const plotting_frame,
-    RigidTransformation<Navigation, World> const& plotting_to_world)
+    RigidTransformation<Navigation, World> const& plotting_to_world,
+    Inverse<Length> const& inverse_scale_factor,
+    Position<World> const& scaled_space_origin)
     : parameters_(parameters),
       perspective_(std::move(perspective)),
       ephemeris_(ephemeris),
       plotting_frame_(plotting_frame),
-      plotting_to_world_(plotting_to_world) {}
+      plotting_to_world_(plotting_to_world),
+      inverse_scale_factor_(inverse_scale_factor),
+      scaled_space_origin_(scaled_space_origin) {}
 
 RP2Lines<Length, Camera> Planetarium::PlotMethod0(
     DiscreteTrajectory<Barycentric> const& trajectory,
@@ -276,7 +281,7 @@ void Planetarium::PlotMethod3(
     Instant const& last_time,
     Instant const& now,
     bool reverse,
-    std::function<void(Position<World> const&)> add_point,
+    std::function<void(ScaledSpacePoint const&)> add_point,
     int const max_steps,
     Length* minimal_distance) const {
   double const tan²_angular_resolution =
@@ -438,6 +443,15 @@ Segments<Navigation> Planetarium::ComputePlottableSegments(
   }
 
   return all_segments;
+}
+
+ScaledSpacePoint Planetarium::WorldToScaledSpace(
+    Position<World> const& position) {
+  R3Element<double> const scaled_space_coordinates =
+      ((position - scaled_space_origin_) * inverse_scale_factor_).coordinates();
+  return ScaledSpacePoint{static_cast<float>(scaled_space_coordinates.x),
+                          static_cast<float>(scaled_space_coordinates.y),
+                          static_cast<float>(scaled_space_coordinates.z)};
 }
 
 }  // namespace internal_planetarium

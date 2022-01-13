@@ -39,6 +39,19 @@ using physics::RigidMotion;
 using physics::Trajectory;
 using quantities::Angle;
 using quantities::Length;
+using quantities::Inverse;
+
+// Corresponds to a UnityEngine.Vector3 representing a position in KSP’s
+// ScaledSpace.
+extern "C"
+struct ScaledSpacePoint {
+  float x;
+  float y;
+  float z;
+};
+
+static_assert(std::is_pod<ScaledSpacePoint>::value,
+              "NavigationFrameParameters is used for interfacing");
 
 // A planetarium is an ephemeris together with a perspective.  In this setting
 // it is possible to draw trajectories in the projective plane.
@@ -64,11 +77,15 @@ class Planetarium {
 
   // TODO(phl): All this Navigation is weird.  Should it be named Plotting?
   // In particular Navigation vs. NavigationFrame is a mess.
+  // |inverse_scale_factor| and |scaled_space_origin| define the
+  // transformation from World to ScaledSpace.
   Planetarium(Parameters const& parameters,
               Perspective<Navigation, Camera> perspective,
               not_null<Ephemeris<Barycentric> const*> ephemeris,
               not_null<NavigationFrame const*> plotting_frame,
-              RigidTransformation<Navigation, World> const& plotting_to_world);
+              RigidTransformation<Navigation, World> const& plotting_to_world,
+              Inverse<Length> const& inverse_scale_factor,
+              Position<World> const& scaled_space_origin);
 
   // A no-op method that just returns all the points in the trajectory defined
   // by |begin| and |end|.
@@ -113,7 +130,7 @@ class Planetarium {
       Instant const& last_time,
       Instant const& now,
       bool reverse,
-      std::function<void(Position<World> const&)> add_point,
+      std::function<void(ScaledSpacePoint const&)> add_point,
       int max_steps,
       Length* minimal_distance = nullptr) const;
 
@@ -130,17 +147,22 @@ class Planetarium {
       DiscreteTrajectory<Barycentric>::iterator begin,
       DiscreteTrajectory<Barycentric>::iterator end) const;
 
+  ScaledSpacePoint WorldToScaledSpace(Position<World> const& position);
+
   Parameters const parameters_;
   // TODO(egg): Consider distinguishing this copy of World.
   RigidTransformation<Navigation, World> const plotting_to_world_;
   Perspective<Navigation, Camera> const perspective_;
   not_null<Ephemeris<Barycentric> const*> const ephemeris_;
   not_null<NavigationFrame const*> const plotting_frame_;
+  Inverse<Length> const inverse_scale_factor_;
+  Position<World> const scaled_space_origin_;
 };
 
 }  // namespace internal_planetarium
 
 using internal_planetarium::Planetarium;
+using internal_planetarium::ScaledSpacePoint;
 
 }  // namespace ksp_plugin
 }  // namespace principia
