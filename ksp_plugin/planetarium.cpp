@@ -358,7 +358,7 @@ void Planetarium::PlotMethod3(
     previous_velocity =
         to_plotting_frame_at_t(*degrees_of_freedom_in_barycentric).velocity();
 
-    add_point(plotting_to_world_(position));
+    add_point(WorldToScaledSpace(plotting_to_world_(position)));
     if (minimal_distance != nullptr) {
       minimal_squared_distance =
           std::min(minimal_squared_distance,
@@ -446,7 +446,7 @@ Segments<Navigation> Planetarium::ComputePlottableSegments(
 }
 
 ScaledSpacePoint Planetarium::WorldToScaledSpace(
-    Position<World> const& position) {
+    Position<World> const& position) const {
   R3Element<double> const scaled_space_coordinates =
       ((position - scaled_space_origin_) * inverse_scale_factor_).coordinates();
   return ScaledSpacePoint{static_cast<float>(scaled_space_coordinates.x),

@@ -86,6 +86,7 @@ using physics::RotatingBody;
 using physics::Trajectory;
 using quantities::Angle;
 using quantities::Force;
+using quantities::Inverse;
 using quantities::Length;
 using quantities::Mass;
 using quantities::Time;
@@ -391,7 +392,9 @@ class Plugin {
   virtual not_null<std::unique_ptr<Planetarium>> NewPlanetarium(
       Planetarium::Parameters const& parameters,
       Perspective<Navigation, Camera> const& perspective,
-      geometry::RigidTransformation<Navigation, World> const& plotting_to_world) const;
+      geometry::RigidTransformation<Navigation, World> const& plotting_to_world,
+      Inverse<Length> inverse_scale_factor,
+      Position<World> scaled_space_origin) const;
 
   virtual not_null<std::unique_ptr<NavigationFrame>>
   NewBarycentricRotatingNavigationFrame(Index primary_index,

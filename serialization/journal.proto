@@ -1782,7 +1782,7 @@ message PlanetariumCreate {
     required double focal = 7;
     required double field_of_view = 8;
     required double inverse_scale_factor = 9;
-    required XYZ offset = 10;
+    required XYZ scaled_space_origin = 10;
   }
   message Return {
     required fixed64 result = 1 [(pointer_to) = "Planetarium",

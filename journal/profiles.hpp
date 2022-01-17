@@ -39,7 +39,6 @@ using interface::Origin;
 using interface::QP;
 using interface::QPRW;
 using interface::Status;
-using interface::UnityVector3;
 using interface::WXYZ;
 using interface::XY;
 using interface::XYZ;
@@ -48,6 +47,7 @@ using ksp_plugin::PileUpFuture;
 using ksp_plugin::Planetarium;
 using ksp_plugin::Plugin;
 using ksp_plugin::Vessel;
+using ksp_plugin::ScaledSpacePoint;
 
 namespace journal {
 

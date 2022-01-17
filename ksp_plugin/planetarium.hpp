@@ -147,7 +147,7 @@ class Planetarium {
       DiscreteTrajectory<Barycentric>::iterator begin,
       DiscreteTrajectory<Barycentric>::iterator end) const;
 
-  ScaledSpacePoint WorldToScaledSpace(Position<World> const& position);
+  ScaledSpacePoint WorldToScaledSpace(Position<World> const& position) const;
 
   Parameters const parameters_;
   // TODO(egg): Consider distinguishing this copy of World.

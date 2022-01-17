@@ -51,7 +51,9 @@ Planetarium* __cdecl principia__PlanetariumCreate(
     XYZ const xyz_opengl_camera_z_in_world,
     XYZ const xyz_camera_position_in_world,
     double const focal,
-    double const field_of_view) {
+    double const field_of_view,
+    double const inverse_scale_factor,
+    XYZ const scaled_space_origin) {
   journal::Method<journal::PlanetariumCreate> m({plugin,
                                                  sun_world_position,
                                                  xyz_opengl_camera_x_in_world,
@@ -59,7 +61,9 @@ Planetarium* __cdecl principia__PlanetariumCreate(
                                                  xyz_opengl_camera_z_in_world,
                                                  xyz_camera_position_in_world,
                                                  focal,
-                                                 field_of_view});
+                                                 field_of_view,
+                                                 inverse_scale_factor,
+                                                 scaled_space_origin});
   Renderer const& renderer = CHECK_NOTNULL(plugin)->renderer();
 
   Multivector<double, World, 1> const opengl_camera_x_in_world(
@@ -98,7 +102,9 @@ Planetarium* __cdecl principia__PlanetariumCreate(
   return m.Return(plugin->NewPlanetarium(
       parameters,
       perspective,
-      world_to_plotting_affine_map.Inverse()).release());
+      world_to_plotting_affine_map.Inverse(),
+      inverse_scale_factor * (1 / Metre),
+      FromXYZ<Position<World>>(scaled_space_origin)).release());
 }
 
 void __cdecl principia__PlanetariumDelete(
@@ -242,7 +248,7 @@ Iterator* __cdecl principia__PlanetariumPlotCelestialTrajectoryForPsychohistory(
 // the given index; the trajectory goes as far as the furthest of the final time
 // of the prediction or that of the flight plan.
 Iterator* __cdecl
-principia__PlanetariumGetCelestialPastTrajectoryVertices(
+principia__PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
     int const celestial_index,
@@ -292,9 +298,7 @@ void __cdecl principia__PlanetariumGetCelestialFutureTrajectoryVertices(
     Plugin const* const plugin,
     int const celestial_index,
     char const* const vessel_guid,
-    double const inverse_scale_factor,
-    XYZ const offset,
-    UnityVector3* const vertices,
+    ScaledSpacePoint* const vertices,
     int const vertices_size,
     double* const minimal_distance_from_camera,
     int* const vertex_count) {
@@ -303,8 +307,6 @@ void __cdecl principia__PlanetariumGetCelestialFutureTrajectoryVertices(
        plugin,
        celestial_index,
        vessel_guid,
-       inverse_scale_factor,
-       offset,
        vertices,
        vertices_size},
       {minimal_distance_from_camera, vertex_count});
@@ -335,16 +337,8 @@ void __cdecl principia__PlanetariumGetCelestialFutureTrajectoryVertices(
         /*last_time=*/final_time,
         /*now=*/plugin->CurrentTime(),
         /*reverse=*/false,
-        [inverse_scale_factor, offset = FromXYZ(offset), vertices, vertex_count](
-            Position<World> const& q) {
-          auto const scaled_coords =
-              ((q - World::origin) / Metre).coordinates() *
-                  inverse_scale_factor +
-              offset;
-          vertices[*vertex_count] = {static_cast<float>(scaled_coords.x),
-                                     static_cast<float>(scaled_coords.y),
-                                     static_cast<float>(scaled_coords.z)};
-          ++*vertex_count;
+        [vertices, vertex_count](ScaledSpacePoint const& vertex) {
+          vertices[(*vertex_count)++] = vertex;
         },
         vertices_size,
         &minimal_distance);

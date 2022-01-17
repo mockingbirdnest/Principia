@@ -74,7 +74,8 @@ internal static class GLLines {
                                     (XYZ)(Vector3d)opengl_camera_z_in_world,
                                     (XYZ)(Vector3d)camera_position_in_world,
                                     focal:1,
-                                    field_of_view);
+                                    field_of_view,                  ScaledSpace.InverseScaleFactor,
+                  (XYZ)ScaledSpace.LocalToScaledSpace(Vector3d.zero));
   }
 
   public static void PlotRP2Lines(DisposableIterator rp2_lines_iterator,
