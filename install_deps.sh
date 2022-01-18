@@ -41,8 +41,8 @@ for repo in protobuf glog googletest gipfeli abseil-cpp compatibility benchmark 
   # Luckily, the <type_traits> definitions are gated on _LIBCPP_STD_VER > 14, while the
   # <filesystem> usage is gated on _LIBCPP_STD_VER >= 17.  We can therefore get the
   # former without the latter by setting _LIBCPP_STD_VER to 16 ∈ ]14, 17[.
-  PRINCIPIA_MACOS_CXX_FLAGS="-D_LIBCPP_STD_VER=16"
-  PRINCIPIA_MACOS_VERSION_MIN="10.14"
+  PRINCIPIA_MACOS_CXX_FLAGS="-D_LIBCPP_STD_VER=16 -D_LIBCPP_NO_EXCEPTIONS"
+  PRINCIPIA_MACOS_VERSION_MIN="10.12"
   # End pipeline variables.
 
   # Task group Make.
