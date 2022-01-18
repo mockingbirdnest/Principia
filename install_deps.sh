@@ -74,12 +74,4 @@ for repo in protobuf glog googletest gipfeli abseil-cpp compatibility benchmark 
   popd
 done
 
-if [ ! -d "Optional" ]; then
-  mkdir Optional
-fi
-pushd Optional
-curl "https://raw.githubusercontent.com/llvm-mirror/libcxx/52f9ca28a39aa02a2e78fa0eb5aa927ad046487f/include/optional" > principia_optional_impl
-touch __undef_macros
-popd
-
 popd
