@@ -313,7 +313,7 @@ constexpr FixedVector<Difference<ScalarLeft, ScalarRight>, size> operator-(
 }
 
 template<typename ScalarLeft, typename ScalarRight, int size>
-Product<ScalarLeft, ScalarRight> operator*(
+constexpr Product<ScalarLeft, ScalarRight> operator*(
     FixedVector<ScalarLeft, size> const& left,
     FixedVector<ScalarRight, size> const& right) {
   return DotProduct<ScalarLeft, ScalarRight, size>::Compute(left.data_,
@@ -321,7 +321,7 @@ Product<ScalarLeft, ScalarRight> operator*(
 }
 
 template<typename ScalarLeft, typename ScalarRight, int rows, int columns>
-FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
+constexpr FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
     FixedMatrix<ScalarLeft, rows, columns> const& left,
     FixedVector<ScalarRight, columns> const& right) {
   std::array<Product<ScalarLeft, ScalarRight>, rows> result;
