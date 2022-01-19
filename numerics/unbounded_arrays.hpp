@@ -14,6 +14,7 @@ namespace numerics {
 namespace internal_unbounded_arrays {
 
 using base::uninitialized_t;
+using quantities::Product;
 using quantities::Quotient;
 using quantities::SquareRoot;
 
@@ -25,6 +26,8 @@ class uninitialized_allocator : public std::allocator<T> {
   void construct(U* p, Args&&... args);
 };
 
+template<typename Scalar>
+class UnboundedMatrix;
 template<typename Scalar>
 class UnboundedUpperTriangularMatrix;
 
@@ -54,6 +57,10 @@ class UnboundedVector final {
  private:
   std::vector<Scalar, uninitialized_allocator<Scalar>> data_;
 
+  template<typename L, typename R>
+  friend UnboundedVector<Product<L, R>> operator*(
+      UnboundedMatrix<L> const& left,
+      UnboundedVector<R> const& right);
   template<typename S>
   friend std::ostream& operator<<(std::ostream& out,
                                   UnboundedVector<S> const& vector);
@@ -204,6 +211,16 @@ class UnboundedUpperTriangularMatrix final {
   template<typename R>
   friend class Row;
 };
+
+template<typename ScalarLeft, typename ScalarRight>
+Product<ScalarLeft, ScalarRight> operator*(
+    UnboundedVector<ScalarLeft> const& left,
+    UnboundedVector<ScalarRight> const& right);
+
+template<typename ScalarLeft, typename ScalarRight>
+UnboundedVector<Product<ScalarLeft, ScalarRight>> operator*(
+    UnboundedMatrix<ScalarLeft> const& left,
+    UnboundedVector<ScalarRight> const& right);
 
 template<typename Scalar>
 std::ostream& operator<<(std::ostream& out,

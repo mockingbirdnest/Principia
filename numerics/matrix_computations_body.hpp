@@ -83,7 +83,7 @@ template<typename MScalar, typename VScalar, int dimension,
          template<typename S, int d> typename Vector>
 struct RayleighQuotientGenerator<Matrix<MScalar, dimension, dimension>,
                                  Vector<VScalar, dimension>> {
-
+  using Result = MScalar;
 };
 
 
@@ -228,7 +228,7 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
 }
 
 template<typename Matrix, typename Vector>
-typename RayleighQuotientGenerator<Matrix, Vector> RayleighQuotient(
+typename RayleighQuotientGenerator<Matrix, Vector>::Result RayleighQuotient(
     Matrix const& A, Vector const& x) {
   // [GV13], section 8.2.3.
   return x * (A * x) / (x * x);

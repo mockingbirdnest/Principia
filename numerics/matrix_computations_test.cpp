@@ -112,7 +112,7 @@ TYPED_TEST(MatrixComputationsTest, RayleighQuotient) {
   Vector const v4({1, -1, 2, 3});
 
   auto const actual = RayleighQuotient(m4, v4);
-  EXPECT_THAT(actual, AlmostEquals(8.0 / 5.0, 0));
+  EXPECT_THAT(actual, AlmostEquals(38.0 / 15.0, 0));
 }
 
 }  // namespace numerics

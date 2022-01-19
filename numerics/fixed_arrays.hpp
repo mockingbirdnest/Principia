@@ -41,6 +41,9 @@ class FixedVector final {
  private:
   std::array<Scalar, size_> data_;
 
+  template<typename L, typename R, int s>
+  friend Product<L, R> operator*(FixedVector<L, s> const& left,
+                                 FixedVector<R, s> const& right);
   template<typename L, typename R, int r, int c>
   friend FixedVector<Product<L, R>, r> operator*(
       FixedMatrix<L, r, c> const& left,
@@ -94,16 +97,6 @@ class FixedMatrix final {
       FixedMatrix<L, r, c> const& left,
       FixedVector<R, c> const& right);
 };
-
-template<typename ScalarLeft, typename ScalarRight, int size>
-constexpr FixedVector<Difference<ScalarLeft, ScalarRight>, size> operator-(
-    FixedVector<ScalarLeft, size> const& left,
-    FixedVector<ScalarRight, size> const& right);
-
-template<typename ScalarLeft, typename ScalarRight, int rows, int columns>
-FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
-    FixedMatrix<ScalarLeft, rows, columns> const& left,
-    FixedVector<ScalarRight, columns> const& right);
 
 template<typename Scalar, int rows_>
 class FixedStrictlyLowerTriangularMatrix final {
@@ -204,6 +197,21 @@ class FixedUpperTriangularMatrix final {
 
   std::array<Scalar, dimension> data_;
 };
+
+template<typename ScalarLeft, typename ScalarRight, int size>
+constexpr FixedVector<Difference<ScalarLeft, ScalarRight>, size> operator-(
+    FixedVector<ScalarLeft, size> const& left,
+    FixedVector<ScalarRight, size> const& right);
+
+template<typename ScalarLeft, typename ScalarRight, int size>
+Product<ScalarLeft, ScalarRight> operator*(
+    FixedVector<ScalarLeft, size> const& left,
+    FixedVector<ScalarRight, size> const& right);
+
+template<typename ScalarLeft, typename ScalarRight, int rows, int columns>
+FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
+    FixedMatrix<ScalarLeft, rows, columns> const& left,
+    FixedVector<ScalarRight, columns> const& right);
 
 template<typename Scalar, int size>
 std::ostream& operator<<(std::ostream& out,

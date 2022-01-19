@@ -409,6 +409,33 @@ UnboundedUpperTriangularMatrix<Scalar>::Transpose(
   return result;
 }
 
+template<typename ScalarLeft, typename ScalarRight>
+Product<ScalarLeft, ScalarRight> operator*(
+    UnboundedVector<ScalarLeft> const& left,
+    UnboundedVector<ScalarRight> const& right) {
+  CHECK_EQ(left.size(), right.size());
+  Product<ScalarLeft, ScalarRight> result{};
+  for (int i = 0; i < left.size(); ++i) {
+    result += left[i] * right[i];
+  }
+  return result;
+}
+
+template<typename ScalarLeft, typename ScalarRight>
+UnboundedVector<Product<ScalarLeft, ScalarRight>> operator*(
+    UnboundedMatrix<ScalarLeft> const& left,
+    UnboundedVector<ScalarRight> const& right) {
+  CHECK_EQ(left.columns(), right.size());
+  UnboundedVector<Product<ScalarLeft, ScalarRight>> result(left.rows());
+  for (int i = 0; i < left.rows(); ++i) {
+    auto& result_i = result.data_[i];
+    for (int j = 0; j < left.columns(); ++j) {
+      result_i += left[i][j] * right[j];
+    }
+  }
+  return result;
+}
+
 template<typename Scalar>
 std::ostream& operator<<(std::ostream& out,
                          UnboundedVector<Scalar> const& vector) {

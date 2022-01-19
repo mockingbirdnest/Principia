@@ -147,80 +147,6 @@ FixedMatrix<Scalar, rows, columns>::row() const {
   return Row<r>(this);
 }
 
-template<typename ScalarLeft, typename ScalarRight, int size>
-constexpr FixedVector<Difference<ScalarLeft, ScalarRight>, size> operator-(
-    FixedVector<ScalarLeft, size> const& left,
-    FixedVector<ScalarRight, size> const& right) {
-  std::array<Difference<ScalarLeft, ScalarRight>, size> result{};
-  for (int i = 0; i < size; ++i) {
-    result[i] = left[i] - right[i];
-  }
-  return FixedVector<Difference<ScalarLeft, ScalarRight>, size>(
-      std::move(result));
-}
-
-template<typename ScalarLeft, typename ScalarRight, int rows, int columns>
-FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
-    FixedMatrix<ScalarLeft, rows, columns> const& left,
-    FixedVector<ScalarRight, columns> const& right) {
-  std::array<Product<ScalarLeft, ScalarRight>, rows> result;
-  auto const* row = left.data_.data();
-  for (int i = 0; i < rows; ++i) {
-    result[i] =
-        DotProduct<ScalarLeft, ScalarRight, columns>::Compute(row, right.data_);
-    row += columns;
-  }
-  return FixedVector<Product<ScalarLeft, ScalarRight>, rows>(std::move(result));
-}
-
-template<typename Scalar, int size>
-std::ostream& operator<<(std::ostream& out,
-                         FixedVector<Scalar, size> const& vector) {
-  std::stringstream s;
-  for (int i = 0; i < size; ++i) {
-    s << (i == 0 ? "{" : "") << vector.data_[i]
-      << (i == size - 1 ? "}" : ", ");
-  }
-  out << s.str();
-  return out;
-}
-
-template<typename Scalar, int rows>
-std::ostream& operator<<(
-    std::ostream& out,
-    FixedLowerTriangularMatrix<Scalar, rows> const& matrix) {
-  out << "rows: " << matrix.rows << "\n";
-  for (int i = 0; i < matrix.rows; ++i) {
-    out << "{";
-    for (int j = 0; j <= i; ++j) {
-      out << matrix[i][j];
-      if (j < i) {
-        out << ", ";
-      }
-    }
-    out << "}\n";
-  }
-  return out;
-}
-
-template<typename Scalar, int columns>
-std::ostream& operator<<(
-    std::ostream& out,
-    FixedUpperTriangularMatrix<Scalar, columns> const& matrix) {
-  out << "columns: " << matrix.columns() << "\n";
-  for (int i = 0; i < matrix.columns(); ++i) {
-    out << "{";
-    for (int j = i; j < matrix.columns(); ++j) {
-      if (j > i) {
-        out << ", ";
-      }
-      out << matrix[i][j];
-    }
-    out << "}\n";
-  }
-  return out;
-}
-
 template<typename Scalar, int rows_>
 constexpr FixedStrictlyLowerTriangularMatrix<Scalar, rows_>::
     FixedStrictlyLowerTriangularMatrix()
@@ -372,6 +298,88 @@ auto FixedUpperTriangularMatrix<Scalar, columns_>::Transpose(
     }
   }
   return result;
+}
+
+template<typename ScalarLeft, typename ScalarRight, int size>
+constexpr FixedVector<Difference<ScalarLeft, ScalarRight>, size> operator-(
+    FixedVector<ScalarLeft, size> const& left,
+    FixedVector<ScalarRight, size> const& right) {
+  std::array<Difference<ScalarLeft, ScalarRight>, size> result{};
+  for (int i = 0; i < size; ++i) {
+    result[i] = left[i] - right[i];
+  }
+  return FixedVector<Difference<ScalarLeft, ScalarRight>, size>(
+      std::move(result));
+}
+
+template<typename ScalarLeft, typename ScalarRight, int size>
+Product<ScalarLeft, ScalarRight> operator*(
+    FixedVector<ScalarLeft, size> const& left,
+    FixedVector<ScalarRight, size> const& right) {
+  return DotProduct<ScalarLeft, ScalarRight, size>::Compute(left.data_,
+                                                            right.data_);
+}
+
+template<typename ScalarLeft, typename ScalarRight, int rows, int columns>
+FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
+    FixedMatrix<ScalarLeft, rows, columns> const& left,
+    FixedVector<ScalarRight, columns> const& right) {
+  std::array<Product<ScalarLeft, ScalarRight>, rows> result;
+  auto const* row = left.data_.data();
+  for (int i = 0; i < rows; ++i) {
+    result[i] =
+        DotProduct<ScalarLeft, ScalarRight, columns>::Compute(row, right.data_);
+    row += columns;
+  }
+  return FixedVector<Product<ScalarLeft, ScalarRight>, rows>(std::move(result));
+}
+
+template<typename Scalar, int size>
+std::ostream& operator<<(std::ostream& out,
+                         FixedVector<Scalar, size> const& vector) {
+  std::stringstream s;
+  for (int i = 0; i < size; ++i) {
+    s << (i == 0 ? "{" : "") << vector.data_[i]
+      << (i == size - 1 ? "}" : ", ");
+  }
+  out << s.str();
+  return out;
+}
+
+template<typename Scalar, int rows>
+std::ostream& operator<<(
+    std::ostream& out,
+    FixedLowerTriangularMatrix<Scalar, rows> const& matrix) {
+  out << "rows: " << matrix.rows << "\n";
+  for (int i = 0; i < matrix.rows; ++i) {
+    out << "{";
+    for (int j = 0; j <= i; ++j) {
+      out << matrix[i][j];
+      if (j < i) {
+        out << ", ";
+      }
+    }
+    out << "}\n";
+  }
+  return out;
+}
+
+template<typename Scalar, int columns>
+std::ostream& operator<<(
+    std::ostream& out,
+    FixedUpperTriangularMatrix<Scalar, columns> const& matrix) {
+  out << "columns: " << matrix.columns() << "\n";
+  for (int i = 0; i < matrix.columns(); ++i) {
+    out << "{";
+    for (int j = i; j < matrix.columns(); ++j) {
+      if (j > i) {
+        out << ", ";
+      }
+      out << matrix[i][j];
+    }
+    out << "}\n";
+  }
+  return out;
 }
 
 template<typename Scalar, int columns_>

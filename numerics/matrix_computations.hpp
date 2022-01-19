@@ -48,7 +48,7 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
 
 // Returns the Rayleigh quotient r(x) = ᵗx A x / ᵗx x.
 template<typename Matrix, typename Vector>
-typename RayleighQuotientGenerator<Matrix, Vector>
+typename RayleighQuotientGenerator<Matrix, Vector>::Result
 RayleighQuotient(Matrix const& A, Vector const& x);
 
 }  // namespace internal_matrix_computations
