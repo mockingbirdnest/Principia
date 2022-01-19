@@ -60,6 +60,39 @@ class UnboundedVector final {
 };
 
 template<typename Scalar>
+class UnboundedMatrix final {
+ public:
+  UnboundedMatrix(int rows, int columns);
+  UnboundedMatrix(int rows, int columns, uninitialized_t);
+
+  // The |data| must be in row-major format.
+  UnboundedMatrix(std::initializer_list<Scalar> data);
+
+  UnboundedMatrix<Scalar> Transpose() const;
+
+  int columns() const;
+  int rows() const;
+  int dimension() const;
+
+  bool operator==(UnboundedMatrix const& right) const;
+
+  // For  0 ≤ i < rows and 0 ≤ j < columns, the entry a_ij is accessed as
+  // |a[i][j]|.  If i and j do not satisfy these conditions, the expression
+  // |a[i][j]| is erroneous.
+  Scalar* operator[](int index);
+  Scalar const* operator[](int index) const;
+
+ private:
+  int rows_;
+  int columns_;
+  std::vector<Scalar, uninitialized_allocator<Scalar>> data_;
+
+  template<typename S>
+  friend std::ostream& operator<<(std::ostream& out,
+                                  UnboundedMatrix<S> const& matrix);
+};
+
+template<typename Scalar>
 class UnboundedLowerTriangularMatrix final {
  public:
   explicit UnboundedLowerTriangularMatrix(int rows);
@@ -85,7 +118,7 @@ class UnboundedLowerTriangularMatrix final {
   bool operator==(UnboundedLowerTriangularMatrix const& right) const;
 
   // For  0 ≤ j ≤ i < rows, the entry a_ij is accessed as |a[i][j]|.
-  // if i and j do not satisfy these conditions, the expression |a[i][j]| is
+  // If i and j do not satisfy these conditions, the expression |a[i][j]| is
   // erroneous.
   Scalar* operator[](int index);
   Scalar const* operator[](int index) const;
@@ -145,7 +178,7 @@ class UnboundedUpperTriangularMatrix final {
   };
 
   // For  0 ≤ i ≤ j < columns, the entry a_ij is accessed as |a[i][j]|.
-  // if i and j do not satisfy these conditions, the expression |a[i][j]| is
+  // If i and j do not satisfy these conditions, the expression |a[i][j]| is
   // erroneous.
   Row<UnboundedUpperTriangularMatrix> operator[](int row);
   Row<UnboundedUpperTriangularMatrix const> operator[](int row) const;
@@ -187,6 +220,7 @@ std::ostream& operator<<(std::ostream& out,
 }  // namespace internal_unbounded_arrays
 
 using internal_unbounded_arrays::UnboundedLowerTriangularMatrix;
+using internal_unbounded_arrays::UnboundedMatrix;
 using internal_unbounded_arrays::UnboundedUpperTriangularMatrix;
 using internal_unbounded_arrays::UnboundedVector;
 

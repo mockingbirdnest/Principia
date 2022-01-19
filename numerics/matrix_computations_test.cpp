@@ -24,10 +24,12 @@ class MatrixComputationsTest : public ::testing::Test {
 using MatrixTypes =
     ::testing::Types<std::tuple<FixedVector<double, 4>,
                                 FixedLowerTriangularMatrix<double, 4>,
-                                FixedUpperTriangularMatrix<double, 4>>,
+                                FixedUpperTriangularMatrix<double, 4>,
+                                FixedMatrix<double, 4, 4>>,
                      std::tuple<UnboundedVector<double>,
                                 UnboundedLowerTriangularMatrix<double>,
-                                UnboundedUpperTriangularMatrix<double>>>;
+                                UnboundedUpperTriangularMatrix<double>,
+                                UnboundedMatrix<double>>>;
 
 TYPED_TEST_SUITE(MatrixComputationsTest, MatrixTypes);
 

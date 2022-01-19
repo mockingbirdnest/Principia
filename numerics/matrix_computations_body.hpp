@@ -79,9 +79,9 @@ struct RayleighQuotientGenerator<Matrix<MScalar>, Vector<VScalar>> {
 };
 
 template<typename MScalar, typename VScalar, int dimension,
-         template<typename S, int d> typename Matrix,
+         template<typename S, int r, int c> typename Matrix,
          template<typename S, int d> typename Vector>
-struct RayleighQuotientGenerator<Matrix<MScalar, dimension>,
+struct RayleighQuotientGenerator<Matrix<MScalar, dimension, dimension>,
                                  Vector<VScalar, dimension>> {
 
 };
