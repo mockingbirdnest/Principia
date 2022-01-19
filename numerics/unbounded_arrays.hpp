@@ -211,6 +211,10 @@ std::ostream& operator<<(std::ostream& out,
 
 template<typename Scalar>
 std::ostream& operator<<(std::ostream& out,
+                         UnboundedMatrix<Scalar> const& matrix);
+
+template<typename Scalar>
+std::ostream& operator<<(std::ostream& out,
                          UnboundedLowerTriangularMatrix<Scalar> const& matrix);
 
 template<typename Scalar>

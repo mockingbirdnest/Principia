@@ -91,46 +91,55 @@ UnboundedMatrix<Scalar>::UnboundedMatrix(int rows, int columns, uninitialized_t)
 
 
 template<typename Scalar>
-UnboundedMatrix<Scalar>::UnboundedMatrix(
-    std::initializer_list<Scalar> data)
-    : rows_(Sqrt(data.size()),
+UnboundedMatrix<Scalar>::UnboundedMatrix(std::initializer_list<Scalar> data)
+    : rows_(Sqrt(data.size())),
       columns_(Sqrt(data.size())),
-      data_(std::{}
+      data_(std::move(data)) {
+  CHECK_EQ(data.size(), rows_ * columns_);
+}
 
 template<typename Scalar>
 UnboundedMatrix<Scalar> UnboundedMatrix<Scalar>::Transpose() const {
-  return UnboundedMatrix<Scalar>();
+  UnboundedMatrix<Scalar> m(columns_, rows_, uninitialized);
+  for (int i = 0; i < rows_; ++i) {
+    for (int j = 0; j < columns_; ++j) {
+      m[j][i] = (*this)[i][j];
+    }
+  }
+  return m;
 }
 
 template<typename Scalar>
 int UnboundedMatrix<Scalar>::columns() const {
-  return 0;
+  return columns_;
 }
 
 template<typename Scalar>
 int UnboundedMatrix<Scalar>::rows() const {
-  return 0;
+  return rows_;
 }
 
 template<typename Scalar>
 int UnboundedMatrix<Scalar>::dimension() const {
-  return 0;
+  return rows_ * columns_;
 }
 
 template<typename Scalar>
 bool UnboundedMatrix<Scalar>::operator==(
     UnboundedMatrix const& right) const {
-  return false;
+  return data_ == right.data_;
 }
 
 template<typename Scalar>
 Scalar* UnboundedMatrix<Scalar>::operator[](int index) {
-  return nullptr;
+  DCHECK_LT(index, rows_);
+  return &data_[index * columns_];
 }
 
 template<typename Scalar>
 Scalar const* UnboundedMatrix<Scalar>::operator[](int index) const {
-  return nullptr;
+  DCHECK_LT(index, rows_);
+  return &data_[index * columns_];
 }
 
 template<typename Scalar>
@@ -421,6 +430,23 @@ std::ostream& operator<<(std::ostream& out,
     for (int j = 0; j <= i; ++j) {
       out << matrix[i][j];
       if (j < i) {
+        out << ", ";
+      }
+    }
+    out << "}\n";
+  }
+  return out;
+}
+
+template<typename Scalar>
+std::ostream& operator<<(std::ostream& out,
+                         UnboundedMatrix<Scalar> const& matrix) {
+  out << "rows: " << matrix.rows() << " columns: " << matrix.columns() << "\n";
+  for (int i = 0; i < matrix.rows(); ++i) {
+    out << "{";
+    for (int j = 0; j < matrix.columns(); ++j) {
+      out << matrix[i][j];
+      if (j < matrix.columns() - 1) {
         out << ", ";
       }
     }
