@@ -19,7 +19,7 @@ using quantities::Sqrt;
 
 template<class T>
 template<class U, class... Args>
-inline void uninitialized_allocator<T>::construct(U* const p, Args&&... args) {
+void uninitialized_allocator<T>::construct(U* const p, Args&&... args) {
   ::new ((void*)p) U(std::forward<Args>(args)...);  // NOLINT
 }
 
@@ -75,6 +75,62 @@ Scalar& UnboundedVector<Scalar>::operator[](int const index) {
 template<typename Scalar>
 Scalar const& UnboundedVector<Scalar>::operator[](int const index) const {
   return data_[index];
+}
+
+template<typename Scalar>
+UnboundedMatrix<Scalar>::UnboundedMatrix(int rows, int columns)
+    : rows_(rows),
+      columns_(columns),
+      data_(rows_ * columns_, Scalar{}) {}
+
+template<typename Scalar>
+UnboundedMatrix<Scalar>::UnboundedMatrix(int rows, int columns, uninitialized_t)
+    : rows_(rows),
+      columns_(columns),
+      data_(rows_ * columns_) {}
+
+
+template<typename Scalar>
+UnboundedMatrix<Scalar>::UnboundedMatrix(
+    std::initializer_list<Scalar> data)
+    : rows_(Sqrt(data.size()),
+      columns_(Sqrt(data.size())),
+      data_(std::{}
+
+template<typename Scalar>
+UnboundedMatrix<Scalar> UnboundedMatrix<Scalar>::Transpose() const {
+  return UnboundedMatrix<Scalar>();
+}
+
+template<typename Scalar>
+int UnboundedMatrix<Scalar>::columns() const {
+  return 0;
+}
+
+template<typename Scalar>
+int UnboundedMatrix<Scalar>::rows() const {
+  return 0;
+}
+
+template<typename Scalar>
+int UnboundedMatrix<Scalar>::dimension() const {
+  return 0;
+}
+
+template<typename Scalar>
+bool UnboundedMatrix<Scalar>::operator==(
+    UnboundedMatrix const& right) const {
+  return false;
+}
+
+template<typename Scalar>
+Scalar* UnboundedMatrix<Scalar>::operator[](int index) {
+  return nullptr;
+}
+
+template<typename Scalar>
+Scalar const* UnboundedMatrix<Scalar>::operator[](int index) const {
+  return nullptr;
 }
 
 template<typename Scalar>
