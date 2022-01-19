@@ -8,7 +8,7 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_arrays {
+namespace internal_matrix_computations {
 
 using base::uninitialized;
 using quantities::Pow;
@@ -69,6 +69,21 @@ struct SubstitutionGenerator<Matrix<LScalar, dimension>,
                              Vector<RScalar, dimension>> {
   using Result = Vector<Quotient<RScalar, LScalar>, dimension>;
   static Result Uninitialized(Matrix<LScalar, dimension> const& m);
+};
+
+template<typename MScalar, typename VScalar,
+         template<typename S> typename Matrix,
+         template<typename S> typename Vector>
+struct RayleighQuotientGenerator<Matrix<MScalar>, Vector<VScalar>> {
+  using Result = MScalar;
+};
+
+template<typename MScalar, typename VScalar, int dimension,
+         template<typename S, int d> typename Matrix,
+         template<typename S, int d> typename Vector>
+struct RayleighQuotientGenerator<Matrix<MScalar, dimension>,
+                                 Vector<VScalar, dimension>> {
+
 };
 
 
@@ -212,6 +227,13 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
   return x;
 }
 
-}  // namespace internal_arrays
+template<typename Matrix, typename Vector>
+typename RayleighQuotientGenerator<Matrix, Vector> RayleighQuotient(
+    Matrix const& A, Vector const& x) {
+  // [GV13], section 8.2.3.
+  return x * (A * x) / (x * x);
+}
+
+}  // namespace internal_matrix_computations
 }  // namespace numerics
 }  // namespace principia

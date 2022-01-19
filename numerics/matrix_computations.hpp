@@ -5,7 +5,7 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_arrays {
+namespace internal_matrix_computations {
 
 using quantities::Quotient;
 using quantities::SquareRoot;
@@ -18,6 +18,9 @@ struct ᵗRDRGenerator;
 
 template<typename M, typename V>
 struct SubstitutionGenerator;
+
+template<typename M, typename V>
+struct RayleighQuotientGenerator;
 
 // If A is the upper half of a symmetric positive definite matrix, returns R so
 // that A = ᵗR R.
@@ -37,18 +40,24 @@ typename SubstitutionGenerator<UpperTriangularMatrix, Vector>::Result
 BackSubstitution(UpperTriangularMatrix const& U,
                  Vector const& b);
 
-// Return x such that L x = b.
+// Returns x such that L x = b.
 template<typename LowerTriangularMatrix, typename Vector>
 typename SubstitutionGenerator<LowerTriangularMatrix, Vector>::Result
 ForwardSubstitution(LowerTriangularMatrix const& L,
                     Vector const& b);
 
-}  // namespace internal_arrays
+// Returns the Rayleigh quotient r(x) = ᵗx A x / ᵗx x.
+template<typename Matrix, typename Vector>
+typename RayleighQuotientGenerator<Matrix, Vector>
+RayleighQuotient(Matrix const& A, Vector const& x);
 
-using internal_arrays::BackSubstitution;
-using internal_arrays::CholeskyDecomposition;
-using internal_arrays::ForwardSubstitution;
-using internal_arrays::ᵗRDRDecomposition;
+}  // namespace internal_matrix_computations
+
+using internal_matrix_computations::BackSubstitution;
+using internal_matrix_computations::CholeskyDecomposition;
+using internal_matrix_computations::ForwardSubstitution;
+using internal_matrix_computations::RayleighQuotient;
+using internal_matrix_computations::ᵗRDRDecomposition;
 
 }  // namespace numerics
 }  // namespace principia
