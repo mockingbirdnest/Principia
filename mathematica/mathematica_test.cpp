@@ -56,6 +56,7 @@ using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using quantities::Infinity;
 using quantities::Length;
+using quantities::NaN;
 using quantities::Speed;
 using quantities::Sqrt;
 using quantities::Time;
@@ -63,6 +64,7 @@ using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+using testing::AnyOf;
 
 class MathematicaTest : public ::testing::Test {
  protected:
@@ -116,7 +118,12 @@ TEST_F(MathematicaTest, ToMathematica) {
     EXPECT_EQ("Minus[0]", ToMathematica(-0.0));  // Not that this does anything.
     EXPECT_EQ("Infinity", ToMathematica(Infinity<double>));
     EXPECT_EQ("Minus[Infinity]", ToMathematica(-Infinity<double>));
-    EXPECT_EQ("Minus[Indeterminate]", ToMathematica(Sqrt(-1)));
+    EXPECT_EQ("Indeterminate", ToMathematica(NaN<double>));
+    EXPECT_EQ("Minus[Indeterminate]", ToMathematica(-NaN<double>));
+
+    // The sign of √-1 varies between Clang versions.
+    EXPECT_THAT(ToMathematica(Sqrt(-1)),
+                AnyOf("Indeterminate", "Minus[Indeterminate]"));
   }
   {
     EXPECT_EQ(ToMathematica(std::tuple{2.0, 3.0}),
