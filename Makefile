@@ -121,8 +121,6 @@ endif
 ifeq ($(UNAME_S),Darwin)
     INCLUDES += \
 			-I$(DEP_DIR)compatibility/filesystem \
-			-I$(DEP_DIR)compatibility/optional \
-			-I$(DEP_DIR)Optional \
 			-include "base/macos_allocator_replacement.hpp"
     LIBS += -framework CoreFoundation
     SHARED_ARGS += -mmacosx-version-min=10.14 -arch x86_64 -D_LIBCPP_STD_VER=16
