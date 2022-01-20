@@ -133,9 +133,8 @@ template<typename Q>
 CONSTEXPR_INFINITY Q Infinity =
     SIUnit<Q>() * std::numeric_limits<double>::infinity();
 // A quiet NaN of |Q|.
-template<typename Q>
-CONSTEXPR_INFINITY Q NaN =
-    SIUnit<Q>() * std::numeric_limits<double>::quiet_NaN();
+template <typename Q>
+CONSTEXPR_NAN Q NaN = SIUnit<Q>() * std::numeric_limits<double>::quiet_NaN();
 
 template<typename Q>
 constexpr bool IsFinite(Q const& x);

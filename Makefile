@@ -103,6 +103,7 @@ SHARED_ARGS   := \
 	-Wno-gnu-zero-variadic-macro-arguments                        \
 	-Wno-nested-anon-types                                        \
 	-Wno-unknown-pragmas                                          \
+	-Wno-elaborated-enum-class                                    \
 	-DPROJECT_DIR='std::filesystem::path("$(PROJECT_DIR)")'       \
 	-DSOLUTION_DIR='std::filesystem::path("$(SOLUTION_DIR)")'     \
 	-DTEMP_DIR='std::filesystem::path("/tmp")'                    \

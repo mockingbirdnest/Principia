@@ -196,6 +196,14 @@ inline void noreturn() { std::exit(0); }
 #  define CONSTEXPR_INFINITY const
 #endif
 
+// Clang does not like FP arithmetic that yields a NaN in constexpr code.
+// https://github.com/llvm-mirror/clang/blob/aa231e4be75ac4759c236b755c57876f76e3cf05/lib/AST/ExprConstant.cpp#L2611-L2618
+#if PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL
+#  define CONSTEXPR_NAN const
+#else
+#  define CONSTEXPR_NAN constexpr
+#endif
+
 #if PRINCIPIA_COMPILER_MSVC
 #define MSVC_ONLY_TEST(test_name) test_name
 #else
