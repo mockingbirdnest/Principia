@@ -221,8 +221,7 @@ AcceleratedRigidMotion<FromFrame, ToFrame>::angular_acceleration_of() const {
     static_assert(!std::is_same_v<F, FromFrame>,
                   "Time to implement AcceleratedRigidMotion::Inverse");
   } else {
-    static_assert(std::disjunction_v<std::is_same<F, ToFrame>,
-                                     std::is_same<F, FromFrame>>,
+    static_assert(std::is_same_v<F, ToFrame> || std::is_same_v<F, FromFrame>,
                   "Nonsensical frame");
   }
 }
@@ -239,8 +238,7 @@ AcceleratedRigidMotion<FromFrame, ToFrame>::acceleration_of_origin_of() const {
     static_assert(!std::is_same_v<F, FromFrame>,
                   "Time to implement AcceleratedRigidMotion::Inverse");
   } else {
-    static_assert(std::disjunction_v<std::is_same<F, ToFrame>,
-                                     std::is_same<F, FromFrame>>,
+    static_assert(std::is_same_v<F, ToFrame> || std::is_same_v<F, FromFrame>,
                   "Nonsensical frame");
   }
 }

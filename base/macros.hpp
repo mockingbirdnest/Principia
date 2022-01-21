@@ -197,7 +197,7 @@ inline void noreturn() { std::exit(0); }
 #endif
 
 // Clang does not like FP arithmetic that yields a NaN in constexpr code.
-// https://github.com/llvm-mirror/clang/blob/aa231e4be75ac4759c236b755c57876f76e3cf05/lib/AST/ExprConstant.cpp#L2611-L2618
+// https://github.com/llvm/llvm-project/blob/llvmorg-13.0.0/clang/lib/AST/ExprConstant.cpp#L2860-L2867
 #if PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL
 #  define CONSTEXPR_NAN const
 #else
