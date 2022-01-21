@@ -609,14 +609,14 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   bool const is_pre_陈景润 = !message.history().has_downsampling() &&
                              message.history().segment_size() == 0;
   bool const is_pre_hamilton = message.history().segment_size() == 0;
-  bool const is_pre_zermelo = !message.has_is_collapsible();
-  LOG_IF(WARNING, is_pre_zermelo)
+  bool const is_pre_हरीश_चंद्र = !message.has_is_collapsible();
+  LOG_IF(WARNING, is_pre_हरीश_चंद्र)
       << "Reading pre-"
       << (is_pre_cesàro     ? u8"Cesàro"
           : is_pre_chasles  ? "Chasles"
           : is_pre_陈景润    ? u8"陈景润"
           : is_pre_hamilton ? "Hamilton"
-                            : "Zermelo") << " Vessel";
+                            : u8"हरीश चंद्र") << " Vessel";
 
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
   // information.
@@ -679,7 +679,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     vessel->backstory_ = vessel->trajectory_.segments().begin();
     CHECK(vessel->backstory_ == std::prev(vessel->psychohistory_));
     vessel->downsampling_parameters_ = DefaultDownsamplingParameters();
-  } else if (is_pre_zermelo) {
+  } else if (is_pre_हरीश_चंद्र) {
     DiscreteTrajectorySegmentIterator<Barycentric> history;
     vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
