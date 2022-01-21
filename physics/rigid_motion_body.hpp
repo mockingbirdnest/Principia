@@ -57,8 +57,7 @@ RigidMotion<FromFrame, ToFrame>::angular_velocity_of() const {
   } else if constexpr (std::is_same_v<F, FromFrame>) {
     return Inverse().angular_velocity_of_to_frame_;
   } else {
-    static_assert(std::disjunction_v<std::is_same<F, ToFrame>,
-                                     std::is_same<F, FromFrame>>,
+    static_assert(std::is_same_v<F, ToFrame> || std::is_same_v<F, FromFrame>,
                   "Nonsensical frame");
   }
 }
@@ -72,8 +71,7 @@ RigidMotion<FromFrame, ToFrame>::velocity_of_origin_of() const {
   } else if constexpr (std::is_same_v<F, FromFrame>) {
     return Inverse().velocity_of_to_frame_origin_;
   } else {
-    static_assert(std::disjunction_v<std::is_same<F, ToFrame>,
-                                     std::is_same<F, FromFrame>>,
+    static_assert(std::is_same_v<F, ToFrame> || std::is_same_v<F, FromFrame>,
                   "Nonsensical frame");
   }
 }
