@@ -283,6 +283,98 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 }
 
 template<typename T>
+template<typename Scalar, int size>
+bool AlmostEqualsMatcher<T>::MatchAndExplain(
+    numerics::FixedVector<Scalar, size> const& actual,
+    testing::MatchResultListener* listener) const {
+  // Check that the types are equality-comparable up to implicit casts.
+  if (actual == expected_) {
+    return MatchAndExplainIdentical(listener);
+  }
+  std::int64_t max_distance = -1;
+  int max_i = -1;
+  for (int i = 0; i < expected_.size(); ++i) {
+    int const distance = NormalizedNaNULPDistance(DoubleValue(actual[i]),
+                                                  DoubleValue(expected_[i]));
+    if (distance > max_distance) {
+      max_distance = distance;
+      max_i = i;
+    }
+  }
+  bool const matches = min_ulps_ <= max_distance && max_distance <= max_ulps_;
+  if (!matches) {
+    *listener << "the component at index " << max_i << " is not within "
+              << min_ulps_ << " to " << max_ulps_ << " ULPs: it differs by "
+              << max_distance << " ULPs";
+  }
+  return matches;
+}
+
+template<typename T>
+template<typename Scalar, int rows>
+bool AlmostEqualsMatcher<T>::MatchAndExplain(
+    numerics::FixedLowerTriangularMatrix<Scalar, rows> const& actual,
+    testing::MatchResultListener* listener) const {
+  // Check that the types are equality-comparable up to implicit casts.
+  if (actual == expected_) {
+    return MatchAndExplainIdentical(listener);
+  }
+  std::int64_t max_distance = -1;
+  int max_i = -1;
+  int max_j = -1;
+  for (int i = 0; i < expected_.rows; ++i) {
+    for (int j = 0; j <= i; ++j) {
+      int const distance = NormalizedNaNULPDistance(
+          DoubleValue(actual[i][j]), DoubleValue(expected_[i][j]));
+      if (distance > max_distance) {
+        max_distance = distance;
+        max_i = i;
+        max_j = j;
+      }
+    }
+  }
+  bool const matches = min_ulps_ <= max_distance && max_distance <= max_ulps_;
+  if (!matches) {
+    *listener << "the component at indices " << max_i << ", " << max_j
+              << " is not within " << min_ulps_ << " to " << max_ulps_
+              << " ULPs: it differs by " << max_distance << " ULPs";
+  }
+  return matches;
+}
+
+template<typename T>
+template<typename Scalar, int columns>
+bool AlmostEqualsMatcher<T>::MatchAndExplain(
+    numerics::FixedUpperTriangularMatrix<Scalar, columns> const& actual,
+    testing::MatchResultListener* listener) const {
+  // Check that the types are equality-comparable up to implicit casts.
+  if (actual == expected_) {
+    return MatchAndExplainIdentical(listener);
+  }
+  std::int64_t max_distance = -1;
+  int max_i = -1;
+  int max_j = -1;
+  for (int i = 0; i < expected_.columns(); ++i) {
+    for (int j = i; j < expected_.columns(); ++j) {
+      int const distance = NormalizedNaNULPDistance(
+          DoubleValue(actual[i][j]), DoubleValue(expected_[i][j]));
+      if (distance > max_distance) {
+        max_distance = distance;
+        max_i = i;
+        max_j = j;
+      }
+    }
+  }
+  bool const matches = min_ulps_ <= max_distance && max_distance <= max_ulps_;
+  if (!matches) {
+    *listener << "the component at indices " << max_i << ", " << max_j
+              << " is not within " << min_ulps_ << " to " << max_ulps_
+              << " ULPs: it differs by " << max_distance << " ULPs";
+  }
+  return matches;
+}
+
+template<typename T>
 template<typename Scalar>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
     numerics::UnboundedVector<Scalar> const& actual,

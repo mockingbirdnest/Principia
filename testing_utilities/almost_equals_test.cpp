@@ -8,6 +8,7 @@
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "numerics/fixed_arrays.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "quantities/bipm.hpp"
 #include "quantities/cgs.hpp"
@@ -26,6 +27,9 @@ using geometry::R3Element;
 using geometry::R3x3Matrix;
 using geometry::Vector;
 using geometry::Trivector;
+using numerics::FixedLowerTriangularMatrix;
+using numerics::FixedUpperTriangularMatrix;
+using numerics::FixedVector;
 using numerics::UnboundedLowerTriangularMatrix;
 using numerics::UnboundedUpperTriangularMatrix;
 using numerics::UnboundedVector;
@@ -159,6 +163,53 @@ TEST_F(AlmostEqualsTest, Trivector) {
   }
   EXPECT_THAT(v_accumulated, Ne(v1));
   EXPECT_THAT(v_accumulated, AlmostEquals(v1, 9));
+}
+
+TEST_F(AlmostEqualsTest, FixedVector) {
+  FixedVector<double, 3> const v1({1, 2, 3});
+  FixedVector<double, 3> const v2 = v1;
+  EXPECT_THAT(v2, AlmostEquals(v1, 0));
+  EXPECT_THAT(v2, Not(AlmostEquals(v1, 4)));
+  double const δv = v1[1] / 100;
+  FixedVector<double, 3> v_accumulated({1, 0, 3});
+  for (int i = 1; i <= 100; ++i) {
+    v_accumulated[1] += δv;
+  }
+  EXPECT_THAT(v_accumulated, AlmostEquals(v1, 3));
+}
+
+TEST_F(AlmostEqualsTest, FixedLowerTriangularMatrix) {
+  FixedLowerTriangularMatrix<double, 3> const m1({1,
+                                               2, 3,
+                                               4, 5, 6});
+  FixedLowerTriangularMatrix<double, 3> const m2 = m1;
+  EXPECT_THAT(m2, AlmostEquals(m1, 0));
+  EXPECT_THAT(m2, Not(AlmostEquals(m1, 4)));
+  double const δv = m1[1][0] / 100;
+  FixedLowerTriangularMatrix<double, 3> m_accumulated({1,
+                                                       0, 3,
+                                                       4, 5, 6});
+  for (int i = 1; i <= 100; ++i) {
+    m_accumulated[1][0] += δv;
+  }
+  EXPECT_THAT(m_accumulated, AlmostEquals(m1, 3));
+}
+
+TEST_F(AlmostEqualsTest, FixedUpperTriangularMatrix) {
+  FixedUpperTriangularMatrix<double, 3> const m1({1, 2, 3,
+                                                     4, 5,
+                                                        6});
+  FixedUpperTriangularMatrix<double, 3> const m2 = m1;
+  EXPECT_THAT(m2, AlmostEquals(m1, 0));
+  EXPECT_THAT(m2, Not(AlmostEquals(m1, 4)));
+  double const δv = m1[0][1] / 100;
+  FixedUpperTriangularMatrix<double, 3> m_accumulated({1, 0, 3,
+                                                          4, 5,
+                                                             6});
+  for (int i = 1; i <= 100; ++i) {
+    m_accumulated[0][1] += δv;
+  }
+  EXPECT_THAT(m_accumulated, AlmostEquals(m1, 3));
 }
 
 TEST_F(AlmostEqualsTest, UnboundedVector) {

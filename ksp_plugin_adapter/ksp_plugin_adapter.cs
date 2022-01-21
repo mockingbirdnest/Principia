@@ -2239,34 +2239,41 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
   private void PlotCelestialTrajectories(DisposablePlanetarium planetarium,
                                          string main_vessel_guid) {
-    foreach (CelestialBody celestial in FlightGlobals.Bodies) {
-      if (plotting_frame_selector_.FixesBody(celestial)) {
-        continue;
-      }
-      var colour = celestial.orbitDriver?.Renderer?.orbitColor ??
-                   XKCDColors.SunshineYellow;
-      if (colour.a != 1) {
-        // When zoomed into a planetary system, the trajectory of the
-        // planet is hidden in stock (because KSP then draws most things
-        // in the reference frame centred on that planet).
-        // Here we still want to display the trajectory of the primary,
-        // e.g., if we are drawing the trajectories of the Jovian system
-        // in the heliocentric frame.
-        foreach (CelestialBody child in celestial.orbitingBodies) {
-          colour.a = Math.Max(
-              child.MapObject?.uiNode?.VisualIconData.color.a ?? 1,
-              colour.a);
-        }
-      }
-      if (colour.a == 0) {
-        continue;
-      }
+    const double degree = Math.PI / 180;
+    UnityEngine.Camera camera = PlanetariumCamera.Camera;
+    float vertical_fov = camera.fieldOfView;
+    float horizontal_fov =
+        UnityEngine.Camera.VerticalToHorizontalFieldOfView(
+            vertical_fov, camera.aspect);
+    // The angle subtended by the pixel closest to the centre of the viewport.
+    double tan_angular_resolution = Math.Min(
+            Math.Tan(vertical_fov * degree / 2) / (camera.pixelHeight / 2),
+            Math.Tan(horizontal_fov * degree / 2) / (camera.pixelWidth / 2));
+    PlotSubtreeTrajectories(planetarium, main_vessel_guid,
+                            Planetarium.fetch.Sun,
+                            tan_angular_resolution);
+  }
+
+  private void PlotSubtreeTrajectories(DisposablePlanetarium planetarium,
+                                       string main_vessel_guid,
+                                       CelestialBody root,
+                                       double tan_angular_resolution) {
+    var colour = root.orbitDriver?.Renderer?.orbitColor ??
+        XKCDColors.SunshineYellow;
+    var camera_world_position = ScaledSpace.ScaledToLocalSpace(
+        PlanetariumCamera.fetch.transform.position);
+    double min_distance_from_camera =
+        (root.position - camera_world_position).magnitude;
+    if (!plotting_frame_selector_.FixesBody(root)) {
       using (DisposableIterator rp2_lines_iterator =
-          planetarium.PlanetariumPlotCelestialTrajectoryForPsychohistory(
-              plugin_,
-              celestial.flightGlobalsIndex,
-              main_vessel_guid,
-              main_window_.history_length)) {
+             planetarium.PlanetariumPlotCelestialTrajectoryForPsychohistory(
+                 plugin_,
+                 root.flightGlobalsIndex,
+                 main_vessel_guid,
+                 main_window_.history_length,
+                 out double min_past_distance)) {
+        min_distance_from_camera =
+            Math.Min(min_distance_from_camera, min_past_distance);
         GLLines.PlotRP2Lines(rp2_lines_iterator, colour, GLLines.Style.Faded);
       }
       if (main_vessel_guid != null) {
@@ -2274,10 +2281,22 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             planetarium.
                 PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
                     plugin_,
-                    celestial.flightGlobalsIndex,
-                    main_vessel_guid)) {
+                    root.flightGlobalsIndex,
+                    main_vessel_guid,
+                    out double min_future_distance)) {
+          min_distance_from_camera =
+              Math.Min(min_distance_from_camera, min_future_distance);
           GLLines.PlotRP2Lines(rp2_lines_iterator, colour, GLLines.Style.Solid);
         }
+      }
+    }
+    foreach (CelestialBody child in root.orbitingBodies) {
+      // Plot the trajectory of an orbiting body if it could be separated from
+      // that of its parent by a pixel of empty space, instead of merely making
+      // the line wider.
+      if (child.orbit.ApR / min_distance_from_camera > 2 * tan_angular_resolution) {
+        PlotSubtreeTrajectories(planetarium, main_vessel_guid, child,
+                                tan_angular_resolution);
       }
     }
   }

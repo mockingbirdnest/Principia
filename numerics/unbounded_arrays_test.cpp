@@ -3,6 +3,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "numerics/matrix_computations.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "testing_utilities/almost_equals.hpp"
 
@@ -17,6 +18,10 @@ class UnboundedArraysTest : public ::testing::Test {
   UnboundedArraysTest()
     : v3_({10, 31, -47}),
       v4_({-3, -3, 1, 4}),
+      m4_({  1,   2,   3,    5,
+             8,  13,  21,   34,
+            55,  89, 144,  233,
+           377, 610, 987, 1597}),
       l4_({ 1,
             2,  3,
             5,  8,  13,
@@ -28,6 +33,7 @@ class UnboundedArraysTest : public ::testing::Test {
 
   UnboundedVector<double> v3_;
   UnboundedVector<double> v4_;
+  UnboundedMatrix<double> m4_;
   UnboundedLowerTriangularMatrix<double> l4_;
   UnboundedUpperTriangularMatrix<double> u4_;
 };
@@ -38,6 +44,14 @@ TEST_F(UnboundedArraysTest, Assignment) {
     UnboundedVector<double> v2 = {{1, 2}};
     UnboundedVector<double> w2(2);
     w2 = {{1, 2}};
+    EXPECT_EQ(u2, v2);
+    EXPECT_EQ(u2, w2);
+  }
+  {
+    UnboundedMatrix<double> u2({1, 2, 3, 4});
+    UnboundedMatrix<double> v2 = {{1, 2, 3, 4}};
+    UnboundedMatrix<double> w2(2, 2);
+    w2 = {{1, 2, 3, 4}};
     EXPECT_EQ(u2, v2);
     EXPECT_EQ(u2, w2);
   }
@@ -79,10 +93,21 @@ TEST_F(UnboundedArraysTest, Assignment) {
   }
 }
 
+TEST_F(UnboundedArraysTest, Multiplication) {
+  EXPECT_EQ(35, v4_.Transpose() * v4_);
+  EXPECT_EQ(UnboundedVector<double>({14, 94, 644, 4414}), m4_ * v4_);
+}
+
 TEST_F(UnboundedArraysTest, VectorIndexing) {
   EXPECT_EQ(31, v3_[1]);
   v3_[2] = -666;
   EXPECT_EQ(-666, v3_[2]);
+}
+
+TEST_F(UnboundedArraysTest, MatrixIndexing) {
+  EXPECT_EQ(21, m4_[1][2]);
+  m4_[2][1] = -666;
+  EXPECT_EQ(-666, m4_[2][1]);
 }
 
 TEST_F(UnboundedArraysTest, LowerTriangularMatrixIndexing) {
@@ -188,64 +213,22 @@ TEST_F(UnboundedArraysTest, Erase) {
   }
 }
 
-TEST_F(UnboundedArraysTest, CholeskyDecomposition) {
-  UnboundedUpperTriangularMatrix<double> const hilbert4({
-      1, 1.0 / 2.0, 1.0 / 3.0, 1.0 / 4.0,
-         1.0 / 3.0, 1.0 / 4.0, 1.0 / 5.0,
-                    1.0 / 5.0, 1.0 / 6.0,
-                               1.0 / 7.0});
-  UnboundedUpperTriangularMatrix<double> const r4_expected({
-      1,        1.0 / 2.0,         1.0 / 3.0,          1.0 / 4.0,
-         1.0 / Sqrt(12.0),  1.0 / Sqrt(12.0),  Sqrt(27.0) / 20.0,
-                           1.0 / Sqrt(180.0),   1.0 / Sqrt(80.0),
-                                              1.0 / Sqrt(2800.0)});
-
-  auto const r4_actual = CholeskyDecomposition(hilbert4);
-  EXPECT_THAT(r4_actual, AlmostEquals(r4_expected, 245));
-}
-
-TEST_F(UnboundedArraysTest, ᵗRDRDecomposition) {
-  UnboundedUpperTriangularMatrix<double> const hilbert4({
-      1, 1.0 / 2.0, 1.0 / 3.0, 1.0 / 4.0,
-         1.0 / 3.0, 1.0 / 4.0, 1.0 / 5.0,
-                    1.0 / 5.0, 1.0 / 6.0,
-                               1.0 / 7.0});
-  UnboundedUpperTriangularMatrix<double> const r4_expected({
-      1, 1.0 / 2.0, 1.0 / 3.0,  1.0 / 4.0,
-                 1,         1, 9.0 / 10.0,
-                            1,  3.0 / 2.0,
-                                        1});
-  UnboundedVector<double> d4_expected(
-      {1, 1.0 / 12.0, 1.0 / 180.0, 1.0 / 2800.0});
-
-  UnboundedUpperTriangularMatrix<double> r4_actual(4);
-  UnboundedVector<double> d4_actual(4);
-  ᵗRDRDecomposition(hilbert4, r4_actual, d4_actual);
-  EXPECT_THAT(d4_actual, AlmostEquals(d4_expected, 1615));
-  EXPECT_THAT(r4_actual, AlmostEquals(r4_expected, 23));
-}
-
-TEST_F(UnboundedArraysTest, BackSubstitution) {
-  UnboundedUpperTriangularMatrix<double> const m3({1, 3, -2,
-                                                      4,  7,
-                                                          5});
-  UnboundedVector<double> const b3({1, 1, -4});
-  UnboundedVector<double> const x3_expected(
-      {-111.0 / 20.0, 33.0 / 20.0, -4.0 / 5.0});
-
-  auto const x3_actual = BackSubstitution(m3, b3);
-  EXPECT_THAT(x3_actual, AlmostEquals(x3_expected, 1));
-}
-
-TEST_F(UnboundedArraysTest, ForwardSubstitution) {
-  UnboundedLowerTriangularMatrix<double> const m3({1,
-                                                   3, -2,
-                                                   4,  7, 5});
-  UnboundedVector<double> const b3({1, 1, -4});
-  UnboundedVector<double> const x3_expected({1, 1, -3});
-
-  auto const x3_actual = ForwardSubstitution(m3, b3);
-  EXPECT_THAT(x3_actual, AlmostEquals(x3_expected, 0));
+TEST_F(UnboundedArraysTest, Transpose) {
+  EXPECT_EQ(
+      UnboundedMatrix<double>({1,  8,  55,  377,
+                                2, 13,  89,  610,
+                                3, 21, 144,  987,
+                                5, 34, 233, 1597}), m4_.Transpose());
+  EXPECT_EQ(
+      UnboundedUpperTriangularMatrix<double>({1, 2,  5, 21,
+                                                 3,  8, 34,
+                                                    13, 55,
+                                                        89}), l4_.Transpose());
+  EXPECT_EQ(
+      UnboundedLowerTriangularMatrix<double>({1,
+                                              2,  8,
+                                              3, 13, 34,
+                                              5, 21, 55, 89}), u4_.Transpose());
 }
 
 }  // namespace numerics

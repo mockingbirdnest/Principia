@@ -20,6 +20,7 @@ namespace internal_perspective {
 
 using base::BoundedArray;
 using quantities::Length;
+using quantities::Square;
 
 template<typename Frame>
 using Segment = std::pair<Position<Frame>, Position<Frame>>;
@@ -57,6 +58,8 @@ class Perspective final {
   // as seen from the camera.
   double Tan²AngularDistance(Position<FromFrame> const& p1,
                              Position<FromFrame> const& p2) const;
+
+  Square<Length> SquaredDistanceFromCamera(Position<FromFrame> const& p) const;
 
   // Returns true iff the |point| is hidden by the |sphere| in this perspective.
   bool IsHiddenBySphere(Position<FromFrame> const& point,

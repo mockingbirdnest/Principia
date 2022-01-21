@@ -99,6 +99,12 @@ double Perspective<FromFrame, ToFrame>::Tan²AngularDistance(
 }
 
 template<typename FromFrame, typename ToFrame>
+Square<Length> Perspective<FromFrame, ToFrame>::SquaredDistanceFromCamera(
+    Position<FromFrame> const& p) const {
+  return (p - camera_).Norm²();
+}
+
+template<typename FromFrame, typename ToFrame>
 bool Perspective<FromFrame, ToFrame>::IsHiddenBySphere(
     Position<FromFrame> const& point,
     Sphere<FromFrame> const& sphere) const {

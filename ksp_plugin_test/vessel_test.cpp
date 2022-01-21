@@ -678,6 +678,7 @@ TEST_F(VesselTest, SerializationSuccess) {
   auto const v = Vessel::ReadFromMessage(
       message, &celestial_, &ephemeris_, /*deletion_callback=*/nullptr);
   EXPECT_TRUE(v->has_flight_plan());
+  v->ReadFlightPlanFromMessage();
 
   serialization::Vessel second_message;
   v->WriteToMessage(&second_message,

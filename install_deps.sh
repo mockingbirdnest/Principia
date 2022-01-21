@@ -16,7 +16,7 @@ for repo in protobuf glog googletest gipfeli abseil-cpp compatibility benchmark 
   pushd "$repo"
   git checkout master
   git pull
-  
+
   # Azure pipelines define this variable for us.
   AGENT_OS=$(uname -s)
 
@@ -40,8 +40,8 @@ for repo in protobuf glog googletest gipfeli abseil-cpp compatibility benchmark 
   # from <type_traits>, which are C++17 additions on which we heavily rely.
   # Luckily, the <type_traits> definitions are gated on _LIBCPP_STD_VER > 14, while the
   # <filesystem> usage is gated on _LIBCPP_STD_VER >= 17.  We can therefore get the
-  # former without the latter by setting _LIBCPP_STD_VER to 16 ∈ ]14, 17[.  
-  PRINCIPIA_MACOS_CXX_FLAGS="-D_LIBCPP_STD_VER=16"
+  # former without the latter by setting _LIBCPP_STD_VER to 16 ∈ ]14, 17[.
+  PRINCIPIA_MACOS_CXX_FLAGS="-D_LIBCPP_STD_VER=16 -D_LIBCPP_NO_EXCEPTIONS"
   PRINCIPIA_MACOS_VERSION_MIN="10.12"
   # End pipeline variables.
 
@@ -73,13 +73,5 @@ for repo in protobuf glog googletest gipfeli abseil-cpp compatibility benchmark 
 
   popd
 done
-
-if [ ! -d "Optional" ]; then
-  mkdir Optional
-fi
-pushd Optional
-curl "https://raw.githubusercontent.com/llvm-mirror/libcxx/52f9ca28a39aa02a2e78fa0eb5aa927ad046487f/include/optional" > principia_optional_impl
-touch __undef_macros
-popd
 
 popd
