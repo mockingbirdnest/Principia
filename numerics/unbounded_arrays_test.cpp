@@ -18,6 +18,10 @@ class UnboundedArraysTest : public ::testing::Test {
   UnboundedArraysTest()
     : v3_({10, 31, -47}),
       v4_({-3, -3, 1, 4}),
+      m4_({  1,   2,   3,    5,
+             8,  13,  21,   34,
+            55,  89, 144,  233,
+           377, 610, 987, 1597}),
       l4_({ 1,
             2,  3,
             5,  8,  13,
@@ -29,6 +33,7 @@ class UnboundedArraysTest : public ::testing::Test {
 
   UnboundedVector<double> v3_;
   UnboundedVector<double> v4_;
+  UnboundedMatrix<double> m4_;
   UnboundedLowerTriangularMatrix<double> l4_;
   UnboundedUpperTriangularMatrix<double> u4_;
 };
@@ -39,6 +44,14 @@ TEST_F(UnboundedArraysTest, Assignment) {
     UnboundedVector<double> v2 = {{1, 2}};
     UnboundedVector<double> w2(2);
     w2 = {{1, 2}};
+    EXPECT_EQ(u2, v2);
+    EXPECT_EQ(u2, w2);
+  }
+  {
+    UnboundedMatrix<double> u2({1, 2, 3, 4});
+    UnboundedMatrix<double> v2 = {{1, 2, 3, 4}};
+    UnboundedMatrix<double> w2(2, 2);
+    w2 = {{1, 2, 3, 4}};
     EXPECT_EQ(u2, v2);
     EXPECT_EQ(u2, w2);
   }
@@ -80,10 +93,21 @@ TEST_F(UnboundedArraysTest, Assignment) {
   }
 }
 
+TEST_F(UnboundedArraysTest, Multiplication) {
+  EXPECT_EQ(35, v4_.Transpose() * v4_);
+  EXPECT_EQ(UnboundedVector<double>({14, 94, 644, 4414}), m4_ * v4_);
+}
+
 TEST_F(UnboundedArraysTest, VectorIndexing) {
   EXPECT_EQ(31, v3_[1]);
   v3_[2] = -666;
   EXPECT_EQ(-666, v3_[2]);
+}
+
+TEST_F(UnboundedArraysTest, MatrixIndexing) {
+  EXPECT_EQ(21, m4_[1][2]);
+  m4_[2][1] = -666;
+  EXPECT_EQ(-666, m4_[2][1]);
 }
 
 TEST_F(UnboundedArraysTest, LowerTriangularMatrixIndexing) {
@@ -187,6 +211,24 @@ TEST_F(UnboundedArraysTest, Erase) {
     u4.EraseToEnd(2);
     EXPECT_EQ(u2, u4);
   }
+}
+
+TEST_F(UnboundedArraysTest, Transpose) {
+  EXPECT_EQ(
+      UnboundedMatrix<double>({1,  8,  55,  377,
+                                2, 13,  89,  610,
+                                3, 21, 144,  987,
+                                5, 34, 233, 1597}), m4_.Transpose());
+  EXPECT_EQ(
+      UnboundedUpperTriangularMatrix<double>({1, 2,  5, 21,
+                                                 3,  8, 34,
+                                                    13, 55,
+                                                        89}), l4_.Transpose());
+  EXPECT_EQ(
+      UnboundedLowerTriangularMatrix<double>({1,
+                                              2,  8,
+                                              3, 13, 34,
+                                              5, 21, 55, 89}), u4_.Transpose());
 }
 
 }  // namespace numerics

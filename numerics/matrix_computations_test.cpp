@@ -24,10 +24,12 @@ class MatrixComputationsTest : public ::testing::Test {
 using MatrixTypes =
     ::testing::Types<std::tuple<FixedVector<double, 4>,
                                 FixedLowerTriangularMatrix<double, 4>,
-                                FixedUpperTriangularMatrix<double, 4>>,
+                                FixedUpperTriangularMatrix<double, 4>,
+                                FixedMatrix<double, 4, 4>>,
                      std::tuple<UnboundedVector<double>,
                                 UnboundedLowerTriangularMatrix<double>,
-                                UnboundedUpperTriangularMatrix<double>>>;
+                                UnboundedUpperTriangularMatrix<double>,
+                                UnboundedMatrix<double>>>;
 
 TYPED_TEST_SUITE(MatrixComputationsTest, MatrixTypes);
 
@@ -97,6 +99,20 @@ TYPED_TEST(MatrixComputationsTest, ForwardSubstitution) {
 
   auto const x4_actual = ForwardSubstitution(m4, b4);
   EXPECT_THAT(x4_actual, AlmostEquals(x4_expected, 0));
+}
+
+TYPED_TEST(MatrixComputationsTest, RayleighQuotient) {
+  using Vector = typename std::tuple_element<0, TypeParam>::type;
+  using Matrix = typename std::tuple_element<3, TypeParam>::type;
+
+  Matrix const m4({ 1, 0, -2, 3,
+                   -4, 4,  1, 2,
+                    0, 8,  3, 5,
+                   -7, 1,  2, 2});
+  Vector const v4({1, -1, 2, 3});
+
+  auto const actual = RayleighQuotient(m4, v4);
+  EXPECT_THAT(actual, AlmostEquals(38.0 / 15.0, 0));
 }
 
 }  // namespace numerics

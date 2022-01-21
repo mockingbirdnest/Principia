@@ -19,7 +19,7 @@ using quantities::Sqrt;
 
 template<class T>
 template<class U, class... Args>
-inline void uninitialized_allocator<T>::construct(U* const p, Args&&... args) {
+void uninitialized_allocator<T>::construct(U* const p, Args&&... args) {
   ::new ((void*)p) U(std::forward<Args>(args)...);  // NOLINT
 }
 
@@ -29,11 +29,17 @@ UnboundedVector<Scalar>::UnboundedVector(int const size)
 
 template<typename Scalar>
 UnboundedVector<Scalar>::UnboundedVector(int const size, uninitialized_t)
-    : data_(size)  {}
+    : data_(size) {}
 
 template<typename Scalar>
 UnboundedVector<Scalar>::UnboundedVector(std::initializer_list<Scalar> data)
     : data_(std::move(data)) {}
+
+template<typename Scalar>
+TransposedView<UnboundedVector<Scalar>>
+UnboundedVector<Scalar>::Transpose() const {
+  return {.transpose = *this};
+}
 
 template<typename Scalar>
 void UnboundedVector<Scalar>::Extend(int const extra_size) {
@@ -75,6 +81,71 @@ Scalar& UnboundedVector<Scalar>::operator[](int const index) {
 template<typename Scalar>
 Scalar const& UnboundedVector<Scalar>::operator[](int const index) const {
   return data_[index];
+}
+
+template<typename Scalar>
+UnboundedMatrix<Scalar>::UnboundedMatrix(int rows, int columns)
+    : rows_(rows),
+      columns_(columns),
+      data_(rows_ * columns_, Scalar{}) {}
+
+template<typename Scalar>
+UnboundedMatrix<Scalar>::UnboundedMatrix(int rows, int columns, uninitialized_t)
+    : rows_(rows),
+      columns_(columns),
+      data_(rows_ * columns_) {}
+
+
+template<typename Scalar>
+UnboundedMatrix<Scalar>::UnboundedMatrix(std::initializer_list<Scalar> data)
+    : rows_(Sqrt(data.size())),
+      columns_(Sqrt(data.size())),
+      data_(std::move(data)) {
+  CHECK_EQ(data.size(), rows_ * columns_);
+}
+
+template<typename Scalar>
+UnboundedMatrix<Scalar> UnboundedMatrix<Scalar>::Transpose() const {
+  UnboundedMatrix<Scalar> m(columns_, rows_, uninitialized);
+  for (int i = 0; i < rows_; ++i) {
+    for (int j = 0; j < columns_; ++j) {
+      m[j][i] = (*this)[i][j];
+    }
+  }
+  return m;
+}
+
+template<typename Scalar>
+int UnboundedMatrix<Scalar>::columns() const {
+  return columns_;
+}
+
+template<typename Scalar>
+int UnboundedMatrix<Scalar>::rows() const {
+  return rows_;
+}
+
+template<typename Scalar>
+int UnboundedMatrix<Scalar>::dimension() const {
+  return rows_ * columns_;
+}
+
+template<typename Scalar>
+bool UnboundedMatrix<Scalar>::operator==(
+    UnboundedMatrix const& right) const {
+  return data_ == right.data_;
+}
+
+template<typename Scalar>
+Scalar* UnboundedMatrix<Scalar>::operator[](int index) {
+  DCHECK_LT(index, rows_);
+  return &data_[index * columns_];
+}
+
+template<typename Scalar>
+Scalar const* UnboundedMatrix<Scalar>::operator[](int index) const {
+  DCHECK_LT(index, rows_);
+  return &data_[index * columns_];
 }
 
 template<typename Scalar>
@@ -344,6 +415,33 @@ UnboundedUpperTriangularMatrix<Scalar>::Transpose(
   return result;
 }
 
+template<typename ScalarLeft, typename ScalarRight>
+Product<ScalarLeft, ScalarRight> operator*(
+    TransposedView<UnboundedVector<ScalarLeft>> const& left,
+    UnboundedVector<ScalarRight> const& right) {
+  CHECK_EQ(left.transpose.size(), right.size());
+  Product<ScalarLeft, ScalarRight> result{};
+  for (int i = 0; i < left.transpose.size(); ++i) {
+    result += left.transpose[i] * right[i];
+  }
+  return result;
+}
+
+template<typename ScalarLeft, typename ScalarRight>
+UnboundedVector<Product<ScalarLeft, ScalarRight>> operator*(
+    UnboundedMatrix<ScalarLeft> const& left,
+    UnboundedVector<ScalarRight> const& right) {
+  CHECK_EQ(left.columns(), right.size());
+  UnboundedVector<Product<ScalarLeft, ScalarRight>> result(left.rows());
+  for (int i = 0; i < left.rows(); ++i) {
+    auto& result_i = result.data_[i];
+    for (int j = 0; j < left.columns(); ++j) {
+      result_i += left[i][j] * right[j];
+    }
+  }
+  return result;
+}
+
 template<typename Scalar>
 std::ostream& operator<<(std::ostream& out,
                          UnboundedVector<Scalar> const& vector) {
@@ -365,6 +463,23 @@ std::ostream& operator<<(std::ostream& out,
     for (int j = 0; j <= i; ++j) {
       out << matrix[i][j];
       if (j < i) {
+        out << ", ";
+      }
+    }
+    out << "}\n";
+  }
+  return out;
+}
+
+template<typename Scalar>
+std::ostream& operator<<(std::ostream& out,
+                         UnboundedMatrix<Scalar> const& matrix) {
+  out << "rows: " << matrix.rows() << " columns: " << matrix.columns() << "\n";
+  for (int i = 0; i < matrix.rows(); ++i) {
+    out << "{";
+    for (int j = 0; j < matrix.columns(); ++j) {
+      out << matrix[i][j];
+      if (j < matrix.columns() - 1) {
         out << ", ";
       }
     }
