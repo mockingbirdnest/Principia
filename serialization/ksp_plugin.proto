@@ -195,7 +195,4 @@ message Vessel {
            "prediction_fork_time";
   // Pre-Cesàro.
   reserved "psychohistory";
-  // हरीश चंद्र failed attempt.
-  reserved 20;
-  reserved "prehistory";
 }
