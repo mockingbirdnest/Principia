@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/tags.hpp"
+#include "numerics/transposed_view.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -29,6 +30,8 @@ class FixedVector final {
   constexpr FixedVector(std::array<Scalar, size_> const& data);
   constexpr FixedVector(std::array<Scalar, size_>&& data);
 
+  TransposedView<FixedVector> Transpose() const;
+
   bool operator==(FixedVector const& right) const;
 
   constexpr Scalar& operator[](int index);
@@ -42,8 +45,9 @@ class FixedVector final {
   std::array<Scalar, size_> data_;
 
   template<typename L, typename R, int s>
-  friend constexpr Product<L, R> operator*(FixedVector<L, s> const& left,
-                                           FixedVector<R, s> const& right);
+  friend constexpr Product<L, R> operator*(
+      TransposedView<FixedVector<L, s>> const& left,
+      FixedVector<R, s> const& right);
   template<typename L, typename R, int r, int c>
   friend constexpr FixedVector<Product<L, R>, r> operator*(
       FixedMatrix<L, r, c> const& left,
@@ -205,7 +209,7 @@ constexpr FixedVector<Difference<ScalarLeft, ScalarRight>, size> operator-(
 
 template<typename ScalarLeft, typename ScalarRight, int size>
 constexpr Product<ScalarLeft, ScalarRight> operator*(
-    FixedVector<ScalarLeft, size> const& left,
+    TransposedView<FixedVector<ScalarLeft, size>> const& left,
     FixedVector<ScalarRight, size> const& right);
 
 template<typename ScalarLeft, typename ScalarRight, int rows, int columns>

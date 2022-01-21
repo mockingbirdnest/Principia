@@ -209,6 +209,9 @@
     <ClInclude Include="matrix_computations_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="transposed_view.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">

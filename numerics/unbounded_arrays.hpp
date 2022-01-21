@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/tags.hpp"
+#include "numerics/transposed_view.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -41,6 +42,8 @@ class UnboundedVector final {
   UnboundedVector(int size, uninitialized_t);
   UnboundedVector(std::initializer_list<Scalar> data);
 
+  TransposedView<UnboundedVector> Transpose() const;
+
   void Extend(int extra_size);
   void Extend(int extra_size, uninitialized_t);
   void Extend(std::initializer_list<Scalar> data);
@@ -57,6 +60,10 @@ class UnboundedVector final {
  private:
   std::vector<Scalar, uninitialized_allocator<Scalar>> data_;
 
+  template<typename L, typename R>
+  friend UnboundedVector<Product<L, R>> operator*(
+      TransposedView<UnboundedMatrix<L>> const& left,
+      UnboundedVector<R> const& right);
   template<typename L, typename R>
   friend UnboundedVector<Product<L, R>> operator*(
       UnboundedMatrix<L> const& left,
@@ -214,7 +221,7 @@ class UnboundedUpperTriangularMatrix final {
 
 template<typename ScalarLeft, typename ScalarRight>
 Product<ScalarLeft, ScalarRight> operator*(
-    UnboundedVector<ScalarLeft> const& left,
+    TransposedView<UnboundedVector<ScalarLeft>> const& left,
     UnboundedVector<ScalarRight> const& right);
 
 template<typename ScalarLeft, typename ScalarRight>

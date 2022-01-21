@@ -68,6 +68,12 @@ constexpr FixedVector<Scalar, size_>::FixedVector(
     : data_(std::move(data)) {}
 
 template<typename Scalar, int size_>
+TransposedView<FixedVector<Scalar, size_>>
+FixedVector<Scalar, size_>::Transpose() const {
+  return {.transpose = *this};
+}
+
+template<typename Scalar, int size_>
 bool FixedVector<Scalar, size_>::operator==(FixedVector const& right) const {
   return data_ == right.data_;
 }
@@ -314,10 +320,10 @@ constexpr FixedVector<Difference<ScalarLeft, ScalarRight>, size> operator-(
 
 template<typename ScalarLeft, typename ScalarRight, int size>
 constexpr Product<ScalarLeft, ScalarRight> operator*(
-    FixedVector<ScalarLeft, size> const& left,
+    TransposedView<FixedVector<ScalarLeft, size>> const& left,
     FixedVector<ScalarRight, size> const& right) {
-  return DotProduct<ScalarLeft, ScalarRight, size>::Compute(left.data_,
-                                                            right.data_);
+  return DotProduct<ScalarLeft, ScalarRight, size>::Compute(
+      left.transpose.data_, right.data_);
 }
 
 template<typename ScalarLeft, typename ScalarRight, int rows, int columns>

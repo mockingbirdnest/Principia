@@ -411,12 +411,12 @@ UnboundedUpperTriangularMatrix<Scalar>::Transpose(
 
 template<typename ScalarLeft, typename ScalarRight>
 Product<ScalarLeft, ScalarRight> operator*(
-    UnboundedVector<ScalarLeft> const& left,
+    TransposedView<UnboundedVector<ScalarLeft>> const& left,
     UnboundedVector<ScalarRight> const& right) {
-  CHECK_EQ(left.size(), right.size());
+  CHECK_EQ(left.transpose.size(), right.size());
   Product<ScalarLeft, ScalarRight> result{};
-  for (int i = 0; i < left.size(); ++i) {
-    result += left[i] * right[i];
+  for (int i = 0; i < left.transpose.size(); ++i) {
+    result += left.transpose[i] * right[i];
   }
   return result;
 }

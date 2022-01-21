@@ -72,6 +72,7 @@
     <ClInclude Include="root_finders_body.hpp" />
     <ClInclude Include="scale_b.hpp" />
     <ClInclude Include="scale_b_body.hpp" />
+    <ClInclude Include="transposed_view.hpp" />
     <ClInclude Include="ulp_distance.hpp" />
     <ClInclude Include="ulp_distance_body.hpp" />
     <ClInclude Include="apodization.hpp" />

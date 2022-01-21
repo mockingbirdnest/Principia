@@ -94,7 +94,7 @@ TEST_F(UnboundedArraysTest, Assignment) {
 }
 
 TEST_F(UnboundedArraysTest, Multiplication) {
-  EXPECT_EQ(35, v4_ * v4_);
+  EXPECT_EQ(35, TransposedView{v4_} * v4_);
   EXPECT_EQ(UnboundedVector<double>({14, 94, 644, 4414}), m4_ * v4_);
 }
 
