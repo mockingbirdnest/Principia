@@ -231,7 +231,7 @@ template<typename Matrix, typename Vector>
 typename RayleighQuotientGenerator<Matrix, Vector>::Result RayleighQuotient(
     Matrix const& A, Vector const& x) {
   // [GV13], section 8.2.3.
-  return x * (A * x) / (x * x);
+  return x.Transpose() * (A * x) / (x.Transpose() * x);
 }
 
 }  // namespace internal_matrix_computations

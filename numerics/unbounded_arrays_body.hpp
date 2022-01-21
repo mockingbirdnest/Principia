@@ -29,11 +29,17 @@ UnboundedVector<Scalar>::UnboundedVector(int const size)
 
 template<typename Scalar>
 UnboundedVector<Scalar>::UnboundedVector(int const size, uninitialized_t)
-    : data_(size)  {}
+    : data_(size) {}
 
 template<typename Scalar>
 UnboundedVector<Scalar>::UnboundedVector(std::initializer_list<Scalar> data)
     : data_(std::move(data)) {}
+
+template<typename Scalar>
+TransposedView<UnboundedVector<Scalar>>
+UnboundedVector<Scalar>::Transpose() const {
+  return {.transpose = *this};
+}
 
 template<typename Scalar>
 void UnboundedVector<Scalar>::Extend(int const extra_size) {

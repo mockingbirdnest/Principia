@@ -73,7 +73,7 @@ TEST_F(FixedArraysTest, Assignment) {
 }
 
 TEST_F(FixedArraysTest, Multiplication) {
-  EXPECT_EQ(35, TransposedView{v4_} * v4_);
+  EXPECT_EQ(35, v4_.Transpose() * v4_);
   EXPECT_EQ(v3_, m34_ * v4_);
 }
 
