@@ -328,7 +328,7 @@ class Vessel {
 
   mutable absl::Mutex lock_;
 
-  // When reading a pre-Zermelo save, the existing history must be
+  // When reading a pre-हरीश चंद्र save, the existing history must be
   // non-collapsible as we don't know anything about it.
   bool is_collapsible_ = false;
 
