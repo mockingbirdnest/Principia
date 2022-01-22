@@ -245,13 +245,12 @@ Ephemeris<Frame>::Ephemeris(
           [this](Instant const& desired_t_min) {
             return Reanimate(desired_t_min);
           },
-          50ms) {
+          20ms) {  // 50 Hz.
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
   IntegrationProblem<NewtonianMotionEquation> problem;
   problem.equation = MakeMassiveBodiesNewtonianMotionEquation();
-  reanimator_.Start();
 
   typename NewtonianMotionEquation::SystemState& state = problem.initial_state;
   state.time = DoublePrecision<Instant>(initial_time);
@@ -360,6 +359,8 @@ absl::Status Ephemeris<Frame>::last_severe_integration_status() const {
 
 template<typename Frame>
 void Ephemeris<Frame>::RequestReanimation(Instant const& desired_t_min) {
+  reanimator_.Start();
+
   bool must_restart;
   {
     absl::MutexLock l(&lock_);

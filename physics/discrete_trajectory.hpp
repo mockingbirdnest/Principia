@@ -142,6 +142,10 @@ class DiscreteTrajectory : public Trajectory<Frame> {
       std::vector<SegmentIterator> const& tracked,
       std::vector<iterator> const& exact) const;
 
+  // |tracked| must have a size appropriate for the |message| being deserialized
+  // and the orders of the |tracked| iterators must be consistent during
+  // serialization and deserialization.  Upon return, the iterators in |tracked|
+  // are past-the-end iff they were past-the-end at serialization time.
   template<typename F = Frame,
            typename = std::enable_if_t<base::is_serializable_v<F>>>
   static DiscreteTrajectory ReadFromMessage(

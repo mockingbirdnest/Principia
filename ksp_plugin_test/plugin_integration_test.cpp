@@ -245,12 +245,12 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
              -1.0 * AstronomicalUnit / Hour,
               0.0 * AstronomicalUnit / Hour}) * (t - initial_time);
     auto const& vessel = *plugin_->GetVessel(vessel_guid);
-    auto const history = vessel.history();
+    auto const& trajectory = vessel.trajectory();
     auto const psychohistory = vessel.psychohistory();
     auto const rendered_trajectory =
         plugin_->renderer().RenderBarycentricTrajectoryInWorld(
             plugin_->CurrentTime(),
-            history->begin(),
+            trajectory.begin(),
             psychohistory->end(),
             sun_world_position,
             plugin_->PlanetariumRotation());
@@ -355,12 +355,12 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
            -1.0 * AstronomicalUnit / Hour,
             0.0 * AstronomicalUnit / Hour}) * (t - initial_time);
   auto const& vessel = *plugin_->GetVessel(vessel_guid);
-  auto const history = vessel.history();
+  auto const& trajectory = vessel.trajectory();
   auto const psychohistory = vessel.psychohistory();
   auto const rendered_trajectory =
       plugin_->renderer().RenderBarycentricTrajectoryInWorld(
           plugin_->CurrentTime(),
-          history->begin(),
+          trajectory.begin(),
           psychohistory->end(),
           sun_world_position,
           plugin_->PlanetariumRotation());

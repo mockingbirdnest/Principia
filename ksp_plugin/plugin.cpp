@@ -35,6 +35,7 @@
 #include "geometry/named_quantities.hpp"
 #include "geometry/permutation.hpp"
 #include "geometry/r3x3_matrix.hpp"
+#include "geometry/rotation.hpp"
 #include "glog/logging.h"
 #include "glog/stl_logging.h"
 #include "ksp_plugin/equator_relevance_threshold.hpp"
@@ -85,6 +86,7 @@ using geometry::Normalize;
 using geometry::OddPermutation;
 using geometry::Permutation;
 using geometry::RigidTransformation;
+using geometry::Rotation;
 using geometry::R3x3Matrix;
 using geometry::Sign;
 using physics::BarycentricRotatingDynamicFrame;
@@ -392,7 +394,8 @@ void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
                                          vessel_name,
                                          parent,
                                          ephemeris_.get(),
-                                         prediction_parameters));
+                                         prediction_parameters,
+                                         history_downsampling_parameters_));
   } else {
     inserted = false;
   }
@@ -581,7 +584,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
     Instant const vessel_time =
         is_loaded(vessel) ? current_time_ - Δt : current_time_;
     if (kept_vessels_.erase(vessel) > 0) {
-      vessel->PrepareHistory(vessel_time, history_downsampling_parameters_);
+      vessel->CreateTrajectoryIfNeeded(vessel_time);
       ++it;
     } else {
       loaded_vessels_.erase(vessel);
@@ -649,6 +652,12 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
           history_fixed_step_parameters_,
           ephemeris_.get());
     });
+  }
+
+  // Now that the composition of the vessels is known, as well as their
+  // intrinsic forces and torques, we may detect collapsibility changes.
+  for (auto const& [_, vessel] : vessels_) {
+    vessel->DetectCollapsibilityChange();
   }
 }
 

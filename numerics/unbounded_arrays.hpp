@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/tags.hpp"
+#include "numerics/transposed_view.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -14,6 +15,7 @@ namespace numerics {
 namespace internal_unbounded_arrays {
 
 using base::uninitialized_t;
+using quantities::Product;
 using quantities::Quotient;
 using quantities::SquareRoot;
 
@@ -26,6 +28,8 @@ class uninitialized_allocator : public std::allocator<T> {
 };
 
 template<typename Scalar>
+class UnboundedMatrix;
+template<typename Scalar>
 class UnboundedUpperTriangularMatrix;
 
 // The following classes are similar to those in fixed_arrays.hpp, but they have
@@ -37,6 +41,8 @@ class UnboundedVector final {
   explicit UnboundedVector(int size);  // Zero-initialized.
   UnboundedVector(int size, uninitialized_t);
   UnboundedVector(std::initializer_list<Scalar> data);
+
+  TransposedView<UnboundedVector> Transpose() const;
 
   void Extend(int extra_size);
   void Extend(int extra_size, uninitialized_t);
@@ -54,9 +60,50 @@ class UnboundedVector final {
  private:
   std::vector<Scalar, uninitialized_allocator<Scalar>> data_;
 
+  template<typename L, typename R>
+  friend UnboundedVector<Product<L, R>> operator*(
+      TransposedView<UnboundedMatrix<L>> const& left,
+      UnboundedVector<R> const& right);
+  template<typename L, typename R>
+  friend UnboundedVector<Product<L, R>> operator*(
+      UnboundedMatrix<L> const& left,
+      UnboundedVector<R> const& right);
   template<typename S>
   friend std::ostream& operator<<(std::ostream& out,
                                   UnboundedVector<S> const& vector);
+};
+
+template<typename Scalar>
+class UnboundedMatrix final {
+ public:
+  UnboundedMatrix(int rows, int columns);
+  UnboundedMatrix(int rows, int columns, uninitialized_t);
+
+  // The |data| must be in row-major format.
+  UnboundedMatrix(std::initializer_list<Scalar> data);
+
+  UnboundedMatrix<Scalar> Transpose() const;
+
+  int columns() const;
+  int rows() const;
+  int dimension() const;
+
+  bool operator==(UnboundedMatrix const& right) const;
+
+  // For  0 ≤ i < rows and 0 ≤ j < columns, the entry a_ij is accessed as
+  // |a[i][j]|.  If i and j do not satisfy these conditions, the expression
+  // |a[i][j]| is erroneous.
+  Scalar* operator[](int index);
+  Scalar const* operator[](int index) const;
+
+ private:
+  int rows_;
+  int columns_;
+  std::vector<Scalar, uninitialized_allocator<Scalar>> data_;
+
+  template<typename S>
+  friend std::ostream& operator<<(std::ostream& out,
+                                  UnboundedMatrix<S> const& matrix);
 };
 
 template<typename Scalar>
@@ -78,13 +125,14 @@ class UnboundedLowerTriangularMatrix final {
 
   UnboundedUpperTriangularMatrix<Scalar> Transpose() const;
 
+  int columns() const;
   int rows() const;
   int dimension() const;
 
   bool operator==(UnboundedLowerTriangularMatrix const& right) const;
 
   // For  0 ≤ j ≤ i < rows, the entry a_ij is accessed as |a[i][j]|.
-  // if i and j do not satisfy these conditions, the expression |a[i][j]| is
+  // If i and j do not satisfy these conditions, the expression |a[i][j]| is
   // erroneous.
   Scalar* operator[](int index);
   Scalar const* operator[](int index) const;
@@ -134,7 +182,7 @@ class UnboundedUpperTriangularMatrix final {
     explicit Row(Matrix& matrix, int row);
 
     // We need to remove the const because, when this class is instantiated with
-    // 'UnboundedUpperTriangularMatrix const', the first operator[], not the
+    // |UnboundedUpperTriangularMatrix const|, the first operator[], not the
     // second, is picked by overload resolution.
     std::remove_const_t<Matrix>& matrix_;
     int row_;
@@ -144,7 +192,7 @@ class UnboundedUpperTriangularMatrix final {
   };
 
   // For  0 ≤ i ≤ j < columns, the entry a_ij is accessed as |a[i][j]|.
-  // if i and j do not satisfy these conditions, the expression |a[i][j]| is
+  // If i and j do not satisfy these conditions, the expression |a[i][j]| is
   // erroneous.
   Row<UnboundedUpperTriangularMatrix> operator[](int row);
   Row<UnboundedUpperTriangularMatrix const> operator[](int row) const;
@@ -171,34 +219,23 @@ class UnboundedUpperTriangularMatrix final {
   friend class Row;
 };
 
-// If A is the upper half of a symmetric positive definite matrix, returns R so
-// that A = ᵗR R.
-template<typename Scalar>
-UnboundedUpperTriangularMatrix<SquareRoot<Scalar>> CholeskyDecomposition(
-    UnboundedUpperTriangularMatrix<Scalar> const& A);
+template<typename ScalarLeft, typename ScalarRight>
+Product<ScalarLeft, ScalarRight> operator*(
+    TransposedView<UnboundedVector<ScalarLeft>> const& left,
+    UnboundedVector<ScalarRight> const& right);
 
-// If A is the upper half of a symmetric matrix, returns R and D so that
-// that A = ᵗR D R.  The diagonal matrix is represented as a vector.
-template<typename Scalar>
-void ᵗRDRDecomposition(UnboundedUpperTriangularMatrix<Scalar> const& A,
-                       UnboundedUpperTriangularMatrix<double>& R,
-                       UnboundedVector<Scalar>& D);
-
-// Returns x such that U x = b.
-template<typename LScalar, typename RScalar>
-UnboundedVector<Quotient<RScalar, LScalar>> BackSubstitution(
-    UnboundedUpperTriangularMatrix<LScalar> const& U,
-    UnboundedVector<RScalar> const& b);
-
-// Return x such that L x = b.
-template<typename LScalar, typename RScalar>
-UnboundedVector<Quotient<RScalar, LScalar>> ForwardSubstitution(
-    UnboundedLowerTriangularMatrix<LScalar> const& L,
-    UnboundedVector<RScalar> const& b);
+template<typename ScalarLeft, typename ScalarRight>
+UnboundedVector<Product<ScalarLeft, ScalarRight>> operator*(
+    UnboundedMatrix<ScalarLeft> const& left,
+    UnboundedVector<ScalarRight> const& right);
 
 template<typename Scalar>
 std::ostream& operator<<(std::ostream& out,
                          UnboundedVector<Scalar> const& vector);
+
+template<typename Scalar>
+std::ostream& operator<<(std::ostream& out,
+                         UnboundedMatrix<Scalar> const& matrix);
 
 template<typename Scalar>
 std::ostream& operator<<(std::ostream& out,
@@ -210,11 +247,8 @@ std::ostream& operator<<(std::ostream& out,
 
 }  // namespace internal_unbounded_arrays
 
-using internal_unbounded_arrays::BackSubstitution;
-using internal_unbounded_arrays::CholeskyDecomposition;
-using internal_unbounded_arrays::ForwardSubstitution;
-using internal_unbounded_arrays::ᵗRDRDecomposition;
 using internal_unbounded_arrays::UnboundedLowerTriangularMatrix;
+using internal_unbounded_arrays::UnboundedMatrix;
 using internal_unbounded_arrays::UnboundedUpperTriangularMatrix;
 using internal_unbounded_arrays::UnboundedVector;
 

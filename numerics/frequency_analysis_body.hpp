@@ -11,6 +11,7 @@
 #include "base/tags.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/hilbert.hpp"
+#include "numerics/matrix_computations.hpp"
 #include "numerics/poisson_series_basis.hpp"
 #include "numerics/root_finders.hpp"
 #include "numerics/unbounded_arrays.hpp"

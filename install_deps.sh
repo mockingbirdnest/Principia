@@ -9,7 +9,7 @@ echo "Required runtime dependencies: libc++1"
 mkdir -p deps
 pushd deps
 
-for repo in protobuf glog googletest gipfeli abseil-cpp compatibility benchmark zfp; do
+for repo in protobuf glog googletest gipfeli abseil-cpp benchmark zfp; do
   if [ ! -d "$repo" ]; then
     git clone "https://github.com/mockingbirdnest/$repo.git"
   fi
@@ -28,21 +28,10 @@ for repo in protobuf glog googletest gipfeli abseil-cpp compatibility benchmark 
   # Note that the Principia Makefile doesn't get these variables; flags are duplicated
   # there.
   PRINCIPIA_C_FLAGS="-fPIC -O3 -g -DNDEBUG"
-  PRINCIPIA_CXX_FLAGS="-std=c++17"
+  PRINCIPIA_CXX_FLAGS="-std=c++20"
   PRINCIPIA_LD_FLAGS="-stdlib=libc++"
-  # NOTE(egg): We need Clang 8, and therefore we use Xcode 11.  The libc++ provided by
-  # Xcode 11 has the <filesystem> header, however its symbols are marked unavailable
-  # unless macosx-version-min is at least 10.15 (Catalina).  Since we do not want to
-  # require that version yet (quousque tandem?), we cannot use the libc++ filesystem.
-  # Instead we inject our own (https://github.com/mockingbirdnest/Compatibility), and we
-  # prevent libc++ from defining and relying on its own, by setting _LIBCPP_STD_VER.
-  # However, if we set that to 14, we would be missing void_t and the variable templates
-  # from <type_traits>, which are C++17 additions on which we heavily rely.
-  # Luckily, the <type_traits> definitions are gated on _LIBCPP_STD_VER > 14, while the
-  # <filesystem> usage is gated on _LIBCPP_STD_VER >= 17.  We can therefore get the
-  # former without the latter by setting _LIBCPP_STD_VER to 16 ∈ ]14, 17[.
-  PRINCIPIA_MACOS_CXX_FLAGS="-D_LIBCPP_STD_VER=16"
-  PRINCIPIA_MACOS_VERSION_MIN="10.14"
+  PRINCIPIA_MACOS_CXX_FLAGS="-D_LIBCPP_STD_VER=20 -D_LIBCPP_NO_EXCEPTIONS"
+  PRINCIPIA_MACOS_VERSION_MIN="10.12"
   # End pipeline variables.
 
   # Task group Make.
@@ -73,13 +62,5 @@ for repo in protobuf glog googletest gipfeli abseil-cpp compatibility benchmark 
 
   popd
 done
-
-if [ ! -d "Optional" ]; then
-  mkdir Optional
-fi
-pushd Optional
-curl "https://raw.githubusercontent.com/llvm-mirror/libcxx/52f9ca28a39aa02a2e78fa0eb5aa927ad046487f/include/optional" > principia_optional_impl
-touch __undef_macros
-popd
 
 popd

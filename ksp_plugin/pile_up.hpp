@@ -93,16 +93,19 @@ using PileUpPrincipalAxes = Frame<serialization::Frame::PluginTag,
 class PileUp {
  public:
   PileUp(
-      std::list<not_null<Part*>>&& parts,
+      std::list<not_null<Part*>> parts,
       Instant const& t,
       Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters,
       Ephemeris<Barycentric>::FixedStepParameters fixed_step_parameters,
       not_null<Ephemeris<Barycentric>*> ephemeris,
       std::function<void()> deletion_callback);
 
+  // Runs the |deletion_callback| passed at construction, if not null.
   virtual ~PileUp();
 
   std::list<not_null<Part*>> const& parts() const;
+  Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters()
+      const;
 
   // Set the rigid motion for the given |part|.  This rigid motion is *apparent*
   // in the sense that it was reported by the game but we know better since we

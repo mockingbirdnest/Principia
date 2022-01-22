@@ -239,5 +239,8 @@
     <None Include="3 vessels.proto.bin">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="reanimation test.proto.b64">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
