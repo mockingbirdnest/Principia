@@ -5,6 +5,7 @@
 #include <functional>
 #include <limits>
 #include <list>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -31,10 +32,14 @@ using geometry::Position;
 using quantities::IsFinite;
 using quantities::Length;
 using quantities::Time;
+using quantities::Torque;
 using quantities::si::Metre;
 using ::std::placeholders::_1;
 
 using namespace std::chrono_literals;
+
+// TODO(phl): Move this to some kind of parameters.
+constexpr std::int64_t max_points_to_serialize = 20'000;
 
 bool operator!=(Vessel::PrognosticatorParameters const& left,
                 Vessel::PrognosticatorParameters const& right) {
@@ -50,12 +55,15 @@ bool operator!=(Vessel::PrognosticatorParameters const& left,
              right.adaptive_step_parameters.speed_integration_tolerance();
 }
 
-Vessel::Vessel(GUID guid,
-               std::string name,
-               not_null<Celestial const*> const parent,
-               not_null<Ephemeris<Barycentric>*> const ephemeris,
-               Ephemeris<Barycentric>::AdaptiveStepParameters
-                   prediction_adaptive_step_parameters)
+Vessel::Vessel(
+    GUID guid,
+    std::string name,
+    not_null<Celestial const*> const parent,
+    not_null<Ephemeris<Barycentric>*> const ephemeris,
+    Ephemeris<Barycentric>::AdaptiveStepParameters
+        prediction_adaptive_step_parameters,
+    DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters const&
+        downsampling_parameters)
     : guid_(std::move(guid)),
       name_(std::move(name)),
       body_(),
@@ -63,20 +71,29 @@ Vessel::Vessel(GUID guid,
           std::move(prediction_adaptive_step_parameters)),
       parent_(parent),
       ephemeris_(ephemeris),
-      history_(trajectory_.segments().begin()),
-      psychohistory_(trajectory_.segments().end()),
-      prediction_(trajectory_.segments().end()),
+      downsampling_parameters_(downsampling_parameters),
+      reanimator_(
+          [this](Instant const& desired_t_min) {
+            return Reanimate(desired_t_min);
+          },
+          20ms),  // 50 Hz.
       prognosticator_(
           [this](PrognosticatorParameters const& parameters) {
             return FlowPrognostication(parameters);
           },
-          20ms)  // 50 Hz.
-{}
+          20ms),  // 50 Hz.
+      checkpointer_(make_not_null_unique<Checkpointer<serialization::Vessel>>(
+          MakeCheckpointerWriter(),
+          MakeCheckpointerReader())),
+      backstory_(trajectory_.segments().begin()),
+      psychohistory_(trajectory_.segments().end()),
+      prediction_(trajectory_.segments().end()) {}
 
 Vessel::~Vessel() {
   LOG(INFO) << "Destroying vessel " << ShortDebugString();
   // Ask the prognosticator to shut down.  This may take a while.
   StopPrognosticator();
+  reanimator_.Stop();
 }
 
 GUID const& Vessel::guid() const {
@@ -157,10 +174,56 @@ void Vessel::ClearAllIntrinsicForcesAndTorques() {
   }
 }
 
-void Vessel::PrepareHistory(
-    Instant const& t,
-    DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters const&
-        downsampling_parameters) {
+void Vessel::DetectCollapsibilityChange() {
+  bool const becomes_collapsible = IsCollapsible();
+  if (is_collapsible_ != becomes_collapsible) {
+    // If collapsibility changes, we create a new history segment.  This ensures
+    // that downsampling does not change collapsibility boundaries.
+    // NOTE(phl): It is always correct to mark as non-collapsible a collapsible
+    // segment (but not vice-versa).  If the segment being closed is a very
+    // short collapsible one (e.g., no downsampling took place) we could
+    // consider merging it with its predecessor and avoiding the creation of a
+    // new segment.  The checkpointing code below would remain correct.
+
+    if (!is_collapsible_) {
+      // If the segment that is being closed is not collapsible, we have no way
+      // to reconstruct it, so we must serialize it in a checkpoint.  Note that
+      // the last point of the backstory specifies the initial conditions of the
+      // next (collapsible) segment.
+      Instant const checkpoint = backstory_->back().time;
+      // This test is needed because in some cornercases we might try to create
+      // multiple checkpoints at the same time.  See #3280.
+      if (checkpointer_->newest_checkpoint() < checkpoint) {
+        LOG(INFO) << "Writing " << ShortDebugString()
+                  << " to checkpoint at: " << checkpoint;
+        checkpointer_->WriteToCheckpoint(checkpoint);
+      }
+
+      // If there are no checkpoints in the current trajectory (this would
+      // happen if we restored the last part of trajectory and it didn't overlap
+      // with a checkpoint and no reanimation happened) then the
+      // |oldest_reanimated_checkpoint_| need to be updated to reflect the newly
+      // created checkpoint.
+      {
+        absl::MutexLock l(&lock_);
+        if (oldest_reanimated_checkpoint_ == InfiniteFuture) {
+          oldest_reanimated_checkpoint_ = checkpoint;
+        } else {
+          CHECK_LT(oldest_reanimated_checkpoint_, checkpoint);
+        }
+      }
+    }
+    auto psychohistory = trajectory_.DetachSegments(psychohistory_);
+    backstory_ = trajectory_.NewSegment();
+    if (downsampling_parameters_.has_value()) {
+      backstory_->SetDownsampling(downsampling_parameters_.value());
+    }
+    psychohistory_ = trajectory_.AttachSegments(std::move(psychohistory));
+    is_collapsible_ = becomes_collapsible;
+  }
+}
+
+void Vessel::CreateTrajectoryIfNeeded(Instant const& t) {
   CHECK(!parts_.empty());
   if (trajectory_.empty()) {
     LOG(INFO) << "Preparing history of vessel " << ShortDebugString()
@@ -172,7 +235,9 @@ void Vessel::PrepareHistory(
           part.mass());
     });
     CHECK(psychohistory_ == trajectory_.segments().end());
-    history_->SetDownsampling(downsampling_parameters);
+    if (downsampling_parameters_.has_value()) {
+      backstory_->SetDownsampling(downsampling_parameters_.value());
+    }
     trajectory_.Append(t, calculator.Get()).IgnoreError();
     psychohistory_ = trajectory_.NewSegment();
     prediction_ = trajectory_.NewSegment();
@@ -180,7 +245,9 @@ void Vessel::PrepareHistory(
 }
 
 void Vessel::DisableDownsampling() {
-  history_->ClearDownsampling();
+  backstory_->ClearDownsampling();
+  // From now on, no downsampling will happen.
+  downsampling_parameters_ = std::nullopt;
 }
 
 not_null<Part*> Vessel::part(PartId const id) const {
@@ -200,10 +267,6 @@ void Vessel::ForAllParts(std::function<void(Part&)> action) const {
 
 DiscreteTrajectory<Barycentric> const& Vessel::trajectory() const {
   return trajectory_;
-}
-
-DiscreteTrajectorySegmentIterator<Barycentric> Vessel::history() const {
-  return history_;
 }
 
 DiscreteTrajectorySegmentIterator<Barycentric> Vessel::psychohistory() const {
@@ -256,7 +319,7 @@ void Vessel::AdvanceTime() {
   trajectory_.DeleteSegments(psychohistory_);
   AppendToVesselTrajectory(&Part::history_begin,
                            &Part::history_end,
-                           *history_);
+                           *backstory_);
   psychohistory_ = trajectory_.NewSegment();
 
   // The reason why we may want to skip the start of the psychohistory is
@@ -290,6 +353,49 @@ void Vessel::AdvanceTime() {
   }
 }
 
+void Vessel::RequestReanimation(Instant const& desired_t_min) {
+  reanimator_.Start();
+
+  // No locking here because vessel reanimation is only invoked from the main
+  // thread.
+
+  // If the reanimator is asked to do significantly less work (in terms of
+  // checkpoints to reanimate) than it is currently doing, interrupt it.  Note
+  // that this is fundamentally racy: for instance the reanimator may not have
+  // picked the last input given by Put.  But it helps if the user was doing a
+  // very long reanimation and wants to shorten it.
+  bool const must_restart =
+      last_desired_t_min_.has_value() &&
+      checkpointer_->checkpoint_at_or_before(last_desired_t_min_.value()) <
+          checkpointer_->checkpoint_at_or_before(desired_t_min);
+  LOG_IF(WARNING, must_restart)
+      << "Restarting reanimator because desired t_min went from "
+      << last_desired_t_min_.value() << " to " << desired_t_min;
+  last_desired_t_min_ = desired_t_min;
+
+  if (must_restart) {
+    reanimator_.Restart();
+  }
+
+  {
+    absl::MutexLock l(&lock_);
+    if (DesiredTMinReachedOrFullyReanimated(desired_t_min)) {
+      return;
+    }
+  }
+
+  reanimator_.Put(desired_t_min);
+}
+
+void Vessel::WaitForReanimation(Instant const& desired_t_min) {
+  auto desired_t_min_reached_or_fully_reanimated = [this, desired_t_min]() {
+    return DesiredTMinReachedOrFullyReanimated(desired_t_min);
+  };
+
+  absl::ReaderMutexLock l(&lock_);
+  lock_.Await(absl::Condition(&desired_t_min_reached_or_fully_reanimated));
+}
+
 void Vessel::CreateFlightPlan(
     Instant const& final_time,
     Mass const& initial_mass,
@@ -297,11 +403,11 @@ void Vessel::CreateFlightPlan(
         flight_plan_adaptive_step_parameters,
     Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
         flight_plan_generalized_adaptive_step_parameters) {
-  auto const history_back = history_->back();
+  auto const flight_plan_start = backstory_->back();
   flight_plan_ = std::make_unique<FlightPlan>(
       initial_mass,
-      /*initial_time=*/history_back.time,
-      /*initial_degrees_of_freedom=*/history_back.degrees_of_freedom,
+      /*initial_time=*/flight_plan_start.time,
+      /*initial_degrees_of_freedom=*/flight_plan_start.degrees_of_freedom,
       final_time,
       ephemeris_,
       flight_plan_adaptive_step_parameters,
@@ -316,7 +422,7 @@ absl::Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
   CHECK(has_deserialized_flight_plan());
   auto& flight_plan =
       std::get<std::unique_ptr<FlightPlan>>(flight_plan_);
-  Instant const new_initial_time = history_->back().time;
+  Instant const new_initial_time = backstory_->back().time;
   int first_manœuvre_kept = 0;
   for (int i = 0; i < flight_plan->number_of_manœuvres(); ++i) {
     auto const& manœuvre = flight_plan->GetManœuvre(i);
@@ -387,156 +493,6 @@ void Vessel::StopPrognosticator() {
   prognosticator_.Stop();
 }
 
-std::string Vessel::ShortDebugString() const {
-  return name_ + " (" + guid_ + ")";
-}
-
-void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
-                            PileUp::SerializationIndexForPileUp const&
-                                serialization_index_for_pile_up) const {
-  message->set_guid(guid_);
-  message->set_name(name_);
-  body_.WriteToMessage(message->mutable_body());
-  prediction_adaptive_step_parameters_.WriteToMessage(
-      message->mutable_prediction_adaptive_step_parameters());
-  for (auto const& [_, part] : parts_) {
-    part->WriteToMessage(message->add_parts(), serialization_index_for_pile_up);
-  }
-  for (auto const& part_id : kept_parts_) {
-    CHECK(Contains(parts_, part_id));
-    message->add_kept_parts(part_id);
-  }
-  // Starting with Gateaux we don't save the prediction, see #2685.  Instead we
-  // just save its first point and re-read as if it was the whole prediction.
-  trajectory_.WriteToMessage(
-      message->mutable_history(),
-      /*begin=*/trajectory_.begin(),
-      /*end=*/std::next(prediction_->begin()),
-      /*tracked=*/{history_, psychohistory_, prediction_},
-      /*exact=*/{});
-  if (std::holds_alternative<serialization::FlightPlan>(flight_plan_)) {
-    *message->mutable_flight_plan() =
-        std::get<serialization::FlightPlan>(flight_plan_);
-  } else if (std::holds_alternative<std::unique_ptr<FlightPlan>>(
-                 flight_plan_)) {
-    auto& flight_plan = std::get<std::unique_ptr<FlightPlan>>(flight_plan_);
-    if (flight_plan != nullptr) {
-      flight_plan->WriteToMessage(message->mutable_flight_plan());
-    }
-  } else {
-    LOG(FATAL) << "Unexpected flight plan variant " << flight_plan_.index();
-  }
-}
-
-not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
-    serialization::Vessel const& message,
-    not_null<Celestial const*> const parent,
-    not_null<Ephemeris<Barycentric>*> const ephemeris,
-    std::function<void(PartId)> const& deletion_callback) {
-  bool const is_pre_cesàro = message.has_psychohistory_is_authoritative();
-  bool const is_pre_chasles = message.has_prediction();
-  bool const is_pre_陈景润 = !message.history().has_downsampling() &&
-                             message.history().segment_size() == 0;
-  bool const is_pre_hamilton = message.history().segment_size() == 0;
-  LOG_IF(WARNING, is_pre_hamilton)
-      << "Reading pre-"
-      << (is_pre_cesàro    ? u8"Cesàro"
-          : is_pre_chasles ? "Chasles"
-          : is_pre_陈景润   ? u8"陈景润"
-                           : "Hamilton") << " Vessel";
-
-  // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
-  // information.
-  auto vessel = make_not_null_unique<Vessel>(
-      message.guid(),
-      message.name(),
-      parent,
-      ephemeris,
-      Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
-          message.prediction_adaptive_step_parameters()));
-  for (auto const& serialized_part : message.parts()) {
-    PartId const part_id = serialized_part.part_id();
-    auto part =
-        Part::ReadFromMessage(serialized_part, [deletion_callback, part_id]() {
-          if (deletion_callback != nullptr) {
-            deletion_callback(part_id);
-          }
-        });
-    vessel->parts_.emplace(part_id, std::move(part));
-  }
-  for (PartId const part_id : message.kept_parts()) {
-    CHECK(Contains(vessel->parts_, part_id));
-    vessel->kept_parts_.insert(part_id);
-  }
-
-  if (is_pre_cesàro) {
-    auto const psychohistory =
-        DiscreteTrajectory<Barycentric>::ReadFromMessage(message.history(),
-                                                         /*forks=*/{});
-    // The |history_| has been created by the constructor above.  Reconstruct
-    // it from the |psychohistory|.
-    for (auto it = psychohistory.begin(); it != psychohistory.end();) {
-      auto const& [time, degrees_of_freedom] = *it;
-      ++it;
-      if (it == psychohistory.end() &&
-          !message.psychohistory_is_authoritative()) {
-        vessel->psychohistory_ = vessel->trajectory_.NewSegment();
-      }
-      vessel->trajectory_.Append(time, degrees_of_freedom).IgnoreError();
-    }
-    if (message.psychohistory_is_authoritative()) {
-      vessel->psychohistory_ = vessel->trajectory_.NewSegment();
-    }
-    vessel->prediction_ = vessel->trajectory_.NewSegment();
-  } else if (is_pre_chasles) {
-    vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
-        message.history(),
-        /*tracked=*/{&vessel->psychohistory_});
-    vessel->history_ = vessel->trajectory_.segments().begin();
-    vessel->prediction_ = vessel->trajectory_.NewSegment();
-  } else if (is_pre_hamilton) {
-    vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
-        message.history(),
-        /*tracked=*/{&vessel->psychohistory_, &vessel->prediction_});
-    vessel->history_ = vessel->trajectory_.segments().begin();
-    // Necessary after Εὔδοξος because the ephemeris has not been prolonged
-    // during deserialization.  Doesn't hurt prior to Εὔδοξος.
-    ephemeris->Prolong(vessel->prediction_->back().time).IgnoreError();
-  } else {
-    vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
-        message.history(),
-        /*tracked=*/{&vessel->history_,
-                     &vessel->psychohistory_,
-                     &vessel->prediction_});
-    // Necessary after Εὔδοξος because the ephemeris has not been prolonged
-    // during deserialization.
-    ephemeris->Prolong(vessel->prediction_->back().time).IgnoreError();
-  }
-
-  if (is_pre_陈景润) {
-    vessel->history_->SetDownsamplingUnconditionally(
-        DefaultDownsamplingParameters());
-  }
-
-  if (message.has_flight_plan()) {
-    // Starting with हरीश चंद्र we deserialize the flight plan lazily.
-    vessel->flight_plan_
-        .emplace<serialization::FlightPlan>(message.flight_plan());
-  }
-  return vessel;
-}
-
-void Vessel::FillContainingPileUpsFromMessage(
-    serialization::Vessel const& message,
-    PileUp::PileUpForSerializationIndex const&
-        pile_up_for_serialization_index) {
-  for (auto const& part_message : message.parts()) {
-    auto const& part = FindOrDie(parts_, part_message.part_id());
-    part->FillContainingPileUpFromMessage(part_message,
-                                          pile_up_for_serialization_index);
-  }
-}
-
 void Vessel::RequestOrbitAnalysis(Time const& mission_duration) {
   if (!orbit_analyser_.has_value()) {
     // TODO(egg): perhaps we should get the history parameters from the plugin;
@@ -578,6 +534,253 @@ OrbitAnalyser::Analysis* Vessel::orbit_analysis() {
   return orbit_analyser_.has_value() ? orbit_analyser_->analysis() : nullptr;
 }
 
+std::string Vessel::ShortDebugString() const {
+  return name_ + " (" + guid_ + ")";
+}
+
+void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
+                            PileUp::SerializationIndexForPileUp const&
+                                serialization_index_for_pile_up) const {
+  message->set_guid(guid_);
+  message->set_name(name_);
+  body_.WriteToMessage(message->mutable_body());
+  prediction_adaptive_step_parameters_.WriteToMessage(
+      message->mutable_prediction_adaptive_step_parameters());
+  if (downsampling_parameters_.has_value()) {
+    auto* const serialized_downsampling_parameters =
+        message->mutable_downsampling_parameters();
+    serialized_downsampling_parameters->set_max_dense_intervals(
+        downsampling_parameters_->max_dense_intervals);
+    downsampling_parameters_->tolerance.WriteToMessage(
+        serialized_downsampling_parameters->mutable_tolerance());
+  }
+  for (auto const& [_, part] : parts_) {
+    part->WriteToMessage(message->add_parts(), serialization_index_for_pile_up);
+  }
+  for (auto const& part_id : kept_parts_) {
+    CHECK(Contains(parts_, part_id));
+    message->add_kept_parts(part_id);
+  }
+
+  // If the vessel is collapsible, we serialize at most the last
+  // |max_points_to_serialize| of the part of the trajectory that ends at the
+  // |backstory_|.  If it is not, however, we must serialize at least the entire
+  // |backstory_| otherwise we'd lose the beginning of a non-collapsible
+  // segment.
+  std::int64_t const history_size = backstory_->end() - trajectory_.begin();
+  std::int64_t const max_points_to_serialize_present_in_history =
+      std::min(max_points_to_serialize, history_size);
+  std::int64_t const serialized_points =
+      is_collapsible_ ? max_points_to_serialize_present_in_history
+                      : std::max(max_points_to_serialize_present_in_history,
+                                 backstory_->size());
+
+  // Starting with Gateaux we don't save the prediction, see #2685.  Instead we
+  // just save its first point and re-read as if it was the whole prediction.
+  trajectory_.WriteToMessage(
+      message->mutable_history(),
+      /*begin=*/backstory_->end() - serialized_points,
+      /*end=*/std::next(prediction_->begin()),
+      /*tracked=*/{backstory_, psychohistory_, prediction_},
+      /*exact=*/{});
+  if (std::holds_alternative<serialization::FlightPlan>(flight_plan_)) {
+    *message->mutable_flight_plan() =
+        std::get<serialization::FlightPlan>(flight_plan_);
+  } else if (std::holds_alternative<std::unique_ptr<FlightPlan>>(
+                 flight_plan_)) {
+    auto& flight_plan = std::get<std::unique_ptr<FlightPlan>>(flight_plan_);
+    if (flight_plan != nullptr) {
+      flight_plan->WriteToMessage(message->mutable_flight_plan());
+    }
+  } else {
+    LOG(FATAL) << "Unexpected flight plan variant " << flight_plan_.index();
+  }
+  message->set_is_collapsible(is_collapsible_);
+  checkpointer_->WriteToMessage(message->mutable_checkpoint());
+}
+
+not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
+    serialization::Vessel const& message,
+    not_null<Celestial const*> const parent,
+    not_null<Ephemeris<Barycentric>*> const ephemeris,
+    std::function<void(PartId)> const& deletion_callback) {
+  bool const is_pre_cesàro = message.has_psychohistory_is_authoritative();
+  bool const is_pre_chasles = message.has_prediction();
+  bool const is_pre_陈景润 = !message.history().has_downsampling() &&
+                             message.history().segment_size() == 0;
+  bool const is_pre_hamilton = message.history().segment_size() == 0;
+  bool const is_pre_हरीश_चंद्र = !message.has_is_collapsible();
+  LOG_IF(WARNING, is_pre_हरीश_चंद्र)
+      << "Reading pre-"
+      << (is_pre_cesàro     ? u8"Cesàro"
+          : is_pre_chasles  ? "Chasles"
+          : is_pre_陈景润    ? u8"陈景润"
+          : is_pre_hamilton ? "Hamilton"
+                            : u8"हरीश चंद्र") << " Vessel";
+
+  // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
+  // information.
+  auto vessel = make_not_null_unique<Vessel>(
+      message.guid(),
+      message.name(),
+      parent,
+      ephemeris,
+      Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
+          message.prediction_adaptive_step_parameters()),
+      DefaultDownsamplingParameters());
+  for (auto const& serialized_part : message.parts()) {
+    PartId const part_id = serialized_part.part_id();
+    auto part =
+        Part::ReadFromMessage(serialized_part, [deletion_callback, part_id]() {
+          if (deletion_callback != nullptr) {
+            deletion_callback(part_id);
+          }
+        });
+    vessel->parts_.emplace(part_id, std::move(part));
+  }
+  for (PartId const part_id : message.kept_parts()) {
+    CHECK(Contains(vessel->parts_, part_id));
+    vessel->kept_parts_.insert(part_id);
+  }
+
+  if (is_pre_cesàro) {
+    auto const psychohistory =
+        DiscreteTrajectory<Barycentric>::ReadFromMessage(message.history(),
+                                                         /*tracked=*/{});
+    // The |backstory_| has been created by the constructor above.  Reconstruct
+    // it from the |psychohistory|.
+    for (auto it = psychohistory.begin(); it != psychohistory.end();) {
+      auto const& [time, degrees_of_freedom] = *it;
+      ++it;
+      if (it == psychohistory.end() &&
+          !message.psychohistory_is_authoritative()) {
+        vessel->psychohistory_ = vessel->trajectory_.NewSegment();
+      }
+      vessel->trajectory_.Append(time, degrees_of_freedom).IgnoreError();
+    }
+    if (message.psychohistory_is_authoritative()) {
+      vessel->psychohistory_ = vessel->trajectory_.NewSegment();
+    }
+    vessel->backstory_ = std::prev(vessel->psychohistory_);
+    vessel->prediction_ = vessel->trajectory_.NewSegment();
+    vessel->downsampling_parameters_ = DefaultDownsamplingParameters();
+  } else if (is_pre_chasles) {
+    vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+        message.history(),
+        /*tracked=*/{&vessel->psychohistory_});
+    vessel->backstory_ = vessel->trajectory_.segments().begin();
+    CHECK(vessel->backstory_ == std::prev(vessel->psychohistory_));
+    vessel->prediction_ = vessel->trajectory_.NewSegment();
+    vessel->downsampling_parameters_ = DefaultDownsamplingParameters();
+  } else if (is_pre_hamilton) {
+    vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+        message.history(),
+        /*tracked=*/{&vessel->psychohistory_, &vessel->prediction_});
+    vessel->backstory_ = vessel->trajectory_.segments().begin();
+    CHECK(vessel->backstory_ == std::prev(vessel->psychohistory_));
+    vessel->downsampling_parameters_ = DefaultDownsamplingParameters();
+  } else if (is_pre_हरीश_चंद्र) {
+    DiscreteTrajectorySegmentIterator<Barycentric> history;
+    vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+        message.history(),
+        /*tracked=*/{&history,
+                     &vessel->psychohistory_,
+                     &vessel->prediction_});
+    vessel->backstory_ = std::prev(vessel->psychohistory_);
+    vessel->downsampling_parameters_ = DefaultDownsamplingParameters();
+  } else {
+    vessel->trajectory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+        message.history(),
+        /*tracked=*/{&vessel->backstory_,
+                     &vessel->psychohistory_,
+                     &vessel->prediction_});
+    vessel->is_collapsible_ = message.is_collapsible();
+
+    vessel->checkpointer_ =
+        Checkpointer<serialization::Vessel>::ReadFromMessage(
+            vessel->MakeCheckpointerWriter(),
+            vessel->MakeCheckpointerReader(),
+            message.checkpoint());
+    if (message.has_downsampling_parameters()) {
+      vessel->downsampling_parameters_ =
+          DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters{
+              .max_dense_intervals =
+                  message.downsampling_parameters().max_dense_intervals(),
+              .tolerance = Length::ReadFromMessage(
+                  message.downsampling_parameters().tolerance())};
+    } else {
+      vessel->downsampling_parameters_ = std::nullopt;
+    }
+  }
+
+  // Necessary after Εὔδοξος because the ephemeris has not been prolonged
+  // during deserialization.
+  ephemeris->Prolong(vessel->prediction_->back().time).IgnoreError();
+
+  if (is_pre_陈景润) {
+    vessel->backstory_->SetDownsamplingUnconditionally(
+        DefaultDownsamplingParameters());
+  }
+
+  if (message.has_flight_plan()) {
+    // Starting with हरीश चंद्र we deserialize the flight plan lazily.
+    vessel->flight_plan_
+        .emplace<serialization::FlightPlan>(message.flight_plan());
+  }
+
+  // Figure out which was the last checkpoint to be "reanimated" by reading the
+  // end of the trajectory from the serialized form.  Interestingly enough, that
+  // checkpoint (that is, the non-collapsible segment) may overlap the beginning
+  // of the trajectory that we just deserialized, in which case we must rebuild
+  // the front part of the non-collapsible segment to make sure that the
+  // trajectory doesn't start in the middle of a non-collapsible segment (the
+  // integration of the preceding collapsible segment would not end at the right
+  // time if it did).
+  Instant const checkpoint =
+      vessel->checkpointer_->checkpoint_at_or_after(
+          vessel->trajectory().t_min());
+  if (checkpoint != InfiniteFuture) {
+    CHECK_OK(vessel->checkpointer_->ReadFromCheckpointAt(
+        checkpoint,
+        [checkpoint, &vessel](
+            serialization::Vessel::Checkpoint const& message) {
+          // This code is similar to the one in ReanimateOneCheckpoint except
+          // that (1) we never need to reconstruct a collapsible segment; (2) we
+          // may actually have to truncate the non-collapsible segment obtained
+          // from the checkpoint.
+          LOG(INFO) << "Restoring " << vessel->ShortDebugString()
+                    << " to initial checkpoint at " << checkpoint;
+
+          DiscreteTrajectorySegmentIterator<Barycentric> unused;
+          auto reanimated_trajectory =
+              DiscreteTrajectory<Barycentric>::ReadFromMessage(
+                  message.non_collapsible_segment(),
+                  /*tracked=*/{&unused});
+          CHECK(!reanimated_trajectory.empty());
+          CHECK_EQ(checkpoint, reanimated_trajectory.back().time);
+          reanimated_trajectory.ForgetAfter(vessel->trajectory().t_min());
+          if (!reanimated_trajectory.empty()) {
+            vessel->trajectory_.Merge(std::move(reanimated_trajectory));
+          }
+          return absl::OkStatus();
+        }));
+  }
+  vessel->oldest_reanimated_checkpoint_ = checkpoint;
+
+  return vessel;
+}
+
+void Vessel::FillContainingPileUpsFromMessage(
+    serialization::Vessel const& message,
+    PileUp::PileUpForSerializationIndex const&
+        pile_up_for_serialization_index) {
+  for (auto const& part_message : message.parts()) {
+    auto const& part = FindOrDie(parts_, part_message.part_id());
+    part->FillContainingPileUpFromMessage(part_message,
+                                          pile_up_for_serialization_index);
+  }
+}
+
 void Vessel::MakeAsynchronous() {
   synchronous_ = false;
 }
@@ -591,13 +794,160 @@ Vessel::Vessel()
       prediction_adaptive_step_parameters_(DefaultPredictionParameters()),
       parent_(testing_utilities::make_not_null<Celestial const*>()),
       ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
-      history_(trajectory_.segments().begin()),
+      reanimator_(/*action=*/nullptr, 0ms),
+      checkpointer_(make_not_null_unique<Checkpointer<serialization::Vessel>>(
+          /*reader=*/nullptr,
+          /*writer=*/nullptr)),
+      backstory_(trajectory_.segments().begin()),
       psychohistory_(trajectory_.segments().end()),
       prediction_(trajectory_.segments().end()),
       prognosticator_(nullptr, 20ms) {}
 
-absl::StatusOr<DiscreteTrajectory<Barycentric>>
-Vessel::FlowPrognostication(
+Checkpointer<serialization::Vessel>::Writer Vessel::MakeCheckpointerWriter() {
+  return [this](not_null<serialization::Vessel::Checkpoint*> const message) {
+    // The extremities of the |backstory_| are implicitly exact.  Note that
+    // |backstory_->end()| might cause serialization of a 1-point psychohistory
+    // or prediction (at the last time of the backstory).  To figure things out
+    // when reading we must track the |backstory_|.
+    trajectory_.WriteToMessage(message->mutable_non_collapsible_segment(),
+                               backstory_->begin(),
+                               backstory_->end(),
+                               /*tracked=*/{backstory_},
+                               /*exact=*/{});
+
+    // Here the containing pile-up is the one for the collapsible segment.
+    ForSomePart([message](Part& first_part) {
+      first_part.containing_pile_up()->fixed_step_parameters().WriteToMessage(
+          message->mutable_collapsible_fixed_step_parameters());
+    });
+  };
+}
+
+Checkpointer<serialization::Vessel>::Reader Vessel::MakeCheckpointerReader() {
+  return [this](serialization::Vessel::Checkpoint const& message) {
+    return absl::OkStatus();
+  };
+}
+
+absl::Status Vessel::Reanimate(Instant const desired_t_min) {
+  // This method is very similar to Ephemeris::Reanimate.  See the comments
+  // there for some of the subtle points.
+  static_assert(base::is_serializable_v<Barycentric>);
+  std::set<Instant> checkpoints;
+  LOG(INFO) << "Reanimating " << ShortDebugString() << " until "
+            << desired_t_min;
+
+  Instant t_final;
+  {
+    absl::ReaderMutexLock l(&lock_);
+    if (reanimated_trajectories_.empty()) {
+      t_final = trajectory_.begin()->time;
+    } else {
+      t_final = reanimated_trajectories_.back().front().time;
+    }
+
+    Instant const oldest_checkpoint_to_reanimate =
+        checkpointer_->checkpoint_at_or_before(desired_t_min);
+    checkpoints = checkpointer_->all_checkpoints_between(
+        oldest_checkpoint_to_reanimate, oldest_reanimated_checkpoint_);
+
+    // The |oldest_reanimated_checkpoint_| has already been reanimated before,
+    // we don't need it below.
+    checkpoints.erase(oldest_reanimated_checkpoint_);
+  }
+
+  for (auto it = checkpoints.crbegin(); it != checkpoints.crend(); ++it) {
+    Instant const& checkpoint = *it;
+    RETURN_IF_ERROR(checkpointer_->ReadFromCheckpointAt(
+        checkpoint,
+        [this, t_initial = checkpoint, &t_final](
+            serialization::Vessel::Checkpoint const& message) -> absl::Status {
+          auto const status_or_t_final =
+              ReanimateOneCheckpoint(message, t_initial, t_final);
+          RETURN_IF_ERROR(status_or_t_final);
+          t_final = status_or_t_final.value();
+          return absl::OkStatus();
+        }));
+  }
+  return absl::OkStatus();
+}
+
+absl::StatusOr<Instant> Vessel::ReanimateOneCheckpoint(
+    serialization::Vessel::Checkpoint const& message,
+    Instant const& t_initial,
+    Instant const& t_final) {
+  CHECK_LE(t_initial, t_final);
+  LOG(INFO) << "Restoring " << ShortDebugString() << " to checkpoint at "
+            << t_initial << " until " << t_final;
+
+  // Restore the non-collapsible segment that was fully saved.  It was the
+  // backstory when the checkpoint was taken.
+  DiscreteTrajectorySegmentIterator<Barycentric> reanimated_backstory;
+  auto reanimated_trajectory =
+      DiscreteTrajectory<Barycentric>::ReadFromMessage(
+          message.non_collapsible_segment(),
+          /*tracked=*/{&reanimated_backstory});
+  auto const collapsible_fixed_step_parameters =
+      Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
+          message.collapsible_fixed_step_parameters());
+  CHECK(!reanimated_trajectory.empty());
+  CHECK_EQ(t_initial, reanimated_trajectory.back().time);
+  Instant const reanimated_trajectory_t_initial =
+      reanimated_trajectory.front().time;
+  std::int64_t const reanimated_trajectory_size = reanimated_trajectory.size();
+
+  // Construct a new collapsible segment at the end of the non-collapsible
+  // backstory and integrate it until |t_final|.
+  ++reanimated_backstory;
+  reanimated_trajectory.DeleteSegments(reanimated_backstory);
+  auto const collapsible_segment = reanimated_trajectory.NewSegment();
+
+  // Make sure that the ephemeris covers the times that we are going to
+  // reanimate.
+  ephemeris_->RequestReanimation(t_initial);
+  ephemeris_->WaitForReanimation(t_initial);
+  auto fixed_instance =
+      ephemeris_->NewInstance({&reanimated_trajectory},
+                              Ephemeris<Barycentric>::NoIntrinsicAccelerations,
+                              collapsible_fixed_step_parameters);
+
+  auto const status = ephemeris_->FlowWithFixedStep(t_final, *fixed_instance);
+  RETURN_IF_ERROR(status);
+
+  LOG(INFO) << "Burn from " << reanimated_trajectory.front().time << " to "
+            << t_initial << " (" << reanimated_trajectory_size
+            << " points), coast to " << t_final << " ("
+            << collapsible_segment->size() << " points)";
+
+
+  // Push the reanimated trajectory into the queue where it will be consumed by
+  // RequestReanimation.
+  {
+    absl::MutexLock l(&lock_);
+    reanimated_trajectories_.push(std::move(reanimated_trajectory));
+    oldest_reanimated_checkpoint_ = t_initial;
+  }
+
+  return reanimated_trajectory_t_initial;
+}
+
+bool Vessel::DesiredTMinReachedOrFullyReanimated(
+    Instant const& desired_t_min) {
+  lock_.AssertReaderHeld();
+
+  // Consume the reanimated trajectories and merge them into this trajectory.
+  // This is the only place where the reanimation becomes externally visible,
+  // thereby ensuring that the trajectory doesn't change, say, while clients
+  // iterate over it.
+  while (!reanimated_trajectories_.empty()) {
+    trajectory_.Merge(std::move(reanimated_trajectories_.front()));
+    reanimated_trajectories_.pop();
+  }
+  return trajectory_.t_min() <= desired_t_min ||
+         oldest_reanimated_checkpoint_ == checkpointer_->oldest_checkpoint();
+}
+
+absl::StatusOr<DiscreteTrajectory<Barycentric>> Vessel::FlowPrognostication(
     PrognosticatorParameters prognosticator_parameters) {
   DiscreteTrajectory<Barycentric> prognostication;
   prognostication.Append(
@@ -697,6 +1047,35 @@ void Vessel::AttachPrediction(DiscreteTrajectory<Barycentric>&& trajectory) {
     }
     prediction_ = trajectory_.AttachSegments(std::move(trajectory));
   }
+}
+
+bool Vessel::IsCollapsible() const {
+  PileUp* containing_pile_up = nullptr;
+  std::set<not_null<Part*>> parts;
+  for (const auto& [_, part] : parts_) {
+    // We expect parts to be piled up.
+    CHECK(part->is_piled_up());
+    // Not collapsible if any part has a force applied to it (but a torque is
+    // fine).
+    if (part->intrinsic_force() != Vector<Force, Barycentric>{}) {
+      return false;
+    }
+    parts.insert(part.get());
+    if (containing_pile_up == nullptr) {
+      containing_pile_up = part->containing_pile_up();
+    } else {
+      // All the parts should be in the same pile-up.
+      CHECK_EQ(containing_pile_up, part->containing_pile_up());
+    }
+  }
+  CHECK_NE(nullptr, containing_pile_up);
+  for (const auto part : containing_pile_up->parts()) {
+    // Not collapsible if the pile-up contains a part not in this vessel.
+    if (!parts.contains(part)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 bool Vessel::has_deserialized_flight_plan() const {

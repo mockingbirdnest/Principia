@@ -161,6 +161,12 @@ message Renderer {
 }
 
 message Vessel {
+  message Checkpoint {
+    required Point time = 1;
+    required DiscreteTrajectory non_collapsible_segment = 2;
+    required Ephemeris.FixedStepParameters
+        collapsible_fixed_step_parameters = 3;
+  }
   required string guid = 13;
   required string name = 19;
   required MasslessBody body = 1;
@@ -172,6 +178,10 @@ message Vessel {
   optional bool psychohistory_is_authoritative = 17;  // Pre-Cesàro.
   optional DiscreteTrajectory prediction = 18;  // Pre-Chasles.
   optional FlightPlan flight_plan = 4;
+  optional bool is_collapsible = 22;  // Added in हरीश चंद्र.
+  repeated Checkpoint checkpoint = 21;  // Added in हरीश चंद्र.
+  optional DiscreteTrajectorySegment.DownsamplingParameters
+      downsampling_parameters = 23;  // Added in हरीश चंद्र.
 
   // Pre-Буняковский.
   reserved 2, 3, 5;

@@ -446,7 +446,11 @@ TEST_F(PluginTest, Serialization) {
   EXPECT_TRUE(message.vessel(0).vessel().has_flight_plan());
   EXPECT_TRUE(message.vessel(0).vessel().has_history());
   auto const& vessel_0_history = message.vessel(0).vessel().history();
-  EXPECT_EQ(7, vessel_0_history.segment(0).zfp().timeline_size());
+  EXPECT_EQ(4, vessel_0_history.segment_size());
+  EXPECT_EQ(1, vessel_0_history.segment(0).zfp().timeline_size());
+  EXPECT_EQ(7, vessel_0_history.segment(1).zfp().timeline_size());
+  EXPECT_EQ(2, vessel_0_history.segment(2).zfp().timeline_size());
+  EXPECT_EQ(1, vessel_0_history.segment(3).zfp().timeline_size());
   EXPECT_TRUE(message.has_renderer());
   EXPECT_TRUE(message.renderer().has_plotting_frame());
   EXPECT_TRUE(message.renderer().plotting_frame().HasExtension(
@@ -464,9 +468,9 @@ TEST_F(PluginTest, Serialization) {
   // bounds of each segment.  Ignore it for the purposes of comparing the
   // messages.
   message.mutable_vessel(0)->mutable_vessel()
-      ->mutable_history()->mutable_segment(0)->clear_zfp();
+      ->mutable_history()->mutable_segment(1)->clear_zfp();
   second_message.mutable_vessel(0)->mutable_vessel()
-      ->mutable_history()->mutable_segment(0)->clear_zfp();
+      ->mutable_history()->mutable_segment(1)->clear_zfp();
   EXPECT_THAT(message, EqualsProto(second_message));
 }
 
