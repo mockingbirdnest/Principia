@@ -84,6 +84,8 @@ class DiscreteTrajectoryIterator {
   OptionalTimelineConstIterator point_;
 
   template<typename F>
+  friend class physics::DiscreteTrajectory;
+  template<typename F>
   friend class physics::DiscreteTrajectorySegment;
   friend class physics::DiscreteTrajectoryIteratorTest;
 };

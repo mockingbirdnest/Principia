@@ -33,7 +33,7 @@ DiscreteTrajectory<Frame>::DiscreteTrajectory()
 template<typename Frame>
 typename DiscreteTrajectory<Frame>::reference
 DiscreteTrajectory<Frame>::front() const {
-  return *begin();
+  return segments_->front().front();
 }
 
 template<typename Frame>
@@ -51,7 +51,8 @@ DiscreteTrajectory<Frame>::begin() const {
 template<typename Frame>
 typename DiscreteTrajectory<Frame>::iterator
 DiscreteTrajectory<Frame>::end() const {
-  return segments_->back().end();
+  return iterator(SegmentIterator(segments_.get(), segments_->end()),
+                  std::nullopt);
 }
 
 template<typename Frame>
