@@ -94,7 +94,7 @@ INCLUDES      := -I. -I$(DEP_DIR)glog/src \
 	-I$(DEP_DIR)abseil-cpp \
 	-I$(DEP_DIR)zfp/include
 SHARED_ARGS   := \
-	-std=c++1z -stdlib=libc++ -O3 -g                              \
+	-std=c++20 -stdlib=libc++ -O3 -g                              \
 	-fPIC -fexceptions -ferror-limit=1000 -fno-omit-frame-pointer \
 	-Wall -Wpedantic                                              \
 	-Wno-char-subscripts                                          \
@@ -126,7 +126,7 @@ ifeq ($(UNAME_S),Darwin)
     SHARED_ARGS += \
 			-mmacosx-version-min=10.12 \
 			-arch x86_64 \
-			-D_LIBCPP_STD_VER=16 \
+			-D_LIBCPP_STD_VER=20 \
 			-D_LIBCPP_NO_EXCEPTIONS
     SHAREDFLAG := -dynamiclib
 endif
