@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include "base/macros.hpp"
-
-#if OS_MACOSX
 #include <iomanip>
 #include <string>
-#else
+
+#include "base/macros.hpp"
+
+#if !OS_MACOSX
 #error Only include this file for macOS
 #endif
 
@@ -24,8 +24,8 @@ namespace filesystem {
 class path {
  public:
   path() = default;
-  path(std::string const& source) : native_(source) {};
-  path(char const* source) : native_(source) {};
+  path(std::string const& source) : native_(source) {};  // NOLINT
+  path(char const* source) : native_(source) {};         // NOLINT
   path(path const&) = default;
   ~path() = default;
 
