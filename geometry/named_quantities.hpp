@@ -26,8 +26,8 @@ using quantities::Time;
 
 using Instant = Point<Time>;
 
-CONSTEXPR_INFINITY Instant InfinitePast = Instant() - Infinity<Time>;
-CONSTEXPR_INFINITY Instant InfiniteFuture = Instant() + Infinity<Time>;
+constexpr Instant InfinitePast = Instant() - Infinity<Time>;
+constexpr Instant InfiniteFuture = Instant() + Infinity<Time>;
 
 template<typename Frame>
 using Displacement = Vector<Length, Frame>;
