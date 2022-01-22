@@ -105,7 +105,6 @@ void BM_PluginDeserializationBenchmark(benchmark::State& state) {
 
   std::int64_t bytes_processed = 0;
   for (auto _ : state) {
-    PushDeserializer* deserializer = nullptr;
     auto const plugin = ReadPluginFromFile(
         SOLUTION_DIR / "ksp_plugin_test" / "large_plugin.proto.gipfeli.hex",
         compressor,
