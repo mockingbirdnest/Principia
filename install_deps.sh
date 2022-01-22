@@ -9,7 +9,7 @@ echo "Required runtime dependencies: libc++1"
 mkdir -p deps
 pushd deps
 
-for repo in protobuf glog googletest gipfeli abseil-cpp compatibility benchmark zfp; do
+for repo in protobuf glog googletest gipfeli abseil-cpp benchmark zfp; do
   if [ ! -d "$repo" ]; then
     git clone "https://github.com/mockingbirdnest/$repo.git"
   fi
