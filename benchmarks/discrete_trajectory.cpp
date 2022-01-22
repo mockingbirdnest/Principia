@@ -86,10 +86,9 @@ void BM_DiscreteTrajectoryFront(benchmark::State& state) {
                                                         /*t1=*/t0,
                                                         /*t2=*/t0 + 4 * Second);
   auto const trajectory = MakeTrajectory(timeline, {0.5, 0.75});
-  auto const& segment = trajectory.segments().back();
 
   for (auto _ : state) {
-    benchmark::DoNotOptimize(segment.front());
+    benchmark::DoNotOptimize(trajectory.front());
   }
 }
 void BM_DiscreteTrajectoryBack(benchmark::State& state) {
@@ -99,10 +98,9 @@ void BM_DiscreteTrajectoryBack(benchmark::State& state) {
                                                         /*t1=*/t0,
                                                         /*t2=*/t0 + 4 * Second);
   auto const trajectory = MakeTrajectory(timeline, {0.5, 0.75});
-  auto const& segment = trajectory.segments().back();
 
   for (auto _ : state) {
-    benchmark::DoNotOptimize(segment.back());
+    benchmark::DoNotOptimize(trajectory.back());
   }
 }
 
@@ -113,10 +111,9 @@ void BM_DiscreteTrajectoryBegin(benchmark::State& state) {
                                                         /*t1=*/t0,
                                                         /*t2=*/t0 + 4 * Second);
   auto const trajectory = MakeTrajectory(timeline, {0.5, 0.75});
-  auto const& segment = trajectory.segments().back();
 
   for (auto _ : state) {
-    benchmark::DoNotOptimize(segment.begin());
+    benchmark::DoNotOptimize(trajectory.begin());
   }
 }
 
@@ -127,10 +124,9 @@ void BM_DiscreteTrajectoryEnd(benchmark::State& state) {
                                                         /*t1=*/t0,
                                                         /*t2=*/t0 + 4 * Second);
   auto const trajectory = MakeTrajectory(timeline, {0.5, 0.75});
-  auto const& segment = trajectory.segments().back();
 
   for (auto _ : state) {
-    segment.end();
+    benchmark::DoNotOptimize(trajectory.end());
   }
 }
 
@@ -141,10 +137,9 @@ void BM_DiscreteTrajectoryTMin(benchmark::State& state) {
                                                         /*t1=*/t0,
                                                         /*t2=*/t0 + 4 * Second);
   auto const trajectory = MakeTrajectory(timeline, {0.5, 0.75});
-  auto const& segment = trajectory.segments().back();
 
   for (auto _ : state) {
-    segment.t_min();
+    benchmark::DoNotOptimize(trajectory.t_min());
   }
 }
 
@@ -155,10 +150,93 @@ void BM_DiscreteTrajectoryTMax(benchmark::State& state) {
                                                         /*t1=*/t0,
                                                         /*t2=*/t0 + 4 * Second);
   auto const trajectory = MakeTrajectory(timeline, {0.5, 0.75});
-  auto const& segment = trajectory.segments().back();
 
   for (auto _ : state) {
-    segment.t_max();
+    benchmark::DoNotOptimize(trajectory.t_max());
+  }
+}
+
+
+void BM_DiscreteTrajectorySegmentFront(benchmark::State& state) {
+  Instant const t0;
+  auto const timeline = NewMotionlessTrajectoryTimeline(World::origin,
+                                                        /*Δt=*/1 * Second,
+                                                        /*t1=*/t0,
+                                                        /*t2=*/t0 + 4 * Second);
+  auto const trajectory = MakeTrajectory(timeline, {0.5, 0.75});
+  auto const& segment = trajectory.segments().front();
+
+  for (auto _ : state) {
+    benchmark::DoNotOptimize(segment.front());
+  }
+}
+void BM_DiscreteTrajectorySegmentBack(benchmark::State& state) {
+  Instant const t0;
+  auto const timeline = NewMotionlessTrajectoryTimeline(World::origin,
+                                                        /*Δt=*/1 * Second,
+                                                        /*t1=*/t0,
+                                                        /*t2=*/t0 + 4 * Second);
+  auto const trajectory = MakeTrajectory(timeline, {0.5, 0.75});
+  auto const& segment = trajectory.segments().front();
+
+  for (auto _ : state) {
+    benchmark::DoNotOptimize(segment.back());
+  }
+}
+
+void BM_DiscreteTrajectorySegmentBegin(benchmark::State& state) {
+  Instant const t0;
+  auto const timeline = NewMotionlessTrajectoryTimeline(World::origin,
+                                                        /*Δt=*/1 * Second,
+                                                        /*t1=*/t0,
+                                                        /*t2=*/t0 + 4 * Second);
+  auto const trajectory = MakeTrajectory(timeline, {0.5, 0.75});
+  auto const& segment = trajectory.segments().front();
+
+  for (auto _ : state) {
+    benchmark::DoNotOptimize(segment.begin());
+  }
+}
+
+void BM_DiscreteTrajectorySegmentEnd(benchmark::State& state) {
+  Instant const t0;
+  auto const timeline = NewMotionlessTrajectoryTimeline(World::origin,
+                                                        /*Δt=*/1 * Second,
+                                                        /*t1=*/t0,
+                                                        /*t2=*/t0 + 4 * Second);
+  auto const trajectory = MakeTrajectory(timeline, {0.5, 0.75});
+  auto const& segment = trajectory.segments().front();
+
+  for (auto _ : state) {
+    benchmark::DoNotOptimize(segment.end());
+  }
+}
+
+void BM_DiscreteTrajectorySegmentTMin(benchmark::State& state) {
+  Instant const t0;
+  auto const timeline = NewMotionlessTrajectoryTimeline(World::origin,
+                                                        /*Δt=*/1 * Second,
+                                                        /*t1=*/t0,
+                                                        /*t2=*/t0 + 4 * Second);
+  auto const trajectory = MakeTrajectory(timeline, {0.5, 0.75});
+  auto const& segment = trajectory.segments().front();
+
+  for (auto _ : state) {
+    benchmark::DoNotOptimize(segment.t_min());
+  }
+}
+
+void BM_DiscreteTrajectorySegmentTMax(benchmark::State& state) {
+  Instant const t0;
+  auto const timeline = NewMotionlessTrajectoryTimeline(World::origin,
+                                                        /*Δt=*/1 * Second,
+                                                        /*t1=*/t0,
+                                                        /*t2=*/t0 + 4 * Second);
+  auto const trajectory = MakeTrajectory(timeline, {0.5, 0.75});
+  auto const& segment = trajectory.segments().front();
+
+  for (auto _ : state) {
+    benchmark::DoNotOptimize(segment.t_max());
   }
 }
 
@@ -287,6 +365,12 @@ BENCHMARK(BM_DiscreteTrajectoryBegin);
 BENCHMARK(BM_DiscreteTrajectoryEnd);
 BENCHMARK(BM_DiscreteTrajectoryTMin);
 BENCHMARK(BM_DiscreteTrajectoryTMax);
+BENCHMARK(BM_DiscreteTrajectorySegmentFront);
+BENCHMARK(BM_DiscreteTrajectorySegmentBack);
+BENCHMARK(BM_DiscreteTrajectorySegmentBegin);
+BENCHMARK(BM_DiscreteTrajectorySegmentEnd);
+BENCHMARK(BM_DiscreteTrajectorySegmentTMin);
+BENCHMARK(BM_DiscreteTrajectorySegmentTMax);
 BENCHMARK(BM_DiscreteTrajectoryCreateDestroy)->Range(8, 1024);
 BENCHMARK(BM_DiscreteTrajectoryIterate)->Range(8, 1024);
 BENCHMARK(BM_DiscreteTrajectoryReverseIterate)->Range(8, 1024);
