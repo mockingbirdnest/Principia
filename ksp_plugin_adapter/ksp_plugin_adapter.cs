@@ -109,18 +109,19 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   private bool navball_changed_ = true;
   private FlightGlobals.SpeedDisplayModes? previous_display_mode_;
 
-  private UnityEngine.Color history_colour = XKCDColors.Lime;
-  private GLLines.Style history_style = GLLines.Style.Faded;
-  private UnityEngine.Color prediction_colour = XKCDColors.Fuchsia;
-  private GLLines.Style prediction_style = GLLines.Style.Solid;
-  private UnityEngine.Color flight_plan_colour = XKCDColors.PeriwinkleBlue;
-  private GLLines.Style flight_plan_style = GLLines.Style.Dashed;
-  private UnityEngine.Color burn_colour = XKCDColors.Pink;
-  private GLLines.Style burn_style = GLLines.Style.Solid;
-  private UnityEngine.Color target_history_colour = XKCDColors.Goldenrod;
-  private GLLines.Style target_history_style = GLLines.Style.Faded;
-  private UnityEngine.Color target_prediction_colour = XKCDColors.LightMauve;
-  private GLLines.Style target_prediction_style = GLLines.Style.Solid;
+  // TODO(egg): move all of that to the plotter once the RP2 lines are gone.
+  internal UnityEngine.Color history_colour = XKCDColors.Lime;
+  internal GLLines.Style history_style = GLLines.Style.Faded;
+  internal UnityEngine.Color prediction_colour = XKCDColors.Fuchsia;
+  internal GLLines.Style prediction_style = GLLines.Style.Solid;
+  internal UnityEngine.Color flight_plan_colour = XKCDColors.PeriwinkleBlue;
+  internal GLLines.Style flight_plan_style = GLLines.Style.Dashed;
+  internal UnityEngine.Color burn_colour = XKCDColors.Pink;
+  internal GLLines.Style burn_style = GLLines.Style.Solid;
+  internal UnityEngine.Color target_history_colour = XKCDColors.Goldenrod;
+  internal GLLines.Style target_history_style = GLLines.Style.Faded;
+  internal UnityEngine.Color target_prediction_colour = XKCDColors.LightMauve;
+  internal GLLines.Style target_prediction_style = GLLines.Style.Solid;
 
   private Plotter plotter_;
 
@@ -2168,7 +2169,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
               GLLines.PlotRP2Lines(rp2_lines_iterator,
                                    target_history_colour,
                                    target_history_style);
-            }// TODO COMMENT ALL PAST CELESTIAL PLOTTING, ADD MESH PATH
+            }
             using (DisposableIterator rp2_lines_iterator =
                 planetarium.PlanetariumPlotPrediction(
                     plugin_,

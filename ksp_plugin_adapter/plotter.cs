@@ -16,6 +16,94 @@ class Plotter {
                    string main_vessel_guid,
                    double history_length) {
     PlotCelestialTrajectories(planetarium, main_vessel_guid, history_length);
+    if (main_vessel_guid == null) {
+      return;
+    }
+    PlotVesselTrajectories(planetarium, main_vessel_guid, history_length);
+  }
+
+  private void PlotVesselTrajectories(DisposablePlanetarium planetarium,
+                                      string main_vessel_guid,
+                                      double history_length) {
+    // Main vessel psychohistory and prediction.
+    using (DisposableIterator rp2_lines_iterator =
+        planetarium.PlanetariumPlotPsychohistory(
+            Plugin,
+            main_vessel_guid,
+            history_length)) {
+      GLLines.PlotRP2Lines(rp2_lines_iterator,
+                           adapter_.history_colour,
+                           adapter_.history_style);
+    }
+    using (DisposableIterator rp2_lines_iterator =
+        planetarium.PlanetariumPlotPrediction(
+            Plugin,
+            main_vessel_guid)) {
+      GLLines.PlotRP2Lines(rp2_lines_iterator,
+                           adapter_.prediction_colour,
+                           adapter_.prediction_style);
+    }
+    // Target psychohistory and prediction.
+    string target_id = FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.
+        ToString();
+    if (FlightGlobals.ActiveVessel != null &&
+        !adapter_.plotting_frame_selector_.target_frame_selected &&
+        target_id != null &&
+        Plugin.HasVessel(target_id)) {
+      fixed (UnityEngine.Vector3* vertices_data = vertices_) {
+          planetarium.PlanetariumGetPsychohistoryVertices(
+              Plugin,
+              target_id,
+              history_length,
+              vertices_,)) {
+        GLLines.PlotRP2Lines(rp2_lines_iterator,
+                             adapter_.target_history_colour,
+                             adapter_.target_history_style);
+      }// TODO COMMENT ALL PAST CELESTIAL PLOTTING, ADD MESH PATH
+      using (DisposableIterator rp2_lines_iterator =
+          planetarium.PlanetariumPlotPrediction(
+              Plugin,
+              target_id)) {
+        GLLines.PlotRP2Lines(rp2_lines_iterator,
+                             adapter_.target_prediction_colour,
+                             adapter_.target_prediction_style);
+      }
+    }
+    // Main vessel flight plan.
+    if (Plugin.FlightPlanExists(main_vessel_guid)) {
+      int number_of_anomalous_manœuvres =
+          Plugin.FlightPlanNumberOfAnomalousManoeuvres(main_vessel_guid);
+      int number_of_manœuvres =
+          Plugin.FlightPlanNumberOfManoeuvres(main_vessel_guid);
+      int number_of_segments =
+          Plugin.FlightPlanNumberOfSegments(main_vessel_guid);
+      for (int i = 0; i < number_of_segments; ++i) {
+        bool is_burn = i % 2 == 1;
+        using (DisposableIterator rp2_lines_iterator =
+            planetarium.PlanetariumPlotFlightPlanSegment(
+                Plugin,
+                main_vessel_guid,
+                i)) {
+          GLLines.PlotRP2Lines(rp2_lines_iterator,
+                                is_burn
+                                    ? adapter_.burn_colour
+                                    : adapter_.flight_plan_colour,
+                                is_burn
+                                    ? adapter_.burn_style
+                                    : adapter_.flight_plan_style);
+        }
+        if (is_burn) {
+          int manœuvre_index = i / 2;
+          if (manœuvre_index <
+              number_of_manœuvres - number_of_anomalous_manœuvres) {
+            NavigationManoeuvreFrenetTrihedron manœuvre =
+                Plugin.FlightPlanGetManoeuvreFrenetTrihedron(
+                    main_vessel_guid,
+                    manœuvre_index);
+          }
+        }
+      }
+    }
   }
 
   private void PlotCelestialTrajectories(DisposablePlanetarium planetarium,
@@ -55,7 +143,7 @@ class Plotter {
       UnityEngine.Mesh past_mesh = MainWindow.reuse_meshes ? trajectories.past : new UnityEngine.Mesh();
       fixed (UnityEngine.Vector3* vertices_data = vertices_) {
         planetarium.PlanetariumGetCelestialPastTrajectoryVertices(
-            adapter_.Plugin(),
+            Plugin,
             root.flightGlobalsIndex,
             history_length,
             (IntPtr)vertices_data,
@@ -71,7 +159,7 @@ class Plotter {
         UnityEngine.Mesh future_mesh = MainWindow.reuse_meshes ? trajectories.future : new UnityEngine.Mesh();
         fixed (UnityEngine.Vector3* vertices_data = vertices_) {
           planetarium.PlanetariumGetCelestialFutureTrajectoryVertices(
-              adapter_.Plugin(),
+              Plugin,
               root.flightGlobalsIndex,
               main_vessel_guid,
               (IntPtr)vertices_data,
@@ -142,6 +230,8 @@ class Plotter {
   }
 
   private readonly PrincipiaPluginAdapter adapter_;
+
+  private IntPtr Plugin => adapter_.Plugin();
 
   private UnityEngine.Vector3[] vertices_ = new UnityEngine.Vector3[10_000];
 
