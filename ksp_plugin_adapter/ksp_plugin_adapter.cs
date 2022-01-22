@@ -2129,54 +2129,59 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         if (MainWindow.use_meshes) {
           plotter_.Plot(planetarium, main_vessel_guid,
                         main_window_.history_length);
-        } else GLLines.Draw(() => {
-          PlotCelestialTrajectories(planetarium, main_vessel_guid);
+        }
+        GLLines.Draw(() => {
+          if (!MainWindow.use_meshes) {
+            PlotCelestialTrajectories(planetarium, main_vessel_guid);
+          }
 
           // Vessel trajectories.
           if (main_vessel_guid == null) {
             return;
           }
-          // Main vessel psychohistory and prediction.
-          using (DisposableIterator rp2_lines_iterator =
-              planetarium.PlanetariumPlotPsychohistory(
-                  plugin_,
-                  main_vessel_guid,
-                  main_window_.history_length)) {
-            GLLines.PlotRP2Lines(rp2_lines_iterator,
-                                 history_colour,
-                                 history_style);
-          }
-          using (DisposableIterator rp2_lines_iterator =
-              planetarium.PlanetariumPlotPrediction(
-                  plugin_,
-                  main_vessel_guid)) {
-            GLLines.PlotRP2Lines(rp2_lines_iterator,
-                                 prediction_colour,
-                                 prediction_style);
-          }
-          // Target psychohistory and prediction.
-          string target_id = FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.
-              ToString();
-          if (FlightGlobals.ActiveVessel != null &&
-              !plotting_frame_selector_.target_frame_selected &&
-              target_id != null &&
-              plugin_.HasVessel(target_id)) {
+          if (!MainWindow.use_meshes) {
+            // Main vessel psychohistory and prediction.
             using (DisposableIterator rp2_lines_iterator =
                 planetarium.PlanetariumPlotPsychohistory(
                     plugin_,
-                    target_id,
+                    main_vessel_guid,
                     main_window_.history_length)) {
               GLLines.PlotRP2Lines(rp2_lines_iterator,
-                                   target_history_colour,
-                                   target_history_style);
+                                   history_colour,
+                                   history_style);
             }
             using (DisposableIterator rp2_lines_iterator =
                 planetarium.PlanetariumPlotPrediction(
                     plugin_,
-                    target_id)) {
+                    main_vessel_guid)) {
               GLLines.PlotRP2Lines(rp2_lines_iterator,
-                                   target_prediction_colour,
-                                   target_prediction_style);
+                                   prediction_colour,
+                                   prediction_style);
+            }
+            // Target psychohistory and prediction.
+            string target_id = FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.
+                ToString();
+            if (FlightGlobals.ActiveVessel != null &&
+                !plotting_frame_selector_.target_frame_selected &&
+                target_id != null &&
+                plugin_.HasVessel(target_id)) {
+              using (DisposableIterator rp2_lines_iterator =
+                  planetarium.PlanetariumPlotPsychohistory(
+                      plugin_,
+                      target_id,
+                      main_window_.history_length)) {
+                GLLines.PlotRP2Lines(rp2_lines_iterator,
+                                     target_history_colour,
+                                     target_history_style);
+              }
+              using (DisposableIterator rp2_lines_iterator =
+                  planetarium.PlanetariumPlotPrediction(
+                      plugin_,
+                      target_id)) {
+                GLLines.PlotRP2Lines(rp2_lines_iterator,
+                                     target_prediction_colour,
+                                     target_prediction_style);
+              }
             }
           }
           // Main vessel flight plan.
@@ -2199,18 +2204,20 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                 }
                 Vector3d position_at_start = (Vector3d)rendered_segments.
                     IteratorGetDiscreteTrajectoryXYZ();
-                using (DisposableIterator rp2_lines_iterator =
-                    planetarium.PlanetariumPlotFlightPlanSegment(
-                        plugin_,
-                        main_vessel_guid,
-                        i)) {
-                  GLLines.PlotRP2Lines(rp2_lines_iterator,
-                                       is_burn
-                                           ? burn_colour
-                                           : flight_plan_colour,
-                                       is_burn
-                                           ? burn_style
-                                           : flight_plan_style);
+                if (!MainWindow.use_meshes) {
+                  using (DisposableIterator rp2_lines_iterator =
+                      planetarium.PlanetariumPlotFlightPlanSegment(
+                          plugin_,
+                          main_vessel_guid,
+                          i)) {
+                    GLLines.PlotRP2Lines(rp2_lines_iterator,
+                                         is_burn
+                                             ? burn_colour
+                                             : flight_plan_colour,
+                                         is_burn
+                                             ? burn_style
+                                             : flight_plan_style);
+                  }
                 }
                 if (is_burn) {
                   int manœuvre_index = i / 2;

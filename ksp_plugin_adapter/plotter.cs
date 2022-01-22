@@ -12,37 +12,39 @@ class Plotter {
     adapter_ = adapter;
   }
 
-  public void Plot(DisposablePlanetarium planetarium,
-                   string main_vessel_guid,
-                   double history_length) {
-    PlotCelestialTrajectories(planetarium, main_vessel_guid, history_length);
-    if (main_vessel_guid == null) {
-      return;
+  public unsafe void Plot(DisposablePlanetarium planetarium,
+                          string main_vessel_guid,
+                          double history_length) {
+    fixed (UnityEngine.Vector3* vertices_data = vertices_) {
+      vertices_data_ = (IntPtr)vertices_data;
+      PlotCelestialTrajectories(planetarium, main_vessel_guid, history_length);
+      if (main_vessel_guid == null) {
+        return;
+      }
+      PlotVesselTrajectories(planetarium, main_vessel_guid, history_length);
+      vertices_data_ = IntPtr.Zero;
     }
-    PlotVesselTrajectories(planetarium, main_vessel_guid, history_length);
   }
 
   private void PlotVesselTrajectories(DisposablePlanetarium planetarium,
                                       string main_vessel_guid,
                                       double history_length) {
-    // Main vessel psychohistory and prediction.
-    using (DisposableIterator rp2_lines_iterator =
-        planetarium.PlanetariumPlotPsychohistory(
-            Plugin,
-            main_vessel_guid,
-            history_length)) {
-      GLLines.PlotRP2Lines(rp2_lines_iterator,
-                           adapter_.history_colour,
-                           adapter_.history_style);
-    }
-    using (DisposableIterator rp2_lines_iterator =
-        planetarium.PlanetariumPlotPrediction(
-            Plugin,
-            main_vessel_guid)) {
-      GLLines.PlotRP2Lines(rp2_lines_iterator,
-                           adapter_.prediction_colour,
-                           adapter_.prediction_style);
-    }
+    planetarium.PlanetariumGetPsychohistoryVertices(
+        Plugin,
+        main_vessel_guid,
+        history_length,
+        vertices_data_,
+        vertices_.Length,
+        out vertex_count_);
+    DrawLineMesh(psychohistory_, adapter_.history_colour, adapter_.history_style);
+    planetarium.PlanetariumGetPredictionVertices(
+        Plugin,
+        main_vessel_guid,
+        vertices_data_,
+        vertices_.Length,
+        out vertex_count_);
+    DrawLineMesh(prediction_, adapter_.prediction_colour, adapter_.prediction_style);
+
     // Target psychohistory and prediction.
     string target_id = FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.
         ToString();
@@ -50,24 +52,15 @@ class Plotter {
         !adapter_.plotting_frame_selector_.target_frame_selected &&
         target_id != null &&
         Plugin.HasVessel(target_id)) {
-      fixed (UnityEngine.Vector3* vertices_data = vertices_) {
-          planetarium.PlanetariumGetPsychohistoryVertices(
-              Plugin,
-              target_id,
-              history_length,
-              vertices_,)) {
-        GLLines.PlotRP2Lines(rp2_lines_iterator,
-                             adapter_.target_history_colour,
-                             adapter_.target_history_style);
-      }// TODO COMMENT ALL PAST CELESTIAL PLOTTING, ADD MESH PATH
-      using (DisposableIterator rp2_lines_iterator =
-          planetarium.PlanetariumPlotPrediction(
-              Plugin,
-              target_id)) {
-        GLLines.PlotRP2Lines(rp2_lines_iterator,
-                             adapter_.target_prediction_colour,
-                             adapter_.target_prediction_style);
-      }
+      planetarium.PlanetariumGetPsychohistoryVertices(
+          Plugin,
+          target_id,
+          history_length,
+          vertices_data_,
+          vertices_.Length,
+          out vertex_count_);
+      DrawLineMesh(target_psychohistory_, adapter_.target_history_colour,
+                   adapter_.target_history_style);
     }
     // Main vessel flight plan.
     if (Plugin.FlightPlanExists(main_vessel_guid)) {
@@ -77,31 +70,23 @@ class Plotter {
           Plugin.FlightPlanNumberOfManoeuvres(main_vessel_guid);
       int number_of_segments =
           Plugin.FlightPlanNumberOfSegments(main_vessel_guid);
+      for (int i = flight_plan_segments_.Count; i < number_of_segments; ++i) {
+        flight_plan_segments_.Add(new UnityEngine.Mesh());
+      }
       for (int i = 0; i < number_of_segments; ++i) {
         bool is_burn = i % 2 == 1;
-        using (DisposableIterator rp2_lines_iterator =
-            planetarium.PlanetariumPlotFlightPlanSegment(
-                Plugin,
-                main_vessel_guid,
-                i)) {
-          GLLines.PlotRP2Lines(rp2_lines_iterator,
-                                is_burn
-                                    ? adapter_.burn_colour
-                                    : adapter_.flight_plan_colour,
-                                is_burn
-                                    ? adapter_.burn_style
-                                    : adapter_.flight_plan_style);
-        }
-        if (is_burn) {
-          int manœuvre_index = i / 2;
-          if (manœuvre_index <
-              number_of_manœuvres - number_of_anomalous_manœuvres) {
-            NavigationManoeuvreFrenetTrihedron manœuvre =
-                Plugin.FlightPlanGetManoeuvreFrenetTrihedron(
-                    main_vessel_guid,
-                    manœuvre_index);
-          }
-        }
+        planetarium.PlanetariumGetFlightPlanSegmentVertices(
+            Plugin,
+            main_vessel_guid,
+            i,
+            vertices_data_,
+            vertices_.Length,
+            out vertex_count_);
+        DrawLineMesh(flight_plan_segments_[i],
+                     is_burn ? adapter_.burn_colour
+                             : adapter_.flight_plan_colour,
+                     is_burn ? adapter_.burn_style
+                             : adapter_.flight_plan_style);
       }
     }
   }
@@ -123,11 +108,11 @@ class Plotter {
                             Planetarium.fetch.Sun, tan_angular_resolution);
   }
 
-  private unsafe void PlotSubtreeTrajectories(DisposablePlanetarium planetarium,
-                                              string main_vessel_guid,
-                                              double history_length,
-                                              CelestialBody root,
-                                              double tan_angular_resolution) {
+  private void PlotSubtreeTrajectories(DisposablePlanetarium planetarium,
+                                             string main_vessel_guid,
+                                             double history_length,
+                                             CelestialBody root,
+                                             double tan_angular_resolution) {
     CelestialTrajectories trajectories;
     if (!celestial_trajectories_.TryGetValue(root, out trajectories)) {
       trajectories = celestial_trajectories_[root] =
@@ -140,35 +125,27 @@ class Plotter {
     double min_distance_from_camera =
         (root.position - camera_world_position).magnitude;
     if (!adapter_.plotting_frame_selector_.FixesBody(root)) {
-      UnityEngine.Mesh past_mesh = MainWindow.reuse_meshes ? trajectories.past : new UnityEngine.Mesh();
-      fixed (UnityEngine.Vector3* vertices_data = vertices_) {
-        planetarium.PlanetariumGetCelestialPastTrajectoryVertices(
+      planetarium.PlanetariumGetCelestialPastTrajectoryVertices(
+          Plugin,
+          root.flightGlobalsIndex,
+          history_length,
+          vertices_data_,
+          vertices_.Length,
+          out double min_past_distance,
+          out vertex_count_);
+      min_distance_from_camera =
+          Math.Min(min_distance_from_camera, min_past_distance);
+      DrawLineMesh(trajectories.past, colour, GLLines.Style.Faded);
+      if (main_vessel_guid != null) {
+        planetarium.PlanetariumGetCelestialFutureTrajectoryVertices(
             Plugin,
             root.flightGlobalsIndex,
-            history_length,
-            (IntPtr)vertices_data,
+            main_vessel_guid,
+            vertices_data_,
             vertices_.Length,
-            out double min_past_distance,
-            out int vertex_count);
-        min_distance_from_camera =
-            Math.Min(min_distance_from_camera, min_past_distance);
-        DrawLineMesh(past_mesh, vertices_, vertex_count, colour,
-                     GLLines.Style.Faded);
-      }
-      if (main_vessel_guid != null) {
-        UnityEngine.Mesh future_mesh = MainWindow.reuse_meshes ? trajectories.future : new UnityEngine.Mesh();
-        fixed (UnityEngine.Vector3* vertices_data = vertices_) {
-          planetarium.PlanetariumGetCelestialFutureTrajectoryVertices(
-              Plugin,
-              root.flightGlobalsIndex,
-              main_vessel_guid,
-              (IntPtr)vertices_data,
-              vertices_.Length,
-              out double min_future_distance,
-              out int vertex_count);
-          DrawLineMesh(future_mesh, vertices_, vertex_count, colour,
-                       GLLines.Style.Solid);
-        }
+            out double min_future_distance,
+            out vertex_count_);
+        DrawLineMesh(trajectories.future, colour, GLLines.Style.Solid);
       }
     }
     foreach (CelestialBody child in root.orbitingBodies) {
@@ -183,17 +160,19 @@ class Plotter {
     }
   }
 
-  private static void DrawLineMesh(UnityEngine.Mesh mesh,
-                                   UnityEngine.Vector3[] vertices,
-                                   int vertex_count,
-                                   UnityEngine.Color colour,
-                                   GLLines.Style style) {
-    mesh.vertices = vertices;
-    var indices = new int[vertex_count];
-    for (int i = 0; i < vertex_count; ++i) {
+  private void DrawLineMesh(UnityEngine.Mesh mesh,
+                            UnityEngine.Color colour,
+                            GLLines.Style style) {
+    filled_vertices_ |= vertex_count_ == vertices_.Length;
+    if (!MainWindow.reuse_meshes) {
+      mesh = new UnityEngine.Mesh();
+    }
+    mesh.vertices = vertices_;
+    var indices = new int[vertex_count_];
+    for (int i = 0; i < vertex_count_; ++i) {
       indices[i] = i;
     }
-    var colours = new UnityEngine.Color[vertices.Length];
+    var colours = new UnityEngine.Color[vertices_.Length];
     if (style == GLLines.Style.Faded) {
       for (int i = 0; i < colours.Length; ++i) {
         var faded_colour = colour;
@@ -234,6 +213,11 @@ class Plotter {
   private IntPtr Plugin => adapter_.Plugin();
 
   private UnityEngine.Vector3[] vertices_ = new UnityEngine.Vector3[10_000];
+  // A pointer to vertices_; vertices_ should be pinned and should not be
+  // reassigned while this is non-null.
+  private IntPtr vertices_data_ = IntPtr.Zero;
+  private int vertex_count_;
+  private bool filled_vertices_ = false;
 
   private class CelestialTrajectories {
     public UnityEngine.Mesh future = new UnityEngine.Mesh();
@@ -242,6 +226,11 @@ class Plotter {
 
   private Dictionary<CelestialBody, CelestialTrajectories> celestial_trajectories_ =
       new Dictionary<CelestialBody, CelestialTrajectories>();
+  private UnityEngine.Mesh psychohistory_ = new UnityEngine.Mesh();
+  private UnityEngine.Mesh prediction_ = new UnityEngine.Mesh();
+  private List<UnityEngine.Mesh> flight_plan_segments_ = new List<UnityEngine.Mesh>();
+  private UnityEngine.Mesh target_psychohistory_ = new UnityEngine.Mesh();
+  private UnityEngine.Mesh target_prediction_ = new UnityEngine.Mesh();
 }
 
 }  // namespace ksp_plugin_adapter
