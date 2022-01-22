@@ -96,6 +96,7 @@ INCLUDES      := -I. -I$(DEP_DIR)glog/src \
 SHARED_ARGS   := \
 	-std=c++20 -stdlib=libc++ -O3 -g                              \
 	-fPIC -fexceptions -ferror-limit=1000 -fno-omit-frame-pointer \
+	-fno-char8_t                                                  \
 	-Wall -Wpedantic                                              \
 	-Wno-char-subscripts                                          \
 	-Wno-gnu-anonymous-struct                                     \
@@ -121,7 +122,7 @@ ifeq ($(UNAME_S),Linux)
 endif
 ifeq ($(UNAME_S),Darwin)
     INCLUDES += \
-			-include "base/macos_allocator_replacement.hpp"
+			-include "base/macos_allocator_replacement.hpp" \
 			-include "base/macos_filesystem_replacement.hpp"
     LIBS += -framework CoreFoundation
     SHARED_ARGS += \
