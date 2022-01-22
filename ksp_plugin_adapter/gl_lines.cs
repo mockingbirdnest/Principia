@@ -14,9 +14,7 @@ internal static class GLLines {
     try {
       UnityEngine.GL.PushMatrix();
       line_material.SetPass(0);
-      if (!MainWindow.use_meshes) {
-        UnityEngine.GL.LoadPixelMatrix();
-      }
+      UnityEngine.GL.LoadPixelMatrix();
       UnityEngine.GL.Begin(UnityEngine.GL.LINES);
 
       line_vertices();
