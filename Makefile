@@ -120,8 +120,8 @@ ifeq ($(UNAME_S),Linux)
 endif
 ifeq ($(UNAME_S),Darwin)
     INCLUDES += \
-			-I$(DEP_DIR)compatibility/filesystem \
 			-include "base/macos_allocator_replacement.hpp"
+			-include "base/macos_filesystem_replacement.hpp"
     LIBS += -framework CoreFoundation
     SHARED_ARGS += \
 			-mmacosx-version-min=10.12 \

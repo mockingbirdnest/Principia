@@ -44,6 +44,7 @@
     <ClInclude Include="jthread.hpp" />
     <ClInclude Include="jthread_body.hpp" />
     <ClInclude Include="macos_allocator_replacement.hpp" />
+    <ClInclude Include="macos_filesystem_replacement.hpp" />
     <ClInclude Include="macros.hpp" />
     <ClInclude Include="malloc_allocator.hpp" />
     <ClInclude Include="mappable.hpp" />
