@@ -270,22 +270,22 @@ TEST_F(NotNullTest, RValue) {
 
 TEST_F(NotNullTest, TypeTraits) {
   // not_null<foo*> is trivially copyable.
-  EXPECT_TRUE(std::is_trivially_copyable_v<not_null<int*>>);
-  EXPECT_TRUE(std::is_trivially_copy_constructible_v<not_null<int*>>);
-  EXPECT_TRUE(std::is_trivially_copy_assignable_v<not_null<int*>>);
-  EXPECT_TRUE(std::is_trivially_move_constructible_v<not_null<int*>>);
-  EXPECT_TRUE(std::is_trivially_move_assignable_v<not_null<int*>>);
+  static_assert(std::is_trivially_copyable_v<not_null<int*>>);
+  static_assert(std::is_trivially_copy_constructible_v<not_null<int*>>);
+  static_assert(std::is_trivially_copy_assignable_v<not_null<int*>>);
+  static_assert(std::is_trivially_move_constructible_v<not_null<int*>>);
+  static_assert(std::is_trivially_move_assignable_v<not_null<int*>>);
 
   // not_null<std::unique_ptr<foo>> is not.
-  EXPECT_FALSE(std::is_trivially_copyable_v<not_null<std::unique_ptr<int>>>);
-  EXPECT_FALSE(
-      std::is_trivially_copy_constructible_v<not_null<std::unique_ptr<int>>>);
-  EXPECT_FALSE(
-      std::is_trivially_copy_assignable_v<not_null<std::unique_ptr<int>>>);
-  EXPECT_FALSE(
-      std::is_trivially_move_constructible_v<not_null<std::unique_ptr<int>>>);
-  EXPECT_FALSE(
-      std::is_trivially_move_assignable_v<not_null<std::unique_ptr<int>>>);
+  static_assert(!std::is_trivially_copyable_v<not_null<std::unique_ptr<int>>>);
+  static_assert(
+      !std::is_trivially_copy_constructible_v<not_null<std::unique_ptr<int>>>);
+  static_assert(
+      !std::is_trivially_copy_assignable_v<not_null<std::unique_ptr<int>>>);
+  static_assert(
+      !std::is_trivially_move_constructible_v<not_null<std::unique_ptr<int>>>);
+  static_assert(
+      !std::is_trivially_move_assignable_v<not_null<std::unique_ptr<int>>>);
 }
 
 }  // namespace base
