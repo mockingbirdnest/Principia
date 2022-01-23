@@ -116,192 +116,7 @@ void __cdecl principia__PlanetariumDelete(
   return m.Return();
 }
 
-Iterator* __cdecl principia__PlanetariumPlotFlightPlanSegment(
-    Planetarium const* const planetarium,
-    Plugin const* const plugin,
-    char const* const vessel_guid,
-    int const index) {
-  journal::Method<journal::PlanetariumPlotFlightPlanSegment> m({planetarium,
-                                                                plugin,
-                                                                vessel_guid,
-                                                                index});
-  CHECK_NOTNULL(plugin);
-  CHECK_NOTNULL(planetarium);
-  Vessel const& vessel = *plugin->GetVessel(vessel_guid);
-  CHECK(vessel.has_flight_plan()) << vessel_guid;
-  auto const segment = vessel.flight_plan().GetSegment(index);
-  RP2Lines<Length, Camera> rp2_lines;
-  // TODO(egg): this is ugly; we should centralize rendering.
-  // If this is a burn and we cannot render the beginning of the burn, we
-  // render none of it, otherwise we try to render the Frenet trihedron at the
-  // start and we fail.
-  if (index % 2 == 0 ||
-      segment->empty() ||
-      segment->front().time >= plugin->renderer().GetPlottingFrame()->t_min()) {
-    rp2_lines = planetarium->PlotMethod2(*segment,
-                                         segment->begin(), segment->end(),
-                                         plugin->CurrentTime(),
-                                         /*reverse=*/false);
-  }
-  return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
-}
-
-Iterator* __cdecl principia__PlanetariumPlotPrediction(
-    Planetarium const* const planetarium,
-    Plugin const* const plugin,
-    char const* const vessel_guid) {
-  journal::Method<journal::PlanetariumPlotPrediction> m({planetarium,
-                                                         plugin,
-                                                         vessel_guid});
-  CHECK_NOTNULL(plugin);
-  CHECK_NOTNULL(planetarium);
-  auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
-  auto const rp2_lines = planetarium->PlotMethod2(*prediction,
-                                                  prediction->begin(),
-                                                  prediction->end(),
-                                                  plugin->CurrentTime(),
-                                                  /*reverse=*/false);
-  return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
-}
-
-Iterator* __cdecl principia__PlanetariumPlotPsychohistory(
-    Planetarium const* const planetarium,
-    Plugin const* const plugin,
-    char const* const vessel_guid,
-    double const max_history_length) {
-  journal::Method<journal::PlanetariumPlotPsychohistory> m(
-      {planetarium, plugin, vessel_guid, max_history_length});
-  CHECK_NOTNULL(plugin);
-  CHECK_NOTNULL(planetarium);
-
-  // Do not plot the psychohistory when there is a target vessel as it is
-  // misleading.
-  if (plugin->renderer().HasTargetVessel()) {
-    return m.Return(new TypedIterator<RP2Lines<Length, Camera>>({}));
-  } else {
-    auto const vessel = plugin->GetVessel(vessel_guid);
-    auto const& trajectory = vessel->trajectory();
-    auto const& psychohistory = vessel->psychohistory();
-
-    Instant const desired_first_time =
-        plugin->CurrentTime() - max_history_length * Second;
-
-    // Since we would want to plot starting from |desired_first_time|, ask the
-    // reanimator to reconstruct the past.  That may take a while, during which
-    // time the history will be shorter than desired.
-    vessel->RequestReanimation(desired_first_time);
-
-    auto const rp2_lines =
-        planetarium->PlotMethod2(
-            trajectory,
-            trajectory.lower_bound(desired_first_time),
-            psychohistory->end(),
-            plugin->CurrentTime(),
-            /*reverse=*/true);
-    return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
-  }
-}
-
-// Returns an iterator for the rendered past trajectory of the celestial with
-// the given index; the trajectory goes back |max_history_length| seconds before
-// the present time (or to the earliest time available if the relevant |t_min|
-// is more recent).
-Iterator* __cdecl principia__PlanetariumPlotCelestialTrajectoryForPsychohistory(
-    Planetarium const* const planetarium,
-    Plugin const* const plugin,
-    int const celestial_index,
-    char const* const vessel_guid,
-    double const max_history_length,
-    double* const minimal_distance_from_camera) {
-  journal::Method<journal::PlanetariumPlotCelestialTrajectoryForPsychohistory>
-      m({planetarium,
-         plugin,
-         celestial_index,
-         vessel_guid,
-         max_history_length},
-        {minimal_distance_from_camera});
-  CHECK_NOTNULL(plugin);
-  CHECK_NOTNULL(planetarium);
-
-  // Do not plot the past when there is a target vessel as it is misleading.
-  if (plugin->renderer().HasTargetVessel()) {
-    *minimal_distance_from_camera = std::numeric_limits<double>::infinity();
-    return m.Return(new TypedIterator<RP2Lines<Length, Camera>>({}));
-  } else {
-    auto const& celestial_trajectory =
-        plugin->GetCelestial(celestial_index).trajectory();
-    Instant const desired_first_time =
-        plugin->CurrentTime() - max_history_length * Second;
-
-    // Since we would want to plot starting from |desired_first_time|, ask the
-    // reanimator to reconstruct the past.  That may take a while, during which
-    // time the history will be shorter than desired.
-    plugin->RequestReanimation(desired_first_time);
-
-    Instant const first_time =
-        std::max(desired_first_time, celestial_trajectory.t_min());
-    Length minimal_distance;
-    auto const rp2_lines =
-        planetarium->PlotMethod2(celestial_trajectory,
-                                 first_time,
-                                 /*last_time=*/plugin->CurrentTime(),
-                                 /*now=*/plugin->CurrentTime(),
-                                 /*reverse=*/true,
-                                 &minimal_distance);
-    *minimal_distance_from_camera = minimal_distance / Metre;
-    return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
-  }
-}
-
-// Returns an iterator for the rendered future trajectory of the celestial with
-// the given index; the trajectory goes as far as the furthest of the final time
-// of the prediction or that of the flight plan.
-Iterator* __cdecl
-principia__PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
-    Planetarium const* const planetarium,
-    Plugin const* const plugin,
-    int const celestial_index,
-    char const* const vessel_guid,
-    double* const minimal_distance_from_camera) {
-  journal::Method<
-      journal::PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan>
-      m({planetarium, plugin, celestial_index, vessel_guid},
-        {minimal_distance_from_camera});
-  CHECK_NOTNULL(plugin);
-  CHECK_NOTNULL(planetarium);
-
-  // Do not plot the past when there is a target vessel as it is misleading.
-  if (plugin->renderer().HasTargetVessel()) {
-    *minimal_distance_from_camera = std::numeric_limits<double>::infinity();
-    return m.Return(new TypedIterator<RP2Lines<Length, Camera>>({}));
-  } else {
-    auto const& vessel = *plugin->GetVessel(vessel_guid);
-    Instant const prediction_final_time = vessel.prediction()->t_max();
-    Instant const final_time =
-        vessel.has_flight_plan()
-            ? std::max(vessel.flight_plan().actual_final_time(),
-                       prediction_final_time)
-            : prediction_final_time;
-    auto const& celestial_trajectory =
-        plugin->GetCelestial(celestial_index).trajectory();
-    // No need to request reanimation here because the current time of the
-    // plugin is necessarily covered.
-    Length minimal_distance;
-    auto const rp2_lines =
-        planetarium->PlotMethod2(celestial_trajectory,
-                                 /*first_time=*/plugin->CurrentTime(),
-                                 /*last_time=*/final_time,
-                                 /*now=*/plugin->CurrentTime(),
-                                 /*reverse=*/false,
-                                 &minimal_distance);
-    *minimal_distance_from_camera = minimal_distance / Metre;
-    return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
-  }
-}
-
-// PLOT METHOD 3
-
-void __cdecl principia__PlanetariumGetFlightPlanSegmentVertices(
+void __cdecl principia__PlanetariumPlotFlightPlanSegment(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
     char const* const vessel_guid,
@@ -309,7 +124,7 @@ void __cdecl principia__PlanetariumGetFlightPlanSegmentVertices(
     ScaledSpacePoint* const vertices,
     int const vertices_size,
     int* const vertex_count) {
-  journal::Method<journal::PlanetariumGetFlightPlanSegmentVertices> m(
+  journal::Method<journal::PlanetariumPlotFlightPlanSegment> m(
       {planetarium, plugin, vessel_guid, index, vertices, vertices_size},
       {vertex_count});
   CHECK_NOTNULL(plugin);
@@ -342,14 +157,14 @@ void __cdecl principia__PlanetariumGetFlightPlanSegmentVertices(
   return m.Return();
 }
 
-void __cdecl principia__PlanetariumGetPredictionVertices(
+void __cdecl principia__PlanetariumPlotPrediction(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
     char const* const vessel_guid,
     ScaledSpacePoint* const vertices,
     int const vertices_size,
     int* const vertex_count) {
-  journal::Method<journal::PlanetariumGetPredictionVertices> m(
+  journal::Method<journal::PlanetariumPlotPrediction> m(
       {planetarium, plugin, vessel_guid, vertices, vertices_size},
       {vertex_count});
   CHECK_NOTNULL(plugin);
@@ -370,7 +185,7 @@ void __cdecl principia__PlanetariumGetPredictionVertices(
   return m.Return();
 }
 
-void __cdecl principia__PlanetariumGetPsychohistoryVertices(
+void __cdecl principia__PlanetariumPlotPsychohistory(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
     char const* const vessel_guid,
@@ -378,7 +193,7 @@ void __cdecl principia__PlanetariumGetPsychohistoryVertices(
     ScaledSpacePoint* const vertices,
     int const vertices_size,
     int* const vertex_count) {
-  journal::Method<journal::PlanetariumGetPsychohistoryVertices> m(
+  journal::Method<journal::PlanetariumPlotPsychohistory> m(
       {planetarium,
        plugin,
        vessel_guid,
@@ -417,7 +232,7 @@ void __cdecl principia__PlanetariumGetPsychohistoryVertices(
 // the given index; the trajectory goes back |max_history_length| seconds before
 // the present time (or to the earliest time available if the relevant |t_min|
 // is more recent).
-void __cdecl principia__PlanetariumGetCelestialPastTrajectoryVertices(
+void __cdecl principia__PlanetariumPlotCelestialPastTrajectory(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
     int const celestial_index,
@@ -426,7 +241,7 @@ void __cdecl principia__PlanetariumGetCelestialPastTrajectoryVertices(
     int const vertices_size,
     double* const minimal_distance_from_camera,
     int* const vertex_count) {
-  journal::Method<journal::PlanetariumGetCelestialPastTrajectoryVertices> m(
+  journal::Method<journal::PlanetariumPlotCelestialPastTrajectory> m(
       {planetarium,
        plugin,
        celestial_index,
@@ -474,7 +289,7 @@ void __cdecl principia__PlanetariumGetCelestialPastTrajectoryVertices(
 
 // TODO(egg): comment; the trajectory goes as far as the furthest of the final time
 // of the prediction or that of the flight plan.
-void __cdecl principia__PlanetariumGetCelestialFutureTrajectoryVertices(
+void __cdecl principia__PlanetariumPlotCelestialFutureTrajectory(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
     int const celestial_index,
@@ -483,7 +298,7 @@ void __cdecl principia__PlanetariumGetCelestialFutureTrajectoryVertices(
     int const vertices_size,
     double* const minimal_distance_from_camera,
     int* const vertex_count) {
-  journal::Method<journal::PlanetariumGetCelestialFutureTrajectoryVertices> m(
+  journal::Method<journal::PlanetariumPlotCelestialFutureTrajectory> m(
       {planetarium,
        plugin,
        celestial_index,

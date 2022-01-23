@@ -23,7 +23,7 @@ class Plotter {
   private void PlotVesselTrajectories(DisposablePlanetarium planetarium,
                                       string main_vessel_guid,
                                       double history_length) {
-    planetarium.PlanetariumGetPsychohistoryVertices(
+    planetarium.PlanetariumPlotPsychohistory(
         Plugin,
         main_vessel_guid,
         history_length,
@@ -31,7 +31,7 @@ class Plotter {
         VertexBuffer.size,
         out vertex_count_);
     DrawLineMesh(psychohistory_, adapter_.history_colour, adapter_.history_style);
-    planetarium.PlanetariumGetPredictionVertices(
+    planetarium.PlanetariumPlotPrediction(
         Plugin,
         main_vessel_guid,
         VertexBuffer.data,
@@ -46,7 +46,7 @@ class Plotter {
         !adapter_.plotting_frame_selector_.target_frame_selected &&
         target_id != null &&
         Plugin.HasVessel(target_id)) {
-      planetarium.PlanetariumGetPsychohistoryVertices(
+      planetarium.PlanetariumPlotPsychohistory(
           Plugin,
           target_id,
           history_length,
@@ -55,7 +55,7 @@ class Plotter {
           out vertex_count_);
       DrawLineMesh(target_psychohistory_, adapter_.target_history_colour,
                    adapter_.target_history_style);
-      planetarium.PlanetariumGetPredictionVertices(
+      planetarium.PlanetariumPlotPrediction(
           Plugin,
           target_id,
           VertexBuffer.data,
@@ -73,7 +73,7 @@ class Plotter {
       }
       for (int i = 0; i < number_of_segments; ++i) {
         bool is_burn = i % 2 == 1;
-        planetarium.PlanetariumGetFlightPlanSegmentVertices(
+        planetarium.PlanetariumPlotFlightPlanSegment(
             Plugin,
             main_vessel_guid,
             i,
@@ -123,7 +123,7 @@ class Plotter {
     double min_distance_from_camera =
         (root.position - camera_world_position).magnitude;
     if (!adapter_.plotting_frame_selector_.FixesBody(root)) {
-      planetarium.PlanetariumGetCelestialPastTrajectoryVertices(
+      planetarium.PlanetariumPlotCelestialPastTrajectory(
           Plugin,
           root.flightGlobalsIndex,
           history_length,
@@ -135,7 +135,7 @@ class Plotter {
           Math.Min(min_distance_from_camera, min_past_distance);
       DrawLineMesh(trajectories.past, colour, GLLines.Style.Faded);
       if (main_vessel_guid != null) {
-        planetarium.PlanetariumGetCelestialFutureTrajectoryVertices(
+        planetarium.PlanetariumPlotCelestialFutureTrajectory(
             Plugin,
             root.flightGlobalsIndex,
             main_vessel_guid,
@@ -163,7 +163,7 @@ class Plotter {
   private void DrawLineMesh(UnityEngine.Mesh mesh,
                             UnityEngine.Color colour,
                             GLLines.Style style) {
-    mesh.vertices = VertexBuffer.get;
+    mesh.vertices = VertexBuffer.vertices;
     var indices = new int[vertex_count_];
     for (int i = 0; i < vertex_count_; ++i) {
       indices[i] = i;
@@ -215,7 +215,7 @@ class Plotter {
     public static IntPtr data => handle_.AddrOfPinnedObject();
     public static int size => vertices_.Length;
 
-    public static UnityEngine.Vector3[] get => vertices_;
+    public static UnityEngine.Vector3[] vertices => vertices_;
 
     private static UnityEngine.Vector3[] vertices_ =
         new UnityEngine.Vector3[10_000];
