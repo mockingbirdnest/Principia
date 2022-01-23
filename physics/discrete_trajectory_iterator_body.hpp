@@ -249,6 +249,14 @@ bool DiscreteTrajectoryIterator<Frame>::operator>=(
   return !operator<(other);
 }
 
+template <typename Frame>
+DiscreteTrajectoryIterator<Frame>
+DiscreteTrajectoryIterator<Frame>::EndOfLastSegment(
+    DiscreteTrajectorySegmentIterator<Frame> const segment) {
+  DCHECK(segment.is_end());
+  return DiscreteTrajectoryIterator<Frame>(segment, std::nullopt);
+}
+
 template<typename Frame>
 DiscreteTrajectoryIterator<Frame>::DiscreteTrajectoryIterator(
     DiscreteTrajectorySegmentIterator<Frame> const segment,

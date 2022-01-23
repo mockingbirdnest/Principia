@@ -33,7 +33,8 @@ DiscreteTrajectory<Frame>::DiscreteTrajectory()
 template<typename Frame>
 typename DiscreteTrajectory<Frame>::reference
 DiscreteTrajectory<Frame>::front() const {
-  return *segment_by_left_endpoint_.begin()->second->timeline_.begin();
+  auto const sit = segment_by_left_endpoint_.begin()->second;
+  return *sit->timeline_.begin();
 }
 
 template<typename Frame>
@@ -42,17 +43,22 @@ DiscreteTrajectory<Frame>::back() const {
   return *rbegin();
 }
 
-template<typename Frame>
-typename DiscreteTrajectory<Frame>::iterator
-DiscreteTrajectory<Frame>::begin() const {
-  return empty() ? end() : segment_by_left_endpoint_.begin()->second->begin();
+template <typename Frame>
+typename DiscreteTrajectory<Frame>::iterator DiscreteTrajectory<Frame>::begin()
+    const {
+  if (empty()) {
+    return end();
+  } else {
+    auto const sit = segment_by_left_endpoint_.begin()->second;
+    return sit->begin();
+  }
 }
 
-template<typename Frame>
-typename DiscreteTrajectory<Frame>::iterator
-DiscreteTrajectory<Frame>::end() const {
-  return iterator(SegmentIterator(segments_.get(), segments_->end()),
-                  std::nullopt);
+template <typename Frame>
+typename DiscreteTrajectory<Frame>::iterator DiscreteTrajectory<Frame>::end()
+    const {
+  return iterator::EndOfLastSegment(
+      SegmentIterator(segments_.get(), segments_->end()));
 }
 
 template<typename Frame>
@@ -103,7 +109,8 @@ DiscreteTrajectory<Frame>::find(Instant const& t) const {
   if (leit == segment_by_left_endpoint_.cend()) {
     return end();
   }
-  auto const it = leit->second->FindImpl(t);
+  auto const sit = leit->second;
+  auto const it = sit->FindOrNullopt(t);
   return it.has_value() ? *it : end();
 }
 
@@ -115,7 +122,8 @@ DiscreteTrajectory<Frame>::lower_bound(Instant const& t) const {
     // This includes an empty trajectory.
     return begin();
   }
-  auto const it = leit->second->LowerBoundImpl(t);
+  auto const sit = leit->second;
+  auto const it = sit->LowerBoundOrNullopt(t);
   return it.has_value() ? *it : end();
 }
 
@@ -127,7 +135,8 @@ DiscreteTrajectory<Frame>::upper_bound(Instant const& t) const {
     // This includes an empty trajectory.
     return begin();
   }
-  auto const it = leit->second->UpperBoundImpl(t);
+  auto const sit = leit->second;
+  auto const it = sit->UpperBoundOrNullopt(t);
   return it.has_value() ? *it : end();
 }
 

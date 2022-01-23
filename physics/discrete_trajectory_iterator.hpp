@@ -65,6 +65,10 @@ class DiscreteTrajectoryIterator {
   using OptionalTimelineConstIterator =
       std::optional<typename Timeline::const_iterator>;
 
+  // Constructs an `end()` iterator.
+  static DiscreteTrajectoryIterator EndOfLastSegment(
+      DiscreteTrajectorySegmentIterator<Frame> segment);
+
   DiscreteTrajectoryIterator(DiscreteTrajectorySegmentIterator<Frame> segment,
                              OptionalTimelineConstIterator point);
 

@@ -63,8 +63,8 @@ DiscreteTrajectory<World> MakeTrajectory(Timeline<World> const& timeline,
         double const split = *it_split;
         CHECK_LE(0, split);
         CHECK_LE(split, 1);
-        t_split =
-            Barycentre<Instant, double>({t_min, t_max}, {1 - split, split});
+        t_split = Barycentre<Instant, double>({t_min, t_max},
+                                              {1 - split, split});
       }
     }
     if (t >= t_split) {
@@ -79,7 +79,7 @@ DiscreteTrajectory<World> MakeTrajectory(Timeline<World> const& timeline,
 
 // Constructs a trajectory beginning with many empty segments.
 DiscreteTrajectory<World> MakeTrajectoryWithEmptySegments(
-    int num_empty_segments) {
+    int const num_empty_segments) {
   DiscreteTrajectory<World> trajectory;
   for (int i = 0; i < num_empty_segments; i++) {
     trajectory.NewSegment();
