@@ -63,8 +63,8 @@ DiscreteTrajectory<World> MakeTrajectory(Timeline<World> const& timeline,
         double const split = *it_split;
         CHECK_LE(0, split);
         CHECK_LE(split, 1);
-        t_split = Barycentre<Instant, double>({t_min, t_max},
-                                              {1 - split, split});
+        t_split =
+            Barycentre<Instant, double>({t_min, t_max}, {1 - split, split});
       }
     }
     if (t >= t_split) {
@@ -74,6 +74,18 @@ DiscreteTrajectory<World> MakeTrajectory(Timeline<World> const& timeline,
     }
     CHECK_OK(trajectory.Append(t, degrees_of_freedom));
   }
+  return trajectory;
+}
+
+// Constructs a trajectory beginning with many empty segments.
+DiscreteTrajectory<World> MakeTrajectoryWithEmptySegments(
+    int num_empty_segments) {
+  DiscreteTrajectory<World> trajectory;
+  for (int i = 0; i < num_empty_segments; i++) {
+    trajectory.NewSegment();
+  }
+  CHECK_OK(trajectory.Append(
+      Instant(), DegreesOfFreedom<World>(World::origin, Velocity<World>())));
   return trajectory;
 }
 
@@ -91,6 +103,15 @@ void BM_DiscreteTrajectoryFront(benchmark::State& state) {
     benchmark::DoNotOptimize(trajectory.front());
   }
 }
+
+void BM_DiscreteTrajectoryFrontEmpty(benchmark::State& state) {
+  auto const trajectory = MakeTrajectoryWithEmptySegments(100);
+
+  for (auto _ : state) {
+    benchmark::DoNotOptimize(trajectory.front());
+  }
+}
+
 void BM_DiscreteTrajectoryBack(benchmark::State& state) {
   Instant const t0;
   auto const timeline = NewMotionlessTrajectoryTimeline(World::origin,
@@ -111,6 +132,14 @@ void BM_DiscreteTrajectoryBegin(benchmark::State& state) {
                                                         /*t1=*/t0,
                                                         /*t2=*/t0 + 4 * Second);
   auto const trajectory = MakeTrajectory(timeline, {0.5, 0.75});
+
+  for (auto _ : state) {
+    benchmark::DoNotOptimize(trajectory.begin());
+  }
+}
+
+void BM_DiscreteTrajectoryBeginEmpty(benchmark::State& state) {
+  auto const trajectory = MakeTrajectoryWithEmptySegments(100);
 
   for (auto _ : state) {
     benchmark::DoNotOptimize(trajectory.begin());
@@ -156,7 +185,6 @@ void BM_DiscreteTrajectoryTMax(benchmark::State& state) {
   }
 }
 
-
 void BM_DiscreteTrajectorySegmentFront(benchmark::State& state) {
   Instant const t0;
   auto const timeline = NewMotionlessTrajectoryTimeline(World::origin,
@@ -170,6 +198,16 @@ void BM_DiscreteTrajectorySegmentFront(benchmark::State& state) {
     benchmark::DoNotOptimize(segment.front());
   }
 }
+
+void BM_DiscreteTrajectorySegmentFrontEmpty(benchmark::State& state) {
+  auto const trajectory = MakeTrajectoryWithEmptySegments(100);
+  auto const& segment = trajectory.segments().front();
+
+  for (auto _ : state) {
+    benchmark::DoNotOptimize(segment.front());
+  }
+}
+
 void BM_DiscreteTrajectorySegmentBack(benchmark::State& state) {
   Instant const t0;
   auto const timeline = NewMotionlessTrajectoryTimeline(World::origin,
@@ -191,6 +229,15 @@ void BM_DiscreteTrajectorySegmentBegin(benchmark::State& state) {
                                                         /*t1=*/t0,
                                                         /*t2=*/t0 + 4 * Second);
   auto const trajectory = MakeTrajectory(timeline, {0.5, 0.75});
+  auto const& segment = trajectory.segments().front();
+
+  for (auto _ : state) {
+    benchmark::DoNotOptimize(segment.begin());
+  }
+}
+
+void BM_DiscreteTrajectorySegmentBeginEmpty(benchmark::State& state) {
+  auto const trajectory = MakeTrajectoryWithEmptySegments(100);
   auto const& segment = trajectory.segments().front();
 
   for (auto _ : state) {
@@ -360,14 +407,18 @@ void BM_DiscreteTrajectoryEvaluateDegreesOfFreedomInterpolated(
 }
 
 BENCHMARK(BM_DiscreteTrajectoryFront);
+BENCHMARK(BM_DiscreteTrajectoryFrontEmpty);
 BENCHMARK(BM_DiscreteTrajectoryBack);
 BENCHMARK(BM_DiscreteTrajectoryBegin);
+BENCHMARK(BM_DiscreteTrajectoryBeginEmpty);
 BENCHMARK(BM_DiscreteTrajectoryEnd);
 BENCHMARK(BM_DiscreteTrajectoryTMin);
 BENCHMARK(BM_DiscreteTrajectoryTMax);
 BENCHMARK(BM_DiscreteTrajectorySegmentFront);
+BENCHMARK(BM_DiscreteTrajectorySegmentFrontEmpty);
 BENCHMARK(BM_DiscreteTrajectorySegmentBack);
 BENCHMARK(BM_DiscreteTrajectorySegmentBegin);
+BENCHMARK(BM_DiscreteTrajectorySegmentBeginEmpty);
 BENCHMARK(BM_DiscreteTrajectorySegmentEnd);
 BENCHMARK(BM_DiscreteTrajectorySegmentTMin);
 BENCHMARK(BM_DiscreteTrajectorySegmentTMax);
