@@ -23,8 +23,6 @@ TEST_F(CPUIDTest, CPUFeatureFlags) {
   // We require Prescott or later.
   EXPECT_TRUE(HasCPUFeatures(CPUFeatureFlags::FPU | CPUFeatureFlags::SSE |
                              CPUFeatureFlags::SSE2 | CPUFeatureFlags::SSE3));
-  // We develop on Sandy Bridge or later.
-  EXPECT_TRUE(HasCPUFeatures(CPUFeatureFlags::AVX));
   // Check that we don’t always return true.
   // We are not running these tests on a Pentium III, so we do not have the
   // Processor Serial Number feature.

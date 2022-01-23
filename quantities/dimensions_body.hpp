@@ -55,16 +55,14 @@ template<std::int64_t LengthExponent,
          std::int64_t LuminousIntensityExponent,
          std::int64_t AngleExponent>
 struct Dimensions : not_constructible {
-  enum {
-    Length            = LengthExponent,
-    Mass              = MassExponent,
-    Time              = TimeExponent,
-    Current           = CurrentExponent,
-    Temperature       = TemperatureExponent,
-    Amount            = AmountExponent,
-    LuminousIntensity = LuminousIntensityExponent,
-    Angle             = AngleExponent,
-  };
+  static constexpr std::int64_t Length            = LengthExponent;
+  static constexpr std::int64_t Mass              = MassExponent;
+  static constexpr std::int64_t Time              = TimeExponent;
+  static constexpr std::int64_t Current           = CurrentExponent;
+  static constexpr std::int64_t Temperature       = TemperatureExponent;
+  static constexpr std::int64_t Amount            = AmountExponent;
+  static constexpr std::int64_t LuminousIntensity = LuminousIntensityExponent;
+  static constexpr std::int64_t Angle             = AngleExponent;
 
   static std::int64_t constexpr representation =
       ExponentSerializer::Representation(LengthExponent, 0)            |

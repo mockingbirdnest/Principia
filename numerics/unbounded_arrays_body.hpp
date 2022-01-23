@@ -15,12 +15,11 @@ namespace numerics {
 namespace internal_unbounded_arrays {
 
 using base::uninitialized;
-using quantities::Pow;
 using quantities::Sqrt;
 
 template<class T>
 template<class U, class... Args>
-inline void uninitialized_allocator<T>::construct(U* const p, Args&&... args) {
+void uninitialized_allocator<T>::construct(U* const p, Args&&... args) {
   ::new ((void*)p) U(std::forward<Args>(args)...);  // NOLINT
 }
 
@@ -30,11 +29,17 @@ UnboundedVector<Scalar>::UnboundedVector(int const size)
 
 template<typename Scalar>
 UnboundedVector<Scalar>::UnboundedVector(int const size, uninitialized_t)
-    : data_(size)  {}
+    : data_(size) {}
 
 template<typename Scalar>
 UnboundedVector<Scalar>::UnboundedVector(std::initializer_list<Scalar> data)
     : data_(std::move(data)) {}
+
+template<typename Scalar>
+TransposedView<UnboundedVector<Scalar>>
+UnboundedVector<Scalar>::Transpose() const {
+  return {.transpose = *this};
+}
 
 template<typename Scalar>
 void UnboundedVector<Scalar>::Extend(int const extra_size) {
@@ -76,6 +81,71 @@ Scalar& UnboundedVector<Scalar>::operator[](int const index) {
 template<typename Scalar>
 Scalar const& UnboundedVector<Scalar>::operator[](int const index) const {
   return data_[index];
+}
+
+template<typename Scalar>
+UnboundedMatrix<Scalar>::UnboundedMatrix(int rows, int columns)
+    : rows_(rows),
+      columns_(columns),
+      data_(rows_ * columns_, Scalar{}) {}
+
+template<typename Scalar>
+UnboundedMatrix<Scalar>::UnboundedMatrix(int rows, int columns, uninitialized_t)
+    : rows_(rows),
+      columns_(columns),
+      data_(rows_ * columns_) {}
+
+
+template<typename Scalar>
+UnboundedMatrix<Scalar>::UnboundedMatrix(std::initializer_list<Scalar> data)
+    : rows_(Sqrt(data.size())),
+      columns_(Sqrt(data.size())),
+      data_(std::move(data)) {
+  CHECK_EQ(data.size(), rows_ * columns_);
+}
+
+template<typename Scalar>
+UnboundedMatrix<Scalar> UnboundedMatrix<Scalar>::Transpose() const {
+  UnboundedMatrix<Scalar> m(columns_, rows_, uninitialized);
+  for (int i = 0; i < rows_; ++i) {
+    for (int j = 0; j < columns_; ++j) {
+      m[j][i] = (*this)[i][j];
+    }
+  }
+  return m;
+}
+
+template<typename Scalar>
+int UnboundedMatrix<Scalar>::columns() const {
+  return columns_;
+}
+
+template<typename Scalar>
+int UnboundedMatrix<Scalar>::rows() const {
+  return rows_;
+}
+
+template<typename Scalar>
+int UnboundedMatrix<Scalar>::dimension() const {
+  return rows_ * columns_;
+}
+
+template<typename Scalar>
+bool UnboundedMatrix<Scalar>::operator==(
+    UnboundedMatrix const& right) const {
+  return data_ == right.data_;
+}
+
+template<typename Scalar>
+Scalar* UnboundedMatrix<Scalar>::operator[](int index) {
+  DCHECK_LT(index, rows_);
+  return &data_[index * columns_];
+}
+
+template<typename Scalar>
+Scalar const* UnboundedMatrix<Scalar>::operator[](int index) const {
+  DCHECK_LT(index, rows_);
+  return &data_[index * columns_];
 }
 
 template<typename Scalar>
@@ -138,6 +208,11 @@ UnboundedLowerTriangularMatrix<Scalar>::Transpose() const {
     }
   }
   return u;
+}
+
+template<typename Scalar>
+int UnboundedLowerTriangularMatrix<Scalar>::columns() const {
+  return rows_;
 }
 
 template<typename Scalar>
@@ -340,87 +415,31 @@ UnboundedUpperTriangularMatrix<Scalar>::Transpose(
   return result;
 }
 
-// [Hig02], Algorithm 10.2.
-template<typename Scalar>
-UnboundedUpperTriangularMatrix<SquareRoot<Scalar>> CholeskyDecomposition(
-    UnboundedUpperTriangularMatrix<Scalar> const& A) {
-  UnboundedUpperTriangularMatrix<SquareRoot<Scalar>> R(A.columns(),
-                                                       uninitialized);
-  for (int j = 0; j < A.columns(); ++j) {
-    for (int i = 0; i < j; ++i) {
-      Scalar Σrₖᵢrₖⱼ{};
-      for (int k = 0; k < i; ++k) {
-        Σrₖᵢrₖⱼ += R[k][i] * R[k][j];
-      }
-      R[i][j] = (A[i][j] - Σrₖᵢrₖⱼ) / R[i][i];
-    }
-    Scalar Σrₖⱼ²{};
-    for (int k = 0; k < j; ++k) {
-      Σrₖⱼ² += Pow<2>(R[k][j]);
-    }
-    // This will produce NaNs if the matrix is not positive definite.
-    R[j][j] = Sqrt(A[j][j] - Σrₖⱼ²);
+template<typename ScalarLeft, typename ScalarRight>
+Product<ScalarLeft, ScalarRight> operator*(
+    TransposedView<UnboundedVector<ScalarLeft>> const& left,
+    UnboundedVector<ScalarRight> const& right) {
+  CHECK_EQ(left.transpose.size(), right.size());
+  Product<ScalarLeft, ScalarRight> result{};
+  for (int i = 0; i < left.transpose.size(); ++i) {
+    result += left.transpose[i] * right[i];
   }
-  return R;
+  return result;
 }
 
-// [KM13], formulæ (10) and (11).
-template<typename Scalar>
-void ᵗRDRDecomposition(UnboundedUpperTriangularMatrix<Scalar> const& A,
-                       UnboundedUpperTriangularMatrix<double>& R,
-                       UnboundedVector<Scalar>& D) {
-  for (int i = 0; i < A.columns(); ++i) {
-    Scalar Σrₖᵢ²dₖ{};
-    for (int k = 0; k < i; ++k) {
-      Σrₖᵢ²dₖ += Pow<2>(R[k][i]) * D[k];
+template<typename ScalarLeft, typename ScalarRight>
+UnboundedVector<Product<ScalarLeft, ScalarRight>> operator*(
+    UnboundedMatrix<ScalarLeft> const& left,
+    UnboundedVector<ScalarRight> const& right) {
+  CHECK_EQ(left.columns(), right.size());
+  UnboundedVector<Product<ScalarLeft, ScalarRight>> result(left.rows());
+  for (int i = 0; i < left.rows(); ++i) {
+    auto& result_i = result.data_[i];
+    for (int j = 0; j < left.columns(); ++j) {
+      result_i += left[i][j] * right[j];
     }
-    D[i] = A[i][i] - Σrₖᵢ²dₖ;
-    for (int j = i + 1; j < A.columns(); ++j) {
-      Scalar Σrₖᵢrₖⱼdₖ{};
-      for (int k = 0; k < i; ++k) {
-        Σrₖᵢrₖⱼdₖ += R[k][i] * R[k][j] * D[k];
-      }
-      R[i][j] = (A[i][j] - Σrₖᵢrₖⱼdₖ) / D[i];
-    }
-    R[i][i] = 1;
   }
-}
-
-// [Hig02], Algorithm 8.1.
-template<typename LScalar, typename RScalar>
-UnboundedVector<Quotient<RScalar, LScalar>> BackSubstitution(
-    UnboundedUpperTriangularMatrix<LScalar> const& U,
-    UnboundedVector<RScalar> const& b) {
-  UnboundedVector<Quotient<RScalar, LScalar>> x(b.size(), uninitialized);
-  int const n = b.size() - 1;
-  x[n] = b[n] / U[n][n];
-  for (int i = n - 1; i >= 0; --i) {
-    auto s = b[i];
-    for (int j = i + 1; j <= n; ++j) {
-      s -= U[i][j] * x[j];
-    }
-    x[i] = s / U[i][i];
-  }
-  return x;
-}
-
-// [Hig02] says: "We will not state the analogous algorithm for solving a lower
-// triangular system, forward substitution."  So we follow
-// https://en.wikipedia.org/wiki/Triangular_matrix#Forward_substitution.
-template<typename LScalar, typename RScalar>
-UnboundedVector<Quotient<RScalar, LScalar>> ForwardSubstitution(
-    UnboundedLowerTriangularMatrix<LScalar> const& L,
-    UnboundedVector<RScalar> const& b) {
-  UnboundedVector<Quotient<RScalar, LScalar>> x(b.size(), uninitialized);
-  x[0] = b[0] / L[0][0];
-  for (int i = 1; i < b.size(); ++i) {
-    auto s = b[i];
-    for (int j = 0; j < i; ++j) {
-      s -= L[i][j] * x[j];
-    }
-    x[i] = s / L[i][i];
-  }
-  return x;
+  return result;
 }
 
 template<typename Scalar>
@@ -444,6 +463,23 @@ std::ostream& operator<<(std::ostream& out,
     for (int j = 0; j <= i; ++j) {
       out << matrix[i][j];
       if (j < i) {
+        out << ", ";
+      }
+    }
+    out << "}\n";
+  }
+  return out;
+}
+
+template<typename Scalar>
+std::ostream& operator<<(std::ostream& out,
+                         UnboundedMatrix<Scalar> const& matrix) {
+  out << "rows: " << matrix.rows() << " columns: " << matrix.columns() << "\n";
+  for (int i = 0; i < matrix.rows(); ++i) {
+    out << "{";
+    for (int j = 0; j < matrix.columns(); ++j) {
+      out << matrix[i][j];
+      if (j < matrix.columns() - 1) {
         out << ", ";
       }
     }

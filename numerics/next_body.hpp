@@ -50,15 +50,6 @@ constexpr SourceFormat NextUp(SourceFormat const x) {
   if (signed_significand == -1) {
     return x + ulp / std::numeric_limits<SourceFormat>::radix;
   }
-#if !PRINCIPIA_MAY_SIGNAL_OVERFLOW_IN_CONSTEXPR_ARITHMETIC
-  // When |x| is the largest finite number in |SourceFormat|, the operation
-  // |x + ulp| below results in positive infinity and signals the overflow
-  // exception.  On compilers that think overflow is non-constexpr, explicitly
-  // return an infinity.
-  if (x == std::numeric_limits<SourceFormat>::max()) {
-    return std::numeric_limits<SourceFormat>::infinity();
-  }
-#endif
   return x + ulp;
 }
 

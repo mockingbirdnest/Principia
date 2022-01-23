@@ -175,25 +175,12 @@ inline void noreturn() { std::exit(0); }
              minor,                                \
              patchlevel)
 
-// Clang for some reason doesn't like FP arithmetic that yields infinities by
-// overflow (as opposed to division by zero, which the standard explicitly
-// prohibits) in constexpr code (MSVC and GCC are fine with that).  This will be
-// fixed in Clang 9.0.0, all hail zygoloid.
+// Clang does not like FP arithmetic that yields a NaN in constexpr code.
+// https://github.com/llvm/llvm-project/blob/llvmorg-13.0.0/clang/lib/AST/ExprConstant.cpp#L2860-L2867
 #if PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL
-#  if OS_MACOSX
-#    define PRINCIPIA_MAY_SIGNAL_OVERFLOW_IN_CONSTEXPR_ARITHMETIC \
-       CLANG_VERSION_GE(11, 0, 3)
-#  else
-#    define PRINCIPIA_MAY_SIGNAL_OVERFLOW_IN_CONSTEXPR_ARITHMETIC \
-       CLANG_VERSION_GE(9, 0, 0)
-#  endif
+#  define CONSTEXPR_NAN const
 #else
-#  define PRINCIPIA_MAY_SIGNAL_OVERFLOW_IN_CONSTEXPR_ARITHMETIC 1
-#endif
-#if PRINCIPIA_MAY_SIGNAL_OVERFLOW_IN_CONSTEXPR_ARITHMETIC
-#  define CONSTEXPR_INFINITY constexpr
-#else
-#  define CONSTEXPR_INFINITY const
+#  define CONSTEXPR_NAN constexpr
 #endif
 
 #if PRINCIPIA_COMPILER_MSVC

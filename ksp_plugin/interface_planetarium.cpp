@@ -2,6 +2,7 @@
 #include "ksp_plugin/interface.hpp"
 
 #include <algorithm>
+#include <limits>
 
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
@@ -181,11 +182,19 @@ Iterator* __cdecl principia__PlanetariumPlotPsychohistory(
     auto const vessel = plugin->GetVessel(vessel_guid);
     auto const& trajectory = vessel->trajectory();
     auto const& psychohistory = vessel->psychohistory();
+
+    Instant const desired_first_time =
+        plugin->CurrentTime() - max_history_length * Second;
+
+    // Since we would want to plot starting from |desired_first_time|, ask the
+    // reanimator to reconstruct the past.  That may take a while, during which
+    // time the history will be shorter than desired.
+    vessel->RequestReanimation(desired_first_time);
+
     auto const rp2_lines =
         planetarium->PlotMethod2(
             trajectory,
-            trajectory.lower_bound(plugin->CurrentTime() -
-                                     max_history_length * Second),
+            trajectory.lower_bound(desired_first_time),
             psychohistory->end(),
             plugin->CurrentTime(),
             /*reverse=*/true);

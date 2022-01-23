@@ -352,7 +352,7 @@ TEST_F(DiscreteTrajectorySegmentTest, DownsamplingForgetAfter) {
   std::vector<Speed> velocity_errors;
 
   // Check that the two trajectories are identical.
-  for (auto const [t, degrees_of_freedom] : forgotten_circle) {
+  for (auto const& [t, degrees_of_freedom] : forgotten_circle) {
     position_errors.push_back(
         (circle.find(t)->degrees_of_freedom.position() -
          degrees_of_freedom.position()).Norm());

@@ -94,8 +94,9 @@ INCLUDES      := -I. -I$(DEP_DIR)glog/src \
 	-I$(DEP_DIR)abseil-cpp \
 	-I$(DEP_DIR)zfp/include
 SHARED_ARGS   := \
-	-std=c++1z -stdlib=libc++ -O3 -g                              \
+	-std=c++20 -stdlib=libc++ -O3 -g                              \
 	-fPIC -fexceptions -ferror-limit=1000 -fno-omit-frame-pointer \
+	-fno-char8_t                                                  \
 	-Wall -Wpedantic                                              \
 	-Wno-char-subscripts                                          \
 	-Wno-gnu-anonymous-struct                                     \
@@ -103,6 +104,7 @@ SHARED_ARGS   := \
 	-Wno-gnu-zero-variadic-macro-arguments                        \
 	-Wno-nested-anon-types                                        \
 	-Wno-unknown-pragmas                                          \
+	-Wno-elaborated-enum-class                                    \
 	-DPROJECT_DIR='std::filesystem::path("$(PROJECT_DIR)")'       \
 	-DSOLUTION_DIR='std::filesystem::path("$(SOLUTION_DIR)")'     \
 	-DTEMP_DIR='std::filesystem::path("/tmp")'                    \
@@ -114,18 +116,20 @@ ifeq ($(UNAME_S),Linux)
     else
         SHARED_ARGS += -m32
     endif
-    LIBS += -lsupc++ -lc++fs
+    LIBS += -lsupc++
     TEST_LIBS += -lsupc++
     SHAREDFLAG := -shared
 endif
 ifeq ($(UNAME_S),Darwin)
     INCLUDES += \
-			-I$(DEP_DIR)compatibility/filesystem \
-			-I$(DEP_DIR)compatibility/optional \
-			-I$(DEP_DIR)Optional \
-			-include "base/macos_allocator_replacement.hpp"
+			-include "base/macos_allocator_replacement.hpp" \
+			-include "base/macos_filesystem_replacement.hpp"
     LIBS += -framework CoreFoundation
-    SHARED_ARGS += -mmacosx-version-min=10.12 -arch x86_64 -D_LIBCPP_STD_VER=16
+    SHARED_ARGS += \
+			-mmacosx-version-min=10.12 \
+			-arch x86_64 \
+			-D_LIBCPP_STD_VER=20 \
+			-D_LIBCPP_NO_EXCEPTIONS
     SHAREDFLAG := -dynamiclib
 endif
 
@@ -137,7 +141,7 @@ LDFLAGS := $(SHARED_ARGS)
 BUILD_DIRECTORY := build/
 
 TEST_OR_MOCK_DEPENDENCIES := $(addprefix $(BUILD_DIRECTORY), $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS:.cpp=.d))
-BENCHMARK_DEPENDENCIES    := $(addprefix $(BUILD_DIRECTORY), $(BENCHMARK_TRANSLATIONS_UNITS:.cpp=.d))
+BENCHMARK_DEPENDENCIES    := $(addprefix $(BUILD_DIRECTORY), $(BENCHMARK_TRANSLATION_UNITS:.cpp=.d))
 TOOLS_DEPENDENCIES        := $(addprefix $(BUILD_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.d))
 LIBRARY_DEPENDENCIES      := $(addprefix $(BUILD_DIRECTORY), $(LIBRARY_TRANSLATION_UNITS:.cpp=.d))
 PLUGIN_DEPENDENCIES       := $(addprefix $(BUILD_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS:.cpp=.d))
@@ -298,7 +302,7 @@ PACKAGE_BENCHMARK_TARGET := $(patsubst $(BIN_DIRECTORY)%, %, $(PACKAGE_BENCHMARK
 
 PRINCIPIA_BENCHMARK_BIN := $(BIN_DIRECTORY)benchmark
 
-$(PRINCIPIA_BENCHMARK_BIN) : $(BENCHMARK_OBJECTS) $(FAKE_OR_MOCK_OBJECTS) $(GMOCK_OBJECTS) $(KSP_PLUGIN) $(BASE_LIB_OBJECTS) $(NUMERICS_LIB_OBJECTS) $(PHYSICS_LIB_OBJECTS) $(ASTRONOMY_LIB_OBJECTS) $(GEOMETRY_LIB_OBJECTS)
+$(PRINCIPIA_BENCHMARK_BIN) : $(BENCHMARK_OBJECTS) $(FAKE_OR_MOCK_OBJECTS) $(GMOCK_OBJECTS) $(KSP_PLUGIN) $(BASE_LIB_OBJECTS) $(NUMERICS_LIB_OBJECTS) $(PHYSICS_LIB_OBJECTS) $(ASTRONOMY_LIB_OBJECTS) $(GEOMETRY_LIB_OBJECTS) $(PLUGIN_TEST_LIB_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -lpthread -o $@
 

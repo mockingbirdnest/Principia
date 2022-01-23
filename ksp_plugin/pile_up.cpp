@@ -66,7 +66,7 @@ using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 
 PileUp::PileUp(
-    std::list<not_null<Part*>>&& parts,
+    std::list<not_null<Part*>> parts,
     Instant const& t,
     Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters,
     Ephemeris<Barycentric>::FixedStepParameters fixed_step_parameters,
@@ -112,6 +112,11 @@ PileUp::~PileUp() {
 
 std::list<not_null<Part*>> const& PileUp::parts() const {
   return parts_;
+}
+
+Ephemeris<Barycentric>::FixedStepParameters const&
+PileUp::fixed_step_parameters() const {
+  return fixed_step_parameters_;
 }
 
 void PileUp::SetPartApparentRigidMotion(
@@ -238,7 +243,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
                      DefaultHistoryParameters(),
                      DiscreteTrajectory<Barycentric>::ReadFromMessage(
                          message.history(),
-                         /*forks=*/{}),
+                         /*tracked=*/{}),
                      /*history=*/std::nullopt,
                      /*psychohistory=*/std::nullopt,
                      /*angular_momentum=*/{},
@@ -254,7 +259,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
                   message.fixed_step_parameters()),
               DiscreteTrajectory<Barycentric>::ReadFromMessage(
                   message.history(),
-                  /*forks=*/{}),
+                  /*tracked=*/{}),
               /*history=*/std::nullopt,
               /*psychohistory=*/std::nullopt,
               /*angular_momentum=*/{},
@@ -279,7 +284,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
       DiscreteTrajectorySegmentIterator<Barycentric> psychohistory;
       auto trajectory = DiscreteTrajectory<Barycentric>::ReadFromMessage(
           message.history(),
-          /*forks=*/{&psychohistory});
+          /*tracked=*/{&psychohistory});
       pile_up = std::unique_ptr<PileUp>(
           new PileUp(
               std::move(parts),

@@ -85,8 +85,7 @@ TEST_F(DiscreteTrajectoryFactoriesTest, NewLinearTrajectoryTimeline) {
                 AlmostEquals(Sqrt(5000 + 1160 * (time - Instant()) / Second +
                                   77 * Pow<2>((time - Instant()) / Second)) *
                                  Metre,
-                             0,
-                             1));
+                             0, 1));
     EXPECT_THAT(velocity.Norm(), AlmostEquals(Sqrt(77) * Metre / Second, 0, 0));
   }
   EXPECT_THAT(timeline.begin()->time,

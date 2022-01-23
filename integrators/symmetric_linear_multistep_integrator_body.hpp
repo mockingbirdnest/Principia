@@ -354,7 +354,9 @@ Instance::ComputeVelocityUsingCohenHubbardOesterwinter() {
         (displacement_change.value + displacement_change.error) / step);
 
     Acceleration weighted_accelerations;
-    for (int i = 0; i < cohen_hubbard_oesterwinter.numerators.size; ++i, ++it) {
+    for (int i = 0;
+         i < cohen_hubbard_oesterwinter.numerators.size();
+         ++i, ++it) {
       weighted_accelerations +=
           cohen_hubbard_oesterwinter.numerators[i] * it->accelerations[d];
     }

@@ -316,14 +316,14 @@ class Ephemeris {
   // and its trajectories starting in such a way that |t_min()| is at or before
   // |desired_t_min|.  The member variable |oldest_reanimated_checkpoint_| tells
   // the reanimator where to stop.
-  absl::Status Reanimate(Instant const desired_t_min);
+  absl::Status Reanimate(Instant const desired_t_min) EXCLUDES(lock_);
 
   // Reconstructs the past state of the ephemeris between |t_initial| and
   // |t_final| using the given checkpoint |message|.
   absl::Status ReanimateOneCheckpoint(
       serialization::Ephemeris::Checkpoint const& message,
       Instant const& t_initial,
-      Instant const& t_final);
+      Instant const& t_final) EXCLUDES(lock_);
 
   // Callbacks for the integrators.
   void AppendMassiveBodiesState(
@@ -444,7 +444,10 @@ class Ephemeris {
   not_null<
       std::unique_ptr<Checkpointer<serialization::Ephemeris>>> checkpointer_;
 
-  // This member must only be accessed by the |reanimator_| thread.
+  // This member must only be accessed by the |reanimator_| thread, or before
+  // the |reanimator_| thread is started.  An ephemeris that is constructed de
+  // novo won't ever need reanimation, so all the checkpoints are animate at
+  // birth.
   Instant oldest_reanimated_checkpoint_ = InfinitePast;
 
   // The techniques and terminology follow [Lov22].

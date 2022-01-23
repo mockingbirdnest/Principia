@@ -97,6 +97,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Setup Files", "Setup Files", "{E3536C51-3B98-4D50-8973-A72D03042FCF}"
 	ProjectSection(SolutionItems) = preProject
 		Makefile = Makefile
+		principia_make.sh = principia_make.sh
 		Vagrantfile = Vagrantfile
 	EndProjectSection
 EndProject
