@@ -61,13 +61,17 @@ class Plotter {
           out vertex_count_);
       DrawLineMesh(target_psychohistory_, adapter_.target_history_colour,
                    adapter_.target_history_style);
+      planetarium.PlanetariumGetPredictionVertices(
+          Plugin,
+          target_id,
+          vertices_data_,
+          vertices_.Length,
+          out vertex_count_);
+      DrawLineMesh(target_prediction_, adapter_.target_prediction_colour,
+                   adapter_.target_prediction_style);
     }
     // Main vessel flight plan.
     if (Plugin.FlightPlanExists(main_vessel_guid)) {
-      int number_of_anomalous_manœuvres =
-          Plugin.FlightPlanNumberOfAnomalousManoeuvres(main_vessel_guid);
-      int number_of_manœuvres =
-          Plugin.FlightPlanNumberOfManoeuvres(main_vessel_guid);
       int number_of_segments =
           Plugin.FlightPlanNumberOfSegments(main_vessel_guid);
       for (int i = flight_plan_segments_.Count; i < number_of_segments; ++i) {
@@ -146,6 +150,8 @@ class Plotter {
             vertices_.Length,
             out double min_future_distance,
             out vertex_count_);
+        min_distance_from_camera =
+            Math.Min(min_distance_from_camera, min_future_distance);
         DrawLineMesh(trajectories.future, colour, GLLines.Style.Solid);
       }
     }

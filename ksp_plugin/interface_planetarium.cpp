@@ -305,6 +305,8 @@ void __cdecl principia__PlanetariumGetFlightPlanSegmentVertices(
       {vertex_count});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
+  *vertex_count = 0;
+
   Vessel const& vessel = *plugin->GetVessel(vessel_guid);
   CHECK(vessel.has_flight_plan()) << vessel_guid;
   auto const segment = vessel.flight_plan().GetSegment(index);
@@ -343,6 +345,8 @@ void __cdecl principia__PlanetariumGetPredictionVertices(
       {vertex_count});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
+  *vertex_count = 0;
+
   auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
   planetarium->PlotMethod3(
       *prediction,
@@ -375,6 +379,7 @@ void __cdecl principia__PlanetariumGetPsychohistoryVertices(
       {vertex_count});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
+  *vertex_count = 0;
 
   // Do not plot the psychohistory when there is a target vessel as it is
   // misleading.
@@ -422,6 +427,7 @@ void __cdecl principia__PlanetariumGetCelestialPastTrajectoryVertices(
       {minimal_distance_from_camera, vertex_count});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
+  *vertex_count = 0;
 
   // Do not plot the past when there is a target vessel as it is misleading.
   if (plugin->renderer().HasTargetVessel()) {
