@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -12,18 +10,14 @@ class Plotter {
     adapter_ = adapter;
   }
 
-  public unsafe void Plot(DisposablePlanetarium planetarium,
-                          string main_vessel_guid,
-                          double history_length) {
-    fixed (UnityEngine.Vector3* vertices_data = vertices_) {
-      vertices_data_ = (IntPtr)vertices_data;
-      PlotCelestialTrajectories(planetarium, main_vessel_guid, history_length);
-      if (main_vessel_guid == null) {
-        return;
-      }
-      PlotVesselTrajectories(planetarium, main_vessel_guid, history_length);
-      vertices_data_ = IntPtr.Zero;
+  public void Plot(DisposablePlanetarium planetarium,
+                   string main_vessel_guid,
+                   double history_length) {
+    PlotCelestialTrajectories(planetarium, main_vessel_guid, history_length);
+    if (main_vessel_guid == null) {
+      return;
     }
+    PlotVesselTrajectories(planetarium, main_vessel_guid, history_length);
   }
 
   private void PlotVesselTrajectories(DisposablePlanetarium planetarium,
@@ -33,15 +27,15 @@ class Plotter {
         Plugin,
         main_vessel_guid,
         history_length,
-        vertices_data_,
-        vertices_.Length,
+        VertexBuffer.data,
+        VertexBuffer.size,
         out vertex_count_);
     DrawLineMesh(psychohistory_, adapter_.history_colour, adapter_.history_style);
     planetarium.PlanetariumGetPredictionVertices(
         Plugin,
         main_vessel_guid,
-        vertices_data_,
-        vertices_.Length,
+        VertexBuffer.data,
+        VertexBuffer.size,
         out vertex_count_);
     DrawLineMesh(prediction_, adapter_.prediction_colour, adapter_.prediction_style);
 
@@ -56,16 +50,16 @@ class Plotter {
           Plugin,
           target_id,
           history_length,
-          vertices_data_,
-          vertices_.Length,
+          VertexBuffer.data,
+          VertexBuffer.size,
           out vertex_count_);
       DrawLineMesh(target_psychohistory_, adapter_.target_history_colour,
                    adapter_.target_history_style);
       planetarium.PlanetariumGetPredictionVertices(
           Plugin,
           target_id,
-          vertices_data_,
-          vertices_.Length,
+          VertexBuffer.data,
+          VertexBuffer.size,
           out vertex_count_);
       DrawLineMesh(target_prediction_, adapter_.target_prediction_colour,
                    adapter_.target_prediction_style);
@@ -83,8 +77,8 @@ class Plotter {
             Plugin,
             main_vessel_guid,
             i,
-            vertices_data_,
-            vertices_.Length,
+            VertexBuffer.data,
+            VertexBuffer.size,
             out vertex_count_);
         DrawLineMesh(flight_plan_segments_[i],
                      is_burn ? adapter_.burn_colour
@@ -134,8 +128,8 @@ class Plotter {
           Plugin,
           root.flightGlobalsIndex,
           history_length,
-          vertices_data_,
-          vertices_.Length,
+          VertexBuffer.data,
+          VertexBuffer.size,
           out double min_past_distance,
           out vertex_count_);
       min_distance_from_camera =
@@ -146,8 +140,8 @@ class Plotter {
             Plugin,
             root.flightGlobalsIndex,
             main_vessel_guid,
-            vertices_data_,
-            vertices_.Length,
+            VertexBuffer.data,
+            VertexBuffer.size,
             out double min_future_distance,
             out vertex_count_);
         min_distance_from_camera =
@@ -170,16 +164,15 @@ class Plotter {
   private void DrawLineMesh(UnityEngine.Mesh mesh,
                             UnityEngine.Color colour,
                             GLLines.Style style) {
-    filled_vertices_ |= vertex_count_ == vertices_.Length;
     if (!MainWindow.reuse_meshes) {
       mesh = new UnityEngine.Mesh();
     }
-    mesh.vertices = vertices_;
+    mesh.vertices = VertexBuffer.get;
     var indices = new int[vertex_count_];
     for (int i = 0; i < vertex_count_; ++i) {
       indices[i] = i;
     }
-    var colours = new UnityEngine.Color[vertices_.Length];
+    var colours = new UnityEngine.Color[VertexBuffer.size];
     if (style == GLLines.Style.Faded) {
       for (int i = 0; i < vertex_count_; ++i) {
         var faded_colour = colour;
@@ -219,12 +212,19 @@ class Plotter {
 
   private IntPtr Plugin => adapter_.Plugin();
 
-  private UnityEngine.Vector3[] vertices_ = new UnityEngine.Vector3[10_000];
-  // A pointer to vertices_; vertices_ should be pinned and should not be
-  // reassigned while this is non-null.
-  private IntPtr vertices_data_ = IntPtr.Zero;
+  private static class VertexBuffer {
+    public static IntPtr data => handle_.AddrOfPinnedObject();
+    public static int size => vertices_.Length;
+
+    public static UnityEngine.Vector3[] get => vertices_;
+
+    private static UnityEngine.Vector3[] vertices_ =
+        new UnityEngine.Vector3[10_000];
+    private static GCHandle handle_ =
+        GCHandle.Alloc(vertices_, GCHandleType.Pinned);
+  }
+
   private int vertex_count_;
-  private bool filled_vertices_ = false;
 
   private class CelestialTrajectories {
     public UnityEngine.Mesh future = new UnityEngine.Mesh();
