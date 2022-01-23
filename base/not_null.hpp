@@ -93,6 +93,40 @@ struct remove_not_null<not_null<Pointer>> {
   using type = typename remove_not_null<Pointer>::type;
 };
 
+// Wrapper struct for pointers with move assigment compatible with not_null.
+template<typename Pointer, typename=void>
+struct NotNullStorage;
+
+// Case: move assignment is equvalent to copy (raw pointer).
+template <typename P>
+struct NotNullStorage<
+    P, std::enable_if_t<std::is_trivially_move_assignable_v<P>>> {
+  NotNullStorage(P&& pointer) : pointer(std::move(pointer)) {}
+  NotNullStorage(NotNullStorage const&) = default;
+  NotNullStorage(NotNullStorage&&) = default;
+  NotNullStorage& operator=(NotNullStorage const&) = default;
+  NotNullStorage& operator=(NotNullStorage&&) = default;
+
+  P pointer;
+};
+
+// Case: move assignent is nontrivial (unique_ptr).
+template <typename P>
+struct NotNullStorage<
+    P, std::enable_if_t<!std::is_trivially_move_assignable_v<P>>> {
+  NotNullStorage(P&& pointer) : pointer(std::move(pointer)) {}
+  NotNullStorage(NotNullStorage const&) = default;
+  NotNullStorage(NotNullStorage&&) = default;
+  NotNullStorage& operator=(NotNullStorage const&) = default;
+  // Implemented as a swap, so the argument remains valid.
+  NotNullStorage& operator=(NotNullStorage&& other) {
+    std::swap(pointer, other.pointer);
+    return *this;
+  }
+
+  P pointer;
+};
+
 // When |T| is not a reference, |_checked_not_null<T>| is |not_null<T>| if |T|
 // is not already an instance of |not_null|.  It fails otherwise.
 // |_checked_not_null| is invariant under application of reference or rvalue
@@ -111,7 +145,7 @@ inline constexpr bool is_instance_of_not_null_v =
 // |Pointer| should be a C-style pointer or a smart pointer.  |Pointer| must not
 // be a const, reference, rvalue reference, or |not_null|.  |not_null<Pointer>|
 // is movable and may be left in an invalid state when moved, i.e., its
-// |pointer_| may become null.
+// |storage_.pointer| may become null.
 // |not_null<not_null<Pointer>>| and |not_null<Pointer>| are equivalent.
 // This is useful when a |template<typename T>| using a |not_null<T>| is
 // instanced with an instance of |not_null|.
@@ -174,15 +208,14 @@ class not_null final {
   not_null& operator=(not_null<OtherPointer> const& other);
 
   // Move assignment operators.
-  // Implemented as a swap, so the argument remains valid.
-  not_null& operator=(not_null&& other);
+  not_null& operator=(not_null&& other) = default;
   // This operator may invalidate its argument.
   template<typename OtherPointer,
            typename = typename std::enable_if<
                std::is_convertible<OtherPointer, pointer>::value>::type>
   not_null& operator=(not_null<OtherPointer>&& other);
 
-  // Returns |pointer_|, by const reference to avoid a copy if |pointer| is
+  // Returns |storage_.pointer|, by const reference to avoid a copy if |pointer| is
   // |unique_ptr|.
   // If this were to return by |const&|, ambiguities would arise where an rvalue
   // of type |not_null<pointer>| is given as an argument to a function that has
@@ -211,23 +244,23 @@ class not_null final {
                !is_instance_of_not_null_v<OtherPointer>>>
   operator OtherPointer() &&;  // NOLINT(whitespace/operators)
 
-  // Returns |*pointer_|.
+  // Returns |*storage_.pointer|.
   std::add_lvalue_reference_t<element_type> operator*() const;
   std::add_pointer_t<element_type> operator->() const;
 
   // When |pointer| has a |get()| member function, this returns
-  // |pointer_.get()|.
+  // |storage_.pointer.get()|.
   template<typename P = pointer, typename = decltype(std::declval<P>().get())>
   not_null<decltype(std::declval<P>().get())> get() const;
 
   // When |pointer| has a |release()| member function, this returns
-  // |pointer_.release()|.  May invalidate its argument.
+  // |storage_.pointer.release()|.  May invalidate its argument.
   template<typename P = pointer,
            typename = decltype(std::declval<P>().release())>
   not_null<decltype(std::declval<P>().release())> release();
 
   // When |pointer| has a |reset()| member function, this calls
-  // |pointer_.reset()|.
+  // |storage_.pointer.reset()|.
   template<typename Q,
            typename P = pointer,
            typename = decltype(std::declval<P>().reset())>
@@ -259,12 +292,12 @@ class not_null final {
  private:
   struct unchecked_tag final {};
 
-  // Creates a |not_null<Pointer>| whose |pointer_| equals the given |pointer|,
-  // dawg.  The constructor does *not* perform a null check.  Callers must
-  // perform one if needed before using it.
+  // Creates a |not_null<Pointer>| whose |storage_.pointer| equals the given
+  // |pointer|, dawg.  The constructor does *not* perform a null check.  Callers
+  // must perform one if needed before using it.
   explicit not_null(pointer other, unchecked_tag tag);
 
-  pointer pointer_;
+  NotNullStorage<Pointer> storage_;
 
   static constexpr unchecked_tag unchecked_tag_{};
 
