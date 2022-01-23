@@ -45,7 +45,7 @@ void DiscreteTrajectorySegment<Frame>::SetDownsamplingUnconditionally(
 template<typename Frame>
 typename DiscreteTrajectorySegment<Frame>::reference
 DiscreteTrajectorySegment<Frame>::front() const {
-  return *timeline_.begin();
+  return *begin();
 }
 
 template<typename Frame>
@@ -107,34 +107,22 @@ void DiscreteTrajectorySegment<Frame>::clear() {
 template<typename Frame>
 typename DiscreteTrajectorySegment<Frame>::iterator
 DiscreteTrajectorySegment<Frame>::find(Instant const& t) const {
-  auto const it = timeline_.find(t);
-  if (it == timeline_.end()) {
-    return end();
-  } else {
-    return iterator(self_, it);
-  }
+  auto const it = FindOrNullopt(t);
+  return it.has_value() ? *it : end();
 }
 
 template<typename Frame>
 typename DiscreteTrajectorySegment<Frame>::iterator
 DiscreteTrajectorySegment<Frame>::lower_bound(Instant const& t) const {
-  auto const it = timeline_.lower_bound(t);
-  if (it == timeline_.end()) {
-    return end();
-  } else {
-    return iterator(self_, it);
-  }
+  auto const it = LowerBoundOrNullopt(t);
+  return it.has_value() ? *it : end();
 }
 
 template<typename Frame>
 typename DiscreteTrajectorySegment<Frame>::iterator
 DiscreteTrajectorySegment<Frame>::upper_bound(Instant const& t) const {
-  auto const it = timeline_.upper_bound(t);
-  if (it == timeline_.end()) {
-    return end();
-  } else {
-    return iterator(self_, it);
-  }
+  auto const it = UpperBoundOrNullopt(t);
+  return it.has_value() ? *it : end();
 }
 
 template<typename Frame>
@@ -324,6 +312,39 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
   }
 
   return segment;
+}
+
+template <typename Frame>
+std::optional<typename DiscreteTrajectorySegment<Frame>::iterator>
+DiscreteTrajectorySegment<Frame>::FindOrNullopt(Instant const& t) const {
+  auto const it = timeline_.find(t);
+  if (it == timeline_.end()) {
+    return std::nullopt;
+  } else {
+    return iterator(self_, it);
+  }
+}
+
+template<typename Frame>
+std::optional<typename DiscreteTrajectorySegment<Frame>::iterator>
+DiscreteTrajectorySegment<Frame>::LowerBoundOrNullopt(Instant const& t) const {
+  auto const it = timeline_.lower_bound(t);
+  if (it == timeline_.end()) {
+    return std::nullopt;
+  } else {
+    return iterator(self_, it);
+  }
+}
+
+template<typename Frame>
+std::optional<typename DiscreteTrajectorySegment<Frame>::iterator>
+DiscreteTrajectorySegment<Frame>::UpperBoundOrNullopt(Instant const& t) const {
+  auto const it = timeline_.upper_bound(t);
+  if (it == timeline_.end()) {
+    return std::nullopt;
+  } else {
+    return iterator(self_, it);
+  }
 }
 
 template<typename Frame>

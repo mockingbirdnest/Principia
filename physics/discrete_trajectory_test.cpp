@@ -137,6 +137,23 @@ TEST_F(DiscreteTrajectoryTest, BackFront) {
   EXPECT_EQ(t0_ + 14 * Second, trajectory.back().time);
 }
 
+TEST_F(DiscreteTrajectoryTest, FrontEmpty) {
+  // Construct a non-empty trajectory with an empty front segment.
+  DiscreteTrajectory<World> trajectory;
+  trajectory.NewSegment();
+  EXPECT_OK(trajectory.Append(
+      t0_, DegreesOfFreedom<World>(World::origin, Velocity<World>())));
+  ASSERT_FALSE(trajectory.empty());
+  ASSERT_TRUE(trajectory.segments().front().empty());
+
+  // Verify that begin() and front() behave as expected.
+  EXPECT_EQ(trajectory.front().time, t0_);
+  EXPECT_EQ(trajectory.begin()->time, t0_);
+
+  EXPECT_EQ(trajectory.segments().front().front().time, t0_);
+  EXPECT_EQ(trajectory.segments().front().begin()->time, t0_);
+}
+
 TEST_F(DiscreteTrajectoryTest, IterateForward) {
   auto const trajectory = MakeTrajectory();
   std::vector<Instant> times;
@@ -188,8 +205,10 @@ TEST_F(DiscreteTrajectoryTest, IterateBackward) {
 TEST_F(DiscreteTrajectoryTest, Empty) {
   DiscreteTrajectory<World> trajectory;
   EXPECT_TRUE(trajectory.empty());
+  EXPECT_EQ(trajectory.begin(), trajectory.end());
   trajectory = MakeTrajectory();
   EXPECT_FALSE(trajectory.empty());
+  EXPECT_NE(trajectory.begin(), trajectory.end());
 }
 
 TEST_F(DiscreteTrajectoryTest, Size) {

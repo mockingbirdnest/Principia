@@ -33,7 +33,8 @@ DiscreteTrajectory<Frame>::DiscreteTrajectory()
 template<typename Frame>
 typename DiscreteTrajectory<Frame>::reference
 DiscreteTrajectory<Frame>::front() const {
-  return *begin();
+  auto const sit = segment_by_left_endpoint_.begin()->second;
+  return *sit->timeline_.begin();
 }
 
 template<typename Frame>
@@ -42,16 +43,22 @@ DiscreteTrajectory<Frame>::back() const {
   return *rbegin();
 }
 
-template<typename Frame>
-typename DiscreteTrajectory<Frame>::iterator
-DiscreteTrajectory<Frame>::begin() const {
-  return segments_->front().begin();
+template <typename Frame>
+typename DiscreteTrajectory<Frame>::iterator DiscreteTrajectory<Frame>::begin()
+    const {
+  if (empty()) {
+    return end();
+  } else {
+    auto const sit = segment_by_left_endpoint_.begin()->second;
+    return sit->begin();
+  }
 }
 
-template<typename Frame>
-typename DiscreteTrajectory<Frame>::iterator
-DiscreteTrajectory<Frame>::end() const {
-  return segments_->back().end();
+template <typename Frame>
+typename DiscreteTrajectory<Frame>::iterator DiscreteTrajectory<Frame>::end()
+    const {
+  return iterator::EndOfLastSegment(
+      SegmentIterator(segments_.get(), segments_->end()));
 }
 
 template<typename Frame>
@@ -103,11 +110,8 @@ DiscreteTrajectory<Frame>::find(Instant const& t) const {
     return end();
   }
   auto const sit = leit->second;
-  auto const it = sit->find(t);
-  if (it == sit->end()) {
-    return end();
-  }
-  return it;
+  auto const it = sit->FindOrNullopt(t);
+  return it.has_value() ? *it : end();
 }
 
 template<typename Frame>
@@ -119,11 +123,8 @@ DiscreteTrajectory<Frame>::lower_bound(Instant const& t) const {
     return begin();
   }
   auto const sit = leit->second;
-  auto const it = sit->lower_bound(t);
-  if (it == sit->end()) {
-    return end();
-  }
-  return it;
+  auto const it = sit->LowerBoundOrNullopt(t);
+  return it.has_value() ? *it : end();
 }
 
 template<typename Frame>
@@ -135,11 +136,8 @@ DiscreteTrajectory<Frame>::upper_bound(Instant const& t) const {
     return begin();
   }
   auto const sit = leit->second;
-  auto const it = sit->upper_bound(t);
-  if (it == sit->end()) {
-    return end();
-  }
-  return it;
+  auto const it = sit->UpperBoundOrNullopt(t);
+  return it.has_value() ? *it : end();
 }
 
 template<typename Frame>

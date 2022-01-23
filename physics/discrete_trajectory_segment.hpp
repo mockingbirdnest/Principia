@@ -136,6 +136,12 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
       DiscreteTrajectorySegmentIterator<Frame> self);
 
  private:
+  // Versions of find, lower_bound, and upper_bound that use optionals to
+  // indicate absense. Useful for bypassing expensive end() call.
+  std::optional<iterator> FindOrNullopt(Instant const& t) const;
+  std::optional<iterator> LowerBoundOrNullopt(Instant const& t) const;
+  std::optional<iterator> UpperBoundOrNullopt(Instant const& t) const;
+
   // Changes the |self_| iterator.  Only for use when attaching/detaching
   // segments.
   void SetSelf(DiscreteTrajectorySegmentIterator<Frame> self);
