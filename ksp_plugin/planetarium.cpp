@@ -308,6 +308,9 @@ void Planetarium::PlotMethod3(
       initial_degrees_of_freedom.velocity();
   Time Δt = final_time - previous_time;
 
+  add_point(WorldToScaledSpace(plotting_to_world_(previous_position)));
+  int points_added = 1;
+
   Instant t;
   double estimated_tan²_error;
   std::optional<DegreesOfFreedom<Barycentric>>
@@ -315,13 +318,9 @@ void Planetarium::PlotMethod3(
   Position<Navigation> position;
   Square<Length> minimal_squared_distance = Infinity<Square<Length>>;
 
-  std::optional<Position<Navigation>> last_endpoint;
-
-  int steps_accepted = 0;
-
   goto estimate_tan²_error;
 
-  while (steps_accepted < max_steps &&
+  while (points_added < max_steps &&
          direction * (previous_time - final_time) < Time{}) {
     do {
       // One square root because we have squared errors, another one because the
@@ -351,7 +350,6 @@ void Planetarium::PlotMethod3(
           perspective_.Tan²AngularDistance(extrapolated_position, position) /
           16;
     } while (estimated_tan²_error > tan²_angular_resolution);
-    ++steps_accepted;
 
     previous_time = t;
     previous_position = position;
@@ -359,6 +357,8 @@ void Planetarium::PlotMethod3(
         to_plotting_frame_at_t(*degrees_of_freedom_in_barycentric).velocity();
 
     add_point(WorldToScaledSpace(plotting_to_world_(position)));
+    ++points_added;
+
     if (minimal_distance != nullptr) {
       minimal_squared_distance =
           std::min(minimal_squared_distance,
