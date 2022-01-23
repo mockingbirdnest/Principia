@@ -210,19 +210,8 @@ class Plotter {
 
   private static UnityEngine.Mesh MakeDynamicMesh() {
     var result = new UnityEngine.Mesh();
-    if (MainWindow.dynamic) {
-      result.MarkDynamic();
-    }
+    result.MarkDynamic();
     return result;
-  }
-
-  public void RemakeAllMeshes() {
-    celestial_trajectories_ = new Dictionary<CelestialBody, CelestialTrajectories>();
-    psychohistory_ = MakeDynamicMesh();
-    prediction_ = MakeDynamicMesh();
-    flight_plan_segments_ = new List<UnityEngine.Mesh>();
-    target_psychohistory_ = MakeDynamicMesh();
-    target_prediction_ = MakeDynamicMesh();
   }
 
   private readonly PrincipiaPluginAdapter adapter_;

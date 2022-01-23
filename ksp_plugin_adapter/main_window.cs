@@ -279,7 +279,6 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
   public static bool reuse_meshes = true;
   public static bool pre_cull => !now;
   public static bool now = false;
-  public static bool dynamic = false;
   public static int layer = 9;
   public static string trace = "";
 
@@ -287,10 +286,6 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     use_meshes = UnityEngine.GUILayout.Toggle(use_meshes, "Use meshes");
     reuse_meshes = UnityEngine.GUILayout.Toggle(reuse_meshes, "Reuse meshes");
     now = UnityEngine.GUILayout.Toggle(now, "Now post-render");
-    dynamic = UnityEngine.GUILayout.Toggle(dynamic, "Dynamic");
-    if (UnityEngine.GUILayout.Button("Remake meshes")) {
-      adapter_.plotter_.RemakeAllMeshes();
-    }
     if (int.TryParse(UnityEngine.GUILayout.TextArea(layer.ToString()), out int result)) {
       layer = result;
     }
