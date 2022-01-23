@@ -66,14 +66,17 @@ internal static class GLLines {
     double m11 = camera.projectionMatrix[1, 1];
     double field_of_view = Math.Atan2(Math.Sqrt(m00 * m00 + m11 * m11),
                                       m00 * m11);
-    return plugin.PlanetariumCreate(sun_world_position,
-                                    (XYZ)(Vector3d)opengl_camera_x_in_world,
-                                    (XYZ)(Vector3d)opengl_camera_y_in_world,
-                                    (XYZ)(Vector3d)opengl_camera_z_in_world,
-                                    (XYZ)(Vector3d)camera_position_in_world,
-                                    focal:1,
-                                    field_of_view,                  ScaledSpace.InverseScaleFactor,
-                  (XYZ)ScaledSpace.LocalToScaledSpace(Vector3d.zero));
+    return plugin.PlanetariumCreate(
+        sun_world_position,
+        (XYZ)(Vector3d)opengl_camera_x_in_world,
+        (XYZ)(Vector3d)opengl_camera_y_in_world,
+        (XYZ)(Vector3d)opengl_camera_z_in_world,
+        (XYZ)(Vector3d)camera_position_in_world,
+        focal:1,
+        field_of_view,
+        ScaledSpace.InverseScaleFactor,
+        scaled_space_origin: (XYZ)ScaledSpace.ScaledToLocalSpace(
+            Vector3d.zero));
   }
 
   public static void PlotRP2Lines(DisposableIterator rp2_lines_iterator,

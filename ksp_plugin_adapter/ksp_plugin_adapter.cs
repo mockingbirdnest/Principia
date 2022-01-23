@@ -2104,6 +2104,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   }
 
   private void RenderTrajectoriesWithMeshes() {
+    if (!PluginRunning()) {
+      return;
+    }
     if (!MainWindow.use_meshes) {
       return;
     }

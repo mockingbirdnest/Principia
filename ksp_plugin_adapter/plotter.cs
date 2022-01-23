@@ -104,6 +104,7 @@ class Plotter {
     double tan_angular_resolution = Math.Min(
             Math.Tan(vertical_fov * degree / 2) / (camera.pixelHeight / 2),
             Math.Tan(horizontal_fov * degree / 2) / (camera.pixelWidth / 2));
+    MainWindow.trace = $"{UnityEngine.Camera.current.name}, {PlanetariumCamera.Camera.name} {ScaledSpace.LocalToScaledSpace(Vector3d.zero)}";
     PlotSubtreeTrajectories(planetarium, main_vessel_guid, history_length,
                             Planetarium.fetch.Sun, tan_angular_resolution);
   }
