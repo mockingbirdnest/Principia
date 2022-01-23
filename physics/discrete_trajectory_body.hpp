@@ -103,12 +103,8 @@ DiscreteTrajectory<Frame>::find(Instant const& t) const {
   if (leit == segment_by_left_endpoint_.cend()) {
     return end();
   }
-  auto const sit = leit->second;
-  auto const it = sit->find(t);
-  if (it == sit->end()) {
-    return end();
-  }
-  return it;
+  auto const it = leit->second->FindImpl(t);
+  return it.has_value() ? *it : end();
 }
 
 template<typename Frame>
@@ -119,12 +115,8 @@ DiscreteTrajectory<Frame>::lower_bound(Instant const& t) const {
     // This includes an empty trajectory.
     return begin();
   }
-  auto const sit = leit->second;
-  auto const it = sit->lower_bound(t);
-  if (it == sit->end()) {
-    return end();
-  }
-  return it;
+  auto const it = leit->second->LowerBoundImpl(t);
+  return it.has_value() ? *it : end();
 }
 
 template<typename Frame>
@@ -135,12 +127,8 @@ DiscreteTrajectory<Frame>::upper_bound(Instant const& t) const {
     // This includes an empty trajectory.
     return begin();
   }
-  auto const sit = leit->second;
-  auto const it = sit->upper_bound(t);
-  if (it == sit->end()) {
-    return end();
-  }
-  return it;
+  auto const it = leit->second->UpperBoundImpl(t);
+  return it.has_value() ? *it : end();
 }
 
 template<typename Frame>

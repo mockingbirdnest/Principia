@@ -107,9 +107,16 @@ void DiscreteTrajectorySegment<Frame>::clear() {
 template<typename Frame>
 typename DiscreteTrajectorySegment<Frame>::iterator
 DiscreteTrajectorySegment<Frame>::find(Instant const& t) const {
+  auto const it = FindImpl(t);
+  return it.has_value() ? *it : end();
+}
+
+template <typename Frame>
+std::optional<typename DiscreteTrajectorySegment<Frame>::iterator>
+DiscreteTrajectorySegment<Frame>::FindImpl(Instant const& t) const {
   auto const it = timeline_.find(t);
   if (it == timeline_.end()) {
-    return end();
+    return std::nullopt;
   } else {
     return iterator(self_, it);
   }
@@ -118,9 +125,16 @@ DiscreteTrajectorySegment<Frame>::find(Instant const& t) const {
 template<typename Frame>
 typename DiscreteTrajectorySegment<Frame>::iterator
 DiscreteTrajectorySegment<Frame>::lower_bound(Instant const& t) const {
+  auto const it = LowerBoundImpl(t);
+  return it.has_value() ? *it : end();
+}
+
+template<typename Frame>
+std::optional<typename DiscreteTrajectorySegment<Frame>::iterator>
+DiscreteTrajectorySegment<Frame>::LowerBoundImpl(Instant const& t) const {
   auto const it = timeline_.lower_bound(t);
   if (it == timeline_.end()) {
-    return end();
+    return std::nullopt;
   } else {
     return iterator(self_, it);
   }
@@ -129,9 +143,16 @@ DiscreteTrajectorySegment<Frame>::lower_bound(Instant const& t) const {
 template<typename Frame>
 typename DiscreteTrajectorySegment<Frame>::iterator
 DiscreteTrajectorySegment<Frame>::upper_bound(Instant const& t) const {
+  auto const it = UpperBoundImpl(t);
+  return it.has_value() ? *it : end();
+}
+
+template<typename Frame>
+std::optional<typename DiscreteTrajectorySegment<Frame>::iterator>
+DiscreteTrajectorySegment<Frame>::UpperBoundImpl(Instant const& t) const {
   auto const it = timeline_.upper_bound(t);
   if (it == timeline_.end()) {
-    return end();
+    return std::nullopt;
   } else {
     return iterator(self_, it);
   }
