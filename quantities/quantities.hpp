@@ -130,8 +130,7 @@ constexpr Q SIUnit() { return Q(1); };
 
 // A positive infinity of |Q|.
 template<typename Q>
-CONSTEXPR_INFINITY Q Infinity =
-    SIUnit<Q>() * std::numeric_limits<double>::infinity();
+constexpr Q Infinity = SIUnit<Q>() * std::numeric_limits<double>::infinity();
 // A quiet NaN of |Q|.
 template <typename Q>
 CONSTEXPR_NAN Q NaN = SIUnit<Q>() * std::numeric_limits<double>::quiet_NaN();
