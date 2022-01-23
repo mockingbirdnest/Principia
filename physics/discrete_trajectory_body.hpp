@@ -33,7 +33,7 @@ DiscreteTrajectory<Frame>::DiscreteTrajectory()
 template<typename Frame>
 typename DiscreteTrajectory<Frame>::reference
 DiscreteTrajectory<Frame>::front() const {
-  return segments_->front().front();
+  return *segment_by_left_endpoint_.begin()->second->timeline_.begin();
 }
 
 template<typename Frame>

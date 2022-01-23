@@ -45,7 +45,7 @@ void DiscreteTrajectorySegment<Frame>::SetDownsamplingUnconditionally(
 template<typename Frame>
 typename DiscreteTrajectorySegment<Frame>::reference
 DiscreteTrajectorySegment<Frame>::front() const {
-  return *timeline_.begin();
+  return *begin();
 }
 
 template<typename Frame>
