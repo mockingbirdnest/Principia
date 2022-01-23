@@ -276,8 +276,8 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
   }
   
   public static bool use_meshes = false;
-  public static bool reuse_meshes = false;
-  public static bool pre_cull = false;
+  public static bool reuse_meshes = true;
+  public static bool pre_cull => !now;
   public static bool now = false;
   public static int layer = 9;
   public static string trace = "";
@@ -286,7 +286,6 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     use_meshes = UnityEngine.GUILayout.Toggle(use_meshes, "Use meshes");
     reuse_meshes = UnityEngine.GUILayout.Toggle(reuse_meshes, "Reuse meshes");
     now = UnityEngine.GUILayout.Toggle(now, "Now post-render");
-    pre_cull = !now;
     if (int.TryParse(UnityEngine.GUILayout.TextArea(layer.ToString()), out int result)) {
       layer = result;
     }

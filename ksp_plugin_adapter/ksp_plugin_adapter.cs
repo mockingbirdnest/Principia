@@ -874,8 +874,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     if (map_renderer_ == null) {
       map_renderer_ = PlanetariumCamera.Camera.gameObject.
           AddComponent<RenderingActions>();
-      map_renderer_.pre_cull = () => {if (MainWindow.pre_cull) RenderTrajectories();};
-      map_renderer_.post_render = () => {if (!MainWindow.pre_cull) RenderTrajectories();};
+      map_renderer_.pre_cull = () => { if (MainWindow.pre_cull) RenderTrajectoriesWithMeshes(); };
+      map_renderer_.post_render = () => { RenderTrajectories(); if (!MainWindow.pre_cull) RenderTrajectoriesWithMeshes(); };
     }
 
     if (galaxy_cube_rotator_ == null) {
@@ -2103,6 +2103,20 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     }
   }
 
+  private void RenderTrajectoriesWithMeshes() {
+    if (!MainWindow.use_meshes) {
+      return;
+    }
+    string main_vessel_guid = PredictedVessel()?.id.ToString();
+    if (MapView.MapIsEnabled) {
+      XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
+      using (DisposablePlanetarium planetarium =
+          GLLines.NewPlanetarium(plugin_, sun_world_position)) {
+        plotter_.Plot(planetarium, main_vessel_guid, main_window_.history_length);
+      }
+    }
+  }
+
   private void RenderTrajectories() {
     if (!PluginRunning()) {
       return;
@@ -2126,10 +2140,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
       using (DisposablePlanetarium planetarium =
           GLLines.NewPlanetarium(plugin_, sun_world_position)) {
-        if (MainWindow.use_meshes) {
-          plotter_.Plot(planetarium, main_vessel_guid,
-                        main_window_.history_length);
-        }
         GLLines.Draw(() => {
           if (!MainWindow.use_meshes) {
             PlotCelestialTrajectories(planetarium, main_vessel_guid);
