@@ -79,9 +79,9 @@ DiscreteTrajectory<World> MakeTrajectory(Timeline<World> const& timeline,
 
 // Constructs a trajectory beginning with many empty segments.
 DiscreteTrajectory<World> MakeTrajectoryWithEmptySegments(
-    int const num_empty_segments) {
+    int const number_of_empty_segments) {
   DiscreteTrajectory<World> trajectory;
-  for (int i = 0; i < num_empty_segments; i++) {
+  for (int i = 0; i < number_of_empty_segments; i++) {
     trajectory.NewSegment();
   }
   CHECK_OK(trajectory.Append(
