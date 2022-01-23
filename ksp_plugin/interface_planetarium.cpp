@@ -393,8 +393,8 @@ void __cdecl principia__PlanetariumGetPsychohistoryVertices(
         trajectory
             .lower_bound(plugin->CurrentTime() - max_history_length * Second)
             ->time,
-        trajectory.back().time,
-        plugin->CurrentTime(),
+        /*last_time=*/plugin->CurrentTime(),
+        /*now=*/plugin->CurrentTime(),
         /*reverse=*/true,
         [vertices, vertex_count](ScaledSpacePoint const& vertex) {
           vertices[(*vertex_count)++] = vertex;
