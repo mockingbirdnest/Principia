@@ -18,7 +18,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   // From https://forum.kerbalspaceprogram.com/index.php?/topic/84273--/,
   // edited 2017-03-09.  Where the name of the layer is not CamelCase, the
   // actual name is commented.
-  private enum UnityLayers {
+  public enum UnityLayers {
     TransparentFX = 1,
     IgnoreRaycast = 2,  // Ignore Raycast
     Water = 3,
@@ -874,8 +874,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     if (map_renderer_ == null) {
       map_renderer_ = PlanetariumCamera.Camera.gameObject.
           AddComponent<RenderingActions>();
-      map_renderer_.pre_cull = () => { if (MainWindow.pre_cull) RenderTrajectoriesWithMeshes(); };
-      map_renderer_.post_render = () => { RenderTrajectories(); if (!MainWindow.pre_cull) RenderTrajectoriesWithMeshes(); };
+      map_renderer_.pre_cull = () => { RenderTrajectories(); };
+      map_renderer_.post_render = () => { RenderManœuvreMarkers(); };
     }
 
     if (galaxy_cube_rotator_ == null) {
@@ -2103,23 +2103,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     }
   }
 
-  private void RenderTrajectoriesWithMeshes() {
-    if (!PluginRunning()) {
-      return;
-    }
-    if (!MainWindow.use_meshes) {
-      return;
-    }
-    string main_vessel_guid = PredictedVessel()?.id.ToString();
-    if (MapView.MapIsEnabled) {
-      XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
-      using (DisposablePlanetarium planetarium =
-          GLLines.NewPlanetarium(plugin_, sun_world_position)) {
-        plotter_.Plot(planetarium, main_vessel_guid, main_window_.history_length);
-      }
-    }
-  }
-
   private void RenderTrajectories() {
     if (!PluginRunning()) {
       return;
@@ -2143,61 +2126,24 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
       using (DisposablePlanetarium planetarium =
           GLLines.NewPlanetarium(plugin_, sun_world_position)) {
-        GLLines.Draw(() => {
-          if (!MainWindow.use_meshes) {
-            PlotCelestialTrajectories(planetarium, main_vessel_guid);
-          }
+        plotter_.Plot(planetarium, main_vessel_guid, main_window_.history_length);
+      }
+    }
+  }
 
-          // Vessel trajectories.
+  private void RenderManœuvreMarkers() {
+    if (!PluginRunning()) {
+      return;
+    }
+    string main_vessel_guid = PredictedVessel()?.id.ToString();
+    if (MapView.MapIsEnabled) {
+      XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
+      using (DisposablePlanetarium planetarium =
+          GLLines.NewPlanetarium(plugin_, sun_world_position)) {
+        GLLines.Draw(() => {
           if (main_vessel_guid == null) {
             return;
           }
-          if (!MainWindow.use_meshes) {
-            // Main vessel psychohistory and prediction.
-            using (DisposableIterator rp2_lines_iterator =
-                planetarium.PlanetariumPlotPsychohistory(
-                    plugin_,
-                    main_vessel_guid,
-                    main_window_.history_length)) {
-              GLLines.PlotRP2Lines(rp2_lines_iterator,
-                                   history_colour,
-                                   history_style);
-            }
-            using (DisposableIterator rp2_lines_iterator =
-                planetarium.PlanetariumPlotPrediction(
-                    plugin_,
-                    main_vessel_guid)) {
-              GLLines.PlotRP2Lines(rp2_lines_iterator,
-                                   prediction_colour,
-                                   prediction_style);
-            }
-            // Target psychohistory and prediction.
-            string target_id = FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.
-                ToString();
-            if (FlightGlobals.ActiveVessel != null &&
-                !plotting_frame_selector_.target_frame_selected &&
-                target_id != null &&
-                plugin_.HasVessel(target_id)) {
-              using (DisposableIterator rp2_lines_iterator =
-                  planetarium.PlanetariumPlotPsychohistory(
-                      plugin_,
-                      target_id,
-                      main_window_.history_length)) {
-                GLLines.PlotRP2Lines(rp2_lines_iterator,
-                                     target_history_colour,
-                                     target_history_style);
-              }
-              using (DisposableIterator rp2_lines_iterator =
-                  planetarium.PlanetariumPlotPrediction(
-                      plugin_,
-                      target_id)) {
-                GLLines.PlotRP2Lines(rp2_lines_iterator,
-                                     target_prediction_colour,
-                                     target_prediction_style);
-              }
-            }
-          }
-          // Main vessel flight plan.
           if (plugin_.FlightPlanExists(main_vessel_guid)) {
             int number_of_anomalous_manœuvres =
                 plugin_.FlightPlanNumberOfAnomalousManoeuvres(main_vessel_guid);
@@ -2217,21 +2163,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                 }
                 Vector3d position_at_start = (Vector3d)rendered_segments.
                     IteratorGetDiscreteTrajectoryXYZ();
-                if (!MainWindow.use_meshes) {
-                  using (DisposableIterator rp2_lines_iterator =
-                      planetarium.PlanetariumPlotFlightPlanSegment(
-                          plugin_,
-                          main_vessel_guid,
-                          i)) {
-                    GLLines.PlotRP2Lines(rp2_lines_iterator,
-                                         is_burn
-                                             ? burn_colour
-                                             : flight_plan_colour,
-                                         is_burn
-                                             ? burn_style
-                                             : flight_plan_style);
-                  }
-                }
                 if (is_burn) {
                   int manœuvre_index = i / 2;
                   if (manœuvre_index <
@@ -2261,71 +2192,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             }
           }
         });
-      }
-    }
-  }
-
-  private void PlotCelestialTrajectories(DisposablePlanetarium planetarium,
-                                         string main_vessel_guid) {
-    const double degree = Math.PI / 180;
-    UnityEngine.Camera camera = PlanetariumCamera.Camera;
-    float vertical_fov = camera.fieldOfView;
-    float horizontal_fov =
-        UnityEngine.Camera.VerticalToHorizontalFieldOfView(
-            vertical_fov, camera.aspect);
-    // The angle subtended by the pixel closest to the centre of the viewport.
-    double tan_angular_resolution = Math.Min(
-            Math.Tan(vertical_fov * degree / 2) / (camera.pixelHeight / 2),
-            Math.Tan(horizontal_fov * degree / 2) / (camera.pixelWidth / 2));
-    MainWindow.trace = $"{UnityEngine.Camera.current.name}, {PlanetariumCamera.Camera.name} {ScaledSpace.LocalToScaledSpace(Vector3d.zero)}";
-    PlotSubtreeTrajectories(planetarium, main_vessel_guid,
-                            Planetarium.fetch.Sun,
-                            tan_angular_resolution);
-  }
-
-  private void PlotSubtreeTrajectories(DisposablePlanetarium planetarium,
-                                       string main_vessel_guid,
-                                       CelestialBody root,
-                                       double tan_angular_resolution) {
-    var colour = root.orbitDriver?.Renderer?.orbitColor ??
-        XKCDColors.SunshineYellow;
-    var camera_world_position = ScaledSpace.ScaledToLocalSpace(
-        PlanetariumCamera.fetch.transform.position);
-    double min_distance_from_camera =
-        (root.position - camera_world_position).magnitude;
-    if (!plotting_frame_selector_.FixesBody(root)) {
-      using (DisposableIterator rp2_lines_iterator =
-             planetarium.PlanetariumPlotCelestialTrajectoryForPsychohistory(
-                 plugin_,
-                 root.flightGlobalsIndex,
-                 main_vessel_guid,
-                 main_window_.history_length,
-                 out double min_past_distance)) {
-        min_distance_from_camera =
-            Math.Min(min_distance_from_camera, min_past_distance);
-        GLLines.PlotRP2Lines(rp2_lines_iterator, colour, GLLines.Style.Faded);
-      }
-      if (main_vessel_guid != null) {
-        using (DisposableIterator rp2_lines_iterator =
-            planetarium.
-                PlanetariumPlotCelestialTrajectoryForPredictionOrFlightPlan(
-                    plugin_,
-                    root.flightGlobalsIndex,
-                    main_vessel_guid,
-                    out double min_future_distance)) {
-          min_distance_from_camera =
-              Math.Min(min_distance_from_camera, min_future_distance);
-          GLLines.PlotRP2Lines(rp2_lines_iterator, colour, GLLines.Style.Solid);
-        }
-      }
-    }
-    foreach (CelestialBody child in root.orbitingBodies) {
-      // Plot the trajectory of an orbiting body if it could be separated from
-      // that of its parent by a pixel of empty space, instead of merely making
-      // the line wider.
-      if (child.orbit.ApR / min_distance_from_camera > 2 * tan_angular_resolution) {
-        PlotSubtreeTrajectories(planetarium, main_vessel_guid, child,
-                                tan_angular_resolution);
       }
     }
   }

@@ -274,22 +274,8 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
       selecting_target_celestial_ = false;
     }
   }
-  
-  public static bool use_meshes = false;
-  public static bool reuse_meshes = true;
-  public static bool pre_cull => !now;
-  public static bool now = false;
-  public static int layer = 9;
-  public static string trace = "";
 
   private void RenderLoggingSettings() {
-    use_meshes = UnityEngine.GUILayout.Toggle(use_meshes, "Use meshes");
-    reuse_meshes = UnityEngine.GUILayout.Toggle(reuse_meshes, "Reuse meshes");
-    now = UnityEngine.GUILayout.Toggle(now, "Now post-render");
-    if (int.TryParse(UnityEngine.GUILayout.TextArea(layer.ToString()), out int result)) {
-      layer = result;
-    }
-    UnityEngine.GUILayout.Label(trace);
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(
           text : L10N.CacheFormat(

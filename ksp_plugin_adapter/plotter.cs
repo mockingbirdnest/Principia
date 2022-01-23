@@ -102,7 +102,6 @@ class Plotter {
     double tan_angular_resolution = Math.Min(
             Math.Tan(vertical_fov * degree / 2) / (camera.pixelHeight / 2),
             Math.Tan(horizontal_fov * degree / 2) / (camera.pixelWidth / 2));
-    MainWindow.trace = $"{UnityEngine.Camera.current.name}, {PlanetariumCamera.Camera.name} {ScaledSpace.LocalToScaledSpace(Vector3d.zero)}";
     PlotSubtreeTrajectories(planetarium, main_vessel_guid, history_length,
                             Planetarium.fetch.Sun, tan_angular_resolution);
   }
@@ -164,9 +163,6 @@ class Plotter {
   private void DrawLineMesh(UnityEngine.Mesh mesh,
                             UnityEngine.Color colour,
                             GLLines.Style style) {
-    if (!MainWindow.reuse_meshes) {
-      mesh = MakeDynamicMesh();
-    }
     mesh.vertices = VertexBuffer.get;
     var indices = new int[vertex_count_];
     for (int i = 0; i < vertex_count_; ++i) {
@@ -192,20 +188,14 @@ class Plotter {
         style == GLLines.Style.Dashed ? UnityEngine.MeshTopology.Lines
                                       : UnityEngine.MeshTopology.LineStrip,
         submesh: 0);
-    if (MainWindow.reuse_meshes) {
-      mesh.RecalculateBounds();
-    }
-    if (MainWindow.now) {
-      UnityEngine.Graphics.DrawMeshNow(mesh, UnityEngine.Vector3.zero, UnityEngine.Quaternion.identity);
-    } else {
-      UnityEngine.Graphics.DrawMesh(
-          mesh,
-          UnityEngine.Vector3.zero,
-          UnityEngine.Quaternion.identity,
-          GLLines.line_material,
-          MainWindow.layer,
-          PlanetariumCamera.Camera);
-    }
+    mesh.RecalculateBounds();
+    UnityEngine.Graphics.DrawMesh(
+        mesh,
+        UnityEngine.Vector3.zero,
+        UnityEngine.Quaternion.identity,
+        GLLines.line_material,
+        (int)PrincipiaPluginAdapter.UnityLayers.Atmosphere,
+        PlanetariumCamera.Camera);
   }
 
   private static UnityEngine.Mesh MakeDynamicMesh() {

@@ -79,75 +79,9 @@ internal static class GLLines {
             Vector3d.zero));
   }
 
-  public static void PlotRP2Lines(DisposableIterator rp2_lines_iterator,
-                                  UnityEngine.Color colour,
-                                  Style style) {
-    UnityEngine.GL.Color(colour);
-
-    // First evaluate the total size of the lines.
-    int size = 0;
-    for (;
-        !rp2_lines_iterator.IteratorAtEnd();
-        rp2_lines_iterator.IteratorIncrement()) {
-      using (DisposableIterator rp2_line_iterator =
-          rp2_lines_iterator.IteratorGetRP2LinesIterator()) {
-        size += rp2_line_iterator.IteratorSize();
-      }
-    }
-
-    // Reset the iterator and do the actual plotting.
-    rp2_lines_iterator.IteratorReset();
-    int index = 0;
-    for (;
-        !rp2_lines_iterator.IteratorAtEnd();
-        rp2_lines_iterator.IteratorIncrement()) {
-      using (DisposableIterator rp2_line_iterator =
-          rp2_lines_iterator.IteratorGetRP2LinesIterator()) {
-        XY? previous_rp2_point = null;
-        for (;
-            !rp2_line_iterator.IteratorAtEnd();
-            rp2_line_iterator.IteratorIncrement()) {
-          XY current_rp2_point = ToScreen(
-              rp2_line_iterator.IteratorGetRP2LineXY());
-          if (previous_rp2_point.HasValue) {
-            if (style == Style.Faded) {
-              var faded_colour = colour;
-              // Fade from the opacity of |colour| (when index = 0) down to 1/4
-              // of that opacity.
-              faded_colour.a *= 1 - (float)(4 * index) / (float)(5 * size);
-              UnityEngine.GL.Color(faded_colour);
-            }
-            if (style != Style.Dashed || index % 2 == 1) {
-              UnityEngine.GL.Vertex3((float)previous_rp2_point.Value.x,
-                                     (float)previous_rp2_point.Value.y,
-                                     0);
-              UnityEngine.GL.Vertex3((float)current_rp2_point.x,
-                                     (float)current_rp2_point.y,
-                                     0);
-            }
-          }
-          previous_rp2_point = current_rp2_point;
-          ++index;
-        }
-      }
-    }
-  }
-
   private static UnityEngine.Vector3 WorldToMapScreen(Vector3d world) {
     return PlanetariumCamera.Camera.WorldToScreenPoint(
         ScaledSpace.LocalToScaledSpace(world));
-  }
-
-  private static XY ToScreen(XY rp2_point) {
-    UnityEngine.Camera camera = PlanetariumCamera.Camera;
-    return new XY{
-        x = (rp2_point.x * camera.projectionMatrix[0, 0] + 1.0) *
-            0.5 *
-            camera.pixelWidth,
-        y = (rp2_point.y * camera.projectionMatrix[1, 1] + 1.0) *
-            0.5 *
-            camera.pixelHeight
-    };
   }
 
   private static UnityEngine.Material line_material_;
