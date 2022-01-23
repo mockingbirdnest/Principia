@@ -123,7 +123,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   internal UnityEngine.Color target_prediction_colour = XKCDColors.LightMauve;
   internal GLLines.Style target_prediction_style = GLLines.Style.Solid;
 
-  private Plotter plotter_;
+  // TODO(egg): private.
+  internal Plotter plotter_;
 
   private readonly List<IntPtr> vessel_futures_ = new List<IntPtr>();
 

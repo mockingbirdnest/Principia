@@ -69,7 +69,7 @@ class Plotter {
       int number_of_segments =
           Plugin.FlightPlanNumberOfSegments(main_vessel_guid);
       for (int i = flight_plan_segments_.Count; i < number_of_segments; ++i) {
-        flight_plan_segments_.Add(new UnityEngine.Mesh());
+        flight_plan_segments_.Add(MakeDynamicMesh());
       }
       for (int i = 0; i < number_of_segments; ++i) {
         bool is_burn = i % 2 == 1;
@@ -165,7 +165,7 @@ class Plotter {
                             UnityEngine.Color colour,
                             GLLines.Style style) {
     if (!MainWindow.reuse_meshes) {
-      mesh = new UnityEngine.Mesh();
+      mesh = MakeDynamicMesh();
     }
     mesh.vertices = VertexBuffer.get;
     var indices = new int[vertex_count_];
@@ -208,6 +208,23 @@ class Plotter {
     }
   }
 
+  private static UnityEngine.Mesh MakeDynamicMesh() {
+    var result = new UnityEngine.Mesh();
+    if (MainWindow.dynamic) {
+      result.MarkDynamic();
+    }
+    return result;
+  }
+
+  public void RemakeAllMeshes() {
+    celestial_trajectories_ = new Dictionary<CelestialBody, CelestialTrajectories>();
+    psychohistory_ = MakeDynamicMesh();
+    prediction_ = MakeDynamicMesh();
+    flight_plan_segments_ = new List<UnityEngine.Mesh>();
+    target_psychohistory_ = MakeDynamicMesh();
+    target_prediction_ = MakeDynamicMesh();
+  }
+
   private readonly PrincipiaPluginAdapter adapter_;
 
   private IntPtr Plugin => adapter_.Plugin();
@@ -227,17 +244,17 @@ class Plotter {
   private int vertex_count_;
 
   private class CelestialTrajectories {
-    public UnityEngine.Mesh future = new UnityEngine.Mesh();
-    public UnityEngine.Mesh past = new UnityEngine.Mesh();
+    public UnityEngine.Mesh future = MakeDynamicMesh();
+    public UnityEngine.Mesh past = MakeDynamicMesh();
   }
 
   private Dictionary<CelestialBody, CelestialTrajectories> celestial_trajectories_ =
       new Dictionary<CelestialBody, CelestialTrajectories>();
-  private UnityEngine.Mesh psychohistory_ = new UnityEngine.Mesh();
-  private UnityEngine.Mesh prediction_ = new UnityEngine.Mesh();
+  private UnityEngine.Mesh psychohistory_ = MakeDynamicMesh();
+  private UnityEngine.Mesh prediction_ = MakeDynamicMesh();
   private List<UnityEngine.Mesh> flight_plan_segments_ = new List<UnityEngine.Mesh>();
-  private UnityEngine.Mesh target_psychohistory_ = new UnityEngine.Mesh();
-  private UnityEngine.Mesh target_prediction_ = new UnityEngine.Mesh();
+  private UnityEngine.Mesh target_psychohistory_ = MakeDynamicMesh();
+  private UnityEngine.Mesh target_prediction_ = MakeDynamicMesh();
 }
 
 }  // namespace ksp_plugin_adapter
