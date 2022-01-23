@@ -131,7 +131,7 @@ class Planetarium {
       Instant const& now,
       bool reverse,
       std::function<void(ScaledSpacePoint const&)> add_point,
-      int max_steps,
+      int max_points,
       Length* minimal_distance = nullptr) const;
 
  private:

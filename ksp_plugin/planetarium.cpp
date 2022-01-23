@@ -282,7 +282,7 @@ void Planetarium::PlotMethod3(
     Instant const& now,
     bool reverse,
     std::function<void(ScaledSpacePoint const&)> add_point,
-    int const max_steps,
+    int const max_points,
     Length* minimal_distance) const {
   double const tan²_angular_resolution =
       Pow<2>(parameters_.tan_angular_resolution_);
