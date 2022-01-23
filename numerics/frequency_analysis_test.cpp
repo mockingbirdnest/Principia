@@ -466,7 +466,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionNoSecular) {
     EXPECT_THAT(
         projection4(t_min + i * (t_max - t_min) / 100),
         RelativeErrorFrom(series.value()(t_min + i * (t_max - t_min) / 100),
-                          AllOf(Ge(0), Lt(9.3e-14))));
+                          AllOf(Ge(0), Lt(1.4e-13))));
   }
 }
 

@@ -201,7 +201,7 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
 
   // Mean element stability.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().measure(),
-              Lt(1.0 * Milli(Metre)));
+              Lt(1.1 * Milli(Metre)));
   EXPECT_THAT(elements.mean_eccentricity_interval().measure(),
               Lt(1.1e-10));
   EXPECT_THAT(elements.mean_inclination_interval().measure(),
