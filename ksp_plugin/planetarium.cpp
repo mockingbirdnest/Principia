@@ -320,7 +320,7 @@ void Planetarium::PlotMethod3(
 
   goto estimate_tan²_error;
 
-  while (points_added < max_steps &&
+  while (points_added < max_points &&
          direction * (previous_time - final_time) < Time{}) {
     do {
       // One square root because we have squared errors, another one because the

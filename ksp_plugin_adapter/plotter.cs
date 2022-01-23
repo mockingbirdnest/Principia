@@ -181,15 +181,15 @@ class Plotter {
     }
     var colours = new UnityEngine.Color[vertices_.Length];
     if (style == GLLines.Style.Faded) {
-      for (int i = 0; i < colours.Length; ++i) {
+      for (int i = 0; i < vertex_count_; ++i) {
         var faded_colour = colour;
         // Fade from the opacity of |colour| (when i = 0) down to 1/4 of that
         // opacity.
-        faded_colour.a *= 1 - (float)(4 * i) / (float)(5 * colours.Length);
+        faded_colour.a *= 1 - (float)(4 * i) / (float)(5 * vertex_count_);
         colours[i] = faded_colour;
       }
     } else {
-      for (int i = 0; i < colours.Length; ++i) {
+      for (int i = 0; i < vertex_count_; ++i) {
         colours[i] = colour;
       }
     }
