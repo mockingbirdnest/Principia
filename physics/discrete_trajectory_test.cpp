@@ -205,8 +205,10 @@ TEST_F(DiscreteTrajectoryTest, IterateBackward) {
 TEST_F(DiscreteTrajectoryTest, Empty) {
   DiscreteTrajectory<World> trajectory;
   EXPECT_TRUE(trajectory.empty());
+  EXPECT_EQ(trajectory.begin(), trajectory.end());
   trajectory = MakeTrajectory();
   EXPECT_FALSE(trajectory.empty());
+  EXPECT_NE(trajectory.begin(), trajectory.end());
 }
 
 TEST_F(DiscreteTrajectoryTest, Size) {

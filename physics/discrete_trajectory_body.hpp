@@ -45,7 +45,7 @@ DiscreteTrajectory<Frame>::back() const {
 template<typename Frame>
 typename DiscreteTrajectory<Frame>::iterator
 DiscreteTrajectory<Frame>::begin() const {
-  return segment_by_left_endpoint_.begin()->second->begin();
+  return empty() ? end() : segment_by_left_endpoint_.begin()->second->begin();
 }
 
 template<typename Frame>
