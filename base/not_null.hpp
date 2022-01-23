@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <type_traits>
+#include <utility>
 
 #include "base/macros.hpp"
 #include "base/not_constructible.hpp"
@@ -94,14 +95,14 @@ struct remove_not_null<not_null<Pointer>> {
 };
 
 // Wrapper struct for pointers with move assigment compatible with not_null.
-template<typename Pointer, typename=void>
+template <typename Pointer, typename = void>
 struct NotNullStorage;
 
 // Case: move assignment is equvalent to copy (raw pointer).
 template <typename P>
 struct NotNullStorage<
     P, std::enable_if_t<std::is_trivially_move_assignable_v<P>>> {
-  NotNullStorage(P&& pointer) : pointer(std::move(pointer)) {}
+  explicit NotNullStorage(P&& pointer) : pointer(std::move(pointer)) {}
   NotNullStorage(NotNullStorage const&) = default;
   NotNullStorage(NotNullStorage&&) = default;
   NotNullStorage& operator=(NotNullStorage const&) = default;
@@ -114,7 +115,7 @@ struct NotNullStorage<
 template <typename P>
 struct NotNullStorage<
     P, std::enable_if_t<!std::is_trivially_move_assignable_v<P>>> {
-  NotNullStorage(P&& pointer) : pointer(std::move(pointer)) {}
+  explicit NotNullStorage(P&& pointer) : pointer(std::move(pointer)) {}
   NotNullStorage(NotNullStorage const&) = default;
   NotNullStorage(NotNullStorage&&) = default;
   NotNullStorage& operator=(NotNullStorage const&) = default;
@@ -215,8 +216,8 @@ class not_null final {
                std::is_convertible<OtherPointer, pointer>::value>::type>
   not_null& operator=(not_null<OtherPointer>&& other);
 
-  // Returns |storage_.pointer|, by const reference to avoid a copy if |pointer| is
-  // |unique_ptr|.
+  // Returns |storage_.pointer|, by const reference to avoid a copy if |pointer|
+  // is |unique_ptr|.
   // If this were to return by |const&|, ambiguities would arise where an rvalue
   // of type |not_null<pointer>| is given as an argument to a function that has
   // overloads for both |pointer const&| and |pointer&&|.
