@@ -189,6 +189,9 @@ class Plotter {
                                       : UnityEngine.MeshTopology.LineStrip,
         submesh: 0);
     mesh.RecalculateBounds();
+    // If the lines are drawn in layer 31 (Vectors), which sounds more
+    // appropriate, they vanish when zoomed out.  Layer 9 works; pay no
+    // attention to its name.
     UnityEngine.Graphics.DrawMesh(
         mesh,
         UnityEngine.Vector3.zero,
