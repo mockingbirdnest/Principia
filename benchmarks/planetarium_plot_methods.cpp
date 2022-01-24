@@ -36,6 +36,8 @@ using ksp_plugin::Barycentric;
 using ksp_plugin::Navigation;
 using ksp_plugin::NavigationFrame;
 using ksp_plugin::Planetarium;
+using ksp_plugin::ScaledSpacePoint;
+using ksp_plugin::World;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
@@ -171,7 +173,12 @@ class Satellites {
     return Planetarium(parameters,
                        perspective,
                        ephemeris_.get(),
-                       earth_centred_inertial_.get());
+                       earth_centred_inertial_.get(),
+        [](Position<Navigation> const& plotted_point) {
+          return ScaledSpacePoint::FromCoordinates(
+              ((plotted_point - World::origin) *
+               (1 / (6000 * Metre))).coordinates());
+        });
   }
 
  private:
