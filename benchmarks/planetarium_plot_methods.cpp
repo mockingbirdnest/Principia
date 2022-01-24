@@ -176,7 +176,7 @@ class Satellites {
                        earth_centred_inertial_.get(),
         [](Position<Navigation> const& plotted_point) {
           return ScaledSpacePoint::FromCoordinates(
-              ((plotted_point - World::origin) *
+              ((plotted_point - Navigation::origin) *
                (1 / (6000 * Metre))).coordinates());
         });
   }
