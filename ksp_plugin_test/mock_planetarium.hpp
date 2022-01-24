@@ -30,6 +30,7 @@ class MockPlanetarium : public Planetarium {
                     .Forget<OrthogonalMap>()),
                 1 * Metre),
             make_not_null<Ephemeris<Barycentric> const*>(),
+            make_not_null<NavigationFrame const*>(),
             [](Position<Navigation> const& plotted_point) {
               return ScaledSpacePoint::FromCoordinates(
                   ((plotted_point - Navigation::origin) *

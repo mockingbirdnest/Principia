@@ -49,6 +49,7 @@ using geometry::Instant;
 using geometry::LinearMap;
 using geometry::OrthogonalMap;
 using geometry::Perspective;
+using geometry::Position;
 using geometry::RigidTransformation;
 using geometry::Rotation;
 using geometry::Sign;
@@ -112,7 +113,7 @@ class PlanetariumTest : public ::testing::Test {
               return ScaledSpacePoint::FromCoordinates(
                   ((plotted_point - Navigation::origin) *
                    (1 / (6000 * Metre))).coordinates());
-            })
+            }),
         // A body of radius 1 m located at the origin.
         body_(MassiveBody::Parameters(1 * Kilogram),
               RotatingBody<Barycentric>::Parameters(
