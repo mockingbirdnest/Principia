@@ -107,6 +107,10 @@ class PlanetariumTest : public ::testing::Test {
                     Sign::Positive(),
                     DeduceSignReversingOrientation{}).Forget<OrthogonalMap>()),
           /*focal=*/5 * Metre),
+        plotting_to_world_(Navigation::origin,
+                           World::origin,
+                           Signature<Navigation, World>::CentralInversion()
+                               .Forget<OrthogonalMap>()),
         // A body of radius 1 m located at the origin.
         body_(MassiveBody::Parameters(1 * Kilogram),
               RotatingBody<Barycentric>::Parameters(
@@ -134,6 +138,7 @@ class PlanetariumTest : public ::testing::Test {
   Instant const t0_;
   Perspective<Navigation, Camera> const perspective_;
   MockDynamicFrame<Barycentric, Navigation> plotting_frame_;
+  RigidTransformation<Navigation, World> plotting_to_world_;
   RotatingBody<Barycentric> const body_;
   std::vector<not_null<MassiveBody const*>> const bodies_;
   MockContinuousTrajectory<Barycentric> continuous_trajectory_;
@@ -155,8 +160,13 @@ TEST_F(PlanetariumTest, PlotMethod0) {
       /*sphere_radius_multiplier=*/1,
       /*angular_resolution=*/0 * Degree,
       /*field_of_view=*/90 * Degree);
-  Planetarium planetarium(
-      parameters, perspective_, &ephemeris_, &plotting_frame_);
+  Planetarium planetarium(parameters,
+                          perspective_,
+                          &ephemeris_,
+                          &plotting_frame_,
+                          plotting_to_world_,
+                          /*inverse_scale_factor=*/1 / (6000 * Metre),
+                          /*scaled_space_origin=*/World::origin);
   auto const rp2_lines =
       planetarium.PlotMethod0(discrete_trajectory,
                               discrete_trajectory.begin(),
@@ -201,8 +211,13 @@ TEST_F(PlanetariumTest, PlotMethod1) {
       /*sphere_radius_multiplier=*/1,
       /*angular_resolution=*/0.4 * ArcMinute,
       /*field_of_view=*/90 * Degree);
-  Planetarium planetarium(
-      parameters, perspective_, &ephemeris_, &plotting_frame_);
+  Planetarium planetarium(parameters,
+                          perspective_,
+                          &ephemeris_,
+                          &plotting_frame_,
+                          plotting_to_world_,
+                          /*inverse_scale_factor=*/1 / (6000 * Metre),
+                          /*scaled_space_origin=*/World::origin);
   auto const rp2_lines =
       planetarium.PlotMethod1(discrete_trajectory,
                               discrete_trajectory.begin(),
@@ -237,8 +252,13 @@ TEST_F(PlanetariumTest, PlotMethod2) {
       /*sphere_radius_multiplier=*/1,
       /*angular_resolution=*/0.4 * ArcMinute,
       /*field_of_view=*/90 * Degree);
-  Planetarium planetarium(
-      parameters, perspective_, &ephemeris_, &plotting_frame_);
+  Planetarium planetarium(parameters,
+                          perspective_,
+                          &ephemeris_,
+                          &plotting_frame_,
+                          plotting_to_world_,
+                          /*inverse_scale_factor=*/1 / (6000 * Metre),
+                          /*scaled_space_origin=*/World::origin);
   auto const rp2_lines =
       planetarium.PlotMethod2(discrete_trajectory,
                               discrete_trajectory.begin(),
@@ -293,7 +313,10 @@ TEST_F(PlanetariumTest, RealSolarSystem) {
                           Perspective<Navigation, Camera>(rigid_transformation,
                                                           /*focal=*/1 * Metre),
                           ephemeris.get(),
-                          plotting_frame.get());
+                          plotting_frame.get(),
+                          plotting_to_world_,
+                          /*inverse_scale_factor=*/1 / (6000 * Metre),
+                          /*scaled_space_origin=*/World::origin);
   auto const rp2_lines =
       planetarium.PlotMethod2(discrete_trajectory,
                               discrete_trajectory.begin(),

@@ -124,6 +124,8 @@ class Planetarium {
       bool reverse,
       Length* minimal_distance = nullptr) const;
 
+  // A method similar to PlotMethod2, but which produces a three-dimensional
+  // trajectory in scaled space instead of projecting and hiding.
   void PlotMethod3(
       Trajectory<Barycentric> const& trajectory,
       Instant const& first_time,

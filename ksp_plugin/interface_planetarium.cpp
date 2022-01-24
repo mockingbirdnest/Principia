@@ -228,10 +228,10 @@ void __cdecl principia__PlanetariumPlotPsychohistory(
   }
 }
 
-// TODO(egg): comment for the rendered past trajectory of the celestial with
-// the given index; the trajectory goes back |max_history_length| seconds before
-// the present time (or to the earliest time available if the relevant |t_min|
-// is more recent).
+// Fills the array of size |vertices_size| at |vertices| with vertices for the
+// rendered past trajectory of the celestial with the given index; the
+// trajectory goes back |max_history_length| seconds before the present time (or
+// to the earliest time available if the relevant |t_min| is more recent).
 void __cdecl principia__PlanetariumPlotCelestialPastTrajectory(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
@@ -287,8 +287,10 @@ void __cdecl principia__PlanetariumPlotCelestialPastTrajectory(
   }
 }
 
-// TODO(egg): comment; the trajectory goes as far as the furthest of the final time
-// of the prediction or that of the flight plan.
+// Fills the array of size |vertices_size| at |vertices| with vertices for the
+// rendered future trajectory of the celestial with the given index; the
+// trajectory goes as far as the furthest of the final time of the prediction or
+// that of the flight plan.
 void __cdecl principia__PlanetariumPlotCelestialFutureTrajectory(
     Planetarium const* const planetarium,
     Plugin const* const plugin,

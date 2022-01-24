@@ -66,6 +66,7 @@ using geometry::Point;
 using geometry::Perspective;
 using geometry::Position;
 using geometry::Rotation;
+using geometry::RigidTransformation;
 using geometry::Vector;
 using geometry::Velocity;
 using integrators::FixedStepSizeIntegrator;
@@ -392,7 +393,7 @@ class Plugin {
   virtual not_null<std::unique_ptr<Planetarium>> NewPlanetarium(
       Planetarium::Parameters const& parameters,
       Perspective<Navigation, Camera> const& perspective,
-      geometry::RigidTransformation<Navigation, World> const& plotting_to_world,
+      RigidTransformation<Navigation, World> const& plotting_to_world,
       Inverse<Length> inverse_scale_factor,
       Position<World> scaled_space_origin) const;
 
