@@ -26,7 +26,7 @@ using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Perspective;
 using geometry::Position;
-using geometry::RigidTransformation;
+using geometry::R3Element;
 using geometry::RP2Lines;
 using geometry::RP2Point;
 using geometry::Segment;
@@ -39,12 +39,13 @@ using physics::RigidMotion;
 using physics::Trajectory;
 using quantities::Angle;
 using quantities::Length;
-using quantities::Inverse;
 
 // Corresponds to a UnityEngine.Vector3 representing a position in KSP’s
 // ScaledSpace.
-extern "C"
-struct ScaledSpacePoint {
+extern "C" struct ScaledSpacePoint {
+  static inline ScaledSpacePoint FromCoordinates(
+      R3Element<double> const& coordinates);
+
   float x;
   float y;
   float z;
@@ -83,9 +84,8 @@ class Planetarium {
               Perspective<Navigation, Camera> perspective,
               not_null<Ephemeris<Barycentric> const*> ephemeris,
               not_null<NavigationFrame const*> plotting_frame,
-              RigidTransformation<Navigation, World> const& plotting_to_world,
-              Inverse<Length> const& inverse_scale_factor,
-              Position<World> const& scaled_space_origin);
+              std::function<ScaledSpacePoint(Position<Navigation> const&)>
+                  plotting_to_scaled_space);
 
   // A no-op method that just returns all the points in the trajectory defined
   // by |begin| and |end|.
@@ -149,17 +149,19 @@ class Planetarium {
       DiscreteTrajectory<Barycentric>::iterator begin,
       DiscreteTrajectory<Barycentric>::iterator end) const;
 
-  ScaledSpacePoint WorldToScaledSpace(Position<World> const& position) const;
-
   Parameters const parameters_;
-  // TODO(egg): Consider distinguishing this copy of World.
-  RigidTransformation<Navigation, World> const plotting_to_world_;
+  std::function<ScaledSpacePoint(Position<Navigation> const&)> plotting_to_scaled_space_;
   Perspective<Navigation, Camera> const perspective_;
   not_null<Ephemeris<Barycentric> const*> const ephemeris_;
   not_null<NavigationFrame const*> const plotting_frame_;
-  Inverse<Length> const inverse_scale_factor_;
-  Position<World> const scaled_space_origin_;
 };
+
+inline ScaledSpacePoint ScaledSpacePoint::FromCoordinates(
+    R3Element<double> const& coordinates) {
+  return ScaledSpacePoint{static_cast<float>(coordinates.x),
+                          static_cast<float>(coordinates.y),
+                          static_cast<float>(coordinates.z)};
+}
 
 }  // namespace internal_planetarium
 

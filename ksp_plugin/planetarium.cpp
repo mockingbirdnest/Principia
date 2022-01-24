@@ -45,16 +45,13 @@ Planetarium::Planetarium(
     Perspective<Navigation, Camera> perspective,
     not_null<Ephemeris<Barycentric> const*> const ephemeris,
     not_null<NavigationFrame const*> const plotting_frame,
-    RigidTransformation<Navigation, World> const& plotting_to_world,
-    Inverse<Length> const& inverse_scale_factor,
-    Position<World> const& scaled_space_origin)
+    std::function<ScaledSpacePoint(Position<Navigation> const&)>
+        plotting_to_scaled_space)
     : parameters_(parameters),
       perspective_(std::move(perspective)),
       ephemeris_(ephemeris),
       plotting_frame_(plotting_frame),
-      plotting_to_world_(plotting_to_world),
-      inverse_scale_factor_(inverse_scale_factor),
-      scaled_space_origin_(scaled_space_origin) {}
+      plotting_to_scaled_space_(std::move(plotting_to_scaled_space)) {}
 
 RP2Lines<Length, Camera> Planetarium::PlotMethod0(
     DiscreteTrajectory<Barycentric> const& trajectory,
@@ -308,7 +305,7 @@ void Planetarium::PlotMethod3(
       initial_degrees_of_freedom.velocity();
   Time Δt = final_time - previous_time;
 
-  add_point(WorldToScaledSpace(plotting_to_world_(previous_position)));
+  add_point(plotting_to_scaled_space_(previous_position));
   int points_added = 1;
 
   Instant t;
@@ -356,7 +353,7 @@ void Planetarium::PlotMethod3(
     previous_velocity =
         to_plotting_frame_at_t(*degrees_of_freedom_in_barycentric).velocity();
 
-    add_point(WorldToScaledSpace(plotting_to_world_(position)));
+    add_point(plotting_to_scaled_space_(position));
     ++points_added;
 
     if (minimal_distance != nullptr) {
@@ -443,15 +440,6 @@ Segments<Navigation> Planetarium::ComputePlottableSegments(
   }
 
   return all_segments;
-}
-
-ScaledSpacePoint Planetarium::WorldToScaledSpace(
-    Position<World> const& position) const {
-  R3Element<double> const scaled_space_coordinates =
-      ((position - scaled_space_origin_) * inverse_scale_factor_).coordinates();
-  return ScaledSpacePoint{static_cast<float>(scaled_space_coordinates.x),
-                          static_cast<float>(scaled_space_coordinates.y),
-                          static_cast<float>(scaled_space_coordinates.z)};
 }
 
 }  // namespace internal_planetarium

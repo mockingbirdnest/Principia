@@ -100,12 +100,18 @@ Planetarium* __cdecl principia__PlanetariumCreate(
       world_to_plotting_affine_map * camera_to_world_affine_map,
       focal * Metre);
 
-  return m.Return(plugin->NewPlanetarium(
-      parameters,
-      perspective,
-      world_to_plotting_affine_map.Inverse(),
-      inverse_scale_factor * (1 / Metre),
-      FromXYZ<Position<World>>(scaled_space_origin)).release());
+  return m.Return(
+      plugin->NewPlanetarium(
+          parameters,
+          perspective,
+          [plotting_to_world = world_to_plotting_affine_map.Inverse(),
+           scaled_space_origin = FromXYZ<Position<World>>(scaled_space_origin),
+           inverse_scale_factor = inverse_scale_factor * (1 / Metre)](
+              Position<Navigation> const& plotted_point) {
+            return ScaledSpacePoint::FromCoordinates(
+                ((plotting_to_world(plotted_point) - scaled_space_origin) *
+                  inverse_scale_factor).coordinates());
+          }).release());
 }
 
 void __cdecl principia__PlanetariumDelete(
