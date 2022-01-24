@@ -78,8 +78,6 @@ class Planetarium {
 
   // TODO(phl): All this Navigation is weird.  Should it be named Plotting?
   // In particular Navigation vs. NavigationFrame is a mess.
-  // |inverse_scale_factor| and |scaled_space_origin| define the
-  // transformation from World to ScaledSpace.
   Planetarium(Parameters const& parameters,
               Perspective<Navigation, Camera> perspective,
               not_null<Ephemeris<Barycentric> const*> ephemeris,
@@ -150,7 +148,8 @@ class Planetarium {
       DiscreteTrajectory<Barycentric>::iterator end) const;
 
   Parameters const parameters_;
-  std::function<ScaledSpacePoint(Position<Navigation> const&)> plotting_to_scaled_space_;
+  std::function<ScaledSpacePoint(Position<Navigation> const&)>
+      plotting_to_scaled_space_;
   Perspective<Navigation, Camera> const perspective_;
   not_null<Ephemeris<Barycentric> const*> const ephemeris_;
   not_null<NavigationFrame const*> const plotting_frame_;
