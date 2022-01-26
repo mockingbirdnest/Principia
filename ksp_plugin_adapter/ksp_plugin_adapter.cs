@@ -109,7 +109,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   private bool navball_changed_ = true;
   private FlightGlobals.SpeedDisplayModes? previous_display_mode_;
 
-  // TODO(egg): move all of that to the plotter once the RP2 lines are gone.
+  // TODO(egg): move all of that to the plotter.
   internal UnityEngine.Color history_colour = XKCDColors.Lime;
   internal GLLines.Style history_style = GLLines.Style.Faded;
   internal UnityEngine.Color prediction_colour = XKCDColors.Fuchsia;
@@ -2126,7 +2126,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
       using (DisposablePlanetarium planetarium =
           GLLines.NewPlanetarium(plugin_, sun_world_position)) {
-        plotter_.Plot(planetarium, main_vessel_guid, main_window_.history_length);
+        plotter_.PlotTrajectories(planetarium, main_vessel_guid, main_window_.history_length);
       }
     }
   }
