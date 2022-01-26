@@ -30,7 +30,13 @@ class MockPlanetarium : public Planetarium {
                     .Forget<OrthogonalMap>()),
                 1 * Metre),
             make_not_null<Ephemeris<Barycentric> const*>(),
-            make_not_null<NavigationFrame const*>()) {}
+            make_not_null<NavigationFrame const*>(),
+            [](Position<Navigation> const& plotted_point) {
+              constexpr auto inverse_scale_factor = 1 / (6000 * Metre);
+              return ScaledSpacePoint::FromCoordinates(
+                  ((plotted_point - Navigation::origin) *
+                   inverse_scale_factor).coordinates());
+            }) {}
 };
 
 }  // namespace internal_planetarium

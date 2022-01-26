@@ -47,6 +47,7 @@ using ksp_plugin::PileUpFuture;
 using ksp_plugin::Planetarium;
 using ksp_plugin::Plugin;
 using ksp_plugin::Vessel;
+using ksp_plugin::ScaledSpacePoint;
 
 namespace journal {
 
