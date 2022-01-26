@@ -76,14 +76,16 @@ class Planetarium {
     friend class Planetarium;
   };
 
+  using PlottingToScaledSpaceConversion =
+      std::function<ScaledSpacePoint(Position<Navigation> const&)>;
+
   // TODO(phl): All this Navigation is weird.  Should it be named Plotting?
   // In particular Navigation vs. NavigationFrame is a mess.
   Planetarium(Parameters const& parameters,
               Perspective<Navigation, Camera> perspective,
               not_null<Ephemeris<Barycentric> const*> ephemeris,
               not_null<NavigationFrame const*> plotting_frame,
-              std::function<ScaledSpacePoint(Position<Navigation> const&)>
-                  plotting_to_scaled_space);
+              PlottingToScaledSpaceConversion plotting_to_scaled_space);
 
   // A no-op method that just returns all the points in the trajectory defined
   // by |begin| and |end|.
@@ -124,15 +126,23 @@ class Planetarium {
 
   // A method similar to PlotMethod2, but which produces a three-dimensional
   // trajectory in scaled space instead of projecting and hiding.
-  void PlotMethod3(
-      Trajectory<Barycentric> const& trajectory,
-      Instant const& first_time,
-      Instant const& last_time,
-      Instant const& now,
-      bool reverse,
-      std::function<void(ScaledSpacePoint const&)> add_point,
-      int max_points,
-      Length* minimal_distance = nullptr) const;
+  void PlotMethod3(Trajectory<Barycentric> const& trajectory,
+                   DiscreteTrajectory<Barycentric>::iterator begin,
+                   DiscreteTrajectory<Barycentric>::iterator end,
+                   Instant const& now,
+                   bool reverse,
+                   std::function<void(ScaledSpacePoint const&)> const& add_point,
+                   int max_points) const;
+
+  // The same method, operating on the |Trajectory| interface.
+  void PlotMethod3(Trajectory<Barycentric> const& trajectory,
+                   Instant const& first_time,
+                   Instant const& last_time,
+                   Instant const& now,
+                   bool reverse,
+                   std::function<void(ScaledSpacePoint const&)> const& add_point,
+                   int max_points,
+                   Length* minimal_distance = nullptr) const;
 
  private:
   // Computes the coordinates of the spheres that represent the |ephemeris_|
@@ -148,8 +158,7 @@ class Planetarium {
       DiscreteTrajectory<Barycentric>::iterator end) const;
 
   Parameters const parameters_;
-  std::function<ScaledSpacePoint(Position<Navigation> const&)>
-      plotting_to_scaled_space_;
+  PlottingToScaledSpaceConversion plotting_to_scaled_space_;
   Perspective<Navigation, Camera> const perspective_;
   not_null<Ephemeris<Barycentric> const*> const ephemeris_;
   not_null<NavigationFrame const*> const plotting_frame_;

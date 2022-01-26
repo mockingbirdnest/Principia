@@ -100,18 +100,20 @@ Planetarium* __cdecl principia__PlanetariumCreate(
       world_to_plotting_affine_map * camera_to_world_affine_map,
       focal * Metre);
 
+  auto const plotting_to_scaled_space =
+      [plotting_to_world = world_to_plotting_affine_map.Inverse(),
+       scaled_space_origin = FromXYZ<Position<World>>(scaled_space_origin),
+       inverse_scale_factor = inverse_scale_factor * (1 / Metre)](
+          Position<Navigation> const& plotted_point) {
+        return ScaledSpacePoint::FromCoordinates(
+            ((plotting_to_world(plotted_point) - scaled_space_origin) *
+             inverse_scale_factor).coordinates());
+      };
   return m.Return(
       plugin->NewPlanetarium(
           parameters,
           perspective,
-          [plotting_to_world = world_to_plotting_affine_map.Inverse(),
-           scaled_space_origin = FromXYZ<Position<World>>(scaled_space_origin),
-           inverse_scale_factor = inverse_scale_factor * (1 / Metre)](
-              Position<Navigation> const& plotted_point) {
-            return ScaledSpacePoint::FromCoordinates(
-                ((plotting_to_world(plotted_point) - scaled_space_origin) *
-                  inverse_scale_factor).coordinates());
-          }).release());
+          plotting_to_scaled_space).release());
 }
 
 void __cdecl principia__PlanetariumDelete(
@@ -122,6 +124,9 @@ void __cdecl principia__PlanetariumDelete(
   return m.Return();
 }
 
+// Fills the array of size |vertices_size| at |vertices| with vertices for the
+// rendering of the segment with the given index in the flight plan of the
+// vessel with the given GUID.
 void __cdecl principia__PlanetariumPlotFlightPlanSegment(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
@@ -140,19 +145,15 @@ void __cdecl principia__PlanetariumPlotFlightPlanSegment(
   Vessel const& vessel = *plugin->GetVessel(vessel_guid);
   CHECK(vessel.has_flight_plan()) << vessel_guid;
   auto const segment = vessel.flight_plan().GetSegment(index);
-  if (segment->empty()) {
-    return m.Return();
-  }
   // TODO(egg): this is ugly; we should centralize rendering.
   // If this is a burn and we cannot render the beginning of the burn, we
   // render none of it, otherwise we try to render the Frenet trihedron at the
   // start and we fail.
   if (index % 2 == 0 ||
+      segment->empty() ||
       segment->front().time >= plugin->renderer().GetPlottingFrame()->t_min()) {
     planetarium->PlotMethod3(
-        *segment,
-        segment->front().time,
-        segment->back().time,
+        *segment, segment->begin(), segment->end(),
         plugin->CurrentTime(),
         /*reverse=*/false,
         [vertices, vertex_count](ScaledSpacePoint const& vertex) {
@@ -163,6 +164,8 @@ void __cdecl principia__PlanetariumPlotFlightPlanSegment(
   return m.Return();
 }
 
+// Fills the array of size |vertices_size| at |vertices| with vertices for the
+// rendered prediction of the vessel with the given GUID.
 void __cdecl principia__PlanetariumPlotPrediction(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
@@ -179,9 +182,7 @@ void __cdecl principia__PlanetariumPlotPrediction(
 
   auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
   planetarium->PlotMethod3(
-      *prediction,
-      prediction->front().time,
-      prediction->back().time,
+      *prediction, prediction->begin(), prediction->end(),
       plugin->CurrentTime(),
       /*reverse=*/false,
       [vertices, vertex_count](ScaledSpacePoint const& vertex) {
@@ -191,6 +192,10 @@ void __cdecl principia__PlanetariumPlotPrediction(
   return m.Return();
 }
 
+// Fills the array of size |vertices_size| at |vertices| with vertices for the
+// rendered past trajectory of the vessel with the given GUID; the
+// trajectory goes back |max_history_length| seconds before the present time (or
+// to the earliest time available if the relevant |t_min| is more recent).
 void __cdecl principia__PlanetariumPlotPsychohistory(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
@@ -218,12 +223,20 @@ void __cdecl principia__PlanetariumPlotPsychohistory(
   } else {
     auto const vessel = plugin->GetVessel(vessel_guid);
     auto const& trajectory = vessel->trajectory();
+    auto const& psychohistory = vessel->psychohistory();
+
+    Instant const desired_first_time =
+        plugin->CurrentTime() - max_history_length * Second;
+
+    // Since we would want to plot starting from |desired_first_time|, ask the
+    // reanimator to reconstruct the past.  That may take a while, during which
+    // time the history will be shorter than desired.
+    vessel->RequestReanimation(desired_first_time);
+
     planetarium->PlotMethod3(
         trajectory,
-        trajectory
-            .lower_bound(plugin->CurrentTime() - max_history_length * Second)
-            ->time,
-        /*last_time=*/plugin->CurrentTime(),
+        trajectory.lower_bound(desired_first_time),
+        psychohistory->end(),
         /*now=*/plugin->CurrentTime(),
         /*reverse=*/true,
         [vertices, vertex_count](ScaledSpacePoint const& vertex) {

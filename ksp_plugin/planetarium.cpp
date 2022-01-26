@@ -45,8 +45,7 @@ Planetarium::Planetarium(
     Perspective<Navigation, Camera> perspective,
     not_null<Ephemeris<Barycentric> const*> const ephemeris,
     not_null<NavigationFrame const*> const plotting_frame,
-    std::function<ScaledSpacePoint(Position<Navigation> const&)>
-        plotting_to_scaled_space)
+    PlottingToScaledSpaceConversion plotting_to_scaled_space)
     : parameters_(parameters),
       perspective_(std::move(perspective)),
       ephemeris_(ephemeris),
@@ -274,13 +273,31 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
 
 void Planetarium::PlotMethod3(
     Trajectory<Barycentric> const& trajectory,
+    DiscreteTrajectory<Barycentric>::iterator begin,
+    DiscreteTrajectory<Barycentric>::iterator end,
+    Instant const& now,
+    bool const reverse,
+    std::function<void(ScaledSpacePoint const&)> const& add_point,
+    int max_points) const {
+  if (begin == end) {
+    return {};
+  }
+  auto last = std::prev(end);
+  auto const begin_time = std::max(begin->time, plotting_frame_->t_min());
+  auto const last_time = std::min(last->time, plotting_frame_->t_max());
+  PlotMethod3(
+      trajectory, begin_time, last_time, now, reverse, add_point, max_points);
+}
+
+void Planetarium::PlotMethod3(
+    Trajectory<Barycentric> const& trajectory,
     Instant const& first_time,
     Instant const& last_time,
     Instant const& now,
-    bool reverse,
-    std::function<void(ScaledSpacePoint const&)> add_point,
+    bool const reverse,
+    std::function<void(ScaledSpacePoint const&)> const& add_point,
     int const max_points,
-    Length* minimal_distance) const {
+    Length* const minimal_distance) const {
   double const tan²_angular_resolution =
       Pow<2>(parameters_.tan_angular_resolution_);
   auto const final_time = reverse ? first_time : last_time;
