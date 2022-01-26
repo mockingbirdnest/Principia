@@ -126,23 +126,25 @@ class Planetarium {
 
   // A method similar to PlotMethod2, but which produces a three-dimensional
   // trajectory in scaled space instead of projecting and hiding.
-  void PlotMethod3(Trajectory<Barycentric> const& trajectory,
-                   DiscreteTrajectory<Barycentric>::iterator begin,
-                   DiscreteTrajectory<Barycentric>::iterator end,
-                   Instant const& now,
-                   bool reverse,
-                   std::function<void(ScaledSpacePoint const&)> const& add_point,
-                   int max_points) const;
+  void PlotMethod3(
+      Trajectory<Barycentric> const& trajectory,
+      DiscreteTrajectory<Barycentric>::iterator begin,
+      DiscreteTrajectory<Barycentric>::iterator end,
+      Instant const& now,
+      bool reverse,
+      std::function<void(ScaledSpacePoint const&)> const& add_point,
+      int max_points) const;
 
   // The same method, operating on the |Trajectory| interface.
-  void PlotMethod3(Trajectory<Barycentric> const& trajectory,
-                   Instant const& first_time,
-                   Instant const& last_time,
-                   Instant const& now,
-                   bool reverse,
-                   std::function<void(ScaledSpacePoint const&)> const& add_point,
-                   int max_points,
-                   Length* minimal_distance = nullptr) const;
+  void PlotMethod3(
+      Trajectory<Barycentric> const& trajectory,
+      Instant const& first_time,
+      Instant const& last_time,
+      Instant const& now,
+      bool reverse,
+      std::function<void(ScaledSpacePoint const&)> const& add_point,
+      int max_points,
+      Length* minimal_distance = nullptr) const;
 
  private:
   // Computes the coordinates of the spheres that represent the |ephemeris_|
