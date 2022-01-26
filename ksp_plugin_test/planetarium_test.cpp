@@ -113,7 +113,7 @@ class PlanetariumTest : public ::testing::Test {
               constexpr auto inverse_scale_factor = 1 / (6000 * Metre);
               return ScaledSpacePoint::FromCoordinates(
                   ((plotted_point - Navigation::origin) *
-                   inverse_scale_factor)).coordinates());
+                   inverse_scale_factor).coordinates());
             }),
         // A body of radius 1 m located at the origin.
         body_(MassiveBody::Parameters(1 * Kilogram),

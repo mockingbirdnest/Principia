@@ -280,7 +280,7 @@ void Planetarium::PlotMethod3(
     std::function<void(ScaledSpacePoint const&)> const& add_point,
     int max_points) const {
   if (begin == end) {
-    return {};
+    return;
   }
   auto last = std::prev(end);
   auto const begin_time = std::max(begin->time, plotting_frame_->t_min());

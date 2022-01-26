@@ -170,15 +170,15 @@ class Satellites {
         /*sphere_radius_multiplier=*/1,
         /*angular_resolution=*/0.4 * ArcMinute,
         /*field_of_view=*/90 * Degree);
-    constexpr auto inverse_scale_factor = (1 / (6000 * Metre);
     return Planetarium(parameters,
                        perspective,
                        ephemeris_.get(),
                        earth_centred_inertial_.get(),
         [](Position<Navigation> const& plotted_point) {
-      return ScaledSpacePoint::FromCoordinates(
-          ((plotted_point - Navigation::origin) *
-           inverse_scale_factor).coordinates());
+          constexpr auto inverse_scale_factor = 1 / (6000 * Metre);
+          return ScaledSpacePoint::FromCoordinates(
+              ((plotted_point - Navigation::origin) *
+               inverse_scale_factor).coordinates());
         });
   }
 
