@@ -20,41 +20,35 @@ struct is_unique<std::unique_ptr<T>> : std::true_type, not_constructible {};
 template<typename Pointer>
 template<typename OtherPointer, typename>
 not_null<Pointer>::not_null(not_null<OtherPointer> const& other)
-    : pointer_(other.pointer_) {}
+    : storage_(static_cast<pointer>(other.storage_.pointer)) {}
 
 template<typename Pointer>
 template<typename OtherPointer, typename, typename>
 not_null<Pointer>::not_null(not_null<OtherPointer> const& other)
-    : pointer_(static_cast<pointer>(other.pointer_)) {}
+    : storage_(static_cast<pointer>(other.storage_.pointer)) {}
 
 template<typename Pointer>
 template<typename OtherPointer, typename>
-not_null<Pointer>::not_null(OtherPointer other) {
-  CHECK(other != nullptr);
-  pointer_ = std::move(other);
+not_null<Pointer>::not_null(OtherPointer other)
+    : storage_(std::move(other)) {
+  CHECK(storage_.pointer != nullptr);
 }
 
 template<typename Pointer>
 template<typename OtherPointer, typename>
 not_null<Pointer>::not_null(not_null<OtherPointer>&& other)
-    : pointer_(std::move(other.pointer_)) {}
+    : storage_(std::move(other.storage_.pointer)) {}
 
 template<typename Pointer>
 template<typename OtherPointer, typename, typename>
 not_null<Pointer>::not_null(not_null<OtherPointer>&& other)
-    : pointer_(static_cast<pointer>(std::move(other.pointer_))) {}
+    : storage_(static_cast<pointer>(std::move(other.storage_.pointer))) {}
 
 template<typename Pointer>
 template<typename OtherPointer, typename>
 not_null<Pointer>& not_null<Pointer>::operator=(
     not_null<OtherPointer> const& other) {
-  pointer_ = other.pointer_;
-  return *this;
-}
-
-template<typename Pointer>
-not_null<Pointer>& not_null<Pointer>::operator=(not_null&& other) {
-  std::swap(pointer_, other.pointer_);
+  storage_.pointer = other.storage_.pointer;
   return *this;
 }
 
@@ -62,7 +56,7 @@ template<typename Pointer>
 template<typename OtherPointer, typename>
 not_null<Pointer>& not_null<Pointer>::operator=(
     not_null<OtherPointer>&& other) {
-  pointer_ = std::move(other.pointer_);
+  storage_.pointer = std::move(other.storage_.pointer);
   return *this;
 }
 
@@ -70,36 +64,36 @@ template<typename Pointer>
 not_null<Pointer>::operator pointer const&&() const& {
   // This |move| is deceptive: we are not actually moving anything (|*this| is
   // |const&|), we are simply casting to an rvalue reference.
-  return std::move(pointer_);
+  return std::move(storage_.pointer);
 }
 
 template<typename Pointer>
 template<typename OtherPointer, typename>
 not_null<Pointer>::operator OtherPointer() const& {
-  return pointer_;
+  return storage_.pointer;
 }
 
 template<typename Pointer>
 not_null<Pointer>::operator pointer&&() && {
-  return std::move(pointer_);
+  return std::move(storage_.pointer);
 }
 
 template<typename Pointer>
 template<typename OtherPointer, typename>
 not_null<Pointer>::operator OtherPointer() && {
-  return std::move(pointer_);
+  return std::move(storage_.pointer);
 }
 
 template<typename Pointer>
 std::add_lvalue_reference_t<typename not_null<Pointer>::element_type>
 not_null<Pointer>::operator*() const {
-  return *pointer_;
+  return *storage_.pointer;
 }
 
 template<typename Pointer>
 std::add_pointer_t<typename not_null<Pointer>::element_type>
 not_null<Pointer>::operator->() const {
-  return std::addressof(*pointer_);
+  return std::addressof(*storage_.pointer);
 }
 
 template<typename Pointer>
@@ -107,19 +101,20 @@ template<typename P, typename>
 not_null<decltype(std::declval<P>().get())> not_null<Pointer>::get() const {
   // NOTE(egg): no |CHECK| is performed.
   using type = decltype(std::declval<P>().get());
-  return not_null<type>(pointer_.get(), not_null<type>::unchecked_tag_);
+  return not_null<type>(storage_.pointer.get(), not_null<type>::unchecked_tag_);
 }
 
 template<typename Pointer>
 template<typename P, typename>
 not_null<decltype(std::declval<P>().release())> not_null<Pointer>::release() {
-  return not_null<decltype(std::declval<P>().release())>(pointer_.release());
+  return not_null<decltype(std::declval<P>().release())>(
+      storage_.pointer.release());
 }
 
 template<typename Pointer>
 template<typename Q, typename P, typename>
 void not_null<Pointer>::reset(not_null<Q> const ptr) {
-  pointer_.reset(ptr);
+  storage_.pointer.reset(ptr);
 }
 
 template<typename Pointer>
@@ -139,47 +134,47 @@ not_null<Pointer>::operator bool() const {
 
 template<typename Pointer>
 bool not_null<Pointer>::operator==(pointer const other) const {
-  return pointer_ == other;
+  return storage_.pointer == other;
 }
 
 template<typename Pointer>
 bool not_null<Pointer>::operator==(not_null const other) const {
-  return pointer_ == other.pointer_;
+  return storage_.pointer == other.storage_.pointer;
 }
 
 template<typename Pointer>
 bool not_null<Pointer>::operator!=(pointer const other) const {
-  return pointer_ != other;
+  return storage_.pointer != other;
 }
 
 template<typename Pointer>
 bool not_null<Pointer>::operator!=(not_null const other) const {
-  return pointer_ != other.pointer_;
+  return storage_.pointer != other.storage_.pointer;
 }
 
 template<typename Pointer>
 bool not_null<Pointer>::operator<(not_null const other) const {
-  return pointer_ < other.pointer_;
+  return storage_.pointer < other.storage_.pointer;
 }
 
 template<typename Pointer>
 bool not_null<Pointer>::operator<=(not_null const other) const {
-  return pointer_ <= other.pointer_;
+  return storage_.pointer <= other.storage_.pointer;
 }
 
 template<typename Pointer>
 bool not_null<Pointer>::operator>=(not_null const other) const {
-  return pointer_ >= other.pointer_;
+  return storage_.pointer >= other.storage_.pointer;
 }
 
 template<typename Pointer>
 bool not_null<Pointer>::operator>(not_null const other) const {
-  return pointer_ > other.pointer_;
+  return storage_.pointer > other.storage_.pointer;
 }
 
 template<typename Pointer>
 not_null<Pointer>::not_null(pointer other, unchecked_tag const tag)
-    : pointer_(std::move(other)) {}
+    : storage_(std::move(other)) {}
 
 template<typename Pointer>
 _checked_not_null<Pointer> check_not_null(Pointer pointer) {

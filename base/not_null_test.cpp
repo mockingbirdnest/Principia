@@ -4,6 +4,7 @@
 #include <memory>
 #include <utility>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "base/macros.hpp"
@@ -176,6 +177,11 @@ TEST_F(NotNullTest, CheckArguments) {
 #endif
 }
 
+TEST_F(NotNullTest, ExplicitCast) {
+  int* pointer_to_int = new int();
+  not_null<std::unique_ptr<int>>(check_not_null(pointer_to_int));
+}
+
 TEST_F(NotNullTest, DynamicCast) {
   class Base {
    public:
@@ -260,6 +266,26 @@ TEST_F(NotNullTest, RValue) {
   std::unique_ptr<int const> owner_const_int = make_not_null_unique<int>(5);
 #endif
   EXPECT_EQ(5, *owner_const_int);
+}
+
+TEST_F(NotNullTest, TypeTraits) {
+  // not_null<foo*> is trivially copyable.
+  static_assert(std::is_trivially_copyable_v<not_null<int*>>);
+  static_assert(std::is_trivially_copy_constructible_v<not_null<int*>>);
+  static_assert(std::is_trivially_copy_assignable_v<not_null<int*>>);
+  static_assert(std::is_trivially_move_constructible_v<not_null<int*>>);
+  static_assert(std::is_trivially_move_assignable_v<not_null<int*>>);
+
+  // not_null<std::unique_ptr<foo>> is not.
+  static_assert(!std::is_trivially_copyable_v<not_null<std::unique_ptr<int>>>);
+  static_assert(
+      !std::is_trivially_copy_constructible_v<not_null<std::unique_ptr<int>>>);
+  static_assert(
+      !std::is_trivially_copy_assignable_v<not_null<std::unique_ptr<int>>>);
+  static_assert(
+      !std::is_trivially_move_constructible_v<not_null<std::unique_ptr<int>>>);
+  static_assert(
+      !std::is_trivially_move_assignable_v<not_null<std::unique_ptr<int>>>);
 }
 
 }  // namespace base
