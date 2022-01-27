@@ -160,10 +160,10 @@ class Planetarium {
       DiscreteTrajectory<Barycentric>::iterator end) const;
 
   Parameters const parameters_;
-  PlottingToScaledSpaceConversion plotting_to_scaled_space_;
   Perspective<Navigation, Camera> const perspective_;
   not_null<Ephemeris<Barycentric> const*> const ephemeris_;
   not_null<NavigationFrame const*> const plotting_frame_;
+  PlottingToScaledSpaceConversion plotting_to_scaled_space_;
 };
 
 inline ScaledSpacePoint ScaledSpacePoint::FromCoordinates(

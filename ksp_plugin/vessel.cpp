@@ -72,6 +72,9 @@ Vessel::Vessel(
       parent_(parent),
       ephemeris_(ephemeris),
       downsampling_parameters_(downsampling_parameters),
+      checkpointer_(make_not_null_unique<Checkpointer<serialization::Vessel>>(
+          MakeCheckpointerWriter(),
+          MakeCheckpointerReader())),
       reanimator_(
           [this](Instant const& desired_t_min) {
             return Reanimate(desired_t_min);
@@ -82,9 +85,6 @@ Vessel::Vessel(
             return FlowPrognostication(parameters);
           },
           20ms),  // 50 Hz.
-      checkpointer_(make_not_null_unique<Checkpointer<serialization::Vessel>>(
-          MakeCheckpointerWriter(),
-          MakeCheckpointerReader())),
       backstory_(trajectory_.segments().begin()),
       psychohistory_(trajectory_.segments().end()),
       prediction_(trajectory_.segments().end()) {}
@@ -824,7 +824,7 @@ Checkpointer<serialization::Vessel>::Writer Vessel::MakeCheckpointerWriter() {
 }
 
 Checkpointer<serialization::Vessel>::Reader Vessel::MakeCheckpointerReader() {
-  return [this](serialization::Vessel::Checkpoint const& message) {
+  return [](serialization::Vessel::Checkpoint const& message) {
     return absl::OkStatus();
   };
 }

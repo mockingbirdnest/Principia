@@ -638,7 +638,7 @@ TEST_F(ContinuousTrajectoryTest, Prepend) {
 
   Instant const t1 = t0_;
   auto position_function1 =
-      [this, t1](Instant const t) {
+      [t1](Instant const t) {
         return World::origin +
             Displacement<World>({(t - t1) * 3 * Metre / Second,
                                  (t - t1) * 5 * Metre / Second,
@@ -664,7 +664,7 @@ TEST_F(ContinuousTrajectoryTest, Prepend) {
 
   Instant const t2 = trajectory1->t_max();
   auto position_function2 =
-      [this, &position_function1, t2](Instant const t) {
+      [&position_function1, t2](Instant const t) {
         return position_function1(t2) +
                Displacement<World>({(t - t2) * 6 * Metre / Second,
                                     (t - t2) * 1.5 * Metre / Second,

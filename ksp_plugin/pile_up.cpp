@@ -270,7 +270,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
     // point.
     if (pile_up->history_->size() == 2) {
       DiscreteTrajectory<Barycentric> psychohistory;
-      for (auto const [time, degrees_of_freedom] : *pile_up->history_) {
+      for (auto const& [time, degrees_of_freedom] : *pile_up->history_) {
         psychohistory.Append(time, degrees_of_freedom).IgnoreError();
       }
       pile_up->trajectory_.ForgetAfter(std::next(pile_up->history_->begin()));

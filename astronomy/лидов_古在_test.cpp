@@ -126,7 +126,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
   // respectively.
   Interval<double> c₁;
   Interval<double> c₂;
-  for (auto const elements : elements.mean_elements()) {
+  for (auto const& elements : elements.mean_elements()) {
     double const ε = 1 - Pow<2>(elements.eccentricity);
     double const cos²_i = Pow<2>(Cos(elements.inclination));
     double const sin²_i = Pow<2>(Sin(elements.inclination));

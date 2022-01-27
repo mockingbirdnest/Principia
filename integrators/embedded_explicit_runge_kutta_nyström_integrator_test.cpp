@@ -345,8 +345,6 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Restart) {
   Time const duration = 10 * period;
   Length const length_tolerance = 1 * Milli(Metre);
   Speed const speed_tolerance = 1 * Milli(Metre) / Second;
-  // The number of steps if no step limit is set.
-  std::int64_t const steps_forward = 132;
 
   auto const step_size_callback = [](bool tolerable) {};
 

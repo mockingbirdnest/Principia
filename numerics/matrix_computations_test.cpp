@@ -34,7 +34,6 @@ using MatrixTypes =
 TYPED_TEST_SUITE(MatrixComputationsTest, MatrixTypes);
 
 TYPED_TEST(MatrixComputationsTest, CholeskyDecomposition) {
-  using Vector = typename std::tuple_element<0, TypeParam>::type;
   using UpperTriangularMatrix = typename std::tuple_element<2, TypeParam>::type;
 
   UpperTriangularMatrix const hilbert4({1, 1.0 / 2.0, 1.0 / 3.0, 1.0 / 4.0,
