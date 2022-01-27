@@ -164,7 +164,7 @@ $(LIBRARY_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
 	sed 's!.*\.o[ :]*!$(OBJ_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
 	rm -f $@.temp
 
-$(TEST_OR_MOCK_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
+$(TEST_OR_MOCK_DEPENDENCIES) $(BENCHMARK_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
 	@mkdir -p $(@D)
 	$(CXX) -M $(COMPILER_OPTIONS) $(TEST_INCLUDES) $< > $@.temp
 	sed 's!.*\.o[ :]*!$(OBJ_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
@@ -173,6 +173,7 @@ $(TEST_OR_MOCK_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
 ifneq ($(MAKECMDGOALS), clean)
 include $(LIBRARY_DEPENDENCIES)
 include $(TEST_OR_MOCK_DEPENDENCIES)
+include $(BENCHMARK_DEPENDENCIES)
 endif
 
 ########## Compilation
