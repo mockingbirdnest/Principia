@@ -68,8 +68,6 @@ TEST_F(PoissonSeriesBasisTest, AperiodicVector) {
                                   /*degree=*/3>::Subspaces();
   EXPECT_EQ(12, aperiodic.size());
 
-  Instant const t1 = t0_ + 2 * Second;
-
   // Degree 0.
   EXPECT_EQ(V({1, 0, 0}), aperiodic[0](t2_));
   EXPECT_EQ(V({0, 1, 0}), aperiodic[1](t2_));
@@ -264,8 +262,6 @@ TEST_F(PoissonSeriesBasisTest, PeriodicScalar) {
                                   /*degree=*/2>::Basis(ω, t1_, t2_);
   EXPECT_EQ(6, periodic.size());
 
-  Instant const t1 = t0_ + 2 * Second;
-
   EXPECT_THAT(periodic[0](t2_), AlmostEquals(0.5, 1));
   EXPECT_THAT(periodic[1](t2_), AlmostEquals(Sqrt(3) / 2, 0));
 
@@ -285,8 +281,6 @@ TEST_F(PoissonSeriesBasisTest, PeriodicVector) {
       PoissonSeriesBasisGenerator<Series3,
                                   /*degree=*/3>::Subspaces(ω);
   EXPECT_EQ(24, periodic.size());
-
-  Instant const t1 = t0_ + 2 * Second;
 
   // Degree 0, Cos.
   EXPECT_THAT(periodic[0](t2_), AlmostEquals(V({0.5, 0, 0}), 1));
@@ -506,8 +500,6 @@ TEST_F(PoissonSeriesBasisTest, ReducedDegree) {
       PoissonSeriesBasisGenerator<Series3,
                                   /*degree=*/2>::Basis(ω, t1_, t2_);
   EXPECT_EQ(18, periodic.size());
-
-  Instant const t1 = t0_ + 2 * Second;
 
   EXPECT_EQ(V({1, 0, 0}), aperiodic[0](t2_));
   EXPECT_EQ(V({0, 1, 0}), aperiodic[1](t2_));
