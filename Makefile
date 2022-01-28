@@ -160,19 +160,16 @@ $(JOURNAL_DEPENDENCIES)             : | $(GENERATED_PROFILES)
 
 $(LIBRARY_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
 	@mkdir -p $(@D)
-	$(CXX) -M $(COMPILER_OPTIONS) $< > $@.temp
-	sed 's!.*\.o[ :]*!$(OBJ_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
-	rm -f $@.temp
+	$(CXX) -M -MT '$(OBJ_DIRECTORY)$(<:.cpp=.o) $@' $(COMPILER_OPTIONS) $< -MF $@
 
-$(TEST_OR_MOCK_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
+$(TEST_OR_MOCK_DEPENDENCIES) $(BENCHMARK_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
 	@mkdir -p $(@D)
-	$(CXX) -M $(COMPILER_OPTIONS) $(TEST_INCLUDES) $< > $@.temp
-	sed 's!.*\.o[ :]*!$(OBJ_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
-	rm -f $@.temp
+	$(CXX) -M -MT '$(OBJ_DIRECTORY)$(<:.cpp=.o) $@' $(COMPILER_OPTIONS) $(TEST_INCLUDES) $< -MF $@
 
 ifneq ($(MAKECMDGOALS), clean)
 include $(LIBRARY_DEPENDENCIES)
 include $(TEST_OR_MOCK_DEPENDENCIES)
+include $(BENCHMARK_DEPENDENCIES)
 endif
 
 ########## Compilation
