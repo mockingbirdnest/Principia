@@ -271,7 +271,8 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
   auto const& trajectory = vessel.trajectory();
   auto history = trajectory.segments().begin();
   auto psychohistory = vessel.psychohistory();
-  EXPECT_THAT(trajectory, SizeIs(435'927));
+  EXPECT_THAT(trajectory, SizeIs(435'929));
+  EXPECT_THAT(*history, SizeIs(435'927));
   EXPECT_THAT(*psychohistory, SizeIs(3));
 
   // Evaluate a point in each of the two segments.
@@ -314,6 +315,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
         ParseFromBytes<serialization::DiscreteTrajectory>(serialized_message);
     auto const trajectory = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message, /*tracked=*/{&history, &psychohistory});
+    EXPECT_THAT(trajectory, SizeIs(435'929));
     EXPECT_THAT(*history, SizeIs(435'927));
     EXPECT_THAT(*psychohistory, SizeIs(3));
   }
