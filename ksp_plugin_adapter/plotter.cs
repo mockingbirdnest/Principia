@@ -191,7 +191,9 @@ class Plotter {
     }
     var colours = new UnityEngine.Color[VertexBuffer.size];
     if (style == GLLines.Style.Faded) {
-      for (int i = 0; i < vertex_count; ++i) {
+      int index_count = style == GLLines.Style.Dashed ? vertex_count & ~1
+                                                      : vertex_count;
+      for (int i = 0; i < index_count; ++i) {
         var faded_colour = colour;
         // Fade from the opacity of |colour| (when i = 0) down to 20% of that
         // opacity.
