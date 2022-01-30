@@ -15,7 +15,7 @@ using quantities::Pow;
 using quantities::Sqrt;
 
 template<typename Scalar_, template<typename S> typename UpperTriangularMatrix>
-struct CholeskyGenerator<UpperTriangularMatrix<Scalar_>> {
+struct CholeskyDecompositionGenerator<UpperTriangularMatrix<Scalar_>> {
   using Scalar = Scalar_;
   using Result = UpperTriangularMatrix<SquareRoot<Scalar>>;
   static Result Uninitialized(UpperTriangularMatrix<Scalar> const& u);
@@ -23,16 +23,47 @@ struct CholeskyGenerator<UpperTriangularMatrix<Scalar_>> {
 
 template<typename Scalar_, int columns,
          template<typename S, int c> typename UpperTriangularMatrix>
-struct CholeskyGenerator<UpperTriangularMatrix<Scalar_, columns>> {
+struct CholeskyDecompositionGenerator<UpperTriangularMatrix<Scalar_, columns>> {
   using Scalar = Scalar_;
   using Result = UpperTriangularMatrix<SquareRoot<Scalar>, columns>;
   static Result Uninitialized(UpperTriangularMatrix<Scalar, columns> const& u);
 };
 
 template<typename Scalar_,
+         template<typename S> typename Matrix,
+         template<typename S> typename LowerTriangularMatrix,
+         template<typename S> typename UpperTriangularMatrix>
+struct LUDecompositionGenerator<Matrix<Scalar_>,
+                                LowerTriangularMatrix<double>,
+                                UpperTriangularMatrix<Scalar_>> {
+  using Scalar = Scalar_;
+  struct Result {
+    LowerTriangularMatrix<double> L;
+    UpperTriangularMatrix<Scalar> U;
+  };
+  static Result Uninitialized(Matrix<Scalar> const& m);
+};
+
+template<typename Scalar_, int size,
+         template<typename S, int s> typename Matrix,
+         template<typename S, int s> typename LowerTriangularMatrix,
+         template<typename S, int s> typename UpperTriangularMatrix>
+struct LUDecompositionGenerator<Matrix<Scalar_, size>,
+                                LowerTriangularMatrix<double, size>,
+                                UpperTriangularMatrix<Scalar_, size>> {
+  using Scalar = Scalar_;
+  struct Result {
+    LowerTriangularMatrix<double, size> L;
+    UpperTriangularMatrix<Scalar, size> U;
+  };
+  static Result Uninitialized(Matrix<Scalar, size> const& m);
+};
+
+template<typename Scalar_,
          template<typename S> typename Vector,
          template<typename S> typename UpperTriangularMatrix>
-struct ᵗRDRGenerator<Vector<Scalar_>, UpperTriangularMatrix<Scalar_>> {
+struct ᵗRDRDecompositionGenerator<Vector<Scalar_>,
+                                  UpperTriangularMatrix<Scalar_>> {
   using Scalar = Scalar_;
   struct Result {
     UpperTriangularMatrix<double> R;
@@ -44,8 +75,8 @@ struct ᵗRDRGenerator<Vector<Scalar_>, UpperTriangularMatrix<Scalar_>> {
 template<typename Scalar_, int columns,
          template<typename S, int c> typename Vector,
          template<typename S, int c> typename UpperTriangularMatrix>
-struct ᵗRDRGenerator<Vector<Scalar_, columns>,
-                     UpperTriangularMatrix<Scalar_, columns>> {
+struct ᵗRDRDecompositionGenerator<Vector<Scalar_, columns>,
+                                  UpperTriangularMatrix<Scalar_, columns>> {
   using Scalar = Scalar_;
   struct Result {
     UpperTriangularMatrix<double, columns> R;
@@ -88,22 +119,47 @@ struct RayleighQuotientGenerator<Matrix<MScalar, dimension, dimension>,
 
 
 template<typename Scalar_, template<typename S> typename UpperTriangularMatrix>
-auto CholeskyGenerator<UpperTriangularMatrix<Scalar_>>::Uninitialized(
-    UpperTriangularMatrix<Scalar> const& u) -> Result {
+auto CholeskyDecompositionGenerator<UpperTriangularMatrix<Scalar_>>::
+Uninitialized(UpperTriangularMatrix<Scalar> const& u) -> Result {
   return Result(u.columns(), uninitialized);
 }
 
 template<typename Scalar_, int columns,
          template<typename S, int c> typename UpperTriangularMatrix>
-auto CholeskyGenerator<UpperTriangularMatrix<Scalar_, columns>>::Uninitialized(
-    UpperTriangularMatrix<Scalar, columns> const& u) -> Result {
+auto CholeskyDecompositionGenerator<UpperTriangularMatrix<Scalar_, columns>>::
+Uninitialized(UpperTriangularMatrix<Scalar, columns> const& u) -> Result {
   return Result(uninitialized);
+}
+
+template<typename Scalar_,
+         template<typename S> typename Matrix,
+         template<typename S> typename LowerTriangularMatrix,
+         template<typename S> typename UpperTriangularMatrix>
+auto LUDecompositionGenerator<Matrix<Scalar_>,
+                              LowerTriangularMatrix<double>,
+                              UpperTriangularMatrix<Scalar_>>::
+Uninitialized(Matrix<Scalar> const& m) -> Result {
+  return {LowerTriangularMatrix<double>(uninitialized),
+          UpperTriangularMatrix<Scalar>(uninitialized)};
+}
+
+template<typename Scalar_, int size,
+         template<typename S, int s> typename Matrix,
+         template<typename S, int s> typename LowerTriangularMatrix,
+         template<typename S, int s> typename UpperTriangularMatrix>
+auto LUDecompositionGenerator<Matrix<Scalar_, size>,
+                              LowerTriangularMatrix<double, size>,
+                              UpperTriangularMatrix<Scalar_, size>>::
+Uninitialized(Matrix<Scalar, size> const& m) -> Result {
+  return {LowerTriangularMatrix<double, size>(uninitialized),
+          UpperTriangularMatrix<Scalar, size>(uninitialized)};
 }
 
 template<typename Scalar_,
          template<typename S> typename Vector,
          template<typename S> typename UpperTriangularMatrix>
-auto ᵗRDRGenerator<Vector<Scalar_>, UpperTriangularMatrix<Scalar_>>::
+auto ᵗRDRDecompositionGenerator<Vector<Scalar_>,
+                                UpperTriangularMatrix<Scalar_>>::
 Uninitialized(UpperTriangularMatrix<Scalar> const& u) -> Result {
   return {UpperTriangularMatrix<double>(u.columns(), uninitialized),
           Vector<Scalar>(u.columns(), uninitialized)};
@@ -112,8 +168,8 @@ Uninitialized(UpperTriangularMatrix<Scalar> const& u) -> Result {
 template<typename Scalar_, int columns,
          template<typename S, int c> typename Vector,
          template<typename S, int c> typename UpperTriangularMatrix>
-auto ᵗRDRGenerator<Vector<Scalar_, columns>,
-                   UpperTriangularMatrix<Scalar_, columns>>::
+auto ᵗRDRDecompositionGenerator<Vector<Scalar_, columns>,
+                                UpperTriangularMatrix<Scalar_, columns>>::
 Uninitialized(UpperTriangularMatrix<Scalar, columns> const& u) -> Result {
   return {UpperTriangularMatrix<double, columns>(uninitialized),
           Vector<Scalar, columns>(uninitialized)};
@@ -138,9 +194,9 @@ auto SubstitutionGenerator<Matrix<LScalar, dimension>,
 
 // [Hig02], Algorithm 10.2.
 template<typename UpperTriangularMatrix>
-typename CholeskyGenerator<UpperTriangularMatrix>::Result
+typename CholeskyDecompositionGenerator<UpperTriangularMatrix>::Result
 CholeskyDecomposition(UpperTriangularMatrix const& A) {
-  using G = CholeskyGenerator<UpperTriangularMatrix>;
+  using G = CholeskyDecompositionGenerator<UpperTriangularMatrix>;
   using Scalar = typename G::Scalar;
   auto R = G::Uninitialized(A);
   for (int j = 0; j < A.columns(); ++j) {
@@ -161,11 +217,38 @@ CholeskyDecomposition(UpperTriangularMatrix const& A) {
   return R;
 }
 
+template<typename Matrix,
+         typename LowerTriangularMatrix,
+         typename UpperTriangularMatrix>
+typename LUDecompositionGenerator<Matrix,
+                                  LowerTriangularMatrix,
+                                  UpperTriangularMatrix>::Result
+LUDecomposition(Matrix const& A) {
+  for (int k = 0; k < A.size(); ++k) {
+    //Pivot
+    for (int j = k; j < A.size(); ++j) {
+      auto U_kj = A[k][j];
+      for (int i = 0; i < k; ++i) {
+        U_kj -= L[k][i] * U[i][j];
+      }
+      U[k][j] = U_kj;
+    }
+    for (int i = k + 1; i < A.size(); ++i) {
+      auto L_ik = A[i][k];
+      for (int j = 0; j < k; ++j) {
+        L_ik -= L[i][j] * U[j][k];
+      }
+      L[i][k] = L_ik / U[k][k];
+    }
+    L[k][k] = 1;
+  }
+}
+
 // [KM13], formulæ (10) and (11).
 template<typename Vector, typename UpperTriangularMatrix>
-typename ᵗRDRGenerator<Vector, UpperTriangularMatrix>::Result
+typename ᵗRDRDecompositionGenerator<Vector, UpperTriangularMatrix>::Result
 ᵗRDRDecomposition(UpperTriangularMatrix const& A) {
-  using G = ᵗRDRGenerator<Vector, UpperTriangularMatrix>;
+  using G = ᵗRDRDecompositionGenerator<Vector, UpperTriangularMatrix>;
   using Scalar = typename G::Scalar;
   auto result = G::Uninitialized(A);
   auto& R = result.R;
