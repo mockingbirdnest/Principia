@@ -139,8 +139,8 @@ auto LUDecompositionGenerator<Matrix<Scalar_>,
                               LowerTriangularMatrix<double>,
                               UpperTriangularMatrix<Scalar_>>::
 Uninitialized(Matrix<Scalar> const& m) -> Result {
-  return {LowerTriangularMatrix<double>(uninitialized),
-          UpperTriangularMatrix<Scalar>(uninitialized)};
+  return {LowerTriangularMatrix<double>(m.size(), uninitialized),
+          UpperTriangularMatrix<Scalar>(m.size(), uninitialized)};
 }
 
 template<typename Scalar_, int size,
@@ -224,6 +224,13 @@ typename LUDecompositionGenerator<Matrix,
                                   LowerTriangularMatrix,
                                   UpperTriangularMatrix>::Result
 LUDecomposition(Matrix const& A) {
+  using G = LUDecompositionGenerator<Matrix,
+                                     LowerTriangularMatrix,
+                                     UpperTriangularMatrix>;
+  using Scalar = typename G::Scalar;
+  auto result = G::Uninitialized(A);
+  auto& U = result.U;
+  auto& L = result.L;
   for (int k = 0; k < A.size(); ++k) {
     //Pivot
     for (int j = k; j < A.size(); ++j) {
@@ -242,6 +249,7 @@ LUDecomposition(Matrix const& A) {
     }
     L[k][k] = 1;
   }
+  return L;
 }
 
 // [KM13], formulæ (10) and (11).
