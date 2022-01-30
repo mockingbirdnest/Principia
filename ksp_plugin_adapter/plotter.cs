@@ -185,8 +185,10 @@ class Plotter {
                             UnityEngine.Color colour,
                             GLLines.Style style) {
     mesh.vertices = VertexBuffer.vertices;
-    var indices = new int[vertex_count];
-    for (int i = 0; i < vertex_count; ++i) {
+    int index_count = style == GLLines.Style.Dashed ? vertex_count & ~1
+                                                    : vertex_count;
+    var indices = new int[index_count];
+    for (int i = 0; i < index_count; ++i) {
       indices[i] = i;
     }
     var colours = new UnityEngine.Color[VertexBuffer.size];
@@ -199,9 +201,7 @@ class Plotter {
         colours[i] = faded_colour;
       }
     } else {
-      int index_count = style == GLLines.Style.Dashed ? vertex_count & ~1
-                                                      : vertex_count;
-      for (int i = 0; i < index_count; ++i) {
+      for (int i = 0; i < vertex_count; ++i) {
         colours[i] = colour;
       }
     }
