@@ -64,8 +64,8 @@ Solve(Matrix const& A, Vector const& b);
 using internal_matrix_computations::BackSubstitution;
 using internal_matrix_computations::CholeskyDecomposition;
 using internal_matrix_computations::ForwardSubstitution;
-using internal_matrix_computations::LUDecomposition;
 using internal_matrix_computations::RayleighQuotient;
+using internal_matrix_computations::Solve;
 using internal_matrix_computations::ᵗRDRDecomposition;
 
 }  // namespace numerics

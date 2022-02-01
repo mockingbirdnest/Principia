@@ -101,7 +101,6 @@ template<typename MScalar, typename VScalar,
          template<typename S> typename Vector>
 struct SolveGenerator<Matrix<MScalar>, Vector<VScalar>> {
   using Result = Vector<Quotient<VScalar, MScalar>>;
-  static Result Uninitialized(Matrix<MScalar> const& m);
   static Matrix<double> UninitializedL(Matrix<MScalar> const& m);
   static Matrix<MScalar> UninitializedU(Matrix<MScalar> const& m);
 };
@@ -112,8 +111,6 @@ template<typename MScalar, typename VScalar, int rows, int columns,
 struct SolveGenerator<Matrix<MScalar, rows, columns>,
                       Vector<VScalar, rows>> {
   using Result = MScalar;
-  static Result Uninitialized(
-      Matrix<MScalar, rows, columns> const& m);
   static Matrix<double, rows, columns> UninitializedL(
       Matrix<MScalar, rows, columns> const& m);
   static Matrix<MScalar, columns, columns> UninitializedU(
@@ -173,14 +170,6 @@ auto SubstitutionGenerator<Matrix<LScalar, dimension>,
 template<typename MScalar, typename VScalar,
          template<typename S> typename Matrix,
          template<typename S> typename Vector>
-auto SolveGenerator<Matrix<MScalar>, Vector<VScalar>>::Uninitialized(
-    Matrix<MScalar> const& m) -> Result {
-  return Result(m.columns(), uninitialized);
-}
-
-template<typename MScalar, typename VScalar,
-         template<typename S> typename Matrix,
-         template<typename S> typename Vector>
 auto SolveGenerator<Matrix<MScalar>, Vector<VScalar>>::UninitializedL(
     Matrix<MScalar> const& m) -> Matrix<double> {
   return Matrix<double>(m.rows(), m.columns(), uninitialized);
@@ -192,15 +181,6 @@ template<typename MScalar, typename VScalar,
 auto SolveGenerator<Matrix<MScalar>, Vector<VScalar>>::UninitializedU(
     Matrix<MScalar> const& m) -> Matrix<MScalar> {
   return Matrix<MScalar>(m.columns(), m.columns(), uninitialized);
-}
-
-template<typename MScalar, typename VScalar, int rows, int columns,
-         template<typename S, int r, int c> typename Matrix,
-         template<typename S, int d> typename Vector>
-auto SolveGenerator<Matrix<MScalar, rows, columns>,
-                    Vector<VScalar, rows>>::Uninitialized(
-    Matrix<MScalar, rows, columns> const& m) -> Result {
-  return Result(uninitialized);
 }
 
 template<typename MScalar, typename VScalar, int rows, int columns,
@@ -324,11 +304,8 @@ template<typename Matrix, typename Vector>
 typename SolveGenerator<Matrix, Vector>::Result
 Solve(Matrix const& A, Vector const& b) {
   // This implementation follows [Hig02].
-  using G = LUDecompositionGenerator<Matrix,
-                                     LowerTriangularMatrix,
-                                     UpperTriangularMatrix>;
+  using G = SolveGenerator<Matrix, Vector>;
   using Scalar = typename G::Scalar;
-  auto x = G::Uninitialized(A);
 
   // The units make it inconvenient to overlay L and U onto A.
   Matrix L = G::UninitializedL(A);
@@ -369,6 +346,15 @@ Solve(Matrix const& A, Vector const& b) {
     }
     L[k][k] = 1;
   }
+
+  // For the resolution of triangular systems see [Hig02], Algorithm 8.1 p. 140.
+
+  // Find y such that L * y = P * b.
+  auto const y = ForwardSubstitution(L, b);
+  // Find x such that U * x = y.
+  auto const x = BackSubstitution(U, y);
+
+  return x;
 }
 
 }  // namespace internal_matrix_computations
