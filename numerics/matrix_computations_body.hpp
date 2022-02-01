@@ -39,36 +39,6 @@ struct CholeskyDecompositionGenerator<UpperTriangularMatrix<Scalar_, columns>> {
 };
 
 template<typename Scalar_,
-         template<typename S> typename Matrix,
-         template<typename S> typename LowerTriangularMatrix,
-         template<typename S> typename UpperTriangularMatrix>
-struct LUDecompositionGenerator<Matrix<Scalar_>,
-                                LowerTriangularMatrix<double>,
-                                UpperTriangularMatrix<Scalar_>> {
-  using Scalar = Scalar_;
-  struct Result {
-    LowerTriangularMatrix<double> L;
-    UpperTriangularMatrix<Scalar> U;
-  };
-  static Result Uninitialized(Matrix<Scalar> const& m);
-};
-
-template<typename Scalar_, int size,
-         template<typename S, int s> typename Matrix,
-         template<typename S, int s> typename LowerTriangularMatrix,
-         template<typename S, int s> typename UpperTriangularMatrix>
-struct LUDecompositionGenerator<Matrix<Scalar_, size>,
-                                LowerTriangularMatrix<double, size>,
-                                UpperTriangularMatrix<Scalar_, size>> {
-  using Scalar = Scalar_;
-  struct Result {
-    LowerTriangularMatrix<double, size> L;
-    UpperTriangularMatrix<Scalar, size> U;
-  };
-  static Result Uninitialized(Matrix<Scalar, size> const& m);
-};
-
-template<typename Scalar_,
          template<typename S> typename Vector,
          template<typename S> typename UpperTriangularMatrix>
 struct ᵗRDRDecompositionGenerator<Vector<Scalar_>,
@@ -126,6 +96,29 @@ struct RayleighQuotientGenerator<Matrix<MScalar, dimension, dimension>,
   using Result = MScalar;
 };
 
+template<typename MScalar, typename VScalar,
+         template<typename S> typename Matrix,
+         template<typename S> typename Vector>
+struct SolveGenerator<Matrix<MScalar>, Vector<VScalar>> {
+  using Result = Vector<Quotient<VScalar, MScalar>>;
+  static Result Uninitialized(Matrix<MScalar> const& m);
+  static Matrix<double> UninitializedL(Matrix<MScalar> const& m);
+  static Matrix<MScalar> UninitializedU(Matrix<MScalar> const& m);
+};
+
+template<typename MScalar, typename VScalar, int rows, int columns,
+         template<typename S, int r, int c> typename Matrix,
+         template<typename S, int d> typename Vector>
+struct SolveGenerator<Matrix<MScalar, rows, columns>,
+                      Vector<VScalar, rows>> {
+  using Result = MScalar;
+  static Result Uninitialized(
+      Matrix<MScalar, rows, columns> const& m);
+  static Matrix<double, rows, columns> UninitializedL(
+      Matrix<MScalar, rows, columns> const& m);
+  static Matrix<MScalar, columns, columns> UninitializedU(
+      Matrix<MScalar, rows, columns> const& m);
+};
 
 template<typename Scalar_, template<typename S> typename UpperTriangularMatrix>
 auto CholeskyDecompositionGenerator<UpperTriangularMatrix<Scalar_>>::
@@ -138,30 +131,6 @@ template<typename Scalar_, int columns,
 auto CholeskyDecompositionGenerator<UpperTriangularMatrix<Scalar_, columns>>::
 Uninitialized(UpperTriangularMatrix<Scalar, columns> const& u) -> Result {
   return Result(uninitialized);
-}
-
-template<typename Scalar_,
-         template<typename S> typename Matrix,
-         template<typename S> typename LowerTriangularMatrix,
-         template<typename S> typename UpperTriangularMatrix>
-auto LUDecompositionGenerator<Matrix<Scalar_>,
-                              LowerTriangularMatrix<double>,
-                              UpperTriangularMatrix<Scalar_>>::
-Uninitialized(Matrix<Scalar> const& m) -> Result {
-  return {LowerTriangularMatrix<double>(m.size(), uninitialized),
-          UpperTriangularMatrix<Scalar>(m.size(), uninitialized)};
-}
-
-template<typename Scalar_, int size,
-         template<typename S, int s> typename Matrix,
-         template<typename S, int s> typename LowerTriangularMatrix,
-         template<typename S, int s> typename UpperTriangularMatrix>
-auto LUDecompositionGenerator<Matrix<Scalar_, size>,
-                              LowerTriangularMatrix<double, size>,
-                              UpperTriangularMatrix<Scalar_, size>>::
-Uninitialized(Matrix<Scalar, size> const& m) -> Result {
-  return {LowerTriangularMatrix<double, size>(uninitialized),
-          UpperTriangularMatrix<Scalar, size>(uninitialized)};
 }
 
 template<typename Scalar_,
@@ -201,6 +170,58 @@ auto SubstitutionGenerator<Matrix<LScalar, dimension>,
   return Result(uninitialized);
 }
 
+template<typename MScalar, typename VScalar,
+         template<typename S> typename Matrix,
+         template<typename S> typename Vector>
+auto SolveGenerator<Matrix<MScalar>, Vector<VScalar>>::Uninitialized(
+    Matrix<MScalar> const& m) -> Result {
+  return Result(m.columns(), uninitialized);
+}
+
+template<typename MScalar, typename VScalar,
+         template<typename S> typename Matrix,
+         template<typename S> typename Vector>
+auto SolveGenerator<Matrix<MScalar>, Vector<VScalar>>::UninitializedL(
+    Matrix<MScalar> const& m) -> Matrix<double> {
+  return Matrix<double>(m.rows(), m.columns(), uninitialized);
+}
+
+template<typename MScalar, typename VScalar,
+         template<typename S> typename Matrix,
+         template<typename S> typename Vector>
+auto SolveGenerator<Matrix<MScalar>, Vector<VScalar>>::UninitializedU(
+    Matrix<MScalar> const& m) -> Matrix<MScalar> {
+  return Matrix<MScalar>(m.columns(), m.columns(), uninitialized);
+}
+
+template<typename MScalar, typename VScalar, int rows, int columns,
+         template<typename S, int r, int c> typename Matrix,
+         template<typename S, int d> typename Vector>
+auto SolveGenerator<Matrix<MScalar, rows, columns>,
+                    Vector<VScalar, rows>>::Uninitialized(
+    Matrix<MScalar, rows, columns> const& m) -> Result {
+  return Result(uninitialized);
+}
+
+template<typename MScalar, typename VScalar, int rows, int columns,
+         template<typename S, int r, int c> typename Matrix,
+         template<typename S, int d> typename Vector>
+auto SolveGenerator<Matrix<MScalar, rows, columns>,
+                    Vector<VScalar, rows>>::UninitializedL(
+    Matrix<MScalar, rows, columns> const& m) -> Matrix<double, rows, columns> {
+  return Matrix<double, rows, columns>(uninitialized);
+}
+
+template<typename MScalar, typename VScalar, int rows, int columns,
+         template<typename S, int r, int c> typename Matrix,
+         template<typename S, int d> typename Vector>
+auto SolveGenerator<Matrix<MScalar, rows, columns>,
+                    Vector<VScalar, rows>>::UninitializedU(
+   Matrix<MScalar, rows, columns> const& m)
+        -> Matrix<MScalar, columns, columns> {
+  return Matrix<MScalar, columns, columns>(uninitialized);
+}
+
 // [Hig02], Algorithm 10.2.
 template<typename UpperTriangularMatrix>
 typename CholeskyDecompositionGenerator<UpperTriangularMatrix>::Result
@@ -224,56 +245,6 @@ CholeskyDecomposition(UpperTriangularMatrix const& A) {
     R[j][j] = Sqrt(A[j][j] - Σrₖⱼ²);
   }
   return R;
-}
-
-template<typename Matrix,
-         typename LowerTriangularMatrix,
-         typename UpperTriangularMatrix>
-typename LUDecompositionGenerator<Matrix,
-                                  LowerTriangularMatrix,
-                                  UpperTriangularMatrix>::Result
-LUDecomposition(Matrix const& A) {
-  using G = LUDecompositionGenerator<Matrix,
-                                     LowerTriangularMatrix,
-                                     UpperTriangularMatrix>;
-  using Scalar = typename G::Scalar;
-  auto result = G::Uninitialized(A);
-  auto& U = result.U;
-  auto& L = result.L;
-
-  for (int k = 0; k < A.columns(); ++k) {
-    // Partial pivoting.
-    int r = -1;
-    Scalar max{};
-    for (int i = k; i < A.rows(); ++i) {
-      if (Abs(A[i][k]) > max) {
-        r = i;
-        max = Abs(A[i][k]));
-      }
-    }
-    CHECK_LE(0, r) << A << " cannot pivot";
-    CHECK_GT(A.size(), r) << A << " cannot pivot";
-    SwapRows(A, k, r);
-    SwapRows(L, k, r);
-    CHECK_NE(Scalar{}, A[k][k])) << *this << " is singular";
-
-    for (int j = k; j < A.columns(); ++j) {
-      auto U_kj = A[k][j];
-      for (int i = 0; i < k; ++i) {
-        U_kj -= L[k][i] * U[i][j];
-      }
-      U[k][j] = U_kj;
-    }
-    for (int i = k + 1; i < A.rows(); ++i) {
-      auto L_ik = A[i][k];
-      for (int j = 0; j < k; ++j) {
-        L_ik -= L[i][j] * U[j][k];
-      }
-      L[i][k] = L_ik / U[k][k];
-    }
-    L[k][k] = 1;
-  }
-  return result;
 }
 
 // [KM13], formulæ (10) and (11).
@@ -347,6 +318,57 @@ typename RayleighQuotientGenerator<Matrix, Vector>::Result RayleighQuotient(
     Matrix const& A, Vector const& x) {
   // [GV13], section 8.2.3.
   return x.Transpose() * (A * x) / (x.Transpose() * x);
+}
+
+template<typename Matrix, typename Vector>
+typename SolveGenerator<Matrix, Vector>::Result
+Solve(Matrix const& A, Vector const& b) {
+  // This implementation follows [Hig02].
+  using G = LUDecompositionGenerator<Matrix,
+                                     LowerTriangularMatrix,
+                                     UpperTriangularMatrix>;
+  using Scalar = typename G::Scalar;
+  auto x = G::Uninitialized(A);
+
+  // The units make it inconvenient to overlay L and U onto A.
+  Matrix L = G::UninitializedL(A);
+  Matrix U = G::UninitializedU(A);
+
+  // Doolittle's method: write P * A = L * U where P is an implicit permutation
+  // that is also applied to b.  See [Hig02], Algorithm 9.2 p. 162.
+  for (int k = 0; k < A.columns(); ++k) {
+    // Partial pivoting.
+    int r = -1;
+    Scalar max{};
+    for (int i = k; i < A.rows(); ++i) {
+      if (Abs(A[i][k]) > max) {
+        r = i;
+        max = Abs(A[i][k]));
+      }
+    }
+    CHECK_LE(0, r) << A << " cannot pivot";
+    CHECK_GT(A.size(), r) << A << " cannot pivot";
+    SwapRows(A, k, r);
+    SwapRows(L, k, r);
+    std::swap(b[k], b[r]);
+    CHECK_NE(Scalar{}, A[k][k])) << *this << " is singular";
+
+    for (int j = k; j < A.columns(); ++j) {
+      auto U_kj = A[k][j];
+      for (int i = 0; i < k; ++i) {
+        U_kj -= L[k][i] * U[i][j];
+      }
+      U[k][j] = U_kj;
+    }
+    for (int i = k + 1; i < A.rows(); ++i) {
+      auto L_ik = A[i][k];
+      for (int j = 0; j < k; ++j) {
+        L_ik -= L[i][j] * U[j][k];
+      }
+      L[i][k] = L_ik / U[k][k];
+    }
+    L[k][k] = 1;
+  }
 }
 
 }  // namespace internal_matrix_computations

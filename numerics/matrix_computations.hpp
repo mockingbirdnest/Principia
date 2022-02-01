@@ -13,9 +13,6 @@ using quantities::SquareRoot;
 template<typename U>
 struct CholeskyDecompositionGenerator;
 
-template<typename M, typename L, typename U>
-struct LUDecompositionGenerator;
-
 template<typename V, typename U>
 struct ᵗRDRDecompositionGenerator;
 
@@ -25,19 +22,14 @@ struct SubstitutionGenerator;
 template<typename M, typename V>
 struct RayleighQuotientGenerator;
 
+template<typename M, typename V>
+struct SolveGenerator;
+
 // If A is the upper half of a symmetric positive definite matrix, returns R so
 // that A = ᵗR R.
 template<typename UpperTriangularMatrix>
 typename CholeskyDecompositionGenerator<UpperTriangularMatrix>::Result
 CholeskyDecomposition(UpperTriangularMatrix const& A);
-
-template<typename Matrix,
-         typename LowerTriangularMatrix,
-         typename UpperTriangularMatrix>
-typename LUDecompositionGenerator<Matrix,
-                                  LowerTriangularMatrix,
-                                  UpperTriangularMatrix>::Result
-LUDecomposition(Matrix const& A);
 
 // If A is the upper half of a symmetric matrix, returns R and D so that
 // A = ᵗR D R.  The diagonal matrix is represented as a vector.
@@ -61,6 +53,11 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
 template<typename Matrix, typename Vector>
 typename RayleighQuotientGenerator<Matrix, Vector>::Result
 RayleighQuotient(Matrix const& A, Vector const& x);
+
+// Returns x such that A x = b.
+template<typename Matrix, typename Vector>
+typename SolveGenerator<Matrix, Vector>::Result
+Solve(Matrix const& A, Vector const& b);
 
 }  // namespace internal_matrix_computations
 
