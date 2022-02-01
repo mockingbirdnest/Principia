@@ -15,14 +15,6 @@ using quantities::Abs;
 using quantities::Pow;
 using quantities::Sqrt;
 
-// M may be a vanilla matrix or a lower-triangular matrix.
-template<typename M>
-void SwapRows(M& m, int const r1, int const r2) {
-  for (int i = 0; i < M.columns(); ++i) {
-    std::swap(m[r1][i], m[r2][i]);
-  }
-}
-
 template<typename Scalar_, template<typename S> typename UpperTriangularMatrix>
 struct CholeskyDecompositionGenerator<UpperTriangularMatrix<Scalar_>> {
   using Scalar = Scalar_;
@@ -325,8 +317,17 @@ Solve(Matrix const& A, Vector const& b) {
     }
     CHECK_LE(0, r) << A << " cannot pivot";
     CHECK_GT(A.size(), r) << A << " cannot pivot";
-    SwapRows(A, k, r);
-    SwapRows(L, k, r);
+
+    // Swap the rows of A.
+    for (int i = 0; i < A.columns(); ++i) {
+      std::swap(A[k][i], A[r][i]);
+    }
+
+    // Swap the rows of L.
+    for (int i = 0; i < k; ++i) {
+      std::swap(L[k][i], L[r][i]);
+    }
+
     std::swap(b[k], b[r]);
     CHECK_NE(Scalar{}, A[k][k])) << *this << " is singular";
 
