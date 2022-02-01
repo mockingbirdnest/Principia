@@ -11,8 +11,17 @@ namespace numerics {
 namespace internal_matrix_computations {
 
 using base::uninitialized;
+using quantities::Abs;
 using quantities::Pow;
 using quantities::Sqrt;
+
+// M may be a vanilla matrix or a lower-triangular matrix.
+template<typename M>
+void SwapRows(M& m, int const r1, int const r2) {
+  for (int i = 0; i < M.columns(); ++i) {
+    std::swap(m[r1][i], m[r2][i]);
+  }
+}
 
 template<typename Scalar_, template<typename S> typename UpperTriangularMatrix>
 struct CholeskyDecompositionGenerator<UpperTriangularMatrix<Scalar_>> {
@@ -231,16 +240,31 @@ LUDecomposition(Matrix const& A) {
   auto result = G::Uninitialized(A);
   auto& U = result.U;
   auto& L = result.L;
-  for (int k = 0; k < A.size(); ++k) {
-    //Pivot
-    for (int j = k; j < A.size(); ++j) {
+
+  for (int k = 0; k < A.columns(); ++k) {
+    // Partial pivoting.
+    int r = -1;
+    Scalar max{};
+    for (int i = k; i < A.rows(); ++i) {
+      if (Abs(A[i][k]) > max) {
+        r = i;
+        max = Abs(A[i][k]));
+      }
+    }
+    CHECK_LE(0, r) << A << " cannot pivot";
+    CHECK_GT(A.size(), r) << A << " cannot pivot";
+    SwapRows(A, k, r);
+    SwapRows(L, k, r);
+    CHECK_NE(Scalar{}, A[k][k])) << *this << " is singular";
+
+    for (int j = k; j < A.columns(); ++j) {
       auto U_kj = A[k][j];
       for (int i = 0; i < k; ++i) {
         U_kj -= L[k][i] * U[i][j];
       }
       U[k][j] = U_kj;
     }
-    for (int i = k + 1; i < A.size(); ++i) {
+    for (int i = k + 1; i < A.rows(); ++i) {
       auto L_ik = A[i][k];
       for (int j = 0; j < k; ++j) {
         L_ik -= L[i][j] * U[j][k];
@@ -249,7 +273,7 @@ LUDecomposition(Matrix const& A) {
     }
     L[k][k] = 1;
   }
-  return L;
+  return result;
 }
 
 // [KM13], formulæ (10) and (11).
