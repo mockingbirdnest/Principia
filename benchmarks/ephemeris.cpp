@@ -116,7 +116,7 @@ not_null<std::unique_ptr<SolarSystem<Barycentric>>> SolarSystemAtСпутник1
 
 void BM_EphemerisKSPSystem(benchmark::State& state) {
   Length error;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     state.PauseTiming();
 
     auto at_origin = make_not_null_unique<SolarSystem<Barycentric>>(
@@ -153,7 +153,7 @@ void BM_EphemerisKSPSystem(benchmark::State& state) {
 template<SolarSystemFactory::Accuracy accuracy>
 void BM_EphemerisSolarSystem(benchmark::State& state) {
   Length error;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     state.PauseTiming();
 
     auto const at_спутник_1_launch = SolarSystemAtСпутник1Launch(accuracy);
@@ -200,7 +200,7 @@ void BM_EphemerisLEOProbe(benchmark::State& state) {
 
   CHECK_OK(ephemeris->Prolong(final_time));
 
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     state.PauseTiming();
     // A probe in low earth orbit.
     MasslessBody probe;
@@ -269,7 +269,7 @@ void BM_EphemerisTranslunarSpaceProbe(benchmark::State& state) {
 
   CHECK_OK(ephemeris->Prolong(final_time));
 
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     state.PauseTiming();
     // A probe orbiting the Earth beyond the orbit of the Moon.
     MasslessBody probe;
@@ -360,7 +360,7 @@ void BM_EphemerisMultithreadingBenchmark(benchmark::State& state) {
   static constexpr Frequency refresh_frequency = 50 * Hertz;
   static constexpr Time step = warp_factor / refresh_frequency;
   Instant final_time = epoch;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     state.PauseTiming();
     std::vector<not_null<std::unique_ptr<Integrator<Ephemeris<
         Barycentric>::NewtonianMotionEquation>::Instance>>>
@@ -473,7 +473,7 @@ void EphemerisL4ProbeBenchmark(Time const integration_duration,
     total_degree += ephemeris->trajectory(body)->average_degree();
   }
 
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> trajectory =
         make_l4_probe_trajectory();
     state.PauseTiming();

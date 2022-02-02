@@ -68,7 +68,7 @@ void RandomSegmentsBenchmark(
 
   int visible_segments_count = 0;
   int visible_segments_size = 0;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     for (auto const& segment : segments) {
       auto const visible_segments =
           perspective.VisibleSegments(segment, sphere);
@@ -120,7 +120,7 @@ void BM_VisibleSegmentsOrbit(benchmark::State& state) {
 
   int visible_segments_count = 0;
   int visible_segments_size = 0;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     for (auto const& segment : segments) {
       auto const visible_segments =
           perspective.VisibleSegments(segment, sphere);
@@ -183,7 +183,7 @@ void BM_VisibleSegmentsOrbitMultipleSpheres(benchmark::State& state) {
 
   int visible_segments_count = 0;
   int visible_segments_size = 0;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     for (auto const& segment : segments) {
       auto const visible_segments =
           perspective.VisibleSegments(segment, spheres);

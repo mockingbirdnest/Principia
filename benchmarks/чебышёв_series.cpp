@@ -64,7 +64,7 @@ void BM_EvaluateDouble(benchmark::State& state) {
   Time const Δt = (t_max - t_min) * 1e-9;
   double result = 0.0;
 
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     for (int i = 0; i < evaluations_per_iteration; ++i) {
       result += series.Evaluate(t);
       t += Δt;
@@ -92,7 +92,7 @@ void BM_EvaluateQuantity(benchmark::State& state) {
   Time const Δt = (t_max - t_min) * 1e-9;
   Length result = 0.0 * Metre;
 
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     for (int i = 0; i < evaluations_per_iteration; ++i) {
       result += series.Evaluate(t);
       t += Δt;
@@ -124,7 +124,7 @@ void BM_EvaluateR3ElementDouble(benchmark::State& state) {
   Time const Δt = (t_max - t_min) * 1e-9;
   R3Element<double> result{0.0, 0.0, 0.0};
 
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     for (int i = 0; i < evaluations_per_iteration; ++i) {
       result += series.Evaluate(t);
       t += Δt;
@@ -158,7 +158,7 @@ void BM_EvaluateVectorDouble(benchmark::State& state) {
   Time const Δt = (t_max - t_min) * 1e-9;
   Multivector<double, ICRS, 1> result{};
 
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     for (int i = 0; i < evaluations_per_iteration; ++i) {
       result += series.Evaluate(t);
       t += Δt;
@@ -191,7 +191,7 @@ void BM_EvaluateDisplacement(benchmark::State& state) {
   Time const Δt = (t_max - t_min) * 1e-9;
   Displacement<ICRS> result{};
 
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     for (int i = 0; i < evaluations_per_iteration; ++i) {
       result += series.Evaluate(t);
       t += Δt;

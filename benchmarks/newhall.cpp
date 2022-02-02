@@ -44,7 +44,7 @@ void BM_NewhallApproximationDouble(benchmark::State& state) {
   Instant const t_max = t_min + static_cast<double>(random()) * Second;
 
   double error_estimate;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     state.PauseTiming();
     p.clear();
     v.clear();
@@ -74,7 +74,7 @@ void BM_NewhallApproximationDisplacement(benchmark::State& state) {
   Instant const t_max = t_min + static_cast<double>(random()) * Second;
 
   Displacement<ICRS> error_estimate;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     state.PauseTiming();
     p.clear();
     v.clear();

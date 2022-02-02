@@ -91,7 +91,7 @@ void EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
   auto const Δargument = (max - min) * 1e-9;
   auto result = Value{};
 
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     for (int i = 0; i < evaluations_per_iteration; ++i) {
       result += p(argument);
       argument += Δargument;

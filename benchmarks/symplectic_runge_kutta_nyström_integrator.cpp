@@ -174,7 +174,7 @@ void BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D(
     benchmark::State& state) {
   Length q_error;
   Speed v_error;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     SolveHarmonicOscillatorAndComputeError1D(
         state,
         q_error,
@@ -191,7 +191,7 @@ void BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D(
     benchmark::State& state) {
   Length q_error;
   Speed v_error;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     SolveHarmonicOscillatorAndComputeError3D(
         state,
         q_error,

@@ -49,7 +49,7 @@ double ComsumeCpuExclusiveLock(std::int64_t const n) {
 void BM_ThreadPoolNoLock(benchmark::State& state) {
   ThreadPool<void> pool(/*pool_size=*/state.range_x());
   std::vector<std::int64_t> results;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     std::vector<std::future<void>> futures;
     for (int i = 0; i < 1000; ++i) {
       futures.push_back(pool.Add([]() {
@@ -66,7 +66,7 @@ void BM_ThreadPoolNoLock(benchmark::State& state) {
 void BM_ThreadPoolSharedLock(benchmark::State& state) {
   ThreadPool<void> pool(/*pool_size=*/state.range_x());
   std::vector<std::int64_t> results;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     std::vector<std::future<void>> futures;
     for (int i = 0; i < 1000; ++i) {
       futures.push_back(pool.Add([]() {
@@ -83,7 +83,7 @@ void BM_ThreadPoolSharedLock(benchmark::State& state) {
 void BM_ThreadPoolExclusiveLock(benchmark::State& state) {
   ThreadPool<void> pool(/*pool_size=*/state.range_x());
   std::vector<std::int64_t> results;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     std::vector<std::future<void>> futures;
     for (int i = 0; i < 1000; ++i) {
       futures.push_back(pool.Add([]() {

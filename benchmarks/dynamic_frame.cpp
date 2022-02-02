@@ -163,7 +163,7 @@ void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
 
   BodyCentredNonRotatingDynamicFrame<Barycentric, Rendering>
       dynamic_frame(ephemeris.get(), earth);
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     auto v = ApplyDynamicFrame(&probe,
                                &dynamic_frame,
                                probe_trajectory.begin(),
@@ -213,7 +213,7 @@ void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
 
   BarycentricRotatingDynamicFrame<Barycentric, Rendering>
       dynamic_frame(ephemeris.get(), earth, venus);
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     auto v = ApplyDynamicFrame(&probe,
                                &dynamic_frame,
                                probe_trajectory.begin(),

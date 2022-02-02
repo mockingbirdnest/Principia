@@ -45,7 +45,7 @@ double PoorlyMixTrigonometricLines(double cos_2πx, double sin_2πx) {
 }  // namespace
 
 void BM_FastSinCos2πPoorlyPredictedLatency(benchmark::State& state) {
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     double sin = π;
     double cos = 0.0;
     for (int i = 0; i < 1e3; ++i) {
@@ -55,7 +55,7 @@ void BM_FastSinCos2πPoorlyPredictedLatency(benchmark::State& state) {
 }
 
 void BM_FastSinCos2πWellPredictedLatency(benchmark::State& state) {
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     double sin = π;
     double cos = 0.0;
     for (int i = 0; i < 1e3; ++i) {
@@ -72,7 +72,7 @@ void BM_FastSinCos2πThroughput(benchmark::State& state) {
     input.push_back(distribution(random));
   }
 
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     double sin;
     double cos;
     for (double const x : input) {

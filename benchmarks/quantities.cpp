@@ -11,7 +11,7 @@ namespace quantities {
 
 void BM_DimensionfulDiscreteCosineTransform(benchmark::State& state) {
   std::vector<Momentum> output;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     DimensionfulDiscreteCosineTransform(output);
   }
 }
@@ -19,7 +19,7 @@ BENCHMARK(BM_DimensionfulDiscreteCosineTransform);
 
 void BM_DoubleDiscreteCosineTransform(benchmark::State& state) {
   std::vector<double> output;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     DoubleDiscreteCosineTransform(output);
   }
 }

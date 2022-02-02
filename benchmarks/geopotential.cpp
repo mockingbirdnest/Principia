@@ -138,7 +138,7 @@ void BM_ComputeGeopotentialCpp(benchmark::State& state) {
                             distribution(random) * Metre})));
   }
 
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     Vector<Exponentiation<Length, -2>, ICRS> acceleration;
     for (auto const& displacement : displacements) {
       acceleration = GeneralSphericalHarmonicsAccelerationCpp(
@@ -178,7 +178,7 @@ void BM_ComputeGeopotentialDistance(benchmark::State& state) {
     }
   }
 
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     Vector<Exponentiation<Length, -2>, ICRS> acceleration;
     for (auto const& displacement : displacements) {
       acceleration = GeneralSphericalHarmonicsAccelerationCpp(
@@ -198,7 +198,7 @@ void BM_ComputeGeopotentialDistance(benchmark::State& state) {
         snm[n][m] = earth.sin()[n][m] * LegendreNormalizationFactor[n][m]; \
       }                                                                    \
     }                                                                      \
-    while (state.KeepRunning()) {                                          \
+    for (auto _ : state) {                                          \
       Vector<Exponentiation<Length, -2>, ICRS> acceleration;               \
       for (auto const& displacement : displacements) {                     \
         acceleration =                                                     \
