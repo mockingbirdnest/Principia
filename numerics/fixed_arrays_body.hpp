@@ -146,7 +146,7 @@ template<int r>
 constexpr Scalar const& FixedMatrix<Scalar, rows_, columns_>::Row<r>::
 operator[](int index) const {
   CONSTEXPR_DCHECK(0 <= index);
-  CONSTEXPR_DCHECK(index < rows());
+  CONSTEXPR_DCHECK(index < columns());
   return (matrix_->data_)[r * columns() + index];
 }
 
