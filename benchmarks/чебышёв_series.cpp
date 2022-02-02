@@ -49,7 +49,7 @@ constexpr int evaluations_per_iteration = 1000;
 }  // namespace
 
 void BM_EvaluateDouble(benchmark::State& state) {
-  int const degree = state.range_x();
+  int const degree = state.range(0);
   std::mt19937_64 random(42);
   std::vector<double> coefficients;
   for (int i = 0; i <= degree; ++i) {
@@ -77,7 +77,7 @@ void BM_EvaluateDouble(benchmark::State& state) {
 }
 
 void BM_EvaluateQuantity(benchmark::State& state) {
-  int const degree = state.range_x();
+  int const degree = state.range(0);
   std::mt19937_64 random(42);
   std::vector<Length> coefficients;
   for (int i = 0; i <= degree; ++i) {
@@ -107,7 +107,7 @@ void BM_EvaluateQuantity(benchmark::State& state) {
 }
 
 void BM_EvaluateR3ElementDouble(benchmark::State& state) {
-  int const degree = state.range_x();
+  int const degree = state.range(0);
   std::mt19937_64 random(42);
   std::vector<R3Element<double>> coefficients;
   for (int i = 0; i <= degree; ++i) {
@@ -139,7 +139,7 @@ void BM_EvaluateR3ElementDouble(benchmark::State& state) {
 }
 
 void BM_EvaluateVectorDouble(benchmark::State& state) {
-  int const degree = state.range_x();
+  int const degree = state.range(0);
   std::mt19937_64 random(42);
   std::vector<Multivector<double, ICRS, 1>> coefficients;
   for (int i = 0; i <= degree; ++i) {
@@ -173,7 +173,7 @@ void BM_EvaluateVectorDouble(benchmark::State& state) {
 }
 
 void BM_EvaluateDisplacement(benchmark::State& state) {
-  int const degree = state.range_x();
+  int const degree = state.range(0);
   std::mt19937_64 random(42);
   std::vector<Displacement<ICRS>> coefficients;
   for (int i = 0; i <= degree; ++i) {

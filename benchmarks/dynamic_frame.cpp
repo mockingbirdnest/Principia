@@ -124,7 +124,7 @@ ApplyDynamicFrame(
 
 void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
   Time const Δt = 5 * Minute;
-  int const steps = state.range_x();
+  int const steps = state.range(0);
 
   SolarSystem<Barycentric> solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
@@ -173,7 +173,7 @@ void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
 
 void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
   Time const Δt = 5 * Minute;
-  int const steps = state.range_x();
+  int const steps = state.range(0);
 
   SolarSystem<Barycentric> solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",

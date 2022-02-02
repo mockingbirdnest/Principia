@@ -49,7 +49,7 @@ void RandomSegmentsBenchmark(
   Sphere<World> const sphere(World::origin,
                              /*radius=*/1 * Metre);
 
-  int const count = state.range_x();
+  int const count = state.range(0);
   std::mt19937_64 random(42);
   std::vector<Segment<World>> segments;
   for (int i = 0; i < count; ++i) {
@@ -100,7 +100,7 @@ void BM_VisibleSegmentsOrbit(benchmark::State& state) {
                              /*radius=*/1 * Metre);
 
   // A circular orbit in the x-y plane.
-  int const count = state.range_x();
+  int const count = state.range(0);
   std::vector<Segment<World>> segments;
   for (int i = 0; i < count; ++i) {
     Angle θ1 = 2 * π * i * Radian / static_cast<double>(count);
@@ -154,7 +154,7 @@ void BM_VisibleSegmentsOrbitMultipleSpheres(benchmark::State& state) {
   // A bunch of other spheres scattered around.
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> distribution(-10.0, 10.0);
-  for (int i = 0; i < state.range_y(); ++i) {
+  for (int i = 0; i < state.range(1); ++i) {
     spheres.emplace_back(
         World::origin + Displacement<World>({distribution(random) * Metre,
                                              distribution(random) * Metre,
@@ -163,7 +163,7 @@ void BM_VisibleSegmentsOrbitMultipleSpheres(benchmark::State& state) {
   }
 
   // A circular orbit in the x-y plane.
-  int const count = state.range_x();
+  int const count = state.range(0);
   std::vector<Segment<World>> segments;
   for (int i = 0; i < count; ++i) {
     Angle θ1 = 2 * π * i * Radian / static_cast<double>(count);

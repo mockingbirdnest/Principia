@@ -107,7 +107,7 @@ void EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
 
 template<template<typename, typename, int> class Evaluator>
 void BM_EvaluatePolynomialInMonomialBasisDouble(benchmark::State& state) {
-  int const degree = state.range_x();
+  int const degree = state.range(0);
   switch (degree) {
     case 4:
       EvaluatePolynomialInMonomialBasis<double, Time, 4, Evaluator>(state);
@@ -129,7 +129,7 @@ void BM_EvaluatePolynomialInMonomialBasisDouble(benchmark::State& state) {
 
 template<template<typename, typename, int> class Evaluator>
 void BM_EvaluatePolynomialInMonomialBasisQuantity(benchmark::State& state) {
-  int const degree = state.range_x();
+  int const degree = state.range(0);
   switch (degree) {
     case 4:
       EvaluatePolynomialInMonomialBasis<Length, Time, 4, Evaluator>(state);
@@ -151,7 +151,7 @@ void BM_EvaluatePolynomialInMonomialBasisQuantity(benchmark::State& state) {
 
 template<template<typename, typename, int> class Evaluator>
 void BM_EvaluatePolynomialInMonomialBasisVectorDouble(benchmark::State& state) {
-  int const degree = state.range_x();
+  int const degree = state.range(0);
   switch (degree) {
     case 4:
       EvaluatePolynomialInMonomialBasis<Multivector<double, ICRS, 1>,
@@ -185,7 +185,7 @@ void BM_EvaluatePolynomialInMonomialBasisVectorDouble(benchmark::State& state) {
 
 template<template<typename, typename, int> class Evaluator>
 void BM_EvaluatePolynomialInMonomialBasisDisplacement(benchmark::State& state) {
-  int const degree = state.range_x();
+  int const degree = state.range(0);
   switch (degree) {
     case 4:
       EvaluatePolynomialInMonomialBasis<Displacement<ICRS>,
