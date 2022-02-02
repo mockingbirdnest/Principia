@@ -4,6 +4,8 @@
 #include "numerics/matrix_computations.hpp"
 
 #include "base/tags.hpp"
+#include "numerics/fixed_arrays.hpp"
+#include "numerics/unbounded_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
@@ -15,183 +17,170 @@ using quantities::Abs;
 using quantities::Pow;
 using quantities::Sqrt;
 
-template<typename Scalar_, template<typename S> typename UpperTriangularMatrix>
-struct CholeskyDecompositionGenerator<UpperTriangularMatrix<Scalar_>> {
+//TODO(phl): Decide what is square and what isn't.
+
+template<typename Scalar_>
+struct CholeskyDecompositionGenerator<UnboundedUpperTriangularMatrix<Scalar_>> {
   using Scalar = Scalar_;
-  using Result = UpperTriangularMatrix<SquareRoot<Scalar>>;
-  static Result Uninitialized(UpperTriangularMatrix<Scalar> const& u);
+  using Result = UnboundedUpperTriangularMatrix<SquareRoot<Scalar>>;
+  static Result Uninitialized(UnboundedUpperTriangularMatrix<Scalar> const& u);
 };
 
-template<typename Scalar_, int columns,
-         template<typename S, int c> typename UpperTriangularMatrix>
-struct CholeskyDecompositionGenerator<UpperTriangularMatrix<Scalar_, columns>> {
+template<typename Scalar_, int columns>
+struct CholeskyDecompositionGenerator<
+    FixedUpperTriangularMatrix<Scalar_, columns>> {
   using Scalar = Scalar_;
-  using Result = UpperTriangularMatrix<SquareRoot<Scalar>, columns>;
-  static Result Uninitialized(UpperTriangularMatrix<Scalar, columns> const& u);
+  using Result = FixedUpperTriangularMatrix<SquareRoot<Scalar>, columns>;
+  static Result Uninitialized(
+      FixedUpperTriangularMatrix<Scalar, columns> const& u);
 };
 
-template<typename Scalar_,
-         template<typename S> typename Vector,
-         template<typename S> typename UpperTriangularMatrix>
-struct ᵗRDRDecompositionGenerator<Vector<Scalar_>,
-                                  UpperTriangularMatrix<Scalar_>> {
+template<typename Scalar_>
+struct ᵗRDRDecompositionGenerator<UnboundedVector<Scalar_>,
+                                  UnboundedUpperTriangularMatrix<Scalar_>> {
   using Scalar = Scalar_;
   struct Result {
-    UpperTriangularMatrix<double> R;
-    Vector<Scalar> D;
+    UnboundedUpperTriangularMatrix<double> R;
+    UnboundedVector<Scalar> D;
   };
-  static Result Uninitialized(UpperTriangularMatrix<Scalar> const& u);
+  static Result Uninitialized(UnboundedUpperTriangularMatrix<Scalar> const& u);
 };
 
-template<typename Scalar_, int columns,
-         template<typename S, int c> typename Vector,
-         template<typename S, int c> typename UpperTriangularMatrix>
-struct ᵗRDRDecompositionGenerator<Vector<Scalar_, columns>,
-                                  UpperTriangularMatrix<Scalar_, columns>> {
+template<typename Scalar_, int columns>
+struct ᵗRDRDecompositionGenerator<
+    FixedVector<Scalar_, columns>,
+    FixedUpperTriangularMatrix<Scalar_, columns>> {
   using Scalar = Scalar_;
   struct Result {
-    UpperTriangularMatrix<double, columns> R;
-    Vector<Scalar, columns> D;
+    FixedUpperTriangularMatrix<double, columns> R;
+    FixedVector<Scalar, columns> D;
   };
-  static Result Uninitialized(UpperTriangularMatrix<Scalar, columns> const& u);
+  static Result Uninitialized(
+      FixedUpperTriangularMatrix<Scalar, columns> const& u);
 };
 
 template<typename LScalar, typename RScalar,
-         template<typename S> typename Matrix,
-         template<typename S> typename Vector>
-struct SubstitutionGenerator<Matrix<LScalar>, Vector<RScalar>> {
-  using Result = Vector<Quotient<RScalar, LScalar>>;
-  static Result Uninitialized(Matrix<LScalar> const& m);
+         template<typename S> typename TriangularMatrix>
+struct SubstitutionGenerator<TriangularMatrix<LScalar>,
+                             UnboundedVector<RScalar>> {
+  using Result = UnboundedVector<Quotient<RScalar, LScalar>>;
+  static Result Uninitialized(TriangularMatrix<LScalar> const& m);
 };
 
 template<typename LScalar, typename RScalar, int dimension,
-         template<typename S, int d> typename Matrix,
-         template<typename S, int d> typename Vector>
-struct SubstitutionGenerator<Matrix<LScalar, dimension>,
-                             Vector<RScalar, dimension>> {
-  using Result = Vector<Quotient<RScalar, LScalar>, dimension>;
-  static Result Uninitialized(Matrix<LScalar, dimension> const& m);
+         template<typename S, int d> typename TriangularMatrix>
+struct SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
+                             FixedVector<RScalar, dimension>> {
+  using Result = FixedVector<Quotient<RScalar, LScalar>, dimension>;
+  static Result Uninitialized(TriangularMatrix<LScalar, dimension> const& m);
 };
 
-template<typename MScalar, typename VScalar,
-         template<typename S> typename Matrix,
-         template<typename S> typename Vector>
-struct RayleighQuotientGenerator<Matrix<MScalar>, Vector<VScalar>> {
+template<typename MScalar, typename VScalar>
+struct RayleighQuotientGenerator<UnboundedMatrix<MScalar>,
+                                 UnboundedVector<VScalar>> {
   using Result = MScalar;
 };
 
-template<typename MScalar, typename VScalar, int dimension,
-         template<typename S, int r, int c> typename Matrix,
-         template<typename S, int d> typename Vector>
-struct RayleighQuotientGenerator<Matrix<MScalar, dimension, dimension>,
-                                 Vector<VScalar, dimension>> {
+template<typename MScalar, typename VScalar, int dimension>
+struct RayleighQuotientGenerator<FixedMatrix<MScalar, dimension, dimension>,
+                                 FixedVector<VScalar, dimension>> {
   using Result = MScalar;
 };
 
-template<typename MScalar, typename VScalar,
-         template<typename S> typename Matrix,
-         template<typename S> typename Vector>
-struct SolveGenerator<Matrix<MScalar>, Vector<VScalar>> {
-  using Result = Vector<Quotient<VScalar, MScalar>>;
-  static Matrix<double> UninitializedL(Matrix<MScalar> const& m);
-  static Matrix<MScalar> UninitializedU(Matrix<MScalar> const& m);
+template<typename MScalar, typename VScalar>
+struct SolveGenerator<UnboundedMatrix<MScalar>, UnboundedVector<VScalar>> {
+  using Result = UnboundedVector<Quotient<VScalar, MScalar>>;
+  static UnboundedLowerTriangularMatrix<double> UninitializedL(
+      UnboundedMatrix<MScalar> const& m);
+  static UnboundedUpperTriangularMatrix<MScalar> UninitializedU(
+      UnboundedMatrix<MScalar> const& m);
 };
 
-template<typename MScalar, typename VScalar, int rows, int columns,
-         template<typename S, int r, int c> typename Matrix,
-         template<typename S, int d> typename Vector>
-struct SolveGenerator<Matrix<MScalar, rows, columns>,
-                      Vector<VScalar, rows>> {
+template<typename MScalar, typename VScalar, int rows, int columns>
+struct SolveGenerator<FixedMatrix<MScalar, rows, columns>,
+                      FixedVector<VScalar, rows>> {
   using Result = MScalar;
-  static Matrix<double, rows, columns> UninitializedL(
-      Matrix<MScalar, rows, columns> const& m);
-  static Matrix<MScalar, columns, columns> UninitializedU(
-      Matrix<MScalar, rows, columns> const& m);
+  static FixedLowerTriangularMatrix<double, rows> UninitializedL(
+      FixedMatrix<MScalar, rows, columns> const& m);
+  static FixedUpperTriangularMatrix<MScalar, columns> UninitializedU(
+      FixedMatrix<MScalar, rows, columns> const& m);
 };
 
-template<typename Scalar_, template<typename S> typename UpperTriangularMatrix>
-auto CholeskyDecompositionGenerator<UpperTriangularMatrix<Scalar_>>::
-Uninitialized(UpperTriangularMatrix<Scalar> const& u) -> Result {
+template<typename Scalar_>
+auto CholeskyDecompositionGenerator<UnboundedUpperTriangularMatrix<Scalar_>>::
+Uninitialized(UnboundedUpperTriangularMatrix<Scalar> const& u) -> Result {
   return Result(u.columns(), uninitialized);
 }
 
-template<typename Scalar_, int columns,
-         template<typename S, int c> typename UpperTriangularMatrix>
-auto CholeskyDecompositionGenerator<UpperTriangularMatrix<Scalar_, columns>>::
-Uninitialized(UpperTriangularMatrix<Scalar, columns> const& u) -> Result {
+template<typename Scalar_, int columns>
+auto CholeskyDecompositionGenerator<
+    FixedUpperTriangularMatrix<Scalar_, columns>>::
+Uninitialized(FixedUpperTriangularMatrix<Scalar, columns> const& u) -> Result {
   return Result(uninitialized);
 }
 
-template<typename Scalar_,
-         template<typename S> typename Vector,
-         template<typename S> typename UpperTriangularMatrix>
-auto ᵗRDRDecompositionGenerator<Vector<Scalar_>,
-                                UpperTriangularMatrix<Scalar_>>::
-Uninitialized(UpperTriangularMatrix<Scalar> const& u) -> Result {
-  return {UpperTriangularMatrix<double>(u.columns(), uninitialized),
-          Vector<Scalar>(u.columns(), uninitialized)};
+template<typename Scalar_>
+auto ᵗRDRDecompositionGenerator<UnboundedVector<Scalar_>,
+                                UnboundedUpperTriangularMatrix<Scalar_>>::
+Uninitialized(UnboundedUpperTriangularMatrix<Scalar> const& u) -> Result {
+  return {UnboundedUpperTriangularMatrix<double>(u.columns(), uninitialized),
+          UnboundedVector<Scalar>(u.columns(), uninitialized)};
 }
 
-template<typename Scalar_, int columns,
-         template<typename S, int c> typename Vector,
-         template<typename S, int c> typename UpperTriangularMatrix>
-auto ᵗRDRDecompositionGenerator<Vector<Scalar_, columns>,
-                                UpperTriangularMatrix<Scalar_, columns>>::
-Uninitialized(UpperTriangularMatrix<Scalar, columns> const& u) -> Result {
-  return {UpperTriangularMatrix<double, columns>(uninitialized),
-          Vector<Scalar, columns>(uninitialized)};
+template<typename Scalar_, int columns>
+auto ᵗRDRDecompositionGenerator<FixedVector<Scalar_, columns>,
+                                FixedUpperTriangularMatrix<Scalar_, columns>>::
+Uninitialized(FixedUpperTriangularMatrix<Scalar, columns> const& u) -> Result {
+  return {FixedUpperTriangularMatrix<double, columns>(uninitialized),
+          FixedVector<Scalar, columns>(uninitialized)};
 }
 
 template<typename LScalar, typename RScalar,
-         template<typename S> typename Matrix,
-         template<typename S> typename Vector>
-auto SubstitutionGenerator<Matrix<LScalar>, Vector<RScalar>>::Uninitialized(
-    Matrix<LScalar> const& m) -> Result {
+         template<typename S> typename TriangularMatrix>
+auto SubstitutionGenerator<TriangularMatrix<LScalar>,
+                           UnboundedVector<RScalar>>::
+Uninitialized(TriangularMatrix<LScalar> const& m) -> Result {
   return Result(m.columns(), uninitialized);
 }
 
 template<typename LScalar, typename RScalar, int dimension,
-         template<typename S, int d> typename Matrix,
-         template<typename S, int d> typename Vector>
-auto SubstitutionGenerator<Matrix<LScalar, dimension>,
-                           Vector<RScalar, dimension>>::Uninitialized(
-    Matrix<LScalar, dimension> const& m) -> Result {
+         template<typename S, int d> typename TriangularMatrix>
+auto SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
+                           FixedVector<RScalar, dimension>>::Uninitialized(
+    TriangularMatrix<LScalar, dimension> const& m) -> Result {
   return Result(uninitialized);
 }
 
-template<typename MScalar, typename VScalar,
-         template<typename S> typename Matrix,
-         template<typename S> typename Vector>
-auto SolveGenerator<Matrix<MScalar>, Vector<VScalar>>::UninitializedL(
-    Matrix<MScalar> const& m) -> Matrix<double> {
-  return Matrix<double>(m.rows(), m.columns(), uninitialized);
+template<typename MScalar, typename VScalar>
+UnboundedLowerTriangularMatrix<double>
+SolveGenerator<UnboundedMatrix<MScalar>, UnboundedVector<VScalar>>::
+UninitializedL(UnboundedMatrix<MScalar> const& m) {
+  return UnboundedLowerTriangularMatrix<double>(
+      m.rows(), m.columns(), uninitialized);
 }
 
-template<typename MScalar, typename VScalar,
-         template<typename S> typename Matrix,
-         template<typename S> typename Vector>
-auto SolveGenerator<Matrix<MScalar>, Vector<VScalar>>::UninitializedU(
-    Matrix<MScalar> const& m) -> Matrix<MScalar> {
-  return Matrix<MScalar>(m.columns(), m.columns(), uninitialized);
+template<typename MScalar, typename VScalar>
+UnboundedUpperTriangularMatrix<MScalar>
+SolveGenerator<UnboundedMatrix<MScalar>, UnboundedVector<VScalar>>::
+UninitializedU(UnboundedMatrix<MScalar> const& m) {
+  return UnboundedUpperTriangularMatrix<MScalar>(
+      m.columns(), m.columns(), uninitialized);
 }
 
-template<typename MScalar, typename VScalar, int rows, int columns,
-         template<typename S, int r, int c> typename Matrix,
-         template<typename S, int d> typename Vector>
-auto SolveGenerator<Matrix<MScalar, rows, columns>,
-                    Vector<VScalar, rows>>::UninitializedL(
-    Matrix<MScalar, rows, columns> const& m) -> Matrix<double, rows, columns> {
-  return Matrix<double, rows, columns>(uninitialized);
+template<typename MScalar, typename VScalar, int rows, int columns>
+FixedLowerTriangularMatrix<double, rows>
+SolveGenerator<FixedMatrix<MScalar, rows, columns>,
+               FixedVector<VScalar, rows>>::
+UninitializedL(FixedMatrix<MScalar, rows, columns> const& m) {
+  return FixedLowerTriangularMatrix<double, rows>(uninitialized);
 }
 
-template<typename MScalar, typename VScalar, int rows, int columns,
-         template<typename S, int r, int c> typename Matrix,
-         template<typename S, int d> typename Vector>
-auto SolveGenerator<Matrix<MScalar, rows, columns>,
-                    Vector<VScalar, rows>>::UninitializedU(
-   Matrix<MScalar, rows, columns> const& m)
-        -> Matrix<MScalar, columns, columns> {
-  return Matrix<MScalar, columns, columns>(uninitialized);
+template<typename MScalar, typename VScalar, int rows, int columns>
+FixedUpperTriangularMatrix<MScalar, columns>
+SolveGenerator<FixedMatrix<MScalar, rows, columns>,
+               FixedVector<VScalar, rows>>::
+UninitializedU(FixedMatrix<MScalar, rows, columns> const& m) {
+  return FixedUpperTriangularMatrix<MScalar, columns>(uninitialized);
 }
 
 // [Hig02], Algorithm 10.2.
@@ -300,8 +289,8 @@ Solve(Matrix const& A, Vector const& b) {
   using Scalar = typename G::Scalar;
 
   // The units make it inconvenient to overlay L and U onto A.
-  Matrix L = G::UninitializedL(A);
-  Matrix U = G::UninitializedU(A);
+  auto L = G::UninitializedL(A);
+  auto U = G::UninitializedU(A);
 
   // Doolittle's method: write P * A = L * U where P is an implicit permutation
   // that is also applied to b.  See [Hig02], Algorithm 9.2 p. 162.
@@ -312,7 +301,7 @@ Solve(Matrix const& A, Vector const& b) {
     for (int i = k; i < A.rows(); ++i) {
       if (Abs(A[i][k]) > max) {
         r = i;
-        max = Abs(A[i][k]));
+        max = Abs(A[i][k]);
       }
     }
     CHECK_LE(0, r) << A << " cannot pivot";
@@ -329,7 +318,7 @@ Solve(Matrix const& A, Vector const& b) {
     }
 
     std::swap(b[k], b[r]);
-    CHECK_NE(Scalar{}, A[k][k])) << *this << " is singular";
+    CHECK_NE(Scalar{}, A[k][k]) << *this << " is singular";
 
     for (int j = k; j < A.columns(); ++j) {
       auto U_kj = A[k][j];
