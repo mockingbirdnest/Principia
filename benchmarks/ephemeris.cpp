@@ -586,97 +586,122 @@ BENCHMARK(BM_EphemerisMultithreadingBenchmark)
     ->ArgPair(3, 2)
     ->ArgPair(3, 3)
     ->ArgPair(3, 4)
-    ->ArgPair(3, 5);
-BENCHMARK(BM_EphemerisKSPSystem)->Arg(-3);
+    ->ArgPair(3, 5)
+    ->Unit(benchmark::kMicrosecond);
+BENCHMARK(BM_EphemerisKSPSystem)->Arg(-3)->Unit(benchmark::kSecond);
 BENCHMARK_TEMPLATE(BM_EphemerisSolarSystem,
                    SolarSystemFactory::Accuracy::MajorBodiesOnly)
-    ->Arg(-3);
+    ->Arg(-3)
+    ->Unit(benchmark::kSecond);
 BENCHMARK_TEMPLATE(BM_EphemerisSolarSystem,
                    SolarSystemFactory::Accuracy::MinorAndMajorBodies)
-    ->Arg(-3);
+    ->Arg(-3)
+    ->Unit(benchmark::kSecond);
 BENCHMARK_TEMPLATE(BM_EphemerisSolarSystem,
                    SolarSystemFactory::Accuracy::AllBodiesAndDampedOblateness)
-    ->Arg(-3);
+    ->Arg(-3)
+    ->Unit(benchmark::kSecond);
 BENCHMARK_TEMPLATE(BM_EphemerisL4Probe,
                    SolarSystemFactory::Accuracy::MajorBodiesOnly,
                    &FlowEphemerisWithAdaptiveStep)
-    ->Arg(-3);
+    ->Arg(-3)
+    ->Unit(benchmark::kSecond);
 BENCHMARK_TEMPLATE(BM_EphemerisL4Probe,
                    SolarSystemFactory::Accuracy::MinorAndMajorBodies,
                    &FlowEphemerisWithAdaptiveStep)
-    ->Arg(-3);
+    ->Arg(-3)
+    ->Unit(benchmark::kSecond);
 BENCHMARK_TEMPLATE(BM_EphemerisL4Probe,
                    SolarSystemFactory::Accuracy::AllBodiesAndDampedOblateness,
                    &FlowEphemerisWithAdaptiveStep)
-    ->Arg(-3);
+    ->Arg(-3)
+    ->Unit(benchmark::kSecond);
 BENCHMARK_TEMPLATE(BM_EphemerisLEOProbe,
                    SolarSystemFactory::Accuracy::MajorBodiesOnly,
                    &FlowEphemerisWithAdaptiveStep)
-    ->Arg(-3);
+    ->Arg(-3)
+    ->Unit(benchmark::kSecond);
 BENCHMARK_TEMPLATE(BM_EphemerisLEOProbe,
                    SolarSystemFactory::Accuracy::MajorBodiesOnly,
                    &FlowEphemerisWithFixedStepSLMS)
-    ->Arg(-3);
+    ->Arg(-3)
+    ->Unit(benchmark::kSecond);
 BENCHMARK_TEMPLATE(BM_EphemerisLEOProbe,
                    SolarSystemFactory::Accuracy::MajorBodiesOnly,
                    &FlowEphemerisWithFixedStepSRKN)
-    ->Arg(-3);
+    ->Arg(-3)
+    ->Unit(benchmark::kSecond);
 BENCHMARK_TEMPLATE(BM_EphemerisLEOProbe,
                    SolarSystemFactory::Accuracy::MinorAndMajorBodies,
                    &FlowEphemerisWithAdaptiveStep)
-    ->Arg(-3);
+    ->Arg(-3)
+    ->Unit(benchmark::kSecond);
 BENCHMARK_TEMPLATE(BM_EphemerisLEOProbe,
                    SolarSystemFactory::Accuracy::MinorAndMajorBodies,
                    &FlowEphemerisWithFixedStepSLMS)
-    ->Arg(-3);
+    ->Arg(-3)
+    ->Unit(benchmark::kSecond);
 BENCHMARK_TEMPLATE(BM_EphemerisLEOProbe,
                    SolarSystemFactory::Accuracy::MinorAndMajorBodies,
                    &FlowEphemerisWithFixedStepSRKN)
-    ->Arg(-3);
+    ->Arg(-3)
+    ->Unit(benchmark::kSecond);
 BENCHMARK_TEMPLATE(BM_EphemerisLEOProbe,
                    SolarSystemFactory::Accuracy::AllBodiesAndDampedOblateness,
                    &FlowEphemerisWithAdaptiveStep)
-    ->Arg(-3);
+    ->Arg(-3)
+    ->Unit(benchmark::kSecond);
 BENCHMARK_TEMPLATE(BM_EphemerisLEOProbe,
                    SolarSystemFactory::Accuracy::AllBodiesAndDampedOblateness,
                    &FlowEphemerisWithFixedStepSLMS)
-    ->Arg(-3);
+    ->Arg(-3)
+    ->Unit(benchmark::kSecond);
 BENCHMARK_TEMPLATE(BM_EphemerisLEOProbe,
                    SolarSystemFactory::Accuracy::AllBodiesAndDampedOblateness,
                    &FlowEphemerisWithFixedStepSRKN)
-    ->Arg(-3);
+    ->Arg(-3)
+    ->Unit(benchmark::kSecond);
 BENCHMARK_TEMPLATE(BM_EphemerisTranslunarSpaceProbe,
                    SolarSystemFactory::Accuracy::MajorBodiesOnly,
                    &FlowEphemerisWithFixedStepSLMS)
-    ->Arg(-3);
+    ->Arg(-3)
+    ->Unit(benchmark::kSecond);
 BENCHMARK_TEMPLATE(BM_EphemerisTranslunarSpaceProbe,
                    SolarSystemFactory::Accuracy::MinorAndMajorBodies,
                    &FlowEphemerisWithFixedStepSLMS)
-    ->Arg(-3);
+    ->Arg(-3)
+    ->Unit(benchmark::kSecond);
 BENCHMARK_TEMPLATE(BM_EphemerisTranslunarSpaceProbe,
                    SolarSystemFactory::Accuracy::AllBodiesAndDampedOblateness,
                    &FlowEphemerisWithFixedStepSLMS)
-    ->Arg(-3);
+    ->Arg(-3)
+    ->Unit(benchmark::kSecond);
 BENCHMARK_TEMPLATE(BM_EphemerisL4Probe1Year,
                    SolarSystemFactory::Accuracy::MajorBodiesOnly,
                    &FlowEphemerisWithFixedStepSLMS)
-    ->Arg(-3);
+    ->Arg(-3)
+    ->Unit(benchmark::kSecond);
 BENCHMARK_TEMPLATE(BM_EphemerisL4Probe1Year,
                    SolarSystemFactory::Accuracy::MinorAndMajorBodies,
                    &FlowEphemerisWithFixedStepSLMS)
-    ->Arg(-3);
+    ->Arg(-3)
+    ->Unit(benchmark::kSecond);
 BENCHMARK_TEMPLATE(BM_EphemerisL4Probe1Year,
                    SolarSystemFactory::Accuracy::AllBodiesAndDampedOblateness,
                    &FlowEphemerisWithFixedStepSLMS)
-    ->Arg(-3);
+    ->Arg(-3)
+    ->Unit(benchmark::kSecond);
 
 BENCHMARK_TEMPLATE(BM_EphemerisFittingTolerance, &FlowEphemerisWithAdaptiveStep)
-    ->DenseRange(-4, 4);
+    ->DenseRange(-4, 4)
+    ->Unit(benchmark::kMillisecond);
 
 BENCHMARK_TEMPLATE(BM_EphemerisStartup, &FlowEphemerisWithFixedStepSLMS)
-    ->Arg(3);
+    ->Arg(3)
+    ->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE(BM_EphemerisStartup, &FlowEphemerisWithFixedStepSRKN)
-    ->Arg(3);
+    ->Arg(3)
+    ->Unit(benchmark::kMicrosecond);
 
 }  // namespace physics
 }  // namespace principia

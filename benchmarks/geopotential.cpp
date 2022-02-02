@@ -248,12 +248,23 @@ void BM_ComputeGeopotentialF90(benchmark::State& state) {
 
 #undef PRINCIPIA_CASE_COMPUTE_GEOPOTENTIAL_F90
 
-BENCHMARK(BM_ComputeGeopotentialCpp)->Arg(2)->Arg(3)->Arg(5)->Arg(10);
-BENCHMARK(BM_ComputeGeopotentialF90)->Arg(2)->Arg(3)->Arg(5)->Arg(10);
+BENCHMARK(BM_ComputeGeopotentialCpp)
+    ->Arg(2)
+    ->Arg(3)
+    ->Arg(5)
+    ->Arg(10)
+    ->Unit(benchmark::kMicrosecond);
+BENCHMARK(BM_ComputeGeopotentialF90)
+    ->Arg(2)
+    ->Arg(3)
+    ->Arg(5)
+    ->Arg(10)
+    ->Unit(benchmark::kMicrosecond);
 BENCHMARK(BM_ComputeGeopotentialDistance)
-    ->Arg(150'000)     // C₂₂, S₂₂, J₂.
-    ->Arg(500'000)     // J₂.
-    ->Arg(5'000'000);  // Central
+    ->Arg(150'000)    // C₂₂, S₂₂, J₂.
+    ->Arg(500'000)    // J₂.
+    ->Arg(5'000'000)  // Central
+    ->Unit(benchmark::kMicrosecond);
 
 }  // namespace physics
 }  // namespace principia

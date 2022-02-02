@@ -219,28 +219,28 @@ void BM_EvaluatePolynomialInMonomialBasisDisplacement(benchmark::State& state) {
 
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDouble,
                     EstrinEvaluator)
-    ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
+    ->Arg(4)->Arg(8)->Arg(12)->Arg(16)->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisQuantity,
                     EstrinEvaluator)
-    ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
+    ->Arg(4)->Arg(8)->Arg(12)->Arg(16)->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisVectorDouble,
                     EstrinEvaluator)
-    ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
+    ->Arg(4)->Arg(8)->Arg(12)->Arg(16)->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDisplacement,
                     EstrinEvaluator)
-    ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
+    ->Arg(4)->Arg(8)->Arg(12)->Arg(16)->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDouble,
                     HornerEvaluator)
-    ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
+    ->Arg(4)->Arg(8)->Arg(12)->Arg(16)->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisQuantity,
                     HornerEvaluator)
-    ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
+    ->Arg(4)->Arg(8)->Arg(12)->Arg(16)->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisVectorDouble,
                     HornerEvaluator)
-    ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
+    ->Arg(4)->Arg(8)->Arg(12)->Arg(16)->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDisplacement,
                     HornerEvaluator)
-    ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
+    ->Arg(4)->Arg(8)->Arg(12)->Arg(16)->Unit(benchmark::kMicrosecond);
 
 }  // namespace numerics
 }  // namespace principia

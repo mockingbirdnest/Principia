@@ -205,16 +205,51 @@ void BM_EvaluateDisplacement(benchmark::State& state) {
   state.SetLabel(ss.str().substr(0, 0));
 }
 
-BENCHMARK(BM_EvaluateDouble)->
-    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17)->Arg(18)->Arg(19);
-BENCHMARK(BM_EvaluateQuantity)->
-    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17)->Arg(18)->Arg(19);
-BENCHMARK(BM_EvaluateR3ElementDouble)->
-    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17)->Arg(18)->Arg(19);
-BENCHMARK(BM_EvaluateVectorDouble)->
-    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17)->Arg(18)->Arg(19);
-BENCHMARK(BM_EvaluateDisplacement)->
-    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17)->Arg(18)->Arg(19);
+BENCHMARK(BM_EvaluateDouble)
+    ->Arg(4)
+    ->Arg(8)
+    ->Arg(15)
+    ->Arg(16)
+    ->Arg(17)
+    ->Arg(18)
+    ->Arg(19)
+    ->Unit(benchmark::kMicrosecond);
+BENCHMARK(BM_EvaluateQuantity)
+    ->Arg(4)
+    ->Arg(8)
+    ->Arg(15)
+    ->Arg(16)
+    ->Arg(17)
+    ->Arg(18)
+    ->Arg(19)
+    ->Unit(benchmark::kMicrosecond);
+BENCHMARK(BM_EvaluateR3ElementDouble)
+    ->Arg(4)
+    ->Arg(8)
+    ->Arg(15)
+    ->Arg(16)
+    ->Arg(17)
+    ->Arg(18)
+    ->Arg(19)
+    ->Unit(benchmark::kMicrosecond);
+BENCHMARK(BM_EvaluateVectorDouble)
+    ->Arg(4)
+    ->Arg(8)
+    ->Arg(15)
+    ->Arg(16)
+    ->Arg(17)
+    ->Arg(18)
+    ->Arg(19)
+    ->Unit(benchmark::kMicrosecond);
+BENCHMARK(BM_EvaluateDisplacement)
+    ->Arg(4)
+    ->Arg(8)
+    ->Arg(15)
+    ->Arg(16)
+    ->Arg(17)
+    ->Arg(18)
+    ->Arg(19)
+    ->Unit(benchmark::kMicrosecond);
 
 }  // namespace numerics
 }  // namespace principia

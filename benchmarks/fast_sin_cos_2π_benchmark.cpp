@@ -83,9 +83,9 @@ void BM_FastSinCos2πThroughput(benchmark::State& state) {
   }
 }
 
-BENCHMARK(BM_FastSinCos2πPoorlyPredictedLatency);
-BENCHMARK(BM_FastSinCos2πWellPredictedLatency);
-BENCHMARK(BM_FastSinCos2πThroughput);
+BENCHMARK(BM_FastSinCos2πPoorlyPredictedLatency)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BM_FastSinCos2πWellPredictedLatency)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BM_FastSinCos2πThroughput)->Unit(benchmark::kMicrosecond);
 
 }  // namespace numerics
 }  // namespace principia

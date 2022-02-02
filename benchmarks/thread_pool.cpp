@@ -105,7 +105,8 @@ BENCHMARK(BM_ThreadPoolNoLock)
     ->Arg(5)
     ->Arg(6)
     ->Arg(7)
-    ->Arg(8);
+    ->Arg(8)
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK(BM_ThreadPoolSharedLock)
     ->Arg(1)
     ->Arg(2)
@@ -114,7 +115,8 @@ BENCHMARK(BM_ThreadPoolSharedLock)
     ->Arg(5)
     ->Arg(6)
     ->Arg(7)
-    ->Arg(8);
+    ->Arg(8)
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK(BM_ThreadPoolExclusiveLock)
     ->Arg(1)
     ->Arg(2)
@@ -123,7 +125,8 @@ BENCHMARK(BM_ThreadPoolExclusiveLock)
     ->Arg(5)
     ->Arg(6)
     ->Arg(7)
-    ->Arg(8);
+    ->Arg(8)
+    ->Unit(benchmark::kMillisecond);
 
 }  // namespace base
 }  // namespace principia

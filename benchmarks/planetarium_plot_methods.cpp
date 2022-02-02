@@ -262,10 +262,14 @@ void BM_PlanetariumPlotMethod2FarEquatorialPerspective(
   RunBenchmark(state, EquatorialPerspective(far));
 }
 
-BENCHMARK(BM_PlanetariumPlotMethod2NearPolarPerspective);
-BENCHMARK(BM_PlanetariumPlotMethod2FarPolarPerspective);
-BENCHMARK(BM_PlanetariumPlotMethod2NearEquatorialPerspective);
-BENCHMARK(BM_PlanetariumPlotMethod2FarEquatorialPerspective);
+BENCHMARK(BM_PlanetariumPlotMethod2NearPolarPerspective)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK(BM_PlanetariumPlotMethod2FarPolarPerspective)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK(BM_PlanetariumPlotMethod2NearEquatorialPerspective)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK(BM_PlanetariumPlotMethod2FarEquatorialPerspective)
+    ->Unit(benchmark::kMillisecond);
 
 }  // namespace geometry
 }  // namespace principia

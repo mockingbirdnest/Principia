@@ -223,8 +223,12 @@ void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
 
 int const iterations = (1000 << 10) + 1;
 
-BENCHMARK(BM_BodyCentredNonRotatingDynamicFrame)->Arg(iterations);
-BENCHMARK(BM_BarycentricRotatingDynamicFrame)->Arg(iterations);
+BENCHMARK(BM_BodyCentredNonRotatingDynamicFrame)
+    ->Arg(iterations)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK(BM_BarycentricRotatingDynamicFrame)
+    ->Arg(iterations)
+    ->Unit(benchmark::kMillisecond);
 
 }  // namespace physics
 }  // namespace principia

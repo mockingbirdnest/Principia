@@ -236,11 +236,13 @@ void BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D(
 
 BENCHMARK_TEMPLATE2(
     BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    methods::DormandالمكاوىPrince1986RKN434FM, Length);
+    methods::DormandالمكاوىPrince1986RKN434FM, Length)
+    ->Unit(benchmark::kMillisecond);
 
 BENCHMARK_TEMPLATE2(
     BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    methods::DormandالمكاوىPrince1986RKN434FM, Position<World>);
+    methods::DormandالمكاوىPrince1986RKN434FM, Position<World>)
+    ->Unit(benchmark::kMillisecond);
 
 }  // namespace integrators
 }  // namespace principia
