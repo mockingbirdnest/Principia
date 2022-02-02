@@ -97,7 +97,7 @@ class FixedMatrix final {
   constexpr Scalar const* operator[](int index) const;
 
  private:
-  std::array<Scalar, rows() * columns()> data_;
+  std::array<Scalar, rows_ * columns_> data_;
 
   template<typename L, typename R, int r, int c>
   friend constexpr FixedVector<Product<L, R>, r> operator*(
