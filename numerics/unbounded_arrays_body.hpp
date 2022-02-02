@@ -370,7 +370,7 @@ template<typename Scalar>
 auto UnboundedUpperTriangularMatrix<Scalar>::operator[](int const row)
     -> Row<UnboundedUpperTriangularMatrix> {
   DCHECK_LE(0, row);
-  DCHECK_LT(row, matrix_.columns_);
+  DCHECK_LT(row, columns_);
   return Row<UnboundedUpperTriangularMatrix>{*this, row};
 }
 
@@ -378,7 +378,7 @@ template<typename Scalar>
 auto UnboundedUpperTriangularMatrix<Scalar>::operator[](int const row) const
     -> Row<UnboundedUpperTriangularMatrix const> {
   DCHECK_LE(0, row);
-  DCHECK_LT(row, matrix_.columns_);
+  DCHECK_LT(row, columns_);
   return Row<UnboundedUpperTriangularMatrix const>{*this, row};
 }
 

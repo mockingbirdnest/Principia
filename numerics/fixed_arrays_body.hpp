@@ -80,16 +80,16 @@ bool FixedVector<Scalar, size_>::operator==(FixedVector const& right) const {
 
 template<typename Scalar, int size_>
 constexpr Scalar& FixedVector<Scalar, size_>::operator[](int const index) {
-  DCHECK_LE(0, index);
-  DCHECK_LT(index, size);
+  CONSTEXPR_DCHECK(0 <= index);
+  CONSTEXPR_DCHECK(index < size());
   return data_[index];
 }
 
 template<typename Scalar, int size_>
 constexpr Scalar const& FixedVector<Scalar, size_>::operator[](
     int const index) const {
-  DCHECK_LE(0, index);
-  DCHECK_LT(index, size);
+  CONSTEXPR_DCHECK(0 <= index);
+  CONSTEXPR_DCHECK(index < size());
   return data_[index];
 }
 
@@ -120,16 +120,16 @@ bool FixedMatrix<Scalar, rows, columns>::operator==(
 
 template<typename Scalar, int rows, int columns>
 Scalar* FixedMatrix<Scalar, rows, columns>::operator[](int const index) {
-  DCHECK_LE(0, index);
-  DCHECK_LT(index, rows);
+  CONSTEXPR_DCHECK(0 <= index);
+  CONSTEXPR_DCHECK(index < rows);
   return &data_[index * columns];
 }
 
 template<typename Scalar, int rows, int columns>
 constexpr Scalar const* FixedMatrix<Scalar, rows, columns>::operator[](
     int const index) const {
-  DCHECK_LE(0, index);
-  DCHECK_LT(index, rows);
+  CONSTEXPR_DCHECK(0 <= index);
+  CONSTEXPR_DCHECK(index < rows);
   return &data_[index * columns];
 }
 
@@ -144,8 +144,8 @@ template<typename Scalar, int rows, int columns>
 template<int r>
 constexpr Scalar const& FixedMatrix<Scalar, rows, columns>::Row<r>::operator[](
     int index) const {
-  DCHECK_LE(0, index);
-  DCHECK_LT(index, rows);
+  CONSTEXPR_DCHECK(0 <= index);
+  CONSTEXPR_DCHECK(index < rows);
   return (matrix_->data_)[r * columns + index];
 }
 
@@ -189,8 +189,8 @@ bool FixedStrictlyLowerTriangularMatrix<Scalar, rows_>::operator==(
 template<typename Scalar, int rows_>
 Scalar* FixedStrictlyLowerTriangularMatrix<Scalar, rows_>::operator[](
     int const index) {
-  DCHECK_LE(0, index);
-  DCHECK_LT(index, rows);
+  CONSTEXPR_DCHECK(0 <= index);
+  CONSTEXPR_DCHECK(index < rows);
   return &data_[index * (index - 1) / 2];
 }
 
@@ -198,8 +198,8 @@ template<typename Scalar, int rows_>
 constexpr Scalar const*
 FixedStrictlyLowerTriangularMatrix<Scalar, rows_>::operator[](
     int const index) const {
-  DCHECK_LE(0, index);
-  DCHECK_LT(index, rows);
+  CONSTEXPR_DCHECK(0 <= index);
+  CONSTEXPR_DCHECK(index < rows);
   return &data_[index * (index - 1) / 2];
 }
 
@@ -229,8 +229,8 @@ bool FixedLowerTriangularMatrix<Scalar, rows_>::operator==(
 template<typename Scalar, int rows_>
 Scalar* FixedLowerTriangularMatrix<Scalar, rows_>::operator[](
     int const index) {
-  DCHECK_LE(0, index);
-  DCHECK_LT(index, rows);
+  CONSTEXPR_DCHECK(0 <= index);
+  CONSTEXPR_DCHECK(index < rows);
   return &data_[index * (index + 1) / 2];
 }
 
@@ -238,8 +238,8 @@ template<typename Scalar, int rows_>
 constexpr Scalar const*
 FixedLowerTriangularMatrix<Scalar, rows_>::operator[](
     int const index) const {
-  DCHECK_LE(0, index);
-  DCHECK_LT(index, rows);
+  CONSTEXPR_DCHECK(0 <= index);
+  CONSTEXPR_DCHECK(index < rows);
   return &data_[index * (index + 1) / 2];
 }
 
@@ -270,8 +270,8 @@ template<typename Scalar, int columns_>
 template<typename Matrix>
 Scalar& FixedUpperTriangularMatrix<Scalar, columns_>::Row<Matrix>::operator[](
     int const column) {
-  DCHECK_LE(0, column);
-  DCHECK_LT(column, columns_);
+  CONSTEXPR_DCHECK(0 <= column);
+  CONSTEXPR_DCHECK(column < columns_);
   return matrix_.data_[column * (column + 1) / 2 + row_];
 }
 
@@ -280,8 +280,8 @@ template<typename Matrix>
 Scalar const&
 FixedUpperTriangularMatrix<Scalar, columns_>::Row<Matrix>::operator[](
     int const column) const {
-  DCHECK_LE(0, column);
-  DCHECK_LT(column, columns_);
+  CONSTEXPR_DCHECK(0 <= column);
+  CONSTEXPR_DCHECK(column < columns_);
   return matrix_.data_[column * (column + 1) / 2 + row_];
 }
 
@@ -295,16 +295,14 @@ FixedUpperTriangularMatrix<Scalar, columns_>::Row<Matrix>::Row(Matrix& matrix,
 template<typename Scalar, int columns_>
 auto FixedUpperTriangularMatrix<Scalar, columns_>::operator[](int const row)
     -> Row<FixedUpperTriangularMatrix<Scalar, columns_>> {
-  DCHECK_LE(0, row);
-  DCHECK_LT(row, columns);
+  CONSTEXPR_DCHECK(0 <= row);
+  CONSTEXPR_DCHECK(row < columns());
   return Row<FixedUpperTriangularMatrix<Scalar, columns_>>{*this, row};
 }
 
 template<typename Scalar, int columns_>
 auto FixedUpperTriangularMatrix<Scalar, columns_>::operator[](int const row)
     const -> Row<FixedUpperTriangularMatrix<Scalar, columns_> const> {
-  DCHECK_LE(0, row);
-  DCHECK_LT(row, columns);
   return Row<FixedUpperTriangularMatrix<Scalar, columns_> const>{*this, row};
 }
 
