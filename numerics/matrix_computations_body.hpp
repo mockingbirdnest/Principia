@@ -3,6 +3,8 @@
 
 #include "numerics/matrix_computations.hpp"
 
+#include <utility>
+
 #include "base/tags.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/unbounded_arrays.hpp"
@@ -16,8 +18,6 @@ using base::uninitialized;
 using quantities::Abs;
 using quantities::Pow;
 using quantities::Sqrt;
-
-//TODO(phl): Decide what is square and what isn't.
 
 template<typename Scalar_>
 struct CholeskyDecompositionGenerator<UnboundedUpperTriangularMatrix<Scalar_>> {
@@ -89,6 +89,7 @@ struct RayleighQuotientGenerator<FixedMatrix<MScalar, dimension, dimension>,
 
 template<typename MScalar, typename VScalar>
 struct SolveGenerator<UnboundedMatrix<MScalar>, UnboundedVector<VScalar>> {
+  using Scalar = MScalar;
   using Result = UnboundedVector<Quotient<VScalar, MScalar>>;
   static UnboundedLowerTriangularMatrix<double> UninitializedL(
       UnboundedMatrix<MScalar> const& m);
@@ -99,7 +100,8 @@ struct SolveGenerator<UnboundedMatrix<MScalar>, UnboundedVector<VScalar>> {
 template<typename MScalar, typename VScalar, int rows, int columns>
 struct SolveGenerator<FixedMatrix<MScalar, rows, columns>,
                       FixedVector<VScalar, rows>> {
-  using Result = MScalar;
+  using Scalar = MScalar;
+  using Result = FixedVector<Quotient<VScalar, MScalar>, columns>;
   static FixedLowerTriangularMatrix<double, rows> UninitializedL(
       FixedMatrix<MScalar, rows, columns> const& m);
   static FixedUpperTriangularMatrix<MScalar, columns> UninitializedU(
@@ -155,16 +157,14 @@ template<typename MScalar, typename VScalar>
 UnboundedLowerTriangularMatrix<double>
 SolveGenerator<UnboundedMatrix<MScalar>, UnboundedVector<VScalar>>::
 UninitializedL(UnboundedMatrix<MScalar> const& m) {
-  return UnboundedLowerTriangularMatrix<double>(
-      m.rows(), m.columns(), uninitialized);
+  return UnboundedLowerTriangularMatrix<double>(m.rows(), uninitialized);
 }
 
 template<typename MScalar, typename VScalar>
 UnboundedUpperTriangularMatrix<MScalar>
 SolveGenerator<UnboundedMatrix<MScalar>, UnboundedVector<VScalar>>::
 UninitializedU(UnboundedMatrix<MScalar> const& m) {
-  return UnboundedUpperTriangularMatrix<MScalar>(
-      m.columns(), m.columns(), uninitialized);
+  return UnboundedUpperTriangularMatrix<MScalar>(m.columns(), uninitialized);
 }
 
 template<typename MScalar, typename VScalar, int rows, int columns>
@@ -283,7 +283,7 @@ typename RayleighQuotientGenerator<Matrix, Vector>::Result RayleighQuotient(
 
 template<typename Matrix, typename Vector>
 typename SolveGenerator<Matrix, Vector>::Result
-Solve(Matrix const& A, Vector const& b) {
+Solve(Matrix A, Vector b) {
   // This implementation follows [Hig02].
   using G = SolveGenerator<Matrix, Vector>;
   using Scalar = typename G::Scalar;
@@ -305,7 +305,7 @@ Solve(Matrix const& A, Vector const& b) {
       }
     }
     CHECK_LE(0, r) << A << " cannot pivot";
-    CHECK_GT(A.size(), r) << A << " cannot pivot";
+    CHECK_LT(r, A.rows()) << A << " cannot pivot";
 
     // Swap the rows of A.
     for (int i = 0; i < A.columns(); ++i) {
@@ -318,7 +318,7 @@ Solve(Matrix const& A, Vector const& b) {
     }
 
     std::swap(b[k], b[r]);
-    CHECK_NE(Scalar{}, A[k][k]) << *this << " is singular";
+    CHECK_NE(Scalar{}, A[k][k]) << A << " is singular";
 
     for (int j = k; j < A.columns(); ++j) {
       auto U_kj = A[k][j];

@@ -114,5 +114,21 @@ TYPED_TEST(MatrixComputationsTest, RayleighQuotient) {
   EXPECT_THAT(actual, AlmostEquals(38.0 / 15.0, 0));
 }
 
+TYPED_TEST(MatrixComputationsTest, Solve) {
+  using Vector = typename std::tuple_element<0, TypeParam>::type;
+  using Matrix = typename std::tuple_element<3, TypeParam>::type;
+
+  Matrix const m4({ 1, 0, -2, 3,
+                   -4, 4,  1, 2,
+                    0, 8,  3, 5,
+                   -7, 1,  2, 2});
+  Vector const v4({1, -1, 2, 3});
+  Vector const x4_expected(
+      {66.0 / 383.0, -397.0 / 383.0, 539.0 / 383.0, 465.0 / 383.0});
+
+  auto const x4_actual = Solve(m4, v4);
+  EXPECT_THAT(x4_actual, AlmostEquals(x4_expected, 4));
+}
+
 }  // namespace numerics
 }  // namespace principia

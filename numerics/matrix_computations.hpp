@@ -57,7 +57,7 @@ RayleighQuotient(Matrix const& A, Vector const& x);
 // Returns x such that A x = b.
 template<typename Matrix, typename Vector>
 typename SolveGenerator<Matrix, Vector>::Result
-Solve(Matrix const& A, Vector const& b);
+Solve(Matrix A, Vector b);
 
 }  // namespace internal_matrix_computations
 
