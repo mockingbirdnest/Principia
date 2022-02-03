@@ -57,14 +57,17 @@ class FixedVector final {
                                   FixedVector<S, s> const& vector);
 };
 
-template<typename Scalar, int rows, int columns>
+template<typename Scalar, int rows_, int columns_>
 class FixedMatrix final {
  public:
+  static constexpr int rows() { return rows_; }
+  static constexpr int columns() { return columns_; }
+
   constexpr FixedMatrix();
   explicit FixedMatrix(uninitialized_t);
 
   // The |data| must be in row-major format.
-  constexpr FixedMatrix(std::array<Scalar, rows * columns> const& data);
+  constexpr FixedMatrix(std::array<Scalar, rows_ * columns_> const& data);
 
   bool operator==(FixedMatrix const& right) const;
 
@@ -78,7 +81,7 @@ class FixedMatrix final {
     // The template deduction runs into trouble if this operator is declared at
     // namespace scope.
     template<typename S>
-    Product<Scalar, S> operator*(FixedVector<S, columns> const& right);
+    Product<Scalar, S> operator*(FixedVector<S, columns_> const& right);
 
    private:
     const FixedMatrix* matrix_;
@@ -94,7 +97,7 @@ class FixedMatrix final {
   constexpr Scalar const* operator[](int index) const;
 
  private:
-  std::array<Scalar, rows * columns> data_;
+  std::array<Scalar, rows_ * columns_> data_;
 
   template<typename L, typename R, int r, int c>
   friend constexpr FixedVector<Product<L, R>, r> operator*(
@@ -220,6 +223,10 @@ constexpr FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
 template<typename Scalar, int size>
 std::ostream& operator<<(std::ostream& out,
                          FixedVector<Scalar, size> const& vector);
+
+template<typename Scalar, int rows, int columns>
+std::ostream& operator<<(std::ostream& out,
+                         FixedMatrix<Scalar, rows, columns> const& matrix);
 
 template<typename Scalar, int rows>
 std::ostream& operator<<(
