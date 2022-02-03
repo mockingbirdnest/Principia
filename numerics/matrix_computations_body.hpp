@@ -3,7 +3,7 @@
 
 #include "numerics/matrix_computations.hpp"
 
-#include <utility>
+#include <algorithm>
 
 #include "base/tags.hpp"
 #include "numerics/fixed_arrays.hpp"
