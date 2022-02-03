@@ -76,34 +76,37 @@ struct SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
 };
 
 template<typename MScalar, typename VScalar>
-struct RayleighQuotientGenerator<UnboundedMatrix<MScalar>,
+struct RayleighQuotientGenerator<UnboundedUpperTriangularMatrix<MScalar>,
                                  UnboundedVector<VScalar>> {
   using Result = MScalar;
 };
 
 template<typename MScalar, typename VScalar, int dimension>
-struct RayleighQuotientGenerator<FixedMatrix<MScalar, dimension, dimension>,
+struct RayleighQuotientGenerator<FixedUpperTriangularMatrix<MScalar, dimension>,
                                  FixedVector<VScalar, dimension>> {
   using Result = MScalar;
 };
 
 template<typename MScalar, typename VScalar>
-struct RayleighQuotientIterationGenerator<UnboundedMatrix<MScalar>,
-                                          UnboundedVector<VScalar>> {
+struct RayleighQuotientIterationGenerator<
+    UnboundedUpperTriangularMatrix<MScalar>,
+    UnboundedVector<VScalar>> {
   struct Result {
     UnboundedVector<VScalar> eigenvector;
     MScalar eigenvalue;
   };
+  static Result Uninitialized(UnboundedVector<VScalar> const& v);
 };
 
 template<typename MScalar, typename VScalar, int dimension>
 struct RayleighQuotientIterationGenerator<
-    FixedMatrix<MScalar, dimension, dimension>,
+    FixedUpperTriangularMatrix<MScalar, dimension>,
     FixedVector<VScalar, dimension>> {
   struct Result {
     FixedVector<VScalar, dimension> eigenvector;
     MScalar eigenvalue;
   };
+  static Result Uninitialized(FixedVector<VScalar, dimension> const& v);
 };
 
 template<typename MScalar, typename VScalar>
@@ -162,6 +165,22 @@ auto SubstitutionGenerator<TriangularMatrix<LScalar>,
                            UnboundedVector<RScalar>>::
 Uninitialized(TriangularMatrix<LScalar> const& m) -> Result {
   return Result(m.columns(), uninitialized);
+}
+
+template<typename MScalar, typename VScalar>
+auto RayleighQuotientIterationGenerator<
+    UnboundedUpperTriangularMatrix<MScalar>,
+    UnboundedVector<VScalar>>::Uninitialized(UnboundedVector<VScalar> const& v)
+    -> Result {
+  return {UnboundedVector<VScalar>(uninitialized), MScalar()};
+}
+
+template<typename MScalar, typename VScalar, int dimension>
+auto RayleighQuotientIterationGenerator<
+    FixedUpperTriangularMatrix<MScalar, dimension>,
+    FixedVector<VScalar, dimension>>::
+Uninitialized(FixedVector<VScalar, dimension> const& v) -> Result {
+  return {FixedVector<VScalar, dimension>(uninitialized), MScalar()};
 }
 
 template<typename LScalar, typename RScalar, int dimension,
@@ -293,21 +312,26 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
   return x;
 }
 
-template<typename Matrix, typename Vector>
-typename RayleighQuotientGenerator<Matrix, Vector>::Result RayleighQuotient(
-    Matrix const& A, Vector const& x) {
+template<typename UpperTriangularMatrix, typename Vector>
+typename RayleighQuotientGenerator<UpperTriangularMatrix, Vector>::Result
+RayleighQuotient(UpperTriangularMatrix const& A, Vector const& x) {
   // [GV13], section 8.2.3.
   return x.Transpose() * (A * x) / (x.Transpose() * x);
 }
 
-//TODO(phl): What is A?
-template<typename Matrix, typename Vector>
-typename RayleighQuotientIterationGenerator<Matrix, Vector>::Result
-RayleighQuotientIteration(Matrix const& A, Vector const& x) {
-  auto xₖ = x;
+template<typename UpperTriangularMatrix, typename Vector>
+typename RayleighQuotientIterationGenerator<UpperTriangularMatrix,
+                                            Vector>::Result
+RayleighQuotientIteration(UpperTriangularMatrix const& A, Vector const& x) {
+  using G = RayleighQuotientIterationGenerator<UpperTriangularMatrix, Vector>;
+  auto result = G::Unitialized(x);
+  auto& xₖ = result.eigenvector;
+  auto& μₖ = result.eigenvalue;
+
   //TODO(phl): Stop?
+  xₖ = x;
   for (;;) {
-    auto const μₖ = RayleighQuotient(A, xₖ);
+    μₖ = RayleighQuotient(A, xₖ);
     auto const A_minus_μₖ_I = A;
     for (int i = 0; i < A.size(); ++i) {
       A[i][i] -= μₖ;
@@ -315,9 +339,8 @@ RayleighQuotientIteration(Matrix const& A, Vector const& x) {
     auto const zₖ₊₁ = Solve(A_minus_μₖ_I, xₖ);
     xₖ = zₖ₊₁ / zₖ₊₁.Norm();
   }
-  return {xₖ, μₖ};
+  return result;
 }
-
 
 template<typename Matrix, typename Vector>
 typename SolveGenerator<Matrix, Vector>::Result
