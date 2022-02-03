@@ -88,6 +88,25 @@ struct RayleighQuotientGenerator<FixedMatrix<MScalar, dimension, dimension>,
 };
 
 template<typename MScalar, typename VScalar>
+struct RayleighQuotientIterationGenerator<UnboundedMatrix<MScalar>,
+                                          UnboundedVector<VScalar>> {
+  struct Result {
+    UnboundedVector<VScalar> eigenvector;
+    MScalar eigenvalue;
+  };
+};
+
+template<typename MScalar, typename VScalar, int dimension>
+struct RayleighQuotientIterationGenerator<
+    FixedMatrix<MScalar, dimension, dimension>,
+    FixedVector<VScalar, dimension>> {
+  struct Result {
+    FixedVector<VScalar, dimension> eigenvector;
+    MScalar eigenvalue;
+  };
+};
+
+template<typename MScalar, typename VScalar>
 struct SolveGenerator<UnboundedMatrix<MScalar>, UnboundedVector<VScalar>> {
   using Scalar = MScalar;
   using Result = UnboundedVector<Quotient<VScalar, MScalar>>;
@@ -281,10 +300,12 @@ typename RayleighQuotientGenerator<Matrix, Vector>::Result RayleighQuotient(
   return x.Transpose() * (A * x) / (x.Transpose() * x);
 }
 
+//TODO(phl): What is A?
 template<typename Matrix, typename Vector>
 typename RayleighQuotientIterationGenerator<Matrix, Vector>::Result
 RayleighQuotientIteration(Matrix const& A, Vector const& x) {
   auto xₖ = x;
+  //TODO(phl): Stop?
   for (;;) {
     auto const μₖ = RayleighQuotient(A, xₖ);
     auto const A_minus_μₖ_I = A;
@@ -294,7 +315,7 @@ RayleighQuotientIteration(Matrix const& A, Vector const& x) {
     auto const zₖ₊₁ = Solve(A_minus_μₖ_I, xₖ);
     xₖ = zₖ₊₁ / zₖ₊₁.Norm();
   }
-  return xₖ;
+  return {xₖ, μₖ};
 }
 
 
