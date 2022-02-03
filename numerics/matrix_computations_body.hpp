@@ -282,6 +282,23 @@ typename RayleighQuotientGenerator<Matrix, Vector>::Result RayleighQuotient(
 }
 
 template<typename Matrix, typename Vector>
+typename RayleighQuotientIterationGenerator<Matrix, Vector>::Result
+RayleighQuotientIteration(Matrix const& A, Vector const& x) {
+  auto xₖ = x;
+  for (;;) {
+    auto const μₖ = RayleighQuotient(A, xₖ);
+    auto const A_minus_μₖ_I = A;
+    for (int i = 0; i < A.size(); ++i) {
+      A[i][i] -= μₖ;
+    }
+    auto const zₖ₊₁ = Solve(A_minus_μₖ_I, xₖ);
+    xₖ = zₖ₊₁ / zₖ₊₁.Norm();
+  }
+  return xₖ;
+}
+
+
+template<typename Matrix, typename Vector>
 typename SolveGenerator<Matrix, Vector>::Result
 Solve(Matrix A, Vector b) {
   // This implementation follows [Hig02].

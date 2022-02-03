@@ -23,6 +23,9 @@ template<typename M, typename V>
 struct RayleighQuotientGenerator;
 
 template<typename M, typename V>
+struct RayleighQuotientIterationGenerator;
+
+template<typename M, typename V>
 struct SolveGenerator;
 
 // If A is the upper half of a symmetric positive definite matrix, returns R so
@@ -54,6 +57,10 @@ template<typename Matrix, typename Vector>
 typename RayleighQuotientGenerator<Matrix, Vector>::Result
 RayleighQuotient(Matrix const& A, Vector const& x);
 
+template<typename Matrix, typename Vector>
+typename RayleighQuotientIterationGenerator<Matrix, Vector>::Result
+RayleighQuotientIteration(Matrix const& A, Vector const& x);
+
 // Returns x such that A x = b.
 template<typename Matrix, typename Vector>
 typename SolveGenerator<Matrix, Vector>::Result
@@ -65,6 +72,7 @@ using internal_matrix_computations::BackSubstitution;
 using internal_matrix_computations::CholeskyDecomposition;
 using internal_matrix_computations::ForwardSubstitution;
 using internal_matrix_computations::RayleighQuotient;
+using internal_matrix_computations::RayleighQuotientIteration;
 using internal_matrix_computations::Solve;
 using internal_matrix_computations::ᵗRDRDecomposition;
 
