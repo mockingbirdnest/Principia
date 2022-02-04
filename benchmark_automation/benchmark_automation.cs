@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 
@@ -75,7 +75,8 @@ class BenchmarkAutomation {
                     words[0].Substring(
                         startIndex : 0,
                         length     : words[0].Length - mean_suffix.Length);
-                double μ = double.Parse(words[1]);
+                double μ = double.Parse(words[1]) *
+                    TimeConversionFactor(words[2]);
                 Console.WriteLine(benchmark_name + ": μ = " + μ + " ns");
                 CommaSeparatedAppend(
                     ref csv_benchmark_names,
@@ -127,6 +128,20 @@ class BenchmarkAutomation {
       csv = value;
     } else {
       csv = csv + ", " + value;
+    }
+  }
+
+  private static double TimeConversionFactor(string unit) {
+    if (unit == "ns") {
+      return 1e0;
+    } else if (unit == "us") {
+      return 1e3;
+    } else if (unit == "ms") {
+      return 1e6;
+    } else if (unit == "s") {
+      return 1e9;
+    } else {
+      throw new ArgumentException("Invalid unit: " + unit);
     }
   }
 }
