@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 
@@ -84,7 +84,8 @@ class BenchmarkAutomation {
                 CommaSeparatedAppend(ref csv_means, μ.ToString());
               } else if (!has_repetitions) {
                 string benchmark_name = words[0];
-                double μ = double.Parse(words[1]);
+                double μ = double.Parse(words[1]) *
+                    TimeConversionFactor(words[2]);
                 CommaSeparatedAppend(
                     ref csv_benchmark_names,
                     "\"" + benchmark_name.Replace("\"", "\"\"") + "\"");
