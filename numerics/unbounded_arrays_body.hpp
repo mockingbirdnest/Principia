@@ -356,6 +356,11 @@ int UnboundedUpperTriangularMatrix<Scalar>::columns() const {
 }
 
 template<typename Scalar>
+int UnboundedUpperTriangularMatrix<Scalar>::rows() const {
+  return columns_;
+}
+
+template<typename Scalar>
 int UnboundedUpperTriangularMatrix<Scalar>::size() const {
   return data_.size();
 }

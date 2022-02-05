@@ -325,7 +325,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   for (int i = 0; i < expected_.rows; ++i) {
     for (int j = 0; j <= i; ++j) {
       int const distance = NormalizedNaNULPDistance(
-          DoubleValue(actual[i][j]), DoubleValue(expected_[i][j]));
+          DoubleValue(actual(i, j)), DoubleValue(expected_(i, j)));
       if (distance > max_distance) {
         max_distance = distance;
         max_i = i;
@@ -357,7 +357,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   for (int i = 0; i < expected_.columns(); ++i) {
     for (int j = i; j < expected_.columns(); ++j) {
       int const distance = NormalizedNaNULPDistance(
-          DoubleValue(actual[i][j]), DoubleValue(expected_[i][j]));
+          DoubleValue(actual(i, j)), DoubleValue(expected_(i, j)));
       if (distance > max_distance) {
         max_distance = distance;
         max_i = i;
@@ -425,7 +425,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   for (int i = 0; i < expected_.rows(); ++i) {
     for (int j = 0; j <= i; ++j) {
       int const distance = NormalizedNaNULPDistance(
-          DoubleValue(actual[i][j]), DoubleValue(expected_[i][j]));
+          DoubleValue(actual(i, j)), DoubleValue(expected_(i, j)));
       if (distance > max_distance) {
         max_distance = distance;
         max_i = i;
@@ -462,7 +462,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   for (int i = 0; i < expected_.columns(); ++i) {
     for (int j = i; j < expected_.columns(); ++j) {
       int const distance = NormalizedNaNULPDistance(
-          DoubleValue(actual[i][j]), DoubleValue(expected_[i][j]));
+          DoubleValue(actual(i, j)), DoubleValue(expected_(i, j)));
       if (distance > max_distance) {
         max_distance = distance;
         max_i = i;

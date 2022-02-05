@@ -47,6 +47,10 @@ class FixedVector final {
 
   template<typename L, typename R, int s>
   friend constexpr Product<L, R> operator*(
+      L* const left,
+      FixedVector<R, s> const& right);
+  template<typename L, typename R, int s>
+  friend constexpr Product<L, R> operator*(
       TransposedView<FixedVector<L, s>> const& left,
       FixedVector<R, s> const& right);
   template<typename L, typename R, int r, int c>
@@ -76,6 +80,9 @@ class FixedMatrix final {
   // |a(i, j)| implies undefined behaviour.
   constexpr Scalar& operator()(int row, int column);
   constexpr Scalar const& operator()(int row, int column) const;
+
+  template<int r>
+  Scalar const* row() const;
 
   bool operator==(FixedMatrix const& right) const;
   bool operator!=(FixedMatrix const& right) const;
@@ -108,6 +115,9 @@ class FixedStrictlyLowerTriangularMatrix final {
   // implies undefined behaviour.
   constexpr Scalar& operator()(int row, int column);
   constexpr Scalar const& operator()(int row, int column) const;
+
+  template<int r>
+  Scalar const* row() const;
 
   bool operator==(FixedStrictlyLowerTriangularMatrix const& right) const;
   bool operator!=(FixedStrictlyLowerTriangularMatrix const& right) const;
@@ -168,7 +178,7 @@ class FixedUpperTriangularMatrix final {
 
  private:
   // For ease of writing matrices in tests, the input data is received in row-
-  // major format.  This translates a trapezoidal slice to make it column-major.
+  // major format.  This transposes a trapezoidal slice to make it column-major.
   static std::array<Scalar, size()> Transpose(
       std::array<Scalar, size()> const& data);
 
@@ -178,6 +188,11 @@ class FixedUpperTriangularMatrix final {
 template<typename ScalarLeft, typename ScalarRight, int size>
 constexpr FixedVector<Difference<ScalarLeft, ScalarRight>, size> operator-(
     FixedVector<ScalarLeft, size> const& left,
+    FixedVector<ScalarRight, size> const& right);
+
+template<typename ScalarLeft, typename ScalarRight, int size>
+constexpr Product<ScalarLeft, ScalarRight> operator*(
+    ScalarLeft* const left,
     FixedVector<ScalarRight, size> const& right);
 
 template<typename ScalarLeft, typename ScalarRight, int size>

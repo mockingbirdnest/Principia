@@ -130,8 +130,8 @@ TEST_F(FixedArraysTest, UpperTriangularMatrixIndexing) {
 TEST_F(FixedArraysTest, Row) {
   FixedMatrix<double, 2, 3> m({1, 2, 3,
                                4, -5, 6});
-  FixedMatrix<double, 2, 3>::Row<0> r0 = m.row<0>();
-  FixedMatrix<double, 2, 3>::Row<1> r1 = m.row<1>();
+  auto const* const r0 = m.row<0>();
+  auto const* const r1 = m.row<1>();
   FixedVector<double, 3> v = {{1, 2, -3}};
 
   EXPECT_EQ(-4, r0 * v);
