@@ -174,7 +174,7 @@ void BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D(
     benchmark::State& state) {
   Length q_error;
   Speed v_error;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     SolveHarmonicOscillatorAndComputeError1D(
         state,
         q_error,
@@ -191,7 +191,7 @@ void BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D(
     benchmark::State& state) {
   Length q_error;
   Speed v_error;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     SolveHarmonicOscillatorAndComputeError3D(
         state,
         q_error,
@@ -205,53 +205,69 @@ void BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D(
 
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    methods::McLachlanAtela1992Order4Optimal, Length);
+    methods::McLachlanAtela1992Order4Optimal, Length)
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    methods::McLachlan1995SB3A4, Length);
+    methods::McLachlan1995SB3A4, Length)
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    methods::McLachlan1995SB3A5, Length);
+    methods::McLachlan1995SB3A5, Length)
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    methods::BlanesMoan2002SRKN6B, Length);
+    methods::BlanesMoan2002SRKN6B, Length)
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    methods::McLachlanAtela1992Order5Optimal, Length);
+    methods::McLachlanAtela1992Order5Optimal, Length)
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    methods::OkunborSkeel1994Order6Method13, Length);
+    methods::OkunborSkeel1994Order6Method13, Length)
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    methods::BlanesMoan2002SRKN11B, Length);
+    methods::BlanesMoan2002SRKN11B, Length)
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    methods::BlanesMoan2002SRKN14A, Length);
+    methods::BlanesMoan2002SRKN14A, Length)
+    ->Unit(benchmark::kMillisecond);
 
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    methods::McLachlanAtela1992Order4Optimal, Position<World>);
+    methods::McLachlanAtela1992Order4Optimal, Position<World>)
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    methods::McLachlan1995SB3A4, Position<World>);
+    methods::McLachlan1995SB3A4, Position<World>)
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    methods::McLachlan1995SB3A5, Position<World>);
+    methods::McLachlan1995SB3A5, Position<World>)
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    methods::BlanesMoan2002SRKN6B, Position<World>);
+    methods::BlanesMoan2002SRKN6B, Position<World>)
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    methods::McLachlanAtela1992Order5Optimal, Position<World>);
+    methods::McLachlanAtela1992Order5Optimal, Position<World>)
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    methods::OkunborSkeel1994Order6Method13, Position<World>);
+    methods::OkunborSkeel1994Order6Method13, Position<World>)
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    methods::BlanesMoan2002SRKN11B, Position<World>);
+    methods::BlanesMoan2002SRKN11B, Position<World>)
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    methods::BlanesMoan2002SRKN14A, Position<World>);
+    methods::BlanesMoan2002SRKN14A, Position<World>)
+    ->Unit(benchmark::kMillisecond);
 
 }  // namespace integrators
 }  // namespace principia

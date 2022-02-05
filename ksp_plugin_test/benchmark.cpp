@@ -115,9 +115,9 @@ void BM_PluginDeserializationBenchmark(benchmark::State& state) {
   state.SetBytesProcessed(bytes_processed);
 }
 
-BENCHMARK(BM_PluginSerializationBenchmark);
-BENCHMARK(BM_PluginDeserializationBenchmark);
-BENCHMARK(BM_PluginIntegrationBenchmark);
+BENCHMARK(BM_PluginSerializationBenchmark)->Unit(benchmark::kMillisecond);
+BENCHMARK(BM_PluginDeserializationBenchmark)->Unit(benchmark::kMillisecond);
+BENCHMARK(BM_PluginIntegrationBenchmark)->Unit(benchmark::kMillisecond);
 
 // .\Release\x64\ksp_plugin_test_tests.exe --gtest_filter=PluginBenchmark.DISABLED_All --gtest_also_run_disabled_tests  // NOLINT
 TEST(PluginBenchmark, DISABLED_All) {

@@ -47,9 +47,9 @@ double ComsumeCpuExclusiveLock(std::int64_t const n) {
 }
 
 void BM_ThreadPoolNoLock(benchmark::State& state) {
-  ThreadPool<void> pool(/*pool_size=*/state.range_x());
+  ThreadPool<void> pool(/*pool_size=*/state.range(0));
   std::vector<std::int64_t> results;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     std::vector<std::future<void>> futures;
     for (int i = 0; i < 1000; ++i) {
       futures.push_back(pool.Add([]() {
@@ -64,9 +64,9 @@ void BM_ThreadPoolNoLock(benchmark::State& state) {
 }
 
 void BM_ThreadPoolSharedLock(benchmark::State& state) {
-  ThreadPool<void> pool(/*pool_size=*/state.range_x());
+  ThreadPool<void> pool(/*pool_size=*/state.range(0));
   std::vector<std::int64_t> results;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     std::vector<std::future<void>> futures;
     for (int i = 0; i < 1000; ++i) {
       futures.push_back(pool.Add([]() {
@@ -81,9 +81,9 @@ void BM_ThreadPoolSharedLock(benchmark::State& state) {
 }
 
 void BM_ThreadPoolExclusiveLock(benchmark::State& state) {
-  ThreadPool<void> pool(/*pool_size=*/state.range_x());
+  ThreadPool<void> pool(/*pool_size=*/state.range(0));
   std::vector<std::int64_t> results;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     std::vector<std::future<void>> futures;
     for (int i = 0; i < 1000; ++i) {
       futures.push_back(pool.Add([]() {
@@ -105,7 +105,8 @@ BENCHMARK(BM_ThreadPoolNoLock)
     ->Arg(5)
     ->Arg(6)
     ->Arg(7)
-    ->Arg(8);
+    ->Arg(8)
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK(BM_ThreadPoolSharedLock)
     ->Arg(1)
     ->Arg(2)
@@ -114,7 +115,8 @@ BENCHMARK(BM_ThreadPoolSharedLock)
     ->Arg(5)
     ->Arg(6)
     ->Arg(7)
-    ->Arg(8);
+    ->Arg(8)
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK(BM_ThreadPoolExclusiveLock)
     ->Arg(1)
     ->Arg(2)
@@ -123,7 +125,8 @@ BENCHMARK(BM_ThreadPoolExclusiveLock)
     ->Arg(5)
     ->Arg(6)
     ->Arg(7)
-    ->Arg(8);
+    ->Arg(8)
+    ->Unit(benchmark::kMillisecond);
 
 }  // namespace base
 }  // namespace principia

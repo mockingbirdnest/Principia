@@ -138,7 +138,7 @@ void BM_ComputeGeopotentialCpp(benchmark::State& state) {
                             distribution(random) * Metre})));
   }
 
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     Vector<Exponentiation<Length, -2>, ICRS> acceleration;
     for (auto const& displacement : displacements) {
       acceleration = GeneralSphericalHarmonicsAccelerationCpp(
@@ -178,7 +178,7 @@ void BM_ComputeGeopotentialDistance(benchmark::State& state) {
     }
   }
 
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     Vector<Exponentiation<Length, -2>, ICRS> acceleration;
     for (auto const& displacement : displacements) {
       acceleration = GeneralSphericalHarmonicsAccelerationCpp(
@@ -198,7 +198,7 @@ void BM_ComputeGeopotentialDistance(benchmark::State& state) {
         snm[n][m] = earth.sin()[n][m] * LegendreNormalizationFactor[n][m]; \
       }                                                                    \
     }                                                                      \
-    while (state.KeepRunning()) {                                          \
+    for (auto _ : state) {                                          \
       Vector<Exponentiation<Length, -2>, ICRS> acceleration;               \
       for (auto const& displacement : displacements) {                     \
         acceleration =                                                     \
@@ -248,12 +248,23 @@ void BM_ComputeGeopotentialF90(benchmark::State& state) {
 
 #undef PRINCIPIA_CASE_COMPUTE_GEOPOTENTIAL_F90
 
-BENCHMARK(BM_ComputeGeopotentialCpp)->Arg(2)->Arg(3)->Arg(5)->Arg(10);
-BENCHMARK(BM_ComputeGeopotentialF90)->Arg(2)->Arg(3)->Arg(5)->Arg(10);
+BENCHMARK(BM_ComputeGeopotentialCpp)
+    ->Arg(2)
+    ->Arg(3)
+    ->Arg(5)
+    ->Arg(10)
+    ->Unit(benchmark::kMicrosecond);
+BENCHMARK(BM_ComputeGeopotentialF90)
+    ->Arg(2)
+    ->Arg(3)
+    ->Arg(5)
+    ->Arg(10)
+    ->Unit(benchmark::kMicrosecond);
 BENCHMARK(BM_ComputeGeopotentialDistance)
-    ->Arg(150'000)     // C₂₂, S₂₂, J₂.
-    ->Arg(500'000)     // J₂.
-    ->Arg(5'000'000);  // Central
+    ->Arg(150'000)    // C₂₂, S₂₂, J₂.
+    ->Arg(500'000)    // J₂.
+    ->Arg(5'000'000)  // Central
+    ->Unit(benchmark::kMicrosecond);
 
 }  // namespace physics
 }  // namespace principia

@@ -49,7 +49,7 @@ constexpr int evaluations_per_iteration = 1000;
 }  // namespace
 
 void BM_EvaluateDouble(benchmark::State& state) {
-  int const degree = state.range_x();
+  int const degree = state.range(0);
   std::mt19937_64 random(42);
   std::vector<double> coefficients;
   for (int i = 0; i <= degree; ++i) {
@@ -64,7 +64,7 @@ void BM_EvaluateDouble(benchmark::State& state) {
   Time const Δt = (t_max - t_min) * 1e-9;
   double result = 0.0;
 
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     for (int i = 0; i < evaluations_per_iteration; ++i) {
       result += series.Evaluate(t);
       t += Δt;
@@ -77,7 +77,7 @@ void BM_EvaluateDouble(benchmark::State& state) {
 }
 
 void BM_EvaluateQuantity(benchmark::State& state) {
-  int const degree = state.range_x();
+  int const degree = state.range(0);
   std::mt19937_64 random(42);
   std::vector<Length> coefficients;
   for (int i = 0; i <= degree; ++i) {
@@ -92,7 +92,7 @@ void BM_EvaluateQuantity(benchmark::State& state) {
   Time const Δt = (t_max - t_min) * 1e-9;
   Length result = 0.0 * Metre;
 
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     for (int i = 0; i < evaluations_per_iteration; ++i) {
       result += series.Evaluate(t);
       t += Δt;
@@ -107,7 +107,7 @@ void BM_EvaluateQuantity(benchmark::State& state) {
 }
 
 void BM_EvaluateR3ElementDouble(benchmark::State& state) {
-  int const degree = state.range_x();
+  int const degree = state.range(0);
   std::mt19937_64 random(42);
   std::vector<R3Element<double>> coefficients;
   for (int i = 0; i <= degree; ++i) {
@@ -124,7 +124,7 @@ void BM_EvaluateR3ElementDouble(benchmark::State& state) {
   Time const Δt = (t_max - t_min) * 1e-9;
   R3Element<double> result{0.0, 0.0, 0.0};
 
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     for (int i = 0; i < evaluations_per_iteration; ++i) {
       result += series.Evaluate(t);
       t += Δt;
@@ -139,7 +139,7 @@ void BM_EvaluateR3ElementDouble(benchmark::State& state) {
 }
 
 void BM_EvaluateVectorDouble(benchmark::State& state) {
-  int const degree = state.range_x();
+  int const degree = state.range(0);
   std::mt19937_64 random(42);
   std::vector<Multivector<double, ICRS, 1>> coefficients;
   for (int i = 0; i <= degree; ++i) {
@@ -158,7 +158,7 @@ void BM_EvaluateVectorDouble(benchmark::State& state) {
   Time const Δt = (t_max - t_min) * 1e-9;
   Multivector<double, ICRS, 1> result{};
 
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     for (int i = 0; i < evaluations_per_iteration; ++i) {
       result += series.Evaluate(t);
       t += Δt;
@@ -173,7 +173,7 @@ void BM_EvaluateVectorDouble(benchmark::State& state) {
 }
 
 void BM_EvaluateDisplacement(benchmark::State& state) {
-  int const degree = state.range_x();
+  int const degree = state.range(0);
   std::mt19937_64 random(42);
   std::vector<Displacement<ICRS>> coefficients;
   for (int i = 0; i <= degree; ++i) {
@@ -191,7 +191,7 @@ void BM_EvaluateDisplacement(benchmark::State& state) {
   Time const Δt = (t_max - t_min) * 1e-9;
   Displacement<ICRS> result{};
 
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     for (int i = 0; i < evaluations_per_iteration; ++i) {
       result += series.Evaluate(t);
       t += Δt;
@@ -205,16 +205,51 @@ void BM_EvaluateDisplacement(benchmark::State& state) {
   state.SetLabel(ss.str().substr(0, 0));
 }
 
-BENCHMARK(BM_EvaluateDouble)->
-    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17)->Arg(18)->Arg(19);
-BENCHMARK(BM_EvaluateQuantity)->
-    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17)->Arg(18)->Arg(19);
-BENCHMARK(BM_EvaluateR3ElementDouble)->
-    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17)->Arg(18)->Arg(19);
-BENCHMARK(BM_EvaluateVectorDouble)->
-    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17)->Arg(18)->Arg(19);
-BENCHMARK(BM_EvaluateDisplacement)->
-    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17)->Arg(18)->Arg(19);
+BENCHMARK(BM_EvaluateDouble)
+    ->Arg(4)
+    ->Arg(8)
+    ->Arg(15)
+    ->Arg(16)
+    ->Arg(17)
+    ->Arg(18)
+    ->Arg(19)
+    ->Unit(benchmark::kMicrosecond);
+BENCHMARK(BM_EvaluateQuantity)
+    ->Arg(4)
+    ->Arg(8)
+    ->Arg(15)
+    ->Arg(16)
+    ->Arg(17)
+    ->Arg(18)
+    ->Arg(19)
+    ->Unit(benchmark::kMicrosecond);
+BENCHMARK(BM_EvaluateR3ElementDouble)
+    ->Arg(4)
+    ->Arg(8)
+    ->Arg(15)
+    ->Arg(16)
+    ->Arg(17)
+    ->Arg(18)
+    ->Arg(19)
+    ->Unit(benchmark::kMicrosecond);
+BENCHMARK(BM_EvaluateVectorDouble)
+    ->Arg(4)
+    ->Arg(8)
+    ->Arg(15)
+    ->Arg(16)
+    ->Arg(17)
+    ->Arg(18)
+    ->Arg(19)
+    ->Unit(benchmark::kMicrosecond);
+BENCHMARK(BM_EvaluateDisplacement)
+    ->Arg(4)
+    ->Arg(8)
+    ->Arg(15)
+    ->Arg(16)
+    ->Arg(17)
+    ->Arg(18)
+    ->Arg(19)
+    ->Unit(benchmark::kMicrosecond);
 
 }  // namespace numerics
 }  // namespace principia

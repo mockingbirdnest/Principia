@@ -124,7 +124,7 @@ ApplyDynamicFrame(
 
 void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
   Time const Δt = 5 * Minute;
-  int const steps = state.range_x();
+  int const steps = state.range(0);
 
   SolarSystem<Barycentric> solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
@@ -163,7 +163,7 @@ void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
 
   BodyCentredNonRotatingDynamicFrame<Barycentric, Rendering>
       dynamic_frame(ephemeris.get(), earth);
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     auto v = ApplyDynamicFrame(&probe,
                                &dynamic_frame,
                                probe_trajectory.begin(),
@@ -173,7 +173,7 @@ void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
 
 void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
   Time const Δt = 5 * Minute;
-  int const steps = state.range_x();
+  int const steps = state.range(0);
 
   SolarSystem<Barycentric> solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
@@ -213,7 +213,7 @@ void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
 
   BarycentricRotatingDynamicFrame<Barycentric, Rendering>
       dynamic_frame(ephemeris.get(), earth, venus);
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     auto v = ApplyDynamicFrame(&probe,
                                &dynamic_frame,
                                probe_trajectory.begin(),
@@ -223,8 +223,12 @@ void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
 
 int const iterations = (1000 << 10) + 1;
 
-BENCHMARK(BM_BodyCentredNonRotatingDynamicFrame)->Arg(iterations);
-BENCHMARK(BM_BarycentricRotatingDynamicFrame)->Arg(iterations);
+BENCHMARK(BM_BodyCentredNonRotatingDynamicFrame)
+    ->Arg(iterations)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK(BM_BarycentricRotatingDynamicFrame)
+    ->Arg(iterations)
+    ->Unit(benchmark::kMillisecond);
 
 }  // namespace physics
 }  // namespace principia
