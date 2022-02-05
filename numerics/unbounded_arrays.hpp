@@ -52,10 +52,11 @@ class UnboundedVector final {
 
   int size() const;
 
-  bool operator==(UnboundedVector const& right) const;
-
   Scalar& operator[](int index);
   Scalar const& operator[](int index) const;
+
+  bool operator==(UnboundedVector const& right) const;
+  bool operator!=(UnboundedVector const& right) const;
 
  private:
   std::vector<Scalar, uninitialized_allocator<Scalar>> data_;
@@ -130,8 +131,8 @@ class UnboundedLowerTriangularMatrix final {
   int rows() const;
   int size() const;
 
-  // For  0 ≤ j ≤ i < rows, the entry a_ij is accessed as |a[i][j]|.
-  // If i and j do not satisfy these conditions, the expression |a[i][j]|
+  // For  0 ≤ j ≤ i < rows, the entry a_ij is accessed as |a(i, j)|.
+  // If i and j do not satisfy these conditions, the expression |a(i, j)|
   // implies undefined behaviour.
   Scalar& operator()(int row, int column);
   Scalar const& operator()(int row, int column) const;
@@ -172,8 +173,8 @@ class UnboundedUpperTriangularMatrix final {
   int rows() const;
   int size() const;
 
-  // For  0 ≤ i ≤ j < columns, the entry a_ij is accessed as |a[i][j]|.
-  // If i and j do not satisfy these conditions, the expression |a[i][j]|
+  // For  0 ≤ i ≤ j < columns, the entry a_ij is accessed as |a(i, j)|.
+  // If i and j do not satisfy these conditions, the expression |a(i, j)|
   // implies undefined behaviour.
   Scalar& operator()(int row, int column);
   Scalar const& operator()(int row, int column) const;

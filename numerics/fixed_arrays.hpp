@@ -32,14 +32,15 @@ class FixedVector final {
 
   TransposedView<FixedVector> Transpose() const;
 
-  bool operator==(FixedVector const& right) const;
+  static constexpr int size() { return size_; }
 
   constexpr Scalar& operator[](int index);
   constexpr Scalar const& operator[](int index) const;
 
   explicit operator std::vector<Scalar>() const;
 
-  static constexpr int size() { return size_; }
+  bool operator==(FixedVector const& right) const;
+  bool operator!=(FixedVector const& right) const;
 
  private:
   std::array<Scalar, size_> data_;
@@ -62,42 +63,25 @@ class FixedMatrix final {
  public:
   static constexpr int rows() { return rows_; }
   static constexpr int columns() { return columns_; }
+  static constexpr int size() { return rows_ * columns_; }
 
   constexpr FixedMatrix();
   explicit FixedMatrix(uninitialized_t);
 
   // The |data| must be in row-major format.
-  constexpr FixedMatrix(std::array<Scalar, rows_ * columns_> const& data);
-
-  bool operator==(FixedMatrix const& right) const;
-
-  template<int r>
-  class Row {
-   public:
-    explicit Row(const FixedMatrix* matrix);
-
-    constexpr Scalar const& operator[](int index) const;
-
-    // The template deduction runs into trouble if this operator is declared at
-    // namespace scope.
-    template<typename S>
-    Product<Scalar, S> operator*(FixedVector<S, columns_> const& right);
-
-   private:
-    const FixedMatrix* matrix_;
-  };
-
-  template<int r>
-  typename FixedMatrix::template Row<r> row() const;
+  constexpr FixedMatrix(std::array<Scalar, size()> const& data);
 
   // For  0 < i < rows and 0 < j < columns, the entry a_ij is accessed as
-  // |a[i][j]|.  if i and j do not satisfy these conditions, the expression
-  // |a[i][j]| is erroneous.
-  Scalar* operator[](int index);
-  constexpr Scalar const* operator[](int index) const;
+  // |a(i, j)|.  if i and j do not satisfy these conditions, the expression
+  // |a(i, j)| implies undefined behaviour.
+  constexpr Scalar& operator()(int row, int column);
+  constexpr Scalar const& operator()(int row, int column) const;
+
+  bool operator==(FixedMatrix const& right) const;
+  bool operator!=(FixedMatrix const& right) const;
 
  private:
-  std::array<Scalar, rows_ * columns_> data_;
+  std::array<Scalar, size()> data_;
 
   template<typename L, typename R, int r, int c>
   friend constexpr FixedVector<Product<L, R>, r> operator*(
@@ -108,48 +92,52 @@ class FixedMatrix final {
 template<typename Scalar, int rows_>
 class FixedStrictlyLowerTriangularMatrix final {
  public:
-  static constexpr int rows = rows_;
-  static constexpr int dimension = rows_ * (rows_ - 1) / 2;
+  static constexpr int rows() { return rows_; }
+  static constexpr int columns() { return rows_; }
+  static constexpr int size() { return rows_ * (rows_ - 1) / 2; }
 
   constexpr FixedStrictlyLowerTriangularMatrix();
   explicit FixedStrictlyLowerTriangularMatrix(uninitialized_t);
 
   // The |data| must be in row-major format.
   constexpr FixedStrictlyLowerTriangularMatrix(
-      std::array<Scalar, dimension> const& data);
+      std::array<Scalar, size()> const& data);
+
+  // For  0 < j < i < rows, the entry a_ij is accessed as |a(i, j)|.
+  // if i and j do not satisfy these conditions, the expression |a(i, j)|
+  // implies undefined behaviour.
+  constexpr Scalar& operator()(int row, int column);
+  constexpr Scalar const& operator()(int row, int column) const;
 
   bool operator==(FixedStrictlyLowerTriangularMatrix const& right) const;
-
-  // For  0 < j < i < rows, the entry a_ij is accessed as |a[i][j]|.
-  // if i and j do not satisfy these conditions, the expression |a[i][j]| is
-  // erroneous.
-  Scalar* operator[](int index);
-  constexpr Scalar const* operator[](int index) const;
+  bool operator!=(FixedStrictlyLowerTriangularMatrix const& right) const;
 
  private:
-  std::array<Scalar, dimension> data_;
+  std::array<Scalar, size()> data_;
 };
 
 template<typename Scalar, int rows_>
 class FixedLowerTriangularMatrix final {
  public:
-  static constexpr int rows = rows_;
-  static constexpr int dimension = rows * (rows + 1) / 2;
+  static constexpr int rows() { return rows_; }
+  static constexpr int columns() { return rows_; }
+  static constexpr int size() { return rows_ * (rows_ + 1) / 2; }
 
   constexpr FixedLowerTriangularMatrix();
   explicit FixedLowerTriangularMatrix(uninitialized_t);
 
   // The |data| must be in row-major format.
   constexpr FixedLowerTriangularMatrix(
-      std::array<Scalar, dimension> const& data);
+      std::array<Scalar, size()> const& data);
+
+  // For  0 < j <= i < rows, the entry a_ij is accessed as |a(i, j)|.
+  // if i and j do not satisfy these conditions, the expression |a(i, j)|
+  // implies undefined behaviour.
+  constexpr Scalar& operator()(int row, int column);
+  constexpr Scalar const& operator()(int row, int column) const;
 
   bool operator==(FixedLowerTriangularMatrix const& right) const;
-
-  // For  0 < j <= i < rows, the entry a_ij is accessed as |a[i][j]|.
-  // if i and j do not satisfy these conditions, the expression |a[i][j]| is
-  // erroneous.
-  Scalar* operator[](int index);
-  constexpr Scalar const* operator[](int index) const;
+  bool operator!=(FixedLowerTriangularMatrix const& right) const;
 
  private:
   std::array<Scalar, dimension> data_;
@@ -158,49 +146,31 @@ class FixedLowerTriangularMatrix final {
 template<typename Scalar, int columns_>
 class FixedUpperTriangularMatrix final {
  public:
-  static constexpr int columns() { return columns_; }
-  static constexpr int dimension = columns_ * (columns_ + 1) / 2;
+  static constexpr int rows() { return columns_; }
+  static constexpr int columns() { return rows_; }
+  static constexpr int size() { return columns_ * (columns_ + 1) / 2; }
 
   constexpr FixedUpperTriangularMatrix();
   explicit FixedUpperTriangularMatrix(uninitialized_t);
 
   // The |data| must be in row-major format.
   constexpr FixedUpperTriangularMatrix(
-      std::array<Scalar, dimension> const& data);
+      std::array<Scalar, size()> const& data);
+
+  // For  0 ≤ i ≤ j < columns, the entry a_ij is accessed as |a(i, j)|.
+  // if i and j do not satisfy these conditions, the expression |a(i, j)|
+  // implies undefined behaviour.
+  constexpr Scalar& operator()(int row, int column);
+  constexpr Scalar const& operator()(int row, int column) const;
 
   bool operator==(FixedUpperTriangularMatrix const& right) const;
-
-  // A helper class for indexing column-major data in a human-friendly manner.
-  template<typename Matrix>
-  class Row {
-   public:
-    Scalar& operator[](int column);
-    Scalar const& operator[](int column) const;
-
-   private:
-    explicit Row(Matrix& matrix, int row);
-
-    // We need to remove the const because, when this class is instantiated with
-    // |FixedUpperTriangularMatrix const|, the first operator[], not the second,
-    // is picked by overload resolution.
-    std::remove_const_t<Matrix>& matrix_;
-    int row_;
-
-    template<typename S, int c>
-    friend class FixedUpperTriangularMatrix;
-  };
-
-  // For  0 ≤ i ≤ j < columns, the entry a_ij is accessed as |a[i][j]|.
-  // if i and j do not satisfy these conditions, the expression |a[i][j]| is
-  // erroneous.
-  Row<FixedUpperTriangularMatrix> operator[](int row);
-  Row<FixedUpperTriangularMatrix const> operator[](int row) const;
+  bool operator!=(FixedUpperTriangularMatrix const& right) const;
 
  private:
   // For ease of writing matrices in tests, the input data is received in row-
   // major format.  This translates a trapezoidal slice to make it column-major.
-  static std::array<Scalar, dimension> Transpose(
-      std::array<Scalar, dimension> const& data);
+  static std::array<Scalar, size()> Transpose(
+      std::array<Scalar, size()> const& data);
 
   std::array<Scalar, dimension> data_;
 };

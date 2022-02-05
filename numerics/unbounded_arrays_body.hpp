@@ -69,11 +69,6 @@ int UnboundedVector<Scalar>::size() const {
 }
 
 template<typename Scalar>
-bool UnboundedVector<Scalar>::operator==(UnboundedVector const& right) const {
-  return data_ == right.data_;
-}
-
-template<typename Scalar>
 Scalar& UnboundedVector<Scalar>::operator[](int const index) {
   DCHECK_LE(0, index);
   DCHECK_LT(index, size());
@@ -85,6 +80,16 @@ Scalar const& UnboundedVector<Scalar>::operator[](int const index) const {
   DCHECK_LE(0, index);
   DCHECK_LT(index, size());
   return data_[index];
+}
+
+template<typename Scalar>
+bool UnboundedVector<Scalar>::operator==(UnboundedVector const& right) const {
+  return data_ == right.data_;
+}
+
+template<typename Scalar>
+bool UnboundedVector<Scalar>::operator==(UnboundedVector const& right) const {
+  return data_ != right.data_;
 }
 
 template<typename Scalar>
