@@ -88,7 +88,7 @@ bool UnboundedVector<Scalar>::operator==(UnboundedVector const& right) const {
 }
 
 template<typename Scalar>
-bool UnboundedVector<Scalar>::operator==(UnboundedVector const& right) const {
+bool UnboundedVector<Scalar>::operator!=(UnboundedVector const& right) const {
   return data_ != right.data_;
 }
 
@@ -118,7 +118,7 @@ UnboundedMatrix<Scalar> UnboundedMatrix<Scalar>::Transpose() const {
   UnboundedMatrix<Scalar> m(columns_, rows_, uninitialized);
   for (int i = 0; i < rows_; ++i) {
     for (int j = 0; j < columns_; ++j) {
-      m[j][i] = (*this)[i][j];
+      m(j, i) = (*this)(i, j);
     }
   }
   return m;
@@ -146,7 +146,7 @@ Scalar& UnboundedMatrix<Scalar>::operator()(
   DCHECK_LT(row, rows_);
   DCHECK_LE(0, column);
   DCHECK_LT(column, columns_);
-  return &data_[row * columns_ + column];
+  return data_[row * columns_ + column];
 }
 
 template<typename Scalar>
@@ -156,7 +156,7 @@ Scalar const& UnboundedMatrix<Scalar>::operator()(
   DCHECK_LT(row, rows_);
   DCHECK_LE(0, column);
   DCHECK_LT(column, columns_);
-  return &data_[row * columns_ + column];
+  return data_[row * columns_ + column];
 }
 
 template<typename Scalar>
@@ -165,7 +165,7 @@ bool UnboundedMatrix<Scalar>::operator==(UnboundedMatrix const& right) const {
 }
 
 template<typename Scalar>
-bool UnboundedMatrix<Scalar>::operator==(UnboundedMatrix const& right) const {
+bool UnboundedMatrix<Scalar>::operator!=(UnboundedMatrix const& right) const {
   return !(*this == right);
 }
 
@@ -225,7 +225,7 @@ UnboundedLowerTriangularMatrix<Scalar>::Transpose() const {
   UnboundedUpperTriangularMatrix<Scalar> u(rows_, uninitialized);
   for (int i = 0; i < rows_; ++i) {
     for (int j = 0; j <= i; ++j) {
-      u[j][i] = (*this)[i][j];
+      u(j, i) = (*this)(i, j);
     }
   }
   return u;
@@ -252,8 +252,8 @@ Scalar& UnboundedLowerTriangularMatrix<Scalar>::operator()(
   DCHECK_LE(0, row);
   DCHECK_LT(row, rows_);
   DCHECK_LE(0, column);
-  DCHECK_LT(column, columns_);
-  return &data_[row * (row + 1) / 2 + column];
+  DCHECK_LT(column, columns());
+  return data_[row * (row + 1) / 2 + column];
 }
 
 template<typename Scalar>
@@ -262,8 +262,8 @@ Scalar const& UnboundedLowerTriangularMatrix<Scalar>::operator()(
   DCHECK_LE(0, row);
   DCHECK_LT(row, rows_);
   DCHECK_LE(0, column);
-  DCHECK_LT(column, columns_);
-  return &data_[row * (row + 1) / 2 + column];
+  DCHECK_LT(column, columns());
+  return data_[row * (row + 1) / 2 + column];
 }
 
 template<typename Scalar>
@@ -342,9 +342,9 @@ template<typename Scalar>
 UnboundedLowerTriangularMatrix<Scalar>
 UnboundedUpperTriangularMatrix<Scalar>::Transpose() const {
   UnboundedLowerTriangularMatrix<Scalar> l(columns_, uninitialized);
-  for (int i = 0; i < columns_; ++i) {
+  for (int i = 0; i < rows(); ++i) {
     for (int j = i; j < columns_; ++j) {
-      l[j][i] = (*this)[i][j];
+      l(j, i) = (*this)(i, j);
     }
   }
   return l;
@@ -361,23 +361,23 @@ int UnboundedUpperTriangularMatrix<Scalar>::size() const {
 }
 
 template<typename Scalar>
-Scalar& UnboundedLowerTriangularMatrix<Scalar>::operator()(
+Scalar& UnboundedUpperTriangularMatrix<Scalar>::operator()(
     int const row, int const column) {
   DCHECK_LE(0, row);
-  DCHECK_LT(row, rows_);
+  DCHECK_LT(row, rows());
   DCHECK_LE(0, column);
   DCHECK_LT(column, columns_);
-  return &data_[column * (column + 1) / 2 + row];
+  return data_[column * (column + 1) / 2 + row];
 }
 
 template<typename Scalar>
-Scalar const& UnboundedLowerTriangularMatrix<Scalar>::operator()(
+Scalar const& UnboundedUpperTriangularMatrix<Scalar>::operator()(
     int const row, int const column) const {
   DCHECK_LE(0, row);
-  DCHECK_LT(row, rows_);
+  DCHECK_LT(row, rows());
   DCHECK_LE(0, column);
   DCHECK_LT(column, columns_);
-  return &data_[column * (column + 1) / 2 + row];
+  return data_[column * (column + 1) / 2 + row];
 }
 
 template<typename Scalar>
@@ -387,7 +387,7 @@ bool UnboundedUpperTriangularMatrix<Scalar>::operator==(
 }
 
 template<typename Scalar>
-bool UnboundedUpperTriangularMatrix<Scalar>::operator==(
+bool UnboundedUpperTriangularMatrix<Scalar>::operator!=(
     UnboundedUpperTriangularMatrix const& right) const {
   return !(*this == right);
 }
@@ -460,7 +460,7 @@ UnboundedVector<Product<ScalarLeft, ScalarRight>> operator*(
   for (int i = 0; i < left.rows(); ++i) {
     auto& result_i = result.data_[i];
     for (int j = 0; j < left.columns(); ++j) {
-      result_i += left[i][j] * right[j];
+      result_i += left(i, j) * right[j];
     }
   }
   return result;
@@ -485,7 +485,7 @@ std::ostream& operator<<(std::ostream& out,
   for (int i = 0; i < matrix.rows(); ++i) {
     out << "{";
     for (int j = 0; j <= i; ++j) {
-      out << matrix[i][j];
+      out << matrix(i, j);
       if (j < i) {
         out << ", ";
       }
@@ -502,7 +502,7 @@ std::ostream& operator<<(std::ostream& out,
   for (int i = 0; i < matrix.rows(); ++i) {
     out << "{";
     for (int j = 0; j < matrix.columns(); ++j) {
-      out << matrix[i][j];
+      out << matrix(i, j);
       if (j < matrix.columns() - 1) {
         out << ", ";
       }
@@ -522,7 +522,7 @@ std::ostream& operator<<(std::ostream& out,
       if (j > i) {
         out << ", ";
       }
-      out << matrix[i][j];
+      out << matrix(i, j);
     }
     out << "}\n";
   }

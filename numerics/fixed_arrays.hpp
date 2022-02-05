@@ -140,14 +140,14 @@ class FixedLowerTriangularMatrix final {
   bool operator!=(FixedLowerTriangularMatrix const& right) const;
 
  private:
-  std::array<Scalar, dimension> data_;
+  std::array<Scalar, size()> data_;
 };
 
 template<typename Scalar, int columns_>
 class FixedUpperTriangularMatrix final {
  public:
   static constexpr int rows() { return columns_; }
-  static constexpr int columns() { return rows_; }
+  static constexpr int columns() { return columns_; }
   static constexpr int size() { return columns_ * (columns_ + 1) / 2; }
 
   constexpr FixedUpperTriangularMatrix();
@@ -172,7 +172,7 @@ class FixedUpperTriangularMatrix final {
   static std::array<Scalar, size()> Transpose(
       std::array<Scalar, size()> const& data);
 
-  std::array<Scalar, dimension> data_;
+  std::array<Scalar, size()> data_;
 };
 
 template<typename ScalarLeft, typename ScalarRight, int size>

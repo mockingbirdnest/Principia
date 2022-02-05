@@ -294,7 +294,7 @@ auto FixedUpperTriangularMatrix<Scalar, columns_>::Transpose(
     }
   }
 
-  std::array<Scalar, dimension> result;
+  std::array<Scalar, size()> result;
   index = 0;
   for (int column = 0; column < columns(); ++column) {
     for (int row = 0; row <= rows(); ++row) {
