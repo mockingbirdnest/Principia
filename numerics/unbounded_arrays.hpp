@@ -86,15 +86,16 @@ class UnboundedMatrix final {
 
   int columns() const;
   int rows() const;
-  int dimension() const;
-
-  bool operator==(UnboundedMatrix const& right) const;
+  int size() const;
 
   // For  0 ≤ i < rows and 0 ≤ j < columns, the entry a_ij is accessed as
-  // |a[i][j]|.  If i and j do not satisfy these conditions, the expression
-  // |a[i][j]| is erroneous.
-  Scalar* operator[](int index);
-  Scalar const* operator[](int index) const;
+  // |a(i, j)|.  If i and j do not satisfy these conditions, the expression
+  // |a(i, j)| implies undefined behaviour.
+  Scalar& operator()(int row, int column);
+  Scalar const& operator()(int row, int column) const;
+
+  bool operator==(UnboundedMatrix const& right) const;
+  bool operator!=(UnboundedMatrix const& right) const;
 
  private:
   int rows_;
@@ -127,15 +128,16 @@ class UnboundedLowerTriangularMatrix final {
 
   int columns() const;
   int rows() const;
-  int dimension() const;
-
-  bool operator==(UnboundedLowerTriangularMatrix const& right) const;
+  int size() const;
 
   // For  0 ≤ j ≤ i < rows, the entry a_ij is accessed as |a[i][j]|.
-  // If i and j do not satisfy these conditions, the expression |a[i][j]| is
-  // erroneous.
-  Scalar* operator[](int index);
-  Scalar const* operator[](int index) const;
+  // If i and j do not satisfy these conditions, the expression |a[i][j]|
+  // implies undefined behaviour.
+  Scalar& operator()(int row, int column);
+  Scalar const& operator()(int row, int column) const;
+
+  bool operator==(UnboundedLowerTriangularMatrix const& right) const;
+  bool operator!=(UnboundedLowerTriangularMatrix const& right) const;
 
  private:
   int rows_;
@@ -167,35 +169,17 @@ class UnboundedUpperTriangularMatrix final {
   UnboundedLowerTriangularMatrix<Scalar> Transpose() const;
 
   int columns() const;
-  int dimension() const;
-
-  bool operator==(UnboundedUpperTriangularMatrix const& right) const;
-
-  // A helper class for indexing column-major data in a human-friendly manner.
-  template<typename Matrix>
-  class Row {
-   public:
-    Scalar& operator[](int column);
-    Scalar const& operator[](int column) const;
-
-   private:
-    explicit Row(Matrix& matrix, int row);
-
-    // We need to remove the const because, when this class is instantiated with
-    // |UnboundedUpperTriangularMatrix const|, the first operator[], not the
-    // second, is picked by overload resolution.
-    std::remove_const_t<Matrix>& matrix_;
-    int row_;
-
-    template<typename S>
-    friend class UnboundedUpperTriangularMatrix;
-  };
+  int rows() const;
+  int size() const;
 
   // For  0 ≤ i ≤ j < columns, the entry a_ij is accessed as |a[i][j]|.
-  // If i and j do not satisfy these conditions, the expression |a[i][j]| is
-  // erroneous.
-  Row<UnboundedUpperTriangularMatrix> operator[](int row);
-  Row<UnboundedUpperTriangularMatrix const> operator[](int row) const;
+  // If i and j do not satisfy these conditions, the expression |a[i][j]|
+  // implies undefined behaviour.
+  Scalar& operator()(int row, int column);
+  Scalar const& operator()(int row, int column) const;
+
+  bool operator==(UnboundedUpperTriangularMatrix const& right) const;
+  bool operator!=(UnboundedUpperTriangularMatrix const& right) const;
 
  private:
   // For ease of writing matrices in tests, the input data is received in row-

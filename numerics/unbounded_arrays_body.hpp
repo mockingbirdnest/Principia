@@ -130,28 +130,38 @@ int UnboundedMatrix<Scalar>::rows() const {
 }
 
 template<typename Scalar>
-int UnboundedMatrix<Scalar>::dimension() const {
+int UnboundedMatrix<Scalar>::size() const {
   return rows_ * columns_;
 }
 
 template<typename Scalar>
-bool UnboundedMatrix<Scalar>::operator==(
-    UnboundedMatrix const& right) const {
+Scalar& UnboundedMatrix<Scalar>::operator()(
+    int const row, int const column) {
+  DCHECK_LE(0, row);
+  DCHECK_LT(row, rows_);
+  DCHECK_LE(0, column);
+  DCHECK_LT(column, columns_);
+  return &data_[row * columns_ + column];
+}
+
+template<typename Scalar>
+Scalar const& UnboundedMatrix<Scalar>::operator()(
+    int const row, int const column) const {
+  DCHECK_LE(0, row);
+  DCHECK_LT(row, rows_);
+  DCHECK_LE(0, column);
+  DCHECK_LT(column, columns_);
+  return &data_[row * columns_ + column];
+}
+
+template<typename Scalar>
+bool UnboundedMatrix<Scalar>::operator==(UnboundedMatrix const& right) const {
   return data_ == right.data_;
 }
 
 template<typename Scalar>
-Scalar* UnboundedMatrix<Scalar>::operator[](int index) {
-  DCHECK_LE(0, index);
-  DCHECK_LT(index, rows_);
-  return &data_[index * columns_];
-}
-
-template<typename Scalar>
-Scalar const* UnboundedMatrix<Scalar>::operator[](int index) const {
-  DCHECK_LE(0, index);
-  DCHECK_LT(index, rows_);
-  return &data_[index * columns_];
+bool UnboundedMatrix<Scalar>::operator==(UnboundedMatrix const& right) const {
+  return !(*this == right);
 }
 
 template<typename Scalar>
@@ -227,8 +237,28 @@ int UnboundedLowerTriangularMatrix<Scalar>::rows() const {
 }
 
 template<typename Scalar>
-int UnboundedLowerTriangularMatrix<Scalar>::dimension() const {
+int UnboundedLowerTriangularMatrix<Scalar>::size() const {
   return data_.size();
+}
+
+template<typename Scalar>
+Scalar& UnboundedLowerTriangularMatrix<Scalar>::operator()(
+    int const row, int const column) {
+  DCHECK_LE(0, row);
+  DCHECK_LT(row, rows_);
+  DCHECK_LE(0, column);
+  DCHECK_LT(column, columns_);
+  return &data_[row * (row + 1) / 2 + column];
+}
+
+template<typename Scalar>
+Scalar const& UnboundedLowerTriangularMatrix<Scalar>::operator()(
+    int const row, int const column) const {
+  DCHECK_LE(0, row);
+  DCHECK_LT(row, rows_);
+  DCHECK_LE(0, column);
+  DCHECK_LT(column, columns_);
+  return &data_[row * (row + 1) / 2 + column];
 }
 
 template<typename Scalar>
@@ -238,18 +268,9 @@ bool UnboundedLowerTriangularMatrix<Scalar>::operator==(
 }
 
 template<typename Scalar>
-Scalar* UnboundedLowerTriangularMatrix<Scalar>::operator[](int const index) {
-  DCHECK_LE(0, index);
-  DCHECK_LT(index, rows_);
-  return &data_[index * (index + 1) / 2];
-}
-
-template<typename Scalar>
-Scalar const* UnboundedLowerTriangularMatrix<Scalar>::operator[](
-    int const index) const {
-  DCHECK_LE(0, index);
-  DCHECK_LT(index, rows_);
-  return &data_[index * (index + 1) / 2];
+bool UnboundedLowerTriangularMatrix<Scalar>::operator!=(
+    UnboundedLowerTriangularMatrix const& right) const {
+  return !(*this == right);
 }
 
 template<typename Scalar>
@@ -330,8 +351,28 @@ int UnboundedUpperTriangularMatrix<Scalar>::columns() const {
 }
 
 template<typename Scalar>
-int UnboundedUpperTriangularMatrix<Scalar>::dimension() const {
+int UnboundedUpperTriangularMatrix<Scalar>::size() const {
   return data_.size();
+}
+
+template<typename Scalar>
+Scalar& UnboundedLowerTriangularMatrix<Scalar>::operator()(
+    int const row, int const column) {
+  DCHECK_LE(0, row);
+  DCHECK_LT(row, rows_);
+  DCHECK_LE(0, column);
+  DCHECK_LT(column, columns_);
+  return &data_[column * (column + 1) / 2 + row];
+}
+
+template<typename Scalar>
+Scalar const& UnboundedLowerTriangularMatrix<Scalar>::operator()(
+    int const row, int const column) const {
+  DCHECK_LE(0, row);
+  DCHECK_LT(row, rows_);
+  DCHECK_LE(0, column);
+  DCHECK_LT(column, columns_);
+  return &data_[column * (column + 1) / 2 + row];
 }
 
 template<typename Scalar>
@@ -341,45 +382,9 @@ bool UnboundedUpperTriangularMatrix<Scalar>::operator==(
 }
 
 template<typename Scalar>
-template<typename Matrix>
-Scalar& UnboundedUpperTriangularMatrix<Scalar>::Row<Matrix>::operator[](
-    int const column) {
-  DCHECK_LE(0, column);
-  DCHECK_LT(column, matrix_.columns_);
-  return matrix_.data_[column * (column + 1) / 2 + row_];
-}
-
-template<typename Scalar>
-template<typename Matrix>
-Scalar const&
-UnboundedUpperTriangularMatrix<Scalar>::Row<Matrix>::operator[](
-    int const column) const {
-  DCHECK_LE(0, column);
-  DCHECK_LT(column, matrix_.columns_);
-  return matrix_.data_[column * (column + 1) / 2 + row_];
-}
-
-template<typename Scalar>
-template<typename Matrix>
-UnboundedUpperTriangularMatrix<Scalar>::Row<Matrix>::Row(Matrix& matrix,
-                                                         int const row)
-    : matrix_(const_cast<std::remove_const_t<Matrix>&>(matrix)),
-      row_(row) {}
-
-template<typename Scalar>
-auto UnboundedUpperTriangularMatrix<Scalar>::operator[](int const row)
-    -> Row<UnboundedUpperTriangularMatrix> {
-  DCHECK_LE(0, row);
-  DCHECK_LT(row, columns_);
-  return Row<UnboundedUpperTriangularMatrix>{*this, row};
-}
-
-template<typename Scalar>
-auto UnboundedUpperTriangularMatrix<Scalar>::operator[](int const row) const
-    -> Row<UnboundedUpperTriangularMatrix const> {
-  DCHECK_LE(0, row);
-  DCHECK_LT(row, columns_);
-  return Row<UnboundedUpperTriangularMatrix const>{*this, row};
+bool UnboundedUpperTriangularMatrix<Scalar>::operator==(
+    UnboundedUpperTriangularMatrix const& right) const {
+  return !(*this == right);
 }
 
 template<typename Scalar>
