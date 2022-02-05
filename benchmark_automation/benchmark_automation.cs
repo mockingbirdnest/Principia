@@ -108,7 +108,8 @@ class BenchmarkAutomation {
                   mathematica_stream.Write(", ");
                 }
                 mathematica_stream.Write(
-                    double.Parse(words[1]).ToString().Replace("e", "*^"));
+                    double.Parse(words[1] * TimeConversionFactor(words[2]))
+                        .ToString().Replace("e", "*^"));
               }
             }
           }
