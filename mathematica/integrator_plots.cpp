@@ -169,23 +169,6 @@ std::vector<SimpleHarmonicMotionPlottedIntegrator> Methods() {
           SLMS_INTEGRATOR(QuinlanTremaine1990Order14)};
 }
 
-// Those methods which have converged to the limits of double-precision floating
-// point error on the circular Kepler problem tested by
-// |GenerateKeplerProblemWorkErrorGraphs| with less than 8e4 evaluations.
-std::vector<SimpleHarmonicMotionPlottedIntegrator> ReferenceMethods() {
-  return {// Order 5
-          SRKN_INTEGRATOR(McLachlanAtela1992Order5Optimal),
-          // Order 6
-          SPRK_INTEGRATOR(McLachlan1995SS9, BAB),
-          SPRK_INTEGRATOR(BlanesMoan2002S10, BAB),
-          SRKN_INTEGRATOR(OkunborSkeel1994Order6Method13),
-          SRKN_INTEGRATOR(BlanesMoan2002SRKN11B),
-          SRKN_INTEGRATOR(BlanesMoan2002SRKN14A),
-          // Order 8
-          SPRK_INTEGRATOR(McLachlan1995SS15, BAB),
-          SPRK_INTEGRATOR(McLachlan1995SS17, BAB)};
-}
-
 }  // namespace
 
 // Templatized to allow for problems where specific energy is more convenient
