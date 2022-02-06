@@ -32,7 +32,7 @@ R3Element<double> ComputeGravityAccelerationLear(
   int nm1, nm2;
 
   for (int n = 2; n <= nmodel; ++n) {
-    pnm[n - 1][n] = 0.0;
+    pnm(n - 1, n) = 0.0;
   }
 
   e1 = rgr.x * rgr.x + rgr.y * rgr.y;
@@ -56,12 +56,12 @@ R3Element<double> ComputeGravityAccelerationLear(
   pn[2] = (3.0 * sphi * sphi - 1.0) / 2.0;
   ppn[1] = 1.0;
   ppn[2] = 3.0 * sphi;
-  pnm[1][1] = 1.0;
-  pnm[2][2] = 3.0 * cphi;
-  pnm[2][1] = ppn[2];
-  ppnm[1][1] = -sphi;
-  ppnm[2][2] = -6.0 * sphi * cphi;
-  ppnm[2][1] = 3.0 - 6.0 * sphi * sphi;
+  pnm(1, 1) = 1.0;
+  pnm(2, 2) = 3.0 * cphi;
+  pnm(2, 1) = ppn[2];
+  ppnm(1, 1) = -sphi;
+  ppnm(2, 2) = -6.0 * sphi * cphi;
+  ppnm(2, 1) = 3.0 - 6.0 * sphi * sphi;
   if (nmodel >= 3) {
     for (int n = 3; n <= nmodel; ++n) {
       nm1 = n - 1;
@@ -72,19 +72,19 @@ R3Element<double> ComputeGravityAccelerationLear(
       e1 = 2 * n - 1;
       pn[n] = (e1 * sphi * pn[nm1] - nm1 * pn[nm2]) / n;
       ppn[n] = sphi * ppn[nm1] + n * pn[nm1];
-      pnm[n][n] = e1 * cphi * pnm[nm1][nm1];
-      ppnm[n][n] = -n * sphi * pnm[n][n];
+      pnm(n, n) = e1 * cphi * pnm(nm1, nm1);
+      ppnm(n, n) = -n * sphi * pnm(n, n);
     }
     for (int n = 3; n <= nmodel; ++n) {
       nm1 = n - 1;
       e1 = (2 * n - 1) * sphi;
       e2 = -n * sphi;
       for (int m = 1; m <= nm1; ++m) {
-        e3 = pnm[nm1][m];
+        e3 = pnm(nm1, m);
         e4 = n + m;
-        e5 = (e1 * e3 - (e4 - 1.0) * pnm[n - 2][m]) / (n - m);
-        pnm[n][m] = e5;
-        ppnm[n][m] = e2 * e5 + e4 * e3;
+        e5 = (e1 * e3 - (e4 - 1.0) * pnm(n - 2, m)) / (n - m);
+        pnm(n, m) = e5;
+        ppnm(n, m) = e2 * e5 + e4 * e3;
       }
     }
   }
@@ -93,7 +93,7 @@ R3Element<double> ComputeGravityAccelerationLear(
   asph.z = 0.0;
 
   for (int n = 2; n <= nmodel; ++n) {
-    e1 = cnm[n][0] * rb[n];
+    e1 = cnm(n, 0) * rb[n];
     asph.x = asph.x - (n + 1) * e1 * pn[n];
     asph.z = asph.z + e1 * ppn[n];
   }
@@ -107,15 +107,15 @@ R3Element<double> ComputeGravityAccelerationLear(
     e2 = 0.0;
     e3 = 0.0;
     for (int m = 1; m <= std::min(n, mmodel); ++m) {
-      tsnm = snm[n][m];
-      tcnm = cnm[n][m];
+      tsnm = snm(n, m);
+      tcnm = cnm(n, m);
       tsm = sm[m];
       tcm = cm[m];
-      tpnm = pnm[n][m];
+      tpnm = pnm(n, m);
       e4 = tsnm * tsm + tcnm * tcm;
       e1 = e1 + e4 * tpnm;
       e2 = e2 + m * (tsnm * tcm - tcnm * tsm) * tpnm;
-      e3 = e3 + e4 * ppnm[n][m];
+      e3 = e3 + e4 * ppnm(n, m);
     }
     t1 = t1 + (n + 1) * rb[n] * e1;
     asph.y = asph.y + rb[n] * e2;

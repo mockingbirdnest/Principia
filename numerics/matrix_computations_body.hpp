@@ -194,16 +194,16 @@ CholeskyDecomposition(UpperTriangularMatrix const& A) {
     for (int i = 0; i < j; ++i) {
       Scalar Σrₖᵢrₖⱼ{};
       for (int k = 0; k < i; ++k) {
-        Σrₖᵢrₖⱼ += R[k][i] * R[k][j];
+        Σrₖᵢrₖⱼ += R(k, i) * R(k, j);
       }
-      R[i][j] = (A[i][j] - Σrₖᵢrₖⱼ) / R[i][i];
+      R(i, j) = (A(i, j) - Σrₖᵢrₖⱼ) / R(i, i);
     }
     Scalar Σrₖⱼ²{};
     for (int k = 0; k < j; ++k) {
-      Σrₖⱼ² += Pow<2>(R[k][j]);
+      Σrₖⱼ² += Pow<2>(R(k, j));
     }
     // This will produce NaNs if the matrix is not positive definite.
-    R[j][j] = Sqrt(A[j][j] - Σrₖⱼ²);
+    R(j, j) = Sqrt(A(j, j) - Σrₖⱼ²);
   }
   return R;
 }
@@ -220,17 +220,17 @@ typename ᵗRDRDecompositionGenerator<Vector, UpperTriangularMatrix>::Result
   for (int i = 0; i < A.columns(); ++i) {
     Scalar Σrₖᵢ²dₖ{};
     for (int k = 0; k < i; ++k) {
-      Σrₖᵢ²dₖ += Pow<2>(R[k][i]) * D[k];
+      Σrₖᵢ²dₖ += Pow<2>(R(k, i)) * D[k];
     }
-    D[i] = A[i][i] - Σrₖᵢ²dₖ;
+    D[i] = A(i, i) - Σrₖᵢ²dₖ;
     for (int j = i + 1; j < A.columns(); ++j) {
       Scalar Σrₖᵢrₖⱼdₖ{};
       for (int k = 0; k < i; ++k) {
-        Σrₖᵢrₖⱼdₖ += R[k][i] * R[k][j] * D[k];
+        Σrₖᵢrₖⱼdₖ += R(k, i) * R(k, j) * D[k];
       }
-      R[i][j] = (A[i][j] - Σrₖᵢrₖⱼdₖ) / D[i];
+      R(i, j) = (A(i, j) - Σrₖᵢrₖⱼdₖ) / D[i];
     }
-    R[i][i] = 1;
+    R(i, i) = 1;
   }
   return result;
 }
@@ -243,13 +243,13 @@ BackSubstitution(UpperTriangularMatrix const& U,
   using G = SubstitutionGenerator<UpperTriangularMatrix, Vector>;
   auto x = G::Uninitialized(U);
   int const n = x.size() - 1;
-  x[n] = b[n] / U[n][n];
+  x[n] = b[n] / U(n, n);
   for (int i = n - 1; i >= 0; --i) {
     auto s = b[i];
     for (int j = i + 1; j <= n; ++j) {
-      s -= U[i][j] * x[j];
+      s -= U(i, j) * x[j];
     }
-    x[i] = s / U[i][i];
+    x[i] = s / U(i, i);
   }
   return x;
 }
@@ -263,13 +263,13 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
                     Vector const& b) {
   using G = SubstitutionGenerator<LowerTriangularMatrix, Vector>;
   auto x = G::Uninitialized(L);
-  x[0] = b[0] / L[0][0];
+  x[0] = b[0] / L(0, 0);
   for (int i = 1; i < b.size(); ++i) {
     auto s = b[i];
     for (int j = 0; j < i; ++j) {
-      s -= L[i][j] * x[j];
+      s -= L(i, j) * x[j];
     }
-    x[i] = s / L[i][i];
+    x[i] = s / L(i, i);
   }
   return x;
 }
@@ -299,9 +299,9 @@ Solve(Matrix A, Vector b) {
     int r = -1;
     Scalar max{};
     for (int i = k; i < A.rows(); ++i) {
-      if (Abs(A[i][k]) > max) {
+      if (Abs(A(i, k)) > max) {
         r = i;
-        max = Abs(A[i][k]);
+        max = Abs(A(i, k));
       }
     }
     CHECK_LE(0, r) << A << " cannot pivot";
@@ -309,32 +309,32 @@ Solve(Matrix A, Vector b) {
 
     // Swap the rows of A.
     for (int i = 0; i < A.columns(); ++i) {
-      std::swap(A[k][i], A[r][i]);
+      std::swap(A(k, i), A(r, i));
     }
 
     // Swap the rows of L.
     for (int i = 0; i < k; ++i) {
-      std::swap(L[k][i], L[r][i]);
+      std::swap(L(k, i), L(r, i));
     }
 
     std::swap(b[k], b[r]);
-    CHECK_NE(Scalar{}, A[k][k]) << A << " is singular";
+    CHECK_NE(Scalar{}, A(k, k)) << A << " is singular";
 
     for (int j = k; j < A.columns(); ++j) {
-      auto U_kj = A[k][j];
+      auto U_kj = A(k, j);
       for (int i = 0; i < k; ++i) {
-        U_kj -= L[k][i] * U[i][j];
+        U_kj -= L(k, i) * U(i, j);
       }
-      U[k][j] = U_kj;
+      U(k, j) = U_kj;
     }
     for (int i = k + 1; i < A.rows(); ++i) {
-      auto L_ik = A[i][k];
+      auto L_ik = A(i, k);
       for (int j = 0; j < k; ++j) {
-        L_ik -= L[i][j] * U[j][k];
+        L_ik -= L(i, j) * U(j, k);
       }
-      L[i][k] = L_ik / U[k][k];
+      L(i, k) = L_ik / U(k, k);
     }
-    L[k][k] = 1;
+    L(k, k) = 1;
   }
 
   // For the resolution of triangular systems see [Hig02], Algorithm 8.1 p. 140.

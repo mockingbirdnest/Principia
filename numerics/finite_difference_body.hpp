@@ -13,7 +13,7 @@ Derivative<Value, Argument> FiniteDifference(
     std::array<Value, n> const& values,
     Argument const& step,
     int const offset) {
-  double const* const numerators = std::get<n - 1>(Numerators)[offset];
+  auto const& numerators = std::get<n - 1>(Numerators);
   constexpr double denominator = Denominators[n - 1];
   Difference<Value> sum{};
   if (n % 2 == 1 && offset == (n - 1) / 2) {
@@ -24,7 +24,7 @@ Derivative<Value, Argument> FiniteDifference(
     // Σⱼ aⱼ (f(xⱼ) - f(xₙ₋ⱼ₋₁)), with j running from 0 to (n - 3) / 2.  Which
     // we cannot write naively because n is unsigned.
     for (int j = 0; 2 * j + 3 <= n; ++j) {
-      sum += numerators[j] * (values[j] - values[n - j - 1]);
+      sum += numerators(offset, j) * (values[j] - values[n - j - 1]);
     }
     return sum / (denominator * step);
   } else {
@@ -35,7 +35,7 @@ Derivative<Value, Argument> FiniteDifference(
     // k runs from 0 to j.
     double numerator = 0;
     for (int j = 0; j + 2 <= n; ++j) {
-      numerator += numerators[j];
+      numerator += numerators(offset, j);
       sum += numerator * (values[j] - values[j + 1]);
     }
   }

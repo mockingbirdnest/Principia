@@ -318,7 +318,7 @@ IncrementalProjection(Function const& function,
 
       // Fill the QR decomposition.
       for (int i = 0; i <= m; ++i) {
-        r[i][m] = rₘ[i];
+        r(i, m) = rₘ[i];
       }
       q.push_back(qₘ);
       DCHECK_EQ(m + 1, q.size());
