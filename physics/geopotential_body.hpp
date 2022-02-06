@@ -164,14 +164,14 @@ auto Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
   if constexpr (degree == 2 && order == 1) {
     // Let's not forget the Legendre derivative that we would compute if we did
     // not short-circuit.
-    precomputations.DmPn_of_sin_β[2][2] = 3;
+    precomputations.DmPn_of_sin_β(2, 2) = 3;
     return {};
   } else {
     constexpr int n = degree;
     constexpr int m = order;
     static_assert(0 <= m && m <= n);
     constexpr double normalization_factor =
-        LegendreNormalizationFactor[n][m];
+        LegendreNormalizationFactor(n, m);
 
     double const cos_β = precomputations.cos_β;
     double const sin_β = precomputations.sin_β;
@@ -225,8 +225,8 @@ auto Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
     // Recurrence relationship between the Legendre polynomials.
     if constexpr (m == 0) {
       static_assert(n >= 2);
-      DmPn_of_sin_β[n][0] = ((2 * n - 1) * sin_β * DmPn_of_sin_β[n - 1][0] -
-                             (n - 1) * DmPn_of_sin_β[n - 2][0]) /
+      DmPn_of_sin_β(n, 0) = ((2 * n - 1) * sin_β * DmPn_of_sin_β(n - 1, 0) -
+                             (n - 1) * DmPn_of_sin_β(n - 2, 0)) /
                             n;
     }
 
@@ -236,20 +236,20 @@ auto Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
       // Do not store the zero.
     } else if constexpr (m == n - 1) {  // NOLINT(readability/braces)
       static_assert(n >= 1);
-      DmPn_of_sin_β[n][m + 1] =
-          ((2 * n - 1) * (m + 1) * DmPn_of_sin_β[n - 1][m]) / n;
+      DmPn_of_sin_β(n, m + 1) =
+          ((2 * n - 1) * (m + 1) * DmPn_of_sin_β(n - 1, m)) / n;
     } else if constexpr (m == n - 2) {  // NOLINT(readability/braces)
       static_assert(n >= 1);
-      DmPn_of_sin_β[n][m + 1] =
-          ((2 * n - 1) * (sin_β * DmPn_of_sin_β[n - 1][m + 1] +
-                          (m + 1) * DmPn_of_sin_β[n - 1][m])) /
+      DmPn_of_sin_β(n, m + 1) =
+          ((2 * n - 1) * (sin_β * DmPn_of_sin_β(n - 1, m + 1) +
+                          (m + 1) * DmPn_of_sin_β(n - 1, m))) /
           n;
     } else {
       static_assert(n >= 2);
-      DmPn_of_sin_β[n][m + 1] =
-          ((2 * n - 1) * (sin_β * DmPn_of_sin_β[n - 1][m + 1] +
-                          (m + 1) * DmPn_of_sin_β[n - 1][m]) -
-           (n - 1) * DmPn_of_sin_β[n - 2][m + 1]) /
+      DmPn_of_sin_β(n, m + 1) =
+          ((2 * n - 1) * (sin_β * DmPn_of_sin_β(n - 1, m + 1) +
+                          (m + 1) * DmPn_of_sin_β(n - 1, m)) -
+           (n - 1) * DmPn_of_sin_β(n - 2, m + 1)) /
           n;
     }
 
@@ -257,21 +257,21 @@ auto Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
 #pragma warning(disable: 4101)
     double cos_β_to_the_m_minus_1;  // Not used if m = 0.
 #pragma warning(pop)
-    double const 𝔅 = cos_β_to_the_m * DmPn_of_sin_β[n][m];
+    double const 𝔅 = cos_β_to_the_m * DmPn_of_sin_β(n, m);
 
     double grad_𝔅_polynomials = 0;
     if constexpr (m < n) {
-      grad_𝔅_polynomials = cos_β * cos_β_to_the_m * DmPn_of_sin_β[n][m + 1];
+      grad_𝔅_polynomials = cos_β * cos_β_to_the_m * DmPn_of_sin_β(n, m + 1);
     }
     if constexpr (m > 0) {
       cos_β_to_the_m_minus_1 = precomputations.cos_β_to_the_m[m - 1];
       // Remove a singularity when m == 0 and cos_β == 0.
       grad_𝔅_polynomials -=
-          m * sin_β * cos_β_to_the_m_minus_1 * DmPn_of_sin_β[n][m];
+          m * sin_β * cos_β_to_the_m_minus_1 * DmPn_of_sin_β(n, m);
     }
 
-    double const Cnm = cos[n][m];
-    double const Snm = sin[n][m];
+    double const Cnm = cos(n, m);
+    double const Snm = sin(n, m);
     double 𝔏;
     if constexpr (m == 0) {
       𝔏 = Cnm;
@@ -287,7 +287,7 @@ auto Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
       // Compensate a cos_β to remove a singularity when cos_β == 0.
       Vector<ReducedAcceleration, Frame> const ℜ𝔅_grad_𝔏 =
           (ℜ_over_r *
-           cos_β_to_the_m_minus_1 * DmPn_of_sin_β[n][m] *  // 𝔅/cos_β
+           cos_β_to_the_m_minus_1 * DmPn_of_sin_β(n, m) *  // 𝔅/cos_β
            m * (Snm * cos_mλ - Cnm * sin_mλ)) * grad_𝔏_vector;  // grad_𝔏*cos_β
       grad_ℜ𝔅𝔏 += ℜ𝔅_grad_𝔏;
     }
@@ -478,9 +478,9 @@ Acceleration(Geopotential<Frame> const& geopotential,
   cos_β_to_the_0 = 1;
   cos_β_to_the_1 = cos_β;
 
-  DmPn_of_sin_β[0][0] = 1;
-  DmPn_of_sin_β[1][0] = sin_β;
-  DmPn_of_sin_β[1][1] = 1;
+  DmPn_of_sin_β(0, 0) = 1;
+  DmPn_of_sin_β(1, 0) = sin_β;
+  DmPn_of_sin_β(1, 1) = 1;
 
   // Force the evaluation by increasing degree using an initializer list.  In
   // the zonal case, no point in going beyond order 0.
@@ -529,9 +529,9 @@ Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body,
   for (int n = 2; n <= body_->geopotential_degree(); ++n) {
     for (int m = 0; m <= n; ++m) {
       double const max_abs_Pnm =
-          MaxAbsNormalizedAssociatedLegendreFunction[n][m];
-      double const Cnm = body->cos()[n][m];
-      double const Snm = body->sin()[n][m];
+          MaxAbsNormalizedAssociatedLegendreFunction(n, m);
+      double const Cnm = body->cos()(n, m);
+      double const Snm = body->sin()(n, m);
       // TODO(egg): write a rootn.
       Length const r = Cnm == 0 && Snm == 0
                            ? Length{}

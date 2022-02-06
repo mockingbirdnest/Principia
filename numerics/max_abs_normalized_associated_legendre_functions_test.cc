@@ -34,17 +34,17 @@ class MaxAbsNormalizedAssociatedLegendreFunctionTest : public testing::Test {
 };
 
 TEST_F(MaxAbsNormalizedAssociatedLegendreFunctionTest, Polynomials) {
-  for (int n = 0; n < MaxAbsNormalizedAssociatedLegendreFunction.rows; ++n) {
-    EXPECT_THAT(MaxAbsNormalizedAssociatedLegendreFunction[n][0],
-                AlmostEquals(LegendreNormalizationFactor[n][0], 0))
+  for (int n = 0; n < MaxAbsNormalizedAssociatedLegendreFunction.rows(); ++n) {
+    EXPECT_THAT(MaxAbsNormalizedAssociatedLegendreFunction(n, 0),
+                AlmostEquals(LegendreNormalizationFactor(n, 0), 0))
         << "n = " << n;
   }
 }
 
 TEST_F(MaxAbsNormalizedAssociatedLegendreFunctionTest, HighestOrder) {
-  for (int n = 0; n < MaxAbsNormalizedAssociatedLegendreFunction.rows; ++n) {
-    EXPECT_THAT(MaxAbsNormalizedAssociatedLegendreFunction[n][n],
-                AlmostEquals(LegendreNormalizationFactor[n][n] *
+  for (int n = 0; n < MaxAbsNormalizedAssociatedLegendreFunction.rows(); ++n) {
+    EXPECT_THAT(MaxAbsNormalizedAssociatedLegendreFunction(n, n),
+                AlmostEquals(LegendreNormalizationFactor(n, n) *
                                  ApproximateDoubleFactorial(2 * n - 1),
                              0, 3))
         << "n = " << n;
