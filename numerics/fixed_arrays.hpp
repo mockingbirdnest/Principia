@@ -110,7 +110,7 @@ class FixedStrictlyLowerTriangularMatrix final {
   constexpr FixedStrictlyLowerTriangularMatrix(
       std::array<Scalar, size()> const& data);
 
-  // For  0 < j < i < rows, the entry a_ij is accessed as |a(i, j)|.
+  // For  0 ≤ j < i < rows, the entry a_ij is accessed as |a(i, j)|.
   // if i and j do not satisfy these conditions, the expression |a(i, j)|
   // implies undefined behaviour.
   constexpr Scalar& operator()(int row, int column);

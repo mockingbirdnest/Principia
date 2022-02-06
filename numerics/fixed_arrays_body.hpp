@@ -173,7 +173,7 @@ FixedStrictlyLowerTriangularMatrix(std::array<Scalar, size()> const& data)
 template<typename Scalar, int rows_>
 constexpr Scalar& FixedStrictlyLowerTriangularMatrix<Scalar, rows_>::
 operator()(int const row, int const column) {
-  CONSTEXPR_DCHECK(0 < column);
+  CONSTEXPR_DCHECK(0 <= column);
   CONSTEXPR_DCHECK(column < row);
   CONSTEXPR_DCHECK(row < rows());
   return data_[row * (row - 1) / 2 + column];
@@ -182,7 +182,7 @@ operator()(int const row, int const column) {
 template<typename Scalar, int rows_>
 constexpr Scalar const& FixedStrictlyLowerTriangularMatrix<Scalar, rows_>::
 operator()(int const row, int const column) const {
-  CONSTEXPR_DCHECK(0 < column);
+  CONSTEXPR_DCHECK(0 <= column);
   CONSTEXPR_DCHECK(column < row);
   CONSTEXPR_DCHECK(row < rows());
   return data_[row * (row - 1) / 2 + column];
