@@ -421,7 +421,7 @@ std::string ToMathematica(UnboundedLowerTriangularMatrix<Scalar> const& matrix,
     std::vector<std::string> row;
     row.reserve(matrix.rows());
     for (int j = 0; j <= i; ++j) {
-      row.push_back(ToMathematica(matrix[i][j], express_in));
+      row.push_back(ToMathematica(matrix(i, j), express_in));
     }
     for (int j = i + 1; j < matrix.rows(); ++j) {
       row.push_back(ToMathematica(Scalar{}, express_in));
@@ -443,7 +443,7 @@ std::string ToMathematica(UnboundedUpperTriangularMatrix<Scalar> const& matrix,
       row.push_back(ToMathematica(Scalar{}, express_in));
     }
     for (int j = i; j < matrix.columns(); ++j) {
-      row.push_back(ToMathematica(matrix[i][j], express_in));
+      row.push_back(ToMathematica(matrix(i, j), express_in));
     }
     rows.push_back(Apply("List", row));
   }

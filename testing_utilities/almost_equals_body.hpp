@@ -322,7 +322,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   std::int64_t max_distance = -1;
   int max_i = -1;
   int max_j = -1;
-  for (int i = 0; i < expected_.rows; ++i) {
+  for (int i = 0; i < expected_.rows(); ++i) {
     for (int j = 0; j <= i; ++j) {
       int const distance = NormalizedNaNULPDistance(
           DoubleValue(actual(i, j)), DoubleValue(expected_(i, j)));

@@ -195,8 +195,8 @@ Status* __cdecl principia__ExternalGeopotentialGetCoefficient(
     *coefficient = {0, 0};
     return m.Return(OK());
   }
-  *coefficient = {oblate_body.cos()[degree][order],
-                  oblate_body.sin()[degree][order]};
+  *coefficient = {oblate_body.cos()(degree, order),
+                  oblate_body.sin()(degree, order)};
   return m.Return(OK());
 }
 

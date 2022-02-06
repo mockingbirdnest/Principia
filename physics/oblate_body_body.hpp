@@ -37,7 +37,7 @@ OblateBody<Frame>::Parameters::Parameters(double const j2,
       degree_(2),
       is_zonal_(true) {
   CHECK_LT(0.0, j2) << "Oblate body must have positive j2";
-  cos_[2][0] = -j2 / LegendreNormalizationFactor[2][0];
+  cos_(2, 0) = -j2 / LegendreNormalizationFactor(2, 0);
 }
 
 template<typename Frame>
@@ -74,7 +74,7 @@ OblateBody<Frame>::Parameters::ReadFromMessage(
       double cos = column.cos();
       if (m == 0) {
         if (column.has_j()) {
-          cos = -column.j() / LegendreNormalizationFactor[n][0];
+          cos = -column.j() / LegendreNormalizationFactor(n, 0);
         } else {
           CHECK(column.has_cos())
               << "Cos and J missing for degree " << n << " order " << m;
@@ -83,23 +83,23 @@ OblateBody<Frame>::Parameters::ReadFromMessage(
         CHECK(column.has_cos())
             << "Cos missing for degree " << n << " order " << m;
       }
-      parameters.cos_[n][m] = cos;
-      parameters.sin_[n][m] = column.sin();
+      parameters.cos_(n, m) = cos;
+      parameters.sin_(n, m) = column.sin();
     }
   }
   parameters.degree_ = *degrees_seen.crbegin();
 
   // Unnormalization.
-  parameters.j2_ = -parameters.cos_[2][0] * LegendreNormalizationFactor[2][0];
-  parameters.j2_over_μ_ = -parameters.cos_[2][0] *
-                          LegendreNormalizationFactor[2][0] * reference_radius *
+  parameters.j2_ = -parameters.cos_(2, 0) * LegendreNormalizationFactor(2, 0);
+  parameters.j2_over_μ_ = -parameters.cos_(2, 0) *
+                          LegendreNormalizationFactor(2, 0) * reference_radius *
                           reference_radius;
 
   // Zonalness.
   parameters.is_zonal_ = true;
   for (int n = 0; n <= parameters.degree_; ++n) {
     for (int m = 1; m <= n; ++m) {
-      if (parameters.cos_[n][m] != 0 || parameters.sin_[n][m] != 0) {
+      if (parameters.cos_(n, m) != 0 || parameters.sin_(n, m) != 0) {
         parameters.is_zonal_ = false;
         break;
       }
@@ -118,8 +118,8 @@ void OblateBody<Frame>::Parameters::WriteToMessage(
     for (int m = 0; m <= n; ++m) {
       auto const column = row->add_column();
       column->set_order(m);
-      column->set_cos(cos_[n][m]);
-      column->set_sin(sin_[n][m]);
+      column->set_cos(cos_(n, m));
+      column->set_sin(sin_(n, m));
     }
   }
 }

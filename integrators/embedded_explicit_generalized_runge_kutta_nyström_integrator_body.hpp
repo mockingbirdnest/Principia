@@ -36,7 +36,7 @@ EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator() {
     CHECK_EQ(1.0, c_[stages_ - 1]);
     CHECK_EQ(0.0, b̂_[stages_ - 1]);
     for (int j = 0; j < stages_ - 1; ++j) {
-      CHECK_EQ(b̂_[j], a_[stages_ - 1][j]);
+      CHECK_EQ(b̂_[j], a_(stages_ - 1, j));
     }
   }
 }
@@ -187,8 +187,8 @@ absl::Status EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
           Acceleration Σj_a_ij_g_jk{};
           Acceleration Σj_aʹ_ij_g_jk{};
           for (int j = 0; j < i; ++j) {
-            Σj_a_ij_g_jk  += a[i][j] * g[j][k];
-            Σj_aʹ_ij_g_jk += aʹ[i][j] * g[j][k];
+            Σj_a_ij_g_jk  += a(i, j) * g[j][k];
+            Σj_aʹ_ij_g_jk += aʹ(i, j) * g[j][k];
           }
           q_stage[k] = q̂[k].value + h * c[i] * v̂[k].value + h² * Σj_a_ij_g_jk;
           v_stage[k] = v̂[k].value + h * Σj_aʹ_ij_g_jk;

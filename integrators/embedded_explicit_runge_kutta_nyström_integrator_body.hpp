@@ -36,7 +36,7 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator() {
     CHECK_EQ(1.0, c_[stages_ - 1]);
     CHECK_EQ(0.0, b̂_[stages_ - 1]);
     for (int j = 0; j < stages_ - 1; ++j) {
-      CHECK_EQ(b̂_[j], a_[stages_ - 1][j]);
+      CHECK_EQ(b̂_[j], a_(stages_ - 1, j));
     }
   }
 }
@@ -183,7 +183,7 @@ Instance::Solve(Instant const& t_final) {
         for (int k = 0; k < dimension; ++k) {
           Acceleration Σj_a_ij_g_jk{};
           for (int j = 0; j < i; ++j) {
-            Σj_a_ij_g_jk += a[i][j] * g[j][k];
+            Σj_a_ij_g_jk += a(i, j) * g[j][k];
           }
           q_stage[k] = q̂[k].value + h * c[i] * v̂[k].value + h² * Σj_a_ij_g_jk;
         }
