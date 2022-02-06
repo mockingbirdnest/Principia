@@ -249,20 +249,18 @@ int UnboundedLowerTriangularMatrix<Scalar>::size() const {
 template<typename Scalar>
 Scalar& UnboundedLowerTriangularMatrix<Scalar>::operator()(
     int const row, int const column) {
-  DCHECK_LE(0, row);
-  DCHECK_LT(row, rows_);
   DCHECK_LE(0, column);
-  DCHECK_LT(column, columns());
+  DCHECK_LE(column, row);
+  DCHECK_LT(row, rows_);
   return data_[row * (row + 1) / 2 + column];
 }
 
 template<typename Scalar>
 Scalar const& UnboundedLowerTriangularMatrix<Scalar>::operator()(
     int const row, int const column) const {
-  DCHECK_LE(0, row);
-  DCHECK_LT(row, rows_);
   DCHECK_LE(0, column);
-  DCHECK_LT(column, columns());
+  DCHECK_LE(column, row);
+  DCHECK_LT(row, rows_);
   return data_[row * (row + 1) / 2 + column];
 }
 
@@ -369,8 +367,7 @@ template<typename Scalar>
 Scalar& UnboundedUpperTriangularMatrix<Scalar>::operator()(
     int const row, int const column) {
   DCHECK_LE(0, row);
-  DCHECK_LT(row, rows());
-  DCHECK_LE(0, column);
+  DCHECK_LE(row, column);
   DCHECK_LT(column, columns_);
   return data_[column * (column + 1) / 2 + row];
 }
@@ -379,8 +376,7 @@ template<typename Scalar>
 Scalar const& UnboundedUpperTriangularMatrix<Scalar>::operator()(
     int const row, int const column) const {
   DCHECK_LE(0, row);
-  DCHECK_LT(row, rows());
-  DCHECK_LE(0, column);
+  DCHECK_LE(row, column);
   DCHECK_LT(column, columns_);
   return data_[column * (column + 1) / 2 + row];
 }

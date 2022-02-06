@@ -173,20 +173,18 @@ FixedStrictlyLowerTriangularMatrix(std::array<Scalar, size()> const& data)
 template<typename Scalar, int rows_>
 constexpr Scalar& FixedStrictlyLowerTriangularMatrix<Scalar, rows_>::
 operator()(int const row, int const column) {
-  CONSTEXPR_DCHECK(0 <= row);
+  CONSTEXPR_DCHECK(0 < column);
+  CONSTEXPR_DCHECK(column < row);
   CONSTEXPR_DCHECK(row < rows());
-  CONSTEXPR_DCHECK(0 <= column);
-  CONSTEXPR_DCHECK(column < columns());
   return data_[row * (row - 1) / 2 + column];
 }
 
 template<typename Scalar, int rows_>
 constexpr Scalar const& FixedStrictlyLowerTriangularMatrix<Scalar, rows_>::
 operator()(int const row, int const column) const {
-  CONSTEXPR_DCHECK(0 <= row);
+  CONSTEXPR_DCHECK(0 < column);
+  CONSTEXPR_DCHECK(column < row);
   CONSTEXPR_DCHECK(row < rows());
-  CONSTEXPR_DCHECK(0 <= column);
-  CONSTEXPR_DCHECK(column < columns());
   return data_[row * (row - 1) / 2 + column];
 }
 
@@ -226,20 +224,18 @@ FixedLowerTriangularMatrix(std::array<Scalar, size()> const& data)
 template<typename Scalar, int rows_>
 constexpr Scalar& FixedLowerTriangularMatrix<Scalar, rows_>::
 operator()(int const row, int const column) {
-  CONSTEXPR_DCHECK(0 <= row);
-  CONSTEXPR_DCHECK(row < rows());
   CONSTEXPR_DCHECK(0 <= column);
-  CONSTEXPR_DCHECK(column < columns());
+  CONSTEXPR_DCHECK(column <= row);
+  CONSTEXPR_DCHECK(row < rows());
   return data_[row * (row + 1) / 2 + column];
 }
 
 template<typename Scalar, int rows_>
 constexpr Scalar const& FixedLowerTriangularMatrix<Scalar, rows_>::
 operator()(int const row, int const column) const {
-  CONSTEXPR_DCHECK(0 <= row);
-  CONSTEXPR_DCHECK(row < rows());
   CONSTEXPR_DCHECK(0 <= column);
-  CONSTEXPR_DCHECK(column < columns());
+  CONSTEXPR_DCHECK(column <= row);
+  CONSTEXPR_DCHECK(row < rows());
   return data_[row * (row + 1) / 2 + column];
 }
 
@@ -273,8 +269,7 @@ template<typename Scalar, int columns_>
 constexpr Scalar& FixedUpperTriangularMatrix<Scalar, columns_>::
 operator()(int const row, int const column) {
   CONSTEXPR_DCHECK(0 <= row);
-  CONSTEXPR_DCHECK(row < rows());
-  CONSTEXPR_DCHECK(0 <= column);
+  CONSTEXPR_DCHECK(row <= column);
   CONSTEXPR_DCHECK(column < columns());
   return data_[column * (column + 1) / 2 + row];
 }
@@ -283,8 +278,7 @@ template<typename Scalar, int columns_>
 constexpr Scalar const& FixedUpperTriangularMatrix<Scalar, columns_>::
 operator()(int const row, int const column) const {
   CONSTEXPR_DCHECK(0 <= row);
-  CONSTEXPR_DCHECK(row < rows());
-  CONSTEXPR_DCHECK(0 <= column);
+  CONSTEXPR_DCHECK(row <= column);
   CONSTEXPR_DCHECK(column < columns());
   return data_[column * (column + 1) / 2 + row];
 }
