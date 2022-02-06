@@ -114,6 +114,21 @@ TYPED_TEST(MatrixComputationsTest, RayleighQuotient) {
   EXPECT_THAT(actual, AlmostEquals(38.0 / 15.0, 0));
 }
 
+TYPED_TEST(MatrixComputationsTest, RayleighQuotientIteration) {
+  using Vector = typename std::tuple_element<0, TypeParam>::type;
+  using Matrix = typename std::tuple_element<3, TypeParam>::type;
+
+  Matrix const m4({ 1, 0, -2, 3,
+                   -4, 4,  1, 2,
+                    0, 8,  3, 5,
+                   -7, 1,  2, 2});
+  Vector const v4({1, -1, 2, 3});
+
+  auto const actual = RayleighQuotientIteration(m4, v4);
+  LOG(ERROR)<<actual.eigenvalue;
+  LOG(ERROR)<<actual.eigenvector;
+}
+
 TYPED_TEST(MatrixComputationsTest, Solve) {
   using Vector = typename std::tuple_element<0, TypeParam>::type;
   using Matrix = typename std::tuple_element<3, TypeParam>::type;

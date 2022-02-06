@@ -52,14 +52,12 @@ typename SubstitutionGenerator<LowerTriangularMatrix, Vector>::Result
 ForwardSubstitution(LowerTriangularMatrix const& L,
                     Vector const& b);
 
-// If A is the upper half of a symmetric positive definite matrix, returns the
-// Rayleigh quotient r(x) = ᵗx A x / ᵗx x.
-template<typename UpperTriangularMatrix, typename Vector>
-typename RayleighQuotientGenerator<UpperTriangularMatrix, Vector>::Result
-RayleighQuotient(UpperTriangularMatrix const& A, Vector const& x);
+// Returns the Rayleigh quotient r(x) = ᵗx A x / ᵗx x.
+template<typename Matrix, typename Vector>
+typename RayleighQuotientGenerator<Matrix, Vector>::Result
+RayleighQuotient(Matrix const& A, Vector const& x);
 
-// If A is the upper half of a symmetric positive definite matrix, returns the
-// eigenvector closest to x and its eigenvalue.
+// Returns the eigenvector closest to x and its eigenvalue.
 template<typename Matrix, typename Vector>
 typename RayleighQuotientIterationGenerator<Matrix, Vector>::Result
 RayleighQuotientIteration(Matrix const& A, Vector const& x);

@@ -76,20 +76,20 @@ struct SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
 };
 
 template<typename MScalar, typename VScalar>
-struct RayleighQuotientGenerator<UnboundedUpperTriangularMatrix<MScalar>,
+struct RayleighQuotientGenerator<UnboundedMatrix<MScalar>,
                                  UnboundedVector<VScalar>> {
   using Result = MScalar;
 };
 
 template<typename MScalar, typename VScalar, int dimension>
-struct RayleighQuotientGenerator<FixedUpperTriangularMatrix<MScalar, dimension>,
+struct RayleighQuotientGenerator<FixedMatrix<MScalar, dimension, dimension>,
                                  FixedVector<VScalar, dimension>> {
   using Result = MScalar;
 };
 
 template<typename MScalar, typename VScalar>
 struct RayleighQuotientIterationGenerator<
-    UnboundedUpperTriangularMatrix<MScalar>,
+    UnboundedMatrix<MScalar>,
     UnboundedVector<VScalar>> {
   struct Result {
     UnboundedVector<VScalar> eigenvector;
@@ -100,7 +100,7 @@ struct RayleighQuotientIterationGenerator<
 
 template<typename MScalar, typename VScalar, int dimension>
 struct RayleighQuotientIterationGenerator<
-    FixedUpperTriangularMatrix<MScalar, dimension>,
+    FixedMatrix<MScalar, dimension, dimension>,
     FixedVector<VScalar, dimension>> {
   struct Result {
     FixedVector<VScalar, dimension> eigenvector;
@@ -169,15 +169,15 @@ Uninitialized(TriangularMatrix<LScalar> const& m) -> Result {
 
 template<typename MScalar, typename VScalar>
 auto RayleighQuotientIterationGenerator<
-    UnboundedUpperTriangularMatrix<MScalar>,
+    UnboundedMatrix<MScalar>,
     UnboundedVector<VScalar>>::Uninitialized(UnboundedVector<VScalar> const& v)
     -> Result {
-  return {UnboundedVector<VScalar>(uninitialized), MScalar()};
+  return {UnboundedVector<VScalar>(v.size(), uninitialized), MScalar()};
 }
 
 template<typename MScalar, typename VScalar, int dimension>
 auto RayleighQuotientIterationGenerator<
-    FixedUpperTriangularMatrix<MScalar, dimension>,
+    FixedMatrix<MScalar, dimension, dimension>,
     FixedVector<VScalar, dimension>>::
 Uninitialized(FixedVector<VScalar, dimension> const& v) -> Result {
   return {FixedVector<VScalar, dimension>(uninitialized), MScalar()};
@@ -312,32 +312,41 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
   return x;
 }
 
-template<typename UpperTriangularMatrix, typename Vector>
-typename RayleighQuotientGenerator<UpperTriangularMatrix, Vector>::Result
-RayleighQuotient(UpperTriangularMatrix const& A, Vector const& x) {
+template<typename Matrix, typename Vector>
+typename RayleighQuotientGenerator<Matrix, Vector>::Result
+RayleighQuotient(Matrix const& A, Vector const& x) {
   // [GV13], section 8.2.3.
   return x.Transpose() * (A * x) / (x.Transpose() * x);
 }
 
-template<typename UpperTriangularMatrix, typename Vector>
-typename RayleighQuotientIterationGenerator<UpperTriangularMatrix,
-                                            Vector>::Result
-RayleighQuotientIteration(UpperTriangularMatrix const& A, Vector const& x) {
-  using G = RayleighQuotientIterationGenerator<UpperTriangularMatrix, Vector>;
-  auto result = G::Unitialized(x);
+template<typename Matrix, typename Vector>
+typename RayleighQuotientIterationGenerator<Matrix, Vector>::Result
+RayleighQuotientIteration(Matrix const& A, Vector const& x) {
+  using G = RayleighQuotientIterationGenerator<Matrix, Vector>;
+  auto result = G::Uninitialized(x);
   auto& xₖ = result.eigenvector;
   auto& μₖ = result.eigenvalue;
 
   //TODO(phl): Stop?
   xₖ = x;
-  for (;;) {
+  for (int i = 0; i < 10; ++i) {
     μₖ = RayleighQuotient(A, xₖ);
-    auto const A_minus_μₖ_I = A;
-    for (int i = 0; i < A.size(); ++i) {
-      A[i][i] -= μₖ;
+  LOG(ERROR)<<i;
+  LOG(ERROR)<<quantities::DebugString(μₖ);
+  LOG(ERROR)<<xₖ;
+    auto A_minus_μₖ_I = A;
+    for (int i = 0; i < A.rows(); ++i) {
+      A_minus_μₖ_I(i, i) -= μₖ;
     }
     auto const zₖ₊₁ = Solve(A_minus_μₖ_I, xₖ);
-    xₖ = zₖ₊₁ / zₖ₊₁.Norm();
+    //TODO(phl): Normalize?
+    double norm2 = 0.0;
+    for (int j = 0; j < zₖ₊₁.size(); ++j) {
+      norm2 += zₖ₊₁[j] * zₖ₊₁[j];
+    }
+    for (int j = 0; j < xₖ.size(); ++j) {
+      xₖ[j] = zₖ₊₁[j] / Sqrt(norm2);
+    }
   }
   return result;
 }
