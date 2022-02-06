@@ -269,7 +269,7 @@ constexpr std::array<GeopotentialTruncation, 4> geopotential_truncations = {
      }},
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DISABLED_TruncatedSelenopotentials,
     LunarOrbitTest,
     ::testing::ValuesIn(geopotential_truncations));

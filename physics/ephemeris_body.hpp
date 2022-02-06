@@ -1074,6 +1074,7 @@ Ephemeris<Frame>::AppendMassiveBodiesStateToTrajectories(
     typename NewtonianMotionEquation::SystemState const& state,
     std::vector<not_null<ContinuousTrajectoryPtr>> const& trajectories) {
   std::vector<absl::Status> statuses;
+  statuses.reserve(trajectories.size());
   Instant const time = state.time.value;
   int index = 0;
   for (auto& trajectory : trajectories) {

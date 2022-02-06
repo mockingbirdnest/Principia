@@ -706,7 +706,7 @@ TEST_P(SolarSystemDynamicsConvergenceTest, DISABLED_Convergence) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AllSolarSystemDynamicsConvergenceTests,
     SolarSystemDynamicsConvergenceTest,
     ::testing::Values(

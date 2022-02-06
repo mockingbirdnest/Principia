@@ -186,7 +186,7 @@ class SymmetricLinearMultistepIntegratorTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(SymmetricLinearMultistepIntegratorTests,
+INSTANTIATE_TEST_SUITE_P(SymmetricLinearMultistepIntegratorTests,
                         SymmetricLinearMultistepIntegratorTest,
                         ValuesIn(Instances()));
 

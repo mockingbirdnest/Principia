@@ -151,7 +151,6 @@ void SolveHarmonicOscillatorAndComputeError3D(
   Velocity<World> const v_initial;
   Instant const t_initial;
   Instant const t_final = t_initial + 1000 * Second;
-  Time const step = 3.0e-4 * Second;
   Length const length_tolerance = 1e-6 * Metre;
   Speed const speed_tolerance = 1e-6 * Metre / Second;
 
@@ -203,7 +202,7 @@ void BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D(
     benchmark::State& state) {
   Length q_error;
   Speed v_error;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     SolveHarmonicOscillatorAndComputeError1D(
         state,
         q_error,
@@ -220,7 +219,7 @@ void BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D(
     benchmark::State& state) {
   Length q_error;
   Speed v_error;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     SolveHarmonicOscillatorAndComputeError3D(
         state,
         q_error,
@@ -236,11 +235,13 @@ void BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D(
 
 BENCHMARK_TEMPLATE2(
     BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    methods::DormandالمكاوىPrince1986RKN434FM, Length);
+    methods::DormandالمكاوىPrince1986RKN434FM, Length)
+    ->Unit(benchmark::kMillisecond);
 
 BENCHMARK_TEMPLATE2(
     BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    methods::DormandالمكاوىPrince1986RKN434FM, Position<World>);
+    methods::DormandالمكاوىPrince1986RKN434FM, Position<World>)
+    ->Unit(benchmark::kMillisecond);
 
 }  // namespace integrators
 }  // namespace principia

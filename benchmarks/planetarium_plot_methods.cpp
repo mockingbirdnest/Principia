@@ -215,7 +215,7 @@ void RunBenchmark(benchmark::State& state,
   int iterations = 0;
   // This is the time of a lunar eclipse in January 2000.
   constexpr Instant now = "2000-01-21T04:41:30,5"_TT;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     lines = planetarium.PlotMethod2(satellites.goes_8_trajectory(),
                                     satellites.goes_8_trajectory().begin(),
                                     satellites.goes_8_trajectory().end(),
@@ -262,10 +262,14 @@ void BM_PlanetariumPlotMethod2FarEquatorialPerspective(
   RunBenchmark(state, EquatorialPerspective(far));
 }
 
-BENCHMARK(BM_PlanetariumPlotMethod2NearPolarPerspective);
-BENCHMARK(BM_PlanetariumPlotMethod2FarPolarPerspective);
-BENCHMARK(BM_PlanetariumPlotMethod2NearEquatorialPerspective);
-BENCHMARK(BM_PlanetariumPlotMethod2FarEquatorialPerspective);
+BENCHMARK(BM_PlanetariumPlotMethod2NearPolarPerspective)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK(BM_PlanetariumPlotMethod2FarPolarPerspective)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK(BM_PlanetariumPlotMethod2NearEquatorialPerspective)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK(BM_PlanetariumPlotMethod2FarEquatorialPerspective)
+    ->Unit(benchmark::kMillisecond);
 
 }  // namespace geometry
 }  // namespace principia

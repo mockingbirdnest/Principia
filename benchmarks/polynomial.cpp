@@ -91,7 +91,7 @@ void EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
   auto const Δargument = (max - min) * 1e-9;
   auto result = Value{};
 
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     for (int i = 0; i < evaluations_per_iteration; ++i) {
       result += p(argument);
       argument += Δargument;
@@ -107,7 +107,7 @@ void EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
 
 template<template<typename, typename, int> class Evaluator>
 void BM_EvaluatePolynomialInMonomialBasisDouble(benchmark::State& state) {
-  int const degree = state.range_x();
+  int const degree = state.range(0);
   switch (degree) {
     case 4:
       EvaluatePolynomialInMonomialBasis<double, Time, 4, Evaluator>(state);
@@ -129,7 +129,7 @@ void BM_EvaluatePolynomialInMonomialBasisDouble(benchmark::State& state) {
 
 template<template<typename, typename, int> class Evaluator>
 void BM_EvaluatePolynomialInMonomialBasisQuantity(benchmark::State& state) {
-  int const degree = state.range_x();
+  int const degree = state.range(0);
   switch (degree) {
     case 4:
       EvaluatePolynomialInMonomialBasis<Length, Time, 4, Evaluator>(state);
@@ -151,7 +151,7 @@ void BM_EvaluatePolynomialInMonomialBasisQuantity(benchmark::State& state) {
 
 template<template<typename, typename, int> class Evaluator>
 void BM_EvaluatePolynomialInMonomialBasisVectorDouble(benchmark::State& state) {
-  int const degree = state.range_x();
+  int const degree = state.range(0);
   switch (degree) {
     case 4:
       EvaluatePolynomialInMonomialBasis<Multivector<double, ICRS, 1>,
@@ -185,7 +185,7 @@ void BM_EvaluatePolynomialInMonomialBasisVectorDouble(benchmark::State& state) {
 
 template<template<typename, typename, int> class Evaluator>
 void BM_EvaluatePolynomialInMonomialBasisDisplacement(benchmark::State& state) {
-  int const degree = state.range_x();
+  int const degree = state.range(0);
   switch (degree) {
     case 4:
       EvaluatePolynomialInMonomialBasis<Displacement<ICRS>,
@@ -219,28 +219,28 @@ void BM_EvaluatePolynomialInMonomialBasisDisplacement(benchmark::State& state) {
 
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDouble,
                     EstrinEvaluator)
-    ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
+    ->Arg(4)->Arg(8)->Arg(12)->Arg(16)->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisQuantity,
                     EstrinEvaluator)
-    ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
+    ->Arg(4)->Arg(8)->Arg(12)->Arg(16)->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisVectorDouble,
                     EstrinEvaluator)
-    ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
+    ->Arg(4)->Arg(8)->Arg(12)->Arg(16)->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDisplacement,
                     EstrinEvaluator)
-    ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
+    ->Arg(4)->Arg(8)->Arg(12)->Arg(16)->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDouble,
                     HornerEvaluator)
-    ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
+    ->Arg(4)->Arg(8)->Arg(12)->Arg(16)->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisQuantity,
                     HornerEvaluator)
-    ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
+    ->Arg(4)->Arg(8)->Arg(12)->Arg(16)->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisVectorDouble,
                     HornerEvaluator)
-    ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
+    ->Arg(4)->Arg(8)->Arg(12)->Arg(16)->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDisplacement,
                     HornerEvaluator)
-    ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
+    ->Arg(4)->Arg(8)->Arg(12)->Arg(16)->Unit(benchmark::kMicrosecond);
 
 }  // namespace numerics
 }  // namespace principia

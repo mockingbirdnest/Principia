@@ -35,7 +35,7 @@ template<typename Result,
                            Instant const& t_max,
                            double& error_estimate)>
 void BM_NewhallApproximationDouble(benchmark::State& state) {
-  int const degree = state.range_x();
+  int const degree = state.range(0);
   std::mt19937_64 random(42);
   std::vector<double> p;
   std::vector<Variation<double>> v;
@@ -44,7 +44,7 @@ void BM_NewhallApproximationDouble(benchmark::State& state) {
   Instant const t_max = t_min + static_cast<double>(random()) * Second;
 
   double error_estimate;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     state.PauseTiming();
     p.clear();
     v.clear();
@@ -65,7 +65,7 @@ template<typename Result,
                            Instant const& t_max,
                            Displacement<ICRS>& error_estimate)>
 void BM_NewhallApproximationDisplacement(benchmark::State& state) {
-  int const degree = state.range_x();
+  int const degree = state.range(0);
   std::mt19937_64 random(42);
   std::vector<Displacement<ICRS>> p;
   std::vector<Variation<Displacement<ICRS>>> v;
@@ -74,7 +74,7 @@ void BM_NewhallApproximationDisplacement(benchmark::State& state) {
   Instant const t_max = t_min + static_cast<double>(random()) * Second;
 
   Displacement<ICRS> error_estimate;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     state.PauseTiming();
     p.clear();
     v.clear();
