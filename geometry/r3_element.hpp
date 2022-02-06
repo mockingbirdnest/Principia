@@ -10,6 +10,7 @@
 #include "base/tags.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/traits.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {

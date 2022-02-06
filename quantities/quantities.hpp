@@ -13,8 +13,6 @@
 #include "base/tags.hpp"
 #include "quantities/dimensions.hpp"
 #include "quantities/generators.hpp"
-#include "quantities/traits.hpp"
-#include "quantities/wide.hpp"
 #include "serialization/quantities.pb.h"
 
 namespace principia {
@@ -106,8 +104,8 @@ class Quantity final {
   template<typename Q>
   friend constexpr Q SIUnit();
 
-  template<typename U>
-  friend __m128d internal_wide::ToM128D(Quantity<U> x);
+  template<typename D>
+  friend __m128d ToM128D(Quantity<D> x);
 };
 
 template<typename LDimensions, typename RDimensions>
@@ -127,6 +125,11 @@ operator/(double, Quantity<RDimensions> const&);
 // this namespace.  Defined here to break circular dependencies.
 template<typename Q>
 constexpr Q SIUnit() { return Q(1); };
+
+inline __m128d ToM128D(double x);
+
+template<typename Dimensions>
+__m128d ToM128D(Quantity<Dimensions> x);
 
 // A positive infinity of |Q|.
 template<typename Q>
@@ -169,13 +172,9 @@ using internal_quantities::NaN;
 using internal_quantities::Quantity;
 using internal_quantities::Temperature;
 using internal_quantities::Time;
+using internal_quantities::ToM128D;
 
 }  // namespace quantities
 }  // namespace principia
-
-// Include before quantities_body.hpp all the bodies that want to see the
-// definition of class Quantity.
-#include "quantities/generators_body.hpp"
-#include "quantities/wide_body.hpp"
 
 #include "quantities/quantities_body.hpp"

@@ -1,6 +1,4 @@
 
-#include "quantities/wide.hpp"
-
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"

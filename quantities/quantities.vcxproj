@@ -31,8 +31,6 @@
     <ClInclude Include="tuples.hpp" />
     <ClInclude Include="tuples_body.hpp" />
     <ClInclude Include="uk.hpp" />
-    <ClInclude Include="wide.hpp" />
-    <ClInclude Include="wide_body.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\base\cpuid.cpp" />

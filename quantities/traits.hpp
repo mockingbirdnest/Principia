@@ -4,19 +4,13 @@
 #include <type_traits>
 
 #include "base/not_constructible.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace quantities {
-
-namespace internal_quantities {
-template<typename D>
-class Quantity;
-}  // namespace internal_quantities
-
 namespace internal_traits {
 
 using base::not_constructible;
-using internal_quantities::Quantity;
 
 // A type trait for testing if a type is a quantity.
 template<typename T>
