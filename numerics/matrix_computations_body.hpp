@@ -327,27 +327,21 @@ RayleighQuotientIteration(Matrix const& A, Vector const& x) {
   auto& xₖ = result.eigenvector;
   auto& μₖ = result.eigenvalue;
 
-  //TODO(phl): Stop?
-  xₖ = x;
+  xₖ = x / x.Norm();
   for (int i = 0; i < 10; ++i) {
     μₖ = RayleighQuotient(A, xₖ);
-  LOG(ERROR)<<i;
-  LOG(ERROR)<<quantities::DebugString(μₖ);
-  LOG(ERROR)<<xₖ;
     auto A_minus_μₖ_I = A;
     for (int i = 0; i < A.rows(); ++i) {
       A_minus_μₖ_I(i, i) -= μₖ;
     }
+    auto const residual = (A_minus_μₖ_I * xₖ).Norm();
+    if (residual < 2 * std::numeric_limits<double>::epsilon()) {
+      return result;
+    }
     auto const zₖ₊₁ = Solve(A_minus_μₖ_I, xₖ);
-    //TODO(phl): Normalize?
-    double norm2 = 0.0;
-    for (int j = 0; j < zₖ₊₁.size(); ++j) {
-      norm2 += zₖ₊₁[j] * zₖ₊₁[j];
-    }
-    for (int j = 0; j < xₖ.size(); ++j) {
-      xₖ[j] = zₖ₊₁[j] / Sqrt(norm2);
-    }
+    xₖ = zₖ₊₁ / zₖ₊₁.Norm();
   }
+  LOG(WARNING) << "Unconverged Rayleigh quotient iteration: " << A;
   return result;
 }
 

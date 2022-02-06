@@ -125,8 +125,14 @@ TYPED_TEST(MatrixComputationsTest, RayleighQuotientIteration) {
   Vector const v4({1, -1, 2, 3});
 
   auto const actual = RayleighQuotientIteration(m4, v4);
-  LOG(ERROR)<<actual.eigenvalue;
-  LOG(ERROR)<<actual.eigenvector;
+  EXPECT_THAT(actual.eigenvalue,
+              AlmostEquals(1.61073818969894450774101079322, 1));
+  EXPECT_THAT(actual.eigenvector,
+              AlmostEquals(Vector({-0.169506517685592297780621340523,
+                                   0.444078911480267347768558852121,
+                                   -0.71572747951425189504245569810,
+                                   -0.51165968759399151699548201390}),
+                           1));
 }
 
 TYPED_TEST(MatrixComputationsTest, Solve) {

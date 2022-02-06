@@ -7,10 +7,15 @@
 #include <vector>
 
 #include "glog/logging.h"
+#include "quantities/elementary_functions.hpp"
 
 namespace principia {
 namespace numerics {
 namespace internal_fixed_arrays {
+
+using base::uninitialized;
+using quantities::Sqrt;
+using quantities::Square;
 
 // A helper class to compute the dot product of two arrays.  |ScalarLeft| and
 // |ScalarRight| are the types of the elements of the arrays.  |Left| and
@@ -71,6 +76,15 @@ template<typename Scalar, int size_>
 TransposedView<FixedVector<Scalar, size_>>
 FixedVector<Scalar, size_>::Transpose() const {
   return {.transpose = *this};
+}
+
+template<typename Scalar, int size_>
+Scalar FixedVector<Scalar, size_>::Norm() const {
+  Square<Scalar> norm²{};
+  for (auto const c : data_) {
+    norm² += c * c;
+  }
+  return Sqrt(norm²);
 }
 
 template<typename Scalar, int size_>
@@ -320,6 +334,17 @@ auto FixedUpperTriangularMatrix<Scalar, columns_>::Transpose(
 }
 
 template<typename ScalarLeft, typename ScalarRight, int size>
+constexpr FixedVector<Quotient<ScalarLeft, ScalarRight>, size> operator/(
+    FixedVector<ScalarLeft, size> const& left,
+    ScalarRight const& right) {
+  FixedVector<Quotient<ScalarLeft, ScalarRight>, size> result(uninitialized);
+  for (int i = 0; i < left.size(); ++i) {
+    result[i] = left[i] / right;
+  }
+  return result;
+}
+
+template<typename ScalarLeft, typename ScalarRight, int size>
 constexpr FixedVector<Difference<ScalarLeft, ScalarRight>, size> operator-(
     FixedVector<ScalarLeft, size> const& left,
     FixedVector<ScalarRight, size> const& right) {
@@ -365,7 +390,7 @@ std::ostream& operator<<(std::ostream& out,
                          FixedVector<Scalar, size> const& vector) {
   std::stringstream s;
   for (int i = 0; i < size; ++i) {
-    s << (i == 0 ? "{" : "") << vector.data_[i]
+    s << (i == 0 ? "{" : "") << vector[i]
       << (i == size - 1 ? "}" : ", ");
   }
   out << s.str();
