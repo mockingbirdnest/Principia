@@ -170,8 +170,8 @@ Uninitialized(TriangularMatrix<LScalar> const& m) -> Result {
 template<typename MScalar, typename VScalar>
 auto RayleighQuotientIterationGenerator<
     UnboundedMatrix<MScalar>,
-    UnboundedVector<VScalar>>::Uninitialized(UnboundedVector<VScalar> const& v)
-    -> Result {
+    UnboundedVector<VScalar>>::
+Uninitialized(UnboundedVector<VScalar> const& v) -> Result {
   return {UnboundedVector<VScalar>(v.size(), uninitialized), MScalar()};
 }
 
@@ -327,6 +327,7 @@ RayleighQuotientIteration(Matrix const& A, Vector const& x) {
   auto& xₖ = result.eigenvector;
   auto& μₖ = result.eigenvalue;
 
+  // [GV13], section 8.2.3.
   xₖ = x / x.Norm();
   for (int i = 0; i < 10; ++i) {
     μₖ = RayleighQuotient(A, xₖ);
