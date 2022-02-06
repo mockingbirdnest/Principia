@@ -61,10 +61,6 @@ namespace si = quantities::si;
 
 namespace physics {
 
-namespace {
-const Length tolerance = 0.01 * Metre;
-}  // namespace
-
 using Rendering = Frame<enum class RenderingTag>;
 
 template<typename F, template<typename> class T>

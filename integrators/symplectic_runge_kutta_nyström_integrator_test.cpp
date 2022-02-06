@@ -535,7 +535,7 @@ class SymplecticRungeKuttaNyströmIntegratorTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(SymplecticRungeKuttaNyströmIntegratorTests,
+INSTANTIATE_TEST_SUITE_P(SymplecticRungeKuttaNyströmIntegratorTests,
                         SymplecticRungeKuttaNyströmIntegratorTest,
                         ValuesIn(Instances()));
 

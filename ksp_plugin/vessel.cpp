@@ -80,14 +80,15 @@ Vessel::Vessel(
             return Reanimate(desired_t_min);
           },
           20ms),  // 50 Hz.
+      backstory_(trajectory_.segments().begin()),
+      psychohistory_(trajectory_.segments().end()),
+      prediction_(trajectory_.segments().end()),
       prognosticator_(
           [this](PrognosticatorParameters const& parameters) {
             return FlowPrognostication(parameters);
           },
-          20ms),  // 50 Hz.
-      backstory_(trajectory_.segments().begin()),
-      psychohistory_(trajectory_.segments().end()),
-      prediction_(trajectory_.segments().end()) {}
+          20ms)  // 50 Hz.
+{}
 
 Vessel::~Vessel() {
   LOG(INFO) << "Destroying vessel " << ShortDebugString();
@@ -794,10 +795,10 @@ Vessel::Vessel()
       prediction_adaptive_step_parameters_(DefaultPredictionParameters()),
       parent_(testing_utilities::make_not_null<Celestial const*>()),
       ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
-      reanimator_(/*action=*/nullptr, 0ms),
       checkpointer_(make_not_null_unique<Checkpointer<serialization::Vessel>>(
           /*reader=*/nullptr,
           /*writer=*/nullptr)),
+      reanimator_(/*action=*/nullptr, 0ms),
       backstory_(trajectory_.segments().begin()),
       psychohistory_(trajectory_.segments().end()),
       prediction_(trajectory_.segments().end()),

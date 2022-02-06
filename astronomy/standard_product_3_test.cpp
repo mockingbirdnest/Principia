@@ -293,7 +293,7 @@ class StandardProduct3DynamicsTest
   BodySurfaceDynamicFrame<ICRS, ITRS> itrs_;
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AllVersionsAndDialects,
     StandardProduct3DynamicsTest,
     ValuesIn(std::vector<StandardProduct3Args>{
