@@ -419,7 +419,7 @@ void EphemerisL4ProbeBenchmark(Time const integration_duration,
 
   CHECK_OK(ephemeris->Prolong(final_time));
 
-  auto make_l4_probe_trajectory = [&ephemeris, &at_спутник_1_launch]() {
+  auto make_l4_probe_trajectory = [&at_спутник_1_launch]() {
     // A probe near the L4 point of the Sun-Earth system.
     Identity<ICRS, Barycentric> to_barycentric;
     Identity<Barycentric, ICRS> from_barycentric;
