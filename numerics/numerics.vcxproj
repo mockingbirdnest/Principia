@@ -16,6 +16,7 @@
   </ImportGroup>
   <ItemGroup>
     <ClInclude Include="apodization_body.hpp" />
+    <ClInclude Include="davenport_q_method_body.hpp" />
     <ClInclude Include="matrix_computations.hpp" />
     <ClInclude Include="matrix_computations_body.hpp" />
     <ClInclude Include="combinatorics.hpp" />
@@ -86,6 +87,7 @@
     <ClCompile Include="cbrt.cpp" />
     <ClCompile Include="cbrt_test.cpp" />
     <ClCompile Include="combinatorics_test.cpp" />
+    <ClCompile Include="davenport_q_method.hpp" />
     <ClCompile Include="double_precision_test.cpp" />
     <ClCompile Include="elliptic_integrals.cpp" />
     <ClCompile Include="elliptic_integrals_test.cpp" />
