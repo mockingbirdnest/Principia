@@ -12,9 +12,9 @@ namespace internal_davenport_q_method {
 using geometry::Quaternion;
 using geometry::Vector;
 
-template<typename Weight, typename Frame>
-Quaternion DavenportQMethod(std::vector<Vector<double, Frame>> const& a,
-                            std::vector<Vector<double, Frame>> const& b,
+template<typename FromFrame, typename ToFrame, typename Weight>
+Quaternion DavenportQMethod(std::vector<Vector<double, FromFrame>> const& a,
+                            std::vector<Vector<double, ToFrame>> const& b,
                             std::vector<Weight> const& weights);
 
 }  // namespace internal_davenport_q_method
