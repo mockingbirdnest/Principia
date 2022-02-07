@@ -182,7 +182,7 @@ R3Element<Quotient<RScalar, Scalar>> R3x3Matrix<Scalar>::Solve(
     int r = -1;
     Scalar max{};
     for (int i = k; i < 3; ++i) {
-      if (Abs(A(i, k)) > max) {
+      if (Abs(A(i, k)) >= max) {
         r = i;
         max = Abs(A(i, k));
       }

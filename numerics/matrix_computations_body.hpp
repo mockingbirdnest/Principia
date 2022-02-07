@@ -541,7 +541,7 @@ Solve(Matrix A, Vector b) {
     int r = -1;
     Scalar max{};
     for (int i = k; i < A.rows(); ++i) {
-      if (Abs(A(i, k)) > max) {
+      if (Abs(A(i, k)) >= max) {
         r = i;
         max = Abs(A(i, k));
       }
