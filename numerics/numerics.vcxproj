@@ -88,6 +88,7 @@
     <ClCompile Include="cbrt_test.cpp" />
     <ClCompile Include="combinatorics_test.cpp" />
     <ClCompile Include="davenport_q_method.hpp" />
+    <ClCompile Include="davenport_q_method_test.cpp" />
     <ClCompile Include="double_precision_test.cpp" />
     <ClCompile Include="elliptic_integrals.cpp" />
     <ClCompile Include="elliptic_integrals_test.cpp" />

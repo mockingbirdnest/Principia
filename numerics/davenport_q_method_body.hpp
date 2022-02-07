@@ -32,9 +32,9 @@ Quaternion DavenportQMethod(std::vector<Vector<double, Frame>> const& a,
     B += w_b_ᵗa;
   }
 
-  R3Element<Weight> const z{B(2, 3) - B(3, 2),
-                            B(3, 1) - B(1, 3),
-                            B(1, 2) - B(2, 1)};
+  R3Element<Weight> const z{B(1, 2) - B(2, 1),
+                            B(2, 0) - B(0, 2),
+                            B(0, 1) - B(1, 0)};
   auto const S = B + B.Transpose();
   auto const μ = B.Trace();
 
@@ -57,7 +57,7 @@ Quaternion DavenportQMethod(std::vector<Vector<double, Frame>> const& a,
   // Find its eigenvector closest to the identity.
   FixedVector<double, 4> const q₀({0, 0, 0, 1});
   auto const eigensystem = RayleighQuotientIteration(K, q₀);
-  auto const& q = eigensystem.eigenvalue;
+  auto const& q = eigensystem.eigenvector;
 
   return Quaternion(q[3], R3Element<double>(q[0], q[1], q[2]));
 }
