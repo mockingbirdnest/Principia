@@ -65,5 +65,3 @@ Quaternion DavenportQMethod(std::vector<Vector<double, FromFrame>> const& a,
 }  // namespace internal_davenport_q_method
 }  // namespace numerics
 }  // namespace principia
-
-#include "numerics/davenport_q_method_body.hpp"
