@@ -4,6 +4,7 @@
 #include "numerics/matrix_computations.hpp"
 
 #include <algorithm>
+#include <limits>
 
 #include "base/tags.hpp"
 #include "numerics/fixed_arrays.hpp"
@@ -329,7 +330,7 @@ RayleighQuotientIteration(Matrix const& A, Vector const& x) {
 
   // [GV13], section 8.2.3.
   xₖ = x / x.Norm();
-  for (int i = 0; i < 10; ++i) {
+  for (int iteration = 0; iteration < 10; ++iteration) {
     μₖ = RayleighQuotient(A, xₖ);
     auto A_minus_μₖ_I = A;
     for (int i = 0; i < A.rows(); ++i) {
