@@ -10,6 +10,7 @@
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace numerics {
@@ -19,6 +20,7 @@ using base::uninitialized;
 using quantities::Abs;
 using quantities::Pow;
 using quantities::Sqrt;
+namespace si = quantities::si;
 
 // This is J(p, q, θ) in [GV13] section 8.5.1.  This matrix is also called a
 // Givens rotation.  As mentioned in [GV13] section 5.1.9, "It is critical that
@@ -508,7 +510,10 @@ RayleighQuotientIteration(Matrix const& A, Vector const& x) {
       A_minus_μₖ_I(i, i) -= μₖ;
     }
     auto const residual = (A_minus_μₖ_I * xₖ).Norm();
-    if (residual < 2 * std::numeric_limits<double>::epsilon()) {
+    // TODO(phl): This test is cheezy.  It should be based on the norm of the
+    // matrix.
+    if (residual < 2 * std::numeric_limits<double>::epsilon() *
+                       si::Unit<decltype(residual)>) {
       return result;
     }
     auto const zₖ₊₁ = Solve(A_minus_μₖ_I, xₖ);
