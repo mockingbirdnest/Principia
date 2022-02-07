@@ -16,6 +16,7 @@ namespace internal_unbounded_arrays {
 
 using base::uninitialized;
 using quantities::Sqrt;
+using quantities::Square;
 
 template<class T>
 template<class U, class... Args>
@@ -61,6 +62,15 @@ void UnboundedVector<Scalar>::Extend(std::initializer_list<Scalar> data) {
 template<typename Scalar>
 void UnboundedVector<Scalar>::EraseToEnd(int const begin_index) {
   data_.erase(data_.begin() + begin_index, data_.end());
+}
+
+template<typename Scalar>
+Scalar UnboundedVector<Scalar>::Norm() const {
+  Square<Scalar> norm²{};
+  for (auto const c : data_) {
+    norm² += c * c;
+  }
+  return Sqrt(norm²);
 }
 
 template<typename Scalar>
@@ -441,6 +451,18 @@ UnboundedUpperTriangularMatrix<Scalar>::Transpose(
 }
 
 template<typename ScalarLeft, typename ScalarRight>
+UnboundedVector<Quotient<ScalarLeft, ScalarRight>> operator/(
+    UnboundedVector<ScalarLeft> const& left,
+    ScalarRight const& right) {
+  UnboundedVector<Quotient<ScalarLeft, ScalarRight>> result(left.size(),
+                                                            uninitialized);
+  for (int i = 0; i < left.size(); ++i) {
+    result[i] = left[i] / right;
+  }
+  return result;
+}
+
+template<typename ScalarLeft, typename ScalarRight>
 Product<ScalarLeft, ScalarRight> operator*(
     TransposedView<UnboundedVector<ScalarLeft>> const& left,
     UnboundedVector<ScalarRight> const& right) {
@@ -459,7 +481,7 @@ UnboundedVector<Product<ScalarLeft, ScalarRight>> operator*(
   CHECK_EQ(left.columns(), right.size());
   UnboundedVector<Product<ScalarLeft, ScalarRight>> result(left.rows());
   for (int i = 0; i < left.rows(); ++i) {
-    auto& result_i = result.data_[i];
+    auto& result_i = result[i];
     for (int j = 0; j < left.columns(); ++j) {
       result_i += left(i, j) * right[j];
     }
@@ -471,9 +493,9 @@ template<typename Scalar>
 std::ostream& operator<<(std::ostream& out,
                          UnboundedVector<Scalar> const& vector) {
   std::stringstream s;
-  for (int i = 0; i < vector.data_.size(); ++i) {
-    s << (i == 0 ? "{" : "") << vector.data_[i]
-      << (i == vector.data_.size() - 1 ? "}" : ", ");
+  for (int i = 0; i < vector.size(); ++i) {
+    s << (i == 0 ? "{" : "") << vector[i]
+      << (i == vector.size() - 1 ? "}" : ", ");
   }
   out << s.str();
   return out;

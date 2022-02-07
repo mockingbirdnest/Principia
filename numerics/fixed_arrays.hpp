@@ -15,6 +15,7 @@ namespace internal_fixed_arrays {
 using base::uninitialized_t;
 using quantities::Difference;
 using quantities::Product;
+using quantities::Quotient;
 
 template<typename Scalar, int rows, int columns>
 class FixedMatrix;
@@ -31,6 +32,8 @@ class FixedVector final {
   constexpr FixedVector(std::array<Scalar, size_>&& data);
 
   TransposedView<FixedVector> Transpose() const;
+
+  Scalar Norm() const;
 
   static constexpr int size() { return size_; }
 
@@ -57,9 +60,6 @@ class FixedVector final {
   friend constexpr FixedVector<Product<L, R>, r> operator*(
       FixedMatrix<L, r, c> const& left,
       FixedVector<R, c> const& right);
-  template<typename S, int s>
-  friend std::ostream& operator<<(std::ostream& out,
-                                  FixedVector<S, s> const& vector);
 };
 
 template<typename Scalar, int rows_, int columns_>
@@ -184,6 +184,11 @@ class FixedUpperTriangularMatrix final {
 
   std::array<Scalar, size()> data_;
 };
+
+template<typename ScalarLeft, typename ScalarRight, int size>
+constexpr FixedVector<Quotient<ScalarLeft, ScalarRight>, size> operator/(
+    FixedVector<ScalarLeft, size> const& left,
+    ScalarRight const& right);
 
 template<typename ScalarLeft, typename ScalarRight, int size>
 constexpr FixedVector<Difference<ScalarLeft, ScalarRight>, size> operator-(

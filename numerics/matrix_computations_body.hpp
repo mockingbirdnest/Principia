@@ -4,6 +4,7 @@
 #include "numerics/matrix_computations.hpp"
 
 #include <algorithm>
+#include <limits>
 
 #include "base/tags.hpp"
 #include "numerics/fixed_arrays.hpp"
@@ -88,6 +89,28 @@ struct RayleighQuotientGenerator<FixedMatrix<MScalar, dimension, dimension>,
 };
 
 template<typename MScalar, typename VScalar>
+struct RayleighQuotientIterationGenerator<
+    UnboundedMatrix<MScalar>,
+    UnboundedVector<VScalar>> {
+  struct Result {
+    UnboundedVector<VScalar> eigenvector;
+    MScalar eigenvalue;
+  };
+  static Result Uninitialized(UnboundedVector<VScalar> const& v);
+};
+
+template<typename MScalar, typename VScalar, int dimension>
+struct RayleighQuotientIterationGenerator<
+    FixedMatrix<MScalar, dimension, dimension>,
+    FixedVector<VScalar, dimension>> {
+  struct Result {
+    FixedVector<VScalar, dimension> eigenvector;
+    MScalar eigenvalue;
+  };
+  static Result Uninitialized(FixedVector<VScalar, dimension> const& v);
+};
+
+template<typename MScalar, typename VScalar>
 struct SolveGenerator<UnboundedMatrix<MScalar>, UnboundedVector<VScalar>> {
   using Scalar = MScalar;
   using Result = UnboundedVector<Quotient<VScalar, MScalar>>;
@@ -143,6 +166,22 @@ auto SubstitutionGenerator<TriangularMatrix<LScalar>,
                            UnboundedVector<RScalar>>::
 Uninitialized(TriangularMatrix<LScalar> const& m) -> Result {
   return Result(m.columns(), uninitialized);
+}
+
+template<typename MScalar, typename VScalar>
+auto RayleighQuotientIterationGenerator<
+    UnboundedMatrix<MScalar>,
+    UnboundedVector<VScalar>>::
+Uninitialized(UnboundedVector<VScalar> const& v) -> Result {
+  return {UnboundedVector<VScalar>(v.size(), uninitialized), MScalar()};
+}
+
+template<typename MScalar, typename VScalar, int dimension>
+auto RayleighQuotientIterationGenerator<
+    FixedMatrix<MScalar, dimension, dimension>,
+    FixedVector<VScalar, dimension>>::
+Uninitialized(FixedVector<VScalar, dimension> const& v) -> Result {
+  return {FixedVector<VScalar, dimension>(uninitialized), MScalar()};
 }
 
 template<typename LScalar, typename RScalar, int dimension,
@@ -275,10 +314,37 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
 }
 
 template<typename Matrix, typename Vector>
-typename RayleighQuotientGenerator<Matrix, Vector>::Result RayleighQuotient(
-    Matrix const& A, Vector const& x) {
+typename RayleighQuotientGenerator<Matrix, Vector>::Result
+RayleighQuotient(Matrix const& A, Vector const& x) {
   // [GV13], section 8.2.3.
   return x.Transpose() * (A * x) / (x.Transpose() * x);
+}
+
+template<typename Matrix, typename Vector>
+typename RayleighQuotientIterationGenerator<Matrix, Vector>::Result
+RayleighQuotientIteration(Matrix const& A, Vector const& x) {
+  using G = RayleighQuotientIterationGenerator<Matrix, Vector>;
+  auto result = G::Uninitialized(x);
+  auto& xₖ = result.eigenvector;
+  auto& μₖ = result.eigenvalue;
+
+  // [GV13], section 8.2.3.
+  xₖ = x / x.Norm();
+  for (int iteration = 0; iteration < 10; ++iteration) {
+    μₖ = RayleighQuotient(A, xₖ);
+    auto A_minus_μₖ_I = A;
+    for (int i = 0; i < A.rows(); ++i) {
+      A_minus_μₖ_I(i, i) -= μₖ;
+    }
+    auto const residual = (A_minus_μₖ_I * xₖ).Norm();
+    if (residual < 2 * std::numeric_limits<double>::epsilon()) {
+      return result;
+    }
+    auto const zₖ₊₁ = Solve(A_minus_μₖ_I, xₖ);
+    xₖ = zₖ₊₁ / zₖ₊₁.Norm();
+  }
+  LOG(WARNING) << "Unconverged Rayleigh quotient iteration: " << A;
+  return result;
 }
 
 template<typename Matrix, typename Vector>

@@ -50,6 +50,8 @@ class UnboundedVector final {
 
   void EraseToEnd(int begin_index);
 
+  Scalar Norm() const;
+
   int size() const;
 
   Scalar& operator[](int index);
@@ -60,18 +62,6 @@ class UnboundedVector final {
 
  private:
   std::vector<Scalar, uninitialized_allocator<Scalar>> data_;
-
-  template<typename L, typename R>
-  friend UnboundedVector<Product<L, R>> operator*(
-      TransposedView<UnboundedMatrix<L>> const& left,
-      UnboundedVector<R> const& right);
-  template<typename L, typename R>
-  friend UnboundedVector<Product<L, R>> operator*(
-      UnboundedMatrix<L> const& left,
-      UnboundedVector<R> const& right);
-  template<typename S>
-  friend std::ostream& operator<<(std::ostream& out,
-                                  UnboundedVector<S> const& vector);
 };
 
 template<typename Scalar>
@@ -203,6 +193,11 @@ class UnboundedUpperTriangularMatrix final {
   template<typename R>
   friend class Row;
 };
+
+template<typename ScalarLeft, typename ScalarRight>
+UnboundedVector<Quotient<ScalarLeft, ScalarRight>> operator/(
+    UnboundedVector<ScalarLeft> const& left,
+    ScalarRight const& right);
 
 template<typename ScalarLeft, typename ScalarRight>
 Product<ScalarLeft, ScalarRight> operator*(

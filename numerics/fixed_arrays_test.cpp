@@ -3,8 +3,12 @@
 
 #include "gtest/gtest.h"
 
+#include "quantities/elementary_functions.hpp"
+
 namespace principia {
 namespace numerics {
+
+using quantities::Sqrt;
 
 class FixedArraysTest : public ::testing::Test {
  protected:
@@ -72,9 +76,14 @@ TEST_F(FixedArraysTest, Assignment) {
   EXPECT_EQ(l3, n3);
 }
 
-TEST_F(FixedArraysTest, Multiplication) {
+TEST_F(FixedArraysTest, Norm) {
   EXPECT_EQ(35, v4_.Transpose() * v4_);
+  EXPECT_EQ(Sqrt(35.0), v4_.Norm());
+}
+
+TEST_F(FixedArraysTest, MultiplicationDivision) {
   EXPECT_EQ(v3_, m34_ * v4_);
+  EXPECT_EQ((FixedVector<double, 4>({-1.5, -1.5, 0.5, 2.0})), v4_ / 2.0);
 }
 
 TEST_F(FixedArraysTest, VectorIndexing) {

@@ -93,9 +93,14 @@ TEST_F(UnboundedArraysTest, Assignment) {
   }
 }
 
-TEST_F(UnboundedArraysTest, Multiplication) {
+TEST_F(UnboundedArraysTest, Norm) {
   EXPECT_EQ(35, v4_.Transpose() * v4_);
+  EXPECT_EQ(Sqrt(35.0), v4_.Norm());
+}
+
+TEST_F(UnboundedArraysTest, MultiplicationDivision) {
   EXPECT_EQ(UnboundedVector<double>({14, 94, 644, 4414}), m4_ * v4_);
+  EXPECT_EQ(UnboundedVector<double>({-1.5, -1.5, 0.5, 2.0}), v4_ / 2.0);
 }
 
 TEST_F(UnboundedArraysTest, VectorIndexing) {
