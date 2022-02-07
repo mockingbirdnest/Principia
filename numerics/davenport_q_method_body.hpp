@@ -16,9 +16,9 @@ using geometry::Quaternion;
 using geometry::R3Element;
 using geometry::R3x3Matrix;
 
-template<typename Weight, typename Frame>
-Quaternion DavenportQMethod(std::vector<Vector<double, Frame>> const& a,
-                            std::vector<Vector<double, Frame>> const& b,
+template<typename FromFrame, typename ToFrame, typename Weight>
+Quaternion DavenportQMethod(std::vector<Vector<double, FromFrame>> const& a,
+                            std::vector<Vector<double, ToFrame>> const& b,
                             std::vector<Weight> const& weights) {
   std::int64_t const size = a.size();
   CHECK_EQ(size, b.size());
