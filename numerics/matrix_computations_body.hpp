@@ -549,18 +549,13 @@ Solve(Matrix A, Vector b) {
     CHECK_LE(0, r) << A << " cannot pivot";
     CHECK_LT(r, A.rows()) << A << " cannot pivot";
 
-    // Swap the rows of A.
+    // Swap the rows of A and b.
     for (int i = 0; i < A.columns(); ++i) {
       std::swap(A(k, i), A(r, i));
     }
-
-    // Swap the rows of L.
-    for (int i = 0; i < k; ++i) {
-      std::swap(L(k, i), L(r, i));
-    }
-
     std::swap(b[k], b[r]);
-    CHECK_NE(Scalar{}, A(k, k)) << A << " is singular";
+    LOG_IF(WARNING, A(k, k) == Scalar{})
+        << A << " does not have a unique LU decomposition";
 
     for (int j = k; j < A.columns(); ++j) {
       auto U_kj = A(k, j);
