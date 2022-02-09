@@ -59,6 +59,7 @@ TEST_F(DavenportQMethodTest, Rotation) {
   Quaternion const q(2, R3Element<double>({1, -3, -2}));
   auto const normalized_q = q / q.Norm();
   Rotation<World1, World2> const rotation{normalized_q};
+  LOG(ERROR)<<normalized_q;
 
   std::vector<Vector<double, World2>> vectors2;
   for (auto const& vector1 : vectors1_) {

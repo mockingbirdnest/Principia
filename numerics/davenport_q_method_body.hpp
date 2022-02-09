@@ -53,11 +53,14 @@ Quaternion DavenportQMethod(std::vector<Vector<double, FromFrame>> const& a,
     K(i, 3) = z[i];
   }
   K(3, 3) = μ;
+  LOG(ERROR)<<K;
 
   // Find its eigenvector closest to the identity.
   FixedVector<double, 4> const q₀({0, 0, 0, 1});
   auto const eigensystem = RayleighQuotientIteration(K, q₀);
   auto const& q = eigensystem.eigenvector;
+
+  LOG(ERROR)<<eigensystem.eigenvalue;
 
   return Quaternion(q[3], R3Element<double>(q[0], q[1], q[2]));
 }
