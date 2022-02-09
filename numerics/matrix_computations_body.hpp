@@ -76,16 +76,18 @@ struct SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
   static Result Uninitialized(TriangularMatrix<LScalar, dimension> const& m);
 };
 
-template<typename Scalar>
-struct ClassicalJacobiGenerator<UnboundedMatrix<Scalar>> {
+template<typename Scalar_>
+struct ClassicalJacobiGenerator<UnboundedMatrix<Scalar_>> {
+  using Scalar = Scalar_;
   struct Result {
     UnboundedVector<double> eigenvector;
     Scalar eigenvalue;
   };
 };
 
-template<typename Scalar, int dimension>
-struct ClassicalJacobiGenerator<FixedMatrix<Scalar, dimension, dimension>> {
+template<typename Scalar_, int dimension>
+struct ClassicalJacobiGenerator<FixedMatrix<Scalar_, dimension, dimension>> {
+  using Scalar = Scalar_;
   struct Result {
     FixedVector<double, dimension> eigenvector;
     Scalar eigenvalue;
@@ -331,7 +333,48 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
 
 template<typename Matrix>
 typename ClassicalJacobiGenerator<Matrix>::Result ClassicalJacobi(
-    Matrix const& A) {}
+    Matrix A) {
+  using G = ClassicalJacobiGenerator<Matrix>;
+  using Scalar = typename G::Scalar;
+
+  // As a safety measure we limit the number of iterations.  We prefer to exit
+  // when the matrix is nearly diagonal, though.
+  static constexpr int max_iterations = 16;
+  static constexpr double ε = std::numeric_limits<double>::epsilon() / 128;
+
+  // [GV13], Algorithm 8.5.2.
+  auto const A_frobenius_norm = A.FrobeniusNorm();
+  auto V = R3x3Matrix<double>::Identity();
+  for (int k = 0; k < max_iterations; ++k) {
+    Scalar max_Apq{};
+    int max_p;
+    int max_q;
+
+    // Find the largest off-diagonal element and exit if it's small.
+    for (int p = 0; p < A.rows(); ++p) {
+      for (int q = p + 1; q < A.columns(); ++q) {
+        Scalar const abs_Apq = Abs(A(p, q));
+        if (abs_Apq >= max_Apq) {
+          max_Apq = abs_Apq;
+          max_p = p;
+          max_q = q;
+        }
+      }
+    }
+    if (max_Apq <= ε * A_frobenius_norm) {
+      break;
+    }
+
+    auto θ = SymmetricShurDecomposition2(A, max_p, max_q);
+    auto const J = JacobiRotation(max_p, max_q, θ);
+    A = J.Transpose() * A * J;
+    V = V * J;
+    if (k == max_iterations - 1) {
+      LOG(ERROR) << "Difficult diagonalization: " << matrix_
+                 << ", stopping with: " << A;
+    }
+  }
+}
 
 template<typename Matrix, typename Vector>
 typename RayleighQuotientGenerator<Matrix, Vector>::Result

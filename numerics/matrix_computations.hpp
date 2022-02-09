@@ -55,10 +55,10 @@ typename SubstitutionGenerator<LowerTriangularMatrix, Vector>::Result
 ForwardSubstitution(LowerTriangularMatrix const& L,
                     Vector const& b);
 
-// Returns the eigensystem of A.
+// Returns the eigensystem of A, which must be symmetric.
 template<typename Matrix>
 typename ClassicalJacobiGenerator<Matrix>::Result
-ClassicalJacobi(Matrix const& A);
+ClassicalJacobi(Matrix A);
 
 // Returns the Rayleigh quotient r(x) = ᵗx A x / ᵗx x.
 template<typename Matrix, typename Vector>
