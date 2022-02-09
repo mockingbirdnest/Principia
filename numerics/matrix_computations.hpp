@@ -19,6 +19,9 @@ struct ᵗRDRDecompositionGenerator;
 template<typename M, typename V>
 struct SubstitutionGenerator;
 
+template<typename M>
+struct ClassicalJacobiGenerator;
+
 template<typename M, typename V>
 struct RayleighQuotientGenerator;
 
@@ -51,6 +54,11 @@ template<typename LowerTriangularMatrix, typename Vector>
 typename SubstitutionGenerator<LowerTriangularMatrix, Vector>::Result
 ForwardSubstitution(LowerTriangularMatrix const& L,
                     Vector const& b);
+
+// Returns the eigensystem of A.
+template<typename Matrix>
+typename ClassicalJacobiGenerator<Matrix>::Result
+ClassicalJacobi(Matrix const& A);
 
 // Returns the Rayleigh quotient r(x) = ᵗx A x / ᵗx x.
 template<typename Matrix, typename Vector>

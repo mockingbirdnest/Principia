@@ -76,6 +76,22 @@ struct SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
   static Result Uninitialized(TriangularMatrix<LScalar, dimension> const& m);
 };
 
+template<typename Scalar>
+struct ClassicalJacobiGenerator<UnboundedMatrix<Scalar>> {
+  struct Result {
+    UnboundedVector<double> eigenvector;
+    Scalar eigenvalue;
+  };
+};
+
+template<typename Scalar, int dimension>
+struct ClassicalJacobiGenerator<FixedMatrix<Scalar, dimension, dimension>> {
+  struct Result {
+    FixedVector<double, dimension> eigenvector;
+    Scalar eigenvalue;
+  };
+};
+
 template<typename MScalar, typename VScalar>
 struct RayleighQuotientGenerator<UnboundedMatrix<MScalar>,
                                  UnboundedVector<VScalar>> {
@@ -312,6 +328,10 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
   }
   return x;
 }
+
+template<typename Matrix>
+typename ClassicalJacobiGenerator<Matrix>::Result ClassicalJacobi(
+    Matrix const& A) {}
 
 template<typename Matrix, typename Vector>
 typename RayleighQuotientGenerator<Matrix, Vector>::Result
