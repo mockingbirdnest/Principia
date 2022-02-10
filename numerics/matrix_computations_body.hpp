@@ -28,11 +28,12 @@ struct CosSin {
 // This is J(p, q, θ) in [GV13] section 8.5.1.  This matrix is also called a
 // Givens rotation.
 template<typename Rotation>
-Rotation JacobiRotation(int const p,
+Rotation JacobiRotation(Rotation const& identity,
+                        int const p,
                         int const q,
                         CosSin const& θ) {
   auto const& [c, s] = θ;
-  auto J = Rotation::Identity();
+  auto J = identity;
   J(p, p) = c;
   J(q, q) = c;
   J(p, q) = s;
@@ -129,6 +130,7 @@ struct ClassicalJacobiGenerator<UnboundedMatrix<Scalar_>> {
     UnboundedVector<double> eigenvector;
     Scalar eigenvalue;
   };
+  static Rotation Identity(UnboundedMatrix<Scalar_> const& m);
 };
 
 template<typename Scalar_, int dimension>
@@ -139,6 +141,7 @@ struct ClassicalJacobiGenerator<FixedMatrix<Scalar_, dimension, dimension>> {
     FixedVector<double, dimension> eigenvector;
     Scalar eigenvalue;
   };
+  static Rotation Identity(FixedMatrix<Scalar_, dimension, dimension> const& m);
 };
 
 template<typename MScalar, typename VScalar>
@@ -231,6 +234,18 @@ auto SubstitutionGenerator<TriangularMatrix<LScalar>,
                            UnboundedVector<RScalar>>::
 Uninitialized(TriangularMatrix<LScalar> const& m) -> Result {
   return Result(m.columns(), uninitialized);
+}
+
+template<typename Scalar_>
+auto ClassicalJacobiGenerator<UnboundedMatrix<Scalar_>>::Identity(
+    UnboundedMatrix<Scalar_> const& m) -> Rotation {
+  return UnboundedMatrix<Scalar>::Identity(m.rows(), m.columns());
+}
+
+template<typename Scalar_, int dimension>
+auto ClassicalJacobiGenerator<FixedMatrix<Scalar_, dimension, dimension>>::
+Identity(FixedMatrix<Scalar_, dimension, dimension> const& m) -> Rotation {
+  return Rotation::Identity();
 }
 
 template<typename MScalar, typename VScalar>
@@ -379,8 +394,8 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
 }
 
 template<typename Matrix>
-typename ClassicalJacobiGenerator<Matrix>::Result ClassicalJacobi(
-    Matrix const& A) {
+typename ClassicalJacobiGenerator<Matrix>::Result
+ClassicalJacobi(Matrix const& A) {
   using G = ClassicalJacobiGenerator<Matrix>;
   using Scalar = typename G::Scalar;
   using Rotation = typename G::Rotation;
@@ -391,9 +406,10 @@ typename ClassicalJacobiGenerator<Matrix>::Result ClassicalJacobi(
   static constexpr double ε = std::numeric_limits<double>::epsilon() / 128;
 
   // [GV13], Algorithm 8.5.2.
+  auto const identity = G::Identity(A);
+  auto const A_frobenius_norm = A.FrobeniusNorm();
+  auto V = identity;
   auto diagonalized_A = A;
-  auto const A_frobenius_norm = diagonalized_A.FrobeniusNorm();
-  auto V = Matrix::Identity();
   for (int k = 0; k < max_iterations; ++k) {
     Scalar max_Apq{};
     int max_p;
@@ -415,7 +431,7 @@ typename ClassicalJacobiGenerator<Matrix>::Result ClassicalJacobi(
     }
 
     auto θ = SymmetricShurDecomposition2<Scalar>(diagonalized_A, max_p, max_q);
-    auto const J = JacobiRotation<Rotation>(max_p, max_q, θ);
+    auto const J = JacobiRotation(identity, max_p, max_q, θ);
     diagonalized_A = J.Transpose() * diagonalized_A * J;
     V = V * J;
     if (k == max_iterations - 1) {
@@ -423,6 +439,10 @@ typename ClassicalJacobiGenerator<Matrix>::Result ClassicalJacobi(
                  << ", stopping with: " << diagonalized_A;
     }
   }
+  LOG(ERROR)<<diagonalized_A;
+  LOG(ERROR)<<V;
+
+  return typename ClassicalJacobiGenerator<Matrix>::Result{};
 }
 
 template<typename Matrix, typename Vector>
