@@ -104,9 +104,9 @@ TYPED_TEST(MatrixComputationsTest, ClassicalJacobi) {
   using Matrix = typename std::tuple_element<3, TypeParam>::type;
 
   Matrix const m4({ 1, 0, -2, 3,
-                   -4, 4,  1, 2,
-                    0, 8,  3, 5,
-                   -7, 1,  2, 2});
+                    0, 4,  8, 1,
+                   -2, 8,  3, 5,
+                    3, 1,  5, 2});
 
   auto const actual = ClassicalJacobi(m4);
 }

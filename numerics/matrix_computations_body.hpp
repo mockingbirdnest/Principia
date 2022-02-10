@@ -434,12 +434,12 @@ ClassicalJacobi(Matrix const& A) {
     auto const J = JacobiRotation(identity, max_p, max_q, θ);
     diagonalized_A = J.Transpose() * diagonalized_A * J;
     V = V * J;
+  LOG(ERROR)<<diagonalized_A;
     if (k == max_iterations - 1) {
       LOG(ERROR) << "Difficult diagonalization: " << A
                  << ", stopping with: " << diagonalized_A;
     }
   }
-  LOG(ERROR)<<diagonalized_A;
   LOG(ERROR)<<V;
 
   return typename ClassicalJacobiGenerator<Matrix>::Result{};
