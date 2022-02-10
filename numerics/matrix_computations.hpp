@@ -58,7 +58,7 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
 // Returns the eigensystem of A, which must be symmetric.
 template<typename Matrix>
 typename ClassicalJacobiGenerator<Matrix>::Result
-ClassicalJacobi(Matrix A);
+ClassicalJacobi(Matrix const& A);
 
 // Returns the Rayleigh quotient r(x) = ᵗx A x / ᵗx x.
 template<typename Matrix, typename Vector>
@@ -79,6 +79,7 @@ Solve(Matrix A, Vector b);
 
 using internal_matrix_computations::BackSubstitution;
 using internal_matrix_computations::CholeskyDecomposition;
+using internal_matrix_computations::ClassicalJacobi;
 using internal_matrix_computations::ForwardSubstitution;
 using internal_matrix_computations::RayleighQuotient;
 using internal_matrix_computations::RayleighQuotientIteration;

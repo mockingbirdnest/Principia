@@ -72,7 +72,6 @@ CosSin SymmetricShurDecomposition2(R3x3Matrix<Scalar> const& A,
 };
 
 
-
 template<typename Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>

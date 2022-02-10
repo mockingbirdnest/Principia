@@ -20,6 +20,51 @@ using quantities::Abs;
 using quantities::Pow;
 using quantities::Sqrt;
 
+struct CosSin {
+  double cos;
+  double sin;
+};
+
+// This is J(p, q, θ) in [GV13] section 8.5.1.  This matrix is also called a
+// Givens rotation.
+template<typename Rotation>
+Rotation JacobiRotation(int const p,
+                        int const q,
+                        CosSin const& θ) {
+  auto const& [c, s] = θ;
+  auto J = Rotation::Identity();
+  J(p, p) = c;
+  J(q, q) = c;
+  J(p, q) = s;
+  J(q, p) = -s;
+  return J;
+};
+
+// See [GV13] section 8.5.2, algorithm 8.5.1.
+template<typename Scalar, typename Matrix>
+CosSin SymmetricShurDecomposition2(Matrix const& A,
+                                   int const p,
+                                   int const q) {
+  static Scalar const zero{};
+  CosSin θ;
+  auto& [c, s] = θ;
+  if (A(p, q) != zero) {
+    double const τ = (A(q, q) - A(p, p)) / (2 * A(p, q));
+    double t;
+    if (τ >= 0) {
+      t = 1 / (τ + Sqrt(1 + τ * τ));
+    } else {
+      t = 1 / (τ - Sqrt(1 + τ * τ));
+    }
+    c = 1 / Sqrt(1 + t * t);
+    s = t * c;
+  } else {
+    θ = {1, 0};
+  }
+  return θ;
+};
+
+
 template<typename Scalar_>
 struct CholeskyDecompositionGenerator<UnboundedUpperTriangularMatrix<Scalar_>> {
   using Scalar = Scalar_;
@@ -79,6 +124,7 @@ struct SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
 template<typename Scalar_>
 struct ClassicalJacobiGenerator<UnboundedMatrix<Scalar_>> {
   using Scalar = Scalar_;
+  using Rotation = UnboundedMatrix<double>;
   struct Result {
     UnboundedVector<double> eigenvector;
     Scalar eigenvalue;
@@ -88,6 +134,7 @@ struct ClassicalJacobiGenerator<UnboundedMatrix<Scalar_>> {
 template<typename Scalar_, int dimension>
 struct ClassicalJacobiGenerator<FixedMatrix<Scalar_, dimension, dimension>> {
   using Scalar = Scalar_;
+  using Rotation = FixedMatrix<double, dimension, dimension>;
   struct Result {
     FixedVector<double, dimension> eigenvector;
     Scalar eigenvalue;
@@ -333,9 +380,10 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
 
 template<typename Matrix>
 typename ClassicalJacobiGenerator<Matrix>::Result ClassicalJacobi(
-    Matrix A) {
+    Matrix const& A) {
   using G = ClassicalJacobiGenerator<Matrix>;
   using Scalar = typename G::Scalar;
+  using Rotation = typename G::Rotation;
 
   // As a safety measure we limit the number of iterations.  We prefer to exit
   // when the matrix is nearly diagonal, though.
@@ -343,17 +391,18 @@ typename ClassicalJacobiGenerator<Matrix>::Result ClassicalJacobi(
   static constexpr double ε = std::numeric_limits<double>::epsilon() / 128;
 
   // [GV13], Algorithm 8.5.2.
-  auto const A_frobenius_norm = A.FrobeniusNorm();
-  auto V = R3x3Matrix<double>::Identity();
+  auto diagonalized_A = A;
+  auto const A_frobenius_norm = diagonalized_A.FrobeniusNorm();
+  auto V = Matrix::Identity();
   for (int k = 0; k < max_iterations; ++k) {
     Scalar max_Apq{};
     int max_p;
     int max_q;
 
     // Find the largest off-diagonal element and exit if it's small.
-    for (int p = 0; p < A.rows(); ++p) {
-      for (int q = p + 1; q < A.columns(); ++q) {
-        Scalar const abs_Apq = Abs(A(p, q));
+    for (int p = 0; p < diagonalized_A.rows(); ++p) {
+      for (int q = p + 1; q < diagonalized_A.columns(); ++q) {
+        Scalar const abs_Apq = Abs(diagonalized_A(p, q));
         if (abs_Apq >= max_Apq) {
           max_Apq = abs_Apq;
           max_p = p;
@@ -365,13 +414,13 @@ typename ClassicalJacobiGenerator<Matrix>::Result ClassicalJacobi(
       break;
     }
 
-    auto θ = SymmetricShurDecomposition2(A, max_p, max_q);
-    auto const J = JacobiRotation(max_p, max_q, θ);
-    A = J.Transpose() * A * J;
+    auto θ = SymmetricShurDecomposition2<Scalar>(diagonalized_A, max_p, max_q);
+    auto const J = JacobiRotation<Rotation>(max_p, max_q, θ);
+    diagonalized_A = J.Transpose() * diagonalized_A * J;
     V = V * J;
     if (k == max_iterations - 1) {
-      LOG(ERROR) << "Difficult diagonalization: " << matrix_
-                 << ", stopping with: " << A;
+      LOG(ERROR) << "Difficult diagonalization: " << A
+                 << ", stopping with: " << diagonalized_A;
     }
   }
 }
