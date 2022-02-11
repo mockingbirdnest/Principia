@@ -122,15 +122,18 @@ struct SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
   static Result Uninitialized(TriangularMatrix<LScalar, dimension> const& m);
 };
 
+// In the |rotation| field the eigenvectors appear in column.  They are
+// normalized.
 template<typename Scalar_>
 struct ClassicalJacobiGenerator<UnboundedMatrix<Scalar_>> {
   using Scalar = Scalar_;
   using Rotation = UnboundedMatrix<double>;
   struct Result {
-    UnboundedVector<double> eigenvector;
-    Scalar eigenvalue;
+    UnboundedMatrix<double> rotation;
+    UnboundedVector<Scalar> eigenvalues;
   };
-  static Rotation Identity(UnboundedMatrix<Scalar_> const& m);
+  static Rotation Identity(UnboundedMatrix<Scalar> const& m);
+  static Result Uninitialized(UnboundedMatrix<Scalar> const& m);
 };
 
 template<typename Scalar_, int dimension>
@@ -138,10 +141,12 @@ struct ClassicalJacobiGenerator<FixedMatrix<Scalar_, dimension, dimension>> {
   using Scalar = Scalar_;
   using Rotation = FixedMatrix<double, dimension, dimension>;
   struct Result {
-    FixedVector<double, dimension> eigenvector;
-    Scalar eigenvalue;
+    FixedMatrix<double, dimension, dimension> rotation;
+    FixedVector<Scalar, dimension> eigenvalues;
   };
-  static Rotation Identity(FixedMatrix<Scalar_, dimension, dimension> const& m);
+  static Rotation Identity(FixedMatrix<Scalar, dimension, dimension> const& m);
+  static Result Uninitialized(
+      FixedMatrix<Scalar, dimension, dimension> const& m);
 };
 
 template<typename MScalar, typename VScalar>
@@ -242,10 +247,24 @@ auto ClassicalJacobiGenerator<UnboundedMatrix<Scalar_>>::Identity(
   return UnboundedMatrix<Scalar>::Identity(m.rows(), m.columns());
 }
 
+template<typename Scalar_>
+auto ClassicalJacobiGenerator<UnboundedMatrix<Scalar_>>::
+Uninitialized(UnboundedMatrix<Scalar> const& m) -> Result {
+  return {.rotation = UnboundedMatrix<Scalar>(m.rows(), m.columns()),
+          .eigenvalues = UnboundedVector<Scalar>(m.columns())};
+}
+
 template<typename Scalar_, int dimension>
 auto ClassicalJacobiGenerator<FixedMatrix<Scalar_, dimension, dimension>>::
 Identity(FixedMatrix<Scalar_, dimension, dimension> const& m) -> Rotation {
   return Rotation::Identity();
+}
+
+template<typename Scalar_, int dimension>
+auto ClassicalJacobiGenerator<FixedMatrix<Scalar_, dimension, dimension>>::
+Uninitialized(FixedMatrix<Scalar, dimension, dimension> const& m) -> Result {
+  return {.rotation = FixedMatrix<Scalar, dimension, dimension>(),
+          .eigenvalues = FixedVector<Scalar, dimension>()};
 }
 
 template<typename MScalar, typename VScalar>
@@ -395,20 +414,16 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
 
 template<typename Matrix>
 typename ClassicalJacobiGenerator<Matrix>::Result
-ClassicalJacobi(Matrix const& A) {
+ClassicalJacobi(Matrix const& A,  int max_iterations, double ε) {
   using G = ClassicalJacobiGenerator<Matrix>;
   using Scalar = typename G::Scalar;
-  using Rotation = typename G::Rotation;
-
-  // As a safety measure we limit the number of iterations.  We prefer to exit
-  // when the matrix is nearly diagonal, though.
-  static constexpr int max_iterations = 16;
-  static constexpr double ε = std::numeric_limits<double>::epsilon() / 128;
+  auto result = G::Uninitialized(A);
+  auto& V = result.rotation;
 
   // [GV13], Algorithm 8.5.2.
   auto const identity = G::Identity(A);
   auto const A_frobenius_norm = A.FrobeniusNorm();
-  auto V = identity;
+  V = identity;
   auto diagonalized_A = A;
   for (int k = 0; k < max_iterations; ++k) {
     Scalar max_Apq{};
@@ -434,15 +449,16 @@ ClassicalJacobi(Matrix const& A) {
     auto const J = JacobiRotation(identity, max_p, max_q, θ);
     diagonalized_A = J.Transpose() * diagonalized_A * J;
     V = V * J;
-  LOG(ERROR)<<diagonalized_A;
     if (k == max_iterations - 1) {
       LOG(ERROR) << "Difficult diagonalization: " << A
                  << ", stopping with: " << diagonalized_A;
     }
   }
-  LOG(ERROR)<<V;
 
-  return typename ClassicalJacobiGenerator<Matrix>::Result{};
+  for (int i = 0; i < A.rows(); ++i) {
+    result.eigenvalues[i] = diagonalized_A(i, i);
+  }
+  return result;
 }
 
 template<typename Matrix, typename Vector>

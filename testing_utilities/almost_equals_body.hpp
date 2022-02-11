@@ -311,6 +311,38 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 }
 
 template<typename T>
+template<typename Scalar, int rows, int columns>
+bool AlmostEqualsMatcher<T>::MatchAndExplain(
+    numerics::FixedMatrix<Scalar, rows, columns> const& actual,
+    testing::MatchResultListener* listener) const {
+  // Check that the types are equality-comparable up to implicit casts.
+  if (actual == expected_) {
+    return MatchAndExplainIdentical(listener);
+  }
+  std::int64_t max_distance = -1;
+  int max_i = -1;
+  int max_j = -1;
+  for (int i = 0; i < expected_.rows(); ++i) {
+    for (int j = 0; j < expected_.columns(); ++j) {
+      int const distance = NormalizedNaNULPDistance(
+          DoubleValue(actual(i, j)), DoubleValue(expected_(i, j)));
+      if (distance > max_distance) {
+        max_distance = distance;
+        max_i = i;
+        max_j = j;
+      }
+    }
+  }
+  bool const matches = min_ulps_ <= max_distance && max_distance <= max_ulps_;
+  if (!matches) {
+    *listener << "the component at indices " << max_i << ", " << max_j
+              << " is not within " << min_ulps_ << " to " << max_ulps_
+              << " ULPs: it differs by " << max_distance << " ULPs";
+  }
+  return matches;
+}
+
+template<typename T>
 template<typename Scalar, int rows>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
     numerics::FixedLowerTriangularMatrix<Scalar, rows> const& actual,
@@ -402,6 +434,42 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
     *listener << "the component at index " << max_i << " is not within "
               << min_ulps_ << " to " << max_ulps_ << " ULPs: it differs by "
               << max_distance << " ULPs";
+  }
+  return matches;
+}
+
+template<typename T>
+template<typename Scalar>
+bool AlmostEqualsMatcher<T>::MatchAndExplain(
+    numerics::UnboundedMatrix<Scalar> const& actual,
+    testing::MatchResultListener* listener) const {
+  // Check that the types are equality-comparable up to implicit casts.
+  if (actual == expected_) {
+    return MatchAndExplainIdentical(listener);
+  }
+  if (actual.rows() != expected_.rows()) {
+    *listener << "the matrix does not have " << expected_.rows() << " rows";
+    return false;
+  }
+  std::int64_t max_distance = -1;
+  int max_i = -1;
+  int max_j = -1;
+  for (int i = 0; i < expected_.rows(); ++i) {
+    for (int j = 0; j < expected_.columns(); ++j) {
+      int const distance = NormalizedNaNULPDistance(
+          DoubleValue(actual(i, j)), DoubleValue(expected_(i, j)));
+      if (distance > max_distance) {
+        max_distance = distance;
+        max_i = i;
+        max_j = j;
+      }
+    }
+  }
+  bool const matches = min_ulps_ <= max_distance && max_distance <= max_ulps_;
+  if (!matches) {
+    *listener << "the component at indices " << max_i << ", " << max_j
+              << " is not within " << min_ulps_ << " to " << max_ulps_
+              << " ULPs: it differs by " << max_distance << " ULPs";
   }
   return matches;
 }

@@ -56,9 +56,13 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
                     Vector const& b);
 
 // Returns the eigensystem of A, which must be symmetric.
+// As a safety measure we limit the number of iterations.  We prefer to exit
+// when the matrix is nearly diagonal, though.
 template<typename Matrix>
-typename ClassicalJacobiGenerator<Matrix>::Result
-ClassicalJacobi(Matrix const& A);
+typename ClassicalJacobiGenerator<Matrix>::Result ClassicalJacobi(
+    Matrix const& A,
+    int max_iterations = 16,
+    double ε = std::numeric_limits<double>::epsilon() / 128);
 
 // Returns the Rayleigh quotient r(x) = ᵗx A x / ᵗx x.
 template<typename Matrix, typename Vector>
