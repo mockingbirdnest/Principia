@@ -10,12 +10,26 @@ namespace ksp_plugin_adapter {
 
 internal static class CelestialExtensions {
   public static bool is_leaf(this CelestialBody celestial, Vessel target) {
-    return celestial.orbitingBodies.Count == 0 &&
+                if (!celestial.name.Equals("KopernicusWatchdog"))
+                {
+                    return celestial.orbitingBodies.Count == 0 &&
            target?.orbit.referenceBody != celestial;
+                }
+                else
+                {
+                    return false;
+                }
   }
 
   public static bool is_root(this CelestialBody celestial) {
-    return celestial.orbit == null;
+                if (!celestial.name.Equals("KopernicusWatchdog"))
+                {
+                    return celestial.orbit == null;
+                }
+                else
+                {
+                    return false;
+                }
   }
 }
 
@@ -47,8 +61,11 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     expanded_ = new Dictionary<CelestialBody, bool>();
     pinned_ = new Dictionary<CelestialBody, bool>();
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
-      expanded_.Add(celestial, false);
-      pinned_.Add(celestial, false);
+                    if (!celestial.name.Equals("KopernicusWatchdog"))
+                    {
+                        expanded_.Add(celestial, false);
+                        pinned_.Add(celestial, false);
+                    }
     }
   }
 
@@ -490,144 +507,204 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   }
 
   private bool AnyDescendantPinned(CelestialBody celestial) {
-    if (pinned_[celestial]) {
-      return true;
-    }
-    if (target_pinned_ && target?.orbit.referenceBody == celestial) {
-      return true;
-    }
-    foreach (CelestialBody body in celestial.orbitingBodies) {
-      if (AnyDescendantPinned(body)) {
-        return true;
-      }
-    }
-    return false;
+                if (!celestial.name.Equals("KopernicusWatchdog"))
+                {
+                    if (pinned_[celestial])
+                    {
+                        return true;
+                    }
+                    if (target_pinned_ && target?.orbit.referenceBody == celestial)
+                    {
+                        return true;
+                    }
+                    foreach (CelestialBody body in celestial.orbitingBodies)
+                    {
+                        if (!body.name.Equals("KopernicusWatchdog"))
+                        {
+                            if (AnyDescendantPinned(body))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }
+                return false;
   }
 
-  private void RenderSubtree(CelestialBody celestial, int depth) {
-    // Horizontal offset between a node and its children.
-    const int offset = 1;
-    using (new UnityEngine.GUILayout.HorizontalScope()) {
-      UnityEngine.GUILayout.Space(Width(offset * depth));
-      if (celestial.is_leaf(target)) {
-        UnityEngine.GUILayout.Button(
-            "", UnityEngine.GUI.skin.label, GUILayoutWidth(offset));
-      } else {
-        string button_text = expanded_[celestial] ? "−" : "+";
-        if (UnityEngine.GUILayout.Button(
-                button_text, GUILayoutWidth(offset))) {
-          Shrink();
-          expanded_[celestial] = !expanded_[celestial];
-        }
-      }
-      UnityEngine.GUILayout.Label(celestial.StandaloneName());
-      UnityEngine.GUILayout.FlexibleSpace();
-      if (celestial.is_root()) {
-        UnityEngine.GUILayout.Label(
-            L10N.CacheFormat("#Principia_ReferenceFrameSelector_Pin"));
-      } else if (UnityEngine.GUILayout.Toggle(pinned_[celestial], "") !=
-                 pinned_[celestial]) {
-        pinned_[celestial] = !pinned_[celestial];
-        Shrink();
-      }
-    }
-    if (!celestial.is_leaf(target)) {
-      if ((expanded_[celestial] || target_pinned_) &&
-          target?.orbit.referenceBody == celestial) {
-        using (new UnityEngine.GUILayout.HorizontalScope()) {
-          UnityEngine.GUILayout.Space(Width(offset * (depth + 1)));
-          UnityEngine.GUILayout.Button(
-              "", UnityEngine.GUI.skin.label, GUILayoutWidth(offset));
-          UnityEngine.GUILayout.Label(
-              L10N.CacheFormat("#Principia_ReferenceFrameSelector_Target",
-                               target.vesselName));
-          UnityEngine.GUILayout.FlexibleSpace();
-          if (UnityEngine.GUILayout.Toggle(target_pinned_, "") !=
-              target_pinned_) {
-            target_pinned_ = !target_pinned_;
-            Shrink();
-          }
-        }
-      }
-      foreach (CelestialBody child in celestial.orbitingBodies) {
-        if (expanded_[celestial] || AnyDescendantPinned(child)) {
-          RenderSubtree(child, depth + 1);
-        }
-      }
-    }
-  }
+            private void RenderSubtree(CelestialBody celestial, int depth)
+            {
+                if (!celestial.name.Equals("KopernicusWatchdog"))
+                {
+                    // Horizontal offset between a node and its children.
+                    const int offset = 1;
+                    using (new UnityEngine.GUILayout.HorizontalScope())
+                    {
+                        UnityEngine.GUILayout.Space(Width(offset * depth));
+                        if (celestial.is_leaf(target))
+                        {
+                            UnityEngine.GUILayout.Button(
+                                "", UnityEngine.GUI.skin.label, GUILayoutWidth(offset));
+                        }
+                        else
+                        {
+                            string button_text = expanded_[celestial] ? "−" : "+";
+                            if (UnityEngine.GUILayout.Button(
+                                    button_text, GUILayoutWidth(offset)))
+                            {
+                                Shrink();
+                                expanded_[celestial] = !expanded_[celestial];
+                            }
+                        }
+                        UnityEngine.GUILayout.Label(celestial.StandaloneName());
+                        UnityEngine.GUILayout.FlexibleSpace();
+                        if (celestial.is_root())
+                        {
+                            UnityEngine.GUILayout.Label(
+                                L10N.CacheFormat("#Principia_ReferenceFrameSelector_Pin"));
+                        }
+                        else if (UnityEngine.GUILayout.Toggle(pinned_[celestial], "") !=
+                                 pinned_[celestial])
+                        {
+                            pinned_[celestial] = !pinned_[celestial];
+                            Shrink();
+                        }
+                    }
+                    if (!celestial.is_leaf(target))
+                    {
+                        if ((expanded_[celestial] || target_pinned_) &&
+                            target?.orbit.referenceBody == celestial)
+                        {
+                            using (new UnityEngine.GUILayout.HorizontalScope())
+                            {
+                                UnityEngine.GUILayout.Space(Width(offset * (depth + 1)));
+                                UnityEngine.GUILayout.Button(
+                                    "", UnityEngine.GUI.skin.label, GUILayoutWidth(offset));
+                                UnityEngine.GUILayout.Label(
+                                    L10N.CacheFormat("#Principia_ReferenceFrameSelector_Target",
+                                                     target.vesselName));
+                                UnityEngine.GUILayout.FlexibleSpace();
+                                if (UnityEngine.GUILayout.Toggle(target_pinned_, "") !=
+                                    target_pinned_)
+                                {
+                                    target_pinned_ = !target_pinned_;
+                                    Shrink();
+                                }
+                            }
+                        }
+                        foreach (CelestialBody child in celestial.orbitingBodies)
+                        {
+                            if (!child.name.Equals("KopernicusWatchdog"))
+                            {
+                                if (expanded_[celestial] || AnyDescendantPinned(child))
+                                {
+                                    RenderSubtree(child, depth + 1);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
-  private void RenderSubtreeToggleGrid(CelestialBody celestial) {
-    int column_width = 2;
-    using (new UnityEngine.GUILayout.HorizontalScope()) {
-      if (ToggleButton(
-              SelectedFrameIs(celestial, FrameType.BODY_CENTRED_NON_ROTATING),
-              new UnityEngine.GUIContent(
-                  SelectorText(FrameType.BODY_CENTRED_NON_ROTATING, celestial),
-                  SelectorTooltip(FrameType.BODY_CENTRED_NON_ROTATING, celestial)),
-              GUILayoutWidth(column_width))) {
-        EffectChange(() => {
-          target_frame_selected = false;
-          selected_celestial = celestial;
-          frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
-        });
-      }
-      if (ToggleButton(
-              SelectedFrameIs(celestial, FrameType.BODY_SURFACE),
-              new UnityEngine.GUIContent(
-                  SelectorText(FrameType.BODY_SURFACE, celestial),
-                  SelectorTooltip(FrameType.BODY_SURFACE, celestial)),
-              GUILayoutWidth(column_width))) {
-        EffectChange(() => {
-          target_frame_selected = false;
-          selected_celestial = celestial;
-          frame_type = FrameType.BODY_SURFACE;
-        });
-      }
-      if (!celestial.is_root() &&
-          ToggleButton(
-              SelectedFrameIs(celestial,
-                              FrameType.BODY_CENTRED_PARENT_DIRECTION),
-              new UnityEngine.GUIContent(
-                  SelectorText(FrameType.BODY_CENTRED_PARENT_DIRECTION, celestial),
-                  SelectorTooltip(FrameType.BODY_CENTRED_PARENT_DIRECTION, celestial)),
-              GUILayoutWidth(column_width))) {
-        EffectChange(() => {
-          target_frame_selected = false;
-          selected_celestial = celestial;
-          frame_type = FrameType.BODY_CENTRED_PARENT_DIRECTION;
-        });
-      }
-    }
-    if (!celestial.is_leaf(target)) {
-      if ((expanded_[celestial] || target_pinned_) &&
-          target?.orbit.referenceBody == celestial) {
-        using (new UnityEngine.GUILayout.HorizontalScope()) {
-          UnityEngine.GUILayout.Button("", UnityEngine.GUI.skin.label, GUILayoutWidth(column_width));
-          UnityEngine.GUILayout.Button("", UnityEngine.GUI.skin.label, GUILayoutWidth(column_width));
-          if (ToggleButton(
-                  target_frame_selected,
-                  new UnityEngine.GUIContent(
-                    TargetFrameSelectorText(target),
-                    TargetFrameSelectorTooltip(target)),
-                  GUILayoutWidth(column_width))) {
-            EffectChange(() => {
-              target_frame_selected = true;
-            });
-          }
-        }
-      }
-      foreach (CelestialBody child in celestial.orbitingBodies) {
-        if (expanded_[celestial] || AnyDescendantPinned(child)) {
-          RenderSubtreeToggleGrid(child);
-        }
-      }
-    }
-  }
+            private void RenderSubtreeToggleGrid(CelestialBody celestial)
+            {
+                if (!celestial.name.Equals("KopernicusWatchdog"))
+                {
+                    int column_width = 2;
+                    using (new UnityEngine.GUILayout.HorizontalScope())
+                    {
+                        if (ToggleButton(
+                                SelectedFrameIs(celestial, FrameType.BODY_CENTRED_NON_ROTATING),
+                                new UnityEngine.GUIContent(
+                                    SelectorText(FrameType.BODY_CENTRED_NON_ROTATING, celestial),
+                                    SelectorTooltip(FrameType.BODY_CENTRED_NON_ROTATING, celestial)),
+                                GUILayoutWidth(column_width)))
+                        {
+                            EffectChange(() =>
+                            {
+                                target_frame_selected = false;
+                                selected_celestial = celestial;
+                                frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
+                            });
+                        }
+                        if (ToggleButton(
+                                SelectedFrameIs(celestial, FrameType.BODY_SURFACE),
+                                new UnityEngine.GUIContent(
+                                    SelectorText(FrameType.BODY_SURFACE, celestial),
+                                    SelectorTooltip(FrameType.BODY_SURFACE, celestial)),
+                                GUILayoutWidth(column_width)))
+                        {
+                            EffectChange(() =>
+                            {
+                                target_frame_selected = false;
+                                selected_celestial = celestial;
+                                frame_type = FrameType.BODY_SURFACE;
+                            });
+                        }
+                        if (!celestial.is_root() &&
+                            ToggleButton(
+                                SelectedFrameIs(celestial,
+                                                FrameType.BODY_CENTRED_PARENT_DIRECTION),
+                                new UnityEngine.GUIContent(
+                                    SelectorText(FrameType.BODY_CENTRED_PARENT_DIRECTION, celestial),
+                                    SelectorTooltip(FrameType.BODY_CENTRED_PARENT_DIRECTION, celestial)),
+                                GUILayoutWidth(column_width)))
+                        {
+                            EffectChange(() =>
+                            {
+                                target_frame_selected = false;
+                                selected_celestial = celestial;
+                                frame_type = FrameType.BODY_CENTRED_PARENT_DIRECTION;
+                            });
+                        }
+                    }
+                    if (!celestial.is_leaf(target))
+                    {
+                        if ((expanded_[celestial] || target_pinned_) &&
+                            target?.orbit.referenceBody == celestial)
+                        {
+                            using (new UnityEngine.GUILayout.HorizontalScope())
+                            {
+                                UnityEngine.GUILayout.Button("", UnityEngine.GUI.skin.label, GUILayoutWidth(column_width));
+                                UnityEngine.GUILayout.Button("", UnityEngine.GUI.skin.label, GUILayoutWidth(column_width));
+                                if (ToggleButton(
+                                        target_frame_selected,
+                                        new UnityEngine.GUIContent(
+                                          TargetFrameSelectorText(target),
+                                          TargetFrameSelectorTooltip(target)),
+                                        GUILayoutWidth(column_width)))
+                                {
+                                    EffectChange(() =>
+                                    {
+                                        target_frame_selected = true;
+                                    });
+                                }
+                            }
+                        }
+                        foreach (CelestialBody child in celestial.orbitingBodies)
+                        {
+                            if (!child.name.Equals("KopernicusWatchdog"))
+                            {
+                                if (expanded_[celestial] || AnyDescendantPinned(child))
+                                {
+                                    RenderSubtreeToggleGrid(child);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
   private bool SelectedFrameIs(CelestialBody celestial, FrameType type) {
-    return !target_frame_selected &&
+                if (!celestial.name.Equals("KopernicusWatchdog"))
+                {
+                    return !target_frame_selected &&
         selected_celestial == celestial && frame_type == type;
+                }
+                else
+                {
+                    return false;
+                }
   }
 
   // Runs an action that may change the frame and run on_change_ if there

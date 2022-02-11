@@ -137,47 +137,55 @@ class Plotter {
         PlanetariumCamera.fetch.transform.position);
     double min_distance_from_camera =
         (root.position - camera_world_position).magnitude;
-    if (!adapter_.plotting_frame_selector_.FixesBody(root)) {
-      {
-        planetarium.PlanetariumPlotCelestialPastTrajectory(
-            Plugin,
-            root.flightGlobalsIndex,
-            history_length,
-            VertexBuffer.data,
-            VertexBuffer.size,
-            out double min_past_distance,
-            out int vertex_count);
-        min_distance_from_camera =
-            Math.Min(min_distance_from_camera, min_past_distance);
-        DrawLineMesh(trajectories.past, vertex_count, colour,
-                     GLLines.Style.Faded);
-      }
+        if ((root.flightGlobalsIndex + 1) != FlightGlobals.Bodies.Count)
+                        {
+                    if (!adapter_.plotting_frame_selector_.FixesBody(root))
+                    {
+                        {
+                            planetarium.PlanetariumPlotCelestialPastTrajectory(
+                                Plugin,
+                                root.flightGlobalsIndex,
+                                history_length,
+                                VertexBuffer.data,
+                                VertexBuffer.size,
+                                out double min_past_distance,
+                                out int vertex_count);
+                            min_distance_from_camera =
+                                Math.Min(min_distance_from_camera, min_past_distance);
+                            DrawLineMesh(trajectories.past, vertex_count, colour,
+                                         GLLines.Style.Faded);
+                        }
 
-      if (main_vessel_guid != null) {
-        planetarium.PlanetariumPlotCelestialFutureTrajectory(
-            Plugin,
-            root.flightGlobalsIndex,
-            main_vessel_guid,
-            VertexBuffer.data,
-            VertexBuffer.size,
-            out double min_future_distance,
-            out int vertex_count);
-        min_distance_from_camera =
-            Math.Min(min_distance_from_camera, min_future_distance);
-        DrawLineMesh(trajectories.future, vertex_count, colour,
-                     GLLines.Style.Solid);
-      }
+                        if (main_vessel_guid != null)
+                        {
+                            planetarium.PlanetariumPlotCelestialFutureTrajectory(
+                                Plugin,
+                                root.flightGlobalsIndex,
+                                main_vessel_guid,
+                                VertexBuffer.data,
+                                VertexBuffer.size,
+                                out double min_future_distance,
+                                out int vertex_count);
+                            min_distance_from_camera =
+                                Math.Min(min_distance_from_camera, min_future_distance);
+                            DrawLineMesh(trajectories.future, vertex_count, colour,
+                                         GLLines.Style.Solid);
+                        }
+                    }
     }
-    foreach (CelestialBody child in root.orbitingBodies) {
-      // Plot the trajectory of an orbiting body if it could be separated from
-      // that of its parent by a pixel of empty space, instead of merely making
-      // the line wider.
-      if (child.orbit.ApR / min_distance_from_camera >
+                foreach (CelestialBody child in root.orbitingBodies) {
+                    if (!child.name.Equals("KopernicusWatchdog"))
+                    {
+                        // Plot the trajectory of an orbiting body if it could be separated from
+                        // that of its parent by a pixel of empty space, instead of merely making
+                        // the line wider.
+                        if (child.orbit.ApR / min_distance_from_camera >
               2 * tan_angular_resolution) {
-        PlotSubtreeTrajectories(planetarium, main_vessel_guid, history_length,
-                                child, tan_angular_resolution);
-      }
-    }
+                            PlotSubtreeTrajectories(planetarium, main_vessel_guid, history_length,
+                                                    child, tan_angular_resolution);
+                        }
+                    }
+                }
   }
 
   private void DrawLineMesh(UnityEngine.Mesh mesh,

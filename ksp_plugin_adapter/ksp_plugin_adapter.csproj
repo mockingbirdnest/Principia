@@ -25,16 +25,17 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>full</DebugType>
+    <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\Release\GameData\Principia\</OutputPath>
-    <DefineConstants>TRACE;KSP_VERSION_1_12_3</DefineConstants>
+    <DefineConstants>KSP_VERSION_1_12_3</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DebugSymbols>true</DebugSymbols>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Prefer32Bit>false</Prefer32Bit>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release KSP 1.7.3|AnyCPU'">
     <DebugType>full</DebugType>

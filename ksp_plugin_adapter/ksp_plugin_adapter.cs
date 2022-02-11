@@ -376,13 +376,22 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     // Tree traversal (DFS, not that it matters).
     Stack<CelestialBody> stack = new Stack<CelestialBody>();
     foreach (CelestialBody child in Planetarium.fetch.Sun.orbitingBodies) {
-      stack.Push(child);
+                    if (!child.name.Equals("KopernicusWatchdog"))
+                    {
+                        stack.Push(child);
+                    }
     }
     while (stack.Count > 0) {
       CelestialBody body = stack.Pop();
-      process_body(body);
+                    if (!body.name.Equals("KopernicusWatchdog"))
+                    {
+                        process_body(body);
+                    }
       foreach (CelestialBody child in body.orbitingBodies) {
-        stack.Push(child);
+                        if (!child.name.Equals("KopernicusWatchdog"))
+                        {
+                            stack.Push(child);
+                        }
       }
     }
   }
@@ -394,42 +403,46 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     }
   }
 
-  private void UpdateBody(CelestialBody body, double universal_time) {
-    plugin_.UpdateCelestialHierarchy(body.flightGlobalsIndex,
+            private void UpdateBody(CelestialBody body, double universal_time)
+            {
+                if (!body.name.Equals("KopernicusWatchdog"))
+                {
+                    plugin_.UpdateCelestialHierarchy(body.flightGlobalsIndex,
                                      body.orbit.referenceBody.
                                          flightGlobalsIndex);
-    QP from_parent = plugin_.CelestialFromParent(body.flightGlobalsIndex);
-    // TODO(egg): Some of this might be be superfluous and redundant.
-    Orbit original = body.orbit;
-    Orbit copy = new Orbit(original.inclination,
-                           original.eccentricity,
-                           original.semiMajorAxis,
-                           original.LAN,
-                           original.argumentOfPeriapsis,
-                           original.meanAnomalyAtEpoch,
-                           original.epoch,
-                           original.referenceBody);
-    copy.UpdateFromStateVectors((Vector3d)from_parent.q,
-                                (Vector3d)from_parent.p,
-                                copy.referenceBody,
-                                universal_time);
-    body.orbit.inclination = copy.inclination;
-    body.orbit.eccentricity = copy.eccentricity;
-    body.orbit.semiMajorAxis = copy.semiMajorAxis;
-    body.orbit.LAN = copy.LAN;
-    body.orbit.argumentOfPeriapsis = copy.argumentOfPeriapsis;
-    body.orbit.meanAnomalyAtEpoch = copy.meanAnomalyAtEpoch;
-    body.orbit.epoch = copy.epoch;
-    body.orbit.referenceBody = copy.referenceBody;
-    body.orbit.Init();
-    body.orbit.UpdateFromUT(universal_time);
-    body.CBUpdate();
-    body.orbit.UpdateFromStateVectors((Vector3d)from_parent.q,
-                                      (Vector3d)from_parent.p,
-                                      copy.referenceBody,
-                                      universal_time);
-    body.CBUpdate();
-  }
+                    QP from_parent = plugin_.CelestialFromParent(body.flightGlobalsIndex);
+                    // TODO(egg): Some of this might be be superfluous and redundant.
+                    Orbit original = body.orbit;
+                    Orbit copy = new Orbit(original.inclination,
+                                           original.eccentricity,
+                                           original.semiMajorAxis,
+                                           original.LAN,
+                                           original.argumentOfPeriapsis,
+                                           original.meanAnomalyAtEpoch,
+                                           original.epoch,
+                                           original.referenceBody);
+                    copy.UpdateFromStateVectors((Vector3d)from_parent.q,
+                                                (Vector3d)from_parent.p,
+                                                copy.referenceBody,
+                                                universal_time);
+                    body.orbit.inclination = copy.inclination;
+                    body.orbit.eccentricity = copy.eccentricity;
+                    body.orbit.semiMajorAxis = copy.semiMajorAxis;
+                    body.orbit.LAN = copy.LAN;
+                    body.orbit.argumentOfPeriapsis = copy.argumentOfPeriapsis;
+                    body.orbit.meanAnomalyAtEpoch = copy.meanAnomalyAtEpoch;
+                    body.orbit.epoch = copy.epoch;
+                    body.orbit.referenceBody = copy.referenceBody;
+                    body.orbit.Init();
+                    body.orbit.UpdateFromUT(universal_time);
+                    body.CBUpdate();
+                    body.orbit.UpdateFromStateVectors((Vector3d)from_parent.q,
+                                                      (Vector3d)from_parent.p,
+                                                      copy.referenceBody,
+                                                      universal_time);
+                    body.CBUpdate();
+                }
+            }
 
   private void UpdatePredictions() {
     Vessel main_vessel = PredictedVessel();
@@ -698,24 +711,29 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             principia_draw_styles_config_name);
     LoadDrawStyles(draw_styles);
 
-    if (unmodified_orbits_ == null) {
-      unmodified_orbits_ = new Dictionary<CelestialBody, Orbit>();
-      foreach (CelestialBody celestial in FlightGlobals.Bodies.Where(
-          c => c.orbit != null)) {
-        unmodified_orbits_.Add(
+                if (unmodified_orbits_ == null)
+                {
+                    unmodified_orbits_ = new Dictionary<CelestialBody, Orbit>();
+                    foreach (CelestialBody celestial in FlightGlobals.Bodies.Where(
+                        c => c.orbit != null))
+                    {
+                        if (!celestial.name.Equals("KopernicusWatchdog"))
+                        {
+                            unmodified_orbits_.Add(
             celestial,
-            new Orbit(inc   : celestial.orbit.inclination,
-                      e     : celestial.orbit.eccentricity,
-                      sma   : celestial.orbit.semiMajorAxis,
-                      lan   : celestial.orbit.LAN,
-                      argPe : celestial.orbit.argumentOfPeriapsis,
-                      mEp   : celestial.orbit.meanAnomalyAtEpoch,
-                      t     : celestial.orbit.epoch,
-                      body  : celestial.orbit.referenceBody));
-      }
-    }
+            new Orbit(inc: celestial.orbit.inclination,
+                      e: celestial.orbit.eccentricity,
+                      sma: celestial.orbit.semiMajorAxis,
+                      lan: celestial.orbit.LAN,
+                      argPe: celestial.orbit.argumentOfPeriapsis,
+                      mEp: celestial.orbit.meanAnomalyAtEpoch,
+                      t: celestial.orbit.epoch,
+                      body: celestial.orbit.referenceBody));
+                        }
+                    }
+                }
 
-    GameEvents.onShowUI.Add(() => { hide_all_gui_ = false; });
+                GameEvents.onShowUI.Add(() => { hide_all_gui_ = false; });
     GameEvents.onHideUI.Add(() => { hide_all_gui_ = true; });
     GameEvents.onGUIAdministrationFacilitySpawn.Add(() => {
       in_principia_scene_ = false;
@@ -887,12 +905,16 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
     // Orient the celestial bodies.
     if (PluginRunning()) {
-      foreach (var body in FlightGlobals.Bodies) {
-        body.scaledBody.transform.rotation =
+                    foreach (var body in FlightGlobals.Bodies)
+                    {
+                        if (!body.name.Equals("KopernicusWatchdog"))
+                        {
+                            body.scaledBody.transform.rotation =
             (UnityEngine.QuaternionD)plugin_.CelestialRotation(
                 body.flightGlobalsIndex);
-      }
-    }
+                        }
+                    }
+                }
 
     // Handle clicks on planets.
     if (MapView.MapIsEnabled) {
@@ -1445,7 +1467,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         // as far as I can tell, that does not move the bubble relative to the
         // rest of the universe.
         foreach (CelestialBody celestial in FlightGlobals.Bodies) {
-          celestial.position += offset;
+                            if (!celestial.name.Equals("KopernicusWatchdog"))
+                            {
+                                celestial.position += offset;
+                            }
         }
         foreach (Vessel vessel in FlightGlobals.Vessels.Where(
             is_manageable_on_rails)) {
@@ -1756,17 +1781,21 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       ApplyToBodyTree(body => UpdateBody(body, Planetarium.GetUniversalTime()));
 
       foreach (var body in FlightGlobals.Bodies) {
-        // TODO(egg): I have no idea why this |swizzle| thing makes things work.
-        // This probably really means something in terms of frames that should
-        // be done in the C++ instead---once I figure out what it is.
-        var swizzly_body_world_to_world =
+                        if (!body.name.Equals("KopernicusWatchdog"))
+                        {
+                            // TODO(egg): I have no idea why this |swizzle| thing makes things work.
+                            // This probably really means something in terms of frames that should
+                            // be done in the C++ instead---once I figure out what it is.
+                            var swizzly_body_world_to_world =
             ((UnityEngine.QuaternionD)plugin_.CelestialRotation(
                   body.flightGlobalsIndex)).swizzle;
-        body.BodyFrame = new Planetarium.CelestialFrame{
-            X = swizzly_body_world_to_world * new Vector3d{x = 1, y = 0, z = 0},
-            Y = swizzly_body_world_to_world * new Vector3d{x = 0, y = 1, z = 0},
-            Z = swizzly_body_world_to_world * new Vector3d{x = 0, y = 0, z = 1}
-        };
+                            body.BodyFrame = new Planetarium.CelestialFrame
+                            {
+                                X = swizzly_body_world_to_world * new Vector3d { x = 1, y = 0, z = 0 },
+                                Y = swizzly_body_world_to_world * new Vector3d { x = 0, y = 1, z = 0 },
+                                Z = swizzly_body_world_to_world * new Vector3d { x = 0, y = 0, z = 1 }
+                            };
+                        }
       }
     }
   }
@@ -2002,15 +2031,20 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     }
   }
 
-  private void RemoveStockTrajectoriesIfNeeded(CelestialBody celestial) {
-    if (celestial.orbitDriver == null) {
-      return;
-    }
-    celestial.orbitDriver.Renderer.drawMode =
-        main_window_.display_patched_conics
-            ? OrbitRenderer.DrawMode.REDRAW_AND_RECALCULATE
-            : OrbitRenderer.DrawMode.OFF;
-  }
+            private void RemoveStockTrajectoriesIfNeeded(CelestialBody celestial)
+            {
+                if (!celestial.name.Equals("KopernicusWatchdog"))
+                {
+                    if (celestial.orbitDriver == null)
+                    {
+                        return;
+                    }
+                    celestial.orbitDriver.Renderer.drawMode =
+                        main_window_.display_patched_conics
+                            ? OrbitRenderer.DrawMode.REDRAW_AND_RECALCULATE
+                            : OrbitRenderer.DrawMode.OFF;
+                }
+            }
 
   private void RemoveStockTrajectoriesIfNeeded(Vessel vessel) {
     if (vessel.patchedConicRenderer != null) {
@@ -2084,23 +2118,28 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   }
 
   private void HandleMapViewClicks() {
-    if (InputLockManager.IsUnlocked(ControlTypes.MAP_UI) &&
-        !UnityEngine.EventSystems.EventSystem.current.
-            IsPointerOverGameObject() &&
-        Mouse.Left.GetClick() &&
-        !ManeuverGizmo.HasMouseFocus &&
-        !main_window_.selecting_active_vessel_target) {
-      var ray = PlanetariumCamera.Camera.ScreenPointToRay(
-          UnityEngine.Input.mousePosition);
-      foreach (var celestial in FlightGlobals.Bodies) {
-        double scaled_distance = Vector3d.
-            Cross(ray.direction,
-                  ScaledSpace.LocalToScaledSpace(celestial.position) -
-                  ray.origin).magnitude;
-        if (scaled_distance * ScaledSpace.ScaleFactor < celestial.Radius) {
-          main_window_.SelectTargetCelestial(celestial.MapObject);
-        }
-      }
+                if (InputLockManager.IsUnlocked(ControlTypes.MAP_UI) &&
+                    !UnityEngine.EventSystems.EventSystem.current.
+                        IsPointerOverGameObject() &&
+                    Mouse.Left.GetClick() &&
+                    !ManeuverGizmo.HasMouseFocus &&
+                    !main_window_.selecting_active_vessel_target){
+                    var ray = PlanetariumCamera.Camera.ScreenPointToRay(
+                        UnityEngine.Input.mousePosition);
+                    foreach (var celestial in FlightGlobals.Bodies)
+                    {
+                        if (!celestial.name.Equals("KopernicusWatchdog"))
+                        {
+                            double scaled_distance = Vector3d.
+                            Cross(ray.direction,
+                                  ScaledSpace.LocalToScaledSpace(celestial.position) -
+                                  ray.origin).magnitude;
+                        if (scaled_distance * ScaledSpace.ScaleFactor < celestial.Radius)
+                        {
+                            main_window_.SelectTargetCelestial(celestial.MapObject);
+                        }
+                    }
+                }
     }
   }
 
@@ -2109,10 +2148,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       return;
     }
     foreach (var celestial in FlightGlobals.Bodies.Where(
-        c => c.MapObject?.uiNode != null)) {
-      celestial.MapObject.uiNode.OnClick -= OnCelestialNodeClick;
-      celestial.MapObject.uiNode.OnClick += OnCelestialNodeClick;
-      RemoveStockTrajectoriesIfNeeded(celestial);
+        c => c.MapObject?.uiNode != null))
+            {
+                if (!celestial.name.Equals("KopernicusWatchdog"))
+                {
+                    celestial.MapObject.uiNode.OnClick -= OnCelestialNodeClick;
+                    celestial.MapObject.uiNode.OnClick += OnCelestialNodeClick;
+                    RemoveStockTrajectoriesIfNeeded(celestial);
+                }
     }
     foreach (var vessel in FlightGlobals.Vessels.Where(
         v => v.mapObject?.uiNode != null)) {
@@ -2462,35 +2505,40 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         var name_to_initial_state = initial_state.GetNodes("body").
             ToDictionary(node => node.GetUniqueValue("name"));
         BodyProcessor insert_body = body => {
-          Log.Info("Inserting " + body.name + "...");
-          if (!name_to_gravity_model.TryGetValue(
-                  body.name,
-                  out ConfigNode body_gravity_model)) {
-            Log.Fatal("missing gravity model for " + body.name);
-          }
-          if (!name_to_initial_state.TryGetValue(
-                  body.name,
-                  out ConfigNode body_initial_state)) {
-            Log.Fatal("missing Cartesian initial state for " + body.name);
-          }
-          int? parent_index = body.orbit?.referenceBody.flightGlobalsIndex;
-          // GetUniqueValue resp. GetAtMostOneValue corresponding to required
-          // resp. optional in principia.serialization.GravityModel.Body.
-          var body_parameters =
-              ConfigNodeParsers.NewCartesianBodyParameters(body,
-                body_gravity_model);
-          // GetUniqueValue since these are all required fields in
-          // principia.serialization.InitialState.Cartesian.Body.
-          plugin_.InsertCelestialAbsoluteCartesian(
-              celestial_index : body.flightGlobalsIndex,
-              parent_index    : parent_index,
-              body_parameters : body_parameters,
-              x               : body_initial_state.GetUniqueValue("x"),
-              y               : body_initial_state.GetUniqueValue("y"),
-              z               : body_initial_state.GetUniqueValue("z"),
-              vx              : body_initial_state.GetUniqueValue("vx"),
-              vy              : body_initial_state.GetUniqueValue("vy"),
-              vz              : body_initial_state.GetUniqueValue("vz"));
+            if (!body.name.Equals("KopernicusWatchdog"))
+            {
+                Log.Info("Inserting " + body.name + "...");
+                if (!name_to_gravity_model.TryGetValue(
+                        body.name,
+                        out ConfigNode body_gravity_model))
+                {
+                    Log.Fatal("missing gravity model for " + body.name);
+                }
+                if (!name_to_initial_state.TryGetValue(
+                        body.name,
+                        out ConfigNode body_initial_state))
+                {
+                    Log.Fatal("missing Cartesian initial state for " + body.name);
+                }
+                int? parent_index = body.orbit?.referenceBody.flightGlobalsIndex;
+                // GetUniqueValue resp. GetAtMostOneValue corresponding to required
+                // resp. optional in principia.serialization.GravityModel.Body.
+                var body_parameters =
+                    ConfigNodeParsers.NewCartesianBodyParameters(body,
+                      body_gravity_model);
+                // GetUniqueValue since these are all required fields in
+                // principia.serialization.InitialState.Cartesian.Body.
+                plugin_.InsertCelestialAbsoluteCartesian(
+                    celestial_index: body.flightGlobalsIndex,
+                    parent_index: parent_index,
+                    body_parameters: body_parameters,
+                    x: body_initial_state.GetUniqueValue("x"),
+                    y: body_initial_state.GetUniqueValue("y"),
+                    z: body_initial_state.GetUniqueValue("z"),
+                    vx: body_initial_state.GetUniqueValue("vx"),
+                    vy: body_initial_state.GetUniqueValue("vy"),
+                    vz: body_initial_state.GetUniqueValue("vz"));
+            }
         };
         insert_body(Planetarium.fetch.Sun);
         ApplyToBodyTree(insert_body);
