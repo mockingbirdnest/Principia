@@ -142,8 +142,6 @@ struct SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
   static Result Uninitialized(TriangularMatrix<LScalar, dimension> const& m);
 };
 
-// In the |rotation| field the eigenvectors appear in column.  They are
-// normalized.
 template<typename Scalar_>
 struct ClassicalJacobiGenerator<UnboundedMatrix<Scalar_>> {
   using Scalar = Scalar_;

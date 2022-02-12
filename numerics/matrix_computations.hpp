@@ -10,24 +10,49 @@ namespace internal_matrix_computations {
 using quantities::Quotient;
 using quantities::SquareRoot;
 
+// Declares:
+//   using Result = <upper triangular matrix>;
 template<typename U>
 struct CholeskyDecompositionGenerator;
 
+// Declares:
+//   struct Result {
+//     <upper triangular matrix> R;
+//     <vector> D;
+//   };
 template<typename V, typename U>
 struct ᵗRDRDecompositionGenerator;
 
+// Declares:
+//   using Result = <vector>;
 template<typename M, typename V>
 struct SubstitutionGenerator;
 
+// Declares:
+//   struct Result {
+//     <matrix> rotation;
+//     <vector> eigenvalues;
+//   };
+// Note that in the |rotation| field the eigenvectors appear in column.  They
+// are normalized.
 template<typename M>
 struct ClassicalJacobiGenerator;
 
+// Declares:
+//   using Result = <scalar>;
 template<typename M, typename V>
 struct RayleighQuotientGenerator;
 
+// Declares:
+//   struct Result {
+//     <vector> eigenvector;
+//     <scalar> eigenvalue;
+//   };
 template<typename M, typename V>
 struct RayleighQuotientIterationGenerator;
 
+// Declares:
+//   using Result = <vector>;
 template<typename M, typename V>
 struct SolveGenerator;
 
