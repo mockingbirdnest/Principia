@@ -51,15 +51,15 @@ class DavenportQMethodTest : public ::testing::Test {
 };
 
 TEST_F(DavenportQMethodTest, Identity) {
+  auto const rotation = Rotation<World1, World2>::Identity();
   EXPECT_THAT(DavenportQMethod(vectors1_, vectors1_, weights_),
-              AlmostEquals(Quaternion(1), 0));
+              AlmostEquals(rotation, 0));
 }
 
-TEST_F(DavenportQMethodTest, Rotation) {
+TEST_F(DavenportQMethodTest, FarFromIdentity) {
   Quaternion const q(2, R3Element<double>({1, -3, -2}));
   auto const normalized_q = q / q.Norm();
   Rotation<World1, World2> const rotation{normalized_q};
-  LOG(ERROR)<<normalized_q;
 
   std::vector<Vector<double, World2>> vectors2;
   for (auto const& vector1 : vectors1_) {
@@ -67,7 +67,7 @@ TEST_F(DavenportQMethodTest, Rotation) {
   }
 
   EXPECT_THAT(DavenportQMethod(vectors1_, vectors2, weights_),
-              AlmostEquals(normalized_q , 0));
+              AlmostEquals(rotation , 2));
 }
 
 }  // namespace numerics

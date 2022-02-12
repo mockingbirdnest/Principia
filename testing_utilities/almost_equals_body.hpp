@@ -220,6 +220,19 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 }
 
 template<typename T>
+template<typename FromFrame, typename ToFrame>
+bool AlmostEqualsMatcher<T>::MatchAndExplain(
+    geometry::Rotation<FromFrame, ToFrame> const& actual,
+    testing::MatchResultListener* listener) const {
+  return testing::ExplainMatchResult(
+      testing::AnyOf(
+          AlmostEquals(expected_.quaternion(), min_ulps_, max_ulps_),
+          AlmostEquals(-expected_.quaternion(), min_ulps_, max_ulps_)),
+      actual.quaternion(),
+      listener);
+}
+
+template<typename T>
 template<typename Scalar, typename Frame>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
     geometry::Vector<Scalar, Frame> const& actual,
