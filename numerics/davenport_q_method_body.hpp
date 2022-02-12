@@ -71,10 +71,11 @@ Rotation<FromFrame, ToFrame> DavenportQMethod(
       eigenvector = Quaternion(
           rotation(3, i),
           R3Element<double>(rotation(0, i), rotation(1, i), rotation(2, i)));
-      LOG(ERROR)<<most_positive_eigenvalue;
-      LOG(ERROR)<<eigenvector;
     }
   }
+
+  // The conjugation is because [And17] uses active rotations, but our rotations
+  // are passive.
   return Rotation<FromFrame, ToFrame>(eigenvector.Conjugate());
 }
 
