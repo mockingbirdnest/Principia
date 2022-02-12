@@ -9,13 +9,14 @@ namespace principia {
 namespace numerics {
 namespace internal_davenport_q_method {
 
-using geometry::Quaternion;
+using geometry::Rotation;
 using geometry::Vector;
 
 template<typename FromFrame, typename ToFrame, typename Weight>
-Quaternion DavenportQMethod(std::vector<Vector<double, FromFrame>> const& a,
-                            std::vector<Vector<double, ToFrame>> const& b,
-                            std::vector<Weight> const& weights);
+Rotation<FromFrame, ToFrame> DavenportQMethod(
+    std::vector<Vector<double, FromFrame>> const& a,
+    std::vector<Vector<double, ToFrame>> const& b,
+    std::vector<Weight> const& weights);
 
 }  // namespace internal_davenport_q_method
 

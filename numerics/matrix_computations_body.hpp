@@ -270,7 +270,7 @@ auto ClassicalJacobiGenerator<UnboundedMatrix<Scalar_>>::Identity(
 template<typename Scalar_>
 auto ClassicalJacobiGenerator<UnboundedMatrix<Scalar_>>::
 Uninitialized(UnboundedMatrix<Scalar> const& m) -> Result {
-  return {.rotation = UnboundedMatrix<Scalar>(m.rows(), m.columns()),
+  return {.rotation = UnboundedMatrix<double>(m.rows(), m.columns()),
           .eigenvalues = UnboundedVector<Scalar>(m.columns())};
 }
 
@@ -283,7 +283,7 @@ Identity(FixedMatrix<Scalar_, dimension, dimension> const& m) -> Rotation {
 template<typename Scalar_, int dimension>
 auto ClassicalJacobiGenerator<FixedMatrix<Scalar_, dimension, dimension>>::
 Uninitialized(FixedMatrix<Scalar, dimension, dimension> const& m) -> Result {
-  return {.rotation = FixedMatrix<Scalar, dimension, dimension>(),
+  return {.rotation = FixedMatrix<double, dimension, dimension>(),
           .eigenvalues = FixedVector<Scalar, dimension>()};
 }
 

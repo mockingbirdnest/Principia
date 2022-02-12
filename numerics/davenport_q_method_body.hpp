@@ -6,6 +6,7 @@
 #include "geometry/r3_element.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/matrix_computations.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace numerics {
@@ -15,11 +16,13 @@ using geometry::KroneckerProduct;
 using geometry::Quaternion;
 using geometry::R3Element;
 using geometry::R3x3Matrix;
+using quantities::Infinity;
 
 template<typename FromFrame, typename ToFrame, typename Weight>
-Quaternion DavenportQMethod(std::vector<Vector<double, FromFrame>> const& a,
-                            std::vector<Vector<double, ToFrame>> const& b,
-                            std::vector<Weight> const& weights) {
+Rotation<FromFrame, ToFrame> DavenportQMethod(
+    std::vector<Vector<double, FromFrame>> const& a,
+    std::vector<Vector<double, ToFrame>> const& b,
+    std::vector<Weight> const& weights) {
   std::int64_t const size = a.size();
   CHECK_EQ(size, b.size());
   CHECK_EQ(size, weights.size());
@@ -53,16 +56,26 @@ Quaternion DavenportQMethod(std::vector<Vector<double, FromFrame>> const& a,
     K(i, 3) = z[i];
   }
   K(3, 3) = μ;
-  LOG(ERROR)<<K;
 
-  // Find its eigenvector closest to the identity.
-  FixedVector<double, 4> const q₀({0, 0, 0, 1});
-  auto const eigensystem = RayleighQuotientIteration(K, q₀);
-  auto const& q = eigensystem.eigenvector;
+  // Compute its eigensystem.
+  auto const eigensystem = ClassicalJacobi(K, /*max_iterations=*/20);
+  auto const& eigenvalues = eigensystem.eigenvalues;
+  auto const& rotation = eigensystem.rotation;
 
-  LOG(ERROR)<<eigensystem.eigenvalue;
-
-  return Quaternion(q[3], R3Element<double>(q[0], q[1], q[2]));
+  // Find the most positive eigenvalue and the corresponding eigenvector;
+  auto most_positive_eigenvalue = -Infinity<Weight>;
+  Quaternion eigenvector;
+  for (int i = 0; i < eigenvalues.size(); ++i) {
+    if (eigenvalues[i] > most_positive_eigenvalue) {
+      most_positive_eigenvalue = eigenvalues[i];
+      eigenvector = Quaternion(
+          rotation(3, i),
+          R3Element<double>(rotation(0, i), rotation(1, i), rotation(2, i)));
+      LOG(ERROR)<<most_positive_eigenvalue;
+      LOG(ERROR)<<eigenvector;
+    }
+  }
+  return Rotation<FromFrame, ToFrame>(eigenvector.Conjugate());
 }
 
 }  // namespace internal_davenport_q_method
