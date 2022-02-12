@@ -95,10 +95,6 @@ class FixedMatrix final {
  private:
   std::array<Scalar, size()> data_;
 
-  template<typename L, typename R, int r, int d, int c>
-  friend constexpr FixedMatrix<Product<L, R>, r, c> operator*(
-      FixedMatrix<L, r, d> const& left,
-      FixedMatrix<R, d, c> const& right);
   template<typename L, typename R, int r, int c>
   friend constexpr FixedVector<Product<L, R>, r> operator*(
       FixedMatrix<L, r, c> const& left,

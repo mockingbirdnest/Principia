@@ -20,35 +20,28 @@ using quantities::Abs;
 using quantities::Pow;
 using quantities::Sqrt;
 
-struct CosSin {
+// This is J(p, q, θ) in [GV13] section 8.5.1.  This matrix is also called a
+// Givens rotation.  As mentioned in [GV13] section 5.1.9, "It is critical that
+// the special structure of a Givens rotation matrix be exploited".
+struct JacobiRotation {
   double cos;
   double sin;
-};
-
-// This is J(p, q, θ) in [GV13] section 8.5.1.  This matrix is also called a
-// Givens rotation.
-template<typename Rotation>
-Rotation JacobiRotation(Rotation const& identity,
-                        int const p,
-                        int const q,
-                        CosSin const& θ) {
-  auto const& [c, s] = θ;
-  auto J = identity;
-  J(p, p) = c;
-  J(q, q) = c;
-  J(p, q) = s;
-  J(q, p) = -s;
-  return J;
+  int p;
+  int q;
 };
 
 // See [GV13] section 8.5.2, algorithm 8.5.1.
 template<typename Scalar, typename Matrix>
-CosSin SymmetricShurDecomposition2(Matrix const& A,
-                                   int const p,
-                                   int const q) {
+JacobiRotation SymmetricShurDecomposition2(Matrix const& A,
+                                           int const p,
+                                           int const q) {
+  DCHECK_LE(0, p);
+  DCHECK_LT(p, q);
+  DCHECK_LT(q, A.rows());
   static Scalar const zero{};
-  CosSin θ;
-  auto& [c, s] = θ;
+  JacobiRotation J = {.p = p, .q = q};
+  auto& c = J.cos;
+  auto& s = J.sin;
   if (A(p, q) != zero) {
     double const τ = (A(q, q) - A(p, p)) / (2 * A(p, q));
     double t;
@@ -60,10 +53,37 @@ CosSin SymmetricShurDecomposition2(Matrix const& A,
     c = 1 / Sqrt(1 + t * t);
     s = t * c;
   } else {
-    θ = {1, 0};
+    c = 1;
+    s = 0;
   }
-  return θ;
+  return J;
 };
+
+// For these two functions, see [GV13] section 5.1.9.
+
+// A becomes ᵗJ A.
+template<typename Matrix>
+void Premultiplication(JacobiRotation const& J, Matrix& A) {
+  auto const& [c, s, p, q] = J;
+  for (int j = 0; j < A.columns(); ++j) {
+    auto const τ₁ = A(p, j);
+    auto const τ₂ = A(q, j);
+    A(p, j) = c * τ₁ - s * τ₂;
+    A(q, j) = s * τ₁ + c * τ₂;
+  }
+}
+
+// A becomes A J.
+template<typename Matrix>
+void Postmultiplication(Matrix& A, JacobiRotation const& J) {
+  auto const& [c, s, p, q] = J;
+  for (int j = 0; j < A.rows(); ++j) {
+    auto const τ₁ = A(j, p);
+    auto const τ₂ = A(j, q);
+    A(j, p) = c * τ₁ - s * τ₂;
+    A(j, q) = s * τ₁ + c * τ₂;
+  }
+}
 
 
 template<typename Scalar_>
@@ -427,8 +447,8 @@ ClassicalJacobi(Matrix const& A,  int max_iterations, double ε) {
   auto diagonalized_A = A;
   for (int k = 0; k < max_iterations; ++k) {
     Scalar max_Apq{};
-    int max_p;
-    int max_q;
+    int max_p = -1;
+    int max_q = -1;
 
     // Find the largest off-diagonal element and exit if it's small.
     for (int p = 0; p < diagonalized_A.rows(); ++p) {
@@ -445,10 +465,15 @@ ClassicalJacobi(Matrix const& A,  int max_iterations, double ε) {
       break;
     }
 
-    auto θ = SymmetricShurDecomposition2<Scalar>(diagonalized_A, max_p, max_q);
-    auto const J = JacobiRotation(identity, max_p, max_q, θ);
-    diagonalized_A = J.Transpose() * diagonalized_A * J;
-    V = V * J;
+    auto const J =
+        SymmetricShurDecomposition2<Scalar>(diagonalized_A, max_p, max_q);
+
+    // A = ᵗJ A J
+    Postmultiplication(diagonalized_A, J);
+    Premultiplication(J, diagonalized_A);
+
+    // V = V J
+    Postmultiplication(V, J);
     if (k == max_iterations - 1) {
       LOG(ERROR) << "Difficult diagonalization: " << A
                  << ", stopping with: " << diagonalized_A;

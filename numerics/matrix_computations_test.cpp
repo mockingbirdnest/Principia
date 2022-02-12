@@ -116,7 +116,6 @@ TYPED_TEST(MatrixComputationsTest, ClassicalJacobi) {
                                    -6.7936661606326601037,
                                    -0.46037917308323670016}),
                            5));
-  LOG(ERROR)<<quantities::DebugString(actual.rotation(0, 1));
   EXPECT_THAT(actual.rotation,
               AlmostEquals(Matrix({ 0.69703188150800443363259536246,
                                    -0.0242745668874571481045489833007,
