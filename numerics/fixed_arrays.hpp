@@ -84,12 +84,21 @@ class FixedMatrix final {
   template<int r>
   Scalar const* row() const;
 
+  FixedMatrix Transpose() const;
+  Scalar FrobeniusNorm() const;
+
   bool operator==(FixedMatrix const& right) const;
   bool operator!=(FixedMatrix const& right) const;
+
+  static FixedMatrix Identity();
 
  private:
   std::array<Scalar, size()> data_;
 
+  template<typename L, typename R, int r, int d, int c>
+  friend constexpr FixedMatrix<Product<L, R>, r, c> operator*(
+      FixedMatrix<L, r, d> const& left,
+      FixedMatrix<R, d, c> const& right);
   template<typename L, typename R, int r, int c>
   friend constexpr FixedVector<Product<L, R>, r> operator*(
       FixedMatrix<L, r, c> const& left,
@@ -204,6 +213,12 @@ template<typename ScalarLeft, typename ScalarRight, int size>
 constexpr Product<ScalarLeft, ScalarRight> operator*(
     TransposedView<FixedVector<ScalarLeft, size>> const& left,
     FixedVector<ScalarRight, size> const& right);
+
+template<typename ScalarLeft, typename ScalarRight,
+         int rows, int dimension, int columns>
+constexpr FixedMatrix<Product<ScalarLeft, ScalarRight>, rows, columns>
+operator*(FixedMatrix<ScalarLeft, rows, dimension> const& left,
+          FixedMatrix<ScalarRight, dimension, columns> const& right);
 
 template<typename ScalarLeft, typename ScalarRight, int rows, int columns>
 constexpr FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(

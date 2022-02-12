@@ -16,6 +16,8 @@ class FixedArraysTest : public ::testing::Test {
     : m34_({-8,  -6, -4, -7,
             -4, -10,  9, -5,
              6,  -3, -2, -9}),
+      m23_({1, -2,  0,
+            2,  3,  7}),
       v3_({10, 31, -47}),
       v4_({-3, -3, 1, 4}),
       sl4_({
@@ -32,6 +34,7 @@ class FixedArraysTest : public ::testing::Test {
                       89}) {}
 
   FixedMatrix<double, 3, 4> m34_;
+  FixedMatrix<double, 2, 3> m23_;
   FixedVector<double, 3> v3_;
   FixedVector<double, 4> v4_;
   FixedStrictlyLowerTriangularMatrix<double, 4> sl4_;
@@ -79,11 +82,15 @@ TEST_F(FixedArraysTest, Assignment) {
 TEST_F(FixedArraysTest, Norm) {
   EXPECT_EQ(35, v4_.Transpose() * v4_);
   EXPECT_EQ(Sqrt(35.0), v4_.Norm());
+  EXPECT_EQ(Sqrt(517.0), m34_.FrobeniusNorm());
 }
 
 TEST_F(FixedArraysTest, MultiplicationDivision) {
   EXPECT_EQ(v3_, m34_ * v4_);
   EXPECT_EQ((FixedVector<double, 4>({-1.5, -1.5, 0.5, 2.0})), v4_ / 2.0);
+  EXPECT_EQ((FixedMatrix<double, 2, 4>({ 0,  14, -22,   3,
+                                        14, -63,   5, -92})),
+            m23_ * m34_);
 }
 
 TEST_F(FixedArraysTest, VectorIndexing) {

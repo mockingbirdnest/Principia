@@ -96,11 +96,17 @@ TEST_F(UnboundedArraysTest, Assignment) {
 TEST_F(UnboundedArraysTest, Norm) {
   EXPECT_EQ(35, v4_.Transpose() * v4_);
   EXPECT_EQ(Sqrt(35.0), v4_.Norm());
+  EXPECT_EQ(Sqrt(4'126'647.0), m4_.FrobeniusNorm());
 }
 
 TEST_F(UnboundedArraysTest, MultiplicationDivision) {
   EXPECT_EQ(UnboundedVector<double>({14, 94, 644, 4414}), m4_ * v4_);
   EXPECT_EQ(UnboundedVector<double>({-1.5, -1.5, 0.5, 2.0}), v4_ / 2.0);
+  EXPECT_EQ(UnboundedMatrix<double>(
+                {  2067,    3345,   5412,     8757,
+                  14085,   22794,  36879,    59673,
+                  96528,  156213,  252741,  408954,
+                 661611, 1070697, 1732308, 2803005}), m4_ * m4_);
 }
 
 TEST_F(UnboundedArraysTest, VectorIndexing) {
