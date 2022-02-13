@@ -20,6 +20,72 @@ using quantities::Abs;
 using quantities::Pow;
 using quantities::Sqrt;
 
+// This is J(p, q, θ) in [GV13] section 8.5.1.  This matrix is also called a
+// Givens rotation.  As mentioned in [GV13] section 5.1.9, "It is critical that
+// the special structure of a Givens rotation matrix be exploited".
+struct JacobiRotation {
+  double cos;
+  double sin;
+  int p;
+  int q;
+};
+
+// See [GV13] section 8.5.2, algorithm 8.5.1.
+template<typename Scalar, typename Matrix>
+JacobiRotation SymmetricSchurDecomposition2By2(Matrix const& A,
+                                               int const p,
+                                               int const q) {
+  DCHECK_LE(0, p);
+  DCHECK_LT(p, q);
+  DCHECK_LT(q, A.rows());
+  constexpr Scalar const zero{};
+  JacobiRotation J = {.p = p, .q = q};
+  auto& c = J.cos;
+  auto& s = J.sin;
+  if (A(p, q) != zero) {
+    double const τ = (A(q, q) - A(p, p)) / (2 * A(p, q));
+    double t;
+    if (τ >= 0) {
+      t = 1 / (τ + Sqrt(1 + τ * τ));
+    } else {
+      t = 1 / (τ - Sqrt(1 + τ * τ));
+    }
+    c = 1 / Sqrt(1 + t * t);
+    s = t * c;
+  } else {
+    c = 1;
+    s = 0;
+  }
+  return J;
+};
+
+// For these two functions, see [GV13] section 5.1.9.
+
+// A becomes ᵗJ A.
+template<typename Matrix>
+void PremultiplyByTranspose(JacobiRotation const& J, Matrix& A) {
+  auto const& [c, s, p, q] = J;
+  for (int j = 0; j < A.columns(); ++j) {
+    auto const τ₁ = A(p, j);
+    auto const τ₂ = A(q, j);
+    A(p, j) = c * τ₁ - s * τ₂;
+    A(q, j) = s * τ₁ + c * τ₂;
+  }
+}
+
+// A becomes A J.
+template<typename Matrix>
+void PostMultiply(Matrix& A, JacobiRotation const& J) {
+  auto const& [c, s, p, q] = J;
+  for (int j = 0; j < A.rows(); ++j) {
+    auto const τ₁ = A(j, p);
+    auto const τ₂ = A(j, q);
+    A(j, p) = c * τ₁ - s * τ₂;
+    A(j, q) = s * τ₁ + c * τ₂;
+  }
+}
+
+
 template<typename Scalar_>
 struct CholeskyDecompositionGenerator<UnboundedUpperTriangularMatrix<Scalar_>> {
   using Scalar = Scalar_;
@@ -74,6 +140,31 @@ struct SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
                              FixedVector<RScalar, dimension>> {
   using Result = FixedVector<Quotient<RScalar, LScalar>, dimension>;
   static Result Uninitialized(TriangularMatrix<LScalar, dimension> const& m);
+};
+
+template<typename Scalar_>
+struct ClassicalJacobiGenerator<UnboundedMatrix<Scalar_>> {
+  using Scalar = Scalar_;
+  using Rotation = UnboundedMatrix<double>;
+  struct Result {
+    UnboundedMatrix<double> rotation;
+    UnboundedVector<Scalar> eigenvalues;
+  };
+  static Rotation Identity(UnboundedMatrix<Scalar> const& m);
+  static Result Uninitialized(UnboundedMatrix<Scalar> const& m);
+};
+
+template<typename Scalar_, int dimension>
+struct ClassicalJacobiGenerator<FixedMatrix<Scalar_, dimension, dimension>> {
+  using Scalar = Scalar_;
+  using Rotation = FixedMatrix<double, dimension, dimension>;
+  struct Result {
+    FixedMatrix<double, dimension, dimension> rotation;
+    FixedVector<Scalar, dimension> eigenvalues;
+  };
+  static Rotation Identity(FixedMatrix<Scalar, dimension, dimension> const& m);
+  static Result Uninitialized(
+      FixedMatrix<Scalar, dimension, dimension> const& m);
 };
 
 template<typename MScalar, typename VScalar>
@@ -166,6 +257,32 @@ auto SubstitutionGenerator<TriangularMatrix<LScalar>,
                            UnboundedVector<RScalar>>::
 Uninitialized(TriangularMatrix<LScalar> const& m) -> Result {
   return Result(m.columns(), uninitialized);
+}
+
+template<typename Scalar_>
+auto ClassicalJacobiGenerator<UnboundedMatrix<Scalar_>>::Identity(
+    UnboundedMatrix<Scalar_> const& m) -> Rotation {
+  return UnboundedMatrix<Scalar>::Identity(m.rows(), m.columns());
+}
+
+template<typename Scalar_>
+auto ClassicalJacobiGenerator<UnboundedMatrix<Scalar_>>::
+Uninitialized(UnboundedMatrix<Scalar> const& m) -> Result {
+  return {.rotation = UnboundedMatrix<Scalar>(m.rows(), m.columns()),
+          .eigenvalues = UnboundedVector<Scalar>(m.columns())};
+}
+
+template<typename Scalar_, int dimension>
+auto ClassicalJacobiGenerator<FixedMatrix<Scalar_, dimension, dimension>>::
+Identity(FixedMatrix<Scalar_, dimension, dimension> const& m) -> Rotation {
+  return Rotation::Identity();
+}
+
+template<typename Scalar_, int dimension>
+auto ClassicalJacobiGenerator<FixedMatrix<Scalar_, dimension, dimension>>::
+Uninitialized(FixedMatrix<Scalar, dimension, dimension> const& m) -> Result {
+  return {.rotation = FixedMatrix<Scalar, dimension, dimension>(),
+          .eigenvalues = FixedVector<Scalar, dimension>()};
 }
 
 template<typename MScalar, typename VScalar>
@@ -311,6 +428,60 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
     x[i] = s / L(i, i);
   }
   return x;
+}
+
+template<typename Matrix>
+typename ClassicalJacobiGenerator<Matrix>::Result
+ClassicalJacobi(Matrix const& A,  int max_iterations, double ε) {
+  using G = ClassicalJacobiGenerator<Matrix>;
+  using Scalar = typename G::Scalar;
+  auto result = G::Uninitialized(A);
+  auto& V = result.rotation;
+
+  // [GV13], Algorithm 8.5.2.
+  auto const identity = G::Identity(A);
+  auto const A_frobenius_norm = A.FrobeniusNorm();
+  V = identity;
+  auto diagonalized_A = A;
+  for (int k = 0; k < max_iterations; ++k) {
+    Scalar max_Apq{};
+    int max_p = -1;
+    int max_q = -1;
+
+    // Find the largest off-diagonal element and exit if it's small.
+    for (int p = 0; p < diagonalized_A.rows(); ++p) {
+      for (int q = p + 1; q < diagonalized_A.columns(); ++q) {
+        Scalar const abs_Apq = Abs(diagonalized_A(p, q));
+        if (abs_Apq >= max_Apq) {
+          max_Apq = abs_Apq;
+          max_p = p;
+          max_q = q;
+        }
+      }
+    }
+    if (max_Apq <= ε * A_frobenius_norm) {
+      break;
+    }
+
+    auto const J =
+        SymmetricSchurDecomposition2By2<Scalar>(diagonalized_A, max_p, max_q);
+
+    // A = ᵗJ A J
+    PostMultiply(diagonalized_A, J);
+    PremultiplyByTranspose(J, diagonalized_A);
+
+    // V = V J
+    PostMultiply(V, J);
+    if (k == max_iterations - 1) {
+      LOG(ERROR) << "Difficult diagonalization: " << A
+                 << ", stopping with: " << diagonalized_A;
+    }
+  }
+
+  for (int i = 0; i < A.rows(); ++i) {
+    result.eigenvalues[i] = diagonalized_A(i, i);
+  }
+  return result;
 }
 
 template<typename Matrix, typename Vector>

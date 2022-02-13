@@ -78,6 +78,10 @@ class AlmostEqualsMatcher final {
   template<typename Scalar, int size>
   bool MatchAndExplain(numerics::FixedVector<Scalar, size> const& actual,
                        testing::MatchResultListener* listener) const;
+  template<typename Scalar, int rows, int columns>
+  bool MatchAndExplain(
+      numerics::FixedMatrix<Scalar, rows, columns> const& actual,
+      testing::MatchResultListener* listener) const;
   template<typename Scalar, int rows>
   bool MatchAndExplain(
       numerics::FixedLowerTriangularMatrix<Scalar, rows> const& actual,
@@ -89,6 +93,10 @@ class AlmostEqualsMatcher final {
   template<typename Scalar>
   bool MatchAndExplain(numerics::UnboundedVector<Scalar> const& actual,
                        testing::MatchResultListener* listener) const;
+  template<typename Scalar>
+  bool MatchAndExplain(
+      numerics::UnboundedMatrix<Scalar> const& actual,
+      testing::MatchResultListener* listener) const;
   template<typename Scalar>
   bool MatchAndExplain(
       numerics::UnboundedLowerTriangularMatrix<Scalar> const& actual,

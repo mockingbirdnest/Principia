@@ -49,9 +49,9 @@ inline R3x3Matrix<double> JacobiRotation(int const p,
 
 // See [GV13] section 8.5.2, algorithm 8.5.1.
 template<typename Scalar>
-CosSin SymmetricShurDecomposition2(R3x3Matrix<Scalar> const& A,
-                                   int const p,
-                                   int const q) {
+CosSin SymmetricSchurDecomposition2By2(R3x3Matrix<Scalar> const& A,
+                                       int const p,
+                                       int const q) {
   static Scalar const zero{};
   CosSin θ;
   auto& [c, s] = θ;
@@ -70,7 +70,6 @@ CosSin SymmetricShurDecomposition2(R3x3Matrix<Scalar> const& A,
   }
   return θ;
 };
-
 
 
 template<typename Scalar,
@@ -208,7 +207,7 @@ typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
       break;
     }
 
-    auto θ = SymmetricShurDecomposition2(A, max_p, max_q);
+    auto θ = SymmetricSchurDecomposition2By2(A, max_p, max_q);
     auto const J = JacobiRotation(max_p, max_q, θ);
     A = J.Transpose() * A * J;
     V = V * J;

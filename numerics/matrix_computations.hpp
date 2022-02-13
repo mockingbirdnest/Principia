@@ -1,6 +1,8 @@
 ﻿
 #pragma once
 
+#include <limits>
+
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -10,21 +12,49 @@ namespace internal_matrix_computations {
 using quantities::Quotient;
 using quantities::SquareRoot;
 
+// Declares:
+//   using Result = ⟨upper triangular matrix⟩;
 template<typename U>
 struct CholeskyDecompositionGenerator;
 
+// Declares:
+//   struct Result {
+//     ⟨upper triangular matrix⟩ R;
+//     ⟨vector⟩ D;
+//   };
 template<typename V, typename U>
 struct ᵗRDRDecompositionGenerator;
 
+// Declares:
+//   using Result = ⟨vector⟩;
 template<typename M, typename V>
 struct SubstitutionGenerator;
 
+// Declares:
+//   struct Result {
+//     ⟨matrix⟩ rotation;
+//     ⟨vector⟩ eigenvalues;
+//   };
+// Note that in |rotation| the eigenvectors appear in column.  They are
+// normalized.
+template<typename M>
+struct ClassicalJacobiGenerator;
+
+// Declares:
+//   using Result = ⟨scalar⟩;
 template<typename M, typename V>
 struct RayleighQuotientGenerator;
 
+// Declares:
+//   struct Result {
+//     ⟨vector⟩ eigenvector;
+//     ⟨scalar⟩ eigenvalue;
+//   };
 template<typename M, typename V>
 struct RayleighQuotientIterationGenerator;
 
+// Declares:
+//   using Result = ⟨vector⟩;
 template<typename M, typename V>
 struct SolveGenerator;
 
@@ -52,6 +82,15 @@ typename SubstitutionGenerator<LowerTriangularMatrix, Vector>::Result
 ForwardSubstitution(LowerTriangularMatrix const& L,
                     Vector const& b);
 
+// Returns the eigensystem of A, which must be symmetric.
+// As a safety measure we limit the number of iterations.  We prefer to exit
+// when the matrix is nearly diagonal, though.
+template<typename Matrix>
+typename ClassicalJacobiGenerator<Matrix>::Result ClassicalJacobi(
+    Matrix const& A,
+    int max_iterations = 16,
+    double ε = std::numeric_limits<double>::epsilon() / 128);
+
 // Returns the Rayleigh quotient r(x) = ᵗx A x / ᵗx x.
 template<typename Matrix, typename Vector>
 typename RayleighQuotientGenerator<Matrix, Vector>::Result
@@ -71,6 +110,7 @@ Solve(Matrix A, Vector b);
 
 using internal_matrix_computations::BackSubstitution;
 using internal_matrix_computations::CholeskyDecomposition;
+using internal_matrix_computations::ClassicalJacobi;
 using internal_matrix_computations::ForwardSubstitution;
 using internal_matrix_computations::RayleighQuotient;
 using internal_matrix_computations::RayleighQuotientIteration;

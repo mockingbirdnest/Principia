@@ -100,6 +100,45 @@ TYPED_TEST(MatrixComputationsTest, ForwardSubstitution) {
   EXPECT_THAT(x4_actual, AlmostEquals(x4_expected, 0));
 }
 
+TYPED_TEST(MatrixComputationsTest, ClassicalJacobi) {
+  using Vector = typename std::tuple_element<0, TypeParam>::type;
+  using Matrix = typename std::tuple_element<3, TypeParam>::type;
+
+  Matrix const m4({ 1, 0, -2, 3,
+                    0, 4,  8, 1,
+                   -2, 8,  3, 5,
+                    3, 1,  5, 2});
+
+  auto const actual = ClassicalJacobi(m4, /*max_iterations=*/20);
+  EXPECT_THAT(actual.eigenvalues,
+              AlmostEquals(Vector({ 4.1113216733296883337,
+                                   13.142723660386208470,
+                                   -6.7936661606326601037,
+                                   -0.46037917308323670016}),
+                           5));
+  EXPECT_THAT(actual.rotation,
+              AlmostEquals(Matrix({ 0.69703188150800443363259536246,
+                                   -0.0242745668874571481045489833007,
+                                    0.348414169206928869401042467771,
+                                   -0.62623068294334091553061725607,
+
+                                   -0.253480622026314290230470255713,
+                                    0.63670280841355494645059139667,
+                                   -0.461338172568875015343083925357,
+                                   -0.56349285580764520595180494534,
+
+                                   -0.086667079266903233811093219163,
+                                    0.68301357119387773794045748748,
+                                    0.67900055330874283257183529919,
+                                    0.254832351836950053168269666832,
+
+                                    0.66511874713460630976547141298,
+                                    0.357089261565933987671587390098,
+                                   -0.452474204605165882087767104452,
+                                    0.474732983530015631333696554458}),
+                           4));
+}
+
 TYPED_TEST(MatrixComputationsTest, RayleighQuotient) {
   using Vector = typename std::tuple_element<0, TypeParam>::type;
   using Matrix = typename std::tuple_element<3, TypeParam>::type;
