@@ -84,8 +84,13 @@ class FixedMatrix final {
   template<int r>
   Scalar const* row() const;
 
+  FixedMatrix Transpose() const;
+  Scalar FrobeniusNorm() const;
+
   bool operator==(FixedMatrix const& right) const;
   bool operator!=(FixedMatrix const& right) const;
+
+  static FixedMatrix Identity();
 
  private:
   std::array<Scalar, size()> data_;
@@ -204,6 +209,12 @@ template<typename ScalarLeft, typename ScalarRight, int size>
 constexpr Product<ScalarLeft, ScalarRight> operator*(
     TransposedView<FixedVector<ScalarLeft, size>> const& left,
     FixedVector<ScalarRight, size> const& right);
+
+template<typename ScalarLeft, typename ScalarRight,
+         int rows, int dimension, int columns>
+constexpr FixedMatrix<Product<ScalarLeft, ScalarRight>, rows, columns>
+operator*(FixedMatrix<ScalarLeft, rows, dimension> const& left,
+          FixedMatrix<ScalarRight, dimension, columns> const& right);
 
 template<typename ScalarLeft, typename ScalarRight, int rows, int columns>
 constexpr FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(

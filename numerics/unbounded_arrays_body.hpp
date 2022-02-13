@@ -15,6 +15,7 @@ namespace numerics {
 namespace internal_unbounded_arrays {
 
 using base::uninitialized;
+using quantities::Pow;
 using quantities::Sqrt;
 using quantities::Square;
 
@@ -124,17 +125,6 @@ UnboundedMatrix<Scalar>::UnboundedMatrix(std::initializer_list<Scalar> data)
 }
 
 template<typename Scalar>
-UnboundedMatrix<Scalar> UnboundedMatrix<Scalar>::Transpose() const {
-  UnboundedMatrix<Scalar> m(columns_, rows_, uninitialized);
-  for (int i = 0; i < rows_; ++i) {
-    for (int j = 0; j < columns_; ++j) {
-      m(j, i) = (*this)(i, j);
-    }
-  }
-  return m;
-}
-
-template<typename Scalar>
 int UnboundedMatrix<Scalar>::columns() const {
   return columns_;
 }
@@ -147,6 +137,28 @@ int UnboundedMatrix<Scalar>::rows() const {
 template<typename Scalar>
 int UnboundedMatrix<Scalar>::size() const {
   return rows_ * columns_;
+}
+
+template<typename Scalar>
+UnboundedMatrix<Scalar> UnboundedMatrix<Scalar>::Transpose() const {
+  UnboundedMatrix<Scalar> m(columns_, rows_, uninitialized);
+  for (int i = 0; i < rows_; ++i) {
+    for (int j = 0; j < columns_; ++j) {
+      m(j, i) = (*this)(i, j);
+    }
+  }
+  return m;
+}
+
+template<typename Scalar>
+Scalar UnboundedMatrix<Scalar>::FrobeniusNorm() const {
+  Square<Scalar> Σᵢⱼaᵢⱼ²{};
+  for (int i = 0; i < rows_; ++i) {
+    for (int j = 0; j < columns_; ++j) {
+      Σᵢⱼaᵢⱼ² += Pow<2>((*this)(i, j));
+    }
+  }
+  return Sqrt(Σᵢⱼaᵢⱼ²);
 }
 
 template<typename Scalar>
@@ -177,6 +189,16 @@ bool UnboundedMatrix<Scalar>::operator==(UnboundedMatrix const& right) const {
 template<typename Scalar>
 bool UnboundedMatrix<Scalar>::operator!=(UnboundedMatrix const& right) const {
   return !(*this == right);
+}
+
+template<typename Scalar>
+UnboundedMatrix<Scalar>
+UnboundedMatrix<Scalar>::Identity(int const rows, int const columns) {
+  UnboundedMatrix<Scalar> m(rows, columns);
+  for (int i = 0; i < rows; ++i) {
+    m(i, i) = 1;
+  }
+  return m;
 }
 
 template<typename Scalar>
@@ -230,18 +252,6 @@ void UnboundedLowerTriangularMatrix<Scalar>::EraseToEnd(
 }
 
 template<typename Scalar>
-UnboundedUpperTriangularMatrix<Scalar>
-UnboundedLowerTriangularMatrix<Scalar>::Transpose() const {
-  UnboundedUpperTriangularMatrix<Scalar> u(rows_, uninitialized);
-  for (int i = 0; i < rows_; ++i) {
-    for (int j = 0; j <= i; ++j) {
-      u(j, i) = (*this)(i, j);
-    }
-  }
-  return u;
-}
-
-template<typename Scalar>
 int UnboundedLowerTriangularMatrix<Scalar>::columns() const {
   return rows_;
 }
@@ -272,6 +282,18 @@ Scalar const& UnboundedLowerTriangularMatrix<Scalar>::operator()(
   DCHECK_LE(column, row);
   DCHECK_LT(row, rows_);
   return data_[row * (row + 1) / 2 + column];
+}
+
+template<typename Scalar>
+UnboundedUpperTriangularMatrix<Scalar>
+UnboundedLowerTriangularMatrix<Scalar>::Transpose() const {
+  UnboundedUpperTriangularMatrix<Scalar> u(rows_, uninitialized);
+  for (int i = 0; i < rows_; ++i) {
+    for (int j = 0; j <= i; ++j) {
+      u(j, i) = (*this)(i, j);
+    }
+  }
+  return u;
 }
 
 template<typename Scalar>
@@ -347,18 +369,6 @@ void UnboundedUpperTriangularMatrix<Scalar>::EraseToEnd(
 }
 
 template<typename Scalar>
-UnboundedLowerTriangularMatrix<Scalar>
-UnboundedUpperTriangularMatrix<Scalar>::Transpose() const {
-  UnboundedLowerTriangularMatrix<Scalar> l(columns_, uninitialized);
-  for (int i = 0; i < rows(); ++i) {
-    for (int j = i; j < columns_; ++j) {
-      l(j, i) = (*this)(i, j);
-    }
-  }
-  return l;
-}
-
-template<typename Scalar>
 int UnboundedUpperTriangularMatrix<Scalar>::columns() const {
   return columns_;
 }
@@ -389,6 +399,18 @@ Scalar const& UnboundedUpperTriangularMatrix<Scalar>::operator()(
   DCHECK_LE(row, column);
   DCHECK_LT(column, columns_);
   return data_[column * (column + 1) / 2 + row];
+}
+
+template<typename Scalar>
+UnboundedLowerTriangularMatrix<Scalar>
+UnboundedUpperTriangularMatrix<Scalar>::Transpose() const {
+  UnboundedLowerTriangularMatrix<Scalar> l(columns_, uninitialized);
+  for (int i = 0; i < rows(); ++i) {
+    for (int j = i; j < columns_; ++j) {
+      l(j, i) = (*this)(i, j);
+    }
+  }
+  return l;
 }
 
 template<typename Scalar>
@@ -470,6 +492,23 @@ Product<ScalarLeft, ScalarRight> operator*(
   Product<ScalarLeft, ScalarRight> result{};
   for (int i = 0; i < left.transpose.size(); ++i) {
     result += left.transpose[i] * right[i];
+  }
+  return result;
+}
+
+template<typename ScalarLeft, typename ScalarRight>
+UnboundedMatrix<Product<ScalarLeft, ScalarRight>> operator*(
+    UnboundedMatrix<ScalarLeft> const& left,
+    UnboundedMatrix<ScalarRight> const& right) {
+  CHECK_EQ(left.columns(), right.rows());
+  UnboundedMatrix<Product<ScalarLeft, ScalarRight>> result(left.rows(),
+                                                           right.columns());
+  for (int i = 0; i < left.rows(); ++i) {
+    for (int j = 0; j < right.columns(); ++j) {
+      for (int k = 0; k < left.columns(); ++k) {
+        result(i, j) += left(i, k) * right(k, j);
+      }
+    }
   }
   return result;
 }

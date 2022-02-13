@@ -73,8 +73,6 @@ class UnboundedMatrix final {
   // The |data| must be in row-major format.
   UnboundedMatrix(std::initializer_list<Scalar> data);
 
-  UnboundedMatrix<Scalar> Transpose() const;
-
   int columns() const;
   int rows() const;
   int size() const;
@@ -85,8 +83,13 @@ class UnboundedMatrix final {
   Scalar& operator()(int row, int column);
   Scalar const& operator()(int row, int column) const;
 
+  UnboundedMatrix Transpose() const;
+  Scalar FrobeniusNorm() const;
+
   bool operator==(UnboundedMatrix const& right) const;
   bool operator!=(UnboundedMatrix const& right) const;
+
+  static UnboundedMatrix Identity(int rows, int columns);
 
  private:
   int rows_;
@@ -115,8 +118,6 @@ class UnboundedLowerTriangularMatrix final {
 
   void EraseToEnd(int begin_row_index);
 
-  UnboundedUpperTriangularMatrix<Scalar> Transpose() const;
-
   int columns() const;
   int rows() const;
   int size() const;
@@ -126,6 +127,8 @@ class UnboundedLowerTriangularMatrix final {
   // implies undefined behaviour.
   Scalar& operator()(int row, int column);
   Scalar const& operator()(int row, int column) const;
+
+  UnboundedUpperTriangularMatrix<Scalar> Transpose() const;
 
   bool operator==(UnboundedLowerTriangularMatrix const& right) const;
   bool operator!=(UnboundedLowerTriangularMatrix const& right) const;
@@ -157,8 +160,6 @@ class UnboundedUpperTriangularMatrix final {
 
   void EraseToEnd(int begin_column_index);
 
-  UnboundedLowerTriangularMatrix<Scalar> Transpose() const;
-
   int columns() const;
   int rows() const;
   int size() const;
@@ -168,6 +169,8 @@ class UnboundedUpperTriangularMatrix final {
   // implies undefined behaviour.
   Scalar& operator()(int row, int column);
   Scalar const& operator()(int row, int column) const;
+
+  UnboundedLowerTriangularMatrix<Scalar> Transpose() const;
 
   bool operator==(UnboundedUpperTriangularMatrix const& right) const;
   bool operator!=(UnboundedUpperTriangularMatrix const& right) const;
@@ -203,6 +206,11 @@ template<typename ScalarLeft, typename ScalarRight>
 Product<ScalarLeft, ScalarRight> operator*(
     TransposedView<UnboundedVector<ScalarLeft>> const& left,
     UnboundedVector<ScalarRight> const& right);
+
+template<typename ScalarLeft, typename ScalarRight>
+UnboundedMatrix<Product<ScalarLeft, ScalarRight>> operator*(
+    UnboundedMatrix<ScalarLeft> const& left,
+    UnboundedMatrix<ScalarRight> const& right);
 
 template<typename ScalarLeft, typename ScalarRight>
 UnboundedVector<Product<ScalarLeft, ScalarRight>> operator*(

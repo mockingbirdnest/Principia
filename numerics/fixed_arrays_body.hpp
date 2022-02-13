@@ -14,6 +14,7 @@ namespace numerics {
 namespace internal_fixed_arrays {
 
 using base::uninitialized;
+using quantities::Pow;
 using quantities::Sqrt;
 using quantities::Square;
 
@@ -159,6 +160,29 @@ Scalar const* FixedMatrix<Scalar, rows_, columns_>::row() const {
 }
 
 template<typename Scalar, int rows_, int columns_>
+FixedMatrix<Scalar, rows_, columns_>
+FixedMatrix<Scalar, rows_, columns_>::Transpose() const {
+  FixedMatrix<Scalar, rows(), columns()> m(uninitialized);
+  for (int i = 0; i < rows(); ++i) {
+    for (int j = 0; j < columns(); ++j) {
+      m(j, i) = (*this)(i, j);
+    }
+  }
+  return m;
+}
+
+template<typename Scalar, int rows_, int columns_>
+Scalar FixedMatrix<Scalar, rows_, columns_>::FrobeniusNorm() const {
+  Square<Scalar> Σᵢⱼaᵢⱼ²{};
+  for (int i = 0; i < rows(); ++i) {
+    for (int j = 0; j < columns(); ++j) {
+      Σᵢⱼaᵢⱼ² += Pow<2>((*this)(i, j));
+    }
+  }
+  return Sqrt(Σᵢⱼaᵢⱼ²);
+}
+
+template<typename Scalar, int rows_, int columns_>
 bool FixedMatrix<Scalar, rows_, columns_>::operator==(
     FixedMatrix const& right) const {
   return data_ == right.data_;
@@ -168,6 +192,16 @@ template<typename Scalar, int rows_, int columns_>
 bool FixedMatrix<Scalar, rows_, columns_>::operator!=(
     FixedMatrix const& right) const {
   return data_ != right.data_;
+}
+
+template<typename Scalar, int rows_, int columns_>
+FixedMatrix<Scalar, rows_, columns_>
+FixedMatrix<Scalar, rows_, columns_>::Identity() {
+  FixedMatrix<Scalar, rows(), columns()> m;
+  for (int i = 0; i < rows(); ++i) {
+    m(i, i) = 1;
+  }
+  return m;
 }
 
 template<typename Scalar, int rows_>
@@ -369,6 +403,22 @@ constexpr Product<ScalarLeft, ScalarRight> operator*(
     FixedVector<ScalarRight, size> const& right) {
   return DotProduct<ScalarLeft, ScalarRight, size>::Compute(
       left.transpose.data_, right.data_);
+}
+
+template<typename ScalarLeft, typename ScalarRight,
+         int rows, int dimension, int columns>
+constexpr FixedMatrix<Product<ScalarLeft, ScalarRight>, rows, columns>
+operator*(FixedMatrix<ScalarLeft, rows, dimension> const& left,
+          FixedMatrix<ScalarRight, dimension, columns> const& right) {
+  FixedMatrix<Product<ScalarLeft, ScalarRight>, rows, columns> result;
+  for (int i = 0; i < left.rows(); ++i) {
+    for (int j = 0; j < right.columns(); ++j) {
+      for (int k = 0; k < left.columns(); ++k) {
+        result(i, j) += left(i, k) * right(k, j);
+      }
+    }
+  }
+  return result;
 }
 
 template<typename ScalarLeft, typename ScalarRight, int rows, int columns>
