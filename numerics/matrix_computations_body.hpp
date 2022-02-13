@@ -32,13 +32,13 @@ struct JacobiRotation {
 
 // See [GV13] section 8.5.2, algorithm 8.5.1.
 template<typename Scalar, typename Matrix>
-JacobiRotation SymmetricShurDecomposition2(Matrix const& A,
-                                           int const p,
-                                           int const q) {
+JacobiRotation SymmetricSchurDecomposition2By2(Matrix const& A,
+                                               int const p,
+                                               int const q) {
   DCHECK_LE(0, p);
   DCHECK_LT(p, q);
   DCHECK_LT(q, A.rows());
-  static Scalar const zero{};
+  constexpr Scalar const zero{};
   JacobiRotation J = {.p = p, .q = q};
   auto& c = J.cos;
   auto& s = J.sin;
@@ -63,7 +63,7 @@ JacobiRotation SymmetricShurDecomposition2(Matrix const& A,
 
 // A becomes ᵗJ A.
 template<typename Matrix>
-void Premultiplication(JacobiRotation const& J, Matrix& A) {
+void PremultiplyByTranspose(JacobiRotation const& J, Matrix& A) {
   auto const& [c, s, p, q] = J;
   for (int j = 0; j < A.columns(); ++j) {
     auto const τ₁ = A(p, j);
@@ -75,7 +75,7 @@ void Premultiplication(JacobiRotation const& J, Matrix& A) {
 
 // A becomes A J.
 template<typename Matrix>
-void Postmultiplication(Matrix& A, JacobiRotation const& J) {
+void PostMultiply(Matrix& A, JacobiRotation const& J) {
   auto const& [c, s, p, q] = J;
   for (int j = 0; j < A.rows(); ++j) {
     auto const τ₁ = A(j, p);
@@ -464,14 +464,14 @@ ClassicalJacobi(Matrix const& A,  int max_iterations, double ε) {
     }
 
     auto const J =
-        SymmetricShurDecomposition2<Scalar>(diagonalized_A, max_p, max_q);
+        SymmetricSchurDecomposition2By2<Scalar>(diagonalized_A, max_p, max_q);
 
     // A = ᵗJ A J
-    Postmultiplication(diagonalized_A, J);
-    Premultiplication(J, diagonalized_A);
+    PostMultiply(diagonalized_A, J);
+    PremultiplyByTranspose(J, diagonalized_A);
 
     // V = V J
-    Postmultiplication(V, J);
+    PostMultiply(V, J);
     if (k == max_iterations - 1) {
       LOG(ERROR) << "Difficult diagonalization: " << A
                  << ", stopping with: " << diagonalized_A;
