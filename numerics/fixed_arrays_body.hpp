@@ -173,13 +173,13 @@ FixedMatrix<Scalar, rows_, columns_>::Transpose() const {
 
 template<typename Scalar, int rows_, int columns_>
 Scalar FixedMatrix<Scalar, rows_, columns_>::FrobeniusNorm() const {
-  Square<Scalar> sum²{};
+  Square<Scalar> Σᵢⱼaᵢⱼ²{};
   for (int i = 0; i < rows(); ++i) {
     for (int j = 0; j < columns(); ++j) {
-      sum² += Pow<2>((*this)(i, j));
+      Σᵢⱼaᵢⱼ² += Pow<2>((*this)(i, j));
     }
   }
-  return Sqrt(sum²);
+  return Sqrt(Σᵢⱼaᵢⱼ²);
 }
 
 template<typename Scalar, int rows_, int columns_>
