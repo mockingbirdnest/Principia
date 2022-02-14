@@ -95,7 +95,7 @@ TEST_F(R3x3MatrixTest, Solve) {
     R3Element<double> b(7, -9, 11);
     EXPECT_THAT(
         vandermonde.Solve(b),
-        AlmostEquals(R3Element<double>(2, 89.0 / 30.0, -7.0 / 30.0), 1));
+        AlmostEquals(R3Element<double>(2, 89.0 / 30.0, -7.0 / 30.0), 4));
   }
 }
 

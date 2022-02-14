@@ -3,8 +3,10 @@
 
 #include <sstream>
 
+#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/quaternion.hpp"
+#include "geometry/rotation.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -22,9 +24,11 @@ namespace principia {
 namespace testing_utilities {
 
 using geometry::Bivector;
+using geometry::Frame;
 using geometry::Quaternion;
 using geometry::R3Element;
 using geometry::R3x3Matrix;
+using geometry::Rotation;
 using geometry::Vector;
 using geometry::Trivector;
 using numerics::FixedLowerTriangularMatrix;
@@ -45,7 +49,7 @@ using testing::Not;
 namespace si = quantities::si;
 
 namespace {
-struct World;
+using World = Frame<enum class WorldTag>;
 }  // namespace
 
 class AlmostEqualsTest : public testing::Test {};
@@ -121,6 +125,13 @@ TEST_F(AlmostEqualsTest, Quaternion) {
   }
   EXPECT_THAT(q_accumulated, Ne(q1));
   EXPECT_THAT(q_accumulated, AlmostEquals(q1, 11));
+}
+
+TEST_F(AlmostEqualsTest, Rotation) {
+  Rotation<World, World> const r1(Quaternion{1, {2, 3, 4}});
+  Rotation<World, World> const r2(Quaternion{-1, {-2, -3, -4}});
+  EXPECT_THAT(r2, AlmostEquals(r1, 0));
+  EXPECT_THAT(r1 * r2, Not(AlmostEquals(r1, 4)));
 }
 
 TEST_F(AlmostEqualsTest, Vector) {

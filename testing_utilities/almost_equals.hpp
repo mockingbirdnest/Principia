@@ -11,6 +11,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/quaternion.hpp"
+#include "geometry/rotation.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "gmock/gmock.h"
@@ -62,6 +63,9 @@ class AlmostEqualsMatcher final {
   bool MatchAndExplain(geometry::R3x3Matrix<Scalar> const& actual,
                        testing::MatchResultListener* listener) const;
   bool MatchAndExplain(geometry::Quaternion const& actual,
+                       testing::MatchResultListener* listener) const;
+  template<typename FromFrame, typename ToFrame>
+  bool MatchAndExplain(geometry::Rotation<FromFrame, ToFrame> const& actual,
                        testing::MatchResultListener* listener) const;
   template<typename Scalar, typename Frame>
   bool MatchAndExplain(geometry::Vector<Scalar, Frame> const& actual,

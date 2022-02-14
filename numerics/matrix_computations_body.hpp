@@ -10,6 +10,7 @@
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace numerics {
@@ -19,6 +20,7 @@ using base::uninitialized;
 using quantities::Abs;
 using quantities::Pow;
 using quantities::Sqrt;
+namespace si = quantities::si;
 
 // This is J(p, q, θ) in [GV13] section 8.5.1.  This matrix is also called a
 // Givens rotation.  As mentioned in [GV13] section 5.1.9, "It is critical that
@@ -268,7 +270,7 @@ auto ClassicalJacobiGenerator<UnboundedMatrix<Scalar_>>::Identity(
 template<typename Scalar_>
 auto ClassicalJacobiGenerator<UnboundedMatrix<Scalar_>>::
 Uninitialized(UnboundedMatrix<Scalar> const& m) -> Result {
-  return {.rotation = UnboundedMatrix<Scalar>(m.rows(), m.columns()),
+  return {.rotation = UnboundedMatrix<double>(m.rows(), m.columns()),
           .eigenvalues = UnboundedVector<Scalar>(m.columns())};
 }
 
@@ -281,7 +283,7 @@ Identity(FixedMatrix<Scalar_, dimension, dimension> const& m) -> Rotation {
 template<typename Scalar_, int dimension>
 auto ClassicalJacobiGenerator<FixedMatrix<Scalar_, dimension, dimension>>::
 Uninitialized(FixedMatrix<Scalar, dimension, dimension> const& m) -> Result {
-  return {.rotation = FixedMatrix<Scalar, dimension, dimension>(),
+  return {.rotation = FixedMatrix<double, dimension, dimension>(),
           .eigenvalues = FixedVector<Scalar, dimension>()};
 }
 
@@ -508,7 +510,10 @@ RayleighQuotientIteration(Matrix const& A, Vector const& x) {
       A_minus_μₖ_I(i, i) -= μₖ;
     }
     auto const residual = (A_minus_μₖ_I * xₖ).Norm();
-    if (residual < 2 * std::numeric_limits<double>::epsilon()) {
+    // TODO(phl): This test is cheezy.  It should be based on the norm of the
+    // matrix.
+    if (residual < 2 * std::numeric_limits<double>::epsilon() *
+                       si::Unit<decltype(residual)>) {
       return result;
     }
     auto const zₖ₊₁ = Solve(A_minus_μₖ_I, xₖ);
@@ -536,7 +541,7 @@ Solve(Matrix A, Vector b) {
     int r = -1;
     Scalar max{};
     for (int i = k; i < A.rows(); ++i) {
-      if (Abs(A(i, k)) > max) {
+      if (Abs(A(i, k)) >= max) {
         r = i;
         max = Abs(A(i, k));
       }
@@ -548,14 +553,15 @@ Solve(Matrix A, Vector b) {
     for (int i = 0; i < A.columns(); ++i) {
       std::swap(A(k, i), A(r, i));
     }
-
     // Swap the rows of L.
     for (int i = 0; i < k; ++i) {
       std::swap(L(k, i), L(r, i));
     }
-
+    // Swap the rows of b.
     std::swap(b[k], b[r]);
-    CHECK_NE(Scalar{}, A(k, k)) << A << " is singular";
+
+    LOG_IF(WARNING, A(k, k) == Scalar{})
+        << A << " does not have a unique LU decomposition";
 
     for (int j = k; j < A.columns(); ++j) {
       auto U_kj = A(k, j);
