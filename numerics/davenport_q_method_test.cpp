@@ -68,7 +68,7 @@ TEST_F(DavenportQMethodTest, FarFromIdentity) {
   }
 
   EXPECT_THAT(DavenportQMethod(vectors1_, vectors2, weights_),
-              AlmostEquals(rotation , 2));
+              AlmostEquals(rotation , 2, 16));
 }
 
 TEST_F(DavenportQMethodTest, Perturbed) {
@@ -89,7 +89,8 @@ TEST_F(DavenportQMethodTest, Perturbed) {
 
   EXPECT_THAT(
       DavenportQMethod(vectors1_, vectors2, weights_),
-      AlmostEquals(Rotation<World1, World2>(q / q.Norm()), 361'747'092));
+      AlmostEquals(
+          Rotation<World1, World2>(q / q.Norm()), 361'747'092, 745'100'359));
 }
 
 TEST_F(DavenportQMethodTest, PerturbedWeighted) {
@@ -119,7 +120,7 @@ TEST_F(DavenportQMethodTest, PerturbedWeighted) {
   }
 
   EXPECT_THAT(DavenportQMethod(vectors1_, vectors2, weights),
-              AlmostEquals(rotation, 112'728'156));
+              AlmostEquals(rotation, 112'728'156, 473'381'658));
 }
 
 }  // namespace numerics
