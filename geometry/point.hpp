@@ -9,6 +9,7 @@
 #include "base/traits.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/traits.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {

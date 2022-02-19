@@ -13,7 +13,6 @@
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/serialization.hpp"
-#include "quantities/wide.hpp"
 
 namespace principia {
 namespace geometry {

@@ -163,6 +163,15 @@ constexpr Quotient<double, Quantity<RDimensions>> operator/(
   return Quotient<double, Quantity<RDimensions>>(left / right.magnitude_);
 }
 
+inline __m128d ToM128D(double const x) {
+  return _mm_set1_pd(x);
+}
+
+template<typename Dimensions>
+__m128d ToM128D(Quantity<Dimensions> const x) {
+  return _mm_set1_pd(x.magnitude_);
+}
+
 template<typename Q>
 constexpr bool IsFinite(Q const& x) {
   return std::isfinite(x / SIUnit<Q>());
