@@ -104,8 +104,8 @@ class Quantity final {
   template<typename Q>
   friend constexpr Q SIUnit();
 
-  template<typename D>
-  friend __m128d ToM128D(Quantity<D> x);
+  template<typename Dimensions>
+  friend __m128d ToM128D(Quantity<Dimensions> x);
 };
 
 template<typename LDimensions, typename RDimensions>
