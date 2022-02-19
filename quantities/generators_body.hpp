@@ -21,6 +21,9 @@ using internal_dimensions::DimensionsProductGenerator;
 using internal_dimensions::DimensionsQuotientGenerator;
 using internal_dimensions::NoDimensions;
 
+// The template template parameter |Quantity| on specializations lifts a
+// circular dependency.
+
 template<typename Q>
 struct Collapse : not_constructible {
   using Type = Q;
@@ -53,7 +56,7 @@ struct NthRootGenerator<Quantity<D>, n, void> : not_constructible {
 // but it would make the template magic even harder to follow, so let's not do
 // that until we have a good reason.
 template<typename Q, int n>
-struct NthRootGenerator<Q, n, std::enable_if_t<std::is_arithmetic<Q>::value>>
+struct NthRootGenerator<Q, n, std::enable_if_t<std::is_arithmetic_v<Q>>>
     : not_constructible {
   using Type = double;
 };
@@ -61,8 +64,7 @@ struct NthRootGenerator<Q, n, std::enable_if_t<std::is_arithmetic<Q>::value>>
 template<template<typename> typename Quantity, typename Left, typename Right>
 struct ProductGenerator<Quantity<Left>, Quantity<Right>> : not_constructible {
   using Type = typename Collapse<Quantity<
-      typename DimensionsProductGenerator<Left,
-                                          Right>::Type>>::Type;
+      typename DimensionsProductGenerator<Left, Right>::Type>>::Type;
 };
 
 template<typename Left>
@@ -83,8 +85,7 @@ struct ProductGenerator<double, double> : not_constructible {
 template<template<typename> typename Quantity, typename Left, typename Right>
 struct QuotientGenerator<Quantity<Left>, Quantity<Right>> : not_constructible {
   using Type = typename Collapse<Quantity<
-      typename DimensionsQuotientGenerator<Left,
-                                           Right>::Type>>::Type;
+      typename DimensionsQuotientGenerator<Left, Right>::Type>>::Type;
 };
 
 template<typename Left>
@@ -95,8 +96,7 @@ struct QuotientGenerator<Left, double> : not_constructible {
 template<template<typename> typename Quantity, typename Right>
 struct QuotientGenerator<double, Quantity<Right>> : not_constructible {
   using Type = typename Collapse<Quantity<
-      typename DimensionsQuotientGenerator<NoDimensions,
-                                           Right>::Type>>::Type;
+      typename DimensionsQuotientGenerator<NoDimensions, Right>::Type>>::Type;
 };
 
 template<>
