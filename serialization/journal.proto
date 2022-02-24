@@ -2392,6 +2392,14 @@ extend google.protobuf.FieldOptions {
   // For a produced field that is returned by reference, this option is attached
   // to the field that contains the address of the returned field.
   optional string address_of = 50010;
+
+  //TODO(phl):Comment
+  // For a foobar field, this option is attached to the field that contains the
+  // size of the foobar.
+  optional string size_of = 50014;
+
+  //TODO(phl):Comment
+  optional bool is_csharp_owned = 50015;
 }
 
 extend google.protobuf.MessageOptions {
@@ -2402,5 +2410,5 @@ extend google.protobuf.MessageOptions {
   optional bool is_public = 50012;
   // If set, the body of the Run method is wrapped into an #ifdef for the given
   // symbol.  Useful for selectively skipping replay of some methods.
-  optional string run_conditional_compilation_symbol = 50010;
+  optional string run_conditional_compilation_symbol = 50013;
 }

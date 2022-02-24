@@ -940,8 +940,9 @@ void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
     }
 }
 
-void JournalProtoProcessor::ProcessAddressOf(Descriptor const* descriptor) {
-  // Do a pass to build the field_cxx_address_of_ map.
+void JournalProtoProcessor::ProcessAddressOfSizeOf(
+    Descriptor const* descriptor) {
+  // Do a pass to build the field_cxx_address_of_ and field_cxx_size_of_ maps.
   for (int i = 0; i < descriptor->field_count(); ++i) {
     FieldDescriptor const* field_descriptor = descriptor->field(i);
     FieldOptions const& options = field_descriptor->options();
@@ -963,6 +964,24 @@ void JournalProtoProcessor::ProcessAddressOf(Descriptor const* descriptor) {
           << "(is_produced) option";
       field_cxx_address_of_[field_descriptor] = address_of_field;
       field_cxx_address_[address_of_field] = field_descriptor;
+    } else if (options.HasExtension(journal::serialization::size_of)) {
+      CHECK_EQ(field_descriptor->label(), FieldDescriptor::LABEL_REQUIRED)
+          << field_descriptor->full_name()
+          << " must be a required field to have the (size_of) option";
+      CHECK_EQ(field_descriptor->type(), FieldDescriptor::TYPE_INT32)
+          << field_descriptor->full_name()
+          << " must be an int32 field to have the (size_of) option";
+      FieldDescriptor const* const size_of_field =
+          field_descriptor->containing_type()->FindFieldByName(
+              options.GetExtension(journal::serialization::size_of));
+      FieldOptions const& size_of_options = size_of_field->options();
+      CHECK(
+          size_of_options.GetExtension(journal::serialization::is_csharp_owned))
+          << size_of_field->full_name()
+          << " is designated by a (size_of) option and must have the "
+          << "(is_csharp_owned) option";
+      field_cxx_size_of_[field_descriptor] = size_of_field;
+      field_cxx_size_[size_of_field] = field_descriptor;
     }
   }
 }
@@ -1099,7 +1118,7 @@ void JournalProtoProcessor::ProcessInOut(
 void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
   CHECK(descriptor->field_count() >= 1 && descriptor->field_count() <= 2)
       << descriptor->full_name() << " must have one or two fields";
-  ProcessAddressOf(descriptor);
+  ProcessAddressOfSizeOf(descriptor);
 
   // Process the fields, making sure that at most one is the bona fide result.
   FieldDescriptor const* address_field_descriptor = nullptr;
@@ -1203,7 +1222,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
   std::string const& proto_parameter_name = ToLower(name) + "_proto";
   std::string const& object_parameter_name = ToLower(name) + "_object";
   MessageOptions const& options = descriptor->options();
-  ProcessAddressOf(descriptor);
+  ProcessAddressOfSizeOf(descriptor);
 
   // Start by processing the fields.  We need to know if any of them has a
   // custom marshaler to decide whether we generate a struct or a class.

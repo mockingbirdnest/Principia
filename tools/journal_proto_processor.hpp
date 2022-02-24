@@ -74,7 +74,7 @@ class JournalProtoProcessor final {
 
   void ProcessField(FieldDescriptor const* descriptor);
 
-  void ProcessAddressOf(Descriptor const* descriptor);
+  void ProcessAddressOfSizeOf(Descriptor const* descriptor);
 
   void ProcessInOut(Descriptor const* descriptor,
                     std::vector<FieldDescriptor const*>* field_descriptors);
@@ -123,6 +123,10 @@ class JournalProtoProcessor final {
   std::map<FieldDescriptor const*, FieldDescriptor const*>
       field_cxx_address_of_;
   std::map<FieldDescriptor const*, FieldDescriptor const*> field_cxx_address_;
+
+  //TODO(phl):Comment
+  std::map<FieldDescriptor const*, FieldDescriptor const*> field_cxx_size_of_;
+  std::map<FieldDescriptor const*, FieldDescriptor const*> field_cxx_size_;
 
   // For all fields, a lambda that takes the name of a local variable containing
   // data extracted (and deserialized) from the field and returns a list of
