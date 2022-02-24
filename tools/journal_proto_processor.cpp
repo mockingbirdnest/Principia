@@ -583,6 +583,22 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
     }
   }
 
+  if (options.HasExtension(journal::serialization::is_csharp_owned)) {
+    CHECK(options.GetExtension(journal::serialization::is_csharp_owned))
+        << descriptor->full_name() << " has incorrect (is_csharp_owned) option";
+    CHECK(!options.HasExtension(journal::serialization::is_produced) &&
+          !options.HasExtension(journal::serialization::is_produced_if) &&
+          !options.HasExtension(journal::serialization::is_consumed) &&
+          !options.HasExtension(journal::serialization::is_consumed_if))
+        << descriptor->full_name()
+        << " has (is_csharp_owned) option and cannot have any of the "
+        << "(is_produced), (is_produced_if), (is_consumed), and "
+        << "(is_consumed_if) options";
+    CHECK(field_cxx_size_of_.contains(descriptor))
+        << descriptor->full_name() << " must be designated by a (size_of) "
+        << "because it has the (is_csharp_owned) option";
+  }
+
   field_cxx_deserializer_fn_[descriptor] =
       [pointer_to](std::string const& expr) {
         return "DeserializePointer<" + pointer_to + "*>(" + expr +
