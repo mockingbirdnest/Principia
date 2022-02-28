@@ -21,7 +21,7 @@ namespace base {
 
 // AllocatorIs<container, alloc>() returns true iff container's allocator is
 // alloc.
-template<typename T, typename Allocator>
+template <typename T, typename Allocator>
 constexpr bool AllocatorIs() {
   return std::is_same<typename T::allocator_type, Allocator>::value;
 }
@@ -29,15 +29,15 @@ constexpr bool AllocatorIs() {
 // Test that the default allocators for various classes are overridden.
 TEST(PrincipiaMallocAllocatorTest, DefaultAllocators) {
   // STL
-  EXPECT_TRUE((AllocatorIs<std::vector<int>, MallocAllocator<int>>()));
-  EXPECT_TRUE((AllocatorIs<std::deque<int>, MallocAllocator<int>>()));
-  EXPECT_TRUE((AllocatorIs<std::list<int>, MallocAllocator<int>>()));
-  EXPECT_TRUE((AllocatorIs<std::set<int>, MallocAllocator<int>>()));
-  EXPECT_TRUE((AllocatorIs<std::map<int, int>,
-                           MallocAllocator<std::pair<const int, int>>>()));
-  EXPECT_TRUE((AllocatorIs<std::multiset<int>, MallocAllocator<int>>()));
-  EXPECT_TRUE((AllocatorIs<std::multimap<int, int>,
-                           MallocAllocator<std::pair<const int, int>>>()));
+  static_assert(AllocatorIs<std::vector<int>, MallocAllocator<int>>());
+  static_assert(AllocatorIs<std::deque<int>, MallocAllocator<int>>());
+  static_assert(AllocatorIs<std::list<int>, MallocAllocator<int>>());
+  static_assert(AllocatorIs<std::set<int>, MallocAllocator<int>>());
+  static_assert(AllocatorIs<std::map<int, int>,
+                            MallocAllocator<std::pair<const int, int>>>());
+  static_assert(AllocatorIs<std::multiset<int>, MallocAllocator<int>>());
+  static_assert(AllocatorIs<std::multimap<int, int>,
+                            MallocAllocator<std::pair<const int, int>>>());
 }
 
 }  // namespace base
