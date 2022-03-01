@@ -22,6 +22,13 @@ class MallocAllocator {
   using size_type = std::size_t;
   using difference_type = std::ptrdiff_t;
 
+  // Constructors. This is a stateless struct so these don't do anything (but
+  // they are required by some containers).
+  MallocAllocator() {}
+  MallocAllocator(const MallocAllocator& other) = default;
+  template<typename U>
+  MallocAllocator(const MallocAllocator<U>& other) {}
+
   T* allocate(size_t n) {
     return static_cast<T*>(calloc(n, sizeof(T)));
   }

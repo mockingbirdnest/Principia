@@ -38,5 +38,11 @@ TEST(MallocAllocatorTest, RoundTrip) {
   MallocAllocator<int>().deallocate(p, 1);
 }
 
+TEST(MallocAllocatorTest, Conversion) {
+  // This is required by some containers.
+  MallocAllocator<int> foo;
+  MallocAllocator<float> bar(foo);
+}
+
 }  // namespace base
 }  // namespace principia
