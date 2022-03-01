@@ -9,6 +9,14 @@
 #include <utility>
 #include <vector>
 
+#include "absl/container/btree_map.h"
+#include "absl/container/btree_set.h"
+#include "absl/container/fixed_array.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+#include "absl/container/inlined_vector.h"
+#include "absl/container/node_hash_map.h"
+#include "absl/container/node_hash_set.h"
 #include "base/macros.hpp"
 #include "base/malloc_allocator.hpp"
 #include "gmock/gmock.h"
@@ -38,6 +46,21 @@ TEST(PrincipiaMallocAllocatorTest, DefaultAllocators) {
   static_assert(AllocatorIs<std::multiset<int>, MallocAllocator<int>>());
   static_assert(AllocatorIs<std::multimap<int, int>,
                             MallocAllocator<std::pair<const int, int>>>());
+
+  // Abseil
+  static_assert(AllocatorIs<absl::btree_set<int>, MallocAllocator<int>>());
+  static_assert(AllocatorIs<absl::btree_map<int, int>,
+                            MallocAllocator<std::pair<const int, int>>>());
+  static_assert(AllocatorIs<absl::flat_hash_set<int>, MallocAllocator<int>>());
+  static_assert(AllocatorIs<absl::flat_hash_map<int, int>,
+                            MallocAllocator<std::pair<const int, int>>>());
+  static_assert(AllocatorIs<absl::node_hash_set<int>, MallocAllocator<int>>());
+  static_assert(AllocatorIs<absl::node_hash_map<int, int>,
+                            MallocAllocator<std::pair<const int, int>>>());
+  static_assert(
+      AllocatorIs<absl::FixedArray<int, 1024>, MallocAllocator<int>>());
+  static_assert(
+      AllocatorIs<absl::InlinedVector<int, 4>, MallocAllocator<int>>());
 }
 
 }  // namespace base
