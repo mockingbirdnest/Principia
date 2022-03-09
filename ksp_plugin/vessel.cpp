@@ -225,7 +225,8 @@ void Vessel::DetectCollapsibilityChange() {
       } else {
         // Not only don't we create a new checkpoint and a new segment, but we
         // also delete the current, non-collapsible, 1-point segment, so that we
-        // keep appending to the previous collapsible, 1-point segment.
+        // keep appending to the previous collapsible, 1-point segment.  See
+        // #3332.
         LOG(INFO) << "Not writing " << ShortDebugString()
                   << " to duplicate checkpoint at: " << checkpoint;
         segment_action = Delete;
