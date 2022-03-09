@@ -127,7 +127,7 @@ class StackTraceDecoder {
     if (!unity_crash) {
       var version_regex = new Regex(
           @"^[EI].*\] Principia version " +
-          @"([0-9]{10}-\w+)-[0-9]+-g([0-9a-f]{40})(-dirty)? built");
+          @"([0-9]{10}-.+)-[0-9]+-g([0-9a-f]{40})(-dirty)? built");
       Match version_match;
       do {
         Check(!stream.EndOfStream,
