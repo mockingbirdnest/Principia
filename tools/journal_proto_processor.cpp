@@ -594,7 +594,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
         << " has (is_csharp_owned) option and cannot have any of the "
         << "(is_produced), (is_produced_if), (is_consumed), and "
         << "(is_consumed_if) options";
-    CHECK(field_cxx_size_of_.contains(descriptor))
+    CHECK(field_cxx_size_.contains(descriptor))
         << descriptor->full_name() << " must be designated by a (size_of) "
         << "because it has the (is_csharp_owned) option";
   }
@@ -1006,6 +1006,7 @@ void JournalProtoProcessor::ProcessInOut(
   Descriptor const* descriptor,
   std::vector<FieldDescriptor const*>* field_descriptors) {
   std::string const& name = descriptor->name();
+  ProcessAddressOfSizeOf(descriptor);
 
   std::string cxx_message_prefix;
   {

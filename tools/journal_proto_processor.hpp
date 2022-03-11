@@ -124,7 +124,9 @@ class JournalProtoProcessor final {
       field_cxx_address_of_;
   std::map<FieldDescriptor const*, FieldDescriptor const*> field_cxx_address_;
 
-  //TODO(phl):Comment
+  // For a field that has a (size_of) option, field_cxx_size_of_ has that field
+  // as a key and the field designated by the option as its value.
+  // field_cxx_size_ is the inverse map.
   std::map<FieldDescriptor const*, FieldDescriptor const*> field_cxx_size_of_;
   std::map<FieldDescriptor const*, FieldDescriptor const*> field_cxx_size_;
 
