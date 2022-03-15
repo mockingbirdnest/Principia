@@ -71,7 +71,7 @@ std::set<Instant> Checkpointer<Message>::all_checkpoints() const {
       checkpoints_.cbegin(),
       checkpoints_.cend(),
       std::inserter(result, result.end()),
-      [](std::pair<Instant, typename Message::Checkpoint> const& pair) {
+      [](std::pair<Instant const, typename Message::Checkpoint> const& pair) {
         return pair.first;
       });
   return result;
@@ -88,7 +88,7 @@ std::set<Instant> Checkpointer<Message>::all_checkpoints_at_or_before(
       checkpoints_.cbegin(),
       it,
       std::inserter(result, result.end()),
-      [](std::pair<Instant, typename Message::Checkpoint> const& pair) {
+      [](std::pair<Instant const, typename Message::Checkpoint> const& pair) {
         return pair.first;
       });
   return result;
@@ -112,7 +112,7 @@ std::set<Instant> Checkpointer<Message>::all_checkpoints_between(
       it1,
       it2,
       std::inserter(result, result.end()),
-      [](std::pair<Instant, typename Message::Checkpoint> const& pair) {
+      [](std::pair<Instant const, typename Message::Checkpoint> const& pair) {
         return pair.first;
       });
   return result;
