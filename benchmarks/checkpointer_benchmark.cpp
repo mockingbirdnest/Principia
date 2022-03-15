@@ -7,8 +7,12 @@
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
 #include "benchmark/benchmark.h"
+#include "physics/checkpointer.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
+#include "serialization/geometry.pb.h"
+#include "serialization/integrators.pb.h"
+#include "serialization/numerics.pb.h"
 #include "serialization/physics.pb.h"
 
 namespace principia {
@@ -17,10 +21,31 @@ namespace physics {
 using base::not_null;
 using geometry::Instant;
 using quantities::si::Second;
+using serialization::DoublePrecision;
 using serialization::Ephemeris;
+using serialization::IntegratorInstance;
+using serialization::R3Element;
+using serialization::SystemState;
 
-// Stub writer for checkpointer. Does nothing.
-void WriteToCheckpoint(not_null<typename Ephemeris::Checkpoint*> checkpoint) {}
+// Stub writer for checkpointer. Adds some data to the checkpoint.
+void WriteToCheckpoint(not_null<typename Ephemeris::Checkpoint*> checkpoint) {
+  // Fill out the state with dummy values. We don't care what the values are (or
+  // even if they're valid), just that they take time to copy.
+  SystemState* state = checkpoint->mutable_instance()->mutable_current_state();
+  state->mutable_time()->mutable_value()->set_double_(1.0);
+  state->mutable_time()->mutable_error()->set_double_(1.0);
+  for (int i = 0; i < 5; i++) {
+    DoublePrecision* position = state->add_position();
+    R3Element* raw = position->mutable_value()
+                         ->mutable_point()
+                         ->mutable_multivector()
+                         ->mutable_vector();
+    raw->mutable_x()->mutable_quantity()->set_magnitude(1.0);
+    raw->mutable_y()->mutable_quantity()->set_magnitude(1.0);
+    raw->mutable_y()->mutable_quantity()->set_magnitude(1.0);
+    *state->add_velocity() = *position;
+  }
+}
 
 // Stub reader for checkpointer. Does nothing.
 absl::Status ReadFromCheckpoint(Ephemeris::Checkpoint const&) {
