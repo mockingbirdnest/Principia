@@ -3,8 +3,8 @@
 
 #include <functional>
 #include <map>
-#include <set>
 
+#include "absl/container/btree_set.h"
 #include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
@@ -67,15 +67,15 @@ class Checkpointer {
   Instant checkpoint_at_or_before(Instant const& t) const EXCLUDES(lock_);
 
   // Returns all the checkpoints in this object.
-  std::set<Instant> all_checkpoints() const EXCLUDES(lock_);
+  absl::btree_set<Instant> all_checkpoints() const EXCLUDES(lock_);
 
   // Returns all the checkpoints at or before |t|.
-  std::set<Instant> all_checkpoints_at_or_before(Instant const& t) const
+  absl::btree_set<Instant> all_checkpoints_at_or_before(Instant const& t) const
       EXCLUDES(lock_);
 
   // Returns all the checkpoints in interval [t1, t2].
-  std::set<Instant> all_checkpoints_between(Instant const& t1,
-                                            Instant const& t2) const
+  absl::btree_set<Instant> all_checkpoints_between(Instant const& t1,
+                                                   Instant const& t2) const
       EXCLUDES(lock_);
 
   // Creates a checkpoint at time |t|, which will be used to recreate the

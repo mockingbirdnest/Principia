@@ -4,10 +4,10 @@
 #include "physics/checkpointer.hpp"
 
 #include <map>
-#include <set>
 #include <vector>
 #include <utility>
 
+#include "absl/container/btree_set.h"
 #include "base/status_utilities.hpp"
 #include "geometry/named_quantities.hpp"
 
@@ -64,9 +64,9 @@ Instant Checkpointer<Message>::checkpoint_at_or_before(Instant const& t) const {
 }
 
 template<typename Message>
-std::set<Instant> Checkpointer<Message>::all_checkpoints() const {
+absl::btree_set<Instant> Checkpointer<Message>::all_checkpoints() const {
   absl::ReaderMutexLock l(&lock_);
-  std::set<Instant> result;
+  absl::btree_set<Instant> result;
   std::transform(
       checkpoints_.cbegin(),
       checkpoints_.cend(),
@@ -78,12 +78,12 @@ std::set<Instant> Checkpointer<Message>::all_checkpoints() const {
 }
 
 template<typename Message>
-std::set<Instant> Checkpointer<Message>::all_checkpoints_at_or_before(
+absl::btree_set<Instant> Checkpointer<Message>::all_checkpoints_at_or_before(
     Instant const& t) const {
   absl::ReaderMutexLock l(&lock_);
   // |it| denotes an entry strictly greater than |t| (or end).
   auto const it = checkpoints_.upper_bound(t);
-  std::set<Instant> result;
+  absl::btree_set<Instant> result;
   std::transform(
       checkpoints_.cbegin(),
       it,
@@ -95,11 +95,11 @@ std::set<Instant> Checkpointer<Message>::all_checkpoints_at_or_before(
 }
 
 template<typename Message>
-std::set<Instant> Checkpointer<Message>::all_checkpoints_between(
+absl::btree_set<Instant> Checkpointer<Message>::all_checkpoints_between(
     Instant const& t1,
     Instant const& t2) const {
   if (t2 < t1) {
-    return std::set<Instant>();
+    return absl::btree_set<Instant>();
   }
 
   absl::ReaderMutexLock l(&lock_);
@@ -107,7 +107,7 @@ std::set<Instant> Checkpointer<Message>::all_checkpoints_between(
   auto const it1 = checkpoints_.lower_bound(t1);
   // |it2| denotes an entry strictly greater than |t2| (or end).
   auto const it2 = checkpoints_.upper_bound(t2);
-  std::set<Instant> result;
+  absl::btree_set<Instant> result;
   std::transform(
       it1,
       it2,
