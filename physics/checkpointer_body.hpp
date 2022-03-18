@@ -71,7 +71,7 @@ absl::btree_set<Instant> Checkpointer<Message>::all_checkpoints() const {
       checkpoints_.cbegin(),
       checkpoints_.cend(),
       std::inserter(result, result.end()),
-      [](std::pair<Instant const, typename Message::Checkpoint> const& pair) {
+      [](typename CheckpointsByTime::value_type const& pair) {
         return pair.first;
       });
   return result;
@@ -88,7 +88,7 @@ absl::btree_set<Instant> Checkpointer<Message>::all_checkpoints_at_or_before(
       checkpoints_.cbegin(),
       it,
       std::inserter(result, result.end()),
-      [](std::pair<Instant const, typename Message::Checkpoint> const& pair) {
+      [](typename CheckpointsByTime::value_type const& pair) {
         return pair.first;
       });
   return result;
@@ -112,7 +112,7 @@ absl::btree_set<Instant> Checkpointer<Message>::all_checkpoints_between(
       it1,
       it2,
       std::inserter(result, result.end()),
-      [](std::pair<Instant const, typename Message::Checkpoint> const& pair) {
+      [](typename CheckpointsByTime::value_type const& pair) {
         return pair.first;
       });
   return result;
@@ -183,7 +183,7 @@ template<typename Message>
 absl::Status Checkpointer<Message>::ReadFromCheckpointAt(
     Instant const& t,
     Reader const& reader) const {
-  typename std::map<Instant, typename Message::Checkpoint>::const_iterator it;
+  typename CheckpointsByTime::const_iterator it;
   {
     absl::ReaderMutexLock l(&lock_);
     it = checkpoints_.find(t);

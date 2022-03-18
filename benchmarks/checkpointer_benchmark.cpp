@@ -54,8 +54,8 @@ absl::Status ReadFromCheckpoint(Ephemeris::Checkpoint const&) {
 
 // Constructs a Checkpointer with the specified number of points. Checkpoints
 // are spaced at an interval of one second.
-std::unique_ptr<Checkpointer<Ephemeris>> ConstructCheckpointerWithSize(
-    int size) {
+std::unique_ptr<Checkpointer<Ephemeris>> NewCheckpointerWithSize(
+    int const size) {
   auto checkpointer = std::make_unique<Checkpointer<Ephemeris>>(
       &WriteToCheckpoint, &ReadFromCheckpoint);
 
@@ -68,7 +68,7 @@ std::unique_ptr<Checkpointer<Ephemeris>> ConstructCheckpointerWithSize(
 
 void BM_CheckpointerOldestCheckpoint(benchmark::State& state) {
   std::unique_ptr<Checkpointer<Ephemeris>> checkpointer =
-      ConstructCheckpointerWithSize(state.range(0));
+      NewCheckpointerWithSize(state.range(0));
 
   for (auto _ : state) {
     benchmark::DoNotOptimize(checkpointer->oldest_checkpoint());
@@ -77,7 +77,7 @@ void BM_CheckpointerOldestCheckpoint(benchmark::State& state) {
 
 void BM_CheckpointerNewestCheckpoint(benchmark::State& state) {
   std::unique_ptr<Checkpointer<Ephemeris>> checkpointer =
-      ConstructCheckpointerWithSize(state.range(0));
+      NewCheckpointerWithSize(state.range(0));
 
   for (auto _ : state) {
     benchmark::DoNotOptimize(checkpointer->newest_checkpoint());
@@ -86,9 +86,8 @@ void BM_CheckpointerNewestCheckpoint(benchmark::State& state) {
 
 void BM_CheckpointerCheckpointAtOrAfter(benchmark::State& state) {
   int const size = state.range(0);
-
   std::unique_ptr<Checkpointer<Ephemeris>> checkpointer =
-      ConstructCheckpointerWithSize(size);
+      NewCheckpointerWithSize(size);
   Instant const t = Instant() + (size / 3.0) * Second;
 
   for (auto _ : state) {
@@ -97,9 +96,8 @@ void BM_CheckpointerCheckpointAtOrAfter(benchmark::State& state) {
 }
 void BM_CheckpointerCheckpointAtOrBefore(benchmark::State& state) {
   int const size = state.range(0);
-
   std::unique_ptr<Checkpointer<Ephemeris>> checkpointer =
-      ConstructCheckpointerWithSize(size);
+      NewCheckpointerWithSize(size);
   Instant const t = Instant() + (size * 2.0 / 3.0) * Second;
 
   for (auto _ : state) {
@@ -109,7 +107,7 @@ void BM_CheckpointerCheckpointAtOrBefore(benchmark::State& state) {
 
 void BM_CheckpointerAllCheckpoints(benchmark::State& state) {
   std::unique_ptr<Checkpointer<Ephemeris>> checkpointer =
-      ConstructCheckpointerWithSize(state.range(0));
+      NewCheckpointerWithSize(state.range(0));
 
   for (auto _ : state) {
     benchmark::DoNotOptimize(checkpointer->all_checkpoints());
@@ -119,7 +117,7 @@ void BM_CheckpointerAllCheckpoints(benchmark::State& state) {
 void BM_CheckpointerAllCheckpointsAtOrBefore(benchmark::State& state) {
   int const size = state.range(0);
   std::unique_ptr<Checkpointer<Ephemeris>> checkpointer =
-      ConstructCheckpointerWithSize(state.range(0));
+      NewCheckpointerWithSize(state.range(0));
   Instant const t = Instant() + (size / 3.0) * Second;
 
   for (auto _ : state) {
@@ -129,7 +127,7 @@ void BM_CheckpointerAllCheckpointsAtOrBefore(benchmark::State& state) {
 void BM_CheckpointerAllCheckpointsBetween(benchmark::State& state) {
   int const size = state.range(0);
   std::unique_ptr<Checkpointer<Ephemeris>> checkpointer =
-      ConstructCheckpointerWithSize(state.range(0));
+      NewCheckpointerWithSize(state.range(0));
   Instant const t1 = Instant() + (size / 3.0) * Second;
   Instant const t2 = Instant() + (size * 2.0 / 3.0) * Second;
 

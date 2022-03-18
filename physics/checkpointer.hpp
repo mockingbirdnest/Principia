@@ -2,8 +2,8 @@
 #pragma once
 
 #include <functional>
-#include <map>
 
+#include "absl/container/btree_map.h"
 #include "absl/container/btree_set.h"
 #include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
@@ -124,6 +124,8 @@ class Checkpointer {
           message);
 
  private:
+  using CheckpointsByTime = absl::btree_map<Instant, typename Message::Checkpoint>;
+
   void WriteToCheckpointLocked(Instant const& t)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
@@ -133,7 +135,7 @@ class Checkpointer {
 
   // The time field of the Checkpoint message may or may not be set.  The map
   // key is the source of truth.
-  std::map<Instant, typename Message::Checkpoint> checkpoints_;
+  CheckpointsByTime checkpoints_;
 };
 
 }  // namespace internal_checkpointer
