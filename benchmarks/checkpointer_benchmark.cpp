@@ -7,7 +7,6 @@
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
 #include "benchmark/benchmark.h"
-#include "physics/checkpointer.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"

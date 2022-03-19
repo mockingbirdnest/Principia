@@ -124,7 +124,8 @@ class Checkpointer {
           message);
 
  private:
-  using CheckpointsByTime = absl::btree_map<Instant, typename Message::Checkpoint>;
+  using CheckpointsByTime =
+      absl::btree_map<Instant, typename Message::Checkpoint>;
 
   void WriteToCheckpointLocked(Instant const& t)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
