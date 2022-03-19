@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/container/btree_set.h"
 #include "base/map_util.hpp"
 #include "geometry/named_quantities.hpp"
 #include "ksp_plugin/integrators.hpp"
@@ -865,7 +866,7 @@ absl::Status Vessel::Reanimate(Instant const desired_t_min) {
   // This method is very similar to Ephemeris::Reanimate.  See the comments
   // there for some of the subtle points.
   static_assert(base::is_serializable_v<Barycentric>);
-  std::set<Instant> checkpoints;
+  absl::btree_set<Instant> checkpoints;
   LOG(INFO) << "Reanimating " << ShortDebugString() << " until "
             << desired_t_min;
 
