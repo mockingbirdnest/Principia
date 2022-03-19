@@ -165,6 +165,8 @@ class JournalProtoProcessor final {
   // local variable (typically a call to some Deserialize function, but other
   // transformations are possible).  Deals with arrays of pointers for repeated
   // fields.
+  // Note that for a field that is designated by a (size_of) field, the
+  // (size_of) field is passed to this lambda instead of the field itself.
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& expr)>>
       field_cxx_deserializer_fn_;

@@ -594,9 +594,30 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
         << " has (is_csharp_owned) option and cannot have any of the "
         << "(is_produced), (is_produced_if), (is_consumed), and "
         << "(is_consumed_if) options";
+    CHECK(options.HasExtension(journal::serialization::pointer_to))
+        << descriptor->full_name()
+        << " must have a (pointer_to) option because it has the "
+        << "(is_csharp_owned) option";
     CHECK(field_cxx_size_.contains(descriptor))
         << descriptor->full_name() << " must be designated by a (size_of) "
-        << "because it has the (is_csharp_owned) option";
+        << "option because it has the (is_csharp_owned) option";
+    std::string const storage_name = descriptor->name() + "_storage";
+    field_cxx_deserialization_storage_name_[descriptor] = storage_name;
+    field_cxx_deserialization_storage_type_[descriptor] =
+        "std::vector<" +
+        options.GetExtension(journal::serialization::pointer_to) + ">";
+    std::string const size_field_name = field_cxx_size_[descriptor]->name();
+    field_cxx_deserializer_fn_[descriptor] =
+        [size_field_name, storage_name](std::string const& expr) {
+          return "[&" + storage_name + "](" +
+                 "std::int32_t const " + size_field_name + "){\n" +
+                 "    " + storage_name + ".resize(" +
+                 size_field_name + ");\n" +
+                 "    return " + storage_name + ".data();\n"
+                 "  }(" +
+                 expr + ")";
+    };
+    return;
   }
 
   field_cxx_deserializer_fn_[descriptor] =
@@ -1090,12 +1111,26 @@ void JournalProtoProcessor::ProcessInOut(
           cxx_run_body_prolog_[descriptor] +=
               cxx_deserialization_storage_declarations_[field_message_type];
         }
+
+        // If the field is designated by a (size_of), the (size_of) field is
+        // passed to the deserialization function instead of the field itself.
+        std::string deserialize_field;
+        if (Contains(field_cxx_size_, field_descriptor)) {
+          std::string const cxx_run_size_field_getter =
+              ToLower(name) + "." + field_cxx_size_[field_descriptor]->name() +
+              "()";
+          deserialize_field = field_cxx_deserializer_fn_[field_descriptor](
+              cxx_run_size_field_getter);
+        } else {
+          deserialize_field = field_cxx_deserializer_fn_[field_descriptor](
+              cxx_run_field_getter);
+        }
+
         cxx_run_body_prolog_[descriptor] +=
             "  auto " + run_local_variable + " = " +
             field_cxx_optional_pointer_fn_[field_descriptor](
                 ToLower(name) + ".has_" + field_descriptor_name + "()",
-                field_cxx_deserializer_fn_[field_descriptor](
-                    cxx_run_field_getter)) +
+                deserialize_field) +
             ";\n";
       }
     }
