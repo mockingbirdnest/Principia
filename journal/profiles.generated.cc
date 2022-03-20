@@ -2398,7 +2398,11 @@ void PlanetariumPlotCelestialFutureTrajectory::Run(Message const& message, Playe
   auto plugin = DeserializePointer<Plugin const*>(in.plugin(), pointer_map);
   auto celestial_index = in.celestial_index();
   auto vessel_guid = in.vessel_guid().c_str();
-  auto vertices = DeserializePointer<ScaledSpacePoint*>(in.vertices(), pointer_map);
+  std::vector<ScaledSpacePoint> vertices_storage;
+  auto vertices = [&vertices_storage](std::int32_t const vertices_size){
+    vertices_storage.resize(vertices_size);
+    return vertices_storage.data();
+  }(in.vertices_size());
   auto vertices_size = in.vertices_size();
   [[maybe_unused]] auto const& out = message.out();
   double minimal_distance_from_camera;
@@ -2428,7 +2432,11 @@ void PlanetariumPlotCelestialPastTrajectory::Run(Message const& message, Player:
   auto plugin = DeserializePointer<Plugin const*>(in.plugin(), pointer_map);
   auto celestial_index = in.celestial_index();
   auto max_history_length = in.max_history_length();
-  auto vertices = DeserializePointer<ScaledSpacePoint*>(in.vertices(), pointer_map);
+  std::vector<ScaledSpacePoint> vertices_storage;
+  auto vertices = [&vertices_storage](std::int32_t const vertices_size){
+    vertices_storage.resize(vertices_size);
+    return vertices_storage.data();
+  }(in.vertices_size());
   auto vertices_size = in.vertices_size();
   [[maybe_unused]] auto const& out = message.out();
   double minimal_distance_from_camera;
@@ -2456,7 +2464,11 @@ void PlanetariumPlotFlightPlanSegment::Run(Message const& message, Player::Point
   auto plugin = DeserializePointer<Plugin const*>(in.plugin(), pointer_map);
   auto vessel_guid = in.vessel_guid().c_str();
   auto index = in.index();
-  auto vertices = DeserializePointer<ScaledSpacePoint*>(in.vertices(), pointer_map);
+  std::vector<ScaledSpacePoint> vertices_storage;
+  auto vertices = [&vertices_storage](std::int32_t const vertices_size){
+    vertices_storage.resize(vertices_size);
+    return vertices_storage.data();
+  }(in.vertices_size());
   auto vertices_size = in.vertices_size();
   [[maybe_unused]] auto const& out = message.out();
   int vertex_count;
@@ -2481,7 +2493,11 @@ void PlanetariumPlotPrediction::Run(Message const& message, Player::PointerMap& 
   auto planetarium = DeserializePointer<Planetarium const*>(in.planetarium(), pointer_map);
   auto plugin = DeserializePointer<Plugin const*>(in.plugin(), pointer_map);
   auto vessel_guid = in.vessel_guid().c_str();
-  auto vertices = DeserializePointer<ScaledSpacePoint*>(in.vertices(), pointer_map);
+  std::vector<ScaledSpacePoint> vertices_storage;
+  auto vertices = [&vertices_storage](std::int32_t const vertices_size){
+    vertices_storage.resize(vertices_size);
+    return vertices_storage.data();
+  }(in.vertices_size());
   auto vertices_size = in.vertices_size();
   [[maybe_unused]] auto const& out = message.out();
   int vertex_count;
@@ -2508,7 +2524,11 @@ void PlanetariumPlotPsychohistory::Run(Message const& message, Player::PointerMa
   auto plugin = DeserializePointer<Plugin const*>(in.plugin(), pointer_map);
   auto vessel_guid = in.vessel_guid().c_str();
   auto max_history_length = in.max_history_length();
-  auto vertices = DeserializePointer<ScaledSpacePoint*>(in.vertices(), pointer_map);
+  std::vector<ScaledSpacePoint> vertices_storage;
+  auto vertices = [&vertices_storage](std::int32_t const vertices_size){
+    vertices_storage.resize(vertices_size);
+    return vertices_storage.data();
+  }(in.vertices_size());
   auto vertices_size = in.vertices_size();
   [[maybe_unused]] auto const& out = message.out();
   int vertex_count;
