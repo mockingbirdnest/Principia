@@ -7,10 +7,10 @@
 #include <functional>
 #include <limits>
 #include <optional>
-#include <set>
 #include <utility>
 #include <vector>
 
+#include "absl/container/btree_set.h"
 #include "absl/strings/str_cat.h"
 #include "astronomy/epoch.hpp"
 #include "base/jthread.hpp"
@@ -946,7 +946,7 @@ Ephemeris<Frame>::MakeCheckpointerReader() {
 
 template<typename Frame>
 absl::Status Ephemeris<Frame>::Reanimate(Instant const desired_t_min) {
-  std::set<Instant> checkpoints;
+  absl::btree_set<Instant> checkpoints;
   {
     absl::ReaderMutexLock l(&lock_);
 

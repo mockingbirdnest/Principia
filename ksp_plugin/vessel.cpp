@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/container/btree_set.h"
 #include "base/map_util.hpp"
 #include "geometry/named_quantities.hpp"
 #include "ksp_plugin/integrators.hpp"
@@ -186,39 +187,70 @@ void Vessel::DetectCollapsibilityChange() {
     // consider merging it with its predecessor and avoiding the creation of a
     // new segment.  The checkpointing code below would remain correct.
 
+    // In normal situations we create a new segment with the collapsibility
+    // given by |becomes_collapsible|.  In one cornercase we delete the current
+    // segment.
+    enum {
+      Create,
+      Delete,
+    } segment_action = Create;
+
     if (!is_collapsible_) {
       // If the segment that is being closed is not collapsible, we have no way
       // to reconstruct it, so we must serialize it in a checkpoint.  Note that
       // the last point of the backstory specifies the initial conditions of the
       // next (collapsible) segment.
       Instant const checkpoint = backstory_->back().time;
-      // This test is needed because in some cornercases we might try to create
-      // multiple checkpoints at the same time.  See #3280.
-      if (checkpointer_->newest_checkpoint() < checkpoint) {
+
+      // In some cornercases we might try to create multiple checkpoints at the
+      // same time, see #3280.  The checkpointer doesn't support that.
+      bool const create_checkpoint =
+          checkpointer_->newest_checkpoint() < checkpoint;
+
+      if (create_checkpoint) {
         LOG(INFO) << "Writing " << ShortDebugString()
                   << " to checkpoint at: " << checkpoint;
         checkpointer_->WriteToCheckpoint(checkpoint);
-      }
 
-      // If there are no checkpoints in the current trajectory (this would
-      // happen if we restored the last part of trajectory and it didn't overlap
-      // with a checkpoint and no reanimation happened) then the
-      // |oldest_reanimated_checkpoint_| need to be updated to reflect the newly
-      // created checkpoint.
-      {
+        // If there are no checkpoints in the current trajectory (this would
+        // happen if we restored the last part of trajectory and it didn't
+        // overlap with a checkpoint and no reanimation happened) then the
+        // |oldest_reanimated_checkpoint_| need to be updated to reflect the
+        // newly created checkpoint.
         absl::MutexLock l(&lock_);
         if (oldest_reanimated_checkpoint_ == InfiniteFuture) {
           oldest_reanimated_checkpoint_ = checkpoint;
         } else {
           CHECK_LT(oldest_reanimated_checkpoint_, checkpoint);
         }
+      } else {
+        // Not only don't we create a new checkpoint and a new segment, but we
+        // also delete the current, non-collapsible, 1-point segment, so that we
+        // keep appending to the previous collapsible, 1-point segment.  See
+        // #3332.
+        LOG(INFO) << "Not writing " << ShortDebugString()
+                  << " to duplicate checkpoint at: " << checkpoint;
+        segment_action = Delete;
       }
     }
+
     auto psychohistory = trajectory_.DetachSegments(psychohistory_);
-    backstory_ = trajectory_.NewSegment();
-    if (downsampling_parameters_.has_value()) {
-      backstory_->SetDownsampling(downsampling_parameters_.value());
-    }
+    switch (segment_action) {
+      case Create: {
+        backstory_ = trajectory_.NewSegment();
+        if (downsampling_parameters_.has_value()) {
+          backstory_->SetDownsampling(downsampling_parameters_.value());
+        }
+        break;
+      }
+      case Delete: {
+        // Let's hope that no-one has kept an iterator to the deleted backstory.
+        trajectory_.DeleteSegments(backstory_);
+        CHECK(!trajectory_.segments().empty());
+        backstory_ = std::prev(trajectory_.segments().end());
+        break;
+      }
+    };
     psychohistory_ = trajectory_.AttachSegments(std::move(psychohistory));
     is_collapsible_ = becomes_collapsible;
   }
@@ -834,7 +866,7 @@ absl::Status Vessel::Reanimate(Instant const desired_t_min) {
   // This method is very similar to Ephemeris::Reanimate.  See the comments
   // there for some of the subtle points.
   static_assert(base::is_serializable_v<Barycentric>);
-  std::set<Instant> checkpoints;
+  absl::btree_set<Instant> checkpoints;
   LOG(INFO) << "Reanimating " << ShortDebugString() << " until "
             << desired_t_min;
 
