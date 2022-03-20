@@ -583,11 +583,51 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
     }
   }
 
-  field_cxx_deserializer_fn_[descriptor] =
-      [pointer_to](std::string const& expr) {
-        return "DeserializePointer<" + pointer_to + "*>(" + expr +
-               ", pointer_map)";
-      };
+  if (options.HasExtension(journal::serialization::is_csharp_owned)) {
+    CHECK(options.GetExtension(journal::serialization::is_csharp_owned))
+        << descriptor->full_name() << " has incorrect (is_csharp_owned) option";
+    CHECK(!options.HasExtension(journal::serialization::is_produced) &&
+          !options.HasExtension(journal::serialization::is_produced_if) &&
+          !options.HasExtension(journal::serialization::is_consumed) &&
+          !options.HasExtension(journal::serialization::is_consumed_if))
+        << descriptor->full_name()
+        << " has (is_csharp_owned) option and cannot have any of the "
+        << "(is_produced), (is_produced_if), (is_consumed), and "
+        << "(is_consumed_if) options";
+    CHECK(options.HasExtension(journal::serialization::pointer_to))
+        << descriptor->full_name()
+        << " must have a (pointer_to) option because it has the "
+        << "(is_csharp_owned) option";
+    CHECK(field_cxx_size_.contains(descriptor))
+        << descriptor->full_name() << " must be designated by a (size_of) "
+        << "option because it has the (is_csharp_owned) option";
+    std::string const storage_name = descriptor->name() + "_storage";
+    field_cxx_deserialization_storage_name_[descriptor] = storage_name;
+    field_cxx_deserialization_storage_type_[descriptor] =
+        "std::vector<" +
+        options.GetExtension(journal::serialization::pointer_to) + ">";
+    std::string const size_field_name = field_cxx_size_[descriptor]->name();
+    // Note that in this lambda |expr| is the size field, not the address field:
+    // the latter was allocated in C# and never inserted in our pointer map, so
+    // it's mostly useless.
+    field_cxx_deserializer_fn_[descriptor] =
+        [size_field_name, storage_name](std::string const& expr) {
+          return "[&" + storage_name + "](" +
+                 "std::int32_t const " + size_field_name + "){\n" +
+                 "    " + storage_name + ".resize(" +
+                 size_field_name + ");\n" +
+                 "    return " + storage_name + ".data();\n"
+                 "  }(" +
+                 expr + ")";
+    };
+  } else {
+    // The normal case.
+    field_cxx_deserializer_fn_[descriptor] =
+        [pointer_to](std::string const& expr) {
+          return "DeserializePointer<" + pointer_to + "*>(" + expr +
+                 ", pointer_map)";
+        };
+  }
   field_cxx_serializer_fn_[descriptor] =
       [](std::string const& expr) {
         return "SerializePointer(" + expr + ")";
@@ -940,8 +980,9 @@ void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
     }
 }
 
-void JournalProtoProcessor::ProcessAddressOf(Descriptor const* descriptor) {
-  // Do a pass to build the field_cxx_address_of_ map.
+void JournalProtoProcessor::ProcessAddressOfSizeOf(
+    Descriptor const* descriptor) {
+  // Do a pass to build the field_cxx_address_of_ and field_cxx_size_of_ maps.
   for (int i = 0; i < descriptor->field_count(); ++i) {
     FieldDescriptor const* field_descriptor = descriptor->field(i);
     FieldOptions const& options = field_descriptor->options();
@@ -963,6 +1004,24 @@ void JournalProtoProcessor::ProcessAddressOf(Descriptor const* descriptor) {
           << "(is_produced) option";
       field_cxx_address_of_[field_descriptor] = address_of_field;
       field_cxx_address_[address_of_field] = field_descriptor;
+    } else if (options.HasExtension(journal::serialization::size_of)) {
+      CHECK_EQ(field_descriptor->label(), FieldDescriptor::LABEL_REQUIRED)
+          << field_descriptor->full_name()
+          << " must be a required field to have the (size_of) option";
+      CHECK_EQ(field_descriptor->type(), FieldDescriptor::TYPE_INT32)
+          << field_descriptor->full_name()
+          << " must be an int32 field to have the (size_of) option";
+      FieldDescriptor const* const size_of_field =
+          field_descriptor->containing_type()->FindFieldByName(
+              options.GetExtension(journal::serialization::size_of));
+      FieldOptions const& size_of_options = size_of_field->options();
+      CHECK(
+          size_of_options.GetExtension(journal::serialization::is_csharp_owned))
+          << size_of_field->full_name()
+          << " is designated by a (size_of) option and must have the "
+          << "(is_csharp_owned) option";
+      field_cxx_size_of_[field_descriptor] = size_of_field;
+      field_cxx_size_[size_of_field] = field_descriptor;
     }
   }
 }
@@ -971,6 +1030,7 @@ void JournalProtoProcessor::ProcessInOut(
   Descriptor const* descriptor,
   std::vector<FieldDescriptor const*>* field_descriptors) {
   std::string const& name = descriptor->name();
+  ProcessAddressOfSizeOf(descriptor);
 
   std::string cxx_message_prefix;
   {
@@ -1054,12 +1114,26 @@ void JournalProtoProcessor::ProcessInOut(
           cxx_run_body_prolog_[descriptor] +=
               cxx_deserialization_storage_declarations_[field_message_type];
         }
+
+        // If the field is designated by a (size_of), the (size_of) field is
+        // passed to the deserialization function instead of the field itself.
+        std::string deserialize_field;
+        if (Contains(field_cxx_size_, field_descriptor)) {
+          std::string const cxx_run_size_field_getter =
+              ToLower(name) + "." + field_cxx_size_[field_descriptor]->name() +
+              "()";
+          deserialize_field = field_cxx_deserializer_fn_[field_descriptor](
+              cxx_run_size_field_getter);
+        } else {
+          deserialize_field = field_cxx_deserializer_fn_[field_descriptor](
+              cxx_run_field_getter);
+        }
+
         cxx_run_body_prolog_[descriptor] +=
             "  auto " + run_local_variable + " = " +
             field_cxx_optional_pointer_fn_[field_descriptor](
                 ToLower(name) + ".has_" + field_descriptor_name + "()",
-                field_cxx_deserializer_fn_[field_descriptor](
-                    cxx_run_field_getter)) +
+                deserialize_field) +
             ";\n";
       }
     }
@@ -1099,7 +1173,7 @@ void JournalProtoProcessor::ProcessInOut(
 void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
   CHECK(descriptor->field_count() >= 1 && descriptor->field_count() <= 2)
       << descriptor->full_name() << " must have one or two fields";
-  ProcessAddressOf(descriptor);
+  ProcessAddressOfSizeOf(descriptor);
 
   // Process the fields, making sure that at most one is the bona fide result.
   FieldDescriptor const* address_field_descriptor = nullptr;
@@ -1203,7 +1277,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
   std::string const& proto_parameter_name = ToLower(name) + "_proto";
   std::string const& object_parameter_name = ToLower(name) + "_object";
   MessageOptions const& options = descriptor->options();
-  ProcessAddressOf(descriptor);
+  ProcessAddressOfSizeOf(descriptor);
 
   // Start by processing the fields.  We need to know if any of them has a
   // custom marshaler to decide whether we generate a struct or a class.

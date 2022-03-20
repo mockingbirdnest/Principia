@@ -74,7 +74,7 @@ class JournalProtoProcessor final {
 
   void ProcessField(FieldDescriptor const* descriptor);
 
-  void ProcessAddressOf(Descriptor const* descriptor);
+  void ProcessAddressOfSizeOf(Descriptor const* descriptor);
 
   void ProcessInOut(Descriptor const* descriptor,
                     std::vector<FieldDescriptor const*>* field_descriptors);
@@ -124,6 +124,12 @@ class JournalProtoProcessor final {
       field_cxx_address_of_;
   std::map<FieldDescriptor const*, FieldDescriptor const*> field_cxx_address_;
 
+  // For a field that has a (size_of) option, field_cxx_size_of_ has that field
+  // as a key and the field designated by the option as its value.
+  // field_cxx_size_ is the inverse map.
+  std::map<FieldDescriptor const*, FieldDescriptor const*> field_cxx_size_of_;
+  std::map<FieldDescriptor const*, FieldDescriptor const*> field_cxx_size_;
+
   // For all fields, a lambda that takes the name of a local variable containing
   // data extracted (and deserialized) from the field and returns a list of
   // expressions to be passed to the interface.  Deals with passing by reference
@@ -159,6 +165,8 @@ class JournalProtoProcessor final {
   // local variable (typically a call to some Deserialize function, but other
   // transformations are possible).  Deals with arrays of pointers for repeated
   // fields.
+  // Note that for a field that is designated by a (size_of) field, the
+  // (size_of) field is passed to this lambda instead of the field itself.
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& expr)>>
       field_cxx_deserializer_fn_;
