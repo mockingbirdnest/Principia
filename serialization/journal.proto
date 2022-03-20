@@ -2398,12 +2398,14 @@ extend google.protobuf.FieldOptions {
   // to the field that contains the address of the returned field.
   optional string address_of = 50010;
 
-  //TODO(phl):Comment
-  // For a foobar field, this option is attached to the field that contains the
-  // size of the foobar.
+  // For a fixed64 field used to represent the address of an object allocated by
+  // C#, this option is attached to the field that contains the size of the C#
+  // object.
   optional string size_of = 50014;
 
-  //TODO(phl):Comment
+  // For a fixed64 field used to represent an addresse, indicates that the
+  // object is owned by C# and not by C++.  There must be a field with a
+  // (size_of) option designating this field.
   optional bool is_csharp_owned = 50015;
 }
 
