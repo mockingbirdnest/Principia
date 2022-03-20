@@ -1908,8 +1908,9 @@ message PlanetariumPlotPsychohistory {
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
     required string vessel_guid = 4;
     required double max_history_length = 5;
-    required fixed64 vertices = 6 [(pointer_to) = "ScaledSpacePoint"];
-    required int32 vertices_size = 7;
+    required fixed64 vertices = 6 [(pointer_to) = "ScaledSpacePoint",
+                                   (is_csharp_owned) = true];
+    required int32 vertices_size = 7 [(size_of) = "vertices"];
   }
   message Out {
     required int32 vertex_count = 1;

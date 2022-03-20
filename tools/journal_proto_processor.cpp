@@ -607,6 +607,9 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
         "std::vector<" +
         options.GetExtension(journal::serialization::pointer_to) + ">";
     std::string const size_field_name = field_cxx_size_[descriptor]->name();
+    // Note that in this lambda |expr| is the size field, not the address field:
+    // the latter was allocated in C# and never inserted in our pointer map, so
+    // it's mostly useless.
     field_cxx_deserializer_fn_[descriptor] =
         [size_field_name, storage_name](std::string const& expr) {
           return "[&" + storage_name + "](" +
@@ -617,14 +620,14 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
                  "  }(" +
                  expr + ")";
     };
-    return;
+  } else {
+    // The normal case.
+    field_cxx_deserializer_fn_[descriptor] =
+        [pointer_to](std::string const& expr) {
+          return "DeserializePointer<" + pointer_to + "*>(" + expr +
+                 ", pointer_map)";
+        };
   }
-
-  field_cxx_deserializer_fn_[descriptor] =
-      [pointer_to](std::string const& expr) {
-        return "DeserializePointer<" + pointer_to + "*>(" + expr +
-               ", pointer_map)";
-      };
   field_cxx_serializer_fn_[descriptor] =
       [](std::string const& expr) {
         return "SerializePointer(" + expr + ")";
