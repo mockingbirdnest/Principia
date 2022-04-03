@@ -504,10 +504,6 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   // as input to Davenport's method to figure out how the game rotated the pile-
   // up overall.  This is then used to determine the attitute at |t| based on
   // the principal axis at |t|.
-  //
-  // the attitude at |t0| is compared with the
-  // orientation with respect to the new principal axes (from apparent
-  // coordinates at |t|).
 
   // Compute the canonical axes of all the parts using their apparent and actual
   // motions.
