@@ -523,7 +523,9 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
     actual_directions.push_back(actual_part_orthogonal_map(part_x));
     actual_directions.push_back(actual_part_orthogonal_map(part_y));
     actual_directions.push_back(actual_part_orthogonal_map(part_z));
-    masses.push_back(part->mass());
+    for (int d = 1; d <= 3; ++d) {
+      masses.push_back(part->mass());
+    }
   }
 
   // Use Davenport's Q Method to figure out how the game rotated the pile-up
