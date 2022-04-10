@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/flags.hpp"
 #include "base/map_util.hpp"
 #include "geometry/identity.hpp"
 #include "ksp_plugin/integrators.hpp"
@@ -87,8 +86,7 @@ PileUp::PileUp(
       adaptive_step_parameters_(std::move(adaptive_step_parameters)),
       fixed_step_parameters_(std::move(fixed_step_parameters)),
       history_(trajectory_.segments().begin()),
-      deletion_callback_(std::move(deletion_callback)),
-      logger_(SOLUTION_DIR / "mathematica" / "pile_up", true) {
+      deletion_callback_(std::move(deletion_callback)) {
   LOG(INFO) << "Constructing pile up at " << this;
   MechanicalSystem<Barycentric, NonRotatingPileUp> mechanical_system;
   for (not_null<Part*> const part : parts_) {
@@ -426,8 +424,7 @@ PileUp::PileUp(
       fixed_step_parameters_(std::move(fixed_step_parameters)),
       trajectory_(std::move(trajectory)),
       angular_momentum_(angular_momentum),
-      deletion_callback_(std::move(deletion_callback)),
-      logger_(SOLUTION_DIR / "mathematica" / "pile_up", true) {
+      deletion_callback_(std::move(deletion_callback)) {
   if (history.has_value()) {
     history_ = history.value();
   } else {
@@ -501,108 +498,6 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   Rotation<PileUpPrincipalAxes, ApparentPileUp> const apparent_attitude =
       apparent_inertia_eigensystem.rotation;
 
-AngularVelocity<PileUpPrincipalAxes> ω_actual;
-if (base::Flags::IsPresent("heine")) {
-  LOG_EVERY_N(WARNING, 50)<<">>> Heine";
-  // The motion of a hypothetical rigid body with the same moment of inertia and
-  // angular momentum as the apparent parts.
-  RigidMotion<PileUpPrincipalAxes, ApparentPileUp> const
-      apparent_pile_up_motion(
-          RigidTransformation<PileUpPrincipalAxes, ApparentPileUp>(
-              PileUpPrincipalAxes::origin,
-              ApparentPileUp::origin,
-              apparent_attitude.Forget<OrthogonalMap>()),
-          apparent_angular_momentum / apparent_inertia_tensor,
-          ApparentPileUp::unmoving);
-
-  // In a non-rigid body, the principal axes are not stable, and cannot be used
-  // to determine attitude.  We treat this as a flexible body, and use a part to
-  // propagate the attitude: its attitude at |t0| is used, together with its
-  // orientation with respect to the new principal axes (from apparent
-  // coordinates at |t|), to define the attitude at |t0| of the new principal
-  // axes.
-  // We choose the part which rotates the least with respect to the
-  // (instantaneous) principal axes to define the attitude.
-  AngularFrequency reference_part_proper_ω = Infinity<AngularFrequency>;
-  Part* reference_part = nullptr;
-  std::optional<OrthogonalMap<RigidPart, PileUpPrincipalAxes>>
-      reference_part_orientation_in_principal_axes;
-  for (auto const& [part, apparent_part_motion] : apparent_part_rigid_motion_) {
-    RigidMotion<RigidPart, PileUpPrincipalAxes> const
-        part_motion_in_principal_axes =
-            apparent_pile_up_motion.Inverse() *
-            apparent_system.LinearMotion().Inverse() * apparent_part_motion;
-    auto const part_proper_ω =
-        part_motion_in_principal_axes.angular_velocity_of<PileUpPrincipalAxes>()
-            .Norm();
-    if (part_proper_ω < reference_part_proper_ω) {
-      reference_part_proper_ω = part_proper_ω;
-      reference_part = part;
-      reference_part_orientation_in_principal_axes =
-          part_motion_in_principal_axes.orthogonal_map();
-    }
-  }
-
-  OrthogonalMap<RigidPart, NonRotatingPileUp> const
-      reference_part_initial_attitude =
-          actual_part_rigid_motion_.at(reference_part).orthogonal_map();
-
-  // |reference_part_initial_attitude|, an |actual_part_rigid_motion_|, is
-  // computed from the output of the previous |EulerSolver|.  |initial_attitude|
-  // will be used to construct the new one.  In order to prevent roundoff
-  // accumulation from eventually producing noticeably non-unit quaternions, we
-  // normalize |initial_attitude|.
-  Rotation<PileUpPrincipalAxes, NonRotatingPileUp> initial_attitude =
-      (reference_part_initial_attitude *
-       reference_part_orientation_in_principal_axes->Inverse())
-          .AsRotation();
-  initial_attitude = Rotation<PileUpPrincipalAxes, NonRotatingPileUp>(
-      Normalize(initial_attitude.quaternion()));
-
-  // We take into account the changes to |angular_momentum_| and to the moments
-  // of inertia for the step from t0 to t before propagating the attitude from
-  // t0 to t. This forms a splitting with the game, with the game changing
-  // angular momentum and moment of inertia according to various physical
-  // effects (engines, aerodynamics, internal dynamics, etc.) that depend, among
-  // other things, on the attitude and angular velocity, and the Euler solver
-  // changing attitude and angular velocity according to Euler’s equations.
-  angular_momentum_ += intrinsic_torque_ * Δt + angular_momentum_change_;
-  euler_solver_.emplace(
-      apparent_inertia_eigensystem.form.coordinates().Diagonal(),
-      angular_momentum_,
-      initial_attitude,
-      t0);
-
-  // This is where we compute our half of the splitting.
-  RigidMotion<PileUpPrincipalAxes, NonRotatingPileUp> const
-      actual_pile_up_motion = euler_solver_->MotionAt(
-          t, {NonRotatingPileUp::origin, NonRotatingPileUp::unmoving});
-
-  RigidMotion<ApparentPileUp, NonRotatingPileUp> const rotational_correction =
-      actual_pile_up_motion * apparent_pile_up_motion.Inverse();
-  RigidMotion<Apparent, NonRotatingPileUp> const correction =
-      rotational_correction * apparent_system.LinearMotion().Inverse();
-
-  // Now update the motions of the parts in the pile-up frame, and keep their
-  // orientations with respect to the principal axes in case we warp.
-  actual_part_rigid_motion_.clear();
-  rigid_pile_up_.clear();
-  for (auto const& [part, apparent_part_rigid_motion] :
-       apparent_part_rigid_motion_) {
-    RigidMotion<RigidPart, NonRotatingPileUp> const actual_rigid_motion =
-        correction * apparent_part_rigid_motion;
-
-    actual_part_rigid_motion_.emplace(part, actual_rigid_motion);
-    rigid_pile_up_.emplace(
-        part,
-        actual_pile_up_motion.rigid_transformation().Inverse() *
-            actual_rigid_motion.rigid_transformation());
-  }
-  apparent_part_rigid_motion_.clear();
-  ω_actual = actual_pile_up_motion.angular_velocity_of<NonRotatingPileUp>();
-} else {
-  CHECK(base::Flags::IsPresent("davenport"));
-  LOG_EVERY_N(WARNING, 50)<<">>> Davenport";
   // In a non-rigid body, the principal axes are not stable, and cannot be used
   // to determine attitude.  We treat this as a flexible body, and use the parts
   // to propagate the attitude: the part orientations at |t0| and |t| are used
@@ -701,13 +596,6 @@ if (base::Flags::IsPresent("heine")) {
             actual_rigid_motion.rigid_transformation());
   }
   apparent_part_rigid_motion_.clear();
-  ω_actual = actual_pile_up_motion.angular_velocity_of<NonRotatingPileUp>();
-}
-
-  logger_.Append(
-      "angularVelocity",
-      std::tuple{t, ω_actual},
-      mathematica::ExpressIn(2 * π * Radian, quantities::si::Minute));
 }
 
 absl::Status PileUp::AdvanceTime(Instant const& t) {

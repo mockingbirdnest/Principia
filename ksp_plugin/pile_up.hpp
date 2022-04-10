@@ -16,7 +16,6 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "integrators/integrators.hpp"
-#include "mathematica/mathematica.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/ephemeris.hpp"
@@ -247,8 +246,6 @@ class PileUp {
 
   // Called in the destructor.
   std::function<void()> deletion_callback_;
-
-  mathematica::Logger logger_;
 
   friend class TestablePileUp;
 };
