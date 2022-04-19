@@ -141,6 +141,21 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   Checkpointer<serialization::ContinuousTrajectory>::Reader
   MakeCheckpointerReader();
 
+ public:
+  // Beware! This part of the API is thread-unsafe.  The caller (which may be a
+  // function of this class) is responsible for synchronization, i.e., for
+  // making sure that no mutators execute in parallel with any of the functions
+  // having "locked" in their name.  The purpose of this API is to improve the
+  // performance of the |Ephemeris|.
+
+  Instant t_min_locked() const;
+  Instant t_max_locked() const;
+
+  Position<Frame> EvaluatePositionLocked(Instant const& time) const;
+  Velocity<Frame> EvaluateVelocityLocked(Instant const& time) const;
+  DegreesOfFreedom<Frame> EvaluateDegreesOfFreedomLocked(
+      Instant const& time) const;
+
  protected:
   // For mocking.
   ContinuousTrajectory();
@@ -161,9 +176,6 @@ class ContinuousTrajectory : public Trajectory<Frame> {
         polynomial;
   };
   using InstantPolynomialPairs = std::vector<InstantPolynomialPair>;
-
-  Instant t_min_locked() const REQUIRES_SHARED(lock_);
-  Instant t_max_locked() const REQUIRES_SHARED(lock_);
 
   // Really a static method, but may be overridden for testing.
   virtual not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>

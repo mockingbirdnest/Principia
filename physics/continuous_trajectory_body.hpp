@@ -188,37 +188,21 @@ template<typename Frame>
 Position<Frame> ContinuousTrajectory<Frame>::EvaluatePosition(
     Instant const& time) const {
   absl::ReaderMutexLock l(&lock_);
-  CHECK_LE(t_min_locked(), time);
-  CHECK_GE(t_max_locked(), time);
-  auto const it = FindPolynomialForInstant(time);
-  CHECK(it != polynomials_.end());
-  auto const& polynomial = *it->polynomial;
-  return polynomial(time);
+  return EvaluatePositionLocked(time);
 }
 
 template<typename Frame>
 Velocity<Frame> ContinuousTrajectory<Frame>::EvaluateVelocity(
     Instant const& time) const {
   absl::ReaderMutexLock l(&lock_);
-  CHECK_LE(t_min_locked(), time);
-  CHECK_GE(t_max_locked(), time);
-  auto const it = FindPolynomialForInstant(time);
-  CHECK(it != polynomials_.end());
-  auto const& polynomial = *it->polynomial;
-  return polynomial.EvaluateDerivative(time);
+  return EvaluateVelocityLocked(time);
 }
 
 template<typename Frame>
 DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
     Instant const& time) const {
   absl::ReaderMutexLock l(&lock_);
-  CHECK_LE(t_min_locked(), time);
-  CHECK_GE(t_max_locked(), time);
-  auto const it = FindPolynomialForInstant(time);
-  CHECK(it != polynomials_.end());
-  auto const& polynomial = *it->polynomial;
-  return DegreesOfFreedom<Frame>(polynomial(time),
-                                 polynomial.EvaluateDerivative(time));
+  return EvaluateDegreesOfFreedomLocked(time);
 }
 
 #if PRINCIPIA_CONTINUOUS_TRAJECTORY_SUPPORTS_PIECEWISE_POISSON_SERIES
@@ -602,6 +586,57 @@ ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
 }
 
 template<typename Frame>
+Instant ContinuousTrajectory<Frame>::t_min_locked() const {
+  if (polynomials_.empty()) {
+    return InfiniteFuture;
+  }
+  return *first_time_;
+}
+
+template<typename Frame>
+Instant ContinuousTrajectory<Frame>::t_max_locked() const {
+  if (polynomials_.empty()) {
+    return InfinitePast;
+  }
+  return polynomials_.crbegin()->t_max;
+}
+
+template<typename Frame>
+Position<Frame> ContinuousTrajectory<Frame>::EvaluatePositionLocked(
+    Instant const& time) const {
+  CHECK_LE(t_min_locked(), time);
+  CHECK_GE(t_max_locked(), time);
+  auto const it = FindPolynomialForInstant(time);
+  CHECK(it != polynomials_.end());
+  auto const& polynomial = *it->polynomial;
+  return polynomial(time);
+}
+
+template<typename Frame>
+Velocity<Frame> ContinuousTrajectory<Frame>::EvaluateVelocityLocked(
+    Instant const& time) const {
+  CHECK_LE(t_min_locked(), time);
+  CHECK_GE(t_max_locked(), time);
+  auto const it = FindPolynomialForInstant(time);
+  CHECK(it != polynomials_.end());
+  auto const& polynomial = *it->polynomial;
+  return polynomial.EvaluateDerivative(time);
+}
+
+template<typename Frame>
+DegreesOfFreedom<Frame>
+ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedomLocked(
+    Instant const& time) const {
+  CHECK_LE(t_min_locked(), time);
+  CHECK_GE(t_max_locked(), time);
+  auto const it = FindPolynomialForInstant(time);
+  CHECK(it != polynomials_.end());
+  auto const& polynomial = *it->polynomial;
+  return DegreesOfFreedom<Frame>(polynomial(time),
+                                 polynomial.EvaluateDerivative(time));
+}
+
+template<typename Frame>
 ContinuousTrajectory<Frame>::ContinuousTrajectory()
     : checkpointer_(
           make_not_null_unique<
@@ -616,28 +651,6 @@ ContinuousTrajectory<Frame>::InstantPolynomialPair::InstantPolynomialPair(
         polynomial)
     : t_max(t_max),
       polynomial(std::move(polynomial)) {}
-
-template<typename Frame>
-Instant ContinuousTrajectory<Frame>::t_min_locked() const {
-#if defined(_DEBUG)
-  lock_.AssertReaderHeld();
-#endif
-  if (polynomials_.empty()) {
-    return InfiniteFuture;
-  }
-  return *first_time_;
-}
-
-template<typename Frame>
-Instant ContinuousTrajectory<Frame>::t_max_locked() const {
-#if defined(_DEBUG)
-  lock_.AssertReaderHeld();
-#endif
-  if (polynomials_.empty()) {
-    return InfinitePast;
-  }
-  return polynomials_.crbegin()->t_max;
-}
 
 template<typename Frame>
 not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>
