@@ -558,8 +558,8 @@ ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
         first_time_ = std::nullopt;
       } else {
         // Locate the polynomial that ends at the first last_point_.  Note that
-        // we cannot use FindPolynomialForInstantLocked because it calls lower_bound
-        // and we don't want to change its behaviour.
+        // we cannot use FindPolynomialForInstantLocked because it calls
+        // lower_bound and we don't want to change its behaviour.
         Instant const& oldest_time = last_points_.front().first;
         // If oldest_time is the t_max of some polynomial, then the returned
         // iterator points to the next polynomial.
