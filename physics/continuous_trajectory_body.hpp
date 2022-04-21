@@ -214,8 +214,8 @@ int ContinuousTrajectory<Frame>::PiecewisePoissonSeriesDegree(
   absl::ReaderMutexLock l(&lock_);
   CHECK_LE(t_min_locked(), t_min);
   CHECK_GE(t_max_locked(), t_max);
-  auto const it_min = FindPolynomialForInstant(t_min);
-  auto const it_max = FindPolynomialForInstant(t_max);
+  auto const it_min = FindPolynomialForInstantLocked(t_min);
+  auto const it_max = FindPolynomialForInstantLocked(t_max);
   int degree = min_degree;
   for (auto it = it_min;; ++it) {
     degree = std::max(degree, it->polynomial->degree());
@@ -307,8 +307,8 @@ ContinuousTrajectory<Frame>::ToPiecewisePoissonSeries(
   std::unique_ptr<PiecewisePoisson> result;
 
   absl::ReaderMutexLock l(&lock_);
-  auto const it_min = FindPolynomialForInstant(t_min);
-  auto const it_max = FindPolynomialForInstant(t_max);
+  auto const it_min = FindPolynomialForInstantLocked(t_min);
+  auto const it_max = FindPolynomialForInstantLocked(t_max);
   Instant current_t_min = t_min;
   for (auto it = it_min;; ++it) {
     Instant const current_t_max = std::min(t_max, it->t_max);
@@ -558,7 +558,7 @@ ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
         first_time_ = std::nullopt;
       } else {
         // Locate the polynomial that ends at the first last_point_.  Note that
-        // we cannot use FindPolynomialForInstant because it calls lower_bound
+        // we cannot use FindPolynomialForInstantLocked because it calls lower_bound
         // and we don't want to change its behaviour.
         Instant const& oldest_time = last_points_.front().first;
         // If oldest_time is the t_max of some polynomial, then the returned
@@ -606,7 +606,7 @@ Position<Frame> ContinuousTrajectory<Frame>::EvaluatePositionLocked(
     Instant const& time) const {
   CHECK_LE(t_min_locked(), time);
   CHECK_GE(t_max_locked(), time);
-  auto const it = FindPolynomialForInstant(time);
+  auto const it = FindPolynomialForInstantLocked(time);
   CHECK(it != polynomials_.end());
   auto const& polynomial = *it->polynomial;
   return polynomial(time);
@@ -617,7 +617,7 @@ Velocity<Frame> ContinuousTrajectory<Frame>::EvaluateVelocityLocked(
     Instant const& time) const {
   CHECK_LE(t_min_locked(), time);
   CHECK_GE(t_max_locked(), time);
-  auto const it = FindPolynomialForInstant(time);
+  auto const it = FindPolynomialForInstantLocked(time);
   CHECK(it != polynomials_.end());
   auto const& polynomial = *it->polynomial;
   return polynomial.EvaluateDerivative(time);
@@ -629,7 +629,7 @@ ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedomLocked(
     Instant const& time) const {
   CHECK_LE(t_min_locked(), time);
   CHECK_GE(t_max_locked(), time);
-  auto const it = FindPolynomialForInstant(time);
+  auto const it = FindPolynomialForInstantLocked(time);
   CHECK(it != polynomials_.end());
   auto const& polynomial = *it->polynomial;
   return DegreesOfFreedom<Frame>(polynomial(time),
@@ -773,11 +773,8 @@ absl::Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
 
 template<typename Frame>
 typename ContinuousTrajectory<Frame>::InstantPolynomialPairs::const_iterator
-ContinuousTrajectory<Frame>::FindPolynomialForInstant(
+ContinuousTrajectory<Frame>::FindPolynomialForInstantLocked(
     Instant const& time) const {
-#if defined(_DEBUG)
-  lock_.AssertReaderHeld();
-#endif
   // This returns the first polynomial |p| such that |time <= p.t_max|.
   {
     auto const begin = polynomials_.begin();

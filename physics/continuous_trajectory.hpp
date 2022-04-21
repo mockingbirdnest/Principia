@@ -201,7 +201,8 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // after the last polynomial.  If |time| is the |t_max| of some polynomial,
   // that polynomial is returned.  Time complexity is O(N Log N).
   typename InstantPolynomialPairs::const_iterator
-  FindPolynomialForInstant(Instant const& time) const REQUIRES_SHARED(lock_);
+  FindPolynomialForInstantLocked(Instant const& time) const
+      REQUIRES_SHARED(lock_);
 
   // Construction parameters;
   Time const step_;
