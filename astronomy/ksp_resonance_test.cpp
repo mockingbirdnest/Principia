@@ -287,13 +287,13 @@ TEST_F(KSPResonanceTest, MSVC_ONLY_TEST(Stock)) {
                      ephemeris->t_max() - 2 * longest_joolian_period_);
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(laythe_),
                             expected_periods_.at(laythe_)),
-              IsNear(0.874_⑴));
+              IsNear(0.121_⑴));
   EXPECT_THAT(periods_at_mid_term.at(vall_), Eq(Infinity<Time>));
   EXPECT_THAT(periods_at_mid_term.at(tylo_), Eq(Infinity<Time>));
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(bop_),
-                            expected_periods_.at(bop_)), IsNear(0.38_⑴));
+                            expected_periods_.at(bop_)), IsNear(0.19_⑴));
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(pol_),
-                            expected_periods_.at(pol_)), IsNear(0.30_⑴));
+                            expected_periods_.at(pol_)), IsNear(0.13_⑴));
 
   LogEphemeris(*ephemeris,
                ephemeris->t_max() - 5 * longest_joolian_period_,
@@ -357,15 +357,15 @@ TEST_F(KSPResonanceTest, MSVC_ONLY_TEST(Corrected)) {
       ComputePeriods(*ephemeris,
                      ephemeris->t_max() - 2 * longest_joolian_period_);
   EXPECT_THAT(RelativeError(periods_at_long_term.at(laythe_),
-                            expected_periods_.at(laythe_)), IsNear(4.7e-3_⑴));
+                            expected_periods_.at(laythe_)), IsNear(4.3e-3_⑴));
   EXPECT_THAT(RelativeError(periods_at_long_term.at(vall_),
-                            expected_periods_.at(vall_)), IsNear(5.7e-3_⑴));
+                            expected_periods_.at(vall_)), IsNear(2.9e-3_⑴));
   EXPECT_THAT(RelativeError(periods_at_long_term.at(tylo_),
-                            expected_periods_.at(tylo_)), IsNear(0.75e-3_⑴));
+                            expected_periods_.at(tylo_)), IsNear(0.87e-3_⑴));
   EXPECT_THAT(RelativeError(periods_at_long_term.at(bop_),
-                            expected_periods_.at(bop_)), IsNear(43e-3_⑴));
+                            expected_periods_.at(bop_)), IsNear(1.3e-3_⑴));
   EXPECT_THAT(RelativeError(periods_at_long_term.at(pol_),
-                            expected_periods_.at(pol_)), IsNear(9.9e-3_⑴));
+                            expected_periods_.at(pol_)), IsNear(1.2e-3_⑴));
 
   LogEphemeris(*ephemeris,
                ephemeris->t_max() - 5 * longest_joolian_period_,
