@@ -49,7 +49,7 @@ using integrators::ExplicitSecondOrderOrdinaryDifferentialEquation;
 using integrators::IntegrationProblem;
 using integrators::Integrator;
 using integrators::methods::Fine1987RKNG34;
-using numerics::Bisect;
+using numerics::Brent;
 using numerics::DoublePrecision;
 using numerics::Hermite3;
 using quantities::Abs;
@@ -721,11 +721,11 @@ void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
       CHECK(previous_time);
 
       // The derivative of |squared_distance| changed sign.  Find its zero by
-      // bisection, this is the time of the apsis.  Then compute the apsis and
-      // append it to one of the output trajectories.
-      Instant const apsis_time = Bisect(evaluate_square_distance_derivative,
-                                        *previous_time,
-                                        time);
+      // Brent's method, this is the time of the apsis.  Then compute the apsis
+      // and append it to one of the output trajectories.
+      Instant const apsis_time = Brent(evaluate_square_distance_derivative,
+                                       *previous_time,
+                                       time);
       DegreesOfFreedom<Frame> const apsis1_degrees_of_freedom =
           body1_trajectory->EvaluateDegreesOfFreedomLocked(apsis_time);
       DegreesOfFreedom<Frame> const apsis2_degrees_of_freedom =

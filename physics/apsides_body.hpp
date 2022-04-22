@@ -19,7 +19,7 @@ using geometry::Barycentre;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Sign;
-using numerics::Bisect;
+using numerics::Brent;
 using numerics::Hermite3;
 using quantities::IsFinite;
 using quantities::Length;
@@ -176,10 +176,9 @@ absl::Status ComputeNodes(
         node_time = Barycentre<Instant, Length>({*previous_time, time},
                                                 {z, -*previous_z});
       } else {
-        // The normal case, find the intersection with z = 0 using bisection.
-        // TODO(egg): Bisection on a polynomial seems daft; we should have
-        // Newton's method.
-        node_time = Bisect(
+        // The normal case, find the intersection with z = 0 using Brent's
+        // method.
+        node_time = Brent(
             [&z_approximation](Instant const& t) {
               return z_approximation.Evaluate(t);
             },
