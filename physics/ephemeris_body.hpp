@@ -337,11 +337,8 @@ Instant Ephemeris<Frame>::t_min() const {
 
 template<typename Frame>
 Instant Ephemeris<Frame>::t_max() const {
-  Instant t_max = bodies_to_trajectories_.begin()->second->t_max();
-  for (auto const& [_, trajectory] : bodies_to_trajectories_) {
-    t_max = std::min(t_max, trajectory->t_max());
-  }
-  return t_max;
+  absl::ReaderMutexLock l(&lock_);
+  return t_max_locked();
 }
 
 template<typename Frame>
@@ -419,7 +416,7 @@ absl::Status Ephemeris<Frame>::Prolong(Instant const& t) {
   // actually reaches |t| because the last series may not be fully determined
   // after the first integration.
   absl::MutexLock l(&lock_);
-  while (t_max() < t) {
+  while (t_max_locked() < t) {
     instance_->Solve(t_final).IgnoreError();
     RETURN_IF_STOPPED;
     t_final += fixed_step_parameters_.step_;
@@ -607,18 +604,22 @@ Ephemeris<Frame>::ComputeGravitationalAccelerationOnMassiveBody(
   std::vector<Vector<Acceleration, Frame>> accelerations(bodies_.size());
   int b1 = -1;
 
-  // Evaluate the |positions|.
-  positions.reserve(bodies_.size());
-  for (int b = 0; b < bodies_.size(); ++b) {
-    auto const& current_body = bodies_[b];
-    auto const& current_body_trajectory = trajectories_[b];
-    if (current_body.get() == body) {
-      CHECK_EQ(-1, b1);
-      b1 = b;
+  // Evaluate the |positions|.  Locking is necessary to be able to call the
+  // "locked" method of each trajectory.
+  {
+    absl::ReaderMutexLock l(&lock_);
+    positions.reserve(bodies_.size());
+    for (int b = 0; b < bodies_.size(); ++b) {
+      auto const& current_body = bodies_[b];
+      auto const& current_body_trajectory = trajectories_[b];
+      if (current_body.get() == body) {
+        CHECK_EQ(-1, b1);
+        b1 = b;
+      }
+      positions.push_back(current_body_trajectory->EvaluatePositionLocked(t));
     }
-    positions.push_back(current_body_trajectory->EvaluatePosition(t));
+    CHECK_LE(0, b1);
   }
-  CHECK_LE(0, b1);
 
   if (body_is_oblate) {
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
@@ -685,6 +686,8 @@ void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
                                       DiscreteTrajectory<Frame>& periapsides1,
                                       DiscreteTrajectory<Frame>& apoapsides2,
                                       DiscreteTrajectory<Frame>& periapsides2) {
+  absl::ReaderMutexLock l(&lock_);
+
   not_null<ContinuousTrajectory<Frame> const*> const body1_trajectory =
       trajectory(body1);
   not_null<ContinuousTrajectory<Frame> const*> const body2_trajectory =
@@ -696,9 +699,9 @@ void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
       [body1_trajectory, body2_trajectory](
           Instant const& t) -> Variation<Square<Length>> {
     DegreesOfFreedom<Frame> const body1_degrees_of_freedom =
-        body1_trajectory->EvaluateDegreesOfFreedom(t);
+        body1_trajectory->EvaluateDegreesOfFreedomLocked(t);
     DegreesOfFreedom<Frame> const body2_degrees_of_freedom =
-        body2_trajectory->EvaluateDegreesOfFreedom(t);
+        body2_trajectory->EvaluateDegreesOfFreedomLocked(t);
     RelativeDegreesOfFreedom<Frame> const relative =
         body1_degrees_of_freedom - body2_degrees_of_freedom;
     return 2.0 * InnerProduct(relative.displacement(), relative.velocity());
@@ -707,8 +710,8 @@ void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
   std::optional<Instant> previous_time;
   std::optional<Variation<Square<Length>>> previous_squared_distance_derivative;
 
-  for (Instant time = t_min();
-       time <= t_max();
+  for (Instant time = t_min_locked();
+       time <= t_max_locked();
        time += fixed_step_parameters_.step()) {
     Variation<Square<Length>> const squared_distance_derivative =
         evaluate_square_distance_derivative(time);
@@ -724,9 +727,9 @@ void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
                                         *previous_time,
                                         time);
       DegreesOfFreedom<Frame> const apsis1_degrees_of_freedom =
-          body1_trajectory->EvaluateDegreesOfFreedom(apsis_time);
+          body1_trajectory->EvaluateDegreesOfFreedomLocked(apsis_time);
       DegreesOfFreedom<Frame> const apsis2_degrees_of_freedom =
-          body2_trajectory->EvaluateDegreesOfFreedom(apsis_time);
+          body2_trajectory->EvaluateDegreesOfFreedomLocked(apsis_time);
       if (Sign(squared_distance_derivative).is_negative()) {
         apoapsides1.Append(apsis_time, apsis1_degrees_of_freedom).IgnoreError();
         apoapsides2.Append(apsis_time, apsis2_degrees_of_freedom).IgnoreError();
@@ -1128,9 +1131,19 @@ Instant Ephemeris<Frame>::t_min_locked() const {
   lock_.AssertReaderHeld();
   Instant t_min = bodies_to_trajectories_.begin()->second->t_min();
   for (auto const& [_, trajectory] : bodies_to_trajectories_) {
-    t_min = std::max(t_min, trajectory->t_min());
+    t_min = std::max(t_min, trajectory->t_min_locked());
   }
   return t_min;
+}
+
+template<typename Frame>
+Instant Ephemeris<Frame>::t_max_locked() const {
+  lock_.AssertReaderHeld();
+  Instant t_max = bodies_to_trajectories_.begin()->second->t_max();
+  for (auto const& [_, trajectory] : bodies_to_trajectories_) {
+    t_max = std::min(t_max, trajectory->t_max_locked());
+  }
+  return t_max;
 }
 
 template<typename Frame>
@@ -1215,7 +1228,7 @@ Ephemeris<Frame>::ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
   lock_.AssertReaderHeld();
   GravitationalParameter const& μ1 = body1.gravitational_parameter();
   auto const& trajectory1 = *trajectories_[b1];
-  Position<Frame> const position1 = trajectory1.EvaluatePosition(t);
+  Position<Frame> const position1 = trajectory1.EvaluatePositionLocked(t);
   Length const body1_collision_radius =
       min_radius_tolerance * body1.min_radius();
   // TODO(phl): Use std::to_underlying when we have C++23.
