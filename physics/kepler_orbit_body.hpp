@@ -29,7 +29,7 @@ using geometry::Sign;
 using geometry::Vector;
 using geometry::Velocity;
 using geometry::Wedge;
-using numerics::Bisect;
+using numerics::Brent;
 using quantities::Abs;
 using quantities::ArcCos;
 using quantities::ArcCosh;
@@ -642,9 +642,9 @@ void KeplerOrbit<Frame>::CompleteAnomalies(KeplerianElements<Frame>& elements) {
              (eccentric_anomaly - e * Sin(eccentric_anomaly) * Radian);
     };
     Angle const eccentric_anomaly = e == 0 ? *mean_anomaly
-                                           : Bisect(kepler_equation,
-                                                    *mean_anomaly - e * Radian,
-                                                    *mean_anomaly + e * Radian);
+                                           : Brent(kepler_equation,
+                                                   *mean_anomaly - e * Radian,
+                                                   *mean_anomaly + e * Radian);
     true_anomaly = 2 * ArcTan(Sqrt(1 + e) * Sin(eccentric_anomaly / 2),
                               Sqrt(1 - e) * Cos(eccentric_anomaly / 2));
     hyperbolic_mean_anomaly = NaN<Angle>;
@@ -657,9 +657,9 @@ void KeplerOrbit<Frame>::CompleteAnomalies(KeplerianElements<Frame>& elements) {
               hyperbolic_eccentric_anomaly);
     };
     Angle const hyperbolic_eccentric_anomaly =
-        Bisect(hyperbolic_kepler_equation,
-               0 * Radian,
-               *hyperbolic_mean_anomaly / (e - 1));
+        Brent(hyperbolic_kepler_equation,
+              0 * Radian,
+              *hyperbolic_mean_anomaly / (e - 1));
     true_anomaly =
         2 * ArcTan(Sqrt(e + 1) * Sinh(hyperbolic_eccentric_anomaly / 2),
                    Sqrt(e - 1) * Cosh(hyperbolic_eccentric_anomaly / 2));
