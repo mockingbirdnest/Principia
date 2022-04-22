@@ -365,7 +365,7 @@ TEST_F(KSPResonanceTest, MSVC_ONLY_TEST(Corrected)) {
   EXPECT_THAT(RelativeError(periods_at_long_term.at(bop_),
                             expected_periods_.at(bop_)), IsNear(1.3e-3_⑴));
   EXPECT_THAT(RelativeError(periods_at_long_term.at(pol_),
-                            expected_periods_.at(pol_)), IsNear(1.2e-3_⑴));
+                            expected_periods_.at(pol_)), IsNear(12e-3_⑴));
 
   LogEphemeris(*ephemeris,
                ephemeris->t_max() - 5 * longest_joolian_period_,
