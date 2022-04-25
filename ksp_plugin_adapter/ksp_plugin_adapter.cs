@@ -1258,7 +1258,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
               plugin_.ReportGroundCollision(vessel1.rootPart.flightID);
             }
           }
-          foreach (Part part1 in vessel1.parts) {
+          foreach (Part part1 in vessel1.parts.Where(PartIsFaithful)) {
             if (part1.Modules.OfType<ModuleWheelBase>().
                 Any(wheel => wheel.isGrounded)) {
               Log.Info("Reporting grounded wheel");
@@ -1632,7 +1632,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     if (PluginRunning()) {
       foreach (Vessel vessel in FlightGlobals.Vessels.Where(
           v => is_manageable(v) && !v.packed)) {
-        foreach (Part part in vessel.parts) {
+        foreach (Part part in vessel.parts.Where(PartIsFaithful)) {
           if (part.atmDensity <= 0) {
             continue;
           }
