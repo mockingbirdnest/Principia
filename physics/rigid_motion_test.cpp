@@ -55,7 +55,7 @@ using testing_utilities::Componentwise;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeErrorFrom;
 using testing_utilities::VanishesBefore;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 
 class RigidMotionTest : public testing::Test {
  protected:
@@ -338,17 +338,17 @@ TEST_F(RigidMotionTest, QuaternionNormalization) {
   EXPECT_THAT(d2.position() - Barycentric::origin,
               AlmostEquals(d3.position() - Barycentric::origin, 0));
   EXPECT_THAT(d2.velocity(),
-              RelativeErrorFrom(d3.velocity(), IsNear(1.1e-12_⑴)));
+              RelativeErrorFrom(d3.velocity(), IsNear(1.1e-12_(1))));
   EXPECT_THAT(d4.position() - World::origin,
               RelativeErrorFrom(d1.position() - World::origin,
-                                IsNear(5.8e-6_⑴)));
+                                IsNear(5.8e-6_(1))));
   EXPECT_THAT(d4.velocity(),
-              RelativeErrorFrom(d1.velocity(), IsNear(2.7e-6_⑴)));
+              RelativeErrorFrom(d1.velocity(), IsNear(2.7e-6_(1))));
   EXPECT_THAT(d5.position() - World::origin,
               RelativeErrorFrom(d1.position() - World::origin,
-                                IsNear(5.8e-6_⑴)));
+                                IsNear(5.8e-6_(1))));
   EXPECT_THAT(d5.velocity(),
-              RelativeErrorFrom(d1.velocity(), IsNear(5.7e-8_⑴)));
+              RelativeErrorFrom(d1.velocity(), IsNear(5.7e-8_(1))));
 }
 
 }  // namespace physics

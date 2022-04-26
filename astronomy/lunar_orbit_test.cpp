@@ -96,7 +96,7 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using testing_utilities::Slope;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 using ::testing::Lt;
 
 namespace astronomy {
@@ -309,8 +309,8 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                          (GM_rl / (Pow<3>(LU_rl) / Pow<2>(TU_rl))));
   EXPECT_THAT(moon_->gravitational_parameter() / (Pow<3>(LU) / Pow<2>(TU)),
               AlmostEquals(GM_rl / (Pow<3>(LU_rl) / Pow<2>(TU_rl)), 1));
-  EXPECT_THAT(RelativeError(TU, TU_rl), IsNear(1.4e-3_⑴));
-  EXPECT_THAT(RelativeError(LU, LU_rl), IsNear(9.0e-4_⑴));
+  EXPECT_THAT(RelativeError(TU, TU_rl), IsNear(1.4e-3_(1)));
+  EXPECT_THAT(RelativeError(LU, LU_rl), IsNear(9.0e-4_(1)));
 
   logger.Set("tu", TU, mathematica::ExpressIn(Second));
   logger.Set("lu", LU, mathematica::ExpressIn(Metre));
@@ -351,17 +351,17 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
     // error on our LU with respect to the one in the paper: the semimajor axis
     // has the same value in LU.
     EXPECT_THAT(RelativeError(*initial_osculating.semimajor_axis, a0),
-                IsNear(9.0e-4_⑴));
+                IsNear(9.0e-4_(1)));
     EXPECT_THAT(RelativeError(*initial_osculating.eccentricity, e0),
-                IsNear(1.4e-10_⑴));
+                IsNear(1.4e-10_(1)));
     EXPECT_THAT(RelativeError(initial_osculating.inclination, i0),
-                IsNear(9.7e-9_⑴));
+                IsNear(9.7e-9_(1)));
     EXPECT_THAT(RelativeError(*initial_osculating.argument_of_periapsis,
                               2 * π * Radian + ω0),
-                IsNear(2.0e-11_⑴));
+                IsNear(2.0e-11_(1)));
     EXPECT_THAT(RelativeError(initial_osculating.longitude_of_ascending_node,
                               2 * π * Radian + Ω0),
-                IsNear(4.7e-13_⑴));
+                IsNear(4.7e-13_(1)));
   }
 
   DiscreteTrajectory<ICRS> trajectory;

@@ -72,7 +72,7 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
 using testing_utilities::StatusIs;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
@@ -473,7 +473,7 @@ TEST_F(FlightPlanTest, GuidedBurn) {
   EXPECT_OK(flight_plan_->Replace(std::move(guided_burn), /*index=*/0));
   Speed const guided_final_speed =
       trajectory.back().degrees_of_freedom.velocity().Norm();
-  EXPECT_THAT(guided_final_speed, IsNear(1.40_⑴ * unguided_final_speed));
+  EXPECT_THAT(guided_final_speed, IsNear(1.40_(1) * unguided_final_speed));
 }
 
 TEST_F(FlightPlanTest, Issue2331) {

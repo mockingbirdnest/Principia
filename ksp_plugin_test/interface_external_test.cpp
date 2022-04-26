@@ -37,7 +37,7 @@ using testing_utilities::Componentwise;
 using testing_utilities::IsNear;
 using testing_utilities::SolarSystemFactory;
 using testing_utilities::StatusIs;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
@@ -120,11 +120,11 @@ TEST_F(InterfaceExternalTest, GetNearestPlannedCoastDegreesOfFreedom) {
   // the apoapsis.
   EXPECT_THAT(
       barycentric_result,
-      Componentwise(Componentwise(IsNear(-11'972_⑴ * Kilo(Metre)),
-                                  IsNear(-120_⑴ * Kilo(Metre)),
+      Componentwise(Componentwise(IsNear(-11'972_(1) * Kilo(Metre)),
+                                  IsNear(-120_(1) * Kilo(Metre)),
                                   AllOf(Gt(-50 * Metre), Lt(50 * Metre))),
-                    Componentwise(IsNear(-6.7_⑴ * Metre / Second),
-                                  IsNear(-4.9_⑴ * Kilo(Metre) / Second),
+                    Componentwise(IsNear(-6.7_(1) * Metre / Second),
+                                  IsNear(-4.9_(1) * Kilo(Metre) / Second),
                                   AllOf(Gt(-1 * Centi(Metre) / Second),
                                         Lt(1 * Centi(Metre) / Second)))));
 }
@@ -139,7 +139,7 @@ TEST_F(InterfaceExternalTest, Geopotential) {
       /*order=*/0,
       &coefficient);
   EXPECT_THAT(*status, IsOk());
-  EXPECT_THAT(-coefficient.x * Sqrt(5), IsNear(1.08e-3_⑴));
+  EXPECT_THAT(-coefficient.x * Sqrt(5), IsNear(1.08e-3_(1)));
   EXPECT_THAT(coefficient.y, Eq(0));
 
   status = principia__ExternalGeopotentialGetCoefficient(
@@ -149,8 +149,8 @@ TEST_F(InterfaceExternalTest, Geopotential) {
       /*order=*/1,
       &coefficient);
   EXPECT_THAT(*status, IsOk());
-  EXPECT_THAT(coefficient.x, IsNear(2.03e-6_⑴));
-  EXPECT_THAT(coefficient.y, IsNear(0.248e-6_⑴));
+  EXPECT_THAT(coefficient.x, IsNear(2.03e-6_(1)));
+  EXPECT_THAT(coefficient.y, IsNear(0.248e-6_(1)));
 
   status = principia__ExternalGeopotentialGetCoefficient(
       &plugin_,

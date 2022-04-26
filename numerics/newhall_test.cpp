@@ -35,7 +35,7 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::ApproximateQuantity;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 
 // The adapters wrap the result of the Newhall approximation so that they can be
 // used consistently in this test.
@@ -238,542 +238,542 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_3) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 3>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/3.9e1_⑴ * Metre,
-      /*expected_value_absolute_error=*/1.7e2_⑴ * Metre,
-      /*expected_variation_absolute_error=*/2.3e2_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/3.9e1_(1) * Metre,
+      /*expected_value_absolute_error=*/1.7e2_(1) * Metre,
+      /*expected_variation_absolute_error=*/2.3e2_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_4) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 4>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/1.8e1_⑴ * Metre,
-      /*expected_value_absolute_error=*/4.7e1_⑴ * Metre,
-      /*expected_variation_absolute_error=*/1.2e2_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/1.8e1_(1) * Metre,
+      /*expected_value_absolute_error=*/4.7e1_(1) * Metre,
+      /*expected_variation_absolute_error=*/1.2e2_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_5) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 5>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/8.3e0_⑴ * Metre,
-      /*expected_value_absolute_error=*/4.3e1_⑴ * Metre,
-      /*expected_variation_absolute_error=*/1.2e2_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/8.3e0_(1) * Metre,
+      /*expected_value_absolute_error=*/4.3e1_(1) * Metre,
+      /*expected_variation_absolute_error=*/1.2e2_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_6) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 6>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/1.4e0_⑴ * Metre,
-      /*expected_value_absolute_error=*/3.8e1_⑴ * Metre,
-      /*expected_variation_absolute_error=*/1.0e2_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/1.4e0_(1) * Metre,
+      /*expected_value_absolute_error=*/3.8e1_(1) * Metre,
+      /*expected_variation_absolute_error=*/1.0e2_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_7) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 7>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/7.5e0_⑴ * Metre,
-      /*expected_value_absolute_error=*/1.4e1_⑴ * Metre,
-      /*expected_variation_absolute_error=*/4.5e1_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/7.5e0_(1) * Metre,
+      /*expected_value_absolute_error=*/1.4e1_(1) * Metre,
+      /*expected_variation_absolute_error=*/4.5e1_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_8) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 8>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/4.2e0_⑴ * Metre,
-      /*expected_value_absolute_error=*/6.3e0_⑴ * Metre,
-      /*expected_variation_absolute_error=*/2.8e1_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/4.2e0_(1) * Metre,
+      /*expected_value_absolute_error=*/6.3e0_(1) * Metre,
+      /*expected_variation_absolute_error=*/2.8e1_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_9) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 9>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/3.1e-1_⑴ * Metre,
-      /*expected_value_absolute_error=*/4.9e0_⑴ * Metre,
-      /*expected_variation_absolute_error=*/2.2e1_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/3.1e-1_(1) * Metre,
+      /*expected_value_absolute_error=*/4.9e0_(1) * Metre,
+      /*expected_variation_absolute_error=*/2.2e1_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_10) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 10>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/7.5e-1_⑴ * Metre,
-      /*expected_value_absolute_error=*/6.5e-1_⑴ * Metre,
-      /*expected_variation_absolute_error=*/3.6e0_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/7.5e-1_(1) * Metre,
+      /*expected_value_absolute_error=*/6.5e-1_(1) * Metre,
+      /*expected_variation_absolute_error=*/3.6e0_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_11) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 11>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/1.8e-1_⑴ * Metre,
-      /*expected_value_absolute_error=*/2.0e-1_⑴ * Metre,
-      /*expected_variation_absolute_error=*/1.6e0_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/1.8e-1_(1) * Metre,
+      /*expected_value_absolute_error=*/2.0e-1_(1) * Metre,
+      /*expected_variation_absolute_error=*/1.6e0_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_12) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 12>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/4.9e-2_⑴ * Metre,
-      /*expected_value_absolute_error=*/7.9e-2_⑴ * Metre,
-      /*expected_variation_absolute_error=*/7.3e-1_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/4.9e-2_(1) * Metre,
+      /*expected_value_absolute_error=*/7.9e-2_(1) * Metre,
+      /*expected_variation_absolute_error=*/7.3e-1_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_13) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 13>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/2.6e-2_⑴ * Metre,
-      /*expected_value_absolute_error=*/1.3e-2_⑴ * Metre,
-      /*expected_variation_absolute_error=*/1.2e-1_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/2.6e-2_(1) * Metre,
+      /*expected_value_absolute_error=*/1.3e-2_(1) * Metre,
+      /*expected_variation_absolute_error=*/1.2e-1_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_14) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 14>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/8.9e-4_⑴ * Metre,
-      /*expected_value_absolute_error=*/1.5e-2_⑴ * Metre,
-      /*expected_variation_absolute_error=*/1.5e-1_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/8.9e-4_(1) * Metre,
+      /*expected_value_absolute_error=*/1.5e-2_(1) * Metre,
+      /*expected_variation_absolute_error=*/1.5e-1_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_15) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 15>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/1.6e-3_⑴ * Metre,
-      /*expected_value_absolute_error=*/4.3e-3_⑴ * Metre,
-      /*expected_variation_absolute_error=*/4.4e-2_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/1.6e-3_(1) * Metre,
+      /*expected_value_absolute_error=*/4.3e-3_(1) * Metre,
+      /*expected_variation_absolute_error=*/4.4e-2_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_16) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 16>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/2.9e-4_⑴ * Metre,
-      /*expected_value_absolute_error=*/1.7e-3_⑴ * Metre,
-      /*expected_variation_absolute_error=*/1.8e-2_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/2.9e-4_(1) * Metre,
+      /*expected_value_absolute_error=*/1.7e-3_(1) * Metre,
+      /*expected_variation_absolute_error=*/1.8e-2_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_17) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 17>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/3.7e-5_⑴ * Metre,
-      /*expected_value_absolute_error=*/7.6e-4_⑴ * Metre,
-      /*expected_variation_absolute_error=*/8.2e-3_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/3.7e-5_(1) * Metre,
+      /*expected_value_absolute_error=*/7.6e-4_(1) * Metre,
+      /*expected_variation_absolute_error=*/8.2e-3_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_3) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 3>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/7.9e-1_⑴ * Metre,
-      /*expected_value_absolute_error=*/2.0e0_⑴ * Metre,
-      /*expected_variation_absolute_error=*/1.8e0_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/7.9e-1_(1) * Metre,
+      /*expected_value_absolute_error=*/2.0e0_(1) * Metre,
+      /*expected_variation_absolute_error=*/1.8e0_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_4) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 4>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/2.5e-1_⑴ * Metre,
-      /*expected_value_absolute_error=*/2.9e-1_⑴ * Metre,
-      /*expected_variation_absolute_error=*/4.6e-1_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/2.5e-1_(1) * Metre,
+      /*expected_value_absolute_error=*/2.9e-1_(1) * Metre,
+      /*expected_variation_absolute_error=*/4.6e-1_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_5) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 5>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/5.7e-2_⑴ * Metre,
-      /*expected_value_absolute_error=*/3.6e-2_⑴ * Metre,
-      /*expected_variation_absolute_error=*/7.4e-2_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/5.7e-2_(1) * Metre,
+      /*expected_value_absolute_error=*/3.6e-2_(1) * Metre,
+      /*expected_variation_absolute_error=*/7.4e-2_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_6) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 6>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/8.6e-3_⑴ * Metre,
-      /*expected_value_absolute_error=*/2.3e-3_⑴ * Metre,
-      /*expected_variation_absolute_error=*/6.0e-3_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/8.6e-3_(1) * Metre,
+      /*expected_value_absolute_error=*/2.3e-3_(1) * Metre,
+      /*expected_variation_absolute_error=*/6.0e-3_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_7) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 7>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/6.2e-4_⑴ * Metre,
-      /*expected_value_absolute_error=*/2.9e-14_⑴ * Metre,
-      /*expected_variation_absolute_error=*/2.5e-14_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/6.2e-4_(1) * Metre,
+      /*expected_value_absolute_error=*/2.9e-14_(1) * Metre,
+      /*expected_variation_absolute_error=*/2.5e-14_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_8) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 8>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/4.5e-16_⑴ * Metre,
-      /*expected_value_absolute_error=*/2.9e-14_⑴ * Metre,
-      /*expected_variation_absolute_error=*/2.2e-14_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/4.5e-16_(1) * Metre,
+      /*expected_value_absolute_error=*/2.9e-14_(1) * Metre,
+      /*expected_variation_absolute_error=*/2.2e-14_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_9) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 9>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/4.8e-16_⑴ * Metre,
-      /*expected_value_absolute_error=*/2.9e-14_⑴ * Metre,
-      /*expected_variation_absolute_error=*/2.2e-14_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/4.8e-16_(1) * Metre,
+      /*expected_value_absolute_error=*/2.9e-14_(1) * Metre,
+      /*expected_variation_absolute_error=*/2.2e-14_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_10) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 10>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/4.8e-16_⑴ * Metre,
-      /*expected_value_absolute_error=*/4.3e-14_⑴ * Metre,
-      /*expected_variation_absolute_error=*/2.9e-14_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/4.8e-16_(1) * Metre,
+      /*expected_value_absolute_error=*/4.3e-14_(1) * Metre,
+      /*expected_variation_absolute_error=*/2.9e-14_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_11) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 11>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/1.1e-16_⑴ * Metre,
-      /*expected_value_absolute_error=*/3.6e-14_⑴ * Metre,
-      /*expected_variation_absolute_error=*/2.2e-14_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/1.1e-16_(1) * Metre,
+      /*expected_value_absolute_error=*/3.6e-14_(1) * Metre,
+      /*expected_variation_absolute_error=*/2.2e-14_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_12) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 12>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/7.3e-16_⑴ * Metre,
-      /*expected_value_absolute_error=*/2.9e-14_⑴ * Metre,
-      /*expected_variation_absolute_error=*/2.9e-14_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/7.3e-16_(1) * Metre,
+      /*expected_value_absolute_error=*/2.9e-14_(1) * Metre,
+      /*expected_variation_absolute_error=*/2.9e-14_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_13) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 13>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/1.3e-15_⑴ * Metre,
-      /*expected_value_absolute_error=*/1.4e-14_⑴ * Metre,
-      /*expected_variation_absolute_error=*/6.1e-14_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/1.3e-15_(1) * Metre,
+      /*expected_value_absolute_error=*/1.4e-14_(1) * Metre,
+      /*expected_variation_absolute_error=*/6.1e-14_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_14) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 14>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/2.1e-16_⑴ * Metre,
-      /*expected_value_absolute_error=*/1.4e-14_⑴ * Metre,
-      /*expected_variation_absolute_error=*/6.8e-14_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/2.1e-16_(1) * Metre,
+      /*expected_value_absolute_error=*/1.4e-14_(1) * Metre,
+      /*expected_variation_absolute_error=*/6.8e-14_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_15) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 15>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/3.2e-16_⑴ * Metre,
-      /*expected_value_absolute_error=*/2.9e-14_⑴ * Metre,
-      /*expected_variation_absolute_error=*/3.5e-13_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/3.2e-16_(1) * Metre,
+      /*expected_value_absolute_error=*/2.9e-14_(1) * Metre,
+      /*expected_variation_absolute_error=*/3.5e-13_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_16) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 16>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/1.1e-15_⑴ * Metre,
-      /*expected_value_absolute_error=*/2.9e-14_⑴ * Metre,
-      /*expected_variation_absolute_error=*/8.5e-13_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/1.1e-15_(1) * Metre,
+      /*expected_value_absolute_error=*/2.9e-14_(1) * Metre,
+      /*expected_variation_absolute_error=*/8.5e-13_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_17) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter, Length, 17>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/4.8e-15_⑴ * Metre,
-      /*expected_value_absolute_error=*/7.2e-14_⑴ * Metre,
-      /*expected_variation_absolute_error=*/1.2e-12_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/4.8e-15_(1) * Metre,
+      /*expected_value_absolute_error=*/7.2e-14_(1) * Metre,
+      /*expected_variation_absolute_error=*/1.2e-12_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_1_3) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 3>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/3.9e1_⑴ * Metre,
-      /*expected_value_absolute_error=*/1.7e2_⑴ * Metre,
-      /*expected_variation_absolute_error=*/2.3e2_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/3.9e1_(1) * Metre,
+      /*expected_value_absolute_error=*/1.7e2_(1) * Metre,
+      /*expected_variation_absolute_error=*/2.3e2_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_1_4) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 4>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/1.8e1_⑴ * Metre,
-      /*expected_value_absolute_error=*/4.7e1_⑴ * Metre,
-      /*expected_variation_absolute_error=*/1.2e2_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/1.8e1_(1) * Metre,
+      /*expected_value_absolute_error=*/4.7e1_(1) * Metre,
+      /*expected_variation_absolute_error=*/1.2e2_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_1_5) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 5>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/8.3e0_⑴ * Metre,
-      /*expected_value_absolute_error=*/4.3e1_⑴ * Metre,
-      /*expected_variation_absolute_error=*/1.2e2_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/8.3e0_(1) * Metre,
+      /*expected_value_absolute_error=*/4.3e1_(1) * Metre,
+      /*expected_variation_absolute_error=*/1.2e2_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_1_6) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 6>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/1.4e0_⑴ * Metre,
-      /*expected_value_absolute_error=*/3.8e1_⑴ * Metre,
-      /*expected_variation_absolute_error=*/1.0e2_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/1.4e0_(1) * Metre,
+      /*expected_value_absolute_error=*/3.8e1_(1) * Metre,
+      /*expected_variation_absolute_error=*/1.0e2_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_1_7) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 7>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/7.5e0_⑴ * Metre,
-      /*expected_value_absolute_error=*/1.4e1_⑴ * Metre,
-      /*expected_variation_absolute_error=*/4.5e1_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/7.5e0_(1) * Metre,
+      /*expected_value_absolute_error=*/1.4e1_(1) * Metre,
+      /*expected_variation_absolute_error=*/4.5e1_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_1_8) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 8>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/4.2e0_⑴ * Metre,
-      /*expected_value_absolute_error=*/6.3e0_⑴ * Metre,
-      /*expected_variation_absolute_error=*/2.8e1_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/4.2e0_(1) * Metre,
+      /*expected_value_absolute_error=*/6.3e0_(1) * Metre,
+      /*expected_variation_absolute_error=*/2.8e1_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_1_9) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 9>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/3.1e-1_⑴ * Metre,
-      /*expected_value_absolute_error=*/4.9e0_⑴ * Metre,
-      /*expected_variation_absolute_error=*/2.2e1_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/3.1e-1_(1) * Metre,
+      /*expected_value_absolute_error=*/4.9e0_(1) * Metre,
+      /*expected_variation_absolute_error=*/2.2e1_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_1_10) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 10>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/7.5e-1_⑴ * Metre,
-      /*expected_value_absolute_error=*/6.5e-1_⑴ * Metre,
-      /*expected_variation_absolute_error=*/3.6e0_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/7.5e-1_(1) * Metre,
+      /*expected_value_absolute_error=*/6.5e-1_(1) * Metre,
+      /*expected_variation_absolute_error=*/3.6e0_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_1_11) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 11>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/1.8e-1_⑴ * Metre,
-      /*expected_value_absolute_error=*/2.0e-1_⑴ * Metre,
-      /*expected_variation_absolute_error=*/1.6e0_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/1.8e-1_(1) * Metre,
+      /*expected_value_absolute_error=*/2.0e-1_(1) * Metre,
+      /*expected_variation_absolute_error=*/1.6e0_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_1_12) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 12>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/4.9e-2_⑴ * Metre,
-      /*expected_value_absolute_error=*/7.9e-2_⑴ * Metre,
-      /*expected_variation_absolute_error=*/7.3e-1_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/4.9e-2_(1) * Metre,
+      /*expected_value_absolute_error=*/7.9e-2_(1) * Metre,
+      /*expected_variation_absolute_error=*/7.3e-1_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_1_13) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 13>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/2.6e-2_⑴ * Metre,
-      /*expected_value_absolute_error=*/1.3e-2_⑴ * Metre,
-      /*expected_variation_absolute_error=*/1.2e-1_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/2.6e-2_(1) * Metre,
+      /*expected_value_absolute_error=*/1.3e-2_(1) * Metre,
+      /*expected_variation_absolute_error=*/1.2e-1_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_1_14) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 14>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/8.9e-4_⑴ * Metre,
-      /*expected_value_absolute_error=*/1.5e-2_⑴ * Metre,
-      /*expected_variation_absolute_error=*/1.5e-1_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/8.9e-4_(1) * Metre,
+      /*expected_value_absolute_error=*/1.5e-2_(1) * Metre,
+      /*expected_variation_absolute_error=*/1.5e-1_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_1_15) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 15>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/1.6e-3_⑴ * Metre,
-      /*expected_value_absolute_error=*/4.3e-3_⑴ * Metre,
-      /*expected_variation_absolute_error=*/4.4e-2_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/1.6e-3_(1) * Metre,
+      /*expected_value_absolute_error=*/4.3e-3_(1) * Metre,
+      /*expected_variation_absolute_error=*/4.4e-2_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_1_16) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 16>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/2.9e-4_⑴ * Metre,
-      /*expected_value_absolute_error=*/1.7e-3_⑴ * Metre,
-      /*expected_variation_absolute_error=*/1.8e-2_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/2.9e-4_(1) * Metre,
+      /*expected_value_absolute_error=*/1.7e-3_(1) * Metre,
+      /*expected_variation_absolute_error=*/1.8e-2_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_1_17) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 17>(
       length_function_1_,
       speed_function_1_,
-      /*expected_value_error_estimate=*/3.7e-5_⑴ * Metre,
-      /*expected_value_absolute_error=*/7.6e-4_⑴ * Metre,
-      /*expected_variation_absolute_error=*/8.2e-3_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/3.7e-5_(1) * Metre,
+      /*expected_value_absolute_error=*/7.6e-4_(1) * Metre,
+      /*expected_variation_absolute_error=*/8.2e-3_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_2_3) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 3>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/7.9e-1_⑴ * Metre,
-      /*expected_value_absolute_error=*/2.0e0_⑴ * Metre,
-      /*expected_variation_absolute_error=*/1.8e0_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/7.9e-1_(1) * Metre,
+      /*expected_value_absolute_error=*/2.0e0_(1) * Metre,
+      /*expected_variation_absolute_error=*/1.8e0_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_2_4) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 4>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/2.5e-1_⑴ * Metre,
-      /*expected_value_absolute_error=*/2.9e-1_⑴ * Metre,
-      /*expected_variation_absolute_error=*/4.6e-1_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/2.5e-1_(1) * Metre,
+      /*expected_value_absolute_error=*/2.9e-1_(1) * Metre,
+      /*expected_variation_absolute_error=*/4.6e-1_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_2_5) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 5>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/5.7e-2_⑴ * Metre,
-      /*expected_value_absolute_error=*/3.6e-2_⑴ * Metre,
-      /*expected_variation_absolute_error=*/7.4e-2_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/5.7e-2_(1) * Metre,
+      /*expected_value_absolute_error=*/3.6e-2_(1) * Metre,
+      /*expected_variation_absolute_error=*/7.4e-2_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_2_6) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 6>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/8.6e-3_⑴ * Metre,
-      /*expected_value_absolute_error=*/2.3e-3_⑴ * Metre,
-      /*expected_variation_absolute_error=*/6.0e-3_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/8.6e-3_(1) * Metre,
+      /*expected_value_absolute_error=*/2.3e-3_(1) * Metre,
+      /*expected_variation_absolute_error=*/6.0e-3_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_2_7) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 7>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/6.2e-4_⑴ * Metre,
-      /*expected_value_absolute_error=*/2.9e-14_⑴ * Metre,
-      /*expected_variation_absolute_error=*/2.5e-14_⑴ * Metre / Second,
-      /*expected_value_absolute_error_with_fma=*/1.7e-14_⑴ * Metre);
+      /*expected_value_error_estimate=*/6.2e-4_(1) * Metre,
+      /*expected_value_absolute_error=*/2.9e-14_(1) * Metre,
+      /*expected_variation_absolute_error=*/2.5e-14_(1) * Metre / Second,
+      /*expected_value_absolute_error_with_fma=*/1.7e-14_(1) * Metre);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_2_8) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 8>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/4.5e-16_⑴ * Metre,
-      /*expected_value_absolute_error=*/3.9e-14_⑴ * Metre,
-      /*expected_variation_absolute_error=*/1.2e-13_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/4.5e-16_(1) * Metre,
+      /*expected_value_absolute_error=*/3.9e-14_(1) * Metre,
+      /*expected_variation_absolute_error=*/1.2e-13_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_2_9) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 9>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/4.8e-16_⑴ * Metre,
-      /*expected_value_absolute_error=*/1.0e-13_⑴ * Metre,
-      /*expected_variation_absolute_error=*/4.8e-13_⑴ * Metre / Second,
-      /*expected_value_absolute_error_with_fma=*/1.1e-13_⑴ * Metre);
+      /*expected_value_error_estimate=*/4.8e-16_(1) * Metre,
+      /*expected_value_absolute_error=*/1.0e-13_(1) * Metre,
+      /*expected_variation_absolute_error=*/4.8e-13_(1) * Metre / Second,
+      /*expected_value_absolute_error_with_fma=*/1.1e-13_(1) * Metre);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_2_10) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 10>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/4.8e-16_⑴ * Metre,
-      /*expected_value_absolute_error=*/3.5e-13_⑴ * Metre,
-      /*expected_variation_absolute_error=*/7.1e-13_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/4.8e-16_(1) * Metre,
+      /*expected_value_absolute_error=*/3.5e-13_(1) * Metre,
+      /*expected_variation_absolute_error=*/7.1e-13_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_2_11) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 11>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/1.1e-16_⑴ * Metre,
-      /*expected_value_absolute_error=*/5.6e-13_⑴ * Metre,
-      /*expected_variation_absolute_error=*/1.7e-12_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/1.1e-16_(1) * Metre,
+      /*expected_value_absolute_error=*/5.6e-13_(1) * Metre,
+      /*expected_variation_absolute_error=*/1.7e-12_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_2_12) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 12>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/7.3e-16_⑴ * Metre,
-      /*expected_value_absolute_error=*/1.3e-11_⑴ * Metre,
-      /*expected_variation_absolute_error=*/5.4e-11_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/7.3e-16_(1) * Metre,
+      /*expected_value_absolute_error=*/1.3e-11_(1) * Metre,
+      /*expected_variation_absolute_error=*/5.4e-11_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_2_13) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 13>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/1.3e-15_⑴ * Metre,
-      /*expected_value_absolute_error=*/1.9e-11_⑴ * Metre,
-      /*expected_variation_absolute_error=*/9.5e-11_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/1.3e-15_(1) * Metre,
+      /*expected_value_absolute_error=*/1.9e-11_(1) * Metre,
+      /*expected_variation_absolute_error=*/9.5e-11_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_2_14) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 14>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/2.1e-16_⑴ * Metre,
-      /*expected_value_absolute_error=*/8.1e-12_⑴ * Metre,
-      /*expected_variation_absolute_error=*/5.1e-11_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/2.1e-16_(1) * Metre,
+      /*expected_value_absolute_error=*/8.1e-12_(1) * Metre,
+      /*expected_variation_absolute_error=*/5.1e-11_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_2_15) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 15>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/3.2e-16_⑴ * Metre,
-      /*expected_value_absolute_error=*/3.0e-10_⑴ * Metre,
-      /*expected_variation_absolute_error=*/1.6e-9_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/3.2e-16_(1) * Metre,
+      /*expected_value_absolute_error=*/3.0e-10_(1) * Metre,
+      /*expected_variation_absolute_error=*/1.6e-9_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_2_16) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 16>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/1.1e-15_⑴ * Metre,
-      /*expected_value_absolute_error=*/5.8e-10_⑴ * Metre,
-      /*expected_variation_absolute_error=*/2.8e-9_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/1.1e-15_(1) * Metre,
+      /*expected_value_absolute_error=*/5.8e-10_(1) * Metre,
+      /*expected_variation_absolute_error=*/2.8e-9_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_2_17) {
   CheckNewhallApproximationErrors<MonomialAdapter, Length, 17>(
       length_function_2_,
       speed_function_2_,
-      /*expected_value_error_estimate=*/4.8e-15_⑴ * Metre,
-      /*expected_value_absolute_error=*/3.7e-9_⑴ * Metre,
-      /*expected_variation_absolute_error=*/2.2e-8_⑴ * Metre / Second);
+      /*expected_value_error_estimate=*/4.8e-15_(1) * Metre,
+      /*expected_value_absolute_error=*/3.7e-9_(1) * Metre,
+      /*expected_variation_absolute_error=*/2.2e-8_(1) * Metre / Second);
 }
 
 TEST_F(NewhallTest, Affine) {
@@ -787,9 +787,9 @@ TEST_F(NewhallTest, Affine) {
   CheckNewhallApproximationErrors<MonomialAdapter, Instant, 3>(
       instant_function,
       double_function,
-      /*expected_value_error_estimate=*/0.0_⑴ * Second,
-      /*expected_value_absolute_error=*/1.1e-16_⑴ * Second,
-      /*expected_variation_absolute_error=*/0.0_⑴);
+      /*expected_value_error_estimate=*/0.0_(1) * Second,
+      /*expected_value_absolute_error=*/1.1e-16_(1) * Second,
+      /*expected_variation_absolute_error=*/0.0_(1));
 }
 
 TEST_F(NewhallTest, NonConstantDegree) {
@@ -807,7 +807,7 @@ TEST_F(NewhallTest, NonConstantDegree) {
             lengths, speeds, t_min_, t_max_, length_error_estimate);
 
     EXPECT_THAT(RelativeError((*approximation)(t_min_),
-                              length_function_1_(t_min_)), IsNear(9e-13_⑴));
+                              length_function_1_(t_min_)), IsNear(9e-13_(1)));
 }
 
 }  // namespace numerics

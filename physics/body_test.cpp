@@ -64,7 +64,7 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 using ::testing::IsNull;
 using ::testing::NotNull;
 namespace si = quantities::si;
@@ -405,24 +405,24 @@ TEST_F(BodyTest, SolarNoon) {
                                      "2000-01-02T08:00:00"_UTC,
                                      "2000-01-02T16:00:00"_UTC);
   EXPECT_THAT(solar_noon_greenwich - "2000-01-02T12:04:00"_UTC,
-              IsNear(-15_⑴ * Milli(Second)));
+              IsNear(-15_(1) * Milli(Second)));
   solar_noon_greenwich = Bisect(solar_noon,
                                 "2010-09-30T08:00:00"_UTC,
                                 "2010-09-30T16:00:00"_UTC);
   EXPECT_THAT(solar_noon_greenwich - "2010-09-30T11:51:00"_UTC,
-              IsNear(-58_⑴ * Second));
+              IsNear(-58_(1) * Second));
 
   location = Vector<double, SurfaceFrame>(istanbul.ToCartesian());
   auto solar_noon_istanbul = Bisect(solar_noon,
                                     "2000-01-02T08:00:00"_UTC,
                                     "2000-01-02T16:00:00"_UTC);
   EXPECT_THAT(solar_noon_istanbul - "2000-01-02T10:08:00"_UTC,
-              IsNear(1.05_⑴ * Second));
+              IsNear(1.05_(1) * Second));
   solar_noon_istanbul = Bisect(solar_noon,
                                "2010-09-30T08:00:00"_UTC,
                                "2010-09-30T16:00:00"_UTC);
   EXPECT_THAT(solar_noon_istanbul - "2010-09-30T09:55:00"_UTC,
-              IsNear(-53_⑴ * Second));
+              IsNear(-53_(1) * Second));
 }
 
 #endif

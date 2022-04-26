@@ -22,7 +22,7 @@ using quantities::astronomy::JovianEquatorialRadius;
 using quantities::astronomy::SolarRadius;
 using quantities::astronomy::TerrestrialEquatorialRadius;
 using testing_utilities::IsNear;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 
 class EquatorRelevanceThresholdTest : public testing::Test {
  protected:
@@ -49,23 +49,23 @@ class EquatorRelevanceThresholdTest : public testing::Test {
 TEST_F(EquatorRelevanceThresholdTest, Planets) {
   // See the discussion on #1841.
   EXPECT_THAT(EquatorRelevanceThreshold(*MakeBody("Sun")),
-              IsNear(58_⑴ * SolarRadius));
+              IsNear(58_(1) * SolarRadius));
   EXPECT_THAT(EquatorRelevanceThreshold(*MakeBody("Mercury")),
-              IsNear(158_⑴ * mean_radius("Mercury")));
+              IsNear(158_(1) * mean_radius("Mercury")));
   EXPECT_THAT(EquatorRelevanceThreshold(*MakeBody("Venus")),
-              IsNear(403_⑴ * mean_radius("Venus")));
+              IsNear(403_(1) * mean_radius("Venus")));
   EXPECT_THAT(EquatorRelevanceThreshold(*MakeBody("Earth")),
-              IsNear(233_⑴ * TerrestrialEquatorialRadius));
+              IsNear(233_(1) * TerrestrialEquatorialRadius));
   EXPECT_THAT(EquatorRelevanceThreshold(*MakeBody("Mars")),
-              IsNear(314_⑴ * mean_radius("Mars")));
+              IsNear(314_(1) * mean_radius("Mars")));
   EXPECT_THAT(EquatorRelevanceThreshold(*MakeBody("Jupiter")),
-              IsNear(860_⑴ * JovianEquatorialRadius));
+              IsNear(860_(1) * JovianEquatorialRadius));
   EXPECT_THAT(EquatorRelevanceThreshold(*MakeBody("Saturn")),
-              IsNear(938_⑴ * mean_radius("Saturn")));
+              IsNear(938_(1) * mean_radius("Saturn")));
   EXPECT_THAT(EquatorRelevanceThreshold(*MakeBody("Neptune")),
-              IsNear(424_⑴ * mean_radius("Neptune")));
+              IsNear(424_(1) * mean_radius("Neptune")));
   EXPECT_THAT(EquatorRelevanceThreshold(*MakeBody("Uranus")),
-              IsNear(424_⑴ * mean_radius("Uranus")));
+              IsNear(424_(1) * mean_radius("Uranus")));
 }
 
 }  // namespace internal_equator_relevance_threshold

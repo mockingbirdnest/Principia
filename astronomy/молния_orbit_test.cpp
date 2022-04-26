@@ -65,7 +65,7 @@ using testing_utilities::IsNear;
 using testing_utilities::PearsonProductMomentCorrelationCoefficient;
 using testing_utilities::RelativeError;
 using testing_utilities::Slope;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 
 namespace astronomy {
 
@@ -201,7 +201,7 @@ TEST_F(МолнияOrbitTest, DISABLED_Satellite) {
                               (3.0 / 2.0) * Cos(initial_elements.inclination);
   EXPECT_THAT(RelativeError(ΔΩ_per_period / (sidereal_day / 2.0),
                             actual_precession_speed),
-              IsNear(0.076_⑴));
+              IsNear(0.076_(1)));
 }
 
 #endif

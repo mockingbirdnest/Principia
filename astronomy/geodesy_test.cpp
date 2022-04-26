@@ -53,7 +53,7 @@ using quantities::si::Minute;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::IsNear;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 using ::testing::AnyOf;
 using ::testing::Eq;
 
@@ -170,16 +170,16 @@ TEST_F(GeodesyTest, DISABLED_LAGEOS2) {
   // Absolute error in position.
   EXPECT_THAT(AbsoluteError(primary_actual_final_dof.position(),
                             expected_final_dof.position()),
-              IsNear(191_⑴ * Kilo(Metre)));
+              IsNear(191_(1) * Kilo(Metre)));
   // Angular error at the geocentre.
   EXPECT_THAT(AngleBetween(primary_actual_final_dof.position() - ITRS::origin,
                            expected_final_dof.position() - ITRS::origin),
-              IsNear(53_⑴ * ArcMinute));
+              IsNear(53_(1) * ArcMinute));
   // Radial error at the geocentre.
   EXPECT_THAT(
       AbsoluteError((primary_actual_final_dof.position() - ITRS::origin).Norm(),
                     (expected_final_dof.position() - ITRS::origin).Norm()),
-      IsNear(0.89_⑴ * Kilo(Metre)));
+      IsNear(0.89_(1) * Kilo(Metre)));
 
   // Errors in orbital elements.
   KeplerianElements<ICRS> const expected_elements =
@@ -199,22 +199,22 @@ TEST_F(GeodesyTest, DISABLED_LAGEOS2) {
 
   EXPECT_THAT(AbsoluteError(*actual_elements.periapsis_distance,
                             *expected_elements.periapsis_distance),
-              IsNear(42_⑴ * Metre));
+              IsNear(42_(1) * Metre));
   EXPECT_THAT(AbsoluteError(*actual_elements.apoapsis_distance,
                             *expected_elements.apoapsis_distance),
-              IsNear(9.5_⑴ * Metre));
+              IsNear(9.5_(1) * Metre));
   EXPECT_THAT(AbsoluteError(actual_elements.longitude_of_ascending_node,
                             expected_elements.longitude_of_ascending_node),
-              IsNear(17_⑴ * ArcSecond));
+              IsNear(17_(1) * ArcSecond));
   EXPECT_THAT(AbsoluteError(actual_elements.inclination,
                             expected_elements.inclination),
-              IsNear(1.1_⑴ * ArcSecond));
+              IsNear(1.1_(1) * ArcSecond));
   EXPECT_THAT(AbsoluteError(*actual_elements.argument_of_periapsis,
                             *expected_elements.argument_of_periapsis),
-              IsNear(217_⑴ * ArcSecond));
+              IsNear(217_(1) * ArcSecond));
   EXPECT_THAT(AbsoluteError(*actual_elements.mean_anomaly,
                             *expected_elements.mean_anomaly),
-              IsNear(58_⑴ * ArcMinute));
+              IsNear(58_(1) * ArcMinute));
 
 #if 0
   // Error arising from uncertainty in the initial state, estimated as the
@@ -222,25 +222,25 @@ TEST_F(GeodesyTest, DISABLED_LAGEOS2) {
   // Absolute error in position.
   EXPECT_THAT(AbsoluteError(secondary_actual_final_dof.position(),
                             primary_actual_final_dof.position()),
-              AnyOf(IsNear(237_⑴ * Metre),    // Linux.
-                    IsNear(28_⑴ * Metre),     // No FMA.
-                    IsNear(98_⑴ * Metre),     // FMA.
-                    IsNear(220_⑴ * Metre)));  // VS 2019.
+              AnyOf(IsNear(237_(1) * Metre),    // Linux.
+                    IsNear(28_(1) * Metre),     // No FMA.
+                    IsNear(98_(1) * Metre),     // FMA.
+                    IsNear(220_(1) * Metre)));  // VS 2019.
   // Angular error at the geocentre.
   EXPECT_THAT(AngleBetween(secondary_actual_final_dof.position() - ITRS::origin,
                            primary_actual_final_dof.position() - ITRS::origin),
-                AnyOf(IsNear(4.0_⑴ * ArcSecond),    // Linux.
-                      IsNear(0.47_⑴ * ArcSecond),   // No FMA.
-                      IsNear(1.6_⑴ * ArcSecond),    // FMA.
-                      IsNear(3.7_⑴ * ArcSecond)));  // VS 2019.
+                AnyOf(IsNear(4.0_(1) * ArcSecond),    // Linux.
+                      IsNear(0.47_(1) * ArcSecond),   // No FMA.
+                      IsNear(1.6_(1) * ArcSecond),    // FMA.
+                      IsNear(3.7_(1) * ArcSecond)));  // VS 2019.
   // Radial error at the geocentre.
   EXPECT_THAT(AbsoluteError(
                   (secondary_actual_final_dof.position() - ITRS::origin).Norm(),
                   (primary_actual_final_dof.position() - ITRS::origin).Norm()),
-              AnyOf(IsNear(99_⑴ * Centi(Metre)),    // Linux.
-                    IsNear(11_⑴ * Centi(Metre)),    // No FMA.
-                    IsNear(43_⑴ * Centi(Metre)),    // FMA.
-                    IsNear(93_⑴ * Centi(Metre))));  // VS 2019.
+              AnyOf(IsNear(99_(1) * Centi(Metre)),    // Linux.
+                    IsNear(11_(1) * Centi(Metre)),    // No FMA.
+                    IsNear(43_(1) * Centi(Metre)),    // FMA.
+                    IsNear(93_(1) * Centi(Metre))));  // VS 2019.
 #endif
 }
 

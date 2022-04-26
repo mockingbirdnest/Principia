@@ -55,7 +55,7 @@ using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 using ::testing::Sequence;
 using ::testing::SetArgReferee;
 using ::testing::_;
@@ -572,8 +572,9 @@ TEST_F(ContinuousTrajectoryTest, Io) {
         std::max(max_velocity_absolute_error,
                  AbsoluteError(expected_velocity, actual_velocity));
   }
-  EXPECT_THAT(max_position_absolute_error, IsNear(31_⑴ * Milli(Metre)));
-  EXPECT_THAT(max_velocity_absolute_error, IsNear(1.40e-5_⑴ * Metre / Second));
+  EXPECT_THAT(max_position_absolute_error, IsNear(31_(1) * Milli(Metre)));
+  EXPECT_THAT(max_velocity_absolute_error,
+              IsNear(1.40e-5_(1) * Metre / Second));
 }
 
 TEST_F(ContinuousTrajectoryTest, Continuity) {

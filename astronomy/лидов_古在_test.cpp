@@ -43,7 +43,7 @@ using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 using testing_utilities::IsNear;
 
 // A test that showcases the eccentricity-inclination exchange mechanism
@@ -142,32 +142,34 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
                   mathematica::ExpressIn(Radian));
   }
   // The elements e, i, and ω all vary quite a lot.
-  EXPECT_THAT(elements.mean_eccentricity_interval().min, IsNear(0.40_⑴));
-  EXPECT_THAT(elements.mean_eccentricity_interval().max, IsNear(0.88_⑴));
-  EXPECT_THAT(elements.mean_inclination_interval().min, IsNear(62_⑴ * Degree));
-  EXPECT_THAT(elements.mean_inclination_interval().max, IsNear(77_⑴ * Degree));
+  EXPECT_THAT(elements.mean_eccentricity_interval().min, IsNear(0.40_(1)));
+  EXPECT_THAT(elements.mean_eccentricity_interval().max, IsNear(0.88_(1)));
+  EXPECT_THAT(elements.mean_inclination_interval().min,
+              IsNear(62_(1) * Degree));
+  EXPECT_THAT(elements.mean_inclination_interval().max,
+              IsNear(77_(1) * Degree));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().min,
-              IsNear(51_⑴ * Degree));
+              IsNear(51_(1) * Degree));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().max,
-              IsNear(129_⑴ * Degree));
+              IsNear(129_(1) * Degree));
 
   // The conservation of the “тривиального интеграла a = const” [Лид61, p. 25]
   // is excellent: while the sun is nudging and deforming the orbit, it is not
   // pumping energy into nor out of it.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().min,
-              IsNear(14'910.0_⑴ * Kilo(Metre)));
+              IsNear(14'910.0_(1) * Kilo(Metre)));
   EXPECT_THAT(elements.mean_semimajor_axis_interval().max,
-              IsNear(14'910.3_⑴ * Kilo(Metre)));
+              IsNear(14'910.3_(1) * Kilo(Metre)));
 
   // The integral c₁ is preserved quite well: we have an exchange between
   // inclination and eccentricity.
-  EXPECT_THAT(c₁.min, IsNear(0.042_⑴));
-  EXPECT_THAT(c₁.max, IsNear(0.050_⑴));
+  EXPECT_THAT(c₁.min, IsNear(0.042_(1)));
+  EXPECT_THAT(c₁.max, IsNear(0.050_(1)));
 
   // The integral c₂ is also conserved: the long-term evolution of the orbital
   // elements is as described in [Лид61].
-  EXPECT_THAT(c₂.min, IsNear(-0.091_⑴));
-  EXPECT_THAT(c₂.max, IsNear(-0.083_⑴));
+  EXPECT_THAT(c₂.min, IsNear(-0.091_(1)));
+  EXPECT_THAT(c₂.max, IsNear(-0.083_(1)));
 
   // TODO(egg): The above are integrals of motion only when averaging over an
   // orbit of the perturbing body (so here, over the orbit of Mercury); see what

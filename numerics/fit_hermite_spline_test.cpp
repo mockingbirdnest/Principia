@@ -28,7 +28,7 @@ using quantities::si::Nano;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::IsNear;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::ResultOf;
@@ -91,7 +91,7 @@ TEST_F(FitHermiteSplineTest, Sinusoid) {
                   Range(lower_bound, upper_bound),
                   [](auto&& sample) -> auto&& { return sample.t; },
                   [](auto&& sample) -> auto&& { return sample.x; }),
-              IsNear(9.3_⑴ * Milli(Metre)));
+              IsNear(9.3_(1) * Milli(Metre)));
   lower_bound = upper_bound;
   upper_bound = interpolation_points.back();
   Hermite3<Instant, Length> second_polynomial({lower_bound->t, upper_bound->t},
@@ -101,7 +101,7 @@ TEST_F(FitHermiteSplineTest, Sinusoid) {
                   Range(lower_bound, upper_bound),
                   [](auto&& sample) -> auto&& { return sample.t; },
                   [](auto&& sample) -> auto&& { return sample.x; }),
-              IsNear(1.0_⑴ * Centi(Metre)));
+              IsNear(1.0_(1) * Centi(Metre)));
   lower_bound = upper_bound;
   upper_bound = samples.cend() - 1;
   Hermite3<Instant, Length> tail_polynomial({lower_bound->t, upper_bound->t},
@@ -111,7 +111,7 @@ TEST_F(FitHermiteSplineTest, Sinusoid) {
                   Range(lower_bound, upper_bound),
                   [](auto&& sample) -> auto&& { return sample.t; },
                   [](auto&& sample) -> auto&& { return sample.x; }),
-              IsNear(107_⑴ * Nano(Metre)));
+              IsNear(107_(1) * Nano(Metre)));
 }
 
 #if PRINCIPIA_MUST_ALWAYS_DOWNSAMPLE

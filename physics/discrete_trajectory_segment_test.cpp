@@ -47,7 +47,7 @@ using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
 using testing_utilities::NewCircularTrajectoryTimeline;
 using testing_utilities::NewLinearTrajectoryTimeline;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 using ::testing::Eq;
 using ::testing::Le;
 using ::testing::Lt;
@@ -234,9 +234,9 @@ TEST_F(DiscreteTrajectorySegmentTest, Evaluate) {
         Abs(circle.EvaluateVelocity(t).Norm() - r * ω / Radian));
   }
   EXPECT_THAT(*std::max_element(position_errors.begin(), position_errors.end()),
-              IsNear(4.2_⑴ * Nano(Metre)));
+              IsNear(4.2_(1) * Nano(Metre)));
   EXPECT_THAT(*std::max_element(velocity_errors.begin(), velocity_errors.end()),
-              IsNear(10.4_⑴ * Nano(Metre / Second)));
+              IsNear(10.4_(1) * Nano(Metre / Second)));
 }
 
 TEST_F(DiscreteTrajectorySegmentTest, DownsamplingCircle) {
@@ -271,9 +271,9 @@ TEST_F(DiscreteTrajectorySegmentTest, DownsamplingCircle) {
          degrees_of_freedom.velocity()).Norm());
   }
   EXPECT_THAT(*std::max_element(position_errors.begin(), position_errors.end()),
-              IsNear(0.98_⑴ * Milli(Metre)));
+              IsNear(0.98_(1) * Milli(Metre)));
   EXPECT_THAT(*std::max_element(velocity_errors.begin(), velocity_errors.end()),
-              IsNear(14_⑴ * Milli(Metre / Second)));
+              IsNear(14_(1) * Milli(Metre / Second)));
 }
 
 TEST_F(DiscreteTrajectorySegmentTest, DownsamplingStraightLine) {
@@ -310,9 +310,9 @@ TEST_F(DiscreteTrajectorySegmentTest, DownsamplingStraightLine) {
          degrees_of_freedom.velocity()).Norm());
   }
   EXPECT_THAT(*std::max_element(position_errors.begin(), position_errors.end()),
-              IsNear(3.6e-15_⑴ * Metre));
+              IsNear(3.6e-15_(1) * Metre));
   EXPECT_THAT(*std::max_element(velocity_errors.begin(), velocity_errors.end()),
-              IsNear(1.1e-14_⑴ * Metre / Second));
+              IsNear(1.1e-14_(1) * Metre / Second));
 }
 
 TEST_F(DiscreteTrajectorySegmentTest, DownsamplingForgetAfter) {

@@ -50,7 +50,7 @@ using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
 using testing_utilities::VanishesBefore;
 using testing_utilities::RelativeErrorFrom;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 using ::testing::AnyOf;
 
 class PoissonSeriesTest : public ::testing::Test {
@@ -330,7 +330,7 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct1) {
   // Exact result obtained using Mathematica.
   EXPECT_THAT(product,
               RelativeErrorFrom(-4.848079980325297e-13 * Metre * Metre,
-                                IsNear(0.19_⑴)));
+                                IsNear(0.19_(1))));
 }
 
 TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct2) {
@@ -390,10 +390,11 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct2) {
     auto const product = InnerProduct(f, g,
                      apodization::Dirichlet<HornerEvaluator>(t_min, t_max),
                      t_min, t_max);
-    EXPECT_THAT(product,
-                RelativeErrorFrom(
-                    +2.0267451184776034270e-11,
-                    AnyOf(IsNear(0.26_⑴), IsNear(0.33_⑴), IsNear(0.38_⑴))));
+    EXPECT_THAT(
+        product,
+        RelativeErrorFrom(
+            +2.0267451184776034270e-11,
+            AnyOf(IsNear(0.26_(1)), IsNear(0.33_(1)), IsNear(0.38_(1)))));
   }
   {
     auto const product = (PointwiseInnerProduct(f, g) *
@@ -402,7 +403,7 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct2) {
                          (t_max - t_min);
     EXPECT_THAT(
         product,
-        RelativeErrorFrom(+2.0267451184776034270e-11, IsNear(4.0e3_⑴)));
+        RelativeErrorFrom(+2.0267451184776034270e-11, IsNear(4.0e3_(1))));
   }
 }
 
@@ -597,11 +598,11 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct3) {
         InnerProduct(f, g,
                      apodization::Dirichlet<EstrinEvaluator>(t_min, t_max),
                      t_min, t_max);
-    EXPECT_THAT(
-        product,
-        RelativeErrorFrom(
-            expected_product,
-            AnyOf(IsNear(0.00069_⑴), IsNear(0.0013_⑴), IsNear(0.0015_⑴))));
+    EXPECT_THAT(product,
+                RelativeErrorFrom(expected_product,
+                                  AnyOf(IsNear(0.00069_(1)),
+                                        IsNear(0.0013_(1)),
+                                        IsNear(0.0015_(1)))));
   }
   // This test demonstrates how bad Integrate can be, for products that arise in
   // practice.  Exact integration of the result of PointwiseInnerProduct yields
@@ -614,10 +615,11 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct3) {
                           apodization::Dirichlet<EstrinEvaluator>(t_min, t_max))
                              .Integrate(t_min, t_max) /
                          (t_max - t_min);
-    EXPECT_THAT(product,
-                RelativeErrorFrom(
-                    expected_product,
-                    AnyOf(IsNear(7.7e6_⑴), IsNear(8.8e6_⑴), IsNear(1.0e7_⑴))));
+    EXPECT_THAT(
+        product,
+        RelativeErrorFrom(
+            expected_product,
+            AnyOf(IsNear(7.7e6_(1)), IsNear(8.8e6_(1)), IsNear(1.0e7_(1)))));
   }
 }
 

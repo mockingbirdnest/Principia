@@ -62,7 +62,7 @@ using testing_utilities::AbsoluteError;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using testing_utilities::SolarSystemFactory;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 using ::testing::AllOf;
 using ::testing::AnyOf;
 using ::testing::Eq;
@@ -743,7 +743,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
                   rendered_prediction.back().degrees_of_freedom.position(),
                   Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}) +
                       World::origin),
-              IsNear(29_⑴ * Milli(Metre)));
+              IsNear(29_(1) * Milli(Metre)));
 }
 
 }  // namespace internal_plugin

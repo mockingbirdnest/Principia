@@ -43,7 +43,7 @@ using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
 using testing_utilities::VanishesBefore;
 using testing_utilities::RelativeErrorFrom;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 
 class PiecewisePoissonSeriesTest : public ::testing::Test {
  protected:
@@ -211,8 +211,8 @@ TEST_F(PiecewisePoissonSeriesTest, InnerProduct) {
       p_, pp_,
       apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second),
       /*max_points=*/1 << 20);
-  EXPECT_THAT(d1, RelativeErrorFrom((3 * π - 26) / (8 * π), IsNear(3e-11_⑴)));
-  EXPECT_THAT(d2, RelativeErrorFrom((3 * π - 26) / (8 * π), IsNear(3e-11_⑴)));
+  EXPECT_THAT(d1, RelativeErrorFrom((3 * π - 26) / (8 * π), IsNear(3e-11_(1))));
+  EXPECT_THAT(d2, RelativeErrorFrom((3 * π - 26) / (8 * π), IsNear(3e-11_(1))));
 }
 
 TEST_F(PiecewisePoissonSeriesTest, InnerProductMultiorigin) {
@@ -225,8 +225,8 @@ TEST_F(PiecewisePoissonSeriesTest, InnerProductMultiorigin) {
       p, pp_,
       apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second),
       /*max_points=*/1 << 20);
-  EXPECT_THAT(d1, RelativeErrorFrom((3 * π - 26) / (8 * π), IsNear(3e-11_⑴)));
-  EXPECT_THAT(d2, RelativeErrorFrom((3 * π - 26) / (8 * π), IsNear(3e-11_⑴)));
+  EXPECT_THAT(d1, RelativeErrorFrom((3 * π - 26) / (8 * π), IsNear(3e-11_(1))));
+  EXPECT_THAT(d2, RelativeErrorFrom((3 * π - 26) / (8 * π), IsNear(3e-11_(1))));
 }
 
 TEST_F(PiecewisePoissonSeriesTest, Fourier) {
@@ -256,13 +256,13 @@ TEST_F(PiecewisePoissonSeriesTest, Fourier) {
         return f_fourier_transform(ω).Norm²();
       };
   EXPECT_THAT(Brent(f_power_spectrum, 0.9 * ω, 1.1 * ω, std::greater<>{}),
-              RelativeErrorFrom(ω, IsNear(0.03_⑴)));
+              RelativeErrorFrom(ω, IsNear(0.03_(1))));
   // A peak arising from the finite interval.
   EXPECT_THAT(Brent(f_power_spectrum,
                     0 * Radian / Second,
                     2 * Radian / Second,
                     std::greater<>{}),
-              IsNear(1.209_⑴ * Radian / Second));
+              IsNear(1.209_(1) * Radian / Second));
 
   auto const fw = f * apodization::Hann<HornerEvaluator>(f.t_min(), f.t_max());
 
@@ -272,14 +272,14 @@ TEST_F(PiecewisePoissonSeriesTest, Fourier) {
         return fw_fourier_transform(ω).Norm²();
       };
   EXPECT_THAT(Brent(fw_power_spectrum, 0.9 * ω, 1.1 * ω, std::greater<>{}),
-              RelativeErrorFrom(ω, IsNear(0.005_⑴)));
+              RelativeErrorFrom(ω, IsNear(0.005_(1))));
   // Hann filters out the interval; this search for a second maximum converges
   // to its boundary.
   EXPECT_THAT(Brent(fw_power_spectrum,
                     0 * Radian / Second,
                     2 * Radian / Second,
                     std::greater<>{}),
-              IsNear(1.9999999_⑴ * Radian / Second));
+              IsNear(1.9999999_(1) * Radian / Second));
 }
 
 TEST_F(PiecewisePoissonSeriesTest, Serialization) {
