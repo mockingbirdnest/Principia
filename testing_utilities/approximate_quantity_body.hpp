@@ -213,7 +213,8 @@ inline NumericLiteral operator""_(char const* const representation) {
   return NumericLiteral{representation};
 }
 
-ApproximateQuantity<double> NumericLiteral::operator(int ulp) {
+ApproximateQuantity<double> NumericLiteral::operator()(int const ulp) {
+  CHECK_GT(ulp, 0);
   return ApproximateQuantity<double>::Parse(representation, ulp);
 }
 

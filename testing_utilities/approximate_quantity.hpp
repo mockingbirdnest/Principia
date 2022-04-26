@@ -135,11 +135,11 @@ std::ostream& operator<<(std::ostream& out,
 // concert to allow the syntax 1.234_(1), or, in principle, 1.234_(123) for
 // approximate quantities.
 struct NumericLiteral {
-  ApproximateQuantity<double> operator(int);
+  ApproximateQuantity<double> operator()(int);
   char const* representation;
 };
 
-ApproximateQuantity<double> operator""_(char const* representation);
+NumericLiteral operator""_(char const* representation);
 
 }  // namespace internal_approximate_quantity
 
