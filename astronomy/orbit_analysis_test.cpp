@@ -397,9 +397,9 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
                     RelativeErrorFrom(nominal_anomalistic_mean_motion,
                                       IsNear(0.00086_(1)))));
 
-  EXPECT_THAT(
-      elements.mean_semimajor_axis_interval().midpoint(),
-      AbsoluteErrorFrom(29'599.8 * Kilo(Metre), IsNear(0.35_(1) * Kilo(Metre))));
+  EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
+              AbsoluteErrorFrom(29'599.8 * Kilo(Metre),
+                                IsNear(0.35_(1) * Kilo(Metre))));
   EXPECT_THAT(elements.mean_semimajor_axis_interval().measure(),
               IsNear(00'000.084_(1) * Kilo(Metre)));
 
@@ -569,8 +569,9 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
   // 6 m either side of the reference value.  Our test data is from cycle 198;
   // reading the graph around that time shows that the mean semimajor axis was a
   // bit less than 3 m above the nominal value around that time.
-  EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
-              DifferenceFrom(7714.42938 * Kilo(Metre), IsNear(2.93_(1) * Metre)));
+  EXPECT_THAT(
+      elements.mean_semimajor_axis_interval().midpoint(),
+      DifferenceFrom(7714.42938 * Kilo(Metre), IsNear(2.93_(1) * Metre)));
   // Reference inclination from the legend of figure 9 of Bhat et al.; that
   // value is given as 66.040° in table 1 of Bhat et al., 66.039° in Blanc et
   // al., and 66.04° in Benada.
@@ -583,9 +584,10 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
   // below therefore seem plausible.
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
               DifferenceFrom(66.0408 * Degree, IsNear(-0.0025_(1) * Degree)));
-  EXPECT_THAT(elements.mean_inclination_interval(),
-              AllOf(Field(&Interval<Angle>::min, IsNear(66.0365_(1) * Degree)),
-                    Field(&Interval<Angle>::max, IsNear(66.0401_(1) * Degree))));
+  EXPECT_THAT(
+      elements.mean_inclination_interval(),
+      AllOf(Field(&Interval<Angle>::min, IsNear(66.0365_(1) * Degree)),
+            Field(&Interval<Angle>::max, IsNear(66.0401_(1) * Degree))));
 
   // The same nominal values are given by Blanc et al., Benada, and Bhat et al:
   // e = 0.000095, ω = 90.0°.

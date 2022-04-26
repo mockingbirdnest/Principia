@@ -144,8 +144,10 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
   // The elements e, i, and ω all vary quite a lot.
   EXPECT_THAT(elements.mean_eccentricity_interval().min, IsNear(0.40_(1)));
   EXPECT_THAT(elements.mean_eccentricity_interval().max, IsNear(0.88_(1)));
-  EXPECT_THAT(elements.mean_inclination_interval().min, IsNear(62_(1) * Degree));
-  EXPECT_THAT(elements.mean_inclination_interval().max, IsNear(77_(1) * Degree));
+  EXPECT_THAT(elements.mean_inclination_interval().min,
+              IsNear(62_(1) * Degree));
+  EXPECT_THAT(elements.mean_inclination_interval().max,
+              IsNear(77_(1) * Degree));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().min,
               IsNear(51_(1) * Degree));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().max,

@@ -573,7 +573,8 @@ TEST_F(ContinuousTrajectoryTest, Io) {
                  AbsoluteError(expected_velocity, actual_velocity));
   }
   EXPECT_THAT(max_position_absolute_error, IsNear(31_(1) * Milli(Metre)));
-  EXPECT_THAT(max_velocity_absolute_error, IsNear(1.40e-5_(1) * Metre / Second));
+  EXPECT_THAT(max_velocity_absolute_error,
+              IsNear(1.40e-5_(1) * Metre / Second));
 }
 
 TEST_F(ContinuousTrajectoryTest, Continuity) {
