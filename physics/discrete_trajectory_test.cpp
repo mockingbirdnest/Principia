@@ -43,7 +43,7 @@ using quantities::si::Micro;
 using quantities::si::Milli;
 using quantities::si::Radian;
 using quantities::si::Second;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::AlmostEquals;
 using testing_utilities::AppendTrajectoryTimeline;
@@ -801,17 +801,17 @@ TEST_F(DiscreteTrajectoryTest, SerializationExactEndpoints) {
   EXPECT_THAT(
       (deserialized_degrees_of_freedom1.position() - World::origin).Norm(),
       AbsoluteErrorFrom((degrees_of_freedom1.position() - World::origin).Norm(),
-                        IsNear(0.022_⑴*Milli(Metre))));
+                        IsNear(0.022_(1)*Milli(Metre))));
   EXPECT_THAT(deserialized_degrees_of_freedom1.velocity().Norm(),
               AbsoluteErrorFrom(degrees_of_freedom1.velocity().Norm(),
-                                IsNear(5.8_⑴ * Milli(Metre) / Second)));
+                                IsNear(5.8_(1) * Milli(Metre) / Second)));
   EXPECT_THAT(
       (deserialized_degrees_of_freedom2.position() - World::origin).Norm(),
       AbsoluteErrorFrom((degrees_of_freedom2.position() - World::origin).Norm(),
-                        IsNear(0.47_⑴*Milli(Metre))));
+                        IsNear(0.47_(1)*Milli(Metre))));
   EXPECT_THAT(deserialized_degrees_of_freedom2.velocity().Norm(),
               AbsoluteErrorFrom(degrees_of_freedom2.velocity().Norm(),
-                                IsNear(1.5_⑴ * Milli(Metre) / Second)));
+                                IsNear(1.5_(1) * Milli(Metre) / Second)));
 }
 
 TEST_F(DiscreteTrajectoryTest, SerializationRange) {

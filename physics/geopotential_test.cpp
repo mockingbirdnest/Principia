@@ -53,7 +53,7 @@ using testing_utilities::Componentwise;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using testing_utilities::VanishesBefore;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 using ::testing::AllOf;
 using ::testing::An;
 using ::testing::Each;
@@ -246,7 +246,7 @@ TEST_F(GeopotentialTest, C22S22) {
         Instant(),
         Displacement<World>({30 * Metre, 40 * Metre, 0 * Metre}));
     EXPECT_THAT(acceleration.coordinates().x / acceleration.coordinates().y,
-                Not(IsNear(0.75_⑴)));
+                Not(IsNear(0.75_(1))));
     EXPECT_THAT(acceleration.coordinates().z,
                 VanishesBefore(1 * Pow<-2>(Metre), 0));
   }
@@ -350,9 +350,9 @@ TEST_F(GeopotentialTest, TestVector) {
       AccelerationF90(displacement, earth);
 
   EXPECT_THAT(RelativeError(actual_acceleration_cpp, expected_acceleration),
-              IsNear(1.3e-8_⑴));
+              IsNear(1.3e-8_(1)));
   EXPECT_THAT(RelativeError(actual_acceleration_f90, expected_acceleration),
-              IsNear(1.3e-8_⑴));
+              IsNear(1.3e-8_(1)));
   EXPECT_THAT(actual_acceleration_cpp,
               AlmostEquals(actual_acceleration_f90, 4, 8));
 }
@@ -460,15 +460,15 @@ TEST_F(GeopotentialTest, ThresholdComputation) {
           /*1=*/Property(&HarmonicDamping::inner_threshold,
                          Eq(Infinity<Length>)),
           /*2=*/Property(&HarmonicDamping::inner_threshold,
-                         IsNear(1.5_⑴ * Giga(Metre))),
+                         IsNear(1.5_(1) * Giga(Metre))),
           /*3=*/Property(&HarmonicDamping::inner_threshold,
-                         IsNear(43_⑴ * Mega(Metre))),
+                         IsNear(43_(1) * Mega(Metre))),
           /*4=*/Property(&HarmonicDamping::inner_threshold,
-                         IsNear(23_⑴ * Mega(Metre))),
+                         IsNear(23_(1) * Mega(Metre))),
           /*5=*/Property(&HarmonicDamping::inner_threshold,
-                         IsNear(18_⑴ * Mega(Metre)))));
+                         IsNear(18_(1) * Mega(Metre)))));
   EXPECT_THAT(geopotential.sectoral_damping().inner_threshold(),
-              IsNear(106_⑴ * Mega(Metre)));
+              IsNear(106_(1) * Mega(Metre)));
 
   geopotential = Geopotential<ICRS>(earth.get(), /*tolerance=*/0);
 
@@ -500,15 +500,15 @@ TEST_F(GeopotentialTest, ThresholdComputation) {
           /*1=*/Property(&HarmonicDamping::inner_threshold,
                          Eq(Infinity<Length>)),
           /*2=*/Property(&HarmonicDamping::inner_threshold,
-                         IsNear(105_⑴ * Mega(Metre))),
+                         IsNear(105_(1) * Mega(Metre))),
           /*3=*/Property(&HarmonicDamping::inner_threshold,
-                         IsNear(43_⑴ * Mega(Metre))),
+                         IsNear(43_(1) * Mega(Metre))),
           /*4=*/Property(&HarmonicDamping::inner_threshold,
-                         IsNear(23_⑴ * Mega(Metre))),
+                         IsNear(23_(1) * Mega(Metre))),
           /*5=*/Property(&HarmonicDamping::inner_threshold,
-                         IsNear(18_⑴ * Mega(Metre)))));
+                         IsNear(18_(1) * Mega(Metre)))));
   EXPECT_THAT(geopotential.sectoral_damping().inner_threshold(),
-              IsNear(105_⑴ * Mega(Metre)));
+              IsNear(105_(1) * Mega(Metre)));
 
   earth_message.mutable_geopotential()
       ->mutable_row(0)
@@ -534,15 +534,15 @@ TEST_F(GeopotentialTest, ThresholdComputation) {
           /*1=*/Property(&HarmonicDamping::inner_threshold,
                          Eq(Infinity<Length>)),
           /*2=*/Property(&HarmonicDamping::inner_threshold,
-                         IsNear(1.5_⑴ * Giga(Metre))),
+                         IsNear(1.5_(1) * Giga(Metre))),
           /*3=*/Property(&HarmonicDamping::inner_threshold,
-                         IsNear(281_⑴ * Mega(Metre))),
+                         IsNear(281_(1) * Mega(Metre))),
           /*4=*/Property(&HarmonicDamping::inner_threshold,
-                         IsNear(23_⑴ * Mega(Metre))),
+                         IsNear(23_(1) * Mega(Metre))),
           /*5=*/Property(&HarmonicDamping::inner_threshold,
-                         IsNear(18_⑴ * Mega(Metre)))));
+                         IsNear(18_(1) * Mega(Metre)))));
   EXPECT_THAT(geopotential.sectoral_damping().inner_threshold(),
-              IsNear(281_⑴ * Mega(Metre)));
+              IsNear(281_(1) * Mega(Metre)));
 
   earth_message.mutable_geopotential()
       ->mutable_row(1)
@@ -571,15 +571,15 @@ TEST_F(GeopotentialTest, ThresholdComputation) {
           /*1=*/Property(&HarmonicDamping::inner_threshold,
                          Eq(Infinity<Length>)),
           /*2=*/Property(&HarmonicDamping::inner_threshold,
-                         IsNear(1.5_⑴ * Giga(Metre))),
+                         IsNear(1.5_(1) * Giga(Metre))),
           /*3=*/Property(&HarmonicDamping::inner_threshold,
-                         IsNear(35_⑴ * Mega(Metre))),
+                         IsNear(35_(1) * Mega(Metre))),
           /*4=*/Property(&HarmonicDamping::inner_threshold,
-                         IsNear(22_⑴ * Mega(Metre))),
+                         IsNear(22_(1) * Mega(Metre))),
           /*5=*/Property(&HarmonicDamping::inner_threshold,
-                         IsNear(12_⑴ * Mega(Metre)))));
+                         IsNear(12_(1) * Mega(Metre)))));
   EXPECT_THAT(geopotential.sectoral_damping().inner_threshold(),
-              IsNear(35_⑴ * Mega(Metre)));
+              IsNear(35_(1) * Mega(Metre)));
 
   geopotential = Geopotential<ICRS>(earth.get(), /*tolerance=*/0);
 
@@ -719,8 +719,8 @@ TEST_F(GeopotentialTest, DampedForces) {
     // Inspect the J2 sigmoid.
     Length const s0 = earth_geopotential.degree_damping()[2].inner_threshold();
     Length const s1 = earth_geopotential.degree_damping()[2].outer_threshold();
-    EXPECT_THAT(s0, IsNear(1.5_⑴ * Giga(Metre)));
-    EXPECT_THAT(s1, IsNear(4.5_⑴ * Giga(Metre)));
+    EXPECT_THAT(s0, IsNear(1.5_(1) * Giga(Metre)));
+    EXPECT_THAT(s1, IsNear(4.5_(1) * Giga(Metre)));
 
     // The radial component grows beyond the undamped one.  We check the ratio
     // at the arithmetic mean of the thresholds, and at its maximum.
@@ -756,8 +756,8 @@ TEST_F(GeopotentialTest, DampedForces) {
     // Inspect the C22 and S22 sigmoid.
     Length const s0 = earth_geopotential.sectoral_damping().inner_threshold();
     Length const s1 = earth_geopotential.sectoral_damping().outer_threshold();
-    EXPECT_THAT(s0, IsNear(105_⑴ * Mega(Metre)));
-    EXPECT_THAT(s1, IsNear(317_⑴ * Mega(Metre)));
+    EXPECT_THAT(s0, IsNear(105_(1) * Mega(Metre)));
+    EXPECT_THAT(s1, IsNear(317_(1) * Mega(Metre)));
 
     // Although this sigmoid overlaps with the degree 3 one, the midpoint still
     // lies above the outer threshold for degree 3.
@@ -786,8 +786,8 @@ TEST_F(GeopotentialTest, DampedForces) {
     // Inspect the degree 3 sigmoid.
     Length const s0 = earth_geopotential.degree_damping()[3].inner_threshold();
     Length const s1 = earth_geopotential.degree_damping()[3].outer_threshold();
-    EXPECT_THAT(s0, IsNear(43_⑴ * Mega(Metre)));
-    EXPECT_THAT(s1, IsNear(129_⑴ * Mega(Metre)));
+    EXPECT_THAT(s0, IsNear(43_(1) * Mega(Metre)));
+    EXPECT_THAT(s1, IsNear(129_(1) * Mega(Metre)));
 
     // Although this sigmoid overlaps with the degree 3 and sectoral ones, the
     // midpoint still lies above the outer threshold for degree 3, and below the

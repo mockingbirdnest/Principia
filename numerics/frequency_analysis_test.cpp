@@ -54,7 +54,7 @@ using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeErrorFrom;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 using ::testing::AllOf;
 using ::testing::Ge;
 using ::testing::Gt;
@@ -158,7 +158,7 @@ TEST_F(FrequencyAnalysisTest, PreciseModeScalar) {
   // The FFT gives us an accuracy which is of the order of the number of points.
   auto const mode = transform->Mode(AngularFrequency{},
                                     Infinity<AngularFrequency>);
-  EXPECT_THAT(mode.midpoint(), RelativeErrorFrom(ω, IsNear(8.1e-4_⑴)));
+  EXPECT_THAT(mode.midpoint(), RelativeErrorFrom(ω, IsNear(8.1e-4_(1))));
 
   // The precise analysis is only limited by our ability to pinpoint the
   // maximum.
@@ -166,7 +166,7 @@ TEST_F(FrequencyAnalysisTest, PreciseModeScalar) {
       PreciseMode(mode,
                   piecewise_sin,
                   apodization::Hann<HornerEvaluator>(t_min, t_max));
-  EXPECT_THAT(precise_mode, RelativeErrorFrom(ω, IsNear(2.6e-8_⑴)));
+  EXPECT_THAT(precise_mode, RelativeErrorFrom(ω, IsNear(2.6e-8_(1))));
 }
 
 TEST_F(FrequencyAnalysisTest, PreciseModeVector) {
@@ -207,7 +207,7 @@ TEST_F(FrequencyAnalysisTest, PreciseModeVector) {
   // The FFT gives us an accuracy which is of the order of the number of points.
   auto const mode = transform->Mode(AngularFrequency{},
                                     Infinity<AngularFrequency>);
-  EXPECT_THAT(mode.midpoint(), RelativeErrorFrom(ω, IsNear(8.1e-4_⑴)));
+  EXPECT_THAT(mode.midpoint(), RelativeErrorFrom(ω, IsNear(8.1e-4_(1))));
 
   // The precise analysis is only limited by our ability to pinpoint the
   // maximum.
@@ -215,7 +215,7 @@ TEST_F(FrequencyAnalysisTest, PreciseModeVector) {
       PreciseMode(mode,
                   piecewise_sin,
                   apodization::Hann<HornerEvaluator>(t_min, t_max));
-  EXPECT_THAT(precise_mode, RelativeErrorFrom(ω, IsNear(4.2e-11_⑴)));
+  EXPECT_THAT(precise_mode, RelativeErrorFrom(ω, IsNear(4.2e-11_(1))));
 }
 
 TEST_F(FrequencyAnalysisTest, PoissonSeriesScalarProjection) {

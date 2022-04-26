@@ -41,7 +41,7 @@ using testing_utilities::ComputeLegendrePolynomialSecondDerivative;
 using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
 using testing_utilities::StatusIs;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
@@ -144,8 +144,8 @@ TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, Legendre) {
     max_error = std::max(max_error, error);
     max_derivative_error = std::max(max_derivative_error, derivative_error);
   }
-  EXPECT_THAT(max_error, IsNear(172e-6_⑴));
-  EXPECT_THAT(max_derivative_error, IsNear(4.54e-3_⑴ / Second));
+  EXPECT_THAT(max_error, IsNear(172e-6_(1)));
+  EXPECT_THAT(max_derivative_error, IsNear(4.54e-3_(1) / Second));
 }
 
 }  // namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator  // NOLINT

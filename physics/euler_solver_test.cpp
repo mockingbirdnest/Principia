@@ -74,7 +74,7 @@ using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using testing_utilities::RelativeErrorFrom;
 using testing_utilities::VanishesBefore;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 using ::testing::Le;
 using ::testing::Lt;
 using ::testing::Matcher;
@@ -973,13 +973,13 @@ TEST_F(EulerSolverTest, Toutatis) {
       Normalize(initial_angular_momentum),
       Componentwise(RelativeErrorFrom(
                         angular_momentum_orientation_in_body.coordinates().x,
-                        IsNear(0.016_⑴)),
+                        IsNear(0.016_(1))),
                     RelativeErrorFrom(
                         angular_momentum_orientation_in_body.coordinates().y,
-                        IsNear(0.061_⑴)),
+                        IsNear(0.061_(1))),
                     RelativeErrorFrom(
                         angular_momentum_orientation_in_body.coordinates().z,
-                        IsNear(0.001_⑴))));
+                        IsNear(0.001_(1)))));
 
   // Same check as above, but in the inertial frame.  The y coordinate is small
   // because the longitute is close to 180°, so we only check the absolute error
@@ -988,13 +988,13 @@ TEST_F(EulerSolverTest, Toutatis) {
               Componentwise(
                   RelativeErrorFrom(
                       angular_momentum_orientation_in_inertial.coordinates().x,
-                      IsNear(0.028_⑴)),
+                      IsNear(0.028_(1))),
                   AbsoluteErrorFrom(
                       angular_momentum_orientation_in_inertial.coordinates().y,
-                      IsNear(0.008_⑴)),
+                      IsNear(0.008_(1))),
                   RelativeErrorFrom(
                       angular_momentum_orientation_in_inertial.coordinates().z,
-                      IsNear(0.014_⑴))));
+                      IsNear(0.014_(1)))));
 
   Solver const solver(takahashi_to_vanilla(takahashi_moments_of_inertia),
                       initial_attitude(initial_angular_momentum),
@@ -1029,110 +1029,110 @@ TEST_F(EulerSolverTest, Toutatis) {
        122.2 * Degree, 86.5 * Degree, 107.0 * Degree,
        -35.6 * Degree / Day, 7.2 * Degree / Day, -97.0 * Degree / Day,
 
-       0.011_⑴, 4.5_⑴ * Degree,
-       7.9_⑴ * Degree, 5.4_⑴ * Degree, 5.9_⑴ * Degree},
+       0.011_(1), 4.5_(1) * Degree,
+       7.9_(1) * Degree, 5.4_(1) * Degree, 5.9_(1) * Degree},
       {"1992-12-03T19:30:00"_UTC,
        86.3 * Degree, 81.8 * Degree, 24.5 * Degree,
        -16.4 * Degree / Day, -29.1 * Degree / Day, -91.9 * Degree / Day,
 
-       0.076_⑴, 0.5_⑴ * Degree,
-       6.6_⑴ * Degree, 7.7_⑴ * Degree, 4.7_⑴ * Degree},
+       0.076_(1), 0.5_(1) * Degree,
+       6.6_(1) * Degree, 7.7_(1) * Degree, 4.7_(1) * Degree},
       {"1992-12-04T18:10:00"_UTC,
        47.8 * Degree, 60.7 * Degree, 284.0 * Degree,
        29.1 * Degree / Day, -23.2 * Degree / Day, -97.8 * Degree / Day,
 
-       0.005_⑴, 5.0_⑴ * Degree,
-       13_⑴ * Degree, 15_⑴ * Degree, 9.4_⑴ * Degree},
+       0.005_(1), 5.0_(1) * Degree,
+       13_(1) * Degree, 15_(1) * Degree, 9.4_(1) * Degree},
       {"1992-12-05T18:50:00"_UTC,
        14.6 * Degree, 39.4 * Degree, 207.1 * Degree,
        33.3 * Degree / Day, 8.2 * Degree / Day, -92.2 * Degree / Day,
 
-       0.064_⑴, 1.1_⑴ * Degree,
-       9.4_⑴ * Degree, 4.3_⑴ * Degree, 8.4_⑴ * Degree},
+       0.064_(1), 1.1_(1) * Degree,
+       9.4_(1) * Degree, 4.3_(1) * Degree, 8.4_(1) * Degree},
       {"1992-12-06T17:30:00"_UTC,
        331.3 * Degree, 23.7 * Degree, 151.6 * Degree,
        6.6 * Degree / Day, 34.5 * Degree / Day, -95.8 * Degree / Day,
 
-       0.032_⑴, 0.8_⑴ * Degree,
-       2.0_⑴ * Degree, 0.6_⑴ * Degree, 2.1_⑴ * Degree},
+       0.032_(1), 0.8_(1) * Degree,
+       2.0_(1) * Degree, 0.6_(1) * Degree, 2.1_(1) * Degree},
       {"1992-12-07T17:20:00"_UTC,
        222.5 * Degree, 25.4 * Degree, 143.9 * Degree,
        12.8 * Degree / Day, 25.4 * Degree / Day, -104.1 * Degree / Day,
 
-       0.028_⑴, 24_⑴ * Degree,
-       5.7_⑴ * Degree, 15_⑴ * Degree, 15_⑴ * Degree},
+       0.028_(1), 24_(1) * Degree,
+       5.7_(1) * Degree, 15_(1) * Degree, 15_(1) * Degree},
       {"1992-12-08T16:40:00"_UTC,
        169.8 * Degree, 45.5 * Degree, 106.9 * Degree,
        -31.1 * Degree / Day, -21.9 * Degree / Day, -97.7 * Degree / Day,
 
-       0.0001_⑴, 2.7_⑴ * Degree,
-       3.0_⑴ * Degree, 2.6_⑴ * Degree, 2.6_⑴ * Degree},
+       0.0001_(1), 2.7_(1) * Degree,
+       3.0_(1) * Degree, 2.6_(1) * Degree, 2.6_(1) * Degree},
       {"1992-12-09T17:50:00"_UTC,
        137.3 * Degree, 71.3 * Degree, 22.3 * Degree,
        11.8 * Degree / Day, -36.9 * Degree / Day, -94.9 * Degree / Day,
 
-       0.028_⑴, 3.4_⑴ * Degree,
-       3.4_⑴ * Degree, 3.4_⑴ * Degree, 1.1_⑴ * Degree},
+       0.028_(1), 3.4_(1) * Degree,
+       3.4_(1) * Degree, 3.4_(1) * Degree, 1.1_(1) * Degree},
       {"1992-12-10T17:20:00"_UTC,
        103.1 * Degree, 85.2 * Degree, 292.6 * Degree,
        35.8 * Degree / Day, -8.9 * Degree / Day, -97.9 * Degree / Day,
 
-       0.0009_⑴, 0.8_⑴ * Degree,
-       3.1_⑴ * Degree, 1.4_⑴ * Degree, 3.4_⑴ * Degree},
+       0.0009_(1), 0.8_(1) * Degree,
+       3.1_(1) * Degree, 1.4_(1) * Degree, 3.4_(1) * Degree},
       {"1992-12-11T09:40:00"_UTC,
        77.0 * Degree, 85.7 * Degree, 225.5 * Degree,
        31.0 * Degree / Day, 17.0 * Degree / Day, -96.3 * Degree / Day,
 
-       0.022_⑴, 1.0_⑴ * Degree,
-       2.8_⑴ * Degree, 1.6_⑴ * Degree, 2.7_⑴ * Degree},
+       0.022_(1), 1.0_(1) * Degree,
+       2.8_(1) * Degree, 1.6_(1) * Degree, 2.7_(1) * Degree},
       {"1992-12-12T09:20:00"_UTC,
        42.8 * Degree, 70.2 * Degree, 133.2 * Degree,
        -1.3 * Degree / Day, 37.0 * Degree / Day, -95.9 * Degree / Day,
 
-       0.025_⑴, 2.2_⑴ * Degree,
-       2.0_⑴ * Degree, 3.2_⑴ * Degree, 2.6_⑴ * Degree},
+       0.025_(1), 2.2_(1) * Degree,
+       2.0_(1) * Degree, 3.2_(1) * Degree, 2.6_(1) * Degree},
       {"1992-12-13T08:10:00"_UTC,
        13.7 * Degree, 44.4 * Degree, 51.9 * Degree,
        -38.3 * Degree / Day, 17.9 * Degree / Day, -97.3 * Degree / Day,
 
-       0.013_⑴, 3.4_⑴ * Degree,
-       2.5_⑴ * Degree, 5.3_⑴ * Degree, 5.3_⑴ * Degree},
+       0.013_(1), 3.4_(1) * Degree,
+       2.5_(1) * Degree, 5.3_(1) * Degree, 5.3_(1) * Degree},
       {"1992-12-14T07:50:00"_UTC,
        323.7 * Degree, 14.0 * Degree, 0.0 * Degree,
        -70.5 * Degree / Day, -30.6 * Degree / Day, -91.1 * Degree / Day,
 
-       0.119_⑴, 22_⑴ * Degree,
-       4.1_⑴ * Degree, 3.8_⑴ * Degree, 4.5_⑴ * Degree},
+       0.119_(1), 22_(1) * Degree,
+       4.1_(1) * Degree, 3.8_(1) * Degree, 4.5_(1) * Degree},
       {"1992-12-15T07:50:00"_UTC,
        193.2 * Degree, 24.4 * Degree, 21.4 * Degree,
        22.1 * Degree / Day, -26.6 * Degree / Day, -96.6 * Degree / Day,
 
-       0.026_⑴, 4.9_⑴ * Degree,
-       3.2_⑴ * Degree, 8.2_⑴ * Degree, 8.0_⑴ * Degree},
+       0.026_(1), 4.9_(1) * Degree,
+       3.2_(1) * Degree, 8.2_(1) * Degree, 8.0_(1) * Degree},
       {"1992-12-16T07:10:00"_UTC,
        165.1 * Degree, 46.4 * Degree, 310.6 * Degree,
        33.4 * Degree / Day, -3.4 * Degree / Day, -93.7 * Degree / Day,
 
-       0.052_⑴, 2.6_⑴ * Degree,
-       7.3_⑴ * Degree, 5.8_⑴ * Degree, 8.0_⑴ * Degree},
+       0.052_(1), 2.6_(1) * Degree,
+       7.3_(1) * Degree, 5.8_(1) * Degree, 8.0_(1) * Degree},
       {"1992-12-17T06:49:00"_UTC,
        130.6 * Degree, 76.1 * Degree, 234.9 * Degree,
        12.6 * Degree / Day, 33.9 * Degree / Day, -94.0 * Degree / Day,
 
-       0.045_⑴, 2.1_⑴ * Degree,
-       0.8_⑴ * Degree, 1.1_⑴ * Degree, 1.2_⑴ * Degree},
+       0.045_(1), 2.1_(1) * Degree,
+       0.8_(1) * Degree, 1.1_(1) * Degree, 1.2_(1) * Degree},
       {"1992-12-18T07:09:00"_UTC,
        91.6 * Degree, 81.6 * Degree, 142.4 * Degree,
        -24.3 * Degree / Day, 29.6 * Degree / Day, -102.0 * Degree / Day,
 
-       0.036_⑴, 2.1_⑴ * Degree,
-       5.6_⑴ * Degree, 6.3_⑴ * Degree, 4.1_⑴ * Degree},
+       0.036_(1), 2.1_(1) * Degree,
+       5.6_(1) * Degree, 6.3_(1) * Degree, 4.1_(1) * Degree},
       {"2008-11-23T10:45:00"_UTC,
        86.2 * Degree, 85.0 * Degree, 0.3 * Degree,
        -0.4 * Degree / Day, -36.2 * Degree / Day, -98.9 * Degree / Day,
 
-       0.0005_⑴, 40_⑴ * Degree,
-       29_⑴ * Degree, 122_⑴ * Degree, 131_⑴ * Degree}};
+       0.0005_(1), 40_(1) * Degree,
+       29_(1) * Degree, 122_(1) * Degree, 131_(1) * Degree}};
 
   for (auto const& observation : observations) {
     Instant const& t = observation.t;

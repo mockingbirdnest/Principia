@@ -18,7 +18,7 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using testing_utilities::VanishesBefore;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 
 namespace numerics {
 
@@ -83,10 +83,10 @@ TEST_F(FastSinCos2πTest, Random1) {
   EXPECT_LT(max_cos_error, 5.61e-7);
   EXPECT_THAT(RelativeError(1.0 / 8.0 - 1.0 / 36.0,
                             std::fmod(std::fabs(max_sin_error_x), 1.0 / 8.0)),
-              IsNear(5e-5_⑴));
+              IsNear(5e-5_(1)));
   EXPECT_THAT(RelativeError(1.0 / 8.0 - 1.0 / 36.0,
                             std::fmod(std::fabs(max_cos_error_x), 1.0 / 8.0)),
-              IsNear(5e-5_⑴));
+              IsNear(5e-5_(1)));
 }
 
 // Arguments in the range [-1e6, 1e6 + 1] to test argument reduction.

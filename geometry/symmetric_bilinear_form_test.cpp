@@ -33,7 +33,7 @@ using testing_utilities::Componentwise;
 using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
 using testing_utilities::VanishesBefore;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 using ::testing::Eq;
 
 class SymmetricBilinearFormTest : public ::testing::Test {
@@ -458,15 +458,15 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
     EXPECT_THAT(
         f_eigensystem.rotation(e₀),
         Componentwise(
-            AbsoluteErrorFrom(+0.71267592684216601514, IsNear(6.4e-3_⑴)),
-            AbsoluteErrorFrom(-0.086267747252993862323, IsNear(1.8e-4_⑴)),
-            AbsoluteErrorFrom(+0.69616872888945048034, IsNear(6.4e-3_⑴))));
+            AbsoluteErrorFrom(+0.71267592684216601514, IsNear(6.4e-3_(1))),
+            AbsoluteErrorFrom(-0.086267747252993862323, IsNear(1.8e-4_(1))),
+            AbsoluteErrorFrom(+0.69616872888945048034, IsNear(6.4e-3_(1)))));
     EXPECT_THAT(
         f_eigensystem.rotation(e₁),
         Componentwise(
-            AbsoluteErrorFrom(+0.69988076924532898781, IsNear(6.4e-3_⑴)),
-            AbsoluteErrorFrom(+0.02018794239465783510, IsNear(7.8e-4_⑴)),
-            AbsoluteErrorFrom(-0.71397433835008141314, IsNear(6.4e-3_⑴))));
+            AbsoluteErrorFrom(+0.69988076924532898781, IsNear(6.4e-3_(1))),
+            AbsoluteErrorFrom(+0.02018794239465783510, IsNear(7.8e-4_(1))),
+            AbsoluteErrorFrom(-0.71397433835008141314, IsNear(6.4e-3_(1)))));
     EXPECT_THAT(f_eigensystem.rotation(e₂),
                 Componentwise(AlmostEquals(+0.04753874357012595212, 14),
                               AlmostEquals(+0.99606742882485799451, 1),
@@ -502,15 +502,15 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
     EXPECT_THAT(
         f_eigensystem.rotation(e₁),
         Componentwise(
-            AbsoluteErrorFrom(+0.21167513171658507292, IsNear(1.2e-3_⑴)),
-            AbsoluteErrorFrom(+0.92732994849715299942, IsNear(1.1e-3_⑴)),
-            AbsoluteErrorFrom(-0.30863053191969508327, IsNear(2.4e-3_⑴))));
+            AbsoluteErrorFrom(+0.21167513171658507292, IsNear(1.2e-3_(1))),
+            AbsoluteErrorFrom(+0.92732994849715299942, IsNear(1.1e-3_(1))),
+            AbsoluteErrorFrom(-0.30863053191969508327, IsNear(2.4e-3_(1)))));
     EXPECT_THAT(
         f_eigensystem.rotation(e₂),
         Componentwise(
-            AbsoluteErrorFrom(-0.42509236497268917818, IsNear(6.2e-4_⑴)),
-            AbsoluteErrorFrom(+0.37170808088366222608, IsNear(2.7e-3_⑴)),
-            AbsoluteErrorFrom(+0.82530575173550731715, IsNear(9.1e-4_⑴))));
+            AbsoluteErrorFrom(-0.42509236497268917818, IsNear(6.2e-4_(1))),
+            AbsoluteErrorFrom(+0.37170808088366222608, IsNear(2.7e-3_(1))),
+            AbsoluteErrorFrom(+0.82530575173550731715, IsNear(9.1e-4_(1)))));
   }
 
   // A matrix for which two eigenvalues are computed to be identical and the
@@ -539,21 +539,21 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
     EXPECT_THAT(
         f_eigensystem.rotation(e₀),
         Componentwise(
-            AbsoluteErrorFrom(-0.70710678118654752440, IsNear(1.4_⑴)),
-            AbsoluteErrorFrom(-0.58834840541455209490, IsNear(0.12_⑴)),
-            AbsoluteErrorFrom(+0.39223227027636806515, IsNear(0.43_⑴))));
+            AbsoluteErrorFrom(-0.70710678118654752440, IsNear(1.4_(1))),
+            AbsoluteErrorFrom(-0.58834840541455209490, IsNear(0.12_(1))),
+            AbsoluteErrorFrom(+0.39223227027636806515, IsNear(0.43_(1)))));
     EXPECT_THAT(
         f_eigensystem.rotation(e₁),
         Componentwise(
-            AbsoluteErrorFrom(+2.05936741823631274854e-26, IsNear(0.70_⑴)),
-            AbsoluteErrorFrom(+0.55470019622522912386, IsNear(0.14_⑴)),
-            AbsoluteErrorFrom(+0.83205029433784368179, IsNear(1.0_⑴))));
+            AbsoluteErrorFrom(+2.05936741823631274854e-26, IsNear(0.70_(1))),
+            AbsoluteErrorFrom(+0.55470019622522912386, IsNear(0.14_(1))),
+            AbsoluteErrorFrom(+0.83205029433784368179, IsNear(1.0_(1)))));
     EXPECT_THAT(
         f_eigensystem.rotation(e₂),
         Componentwise(
-            AbsoluteErrorFrom(-0.70710678118654752440, IsNear(0.88_⑴)),
-            AbsoluteErrorFrom(+0.58834840541455209490, IsNear(0.47_⑴)),
-            AbsoluteErrorFrom(-0.39223227027636806515, IsNear(1.4_⑴))));
+            AbsoluteErrorFrom(-0.70710678118654752440, IsNear(0.88_(1))),
+            AbsoluteErrorFrom(+0.58834840541455209490, IsNear(0.47_(1))),
+            AbsoluteErrorFrom(-0.39223227027636806515, IsNear(1.4_(1)))));
   }
 
   // A matrix found in game, see #2853.

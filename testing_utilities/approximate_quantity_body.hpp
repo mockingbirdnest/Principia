@@ -209,29 +209,13 @@ std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
-#define PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(symbol, ulp) \
-  inline ApproximateQuantity<double> operator""_##symbol(               \
-      char const* const representation) {                               \
-    return ApproximateQuantity<double>::Parse(representation, ulp);     \
-  }
+inline NumericLiteral operator""_(char const* const representation) {
+  return NumericLiteral{representation};
+}
 
-PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(⑴, 1)
-PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(⑵, 2)
-PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(⑶, 3)
-PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(⑷, 4)
-PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(⑸, 5)
-PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(⑹, 6)
-PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(⑺, 7)
-PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(⑻, 8)
-PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(⑼, 9)
-PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(🄐, 0xA)
-PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(🄑, 0xB)
-PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(🄒, 0xC)
-PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(🄓, 0xD)
-PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(🄔, 0xE)
-PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION(🄕, 0xF)
-
-#undef PRINCIPIA_APPROXIMATE_QUANTITY_OPERATOR_DEFINITION
+ApproximateQuantity<double> NumericLiteral::operator(int ulp) {
+  return ApproximateQuantity<double>::Parse(representation, ulp);
+}
 
 }  // namespace internal_approximate_quantity
 }  // namespace testing_utilities

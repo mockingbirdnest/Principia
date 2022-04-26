@@ -33,7 +33,7 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 
@@ -138,7 +138,7 @@ TEST_F(Hermite3Test, ThreeDimensionalInterpolationError) {
           samples,
           /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
           /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; }),
-      IsNear(1.5_⑴ * Centi(Metre)));
+      IsNear(1.5_(1) * Centi(Metre)));
 }
 
 }  // namespace numerics

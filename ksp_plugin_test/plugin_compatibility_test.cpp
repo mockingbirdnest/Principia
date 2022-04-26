@@ -40,7 +40,7 @@ using quantities::Speed;
 using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Second;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 using testing_utilities::IsNear;
 using testing_utilities::ReadFromBinaryFile;
 using testing_utilities::StringLogSink;
@@ -229,7 +229,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
   // the beginning.
   EXPECT_THAT((begin->degrees_of_freedom.position() -
                mercury.trajectory().EvaluatePosition(begin->time)).Norm(),
-              IsNear(176'400'999_⑴ * Kilo(Metre)));
+              IsNear(176'400'999_(1) * Kilo(Metre)));
   EXPECT_THAT(begin->time,
               Eq("1966-05-10T00:14:03"_TT + 0.0879862308502197 * Second));
   EXPECT_THAT(begin->degrees_of_freedom,
@@ -250,7 +250,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
               Eq(MercuryOrbiterInitialDegreesOfFreedom<Barycentric>));
   EXPECT_THAT((it->degrees_of_freedom.position() -
                mercury.trajectory().EvaluatePosition(it->time)).Norm(),
-              IsNear(19'163_⑴ * Kilo(Metre)));
+              IsNear(19'163_(1) * Kilo(Metre)));
 
   // Make sure that we can upgrade, save, and reload.
   WriteAndReadBack(std::move(plugin));

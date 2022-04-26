@@ -131,43 +131,22 @@ template<typename Quantity>
 std::ostream& operator<<(std::ostream& out,
                          ApproximateQuantity<Quantity> const& q);
 
-// The 🄐 to 🄕 operators are only for hexadecimal literals.
-ApproximateQuantity<double> operator""_⑴(char const* representation);
-ApproximateQuantity<double> operator""_⑵(char const* representation);
-ApproximateQuantity<double> operator""_⑶(char const* representation);
-ApproximateQuantity<double> operator""_⑷(char const* representation);
-ApproximateQuantity<double> operator""_⑸(char const* representation);
-ApproximateQuantity<double> operator""_⑹(char const* representation);
-ApproximateQuantity<double> operator""_⑺(char const* representation);
-ApproximateQuantity<double> operator""_⑻(char const* representation);
-ApproximateQuantity<double> operator""_⑼(char const* representation);
-ApproximateQuantity<double> operator""_🄐(char const* representation);
-ApproximateQuantity<double> operator""_🄑(char const* representation);
-ApproximateQuantity<double> operator""_🄒(char const* representation);
-ApproximateQuantity<double> operator""_🄓(char const* representation);
-ApproximateQuantity<double> operator""_🄔(char const* representation);
-ApproximateQuantity<double> operator""_🄕(char const* representation);
+// The internal struct |NumericLiteral| and the operator""_ are to be used in
+// concert to allow the syntax 1.234_(1), or, in principle, 1.234_(123) for
+// approximate quantities.
+struct NumericLiteral {
+  ApproximateQuantity<double> operator(int);
+  char const* representation;
+};
+
+ApproximateQuantity<double> operator""_(char const* representation);
 
 }  // namespace internal_approximate_quantity
 
 using internal_approximate_quantity::ApproximateQuantity;
 using internal_approximate_quantity::operator*;
 using internal_approximate_quantity::operator/;
-using internal_approximate_quantity::operator""_⑴;
-using internal_approximate_quantity::operator""_⑵;
-using internal_approximate_quantity::operator""_⑶;
-using internal_approximate_quantity::operator""_⑷;
-using internal_approximate_quantity::operator""_⑸;
-using internal_approximate_quantity::operator""_⑹;
-using internal_approximate_quantity::operator""_⑺;
-using internal_approximate_quantity::operator""_⑻;
-using internal_approximate_quantity::operator""_⑼;
-using internal_approximate_quantity::operator""_🄐;
-using internal_approximate_quantity::operator""_🄑;
-using internal_approximate_quantity::operator""_🄒;
-using internal_approximate_quantity::operator""_🄓;
-using internal_approximate_quantity::operator""_🄔;
-using internal_approximate_quantity::operator""_🄕;
+using internal_approximate_quantity::operator""_;
 
 }  // namespace testing_utilities
 }  // namespace principia

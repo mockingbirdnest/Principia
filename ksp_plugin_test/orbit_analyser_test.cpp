@@ -37,7 +37,7 @@ using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Radian;
 using testing_utilities::IsNear;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::IsNull;
@@ -133,7 +133,7 @@ TEST_F(OrbitAnalyserTest, TOPEXPoséidon) {
                   ->elements()
                   ->mean_semimajor_axis_interval()
                   .midpoint(),
-              IsNear(7714_⑴ * Kilo(Metre)));
+              IsNear(7714_(1) * Kilo(Metre)));
   EXPECT_THAT(analyser.analysis()->recurrence(),
               Optional(AllOf(Property(&OrbitRecurrence::νₒ, 13),
                              Property(&OrbitRecurrence::Dᴛₒ, -3),
@@ -143,7 +143,7 @@ TEST_F(OrbitAnalyserTest, TOPEXPoséidon) {
                       ->longitudes_reduced_to_pass(1)
                       .measure() *
                   TerrestrialEquatorialRadius / Radian,
-              IsNear(93_⑴ * Metre));
+              IsNear(93_(1) * Metre));
   // [13; -1; 3] is the subcycle of [13; -3; 10].
   analyser.analysis()->SetRecurrence({13, -1, 3});
   EXPECT_THAT(analyser.analysis()
@@ -151,7 +151,7 @@ TEST_F(OrbitAnalyserTest, TOPEXPoséidon) {
                       ->longitudes_reduced_to_pass(1)
                       .measure() *
                   TerrestrialEquatorialRadius / Radian,
-              IsNear(8211_⑴ * Metre));
+              IsNear(8211_(1) * Metre));
   // Back to the auto-detected recurrence.
   analyser.analysis()->ResetRecurrence();
   EXPECT_THAT(analyser.analysis()->recurrence(),

@@ -68,7 +68,7 @@ using testing_utilities::DifferenceFrom;
 using testing_utilities::IsNear;
 using testing_utilities::IsOk;
 using testing_utilities::RelativeError;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 using ::testing::Lt;
 
 class OrbitalElementsTest : public ::testing::Test {
@@ -268,13 +268,13 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
   OrbitalElements const& elements = status_or_elements.value();
   EXPECT_THAT(
       elements.anomalistic_period(),
-      DifferenceFrom(*initial_osculating.period, IsNear(-7.8_⑴ * Second)));
+      DifferenceFrom(*initial_osculating.period, IsNear(-7.8_(1) * Second)));
   EXPECT_THAT(
       elements.nodal_period(),
-      DifferenceFrom(*initial_osculating.period, IsNear(-23_⑴ * Second)));
+      DifferenceFrom(*initial_osculating.period, IsNear(-23_(1) * Second)));
   EXPECT_THAT(
       elements.sidereal_period(),
-      DifferenceFrom(*initial_osculating.period, IsNear(-16_⑴ * Second)));
+      DifferenceFrom(*initial_osculating.period, IsNear(-16_(1) * Second)));
 
   // The notation for the computation of the theoretical precessions follows
   // [Cap12], section 7.1.1.
@@ -291,19 +291,19 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
   AngularFrequency const theoretical_ωʹ =
       0.5 * K0 * Pow<-7>(Sqrt(η)) * (5 * Pow<2>(Cos(i)) - 1);
 
-  EXPECT_THAT(theoretical_Ωʹ, IsNear(-7.2_⑴ * Degree / Day));
-  EXPECT_THAT(theoretical_ωʹ, IsNear(14_⑴ * Degree / Day));
+  EXPECT_THAT(theoretical_Ωʹ, IsNear(-7.2_(1) * Degree / Day));
+  EXPECT_THAT(theoretical_ωʹ, IsNear(14_(1) * Degree / Day));
 
   EXPECT_THAT(RelativeError(theoretical_Ωʹ, elements.nodal_precession()),
-              IsNear(0.0029_⑴));
+              IsNear(0.0029_(1)));
 
   // Mean element values.  Since Ω and ω precess rapidly, the midpoint of the
   // range of values is of no interest.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
               AbsoluteErrorFrom(*initial_osculating.semimajor_axis,
-                                IsNear(25_⑴ * Metre)));
+                                IsNear(25_(1) * Metre)));
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
-              IsNear(0.0013_⑴));
+              IsNear(0.0013_(1)));
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
               AbsoluteErrorFrom(initial_osculating.inclination,
                                 Lt(2.0 * Micro(ArcSecond))));
@@ -311,20 +311,20 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
   // Mean element stability: Ω and ω precess as expected, the other elements are
   // stable.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().measure(),
-              IsNear(70_⑴ * Milli(Metre)));
+              IsNear(70_(1) * Milli(Metre)));
   EXPECT_THAT(elements.mean_eccentricity_interval().measure(),
-              IsNear(3.8e-9_⑴));
+              IsNear(3.8e-9_(1)));
   EXPECT_THAT(elements.mean_inclination_interval().measure(),
               Lt(1.1* Micro(ArcSecond)));
   EXPECT_THAT(
       RelativeError(
           -theoretical_Ωʹ * mission_duration,
           elements.mean_longitude_of_ascending_node_interval().measure()),
-      IsNear(0.004_⑴));
+      IsNear(0.004_(1)));
   EXPECT_THAT(
       RelativeError(theoretical_ωʹ * mission_duration,
                     elements.mean_argument_of_periapsis_interval().measure()),
-      IsNear(0.0029_⑴));
+      IsNear(0.0029_(1)));
 
   mathematica::Logger logger(
       SOLUTION_DIR / "mathematica" / "j2_perturbed_elements.generated.wl",
@@ -369,26 +369,26 @@ TEST_F(OrbitalElementsTest, RealPerturbation) {
   OrbitalElements const& elements = status_or_elements.value();
   EXPECT_THAT(
       elements.anomalistic_period(),
-      DifferenceFrom(*initial_osculating.period, IsNear(-8.0_⑴ * Second)));
+      DifferenceFrom(*initial_osculating.period, IsNear(-8.0_(1) * Second)));
   EXPECT_THAT(
       elements.nodal_period(),
-      DifferenceFrom(*initial_osculating.period, IsNear(-14_⑴ * Second)));
+      DifferenceFrom(*initial_osculating.period, IsNear(-14_(1) * Second)));
   EXPECT_THAT(
       elements.sidereal_period(),
-      DifferenceFrom(*initial_osculating.period, IsNear(-16_⑴ * Second)));
+      DifferenceFrom(*initial_osculating.period, IsNear(-16_(1) * Second)));
 
   // This value is meaningless, see below.
-  EXPECT_THAT(elements.nodal_precession(), IsNear(2.0_⑴ * Degree / Day));
+  EXPECT_THAT(elements.nodal_precession(), IsNear(2.0_(1) * Degree / Day));
 
   // Mean element values.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
               AbsoluteErrorFrom(*initial_osculating.semimajor_axis,
-                                IsNear(105_⑴ * Metre)));
+                                IsNear(105_(1) * Metre)));
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
-              IsNear(0.0014_⑴));
+              IsNear(0.0014_(1)));
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
               AbsoluteErrorFrom(initial_osculating.inclination,
-                                IsNear(6.0_⑴ * ArcSecond)));
+                                IsNear(6.0_(1) * ArcSecond)));
 
   // Mean element stability: Ω and ω exhibit a daily oscillation (likely due to
   // the tesseral terms of the geopotential) as the very low inclination means
@@ -400,15 +400,15 @@ TEST_F(OrbitalElementsTest, RealPerturbation) {
   // expected; the longitude of the ascending node Ω exhibits no obvious
   // precession even if its daily oscillation is filtered out.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().measure(),
-              IsNear(20_⑴ * Metre));
+              IsNear(20_(1) * Metre));
   EXPECT_THAT(elements.mean_eccentricity_interval().measure(),
-              IsNear(9.2e-5_⑴));
+              IsNear(9.2e-5_(1)));
   EXPECT_THAT(elements.mean_inclination_interval().measure(),
-              IsNear(11_⑴ * ArcSecond));
+              IsNear(11_(1) * ArcSecond));
   EXPECT_THAT(elements.mean_longitude_of_ascending_node_interval().measure(),
-              IsNear(136_⑴ * Degree));
+              IsNear(136_(1) * Degree));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().measure(),
-              IsNear(154_⑴ * Degree));
+              IsNear(154_(1) * Degree));
 
   mathematica::Logger logger(
       SOLUTION_DIR / "mathematica" / "fully_perturbed_elements.generated.wl",

@@ -46,7 +46,7 @@ using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::ApproximateQuantity;
 using testing_utilities::IsNear;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 using ::testing::Eq;
 
 namespace astronomy {
@@ -240,12 +240,12 @@ TEST_F(LunarEclipseTest, Year1950) {
     constexpr auto U4 = "1950-04-02T22:18:54"_UT1;
     constexpr auto P4 = "1950-04-02T23:17:21"_UT1;
 
-    CheckLunarPenumbralEclipse(P1, U14, 1.4e-5_⑴ * Radian, 31_⑴ * Second);
-    CheckLunarUmbralEclipse(U1, U14,    2.1e-5_⑴ * Radian, 33_⑴ * Second);
-    CheckLunarUmbralEclipse(U2, U23,    1.8e-5_⑴ * Radian, 42_⑴ * Second);
-    CheckLunarUmbralEclipse(U3, U23,    9.6e-6_⑴ * Radian, 24_⑴ * Second);
-    CheckLunarUmbralEclipse(U4, U14,    2.0e-5_⑴ * Radian, 31_⑴ * Second);
-    CheckLunarPenumbralEclipse(P4, U14, 1.5e-5_⑴ * Radian, 33_⑴ * Second);
+    CheckLunarPenumbralEclipse(P1, U14, 1.4e-5_(1) * Radian, 31_(1) * Second);
+    CheckLunarUmbralEclipse(U1, U14,    2.1e-5_(1) * Radian, 33_(1) * Second);
+    CheckLunarUmbralEclipse(U2, U23,    1.8e-5_(1) * Radian, 42_(1) * Second);
+    CheckLunarUmbralEclipse(U3, U23,    9.6e-6_(1) * Radian, 24_(1) * Second);
+    CheckLunarUmbralEclipse(U4, U14,    2.0e-5_(1) * Radian, 31_(1) * Second);
+    CheckLunarPenumbralEclipse(P4, U14, 1.5e-5_(1) * Radian, 33_(1) * Second);
   }
 
   {
@@ -256,12 +256,12 @@ TEST_F(LunarEclipseTest, Year1950) {
     constexpr auto U4 = "1950-09-26T06:01:33"_UT1;
     constexpr auto P4 = "1950-09-26T07:11:47"_UT1;
 
-    CheckLunarPenumbralEclipse(P1, U14, 1.5e-5_⑴ * Radian, 37_⑴ * Second);
-    CheckLunarUmbralEclipse(U1, U14,    2.3e-5_⑴ * Radian, 39_⑴ * Second);
-    CheckLunarUmbralEclipse(U2, U23,    2.8e-5_⑴ * Radian, 45_⑴ * Second);
-    CheckLunarUmbralEclipse(U3, U23,    1.9e-5_⑴ * Radian, 32_⑴ * Second);
-    CheckLunarUmbralEclipse(U4, U14,    2.2e-5_⑴ * Radian, 37_⑴ * Second);
-    CheckLunarPenumbralEclipse(P4, U14, 1.6e-5_⑴ * Radian, 38_⑴ * Second);
+    CheckLunarPenumbralEclipse(P1, U14, 1.5e-5_(1) * Radian, 37_(1) * Second);
+    CheckLunarUmbralEclipse(U1, U14,    2.3e-5_(1) * Radian, 39_(1) * Second);
+    CheckLunarUmbralEclipse(U2, U23,    2.8e-5_(1) * Radian, 45_(1) * Second);
+    CheckLunarUmbralEclipse(U3, U23,    1.9e-5_(1) * Radian, 32_(1) * Second);
+    CheckLunarUmbralEclipse(U4, U14,    2.2e-5_(1) * Radian, 37_(1) * Second);
+    CheckLunarPenumbralEclipse(P4, U14, 1.6e-5_(1) * Radian, 38_(1) * Second);
   }
 }
 
@@ -270,16 +270,16 @@ TEST_F(LunarEclipseTest, Year1951) {
     constexpr auto P1 = "1951-03-23T08:50:00"_UT1;
     constexpr auto P4 = "1951-03-23T12:24:19"_UT1;
 
-    CheckLunarPenumbralEclipse(P1, U14, 9.5e-6_⑴ * Radian, 33_⑴ * Second);
-    CheckLunarPenumbralEclipse(P4, U14, 7.8e-6_⑴ * Radian, 27_⑴ * Second);
+    CheckLunarPenumbralEclipse(P1, U14, 9.5e-6_(1) * Radian, 33_(1) * Second);
+    CheckLunarPenumbralEclipse(P4, U14, 7.8e-6_(1) * Radian, 27_(1) * Second);
   }
 
   {
     constexpr auto P1 = "1951-09-15T10:29:16"_UT1;
     constexpr auto P4 = "1951-09-15T14:23:52"_UT1;
 
-    CheckLunarPenumbralEclipse(P1, U14, 9.5e-6_⑴ * Radian, 30_⑴ * Second);
-    CheckLunarPenumbralEclipse(P4, U14, 8.1e-6_⑴ * Radian, 26_⑴ * Second);
+    CheckLunarPenumbralEclipse(P1, U14, 9.5e-6_(1) * Radian, 30_(1) * Second);
+    CheckLunarPenumbralEclipse(P4, U14, 8.1e-6_(1) * Radian, 26_(1) * Second);
   }
 }
 
@@ -290,10 +290,10 @@ TEST_F(LunarEclipseTest, Year1952) {
     constexpr auto U4 = "1952-02-11T01:14:24"_UT1;
     constexpr auto P4 = "1952-02-11T03:10:15"_UT1;
 
-    CheckLunarPenumbralEclipse(P1, U14, 1.1e-5_⑴ * Radian, 32_⑴ * Second);
-    CheckLunarUmbralEclipse(U1, U14,    4.2e-6_⑴ * Radian, 21_⑴ * Second);
-    CheckLunarUmbralEclipse(U4, U14,    1.0e-5_⑴ * Radian, 52_⑴ * Second);
-    CheckLunarPenumbralEclipse(P4, U14, 1.4e-5_⑴ * Radian, 42_⑴ * Second);
+    CheckLunarPenumbralEclipse(P1, U14, 1.1e-5_(1) * Radian, 32_(1) * Second);
+    CheckLunarUmbralEclipse(U1, U14,    4.2e-6_(1) * Radian, 21_(1) * Second);
+    CheckLunarUmbralEclipse(U4, U14,    1.0e-5_(1) * Radian, 52_(1) * Second);
+    CheckLunarPenumbralEclipse(P4, U14, 1.4e-5_(1) * Radian, 42_(1) * Second);
   }
 
   {
@@ -302,10 +302,10 @@ TEST_F(LunarEclipseTest, Year1952) {
     constexpr auto U4 = "1952-08-05T21:01:00"_UT1;
     constexpr auto P4 = "1952-08-05T22:06:35"_UT1;
 
-    CheckLunarPenumbralEclipse(P1, U14, 8.4e-6_⑴ * Radian, 20_⑴ * Second);
-    CheckLunarUmbralEclipse(U1, U14,    9.6e-6_⑴ * Radian, 20_⑴ * Second);
-    CheckLunarUmbralEclipse(U4, U14,    1.3e-5_⑴ * Radian, 27_⑴ * Second);
-    CheckLunarPenumbralEclipse(P4, U14, 1.2e-5_⑴ * Radian, 28_⑴ * Second);
+    CheckLunarPenumbralEclipse(P1, U14, 8.4e-6_(1) * Radian, 20_(1) * Second);
+    CheckLunarUmbralEclipse(U1, U14,    9.6e-6_(1) * Radian, 20_(1) * Second);
+    CheckLunarUmbralEclipse(U4, U14,    1.3e-5_(1) * Radian, 27_(1) * Second);
+    CheckLunarPenumbralEclipse(P4, U14, 1.2e-5_(1) * Radian, 28_(1) * Second);
   }
 }
 
@@ -317,12 +317,12 @@ TEST_F(LunarEclipseTest, DISABLED_Year2000) {
   constexpr auto U4 = "2000-01-21T06:25:09"_UT1;
   constexpr auto P4 = "2000-01-21T07:22:38"_UT1;
 
-  CheckLunarPenumbralEclipse(P1, U14, 7.8e-5_⑴ * Radian, -162_⑴ * Second);
-  CheckLunarUmbralEclipse(U1, U14,    1.1e-4_⑴ * Radian, -161_⑴ * Second);
-  CheckLunarUmbralEclipse(U2, U23,    2.0e-4_⑴ * Radian, -163_⑴ * Second);
-  CheckLunarUmbralEclipse(U3, U23,    2.0e-4_⑴ * Radian, -157_⑴ * Second);
-  CheckLunarUmbralEclipse(U4, U14,    1.1e-4_⑴ * Radian, -157_⑴ * Second);
-  CheckLunarPenumbralEclipse(P4, U14, 7.5e-5_⑴ * Radian, -156_⑴ * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 7.8e-5_(1) * Radian, -162_(1) * Second);
+  CheckLunarUmbralEclipse(U1, U14,    1.1e-4_(1) * Radian, -161_(1) * Second);
+  CheckLunarUmbralEclipse(U2, U23,    2.0e-4_(1) * Radian, -163_(1) * Second);
+  CheckLunarUmbralEclipse(U3, U23,    2.0e-4_(1) * Radian, -157_(1) * Second);
+  CheckLunarUmbralEclipse(U4, U14,    1.1e-4_(1) * Radian, -157_(1) * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 7.5e-5_(1) * Radian, -156_(1) * Second);
 }
 
 TEST_F(LunarEclipseTest, DISABLED_Year2048) {
@@ -336,12 +336,12 @@ TEST_F(LunarEclipseTest, DISABLED_Year2048) {
   constexpr auto U4 = "2048-01-01T08:39:33"_TT + ΔT;
   constexpr auto P4 = "2048-01-01T09:52:05"_TT + ΔT;
 
-  CheckLunarPenumbralEclipse(P1, U14, 1.5e-4_⑴ * Radian, -358_⑴ * Second);
-  CheckLunarUmbralEclipse(U1, U14,    2.2e-4_⑴ * Radian, -356_⑴ * Second);
-  CheckLunarUmbralEclipse(U2, U23,    2.7e-4_⑴ * Radian, -356_⑴ * Second);
-  CheckLunarUmbralEclipse(U3, U23,    3.1e-4_⑴ * Radian, -355_⑴ * Second);
-  CheckLunarUmbralEclipse(U4, U14,    2.2e-4_⑴ * Radian, -355_⑴ * Second);
-  CheckLunarPenumbralEclipse(P4, U14, 1.5e-4_⑴ * Radian, -353_⑴ * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 1.5e-4_(1) * Radian, -358_(1) * Second);
+  CheckLunarUmbralEclipse(U1, U14,    2.2e-4_(1) * Radian, -356_(1) * Second);
+  CheckLunarUmbralEclipse(U2, U23,    2.7e-4_(1) * Radian, -356_(1) * Second);
+  CheckLunarUmbralEclipse(U3, U23,    3.1e-4_(1) * Radian, -355_(1) * Second);
+  CheckLunarUmbralEclipse(U4, U14,    2.2e-4_(1) * Radian, -355_(1) * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 1.5e-4_(1) * Radian, -353_(1) * Second);
 }
 
 #endif

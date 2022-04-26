@@ -17,24 +17,24 @@ using quantities::Speed;
 using quantities::si::Metre;
 using quantities::si::Second;
 
-TEST(ApproximateQuantityTest, Literals_⑴) {
-  ApproximateQuantity<double> const l1 = 123.45_⑴;
+TEST(ApproximateQuantityTest, Literals_(1)) {
+  ApproximateQuantity<double> const l1 = 123.45_(1);
   EXPECT_THAT(l1.min(), AlmostEquals(123.44, 0));
   EXPECT_THAT(l1.max(), AlmostEquals(123.46, 1));
 
-  ApproximateQuantity<double> const l2 = 123.45e-3_⑴;
+  ApproximateQuantity<double> const l2 = 123.45e-3_(1);
   EXPECT_THAT(l2.min(), AlmostEquals(123.44e-3, 1));
   EXPECT_THAT(l2.max(), AlmostEquals(123.46e-3, 0));
 
-  ApproximateQuantity<double> const l3 = 123e3_⑴;
+  ApproximateQuantity<double> const l3 = 123e3_(1);
   EXPECT_THAT(l3.min(), AlmostEquals(122e3, 0));
   EXPECT_THAT(l3.max(), AlmostEquals(124e3, 0));
 
-  ApproximateQuantity<double> const l4 = 0x1E3.45p0_⑴;
+  ApproximateQuantity<double> const l4 = 0x1E3.45p0_(1);
   EXPECT_THAT(l4.min(), AlmostEquals(0x1E3.44p0, 0));
   EXPECT_THAT(l4.max(), AlmostEquals(0x1E3.46p0, 0));
 
-  ApproximateQuantity<double> const l5 = 123_⑴;
+  ApproximateQuantity<double> const l5 = 123_(1);
   EXPECT_THAT(l5.min(), AlmostEquals(122, 0));
   EXPECT_THAT(l5.max(), AlmostEquals(124, 0));
 }
@@ -76,7 +76,7 @@ TEST(ApproximateQuantityTest, Literals_⑵_⑼) {
   EXPECT_THAT(three.min(), AlmostEquals(2.7, 0));
   EXPECT_THAT(three.max(), AlmostEquals(3.3, 0));
 
-  ApproximateQuantity<double> const quote = 11'972_⑴;
+  ApproximateQuantity<double> const quote = 11'972_(1);
   EXPECT_THAT(quote.min(), AlmostEquals(11971, 0));
   EXPECT_THAT(quote.max(), AlmostEquals(11973, 0));
 }
@@ -108,59 +108,59 @@ TEST(ApproximateQuantityTest, Literals_🄐_🄕) {
 }
 
 TEST(ApproximateQuantityTest, Quantities) {
-  ApproximateQuantity<Length> const l1 = 123.45_⑴ * Metre;
+  ApproximateQuantity<Length> const l1 = 123.45_(1) * Metre;
   EXPECT_THAT(l1.min(), AlmostEquals(123.44 * Metre, 0));
   EXPECT_THAT(l1.max(), AlmostEquals(123.46 * Metre, 1));
 
-  ApproximateQuantity<Area> const l2 = (123.45_⑴ * Metre) * Metre;
+  ApproximateQuantity<Area> const l2 = (123.45_(1) * Metre) * Metre;
   EXPECT_THAT(l2.min(), AlmostEquals(123.44 * Metre * Metre, 0));
   EXPECT_THAT(l2.max(), AlmostEquals(123.46 * Metre * Metre, 1));
 
-  ApproximateQuantity<Frequency> const l3 = 123.45_⑴ / Second;
+  ApproximateQuantity<Frequency> const l3 = 123.45_(1) / Second;
   EXPECT_THAT(l3.min(), AlmostEquals(123.44 / Second, 0));
   EXPECT_THAT(l3.max(), AlmostEquals(123.46 / Second, 1));
 
-  ApproximateQuantity<Speed> const l4 = 123.45_⑴ * Metre / Second;
+  ApproximateQuantity<Speed> const l4 = 123.45_(1) * Metre / Second;
   EXPECT_THAT(l4.min(), AlmostEquals(123.44 * Metre / Second, 0));
   EXPECT_THAT(l4.max(), AlmostEquals(123.46 * Metre / Second, 1));
 }
 
 TEST(ApproximateQuantityTest, Signs) {
-  ApproximateQuantity<double> const l1 = +123.45_⑴;
+  ApproximateQuantity<double> const l1 = +123.45_(1);
   EXPECT_THAT(l1.min(), AlmostEquals(123.44, 0));
   EXPECT_THAT(l1.max(), AlmostEquals(123.46, 1));
 
-  ApproximateQuantity<double> const l2 = -123.45_⑴;
+  ApproximateQuantity<double> const l2 = -123.45_(1);
   EXPECT_THAT(l2.min(), AlmostEquals(-123.46, 1));
   EXPECT_THAT(l2.max(), AlmostEquals(-123.44, 0));
 
-  ApproximateQuantity<Length> const l3 = +(123.45_⑴ * Metre);
+  ApproximateQuantity<Length> const l3 = +(123.45_(1) * Metre);
   EXPECT_THAT(l3.min(), AlmostEquals(123.44 * Metre, 0));
   EXPECT_THAT(l3.max(), AlmostEquals(123.46 * Metre, 1));
 
-  ApproximateQuantity<Length> const l4 = -(123.45_⑴ * Metre);
+  ApproximateQuantity<Length> const l4 = -(123.45_(1) * Metre);
   EXPECT_THAT(l4.min(), AlmostEquals(-123.46 * Metre, 1));
   EXPECT_THAT(l4.max(), AlmostEquals(-123.44 * Metre, 0));
 }
 
 TEST(ApproximateQuantityTest, Unit) {
-  ApproximateQuantity<Length> const l1 = 123.45_⑴ * Metre;
+  ApproximateQuantity<Length> const l1 = 123.45_(1) * Metre;
   EXPECT_EQ(Metre, l1.unit());
   EXPECT_TRUE(l1.has_trivial_unit());
 
-  ApproximateQuantity<Length> const l2 = 123.45_⑴ * (2 * Metre);
+  ApproximateQuantity<Length> const l2 = 123.45_(1) * (2 * Metre);
   EXPECT_EQ(2 * Metre, l2.unit());
   EXPECT_FALSE(l2.has_trivial_unit());
 }
 
 TEST(ApproximateQuantityTest, UlpDistance) {
-  ApproximateQuantity<double> const l1 = 123.45_⑴;
+  ApproximateQuantity<double> const l1 = 123.45_(1);
   EXPECT_THAT(l1.UlpDistance(123.50), AlmostEquals(5, 3200));
 
   ApproximateQuantity<double> const l2 = 123.45_⑵;
   EXPECT_THAT(l2.UlpDistance(123.50), AlmostEquals(5, 800));
 
-  ApproximateQuantity<Length> const l3 = 123.45_⑴ * Metre;
+  ApproximateQuantity<Length> const l3 = 123.45_(1) * Metre;
   EXPECT_THAT(l3.UlpDistance(123.50 * Metre), AlmostEquals(5, 3200));
 
   ApproximateQuantity<Length> const l4 = 123.45_⑵ * Metre;
@@ -168,15 +168,15 @@ TEST(ApproximateQuantityTest, UlpDistance) {
 }
 
 TEST(ApproximateQuantityTest, DebugString) {
-  EXPECT_EQ("123.45(1)", (123.45_⑴).DebugString());
-  EXPECT_EQ("123.45(1) m", (123.45_⑴ * Metre).DebugString());
+  EXPECT_EQ("123.45(1)", (123.45_(1)).DebugString());
+  EXPECT_EQ("123.45(1) m", (123.45_(1) * Metre).DebugString());
   EXPECT_EQ("123.45(1) * +2.00000000000000000e+00 m",
-            (123.45_⑴ * (2 * Metre)).DebugString());
+            (123.45_(1) * (2 * Metre)).DebugString());
 
-  EXPECT_EQ("-123.45(1)", (-123.45_⑴).DebugString());
-  EXPECT_EQ("-123.45(1) m", (-123.45_⑴ * Metre).DebugString());
+  EXPECT_EQ("-123.45(1)", (-123.45_(1)).DebugString());
+  EXPECT_EQ("-123.45(1) m", (-123.45_(1) * Metre).DebugString());
   EXPECT_EQ("-123.45(1) * +2.00000000000000000e+00 m",
-            (-123.45_⑴ * (2 * Metre)).DebugString());
+            (-123.45_(1) * (2 * Metre)).DebugString());
 }
 
 }  // namespace testing_utilities

@@ -95,7 +95,7 @@ using testing_utilities::RelativeError;
 using testing_utilities::SolarSystemFactory;
 using testing_utilities::StatusIs;
 using testing_utilities::VanishesBefore;
-using testing_utilities::operator""_⑴;
+using testing_utilities::operator""_;
 using ::testing::AnyOf;
 using ::testing::Eq;
 using ::testing::Gt;
@@ -736,17 +736,17 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   // so there is a tiny residual in y too.  This greatly annoys the elephant.
   EXPECT_THAT(elephant_positions.size(), Eq(5));
   EXPECT_THAT(elephant_positions.back().coordinates().x,
-              IsNear(-9.8e-19_⑴ * Metre));
+              IsNear(-9.8e-19_(1) * Metre));
   EXPECT_THAT(elephant_positions.back().coordinates().y,
-              AnyOf(IsNear(6.0e-35_⑴ * Metre), Eq(0 * Metre)));
+              AnyOf(IsNear(6.0e-35_(1) * Metre), Eq(0 * Metre)));
   EXPECT_LT(RelativeError(elephant_positions.back().coordinates().z,
                           TerrestrialPolarRadius), 8e-7);
 
   EXPECT_THAT(elephant_accelerations.size(), Eq(5));
   EXPECT_THAT(elephant_accelerations.back().coordinates().x,
-              IsNear(-2.0e-18_⑴ * Metre / Second / Second));
+              IsNear(-2.0e-18_(1) * Metre / Second / Second));
   EXPECT_THAT(elephant_accelerations.back().coordinates().y,
-              AnyOf(IsNear(1.2e-34_⑴ * Metre / Second / Second),
+              AnyOf(IsNear(1.2e-34_(1) * Metre / Second / Second),
                     Eq(0 * Metre / Second / Second)));
   EXPECT_LT(RelativeError(elephant_accelerations.back().coordinates().z,
                           -9.832 * si::Unit<Acceleration>), 6.7e-6);
@@ -1099,7 +1099,7 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
         (trajectory1.EvaluatePosition(t) - trajectory2.EvaluatePosition(t))
             .Norm());
   }
-  EXPECT_THAT(error, IsNear(3.3_⑴ * Metre));
+  EXPECT_THAT(error, IsNear(3.3_(1) * Metre));
 
   mathematica::Logger logger(
       TEMP_DIR / "discrete_trajectory_compression.generated.wl",
