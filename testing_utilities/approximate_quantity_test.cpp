@@ -157,13 +157,13 @@ TEST(ApproximateQuantityTest, UlpDistance) {
   ApproximateQuantity<double> const l1 = 123.45_(1);
   EXPECT_THAT(l1.UlpDistance(123.50), AlmostEquals(5, 3200));
 
-  ApproximateQuantity<double> const l2 = 123.45_⑵;
+  ApproximateQuantity<double> const l2 = 123.45_(2);
   EXPECT_THAT(l2.UlpDistance(123.50), AlmostEquals(5, 800));
 
   ApproximateQuantity<Length> const l3 = 123.45_(1) * Metre;
   EXPECT_THAT(l3.UlpDistance(123.50 * Metre), AlmostEquals(5, 3200));
 
-  ApproximateQuantity<Length> const l4 = 123.45_⑵ * Metre;
+  ApproximateQuantity<Length> const l4 = 123.45_(2) * Metre;
   EXPECT_THAT(l4.UlpDistance(123.50 * Metre), AlmostEquals(5, 800));
 }
 
