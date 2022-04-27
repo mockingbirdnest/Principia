@@ -8,11 +8,13 @@
 #include <map>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/map_util.hpp"
 #include "geometry/identity.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
+#include "numerics/davenport_q_method.hpp"
 #include "quantities/parser.hpp"
 
 namespace principia {
@@ -45,6 +47,7 @@ using geometry::Sign;
 using geometry::Signature;
 using geometry::Velocity;
 using geometry::Wedge;
+using numerics::DavenportQMethod;
 using physics::DegreesOfFreedom;
 using physics::RigidMotion;
 using quantities::Abs;
@@ -53,6 +56,7 @@ using quantities::AngularFrequency;
 using quantities::AngularMomentum;
 using quantities::Infinity;
 using quantities::Inverse;
+using quantities::Mass;
 using quantities::ParseQuantity;
 using quantities::Sqrt;
 using quantities::Tanh;
@@ -64,6 +68,10 @@ using quantities::si::Second;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
+
+const auto part_x = Vector<double, RigidPart>({1, 0, 0});
+const auto part_y = Vector<double, RigidPart>({0, 1, 0});
+const auto part_z = Vector<double, RigidPart>({0, 0, 1});
 
 PileUp::PileUp(
     std::list<not_null<Part*>> parts,
@@ -490,58 +498,50 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   Rotation<PileUpPrincipalAxes, ApparentPileUp> const apparent_attitude =
       apparent_inertia_eigensystem.rotation;
 
-  // The motion of a hypothetical rigid body with the same moment of inertia and
-  // angular momentum as the apparent parts.
-  RigidMotion<PileUpPrincipalAxes, ApparentPileUp> const
-      apparent_pile_up_motion(
-          RigidTransformation<PileUpPrincipalAxes, ApparentPileUp>(
-              PileUpPrincipalAxes::origin,
-              ApparentPileUp::origin,
-              apparent_attitude.Forget<OrthogonalMap>()),
-          apparent_angular_momentum / apparent_inertia_tensor,
-          ApparentPileUp::unmoving);
-
   // In a non-rigid body, the principal axes are not stable, and cannot be used
-  // to determine attitude.  We treat this as a flexible body, and use a part to
-  // propagate the attitude: its attitude at |t0| is used, together with its
-  // orientation with respect to the new principal axes (from apparent
-  // coordinates at |t|), to define the attitude at |t0| of the new principal
-  // axes.
-  // We choose the part which rotates the least with respect to the
-  // (instantaneous) principal axes to define the attitude.
-  AngularFrequency reference_part_proper_ω = Infinity<AngularFrequency>;
-  Part* reference_part = nullptr;
-  std::optional<OrthogonalMap<RigidPart, PileUpPrincipalAxes>>
-      reference_part_orientation_in_principal_axes;
-  for (auto const& [part, apparent_part_motion] : apparent_part_rigid_motion_) {
-    RigidMotion<RigidPart, PileUpPrincipalAxes> const
-        part_motion_in_principal_axes =
-            apparent_pile_up_motion.Inverse() *
-            apparent_system.LinearMotion().Inverse() * apparent_part_motion;
-    auto const part_proper_ω =
-        part_motion_in_principal_axes.angular_velocity_of<PileUpPrincipalAxes>()
-            .Norm();
-    if (part_proper_ω < reference_part_proper_ω) {
-      reference_part_proper_ω = part_proper_ω;
-      reference_part = part;
-      reference_part_orientation_in_principal_axes =
-          part_motion_in_principal_axes.orthogonal_map();
+  // to determine attitude.  We treat this as a flexible body, and use the parts
+  // to propagate the attitude: the part orientations at |t0| and |t| are used
+  // as input to Davenport's method to figure out how the game rotated the pile-
+  // up overall.  This is then used to determine the attitute at |t| based on
+  // the principal axis at |t|.
+
+  // Compute the canonical axes of all the parts using their apparent and actual
+  // motions.
+  std::vector<Vector<double, Apparent>> apparent_directions;
+  std::vector<Vector<double, NonRotatingPileUp>> actual_directions;
+  std::vector<Mass> masses;
+  apparent_directions.reserve(parts_.size());
+  actual_directions.reserve(parts_.size());
+  for (not_null<Part*> const part : parts_) {
+    auto const& apparent_part_orthogonal_map =
+        apparent_part_rigid_motion_.at(part).orthogonal_map();
+    auto const& actual_part_orthogonal_map =
+        actual_part_rigid_motion_.at(part).orthogonal_map();
+    apparent_directions.push_back(apparent_part_orthogonal_map(part_x));
+    apparent_directions.push_back(apparent_part_orthogonal_map(part_y));
+    apparent_directions.push_back(apparent_part_orthogonal_map(part_z));
+    actual_directions.push_back(actual_part_orthogonal_map(part_x));
+    actual_directions.push_back(actual_part_orthogonal_map(part_y));
+    actual_directions.push_back(actual_part_orthogonal_map(part_z));
+    for (int d = 1; d <= 3; ++d) {
+      masses.push_back(part->mass());
     }
   }
 
-  OrthogonalMap<RigidPart, NonRotatingPileUp> const
-      reference_part_initial_attitude =
-          actual_part_rigid_motion_.at(reference_part).orthogonal_map();
+  // Use Davenport's Q Method to figure out how the game rotated the pile-up
+  // overall.  The parts are weighted by their masses, so if a tiny antenna
+  // wiggles a bit it doesn't have much influence.
+  Rotation<NonRotatingPileUp, Apparent> const davenport_rotation =
+      DavenportQMethod(/*a=*/actual_directions,
+                       /*b=*/apparent_directions,
+                       /*weights=*/masses);
 
-  // |reference_part_initial_attitude|, an |actual_part_rigid_motion_|, is
-  // computed from the output of the previous |EulerSolver|.  |initial_attitude|
-  // will be used to construct the new one.  In order to prevent roundoff
-  // accumulation from eventually producing noticeably non-unit quaternions, we
-  // normalize |initial_attitude|.
+  // In order to prevent roundoff accumulation from eventually producing
+  // noticeably non-unit quaternions, we normalize |initial_attitude|.
   Rotation<PileUpPrincipalAxes, NonRotatingPileUp> initial_attitude =
-      (reference_part_initial_attitude *
-       reference_part_orientation_in_principal_axes->Inverse())
-          .AsRotation();
+      davenport_rotation.Inverse() *
+      apparent_system.LinearMotion().orthogonal_map().AsRotation() *
+      apparent_attitude;
   initial_attitude = Rotation<PileUpPrincipalAxes, NonRotatingPileUp>(
       Normalize(initial_attitude.quaternion()));
 
@@ -563,6 +563,17 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   RigidMotion<PileUpPrincipalAxes, NonRotatingPileUp> const
       actual_pile_up_motion = euler_solver_->MotionAt(
           t, {NonRotatingPileUp::origin, NonRotatingPileUp::unmoving});
+
+  // The motion of a hypothetical rigid body with the same moment of inertia and
+  // angular momentum as the apparent parts.
+  RigidMotion<PileUpPrincipalAxes, ApparentPileUp> const
+      apparent_pile_up_motion(
+          RigidTransformation<PileUpPrincipalAxes, ApparentPileUp>(
+              PileUpPrincipalAxes::origin,
+              ApparentPileUp::origin,
+              apparent_attitude.Forget<OrthogonalMap>()),
+          apparent_angular_momentum / apparent_inertia_tensor,
+          ApparentPileUp::unmoving);
 
   RigidMotion<ApparentPileUp, NonRotatingPileUp> const rotational_correction =
       actual_pile_up_motion * apparent_pile_up_motion.Inverse();
