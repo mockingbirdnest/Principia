@@ -22,4 +22,9 @@ elif [ "${AGENT_OS?}" == "Linux" ]; then
 fi
 
 make test
+if [ "${AGENT_OS?}" == "Darwin" ]; then
+  # See https://github.com/actions/virtual-environments/issues/2619#issuecomment-788397841
+  # for why this is needed.
+  sudo /usr/sbin/purge
+fi
 make release
