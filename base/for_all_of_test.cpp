@@ -16,7 +16,6 @@ class ForAllOfTest : public ::testing::Test {
   using ATuple = std::tuple<char, double, int>;
 };
 
-#if 0
 TEST_F(ForAllOfTest, AnArray) {
   constexpr AnArray halved = []() {
     AnArray array{42.0, 43.0, -41.0};
@@ -49,7 +48,6 @@ TEST_F(ForAllOfTest, ATuple) {
   static_assert(std::get<1>(incremented) == 43.0);
   static_assert(std::get<2>(incremented) == 667);
 }
-#endif
 
 TEST_F(ForAllOfTest, Parallel) {
   constexpr ATuple sum = []() {
@@ -57,13 +55,13 @@ TEST_F(ForAllOfTest, Parallel) {
     AnArray array{42.0, 43.0, -41.0};
     for_all_of(tuple, array)
         .loop([](auto& tuple_element, auto const array_element) {
-          tuple_element += array_element;
+          tuple_element = array_element;
         });
     return tuple;
   }();
-  static_assert(std::get<0>(sum) == 'k');
-  static_assert(std::get<1>(sum) == 85.0);
-  static_assert(std::get<2>(sum) == 625);
+  static_assert(std::get<0>(sum) == '*');
+  static_assert(std::get<1>(sum) == 43.0);
+  static_assert(std::get<2>(sum) == -41);
 }
 
 }  // namespace base
