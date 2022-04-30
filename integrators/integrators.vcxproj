@@ -21,6 +21,8 @@
     <ClInclude Include="cohen_hubbard_oesterwinter_body.hpp" />
     <ClInclude Include="embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp" />
     <ClInclude Include="embedded_explicit_generalized_runge_kutta_nyström_integrator_body.hpp" />
+    <ClInclude Include="embedded_explicit_runge_kutta_integrator.hpp" />
+    <ClInclude Include="embedded_explicit_runge_kutta_integrator_body.hpp" />
     <ClInclude Include="embedded_explicit_runge_kutta_nyström_integrator.hpp" />
     <ClInclude Include="embedded_explicit_runge_kutta_nyström_integrator_body.hpp" />
     <ClInclude Include="integrators.hpp" />

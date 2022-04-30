@@ -43,6 +43,7 @@ using quantities::Variation;
 template<typename... StateElements>
 struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
   using State = std::tuple<std::vector<StateElements>...>;
+  using StateDifference = std::tuple<std::vector<Difference<StateElements>>...>;
   using StateVariation = std::tuple<std::vector<Variation<StateElements>>...>;
 
   using RightHandSideComputation =
@@ -62,8 +63,7 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
     }
   };
 
-  using SystemStateError =
-      std::tuple<std::vector<Difference<StateElements>>...>;
+  using SystemStateError = StateDifference;
 
   // A functor that computes f(y, t) and stores it in |derivatives|.
   // This functor must be called with |std::get<i>(derivatives).size()| equal to
@@ -200,6 +200,8 @@ struct IntegrationProblem final {
 
 using internal_ordinary_differential_equations::
     DecomposableFirstOrderDifferentialEquation;
+using internal_ordinary_differential_equations::
+    ExplicitFirstOrderOrdinaryDifferentialEquation;
 using internal_ordinary_differential_equations::
     ExplicitSecondOrderOrdinaryDifferentialEquation;
 using internal_ordinary_differential_equations::IntegrationProblem;

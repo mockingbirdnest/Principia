@@ -370,7 +370,7 @@ struct Fine1987RKNG34 : EmbeddedExplicitGeneralizedRungeKuttaNyström {
       {  2 /   125.0,    0        , -27 /   625.0, 32 /   625.0,  -3 / 125.0}}};
 };
 
-// Coefficients from [DEP87a], table 3 (the RK4(3)4FM).
+// Coefficients from [DEP87a], table 3 (the RKN4(3)4FM).
 // Minimizes the 4th order truncation error.
 struct DormandالمكاوىPrince1986RKN434FM :
     EmbeddedExplicitRungeKuttaNyström {

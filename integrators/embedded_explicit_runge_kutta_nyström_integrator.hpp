@@ -52,9 +52,10 @@ using quantities::Variation;
 // Since we are interested in physical applications, we call the solution q and
 // its derivative v, rather than the more common y and y′ found in the
 // literature on Runge-Kutta-Nyström methods.
-// The order of the template parameters follow the notation of Dormand and
-// Prince, whose RKNq(p)sF has higher order q, lower order p, comprises
-// s stages, and has the first-same-as-last property.
+// The order of the template parameters follow the notation of [DEP87a], which
+// is a generalization of that of [DP86]: the method RKNq(p)s[F]X has higher
+// order q, lower order p, comprises s stages, and has the first-same-as-last
+// property.
 
 template<typename Method, typename Position>
 class EmbeddedExplicitRungeKuttaNyströmIntegrator
