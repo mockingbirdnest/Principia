@@ -9,6 +9,7 @@
 #include <optional>
 #include <vector>
 
+#include "base/for_all_of.hpp"
 #include "base/jthread.hpp"
 #include "geometry/sign.hpp"
 #include "glog/logging.h"
@@ -18,6 +19,7 @@ namespace principia {
 namespace integrators {
 namespace internal_embedded_explicit_runge_kutta_integrator {
 
+using base::for_all_of;
 using base::make_not_null_unique;
 using geometry::Sign;
 using numerics::DoublePrecision;
@@ -171,16 +173,19 @@ Instance::Solve(Instant const& t_final) {
             (parameters.last_step_is_exact && at_end && c[i] == 1.0)
                 ? t_final
                 : t.value + (t.error + c[i] * h);
-        for (int k = 0; k < dimension; ++k) {
-          Acceleration Σj_a_ij_f_jk{};
-          for (int j = 0; j < i; ++j) {
-            Σj_a_ij_f_jk += a(i, j) * f[j][k];
+        for_all_of(
+          [](){
+          for (int k = 0; k < dimension; ++k) {
+            Acceleration Σj_a_ij_f_jk{};
+            for (int j = 0; j < i; ++j) {
+              Σj_a_ij_f_jk += a(i, j) * f[j][k];
+            }
+            y_stage[k] = q̂[k].value + h * c[i] * v̂[k].value + h² * Σj_a_ij_f_jk;
           }
-          y_stage[k] = q̂[k].value + h * c[i] * v̂[k].value + h² * Σj_a_ij_f_jk;
-        }
-        step_status.Update(
-            equation.compute_acceleration(t_stage, y_stage, f[i]));
-      }
+          step_status.Update(
+              equation.compute_acceleration(t_stage, y_stage, f[i]));
+          }
+      });
 
       // Increment computation and step size control.
       for (int k = 0; k < dimension; ++k) {

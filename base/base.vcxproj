@@ -34,6 +34,7 @@
     <ClInclude Include="fingerprint2011.hpp" />
     <ClInclude Include="flags.hpp" />
     <ClInclude Include="for_all_of.hpp" />
+    <ClInclude Include="for_all_of_body.hpp" />
     <ClInclude Include="function.hpp" />
     <ClInclude Include="function_body.hpp" />
     <ClInclude Include="get_line.hpp" />

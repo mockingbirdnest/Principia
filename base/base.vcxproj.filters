@@ -215,6 +215,9 @@
     <ClInclude Include="for_all_of.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="for_all_of_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">

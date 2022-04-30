@@ -1,17 +1,38 @@
 #pragma once
+
 #include <tuple>
 #include <utility>
 
 namespace principia {
 namespace base {
+namespace internal_for_all_of {
 
-template<std::size_t i = 0, typename F, typename Tuple>
-constexpr void for_all_of(Tuple& tuple, F f) {
-  if constexpr (i < std::tuple_size_v<Tuple>) {
-    f(std::get<i>(tuple));
-    for_each<i + 1, F, Tuple>(tuple, f);
-  }
-}
+template<typename... Tuple>
+class Iteration {
+  static constexpr size_t size =
+      (std::tuple_size_v<std::remove_cvref_t<Tuple>>, ...);
+  static_assert(((std::tuple_size_v<std::remove_cvref_t<Tuple>> == size) &&
+                 ...),
+                "Parallel iteration must apply to containers of equal size");
+
+ public:
+  constexpr Iteration(Tuple&&... tuple);
+
+  template<std::size_t i = 0, typename F>
+  constexpr void loop(F const& f);
+
+ private:
+  std::tuple<Tuple&&...> all_the_tuples_;
+};
+
+}  // namespace internal_for_all_of
+
+// Iterates over all the tuples in parallel.  |F| must be a functor taking
+// elements at corresponding positions in each of the tuples.
+template<typename... Tuple>
+constexpr internal_for_all_of::Iteration<Tuple...> for_all_of(Tuple&&... tuple);
 
 }  // namespace base
 }  // namespace principia
+
+#include "base/for_all_of_body.hpp"
