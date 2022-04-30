@@ -68,7 +68,6 @@ Instance::Solve(Instant const& t_final) {
   std::optional<typename ODE::SystemState> final_state;
 
   // Argument checks.
-  int const dimension = current_state.y.size();
   Sign const integration_direction = Sign(parameters.first_time_step);
   if (integration_direction.is_positive()) {
     // Integrating forward.
@@ -87,23 +86,34 @@ Instance::Solve(Instant const& t_final) {
   // equations more readable.
   DoublePrecision<Instant>& t = current_state.time;
 
-  // Position increment (high-order).
-  std::vector<Displacement> Δŷ(dimension);
+  // State increment (high-order).
+  StateDifference Δŷ;
   // Current state.  This is a non-const reference whose purpose is to make
   // the equations more readable.
   auto& ŷ = current_state.y;
 
   // Difference between the low- and high-order approximations.
   typename ODE::SystemStateError error_estimate;
-  error_estimate.position_error.resize(dimension);
 
   // Current Runge-Kutta stage.
-  State y_stage(dimension);
-  // Variations at each stage.
-  std::vector<StateVariation> f(stages_);
-  for (auto& f_stage : f) {
-    f_stage.resize(dimension);
+  State y_stage;
+
+  StateVariation f;
+  std::vector<StateDifference> k(stages_);
+  for (auto& k_stage : k) {
+    for_all_of(ŷ, k_stage).loop([](auto const& ŷ, auto& k_stage) {
+      int const dimension = ŷ.size();
+      k_stage.resize(dimension);
+    });
   }
+
+  for_all_of(ŷ, error_estimate, f, y_stage)
+      .loop([](auto const& ŷ, auto& error_estimate, auto& f, auto& y_stage) {
+        int const dimension = ŷ.size();
+        error_estimate.resize(dimension);
+        f.resize(dimension);
+        y_stage.resize(dimension);
+      });
 
   bool at_end = false;
   double tolerance_to_error_ratio;
@@ -167,41 +177,60 @@ Instance::Solve(Instant const& t_final) {
 
       auto const h² = h * h;
 
-      // Runge-Kutta iteration; fills |f|.
+      // Runge-Kutta iteration; fills |k|.
       for (int i = first_stage; i < stages_; ++i) {
         Instant const t_stage =
             (parameters.last_step_is_exact && at_end && c[i] == 1.0)
                 ? t_final
                 : t.value + (t.error + c[i] * h);
-        for_all_of(
-          [](){
-          for (int k = 0; k < dimension; ++k) {
-            Acceleration Σj_a_ij_f_jk{};
-            for (int j = 0; j < i; ++j) {
-              Σj_a_ij_f_jk += a(i, j) * f[j][k];
-            }
-            y_stage[k] = q̂[k].value + h * c[i] * v̂[k].value + h² * Σj_a_ij_f_jk;
+
+        StateDifference Σj_a_ij_k_j{};
+        for (int j = 0; j < i; ++j) {
+          for_all_of(k[j], ŷ, y_stage, Σj_a_ij_k_j)
+              .loop([](auto const& k_j,
+                       auto const& ŷ,
+                       auto& y_stage,
+                       auto& Σj_a_ij_k_j) {
+                int const dimension = ŷ.size();
+                Σj_a_ij_k_j.resize(dimension);
+                for (int l = 0; l < dimension; ++l) {
+                  Σj_a_ij_k_j[l] += a(i, j) * k_j[l];
+                  y_stage[l] = ŷ[l].value + Σj_a_ij_k_j[l];
+                }
+              });
+        }
+
+        step_status.Update(equation.compute_derivative(t_stage, y_stage, f));
+        for_all_of(f, k[i]).loop([](auto const& f, auto& k_i) {
+          int const dimension = f.size();
+          for (int l = 0; l < dimension; ++l) {
+            k_i[l] = h * f[l];
           }
-          step_status.Update(
-              equation.compute_acceleration(t_stage, y_stage, f[i]));
-          }
-      });
+        });
+      }
 
       // Increment computation and step size control.
-      for (int k = 0; k < dimension; ++k) {
-        Acceleration Σi_b̂_i_f_ik{};
-        Acceleration Σi_b_i_f_ik{};
-        // Please keep the eight assigments below aligned, they become illegible
-        // otherwise.
-        for (int i = 0; i < stages_; ++i) {
-          Σi_b̂_i_f_ik  += b̂[i] * f[i][k];
-          Σi_b_i_f_ik  += b[i] * f[i][k];
-        }
-        // The hat-less Δq is the low-order increments.
-        Δq̂[k]                   = h * v̂[k].value + h² * Σi_b̂_i_f_ik;
-        Displacement const Δq_k = h * v̂[k].value + h² * Σi_b_i_f_ik;
-
-        error_estimate.position_error[k] = Δq_k - Δq̂[k];
+      StateDifference Σi_b̂_i_k_i{};
+      StateDifference Σi_b_i_k_i{};
+      for (int i = 0; i < stages_; ++i) {
+        for_all_of(k[i], ŷ, Δŷ, Σi_b̂_i_k_i, Σi_b_i_k_i, error_estimate)
+            .loop([](auto const& k_i,
+                     auto const& ŷ,
+                     auto& Δŷ,
+                     auto& Σi_b̂_i_k_i,
+                     auto& Σi_b_i_k_i,
+                     auto& error_estimate) {
+              int const dimension = ŷ.size();
+              Σi_b̂_i_k_i.resize(dimension);
+              Σi_b_i_k_i.resize(dimension);
+              for (int l = 0; l < dimension; ++l) {
+                Σi_b̂_i_k_i[l] += b̂[i] + k_i[l];
+                Σi_b_i_k_i[l] += b[i] + k_i[l];
+                Δŷ[l] = Σi_b̂_i_k_i[l];
+                auto const Δy_l = Σi_b_i_k_i[l];
+                error_estimate[l] = Δy_l - Δŷ[l];
+              }
+            });
       }
       tolerance_to_error_ratio =
           this->tolerance_to_error_ratio_(h, error_estimate);
@@ -223,10 +252,13 @@ Instance::Solve(Instant const& t_final) {
 
     // Increment the solution with the high-order approximation.
     t.Increment(h);
-    for (int k = 0; k < dimension; ++k) {
-      q̂[k].Increment(Δq̂[k]);
-      v̂[k].Increment(Δv̂[k]);
-    }
+    for_all_of(Δŷ, ŷ).loop([](auto const& Δŷ, auto& ŷ) {
+      int const dimension = ŷ.size();
+      for (int k = 0; k < dimension; ++k) {
+        ŷ[k].Increment(Δŷ[k]);
+      }
+    });
+
     RETURN_IF_STOPPED;
     append_state(current_state);
     ++step_count;
