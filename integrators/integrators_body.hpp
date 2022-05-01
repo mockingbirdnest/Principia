@@ -13,6 +13,7 @@
 #include "base/traits.hpp"
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
+#include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
@@ -31,11 +32,16 @@
 // calls one of the given actions, which must be 1-argument macros.
 // It has not escaped our notice that the acronym is a fair characterization of
 // these macros.
-#define PRINCIPIA_ASS_INTEGRATOR_CASES(eegrkn_action, eerkn_action)  \
+#define PRINCIPIA_ASS_INTEGRATOR_CASES(                              \
+    eegrkn_action, eerkn_action, eerk_action)                        \
   PRINCIPIA_INTEGRATOR_CASE(AdaptiveStepSizeIntegrator,              \
                             DORMAND_ELMIKKAWY_PRINCE_1986_RKN_434FM, \
                             DormandالمكاوىPrince1986RKN434FM,        \
                             eerkn_action)                            \
+  PRINCIPIA_INTEGRATOR_CASE(AdaptiveStepSizeIntegrator,              \
+                            DORMAND_PRINCE_1986_RK_547FC,            \
+                            DormandPrince1986RK547FC,                \
+                            eerk_action)                             \
   PRINCIPIA_INTEGRATOR_CASE(AdaptiveStepSizeIntegrator,              \
                             FINE_1987_RKNG_34,                       \
                             Fine1987RKNG34,                          \
@@ -381,10 +387,7 @@ Integrator<ODE_>::Instance::Instance(
     AppendState const& append_state)
     : equation_(problem.equation),
       current_state_(problem.initial_state),
-      append_state_(std::move(append_state)) {
-  CHECK_EQ(current_state_.positions.size(),
-           current_state_.velocities.size());
-}
+      append_state_(std::move(append_state)) {}
 
 template<typename ODE_>
 DoublePrecision<Instant> const&
@@ -618,6 +621,7 @@ void AdaptiveStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
                                         first_use,                             \
                                         integrator);                           \
   }
+#define PRINCIPIA_READ_ASS_INTEGRATOR_INSTANCE_EERK(method) LOG(FATAL) << "NYI"
 
 template<typename ODE_>
 template<typename, typename>
@@ -656,7 +660,8 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
   switch (extension.integrator().kind()) {
     PRINCIPIA_ASS_INTEGRATOR_CASES(
         PRINCIPIA_READ_ASS_INTEGRATOR_INSTANCE_EEGRKN,
-        PRINCIPIA_READ_ASS_INTEGRATOR_INSTANCE_EERKN)
+        PRINCIPIA_READ_ASS_INTEGRATOR_INSTANCE_EERKN,
+        PRINCIPIA_READ_ASS_INTEGRATOR_INSTANCE_EERK)
     default:
       LOG(FATAL) << message.DebugString();
       base::noreturn();
@@ -667,6 +672,7 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
 
 #undef PRINCIPIA_READ_ASS_INTEGRATOR_INSTANCE_EEGRKN
 #undef PRINCIPIA_READ_ASS_INTEGRATOR_INSTANCE_EERKN
+#undef PRINCIPIA_READ_ASS_INTEGRATOR_INSTANCE_EERK
 
 template<typename ODE_>
 AdaptiveStepSizeIntegrator<ODE_>::Instance::Instance(
@@ -703,13 +709,16 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::Instance(
         typename ODE::Position>();                                             \
   }
 
+#define PRINCIPIA_READ_ASS_INTEGRATOR_EERK(method) LOG(FATAL) << "NYI"
+
 template<typename ODE_>
 AdaptiveStepSizeIntegrator<ODE_> const&
 AdaptiveStepSizeIntegrator<ODE_>::ReadFromMessage(
     serialization::AdaptiveStepSizeIntegrator const& message) {
   switch (message.kind()) {
     PRINCIPIA_ASS_INTEGRATOR_CASES(PRINCIPIA_READ_ASS_INTEGRATOR_EEGRKN,
-                                   PRINCIPIA_READ_ASS_INTEGRATOR_EERKN)
+                                   PRINCIPIA_READ_ASS_INTEGRATOR_EERKN,
+                                   PRINCIPIA_READ_ASS_INTEGRATOR_EERK)
     default:
       LOG(FATAL) << message.kind();
       base::noreturn();
@@ -720,6 +729,7 @@ AdaptiveStepSizeIntegrator<ODE_>::ReadFromMessage(
 
 #undef PRINCIPIA_READ_ASS_INTEGRATOR_EEGRKN
 #undef PRINCIPIA_READ_ASS_INTEGRATOR_EERKN
+#undef PRINCIPIA_READ_ASS_INTEGRATOR_EERK
 
 template<typename Equation>
 AdaptiveStepSizeIntegrator<Equation> const& ParseAdaptiveStepSizeIntegrator(
