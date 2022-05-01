@@ -221,8 +221,8 @@ Instance::Solve(Instant const& t_final) {
               Σi_b̂_i_k_i.resize(dimension);
               Σi_b_i_k_i.resize(dimension);
               for (int l = 0; l < dimension; ++l) {
-                Σi_b̂_i_k_i[l] += b̂[i] + k_i[l];
-                Σi_b_i_k_i[l] += b[i] + k_i[l];
+                Σi_b̂_i_k_i[l] += b̂[i] * k_i[l];
+                Σi_b_i_k_i[l] += b[i] * k_i[l];
                 Δŷ[l] = Σi_b̂_i_k_i[l];
                 auto const Δy_l = Σi_b_i_k_i[l];
                 error_estimate[l] = Δy_l - Δŷ[l];

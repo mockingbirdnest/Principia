@@ -382,10 +382,7 @@ Integrator<ODE_>::Instance::Instance(
     AppendState const& append_state)
     : equation_(problem.equation),
       current_state_(problem.initial_state),
-      append_state_(std::move(append_state)) {
-  CHECK_EQ(current_state_.positions.size(),
-           current_state_.velocities.size());
-}
+      append_state_(std::move(append_state)) {}
 
 template<typename ODE_>
 DoublePrecision<Instant> const&
