@@ -102,8 +102,9 @@ Instance::Solve(Instant const& t_final) {
   std::optional<StateVariation> last_f;
   std::vector<StateDifference> k(stages_);
   for (auto& k_stage : k) {
-    for_all_of(ŷ, k_stage).loop([](auto const& ŷ, auto& k_stage) {
+    for_all_of(ŷ, Δŷ, k_stage).loop([](auto const& ŷ, auto& Δŷ, auto& k_stage) {
       int const dimension = ŷ.size();
+      Δŷ.resize(dimension);
       k_stage.resize(dimension);
     });
   }
