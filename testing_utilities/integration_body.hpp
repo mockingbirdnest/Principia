@@ -57,6 +57,21 @@ absl::Status ComputeHarmonicOscillatorAcceleration3D(
   return absl::OkStatus();
 }
 
+inline absl::Status ComputeHarmonicOscillatorDerivatives1D(
+    Instant const& t,
+    std::tuple<std::vector<Length>, std::vector<Speed>> const& state,
+    std::tuple<std::vector<Speed>, std::vector<Acceleration>>& result,
+    int* const evaluations) {
+  auto const& [q, v] = state;
+  auto& [qʹ, vʹ] = result;
+  qʹ[0] = v[0];
+  vʹ[0] = -q[0] * (si::Unit<Stiffness> / si::Unit<Mass>);
+  if (evaluations != nullptr) {
+    ++*evaluations;
+  }
+  return absl::OkStatus();
+}
+
 inline absl::Status ComputeKeplerAcceleration(
     Instant const& t,
     std::vector<Length> const& q,

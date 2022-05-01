@@ -15,18 +15,6 @@ using base::not_constructible;
 using numerics::FixedStrictlyLowerTriangularMatrix;
 using numerics::FixedVector;
 
-struct EmbeddedExplicitRungeKutta : not_constructible {
-  // static constexpr int higher_order = ...;
-  // static constexpr int lower_order = ...;
-  // static constexpr int stages = ...;
-  // static constexpr bool first_same_as_last = ...;
-  // static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind = ..;
-  // static constexpr FixedVector<double, stages> c = ...;
-  // static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a = ..;
-  // static constexpr FixedVector<double, stages> b̂ = ...;
-  // static constexpr FixedVector<double, stages> b = ...;
-};
-
 struct EmbeddedExplicitRungeKuttaNyström : not_constructible {
   // static constexpr int higher_order = ...;
   // static constexpr int lower_order = ...;
@@ -414,7 +402,8 @@ struct DormandPrince1986RK547FC :  EmbeddedExplicitRungeKutta {
    static constexpr int lower_order = 4;
    static constexpr int stages = 7;
    static constexpr bool first_same_as_last = true;
-   //static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind = ..;
+   static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind =
+      serialization::AdaptiveStepSizeIntegrator::DORMAND_PRINCE_1986_RK_547FC;
    static constexpr FixedVector<double, stages> c{{
        {0.0, 1.0 / 5.0, 3.0 / 10.0, 6.0 / 13.0, 2.0 / 3.0, 1.0, 1.0}}};
    static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a{{
@@ -440,7 +429,7 @@ struct DormandPrince1986RK547FC :  EmbeddedExplicitRungeKutta {
                                                         1.0 /    40.0}}};
 };
 
-// The following methods have coefficients from [McL95],
+// The following methods have coefficients from [McL95].
 struct McLachlan1995S2 : SymplecticPartitionedRungeKutta {
   static constexpr int order = 2;
   static constexpr bool time_reversible = true;

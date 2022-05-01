@@ -99,6 +99,7 @@ Instance::Solve(Instant const& t_final) {
   State y_stage;
 
   StateVariation f;
+  std::optional<StateVariation> last_f;
   std::vector<StateDifference> k(stages_);
   for (auto& k_stage : k) {
     for_all_of(ŷ, k_stage).loop([](auto const& ŷ, auto& k_stage) {
@@ -117,12 +118,6 @@ Instance::Solve(Instant const& t_final) {
 
   bool at_end = false;
   double tolerance_to_error_ratio;
-
-  // The first stage of the Runge-Kutta iteration.  In the FSAL case,
-  // |first_stage == 1| after the first step, since the first RHS evaluation has
-  // already occurred in the previous step.  In the non-FSAL case and in the
-  // first step of the FSAL case, |first_stage == 0|.
-  int first_stage = 0;
 
   // The number of steps already performed.
   std::int64_t step_count = 0;
@@ -175,33 +170,35 @@ Instance::Solve(Instant const& t_final) {
         }
       }
 
-      auto const h² = h * h;
-
       // Runge-Kutta iteration; fills |k|.
-      for (int i = first_stage; i < stages_; ++i) {
-        Instant const t_stage =
-            (parameters.last_step_is_exact && at_end && c[i] == 1.0)
-                ? t_final
-                : t.value + (t.error + c[i] * h);
+      for (int i = 0; i < stages_; ++i) {
+        if (i == 0 && last_f.has_value()) {
+          f = last_f.value();
+        } else {
+          Instant const t_stage =
+              (parameters.last_step_is_exact && at_end && c[i] == 1.0)
+                  ? t_final
+                  : t.value + (t.error + c[i] * h);
 
-        StateDifference Σj_a_ij_k_j{};
-        for (int j = 0; j < i; ++j) {
-          for_all_of(k[j], ŷ, y_stage, Σj_a_ij_k_j)
-              .loop([](auto const& k_j,
-                       auto const& ŷ,
-                       auto& y_stage,
-                       auto& Σj_a_ij_k_j) {
-                int const dimension = ŷ.size();
-                Σj_a_ij_k_j.resize(dimension);
-                for (int l = 0; l < dimension; ++l) {
-                  Σj_a_ij_k_j[l] += a(i, j) * k_j[l];
-                  y_stage[l] = ŷ[l].value + Σj_a_ij_k_j[l];
-                }
-              });
+          StateDifference Σj_a_ij_k_j{};
+          for (int j = 0; j < i; ++j) {
+            for_all_of(k[j], ŷ, y_stage, Σj_a_ij_k_j)
+                .loop([&a, i, j](auto const& k_j,
+                                 auto const& ŷ,
+                                 auto& y_stage,
+                                 auto& Σj_a_ij_k_j) {
+                  int const dimension = ŷ.size();
+                  Σj_a_ij_k_j.resize(dimension);
+                  for (int l = 0; l < dimension; ++l) {
+                    Σj_a_ij_k_j[l] += a(i, j) * k_j[l];
+                    y_stage[l] = ŷ[l].value + Σj_a_ij_k_j[l];
+                  }
+                });
+          }
+
+          step_status.Update(equation.compute_derivative(t_stage, y_stage, f));
         }
-
-        step_status.Update(equation.compute_derivative(t_stage, y_stage, f));
-        for_all_of(f, k[i]).loop([](auto const& f, auto& k_i) {
+        for_all_of(f, k[i]).loop([h](auto const& f, auto& k_i) {
           int const dimension = f.size();
           for (int l = 0; l < dimension; ++l) {
             k_i[l] = h * f[l];
@@ -214,12 +211,12 @@ Instance::Solve(Instant const& t_final) {
       StateDifference Σi_b_i_k_i{};
       for (int i = 0; i < stages_; ++i) {
         for_all_of(k[i], ŷ, Δŷ, Σi_b̂_i_k_i, Σi_b_i_k_i, error_estimate)
-            .loop([](auto const& k_i,
-                     auto const& ŷ,
-                     auto& Δŷ,
-                     auto& Σi_b̂_i_k_i,
-                     auto& Σi_b_i_k_i,
-                     auto& error_estimate) {
+            .loop([&a, &b, &b̂, i](auto const& k_i,
+                                  auto const& ŷ,
+                                  auto& Δŷ,
+                                  auto& Σi_b̂_i_k_i,
+                                  auto& Σi_b_i_k_i,
+                                  auto& error_estimate) {
               int const dimension = ŷ.size();
               Σi_b̂_i_k_i.resize(dimension);
               Σi_b_i_k_i.resize(dimension);
@@ -245,9 +242,7 @@ Instance::Solve(Instant const& t_final) {
     }
 
     if (first_same_as_last) {
-      using std::swap;
-      swap(f.front(), f.back());
-      first_stage = 1;
+      last_f = f;
     }
 
     // Increment the solution with the high-order approximation.

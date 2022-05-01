@@ -61,6 +61,10 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
     friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
       return lhs.y == rhs.y && lhs.time == rhs.time;
     }
+
+    void WriteToMessage(not_null<serialization::SystemState*> message) const;
+    static SystemState ReadFromMessage(
+        serialization::SystemState const& message);
   };
 
   using SystemStateError = StateDifference;

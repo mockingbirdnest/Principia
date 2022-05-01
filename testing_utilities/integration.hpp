@@ -44,10 +44,19 @@ absl::Status ComputeHarmonicOscillatorAcceleration3D(
     std::vector<Vector<Acceleration, Frame>>& result,
     int* evaluations);
 
+// The Runge-Kutta formulation
+//   qʹ = v
+//   vʹ = -q k / m.
+absl::Status ComputeHarmonicOscillatorDerivatives1D(
+    Instant const& t,
+    std::tuple<std::vector<Length>, std::vector<Speed>> const& state,
+    std::tuple<std::vector<Speed>, std::vector<Acceleration>>& result,
+    int* evaluations);
+
 // The Kepler problem with unit gravitational parameter, where the
 // two-dimensional configuration space is the separation between the bodies, in
 // the Runge-Kutta-Nyström formulation
-//   q" = -q μ / |q|³,
+//   qʺ = -q μ / |q|³,
 // where μ = 1 m³ s⁻².
 absl::Status ComputeKeplerAcceleration(Instant const& t,
                                        std::vector<Length> const& q,
@@ -83,6 +92,7 @@ absl::Status ComputeLegendrePolynomialSecondDerivative(
 using internal_integration::ComputeЧебышёвPolynomialSecondDerivative;
 using internal_integration::ComputeHarmonicOscillatorAcceleration1D;
 using internal_integration::ComputeHarmonicOscillatorAcceleration3D;
+using internal_integration::ComputeHarmonicOscillatorDerivatives1D;
 using internal_integration::ComputeKeplerAcceleration;
 using internal_integration::ComputeLegendrePolynomialSecondDerivative;
 
