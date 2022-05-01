@@ -15,6 +15,18 @@ using base::not_constructible;
 using numerics::FixedStrictlyLowerTriangularMatrix;
 using numerics::FixedVector;
 
+struct EmbeddedExplicitRungeKutta : not_constructible {
+  // static constexpr int higher_order = ...;
+  // static constexpr int lower_order = ...;
+  // static constexpr int stages = ...;
+  // static constexpr bool first_same_as_last = ...;
+  // static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind = ..;
+  // static constexpr FixedVector<double, stages> c = ...;
+  // static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a = ..;
+  // static constexpr FixedVector<double, stages> b̂ = ...;
+  // static constexpr FixedVector<double, stages> b = ...;
+};
+
 struct EmbeddedExplicitRungeKuttaNyström : not_constructible {
   // static constexpr int higher_order = ...;
   // static constexpr int lower_order = ...;
@@ -395,6 +407,37 @@ struct DormandالمكاوىPrince1986RKN434FM :
       {-7.0 /  150.0,  67.0 / 150.0,   3.0 /  20.0, -1.0 / 20.0}}};
   static constexpr FixedVector<double, stages> bʹ{{
       {13.0 /   21.0, -20.0 /  27.0, 275.0 / 189.0, -1.0 /  3.0}}};
+};
+
+struct DormandPrince1986RK547FC :  EmbeddedExplicitRungeKutta {
+   static constexpr int higher_order = 5;
+   static constexpr int lower_order = 4;
+   static constexpr int stages = 7;
+   static constexpr bool first_same_as_last = true;
+   //static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind = ..;
+   static constexpr FixedVector<double, stages> c{{
+       {0.0, 1.0 / 5.0, 3.0 / 10.0, 6.0 / 13.0, 2.0 / 3.0, 1.0, 1.0}}};
+   static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a{{
+       {   1.0 /    5.0,
+           3.0 /   40.0,   9.0 /   40.0,
+         264.0 / 2197.0, -90.0 / 2197.0,  840.0 /  2197.0,
+         932.0 / 3645.0, -14.0 /   27.0, 3256.0 /  5103.0,   7436.0 / 25515.0,
+        -367.0 /  513.0,  30.0 /   19.0, 9940.0 /  5643.0, -29575.0 /  8208.0, 6615.0 / 3344.0,
+          35.0 /  432.0,  0.0,           8500.0 / 14553.0, -28561.0 / 84672.0,  405.0 /  704.0, 19.0 / 196.0}}};
+   static constexpr FixedVector<double, stages> b̂{{{    35.0 /   432.0,
+                                                         0.0,
+                                                      8500.0 / 14553.0,
+                                                    -28561.0 / 84672.0,
+                                                       405.0 /   704.0,
+                                                        19.0 /   196.0,
+                                                         0.0}}};
+   static constexpr FixedVector<double, stages> b{{{   11.0 /   108.0,
+                                                        0.0,
+                                                     6250.0 / 14553.0,
+                                                    -2197.0 / 21168.0,
+                                                       81.0 /   176.0,
+                                                      171.0 /  1960.0,
+                                                        1.0 /    40.0}}};
 };
 
 // The following methods have coefficients from [McL95],

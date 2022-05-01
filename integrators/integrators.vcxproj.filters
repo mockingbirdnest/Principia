@@ -100,5 +100,8 @@
     <ClCompile Include="..\geometry\instant_output.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="embedded_explicit_runge_kutta_integrator_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
