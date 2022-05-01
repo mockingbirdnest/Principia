@@ -212,6 +212,12 @@
     <ClInclude Include="macos_filesystem_replacement.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="for_all_of.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="for_all_of_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
@@ -281,6 +287,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="recurring_thread_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="for_all_of_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
