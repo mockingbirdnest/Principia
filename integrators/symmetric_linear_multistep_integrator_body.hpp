@@ -32,7 +32,7 @@ SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Solve(
   using DoubleDisplacements = std::vector<DoubleDisplacement>;
   using DoublePosition = DoublePrecision<Position>;
 
-  auto const& ɑ = integrator_.ɑ_;
+  auto const& α = integrator_.α_;
   auto const& β_numerator = integrator_.β_numerator_;
   auto const& β_denominator = integrator_.β_denominator_;
 
@@ -66,7 +66,7 @@ SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Solve(
   absl::Status status;
   std::vector<Position> positions(dimension);
 
-  DoubleDisplacements Σⱼ_minus_ɑⱼ_qⱼ(dimension);
+  DoubleDisplacements Σⱼ_minus_αⱼ_qⱼ(dimension);
   std::vector<Acceleration> Σⱼ_βⱼ_numerator_aⱼ(dimension);
   while (h <= (t_final - t.value) - t.error) {
     // We take advantage of the symmetry to iterate on the list of previous
@@ -78,10 +78,10 @@ SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Solve(
     {
       DoubleDisplacements const& qⱼ = front_it->displacements;
       std::vector<Acceleration> const& aⱼ = front_it->accelerations;
-      double const ɑⱼ = ɑ[0];
+      double const αⱼ = α[0];
       double const βⱼ_numerator = β_numerator[0];
       for (int d = 0; d < dimension; ++d) {
-        Σⱼ_minus_ɑⱼ_qⱼ[d] = Scale(-ɑⱼ, qⱼ[d]);
+        Σⱼ_minus_αⱼ_qⱼ[d] = Scale(-αⱼ, qⱼ[d]);
         Σⱼ_βⱼ_numerator_aⱼ[d] = βⱼ_numerator * aⱼ[d];
       }
       ++front_it;
@@ -92,11 +92,11 @@ SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Solve(
       DoubleDisplacements const& qₖ₋ⱼ = back_it->displacements;
       std::vector<Acceleration> const& aⱼ = front_it->accelerations;
       std::vector<Acceleration> const& aₖ₋ⱼ = back_it->accelerations;
-      double const ɑⱼ = ɑ[j];
+      double const αⱼ = α[j];
       double const βⱼ_numerator = β_numerator[j];
       for (int d = 0; d < dimension; ++d) {
-        Σⱼ_minus_ɑⱼ_qⱼ[d] -= Scale(ɑⱼ, qⱼ[d]);
-        Σⱼ_minus_ɑⱼ_qⱼ[d] -= Scale(ɑⱼ, qₖ₋ⱼ[d]);
+        Σⱼ_minus_αⱼ_qⱼ[d] -= Scale(αⱼ, qⱼ[d]);
+        Σⱼ_minus_αⱼ_qⱼ[d] -= Scale(αⱼ, qₖ₋ⱼ[d]);
         Σⱼ_βⱼ_numerator_aⱼ[d] += βⱼ_numerator * (aⱼ[d] + aₖ₋ⱼ[d]);
       }
       ++front_it;
@@ -106,10 +106,10 @@ SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Solve(
     {
       DoubleDisplacements const& qⱼ = front_it->displacements;
       std::vector<Acceleration> const& aⱼ = front_it->accelerations;
-      double const ɑⱼ = ɑ[k / 2];
+      double const αⱼ = α[k / 2];
       double const βⱼ_numerator = β_numerator[k / 2];
       for (int d = 0; d < dimension; ++d) {
-        Σⱼ_minus_ɑⱼ_qⱼ[d] -= Scale(ɑⱼ, qⱼ[d]);
+        Σⱼ_minus_αⱼ_qⱼ[d] -= Scale(αⱼ, qⱼ[d]);
         Σⱼ_βⱼ_numerator_aⱼ[d] += βⱼ_numerator * aⱼ[d];
       }
     }
@@ -122,11 +122,11 @@ SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Solve(
     current_step.accelerations.resize(dimension);
     current_step.displacements.reserve(dimension);
 
-    // Fill the new step.  We skip the division by ɑk as it is equal to 1.0.
-    double const ɑk = ɑ[0];
-    DCHECK_EQ(ɑk, 1.0);
+    // Fill the new step.  We skip the division by αk as it is equal to 1.0.
+    double const αk = α[0];
+    DCHECK_EQ(αk, 1.0);
     for (int d = 0; d < dimension; ++d) {
-      DoubleDisplacement& current_displacement = Σⱼ_minus_ɑⱼ_qⱼ[d];
+      DoubleDisplacement& current_displacement = Σⱼ_minus_αⱼ_qⱼ[d];
       current_displacement.Increment(h * h *
                                      Σⱼ_βⱼ_numerator_aⱼ[d] / β_denominator);
       current_step.displacements.push_back(current_displacement);
@@ -391,7 +391,7 @@ SymmetricLinearMultistepIntegrator(
     FixedStepSizeIntegrator<ODE> const& startup_integrator)
     : startup_integrator_(startup_integrator),
       cohen_hubbard_oesterwinter_(CohenHubbardOesterwinterOrder<order>()) {
-  CHECK_EQ(ɑ_[0], 1.0);
+  CHECK_EQ(α_[0], 1.0);
   CHECK_EQ(β_numerator_[0], 0.0);
 }
 

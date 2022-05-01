@@ -65,7 +65,7 @@ class Perspective final {
   bool IsHiddenBySphere(Position<FromFrame> const& point,
                         Sphere<FromFrame> const& sphere) const;
 
-  // Returns sin² ɑ where ɑ is the half angle under which the |sphere| is seen.
+  // Returns sin² α where α is the half angle under which the |sphere| is seen.
   double SphereSin²HalfAngle(Sphere<FromFrame> const& sphere) const;
 
   // Returns the (sub)segments of |segment| that are visible in this perspective

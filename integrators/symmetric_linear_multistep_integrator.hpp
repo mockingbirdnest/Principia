@@ -122,7 +122,7 @@ class SymmetricLinearMultistepIntegrator
 
  private:
   static constexpr auto half_order_ = Method::Half(order);
-  static constexpr auto ɑ_ = Method::ɑ;
+  static constexpr auto α_ = Method::α;
   static constexpr auto β_numerator_ = Method::β_numerator;
   static constexpr auto β_denominator_ = Method::β_denominator;
 
