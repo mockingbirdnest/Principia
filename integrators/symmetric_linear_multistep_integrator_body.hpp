@@ -66,8 +66,8 @@ SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Solve(
   absl::Status status;
   std::vector<Position> positions(dimension);
 
-  DoubleDisplacements Σj_minus_ɑj_qj(dimension);
-  std::vector<Acceleration> Σj_βj_numerator_aj(dimension);
+  DoubleDisplacements Σⱼ_minus_ɑⱼ_qⱼ(dimension);
+  std::vector<Acceleration> Σⱼ_βⱼ_numerator_aⱼ(dimension);
   while (h <= (t_final - t.value) - t.error) {
     // We take advantage of the symmetry to iterate on the list of previous
     // steps from both ends.
@@ -76,41 +76,41 @@ SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Solve(
 
     // This block corresponds to j = 0.  We must not pair it with j = k.
     {
-      DoubleDisplacements const& qj = front_it->displacements;
-      std::vector<Acceleration> const& aj = front_it->accelerations;
-      double const ɑj = ɑ[0];
-      double const βj_numerator = β_numerator[0];
+      DoubleDisplacements const& qⱼ = front_it->displacements;
+      std::vector<Acceleration> const& aⱼ = front_it->accelerations;
+      double const ɑⱼ = ɑ[0];
+      double const βⱼ_numerator = β_numerator[0];
       for (int d = 0; d < dimension; ++d) {
-        Σj_minus_ɑj_qj[d] = Scale(-ɑj, qj[d]);
-        Σj_βj_numerator_aj[d] = βj_numerator * aj[d];
+        Σⱼ_minus_ɑⱼ_qⱼ[d] = Scale(-ɑⱼ, qⱼ[d]);
+        Σⱼ_βⱼ_numerator_aⱼ[d] = βⱼ_numerator * aⱼ[d];
       }
       ++front_it;
     }
     // The generic value of j, paired with k - j.
     for (int j = 1; j < k / 2; ++j) {
-      DoubleDisplacements const& qj = front_it->displacements;
-      DoubleDisplacements const& qk_minus_j = back_it->displacements;
-      std::vector<Acceleration> const& aj = front_it->accelerations;
-      std::vector<Acceleration> const& ak_minus_j = back_it->accelerations;
-      double const ɑj = ɑ[j];
-      double const βj_numerator = β_numerator[j];
+      DoubleDisplacements const& qⱼ = front_it->displacements;
+      DoubleDisplacements const& qₖ₋ⱼ = back_it->displacements;
+      std::vector<Acceleration> const& aⱼ = front_it->accelerations;
+      std::vector<Acceleration> const& aₖ₋ⱼ = back_it->accelerations;
+      double const ɑⱼ = ɑ[j];
+      double const βⱼ_numerator = β_numerator[j];
       for (int d = 0; d < dimension; ++d) {
-        Σj_minus_ɑj_qj[d] -= Scale(ɑj, qj[d]);
-        Σj_minus_ɑj_qj[d] -= Scale(ɑj, qk_minus_j[d]);
-        Σj_βj_numerator_aj[d] += βj_numerator * (aj[d] + ak_minus_j[d]);
+        Σⱼ_minus_ɑⱼ_qⱼ[d] -= Scale(ɑⱼ, qⱼ[d]);
+        Σⱼ_minus_ɑⱼ_qⱼ[d] -= Scale(ɑⱼ, qₖ₋ⱼ[d]);
+        Σⱼ_βⱼ_numerator_aⱼ[d] += βⱼ_numerator * (aⱼ[d] + aₖ₋ⱼ[d]);
       }
       ++front_it;
       ++back_it;
     }
     // This block corresponds to j = k / 2.  We must not pair it with j = k / 2.
     {
-      DoubleDisplacements const& qj = front_it->displacements;
-      std::vector<Acceleration> const& aj = front_it->accelerations;
-      double const ɑj = ɑ[k / 2];
-      double const βj_numerator = β_numerator[k / 2];
+      DoubleDisplacements const& qⱼ = front_it->displacements;
+      std::vector<Acceleration> const& aⱼ = front_it->accelerations;
+      double const ɑⱼ = ɑ[k / 2];
+      double const βⱼ_numerator = β_numerator[k / 2];
       for (int d = 0; d < dimension; ++d) {
-        Σj_minus_ɑj_qj[d] -= Scale(ɑj, qj[d]);
-        Σj_βj_numerator_aj[d] += βj_numerator * aj[d];
+        Σⱼ_minus_ɑⱼ_qⱼ[d] -= Scale(ɑⱼ, qⱼ[d]);
+        Σⱼ_βⱼ_numerator_aⱼ[d] += βⱼ_numerator * aⱼ[d];
       }
     }
 
@@ -126,9 +126,9 @@ SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Solve(
     double const ɑk = ɑ[0];
     DCHECK_EQ(ɑk, 1.0);
     for (int d = 0; d < dimension; ++d) {
-      DoubleDisplacement& current_displacement = Σj_minus_ɑj_qj[d];
+      DoubleDisplacement& current_displacement = Σⱼ_minus_ɑⱼ_qⱼ[d];
       current_displacement.Increment(h * h *
-                                     Σj_βj_numerator_aj[d] / β_denominator);
+                                     Σⱼ_βⱼ_numerator_aⱼ[d] / β_denominator);
       current_step.displacements.push_back(current_displacement);
       DoublePosition const current_position =
           DoublePosition() + current_displacement;

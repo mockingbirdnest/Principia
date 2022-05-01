@@ -181,11 +181,11 @@ Instance::Solve(Instant const& t_final) {
                 ? t_final
                 : t.value + (t.error + c[i] * h);
         for (int k = 0; k < dimension; ++k) {
-          Acceleration Σj_a_ij_g_jk{};
+          Acceleration Σⱼ_aᵢⱼ_gⱼₖ{};
           for (int j = 0; j < i; ++j) {
-            Σj_a_ij_g_jk += a(i, j) * g[j][k];
+            Σⱼ_aᵢⱼ_gⱼₖ += a(i, j) * g[j][k];
           }
-          q_stage[k] = q̂[k].value + h * c[i] * v̂[k].value + h² * Σj_a_ij_g_jk;
+          q_stage[k] = q̂[k].value + h * c[i] * v̂[k].value + h² * Σⱼ_aᵢⱼ_gⱼₖ;
         }
         step_status.Update(
             equation.compute_acceleration(t_stage, q_stage, g[i]));
@@ -193,26 +193,26 @@ Instance::Solve(Instant const& t_final) {
 
       // Increment computation and step size control.
       for (int k = 0; k < dimension; ++k) {
-        Acceleration Σi_b̂_i_g_ik{};
-        Acceleration Σi_b_i_g_ik{};
-        Acceleration Σi_b̂ʹ_i_g_ik{};
-        Acceleration Σi_bʹ_i_g_ik{};
+        Acceleration Σᵢ_b̂ᵢ_gᵢₖ{};
+        Acceleration Σᵢ_bᵢ_gᵢₖ{};
+        Acceleration Σᵢ_b̂ʹᵢ_gᵢₖ{};
+        Acceleration Σᵢ_bʹᵢ_gᵢₖ{};
         // Please keep the eight assigments below aligned, they become illegible
         // otherwise.
         for (int i = 0; i < stages_; ++i) {
-          Σi_b̂_i_g_ik  += b̂[i] * g[i][k];
-          Σi_b_i_g_ik  += b[i] * g[i][k];
-          Σi_b̂ʹ_i_g_ik += b̂ʹ[i] * g[i][k];
-          Σi_bʹ_i_g_ik += bʹ[i] * g[i][k];
+          Σᵢ_b̂ᵢ_gᵢₖ  += b̂[i] * g[i][k];
+          Σᵢ_bᵢ_gᵢₖ  += b[i] * g[i][k];
+          Σᵢ_b̂ʹᵢ_gᵢₖ += b̂ʹ[i] * g[i][k];
+          Σᵢ_bʹᵢ_gᵢₖ += bʹ[i] * g[i][k];
         }
         // The hat-less Δq and Δv are the low-order increments.
-        Δq̂[k]                   = h * v̂[k].value + h² * Σi_b̂_i_g_ik;
-        Displacement const Δq_k = h * v̂[k].value + h² * Σi_b_i_g_ik;
-        Δv̂[k]                   = h * Σi_b̂ʹ_i_g_ik;
-        Velocity const Δv_k     = h * Σi_bʹ_i_g_ik;
+        Δq̂[k]                  = h * v̂[k].value + h² * Σᵢ_b̂ᵢ_gᵢₖ;
+        Displacement const Δqₖ = h * v̂[k].value + h² * Σᵢ_bᵢ_gᵢₖ;
+        Δv̂[k]                  = h * Σᵢ_b̂ʹᵢ_gᵢₖ;
+        Velocity const Δvₖ     = h * Σᵢ_bʹᵢ_gᵢₖ;
 
-        error_estimate.position_error[k] = Δq_k - Δq̂[k];
-        error_estimate.velocity_error[k] = Δv_k - Δv̂[k];
+        error_estimate.position_error[k] = Δqₖ - Δq̂[k];
+        error_estimate.velocity_error[k] = Δvₖ - Δv̂[k];
       }
       tolerance_to_error_ratio =
           this->tolerance_to_error_ratio_(h, error_estimate);
