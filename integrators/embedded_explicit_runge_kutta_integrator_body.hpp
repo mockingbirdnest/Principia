@@ -119,8 +119,8 @@ Instance::Solve(Instant const& t_final) {
         error_estimate.resize(dimension);
         f.resize(dimension);
         last_f.resize(dimension);
-        for (auto const& ŷ_l : ŷ) {
-          y_stage.push_back(ŷ_l.value);
+        for (auto const& ŷₗ : ŷ) {
+          y_stage.push_back(ŷₗ.value);
         }
       });
 
@@ -193,58 +193,58 @@ Instance::Solve(Instant const& t_final) {
                   ? t_final
                   : t.value + (t.error + c[i] * h);
 
-          StateDifference Σj_a_ij_k_j{};
+          StateDifference Σⱼ_aᵢⱼ_kⱼ{};
           for (int j = 0; j < i; ++j) {
-            for_all_of(k[j], ŷ, y_stage, Σj_a_ij_k_j)
-                .loop([&a, i, j](auto const& k_j,
+            for_all_of(k[j], ŷ, y_stage, Σⱼ_aᵢⱼ_kⱼ)
+                .loop([&a, i, j](auto const& kⱼ,
                                  auto const& ŷ,
                                  auto& y_stage,
-                                 auto& Σj_a_ij_k_j) {
+                                 auto& Σⱼ_aᵢⱼ_kⱼ) {
                   int const dimension = ŷ.size();
-                  Σj_a_ij_k_j.resize(dimension);
+                  Σⱼ_aᵢⱼ_kⱼ.resize(dimension);
                   for (int l = 0; l < dimension; ++l) {
-                    Σj_a_ij_k_j[l] += a(i, j) * k_j[l];
+                    Σⱼ_aᵢⱼ_kⱼ[l] += a(i, j) * kⱼ[l];
                   }
                 });
           }
-          for_all_of(ŷ, Σj_a_ij_k_j, y_stage)
-              .loop([](auto const& ŷ, auto const& Σj_a_ij_k_j, auto& y_stage) {
+          for_all_of(ŷ, Σⱼ_aᵢⱼ_kⱼ, y_stage)
+              .loop([](auto const& ŷ, auto const& Σⱼ_aᵢⱼ_kⱼ, auto& y_stage) {
                 int const dimension = ŷ.size();
                 for (int l = 0; l < dimension; ++l) {
-                  y_stage[l] = ŷ[l].value + Σj_a_ij_k_j[l];
+                  y_stage[l] = ŷ[l].value + Σⱼ_aᵢⱼ_kⱼ[l];
                 }
               });
 
           step_status.Update(equation.compute_derivative(t_stage, y_stage, f));
         }
-        for_all_of(f, k[i]).loop([h](auto const& f, auto& k_i) {
+        for_all_of(f, k[i]).loop([h](auto const& f, auto& kᵢ) {
           int const dimension = f.size();
           for (int l = 0; l < dimension; ++l) {
-            k_i[l] = h * f[l];
+            kᵢ[l] = h * f[l];
           }
         });
       }
 
       // Increment computation and step size control.
-      StateDifference Σi_b̂_i_k_i{};
-      StateDifference Σi_b_i_k_i{};
+      StateDifference Σᵢ_b̂ᵢ_kᵢ{};
+      StateDifference Σᵢ_bᵢ_kᵢ{};
       for (int i = 0; i < stages_; ++i) {
-        for_all_of(k[i], ŷ, Δŷ, Σi_b̂_i_k_i, Σi_b_i_k_i, error_estimate)
-            .loop([&a, &b, &b̂, i](auto const& k_i,
+        for_all_of(k[i], ŷ, Δŷ, Σᵢ_b̂ᵢ_kᵢ, Σᵢ_bᵢ_kᵢ, error_estimate)
+            .loop([&a, &b, &b̂, i](auto const& kᵢ,
                                   auto const& ŷ,
                                   auto& Δŷ,
-                                  auto& Σi_b̂_i_k_i,
-                                  auto& Σi_b_i_k_i,
+                                  auto& Σᵢ_b̂ᵢ_kᵢ,
+                                  auto& Σᵢ_bᵢ_kᵢ,
                                   auto& error_estimate) {
               int const dimension = ŷ.size();
-              Σi_b̂_i_k_i.resize(dimension);
-              Σi_b_i_k_i.resize(dimension);
+              Σᵢ_b̂ᵢ_kᵢ.resize(dimension);
+              Σᵢ_bᵢ_kᵢ.resize(dimension);
               for (int l = 0; l < dimension; ++l) {
-                Σi_b̂_i_k_i[l] += b̂[i] * k_i[l];
-                Σi_b_i_k_i[l] += b[i] * k_i[l];
-                Δŷ[l] = Σi_b̂_i_k_i[l];
-                auto const Δy_l = Σi_b_i_k_i[l];
-                error_estimate[l] = Δy_l - Δŷ[l];
+                Σᵢ_b̂ᵢ_kᵢ[l] += b̂[i] * kᵢ[l];
+                Σᵢ_bᵢ_kᵢ[l] += b[i] * kᵢ[l];
+                Δŷ[l] = Σᵢ_b̂ᵢ_kᵢ[l];
+                auto const Δyₗ = Σᵢ_bᵢ_kᵢ[l];
+                error_estimate[l] = Δyₗ - Δŷ[l];
               }
             });
       }
