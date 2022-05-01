@@ -122,9 +122,9 @@ SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Solve(
     current_step.accelerations.resize(dimension);
     current_step.displacements.reserve(dimension);
 
-    // Fill the new step.  We skip the division by αk as it is equal to 1.0.
-    double const αk = α[0];
-    DCHECK_EQ(αk, 1.0);
+    // Fill the new step.  We skip the division by αₖ as it is equal to 1.0.
+    double const αₖ = α[0];
+    DCHECK_EQ(αₖ, 1.0);
     for (int d = 0; d < dimension; ++d) {
       DoubleDisplacement& current_displacement = Σⱼ_minus_αⱼ_qⱼ[d];
       current_displacement.Increment(h * h *
