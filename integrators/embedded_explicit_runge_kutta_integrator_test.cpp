@@ -79,15 +79,15 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest,
       EmbeddedExplicitRungeKuttaIntegrator<
           methods::DormandPrince1986RK547FC, Length, Speed>();
   Length const x_initial = 1 * Metre;
-  Speed const v_initial = 0 * Metre / Second;
+  Speed const v_initial = 0.0 * Metre / Second;
   Time const period = 2 * π * Second;
   Instant const t_initial;
   Instant const t_final = t_initial + 10 * period;
   Length const length_tolerance = 1 * Milli(Metre);
   Speed const speed_tolerance = 1 * Milli(Metre) / Second;
-  int const steps_forward = 132;
+  int const steps_forward = 50;
   // We integrate backward with double the tolerance.
-  int const steps_backward = 112;
+  int const steps_backward = 46;
 
   int evaluations = 0;
   int initial_rejections = 0;
@@ -114,7 +114,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest,
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   problem.initial_state = {{{x_initial}, {v_initial}}, t_initial};
-  auto const append_state = [&solution](ODE::SystemState const& state) {
+  auto const append_state = [&](ODE::SystemState const& state) {
     solution.push_back(state);
   };
 
@@ -138,16 +138,16 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest,
   {
     auto const& [positions, velocities] = solution.back().y;
     EXPECT_THAT(AbsoluteError(x_initial, positions[0].value),
-                IsNear(3.5e-4_(1) * Metre));
+                IsNear(7.4e-2_(1) * Metre));
     EXPECT_THAT(AbsoluteError(v_initial, velocities[0].value),
-                IsNear(2.8e-3_(1) * Metre / Second));
+                IsNear(6.8e-2_(1) * Metre / Second));
     EXPECT_EQ(t_final, solution.back().time.value);
     EXPECT_EQ(steps_forward, solution.size());
-    EXPECT_EQ((1 + initial_rejections) * 4 +
-                  (steps_forward - 1 + subsequent_rejections) * 3,
+    EXPECT_EQ(1 + (1 + initial_rejections) * 6 +
+                  (steps_forward - 1 + subsequent_rejections) * 6,
               evaluations);
     EXPECT_EQ(1, initial_rejections);
-    EXPECT_EQ(3, subsequent_rejections);
+    EXPECT_EQ(1, subsequent_rejections);
   }
 
   evaluations = 0;
@@ -173,16 +173,16 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest,
   {
     auto const& [positions, velocities] = solution.back().y;
     EXPECT_THAT(AbsoluteError(x_initial, positions[0].value),
-                IsNear(1.2e-3_(1) * Metre));
+                IsNear(2.1e-1_(1) * Metre));
     EXPECT_THAT(AbsoluteError(v_initial, velocities[0].value),
-                IsNear(2.5e-3_(1) * Metre / Second));
+                IsNear(6.8e-2_(1) * Metre / Second));
     EXPECT_EQ(t_initial, solution.back().time.value);
     EXPECT_EQ(steps_backward, solution.size() - steps_forward);
-    EXPECT_EQ((1 + initial_rejections) * 4 +
-                  (steps_backward - 1 + subsequent_rejections) * 3,
+    EXPECT_EQ(1 + (1 + initial_rejections) * 6 +
+                  (steps_backward - 1 + subsequent_rejections) * 6,
               evaluations);
     EXPECT_EQ(1, initial_rejections);
-    EXPECT_EQ(11, subsequent_rejections);
+    EXPECT_EQ(1, subsequent_rejections);
   }
 }
 

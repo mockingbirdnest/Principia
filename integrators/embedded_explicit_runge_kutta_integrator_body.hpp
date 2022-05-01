@@ -99,7 +99,7 @@ Instance::Solve(Instant const& t_final) {
   State y_stage;
 
   StateVariation f;
-  std::optional<StateVariation> last_f;
+  StateVariation last_f;
   std::vector<StateDifference> k(stages_);
   for (auto& k_stage : k) {
     for_all_of(ŷ, Δŷ, k_stage).loop([](auto const& ŷ, auto& Δŷ, auto& k_stage) {
@@ -109,12 +109,19 @@ Instance::Solve(Instant const& t_final) {
     });
   }
 
-  for_all_of(ŷ, error_estimate, f, y_stage)
-      .loop([](auto const& ŷ, auto& error_estimate, auto& f, auto& y_stage) {
+  for_all_of(ŷ, error_estimate, f, last_f, y_stage)
+      .loop([](auto const& ŷ,
+               auto& error_estimate,
+               auto& f,
+               auto& last_f,
+               auto& y_stage) {
         int const dimension = ŷ.size();
         error_estimate.resize(dimension);
         f.resize(dimension);
-        y_stage.resize(dimension);
+        last_f.resize(dimension);
+        for (auto const& ŷ_l : ŷ) {
+          y_stage.push_back(ŷ_l.value);
+        }
       });
 
   bool at_end = false;
@@ -125,6 +132,10 @@ Instance::Solve(Instant const& t_final) {
 
   absl::Status status;
   absl::Status step_status;
+
+  if (first_same_as_last) {
+    status = equation.compute_derivative(t.value, y_stage, last_f);
+  }
 
   // No step size control on the first step.  If this instance is being
   // restarted we already have a value of |h| suitable for the next step, based
@@ -173,8 +184,9 @@ Instance::Solve(Instant const& t_final) {
 
       // Runge-Kutta iteration; fills |k|.
       for (int i = 0; i < stages_; ++i) {
-        if (i == 0 && last_f.has_value()) {
-          f = last_f.value();
+        if (i == 0 && first_same_as_last) {
+          // TODO(phl): Use pointers to avoid copying big objects.
+          f = last_f;
         } else {
           Instant const t_stage =
               (parameters.last_step_is_exact && at_end && c[i] == 1.0)
@@ -192,10 +204,16 @@ Instance::Solve(Instant const& t_final) {
                   Σj_a_ij_k_j.resize(dimension);
                   for (int l = 0; l < dimension; ++l) {
                     Σj_a_ij_k_j[l] += a(i, j) * k_j[l];
-                    y_stage[l] = ŷ[l].value + Σj_a_ij_k_j[l];
                   }
                 });
           }
+          for_all_of(ŷ, Σj_a_ij_k_j, y_stage)
+              .loop([](auto const& ŷ, auto const& Σj_a_ij_k_j, auto& y_stage) {
+                int const dimension = ŷ.size();
+                for (int l = 0; l < dimension; ++l) {
+                  y_stage[l] = ŷ[l].value + Σj_a_ij_k_j[l];
+                }
+              });
 
           step_status.Update(equation.compute_derivative(t_stage, y_stage, f));
         }
