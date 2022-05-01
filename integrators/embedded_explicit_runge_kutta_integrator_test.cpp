@@ -138,7 +138,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest,
   {
     auto const& [positions, velocities] = solution.back().y;
     EXPECT_THAT(AbsoluteError(x_initial, positions[0].value),
-                IsNear(7.4e-2_(1) * Metre));
+                IsNear(7.5e-2_(1) * Metre));
     EXPECT_THAT(AbsoluteError(v_initial, velocities[0].value),
                 IsNear(6.8e-2_(1) * Metre / Second));
     EXPECT_EQ(t_final, solution.back().time.value);
@@ -200,7 +200,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, MaxSteps) {
   Length const length_tolerance = 1 * Milli(Metre);
   Speed const speed_tolerance = 1 * Milli(Metre) / Second;
   // The number of steps if no step limit is set.
-  std::int64_t const steps_forward = 132;
+  std::int64_t const steps_forward = 50;
 
   auto const step_size_callback = [](bool tolerable) {};
 
@@ -218,7 +218,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, MaxSteps) {
   AdaptiveStepSizeIntegrator<ODE>::Parameters const parameters(
       /*first_time_step=*/t_final - t_initial,
       /*safety_factor=*/0.9,
-      /*max_steps=*/100,
+      /*max_steps=*/40,
       /*last_step_is_exact=*/true);
   auto const tolerance_to_error_ratio =
       std::bind(HarmonicOscillatorToleranceRatio,
@@ -239,14 +239,14 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, MaxSteps) {
   EXPECT_THAT(AbsoluteError(
                   x_initial * Cos(ω * (solution.back().time.value - t_initial)),
                   positions[0].value),
-              IsNear(9.0e-4_(1) * Metre));
+              IsNear(5.9e-2_(1) * Metre));
   EXPECT_THAT(AbsoluteError(
                   -v_amplitude *
                       Sin(ω * (solution.back().time.value - t_initial)),
                   velocities[0].value),
-              IsNear(1.9e-3_(1) * Metre / Second));
+              IsNear(5.6e-2_(1) * Metre / Second));
   EXPECT_THAT(solution.back().time.value, Lt(t_final));
-  EXPECT_EQ(100, solution.size());
+  EXPECT_EQ(40, solution.size());
 
   // Check that a |max_steps| greater than or equal to the unconstrained number
   // of steps has no effect.
@@ -266,9 +266,9 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, MaxSteps) {
     auto const& [positions, velocities] = solution.back().y;
     EXPECT_THAT(outcome, StatusIs(termination_condition::Done));
     EXPECT_THAT(AbsoluteError(x_initial, positions[0].value),
-                IsNear(3.6e-4_(1) * Metre));
+                IsNear(7.5e-2_(1) * Metre));
     EXPECT_THAT(AbsoluteError(v_initial, velocities[0].value),
-                IsNear(2.8e-3_(1) * Metre / Second));
+                IsNear(6.8e-2_(1) * Metre / Second));
     EXPECT_EQ(t_final, solution.back().time.value);
     EXPECT_EQ(steps_forward, solution.size());
   }
@@ -337,11 +337,11 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Singularity) {
 
   auto const& [positions, velocities] = solution.back().y;
   EXPECT_THAT(outcome, StatusIs(termination_condition::VanishingStepSize));
-  EXPECT_EQ(132, solution.size());
+  EXPECT_EQ(101, solution.size());
   EXPECT_THAT(solution.back().time.value - t_initial,
-              AlmostEquals(t_singular - t_initial, 15));
+              AlmostEquals(t_singular - t_initial, 4));
   EXPECT_THAT(positions.back().value,
-              AlmostEquals(specific_impulse * initial_mass / mass_flow, 540));
+              AlmostEquals(specific_impulse * initial_mass / mass_flow, 155));
 }
 
 TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Restart) {
@@ -391,22 +391,22 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Restart) {
     EXPECT_THAT(outcome, StatusIs(termination_condition::Done));
 
     // Check that the time step has been updated.
-    EXPECT_EQ(131, solution1.size());
+    EXPECT_EQ(49, solution1.size());
     EXPECT_THAT(
         solution1[solution1.size() - 1].time.value -
             solution1[solution1.size() - 2].time.value,
-        AlmostEquals(0.509'363'975'335'290'320 * Second, 0));
+        AlmostEquals(1.247'142'266'261'910'49 * Second, 0));
 
     // Restart the integration.
     outcome = instance->Solve(t_initial + 2.0 * duration);
     EXPECT_THAT(outcome, StatusIs(termination_condition::Done));
 
     // Check that the time step has been updated again.
-    EXPECT_EQ(261, solution1.size());
+    EXPECT_EQ(99, solution1.size());
     EXPECT_THAT(
         solution1[solution1.size() - 1].time.value -
             solution1[solution1.size() - 2].time.value,
-        AlmostEquals(0.506'410'259'195'249'068 * Second, 0));
+        AlmostEquals(1.237'882'807'009'299'31 * Second, 0));
   }
 
   // Do it again in one call to |Solve| and check associativity.
