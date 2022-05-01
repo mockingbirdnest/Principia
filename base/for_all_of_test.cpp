@@ -29,7 +29,7 @@ TEST_F(ForAllOfTest, AnArray) {
 }
 
 TEST_F(ForAllOfTest, APair) {
-  std::array<int, 1> a;
+  std::array<int, 2> a;
   constexpr APair incremented = [&a]() {
     APair pair{a.data(), 'y'};
     for_all_of(pair).loop([](auto& value) { ++value; });
