@@ -2,7 +2,9 @@
 
 #include <algorithm>
 #include <array>
+#include <iostream>
 #include <tuple>
+#include <utility>
 
 #include "gtest/gtest.h"
 
@@ -28,7 +30,7 @@ TEST_F(ForAllOfTest, AnArray) {
 }
 
 TEST_F(ForAllOfTest, APair) {
-  std::array<int, 1> a;
+  std::array<int, 2> a;
   constexpr APair incremented = [&a]() {
     APair pair{a.data(), 'y'};
     for_all_of(pair).loop([](auto& value) { ++value; });
@@ -62,6 +64,14 @@ TEST_F(ForAllOfTest, Parallel) {
   static_assert(std::get<0>(sum) == '*');
   static_assert(std::get<1>(sum) == 43.0);
   static_assert(std::get<2>(sum) == -41);
+}
+
+TEST_F(ForAllOfTest, Example) {
+  std::tuple const t{"a", 2.5, 3};
+  std::array const a{4, 5, 6};
+  for_all_of(t, a).loop([](auto const tuple_element, int const i) {
+    std::cout << tuple_element << " " << i << "\n";
+  });
 }
 
 }  // namespace base
