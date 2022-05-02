@@ -268,8 +268,8 @@ Instance::Solve(Instant const& t_final) {
     t.Increment(h);
     for_all_of(Δŷ, ŷ).loop([](auto const& Δŷ, auto& ŷ) {
       int const dimension = ŷ.size();
-      for (int k = 0; k < dimension; ++k) {
-        ŷ[k].Increment(Δŷ[k]);
+      for (int l = 0; l < dimension; ++l) {
+        ŷ[l].Increment(Δŷ[l]);
       }
     });
 
