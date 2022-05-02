@@ -371,8 +371,9 @@ Instance::Instance(
       integrator_(integrator) {}
 
 template<typename Method, typename... StateElements>
-not_null<std::unique_ptr<typename Integrator<
-    ExplicitFirstOrderOrdinaryDifferentialEquation<StateElements...>>::Instance>>
+not_null<std::unique_ptr<
+    typename Integrator<ExplicitFirstOrderOrdinaryDifferentialEquation<
+        StateElements...>>::Instance>>
 EmbeddedExplicitRungeKuttaIntegrator<Method, StateElements...>::
 NewInstance(IntegrationProblem<ODE> const& problem,
             AppendState const& append_state,

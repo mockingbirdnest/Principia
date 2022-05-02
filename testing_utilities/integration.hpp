@@ -9,6 +9,8 @@
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 
+#include <tuple>
+
 namespace principia {
 namespace testing_utilities {
 namespace internal_integration {

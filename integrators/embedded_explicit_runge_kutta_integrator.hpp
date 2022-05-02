@@ -40,8 +40,7 @@ using quantities::Variation;
 //   b for the weights of the low-order method;
 // See [DP86] for an example.
 
-//TODO(phl):Fix the comment once we know what we are doing.
-// In the implementation, we follow [DP77] in calling the results of the
+// In the implementation, we follow [DP807] in calling the results of the
 // right-hand-side evaluations fᵢ (this quantity is not named in [DP86]).
 // The order of the template parameters follow the notation of [DP86], whose
 // RKq(p)s[F]X has higher order q, lower order p, comprises s stages, and has
