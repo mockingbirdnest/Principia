@@ -5,14 +5,39 @@
 
 #include <vector>
 
+#include "base/for_all_of.hpp"
+
 namespace principia {
 namespace integrators {
 namespace internal_ordinary_differential_equations {
 
+using base::for_all_of;
+
 template<typename... State>
 ExplicitFirstOrderOrdinaryDifferentialEquation<
     State...>::SystemState::SystemState(State const& y, Instant const& t)
-    : y(y), time(t) {}
+    : time(t) {
+  for_all_of(y, this->y).loop([](auto const& y, auto& this_y) {
+    for (auto const& y_i : y) {
+      this_y.emplace_back(y_i);
+    }
+  });
+}
+
+template<typename... State>
+void ExplicitFirstOrderOrdinaryDifferentialEquation<State...>::SystemState::
+    WriteToMessage(not_null<serialization::SystemState*> message) const {
+  // Writing the tuple would be tricky.
+  LOG(FATAL) << "NYI";
+}
+
+template<typename... State>
+ExplicitFirstOrderOrdinaryDifferentialEquation<State...>::SystemState
+ExplicitFirstOrderOrdinaryDifferentialEquation<State...>::SystemState::
+    ReadFromMessage(serialization::SystemState const& message) {
+  // Reading the tuple would be tricky.
+  LOG(FATAL) << "NYI";
+}
 
 template<typename... State>
 DecomposableFirstOrderDifferentialEquation<State...>::SystemState::SystemState(

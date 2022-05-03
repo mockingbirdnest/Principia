@@ -21,6 +21,8 @@
     <ClInclude Include="cohen_hubbard_oesterwinter_body.hpp" />
     <ClInclude Include="embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp" />
     <ClInclude Include="embedded_explicit_generalized_runge_kutta_nyström_integrator_body.hpp" />
+    <ClInclude Include="embedded_explicit_runge_kutta_integrator.hpp" />
+    <ClInclude Include="embedded_explicit_runge_kutta_integrator_body.hpp" />
     <ClInclude Include="embedded_explicit_runge_kutta_nyström_integrator.hpp" />
     <ClInclude Include="embedded_explicit_runge_kutta_nyström_integrator_body.hpp" />
     <ClInclude Include="integrators.hpp" />
@@ -40,6 +42,7 @@
     <ClCompile Include="..\base\cpuid.cpp" />
     <ClCompile Include="..\geometry\instant_output.cpp" />
     <ClCompile Include="embedded_explicit_generalized_runge_kutta_nyström_integrator_test.cpp" />
+    <ClCompile Include="embedded_explicit_runge_kutta_integrator_test.cpp" />
     <ClCompile Include="embedded_explicit_runge_kutta_nyström_integrator_test.cpp" />
     <ClCompile Include="symmetric_linear_multistep_integrator_test.cpp" />
     <ClCompile Include="symplectic_runge_kutta_nyström_integrator_test.cpp" />
