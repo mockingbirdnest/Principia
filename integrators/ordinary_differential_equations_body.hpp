@@ -32,7 +32,7 @@ void ExplicitFirstOrderOrdinaryDifferentialEquation<State...>::SystemState::
 }
 
 template<typename... State>
-ExplicitFirstOrderOrdinaryDifferentialEquation<State...>::SystemState
+typename ExplicitFirstOrderOrdinaryDifferentialEquation<State...>::SystemState
 ExplicitFirstOrderOrdinaryDifferentialEquation<State...>::SystemState::
     ReadFromMessage(serialization::SystemState const& message) {
   // Reading the tuple would be tricky.
