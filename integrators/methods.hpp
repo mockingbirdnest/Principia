@@ -66,7 +66,7 @@ struct SymmetricLinearMultistep : not_constructible {
   }
   // static constexpr int order = ...;
   // static constexpr serialization::FixedStepSizeIntegrator::Kind kind = ...;
-  // static constexpr FixedVector<double, Half(order)> const ɑ(...);
+  // static constexpr FixedVector<double, Half(order)> const α(...);
   // static constexpr FixedVector<double, Half(order)> const β_numerator(...);
   // static constexpr double β_denominator = ...;
 };
@@ -781,7 +781,7 @@ struct Quinlan1999Order8A : SymmetricLinearMultistep {
   static constexpr int order = 8;
   static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
       serialization::FixedStepSizeIntegrator::QUINLAN_1999_ORDER_8A;
-  static constexpr FixedVector<double, Half(order)> const ɑ{
+  static constexpr FixedVector<double, Half(order)> const α{
       {{1.0, -2.0, 2.0, -2.0, 2.0}}};
   static constexpr FixedVector<double, Half(order)> const β_numerator{
       {{0.0, 22081.0, -29418.0, 75183.0, -75212.0}}};
@@ -791,7 +791,7 @@ struct Quinlan1999Order8B : SymmetricLinearMultistep {
   static constexpr int order = 8;
   static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
       serialization::FixedStepSizeIntegrator::QUINLAN_1999_ORDER_8B;
-  static constexpr FixedVector<double, Half(order)> const ɑ{
+  static constexpr FixedVector<double, Half(order)> const α{
       {{1.0, 0.0, 0.0, -0.5, -1.0}}};
   static constexpr FixedVector<double, Half(order)> const β_numerator{
       {{0.0, 192481.0, 6582.0, 816783.0, -156812.0}}};
@@ -803,7 +803,7 @@ struct QuinlanTremaine1990Order8 : SymmetricLinearMultistep {
   static constexpr int order = 8;
   static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
       serialization::FixedStepSizeIntegrator::QUINLAN_TREMAINE_1990_ORDER_8;
-  static constexpr FixedVector<double, Half(order)> const ɑ{
+  static constexpr FixedVector<double, Half(order)> const α{
       {{1.0, -2.0, 2.0, -1.0, 0.0}}};
   static constexpr FixedVector<double, Half(order)> const β_numerator{
       {{0.0, 17671.0, -23622.0, 61449.0, -50516.0}}};
@@ -813,7 +813,7 @@ struct QuinlanTremaine1990Order10 : SymmetricLinearMultistep {
   static constexpr int order = 10;
   static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
       serialization::FixedStepSizeIntegrator::QUINLAN_TREMAINE_1990_ORDER_10;
-  static constexpr FixedVector<double, Half(order)> const ɑ{
+  static constexpr FixedVector<double, Half(order)> const α{
       {{1.0, -1.0, 1.0, -1.0, 1.0, -2.0}}};
   static constexpr FixedVector<double, Half(order)> const β_numerator{
       {{0.0, 399187.0, -485156.0, 2391436.0, -2816732.0, 4651330.0}}};
@@ -823,7 +823,7 @@ struct QuinlanTremaine1990Order12 : SymmetricLinearMultistep {
   static constexpr int order = 12;
   static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
       serialization::FixedStepSizeIntegrator::QUINLAN_TREMAINE_1990_ORDER_12;
-  static constexpr FixedVector<double, Half(order)> const ɑ{
+  static constexpr FixedVector<double, Half(order)> const α{
       {{1.0, -2.0, 2.0, -1.0, 0.0, 0.0, 0.0}}};
   static constexpr FixedVector<double, Half(order)> const β_numerator{
       {{0.0,
@@ -839,7 +839,7 @@ struct QuinlanTremaine1990Order14 : SymmetricLinearMultistep {
   static constexpr int order = 14;
   static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
       serialization::FixedStepSizeIntegrator::QUINLAN_TREMAINE_1990_ORDER_14;
-  static constexpr FixedVector<double, Half(order)> const ɑ{
+  static constexpr FixedVector<double, Half(order)> const α{
       {{1.0, -2.0, 2.0, -1.0, 0.0, 0.0, 0.0, 0.0}}};
   static constexpr FixedVector<double, Half(order)> const β_numerator{
       {{0.0,

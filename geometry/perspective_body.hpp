@@ -194,18 +194,18 @@ Perspective<FromFrame, ToFrame>::VisibleSegments(
   }
 
   // H is the projection of C on the plane KAB.  It is such that:
-  //   KH = ɑ * KA + β * KB
-  // where ɑ and β are computed by solving the linear system:
-  //   KA·KH = KA·KC = ɑ * KA² + β * KA·KB
-  //   KB·KH = KB·KC = ɑ * KA·KB + β * KB²
+  //   KH = α * KA + β * KB
+  // where α and β are computed by solving the linear system:
+  //   KA·KH = KA·KC = α * KA² + β * KA·KB
+  //   KB·KH = KB·KC = α * KA·KB + β * KB²
   auto const KA² = KA.Norm²();
   auto const KB² = KB.Norm²();
   auto const KAKB = InnerProduct(KA, KB);
 
   auto const determinant = KA² * KB² - KAKB * KAKB;
-  double const ɑ = (KB² * KAKC - KAKB * KBKC) / determinant;
+  double const α = (KB² * KAKC - KAKB * KBKC) / determinant;
   double const β = (KA² * KBKC - KAKB * KAKC) / determinant;
-  Displacement<FromFrame> const KH = ɑ * KA + β * KB;
+  Displacement<FromFrame> const KH = α * KA + β * KB;
 
   // The basic check: if H is outside or on the sphere, the sphere doesn't
   // intersect the plane KAB and therefore there is no hiding.
@@ -219,11 +219,11 @@ Perspective<FromFrame, ToFrame>::VisibleSegments(
   // radius of the circle formed by this intersection.
   auto const r² = sphere.radius²() - CH²;
 
-  // If ɑ is negative, H is on the other side of the line KB with respect to A.
+  // If α is negative, H is on the other side of the line KB with respect to A.
   // If it is large enough in absolute value the circle doesn't intersect the
   // wedge formed by KA and KB and there is no hiding.  Same for β with respect
   // to the line KA.
-  if ((ɑ < 0 && ɑ * ɑ >= r² * KB² / determinant) ||
+  if ((α < 0 && α * α >= r² * KB² / determinant) ||
       (β < 0 && β * β >= r² * KA² / determinant)) {
     return {segment};
   }
