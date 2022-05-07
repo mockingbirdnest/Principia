@@ -24,7 +24,9 @@
   !PRINCIPIA_COMPILER_MSVC || !(_MSC_FULL_VER == 192'930'036 || \
                                 _MSC_FULL_VER == 192'930'037 || \
                                 _MSC_FULL_VER == 192'930'038 || \
-                                _MSC_FULL_VER == 192'930'133)
+                                _MSC_FULL_VER == 192'930'133 || \
+                                _MSC_FULL_VER == 192'930'139 || \
+                                _MSC_FULL_VER == 192'930'143)
 
 namespace principia {
 namespace numerics {
