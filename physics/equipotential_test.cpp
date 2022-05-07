@@ -9,6 +9,7 @@
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
+#include "mathematica/mathematica.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
@@ -25,6 +26,7 @@ using geometry::Instant;
 using geometry::Position;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::QuinlanTremaine1990Order12;
+using quantities::si::Hour;
 using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Minute;
@@ -54,16 +56,21 @@ class EquipotentialTest : public ::testing::Test {
   not_null<std::unique_ptr<Ephemeris<Barycentric>>> const ephemeris_;
 };
 
-TEST_F(EquipotentialTest, Smoke) {
+TEST_F(EquipotentialTest, Mathematica) {
+  mathematica::Logger logger(TEMP_DIR / "equipotential.wl");
   Bivector<double, Barycentric> const plane({2, 3, -5});
-  ComputeEquipotential(
+  Instant const t1 = t0_ + 24 * Hour;
+  CHECK_OK(ephemeris_->Prolong(t1));
+  auto const positions = ComputeEquipotential(
       *ephemeris_,
       plane,
       solar_system_
           ->trajectory(*ephemeris_,
                        SolarSystemFactory::name(SolarSystemFactory::Earth))
           .EvaluatePosition(t0_),
-      t0_);
+      t1);
+
+  logger.Set("equipotential", positions, mathematica::ExpressIn(Metre));
 }
 
 }  // namespace physics

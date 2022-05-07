@@ -90,7 +90,7 @@ std::vector<Position<Frame>> ComputeEquipotential(
             Velocity<Frame> velocity;
             auto const status = RightHandSide(
                 ephemeris, plane, t, std::get<0>(state).front(), velocity);
-            std::get<0>(state_variation).push_back(velocity);
+            std::get<0>(state_variation)[0] = velocity;
             return status;
           }};
   typename ODE<Frame>::SystemState initial_state(
