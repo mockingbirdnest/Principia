@@ -43,6 +43,8 @@
     <ClInclude Include="discrete_trajectory_segment_range_body.hpp" />
     <ClInclude Include="discrete_trajectory_types.hpp" />
     <ClInclude Include="discrete_trajectory_types_body.hpp" />
+    <ClInclude Include="equipotential.hpp" />
+    <ClInclude Include="equipotential_body.hpp" />
     <ClInclude Include="mechanical_system.hpp" />
     <ClInclude Include="mechanical_system_body.hpp" />
     <ClInclude Include="continuous_trajectory_body.hpp" />
@@ -105,6 +107,7 @@
     <ClCompile Include="discrete_trajectory_segment_range_test.cpp" />
     <ClCompile Include="discrete_trajectory_segment_test.cpp" />
     <ClCompile Include="discrete_trajectory_test.cpp" />
+    <ClCompile Include="equipotential_test.cpp" />
     <ClCompile Include="mechanical_system_test.cpp" />
     <ClCompile Include="continuous_trajectory_test.cpp" />
     <ClCompile Include="degrees_of_freedom_test.cpp" />

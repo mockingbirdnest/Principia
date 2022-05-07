@@ -215,6 +215,12 @@
     <ClInclude Include="discrete_trajectory_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="equipotential.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="equipotential_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
@@ -321,6 +327,9 @@
     </ClCompile>
     <ClCompile Include="discrete_trajectory_test.cpp">
       <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="equipotential_test.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
