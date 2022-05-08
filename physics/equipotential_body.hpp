@@ -1,17 +1,15 @@
 ﻿#pragma once
 
+#include "physics/equipotential.hpp"
+
 #include <functional>
 
-#include "absl/status/status.h"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
 #include "integrators/methods.hpp"
-#include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/double_precision.hpp"
-#include "physics/equipotential.hpp"
 #include "quantities/named_quantities.hpp"
-#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -22,14 +20,12 @@ using geometry::InfiniteFuture;
 using geometry::Normalize;
 using geometry::Vector;
 using geometry::Velocity;
-using integrators::AdaptiveStepSizeIntegrator;
 using integrators::EmbeddedExplicitRungeKuttaIntegrator;
 using integrators::ExplicitFirstOrderOrdinaryDifferentialEquation;
 using integrators::IntegrationProblem;
 using integrators::methods::DormandPrince1986RK547FC;
 using numerics::DoublePrecision;
 using quantities::Difference;
-using quantities::Length;
 using quantities::Speed;
 using quantities::Time;
 using quantities::si::Metre;
@@ -37,51 +33,30 @@ using quantities::si::Second;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 
-using IndependentVariable = Instant;
 
-IndependentVariable const s_initial;
-IndependentVariable const s_final = InfiniteFuture;
-Difference<IndependentVariable> const s_initial_step = 1 * Second;
-Speed const characteristic_speed = 1 * Metre / Second;
-
-Length const length_integration_tolerance = 1 * Metre;
+template<typename ODE>
+template<typename Frame>
+Equipotential<Frame>::ODEAdaptiveStepParameters<ODE>::ODEAdaptiveStepParameters(
+    AdaptiveStepSizeIntegrator<ODE> const& integrator,
+    std::int64_t max_steps,
+    Length const& length_integration_tolerance)
+    : integrator_(&integrator),
+      max_steps_(max_steps),
+      length_integration_tolerance_(length_integration_tolerance) {}
 
 template<typename Frame>
-using ODE = ExplicitFirstOrderOrdinaryDifferentialEquation<Position<Frame>>;
+Equipotential<Frame>::Equipotential(
+    AdaptiveParameters const& adaptive_parameters,
+    Ephemeris<Frame> const& ephemeris)
+    : adaptive_parameters_(adaptive_parameters),
+      ephemeris_(&ephemeris) {}
 
 template<typename Frame>
-absl::Status RightHandSide(Ephemeris<Frame> const& ephemeris,
-                           Bivector<double, Frame> const& plane,
-                           IndependentVariable const& t,
-                           Position<Frame> const& position,
-                           Velocity<Frame>& velocity) {
-  auto const dVǀᵧ₍ₛ₎ =
-      ephemeris.ComputeGravitationalAccelerationOnMasslessBody(position, t);
-  velocity = Normalize(plane * dVǀᵧ₍ₛ₎) * characteristic_speed;
-  return absl::OkStatus();
-}
-
-template<typename Frame>
-double ToleranceToErrorRatio(
-    Difference<IndependentVariable> const& current_s_step,
-    typename ODE<Frame>::SystemStateError const& error) {
-  Length const max_length_error = std::get<0>(error).front().Norm();
-  return length_integration_tolerance / max_length_error;
-}
-
-template<typename Frame>
-std::vector<Position<Frame>> ComputeEquipotential(
-    Ephemeris<Frame> const& ephemeris,
+std::vector<Position<Frame>> Equipotential<Frame>::ComputeLine(
     Bivector<double, Frame> const& plane,
     Position<Frame> const& position,
     Instant const& t) {
-  static_assert(Frame::is_inertial);
-
-  auto const& integrator =
-      EmbeddedExplicitRungeKuttaIntegrator<DormandPrince1986RK547FC,
-                                           Position<Frame>>();
-
-  ODE<Frame> equation{
+  ODE equation{
       .compute_derivative =
           [&ephemeris, &plane, &t](
               IndependentVariable const& s,
@@ -122,6 +97,40 @@ std::vector<Position<Frame>> ComputeEquipotential(
   auto status = instance->Solve(s_final);
 
   return equipotential;
+}
+
+template<typename Frame>
+absl::Status Equipotential<Frame>::RightHandSide(
+    Bivector<double, Frame> const& plane,
+    Position<Frame> const& position,
+    Instant const& t,
+    IndependentVariable const& s,
+    State const& state,
+    StateVariation& state_variation) {
+  // First state variable.
+  auto const& γₛ = std::get<0>(state).front();
+  auto const dVǀᵧ₍ₛ₎ =
+      ephemeris.ComputeGravitationalAccelerationOnMasslessBody(position, t);
+  Velocity<Frame> const γʹ = Normalize(plane * dVǀᵧ₍ₛ₎) * characteristic_speed;
+
+  // Second state variable.
+  auto const& γ₀ = position;
+  double const βʹ = characteristic_speed * s / (γₛ - γ₀).Norm();
+
+  std::get<0>(state_variation).front() = γʹ;
+  std::get<1>(state_variation).front() = βʹ;
+
+  return absl::OkStatus();
+}
+
+template<typename Frame>
+double Equipotential<Frame>::ToleranceToErrorRatio(
+    Difference<IndependentVariable> const& current_s_step,
+    typename ODE::SystemStateError const& error) {
+  Length const max_length_error = std::get<0>(error).front().Norm();
+  double const max_braking_error = Abs(std::get<1>(error).front());
+  return std::min(length_integration_tolerance / max_length_error,
+                  max_braking_error);
 }
 
 }  // namespace internal_equipotential
