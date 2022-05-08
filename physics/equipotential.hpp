@@ -74,7 +74,7 @@ class Equipotential {
   using IndependentVariable = Instant;
   static constexpr IndependentVariable const s_initial_;
   static constexpr IndependentVariable const s_final_ = InfiniteFuture;
-  static constexpr Difference<IndependentVariable> const s_initial_step_ =
+  static constexpr Difference<IndependentVariable> const initial_s_step_ =
       1 * Second;
   static constexpr Acceleration const characteristic_acceleration_ =
       1 * Metre / Second / Second;

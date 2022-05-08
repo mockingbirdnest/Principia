@@ -73,7 +73,7 @@ std::vector<Position<Frame>> Equipotential<Frame>::ComputeLine(
 
   typename AdaptiveStepSizeIntegrator<ODE>::Parameters const
       integrator_parameters(
-          /*first_time_step=*/s_initial_step_,
+          /*first_time_step=*/initial_s_step_,
           /*safety_factor=*/0.9,
           /*max_steps=*/adaptive_parameters_.max_steps(),
           /*last_step_is_exact=*/true);
@@ -128,6 +128,9 @@ double Equipotential<Frame>::ToleranceToErrorRatio(
     Difference<IndependentVariable> const& current_s_step,
     SystemStateError const& error) {
   LOG(ERROR)<<"step="<<current_s_step;
+  if (current_s_step < initial_s_step_) {
+    return 0.0;
+  }
   Length const max_length_error = std::get<0>(error).front().Norm();
   double const max_braking_error = Abs(std::get<1>(error).front());
   return std::min(
