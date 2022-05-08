@@ -77,17 +77,17 @@ class PluginCompatibilityTest : public testing::Test {
         TEMP_DIR /
             testing::UnitTest::GetInstance()->current_test_info()->name() /
             "serialized_plugin.proto.b64",
-                      preferred_compressor,
-                      preferred_encoder,
-                      std::move(plugin1));
+        preferred_compressor,
+        preferred_encoder,
+        std::move(plugin1));
 
     // Read the plugin from the new file to make sure that it's fine.
     auto plugin2 = ReadPluginFromFile(
         TEMP_DIR /
             testing::UnitTest::GetInstance()->current_test_info()->name() /
             "serialized_plugin.proto.b64",
-                                      preferred_compressor,
-                                      preferred_encoder);
+        preferred_compressor,
+        preferred_encoder);
   }
 
   static void CheckSaveCompatibility(std::filesystem::path const& filename,
