@@ -75,8 +75,9 @@ class PluginCompatibilityTest : public testing::Test {
     // Write the plugin to a new file with the preferred format.
     WritePluginToFile(
         TEMP_DIR /
-            (testing::UnitTest::GetInstance()->current_test_info()->name() +
-             "_serialized_plugin.proto.b64"),
+            absl::StrCat(
+                testing::UnitTest::GetInstance()->current_test_info()->name(),
+                "_serialized_plugin.proto.b64"),
         preferred_compressor,
         preferred_encoder,
         std::move(plugin1));
@@ -84,8 +85,9 @@ class PluginCompatibilityTest : public testing::Test {
     // Read the plugin from the new file to make sure that it's fine.
     auto plugin2 = ReadPluginFromFile(
         TEMP_DIR /
-            (testing::UnitTest::GetInstance()->current_test_info()->name() +
-             "_serialized_plugin.proto.b64"),
+            absl::StrCat(
+                testing::UnitTest::GetInstance()->current_test_info()->name(),
+                "_serialized_plugin.proto.b64"),
         preferred_compressor,
         preferred_encoder);
   }
