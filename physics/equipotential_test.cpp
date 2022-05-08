@@ -72,10 +72,24 @@ class EquipotentialTest : public ::testing::Test {
 TEST_F(EquipotentialTest, Mathematica) {
   mathematica::Logger logger(TEMP_DIR / "equipotential.wl");
   Bivector<double, Barycentric> const plane({2, 3, -5});
-  Instant const t1 = t0_ + 24 * Hour;
-  CHECK_OK(ephemeris_->Prolong(t1));
+  {
+    LOG(ERROR)<<"MERCURY";
+    Instant const t1 = t0_ + 24 * Hour;
+    CHECK_OK(ephemeris_->Prolong(t1));
+    auto const positions = equipotential_.ComputeLine(
+        plane,
+        solar_system_
+            ->trajectory(*ephemeris_,
+                         SolarSystemFactory::name(SolarSystemFactory::Mercury))
+            .EvaluatePosition(t0_),
+        t1);
+    logger.Set(
+        "equipotentialMercury", positions, mathematica::ExpressIn(Metre));
+  }
   {
     LOG(ERROR)<<"EARTH";
+    Instant const t1 = t0_ + 24 * Hour;
+    CHECK_OK(ephemeris_->Prolong(t1));
     auto const positions = equipotential_.ComputeLine(
         plane,
         solar_system_
@@ -87,6 +101,8 @@ TEST_F(EquipotentialTest, Mathematica) {
   }
   {
     LOG(ERROR)<<"JUPITER";
+    Instant const t1 = t0_ + 2400 * Hour;
+    CHECK_OK(ephemeris_->Prolong(t1));
     auto const positions = equipotential_.ComputeLine(
         plane,
         solar_system_

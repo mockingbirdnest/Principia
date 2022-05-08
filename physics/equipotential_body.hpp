@@ -82,7 +82,7 @@ std::vector<Position<Frame>> Equipotential<Frame>::ComputeLine(
   typename AdaptiveStepSizeIntegrator<ODE>::AppendState const append_state =
       [&equipotential](SystemState const& system_state) {
         equipotential.push_back(std::get<0>(system_state.y).front().value);
-        //LOG(ERROR)<<"beta="<<std::get<1>(system_state.y).front().value;
+        LOG(ERROR)<<"beta="<<std::get<1>(system_state.y).front().value;
       };
 
   auto const tolerance_to_error_ratio =
@@ -115,7 +115,7 @@ absl::Status Equipotential<Frame>::RightHandSide(
       s == s_initial_
           ? Frequency{}
           : Pow<2>(characteristic_speed_) * (s - s_initial_) / (γₛ - γ₀).Norm²();
-  LOG(ERROR)<<u8"βʹ="<<βʹ;
+  //LOG(ERROR)<<u8"βʹ="<<βʹ;
 
   std::get<0>(state_variation).front() = γʹ;
   std::get<1>(state_variation).front() = βʹ;
