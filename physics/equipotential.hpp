@@ -15,8 +15,7 @@ using geometry::Instant;
 using geometry::Position;
 using physics::Ephemeris;
 
-//TODO(phl): Use a proper system state below?
-// Avoid Instant?
+//TODO(phl): Avoid Instant?
 
 template<typename Frame>
 std::vector<Position<Frame>> ComputeEquipotential(
