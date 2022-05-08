@@ -6,43 +6,49 @@
 
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
-#include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
-#include "integrators/methods.hpp"
 #include "numerics/double_precision.hpp"
-#include "quantities/named_quantities.hpp"
-#include "quantities/si.hpp"
+#include "quantities/elementary_functions.hpp"
 
 namespace principia {
 namespace physics {
 namespace internal_equipotential {
 
-using geometry::InfiniteFuture;
 using geometry::Normalize;
 using geometry::Vector;
 using geometry::Velocity;
-using integrators::EmbeddedExplicitRungeKuttaIntegrator;
-using integrators::ExplicitFirstOrderOrdinaryDifferentialEquation;
 using integrators::IntegrationProblem;
-using integrators::methods::DormandPrince1986RK547FC;
 using numerics::DoublePrecision;
-using quantities::Difference;
-using quantities::Speed;
+using quantities::Abs;
+using quantities::Frequency;
 using quantities::Time;
-using quantities::si::Metre;
-using quantities::si::Second;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
-
+using ::std::placeholders::_3;
 
 template<typename ODE>
-template<typename Frame>
-Equipotential<Frame>::ODEAdaptiveStepParameters<ODE>::ODEAdaptiveStepParameters(
+ODEAdaptiveStepParameters<ODE>::ODEAdaptiveStepParameters(
     AdaptiveStepSizeIntegrator<ODE> const& integrator,
-    std::int64_t max_steps,
+    std::int64_t const max_steps,
     Length const& length_integration_tolerance)
     : integrator_(&integrator),
       max_steps_(max_steps),
       length_integration_tolerance_(length_integration_tolerance) {}
+
+template<typename ODE>
+AdaptiveStepSizeIntegrator<ODE> const&
+ODEAdaptiveStepParameters<ODE>::integrator() const {
+  return *integrator_;
+}
+
+template<typename ODE>
+std::int64_t ODEAdaptiveStepParameters<ODE>::max_steps() const {
+  return max_steps_;
+}
+
+template<typename ODE>
+Length ODEAdaptiveStepParameters<ODE>::length_integration_tolerance() const {
+  return length_integration_tolerance_;
+}
 
 template<typename Frame>
 Equipotential<Frame>::Equipotential(
@@ -57,44 +63,33 @@ std::vector<Position<Frame>> Equipotential<Frame>::ComputeLine(
     Position<Frame> const& position,
     Instant const& t) {
   ODE equation{
-      .compute_derivative =
-          [&ephemeris, &plane, &t](
-              IndependentVariable const& s,
-              typename ODE<Frame>::State const& state,
-              typename ODE<Frame>::StateVariation& state_variation) {
-            Velocity<Frame> velocity;
-            auto const status = RightHandSide(
-                ephemeris, plane, t, std::get<0>(state).front(), velocity);
-            std::get<0>(state_variation)[0] = velocity;
-            return status;
-          }};
-  typename ODE<Frame>::SystemState initial_state(
-      {{position}}, s_initial);
-  IntegrationProblem<ODE<Frame>> const problem{
+      .compute_derivative = std::bind(
+          &Equipotential::RightHandSide, this, plane, position, t, _1, _2, _3)};
+  SystemState initial_state({{position}, {0}}, s_initial_);
+  IntegrationProblem<ODE> const problem{
       .equation = std::move(equation),
       .initial_state = std::move(initial_state)};
 
-  typename AdaptiveStepSizeIntegrator<ODE<Frame>>::Parameters const
+  typename AdaptiveStepSizeIntegrator<ODE>::Parameters const
       integrator_parameters(
-          /*first_time_step=*/s_initial_step,
+          /*first_time_step=*/s_initial_step_,
           /*safety_factor=*/0.9,
-          /*max_steps=*/1000,
+          /*max_steps=*/adaptive_parameters_.max_steps(),
           /*last_step_is_exact=*/true);
 
   std::vector<Position<Frame>> equipotential;
-
-  typename AdaptiveStepSizeIntegrator<ODE<Frame>>::AppendState const append_state =
-      [&equipotential](typename ODE<Frame>::SystemState const& system_state) {
+  typename AdaptiveStepSizeIntegrator<ODE>::AppendState const append_state =
+      [&equipotential](SystemState const& system_state) {
         equipotential.push_back(std::get<0>(system_state.y).front().value);
+        LOG(ERROR)<<"beta="<<std::get<1>(system_state.y).front().value;
       };
+
   auto const tolerance_to_error_ratio =
-      std::bind(ToleranceToErrorRatio<Frame>,
-                _1, _2);
+      std::bind(&Equipotential::ToleranceToErrorRatio, this, _1, _2);
 
-
-  auto const instance = integrator.NewInstance(
+  auto const instance = adaptive_parameters_.integrator().NewInstance(
       problem, append_state, tolerance_to_error_ratio, integrator_parameters);
-  auto status = instance->Solve(s_final);
+  auto status = instance->Solve(s_final_);
 
   return equipotential;
 }
@@ -110,12 +105,15 @@ absl::Status Equipotential<Frame>::RightHandSide(
   // First state variable.
   auto const& γₛ = std::get<0>(state).front();
   auto const dVǀᵧ₍ₛ₎ =
-      ephemeris.ComputeGravitationalAccelerationOnMasslessBody(position, t);
-  Velocity<Frame> const γʹ = Normalize(plane * dVǀᵧ₍ₛ₎) * characteristic_speed;
+      ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(position, t);
+  Velocity<Frame> const γʹ = Normalize(plane * dVǀᵧ₍ₛ₎) * characteristic_speed_;
 
   // Second state variable.
   auto const& γ₀ = position;
-  double const βʹ = characteristic_speed * s / (γₛ - γ₀).Norm();
+  Frequency const βʹ =
+      s == s_initial_
+          ? Frequency{}
+          : characteristic_acceleration_ * (s - s_initial_) / (γₛ - γ₀).Norm();
 
   std::get<0>(state_variation).front() = γʹ;
   std::get<1>(state_variation).front() = βʹ;
@@ -126,11 +124,14 @@ absl::Status Equipotential<Frame>::RightHandSide(
 template<typename Frame>
 double Equipotential<Frame>::ToleranceToErrorRatio(
     Difference<IndependentVariable> const& current_s_step,
-    typename ODE::SystemStateError const& error) {
+    SystemStateError const& error) {
+  LOG(ERROR)<<"step="<<current_s_step;
   Length const max_length_error = std::get<0>(error).front().Norm();
   double const max_braking_error = Abs(std::get<1>(error).front());
-  return std::min(length_integration_tolerance / max_length_error,
-                  max_braking_error);
+  //return std::min(
+  //    adaptive_parameters_.length_integration_tolerance() / max_length_error,
+  //    1.0 / max_braking_error);
+  return adaptive_parameters_.length_integration_tolerance() / max_length_error;
 }
 
 }  // namespace internal_equipotential

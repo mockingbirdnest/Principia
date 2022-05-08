@@ -8,6 +8,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
+#include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "mathematica/mathematica.hpp"
 #include "physics/solar_system.hpp"
@@ -24,7 +25,9 @@ using geometry::Frame;
 using geometry::Inertial;
 using geometry::Instant;
 using geometry::Position;
+using integrators::EmbeddedExplicitRungeKuttaIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
+using integrators::methods::DormandPrince1986RK547FC;
 using integrators::methods::QuinlanTremaine1990Order12;
 using quantities::si::Hour;
 using quantities::si::Metre;
@@ -48,12 +51,22 @@ class EquipotentialTest : public ::testing::Test {
         ephemeris_(solar_system_->MakeEphemeris(
             /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
                                      /*geopotential_tolerance=*/0x1p-24},
-            ephemeris_parameters_)) {}
+            ephemeris_parameters_)),
+        equipotential_parameters_(
+            EmbeddedExplicitRungeKuttaIntegrator<DormandPrince1986RK547FC,
+                                                 Position<Barycentric>,
+                                                 double>(),
+            /*max_steps=*/1000,
+            /*length_integration_tolerance=*/1 * Metre),
+        equipotential_(equipotential_parameters_, *ephemeris_) {}
 
   Instant const t0_;
   Ephemeris<Barycentric>::FixedStepParameters const ephemeris_parameters_;
   not_null<std::unique_ptr<SolarSystem<Barycentric>>> const solar_system_;
   not_null<std::unique_ptr<Ephemeris<Barycentric>>> const ephemeris_;
+  Equipotential<Barycentric>::AdaptiveParameters const
+      equipotential_parameters_;
+  Equipotential<Barycentric> equipotential_;
 };
 
 TEST_F(EquipotentialTest, Mathematica) {
@@ -61,8 +74,7 @@ TEST_F(EquipotentialTest, Mathematica) {
   Bivector<double, Barycentric> const plane({2, 3, -5});
   Instant const t1 = t0_ + 24 * Hour;
   CHECK_OK(ephemeris_->Prolong(t1));
-  auto const positions = ComputeEquipotential(
-      *ephemeris_,
+  auto const positions = equipotential_.ComputeLine(
       plane,
       solar_system_
           ->trajectory(*ephemeris_,
