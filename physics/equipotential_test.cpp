@@ -74,15 +74,29 @@ TEST_F(EquipotentialTest, Mathematica) {
   Bivector<double, Barycentric> const plane({2, 3, -5});
   Instant const t1 = t0_ + 24 * Hour;
   CHECK_OK(ephemeris_->Prolong(t1));
-  auto const positions = equipotential_.ComputeLine(
-      plane,
-      solar_system_
-          ->trajectory(*ephemeris_,
-                       SolarSystemFactory::name(SolarSystemFactory::Earth))
-          .EvaluatePosition(t0_),
-      t1);
-
-  logger.Set("equipotential", positions, mathematica::ExpressIn(Metre));
+  {
+    LOG(ERROR)<<"EARTH";
+    auto const positions = equipotential_.ComputeLine(
+        plane,
+        solar_system_
+            ->trajectory(*ephemeris_,
+                         SolarSystemFactory::name(SolarSystemFactory::Earth))
+            .EvaluatePosition(t0_),
+        t1);
+    logger.Set("equipotentialEarth", positions, mathematica::ExpressIn(Metre));
+  }
+  {
+    LOG(ERROR)<<"JUPITER";
+    auto const positions = equipotential_.ComputeLine(
+        plane,
+        solar_system_
+            ->trajectory(*ephemeris_,
+                         SolarSystemFactory::name(SolarSystemFactory::Jupiter))
+            .EvaluatePosition(t0_),
+        t1);
+    logger.Set(
+        "equipotentialJupiter", positions, mathematica::ExpressIn(Metre));
+  }
 }
 
 }  // namespace physics
