@@ -187,8 +187,8 @@ Instance::Solve(Instant const& t_final) {
           }
           q_stage[k] = q̂[k].value + h * c[i] * v̂[k].value + h² * Σⱼ_aᵢⱼ_gⱼₖ;
         }
-        step_status.Update(
-            equation.compute_acceleration(t_stage, q_stage, g[i]));
+        termination_condition::UpdateWithAbort(
+            equation.compute_acceleration(t_stage, q_stage, g[i]), step_status);
       }
 
       // Increment computation and step size control.

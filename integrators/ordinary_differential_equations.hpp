@@ -19,6 +19,7 @@ namespace integrators {
 // The |Solve| function of the |AdaptiveStepSizeIntegrator| exclusively returns
 // one of the following statuses.
 namespace termination_condition {
+
 constexpr absl::StatusCode Done = absl::StatusCode::kOk;
 // The integration may be retried with the same arguments and progress will
 // happen.
@@ -26,6 +27,10 @@ constexpr absl::StatusCode ReachedMaximalStepCount = absl::StatusCode::kAborted;
 // A singularity.
 constexpr absl::StatusCode VanishingStepSize =
     absl::StatusCode::kFailedPrecondition;
+
+// Same as absl::Status::Update, but prefers kAbort.
+void UpdateWithAbort(absl::Status const& updater, absl::Status& updated);
+
 }  // namespace termination_condition
 
 namespace internal_ordinary_differential_equations {
