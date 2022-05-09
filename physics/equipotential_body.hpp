@@ -59,10 +59,10 @@ Equipotential<Frame>::Equipotential(
       ephemeris_(&ephemeris) {}
 
 template<typename Frame>
-std::vector<Position<Frame>> Equipotential<Frame>::ComputeLine(
+auto Equipotential<Frame>::ComputeLine(
     Bivector<double, Frame> const& plane,
     Position<Frame> const& position,
-    Instant const& t) {
+    Instant const& t) -> State {
   ODE equation{
       .compute_derivative = std::bind(
           &Equipotential::RightHandSide, this, plane, position, t, _1, _2, _3)};
@@ -78,11 +78,13 @@ std::vector<Position<Frame>> Equipotential<Frame>::ComputeLine(
           /*max_steps=*/adaptive_parameters_.max_steps(),
           /*last_step_is_exact=*/true);
 
-  std::vector<Position<Frame>> equipotential;
+  State equipotential;
   typename AdaptiveStepSizeIntegrator<ODE>::AppendState const append_state =
       [&equipotential](SystemState const& system_state) {
-        equipotential.push_back(std::get<0>(system_state.y).front().value);
-        LOG(ERROR)<<"beta="<<std::get<1>(system_state.y).front().value;
+        std::get<0>(equipotential)
+            .push_back(std::get<0>(system_state.y).front().value);
+        std::get<1>(equipotential)
+            .push_back(std::get<1>(system_state.y).front().value);
       };
 
   auto const tolerance_to_error_ratio =
@@ -127,7 +129,6 @@ template<typename Frame>
 double Equipotential<Frame>::ToleranceToErrorRatio(
     Difference<IndependentVariable> const& current_s_step,
     SystemStateError const& error) {
-  LOG(ERROR)<<"step="<<current_s_step;
   if (current_s_step < initial_s_step_) {
     return 0.0;
   }

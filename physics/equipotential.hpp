@@ -64,10 +64,9 @@ class Equipotential {
   Equipotential(AdaptiveParameters const& adaptive_parameters,
                 Ephemeris<Frame> const& ephemeris);
 
-  std::vector<Position<Frame>> ComputeLine(
-      Bivector<double, Frame> const& plane,
-      Position<Frame> const& position,
-      Instant const& t);
+  typename ODE::State ComputeLine(Bivector<double, Frame> const& plane,
+                                  Position<Frame> const& position,
+                                  Instant const& t);
 
  private:
   // TODO(phl): Avoid Instant.
@@ -76,8 +75,6 @@ class Equipotential {
   static constexpr IndependentVariable const s_final_ = InfiniteFuture;
   static constexpr Difference<IndependentVariable> const initial_s_step_ =
       1 * Second;
-  static constexpr Acceleration const characteristic_acceleration_ =
-      1 * Metre / Second / Second;
   static constexpr Speed const characteristic_speed_ = 1 * Metre / Second;
 
   using State = typename ODE::State;

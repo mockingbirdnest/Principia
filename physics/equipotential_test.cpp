@@ -1,4 +1,4 @@
-
+﻿
 #include "physics/equipotential.hpp"
 
 #include "base/not_null.hpp"
@@ -76,7 +76,7 @@ TEST_F(EquipotentialTest, Mathematica) {
     LOG(ERROR)<<"MERCURY";
     Instant const t1 = t0_ + 24 * Hour;
     CHECK_OK(ephemeris_->Prolong(t1));
-    auto const positions = equipotential_.ComputeLine(
+    auto const& [positions, βs] = equipotential_.ComputeLine(
         plane,
         solar_system_
             ->trajectory(*ephemeris_,
@@ -85,12 +85,13 @@ TEST_F(EquipotentialTest, Mathematica) {
         t1);
     logger.Set(
         "equipotentialMercury", positions, mathematica::ExpressIn(Metre));
+    logger.Set("betaMercury", βs);
   }
   {
     LOG(ERROR)<<"EARTH";
     Instant const t1 = t0_ + 24 * Hour;
     CHECK_OK(ephemeris_->Prolong(t1));
-    auto const positions = equipotential_.ComputeLine(
+    auto const& [positions, βs] = equipotential_.ComputeLine(
         plane,
         solar_system_
             ->trajectory(*ephemeris_,
@@ -98,12 +99,13 @@ TEST_F(EquipotentialTest, Mathematica) {
             .EvaluatePosition(t0_),
         t1);
     logger.Set("equipotentialEarth", positions, mathematica::ExpressIn(Metre));
+    logger.Set("betaEarth", βs);
   }
   {
     LOG(ERROR)<<"JUPITER";
     Instant const t1 = t0_ + 2400 * Hour;
     CHECK_OK(ephemeris_->Prolong(t1));
-    auto const positions = equipotential_.ComputeLine(
+    auto const& [positions, βs] = equipotential_.ComputeLine(
         plane,
         solar_system_
             ->trajectory(*ephemeris_,
@@ -112,6 +114,7 @@ TEST_F(EquipotentialTest, Mathematica) {
         t1);
     logger.Set(
         "equipotentialJupiter", positions, mathematica::ExpressIn(Metre));
+    logger.Set("betaJupiter", βs);
   }
 }
 
