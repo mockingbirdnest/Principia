@@ -112,6 +112,7 @@ absl::Status Equipotential<Frame>::RightHandSide(
   Velocity<Frame> const γʹ = Normalize(plane * dVǀᵧ₍ₛ₎) * characteristic_speed_;
 
   // Second state variable.
+  double const β = std::get<1>(state).front();
   auto const& γ₀ = position;
   Frequency const βʹ =
       s == s_initial_
@@ -122,7 +123,7 @@ absl::Status Equipotential<Frame>::RightHandSide(
   std::get<0>(state_variation).front() = γʹ;
   std::get<1>(state_variation).front() = βʹ;
 
-  return absl::OkStatus();
+  return β > β_max_ ? absl::AbortedError("β reached max") : absl::OkStatus();
 }
 
 template<typename Frame>

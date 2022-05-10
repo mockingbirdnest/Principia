@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <vector>
 
@@ -23,7 +23,6 @@ using geometry::Instant;
 using geometry::Position;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::ExplicitFirstOrderOrdinaryDifferentialEquation;
-using physics::Ephemeris;
 using quantities::Acceleration;
 using quantities::Difference;
 using quantities::Length;
@@ -76,6 +75,7 @@ class Equipotential {
   static constexpr Difference<IndependentVariable> const initial_s_step_ =
       1 * Second;
   static constexpr Speed const characteristic_speed_ = 1 * Metre / Second;
+  static constexpr double β_max_ = 1e6;
 
   using State = typename ODE::State;
   using StateVariation = typename ODE::StateVariation;

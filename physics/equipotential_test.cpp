@@ -103,7 +103,7 @@ TEST_F(EquipotentialTest, Mathematica) {
   }
   {
     LOG(ERROR)<<"JUPITER";
-    Instant const t1 = t0_ + 2400 * Hour;
+    Instant const t1 = t0_ + 24 * Hour;
     CHECK_OK(ephemeris_->Prolong(t1));
     auto const& [positions, βs] = equipotential_.ComputeLine(
         plane,
