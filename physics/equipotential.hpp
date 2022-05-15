@@ -54,7 +54,6 @@ class Equipotential {
   static_assert(InertialFrame::is_inertial, "InertialFrame must be inertial");
 
  public:
-
   // The first state variable is a point of an equipotential.  The second state
   // variable is the (scale-free) intensity of the braking.
   using ODE =
@@ -67,7 +66,7 @@ class Equipotential {
 
   typename ODE::State ComputeLine(Bivector<double, Frame> const& plane,
                                   Position<Frame> const& position,
-                                  Instant const& t);
+                                  Instant const& t) const;
 
  private:
   // TODO(phl): Avoid Instant.
@@ -89,11 +88,11 @@ class Equipotential {
                              Instant const& t,
                              IndependentVariable const& s,
                              State const& state,
-                             StateVariation& state_variation);
+                             StateVariation& state_variation) const;
 
   double ToleranceToErrorRatio(
       Difference<IndependentVariable> const& current_s_step,
-      SystemStateError const& error);
+      SystemStateError const& error) const;
 
   AdaptiveParameters const& adaptive_parameters_;
   not_null<DynamicFrame<InertialFrame, Frame> const*> const dynamic_frame_;

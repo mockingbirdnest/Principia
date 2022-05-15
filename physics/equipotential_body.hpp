@@ -62,7 +62,7 @@ template<typename InertialFrame, typename Frame>
 auto Equipotential<InertialFrame, Frame>::ComputeLine(
     Bivector<double, Frame> const& plane,
     Position<Frame> const& position,
-    Instant const& t) -> State {
+    Instant const& t) const -> State {
   ODE equation{
       .compute_derivative = std::bind(
           &Equipotential::RightHandSide, this, plane, position, t, _1, _2, _3)};
@@ -104,7 +104,7 @@ absl::Status Equipotential<InertialFrame, Frame>::RightHandSide(
     Instant const& t,
     IndependentVariable const& s,
     State const& state,
-    StateVariation& state_variation) {
+    StateVariation& state_variation) const {
   // First state variable.
   auto const& γₛ = std::get<0>(state).front();
   auto const dVǀᵧ₍ₛ₎ =
@@ -131,7 +131,7 @@ absl::Status Equipotential<InertialFrame, Frame>::RightHandSide(
 template<typename InertialFrame, typename Frame>
 double Equipotential<InertialFrame, Frame>::ToleranceToErrorRatio(
     Difference<IndependentVariable> const& current_s_step,
-    SystemStateError const& error) {
+    SystemStateError const& error) const {
   if (current_s_step < initial_s_step_) {
     return 0.0;
   }
