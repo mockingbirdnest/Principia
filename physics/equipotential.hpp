@@ -7,7 +7,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
-#include "physics/ephemeris.hpp"
+#include "physics/dynamic_frame.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -49,9 +49,10 @@ class ODEAdaptiveStepParameters final {
   Length length_integration_tolerance_;
 };
 
-template<typename Frame>
+template<typename InertialFrame, typename Frame>
 class Equipotential {
-  static_assert(Frame::is_inertial);
+  static_assert(InertialFrame::is_inertial, "InertialFrame must be inertial");
+
  public:
 
   // The first state variable is a point of an equipotential.  The second state
@@ -60,8 +61,9 @@ class Equipotential {
       ExplicitFirstOrderOrdinaryDifferentialEquation<Position<Frame>, double>;
   using AdaptiveParameters = ODEAdaptiveStepParameters<ODE>;
 
-  Equipotential(AdaptiveParameters const& adaptive_parameters,
-                Ephemeris<Frame> const& ephemeris);
+  Equipotential(
+      AdaptiveParameters const& adaptive_parameters,
+      not_null<DynamicFrame<InertialFrame, Frame> const*> dynamic_frame);
 
   typename ODE::State ComputeLine(Bivector<double, Frame> const& plane,
                                   Position<Frame> const& position,
@@ -94,7 +96,7 @@ class Equipotential {
       SystemStateError const& error);
 
   AdaptiveParameters const& adaptive_parameters_;
-  not_null<Ephemeris<Frame> const*> const ephemeris_;
+  not_null<DynamicFrame<InertialFrame, Frame> const*> const dynamic_frame_;
 };
 
 }  // namespace internal_equipotential

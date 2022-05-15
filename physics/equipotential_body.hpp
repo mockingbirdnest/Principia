@@ -51,15 +51,15 @@ Length ODEAdaptiveStepParameters<ODE>::length_integration_tolerance() const {
   return length_integration_tolerance_;
 }
 
-template<typename Frame>
-Equipotential<Frame>::Equipotential(
+template<typename InertialFrame, typename Frame>
+Equipotential<InertialFrame, Frame>::Equipotential(
     AdaptiveParameters const& adaptive_parameters,
-    Ephemeris<Frame> const& ephemeris)
+    not_null<DynamicFrame<InertialFrame, Frame> const*> const dynamic_frame)
     : adaptive_parameters_(adaptive_parameters),
-      ephemeris_(&ephemeris) {}
+      dynamic_frame_(dynamic_frame) {}
 
-template<typename Frame>
-auto Equipotential<Frame>::ComputeLine(
+template<typename InertialFrame, typename Frame>
+auto Equipotential<InertialFrame, Frame>::ComputeLine(
     Bivector<double, Frame> const& plane,
     Position<Frame> const& position,
     Instant const& t) -> State {
@@ -97,8 +97,8 @@ auto Equipotential<Frame>::ComputeLine(
   return equipotential;
 }
 
-template<typename Frame>
-absl::Status Equipotential<Frame>::RightHandSide(
+template<typename InertialFrame, typename Frame>
+absl::Status Equipotential<InertialFrame, Frame>::RightHandSide(
     Bivector<double, Frame> const& plane,
     Position<Frame> const& position,
     Instant const& t,
@@ -108,7 +108,9 @@ absl::Status Equipotential<Frame>::RightHandSide(
   // First state variable.
   auto const& γₛ = std::get<0>(state).front();
   auto const dVǀᵧ₍ₛ₎ =
-      ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(γₛ, t);
+      dynamic_frame_->GeometricAcceleration(
+          t,
+          DegreesOfFreedom<Frame>(γₛ, Velocity<Frame>{}));
   Velocity<Frame> const γʹ = Normalize(plane * dVǀᵧ₍ₛ₎) * characteristic_speed_;
 
   // Second state variable.
@@ -126,8 +128,8 @@ absl::Status Equipotential<Frame>::RightHandSide(
   return β > β_max_ ? absl::AbortedError("β reached max") : absl::OkStatus();
 }
 
-template<typename Frame>
-double Equipotential<Frame>::ToleranceToErrorRatio(
+template<typename InertialFrame, typename Frame>
+double Equipotential<InertialFrame, Frame>::ToleranceToErrorRatio(
     Difference<IndependentVariable> const& current_s_step,
     SystemStateError const& error) {
   if (current_s_step < initial_s_step_) {
