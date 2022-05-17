@@ -61,16 +61,17 @@ class DynamicFrame {
 
   // The acceleration of a particle at rest in |ThisFrame| at the given
   // |position| owing to non-inertial motion of |ThisFrame| and gravity,
-  // excluding components with a rotation; that is, if a is the vector field
-  // given by GeometricAcceleration, this function returns
-  //   a - (rot a) r / 2,
-  // where r is the radial vector.
-  // In a rotating reference frame, this may alternatively be expressed as the
-  // second derivative of position with respect to the parametrization on the
-  // angle θ rather than time (which eliminates the Euler acceleration),
-  // converted to an acceleration (in m/s² rather than m/rad²) by multiplying by
-  // the value of θ′² at t.
-  // This acceleration derives from a potential.
+  // excluding components with a rotation.
+  // Let r be the radial vector (from the origin of |ThisFrame|) corresponding
+  // to |position|.
+  // Let r ↦ r″ be the vector field  of free fall accelerations from a rest in
+  // |ThisFrame| at t. This function returns
+  //   a = r″ - (rot r″) r / 2.
+  // In a rotating reference frame, this may equivalently be expressed using
+  // the second derivative of position with respect to the parametrization on
+  // the angle θ rather than time, which eliminates the Euler acceleration:
+  //   a = θ′² d²r/dθ², starting from a rest defined as dr/dθ = 0.
+  // Either way, the vector field a derives from a potential.
   virtual Vector<Acceleration, ThisFrame>
   RotationFreeGeometricAccelerationAtRest(
       Instant const& t,
