@@ -59,6 +59,23 @@ class DynamicFrame {
       Instant const& t,
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
 
+  // The acceleration of a particle at rest in |ThisFrame| at the given
+  // |position| owing to non-inertial motion of |ThisFrame| and gravity,
+  // excluding components with a rotation; that is, if a is the vector field
+  // given by GeometricAcceleration, this function returns
+  //   a - (rot a) r / 2,
+  // where r is the radial vector.
+  // In a rotating reference frame, this may alternatively be expressed as the
+  // second derivative of position with respect to the parametrization on the
+  // angle θ rather than time (which eliminates the Euler acceleration),
+  // converted to an acceleration (in m/s² rather than m/rad²) by multiplying by
+  // the value of θ′² at t.
+  // This acceleration derives from a potential.
+  virtual Vector<Acceleration, ThisFrame>
+  RotationFreeGeometricAccelerationAtRest(
+      Instant const& t,
+      Position<ThisFrame> const& position) const;
+
   // The definition of the Frenet frame of a free fall trajectory in |ThisFrame|
   // with the given |degrees_of_freedom| at instant |t|.
   virtual Rotation<Frenet<ThisFrame>, ThisFrame> FrenetFrame(
