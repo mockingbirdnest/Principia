@@ -64,7 +64,7 @@ class DynamicFrame {
   // excluding components with a rotation.
   // Let r be the radial vector (from the origin of |ThisFrame|) corresponding
   // to |position|.
-  // Let r ↦ r″ be the vector field  of free fall accelerations from a rest in
+  // Let r ↦ r″ be the vector field of free fall accelerations from rest in
   // |ThisFrame| at t. This function returns
   //   a = r″ - (rot r″) r / 2.
   // In a rotating reference frame, this may equivalently be expressed using
@@ -93,6 +93,15 @@ class DynamicFrame {
                       not_null<Ephemeris<InertialFrame> const*> ephemeris);
 
  private:
+  void ComputeGeometricAccelerations(
+      Instant const& t,
+      DegreesOfFreedom<ThisFrame> const& degrees_of_freedom,
+      Vector<Acceleration, ThisFrame>& gravitational_acceleration,
+      Vector<Acceleration, ThisFrame>& linear_acceleration,
+      Vector<Acceleration, ThisFrame>& coriolis_acceleration_at_point,
+      Vector<Acceleration, ThisFrame>& centrifugal_acceleration,
+      Vector<Acceleration, ThisFrame>& euler_acceleration) const;
+
   virtual Vector<Acceleration, InertialFrame> GravitationalAcceleration(
       Instant const& t,
       Position<InertialFrame> const& q) const = 0;
