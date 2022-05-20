@@ -45,11 +45,11 @@ Vector<Acceleration, ThisFrame>
 DynamicFrame<InertialFrame, ThisFrame>::GeometricAcceleration(
     Instant const& t,
     DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const {
-  Vector<Acceleration, ThisFrame> const gravitational_acceleration;
-  Vector<Acceleration, ThisFrame> const linear_acceleration;
-  Vector<Acceleration, ThisFrame> const coriolis_acceleration;
-  Vector<Acceleration, ThisFrame> const centrifugal_acceleration;
-  Vector<Acceleration, ThisFrame> const euler_acceleration;
+  Vector<Acceleration, ThisFrame> gravitational_acceleration;
+  Vector<Acceleration, ThisFrame> linear_acceleration;
+  Vector<Acceleration, ThisFrame> coriolis_acceleration;
+  Vector<Acceleration, ThisFrame> centrifugal_acceleration;
+  Vector<Acceleration, ThisFrame> euler_acceleration;
   ComputeGeometricAccelerations(t,
                                 degrees_of_freedom,
                                 gravitational_acceleration,
@@ -67,11 +67,11 @@ Vector<Acceleration, ThisFrame>
 DynamicFrame<InertialFrame, ThisFrame>::RotationFreeGeometricAccelerationAtRest(
     Instant const& t,
     Position<ThisFrame> const& position) const {
-  Vector<Acceleration, ThisFrame> const gravitational_acceleration;
-  Vector<Acceleration, ThisFrame> const linear_acceleration;
-  Vector<Acceleration, ThisFrame> const coriolis_acceleration;
-  Vector<Acceleration, ThisFrame> const centrifugal_acceleration;
-  Vector<Acceleration, ThisFrame> const euler_acceleration;
+  Vector<Acceleration, ThisFrame> gravitational_acceleration;
+  Vector<Acceleration, ThisFrame> linear_acceleration;
+  Vector<Acceleration, ThisFrame> coriolis_acceleration;
+  Vector<Acceleration, ThisFrame> centrifugal_acceleration;
+  Vector<Acceleration, ThisFrame> euler_acceleration;
   ComputeGeometricAccelerations(t,
                                 {position, ThisFrame::unmoving},
                                 gravitational_acceleration,
@@ -80,7 +80,7 @@ DynamicFrame<InertialFrame, ThisFrame>::RotationFreeGeometricAccelerationAtRest(
                                 centrifugal_acceleration,
                                 euler_acceleration);
 
-  DCHECK_EQ(coriolis_acceleration, Vector<Acceleration, ThisFrame>{});
+  DCHECK_EQ(coriolis_acceleration, (Vector<Acceleration, ThisFrame>{}));
   return gravitational_acceleration + linear_acceleration + centrifugal_acceleration;
 }
 
@@ -163,7 +163,7 @@ void DynamicFrame<InertialFrame, ThisFrame>::ComputeGeometricAccelerations(
     DegreesOfFreedom<ThisFrame> const& degrees_of_freedom,
     Vector<Acceleration, ThisFrame>& gravitational_acceleration,
     Vector<Acceleration, ThisFrame>& linear_acceleration,
-    Vector<Acceleration, ThisFrame>& coriolis_acceleration_at_point,
+    Vector<Acceleration, ThisFrame>& coriolis_acceleration,
     Vector<Acceleration, ThisFrame>& centrifugal_acceleration,
     Vector<Acceleration, ThisFrame>& euler_acceleration) const {
   AcceleratedRigidMotion<InertialFrame, ThisFrame> const motion =

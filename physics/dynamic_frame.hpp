@@ -98,7 +98,7 @@ class DynamicFrame {
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom,
       Vector<Acceleration, ThisFrame>& gravitational_acceleration,
       Vector<Acceleration, ThisFrame>& linear_acceleration,
-      Vector<Acceleration, ThisFrame>& coriolis_acceleration_at_point,
+      Vector<Acceleration, ThisFrame>& coriolis_acceleration,
       Vector<Acceleration, ThisFrame>& centrifugal_acceleration,
       Vector<Acceleration, ThisFrame>& euler_acceleration) const;
 
