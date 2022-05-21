@@ -59,6 +59,24 @@ class DynamicFrame {
       Instant const& t,
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
 
+  // The acceleration of a particle at rest in |ThisFrame| at the given
+  // |position| owing to non-inertial motion of |ThisFrame| and gravity,
+  // excluding components with a rotation.
+  // Let r be the radial vector (from the origin of |ThisFrame|) corresponding
+  // to |position|.
+  // Let r ↦ r″ be the vector field of free fall accelerations from rest in
+  // |ThisFrame| at t. This function returns
+  //   a = r″ - (rot r″) r / 2.
+  // In a rotating reference frame, this may equivalently be expressed using
+  // the second derivative of position with respect to the parametrization on
+  // the angle θ rather than time, which eliminates the Euler acceleration:
+  //   a = θ′² d²r/dθ², starting from a rest defined as dr/dθ = 0.
+  // Either way, the vector field a derives from a potential.
+  virtual Vector<Acceleration, ThisFrame>
+  RotationFreeGeometricAccelerationAtRest(
+      Instant const& t,
+      Position<ThisFrame> const& position) const;
+
   // The definition of the Frenet frame of a free fall trajectory in |ThisFrame|
   // with the given |degrees_of_freedom| at instant |t|.
   virtual Rotation<Frenet<ThisFrame>, ThisFrame> FrenetFrame(
@@ -75,6 +93,15 @@ class DynamicFrame {
                       not_null<Ephemeris<InertialFrame> const*> ephemeris);
 
  private:
+  void ComputeGeometricAccelerations(
+      Instant const& t,
+      DegreesOfFreedom<ThisFrame> const& degrees_of_freedom,
+      Vector<Acceleration, ThisFrame>& gravitational_acceleration,
+      Vector<Acceleration, ThisFrame>& linear_acceleration,
+      Vector<Acceleration, ThisFrame>& coriolis_acceleration,
+      Vector<Acceleration, ThisFrame>& centrifugal_acceleration,
+      Vector<Acceleration, ThisFrame>& euler_acceleration) const;
+
   virtual Vector<Acceleration, InertialFrame> GravitationalAcceleration(
       Instant const& t,
       Position<InertialFrame> const& q) const = 0;

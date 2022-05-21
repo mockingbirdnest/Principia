@@ -73,15 +73,23 @@ class PluginCompatibilityTest : public testing::Test {
   static void WriteAndReadBack(
       not_null<std::unique_ptr<Plugin const>> plugin1) {
     // Write the plugin to a new file with the preferred format.
-    WritePluginToFile(TEMP_DIR / "serialized_plugin.proto.b64",
-                      preferred_compressor,
-                      preferred_encoder,
-                      std::move(plugin1));
+    WritePluginToFile(
+        TEMP_DIR /
+            absl::StrCat(
+                testing::UnitTest::GetInstance()->current_test_info()->name(),
+                "_serialized_plugin.proto.b64"),
+        preferred_compressor,
+        preferred_encoder,
+        std::move(plugin1));
 
     // Read the plugin from the new file to make sure that it's fine.
-    auto plugin2 = ReadPluginFromFile(TEMP_DIR / "serialized_plugin.proto.b64",
-                                      preferred_compressor,
-                                      preferred_encoder);
+    auto plugin2 = ReadPluginFromFile(
+        TEMP_DIR /
+            absl::StrCat(
+                testing::UnitTest::GetInstance()->current_test_info()->name(),
+                "_serialized_plugin.proto.b64"),
+        preferred_compressor,
+        preferred_encoder);
   }
 
   static void CheckSaveCompatibility(std::filesystem::path const& filename,
