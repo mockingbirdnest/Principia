@@ -112,8 +112,10 @@ Instance::Solve(Instant const& t_final) {
       for (int k = 0; k < dimension; ++k) {
         q_stage[k] = q[k].value + Δq[k];
       }
-      status.Update(equation.compute_acceleration(
-          t.value + (t.error + c[i] * h), q_stage, g));
+      termination_condition::UpdateWithAbort(
+          equation.compute_acceleration(
+              t.value + (t.error + c[i] * h), q_stage, g),
+          status);
       for (int k = 0; k < dimension; ++k) {
         // exp(bᵢ h B)
         Δv[k] += h * b[i] * g[k];
@@ -133,6 +135,9 @@ Instance::Solve(Instant const& t_final) {
     }
     RETURN_IF_STOPPED;
     append_state(current_state);
+    if (absl::IsAborted(status)) {
+      return status;
+    }
   }
 
   return status;

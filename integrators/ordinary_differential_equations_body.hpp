@@ -9,6 +9,19 @@
 
 namespace principia {
 namespace integrators {
+namespace termination_condition {
+
+inline void UpdateWithAbort(absl::Status const& updater,
+                            absl::Status& updated) {
+  if (absl::IsAborted(updater)) {
+    updated = updater;
+  } else {
+    updated.Update(updater);
+  }
+}
+
+}  // namespace termination_condition
+
 namespace internal_ordinary_differential_equations {
 
 using base::for_all_of;

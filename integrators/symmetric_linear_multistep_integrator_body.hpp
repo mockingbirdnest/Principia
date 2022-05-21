@@ -135,9 +135,11 @@ SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Solve(
       positions[d] = current_position.value;
       current_state.positions[d] = current_position;
     }
-    status.Update(equation.compute_acceleration(t.value,
-                                                positions,
-                                                current_step.accelerations));
+    termination_condition::UpdateWithAbort(
+        equation.compute_acceleration(t.value,
+                                      positions,
+                                      current_step.accelerations),
+        status);
     previous_steps_.pop_front();
 
     ComputeVelocityUsingCohenHubbardOesterwinter();
@@ -146,6 +148,9 @@ SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Solve(
     RETURN_IF_STOPPED;
     current_state.time = t;
     append_state(current_state);
+    if (absl::IsAborted(status)) {
+      return status;
+    }
   }
 
   return status;
