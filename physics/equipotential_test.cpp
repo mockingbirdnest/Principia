@@ -1,6 +1,8 @@
 ﻿
 #include "physics/equipotential.hpp"
 
+#include <vector>
+
 #include "base/not_null.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"

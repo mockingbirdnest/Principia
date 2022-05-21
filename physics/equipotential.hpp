@@ -33,7 +33,7 @@ using quantities::si::Second;
 // TODO(phl): Similar class in Ephemeris.  Move to a common place.
 template<typename ODE>
 class ODEAdaptiveStepParameters final {
-  public:
+ public:
   ODEAdaptiveStepParameters(AdaptiveStepSizeIntegrator<ODE> const& integrator,
                             std::int64_t max_steps,
                             Length const& length_integration_tolerance);
@@ -42,7 +42,7 @@ class ODEAdaptiveStepParameters final {
   std::int64_t max_steps() const;
   Length length_integration_tolerance() const;
 
-  private:
+ private:
   // This will refer to a static object returned by a factory.
   not_null<AdaptiveStepSizeIntegrator<ODE> const*> integrator_;
   std::int64_t max_steps_;

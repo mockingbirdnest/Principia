@@ -114,10 +114,10 @@ absl::Status Equipotential<InertialFrame, Frame>::RightHandSide(
   // Second state variable.
   double const β = std::get<1>(state).front();
   auto const& γ₀ = position;
-  Frequency const βʹ =
-      s == s_initial_
-          ? Frequency{}
-          : Pow<2>(characteristic_speed_) * (s - s_initial_) / (γₛ - γ₀).Norm²();
+  Frequency const βʹ = s == s_initial_
+                           ? Frequency{}
+                           : Pow<2>(characteristic_speed_) * (s - s_initial_) /
+                                 (γₛ - γ₀).Norm²();
 
   std::get<0>(state_variation).front() = γʹ;
   std::get<1>(state_variation).front() = βʹ;
