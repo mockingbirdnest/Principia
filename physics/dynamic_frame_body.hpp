@@ -58,8 +58,9 @@ DynamicFrame<InertialFrame, ThisFrame>::GeometricAcceleration(
                                 centrifugal_acceleration,
                                 euler_acceleration);
 
-  return gravitational_acceleration + linear_acceleration +
-         coriolis_acceleration + centrifugal_acceleration + euler_acceleration;
+  return gravitational_acceleration +
+         (linear_acceleration + coriolis_acceleration +
+          centrifugal_acceleration + euler_acceleration);
 }
 
 template<typename InertialFrame, typename ThisFrame>
