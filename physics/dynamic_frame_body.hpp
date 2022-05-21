@@ -82,7 +82,8 @@ DynamicFrame<InertialFrame, ThisFrame>::RotationFreeGeometricAccelerationAtRest(
                                 euler_acceleration);
 
   DCHECK_EQ(coriolis_acceleration, (Vector<Acceleration, ThisFrame>{}));
-  return gravitational_acceleration + linear_acceleration + centrifugal_acceleration;
+  return gravitational_acceleration +
+         (linear_acceleration + centrifugal_acceleration);
 }
 
 template<typename InertialFrame, typename ThisFrame>
