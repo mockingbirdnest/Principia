@@ -76,7 +76,10 @@ class Equipotential {
   static constexpr Difference<IndependentVariable> const initial_s_step_ =
       1 * Second;
   static constexpr Speed const characteristic_speed_ = 1 * Metre / Second;
+
+  // TODO(phl): One or both of these values should probably be a parameter.
   static constexpr double β_max_ = 1e6;
+  static constexpr double β_tolerance_ = 1;
 
   using State = typename ODE::State;
   using StateVariation = typename ODE::StateVariation;

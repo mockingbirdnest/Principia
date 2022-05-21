@@ -66,7 +66,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
   ODE equation{
       .compute_derivative = std::bind(
           &Equipotential::RightHandSide, this, plane, position, t, _1, _2, _3)};
-  SystemState initial_state({{position}, {0}}, s_initial_);
+  SystemState initial_state({{position}, {/*β=*/0}}, s_initial_);
   IntegrationProblem<ODE> const problem{
       .equation = std::move(equation),
       .initial_state = std::move(initial_state)};
@@ -108,9 +108,7 @@ absl::Status Equipotential<InertialFrame, Frame>::RightHandSide(
   // First state variable.
   auto const& γₛ = std::get<0>(state).front();
   auto const dVǀᵧ₍ₛ₎ =
-      dynamic_frame_->GeometricAcceleration(
-          t,
-          DegreesOfFreedom<Frame>(γₛ, Velocity<Frame>{}));
+      dynamic_frame_->RotationFreeGeometricAccelerationAtRest(t, γₛ);
   Velocity<Frame> const γʹ = Normalize(plane * dVǀᵧ₍ₛ₎) * characteristic_speed_;
 
   // Second state variable.
@@ -120,7 +118,6 @@ absl::Status Equipotential<InertialFrame, Frame>::RightHandSide(
       s == s_initial_
           ? Frequency{}
           : Pow<2>(characteristic_speed_) * (s - s_initial_) / (γₛ - γ₀).Norm²();
-  //LOG(ERROR)<<u8"βʹ="<<βʹ;
 
   std::get<0>(state_variation).front() = γʹ;
   std::get<1>(state_variation).front() = βʹ;
@@ -132,15 +129,11 @@ template<typename InertialFrame, typename Frame>
 double Equipotential<InertialFrame, Frame>::ToleranceToErrorRatio(
     Difference<IndependentVariable> const& current_s_step,
     SystemStateError const& error) const {
-  if (current_s_step < initial_s_step_) {
-    return 0.0;
-  }
   Length const max_length_error = std::get<0>(error).front().Norm();
   double const max_braking_error = Abs(std::get<1>(error).front());
   return std::min(
       adaptive_parameters_.length_integration_tolerance() / max_length_error,
-      1.0 / max_braking_error);
-  //return adaptive_parameters_.length_integration_tolerance() / max_length_error;
+      β_tolerance_ / max_braking_error);
 }
 
 }  // namespace internal_equipotential

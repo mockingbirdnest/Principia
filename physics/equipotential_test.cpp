@@ -88,7 +88,8 @@ class EquipotentialTest : public ::testing::Test {
 };
 
 TEST_F(EquipotentialTest, BodyCentredNonRotating) {
-  mathematica::Logger logger(TEMP_DIR / "equipotential.wl");
+  mathematica::Logger logger(TEMP_DIR / "equipotential_bcnr.wl",
+                             /*make_unique=*/false);
   auto const dynamic_frame(
       BodyCentredNonRotatingDynamicFrame<Barycentric, World>(
           ephemeris_.get(),
@@ -99,7 +100,6 @@ TEST_F(EquipotentialTest, BodyCentredNonRotating) {
 
   Bivector<double, World> const plane({2, 3, -5});
   {
-    LOG(ERROR)<<"MERCURY";
     Instant const t1 = t0_ + Day;
     CHECK_OK(ephemeris_->Prolong(t1));
     auto const& [positions, βs] = equipotential.ComputeLine(
@@ -111,7 +111,6 @@ TEST_F(EquipotentialTest, BodyCentredNonRotating) {
     logger.Set("betaMercury", βs);
   }
   {
-    LOG(ERROR)<<"EARTH";
     Instant const t1 = t0_ + Day;
     CHECK_OK(ephemeris_->Prolong(t1));
     auto const& [positions, βs] = equipotential.ComputeLine(
@@ -122,7 +121,6 @@ TEST_F(EquipotentialTest, BodyCentredNonRotating) {
     logger.Set("betaEarth", βs);
   }
   {
-    LOG(ERROR)<<"JUPITER CLOSE";
     Instant const t1 = t0_ + Day;
     CHECK_OK(ephemeris_->Prolong(t1));
     auto const& [positions, βs] = equipotential.ComputeLine(
@@ -134,7 +132,6 @@ TEST_F(EquipotentialTest, BodyCentredNonRotating) {
     logger.Set("betaJupiterClose", βs);
   }
   {
-    LOG(ERROR)<<"JUPITER FAR";
     Instant const t1 = t0_ + 100 * Day;
     CHECK_OK(ephemeris_->Prolong(t1));
     auto const& [positions, βs] = equipotential.ComputeLine(
@@ -148,7 +145,8 @@ TEST_F(EquipotentialTest, BodyCentredNonRotating) {
 }
 
 TEST_F(EquipotentialTest, BodyCentredBodyDirection) {
-  mathematica::Logger logger(TEMP_DIR / "equipotential.wl");
+  mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd.wl",
+                             /*make_unique=*/false);
   auto const dynamic_frame(
       BodyCentredBodyDirectionDynamicFrame<Barycentric, World>(
           ephemeris_.get(),
@@ -166,7 +164,6 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection) {
   std::vector<std::vector<std::vector<double>>> all_βs;
   for (int j = 0; j < 30; ++j) {
     Instant const t = t0_ + j * Day;
-    LOG(ERROR) << "EARTH L4";
     CHECK_OK(ephemeris_->Prolong(t));
     all_positions.emplace_back();
     all_βs.emplace_back();
@@ -195,5 +192,6 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection) {
       "equipotentialsEarthMoon", all_positions, mathematica::ExpressIn(Metre));
   logger.Set("betasEarthMoon", all_βs);
 }
+
 }  // namespace physics
 }  // namespace principia
