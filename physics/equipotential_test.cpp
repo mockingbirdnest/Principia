@@ -87,6 +87,7 @@ class EquipotentialTest : public ::testing::Test {
       equipotential_parameters_;
 };
 
+#if !_DEBUG
 TEST_F(EquipotentialTest, BodyCentredNonRotating) {
   mathematica::Logger logger(TEMP_DIR / "equipotential_bcnr.wl",
                              /*make_unique=*/false);
@@ -192,6 +193,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection) {
       "equipotentialsEarthMoon", all_positions, mathematica::ExpressIn(Metre));
   logger.Set("betasEarthMoon", all_βs);
 }
+#endif
 
 }  // namespace physics
 }  // namespace principia
