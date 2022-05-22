@@ -14,8 +14,8 @@ namespace physics {
 namespace internal_equipotential {
 
 using geometry::Normalize;
+using geometry::Displacement;
 using geometry::Vector;
-using geometry::Velocity;
 using integrators::IntegrationProblem;
 using numerics::DoublePrecision;
 using quantities::Abs;
@@ -66,7 +66,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
   ODE equation{
       .compute_derivative = std::bind(
           &Equipotential::RightHandSide, this, plane, position, t, _1, _2, _3)};
-  SystemState initial_state({{position}, {/*β=*/0}}, s_initial_);
+  SystemState initial_state(s_initial_, {{position}, {/*β=*/0}});
   IntegrationProblem<ODE> const problem{
       .equation = std::move(equation),
       .initial_state = std::move(initial_state)};
@@ -102,22 +102,22 @@ absl::Status Equipotential<InertialFrame, Frame>::RightHandSide(
     Bivector<double, Frame> const& plane,
     Position<Frame> const& position,
     Instant const& t,
-    IndependentVariable const& s,
+    IndependentVariable const s,
     State const& state,
     StateVariation& state_variation) const {
   // First state variable.
   auto const& γₛ = std::get<0>(state).front();
   auto const dVǀᵧ₍ₛ₎ =
       dynamic_frame_->RotationFreeGeometricAccelerationAtRest(t, γₛ);
-  Velocity<Frame> const γʹ = Normalize(plane * dVǀᵧ₍ₛ₎) * characteristic_speed_;
+  Displacement<Frame> const γʹ =
+      Normalize(plane * dVǀᵧ₍ₛ₎) * characteristic_length_;
 
   // Second state variable.
   double const β = std::get<1>(state).front();
   auto const& γ₀ = position;
-  Frequency const βʹ = s == s_initial_
-                           ? Frequency{}
-                           : Pow<2>(characteristic_speed_) * (s - s_initial_) /
-                                 (γₛ - γ₀).Norm²();
+  double const βʹ = s == s_initial_ ? 0
+                                    : Pow<2>(characteristic_length_) *
+                                          (s - s_initial_) / (γₛ - γ₀).Norm²();
 
   std::get<0>(state_variation).front() = γʹ;
   std::get<1>(state_variation).front() = βʹ;
@@ -127,7 +127,7 @@ absl::Status Equipotential<InertialFrame, Frame>::RightHandSide(
 
 template<typename InertialFrame, typename Frame>
 double Equipotential<InertialFrame, Frame>::ToleranceToErrorRatio(
-    Difference<IndependentVariable> const& current_s_step,
+    IndependentVariableDifference const current_s_step,
     SystemStateError const& error) const {
   Length const max_length_error = std::get<0>(error).front().Norm();
   double const max_braking_error = Abs(std::get<1>(error).front());

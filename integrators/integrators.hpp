@@ -26,6 +26,7 @@ template<typename ODE_>
 class Integrator {
  public:
   using ODE = ODE_;
+  using IndependentVariable = typename ODE::IndependentVariable;
   using AppendState =
       std::function<void(typename ODE::SystemState const& state)>;
 
@@ -37,9 +38,9 @@ class Integrator {
              AppendState const& append_state);
     virtual ~Instance() = default;
 
-    // The subclass must document the time passed to the last call to
-    // |append_state|.
-    virtual absl::Status Solve(Instant const& t_final) = 0;
+    // The subclass must document the time (or independent variable) passed to
+    // the last call to |append_state|.
+    virtual absl::Status Solve(IndependentVariable const& s_final) = 0;
 
     // The last instant integrated by this instance.
     DoublePrecision<Instant> const& time() const;
@@ -137,18 +138,18 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
   // otherwise.
   // In both cases, the new step size is chosen so as to try and make the
   // result of the next call to this functor close to |safety_factor|.
-  using ToleranceToErrorRatio =
-      std::function<double(Time const& current_step_size,
-                           typename ODE::SystemStateError const& error)>;
+  using ToleranceToErrorRatio = std::function<double(
+      IndependentVariableDifference const& current_step_size,
+      typename ODE::SystemStateError const& error)>;
 
   struct Parameters final {
-    Parameters(IndependentVariableDifference first_step,
+    Parameters(IndependentVariableDifference const& first_step,
                double safety_factor,
                std::int64_t max_steps,
                bool last_step_is_exact);
 
     // |max_steps| is infinite and the last step is exact.
-    Parameters(IndependentVariableDifference first_step,
+    Parameters(IndependentVariableDifference const& first_step,
                double safety_factor);
 
     void WriteToMessage(
@@ -158,9 +159,9 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
         serialization::AdaptiveStepSizeIntegratorInstance::Parameters const&
             message);
 
-    // The first time step tried by the integrator. It must have the same sign
-    // as |problem.t_final - initial_state.time.value|.
-    Time const first_step;
+    // The first step tried by the integrator. It must have the same sign as
+    // |problem.t_final - initial_state.time.value|.
+    IndependentVariableDifference const first_step;
     // This number must be in ]0, 1[.  Higher values increase the chance of step
     // rejection, lower values yield smaller steps.
     double const safety_factor;

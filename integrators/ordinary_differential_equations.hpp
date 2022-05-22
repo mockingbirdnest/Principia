@@ -45,12 +45,14 @@ using quantities::Variation;
 
 // A differential equation of the form y′ = f(s, y).
 // |State| is the type of y.
-template<typename IndependentVariable, typename... StateElements>
+template<typename IndependentVariable_, typename... StateElements>
 struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
+  using IndependentVariable = IndependentVariable_;
   using IndependentVariableDifference = Difference<IndependentVariable>;
   using State = std::tuple<std::vector<StateElements>...>;
   using StateDifference = std::tuple<std::vector<Difference<StateElements>>...>;
-  using StateVariation = std::tuple<std::vector<Variation<StateElements>>...>;
+  using StateVariation = std::tuple<
+      std::vector<Quotient<Difference<StateElements>, IndependentVariable>>...>;
 
   using RightHandSideComputation =
       std::function<absl::Status(IndependentVariable const& s,
@@ -123,6 +125,7 @@ struct DecomposableFirstOrderDifferentialEquation final {
 // |Position| is the type of q.
 template<typename Position_>
 struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
+  using IndependentVariable = Instant;
   using IndependentVariableDifference = Time;
   using Position = Position_;
   // The type of Δq.
@@ -174,6 +177,7 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
 // |Position| is the type of q.
 template<typename Position_>
 struct SpecialSecondOrderDifferentialEquation final {
+  using IndependentVariable = Instant;
   using IndependentVariableDifference = Time;
   using Position = Position_;
   // The type of Δq.

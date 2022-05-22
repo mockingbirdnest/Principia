@@ -1396,7 +1396,7 @@ absl::Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
           /*safety_factor=*/0.9,
           parameters.max_steps_,
           /*last_step_is_exact=*/true);
-  CHECK_GT(integrator_parameters.first_time_step, 0 * Second)
+  CHECK_GT(integrator_parameters.first_step, 0 * Second)
       << "Flow back to the future: " << t_final
       << " <= " << problem.initial_state.time.value;
   auto const tolerance_to_error_ratio =

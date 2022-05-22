@@ -5,6 +5,7 @@
 
 #include <limits>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -534,7 +535,7 @@ ParseFixedStepSizeIntegrator(std::string const& integrator_kind) {
 
 template<typename ODE_>
 AdaptiveStepSizeIntegrator<ODE_>::Parameters::Parameters(
-    IndependentVariableDifference const first_step,
+    IndependentVariableDifference const& first_step,
     double const safety_factor,
     std::int64_t const max_steps,
     bool const last_step_is_exact)
@@ -545,7 +546,7 @@ AdaptiveStepSizeIntegrator<ODE_>::Parameters::Parameters(
 
 template<typename ODE_>
 AdaptiveStepSizeIntegrator<ODE_>::Parameters::Parameters(
-    IndependentVariableDifference const first_step,
+    IndependentVariableDifference const& first_step,
     double const safety_factor)
     : Parameters(first_step,
                  safety_factor,
@@ -556,7 +557,11 @@ template<typename ODE_>
 void AdaptiveStepSizeIntegrator<ODE_>::Parameters::WriteToMessage(
     not_null<serialization::AdaptiveStepSizeIntegratorInstance::
                  Parameters*> const message) const {
-  first_step.WriteToMessage(message->mutable_first_time_step());
+  if constexpr (std::is_arithmetic_v<IndependentVariableDifference>) {
+    LOG(FATAL) << "NYI";
+  } else {
+    first_step.WriteToMessage(message->mutable_first_time_step());
+  }
   message->set_safety_factor(safety_factor);
   message->set_max_steps(max_steps);
   message->set_last_step_is_exact(last_step_is_exact);
@@ -584,7 +589,11 @@ void AdaptiveStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
   auto* const extension = message->MutableExtension(
       serialization::AdaptiveStepSizeIntegratorInstance::extension);
   parameters_.WriteToMessage(extension->mutable_parameters());
-  step_.WriteToMessage(extension->mutable_time_step());
+  if constexpr (std::is_arithmetic_v<IndependentVariableDifference>) {
+    LOG(FATAL) << "NYI";
+  } else {
+    step_.WriteToMessage(extension->mutable_time_step());
+  }
   extension->set_first_use(first_use_);
   integrator().WriteToMessage(extension->mutable_integrator());
 }
