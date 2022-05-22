@@ -77,7 +77,7 @@ Solve(IndependentVariable const& s_final) {
   std::optional<typename ODE::SystemState> final_state;
 
   // Argument checks.
-  Sign const integration_direction = Sign(parameters.first_time_step);
+  Sign const integration_direction = Sign(parameters.first_step);
   if (integration_direction.is_positive()) {
     // Integrating forward.
     CHECK_LT(current_state.s.value, s_final);
@@ -90,7 +90,7 @@ Solve(IndependentVariable const& s_final) {
   first_use = false;
 
   // Step.  Updated as the integration progresses to allow restartability.
-  IndependentVariableDifference& h = this->time_step_;
+  IndependentVariableDifference& h = this->step_;
   // Current time.  This is a non-const reference whose purpose is to make the
   // equations more readable.
   DoublePrecision<IndependentVariable>& s = current_state.s;
@@ -423,7 +423,7 @@ NewInstance(IntegrationProblem<ODE> const& problem,
                    append_state,
                    tolerance_to_error_ratio,
                    parameters,
-                   /*time_step=*/parameters.first_time_step,
+                   /*step=*/parameters.first_step,
                    /*first_use=*/true,
                    *this));
 }
@@ -448,7 +448,7 @@ internal_embedded_explicit_runge_kutta_integrator::
     EmbeddedExplicitRungeKuttaIntegrator<Method,
                                          IndependentVariable,
                                          StateElements...> const&
-    EmbeddedExplicitRungeKuttaIntegrator() {
+EmbeddedExplicitRungeKuttaIntegrator() {
   static_assert(
       std::is_base_of<methods::EmbeddedExplicitRungeKutta,
                       Method>::value,

@@ -123,6 +123,7 @@ struct DecomposableFirstOrderDifferentialEquation final {
 // |Position| is the type of q.
 template<typename Position_>
 struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
+  using IndependentVariableDifference = Time;
   using Position = Position_;
   // The type of Δq.
   using Displacement = Difference<Position>;
@@ -173,6 +174,7 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
 // |Position| is the type of q.
 template<typename Position_>
 struct SpecialSecondOrderDifferentialEquation final {
+  using IndependentVariableDifference = Time;
   using Position = Position_;
   // The type of Δq.
   using Displacement = Difference<Position>;

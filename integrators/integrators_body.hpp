@@ -534,20 +534,20 @@ ParseFixedStepSizeIntegrator(std::string const& integrator_kind) {
 
 template<typename ODE_>
 AdaptiveStepSizeIntegrator<ODE_>::Parameters::Parameters(
-    Time const first_time_step,
+    IndependentVariableDifference const first_step,
     double const safety_factor,
     std::int64_t const max_steps,
     bool const last_step_is_exact)
-    : first_time_step(first_time_step),
+    : first_step(first_step),
       safety_factor(safety_factor),
       max_steps(max_steps),
       last_step_is_exact(last_step_is_exact) {}
 
 template<typename ODE_>
 AdaptiveStepSizeIntegrator<ODE_>::Parameters::Parameters(
-    Time const first_time_step,
+    IndependentVariableDifference const first_step,
     double const safety_factor)
-    : Parameters(first_time_step,
+    : Parameters(first_step,
                  safety_factor,
                  /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
                  /*last_step_is_exact=*/true) {}
@@ -556,7 +556,7 @@ template<typename ODE_>
 void AdaptiveStepSizeIntegrator<ODE_>::Parameters::WriteToMessage(
     not_null<serialization::AdaptiveStepSizeIntegratorInstance::
                  Parameters*> const message) const {
-  first_time_step.WriteToMessage(message->mutable_first_time_step());
+  first_step.WriteToMessage(message->mutable_first_time_step());
   message->set_safety_factor(safety_factor);
   message->set_max_steps(max_steps);
   message->set_last_step_is_exact(last_step_is_exact);
@@ -584,7 +584,7 @@ void AdaptiveStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
   auto* const extension = message->MutableExtension(
       serialization::AdaptiveStepSizeIntegratorInstance::extension);
   parameters_.WriteToMessage(extension->mutable_parameters());
-  time_step_.WriteToMessage(extension->mutable_time_step());
+  step_.WriteToMessage(extension->mutable_time_step());
   extension->set_first_use(first_use_);
   integrator().WriteToMessage(extension->mutable_integrator());
 }
@@ -602,7 +602,7 @@ void AdaptiveStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
                                          append_state,               \
                                          tolerance_to_error_ratio,   \
                                          parameters,                 \
-                                         time_step,                  \
+                                         step,                       \
                                          first_use,                  \
                                          integrator);                \
   }
@@ -617,7 +617,7 @@ void AdaptiveStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
                                         append_state,                          \
                                         tolerance_to_error_ratio,              \
                                         parameters,                            \
-                                        time_step,                             \
+                                        step,                                  \
                                         first_use,                             \
                                         integrator);                           \
   }
@@ -647,13 +647,13 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
 
   auto const parameters =
       Parameters::ReadFromMessage(extension.parameters());
-  Time time_step;
+  IndependentVariableDifference step;
   bool first_use;
   if (is_pre_cartan) {
-    time_step = parameters.first_time_step;
+    step = parameters.first_step;
     first_use = true;
   } else {
-    time_step = Time::ReadFromMessage(extension.time_step());
+    step = Time::ReadFromMessage(extension.time_step());
     first_use = extension.first_use();
   }
 
@@ -680,14 +680,14 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::Instance(
     AppendState const& append_state,
     ToleranceToErrorRatio tolerance_to_error_ratio,
     Parameters const& parameters,
-    Time const& time_step,
+    IndependentVariableDifference const& step,
     bool const first_use)
     : Integrator<ODE>::Instance(problem, append_state),
       tolerance_to_error_ratio_(std::move(tolerance_to_error_ratio)),
       parameters_(parameters),
-      time_step_(time_step),
+      step_(step),
       first_use_(first_use) {
-  CHECK_NE(Time(), time_step_);
+  CHECK_NE(IndependentVariableDifference{}, step_);
   CHECK_GT(parameters.safety_factor, 0);
   CHECK_LT(parameters.safety_factor, 1);
 }

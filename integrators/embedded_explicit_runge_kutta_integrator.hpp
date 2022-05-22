@@ -133,9 +133,13 @@ class EmbeddedExplicitRungeKuttaIntegrator
 
 }  // namespace internal_embedded_explicit_runge_kutta_integrator
 
-template<typename Method, typename... StateElements>
+template<typename Method,
+         typename IndependentVariable,
+         typename... StateElements>
 internal_embedded_explicit_runge_kutta_integrator::
-    EmbeddedExplicitRungeKuttaIntegrator<Method, StateElements...> const&
+    EmbeddedExplicitRungeKuttaIntegrator<Method,
+                                         IndependentVariable,
+                                         StateElements...> const&
 EmbeddedExplicitRungeKuttaIntegrator();
 
 }  // namespace integrators

@@ -126,6 +126,8 @@ template<typename ODE_>
 class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
  public:
   using ODE = ODE_;
+  using IndependentVariableDifference =
+      typename ODE::IndependentVariableDifference;
   using typename Integrator<ODE>::AppendState;
 
   // This functor is called at each step, with the |current_step_size| used by
@@ -140,13 +142,13 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
                            typename ODE::SystemStateError const& error)>;
 
   struct Parameters final {
-    Parameters(Time first_time_step,
+    Parameters(IndependentVariableDifference first_step,
                double safety_factor,
                std::int64_t max_steps,
                bool last_step_is_exact);
 
     // |max_steps| is infinite and the last step is exact.
-    Parameters(Time first_time_step,
+    Parameters(IndependentVariableDifference first_step,
                double safety_factor);
 
     void WriteToMessage(
@@ -158,7 +160,7 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
 
     // The first time step tried by the integrator. It must have the same sign
     // as |problem.t_final - initial_state.time.value|.
-    Time const first_time_step;
+    Time const first_step;
     // This number must be in ]0, 1[.  Higher values increase the chance of step
     // rejection, lower values yield smaller steps.
     double const safety_factor;
@@ -192,12 +194,12 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
              AppendState const& append_state,
              ToleranceToErrorRatio tolerance_to_error_ratio,
              Parameters const& parameters,
-             Time const& time_step,
+             IndependentVariableDifference const& step,
              bool first_use);
 
     ToleranceToErrorRatio const tolerance_to_error_ratio_;
     Parameters const parameters_;
-    Time time_step_;
+    IndependentVariableDifference step_;
     bool first_use_;
   };
 
