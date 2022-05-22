@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/macros.hpp"
+#include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -21,6 +22,7 @@ namespace principia {
 namespace integrators {
 namespace internal_embedded_explicit_runge_kutta_integrator {
 
+using geometry::Instant;
 using quantities::Abs;
 using quantities::Acceleration;
 using quantities::AngularFrequency;
@@ -51,7 +53,8 @@ using ::std::placeholders::_3;
 using ::testing::ElementsAreArray;
 using ::testing::Lt;
 
-using ODE = ExplicitFirstOrderOrdinaryDifferentialEquation<Length, Speed>;
+using ODE =
+    ExplicitFirstOrderOrdinaryDifferentialEquation<Instant, Length, Speed>;
 
 namespace {
 
@@ -77,7 +80,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest,
        HarmonicOscillatorBackAndForth) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       EmbeddedExplicitRungeKuttaIntegrator<
-          methods::DormandPrince1986RK547FC, Length, Speed>();
+          methods::DormandPrince1986RK547FC, Instant, Length, Speed>();
   Length const x_initial = 1 * Metre;
   Speed const v_initial = 0.0 * Metre / Second;
   Time const period = 2 * π * Second;
@@ -113,7 +116,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest,
                 _1, _2, _3, &evaluations);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
-  problem.initial_state = {{{x_initial}, {v_initial}}, t_initial};
+  problem.initial_state = {t_initial, {{x_initial}, {v_initial}}};
   auto const append_state = [&](ODE::SystemState const& state) {
     solution.push_back(state);
   };
@@ -141,7 +144,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest,
                 IsNear(7.5e-2_(1) * Metre));
     EXPECT_THAT(AbsoluteError(v_initial, velocities[0].value),
                 IsNear(6.8e-2_(1) * Metre / Second));
-    EXPECT_EQ(t_final, solution.back().time.value);
+    EXPECT_EQ(t_final, solution.back().s.value);
     EXPECT_EQ(steps_forward, solution.size());
     EXPECT_EQ(1 + (1 + initial_rejections) * 6 +
                   (steps_forward - 1 + subsequent_rejections) * 6,
@@ -176,7 +179,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest,
                 IsNear(2.1e-1_(1) * Metre));
     EXPECT_THAT(AbsoluteError(v_initial, velocities[0].value),
                 IsNear(6.8e-2_(1) * Metre / Second));
-    EXPECT_EQ(t_initial, solution.back().time.value);
+    EXPECT_EQ(t_initial, solution.back().s.value);
     EXPECT_EQ(steps_backward, solution.size() - steps_forward);
     EXPECT_EQ(1 + (1 + initial_rejections) * 6 +
                   (steps_backward - 1 + subsequent_rejections) * 6,
@@ -189,7 +192,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest,
 TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, MaxSteps) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       EmbeddedExplicitRungeKuttaIntegrator<
-          methods::DormandPrince1986RK547FC, Length, Speed>();
+          methods::DormandPrince1986RK547FC, Instant, Length, Speed>();
   Length const x_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
   Speed const v_amplitude = 1 * Metre / Second;
@@ -211,7 +214,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, MaxSteps) {
                 _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
-  problem.initial_state = {{{x_initial}, {v_initial}}, t_initial};
+  problem.initial_state = {t_initial, {{x_initial}, {v_initial}}};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
@@ -237,15 +240,15 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, MaxSteps) {
   EXPECT_THAT(outcome,
               StatusIs(termination_condition::ReachedMaximalStepCount));
   EXPECT_THAT(AbsoluteError(
-                  x_initial * Cos(ω * (solution.back().time.value - t_initial)),
+                  x_initial * Cos(ω * (solution.back().s.value - t_initial)),
                   positions[0].value),
               IsNear(5.9e-2_(1) * Metre));
   EXPECT_THAT(AbsoluteError(
                   -v_amplitude *
-                      Sin(ω * (solution.back().time.value - t_initial)),
+                      Sin(ω * (solution.back().s.value - t_initial)),
                   velocities[0].value),
               IsNear(5.6e-2_(1) * Metre / Second));
-  EXPECT_THAT(solution.back().time.value, Lt(t_final));
+  EXPECT_THAT(solution.back().s.value, Lt(t_final));
   EXPECT_EQ(40, solution.size());
 
   // Check that a |max_steps| greater than or equal to the unconstrained number
@@ -269,7 +272,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, MaxSteps) {
                 IsNear(7.5e-2_(1) * Metre));
     EXPECT_THAT(AbsoluteError(v_initial, velocities[0].value),
                 IsNear(6.8e-2_(1) * Metre / Second));
-    EXPECT_EQ(t_final, solution.back().time.value);
+    EXPECT_EQ(t_final, solution.back().s.value);
     EXPECT_EQ(steps_forward, solution.size());
   }
 }
@@ -314,7 +317,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Singularity) {
     solution.push_back(state);
   };
   problem.equation = rocket_equation;
-  problem.initial_state = {{{0 * Metre}, {0 * Metre / Second}}, t_initial};
+  problem.initial_state = {t_initial, {{0 * Metre}, {0 * Metre / Second}}};
   AdaptiveStepSizeIntegrator<ODE>::Parameters const parameters(
       /*first_time_step=*/t_final - t_initial,
       /*safety_factor=*/0.9);
@@ -327,7 +330,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Singularity) {
 
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       EmbeddedExplicitRungeKuttaIntegrator<
-          methods::DormandPrince1986RK547FC, Length, Speed>();
+          methods::DormandPrince1986RK547FC, Instant, Length, Speed>();
 
   auto const instance = integrator.NewInstance(problem,
                                                append_state,
@@ -338,7 +341,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Singularity) {
   auto const& [positions, velocities] = solution.back().y;
   EXPECT_THAT(outcome, StatusIs(termination_condition::VanishingStepSize));
   EXPECT_EQ(101, solution.size());
-  EXPECT_THAT(solution.back().time.value - t_initial,
+  EXPECT_THAT(solution.back().s.value - t_initial,
               AlmostEquals(t_singular - t_initial, 4));
   EXPECT_THAT(positions.back().value,
               AlmostEquals(specific_impulse * initial_mass / mass_flow, 155));
@@ -347,7 +350,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Singularity) {
 TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Restart) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       EmbeddedExplicitRungeKuttaIntegrator<
-          methods::DormandPrince1986RK547FC, Length, Speed>();
+          methods::DormandPrince1986RK547FC, Instant, Length, Speed>();
   Length const x_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
   Time const period = 2 * π * Second;
@@ -366,7 +369,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Restart) {
                   _1, _2, _3, /*evaluations=*/nullptr);
     IntegrationProblem<ODE> problem;
     problem.equation = harmonic_oscillator;
-    problem.initial_state = {{{x_initial}, {v_initial}}, t_initial};
+    problem.initial_state = {t_initial, {{x_initial}, {v_initial}}};
     auto const append_state = [&solution1](ODE::SystemState const& state) {
       solution1.push_back(state);
     };
@@ -393,8 +396,8 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Restart) {
     // Check that the time step has been updated.
     EXPECT_EQ(49, solution1.size());
     EXPECT_THAT(
-        solution1[solution1.size() - 1].time.value -
-            solution1[solution1.size() - 2].time.value,
+        solution1[solution1.size() - 1].s.value -
+            solution1[solution1.size() - 2].s.value,
         AlmostEquals(1.247'142'266'261'910'49 * Second, 0));
 
     // Restart the integration.
@@ -404,8 +407,8 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Restart) {
     // Check that the time step has been updated again.
     EXPECT_EQ(99, solution1.size());
     EXPECT_THAT(
-        solution1[solution1.size() - 1].time.value -
-            solution1[solution1.size() - 2].time.value,
+        solution1[solution1.size() - 1].s.value -
+            solution1[solution1.size() - 2].s.value,
         AlmostEquals(1.237'882'807'009'299'31 * Second, 0));
   }
 
@@ -418,7 +421,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Restart) {
                   _1, _2, _3, /*evaluations=*/nullptr);
     IntegrationProblem<ODE> problem;
     problem.equation = harmonic_oscillator;
-    problem.initial_state = {{{x_initial}, {v_initial}}, t_initial};
+    problem.initial_state = {t_initial, {{x_initial}, {v_initial}}};
     auto const append_state = [&solution2](ODE::SystemState const& state) {
       solution2.push_back(state);
     };
@@ -510,7 +513,7 @@ void PrintTo(
         SystemState const& system_state,
     std::ostream* const out) {
   auto const& [positions, velocities] = system_state.y;
-  *out << "\nTime: " << system_state.time << "\n";
+  *out << "\nTime: " << system_state.s << "\n";
   *out << "Positions:\n";
   for (int i = 0; i < positions.size(); ++i) {
     *out << "  " << i << ": " << positions[i] << "\n";

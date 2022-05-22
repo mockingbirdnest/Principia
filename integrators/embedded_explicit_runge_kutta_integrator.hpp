@@ -25,10 +25,8 @@ namespace integrators {
 namespace internal_embedded_explicit_runge_kutta_integrator {
 
 using base::not_null;
-using geometry::Instant;
 using numerics::FixedStrictlyLowerTriangularMatrix;
 using numerics::FixedVector;
-using quantities::Time;
 using quantities::Variation;
 
 // This class solves ordinary differential equations of the form q″ = f(q, t)
@@ -46,12 +44,17 @@ using quantities::Variation;
 // RKq(p)s[F]X has higher order q, lower order p, comprises s stages, and has
 // the first-same-as-last property.
 
-template<typename Method, typename... StateElements>
+template<typename Method,
+         typename IndependentVariable,
+         typename... StateElements>
 class EmbeddedExplicitRungeKuttaIntegrator
     : public AdaptiveStepSizeIntegrator<
-          ExplicitFirstOrderOrdinaryDifferentialEquation<StateElements...>> {
+          ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable,
+                                                         StateElements...>> {
  public:
-  using ODE = ExplicitFirstOrderOrdinaryDifferentialEquation<StateElements...>;
+  using ODE =
+      ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable,
+                                                     StateElements...>;
   using typename Integrator<ODE>::AppendState;
   using typename AdaptiveStepSizeIntegrator<ODE>::Parameters;
   using typename AdaptiveStepSizeIntegrator<ODE>::ToleranceToErrorRatio;
@@ -73,7 +76,7 @@ class EmbeddedExplicitRungeKuttaIntegrator
 
   class Instance : public AdaptiveStepSizeIntegrator<ODE>::Instance {
    public:
-    absl::Status Solve(Instant const& t_final) override;
+    absl::Status Solve(IndependentVariable const& s_final) override;
     EmbeddedExplicitRungeKuttaIntegrator const& integrator()
         const override;
     not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> Clone()
@@ -92,7 +95,7 @@ class EmbeddedExplicitRungeKuttaIntegrator
         AppendState const& append_state,
         ToleranceToErrorRatio const& tolerance_to_error_ratio,
         Parameters const& parameters,
-        Time const& time_step,
+        ODE::IndependentVariableDifference const& step,
         bool first_use,
         EmbeddedExplicitRungeKuttaIntegrator const& integrator);
 #endif
@@ -102,7 +105,7 @@ class EmbeddedExplicitRungeKuttaIntegrator
              AppendState const& append_state,
              ToleranceToErrorRatio const& tolerance_to_error_ratio,
              Parameters const& parameters,
-             Time const& time_step,
+             ODE::IndependentVariableDifference const& step,
              bool first_use,
              EmbeddedExplicitRungeKuttaIntegrator const& integrator);
 

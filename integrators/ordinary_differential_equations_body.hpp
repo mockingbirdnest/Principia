@@ -26,10 +26,10 @@ namespace internal_ordinary_differential_equations {
 
 using base::for_all_of;
 
-template<typename... State>
-ExplicitFirstOrderOrdinaryDifferentialEquation<
-    State...>::SystemState::SystemState(State const& y, Instant const& t)
-    : time(t) {
+template<typename IndependentVariable, typename... State>
+ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable, State...>::
+SystemState::SystemState(IndependentVariable const& s, State const& y)
+    : s(s) {
   for_all_of(y, this->y).loop([](auto const& y, auto& this_y) {
     for (auto const& y_i : y) {
       this_y.emplace_back(y_i);
@@ -37,26 +37,28 @@ ExplicitFirstOrderOrdinaryDifferentialEquation<
   });
 }
 
-template<typename... State>
-void ExplicitFirstOrderOrdinaryDifferentialEquation<State...>::SystemState::
-    WriteToMessage(not_null<serialization::SystemState*> message) const {
+template<typename IndependentVariable, typename... State>
+void
+ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable, State...>::
+SystemState::WriteToMessage(
+    not_null<serialization::SystemState*> message) const {
   // Writing the tuple would be tricky.
   LOG(FATAL) << "NYI";
 }
 
-template<typename... State>
-typename ExplicitFirstOrderOrdinaryDifferentialEquation<State...>::SystemState
-ExplicitFirstOrderOrdinaryDifferentialEquation<State...>::SystemState::
-    ReadFromMessage(serialization::SystemState const& message) {
+template<typename IndependentVariable, typename... State>
+typename ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable,
+                                                        State...>::SystemState
+ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable, State...>::
+SystemState::ReadFromMessage(serialization::SystemState const& message) {
   // Reading the tuple would be tricky.
   LOG(FATAL) << "NYI";
 }
 
-template<typename... State>
-DecomposableFirstOrderDifferentialEquation<State...>::SystemState::SystemState(
-    State const& y,
-    Instant const& t)
-    : y(y), time(t) {}
+template<typename IndependentVariable, typename... State>
+DecomposableFirstOrderDifferentialEquation<IndependentVariable, State...>::
+SystemState::SystemState(IndependentVariable const& s, State const& y)
+    : y(y), s(s) {}
 
 template<typename Position_>
 ExplicitSecondOrderOrdinaryDifferentialEquation<

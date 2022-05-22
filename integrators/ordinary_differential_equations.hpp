@@ -43,28 +43,29 @@ using quantities::Quotient;
 using quantities::Time;
 using quantities::Variation;
 
-// A differential equation of the form y′ = f(y, t).
+// A differential equation of the form y′ = f(s, y).
 // |State| is the type of y.
-template<typename... StateElements>
+template<typename IndependentVariable, typename... StateElements>
 struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
+  using IndependentVariableDifference = Difference<IndependentVariable>;
   using State = std::tuple<std::vector<StateElements>...>;
   using StateDifference = std::tuple<std::vector<Difference<StateElements>>...>;
   using StateVariation = std::tuple<std::vector<Variation<StateElements>>...>;
 
   using RightHandSideComputation =
-      std::function<absl::Status(Instant const& t,
+      std::function<absl::Status(IndependentVariable const& s,
                                  State const& state,
                                  StateVariation& variations)>;
 
   struct SystemState final {
     SystemState() = default;
-    SystemState(State const& y, Instant const& t);
+    SystemState(IndependentVariable const& s, State const& y);
 
+    DoublePrecision<IndependentVariable> s;
     std::tuple<std::vector<DoublePrecision<StateElements>>...> y;
-    DoublePrecision<Instant> time;
 
     friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
-      return lhs.y == rhs.y && lhs.time == rhs.time;
+      return lhs.y == rhs.y && lhs.s == rhs.s;
     }
 
     void WriteToMessage(not_null<serialization::SystemState*> message) const;
@@ -74,34 +75,34 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
 
   using SystemStateError = StateDifference;
 
-  // A functor that computes f(y, t) and stores it in |derivatives|.
+  // A functor that computes f(s, y) and stores it in |derivatives|.
   // This functor must be called with |std::get<i>(derivatives).size()| equal to
   // |std::get<i>(state).size()| for all i, but there is no requirement on the
   // values in |derivatives|.
   RightHandSideComputation compute_derivative;
 };
 
-// A differential equation of the form X′ = A(X, t) + B(X, t), where exp(hA) and
+// A differential equation of the form X′ = A(s, X) + B(s, X), where exp(hA) and
 // exp(hB) are known.  |State| is the type of X.  These equations can be solved
 // using splitting methods.
-template<typename... StateElements>
+template<typename IndependentVariable, typename... StateElements>
 struct DecomposableFirstOrderDifferentialEquation final {
   using State = std::tuple<std::vector<StateElements>...>;
 
-  using Flow = std::function<absl::Status(Instant const& t_initial,
-                                          Instant const& t_final,
+  using Flow = std::function<absl::Status(IndependentVariable const& s_initial,
+                                          IndependentVariable const& s_final,
                                           State const& initial_state,
                                           State& final_state)>;
 
   struct SystemState final {
     SystemState() = default;
-    SystemState(State const& y, Instant const& t);
+    SystemState(IndependentVariable const& s, State const& y);
 
+    DoublePrecision<IndependentVariable> s;
     std::tuple<std::vector<DoublePrecision<StateElements>>...> y;
-    DoublePrecision<Instant> time;
 
     friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
-      return lhs.y == rhs.y && lhs.time == rhs.time;
+      return lhs.y == rhs.y && lhs.s == rhs.s;
     }
   };
 
@@ -110,8 +111,8 @@ struct DecomposableFirstOrderDifferentialEquation final {
   using SystemStateError =
       std::tuple<std::vector<Difference<StateElements, StateElements>>...>;
 
-  // left_flow(t₀, t₁, X₀, X₁) sets X₁ to exp((t₁-t₀)A)X₀, and
-  // right_flow(t₀, t₁, X₀, X₁) sets X₁ to exp((t₁-t₀)B)X₀.
+  // left_flow(s₀, s₁, X₀, X₁) sets X₁ to exp((s₁ - s₀)A)X₀, and
+  // right_flow(s₀, s₁, X₀, X₁) sets X₁ to exp((s₁ - s₀)B)X₀.
   // The |std::vectors| in X₁ must have the same |size()| as those in X₀.  There
   // is no other requirement on their values.
   Flow left_flow;
