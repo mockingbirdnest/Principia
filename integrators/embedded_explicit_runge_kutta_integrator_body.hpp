@@ -30,7 +30,10 @@ using quantities::Quotient;
 template<typename Method,
          typename IndependentVariable,
          typename... StateElements>
-EmbeddedExplicitRungeKuttaIntegrator<Method, IndependentVariable, StateElements...>::
+EmbeddedExplicitRungeKuttaIntegrator<
+    Method,
+    IndependentVariable,
+    StateElements...>::
 EmbeddedExplicitRungeKuttaIntegrator() {
   // The first node is always 0 in an explicit method.
   CHECK_EQ(0.0, c_[0]);
@@ -454,8 +457,9 @@ EmbeddedExplicitRungeKuttaIntegrator() {
                       Method>::value,
       "Method must be derived from EmbeddedExplicitRungeKutta");
   static internal_embedded_explicit_runge_kutta_integrator::
-      EmbeddedExplicitRungeKuttaIntegrator<Method, IndependentVariable, StateElements...> const
-          integrator;
+      EmbeddedExplicitRungeKuttaIntegrator<Method,
+                                           IndependentVariable,
+                                           StateElements...> const integrator;
   return integrator;
 }
 
