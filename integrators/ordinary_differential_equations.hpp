@@ -84,27 +84,27 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
   RightHandSideComputation compute_derivative;
 };
 
-// A differential equation of the form X′ = A(s, X) + B(s, X), where exp(hA) and
+// A differential equation of the form X′ = A(X, t) + B(X, t), where exp(hA) and
 // exp(hB) are known.  |State| is the type of X.  These equations can be solved
 // using splitting methods.
-template<typename IndependentVariable, typename... StateElements>
+template<typename... StateElements>
 struct DecomposableFirstOrderDifferentialEquation final {
   using State = std::tuple<std::vector<StateElements>...>;
 
-  using Flow = std::function<absl::Status(IndependentVariable const& s_initial,
-                                          IndependentVariable const& s_final,
+  using Flow = std::function<absl::Status(Instant const& t_initial,
+                                          Instant const& t_final,
                                           State const& initial_state,
                                           State& final_state)>;
 
   struct SystemState final {
     SystemState() = default;
-    SystemState(IndependentVariable const& s, State const& y);
+    SystemState(State const& y, Instant const& t);
 
-    DoublePrecision<IndependentVariable> s;
     std::tuple<std::vector<DoublePrecision<StateElements>>...> y;
+    DoublePrecision<Instant> time;
 
     friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
-      return lhs.y == rhs.y && lhs.s == rhs.s;
+      return lhs.y == rhs.y && lhs.time == rhs.time;
     }
   };
 
@@ -113,8 +113,8 @@ struct DecomposableFirstOrderDifferentialEquation final {
   using SystemStateError =
       std::tuple<std::vector<Difference<StateElements, StateElements>>...>;
 
-  // left_flow(s₀, s₁, X₀, X₁) sets X₁ to exp((s₁ - s₀)A)X₀, and
-  // right_flow(s₀, s₁, X₀, X₁) sets X₁ to exp((s₁ - s₀)B)X₀.
+  // left_flow(t₀, t₁, X₀, X₁) sets X₁ to exp((t₁-t₀)A)X₀, and
+  // right_flow(t₀, t₁, X₀, X₁) sets X₁ to exp((t₁-t₀)B)X₀.
   // The |std::vectors| in X₁ must have the same |size()| as those in X₀.  There
   // is no other requirement on their values.
   Flow left_flow;

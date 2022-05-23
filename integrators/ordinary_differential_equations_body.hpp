@@ -55,10 +55,11 @@ SystemState::ReadFromMessage(serialization::SystemState const& message) {
   LOG(FATAL) << "NYI";
 }
 
-template<typename IndependentVariable, typename... State>
-DecomposableFirstOrderDifferentialEquation<IndependentVariable, State...>::
-SystemState::SystemState(IndependentVariable const& s, State const& y)
-    : y(y), s(s) {}
+template<typename... State>
+DecomposableFirstOrderDifferentialEquation<State...>::SystemState::SystemState(
+    State const& y,
+    Instant const& t)
+    : y(y), time(t) {}
 
 template<typename Position_>
 ExplicitSecondOrderOrdinaryDifferentialEquation<
