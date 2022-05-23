@@ -88,7 +88,10 @@ message AdaptiveStepSizeIntegratorInstance {
   }
   extensions 9000 to 9999;  // Last used: 9001
   message Parameters {
-    required Quantity first_time_step = 1;
+    oneof first_step {  // Added in Hesse.
+      double double = 5;
+      Quantity quantity = 1;
+    }
     required double safety_factor = 2;
     required int64 max_steps = 3;
     // Added in Cartan.
@@ -96,8 +99,11 @@ message AdaptiveStepSizeIntegratorInstance {
   }
   required Parameters parameters = 1;
   required AdaptiveStepSizeIntegrator integrator = 2;
-  // Added in Cartan.
-  optional Quantity time_step = 3;
+  oneof step {
+    double double = 5;
+    // Added in Cartan under the name time_step.
+    Quantity quantity = 3;
+  }
   optional bool first_use = 4;
 }
 

@@ -51,8 +51,8 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
   using IndependentVariableDifference = Difference<IndependentVariable>;
   using State = std::tuple<std::vector<StateElements>...>;
   using StateDifference = std::tuple<std::vector<Difference<StateElements>>...>;
-  using StateVariation = std::tuple<
-      std::vector<Quotient<Difference<StateElements>, IndependentVariable>>...>;
+  using StateVariation = std::tuple<std::vector<
+      Quotient<Difference<StateElements>, IndependentVariableDifference>>...>;
 
   using RightHandSideComputation =
       std::function<absl::Status(IndependentVariable const& s,

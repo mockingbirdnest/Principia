@@ -5,7 +5,6 @@
 
 #include <limits>
 #include <string>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -18,6 +17,7 @@
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "quantities/serialization.hpp"
 
 // A case branch in a switch on the serialized integrator |kind|.  It determines
 // the |method| type from the |kind| defined in scope |message| and calls
@@ -204,6 +204,8 @@
 namespace principia {
 namespace integrators {
 namespace internal_integrators {
+
+using quantities::DoubleOrQuantitySerializer;
 
 template<typename Integrator>
 not_null<std::unique_ptr<typename Integrator::Instance>>
@@ -557,11 +559,10 @@ template<typename ODE_>
 void AdaptiveStepSizeIntegrator<ODE_>::Parameters::WriteToMessage(
     not_null<serialization::AdaptiveStepSizeIntegratorInstance::
                  Parameters*> const message) const {
-  if constexpr (std::is_arithmetic_v<IndependentVariableDifference>) {
-    LOG(FATAL) << "NYI";
-  } else {
-    first_step.WriteToMessage(message->mutable_first_time_step());
-  }
+  using Serializer = DoubleOrQuantitySerializer<
+      IndependentVariableDifference,
+      serialization::AdaptiveStepSizeIntegratorInstance::Parameters>;
+  Serializer::WriteToMessage(first_step, message);
   message->set_safety_factor(safety_factor);
   message->set_max_steps(max_steps);
   message->set_last_step_is_exact(last_step_is_exact);
@@ -572,10 +573,13 @@ typename AdaptiveStepSizeIntegrator<ODE_>::Parameters
 AdaptiveStepSizeIntegrator<ODE_>::Parameters::ReadFromMessage(
     serialization::AdaptiveStepSizeIntegratorInstance::Parameters const&
         message) {
+  using Serializer = DoubleOrQuantitySerializer<
+      IndependentVariableDifference,
+      serialization::AdaptiveStepSizeIntegratorInstance::Parameters>;
   bool const is_pre_cartan = !message.has_last_step_is_exact();
   LOG_IF(WARNING, is_pre_cartan)
       << "Reading pre-Cartan AdaptiveStepSizeIntegrator";
-  Parameters result(Time::ReadFromMessage(message.first_time_step()),
+  Parameters result(Serializer::ReadFromMessage(message),
                     message.safety_factor(),
                     message.max_steps(),
                     is_pre_cartan ? true : message.last_step_is_exact());
@@ -585,15 +589,14 @@ AdaptiveStepSizeIntegrator<ODE_>::Parameters::ReadFromMessage(
 template<typename ODE_>
 void AdaptiveStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
     not_null<serialization::IntegratorInstance*> message) const {
+  using Serializer = DoubleOrQuantitySerializer<
+      IndependentVariableDifference,
+      serialization::AdaptiveStepSizeIntegratorInstance>;
   Integrator<ODE>::Instance::WriteToMessage(message);
   auto* const extension = message->MutableExtension(
       serialization::AdaptiveStepSizeIntegratorInstance::extension);
   parameters_.WriteToMessage(extension->mutable_parameters());
-  if constexpr (std::is_arithmetic_v<IndependentVariableDifference>) {
-    LOG(FATAL) << "NYI";
-  } else {
-    step_.WriteToMessage(extension->mutable_time_step());
-  }
+  Serializer::WriteToMessage(step_, extension);
   extension->set_first_use(first_use_);
   integrator().WriteToMessage(extension->mutable_integrator());
 }
@@ -640,6 +643,9 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
     ODE const& equation,
     AppendState const& append_state,
     ToleranceToErrorRatio const& tolerance_to_error_ratio) {
+  using Serializer = DoubleOrQuantitySerializer<
+      IndependentVariableDifference,
+      serialization::AdaptiveStepSizeIntegratorInstance>;
   IntegrationProblem<ODE> problem;
   problem.equation = equation;
   problem.initial_state =
@@ -650,7 +656,8 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
       << "Not an adaptive-step integrator instance " << message.DebugString();
   auto const& extension = message.GetExtension(
       serialization::AdaptiveStepSizeIntegratorInstance::extension);
-  bool const is_pre_cartan = !extension.has_time_step();
+  bool const is_pre_cartan = !extension.has_double_() &&
+                             !extension.has_quantity();
   LOG_IF(WARNING, is_pre_cartan)
       << "Reading pre-Cartan AdaptiveStepSizeIntegrator Instance";
 
@@ -662,7 +669,7 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
     step = parameters.first_step;
     first_use = true;
   } else {
-    step = Time::ReadFromMessage(extension.time_step());
+    step = Serializer::ReadFromMessage(extension);
     first_use = extension.first_use();
   }
 
