@@ -117,7 +117,7 @@ TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, Legendre) {
   };
 
   AdaptiveStepSizeIntegrator<ODE>::Parameters const parameters(
-      /*first_time_step=*/t_final - t_initial,
+      /*first_step=*/t_final - t_initial,
       /*safety_factor=*/0.9);
   auto const tolerance_to_error_ratio = std::bind(ToleranceToErrorRatio,
                                                   _1,

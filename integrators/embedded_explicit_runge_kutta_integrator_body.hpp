@@ -27,8 +27,13 @@ using quantities::DebugString;
 using quantities::Difference;
 using quantities::Quotient;
 
-template<typename Method, typename... StateElements>
-EmbeddedExplicitRungeKuttaIntegrator<Method, StateElements...>::
+template<typename Method,
+         typename IndependentVariable,
+         typename... StateElements>
+EmbeddedExplicitRungeKuttaIntegrator<
+    Method,
+    IndependentVariable,
+    StateElements...>::
 EmbeddedExplicitRungeKuttaIntegrator() {
   // The first node is always 0 in an explicit method.
   CHECK_EQ(0.0, c_[0]);
@@ -43,9 +48,16 @@ EmbeddedExplicitRungeKuttaIntegrator() {
   }
 }
 
-template<typename Method, typename... StateElements>
-absl::Status EmbeddedExplicitRungeKuttaIntegrator<Method, StateElements...>::
-Instance::Solve(Instant const& t_final) {
+template<typename Method,
+         typename IndependentVariable,
+         typename... StateElements>
+absl::Status
+EmbeddedExplicitRungeKuttaIntegrator<Method,
+                                     IndependentVariable,
+                                     StateElements...>::Instance::
+Solve(IndependentVariable const& s_final) {
+  using IndependentVariableDifference =
+      typename ODE::IndependentVariableDifference;
   using State = typename ODE::State;
   using StateDifference = typename ODE::StateDifference;
   using StateVariation = typename ODE::StateVariation;
@@ -68,23 +80,23 @@ Instance::Solve(Instant const& t_final) {
   std::optional<typename ODE::SystemState> final_state;
 
   // Argument checks.
-  Sign const integration_direction = Sign(parameters.first_time_step);
+  Sign const integration_direction = Sign(parameters.first_step);
   if (integration_direction.is_positive()) {
     // Integrating forward.
-    CHECK_LT(current_state.time.value, t_final);
+    CHECK_LT(current_state.s.value, s_final);
   } else {
     // Integrating backward.
-    CHECK_GT(current_state.time.value, t_final);
+    CHECK_GT(current_state.s.value, s_final);
   }
   CHECK(first_use || !parameters.last_step_is_exact)
       << "Cannot reuse an instance where the last step is exact";
   first_use = false;
 
-  // Time step.  Updated as the integration progresses to allow restartability.
-  Time& h = this->time_step_;
+  // Step.  Updated as the integration progresses to allow restartability.
+  IndependentVariableDifference& h = this->step_;
   // Current time.  This is a non-const reference whose purpose is to make the
   // equations more readable.
-  DoublePrecision<Instant>& t = current_state.time;
+  DoublePrecision<IndependentVariable>& s = current_state.s;
 
   // State increment (high-order).
   StateDifference Δŷ;
@@ -134,7 +146,7 @@ Instance::Solve(Instant const& t_final) {
   absl::Status step_status;
 
   if (first_same_as_last) {
-    status = equation.compute_derivative(t.value, y_stage, last_f);
+    status = equation.compute_derivative(s.value, y_stage, last_f);
   }
 
   // No step size control on the first step.  If this instance is being
@@ -158,9 +170,9 @@ Instance::Solve(Instant const& t_final) {
                std::pow(tolerance_to_error_ratio, 1.0 / (lower_order + 1));
       // TODO(egg): should we check whether it vanishes in double precision
       // instead?
-      if (t.value + (t.error + h) == t.value) {
+      if (s.value + (s.error + h) == s.value) {
         return absl::Status(termination_condition::VanishingStepSize,
-                            "At time " + DebugString(t.value) +
+                            "At time " + DebugString(s.value) +
                                 ", step size is effectively zero.  "
                                 "Singularity or stiff system suspected.");
       }
@@ -168,16 +180,17 @@ Instance::Solve(Instant const& t_final) {
     runge_kutta_step:
       // Termination condition.
       if (parameters.last_step_is_exact) {
-        Time const time_to_end = (t_final - t.value) - t.error;
+        IndependentVariableDifference const s_to_end =
+            (s_final - s.value) - s.error;
         at_end = integration_direction * h >=
-                 integration_direction * time_to_end;
+                 integration_direction * s_to_end;
         if (at_end) {
           // The chosen step size will overshoot.  Clip it to just reach the
           // end, and terminate if the step is accepted.  Note that while this
           // step size is a good approximation, there is no guarantee that it
           // won't over/undershoot, so we still need to special case the very
           // last stage below.
-          h = time_to_end;
+          h = s_to_end;
           final_state = current_state;
         }
       }
@@ -188,10 +201,10 @@ Instance::Solve(Instant const& t_final) {
           // TODO(phl): Use pointers to avoid copying big objects.
           f = last_f;
         } else {
-          Instant const t_stage =
+          IndependentVariable const s_stage =
               (parameters.last_step_is_exact && at_end && c[i] == 1.0)
-                  ? t_final
-                  : t.value + (t.error + c[i] * h);
+                  ? s_final
+                  : s.value + (s.error + c[i] * h);
 
           StateDifference Σⱼ_aᵢⱼ_kⱼ{};
           for (int j = 0; j < i; ++j) {
@@ -216,7 +229,7 @@ Instance::Solve(Instant const& t_final) {
               });
 
           termination_condition::UpdateWithAbort(
-              equation.compute_derivative(t_stage, y_stage, f), step_status);
+              equation.compute_derivative(s_stage, y_stage, f), step_status);
         }
         for_all_of(f, k[i]).loop([h](auto const& f, auto& kᵢ) {
           int const dimension = f.size();
@@ -255,7 +268,7 @@ Instance::Solve(Instant const& t_final) {
 
     status.Update(step_status);
 
-    if (!parameters.last_step_is_exact && t.value + (t.error + h) > t_final) {
+    if (!parameters.last_step_is_exact && s.value + (s.error + h) > s_final) {
       // We did overshoot.  Drop the point that we just computed and exit.
       final_state = current_state;
       break;
@@ -266,7 +279,7 @@ Instance::Solve(Instant const& t_final) {
     }
 
     // Increment the solution with the high-order approximation.
-    t.Increment(h);
+    s.Increment(h);
     for_all_of(Δŷ, ŷ).loop([](auto const& Δŷ, auto& ŷ) {
       int const dimension = ŷ.size();
       for (int l = 0; l < dimension; ++l) {
@@ -283,8 +296,8 @@ Instance::Solve(Instant const& t_final) {
       return absl::Status(termination_condition::ReachedMaximalStepCount,
                           "Reached maximum step count " +
                               std::to_string(parameters.max_steps) +
-                              " at time " + DebugString(t.value) +
-                              "; requested t_final is " + DebugString(t_final) +
+                              " at time " + DebugString(s.value) +
+                              "; requested s_final is " + DebugString(s_final) +
                               ".");
     }
   }
@@ -294,26 +307,39 @@ Instance::Solve(Instant const& t_final) {
   return status;
 }
 
-template<typename Method, typename... StateElements>
-EmbeddedExplicitRungeKuttaIntegrator<Method, StateElements...> const&
-EmbeddedExplicitRungeKuttaIntegrator<Method, StateElements...>::
-Instance::integrator() const {
+template<typename Method,
+         typename IndependentVariable,
+         typename... StateElements>
+EmbeddedExplicitRungeKuttaIntegrator<Method,
+                                     IndependentVariable,
+                                     StateElements...> const&
+EmbeddedExplicitRungeKuttaIntegrator<Method,
+                                     IndependentVariable,
+                                     StateElements...>::Instance::
+integrator() const {
   return integrator_;
 }
 
-template<typename Method, typename... StateElements>
+template<typename Method,
+         typename IndependentVariable,
+         typename... StateElements>
 not_null<std::unique_ptr<
     typename Integrator<ExplicitFirstOrderOrdinaryDifferentialEquation<
-        StateElements...>>::Instance>>
-EmbeddedExplicitRungeKuttaIntegrator<Method, StateElements...>::
-Instance::Clone() const {
+        IndependentVariable, StateElements...>>::Instance>>
+EmbeddedExplicitRungeKuttaIntegrator<Method,
+                                     IndependentVariable,
+                                     StateElements...>::Instance::
+Clone() const {
   return std::unique_ptr<Instance>(new Instance(*this));
 }
 
-template<typename Method, typename... StateElements>
-void EmbeddedExplicitRungeKuttaIntegrator<Method, StateElements...>::
-Instance::WriteToMessage(
-    not_null<serialization::IntegratorInstance*> message) const {
+template<typename Method,
+         typename IndependentVariable,
+         typename... StateElements>
+void EmbeddedExplicitRungeKuttaIntegrator<Method,
+                                          IndependentVariable,
+                                          StateElements...>::Instance::
+WriteToMessage(not_null<serialization::IntegratorInstance*> message) const {
   AdaptiveStepSizeIntegrator<ODE>::Instance::WriteToMessage(message);
   [[maybe_unused]] auto* const extension =
       message
@@ -326,23 +352,27 @@ Instance::WriteToMessage(
 }
 
 #if 0
-template<typename Method, typename... StateElements>
+template<typename Method,
+         typename IndependentVariable,
+         typename... StateElements>
 template<typename, typename>
 not_null<std::unique_ptr<
     typename EmbeddedExplicitRungeKuttaIntegrator<Method,
+                                                  IndependentVariable,
                                                   StateElements...>::Instance>>
-EmbeddedExplicitRungeKuttaIntegrator<Method, StateElements...>::Instance::
-ReadFromMessage(
-    serialization::
-        EmbeddedExplicitRungeKuttaNystromIntegratorInstance const&
-            extension,
-    IntegrationProblem<ODE> const& problem,
-    AppendState const& append_state,
-    ToleranceToErrorRatio const& tolerance_to_error_ratio,
-    Parameters const& parameters,
-    Time const& time_step,
-    bool const first_use,
-    EmbeddedExplicitRungeKuttaIntegrator const& integrator) {
+EmbeddedExplicitRungeKuttaIntegrator<Method,
+                                     IndependentVariable,
+                                     StateElements...>::Instance::
+ReadFromMessage(serialization::
+                    EmbeddedExplicitRungeKuttaNystromIntegratorInstance const&
+                        extension,
+                IntegrationProblem<ODE> const& problem,
+                AppendState const& append_state,
+                ToleranceToErrorRatio const& tolerance_to_error_ratio,
+                Parameters const& parameters,
+                Time const& time_step,
+                bool const first_use,
+                EmbeddedExplicitRungeKuttaIntegrator const& integrator) {
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is
   // private.
   return std::unique_ptr<Instance>(new Instance(problem,
@@ -355,29 +385,36 @@ ReadFromMessage(
 }
 #endif
 
-template<typename Method, typename... StateElements>
-EmbeddedExplicitRungeKuttaIntegrator<Method, StateElements...>::
-Instance::Instance(
-    IntegrationProblem<ODE> const& problem,
-    AppendState const& append_state,
-    ToleranceToErrorRatio const& tolerance_to_error_ratio,
-    Parameters const& parameters,
-    Time const& time_step,
-    bool const first_use,
-    EmbeddedExplicitRungeKuttaIntegrator const& integrator)
+template<typename Method,
+         typename IndependentVariable,
+         typename... StateElements>
+EmbeddedExplicitRungeKuttaIntegrator<Method,
+                                     IndependentVariable,
+                                     StateElements...>::Instance::
+Instance(IntegrationProblem<ODE> const& problem,
+         AppendState const& append_state,
+         ToleranceToErrorRatio const& tolerance_to_error_ratio,
+         Parameters const& parameters,
+         ODE::IndependentVariableDifference const& step,
+         bool const first_use,
+         EmbeddedExplicitRungeKuttaIntegrator const& integrator)
     : AdaptiveStepSizeIntegrator<ODE>::Instance(problem,
                                                 append_state,
                                                 tolerance_to_error_ratio,
                                                 parameters,
-                                                time_step,
+                                                step,
                                                 first_use),
       integrator_(integrator) {}
 
-template<typename Method, typename... StateElements>
+template<typename Method,
+         typename IndependentVariable,
+         typename... StateElements>
 not_null<std::unique_ptr<
     typename Integrator<ExplicitFirstOrderOrdinaryDifferentialEquation<
-        StateElements...>>::Instance>>
-EmbeddedExplicitRungeKuttaIntegrator<Method, StateElements...>::
+        IndependentVariable, StateElements...>>::Instance>>
+EmbeddedExplicitRungeKuttaIntegrator<Method,
+                                     IndependentVariable,
+                                     StateElements...>::
 NewInstance(IntegrationProblem<ODE> const& problem,
             AppendState const& append_state,
             ToleranceToErrorRatio const& tolerance_to_error_ratio,
@@ -389,31 +426,40 @@ NewInstance(IntegrationProblem<ODE> const& problem,
                    append_state,
                    tolerance_to_error_ratio,
                    parameters,
-                   /*time_step=*/parameters.first_time_step,
+                   /*step=*/parameters.first_step,
                    /*first_use=*/true,
                    *this));
 }
 
-template<typename Method, typename... StateElements>
-void EmbeddedExplicitRungeKuttaIntegrator<Method, StateElements...>::
-WriteToMessage(not_null<serialization::AdaptiveStepSizeIntegrator*> message)
-    const {
+template<typename Method,
+         typename IndependentVariable,
+         typename... StateElements>
+void EmbeddedExplicitRungeKuttaIntegrator<Method,
+                                          IndependentVariable,
+                                          StateElements...>::
+WriteToMessage(
+    not_null<serialization::AdaptiveStepSizeIntegrator*> message) const {
   message->set_kind(Method::kind);
 }
 
 }  // namespace internal_embedded_explicit_runge_kutta_integrator
 
-template<typename Method, typename... StateElements>
+template<typename Method,
+         typename IndependentVariable,
+         typename... StateElements>
 internal_embedded_explicit_runge_kutta_integrator::
-    EmbeddedExplicitRungeKuttaIntegrator<Method, StateElements...> const&
+    EmbeddedExplicitRungeKuttaIntegrator<Method,
+                                         IndependentVariable,
+                                         StateElements...> const&
 EmbeddedExplicitRungeKuttaIntegrator() {
   static_assert(
       std::is_base_of<methods::EmbeddedExplicitRungeKutta,
                       Method>::value,
       "Method must be derived from EmbeddedExplicitRungeKutta");
   static internal_embedded_explicit_runge_kutta_integrator::
-      EmbeddedExplicitRungeKuttaIntegrator<Method, StateElements...> const
-          integrator;
+      EmbeddedExplicitRungeKuttaIntegrator<Method,
+                                           IndependentVariable,
+                                           StateElements...> const integrator;
   return integrator;
 }
 

@@ -17,6 +17,7 @@
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "quantities/serialization.hpp"
 
 // A case branch in a switch on the serialized integrator |kind|.  It determines
 // the |method| type from the |kind| defined in scope |message| and calls
@@ -203,6 +204,8 @@
 namespace principia {
 namespace integrators {
 namespace internal_integrators {
+
+using quantities::DoubleOrQuantitySerializer;
 
 template<typename Integrator>
 not_null<std::unique_ptr<typename Integrator::Instance>>
@@ -534,20 +537,20 @@ ParseFixedStepSizeIntegrator(std::string const& integrator_kind) {
 
 template<typename ODE_>
 AdaptiveStepSizeIntegrator<ODE_>::Parameters::Parameters(
-    Time const first_time_step,
+    IndependentVariableDifference const& first_step,
     double const safety_factor,
     std::int64_t const max_steps,
     bool const last_step_is_exact)
-    : first_time_step(first_time_step),
+    : first_step(first_step),
       safety_factor(safety_factor),
       max_steps(max_steps),
       last_step_is_exact(last_step_is_exact) {}
 
 template<typename ODE_>
 AdaptiveStepSizeIntegrator<ODE_>::Parameters::Parameters(
-    Time const first_time_step,
+    IndependentVariableDifference const& first_step,
     double const safety_factor)
-    : Parameters(first_time_step,
+    : Parameters(first_step,
                  safety_factor,
                  /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
                  /*last_step_is_exact=*/true) {}
@@ -556,7 +559,10 @@ template<typename ODE_>
 void AdaptiveStepSizeIntegrator<ODE_>::Parameters::WriteToMessage(
     not_null<serialization::AdaptiveStepSizeIntegratorInstance::
                  Parameters*> const message) const {
-  first_time_step.WriteToMessage(message->mutable_first_time_step());
+  using Serializer = DoubleOrQuantitySerializer<
+      IndependentVariableDifference,
+      serialization::AdaptiveStepSizeIntegratorInstance::Step>;
+  Serializer::WriteToMessage(first_step, message->mutable_first_step());
   message->set_safety_factor(safety_factor);
   message->set_max_steps(max_steps);
   message->set_last_step_is_exact(last_step_is_exact);
@@ -567,10 +573,18 @@ typename AdaptiveStepSizeIntegrator<ODE_>::Parameters
 AdaptiveStepSizeIntegrator<ODE_>::Parameters::ReadFromMessage(
     serialization::AdaptiveStepSizeIntegratorInstance::Parameters const&
         message) {
+  using Serializer = DoubleOrQuantitySerializer<
+      IndependentVariableDifference,
+      serialization::AdaptiveStepSizeIntegratorInstance::Step>;
   bool const is_pre_cartan = !message.has_last_step_is_exact();
-  LOG_IF(WARNING, is_pre_cartan)
-      << "Reading pre-Cartan AdaptiveStepSizeIntegrator";
-  Parameters result(Time::ReadFromMessage(message.first_time_step()),
+  bool const is_pre_hesse = !message.has_first_step();
+  LOG_IF(WARNING, is_pre_hesse)
+      << "Reading pre-" << (is_pre_cartan ? "Cartan" : "Hesse")
+      << " AdaptiveStepSizeIntegrator";
+  IndependentVariableDifference const first_step =
+      is_pre_hesse ? Time::ReadFromMessage(message.first_time_step())
+                   : Serializer::ReadFromMessage(message.first_step());
+  Parameters result(first_step,
                     message.safety_factor(),
                     message.max_steps(),
                     is_pre_cartan ? true : message.last_step_is_exact());
@@ -580,11 +594,14 @@ AdaptiveStepSizeIntegrator<ODE_>::Parameters::ReadFromMessage(
 template<typename ODE_>
 void AdaptiveStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
     not_null<serialization::IntegratorInstance*> message) const {
+  using Serializer = DoubleOrQuantitySerializer<
+      IndependentVariableDifference,
+      serialization::AdaptiveStepSizeIntegratorInstance::Step>;
   Integrator<ODE>::Instance::WriteToMessage(message);
   auto* const extension = message->MutableExtension(
       serialization::AdaptiveStepSizeIntegratorInstance::extension);
   parameters_.WriteToMessage(extension->mutable_parameters());
-  time_step_.WriteToMessage(extension->mutable_time_step());
+  Serializer::WriteToMessage(step_, extension->mutable_step());
   extension->set_first_use(first_use_);
   integrator().WriteToMessage(extension->mutable_integrator());
 }
@@ -602,7 +619,7 @@ void AdaptiveStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
                                          append_state,               \
                                          tolerance_to_error_ratio,   \
                                          parameters,                 \
-                                         time_step,                  \
+                                         step,                       \
                                          first_use,                  \
                                          integrator);                \
   }
@@ -617,7 +634,7 @@ void AdaptiveStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
                                         append_state,                          \
                                         tolerance_to_error_ratio,              \
                                         parameters,                            \
-                                        time_step,                             \
+                                        step,                                  \
                                         first_use,                             \
                                         integrator);                           \
   }
@@ -631,6 +648,9 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
     ODE const& equation,
     AppendState const& append_state,
     ToleranceToErrorRatio const& tolerance_to_error_ratio) {
+  using Serializer = DoubleOrQuantitySerializer<
+      IndependentVariableDifference,
+      serialization::AdaptiveStepSizeIntegratorInstance::Step>;
   IntegrationProblem<ODE> problem;
   problem.equation = equation;
   problem.initial_state =
@@ -641,19 +661,24 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
       << "Not an adaptive-step integrator instance " << message.DebugString();
   auto const& extension = message.GetExtension(
       serialization::AdaptiveStepSizeIntegratorInstance::extension);
-  bool const is_pre_cartan = !extension.has_time_step();
-  LOG_IF(WARNING, is_pre_cartan)
-      << "Reading pre-Cartan AdaptiveStepSizeIntegrator Instance";
+  bool const is_pre_hesse = !extension.has_step();
+  bool const is_pre_cartan = is_pre_hesse && !extension.has_time_step();
+  LOG_IF(WARNING, is_pre_hesse)
+      << "Reading pre-" << (is_pre_cartan ? "Cartan" : "Hesse")
+      << " AdaptiveStepSizeIntegrator Instance";
 
   auto const parameters =
       Parameters::ReadFromMessage(extension.parameters());
-  Time time_step;
+  IndependentVariableDifference step;
   bool first_use;
   if (is_pre_cartan) {
-    time_step = parameters.first_time_step;
+    step = parameters.first_step;
     first_use = true;
+  } else if (is_pre_hesse) {
+    step = Time::ReadFromMessage(extension.time_step());
+    first_use = extension.first_use();
   } else {
-    time_step = Time::ReadFromMessage(extension.time_step());
+    step = Serializer::ReadFromMessage(extension.step());
     first_use = extension.first_use();
   }
 
@@ -680,14 +705,14 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::Instance(
     AppendState const& append_state,
     ToleranceToErrorRatio tolerance_to_error_ratio,
     Parameters const& parameters,
-    Time const& time_step,
+    IndependentVariableDifference const& step,
     bool const first_use)
     : Integrator<ODE>::Instance(problem, append_state),
       tolerance_to_error_ratio_(std::move(tolerance_to_error_ratio)),
       parameters_(parameters),
-      time_step_(time_step),
+      step_(step),
       first_use_(first_use) {
-  CHECK_NE(Time(), time_step_);
+  CHECK_NE(IndependentVariableDifference{}, step_);
   CHECK_GT(parameters.safety_factor, 0);
   CHECK_LT(parameters.safety_factor, 1);
 }

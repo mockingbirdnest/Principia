@@ -71,7 +71,7 @@ absl::Status EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
 
   // Argument checks.
   int const dimension = current_state.positions.size();
-  Sign const integration_direction = Sign(parameters.first_time_step);
+  Sign const integration_direction = Sign(parameters.first_step);
   if (integration_direction.is_positive()) {
     // Integrating forward.
     CHECK_LT(current_state.time.value, t_final);
@@ -84,7 +84,7 @@ absl::Status EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
   first_use = false;
 
   // Time step.  Updated as the integration progresses to allow restartability.
-  Time& h = this->time_step_;
+  Time& h = this->step_;
   // Current time.  This is a non-const reference whose purpose is to make the
   // equations more readable.
   DoublePrecision<Instant>& t = current_state.time;
@@ -356,7 +356,7 @@ NewInstance(IntegrationProblem<ODE> const& problem,
                    append_state,
                    tolerance_to_error_ratio,
                    parameters,
-                   /*time_step=*/parameters.first_time_step,
+                   /*time_step=*/parameters.first_step,
                    /*first_use=*/true,
                    *this));
 }

@@ -25,8 +25,8 @@ using integrators::AdaptiveStepSizeIntegrator;
 using integrators::ExplicitFirstOrderOrdinaryDifferentialEquation;
 using quantities::Acceleration;
 using quantities::Difference;
+using quantities::Infinity;
 using quantities::Length;
-using quantities::Speed;
 using quantities::si::Metre;
 using quantities::si::Second;
 
@@ -54,10 +54,15 @@ class Equipotential {
   static_assert(InertialFrame::is_inertial, "InertialFrame must be inertial");
 
  public:
+  // Equipotential lines are parameterized by this dimentionless quantity.
+  using IndependentVariable = double;
+
   // The first state variable is a point of an equipotential.  The second state
   // variable is the (scale-free) intensity of the braking.
   using ODE =
-      ExplicitFirstOrderOrdinaryDifferentialEquation<Position<Frame>, double>;
+      ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable,
+                                                     Position<Frame>,
+                                                     double>;
   using AdaptiveParameters = ODEAdaptiveStepParameters<ODE>;
 
   Equipotential(
@@ -69,33 +74,32 @@ class Equipotential {
                                   Instant const& t) const;
 
  private:
-  // TODO(phl): Avoid Instant.
-  using IndependentVariable = Instant;
-  static constexpr IndependentVariable const s_initial_;
-  static constexpr IndependentVariable const s_final_ = InfiniteFuture;
-  static constexpr Difference<IndependentVariable> const initial_s_step_ =
-      1 * Second;
-  static constexpr Speed const characteristic_speed_ = 1 * Metre / Second;
-
-  // TODO(phl): One or both of these values should probably be a parameter.
-  static constexpr double β_max_ = 1e6;
-  static constexpr double β_tolerance_ = 1;
-
+  using IndependentVariableDifference =
+      typename ODE::IndependentVariableDifference;
   using State = typename ODE::State;
   using StateVariation = typename ODE::StateVariation;
   using SystemState = typename ODE::SystemState;
   using SystemStateError = typename ODE::SystemStateError;
 
+  static constexpr IndependentVariable const s_initial_ = 0;
+  static constexpr IndependentVariable const s_final_ =
+      Infinity<IndependentVariable>;
+  static constexpr IndependentVariableDifference const initial_s_step_ = 1;
+  static constexpr Length const characteristic_length_ = 1 * Metre;
+
+  // TODO(phl): One or both of these values should probably be a parameter.
+  static constexpr double β_max_ = 1e6;
+  static constexpr double β_tolerance_ = 1;
+
   absl::Status RightHandSide(Bivector<double, Frame> const& plane,
                              Position<Frame> const& position,
                              Instant const& t,
-                             IndependentVariable const& s,
+                             IndependentVariable s,
                              State const& state,
                              StateVariation& state_variation) const;
 
-  double ToleranceToErrorRatio(
-      Difference<IndependentVariable> const& current_s_step,
-      SystemStateError const& error) const;
+  double ToleranceToErrorRatio(IndependentVariableDifference current_s_step,
+                               SystemStateError const& error) const;
 
   AdaptiveParameters const& adaptive_parameters_;
   not_null<DynamicFrame<InertialFrame, Frame> const*> const dynamic_frame_;

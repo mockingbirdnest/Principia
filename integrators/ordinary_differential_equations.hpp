@@ -43,28 +43,31 @@ using quantities::Quotient;
 using quantities::Time;
 using quantities::Variation;
 
-// A differential equation of the form y′ = f(y, t).
+// A differential equation of the form y′ = f(s, y).
 // |State| is the type of y.
-template<typename... StateElements>
+template<typename IndependentVariable_, typename... StateElements>
 struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
+  using IndependentVariable = IndependentVariable_;
+  using IndependentVariableDifference = Difference<IndependentVariable>;
   using State = std::tuple<std::vector<StateElements>...>;
   using StateDifference = std::tuple<std::vector<Difference<StateElements>>...>;
-  using StateVariation = std::tuple<std::vector<Variation<StateElements>>...>;
+  using StateVariation = std::tuple<std::vector<
+      Quotient<Difference<StateElements>, IndependentVariableDifference>>...>;
 
   using RightHandSideComputation =
-      std::function<absl::Status(Instant const& t,
+      std::function<absl::Status(IndependentVariable const& s,
                                  State const& state,
                                  StateVariation& variations)>;
 
   struct SystemState final {
     SystemState() = default;
-    SystemState(State const& y, Instant const& t);
+    SystemState(IndependentVariable const& s, State const& y);
 
+    DoublePrecision<IndependentVariable> s;
     std::tuple<std::vector<DoublePrecision<StateElements>>...> y;
-    DoublePrecision<Instant> time;
 
     friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
-      return lhs.y == rhs.y && lhs.time == rhs.time;
+      return lhs.y == rhs.y && lhs.s == rhs.s;
     }
 
     void WriteToMessage(not_null<serialization::SystemState*> message) const;
@@ -74,7 +77,7 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
 
   using SystemStateError = StateDifference;
 
-  // A functor that computes f(y, t) and stores it in |derivatives|.
+  // A functor that computes f(s, y) and stores it in |derivatives|.
   // This functor must be called with |std::get<i>(derivatives).size()| equal to
   // |std::get<i>(state).size()| for all i, but there is no requirement on the
   // values in |derivatives|.
@@ -122,6 +125,8 @@ struct DecomposableFirstOrderDifferentialEquation final {
 // |Position| is the type of q.
 template<typename Position_>
 struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
+  using IndependentVariable = Instant;
+  using IndependentVariableDifference = Time;
   using Position = Position_;
   // The type of Δq.
   using Displacement = Difference<Position>;
@@ -172,6 +177,8 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
 // |Position| is the type of q.
 template<typename Position_>
 struct SpecialSecondOrderDifferentialEquation final {
+  using IndependentVariable = Instant;
+  using IndependentVariableDifference = Time;
   using Position = Position_;
   // The type of Δq.
   using Displacement = Difference<Position>;

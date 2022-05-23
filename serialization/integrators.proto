@@ -87,17 +87,23 @@ message AdaptiveStepSizeIntegratorInstance {
     optional AdaptiveStepSizeIntegratorInstance extension = 7001;
   }
   extensions 9000 to 9999;  // Last used: 9001
+  message Step {
+    oneof step {
+      double double = 1;
+      Quantity quantity = 2;
+    }
+  }
   message Parameters {
-    required Quantity first_time_step = 1;
+    optional Quantity first_time_step = 1;  // Pre-Hesse.
+    optional Step first_step = 5;  // Added in Hesse.
     required double safety_factor = 2;
     required int64 max_steps = 3;
-    // Added in Cartan.
-    optional bool last_step_is_exact = 4;
+    optional bool last_step_is_exact = 4;  // Added in Cartan.
   }
   required Parameters parameters = 1;
   required AdaptiveStepSizeIntegrator integrator = 2;
-  // Added in Cartan.
-  optional Quantity time_step = 3;
+  optional Quantity time_step = 3;  // Added in Cartan, pre-Hesse.
+  optional Step step = 5;  // Added in Hesse.
   optional bool first_use = 4;
 }
 

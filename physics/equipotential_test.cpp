@@ -50,6 +50,7 @@ class EquipotentialTest : public ::testing::Test {
  protected:
   using Barycentric = Frame<enum class BarycentricTag, Inertial>;
   using World = Frame<enum class WorldTag, Arbitrary>;
+
   EquipotentialTest()
       : ephemeris_parameters_(
             SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
@@ -65,9 +66,11 @@ class EquipotentialTest : public ::testing::Test {
                                      /*geopotential_tolerance=*/0x1p-24},
             ephemeris_parameters_)),
         equipotential_parameters_(
-            EmbeddedExplicitRungeKuttaIntegrator<DormandPrince1986RK547FC,
-                                                 Position<World>,
-                                                 double>(),
+            EmbeddedExplicitRungeKuttaIntegrator<
+                DormandPrince1986RK547FC,
+                Equipotential<Barycentric, World>::IndependentVariable,
+                Position<World>,
+                double>(),
             /*max_steps=*/1000,
             /*length_integration_tolerance=*/1 * Metre) {}
 
