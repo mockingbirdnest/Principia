@@ -561,8 +561,8 @@ void AdaptiveStepSizeIntegrator<ODE_>::Parameters::WriteToMessage(
                  Parameters*> const message) const {
   using Serializer = DoubleOrQuantitySerializer<
       IndependentVariableDifference,
-      serialization::AdaptiveStepSizeIntegratorInstance::Parameters>;
-  Serializer::WriteToMessage(first_step, message);
+      serialization::AdaptiveStepSizeIntegratorInstance::Step>;
+  Serializer::WriteToMessage(first_step, message->mutable_first_step());
   message->set_safety_factor(safety_factor);
   message->set_max_steps(max_steps);
   message->set_last_step_is_exact(last_step_is_exact);
@@ -575,11 +575,16 @@ AdaptiveStepSizeIntegrator<ODE_>::Parameters::ReadFromMessage(
         message) {
   using Serializer = DoubleOrQuantitySerializer<
       IndependentVariableDifference,
-      serialization::AdaptiveStepSizeIntegratorInstance::Parameters>;
+      serialization::AdaptiveStepSizeIntegratorInstance::Step>;
   bool const is_pre_cartan = !message.has_last_step_is_exact();
-  LOG_IF(WARNING, is_pre_cartan)
-      << "Reading pre-Cartan AdaptiveStepSizeIntegrator";
-  Parameters result(Serializer::ReadFromMessage(message),
+  bool const is_pre_hesse = !message.has_first_step();
+  LOG_IF(WARNING, is_pre_hesse)
+      << "Reading pre-" << (is_pre_cartan ? "Cartan" : "Hesse")
+      << " AdaptiveStepSizeIntegrator";
+  IndependentVariableDifference const first_step =
+      is_pre_hesse ? Time::ReadFromMessage(message.first_time_step())
+                   : Serializer::ReadFromMessage(message.first_step());
+  Parameters result(first_step,
                     message.safety_factor(),
                     message.max_steps(),
                     is_pre_cartan ? true : message.last_step_is_exact());
@@ -591,12 +596,12 @@ void AdaptiveStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
     not_null<serialization::IntegratorInstance*> message) const {
   using Serializer = DoubleOrQuantitySerializer<
       IndependentVariableDifference,
-      serialization::AdaptiveStepSizeIntegratorInstance>;
+      serialization::AdaptiveStepSizeIntegratorInstance::Step>;
   Integrator<ODE>::Instance::WriteToMessage(message);
   auto* const extension = message->MutableExtension(
       serialization::AdaptiveStepSizeIntegratorInstance::extension);
   parameters_.WriteToMessage(extension->mutable_parameters());
-  Serializer::WriteToMessage(step_, extension);
+  Serializer::WriteToMessage(step_, extension->mutable_step());
   extension->set_first_use(first_use_);
   integrator().WriteToMessage(extension->mutable_integrator());
 }
@@ -645,7 +650,7 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
     ToleranceToErrorRatio const& tolerance_to_error_ratio) {
   using Serializer = DoubleOrQuantitySerializer<
       IndependentVariableDifference,
-      serialization::AdaptiveStepSizeIntegratorInstance>;
+      serialization::AdaptiveStepSizeIntegratorInstance::Step>;
   IntegrationProblem<ODE> problem;
   problem.equation = equation;
   problem.initial_state =
@@ -656,10 +661,11 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
       << "Not an adaptive-step integrator instance " << message.DebugString();
   auto const& extension = message.GetExtension(
       serialization::AdaptiveStepSizeIntegratorInstance::extension);
-  bool const is_pre_cartan = !extension.has_double_() &&
-                             !extension.has_quantity();
-  LOG_IF(WARNING, is_pre_cartan)
-      << "Reading pre-Cartan AdaptiveStepSizeIntegrator Instance";
+  bool const is_pre_hesse = !extension.has_step();
+  bool const is_pre_cartan = is_pre_hesse && !extension.has_time_step();
+  LOG_IF(WARNING, is_pre_hesse)
+      << "Reading pre-" << (is_pre_cartan ? "Cartan" : "Hesse")
+      << " AdaptiveStepSizeIntegrator Instance";
 
   auto const parameters =
       Parameters::ReadFromMessage(extension.parameters());
@@ -668,8 +674,11 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
   if (is_pre_cartan) {
     step = parameters.first_step;
     first_use = true;
+  } else if (is_pre_hesse) {
+    step = Time::ReadFromMessage(extension.time_step());
+    first_use = extension.first_use();
   } else {
-    step = Serializer::ReadFromMessage(extension);
+    step = Serializer::ReadFromMessage(extension.step());
     first_use = extension.first_use();
   }
 
