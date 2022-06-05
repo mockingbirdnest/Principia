@@ -130,6 +130,10 @@ class Geopotential<Frame>::DegreeNOrderM {
       Vector<Inverse<Square<Length>>, Frame> const& grad_σℜ,
       Precomputations& precomputations) -> Vector<ReducedAcceleration, Frame>;
 
+  static auto Potential(Inverse<Square<Length>> const& σℜ_over_r,
+                        Length const& r_norm,
+                        Precomputations& precomputations) -> ReducedPotential;
+
  private:
   static void UpdatePrecomputations(Precomputations& precomputations);
 };
@@ -185,12 +189,12 @@ auto Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
     auto const& grad_𝔅_vector = precomputations.grad_𝔅_vector;
     auto const& grad_𝔏_vector = precomputations.grad_𝔏_vector;
 
-    auto& cos_mλ = precomputations.cos_mλ[m];
-    auto& sin_mλ = precomputations.sin_mλ[m];
+    auto const& cos_mλ = precomputations.cos_mλ[m];
+    auto const& sin_mλ = precomputations.sin_mλ[m];
 
-    auto& cos_β_to_the_m = precomputations.cos_β_to_the_m[m];
+    auto const& cos_β_to_the_m = precomputations.cos_β_to_the_m[m];
 
-    auto& DmPn_of_sin_β = precomputations.DmPn_of_sin_β;
+    auto const& DmPn_of_sin_β = precomputations.DmPn_of_sin_β;
     auto const& cos = *precomputations.cos;
     auto const& sin = *precomputations.sin;
 
@@ -236,6 +240,45 @@ auto Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
     }
 
     return normalization_factor * grad_ℜ𝔅𝔏;
+  }
+}
+
+template<typename Frame>
+template<int degree, int order>
+auto Geopotential<Frame>::DegreeNOrderM<degree, order>::Potential(
+    Inverse<Square<Length>> const& σℜ_over_r,
+    Length const& r_norm,
+    Precomputations& precomputations) -> ReducedPotential {
+  UpdatePrecomputations(precomputations);
+
+  if constexpr (degree == 2 && order == 1) {
+    return ReducedPotential{};
+  } else {
+    constexpr int n = degree;
+    constexpr int m = order;
+
+    auto const& cos_mλ = precomputations.cos_mλ[m];
+    auto const& sin_mλ = precomputations.sin_mλ[m];
+
+    auto const& cos_β_to_the_m = precomputations.cos_β_to_the_m[m];
+
+    auto const& DmPn_of_sin_β = precomputations.DmPn_of_sin_β;
+    auto const& cos = *precomputations.cos;
+    auto const& sin = *precomputations.sin;
+
+    Inverse<Length> const σℜ = r_norm * σℜ_over_r;  // TODO(phl): This is dumb.
+    double const 𝔅 = cos_β_to_the_m * DmPn_of_sin_β(n, m);
+
+    double const Cnm = cos(n, m);
+    double const Snm = sin(n, m);
+    double 𝔏;
+    if constexpr (m == 0) {
+      𝔏 = Cnm;
+    } else {
+      𝔏 = Cnm * cos_mλ + Snm * sin_mλ;
+    }
+
+    return σℜ * 𝔅 * 𝔏;
   }
 }
 

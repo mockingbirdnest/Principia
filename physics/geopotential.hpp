@@ -23,6 +23,7 @@ using geometry::Vector;
 using numerics::PolynomialInMonomialBasis;
 using quantities::Acceleration;
 using quantities::Angle;
+using quantities::Energy;
 using quantities::Exponentiation;
 using quantities::GravitationalParameter;
 using quantities::Infinity;
@@ -105,8 +106,9 @@ class Geopotential {
   static const Vector<double, SurfaceFrame> x_;
   static const Vector<double, SurfaceFrame> y_;
 
-  // This is the type that we return, so better have a name for it.
+  // These are the types that we return, so better have a name for them.
   using ReducedAcceleration = Quotient<Acceleration, GravitationalParameter>;
+  using ReducedPotential = Quotient<Energy, GravitationalParameter>;
 
   // List of reduced accelerations computed for all degrees or orders.
   template<int size>
