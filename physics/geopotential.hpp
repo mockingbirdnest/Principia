@@ -59,6 +59,13 @@ class HarmonicDamping final {
       Inverse<Square<Length>>& σℜ_over_r,
       Vector<Inverse<Square<Length>>, Frame>& grad_σℜ) const;
 
+  // Same as above, but only computes the quantities needed for the potential.
+  void ComputeDampedRadialQuantities(Length const& r_norm,
+                                     Square<Length> const& r²,
+                                     Inverse<Square<Length>> const& ℜ_over_r,
+                                     Inverse<Square<Length>>& σℜ_over_r) const;
+
+
  private:
   Length outer_threshold_ = Infinity<Length>;
   Length inner_threshold_ = Infinity<Length>;

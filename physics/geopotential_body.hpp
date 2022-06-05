@@ -59,13 +59,13 @@ inline Length const& HarmonicDamping::inner_threshold() const {
 
 template<typename Frame>
 void HarmonicDamping::ComputeDampedRadialQuantities(
-      Length const& r_norm,
-      Square<Length> const& r²,
-      Vector<double, Frame> const& r_normalized,
-      Inverse<Square<Length>> const& ℜ_over_r,
-      Inverse<Square<Length>> const& ℜʹ,
-      Inverse<Square<Length>>& σℜ_over_r,
-      Vector<Inverse<Square<Length>>, Frame>& grad_σℜ) const {
+    Length const& r_norm,
+    Square<Length> const& r²,
+    Vector<double, Frame> const& r_normalized,
+    Inverse<Square<Length>> const& ℜ_over_r,
+    Inverse<Square<Length>> const& ℜʹ,
+    Inverse<Square<Length>>& σℜ_over_r,
+    Vector<Inverse<Square<Length>>, Frame>& grad_σℜ) const {
   Length const& s0 = inner_threshold_;
   if (r_norm <= s0) {
     // Below the inner threshold, σ = 1.
@@ -87,6 +87,30 @@ void HarmonicDamping::ComputeDampedRadialQuantities(
     // Writing this as σ′ℜ + ℜ′σ rather than ℜ∇σ + σ∇ℜ turns some vector
     // operations into scalar ones.
     grad_σℜ = (σʹr * ℜ_over_r + ℜʹ * σ) * r_normalized;
+  }
+}
+
+inline void HarmonicDamping::ComputeDampedRadialQuantities(
+    Length const& r_norm,
+    Square<Length> const& r²,
+    Inverse<Square<Length>> const& ℜ_over_r,
+    Inverse<Square<Length>>& σℜ_over_r) const {
+  Length const& s0 = inner_threshold_;
+  if (r_norm <= s0) {
+    // Below the inner threshold, σ = 1.
+    σℜ_over_r = ℜ_over_r;
+  } else {
+    auto const& c = sigmoid_coefficients_;
+    Derivative<double, Length> const c1 = std::get<1>(c);
+    Derivative<double, Length, 2> const c2 = std::get<2>(c);
+    Derivative<double, Length, 3> const c3 = std::get<3>(c);
+    auto const r³ = r² * r_norm;
+    double const c3r³ = c3 * r³;
+    double const c2r² = c2 * r²;
+    double const c1r = c1 * r_norm;
+    double const σ = c3r³ + c2r² + c1r;
+
+    σℜ_over_r = σ * ℜ_over_r;
   }
 }
 
@@ -149,6 +173,11 @@ DegreeNAllOrders<degree, std::integer_sequence<int, orders...>> {
                            Square<Length> const& r²,
                            Precomputations& precomputations)
       -> Vector<ReducedAcceleration, Frame>;
+
+  static auto Potential(Geopotential<Frame> const& geopotential,
+                        Length const& r_norm,
+                        Square<Length> const& r²,
+                        Precomputations& precomputations) -> ReducedPotential;
 
  private:
   static void UpdatePrecomputations(Square<Length> const& r²,
@@ -450,6 +479,67 @@ Acceleration(Geopotential<Frame> const& geopotential,
               σℜ_over_r, grad_σℜ, precomputations)...};
 
       return (accelerations[orders] + ...);
+    }
+  }
+}
+
+template<typename Frame>
+template<int degree, int... orders>
+auto Geopotential<Frame>::
+DegreeNAllOrders<degree, std::integer_sequence<int, orders...>>::
+Potential(Geopotential<Frame> const& geopotential,
+          Length const& r_norm,
+          Square<Length> const& r²,
+          Precomputations& precomputations) -> ReducedPotential {
+  if constexpr (degree < 2) {
+    return ReducedPotential{};
+  } else {
+    UpdatePrecomputations(r², precomputations);
+
+    constexpr int n = degree;
+    constexpr int size = sizeof...(orders);
+
+    auto const& ℜ_over_r = precomputations.ℜ_over_r[n];
+
+    Inverse<Square<Length>> σℜ_over_r;
+    if constexpr (n == 2 && size > 1) {
+      geopotential.degree_damping_[2].ComputeDampedRadialQuantities(r_norm,
+                                                                    r²,
+                                                                    ℜ_over_r,
+                                                                    σℜ_over_r);
+      // If we are above the outer threshold, we should not have been called
+      // (σ = 0).
+      DCHECK_LT(r_norm, geopotential.degree_damping_[2].outer_threshold());
+      ReducedPotential const j2_potential =
+          DegreeNOrderM<2, 0>::Potential(σℜ_over_r, precomputations);
+      geopotential.sectoral_damping_.ComputeDampedRadialQuantities(r_norm,
+                                                                   r²,
+                                                                   ℜ_over_r,
+                                                                   σℜ_over_r);
+      // If we are above the outer threshold, we should have been called with
+      // (orders...) = (0).
+      DCHECK_LT(r_norm, geopotential.sectoral_damping_.outer_threshold());
+      // Perform the precomputations for order 1 (but the result is known to be
+      // 0, so don't bother adding it).
+      DegreeNOrderM<2, 1>::Potential(σℜ_over_r, precomputations);
+      Vector<ReducedAcceleration, Frame> const c22_s22_potential =
+          DegreeNOrderM<2, 2>::Potential(σℜ_over_r, precomputations);
+      return j2_potential + c22_s22_potential;
+    } else {
+      geopotential.degree_damping_[n].ComputeDampedRadialQuantities(r_norm,
+                                                                    r²,
+                                                                    ℜ_over_r,
+                                                                    σℜ_over_r);
+      // If we are above the outer threshold, we should not have been called
+      // (σ = 0).
+      DCHECK_LT(r_norm, geopotential.degree_damping_[n].outer_threshold());
+
+      // Force the evaluation by increasing order using an initializer list.
+      ReducedAccelerations<size> const potentials = {
+          DegreeNOrderM<degree, orders>::Potential(σℜ_over_r,
+                                                   precomputations)...};
+
+      return (potentials[orders] + ...);
     }
   }
 }
