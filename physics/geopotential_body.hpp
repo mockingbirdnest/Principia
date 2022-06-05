@@ -83,14 +83,19 @@ struct Geopotential<Frame>::DegreeNOrderM {
 
 template<typename Frame>
 template<int degree, int... orders>
-struct Geopotential<Frame>::
+class Geopotential<Frame>::
 DegreeNAllOrders<degree, std::integer_sequence<int, orders...>> {
+ public:
   static auto Acceleration(Geopotential<Frame> const& geopotential,
                            Vector<double, Frame> const& r_normalized,
                            Length const& r_norm,
                            Square<Length> const& r²,
                            Precomputations& precomputations)
       -> Vector<ReducedAcceleration, Frame>;
+
+ private:
+  static void UpdatePrecomputations(Square<Length> const& r²,
+                                    Precomputations& precomputations);
 };
 
 template<typename Frame>
@@ -260,24 +265,12 @@ Acceleration(Geopotential<Frame> const& geopotential,
   if constexpr (degree < 2) {
     return {};
   } else {
+    UpdatePrecomputations(r², precomputations);
+
     constexpr int n = degree;
     constexpr int size = sizeof...(orders);
 
-    auto& ℜ_over_r = precomputations.ℜ_over_r[n];
-
-    // The caller ensures that we process n by increasing values.  Thus, we can
-    // safely compute ℜ based on values for lower n's.
-    if constexpr (n % 2 == 0) {
-      int const h = n / 2;
-      auto const& ℜh_over_r = precomputations.ℜ_over_r[h];
-      ℜ_over_r = ℜh_over_r * ℜh_over_r * r²;
-    } else {
-      int const h1 = n / 2;
-      int const h2 = n - h1;
-      auto const& ℜh1_over_r = precomputations.ℜ_over_r[h1];
-      auto const& ℜh2_over_r = precomputations.ℜ_over_r[h2];
-      ℜ_over_r = ℜh1_over_r * ℜh2_over_r * r²;
-    }
+    const auto& ℜ_over_r = precomputations.ℜ_over_r[n];
     auto const ℜʹ = -(n + 1) * ℜ_over_r;
     // Note that ∇ℜ = ℜʹ * r_normalized.
 
@@ -337,6 +330,31 @@ Acceleration(Geopotential<Frame> const& geopotential,
 
       return (accelerations[orders] + ...);
     }
+  }
+}
+
+template<typename Frame>
+template<int degree, int... orders>
+void Geopotential<Frame>::
+DegreeNAllOrders<degree, std::integer_sequence<int, orders...>>::
+UpdatePrecomputations(Square<Length> const& r²,
+                      Precomputations& precomputations) {
+  constexpr int n = degree;
+
+  auto& ℜ_over_r = precomputations.ℜ_over_r[n];
+
+  // The caller ensures that we process n by increasing values.  Thus, we can
+  // safely compute ℜ based on values for lower n's.
+  if constexpr (n % 2 == 0) {
+    int const h = n / 2;
+    auto const& ℜh_over_r = precomputations.ℜ_over_r[h];
+    ℜ_over_r = ℜh_over_r * ℜh_over_r * r²;
+  } else {
+    int const h1 = n / 2;
+    int const h2 = n - h1;
+    auto const& ℜh1_over_r = precomputations.ℜ_over_r[h1];
+    auto const& ℜh2_over_r = precomputations.ℜ_over_r[h2];
+    ℜ_over_r = ℜh1_over_r * ℜh2_over_r * r²;
   }
 }
 
