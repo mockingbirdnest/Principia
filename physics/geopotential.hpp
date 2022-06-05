@@ -80,7 +80,7 @@ class Geopotential {
 
   // Helper templates for iterating over the degrees/orders of the geopotential.
   template<int degree, int order>
-  struct DegreeNOrderM;
+  class DegreeNOrderM;
   template<int degree, typename>
   class DegreeNAllOrders;
   template<typename>
