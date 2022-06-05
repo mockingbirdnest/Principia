@@ -122,7 +122,7 @@ class Geopotential {
   template<int degree, int order>
   struct DegreeNOrderM;
   template<int degree, typename>
-  struct DegreeNAllOrders;
+  class DegreeNAllOrders;
   template<typename>
   struct AllDegrees;
 
