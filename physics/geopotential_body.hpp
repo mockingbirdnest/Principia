@@ -47,7 +47,7 @@ struct Geopotential<Frame>::Precomputations {
                   Instant const& t,
                   Displacement<Frame> const& r,
                   Length const& r_norm,
-                  Inverse<Length> const one_over_r_norm,
+                  Square<Length> const& r²,
                   Exponentiation<Length, -3> const& one_over_r³);
 
   // Allocate the maximum size to cover all possible degrees.  Making |size| a
@@ -58,6 +58,10 @@ struct Geopotential<Frame>::Precomputations {
   // These quantities are independent from n and m.
   typename OblateBody<Frame>::GeopotentialCoefficients const* cos;
   typename OblateBody<Frame>::GeopotentialCoefficients const* sin;
+
+  Length const r_norm;
+  Square<Length> const r²;
+  Vector<double, Frame> r_normalized;
 
   double sin_β;
   double cos_β;
@@ -85,8 +89,9 @@ Geopotential<Frame>::Precomputations::Precomputations(
     Instant const& t,
     Displacement<Frame> const& r,
     Length const& r_norm,
-    Inverse<Length> const one_over_r_norm,
-    Exponentiation<Length, -3> const& one_over_r³) {
+    Square<Length> const& r²,
+    Exponentiation<Length, -3> const& one_over_r³)
+    : r_norm(r_norm), r²(r²) {
   OblateBody<Frame> const& body = *geopotential.body_;
   const bool is_zonal =
       body.is_zonal() ||
@@ -135,6 +140,9 @@ Geopotential<Frame>::Precomputations::Precomputations(
   cos = &body.cos();
   sin = &body.sin();
 
+  Inverse<Length> const one_over_r_norm = 1 / r_norm;
+  r_normalized = r * one_over_r_norm;
+
   cos_β = r_equatorial * one_over_r_norm;
   sin_β = z * one_over_r_norm;
 
@@ -173,9 +181,6 @@ class Geopotential<Frame>::
 DegreeNAllOrders<degree, std::integer_sequence<int, orders...>> {
  public:
   static auto Acceleration(Geopotential<Frame> const& geopotential,
-                           Vector<double, Frame> const& r_normalized,
-                           Length const& r_norm,
-                           Square<Length> const& r²,
                            Precomputations& precomputations)
       -> Vector<ReducedAcceleration, Frame>;
 
@@ -288,9 +293,6 @@ void Geopotential<Frame>::DegreeNOrderM<degree, order>::UpdatePrecomputations(
     double const cos_β = precomputations.cos_β;
     double const sin_β = precomputations.sin_β;
 
-    auto const& grad_𝔅_vector = precomputations.grad_𝔅_vector;
-    auto const& grad_𝔏_vector = precomputations.grad_𝔏_vector;
-
     auto& cos_mλ = precomputations.cos_mλ[m];
     auto& sin_mλ = precomputations.sin_mλ[m];
 
@@ -368,18 +370,19 @@ template<int degree, int... orders>
 auto Geopotential<Frame>::
 DegreeNAllOrders<degree, std::integer_sequence<int, orders...>>::
 Acceleration(Geopotential<Frame> const& geopotential,
-             Vector<double, Frame> const& r_normalized,
-             Length const& r_norm,
-             Square<Length> const& r²,
              Precomputations& precomputations)
     -> Vector<ReducedAcceleration, Frame> {
   if constexpr (degree < 2) {
     return {};
   } else {
-    UpdatePrecomputations(r², precomputations);
-
     constexpr int n = degree;
     constexpr int size = sizeof...(orders);
+
+    Length const& r_norm = precomputations.r_norm;
+    Square<Length> const& r² = precomputations.r²;
+    Vector<double, Frame> const& r_normalized = precomputations.r_normalized;
+
+    UpdatePrecomputations(r², precomputations);
 
     auto const& ℜ_over_r = precomputations.ℜ_over_r[n];
     auto const ℜʹ = -(n + 1) * ℜ_over_r;
@@ -485,11 +488,8 @@ Acceleration(Geopotential<Frame> const& geopotential,
       body.is_zonal() ||
       r_norm > geopotential.sectoral_damping_.outer_threshold();
 
-  Inverse<Length> const one_over_r_norm = 1 / r_norm;
-  auto const r_normalized = r * one_over_r_norm;
-
   Precomputations precomputations(
-      geopotential, t, r, r_norm, one_over_r_norm, one_over_r³);
+      geopotential, t, r, r_norm, r², one_over_r³);
 
   // Force the evaluation by increasing degree using an initializer list.  In
   // the zonal case, no point in going beyond order 0.
@@ -497,14 +497,12 @@ Acceleration(Geopotential<Frame> const& geopotential,
   if (is_zonal) {
     accelerations = {
         DegreeNAllOrders<degrees, std::make_integer_sequence<int, 1>>::
-            Acceleration(
-                geopotential, r_normalized, r_norm, r², precomputations)...};
+            Acceleration(geopotential, precomputations)...};
   } else {
     accelerations = {
         DegreeNAllOrders<degrees,
                          std::make_integer_sequence<int, degrees + 1>>::
-            Acceleration(
-                geopotential, r_normalized, r_norm, r², precomputations)...};
+            Acceleration(geopotential, precomputations)...};
   }
 
   return (accelerations[degrees] + ...);
