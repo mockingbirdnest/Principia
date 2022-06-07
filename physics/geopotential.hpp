@@ -65,7 +65,6 @@ class HarmonicDamping final {
                                      Inverse<Square<Length>> const& ℜ_over_r,
                                      Inverse<Square<Length>>& σℜ_over_r) const;
 
-
  private:
   Length outer_threshold_ = Infinity<Length>;
   Length inner_threshold_ = Infinity<Length>;
