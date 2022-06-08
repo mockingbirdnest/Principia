@@ -395,7 +395,7 @@ Instance(IntegrationProblem<ODE> const& problem,
          AppendState const& append_state,
          ToleranceToErrorRatio const& tolerance_to_error_ratio,
          Parameters const& parameters,
-         ODE::IndependentVariableDifference const& step,
+         typename ODE::IndependentVariableDifference const& step,
          bool const first_use,
          EmbeddedExplicitRungeKuttaIntegrator const& integrator)
     : AdaptiveStepSizeIntegrator<ODE>::Instance(problem,

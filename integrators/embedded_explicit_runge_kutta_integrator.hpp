@@ -105,7 +105,7 @@ class EmbeddedExplicitRungeKuttaIntegrator
              AppendState const& append_state,
              ToleranceToErrorRatio const& tolerance_to_error_ratio,
              Parameters const& parameters,
-             ODE::IndependentVariableDifference const& step,
+             typename ODE::IndependentVariableDifference const& step,
              bool first_use,
              EmbeddedExplicitRungeKuttaIntegrator const& integrator);
 
