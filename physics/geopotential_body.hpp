@@ -223,12 +223,12 @@ auto Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
     auto const& grad_𝔅_vector = precomputations.grad_𝔅_vector;
     auto const& grad_𝔏_vector = precomputations.grad_𝔏_vector;
 
-    auto& cos_mλ = precomputations.cos_mλ[m];
-    auto& sin_mλ = precomputations.sin_mλ[m];
+    auto const& cos_mλ = precomputations.cos_mλ[m];
+    auto const& sin_mλ = precomputations.sin_mλ[m];
 
-    auto& cos_β_to_the_m = precomputations.cos_β_to_the_m[m];
+    auto const& cos_β_to_the_m = precomputations.cos_β_to_the_m[m];
 
-    auto& DmPn_of_sin_β = precomputations.DmPn_of_sin_β;
+    auto const& DmPn_of_sin_β = precomputations.DmPn_of_sin_β;
     auto const& cos = *precomputations.cos;
     auto const& sin = *precomputations.sin;
 
@@ -290,17 +290,13 @@ void Geopotential<Frame>::DegreeNOrderM<degree, order>::UpdatePrecomputations(
     constexpr int m = order;
     static_assert(0 <= m && m <= n);
 
-    double const cos_β = precomputations.cos_β;
     double const sin_β = precomputations.sin_β;
 
     auto& cos_mλ = precomputations.cos_mλ[m];
     auto& sin_mλ = precomputations.sin_mλ[m];
 
     auto& cos_β_to_the_m = precomputations.cos_β_to_the_m[m];
-
     auto& DmPn_of_sin_β = precomputations.DmPn_of_sin_β;
-    auto const& cos = *precomputations.cos;
-    auto const& sin = *precomputations.sin;
 
     // The caller ensures that we process n and m by increasing values.  Thus,
     // only the last value of m needs to be initialized for a given value of n.
