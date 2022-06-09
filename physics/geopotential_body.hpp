@@ -172,7 +172,6 @@ class Geopotential<Frame>::DegreeNOrderM {
       Precomputations& precomputations) -> Vector<ReducedAcceleration, Frame>;
 
   static auto Potential(Inverse<Square<Length>> const& σℜ_over_r,
-                        Length const& r_norm,
                         Precomputations& precomputations) -> ReducedPotential;
 
  private:
@@ -189,13 +188,10 @@ DegreeNAllOrders<degree, std::integer_sequence<int, orders...>> {
       -> Vector<ReducedAcceleration, Frame>;
 
   static auto Potential(Geopotential<Frame> const& geopotential,
-                        Length const& r_norm,
-                        Square<Length> const& r²,
                         Precomputations& precomputations) -> ReducedPotential;
 
  private:
-  static void UpdatePrecomputations(Square<Length> const& r²,
-                                    Precomputations& precomputations);
+  static void UpdatePrecomputations(Precomputations& precomputations);
 };
 
 template<typename Frame>
@@ -283,6 +279,46 @@ auto Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
     }
 
     return normalization_factor * grad_ℜ𝔅𝔏;
+  }
+}
+
+template<typename Frame>
+template<int degree, int order>
+auto Geopotential<Frame>::DegreeNOrderM<degree, order>::Potential(
+    Inverse<Square<Length>> const& σℜ_over_r,
+    Precomputations& precomputations) -> ReducedPotential {
+  UpdatePrecomputations(precomputations);
+
+  if constexpr (degree == 2 && order == 1) {
+    return ReducedPotential{};
+  } else {
+    constexpr int n = degree;
+    constexpr int m = order;
+
+    auto const& r_norm = precomputations.r_norm;
+
+    auto const& cos_mλ = precomputations.cos_mλ[m];
+    auto const& sin_mλ = precomputations.sin_mλ[m];
+
+    auto const& cos_β_to_the_m = precomputations.cos_β_to_the_m[m];
+
+    auto const& DmPn_of_sin_β = precomputations.DmPn_of_sin_β;
+    auto const& cos = *precomputations.cos;
+    auto const& sin = *precomputations.sin;
+
+    Inverse<Length> const σℜ = r_norm * σℜ_over_r;  // TODO(phl): This is dumb.
+    double const 𝔅 = cos_β_to_the_m * DmPn_of_sin_β(n, m);
+
+    double const Cnm = cos(n, m);
+    double const Snm = sin(n, m);
+    double 𝔏;
+    if constexpr (m == 0) {
+      𝔏 = Cnm;
+    } else {
+      𝔏 = Cnm * cos_mλ + Snm * sin_mλ;
+    }
+
+    return σℜ * 𝔅 * 𝔏;
   }
 }
 
@@ -383,11 +419,11 @@ Acceleration(Geopotential<Frame> const& geopotential,
     constexpr int n = degree;
     constexpr int size = sizeof...(orders);
 
-    Length const& r_norm = precomputations.r_norm;
-    Square<Length> const& r² = precomputations.r²;
-    Vector<double, Frame> const& r_normalized = precomputations.r_normalized;
+    UpdatePrecomputations(precomputations);
 
-    UpdatePrecomputations(r², precomputations);
+    auto const& r_norm = precomputations.r_norm;
+    auto const& r² = precomputations.r²;
+    auto const& r_normalized = precomputations.r_normalized;
 
     auto const& ℜ_over_r = precomputations.ℜ_over_r[n];
     auto const ℜʹ = -(n + 1) * ℜ_over_r;
@@ -454,45 +490,20 @@ Acceleration(Geopotential<Frame> const& geopotential,
 
 template<typename Frame>
 template<int degree, int... orders>
-void Geopotential<Frame>::
-DegreeNAllOrders<degree, std::integer_sequence<int, orders...>>::
-UpdatePrecomputations(Square<Length> const& r²,
-                      Precomputations& precomputations) {
-  constexpr int n = degree;
-
-  auto& ℜ_over_r = precomputations.ℜ_over_r[n];
-
-  // The caller ensures that we process n by increasing values.  Thus, we can
-  // safely compute ℜ based on values for lower n's.
-  if constexpr (n % 2 == 0) {
-    int const h = n / 2;
-    auto const& ℜh_over_r = precomputations.ℜ_over_r[h];
-    ℜ_over_r = ℜh_over_r * ℜh_over_r * r²;
-  } else {
-    int const h1 = n / 2;
-    int const h2 = n - h1;
-    auto const& ℜh1_over_r = precomputations.ℜ_over_r[h1];
-    auto const& ℜh2_over_r = precomputations.ℜ_over_r[h2];
-    ℜ_over_r = ℜh1_over_r * ℜh2_over_r * r²;
-  }
-}
-
-template<typename Frame>
-template<int degree, int... orders>
 auto Geopotential<Frame>::
 DegreeNAllOrders<degree, std::integer_sequence<int, orders...>>::
 Potential(Geopotential<Frame> const& geopotential,
-          Length const& r_norm,
-          Square<Length> const& r²,
           Precomputations& precomputations) -> ReducedPotential {
   if constexpr (degree < 2) {
     return ReducedPotential{};
   } else {
-    UpdatePrecomputations(r², precomputations);
-
     constexpr int n = degree;
     constexpr int size = sizeof...(orders);
 
+    UpdatePrecomputations(precomputations);
+
+    auto const& r_norm = precomputations.r_norm;
+    auto const& r² = precomputations.r²;
     auto const& ℜ_over_r = precomputations.ℜ_over_r[n];
 
     Inverse<Square<Length>> σℜ_over_r;
@@ -542,10 +553,10 @@ template<typename Frame>
 template<int degree, int... orders>
 void Geopotential<Frame>::
 DegreeNAllOrders<degree, std::integer_sequence<int, orders...>>::
-UpdatePrecomputations(Square<Length> const& r²,
-                      Precomputations& precomputations) {
+UpdatePrecomputations(Precomputations& precomputations) {
   constexpr int n = degree;
 
+  auto const& r² = precomputations.r²;
   auto& ℜ_over_r = precomputations.ℜ_over_r[n];
 
   // The caller ensures that we process n by increasing values.  Thus, we can
