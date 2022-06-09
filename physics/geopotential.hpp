@@ -24,13 +24,13 @@ using geometry::Vector;
 using numerics::PolynomialInMonomialBasis;
 using quantities::Acceleration;
 using quantities::Angle;
-using quantities::Energy;
 using quantities::Exponentiation;
 using quantities::GravitationalParameter;
 using quantities::Infinity;
 using quantities::Inverse;
 using quantities::Length;
 using quantities::Quotient;
+using quantities::SpecificEnergy;
 using quantities::Square;
 
 // Representation of the geopotential model of an oblate body.
@@ -57,7 +57,7 @@ class Geopotential {
       Square<Length> const& r²,
       Exponentiation<Length, -3> const& one_over_r³) const;
 
-  Quotient<Energy, GravitationalParameter>
+  Quotient<SpecificEnergy, GravitationalParameter>
   GeneralSphericalHarmonicsPotential(
       Instant const& t,
       Displacement<Frame> const& r,
@@ -76,7 +76,7 @@ class Geopotential {
 
   // These are the types that we return, so better have a name for them.
   using ReducedAcceleration = Quotient<Acceleration, GravitationalParameter>;
-  using ReducedPotential = Quotient<Energy, GravitationalParameter>;
+  using ReducedPotential = Quotient<SpecificEnergy, GravitationalParameter>;
 
   // List of reduced quantities computed for all degrees or orders.
   template<int size>

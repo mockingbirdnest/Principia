@@ -41,6 +41,7 @@ using quantities::Degree3SphericalHarmonicCoefficient;
 using quantities::GravitationalParameter;
 using quantities::ParseQuantity;
 using quantities::Pow;
+using quantities::SpecificEnergy;
 using quantities::si::Degree;
 using quantities::si::Giga;
 using quantities::si::Kilo;
@@ -103,7 +104,7 @@ class GeopotentialTest : public ::testing::Test {
   }
 
   template<typename Frame>
-  static Quotient<Energy, GravitationalParameter>
+  static Quotient<SpecificEnergy, GravitationalParameter>
   GeneralSphericalHarmonicsPotential(Geopotential<Frame> const& geopotential,
                                      Instant const& t,
                                      Displacement<Frame> const& r) {
@@ -149,10 +150,9 @@ class GeopotentialTest : public ::testing::Test {
                 displacement.coordinates() / Metre, mu, rbar, cnm, snm));
   }
 
-  static Vector<Acceleration, ITRS> Potential(
-      Displacement<ITRS> const& displacement,
-      Geopotential<ICRS> const& geopotential,
-      OblateBody<ICRS> const& earth) {
+  static SpecificEnergy Potential(Displacement<ITRS> const& displacement,
+                                  Geopotential<ICRS> const& geopotential,
+                                  OblateBody<ICRS> const& earth) {
     Displacement<ICRS> const icrs_displacement =
         earth.FromSurfaceFrame<ITRS>(Instant())(displacement);
     return earth.gravitational_parameter() *
@@ -831,9 +831,9 @@ TEST_F(GeopotentialTest, Potential) {
          length_distribution(random) * Metre});
     Displacement<ITRS> const shift = multiplier * displacement;
 
-    Energy const actual_potential_cpp1 =
+    SpecificEnergy const actual_potential_cpp1 =
         Potential(displacement, geopotential, *earth);
-    Energy const actual_potential_cpp2 =
+    SpecificEnergy const actual_potential_cpp2 =
         Potential(displacement + shift, geopotential, *earth);
     auto const finite_difference_acceleration = Vector<Acceleration, ITRS>(
         {(actual_potential_cpp2 - actual_potential_cpp1) /
@@ -843,9 +843,9 @@ TEST_F(GeopotentialTest, Potential) {
          (actual_potential_cpp2 - actual_potential_cpp1) /
              shift.coordinates().z});
     Vector<Acceleration, ITRS> const actual_acceleration =
-        Acceleration(displacement1, geopotential, *earth);
-    EXPECT_THAT(actual_acceleration_cpp,
-                AlmostEquals(actual_acceleration_f90, 0, 584));
+        AccelerationCpp(displacement, geopotential, *earth);
+    EXPECT_THAT(finite_difference_acceleration,
+                AlmostEquals(actual_acceleration, 0, 0));
   }
 }
 

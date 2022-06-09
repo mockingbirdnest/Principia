@@ -821,7 +821,7 @@ Geopotential<Frame>::GeneralSphericalHarmonicsAcceleration(
         *this, t, r, r_norm, r², one_over_r³)
 
 template<typename Frame>
-Quotient<Energy, GravitationalParameter>
+Quotient<SpecificEnergy, GravitationalParameter>
 Geopotential<Frame>::GeneralSphericalHarmonicsPotential(
     Instant const& t,
     Displacement<Frame> const& r,
