@@ -70,10 +70,12 @@ class Geopotential {
   using ReducedAcceleration = Quotient<Acceleration, GravitationalParameter>;
   using ReducedPotential = Quotient<Energy, GravitationalParameter>;
 
-  // List of reduced accelerations computed for all degrees or orders.
+  // List of reduced quantities computed for all degrees or orders.
   template<int size>
   using ReducedAccelerations =
       std::array<Vector<ReducedAcceleration, Frame>, size>;
+  template<int size>
+  using ReducedPotentials = std::array<ReducedPotential, size>;
 
   using UnitVector = Vector<double, Frame>;
 
@@ -86,7 +88,7 @@ class Geopotential {
   template<int degree, typename>
   class DegreeNAllOrders;
   template<typename>
-  struct AllDegrees;
+  class AllDegrees;
 
   // If z is a unit vector along the axis of rotation, and r a vector from the
   // center of |body_| to some point in space, the acceleration computed here

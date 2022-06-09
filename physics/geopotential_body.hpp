@@ -196,7 +196,8 @@ DegreeNAllOrders<degree, std::integer_sequence<int, orders...>> {
 
 template<typename Frame>
 template<int... degrees>
-struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
+class Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
+ public:
   static auto Acceleration(Geopotential<Frame> const& geopotential,
                            Instant const& t,
                            Displacement<Frame> const& r,
@@ -204,6 +205,14 @@ struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
                            Square<Length> const& r²,
                            Exponentiation<Length, -3> const& one_over_r³)
       -> Vector<ReducedAcceleration, Frame>;
+
+  static auto Potential(Geopotential<Frame> const& geopotential,
+                        Instant const& t,
+                        Displacement<Frame> const& r,
+                        Length const& r_norm,
+                        Square<Length> const& r²,
+                        Exponentiation<Length, -3> const& one_over_r³)
+      -> ReducedPotential;
 };
 
 template<typename Frame>
@@ -527,7 +536,7 @@ Potential(Geopotential<Frame> const& geopotential,
       // Perform the precomputations for order 1 (but the result is known to be
       // 0, so don't bother adding it).
       DegreeNOrderM<2, 1>::Potential(σℜ_over_r, precomputations);
-      Vector<ReducedAcceleration, Frame> const c22_s22_potential =
+      ReducedPotential const c22_s22_potential =
           DegreeNOrderM<2, 2>::Potential(σℜ_over_r, precomputations);
       return j2_potential + c22_s22_potential;
     } else {
@@ -540,7 +549,7 @@ Potential(Geopotential<Frame> const& geopotential,
       DCHECK_LT(r_norm, geopotential.degree_damping_[n].outer_threshold());
 
       // Force the evaluation by increasing order using an initializer list.
-      ReducedAccelerations<size> const potentials = {
+      ReducedPotentials<size> const potentials = {
           DegreeNOrderM<degree, orders>::Potential(σℜ_over_r,
                                                    precomputations)...};
 
@@ -608,6 +617,42 @@ Acceleration(Geopotential<Frame> const& geopotential,
   }
 
   return (accelerations[degrees] + ...);
+}
+
+template<typename Frame>
+template<int... degrees>
+auto Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
+Potential(Geopotential<Frame> const& geopotential,
+          Instant const& t,
+          Displacement<Frame> const& r,
+          Length const& r_norm,
+          Square<Length> const& r²,
+          Exponentiation<Length, -3> const& one_over_r³)
+    -> ReducedPotential {
+  constexpr int size = sizeof...(degrees);
+  OblateBody<Frame> const& body = *geopotential.body_;
+  const bool is_zonal =
+      body.is_zonal() ||
+      r_norm > geopotential.sectoral_damping_.outer_threshold();
+
+  Precomputations precomputations(
+      geopotential, t, r, r_norm, r², one_over_r³);
+
+  // Force the evaluation by increasing degree using an initializer list.  In
+  // the zonal case, no point in going beyond order 0.
+  ReducedPotentials<size> potentials;
+  if (is_zonal) {
+    potentials = {
+        DegreeNAllOrders<degrees, std::make_integer_sequence<int, 1>>::
+            Potential(geopotential, precomputations)...};
+  } else {
+    potentials = {
+        DegreeNAllOrders<degrees,
+                         std::make_integer_sequence<int, degrees + 1>>::
+            Potential(geopotential, precomputations)...};
+  }
+
+  return (potentials[degrees] + ...);
 }
 
 template<typename Frame>
