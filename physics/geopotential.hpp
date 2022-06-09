@@ -57,6 +57,14 @@ class Geopotential {
       Square<Length> const& r²,
       Exponentiation<Length, -3> const& one_over_r³) const;
 
+  Quotient<Energy, GravitationalParameter>
+  GeneralSphericalHarmonicsPotential(
+      Instant const& t,
+      Displacement<Frame> const& r,
+      Length const& r_norm,
+      Square<Length> const& r²,
+      Exponentiation<Length, -3> const& one_over_r³) const;
+
   std::vector<HarmonicDamping> const& degree_damping() const;
   HarmonicDamping const& sectoral_damping() const;
 
@@ -89,6 +97,13 @@ class Geopotential {
   class DegreeNAllOrders;
   template<typename>
   class AllDegrees;
+
+  // |limiting_degree| is the first degree such that
+  // |r_norm >= degree_damping_[limiting_degree].outer_threshold()|, or is
+  // |degree_damping_.size()| if |r_norm| is below all thresholds.
+  // Since |degree_damping_[0].outer_threshold()| and
+  // |degree_damping_[1].outer_threshold()| are infinite, |limiting_degree > 1|.
+  int LimitingDegree(Length const& r_norm) const;
 
   // If z is a unit vector along the axis of rotation, and r a vector from the
   // center of |body_| to some point in space, the acceleration computed here

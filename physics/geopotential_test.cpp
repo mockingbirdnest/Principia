@@ -102,6 +102,18 @@ class GeopotentialTest : public ::testing::Test {
         t, r, r_norm, r², one_over_r³);
   }
 
+  template<typename Frame>
+  static Quotient<Energy, GravitationalParameter>
+  GeneralSphericalHarmonicsPotential(Geopotential<Frame> const& geopotential,
+                                     Instant const& t,
+                                     Displacement<Frame> const& r) {
+    auto const r² = r.Norm²();
+    auto const r_norm = Sqrt(r²);
+    auto const one_over_r³ = r_norm / (r² * r²);
+    return geopotential.GeneralSphericalHarmonicsPotential(
+        t, r, r_norm, r², one_over_r³);
+  }
+
   static Vector<Acceleration, ITRS> AccelerationCpp(
       Displacement<ITRS> const& displacement,
       Geopotential<ICRS> const& geopotential,
@@ -135,6 +147,18 @@ class GeopotentialTest : public ::testing::Test {
         astronomy::fortran_astrodynamics_toolkit::
             ComputeGravityAccelerationLear<9, 9>(
                 displacement.coordinates() / Metre, mu, rbar, cnm, snm));
+  }
+
+  static Vector<Acceleration, ITRS> Potential(
+      Displacement<ITRS> const& displacement,
+      Geopotential<ICRS> const& geopotential,
+      OblateBody<ICRS> const& earth) {
+    Displacement<ICRS> const icrs_displacement =
+        earth.FromSurfaceFrame<ITRS>(Instant())(displacement);
+    return earth.gravitational_parameter() *
+           (GeneralSphericalHarmonicsPotential(
+                geopotential, Instant(), icrs_displacement) -
+            1 / icrs_displacement.Norm());
   }
 
   // The axis of rotation is along the z axis for ease of testing.
@@ -785,6 +809,44 @@ TEST_F(GeopotentialTest, DampedForces) {
   // so degrees 4 and above have mixed sigmoids, which are tricky to test.
   EXPECT_THAT(earth_geopotential.degree_damping()[5].outer_threshold(),
               Gt(earth_geopotential.degree_damping()[3].inner_threshold()));
+}
+
+TEST_F(GeopotentialTest, Potential) {
+  SolarSystem<ICRS> solar_system_2000(
+            SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+            SOLUTION_DIR / "astronomy" /
+                "sol_initial_state_jd_2451545_000000000.proto.txt");
+  solar_system_2000.LimitOblatenessToDegree("Earth", /*max_degree=*/9);
+  auto earth_message = solar_system_2000.gravity_model_message("Earth");
+  auto const earth = solar_system_2000.MakeOblateBody(earth_message);
+  Geopotential<ICRS> const geopotential(earth.get(), /*tolerance=*/0x1.0p-24);
+
+  std::mt19937_64 random(42);
+  double const multiplier = 1e-6;
+  std::uniform_real_distribution<double> length_distribution(-1e7, 1e7);
+  for (int i = 0; i < 1000; ++i) {
+    Displacement<ITRS> const displacement(
+        {length_distribution(random) * Metre,
+         length_distribution(random) * Metre,
+         length_distribution(random) * Metre});
+    Displacement<ITRS> const shift = multiplier * displacement;
+
+    Energy const actual_potential_cpp1 =
+        Potential(displacement, geopotential, *earth);
+    Energy const actual_potential_cpp2 =
+        Potential(displacement + shift, geopotential, *earth);
+    auto const finite_difference_acceleration = Vector<Acceleration, ITRS>(
+        {(actual_potential_cpp2 - actual_potential_cpp1) /
+             shift.coordinates().x,
+         (actual_potential_cpp2 - actual_potential_cpp1) /
+             shift.coordinates().y,
+         (actual_potential_cpp2 - actual_potential_cpp1) /
+             shift.coordinates().z});
+    Vector<Acceleration, ITRS> const actual_acceleration =
+        Acceleration(displacement1, geopotential, *earth);
+    EXPECT_THAT(actual_acceleration_cpp,
+                AlmostEquals(actual_acceleration_f90, 0, 584));
+  }
 }
 
 }  // namespace internal_geopotential
