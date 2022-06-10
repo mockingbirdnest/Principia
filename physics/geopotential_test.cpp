@@ -157,9 +157,9 @@ class GeopotentialTest : public ::testing::Test {
                                   OblateBody<ICRS> const& earth) {
     Displacement<ICRS> const icrs_displacement =
         earth.FromSurfaceFrame<ITRS>(Instant())(displacement);
-    return earth.gravitational_parameter() *
-           (/*GeneralSphericalHarmonicsPotential(
-                geopotential, Instant(), icrs_displacement)*/ -
+    return -earth.gravitational_parameter() *
+           (GeneralSphericalHarmonicsPotential(
+                geopotential, Instant(), icrs_displacement) +
             1 / icrs_displacement.Norm());
   }
 
@@ -826,7 +826,7 @@ TEST_F(GeopotentialTest, Potential) {
   std::mt19937_64 random(42);
   std::uniform_real_distribution<double> length_distribution(-1e7, 1e7);
   std::uniform_real_distribution<double> shift_distribution(-1, 1);
-  for (int i = 0; i < 10; ++i) {
+  for (int i = 0; i < 1000; ++i) {
     Displacement<ITRS> const displacement(
         {length_distribution(random) * Metre,
          length_distribution(random) * Metre,
@@ -861,8 +861,13 @@ TEST_F(GeopotentialTest, Potential) {
              shift_z.coordinates().z});
     Vector<Acceleration, ITRS> const actual_acceleration =
         AccelerationCpp(displacement, geopotential, *earth);
-    EXPECT_THAT(finite_difference_acceleration,
-                RelativeErrorFrom(actual_acceleration, testing::Lt(4.0e-3)));
+
+    // The spherical harmonics have a relative effect on the force that may be
+    // as high as 1.0e-3, so the tolerances below tell us that we are doing the
+    // computation correctly.
+    EXPECT_THAT(
+        finite_difference_acceleration,
+        RelativeErrorFrom(actual_acceleration, AllOf(Gt(2.3e-9), Lt(6.2e-6))));
   }
 }
 

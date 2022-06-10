@@ -303,6 +303,7 @@ auto Geopotential<Frame>::DegreeNOrderM<degree, order>::Potential(
   } else {
     constexpr int n = degree;
     constexpr int m = order;
+    static_assert(0 <= m && m <= n);
 
     auto const& r_norm = precomputations.r_norm;
 
@@ -314,6 +315,8 @@ auto Geopotential<Frame>::DegreeNOrderM<degree, order>::Potential(
     auto const& DmPn_of_sin_β = precomputations.DmPn_of_sin_β;
     auto const& cos = *precomputations.cos;
     auto const& sin = *precomputations.sin;
+
+    constexpr double normalization_factor = LegendreNormalizationFactor(n, m);
 
     Inverse<Length> const σℜ = r_norm * σℜ_over_r;  // TODO(phl): This is dumb.
     double const 𝔅 = cos_β_to_the_m * DmPn_of_sin_β(n, m);
@@ -327,7 +330,7 @@ auto Geopotential<Frame>::DegreeNOrderM<degree, order>::Potential(
       𝔏 = Cnm * cos_mλ + Snm * sin_mλ;
     }
 
-    return σℜ * 𝔅 * 𝔏;
+    return normalization_factor * σℜ * 𝔅 * 𝔏;
   }
 }
 
