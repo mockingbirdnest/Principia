@@ -30,6 +30,7 @@ using quantities::Infinity;
 using quantities::Inverse;
 using quantities::Length;
 using quantities::Quotient;
+using quantities::SpecificEnergy;
 using quantities::Square;
 
 // Representation of the geopotential model of an oblate body.
@@ -42,14 +43,15 @@ class Geopotential {
                double tolerance);
 
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  SphericalHarmonicsAcceleration(
+  GeneralSphericalHarmonicsAcceleration(
       Instant const& t,
       Displacement<Frame> const& r,
+      Length const& r_norm,
       Square<Length> const& r²,
       Exponentiation<Length, -3> const& one_over_r³) const;
 
-  Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  GeneralSphericalHarmonicsAcceleration(
+  Quotient<SpecificEnergy, GravitationalParameter>
+  GeneralSphericalHarmonicsPotential(
       Instant const& t,
       Displacement<Frame> const& r,
       Length const& r_norm,
@@ -65,13 +67,16 @@ class Geopotential {
   static const Vector<double, SurfaceFrame> x_;
   static const Vector<double, SurfaceFrame> y_;
 
-  // This is the type that we return, so better have a name for it.
+  // These are the types that we return, so better have a name for them.
   using ReducedAcceleration = Quotient<Acceleration, GravitationalParameter>;
+  using ReducedPotential = Quotient<SpecificEnergy, GravitationalParameter>;
 
-  // List of reduced accelerations computed for all degrees or orders.
+  // List of reduced quantities computed for all degrees or orders.
   template<int size>
   using ReducedAccelerations =
       std::array<Vector<ReducedAcceleration, Frame>, size>;
+  template<int size>
+  using ReducedPotentials = std::array<ReducedPotential, size>;
 
   using UnitVector = Vector<double, Frame>;
 
@@ -84,26 +89,14 @@ class Geopotential {
   template<int degree, typename>
   class DegreeNAllOrders;
   template<typename>
-  struct AllDegrees;
+  class AllDegrees;
 
-  // If z is a unit vector along the axis of rotation, and r a vector from the
-  // center of |body_| to some point in space, the acceleration computed here
-  // is:
-  //
-  //   -(J₂ / (μ ‖r‖⁵)) (3 z (r.z) + r (3 - 15 (r.z)² / ‖r‖²) / 2)
-  //
-  // Where ‖r‖ is the norm of r and r.z is the inner product.  It is the
-  // additional acceleration exerted by the oblateness of |body| on a point at
-  // position r.  J₂, J̃₂ and J̄₂ are normally positive and C̃₂₀ and C̄₂₀ negative
-  // because the planets are oblate, not prolate.  Note that this follows IERS
-  // Technical Note 36 and it differs from
-  // https://en.wikipedia.org/wiki/Geopotential_model which seems to want J̃₂ to
-  // be negative.
-  Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Degree2ZonalAcceleration(UnitVector const& axis,
-                           Displacement<Frame> const& r,
-                           Exponentiation<Length, -2> const& one_over_r²,
-                           Exponentiation<Length, -3> const& one_over_r³) const;
+  // |limiting_degree| is the first degree such that
+  // |r_norm >= degree_damping_[limiting_degree].outer_threshold()|, or is
+  // |degree_damping_.size()| if |r_norm| is below all thresholds.
+  // Since |degree_damping_[0].outer_threshold()| and
+  // |degree_damping_[1].outer_threshold()| are infinite, |limiting_degree > 1|.
+  int LimitingDegree(Length const& r_norm) const;
 
   not_null<OblateBody<Frame> const*> body_;
 

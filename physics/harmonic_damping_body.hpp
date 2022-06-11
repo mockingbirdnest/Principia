@@ -63,6 +63,30 @@ void HarmonicDamping::ComputeDampedRadialQuantities(
   }
 }
 
+inline void HarmonicDamping::ComputeDampedRadialQuantities(
+    Length const& r_norm,
+    Square<Length> const& r²,
+    Inverse<Square<Length>> const& ℜ_over_r,
+    Inverse<Square<Length>>& σℜ_over_r) const {
+  Length const& s0 = inner_threshold_;
+  if (r_norm <= s0) {
+    // Below the inner threshold, σ = 1.
+    σℜ_over_r = ℜ_over_r;
+  } else {
+    auto const& c = sigmoid_coefficients_;
+    Derivative<double, Length> const c1 = std::get<1>(c);
+    Derivative<double, Length, 2> const c2 = std::get<2>(c);
+    Derivative<double, Length, 3> const c3 = std::get<3>(c);
+    auto const r³ = r² * r_norm;
+    double const c3r³ = c3 * r³;
+    double const c2r² = c2 * r²;
+    double const c1r = c1 * r_norm;
+    double const σ = c3r³ + c2r² + c1r;
+
+    σℜ_over_r = σ * ℜ_over_r;
+  }
+}
+
 }  // namespace internal_harmonic_damping
 }  // namespace physics
 }  // namespace principia

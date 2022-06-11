@@ -20,6 +20,7 @@
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
@@ -41,6 +42,7 @@ using quantities::Degree3SphericalHarmonicCoefficient;
 using quantities::GravitationalParameter;
 using quantities::ParseQuantity;
 using quantities::Pow;
+using quantities::SpecificEnergy;
 using quantities::si::Degree;
 using quantities::si::Giga;
 using quantities::si::Kilo;
@@ -52,6 +54,7 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
+using testing_utilities::RelativeErrorFrom;
 using testing_utilities::VanishesBefore;
 using testing_utilities::operator""_;
 using ::testing::AllOf;
@@ -82,16 +85,6 @@ class GeopotentialTest : public ::testing::Test {
 
   template<typename Frame>
   static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  SphericalHarmonicsAcceleration(Geopotential<Frame> const& geopotential,
-                                 Instant const& t,
-                                 Displacement<Frame> const& r) {
-    auto const r² = r.Norm²();
-    auto const one_over_r³ = 1.0 / (r² * r.Norm());
-    return geopotential.SphericalHarmonicsAcceleration(t, r, r², one_over_r³);
-  }
-
-  template<typename Frame>
-  static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
   GeneralSphericalHarmonicsAcceleration(Geopotential<Frame> const& geopotential,
                                         Instant const& t,
                                         Displacement<Frame> const& r) {
@@ -99,6 +92,18 @@ class GeopotentialTest : public ::testing::Test {
     auto const r_norm = Sqrt(r²);
     auto const one_over_r³ = r_norm / (r² * r²);
     return geopotential.GeneralSphericalHarmonicsAcceleration(
+        t, r, r_norm, r², one_over_r³);
+  }
+
+  template<typename Frame>
+  static Quotient<SpecificEnergy, GravitationalParameter>
+  GeneralSphericalHarmonicsPotential(Geopotential<Frame> const& geopotential,
+                                     Instant const& t,
+                                     Displacement<Frame> const& r) {
+    auto const r² = r.Norm²();
+    auto const r_norm = Sqrt(r²);
+    auto const one_over_r³ = r_norm / (r² * r²);
+    return geopotential.GeneralSphericalHarmonicsPotential(
         t, r, r_norm, r², one_over_r³);
   }
 
@@ -137,6 +142,17 @@ class GeopotentialTest : public ::testing::Test {
                 displacement.coordinates() / Metre, mu, rbar, cnm, snm));
   }
 
+  static SpecificEnergy Potential(Displacement<ITRS> const& displacement,
+                                  Geopotential<ICRS> const& geopotential,
+                                  OblateBody<ICRS> const& earth) {
+    Displacement<ICRS> const icrs_displacement =
+        earth.FromSurfaceFrame<ITRS>(Instant())(displacement);
+    return earth.gravitational_parameter() *
+           (GeneralSphericalHarmonicsPotential(
+                geopotential, Instant(), icrs_displacement) -
+            1 / icrs_displacement.Norm());
+  }
+
   // The axis of rotation is along the z axis for ease of testing.
   AngularFrequency const angular_frequency_ = -1.5 * Radian / Second;
   Angle const right_ascension_of_pole_ = 0 * Degree;
@@ -155,7 +171,7 @@ TEST_F(GeopotentialTest, J2) {
 
   // The acceleration at a point located on the axis is along the axis.
   {
-    auto const acceleration = SphericalHarmonicsAcceleration(
+    auto const acceleration = GeneralSphericalHarmonicsAcceleration(
         geopotential,
         Instant(),
         Displacement<World>({0 * Metre, 0 * Metre, 10 * Metre}));
@@ -168,7 +184,7 @@ TEST_F(GeopotentialTest, J2) {
   // The acceleration at a point located in the equatorial plane is directed to
   // the centre.
   {
-    auto const acceleration = SphericalHarmonicsAcceleration(
+    auto const acceleration = GeneralSphericalHarmonicsAcceleration(
         geopotential,
         Instant(),
         Displacement<World>({30 * Metre, 40 * Metre, 0 * Metre}));
@@ -181,26 +197,12 @@ TEST_F(GeopotentialTest, J2) {
   // The acceleration at a random point nudges the overall force away from the
   // centre and towards the equatorial plane.
   {
-    auto const acceleration = SphericalHarmonicsAcceleration(
+    auto const acceleration = GeneralSphericalHarmonicsAcceleration(
         geopotential,
         Instant(),
         Displacement<World>({1e2 * Metre, 0 * Metre, 1e2 * Metre}));
     EXPECT_THAT(acceleration.coordinates().x, Gt(0 * Pow<-2>(Metre)));
     EXPECT_THAT(acceleration.coordinates().z, Lt(0 * Pow<-2>(Metre)));
-  }
-
-  // Consistency between the general implementation in the zonal case and the
-  // J2-specific one.
-  {
-    auto const acceleration1 = SphericalHarmonicsAcceleration(
-        geopotential,
-        Instant(),
-        Displacement<World>({6 * Metre, -4 * Metre, 5 * Metre}));
-    auto const acceleration2 = GeneralSphericalHarmonicsAcceleration(
-        geopotential,
-        Instant(),
-        Displacement<World>({6 * Metre, -4 * Metre, 5 * Metre}));
-    EXPECT_THAT(acceleration1, AlmostEquals(acceleration2, 3));
   }
 }
 
@@ -785,6 +787,64 @@ TEST_F(GeopotentialTest, DampedForces) {
   // so degrees 4 and above have mixed sigmoids, which are tricky to test.
   EXPECT_THAT(earth_geopotential.degree_damping()[5].outer_threshold(),
               Gt(earth_geopotential.degree_damping()[3].inner_threshold()));
+}
+
+TEST_F(GeopotentialTest, Potential) {
+  SolarSystem<ICRS> solar_system_2000(
+            SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+            SOLUTION_DIR / "astronomy" /
+                "sol_initial_state_jd_2451545_000000000.proto.txt");
+  solar_system_2000.LimitOblatenessToDegree("Earth", /*max_degree=*/9);
+  auto earth_message = solar_system_2000.gravity_model_message("Earth");
+  auto const earth = solar_system_2000.MakeOblateBody(earth_message);
+  Geopotential<ICRS> const geopotential(earth.get(), /*tolerance=*/0x1.0p-24);
+
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<double> length_distribution(-1e7, 1e7);
+  std::uniform_real_distribution<double> shift_distribution(-1, 1);
+  for (int i = 0; i < 1000; ++i) {
+    Displacement<ITRS> const displacement(
+        {length_distribution(random) * Metre,
+         length_distribution(random) * Metre,
+         length_distribution(random) * Metre});
+    Displacement<ITRS> const shift_x(
+        {shift_distribution(random) * Metre,
+         0 * Metre,
+         0 * Metre});
+    Displacement<ITRS> const shift_y(
+        {0 * Metre,
+         shift_distribution(random) * Metre,
+         0 * Metre});
+    Displacement<ITRS> const shift_z(
+        {0 * Metre,
+         0 * Metre,
+         shift_distribution(random) * Metre});
+
+    SpecificEnergy const potential_base =
+        Potential(displacement, geopotential, *earth);
+    SpecificEnergy const potential_shift_x =
+        Potential(displacement + shift_x, geopotential, *earth);
+    SpecificEnergy const potential_shift_y =
+        Potential(displacement + shift_y, geopotential, *earth);
+    SpecificEnergy const potential_shift_z =
+        Potential(displacement + shift_z, geopotential, *earth);
+    auto const finite_difference_acceleration = Vector<Acceleration, ITRS>(
+        {-(potential_shift_x - potential_base) /
+             shift_x.coordinates().x,
+         -(potential_shift_y - potential_base) /
+             shift_y.coordinates().y,
+         -(potential_shift_z - potential_base) /
+             shift_z.coordinates().z});
+    Vector<Acceleration, ITRS> const actual_acceleration =
+        AccelerationCpp(displacement, geopotential, *earth);
+
+    // The spherical harmonics have a relative effect on the force that may be
+    // as high as 1.0e-3, so the tolerances below tell us that we are doing the
+    // computation correctly.
+    EXPECT_THAT(
+        finite_difference_acceleration,
+        RelativeErrorFrom(actual_acceleration, AllOf(Gt(2.3e-9), Lt(6.2e-6))));
+  }
 }
 
 }  // namespace internal_geopotential
