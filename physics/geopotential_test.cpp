@@ -85,16 +85,6 @@ class GeopotentialTest : public ::testing::Test {
 
   template<typename Frame>
   static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  SphericalHarmonicsAcceleration(Geopotential<Frame> const& geopotential,
-                                 Instant const& t,
-                                 Displacement<Frame> const& r) {
-    auto const r² = r.Norm²();
-    auto const one_over_r³ = 1.0 / (r² * r.Norm());
-    return geopotential.SphericalHarmonicsAcceleration(t, r, r², one_over_r³);
-  }
-
-  template<typename Frame>
-  static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
   GeneralSphericalHarmonicsAcceleration(Geopotential<Frame> const& geopotential,
                                         Instant const& t,
                                         Displacement<Frame> const& r) {
@@ -181,7 +171,7 @@ TEST_F(GeopotentialTest, J2) {
 
   // The acceleration at a point located on the axis is along the axis.
   {
-    auto const acceleration = SphericalHarmonicsAcceleration(
+    auto const acceleration = GeneralSphericalHarmonicsAcceleration(
         geopotential,
         Instant(),
         Displacement<World>({0 * Metre, 0 * Metre, 10 * Metre}));
@@ -194,7 +184,7 @@ TEST_F(GeopotentialTest, J2) {
   // The acceleration at a point located in the equatorial plane is directed to
   // the centre.
   {
-    auto const acceleration = SphericalHarmonicsAcceleration(
+    auto const acceleration = GeneralSphericalHarmonicsAcceleration(
         geopotential,
         Instant(),
         Displacement<World>({30 * Metre, 40 * Metre, 0 * Metre}));
@@ -207,26 +197,12 @@ TEST_F(GeopotentialTest, J2) {
   // The acceleration at a random point nudges the overall force away from the
   // centre and towards the equatorial plane.
   {
-    auto const acceleration = SphericalHarmonicsAcceleration(
+    auto const acceleration = GeneralSphericalHarmonicsAcceleration(
         geopotential,
         Instant(),
         Displacement<World>({1e2 * Metre, 0 * Metre, 1e2 * Metre}));
     EXPECT_THAT(acceleration.coordinates().x, Gt(0 * Pow<-2>(Metre)));
     EXPECT_THAT(acceleration.coordinates().z, Lt(0 * Pow<-2>(Metre)));
-  }
-
-  // Consistency between the general implementation in the zonal case and the
-  // J2-specific one.
-  {
-    auto const acceleration1 = SphericalHarmonicsAcceleration(
-        geopotential,
-        Instant(),
-        Displacement<World>({6 * Metre, -4 * Metre, 5 * Metre}));
-    auto const acceleration2 = GeneralSphericalHarmonicsAcceleration(
-        geopotential,
-        Instant(),
-        Displacement<World>({6 * Metre, -4 * Metre, 5 * Metre}));
-    EXPECT_THAT(acceleration1, AlmostEquals(acceleration2, 3));
   }
 }
 
