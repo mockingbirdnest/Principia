@@ -43,13 +43,6 @@ using quantities::Sin;
 
 template<typename Frame>
 struct Geopotential<Frame>::Precomputations {
-  Precomputations(Geopotential<Frame> const& geopotential,
-                  Instant const& t,
-                  Displacement<Frame> const& r,
-                  Length const& r_norm,
-                  Square<Length> const& r²,
-                  Exponentiation<Length, -3> const& one_over_r³);
-
   // Allocate the maximum size to cover all possible degrees.  Making |size| a
   // template parameter of this class would be possible, but it would greatly
   // increase the number of instances of DegreeNOrderM and friends.
@@ -59,13 +52,14 @@ struct Geopotential<Frame>::Precomputations {
   typename OblateBody<Frame>::GeopotentialCoefficients const* cos;
   typename OblateBody<Frame>::GeopotentialCoefficients const* sin;
 
-  Length const r_norm;
-  Square<Length> const r²;
-  Vector<double, Frame> r_normalized;
+  Length r_norm;
+  Square<Length> r²;
+  Vector<double, Frame> r_normalized;  // Only used for the acceleration.
 
   double sin_β;
   double cos_β;
 
+  // Only used for the acceleration.
   Vector<double, Frame> grad_𝔅_vector;
   Vector<double, Frame> grad_𝔏_vector;
 
@@ -82,85 +76,6 @@ struct Geopotential<Frame>::Precomputations {
   // not stored.
   FixedLowerTriangularMatrix<double, size> DmPn_of_sin_β{uninitialized};
 };
-
-template<typename Frame>
-Geopotential<Frame>::Precomputations::Precomputations(
-    Geopotential<Frame> const& geopotential,
-    Instant const& t,
-    Displacement<Frame> const& r,
-    Length const& r_norm,
-    Square<Length> const& r²,
-    Exponentiation<Length, -3> const& one_over_r³)
-    : r_norm(r_norm), r²(r²) {
-  OblateBody<Frame> const& body = *geopotential.body_;
-  const bool is_zonal =
-      body.is_zonal() ||
-      r_norm > geopotential.sectoral_damping_.outer_threshold();
-
-  auto& ℜ1_over_r = ℜ_over_r[1];
-
-  auto& cos_1λ = cos_mλ[1];
-  auto& sin_1λ = sin_mλ[1];
-
-  auto& cos_β_to_the_0 = cos_β_to_the_m[0];
-  auto& cos_β_to_the_1 = cos_β_to_the_m[1];
-
-  // In the zonal case the rotation of the body is of no importance, so any pair
-  // of equatorial vectors will do.
-  UnitVector x̂;
-  UnitVector ŷ;
-  UnitVector const ẑ = body.polar_axis();
-  if (is_zonal) {
-    x̂ = body.equatorial();
-    ŷ = body.biequatorial();
-  } else {
-    auto const from_surface_frame =
-      body.template FromSurfaceFrame<SurfaceFrame>(t);
-    x̂ = from_surface_frame(x_);
-    ŷ = from_surface_frame(y_);
-  }
-
-  Length const x = InnerProduct(r, x̂);
-  Length const y = InnerProduct(r, ŷ);
-  Length const z = InnerProduct(r, ẑ);
-
-  Square<Length> const x²_plus_y² = x * x + y * y;
-  Length const r_equatorial = Sqrt(x²_plus_y²);
-
-  // TODO(phl): This is probably incorrect for celestials that don't have
-  // longitudes counted to the East.
-  double cos_λ = 1;
-  double sin_λ = 0;
-  if (r_equatorial > Length{}) {
-    Inverse<Length> const one_over_r_equatorial = 1 / r_equatorial;
-    cos_λ = x * one_over_r_equatorial;
-    sin_λ = y * one_over_r_equatorial;
-  }
-
-  cos = &body.cos();
-  sin = &body.sin();
-
-  Inverse<Length> const one_over_r_norm = 1 / r_norm;
-  r_normalized = r * one_over_r_norm;
-
-  cos_β = r_equatorial * one_over_r_norm;
-  sin_β = z * one_over_r_norm;
-
-  grad_𝔅_vector = (-sin_β * cos_λ) * x̂ - (sin_β * sin_λ) * ŷ + cos_β * ẑ;
-  grad_𝔏_vector = cos_λ * ŷ - sin_λ * x̂;
-
-  ℜ1_over_r = body.reference_radius() * one_over_r³;
-
-  cos_1λ = cos_λ;
-  sin_1λ = sin_λ;
-
-  cos_β_to_the_0 = 1;
-  cos_β_to_the_1 = cos_β;
-
-  DmPn_of_sin_β(0, 0) = 1;
-  DmPn_of_sin_β(1, 0) = sin_β;
-  DmPn_of_sin_β(1, 1) = 1;
-}
 
 template<typename Frame>
 template<int degree, int order>
@@ -213,6 +128,15 @@ class Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
                         Square<Length> const& r²,
                         Exponentiation<Length, -3> const& one_over_r³)
       -> ReducedPotential;
+
+ private:
+  static auto MakePrecomputations(
+      Geopotential<Frame> const& geopotential,
+      Instant const& t,
+      Displacement<Frame> const& r,
+      Length const& r_norm,
+      Square<Length> const& r²,
+      Exponentiation<Length, -3> const& one_over_r³) -> Precomputations;
 };
 
 template<typename Frame>
@@ -318,7 +242,7 @@ auto Geopotential<Frame>::DegreeNOrderM<degree, order>::Potential(
 
     constexpr double normalization_factor = LegendreNormalizationFactor(n, m);
 
-    Inverse<Length> const σℜ = r_norm * σℜ_over_r;  // TODO(phl): This is dumb.
+    Inverse<Length> const σℜ = r_norm * σℜ_over_r;
     double const 𝔅 = cos_β_to_the_m * DmPn_of_sin_β(n, m);
 
     double const Cnm = cos(n, m);
@@ -602,7 +526,7 @@ Acceleration(Geopotential<Frame> const& geopotential,
       body.is_zonal() ||
       r_norm > geopotential.sectoral_damping_.outer_threshold();
 
-  Precomputations precomputations(
+  auto precomputations = MakePrecomputations(
       geopotential, t, r, r_norm, r², one_over_r³);
 
   // Force the evaluation by increasing degree using an initializer list.  In
@@ -638,7 +562,7 @@ Potential(Geopotential<Frame> const& geopotential,
       body.is_zonal() ||
       r_norm > geopotential.sectoral_damping_.outer_threshold();
 
-  Precomputations precomputations(
+  auto precomputations = MakePrecomputations(
       geopotential, t, r, r_norm, r², one_over_r³);
 
   // Force the evaluation by increasing degree using an initializer list.  In
@@ -656,6 +580,101 @@ Potential(Geopotential<Frame> const& geopotential,
   }
 
   return (potentials[degrees] + ...);
+}
+
+template<typename Frame>
+template<int... degrees>
+auto Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
+    MakePrecomputations(Geopotential<Frame> const& geopotential,
+                        Instant const& t,
+                        Displacement<Frame> const& r,
+                        Length const& r_norm,
+                        Square<Length> const& r²,
+                        Exponentiation<Length, -3> const& one_over_r³)
+        -> Precomputations {
+  OblateBody<Frame> const& body = *geopotential.body_;
+  const bool is_zonal =
+      body.is_zonal() ||
+      r_norm > geopotential.sectoral_damping_.outer_threshold();
+
+  Precomputations precomputations{.r_norm = r_norm, .r² = r²};
+
+  auto& cos = precomputations.cos;
+  auto& sin = precomputations.sin;
+
+  auto& cos_β = precomputations.cos_β;
+  auto& sin_β = precomputations.sin_β;
+
+  auto& grad_𝔅_vector = precomputations.grad_𝔅_vector;
+  auto& grad_𝔏_vector = precomputations.grad_𝔏_vector;
+
+  auto& ℜ1_over_r = precomputations.ℜ_over_r[1];
+
+  auto& cos_1λ = precomputations.cos_mλ[1];
+  auto& sin_1λ = precomputations.sin_mλ[1];
+
+  auto& cos_β_to_the_0 = precomputations.cos_β_to_the_m[0];
+  auto& cos_β_to_the_1 = precomputations.cos_β_to_the_m[1];
+
+  auto& DmPn_of_sin_β = precomputations.DmPn_of_sin_β;
+
+  // In the zonal case the rotation of the body is of no importance, so any pair
+  // of equatorial vectors will do.
+  UnitVector x̂;
+  UnitVector ŷ;
+  UnitVector const ẑ = body.polar_axis();
+  if (is_zonal) {
+    x̂ = body.equatorial();
+    ŷ = body.biequatorial();
+  } else {
+    auto const from_surface_frame =
+      body.template FromSurfaceFrame<SurfaceFrame>(t);
+    x̂ = from_surface_frame(x_);
+    ŷ = from_surface_frame(y_);
+  }
+
+  Length const x = InnerProduct(r, x̂);
+  Length const y = InnerProduct(r, ŷ);
+  Length const z = InnerProduct(r, ẑ);
+
+  Square<Length> const x²_plus_y² = x * x + y * y;
+  Length const r_equatorial = Sqrt(x²_plus_y²);
+
+  // TODO(phl): This is probably incorrect for celestials that don't have
+  // longitudes counted to the East.
+  double cos_λ = 1;
+  double sin_λ = 0;
+  if (r_equatorial > Length{}) {
+    Inverse<Length> const one_over_r_equatorial = 1 / r_equatorial;
+    cos_λ = x * one_over_r_equatorial;
+    sin_λ = y * one_over_r_equatorial;
+  }
+
+  cos = &body.cos();
+  sin = &body.sin();
+
+  Inverse<Length> const one_over_r_norm = 1 / r_norm;
+  precomputations.r_normalized = r * one_over_r_norm;
+
+  cos_β = r_equatorial * one_over_r_norm;
+  sin_β = z * one_over_r_norm;
+
+  grad_𝔅_vector = (-sin_β * cos_λ) * x̂ - (sin_β * sin_λ) * ŷ + cos_β * ẑ;
+  grad_𝔏_vector = cos_λ * ŷ - sin_λ * x̂;
+
+  ℜ1_over_r = body.reference_radius() * one_over_r³;
+
+  cos_1λ = cos_λ;
+  sin_1λ = sin_λ;
+
+  cos_β_to_the_0 = 1;
+  cos_β_to_the_1 = cos_β;
+
+  DmPn_of_sin_β(0, 0) = 1;
+  DmPn_of_sin_β(1, 0) = sin_β;
+  DmPn_of_sin_β(1, 1) = 1;
+
+  return precomputations;
 }
 
 template<typename Frame>
