@@ -30,6 +30,7 @@ using quantities::Infinity;
 using quantities::Inverse;
 using quantities::Length;
 using quantities::Quotient;
+using quantities::SpecificEnergy;
 using quantities::Square;
 
 // Representation of the geopotential model of an oblate body.
@@ -56,6 +57,14 @@ class Geopotential {
       Square<Length> const& r²,
       Exponentiation<Length, -3> const& one_over_r³) const;
 
+  Quotient<SpecificEnergy, GravitationalParameter>
+  GeneralSphericalHarmonicsPotential(
+      Instant const& t,
+      Displacement<Frame> const& r,
+      Length const& r_norm,
+      Square<Length> const& r²,
+      Exponentiation<Length, -3> const& one_over_r³) const;
+
   std::vector<HarmonicDamping> const& degree_damping() const;
   HarmonicDamping const& sectoral_damping() const;
 
@@ -65,13 +74,16 @@ class Geopotential {
   static const Vector<double, SurfaceFrame> x_;
   static const Vector<double, SurfaceFrame> y_;
 
-  // This is the type that we return, so better have a name for it.
+  // These are the types that we return, so better have a name for them.
   using ReducedAcceleration = Quotient<Acceleration, GravitationalParameter>;
+  using ReducedPotential = Quotient<SpecificEnergy, GravitationalParameter>;
 
-  // List of reduced accelerations computed for all degrees or orders.
+  // List of reduced quantities computed for all degrees or orders.
   template<int size>
   using ReducedAccelerations =
       std::array<Vector<ReducedAcceleration, Frame>, size>;
+  template<int size>
+  using ReducedPotentials = std::array<ReducedPotential, size>;
 
   using UnitVector = Vector<double, Frame>;
 
@@ -84,7 +96,14 @@ class Geopotential {
   template<int degree, typename>
   class DegreeNAllOrders;
   template<typename>
-  struct AllDegrees;
+  class AllDegrees;
+
+  // |limiting_degree| is the first degree such that
+  // |r_norm >= degree_damping_[limiting_degree].outer_threshold()|, or is
+  // |degree_damping_.size()| if |r_norm| is below all thresholds.
+  // Since |degree_damping_[0].outer_threshold()| and
+  // |degree_damping_[1].outer_threshold()| are infinite, |limiting_degree > 1|.
+  int LimitingDegree(Length const& r_norm) const;
 
   // If z is a unit vector along the axis of rotation, and r a vector from the
   // center of |body_| to some point in space, the acceleration computed here
