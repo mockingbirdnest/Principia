@@ -745,18 +745,6 @@ Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body,
   }
 }
 
-template<typename Frame>
-Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-Geopotential<Frame>::SphericalHarmonicsAcceleration(
-    Instant const& t,
-    Displacement<Frame> const& r,
-    Square<Length> const& r²,
-    Exponentiation<Length, -3> const& one_over_r³) const {
-  Exponentiation<Length, -2> const one_over_r² = 1 / r²;
-  UnitVector const& axis = body_->polar_axis();
-  return Degree2ZonalAcceleration(axis, r, one_over_r², one_over_r³);
-}
-
 #define PRINCIPIA_CASE_SPHERICAL_HARMONICS_ACCELERATION(d)                     \
   case (d):                                                                    \
     return AllDegrees<std::make_integer_sequence<int, (d) + 1>>::Acceleration( \
@@ -941,25 +929,6 @@ int Geopotential<Frame>::LimitingDegree(Length const& r_norm) const {
                return r_norm < degree_damping.outer_threshold();
              }) -
          degree_damping_.begin();
-}
-
-template<typename Frame>
-Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-Geopotential<Frame>::Degree2ZonalAcceleration(
-    UnitVector const& axis,
-    Displacement<Frame> const& r,
-    Exponentiation<Length, -2> const& one_over_r²,
-    Exponentiation<Length, -3> const& one_over_r³) const {
-  Length const r_axis_projection = InnerProduct(axis, r);
-  auto const j2_over_r⁵ = body_->j2_over_μ() * one_over_r³ * one_over_r²;
-  Vector<ReducedAcceleration, Frame> const
-      axis_effect = -3 * j2_over_r⁵ * r_axis_projection * axis;
-  Vector<ReducedAcceleration, Frame> const
-      radial_effect =
-          j2_over_r⁵ *
-          (-1.5 + 7.5 * r_axis_projection * r_axis_projection * one_over_r²) *
-          r;
-  return axis_effect + radial_effect;
 }
 
 template<typename Frame>
