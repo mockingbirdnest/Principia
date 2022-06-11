@@ -157,9 +157,9 @@ class GeopotentialTest : public ::testing::Test {
                                   OblateBody<ICRS> const& earth) {
     Displacement<ICRS> const icrs_displacement =
         earth.FromSurfaceFrame<ITRS>(Instant())(displacement);
-    return -earth.gravitational_parameter() *
+    return earth.gravitational_parameter() *
            (GeneralSphericalHarmonicsPotential(
-                geopotential, Instant(), icrs_displacement) +
+                geopotential, Instant(), icrs_displacement) -
             1 / icrs_displacement.Norm());
   }
 

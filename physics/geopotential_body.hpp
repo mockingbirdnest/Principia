@@ -254,7 +254,7 @@ auto Geopotential<Frame>::DegreeNOrderM<degree, order>::Potential(
       𝔏 = Cnm * cos_mλ + Snm * sin_mλ;
     }
 
-    return normalization_factor * σℜ * 𝔅 * 𝔏;
+    return -normalization_factor * σℜ * 𝔅 * 𝔏;
   }
 }
 
