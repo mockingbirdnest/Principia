@@ -130,13 +130,14 @@ class Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
       -> ReducedPotential;
 
  private:
-  static auto MakePrecomputations(
+  static void InitializePrecomputations(
       Geopotential<Frame> const& geopotential,
       Instant const& t,
       Displacement<Frame> const& r,
       Length const& r_norm,
       Square<Length> const& r²,
-      Exponentiation<Length, -3> const& one_over_r³) -> Precomputations;
+      Exponentiation<Length, -3> const& one_over_r³,
+      Precomputations& precomputations);
 };
 
 template<typename Frame>
@@ -526,8 +527,9 @@ Acceleration(Geopotential<Frame> const& geopotential,
       body.is_zonal() ||
       r_norm > geopotential.sectoral_damping_.outer_threshold();
 
-  auto precomputations = MakePrecomputations(
-      geopotential, t, r, r_norm, r², one_over_r³);
+  Precomputations precomputations;
+  InitializePrecomputations(
+      geopotential, t, r, r_norm, r², one_over_r³, precomputations);
 
   // Force the evaluation by increasing degree using an initializer list.  In
   // the zonal case, no point in going beyond order 0.
@@ -562,8 +564,9 @@ Potential(Geopotential<Frame> const& geopotential,
       body.is_zonal() ||
       r_norm > geopotential.sectoral_damping_.outer_threshold();
 
-  auto precomputations = MakePrecomputations(
-      geopotential, t, r, r_norm, r², one_over_r³);
+  Precomputations precomputations;
+  InitializePrecomputations(
+      geopotential, t, r, r_norm, r², one_over_r³, precomputations);
 
   // Force the evaluation by increasing degree using an initializer list.  In
   // the zonal case, no point in going beyond order 0.
@@ -584,20 +587,21 @@ Potential(Geopotential<Frame> const& geopotential,
 
 template<typename Frame>
 template<int... degrees>
-auto Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
-    MakePrecomputations(Geopotential<Frame> const& geopotential,
-                        Instant const& t,
-                        Displacement<Frame> const& r,
-                        Length const& r_norm,
-                        Square<Length> const& r²,
-                        Exponentiation<Length, -3> const& one_over_r³)
-        -> Precomputations {
+void Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
+InitializePrecomputations(Geopotential<Frame> const& geopotential,
+                          Instant const& t,
+                          Displacement<Frame> const& r,
+                          Length const& r_norm,
+                          Square<Length> const& r²,
+                          Exponentiation<Length, -3> const& one_over_r³,
+                          Precomputations& precomputations) {
   OblateBody<Frame> const& body = *geopotential.body_;
   const bool is_zonal =
       body.is_zonal() ||
       r_norm > geopotential.sectoral_damping_.outer_threshold();
 
-  Precomputations precomputations{.r_norm = r_norm, .r² = r²};
+  precomputations.r_norm = r_norm;
+  precomputations.r² = r²;
 
   auto& cos = precomputations.cos;
   auto& sin = precomputations.sin;
@@ -673,8 +677,6 @@ auto Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
   DmPn_of_sin_β(0, 0) = 1;
   DmPn_of_sin_β(1, 0) = sin_β;
   DmPn_of_sin_β(1, 1) = 1;
-
-  return precomputations;
 }
 
 template<typename Frame>
