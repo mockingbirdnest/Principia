@@ -58,8 +58,8 @@ bool Player::Play(int const index) {
                (PRINCIPIA_PLAYER_ALLOW_VERSION_MISMATCH == 0))
         << "Journal version is " << get_version_out.version()
         << ", running with a binary built at version " << Version
-        << "; set PRINCIPIA_PLAYER_ALLOW_VERSION_MISMATCH to 1 if this is "
-        << "intended";
+        << "; set PRINCIPIA_PLAYER_ALLOW_VERSION_MISMATCH to 1 in player.cpp "
+        << "if this is intended.";
   }
 
 #if 0
