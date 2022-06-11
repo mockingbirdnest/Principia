@@ -34,7 +34,37 @@ Player::Player(std::filesystem::path const& path)
 }
 
 bool Player::Play(int const index) {
-  std::unique_ptr<serialization::Method> method_in = Read();
+  return Process(/*method_in=*/Read(), index, /*play=*/true);
+}
+
+bool Player::Scan(int const index) {
+  return Process(/*method_in=*/Read(), index, /*play=*/false);
+}
+
+serialization::Method const& Player::last_method_in() const {
+  return *last_method_in_;
+}
+
+serialization::Method const& Player::last_method_out_return() const {
+  return *last_method_out_return_;
+}
+
+std::unique_ptr<serialization::Method> Player::Read() {
+  std::string const line = GetLine(stream_);
+  if (line.empty()) {
+    return nullptr;
+  }
+
+  static auto* const encoder = new HexadecimalEncoder</*null_terminated=*/true>;
+  auto const bytes = encoder->Decode({line.c_str(), strlen(line.c_str())});
+  auto method = std::make_unique<serialization::Method>();
+  CHECK(method->ParseFromArray(bytes.data.get(), static_cast<int>(bytes.size)));
+
+  return method;
+}
+
+bool Player::Process(std::unique_ptr<serialization::Method> method_in,
+                     int const index, bool const play) {
   if (method_in == nullptr) {
     // End of input file.
     return false;
@@ -77,42 +107,22 @@ bool Player::Play(int const index) {
                                  << method_out_return->ShortDebugString();
 #endif
 
-  auto const before = std::chrono::system_clock::now();
+  if (play) {
+    auto const before = std::chrono::system_clock::now();
 
 #include "journal/player.generated.cc"
 
-  auto const after = std::chrono::system_clock::now();
-  if (after - before > 100ms) {
-    LOG(ERROR) << "Long method (" << (after - before) / 1ms << " ms):\n"
-               << method_in->DebugString();
+    auto const after = std::chrono::system_clock::now();
+    if (after - before > 100ms) {
+      LOG(ERROR) << "Long method (" << (after - before) / 1ms << " ms):\n"
+                 << method_in->DebugString();
+    }
   }
 
   last_method_in_.swap(method_in);
   last_method_out_return_.swap(method_out_return);
 
   return true;
-}
-
-serialization::Method const& Player::last_method_in() const {
-  return *last_method_in_;
-}
-
-serialization::Method const& Player::last_method_out_return() const {
-  return *last_method_out_return_;
-}
-
-std::unique_ptr<serialization::Method> Player::Read() {
-  std::string const line = GetLine(stream_);
-  if (line.empty()) {
-    return nullptr;
-  }
-
-  static auto* const encoder = new HexadecimalEncoder</*null_terminated=*/true>;
-  auto const bytes = encoder->Decode({line.c_str(), strlen(line.c_str())});
-  auto method = std::make_unique<serialization::Method>();
-  CHECK(method->ParseFromArray(bytes.data.get(), static_cast<int>(bytes.size)));
-
-  return method;
 }
 
 }  // namespace journal
