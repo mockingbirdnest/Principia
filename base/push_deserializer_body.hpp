@@ -75,6 +75,32 @@ inline std::int64_t DelegatingArrayInputStream::ByteCount() const {
   return byte_count_;
 }
 
+inline std::ostream& operator<<(std::ostream& out,
+                                DelegatingArrayInputStream const& stream) {
+  out << "Stream with " << stream.ByteCount() << " total bytes, "
+      << "current chunk of size " << stream.bytes_.size
+      << " at position " << stream.position_
+      << ", last call to Next returned " << stream.last_returned_size_
+      << " bytes\n";
+  for (std::int64_t index = 0; index < stream.bytes_.size; ++index) {
+    out << std::hex << std::setw(2) << std::setfill('0')
+        << static_cast<short>(stream.bytes_.data[index]);
+    if (index == stream.position_) {
+      out << "*";
+    }
+    if ((index + 1) % 32 == 0) {
+      out << "  " << std::dec << index - 31 << "\n";
+    } else {
+      out << " ";
+    }
+  }
+  if (stream.position_ == stream.bytes_.size) {
+    out << "*";
+  }
+  out << "\n";
+  return out;
+}
+
 inline PushDeserializer::PushDeserializer(
     int const chunk_size,
     int const number_of_chunks,
@@ -116,7 +142,11 @@ inline void PushDeserializer::Start(
     // Kenton.
     google::protobuf::io::CodedInputStream decoder(&stream_);
     decoder.SetTotalBytesLimit(1 << 29, 1<< 29);
-    CHECK(message_->ParseFromCodedStream(&decoder));
+    if (!message_->ParseFromCodedStream(&decoder)) {
+      std::cout << stream_;
+      LOG(FATAL) << "Decoding failed";
+    }
+    //CHECK(message_->ParseFromCodedStream(&decoder));
     CHECK(decoder.ConsumedEntireMessage());
 
     // Run any remainining chunk callback.
