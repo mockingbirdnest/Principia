@@ -114,7 +114,7 @@ inline PushDeserializer::PushDeserializer(
       number_of_chunks_(number_of_chunks),
       uncompressed_data_(chunk_size_),
       stream_(std::bind(&PushDeserializer::Pull, this)) {
-  // This sentinel ensures that the two queue are correctly out of step.
+  // This sentinel ensures that the two queues are correctly out of step.
   done_.push(nullptr);
 }
 
@@ -141,7 +141,6 @@ inline void PushDeserializer::Start(
     // we have to copy code from MessageLite::ParseFromZeroCopyStream.  Blame
     // Kenton.
     google::protobuf::io::CodedInputStream decoder(&stream_);
-    decoder.SetTotalBytesLimit(1 << 29, 1<< 29);
     if (!message_->ParseFromCodedStream(&decoder)) {
       std::cout << stream_;
       LOG(FATAL) << "Decoding failed";
