@@ -84,7 +84,7 @@ inline std::ostream& operator<<(std::ostream& out,
       << " bytes\n";
   for (std::int64_t index = 0; index < stream.bytes_.size; ++index) {
     out << std::hex << std::setw(2) << std::setfill('0')
-        << static_cast<short>(stream.bytes_.data[index]);
+        << static_cast<std::int16_t>(stream.bytes_.data[index]);
     if (index == stream.position_) {
       out << "*";
     }
