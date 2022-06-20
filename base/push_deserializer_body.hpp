@@ -141,11 +141,7 @@ inline void PushDeserializer::Start(
     // we have to copy code from MessageLite::ParseFromZeroCopyStream.  Blame
     // Kenton.
     google::protobuf::io::CodedInputStream decoder(&stream_);
-    if (!message_->ParseFromCodedStream(&decoder)) {
-      std::cout << stream_;
-      LOG(FATAL) << "Decoding failed";
-    }
-    //CHECK(message_->ParseFromCodedStream(&decoder));
+    CHECK(message_->ParseFromCodedStream(&decoder));
     CHECK(decoder.ConsumedEntireMessage());
 
     // Run any remainining chunk callback.

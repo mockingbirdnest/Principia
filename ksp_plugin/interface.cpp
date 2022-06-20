@@ -1060,7 +1060,7 @@ Status* __cdecl principia__SayNotFound() {
       absl::NotFoundError("Not found from native C++!")));
 }
 
-#define PRINCIPIA_VERIFY_SERIALIZATION 1
+#define PRINCIPIA_VERIFY_SERIALIZATION 0
 
 #if PRINCIPIA_VERIFY_SERIALIZATION
 static PushDeserializer* verification_deserializer = nullptr;
