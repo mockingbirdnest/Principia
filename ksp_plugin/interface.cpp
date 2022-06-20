@@ -1060,6 +1060,13 @@ Status* __cdecl principia__SayNotFound() {
       absl::NotFoundError("Not found from native C++!")));
 }
 
+#define PRINCIPIA_VERIFY_SERIALIZATION 0
+
+#if PRINCIPIA_VERIFY_SERIALIZATION
+static PushDeserializer* verification_deserializer = nullptr;
+static Plugin const* verification_plugin = nullptr;
+#endif
+
 // |plugin| must not be null.  The caller takes ownership of the result, except
 // when it is null (at the end of the stream).  No transfer of ownership of
 // |*plugin|.  |*serializer| must be null on the first call and must be passed
@@ -1096,6 +1103,18 @@ char const* __cdecl principia__SerializePlugin(
   // If this is the end of the serialization, delete the serializer and return a
   // nullptr.
   if (bytes.size == 0) {
+#if PRINCIPIA_VERIFY_SERIALIZATION
+    principia__DeserializePlugin("",
+                                 &verification_deserializer,
+                                 &verification_plugin,
+                                 compressor,
+                                 encoder);
+    CHECK_NOTNULL(verification_plugin);
+    LOG(INFO) << "Deleting verification plugin";
+    delete verification_plugin;
+    verification_plugin = nullptr;
+    LOG(INFO) << "Verification plugin deleted";
+#endif
     LOG(INFO) << "End plugin serialization";
     TakeOwnership(serializer);
     arena->Reset();
@@ -1104,6 +1123,13 @@ char const* __cdecl principia__SerializePlugin(
 
   // Encode and return to the client.
   auto hexadecimal = NewEncoder(encoder)->Encode(bytes);
+#if PRINCIPIA_VERIFY_SERIALIZATION
+  principia__DeserializePlugin(hexadecimal.data.get(),
+                               &verification_deserializer,
+                               &verification_plugin,
+                               compressor,
+                               encoder);
+#endif
   return m.Return(hexadecimal.data.release());
 }
 

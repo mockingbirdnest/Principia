@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <ostream>
 #include <queue>
 #include <thread>
 
@@ -38,6 +39,9 @@ class DelegatingArrayInputStream
   bool Skip(int count) override;
   std::int64_t ByteCount() const override;
 
+  friend std::ostream& operator<<(std::ostream& out,
+                                  DelegatingArrayInputStream const& stream);
+
  private:
   Array<std::uint8_t> bytes_;
   std::function<Array<std::uint8_t>()> on_empty_;
@@ -47,6 +51,9 @@ class DelegatingArrayInputStream
   std::int64_t last_returned_size_;  // How many bytes we returned last time
                                      // Next() was called.
 };
+
+std::ostream& operator<<(std::ostream& out,
+                         DelegatingArrayInputStream const& stream);
 
 // This class support deserialization which is "pushed" by the client.  That is,
 // the client creates a |PushDeserializer| object, calls |Start| to start the

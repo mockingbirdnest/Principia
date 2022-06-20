@@ -21,6 +21,9 @@ class Player final {
   // |index| is the 0-based index of the message in the journal.
   bool Play(int index);
 
+  // Same as |Play|, but does not execute the messages, only parse them.
+  bool Scan(int index);
+
   // Return the last replayed messages.
   serialization::Method const& last_method_in() const;
   serialization::Method const& last_method_out_return() const;
@@ -28,6 +31,10 @@ class Player final {
  private:
   // Reads one message from the stream.  Returns a |nullptr| at end of stream.
   std::unique_ptr<serialization::Method> Read();
+
+  // Implementation of |Play| and |Scan|.
+  bool Process(std::unique_ptr<serialization::Method> method_in,
+               int const index, bool const play);
 
   template<typename Profile>
   bool RunIfAppropriate(serialization::Method const& method_in,

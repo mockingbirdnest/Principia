@@ -88,11 +88,30 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Benchmarks) {
   benchmark::RunSpecifiedBenchmarks();
 }
 
-TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
-  // An example of how journaling may be used for debugging.  You must set
-  // |path| and fill the |method_in| and |method_out_return| protocol buffers.
+// A convenience test to find the last unpaired method of a journal.  You must
+// set |path|.
+TEST_F(PlayerTest, DISABLED_SECULAR_Scan) {
   std::string path =
-      R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20211128-162300)";  // NOLINT
+      R"(P:\Public Mockingbird\Principia\Crashes\3375\JOURNAL.20220610-092143)";  // NOLINT
+  Player player(path);
+  int count = 0;
+  while (player.Scan(count)) {
+    ++count;
+    LOG_IF(ERROR, (count % 100'000) == 0) << count
+                                          << " journal entries replayed";
+  }
+  LOG(ERROR) << count << " journal entries in total";
+  LOG(ERROR) << "Last successful method in:\n"
+             << player.last_method_in().DebugString();
+  LOG(ERROR) << "Last successful method out/return: \n"
+             << player.last_method_out_return().DebugString();
+}
+
+// A test to debug a journal.  You must set |path| and fill the |method_in| and
+// |method_out_return| protocol buffers.
+TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
+  std::string path =
+      R"(P:\Public Mockingbird\Principia\Crashes\3375\JOURNAL.20220610-092143)";  // NOLINT
   Player player(path);
   int count = 0;
   while (player.Play(count)) {

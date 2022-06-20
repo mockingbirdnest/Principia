@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "absl/container/btree_set.h"
+#include "base/macros.hpp"
 #include "base/map_util.hpp"
 #include "geometry/named_quantities.hpp"
 #include "ksp_plugin/integrators.hpp"
@@ -630,6 +631,8 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
   }
   message->set_is_collapsible(is_collapsible_);
   checkpointer_->WriteToMessage(message->mutable_checkpoint());
+  LOG(INFO) << name_ << " " << NAMED(message->SpaceUsed()) << " "
+            << NAMED(message->ByteSize());
 }
 
 not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(

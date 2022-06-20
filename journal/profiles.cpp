@@ -84,7 +84,9 @@ std::uint64_t SerializePointer(T* t) {
 #define PRINCIPIA_SET_VERBOSE_LOGGING 1
 
 #if PRINCIPIA_PERFORM_RUN_CHECKS
-#define PRINCIPIA_CHECK_EQ(a, b) CHECK((a) == (b))
+#define PRINCIPIA_CHECK_EQ(a, b)                                               \
+  CHECK((a) == (b)) << "Set PRINCIPIA_PERFORM_RUN_CHECKS to 0 in profile.cpp " \
+                    << "to disable this check."
 #else
 #define PRINCIPIA_CHECK_EQ(a, b)          \
   {                                       \
