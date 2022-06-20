@@ -772,6 +772,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     base.OnSave(node);
     if (PluginRunning()) {
       IntPtr serializer = IntPtr.Zero;
+      int chunks = 0;
       for (;;) {
         string serialization = plugin_.SerializePlugin(
             ref serializer,
@@ -781,7 +782,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           break;
         }
         node.AddValue(principia_serialized_plugin, serialization);
+        ++chunks;
       }
+      Log.Info("Serialization has " + chunks + " chunks");
     }
   }
 
