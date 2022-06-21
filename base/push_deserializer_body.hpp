@@ -4,6 +4,7 @@
 #include "base/push_deserializer.hpp"
 
 #include <algorithm>
+#include <iomanip>
 
 #include "base/sink_source.hpp"
 #include "glog/logging.h"
