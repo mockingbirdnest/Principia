@@ -259,7 +259,9 @@ TEST_F(DiscreteTrajectorySegmentTest, DownsamplingCircle) {
       /*to=*/downsampled_circle);
 
   EXPECT_THAT(circle.size(), Eq(1001));
+  EXPECT_FALSE(circle.was_downsampled());
   EXPECT_THAT(downsampled_circle.size(), Eq(77));
+  EXPECT_TRUE(downsampled_circle.was_downsampled());
   std::vector<Length> position_errors;
   std::vector<Speed> velocity_errors;
   for (auto const& [time, degrees_of_freedom] : circle) {

@@ -115,6 +115,11 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   // segment are going to be retained.
   void ClearDownsampling();
 
+  // Returns true iff this segment was downsampled at least once since its
+  // creation or the last call to |clear|.  Only use for optimization purposes,
+  // not to depend on the actual structure of the timeline.
+  bool was_downsampled() const;
+
   // The points denoted by |exact| are written and re-read exactly and are not
   // affected by any errors introduced by zfp compression.  The endpoints of a
   // segment are always exact.
@@ -208,6 +213,8 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   // The number of points at the end of the segment that are part of a "dense"
   // span, i.e., have not been subjected to downsampling yet.
   std::int64_t number_of_dense_points_ = 0;
+
+  bool was_downsampled_ = false;
 
   DiscreteTrajectorySegmentIterator<Frame> self_;
   Timeline timeline_;
