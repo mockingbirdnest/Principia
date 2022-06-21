@@ -101,6 +101,7 @@ template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::clear() {
   downsampling_parameters_.reset();
   number_of_dense_points_ = 0;
+  was_downsampled_ = false;
   timeline_.clear();
 }
 
@@ -179,6 +180,7 @@ void DiscreteTrajectorySegment<Frame>::SetDownsampling(
   // The semantics of changing downsampling on a segment that has 2 points or
   // more are unclear.  Let's not do that.
   CHECK_LE(timeline_.size(), 1);
+  CHECK(!was_downsampled_);
   downsampling_parameters_ = downsampling_parameters;
   number_of_dense_points_ = timeline_.empty() ? 0 : 1;
 }
@@ -186,6 +188,11 @@ void DiscreteTrajectorySegment<Frame>::SetDownsampling(
 template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::ClearDownsampling() {
   downsampling_parameters_ = std::nullopt;
+}
+
+template<typename Frame>
+bool DiscreteTrajectorySegment<Frame>::was_downsampled() const {
+  return was_downsampled_;
 }
 
 template<typename Frame>
@@ -236,10 +243,13 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
   // Note that while is_pre_hardy means that the save is pre-Hardy,
   // !is_pre_hardy does not mean it is Hardy or later; a pre-Hardy segment with
   // downsampling will have both fields present.
-  bool is_pre_hardy = !message.has_downsampling_parameters() &&
-                      message.has_number_of_dense_points();
-  LOG_IF(WARNING, is_pre_hardy)
-      << "Reading pre-Hardy DiscreteTrajectorySegment";
+  bool const is_pre_hardy = !message.has_downsampling_parameters() &&
+                            message.has_number_of_dense_points();
+  bool const is_pre_hesse = !message.has_was_downsampled();
+  LOG_IF(WARNING, is_pre_hesse)
+      << "Reading pre-"
+      << (is_pre_hardy ? "Hardy"
+          : "Hesse") << " DiscreteTrajectorySegment";
 
   DiscreteTrajectorySegment<Frame> segment(self);
 
@@ -300,6 +310,13 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
     CHECK_EQ(message.has_downsampling_parameters(),
              message.has_number_of_dense_points())
         << message.DebugString();
+  }
+  if (is_pre_hesse) {
+    // Assume that the segment was already downsampled, to avoid re-downsampling
+    // it.
+    segment.was_downsampled_ = true;
+  } else {
+    segment.was_downsampled_ = message.was_downsampled();
   }
   if (message.has_downsampling_parameters()) {
     segment.downsampling_parameters_ = DownsamplingParameters{
@@ -555,6 +572,7 @@ absl::Status DiscreteTrajectorySegment<Frame>::DownsampleIfNeeded() {
       left_it = timeline_.erase(left_it, right_it);
     }
     number_of_dense_points_ = std::distance(left_it, timeline_.cend());
+    was_downsampled_ = true;
   }
   return absl::OkStatus();
 }
@@ -616,6 +634,7 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
         timeline_size,
         std::max<std::int64_t>(
             0, number_of_dense_points_ - number_of_points_to_skip_at_end)));
+    message->set_was_downsampled(was_downsampled_);
   }
 
   // Convert the |exact| vector into a set, and add the extremities.  This
