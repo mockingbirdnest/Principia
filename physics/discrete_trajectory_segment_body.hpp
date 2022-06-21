@@ -249,7 +249,7 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
   LOG_IF(WARNING, is_pre_hesse)
       << "Reading pre-"
       << (is_pre_hardy ? "Hardy"
-          : "Hesse") << " DiscreteTrajectorySegment";
+                       : "Hesse") << " DiscreteTrajectorySegment";
 
   DiscreteTrajectorySegment<Frame> segment(self);
 
