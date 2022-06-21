@@ -52,7 +52,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
   protected override string Title =>
       L10N.CacheFormat("#Principia_FlightPlan_Title");
 
-  protected override void RenderWindow(int window_id) {
+  protected override void RenderWindowContents(int window_id) {
     // We must ensure that the GUI elements don't change between Layout and
     // Repaint.  This means that any state change must occur before Layout or
     // after Repaint.  This if statement implements the former.  It updates the

@@ -267,14 +267,15 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
   private UnityEngine.GUISkin skin_;
   private bool must_centre_ = true;
   private bool show_ = false;
-  private UnityEngine.Rect rectangle_;
+  protected UnityEngine.Rect rectangle_;
   private DateTime tooltip_begin_;
   private string tooltip_ = "";
   private UnityEngine.Rect tooltip_rectangle_;
 }
 
 // The supervisor of a window decides when to clear input locks, when to render
-// the window and when to delete it.
+// the window and when to delete it.  A supervised window has a “Hide” button,
+// in addition to the external toggle handled by the supervisor.
 internal abstract class SupervisedWindowRenderer : BaseWindowRenderer {
   public interface ISupervisor {
     event Action LockClearing;
@@ -291,7 +292,21 @@ internal abstract class SupervisedWindowRenderer : BaseWindowRenderer {
     supervisor_.WindowsRendering += RenderWindow;
   }
 
-  public void DisposeWindow() {
+  protected abstract void RenderWindowContents(int window_id);
+
+  protected sealed override void RenderWindow(int window_id) {
+    if (UnityEngine.GUI.Button(new UnityEngine.Rect(
+            x: rectangle_.width - Width(1),
+            y: 0,
+            width: Width(1),
+            height: Width(1)),
+            "×")) {
+      Hide();
+    }
+    RenderWindowContents(window_id);
+  }
+
+      public void DisposeWindow() {
     supervisor_.LockClearing -= ClearLock;
     supervisor_.WindowsDisposal -= DisposeWindow;
     supervisor_.WindowsRendering -= RenderWindow;
