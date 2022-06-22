@@ -306,7 +306,7 @@ internal abstract class SupervisedWindowRenderer : BaseWindowRenderer {
     RenderWindowContents(window_id);
   }
 
-      public void DisposeWindow() {
+  public void DisposeWindow() {
     supervisor_.LockClearing -= ClearLock;
     supervisor_.WindowsDisposal -= DisposeWindow;
     supervisor_.WindowsRendering -= RenderWindow;
