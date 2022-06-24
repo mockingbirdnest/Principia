@@ -191,7 +191,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
                                                ToUpper() +
                                            orbit_description_.Substring(1);
 
-  protected override void RenderWindow(int window_id) {
+  protected override void RenderWindowContents(int window_id) {
     string vessel_guid = predicted_vessel?.id.ToString();
     if (vessel_guid == null) {
       return;

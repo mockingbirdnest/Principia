@@ -142,7 +142,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
 
   protected override string Title => "Principia";
 
-  protected override void RenderWindow(int window_id) {
+  protected override void RenderWindowContents(int window_id) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
       if (!adapter_.PluginRunning()) {
         UnityEngine.GUILayout.Label(

@@ -462,7 +462,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
                        Name(),
                        NavballName());
 
-  protected override void RenderWindow(int window_id) {
+  protected override void RenderWindowContents(int window_id) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
       UnityEngine.GUILayout.Label(
           L10N.CacheFormat(
