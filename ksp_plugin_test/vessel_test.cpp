@@ -845,32 +845,36 @@ TEST_F(VesselTest, TailSerialization) {
   p1_->set_containing_pile_up(pile_up);
   p2_->set_containing_pile_up(pile_up);
 
-  // A long trajectory for each part.
-  AppendTrajectoryTimeline<Barycentric>(
-      NewCircularTrajectoryTimeline<Barycentric>(
-          /*period=*/20 * Second,
-          /*r=*/101 * Metre,
-          /*Δt=*/1 * Second,
-          /*t1=*/t0_ + 1 * Second,
-          /*t2=*/t0_ + number_of_points * Second),
-      [this](Instant const& time,
-             DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-        p1_->AppendToHistory(time, degrees_of_freedom);
-      });
-  AppendTrajectoryTimeline<Barycentric>(
-      NewCircularTrajectoryTimeline<Barycentric>(
-          /*period=*/20 * Second,
-          /*r=*/102 * Metre,
-          /*Δt=*/1 * Second,
-          /*t1=*/t0_ + 1 * Second,
-          /*t2=*/t0_ + number_of_points * Second),
-      [this](Instant const& time,
-             DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-        p2_->AppendToHistory(time, degrees_of_freedom);
-      });
+  // A long trajectory for each part, one point at a time, with a collapsibility
+  // check after each point just like it would happen in real life.
+  for (Instant t1 = t0_ + 1 * Second;
+       t1 < t0_ + number_of_points * Second;
+       t1 += 1 * Second) {
+    Instant const t2 = t1 + 1 * Second;
+    AppendTrajectoryTimeline<Barycentric>(
+        NewCircularTrajectoryTimeline<Barycentric>(
+            /*period=*/20 * Second,
+            /*r=*/101 * Metre,
+            /*Δt=*/1 * Second,
+            t1, t2),
+        [this](Instant const& time,
+               DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+          p1_->AppendToHistory(time, degrees_of_freedom);
+        });
+    AppendTrajectoryTimeline<Barycentric>(
+        NewCircularTrajectoryTimeline<Barycentric>(
+            /*period=*/20 * Second,
+            /*r=*/102 * Metre,
+            /*Δt=*/1 * Second,
+            t1, t2),
+        [this](Instant const& time,
+               DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+          p2_->AppendToHistory(time, degrees_of_freedom);
+        });
 
-  vessel_.DetectCollapsibilityChange();
-  vessel_.AdvanceTime();
+    vessel_.DetectCollapsibilityChange();
+    vessel_.AdvanceTime();
+  }
   EXPECT_EQ(25'139,
             std::distance(vessel_.trajectory().begin(),
                           vessel_.psychohistory()->begin()));
@@ -889,8 +893,8 @@ TEST_F(VesselTest, TailSerialization) {
   {
     // Collapsible segment of the history (backstory), truncated to the left.
     auto const& segment1 = message.history().segment(1);
-    EXPECT_EQ(159, segment1.number_of_dense_points());
-    EXPECT_EQ("2000-01-01T23:25:13"_TT,
+    EXPECT_EQ(152, segment1.number_of_dense_points());
+    EXPECT_EQ("2000-01-01T23:24:24"_TT,
               Instant::ReadFromMessage(segment1.exact(0).instant()));
     EXPECT_EQ(t0_ + (number_of_points - 1) * Second,
               Instant::ReadFromMessage(segment1.exact(1).instant()));
@@ -913,7 +917,7 @@ TEST_F(VesselTest, TailSerialization) {
       message, &celestial_, &ephemeris_, /*deletion_callback=*/nullptr);
   EXPECT_TRUE(v->trajectory().segments().begin()->empty());
   auto const backstory = std::next(v->trajectory().segments().begin());
-  EXPECT_EQ("2000-01-01T23:25:13"_TT, backstory->front().time);
+  EXPECT_EQ("2000-01-01T23:24:24"_TT, backstory->front().time);
   EXPECT_EQ(t0_ + (number_of_points - 1) * Second, backstory->back().time);
 }
 
