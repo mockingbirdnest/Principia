@@ -636,6 +636,138 @@ TEST_F(VesselTest, Checkpointing) {
   }
 }
 
+// Exact same setup as the previous test, but with downsampling enabled.  We
+// create a single segment because it does not reach the downsampling threshold.
+TEST_F(VesselTest, SingleSegment) {
+  MockFunction<int(not_null<PileUp const*>)>
+      serialization_index_for_pile_up;
+  EXPECT_CALL(serialization_index_for_pile_up, Call(_))
+      .Times(2)
+      .WillRepeatedly(Return(0));
+
+  EXPECT_CALL(ephemeris_, t_max())
+      .WillRepeatedly(Return(t0_ + 30 * Second));
+  EXPECT_CALL(ephemeris_,
+              FlowWithAdaptiveStep(_, _, InfiniteFuture, _, _))
+      .Times(AnyNumber());
+  EXPECT_CALL(ephemeris_,
+              FlowWithAdaptiveStep(_, _, t0_ + 30 * Second, _, _))
+      .Times(AnyNumber());
+
+  vessel_.CreateTrajectoryIfNeeded(t0_);
+
+  auto const pile_up =
+      std::make_shared<PileUp>(/*parts=*/std::list<not_null<Part*>>{p1_, p2_},
+                                Instant{},
+                                DefaultPsychohistoryParameters(),
+                                DefaultHistoryParameters(),
+                                &ephemeris_,
+                                /*deletion_callback=*/nullptr);
+  p1_->set_containing_pile_up(pile_up);
+  p2_->set_containing_pile_up(pile_up);
+
+  // Free-fall trajectory.
+  AppendTrajectoryTimeline<Barycentric>(
+      NewLinearTrajectoryTimeline<Barycentric>(p1_dof_,
+                                               /*Δt=*/1 * Second,
+                                               /*t1=*/t0_ + 1 * Second,
+                                               /*t2=*/t0_ + 11 * Second),
+      [this](Instant const& time,
+             DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+        p1_->AppendToHistory(time, degrees_of_freedom);
+      });
+  AppendTrajectoryTimeline<Barycentric>(
+      NewLinearTrajectoryTimeline<Barycentric>(p2_dof_,
+                                               /*Δt=*/1 * Second,
+                                               /*t1=*/t0_ + 1 * Second,
+                                               /*t2=*/t0_ + 11 * Second),
+      [this](Instant const& time,
+             DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+        p2_->AppendToHistory(time, degrees_of_freedom);
+      });
+
+  vessel_.DetectCollapsibilityChange();
+  vessel_.AdvanceTime();
+
+  // Apply a force.  This segment is not collapsible.
+  auto const p1_force =
+      Vector<Force, Barycentric>({1 * Newton, 0 * Newton, 0 * Newton});
+  p1_->apply_intrinsic_force(p1_force);
+  AppendTrajectoryTimeline<Barycentric>(
+      NewAcceleratedTrajectoryTimeline(p1_dof_,
+                                       /*acceleration=*/p1_force / mass1_,
+                                       /*Δt=*/1 * Second,
+                                       /*t1=*/t0_ + 11 * Second,
+                                       /*t2=*/t0_ + 26 * Second),
+      [this](Instant const& time,
+             DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+        p1_->AppendToHistory(time, degrees_of_freedom);
+      });
+  AppendTrajectoryTimeline<Barycentric>(
+      NewLinearTrajectoryTimeline<Barycentric>(p2_dof_,
+                                               /*Δt=*/1 * Second,
+                                               /*t1=*/t0_ + 11 * Second,
+                                               /*t2=*/t0_ + 26 * Second),
+      [this](Instant const& time,
+             DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+        p2_->AppendToHistory(time, degrees_of_freedom);
+      });
+
+  vessel_.DetectCollapsibilityChange();
+  vessel_.AdvanceTime();
+
+  // Remove the force.
+  p1_->clear_intrinsic_force();
+  AppendTrajectoryTimeline<Barycentric>(
+      NewLinearTrajectoryTimeline<Barycentric>(p1_dof_,
+                                               /*Δt=*/1 * Second,
+                                               /*t1=*/t0_ + 26 * Second,
+                                               /*t2=*/t0_ + 31 * Second),
+      [this](Instant const& time,
+             DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+        p1_->AppendToHistory(time, degrees_of_freedom);
+      });
+  AppendTrajectoryTimeline<Barycentric>(
+      NewLinearTrajectoryTimeline<Barycentric>(p2_dof_,
+                                               /*Δt=*/1 * Second,
+                                               /*t1=*/t0_ + 26 * Second,
+                                               /*t2=*/t0_ + 31 * Second),
+      [this](Instant const& time,
+             DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+        p2_->AppendToHistory(time, degrees_of_freedom);
+      });
+
+  vessel_.DetectCollapsibilityChange();
+  vessel_.AdvanceTime();
+
+  serialization::Vessel message;
+  vessel_.WriteToMessage(&message,
+                         serialization_index_for_pile_up.AsStdFunction());
+  EXPECT_TRUE(message.has_is_collapsible());
+  EXPECT_FALSE(message.is_collapsible());
+  EXPECT_EQ(0, message.checkpoint_size());
+  EXPECT_TRUE(message.has_downsampling_parameters());
+  EXPECT_EQ(3, message.history().segment_size());
+  {
+    // Non-collapsible segment for the history.
+    auto const& segment0 = message.history().segment(0);
+    EXPECT_EQ(31, segment0.number_of_dense_points());
+    EXPECT_EQ(31, segment0.zfp().timeline_size());
+  }
+  {
+    // Psychohistory, only one point.
+    auto const& segment1 = message.history().segment(1);
+    EXPECT_EQ(0, segment1.number_of_dense_points());
+    EXPECT_EQ(1, segment1.zfp().timeline_size());
+  }
+  {
+    // Prediction, excluded except for its first point.
+    auto const& segment2 = message.history().segment(2);
+    EXPECT_EQ(0, segment2.number_of_dense_points());
+    EXPECT_EQ(1, segment2.zfp().timeline_size());
+  }
+}
+
 TEST_F(VesselTest, SerializationSuccess) {
   MockFunction<int(not_null<PileUp const*>)>
       serialization_index_for_pile_up;

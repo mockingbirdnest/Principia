@@ -185,7 +185,7 @@ void Vessel::DetectCollapsibilityChange() {
   // vice-versa).  If a non-collapsible segment is being closed but is very
   // short, we don't actually close it but keep appending points to it until it
   // is long enough to have been downsampled.  If downsampling is disabled,
-  // surely it is not going to happen so no point waiting for Godot.
+  // surely this is not going to happen so no point in waiting for Godot.
   bool const may_append_to_current_segment =
       !is_collapsible_ &&
       downsampling_parameters_.has_value() &&
@@ -261,6 +261,8 @@ void Vessel::DetectCollapsibilityChange() {
       }
     };
     psychohistory_ = trajectory_.AttachSegments(std::move(psychohistory));
+
+    // Not updated if we chose to append to the current segment.
     is_collapsible_ = becomes_collapsible;
   }
 }
