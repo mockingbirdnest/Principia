@@ -178,18 +178,27 @@ void Vessel::ClearAllIntrinsicForcesAndTorques() {
 }
 
 void Vessel::DetectCollapsibilityChange() {
-  bool const becomes_collapsible = IsCollapsible();
-  if (is_collapsible_ != becomes_collapsible) {
+  bool const will_be_collapsible = IsCollapsible();
+
+  // It is always correct to mark as non-collapsible a collapsible segment or to
+  // append collapsible points to a non-collapsible segment (but not
+  // vice-versa).  If a non-collapsible segment is being closed but is very
+  // short, we don't actually close it but keep appending points to it until it
+  // is long enough to have been downsampled.  If downsampling is disabled,
+  // surely this is not going to happen so no point in waiting for Godot.
+  bool const collapsibility_changes = is_collapsible_ != will_be_collapsible;
+  bool const becomes_non_collapsible = collapsibility_changes &&
+                                       !will_be_collapsible;
+  bool const awaits_first_downsampling = downsampling_parameters_.has_value() &&
+                                         !backstory_->was_downsampled();
+
+  if (collapsibility_changes &&
+      (becomes_non_collapsible || !awaits_first_downsampling)) {
     // If collapsibility changes, we create a new history segment.  This ensures
     // that downsampling does not change collapsibility boundaries.
-    // NOTE(phl): It is always correct to mark as non-collapsible a collapsible
-    // segment (but not vice-versa).  If the segment being closed is a very
-    // short collapsible one (e.g., no downsampling took place) we could
-    // consider merging it with its predecessor and avoiding the creation of a
-    // new segment.  The checkpointing code below would remain correct.
 
     // In normal situations we create a new segment with the collapsibility
-    // given by |becomes_collapsible|.  In one cornercase we delete the current
+    // given by |will_be_collapsible|.  In one cornercase we delete the current
     // segment.
     enum {
       Create,
@@ -253,7 +262,9 @@ void Vessel::DetectCollapsibilityChange() {
       }
     };
     psychohistory_ = trajectory_.AttachSegments(std::move(psychohistory));
-    is_collapsible_ = becomes_collapsible;
+
+    // Not updated if we chose to append to the current segment.
+    is_collapsible_ = will_be_collapsible;
   }
 }
 
