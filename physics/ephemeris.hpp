@@ -46,8 +46,8 @@ using integrators::IntegrationProblem;
 using integrators::Integrator;
 using integrators::SpecialSecondOrderDifferentialEquation;
 using quantities::Acceleration;
-using quantities::Energy;
 using quantities::Length;
+using quantities::SpecificEnergy;
 using quantities::Speed;
 using quantities::Time;
 
@@ -395,7 +395,7 @@ class Ephemeris {
       MassiveBody const& body1,
       std::size_t b1,
       std::vector<Position<Frame>> const& positions,
-      std::vector<Energy>& potentials) const
+      std::vector<SpecificEnergy>& potentials) const
       REQUIRES_SHARED(lock_);
 
   // Computes the accelerations between all the massive bodies in |bodies_|.
@@ -420,7 +420,7 @@ class Ephemeris {
   void ComputeGravitationalPotentialsOfAllMassiveBodies(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
-      std::vector<Energy>& potentials) const
+      std::vector<SpecificEnergy>& potentials) const
       EXCLUDES(lock_);
 
   // Flows the given ODE with an adaptive step integrator.

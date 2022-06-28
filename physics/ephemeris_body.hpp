@@ -1283,7 +1283,7 @@ void Ephemeris<Frame>::ComputeGravitationalPotentialsOfMassiveBody(
     MassiveBody const& body1,
     std::size_t b1,
     std::vector<Position<Frame>> const& positions,
-    std::vector<Energy>& potentials) const {
+    std::vector<SpecificEnergy>& potentials) const {
   lock_.AssertReaderHeld();
   GravitationalParameter const& μ1 = body1.gravitational_parameter();
   auto const& trajectory1 = *trajectories_[b1];
@@ -1303,8 +1303,7 @@ void Ephemeris<Frame>::ComputeGravitationalPotentialsOfMassiveBody(
           one_over_Δq_norm * one_over_Δq_norm * one_over_Δq_norm;
 
       auto const μ1_over_Δq³ = μ1 * one_over_Δq³;
-      Vector<Quotient<Acceleration,
-                      GravitationalParameter>, Frame> const
+      Quotient<SpecificEnergy, GravitationalParameter> const
           spherical_harmonics_effect =
               geopotentials_[b1].GeneralSphericalHarmonicsPotential(
                   t,
@@ -1410,9 +1409,9 @@ template<typename Frame>
 void Ephemeris<Frame>::ComputeGravitationalPotentialsOfAllMassiveBodies(
     Instant const& t,
     std::vector<Position<Frame>> const& positions,
-    std::vector<Energy>& potentials) const {
+    std::vector<SpecificEnergy>& potentials) const {
   CHECK_EQ(positions.size(), potentials.size());
-  potentials.assign(potentials.size(), Energy());
+  potentials.assign(potentials.size(), SpecificEnergy());
 
   // Locking ensures that we see a consistent state of all the trajectories.
   absl::ReaderMutexLock l(&lock_);
