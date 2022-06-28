@@ -46,6 +46,7 @@ using integrators::IntegrationProblem;
 using integrators::Integrator;
 using integrators::SpecialSecondOrderDifferentialEquation;
 using quantities::Acceleration;
+using quantities::Energy;
 using quantities::Length;
 using quantities::Speed;
 using quantities::Time;
@@ -384,20 +385,42 @@ class Ephemeris {
       std::vector<Vector<Acceleration, Frame>>& accelerations) const
       REQUIRES_SHARED(lock_);
 
+  // Computes the potential resulting from one body, |body1| (with index |b1| in
+  // the |bodies_| and |trajectories_| arrays) at the given |positions|.  The
+  // template parameter specifies what we know about the massive body, and
+  // therefore what potential applies.
+  template<bool body1_is_oblate>
+  void ComputeGravitationalPotentialsOfMassiveBody(
+      Instant const& t,
+      MassiveBody const& body1,
+      std::size_t b1,
+      std::vector<Position<Frame>> const& positions,
+      std::vector<Energy>& potentials) const
+      REQUIRES_SHARED(lock_);
+
   // Computes the accelerations between all the massive bodies in |bodies_|.
-  absl::Status ComputeMassiveBodiesGravitationalAccelerations(
+  absl::Status ComputeGravitationalAccelerationBetweenAllMassiveBodies(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations) const;
 
   // Computes the acceleration exerted by the massive bodies in |bodies_| on
   // massless bodies.  The massless bodies are at the given |positions|.
-  // Returns false iff a collision occurred, i.e., the massless body is inside
-  // one of the |bodies_|.
-  absl::StatusCode ComputeMasslessBodiesGravitationalAccelerations(
+  // Returns an error iff a collision occurred, i.e., the massless body is
+  // inside one of the |bodies_|.
+  absl::StatusCode
+  ComputeGravitationalAccelerationByAllMassiveBodiesOnMasslessBodies(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations) const
+      EXCLUDES(lock_);
+
+  // Computes the potential resulting from the massive bodies in |bodies_|.  The
+  // potentials are computed at the given |positions|.
+  void ComputeGravitationalPotentialsOfAllMassiveBodies(
+      Instant const& t,
+      std::vector<Position<Frame>> const& positions,
+      std::vector<Energy>& potentials) const
       EXCLUDES(lock_);
 
   // Flows the given ODE with an adaptive step integrator.
