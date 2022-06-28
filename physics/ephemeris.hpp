@@ -269,6 +269,11 @@ class Ephemeris {
       not_null<MassiveBody const*> body,
       Instant const& t) const EXCLUDES(lock_);
 
+  // Returns the potential at the given |position| at time |t|.
+  SpecificEnergy ComputeGravitationalPotential(
+      Position<Frame> const& position,
+      Instant const& t) const EXCLUDES(lock_);
+
   // Computes the apsides of the relative trajectory of |body1| and |body2}.
   // Appends to the given trajectories two point for each apsis, one for |body1|
   // and one for |body2|.  The times of |apoapsides1| and |apoapsideds2| are

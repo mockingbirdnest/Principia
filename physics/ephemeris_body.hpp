@@ -687,6 +687,16 @@ Ephemeris<Frame>::ComputeGravitationalAccelerationOnMassiveBody(
 }
 
 template<typename Frame>
+SpecificEnergy Ephemeris<Frame>::ComputeGravitationalPotential(
+    Position<Frame> const& position,
+    Instant const& t) const {
+  std::vector<SpecificEnergy> potentials(1);
+  ComputeGravitationalPotentialsByAllMassiveBodies(t, {position}, potentials);
+
+  return potentials[0];
+}
+
+template<typename Frame>
 void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
                                       not_null<MassiveBody const*> const body2,
                                       DiscreteTrajectory<Frame>& apoapsides1,
