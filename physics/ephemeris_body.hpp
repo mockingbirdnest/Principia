@@ -691,7 +691,7 @@ SpecificEnergy Ephemeris<Frame>::ComputeGravitationalPotential(
     Position<Frame> const& position,
     Instant const& t) const {
   std::vector<SpecificEnergy> potentials(1);
-  ComputeGravitationalPotentialsByAllMassiveBodies(t, {position}, potentials);
+  ComputeGravitationalPotentialsOfAllMassiveBodies(t, {position}, potentials);
 
   return potentials[0];
 }
