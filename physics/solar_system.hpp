@@ -55,8 +55,8 @@ class SolarSystem final {
   SolarSystem& operator=(SolarSystem&& other) = default;
 
   // Constructs an ephemeris for this object using the specified parameters.
-  // The bodies and initial state are constructed from the data passed to
-  // |Initialize|.
+  // The bodies and initial state are built from the data passed at
+  // construction.
   not_null<std::unique_ptr<Ephemeris<Frame>>> MakeEphemeris(
       typename Ephemeris<Frame>::AccuracyParameters const& accuracy_parameters,
       typename Ephemeris<Frame>::FixedStepParameters const&

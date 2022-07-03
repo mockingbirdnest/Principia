@@ -47,6 +47,7 @@ using integrators::Integrator;
 using integrators::SpecialSecondOrderDifferentialEquation;
 using quantities::Acceleration;
 using quantities::Length;
+using quantities::SpecificEnergy;
 using quantities::Speed;
 using quantities::Time;
 
@@ -268,10 +269,15 @@ class Ephemeris {
       not_null<MassiveBody const*> body,
       Instant const& t) const EXCLUDES(lock_);
 
+  // Returns the potential at the given |position| at time |t|.
+  SpecificEnergy ComputeGravitationalPotential(
+      Position<Frame> const& position,
+      Instant const& t) const EXCLUDES(lock_);
+
   // Computes the apsides of the relative trajectory of |body1| and |body2}.
-  // Appends to the given trajectories two point for each apsis, one for |body1|
-  // and one for |body2|.  The times of |apoapsides1| and |apoapsideds2| are
-  // identical (are similarly for |periapsides1| and |periapsides2|).
+  // Appends to the given trajectories two points for each apsis, one for
+  // |body1| and one for |body2|.  The times of |apoapsides1| and |apoapsideds2|
+  // are identical (are similarly for |periapsides1| and |periapsides2|).
   virtual void ComputeApsides(not_null<MassiveBody const*> body1,
                               not_null<MassiveBody const*> body2,
                               DiscreteTrajectory<Frame>& apoapsides1,
@@ -384,20 +390,42 @@ class Ephemeris {
       std::vector<Vector<Acceleration, Frame>>& accelerations) const
       REQUIRES_SHARED(lock_);
 
+  // Computes the potential resulting from one body, |body1| (with index |b1| in
+  // the |bodies_| and |trajectories_| arrays) at the given |positions|.  The
+  // template parameter specifies what we know about the massive body, and
+  // therefore what potential applies.
+  template<bool body1_is_oblate>
+  void ComputeGravitationalPotentialsOfMassiveBody(
+      Instant const& t,
+      MassiveBody const& body1,
+      std::size_t b1,
+      std::vector<Position<Frame>> const& positions,
+      std::vector<SpecificEnergy>& potentials) const
+      REQUIRES_SHARED(lock_);
+
   // Computes the accelerations between all the massive bodies in |bodies_|.
-  absl::Status ComputeMassiveBodiesGravitationalAccelerations(
+  absl::Status ComputeGravitationalAccelerationBetweenAllMassiveBodies(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations) const;
 
   // Computes the acceleration exerted by the massive bodies in |bodies_| on
   // massless bodies.  The massless bodies are at the given |positions|.
-  // Returns false iff a collision occurred, i.e., the massless body is inside
-  // one of the |bodies_|.
-  absl::StatusCode ComputeMasslessBodiesGravitationalAccelerations(
+  // Returns an error iff a collision occurred, i.e., the massless body is
+  // inside one of the |bodies_|.
+  absl::StatusCode
+  ComputeGravitationalAccelerationByAllMassiveBodiesOnMasslessBodies(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations) const
+      EXCLUDES(lock_);
+
+  // Computes the potential resulting from the massive bodies in |bodies_|.  The
+  // potentials are computed at the given |positions|.
+  void ComputeGravitationalPotentialsOfAllMassiveBodies(
+      Instant const& t,
+      std::vector<Position<Frame>> const& positions,
+      std::vector<SpecificEnergy>& potentials) const
       EXCLUDES(lock_);
 
   // Flows the given ODE with an adaptive step integrator.

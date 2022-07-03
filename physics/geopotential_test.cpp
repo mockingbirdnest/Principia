@@ -83,6 +83,9 @@ class GeopotentialTest : public ::testing::Test {
                                   right_ascension_of_pole_,
                                   declination_of_pole_) {}
 
+  // Rather confusingly, the quantity called |r| or |displacement| below is
+  // called |-Δq| in ephemeris_body.hpp.
+
   template<typename Frame>
   static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
   GeneralSphericalHarmonicsAcceleration(Geopotential<Frame> const& geopotential,
@@ -801,7 +804,7 @@ TEST_F(GeopotentialTest, Potential) {
 
   std::mt19937_64 random(42);
   std::uniform_real_distribution<double> length_distribution(-1e7, 1e7);
-  std::uniform_real_distribution<double> shift_distribution(-1, 1);
+  std::uniform_real_distribution<double> shift_distribution(1, 2);
   for (int i = 0; i < 1000; ++i) {
     Displacement<ITRS> const displacement(
         {length_distribution(random) * Metre,
@@ -843,7 +846,7 @@ TEST_F(GeopotentialTest, Potential) {
     // computation correctly.
     EXPECT_THAT(
         finite_difference_acceleration,
-        RelativeErrorFrom(actual_acceleration, AllOf(Gt(2.3e-9), Lt(6.2e-6))));
+        RelativeErrorFrom(actual_acceleration, AllOf(Gt(3.3e-9), Lt(8.4e-6))));
   }
 }
 
