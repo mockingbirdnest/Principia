@@ -150,6 +150,9 @@
     <Compile Include="window_renderer.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="assets\digit_scroll_indicator.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="assets\navball_barycentric.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

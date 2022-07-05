@@ -152,6 +152,28 @@ internal class DifferentialSlider : ScalingRenderer {
           style = Style.Warning(style);
         }
 
+        var current_event = UnityEngine.Event.current;
+
+        // Handle digit adjustment using scroll wheel or the arrow keys.  We
+        // must do so before calling |TextField| below, because the text field
+        // would use the arrow keys (it interprets up as home and down as end).
+        double increment = 0;
+        if (scroll_adjustment_.HasValue && current_event.isScrollWheel) {
+          increment = scroll_adjustment_.Value.increment *
+              -UnityEngine.Event.current.delta.normalized.y;
+          current_event.Use();
+        } else if (arrows_adjustment_.HasValue &&
+            current_event.type == UnityEngine.EventType.KeyDown &&
+            (current_event.keyCode == UnityEngine.KeyCode.UpArrow ||
+            current_event.keyCode == UnityEngine.KeyCode.DownArrow)) {
+          UnityEngine.Debug.Log($"Arrow key at {arrows_adjustment_}");
+          increment = arrows_adjustment_.Value.increment;
+          if (current_event.keyCode == UnityEngine.KeyCode.DownArrow) {
+            increment = -increment;
+          }
+          current_event.Use();
+        }
+
         // Draw the text field and give it a name to be able to detect if it has
         // focus.
         string text_field_name = GetHashCode() + ":text_field";
@@ -161,38 +183,78 @@ internal class DifferentialSlider : ScalingRenderer {
             style   : style,
             options : GUILayoutWidth(field_width_));
         var text_field = UnityEngine.GUILayoutUtility.GetLastRect();
-        // If we are hovering over a digit, change the cursor to hint that
-        // scrolling will change it.
-        if (UnityEngine.Event.current.type == UnityEngine.EventType.Repaint &&
-            text_field.Contains(UnityEngine.Event.current.mousePosition) &&
-            incrementer_(formatted_value_,
-                         style.GetCursorStringIndex(text_field, new UnityEngine.GUIContent(formatted_value_), UnityEngine.Event.current.mousePosition),
-                         increment: out _)) {
-          DigitScrollCursor.RequestCursor();
+
+        // Add a marker to hint if a digit can be adjusted by scrolling or
+        // pressing the arrow keys.  Note that scrollability takes precedence
+        // throughout.
+        if (scroll_adjustment_.HasValue || arrows_adjustment_.HasValue) {
+          UnityEngine.Vector2 indicator_position = style.GetCursorPixelPosition(
+              text_field,
+              new UnityEngine.GUIContent(formatted_value_),
+              (scroll_adjustment_ ?? arrows_adjustment_.Value).index);
+          indicator_position.y -= 2 * Width(1) / 25;
+          if (scroll_indicator == null) {
+            PrincipiaPluginAdapter.LoadTextureOrDie(
+                out scroll_indicator,
+                "digit_scroll_indicator.png");
+          }
+          UnityEngine.GUI.DrawTexture(
+              new UnityEngine.Rect(indicator_position,
+                                   new UnityEngine.Vector2(32 * Width(1) / 25,
+                                                           32 * Width(1) / 25)),
+                                   scroll_indicator);
         }
+
+        // Check if the user is hovering over a digit.
+        if (current_event.type == UnityEngine.EventType.Repaint) {
+          scroll_adjustment_ = null;
+          if (text_field.Contains(current_event.mousePosition)) {
+            int cursor_index = style.GetCursorStringIndex(
+                text_field,
+                new UnityEngine.GUIContent(formatted_value_),
+                current_event.mousePosition);
+            if (incrementer_(formatted_value_, cursor_index, out double Δ)) {
+              scroll_adjustment_ = new DigitAdjustment(cursor_index, Δ);
+            }
+          }
+        }
+
+        // Otherwise, check if the text cursor is before a digit.
+        arrows_adjustment_ = null;
+        if (scroll_adjustment_ == null &&
+            UnityEngine.GUI.GetNameOfFocusedControl() == text_field_name) {
+          var editor =
+              (UnityEngine.TextEditor)UnityEngine.GUIUtility.GetStateObject(
+                  typeof(UnityEngine.TextEditor),
+                  UnityEngine.GUIUtility.keyboardControl);
+          int cursor_index = editor.cursorIndex;
+          // If there is a selection, try to edit the last digit of the
+          // selection.
+          if (cursor_index != editor.selectIndex) {
+            cursor_index = Math.Max(cursor_index, editor.selectIndex) - 1;
+          }
+          if (incrementer_(formatted_value_, cursor_index, out double Δ)) {
+            arrows_adjustment_ = new DigitAdjustment(cursor_index, Δ);
+          }
+        }
+
         // See if the user typed 'Return' in the field, or moved focus
-        // elsewhere, or scrolled over a digit, in which case we terminate text
-        // entry.
+        // elsewhere, or adjusted a digit by scrolling or pressing the arrow
+        // keys, in which case we terminate text entry.
         bool terminate_text_entry = false;
-        var current_event = UnityEngine.Event.current;
         if (current_event.isKey &&
-            current_event.keyCode == UnityEngine.KeyCode.Return &&
+            (current_event.keyCode == UnityEngine.KeyCode.Return ||
+             current_event.keyCode == UnityEngine.KeyCode.KeypadEnter) &&
             UnityEngine.GUI.GetNameOfFocusedControl() == text_field_name) {
           terminate_text_entry = true;
         } else if (UnityEngine.GUI.GetNameOfFocusedControl() !=
                    text_field_name &&
                    formatted_value_ != formatter_(value_.Value)) {
           terminate_text_entry = true;
-        }
-        double increment = 0;
-        if (UnityEngine.Event.current.type == UnityEngine.EventType.ScrollWheel &&
-            text_field.Contains(UnityEngine.Event.current.mousePosition) &&
-            incrementer_(formatted_value_,
-                         style.GetCursorStringIndex(text_field, new UnityEngine.GUIContent(formatted_value_), UnityEngine.Event.current.mousePosition),
-                         out increment)) {
-          increment *= UnityEngine.Event.current.delta.normalized.y;
+        } else if (increment != 0) {
           terminate_text_entry = true;
         }
+
         if (terminate_text_entry) {
           // Try to parse the input.  If that fails, go back to the previous
           // legal value.
@@ -284,6 +346,20 @@ internal class DifferentialSlider : ScalingRenderer {
   // during some events handling.
   private double? value_;
   private string formatted_value_;
+
+  private struct DigitAdjustment {
+    public DigitAdjustment(int index, double increment) {
+      this.index = index;
+      this.increment = increment;
+    }
+
+    public double increment;
+    public int index;
+  }
+
+  private DigitAdjustment? scroll_adjustment_;
+  private DigitAdjustment? arrows_adjustment_;
+  private UnityEngine.Texture scroll_indicator;
 }
 
 }  // namespace ksp_plugin_adapter
