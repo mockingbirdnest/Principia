@@ -148,6 +148,12 @@ TEST_F(PluginCompatibilityTest, Reach) {
               Eq("1970-08-14T08:47:05"_DateTime));
   ASSERT_TRUE(ifnity->has_flight_plan());
   ifnity->ReadFlightPlanFromMessage();
+  EXPECT_THAT(ifnity->flight_plan()
+                  .adaptive_step_parameters()
+                  .length_integration_tolerance(),
+              Eq(1 * Metre));
+  EXPECT_THAT(ifnity->flight_plan().adaptive_step_parameters().max_steps(),
+              Eq(16'000));
   EXPECT_THAT(ifnity->flight_plan().number_of_manœuvres(), Eq(16));
   std::vector<std::pair<DateTime, Speed>> manœuvre_ignition_tt_seconds_and_Δvs;
   for (int i = 0; i < ifnity->flight_plan().number_of_manœuvres(); ++i) {
