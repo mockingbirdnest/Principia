@@ -256,8 +256,10 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
     node.SetValue("y", rectangle_.y, createIfNotFound : true);
   }
 
+  // Lock everything but camera mode switching and ship controls.
   private static readonly ControlTypes PrincipiaLock =
-      ControlTypes.ALLBUTCAMERAS & ~ControlTypes.ALL_SHIP_CONTROLS;
+      (ControlTypes.ALLBUTCAMERAS | ControlTypes.CAMERACONTROLS) &
+          ~ControlTypes.ALL_SHIP_CONTROLS;
 
   private const float min_height_on_screen = 50;
   private const float min_width_on_screen = 50;

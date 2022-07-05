@@ -6,7 +6,12 @@ namespace ksp_plugin_adapter {
 
 internal class DifferentialSlider : ScalingRenderer {
   public delegate string ValueFormatter(double value);
-
+  // A function that sets |increment| to the value a unit the decimal place at
+  // s[digit_index]; for instance, for s = "123" and digit_index = 1,
+  // increment = 10.
+  public delegate bool Incrementer(string s,
+                                   int digit_index,
+                                   out double increment);
   public delegate bool ValueParser(string s, out double value);
 
   // Rates are in units of |value| per real-time second.
@@ -18,6 +23,7 @@ internal class DifferentialSlider : ScalingRenderer {
                             double min_value = double.NegativeInfinity,
                             double max_value = double.PositiveInfinity,
                             ValueFormatter formatter = null,
+                            Incrementer incrementer = null,
                             ValueParser parser = null,
                             UnityEngine.Color? text_colour = null,
                             int label_width = 3,
@@ -31,6 +37,40 @@ internal class DifferentialSlider : ScalingRenderer {
       formatter_ = v => v.ToString("#,0.000", Culture.culture);
     } else {
       formatter_ = formatter;
+    }
+    if (incrementer == null) {
+      incrementer_ = (string s, int index, out double increment) => {
+        // Past the end or at a nondigit.
+        if (index == s.Length || !char.IsDigit(s[index])) {
+          increment = 0;
+          return false;
+        }
+        int decimal_index = s.IndexOfAny(new[]{',', '.'});
+        if (decimal_index == -1) {
+          decimal_index = s.Length;
+        }
+        if (index < decimal_index) {
+          double ten_increments = 1;
+          for (int i = decimal_index - 1; i >= index; --i) {
+            if (char.IsDigit(s[i])) {
+              ten_increments *= 10;
+            }
+          }
+          increment = ten_increments / 10;
+          return true;
+        } else {
+          double inverse_increment = 1;
+          for (int i = decimal_index; i <= index; ++i) {
+            if (char.IsDigit(s[i])) {
+              inverse_increment *= 10;
+            }
+          }
+          increment = 1 / inverse_increment;
+          return true;
+        }
+      };
+    } else {
+      incrementer_ = incrementer;
     }
     if (parser == null) {
       // As a special exemption we allow a comma as the decimal separator.
@@ -120,9 +160,19 @@ internal class DifferentialSlider : ScalingRenderer {
             text    : formatted_value_,
             style   : style,
             options : GUILayoutWidth(field_width_));
-
+        var text_field = UnityEngine.GUILayoutUtility.GetLastRect();
+        // If we are hovering over a digit, change the cursor to hint that
+        // scrolling will change it.
+        if (UnityEngine.Event.current.type == UnityEngine.EventType.Repaint &&
+            text_field.Contains(UnityEngine.Event.current.mousePosition) &&
+            incrementer_(formatted_value_,
+                         style.GetCursorStringIndex(text_field, new UnityEngine.GUIContent(formatted_value_), UnityEngine.Event.current.mousePosition),
+                         increment: out _)) {
+          DigitScrollCursor.RequestCursor();
+        }
         // See if the user typed 'Return' in the field, or moved focus
-        // elsewhere, in which case we terminate text entry.
+        // elsewhere, or scrolled over a digit, in which case we terminate text
+        // entry.
         bool terminate_text_entry = false;
         var current_event = UnityEngine.Event.current;
         if (current_event.isKey &&
@@ -132,6 +182,15 @@ internal class DifferentialSlider : ScalingRenderer {
         } else if (UnityEngine.GUI.GetNameOfFocusedControl() !=
                    text_field_name &&
                    formatted_value_ != formatter_(value_.Value)) {
+          terminate_text_entry = true;
+        }
+        double increment = 0;
+        if (UnityEngine.Event.current.type == UnityEngine.EventType.ScrollWheel &&
+            text_field.Contains(UnityEngine.Event.current.mousePosition) &&
+            incrementer_(formatted_value_,
+                         style.GetCursorStringIndex(text_field, new UnityEngine.GUIContent(formatted_value_), UnityEngine.Event.current.mousePosition),
+                         out increment)) {
+          increment *= UnityEngine.Event.current.delta.normalized.y;
           terminate_text_entry = true;
         }
         if (terminate_text_entry) {
@@ -148,6 +207,10 @@ internal class DifferentialSlider : ScalingRenderer {
             // Go back to the previous legal value.
             formatted_value_ = formatter_(value_.Value);
           }
+        }
+        if (increment != 0) {
+          value_changed = true;
+          value += increment;
         }
       } else {
         UnityEngine.GUILayout.Label(text    : formatted_value_,
@@ -208,6 +271,7 @@ internal class DifferentialSlider : ScalingRenderer {
   private readonly double min_value_;
 
   private readonly ValueFormatter formatter_;
+  private readonly Incrementer incrementer_;
   private readonly ValueParser parser_;
   private readonly UnityEngine.Color? text_colour_;
 

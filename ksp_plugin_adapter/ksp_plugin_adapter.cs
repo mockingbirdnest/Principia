@@ -637,8 +637,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   }
 
   // Returns false and nulls |texture| if the file does not exist.
-  private bool LoadTextureIfExists(out UnityEngine.Texture texture,
-                                   string path) {
+  public static bool LoadTextureIfExists(out UnityEngine.Texture texture,
+                                         string path) {
     string full_path =
         KSPUtil.ApplicationRootPath + Path.DirectorySeparatorChar +
         "GameData" + Path.DirectorySeparatorChar +
@@ -661,7 +661,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     }
   }
 
-  private void LoadTextureOrDie(out UnityEngine.Texture texture, string path) {
+  public static void LoadTextureOrDie(out UnityEngine.Texture texture,
+                                      string path) {
     bool success = LoadTextureIfExists(out texture, path);
     if (!success) {
       Log.Fatal("Missing texture " + path);
@@ -881,6 +882,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       map_renderer_.pre_cull = () => { RenderTrajectories(); };
       map_renderer_.post_render = () => { RenderManœuvreMarkers(); };
     }
+
+    DigitScrollCursor.Update();
 
     if (galaxy_cube_rotator_ == null) {
       galaxy_cube_rotator_ = ScaledCamera.Instance.galaxyCamera.gameObject.

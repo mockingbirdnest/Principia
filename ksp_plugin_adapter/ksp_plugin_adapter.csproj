@@ -113,6 +113,7 @@
     <Compile Include="config_node_extensions.cs" />
     <Compile Include="config_node_parsers.cs" />
     <Compile Include="culture.cs" />
+    <Compile Include="cursors.cs" />
     <Compile Include="dialog.cs" />
     <Compile Include="differential_slider.cs" />
     <Compile Include="disposable.cs" />
@@ -165,6 +166,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="assets\navball_target.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="assets\digit_scroll_cursor.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="assets\toolbar_button.png">
