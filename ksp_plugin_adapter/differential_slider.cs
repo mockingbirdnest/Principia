@@ -236,9 +236,12 @@ internal class DifferentialSlider : ScalingRenderer {
           }
         }
         if (increment != 0) {
-          value_changed = true;
-          value += increment;
-          value = Math.Min(Math.Max(min_value_, value), max_value_);
+          double incremented_value = value + increment;
+          if (incremented_value >= min_value_ &&
+              incremented_value <= max_value_) {
+            value_changed = true;
+            value = incremented_value;
+          }
         }
       } else {
         UnityEngine.GUILayout.Label(text    : formatted_value_,
