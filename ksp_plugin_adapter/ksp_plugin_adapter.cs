@@ -883,8 +883,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       map_renderer_.post_render = () => { RenderManœuvreMarkers(); };
     }
 
-    DigitScrollCursor.Update();
-
     if (galaxy_cube_rotator_ == null) {
       galaxy_cube_rotator_ = ScaledCamera.Instance.galaxyCamera.gameObject.
           AddComponent<RenderingActions>();
