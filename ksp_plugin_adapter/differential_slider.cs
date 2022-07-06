@@ -6,6 +6,7 @@ namespace ksp_plugin_adapter {
 
 internal class DifferentialSlider : ScalingRenderer {
   public delegate string ValueFormatter(double value);
+
   public delegate bool ValueParser(string s, out double value);
 
   // Rates are in units of |value| per real-time second.
