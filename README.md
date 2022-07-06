@@ -1,8 +1,8 @@
 # Principia
 
-**[Ἥρων](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#%E1%BC%AD%CF%81%CF%89%CE%BD), the May version of Principia, is available.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, 1.12.2, and 1.12.3](https://bit.ly/3x1Ct8O).**
+**[Hesse](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#hesse), the June version of Principia, is available, with bug fixes and UI improvements.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, 1.12.2, and 1.12.3](https://bit.ly/3xZELEm).**
 
-**For the convenience of Chinese users, download from 腾讯微云: [Principia Ἥρων for 1.8.1—1.12.3](https://share.weiyun.com/UPDRA0OF).**
+**For the convenience of Chinese users, download from 腾讯微云: [Principia Hesse for 1.8.1—1.12.3](https://share.weiyun.com/OKi28jmn).**
 
 Principia is a mod for Kerbal Space Program (KSP) which implements N-body and extended body gravitation.  Instead of being within the sphere of influence of a single celestial body at any point in time, your vessels are influenced by all the celestials.  This makes it possible to implement missions that are more complex and more realistic than in the stock game, especially if used in conjunction with a mod like RealSolarSystem which has real-life celestials.
 
@@ -18,4 +18,4 @@ The [change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log) g
 
 Principia is released on every [new moon](https://en.wikipedia.org/wiki/New_moon) with whatever features and bug fixes are ready at the time.  This ensures relatively timely improvements and bug fixes.
 
-Download the binary (Ubuntu, macOS, and Windows) [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, 1.12.2, and 1.12.3](https://bit.ly/3x1Ct8O).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [Ἥρων](https://github.com/mockingbirdnest/Principia/releases/tag/2022053012-%E1%BC%AD%CF%81%CF%89%CE%BD) release.
+Download the binary (Ubuntu, macOS, and Windows) [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, 1.12.2, and 1.12.3](https://bit.ly/3xZELEm).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [Hesse](https://github.com/mockingbirdnest/Principia/releases/tag/2022062903-Hesse) release.

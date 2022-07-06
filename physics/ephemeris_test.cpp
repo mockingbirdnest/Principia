@@ -4,6 +4,7 @@
 #include <limits>
 #include <map>
 #include <optional>
+#include <random>
 #include <set>
 #include <string>
 #include <thread>
@@ -40,6 +41,7 @@
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
@@ -92,10 +94,12 @@ using testing_utilities::Componentwise;
 using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
+using testing_utilities::RelativeErrorFrom;
 using testing_utilities::SolarSystemFactory;
 using testing_utilities::StatusIs;
 using testing_utilities::VanishesBefore;
 using testing_utilities::operator""_;
+using ::testing::AllOf;
 using ::testing::AnyOf;
 using ::testing::Eq;
 using ::testing::Gt;
@@ -804,7 +808,7 @@ TEST_P(EphemerisTest, CollisionDetection) {
 }
 #endif
 
-TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
+TEST_P(EphemerisTest, ComputeGravitationalAccelerationOnMassiveBody) {
   Time const duration = 1 * Second;
   double const j2 = 1e6;
   Length const radius = 1 * TerrestrialEquatorialRadius;
@@ -933,6 +937,77 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
       Componentwise(AlmostEquals(expected_acceleration3.coordinates().x, 3),
                     VanishesBefore(expected_acceleration3.coordinates().x, 0),
                     AlmostEquals(expected_acceleration3.coordinates().z, 0)));
+}
+
+TEST_P(EphemerisTest, ComputeGravitationalPotential) {
+  SolarSystem<ICRS> solar_system_2000(
+            SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+            SOLUTION_DIR / "astronomy" /
+                "sol_initial_state_jd_2451545_000000000.proto.txt");
+  Instant const j2000 = solar_system_2000.epoch();
+
+  auto ephemeris = solar_system_2000.MakeEphemeris(
+      /*accuracy_parameters=*/{/*fitting_tolerance-*/1 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
+      Ephemeris<ICRS>::FixedStepParameters(
+          SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order4Optimal,
+                                                Position<ICRS>>(),
+          /*step=*/10 * Minute));
+  CHECK_OK(ephemeris->Prolong(j2000));
+
+  auto const earth_trajectory = ephemeris->trajectory(
+      ephemeris->bodies()[solar_system_2000.index("Earth")]);
+  Position<ICRS> const earth_position =
+      earth_trajectory->EvaluatePosition(j2000);
+
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<double> length_distribution(-1e7, 1e7);
+  std::uniform_real_distribution<double> shift_distribution(1, 2);
+  for (int i = 0; i < 1000; ++i) {
+    Displacement<ICRS> const displacement(
+        {length_distribution(random) * Metre,
+         length_distribution(random) * Metre,
+         length_distribution(random) * Metre});
+    Displacement<ICRS> const shift_x(
+        {shift_distribution(random) * Metre,
+         0 * Metre,
+         0 * Metre});
+    Displacement<ICRS> const shift_y(
+        {0 * Metre,
+         shift_distribution(random) * Metre,
+         0 * Metre});
+    Displacement<ICRS> const shift_z(
+        {0 * Metre,
+         0 * Metre,
+         shift_distribution(random) * Metre});
+
+    SpecificEnergy const potential_base =
+        ephemeris->ComputeGravitationalPotential(
+            earth_position + displacement, j2000);
+    SpecificEnergy const potential_shift_x =
+        ephemeris->ComputeGravitationalPotential(
+            earth_position + displacement + shift_x, j2000);
+    SpecificEnergy const potential_shift_y =
+        ephemeris->ComputeGravitationalPotential(
+            earth_position + displacement + shift_y, j2000);
+    SpecificEnergy const potential_shift_z =
+        ephemeris->ComputeGravitationalPotential(
+            earth_position + displacement + shift_z, j2000);
+    auto const finite_difference_acceleration = Vector<Acceleration, ICRS>(
+        {-(potential_shift_x - potential_base) /
+             shift_x.coordinates().x,
+         -(potential_shift_y - potential_base) /
+             shift_y.coordinates().y,
+         -(potential_shift_z - potential_base) /
+             shift_z.coordinates().z});
+    Vector<Acceleration, ICRS> const actual_acceleration =
+        ephemeris->ComputeGravitationalAccelerationOnMasslessBody(
+            earth_position + displacement, j2000);
+
+    EXPECT_THAT(
+        finite_difference_acceleration,
+        RelativeErrorFrom(actual_acceleration, AllOf(Gt(1.1e-7), Lt(9.0e-6))));
+  }
 }
 
 TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {

@@ -178,7 +178,7 @@ void Vessel::ClearAllIntrinsicForcesAndTorques() {
 }
 
 void Vessel::DetectCollapsibilityChange() {
-  bool const becomes_collapsible = IsCollapsible();
+  bool const will_be_collapsible = IsCollapsible();
 
   // It is always correct to mark as non-collapsible a collapsible segment or to
   // append collapsible points to a non-collapsible segment (but not
@@ -186,18 +186,19 @@ void Vessel::DetectCollapsibilityChange() {
   // short, we don't actually close it but keep appending points to it until it
   // is long enough to have been downsampled.  If downsampling is disabled,
   // surely this is not going to happen so no point in waiting for Godot.
-  bool const may_append_to_current_segment =
-      !is_collapsible_ &&
-      downsampling_parameters_.has_value() &&
-      !backstory_->was_downsampled();
+  bool const collapsibility_changes = is_collapsible_ != will_be_collapsible;
+  bool const becomes_non_collapsible = collapsibility_changes &&
+                                       !will_be_collapsible;
+  bool const awaits_first_downsampling = downsampling_parameters_.has_value() &&
+                                         !backstory_->was_downsampled();
 
-  if (is_collapsible_ != becomes_collapsible &&
-      !may_append_to_current_segment) {
+  if (collapsibility_changes &&
+      (becomes_non_collapsible || !awaits_first_downsampling)) {
     // If collapsibility changes, we create a new history segment.  This ensures
     // that downsampling does not change collapsibility boundaries.
 
     // In normal situations we create a new segment with the collapsibility
-    // given by |becomes_collapsible|.  In one cornercase we delete the current
+    // given by |will_be_collapsible|.  In one cornercase we delete the current
     // segment.
     enum {
       Create,
@@ -263,7 +264,7 @@ void Vessel::DetectCollapsibilityChange() {
     psychohistory_ = trajectory_.AttachSegments(std::move(psychohistory));
 
     // Not updated if we chose to append to the current segment.
-    is_collapsible_ = becomes_collapsible;
+    is_collapsible_ = will_be_collapsible;
   }
 }
 
