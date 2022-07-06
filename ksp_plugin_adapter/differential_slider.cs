@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Globalization;
+using System.Text;
 
 namespace principia {
 namespace ksp_plugin_adapter {
 
 internal class DifferentialSlider : ScalingRenderer {
   public delegate string ValueFormatter(double value);
-  // A function that sets |increment| to the value a unit the decimal place at
-  // s[digit_index]; for instance, for s = "123" and digit_index = 1,
-  // increment = 10.
-  public delegate bool Incrementer(string s,
-                                   int digit_index,
-                                   out double increment);
   public delegate bool ValueParser(string s, out double value);
 
   // Rates are in units of |value| per real-time second.
@@ -23,7 +18,6 @@ internal class DifferentialSlider : ScalingRenderer {
                             double min_value = double.NegativeInfinity,
                             double max_value = double.PositiveInfinity,
                             ValueFormatter formatter = null,
-                            Incrementer incrementer = null,
                             ValueParser parser = null,
                             UnityEngine.Color? text_colour = null,
                             int label_width = 3,
@@ -37,40 +31,6 @@ internal class DifferentialSlider : ScalingRenderer {
       formatter_ = v => v.ToString("#,0.000", Culture.culture);
     } else {
       formatter_ = formatter;
-    }
-    if (incrementer == null) {
-      incrementer_ = (string s, int index, out double increment) => {
-        // Past the end or at a nondigit.
-        if (index == s.Length || !char.IsDigit(s[index])) {
-          increment = 0;
-          return false;
-        }
-        int decimal_index = s.IndexOfAny(new[]{',', '.'});
-        if (decimal_index == -1) {
-          decimal_index = s.Length;
-        }
-        if (index < decimal_index) {
-          double ten_increments = 1;
-          for (int i = decimal_index - 1; i >= index; --i) {
-            if (char.IsDigit(s[i])) {
-              ten_increments *= 10;
-            }
-          }
-          increment = ten_increments / 10;
-          return true;
-        } else {
-          double inverse_increment = 1;
-          for (int i = decimal_index; i <= index; ++i) {
-            if (char.IsDigit(s[i])) {
-              inverse_increment *= 10;
-            }
-          }
-          increment = 1 / inverse_increment;
-          return true;
-        }
-      };
-    } else {
-      incrementer_ = incrementer;
     }
     if (parser == null) {
       // As a special exemption we allow a comma as the decimal separator.
@@ -153,30 +113,22 @@ internal class DifferentialSlider : ScalingRenderer {
         }
 
         var current_event = UnityEngine.Event.current;
+        bool text_field_has_focus =
+            UnityEngine.GUI.GetNameOfFocusedControl() == text_field_name;
 
-        // Handle digit adjustment using scroll wheel or the arrow keys.  We
-        // must do so before calling |TextField| below, because the text field
-        // would use the arrow keys (it interprets up as home and down as end).
-        double increment = 0;
-        if (scroll_adjustment_.HasValue && current_event.isScrollWheel) {
-          increment = scroll_adjustment_.Value.increment *
-              -UnityEngine.Event.current.delta.normalized.y;
-          current_event.Use();
-        } else if (arrows_adjustment_.HasValue &&
+        // Use up the vertical arrow keys before the |TextField| does (it
+        // interprets up as home and down as end).
+        bool event_was_arrow_key = false;
+        if (text_field_has_focus &&
             current_event.type == UnityEngine.EventType.KeyDown &&
             (current_event.keyCode == UnityEngine.KeyCode.UpArrow ||
-            current_event.keyCode == UnityEngine.KeyCode.DownArrow)) {
-          UnityEngine.Debug.Log($"Arrow key at {arrows_adjustment_}");
-          increment = arrows_adjustment_.Value.increment;
-          if (current_event.keyCode == UnityEngine.KeyCode.DownArrow) {
-            increment = -increment;
-          }
+             current_event.keyCode == UnityEngine.KeyCode.DownArrow)) {
+          event_was_arrow_key = true;
           current_event.Use();
         }
 
         // Draw the text field and give it a name to be able to detect if it has
         // focus.
-        string text_field_name = GetHashCode() + ":text_field";
         UnityEngine.GUI.SetNextControlName(text_field_name);
         formatted_value_ = UnityEngine.GUILayout.TextField(
             text    : formatted_value_,
@@ -205,6 +157,21 @@ internal class DifferentialSlider : ScalingRenderer {
                                    scroll_indicator);
         }
 
+        // Handle digit adjustment using scroll wheel or the arrow keys.  We
+        // must do so before calling |TextField| below, because the text field
+        // would use the arrow keys (it interprets up as home and down as end).
+        double increment = 0;
+        if (scroll_adjustment_.HasValue && current_event.isScrollWheel) {
+          increment = scroll_adjustment_.Value.increment *
+              -UnityEngine.Event.current.delta.normalized.y;
+          current_event.Use();
+        } else if (arrows_adjustment_.HasValue && event_was_arrow_key) {
+          increment = arrows_adjustment_.Value.increment;
+          if (current_event.keyCode == UnityEngine.KeyCode.DownArrow) {
+            increment = -increment;
+          }
+        }
+
         // Check if the user is hovering over a digit.
         if (current_event.type == UnityEngine.EventType.Repaint) {
           scroll_adjustment_ = null;
@@ -213,7 +180,7 @@ internal class DifferentialSlider : ScalingRenderer {
                 text_field,
                 new UnityEngine.GUIContent(formatted_value_),
                 current_event.mousePosition);
-            if (incrementer_(formatted_value_, cursor_index, out double Δ)) {
+            if (CanIncrementAt(cursor_index, out double Δ)) {
               scroll_adjustment_ = new DigitAdjustment(cursor_index, Δ);
             }
           }
@@ -221,8 +188,7 @@ internal class DifferentialSlider : ScalingRenderer {
 
         // Otherwise, check if the text cursor is before a digit.
         arrows_adjustment_ = null;
-        if (scroll_adjustment_ == null &&
-            UnityEngine.GUI.GetNameOfFocusedControl() == text_field_name) {
+        if (scroll_adjustment_ == null && text_field_has_focus) {
           var editor =
               (UnityEngine.TextEditor)UnityEngine.GUIUtility.GetStateObject(
                   typeof(UnityEngine.TextEditor),
@@ -233,7 +199,7 @@ internal class DifferentialSlider : ScalingRenderer {
           if (cursor_index != editor.selectIndex) {
             cursor_index = Math.Max(cursor_index, editor.selectIndex) - 1;
           }
-          if (incrementer_(formatted_value_, cursor_index, out double Δ)) {
+          if (CanIncrementAt(cursor_index, out double Δ)) {
             arrows_adjustment_ = new DigitAdjustment(cursor_index, Δ);
           }
         }
@@ -245,10 +211,9 @@ internal class DifferentialSlider : ScalingRenderer {
         if (current_event.isKey &&
             (current_event.keyCode == UnityEngine.KeyCode.Return ||
              current_event.keyCode == UnityEngine.KeyCode.KeypadEnter) &&
-            UnityEngine.GUI.GetNameOfFocusedControl() == text_field_name) {
+            text_field_has_focus) {
           terminate_text_entry = true;
-        } else if (UnityEngine.GUI.GetNameOfFocusedControl() !=
-                   text_field_name &&
+        } else if (!text_field_has_focus &&
                    formatted_value_ != formatter_(value_.Value)) {
           terminate_text_entry = true;
         } else if (increment != 0) {
@@ -273,6 +238,7 @@ internal class DifferentialSlider : ScalingRenderer {
         if (increment != 0) {
           value_changed = true;
           value += increment;
+          value = Math.Min(Math.Max(min_value_, value), max_value_);
         }
       } else {
         UnityEngine.GUILayout.Label(text    : formatted_value_,
@@ -322,6 +288,34 @@ internal class DifferentialSlider : ScalingRenderer {
     return value_changed;
   }
 
+  // If |formatted_value_[digit_index]| is a decimal place, returns true and
+  // sets |increment| to the value of a unit in that place.  Otherwise, returns
+  // false, setting increment to 0.
+  private bool CanIncrementAt(int digit_index, out double increment) {
+    increment = 0;
+    // Cannot increment an ill-formed value.
+    if (!parser_(formatted_value_, out double base_value)) {
+      return false;
+    }
+    // Can only increment digits.
+    if (digit_index < 0 || digit_index >= formatted_value_.Length ||
+        !char.IsDigit(formatted_value_[digit_index])) {
+      return false;
+    }
+    char[] adjusted_formatted_value = formatted_value_.ToCharArray();
+    if (adjusted_formatted_value[digit_index] == '9') {
+      --adjusted_formatted_value[digit_index];
+    } else {
+      ++adjusted_formatted_value[digit_index];
+    }
+    if (!parser_(new string(adjusted_formatted_value),
+                 out double adjusted_value)) {
+      return false;
+    }
+    increment = Math.Abs(adjusted_value - base_value);
+    return true;
+  }
+
   private readonly string label_;
   private readonly int label_width_;
   private readonly int field_width_;
@@ -333,7 +327,6 @@ internal class DifferentialSlider : ScalingRenderer {
   private readonly double min_value_;
 
   private readonly ValueFormatter formatter_;
-  private readonly Incrementer incrementer_;
   private readonly ValueParser parser_;
   private readonly UnityEngine.Color? text_colour_;
 
@@ -360,6 +353,8 @@ internal class DifferentialSlider : ScalingRenderer {
   private DigitAdjustment? scroll_adjustment_;
   private DigitAdjustment? arrows_adjustment_;
   private UnityEngine.Texture scroll_indicator;
+
+  private string text_field_name => GetHashCode() + ":text_field";
 }
 
 }  // namespace ksp_plugin_adapter
