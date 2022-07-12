@@ -64,9 +64,16 @@ public class PlanetariumCameraAdjuster : UnityEngine.MonoBehaviour {
     // Both the scaled space and galaxy cameras are used in the flight scene as
     // well as map view; they should not be reoriented there.
     if (MapView.MapIsEnabled) {
+      // The pivot does not get updated when camera controls are locked, so we
+      // would be taking our previously corrected orientation as an uncorrected
+      // orientation in the next frame, leading to wild spin.  Don’t do that.
+      if (InputLockManager.IsUnlocked(ControlTypes.CAMERACONTROLS)) {
+          last_fresh_planetarium_camera_rotation_ =
+              PlanetariumCamera.fetch.GetPivot().rotation;
+      }
       PlanetariumCamera.fetch.GetPivot().rotation =
           reference_rotation *
-          (UnityEngine.QuaternionD)PlanetariumCamera.fetch.GetPivot().rotation *
+          last_fresh_planetarium_camera_rotation_ *
           camera_roll;
       ScaledCamera.Instance.galaxyCamera.transform.rotation =
           reference_rotation *
@@ -91,6 +98,8 @@ public class PlanetariumCameraAdjuster : UnityEngine.MonoBehaviour {
   // (due to a change in plotting frame), in which case we need special handling
   // to keep the motion of the camera continuous.
   public bool should_transfer_camera_coordinates { private get; set; }
+
+  private UnityEngine.QuaternionD last_fresh_planetarium_camera_rotation_;
 
   // The camera reference rotation applied during the previous frame; this is
   // used when transfering camera coordinates to preserve continuity.
