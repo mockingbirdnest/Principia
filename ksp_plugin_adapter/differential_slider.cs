@@ -136,41 +136,10 @@ internal class DifferentialSlider : ScalingRenderer {
             options : GUILayoutWidth(field_width_));
         var text_field = UnityEngine.GUILayoutUtility.GetLastRect();
 
-        // Add a marker to hint if a digit can be adjusted by scrolling or
-        // pressing the arrow keys.  Note that scrollability takes precedence
-        // throughout.
-        if (scroll_adjustment_.HasValue || arrows_adjustment_.HasValue) {
-          UnityEngine.Vector2 indicator_position = style.GetCursorPixelPosition(
-              text_field,
-              new UnityEngine.GUIContent(formatted_value_),
-              (scroll_adjustment_ ?? arrows_adjustment_.Value).index);
-          indicator_position.y -= 2 * Width(1) / 25;
-          if (scroll_indicator == null) {
-            PrincipiaPluginAdapter.LoadTextureOrDie(
-                out scroll_indicator,
-                "digit_scroll_indicator.png");
-          }
-          UnityEngine.GUI.DrawTexture(
-              new UnityEngine.Rect(indicator_position,
-                                   new UnityEngine.Vector2(32 * Width(1) / 25,
-                                                           32 * Width(1) / 25)),
-                                   scroll_indicator);
-        }
+        DisplayDigitAdjustmentIndicators(text_field, style);
 
-        // Handle digit adjustment using scroll wheel or the arrow keys.  We
-        // must do so before calling |TextField| below, because the text field
-        // would use the arrow keys (it interprets up as home and down as end).
-        double increment = 0;
-        if (scroll_adjustment_.HasValue && current_event.isScrollWheel) {
-          increment = scroll_adjustment_.Value.increment *
-              -UnityEngine.Event.current.delta.normalized.y;
-          current_event.Use();
-        } else if (arrows_adjustment_.HasValue && event_was_arrow_key) {
-          increment = arrows_adjustment_.Value.increment;
-          if (current_event.keyCode == UnityEngine.KeyCode.DownArrow) {
-            increment = -increment;
-          }
-        }
+        // Handle digit adjustment using scroll wheel or the arrow keys.
+        double increment = GetIncrement(event_was_arrow_key);
 
         // Check if the user is hovering over a digit.
         if (current_event.type == UnityEngine.EventType.Repaint) {
@@ -291,9 +260,50 @@ internal class DifferentialSlider : ScalingRenderer {
     return value_changed;
   }
 
+  // Adds a marker to hint if a digit can be adjusted by scrolling or pressing
+  // the arrow keys.  Note that scrollability takes precedence throughout.
+  private void DisplayDigitAdjustmentIndicators(
+      UnityEngine.Rect text_field,
+      UnityEngine.GUIStyle style) {
+    if (scroll_adjustment_.HasValue || arrows_adjustment_.HasValue) {
+      UnityEngine.Vector2 indicator_position = style.GetCursorPixelPosition(
+          text_field,
+          new UnityEngine.GUIContent(formatted_value_),
+          (scroll_adjustment_ ?? arrows_adjustment_.Value).index);
+      indicator_position.y -= Width(0.08f);
+      if (scroll_indicator == null) {
+        PrincipiaPluginAdapter.LoadTextureOrDie(
+            out scroll_indicator,
+            "digit_scroll_indicator.png");
+      }
+      UnityEngine.GUI.DrawTexture(
+          new UnityEngine.Rect(indicator_position,
+                                new UnityEngine.Vector2(Width(1.28f),
+                                                        Width(1.28f))),
+                                scroll_indicator);
+    }
+  }
+
+  // Returns the increment resulting from any scrolling or arrow keys.
+  private double GetIncrement(bool event_was_arrow_key) {
+    double increment = 0;
+    var current_event = UnityEngine.Event.current;
+    if (scroll_adjustment_.HasValue && current_event.isScrollWheel) {
+      increment = scroll_adjustment_.Value.increment *
+          -UnityEngine.Event.current.delta.normalized.y;
+      current_event.Use();
+    } else if (arrows_adjustment_.HasValue && event_was_arrow_key) {
+      increment = arrows_adjustment_.Value.increment;
+      if (current_event.keyCode == UnityEngine.KeyCode.DownArrow) {
+        increment = -increment;
+      }
+    }
+    return increment;
+  }
+
   // If |formatted_value_[digit_index]| is a decimal place, returns true and
   // sets |increment| to the value of a unit in that place.  Otherwise, returns
-  // false, setting increment to 0.
+  // false, setting |increment| to 0.
   private bool CanIncrementAt(int digit_index, out double increment) {
     increment = 0;
     // Cannot increment an ill-formed value.
@@ -305,6 +315,8 @@ internal class DifferentialSlider : ScalingRenderer {
         !char.IsDigit(formatted_value_[digit_index])) {
       return false;
     }
+    // Increment or decrement the digit by 1 (whichever one doesn’t involve
+    // carries).  We will take the absolute value of the difference below.
     char[] adjusted_formatted_value = formatted_value_.ToCharArray();
     if (adjusted_formatted_value[digit_index] == '9') {
       --adjusted_formatted_value[digit_index];
@@ -343,6 +355,8 @@ internal class DifferentialSlider : ScalingRenderer {
   private double? value_;
   private string formatted_value_;
 
+  // Represents a possible adjustment of the digit at |index| in
+  // |formatted_value_|.  The unit in that place is |increment|.
   private struct DigitAdjustment {
     public DigitAdjustment(int index, double increment) {
       this.index = index;
@@ -353,7 +367,9 @@ internal class DifferentialSlider : ScalingRenderer {
     public int index;
   }
 
+  // This field is set if a digit is being hovered over.
   private DigitAdjustment? scroll_adjustment_;
+  // This field is set if the text edition cursor is before a digit.
   private DigitAdjustment? arrows_adjustment_;
   private UnityEngine.Texture scroll_indicator;
 

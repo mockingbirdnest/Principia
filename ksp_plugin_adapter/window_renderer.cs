@@ -25,7 +25,7 @@ internal class ScalingRenderer {
     return UnityEngine.GUILayout.Width(Width(units));
   }
 
-  protected float Width(int units) {
+  protected float Width(float units) {
     return unit_ * units;
   }
 
