@@ -35,8 +35,7 @@ class BurnEditor : ScalingRenderer {
         log10_upper_rate : log10_Δv_upper_rate,
         text_colour      : Style.Binormal);
     previous_coast_duration_ = new DifferentialSlider(
-        label            :
-            L10N.CacheFormat("#Principia_BurnEditor_InitialTime"),
+        label            : L10N.CacheFormat("#Principia_BurnEditor_InitialTime"),
         unit             : null,
         log10_lower_rate : log10_time_lower_rate,
         log10_upper_rate : log10_time_upper_rate,
@@ -68,7 +67,11 @@ class BurnEditor : ScalingRenderer {
 
   // Renders the |BurnEditor|.  Returns true if and only if the settings were
   // changed.
-  public Event Render(string header, bool anomalous, double burn_final_time) {
+  public Event Render(
+      string header,
+      bool anomalous,
+      double burn_final_time,
+      double? orbital_period) {
     bool changed = false;
     previous_coast_duration_.max_value = burn_final_time - time_base;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
@@ -153,7 +156,6 @@ class BurnEditor : ScalingRenderer {
         var render_time_base = time_base;
         previous_coast_duration_.value_if_different =
             initial_time_ - render_time_base;
-
         // The duration of the previous coast is always enabled as it can make
         // a manœuvre non-anomalous.
         if (previous_coast_duration_.Render(enabled : true)) {
@@ -161,15 +163,51 @@ class BurnEditor : ScalingRenderer {
           initial_time_ = previous_coast_duration_.value + render_time_base;
         }
       }
-      UnityEngine.GUILayout.Label(
-          index == 0
-              ? L10N.CacheFormat(
-                  "#Principia_BurnEditor_TimeBase_StartOfFlightPlan")
-              : L10N.CacheFormat("#Principia_BurnEditor_TimeBase_EndOfManœuvre",
-                                 index),
-          style : new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label){
-              alignment = UnityEngine.TextAnchor.UpperLeft
-          });
+      using (new UnityEngine.GUILayout.HorizontalScope()) {
+        UnityEngine.GUILayout.Label("", GUILayoutWidth(3));
+        if (decrement_revolution == null) {
+          PrincipiaPluginAdapter.LoadTextureOrDie(out decrement_revolution,
+                                                  "decrement_revolution.png");
+        }
+        if (increment_revolution == null) {
+          PrincipiaPluginAdapter.LoadTextureOrDie(out increment_revolution,
+                                                  "increment_revolution.png");
+        }
+        if (orbital_period is double period) {
+          if (UnityEngine.GUILayout.Button(
+                  new UnityEngine.GUIContent(
+                      decrement_revolution,
+                      L10N.CacheFormat(
+                          "#Principia_BurnEditor_DecrementRevolution")),
+                  GUILayoutWidth(1))) {
+            changed = true;
+            initial_time_ -= period;
+          }
+          UnityEngine.GUILayout.Space(Width(5));
+          if (UnityEngine.GUILayout.Button(
+                  new UnityEngine.GUIContent(
+                      increment_revolution,
+                      L10N.CacheFormat(
+                          "#Principia_BurnEditor_IncrementRevolution")),
+                  GUILayoutWidth(1))) {
+            changed = true;
+            initial_time_ += period;
+          }
+        } else {
+          UnityEngine.GUILayout.Button("", GUILayoutWidth(1));
+          UnityEngine.GUILayout.Space(Width(5));
+          UnityEngine.GUILayout.Button("", GUILayoutWidth(1));
+        }
+        UnityEngine.GUILayout.Label(
+            index == 0
+                ? L10N.CacheFormat(
+                    "#Principia_BurnEditor_TimeBase_StartOfFlightPlan")
+                : L10N.CacheFormat("#Principia_BurnEditor_TimeBase_EndOfManœuvre",
+                                   index),
+            style : new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label){
+                alignment = UnityEngine.TextAnchor.UpperLeft
+            });
+      }
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         UnityEngine.GUILayout.Label(
             L10N.CacheFormat("#Principia_BurnEditor_Δv",
@@ -371,6 +409,9 @@ class BurnEditor : ScalingRenderer {
 
   private bool changed_reference_frame_ = false;
   private string engine_warning_ = "";
+  
+  private static UnityEngine.Texture decrement_revolution;
+  private static UnityEngine.Texture increment_revolution;
 }
 
 }  // namespace ksp_plugin_adapter

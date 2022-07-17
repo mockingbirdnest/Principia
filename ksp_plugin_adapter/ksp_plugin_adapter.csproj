@@ -149,6 +149,12 @@
     <Compile Include="window_renderer.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="assets\decrement_revolution.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="assets\increment_revolution.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="assets\digit_scroll_indicator.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
