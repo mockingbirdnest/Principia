@@ -371,7 +371,7 @@ internal class DifferentialSlider : ScalingRenderer {
   private DigitAdjustment? scroll_adjustment_;
   // This field is set if the text edition cursor is before a digit.
   private DigitAdjustment? arrows_adjustment_;
-  private UnityEngine.Texture scroll_indicator;
+  private static UnityEngine.Texture scroll_indicator;
 
   private string text_field_name => GetHashCode() + ":text_field";
 }

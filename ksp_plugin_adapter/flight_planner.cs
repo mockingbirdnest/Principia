@@ -294,7 +294,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
 
         for (int i = 0; i < burn_editors_.Count; ++i) {
           Style.HorizontalLine();
-          if (RenderCoast(i)) {
+          if (RenderCoast(i, out double? orbital_period)) {
             return;
           }
           Style.HorizontalLine();
@@ -305,7 +305,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
               anomalous       : i >=
                                 burn_editors_.Count -
                                 number_of_anomalous_manœuvres_,
-              burn_final_time : final_times[i])) {
+              burn_final_time : final_times[i],
+              orbital_period  : orbital_period)) {
             case BurnEditor.Event.Deleted: {
               var status = plugin.FlightPlanRemove(vessel_guid, i);
               UpdateStatus(status, null);
@@ -333,7 +334,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           }
         }
         Style.HorizontalLine();
-        if (RenderCoast(burn_editors_.Count)) {
+        if (RenderCoast(burn_editors_.Count, orbital_period: out _)) {
           return;
         }
       }
@@ -399,7 +400,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
     }
   }
 
-  private bool RenderCoast(int index) {
+  private bool RenderCoast(int index, out double? orbital_period) {
     string vessel_guid = predicted_vessel.id.ToString();
     var coast_analysis = plugin.FlightPlanGetCoastAnalysis(
         vessel_guid,
@@ -408,6 +409,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         ground_track_revolution : 0,
         index);
     string orbit_description = null;
+    orbital_period = coast_analysis.elements?.nodal_period;
     if (coast_analysis.primary_index.HasValue) {
       var primary = FlightGlobals.Bodies[coast_analysis.primary_index.Value];
       int? nodal_revolutions = (int?)(coast_analysis.mission_duration /
