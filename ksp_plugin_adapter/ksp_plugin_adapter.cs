@@ -269,6 +269,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   [KSPField(isPersistant = true)]
   private MainWindow main_window_;
 
+  public bool show_celestial_trajectory(CelestialBody celestial) {
+    return !main_window_.show_only_pinned_celestials ||
+           plotting_frame_selector_.pinned[celestial];
+  }
+
   public event Action LockClearing;
   public event Action WindowsDisposal;
   public event Action WindowsRendering;
@@ -329,7 +334,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       }
     }
 
-    map_node_pool_ = new MapNodePool();
+    map_node_pool_ = new MapNodePool(
+        show_only_pinned: () => main_window_.show_only_pinned_markers);
     flight_planner_ = new FlightPlanner(this, PredictedVessel);
     orbit_analyser_ = new CurrentOrbitAnalyser(this, PredictedVessel);
     plotting_frame_selector_ = new ReferenceFrameSelector(this,

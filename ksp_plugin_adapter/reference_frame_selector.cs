@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using KSP.Localization;
 
 namespace principia {
@@ -45,10 +46,10 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     is_freshly_constructed_ = true;
 
     expanded_ = new Dictionary<CelestialBody, bool>();
-    pinned_ = new Dictionary<CelestialBody, bool>();
+    pinned = new Dictionary<CelestialBody, bool>();
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
       expanded_.Add(celestial, false);
-      pinned_.Add(celestial, false);
+      pinned.Add(celestial, false);
     }
   }
 
@@ -490,7 +491,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   }
 
   private bool AnyDescendantPinned(CelestialBody celestial) {
-    if (pinned_[celestial]) {
+    if (pinned[celestial]) {
       return true;
     }
     if (target_pinned_ && target?.orbit.referenceBody == celestial) {
@@ -525,9 +526,9 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
       if (celestial.is_root()) {
         UnityEngine.GUILayout.Label(
             L10N.CacheFormat("#Principia_ReferenceFrameSelector_Pin"));
-      } else if (UnityEngine.GUILayout.Toggle(pinned_[celestial], "") !=
-                 pinned_[celestial]) {
-        pinned_[celestial] = !pinned_[celestial];
+      } else if (UnityEngine.GUILayout.Toggle(pinned[celestial], "") !=
+                 pinned[celestial]) {
+        pinned[celestial] = !pinned[celestial];
         Shrink();
       }
     }
@@ -638,7 +639,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     var target_frame_was_selected = target_frame_selected;
     action();
     if (is_freshly_constructed_) {
-      pinned_[selected_celestial] = true;
+      pinned[selected_celestial] = true;
       if (!selected_celestial.is_leaf(target)) {
         expanded_[selected_celestial] = true;
       }
@@ -668,10 +669,11 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
         options) ? !value : value;
   }
 
+  public readonly Dictionary<CelestialBody, bool> pinned;
+
   private readonly Callback on_change_;
   private readonly string name_;
   private readonly Dictionary<CelestialBody, bool> expanded_;
-  private readonly Dictionary<CelestialBody, bool> pinned_;
   private bool target_pinned_ = true;
   private bool is_freshly_constructed_;
   private ReferenceFrameSelector.FrameType last_orbital_type_ =

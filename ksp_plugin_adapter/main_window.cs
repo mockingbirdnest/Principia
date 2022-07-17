@@ -45,6 +45,9 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
       PlanetariumCamera.fetch.SetTarget(map_object);
     }
   }
+  
+  public bool show_only_pinned_markers { get; private set; } = false;
+  public bool show_only_pinned_celestials { get; private set; } = false;
 
   public bool selecting_active_vessel_target { get; private set; } = false;
 
@@ -210,6 +213,23 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
       // interface.
       if (adapter_.PluginRunning()) {
         plotting_frame_selector_.RenderButton();
+        using (new UnityEngine.GUILayout.HorizontalScope()) {
+          if (UnityEngine.GUILayout.Button(
+                  L10N.CacheFormat("#Principia_MainWindow_Declutter"),
+                  GUILayoutWidth(5))) {
+            show_only_pinned_markers = true;
+            show_only_pinned_celestials = true;
+          }
+          UnityEngine.GUILayout.Label(
+              L10N.CacheFormat("#Principia_MainWindow_Declutter_ShowOnly"));
+          show_only_pinned_markers = UnityEngine.GUILayout.Toggle(
+              show_only_pinned_markers,
+              L10N.CacheFormat("#Principia_MainWindow_Declutter_PinnedMarkers"));
+          show_only_pinned_celestials = UnityEngine.GUILayout.Toggle(
+              show_only_pinned_celestials,
+              L10N.CacheFormat(
+                  "#Principia_MainWindow_Declutter_PinnedCelestials"));
+        }
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           flight_planner_.RenderButton();
           orbit_analyser_.RenderButton();
