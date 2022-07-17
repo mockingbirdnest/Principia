@@ -168,6 +168,8 @@ class BurnEditor : ScalingRenderer {
         if (decrement_revolution == null) {
           PrincipiaPluginAdapter.LoadTextureOrDie(out decrement_revolution,
                                                   "decrement_revolution.png");
+        }
+        if (increment_revolution == null) {
           PrincipiaPluginAdapter.LoadTextureOrDie(out increment_revolution,
                                                   "increment_revolution.png");
         }
