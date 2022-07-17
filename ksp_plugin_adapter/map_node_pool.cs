@@ -10,49 +10,97 @@ internal class MapNodePool {
   // most 64 perilunes for the prediction of the active vessel).  This is
   // more than is readable, and keeps the size of the map node pool under
   // control.
-  public const int MaxRenderedNodes = 64;
+  public const int MaxNodesPerProvenance = 64;
 
   public enum NodeSource {
     Prediction,
     FlightPlan,
   }
 
+  public struct Provenance {
+    public string vessel_guid;
+    public NodeSource source;
+    public MapObject.ObjectType type;
+
+    public Provenance(string vessel_guid,
+                      NodeSource source,
+                      MapObject.ObjectType type) {
+      this.vessel_guid = vessel_guid;
+      this.source = source;
+      this.type = type;
+    }
+
+    public override int GetHashCode() =>
+    (vessel_guid, source, type).GetHashCode();
+    public override bool Equals(object other) =>
+        other is Provenance p && Equals(p);
+    public bool Equals(Provenance other) => vessel_guid == other.vessel_guid &&
+                                            source == other.source &&
+                                            type == other.type;
+  }
+
+  public class SingleProvenancePool {
+    public int nodes_used;
+    public List<KSP.UI.Screens.Mapview.MapNode> nodes =
+        new List<KSP.UI.Screens.Mapview.MapNode>(MaxNodesPerProvenance);
+  }
+
   public MapNodePool() {
-    nodes_ = new List<KSP.UI.Screens.Mapview.MapNode>();
+    nodes_ = new Dictionary<Provenance, SingleProvenancePool>();
     properties_ =
         new Dictionary<KSP.UI.Screens.Mapview.MapNode, MapNodeProperties>();
   }
 
   public void Clear() {
-    foreach (var node in nodes_) {
-      node.Terminate();
+    foreach (var provenance_pool in nodes_) {
+      foreach (var node in provenance_pool.Value.nodes) {
+        node.Terminate();
+      }
     }
-    nodes_ = new List<KSP.UI.Screens.Mapview.MapNode>();
+    nodes_ = new Dictionary<Provenance, SingleProvenancePool>();
     properties_ =
         new Dictionary<KSP.UI.Screens.Mapview.MapNode, MapNodeProperties>();
-    pool_index_ = 0;
   }
 
   public void Update() {
-    for (int i = pool_index_; i < nodes_.Count; ++i) {
-      if (properties_[nodes_[i]].visible) {
-        properties_[nodes_[i]].visible = false;
-        nodes_[i].NodeUpdate();
+    List<Provenance> unused_provenances = new List<Provenance>();
+    foreach (var provenance_pool in nodes_) {
+      var provenance = provenance_pool.Key;
+      var pool = provenance_pool.Value;
+      if (pool.nodes_used == 0) {
+        unused_provenances.Add(provenance);
+        continue;
       }
+      for (int i = pool.nodes_used; i < pool.nodes.Count; ++i) {
+        if (properties_[pool.nodes[i]].visible) {
+          properties_[pool.nodes[i]].visible = false;
+          pool.nodes[i].NodeUpdate();
+        }
+      }
+      for (int i = 0; i < pool.nodes_used; ++i) {
+        pool.nodes[i].NodeUpdate();
+      }
+      pool.nodes_used = 0;
     }
-    for (int i = 0; i < pool_index_; ++i) {
-      nodes_[i].NodeUpdate();
+    foreach (var provenance in unused_provenances) {
+      foreach (var node in nodes_[provenance].nodes) {
+        node.Terminate();
+        properties_.Remove(node);
+      }
+      nodes_.Remove(provenance);
     }
-    pool_index_ = 0;
   }
 
   public void RenderMarkers(DisposableIterator apsis_iterator,
-                            MapObject.ObjectType type,
-                            NodeSource source,
+                            Provenance provenance,
                             ReferenceFrameSelector reference_frame) {
+    if (!nodes_.ContainsKey(provenance)) {
+      nodes_.Add(provenance, new SingleProvenancePool());
+    }
+    var pool = nodes_[provenance];
     MapObject associated_map_object;
     UnityEngine.Color colour;
-    switch (type) {
+    switch (provenance.type) {
       case MapObject.ObjectType.Apoapsis:
       case MapObject.ObjectType.Periapsis:
         CelestialBody fixed_body = reference_frame.Centre();
@@ -89,63 +137,36 @@ internal class MapNodePool {
         }
         break;
       default:
-        throw Log.Fatal($"Unexpected type {type}");
+        throw Log.Fatal($"Unexpected type {provenance.type}");
     }
     colour.a = 1;
 
     for (int i = 0;
-         i < MaxRenderedNodes && !apsis_iterator.IteratorAtEnd();
+         i < MaxNodesPerProvenance && !apsis_iterator.IteratorAtEnd();
          ++i, apsis_iterator.IteratorIncrement()) {
       QP apsis = apsis_iterator.IteratorGetDiscreteTrajectoryQP();
       MapNodeProperties node_properties = new MapNodeProperties {
           visible = true,
-          object_type = type,
+          object_type = provenance.type,
           colour = colour,
           reference_frame = reference_frame,
           world_position = (Vector3d)apsis.q,
           velocity = (Vector3d)apsis.p,
-          source = source,
+          source = provenance.source,
           time = apsis_iterator.IteratorGetDiscreteTrajectoryTime(),
           associated_map_object = associated_map_object,
       };
-      if (type == MapObject.ObjectType.Periapsis &&
+      if (provenance.type == MapObject.ObjectType.Periapsis &&
           reference_frame.Centre().GetAltitude(
               node_properties.world_position) < 0) {
         node_properties.object_type = MapObject.ObjectType.PatchTransition;
         node_properties.colour = XKCDColors.Orange;
       }
 
-      if (pool_index_ == nodes_.Count) {
-        nodes_.Add(MakePoolNode());
-      } else if (properties_[nodes_[pool_index_]].object_type !=
-                 node_properties.object_type ||
-                 properties_[nodes_[pool_index_]].colour !=
-                 node_properties.colour) {
-        // KSP attaches labels to its map nodes, but never detaches them.
-        // If the node changes type, we end up with an arbitrary combination of
-        // labels Ap, Pe, AN, DN.
-        // Similarly, if the node changes colour, the colour of the icon label
-        // is not updated to match the icon (making it unreadable in some
-        // cases).  Recreating the node entirely takes a long time
-        // (approximately 𝑁 * 70 μs, where 𝑁 is the total number of map nodes
-        // in existence), instead we manually get rid of the labels.
-        foreach (var component in nodes_[pool_index_].transform.
-            GetComponentsInChildren<TMPro.TextMeshProUGUI>()) {
-          if (component.name == "iconLabel(Clone)") {
-            UnityEngine.Object.Destroy(component.gameObject);
-          }
-        }
-        // Ensure that KSP thinks the type changed, and reattaches icon
-        // labels next time around, otherwise we might end up with no labels.
-        // Null nodes do not have a label, so inducing a type change through
-        // Null does not result in spurious labels.  Note that the type is
-        // updated only if the node is visible.
-        properties_[nodes_[pool_index_]].visible = true;
-        properties_[nodes_[pool_index_]].object_type =
-            MapObject.ObjectType.Null;
-        nodes_[pool_index_].NodeUpdate();
+      if (pool.nodes_used == pool.nodes.Count) {
+        pool.nodes.Add(MakePoolNode());
       }
-      properties_[nodes_[pool_index_++]] = node_properties;
+      properties_[pool.nodes[pool.nodes_used++]] = node_properties;
     }
   }
 
@@ -289,10 +310,9 @@ internal class MapNodePool {
     public double time;
   }
 
-  private List<KSP.UI.Screens.Mapview.MapNode> nodes_;
+  private Dictionary<Provenance, SingleProvenancePool> nodes_;
   private Dictionary<KSP.UI.Screens.Mapview.MapNode, MapNodeProperties>
       properties_;
-  private int pool_index_ = 0;
 }
 
 }  // namespace ksp_plugin_adapter
