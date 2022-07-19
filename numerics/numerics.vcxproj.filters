@@ -209,6 +209,12 @@
     <ClInclude Include="davenport_q_method_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="gradient_descent.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gradient_descent_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">

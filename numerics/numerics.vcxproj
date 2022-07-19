@@ -17,6 +17,8 @@
   <ItemGroup>
     <ClInclude Include="apodization_body.hpp" />
     <ClInclude Include="davenport_q_method_body.hpp" />
+    <ClInclude Include="gradient_descent.hpp" />
+    <ClInclude Include="gradient_descent_body.hpp" />
     <ClInclude Include="matrix_computations.hpp" />
     <ClInclude Include="matrix_computations_body.hpp" />
     <ClInclude Include="combinatorics.hpp" />
