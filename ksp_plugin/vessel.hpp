@@ -148,10 +148,17 @@ class Vessel {
           prediction_adaptive_step_parameters);
   virtual Ephemeris<Barycentric>::AdaptiveStepParameters const&
   prediction_adaptive_step_parameters() const;
-
+  
   // Returns true iff the vessel has a flight plan, deserialized or not.  Never
   // fails.
   virtual bool has_flight_plan() const;
+
+  // Returns the number of flight plans for this vessel.  Never fails.
+  virtual int flight_plan_count() const;
+
+  // Selects the flight plan at the given index, which must lie within
+  // [0, flight_plan_count()[.
+  virtual void SelectFlightPlan(int index);
 
   // If the flight plan has been deserialized, returns it.  Fails if there is no
   // flight plan or the flight plan has not been deserialized.
@@ -371,8 +378,9 @@ class Vessel {
   RecurringThread<PrognosticatorParameters,
                   DiscreteTrajectory<Barycentric>> prognosticator_;
 
-  std::variant<std::unique_ptr<FlightPlan>,
-               serialization::FlightPlan> flight_plan_;
+  std::vector<std::variant<not_null<std::unique_ptr<FlightPlan>>,
+                           serialization::FlightPlan>> flight_plans_;
+  int selected_flight_plan_ = 0;
 
   std::optional<OrbitAnalyser> orbit_analyser_;
 
