@@ -70,18 +70,49 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
       return;
     }
 
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      int flight_plans = plugin.FlightPlanCount(vessel_guid);
+      int selected_flight_plan = plugin.FlightPlanSelected(vessel_guid);
+      for (int i = 0; i < flight_plans; ++i) {
+        var id = new string(L10N.CacheFormat("#Principia_AlphabeticList")[i],
+                            1);
+        if (UnityEngine.GUILayout.Toggle(i == selected_flight_plan, id,
+                                         "Button",
+                                         GUILayoutWidth(1)) &&
+            i != selected_flight_plan) {
+          plugin.FlightPlanSelect(vessel_guid, i);
+          final_time_.value_if_different =
+              plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
+          ClearBurnEditors();
+          UpdateVesselAndBurnEditors();
+        }
+      }
+      if (flight_plans < 10) {
+        if (UnityEngine.GUILayout.Button("+", GUILayoutWidth(1))) {
+          plugin.FlightPlanCreate(vessel_guid,
+                                  plugin.CurrentTime() + 3600,
+                                  predicted_vessel.GetTotalMass());
+          final_time_.value_if_different =
+              plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
+          ClearBurnEditors();
+          UpdateVesselAndBurnEditors();
+          return;
+        }
+      }
+    }
+
     if (plugin.FlightPlanExists(vessel_guid)) {
       RenderFlightPlan(vessel_guid);
-    } else if (UnityEngine.GUILayout.Button(
-        L10N.CacheFormat("#Principia_FlightPlan_Create"))) {
-      plugin.FlightPlanCreate(vessel_guid,
-                              plugin.CurrentTime() + 3600,
-                              predicted_vessel.GetTotalMass());
-      final_time_.value_if_different =
-          plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
-      Shrink();
     }
     UnityEngine.GUI.DragWindow();
+  }
+
+  private void ClearBurnEditors() {
+    foreach (BurnEditor editor in burn_editors_) {
+      editor.Close();
+    }
+    burn_editors_ = null;
+    Shrink();
   }
 
   private void UpdateVesselAndBurnEditors() {
@@ -93,11 +124,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           plugin.FlightPlanNumberOfManoeuvres(vessel_guid) !=
           burn_editors_?.Count) {
         if (burn_editors_ != null) {
-          foreach (BurnEditor editor in burn_editors_) {
-            editor.Close();
-          }
-          burn_editors_ = null;
-          Shrink();
+          ClearBurnEditors();
         }
         previous_predicted_vessel_ = predicted_vessel;
       }
