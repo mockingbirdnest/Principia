@@ -156,6 +156,10 @@ class Vessel {
   // Returns the number of flight plans for this vessel.  Never fails.
   virtual int flight_plan_count() const;
 
+  // Returns the index of the currently-selected flight plan, or -1 if there is
+  // no flight plan.
+  virtual int selected_flight_plan() const;
+
   // Selects the flight plan at the given index, which must lie within
   // [0, flight_plan_count()[.
   virtual void SelectFlightPlan(int index);
@@ -380,7 +384,7 @@ class Vessel {
 
   std::vector<std::variant<not_null<std::unique_ptr<FlightPlan>>,
                            serialization::FlightPlan>> flight_plans_;
-  int selected_flight_plan_ = 0;
+  int selected_flight_plan_ = -1;
 
   std::optional<OrbitAnalyser> orbit_analyser_;
 

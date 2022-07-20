@@ -341,6 +341,10 @@ int Vessel::flight_plan_count() const {
   return flight_plans_.size();
 }
 
+int Vessel::selected_flight_plan() const {
+  return selected_flight_plan_;
+}
+
 void Vessel::SelectFlightPlan(int index) {
   CHECK_GE(index, 0);
   CHECK_LT(index, flight_plan_count());
@@ -795,7 +799,8 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     vessel->flight_plans_.emplace_back(flight_plan);
   }
   vessel->selected_flight_plan_ =
-      is_pre_hilbert ? 0 : message.selected_flight_plan();
+      is_pre_hilbert ? static_cast<int>(vessel->flight_plans_.size()) - 1
+                     : message.selected_flight_plan();
 
   // Figure out which was the last checkpoint to be "reanimated" by reading the
   // end of the trajectory from the serialized form.  Interestingly enough, that
