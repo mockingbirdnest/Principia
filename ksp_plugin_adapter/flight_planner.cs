@@ -87,17 +87,16 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           UpdateVesselAndBurnEditors();
         }
       }
-      if (flight_plans < 10) {
-        if (UnityEngine.GUILayout.Button("+", GUILayoutWidth(1))) {
-          plugin.FlightPlanCreate(vessel_guid,
-                                  plugin.CurrentTime() + 3600,
-                                  predicted_vessel.GetTotalMass());
-          final_time_.value_if_different =
-              plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
-          ClearBurnEditors();
-          UpdateVesselAndBurnEditors();
-          return;
-        }
+      if (flight_plans < max_flight_plans &&
+          UnityEngine.GUILayout.Button("+", GUILayoutWidth(1))) {
+        plugin.FlightPlanCreate(vessel_guid,
+                                plugin.CurrentTime() + 3600,
+                                predicted_vessel.GetTotalMass());
+        final_time_.value_if_different =
+            plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
+        ClearBurnEditors();
+        UpdateVesselAndBurnEditors();
+        return;
       }
     }
 
@@ -306,7 +305,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
               return;
             }
           }
-          if (UnityEngine.GUILayout.Button(
+          if (plugin.FlightPlanCount(vessel_guid) < max_flight_plans &&
+              UnityEngine.GUILayout.Button(
               L10N.CacheFormat("#Principia_FlightPlan_Duplicate"))) {
             plugin.FlightPlanDuplicate(vessel_guid);
           }
@@ -702,6 +702,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
 
   private const double log10_time_lower_rate = 0.0;
   private const double log10_time_upper_rate = 7.0;
+
+  private const int max_flight_plans = 10;
 }
 
 }  // namespace ksp_plugin_adapter
