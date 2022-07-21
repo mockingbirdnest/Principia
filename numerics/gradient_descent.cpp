@@ -5,6 +5,7 @@
 #include "gtest/gtest.h"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -12,7 +13,9 @@ namespace numerics {
 
 using geometry::Frame;
 using geometry::Position;
+using geometry::Vector;
 using quantities::Exponentiation;
+using quantities::Length;
 using quantities::Pow;
 using quantities::si::Metre;
 
@@ -30,18 +33,19 @@ TEST_F(GradientDescentTest, Basic) {
   };
   auto gradient = [](Position<World> const& position) {
     auto const coordinates = (position - World::origin).coordinates();
-    return 2 * (coordinates.x - 1 * Metre) *
-           Pow<4>(coordinates.y - 2 * Metre) *
-           Pow<6>(coordinates.z + 3 * Metre) +
-           Pow<2>(coordinates.x - 1 * Metre) *
-           4 * (coordinates.y - 2 * Metre) *
-           Pow<6>(coordinates.z + 3 * Metre) +
-           Pow<2>(coordinates.x - 1 * Metre) *
-           Pow<4>(coordinates.y - 2 * Metre) *
-           6 * (coordinates.z + 3 * Metre);
+    return Vector<Exponentiation<Length, 11>, World>
+           ({2 * (coordinates.x - 1 * Metre) *
+                 Pow<4>(coordinates.y - 2 * Metre) *
+                 Pow<6>(coordinates.z + 3 * Metre),
+             Pow<2>(coordinates.x - 1 * Metre) *
+             4 * Pow<3>(coordinates.y - 2 * Metre) *
+                 Pow<6>(coordinates.z + 3 * Metre),
+             Pow<2>(coordinates.x - 1 * Metre) *
+                 Pow<4>(coordinates.y - 2 * Metre) *
+             6 * Pow<5>(coordinates.z + 3 * Metre)});
   };
 
-  auto const minimum = GradientDescent<Exponentiation<Length, 12>>(
+  auto const minimum = GradientDescent<Exponentiation<Length, 12>, World>(
       /*start_position=*/World::origin, field, gradient, []() { return true; });
 }
 
