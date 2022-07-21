@@ -174,6 +174,15 @@ SymmetricBilinearForm<Scalar, Frame, Multivector>::AnticommutatorInverse()
 template<typename Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
+template<typename S, typename>
+SymmetricBilinearForm<S, Frame, Multivector>
+SymmetricBilinearForm<Scalar, Frame, Multivector>::Identity() {
+  return SymmetricBilinearForm(R3x3Matrix<S>::Identity());
+}
+
+template<typename Scalar,
+         typename Frame,
+         template<typename, typename> typename Multivector>
 template<typename Eigenframe>
 typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
     template Eigensystem<Eigenframe>

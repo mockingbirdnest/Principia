@@ -67,7 +67,7 @@ class R3x3Matrix final {
   R3x3Matrix& operator/=(double right);
 
   template<typename S = Scalar,
-           typename = std::enable_if_t<std::is_same<S, double>::value>>
+           typename = std::enable_if_t<std::is_same_v<S, double>>>
   static R3x3Matrix<S> Identity();
 
   void WriteToMessage(not_null<serialization::R3x3Matrix*> message) const;

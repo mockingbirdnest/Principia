@@ -17,6 +17,7 @@ using geometry::Vector;
 using quantities::Exponentiation;
 using quantities::Length;
 using quantities::Pow;
+using quantities::si::Micro;
 using quantities::si::Metre;
 
 class GradientDescentTest : public ::testing::Test {
@@ -46,7 +47,11 @@ TEST_F(GradientDescentTest, Basic) {
   };
 
   auto const minimum = GradientDescent<Exponentiation<Length, 12>, World>(
-      /*start_position=*/World::origin, field, gradient, []() { return true; });
+      /*start_position=*/World::origin,
+      field,
+      gradient,
+      /*tolerance=*/1 * Micro(Metre));
+  LOG(ERROR)<<minimum;
 }
 
 }  // namespace numerics

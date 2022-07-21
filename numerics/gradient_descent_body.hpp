@@ -4,6 +4,7 @@
 #include "numerics/gradient_descent.hpp"
 
 #include "geometry/grassmann.hpp"
+#include "geometry/r3x3_matrix.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
@@ -15,16 +16,18 @@ namespace internal_gradient_descent {
 using geometry::Displacement;
 using geometry::InnerProduct;
 using geometry::Normalize;
+using geometry::R3x3Matrix;
 using geometry::SymmetricBilinearForm;
 using geometry::SymmetricProduct;
 using quantities::Quotient;
 using quantities::Square;
 using quantities::si::Kilo;
 using quantities::si::Metre;
+namespace si = quantities::si;
 
-// The type of Dₖ.
+// The type of Dₖ, which approximates the inverse of the Hessian.
 template<typename Scalar, typename Frame>
-using DescentMatrix =
+using InverseHessian =
     SymmetricBilinearForm<Quotient<Square<Length>, Scalar>, Frame, Vector>;
 
 constexpr Length initial_step_size = 1 * Kilo(Metre);
@@ -55,7 +58,10 @@ Position<Frame> GradientDescent(
     Position<Frame> const& start_position,
     Field<Scalar, Frame> const& f,
     Field<Gradient<Scalar, Frame>, Frame> const& grad_f,
-    TerminationCondition const& termination_condition) {
+    Length const& tolerance) {
+  static SymmetricBilinearForm<double, Frame, Vector> const identity =
+      SymmetricBilinearForm<double, Frame, Vector>::Identity();
+
   // The first step uses vanilla steepest descent.
   auto const x₀ = start_position;
   auto const grad_f_x₀ = grad_f(x₀);
@@ -68,13 +74,17 @@ Position<Frame> GradientDescent(
   auto const grad_f_x₁ = grad_f(x₁);
   Displacement<Frame> const p₀ = x₁ - x₀;
   auto const q₀ = grad_f_x₁ - grad_f_x₀;
-  DescentMatrix<Scalar, Frame> const D₀ = SymmetricProduct(p₀, q₀) / q₀.Norm²();
+  InverseHessian<Scalar, Frame> const D₀ =
+      InnerProduct(p₀, q₀) * identity / q₀.Norm²();
 
   auto xₖ = x₁;
   auto grad_f_xₖ = grad_f_x₁;
   auto Dₖ = D₀;
-  while (!termination_condition()) {
+  for (;;) {
     Displacement<Frame> const dₖ = -Dₖ * grad_f_xₖ;
+    if (dₖ.Norm() <= tolerance) {
+      return xₖ;
+    }
     double const αₖ = ArmijoRule(xₖ, dₖ, grad_f_xₖ, f);
     auto const xₖ₊₁ = xₖ + αₖ * dₖ;
     auto const pₖ = xₖ₊₁ - xₖ;

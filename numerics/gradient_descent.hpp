@@ -23,14 +23,12 @@ using Field = std::function<Value(Position<Frame> const&)>;
 template<typename Scalar, typename Frame>
 using Gradient = Vector<Derivative<Scalar, Length>, Frame>;
 
-using TerminationCondition = std::function<bool()>;
-
 template<typename Scalar, typename Frame>
 Position<Frame> GradientDescent(
     Position<Frame> const& start_position,
     Field<Scalar, Frame> const& f,
     Field<Gradient<Scalar, Frame>, Frame> const& grad_f,
-    TerminationCondition const& termination_condition);
+    Length const& tolerance);
 
 }  // namespace internal_gradient_descent
 

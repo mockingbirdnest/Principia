@@ -64,6 +64,10 @@ class SymmetricBilinearForm {
            typename = std::enable_if_t<base::is_same_template_v<M, Bivector>>>
   SymmetricBilinearForm<Scalar, Frame, Vector> AnticommutatorInverse() const;
 
+  template<typename S = Scalar,
+           typename = std::enable_if_t<std::is_same_v<S, double>>>
+  static SymmetricBilinearForm<S, Frame, Multivector> Identity();
+
   // The eigensystem for a form is described by (1) the form in its eigenbasis,
   // which gives the eigenvalues; and (2) a rotation from the current basis to
   // the eigenbasis, which gives the eigenvectors.  The eigenvalues are in
