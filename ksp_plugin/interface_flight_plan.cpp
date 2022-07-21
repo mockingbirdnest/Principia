@@ -213,6 +213,14 @@ void __cdecl principia__FlightPlanDelete(Plugin const* const plugin,
   return m.Return();
 }
 
+void __cdecl principia__FlightPlanDuplicate(Plugin const* const plugin,
+                                            char const* const vessel_guid) {
+  journal::Method<journal::FlightPlanDuplicate> m({plugin, vessel_guid});
+  CHECK_NOTNULL(plugin);
+  plugin->GetVessel(vessel_guid)->DuplicateFlightPlan();
+  return m.Return();
+}
+
 bool __cdecl principia__FlightPlanExists(
     Plugin const* const plugin,
     char const* const vessel_guid) {

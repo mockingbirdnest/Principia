@@ -196,6 +196,15 @@ class Vessel {
       Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
           flight_plan_generalized_adaptive_step_parameters);
 
+  // Requires |has_flight_plan()|.
+  // Inserts a flight plan equivalent to the current one immediately before it.
+  // The current flight plan remains selected.
+  // Note that conceptually, this is equivalent to inserting an equivalent
+  // flight plan immediately after the current one and switching to it, but
+  // insertion before is lazier, as the newly added flight plan can remain
+  // serialized.
+  virtual void DuplicateFlightPlan();
+
   // Deletes the |flight_plan_|.  Performs no action unless |has_flight_plan()|.
   virtual void DeleteFlightPlan();
 

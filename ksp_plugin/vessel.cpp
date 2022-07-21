@@ -477,6 +477,22 @@ void Vessel::CreateFlightPlan(
   selected_flight_plan_ = flight_plans_.size() - 1;
 }
 
+void Vessel::DuplicateFlightPlan() {
+  auto const& original = flight_plans_[selected_flight_plan_];
+  auto const it = flight_plans_.begin() + selected_flight_plan_;
+  if (std::holds_alternative<serialization::FlightPlan>(original)) {
+    flight_plans_.emplace(it, std::get<serialization::FlightPlan>(original));
+  } else if (std::holds_alternative<not_null<std::unique_ptr<FlightPlan>>>(
+                 original)) {
+    std::get<not_null<std::unique_ptr<FlightPlan>>>(original)->WriteToMessage(
+        &std::get<serialization::FlightPlan>(*flight_plans_.emplace(
+            it, std::in_place_type<serialization::FlightPlan>)));
+  } else {
+    LOG(FATAL) << "Unexpected flight plan variant " << original.index();
+  }
+  ++selected_flight_plan_;
+}
+
 void Vessel::DeleteFlightPlan() {
   flight_plans_.erase(flight_plans_.begin() + selected_flight_plan_);
   if (selected_flight_plan_ == flight_plans_.size()) {

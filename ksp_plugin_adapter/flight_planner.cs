@@ -290,21 +290,28 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         Shrink();
         // The state change will happen the next time we go through OnGUI.
       } else {
-        if (UnityEngine.GUILayout.Button(
-            L10N.CacheFormat("#Principia_FlightPlan_Rebase"))) {
-          var status = plugin.FlightPlanRebase(
-              vessel_guid,
-              predicted_vessel.GetTotalMass());
-          UpdateStatus(status, null);
-          if (status.ok()) {
-            // The final time does not change, but since it is displayed with
-            // respect to the beginning of the flight plan, the text must be
-            // recomputed.
-            final_time_.ResetValue(
-                plugin.FlightPlanGetDesiredFinalTime(vessel_guid));
-            return;
+        using (new UnityEngine.GUILayout.HorizontalScope()) {
+          if (UnityEngine.GUILayout.Button(
+              L10N.CacheFormat("#Principia_FlightPlan_Rebase"))) {
+            var status = plugin.FlightPlanRebase(
+                vessel_guid,
+                predicted_vessel.GetTotalMass());
+            UpdateStatus(status, null);
+            if (status.ok()) {
+              // The final time does not change, but since it is displayed with
+              // respect to the beginning of the flight plan, the text must be
+              // recomputed.
+              final_time_.ResetValue(
+                  plugin.FlightPlanGetDesiredFinalTime(vessel_guid));
+              return;
+            }
+          }
+          if (UnityEngine.GUILayout.Button(
+              L10N.CacheFormat("#Principia_FlightPlan_Duplicate"))) {
+            plugin.FlightPlanDuplicate(vessel_guid);
           }
         }
+
 
         if (burn_editors_.Count > 0) {
           RenderUpcomingEvents();
