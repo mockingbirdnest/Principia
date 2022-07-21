@@ -34,6 +34,9 @@ Position<Frame> GradientDescent(
     TerminationCondition const& termination_condition);
 
 }  // namespace internal_gradient_descent
+
+using internal_gradient_descent::GradientDescent;
+
 }  // namespace numerics
 }  // namespace principia
 

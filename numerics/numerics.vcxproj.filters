@@ -328,6 +328,9 @@
     <ClCompile Include="davenport_q_method_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="gradient_descent.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="xgscd.proto.txt">
