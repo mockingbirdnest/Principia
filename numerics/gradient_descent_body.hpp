@@ -35,7 +35,7 @@ constexpr Length initial_step_size = 1 * Kilo(Metre);
 // Parameters for the Armijo rule.
 constexpr double s = 1;
 constexpr double β = 0.5;
-constexpr double σ = 0.5;
+constexpr double σ = 1e-3;
 
 // We use the BFGS method.
 constexpr double ξ = 1;
@@ -48,6 +48,7 @@ double ArmijoRule(Position<Frame> const& xₖ,
   Scalar const f_xₖ = f(xₖ);
   for (double βᵐs = s;; βᵐs *= β) {
     if (f_xₖ - f(xₖ + βᵐs * dₖ) >= -σ * βᵐs * InnerProduct(grad_f_xₖ, dₖ)) {
+      LOG(ERROR)<<βᵐs;
       return βᵐs;
     }
   }
@@ -87,6 +88,7 @@ Position<Frame> GradientDescent(
     }
     double const αₖ = ArmijoRule(xₖ, dₖ, grad_f_xₖ, f);
     auto const xₖ₊₁ = xₖ + αₖ * dₖ;
+    LOG(ERROR)<<"ADk "<<(αₖ * dₖ).Norm();
     auto const pₖ = xₖ₊₁ - xₖ;
     auto const grad_f_xₖ₊₁ = grad_f(xₖ₊₁);
     auto const qₖ = grad_f_xₖ₊₁ - grad_f_xₖ;
@@ -101,6 +103,9 @@ Position<Frame> GradientDescent(
     xₖ = xₖ₊₁;
     grad_f_xₖ = grad_f_xₖ₊₁;
     Dₖ = Dₖ₊₁;
+
+    LOG(ERROR)<<"Fk "<<f(xₖ);
+    LOG(ERROR)<<"Xk "<<xₖ;
   }
   return xₖ;
 }
