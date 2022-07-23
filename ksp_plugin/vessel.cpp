@@ -359,7 +359,8 @@ FlightPlan& Vessel::flight_plan() const {
 }
 
 void Vessel::ReadFlightPlanFromMessage() {
-  if (std::holds_alternative<serialization::FlightPlan>(
+  if (!flight_plans_.empty() &&
+      std::holds_alternative<serialization::FlightPlan>(
           flight_plans_[selected_flight_plan_])) {
     auto const& message = std::get<serialization::FlightPlan>(
         flight_plans_[selected_flight_plan_]);
