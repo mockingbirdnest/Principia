@@ -148,7 +148,7 @@ class Vessel {
           prediction_adaptive_step_parameters);
   virtual Ephemeris<Barycentric>::AdaptiveStepParameters const&
   prediction_adaptive_step_parameters() const;
-  
+
   // Returns true iff the vessel has a flight plan, deserialized or not.  Never
   // fails.
   virtual bool has_flight_plan() const;
