@@ -24,7 +24,7 @@ template<typename Scalar, typename Frame>
 using Gradient = Vector<Derivative<Scalar, Length>, Frame>;
 
 template<typename Scalar, typename Frame>
-Position<Frame> GradientDescent(
+Position<Frame> BroydenFletcherGoldfarbShanno(
     Position<Frame> const& start_position,
     Field<Scalar, Frame> const& f,
     Field<Gradient<Scalar, Frame>, Frame> const& grad_f,
@@ -32,7 +32,7 @@ Position<Frame> GradientDescent(
 
 }  // namespace internal_gradient_descent
 
-using internal_gradient_descent::GradientDescent;
+using internal_gradient_descent::BroydenFletcherGoldfarbShanno;
 
 }  // namespace numerics
 }  // namespace principia

@@ -38,9 +38,6 @@ constexpr double s = 1;
 constexpr double β = 0.5;
 constexpr double σ = 1e-3;
 
-// We use the BFGS method.
-constexpr double ξ = 1;
-
 template<typename Scalar, typename Frame>
 double ArmijoRule(Position<Frame> const& xₖ,
                   Displacement<Frame> const& dₖ,
@@ -60,7 +57,7 @@ double ArmijoRule(Position<Frame> const& xₖ,
 }
 
 template<typename Scalar, typename Frame>
-Position<Frame> GradientDescent(
+Position<Frame> BroydenFletcherGoldfarbShanno(
     Position<Frame> const& start_position,
     Field<Scalar, Frame> const& f,
     Field<Gradient<Scalar, Frame>, Frame> const& grad_f,
@@ -73,65 +70,58 @@ Position<Frame> GradientDescent(
   // The first step uses vanilla steepest descent.
   auto const x₀ = start_position;
   auto const grad_f_x₀ = grad_f(x₀);
-  Displacement<Frame> const d₀ = -Normalize(grad_f_x₀) * initial_step_size;
-  double const α₀ = ArmijoRule(x₀, d₀, grad_f_x₀, f);
-  auto const x₁ = x₀+ α₀ * d₀;
+  Displacement<Frame> const p₀ = -Normalize(grad_f_x₀) * initial_step_size;
+  double const α₀ = ArmijoRule(x₀, p₀, grad_f_x₀, f);
+  auto const x₁ = x₀+ α₀ * p₀;
 
-  // Special computation of D₀ using eq. 1.201 and the identity as the starting
-  // value of D₀.
+  // Special computation of H₀ using eq. 6.20.
   auto const grad_f_x₁ = grad_f(x₁);
-  Displacement<Frame> const p₀ = x₁ - x₀;
-  auto const q₀ = grad_f_x₁ - grad_f_x₀;
-  InverseHessian<Scalar, Frame> const D₀ =
-      InnerProduct(p₀, q₀) * identity / q₀.Norm²();
+  Displacement<Frame> const s₀ = x₁ - x₀;
+  auto const y₀ = grad_f_x₁ - grad_f_x₀;
+  InverseHessian<Scalar, Frame> const H₀ =
+      InnerProduct(s₀, y₀) * identity / y₀.Norm²();
 
   auto xₖ = x₁;
   auto grad_f_xₖ = grad_f_x₁;
-  auto Dₖ = D₀;
+  auto Hₖ = H₀;
   for (;;) {
     LOG(ERROR)<<xₖ;
-    LOG(ERROR)<<Dₖ;
+    LOG(ERROR)<<Hₖ;
     logger.Append("grad",
                   std::tuple{xₖ, grad_f_xₖ},
                   mathematica::ExpressIn(quantities::si::Metre));
     logger.Append("inverseHessian",
-                  Dₖ,
+                  Hₖ,
                   mathematica::ExpressIn(quantities::si::Metre));
-    Displacement<Frame> const dₖ = -Dₖ * grad_f_xₖ;
-    LOG(ERROR)<<InnerProduct(grad_f_xₖ, dₖ);
-    if (dₖ.Norm() <= tolerance) {
+    Displacement<Frame> const pₖ = -Hₖ * grad_f_xₖ;
+    LOG(ERROR)<<InnerProduct(grad_f_xₖ, pₖ);
+    if (pₖ.Norm() <= tolerance) {
       return xₖ;
     }
-    double αₖ = ArmijoRule(xₖ, dₖ, grad_f_xₖ, f);
+    double αₖ = ArmijoRule(xₖ, pₖ, grad_f_xₖ, f);
     Position<Frame> xₖ₊₁;
     Gradient<Scalar, Frame> grad_f_xₖ₊₁;
     do {
-      xₖ₊₁ = xₖ + αₖ * dₖ;
+      xₖ₊₁ = xₖ + αₖ * pₖ;
       grad_f_xₖ₊₁ = grad_f(xₖ₊₁);
       αₖ *= 1.1;
     LOG(ERROR)<<xₖ₊₁;
-      LOG(ERROR)<<-InnerProduct(grad_f_xₖ₊₁, dₖ) <<" "<<
-             -0.9 * InnerProduct(grad_f_xₖ, dₖ);
-    } while (-InnerProduct(grad_f_xₖ₊₁, dₖ) >
-             -0.9 * InnerProduct(grad_f_xₖ, dₖ));
-    auto const pₖ = xₖ₊₁ - xₖ;
-    auto const qₖ = grad_f_xₖ₊₁ - grad_f_xₖ;
-    auto const Dₖqₖ = Dₖ * qₖ;
-    auto const τ = InnerProduct(qₖ, Dₖqₖ);
-    auto const pₖqₖ = InnerProduct(pₖ, qₖ);
-    auto const v = pₖ / pₖqₖ - Dₖqₖ / τ;
-    //auto const Dₖ₊₁ = Dₖ + SymmetricProduct(pₖ, pₖ) / pₖqₖ -
-    //                  SymmetricProduct(Dₖqₖ, Dₖqₖ) / τ +
-    //                  ξ * τ * SymmetricProduct(v, v);
-    auto const Dₖ₊₁ =
-        Dₖ +
-        (pₖqₖ + InnerProduct(qₖ, Dₖqₖ)) * SymmetricProduct(pₖ, pₖ) /
-            Pow<2>(pₖqₖ) -
-        (SymmetricProduct(Dₖqₖ, pₖ) + SymmetricProduct(pₖ, Dₖqₖ)) / pₖqₖ;
+      LOG(ERROR)<<-InnerProduct(grad_f_xₖ₊₁, pₖ) <<" "<<
+             -0.9 * InnerProduct(grad_f_xₖ, pₖ);
+    } while (-InnerProduct(grad_f_xₖ₊₁, pₖ) >
+             -0.9 * InnerProduct(grad_f_xₖ, pₖ));
+    auto const sₖ = xₖ₊₁ - xₖ;
+    auto const yₖ = grad_f_xₖ₊₁ - grad_f_xₖ;
+    // The formula (6.17) from [] is inconvenient because it uses external
+    // products.  Elementary transformations yield the formula below.
+    auto const ρ = 1 / InnerProduct(sₖ, yₖ);
+    auto const Hₖ₊₁ =
+        Hₖ + ρ * ((ρ * Hₖ(yₖ, yₖ) + 1) * SymmetricProduct(sₖ, sₖ) -
+                  2 * SymmetricProduct(Hₖ * yₖ, sₖ));
 
     xₖ = xₖ₊₁;
     grad_f_xₖ = grad_f_xₖ₊₁;
-    Dₖ = Dₖ₊₁;
+    Hₖ = Hₖ₊₁;
   }
   return xₖ;
 }

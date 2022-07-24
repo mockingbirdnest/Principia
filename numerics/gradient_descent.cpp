@@ -49,7 +49,7 @@ TEST_F(GradientDescentTest, Quadratic) {
 
   Position<World> const expected_minimum =
       World::origin + Displacement<World>({1 * Metre, 2 * Metre, -3 * Metre});
-  auto const actual_minimum = GradientDescent<Exponentiation<Length, 2>, World>(
+  auto const actual_minimum = BroydenFletcherGoldfarbShanno<Exponentiation<Length, 2>, World>(
       /*start_position=*/World::origin,
       field,
       gradient,
@@ -74,7 +74,7 @@ TEST_F(GradientDescentTest, Quartic) {
 
   Position<World> const expected_minimum =
       World::origin + Displacement<World>({1 * Metre, 2 * Metre, -3 * Metre});
-  auto const actual_minimum = GradientDescent<Exponentiation<Length, 4>, World>(
+  auto const actual_minimum = BroydenFletcherGoldfarbShanno<Exponentiation<Length, 4>, World>(
       /*start_position=*/World::origin,
       field,
       gradient,
@@ -104,7 +104,7 @@ TEST_F(GradientDescentTest, Exp) {
 
   Position<World> const expected_minimum =
       World::origin + Displacement<World>({1 * Metre, 2 * Metre, -3 * Metre});
-  auto const actual_minimum = GradientDescent<double, World>(
+  auto const actual_minimum = BroydenFletcherGoldfarbShanno<double, World>(
       /*start_position=*/World::origin,
       field,
       gradient,
