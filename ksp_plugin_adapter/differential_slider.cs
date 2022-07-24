@@ -33,8 +33,11 @@ internal class DifferentialSlider : ScalingRenderer {
     if (parser == null) {
       // As a special exemption we allow a comma as the decimal separator and
       // the hyphen-minus instead of the minus sign.
+      // We also turn figure spaces back into leading 0s, and remove grouping
+      // marks, since .NET does not like those in the fractional part.
       parser_ = (string s, out double value) => double.TryParse(
-          s.Replace(',', '.').Replace('-', '−').Replace(figure_space, '0'),
+          s.Replace(',', '.').Replace('-', '−')
+           .Replace(figure_space, '0').Replace("'", ""),
           NumberStyles.AllowDecimalPoint |
           NumberStyles.AllowLeadingSign |
           NumberStyles.AllowLeadingWhite |

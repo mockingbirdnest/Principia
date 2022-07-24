@@ -20,6 +20,8 @@ class BurnEditor : ScalingRenderer {
     Δv_tangent_ = new DifferentialSlider(
         label            : L10N.CacheFormat("#Principia_BurnEditor_ΔvTangent"),
         unit             : L10N.CacheFormat("#Principia_BurnEditor_SpeedUnit"),
+        min_value        : -max_Δv_component,
+        max_value        : max_Δv_component,
         log10_lower_rate : log10_Δv_lower_rate,
         log10_upper_rate : log10_Δv_upper_rate,
         formatter        : FormatΔvComponent,
@@ -28,6 +30,8 @@ class BurnEditor : ScalingRenderer {
     Δv_normal_ = new DifferentialSlider(
         label            : L10N.CacheFormat("#Principia_BurnEditor_ΔvNormal"),
         unit             : L10N.CacheFormat("#Principia_BurnEditor_SpeedUnit"),
+        min_value        : -max_Δv_component,
+        max_value        : max_Δv_component,
         log10_lower_rate : log10_Δv_lower_rate,
         log10_upper_rate : log10_Δv_upper_rate,
         formatter        : FormatΔvComponent,
@@ -36,6 +40,8 @@ class BurnEditor : ScalingRenderer {
     Δv_binormal_ = new DifferentialSlider(
         label            : L10N.CacheFormat("#Principia_BurnEditor_ΔvBinormal"),
         unit             : L10N.CacheFormat("#Principia_BurnEditor_SpeedUnit"),
+        min_value        : -max_Δv_component,
+        max_value        : max_Δv_component,
         log10_lower_rate : log10_Δv_lower_rate,
         log10_upper_rate : log10_Δv_upper_rate,
         formatter        : FormatΔvComponent,
@@ -346,11 +352,32 @@ class BurnEditor : ScalingRenderer {
     }
   }
 
-  private string FormatΔvComponent(double Δv) {
+  private string FormatΔvComponent(double metres_per_second) {
+    // The granularity of Instant in 1950.
+    double dt = 2.3841857910156250e-7;  // 2⁻²² s.
+    double initial_acceleration =
+        thrust_in_kilonewtons_ / initial_mass_in_tonnes_;
+    double Isp = specific_impulse_in_seconds_g0_ * 9.80665;
+    // Allow an increment in speed which, if applied to the norm of the
+    // velocity, will always result in a change in the duration of the
+    // integrated burn.
+    double dv = dt * Math.Exp(Δv() / Isp) * initial_acceleration;
+    // Allow no more than 1 nm/s to ensure that the number fits in the field,
+    // and that the increment remains representable at any reasonable speed in
+    // the solar system (that second criterion would be satisfied at 0.1 nm/s,
+    // but the first would not).
+    int fractional_digits =
+        Math.Max(0, Math.Min((int)Math.Floor(-Math.Log10(dv)), 10));
+    string unsigned_format = "00,000." + new string('0', fractional_digits);
     return Regex.Replace(
-        Δv.ToString("+00,000.000;−00,000.000", Culture.culture),
+        Regex.Replace(
+        metres_per_second.ToString($"+{unsigned_format};−{unsigned_format}",
+                                   Culture.culture),
         "^[+−][0']{1,5}",
-        match => match.Value.Replace('0', figure_space));
+        match => match.Value.Replace('0', figure_space)),
+        // Add grouping marks to the fractional part.
+        @"\d{3}(?=\d)",
+        match => match.Value + "'");
   }
 
   private void UseTheForceLuke() {
@@ -415,6 +442,7 @@ class BurnEditor : ScalingRenderer {
   private const double log10_Δv_upper_rate = 3.5;
   private const double log10_time_lower_rate = 0.0;
   private const double log10_time_upper_rate = 7.0;
+  private const double max_Δv_component = 99_999.999_999_999;
 
   // Not owned.
   private readonly Vessel vessel_;
