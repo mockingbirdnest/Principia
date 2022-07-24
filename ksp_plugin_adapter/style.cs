@@ -46,10 +46,15 @@ internal static class Style {
     return error_style;
   }
 
+  public static UnityEngine.GUIStyle Aligned(UnityEngine.TextAnchor alignment,
+                                             UnityEngine.GUIStyle style) {
+    var aligned_style = new UnityEngine.GUIStyle(style);
+    aligned_style.alignment = alignment;
+    return aligned_style;
+  }
+
   public static UnityEngine.GUIStyle RightAligned(UnityEngine.GUIStyle style) {
-    var right_aligned_style = new UnityEngine.GUIStyle(style);
-    right_aligned_style.alignment = UnityEngine.TextAnchor.MiddleRight;
-    return right_aligned_style;
+    return Aligned(UnityEngine.TextAnchor.MiddleRight, style);
   }
 
   public static UnityEngine.GUIStyle Multiline(UnityEngine.GUIStyle style) {

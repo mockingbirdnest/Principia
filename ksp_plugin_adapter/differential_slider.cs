@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -14,6 +15,8 @@ internal class DifferentialSlider : ScalingRenderer {
                             string unit,
                             double log10_lower_rate,
                             double log10_upper_rate,
+                            UnityEngine.TextAnchor alignment =
+                                UnityEngine.TextAnchor.MiddleRight,
                             double zero_value = 0,
                             double min_value = double.NegativeInfinity,
                             double max_value = double.PositiveInfinity,
@@ -26,9 +29,13 @@ internal class DifferentialSlider : ScalingRenderer {
     label_width_ = label_width;
     field_width_ = field_width;
     unit_ = unit;
+    alignment_ = alignment;
     if (formatter == null) {
-      // TODO(egg): Is this just "N3"?
-      formatter_ = v => v.ToString("#,0.000", Culture.culture);
+      formatter_ = v =>
+          Regex.Replace(
+              v.ToString("+00,000.000;−00,000.000", Culture.culture),
+              "^[+−][0']{1,5}",
+              match => match.Value.Replace('0', figure_space));
     } else {
       formatter_ = formatter;
     }
@@ -36,7 +43,7 @@ internal class DifferentialSlider : ScalingRenderer {
       // As a special exemption we allow a comma as the decimal separator and
       // the hyphen-minus instead of the minus sign.
       parser_ = (string s, out double value) => double.TryParse(
-          s.Replace(',', '.').Replace('-', '−'),
+          s.Replace(',', '.').Replace('-', '−').Replace(figure_space, '0'),
           NumberStyles.AllowDecimalPoint |
           NumberStyles.AllowLeadingSign |
           NumberStyles.AllowLeadingWhite |
@@ -107,7 +114,7 @@ internal class DifferentialSlider : ScalingRenderer {
         // If the text is not syntactically correct, or it exceeds the upper
         // bound, inform the user by drawing it in the warning style.  Note the
         // fudge factor to account for uncertainty in text/double conversions.
-        var style = Style.RightAligned(UnityEngine.GUI.skin.textField);
+        var style = Style.Aligned(alignment_, UnityEngine.GUI.skin.textField);
         if (!parser_(formatted_value_, out double v1) ||
             v1 > max_value_ + 0.1) {
           style = Style.Warning(style);
@@ -215,7 +222,8 @@ internal class DifferentialSlider : ScalingRenderer {
         }
       } else {
         UnityEngine.GUILayout.Label(text    : formatted_value_,
-                                    style   : Style.RightAligned(
+                                    style   : Style.Aligned(
+                                        alignment_,
                                         UnityEngine.GUI.skin.label),
                                     options : GUILayoutWidth(
                                         5 + (unit_ == null ? 2 : 0)));
@@ -311,14 +319,18 @@ internal class DifferentialSlider : ScalingRenderer {
     if (!parser_(formatted_value_, out double base_value)) {
       return false;
     }
+    string formatted_value_with_leading_0s =
+        formatted_value_.Replace(figure_space, '0');
     // Can only increment digits.
-    if (digit_index < 0 || digit_index >= formatted_value_.Length ||
-        !char.IsDigit(formatted_value_[digit_index])) {
+    if (digit_index < 0 ||
+        digit_index >= formatted_value_with_leading_0s.Length ||
+        !char.IsDigit(formatted_value_with_leading_0s[digit_index])) {
       return false;
     }
     // Increment or decrement the digit by 1 (whichever one doesn’t involve
     // carries).  We will take the absolute value of the difference below.
-    char[] adjusted_formatted_value = formatted_value_.ToCharArray();
+    char[] adjusted_formatted_value =
+        formatted_value_with_leading_0s.ToCharArray();
     if (adjusted_formatted_value[digit_index] == '9') {
       --adjusted_formatted_value[digit_index];
     } else {
@@ -355,6 +367,7 @@ internal class DifferentialSlider : ScalingRenderer {
   // during some events handling.
   private double? value_;
   private string formatted_value_;
+  private UnityEngine.TextAnchor alignment_;
 
   // Represents a possible adjustment of the digit at |index| in
   // |formatted_value_|.  The unit in that place is |increment|.
@@ -375,6 +388,7 @@ internal class DifferentialSlider : ScalingRenderer {
   private static UnityEngine.Texture scroll_indicator;
 
   private string text_field_name => GetHashCode() + ":text_field";
+  private const char figure_space = '\u2007';
 }
 
 }  // namespace ksp_plugin_adapter
