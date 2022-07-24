@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using KSP.Localization;
 
 namespace principia {
@@ -21,18 +22,24 @@ class BurnEditor : ScalingRenderer {
         unit             : L10N.CacheFormat("#Principia_BurnEditor_SpeedUnit"),
         log10_lower_rate : log10_Δv_lower_rate,
         log10_upper_rate : log10_Δv_upper_rate,
+        formatter        : FormatΔvComponent,
+        alignment        : UnityEngine.TextAnchor.MiddleLeft,
         text_colour      : Style.Tangent);
     Δv_normal_ = new DifferentialSlider(
         label            : L10N.CacheFormat("#Principia_BurnEditor_ΔvNormal"),
         unit             : L10N.CacheFormat("#Principia_BurnEditor_SpeedUnit"),
         log10_lower_rate : log10_Δv_lower_rate,
         log10_upper_rate : log10_Δv_upper_rate,
+        formatter        : FormatΔvComponent,
+        alignment        : UnityEngine.TextAnchor.MiddleLeft,
         text_colour      : Style.Normal);
     Δv_binormal_ = new DifferentialSlider(
         label            : L10N.CacheFormat("#Principia_BurnEditor_ΔvBinormal"),
         unit             : L10N.CacheFormat("#Principia_BurnEditor_SpeedUnit"),
         log10_lower_rate : log10_Δv_lower_rate,
         log10_upper_rate : log10_Δv_upper_rate,
+        formatter        : FormatΔvComponent,
+        alignment        : UnityEngine.TextAnchor.MiddleLeft,
         text_colour      : Style.Binormal);
     previous_coast_duration_ = new DifferentialSlider(
         label            : L10N.CacheFormat("#Principia_BurnEditor_InitialTime"),
@@ -339,6 +346,13 @@ class BurnEditor : ScalingRenderer {
     }
   }
 
+  private string FormatΔvComponent(double Δv) {
+    return Regex.Replace(
+        Δv.ToString("+00,000.000;−00,000.000", Culture.culture),
+        "^[+−][0']{1,5}",
+        match => match.Value.Replace('0', figure_space));
+  }
+
   private void UseTheForceLuke() {
     // The burn can last at most (9.80665 / scale) s.
     const double scale = 1;
@@ -412,6 +426,7 @@ class BurnEditor : ScalingRenderer {
   
   private static UnityEngine.Texture decrement_revolution;
   private static UnityEngine.Texture increment_revolution;
+  private const char figure_space = '\u2007';
 }
 
 }  // namespace ksp_plugin_adapter

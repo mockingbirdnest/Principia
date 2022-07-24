@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using System.Text.RegularExpressions;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -15,13 +14,13 @@ internal class DifferentialSlider : ScalingRenderer {
                             string unit,
                             double log10_lower_rate,
                             double log10_upper_rate,
+                            ValueFormatter formatter,
                             UnityEngine.TextAnchor alignment =
                                 UnityEngine.TextAnchor.MiddleRight,
+                            ValueParser parser = null,
                             double zero_value = 0,
                             double min_value = double.NegativeInfinity,
                             double max_value = double.PositiveInfinity,
-                            ValueFormatter formatter = null,
-                            ValueParser parser = null,
                             UnityEngine.Color? text_colour = null,
                             int label_width = 3,
                             int field_width = 5) {
@@ -30,15 +29,7 @@ internal class DifferentialSlider : ScalingRenderer {
     field_width_ = field_width;
     unit_ = unit;
     alignment_ = alignment;
-    if (formatter == null) {
-      formatter_ = v =>
-          Regex.Replace(
-              v.ToString("+00,000.000;−00,000.000", Culture.culture),
-              "^[+−][0']{1,5}",
-              match => match.Value.Replace('0', figure_space));
-    } else {
-      formatter_ = formatter;
-    }
+    formatter_ = formatter;
     if (parser == null) {
       // As a special exemption we allow a comma as the decimal separator and
       // the hyphen-minus instead of the minus sign.
