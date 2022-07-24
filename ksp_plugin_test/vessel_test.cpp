@@ -799,7 +799,7 @@ TEST_F(VesselTest, SerializationSuccess) {
   vessel_.WriteToMessage(&message,
                          serialization_index_for_pile_up.AsStdFunction());
   EXPECT_TRUE(message.has_history());
-  EXPECT_TRUE(message.has_flight_plan());
+  EXPECT_FALSE(message.flight_plans().empty());
 
   EXPECT_CALL(ephemeris_, Prolong(_)).Times(2);
   auto const v = Vessel::ReadFromMessage(
