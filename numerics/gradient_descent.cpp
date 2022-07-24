@@ -1,4 +1,4 @@
-#include "numerics/gradient_descent.hpp"
+﻿#include "numerics/gradient_descent.hpp"
 
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
@@ -17,11 +17,13 @@ using geometry::Displacement;
 using geometry::Frame;
 using geometry::Position;
 using geometry::Vector;
+using quantities::Exponentiation;
+using quantities::Inverse;
 using quantities::Length;
 using quantities::Pow;
-using quantities::Exponentiation;
 using quantities::si::Micro;
 using quantities::si::Metre;
+using quantities::si::Radian;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 
@@ -78,6 +80,37 @@ TEST_F(GradientDescentTest, Quartic) {
       gradient,
       /*tolerance=*/1 * Micro(Metre));
   EXPECT_THAT(actual_minimum, AlmostEquals(expected_minimum, 2));
+  LOG(ERROR)<<(actual_minimum-expected_minimum).Norm();
+}
+
+TEST_F(GradientDescentTest, Exp) {
+  static constexpr auto ω = 1 / Metre;
+  auto field = [](Position<World> const& position) {
+    auto const coordinates = (position - World::origin).coordinates();
+    return -std::exp(-Pow<2>(ω * (coordinates.x - 1 * Metre))) -
+           std::exp(-Pow<2>(ω * (coordinates.y - 2 * Metre))) -
+           std::exp(-Pow<2>(ω * (coordinates.z + 3 * Metre)));
+  };
+  auto gradient = [](Position<World> const& position) {
+    auto const coordinates = (position - World::origin).coordinates();
+    return Vector<Inverse<Length>, World>(
+        {2 * Pow<2>(ω) * (coordinates.x - 1 * Metre) *
+             std::exp(-Pow<2>(ω * (coordinates.x - 1 * Metre))),
+         2 * Pow<2>(ω) * (coordinates.y - 2 * Metre) *
+             std::exp(-Pow<2>(ω * (coordinates.y - 2 * Metre))),
+         2 * Pow<2>(ω) * (coordinates.z + 3 * Metre) *
+             std::exp(-Pow<2>(ω * (coordinates.z + 3 * Metre)))});
+  };
+
+  Position<World> const expected_minimum =
+      World::origin + Displacement<World>({1 * Metre, 2 * Metre, -3 * Metre});
+  auto const actual_minimum = GradientDescent<double, World>(
+      /*start_position=*/World::origin,
+      field,
+      gradient,
+      /*tolerance=*/1 * Micro(Metre));
+  EXPECT_THAT(actual_minimum, AlmostEquals(expected_minimum, 2));
+  LOG(ERROR)<<(actual_minimum-expected_minimum).Norm();
 }
 
 }  // namespace numerics

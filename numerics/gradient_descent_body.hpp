@@ -6,6 +6,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
+#include "mathematica/mathematica.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -30,7 +31,7 @@ template<typename Scalar, typename Frame>
 using InverseHessian =
     SymmetricBilinearForm<Quotient<Square<Length>, Scalar>, Frame, Vector>;
 
-constexpr Length initial_step_size = 1 * Kilo(Metre);
+constexpr Length initial_step_size = 1 * Metre;//Kilo(Metre);
 
 // Parameters for the Armijo rule.
 constexpr double s = 1;
@@ -46,8 +47,12 @@ double ArmijoRule(Position<Frame> const& xₖ,
                   Gradient<Scalar, Frame> const& grad_f_xₖ,
                   Field<Scalar, Frame> const& f) {
   Scalar const f_xₖ = f(xₖ);
+  Scalar const threshold =  -σ * InnerProduct(grad_f_xₖ, dₖ);
+  CHECK_LT(Scalar{}, threshold)
+      << "Encountered a Hessian that is not positive definite "
+      << "xₖ = " << xₖ << ", dₖ = " << dₖ << " , grad_f_xₖ = " << grad_f_xₖ;
   for (double βᵐs = s;; βᵐs *= β) {
-    if (f_xₖ - f(xₖ + βᵐs * dₖ) >= -σ * βᵐs * InnerProduct(grad_f_xₖ, dₖ)) {
+    if (f_xₖ - f(xₖ + βᵐs * dₖ) >= βᵐs * threshold) {
       LOG(ERROR)<<βᵐs;
       return βᵐs;
     }
@@ -62,6 +67,8 @@ Position<Frame> GradientDescent(
     Length const& tolerance) {
   static SymmetricBilinearForm<double, Frame, Vector> const identity =
       SymmetricBilinearForm<double, Frame, Vector>::Identity();
+
+  mathematica::Logger logger(TEMP_DIR / "gradient_descent.wl");
 
   // The first step uses vanilla steepest descent.
   auto const x₀ = start_position;
@@ -82,30 +89,49 @@ Position<Frame> GradientDescent(
   auto grad_f_xₖ = grad_f_x₁;
   auto Dₖ = D₀;
   for (;;) {
+    LOG(ERROR)<<xₖ;
+    LOG(ERROR)<<Dₖ;
+    logger.Append("grad",
+                  std::tuple{xₖ, grad_f_xₖ},
+                  mathematica::ExpressIn(quantities::si::Metre));
+    logger.Append("inverseHessian",
+                  Dₖ,
+                  mathematica::ExpressIn(quantities::si::Metre));
     Displacement<Frame> const dₖ = -Dₖ * grad_f_xₖ;
+    LOG(ERROR)<<InnerProduct(grad_f_xₖ, dₖ);
     if (dₖ.Norm() <= tolerance) {
       return xₖ;
     }
-    double const αₖ = ArmijoRule(xₖ, dₖ, grad_f_xₖ, f);
-    auto const xₖ₊₁ = xₖ + αₖ * dₖ;
-    LOG(ERROR)<<"ADk "<<(αₖ * dₖ).Norm();
+    double αₖ = ArmijoRule(xₖ, dₖ, grad_f_xₖ, f);
+    Position<Frame> xₖ₊₁;
+    Gradient<Scalar, Frame> grad_f_xₖ₊₁;
+    do {
+      xₖ₊₁ = xₖ + αₖ * dₖ;
+      grad_f_xₖ₊₁ = grad_f(xₖ₊₁);
+      αₖ *= 1.1;
+    LOG(ERROR)<<xₖ₊₁;
+      LOG(ERROR)<<-InnerProduct(grad_f_xₖ₊₁, dₖ) <<" "<<
+             -0.9 * InnerProduct(grad_f_xₖ, dₖ);
+    } while (-InnerProduct(grad_f_xₖ₊₁, dₖ) >
+             -0.9 * InnerProduct(grad_f_xₖ, dₖ));
     auto const pₖ = xₖ₊₁ - xₖ;
-    auto const grad_f_xₖ₊₁ = grad_f(xₖ₊₁);
     auto const qₖ = grad_f_xₖ₊₁ - grad_f_xₖ;
     auto const Dₖqₖ = Dₖ * qₖ;
     auto const τ = InnerProduct(qₖ, Dₖqₖ);
     auto const pₖqₖ = InnerProduct(pₖ, qₖ);
     auto const v = pₖ / pₖqₖ - Dₖqₖ / τ;
-    auto const Dₖ₊₁ = Dₖ + SymmetricProduct(pₖ, pₖ) / pₖqₖ -
-                      SymmetricProduct(Dₖqₖ, Dₖqₖ) / τ +
-                      ξ * τ * SymmetricProduct(v, v);
+    //auto const Dₖ₊₁ = Dₖ + SymmetricProduct(pₖ, pₖ) / pₖqₖ -
+    //                  SymmetricProduct(Dₖqₖ, Dₖqₖ) / τ +
+    //                  ξ * τ * SymmetricProduct(v, v);
+    auto const Dₖ₊₁ =
+        Dₖ +
+        (pₖqₖ + InnerProduct(qₖ, Dₖqₖ)) * SymmetricProduct(pₖ, pₖ) /
+            Pow<2>(pₖqₖ) -
+        (SymmetricProduct(Dₖqₖ, pₖ) + SymmetricProduct(pₖ, Dₖqₖ)) / pₖqₖ;
 
     xₖ = xₖ₊₁;
     grad_f_xₖ = grad_f_xₖ₊₁;
     Dₖ = Dₖ₊₁;
-
-    LOG(ERROR)<<"Fk "<<f(xₖ);
-    LOG(ERROR)<<"Xk "<<xₖ;
   }
   return xₖ;
 }
