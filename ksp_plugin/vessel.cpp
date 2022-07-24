@@ -342,30 +342,29 @@ int Vessel::flight_plan_count() const {
 }
 
 int Vessel::selected_flight_plan() const {
-  return selected_flight_plan_;
+  return selected_flight_plan_index_;
 }
 
 void Vessel::SelectFlightPlan(int index) {
   CHECK_GE(index, 0);
   CHECK_LT(index, flight_plan_count());
-  selected_flight_plan_ = index;
+  selected_flight_plan_index_ = index;
 }
 
 FlightPlan& Vessel::flight_plan() const {
   CHECK(has_deserialized_flight_plan());
-  auto& flight_plan = *std::get<not_null<std::unique_ptr<FlightPlan>>>(
-      currently_selected_flight_plan());
+  auto& flight_plan =
+      *std::get<not_null<std::unique_ptr<FlightPlan>>>(selected_flight_plan());
   return flight_plan;
 }
 
 void Vessel::ReadFlightPlanFromMessage() {
   if (!flight_plans_.empty() &&
       std::holds_alternative<serialization::FlightPlan>(
-          currently_selected_flight_plan())) {
+          selected_flight_plan())) {
     auto const& message =
-        std::get<serialization::FlightPlan>(currently_selected_flight_plan());
-    currently_selected_flight_plan() =
-        FlightPlan::ReadFromMessage(message, ephemeris_);
+        std::get<serialization::FlightPlan>(selected_flight_plan());
+    selected_flight_plan() = FlightPlan::ReadFromMessage(message, ephemeris_);
   }
 }
 
@@ -475,12 +474,12 @@ void Vessel::CreateFlightPlan(
       ephemeris_,
       flight_plan_adaptive_step_parameters,
       flight_plan_generalized_adaptive_step_parameters));
-  selected_flight_plan_ = flight_plans_.size() - 1;
+  selected_flight_plan_index_ = flight_plans_.size() - 1;
 }
 
 void Vessel::DuplicateFlightPlan() {
-  auto const& original = currently_selected_flight_plan();
-  auto const it = flight_plans_.begin() + selected_flight_plan_;
+  auto const& original = selected_flight_plan();
+  auto const it = flight_plans_.begin() + selected_flight_plan_index_;
   // There is no need to adjust either flight plan after the copy; in particular
   // flight plans currently do not have a name, so there is no need to append a
   // (Copy).
@@ -498,20 +497,20 @@ void Vessel::DuplicateFlightPlan() {
   } else {
     LOG(FATAL) << "Unexpected flight plan variant " << original.index();
   }
-  ++selected_flight_plan_;
+  ++selected_flight_plan_index_;
 }
 
 void Vessel::DeleteFlightPlan() {
-  flight_plans_.erase(flight_plans_.begin() + selected_flight_plan_);
-  if (selected_flight_plan_ == flight_plans_.size()) {
-    --selected_flight_plan_;
+  flight_plans_.erase(flight_plans_.begin() + selected_flight_plan_index_);
+  if (selected_flight_plan_index_ == flight_plans_.size()) {
+    --selected_flight_plan_index_;
   }
 }
 
 absl::Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
   CHECK(has_deserialized_flight_plan());
-  auto& flight_plan = std::get<not_null<std::unique_ptr<FlightPlan>>>(
-      currently_selected_flight_plan());
+  auto& flight_plan =
+      std::get<not_null<std::unique_ptr<FlightPlan>>>(selected_flight_plan());
   Instant const new_initial_time = backstory_->back().time;
   int first_manœuvre_kept = 0;
   for (int i = 0; i < flight_plan->number_of_manœuvres(); ++i) {
@@ -686,7 +685,7 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
       LOG(FATAL) << "Unexpected flight plan variant " << flight_plan.index();
     }
   }
-  message->set_selected_flight_plan(selected_flight_plan_);
+  message->set_selected_flight_plan_index(selected_flight_plan_index_);
   message->set_is_collapsible(is_collapsible_);
   checkpointer_->WriteToMessage(message->mutable_checkpoint());
   LOG(INFO) << name_ << " " << NAMED(message->SpaceUsed()) << " "
@@ -704,7 +703,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
                              message.history().segment_size() == 0;
   bool const is_pre_hamilton = message.history().segment_size() == 0;
   bool const is_pre_हरीश_चंद्र = !message.has_is_collapsible();
-  bool const is_pre_hilbert = !message.has_selected_flight_plan();
+  bool const is_pre_hilbert = !message.has_selected_flight_plan_index();
   LOG_IF(WARNING, is_pre_hilbert)
       << "Reading pre-"
       << (is_pre_cesàro     ? u8"Cesàro"
@@ -822,9 +821,9 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     // Starting with हरीश चंद्र we deserialize the flight plan lazily.
     vessel->flight_plans_.emplace_back(flight_plan);
   }
-  vessel->selected_flight_plan_ =
+  vessel->selected_flight_plan_index_ =
       is_pre_hilbert ? static_cast<int>(vessel->flight_plans_.size()) - 1
-                     : message.selected_flight_plan();
+                     : message.selected_flight_plan_index();
 
   // Figure out which was the last checkpoint to be "reanimated" by reading the
   // end of the trajectory from the serialized form.  Interestingly enough, that
@@ -1179,20 +1178,20 @@ bool Vessel::IsCollapsible() const {
 bool Vessel::has_deserialized_flight_plan() const {
   return !flight_plans_.empty() &&
          std::holds_alternative<not_null<std::unique_ptr<FlightPlan>>>(
-             currently_selected_flight_plan());
+             selected_flight_plan());
 }
 
-Vessel::LazilyDeserializedFlightPlan& Vessel::currently_selected_flight_plan() {
-  CHECK_GE(selected_flight_plan_, 0);
-  CHECK_LT(selected_flight_plan_, flight_plans_.size());
-  return flight_plans_[selected_flight_plan_];
+Vessel::LazilyDeserializedFlightPlan& Vessel::selected_flight_plan() {
+  CHECK_GE(selected_flight_plan_index_, 0);
+  CHECK_LT(selected_flight_plan_index_, flight_plans_.size());
+  return flight_plans_[selected_flight_plan_index_];
 }
 
 Vessel::LazilyDeserializedFlightPlan const&
-Vessel::currently_selected_flight_plan() const {
-  CHECK_GE(selected_flight_plan_, 0);
-  CHECK_LT(selected_flight_plan_, flight_plans_.size());
-  return flight_plans_[selected_flight_plan_];
+Vessel::selected_flight_plan() const {
+  CHECK_GE(selected_flight_plan_index_, 0);
+  CHECK_LT(selected_flight_plan_index_, flight_plans_.size());
+  return flight_plans_[selected_flight_plan_index_];
 }
 
 // Run the prognostication in both synchronous and asynchronous mode in tests to

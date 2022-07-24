@@ -338,9 +338,8 @@ class Vessel {
   // Returns true if this object holds a non-null deserialized flight plan.
   bool has_deserialized_flight_plan() const;
 
-  LazilyDeserializedFlightPlan& currently_selected_flight_plan();
-
-  LazilyDeserializedFlightPlan const& currently_selected_flight_plan() const;
+  LazilyDeserializedFlightPlan& selected_flight_plan();
+  LazilyDeserializedFlightPlan const& selected_flight_plan() const;
 
   GUID const guid_;
   std::string name_;
@@ -401,7 +400,7 @@ class Vessel {
 
   std::vector<std::variant<not_null<std::unique_ptr<FlightPlan>>,
                            serialization::FlightPlan>> flight_plans_;
-  int selected_flight_plan_ = -1;
+  int selected_flight_plan_index_ = -1;
 
   std::optional<OrbitAnalyser> orbit_analyser_;
 

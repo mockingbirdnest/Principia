@@ -178,7 +178,7 @@ message Vessel {
   optional bool psychohistory_is_authoritative = 17;  // Pre-Cesàro.
   optional DiscreteTrajectory prediction = 18;  // Pre-Chasles.
   repeated FlightPlan flight_plans = 4;  // Optional before Hilbert.
-  optional int32 selected_flight_plan = 24;  // Added in Hilbert.
+  optional int32 selected_flight_plan_index = 24;  // Added in Hilbert.
   optional bool is_collapsible = 22;  // Added in हरीश चंद्र.
   repeated Checkpoint checkpoint = 21;  // Added in हरीश चंद्र.
   optional DiscreteTrajectorySegment.DownsamplingParameters
