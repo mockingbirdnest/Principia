@@ -42,7 +42,7 @@ class PrincipiaTimeSpan {
   // Formats a duration, optionally omitting leading components if they are 0,
   // and leading 0s on the days; optionally exclude seconds.
   public string Format(bool with_leading_zeroes, bool with_seconds) {
-    return seconds_.ToString("+;-") +
+    return seconds_.ToString("+;−") +
            FormatPositive(with_leading_zeroes, with_seconds);
   }
 

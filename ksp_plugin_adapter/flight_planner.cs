@@ -204,7 +204,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           if (parameters.max_steps <= 100) {
             UnityEngine.GUILayout.Button(
                 L10N.CacheFormat("#Principia_DiscreteSelector_Min"));
-          } else if (UnityEngine.GUILayout.Button("-")) {
+          } else if (UnityEngine.GUILayout.Button("−")) {
             parameters.max_steps /= factor;
             var status =
                 plugin.FlightPlanSetAdaptiveStepParameters(
@@ -233,7 +233,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           if (parameters.length_integration_tolerance <= 1e-6) {
             UnityEngine.GUILayout.Button(
                 L10N.CacheFormat("#Principia_DiscreteSelector_Min"));
-          } else if (UnityEngine.GUILayout.Button("-")) {
+          } else if (UnityEngine.GUILayout.Button("−")) {
             parameters.length_integration_tolerance /= 2;
             parameters.speed_integration_tolerance /= 2;
             var status =

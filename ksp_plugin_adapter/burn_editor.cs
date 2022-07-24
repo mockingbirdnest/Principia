@@ -76,7 +76,7 @@ class BurnEditor : ScalingRenderer {
     previous_coast_duration_.max_value = burn_final_time - time_base;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       if (UnityEngine.GUILayout.Button(
-              minimized ? "+" : "-", GUILayoutWidth(1))) {
+              minimized ? "+" : "−", GUILayoutWidth(1))) {
         minimized = !minimized;
         return minimized ? Event.Minimized : Event.Maximized;
       }
