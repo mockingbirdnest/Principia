@@ -158,7 +158,7 @@ class Vessel {
 
   // Returns the index of the currently-selected flight plan, or -1 if there is
   // no flight plan.
-  virtual int selected_flight_plan() const;
+  virtual int selected_flight_plan_index() const;
 
   // Selects the flight plan at the given index, which must lie within
   // [0, flight_plan_count()[.

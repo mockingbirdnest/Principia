@@ -552,7 +552,7 @@ int __cdecl principia__FlightPlanSelected(Plugin const* const plugin,
                                           char const* const vessel_guid) {
   journal::Method<journal::FlightPlanSelected> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
-  return m.Return(plugin->GetVessel(vessel_guid)->selected_flight_plan());
+  return m.Return(plugin->GetVessel(vessel_guid)->selected_flight_plan_index());
 }
 
 Status* __cdecl principia__FlightPlanSetAdaptiveStepParameters(

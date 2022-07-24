@@ -341,7 +341,7 @@ int Vessel::flight_plan_count() const {
   return flight_plans_.size();
 }
 
-int Vessel::selected_flight_plan() const {
+int Vessel::selected_flight_plan_index() const {
   return selected_flight_plan_index_;
 }
 
