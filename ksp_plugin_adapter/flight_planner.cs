@@ -87,8 +87,15 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           UpdateVesselAndBurnEditors();
         }
       }
-      if (flight_plans < max_flight_plans &&
-          UnityEngine.GUILayout.Button("+", GUILayoutWidth(1))) {
+      bool must_create_flight_plan = false;
+      if (flight_plans == 0) {
+        must_create_flight_plan = UnityEngine.GUILayout.Button(
+            L10N.CacheFormat("#Principia_FlightPlan_Create"));
+      } else if (flight_plans < max_flight_plans) {
+        must_create_flight_plan = 
+            UnityEngine.GUILayout.Button("+", GUILayoutWidth(1));
+      }
+      if (must_create_flight_plan) {
         plugin.FlightPlanCreate(vessel_guid,
                                 plugin.CurrentTime() + 3600,
                                 predicted_vessel.GetTotalMass());
@@ -311,7 +318,6 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
             plugin.FlightPlanDuplicate(vessel_guid);
           }
         }
-
 
         if (burn_editors_.Count > 0) {
           RenderUpcomingEvents();

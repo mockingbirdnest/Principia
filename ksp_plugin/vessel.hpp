@@ -286,6 +286,10 @@ class Vessel {
   using TrajectoryIterator =
       DiscreteTrajectory<Barycentric>::iterator (Part::*)();
 
+  using LazilyDeserializedFlightPlan =
+      std::variant<not_null<std::unique_ptr<FlightPlan>>,
+                   serialization::FlightPlan>;
+
   // Return functions that can be passed to a |Checkpointer| to write this
   // vessel to a checkpoint or read it back.
   Checkpointer<serialization::Vessel>::Writer
@@ -333,6 +337,10 @@ class Vessel {
 
   // Returns true if this object holds a non-null deserialized flight plan.
   bool has_deserialized_flight_plan() const;
+
+  LazilyDeserializedFlightPlan& currently_selected_flight_plan();
+
+  LazilyDeserializedFlightPlan const& currently_selected_flight_plan() const;
 
   GUID const guid_;
   std::string name_;

@@ -354,17 +354,17 @@ void Vessel::SelectFlightPlan(int index) {
 FlightPlan& Vessel::flight_plan() const {
   CHECK(has_deserialized_flight_plan());
   auto& flight_plan = *std::get<not_null<std::unique_ptr<FlightPlan>>>(
-      flight_plans_[selected_flight_plan_]);
+      currently_selected_flight_plan());
   return flight_plan;
 }
 
 void Vessel::ReadFlightPlanFromMessage() {
   if (!flight_plans_.empty() &&
       std::holds_alternative<serialization::FlightPlan>(
-          flight_plans_[selected_flight_plan_])) {
-    auto const& message = std::get<serialization::FlightPlan>(
-        flight_plans_[selected_flight_plan_]);
-    flight_plans_[selected_flight_plan_] =
+          currently_selected_flight_plan())) {
+    auto const& message =
+        std::get<serialization::FlightPlan>(currently_selected_flight_plan());
+    currently_selected_flight_plan() =
         FlightPlan::ReadFromMessage(message, ephemeris_);
   }
 }
@@ -479,8 +479,15 @@ void Vessel::CreateFlightPlan(
 }
 
 void Vessel::DuplicateFlightPlan() {
-  auto const& original = flight_plans_[selected_flight_plan_];
+  auto const& original = currently_selected_flight_plan();
   auto const it = flight_plans_.begin() + selected_flight_plan_;
+  // There is no need to adjust either flight plan after the copy; in particular
+  // flight plans currently do not have a name, so there is no need to append a
+  // (Copy).
+  // If we needed to adjust something, it would probably be the original, to
+  // mimic the behaviour of adding a copy after the current tab and switching to
+  // that copy, even though behind the scenes we are inserting a copy before for
+  // the sake of laziness.
   if (std::holds_alternative<serialization::FlightPlan>(original)) {
     flight_plans_.emplace(it, std::get<serialization::FlightPlan>(original));
   } else if (std::holds_alternative<not_null<std::unique_ptr<FlightPlan>>>(
@@ -504,7 +511,7 @@ void Vessel::DeleteFlightPlan() {
 absl::Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
   CHECK(has_deserialized_flight_plan());
   auto& flight_plan = std::get<not_null<std::unique_ptr<FlightPlan>>>(
-      flight_plans_[selected_flight_plan_]);
+      currently_selected_flight_plan());
   Instant const new_initial_time = backstory_->back().time;
   int first_manœuvre_kept = 0;
   for (int i = 0; i < flight_plan->number_of_manœuvres(); ++i) {
@@ -1172,7 +1179,20 @@ bool Vessel::IsCollapsible() const {
 bool Vessel::has_deserialized_flight_plan() const {
   return !flight_plans_.empty() &&
          std::holds_alternative<not_null<std::unique_ptr<FlightPlan>>>(
-             flight_plans_[selected_flight_plan_]);
+             currently_selected_flight_plan());
+}
+
+Vessel::LazilyDeserializedFlightPlan& Vessel::currently_selected_flight_plan() {
+  CHECK_GE(selected_flight_plan_, 0);
+  CHECK_LT(selected_flight_plan_, flight_plans_.size());
+  return flight_plans_[selected_flight_plan_];
+}
+
+Vessel::LazilyDeserializedFlightPlan const&
+Vessel::currently_selected_flight_plan() const {
+  CHECK_GE(selected_flight_plan_, 0);
+  CHECK_LT(selected_flight_plan_, flight_plans_.size());
+  return flight_plans_[selected_flight_plan_];
 }
 
 // Run the prognostication in both synchronous and asynchronous mode in tests to
