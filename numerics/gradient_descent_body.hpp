@@ -3,6 +3,8 @@
 
 #include "numerics/gradient_descent.hpp"
 
+#include <optional>
+
 #include "geometry/grassmann.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
@@ -53,6 +55,40 @@ double ArmijoRule(Position<Frame> const& xₖ,
       LOG(ERROR)<<βᵐs;
       return βᵐs;
     }
+  }
+}
+
+constexpr double c₁ = 1e-4;
+constexpr double c₂ = 0.9;
+constexpr double α_max = 1e3;
+
+template<typename Scalar, typename Frame>
+double LineSearch(Position<Frame> const& x,
+                  Displacement<Frame> const& p,
+                  Field<Scalar, Frame> const& f,
+                  Field<Gradient<Scalar, Frame>, Frame> const& grad_f) {
+  auto const ϕ_0 = f(x);
+  auto const ϕʹ_0 = InnerProduct(grad_f(x), p);
+  double αᵢ₋₁ = 0;  // α₀.
+  double αᵢ = 1;    // α₁
+  std::optional<Scalar> ϕ_αᵢ₋₁;
+  while (αᵢ < α_max) {
+    auto const ϕ_αᵢ = f(x + αᵢ * p);
+    if (ϕ_αᵢ > ϕ_0 + c₁ * αᵢ * ϕʹ_0 ||
+        (ϕ_αᵢ₋₁.has_value() && ϕ_αᵢ >= ϕ_αᵢ₋₁.value())) {
+      return Zoom(αᵢ₋₁, αᵢ);
+    }
+    auto const ϕʹ_αᵢ = InnerProduct(grad_f(x + αᵢ * p), p);
+    if (Abs(ϕʹ_αᵢ) <= -c₂ * ϕʹ_0) {
+      return αᵢ;
+    }
+    if (ϕʹ_αᵢ >= 0) {
+      return Zoom(αᵢ, αᵢ₋₁);
+    }
+
+    αᵢ₋₁ = αᵢ;
+    ϕ_αᵢ₋₁ = ϕ_αᵢ;
+    αᵢ = αᵢ * 2;  ////
   }
 }
 
