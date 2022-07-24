@@ -399,7 +399,9 @@ class BurnEditor : ScalingRenderer {
   internal string FormatPreviousCoastDuration(double seconds) {
     return new PrincipiaTimeSpan(seconds).FormatPositive(
         with_leading_zeroes: true,
-        with_seconds: true);
+        with_seconds: true,
+        iau_style: true,
+        fractional_second_digits: 6);
   }
 
   internal bool TryParsePreviousCoastDuration(string text, out double value) {
