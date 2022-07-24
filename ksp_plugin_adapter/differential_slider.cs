@@ -36,7 +36,7 @@ internal class DifferentialSlider : ScalingRenderer {
       // As a special exemption we allow a comma as the decimal separator and
       // the hyphen-minus instead of the minus sign.
       parser_ = (string s, out double value) => double.TryParse(
-          s.Replace(',', '.').Replace("-", "−"),
+          s.Replace(',', '.').Replace('-', '−'),
           NumberStyles.AllowDecimalPoint |
           NumberStyles.AllowLeadingSign |
           NumberStyles.AllowLeadingWhite |
