@@ -367,7 +367,7 @@ class BurnEditor : ScalingRenderer {
     // the solar system (that second criterion would be satisfied at 0.1 nm/s,
     // but the first would not).
     int fractional_digits =
-        Math.Max(0, Math.Min((int)Math.Floor(-Math.Log10(dv)), 10));
+        Math.Max(0, Math.Min((int)Math.Floor(-Math.Log10(dv)), 9));
     string unsigned_format = "00,000." + new string('0', fractional_digits);
     return Regex.Replace(
         Regex.Replace(
