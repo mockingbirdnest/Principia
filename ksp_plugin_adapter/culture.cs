@@ -9,7 +9,13 @@ internal static class Culture {
     // conventions from a copy of the invariant culture.
     culture = new CultureInfo(""){
         NumberFormat = {
-            NumberGroupSeparator = "'", PositiveInfinitySymbol = "+∞"
+            NumberGroupSeparator = "'",
+            PositiveInfinitySymbol = "+∞",
+            NegativeInfinitySymbol = "−∞",
+            // We use U+2212 MINUS SIGN rather than U+002D HYPHEN-MINUS; in
+            // particular we rely on MINUS SIGN having the same width as
+            // U+002B PLUS SIGN.
+            NegativeSign = "−"
         }
     };
   }

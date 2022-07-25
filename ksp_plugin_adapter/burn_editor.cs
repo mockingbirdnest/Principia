@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using KSP.Localization;
 
 namespace principia {
@@ -19,20 +20,32 @@ class BurnEditor : ScalingRenderer {
     Δv_tangent_ = new DifferentialSlider(
         label            : L10N.CacheFormat("#Principia_BurnEditor_ΔvTangent"),
         unit             : L10N.CacheFormat("#Principia_BurnEditor_SpeedUnit"),
+        min_value        : -max_Δv_component,
+        max_value        : max_Δv_component,
         log10_lower_rate : log10_Δv_lower_rate,
         log10_upper_rate : log10_Δv_upper_rate,
+        formatter        : FormatΔvComponent,
+        alignment        : UnityEngine.TextAnchor.MiddleLeft,
         text_colour      : Style.Tangent);
     Δv_normal_ = new DifferentialSlider(
         label            : L10N.CacheFormat("#Principia_BurnEditor_ΔvNormal"),
         unit             : L10N.CacheFormat("#Principia_BurnEditor_SpeedUnit"),
+        min_value        : -max_Δv_component,
+        max_value        : max_Δv_component,
         log10_lower_rate : log10_Δv_lower_rate,
         log10_upper_rate : log10_Δv_upper_rate,
+        formatter        : FormatΔvComponent,
+        alignment        : UnityEngine.TextAnchor.MiddleLeft,
         text_colour      : Style.Normal);
     Δv_binormal_ = new DifferentialSlider(
         label            : L10N.CacheFormat("#Principia_BurnEditor_ΔvBinormal"),
         unit             : L10N.CacheFormat("#Principia_BurnEditor_SpeedUnit"),
+        min_value        : -max_Δv_component,
+        max_value        : max_Δv_component,
         log10_lower_rate : log10_Δv_lower_rate,
         log10_upper_rate : log10_Δv_upper_rate,
+        formatter        : FormatΔvComponent,
+        alignment        : UnityEngine.TextAnchor.MiddleLeft,
         text_colour      : Style.Binormal);
     previous_coast_duration_ = new DifferentialSlider(
         label            : L10N.CacheFormat("#Principia_BurnEditor_InitialTime"),
@@ -76,7 +89,7 @@ class BurnEditor : ScalingRenderer {
     previous_coast_duration_.max_value = burn_final_time - time_base;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       if (UnityEngine.GUILayout.Button(
-              minimized ? "+" : "-", GUILayoutWidth(1))) {
+              minimized ? "+" : "−", GUILayoutWidth(1))) {
         minimized = !minimized;
         return minimized ? Event.Minimized : Event.Maximized;
       }
@@ -345,6 +358,34 @@ class BurnEditor : ScalingRenderer {
     }
   }
 
+  private string FormatΔvComponent(double metres_per_second) {
+    // The granularity of Instant in 1950.
+    double dt = 2.3841857910156250e-7;  // 2⁻²² s.
+    double initial_acceleration =
+        thrust_in_kilonewtons_ / initial_mass_in_tonnes_;
+    double Isp = specific_impulse_in_seconds_g0_ * 9.80665;
+    // Allow an increment in speed which, if applied to the norm of the
+    // velocity, will always result in a change in the duration of the
+    // integrated burn.
+    double dv = dt * Math.Exp(Δv() / Isp) * initial_acceleration;
+    // Allow no less than 1 nm/s to ensure that the number fits in the field,
+    // and that the increment remains representable at any reasonable speed in
+    // the solar system (that second criterion would be satisfied at 0.1 nm/s,
+    // but the first would not).
+    int fractional_digits =
+        Math.Max(0, Math.Min((int)Math.Floor(-Math.Log10(dv)), 9));
+    string unsigned_format = "00,000." + new string('0', fractional_digits);
+    return Regex.Replace(
+        Regex.Replace(
+        metres_per_second.ToString($"+{unsigned_format};−{unsigned_format}",
+                                   Culture.culture),
+        "^[+−][0']{1,5}",
+        match => match.Value.Replace('0', figure_space)),
+        // Add grouping marks to the fractional part.
+        @"\d{3}(?=\d)",
+        match => match.Value + "'");
+  }
+
   private void UseTheForceLuke() {
     // The burn can last at most (9.80665 / scale) s.
     const double scale = 1;
@@ -364,7 +405,9 @@ class BurnEditor : ScalingRenderer {
   internal string FormatPreviousCoastDuration(double seconds) {
     return new PrincipiaTimeSpan(seconds).FormatPositive(
         with_leading_zeroes: true,
-        with_seconds: true);
+        with_seconds: true,
+        iau_style: true,
+        fractional_second_digits: 6);
   }
 
   internal bool TryParsePreviousCoastDuration(string text, out double value) {
@@ -407,6 +450,7 @@ class BurnEditor : ScalingRenderer {
   private const double log10_Δv_upper_rate = 3.5;
   private const double log10_time_lower_rate = 0.0;
   private const double log10_time_upper_rate = 7.0;
+  private const double max_Δv_component = 99_999.999_999_999;
 
   // Not owned.
   private readonly Vessel vessel_;
@@ -418,6 +462,7 @@ class BurnEditor : ScalingRenderer {
   
   private static UnityEngine.Texture decrement_revolution;
   private static UnityEngine.Texture increment_revolution;
+  private const char figure_space = '\u2007';
 }
 
 }  // namespace ksp_plugin_adapter
