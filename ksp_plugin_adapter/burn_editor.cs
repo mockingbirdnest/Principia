@@ -181,7 +181,7 @@ class BurnEditor : ScalingRenderer {
                           "#Principia_BurnEditor_DecrementRevolution") +
                       "\n(" + new PrincipiaTimeSpan(-period).Format(
                           with_leading_zeroes: false,
-                          with_seconds: true) + ")"),
+                          with_seconds: false) + ")"),
                   GUILayoutWidth(1))) {
             changed = true;
             initial_time_ -= period;
