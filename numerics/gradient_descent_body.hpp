@@ -9,6 +9,7 @@
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "mathematica/mathematica.hpp"
+#include "numerics/hermite3.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -39,7 +40,7 @@ using InverseHessian =
 
 constexpr double c₁ = 1e-4;
 constexpr double c₂ = 0.9;
-constexpr double α_max = 1e3;
+constexpr double α_max = 1e9;
 
 template<typename Scalar, typename Frame>
 double Zoom(double α_lo,
@@ -80,6 +81,7 @@ double LineSearch(Position<Frame> const& x,
   double αᵢ₋₁ = 0;  // α₀.
   double αᵢ = 1;    // α₁.
   Scalar ϕ_αᵢ₋₁ = ϕ_0;
+  Scalar ϕʹ_αᵢ₋₁ = ϕʹ_0;
   while (αᵢ < α_max) {
     auto const ϕ_αᵢ = f(x + αᵢ * p);
     // For i = 1 the second condition implies the first, so it has no effect on
@@ -95,9 +97,25 @@ double LineSearch(Position<Frame> const& x,
       return Zoom(αᵢ, αᵢ₋₁, ϕ_0, ϕʹ_0, x, p, f, grad_f);
     }
 
+    // Cubic interpolation.
+    Hermite3<double, Scalar> const hermite3(
+        {αᵢ₋₁, αᵢ}, {ϕ_αᵢ₋₁, ϕ_αᵢ}, {ϕʹ_αᵢ₋₁, ϕʹ_αᵢ});
+
     αᵢ₋₁ = αᵢ;
     ϕ_αᵢ₋₁ = ϕ_αᵢ;
-    αᵢ = αᵢ * 2;  ////
+    ϕʹ_αᵢ₋₁ = ϕʹ_αᵢ;
+
+    auto const extrema = hermite3.FindExtrema();
+    if (extrema.empty() || extrema.back() <= αᵢ) {
+      αᵢ *= 2;
+    } else {
+      for (double const extremum : extrema) {
+        if (extremum > αᵢ) {
+          αᵢ = extremum;
+          break;
+        }
+      }
+    }
   }
   return αᵢ;
 }
