@@ -22,45 +22,53 @@ using geometry::Normalize;
 using geometry::R3x3Matrix;
 using geometry::SymmetricBilinearForm;
 using geometry::SymmetricProduct;
+using quantities::Abs;
 using quantities::Quotient;
 using quantities::Square;
 using quantities::si::Kilo;
 using quantities::si::Metre;
 namespace si = quantities::si;
 
-// The type of Dₖ, which approximates the inverse of the Hessian.
+// The type of Hₖ, which approximates the inverse of the Hessian.
 template<typename Scalar, typename Frame>
 using InverseHessian =
     SymmetricBilinearForm<Quotient<Square<Length>, Scalar>, Frame, Vector>;
 
-constexpr Length initial_step_size = 1 * Metre;//Kilo(Metre);
-
-// Parameters for the Armijo rule.
-constexpr double s = 1;
-constexpr double β = 0.5;
-constexpr double σ = 1e-3;
-
-template<typename Scalar, typename Frame>
-double ArmijoRule(Position<Frame> const& xₖ,
-                  Displacement<Frame> const& dₖ,
-                  Gradient<Scalar, Frame> const& grad_f_xₖ,
-                  Field<Scalar, Frame> const& f) {
-  Scalar const f_xₖ = f(xₖ);
-  Scalar const threshold =  -σ * InnerProduct(grad_f_xₖ, dₖ);
-  CHECK_LT(Scalar{}, threshold)
-      << "Encountered a Hessian that is not positive definite "
-      << "xₖ = " << xₖ << ", dₖ = " << dₖ << " , grad_f_xₖ = " << grad_f_xₖ;
-  for (double βᵐs = s;; βᵐs *= β) {
-    if (f_xₖ - f(xₖ + βᵐs * dₖ) >= βᵐs * threshold) {
-      LOG(ERROR)<<βᵐs;
-      return βᵐs;
-    }
-  }
-}
+// The line search follows [NW06], algorithms 3.5 and 3.6, which guarantee that
+// the chosen step obeys the strong Wolfe conditions.
 
 constexpr double c₁ = 1e-4;
 constexpr double c₂ = 0.9;
 constexpr double α_max = 1e3;
+
+template<typename Scalar, typename Frame>
+double Zoom(double α_lo,
+            double α_hi,
+            Scalar const& ϕ_0,
+            Scalar const& ϕʹ_0,
+            Position<Frame> const& x,
+            Displacement<Frame> const& p,
+            Field<Scalar, Frame> const& f,
+            Field<Gradient<Scalar, Frame>, Frame> const& grad_f) {
+  auto ϕ_α_lo = f(x + α_lo * p);
+  for (;;) {
+    auto αⱼ = (α_lo + α_hi) / 2;  ////
+    auto const ϕ_αⱼ = f(x + αⱼ * p);
+    if (ϕ_αⱼ > ϕ_0 + c₁ * αⱼ * ϕʹ_0 || ϕ_αⱼ >= ϕ_α_lo) {
+      α_hi = αⱼ;
+    } else {
+      auto const ϕʹ_αⱼ = InnerProduct(grad_f(x + αⱼ * p), p);
+      if (Abs(ϕʹ_αⱼ) <= -c₂ * ϕʹ_0) {
+        return αⱼ;
+      }
+      if (ϕʹ_αⱼ * (α_hi - α_lo) >= Scalar{}) {
+        α_hi = α_lo;
+      }
+      α_lo = αⱼ;
+      ϕ_α_lo = ϕ_αⱼ;
+    }
+  }
+}
 
 template<typename Scalar, typename Frame>
 double LineSearch(Position<Frame> const& x,
@@ -70,28 +78,31 @@ double LineSearch(Position<Frame> const& x,
   auto const ϕ_0 = f(x);
   auto const ϕʹ_0 = InnerProduct(grad_f(x), p);
   double αᵢ₋₁ = 0;  // α₀.
-  double αᵢ = 1;    // α₁
-  std::optional<Scalar> ϕ_αᵢ₋₁;
+  double αᵢ = 1;    // α₁.
+  Scalar ϕ_αᵢ₋₁ = ϕ_0;
   while (αᵢ < α_max) {
     auto const ϕ_αᵢ = f(x + αᵢ * p);
-    if (ϕ_αᵢ > ϕ_0 + c₁ * αᵢ * ϕʹ_0 ||
-        (ϕ_αᵢ₋₁.has_value() && ϕ_αᵢ >= ϕ_αᵢ₋₁.value())) {
-      return Zoom(αᵢ₋₁, αᵢ);
+    // For i = 1 the second condition implies the first, so it has no effect on
+    // the disjuntion (thus, the test on i in [NW06] is unnecessary).
+    if (ϕ_αᵢ > ϕ_0 + c₁ * αᵢ * ϕʹ_0 || ϕ_αᵢ >= ϕ_αᵢ₋₁) {
+      return Zoom(αᵢ₋₁, αᵢ, ϕ_0, ϕʹ_0, x, p, f, grad_f);
     }
     auto const ϕʹ_αᵢ = InnerProduct(grad_f(x + αᵢ * p), p);
     if (Abs(ϕʹ_αᵢ) <= -c₂ * ϕʹ_0) {
       return αᵢ;
     }
-    if (ϕʹ_αᵢ >= 0) {
-      return Zoom(αᵢ, αᵢ₋₁);
+    if (ϕʹ_αᵢ >= Scalar{}) {
+      return Zoom(αᵢ, αᵢ₋₁, ϕ_0, ϕʹ_0, x, p, f, grad_f);
     }
 
     αᵢ₋₁ = αᵢ;
     ϕ_αᵢ₋₁ = ϕ_αᵢ;
     αᵢ = αᵢ * 2;  ////
   }
+  return αᵢ;
 }
 
+// The implementation of BFGS follows [NW06], algorithm 6.18.
 template<typename Scalar, typename Frame>
 Position<Frame> BroydenFletcherGoldfarbShanno(
     Position<Frame> const& start_position,
@@ -106,8 +117,14 @@ Position<Frame> BroydenFletcherGoldfarbShanno(
   // The first step uses vanilla steepest descent.
   auto const x₀ = start_position;
   auto const grad_f_x₀ = grad_f(x₀);
-  Displacement<Frame> const p₀ = -Normalize(grad_f_x₀) * initial_step_size;
-  double const α₀ = ArmijoRule(x₀, p₀, grad_f_x₀, f);
+
+  // We (ab)use the tolerance to determine the first step size.  The assumption
+  // is that, if the caller provides a reasonable value then (1) we won't miss
+  // "interesting features" of f; (2) the finite differences won't underflow or
+  // have other unpleasant properties.
+  Displacement<Frame> const p₀ = -Normalize(grad_f_x₀) * tolerance;
+
+  double const α₀ = LineSearch(x₀, p₀, f, grad_f);
   auto const x₁ = x₀+ α₀ * p₀;
 
   // Special computation of H₀ using eq. 6.20.
@@ -121,8 +138,6 @@ Position<Frame> BroydenFletcherGoldfarbShanno(
   auto grad_f_xₖ = grad_f_x₁;
   auto Hₖ = H₀;
   for (;;) {
-    LOG(ERROR)<<xₖ;
-    LOG(ERROR)<<Hₖ;
     logger.Append("grad",
                   std::tuple{xₖ, grad_f_xₖ},
                   mathematica::ExpressIn(quantities::si::Metre));
@@ -130,25 +145,15 @@ Position<Frame> BroydenFletcherGoldfarbShanno(
                   Hₖ,
                   mathematica::ExpressIn(quantities::si::Metre));
     Displacement<Frame> const pₖ = -Hₖ * grad_f_xₖ;
-    LOG(ERROR)<<InnerProduct(grad_f_xₖ, pₖ);
     if (pₖ.Norm() <= tolerance) {
       return xₖ;
     }
-    double αₖ = ArmijoRule(xₖ, pₖ, grad_f_xₖ, f);
-    Position<Frame> xₖ₊₁;
-    Gradient<Scalar, Frame> grad_f_xₖ₊₁;
-    do {
-      xₖ₊₁ = xₖ + αₖ * pₖ;
-      grad_f_xₖ₊₁ = grad_f(xₖ₊₁);
-      αₖ *= 1.1;
-    LOG(ERROR)<<xₖ₊₁;
-      LOG(ERROR)<<-InnerProduct(grad_f_xₖ₊₁, pₖ) <<" "<<
-             -0.9 * InnerProduct(grad_f_xₖ, pₖ);
-    } while (-InnerProduct(grad_f_xₖ₊₁, pₖ) >
-             -0.9 * InnerProduct(grad_f_xₖ, pₖ));
+    double const αₖ = LineSearch(xₖ, pₖ, f, grad_f);
+    auto const xₖ₊₁ = xₖ + αₖ * pₖ;
+    auto const grad_f_xₖ₊₁ = grad_f(xₖ₊₁);
     auto const sₖ = xₖ₊₁ - xₖ;
     auto const yₖ = grad_f_xₖ₊₁ - grad_f_xₖ;
-    // The formula (6.17) from [] is inconvenient because it uses external
+    // The formula (6.17) from [NW06] is inconvenient because it uses external
     // products.  Elementary transformations yield the formula below.
     auto const ρ = 1 / InnerProduct(sₖ, yₖ);
     auto const Hₖ₊₁ =
