@@ -187,7 +187,8 @@ class Vessel {
   // Blocks until the |t_min()| of the vessel is at or before |desired_t_min|.
   void WaitForReanimation(Instant const& desired_t_min) EXCLUDES(lock_);
 
-  // Creates a |flight_plan_| at the end of history using the given parameters.
+  // Creates a flight plan at the end of history using the given parameters;
+  // selects that flight plan, which is the last one in |flight_plans_|.
   virtual void CreateFlightPlan(
       Instant const& final_time,
       Mass const& initial_mass,
@@ -205,7 +206,8 @@ class Vessel {
   // serialized.
   virtual void DuplicateFlightPlan();
 
-  // Deletes the |flight_plan_|.  Performs no action unless |has_flight_plan()|.
+  // Deletes the currently selected flight plan.  Performs no action unless
+  // |has_flight_plan()|.
   virtual void DeleteFlightPlan();
 
   // Requires |has_flight_plan()|.

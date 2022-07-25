@@ -530,17 +530,19 @@ absl::Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
           ? new_initial_time + (original_flight_plan->desired_final_time() -
                                 original_flight_plan->initial_time())
           : original_flight_plan->desired_final_time();
-  CreateFlightPlan(
-      new_desired_final_time,
+  flight_plan = make_not_null_unique<FlightPlan>(
       initial_mass,
+      /*initial_time=*/new_initial_time,
+      /*initial_degrees_of_freedom=*/backstory_->back().degrees_of_freedom,
+      new_desired_final_time,
+      ephemeris_,
       original_flight_plan->adaptive_step_parameters(),
       original_flight_plan->generalized_adaptive_step_parameters());
   for (int i = first_manœuvre_kept;
        i < original_flight_plan->number_of_manœuvres();
        ++i) {
     auto const& manœuvre = original_flight_plan->GetManœuvre(i);
-    flight_plan->Insert(manœuvre.burn(), i - first_manœuvre_kept)
-        .IgnoreError();
+    flight_plan->Insert(manœuvre.burn(), i - first_manœuvre_kept).IgnoreError();
   }
   return absl::OkStatus();
 }

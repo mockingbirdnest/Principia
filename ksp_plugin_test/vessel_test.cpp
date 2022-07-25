@@ -390,24 +390,51 @@ TEST_F(VesselTest, FlightPlan) {
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 2 * Second, _, _))
       .Times(AnyNumber());
+  EXPECT_CALL(ephemeris_,
+              FlowWithAdaptiveStep(_, _, t0_ + 3 * Second, _, _))
+      .Times(AnyNumber());
   std::vector<not_null<MassiveBody const*>> const bodies;
   ON_CALL(ephemeris_, bodies()).WillByDefault(ReturnRef(bodies));
   vessel_.CreateTrajectoryIfNeeded(t0_);
 
   EXPECT_FALSE(vessel_.has_flight_plan());
-  EXPECT_CALL(
-      ephemeris_,
-      FlowWithAdaptiveStep(_, _, t0_ + 3 * Second, _, _))
-      .WillOnce(Return(absl::OkStatus()));
   vessel_.CreateFlightPlan(t0_ + 3.0 * Second,
                            10 * Kilogram,
                            DefaultPredictionParameters(),
                            DefaultBurnParameters());
   EXPECT_TRUE(vessel_.has_flight_plan());
+  EXPECT_EQ(1, vessel_.flight_plan_count());
+  EXPECT_EQ(0, vessel_.selected_flight_plan_index());
   EXPECT_EQ(0, vessel_.flight_plan().number_of_manœuvres());
   EXPECT_EQ(1, vessel_.flight_plan().number_of_segments());
+  FlightPlan* p1 = &vessel_.flight_plan();
+  vessel_.RebaseFlightPlan(5 * Kilogram);
+  EXPECT_NE(p1, &vessel_.flight_plan());
+  p1 = &vessel_.flight_plan();
+  EXPECT_EQ(1, vessel_.flight_plan_count());
+  EXPECT_EQ(0, vessel_.selected_flight_plan_index());
+  vessel_.CreateFlightPlan(t0_ + 3.0 * Second,
+                           10 * Kilogram,
+                           DefaultPredictionParameters(),
+                           DefaultBurnParameters());
+  EXPECT_EQ(2, vessel_.flight_plan_count());
+  EXPECT_EQ(1, vessel_.selected_flight_plan_index());
+  FlightPlan* p2 = &vessel_.flight_plan();
+  EXPECT_NE(p1, p2);
+  vessel_.SelectFlightPlan(0);
+  EXPECT_EQ(p1, &vessel_.flight_plan());
+  vessel_.DuplicateFlightPlan();
+  EXPECT_EQ(3, vessel_.flight_plan_count());
+  EXPECT_EQ(1, vessel_.selected_flight_plan_index());
+  EXPECT_EQ(p1, &vessel_.flight_plan());
+  vessel_.DeleteFlightPlan();
+  EXPECT_EQ(p2, &vessel_.flight_plan());
+  vessel_.DeleteFlightPlan();
+  EXPECT_EQ(1, vessel_.flight_plan_count());
+  EXPECT_EQ(0, vessel_.selected_flight_plan_index());
   vessel_.DeleteFlightPlan();
   EXPECT_FALSE(vessel_.has_flight_plan());
+  EXPECT_EQ(0, vessel_.flight_plan_count());
 }
 
 TEST_F(VesselTest, IsCollapsible) {
