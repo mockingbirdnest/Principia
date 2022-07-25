@@ -183,6 +183,13 @@ Status* __cdecl principia__FlightPlanInsert(Plugin const* const plugin,
                       .Insert(FromInterfaceBurn(*plugin, burn), index)));
 }
 
+int __cdecl principia__FlightPlanCount(Plugin const* const plugin,
+                                       char const* const vessel_guid) {
+  journal::Method<journal::FlightPlanCount> m({plugin, vessel_guid});
+  CHECK_NOTNULL(plugin);
+  return m.Return(plugin->GetVessel(vessel_guid)->flight_plan_count());
+}
+
 void __cdecl principia__FlightPlanCreate(Plugin const* const plugin,
                                          char const* const vessel_guid,
                                          double const final_time,
@@ -203,6 +210,14 @@ void __cdecl principia__FlightPlanDelete(Plugin const* const plugin,
   journal::Method<journal::FlightPlanDelete> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
   plugin->GetVessel(vessel_guid)->DeleteFlightPlan();
+  return m.Return();
+}
+
+void __cdecl principia__FlightPlanDuplicate(Plugin const* const plugin,
+                                            char const* const vessel_guid) {
+  journal::Method<journal::FlightPlanDuplicate> m({plugin, vessel_guid});
+  CHECK_NOTNULL(plugin);
+  plugin->GetVessel(vessel_guid)->DuplicateFlightPlan();
   return m.Return();
 }
 
@@ -522,6 +537,22 @@ Status* __cdecl principia__FlightPlanReplace(Plugin const* const plugin,
   return m.Return(
       ToNewStatus(GetFlightPlan(*plugin, vessel_guid)
                       .Replace(FromInterfaceBurn(*plugin, burn), index)));
+}
+
+void __cdecl principia__FlightPlanSelect(Plugin const* const plugin,
+                                         char const* const vessel_guid,
+                                         int const index) {
+  journal::Method<journal::FlightPlanSelect> m({plugin, vessel_guid, index});
+  CHECK_NOTNULL(plugin);
+  plugin->GetVessel(vessel_guid)->SelectFlightPlan(index);
+  return m.Return();
+}
+
+int __cdecl principia__FlightPlanSelected(Plugin const* const plugin,
+                                          char const* const vessel_guid) {
+  journal::Method<journal::FlightPlanSelected> m({plugin, vessel_guid});
+  CHECK_NOTNULL(plugin);
+  return m.Return(plugin->GetVessel(vessel_guid)->selected_flight_plan_index());
 }
 
 Status* __cdecl principia__FlightPlanSetAdaptiveStepParameters(
