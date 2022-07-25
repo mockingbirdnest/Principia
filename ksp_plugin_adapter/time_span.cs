@@ -132,7 +132,7 @@ class PrincipiaTimeSpan {
         (?:(?<seconds>[0-9.,']+)\s*[sˢ]\s*|
            (?<integer_seconds>[0-9']+)[sˢ][.,]
                 (?<fractional_seconds>[0-9']+))?$",
-    RegexOptions.IgnorePatternWhitespace);
+        RegexOptions.IgnorePatternWhitespace);
     regex = new Regex(
         regex.ToString().Replace("{day_symbol}", day_symbol)
                         .Replace("{short_day_symbol}", short_day_symbol),

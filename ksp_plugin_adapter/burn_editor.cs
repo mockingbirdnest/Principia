@@ -362,7 +362,7 @@ class BurnEditor : ScalingRenderer {
     // velocity, will always result in a change in the duration of the
     // integrated burn.
     double dv = dt * Math.Exp(Δv() / Isp) * initial_acceleration;
-    // Allow no more than 1 nm/s to ensure that the number fits in the field,
+    // Allow no less than 1 nm/s to ensure that the number fits in the field,
     // and that the increment remains representable at any reasonable speed in
     // the solar system (that second criterion would be satisfied at 0.1 nm/s,
     // but the first would not).
