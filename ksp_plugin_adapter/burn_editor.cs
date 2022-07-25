@@ -191,7 +191,10 @@ class BurnEditor : ScalingRenderer {
                   new UnityEngine.GUIContent(
                       decrement_revolution,
                       L10N.CacheFormat(
-                          "#Principia_BurnEditor_DecrementRevolution")),
+                          "#Principia_BurnEditor_DecrementRevolution") +
+                      "\n(" + new PrincipiaTimeSpan(-period).Format(
+                          with_leading_zeroes: false,
+                          with_seconds: false) + ")"),
                   GUILayoutWidth(1))) {
             changed = true;
             initial_time_ -= period;
@@ -201,7 +204,10 @@ class BurnEditor : ScalingRenderer {
                   new UnityEngine.GUIContent(
                       increment_revolution,
                       L10N.CacheFormat(
-                          "#Principia_BurnEditor_IncrementRevolution")),
+                          "#Principia_BurnEditor_IncrementRevolution") +
+                      "\n(" + new PrincipiaTimeSpan(+period).Format(
+                          with_leading_zeroes: false,
+                          with_seconds: false) + ")"),
                   GUILayoutWidth(1))) {
             changed = true;
             initial_time_ += period;
