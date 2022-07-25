@@ -286,15 +286,18 @@ internal class MapNodePool {
         }
       }
       if (properties.object_type != MapObject.ObjectType.PatchTransition) {
-        // The font used by map nodes does not support the minus sign, so we
-        // fall back to the hyphen-minus.
         caption.captionLine1 =
             "T" + new PrincipiaTimeSpan(
                     Planetarium.GetUniversalTime() - properties.time).
-                Format(with_leading_zeroes: false, with_seconds: true)
-                .Replace(Culture.culture.NumberFormat.NegativeSign,
-                         "-");
+                Format(with_leading_zeroes: false, with_seconds: true);
       }
+      // The font used by map nodes does not support the minus sign, so we
+      // fall back to the hyphen-minus.
+      string minus = Culture.culture.NumberFormat.NegativeSign;
+      caption.Header = caption.Header?.Replace(minus, "-");
+      caption.captionLine1 = caption.captionLine1?.Replace(minus, "-");
+      caption.captionLine2 = caption.captionLine2?.Replace(minus, "-");
+      caption.captionLine3 = caption.captionLine3?.Replace(minus, "-");
     };
     new_node.OnUpdatePosition += (KSP.UI.Screens.Mapview.MapNode node) =>
         ScaledSpace.LocalToScaledSpace(properties_[node].world_position);
