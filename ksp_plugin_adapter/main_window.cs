@@ -7,10 +7,10 @@ namespace ksp_plugin_adapter {
 
 internal class MainWindow : VesselSupervisedWindowRenderer {
   // Update this section before each release.
-  private const string next_release_name = "Hilbert";
-  private const int next_release_lunation_number = 279;
+  private const string next_release_name = "Ἵππαρχος";
+  private const int next_release_lunation_number = 280;
   private readonly DateTimeOffset next_release_date_ =
-      new DateTimeOffset(2022, 07, 28, 17, 54, 00, TimeSpan.Zero);
+      new DateTimeOffset(2022, 08, 27, 08, 16, 00, TimeSpan.Zero);
 
   public MainWindow(PrincipiaPluginAdapter adapter,
                     FlightPlanner flight_planner,
@@ -45,7 +45,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
       PlanetariumCamera.fetch.SetTarget(map_object);
     }
   }
-  
+
   public bool show_only_pinned_markers { get; private set; } = false;
   public bool show_only_pinned_celestials { get; private set; } = false;
 
