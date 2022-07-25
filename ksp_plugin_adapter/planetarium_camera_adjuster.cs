@@ -19,15 +19,12 @@ public class PlanetariumCameraAdjuster : UnityEngine.MonoBehaviour {
     if (!adapter.PluginRunning() || FlightDriver.Pause) {
       return;
     }
-    const double degree = Math.PI / 180;
     var reference_rotation =
         (UnityEngine.QuaternionD)adapter.Plugin().CameraReferenceRotation();
-    var camera_roll = UnityEngine.QuaternionD.AngleAxis(camera_roll_ / degree,
-      Vector3d.forward);
     if (should_transfer_camera_coordinates) {
       UnityEngine.QuaternionD previous_referenced_pivot =
           previous_camera_reference_rotation_ *
-          (UnityEngine.QuaternionD)PlanetariumCamera.fetch.GetPivot().rotation *
+          last_fresh_planetarium_camera_rotation_ *
           camera_roll;
       // Note that we use a single-precision quaternion here because the
       // double-precision one that comes with KSP does not implement Euler
@@ -53,11 +50,16 @@ public class PlanetariumCameraAdjuster : UnityEngine.MonoBehaviour {
       }
       PlanetariumCamera.fetch.camHdg = (float)new_heading;
       PlanetariumCamera.fetch.camPitch = (float)new_pitch;
-      // Use the old reference rotation for this frame: since the change to
-      // camera heading and pitch has yet to take effect, the new one would
-      // result in a weird orientation for one frame.  Similarly, we keep the
-      // existing |camera_roll|.
-      reference_rotation = previous_camera_reference_rotation_;
+      // The next LateUpdate would set the pivot rotation from the camera
+      // heading and pitch fields, but it would still be wrong for one frame
+      // when we adjust it below, and it would not happen when the camera
+      // controls are locked—which they most likely are.  Do it ourselves.
+      PlanetariumCamera.fetch.GetPivot().rotation =
+          UnityEngine.Quaternion.Euler(new_dereferenced_pivot.eulerAngles.x,
+                                       new_dereferenced_pivot.eulerAngles.y,
+                                       0);
+      last_fresh_planetarium_camera_rotation_ =
+          PlanetariumCamera.fetch.GetPivot().rotation;
       should_transfer_camera_coordinates = false;
     }
     previous_camera_reference_rotation_ = reference_rotation;
@@ -108,6 +110,10 @@ public class PlanetariumCameraAdjuster : UnityEngine.MonoBehaviour {
   // preserve continuity of orientation, and gradually brought down to 0 so that
   // the camera is horizontal in the new reference frame.
   private double camera_roll_ = 0;
+
+  private const double degree = Math.PI / 180;
+  private UnityEngine.QuaternionD camera_roll =>
+      UnityEngine.QuaternionD.AngleAxis(camera_roll_ / degree, Vector3d.forward);
 
   public PrincipiaPluginAdapter adapter { private get; set; }
 }
