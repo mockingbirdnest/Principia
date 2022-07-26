@@ -124,13 +124,7 @@ class BurnEditor : ScalingRenderer {
         changed = true;
         engine_warning_ = "";
         ComputeEngineCharacteristics();
-        // Ensure that the number of digits used in formatting is consistent
-        // with the previously set Δv values, the initial mass, and the newly
-        // set engine characteristics, otherwise the change in the number of
-        // significant figures will be interpreted as input.
-        Δv_tangent_.value = Δv_tangent_.value;
-        Δv_normal_.value = Δv_normal_.value;
-        Δv_binormal_.value = Δv_binormal_.value;
+        ReformatΔv();
       }
 
       // The frame selector is disabled for an anomalous manœuvre as is has no
@@ -143,16 +137,19 @@ class BurnEditor : ScalingRenderer {
               L10N.CacheFormat("#Principia_BurnEditor_ActiveEngines"))) {
             engine_warning_ = "";
             ComputeEngineCharacteristics();
+            ReformatΔv();
             changed = true;
           } else if (UnityEngine.GUILayout.Button(
               L10N.CacheFormat("#Principia_BurnEditor_ActiveRCS"))) {
             engine_warning_ = "";
             ComputeRCSCharacteristics();
+            ReformatΔv();
             changed = true;
           } else if (UnityEngine.GUILayout.Button(
               L10N.CacheFormat("#Principia_BurnEditor_InstantImpulse"))) {
             engine_warning_ = "";
             UseTheForceLuke();
+            ReformatΔv();
             changed = true;
           }
         }
@@ -258,6 +255,16 @@ class BurnEditor : ScalingRenderer {
     }.magnitude;
   }
 
+  private void ReformatΔv() { 
+    // Ensure that the number of digits used in formatting is consistent with
+    // the current Δv values, initial mass, and engine characteristics,
+    // otherwise the change in the number of significant figures will be
+    // interpreted as input.
+    Δv_tangent_.value = Δv_tangent_.value;
+    Δv_normal_.value = Δv_normal_.value;
+    Δv_binormal_.value = Δv_binormal_.value;
+  }
+
   public void Reset(NavigationManoeuvre manœuvre) {
     Burn burn = manœuvre.burn;
     Δv_tangent_.value = burn.delta_v.x;
@@ -268,6 +275,7 @@ class BurnEditor : ScalingRenderer {
     is_inertially_fixed_ = burn.is_inertially_fixed;
     duration_ = manœuvre.duration;
     initial_mass_in_tonnes_ = manœuvre.initial_mass_in_tonnes;
+    ReformatΔv();
   }
 
   public Burn Burn() {
