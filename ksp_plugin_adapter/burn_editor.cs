@@ -124,6 +124,13 @@ class BurnEditor : ScalingRenderer {
         changed = true;
         engine_warning_ = "";
         ComputeEngineCharacteristics();
+        // Ensure that the number of digits used in formatting is consistent
+        // with the previously set Δv values, the initial mass, and the newly
+        // set engine characteristics, otherwise the change in the number of
+        // significant figures will be interpreted as input.
+        Δv_tangent_.value = Δv_tangent_.value;
+        Δv_normal_.value = Δv_normal_.value;
+        Δv_binormal_.value = Δv_binormal_.value;
       }
 
       // The frame selector is disabled for an anomalous manœuvre as is has no
