@@ -9,7 +9,7 @@
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "mathematica/mathematica.hpp"
-#include "numerics/hermite3.hpp"
+#include "numerics/hermite2.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -40,23 +40,39 @@ using InverseHessian =
 
 constexpr double c₁ = 1e-4;
 constexpr double c₂ = 0.9;
-constexpr double α_max = 1e9;
+constexpr double α_multiplier = 2;
 
 template<typename Scalar, typename Frame>
 double Zoom(double α_lo,
             double α_hi,
+            Scalar ϕ_α_lo,
+            Scalar ϕ_α_hi,
+            Scalar ϕʹ_α_lo,
             Scalar const& ϕ_0,
             Scalar const& ϕʹ_0,
             Position<Frame> const& x,
             Displacement<Frame> const& p,
             Field<Scalar, Frame> const& f,
             Field<Gradient<Scalar, Frame>, Frame> const& grad_f) {
-  auto ϕ_α_lo = f(x + α_lo * p);
   for (;;) {
-    auto αⱼ = (α_lo + α_hi) / 2;  ////
+    double αⱼ;
+    {
+      // Quadratic interpolation.
+      Hermite2<Scalar, double> const hermite2(
+          {α_lo, α_hi}, {ϕ_α_lo, ϕ_α_hi}, ϕʹ_α_lo);
+      auto const α_extremum = hermite2.FindExtremum();
+      if (α_lo < α_extremum && α_extremum < α_hi) {
+        αⱼ = α_extremum;
+      } else {
+        // Fall back to bisection.
+        αⱼ = (α_lo + α_hi) / 2;
+      }
+    }
+
     auto const ϕ_αⱼ = f(x + αⱼ * p);
     if (ϕ_αⱼ > ϕ_0 + c₁ * αⱼ * ϕʹ_0 || ϕ_αⱼ >= ϕ_α_lo) {
       α_hi = αⱼ;
+      ϕ_α_hi = ϕ_αⱼ;
     } else {
       auto const ϕʹ_αⱼ = InnerProduct(grad_f(x + αⱼ * p), p);
       if (Abs(ϕʹ_αⱼ) <= -c₂ * ϕʹ_0) {
@@ -64,9 +80,11 @@ double Zoom(double α_lo,
       }
       if (ϕʹ_αⱼ * (α_hi - α_lo) >= Scalar{}) {
         α_hi = α_lo;
+        ϕ_α_hi = ϕ_α_lo;
       }
       α_lo = αⱼ;
       ϕ_α_lo = ϕ_αⱼ;
+      ϕʹ_α_lo = ϕʹ_αⱼ;
     }
   }
 }
@@ -82,40 +100,32 @@ double LineSearch(Position<Frame> const& x,
   double αᵢ = 1;    // α₁.
   Scalar ϕ_αᵢ₋₁ = ϕ_0;
   Scalar ϕʹ_αᵢ₋₁ = ϕʹ_0;
-  while (αᵢ < α_max) {
+  for (;;) {
     auto const ϕ_αᵢ = f(x + αᵢ * p);
     // For i = 1 the second condition implies the first, so it has no effect on
     // the disjuntion (thus, the test on i in [NW06] is unnecessary).
     if (ϕ_αᵢ > ϕ_0 + c₁ * αᵢ * ϕʹ_0 || ϕ_αᵢ >= ϕ_αᵢ₋₁) {
-      return Zoom(αᵢ₋₁, αᵢ, ϕ_0, ϕʹ_0, x, p, f, grad_f);
+      return Zoom(αᵢ₋₁, αᵢ,
+                  ϕ_αᵢ₋₁, ϕ_αᵢ,
+                  ϕʹ_αᵢ₋₁,
+                  ϕ_0, ϕʹ_0,
+                  x, p, f, grad_f);
     }
     auto const ϕʹ_αᵢ = InnerProduct(grad_f(x + αᵢ * p), p);
     if (Abs(ϕʹ_αᵢ) <= -c₂ * ϕʹ_0) {
       return αᵢ;
     }
     if (ϕʹ_αᵢ >= Scalar{}) {
-      return Zoom(αᵢ, αᵢ₋₁, ϕ_0, ϕʹ_0, x, p, f, grad_f);
+      return Zoom(αᵢ, αᵢ₋₁,
+                  ϕ_αᵢ, ϕ_αᵢ₋₁,
+                  ϕʹ_αᵢ,
+                  ϕ_0, ϕʹ_0,
+                  x, p, f, grad_f);
     }
 
-    // Cubic interpolation.
-    Hermite3<double, Scalar> const hermite3(
-        {αᵢ₋₁, αᵢ}, {ϕ_αᵢ₋₁, ϕ_αᵢ}, {ϕʹ_αᵢ₋₁, ϕʹ_αᵢ});
-
-    αᵢ₋₁ = αᵢ;
-    ϕ_αᵢ₋₁ = ϕ_αᵢ;
-    ϕʹ_αᵢ₋₁ = ϕʹ_αᵢ;
-
-    auto const extrema = hermite3.FindExtrema();
-    if (extrema.empty() || extrema.back() <= αᵢ) {
-      αᵢ *= 2;
-    } else {
-      for (double const extremum : extrema) {
-        if (extremum > αᵢ) {
-          αᵢ = extremum;
-          break;
-        }
-      }
-    }
+    // We don't have a maximum value of α so we blindly increase it until the
+    // conditions are met.
+    αᵢ *= α_multiplier;
   }
   return αᵢ;
 }
