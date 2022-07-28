@@ -215,6 +215,12 @@
     <ClInclude Include="gradient_descent_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="hermite2.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hermite2_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">
@@ -329,6 +335,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="gradient_descent.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hermite2_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

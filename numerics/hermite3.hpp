@@ -56,6 +56,8 @@ class Hermite3 final {
   using Derivative3 = Derivative<Derivative2, Argument>;
 
   std::pair<Argument, Argument> const arguments_;
+
+  // The coefficients are relative to |argements.first|.
   Value a0_;
   Derivative1 a1_;
   Derivative2 a2_;

@@ -19,6 +19,8 @@
     <ClInclude Include="davenport_q_method_body.hpp" />
     <ClInclude Include="gradient_descent.hpp" />
     <ClInclude Include="gradient_descent_body.hpp" />
+    <ClInclude Include="hermite2.hpp" />
+    <ClInclude Include="hermite2_body.hpp" />
     <ClInclude Include="matrix_computations.hpp" />
     <ClInclude Include="matrix_computations_body.hpp" />
     <ClInclude Include="combinatorics.hpp" />
@@ -105,6 +107,7 @@
     <ClCompile Include="fma_test.cpp" />
     <ClCompile Include="frequency_analysis_test.cpp" />
     <ClCompile Include="gradient_descent.cpp" />
+    <ClCompile Include="hermite2_test.cpp" />
     <ClCompile Include="hermite3_test.cpp" />
     <ClCompile Include="legendre_test.cpp" />
     <ClCompile Include="matrix_computations_test.cpp" />
