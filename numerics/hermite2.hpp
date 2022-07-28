@@ -24,10 +24,12 @@ class Hermite2 final {
  public:
   using Derivative1 = Derivative<Value, Argument>;
 
-  // TODO(phl): Add support for providing the derivative at the upper bound.
+  // The derivative corresponds to the first argument.  Note that we don't
+  // require any ordering of the arguments, so this constructor is usable if the
+  // derivative is known at the upper bound of an interval.
   Hermite2(std::pair<Argument, Argument> arguments,
            std::pair<Value, Value> const& values,
-           Derivative1 const& derivative_lo);
+           Derivative1 const& derivative_first);
 
   Value Evaluate(Argument const& argument) const;
   Derivative1 EvaluateDerivative(Argument const& argument) const;
