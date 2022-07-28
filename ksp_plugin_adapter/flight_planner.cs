@@ -70,18 +70,55 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
       return;
     }
 
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      int flight_plans = plugin.FlightPlanCount(vessel_guid);
+      int selected_flight_plan = plugin.FlightPlanSelected(vessel_guid);
+      for (int i = 0; i < flight_plans; ++i) {
+        var id = new string(L10N.CacheFormat("#Principia_AlphabeticList")[i],
+                            1);
+        if (UnityEngine.GUILayout.Toggle(i == selected_flight_plan, id,
+                                         "Button",
+                                         GUILayoutWidth(1)) &&
+            i != selected_flight_plan) {
+          plugin.FlightPlanSelect(vessel_guid, i);
+          final_time_.value_if_different =
+              plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
+          ClearBurnEditors();
+          UpdateVesselAndBurnEditors();
+        }
+      }
+      bool must_create_flight_plan = false;
+      if (flight_plans == 0) {
+        must_create_flight_plan = UnityEngine.GUILayout.Button(
+            L10N.CacheFormat("#Principia_FlightPlan_Create"));
+      } else if (flight_plans < max_flight_plans) {
+        must_create_flight_plan = 
+            UnityEngine.GUILayout.Button("+", GUILayoutWidth(1));
+      }
+      if (must_create_flight_plan) {
+        plugin.FlightPlanCreate(vessel_guid,
+                                plugin.CurrentTime() + 3600,
+                                predicted_vessel.GetTotalMass());
+        final_time_.value_if_different =
+            plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
+        ClearBurnEditors();
+        UpdateVesselAndBurnEditors();
+        return;
+      }
+    }
+
     if (plugin.FlightPlanExists(vessel_guid)) {
       RenderFlightPlan(vessel_guid);
-    } else if (UnityEngine.GUILayout.Button(
-        L10N.CacheFormat("#Principia_FlightPlan_Create"))) {
-      plugin.FlightPlanCreate(vessel_guid,
-                              plugin.CurrentTime() + 3600,
-                              predicted_vessel.GetTotalMass());
-      final_time_.value_if_different =
-          plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
-      Shrink();
     }
     UnityEngine.GUI.DragWindow();
+  }
+
+  private void ClearBurnEditors() {
+    foreach (BurnEditor editor in burn_editors_) {
+      editor.Close();
+    }
+    burn_editors_ = null;
+    Shrink();
   }
 
   private void UpdateVesselAndBurnEditors() {
@@ -93,11 +130,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           plugin.FlightPlanNumberOfManoeuvres(vessel_guid) !=
           burn_editors_?.Count) {
         if (burn_editors_ != null) {
-          foreach (BurnEditor editor in burn_editors_) {
-            editor.Close();
-          }
-          burn_editors_ = null;
-          Shrink();
+          ClearBurnEditors();
         }
         previous_predicted_vessel_ = predicted_vessel;
       }
@@ -171,7 +204,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           if (parameters.max_steps <= 100) {
             UnityEngine.GUILayout.Button(
                 L10N.CacheFormat("#Principia_DiscreteSelector_Min"));
-          } else if (UnityEngine.GUILayout.Button("-")) {
+          } else if (UnityEngine.GUILayout.Button("−")) {
             parameters.max_steps /= factor;
             var status =
                 plugin.FlightPlanSetAdaptiveStepParameters(
@@ -200,7 +233,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           if (parameters.length_integration_tolerance <= 1e-6) {
             UnityEngine.GUILayout.Button(
                 L10N.CacheFormat("#Principia_DiscreteSelector_Min"));
-          } else if (UnityEngine.GUILayout.Button("-")) {
+          } else if (UnityEngine.GUILayout.Button("−")) {
             parameters.length_integration_tolerance /= 2;
             parameters.speed_integration_tolerance /= 2;
             var status =
@@ -263,19 +296,26 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         Shrink();
         // The state change will happen the next time we go through OnGUI.
       } else {
-        if (UnityEngine.GUILayout.Button(
-            L10N.CacheFormat("#Principia_FlightPlan_Rebase"))) {
-          var status = plugin.FlightPlanRebase(
-              vessel_guid,
-              predicted_vessel.GetTotalMass());
-          UpdateStatus(status, null);
-          if (status.ok()) {
-            // The final time does not change, but since it is displayed with
-            // respect to the beginning of the flight plan, the text must be
-            // recomputed.
-            final_time_.ResetValue(
-                plugin.FlightPlanGetDesiredFinalTime(vessel_guid));
-            return;
+        using (new UnityEngine.GUILayout.HorizontalScope()) {
+          if (UnityEngine.GUILayout.Button(
+              L10N.CacheFormat("#Principia_FlightPlan_Rebase"))) {
+            var status = plugin.FlightPlanRebase(
+                vessel_guid,
+                predicted_vessel.GetTotalMass());
+            UpdateStatus(status, null);
+            if (status.ok()) {
+              // The final time does not change, but since it is displayed with
+              // respect to the beginning of the flight plan, the text must be
+              // recomputed.
+              final_time_.ResetValue(
+                  plugin.FlightPlanGetDesiredFinalTime(vessel_guid));
+              return;
+            }
+          }
+          if (plugin.FlightPlanCount(vessel_guid) < max_flight_plans &&
+              UnityEngine.GUILayout.Button(
+              L10N.CacheFormat("#Principia_FlightPlan_Duplicate"))) {
+            plugin.FlightPlanDuplicate(vessel_guid);
           }
         }
 
@@ -294,7 +334,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
 
         for (int i = 0; i < burn_editors_.Count; ++i) {
           Style.HorizontalLine();
-          if (RenderCoast(i)) {
+          if (RenderCoast(i, out double? orbital_period)) {
             return;
           }
           Style.HorizontalLine();
@@ -305,7 +345,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
               anomalous       : i >=
                                 burn_editors_.Count -
                                 number_of_anomalous_manœuvres_,
-              burn_final_time : final_times[i])) {
+              burn_final_time : final_times[i],
+              orbital_period  : orbital_period)) {
             case BurnEditor.Event.Deleted: {
               var status = plugin.FlightPlanRemove(vessel_guid, i);
               UpdateStatus(status, null);
@@ -333,7 +374,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           }
         }
         Style.HorizontalLine();
-        if (RenderCoast(burn_editors_.Count)) {
+        if (RenderCoast(burn_editors_.Count, orbital_period: out _)) {
           return;
         }
       }
@@ -399,7 +440,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
     }
   }
 
-  private bool RenderCoast(int index) {
+  private bool RenderCoast(int index, out double? orbital_period) {
     string vessel_guid = predicted_vessel.id.ToString();
     var coast_analysis = plugin.FlightPlanGetCoastAnalysis(
         vessel_guid,
@@ -408,6 +449,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         ground_track_revolution : 0,
         index);
     string orbit_description = null;
+    orbital_period = coast_analysis.elements?.nodal_period;
     if (coast_analysis.primary_index.HasValue) {
       var primary = FlightGlobals.Bodies[coast_analysis.primary_index.Value];
       int? nodal_revolutions = (int?)(coast_analysis.mission_duration /
@@ -666,6 +708,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
 
   private const double log10_time_lower_rate = 0.0;
   private const double log10_time_upper_rate = 7.0;
+
+  private const int max_flight_plans = 10;
 }
 
 }  // namespace ksp_plugin_adapter

@@ -137,7 +137,8 @@ class Plotter {
         PlanetariumCamera.fetch.transform.position);
     double min_distance_from_camera =
         (root.position - camera_world_position).magnitude;
-    if (!adapter_.plotting_frame_selector_.FixesBody(root)) {
+    if (!adapter_.plotting_frame_selector_.FixesBody(root) &&
+        adapter_.show_celestial_trajectory(root)) {
       {
         planetarium.PlanetariumPlotCelestialPastTrajectory(
             Plugin,
@@ -171,8 +172,10 @@ class Plotter {
     foreach (CelestialBody child in root.orbitingBodies) {
       // Plot the trajectory of an orbiting body if it could be separated from
       // that of its parent by a pixel of empty space, instead of merely making
-      // the line wider.
-      if (child.orbit.ApR / min_distance_from_camera >
+      // the line wider; but always traverse the subtree if the current body is
+      // hidden.
+      if (!adapter_.show_celestial_trajectory(root) ||
+          child.orbit.ApR / min_distance_from_camera >
               2 * tan_angular_resolution) {
         PlotSubtreeTrajectories(planetarium, main_vessel_guid, history_length,
                                 child, tan_angular_resolution);

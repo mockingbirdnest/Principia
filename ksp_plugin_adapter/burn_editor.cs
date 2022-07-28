@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using KSP.Localization;
 
 namespace principia {
@@ -19,24 +20,35 @@ class BurnEditor : ScalingRenderer {
     Δv_tangent_ = new DifferentialSlider(
         label            : L10N.CacheFormat("#Principia_BurnEditor_ΔvTangent"),
         unit             : L10N.CacheFormat("#Principia_BurnEditor_SpeedUnit"),
+        min_value        : -max_Δv_component,
+        max_value        : max_Δv_component,
         log10_lower_rate : log10_Δv_lower_rate,
         log10_upper_rate : log10_Δv_upper_rate,
+        formatter        : FormatΔvComponent,
+        alignment        : UnityEngine.TextAnchor.MiddleLeft,
         text_colour      : Style.Tangent);
     Δv_normal_ = new DifferentialSlider(
         label            : L10N.CacheFormat("#Principia_BurnEditor_ΔvNormal"),
         unit             : L10N.CacheFormat("#Principia_BurnEditor_SpeedUnit"),
+        min_value        : -max_Δv_component,
+        max_value        : max_Δv_component,
         log10_lower_rate : log10_Δv_lower_rate,
         log10_upper_rate : log10_Δv_upper_rate,
+        formatter        : FormatΔvComponent,
+        alignment        : UnityEngine.TextAnchor.MiddleLeft,
         text_colour      : Style.Normal);
     Δv_binormal_ = new DifferentialSlider(
         label            : L10N.CacheFormat("#Principia_BurnEditor_ΔvBinormal"),
         unit             : L10N.CacheFormat("#Principia_BurnEditor_SpeedUnit"),
+        min_value        : -max_Δv_component,
+        max_value        : max_Δv_component,
         log10_lower_rate : log10_Δv_lower_rate,
         log10_upper_rate : log10_Δv_upper_rate,
+        formatter        : FormatΔvComponent,
+        alignment        : UnityEngine.TextAnchor.MiddleLeft,
         text_colour      : Style.Binormal);
     previous_coast_duration_ = new DifferentialSlider(
-        label            :
-            L10N.CacheFormat("#Principia_BurnEditor_InitialTime"),
+        label            : L10N.CacheFormat("#Principia_BurnEditor_InitialTime"),
         unit             : null,
         log10_lower_rate : log10_time_lower_rate,
         log10_upper_rate : log10_time_upper_rate,
@@ -68,12 +80,16 @@ class BurnEditor : ScalingRenderer {
 
   // Renders the |BurnEditor|.  Returns true if and only if the settings were
   // changed.
-  public Event Render(string header, bool anomalous, double burn_final_time) {
+  public Event Render(
+      string header,
+      bool anomalous,
+      double burn_final_time,
+      double? orbital_period) {
     bool changed = false;
     previous_coast_duration_.max_value = burn_final_time - time_base;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       if (UnityEngine.GUILayout.Button(
-              minimized ? "+" : "-", GUILayoutWidth(1))) {
+              minimized ? "+" : "−", GUILayoutWidth(1))) {
         minimized = !minimized;
         return minimized ? Event.Minimized : Event.Maximized;
       }
@@ -108,6 +124,7 @@ class BurnEditor : ScalingRenderer {
         changed = true;
         engine_warning_ = "";
         ComputeEngineCharacteristics();
+        ReformatΔv();
       }
 
       // The frame selector is disabled for an anomalous manœuvre as is has no
@@ -120,16 +137,19 @@ class BurnEditor : ScalingRenderer {
               L10N.CacheFormat("#Principia_BurnEditor_ActiveEngines"))) {
             engine_warning_ = "";
             ComputeEngineCharacteristics();
+            ReformatΔv();
             changed = true;
           } else if (UnityEngine.GUILayout.Button(
               L10N.CacheFormat("#Principia_BurnEditor_ActiveRCS"))) {
             engine_warning_ = "";
             ComputeRCSCharacteristics();
+            ReformatΔv();
             changed = true;
           } else if (UnityEngine.GUILayout.Button(
               L10N.CacheFormat("#Principia_BurnEditor_InstantImpulse"))) {
             engine_warning_ = "";
             UseTheForceLuke();
+            ReformatΔv();
             changed = true;
           }
         }
@@ -153,7 +173,6 @@ class BurnEditor : ScalingRenderer {
         var render_time_base = time_base;
         previous_coast_duration_.value_if_different =
             initial_time_ - render_time_base;
-
         // The duration of the previous coast is always enabled as it can make
         // a manœuvre non-anomalous.
         if (previous_coast_duration_.Render(enabled : true)) {
@@ -161,15 +180,57 @@ class BurnEditor : ScalingRenderer {
           initial_time_ = previous_coast_duration_.value + render_time_base;
         }
       }
-      UnityEngine.GUILayout.Label(
-          index == 0
-              ? L10N.CacheFormat(
-                  "#Principia_BurnEditor_TimeBase_StartOfFlightPlan")
-              : L10N.CacheFormat("#Principia_BurnEditor_TimeBase_EndOfManœuvre",
-                                 index),
-          style : new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label){
-              alignment = UnityEngine.TextAnchor.UpperLeft
-          });
+      using (new UnityEngine.GUILayout.HorizontalScope()) {
+        UnityEngine.GUILayout.Label("", GUILayoutWidth(3));
+        if (decrement_revolution == null) {
+          PrincipiaPluginAdapter.LoadTextureOrDie(out decrement_revolution,
+                                                  "decrement_revolution.png");
+        }
+        if (increment_revolution == null) {
+          PrincipiaPluginAdapter.LoadTextureOrDie(out increment_revolution,
+                                                  "increment_revolution.png");
+        }
+        if (orbital_period is double period) {
+          if (UnityEngine.GUILayout.Button(
+                  new UnityEngine.GUIContent(
+                      decrement_revolution,
+                      L10N.CacheFormat(
+                          "#Principia_BurnEditor_DecrementRevolution") +
+                      "\n(" + new PrincipiaTimeSpan(-period).Format(
+                          with_leading_zeroes: false,
+                          with_seconds: false) + ")"),
+                  GUILayoutWidth(1))) {
+            changed = true;
+            initial_time_ -= period;
+          }
+          UnityEngine.GUILayout.Space(Width(5));
+          if (UnityEngine.GUILayout.Button(
+                  new UnityEngine.GUIContent(
+                      increment_revolution,
+                      L10N.CacheFormat(
+                          "#Principia_BurnEditor_IncrementRevolution") +
+                      "\n(" + new PrincipiaTimeSpan(+period).Format(
+                          with_leading_zeroes: false,
+                          with_seconds: false) + ")"),
+                  GUILayoutWidth(1))) {
+            changed = true;
+            initial_time_ += period;
+          }
+        } else {
+          UnityEngine.GUILayout.Button("", GUILayoutWidth(1));
+          UnityEngine.GUILayout.Space(Width(5));
+          UnityEngine.GUILayout.Button("", GUILayoutWidth(1));
+        }
+        UnityEngine.GUILayout.Label(
+            index == 0
+                ? L10N.CacheFormat(
+                    "#Principia_BurnEditor_TimeBase_StartOfFlightPlan")
+                : L10N.CacheFormat("#Principia_BurnEditor_TimeBase_EndOfManœuvre",
+                                   index),
+            style : new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label){
+                alignment = UnityEngine.TextAnchor.UpperLeft
+            });
+      }
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         UnityEngine.GUILayout.Label(
             L10N.CacheFormat("#Principia_BurnEditor_Δv",
@@ -194,6 +255,16 @@ class BurnEditor : ScalingRenderer {
     }.magnitude;
   }
 
+  private void ReformatΔv() { 
+    // Ensure that the number of digits used in formatting is consistent with
+    // the current Δv values, initial mass, and engine characteristics,
+    // otherwise the change in the number of significant figures will be
+    // interpreted as input.
+    Δv_tangent_.value = Δv_tangent_.value;
+    Δv_normal_.value = Δv_normal_.value;
+    Δv_binormal_.value = Δv_binormal_.value;
+  }
+
   public void Reset(NavigationManoeuvre manœuvre) {
     Burn burn = manœuvre.burn;
     Δv_tangent_.value = burn.delta_v.x;
@@ -204,6 +275,7 @@ class BurnEditor : ScalingRenderer {
     is_inertially_fixed_ = burn.is_inertially_fixed;
     duration_ = manœuvre.duration;
     initial_mass_in_tonnes_ = manœuvre.initial_mass_in_tonnes;
+    ReformatΔv();
   }
 
   public Burn Burn() {
@@ -301,6 +373,34 @@ class BurnEditor : ScalingRenderer {
     }
   }
 
+  private string FormatΔvComponent(double metres_per_second) {
+    // The granularity of Instant in 1950.
+    double dt = 2.3841857910156250e-7;  // 2⁻²² s.
+    double initial_acceleration =
+        thrust_in_kilonewtons_ / initial_mass_in_tonnes_;
+    double Isp = specific_impulse_in_seconds_g0_ * 9.80665;
+    // Allow an increment in speed which, if applied to the norm of the
+    // velocity, will always result in a change in the duration of the
+    // integrated burn.
+    double dv = dt * Math.Exp(Δv() / Isp) * initial_acceleration;
+    // Allow no less than 1 nm/s to ensure that the number fits in the field,
+    // and that the increment remains representable at any reasonable speed in
+    // the solar system (that second criterion would be satisfied at 0.1 nm/s,
+    // but the first would not).
+    int fractional_digits =
+        Math.Max(0, Math.Min((int)Math.Floor(-Math.Log10(dv)), 9));
+    string unsigned_format = "00,000." + new string('0', fractional_digits);
+    return Regex.Replace(
+        Regex.Replace(
+        metres_per_second.ToString($"+{unsigned_format};−{unsigned_format}",
+                                   Culture.culture),
+        "^[+−][0']{1,5}",
+        match => match.Value.Replace('0', figure_space)),
+        // Add grouping marks to the fractional part.
+        @"\d{3}(?=\d)",
+        match => match.Value + "'");
+  }
+
   private void UseTheForceLuke() {
     // The burn can last at most (9.80665 / scale) s.
     const double scale = 1;
@@ -320,7 +420,9 @@ class BurnEditor : ScalingRenderer {
   internal string FormatPreviousCoastDuration(double seconds) {
     return new PrincipiaTimeSpan(seconds).FormatPositive(
         with_leading_zeroes: true,
-        with_seconds: true);
+        with_seconds: true,
+        iau_style: true,
+        fractional_second_digits: 6);
   }
 
   internal bool TryParsePreviousCoastDuration(string text, out double value) {
@@ -363,6 +465,7 @@ class BurnEditor : ScalingRenderer {
   private const double log10_Δv_upper_rate = 3.5;
   private const double log10_time_lower_rate = 0.0;
   private const double log10_time_upper_rate = 7.0;
+  private const double max_Δv_component = 99_999.999_999_999;
 
   // Not owned.
   private readonly Vessel vessel_;
@@ -371,6 +474,10 @@ class BurnEditor : ScalingRenderer {
 
   private bool changed_reference_frame_ = false;
   private string engine_warning_ = "";
+  
+  private static UnityEngine.Texture decrement_revolution;
+  private static UnityEngine.Texture increment_revolution;
+  private const char figure_space = '\u2007';
 }
 
 }  // namespace ksp_plugin_adapter

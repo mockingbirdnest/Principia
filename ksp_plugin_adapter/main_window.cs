@@ -7,10 +7,10 @@ namespace ksp_plugin_adapter {
 
 internal class MainWindow : VesselSupervisedWindowRenderer {
   // Update this section before each release.
-  private const string next_release_name = "Hilbert";
-  private const int next_release_lunation_number = 279;
+  private const string next_release_name = "Ἵππαρχος";
+  private const int next_release_lunation_number = 280;
   private readonly DateTimeOffset next_release_date_ =
-      new DateTimeOffset(2022, 07, 28, 17, 54, 00, TimeSpan.Zero);
+      new DateTimeOffset(2022, 08, 27, 08, 16, 00, TimeSpan.Zero);
 
   public MainWindow(PrincipiaPluginAdapter adapter,
                     FlightPlanner flight_planner,
@@ -46,6 +46,9 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     }
   }
 
+  public bool show_only_pinned_markers { get; private set; } = false;
+  public bool show_only_pinned_celestials { get; private set; } = false;
+
   public bool selecting_active_vessel_target { get; private set; } = false;
 
   public bool display_patched_conics { get; private set; } = false;
@@ -64,12 +67,6 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
         node.GetAtMostOneValue("show_logging_settings");
     if (show_logging_settings_value != null) {
       show_logging_settings_ = Convert.ToBoolean(show_logging_settings_value);
-    }
-    string show_prediction_settings_value =
-        node.GetAtMostOneValue("show_prediction_settings");
-    if (show_prediction_settings_value != null) {
-      show_prediction_settings_ =
-          Convert.ToBoolean(show_prediction_settings_value);
     }
 
     string history_length_value = node.GetAtMostOneValue("history_length");
@@ -120,9 +117,6 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
                   createIfNotFound : true);
     node.SetValue("show_logging_settings",
                   show_logging_settings_,
-                  createIfNotFound : true);
-    node.SetValue("show_prediction_settings",
-                  show_prediction_settings_,
                   createIfNotFound : true);
 
     node.SetValue("history_length", history_length, createIfNotFound : true);
@@ -220,14 +214,27 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
       if (adapter_.PluginRunning()) {
         plotting_frame_selector_.RenderButton();
         using (new UnityEngine.GUILayout.HorizontalScope()) {
+          if (UnityEngine.GUILayout.Button(
+                  L10N.CacheFormat("#Principia_MainWindow_Declutter"),
+                  GUILayoutWidth(5))) {
+            show_only_pinned_markers = true;
+            show_only_pinned_celestials = true;
+          }
+          UnityEngine.GUILayout.Label(
+              L10N.CacheFormat("#Principia_MainWindow_Declutter_ShowOnly"));
+          show_only_pinned_markers = UnityEngine.GUILayout.Toggle(
+              show_only_pinned_markers,
+              L10N.CacheFormat("#Principia_MainWindow_Declutter_PinnedMarkers"));
+          show_only_pinned_celestials = UnityEngine.GUILayout.Toggle(
+              show_only_pinned_celestials,
+              L10N.CacheFormat(
+                  "#Principia_MainWindow_Declutter_PinnedCelestials"));
+        }
+        using (new UnityEngine.GUILayout.HorizontalScope()) {
           flight_planner_.RenderButton();
           orbit_analyser_.RenderButton();
         }
-        RenderToggleableSection(
-            name   :
-            L10N.CacheFormat("#Principia_MainWindow_PredictionSettings"),
-            show   : ref show_prediction_settings_,
-            render : RenderPredictionSettings);
+        RenderPredictionSettings();
       }
       RenderToggleableSection(
           name   : L10N.CacheFormat("#Principia_MainWindow_KspFeatures"),
@@ -394,101 +401,96 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
   private void RenderPredictionSettings() {
     AdaptiveStepParameters? adaptive_step_parameters = null;
     string vessel_guid = predicted_vessel?.id.ToString();
-    if (vessel_guid != null) {
-      adaptive_step_parameters =
-          plugin.VesselGetPredictionAdaptiveStepParameters(vessel_guid);
-      prediction_length_tolerance_index_ = Array.FindIndex(
-          prediction_length_tolerances_,
-          (double tolerance) => tolerance >=
-                                adaptive_step_parameters.Value.
-                                    length_integration_tolerance);
-      if (prediction_length_tolerance_index_ < 0) {
-        prediction_length_tolerance_index_ =
-            default_prediction_length_tolerance_index;
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      UnityEngine.GUILayout.Label(
+          L10N.CacheFormat("#Principia_MainWindow_PredictionSettings"),
+          UnityEngine.GUILayout.ExpandWidth(true));
+      if (vessel_guid != null) {
+        adaptive_step_parameters =
+            plugin.VesselGetPredictionAdaptiveStepParameters(vessel_guid);
+        prediction_length_tolerance_index_ = Array.FindIndex(
+            prediction_length_tolerances_,
+            (double tolerance) => tolerance >=
+                                  adaptive_step_parameters.Value.
+                                      length_integration_tolerance);
+        if (prediction_length_tolerance_index_ < 0) {
+          prediction_length_tolerance_index_ =
+              default_prediction_length_tolerance_index;
+        }
+        prediction_steps_index_ = Array.FindIndex(prediction_steps_,
+                                                  (long step) =>
+                                                      step >=
+                                                      adaptive_step_parameters.
+                                                          Value.max_steps);
+        if (prediction_steps_index_ < 0) {
+          prediction_steps_index_ = default_prediction_steps_index;
+        }
       }
-      prediction_steps_index_ = Array.FindIndex(prediction_steps_,
-                                                (long step) =>
-                                                    step >=
-                                                    adaptive_step_parameters.
-                                                        Value.max_steps);
-      if (prediction_steps_index_ < 0) {
-        prediction_steps_index_ = default_prediction_steps_index;
-      }
-    }
 
-    // TODO(egg): make the speed tolerance independent.
-    if (RenderSelector(prediction_length_tolerances_,
-                       ref prediction_length_tolerance_index_,
-                       L10N.CacheFormat(
-                           "#Principia_PredictionSettings_ToleranceLabel"),
-                       "{0:0.0e0} m",
-                       enabled: adaptive_step_parameters.HasValue)) {
-      AdaptiveStepParameters new_adaptive_step_parameters =
-          new AdaptiveStepParameters{
-              integrator_kind = adaptive_step_parameters.Value.integrator_kind,
-              max_steps = prediction_steps,
-              length_integration_tolerance = prediction_length_tolerance,
-              speed_integration_tolerance = prediction_length_tolerance
-          };
-      plugin.VesselSetPredictionAdaptiveStepParameters(
-          vessel_guid,
-          new_adaptive_step_parameters);
-    }
-    if (RenderSelector(prediction_steps_,
-                       ref prediction_steps_index_,
-                       L10N.CacheFormat("#Principia_PredictionSettings_Steps"),
-                       "{0:0.00e0}",
-                       enabled: adaptive_step_parameters.HasValue)) {
-      AdaptiveStepParameters new_adaptive_step_parameters =
-          new AdaptiveStepParameters{
-              integrator_kind = adaptive_step_parameters.Value.integrator_kind,
-              max_steps = prediction_steps,
-              length_integration_tolerance = prediction_length_tolerance,
-              speed_integration_tolerance = prediction_length_tolerance
-          };
-      plugin.VesselSetPredictionAdaptiveStepParameters(
-          vessel_guid,
-          new_adaptive_step_parameters);
+      // TODO(egg): make the speed tolerance independent.
+      if (RenderSelector(prediction_length_tolerances_,
+                         ref prediction_length_tolerance_index_,
+                         L10N.CacheFormat(
+                             "#Principia_PredictionSettings_ToleranceLabel"),
+                         (i) => prediction_length_tolerance_names_[i],
+                         enabled: adaptive_step_parameters.HasValue)) {
+        AdaptiveStepParameters new_adaptive_step_parameters =
+            new AdaptiveStepParameters{
+                integrator_kind = adaptive_step_parameters.Value.integrator_kind,
+                max_steps = prediction_steps,
+                length_integration_tolerance = prediction_length_tolerance,
+                speed_integration_tolerance = prediction_length_tolerance
+            };
+        plugin.VesselSetPredictionAdaptiveStepParameters(
+            vessel_guid,
+            new_adaptive_step_parameters);
+      }
+      if (RenderSelector(prediction_steps_,
+                         ref prediction_steps_index_,
+                         L10N.CacheFormat("#Principia_PredictionSettings_Steps"),
+                         (i) => string.Format(Culture.culture,
+                                              "{0:0.0e0}",
+                                              prediction_steps_[i]),
+                         enabled: adaptive_step_parameters.HasValue)) {
+        AdaptiveStepParameters new_adaptive_step_parameters =
+            new AdaptiveStepParameters{
+                integrator_kind = adaptive_step_parameters.Value.integrator_kind,
+                max_steps = prediction_steps,
+                length_integration_tolerance = prediction_length_tolerance,
+                speed_integration_tolerance = prediction_length_tolerance
+            };
+        plugin.VesselSetPredictionAdaptiveStepParameters(
+            vessel_guid,
+            new_adaptive_step_parameters);
+      }
     }
   }
 
   private bool RenderSelector<T>(T[] array,
                                  ref int index,
                                  string label,
-                                 string format,
+                                 Func<int, string> format,
                                  bool enabled) {
     bool changed = false;
-    using (new UnityEngine.GUILayout.HorizontalScope()) {
-      UnityEngine.GUILayout.Label(text    : label,
-                                  options : GUILayoutWidth(6));
-      if (UnityEngine.GUILayout.Button(
-              text    : index == 0
-                            ? L10N.CacheFormat(
-                                "#Principia_DiscreteSelector_Min")
-                            : "-",
-              options : GUILayoutWidth(2)) &&
-          enabled &&
-          index != 0) {
-        --index;
-        changed = true;
-      }
-      UnityEngine.GUILayout.TextArea(
-          text    : enabled
-                        ? string.Format(Culture.culture, format, array[index])
-                        : "",
-          style   : Style.RightAligned(UnityEngine.GUI.skin.textArea),
-          options : GUILayoutWidth(3));
-      if (UnityEngine.GUILayout.Button(
-              text    : index == array.Length - 1
-                            ? L10N.CacheFormat(
-                                "#Principia_DiscreteSelector_Max")
-                            : "+",
-              options : GUILayoutWidth(2)) &&
-          enabled &&
-          index != array.Length - 1) {
-        ++index;
-        changed = true;
-      }
+    UnityEngine.GUILayout.Label(label,
+                                UnityEngine.GUILayout.ExpandWidth(false));
+    if (UnityEngine.GUILayout.Button(index == 0 ? "" : "−",
+                                     GUILayoutWidth(1)) &&
+        enabled &&
+        index != 0) {
+      --index;
+      changed = true;
+    }
+    UnityEngine.GUILayout.TextArea(
+        text    : enabled ? format(index) : "",
+        style   : Style.RightAligned(UnityEngine.GUI.skin.textArea),
+        options : GUILayoutWidth(2));
+    if (UnityEngine.GUILayout.Button(index == array.Length - 1 ? "" : "+",
+                                     GUILayoutWidth(1)) &&
+        enabled &&
+        index != array.Length - 1) {
+      ++index;
+      changed = true;
     }
     return changed;
   }
@@ -531,7 +533,9 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
   };
 
   private static readonly double[] prediction_length_tolerances_ =
-      {1e-3, 1e-2, 1e0, 1e1, 1e2, 1e3, 1e4};
+      {1e-3, 1e-2, 1e-1, 1e0, 1e1, 1e2, 1e3, 1e4};
+  private static readonly string[] prediction_length_tolerance_names_ =
+      {"1 mm", "1 cm", "10 cm", "1 m", "10 m", "100 m", "1 km", "10 km"};
   private static readonly long[] prediction_steps_ = {
       1 << 2, 1 << 4, 1 << 6, 1 << 8, 1 << 10, 1 << 12, 1 << 14, 1 << 16,
       1 << 18, 1 << 20, 1 << 22, 1 << 24
@@ -549,7 +553,6 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
 
   private bool show_ksp_features_ = false;
   private bool show_logging_settings_ = false;
-  private bool show_prediction_settings_ = true;
 
   private bool show_selection_ui_ = false;
 

@@ -482,7 +482,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
                                      CelestialBody primary) {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       string νₒ = recurrence?.nuo.ToString() ?? em_dash;
-      string Dᴛₒ = recurrence?.dto.ToString("+0;-0") ?? em_dash;
+      string Dᴛₒ = recurrence?.dto.ToString("+0;−0") ?? em_dash;
       string Cᴛₒ = recurrence?.cto.ToString() ?? em_dash;
       UnityEngine.GUILayout.Label(
           L10N.CacheFormat("#Principia_OrbitAnalyser_Recurrence_CapderouTriple",

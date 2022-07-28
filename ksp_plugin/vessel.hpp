@@ -153,6 +153,17 @@ class Vessel {
   // fails.
   virtual bool has_flight_plan() const;
 
+  // Returns the number of flight plans for this vessel.  Never fails.
+  virtual int flight_plan_count() const;
+
+  // Returns the index of the currently-selected flight plan, or -1 if there is
+  // no flight plan.
+  virtual int selected_flight_plan_index() const;
+
+  // Selects the flight plan at the given index, which must lie within
+  // [0, flight_plan_count()[.
+  virtual void SelectFlightPlan(int index);
+
   // If the flight plan has been deserialized, returns it.  Fails if there is no
   // flight plan or the flight plan has not been deserialized.
   virtual FlightPlan& flight_plan() const;
@@ -176,7 +187,8 @@ class Vessel {
   // Blocks until the |t_min()| of the vessel is at or before |desired_t_min|.
   void WaitForReanimation(Instant const& desired_t_min) EXCLUDES(lock_);
 
-  // Creates a |flight_plan_| at the end of history using the given parameters.
+  // Creates a flight plan at the end of history using the given parameters;
+  // selects that flight plan, which is the last one in |flight_plans_|.
   virtual void CreateFlightPlan(
       Instant const& final_time,
       Mass const& initial_mass,
@@ -185,7 +197,17 @@ class Vessel {
       Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
           flight_plan_generalized_adaptive_step_parameters);
 
-  // Deletes the |flight_plan_|.  Performs no action unless |has_flight_plan()|.
+  // Requires |has_flight_plan()|.
+  // Inserts a flight plan equivalent to the current one immediately before it.
+  // The current flight plan remains selected.
+  // Note that conceptually, this is equivalent to inserting an equivalent
+  // flight plan immediately after the current one and switching to it, but
+  // insertion before is lazier, as the newly added flight plan can remain
+  // serialized.
+  virtual void DuplicateFlightPlan();
+
+  // Deletes the currently selected flight plan.  Performs no action unless
+  // |has_flight_plan()|.
   virtual void DeleteFlightPlan();
 
   // Requires |has_flight_plan()|.
@@ -266,6 +288,10 @@ class Vessel {
   using TrajectoryIterator =
       DiscreteTrajectory<Barycentric>::iterator (Part::*)();
 
+  using LazilyDeserializedFlightPlan =
+      std::variant<not_null<std::unique_ptr<FlightPlan>>,
+                   serialization::FlightPlan>;
+
   // Return functions that can be passed to a |Checkpointer| to write this
   // vessel to a checkpoint or read it back.
   Checkpointer<serialization::Vessel>::Writer
@@ -313,6 +339,9 @@ class Vessel {
 
   // Returns true if this object holds a non-null deserialized flight plan.
   bool has_deserialized_flight_plan() const;
+
+  LazilyDeserializedFlightPlan& selected_flight_plan();
+  LazilyDeserializedFlightPlan const& selected_flight_plan() const;
 
   GUID const guid_;
   std::string name_;
@@ -371,8 +400,9 @@ class Vessel {
   RecurringThread<PrognosticatorParameters,
                   DiscreteTrajectory<Barycentric>> prognosticator_;
 
-  std::variant<std::unique_ptr<FlightPlan>,
-               serialization::FlightPlan> flight_plan_;
+  std::vector<std::variant<not_null<std::unique_ptr<FlightPlan>>,
+                           serialization::FlightPlan>> flight_plans_;
+  int selected_flight_plan_index_ = -1;
 
   std::optional<OrbitAnalyser> orbit_analyser_;
 
