@@ -25,8 +25,8 @@ Hermite2<Value, Argument>::Hermite2(
   a1_ = derivative_first;
   Difference<Argument> const Δargument = arguments_.second - arguments_.first;
   // If we were given the same point twice, there is a removable singularity.
-  // Otherwise, if the arguments are the same but not the values or the
-  // derivatives, we proceed to merrily NaN away as we should.
+  // Otherwise, if the arguments are the same but not the values, we proceed to
+  // merrily NaN away as we should.
   if (Δargument == Difference<Argument>{} &&
       values.first == values.second) {
     a2_ = {};
