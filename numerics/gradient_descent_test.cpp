@@ -8,7 +8,9 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
-#include "testing_utilities/componentwise.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
+#include "testing_utilities/is_near.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace numerics {
@@ -25,7 +27,9 @@ using quantities::si::Micro;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using testing_utilities::AlmostEquals;
-using testing_utilities::Componentwise;
+using testing_utilities::AbsoluteErrorFrom;
+using testing_utilities::IsNear;
+using testing_utilities::operator""_;
 
 class GradientDescentTest : public ::testing::Test {
  protected:
@@ -55,7 +59,7 @@ TEST_F(GradientDescentTest, Quadratic) {
           field,
           gradient,
           /*tolerance=*/1 * Micro(Metre));
-  EXPECT_THAT(actual_minimum, AlmostEquals(expected_minimum, 0));
+  EXPECT_THAT(actual_minimum, AlmostEquals(expected_minimum, 2));
 }
 
 TEST_F(GradientDescentTest, Quartic) {
@@ -81,11 +85,12 @@ TEST_F(GradientDescentTest, Quartic) {
           field,
           gradient,
           /*tolerance=*/1 * Micro(Metre));
-  EXPECT_THAT(actual_minimum, AlmostEquals(expected_minimum, 2));
-  LOG(ERROR)<<(actual_minimum-expected_minimum).Norm();
+  EXPECT_THAT(
+      actual_minimum,
+      AbsoluteErrorFrom(expected_minimum, IsNear(437_(1) * Micro(Metre))));
 }
 
-TEST_F(GradientDescentTest, Exp) {
+TEST_F(GradientDescentTest, Gaussian) {
   static constexpr auto ω = 1 / Metre;
   auto field = [](Position<World> const& position) {
     auto const coordinates = (position - World::origin).coordinates();
@@ -111,8 +116,54 @@ TEST_F(GradientDescentTest, Exp) {
       field,
       gradient,
       /*tolerance=*/1 * Micro(Metre));
-  EXPECT_THAT(actual_minimum, AlmostEquals(expected_minimum, 2));
-  LOG(ERROR)<<(actual_minimum-expected_minimum).Norm();
+  EXPECT_THAT(
+      actual_minimum,
+      AbsoluteErrorFrom(expected_minimum, IsNear(0.82_(1) * Micro(Metre))));
+}
+
+TEST_F(GradientDescentTest, Rosenbrock) {
+  // See [NW06] exercise 3.1 for the definition of the function.
+  static constexpr auto scale = 1 * Metre;
+  auto field = [](Position<World> const& position) {
+    auto const coordinates = (position - World::origin).coordinates() / scale;
+    return 100 * Pow<2>(coordinates.y - Pow<2>(coordinates.x)) +
+           Pow<2>(1 - coordinates.x);
+  };
+  auto gradient = [](Position<World> const& position) {
+    auto const coordinates = (position - World::origin).coordinates() / scale;
+    return Vector<Inverse<Length>, World>(
+        {(-400 * coordinates.x * (coordinates.y - Pow<2>(coordinates.x)) -
+          2 * (1 - coordinates.x)) /
+             scale,
+         (200 * (coordinates.y - Pow<2>(coordinates.x))) / scale,
+         Inverse<Length>{}});
+  };
+
+  // See [NW06] exercise 3.1 for the starting positions.
+  Position<World> const expected_minimum =
+      World::origin + Displacement<World>({scale, scale, 0 * Metre});
+  {
+    auto const actual_minimum = BroydenFletcherGoldfarbShanno<double, World>(
+        /*start_position=*/World::origin +
+            Displacement<World>({1.2 * scale, 1.2 * scale, 0 * Metre}),
+        field,
+        gradient,
+        /*tolerance=*/1 * Micro(Metre));
+    EXPECT_THAT(
+        actual_minimum,
+        AbsoluteErrorFrom(expected_minimum, IsNear(0.96_(1) * Micro(Metre))));
+  }
+  {
+    auto const actual_minimum = BroydenFletcherGoldfarbShanno<double, World>(
+        /*start_position=*/World::origin +
+            Displacement<World>({-1.2 * scale, scale, 0 * Metre}),
+        field,
+        gradient,
+        /*tolerance=*/1 * Micro(Metre));
+    EXPECT_THAT(
+        actual_minimum,
+        AbsoluteErrorFrom(expected_minimum, IsNear(0.047_(1) * Micro(Metre))));
+  }
 }
 
 }  // namespace numerics

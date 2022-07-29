@@ -106,7 +106,7 @@
     <ClCompile Include="fixed_arrays_test.cpp" />
     <ClCompile Include="fma_test.cpp" />
     <ClCompile Include="frequency_analysis_test.cpp" />
-    <ClCompile Include="gradient_descent.cpp" />
+    <ClCompile Include="gradient_descent_test.cpp" />
     <ClCompile Include="hermite2_test.cpp" />
     <ClCompile Include="hermite3_test.cpp" />
     <ClCompile Include="legendre_test.cpp" />

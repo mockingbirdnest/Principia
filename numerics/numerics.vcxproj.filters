@@ -334,7 +334,7 @@
     <ClCompile Include="davenport_q_method_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="gradient_descent.cpp">
+    <ClCompile Include="gradient_descent_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="hermite2_test.cpp">

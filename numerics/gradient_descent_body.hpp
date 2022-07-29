@@ -161,6 +161,9 @@ Position<Frame> BroydenFletcherGoldfarbShanno(
   auto const y₀ = grad_f_x₁ - grad_f_x₀;
   InverseHessian<Scalar, Frame> const H₀ =
       InnerProduct(s₀, y₀) * identity / y₀.Norm²();
+  logger.Append("grad",
+                std::tuple{x₀, grad_f_x₀},
+                mathematica::ExpressIn(quantities::si::Metre));
 
   auto xₖ = x₁;
   auto grad_f_xₖ = grad_f_x₁;
