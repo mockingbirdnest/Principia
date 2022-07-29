@@ -8,7 +8,6 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
-#include "mathematica/mathematica.hpp"
 #include "numerics/hermite2.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
@@ -20,13 +19,11 @@ namespace internal_gradient_descent {
 using geometry::Displacement;
 using geometry::InnerProduct;
 using geometry::Normalize;
-using geometry::R3x3Matrix;
 using geometry::SymmetricBilinearForm;
 using geometry::SymmetricProduct;
 using quantities::Abs;
 using quantities::Quotient;
 using quantities::Square;
-using quantities::si::Kilo;
 using quantities::si::Metre;
 namespace si = quantities::si;
 
@@ -140,8 +137,6 @@ Position<Frame> BroydenFletcherGoldfarbShanno(
   static SymmetricBilinearForm<double, Frame, Vector> const identity =
       SymmetricBilinearForm<double, Frame, Vector>::Identity();
 
-  mathematica::Logger logger(TEMP_DIR / "gradient_descent.wl");
-
   // The first step uses vanilla steepest descent.
   auto const x₀ = start_position;
   auto const grad_f_x₀ = grad_f(x₀);
@@ -155,26 +150,17 @@ Position<Frame> BroydenFletcherGoldfarbShanno(
   double const α₀ = LineSearch(x₀, p₀, f, grad_f);
   auto const x₁ = x₀+ α₀ * p₀;
 
-  // Special computation of H₀ using eq. 6.20.
+  // Special computation of H₀ using (6.20).
   auto const grad_f_x₁ = grad_f(x₁);
   Displacement<Frame> const s₀ = x₁ - x₀;
   auto const y₀ = grad_f_x₁ - grad_f_x₀;
   InverseHessian<Scalar, Frame> const H₀ =
       InnerProduct(s₀, y₀) * identity / y₀.Norm²();
-  logger.Append("grad",
-                std::tuple{x₀, grad_f_x₀},
-                mathematica::ExpressIn(quantities::si::Metre));
 
   auto xₖ = x₁;
   auto grad_f_xₖ = grad_f_x₁;
   auto Hₖ = H₀;
   for (;;) {
-    logger.Append("grad",
-                  std::tuple{xₖ, grad_f_xₖ},
-                  mathematica::ExpressIn(quantities::si::Metre));
-    logger.Append("inverseHessian",
-                  Hₖ,
-                  mathematica::ExpressIn(quantities::si::Metre));
     Displacement<Frame> const pₖ = -Hₖ * grad_f_xₖ;
     if (pₖ.Norm() <= tolerance) {
       return xₖ;
