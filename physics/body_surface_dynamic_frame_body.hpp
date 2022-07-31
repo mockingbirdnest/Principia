@@ -89,9 +89,16 @@ BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
 template<typename InertialFrame, typename ThisFrame>
 Vector<Acceleration, InertialFrame>
 BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::
-    GravitationalAcceleration(Instant const& t,
-                              Position<InertialFrame> const& q) const {
+GravitationalAcceleration(Instant const& t,
+                          Position<InertialFrame> const& q) const {
   return ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(q, t);
+}
+
+template<typename InertialFrame, typename ThisFrame>
+SpecificEnergy BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::
+GravitationalPotential(Instant const& t,
+                       Position<InertialFrame> const& q) const {
+  return ephemeris_->ComputeGravitationalPotential(q, t);
 }
 
 template<typename InertialFrame, typename ThisFrame>

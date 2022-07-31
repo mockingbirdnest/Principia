@@ -113,7 +113,7 @@ class DynamicFrame {
       Position<InertialFrame> const& q) const = 0;
   virtual SpecificEnergy GravitationalPotential(
       Instant const& t,
-      Position<ThisFrame> const& q) const = 0;
+      Position<InertialFrame> const& q) const = 0;
   virtual AcceleratedRigidMotion<InertialFrame, ThisFrame> MotionOfThisFrame(
       Instant const& t) const = 0;
 };

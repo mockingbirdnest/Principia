@@ -125,9 +125,16 @@ BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
 template<typename InertialFrame, typename ThisFrame>
 Vector<Acceleration, InertialFrame>
 BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
-    GravitationalAcceleration(Instant const& t,
-                              Position<InertialFrame> const& q) const {
+GravitationalAcceleration(Instant const& t,
+                          Position<InertialFrame> const& q) const {
   return ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(q, t);
+}
+
+template<typename InertialFrame, typename ThisFrame>
+SpecificEnergy BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
+GravitationalPotential(Instant const& t,
+                       Position<InertialFrame> const& q) const {
+  return ephemeris_->ComputeGravitationalPotential(q, t);
 }
 
 template<typename InertialFrame, typename ThisFrame>

@@ -78,7 +78,7 @@ class BodyCentredBodyDirectionDynamicFrame
       Position<InertialFrame> const& q) const override;
   SpecificEnergy GravitationalPotential(
       Instant const& t,
-      Position<ThisFrame> const& q) const override;
+      Position<InertialFrame> const& q) const override;
   AcceleratedRigidMotion<InertialFrame, ThisFrame> MotionOfThisFrame(
       Instant const& t) const override;
 
