@@ -104,13 +104,14 @@ SpecificEnergy DynamicFrame<InertialFrame, ThisFrame>::GeometricPotential(
       to_this_frame.template angular_velocity_of<ThisFrame>());
   Displacement<ThisFrame> const r = position - ThisFrame::origin;
 
-  auto const gravitational_potential =
+  SpecificEnergy const gravitational_potential =
       GravitationalPotential(t,
-                                from_this_frame.rigid_transformation()(
-                                    degrees_of_freedom.position())));
-  auto const linear_potential = -InnerProduct(r, to_this_frame.orthogonal_map()(
-      motion.template acceleration_of_origin_of<ThisFrame>()));
-  auto const centrifugal_potential = -0.5 * (Ω * r).Norm²();
+                             from_this_frame.rigid_transformation()(position));
+  SpecificEnergy const linear_potential = -InnerProduct(
+      r,
+      to_this_frame.orthogonal_map()(
+          motion.template acceleration_of_origin_of<ThisFrame>()));
+  SpecificEnergy const centrifugal_potential = -0.5 * (Ω * r / Radian).Norm²();
 
   return gravitational_potential + (linear_potential + centrifugal_potential);
 }

@@ -72,6 +72,9 @@ class InertialFrame : public DynamicFrame<OtherFrame, ThisFrame> {
   Vector<Acceleration, OtherFrame> GravitationalAcceleration(
       Instant const& t,
       Position<OtherFrame> const& q) const override;
+  SpecificEnergy GravitationalPotential(
+      Instant const& t,
+      Position<OtherFrame> const& q) const override;
   AcceleratedRigidMotion<OtherFrame, ThisFrame> MotionOfThisFrame(
       Instant const& t) const override;
 
@@ -122,6 +125,11 @@ InertialFrame<OtherFrame, ThisFrame>::GravitationalAcceleration(
     Position<OtherFrame> const& q) const {
   return gravity_(t, q);
 }
+
+template<typename OtherFrame, typename ThisFrame>
+SpecificEnergy InertialFrame<OtherFrame, ThisFrame>::GravitationalPotential(
+    Instant const& t,
+    Position<OtherFrame> const& q) const {}
 
 template<typename OtherFrame, typename ThisFrame>
 AcceleratedRigidMotion<OtherFrame, ThisFrame>
