@@ -69,9 +69,18 @@ class Equipotential {
       AdaptiveParameters const& adaptive_parameters,
       not_null<DynamicFrame<InertialFrame, Frame> const*> dynamic_frame);
 
+  // Computes an equipotential line going through the given point.
   typename ODE::State ComputeLine(Bivector<double, Frame> const& plane,
                                   Position<Frame> const& position,
                                   Instant const& t) const;
+
+  // Computes an equipotential line for the total energy determined by the
+  // |degrees_of_freedom|, multiplied by the given multiplier.
+  typename ODE::State ComputeLine(
+      Bivector<double, Frame> const& plane,
+      DegreesOfFreedom<Frame> const& degrees_of_freedom,
+      Instant const& t,
+      double energy_multiplier = 1.0) const;
 
  private:
   using IndependentVariableDifference =

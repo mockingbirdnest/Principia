@@ -50,6 +50,11 @@ class MockDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
               GravitationalAcceleration,
               (Instant const& t, Position<InertialFrame> const& q),
               (const, override));
+  MOCK_METHOD(SpecificEnergy,
+              GravitationalPotential,
+              (Instant const& t, Position<ThisFrame> const& q),
+              (const override));
+
   MOCK_METHOD((AcceleratedRigidMotion<InertialFrame, ThisFrame>),
               MotionOfThisFrame,
               (Instant const& t),

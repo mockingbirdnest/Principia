@@ -32,6 +32,7 @@ using geometry::Position;
 using geometry::Rotation;
 using geometry::Vector;
 using quantities::Acceleration;
+using quantities::SpecificEnergy;
 
 // The origin of the frame is the centre of mass of the primary body.  The X
 // axis points to the secondary.  The Y axis is in the direction of the velocity
@@ -75,6 +76,9 @@ class BodyCentredBodyDirectionDynamicFrame
   Vector<Acceleration, InertialFrame> GravitationalAcceleration(
       Instant const& t,
       Position<InertialFrame> const& q) const override;
+  SpecificEnergy GravitationalPotential(
+      Instant const& t,
+      Position<ThisFrame> const& q) const override;
   AcceleratedRigidMotion<InertialFrame, ThisFrame> MotionOfThisFrame(
       Instant const& t) const override;
 

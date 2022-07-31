@@ -88,6 +88,34 @@ DynamicFrame<InertialFrame, ThisFrame>::RotationFreeGeometricAccelerationAtRest(
 }
 
 template<typename InertialFrame, typename ThisFrame>
+SpecificEnergy DynamicFrame<InertialFrame, ThisFrame>::GeometricPotential(
+    Instant const& t,
+    Position<ThisFrame> const& position) const {
+  AcceleratedRigidMotion<InertialFrame, ThisFrame> const motion =
+      MotionOfThisFrame(t);
+  RigidMotion<InertialFrame, ThisFrame> const& to_this_frame =
+      motion.rigid_motion();
+  RigidMotion<ThisFrame, InertialFrame> const from_this_frame =
+      to_this_frame.Inverse();
+
+  // Beware, we want the angular velocity of ThisFrame as seen in the
+  // InertialFrame, but pushed to ThisFrame.  Otherwise the sign is wrong.
+  AngularVelocity<ThisFrame> const Ω = to_this_frame.orthogonal_map()(
+      to_this_frame.template angular_velocity_of<ThisFrame>());
+  Displacement<ThisFrame> const r = position - ThisFrame::origin;
+
+  auto const gravitational_potential =
+      GravitationalPotential(t,
+                                from_this_frame.rigid_transformation()(
+                                    degrees_of_freedom.position())));
+  auto const linear_potential = -InnerProduct(r, to_this_frame.orthogonal_map()(
+      motion.template acceleration_of_origin_of<ThisFrame>()));
+  auto const centrifugal_potential = -0.5 * (Ω * r).Norm²();
+
+  return gravitational_potential + (linear_potential + centrifugal_potential);
+}
+
+template<typename InertialFrame, typename ThisFrame>
 Rotation<Frenet<ThisFrame>, ThisFrame>
 DynamicFrame<InertialFrame, ThisFrame>::FrenetFrame(
     Instant const& t,
