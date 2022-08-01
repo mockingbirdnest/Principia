@@ -5,6 +5,7 @@
 #include "base/not_null.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
+#include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -24,6 +25,7 @@ using astronomy::ICRS;
 using base::check_not_null;
 using geometry::AngularVelocity;
 using geometry::Barycentre;
+using geometry::DefinesFrame;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Inertial;
@@ -32,13 +34,16 @@ using geometry::InfinitePast;
 using geometry::InnerProduct;
 using geometry::OrthogonalMap;
 using geometry::Position;
+using geometry::RigidTransformation;
 using geometry::Velocity;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
+using quantities::AngularAcceleration;
 using quantities::GravitationalParameter;
 using quantities::Sqrt;
 using quantities::si::Metre;
 using quantities::si::Milli;
+using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
@@ -155,6 +160,39 @@ InertialFrame<OtherFrame, ThisFrame>::MotionOfThisFrame(
       /*acceleration_of_to_frame_origin=*/{});
 }
 
+//TODO(phl): Use the real MockDynamicFrame.
+template<typename InertialFrame, typename ThisFrame>
+class MockDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
+ public:
+  MockDynamicFrame() = default;
+
+  MOCK_METHOD((RigidMotion<InertialFrame, ThisFrame>),
+              ToThisFrameAtTime,
+              (Instant const& t),
+              (const, override));
+  MOCK_METHOD((RigidMotion<ThisFrame, InertialFrame>),
+              FromThisFrameAtTime,
+              (Instant const& t),
+              (const, override));
+
+  MOCK_METHOD(Instant, t_min, (), (const, override));
+  MOCK_METHOD(Instant, t_max, (), (const, override));
+
+  MOCK_METHOD(void,
+              WriteToMessage,
+              (not_null<serialization::DynamicFrame*> message),
+              (const, override));
+
+  MOCK_METHOD((Vector<Acceleration, InertialFrame>),
+              GravitationalAcceleration,
+              (Instant const& t, Position<InertialFrame> const& q),
+              (const, override));
+  MOCK_METHOD((AcceleratedRigidMotion<InertialFrame, ThisFrame>),
+              MotionOfThisFrame,
+              (Instant const& t),
+              (const, override));
+};
+
 }  // namespace
 
 class DynamicFrameTest : public testing::Test {
@@ -186,15 +224,7 @@ class DynamicFrameTest : public testing::Test {
         small_initial_state_(solar_system_.degrees_of_freedom(small)),
         small_gravitational_parameter_(
             solar_system_.gravitational_parameter(small)) {
-    EXPECT_CALL(mock_ephemeris_,
-                trajectory(solar_system_.massive_body(*ephemeris_, big)))
-        .WillOnce(Return(&mock_big_trajectory_));
-    EXPECT_CALL(mock_ephemeris_,
-                trajectory(solar_system_.massive_body(*ephemeris_, small)))
-        .WillOnce(Return(&mock_small_trajectory_));
-    mock_frame_ =
-        std::make_unique<BarycentricRotatingDynamicFrame<ICRS, MockFrame>>(
-            &mock_ephemeris_, big_, small_);
+    mock_frame_ = std::make_unique<MockDynamicFrame<ICRS, MockFrame>>();
   }
 
   SolarSystem<ICRS> solar_system_;
@@ -209,7 +239,7 @@ class DynamicFrameTest : public testing::Test {
   StrictMock<MockEphemeris<ICRS>> mock_ephemeris_;
   StrictMock<MockContinuousTrajectory<ICRS>> mock_big_trajectory_;
   StrictMock<MockContinuousTrajectory<ICRS>> mock_small_trajectory_;
-  std::unique_ptr<BarycentricRotatingDynamicFrame<ICRS, MockFrame>> mock_frame_;
+  std::unique_ptr<MockDynamicFrame<ICRS, MockFrame>> mock_frame_;
 
   DegreesOfFreedom<Circular> circular_degrees_of_freedom_ = {
       Circular::origin +
@@ -227,68 +257,56 @@ class DynamicFrameTest : public testing::Test {
           &Gravity);
 };
 
-// Two bodies in rotation with their barycentre at rest.  The test point is at
-// the origin and in motion.  The acceleration is purely due to Coriolis.
+// A frame in uniform rotation around |from_origin|.  The test point is at the
+// origin and in motion.  The acceleration is purely due to Coriolis.  The
+// motion elements that don't have specific values have no effect on the
+// acceleration.
 TEST_F(DynamicFrameTest, CoriolisAcceleration) {
-  Instant const t = t0_ + 0 * Second;
+  Instant const t;
+
   // The velocity is opposed to the motion and away from the centre.
   DegreesOfFreedom<MockFrame> const point_dof =
-      {Displacement<MockFrame>({0 * Metre, 0 * Metre, 0 * Metre}) +
-           MockFrame::origin,
-       Velocity<MockFrame>({(80 - 30) * Metre / Second,
-                            (-60 - 40) * Metre / Second,
+      {MockFrame::origin,
+       Velocity<MockFrame>({50 * Metre / Second,
+                            -100 * Metre / Second,
                             0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const big_dof =
-      {Displacement<ICRS>({0.8 * Metre, -0.6 * Metre, 0 * Metre}) +
-       ICRS::origin,
-       Velocity<ICRS>(
-           {-16 * Metre / Second, 12 * Metre / Second, 0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const small_dof =
-      {Displacement<ICRS>({5 * Metre, 5 * Metre, 0 * Metre}) + ICRS::origin,
-       Velocity<ICRS>(
-           {40 * Metre / Second, -30 * Metre / Second, 0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const barycentre_dof =
-      Barycentre<DegreesOfFreedom<ICRS>, GravitationalParameter>(
-          {big_dof, small_dof},
-          {big_gravitational_parameter_, small_gravitational_parameter_});
-  EXPECT_THAT(barycentre_dof.position() - ICRS::origin,
-              Eq(Displacement<ICRS>({2 * Metre, 1 * Metre, 0 * Metre})));
-  EXPECT_THAT(barycentre_dof.velocity(), Eq(ICRS::unmoving));
 
-  EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t))
-      .Times(2)
-      .WillRepeatedly(Return(big_dof));
-  EXPECT_CALL(mock_small_trajectory_, EvaluateDegreesOfFreedom(t))
-      .Times(2)
-      .WillRepeatedly(Return(small_dof));
-  {
-    InSequence s;
-    EXPECT_CALL(mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMassiveBody(
-                    check_not_null(big_), t))
-        .WillOnce(Return(Vector<Acceleration, ICRS>({
-                             120 * Metre / Pow<2>(Second),
-                             160 * Metre / Pow<2>(Second),
-                             0 * Metre / Pow<2>(Second)})));
-    EXPECT_CALL(mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMassiveBody(
-                    check_not_null(small_), t))
-        .WillOnce(Return(Vector<Acceleration, ICRS>({
-                             -300 * Metre / Pow<2>(Second),
-                             -400 * Metre / Pow<2>(Second),
-                             0 * Metre / Pow<2>(Second)})));
-    EXPECT_CALL(mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMasslessBody(
-                    A<Position<ICRS> const&>(), t))
-        .WillOnce(Return(Vector<Acceleration, ICRS>()));
-  }
+  Position<ICRS> const from_origin =
+      ICRS::origin + Displacement<ICRS>({2 * Metre,
+                                         1 * Metre,
+                                         0 * Metre});
+  Position<MockFrame> const to_origin = point_dof.position();
+  auto const rotation = Rotation<ICRS, MockFrame>::Identity();
+  RigidTransformation<ICRS, MockFrame> const rigid_transformation(
+          from_origin, to_origin, rotation.Forget<OrthogonalMap>());
+  AngularVelocity<ICRS> const angular_velocity_of_to_frame(
+      {0 * Radian / Second,
+       0 * Radian / Second,
+       10 * Radian / Second});
+  Velocity<ICRS> const velocity_of_to_frame_origin;
+  RigidMotion<ICRS, MockFrame> const rigid_motion(rigid_transformation,
+                                                  angular_velocity_of_to_frame,
+                                                  velocity_of_to_frame_origin);
+  Bivector<AngularAcceleration, ICRS> const angular_acceleration_of_to_frame;
+  Vector<Acceleration, ICRS> const acceleration_of_to_frame_origin;
+  AcceleratedRigidMotion<ICRS, MockFrame> const accelerated_rigid_motion(
+      rigid_motion,
+      angular_acceleration_of_to_frame,
+      acceleration_of_to_frame_origin);
+  EXPECT_CALL(*mock_frame_, MotionOfThisFrame(t))
+      .WillOnce(Return(accelerated_rigid_motion));
+
+  Vector<Acceleration, ICRS> const gravitational_acceleration;
+  EXPECT_CALL(*mock_frame_, GravitationalAcceleration(t, from_origin))
+      .WillOnce(Return(gravitational_acceleration));
 
   // The Coriolis acceleration is towards the centre and opposed to the motion.
   EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
-              AlmostEquals(Vector<Acceleration, MockFrame>({
-                               (-1200 - 800) * Metre / Pow<2>(Second),
-                               (-1600 + 600) * Metre / Pow<2>(Second),
-                               0 * Metre / Pow<2>(Second)}), 0));
+              AlmostEquals(Vector<Acceleration, MockFrame>(
+                               {-2000 * Metre / Pow<2>(Second),
+                                -1000 * Metre / Pow<2>(Second),
+                                0 * Metre / Pow<2>(Second)}),
+                           0));
 }
 
 TEST_F(DynamicFrameTest, Helix) {
