@@ -408,7 +408,7 @@ TEST_F(VesselTest, FlightPlan) {
   EXPECT_EQ(0, vessel_.flight_plan().number_of_manœuvres());
   EXPECT_EQ(1, vessel_.flight_plan().number_of_segments());
   FlightPlan* p1 = &vessel_.flight_plan();
-  vessel_.RebaseFlightPlan(5 * Kilogram);
+  EXPECT_OK(vessel_.RebaseFlightPlan(5 * Kilogram));
   EXPECT_NE(p1, &vessel_.flight_plan());
   p1 = &vessel_.flight_plan();
   EXPECT_EQ(1, vessel_.flight_plan_count());
