@@ -7,7 +7,9 @@
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/componentwise.hpp"
+#include "testing_utilities/is_near.hpp"
 
 namespace principia {
 namespace physics {
@@ -28,11 +30,16 @@ using quantities::AngularAcceleration;
 using quantities::AngularFrequency;
 using quantities::GravitationalParameter;
 using quantities::Sqrt;
+using quantities::Time;
 using quantities::si::Metre;
+using quantities::si::Micro;
+using quantities::si::Milli;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
+using testing_utilities::IsNear;
+using testing_utilities::operator""_;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::StrictMock;
@@ -180,10 +187,10 @@ class DynamicFrameTest : public testing::Test {
  protected:
   using InertialFrame = Frame<enum class InertialFrameTag,
                               Inertial>;
-  using TestFrame = Frame<enum class TestFrameTag,
+  using RotatingFrame = Frame<enum class TestFrameTag,
                           Arbitrary>;
 
-  StrictMock<MockDynamicFrame<InertialFrame, TestFrame>> mock_frame_;
+  StrictMock<MockDynamicFrame<InertialFrame, RotatingFrame>> mock_frame_;
 
   DegreesOfFreedom<Circular> circular_degrees_of_freedom_ = {
       Circular::origin +
@@ -202,37 +209,28 @@ class DynamicFrameTest : public testing::Test {
 };
 
 // A frame in uniform rotation around |from_origin|.  The test point is at the
-// origin and in motion.  The acceleration is purely due to Coriolis.  The
-// motion elements that don't have specific values have no effect on the
-// acceleration.
+// origin and in motion along the x axis.  The acceleration is purely due to
+// Coriolis.  The motion elements that don't have specific values have no effect
+// on the acceleration.
 TEST_F(DynamicFrameTest, CoriolisAcceleration) {
   Instant const t0;
 
-  // The velocity is opposed to the motion and away from the centre.
-  DegreesOfFreedom<TestFrame> const point_dof =
-      {TestFrame::origin,
-       Velocity<TestFrame>({50 * Metre / Second,
-                            -100 * Metre / Second,
-                            0 * Metre / Second})};
-
   EXPECT_CALL(mock_frame_, MotionOfThisFrame(_))
-      .WillOnce(Invoke([&point_dof, t0](Instant const& t) {
+      .WillRepeatedly(Invoke([t0](Instant const& t) {
         AngularFrequency const ω = 10 * Radian / Second;
         AngularVelocity<InertialFrame> const angular_velocity_of_to_frame(
             {0 * Radian / Second, 0 * Radian / Second, ω});
-        Rotation<InertialFrame, TestFrame> const rotation(
+        Rotation<InertialFrame, RotatingFrame> const rotation(
             ω * (t - t0),
             angular_velocity_of_to_frame,
-            DefinesFrame<TestFrame>{});
-        Position<InertialFrame> const from_origin =
-            InertialFrame::origin +
-            Displacement<InertialFrame>({2 * Metre, 1 * Metre, 0 * Metre});
-        Position<TestFrame> const to_origin = point_dof.position();
-        RigidTransformation<InertialFrame, TestFrame> const
+            DefinesFrame<RotatingFrame>{});
+        RigidTransformation<InertialFrame, RotatingFrame> const
             rigid_transformation(
-                from_origin, to_origin, rotation.Forget<OrthogonalMap>());
+                /*from_origin=*/InertialFrame::origin,
+                /*to_origin=*/RotatingFrame::origin,
+                rotation.Forget<OrthogonalMap>());
         Velocity<InertialFrame> const velocity_of_to_frame_origin;
-        RigidMotion<InertialFrame, TestFrame> const rigid_motion(
+        RigidMotion<InertialFrame, RotatingFrame> const rigid_motion(
             rigid_transformation,
             angular_velocity_of_to_frame,
             velocity_of_to_frame_origin);
@@ -240,23 +238,65 @@ TEST_F(DynamicFrameTest, CoriolisAcceleration) {
             angular_acceleration_of_to_frame;
         Vector<Acceleration, InertialFrame> const
             acceleration_of_to_frame_origin;
-        return AcceleratedRigidMotion<InertialFrame, TestFrame>(
+        return AcceleratedRigidMotion<InertialFrame, RotatingFrame>(
             rigid_motion,
             angular_acceleration_of_to_frame,
             acceleration_of_to_frame_origin);
       }));
 
+  // No gravity.
   Vector<Acceleration, InertialFrame> const gravitational_acceleration;
   EXPECT_CALL(mock_frame_, GravitationalAcceleration(_, _))
       .WillOnce(Return(gravitational_acceleration));
 
-  // The Coriolis acceleration is towards the centre and opposed to the motion.
-  EXPECT_THAT(mock_frame_.GeometricAcceleration(t0, point_dof),
-              AlmostEquals(Vector<Acceleration, TestFrame>(
-                               {-2000 * Metre / Pow<2>(Second),
-                                -1000 * Metre / Pow<2>(Second),
-                                0 * Metre / Pow<2>(Second)}),
-                           0));
+  // The velocity is along the x axis.
+  DegreesOfFreedom<RotatingFrame> const initial_state_in_rotating_frame =
+      {RotatingFrame::origin,
+       Velocity<RotatingFrame>({100 * Metre / Second,
+                                0 * Metre / Second,
+                                0 * Metre / Second})};
+  DegreesOfFreedom<InertialFrame> const initial_state_in_inertial_frame =
+      mock_frame_.MotionOfThisFrame(t0).rigid_motion().Inverse()(
+          initial_state_in_rotating_frame);
+
+  // The time interval for evaluating the first order effect.
+  Time const Δt = 1 * Milli(Second);
+
+  Position<InertialFrame> const final_position_in_inertial_frame =
+      initial_state_in_inertial_frame.position() +
+      initial_state_in_inertial_frame.velocity() * Δt;
+
+  Position<RotatingFrame> const final_position_in_rotating_frame =
+      mock_frame_.MotionOfThisFrame(t0 + Δt)
+          .rigid_motion()
+          .rigid_transformation()(final_position_in_inertial_frame);
+
+  Position<RotatingFrame> const first_order_final_position_in_rotating_frame =
+      initial_state_in_rotating_frame.position() +
+      initial_state_in_rotating_frame.velocity() * Δt;
+
+  Displacement<RotatingFrame> const higher_order_effect =
+      final_position_in_rotating_frame -
+      first_order_final_position_in_rotating_frame;
+
+  // The second order effect is the Coriolis acceleration, the higher order
+  // effects are irrelevant.  This computation only depends on the stub motion
+  // defined above.
+  EXPECT_THAT(higher_order_effect,
+              Componentwise(IsNear(-5.0_(1) * Micro(Metre)),
+                            IsNear(-1.0_(1) * Milli(Metre)),
+                            AlmostEquals(0 * Metre, 0)));
+
+  // The Coriolis acceleration matches that computed based on the motion to the
+  // second order.  This validates that we don't have sign errors in the actual
+  // frame implementation.
+  EXPECT_THAT(
+      mock_frame_.GeometricAcceleration(t0, initial_state_in_rotating_frame) *
+          Pow<2>(Δt) / 2,
+      AlmostEquals(Displacement<RotatingFrame>({0 * Metre,
+                                                -1 * Milli(Metre),
+                                                0 * Metre}),
+                   0));
 }
 
 TEST_F(DynamicFrameTest, Helix) {
