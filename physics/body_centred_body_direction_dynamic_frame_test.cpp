@@ -198,54 +198,6 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, Inverse) {
   }
 }
 
-// The test point doesn't move so the acceleration is purely centrifugal.
-TEST_F(BodyCentredBodyDirectionDynamicFrameTest, CentrifugalAcceleration) {
-  Instant const t = t0_ + 0 * Second;
-  DegreesOfFreedom<MockFrame> const point_dof =
-      {Displacement<MockFrame>({10 * Metre, 20 * Metre, 30 * Metre}) +
-           MockFrame::origin,
-       MockFrame::unmoving};
-  DegreesOfFreedom<ICRS> const big_dof = {ICRS::origin, ICRS::unmoving};
-  DegreesOfFreedom<ICRS> const small_dof =
-      {Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) + ICRS::origin,
-       Velocity<ICRS>(
-           {40 * Metre / Second, -30 * Metre / Second, 0 * Metre / Second})};
-
-  EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t))
-      .Times(2)
-      .WillRepeatedly(Return(big_dof));
-  EXPECT_CALL(mock_small_trajectory_, EvaluateDegreesOfFreedom(t))
-      .Times(2)
-      .WillRepeatedly(Return(small_dof));
-  {
-    InSequence s;
-    EXPECT_CALL(
-        mock_ephemeris_,
-        ComputeGravitationalAccelerationOnMassiveBody(check_not_null(big_), t))
-        .WillOnce(
-            Return(Vector<Acceleration, ICRS>({0 * Metre / Pow<2>(Second),
-                                               0 * Metre / Pow<2>(Second),
-                                               0 * Metre / Pow<2>(Second)})));
-    EXPECT_CALL(mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMassiveBody(
-                    check_not_null(small_), t))
-        .WillOnce(
-            Return(Vector<Acceleration, ICRS>({-300 * Metre / Pow<2>(Second),
-                                               -400 * Metre / Pow<2>(Second),
-                                               0 * Metre / Pow<2>(Second)})));
-    EXPECT_CALL(mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMasslessBody(
-                    A<Position<ICRS> const&>(), t))
-        .WillOnce(Return(Vector<Acceleration, ICRS>()));
-  }
-
-  EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
-              AlmostEquals(Vector<Acceleration, MockFrame>({
-                               1e3 * Metre / Pow<2>(Second),
-                               2e3 * Metre / Pow<2>(Second),
-                               0 * Metre / Pow<2>(Second)}), 0));
-}
-
 // A tangential acceleration that increases the rotational speed.  The test
 // point doesn't move.  The resulting acceleration combines centrifugal and
 // Euler.

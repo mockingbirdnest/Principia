@@ -342,7 +342,7 @@ TEST_F(DynamicFrameTest, CentrifugalAcceleration) {
   // No gravity.
   Vector<Acceleration, InertialFrame> const gravitational_acceleration;
   EXPECT_CALL(mock_frame_, GravitationalAcceleration(_, _))
-      .WillOnce(Return(gravitational_acceleration));
+      .WillRepeatedly(Return(gravitational_acceleration));
 
   // The test point is on the x axis.
   DegreesOfFreedom<RotatingFrame> const initial_state_in_rotating_frame = {
