@@ -208,7 +208,7 @@ class DynamicFrameTest : public testing::Test {
           &Gravity);
 };
 
-// A frame in uniform rotation around |from_origin|.  The test point is at the
+// A frame in uniform rotation around the origin.  The test point is at the
 // origin and in motion along the x axis.  The acceleration is purely due to
 // Coriolis.  The motion elements that don't have specific values have no effect
 // on the acceleration.
@@ -247,7 +247,7 @@ TEST_F(DynamicFrameTest, CoriolisAcceleration) {
   // No gravity.
   Vector<Acceleration, InertialFrame> const gravitational_acceleration;
   EXPECT_CALL(mock_frame_, GravitationalAcceleration(_, _))
-      .WillOnce(Return(gravitational_acceleration));
+      .WillRepeatedly(Return(gravitational_acceleration));
 
   // The velocity is along the x axis.
   DegreesOfFreedom<RotatingFrame> const initial_state_in_rotating_frame =
@@ -297,6 +297,110 @@ TEST_F(DynamicFrameTest, CoriolisAcceleration) {
                                                 -1 * Milli(Metre),
                                                 0 * Metre}),
                    0));
+
+  // No Coriolis acceleration when at rest.
+  EXPECT_THAT(mock_frame_.RotationFreeGeometricAccelerationAtRest(
+                  t0, initial_state_in_rotating_frame.position()),
+              AlmostEquals(Vector<Acceleration, RotatingFrame>(), 0));
+}
+
+// A frame in uniform rotation around the origin.  The test point is on the x
+// axis.  The acceleration is purely due to centrifugal effects.  The motion
+// elements that don't have specific values have no effect on the acceleration.
+TEST_F(DynamicFrameTest, CentrifugalAcceleration) {
+  Instant const t0;
+
+  EXPECT_CALL(mock_frame_, MotionOfThisFrame(_))
+      .WillRepeatedly(Invoke([t0](Instant const& t) {
+        AngularFrequency const ω = 10 * Radian / Second;
+        AngularVelocity<InertialFrame> const angular_velocity_of_to_frame(
+            {0 * Radian / Second, 0 * Radian / Second, ω});
+        Rotation<InertialFrame, RotatingFrame> const rotation(
+            ω * (t - t0),
+            angular_velocity_of_to_frame,
+            DefinesFrame<RotatingFrame>{});
+        RigidTransformation<InertialFrame, RotatingFrame> const
+            rigid_transformation(
+                /*from_origin=*/InertialFrame::origin,
+                /*to_origin=*/RotatingFrame::origin,
+                rotation.Forget<OrthogonalMap>());
+        Velocity<InertialFrame> const velocity_of_to_frame_origin;
+        RigidMotion<InertialFrame, RotatingFrame> const rigid_motion(
+            rigid_transformation,
+            angular_velocity_of_to_frame,
+            velocity_of_to_frame_origin);
+        Bivector<AngularAcceleration, InertialFrame> const
+            angular_acceleration_of_to_frame;
+        Vector<Acceleration, InertialFrame> const
+            acceleration_of_to_frame_origin;
+        return AcceleratedRigidMotion<InertialFrame, RotatingFrame>(
+            rigid_motion,
+            angular_acceleration_of_to_frame,
+            acceleration_of_to_frame_origin);
+      }));
+
+  // No gravity.
+  Vector<Acceleration, InertialFrame> const gravitational_acceleration;
+  EXPECT_CALL(mock_frame_, GravitationalAcceleration(_, _))
+      .WillOnce(Return(gravitational_acceleration));
+
+  // The test point is on the x axis.
+  DegreesOfFreedom<RotatingFrame> const initial_state_in_rotating_frame = {
+      RotatingFrame::origin + Displacement<RotatingFrame>({100 * Metre,
+                                                           0 * Metre,
+                                                           0 * Metre}),
+      RotatingFrame::unmoving};
+  DegreesOfFreedom<InertialFrame> const initial_state_in_inertial_frame =
+      mock_frame_.MotionOfThisFrame(t0).rigid_motion().Inverse()(
+          initial_state_in_rotating_frame);
+
+  // The time interval for evaluating the first order effect.
+  Time const Δt = 1 * Milli(Second);
+
+  Position<InertialFrame> const final_position_in_inertial_frame =
+      initial_state_in_inertial_frame.position() +
+      initial_state_in_inertial_frame.velocity() * Δt;
+
+  Position<RotatingFrame> const final_position_in_rotating_frame =
+      mock_frame_.MotionOfThisFrame(t0 + Δt)
+          .rigid_motion()
+          .rigid_transformation()(final_position_in_inertial_frame);
+
+  Position<RotatingFrame> const first_order_final_position_in_rotating_frame =
+      initial_state_in_rotating_frame.position() +
+      initial_state_in_rotating_frame.velocity() * Δt;
+
+  Displacement<RotatingFrame> const higher_order_effect =
+      final_position_in_rotating_frame -
+      first_order_final_position_in_rotating_frame;
+
+  // The second order effect is the centrifugal acceleration, the higher order
+  // effects are irrelevant.  This computation only depends on the stub motion
+  // defined above.
+  EXPECT_THAT(higher_order_effect,
+              Componentwise(IsNear(5.0_(1) * Milli(Metre)),
+                            IsNear(-33.3_(1) * Micro(Metre)),
+                            AlmostEquals(0 * Metre, 0)));
+
+  // The centrifugal acceleration matches that computed based on the motion to
+  // the second order.  This validates that we don't have sign errors in the
+  // actual frame implementation.
+  EXPECT_THAT(
+      mock_frame_.GeometricAcceleration(t0, initial_state_in_rotating_frame) *
+          Pow<2>(Δt) / 2,
+      AlmostEquals(Displacement<RotatingFrame>({5 * Milli(Metre),
+                                                0 * Metre,
+                                                0 * Metre}),
+                   0));
+
+  // The centrifugal acceleration shows up for a point at rest.
+  EXPECT_THAT(mock_frame_.RotationFreeGeometricAccelerationAtRest(
+                  t0, initial_state_in_rotating_frame.position()) *
+                  Pow<2>(Δt) / 2,
+              AlmostEquals(Displacement<RotatingFrame>({5 * Milli(Metre),
+                                                        0 * Metre,
+                                                        0 * Metre}),
+                           0));
 }
 
 TEST_F(DynamicFrameTest, Helix) {
