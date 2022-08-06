@@ -209,6 +209,12 @@
     <ClInclude Include="davenport_q_method_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="gradient_descent.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gradient_descent_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClInclude Include="hermite2.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -326,6 +332,9 @@
       <Filter>Header Files</Filter>
     </ClCompile>
     <ClCompile Include="davenport_q_method_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gradient_descent_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="hermite2_test.cpp">
