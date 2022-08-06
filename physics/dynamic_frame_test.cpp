@@ -25,6 +25,7 @@ using geometry::Position;
 using geometry::RigidTransformation;
 using geometry::Velocity;
 using quantities::AngularAcceleration;
+using quantities::AngularFrequency;
 using quantities::GravitationalParameter;
 using quantities::Sqrt;
 using quantities::si::Metre;
@@ -32,8 +33,10 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
+using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::StrictMock;
+using ::testing::_;
 namespace si = quantities::si;
 
 namespace {
@@ -203,7 +206,7 @@ class DynamicFrameTest : public testing::Test {
 // motion elements that don't have specific values have no effect on the
 // acceleration.
 TEST_F(DynamicFrameTest, CoriolisAcceleration) {
-  Instant const t;
+  Instant const t0;
 
   // The velocity is opposed to the motion and away from the centre.
   DegreesOfFreedom<TestFrame> const point_dof =
@@ -212,38 +215,43 @@ TEST_F(DynamicFrameTest, CoriolisAcceleration) {
                             -100 * Metre / Second,
                             0 * Metre / Second})};
 
-  Position<InertialFrame> const from_origin =
-      InertialFrame::origin + Displacement<InertialFrame>({2 * Metre,
-                                                           1 * Metre,
-                                                           0 * Metre});
-  Position<TestFrame> const to_origin = point_dof.position();
-  auto const rotation = Rotation<InertialFrame, TestFrame>::Identity();
-  RigidTransformation<InertialFrame, TestFrame> const rigid_transformation(
-          from_origin, to_origin, rotation.Forget<OrthogonalMap>());
-  AngularVelocity<InertialFrame> const angular_velocity_of_to_frame(
-      {0 * Radian / Second,
-       0 * Radian / Second,
-       10 * Radian / Second});
-  Velocity<InertialFrame> const velocity_of_to_frame_origin;
-  RigidMotion<InertialFrame, TestFrame> const rigid_motion(rigid_transformation,
-                                                  angular_velocity_of_to_frame,
-                                                  velocity_of_to_frame_origin);
-  Bivector<AngularAcceleration, InertialFrame> const
-      angular_acceleration_of_to_frame;
-  Vector<Acceleration, InertialFrame> const acceleration_of_to_frame_origin;
-  AcceleratedRigidMotion<InertialFrame, TestFrame> const
-      accelerated_rigid_motion(rigid_motion,
-                               angular_acceleration_of_to_frame,
-                               acceleration_of_to_frame_origin);
-  EXPECT_CALL(mock_frame_, MotionOfThisFrame(t))
-      .WillOnce(Return(accelerated_rigid_motion));
+  EXPECT_CALL(mock_frame_, MotionOfThisFrame(_))
+      .WillOnce(Invoke([&point_dof, t0](Instant const& t) {
+        AngularFrequency const ω = 10 * Radian / Second;
+        AngularVelocity<InertialFrame> const angular_velocity_of_to_frame(
+            {0 * Radian / Second, 0 * Radian / Second, ω});
+        Rotation<InertialFrame, TestFrame> const rotation(
+            ω * (t - t0),
+            angular_velocity_of_to_frame,
+            DefinesFrame<TestFrame>{});
+        Position<InertialFrame> const from_origin =
+            InertialFrame::origin +
+            Displacement<InertialFrame>({2 * Metre, 1 * Metre, 0 * Metre});
+        Position<TestFrame> const to_origin = point_dof.position();
+        RigidTransformation<InertialFrame, TestFrame> const
+            rigid_transformation(
+                from_origin, to_origin, rotation.Forget<OrthogonalMap>());
+        Velocity<InertialFrame> const velocity_of_to_frame_origin;
+        RigidMotion<InertialFrame, TestFrame> const rigid_motion(
+            rigid_transformation,
+            angular_velocity_of_to_frame,
+            velocity_of_to_frame_origin);
+        Bivector<AngularAcceleration, InertialFrame> const
+            angular_acceleration_of_to_frame;
+        Vector<Acceleration, InertialFrame> const
+            acceleration_of_to_frame_origin;
+        return AcceleratedRigidMotion<InertialFrame, TestFrame>(
+            rigid_motion,
+            angular_acceleration_of_to_frame,
+            acceleration_of_to_frame_origin);
+      }));
 
   Vector<Acceleration, InertialFrame> const gravitational_acceleration;
-  EXPECT_CALL(mock_frame_, GravitationalAcceleration(t, from_origin))
+  EXPECT_CALL(mock_frame_, GravitationalAcceleration(_, _))
       .WillOnce(Return(gravitational_acceleration));
 
   // The Coriolis acceleration is towards the centre and opposed to the motion.
-  EXPECT_THAT(mock_frame_.GeometricAcceleration(t, point_dof),
+  EXPECT_THAT(mock_frame_.GeometricAcceleration(t0, point_dof),
               AlmostEquals(Vector<Acceleration, TestFrame>(
                                {-2000 * Metre / Pow<2>(Second),
                                 -1000 * Metre / Pow<2>(Second),
