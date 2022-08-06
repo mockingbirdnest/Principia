@@ -198,58 +198,6 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, Inverse) {
   }
 }
 
-// The test point is at the origin and in motion.  The acceleration is purely
-// due to Coriolis.
-TEST_F(BodyCentredBodyDirectionDynamicFrameTest, CoriolisAcceleration) {
-  Instant const t = t0_ + 0 * Second;
-  // The velocity is opposed to the motion and away from the centre.
-  DegreesOfFreedom<MockFrame> const point_dof =
-      {MockFrame::origin,
-       Velocity<MockFrame>({10 * Metre / Second,
-                            20 * Metre / Second,
-                            30 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const big_dof = {ICRS::origin, ICRS::unmoving};
-  DegreesOfFreedom<ICRS> const small_dof = {
-      Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) + ICRS::origin,
-      Velocity<ICRS>(
-          {40 * Metre / Second, -30 * Metre / Second, 0 * Metre / Second})};
-
-  EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t))
-      .Times(2)
-      .WillRepeatedly(Return(big_dof));
-  EXPECT_CALL(mock_small_trajectory_, EvaluateDegreesOfFreedom(t))
-      .Times(2)
-      .WillRepeatedly(Return(small_dof));
-  {
-    InSequence s;
-    EXPECT_CALL(
-        mock_ephemeris_,
-        ComputeGravitationalAccelerationOnMassiveBody(check_not_null(big_), t))
-        .WillOnce(
-            Return(Vector<Acceleration, ICRS>({0 * Metre / Pow<2>(Second),
-                                               0 * Metre / Pow<2>(Second),
-                                               0 * Metre / Pow<2>(Second)})));
-    EXPECT_CALL(mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMassiveBody(
-                    check_not_null(small_), t))
-        .WillOnce(
-            Return(Vector<Acceleration, ICRS>({-300 * Metre / Pow<2>(Second),
-                                               -400 * Metre / Pow<2>(Second),
-                                               0 * Metre / Pow<2>(Second)})));
-    EXPECT_CALL(mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMasslessBody(
-                    A<Position<ICRS> const&>(), t))
-        .WillOnce(Return(Vector<Acceleration, ICRS>()));
-  }
-
-  // The Coriolis acceleration is towards the centre and opposed to the motion.
-  EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
-              AlmostEquals(Vector<Acceleration, MockFrame>({
-                               400 * Metre / Pow<2>(Second),
-                               -200 * Metre / Pow<2>(Second),
-                               0 * Metre / Pow<2>(Second)}), 0));
-}
-
 // The test point doesn't move so the acceleration is purely centrifugal.
 TEST_F(BodyCentredBodyDirectionDynamicFrameTest, CentrifugalAcceleration) {
   Instant const t = t0_ + 0 * Second;
