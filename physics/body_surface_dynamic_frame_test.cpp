@@ -208,46 +208,6 @@ TEST_F(BodySurfaceDynamicFrameTest, Inverse) {
   }
 }
 
-// The test point is at the origin and in motion.  The acceleration is purely
-// due to Coriolis.
-TEST_F(BodySurfaceDynamicFrameTest, CoriolisAcceleration) {
-  Instant const t = t0_ + 0 * Second;
-  // The velocity is opposed to the motion and away from the centre.
-  DegreesOfFreedom<MockFrame> const point_dof =
-      {Displacement<MockFrame>({0 * Metre, 0 * Metre, 0 * Metre}) +
-           MockFrame::origin,
-       Velocity<MockFrame>({10 * Metre / Second,
-                            20 * Metre / Second,
-                            30 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const centre_dof = {
-      Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre}) + ICRS::origin,
-      Velocity<ICRS>()};
-
-  EXPECT_CALL(mock_centre_trajectory_, EvaluateDegreesOfFreedom(t))
-      .Times(2)
-      .WillRepeatedly(Return(centre_dof));
-  {
-    InSequence s;
-    EXPECT_CALL(
-        mock_ephemeris_,
-        ComputeGravitationalAccelerationOnMassiveBody(massive_centre_, t))
-        .WillOnce(
-            Return(Vector<Acceleration, ICRS>({0 * Metre / Pow<2>(Second),
-                                               0 * Metre / Pow<2>(Second),
-                                               0 * Metre / Pow<2>(Second)})));
-    EXPECT_CALL(mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMasslessBody(
-                    A<Position<ICRS> const&>(), t))
-        .WillOnce(Return(Vector<Acceleration, ICRS>()));
-  }
-
-  // The Coriolis acceleration is towards the centre and opposed to the motion.
-  EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof).coordinates(),
-              Componentwise(AlmostEquals(400 * Metre / Pow<2>(Second), 1),
-                            AlmostEquals(-200 * Metre / Pow<2>(Second), 0),
-                            VanishesBefore(1 * Metre / Pow<2>(Second), 110)));
-}
-
 // The test point doesn't move so the acceleration is purely centrifugal.
 TEST_F(BodySurfaceDynamicFrameTest, CentrifugalAcceleration) {
   Instant const t = t0_ + 0 * Second;
