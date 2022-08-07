@@ -5,6 +5,7 @@
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "physics/mock_dynamic_frame.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -51,42 +52,6 @@ using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::_;
 namespace si = quantities::si;
-
-namespace {
-
-template<typename InertialFrame, typename ThisFrame>
-class MockDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
- public:
-  MockDynamicFrame() = default;
-
-  MOCK_METHOD((RigidMotion<InertialFrame, ThisFrame>),
-              ToThisFrameAtTime,
-              (Instant const& t),
-              (const, override));
-  MOCK_METHOD((RigidMotion<ThisFrame, InertialFrame>),
-              FromThisFrameAtTime,
-              (Instant const& t),
-              (const, override));
-
-  MOCK_METHOD(Instant, t_min, (), (const, override));
-  MOCK_METHOD(Instant, t_max, (), (const, override));
-
-  MOCK_METHOD(void,
-              WriteToMessage,
-              (not_null<serialization::DynamicFrame*> message),
-              (const, override));
-
-  MOCK_METHOD((Vector<Acceleration, InertialFrame>),
-              GravitationalAcceleration,
-              (Instant const& t, Position<InertialFrame> const& q),
-              (const, override));
-  MOCK_METHOD((AcceleratedRigidMotion<InertialFrame, ThisFrame>),
-              MotionOfThisFrame,
-              (Instant const& t),
-              (const, override));
-};
-
-}  // namespace
 
 class DynamicFrameTest : public testing::Test {
  protected:
