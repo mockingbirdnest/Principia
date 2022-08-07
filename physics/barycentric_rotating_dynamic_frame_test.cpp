@@ -212,68 +212,6 @@ TEST_F(BarycentricRotatingDynamicFrameTest, Inverse) {
   }
 }
 
-// Two bodies in rotation with their barycentre at rest.  The test point doesn't
-// move so the acceleration is purely centrifugal.
-TEST_F(BarycentricRotatingDynamicFrameTest, CentrifugalAcceleration) {
-  Instant const t = t0_ + 0 * Second;
-  DegreesOfFreedom<MockFrame> const point_dof =
-      {Displacement<MockFrame>({10 * Metre, 20 * Metre, 30 * Metre}) +
-           MockFrame::origin,
-       Velocity<MockFrame>({0 * Metre / Second,
-                            0 * Metre / Second,
-                            0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const big_dof =
-      {Displacement<ICRS>({0.8 * Metre, -0.6 * Metre, 0 * Metre}) +
-       ICRS::origin,
-       Velocity<ICRS>(
-           {-16 * Metre / Second, 12 * Metre / Second, 0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const small_dof =
-      {Displacement<ICRS>({5 * Metre, 5 * Metre, 0 * Metre}) + ICRS::origin,
-       Velocity<ICRS>(
-           {40 * Metre / Second, -30 * Metre / Second, 0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const barycentre_dof =
-      Barycentre<DegreesOfFreedom<ICRS>, GravitationalParameter>(
-          {big_dof, small_dof},
-          {big_gravitational_parameter_, small_gravitational_parameter_});
-  EXPECT_THAT(barycentre_dof.position() - ICRS::origin,
-              Eq(Displacement<ICRS>({2 * Metre, 1 * Metre, 0 * Metre})));
-  EXPECT_THAT(barycentre_dof.velocity(), Eq(ICRS::unmoving));
-
-  EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t))
-      .Times(2)
-      .WillRepeatedly(Return(big_dof));
-  EXPECT_CALL(mock_small_trajectory_, EvaluateDegreesOfFreedom(t))
-      .Times(2)
-      .WillRepeatedly(Return(small_dof));
-  {
-    InSequence s;
-    EXPECT_CALL(
-        mock_ephemeris_,
-        ComputeGravitationalAccelerationOnMassiveBody(check_not_null(big_), t))
-        .WillOnce(
-            Return(Vector<Acceleration, ICRS>({120 * Metre / Pow<2>(Second),
-                                               160 * Metre / Pow<2>(Second),
-                                               0 * Metre / Pow<2>(Second)})));
-    EXPECT_CALL(mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMassiveBody(
-                    check_not_null(small_), t))
-        .WillOnce(
-            Return(Vector<Acceleration, ICRS>({-300 * Metre / Pow<2>(Second),
-                                               -400 * Metre / Pow<2>(Second),
-                                               0 * Metre / Pow<2>(Second)})));
-    EXPECT_CALL(mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMasslessBody(
-                    A<Position<ICRS> const&>(), t))
-        .WillOnce(Return(Vector<Acceleration, ICRS>()));
-  }
-
-  EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
-              AlmostEquals(Vector<Acceleration, MockFrame>({
-                               1e3 * Metre / Pow<2>(Second),
-                               2e3 * Metre / Pow<2>(Second),
-                               0 * Metre / Pow<2>(Second)}), 2));
-}
-
 // Two bodies in rotation with their barycentre at rest, with a tangential
 // acceleration that increases their rotational speed.  The test point doesn't
 // move.  The resulting acceleration combines centrifugal and Euler.
