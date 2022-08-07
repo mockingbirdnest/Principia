@@ -33,6 +33,7 @@ using quantities::Time;
 using quantities::si::Metre;
 using quantities::si::Micro;
 using quantities::si::Milli;
+using quantities::si::Nano;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
@@ -398,6 +399,103 @@ TEST_F(DynamicFrameTest, CentrifugalAcceleration) {
                                                    0 * Metre,
                                                    0 * Metre}),
                            0));
+}
+
+// A frame initially nonrotating and in uniformly accelerated rotation around
+// the origin.  The test point is on the x axis.  The acceleration is purely due
+// to Euler.  The motion elements that don't have specific values have no effect
+// on the acceleration.
+TEST_F(DynamicFrameTest, EulerAcceleration) {
+  Instant const t0;
+
+  EXPECT_CALL(mock_frame_, MotionOfThisFrame(_))
+      .WillRepeatedly(Invoke([t0](Instant const& t) {
+        AngularAcceleration const ωʹ = 10 * Radian / Second / Second;
+        Bivector<AngularAcceleration, Inertial> const
+            angular_acceleration_of_to_frame({0 * Radian / Second / Second,
+                                              0 * Radian / Second / Second,
+                                              ωʹ});
+        Rotation<Inertial, Rotating> const rotation(
+            ωʹ * Pow<2>(t - t0) / 2,
+            angular_acceleration_of_to_frame,
+            DefinesFrame<Rotating>{});
+        RigidTransformation<Inertial, Rotating> const
+            rigid_transformation(
+                /*from_origin=*/Inertial::origin,
+                /*to_origin=*/Rotating::origin,
+                rotation.Forget<OrthogonalMap>());
+        AngularVelocity<Inertial> const angular_velocity_of_to_frame;
+        Velocity<Inertial> const velocity_of_to_frame_origin;
+        RigidMotion<Inertial, Rotating> const rigid_motion(
+            rigid_transformation,
+            angular_velocity_of_to_frame,
+            velocity_of_to_frame_origin);
+        Vector<Acceleration, Inertial> const
+            acceleration_of_to_frame_origin;
+        return AcceleratedRigidMotion<Inertial, Rotating>(
+            rigid_motion,
+            angular_acceleration_of_to_frame,
+            acceleration_of_to_frame_origin);
+      }));
+
+  // No gravity.
+  Vector<Acceleration, Inertial> const gravitational_acceleration;
+  EXPECT_CALL(mock_frame_, GravitationalAcceleration(_, _))
+      .WillRepeatedly(Return(gravitational_acceleration));
+
+  // The test point is on the x axis.
+  DegreesOfFreedom<Rotating> const initial_state_in_rotating_frame = {
+      Rotating::origin + Displacement<Rotating>({100 * Metre,
+                                                 0 * Metre,
+                                                 0 * Metre}),
+      Rotating::unmoving};
+  DegreesOfFreedom<Inertial> const initial_state_in_inertial_frame =
+      mock_frame_.MotionOfThisFrame(t0).rigid_motion().Inverse()(
+          initial_state_in_rotating_frame);
+
+  // The time interval for evaluating the first order effect.
+  Time const Δt = 1 * Milli(Second);
+
+  Position<Inertial> const final_position_in_inertial_frame =
+      initial_state_in_inertial_frame.position() +
+      initial_state_in_inertial_frame.velocity() * Δt;
+
+  Position<Rotating> const final_position_in_rotating_frame =
+      mock_frame_.MotionOfThisFrame(t0 + Δt)
+          .rigid_motion()
+          .rigid_transformation()(final_position_in_inertial_frame);
+
+  Position<Rotating> const first_order_final_position_in_rotating_frame =
+      initial_state_in_rotating_frame.position() +
+      initial_state_in_rotating_frame.velocity() * Δt;
+
+  Displacement<Rotating> const higher_order_effect =
+      final_position_in_rotating_frame -
+      first_order_final_position_in_rotating_frame;
+
+  // The second order effect is the Euler acceleration, the higher order effects
+  // are irrelevant.  This computation only depends on the stub motion defined
+  // above.
+  EXPECT_THAT(higher_order_effect,
+              Componentwise(IsNear(-1.25_(1) * Nano(Metre)),
+                            IsNear(-0.5_(1) * Milli(Metre)),
+                            AlmostEquals(0 * Metre, 0)));
+
+  // The centrifugal acceleration matches that computed based on the motion to
+  // the second order.  This validates that we don't have sign errors in the
+  // actual frame implementation.
+  EXPECT_THAT(
+      mock_frame_.GeometricAcceleration(t0, initial_state_in_rotating_frame) *
+          Pow<2>(Δt) / 2,
+      AlmostEquals(Displacement<Rotating>({0 * Metre,
+                                           -0.5 * Milli(Metre),
+                                           0 * Metre}),
+                   0));
+
+  // No Euler acceleration when at rest.
+  EXPECT_THAT(mock_frame_.RotationFreeGeometricAccelerationAtRest(
+                  t0, initial_state_in_rotating_frame.position()),
+              AlmostEquals(Vector<Acceleration, Rotating>(), 0));
 }
 
 TEST_F(DynamicFrameTest, Helix) {
