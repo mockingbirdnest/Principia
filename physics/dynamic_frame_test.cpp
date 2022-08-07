@@ -31,7 +31,6 @@ using quantities::AngularFrequency;
 using quantities::ArcTan;
 using quantities::Length;
 using quantities::Speed;
-using quantities::Sqrt;
 using quantities::Time;
 using quantities::si::Centi;
 using quantities::si::Metre;
