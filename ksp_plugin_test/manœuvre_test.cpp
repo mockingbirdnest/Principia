@@ -17,6 +17,7 @@
 #include "physics/mock_dynamic_frame.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
+#include "quantities/constants.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/numbers.hpp"
@@ -37,6 +38,7 @@ using base::not_null;
 using base::make_not_null_unique;
 using geometry::AngularVelocity;
 using geometry::Arbitrary;
+using geometry::Bivector;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Handedness;
@@ -46,6 +48,7 @@ using geometry::RigidTransformation;
 using geometry::Rotation;
 using geometry::Vector;
 using geometry::Velocity;
+using physics::AcceleratedRigidMotion;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
@@ -54,6 +57,8 @@ using physics::MassiveBody;
 using physics::MockDynamicFrame;
 using physics::MockEphemeris;
 using physics::RigidMotion;
+using quantities::Acceleration;
+using quantities::AngularAcceleration;
 using quantities::Force;
 using quantities::GravitationalParameter;
 using quantities::Mass;
@@ -61,6 +66,7 @@ using quantities::Pow;
 using quantities::Speed;
 using quantities::Sqrt;
 using quantities::Variation;
+using quantities::constants::StandardGravity;
 using quantities::si::Kilo;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
@@ -111,13 +117,21 @@ class ManœuvreTest : public ::testing::Test {
           Displacement<Rendering>({1 * Metre, 9 * Metre, 5 * Metre}),
       Velocity<Rendering>(
           {8 * Metre / Second, 10 * Metre / Second, 4 * Metre / Second})};
-  RigidMotion<World, Rendering> const rigid_motion_ =
-      RigidMotion<World, Rendering>(
-          RigidTransformation<World, Rendering>(
-              World::origin,
-              Rendering::origin,
-              OrthogonalMap<World, Rendering>::Identity()),
-          World::nonrotating, World::unmoving);
+  Vector<Acceleration, World> const gravitational_acceleration_{
+      {0 * Metre / Second / Second,
+       0 * Metre / Second / Second,
+       -StandardGravity}};
+  RigidMotion<World, Rendering> const rigid_motion_{
+      RigidTransformation<World, Rendering>(
+          World::origin,
+          Rendering::origin,
+          OrthogonalMap<World, Rendering>::Identity()),
+      World::nonrotating,
+      World::unmoving};
+  AcceleratedRigidMotion<World, Rendering> const accelerated_rigid_motion_{
+      rigid_motion_,
+      Bivector<AngularAcceleration, World>(),
+      Vector<Acceleration, World>()};
 };
 
 TEST_F(ManœuvreTest, TimedBurn) {
@@ -161,25 +175,22 @@ TEST_F(ManœuvreTest, TimedBurn) {
   EXPECT_OK(discrete_trajectory_.Append(manœuvre.initial_time(), dof_));
   EXPECT_CALL(*mock_dynamic_frame_, ToThisFrameAtTime(manœuvre.initial_time()))
       .WillOnce(Return(rigid_motion_));
+  EXPECT_CALL(*mock_dynamic_frame_, MotionOfThisFrame(manœuvre.initial_time()))
+      .WillOnce(Return(accelerated_rigid_motion_));
   EXPECT_CALL(*mock_dynamic_frame_,
-              FrenetFrame(manœuvre.initial_time(), rendering_dof_))
-      .WillOnce(
-          Return(Rotation<Frenet<Rendering>, Rendering>::Identity()));
+              GravitationalAcceleration(manœuvre.initial_time(), _))
+      .WillOnce(Return(gravitational_acceleration_));
   manœuvre.set_coasting_trajectory(discrete_trajectory_.segments().begin());
   auto const acceleration = manœuvre.InertialIntrinsicAcceleration();
   EXPECT_EQ(
       0 * Metre / Pow<2>(Second),
       acceleration(manœuvre.initial_time() - 1 * Second).Norm());
-  EXPECT_EQ(0.5 * Metre / Pow<2>(Second),
-            acceleration(manœuvre.initial_time()).Norm());
+  EXPECT_THAT(acceleration(manœuvre.initial_time()).Norm(),
+              AlmostEquals(0.5 * Metre / Pow<2>(Second), 1));
   EXPECT_THAT(acceleration(manœuvre.time_of_half_Δv()).Norm(),
               AlmostEquals(Sqrt(0.5) * Metre / Pow<2>(Second), 1));
-  EXPECT_EQ(1 * Metre / Pow<2>(Second),
-            acceleration(manœuvre.final_time()).Norm());
-  EXPECT_THAT(
-      acceleration(manœuvre.final_time()),
-      Componentwise(0 * Metre / Pow<2>(Second), 1 * Metre / Pow<2>(Second),
-                    0 * Metre / Pow<2>(Second)));
+  EXPECT_THAT(acceleration(manœuvre.final_time()).Norm(),
+              AlmostEquals(1 * Metre / Pow<2>(Second), 1));
   EXPECT_EQ(0 * Metre / Pow<2>(Second),
             acceleration(manœuvre.final_time() + 1 * Second).Norm());
 }
@@ -224,17 +235,18 @@ TEST_F(ManœuvreTest, TargetΔv) {
   EXPECT_OK(discrete_trajectory_.Append(manœuvre.initial_time(), dof_));
   EXPECT_CALL(*mock_dynamic_frame_, ToThisFrameAtTime(manœuvre.initial_time()))
       .WillOnce(Return(rigid_motion_));
+  EXPECT_CALL(*mock_dynamic_frame_, MotionOfThisFrame(manœuvre.initial_time()))
+      .WillOnce(Return(accelerated_rigid_motion_));
   EXPECT_CALL(*mock_dynamic_frame_,
-              FrenetFrame(manœuvre.initial_time(), rendering_dof_))
-      .WillOnce(
-          Return(Rotation<Frenet<Rendering>, Rendering>::Identity()));
+              GravitationalAcceleration(manœuvre.initial_time(), _))
+      .WillOnce(Return(gravitational_acceleration_));
   manœuvre.set_coasting_trajectory(discrete_trajectory_.segments().begin());
   auto const acceleration = manœuvre.InertialIntrinsicAcceleration();
   EXPECT_EQ(
       0 * Metre / Pow<2>(Second),
       acceleration(manœuvre.initial_time() - 1 * Second).Norm());
-  EXPECT_EQ(0.5 * Metre / Pow<2>(Second),
-            acceleration(manœuvre.initial_time()).Norm());
+  EXPECT_THAT(acceleration(manœuvre.initial_time()).Norm(),
+              AlmostEquals(0.5 * Metre / Pow<2>(Second), 1));
   EXPECT_EQ(Sqrt(e) / 2 * Metre / Pow<2>(Second),
             acceleration(manœuvre.time_of_half_Δv()).Norm());
   EXPECT_EQ((e / 2) * Metre / Pow<2>(Second),
@@ -310,9 +322,11 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
               ToThisFrameAtTime(first_manœuvre.initial_time()))
       .WillOnce(Return(rigid_motion_));
   EXPECT_CALL(*mock_dynamic_frame_,
-              FrenetFrame(first_manœuvre.initial_time(), rendering_dof_))
-      .WillOnce(
-          Return(Rotation<Frenet<Rendering>, Rendering>::Identity()));
+              MotionOfThisFrame(first_manœuvre.initial_time()))
+      .WillOnce(Return(accelerated_rigid_motion_));
+  EXPECT_CALL(*mock_dynamic_frame_,
+              GravitationalAcceleration(first_manœuvre.initial_time(), _))
+      .WillOnce(Return(gravitational_acceleration_));
   first_manœuvre.set_coasting_trajectory(
       discrete_trajectory_.segments().begin());
   auto const first_acceleration =
@@ -357,9 +371,11 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
               ToThisFrameAtTime(second_manœuvre.initial_time()))
       .WillOnce(Return(rigid_motion_));
   EXPECT_CALL(*mock_dynamic_frame_,
-              FrenetFrame(second_manœuvre.initial_time(), rendering_dof_))
-      .WillOnce(
-          Return(Rotation<Frenet<Rendering>, Rendering>::Identity()));
+              MotionOfThisFrame(second_manœuvre.initial_time()))
+      .WillOnce(Return(accelerated_rigid_motion_));
+  EXPECT_CALL(*mock_dynamic_frame_,
+              GravitationalAcceleration(second_manœuvre.initial_time(), _))
+      .WillOnce(Return(gravitational_acceleration_));
   second_manœuvre.set_coasting_trajectory(
       discrete_trajectory_.segments().begin());
   auto const second_acceleration =
