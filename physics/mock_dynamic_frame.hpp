@@ -1,10 +1,11 @@
 ﻿
 #pragma once
 
+#include "physics/dynamic_frame.hpp"
+
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
-#include "physics/dynamic_frame.hpp"
 #include "physics/rigid_motion.hpp"
 
 namespace principia {
@@ -26,26 +27,11 @@ class MockDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
   MOCK_METHOD(Instant, t_min, (), (const, override));
   MOCK_METHOD(Instant, t_max, (), (const, override));
 
-  MOCK_METHOD((Vector<Acceleration, ThisFrame>),
-              GeometricAcceleration,
-              (Instant const& t,
-               DegreesOfFreedom<ThisFrame> const& degrees_of_freedom),
-              (const, override));
-
-  using Rot = Rotation<Frenet<ThisFrame>, ThisFrame>;
-
-  MOCK_METHOD(Rot,
-              FrenetFrame,
-              (Instant const& t,
-               DegreesOfFreedom<ThisFrame> const& degrees_of_freedom),
-              (const, override));
-
   MOCK_METHOD(void,
               WriteToMessage,
               (not_null<serialization::DynamicFrame*> message),
               (const, override));
 
- private:
   MOCK_METHOD((Vector<Acceleration, InertialFrame>),
               GravitationalAcceleration,
               (Instant const& t, Position<InertialFrame> const& q),
