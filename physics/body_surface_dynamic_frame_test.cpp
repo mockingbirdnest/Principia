@@ -208,8 +208,6 @@ TEST_F(BodySurfaceDynamicFrameTest, Inverse) {
   }
 }
 
-// No Euler acceleration in this dynamic frame.
-
 // A linear acceleration identical for both bodies.  The test point doesn't
 // move.  The resulting acceleration combines centrifugal and linear.
 TEST_F(BodySurfaceDynamicFrameTest, LinearAcceleration) {
