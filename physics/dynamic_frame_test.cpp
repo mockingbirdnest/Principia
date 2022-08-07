@@ -182,24 +182,22 @@ TEST_F(DynamicFrameTest, LinearAcceleration) {
       final_position_in_translating_frame -
       first_order_final_position_in_translating_frame;
 
-  // The second order effect is the linear acceleration, the higher order
-  // effects are irrelevant.  This computation only depends on the stub motion
-  // defined above.
+  // The second order effect is the linear acceleration.  This computation only
+  // depends on the stub motion defined above.
   EXPECT_THAT(higher_order_effect,
               Componentwise(AlmostEquals(0 * Metre, 0),
                             AlmostEquals(0 * Metre, 0),
                             IsNear(-5.0_(1) * Micro(Metre))));
 
   // The linear acceleration matches that computed based on the motion to the
-  // second order.  This validates that we don't have sign errors in the actual
-  // frame implementation.
-  EXPECT_THAT(
-      mock_frame_.GeometricAcceleration(t0_, initial_state_in_translating_frame) *
-          Pow<2>(Δt) / 2,
-      AlmostEquals(Displacement<Translating>({0 * Metre,
-                                              0 * Metre,
-                                              -5 * Micro(Metre)}),
-                   0));
+  // second order.
+  EXPECT_THAT(mock_frame_.GeometricAcceleration(
+                  t0_, initial_state_in_translating_frame) *
+                  Pow<2>(Δt) / 2,
+              AlmostEquals(Displacement<Translating>({0 * Metre,
+                                                      0 * Metre,
+                                                      -5 * Micro(Metre)}),
+                           0));
 
   // The linear acceleration shows up for a point at rest.
   EXPECT_THAT(mock_frame_.RotationFreeGeometricAccelerationAtRest(
@@ -288,8 +286,7 @@ TEST_F(DynamicFrameTest, CoriolisAcceleration) {
                             VanishesBefore(1 * Metre, 4)));
 
   // The Coriolis acceleration matches that computed based on the motion to the
-  // second order.  This validates that we don't have sign errors in the actual
-  // frame implementation.
+  // second order.
   EXPECT_THAT(
       mock_frame_.GeometricAcceleration(t0_, initial_state_in_rotating_frame) *
           Pow<2>(Δt) / 2,
@@ -381,8 +378,7 @@ TEST_F(DynamicFrameTest, CentrifugalAcceleration) {
                             AlmostEquals(0 * Metre, 0)));
 
   // The centrifugal acceleration matches that computed based on the motion to
-  // the second order.  This validates that we don't have sign errors in the
-  // actual frame implementation.
+  // the second order.
   EXPECT_THAT(
       mock_frame_.GeometricAcceleration(t0_, initial_state_in_rotating_frame) *
           Pow<2>(Δt) / 2,
@@ -480,8 +476,7 @@ TEST_F(DynamicFrameTest, EulerAcceleration) {
                             AlmostEquals(0 * Metre, 0)));
 
   // The centrifugal acceleration matches that computed based on the motion to
-  // the second order.  This validates that we don't have sign errors in the
-  // actual frame implementation.
+  // the second order.
   EXPECT_THAT(
       mock_frame_.GeometricAcceleration(t0_, initial_state_in_rotating_frame) *
           Pow<2>(Δt) / 2,
