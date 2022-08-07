@@ -18,6 +18,7 @@ namespace internal_gradient_descent {
 
 using geometry::Displacement;
 using geometry::InnerProduct;
+using geometry::InnerProductForm;
 using geometry::Normalize;
 using geometry::SymmetricBilinearForm;
 using geometry::SymmetricProduct;
@@ -134,9 +135,6 @@ Position<Frame> BroydenFletcherGoldfarbShanno(
     Field<Scalar, Frame> const& f,
     Field<Gradient<Scalar, Frame>, Frame> const& grad_f,
     Length const& tolerance) {
-  static SymmetricBilinearForm<double, Frame, Vector> const identity =
-      SymmetricBilinearForm<double, Frame, Vector>::Identity();
-
   // The first step uses vanilla steepest descent.
   auto const x₀ = start_position;
   auto const grad_f_x₀ = grad_f(x₀);
@@ -155,7 +153,7 @@ Position<Frame> BroydenFletcherGoldfarbShanno(
   Displacement<Frame> const s₀ = x₁ - x₀;
   auto const y₀ = grad_f_x₁ - grad_f_x₀;
   InverseHessian<Scalar, Frame> const H₀ =
-      InnerProduct(s₀, y₀) * identity / y₀.Norm²();
+      InnerProduct(s₀, y₀) * InnerProductForm<Frame, Vector>() / y₀.Norm²();
 
   auto xₖ = x₁;
   auto grad_f_xₖ = grad_f_x₁;
