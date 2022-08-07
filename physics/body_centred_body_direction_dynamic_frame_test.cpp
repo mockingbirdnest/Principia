@@ -14,8 +14,6 @@
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
-#include "physics/mock_continuous_trajectory.hpp"
-#include "physics/mock_ephemeris.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/quantities.hpp"
@@ -32,14 +30,11 @@ namespace physics {
 namespace internal_body_centred_body_direction_dynamic_frame {
 
 using astronomy::ICRS;
-using base::check_not_null;
 using geometry::Arbitrary;
 using geometry::Barycentre;
-using geometry::Bivector;
 using geometry::Frame;
 using geometry::Handedness;
 using geometry::Instant;
-using geometry::Rotation;
 using geometry::Vector;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
@@ -53,14 +48,10 @@ using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::VanishesBefore;
-using ::testing::A;
-using ::testing::Eq;
-using ::testing::InSequence;
 using ::testing::IsNull;
 using ::testing::Lt;
 using ::testing::Not;
 using ::testing::Return;
-using ::testing::StrictMock;
 using ::testing::_;
 
 namespace {
@@ -77,10 +68,6 @@ class BodyCentredBodyDirectionDynamicFrameTest : public ::testing::Test {
                               Arbitrary,
                               Handedness::Right,
                               serialization::Frame::TEST>;
-  using MockFrame = Frame<serialization::Frame::TestTag,
-                          Arbitrary,
-                          Handedness::Right,
-                          serialization::Frame::TEST1>;
 
   BodyCentredBodyDirectionDynamicFrameTest()
       : period_(10 * π * sqrt(5.0 / 7.0) * Second),
@@ -105,16 +92,6 @@ class BodyCentredBodyDirectionDynamicFrameTest : public ::testing::Test {
         small_initial_state_(solar_system_.degrees_of_freedom(small)),
         small_gravitational_parameter_(
             solar_system_.gravitational_parameter(small)) {
-    EXPECT_CALL(mock_ephemeris_,
-                trajectory(solar_system_.massive_body(*ephemeris_, big)))
-        .WillOnce(Return(&mock_big_trajectory_));
-    EXPECT_CALL(mock_ephemeris_,
-                trajectory(solar_system_.massive_body(*ephemeris_, small)))
-        .WillOnce(Return(&mock_small_trajectory_));
-    mock_frame_ =
-        std::make_unique<BodyCentredBodyDirectionDynamicFrame<ICRS, MockFrame>>(
-            &mock_ephemeris_, big_, small_);
-
     EXPECT_OK(ephemeris_->Prolong(t0_ + 2 * period_));
     big_small_frame_ = std::make_unique<
         BodyCentredBodyDirectionDynamicFrame<ICRS, BigSmallFrame>>(
@@ -131,14 +108,9 @@ class BodyCentredBodyDirectionDynamicFrameTest : public ::testing::Test {
   MassiveBody const* small_;
   DegreesOfFreedom<ICRS> small_initial_state_;
   GravitationalParameter small_gravitational_parameter_;
-  StrictMock<MockEphemeris<ICRS>> mock_ephemeris_;
 
-  std::unique_ptr<BodyCentredBodyDirectionDynamicFrame<ICRS, MockFrame>>
-      mock_frame_;
   std::unique_ptr<BodyCentredBodyDirectionDynamicFrame<ICRS, BigSmallFrame>>
       big_small_frame_;
-  StrictMock<MockContinuousTrajectory<ICRS>> mock_big_trajectory_;
-  StrictMock<MockContinuousTrajectory<ICRS>> mock_small_trajectory_;
 };
 
 

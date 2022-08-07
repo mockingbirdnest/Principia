@@ -14,8 +14,6 @@
 #include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/ephemeris.hpp"
-#include "physics/mock_continuous_trajectory.hpp"
-#include "physics/mock_ephemeris.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/quantities.hpp"
@@ -31,14 +29,11 @@ namespace physics {
 namespace internal_barycentric_rotating_dynamic_frame {
 
 using astronomy::ICRS;
-using base::check_not_null;
 using geometry::Arbitrary;
 using geometry::Barycentre;
-using geometry::Bivector;
 using geometry::Frame;
 using geometry::Handedness;
 using geometry::Instant;
-using geometry::Rotation;
 using geometry::Vector;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
@@ -50,14 +45,10 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
-using ::testing::A;
-using ::testing::Eq;
-using ::testing::InSequence;
 using ::testing::IsNull;
 using ::testing::Lt;
 using ::testing::Not;
 using ::testing::Return;
-using ::testing::StrictMock;
 using ::testing::_;
 
 namespace {
@@ -74,10 +65,6 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
                               Arbitrary,
                               Handedness::Right,
                               serialization::Frame::TEST>;
-  using MockFrame = Frame<serialization::Frame::TestTag,
-                          Arbitrary,
-                          Handedness::Right,
-                          serialization::Frame::TEST1>;
 
   BarycentricRotatingDynamicFrameTest()
       : period_(10 * π * sqrt(5.0 / 7.0) * Second),
@@ -107,16 +94,6 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
                 {big_initial_state_, small_initial_state_},
                 {big_gravitational_parameter_,
                  small_gravitational_parameter_})) {
-    EXPECT_CALL(mock_ephemeris_,
-                trajectory(solar_system_.massive_body(*ephemeris_, big)))
-        .WillOnce(Return(&mock_big_trajectory_));
-    EXPECT_CALL(mock_ephemeris_,
-                trajectory(solar_system_.massive_body(*ephemeris_, small)))
-        .WillOnce(Return(&mock_small_trajectory_));
-    mock_frame_ =
-        std::make_unique<BarycentricRotatingDynamicFrame<ICRS, MockFrame>>(
-            &mock_ephemeris_, big_, small_);
-
     EXPECT_OK(ephemeris_->Prolong(t0_ + 2 * period_));
     big_small_frame_ =
         std::make_unique<BarycentricRotatingDynamicFrame<ICRS, BigSmallFrame>>(
@@ -134,13 +111,9 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
   DegreesOfFreedom<ICRS> const small_initial_state_;
   GravitationalParameter const small_gravitational_parameter_;
   DegreesOfFreedom<ICRS> const centre_of_mass_initial_state_;
-  StrictMock<MockEphemeris<ICRS>> mock_ephemeris_;
 
-  std::unique_ptr<BarycentricRotatingDynamicFrame<ICRS, MockFrame>> mock_frame_;
   std::unique_ptr<BarycentricRotatingDynamicFrame<ICRS, BigSmallFrame>>
       big_small_frame_;
-  StrictMock<MockContinuousTrajectory<ICRS>> mock_big_trajectory_;
-  StrictMock<MockContinuousTrajectory<ICRS>> mock_small_trajectory_;
 };
 
 

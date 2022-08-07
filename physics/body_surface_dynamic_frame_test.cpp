@@ -13,8 +13,6 @@
 #include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/ephemeris.hpp"
-#include "physics/mock_continuous_trajectory.hpp"
-#include "physics/mock_ephemeris.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/quantities.hpp"
@@ -32,15 +30,12 @@ namespace physics {
 namespace internal_body_surface_dynamic_frame {
 
 using astronomy::ICRS;
-using base::check_not_null;
 using base::dynamic_cast_not_null;
 using geometry::Arbitrary;
-using geometry::Bivector;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Handedness;
 using geometry::Instant;
-using geometry::Rotation;
 using geometry::Vector;
 using geometry::Velocity;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
@@ -58,14 +53,10 @@ using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::VanishesBefore;
-using ::testing::A;
-using ::testing::Eq;
-using ::testing::InSequence;
 using ::testing::IsNull;
 using ::testing::Lt;
 using ::testing::Not;
 using ::testing::Return;
-using ::testing::StrictMock;
 using ::testing::_;
 
 namespace {
@@ -82,10 +73,6 @@ class BodySurfaceDynamicFrameTest : public ::testing::Test {
                               Arbitrary,
                               Handedness::Right,
                               serialization::Frame::TEST>;
-  using MockFrame = Frame<serialization::Frame::TestTag,
-                          Arbitrary,
-                          Handedness::Right,
-                          serialization::Frame::TEST1>;
 
   BodySurfaceDynamicFrameTest()
       : period_(10 * π * sqrt(5.0 / 7.0) * Second),
@@ -122,11 +109,6 @@ class BodySurfaceDynamicFrameTest : public ::testing::Test {
                     /*ascension_of_pole=*/0 * Radian,
                     /*declination_of_pole=*/π / 2 * Radian)),
         massive_centre_(&centre_) {
-    EXPECT_CALL(mock_ephemeris_, trajectory(_))
-        .WillOnce(Return(&mock_centre_trajectory_));
-    mock_frame_ = std::make_unique<BodySurfaceDynamicFrame<ICRS, MockFrame>>(
-        &mock_ephemeris_, &centre_);
-
     EXPECT_OK(ephemeris_->Prolong(t0_ + 2 * period_));
     big_frame_ = std::make_unique<BodySurfaceDynamicFrame<ICRS, BigSmallFrame>>(
         ephemeris_.get(), big_);
@@ -143,11 +125,8 @@ class BodySurfaceDynamicFrameTest : public ::testing::Test {
   GravitationalParameter small_gravitational_parameter_;
   RotatingBody<ICRS> const centre_;
   not_null<MassiveBody const*> const massive_centre_;
-  StrictMock<MockEphemeris<ICRS>> mock_ephemeris_;
 
-  std::unique_ptr<BodySurfaceDynamicFrame<ICRS, MockFrame>> mock_frame_;
   std::unique_ptr<BodySurfaceDynamicFrame<ICRS, BigSmallFrame>> big_frame_;
-  StrictMock<MockContinuousTrajectory<ICRS>> mock_centre_trajectory_;
 };
 
 

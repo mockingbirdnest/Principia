@@ -5,6 +5,7 @@
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
@@ -20,17 +21,18 @@ using geometry::AngularVelocity;
 using geometry::DefinesFrame;
 using geometry::Displacement;
 using geometry::Frame;
-using geometry::InfiniteFuture;
-using geometry::InfinitePast;
 using geometry::OrthogonalMap;
 using geometry::Position;
 using geometry::RigidTransformation;
 using geometry::Velocity;
+using quantities::Angle;
 using quantities::AngularAcceleration;
 using quantities::AngularFrequency;
-using quantities::GravitationalParameter;
-using quantities::Sqrt;
+using quantities::ArcTan;
+using quantities::Length;
+using quantities::Speed;
 using quantities::Time;
+using quantities::si::Centi;
 using quantities::si::Metre;
 using quantities::si::Micro;
 using quantities::si::Milli;
@@ -42,114 +44,15 @@ using testing_utilities::Componentwise;
 using testing_utilities::IsNear;
 using testing_utilities::VanishesBefore;
 using testing_utilities::operator""_;
+using ::testing::Gt;
 using ::testing::Invoke;
+using ::testing::Lt;
 using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::_;
 namespace si = quantities::si;
 
 namespace {
-
-using Circular = Frame<enum class CircularTag, geometry::Inertial>;
-using Helical = Frame<enum class HelicalTag, geometry::Inertial>;
-
-Vector<Acceleration, Circular> Gravity(Instant const& t,
-                                       Position<Circular> const& q) {
-  Displacement<Circular> const r = q - Circular::origin;
-  auto const r² = r.Norm²();
-  return -si::Unit<GravitationalParameter> * r / (Sqrt(r²) * r²);
-}
-
-// An inertial frame.
-template<typename OtherFrame, typename ThisFrame>
-class InertialFrame : public DynamicFrame<OtherFrame, ThisFrame> {
- public:
-  InertialFrame(
-      DegreesOfFreedom<OtherFrame> const& origin_degrees_of_freedom_at_epoch,
-      Instant const& epoch,
-      OrthogonalMap<OtherFrame, ThisFrame> const& orthogonal_map,
-      std::function<Vector<Acceleration, OtherFrame>(
-          Instant const& t,
-          Position<OtherFrame> const& q)> gravity);
-
-  Instant t_min() const override {
-    return InfinitePast;
-  }
-
-  Instant t_max() const override {
-    return InfiniteFuture;
-  }
-
-  RigidMotion<OtherFrame, ThisFrame> ToThisFrameAtTime(
-      Instant const& t) const override;
-
-  void WriteToMessage(
-      not_null<serialization::DynamicFrame*> message) const override;
-
- private:
-  Vector<Acceleration, OtherFrame> GravitationalAcceleration(
-      Instant const& t,
-      Position<OtherFrame> const& q) const override;
-  AcceleratedRigidMotion<OtherFrame, ThisFrame> MotionOfThisFrame(
-      Instant const& t) const override;
-
-  DegreesOfFreedom<OtherFrame> const origin_degrees_of_freedom_at_epoch_;
-  Instant const epoch_;
-  OrthogonalMap<OtherFrame, ThisFrame> const orthogonal_map_;
-  std::function<Vector<Acceleration, OtherFrame>(
-      Instant const& t,
-      Position<OtherFrame> const& q)> gravity_;
-};
-
-template<typename OtherFrame, typename ThisFrame>
-InertialFrame<OtherFrame, ThisFrame>::InertialFrame(
-    DegreesOfFreedom<OtherFrame> const& origin_degrees_of_freedom_at_epoch,
-    Instant const& epoch,
-    OrthogonalMap<OtherFrame, ThisFrame> const& orthogonal_map,
-    std::function<Vector<Acceleration, OtherFrame>(
-        Instant const& t,
-        Position<OtherFrame> const& q)> gravity)
-    : origin_degrees_of_freedom_at_epoch_(origin_degrees_of_freedom_at_epoch),
-      epoch_(epoch),
-      orthogonal_map_(orthogonal_map),
-      gravity_(std::move(gravity)) {}
-
-template<typename OtherFrame, typename ThisFrame>
-RigidMotion<OtherFrame, ThisFrame>
-InertialFrame<OtherFrame, ThisFrame>::ToThisFrameAtTime(
-    Instant const& t) const {
-  return RigidMotion<OtherFrame, ThisFrame>(
-             RigidTransformation<OtherFrame, ThisFrame>(
-                 origin_degrees_of_freedom_at_epoch_.position() +
-                     (t - epoch_) *
-                         origin_degrees_of_freedom_at_epoch_.velocity(),
-                 ThisFrame::origin,
-                 orthogonal_map_),
-             OtherFrame::nonrotating,
-             origin_degrees_of_freedom_at_epoch_.velocity());
-}
-
-template<typename OtherFrame, typename ThisFrame>
-void InertialFrame<OtherFrame, ThisFrame>::WriteToMessage(
-    not_null<serialization::DynamicFrame*> message) const {}
-
-template<typename OtherFrame, typename ThisFrame>
-Vector<Acceleration, OtherFrame>
-InertialFrame<OtherFrame, ThisFrame>::GravitationalAcceleration(
-    Instant const& t,
-    Position<OtherFrame> const& q) const {
-  return gravity_(t, q);
-}
-
-template<typename OtherFrame, typename ThisFrame>
-AcceleratedRigidMotion<OtherFrame, ThisFrame>
-InertialFrame<OtherFrame, ThisFrame>::MotionOfThisFrame(
-    Instant const& t) const {
-  return AcceleratedRigidMotion<OtherFrame, ThisFrame>(
-      ToThisFrameAtTime(t),
-      /*angular_acceleration_of_to_frame=*/{},
-      /*acceleration_of_to_frame_origin=*/{});
-}
 
 template<typename InertialFrame, typename ThisFrame>
 class MockDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
@@ -207,21 +110,6 @@ class DynamicFrameTest : public testing::Test {
       {-41 * Metre / Second, 43 * Metre / Second, -47 * Metre / Second});
   Velocity<Rotating> const general_velocity_z_ = Velocity<Rotating>(
       {0 * Metre / Second, 0 * Metre / Second, 53 * Metre / Second});
-
-  DegreesOfFreedom<Circular> circular_degrees_of_freedom_ = {
-      Circular::origin +
-          Displacement<Circular>({1 * Metre, 0 * Metre, 0 * Metre}),
-      Velocity<Circular>(
-          {0 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second})};
-
-  InertialFrame<Circular, Helical> helix_frame_ =
-      InertialFrame<Circular, Helical>(
-          {Circular::origin,
-           Velocity<Circular>(
-               {0 * Metre / Second, 0 * Metre / Second, 1 * Metre / Second})},
-          /*epoch=*/Instant() ,
-          OrthogonalMap<Circular, Helical>::Identity(),
-          &Gravity);
 };
 
 // A frame uniformly accelerated along the z axis.  The test point is in general
@@ -603,19 +491,142 @@ TEST_F(DynamicFrameTest, EulerAcceleration) {
               AlmostEquals(Vector<Acceleration, Rotating>(), 0));
 }
 
-TEST_F(DynamicFrameTest, Helix) {
-  auto helix_frenet_frame = helix_frame_.FrenetFrame(
-      Instant(),
-      helix_frame_.ToThisFrameAtTime(Instant())(circular_degrees_of_freedom_));
-  Vector<double, Helical> tangent =
-      helix_frenet_frame(Vector<double, Frenet<Helical>>({1, 0, 0}));
-  Vector<double, Helical> normal =
-      helix_frenet_frame(Vector<double, Frenet<Helical>>({0, 1, 0}));
-  EXPECT_THAT(normal, Componentwise(-1, 0, 0));
-  EXPECT_THAT(tangent,
-              Componentwise(0,
-                            AlmostEquals(Sqrt(0.5), 1),
-                            AlmostEquals(-Sqrt(0.5), 1)));
+// A bench vice with a right-hand screw.  The x axis is along the screw,
+// pointing toward the operator, and the z axis is vertical pointing up.  The
+// vice is being untightened (the handle is on the top and turns to the left).
+// In the frame of the handle, a point on top of the moving jaw has a circular
+// trajectory, while a point on top of the fixed jaw has an helical trajectory.
+// This in turns determines two distinct Frenet frames which share the same
+// normal (directed along -z) but different tangents: for the fixed jaw, the
+// tangent is directed along the lead angle of the screw.
+TEST_F(DynamicFrameTest, FrenetFrame) {
+  using Handle = Frame<enum class HangleTag, geometry::Inertial>;
+  using FixedJaw = Frame<enum class FixedJawTag, geometry::Inertial>;
+  using MovingJaw = Frame<enum class MovingJawTag, geometry::Inertial>;
+
+  StrictMock<MockDynamicFrame<FixedJaw, MovingJaw>> jaw_to_jaw_frame;
+  StrictMock<MockDynamicFrame<MovingJaw, Handle>> jaw_to_handle_frame;
+
+  Speed const v = 1 * Centi(Metre) / Second;
+  AngularFrequency const ω = 1 * Radian / Second;
+
+  EXPECT_CALL(jaw_to_jaw_frame, ToThisFrameAtTime(_))
+      .WillRepeatedly(Invoke([this, v](Instant const& t) {
+        auto const velocity_of_to_frame_origin =
+            Velocity<FixedJaw>({v,
+                                0 * Metre / Second,
+                                0 * Metre / Second});
+        auto const position_of_to_frame_origin =
+            FixedJaw::origin +
+            Displacement<FixedJaw>({v * (t - t0_),
+                                    0 * Metre,
+                                    0 * Metre});
+        RigidTransformation<FixedJaw, MovingJaw> const
+            rigid_transformation(
+                /*from_origin=*/position_of_to_frame_origin,
+                /*to_origin=*/MovingJaw::origin,
+                OrthogonalMap<FixedJaw, MovingJaw>::Identity());
+        AngularVelocity<FixedJaw> const angular_velocity_of_to_frame;
+        return RigidMotion<FixedJaw, MovingJaw>(
+            rigid_transformation,
+            angular_velocity_of_to_frame,
+            velocity_of_to_frame_origin);
+      }));
+
+  EXPECT_CALL(jaw_to_jaw_frame, MotionOfThisFrame(_))
+      .WillRepeatedly(Invoke([this, &jaw_to_jaw_frame](Instant const& t) {
+        Bivector<AngularAcceleration, FixedJaw> const
+            angular_acceleration_of_to_frame;
+        Vector<Acceleration, FixedJaw> const acceleration_of_to_frame_origin;
+        return AcceleratedRigidMotion<FixedJaw, MovingJaw>(
+            jaw_to_jaw_frame.ToThisFrameAtTime(t),
+            angular_acceleration_of_to_frame,
+            acceleration_of_to_frame_origin);
+      }));
+
+  EXPECT_CALL(jaw_to_handle_frame, ToThisFrameAtTime(_))
+      .WillRepeatedly(Invoke([this, ω](Instant const& t) {
+        AngularVelocity<MovingJaw> const angular_velocity_of_to_frame(
+            {ω, 0 * Radian / Second, 0 * Radian / Second});
+        Rotation<MovingJaw, Handle> const rotation(
+            ω * (t - t0_),
+            angular_velocity_of_to_frame,
+            DefinesFrame<Handle>{});
+        RigidTransformation<MovingJaw, Handle> const
+            rigid_transformation(
+                /*from_origin=*/MovingJaw::origin,
+                /*to_origin=*/Handle::origin,
+                rotation.Forget<OrthogonalMap>());
+        Velocity<MovingJaw> const velocity_of_to_frame_origin;
+        return RigidMotion<MovingJaw, Handle>(
+            rigid_transformation,
+            angular_velocity_of_to_frame,
+            velocity_of_to_frame_origin);
+      }));
+
+  EXPECT_CALL(jaw_to_handle_frame, MotionOfThisFrame(_))
+      .WillRepeatedly(Invoke([this, &jaw_to_handle_frame](Instant const& t) {
+        Bivector<AngularAcceleration, MovingJaw> const
+            angular_acceleration_of_to_frame;
+        Vector<Acceleration, MovingJaw> const
+            acceleration_of_to_frame_origin;
+        return AcceleratedRigidMotion<MovingJaw, Handle>(
+            jaw_to_handle_frame.ToThisFrameAtTime(t),
+            angular_acceleration_of_to_frame,
+            acceleration_of_to_frame_origin);
+      }));
+
+  // No gravity (or put it another way, the gravity is compensated by a reaction
+  // force).
+  EXPECT_CALL(jaw_to_jaw_frame, GravitationalAcceleration(_, _))
+      .WillRepeatedly(Return(Vector<Acceleration, FixedJaw>()));
+  EXPECT_CALL(jaw_to_handle_frame, GravitationalAcceleration(_, _))
+      .WillRepeatedly(Return(Vector<Acceleration, MovingJaw>()));
+
+  // Fixed points on top of each jaw.
+  Length const r = 0.2 * Metre;
+  DegreesOfFreedom<FixedJaw> fixed_jaw_degrees_of_freedom(
+      FixedJaw::origin +
+          Displacement<FixedJaw>({0 * Metre, 0 * Metre, r}),
+      FixedJaw::unmoving);
+  DegreesOfFreedom<MovingJaw> moving_jaw_degrees_of_freedom(
+      MovingJaw::origin +
+          Displacement<MovingJaw>({0 * Metre, 0 * Metre, r}),
+      MovingJaw::unmoving);
+
+  auto const fixed_jaw_frenet_frame = jaw_to_handle_frame.FrenetFrame(
+      t0_,
+      jaw_to_handle_frame.ToThisFrameAtTime(t0_)(
+          jaw_to_jaw_frame.ToThisFrameAtTime(t0_)(
+              fixed_jaw_degrees_of_freedom)));
+  auto const moving_jaw_frenet_frame = jaw_to_handle_frame.FrenetFrame(
+      t0_,
+      jaw_to_handle_frame.ToThisFrameAtTime(t0_)(
+          moving_jaw_degrees_of_freedom));
+
+  Vector<double, Handle> fixed_jaw_tangent =
+      fixed_jaw_frenet_frame(Vector<double, Frenet<FixedJaw>>({1, 0, 0}));
+  Vector<double, Handle> fixed_jaw_normal =
+      fixed_jaw_frenet_frame(Vector<double, Frenet<FixedJaw>>({0, 1, 0}));
+
+  Vector<double, Handle> moving_jaw_tangent =
+      moving_jaw_frenet_frame(Vector<double, Frenet<FixedJaw>>({1, 0, 0}));
+  Vector<double, Handle> moving_jaw_normal =
+      moving_jaw_frenet_frame(Vector<double, Frenet<FixedJaw>>({0, 1, 0}));
+
+  Length const pitch = v * (2 * π * Radian / ω);
+  Angle const lead_angle = ArcTan(pitch, 2 * π * r);
+  EXPECT_THAT(fixed_jaw_normal,
+              Componentwise(VanishesBefore(1, 1),
+                            VanishesBefore(1, 0),
+                            AlmostEquals(-1, 2)));
+  EXPECT_THAT(fixed_jaw_tangent,
+              Componentwise(Lt(0), Gt(0), VanishesBefore(1, 1)));
+  EXPECT_THAT(AngleBetween(fixed_jaw_tangent, moving_jaw_tangent),
+              AlmostEquals(lead_angle, 13));
+
+  EXPECT_THAT(moving_jaw_normal, Componentwise(0, 0, -1));
+  EXPECT_THAT(moving_jaw_tangent, Componentwise(0, 1, 0));
 }
 
 }  // namespace internal_dynamic_frame
