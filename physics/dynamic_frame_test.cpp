@@ -224,6 +224,8 @@ class DynamicFrameTest : public testing::Test {
           &Gravity);
 };
 
+// A frame uniformly accelerated along the z axis.  The test point is in general
+// motion.  The acceleration is purely linear.
 TEST_F(DynamicFrameTest, LinearAcceleration) {
   EXPECT_CALL(mock_frame_, MotionOfThisFrame(_))
       .WillRepeatedly(Invoke([this](Instant const& t) {
@@ -323,8 +325,7 @@ TEST_F(DynamicFrameTest, LinearAcceleration) {
 
 // A frame in uniform rotation around the origin.  The test point is at the
 // origin and in motion along the x axis.  The acceleration is purely due to
-// Coriolis.  The motion elements that don't have specific values have no effect
-// on the acceleration.
+// Coriolis.
 TEST_F(DynamicFrameTest, CoriolisAcceleration) {
   EXPECT_CALL(mock_frame_, MotionOfThisFrame(_))
       .WillRepeatedly(Invoke([this](Instant const& t) {
@@ -416,8 +417,7 @@ TEST_F(DynamicFrameTest, CoriolisAcceleration) {
 }
 
 // A frame in uniform rotation around the origin.  The test point is on the x
-// axis.  The acceleration is purely due to centrifugal effects.  The motion
-// elements that don't have specific values have no effect on the acceleration.
+// axis.  The acceleration is purely due to centrifugal effects.
 TEST_F(DynamicFrameTest, CentrifugalAcceleration) {
   EXPECT_CALL(mock_frame_, MotionOfThisFrame(_))
       .WillRepeatedly(Invoke([this](Instant const& t) {
@@ -515,8 +515,7 @@ TEST_F(DynamicFrameTest, CentrifugalAcceleration) {
 
 // A frame initially nonrotating and in uniformly accelerated rotation around
 // the origin.  The test point is on the x axis.  The acceleration is purely due
-// to Euler.  The motion elements that don't have specific values have no effect
-// on the acceleration.
+// to Euler.
 TEST_F(DynamicFrameTest, EulerAcceleration) {
   EXPECT_CALL(mock_frame_, MotionOfThisFrame(_))
       .WillRepeatedly(Invoke([this](Instant const& t) {
