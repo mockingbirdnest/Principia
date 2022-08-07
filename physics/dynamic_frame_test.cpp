@@ -200,8 +200,10 @@ class DynamicFrameTest : public testing::Test {
       Displacement<Inertial>({11 * Metre, -13 * Metre, 17 * Metre});
   Displacement<Rotating> const general_displacement_z_ =
       Displacement<Rotating>({0 * Metre, 0 * Metre, -23 * Metre});
+  Velocity<Rotating> const general_velocity_ = Velocity<Rotating>(
+      {29 * Metre / Second, -31 * Metre / Second, 37 * Metre / Second});
   Velocity<Rotating> const general_velocity_z_ = Velocity<Rotating>(
-      {0 * Metre / Second, 0 * Metre / Second, -29 * Metre / Second});
+      {0 * Metre / Second, 0 * Metre / Second, -39 * Metre / Second});
 
   DegreesOfFreedom<Circular> circular_degrees_of_freedom_ = {
       Circular::origin +
@@ -294,7 +296,7 @@ TEST_F(DynamicFrameTest, CoriolisAcceleration) {
   EXPECT_THAT(higher_order_effect,
               Componentwise(IsNear(-5.0_(1) * Micro(Metre)),
                             IsNear(-1.0_(1) * Milli(Metre)),
-                            VanishesBefore(1 * Metre, 0)));
+                            VanishesBefore(1 * Metre, 13)));
 
   // The Coriolis acceleration matches that computed based on the motion to the
   // second order.  This validates that we don't have sign errors in the actual
@@ -457,7 +459,7 @@ TEST_F(DynamicFrameTest, EulerAcceleration) {
           general_displacement_z_ + Displacement<Rotating>({100 * Metre,
                                                             0 * Metre,
                                                             0 * Metre}),
-      general_velocity_z_};
+      general_velocity_};
   DegreesOfFreedom<Inertial> const initial_state_in_inertial_frame =
       mock_frame_.MotionOfThisFrame(t0_).rigid_motion().Inverse()(
           initial_state_in_rotating_frame);
@@ -486,7 +488,7 @@ TEST_F(DynamicFrameTest, EulerAcceleration) {
   // are irrelevant.  This computation only depends on the stub motion defined
   // above.
   EXPECT_THAT(higher_order_effect,
-              Componentwise(IsNear(-1.25_(1) * Nano(Metre)),
+              Componentwise(IsNear(-156_(1) * Nano(Metre)),
                             IsNear(-0.5_(1) * Milli(Metre)),
                             AlmostEquals(0 * Metre, 0)));
 
