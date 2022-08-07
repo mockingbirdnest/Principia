@@ -344,8 +344,8 @@ TEST_F(DynamicFrameTest, CentrifugalAcceleration) {
   // The test point is on the x axis.
   DegreesOfFreedom<Rotating> const initial_state_in_rotating_frame = {
       Rotating::origin + Displacement<Rotating>({100 * Metre,
-                                                           0 * Metre,
-                                                           0 * Metre}),
+                                                 0 * Metre,
+                                                 0 * Metre}),
       Rotating::unmoving};
   DegreesOfFreedom<Inertial> const initial_state_in_inertial_frame =
       mock_frame_.MotionOfThisFrame(t0).rigid_motion().Inverse()(
