@@ -305,13 +305,13 @@ TEST_F(DynamicFrameTest, LinearAcceleration) {
   // The linear acceleration matches that computed based on the motion to the
   // second order.  This validates that we don't have sign errors in the actual
   // frame implementation.
-  EXPECT_THAT(
-      mock_frame_.GeometricAcceleration(t0_, initial_state_in_translating_frame) *
-          Pow<2>(Δt) / 2,
-      AlmostEquals(Displacement<Translating>({0 * Metre,
-                                              0 * Metre,
-                                              -5 * Micro(Metre)}),
-                   0));
+  EXPECT_THAT(mock_frame_.GeometricAcceleration(
+                  t0_, initial_state_in_translating_frame) *
+                  Pow<2>(Δt) / 2,
+              AlmostEquals(Displacement<Translating>({0 * Metre,
+                                                      0 * Metre,
+                                                      -5 * Micro(Metre)}),
+                           0));
 
   // The linear acceleration shows up for a point at rest.
   EXPECT_THAT(mock_frame_.RotationFreeGeometricAccelerationAtRest(
