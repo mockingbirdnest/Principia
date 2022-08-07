@@ -298,7 +298,7 @@ TEST_F(DynamicFrameTest, CoriolisAcceleration) {
   // No Coriolis acceleration when at rest.
   EXPECT_THAT(mock_frame_.RotationFreeGeometricAccelerationAtRest(
                   t0, initial_state_in_rotating_frame.position()),
-              AlmostEquals(Vector<Acceleration, RotatingFrame>(), 0));
+              AlmostEquals(Vector<Acceleration, Rotating>(), 0));
 }
 
 // A frame in uniform rotation around the origin.  The test point is on the x
@@ -310,64 +310,64 @@ TEST_F(DynamicFrameTest, CentrifugalAcceleration) {
   EXPECT_CALL(mock_frame_, MotionOfThisFrame(_))
       .WillRepeatedly(Invoke([t0](Instant const& t) {
         AngularFrequency const ω = 10 * Radian / Second;
-        AngularVelocity<InertialFrame> const angular_velocity_of_to_frame(
+        AngularVelocity<Inertial> const angular_velocity_of_to_frame(
             {0 * Radian / Second, 0 * Radian / Second, ω});
-        Rotation<InertialFrame, RotatingFrame> const rotation(
+        Rotation<Inertial, Rotating> const rotation(
             ω * (t - t0),
             angular_velocity_of_to_frame,
-            DefinesFrame<RotatingFrame>{});
-        RigidTransformation<InertialFrame, RotatingFrame> const
+            DefinesFrame<Rotating>{});
+        RigidTransformation<Inertial, Rotating> const
             rigid_transformation(
-                /*from_origin=*/InertialFrame::origin,
-                /*to_origin=*/RotatingFrame::origin,
+                /*from_origin=*/Inertial::origin,
+                /*to_origin=*/Rotating::origin,
                 rotation.Forget<OrthogonalMap>());
-        Velocity<InertialFrame> const velocity_of_to_frame_origin;
-        RigidMotion<InertialFrame, RotatingFrame> const rigid_motion(
+        Velocity<Inertial> const velocity_of_to_frame_origin;
+        RigidMotion<Inertial, Rotating> const rigid_motion(
             rigid_transformation,
             angular_velocity_of_to_frame,
             velocity_of_to_frame_origin);
-        Bivector<AngularAcceleration, InertialFrame> const
+        Bivector<AngularAcceleration, Inertial> const
             angular_acceleration_of_to_frame;
-        Vector<Acceleration, InertialFrame> const
+        Vector<Acceleration, Inertial> const
             acceleration_of_to_frame_origin;
-        return AcceleratedRigidMotion<InertialFrame, RotatingFrame>(
+        return AcceleratedRigidMotion<Inertial, Rotating>(
             rigid_motion,
             angular_acceleration_of_to_frame,
             acceleration_of_to_frame_origin);
       }));
 
   // No gravity.
-  Vector<Acceleration, InertialFrame> const gravitational_acceleration;
+  Vector<Acceleration, Inertial> const gravitational_acceleration;
   EXPECT_CALL(mock_frame_, GravitationalAcceleration(_, _))
       .WillRepeatedly(Return(gravitational_acceleration));
 
   // The test point is on the x axis.
-  DegreesOfFreedom<RotatingFrame> const initial_state_in_rotating_frame = {
-      RotatingFrame::origin + Displacement<RotatingFrame>({100 * Metre,
+  DegreesOfFreedom<Rotating> const initial_state_in_rotating_frame = {
+      Rotating::origin + Displacement<Rotating>({100 * Metre,
                                                            0 * Metre,
                                                            0 * Metre}),
-      RotatingFrame::unmoving};
-  DegreesOfFreedom<InertialFrame> const initial_state_in_inertial_frame =
+      Rotating::unmoving};
+  DegreesOfFreedom<Inertial> const initial_state_in_inertial_frame =
       mock_frame_.MotionOfThisFrame(t0).rigid_motion().Inverse()(
           initial_state_in_rotating_frame);
 
   // The time interval for evaluating the first order effect.
   Time const Δt = 1 * Milli(Second);
 
-  Position<InertialFrame> const final_position_in_inertial_frame =
+  Position<Inertial> const final_position_in_inertial_frame =
       initial_state_in_inertial_frame.position() +
       initial_state_in_inertial_frame.velocity() * Δt;
 
-  Position<RotatingFrame> const final_position_in_rotating_frame =
+  Position<Rotating> const final_position_in_rotating_frame =
       mock_frame_.MotionOfThisFrame(t0 + Δt)
           .rigid_motion()
           .rigid_transformation()(final_position_in_inertial_frame);
 
-  Position<RotatingFrame> const first_order_final_position_in_rotating_frame =
+  Position<Rotating> const first_order_final_position_in_rotating_frame =
       initial_state_in_rotating_frame.position() +
       initial_state_in_rotating_frame.velocity() * Δt;
 
-  Displacement<RotatingFrame> const higher_order_effect =
+  Displacement<Rotating> const higher_order_effect =
       final_position_in_rotating_frame -
       first_order_final_position_in_rotating_frame;
 
@@ -385,18 +385,18 @@ TEST_F(DynamicFrameTest, CentrifugalAcceleration) {
   EXPECT_THAT(
       mock_frame_.GeometricAcceleration(t0, initial_state_in_rotating_frame) *
           Pow<2>(Δt) / 2,
-      AlmostEquals(Displacement<RotatingFrame>({5 * Milli(Metre),
-                                                0 * Metre,
-                                                0 * Metre}),
+      AlmostEquals(Displacement<Rotating>({5 * Milli(Metre),
+                                           0 * Metre,
+                                           0 * Metre}),
                    0));
 
   // The centrifugal acceleration shows up for a point at rest.
   EXPECT_THAT(mock_frame_.RotationFreeGeometricAccelerationAtRest(
                   t0, initial_state_in_rotating_frame.position()) *
                   Pow<2>(Δt) / 2,
-              AlmostEquals(Displacement<RotatingFrame>({5 * Milli(Metre),
-                                                        0 * Metre,
-                                                        0 * Metre}),
+              AlmostEquals(Displacement<Rotating>({5 * Milli(Metre),
+                                                   0 * Metre,
+                                                   0 * Metre}),
                            0));
 }
 
