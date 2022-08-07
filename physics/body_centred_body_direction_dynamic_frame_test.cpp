@@ -198,59 +198,6 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, Inverse) {
   }
 }
 
-// A linear acceleration identical for both bodies.  The test point doesn't
-// move.  The resulting acceleration combines centrifugal and linear.
-TEST_F(BodyCentredBodyDirectionDynamicFrameTest, LinearAcceleration) {
-  Instant const t = t0_ + 0 * Second;
-  DegreesOfFreedom<MockFrame> const point_dof =
-      {Displacement<MockFrame>({10 * Metre, 20 * Metre, 30 * Metre}) +
-           MockFrame::origin,
-       Velocity<MockFrame>({0 * Metre / Second,
-                            0 * Metre / Second,
-                            0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const big_dof = {ICRS::origin, ICRS::unmoving};
-  DegreesOfFreedom<ICRS> const small_dof =
-      {Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) + ICRS::origin,
-       Velocity<ICRS>(
-           {40 * Metre / Second, -30 * Metre / Second, 0 * Metre / Second})};
-
-  EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t))
-      .Times(2)
-      .WillRepeatedly(Return(big_dof));
-  EXPECT_CALL(mock_small_trajectory_, EvaluateDegreesOfFreedom(t))
-      .Times(2)
-      .WillRepeatedly(Return(small_dof));
-  {
-    // The acceleration is linear + centripetal.
-    InSequence s;
-    EXPECT_CALL(
-        mock_ephemeris_,
-        ComputeGravitationalAccelerationOnMassiveBody(check_not_null(big_), t))
-        .WillOnce(
-            Return(Vector<Acceleration, ICRS>({-160 * Metre / Pow<2>(Second),
-                                               120 * Metre / Pow<2>(Second),
-                                               300 * Metre / Pow<2>(Second)})));
-    EXPECT_CALL(mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMassiveBody(
-                    check_not_null(small_), t))
-        .WillOnce(Return(
-            Vector<Acceleration, ICRS>({(-160 - 300) * Metre / Pow<2>(Second),
-                                        (120 - 400) * Metre / Pow<2>(Second),
-                                        300 * Metre / Pow<2>(Second)})));
-    EXPECT_CALL(mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMasslessBody(
-                    A<Position<ICRS> const&>(), t))
-        .WillOnce(Return(Vector<Acceleration, ICRS>()));
-  }
-
-  // The acceleration is linear + centrifugal.
-  EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
-              AlmostEquals(Vector<Acceleration, MockFrame>({
-                               1e3 * Metre / Pow<2>(Second),
-                               (200 + 2e3) * Metre / Pow<2>(Second),
-                               300 * Metre / Pow<2>(Second)}), 0));
-}
-
 TEST_F(BodyCentredBodyDirectionDynamicFrameTest, GeometricAcceleration) {
   Instant const t = t0_ + period_;
   DegreesOfFreedom<BigSmallFrame> const point_dof =

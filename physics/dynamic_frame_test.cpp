@@ -188,7 +188,8 @@ class MockDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
 class DynamicFrameTest : public testing::Test {
  protected:
   using Inertial = Frame<enum class InertialFrameTag, geometry::Inertial>;
-  using Rotating = Frame<enum class TestFrameTag, Arbitrary>;
+  using Rotating = Frame<enum class RotatingFrameTag, Arbitrary>;
+  using Translating = Rotating;  // A better name for linear acceleration.
 
   StrictMock<MockDynamicFrame<Inertial, Rotating>> mock_frame_;
   Instant const t0_;
@@ -198,12 +199,14 @@ class DynamicFrameTest : public testing::Test {
   Position<Inertial> const general_position_ =
       Inertial::origin +
       Displacement<Inertial>({11 * Metre, -13 * Metre, 17 * Metre});
+  Displacement<Rotating> const general_displacement_ =
+      Displacement<Rotating>({-23 * Metre, 29 * Metre, -31 * Metre});
   Displacement<Rotating> const general_displacement_z_ =
-      Displacement<Rotating>({0 * Metre, 0 * Metre, -23 * Metre});
+      Displacement<Rotating>({0 * Metre, 0 * Metre, 37 * Metre});
   Velocity<Rotating> const general_velocity_ = Velocity<Rotating>(
-      {29 * Metre / Second, -31 * Metre / Second, 37 * Metre / Second});
+      {-41 * Metre / Second, 43 * Metre / Second, -47 * Metre / Second});
   Velocity<Rotating> const general_velocity_z_ = Velocity<Rotating>(
-      {0 * Metre / Second, 0 * Metre / Second, -39 * Metre / Second});
+      {0 * Metre / Second, 0 * Metre / Second, 53 * Metre / Second});
 
   DegreesOfFreedom<Circular> circular_degrees_of_freedom_ = {
       Circular::origin +
@@ -221,10 +224,106 @@ class DynamicFrameTest : public testing::Test {
           &Gravity);
 };
 
+// A frame uniformly accelerated along the z axis.  The test point is in general
+// motion.  The acceleration is purely linear.
+TEST_F(DynamicFrameTest, LinearAcceleration) {
+  EXPECT_CALL(mock_frame_, MotionOfThisFrame(_))
+      .WillRepeatedly(Invoke([this](Instant const& t) {
+        Acceleration const γ = 10 * Metre / Second / Second;
+        auto const acceleration_of_to_frame_origin =
+            Vector<Acceleration, Inertial>({0 * Metre / Second / Second,
+                                            0 * Metre / Second / Second,
+                                            γ});
+        auto const velocity_of_to_frame_origin =
+            Velocity<Inertial>({0 * Metre / Second,
+                                0 * Metre / Second,
+                                γ * (t - t0_)});
+        auto const position_of_to_frame_origin =
+            general_position_ +
+            Displacement<Inertial>({0 * Metre,
+                                    0 * Metre,
+                                    γ * Pow<2>(t - t0_) / 2});
+        RigidTransformation<Inertial, Translating> const
+            rigid_transformation(
+                /*from_origin=*/position_of_to_frame_origin,
+                /*to_origin=*/Translating::origin,
+                OrthogonalMap<Inertial, Translating>::Identity());
+        AngularVelocity<Inertial> const angular_velocity_of_to_frame;
+        RigidMotion<Inertial, Translating> const rigid_motion(
+            rigid_transformation,
+            angular_velocity_of_to_frame,
+            velocity_of_to_frame_origin);
+        Bivector<AngularAcceleration, Inertial> const
+            angular_acceleration_of_to_frame;
+        return AcceleratedRigidMotion<Inertial, Translating>(
+            rigid_motion,
+            angular_acceleration_of_to_frame,
+            acceleration_of_to_frame_origin);
+      }));
+
+  // No gravity.
+  Vector<Acceleration, Inertial> const gravitational_acceleration;
+  EXPECT_CALL(mock_frame_, GravitationalAcceleration(_, _))
+      .WillRepeatedly(Return(gravitational_acceleration));
+
+  // The test point is in general position and velocity.
+  DegreesOfFreedom<Translating> const initial_state_in_translating_frame = {
+      Translating::origin + general_displacement_,
+      general_velocity_};
+  DegreesOfFreedom<Inertial> const initial_state_in_inertial_frame =
+      mock_frame_.MotionOfThisFrame(t0_).rigid_motion().Inverse()(
+          initial_state_in_translating_frame);
+
+  // The time interval for evaluating the first order effect.
+  Time const Δt = 1 * Milli(Second);
+
+  Position<Inertial> const final_position_in_inertial_frame =
+      initial_state_in_inertial_frame.position() +
+      initial_state_in_inertial_frame.velocity() * Δt;
+
+  Position<Translating> const final_position_in_translating_frame =
+      mock_frame_.MotionOfThisFrame(t0_ + Δt)
+          .rigid_motion()
+          .rigid_transformation()(final_position_in_inertial_frame);
+
+  Position<Translating> const first_order_final_position_in_translating_frame =
+      initial_state_in_translating_frame.position() +
+      initial_state_in_translating_frame.velocity() * Δt;
+
+  Displacement<Translating> const higher_order_effect =
+      final_position_in_translating_frame -
+      first_order_final_position_in_translating_frame;
+
+  // The second order effect is the linear acceleration.  This computation only
+  // depends on the stub motion defined above.
+  EXPECT_THAT(higher_order_effect,
+              Componentwise(AlmostEquals(0 * Metre, 0),
+                            AlmostEquals(0 * Metre, 0),
+                            IsNear(-5.0_(1) * Micro(Metre))));
+
+  // The linear acceleration matches that computed based on the motion to the
+  // second order.
+  EXPECT_THAT(mock_frame_.GeometricAcceleration(
+                  t0_, initial_state_in_translating_frame) *
+                  Pow<2>(Δt) / 2,
+              AlmostEquals(Displacement<Translating>({0 * Metre,
+                                                      0 * Metre,
+                                                      -5 * Micro(Metre)}),
+                           0));
+
+  // The linear acceleration shows up for a point at rest.
+  EXPECT_THAT(mock_frame_.RotationFreeGeometricAccelerationAtRest(
+                  t0_, initial_state_in_translating_frame.position()) *
+                  Pow<2>(Δt) / 2,
+              AlmostEquals(Displacement<Translating>({0 * Metre,
+                                                      0 * Metre,
+                                                      -5 * Micro(Metre)}),
+                           0));
+}
+
 // A frame in uniform rotation around the origin.  The test point is at the
 // origin and in motion along the x axis.  The acceleration is purely due to
-// Coriolis.  The motion elements that don't have specific values have no effect
-// on the acceleration.
+// Coriolis.
 TEST_F(DynamicFrameTest, CoriolisAcceleration) {
   EXPECT_CALL(mock_frame_, MotionOfThisFrame(_))
       .WillRepeatedly(Invoke([this](Instant const& t) {
@@ -296,11 +395,10 @@ TEST_F(DynamicFrameTest, CoriolisAcceleration) {
   EXPECT_THAT(higher_order_effect,
               Componentwise(IsNear(-5.0_(1) * Micro(Metre)),
                             IsNear(-1.0_(1) * Milli(Metre)),
-                            VanishesBefore(1 * Metre, 13)));
+                            VanishesBefore(1 * Metre, 4)));
 
   // The Coriolis acceleration matches that computed based on the motion to the
-  // second order.  This validates that we don't have sign errors in the actual
-  // frame implementation.
+  // second order.
   EXPECT_THAT(
       mock_frame_.GeometricAcceleration(t0_, initial_state_in_rotating_frame) *
           Pow<2>(Δt) / 2,
@@ -316,8 +414,7 @@ TEST_F(DynamicFrameTest, CoriolisAcceleration) {
 }
 
 // A frame in uniform rotation around the origin.  The test point is on the x
-// axis.  The acceleration is purely due to centrifugal effects.  The motion
-// elements that don't have specific values have no effect on the acceleration.
+// axis.  The acceleration is purely due to centrifugal effects.
 TEST_F(DynamicFrameTest, CentrifugalAcceleration) {
   EXPECT_CALL(mock_frame_, MotionOfThisFrame(_))
       .WillRepeatedly(Invoke([this](Instant const& t) {
@@ -393,8 +490,7 @@ TEST_F(DynamicFrameTest, CentrifugalAcceleration) {
                             AlmostEquals(0 * Metre, 0)));
 
   // The centrifugal acceleration matches that computed based on the motion to
-  // the second order.  This validates that we don't have sign errors in the
-  // actual frame implementation.
+  // the second order.
   EXPECT_THAT(
       mock_frame_.GeometricAcceleration(t0_, initial_state_in_rotating_frame) *
           Pow<2>(Δt) / 2,
@@ -415,8 +511,7 @@ TEST_F(DynamicFrameTest, CentrifugalAcceleration) {
 
 // A frame initially nonrotating and in uniformly accelerated rotation around
 // the origin.  The test point is on the x axis.  The acceleration is purely due
-// to Euler.  The motion elements that don't have specific values have no effect
-// on the acceleration.
+// to Euler.
 TEST_F(DynamicFrameTest, EulerAcceleration) {
   EXPECT_CALL(mock_frame_, MotionOfThisFrame(_))
       .WillRepeatedly(Invoke([this](Instant const& t) {
@@ -488,13 +583,12 @@ TEST_F(DynamicFrameTest, EulerAcceleration) {
   // are irrelevant.  This computation only depends on the stub motion defined
   // above.
   EXPECT_THAT(higher_order_effect,
-              Componentwise(IsNear(-156_(1) * Nano(Metre)),
+              Componentwise(IsNear(214_(1) * Nano(Metre)),
                             IsNear(-0.5_(1) * Milli(Metre)),
                             AlmostEquals(0 * Metre, 0)));
 
   // The centrifugal acceleration matches that computed based on the motion to
-  // the second order.  This validates that we don't have sign errors in the
-  // actual frame implementation.
+  // the second order.
   EXPECT_THAT(
       mock_frame_.GeometricAcceleration(t0_, initial_state_in_rotating_frame) *
           Pow<2>(Δt) / 2,

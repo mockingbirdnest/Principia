@@ -208,48 +208,6 @@ TEST_F(BodySurfaceDynamicFrameTest, Inverse) {
   }
 }
 
-// A linear acceleration identical for both bodies.  The test point doesn't
-// move.  The resulting acceleration combines centrifugal and linear.
-TEST_F(BodySurfaceDynamicFrameTest, LinearAcceleration) {
-  Instant const t = t0_ + 0 * Second;
-  DegreesOfFreedom<MockFrame> const point_dof =
-      {Displacement<MockFrame>({10 * Metre, 20 * Metre, 30 * Metre}) +
-           MockFrame::origin,
-       Velocity<MockFrame>({0 * Metre / Second,
-                            0 * Metre / Second,
-                            0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const centre_dof = {
-      Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre}) + ICRS::origin,
-      Velocity<ICRS>(
-          {0 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
-
-  EXPECT_CALL(mock_centre_trajectory_, EvaluateDegreesOfFreedom(t))
-      .Times(2)
-      .WillRepeatedly(Return(centre_dof));
-  {
-    // The acceleration is linear + centripetal.
-    InSequence s;
-    EXPECT_CALL(
-        mock_ephemeris_,
-        ComputeGravitationalAccelerationOnMassiveBody(massive_centre_, t))
-        .WillOnce(
-            Return(Vector<Acceleration, ICRS>({-160 * Metre / Pow<2>(Second),
-                                               120 * Metre / Pow<2>(Second),
-                                               300 * Metre / Pow<2>(Second)})));
-    EXPECT_CALL(mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMasslessBody(
-                    A<Position<ICRS> const&>(), t))
-        .WillOnce(Return(Vector<Acceleration, ICRS>()));
-  }
-
-  // The acceleration is linear + centrifugal.
-  EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
-              AlmostEquals(Vector<Acceleration, MockFrame>({
-                               (-120 + 1e3) * Metre / Pow<2>(Second),
-                               (-160 + 2e3) * Metre / Pow<2>(Second),
-                               -300 * Metre / Pow<2>(Second)}), 2));
-}
-
 TEST_F(BodySurfaceDynamicFrameTest, GeometricAcceleration) {
   Instant const t = t0_ + period_;
   DegreesOfFreedom<BigSmallFrame> const point_dof =
