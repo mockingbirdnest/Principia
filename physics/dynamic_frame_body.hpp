@@ -107,7 +107,7 @@ SpecificEnergy DynamicFrame<InertialFrame, ThisFrame>::GeometricPotential(
   SpecificEnergy const gravitational_potential =
       GravitationalPotential(t,
                              from_this_frame.rigid_transformation()(position));
-  SpecificEnergy const linear_potential = -InnerProduct(
+  SpecificEnergy const linear_potential = InnerProduct(
       r,
       to_this_frame.orthogonal_map()(
           motion.template acceleration_of_origin_of<ThisFrame>()));

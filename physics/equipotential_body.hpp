@@ -101,8 +101,7 @@ template<typename InertialFrame, typename Frame>
 auto Equipotential<InertialFrame, Frame>::ComputeLine(
     Bivector<double, Frame> const& plane,
     DegreesOfFreedom<Frame> const& degrees_of_freedom,
-    Instant const& t,
-    double const energy_multiplier) const -> State {
+    Instant const& t) const -> State {
 }
 
 template<typename InertialFrame, typename Frame>

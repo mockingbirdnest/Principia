@@ -75,12 +75,11 @@ class Equipotential {
                                   Instant const& t) const;
 
   // Computes an equipotential line for the total energy determined by the
-  // |degrees_of_freedom|, multiplied by the given multiplier.
+  // |degrees_of_freedom|.
   typename ODE::State ComputeLine(
       Bivector<double, Frame> const& plane,
       DegreesOfFreedom<Frame> const& degrees_of_freedom,
-      Instant const& t,
-      double energy_multiplier = 1.0) const;
+      Instant const& t) const;
 
  private:
   using IndependentVariableDifference =
