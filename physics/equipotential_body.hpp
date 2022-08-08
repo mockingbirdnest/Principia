@@ -98,13 +98,6 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
 }
 
 template<typename InertialFrame, typename Frame>
-auto Equipotential<InertialFrame, Frame>::ComputeLine(
-    Bivector<double, Frame> const& plane,
-    DegreesOfFreedom<Frame> const& degrees_of_freedom,
-    Instant const& t) const -> State {
-}
-
-template<typename InertialFrame, typename Frame>
 absl::Status Equipotential<InertialFrame, Frame>::RightHandSide(
     Bivector<double, Frame> const& plane,
     Position<Frame> const& position,
