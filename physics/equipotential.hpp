@@ -71,15 +71,15 @@ class Equipotential {
 
   // Computes an equipotential line going through the given point.
   typename ODE::State ComputeLine(Bivector<double, Frame> const& plane,
-                                  Position<Frame> const& position,
-                                  Instant const& t) const;
+                                  Instant const& t,
+                                  Position<Frame> const& position) const;
 
   // Computes an equipotential line for the total energy determined by the
   // |degrees_of_freedom|.
   typename ODE::State ComputeLine(
       Bivector<double, Frame> const& plane,
-      DegreesOfFreedom<Frame> const& degrees_of_freedom,
-      Instant const& t) const;
+      Instant const& t,
+      DegreesOfFreedom<Frame> const& degrees_of_freedom) const;
 
  private:
   using IndependentVariableDifference =

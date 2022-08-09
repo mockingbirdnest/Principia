@@ -110,8 +110,8 @@ TEST_F(EquipotentialTest, BodyCentredNonRotating) {
     CHECK_OK(ephemeris_->Prolong(t1));
     auto const& [positions, βs] = equipotential.ComputeLine(
         plane,
-        ComputePositionInWorld(t0_, dynamic_frame, SolarSystemFactory::Mercury),
-        t1);
+        t1,
+        ComputePositionInWorld(t0_, dynamic_frame, SolarSystemFactory::Mercury));
     logger.Set(
         "equipotentialMercury", positions, mathematica::ExpressIn(Metre));
     logger.Set("betaMercury", βs);
@@ -121,8 +121,8 @@ TEST_F(EquipotentialTest, BodyCentredNonRotating) {
     CHECK_OK(ephemeris_->Prolong(t1));
     auto const& [positions, βs] = equipotential.ComputeLine(
         plane,
-        ComputePositionInWorld(t0_, dynamic_frame, SolarSystemFactory::Earth),
-        t1);
+        t1,
+        ComputePositionInWorld(t0_, dynamic_frame, SolarSystemFactory::Earth));
     logger.Set("equipotentialEarth", positions, mathematica::ExpressIn(Metre));
     logger.Set("betaEarth", βs);
   }
@@ -131,8 +131,10 @@ TEST_F(EquipotentialTest, BodyCentredNonRotating) {
     CHECK_OK(ephemeris_->Prolong(t1));
     auto const& [positions, βs] = equipotential.ComputeLine(
         plane,
-        ComputePositionInWorld(t0_, dynamic_frame, SolarSystemFactory::Jupiter),
-        t1);
+        t1,
+        ComputePositionInWorld(t0_,
+                               dynamic_frame,
+                               SolarSystemFactory::Jupiter));
     logger.Set(
         "equipotentialJupiterClose", positions, mathematica::ExpressIn(Metre));
     logger.Set("betaJupiterClose", βs);
@@ -142,8 +144,10 @@ TEST_F(EquipotentialTest, BodyCentredNonRotating) {
     CHECK_OK(ephemeris_->Prolong(t1));
     auto const& [positions, βs] = equipotential.ComputeLine(
         plane,
-        ComputePositionInWorld(t0_, dynamic_frame, SolarSystemFactory::Jupiter),
-        t1);
+        t1,
+        ComputePositionInWorld(t0_,
+                               dynamic_frame,
+                               SolarSystemFactory::Jupiter));
     logger.Set(
         "equipotentialJupiterFar", positions, mathematica::ExpressIn(Metre));
     logger.Set("betaJupiterFar", βs);
@@ -189,7 +193,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection) {
       Position<World> const p =
           Barycentre(std::pair{l4, l5},
                      std::pair{i / 10.0, (10.0 - i) / 10.0});
-      auto const& [positions, βs] = equipotential.ComputeLine(plane, p, t);
+      auto const& [positions, βs] = equipotential.ComputeLine(plane, t, p);
       all_positions.back().push_back(positions);
       all_βs.back().push_back(βs);
     }

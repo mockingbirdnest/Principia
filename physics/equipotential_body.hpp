@@ -61,8 +61,8 @@ Equipotential<InertialFrame, Frame>::Equipotential(
 template<typename InertialFrame, typename Frame>
 auto Equipotential<InertialFrame, Frame>::ComputeLine(
     Bivector<double, Frame> const& plane,
-    Position<Frame> const& position,
-    Instant const& t) const -> State {
+    Instant const& t,
+    Position<Frame> const& position) const -> State {
   ODE equation{
       .compute_derivative = std::bind(
           &Equipotential::RightHandSide, this, plane, position, t, _1, _2, _3)};
@@ -100,8 +100,8 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
 template<typename InertialFrame, typename Frame>
 auto Equipotential<InertialFrame, Frame>::ComputeLine(
     Bivector<double, Frame> const& plane,
-    DegreesOfFreedom<Frame> const& degrees_of_freedom,
-    Instant const& t) const -> State {
+    Instant const& t,
+    DegreesOfFreedom<Frame> const& degrees_of_freedom) const -> State {
 }
 
 template<typename InertialFrame, typename Frame>
