@@ -7,6 +7,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "numerics/double_precision.hpp"
+#include "numerics/gradient_descent.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
@@ -17,6 +18,7 @@ using geometry::Normalize;
 using geometry::Displacement;
 using geometry::Vector;
 using integrators::IntegrationProblem;
+using numerics::BroydenFletcherGoldfarbShanno;
 using numerics::DoublePrecision;
 using quantities::Abs;
 using quantities::Frequency;
@@ -102,6 +104,37 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
     Bivector<double, Frame> const& plane,
     Instant const& t,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) const -> State {
+  // Compute the total (specific) energy.
+  auto const potential_energy =
+      dynamic_frame_->GeometricPotential(t, degrees_of_freedom.position());
+  auto const kinetic_energy = 0.5 * degrees_of_freedom.velocity().Norm²();
+  auto const total_energy = potential_energy + kinetic_energy;
+
+  // The function on which we perform gradient descent is defined to have a
+  // minimum at a position where the potential is equal to the total energy.
+  auto const f = [this, t, total_energy](Position<Frame> const& position) {
+    return Pow<2>(dynamic_frame_->GeometricPotential(t, position) -
+                  total_energy);
+  };
+
+  auto const grad_f = [this, t, total_energy](Position<Frame> const& position) {
+    return 2 *
+           (dynamic_frame_->GeometricPotential(t, position) - total_energy) *
+           dynamic_frame_->RotationFreeGeometricAccelerationAtRest(t, position);
+  };
+
+  // Do the gradient descent to find a point on the equipotential having the
+  // total energy.
+  // NOTE(phl): Unclear if |length_integration_tolerance| is the right thing to
+  // use below.
+  auto const equipotential_position = BroydenFletcherGoldfarbShanno(
+      degrees_of_freedom.position(),
+      f,
+      grad_f,
+      adaptive_parameters_.length_integration_tolerance());
+
+  // Compute that equipotential.
+  return ComputeLine(plane, t, equipotential_position);
 }
 
 template<typename InertialFrame, typename Frame>
