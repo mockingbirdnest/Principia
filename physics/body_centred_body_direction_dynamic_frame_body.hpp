@@ -151,6 +151,13 @@ GravitationalAcceleration(Instant const& t,
 }
 
 template<typename InertialFrame, typename ThisFrame>
+SpecificEnergy BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
+GravitationalPotential(Instant const& t,
+                       Position<InertialFrame> const& q) const {
+  return ephemeris_->ComputeGravitationalPotential(q, t);
+}
+
+template<typename InertialFrame, typename ThisFrame>
 AcceleratedRigidMotion<InertialFrame, ThisFrame>
 BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
 MotionOfThisFrame(Instant const& t) const {

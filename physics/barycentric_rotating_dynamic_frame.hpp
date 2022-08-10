@@ -32,6 +32,7 @@ using geometry::Position;
 using geometry::Rotation;
 using geometry::Vector;
 using quantities::Acceleration;
+using quantities::SpecificEnergy;
 
 // The origin of the frame is the barycentre of the two bodies.  The X axis
 // points to the secondary.  The Y axis is in the direction of the velocity of
@@ -68,6 +69,9 @@ class BarycentricRotatingDynamicFrame
 
  private:
   Vector<Acceleration, InertialFrame> GravitationalAcceleration(
+      Instant const& t,
+      Position<InertialFrame> const& q) const override;
+  SpecificEnergy GravitationalPotential(
       Instant const& t,
       Position<InertialFrame> const& q) const override;
   AcceleratedRigidMotion<InertialFrame, ThisFrame> MotionOfThisFrame(

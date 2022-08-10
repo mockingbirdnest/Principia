@@ -29,6 +29,7 @@ using geometry::Instant;
 using geometry::Position;
 using geometry::Vector;
 using quantities::Acceleration;
+using quantities::SpecificEnergy;
 
 // The origin of the frame is the centre of mass of the body.  The X axis is at
 // the intersection of the equator and the prime meridian.  The Z axis is the
@@ -62,6 +63,9 @@ class BodySurfaceDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
 
  private:
   Vector<Acceleration, InertialFrame> GravitationalAcceleration(
+      Instant const& t,
+      Position<InertialFrame> const& q) const override;
+  SpecificEnergy GravitationalPotential(
       Instant const& t,
       Position<InertialFrame> const& q) const override;
   AcceleratedRigidMotion<InertialFrame, ThisFrame> MotionOfThisFrame(

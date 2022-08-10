@@ -21,6 +21,7 @@ using geometry::Position;
 using geometry::Rotation;
 using geometry::Vector;
 using quantities::Acceleration;
+using quantities::SpecificEnergy;
 
 // The Frenet frame of a free fall trajectory in |Frame|.
 // TODO(egg): this should actually depend on its template parameter somehow.
@@ -77,6 +78,12 @@ class DynamicFrame {
       Instant const& t,
       Position<ThisFrame> const& position) const;
 
+  // Computes the (scalar) potential from which the acceleration given by
+  // |RotationFreeGeometricAccelerationAtRest| derives.
+  virtual SpecificEnergy GeometricPotential(
+      Instant const& t,
+      Position<ThisFrame> const& position) const;
+
   // The definition of the Frenet frame of a free fall trajectory in |ThisFrame|
   // with the given |degrees_of_freedom| at instant |t|.
   virtual Rotation<Frenet<ThisFrame>, ThisFrame> FrenetFrame(
@@ -103,6 +110,9 @@ class DynamicFrame {
       Vector<Acceleration, ThisFrame>& euler_acceleration) const;
 
   virtual Vector<Acceleration, InertialFrame> GravitationalAcceleration(
+      Instant const& t,
+      Position<InertialFrame> const& q) const = 0;
+  virtual SpecificEnergy GravitationalPotential(
       Instant const& t,
       Position<InertialFrame> const& q) const = 0;
   virtual AcceleratedRigidMotion<InertialFrame, ThisFrame> MotionOfThisFrame(

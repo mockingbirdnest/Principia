@@ -12,6 +12,7 @@
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
@@ -43,6 +44,7 @@ using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::IsNear;
+using testing_utilities::RelativeErrorFrom;
 using testing_utilities::VanishesBefore;
 using testing_utilities::operator""_;
 using ::testing::Gt;
@@ -58,6 +60,26 @@ class DynamicFrameTest : public testing::Test {
   using Inertial = Frame<enum class InertialFrameTag, geometry::Inertial>;
   using Rotating = Frame<enum class RotatingFrameTag, Arbitrary>;
   using Translating = Rotating;  // A better name for linear acceleration.
+
+  // Computes a first-order approximation of the acceleration using the
+  // potential returned by |mock_frame_|.  Useful for checking that the
+  // potential and the accelaration are consistent.
+  Vector<Acceleration, Rotating> FirstOrderAccelerationFromPotential(
+      Instant const& t,
+      Position<Rotating> const& position,
+      Length const& Δl) {
+    auto const potential = mock_frame_.GeometricPotential(t, position);
+    auto const potential_Δx = mock_frame_.GeometricPotential(
+        t, position + Displacement<Rotating>({Δl, 0 * Metre, 0 * Metre}));
+    auto const potential_Δy = mock_frame_.GeometricPotential(
+        t, position + Displacement<Rotating>({0 * Metre, Δl, 0 * Metre}));
+    auto const potential_Δz = mock_frame_.GeometricPotential(
+        t, position + Displacement<Rotating>({0 * Metre, 0 * Metre, Δl}));
+
+    return -Vector<Acceleration, Rotating>({(potential_Δx - potential) / Δl,
+                                            (potential_Δy - potential) / Δl,
+                                            (potential_Δz - potential) / Δl});
+  }
 
   StrictMock<MockDynamicFrame<Inertial, Rotating>> mock_frame_;
   Instant const t0_;
@@ -116,8 +138,11 @@ TEST_F(DynamicFrameTest, LinearAcceleration) {
 
   // No gravity.
   Vector<Acceleration, Inertial> const gravitational_acceleration;
+  SpecificEnergy const gravitational_potential;
   EXPECT_CALL(mock_frame_, GravitationalAcceleration(_, _))
       .WillRepeatedly(Return(gravitational_acceleration));
+  EXPECT_CALL(mock_frame_, GravitationalPotential(_, _))
+      .WillRepeatedly(Return(gravitational_potential));
 
   // The test point is in general position and velocity.
   DegreesOfFreedom<Translating> const initial_state_in_translating_frame = {
@@ -172,6 +197,16 @@ TEST_F(DynamicFrameTest, LinearAcceleration) {
                                                       0 * Metre,
                                                       -5 * Micro(Metre)}),
                            0));
+
+  // The linear acceleration derives from a potential.
+  EXPECT_THAT(
+      FirstOrderAccelerationFromPotential(
+          t0_,
+          initial_state_in_translating_frame.position(),
+          /*Δl=*/1 * Micro(Metre)),
+      RelativeErrorFrom(mock_frame_.RotationFreeGeometricAccelerationAtRest(
+                            t0_, initial_state_in_translating_frame.position()),
+                        IsNear(3.1e-9_(1))));
 }
 
 // A frame in uniform rotation around the origin.  The test point is at the
@@ -209,8 +244,11 @@ TEST_F(DynamicFrameTest, CoriolisAcceleration) {
 
   // No gravity.
   Vector<Acceleration, Inertial> const gravitational_acceleration;
+  SpecificEnergy const gravitational_potential;
   EXPECT_CALL(mock_frame_, GravitationalAcceleration(_, _))
       .WillRepeatedly(Return(gravitational_acceleration));
+  EXPECT_CALL(mock_frame_, GravitationalPotential(_, _))
+      .WillRepeatedly(Return(gravitational_potential));
 
   // The velocity is along the x axis.
   DegreesOfFreedom<Rotating> const initial_state_in_rotating_frame =
@@ -264,6 +302,17 @@ TEST_F(DynamicFrameTest, CoriolisAcceleration) {
   EXPECT_THAT(mock_frame_.RotationFreeGeometricAccelerationAtRest(
                   t0_, initial_state_in_rotating_frame.position()),
               AlmostEquals(Vector<Acceleration, Rotating>(), 0));
+
+  // No (scalar) Coriolis potential.  There is a bit of noise in x and y because
+  // moving the points for the first-order computation introduces a tiny
+  // centrifugal force.
+  EXPECT_THAT(FirstOrderAccelerationFromPotential(
+                  t0_,
+                  initial_state_in_rotating_frame.position(),
+                  /*Δl=*/1 * Micro(Metre)),
+              Componentwise(IsNear(50.0_(1) * Micro(Metre) / Second / Second),
+                            IsNear(50.0_(1) * Micro(Metre) / Second / Second),
+                            AlmostEquals(0 * Metre / Second / Second, 0)));
 }
 
 // A frame in uniform rotation around the origin.  The test point is on the x
@@ -300,8 +349,11 @@ TEST_F(DynamicFrameTest, CentrifugalAcceleration) {
 
   // No gravity.
   Vector<Acceleration, Inertial> const gravitational_acceleration;
+  SpecificEnergy const gravitational_potential;
   EXPECT_CALL(mock_frame_, GravitationalAcceleration(_, _))
       .WillRepeatedly(Return(gravitational_acceleration));
+  EXPECT_CALL(mock_frame_, GravitationalPotential(_, _))
+      .WillRepeatedly(Return(gravitational_potential));
 
   // The test point is on the x axis.
   DegreesOfFreedom<Rotating> const initial_state_in_rotating_frame = {
@@ -360,6 +412,16 @@ TEST_F(DynamicFrameTest, CentrifugalAcceleration) {
                                                    0 * Metre,
                                                    0 * Metre}),
                            0));
+
+  // The centrifugal acceleration derives from a potential.
+  EXPECT_THAT(
+      FirstOrderAccelerationFromPotential(
+          t0_,
+          initial_state_in_rotating_frame.position(),
+          /*Δl=*/1 * Micro(Metre)),
+      RelativeErrorFrom(mock_frame_.RotationFreeGeometricAccelerationAtRest(
+                            t0_, initial_state_in_rotating_frame.position()),
+                        IsNear(5.9e-9_(1))));
 }
 
 // A frame initially nonrotating and in uniformly accelerated rotation around
@@ -398,8 +460,11 @@ TEST_F(DynamicFrameTest, EulerAcceleration) {
 
   // No gravity.
   Vector<Acceleration, Inertial> const gravitational_acceleration;
+  SpecificEnergy const gravitational_potential;
   EXPECT_CALL(mock_frame_, GravitationalAcceleration(_, _))
       .WillRepeatedly(Return(gravitational_acceleration));
+  EXPECT_CALL(mock_frame_, GravitationalPotential(_, _))
+      .WillRepeatedly(Return(gravitational_potential));
 
   // The test point is on the x axis.
   DegreesOfFreedom<Rotating> const initial_state_in_rotating_frame = {
@@ -453,6 +518,13 @@ TEST_F(DynamicFrameTest, EulerAcceleration) {
   // No Euler acceleration when at rest.
   EXPECT_THAT(mock_frame_.RotationFreeGeometricAccelerationAtRest(
                   t0_, initial_state_in_rotating_frame.position()),
+              AlmostEquals(Vector<Acceleration, Rotating>(), 0));
+
+  // No (scalar) Euler potential.
+  EXPECT_THAT(FirstOrderAccelerationFromPotential(
+                  t0_,
+                  initial_state_in_rotating_frame.position(),
+                  /*Δl=*/1 * Micro(Metre)),
               AlmostEquals(Vector<Acceleration, Rotating>(), 0));
 }
 

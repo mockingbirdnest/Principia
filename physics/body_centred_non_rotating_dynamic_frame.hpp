@@ -30,6 +30,7 @@ using geometry::OrthogonalMap;
 using geometry::Position;
 using geometry::Vector;
 using quantities::Acceleration;
+using quantities::SpecificEnergy;
 
 // The origin of the frame is the centre of mass of the body.  The Y axis is at
 // the intersection of the equator and the XY plane of |InertialFrame|, in the
@@ -75,6 +76,9 @@ class BodyCentredNonRotatingDynamicFrame
 
  private:
   Vector<Acceleration, InertialFrame> GravitationalAcceleration(
+      Instant const& t,
+      Position<InertialFrame> const& q) const override;
+  SpecificEnergy GravitationalPotential(
       Instant const& t,
       Position<InertialFrame> const& q) const override;
   AcceleratedRigidMotion<InertialFrame, ThisFrame> MotionOfThisFrame(
