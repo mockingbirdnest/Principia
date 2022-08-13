@@ -3,6 +3,7 @@
 
 #include <vector>
 
+#include "absl/strings/str_cat.h"
 #include "base/not_null.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
@@ -17,6 +18,7 @@
 #include "mathematica/mathematica.hpp"
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/si.hpp"
@@ -84,6 +86,29 @@ class EquipotentialTest : public ::testing::Test {
             .EvaluatePosition(t));
   }
 
+  void LogEquipotentialLine(
+      Bivector<double, World> const& plane,
+      Instant const& t,
+      DynamicFrame<Barycentric, World> const& dynamic_frame,
+      SolarSystemFactory::Index const body,
+      mathematica::Logger& logger,
+    std::string_view const suffix = "") {
+    Equipotential<Barycentric, World> const equipotential(
+        equipotential_parameters_, &dynamic_frame);
+    std::string const name = SolarSystemFactory::name(body);
+
+    CHECK_OK(ephemeris_->Prolong(t));
+    auto const& [positions, βs] = equipotential.ComputeLine(
+        plane,
+        t,
+        ComputePositionInWorld(
+            t0_, dynamic_frame, SolarSystemFactory::Mercury));
+    logger.Set(absl::StrCat("equipotential", name, suffix),
+               positions,
+               mathematica::ExpressIn(Metre));
+    logger.Set(absl::StrCat("beta", name, suffix), βs);
+  }
+
   Instant const t0_;
   Ephemeris<Barycentric>::FixedStepParameters const ephemeris_parameters_;
   not_null<std::unique_ptr<SolarSystem<Barycentric>>> const solar_system_;
@@ -105,53 +130,23 @@ TEST_F(EquipotentialTest, BodyCentredNonRotating) {
       equipotential_parameters_, &dynamic_frame);
 
   Bivector<double, World> const plane({2, 3, -5});
-  {
-    Instant const t1 = t0_ + Day;
-    CHECK_OK(ephemeris_->Prolong(t1));
-    auto const& [positions, βs] = equipotential.ComputeLine(
-        plane,
-        t1,
-        ComputePositionInWorld(t0_, dynamic_frame, SolarSystemFactory::Mercury));
-    logger.Set(
-        "equipotentialMercury", positions, mathematica::ExpressIn(Metre));
-    logger.Set("betaMercury", βs);
-  }
-  {
-    Instant const t1 = t0_ + Day;
-    CHECK_OK(ephemeris_->Prolong(t1));
-    auto const& [positions, βs] = equipotential.ComputeLine(
-        plane,
-        t1,
-        ComputePositionInWorld(t0_, dynamic_frame, SolarSystemFactory::Earth));
-    logger.Set("equipotentialEarth", positions, mathematica::ExpressIn(Metre));
-    logger.Set("betaEarth", βs);
-  }
-  {
-    Instant const t1 = t0_ + Day;
-    CHECK_OK(ephemeris_->Prolong(t1));
-    auto const& [positions, βs] = equipotential.ComputeLine(
-        plane,
-        t1,
-        ComputePositionInWorld(t0_,
-                               dynamic_frame,
-                               SolarSystemFactory::Jupiter));
-    logger.Set(
-        "equipotentialJupiterClose", positions, mathematica::ExpressIn(Metre));
-    logger.Set("betaJupiterClose", βs);
-  }
-  {
-    Instant const t1 = t0_ + 100 * Day;
-    CHECK_OK(ephemeris_->Prolong(t1));
-    auto const& [positions, βs] = equipotential.ComputeLine(
-        plane,
-        t1,
-        ComputePositionInWorld(t0_,
-                               dynamic_frame,
-                               SolarSystemFactory::Jupiter));
-    logger.Set(
-        "equipotentialJupiterFar", positions, mathematica::ExpressIn(Metre));
-    logger.Set("betaJupiterFar", βs);
-  }
+
+  LogEquipotentialLine(plane,
+                       t0_ + 1 * Day,
+                       dynamic_frame,
+                       SolarSystemFactory::Mercury);
+  LogEquipotentialLine(plane,
+                       t0_ + 1 * Day,
+                       dynamic_frame,
+                       SolarSystemFactory::Earth);
+  LogEquipotentialLine(plane,
+                       t0_ + 1 * Day,
+                       dynamic_frame,
+                       SolarSystemFactory::Jupiter, "Close");
+  LogEquipotentialLine(plane,
+                       t0_ + 100 * Day,
+                       dynamic_frame,
+                       SolarSystemFactory::Jupiter, "Far");
 }
 
 TEST_F(EquipotentialTest, BodyCentredBodyDirection) {
