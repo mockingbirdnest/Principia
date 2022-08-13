@@ -18,6 +18,7 @@
 #include "mathematica/mathematica.hpp"
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/solar_system.hpp"
@@ -37,6 +38,7 @@ using geometry::Inertial;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Rotation;
+using geometry::Velocity;
 using integrators::EmbeddedExplicitRungeKuttaIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::DormandPrince1986RK547FC;
@@ -46,6 +48,7 @@ using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Minute;
+using quantities::si::Second;
 using testing_utilities::SolarSystemFactory;
 
 class EquipotentialTest : public ::testing::Test {
@@ -148,6 +151,7 @@ class EquipotentialTest : public ::testing::Test {
       auto const l5 = moon_l5 + moon_position;
 
       for (auto const& line_parameter : get_line_parameters(l4, l5)) {
+        LOG(ERROR)<<line_parameter;
         auto const& [positions, βs] =
             equipotential.ComputeLine(plane, t, line_parameter);
         all_positions.back().push_back(positions);
@@ -168,7 +172,7 @@ class EquipotentialTest : public ::testing::Test {
       equipotential_parameters_;
 };
 
-#if !_DEBUG
+//#if !_DEBUG
 TEST_F(EquipotentialTest, BodyCentredNonRotating) {
   mathematica::Logger logger(TEMP_DIR / "equipotential_bcnr.wl",
                              /*make_unique=*/false);
@@ -204,9 +208,9 @@ TEST_F(EquipotentialTest, BodyCentredNonRotating) {
                        SolarSystemFactory::Jupiter, "Far");
 }
 
-TEST_F(EquipotentialTest, BodyCentredBodyDirection) {
+TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantPoints) {
   mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd.wl",
-                             /*make_unique=*/false);
+                             /*make_unique=*/true);
   auto const dynamic_frame(
       BodyCentredBodyDirectionDynamicFrame<Barycentric, World>(
           ephemeris_.get(),
@@ -231,7 +235,40 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection) {
         return positions;
       });
 }
-#endif
+
+TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantEnergies) {
+  mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd.wl",
+                             /*make_unique=*/true);
+  auto const dynamic_frame(
+      BodyCentredBodyDirectionDynamicFrame<Barycentric, World>(
+          ephemeris_.get(),
+          solar_system_->massive_body(
+              *ephemeris_,
+              SolarSystemFactory::name(SolarSystemFactory::Earth)),
+          solar_system_->massive_body(
+              *ephemeris_,
+              SolarSystemFactory::name(SolarSystemFactory::Moon))));
+
+  LogFamilyOfEquipotentialLines<DegreesOfFreedom<World>>(
+      logger,
+      dynamic_frame,
+      /*number_of_days=*/30,
+      /*suffix=*/"Energies",
+      [](Position<World> const& l4, Position<World> const& l5) {
+        auto const midpoint = Barycentre(std::pair{l4, l5}, std::pair{1, 1});
+        std::vector<DegreesOfFreedom<World>> degrees_of_freedom;
+        for (int i = 0; i <= 10; ++i) {
+          degrees_of_freedom.push_back(
+              DegreesOfFreedom<World>(midpoint,
+                                      Velocity<World>({i * 200 * Metre / Second,
+                                                       0 * Metre / Second,
+                                                       0 * Metre / Second})));
+        }
+        return degrees_of_freedom;
+      });
+}
+
+//#endif
 
 }  // namespace physics
 }  // namespace principia

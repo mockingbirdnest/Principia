@@ -7,6 +7,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"

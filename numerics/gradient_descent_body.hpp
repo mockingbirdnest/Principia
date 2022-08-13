@@ -139,6 +139,10 @@ Position<Frame> BroydenFletcherGoldfarbShanno(
   auto const x₀ = start_position;
   auto const grad_f_x₀ = grad_f(x₀);
 
+  if (grad_f_x₀ == Gradient<Scalar, Frame>{}) {
+    return x₀;
+  }
+
   // We (ab)use the tolerance to determine the first step size.  The assumption
   // is that, if the caller provides a reasonable value then (1) we won't miss
   // "interesting features" of f; (2) the finite differences won't underflow or

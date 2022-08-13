@@ -23,6 +23,8 @@ using numerics::DoublePrecision;
 using quantities::Abs;
 using quantities::Frequency;
 using quantities::Pow;
+using quantities::SpecificEnergy;
+using quantities::Square;
 using quantities::Time;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
@@ -118,7 +120,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
   };
 
   auto const grad_f = [this, t, total_energy](Position<Frame> const& position) {
-    return 2 *
+    return -2 *
            (dynamic_frame_->GeometricPotential(t, position) - total_energy) *
            dynamic_frame_->RotationFreeGeometricAccelerationAtRest(t, position);
   };
@@ -127,11 +129,12 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
   // total energy.
   // NOTE(phl): Unclear if |length_integration_tolerance| is the right thing to
   // use below.
-  auto const equipotential_position = BroydenFletcherGoldfarbShanno(
-      degrees_of_freedom.position(),
-      f,
-      grad_f,
-      adaptive_parameters_.length_integration_tolerance());
+  auto const equipotential_position =
+      BroydenFletcherGoldfarbShanno<Square<SpecificEnergy>, Frame>(
+          degrees_of_freedom.position(),
+          f,
+          grad_f,
+          adaptive_parameters_.length_integration_tolerance());
 
   // Compute that equipotential.
   return ComputeLine(plane, t, equipotential_position);
