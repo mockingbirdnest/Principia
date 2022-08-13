@@ -98,8 +98,6 @@ SpecificEnergy DynamicFrame<InertialFrame, ThisFrame>::GeometricPotential(
   RigidMotion<ThisFrame, InertialFrame> const from_this_frame =
       to_this_frame.Inverse();
 
-  // Beware, we want the angular velocity of ThisFrame as seen in the
-  // InertialFrame, but pushed to ThisFrame.  Otherwise the sign is wrong.
   AngularVelocity<ThisFrame> const Ω = to_this_frame.orthogonal_map()(
       to_this_frame.template angular_velocity_of<ThisFrame>());
   Displacement<ThisFrame> const r = position - ThisFrame::origin;

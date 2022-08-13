@@ -78,7 +78,8 @@ class DynamicFrame {
       Instant const& t,
       Position<ThisFrame> const& position) const;
 
-  //TODO(phl):Comment
+  // Computes the (scalar) potential from which the acceleration given by
+  // |RotationFreeGeometricAccelerationAtRest| derives.
   virtual SpecificEnergy GeometricPotential(
       Instant const& t,
       Position<ThisFrame> const& position) const;
