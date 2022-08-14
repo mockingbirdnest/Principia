@@ -87,12 +87,6 @@ class SymmetricBilinearForm {
       serialization::SymmetricBilinearForm const& message);
 
  private:
-  // Given a matrix that contains in columns eigenvectors for a form, picks the
-  // column with the largest norm and return its value.  This is useful to
-  // extract eigenvectors when eigenvalues are known.
-  template<typename S>
-  static R3Element<S> PickEigenvector(R3x3Matrix<S> const& matrix);
-
   // All the operations on this class must ensure that this matrix remains
   // symmetric.
   R3x3Matrix<Scalar> matrix_;
