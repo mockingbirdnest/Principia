@@ -295,6 +295,11 @@ class Logger final {
          bool make_unique = true);
   ~Logger();
 
+  // Flushes the contents of the logger to the file.  This should not normally
+  // be called explicitly, but it's useful when debugging crashes.  Beware, the
+  // resulting file may contain many assignments to the same variable.
+  void Flush();
+
   // Appends an element to the list of values for the List variable |name|.  The
   // |args...| are passed verbatim to ToMathematica for stringification.  When
   // this object is destroyed, an assignment is generated for each of the

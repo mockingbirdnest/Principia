@@ -551,6 +551,10 @@ inline Logger::Logger(std::filesystem::path const& path, bool const make_unique)
       }()) {}
 
 inline Logger::~Logger() {
+  Flush();
+}
+
+inline void Logger::Flush() {
   for (auto const& [name, values] : name_and_multiple_values_) {
     file_ << Apply("Set", {name, Apply("List", values)}) + ";\n";
   }
