@@ -151,7 +151,6 @@ class EquipotentialTest : public ::testing::Test {
       auto const l5 = moon_l5 + moon_position;
 
       for (auto const& line_parameter : get_line_parameters(l4, l5)) {
-        LOG(ERROR)<<line_parameter;
         auto const& [positions, βs] =
             equipotential.ComputeLine(plane, t, line_parameter);
         all_positions.back().push_back(positions);
@@ -172,7 +171,7 @@ class EquipotentialTest : public ::testing::Test {
       equipotential_parameters_;
 };
 
-//#if !_DEBUG
+#if !_DEBUG
 TEST_F(EquipotentialTest, BodyCentredNonRotating) {
   mathematica::Logger logger(TEMP_DIR / "equipotential_bcnr.wl",
                              /*make_unique=*/false);
@@ -260,15 +259,22 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantEnergies) {
         for (int i = 0; i <= 10; ++i) {
           degrees_of_freedom.push_back(
               DegreesOfFreedom<World>(midpoint,
-                                      Velocity<World>({i * 200 * Metre / Second,
+                                      Velocity<World>({i * 100 * Metre / Second,
                                                        0 * Metre / Second,
                                                        0 * Metre / Second})));
+        }
+        for (int i = 0; i <= 10; ++i) {
+          degrees_of_freedom.push_back(DegreesOfFreedom<World>(
+              midpoint,
+              Velocity<World>({(1100 + i * 10) * Metre / Second,
+                               0 * Metre / Second,
+                               0 * Metre / Second})));
         }
         return degrees_of_freedom;
       });
 }
 
-//#endif
+#endif
 
 }  // namespace physics
 }  // namespace principia
