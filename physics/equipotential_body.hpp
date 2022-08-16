@@ -16,7 +16,9 @@ namespace internal_equipotential {
 
 using geometry::Normalize;
 using geometry::Displacement;
+using geometry::Trivector;  // We don't use this every day.
 using geometry::Vector;
+using geometry::Wedge;
 using integrators::IntegrationProblem;
 using numerics::BroydenFletcherGoldfarbShanno;
 using numerics::DoublePrecision;
@@ -29,6 +31,19 @@ using quantities::Time;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
+
+// If the potential is below the total energy by this factor, return an empty
+// equipotential line.
+constexpr double energy_tolerance = 0x1p-24;
+
+// The following function projects a vector on the plane orthogonal to |plane|.
+// TODO(phl): Why don't we have projections?
+template<typename Scalar, typename Frame>
+Vector<Scalar, Frame> ProjectedVector(Bivector<double, Frame> const& plane,
+                                      Vector<Scalar, Frame> const& vector) {
+  Trivector<Scalar, Frame> const projection_on_plane = Wedge(plane, vector);
+  return vector - plane * projection_on_plane;
+}
 
 template<typename ODE>
 ODEAdaptiveStepParameters<ODE>::ODEAdaptiveStepParameters(
@@ -119,10 +134,15 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
                   total_energy);
   };
 
-  auto const grad_f = [this, t, total_energy](Position<Frame> const& position) {
-    return -2 *
-           (dynamic_frame_->GeometricPotential(t, position) - total_energy) *
-           dynamic_frame_->RotationFreeGeometricAccelerationAtRest(t, position);
+  auto const grad_f = [this, &plane, t, total_energy](
+      Position<Frame> const& position) {
+    // To keep the problem bidimensional we eliminate any off-plane component of
+    // the gradient.
+    return ProjectedVector(
+        plane,
+        -2 * (dynamic_frame_->GeometricPotential(t, position) - total_energy) *
+            dynamic_frame_->RotationFreeGeometricAccelerationAtRest(t,
+                                                                    position));
   };
 
   // Do the gradient descent to find a point on the equipotential having the
@@ -135,6 +155,14 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
           f,
           grad_f,
           adaptive_parameters_.length_integration_tolerance());
+
+  // The BFGS algorithm will put us at the minimum of f, but that may be a point
+  // that has (significantly) less energy that our total energy.  No point in
+  // building a line in that case.
+  if (dynamic_frame_->GeometricPotential(t, equipotential_position) <
+      total_energy - Abs(total_energy) * energy_tolerance) {
+    return State{};
+  }
 
   // Compute that equipotential.
   return ComputeLine(plane, t, equipotential_position);
