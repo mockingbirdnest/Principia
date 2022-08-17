@@ -7,6 +7,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -69,9 +70,17 @@ class Equipotential {
       AdaptiveParameters const& adaptive_parameters,
       not_null<DynamicFrame<InertialFrame, Frame> const*> dynamic_frame);
 
+  // Computes an equipotential line going through the given point.
   typename ODE::State ComputeLine(Bivector<double, Frame> const& plane,
-                                  Position<Frame> const& position,
-                                  Instant const& t) const;
+                                  Instant const& t,
+                                  Position<Frame> const& position) const;
+
+  // Computes an equipotential line for the total energy determined by the
+  // |degrees_of_freedom|.
+  typename ODE::State ComputeLine(
+      Bivector<double, Frame> const& plane,
+      Instant const& t,
+      DegreesOfFreedom<Frame> const& degrees_of_freedom) const;
 
  private:
   using IndependentVariableDifference =

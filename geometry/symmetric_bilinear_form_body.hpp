@@ -272,28 +272,6 @@ SymmetricBilinearForm<Scalar, Frame, Multivector>::ReadFromMessage(
       R3x3Matrix<Scalar>::ReadFromMessage(message.matrix()));
 }
 
-template<typename Scalar,
-         typename Frame,
-         template<typename, typename> typename Multivector>
-template<typename S>
-R3Element<S>
-SymmetricBilinearForm<Scalar, Frame, Multivector>::PickEigenvector(
-    R3x3Matrix<S> const& matrix) {
-  static R3Element<double> const e₀{1, 0, 0};
-  static R3Element<double> const e₁{0, 1, 0};
-  static R3Element<double> const e₂{0, 0, 1};
-  std::array<R3Element<S>, 3> vs = {matrix * e₀, matrix * e₁, matrix * e₂};
-
-  // It's possible for a column to be identically 0.  To deal with this we
-  // extract the column with the largest norm.
-  std::sort(vs.begin(),
-            vs.end(),
-            [](R3Element<S> const& left, R3Element<S> const& right) {
-              return left.Norm²() < right.Norm²();
-            });
-  return vs.back();
-}
-
 template<typename Frame, template<typename, typename> typename Multivector>
 SymmetricBilinearForm<double, Frame, Multivector> const& InnerProductForm() {
   static auto const identity =

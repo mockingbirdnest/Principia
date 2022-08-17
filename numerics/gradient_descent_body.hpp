@@ -52,7 +52,9 @@ double Zoom(double α_lo,
             Displacement<Frame> const& p,
             Field<Scalar, Frame> const& f,
             Field<Gradient<Scalar, Frame>, Frame> const& grad_f) {
+  std::optional<Scalar> previous_ϕ_αⱼ;
   for (;;) {
+    DCHECK_NE(α_lo, α_hi);
     double αⱼ;
     {
       // Quadratic interpolation.
@@ -68,6 +70,15 @@ double Zoom(double α_lo,
     }
 
     auto const ϕ_αⱼ = f(x + αⱼ * p);
+
+    // If the function has become (numerically) constant, we might as well
+    // return, even though the value of αⱼ may not meet the strong Wolfe
+    // condition.
+    if (previous_ϕ_αⱼ.has_value() && previous_ϕ_αⱼ.value() == ϕ_αⱼ) {
+      return αⱼ;
+    }
+    previous_ϕ_αⱼ = ϕ_αⱼ;
+
     if (ϕ_αⱼ > ϕ_0 + c₁ * αⱼ * ϕʹ_0 || ϕ_αⱼ >= ϕ_α_lo) {
       α_hi = αⱼ;
       ϕ_α_hi = ϕ_αⱼ;
@@ -139,6 +150,10 @@ Position<Frame> BroydenFletcherGoldfarbShanno(
   auto const x₀ = start_position;
   auto const grad_f_x₀ = grad_f(x₀);
 
+  if (grad_f_x₀ == Gradient<Scalar, Frame>{}) {
+    return x₀;
+  }
+
   // We (ab)use the tolerance to determine the first step size.  The assumption
   // is that, if the caller provides a reasonable value then (1) we won't miss
   // "interesting features" of f; (2) the finite differences won't underflow or
@@ -166,6 +181,12 @@ Position<Frame> BroydenFletcherGoldfarbShanno(
     double const αₖ = LineSearch(xₖ, pₖ, f, grad_f);
     auto const xₖ₊₁ = xₖ + αₖ * pₖ;
     auto const grad_f_xₖ₊₁ = grad_f(xₖ₊₁);
+
+    // If we can't make progress, e.g., because αₖ is too small, give up.
+    if (xₖ₊₁ == xₖ || grad_f_xₖ₊₁ == grad_f_xₖ) {
+      return xₖ;
+    }
+
     auto const sₖ = xₖ₊₁ - xₖ;
     auto const yₖ = grad_f_xₖ₊₁ - grad_f_xₖ;
     // The formula (6.17) from [NW06] is inconvenient because it uses external
