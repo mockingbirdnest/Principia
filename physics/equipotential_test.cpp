@@ -1,6 +1,7 @@
 ﻿
 #include "physics/equipotential.hpp"
 
+#include <string>
 #include <vector>
 
 #include "absl/strings/str_cat.h"
