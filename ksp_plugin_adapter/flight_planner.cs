@@ -265,9 +265,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
             UpdateStatus(status, null);
           }
           UnityEngine.GUILayout.TextArea(
-              L10N.CacheFormat("#Principia_PredictionSettings_ToleranceText",
-                               length_integration_tolerances_names_[
-                                   length_integration_tolerance_index_]),
+              length_integration_tolerances_names_[
+                  length_integration_tolerance_index_],
               GUILayoutWidth(3));
           if (length_integration_tolerance_index_ ==
               integration_tolerances_.Length - 1 ||
@@ -726,10 +725,6 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
   private static readonly string[] length_integration_tolerances_names_ = {
       "1 µm", "10 µm", "100 µm", "1 mm", "1 cm", "10 cm", "1 m", "10 m",
       "100 m", "1 km", "10 km", "100 km", "1000 km"
-  };
-  private static readonly string[] speed_integration_tolerances_names_ = {
-      "1 µm/s", "10 µm/s", "100 µm/s", "1 mm/s", "1 cm/s", "10 cm/s", "1 m/s",
-      "10 m/s", "100 m/s", "1 km/s", "10 km/s", "100 km/s", "1000 km/s"
   };
   private static readonly long[] max_steps_ = {
       1 << 6, 1 << 8, 1 << 10, 1 << 12, 1 << 14, 1 << 16, 1 << 18, 1 << 20

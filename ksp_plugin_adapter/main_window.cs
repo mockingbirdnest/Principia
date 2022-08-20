@@ -427,7 +427,6 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
         }
       }
 
-      // TODO(egg): make the speed tolerance independent.
       if (RenderSelector(prediction_length_tolerances_,
                          ref prediction_length_tolerance_index_,
                          L10N.CacheFormat(
