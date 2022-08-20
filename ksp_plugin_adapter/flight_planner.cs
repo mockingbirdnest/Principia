@@ -194,39 +194,50 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
 
       FlightPlanAdaptiveStepParameters parameters =
           plugin.FlightPlanGetAdaptiveStepParameters(vessel_guid);
-      length_integration_tolerance_index_ = Array.FindIndex(
-          integration_tolerances_,
-          (double tolerance) => tolerance >=
-                                parameters.length_integration_tolerance);
-      speed_integration_tolerance_index_ = Array.FindIndex(
-          integration_tolerances_,
-          (double tolerance) => tolerance >=
-                                parameters.speed_integration_tolerance);
+      length_integration_tolerance_index_ = Math.Max(
+          0,
+          Array.FindIndex(integration_tolerances_,
+                          (double tolerance) => tolerance >=
+                                                parameters.
+                                                    length_integration_tolerance));
+      speed_integration_tolerance_index_ = Math.Max(
+          0,
+          Array.FindIndex(integration_tolerances_,
+                          (double tolerance) => tolerance >=
+                                                parameters.
+                                                    speed_integration_tolerance));
+      max_steps_index_ = Math.Max(0,
+                                  Array.FindIndex(
+                                      max_steps_,
+                                      (long step) =>
+                                          step >= parameters.max_steps));
 
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           UnityEngine.GUILayout.Label(
               L10N.CacheFormat("#Principia_FlightPlan_MaxSteps"),
               GUILayoutWidth(6));
-          const int factor = 4;
-          if (parameters.max_steps <= 100) {
+          if (max_steps_index_ == 0) {
             UnityEngine.GUILayout.Button(
                 L10N.CacheFormat("#Principia_DiscreteSelector_Min"));
           } else if (UnityEngine.GUILayout.Button("−")) {
-            parameters.max_steps /= factor;
+            --max_steps_index_;
+            UpdateAdaptiveStepParameters(ref parameters);
             var status =
                 plugin.FlightPlanSetAdaptiveStepParameters(
                     vessel_guid,
                     parameters);
             UpdateStatus(status, null);
           }
-          UnityEngine.GUILayout.TextArea(parameters.max_steps.ToString(),
-                                         GUILayoutWidth(3));
-          if (parameters.max_steps >= long.MaxValue / factor) {
+          UnityEngine.GUILayout.TextArea(
+              max_steps_[max_steps_index_].ToString(),
+              GUILayoutWidth(3));
+          if (max_steps_index_ == max_steps_.Length - 1) {
             UnityEngine.GUILayout.Button(
                 L10N.CacheFormat("#Principia_DiscreteSelector_Max"));
           } else if (UnityEngine.GUILayout.Button("+")) {
-            parameters.max_steps *= factor;
+            ++max_steps_index_;
+            UpdateAdaptiveStepParameters(ref parameters);
             var status =
                 plugin.FlightPlanSetAdaptiveStepParameters(
                     vessel_guid,
@@ -246,7 +257,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           } else if (UnityEngine.GUILayout.Button("−")) {
             --length_integration_tolerance_index_;
             --speed_integration_tolerance_index_;
-            UpdateIntegrationTolerances(ref parameters);
+            UpdateAdaptiveStepParameters(ref parameters);
             var status =
                 plugin.FlightPlanSetAdaptiveStepParameters(
                     vessel_guid,
@@ -267,7 +278,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           } else if (UnityEngine.GUILayout.Button("+")) {
             ++length_integration_tolerance_index_;
             ++speed_integration_tolerance_index_;
-            UpdateIntegrationTolerances(ref parameters);
+            UpdateAdaptiveStepParameters(ref parameters);
             var status =
                 plugin.FlightPlanSetAdaptiveStepParameters(
                     vessel_guid,
@@ -699,12 +710,13 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
     }
   }
 
-  private void UpdateIntegrationTolerances(
+  private void UpdateAdaptiveStepParameters(
       ref FlightPlanAdaptiveStepParameters parameters) {
     parameters.length_integration_tolerance =
         integration_tolerances_[length_integration_tolerance_index_];
     parameters.speed_integration_tolerance =
         integration_tolerances_[speed_integration_tolerance_index_];
+    parameters.max_steps = max_steps_[max_steps_index_];
   }
 
   private IntPtr plugin => adapter_.Plugin();
@@ -718,6 +730,9 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
   private static readonly string[] speed_integration_tolerances_names_ = {
       "1 µm/s", "10 µm/s", "100 µm/s", "1 mm/s", "1 cm/s", "10 cm/s", "1 m/s",
       "10 m/s", "100 m/s", "1 km/s", "10 km/s", "100 km/s", "1000 km/s"
+  };
+  private static readonly long[] max_steps_ = {
+      1 << 6, 1 << 8, 1 << 10, 1 << 12, 1 << 14, 1 << 16, 1 << 18, 1 << 20
   };
 
   private readonly PrincipiaPluginAdapter adapter_;
@@ -735,6 +750,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
 
   private int length_integration_tolerance_index_;
   private int speed_integration_tolerance_index_;
+  private int max_steps_index_;
   private bool show_guidance_ = false;
   private float warning_height_ = 1;
 
