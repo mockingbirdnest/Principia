@@ -1573,6 +1573,8 @@ void Plugin::UpdatePlanetariumRotation() {
   using PlanetariumFrame = Frame<enum class PlanetariumFrameTag>;
 
   CHECK_NOTNULL(main_body_);
+  // Note: This rotation is actually independent of the ephemeris and current
+  // time.
   Rotation<Barycentric, PlanetariumFrame> const to_planetarium =
       BodyCentredNonRotatingDynamicFrame<Barycentric, PlanetariumFrame>(
           ephemeris_.get(), main_body_)
