@@ -92,7 +92,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         must_create_flight_plan = UnityEngine.GUILayout.Button(
             L10N.CacheFormat("#Principia_FlightPlan_Create"));
       } else if (flight_plans < max_flight_plans) {
-        must_create_flight_plan = 
+        must_create_flight_plan =
             UnityEngine.GUILayout.Button("+", GUILayoutWidth(1));
       }
       if (must_create_flight_plan) {
@@ -194,6 +194,14 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
 
       FlightPlanAdaptiveStepParameters parameters =
           plugin.FlightPlanGetAdaptiveStepParameters(vessel_guid);
+      length_integration_tolerance_index_ = Array.FindIndex(
+          integration_tolerances_,
+          (double tolerance) => tolerance >=
+                                parameters.length_integration_tolerance);
+      speed_integration_tolerance_index_ = Array.FindIndex(
+          integration_tolerances_,
+          (double tolerance) => tolerance >=
+                                parameters.speed_integration_tolerance);
 
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
@@ -230,12 +238,15 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           UnityEngine.GUILayout.Label(
               L10N.CacheFormat("#Principia_PredictionSettings_ToleranceLabel"),
               GUILayoutWidth(3));
-          if (parameters.length_integration_tolerance <= 1e-6) {
+          // Prior to Ἵππαρχος the tolerances were powers of 2, see #3395.
+          if (length_integration_tolerance_index_ == 0 ||
+              speed_integration_tolerance_index_ == 0) {
             UnityEngine.GUILayout.Button(
                 L10N.CacheFormat("#Principia_DiscreteSelector_Min"));
           } else if (UnityEngine.GUILayout.Button("−")) {
-            parameters.length_integration_tolerance /= 2;
-            parameters.speed_integration_tolerance /= 2;
+            --length_integration_tolerance_index_;
+            --speed_integration_tolerance_index_;
+            UpdateIntegrationTolerances(ref parameters);
             var status =
                 plugin.FlightPlanSetAdaptiveStepParameters(
                     vessel_guid,
@@ -244,15 +255,19 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           }
           UnityEngine.GUILayout.TextArea(
               L10N.CacheFormat("#Principia_PredictionSettings_ToleranceText",
-                               parameters.length_integration_tolerance.ToString(
-                                   "0.0e0")),
+                               length_integration_tolerances_names_[
+                                   length_integration_tolerance_index_]),
               GUILayoutWidth(3));
-          if (parameters.length_integration_tolerance >= 1e6) {
+          if (length_integration_tolerance_index_ ==
+              integration_tolerances_.Length - 1 ||
+              speed_integration_tolerance_index_ ==
+              integration_tolerances_.Length - 1) {
             UnityEngine.GUILayout.Button(
                 L10N.CacheFormat("#Principia_DiscreteSelector_Max"));
           } else if (UnityEngine.GUILayout.Button("+")) {
-            parameters.length_integration_tolerance *= 2;
-            parameters.speed_integration_tolerance *= 2;
+            ++length_integration_tolerance_index_;
+            ++speed_integration_tolerance_index_;
+            UpdateIntegrationTolerances(ref parameters);
             var status =
                 plugin.FlightPlanSetAdaptiveStepParameters(
                     vessel_guid,
@@ -684,7 +699,26 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
     }
   }
 
+  private void UpdateIntegrationTolerances(
+      ref FlightPlanAdaptiveStepParameters parameters) {
+    parameters.length_integration_tolerance =
+        integration_tolerances_[length_integration_tolerance_index_];
+    parameters.speed_integration_tolerance =
+        integration_tolerances_[speed_integration_tolerance_index_];
+  }
+
   private IntPtr plugin => adapter_.Plugin();
+
+  private static readonly double[] integration_tolerances_ =
+      {1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1e0, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6};
+  private static readonly string[] length_integration_tolerances_names_ = {
+      "1 µm", "10 µm", "100 µm", "1 mm", "1 cm", "10 cm", "1 m", "10 m",
+      "100 m", "1 km", "10 km", "100 km", "1000 km"
+  };
+  private static readonly string[] speed_integration_tolerances_names_ = {
+      "1 µm/s", "10 µm/s", "100 µm/s", "1 mm/s", "1 cm/s", "10 cm/s", "1 m/s",
+      "10 m/s", "100 m/s", "1 km/s", "10 km/s", "100 km/s", "1000 km/s"
+  };
 
   private readonly PrincipiaPluginAdapter adapter_;
   private readonly PredictedVessel predicted_vessel_;
@@ -699,6 +733,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
   private int? first_future_manœuvre_;
   private int number_of_anomalous_manœuvres_ = 0;
 
+  private int length_integration_tolerance_index_;
+  private int speed_integration_tolerance_index_;
   private bool show_guidance_ = false;
   private float warning_height_ = 1;
 
