@@ -114,6 +114,18 @@ Vector<double, Frame> const& RotatingBody<Frame>::equatorial() const {
 }
 
 template<typename Frame>
+template<typename CelestialFrame>
+Rotation<Frame, CelestialFrame> RotatingBody<Frame>::ToCelestialFrame()
+    const {
+  // In coordinates, the third parameter is |polar_axis|, but we seem
+  // to be a bit confused as to which of these things should be
+  // vectors or bivectors here.
+  // TODO(egg): Figure that out.
+  return Rotation<Frame, CelestialFrame>(
+      equatorial(), biequatorial(), Wedge(equatorial(), biequatorial()));
+}
+
+template<typename Frame>
 Angle const& RotatingBody<Frame>::right_ascension_of_pole() const {
   return parameters_.right_ascension_of_pole_;
 }

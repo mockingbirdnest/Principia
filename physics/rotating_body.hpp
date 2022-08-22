@@ -128,6 +128,14 @@ class RotatingBody : public MassiveBody {
   template<typename SurfaceFrame>
   Rotation<Frame, SurfaceFrame> ToSurfaceFrame(Instant const& t) const;
 
+  // Returns the rotation relating the celestial reference frame of this
+  // body to |Frame|.  The celestial reference frame is defined as follows:
+  //   - the z axis is the |polar_axis|;
+  //   - the x axis is the |equatorial| vector;
+  //   - the reference frame has the same handedness as |Frame|.
+  template<typename CelestialFrame>
+  Rotation<Frame, CelestialFrame> ToCelestialFrame() const;
+
   // Returns the rotation at time |t|.
   Rotation<Frame, Frame> RotationAt(Instant const& t) const;
 
