@@ -806,7 +806,7 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
   EXPECT_THAT(
       plugin_->VesselFromParent(SolarSystemFactory::Earth, guid),
       Componentwise(AlmostEquals(satellite_initial_displacement_, 3437, 3438),
-                    AlmostEquals(satellite_initial_velocity_, 17)));
+                    AlmostEquals(satellite_initial_velocity_, 11, 17)));
 }
 
 TEST_F(PluginTest, UpdateCelestialHierarchy) {
