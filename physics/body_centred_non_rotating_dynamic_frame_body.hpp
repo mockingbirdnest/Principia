@@ -34,7 +34,7 @@ BodyCentredNonRotatingDynamicFrame(
         if (rotating_body == nullptr) {
           return OrthogonalMap<InertialFrame, ThisFrame>::Identity();
         }
-        return rotating_body->ToCelestialFrame<ThisFrame>()
+        return rotating_body->template ToCelestialFrame<ThisFrame>()
             .template Forget<OrthogonalMap>();
       }()) {}
 
