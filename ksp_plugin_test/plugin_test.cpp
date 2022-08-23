@@ -883,13 +883,13 @@ TEST_F(PluginTest, Navball) {
   auto const navball = plugin.NavballFrameField(World::origin);
   EXPECT_THAT(
       AbsoluteError(x_world, navball->FromThisFrame(World::origin)(x_navball)),
-      VanishesBefore(1, 3));
+      VanishesBefore(1, 1, 3));
   EXPECT_THAT(
       AbsoluteError(y_world, navball->FromThisFrame(World::origin)(y_navball)),
       VanishesBefore(1, 0));
   EXPECT_THAT(
       AbsoluteError(z_world, navball->FromThisFrame(World::origin)(z_navball)),
-      VanishesBefore(1, 3));
+      VanishesBefore(1, 1, 3));
 }
 
 TEST_F(PluginTest, NavballTargetVessel) {
