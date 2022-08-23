@@ -805,8 +805,8 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
   plugin_->FreeVesselsAndPartsAndCollectPileUps(20 * Milli(Second));
   EXPECT_THAT(
       plugin_->VesselFromParent(SolarSystemFactory::Earth, guid),
-      Componentwise(AlmostEquals(satellite_initial_displacement_, 13556),
-                    AlmostEquals(satellite_initial_velocity_, 36)));
+      Componentwise(AlmostEquals(satellite_initial_displacement_, 3437),
+                    AlmostEquals(satellite_initial_velocity_, 17)));
 }
 
 TEST_F(PluginTest, UpdateCelestialHierarchy) {
@@ -839,7 +839,7 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
     EXPECT_THAT(
         (initial_from_parent.velocity() -
          computed_from_parent.velocity()).Norm(),
-        VanishesBefore(initial_from_parent.velocity().Norm(), 277, 3170840))
+        VanishesBefore(initial_from_parent.velocity().Norm(), 277, 3170841))
         << SolarSystemFactory::name(index);
   }
 }
@@ -877,19 +877,19 @@ TEST_F(PluginTest, Navball) {
   Vector<double, Navball> x_navball({1, 0, 0});
   Vector<double, Navball> y_navball({0, 1, 0});
   Vector<double, Navball> z_navball({0, 0, 1});
-  Vector<double, World> x_world({-1, 0, 0});
+  Vector<double, World> x_world({0, 0, -1});
   Vector<double, World> y_world({0, 1, 0});
-  Vector<double, World> z_world({0, 0, -1});
+  Vector<double, World> z_world({1, 0, 0});
   auto const navball = plugin.NavballFrameField(World::origin);
   EXPECT_THAT(
       AbsoluteError(x_world, navball->FromThisFrame(World::origin)(x_navball)),
-      VanishesBefore(1, 4));
+      VanishesBefore(1, 3));
   EXPECT_THAT(
       AbsoluteError(y_world, navball->FromThisFrame(World::origin)(y_navball)),
       VanishesBefore(1, 0));
   EXPECT_THAT(
       AbsoluteError(z_world, navball->FromThisFrame(World::origin)(z_navball)),
-      VanishesBefore(1, 4));
+      VanishesBefore(1, 3));
 }
 
 TEST_F(PluginTest, NavballTargetVessel) {
