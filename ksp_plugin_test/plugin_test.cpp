@@ -805,7 +805,7 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
   plugin_->FreeVesselsAndPartsAndCollectPileUps(20 * Milli(Second));
   EXPECT_THAT(
       plugin_->VesselFromParent(SolarSystemFactory::Earth, guid),
-      Componentwise(AlmostEquals(satellite_initial_displacement_, 3437),
+      Componentwise(AlmostEquals(satellite_initial_displacement_, 3437, 3438),
                     AlmostEquals(satellite_initial_velocity_, 17)));
 }
 
