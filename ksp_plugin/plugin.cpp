@@ -346,7 +346,9 @@ Rotation<CelestialSphere, World> Plugin::CelestialSphereRotation()
 
 Angle Plugin::CelestialInitialRotation(Index const celestial_index) const {
   auto const& body = *FindOrDie(celestials_, celestial_index)->body();
-  return body.AngleAt(game_epoch_);
+  // Offset by π/2 since |AngleAt| is with respect to the y axis of the
+  // celestial frame of the body, but KSP counts from the x axis.
+  return body.AngleAt(game_epoch_) + π / 2 * Radian;
 }
 
 Time Plugin::CelestialRotationPeriod(Index const celestial_index) const {
