@@ -16,6 +16,8 @@
   </ImportGroup>
   <ItemGroup>
     <ClInclude Include="apodization_body.hpp" />
+    <ClInclude Include="computational_geometry.hpp" />
+    <ClInclude Include="computational_geometry_body.hpp" />
     <ClInclude Include="davenport_q_method_body.hpp" />
     <ClInclude Include="gradient_descent.hpp" />
     <ClInclude Include="gradient_descent_body.hpp" />
@@ -91,6 +93,7 @@
     <ClCompile Include="cbrt.cpp" />
     <ClCompile Include="cbrt_test.cpp" />
     <ClCompile Include="combinatorics_test.cpp" />
+    <ClCompile Include="computational_geometry_test.cpp" />
     <ClCompile Include="davenport_q_method.hpp" />
     <ClCompile Include="davenport_q_method_test.cpp" />
     <ClCompile Include="double_precision_test.cpp" />
