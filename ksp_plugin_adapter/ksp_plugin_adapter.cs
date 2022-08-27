@@ -109,17 +109,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   private bool navball_changed_ = true;
   private FlightGlobals.SpeedDisplayModes? previous_display_mode_;
 
-  private EventVoid.OnEvent on_show_ui_;
-  private EventVoid.OnEvent on_hide_ui_;
-  private EventVoid.OnEvent on_gui_administration_facility_spawn_;
-  private EventVoid.OnEvent on_gui_administration_facility_despawn_;
-  private EventVoid.OnEvent on_gui_astronaut_complex_spawn_;
-  private EventVoid.OnEvent on_gui_astronaut_complex_despawn_;
-  private EventVoid.OnEvent on_gui_mission_control_spawn_;
-  private EventVoid.OnEvent on_gui_mission_control_despawn_;
-  private EventVoid.OnEvent on_gui_rnd_complex_spawn_;
-  private EventVoid.OnEvent on_gui_rnd_complex_despawn_;
-
   // TODO(egg): move all of that to the plotter.
   internal UnityEngine.Color history_colour = XKCDColors.Lime;
   internal GLLines.Style history_style = GLLines.Style.Faded;
@@ -137,6 +126,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   private Plotter plotter_;
 
   private readonly List<IntPtr> vessel_futures_ = new List<IntPtr>();
+  private readonly EventVoidHolder event_void_holder_ = new EventVoidHolder();
 
   // The RSAS is the component of the stock KSP autopilot that deals with
   // orienting the vessel towards a specific direction (e.g. prograde).
@@ -733,34 +723,26 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       }
     }
 
-    on_show_ui_ = () => { hide_all_gui_ = false; };
-    on_hide_ui_ = () => { hide_all_gui_ = true; };
-    on_gui_administration_facility_spawn_ = () => {
-      in_principia_scene_ = false;
-    };
-    on_gui_administration_facility_despawn_ = () => {
-      in_principia_scene_ = true;
-    };
-    on_gui_astronaut_complex_spawn_ = () => { in_principia_scene_ = false; };
-    on_gui_astronaut_complex_despawn_ = () => { in_principia_scene_ = true; };
-    on_gui_mission_control_spawn_ = () => { in_principia_scene_ = false; };
-    on_gui_mission_control_despawn_ = () => { in_principia_scene_ = true; };
-    on_gui_rnd_complex_spawn_=() => { in_principia_scene_ = false; };
-    on_gui_rnd_complex_despawn_ = () => { in_principia_scene_ = true; };
-
-    GameEvents.onShowUI.Add(on_show_ui_);
-    GameEvents.onHideUI.Add(on_hide_ui_);
-    GameEvents.onGUIAdministrationFacilitySpawn.Add(
-        on_gui_administration_facility_spawn_);
-    GameEvents.onGUIAdministrationFacilityDespawn.Add(
-        on_gui_administration_facility_despawn_);
-    GameEvents.onGUIAstronautComplexSpawn.Add(on_gui_astronaut_complex_spawn_);
-    GameEvents.onGUIAstronautComplexDespawn.Add(
-        on_gui_astronaut_complex_despawn_);
-    GameEvents.onGUIMissionControlSpawn.Add(on_gui_mission_control_spawn_);
-    GameEvents.onGUIMissionControlDespawn.Add(on_gui_mission_control_despawn_);
-    GameEvents.onGUIRnDComplexSpawn.Add(on_gui_rnd_complex_spawn_);
-    GameEvents.onGUIRnDComplexDespawn.Add(on_gui_rnd_complex_despawn_);
+    event_void_holder_.Add(GameEvents.onShowUI,
+                           () => { hide_all_gui_ = false; });
+    event_void_holder_.Add(GameEvents.onHideUI,
+                           () => { hide_all_gui_ = true; });
+    event_void_holder_.Add(GameEvents.onGUIAdministrationFacilitySpawn,
+                           () => { in_principia_scene_ = false; });
+    event_void_holder_.Add(GameEvents.onGUIAdministrationFacilityDespawn,
+                           () => { in_principia_scene_ = true; });
+    event_void_holder_.Add(GameEvents.onGUIAstronautComplexSpawn,
+                           () => { in_principia_scene_ = false; });
+    event_void_holder_.Add(GameEvents.onGUIAstronautComplexDespawn,
+                           () => { in_principia_scene_ = true; });
+    event_void_holder_.Add(GameEvents.onGUIMissionControlSpawn,
+                           () => { in_principia_scene_ = false; });
+    event_void_holder_.Add(GameEvents.onGUIMissionControlDespawn,
+                           () => { in_principia_scene_ = true; });
+    event_void_holder_.Add(GameEvents.onGUIRnDComplexSpawn,
+                           () => { in_principia_scene_ = false; });
+    event_void_holder_.Add(GameEvents.onGUIRnDComplexDespawn,
+                           () => { in_principia_scene_ = true; });
 
     // Timing0, -8008 on the script execution order page.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.ObscenelyEarly,
@@ -1098,23 +1080,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     }
     Cleanup();
     WindowsDisposal();
-
-    GameEvents.onShowUI.Remove(on_show_ui_);
-    GameEvents.onHideUI.Remove(on_hide_ui_);
-    GameEvents.onGUIAdministrationFacilitySpawn.Remove(
-        on_gui_administration_facility_spawn_);
-    GameEvents.onGUIAdministrationFacilityDespawn.Remove(
-        on_gui_administration_facility_despawn_);
-    GameEvents.onGUIAstronautComplexSpawn.Remove(
-        on_gui_astronaut_complex_spawn_);
-    GameEvents.onGUIAstronautComplexDespawn.Remove(
-        on_gui_astronaut_complex_despawn_);
-    GameEvents.onGUIMissionControlSpawn.Remove(on_gui_mission_control_spawn_);
-    GameEvents.onGUIMissionControlDespawn.Remove(
-        on_gui_mission_control_despawn_);
-    GameEvents.onGUIRnDComplexSpawn.Remove(on_gui_rnd_complex_spawn_);
-    GameEvents.onGUIRnDComplexDespawn.Remove(on_gui_rnd_complex_despawn_);
-
+    event_void_holder_.RemoveAll();
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.ObscenelyEarly,
                                     ObscenelyEarly);
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Precalc, Precalc);
