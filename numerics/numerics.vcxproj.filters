@@ -221,12 +221,6 @@
     <ClInclude Include="hermite2_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="computational_geometry.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="computational_geometry_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">
@@ -344,9 +338,6 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="hermite2_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="computational_geometry_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
