@@ -244,5 +244,8 @@
     <ClCompile Include="instant_output_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="nearest_neighbour_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
