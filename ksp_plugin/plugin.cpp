@@ -346,7 +346,9 @@ Rotation<CelestialSphere, World> Plugin::CelestialSphereRotation()
 
 Angle Plugin::CelestialInitialRotation(Index const celestial_index) const {
   auto const& body = *FindOrDie(celestials_, celestial_index)->body();
-  return body.AngleAt(game_epoch_);
+  // Offset by π/2 since |AngleAt| is with respect to the y axis of the
+  // celestial frame of the body, but KSP counts from the x axis.
+  return body.AngleAt(game_epoch_) + π / 2 * Radian;
 }
 
 Time Plugin::CelestialRotationPeriod(Index const celestial_index) const {
@@ -1570,21 +1572,11 @@ void Plugin::InitializeIndices(std::string const& name,
 }
 
 void Plugin::UpdatePlanetariumRotation() {
-  // The z axis of |PlanetariumFrame| is the pole of |main_body_|, and its x
-  // axis is the origin of body rotation (the intersection between the
-  // |Barycentric| xy plane and the plane of |main_body_|'s equator, or the y
-  // axis of |Barycentric| if they coincide).
-  // This can be expressed using Euler angles, see figures 1 and 2 of
-  // http://astropedia.astrogeology.usgs.gov/download/Docs/WGCCRE/WGCCRE2009reprint.pdf.
   using PlanetariumFrame = Frame<enum class PlanetariumFrameTag>;
 
   CHECK_NOTNULL(main_body_);
-  Rotation<Barycentric, PlanetariumFrame> const to_planetarium(
-      π / 2 * Radian + main_body_->right_ascension_of_pole(),
-      π / 2 * Radian - main_body_->declination_of_pole(),
-      0 * Radian,
-      EulerAngles::ZXZ,
-      DefinesFrame<PlanetariumFrame>{});
+  Rotation<Barycentric, PlanetariumFrame> const to_planetarium =
+      main_body_->ToCelestialFrame<PlanetariumFrame>();
   cached_planetarium_rotation_ =
       Rotation<PlanetariumFrame, AliceSun>(
           planetarium_rotation_,

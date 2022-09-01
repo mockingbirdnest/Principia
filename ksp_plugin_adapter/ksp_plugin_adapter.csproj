@@ -117,6 +117,7 @@
     <Compile Include="differential_slider.cs" />
     <Compile Include="disposable.cs" />
     <Compile Include="disposable_marshaler.cs" />
+    <Compile Include="event_void_holder.cs" />
     <Compile Include="external_interface.cs" />
     <Compile Include="flight_planner.cs" />
     <Compile Include="gl_lines.cs" />

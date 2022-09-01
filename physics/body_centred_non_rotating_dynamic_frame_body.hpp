@@ -25,27 +25,18 @@ BodyCentredNonRotatingDynamicFrame(
     : ephemeris_(std::move(ephemeris)),
       centre_(std::move(centre)),
       centre_trajectory_(ephemeris_->trajectory(centre_)),
-      orthogonal_map_(
-          [this]() {
-            // Note that we cannot do this by making |equatorial| and
-            // |biequatorial| virtual members of |MassiveBody|, because that
-            // class is not templatized on |InertialFrame|.
-            auto const rotating_body =
-                dynamic_cast<RotatingBody<InertialFrame> const*>(&*centre_);
-            if (rotating_body == nullptr) {
-              return OrthogonalMap<InertialFrame, ThisFrame>::Identity();
-            }
-            // In coordinates, the third parameter is |polar_axis|, but we seem
-            // to be a bit confused as to which of these things should be
-            // vectors or bivectors here.
-            // TODO(egg): Figure that out.
-            return Rotation<InertialFrame, ThisFrame>(
-                rotating_body->equatorial(),
-                rotating_body->biequatorial(),
-                Wedge(rotating_body->equatorial(),
-                      rotating_body->biequatorial()))
-                      .template Forget<OrthogonalMap>();
-          }()) {}
+      orthogonal_map_([this]() {
+        // Note that we cannot do this by making |equatorial| and
+        // |biequatorial| virtual members of |MassiveBody|, because that
+        // class is not templatized on |InertialFrame|.
+        auto const rotating_body =
+            dynamic_cast<RotatingBody<InertialFrame> const*>(&*centre_);
+        if (rotating_body == nullptr) {
+          return OrthogonalMap<InertialFrame, ThisFrame>::Identity();
+        }
+        return rotating_body->template ToCelestialFrame<ThisFrame>()
+            .template Forget<OrthogonalMap>();
+      }()) {}
 
 template<typename InertialFrame, typename ThisFrame>
 not_null<MassiveBody const*>
