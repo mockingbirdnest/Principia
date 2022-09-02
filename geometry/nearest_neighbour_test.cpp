@@ -14,7 +14,7 @@ class NearestNeighbourTest : public ::testing::Test {
 protected:
   using World = Frame<enum class WorldTag>;
 
-  NearestNeighbourTest() : tree_({}) {}
+  NearestNeighbourTest() : tree_({}, /*max_values_per_cell=*/3) {}
 
   PrincipalComponentPartitioningTree<Vector<double, World>> tree_;
 };

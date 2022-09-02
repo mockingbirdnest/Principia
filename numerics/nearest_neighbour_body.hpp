@@ -22,8 +22,10 @@ using geometry::Wedge;
 
 template<typename Value_>
 PrincipalComponentPartitioningTree<Value_>::PrincipalComponentPartitioningTree(
-    std::vector<Value> const& values)
-    : centroid_(Barycentre<Value, double, std::vector>(
+    std::vector<Value> const& values,
+    std::int64_t const max_values_per_cell)
+    : max_values_per_cell_(max_values_per_cell),
+      centroid_(Barycentre<Value, double, std::vector>(
           values,
           std::vector<double>(values.size(), 1))) {
   displacements_.reserve(values.size());
@@ -51,6 +53,15 @@ PrincipalComponentPartitioningTree<Value_>::BuildTree(
     Indices::iterator const begin,
     Indices::iterator const end,
     std::int64_t const size) const {
+  if (size <= max_values_per_cell_) {
+    // We are done subdividing, return a leaf.
+    std::vector<Displacement> leaf;
+    for (auto it = begin; it != end; ++it) {
+      leaf.push_back(displacements_[*it]);
+    }
+    return make_not_null_unique<Node>(leaf);
+  }
+
   // Compute the "inertia" of the selected displacements and diagonalize it.
   // This gives us the direction of the largest eigenvalue, which defines the splitting plane.
   auto const form = ComputePrincipalComponentForm(begin, end);
@@ -95,9 +106,9 @@ PrincipalComponentPartitioningTree<Value_>::BuildTree(
   auto second_child = BuildTree(mid_upper, end, size - size / 2);
 
   return make_not_null_unique<Node>(
-      Node{.principal_axis = principal_axis,
-           .anchor = anchor,
-           .tree = Children(std::move(first_child), std::move(second_child))});
+      Internal{.principal_axis = principal_axis,
+               .anchor = anchor,
+               .children = {std::move(first_child), std::move(second_child)}});
 }
 
 template<typename Value_>
