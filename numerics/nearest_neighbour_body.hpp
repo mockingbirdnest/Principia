@@ -2,6 +2,10 @@
 
 #include "numerics/nearest_neighbour.hpp"
 
+#include <algorithm>
+#include <numeric>
+#include <type_traits>
+
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -40,36 +44,61 @@ PrincipalComponentPartitioningTree<Value_>::PrincipalComponentPartitioningTree(
     : centroid_(Barycentre<Value, double, std::vector>(
           values,
           std::vector<double>(values.size(), 1))) {
-  // These are members of a vector space, not |Vector| per se.
-  std::vector<Difference<Value>> vectors;
-  vectors.reserve(values.size());
+  // The displacements from the centroid.
+  std::vector<Difference<Value>> displacements;
+  displacements.reserve(values.size());
   for (auto const& value : values) {
-    vectors.push_back(value - centroid_);
+    displacements.push_back(value - centroid_);
   }
+
+  // These are indices in |displacements|, that we'll use to refer to actual
+  // values.  We cannot use iterators because they would be invalidated by
+  // |Add|.  We use
+  std::vector<std::int32_t> indices(displacements.size());
+  std::iota(indices.begin(), indices.end(), 0);
 
   // Compute the "inertia" of the |vectors| and diagonalize it.  This gives us
   // the direction of the largest eigenvalue, which defines the splitting plane.
   using Eigenframe = Frame<enum class EigenframeTag>;
 
-  auto const form = ComputePrincipalComponentForm(vectors);
+  auto const form = ComputePrincipalComponentForm(displacements);
   auto const eigensystem = form.Diagonalize<Eigenframe>();
   // The first eigenvalue is the largest one.
-  auto const principal_plane =
+  //TODO(phl):Bivector?
+  auto const principal_axis =
       eigensystem.rotation(Bivector<double, Eigenframe>({1, 0, 0}));
 
   // Project the |vectors| on the principal axis.
-  std::vector<Difference<Value>> projections;
-  projections.reserve(vectors.size());
-  for (auto const& v : vectors) {
-    auto const projection_on_plane = Wedge(principal_plane, v);
-    projections.push_back(principal_plane * projection_on_plane)
+  using Projection =
+      decltype(Wedge(principal_axis, std::declval<Difference<Value>>()));
+  std::vector<Projection> projections;
+
+  auto const projection_less = [&projections](std::int32_t const left,
+                                              std::int32_t const right) {
+    return projections[left].coordinates() < projections[right].coordinates();
+  };
+
+  projections.reserve(displacements.size());
+  for (auto const& displacement : displacements) {
+    projections.push_back(Wedge(principal_axis, displacement));
   }
 
-  // Find the median in linear time.  This is where our plane will lie.  Note
-  // that |mid| is orthogonal to the plane.
-  auto const mid = projections.begin() + projections.size() / 2;
-  std::nth_element(projections.begin(), mid, projections.end());
-  auto const anchor = *mid;
+  // Find the median of the projections on the principal axis.  Cost: 3.4 * N.
+  auto const mid_upper = indices.begin() + indices.size() / 2;
+  std::nth_element(indices.begin(), mid_upper, indices.end(), projection_less);
+
+  // Here |mid_upper| denotes an index that denotes the point that is "in the
+  // middle" of the projections on the principal axis.  We do not wish to anchor
+  // our separator plane on a point, because that would make it more likely that
+  // queries have to dig into two branches of the tree.  Instead, we look for
+  // the maximum projection in the "lower" half space, and anchor our plane
+  // halfway between these points.  Cost: 0.25 * N.
+  auto const mid_lower =
+      std::max_element(indices.begin(), mid_upper, projection_less);
+
+  auto const anchor = Barycentre<Difference<Value>, double>(
+      {displacements[*mid_lower], displacements[*mid_upper]},
+      {1, 1});
 }
 
 template<typename Value_>
