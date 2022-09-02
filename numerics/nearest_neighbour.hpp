@@ -52,6 +52,12 @@ class PrincipalComponentPartitioningTree {
       decltype(std::declval<DisplacementPrincipalComponentsSystem>().rotation(
           std::declval<Bivector<double, PrincipalComponentsFrame>>()));
 
+  // These are indices in |displacements|, that we'll use to refer to actual
+  // values.  We cannot use iterators because they would be invalidated by
+  // |Add|.  We use 32-bit integers because these will be swapped a lot, so we
+  // don't want to touch too much memory.
+  using Indices = std::vector<std::int32_t>;
+
   struct Node;
 
   using Children = std::pair<not_null<std::unique_ptr<Node>>,
@@ -65,12 +71,21 @@ class PrincipalComponentPartitioningTree {
     std::variant<Children, Leaf> tree;
   };
 
-  static not_null<std::unique_ptr<Node>> BuildTree();
+  not_null<std::unique_ptr<Node>> BuildTree(Indices::iterator begin,
+                                            Indices::iterator end,
+                                            std::int64_t size) const;
 
-  static DisplacementSymmetricBilinearForm ComputePrincipalComponentForm(
-      std::vector<Displacement> const& displacements);
+   DisplacementSymmetricBilinearForm ComputePrincipalComponentForm(
+      Indices::iterator begin,
+      Indices::iterator end) const;
 
+  // The centroid of the values passed at construction.
   Value centroid_;
+
+  // The displacements from the centroid.
+  std::vector<Displacement> displacements_;
+
+  std::unique_ptr<Node> root_;
 };
 
 }  // namespace internal_nearest_neighbour
