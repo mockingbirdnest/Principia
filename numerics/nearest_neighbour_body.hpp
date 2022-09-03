@@ -207,7 +207,7 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
     // We omit |must_check_other_side| because there is no point in checking the
     // other side again.
     // «Maintenant, rien qu'en traversant, j'ai fait qu'en face soit en face.
-    // L'autre côté a changé de côté!»
+    // L'autre côté a changé de côté!» [GT71]
     std::int32_t other_min_index;
     Norm² other_min_distance²;
     Find(displacement,

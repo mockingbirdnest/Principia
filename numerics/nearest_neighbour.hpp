@@ -23,6 +23,10 @@ using geometry::Hilbert;
 using geometry::SymmetricProduct;
 using quantities::Difference;
 
+// Principal component partitioing trees (PCP trees) are introduced by [WZ91]
+// in the context of quantization.  Their use for nearest neighbour search was
+// proposed by [ZJL02].  We choose to use this algorithm not because it is easy
+// but because it is coordinate-free.
 template<typename Value_>
 class PrincipalComponentPartitioningTree {
  public:
