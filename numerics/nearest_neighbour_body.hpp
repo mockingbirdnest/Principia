@@ -72,7 +72,7 @@ PrincipalComponentPartitioningTree<Value_>::BuildTree(
 
   // Compute the "inertia" of the selected displacements and diagonalize it.
   // This gives us the direction of the largest eigenvalue, which defines the
-  // splitting plane.
+  // separator plane.
   auto const form = ComputePrincipalComponentForm(begin, end);
   auto const eigensystem =
       form.template Diagonalize<PrincipalComponentsFrame>();
@@ -131,19 +131,25 @@ PrincipalComponentPartitioningTree<Value_>::ComputePrincipalComponentForm(
 }
 
 template<typename Value_>
-PrincipalComponentPartitioningTree<Value_>::Displacement
-PrincipalComponentPartitioningTree<Value_>::Find(
+void PrincipalComponentPartitioningTree<Value_>::Find(
     Displacement const& displacement,
     Internal const* const parent,
-    Node const& node) const {
+    Node const& node,
+    std::int32_t& min_index,
+    bool& must_check_other_side) const {
   if (std::holds_alternative<Internal>(node)) {
     return Find(displacement, std::get<Internal>(node));
   } else if (std::holds_alternative<Leaf>(node)) {
-    return Find(displacement, parent, std::get<Leaf>(node));
+    Find(displacement,
+         parent,
+         std::get<Leaf>(node),
+         min_index,
+         must_check_other_side);
   } else {
     LOG(FATAL) << "Unexpected node";
   }
 }
+
 template<typename Value_>
 PrincipalComponentPartitioningTree<Value_>::Displacement
 PrincipalComponentPartitioningTree<Value_>::Find(
@@ -151,24 +157,71 @@ PrincipalComponentPartitioningTree<Value_>::Find(
     Internal const& internal) const {
   Norm const projection =
       InnerProduct(internal.principal_axis, displacement - internal.anchor);
+
+
+  // We first search on the "preferred" side of the separator plane, i.e., the
+  // one where |displacement| is located.  We may have to look at the "other"
+  // side, if |displacement| is too close to that plane.
+  Node const* preferred_side;
   if (projection < Norm{}) {
-    return Find(displacement, &internal, *internal.children.first);
+    preferred_side = internal.children.first.get();
   } else {
-    return Find(displacement, &internal, *internal.children.second);
+    preferred_side = internal.children.second.get();
+  }
+
+  std::int32_t preferred_min_index;
+  Norm² preferred_min_distance²;
+  bool& must_check_other_side;
+  Find(displacement,
+        &internal,
+        *preferred_side,
+        preferred_min_index,
+        preferred_min_distance²,
+        must_check_other_side);
+
+  if (must_check_other_side) {
+    Node const* other_side;
+    if (projection < Norm{}) {
+      other_side = internal.children.second.get();
+    } else {
+      other_side = internal.children.first.get();
+    }
+
+    // We omit the |parent| because there is no point in checking the other side
+    // again.
+    // «Maintenant, rien qu'en traversant, j'ai fait qu'en face soit en face.
+    // L'autre côté a changé de côté!»
+    std::int32_t other_min_index;
+    Norm² other_min_distance²;
+    Find(displacement,
+          /*parent=*/nullptr,
+          *internal.children.second,
+          other_min_index,
+          other_min_distance²,
+          must_check_other_side);
+
+    if (other_min_distance² < preferred_min_distance²) {
+      index = other_min_index;
+    } else {
+      index = preferred_min_index;
+    }
+  } else {
+    index = preferred_min_index;
   }
 }
 
 template<typename Value_>
-PrincipalComponentPartitioningTree<Value_>::Displacement
-PrincipalComponentPartitioningTree<Value_>::Find(
+void PrincipalComponentPartitioningTree<Value_>::Find(
     Displacement const& displacement,
     Internal const* const parent,
-    Leaf const& leaf) const {
+    Leaf const& leaf,
+    Norm²& min_distance²,
+    std::int32_t& min_index,
+    bool& must_check_other_side) const {
   CHECK(!leaf.empty());
 
   // Find the point in this leaf which is the closest to |displacement|.
-  Norm² min_distance² = Infinity<Norm²>;
-  int32_t min_index = -1;
+  min_distance² = Infinity<Norm²>;
   for (auto const index : leaf) {
     auto const distance² = (displacements_[index] - displacement).Norm²();
     if (distance² < min_distance²) {
@@ -177,15 +230,15 @@ PrincipalComponentPartitioningTree<Value_>::Find(
     }
   }
 
-  if (parent != nullptr) {
+  // If there is a parent node, and |displacement| is very close to the
+  // separator plane, we'll need to check the other side of the plane.
+  if (parent == nullptr) {
+    must_check_other_side = false;
+  } else {
     Norm² const projection² = Pow<2>(
         InnerProduct(parent->principal_axis, displacement - parent->anchor));
-    if (projection² < min_distance²) {
-
-    }
+    must_check_other_side = projection² < min_distance²;
   }
-
-  // TODO:other side of the wall, return.
 }
 
 }  // namespace internal_nearest_neighbour
