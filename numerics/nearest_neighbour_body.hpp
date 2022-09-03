@@ -3,7 +3,6 @@
 #include "numerics/nearest_neighbour.hpp"
 
 #include <algorithm>
-#include <numeric>
 #include <type_traits>
 
 #include "geometry/barycentre_calculator.hpp"
@@ -33,8 +32,11 @@ PrincipalComponentPartitioningTree<Value_>::PrincipalComponentPartitioningTree(
     displacements_.push_back(value - centroid_);
   }
 
-  Indices indices(values.size());
-  std::iota(indices.begin(), indices.end(), 0);  // Yes!  I did it!
+  Indices indices;
+  indices.reserve(displacements_.size());
+  for (int i = 0; i < displacements_.size(); ++i) {
+    indices[i] = {.index = i, .projection = Norm{}};
+  }
 
   root_ = BuildTree(indices.begin(), indices.end(), indices.size());
 }
@@ -57,7 +59,7 @@ PrincipalComponentPartitioningTree<Value_>::BuildTree(
     // We are done subdividing, return a leaf.
     std::vector<Displacement> leaf;
     for (auto it = begin; it != end; ++it) {
-      leaf.push_back(displacements_[*it]);
+      leaf.push_back(displacements_[it->index]);
     }
     return make_not_null_unique<Node>(leaf);
   }
@@ -73,18 +75,15 @@ PrincipalComponentPartitioningTree<Value_>::BuildTree(
       eigensystem.rotation(PrincipalComponentsAxis({1, 0, 0}));
 
   // Project the |vectors| on the principal axis.
-  std::vector<Norm> projections;
-
-  auto const projection_less = [&projections](std::int32_t const left,
-                                              std::int32_t const right) {
-    return projections[left] < projections[right];
-  };
-
-  projections.reserve(size);///NONONO
   for (auto it = begin; it != end; ++it) {
-    auto const& displacement = displacements_[*it];
-    projections.push_back(InnerProduct(principal_axis, displacement));
+    auto const& displacement = displacements_[it->index];
+    it->projection = InnerProduct(principal_axis, displacement);
   }
+
+  // A comparator for the projections.
+  auto const projection_less = [](Index const& left, Index const& right) {
+    return left.projection < right.projection;
+  };
 
   // Find the median of the projections on the principal axis.  Cost: 3.4 * N.
   auto const mid_upper = begin + size / 2;
@@ -99,7 +98,8 @@ PrincipalComponentPartitioningTree<Value_>::BuildTree(
   auto const mid_lower = std::max_element(begin, mid_upper, projection_less);
 
   auto const anchor = Barycentre<Displacement, double>(
-      {displacements_[*mid_lower], displacements_[*mid_upper]}, {1, 1});
+      {displacements_[mid_lower->index], displacements_[mid_upper->index]},
+      {1, 1});
 
   auto first_child = BuildTree(begin, mid_upper, size / 2);
   auto second_child = BuildTree(mid_upper, end, size - size / 2);
@@ -118,7 +118,7 @@ PrincipalComponentPartitioningTree<Value_>::ComputePrincipalComponentForm(
     Indices::iterator const end) const {
   DisplacementSymmetricBilinearForm result;
   for (auto it = begin; it != end; ++it) {
-    auto const& displacement = displacements_[*it];
+    auto const& displacement = displacements_[it->index];
     result += SymmetricProduct(displacement, displacement);
   }
   return result;

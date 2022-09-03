@@ -65,12 +65,7 @@ class PrincipalComponentPartitioningTree {
       std::declval<DisplacementPrincipalComponentsSystem>().rotation.Inverse()(
           std::declval<Axis>()));
 
-  // These are indices in |displacements_|, that we use to refer to actual
-  // values.  We cannot use iterators because they would be invalidated by
-  // |Add|.  We use 32-bit integers because these will be swapped a lot, so we
-  // don't want to touch too much memory.
-  using Indices = std::vector<std::int32_t>;
-
+  // The declarations of the tree structure.
   struct Internal;
 
   using Leaf = std::vector<Displacement>;
@@ -85,6 +80,17 @@ class PrincipalComponentPartitioningTree {
     Displacement anchor;
     Children children;
   };
+
+  // The construction of the tree uses this type, which contains an index in the
+  // |displacements_| array and storage for the projection of the corresponding
+  // |Displacement| on the current principal axis.  We use 32-bit integers
+  // because these objects will be swapped a lot, so the less memory we touch
+  // the better.
+  struct Index {
+    std::int32_t index;
+    Norm projection;
+  };
+  using Indices = std::vector<Index>;
 
   // Constructs a tree for the displacements given by the index range
   // [begin, end[.  |size| must be equal to |std::distance(begin, end)|, but is
