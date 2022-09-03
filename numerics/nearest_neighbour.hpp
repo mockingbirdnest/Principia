@@ -113,9 +113,13 @@ class PrincipalComponentPartitioningTree {
             Node const& node,
             Norm²& min_distance²,
             std::int32_t& min_index,
-            bool& must_check_other_side) const;
-  Displacement Find(Displacement const& displacement,
-                    Internal const& internal) const;
+            bool* must_check_other_side) const;
+  void Find(Displacement const& displacement,
+            Internal const* parent,
+            Internal const& internal,
+            Norm²& min_distance²,
+            std::int32_t& min_index,
+            bool* must_check_other_side) const;
 
   // Finds the point closest to |displacement| in the |leaf|, and returns its
   // index.  If |displacement| is close to the separator plane of |parent|, sets
@@ -125,7 +129,7 @@ class PrincipalComponentPartitioningTree {
             Leaf const& leaf,
             Norm²& min_distance²,
             std::int32_t& min_index,
-            bool& must_check_other_side) const;
+            bool* must_check_other_side) const;
 
   std::int64_t const max_values_per_cell_;
 
