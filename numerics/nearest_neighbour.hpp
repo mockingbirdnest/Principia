@@ -27,6 +27,8 @@ class PrincipalComponentPartitioningTree {
  public:
   using Value = Value_;
 
+  // We stop subdividing a cell when it contains |max_values_per_cell| or less
+  // values.
   PrincipalComponentPartitioningTree(std::vector<Value> const& values,
                                      std::int64_t max_values_per_cell);
 
@@ -68,7 +70,7 @@ class PrincipalComponentPartitioningTree {
   // The declarations of the tree structure.
   struct Internal;
 
-  using Leaf = std::vector<Displacement>;
+  using Leaf = std::vector<std::int32_t>;  // Indices in |displacements_|.
 
   using Node = std::variant<Internal, Leaf>;
 

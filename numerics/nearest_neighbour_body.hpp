@@ -57,9 +57,9 @@ PrincipalComponentPartitioningTree<Value_>::BuildTree(
     std::int64_t const size) const {
   if (size <= max_values_per_cell_) {
     // We are done subdividing, return a leaf.
-    std::vector<Displacement> leaf;
+    Leaf leaf;
     for (auto it = begin; it != end; ++it) {
-      leaf.push_back(displacements_[it->index]);
+      leaf.push_back(it->index);
     }
     return make_not_null_unique<Node>(leaf);
   }
