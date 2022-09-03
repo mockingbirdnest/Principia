@@ -34,7 +34,7 @@ class PrincipalComponentPartitioningTree {
 
   void Add(Value const& value);
 
-  Value const& FindNearestNeighbour(Value const& value) const;
+  Value FindNearestNeighbour(Value const& value) const;
 
  private:
   // A frame used to compute the principal components.
@@ -108,9 +108,14 @@ class PrincipalComponentPartitioningTree {
       Indices::iterator begin,
       Indices::iterator end) const;
 
-  Displacement Find(Displacement const& displacement, Node const& node);
-  Displacement Find(Displacement const& displacement, Internal const& internal);
-  Displacement Find(Displacement const& displacement, Leaf const& leaf);
+  Displacement Find(Displacement const& displacement,
+                    Internal const* parent,
+                    Node const& node) const;
+  Displacement Find(Displacement const& displacement,
+                    Internal const& internal) const;
+  Displacement Find(Displacement const& displacement,
+                    Internal const* parent,
+                    Leaf const& leaf) const;
 
   std::int64_t const max_values_per_cell_;
 

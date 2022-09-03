@@ -19,5 +19,9 @@ protected:
   PrincipalComponentPartitioningTree<Vector<double, World>> tree_;
 };
 
+TEST_F(NearestNeighbourTest, FindNearestNeighbour) {
+  tree_.FindNearestNeighbour(Vector<double, World>());
+}
+
 }  // namespace numerics
 }  // namespace principia

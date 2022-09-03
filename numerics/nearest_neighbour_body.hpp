@@ -8,6 +8,7 @@
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
 #include "glog/logging.h"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -20,6 +21,7 @@ using geometry::Bivector;
 using geometry::SymmetricBilinearForm;
 using geometry::Wedge;
 using quantities::Infinity;
+using quantities::Pow;
 
 template<typename Value_>
 PrincipalComponentPartitioningTree<Value_>::PrincipalComponentPartitioningTree(
@@ -47,9 +49,9 @@ template<typename Value_>
 void PrincipalComponentPartitioningTree<Value_>::Add(Value const& value) {}
 
 template<typename Value_>
-Value_ const& PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
+Value_ PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
     Value const& value) const {
-  return centroid_ + Find(value - centroid_, *root_);
+  return centroid_ + Find(value - centroid_, /*parent=*/nullptr, *root_);
 }
 
 template<typename Value_>
@@ -132,11 +134,12 @@ template<typename Value_>
 PrincipalComponentPartitioningTree<Value_>::Displacement
 PrincipalComponentPartitioningTree<Value_>::Find(
     Displacement const& displacement,
-    Node const& node) {
+    Internal const* const parent,
+    Node const& node) const {
   if (std::holds_alternative<Internal>(node)) {
     return Find(displacement, std::get<Internal>(node));
   } else if (std::holds_alternative<Leaf>(node)) {
-    return Find(displacement, std::get<Leaf>(node));
+    return Find(displacement, parent, std::get<Leaf>(node));
   } else {
     LOG(FATAL) << "Unexpected node";
   }
@@ -145,13 +148,13 @@ template<typename Value_>
 PrincipalComponentPartitioningTree<Value_>::Displacement
 PrincipalComponentPartitioningTree<Value_>::Find(
     Displacement const& displacement,
-    Internal const& internal) {
+    Internal const& internal) const {
   Norm const projection =
-      InnerProduct(internal.princial_axis, displacement - internal.anchor);
+      InnerProduct(internal.principal_axis, displacement - internal.anchor);
   if (projection < Norm{}) {
-    return Find(displacement, internal.children.first);
+    return Find(displacement, &internal, *internal.children.first);
   } else {
-    return Find(displacement, internal.children.second);
+    return Find(displacement, &internal, *internal.children.second);
   }
 }
 
@@ -159,9 +162,11 @@ template<typename Value_>
 PrincipalComponentPartitioningTree<Value_>::Displacement
 PrincipalComponentPartitioningTree<Value_>::Find(
     Displacement const& displacement,
-    Leaf const& leaf) {
+    Internal const* const parent,
+    Leaf const& leaf) const {
   CHECK(!leaf.empty());
 
+  // Find the point in this leaf which is the closest to |displacement|.
   Norm² min_distance² = Infinity<Norm²>;
   int32_t min_index = -1;
   for (auto const index : leaf) {
@@ -171,6 +176,15 @@ PrincipalComponentPartitioningTree<Value_>::Find(
       min_index = index;
     }
   }
+
+  if (parent != nullptr) {
+    Norm² const projection² = Pow<2>(
+        InnerProduct(parent->principal_axis, displacement - parent->anchor));
+    if (projection² < min_distance²) {
+
+    }
+  }
+
   // TODO:other side of the wall, return.
 }
 
