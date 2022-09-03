@@ -63,28 +63,27 @@ PrincipalComponentPartitioningTree<Value_>::BuildTree(
   }
 
   // Compute the "inertia" of the selected displacements and diagonalize it.
-  // This gives us the direction of the largest eigenvalue, which defines the splitting plane.
+  // This gives us the direction of the largest eigenvalue, which defines the
+  // splitting plane.
   auto const form = ComputePrincipalComponentForm(begin, end);
   auto const eigensystem =
       form.template Diagonalize<PrincipalComponentsFrame>();
   // The first eigenvalue is the largest one.
-  auto const principal_axis = eigensystem.rotation(
-      Bivector<double, PrincipalComponentsFrame>({1, 0, 0}));
+  auto const principal_axis =
+      eigensystem.rotation(PrincipalComponentsAxis({1, 0, 0}));
 
   // Project the |vectors| on the principal axis.
-  using Projection =
-      decltype(Wedge(principal_axis, std::declval<Displacement>()));
-  std::vector<Projection> projections;
+  std::vector<Norm> projections;
 
   auto const projection_less = [&projections](std::int32_t const left,
                                               std::int32_t const right) {
-    return projections[left].coordinates() < projections[right].coordinates();
+    return projections[left] < projections[right];
   };
 
-  projections.reserve(size);
+  projections.reserve(size);///NONONO
   for (auto it = begin; it != end; ++it) {
     auto const& displacement = displacements_[*it];
-    projections.push_back(Wedge(principal_axis, displacement));
+    projections.push_back(InnerProduct(principal_axis, displacement));
   }
 
   // Find the median of the projections on the principal axis.  Cost: 3.4 * N.

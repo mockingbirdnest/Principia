@@ -7,6 +7,7 @@
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/hilbert.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "quantities/named_quantities.hpp"
 
@@ -17,6 +18,7 @@ namespace internal_nearest_neighbour {
 using base::not_null;
 using geometry::Bivector;
 using geometry::Frame;
+using geometry::Hilbert;
 using geometry::SymmetricProduct;
 using quantities::Difference;
 
@@ -40,18 +42,28 @@ class PrincipalComponentPartitioningTree {
   // A displacement from the centroid.
   using Displacement = Difference<Value>;
 
-  // A number of useful types for building data structures and parameters/
-  // results.
+  // The type of the norm (and the elements) of |Displacement|.
+  using Norm = typename Hilbert<Displacement>::NormType;
+
+  // A unit vector corresponding to |Displacement|.
+  using Axis = typename Hilbert<Displacement>::NormalizedType;
+
+  // A form that operates on |Displacement|s.
+  // NOTE(phl): We don't have SymmetricProduct for Bivector, so this effectively
+  // means that Displacement is a Vector.
   using DisplacementSymmetricBilinearForm =
       decltype(SymmetricProduct(std::declval<Displacement>(),
                                 std::declval<Displacement>()));
+
+  // The principal components (a.k.a. eigensystem) of the above form.
   using DisplacementPrincipalComponentsSystem =
       typename DisplacementSymmetricBilinearForm::template Eigensystem<
           PrincipalComponentsFrame>;
-  // TODO(phl): Unclear if the Bivector thingy is a good idea.
-  using PrincipalAxis =
-      decltype(std::declval<DisplacementPrincipalComponentsSystem>().rotation(
-          std::declval<Bivector<double, PrincipalComponentsFrame>>()));
+
+  // A unit vector in the principal components frame.
+  using PrincipalComponentsAxis = decltype(
+      std::declval<DisplacementPrincipalComponentsSystem>().rotation.Inverse()(
+          std::declval<Axis>()));
 
   // These are indices in |displacements_|, that we use to refer to actual
   // values.  We cannot use iterators because they would be invalidated by
@@ -69,7 +81,7 @@ class PrincipalComponentPartitioningTree {
                              not_null<std::unique_ptr<Node>>>;
 
   struct Internal {
-    PrincipalAxis principal_axis;
+    Axis principal_axis;
     Displacement anchor;
     Children children;
   };
