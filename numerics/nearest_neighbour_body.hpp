@@ -3,6 +3,8 @@
 #include "numerics/nearest_neighbour.hpp"
 
 #include <algorithm>
+#include <limits>
+#include <vector>
 #include <type_traits>
 
 #include "geometry/barycentre_calculator.hpp"

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <optional>
 #include <utility>
@@ -54,7 +54,7 @@ class PrincipalComponentPartitioningTree {
 
   // The type of the norm (and its square) of |Displacement|.
   using Norm = typename Hilbert<Displacement>::NormType;
-  using Norm² = typename Hilbert<Displacement>::Norm²Type;
+  using NormÂ² = typename Hilbert<Displacement>::NormÂ²Type;
 
   // A unit vector corresponding to |Displacement|.
   using Axis = typename Hilbert<Displacement>::NormalizedType;
@@ -124,7 +124,7 @@ class PrincipalComponentPartitioningTree {
   void Find(Displacement const& displacement,
             Internal const* parent,
             Node const& node,
-            Norm²& min_distance²,
+            NormÂ²& min_distanceÂ²,
             std::int32_t& min_index,
             bool* must_check_other_side) const;
 
@@ -132,13 +132,13 @@ class PrincipalComponentPartitioningTree {
   void Find(Displacement const& displacement,
             Internal const* parent,
             Internal const& internal,
-            Norm²& min_distance²,
+            NormÂ²& min_distanceÂ²,
             std::int32_t& min_index,
             bool* must_check_other_side) const;
   void Find(Displacement const& displacement,
             Internal const* parent,
             Leaf const& leaf,
-            Norm²& min_distance²,
+            NormÂ²& min_distanceÂ²,
             std::int32_t& min_index,
             bool* must_check_other_side) const;
 
