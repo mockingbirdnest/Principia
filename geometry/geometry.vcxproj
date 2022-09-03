@@ -69,7 +69,6 @@
     <ClCompile Include="identity_test.cpp" />
     <ClCompile Include="instant_output.cpp" />
     <ClCompile Include="instant_output_test.cpp" />
-    <ClCompile Include="nearest_neighbour_test.cpp" />
     <ClCompile Include="pair_test.cpp" />
     <ClCompile Include="perspective_test.cpp" />
     <ClCompile Include="point_test.cpp" />

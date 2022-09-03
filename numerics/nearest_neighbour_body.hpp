@@ -39,7 +39,7 @@ PrincipalComponentPartitioningTree<Value_>::PrincipalComponentPartitioningTree(
   Indices indices;
   indices.reserve(displacements_.size());
   for (int i = 0; i < displacements_.size(); ++i) {
-    indices[i] = {.index = i, .projection = Norm{}};
+    indices.push_back({.index = i, .projection = Norm{}});
   }
 
   root_ = BuildTree(indices.begin(), indices.end(), indices.size());
@@ -49,8 +49,12 @@ template<typename Value_>
 void PrincipalComponentPartitioningTree<Value_>::Add(Value const& value) {}
 
 template<typename Value_>
-Value_ PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
+std::optional<Value_>
+PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
     Value const& value) const {
+  if (displacements_.empty()) {
+    return std::nullopt;
+  }
   Norm² min_distance²;
   std::int32_t min_index;
   Find(value - centroid_,
@@ -83,9 +87,9 @@ PrincipalComponentPartitioningTree<Value_>::BuildTree(
   auto const form = ComputePrincipalComponentForm(begin, end);
   auto const eigensystem =
       form.template Diagonalize<PrincipalComponentsFrame>();
-  // The first eigenvalue is the largest one.
+  // The last eigenvalue is the largest one.
   auto const principal_axis =
-      eigensystem.rotation(PrincipalComponentsAxis({1, 0, 0}));
+      eigensystem.rotation(PrincipalComponentsAxis({0, 0, 1}));
 
   // Project the |vectors| on the principal axis.
   for (auto it = begin; it != end; ++it) {
@@ -208,7 +212,7 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
     Norm² other_min_distance²;
     Find(displacement,
           parent,
-          *internal.children.second,
+          *other_side,
           other_min_distance², other_min_index,
           /*must_check_other_side=*/nullptr);
 

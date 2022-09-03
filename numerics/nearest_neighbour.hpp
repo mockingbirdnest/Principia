@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -34,7 +35,7 @@ class PrincipalComponentPartitioningTree {
 
   void Add(Value const& value);
 
-  Value FindNearestNeighbour(Value const& value) const;
+  std::optional<Value> FindNearestNeighbour(Value const& value) const;
 
  private:
   // A frame used to compute the principal components.
