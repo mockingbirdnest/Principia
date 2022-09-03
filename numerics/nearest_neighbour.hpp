@@ -32,7 +32,7 @@ class PrincipalComponentPartitioningTree {
  public:
   using Value = Value_;
 
-  // We stop subdividing a cell when it contains |max_values_per_cell| or less
+  // We stop subdividing a cell when it contains |max_values_per_cell| or fewer
   // values.
   PrincipalComponentPartitioningTree(std::vector<Value> const& values,
                                      std::int64_t max_values_per_cell);
