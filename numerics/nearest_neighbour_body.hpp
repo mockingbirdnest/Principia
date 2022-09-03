@@ -46,7 +46,9 @@ PrincipalComponentPartitioningTree<Value_>::PrincipalComponentPartitioningTree(
 }
 
 template<typename Value_>
-void PrincipalComponentPartitioningTree<Value_>::Add(Value const& value) {}
+void PrincipalComponentPartitioningTree<Value_>::Add(Value const& value) {
+  LOG(FATAL) << "NYI";
+}
 
 template<typename Value_>
 std::optional<Value_>

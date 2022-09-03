@@ -37,8 +37,11 @@ class PrincipalComponentPartitioningTree {
   PrincipalComponentPartitioningTree(std::vector<Value> const& values,
                                      std::int64_t max_values_per_cell);
 
+  // Adds a new value to the tree, restructuring it as needed.
   void Add(Value const& value);
 
+  // Finds the nearest neighbour of the given |value|.  Returns |nullopt| if the
+  // tree is empty.
   std::optional<Value> FindNearestNeighbour(Value const& value) const;
 
  private:
@@ -113,22 +116,25 @@ class PrincipalComponentPartitioningTree {
       Indices::iterator begin,
       Indices::iterator end) const;
 
+  // Finds the point closest to |displacement| in the |node| and its children,
+  // and returns its index and its (squared) distance.  If |displacement| is
+  // close to the separator plane of |parent|, sets |must_check_other_side| to
+  // true.  That pointer may be null if the client doesn't want to check this
+  // condition.  |parent| should be null for the root of the tree.
   void Find(Displacement const& displacement,
             Internal const* parent,
             Node const& node,
             Norm²& min_distance²,
             std::int32_t& min_index,
             bool* must_check_other_side) const;
+
+  // Specializations for internal nodes and leaves, respectively.
   void Find(Displacement const& displacement,
             Internal const* parent,
             Internal const& internal,
             Norm²& min_distance²,
             std::int32_t& min_index,
             bool* must_check_other_side) const;
-
-  // Finds the point closest to |displacement| in the |leaf|, and returns its
-  // index.  If |displacement| is close to the separator plane of |parent|, sets
-  // |must_check_other_side| to true.
   void Find(Displacement const& displacement,
             Internal const* parent,
             Leaf const& leaf,
