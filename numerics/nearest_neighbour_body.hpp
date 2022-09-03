@@ -7,6 +7,8 @@
 
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
+#include "glog/logging.h"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace numerics {
@@ -17,7 +19,7 @@ using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::SymmetricBilinearForm;
 using geometry::Wedge;
-
+using quantities::Infinity;
 
 template<typename Value_>
 PrincipalComponentPartitioningTree<Value_>::PrincipalComponentPartitioningTree(
@@ -45,8 +47,10 @@ template<typename Value_>
 void PrincipalComponentPartitioningTree<Value_>::Add(Value const& value) {}
 
 template<typename Value_>
-Value_ const& PrincipalComponentPartitioningTree<Value_>::FindNearest(
-    Value const& value) const {}
+Value_ const& PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
+    Value const& value) const {
+  return centroid_ + Find(value - centroid_, *root_);
+}
 
 template<typename Value_>
 not_null<std::unique_ptr<
@@ -122,6 +126,52 @@ PrincipalComponentPartitioningTree<Value_>::ComputePrincipalComponentForm(
     result += SymmetricProduct(displacement, displacement);
   }
   return result;
+}
+
+template<typename Value_>
+PrincipalComponentPartitioningTree<Value_>::Displacement
+PrincipalComponentPartitioningTree<Value_>::Find(
+    Displacement const& displacement,
+    Node const& node) {
+  if (std::holds_alternative<Internal>(node)) {
+    return Find(displacement, std::get<Internal>(node));
+  } else if (std::holds_alternative<Leaf>(node)) {
+    return Find(displacement, std::get<Leaf>(node));
+  } else {
+    LOG(FATAL) << "Unexpected node";
+  }
+}
+template<typename Value_>
+PrincipalComponentPartitioningTree<Value_>::Displacement
+PrincipalComponentPartitioningTree<Value_>::Find(
+    Displacement const& displacement,
+    Internal const& internal) {
+  Norm const projection =
+      InnerProduct(internal.princial_axis, displacement - internal.anchor);
+  if (projection < Norm{}) {
+    return Find(displacement, internal.children.first);
+  } else {
+    return Find(displacement, internal.children.second);
+  }
+}
+
+template<typename Value_>
+PrincipalComponentPartitioningTree<Value_>::Displacement
+PrincipalComponentPartitioningTree<Value_>::Find(
+    Displacement const& displacement,
+    Leaf const& leaf) {
+  CHECK(!leaf.empty());
+
+  Norm² min_distance² = Infinity<Norm²>;
+  int32_t min_index = -1;
+  for (auto const index : leaf) {
+    auto const distance² = (displacements_[index] - displacement).Norm²();
+    if (distance² < min_distance²) {
+      min_distance² = distance²;
+      min_index = index;
+    }
+  }
+  // TODO:other side of the wall, return.
 }
 
 }  // namespace internal_nearest_neighbour

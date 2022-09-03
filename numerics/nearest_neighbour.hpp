@@ -34,7 +34,7 @@ class PrincipalComponentPartitioningTree {
 
   void Add(Value const& value);
 
-  Value const& FindNearest(Value const& value) const;
+  Value const& FindNearestNeighbour(Value const& value) const;
 
  private:
   // A frame used to compute the principal components.
@@ -44,8 +44,9 @@ class PrincipalComponentPartitioningTree {
   // A displacement from the centroid.
   using Displacement = Difference<Value>;
 
-  // The type of the norm (and the elements) of |Displacement|.
+  // The type of the norm (and its square) of |Displacement|.
   using Norm = typename Hilbert<Displacement>::NormType;
+  using Norm² = typename Hilbert<Displacement>::Norm²Type;
 
   // A unit vector corresponding to |Displacement|.
   using Axis = typename Hilbert<Displacement>::NormalizedType;
@@ -106,6 +107,10 @@ class PrincipalComponentPartitioningTree {
   DisplacementSymmetricBilinearForm ComputePrincipalComponentForm(
       Indices::iterator begin,
       Indices::iterator end) const;
+
+  Displacement Find(Displacement const& displacement, Node const& node);
+  Displacement Find(Displacement const& displacement, Internal const& internal);
+  Displacement Find(Displacement const& displacement, Leaf const& leaf);
 
   std::int64_t const max_values_per_cell_;
 
