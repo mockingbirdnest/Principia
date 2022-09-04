@@ -48,7 +48,36 @@ void BM_PCPBuildTree(benchmark::State& state) {
   }
 }
 
+void BM_PCPFindNearestNeighbour(benchmark::State& state) {
+  std::int64_t const points_in_tree = state.range(0);
+  std::int64_t const max_values_per_cell = state.range(1);
+  std::vector<V> values;
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<double> coordinate_distribution(-10, 10);
+  auto const tree = BuildTree(points_in_tree, max_values_per_cell, values);
+
+  for (auto _ : state) {
+    benchmark::DoNotOptimize(
+        tree.FindNearestNeighbour(V({coordinate_distribution(random),
+                                     coordinate_distribution(random),
+                                     coordinate_distribution(random)})));
+  }
+}
+
 BENCHMARK(BM_PCPBuildTree)
+    ->Args({1'000, 1})
+    ->Args({1'000, 2})
+    ->Args({1'000, 4})
+    ->Args({1'000, 8})
+    ->Args({10'000, 1})
+    ->Args({10'000, 2})
+    ->Args({10'000, 4})
+    ->Args({10'000, 8})
+    ->Args({100'000, 1})
+    ->Args({100'000, 2})
+    ->Args({100'000, 4})
+    ->Args({100'000, 8});
+BENCHMARK(BM_PCPFindNearestNeighbour)
     ->Args({1'000, 1})
     ->Args({1'000, 2})
     ->Args({1'000, 4})
