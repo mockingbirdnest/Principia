@@ -66,30 +66,36 @@ void BM_PCPFindNearestNeighbour(benchmark::State& state) {
 
 BENCHMARK(BM_PCPBuildTree)
     ->Args({1'000, 1})
-    ->Args({1'000, 2})
     ->Args({1'000, 4})
-    ->Args({1'000, 8})
+    ->Args({1'000, 16})
+    ->Args({1'000, 64})
+    ->Args({1'000, 256})
     ->Args({10'000, 1})
-    ->Args({10'000, 2})
     ->Args({10'000, 4})
-    ->Args({10'000, 8})
+    ->Args({10'000, 16})
+    ->Args({10'000, 64})
+    ->Args({10'000, 256})
     ->Args({100'000, 1})
-    ->Args({100'000, 2})
     ->Args({100'000, 4})
-    ->Args({100'000, 8});
+    ->Args({100'000, 16})
+    ->Args({100'000, 64})
+    ->Args({100'000, 256});
 BENCHMARK(BM_PCPFindNearestNeighbour)
     ->Args({1'000, 1})
-    ->Args({1'000, 2})
     ->Args({1'000, 4})
-    ->Args({1'000, 8})
+    ->Args({1'000, 16})
+    ->Args({1'000, 64})
+    ->Args({1'000, 256})
     ->Args({10'000, 1})
-    ->Args({10'000, 2})
     ->Args({10'000, 4})
-    ->Args({10'000, 8})
+    ->Args({10'000, 16})
+    ->Args({10'000, 64})
+    ->Args({10'000, 256})
     ->Args({100'000, 1})
-    ->Args({100'000, 2})
     ->Args({100'000, 4})
-    ->Args({100'000, 8});
+    ->Args({100'000, 16})
+    ->Args({100'000, 64})
+    ->Args({100'000, 256});
 
 }  // namespace numerics
 }  // namespace principia
