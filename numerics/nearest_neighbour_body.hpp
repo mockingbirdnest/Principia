@@ -1,0 +1,277 @@
+﻿#pragma once
+
+#include "numerics/nearest_neighbour.hpp"
+
+#include <algorithm>
+#include <limits>
+#include <vector>
+#include <type_traits>
+
+#include "geometry/barycentre_calculator.hpp"
+#include "geometry/grassmann.hpp"
+#include "glog/logging.h"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/quantities.hpp"
+
+namespace principia {
+namespace numerics {
+namespace internal_nearest_neighbour {
+
+using base::make_not_null_unique;
+using geometry::Barycentre;
+using geometry::Bivector;
+using geometry::SymmetricBilinearForm;
+using geometry::Wedge;
+using quantities::Infinity;
+using quantities::Pow;
+
+template<typename Value_>
+PrincipalComponentPartitioningTree<Value_>::PrincipalComponentPartitioningTree(
+    std::vector<Value> const& values,
+    std::int64_t const max_values_per_cell)
+    : max_values_per_cell_(max_values_per_cell),
+      centroid_(Barycentre<Value, double, std::vector>(
+          values,
+          std::vector<double>(values.size(), 1))) {
+  CHECK_LE(values.size(), std::numeric_limits<std::int32_t>::max());
+
+  displacements_.reserve(values.size());
+  for (auto const& value : values) {
+    displacements_.push_back(value - centroid_);
+  }
+
+  Indices indices;
+  indices.reserve(displacements_.size());
+  for (int i = 0; i < displacements_.size(); ++i) {
+    indices.push_back({.index = i, .projection = Norm{}});
+  }
+
+  root_ = BuildTree(indices.begin(), indices.end(), indices.size());
+}
+
+template<typename Value_>
+void PrincipalComponentPartitioningTree<Value_>::Add(Value const& value) {
+  LOG(FATAL) << "NYI";
+}
+
+template<typename Value_>
+std::optional<Value_>
+PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
+    Value const& value) const {
+  if (displacements_.empty()) {
+    return std::nullopt;
+  }
+  Norm² min_distance²;
+  std::int32_t min_index;
+  Find(value - centroid_,
+       /*parent=*/nullptr,
+       *root_,
+       min_distance², min_index,
+       /*must_check_other_side=*/nullptr);
+  return centroid_ + displacements_[min_index];
+}
+
+template<typename Value_>
+not_null<std::unique_ptr<
+typename PrincipalComponentPartitioningTree<Value_>::Node>>
+PrincipalComponentPartitioningTree<Value_>::BuildTree(
+    Indices::iterator const begin,
+    Indices::iterator const end,
+    std::int64_t const size) const {
+  if (size <= max_values_per_cell_) {
+    // We are done subdividing, return a leaf.
+    Leaf leaf;
+    for (auto it = begin; it != end; ++it) {
+      leaf.push_back(it->index);
+    }
+    return make_not_null_unique<Node>(leaf);
+  }
+
+  // Compute the "inertia" of the selected displacements and diagonalize it.
+  // This gives us the direction of the largest eigenvalue, which defines the
+  // separator plane.
+  auto const form = ComputePrincipalComponentForm(begin, end);
+  auto const eigensystem =
+      form.template Diagonalize<PrincipalComponentsFrame>();
+  // The last eigenvalue is the largest one.
+  auto const principal_axis =
+      eigensystem.rotation(PrincipalComponentsAxis({0, 0, 1}));
+
+  // Project the |vectors| on the principal axis.
+  for (auto it = begin; it != end; ++it) {
+    auto const& displacement = displacements_[it->index];
+    it->projection = InnerProduct(principal_axis, displacement);
+  }
+
+  // A comparator for the projections.
+  auto const projection_less = [](Index const& left, Index const& right) {
+    return left.projection < right.projection;
+  };
+
+  // Find the median of the projections on the principal axis.  Cost: 3.4 * N.
+  auto const mid_upper = begin + size / 2;
+  std::nth_element(begin, mid_upper, end, projection_less);
+
+  // Here |mid_upper| denotes an index that denotes the point that is "in the
+  // middle" of the projections on the principal axis.  We do not wish to anchor
+  // our separator plane on a point, because that would make it more likely that
+  // queries have to dig into two branches of the tree.  Instead, we look for
+  // the maximum projection in the "lower" half space, and anchor our plane
+  // halfway between these points.  Cost: 0.25 * N.
+  auto const mid_lower = std::max_element(begin, mid_upper, projection_less);
+
+  auto const anchor = Barycentre<Displacement, double>(
+      {displacements_[mid_lower->index], displacements_[mid_upper->index]},
+      {1, 1});
+
+  auto first_child = BuildTree(begin, mid_upper, size / 2);
+  auto second_child = BuildTree(mid_upper, end, size - size / 2);
+
+  return make_not_null_unique<Node>(
+      Internal{.principal_axis = principal_axis,
+               .anchor = anchor,
+               .children = {std::move(first_child), std::move(second_child)}});
+}
+
+template<typename Value_>
+typename PrincipalComponentPartitioningTree<Value_>::
+DisplacementSymmetricBilinearForm
+PrincipalComponentPartitioningTree<Value_>::ComputePrincipalComponentForm(
+    Indices::iterator const begin,
+    Indices::iterator const end) const {
+  DisplacementSymmetricBilinearForm result;
+  for (auto it = begin; it != end; ++it) {
+    auto const& displacement = displacements_[it->index];
+    result += SymmetricProduct(displacement, displacement);
+  }
+  return result;
+}
+
+template<typename Value_>
+void PrincipalComponentPartitioningTree<Value_>::Find(
+    Displacement const& displacement,
+    Internal const* const parent,
+    Node const& node,
+    Norm²& min_distance²,
+    std::int32_t& min_index,
+    bool* const must_check_other_side) const {
+  if (std::holds_alternative<Internal>(node)) {
+    return Find(displacement,
+                parent,
+                std::get<Internal>(node),
+                min_distance², min_index,
+                must_check_other_side);
+  } else if (std::holds_alternative<Leaf>(node)) {
+    Find(displacement,
+         parent,
+         std::get<Leaf>(node),
+         min_distance², min_index,
+         must_check_other_side);
+  } else {
+    LOG(FATAL) << "Unexpected node";
+  }
+}
+
+template<typename Value_>
+void PrincipalComponentPartitioningTree<Value_>::Find(
+    Displacement const& displacement,
+    Internal const* parent,
+    Internal const& internal,
+    Norm²& min_distance²,
+    std::int32_t& min_index,
+    bool* const must_check_other_side) const {
+  Norm const projection =
+      InnerProduct(internal.principal_axis, displacement - internal.anchor);
+
+  // We first search on the "preferred" side of the separator plane, i.e., the
+  // one where |displacement| is located.  We may have to look at the "other"
+  // side, if |displacement| is too close to that plane.
+  Node const* preferred_side;
+  if (projection < Norm{}) {
+    preferred_side = internal.children.first.get();
+  } else {
+    preferred_side = internal.children.second.get();
+  }
+
+  std::int32_t preferred_min_index;
+  Norm² preferred_min_distance²;
+  bool preferred_must_check_other_side;
+  Find(displacement,
+       &internal,
+       *preferred_side,
+       preferred_min_distance², preferred_min_index,
+       &preferred_must_check_other_side);
+
+  if (preferred_must_check_other_side) {
+    Node const* other_side;
+    if (projection < Norm{}) {
+      other_side = internal.children.second.get();
+    } else {
+      other_side = internal.children.first.get();
+    }
+
+    // We omit |must_check_other_side| because there is no point in checking the
+    // other side again.
+    // « Maintenant, rien qu'en traversant, j'ai fait qu'en face soit en face.
+    // L'autre côté a changé de côté! » [GT71]
+    std::int32_t other_min_index;
+    Norm² other_min_distance²;
+    Find(displacement,
+          parent,
+          *other_side,
+          other_min_distance², other_min_index,
+          /*must_check_other_side=*/nullptr);
+
+    if (other_min_distance² < preferred_min_distance²) {
+      min_distance² = other_min_distance²;
+      min_index = other_min_index;
+    } else {
+      min_distance² = preferred_min_distance²;
+      min_index = preferred_min_index;
+    }
+  } else {
+    min_distance² = preferred_min_distance²;
+    min_index = preferred_min_index;
+  }
+
+  // Finally, check if we are close to the separator plane of the |parent|, in
+  // which case *it* will need to check the other side of its plane.
+  if (parent != nullptr && must_check_other_side != nullptr) {
+    Norm² const projection² = Pow<2>(
+        InnerProduct(parent->principal_axis, displacement - parent->anchor));
+    *must_check_other_side = projection² < min_distance²;
+  }
+}
+
+template<typename Value_>
+void PrincipalComponentPartitioningTree<Value_>::Find(
+    Displacement const& displacement,
+    Internal const* const parent,
+    Leaf const& leaf,
+    Norm²& min_distance²,
+    std::int32_t& min_index,
+    bool* const must_check_other_side) const {
+  CHECK(!leaf.empty());
+
+  // Find the point in this leaf which is the closest to |displacement|.
+  min_distance² = Infinity<Norm²>;
+  for (auto const index : leaf) {
+    auto const distance² = (displacements_[index] - displacement).Norm²();
+    if (distance² < min_distance²) {
+      min_distance² = distance²;
+      min_index = index;
+    }
+  }
+
+  // If there is a parent node, and |displacement| is very close to the
+  // separator plane, we'll need to check the other side of the plane.
+  if (parent != nullptr && must_check_other_side != nullptr) {
+    Norm² const projection² = Pow<2>(
+        InnerProduct(parent->principal_axis, displacement - parent->anchor));
+    *must_check_other_side = projection² < min_distance²;
+  }
+}
+
+}  // namespace internal_nearest_neighbour
+}  // namespace numerics
+}  // namespace principia
