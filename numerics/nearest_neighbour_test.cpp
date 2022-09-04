@@ -17,6 +17,7 @@ using base::not_null;
 using geometry::Frame;
 using geometry::Vector;
 using quantities::Infinity;
+using ::testing::Eq;
 using ::testing::Pointee;
 
 class PrincipalComponentPartitioningTreeTest : public ::testing::Test {
@@ -92,8 +93,8 @@ TEST_F(PrincipalComponentPartitioningTreeTest, Random) {
     auto const nearest1 = tree1.FindNearestNeighbour(query_point);
     auto const nearest3 = tree3.FindNearestNeighbour(query_point);
 
-    EXPECT_EQ(nearest1, nearest);
-    EXPECT_EQ(nearest3, nearest);
+    EXPECT_THAT(nearest1, Eq(nearest));
+    EXPECT_THAT(nearest3, Eq(nearest));
   }
 }
 
