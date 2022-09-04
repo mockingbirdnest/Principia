@@ -1,6 +1,7 @@
 ﻿#include "numerics/nearest_neighbour.hpp"
 
 #include <random>
+#include <vector>
 
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
