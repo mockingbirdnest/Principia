@@ -27,39 +27,49 @@ using quantities::Pow;
 
 template<typename Value_>
 PrincipalComponentPartitioningTree<Value_>::PrincipalComponentPartitioningTree(
-    std::vector<Value> const& values,
+    std::vector<not_null<Value const*>> const& values,
     std::int64_t const max_values_per_cell)
-    : max_values_per_cell_(max_values_per_cell),
-      centroid_(Barycentre<Value, double, std::vector>(
-          values,
-          std::vector<double>(values.size(), 1))) {
-  CHECK_LE(values.size(), std::numeric_limits<std::int32_t>::max());
+    : values_(values),
+      max_values_per_cell_(max_values_per_cell) {
+  CHECK_LE(values_.size(), std::numeric_limits<std::int32_t>::max());
 
-  displacements_.reserve(values.size());
-  for (auto const& value : values) {
-    displacements_.push_back(value - centroid_);
+  // Compute the centroid of the given values.
+  std::vector<Value> values_for_barycentre;
+  values_for_barycentre.reserve(values_.size());
+  for (auto const value : values_) {
+    values_for_barycentre.push_back(*value);
+  }
+  centroid_ = Barycentre<Value, double, std::vector>(
+      values_for_barycentre,
+      std::vector<double>(values_for_barycentre.size(), 1));
+
+  // Compute the displacements from the centroid.
+  displacements_.reserve(values_.size());
+  for (auto const value : values_) {
+    displacements_.push_back(*value - centroid_);
   }
 
+  // Fill indices to denote the displacements.
   Indices indices;
   indices.reserve(displacements_.size());
   for (int i = 0; i < displacements_.size(); ++i) {
     indices.push_back({.index = i, .projection = Norm{}});
   }
 
+  // Finally, build the tree.
   root_ = BuildTree(indices.begin(), indices.end(), indices.size());
 }
 
 template<typename Value_>
-void PrincipalComponentPartitioningTree<Value_>::Add(Value const& value) {
+void PrincipalComponentPartitioningTree<Value_>::Add(Value const* const value) {
   LOG(FATAL) << "NYI";
 }
 
 template<typename Value_>
-std::optional<Value_>
-PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
+Value_ const* PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
     Value const& value) const {
   if (displacements_.empty()) {
-    return std::nullopt;
+    return nullptr;
   }
   Norm² min_distance²;
   std::int32_t min_index;
@@ -68,7 +78,10 @@ PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
        *root_,
        min_distance², min_index,
        /*must_check_other_side=*/nullptr);
-  return centroid_ + displacements_[min_index];
+
+  // In the end, this is why we retain the values: we want to return a pointer
+  // that the client gave us.
+  return values_[min_index];
 }
 
 template<typename Value_>

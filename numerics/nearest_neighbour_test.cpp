@@ -3,21 +3,21 @@
 #include <random>
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/quantities.hpp"
-#include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
 namespace numerics {
 
+using base::not_null;
 using geometry::Frame;
 using geometry::Vector;
 using quantities::Infinity;
-using testing_utilities::AlmostEquals;
-using ::testing::Optional;
+using ::testing::Pointee;
 
 class PrincipalComponentPartitioningTreeTest : public ::testing::Test {
  protected:
@@ -37,60 +37,63 @@ TEST_F(PrincipalComponentPartitioningTreeTest, XYPlane) {
   // are on the separator plane.)  The other principal axes are more complicated
   // because of the position of the centroid, but the first query entails an
   // "other side" search on (v1, v2).
-  PrincipalComponentPartitioningTree<V> tree({v1, v2, v3, v4},
+  PrincipalComponentPartitioningTree<V> tree({&v1, &v2, &v3, &v4},
                                              /*max_values_per_cell=*/1);
 
-  EXPECT_THAT(tree.FindNearestNeighbour(V({-0.5, -0.5, 0})), Optional(v1));
-  EXPECT_THAT(tree.FindNearestNeighbour(V({-0.5, 0.5, 0})), Optional(v2));
-  EXPECT_THAT(tree.FindNearestNeighbour(V({1, 1, 0})), Optional(v4));
-  EXPECT_THAT(tree.FindNearestNeighbour(V({3, 3, 0})), Optional(v4));
+  EXPECT_THAT(tree.FindNearestNeighbour(V({-0.5, -0.5, 0})), Pointee(v1));
+  EXPECT_THAT(tree.FindNearestNeighbour(V({-0.5, 0.5, 0})), Pointee(v2));
+  EXPECT_THAT(tree.FindNearestNeighbour(V({1, 1, 0})), Pointee(v4));
+  EXPECT_THAT(tree.FindNearestNeighbour(V({3, 3, 0})), Pointee(v4));
 
   // Check that the points of the tree can be retrieved.
-  EXPECT_THAT(tree.FindNearestNeighbour(v1), Optional(v1));
-  EXPECT_THAT(tree.FindNearestNeighbour(v2), Optional(v2));
-  EXPECT_THAT(tree.FindNearestNeighbour(v3), Optional(v3));
-  EXPECT_THAT(tree.FindNearestNeighbour(v4), Optional(v4));
+  EXPECT_THAT(tree.FindNearestNeighbour(v1), Pointee(v1));
+  EXPECT_THAT(tree.FindNearestNeighbour(v2), Pointee(v2));
+  EXPECT_THAT(tree.FindNearestNeighbour(v3), Pointee(v3));
+  EXPECT_THAT(tree.FindNearestNeighbour(v4), Pointee(v4));
 }
 
 TEST_F(PrincipalComponentPartitioningTreeTest, Random) {
+  static constexpr int points_in_tree = 100;
+  static constexpr int points_to_test = 100;
   std::mt19937_64 random(42);
   std::uniform_real_distribution<double> coordinate_distribution(-10, 10);
 
   // Build two trees with the same points but different leaf sizes.
   std::vector<V> tree_points;
-  for (int i = 0; i < 100; ++i) {
+  std::vector<not_null<V const*>> tree_pointers;
+  tree_points.reserve(points_in_tree);  // To avoid pointer invalidation below.
+  for (int i = 0; i < points_in_tree; ++i) {
     tree_points.push_back(V({coordinate_distribution(random),
                              coordinate_distribution(random),
                              coordinate_distribution(random)}));
+    tree_pointers.push_back(&tree_points.back());
   }
-  PrincipalComponentPartitioningTree<V> tree1(tree_points,
-                                             /*max_values_per_cell=*/1);
-  PrincipalComponentPartitioningTree<V> tree3(tree_points,
-                                             /*max_values_per_cell=*/3);
+  PrincipalComponentPartitioningTree<V> tree1(tree_pointers,
+                                              /*max_values_per_cell=*/1);
+  PrincipalComponentPartitioningTree<V> tree3(tree_pointers,
+                                              /*max_values_per_cell=*/3);
 
-  for (int i = 0; i < 100; ++i) {
+  for (int i = 0; i < points_to_test; ++i) {
     auto const query_point = V({coordinate_distribution(random),
                                 coordinate_distribution(random),
                                 coordinate_distribution(random)});
 
     // Compute the nearest point using the naive algorithm.
-    V nearest;
+    V const* nearest = nullptr;
     double nearest_distance = Infinity<double>;
     for (auto const& tree_point : tree_points) {
       double const distance = (tree_point - query_point).Norm();
       if (distance < nearest_distance) {
         nearest_distance = distance;
-        nearest = tree_point;
+        nearest = &tree_point;
       }
     }
 
-    auto const nearest1 = tree1.FindNearestNeighbour(query_point).value();
-    auto const nearest3 = tree3.FindNearestNeighbour(query_point).value();
+    auto const nearest1 = tree1.FindNearestNeighbour(query_point);
+    auto const nearest3 = tree3.FindNearestNeighbour(query_point);
 
-    // A small error map be introduced in the PCP tree by the computation of the
-    // centroid.
-    EXPECT_THAT(nearest1, AlmostEquals(nearest, 0, 1));
-    EXPECT_THAT(nearest3, AlmostEquals(nearest, 0, 1));
+    EXPECT_EQ(nearest1, nearest);
+    EXPECT_EQ(nearest3, nearest);
   }
 }
 

@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include <optional>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -33,16 +32,18 @@ class PrincipalComponentPartitioningTree {
   using Value = Value_;
 
   // We stop subdividing a cell when it contains |max_values_per_cell| or fewer
-  // values.
-  PrincipalComponentPartitioningTree(std::vector<Value> const& values,
-                                     std::int64_t max_values_per_cell);
+  // values.  This API takes (non-owning) pointers so that the client can relate
+  // the values given here to the ones it gets from |FindNearestNeighbour|.
+  PrincipalComponentPartitioningTree(
+      std::vector<not_null<Value const*>> const& values,
+      std::int64_t max_values_per_cell);
 
   // Adds a new value to the tree, restructuring it as needed.
-  void Add(Value const& value);
+  void Add(Value const* value);
 
-  // Finds the nearest neighbour of the given |value|.  Returns |nullopt| if the
+  // Finds the nearest neighbour of the given |value|.  Returns nullptr if the
   // tree is empty.
-  std::optional<Value> FindNearestNeighbour(Value const& value) const;
+  Value const* FindNearestNeighbour(Value const& value) const;
 
  private:
   // A frame used to compute the principal components.
@@ -142,6 +143,8 @@ class PrincipalComponentPartitioningTree {
             std::int32_t& min_index,
             bool* must_check_other_side) const;
 
+  // Construction parameters.
+  std::vector<not_null<Value const*>> const values_;
   std::int64_t const max_values_per_cell_;
 
   // The centroid of the values passed at construction.
