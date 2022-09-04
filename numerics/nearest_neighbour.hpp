@@ -107,15 +107,15 @@ class PrincipalComponentPartitioningTree {
   // Constructs a tree for the displacements given by the index range
   // [begin, end[.  |size| must be equal to |std::distance(begin, end)|, but is
   // passed by the caller for efficiency.
-  not_null<std::unique_ptr<Node>> BuildTree(Indices::iterator begin,
-                                            Indices::iterator end,
+  not_null<std::unique_ptr<Node>> BuildTree(typename Indices::iterator begin,
+                                            typename Indices::iterator end,
                                             std::int64_t size) const;
 
   // Returns the symmetric bilinear form that represents the "inertia" of the
   // displacements given by the index range [begin, end[.
   DisplacementSymmetricBilinearForm ComputePrincipalComponentForm(
-      Indices::iterator begin,
-      Indices::iterator end) const;
+      typename Indices::iterator begin,
+      typename Indices::iterator end) const;
 
   // Finds the point closest to |displacement| in the |node| and its children,
   // and returns its index and its (squared) distance.  If |displacement| is

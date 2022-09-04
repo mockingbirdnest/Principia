@@ -88,8 +88,8 @@ template<typename Value_>
 not_null<std::unique_ptr<
 typename PrincipalComponentPartitioningTree<Value_>::Node>>
 PrincipalComponentPartitioningTree<Value_>::BuildTree(
-    Indices::iterator const begin,
-    Indices::iterator const end,
+    typename Indices::iterator const begin,
+    typename Indices::iterator const end,
     std::int64_t const size) const {
   if (size <= max_values_per_cell_) {
     // We are done subdividing, return a leaf.
@@ -150,8 +150,8 @@ template<typename Value_>
 typename PrincipalComponentPartitioningTree<Value_>::
 DisplacementSymmetricBilinearForm
 PrincipalComponentPartitioningTree<Value_>::ComputePrincipalComponentForm(
-    Indices::iterator const begin,
-    Indices::iterator const end) const {
+    typename Indices::iterator const begin,
+    typename Indices::iterator const end) const {
   DisplacementSymmetricBilinearForm result;
   for (auto it = begin; it != end; ++it) {
     auto const& displacement = displacements_[it->index];
