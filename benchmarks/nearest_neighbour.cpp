@@ -1,3 +1,5 @@
+// .\Release\x64\benchmarks.exe --benchmark_filter=PCP --benchmark_repetitions=1  // NOLINT(whitespace/line_length)
+
 #include "numerics/nearest_neighbour.hpp"
 
 #include <random>

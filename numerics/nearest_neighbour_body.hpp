@@ -169,11 +169,11 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
     std::int32_t& min_index,
     bool* const must_check_other_side) const {
   if (std::holds_alternative<Internal>(node)) {
-    return Find(displacement,
-                parent,
-                std::get<Internal>(node),
-                min_distance², min_index,
-                must_check_other_side);
+    Find(displacement,
+         parent,
+         std::get<Internal>(node),
+         min_distance², min_index,
+         must_check_other_side);
   } else if (std::holds_alternative<Leaf>(node)) {
     Find(displacement,
          parent,
