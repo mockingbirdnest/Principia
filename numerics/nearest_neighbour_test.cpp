@@ -23,7 +23,6 @@ using ::testing::Pointee;
 class PrincipalComponentPartitioningTreeTest : public ::testing::Test {
  protected:
   using World = Frame<enum class WorldTag>;
-
   using V = Vector<double, World>;
 };
 
