@@ -62,7 +62,47 @@ PrincipalComponentPartitioningTree<Value_>::PrincipalComponentPartitioningTree(
 
 template<typename Value_>
 void PrincipalComponentPartitioningTree<Value_>::Add(Value const* const value) {
+  auto const displacement = *value - centroid_;
+  std::int32_t const index = displacements_.size();
+  displacements_.push_back(displacement);
+  Add(index, *root_);
   LOG(FATAL) << "NYI";
+}
+
+template<typename Value_>
+void PrincipalComponentPartitioningTree<Value_>::Add(std::int32_t const index,
+                                                     Node& node) {
+  if (std::holds_alternative<Internal>(node)) {
+    Add(std::get<Internal>(node));
+  } else if (std::holds_alternative<Leaf>(node)) {
+    Add(std::get<Leaf>(node), node);
+  } else {
+    LOG(FATAL) << "Unexpected node";
+  }
+}
+
+template<typename Value_>
+void PrincipalComponentPartitioningTree<Value_>::Add(std::int32_t const index,
+                                                     Internal const& internal) {
+  Norm const projection = InnerProduct(internal.principal_axis,
+                                       displacements_[index] - internal.anchor);
+  if (projection < Norm{}) {
+    Add(displacement, *internal.children.first);
+  } else {
+    Add(displacement, *internal.children.second);
+  }
+}
+
+template<typename Value_>
+void PrincipalComponentPartitioningTree<Value_>::Add(std::int32_t const index,
+                                                     Leaf& leaf,
+                                                     Node& node) {
+  leaf.push_back(index);
+  if (leaf.size() > max_values_per_cell_) {
+    // The leaf is full, we need to split it by building a (sub)tree based on
+    // it.
+    node = *BuildTree(leaf.begin(), leaf.end(), leaf.size());
+  }
 }
 
 template<typename Value_>
