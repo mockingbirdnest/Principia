@@ -117,6 +117,13 @@ class PrincipalComponentPartitioningTree {
       typename Indices::iterator begin,
       typename Indices::iterator end) const;
 
+  //TODO(phl):comments, names.
+  void Add(std::int32_t index, Node& node);
+
+  void Add(std::int32_t index, Internal const& internal);
+
+  void Add(std::int32_t index, Leaf& leaf, Node& node);
+
   // Finds the point closest to |displacement| in the |node| and its children,
   // and returns its index and its (squared) distance.  If |displacement| is
   // close to the separator plane of |parent|, sets |must_check_other_side| to

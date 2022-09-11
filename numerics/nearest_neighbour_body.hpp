@@ -70,42 +70,6 @@ void PrincipalComponentPartitioningTree<Value_>::Add(Value const* const value) {
 }
 
 template<typename Value_>
-void PrincipalComponentPartitioningTree<Value_>::Add(std::int32_t const index,
-                                                     Node& node) {
-  if (std::holds_alternative<Internal>(node)) {
-    Add(std::get<Internal>(node));
-  } else if (std::holds_alternative<Leaf>(node)) {
-    Add(std::get<Leaf>(node), node);
-  } else {
-    LOG(FATAL) << "Unexpected node";
-  }
-}
-
-template<typename Value_>
-void PrincipalComponentPartitioningTree<Value_>::Add(std::int32_t const index,
-                                                     Internal const& internal) {
-  Norm const projection = InnerProduct(internal.principal_axis,
-                                       displacements_[index] - internal.anchor);
-  if (projection < Norm{}) {
-    Add(displacement, *internal.children.first);
-  } else {
-    Add(displacement, *internal.children.second);
-  }
-}
-
-template<typename Value_>
-void PrincipalComponentPartitioningTree<Value_>::Add(std::int32_t const index,
-                                                     Leaf& leaf,
-                                                     Node& node) {
-  leaf.push_back(index);
-  if (leaf.size() > max_values_per_cell_) {
-    // The leaf is full, we need to split it by building a (sub)tree based on
-    // it.
-    node = *BuildTree(leaf.begin(), leaf.end(), leaf.size());
-  }
-}
-
-template<typename Value_>
 Value_ const* PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
     Value const& value) const {
   if (displacements_.empty()) {
@@ -198,6 +162,43 @@ PrincipalComponentPartitioningTree<Value_>::ComputePrincipalComponentForm(
     result += SymmetricProduct(displacement, displacement);
   }
   return result;
+}
+
+template<typename Value_>
+void PrincipalComponentPartitioningTree<Value_>::Add(std::int32_t const index,
+                                                     Node& node) {
+  if (std::holds_alternative<Internal>(node)) {
+    Add(index, std::get<Internal>(node));
+  } else if (std::holds_alternative<Leaf>(node)) {
+    Add(index, std::get<Leaf>(node), node);
+  } else {
+    LOG(FATAL) << "Unexpected node";
+  }
+}
+
+template<typename Value_>
+void PrincipalComponentPartitioningTree<Value_>::Add(std::int32_t const index,
+                                                     Internal const& internal) {
+  Norm const projection = InnerProduct(internal.principal_axis,
+                                       displacements_[index] - internal.anchor);
+  if (projection < Norm{}) {
+    Add(index, *internal.children.first);
+  } else {
+    Add(index, *internal.children.second);
+  }
+}
+
+template<typename Value_>
+void PrincipalComponentPartitioningTree<Value_>::Add(std::int32_t const index,
+                                                     Leaf& leaf,
+                                                     Node& node) {
+  leaf.push_back(index);
+  if (leaf.size() > max_values_per_cell_) {
+    // The leaf is full, we need to split it by building a (sub)tree based on
+    // it.
+    node = *BuildTree(leaf.begin(), leaf.end(), leaf.size());
+    CHECK(std::holds_alternative<Internal>(node));
+  }
 }
 
 template<typename Value_>
