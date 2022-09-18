@@ -34,7 +34,8 @@ class PrincipalComponentPartitioningTree {
   // We stop subdividing a cell when it contains |max_values_per_cell| or fewer
   // values.  This API takes (non-owning) pointers so that the client can relate
   // the values given here to the ones it gets from |FindNearestNeighbour|.  The
-  // vector of |values| must not be empty.
+  // vector |values| may be empty, in which case the object is not usable until
+  // the first value has been |Add|ed.
   PrincipalComponentPartitioningTree(
       std::vector<not_null<Value const*>> const& values,
       std::int64_t max_values_per_cell);
@@ -105,6 +106,10 @@ class PrincipalComponentPartitioningTree {
   };
   using Indices = std::vector<Index>;
 
+  // Called when the first point is added to the tree to initialize the
+  // |centroid_| and the |root_|.
+  void Initialize();
+
   // Constructs a tree for the displacements given by the index range
   // [begin, end[.  |size| must be equal to |std::distance(begin, end)|, but is
   // passed by the caller for efficiency.
@@ -118,11 +123,13 @@ class PrincipalComponentPartitioningTree {
       typename Indices::iterator begin,
       typename Indices::iterator end) const;
 
-  //TODO(phl):comments, names.
+  // Adds the value at the given |index| by first finding the location in the
+  // subtree rooted at |node| where it would be located, and then adding it to
+  // the leaf (if there is room) or splitting the leaf (if not).
   void Add(std::int32_t index, Node& node);
 
+  // Specializations for internal nodes and leaves, respectively.
   void Add(std::int32_t index, Internal const& internal);
-
   void Add(std::int32_t index, Leaf& leaf, Node& node);
 
   // Finds the point closest to |displacement| in the |node| and its children,
@@ -155,7 +162,8 @@ class PrincipalComponentPartitioningTree {
   std::vector<not_null<Value const*>> values_;
   std::int64_t const max_values_per_cell_;
 
-  // The centroid of the values passed at construction.
+  // The centroid of the values passed at construction, or the first value
+  // passed to |Add| if no value is passed at construction.
   Value centroid_;
 
   // The displacements from the centroid.

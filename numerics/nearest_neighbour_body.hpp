@@ -32,9 +32,46 @@ PrincipalComponentPartitioningTree<Value_>::PrincipalComponentPartitioningTree(
     : values_(values),
       max_values_per_cell_(max_values_per_cell) {
   CHECK_LE(values_.size(), std::numeric_limits<std::int32_t>::max());
-  CHECK(!values_.empty());
+  if (!values_.empty()) {
+    Initialize();
+  }
+}
 
-  // Compute the centroid of the given values.
+template<typename Value_>
+void PrincipalComponentPartitioningTree<Value_>::Add(Value const* const value) {
+  values_.push_back(value);
+  if (values_.size() == 1) {
+    Initialize();
+  } else {
+    auto const displacement = *value - centroid_;
+    std::int32_t const index = displacements_.size();
+    displacements_.push_back(displacement);
+    Add(index, *root_);
+  }
+}
+
+template<typename Value_>
+Value_ const* PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
+    Value const& value) const {
+  if (displacements_.empty()) {
+    return nullptr;
+  }
+  Norm² min_distance²;
+  std::int32_t min_index;
+  Find(value - centroid_,
+       /*parent=*/nullptr,
+       *root_,
+       min_distance², min_index,
+       /*must_check_other_side=*/nullptr);
+
+  // In the end, this is why we retain the values: we want to return a pointer
+  // that the client gave us.
+  return values_[min_index];
+}
+
+template<typename Value_>
+void PrincipalComponentPartitioningTree<Value_>::Initialize() {
+  // Compute the centroid of the values.
   std::vector<Value> values_for_barycentre;
   values_for_barycentre.reserve(values_.size());
   for (auto const value : values_) {
@@ -59,34 +96,6 @@ PrincipalComponentPartitioningTree<Value_>::PrincipalComponentPartitioningTree(
 
   // Finally, build the tree.
   root_ = BuildTree(indices.begin(), indices.end(), indices.size());
-}
-
-template<typename Value_>
-void PrincipalComponentPartitioningTree<Value_>::Add(Value const* const value) {
-  auto const displacement = *value - centroid_;
-  std::int32_t const index = displacements_.size();
-  values_.push_back(value);
-  displacements_.push_back(displacement);
-  Add(index, *root_);
-}
-
-template<typename Value_>
-Value_ const* PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
-    Value const& value) const {
-  if (displacements_.empty()) {
-    return nullptr;
-  }
-  Norm² min_distance²;
-  std::int32_t min_index;
-  Find(value - centroid_,
-       /*parent=*/nullptr,
-       *root_,
-       min_distance², min_index,
-       /*must_check_other_side=*/nullptr);
-
-  // In the end, this is why we retain the values: we want to return a pointer
-  // that the client gave us.
-  return values_[min_index];
 }
 
 template<typename Value_>

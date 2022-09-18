@@ -61,8 +61,9 @@ TEST_F(PrincipalComponentPartitioningTreeTest, XYPlaneAdd) {
   V const v3({1, -1, -0});
   V const v4({2, 2, 0});
 
-  PrincipalComponentPartitioningTree<V> tree({&v1},
+  PrincipalComponentPartitioningTree<V> tree({},
                                              /*max_values_per_cell=*/1);
+  tree.Add(&v1);
   tree.Add(&v2);
   tree.Add(&v3);
   tree.Add(&v4);
