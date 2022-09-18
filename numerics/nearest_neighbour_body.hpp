@@ -38,7 +38,8 @@ PrincipalComponentPartitioningTree<Value_>::PrincipalComponentPartitioningTree(
 }
 
 template<typename Value_>
-void PrincipalComponentPartitioningTree<Value_>::Add(Value const* const value) {
+void PrincipalComponentPartitioningTree<Value_>::Add(
+    not_null<Value const*> const value) {
   values_.push_back(value);
   if (values_.size() == 1) {
     Initialize();

@@ -41,7 +41,7 @@ class PrincipalComponentPartitioningTree {
       std::int64_t max_values_per_cell);
 
   // Adds a new value to the tree, restructuring it as needed.
-  void Add(Value const* value);
+  void Add(not_null<Value const*> value);
 
   // Finds the nearest neighbour of the given |value|.  Returns nullptr if the
   // tree is empty.
