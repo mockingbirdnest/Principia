@@ -32,6 +32,7 @@ PrincipalComponentPartitioningTree<Value_>::PrincipalComponentPartitioningTree(
     : values_(values),
       max_values_per_cell_(max_values_per_cell) {
   CHECK_LE(values_.size(), std::numeric_limits<std::int32_t>::max());
+  CHECK(!values_.empty());
 
   // Compute the centroid of the given values.
   std::vector<Value> values_for_barycentre;
@@ -64,9 +65,9 @@ template<typename Value_>
 void PrincipalComponentPartitioningTree<Value_>::Add(Value const* const value) {
   auto const displacement = *value - centroid_;
   std::int32_t const index = displacements_.size();
+  values_.push_back(value);
   displacements_.push_back(displacement);
   Add(index, *root_);
-  LOG(FATAL) << "NYI";
 }
 
 template<typename Value_>
@@ -196,8 +197,15 @@ void PrincipalComponentPartitioningTree<Value_>::Add(std::int32_t const index,
   if (leaf.size() > max_values_per_cell_) {
     // The leaf is full, we need to split it by building a (sub)tree based on
     // it.
-    node = *BuildTree(leaf.begin(), leaf.end(), leaf.size());
-    CHECK(std::holds_alternative<Internal>(node));
+    Indices indices;
+    indices.reserve(leaf.size());
+    for (const std::int32_t index : leaf) {
+      indices.push_back({.index = index, .projection = Norm{}});
+    }
+    auto const subtree =
+        BuildTree(indices.begin(), indices.end(), indices.size());
+    CHECK(std::holds_alternative<Internal>(*subtree));
+    node = std::move(*subtree);
   }
 }
 

@@ -26,7 +26,8 @@ class PrincipalComponentPartitioningTreeTest : public ::testing::Test {
   using V = Vector<double, World>;
 };
 
-TEST_F(PrincipalComponentPartitioningTreeTest, XYPlane) {
+// Points in the x-y plane.
+TEST_F(PrincipalComponentPartitioningTreeTest, XYPlaneConstructor) {
   V const v1({-1, -1, 0});
   V const v2({-1, 1, 0});
   V const v3({1, -1, -0});
@@ -39,6 +40,32 @@ TEST_F(PrincipalComponentPartitioningTreeTest, XYPlane) {
   // "other side" search on (v1, v2).
   PrincipalComponentPartitioningTree<V> tree({&v1, &v2, &v3, &v4},
                                              /*max_values_per_cell=*/1);
+
+  EXPECT_THAT(tree.FindNearestNeighbour(V({-0.5, -0.5, 0})), Pointee(v1));
+  EXPECT_THAT(tree.FindNearestNeighbour(V({-0.5, 0.5, 0})), Pointee(v2));
+  EXPECT_THAT(tree.FindNearestNeighbour(V({1, 1, 0})), Pointee(v4));
+  EXPECT_THAT(tree.FindNearestNeighbour(V({3, 3, 0})), Pointee(v4));
+
+  // Check that the points of the tree can be retrieved.
+  EXPECT_THAT(tree.FindNearestNeighbour(v1), Pointee(v1));
+  EXPECT_THAT(tree.FindNearestNeighbour(v2), Pointee(v2));
+  EXPECT_THAT(tree.FindNearestNeighbour(v3), Pointee(v3));
+  EXPECT_THAT(tree.FindNearestNeighbour(v4), Pointee(v4));
+}
+
+// Same as the previous test, but the tree is constructed with a single point
+// and points are added using |Add|.
+TEST_F(PrincipalComponentPartitioningTreeTest, XYPlaneAdd) {
+  V const v1({-1, -1, 0});
+  V const v2({-1, 1, 0});
+  V const v3({1, -1, -0});
+  V const v4({2, 2, 0});
+
+  PrincipalComponentPartitioningTree<V> tree({&v1},
+                                             /*max_values_per_cell=*/1);
+  tree.Add(&v2);
+  tree.Add(&v3);
+  tree.Add(&v4);
 
   EXPECT_THAT(tree.FindNearestNeighbour(V({-0.5, -0.5, 0})), Pointee(v1));
   EXPECT_THAT(tree.FindNearestNeighbour(V({-0.5, 0.5, 0})), Pointee(v2));
