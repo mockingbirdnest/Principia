@@ -44,8 +44,8 @@ void PrincipalComponentPartitioningTree<Value_>::Add(
   if (values_.size() == 1) {
     Initialize();
   } else {
-    // There is no good way to rebalance a PCP tree (or a kd tree) for that
-    // matter.  Bkd trees provide some kind of solution, but their lookup is
+    // There is no good way to rebalance a PCP tree (or a kd tree for that
+    // matter).  Bkd trees provide some kind of solution, but their lookup is
     // expensive.  We are assuming that the tree won't get so unbalanced that
     // lookups get costly.
     auto const displacement = *value - centroid_;
