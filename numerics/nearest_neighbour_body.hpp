@@ -32,8 +32,51 @@ PrincipalComponentPartitioningTree<Value_>::PrincipalComponentPartitioningTree(
     : values_(values),
       max_values_per_cell_(max_values_per_cell) {
   CHECK_LE(values_.size(), std::numeric_limits<std::int32_t>::max());
+  if (!values_.empty()) {
+    Initialize();
+  }
+}
 
-  // Compute the centroid of the given values.
+template<typename Value_>
+void PrincipalComponentPartitioningTree<Value_>::Add(
+    not_null<Value const*> const value) {
+  values_.push_back(value);
+  if (values_.size() == 1) {
+    Initialize();
+  } else {
+    // There is no good way to rebalance a PCP tree (or a kd tree for that
+    // matter).  Bkd trees provide some kind of solution, but their lookup is
+    // expensive.  We are assuming that the tree won't get so unbalanced that
+    // lookups get costly.
+    auto const displacement = *value - centroid_;
+    std::int32_t const index = displacements_.size();
+    displacements_.push_back(displacement);
+    Add(index, *root_);
+  }
+}
+
+template<typename Value_>
+Value_ const* PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
+    Value const& value) const {
+  if (displacements_.empty()) {
+    return nullptr;
+  }
+  Norm² min_distance²;
+  std::int32_t min_index;
+  Find(value - centroid_,
+       /*parent=*/nullptr,
+       *root_,
+       min_distance², min_index,
+       /*must_check_other_side=*/nullptr);
+
+  // In the end, this is why we retain the values: we want to return a pointer
+  // that the client gave us.
+  return values_[min_index];
+}
+
+template<typename Value_>
+void PrincipalComponentPartitioningTree<Value_>::Initialize() {
+  // Compute the centroid of the values.
   std::vector<Value> values_for_barycentre;
   values_for_barycentre.reserve(values_.size());
   for (auto const value : values_) {
@@ -58,30 +101,6 @@ PrincipalComponentPartitioningTree<Value_>::PrincipalComponentPartitioningTree(
 
   // Finally, build the tree.
   root_ = BuildTree(indices.begin(), indices.end(), indices.size());
-}
-
-template<typename Value_>
-void PrincipalComponentPartitioningTree<Value_>::Add(Value const* const value) {
-  LOG(FATAL) << "NYI";
-}
-
-template<typename Value_>
-Value_ const* PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
-    Value const& value) const {
-  if (displacements_.empty()) {
-    return nullptr;
-  }
-  Norm² min_distance²;
-  std::int32_t min_index;
-  Find(value - centroid_,
-       /*parent=*/nullptr,
-       *root_,
-       min_distance², min_index,
-       /*must_check_other_side=*/nullptr);
-
-  // In the end, this is why we retain the values: we want to return a pointer
-  // that the client gave us.
-  return values_[min_index];
 }
 
 template<typename Value_>
@@ -158,6 +177,50 @@ PrincipalComponentPartitioningTree<Value_>::ComputePrincipalComponentForm(
     result += SymmetricProduct(displacement, displacement);
   }
   return result;
+}
+
+template<typename Value_>
+void PrincipalComponentPartitioningTree<Value_>::Add(std::int32_t const index,
+                                                     Node& node) {
+  if (std::holds_alternative<Internal>(node)) {
+    Add(index, std::get<Internal>(node));
+  } else if (std::holds_alternative<Leaf>(node)) {
+    Add(index, std::get<Leaf>(node), node);
+  } else {
+    LOG(FATAL) << "Unexpected node";
+  }
+}
+
+template<typename Value_>
+void PrincipalComponentPartitioningTree<Value_>::Add(std::int32_t const index,
+                                                     Internal const& internal) {
+  Norm const projection = InnerProduct(internal.principal_axis,
+                                       displacements_[index] - internal.anchor);
+  if (projection < Norm{}) {
+    Add(index, *internal.children.first);
+  } else {
+    Add(index, *internal.children.second);
+  }
+}
+
+template<typename Value_>
+void PrincipalComponentPartitioningTree<Value_>::Add(std::int32_t const index,
+                                                     Leaf& leaf,
+                                                     Node& node) {
+  leaf.push_back(index);
+  if (leaf.size() > max_values_per_cell_) {
+    // The leaf is full, we need to split it by building a (sub)tree based on
+    // it.
+    Indices indices;
+    indices.reserve(leaf.size());
+    for (const std::int32_t index : leaf) {
+      indices.push_back({.index = index, .projection = Norm{}});
+    }
+    auto const subtree =
+        BuildTree(indices.begin(), indices.end(), indices.size());
+    CHECK(std::holds_alternative<Internal>(*subtree));
+    node = std::move(*subtree);
+  }
 }
 
 template<typename Value_>

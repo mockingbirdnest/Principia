@@ -24,9 +24,43 @@ class PrincipalComponentPartitioningTreeTest : public ::testing::Test {
  protected:
   using World = Frame<enum class WorldTag>;
   using V = Vector<double, World>;
+
+  // Computes the nearest point using the brute force algorithm.
+  V const* BruteForceNearestNeighbour(V const& query_value,
+                                      std::vector<V> const& values) {
+    V const* nearest = nullptr;
+    double nearest_distance = Infinity<double>;
+    for (auto const& value : values) {
+      double const distance = (value - query_value).Norm();
+      if (distance < nearest_distance) {
+        nearest_distance = distance;
+        nearest = &value;
+      }
+    }
+    return nearest;
+  }
+
+  // Fills the vectors with |number_of_values| randomly generated values.
+  void MakeValues(
+      int const number_of_values,
+      std::vector<V>& values,
+      std::vector<not_null<V const*>>& pointers,
+      std::mt19937_64& random,
+      std::uniform_real_distribution<double>& coordinate_distribution) {
+    values.clear();
+    pointers.clear();
+    values.reserve(number_of_values);  // To avoid pointer invalidation below.
+    for (int i = 0; i < number_of_values; ++i) {
+      values.push_back(V({coordinate_distribution(random),
+                          coordinate_distribution(random),
+                          coordinate_distribution(random)}));
+      pointers.push_back(&values.back());
+    }
+  }
 };
 
-TEST_F(PrincipalComponentPartitioningTreeTest, XYPlane) {
+// Points in the x-y plane.
+TEST_F(PrincipalComponentPartitioningTreeTest, XYPlaneConstructor) {
   V const v1({-1, -1, 0});
   V const v2({-1, 1, 0});
   V const v3({1, -1, -0});
@@ -52,7 +86,35 @@ TEST_F(PrincipalComponentPartitioningTreeTest, XYPlane) {
   EXPECT_THAT(tree.FindNearestNeighbour(v4), Pointee(v4));
 }
 
-TEST_F(PrincipalComponentPartitioningTreeTest, Random) {
+// Same as the previous test, but the tree is initially empty and points are
+// added using |Add|.
+TEST_F(PrincipalComponentPartitioningTreeTest, XYPlaneAdd) {
+  V const v1({-1, -1, 0});
+  V const v2({-1, 1, 0});
+  V const v3({1, -1, -0});
+  V const v4({2, 2, 0});
+
+  PrincipalComponentPartitioningTree<V> tree({},
+                                             /*max_values_per_cell=*/1);
+  tree.Add(&v1);
+  tree.Add(&v2);
+  tree.Add(&v3);
+  tree.Add(&v4);
+
+  EXPECT_THAT(tree.FindNearestNeighbour(V({-0.5, -0.5, 0})), Pointee(v1));
+  EXPECT_THAT(tree.FindNearestNeighbour(V({-0.5, 0.5, 0})), Pointee(v2));
+  EXPECT_THAT(tree.FindNearestNeighbour(V({1, 1, 0})), Pointee(v4));
+  EXPECT_THAT(tree.FindNearestNeighbour(V({3, 3, 0})), Pointee(v4));
+
+  // Check that the points of the tree can be retrieved.
+  EXPECT_THAT(tree.FindNearestNeighbour(v1), Pointee(v1));
+  EXPECT_THAT(tree.FindNearestNeighbour(v2), Pointee(v2));
+  EXPECT_THAT(tree.FindNearestNeighbour(v3), Pointee(v3));
+  EXPECT_THAT(tree.FindNearestNeighbour(v4), Pointee(v4));
+}
+
+// Random points, validated against the brute force algorithm.
+TEST_F(PrincipalComponentPartitioningTreeTest, RandomConstructor) {
   static constexpr int points_in_tree = 100;
   static constexpr int points_to_test = 100;
   std::mt19937_64 random(42);
@@ -61,13 +123,11 @@ TEST_F(PrincipalComponentPartitioningTreeTest, Random) {
   // Build two trees with the same points but different leaf sizes.
   std::vector<V> tree_points;
   std::vector<not_null<V const*>> tree_pointers;
-  tree_points.reserve(points_in_tree);  // To avoid pointer invalidation below.
-  for (int i = 0; i < points_in_tree; ++i) {
-    tree_points.push_back(V({coordinate_distribution(random),
-                             coordinate_distribution(random),
-                             coordinate_distribution(random)}));
-    tree_pointers.push_back(&tree_points.back());
-  }
+  MakeValues(points_in_tree,
+             tree_points,
+             tree_pointers,
+             random,
+             coordinate_distribution);
   PrincipalComponentPartitioningTree<V> tree1(tree_pointers,
                                               /*max_values_per_cell=*/1);
   PrincipalComponentPartitioningTree<V> tree3(tree_pointers,
@@ -78,19 +138,48 @@ TEST_F(PrincipalComponentPartitioningTreeTest, Random) {
                                 coordinate_distribution(random),
                                 coordinate_distribution(random)});
 
-    // Compute the nearest point using the naive algorithm.
-    V const* nearest = nullptr;
-    double nearest_distance = Infinity<double>;
-    for (auto const& tree_point : tree_points) {
-      double const distance = (tree_point - query_point).Norm();
-      if (distance < nearest_distance) {
-        nearest_distance = distance;
-        nearest = &tree_point;
-      }
-    }
+    auto* const nearest = BruteForceNearestNeighbour(query_point, tree_points);
+    auto* const nearest1 = tree1.FindNearestNeighbour(query_point);
+    auto* const nearest3 = tree3.FindNearestNeighbour(query_point);
 
-    auto const nearest1 = tree1.FindNearestNeighbour(query_point);
-    auto const nearest3 = tree3.FindNearestNeighbour(query_point);
+    EXPECT_THAT(nearest1, Eq(nearest));
+    EXPECT_THAT(nearest3, Eq(nearest));
+  }
+}
+
+// Same as the previous test, but the trees are initially empty and points are
+// added using |Add|.
+TEST_F(PrincipalComponentPartitioningTreeTest, RandomAdd) {
+  static constexpr int points_in_tree = 100;
+  static constexpr int points_to_test = 100;
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<double> coordinate_distribution(-10, 10);
+
+  // Build two trees with the same points but different leaf sizes.
+  std::vector<V> tree_points;
+  std::vector<not_null<V const*>> tree_pointers;
+  MakeValues(points_in_tree,
+             tree_points,
+             tree_pointers,
+             random,
+             coordinate_distribution);
+  PrincipalComponentPartitioningTree<V> tree1({},
+                                              /*max_values_per_cell=*/1);
+  PrincipalComponentPartitioningTree<V> tree3({},
+                                              /*max_values_per_cell=*/3);
+  for (auto const tree_pointer : tree_pointers) {
+    tree1.Add(tree_pointer);
+    tree3.Add(tree_pointer);
+  }
+
+  for (int i = 0; i < points_to_test; ++i) {
+    auto const query_point = V({coordinate_distribution(random),
+                                coordinate_distribution(random),
+                                coordinate_distribution(random)});
+
+    auto* const nearest = BruteForceNearestNeighbour(query_point, tree_points);
+    auto* const nearest1 = tree1.FindNearestNeighbour(query_point);
+    auto* const nearest3 = tree3.FindNearestNeighbour(query_point);
 
     EXPECT_THAT(nearest1, Eq(nearest));
     EXPECT_THAT(nearest3, Eq(nearest));
