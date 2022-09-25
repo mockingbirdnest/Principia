@@ -143,6 +143,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   private int? last_guidance_manœuvre_ = null;
 
   private static Dictionary<CelestialBody, Orbit> unmodified_orbits_;
+  private static Dictionary<CelestialBody, double> unmodified_initial_rotations_;
 
   private Krakensbane krakensbane_;
 
@@ -708,18 +709,21 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
     if (unmodified_orbits_ == null) {
       unmodified_orbits_ = new Dictionary<CelestialBody, Orbit>();
-      foreach (CelestialBody celestial in FlightGlobals.Bodies.Where(
-          c => c.orbit != null)) {
-        unmodified_orbits_.Add(
-            celestial,
-            new Orbit(inc   : celestial.orbit.inclination,
-                      e     : celestial.orbit.eccentricity,
-                      sma   : celestial.orbit.semiMajorAxis,
-                      lan   : celestial.orbit.LAN,
-                      argPe : celestial.orbit.argumentOfPeriapsis,
-                      mEp   : celestial.orbit.meanAnomalyAtEpoch,
-                      t     : celestial.orbit.epoch,
-                      body  : celestial.orbit.referenceBody));
+      unmodified_initial_rotations_ = new Dictionary<CelestialBody, double>();
+      foreach (CelestialBody celestial in FlightGlobals.Bodies) {
+        unmodified_initial_rotations_.Add(celestial, celestial.initialRotation);
+        if (celestial.orbit != null) {
+          unmodified_orbits_.Add(
+              celestial,
+              new Orbit(inc   : celestial.orbit.inclination,
+                        e     : celestial.orbit.eccentricity,
+                        sma   : celestial.orbit.semiMajorAxis,
+                        lan   : celestial.orbit.LAN,
+                        argPe : celestial.orbit.argumentOfPeriapsis,
+                        mEp   : celestial.orbit.meanAnomalyAtEpoch,
+                        t     : celestial.orbit.epoch,
+                        body  : celestial.orbit.referenceBody));
+        }
       }
     }
 
@@ -2551,6 +2555,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             Log.Info("using custom gravity model");
           }
           Orbit orbit = unmodified_orbits_.GetValueOrNull(body);
+          body.initialRotation = unmodified_initial_rotations_[body];
           var body_parameters =
               ConfigNodeParsers.NewKeplerianBodyParameters(body,
                 body_gravity_model);
