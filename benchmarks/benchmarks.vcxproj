@@ -25,6 +25,7 @@
     <ClCompile Include="..\numerics\fast_sin_cos_2π.cpp" />
     <ClCompile Include="..\physics\protector.cpp" />
     <ClCompile Include="apsides.cpp" />
+    <ClCompile Include="checkpointer_benchmark.cpp" />
     <ClCompile Include="discrete_trajectory.cpp" />
     <ClCompile Include="dynamic_frame.cpp" />
     <ClCompile Include="elliptic_integrals_benchmark.cpp" />
@@ -35,6 +36,7 @@
     <ClCompile Include="fast_sin_cos_2π_benchmark.cpp" />
     <ClCompile Include="geopotential.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="nearest_neighbour.cpp" />
     <ClCompile Include="newhall.cpp" />
     <ClCompile Include="perspective.cpp" />
     <ClCompile Include="planetarium_plot_methods.cpp" />

@@ -54,6 +54,8 @@
     <ClInclude Include="log_b.hpp" />
     <ClInclude Include="log_b_body.hpp" />
     <ClInclude Include="max_abs_normalized_associated_legendre_function.mathematica.h" />
+    <ClInclude Include="nearest_neighbour.hpp" />
+    <ClInclude Include="nearest_neighbour_body.hpp" />
     <ClInclude Include="newhall.hpp" />
     <ClInclude Include="newhall.mathematica.h" />
     <ClInclude Include="newhall_body.hpp" />
@@ -112,6 +114,7 @@
     <ClCompile Include="legendre_test.cpp" />
     <ClCompile Include="matrix_computations_test.cpp" />
     <ClCompile Include="max_abs_normalized_associated_legendre_functions_test.cc" />
+    <ClCompile Include="nearest_neighbour_test.cpp" />
     <ClCompile Include="newhall_test.cpp" />
     <ClCompile Include="next_test.cpp" />
     <ClCompile Include="piecewise_poisson_series_test.cpp" />

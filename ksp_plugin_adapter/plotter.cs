@@ -31,7 +31,9 @@ class Plotter {
           VertexBuffer.data,
           VertexBuffer.size,
           out int vertex_count);
-      DrawLineMesh(psychohistory_mesh_, vertex_count, adapter_.history_colour,
+      DrawLineMesh(ref psychohistory_mesh_,
+                   vertex_count,
+                   adapter_.history_colour,
                    adapter_.history_style);
     }
     {
@@ -41,7 +43,9 @@ class Plotter {
           VertexBuffer.data,
           VertexBuffer.size,
           out int vertex_count);
-      DrawLineMesh(prediction_mesh_, vertex_count, adapter_.prediction_colour,
+      DrawLineMesh(ref prediction_mesh_,
+                   vertex_count,
+                   adapter_.prediction_colour,
                    adapter_.prediction_style);
     }
 
@@ -60,7 +64,8 @@ class Plotter {
             VertexBuffer.data,
             VertexBuffer.size,
             out int vertex_count);
-        DrawLineMesh(target_psychohistory_mesh_, vertex_count,
+        DrawLineMesh(ref target_psychohistory_mesh_,
+                     vertex_count,
                      adapter_.target_history_colour,
                      adapter_.target_history_style);
       }
@@ -71,7 +76,8 @@ class Plotter {
             VertexBuffer.data,
             VertexBuffer.size,
             out int vertex_count);
-        DrawLineMesh(target_prediction_mesh_, vertex_count,
+        DrawLineMesh(ref target_prediction_mesh_,
+                     vertex_count,
                      adapter_.target_prediction_colour,
                      adapter_.target_prediction_style);
       }
@@ -81,7 +87,9 @@ class Plotter {
     if (Plugin.FlightPlanExists(main_vessel_guid)) {
       int number_of_segments =
           Plugin.FlightPlanNumberOfSegments(main_vessel_guid);
-      for (int i = flight_plan_segment_meshes_.Count; i < number_of_segments; ++i) {
+      for (int i = flight_plan_segment_meshes_.Count;
+           i < number_of_segments;
+           ++i) {
         flight_plan_segment_meshes_.Add(MakeDynamicMesh());
       }
       for (int i = 0; i < number_of_segments; ++i) {
@@ -93,12 +101,15 @@ class Plotter {
             VertexBuffer.data,
             VertexBuffer.size,
             out int vertex_count);
+        // No need for dynamic initialization, that was done above.
         DrawLineMesh(flight_plan_segment_meshes_[i],
                      vertex_count,
-                     is_burn ? adapter_.burn_colour
-                             : adapter_.flight_plan_colour,
-                     is_burn ? adapter_.burn_style
-                             : adapter_.flight_plan_style);
+                     is_burn
+                         ? adapter_.burn_colour
+                         : adapter_.flight_plan_colour,
+                     is_burn
+                         ? adapter_.burn_style
+                         : adapter_.flight_plan_style);
       }
     }
   }
@@ -150,7 +161,9 @@ class Plotter {
             out int vertex_count);
         min_distance_from_camera =
             Math.Min(min_distance_from_camera, min_past_distance);
-        DrawLineMesh(trajectories.past, vertex_count, colour,
+        DrawLineMesh(ref trajectories.past,
+                     vertex_count,
+                     colour,
                      GLLines.Style.Faded);
       }
 
@@ -165,7 +178,9 @@ class Plotter {
             out int vertex_count);
         min_distance_from_camera =
             Math.Min(min_distance_from_camera, min_future_distance);
-        DrawLineMesh(trajectories.future, vertex_count, colour,
+        DrawLineMesh(ref trajectories.future,
+                     vertex_count,
+                     colour,
                      GLLines.Style.Solid);
       }
     }
@@ -181,6 +196,18 @@ class Plotter {
                                 child, tan_angular_resolution);
       }
     }
+  }
+
+  private void DrawLineMesh(ref UnityEngine.Mesh mesh,
+                            int vertex_count,
+                            UnityEngine.Color colour,
+                            GLLines.Style style) {
+    // Construct the mesh on the first call because Unity doesn't want us to do
+    // that at construction.
+    if (mesh == null) {
+      mesh = MakeDynamicMesh();
+    }
+    DrawLineMesh(mesh, vertex_count, colour, style);
   }
 
   private void DrawLineMesh(UnityEngine.Mesh mesh,
@@ -243,7 +270,7 @@ class Plotter {
 
     public static UnityEngine.Vector3[] vertices => vertices_;
 
-    private static UnityEngine.Vector3[] vertices_ =
+    private static readonly UnityEngine.Vector3[] vertices_ =
         new UnityEngine.Vector3[10_000];
     private static GCHandle handle_ =
         GCHandle.Alloc(vertices_, GCHandleType.Pinned);
@@ -254,15 +281,15 @@ class Plotter {
     public UnityEngine.Mesh past = MakeDynamicMesh();
   }
 
-  private Dictionary<CelestialBody, CelestialTrajectories>
+  private readonly Dictionary<CelestialBody, CelestialTrajectories>
       celestial_trajectory_meshes_ =
       new Dictionary<CelestialBody, CelestialTrajectories>();
-  private UnityEngine.Mesh psychohistory_mesh_ = MakeDynamicMesh();
-  private UnityEngine.Mesh prediction_mesh_ = MakeDynamicMesh();
-  private List<UnityEngine.Mesh> flight_plan_segment_meshes_ =
+  private UnityEngine.Mesh psychohistory_mesh_;
+  private UnityEngine.Mesh prediction_mesh_;
+  private readonly List<UnityEngine.Mesh> flight_plan_segment_meshes_ =
       new List<UnityEngine.Mesh>();
-  private UnityEngine.Mesh target_psychohistory_mesh_ = MakeDynamicMesh();
-  private UnityEngine.Mesh target_prediction_mesh_ = MakeDynamicMesh();
+  private UnityEngine.Mesh target_psychohistory_mesh_;
+  private UnityEngine.Mesh target_prediction_mesh_;
 }
 
 }  // namespace ksp_plugin_adapter
