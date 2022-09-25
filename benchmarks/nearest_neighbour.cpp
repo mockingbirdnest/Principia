@@ -87,7 +87,8 @@ void BM_PCPFindNearestNeighbour(benchmark::State& state) {
   std::vector<V> values;
   std::mt19937_64 random(42);
   std::uniform_real_distribution<double> coordinate_distribution(-10, 10);
-  auto const tree = BuildTreeUsingConstructor(points_in_tree, max_values_per_cell, values);
+  auto const tree =
+      BuildTreeUsingConstructor(points_in_tree, max_values_per_cell, values);
 
   for (auto _ : state) {
     benchmark::DoNotOptimize(
