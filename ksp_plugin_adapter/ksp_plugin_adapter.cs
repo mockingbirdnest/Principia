@@ -141,7 +141,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   private bool reset_rsas_target_ = false;
 
   private int? last_guidance_manœuvre_ = null;
-  
+
   private static Dictionary<CelestialBody, Orbit> unmodified_orbits_;
   private static Dictionary<CelestialBody, double> unmodified_initial_rotations_;
 
