@@ -25,6 +25,8 @@ using geometry::Wedge;
 using quantities::Infinity;
 using quantities::Pow;
 
+constexpr std::int32_t no_min_index = -1;
+
 template<typename Value_>
 PrincipalComponentPartitioningTree<Value_>::PrincipalComponentPartitioningTree(
     std::vector<not_null<Value const*>> const& values,
@@ -57,13 +59,15 @@ void PrincipalComponentPartitioningTree<Value_>::Add(
 
 template<typename Value_>
 Value_ const* PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
-    Value const& value) const {
+    Value const& value,
+    Filter const& filter) const {
   if (displacements_.empty()) {
     return nullptr;
   }
   Norm² min_distance²;
   std::int32_t min_index;
   Find(value - centroid_,
+       filter,
        /*parent=*/nullptr,
        *root_,
        min_distance², min_index,
@@ -71,7 +75,7 @@ Value_ const* PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
 
   // In the end, this is why we retain the values: we want to return a pointer
   // that the client gave us.
-  return values_[min_index];
+  return min_index == no_min_index ? nullptr : values_[min_index];
 }
 
 template<typename Value_>
@@ -226,6 +230,7 @@ void PrincipalComponentPartitioningTree<Value_>::Add(std::int32_t const index,
 template<typename Value_>
 void PrincipalComponentPartitioningTree<Value_>::Find(
     Displacement const& displacement,
+    Filter const& filter,
     Internal const* const parent,
     Node const& node,
     Norm²& min_distance²,
@@ -233,12 +238,14 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
     bool* const must_check_other_side) const {
   if (std::holds_alternative<Internal>(node)) {
     Find(displacement,
+         filter,
          parent,
          std::get<Internal>(node),
          min_distance², min_index,
          must_check_other_side);
   } else if (std::holds_alternative<Leaf>(node)) {
     Find(displacement,
+         filter,
          parent,
          std::get<Leaf>(node),
          min_distance², min_index,
@@ -251,6 +258,7 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
 template<typename Value_>
 void PrincipalComponentPartitioningTree<Value_>::Find(
     Displacement const& displacement,
+    Filter const& filter,
     Internal const* parent,
     Internal const& internal,
     Norm²& min_distance²,
@@ -273,6 +281,7 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
   Norm² preferred_min_distance²;
   bool preferred_must_check_other_side;
   Find(displacement,
+       filter,
        &internal,
        *preferred_side,
        preferred_min_distance², preferred_min_index,
@@ -293,10 +302,11 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
     std::int32_t other_min_index;
     Norm² other_min_distance²;
     Find(displacement,
-          parent,
-          *other_side,
-          other_min_distance², other_min_index,
-          /*must_check_other_side=*/nullptr);
+         filter,
+         parent,
+         *other_side,
+         other_min_distance², other_min_index,
+         /*must_check_other_side=*/nullptr);
 
     if (other_min_distance² < preferred_min_distance²) {
       min_distance² = other_min_distance²;
@@ -322,6 +332,7 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
 template<typename Value_>
 void PrincipalComponentPartitioningTree<Value_>::Find(
     Displacement const& displacement,
+    Filter const& filter,
     Internal const* const parent,
     Leaf const& leaf,
     Norm²& min_distance²,
@@ -331,7 +342,13 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
 
   // Find the point in this leaf which is the closest to |displacement|.
   min_distance² = Infinity<Norm²>;
+  min_index = no_min_index;
   for (auto const index : leaf) {
+    // Skip the values that are filtered out.  Note that *all* the values may be
+    // filtered out.
+    if (filter != nullptr && !filter(values_[index])) {
+      continue;
+    }
     auto const distance² = (displacements_[index] - displacement).Norm²();
     if (distance² < min_distance²) {
       min_distance² = distance²;

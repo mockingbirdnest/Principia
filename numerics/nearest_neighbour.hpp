@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <functional>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -31,6 +32,8 @@ class PrincipalComponentPartitioningTree {
  public:
   using Value = Value_;
 
+  using Filter = std::function<bool(Value const*)>;
+
   // We stop subdividing a cell when it contains |max_values_per_cell| or fewer
   // values.  This API takes (non-owning) pointers so that the client can relate
   // the values given here to the ones it gets from |FindNearestNeighbour|.  The
@@ -44,8 +47,10 @@ class PrincipalComponentPartitioningTree {
   void Add(not_null<Value const*> value);
 
   // Finds the nearest neighbour of the given |value|.  Returns nullptr if the
-  // tree is empty.
-  Value const* FindNearestNeighbour(Value const& value) const;
+  // tree is empty.  Only the values for which |filter| returns true are
+  // considered.
+  Value const* FindNearestNeighbour(Value const& value,
+                                    Filter const& filter = nullptr) const;
 
  private:
   // A frame used to compute the principal components.
@@ -138,6 +143,7 @@ class PrincipalComponentPartitioningTree {
   // true.  That pointer may be null if the client doesn't want to check this
   // condition.  |parent| should be null for the root of the tree.
   void Find(Displacement const& displacement,
+            Filter const& filter,
             Internal const* parent,
             Node const& node,
             Norm²& min_distance²,
@@ -146,12 +152,14 @@ class PrincipalComponentPartitioningTree {
 
   // Specializations for internal nodes and leaves, respectively.
   void Find(Displacement const& displacement,
+            Filter const& filter,
             Internal const* parent,
             Internal const& internal,
             Norm²& min_distance²,
             std::int32_t& min_index,
             bool* must_check_other_side) const;
   void Find(Displacement const& displacement,
+            Filter const& filter,
             Internal const* parent,
             Leaf const& leaf,
             Norm²& min_distance²,
@@ -166,7 +174,8 @@ class PrincipalComponentPartitioningTree {
   // passed to |Add| if no value is passed at construction.
   Value centroid_;
 
-  // The displacements from the centroid.
+  // The displacements from the centroid.  The indices are the same as for
+  // |values_|.
   std::vector<Displacement> displacements_;
 
   std::unique_ptr<Node> root_;
