@@ -21,16 +21,23 @@ using geometry::InnerProductForm;
 using geometry::Normalize;
 using geometry::SymmetricBilinearForm;
 using geometry::SymmetricProduct;
+using geometry::Vector;
 using quantities::Abs;
 using quantities::Quotient;
 using quantities::Square;
 using quantities::si::Metre;
 namespace si = quantities::si;
 
-// The type of Hₖ, which approximates the inverse of the Hessian.
-template<typename Scalar, typename Argument>
-using InverseHessian =
-    SymmetricBilinearForm<Quotient<Square<Length>, Scalar>, Argument, Vector>;
+// A helper to use |Argument| with SymmetricBilinearForm.
+template<typename A>
+struct ArgumentHelper;
+
+template<typename Scalar, typename Frame>
+struct ArgumentHelper<Vector<Scalar, Frame>> {
+  static SymmetricBilinearForm<double, Frame, Vector> InnerProductForm() {
+    return geometry::InnerProductForm<Frame, Vector>();
+  }
+};
 
 // The line search follows [NW06], algorithms 3.5 and 3.6, which guarantee that
 // the chosen step obeys the strong Wolfe conditions.
@@ -166,8 +173,9 @@ Argument BroydenFletcherGoldfarbShanno(
   auto const grad_f_x₁ = grad_f(x₁);
   Difference<Argument> const s₀ = x₁ - x₀;
   auto const y₀ = grad_f_x₁ - grad_f_x₀;
-  InverseHessian<Scalar, Argument> const H₀ =
-      InnerProduct(s₀, y₀) * InnerProductForm<Argument, Vector>() / y₀.Norm²();
+  auto const H₀ = InnerProduct(s₀, y₀) *
+                  ArgumentHelper<Difference<Argument>>::InnerProductForm() /
+                  y₀.Norm²();
 
   auto xₖ = x₁;
   auto grad_f_xₖ = grad_f_x₁;
