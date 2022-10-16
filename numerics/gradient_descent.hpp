@@ -17,7 +17,8 @@ using quantities::Length;
 using quantities::Product;
 using quantities::Quotient;
 
-// In this file |Argument| must be a 3-dimensional entity.
+// In this file |Argument| must be such that its difference belongs to a Hilbert
+// space.
 
 template<typename Scalar, typename Argument>
 using Field = std::function<Scalar(Argument const&)>;
