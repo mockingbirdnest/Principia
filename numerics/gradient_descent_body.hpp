@@ -28,7 +28,7 @@ using quantities::Square;
 using quantities::si::Metre;
 namespace si = quantities::si;
 
-// A helper to use |Argument| with SymmetricBilinearForm.
+// A helper to use |Argument| with |SymmetricBilinearForm|.
 template<typename A>
 struct ArgumentHelper;
 
