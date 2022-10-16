@@ -227,6 +227,12 @@
     <ClInclude Include="nearest_neighbour_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="global_optimization.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="global_optimization_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">
