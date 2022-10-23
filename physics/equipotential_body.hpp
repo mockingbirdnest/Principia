@@ -150,7 +150,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
   // NOTE(phl): Unclear if |length_integration_tolerance| is the right thing to
   // use below.
   auto const equipotential_position =
-      BroydenFletcherGoldfarbShanno<Square<SpecificEnergy>, Frame>(
+      BroydenFletcherGoldfarbShanno<Square<SpecificEnergy>, Position<Frame>>(
           degrees_of_freedom.position(),
           f,
           grad_f,

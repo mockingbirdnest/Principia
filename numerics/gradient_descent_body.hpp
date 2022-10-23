@@ -16,22 +16,28 @@ namespace principia {
 namespace numerics {
 namespace internal_gradient_descent {
 
-using geometry::Displacement;
 using geometry::InnerProduct;
 using geometry::InnerProductForm;
 using geometry::Normalize;
 using geometry::SymmetricBilinearForm;
 using geometry::SymmetricProduct;
+using geometry::Vector;
 using quantities::Abs;
 using quantities::Quotient;
 using quantities::Square;
 using quantities::si::Metre;
 namespace si = quantities::si;
 
-// The type of Hₖ, which approximates the inverse of the Hessian.
+// A helper to use |Argument| with |SymmetricBilinearForm|.
+template<typename A>
+struct ArgumentHelper;
+
 template<typename Scalar, typename Frame>
-using InverseHessian =
-    SymmetricBilinearForm<Quotient<Square<Length>, Scalar>, Frame, Vector>;
+struct ArgumentHelper<Vector<Scalar, Frame>> {
+  static SymmetricBilinearForm<double, Frame, Vector> InnerProductForm() {
+    return geometry::InnerProductForm<Frame, Vector>();
+  }
+};
 
 // The line search follows [NW06], algorithms 3.5 and 3.6, which guarantee that
 // the chosen step obeys the strong Wolfe conditions.
@@ -40,7 +46,7 @@ constexpr double c₁ = 1e-4;
 constexpr double c₂ = 0.9;
 constexpr double α_multiplier = 2;
 
-template<typename Scalar, typename Frame>
+template<typename Scalar, typename Argument>
 double Zoom(double α_lo,
             double α_hi,
             Scalar ϕ_α_lo,
@@ -48,10 +54,10 @@ double Zoom(double α_lo,
             Scalar ϕʹ_α_lo,
             Scalar const& ϕ_0,
             Scalar const& ϕʹ_0,
-            Position<Frame> const& x,
-            Displacement<Frame> const& p,
-            Field<Scalar, Frame> const& f,
-            Field<Gradient<Scalar, Frame>, Frame> const& grad_f) {
+            Argument const& x,
+            Difference<Argument> const& p,
+            Field<Scalar, Argument> const& f,
+            Field<Gradient<Scalar, Argument>, Argument> const& grad_f) {
   std::optional<Scalar> previous_ϕ_αⱼ;
   for (;;) {
     DCHECK_NE(α_lo, α_hi);
@@ -98,11 +104,11 @@ double Zoom(double α_lo,
   }
 }
 
-template<typename Scalar, typename Frame>
-double LineSearch(Position<Frame> const& x,
-                  Displacement<Frame> const& p,
-                  Field<Scalar, Frame> const& f,
-                  Field<Gradient<Scalar, Frame>, Frame> const& grad_f) {
+template<typename Scalar, typename Argument>
+double LineSearch(Argument const& x,
+                  Difference<Argument> const& p,
+                  Field<Scalar, Argument> const& f,
+                  Field<Gradient<Scalar, Argument>, Argument> const& grad_f) {
   auto const ϕ_0 = f(x);
   auto const ϕʹ_0 = InnerProduct(grad_f(x), p);
   double αᵢ₋₁ = 0;  // α₀.
@@ -140,17 +146,17 @@ double LineSearch(Position<Frame> const& x,
 }
 
 // The implementation of BFGS follows [NW06], algorithm 6.18.
-template<typename Scalar, typename Frame>
-Position<Frame> BroydenFletcherGoldfarbShanno(
-    Position<Frame> const& start_position,
-    Field<Scalar, Frame> const& f,
-    Field<Gradient<Scalar, Frame>, Frame> const& grad_f,
+template<typename Scalar, typename Argument>
+Argument BroydenFletcherGoldfarbShanno(
+    Argument const& start_argument,
+    Field<Scalar, Argument> const& f,
+    Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
     Length const& tolerance) {
   // The first step uses vanilla steepest descent.
-  auto const x₀ = start_position;
+  auto const x₀ = start_argument;
   auto const grad_f_x₀ = grad_f(x₀);
 
-  if (grad_f_x₀ == Gradient<Scalar, Frame>{}) {
+  if (grad_f_x₀ == Gradient<Scalar, Argument>{}) {
     return x₀;
   }
 
@@ -158,23 +164,24 @@ Position<Frame> BroydenFletcherGoldfarbShanno(
   // is that, if the caller provides a reasonable value then (1) we won't miss
   // "interesting features" of f; (2) the finite differences won't underflow or
   // have other unpleasant properties.
-  Displacement<Frame> const p₀ = -Normalize(grad_f_x₀) * tolerance;
+  Difference<Argument> const p₀ = -Normalize(grad_f_x₀) * tolerance;
 
   double const α₀ = LineSearch(x₀, p₀, f, grad_f);
   auto const x₁ = x₀+ α₀ * p₀;
 
   // Special computation of H₀ using (6.20).
   auto const grad_f_x₁ = grad_f(x₁);
-  Displacement<Frame> const s₀ = x₁ - x₀;
+  Difference<Argument> const s₀ = x₁ - x₀;
   auto const y₀ = grad_f_x₁ - grad_f_x₀;
-  InverseHessian<Scalar, Frame> const H₀ =
-      InnerProduct(s₀, y₀) * InnerProductForm<Frame, Vector>() / y₀.Norm²();
+  auto const H₀ = InnerProduct(s₀, y₀) *
+                  ArgumentHelper<Difference<Argument>>::InnerProductForm() /
+                  y₀.Norm²();
 
   auto xₖ = x₁;
   auto grad_f_xₖ = grad_f_x₁;
   auto Hₖ = H₀;
   for (;;) {
-    Displacement<Frame> const pₖ = -Hₖ * grad_f_xₖ;
+    Difference<Argument> const pₖ = -Hₖ * grad_f_xₖ;
     if (pₖ.Norm() <= tolerance) {
       return xₖ;
     }

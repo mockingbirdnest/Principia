@@ -54,8 +54,8 @@ TEST_F(GradientDescentTest, Quadratic) {
   Position<World> const expected_minimum =
       World::origin + Displacement<World>({1 * Metre, 2 * Metre, -3 * Metre});
   auto const actual_minimum =
-      BroydenFletcherGoldfarbShanno<Exponentiation<Length, 2>, World>(
-          /*start_position=*/World::origin,
+      BroydenFletcherGoldfarbShanno<Exponentiation<Length, 2>, Position<World>>(
+          /*start_argument=*/World::origin,
           field,
           gradient,
           /*tolerance=*/1 * Micro(Metre));
@@ -80,8 +80,8 @@ TEST_F(GradientDescentTest, Quartic) {
   Position<World> const expected_minimum =
       World::origin + Displacement<World>({1 * Metre, 2 * Metre, -3 * Metre});
   auto const actual_minimum =
-      BroydenFletcherGoldfarbShanno<Exponentiation<Length, 4>, World>(
-          /*start_position=*/World::origin,
+      BroydenFletcherGoldfarbShanno<Exponentiation<Length, 4>, Position<World>>(
+          /*start_argument=*/World::origin,
           field,
           gradient,
           /*tolerance=*/1 * Micro(Metre));
@@ -111,11 +111,12 @@ TEST_F(GradientDescentTest, Gaussian) {
 
   Position<World> const expected_minimum =
       World::origin + Displacement<World>({1 * Metre, 2 * Metre, -3 * Metre});
-  auto const actual_minimum = BroydenFletcherGoldfarbShanno<double, World>(
-      /*start_position=*/World::origin,
-      field,
-      gradient,
-      /*tolerance=*/1 * Micro(Metre));
+  auto const actual_minimum =
+      BroydenFletcherGoldfarbShanno<double, Position<World>>(
+          /*start_argument=*/World::origin,
+          field,
+          gradient,
+          /*tolerance=*/1 * Micro(Metre));
   EXPECT_THAT(
       actual_minimum,
       AbsoluteErrorFrom(expected_minimum, IsNear(0.82_(1) * Micro(Metre))));
@@ -143,23 +144,25 @@ TEST_F(GradientDescentTest, Rosenbrock) {
   Position<World> const expected_minimum =
       World::origin + Displacement<World>({scale, scale, 0 * Metre});
   {
-    auto const actual_minimum = BroydenFletcherGoldfarbShanno<double, World>(
-        /*start_position=*/World::origin +
-            Displacement<World>({1.2 * scale, 1.2 * scale, 0 * Metre}),
-        field,
-        gradient,
-        /*tolerance=*/1 * Micro(Metre));
+    auto const actual_minimum =
+        BroydenFletcherGoldfarbShanno<double, Position<World>>(
+            /*start_argument=*/World::origin +
+                Displacement<World>({1.2 * scale, 1.2 * scale, 0 * Metre}),
+            field,
+            gradient,
+            /*tolerance=*/1 * Micro(Metre));
     EXPECT_THAT(
         actual_minimum,
         AbsoluteErrorFrom(expected_minimum, IsNear(0.96_(1) * Micro(Metre))));
   }
   {
-    auto const actual_minimum = BroydenFletcherGoldfarbShanno<double, World>(
-        /*start_position=*/World::origin +
-            Displacement<World>({-1.2 * scale, scale, 0 * Metre}),
-        field,
-        gradient,
-        /*tolerance=*/1 * Micro(Metre));
+    auto const actual_minimum =
+        BroydenFletcherGoldfarbShanno<double, Position<World>>(
+            /*start_argument=*/World::origin +
+                Displacement<World>({-1.2 * scale, scale, 0 * Metre}),
+            field,
+            gradient,
+            /*tolerance=*/1 * Micro(Metre));
     EXPECT_THAT(
         actual_minimum,
         AbsoluteErrorFrom(expected_minimum, IsNear(0.047_(1) * Micro(Metre))));
