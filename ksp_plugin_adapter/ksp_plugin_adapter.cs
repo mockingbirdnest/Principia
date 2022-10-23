@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using KSP.Localization;
 
+using static principia.ksp_plugin_adapter.ReferenceFrameSelector.FrameType;
+
 namespace principia {
 namespace ksp_plugin_adapter {
 
@@ -2021,7 +2023,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       return;
     }
     celestial.orbitDriver.Renderer.drawMode =
-        main_window_.display_patched_conics
+        main_window_.display_patched_conics &&
+        plotting_frame_selector_.frame_type == BODY_CENTRED_NON_ROTATING &&
+        plotting_frame_selector_.Centre() == celestial.orbit.referenceBody
             ? OrbitRenderer.DrawMode.REDRAW_AND_RECALCULATE
             : OrbitRenderer.DrawMode.OFF;
   }
@@ -2032,7 +2036,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           PatchRendering.RelativityMode.RELATIVE;
     }
 
-    if (main_window_.display_patched_conics || !is_manageable(vessel)) {
+    if ((main_window_.display_patched_conics  &&
+         plotting_frame_selector_.frame_type == BODY_CENTRED_NON_ROTATING &&
+         plotting_frame_selector_.Centre() ==
+            vessel.orbitDriver.orbit.referenceBody) ||
+        !is_manageable(vessel)) {
       vessel.orbitDriver.Renderer.drawMode =
           vessel.PatchedConicsAttached
               ? OrbitRenderer.DrawMode.OFF
