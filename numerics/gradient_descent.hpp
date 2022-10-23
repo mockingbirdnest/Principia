@@ -1,4 +1,4 @@
-
+﻿
 #pragma once
 
 #include <functional>
@@ -27,7 +27,7 @@ template<typename Scalar, typename Argument>
 using Gradient =
     Product<Scalar,
             Quotient<Difference<Argument>,
-                     typename Hilbert<Difference<Argument>>::Norm�Type>>;
+                     typename Hilbert<Difference<Argument>>::Norm²Type>>;
 
 template<typename Scalar, typename Argument>
 Argument BroydenFletcherGoldfarbShanno(
