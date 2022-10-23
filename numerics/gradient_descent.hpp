@@ -1,10 +1,9 @@
-
+﻿
 #pragma once
 
 #include <functional>
 
-#include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/hilbert.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -12,22 +11,29 @@ namespace principia {
 namespace numerics {
 namespace internal_gradient_descent {
 
-using geometry::Position;
-using geometry::Vector;
-using quantities::Derivative;
+using geometry::Hilbert;
+using quantities::Difference;
 using quantities::Length;
+using quantities::Product;
+using quantities::Quotient;
 
-template<typename Value, typename Frame>
-using Field = std::function<Value(Position<Frame> const&)>;
+// In this file |Argument| must be such that its difference belongs to a Hilbert
+// space.
 
-template<typename Scalar, typename Frame>
-using Gradient = Vector<Derivative<Scalar, Length>, Frame>;
+template<typename Scalar, typename Argument>
+using Field = std::function<Scalar(Argument const&)>;
 
-template<typename Scalar, typename Frame>
-Position<Frame> BroydenFletcherGoldfarbShanno(
-    Position<Frame> const& start_position,
-    Field<Scalar, Frame> const& f,
-    Field<Gradient<Scalar, Frame>, Frame> const& grad_f,
+template<typename Scalar, typename Argument>
+using Gradient =
+    Product<Scalar,
+            Quotient<Difference<Argument>,
+                     typename Hilbert<Difference<Argument>>::Norm²Type>>;
+
+template<typename Scalar, typename Argument>
+Argument BroydenFletcherGoldfarbShanno(
+    Argument const& start_argument,
+    Field<Scalar, Argument> const& f,
+    Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
     Length const& tolerance);
 
 }  // namespace internal_gradient_descent
