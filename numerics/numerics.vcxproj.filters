@@ -355,6 +355,9 @@
     <ClCompile Include="nearest_neighbour_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="global_optimization_test.cc">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="xgscd.proto.txt">

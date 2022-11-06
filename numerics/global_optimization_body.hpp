@@ -1,10 +1,9 @@
 #pragma once
 
-#include "numerics/global_optimization.hpp"
-
 #include <utility>
 
 #include "geometry/barycentre_calculator.hpp"
+#include "numerics/global_optimization.hpp"
 
 namespace principia {
 namespace numerics {
@@ -17,7 +16,9 @@ MultiLevelSingleLinkage<Scalar, Argument>::MultiLevelSingleLinkage(
     Box const& box,
     Field<Scalar, Argument> const& f,
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
-    std::int64_t const values_per_round) {}
+    std::int64_t const values_per_round)
+    : random_(42),
+      distribution_(-1.0, 1.0) {}
 
 template<typename Scalar, typename Argument>
 std::vector<Argument>
@@ -29,7 +30,7 @@ MultiLevelSingleLinkage<Scalar, Argument>::GenerateArguments(
   for (std::int64_t i = 0; i < values_per_round; ++i) {
     Argument argument = box.centre;
     for (const auto& vertex : box.vertices) {
-      argument += distribution() * vertex;
+      argument += distribution_(random_) * vertex;
     }
     result.push_back(argument);
   }

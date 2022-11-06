@@ -34,7 +34,7 @@ template<typename Scalar, typename Argument>
 class MultiLevelSingleLinkage {
  public:
   // A parallelepiped defined by its centre and the displacements of three
-  // vertices.
+  // vertices.  Random points are uniformly distributed in the box.
   struct Box {
     Argument centre;
     std::array<Difference<Argument>, 3> vertices;
@@ -49,13 +49,19 @@ class MultiLevelSingleLinkage {
  private:
   // The distribution must have bounds [-1, 1].  Returns a vector of size
   // |values_per_round|.
-  static std::vector<Argument> GenerateArguments(
+  std::vector<Argument> GenerateArguments(
       Box const& box,
       std::int64_t values_per_round,
       std::uniform_real_distribution<>& distribution);
+
+  std::mt19937_64 random_;
+  std::uniform_real_distribution<> distribution_;
 };
 
 }  // namespace internal_global_optimization
+
+using internal_global_optimization::MultiLevelSingleLinkage;
+
 }  // namespace numerics
 }  // namespace principia
 
