@@ -1,9 +1,10 @@
 #pragma once
 
 #include <functional>
+#include <random>
+#include <vector>
 
-#include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/hilbert.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -11,26 +12,47 @@ namespace principia {
 namespace numerics {
 namespace internal_global_optimization {
 
-using geometry::Position;  // TODO(phl): Use something more general?
-using geometry::Vector;
-using quantities::Derivative;
+using geometry::Hilbert;
+using quantities::Difference;
 using quantities::Length;
+using quantities::Product;
+using quantities::Quotient;
 
-template<typename Value, typename Frame>
-using Field = std::function<Value(Position<Frame> const&)>;
+// In this file |Argument| must be such that its difference belongs to a Hilbert
+// space.
 
-template<typename Scalar, typename Frame>
-using Gradient = Vector<Derivative<Scalar, Length>, Frame>;
+template<typename Scalar, typename Argument>
+using Field = std::function<Scalar(Argument const&)>;
 
-template<typename Scalar, typename Frame>
+template<typename Scalar, typename Argument>
+using Gradient =
+    Product<Scalar,
+            Quotient<Difference<Argument>,
+                     typename Hilbert<Difference<Argument>>::Norm²Type>>;
+
+template<typename Scalar, typename Argument>
 class MultiLevelSingleLinkage {
  public:
-  using Box = std::pair<Position<Frame>>;
+  // A parallelepiped defined by its centre and the displacements of three
+  // vertices.
+  struct Box {
+    Argument centre;
+    std::array<Difference<Argument>, 3> vertices;
+  };
 
-  MultiLevelSingleLinkage(Box const& box,
-                          Field<Scalar, Frame> const& f,
-                          Field<Gradient<Scalar, Frame>, Frame> const& grad_f,
-                          int64_t values_per_round);
+  MultiLevelSingleLinkage(
+      Box const& box,
+      Field<Scalar, Argument> const& f,
+      Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
+      std::int64_t values_per_round);
+
+ private:
+  // The distribution must have bounds [-1, 1].  Returns a vector of size
+  // |values_per_round|.
+  static std::vector<Argument> GenerateArguments(
+      Box const& box,
+      std::int64_t values_per_round,
+      std::uniform_real_distribution<>& distribution);
 };
 
 }  // namespace internal_global_optimization
