@@ -56,6 +56,8 @@ using ::testing::SizeIs;
 using ::testing::internal::CaptureStderr;
 using ::testing::internal::GetCapturedStderr;
 
+using namespace std::chrono_literals;
+
 const char preferred_compressor[] = "gipfeli";
 const char preferred_encoder[] = "base64";
 
@@ -370,6 +372,24 @@ TEST_F(PluginCompatibilityTest, PreHardy) {
   EXPECT_THAT(log_warning.string(),
               AllOf(HasSubstr("pre-Hardy DiscreteTrajectorySegment"),
                     Not(HasSubstr("pre-Hamilton"))));
+}
+
+TEST_F(PluginCompatibilityTest, 3273) {
+  not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
+      SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3273.proto.b64",
+      /*compressor=*/"gipfeli",
+      /*decoder=*/"base64");
+  auto const& vessel =
+      plugin->GetVessel("ae3aa35c-f33c-486e-a59c-aee43954dc30");
+  vessel->ReadFlightPlanFromMessage();
+  EXPECT_THAT(vessel->flight_plan().number_of_manœuvres(), Eq(2));
+  while (vessel->flight_plan().analysis(2) == nullptr) {
+    LOG(INFO) << vessel->flight_plan().progress_of_analysis(2);
+    std::this_thread::sleep_for(100ms);
+  }
+  EXPECT_THAT(
+      vessel->flight_plan().analysis(2)->recurrence()->number_of_revolutions(),
+      Eq(0));
 }
 
 // Use for debugging saves given by users.
