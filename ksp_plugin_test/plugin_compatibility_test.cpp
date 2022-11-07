@@ -374,6 +374,7 @@ TEST_F(PluginCompatibilityTest, PreHardy) {
                     Not(HasSubstr("pre-Hamilton"))));
 }
 
+#if !_DEBUG
 TEST_F(PluginCompatibilityTest, 3273) {
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
       SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3273.proto.b64",
@@ -384,17 +385,24 @@ TEST_F(PluginCompatibilityTest, 3273) {
   vessel->ReadFlightPlanFromMessage();
   EXPECT_THAT(vessel->flight_plan().number_of_manœuvres(), Eq(2));
   while (vessel->flight_plan().analysis(2) == nullptr) {
-    LOG(ERROR) << vessel->flight_plan().progress_of_analysis(2);
+    LOG(ERROR) << static_cast<int>(vessel->flight_plan().progress_of_analysis(2) * 100) << "%";
     std::this_thread::sleep_for(1s);
   }
-  LOG(ERROR) << vessel->flight_plan().analysis(2)->elements()->nodal_period();
-  LOG(ERROR) << vessel->flight_plan().analysis(2)->recurrence()->νₒ();
-  LOG(ERROR) << vessel->flight_plan().analysis(2)->recurrence()->Dᴛₒ();
-  LOG(ERROR) << vessel->flight_plan().analysis(2)->recurrence()->Cᴛₒ();
+  auto const& analysis = *vessel->flight_plan().analysis(2);
+  auto const Ωʹ = analysis.elements()->nodal_precession();
+  auto const Ωʹᴛ = analysis.primary()->angular_frequency();
+  auto const nd = 2 * π * Radian / analysis.elements()->nodal_period();
+  double const κ = nd / (Ωʹᴛ - Ωʹ);
+  LOG(ERROR) << κ;
+  LOG(ERROR) << "[" << vessel->flight_plan().analysis(2)->recurrence()->νₒ()
+             << "; " << vessel->flight_plan().analysis(2)->recurrence()->Dᴛₒ()
+             << "; " << vessel->flight_plan().analysis(2)->recurrence()->Cᴛₒ()
+             << "]";
   EXPECT_THAT(
       vessel->flight_plan().analysis(2)->recurrence()->number_of_revolutions(),
       Eq(0));
 }
+#endif
 
 // Use for debugging saves given by users.
 TEST_F(PluginCompatibilityTest, DISABLED_SECULAR_Debug) {
