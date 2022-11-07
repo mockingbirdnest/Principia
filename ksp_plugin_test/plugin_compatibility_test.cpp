@@ -385,7 +385,9 @@ TEST_F(PluginCompatibilityTest, 3273) {
   vessel->ReadFlightPlanFromMessage();
   EXPECT_THAT(vessel->flight_plan().number_of_manœuvres(), Eq(2));
   while (vessel->flight_plan().analysis(2) == nullptr) {
-    LOG(ERROR) << static_cast<int>(vessel->flight_plan().progress_of_analysis(2) * 100) << "%";
+    LOG(ERROR) << static_cast<int>(
+                      vessel->flight_plan().progress_of_analysis(2) * 100)
+               << "%";
     std::this_thread::sleep_for(1s);
   }
   auto const& analysis = *vessel->flight_plan().analysis(2);
