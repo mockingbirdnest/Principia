@@ -396,13 +396,8 @@ TEST_F(PluginCompatibilityTest, 3273) {
   auto const nd = 2 * π * Radian / analysis.elements()->nodal_period();
   double const κ = nd / (Ωʹᴛ - Ωʹ);
   LOG(ERROR) << κ;
-  LOG(ERROR) << "[" << vessel->flight_plan().analysis(2)->recurrence()->νₒ()
-             << "; " << vessel->flight_plan().analysis(2)->recurrence()->Dᴛₒ()
-             << "; " << vessel->flight_plan().analysis(2)->recurrence()->Cᴛₒ()
-             << "]";
-  EXPECT_THAT(
-      vessel->flight_plan().analysis(2)->recurrence()->number_of_revolutions(),
-      Eq(0));
+  EXPECT_THAT(vessel->flight_plan().analysis(2)->recurrence(),
+              Eq(std::nullopt));
 }
 #endif
 

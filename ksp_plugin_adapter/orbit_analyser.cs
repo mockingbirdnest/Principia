@@ -253,8 +253,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
             (int)(mission_duration / elements.Value.nodal_period);
         int anomalistic_revolutions =
             (int)(mission_duration / elements.Value.anomalistic_period);
-        int ground_track_cycles = analysis.recurrence.HasValue &&
-                                  analysis.recurrence.Value.number_of_revolutions != 0
+        int ground_track_cycles = analysis.recurrence.HasValue
                                       ? nodal_revolutions /
                                         analysis.recurrence.Value.
                                             number_of_revolutions
