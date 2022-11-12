@@ -56,6 +56,8 @@ using ::testing::SizeIs;
 using ::testing::internal::CaptureStderr;
 using ::testing::internal::GetCapturedStderr;
 
+using namespace std::chrono_literals;
+
 const char preferred_compressor[] = "gipfeli";
 const char preferred_encoder[] = "base64";
 
@@ -371,6 +373,33 @@ TEST_F(PluginCompatibilityTest, PreHardy) {
               AllOf(HasSubstr("pre-Hardy DiscreteTrajectorySegment"),
                     Not(HasSubstr("pre-Hamilton"))));
 }
+
+#if !_DEBUG
+TEST_F(PluginCompatibilityTest, 3273) {
+  not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
+      SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3273.proto.b64",
+      /*compressor=*/"gipfeli",
+      /*decoder=*/"base64");
+  auto const& vessel =
+      plugin->GetVessel("ae3aa35c-f33c-486e-a59c-aee43954dc30");
+  vessel->ReadFlightPlanFromMessage();
+  EXPECT_THAT(vessel->flight_plan().number_of_manœuvres(), Eq(2));
+  while (vessel->flight_plan().analysis(2) == nullptr) {
+    LOG(ERROR) << static_cast<int>(
+                      vessel->flight_plan().progress_of_analysis(2) * 100)
+               << "%";
+    std::this_thread::sleep_for(1s);
+  }
+  auto const& analysis = *vessel->flight_plan().analysis(2);
+  auto const Ωʹ = analysis.elements()->nodal_precession();
+  auto const Ωʹᴛ = analysis.primary()->angular_frequency();
+  auto const nd = 2 * π * Radian / analysis.elements()->nodal_period();
+  double const κ = nd / (Ωʹᴛ - Ωʹ);
+  LOG(ERROR) << κ;
+  EXPECT_THAT(vessel->flight_plan().analysis(2)->recurrence(),
+              Eq(std::nullopt));
+}
+#endif
 
 // Use for debugging saves given by users.
 TEST_F(PluginCompatibilityTest, DISABLED_SECULAR_Debug) {
