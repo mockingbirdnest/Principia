@@ -55,7 +55,7 @@ class MultiLevelSingleLinkage {
   absl::flat_hash_set<Argument> FindGlobalMinima(
       std::int64_t values_per_round,
       std::int64_t number_of_rounds,
-      NormType local_search_tolerance) const;
+      NormType local_search_tolerance);
 
  private:
   // Returns a vector of size |values_per_round|.
@@ -63,7 +63,7 @@ class MultiLevelSingleLinkage {
                                         std::int64_t values_per_round);
 
   // Returns the radius rₖ from [RT87a], eqn. 35, specialized for 3 dimensions.
-  static typename Hilbert<Difference<Argument>>::NormType CriticalRadius(
+  typename Hilbert<Difference<Argument>>::NormType CriticalRadius(
       double σ,
       std::int64_t kN);
 

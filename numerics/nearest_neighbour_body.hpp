@@ -75,7 +75,9 @@ Value_ const* PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
 
   // In the end, this is why we retain the values: we want to return a pointer
   // that the client gave us.
-  return min_index == no_min_index ? nullptr : values_[min_index];
+  return min_index == no_min_index
+             ? nullptr
+             : static_cast<Value const*>(values_[min_index]);
 }
 
 template<typename Value_>
