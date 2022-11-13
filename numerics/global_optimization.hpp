@@ -4,6 +4,7 @@
 #include <random>
 #include <vector>
 
+#include "absl/container/flat_hash_set.h"
 #include "geometry/hilbert.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -35,11 +36,15 @@ using Gradient =
 template<typename Scalar, typename Argument>
 class MultiLevelSingleLinkage {
  public:
+  using NormType = typename Hilbert<Difference<Argument>>::NormType;
+
   // A parallelepiped defined by its centre and the displacements of three
   // vertices.  Random points are uniformly distributed in the box.
   struct Box {
     Argument centre;
     std::array<Difference<Argument>, 3> vertices;
+
+    Cube<NormType> Measure() const;
   };
 
   MultiLevelSingleLinkage(
@@ -47,17 +52,20 @@ class MultiLevelSingleLinkage {
       Field<Scalar, Argument> const& f,
       Field<Gradient<Scalar, Argument>, Argument> const& grad_f);
 
-  void FindGlobalMinimum(std::int64_t values_per_round,
-                         std::int64_t number_of_rounds) const;
+  absl::flat_hash_set<Argument> FindGlobalMinima(
+      std::int64_t values_per_round,
+      std::int64_t number_of_rounds,
+      NormType local_search_tolerance) const;
 
  private:
   // Returns a vector of size |values_per_round|.
-  std::vector<Argument> GenerateArguments(Box const& box,
-                                          std::int64_t values_per_round);
+  std::vector<Argument> RandomArguments(Box const& box,
+                                        std::int64_t values_per_round);
 
   // Returns the radius rₖ from [] specialized for 3 dimensions.
-  static typename Hilbert<Difference<Argument>>::NormType rₖ(double σ,
-                                                             std::int64_t kN);
+  static typename Hilbert<Difference<Argument>>::NormType CriticalRadius(
+      double σ,
+      std::int64_t kN);
 
   Box const box_;
   Cube<typename Hilbert<Difference<Argument>>::NormType> const box_measure_;

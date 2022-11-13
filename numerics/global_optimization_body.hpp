@@ -6,12 +6,22 @@
 
 #include "geometry/barycentre_calculator.hpp"
 #include "numerics/cbrt.hpp"
+#include "numerics/gradient_descent.hpp"
+#include "numerics/nearest_neighbour.hpp"
 
 namespace principia {
 namespace numerics {
 namespace internal_global_optimization {
 
 using geometry::Barycentre;
+using geometry::Wedge;
+
+template<typename Scalar, typename Argument>
+Cube<typename Hilbert<Difference<Argument>>::NormType>
+MultiLevelSingleLinkage<Scalar, Argument>::Box::Measure() const {
+  return 8 * Wedge(box_.vertices[0],
+                   Wedge(box_.vertices[1], box_.vertices[2])).Norm();
+}
 
 template<typename Scalar, typename Argument>
 MultiLevelSingleLinkage<Scalar, Argument>::MultiLevelSingleLinkage(
@@ -19,27 +29,62 @@ MultiLevelSingleLinkage<Scalar, Argument>::MultiLevelSingleLinkage(
     Field<Scalar, Argument> const& f,
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f)
     : box_(box),
-      box_measure_(8 * Wedge(box_.vertices[0],
-                             Wedge(box_.vertices[1], box_.vertices[2])).Norm()),
+      box_measure_(box_.Measure()),
       f_(f),
       grad_f_(grad_f),
       random_(42),
       distribution_(-1.0, 1.0) {}
 
 template<typename Scalar, typename Argument>
-void MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinimum(
+absl::flat_hash_set<Argument>
+MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
     std::int64_t const values_per_round,
-    std::int64_t const number_of_rounds) const {
+    std::int64_t const number_of_rounds,
+    NormType const local_search_tolerance) const {
+  const std::int64_t N = values_per_round;
+
+  absl::flat_hash_set<Argument> stationary_points;
+
+  // The PCP tree used for nearest neighbour computation.  It gets updated as
+  // new points are generated.
+  //TODO(phl):parameters
+  PrincipalComponentPartitioningTree pcp_tree(/*values=*/{},
+                                              /*max_values_per_cell=*/10);
+
+  // Make sure that pointers don't get invalidated as new arguments are added.
   std::vector<Argument> arguments;
+  arguments.reserve(N * number_of_rounds);
+
+  // TODO(phl): This is quadratic.  Make the algorithm linear once we believe
+  // that it is correct.
   for (std::int64_t k = 0; k < number_of_rounds; ++k) {
-    std::vector<Argument> const arguments_k =
-        GenerateArguments(box_, values_per_round);
+    auto const rₖ = CriticalRadius(/*σ=*/4, /*kN=*/k * N);
+
+    // Generate N new random points and add them to the PCP tree.
+    std::vector<Argument> argumentsₖ = RandomArguments(box_, N);
+    for (auto& argumentₖ : argumentsₖ) {
+      arguments.push_back(std::move(argumentₖ));
+      pcp_tree.Add(&arguments.back());
+    }
+
+    for (auto& xᵢ : arguments) {
+      auto* const xⱼ = pcp_tree.FindNearestNeighbour(
+          &xᵢ, [this, f_xᵢ = f_(xᵢ)](Argument const* const xⱼ) {
+            return f_(xⱼ) < f_xᵢ;
+          });
+      if ((xᵢ - xⱼ).Norm() > rₖ) {
+        stationary_points.insert(BroydenFletcherGoldfarbShanno(
+            xᵢ, f_, grad_f_, local_search_tolerance));
+      }
+    }
   }
+
+  return stationary_points;
 }
 
 template<typename Scalar, typename Argument>
 std::vector<Argument>
-MultiLevelSingleLinkage<Scalar, Argument>::GenerateArguments(
+MultiLevelSingleLinkage<Scalar, Argument>::RandomArguments(
     Box const& box,
     std::int64_t const values_per_round) {
   std::vector<Argument> result;
@@ -55,8 +100,9 @@ MultiLevelSingleLinkage<Scalar, Argument>::GenerateArguments(
 
 template<typename Scalar, typename Argument>
 typename Hilbert<Difference<Argument>>::NormType
-MultiLevelSingleLinkage<Scalar, Argument>::rₖ(double const σ,
-                                              std::int64_t const kN) {
+MultiLevelSingleLinkage<Scalar, Argument>::CriticalRadius(
+    double const σ,
+    std::int64_t const kN) {
   return Cbrt(3.0 * box_measure_ * std::log(kN) / (4.0 * π * kN));
 }
 
