@@ -28,7 +28,7 @@ void Interval<T>::Include(T const& x) {
 
 template<typename T>
 std::ostream& operator<<(std::ostream& out, Interval<T> const& interval) {
-  return out << interval.midpoint() << u8" ± " << interval.measure() / 2;
+  return out << interval.midpoint() << " ± " << interval.measure() / 2;
 }
 
 }  // namespace internal_interval

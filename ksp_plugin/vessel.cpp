@@ -519,7 +519,7 @@ absl::Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
       first_manœuvre_kept = i + 1;
       if (new_initial_time < manœuvre.final_time()) {
         return absl::UnavailableError(
-            u8"Cannot rebase during planned manœuvre execution");
+            "Cannot rebase during planned manœuvre execution");
       }
     }
   }
@@ -708,11 +708,11 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   bool const is_pre_hilbert = !message.has_selected_flight_plan_index();
   LOG_IF(WARNING, is_pre_hilbert)
       << "Reading pre-"
-      << (is_pre_cesàro     ? u8"Cesàro"
+      << (is_pre_cesàro     ? "Cesàro"
           : is_pre_chasles  ? "Chasles"
-          : is_pre_陈景润    ? u8"陈景润"
+          : is_pre_陈景润    ? "陈景润"
           : is_pre_hamilton ? "Hamilton"
-          : is_pre_हरीश_चंद्र  ? u8"हरीश चंद्र"
+          : is_pre_हरीश_चंद्र  ? "हरीश चंद्र"
                             : "Hilbert") << " Vessel";
 
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no

@@ -178,7 +178,7 @@ Status* __cdecl principia__ExternalGeopotentialGetCoefficient(
   if (order < 0 || order > degree) {
     return m.Return(ToNewStatus(
         absl::InvalidArgumentError(
-            absl::StrCat(u8"Expected 0 ≤ order ≤ degree; got degree = ",
+            absl::StrCat("Expected 0 ≤ order ≤ degree; got degree = ",
                          degree, ", order = ", order))));
   }
   if (degree == 0) {
@@ -273,13 +273,13 @@ Status* __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
             "|manoeuvre_index| " + std::to_string(manoeuvre_index) +
                 " out of range, vessel " + vessel.ShortDebugString() + " has " +
                 std::to_string(flight_plan.number_of_manœuvres()) +
-                u8" planned manœuvres")));
+                " planned manœuvres")));
   }
   // The index of the coast segment following the desired manœuvre.
   int const segment_index = manoeuvre_index * 2 + 2;
   if (segment_index >= flight_plan.number_of_segments()) {
     return m.Return(ToNewStatus(absl::FailedPreconditionError(
-                                u8"A singularity occurs within manœuvre " +
+                                "A singularity occurs within manœuvre " +
                                     std::to_string(manoeuvre_index) + " of " +
                                     vessel.ShortDebugString())));
   }

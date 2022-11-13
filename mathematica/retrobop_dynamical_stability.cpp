@@ -516,7 +516,7 @@ void AnalyseGlobalError() {
                 << names[most_erroneous_moon] << ")";
       LOG_IF(INFO, numerical_error < visible_threshold) << "invisible on plots";
       if (numerical_error > chaotic_threshold) {
-        LOG(INFO) << u8"The wrath of Ляпунов is upon us!";
+        LOG(INFO) << "The wrath of Ляпунов is upon us!";
         refined_ephemeris.reset();
       }
     }
@@ -541,7 +541,7 @@ void AnalyseGlobalError() {
                 << names[most_erroneous_moon] << ")";
       LOG_IF(INFO, cluster_radius < visible_threshold) << "invisible on plots";
       if (cluster_radius > chaotic_threshold) {
-        LOG(INFO) << u8"The wrath of Ляпунов is upon us!";
+        LOG(INFO) << "The wrath of Ляпунов is upon us!";
         log_radius = false;
       }
     }

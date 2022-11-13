@@ -255,7 +255,7 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
 
   bool const is_pre_erdős =
       !message.has_generalized_adaptive_step_parameters();
-  LOG_IF(WARNING, is_pre_erdős) << u8"Reading pre-Erdős FlightPlan";
+  LOG_IF(WARNING, is_pre_erdős) << "Reading pre-Erdős FlightPlan";
   std::unique_ptr<Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters>
       generalized_adaptive_step_parameters;
   if (is_pre_erdős) {

@@ -386,7 +386,7 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
       << (is_pre_cohen       ? "Cohen"
           : is_pre_fatou     ? "Fatou"
           : is_pre_grassmann ? "Grassmann"
-                             : u8"Gröbner") << " ContinuousTrajectory";
+                             : "Gröbner") << " ContinuousTrajectory";
 
   not_null<std::unique_ptr<ContinuousTrajectory<Frame>>> continuous_trajectory =
       std::make_unique<ContinuousTrajectory<Frame>>(

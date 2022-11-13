@@ -265,8 +265,8 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
   bool const is_pre_hamilton = message.prehistory().segment_size() == 0;
   LOG_IF(WARNING, is_pre_hamilton)
       << "Reading pre-"
-      << (is_pre_cesàro    ? u8"Cesàro"
-          : is_pre_fréchet ? u8"Fréchet"
+      << (is_pre_cesàro    ? "Cesàro"
+          : is_pre_fréchet ? "Fréchet"
           : is_pre_frenet  ? "Frenet"
           : is_pre_galileo ? "Galileo"
                            : "Hamilton") << " Part";

@@ -103,21 +103,21 @@ std::string DebugString(KeplerianElements<Frame> const& elements) {
     }
   };
   append_optional("e", elements.eccentricity);
-  append_optional(u8"ν∞", elements.asymptotic_true_anomaly);
-  append_optional(u8"δ", elements.turning_angle);
+  append_optional("ν∞", elements.asymptotic_true_anomaly);
+  append_optional("δ", elements.turning_angle);
 
   append_optional("a", elements.semimajor_axis);
-  append_optional(u8"ε", elements.specific_energy);
-  append_optional(u8"C₃", elements.characteristic_energy);
+  append_optional("ε", elements.specific_energy);
+  append_optional("C₃", elements.characteristic_energy);
   append_optional("n", elements.mean_motion);
   append_optional("T", elements.period);
   append_optional("n/i", elements.hyperbolic_mean_motion);
-  append_optional(u8"v∞", elements.hyperbolic_excess_velocity);
+  append_optional("v∞", elements.hyperbolic_excess_velocity);
 
   append_optional("b", elements.semiminor_axis);
   append_optional("b/i", elements.impact_parameter);
 
-  append_optional(u8"ℓ", elements.semilatus_rectum);
+  append_optional("ℓ", elements.semilatus_rectum);
   append_optional("h", elements.specific_angular_momentum);
 
   append_optional("r_pe", elements.periapsis_distance);
@@ -125,11 +125,11 @@ std::string DebugString(KeplerianElements<Frame> const& elements) {
   append_optional("r_ap", elements.apoapsis_distance);
 
   append("i", elements.inclination);
-  append(u8"Ω", elements.longitude_of_ascending_node);
-  append_optional(u8"ω", elements.argument_of_periapsis);
-  append_optional(u8"ϖ", elements.longitude_of_periapsis);
+  append("Ω", elements.longitude_of_ascending_node);
+  append_optional("ω", elements.argument_of_periapsis);
+  append_optional("ϖ", elements.longitude_of_periapsis);
 
-  append_optional(u8"ν", elements.true_anomaly);
+  append_optional("ν", elements.true_anomaly);
   append_optional("M", elements.mean_anomaly);
   append_optional("M/i", elements.hyperbolic_mean_anomaly);
   result += "}";

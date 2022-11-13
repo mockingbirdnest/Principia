@@ -100,7 +100,7 @@ TEST_F(ParserTest, ParseLength) {
 
 TEST_F(ParserTest, ParseAngle) {
   EXPECT_EQ(1.23 * Degree, ParseQuantity<Angle>("1.23 deg"));
-  EXPECT_EQ(1.23 * Degree, ParseQuantity<Angle>(u8"1.23 °"));
+  EXPECT_EQ(1.23 * Degree, ParseQuantity<Angle>("1.23 °"));
   EXPECT_EQ(1.23 * Radian, ParseQuantity<Angle>("1.23 rad"));
 }
 
