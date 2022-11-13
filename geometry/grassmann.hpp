@@ -365,9 +365,6 @@ Multivector<Scalar, Frame, rank>& operator/=(
     Multivector<Scalar, Frame, rank>& left,
     double right);
 
-template <typename Scalar, typename Frame, int rank, typename H>
-H AbslHashValue(H h, Multivector<Scalar, Frame, rank> const& multivector);
-
 template<typename Scalar, typename Frame, int rank>
 std::string DebugString(Multivector<Scalar, Frame, rank> const& multivector);
 

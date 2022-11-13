@@ -8,7 +8,6 @@
 #include "base/not_constructible.hpp"
 #include "geometry/permutation.hpp"
 #include "geometry/rotation.hpp"
-#include "quantities/si.hpp"
 
 namespace principia {
 namespace geometry {
@@ -20,7 +19,6 @@ using quantities::FusedMultiplyAdd;
 using quantities::FusedMultiplySubtract;
 using quantities::FusedNegatedMultiplyAdd;
 using quantities::FusedNegatedMultiplySubtract;
-namespace si = quantities::si;
 
 template<typename Scalar, typename Frame>
 Multivector<Scalar, Frame, 1>::Multivector(R3Element<Scalar> const& coordinates)
@@ -496,17 +494,6 @@ Multivector<Scalar, Frame, rank>& operator/=(
     double const right) {
   left.coordinates_ /= right;
   return left;
-}
-
-template<typename Scalar, typename Frame, int rank, typename H>
-H AbslHashValue(H h, Multivector<Scalar, Frame, rank> const& multivector) {
-  if constexpr (rank == 3) {
-    return H::combine(std::move(h), multivector.coordinates());
-  } else {
-    auto const coordinates = multivector.coordinates() / si::template Unit<Scalar>;
-    return H::combine(std::move(h),
-                      coordinates[0], coordinates[1], coordinates[2]);
-  }
 }
 
 template<typename Scalar, typename Frame, int rank>
