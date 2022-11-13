@@ -104,6 +104,7 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
   for (auto const& m : minima) {
     LOG(ERROR) << m;
   }
+  LOG(ERROR) << minima.size() << " minima";
 }
 
 }  // namespace numerics

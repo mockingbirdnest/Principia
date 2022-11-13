@@ -35,14 +35,14 @@ MultiLevelSingleLinkage<Scalar, Argument>::MultiLevelSingleLinkage(
       distribution_(-1.0, 1.0) {}
 
 template<typename Scalar, typename Argument>
-absl::flat_hash_set<Argument>
+std::vector<Argument>
 MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
     std::int64_t const values_per_round,
     std::int64_t const number_of_rounds,
     NormType const local_search_tolerance) {
   const std::int64_t N = values_per_round;
 
-  absl::flat_hash_set<Argument> stationary_points;
+  std::vector<Argument> stationary_points;
 
   // The PCP tree used for nearest neighbour computation.  It gets updated as
   // new points are generated.
@@ -73,7 +73,7 @@ MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
             return f_(*xⱼ) < f_xᵢ;
           });
       if (xⱼ == nullptr || (xᵢ - *xⱼ).Norm() > rₖ) {
-        stationary_points.insert(BroydenFletcherGoldfarbShanno(
+        stationary_points.push_back(BroydenFletcherGoldfarbShanno(
             xᵢ, f_, grad_f_, local_search_tolerance));
       }
     }

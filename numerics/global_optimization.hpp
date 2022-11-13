@@ -4,7 +4,6 @@
 #include <random>
 #include <vector>
 
-#include "absl/container/flat_hash_set.h"
 #include "geometry/hilbert.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -52,10 +51,9 @@ class MultiLevelSingleLinkage {
       Field<Scalar, Argument> const& f,
       Field<Gradient<Scalar, Argument>, Argument> const& grad_f);
 
-  absl::flat_hash_set<Argument> FindGlobalMinima(
-      std::int64_t values_per_round,
-      std::int64_t number_of_rounds,
-      NormType local_search_tolerance);
+  std::vector<Argument> FindGlobalMinima(std::int64_t values_per_round,
+                                         std::int64_t number_of_rounds,
+                                         NormType local_search_tolerance);
 
  private:
   // Returns a vector of size |values_per_round|.
