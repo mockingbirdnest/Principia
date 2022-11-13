@@ -1,4 +1,3 @@
-﻿
 #include "geometry/affine_map.hpp"
 
 #include <limits>

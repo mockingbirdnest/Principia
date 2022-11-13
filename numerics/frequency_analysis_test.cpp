@@ -1,4 +1,3 @@
-﻿
 #include "numerics/frequency_analysis.hpp"
 
 #include <algorithm>

@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "physics/body_surface_frame_field.hpp"

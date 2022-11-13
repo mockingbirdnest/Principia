@@ -1,4 +1,3 @@
-﻿
 #include "physics/body.hpp"
 
 #include "astronomy/epoch.hpp"

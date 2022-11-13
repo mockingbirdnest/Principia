@@ -1,4 +1,3 @@
-﻿
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=Apsides --benchmark_min_time=30  // NOLINT(whitespace/line_length)
 
 #include <limits>

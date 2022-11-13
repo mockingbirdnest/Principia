@@ -187,4 +187,3 @@ void WriteToHexadecimalFile(
 
 }  // namespace testing_utilities
 }  // namespace principia
-

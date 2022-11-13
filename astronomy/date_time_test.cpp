@@ -1,4 +1,3 @@
-﻿
 #include "astronomy/date_time.hpp"
 
 #include <string>

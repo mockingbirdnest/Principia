@@ -1,4 +1,3 @@
-
 // "macos_allocator_replacement.hpp" should be automagically included.
 
 #include <deque>

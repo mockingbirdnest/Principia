@@ -1,4 +1,3 @@
-﻿
 #include "ksp_plugin/part.hpp"
 
 #include "gmock/gmock.h"

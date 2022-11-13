@@ -1,4 +1,3 @@
-
 #include "numerics/polynomial.hpp"
 
 #include <tuple>

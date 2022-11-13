@@ -1,4 +1,3 @@
-
 #include "ksp_plugin/plugin.hpp"
 
 #include <string>

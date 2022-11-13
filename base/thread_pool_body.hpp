@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "base/thread_pool.hpp"

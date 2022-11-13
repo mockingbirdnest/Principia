@@ -1,4 +1,3 @@
-﻿
 #include "astronomy/epoch.hpp"
 #include "astronomy/time_scales.hpp"
 #include "geometry/named_quantities.hpp"

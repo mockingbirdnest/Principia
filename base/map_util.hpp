@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 // This code comes from:

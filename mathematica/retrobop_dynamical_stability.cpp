@@ -1,4 +1,3 @@
-﻿
 #include "mathematica/retrobop_dynamical_stability.hpp"
 
 #include <algorithm>

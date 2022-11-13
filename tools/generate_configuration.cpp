@@ -1,4 +1,3 @@
-﻿
 #include "tools/generate_configuration.hpp"
 
 #include <filesystem>

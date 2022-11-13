@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "astronomy/time_scales.hpp"
 #include "geometry/named_quantities.hpp"

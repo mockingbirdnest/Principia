@@ -1,4 +1,3 @@
-﻿
 #include "physics/geopotential.hpp"
 
 #include <random>

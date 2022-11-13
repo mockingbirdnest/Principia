@@ -1,4 +1,4 @@
-﻿#include "geometry/hilbert.hpp"
+#include "geometry/hilbert.hpp"
 
 #include <type_traits>
 

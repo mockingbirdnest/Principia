@@ -1,4 +1,3 @@
-﻿
 #include "ksp_plugin/vessel.hpp"
 
 #include <limits>

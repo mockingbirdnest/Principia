@@ -1,4 +1,4 @@
-﻿#include "numerics/next.hpp"
+#include "numerics/next.hpp"
 
 #include <limits>
 

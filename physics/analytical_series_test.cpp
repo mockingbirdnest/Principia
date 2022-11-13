@@ -1,4 +1,3 @@
-﻿
 #include <algorithm>
 #include <ctime>
 #include <string>

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "geometry/frame.hpp"
 #include "geometry/orthogonal_map.hpp"

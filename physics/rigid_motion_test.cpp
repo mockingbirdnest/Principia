@@ -1,4 +1,3 @@
-﻿
 #include "physics/rigid_motion.hpp"
 
 #include "geometry/frame.hpp"

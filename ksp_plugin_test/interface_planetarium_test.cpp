@@ -1,4 +1,3 @@
-
 #include "ksp_plugin/interface.hpp"
 
 #include "geometry/affine_map.hpp"

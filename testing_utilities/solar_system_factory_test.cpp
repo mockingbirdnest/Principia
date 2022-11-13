@@ -1,4 +1,3 @@
-﻿
 #include "testing_utilities/solar_system_factory.hpp"
 
 #include <optional>

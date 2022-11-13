@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "numerics/root_finders.hpp"

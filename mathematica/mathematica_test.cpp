@@ -1,4 +1,4 @@
-﻿#include "mathematica/mathematica.hpp"
+#include "mathematica/mathematica.hpp"
 
 #include <list>
 #include <string>

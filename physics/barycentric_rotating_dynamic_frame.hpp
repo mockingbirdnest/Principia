@@ -1,4 +1,3 @@
-﻿
 // The files containing the tree of child classes of |DynamicFrame| must be
 // included in the order of inheritance to avoid circular dependencies.  This
 // class will end up being reincluded as part of the implementation of its

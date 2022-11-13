@@ -1,4 +1,3 @@
-﻿
 #include "testing_utilities/is_near.hpp"
 
 #include "gmock/gmock.h"

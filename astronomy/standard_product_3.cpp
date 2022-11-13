@@ -1,4 +1,4 @@
-﻿#include "astronomy/standard_product_3.hpp"
+#include "astronomy/standard_product_3.hpp"
 
 #include <algorithm>
 #include <fstream>

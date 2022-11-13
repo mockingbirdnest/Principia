@@ -1,4 +1,3 @@
-﻿
 #include "testing_utilities/approximate_quantity.hpp"
 
 #include "gmock/gmock.h"

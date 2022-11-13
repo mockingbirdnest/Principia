@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "integrators/integrators.hpp"

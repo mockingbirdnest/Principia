@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "ksp_plugin/manœuvre.hpp"

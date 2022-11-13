@@ -1,4 +1,3 @@
-﻿
 #include "astronomy/time_scales.hpp"
 
 #include "gmock/gmock.h"

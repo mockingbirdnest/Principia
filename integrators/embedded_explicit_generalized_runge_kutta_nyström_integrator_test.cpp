@@ -1,4 +1,4 @@
-﻿#include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"  // NOLINT(whitespace/line_length)
+#include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"  // NOLINT(whitespace/line_length)
 
 #include <algorithm>
 #include <limits>

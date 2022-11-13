@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "base/unique_ptr_logging.hpp"

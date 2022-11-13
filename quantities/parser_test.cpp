@@ -1,4 +1,3 @@
-﻿
 #include "quantities/parser.hpp"
 
 #include <array>

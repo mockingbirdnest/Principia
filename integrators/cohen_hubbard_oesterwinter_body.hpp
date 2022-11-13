@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "integrators/cohen_hubbard_oesterwinter.hpp"

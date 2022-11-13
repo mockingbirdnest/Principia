@@ -1,4 +1,3 @@
-﻿
 #include "geometry/r3_element.hpp"
 
 #include <functional>

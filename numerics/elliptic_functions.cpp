@@ -1,4 +1,3 @@
-﻿
 #include "numerics/elliptic_functions.hpp"
 
 #include <tuple>

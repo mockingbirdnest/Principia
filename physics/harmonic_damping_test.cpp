@@ -1,4 +1,4 @@
-﻿#include "physics/harmonic_damping.hpp"
+#include "physics/harmonic_damping.hpp"
 
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"

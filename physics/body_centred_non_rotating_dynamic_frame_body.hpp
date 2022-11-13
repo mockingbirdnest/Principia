@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"

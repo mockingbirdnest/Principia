@@ -1,4 +1,3 @@
-﻿
 #include "integrators/adams_moulton_integrator.hpp"
 
 namespace principia {

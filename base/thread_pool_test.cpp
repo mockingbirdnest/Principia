@@ -1,4 +1,3 @@
-
 #include "base/thread_pool.hpp"
 
 #include <vector>

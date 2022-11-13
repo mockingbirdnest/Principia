@@ -1,4 +1,3 @@
-﻿
 #include "ksp_plugin/integrators.hpp"
 
 #include <limits>

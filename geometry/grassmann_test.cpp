@@ -1,4 +1,3 @@
-﻿
 #include <cfloat>
 #include <functional>
 #include <iostream>  // NOLINT(readability/streams)

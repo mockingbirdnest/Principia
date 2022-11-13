@@ -1,4 +1,3 @@
-﻿
 #include "physics/continuous_trajectory.hpp"
 
 #include <algorithm>

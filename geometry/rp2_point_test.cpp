@@ -1,4 +1,3 @@
-
 #include "geometry/rp2_point.hpp"
 
 #include <limits>

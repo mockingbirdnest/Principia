@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "geometry/symmetric_bilinear_form.hpp"

@@ -1,4 +1,3 @@
-﻿
 #include "base/function.hpp"
 
 #include <memory>

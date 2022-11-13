@@ -1,4 +1,3 @@
-﻿
 #include "ksp_plugin/pile_up.hpp"
 
 #include <limits>

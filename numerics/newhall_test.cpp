@@ -1,4 +1,3 @@
-﻿
 #include "numerics/newhall.hpp"
 
 #include <algorithm>

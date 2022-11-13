@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "base/push_deserializer.hpp"

@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "numerics/gradient_descent.hpp"

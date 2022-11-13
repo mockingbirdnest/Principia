@@ -1,4 +1,3 @@
-﻿
 #include "geometry/identity.hpp"
 
 #include <vector>

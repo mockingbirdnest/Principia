@@ -1,4 +1,3 @@
-﻿
 #include "numerics/cbrt.hpp"
 
 #include <cfenv>

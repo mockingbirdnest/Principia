@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "physics/solar_system.hpp"

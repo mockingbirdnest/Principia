@@ -1,4 +1,4 @@
-﻿#include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_trajectory.hpp"
 
 #include <string>
 #include <vector>

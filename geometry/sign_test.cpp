@@ -1,4 +1,3 @@
-﻿
 #include "geometry/sign.hpp"
 
 #include "glog/logging.h"

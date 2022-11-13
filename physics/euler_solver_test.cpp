@@ -1,4 +1,3 @@
-﻿
 #include "physics/euler_solver.hpp"
 
 #include <algorithm>

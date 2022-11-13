@@ -1,4 +1,3 @@
-﻿
 #include "journal/player.hpp"
 
 #include <chrono>

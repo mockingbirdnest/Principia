@@ -1,4 +1,3 @@
-﻿
 #include "journal/profiles.hpp"
 
 #include <fstream>

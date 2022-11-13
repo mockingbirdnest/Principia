@@ -1,4 +1,3 @@
-﻿
 #include "geometry/symmetric_bilinear_form.hpp"
 
 #include <random>

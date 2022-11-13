@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"

@@ -1,4 +1,3 @@
-﻿
 #include "physics/mechanical_system.hpp"
 
 #include "gmock/gmock.h"

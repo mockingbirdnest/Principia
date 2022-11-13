@@ -1,4 +1,3 @@
-﻿
 #include "physics/ephemeris.hpp"
 
 #include <limits>

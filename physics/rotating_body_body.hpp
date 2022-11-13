@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "physics/rotating_body.hpp"

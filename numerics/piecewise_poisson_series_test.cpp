@@ -1,4 +1,3 @@
-﻿
 #include "numerics/piecewise_poisson_series.hpp"
 
 #include <functional>

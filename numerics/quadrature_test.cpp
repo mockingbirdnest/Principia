@@ -1,4 +1,3 @@
-﻿
 #include "numerics/quadrature.hpp"
 
 #include <limits>

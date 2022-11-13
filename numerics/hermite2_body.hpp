@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "numerics/hermite2.hpp"

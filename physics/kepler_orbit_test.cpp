@@ -1,4 +1,3 @@
-﻿
 #include "physics/kepler_orbit.hpp"
 
 #include "astronomy/epoch.hpp"

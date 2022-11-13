@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "physics/oblate_body.hpp"

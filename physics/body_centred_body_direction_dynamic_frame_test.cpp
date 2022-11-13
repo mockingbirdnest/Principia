@@ -1,4 +1,3 @@
-﻿
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"
 
 #include <memory>

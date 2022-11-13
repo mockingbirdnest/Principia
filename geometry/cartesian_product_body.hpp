@@ -1,4 +1,3 @@
-
 #include "geometry/cartesian_product.hpp"
 
 #include <algorithm>

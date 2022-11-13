@@ -1,4 +1,3 @@
-﻿
 #include "numerics/elliptic_integrals.hpp"
 
 #include <filesystem>

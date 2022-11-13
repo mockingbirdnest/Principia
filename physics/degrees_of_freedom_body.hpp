@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "physics/degrees_of_freedom.hpp"

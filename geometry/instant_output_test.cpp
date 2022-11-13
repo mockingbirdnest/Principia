@@ -1,4 +1,3 @@
-﻿
 #include <strstream>
 
 #include "astronomy/time_scales.hpp"

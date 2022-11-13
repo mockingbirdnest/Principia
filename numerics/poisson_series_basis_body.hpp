@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "numerics/poisson_series_basis.hpp"
 

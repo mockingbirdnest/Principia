@@ -1,4 +1,3 @@
-﻿
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=Evaluate  // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 3310 MHz CPU
 // 2015/06/09-22:18:17

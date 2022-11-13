@@ -1,4 +1,3 @@
-
 #include "geometry/signature.hpp"
 
 #include <vector>

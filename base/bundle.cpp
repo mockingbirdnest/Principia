@@ -1,4 +1,3 @@
-﻿
 #include "base/bundle.hpp"
 
 #include <functional>

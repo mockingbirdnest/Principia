@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "geometry/orthogonal_map.hpp"

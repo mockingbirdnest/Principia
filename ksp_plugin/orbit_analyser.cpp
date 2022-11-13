@@ -1,4 +1,3 @@
-﻿
 #include "ksp_plugin/orbit_analyser.hpp"
 
 #include <algorithm>

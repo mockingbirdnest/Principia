@@ -1,4 +1,3 @@
-﻿
 #include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
 
 #include <algorithm>

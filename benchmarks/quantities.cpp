@@ -1,4 +1,3 @@
-﻿
 #include "benchmarks/quantities.hpp"
 
 #include<vector>
