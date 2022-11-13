@@ -62,7 +62,7 @@ class MultiLevelSingleLinkage {
   std::vector<Argument> RandomArguments(Box const& box,
                                         std::int64_t values_per_round);
 
-  // Returns the radius rₖ from [] specialized for 3 dimensions.
+  // Returns the radius rₖ from [RT87a], eqn. 35, specialized for 3 dimensions.
   static typename Hilbert<Difference<Argument>>::NormType CriticalRadius(
       double σ,
       std::int64_t kN);
