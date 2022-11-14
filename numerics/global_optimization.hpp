@@ -51,7 +51,7 @@ class MultiLevelSingleLinkage {
       Field<Scalar, Argument> const& f,
       Field<Gradient<Scalar, Argument>, Argument> const& grad_f);
 
-  std::vector<Argument> FindGlobalMinima(std::int64_t values_per_round,
+  std::vector<Argument> FindGlobalMinima(std::int64_t points_per_round,
                                          std::int64_t number_of_rounds,
                                          NormType local_search_tolerance);
 
