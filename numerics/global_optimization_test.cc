@@ -11,6 +11,8 @@
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace numerics {
@@ -23,10 +25,14 @@ using quantities::Inverse;
 using quantities::Length;
 using quantities::Pow;
 using quantities::si::Metre;
+using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::IsNear;
+using testing_utilities::RelativeErrorFrom;
 using testing_utilities::operator""_;
+using ::testing::Lt;
+using ::testing::UnorderedElementsAre;
 
 // The test functions in this file are from
 // https://www.sfu.ca/~ssurjano/optimization.html.
@@ -41,8 +47,12 @@ TEST_F(GlobalOptimizationTest, Smoke) {
 
 TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
   using Optimizer = MultiLevelSingleLinkage<double, Displacement<World>>;
+  int function_invocations = 0;
+  int gradient_invocations = 0;
 
-  auto goldstein_price = [](Displacement<World> const displacement) {
+  auto goldstein_price = [&function_invocations](
+                             Displacement<World> const& displacement) {
+    ++function_invocations;
     auto const& coordinates = displacement.coordinates();
     // The extra |x0| term ensures that we have a unique solution in three
     // dimensions.
@@ -57,7 +67,9 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
                           36 * x1 * x2 + 27 * Pow<2>(x2)));
   };
 
-  auto grad_goldstein_price = [](Displacement<World> const displacement) {
+  auto grad_goldstein_price = [&gradient_invocations](
+                                  Displacement<World> const& displacement) {
+    ++gradient_invocations;
     auto const& coordinates = displacement.coordinates();
     double const x0 = coordinates[0] / Metre;
     double const x1 = coordinates[1] / Metre;
@@ -105,12 +117,27 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
           Displacement<World>({0 * Metre, 0 * Metre, 2 * Metre}),
       }};
 
+  const auto tolerance = 1e-6 * Metre;
   Optimizer optimizer(box, goldstein_price, grad_goldstein_price);
-  auto const minima = optimizer.FindGlobalMinima(10, 10, 1e-6 * Metre);
-  for (auto const& m : minima) {
-    LOG(ERROR) << m;
-  }
-  LOG(ERROR) << minima.size() << " minima";
+  auto const minima = optimizer.FindGlobalMinima(10, 10, tolerance);
+
+  EXPECT_EQ(32278, function_invocations);
+  EXPECT_EQ(17293, gradient_invocations);
+  EXPECT_THAT(
+      minima,
+      UnorderedElementsAre(
+          Componentwise(AbsoluteErrorFrom(0 * Metre, Lt(9.9e-8 * Metre)),
+                        AbsoluteErrorFrom(0 * Metre, Lt(1.5e-7 * Metre)),
+                        RelativeErrorFrom(-1 * Metre, Lt(8.0e-8))),
+          Componentwise(AbsoluteErrorFrom(0 * Metre, Lt(5.6e-8 * Metre)),
+                        RelativeErrorFrom(-0.6 * Metre, Lt(6.8e-10)),
+                        RelativeErrorFrom(-0.4 * Metre, Lt(1.1e-9))),
+          Componentwise(AbsoluteErrorFrom(0 * Metre, Lt(9.4e-8 * Metre)),
+                        RelativeErrorFrom(1.2 * Metre, Lt(2.8e-9)),
+                        RelativeErrorFrom(0.8 * Metre, Lt(3.0e-9))),
+          Componentwise(AbsoluteErrorFrom(0 * Metre, Lt(4.9e-7 * Metre)),
+                        RelativeErrorFrom(1.8 * Metre, Lt(1.4e-7)),
+                        RelativeErrorFrom(0.2 * Metre, Lt(5.0e-7)))));
 }
 
 }  // namespace numerics
