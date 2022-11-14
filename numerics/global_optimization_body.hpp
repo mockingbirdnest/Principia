@@ -32,7 +32,10 @@ MultiLevelSingleLinkage<Scalar, Argument>::MultiLevelSingleLinkage(
       f_(f),
       grad_f_(grad_f),
       random_(42),
-      distribution_(-1.0, 1.0) {}
+      distribution_(-1.0, 1.0) {
+  CHECK_LT(Cube<typename Hilbert<Difference<Argument>>::NormType>{},
+           box_measure_);
+}
 
 template<typename Scalar, typename Argument>
 std::vector<Argument>
@@ -57,15 +60,15 @@ MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
 
   // TODO(phl): This is quadratic.  Make the algorithm linear once we believe
   // that it is correct.
-  for (std::int64_t k = 0; k < number_of_rounds; ++k) {
-    auto const rₖ = CriticalRadius(/*σ=*/4, /*kN=*/k * N);
-
+  for (std::int64_t k = 1; k <= number_of_rounds; ++k) {
     // Generate N new random points and add them to the PCP tree.
     std::vector<Argument> argumentsₖ = RandomArguments(box_, N);
     for (auto& argumentₖ : argumentsₖ) {
       arguments.push_back(std::move(argumentₖ));
       pcp_tree.Add(&arguments.back());
     }
+
+    auto const rₖ = CriticalRadius(/*σ=*/4, /*kN=*/k * N);
 
     for (auto& xᵢ : arguments) {
       auto* const xⱼ = pcp_tree.FindNearestNeighbour(
