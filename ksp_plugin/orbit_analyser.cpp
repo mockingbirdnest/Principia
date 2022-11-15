@@ -168,6 +168,9 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
           analysis.elements_->nodal_precession(),
           *primary,
           /*max_abs_Cᴛₒ=*/100);
+      if (analysis.closest_recurrence_->number_of_revolutions() == 0) {
+        analysis.closest_recurrence_.reset();
+      }
       auto ground_track =
           OrbitGroundTrack::ForTrajectory(primary_centred_trajectory,
                                           *primary,
