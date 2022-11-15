@@ -44,6 +44,7 @@ MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
     std::int64_t const number_of_rounds,
     NormType const local_search_tolerance) {
   const std::int64_t N = points_per_round;
+  //TODO(phl):improve the names.
 
   // This is the set X* from [RT87b].  It contains |unique_ptr|s because we need
   // pointer stability for the PCP tree but we cannot precompute the vector
