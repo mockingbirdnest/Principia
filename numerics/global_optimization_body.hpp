@@ -6,7 +6,6 @@
 
 #include "geometry/barycentre_calculator.hpp"
 #include "numerics/gradient_descent.hpp"
-#include "numerics/nearest_neighbour.hpp"
 
 namespace principia {
 namespace numerics {
@@ -15,6 +14,9 @@ namespace internal_global_optimization {
 using geometry::Barycentre;
 using geometry::Wedge;
 using quantities::Cbrt;
+
+// TODO(phl): Provide a way to parameterize the PCP trees?
+constexpr int64_t pcp_tree_max_values_per_cell = 10;
 
 template<typename Scalar, typename Argument>
 Cube<typename Hilbert<Difference<Argument>>::NormType>
@@ -44,31 +46,27 @@ MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
     std::int64_t const number_of_rounds,
     NormType const local_search_tolerance) {
   const std::int64_t N = points_per_round;
-  //TODO(phl):improve the names.
 
   // This is the set X* from [RT87b].  It contains |unique_ptr|s because we need
   // pointer stability for the PCP tree but we cannot precompute the vector
   // size.
   std::vector<std::unique_ptr<Argument>> stationary_points;
 
-  // The PCP tree used for nearest neighbour computation.  It gets updated as
-  // new points are generated.
-  //TODO(phl):parameters
-  PrincipalComponentPartitioningTree<Argument> point_neighbourhoods(
-      /*values=*/{},
-      /*max_values_per_cell=*/10);
-
   // The PCP tree used for detecting proximity of the stationary points.  It
   // gets updated as new stationary points are found.
-  //TODO(phl):parameters
   PrincipalComponentPartitioningTree<Argument> stationary_point_neighbourhoods(
       /*values=*/{},
-      /*max_values_per_cell=*/10);
-
+      pcp_tree_max_values_per_cell);
 
   // Make sure that pointers don't get invalidated as new points are added.
   std::vector<Argument> points;
   points.reserve(N * number_of_rounds);
+
+  // The PCP tree used for nearest neighbour computation.  It gets updated as
+  // new points are generated.
+  PrincipalComponentPartitioningTree<Argument> point_neighbourhoods(
+      /*values=*/{},
+      pcp_tree_max_values_per_cell);
 
   // TODO(phl): This is quadratic.  Make the algorithm linear once we believe
   // that it is correct.
@@ -115,7 +113,7 @@ MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
 }
 
 template<typename Scalar, typename Argument>
-void MultiLevelSingleLinkage<Scalar, Argument>::Foo(
+bool MultiLevelSingleLinkage<Scalar, Argument>::IsNewStationaryPoint(
     Argument const& stationary_point,
     PrincipalComponentPartitioningTree<Argument> const&
         stationary_point_neighbourhoods,

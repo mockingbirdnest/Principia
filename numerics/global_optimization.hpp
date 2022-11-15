@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "geometry/hilbert.hpp"
+#include "numerics/nearest_neighbour.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -31,7 +32,9 @@ using Gradient =
             Quotient<Difference<Argument>,
                      typename Hilbert<Difference<Argument>>::Norm²Type>>;
 
-//TODO(phl): Could this be a self-standing function?
+// NOTE(phl): This could nearly be a self-standing function (it doesn't have
+// much state) but having the type |Box| floating around would be unpleasant.
+// Plus, that would be too many parameters in that function.
 template<typename Scalar, typename Argument>
 class MultiLevelSingleLinkage {
  public:

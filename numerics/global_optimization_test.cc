@@ -41,10 +41,6 @@ class GlobalOptimizationTest : public ::testing::Test {
   using World = Frame<enum class WorldTag>;
 };
 
-TEST_F(GlobalOptimizationTest, Smoke) {
-  using Foo = MultiLevelSingleLinkage<Length, Position<World>>;
-}
-
 TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
   using Optimizer = MultiLevelSingleLinkage<double, Displacement<World>>;
   int function_invocations = 0;
