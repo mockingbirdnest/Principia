@@ -13,7 +13,6 @@ namespace internal_gradient_descent {
 
 using geometry::Hilbert;
 using quantities::Difference;
-using quantities::Length;
 using quantities::Product;
 using quantities::Quotient;
 
@@ -34,7 +33,7 @@ Argument BroydenFletcherGoldfarbShanno(
     Argument const& start_argument,
     Field<Scalar, Argument> const& f,
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
-    Length const& tolerance);
+    typename Hilbert<Difference<Argument>>::NormType const& tolerance);
 
 }  // namespace internal_gradient_descent
 

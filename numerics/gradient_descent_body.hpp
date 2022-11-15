@@ -151,7 +151,7 @@ Argument BroydenFletcherGoldfarbShanno(
     Argument const& start_argument,
     Field<Scalar, Argument> const& f,
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
-    Length const& tolerance) {
+    typename Hilbert<Difference<Argument>>::NormType const& tolerance) {
   // The first step uses vanilla steepest descent.
   auto const x₀ = start_argument;
   auto const grad_f_x₀ = grad_f(x₀);
