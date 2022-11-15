@@ -56,9 +56,16 @@ class MultiLevelSingleLinkage {
                                          NormType local_search_tolerance);
 
  private:
-  // Returns a vector of size |values_per_round|.
-  std::vector<Argument> RandomArguments(Box const& box,
-                                        std::int64_t values_per_round);
+  // Returns true iff the given |stationary_point| is sufficiently far from the
+  // ones already in |stationary_point_neighbourhoods|.
+  static bool IsNewStationaryPoint(
+      Argument const& stationary_point,
+      PrincipalComponentPartitioningTree<Argument> const&
+          stationary_point_neighbourhoods,
+      NormType local_search_tolerance);
+
+  // Returns a vector of size |values_per_round|.  The points are in |box_|.
+  std::vector<Argument> RandomArguments(std::int64_t values_per_round);
 
   // Returns the radius rₖ from [RT87a], eqn. 35, specialized for 3 dimensions.
   typename Hilbert<Difference<Argument>>::NormType CriticalRadius(
