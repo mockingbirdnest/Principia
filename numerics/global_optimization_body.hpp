@@ -58,12 +58,13 @@ MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
       /*values=*/{},
       pcp_tree_max_values_per_cell);
 
-  // Make sure that pointers don't get invalidated as new points are added.
+  // The sample points.  Make sure that pointers don't get invalidated as new
+  // points are added.
   std::vector<Argument> points;
   points.reserve(N * number_of_rounds);
 
-  // The PCP tree used for nearest neighbour computation.  It gets updated as
-  // new points are generated.
+  // The PCP tree used for detecting proximity of the sample points .  It gets
+  // updated as new points are generated.
   PrincipalComponentPartitioningTree<Argument> point_neighbourhoods(
       /*values=*/{},
       pcp_tree_max_values_per_cell);
@@ -87,7 +88,7 @@ MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
           });
 
       if (xⱼ == nullptr || (xᵢ - *xⱼ).Norm() > rₖ) {
-        auto stationary_point = BroydenFletcherGoldfarbShanno(
+        auto const stationary_point = BroydenFletcherGoldfarbShanno(
             xᵢ, f_, grad_f_, local_search_tolerance);
 
         // If the new stationary point is sufficiently far from the ones we

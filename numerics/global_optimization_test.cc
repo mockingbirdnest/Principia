@@ -115,7 +115,9 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
 
   const auto tolerance = 1e-6 * Metre;
   Optimizer optimizer(box, goldstein_price, grad_goldstein_price);
-  auto const minima = optimizer.FindGlobalMinima(10, 10, tolerance);
+  auto const minima = optimizer.FindGlobalMinima(/*points_per_round=*/10,
+                                                 /*number_of_rounds=*/10,
+                                                 tolerance);
 
   EXPECT_EQ(32278, function_invocations);
   EXPECT_EQ(17293, gradient_invocations);
