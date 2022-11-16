@@ -2,6 +2,7 @@
 
 #include "numerics/global_optimization.hpp"
 
+#include <vector>
 #include <utility>
 
 #include "geometry/barycentre_calculator.hpp"
