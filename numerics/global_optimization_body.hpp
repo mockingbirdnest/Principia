@@ -2,8 +2,8 @@
 
 #include "numerics/global_optimization.hpp"
 
-#include <vector>
 #include <utility>
+#include <vector>
 
 #include "geometry/barycentre_calculator.hpp"
 #include "numerics/gradient_descent.hpp"
