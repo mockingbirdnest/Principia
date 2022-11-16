@@ -1,4 +1,4 @@
-#include "numerics/global_optimization.hpp"
+﻿#include "numerics/global_optimization.hpp"
 
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -50,48 +50,48 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
                              Displacement<World> const& displacement) {
     ++function_invocations;
     auto const& coordinates = displacement.coordinates();
-    // The extra |x0| term ensures that we have a unique solution in three
+    // The extra |x₀| term ensures that we have a unique solution in three
     // dimensions.
-    double const x0 = coordinates[0] / Metre;
-    double const x1 = coordinates[1] / Metre;
-    double const x2 = coordinates[2] / Metre;
-    return Pow<2>(x0) +
-           (1 + Pow<2>(x1 + x2 + 1) * (19 - 14 * x1 + 3 * Pow<2>(x1) - 14 * x2 +
-                                       6 * x1 * x2 + 3 * Pow<2>(x2))) *
-               (30 + Pow<2>(2 * x1 - 3 * x2) *
-                         (18 - 32 * x1 + 12 * Pow<2>(x1) + 48 * x2 -
-                          36 * x1 * x2 + 27 * Pow<2>(x2)));
+    double const x₀ = coordinates[0] / Metre;
+    double const x₁ = coordinates[1] / Metre;
+    double const x₂ = coordinates[2] / Metre;
+    return Pow<2>(x₀) +
+           (1 + Pow<2>(x₁ + x₂ + 1) * (19 - 14 * x₁ + 3 * Pow<2>(x₁) - 14 * x₂ +
+                                       6 * x₁ * x₂ + 3 * Pow<2>(x₂))) *
+               (30 + Pow<2>(2 * x₁ - 3 * x₂) *
+                         (18 - 32 * x₁ + 12 * Pow<2>(x₁) + 48 * x₂ -
+                          36 * x₁ * x₂ + 27 * Pow<2>(x₂)));
   };
 
   auto grad_goldstein_price = [&gradient_invocations](
                                   Displacement<World> const& displacement) {
     ++gradient_invocations;
     auto const& coordinates = displacement.coordinates();
-    double const x0 = coordinates[0] / Metre;
-    double const x1 = coordinates[1] / Metre;
-    double const x2 = coordinates[2] / Metre;
-    double const g0 = 2 * x0;
-    double const g1 =
-        24 * (-1 + 2 * x1 - 3 * x2) * (2 * x1 - 3 * x2) *
-            (2 * x1 - 3 * (1 + x2)) *
+    double const x₀ = coordinates[0] / Metre;
+    double const x₁ = coordinates[1] / Metre;
+    double const x₂ = coordinates[2] / Metre;
+    double const g₀ = 2 * x₀;
+    double const g₁ =
+        24 * (-1 + 2 * x₁ - 3 * x₂) * (2 * x₁ - 3 * x₂) *
+            (2 * x₁ - 3 * (1 + x₂)) *
             (1 +
-             Pow<2>(1 + x1 + x2) * (19 + 3 * Pow<2>(x1) + x2 * (-14 + 3 * x2) +
-                                    2 * x1 * (-7 + 3 * x2))) +
-        12 * (-2 + x1 + x2) * (-1 + x1 + x2) * (1 + x1 + x2) *
-            (30 + Pow<2>(2 * x1 - 3 * x2) *
-                      (18 + 12 * Pow<2>(x1) - 4 * x1 * (8 + 9 * x2) +
-                       3 * x2 * (16 + 9 * x2)));
-    double const g2 =
-        -36 * (-1 + 2 * x1 - 3 * x2) * (2 * x1 - 3 * x2) *
-            (2 * x1 - 3 * (1 + x2)) *
+             Pow<2>(1 + x₁ + x₂) * (19 + 3 * Pow<2>(x₁) + x₂ * (-14 + 3 * x₂) +
+                                    2 * x₁ * (-7 + 3 * x₂))) +
+        12 * (-2 + x₁ + x₂) * (-1 + x₁ + x₂) * (1 + x₁ + x₂) *
+            (30 + Pow<2>(2 * x₁ - 3 * x₂) *
+                      (18 + 12 * Pow<2>(x₁) - 4 * x₁ * (8 + 9 * x₂) +
+                       3 * x₂ * (16 + 9 * x₂)));
+    double const g₂ =
+        -36 * (-1 + 2 * x₁ - 3 * x₂) * (2 * x₁ - 3 * x₂) *
+            (2 * x₁ - 3 * (1 + x₂)) *
             (1 +
-             Pow<2>(1 + x1 + x2) * (19 + 3 * Pow<2>(x1) + x2 * (-14 + 3 * x2) +
-                                    2 * x1 * (-7 + 3 * x2))) +
-        12 * (-2 + x1 + x2) * (-1 + x1 + x2) * (1 + x1 + x2) *
-            (30 + Pow<2>(2 * x1 - 3 * x2) *
-                      (18 + 12 * Pow<2>(x1) - 4 * x1 * (8 + 9 * x2) +
-                       3 * x2 * (16 + 9 * x2)));
-    return Vector<Inverse<Length>, World>({g0 / Metre, g1 / Metre, g2 / Metre});
+             Pow<2>(1 + x₁ + x₂) * (19 + 3 * Pow<2>(x₁) + x₂ * (-14 + 3 * x₂) +
+                                    2 * x₁ * (-7 + 3 * x₂))) +
+        12 * (-2 + x₁ + x₂) * (-1 + x₁ + x₂) * (1 + x₁ + x₂) *
+            (30 + Pow<2>(2 * x₁ - 3 * x₂) *
+                      (18 + 12 * Pow<2>(x₁) - 4 * x₁ * (8 + 9 * x₂) +
+                       3 * x₂ * (16 + 9 * x₂)));
+    return Vector<Inverse<Length>, World>({g₀ / Metre, g₁ / Metre, g₂ / Metre});
   };
 
   // Correctness checks for the function and its gradient.
