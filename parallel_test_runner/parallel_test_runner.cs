@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace principia {
@@ -219,28 +220,41 @@ class ParallelTestRunner {
     }
 
     Console.WriteLine("Running " + processes.Count + " processes...");
+    var process_semaphore = new Semaphore(initialCount: max_parallelism,
+                                          maximumCount: max_parallelism);
 
-    Task[] tasks = new Task[processes.Count];
+    Task[] tasks = new Task[2 * processes.Count];
     var   errors = new ConcurrentBag<string>();
     for (int i = 0; i < processes.Count; ++i) {
       var process = processes[i];
       // We cannot use i in the lambdas, it would be captured by reference.
       int index = i;
+      process_semaphore.WaitOne();
       process.Start();
-      tasks[i] = Task.Run(async () => {
+      tasks[2 * i] = Task.Run(async () => {
         while (!process.StandardOutput.EndOfStream) {
-          Console.WriteLine("O" + index.ToString().PadLeft(4) + " " +
+          Console.WriteLine("O" +
+                            index.ToString().PadLeft(4) +
+                            " " +
                             await process.StandardOutput.ReadLineAsync());
         }
         if (process.ExitCode != 0) {
-          errors.Add("Exit code " + process.ExitCode + " from (" +
-                     index.ToString() + ") " + process.StartInfo.FileName +
-                     " " + process.StartInfo.Arguments);
+          errors.Add("Exit code " +
+                     process.ExitCode +
+                     " from (" +
+                     index.ToString() +
+                     ") " +
+                     process.StartInfo.FileName +
+                     " " +
+                     process.StartInfo.Arguments);
         }
+        process_semaphore.Release();
       });
-      Task.Run(async () => {
+      tasks[2 * i + 1] = Task.Run(async () => {
         while (!process.StandardError.EndOfStream) {
-          Console.WriteLine("E" + index.ToString().PadLeft(4) + " " +
+          Console.WriteLine("E" +
+                            index.ToString().PadLeft(4) +
+                            " " +
                             await process.StandardError.ReadLineAsync());
         }
       });
@@ -253,6 +267,9 @@ class ParallelTestRunner {
     Console.WriteLine("Done (" + stopwatch.ElapsedMilliseconds + " ms)");
     Environment.Exit(errors.Count);
   }
+
+  // Maximum number of processes to execute in parallel.
+  private static readonly int max_parallelism = 100;
 }
 
 }  // namespace parallel_test_runner
