@@ -1,4 +1,4 @@
-﻿#include "numerics/global_optimization.hpp"
+#include "numerics/global_optimization.hpp"
 
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
