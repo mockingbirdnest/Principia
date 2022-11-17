@@ -17,6 +17,8 @@
   <ItemGroup>
     <ClInclude Include="apodization_body.hpp" />
     <ClInclude Include="davenport_q_method_body.hpp" />
+    <ClInclude Include="global_optimization.hpp" />
+    <ClInclude Include="global_optimization_body.hpp" />
     <ClInclude Include="gradient_descent.hpp" />
     <ClInclude Include="gradient_descent_body.hpp" />
     <ClInclude Include="hermite2.hpp" />
@@ -108,6 +110,7 @@
     <ClCompile Include="fixed_arrays_test.cpp" />
     <ClCompile Include="fma_test.cpp" />
     <ClCompile Include="frequency_analysis_test.cpp" />
+    <ClCompile Include="global_optimization_test.cc" />
     <ClCompile Include="gradient_descent_test.cpp" />
     <ClCompile Include="hermite2_test.cpp" />
     <ClCompile Include="hermite3_test.cpp" />

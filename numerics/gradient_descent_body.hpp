@@ -150,7 +150,7 @@ Argument BroydenFletcherGoldfarbShanno(
     Argument const& start_argument,
     Field<Scalar, Argument> const& f,
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
-    Length const& tolerance) {
+    typename Hilbert<Difference<Argument>>::NormType const& tolerance) {
   // The first step uses vanilla steepest descent.
   auto const x₀ = start_argument;
   auto const grad_f_x₀ = grad_f(x₀);
@@ -188,16 +188,18 @@ Argument BroydenFletcherGoldfarbShanno(
     auto const xₖ₊₁ = xₖ + αₖ * pₖ;
     auto const grad_f_xₖ₊₁ = grad_f(xₖ₊₁);
 
+    auto const sₖ = xₖ₊₁ - xₖ;
+    auto const yₖ = grad_f_xₖ₊₁ - grad_f_xₖ;
+    auto const sₖyₖ = InnerProduct(sₖ, yₖ);
+
     // If we can't make progress, e.g., because αₖ is too small, give up.
-    if (xₖ₊₁ == xₖ || grad_f_xₖ₊₁ == grad_f_xₖ) {
+    if (sₖyₖ == Scalar{}) {
       return xₖ;
     }
 
-    auto const sₖ = xₖ₊₁ - xₖ;
-    auto const yₖ = grad_f_xₖ₊₁ - grad_f_xₖ;
     // The formula (6.17) from [NW06] is inconvenient because it uses external
     // products.  Elementary transformations yield the formula below.
-    auto const ρ = 1 / InnerProduct(sₖ, yₖ);
+    auto const ρ = 1 / sₖyₖ;
     auto const Hₖ₊₁ =
         Hₖ + ρ * ((ρ * Hₖ(yₖ, yₖ) + 1) * SymmetricProduct(sₖ, sₖ) -
                   2 * SymmetricProduct(Hₖ * yₖ, sₖ));
