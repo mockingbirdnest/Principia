@@ -1,4 +1,3 @@
-﻿
 #include "base/base32768.hpp"
 
 #include <memory>

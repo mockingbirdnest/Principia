@@ -1,4 +1,3 @@
-﻿
 #include "jacobi_coordinates.hpp"
 
 #include <algorithm>

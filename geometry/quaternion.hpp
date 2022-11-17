@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "geometry/r3_element.hpp"

@@ -1,4 +1,3 @@
-﻿
 #include <memory>
 #include <string>
 #include <utility>
@@ -214,7 +213,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
       /*compressor=*/"gipfeli",
       /*decoder=*/"base64");
   EXPECT_THAT(log_warning.string(),
-              AllOf(HasSubstr("pre-Haar"), Not(HasSubstr(u8"pre-Gröbner"))));
+              AllOf(HasSubstr("pre-Haar"), Not(HasSubstr("pre-Gröbner"))));
   auto const& orbiter =
       *plugin->GetVessel("e180ca12-492f-45bf-a194-4c5255aec8a0");
   EXPECT_THAT(orbiter.name(), Eq("Mercury Orbiter 1"));

@@ -1,4 +1,3 @@
-﻿
 #include "ksp_plugin/part_subsets.hpp"
 
 #include <list>

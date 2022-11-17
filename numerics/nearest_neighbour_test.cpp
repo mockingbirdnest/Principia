@@ -1,4 +1,4 @@
-﻿#include "numerics/nearest_neighbour.hpp"
+#include "numerics/nearest_neighbour.hpp"
 
 #include <random>
 #include <vector>

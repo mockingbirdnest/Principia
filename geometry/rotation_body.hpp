@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "geometry/rotation.hpp"

@@ -1,4 +1,3 @@
-﻿
 #include "base/hexadecimal.hpp"
 
 #include <memory>

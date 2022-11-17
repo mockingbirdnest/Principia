@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "physics/rotating_body.hpp"
 #include "quantities/named_quantities.hpp"

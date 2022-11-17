@@ -1,4 +1,3 @@
-﻿
 #include "numerics/hermite2.hpp"
 
 #include <utility>

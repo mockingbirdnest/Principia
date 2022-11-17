@@ -1,4 +1,3 @@
-﻿
 #include "physics/equipotential.hpp"
 
 #include <string>

@@ -1,4 +1,3 @@
-﻿
 #include "base/push_deserializer.hpp"
 
 #include <algorithm>

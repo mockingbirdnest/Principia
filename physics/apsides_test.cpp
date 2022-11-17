@@ -1,4 +1,3 @@
-﻿
 #include "physics/apsides.hpp"
 
 #include <limits>

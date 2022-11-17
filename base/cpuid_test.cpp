@@ -1,4 +1,3 @@
-﻿
 #include "base/cpuid.hpp"
 
 #include "gmock/gmock.h"

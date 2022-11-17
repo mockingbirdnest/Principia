@@ -1,4 +1,3 @@
-﻿
 #include "benchmark/benchmark.h"
 #include "glog/logging.h"
 

@@ -1,4 +1,3 @@
-﻿
 #include "geometry/complexification.hpp"
 
 #include <sstream>

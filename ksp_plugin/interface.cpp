@@ -1,4 +1,3 @@
-﻿
 #include "ksp_plugin/interface.hpp"
 
 #include <cctype>

@@ -1,4 +1,3 @@
-﻿
 #include "numerics/poisson_series.hpp"
 
 #include <functional>

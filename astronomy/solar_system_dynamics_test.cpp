@@ -1,4 +1,3 @@
-﻿
 #include <algorithm>
 #include <optional>
 #include <map>
@@ -364,19 +363,19 @@ TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
                                                   ten_years_later);
     LOG(INFO) << "separation = " << std::fixed
               << actual_orbit_error.separation_per_orbit / ArcSecond
-              << u8"″/orbit";
-    LOG(INFO) << u8"Δi         = " << std::fixed
+              << "″/orbit";
+    LOG(INFO) << "Δi         = " << std::fixed
               << actual_orbit_error.inclination_drift_per_orbit / ArcSecond
-              << u8"″/orbit";
+              << "″/orbit";
     LOG(INFO)
-        << u8"ΔΩ         = " << std::fixed
+        << "ΔΩ         = " << std::fixed
         << actual_orbit_error.longitude_of_ascending_node_drift_per_orbit /
                ArcSecond
-        << u8"″/orbit";
-    LOG(INFO) << u8"Δω         = " << std::fixed
+        << "″/orbit";
+    LOG(INFO) << "Δω         = " << std::fixed
               << actual_orbit_error.argument_of_periapsis_drift_per_orbit /
                      ArcSecond
-              << u8"″/orbit";
+              << "″/orbit";
 
     auto const& expected_orbit_error =
         expected_planet_orbit_errors.at(planet_or_minor_planet);
@@ -520,19 +519,19 @@ TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
           moon, *ephemeris, solar_system_at_j2000, ten_years_later);
       LOG(INFO) << "separation = " << std::fixed
                 << actual_orbit_error.separation_per_orbit / ArcSecond
-                << u8"″/orbit";
-      LOG(INFO) << u8"Δi         = " << std::fixed
+                << "″/orbit";
+      LOG(INFO) << "Δi         = " << std::fixed
                 << actual_orbit_error.inclination_drift_per_orbit / ArcSecond
-                << u8"″/orbit";
+                << "″/orbit";
       LOG(INFO)
-          << u8"ΔΩ         = " << std::fixed
+          << "ΔΩ         = " << std::fixed
           << actual_orbit_error.longitude_of_ascending_node_drift_per_orbit /
                  ArcSecond
-          << u8"″/orbit";
-      LOG(INFO) << u8"Δω         = " << std::fixed
+          << "″/orbit";
+      LOG(INFO) << "Δω         = " << std::fixed
                 << actual_orbit_error.argument_of_periapsis_drift_per_orbit /
                        ArcSecond
-                << u8"″/orbit";
+                << "″/orbit";
 
       auto const& expected_orbit_error = expected_moon_orbit_errors.at(moon);
       EXPECT_THAT(actual_orbit_error.separation_per_orbit,

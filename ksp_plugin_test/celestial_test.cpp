@@ -1,4 +1,3 @@
-﻿
 #include "ksp_plugin/celestial.hpp"
 
 #include "gmock/gmock.h"

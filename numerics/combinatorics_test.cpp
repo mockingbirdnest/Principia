@@ -1,4 +1,3 @@
-
 #include "numerics/combinatorics.hpp"
 
 #include "gtest/gtest.h"

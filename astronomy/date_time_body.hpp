@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "astronomy/date_time.hpp"

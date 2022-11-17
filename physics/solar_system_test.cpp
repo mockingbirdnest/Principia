@@ -1,4 +1,3 @@
-﻿
 #include "physics/solar_system.hpp"
 
 #include <algorithm>

@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"

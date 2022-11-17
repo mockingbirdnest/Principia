@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "testing_utilities/discrete_trajectory_factories.hpp"
 

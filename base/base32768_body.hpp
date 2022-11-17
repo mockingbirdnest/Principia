@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "base/base32768.hpp"

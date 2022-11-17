@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "astronomy/fortran_astrodynamics_toolkit.hpp"

@@ -1,4 +1,4 @@
-﻿#include "mathematica/mathematica.hpp"
+#include "mathematica/mathematica.hpp"
 
 #include <list>
 #include <string>
@@ -72,10 +72,10 @@ class MathematicaTest : public ::testing::Test {
 TEST_F(MathematicaTest, ToMathematica) {
   {
     EXPECT_EQ(
-        absl::StrReplaceAll(u8"List[α,β,γ]",
-                            {{u8"α", ToMathematica(1 * Metre)},
-                             {u8"β", ToMathematica(2 * Second)},
-                             {u8"γ", ToMathematica(3 * Metre / Second)}}),
+        absl::StrReplaceAll("List[α,β,γ]",
+                            {{"α", ToMathematica(1 * Metre)},
+                             {"β", ToMathematica(2 * Second)},
+                             {"γ", ToMathematica(3 * Metre / Second)}}),
         ToMathematica(std::tuple{1 * Metre, 2 * Second, 3 * Metre / Second}));
   }
   {
@@ -137,25 +137,25 @@ TEST_F(MathematicaTest, ToMathematica) {
   }
   {
     EXPECT_EQ(
-        absl::StrReplaceAll(u8"Quaternion[α,β,γ,δ]",
-                            {{u8"α", ToMathematica(1.0)},
-                             {u8"β", ToMathematica(2.0)},
-                             {u8"γ", ToMathematica(3.0)},
-                             {u8"δ", ToMathematica(-4.0)}}),
+        absl::StrReplaceAll("Quaternion[α,β,γ,δ]",
+                            {{"α", ToMathematica(1.0)},
+                             {"β", ToMathematica(2.0)},
+                             {"γ", ToMathematica(3.0)},
+                             {"δ", ToMathematica(-4.0)}}),
         ToMathematica(Quaternion(1.0, R3Element<double>(2.0, 3.0, -4.0))));
   }
   {
     EXPECT_EQ(absl::StrReplaceAll(u8R"(Quantity[α," m s^-1"])",
-                                  {{u8"α", ToMathematica(1.5)}}),
+                                  {{"α", ToMathematica(1.5)}}),
               ToMathematica(1.5 * Metre / Second));
   }
   {
     DoublePrecision<double> d(3);
     d += 5e-20;
     EXPECT_EQ(absl::StrReplaceAll(
-                  u8"Plus[α,β]",
-                  {{u8"α", ToMathematica(3.0)},
-                   {u8"β", ToMathematica(5e-20)}}),
+                  "Plus[α,β]",
+                  {{"α", ToMathematica(3.0)},
+                   {"β", ToMathematica(5e-20)}}),
               ToMathematica(d));
   }
   {
@@ -230,10 +230,10 @@ TEST_F(MathematicaTest, ToMathematica) {
     PolynomialInMonomialBasis<Length, Time, 2, HornerEvaluator> polynomial1(
         {2 * Metre, -3 * Metre / Second, 4 * Metre / Second / Second});
     EXPECT_EQ(absl::StrReplaceAll(
-                  u8"Function[Plus[α,Times[β,#],Times[γ,Power[#,2]]]]",
-                  {{u8"α", ToMathematica(2 * Metre)},
-                   {u8"β", ToMathematica(-3 * Metre / Second)},
-                   {u8"γ", ToMathematica(4 * Metre / Second / Second)}}),
+                  "Function[Plus[α,Times[β,#],Times[γ,Power[#,2]]]]",
+                  {{"α", ToMathematica(2 * Metre)},
+                   {"β", ToMathematica(-3 * Metre / Second)},
+                   {"γ", ToMathematica(4 * Metre / Second / Second)}}),
               ToMathematica(polynomial1));
     PolynomialInMonomialBasis<Length, Instant, 2, HornerEvaluator> polynomial2(
         {5 * Metre, 6 * Metre / Second, -7 * Metre / Second / Second},
@@ -243,10 +243,10 @@ TEST_F(MathematicaTest, ToMathematica) {
                         α,
                         Times[β,Subtract[#,δ]],
                         Times[γ,Power[Subtract[#,δ],2]]]])",
-                  {{u8"α", ToMathematica(5 * Metre)},
-                   {u8"β", ToMathematica(6 * Metre / Second)},
-                   {u8"γ", ToMathematica(-7 * Metre / Second / Second)},
-                   {u8"δ", ToMathematica(polynomial2.origin())},
+                  {{"α", ToMathematica(5 * Metre)},
+                   {"β", ToMathematica(6 * Metre / Second)},
+                   {"γ", ToMathematica(-7 * Metre / Second / Second)},
+                   {"δ", ToMathematica(polynomial2.origin())},
                    {" ", ""},
                    {"\n", ""}}),
               ToMathematica(polynomial2));
@@ -264,11 +264,11 @@ TEST_F(MathematicaTest, ToMathematica) {
                   α,
                   Times[β,Sin[Times[ω,Subtract[#,δ]]]],
                   Times[γ,Cos[Times[ω,Subtract[#,δ]]]]]])",
-            {{u8"α", ToMathematicaBody(secular, /*express_in=*/std::nullopt)},
-             {u8"β", ToMathematicaBody(sin, /*express_in=*/std::nullopt)},
-             {u8"γ", ToMathematicaBody(cos, /*express_in=*/std::nullopt)},
-             {u8"δ", ToMathematica(t0)},
-             {u8"ω", ToMathematica(4 * Radian / Second)},
+            {{"α", ToMathematicaBody(secular, /*express_in=*/std::nullopt)},
+             {"β", ToMathematicaBody(sin, /*express_in=*/std::nullopt)},
+             {"γ", ToMathematicaBody(cos, /*express_in=*/std::nullopt)},
+             {"δ", ToMathematica(t0)},
+             {"ω", ToMathematica(4 * Radian / Second)},
              {" ", ""},
              {"\n", ""}}),
         ToMathematica(series));
@@ -286,9 +286,9 @@ TEST_F(MathematicaTest, ToMathematica) {
     PiecewiseSeries pw(interval, series);
     EXPECT_EQ(
         absl::StrReplaceAll(
-            u8"Function[Piecewise[List[List[α,Between[#,β]]]]]",
-            {{u8"α", ToMathematicaBody(series, /*express_in=*/std::nullopt)},
-             {u8"β", ToMathematica(std::tuple{interval.min, interval.max})}}),
+            "Function[Piecewise[List[List[α,Between[#,β]]]]]",
+            {{"α", ToMathematicaBody(series, /*express_in=*/std::nullopt)},
+             {"β", ToMathematica(std::tuple{interval.min, interval.max})}}),
         ToMathematica(pw));
   }
   {
@@ -384,13 +384,13 @@ TEST_F(MathematicaTest, Logger) {
   {
     Logger logger(TEMP_DIR / "mathematica_test.wl");
     logger.Append("a", std::vector{1.0, 2.0, 3.0});
-    logger.Append(u8"β", 4 * Metre / Second);
+    logger.Append("β", 4 * Metre / Second);
     logger.Append("a", F::origin);
     logger.Set("c", 5.0);
   }
   // Go check the file.
   EXPECT_EQ(Assign("a", std::tuple{std::vector{1.0, 2.0, 3.0}, F::origin}) +
-                Assign(u8"β", std::tuple{4 * Metre / Second}) +
+                Assign("β", std::tuple{4 * Metre / Second}) +
                 Assign("c", 5.0),
             (std::stringstream{}
              << std::ifstream(TEMP_DIR / "mathematica_test0.wl").rdbuf())

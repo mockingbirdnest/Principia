@@ -1,4 +1,3 @@
-﻿
 // .\Release\x64\benchmarks.exe --benchmark_filter=DynamicFrame --benchmark_repetitions=5  // NOLINT(whitespace/line_length)
 
 #include <memory>

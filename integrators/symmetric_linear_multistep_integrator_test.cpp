@@ -1,4 +1,3 @@
-﻿
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 
 #include <algorithm>

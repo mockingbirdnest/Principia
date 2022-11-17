@@ -1,4 +1,4 @@
-﻿#include "astronomy/orbit_recurrence.hpp"
+#include "astronomy/orbit_recurrence.hpp"
 
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"

@@ -1,4 +1,3 @@
-﻿
 #include "numerics/double_precision.hpp"
 
 #include <limits>

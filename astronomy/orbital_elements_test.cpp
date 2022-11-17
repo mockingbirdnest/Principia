@@ -1,4 +1,4 @@
-﻿#include "astronomy/orbital_elements.hpp"
+#include "astronomy/orbital_elements.hpp"
 
 #include <limits>
 #include <string>

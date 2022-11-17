@@ -1,4 +1,3 @@
-﻿
 #include "testing_utilities/vanishes_before.hpp"
 
 #include <limits>

@@ -1,4 +1,4 @@
-﻿#include "numerics/scale_b.hpp"
+#include "numerics/scale_b.hpp"
 
 namespace principia {
 namespace numerics {

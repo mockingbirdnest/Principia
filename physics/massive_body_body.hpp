@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "physics/massive_body.hpp"

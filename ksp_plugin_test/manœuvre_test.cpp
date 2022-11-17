@@ -1,4 +1,3 @@
-﻿
 #include "ksp_plugin/manœuvre.hpp"
 
 #include "base/not_null.hpp"

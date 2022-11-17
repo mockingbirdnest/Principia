@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "quantities/named_quantities.hpp"

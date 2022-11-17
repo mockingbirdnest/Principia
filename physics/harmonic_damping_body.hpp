@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "physics/harmonic_damping.hpp"
 

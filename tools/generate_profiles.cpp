@@ -1,4 +1,3 @@
-﻿
 #include "tools/generate_profiles.hpp"
 
 #include <filesystem>

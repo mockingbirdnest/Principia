@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "geometry/identity.hpp"
@@ -102,7 +101,7 @@ Identity<FromFrame, ToFrame> operator*(
 template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,
                          Identity<FromFrame, ToFrame> const& identity) {
-  return out << u8"𝟙";
+  return out << "𝟙";
 }
 
 }  // namespace internal_identity

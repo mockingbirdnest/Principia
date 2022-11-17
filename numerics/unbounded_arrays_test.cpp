@@ -1,4 +1,3 @@
-﻿
 #include "numerics/unbounded_arrays.hpp"
 
 #include "gmock/gmock.h"

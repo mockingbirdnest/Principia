@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "base/optional_logging.hpp"

@@ -1,4 +1,3 @@
-﻿
 #include "numerics/чебышёв_series.hpp"
 
 #include "astronomy/frames.hpp"

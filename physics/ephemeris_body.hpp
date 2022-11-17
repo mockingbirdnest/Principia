@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "physics/ephemeris.hpp"
@@ -814,7 +813,7 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   bool const is_pre_grassmann = message.checkpoint_size() == 0;
   LOG_IF(WARNING, is_pre_grassmann)
       << "Reading pre-"
-      << (is_pre_ἐρατοσθένης ? u8"Ἐρατοσθένης"
+      << (is_pre_ἐρατοσθένης ? "Ἐρατοσθένης"
           : is_pre_fatou     ? "Fatou"
                              : "Grassmann") << " Ephemeris";
 

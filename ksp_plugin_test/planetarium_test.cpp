@@ -1,4 +1,3 @@
-﻿
 #include "ksp_plugin/planetarium.hpp"
 
 #include <random>

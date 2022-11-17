@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "quantities/elementary_functions.hpp"

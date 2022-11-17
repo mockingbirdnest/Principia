@@ -1,4 +1,3 @@
-﻿
 #include "mathematica/integrator_plots.hpp"
 
 #include <algorithm>

@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"

@@ -1,4 +1,3 @@
-﻿
 #include <memory>
 
 #include "astronomy/mercury_orbiter.hpp"

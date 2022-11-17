@@ -1,4 +1,3 @@
-﻿
 #include "numerics/fit_hermite_spline.hpp"
 
 #include <list>

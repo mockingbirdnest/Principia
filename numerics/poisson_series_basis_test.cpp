@@ -1,4 +1,3 @@
-﻿
 #include "numerics/poisson_series_basis.hpp"
 
 #include "geometry/frame.hpp"

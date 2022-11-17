@@ -1,4 +1,3 @@
-﻿
 #include "journal/recorder.hpp"
 
 #include <filesystem>

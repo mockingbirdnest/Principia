@@ -1,4 +1,3 @@
-﻿
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=Ephemeris                                                                     // NOLINT(whitespace/line_length)
 
 #include <cmath>

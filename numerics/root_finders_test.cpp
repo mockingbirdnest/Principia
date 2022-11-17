@@ -1,4 +1,3 @@
-﻿
 #include "numerics/root_finders.hpp"
 
 #include <functional>

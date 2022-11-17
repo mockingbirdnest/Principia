@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "physics/euler_solver.hpp"

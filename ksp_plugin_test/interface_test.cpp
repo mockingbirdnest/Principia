@@ -1,4 +1,3 @@
-﻿
 #include "ksp_plugin/interface.hpp"
 
 #include <limits>
@@ -343,7 +342,7 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
                                           "666 km",
                                           "700 km",
                                           "42 deg",
-                                          u8"8°",
+                                          "8°",
                                           "2 rad",
                                           "0.3 rad / d",
                                           "1000 km",
@@ -413,7 +412,7 @@ TEST_F(InterfaceTest, InsertGeopotentialCelestialAbsoluteCartesian) {
                                           "666 km",
                                           "700 km",
                                           "42 deg",
-                                          u8"8°",
+                                          "8°",
                                           "2 rad",
                                           "0.3 rad / d",
                                           "1000 km",

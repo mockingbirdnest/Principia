@@ -1,4 +1,3 @@
-﻿
 #include "ksp_plugin/pile_up.hpp"
 
 #include <algorithm>
@@ -237,7 +236,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
   LOG_IF(WARNING, is_pre_hamilton)
       << "Reading pre-"
       << (is_pre_cartan      ? "Cartan"
-          : is_pre_cesàro    ? u8"Cesàro"
+          : is_pre_cesàro    ? "Cesàro"
           : is_pre_frege     ? "Frege"
           : is_pre_frobenius ? "Frobenius"
                              : "Hamilton") << " PileUp";

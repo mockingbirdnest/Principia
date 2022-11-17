@@ -1,4 +1,3 @@
-
 #include "geometry/traits.hpp"
 
 #include "geometry/frame.hpp"

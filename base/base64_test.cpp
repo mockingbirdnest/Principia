@@ -1,4 +1,3 @@
-
 #include "base/base64.hpp"
 
 #include <string>

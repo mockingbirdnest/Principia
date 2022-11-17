@@ -1,4 +1,3 @@
-﻿
 #include "physics/body_surface_frame_field.hpp"
 
 #include "astronomy/epoch.hpp"

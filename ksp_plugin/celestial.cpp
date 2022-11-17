@@ -1,4 +1,4 @@
-﻿#include "ksp_plugin/celestial.hpp"
+#include "ksp_plugin/celestial.hpp"
 
 #include <utility>
 

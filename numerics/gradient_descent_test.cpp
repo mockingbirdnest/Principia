@@ -1,4 +1,4 @@
-﻿#include "numerics/gradient_descent.hpp"
+#include "numerics/gradient_descent.hpp"
 
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"

@@ -1,4 +1,3 @@
-
 #pragma once
 
 // This code is a straightforward translation of Jacob Williams' implementation

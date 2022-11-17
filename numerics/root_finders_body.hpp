@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "numerics/root_finders.hpp"
@@ -42,8 +41,8 @@ Argument Bisect(Function f,
     return lower_bound;
   }
   CHECK_NE(Sign(f_lower), Sign(f_upper))
-      << "\nlower: " << lower_bound << u8" ↦ " << f_lower << ", "
-      << "\nupper: " << upper_bound << u8" ↦ " << f_upper;
+      << "\nlower: " << lower_bound << " ↦ " << f_lower << ", "
+      << "\nupper: " << upper_bound << " ↦ " << f_upper;
   Argument lower = lower_bound;
   Argument upper = upper_bound;
   for (;;) {
@@ -97,8 +96,8 @@ Argument Brent(Function f,
     return b;
   }
   CHECK_NE(Sign(f_a), Sign(f_b))
-      << "\nlower: " << lower_bound << u8" ↦ " << f_a << ", "
-      << "\nupper: " << upper_bound << u8" ↦ " << f_b;
+      << "\nlower: " << lower_bound << " ↦ " << f_a << ", "
+      << "\nupper: " << upper_bound << " ↦ " << f_b;
 
   for (;;) {
     c = a;

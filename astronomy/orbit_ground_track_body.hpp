@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "astronomy/orbit_ground_track.hpp"
 

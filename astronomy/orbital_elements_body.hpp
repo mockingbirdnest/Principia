@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "astronomy/orbital_elements.hpp"
 

@@ -1,4 +1,3 @@
-﻿
 #include <utility>
 
 #include "quantities/elementary_functions.hpp"

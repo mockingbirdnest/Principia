@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "testing_utilities/numerics.hpp"

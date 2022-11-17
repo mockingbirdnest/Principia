@@ -1,4 +1,3 @@
-﻿
 #include "geometry/rotation.hpp"
 
 #include "geometry/frame.hpp"

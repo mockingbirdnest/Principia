@@ -1,4 +1,3 @@
-﻿
 #include "physics/body_surface_dynamic_frame.hpp"
 
 #include <memory>

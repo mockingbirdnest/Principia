@@ -1,4 +1,3 @@
-
 #include "numerics/polynomial_evaluators.hpp"
 
 #include <cstddef>

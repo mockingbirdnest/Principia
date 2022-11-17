@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "numerics/matrix_computations.hpp"

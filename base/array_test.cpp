@@ -1,4 +1,3 @@
-
 #include "base/array.hpp"
 
 #include <string>

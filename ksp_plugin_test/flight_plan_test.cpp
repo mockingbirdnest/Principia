@@ -1,4 +1,3 @@
-﻿
 #include "ksp_plugin/flight_plan.hpp"
 
 #include <limits>

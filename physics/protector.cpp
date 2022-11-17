@@ -1,4 +1,3 @@
-
 #include "physics/protector.hpp"
 
 #include <optional>

@@ -1,4 +1,3 @@
-﻿
 #include "testing_utilities/componentwise.hpp"
 
 #include <limits>

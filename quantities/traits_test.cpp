@@ -1,4 +1,3 @@
-
 #include "quantities/traits.hpp"
 
 #include "gtest/gtest.h"

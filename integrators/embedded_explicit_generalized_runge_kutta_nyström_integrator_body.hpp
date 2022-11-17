@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"

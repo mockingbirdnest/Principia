@@ -1,4 +1,3 @@
-﻿
 #include <algorithm>
 #include <chrono>
 #include <iomanip>
@@ -405,9 +404,9 @@ void Population::TraceNewBestGenome(Genome const& genome) const {
                       *best_genome_->elements()[j].argument_of_periapsis +
                       *best_genome_->elements()[j].mean_anomaly),
                      2 * π * Radian) / Degree)
-          << u8"°\n";
+          << "°\n";
 
-      file_ << u8"   ΔL = "
+      file_ << "   ΔL = "
             << absl::StrCat(
                    ((genome.elements()[j].longitude_of_ascending_node +
                      *genome.elements()[j].argument_of_periapsis +
@@ -415,7 +414,7 @@ void Population::TraceNewBestGenome(Genome const& genome) const {
                     (best_genome_->elements()[j].longitude_of_ascending_node +
                      *best_genome_->elements()[j].argument_of_periapsis +
                      *best_genome_->elements()[j].mean_anomaly)) / Degree)
-            << u8"°\n";
+            << "°\n";
     }
     file_ << "new L = "
           << absl::StrCat(
@@ -423,11 +422,11 @@ void Population::TraceNewBestGenome(Genome const& genome) const {
                       *genome.elements()[j].argument_of_periapsis +
                       *genome.elements()[j].mean_anomaly),
                      2 * π * Radian) / Degree)
-          << u8"°\n";
+          << "°\n";
     if (best_genome_) {
       file_ << "old e = "
             << absl::StrCat(*best_genome_->elements()[j].eccentricity) << "\n";
-      file_ << u8"   Δe = "
+      file_ << "   Δe = "
             << absl::StrCat(*genome.elements()[j].eccentricity -
                             *best_genome_->elements()[j].eccentricity)
             << "\n";
@@ -438,7 +437,7 @@ void Population::TraceNewBestGenome(Genome const& genome) const {
       file_ << "old T = "
             << absl::StrCat(*best_genome_->elements()[j].period / Day)
             << " d\n";
-      file_ << u8"   ΔT = "
+      file_ << "   ΔT = "
             << absl::StrCat((*genome.elements()[j].period -
                              *best_genome_->elements()[j].period) / Second)
             << " s\n";
@@ -1091,8 +1090,8 @@ class TrappistDynamicsTest : public ::testing::Test {
             Pow<2>(error / observed_transit.standard_uncertainty);
       }
     }
-    info = u8"max Δt = " + std::to_string(max_Δt / Second) + " s (" +
-           transit_with_max_Δt + u8") avg Δt = " +
+    info = "max Δt = " + std::to_string(max_Δt / Second) + " s (" +
+           transit_with_max_Δt + ") avg Δt = " +
            std::to_string(total_Δt / number_of_observations / Second) + " s";
     return sum_of_squared_errors;
   }
@@ -1114,7 +1113,7 @@ class TrappistDynamicsTest : public ::testing::Test {
     // For some combinations we get an apocalyse.  In this case the dispersion
     // is infinite.
     if (!ephemeris->last_severe_integration_status().ok()) {
-      info = u8"ἀποκάλυψις";
+      info = "ἀποκάλυψις";
       return std::numeric_limits<double>::infinity();
     }
 
@@ -1132,7 +1131,7 @@ class TrappistDynamicsTest : public ::testing::Test {
 
     std::string χ²_info;
     double const χ² = Transitsχ²(observations, computations, χ²_info);
-    info = u8"χ² = " + std::to_string(χ²) + " " + χ²_info;
+    info = "χ² = " + std::to_string(χ²) + " " + χ²_info;
     return χ²;
   }
 
@@ -1220,7 +1219,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_MathematicaTransits) {
     std::string info;
     double const χ² = Transitsχ²(observations, computations, info);
     EXPECT_THAT(χ², AllOf(Gt(358.0), Lt(359.0)));
-    LOG(ERROR) << u8"χ²: " << χ² << " " << info;
+    LOG(ERROR) << "χ²: " << χ² << " " << info;
     ++index;
   }
 }
@@ -1298,7 +1297,7 @@ TEST_F(TrappistDynamicsTest, PlanetBPlanetDAlignment) {
         InnerProduct(home_star, planet_b_star) > 0.0 * Metre * Metre &&
         InnerProduct(home_star, planet_d_star) > 0.0 * Metre * Metre;
     if (in_front && angle < min_angle) {
-      LOG(ERROR) << "Time: " << t << ", Angle: " << angle / Degree << u8"°";
+      LOG(ERROR) << "Time: " << t << ", Angle: " << angle / Degree << "°";
       min_angle = angle;
     }
   }

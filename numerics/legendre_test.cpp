@@ -1,4 +1,3 @@
-
 #include "numerics/legendre.hpp"
 
 #include "gtest/gtest.h"
@@ -35,4 +34,3 @@ TEST_F(LegendreTest, P16) {
 }  // namespace internal_legendre
 }  // namespace numerics
 }  // namespace principia
-

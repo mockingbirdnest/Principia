@@ -1,4 +1,3 @@
-﻿
 // The files containing the tree of child classes of |Body| must be included in
 // the order of inheritance to avoid circular dependencies.
 #ifndef PRINCIPIA_PHYSICS_BODY_HPP_

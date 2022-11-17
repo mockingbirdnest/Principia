@@ -1,4 +1,3 @@
-﻿
 #include "numerics/finite_difference.hpp"
 
 #include <vector>

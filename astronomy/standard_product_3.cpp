@@ -1,4 +1,4 @@
-﻿#include "astronomy/standard_product_3.hpp"
+#include "astronomy/standard_product_3.hpp"
 
 #include <algorithm>
 #include <fstream>
@@ -202,16 +202,16 @@ StandardProduct3::StandardProduct3(
     read_line();
   }
   if (number_of_satellite_id_records < 5) {
-    LOG(FATAL) << u8"at least 5 +␣ records expected: " << location;
+    LOG(FATAL) << "at least 5 +␣ records expected: " << location;
   }
   if (version_ < Version::D && number_of_satellite_id_records > 5) {
     if (dialect == Dialect::ChineseMGEX) {
       CHECK_EQ(number_of_satellite_id_records, 10)
-          << u8"exactly 10 +␣ records expected in the " << dialect << ": "
+          << "exactly 10 +␣ records expected in the " << dialect << ": "
           << location;
     } else {
       CHECK_EQ(number_of_satellite_id_records, 5)
-          << u8"exactly 5 +␣ records expected in SP3-" << version_ << ": "
+          << "exactly 5 +␣ records expected in SP3-" << version_ << ": "
           << location;
     }
   }

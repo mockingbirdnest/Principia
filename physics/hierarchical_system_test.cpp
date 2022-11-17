@@ -1,4 +1,3 @@
-﻿
 #include "hierarchical_system.hpp"
 
 #include <algorithm>

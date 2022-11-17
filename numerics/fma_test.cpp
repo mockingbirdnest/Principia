@@ -1,4 +1,3 @@
-﻿
 #include "numerics/fma.hpp"
 
 #include "glog/logging.h"

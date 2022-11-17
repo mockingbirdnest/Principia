@@ -1,4 +1,3 @@
-﻿
 #include <limits>
 
 #include "astronomy/frames.hpp"

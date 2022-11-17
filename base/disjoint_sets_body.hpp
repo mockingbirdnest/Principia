@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 #include "base/disjoint_sets.hpp"

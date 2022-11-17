@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "mathematica/local_error_analysis.hpp"

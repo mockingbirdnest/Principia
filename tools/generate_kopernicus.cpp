@@ -1,4 +1,3 @@
-﻿
 #include "tools/generate_kopernicus.hpp"
 
 #include <filesystem>

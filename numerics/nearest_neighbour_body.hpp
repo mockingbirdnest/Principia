@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "numerics/nearest_neighbour.hpp"
 

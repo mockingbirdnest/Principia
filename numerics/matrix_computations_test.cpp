@@ -1,4 +1,3 @@
-﻿
 #include "numerics/matrix_computations.hpp"
 
 #include <tuple>

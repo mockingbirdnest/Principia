@@ -1,4 +1,3 @@
-﻿
 #pragma once
 
 // We use ostream for logging purposes.
