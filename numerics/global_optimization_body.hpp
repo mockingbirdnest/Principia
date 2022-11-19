@@ -92,7 +92,7 @@ MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
       points.push_back(std::move(pointₖ));
       Argument const* const pointₖ_pointer = &points.back();
       point_neighbourhoods.Add(pointₖ_pointer);
-      schedule.emplace(Infinity<NormType>, pointₖ_pointer);
+      schedule.emplace_hint(schedule.end(), Infinity<NormType>, pointₖ_pointer);
     }
 
     // Compute the radius below which we won't do a local search in this
@@ -104,31 +104,13 @@ MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
     for (auto it = schedule.upper_bound(rₖ); it != schedule.end();) {
       Argument const& xᵢ = *it->second;
       auto* const xⱼ = point_neighbourhoods.FindNearestNeighbour(
-          xᵢ, [this, f_xᵢ = f_(xᵢ)](Argument const* const xⱼ) {
-            return f_(*xⱼ) < f_xᵢ;
+          xᵢ, [this, f_xᵢ = f_(xᵢ), rₖ, xᵢ](Argument const* const xⱼ) {
+            return (xᵢ - *xⱼ).Norm() <= rₖ && f_(*xⱼ) < f_xᵢ;
           });
 
-      // Decide if we must perform a local search.  If not, move the point xᵢ
-      // down in the |schedule| map, based on the distance to its nearest
-      // neighbour.
-      bool must_perform_local_search;
       if (xⱼ == nullptr) {
-        must_perform_local_search = true;
-      } else {
-        auto const distance_to_xⱼ = (xᵢ - *xⱼ).Norm();
-        if (distance_to_xⱼ <= rₖ) {
-          it = schedule.erase(it);
-          // The point xᵢ "moves down" in the map, so this insertion doesn't
-          // affect the current iteration.
-          schedule.emplace(distance_to_xⱼ, &xᵢ);
-          must_perform_local_search = false;
-        } else {
-          must_perform_local_search = true;
-        }
-      }
-
-      // Do the local search and record the new stationary point if needed.
-      if (must_perform_local_search) {
+        // We must do a local search as the point xᵢ couldn't be added to an
+        // existing cluster.
         ++it;
         ++number_of_local_searches;
         auto const stationary_point = BroydenFletcherGoldfarbShanno(
@@ -143,6 +125,15 @@ MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
               std::make_unique<Argument>(stationary_point));
           stationary_point_neighbourhoods.Add(stationary_points.back().get());
         }
+      } else {
+        // Move the point xᵢ "down" in the |schedule| map, based on the distance
+        // to its nearest neighbour.
+        auto const distance_to_xⱼ = (xᵢ - *xⱼ).Norm();
+        DCHECK_LE(distance_to_xⱼ, rₖ);
+        it = schedule.erase(it);
+        // This insertion take places below |schedule.upper_bound(rₖ)|, so it
+        // doesn't affect the current iteration.
+        schedule.emplace(distance_to_xⱼ, &xᵢ);
       }
     }
   }
