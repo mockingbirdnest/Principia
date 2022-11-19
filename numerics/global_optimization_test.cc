@@ -31,7 +31,6 @@ using testing_utilities::Componentwise;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeErrorFrom;
 using testing_utilities::operator""_;
-using ::testing::Lt;
 using ::testing::ElementsAre;
 
 // The test functions in this file are from
@@ -123,16 +122,18 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
   EXPECT_EQ(3803, gradient_invocations);
   EXPECT_THAT(
       minima,
-      ElementsAre(
-          Componentwise(AbsoluteErrorFrom(0 * Metre, Lt(7.6e-7 * Metre)),
-                        AbsoluteErrorFrom(0 * Metre, Lt(5.3e-8 * Metre)),
-                        RelativeErrorFrom(-1 * Metre, Lt(3.8e-8))),
-          Componentwise(AbsoluteErrorFrom(0 * Metre, Lt(5.6e-8 * Metre)),
-                        RelativeErrorFrom(-0.6 * Metre, Lt(6.8e-10)),
-                        RelativeErrorFrom(-0.4 * Metre, Lt(1.1e-9))),
-          Componentwise(AbsoluteErrorFrom(0 * Metre, Lt(5.6e-8 * Metre)),
-                        RelativeErrorFrom(1.8 * Metre, Lt(1.8e-10)),
-                        RelativeErrorFrom(0.2 * Metre, Lt(7.0e-10)))));
+      ElementsAre(Componentwise(
+                      AbsoluteErrorFrom(0 * Metre, IsNear(7.6e-7_(1) * Metre)),
+                      AbsoluteErrorFrom(0 * Metre, IsNear(5.3e-8_(1) * Metre)),
+                      RelativeErrorFrom(-1 * Metre, IsNear(3.8e-8_(1)))),
+                  Componentwise(
+                      AbsoluteErrorFrom(0 * Metre, IsNear(5.6e-8_(1) * Metre)),
+                      RelativeErrorFrom(-0.6 * Metre, IsNear(6.8e-10_(1))),
+                      RelativeErrorFrom(-0.4 * Metre, IsNear(1.1e-9_(1)))),
+                  Componentwise(
+                      AbsoluteErrorFrom(0 * Metre, IsNear(5.6e-8_(1) * Metre)),
+                      RelativeErrorFrom(1.8 * Metre, IsNear(1.8e-10_(1))),
+                      RelativeErrorFrom(0.2 * Metre, IsNear(7.0e-10_(1))))));
 }
 
 }  // namespace numerics
