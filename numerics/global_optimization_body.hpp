@@ -2,6 +2,7 @@
 
 #include "numerics/global_optimization.hpp"
 
+#include <map>
 #include <utility>
 #include <vector>
 
@@ -80,6 +81,7 @@ MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
   // happens.  Each time through the outer loop, only the points in the upper
   // half of the map (distance greater than rₖ) are considered, and they are
   // moved down if a "too close" neighbour is found.
+  // We modify this map while iterating so we need iterator stability.
   std::multimap<NormType, Argument const*> schedule;
 
   for (std::int64_t k = 1; k <= number_of_rounds; ++k) {
