@@ -195,7 +195,7 @@ typename Hilbert<Difference<Argument>>::NormType
 MultiLevelSingleLinkage<Scalar, Argument>::CriticalRadius(
     double const σ,
     std::int64_t const kN) {
-  return Cbrt(3.0 * box_measure_ * std::log(kN) / (4.0 * π * kN));
+  return Cbrt(3.0 * box_measure_ * σ * std::log(kN) / (4.0 * π * kN));
 }
 
 }  // namespace internal_global_optimization
