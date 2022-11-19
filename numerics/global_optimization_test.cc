@@ -119,7 +119,7 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
                                                  /*number_of_rounds=*/10,
                                                  tolerance);
 
-  EXPECT_EQ(32278, function_invocations);
+  EXPECT_EQ(21203, function_invocations);
   EXPECT_EQ(17293, gradient_invocations);
   EXPECT_THAT(
       minima,

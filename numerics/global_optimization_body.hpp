@@ -15,6 +15,7 @@ namespace internal_global_optimization {
 using geometry::Barycentre;
 using geometry::Wedge;
 using quantities::Cbrt;
+using quantities::Infinity;
 
 // TODO(phl): Provide a way to parameterize the PCP trees?
 constexpr int64_t pcp_tree_max_values_per_cell = 10;
@@ -70,25 +71,66 @@ MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
       /*values=*/{},
       pcp_tree_max_values_per_cell);
 
+  int number_of_local_searches = 0;
+
+  // This structure corresponds to the list T in [RT87b].  Points are ordered
+  // based on their distance to their nearest neighbour that has a lower value
+  // of |f_|.  When new points are added to the map, they are initially given
+  // the key |Infinity|, which is then refined when the nearest neighbour search
+  // happens.  Each time through the outer loop, only the points in the upper
+  // half of the map (distance greater than rₖ) are considered, and they are
+  // moved down if a "too close" neighbour is found.
+  std::multimap<NormType, Argument const*> schedule;
+
   // TODO(phl): This is quadratic.  Make the algorithm linear once we believe
   // that it is correct.
   for (std::int64_t k = 1; k <= number_of_rounds; ++k) {
-    // Generate N new random points and add them to the PCP tree.
+    // Generate N new random points and add them to the PCP tree and to the
+    // |schedule| map.
     std::vector<Argument> pointsₖ = RandomArguments(N);
     for (auto& pointₖ : pointsₖ) {
       points.push_back(std::move(pointₖ));
-      point_neighbourhoods.Add(&points.back());
+      Argument const* const pointₖ_pointer = &points.back();
+      point_neighbourhoods.Add(pointₖ_pointer);
+      schedule.emplace(Infinity<NormType>, pointₖ_pointer);
     }
 
+    // Compute the radius below which we won't do a local search in this
+    // iteration.
     auto const rₖ = CriticalRadius(/*σ=*/4, /*kN=*/k * N);
 
-    for (auto& xᵢ : points) {
+    // Process the points whose nearest neighbour is "sufficiently far" (or
+    // unknown).
+    for (auto it = schedule.upper_bound(rₖ); it != schedule.end();) {
+      Argument const& xᵢ = *it->second;
       auto* const xⱼ = point_neighbourhoods.FindNearestNeighbour(
           xᵢ, [this, f_xᵢ = f_(xᵢ)](Argument const* const xⱼ) {
             return f_(*xⱼ) < f_xᵢ;
           });
 
-      if (xⱼ == nullptr || (xᵢ - *xⱼ).Norm() > rₖ) {
+      // Decide if we must perform a local search.  If not, move the point xᵢ
+      // down in the |schedule| map, based on the distance to its nearest
+      // neighbour.
+      bool must_perform_local_search;
+      if (xⱼ == nullptr) {
+        must_perform_local_search = true;
+      } else {
+        auto const distance_to_xⱼ = (xᵢ - *xⱼ).Norm();
+        if (distance_to_xⱼ <= rₖ) {
+          it = schedule.erase(it);
+          // The point xᵢ "moves down" in the map, so this insertion doesn't
+          // affect the current iteration.
+          schedule.emplace(distance_to_xⱼ, &xᵢ);
+          must_perform_local_search = false;
+        } else {
+          must_perform_local_search = true;
+        }
+      }
+
+      // Do the local search and record the new stationary point if needed.
+      if (must_perform_local_search) {
+        ++it;
+        ++number_of_local_searches;
         auto const stationary_point = BroydenFletcherGoldfarbShanno(
             xᵢ, f_, grad_f_, local_search_tolerance);
 
@@ -104,6 +146,8 @@ MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
       }
     }
   }
+
+  DLOG(ERROR) << "Number of local searches: " << number_of_local_searches;
 
   std::vector<Argument> result;
   result.reserve(stationary_points.size());
