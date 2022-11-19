@@ -82,11 +82,15 @@ MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
   // moved down if a "too close" neighbour is found.
   std::multimap<NormType, Argument const*> schedule;
 
-  // TODO(phl): This is quadratic.  Make the algorithm linear once we believe
-  // that it is correct.
   for (std::int64_t k = 1; k <= number_of_rounds; ++k) {
     // Generate N new random points and add them to the PCP tree and to the
-    // |schedule| map.
+    // |schedule| map.  Note that while [RT87b] tells us in the description of
+    // algorithm A that "it is no longer necessary to reduce the sample" they
+    // also tell us in section 4 that they reduce the sample using γ = 0.1.
+    // Also, [KS05] reduce the sample, but they don't seem to agree on whether
+    // rₖ depends on γ.
+    // Anyway, reducing the sample would be annoying with our data structures,
+    // so let's go there, 'tis a silly place.
     std::vector<Argument> pointsₖ = RandomArguments(N);
     for (auto& pointₖ : pointsₖ) {
       points.push_back(std::move(pointₖ));
@@ -111,7 +115,6 @@ MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
       if (xⱼ == nullptr) {
         // We must do a local search as the point xᵢ couldn't be added to an
         // existing cluster.
-        ++it;
         ++number_of_local_searches;
         auto const stationary_point = BroydenFletcherGoldfarbShanno(
             xᵢ, f_, grad_f_, local_search_tolerance);
@@ -125,6 +128,9 @@ MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
               std::make_unique<Argument>(stationary_point));
           stationary_point_neighbourhoods.Add(stationary_points.back().get());
         }
+        // A local search has been started from xᵢ, so no point in considering
+        // it again.
+        it = schedule.erase(it);
       } else {
         // Move the point xᵢ "down" in the |schedule| map, based on the distance
         // to its nearest neighbour.
