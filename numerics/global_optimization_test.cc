@@ -31,7 +31,7 @@ using testing_utilities::Componentwise;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeErrorFrom;
 using testing_utilities::operator""_;
-using ::testing::ElementsAre;
+using ::testing::UnorderedElementsAre;
 
 // The test functions in this file are from
 // https://www.sfu.ca/~ssurjano/optimization.html.
@@ -120,9 +120,9 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
 
   EXPECT_EQ(2740, function_invocations);
   EXPECT_EQ(1813, gradient_invocations);
-  EXPECT_THAT(
-      minima,
-      ElementsAre(Componentwise(
+  EXPECT_THAT(minima,
+              UnorderedElementsAre(
+                  Componentwise(
                       AbsoluteErrorFrom(0 * Metre, IsNear(7.6e-7_(1) * Metre)),
                       AbsoluteErrorFrom(0 * Metre, IsNear(5.3e-8_(1) * Metre)),
                       RelativeErrorFrom(-1 * Metre, IsNear(3.8e-8_(1)))),

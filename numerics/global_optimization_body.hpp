@@ -90,7 +90,7 @@ MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
     // Also, [KS05] reduce the sample, but they don't seem to agree on whether
     // rₖ depends on γ.
     // Anyway, reducing the sample would be annoying with our data structures,
-    // so let's go there, 'tis a silly place.
+    // so let's not go there, 'tis a silly place.
     std::vector<Argument> pointsₖ = RandomArguments(N);
     for (auto& pointₖ : pointsₖ) {
       points.push_back(std::move(pointₖ));
@@ -113,8 +113,8 @@ MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
           });
 
       if (xⱼ == nullptr) {
-        // We must do a local search as the point xᵢ couldn't be added to an
-        // existing cluster.
+        // We must do a local search as xᵢ couldn't be added to an existing
+        // cluster.
         ++number_of_local_searches;
         auto const stationary_point = BroydenFletcherGoldfarbShanno(
             xᵢ, f_, grad_f_, local_search_tolerance);
