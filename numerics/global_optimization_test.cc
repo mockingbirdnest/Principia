@@ -31,7 +31,6 @@ using testing_utilities::Componentwise;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeErrorFrom;
 using testing_utilities::operator""_;
-using ::testing::Lt;
 using ::testing::UnorderedElementsAre;
 
 // The test functions in this file are from
@@ -119,23 +118,22 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
                                                  /*number_of_rounds=*/10,
                                                  tolerance);
 
-  EXPECT_EQ(32278, function_invocations);
-  EXPECT_EQ(17293, gradient_invocations);
-  EXPECT_THAT(
-      minima,
-      UnorderedElementsAre(
-          Componentwise(AbsoluteErrorFrom(0 * Metre, Lt(9.9e-8 * Metre)),
-                        AbsoluteErrorFrom(0 * Metre, Lt(1.5e-7 * Metre)),
-                        RelativeErrorFrom(-1 * Metre, Lt(8.0e-8))),
-          Componentwise(AbsoluteErrorFrom(0 * Metre, Lt(5.6e-8 * Metre)),
-                        RelativeErrorFrom(-0.6 * Metre, Lt(6.8e-10)),
-                        RelativeErrorFrom(-0.4 * Metre, Lt(1.1e-9))),
-          Componentwise(AbsoluteErrorFrom(0 * Metre, Lt(9.4e-8 * Metre)),
-                        RelativeErrorFrom(1.2 * Metre, Lt(2.8e-9)),
-                        RelativeErrorFrom(0.8 * Metre, Lt(3.0e-9))),
-          Componentwise(AbsoluteErrorFrom(0 * Metre, Lt(4.9e-7 * Metre)),
-                        RelativeErrorFrom(1.8 * Metre, Lt(1.4e-7)),
-                        RelativeErrorFrom(0.2 * Metre, Lt(5.0e-7)))));
+  EXPECT_EQ(2740, function_invocations);
+  EXPECT_EQ(1813, gradient_invocations);
+  EXPECT_THAT(minima,
+              UnorderedElementsAre(
+                  Componentwise(
+                      AbsoluteErrorFrom(0 * Metre, IsNear(7.6e-7_(1) * Metre)),
+                      AbsoluteErrorFrom(0 * Metre, IsNear(5.3e-8_(1) * Metre)),
+                      RelativeErrorFrom(-1 * Metre, IsNear(3.8e-8_(1)))),
+                  Componentwise(
+                      AbsoluteErrorFrom(0 * Metre, IsNear(5.6e-8_(1) * Metre)),
+                      RelativeErrorFrom(-0.6 * Metre, IsNear(6.8e-10_(1))),
+                      RelativeErrorFrom(-0.4 * Metre, IsNear(1.1e-9_(1)))),
+                  Componentwise(
+                      AbsoluteErrorFrom(0 * Metre, IsNear(5.6e-8_(1) * Metre)),
+                      RelativeErrorFrom(1.8 * Metre, IsNear(1.8e-10_(1))),
+                      RelativeErrorFrom(0.2 * Metre, IsNear(7.0e-10_(1))))));
 }
 
 }  // namespace numerics
