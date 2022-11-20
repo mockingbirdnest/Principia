@@ -1,9 +1,11 @@
 #pragma once
 
 #include <functional>
+#include <optional>
 #include <random>
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "geometry/hilbert.hpp"
 #include "numerics/nearest_neighbour.hpp"
 #include "quantities/named_quantities.hpp"
@@ -13,6 +15,7 @@ namespace principia {
 namespace numerics {
 namespace internal_global_optimization {
 
+using base::not_null;
 using geometry::Hilbert;
 using quantities::Cube;
 using quantities::Difference;
@@ -54,11 +57,18 @@ class MultiLevelSingleLinkage {
       Field<Scalar, Argument> const& f,
       Field<Gradient<Scalar, Argument>, Argument> const& grad_f);
 
-  std::vector<Argument> FindGlobalMinima(std::int64_t points_per_round,
-                                         std::int64_t number_of_rounds,
-                                         NormType local_search_tolerance);
+  //TODO(phl)comment
+  std::vector<Argument> FindGlobalMinima(
+      std::int64_t points_per_round,
+      std::optional<std::int64_t> number_of_rounds,
+      NormType local_search_tolerance);
 
  private:
+  // We need pointer stability for the arguments as we store pointer, e.g., in
+  // PCP trees.  We generally cannot |reserve| because we don't know the final
+  // size of the vector, hence the |unique_ptr|s.
+  using Arguments = std::vector<not_null<std::unique_ptr<Argument>>>;
+
   // Returns true iff the given |stationary_point| is sufficiently far from the
   // ones already in |stationary_point_neighbourhoods|.
   static bool IsNewStationaryPoint(
@@ -68,7 +78,7 @@ class MultiLevelSingleLinkage {
       NormType local_search_tolerance);
 
   // Returns a vector of size |values_per_round|.  The points are in |box_|.
-  std::vector<Argument> RandomArguments(std::int64_t values_per_round);
+  Arguments RandomArguments(std::int64_t values_per_round);
 
   // Returns the radius rₖ from [RT87a], eqn. 35, specialized for 3 dimensions.
   NormType CriticalRadius(double σ, std::int64_t kN);

@@ -8,15 +8,18 @@
 
 #include "geometry/barycentre_calculator.hpp"
 #include "numerics/gradient_descent.hpp"
+#include "quantities/elementary_functions.hpp"
 
 namespace principia {
 namespace numerics {
 namespace internal_global_optimization {
 
+using base::make_not_null_unique;
 using geometry::Barycentre;
 using geometry::Wedge;
 using quantities::Cbrt;
 using quantities::Infinity;
+using quantities::Pow;
 
 // TODO(phl): Provide a way to parameterize the PCP trees?
 constexpr int64_t pcp_tree_max_values_per_cell = 10;
@@ -46,14 +49,14 @@ template<typename Scalar, typename Argument>
 std::vector<Argument>
 MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
     std::int64_t const points_per_round,
-    std::int64_t const number_of_rounds,
+    std::optional<std::int64_t> const number_of_rounds,
     NormType const local_search_tolerance) {
-  const std::int64_t N = points_per_round;
+  // This is the set X* from [RT87b].
+  Arguments stationary_points;
 
-  // This is the set X* from [RT87b].  It contains |unique_ptr|s because we need
-  // pointer stability for the PCP tree but we cannot precompute the vector
-  // size.
-  std::vector<std::unique_ptr<Argument>> stationary_points;
+  // The sample points.  We'll have at least |points_per_round| points.
+  Arguments points;
+  points.reserve(points_per_round);
 
   // The PCP tree used for detecting proximity of the stationary points.  It
   // gets updated as new stationary points are found.
@@ -61,10 +64,6 @@ MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
       /*values=*/{},
       pcp_tree_max_values_per_cell);
 
-  // The sample points.  Make sure that pointers don't get invalidated as new
-  // points are added.
-  std::vector<Argument> points;
-  points.reserve(N * number_of_rounds);
 
   // The PCP tree used for detecting proximity of the sample points .  It gets
   // updated as new points are generated.
@@ -84,7 +83,49 @@ MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
   // We modify this map while iterating so we need iterator stability.
   std::multimap<NormType, Argument const*> schedule;
 
-  for (std::int64_t k = 1; k <= number_of_rounds; ++k) {
+  // There are two ways to iterate through this loop, corresponding to different
+  // termination conditions.  We can either do a fixed number of rounds with a
+  // fixed number of points each, as described in the bulk of [RT87a] and
+  // [RT87b]; or we can use the optimal Bayesian stopping rule described in
+  // proposition 2 of [RT87a] and equations (3) and (4) of [RT87b].  For
+  // consistency with most of the description in [RT87a] and [RT87b], we call
+  // |N| the number of points add in a particular iteration and |kN| the total
+  // number of sampling points so far, even if |N| varies from one iteration to
+  // the next and |kN| is not necessarily |k * N|.
+  std::int64_t number_of_points_all_rounds;
+  std::int64_t number_of_points_this_round;
+  std::int64_t round = 1;
+  auto& kN = number_of_points_all_rounds;
+  auto& N = number_of_points_this_round;
+  for (auto& k = round;; ++k) {
+    if (k == 1) {
+      N = points_per_round;
+      kN = N;
+    } else if (number_of_rounds.has_value()) {
+      if (k > number_of_rounds.value()) {
+        break;
+      } else {
+        N = points_per_round;
+        kN += N;
+      }
+    } else {
+      std::int64_t const w = stationary_points.size();
+      DCHECK_NE(w, 0);
+      // [RT87b] equation 3.
+      if (kN > w + 2 &&
+          static_cast<double>(w * (kN - 1)) / static_cast<double>(kN - w - 2) <=
+          w + 0.5) {
+        break;
+      } else {
+        // [RT87b] equation 4.
+        std::int64_t const M = (2 * w + 3) * w + 2;
+        N = M - kN;
+        DCHECK_LT(0, N);
+        kN = M;
+      }
+      DLOG(ERROR) << "Round #" << k << " with " << N << " points";
+    }
+
     // Generate N new random points and add them to the PCP tree and to the
     // |schedule| map.  Note that while [RT87b] tells us in the description of
     // algorithm A that "it is no longer necessary to reduce the sample" they
@@ -93,17 +134,17 @@ MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
     // rₖ depends on γ.
     // Anyway, reducing the sample would be annoying with our data structures,
     // so let's not go there, 'tis a silly place.
-    std::vector<Argument> pointsₖ = RandomArguments(N);
+    Arguments pointsₖ = RandomArguments(N);
     for (auto& pointₖ : pointsₖ) {
       points.push_back(std::move(pointₖ));
-      Argument const* const pointₖ_pointer = &points.back();
+      Argument const* const pointₖ_pointer = points.back().get();
       point_neighbourhoods.Add(pointₖ_pointer);
       schedule.emplace_hint(schedule.end(), Infinity<NormType>, pointₖ_pointer);
     }
 
     // Compute the radius below which we won't do a local search in this
     // iteration.
-    auto const rₖ = CriticalRadius(/*σ=*/4, /*kN=*/k * N);
+    auto const rₖ = CriticalRadius(/*σ=*/4, kN);
 
     // Process the points whose nearest neighbour is "sufficiently far" (or
     // unknown).
@@ -175,18 +216,18 @@ bool MultiLevelSingleLinkage<Scalar, Argument>::IsNewStationaryPoint(
 }
 
 template<typename Scalar, typename Argument>
-std::vector<Argument>
+std::vector<not_null<std::unique_ptr<Argument>>>
 MultiLevelSingleLinkage<Scalar, Argument>::RandomArguments(
     std::int64_t const values_per_round) {
-  std::vector<Argument> result;
+  Arguments arguments;
   for (std::int64_t i = 0; i < values_per_round; ++i) {
-    Argument argument = box_.centre;
+    auto argument = make_not_null_unique<Argument>(box_.centre);
     for (const auto& vertex : box_.vertices) {
-      argument += distribution_(random_) * vertex;
+      *argument += distribution_(random_) * vertex;
     }
-    result.push_back(argument);
+    arguments.push_back(std::move(argument));
   }
-  return result;
+  return arguments;
 }
 
 template<typename Scalar, typename Argument>
