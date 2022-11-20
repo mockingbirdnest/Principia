@@ -110,7 +110,8 @@ MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
       }
     } else {
       std::int64_t const w = stationary_points.size();
-      DCHECK_NE(w, 0);
+      DCHECK_GT(w, 0);
+      DCHECK_GT(kN, w + 2);
       // [RT87b] equation 3.
       if (kN > w + 2 &&
           static_cast<double>(w * (kN - 1)) / static_cast<double>(kN - w - 2) <=
