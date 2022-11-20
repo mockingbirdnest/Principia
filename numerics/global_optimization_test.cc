@@ -49,13 +49,9 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
                              Displacement<World> const& displacement) {
     ++function_invocations;
     auto const& coordinates = displacement.coordinates();
-    // The extra |x₀| term ensures that we have a unique solution in three
-    // dimensions.
-    double const x₀ = coordinates[0] / Metre;
     double const x₁ = coordinates[1] / Metre;
     double const x₂ = coordinates[2] / Metre;
-    return Pow<2>(x₀) +
-           (1 + Pow<2>(x₁ + x₂ + 1) * (19 - 14 * x₁ + 3 * Pow<2>(x₁) - 14 * x₂ +
+    return (1 + Pow<2>(x₁ + x₂ + 1) * (19 - 14 * x₁ + 3 * Pow<2>(x₁) - 14 * x₂ +
                                        6 * x₁ * x₂ + 3 * Pow<2>(x₂))) *
                (30 + Pow<2>(2 * x₁ - 3 * x₂) *
                          (18 - 32 * x₁ + 12 * Pow<2>(x₁) + 48 * x₂ -
@@ -66,10 +62,8 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
                                   Displacement<World> const& displacement) {
     ++gradient_invocations;
     auto const& coordinates = displacement.coordinates();
-    double const x₀ = coordinates[0] / Metre;
     double const x₁ = coordinates[1] / Metre;
     double const x₂ = coordinates[2] / Metre;
-    double const g₀ = 2 * x₀;
     double const g₁ =
         24 * (-1 + 2 * x₁ - 3 * x₂) * (2 * x₁ - 3 * x₂) *
             (2 * x₁ - 3 * (1 + x₂)) *
@@ -90,7 +84,7 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
             (30 + Pow<2>(2 * x₁ - 3 * x₂) *
                       (18 + 12 * Pow<2>(x₁) - 4 * x₁ * (8 + 9 * x₂) +
                        3 * x₂ * (16 + 9 * x₂)));
-    return Vector<Inverse<Length>, World>({g₀ / Metre, g₁ / Metre, g₂ / Metre});
+    return Vector<Inverse<Length>, World>({0 / Metre, g₁ / Metre, g₂ / Metre});
   };
 
   // Correctness checks for the function and its gradient.
@@ -107,7 +101,7 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
   Optimizer::Box const box = {
       .centre = Displacement<World>(),
       .vertices = {
-          Displacement<World>({2 * Metre, 0 * Metre, 0 * Metre}),
+          Displacement<World>({0 * Metre, 0 * Metre, 0 * Metre}),
           Displacement<World>({0 * Metre, 2 * Metre, 0 * Metre}),
           Displacement<World>({0 * Metre, 0 * Metre, 2 * Metre}),
       }};
@@ -116,7 +110,7 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
   Optimizer optimizer(box, goldstein_price, grad_goldstein_price);
 
   {
-    auto const minima = optimizer.FindGlobalMinima(/*points_per_round=*/10,
+    auto const minima = optimizer.FindGlobalMinima(/*points_per_round=*/20,
                                                    /*number_of_rounds=*/10,
                                                    tolerance);
 
@@ -140,7 +134,7 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
   }
   {
     auto const minima =
-        optimizer.FindGlobalMinima(/*points_per_round=*/10,
+        optimizer.FindGlobalMinima(/*points_per_round=*/500,
                                    /*number_of_rounds=*/std::nullopt,
                                    tolerance);
 
