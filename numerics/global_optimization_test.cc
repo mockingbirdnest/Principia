@@ -85,33 +85,67 @@ TEST_F(GlobalOptimizationTest, Branin) {
 
   const auto tolerance = 1e-6 * Metre;
   Optimizer optimizer(box, branin, grad_branin);
-  auto const minima = optimizer.FindGlobalMinima(/*points_per_round=*/10,
-                                                 /*number_of_rounds=*/10,
-                                                 tolerance);
+  {
+    auto const minima = optimizer.FindGlobalMinima(/*points_per_round=*/10,
+                                                   /*number_of_rounds=*/10,
+                                                   tolerance);
 
-  EXPECT_EQ(1434, function_invocations);
-  EXPECT_EQ(598, gradient_invocations);
+    EXPECT_EQ(1434, function_invocations);
+    EXPECT_EQ(598, gradient_invocations);
 
-  // Note that the fourth minima is outside the |box| passed to the optimizer.
-  EXPECT_THAT(
-      minima,
-      ElementsAre(
-          Componentwise(
-              AbsoluteErrorFrom(0 * Metre, IsNear(1.4e-7_(1) * Metre)),
-              AbsoluteErrorFrom(9.42478 * Metre, IsNear(2.0e-6_(1) * Metre)),
-              RelativeErrorFrom(2.475 * Metre, IsNear(8.0e-9_(1)))),
-          Componentwise(
-              AbsoluteErrorFrom(0 * Metre, IsNear(5.7e-7_(1) * Metre)),
-              AbsoluteErrorFrom(π * Metre, IsNear(4.8e-9_(1) * Metre)),
-              RelativeErrorFrom(2.275 * Metre, IsNear(9.1e-8_(1)))),
-          Componentwise(
-              AbsoluteErrorFrom(0 * Metre, IsNear(5.9e-8_(1) * Metre)),
-              RelativeErrorFrom(-π * Metre, IsNear(3.5e-8_(1))),
-              RelativeErrorFrom(12.275 * Metre, IsNear(6.2e-9_(1)))),
-          Componentwise(
-              AbsoluteErrorFrom(0 * Metre, IsNear(1.9e-8_(1) * Metre)),
-              RelativeErrorFrom(5 * π * Metre, IsNear(7.3e-10_(1))),
-              RelativeErrorFrom(12.875 * Metre, IsNear(1.0e-9_(1))))));
+    // Note that the fourth minima is outside the |box| passed to the optimizer.
+    EXPECT_THAT(
+        minima,
+        UnorderedElementsAre(
+            Componentwise(
+                AbsoluteErrorFrom(0 * Metre, IsNear(1.4e-7_(1) * Metre)),
+                AbsoluteErrorFrom(9.42478 * Metre, IsNear(2.0e-6_(1) * Metre)),
+                RelativeErrorFrom(2.475 * Metre, IsNear(8.0e-9_(1)))),
+            Componentwise(
+                AbsoluteErrorFrom(0 * Metre, IsNear(5.7e-7_(1) * Metre)),
+                AbsoluteErrorFrom(π * Metre, IsNear(4.8e-9_(1) * Metre)),
+                RelativeErrorFrom(2.275 * Metre, IsNear(9.1e-8_(1)))),
+            Componentwise(
+                AbsoluteErrorFrom(0 * Metre, IsNear(5.9e-8_(1) * Metre)),
+                RelativeErrorFrom(-π * Metre, IsNear(3.5e-8_(1))),
+                RelativeErrorFrom(12.275 * Metre, IsNear(6.2e-9_(1)))),
+            Componentwise(
+                AbsoluteErrorFrom(0 * Metre, IsNear(1.9e-8_(1) * Metre)),
+                RelativeErrorFrom(5 * π * Metre, IsNear(7.3e-10_(1))),
+                RelativeErrorFrom(12.875 * Metre, IsNear(1.0e-9_(1))))));
+  }
+  function_invocations = 0;
+  gradient_invocations = 0;
+  {
+    auto const minima =
+        optimizer.FindGlobalMinima(/*points_per_round=*/10,
+                                   /*number_of_rounds=*/std::nullopt,
+                                   tolerance);
+
+    EXPECT_EQ(849, function_invocations);
+    EXPECT_EQ(641, gradient_invocations);
+
+    // Note that the fourth minima is outside the |box| passed to the optimizer.
+    EXPECT_THAT(
+        minima,
+        ElementsAre(
+            Componentwise(
+                AbsoluteErrorFrom(0 * Metre, IsNear(4.3e-8_(1) * Metre)),
+                RelativeErrorFrom(-π * Metre, IsNear(8.5e-9_(1))),
+                RelativeErrorFrom(12.275 * Metre, IsNear(2.1e-9_(1)))),
+            Componentwise(
+                AbsoluteErrorFrom(0 * Metre, IsNear(3.9e-8_(1) * Metre)),
+                AbsoluteErrorFrom(π * Metre, IsNear(1.6e-9_(1) * Metre)),
+                RelativeErrorFrom(2.275 * Metre, IsNear(5.6e-9_(1)))),
+            Componentwise(
+                AbsoluteErrorFrom(0 * Metre, IsNear(3.3e-8_(1) * Metre)),
+                AbsoluteErrorFrom(9.42478 * Metre, IsNear(2.0e-6_(1) * Metre)),
+                RelativeErrorFrom(2.475 * Metre, IsNear(3.8e-9_(1)))),
+            Componentwise(
+                AbsoluteErrorFrom(0 * Metre, IsNear(4.7e-7_(1) * Metre)),
+                RelativeErrorFrom(5 * π * Metre, IsNear(1.3e-8_(1))),
+                RelativeErrorFrom(12.875 * Metre, IsNear(3.3e-8_(1))))));
+  }
 }
 
 TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
@@ -159,8 +193,8 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
                                                    /*number_of_rounds=*/10,
                                                    tolerance);
 
-    EXPECT_EQ(2740, function_invocations);
-    EXPECT_EQ(1813, gradient_invocations);
+    EXPECT_EQ(2739, function_invocations);
+    EXPECT_EQ(1812, gradient_invocations);
     EXPECT_THAT(
         minima,
         UnorderedElementsAre(
@@ -177,14 +211,16 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
                 RelativeErrorFrom(1.8 * Metre, IsNear(1.8e-10_(1))),
                 RelativeErrorFrom(0.2 * Metre, IsNear(7.0e-10_(1))))));
   }
+  function_invocations = 0;
+  gradient_invocations = 0;
   {
     auto const minima =
         optimizer.FindGlobalMinima(/*points_per_round=*/10,
                                    /*number_of_rounds=*/std::nullopt,
                                    tolerance);
 
-    EXPECT_EQ(3620, function_invocations);
-    EXPECT_EQ(2474, gradient_invocations);
+    EXPECT_EQ(880, function_invocations);
+    EXPECT_EQ(661, gradient_invocations);
     EXPECT_THAT(
         minima,
         UnorderedElementsAre(
