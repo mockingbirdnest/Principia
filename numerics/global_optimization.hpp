@@ -59,9 +59,10 @@ class MultiLevelSingleLinkage {
 
   // If |number_of_rounds| is given, the algorithm does |number_of_rounds|
   // iterations, each time adding |points_per_round| to the sample.
-  // If |number_of_rounds| is omitted, the first iteration uses that number of
-  // points, and subsequent iterations adjust the number of points (or the
-  // decision to terminate) based on the optimal Bayesian stopping rule.
+  // If |number_of_rounds| is omitted, the first iteration uses
+  // |points_per_round| points, and subsequent iterations adjust the number of
+  // points (or the decision to terminate) based on the optimal Bayesian
+  // stopping rule.
   // Beware!  The Bayesian stopping rule is typically more efficient, but it is
   // only technically correct (the best kind of correct) if the relative sizes
   // of the regions of attraction follow a uniform distribution.
@@ -71,7 +72,7 @@ class MultiLevelSingleLinkage {
       NormType local_search_tolerance);
 
  private:
-  // We need pointer stability for the arguments as we store pointer, e.g., in
+  // We need pointer stability for the arguments as we store pointers, e.g., in
   // PCP trees.  We generally cannot |reserve| because we don't know the final
   // size of the vector, hence the |unique_ptr|s.
   using Arguments = std::vector<not_null<std::unique_ptr<Argument>>>;

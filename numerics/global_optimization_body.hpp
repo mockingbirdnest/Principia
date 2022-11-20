@@ -89,7 +89,7 @@ MultiLevelSingleLinkage<Scalar, Argument>::FindGlobalMinima(
   // [RT87b]; or we can use the optimal Bayesian stopping rule described in
   // proposition 2 of [RT87a] and equations (3) and (4) of [RT87b].  For
   // consistency with most of the description in [RT87a] and [RT87b], we call
-  // |N| the number of points add in a particular iteration and |kN| the total
+  // |N| the number of points added in a particular iteration and |kN| the total
   // number of sampling points so far, even if |N| varies from one iteration to
   // the next and |kN| is not necessarily |k * N|.
   std::int64_t number_of_points_all_rounds;
