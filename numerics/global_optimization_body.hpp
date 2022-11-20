@@ -3,6 +3,7 @@
 #include "numerics/global_optimization.hpp"
 
 #include <map>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -20,14 +21,36 @@ using geometry::Wedge;
 using quantities::Cbrt;
 using quantities::Infinity;
 using quantities::Pow;
+using quantities::Sqrt;
 
 // TODO(phl): Provide a way to parameterize the PCP trees?
 constexpr int64_t pcp_tree_max_values_per_cell = 10;
 
 template<typename Scalar, typename Argument>
-Cube<typename Hilbert<Difference<Argument>>::NormType>
-MultiLevelSingleLinkage<Scalar, Argument>::Box::Measure() const {
-  return 8 * Wedge(vertices[0], Wedge(vertices[1], vertices[2])).Norm();
+MultiLevelSingleLinkage<Scalar, Argument>::Box::Measure
+MultiLevelSingleLinkage<Scalar, Argument>::Box::measure() const {
+  std::vector<Difference<Argument>> nonzero_vertices;
+  nonzero_vertices.reserve(vertices.size());
+  for (auto const& vertex : vertices) {
+    if (vertex != Difference<Argument>{}) {
+      nonzero_vertices.push_back(vertex);
+    }
+  }
+
+  switch (nonzero_vertices.size()) {
+    case 1:
+      return 2 * nonzero_vertices[0].Norm();
+
+    case 2:
+      return 4 * Wedge(nonzero_vertices[0], nonzero_vertices[1]).Norm();
+
+    case 3:
+      return 8 * Wedge(nonzero_vertices[0],
+                       Wedge(nonzero_vertices[1], nonzero_vertices[2]))
+                     .Norm();
+    default:
+      LOG(FATAL) << "Weird dimensionality " << nonzero_vertices.size();
+  }
 }
 
 template<typename Scalar, typename Argument>
@@ -36,14 +59,11 @@ MultiLevelSingleLinkage<Scalar, Argument>::MultiLevelSingleLinkage(
     Field<Scalar, Argument> const& f,
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f)
     : box_(box),
-      box_measure_(box_.Measure()),
+      box_measure_(box_.measure()),
       f_(f),
       grad_f_(grad_f),
       random_(42),
-      distribution_(-1.0, 1.0) {
-  CHECK_LT(Cube<typename Hilbert<Difference<Argument>>::NormType>{},
-           box_measure_);
-}
+      distribution_(-1.0, 1.0) {}
 
 template<typename Scalar, typename Argument>
 std::vector<Argument>
@@ -236,7 +256,20 @@ typename Hilbert<Difference<Argument>>::NormType
 MultiLevelSingleLinkage<Scalar, Argument>::CriticalRadius(
     double const σ,
     std::int64_t const kN) {
-  return Cbrt(3.0 * box_measure_ * σ * std::log(kN) / (4.0 * π * kN));
+  // Note that the dimension is |index + 1|
+  switch (box_measure_.index()) {
+    case 0:
+      return std::get<NormType>(box_measure_) * σ *
+             std::log(kN) / (2.0 * kN);
+    case 1:
+      return Sqrt(std::get<Square<NormType>>(box_measure_) * σ *
+                  std::log(kN) / (π * kN));
+    case 2:
+      return Cbrt(3.0 * std::get<Cube<NormType>>(box_measure_) * σ *
+                  std::log(kN) / (4.0 * π * kN));
+    default:
+      LOG(FATAL) << "Weird dimensionality " << box_measure_.index();
+  }
 }
 
 }  // namespace internal_global_optimization

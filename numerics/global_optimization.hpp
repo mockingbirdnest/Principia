@@ -3,6 +3,7 @@
 #include <functional>
 #include <optional>
 #include <random>
+#include <variant>
 #include <vector>
 
 #include "base/not_null.hpp"
@@ -22,6 +23,7 @@ using quantities::Difference;
 using quantities::Length;
 using quantities::Product;
 using quantities::Quotient;
+using quantities::Square;
 
 // In this file |Argument| must be such that its difference belongs to a Hilbert
 // space.
@@ -49,7 +51,10 @@ class MultiLevelSingleLinkage {
     Argument centre;
     std::array<Difference<Argument>, 3> vertices;
 
-    Cube<NormType> Measure() const;
+    // If some of the dimensions of the box are zero, we handle the problem as a
+    // 1- or 2-dimensional problem.  This only affects the computation of rₖ.
+    using Measure = std::variant<NormType, Square<NormType>, Cube<NormType>>;
+    Measure measure() const;
   };
 
   MultiLevelSingleLinkage(
@@ -92,7 +97,7 @@ class MultiLevelSingleLinkage {
   NormType CriticalRadius(double σ, std::int64_t kN);
 
   Box const box_;
-  Cube<NormType> const box_measure_;
+  Box::Measure const box_measure_;
   Field<Scalar, Argument> const f_;
   Field<Gradient<Scalar, Argument>, Argument> const grad_f_;
 
