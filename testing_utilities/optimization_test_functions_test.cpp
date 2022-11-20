@@ -10,23 +10,6 @@ namespace testing_utilities {
 using ::testing::ElementsAre;
 using ::testing::Eq;
 
-TEST(OptimizationTestFunctionsTest, GoldsteinPrice) {
-  {
-    double const x₁ = 0;
-    double const x₂ = -1;
-    EXPECT_THAT(GoldsteinPrice(x₁, x₂), Eq(3));
-    EXPECT_THAT(GradGoldsteinPrice(x₁, x₂),
-                ElementsAre(Eq(0), Eq(0)));
-  }
-  {
-    double const x₁ = 0.5;
-    double const x₂ = -0.3;
-    EXPECT_THAT(GoldsteinPrice(x₁, x₂), IsNear(596.161_(1)));
-    EXPECT_THAT(GradGoldsteinPrice(x₁, x₂),
-                ElementsAre(IsNear(-601.51_(1)), IsNear(2163.65_(1))));
-  }
-}
-
 TEST(OptimizationTestFunctionsTest, Branin) {
   {
     double const x₁ = -π;
@@ -57,6 +40,23 @@ TEST(OptimizationTestFunctionsTest, Branin) {
                 ElementsAre(IsNear(-20.7963_(1)), IsNear(-11.073_(1))));
   }
 }
+TEST(OptimizationTestFunctionsTest, GoldsteinPrice) {
+  {
+    double const x₁ = 0;
+    double const x₂ = -1;
+    EXPECT_THAT(GoldsteinPrice(x₁, x₂), Eq(3));
+    EXPECT_THAT(GradGoldsteinPrice(x₁, x₂),
+                ElementsAre(Eq(0), Eq(0)));
+  }
+  {
+    double const x₁ = 0.5;
+    double const x₂ = -0.3;
+    EXPECT_THAT(GoldsteinPrice(x₁, x₂), IsNear(596.161_(1)));
+    EXPECT_THAT(GradGoldsteinPrice(x₁, x₂),
+                ElementsAre(IsNear(-601.51_(1)), IsNear(2163.65_(1))));
+  }
+}
+
 
 }  // namespace testing_utilities
 }  // namespace principia
