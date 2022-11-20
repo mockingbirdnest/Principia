@@ -12,6 +12,7 @@
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics_matchers.hpp"
+#include "testing_utilities/optimization_test_functions.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
@@ -28,6 +29,8 @@ using quantities::si::Metre;
 using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
+using testing_utilities::GradGoldsteinPrice;
+using testing_utilities::GoldsteinPrice;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeErrorFrom;
 using testing_utilities::operator""_;
@@ -54,12 +57,7 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
     double const x₀ = coordinates[0] / Metre;
     double const x₁ = coordinates[1] / Metre;
     double const x₂ = coordinates[2] / Metre;
-    return Pow<2>(x₀) +
-           (1 + Pow<2>(x₁ + x₂ + 1) * (19 - 14 * x₁ + 3 * Pow<2>(x₁) - 14 * x₂ +
-                                       6 * x₁ * x₂ + 3 * Pow<2>(x₂))) *
-               (30 + Pow<2>(2 * x₁ - 3 * x₂) *
-                         (18 - 32 * x₁ + 12 * Pow<2>(x₁) + 48 * x₂ -
-                          36 * x₁ * x₂ + 27 * Pow<2>(x₂)));
+    return Pow<2>(x₀) + GoldsteinPrice(x₁, x₂);
   };
 
   auto grad_goldstein_price = [&gradient_invocations](
@@ -70,39 +68,9 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
     double const x₁ = coordinates[1] / Metre;
     double const x₂ = coordinates[2] / Metre;
     double const g₀ = 2 * x₀;
-    double const g₁ =
-        24 * (-1 + 2 * x₁ - 3 * x₂) * (2 * x₁ - 3 * x₂) *
-            (2 * x₁ - 3 * (1 + x₂)) *
-            (1 +
-             Pow<2>(1 + x₁ + x₂) * (19 + 3 * Pow<2>(x₁) + x₂ * (-14 + 3 * x₂) +
-                                    2 * x₁ * (-7 + 3 * x₂))) +
-        12 * (-2 + x₁ + x₂) * (-1 + x₁ + x₂) * (1 + x₁ + x₂) *
-            (30 + Pow<2>(2 * x₁ - 3 * x₂) *
-                      (18 + 12 * Pow<2>(x₁) - 4 * x₁ * (8 + 9 * x₂) +
-                       3 * x₂ * (16 + 9 * x₂)));
-    double const g₂ =
-        -36 * (-1 + 2 * x₁ - 3 * x₂) * (2 * x₁ - 3 * x₂) *
-            (2 * x₁ - 3 * (1 + x₂)) *
-            (1 +
-             Pow<2>(1 + x₁ + x₂) * (19 + 3 * Pow<2>(x₁) + x₂ * (-14 + 3 * x₂) +
-                                    2 * x₁ * (-7 + 3 * x₂))) +
-        12 * (-2 + x₁ + x₂) * (-1 + x₁ + x₂) * (1 + x₁ + x₂) *
-            (30 + Pow<2>(2 * x₁ - 3 * x₂) *
-                      (18 + 12 * Pow<2>(x₁) - 4 * x₁ * (8 + 9 * x₂) +
-                       3 * x₂ * (16 + 9 * x₂)));
+    auto const [g₁, g₂] = GradGoldsteinPrice(x₁, x₂);
     return Vector<Inverse<Length>, World>({g₀ / Metre, g₁ / Metre, g₂ / Metre});
   };
-
-  // Correctness checks for the function and its gradient.
-  {
-    auto const test_point =
-        Displacement<World>({0 * Metre, 0.5 * Metre, -0.3 * Metre});
-    EXPECT_THAT(goldstein_price(test_point), IsNear(596.161_(1)));
-    EXPECT_THAT(grad_goldstein_price(test_point),
-                Componentwise(AlmostEquals(0 / Metre, 0),
-                              IsNear(-601.51_(1) / Metre),
-                              IsNear(2163.65_(1) / Metre)));
-  }
 
   Optimizer::Box const box = {
       .centre = Displacement<World>(),
@@ -118,8 +86,8 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
                                                  /*number_of_rounds=*/10,
                                                  tolerance);
 
-  EXPECT_EQ(2740, function_invocations);
-  EXPECT_EQ(1813, gradient_invocations);
+  EXPECT_EQ(2739, function_invocations);
+  EXPECT_EQ(1812, gradient_invocations);
   EXPECT_THAT(minima,
               UnorderedElementsAre(
                   Componentwise(
