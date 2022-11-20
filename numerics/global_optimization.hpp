@@ -57,7 +57,14 @@ class MultiLevelSingleLinkage {
       Field<Scalar, Argument> const& f,
       Field<Gradient<Scalar, Argument>, Argument> const& grad_f);
 
-  //TODO(phl)comment
+  // If |number_of_rounds| is given, the algorithm does |number_of_rounds|
+  // iterations, each time adding |points_per_round| to the sample.
+  // If |number_of_rounds| is omitted, the first iteration uses that number of
+  // points, and subsequent iterations adjust the number of points (or the
+  // decision to terminate) based on the optimal Bayesian stopping rule.
+  // Beware!  The Bayesian stopping rule is typically more efficient, but it is
+  // only technically correct (the best kind of correct) if the relative sizes
+  // of the regions of attraction follow a uniform distribution.
   std::vector<Argument> FindGlobalMinima(
       std::int64_t points_per_round,
       std::optional<std::int64_t> number_of_rounds,
