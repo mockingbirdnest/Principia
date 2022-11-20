@@ -27,7 +27,7 @@ double Branin(double const x₁, double const x₂) {
          s * (1 - t) * Cos(x₁ * Radian) + s;
 }
 
-std::array<double, 2> GradBranin(double const x₁, double const x₂) {
+std::array<double, 2> 𝛁Branin(double const x₁, double const x₂) {
   using namespace branin_parameters;
   double const g₁ = 2 * a * (c - 2 * b * x₁) * (-r + x₁ * (c - b * x₁) + x₂) +
                     s * (-1 + t) * Sin(x₁ * Radian);
@@ -43,7 +43,7 @@ double GoldsteinPrice(double const x₁, double const x₂) {
                                      36 * x₁ * x₂ + 27 * Pow<2>(x₂)));
 }
 
-std::array<double, 2> GradGoldsteinPrice(double const x₁, double const x₂) {
+std::array<double, 2> 𝛁GoldsteinPrice(double const x₁, double const x₂) {
   double const g₁ =
       24 * (-1 + 2 * x₁ - 3 * x₂) * (2 * x₁ - 3 * x₂) *
           (2 * x₁ - 3 * (1 + x₂)) *

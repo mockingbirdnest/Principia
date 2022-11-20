@@ -30,11 +30,11 @@ using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Branin;
 using testing_utilities::Componentwise;
-using testing_utilities::GradBranin;
-using testing_utilities::GradGoldsteinPrice;
 using testing_utilities::GoldsteinPrice;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeErrorFrom;
+using testing_utilities::𝛁Branin;
+using testing_utilities::𝛁GoldsteinPrice;
 using testing_utilities::operator""_;
 using ::testing::ElementsAre;
 using ::testing::UnorderedElementsAre;
@@ -71,7 +71,7 @@ TEST_F(GlobalOptimizationTest, Branin) {
     double const x₁ = coordinates[1] / Metre;
     double const x₂ = coordinates[2] / Metre;
     double const g₀ = 2 * x₀;
-    auto const [g₁, g₂] = GradBranin(x₁, x₂);
+    auto const [g₁, g₂] = 𝛁Branin(x₁, x₂);
     return Vector<Inverse<Length>, World>({g₀ / Metre, g₁ / Metre, g₂ / Metre});
   };
 
@@ -139,7 +139,7 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
     double const x₁ = coordinates[1] / Metre;
     double const x₂ = coordinates[2] / Metre;
     double const g₀ = 2 * x₀;
-    auto const [g₁, g₂] = GradGoldsteinPrice(x₁, x₂);
+    auto const [g₁, g₂] = 𝛁GoldsteinPrice(x₁, x₂);
     return Vector<Inverse<Length>, World>({g₀ / Metre, g₁ / Metre, g₂ / Metre});
   };
 
