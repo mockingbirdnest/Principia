@@ -33,13 +33,13 @@ using testing_utilities::Componentwise;
 using testing_utilities::GoldsteinPrice;
 using testing_utilities::Hartmann3;
 using testing_utilities::IsNear;
-using testing_utilities::RelativeErrorFrom;
+using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::𝛁Branin;
 using testing_utilities::𝛁GoldsteinPrice;
 using testing_utilities::𝛁Hartmann3;
 using testing_utilities::operator""_;
 using ::testing::ElementsAre;
-using ::testing::UnorderedElementsAre;
+using ::testing::ElementsAre;
 
 // The test functions in this file are from
 // https://www.sfu.ca/~ssurjano/optimization.html.
@@ -98,23 +98,24 @@ TEST_F(GlobalOptimizationTest, Branin) {
     // Note that the fourth minima is outside the |box| passed to the optimizer.
     EXPECT_THAT(
         minima,
-        UnorderedElementsAre(
+        ElementsAre(
             Componentwise(
                 AbsoluteErrorFrom(0 * Metre, IsNear(1.4e-7_(1) * Metre)),
                 AbsoluteErrorFrom(9.42478 * Metre, IsNear(2.0e-6_(1) * Metre)),
-                RelativeErrorFrom(2.475 * Metre, IsNear(8.0e-9_(1)))),
+                AbsoluteErrorFrom(2.475 * Metre, IsNear(2.0e-8_(1) * Metre))),
             Componentwise(
                 AbsoluteErrorFrom(0 * Metre, IsNear(5.7e-7_(1) * Metre)),
                 AbsoluteErrorFrom(π * Metre, IsNear(4.8e-9_(1) * Metre)),
-                RelativeErrorFrom(2.275 * Metre, IsNear(9.1e-8_(1)))),
+                AbsoluteErrorFrom(2.275 * Metre, IsNear(2.1e-7_(1) * Metre))),
             Componentwise(
                 AbsoluteErrorFrom(0 * Metre, IsNear(5.9e-8_(1) * Metre)),
-                RelativeErrorFrom(-π * Metre, IsNear(3.5e-8_(1))),
-                RelativeErrorFrom(12.275 * Metre, IsNear(6.2e-9_(1)))),
+                AbsoluteErrorFrom(-π * Metre, IsNear(1.1e-7_(1) * Metre)),
+                AbsoluteErrorFrom(12.275 * Metre, IsNear(7.7e-8_(1) * Metre))),
             Componentwise(
                 AbsoluteErrorFrom(0 * Metre, IsNear(1.9e-8_(1) * Metre)),
-                RelativeErrorFrom(5 * π * Metre, IsNear(7.3e-10_(1))),
-                RelativeErrorFrom(12.875 * Metre, IsNear(1.0e-9_(1))))));
+                AbsoluteErrorFrom(5 * π * Metre, IsNear(1.1e-8_(1) * Metre)),
+                AbsoluteErrorFrom(12.875 * Metre,
+                                  IsNear(1.3e-8_(1) * Metre)))));
   }
   function_invocations = 0;
   gradient_invocations = 0;
@@ -133,20 +134,21 @@ TEST_F(GlobalOptimizationTest, Branin) {
         ElementsAre(
             Componentwise(
                 AbsoluteErrorFrom(0 * Metre, IsNear(4.3e-8_(1) * Metre)),
-                RelativeErrorFrom(-π * Metre, IsNear(8.5e-9_(1))),
-                RelativeErrorFrom(12.275 * Metre, IsNear(2.1e-9_(1)))),
+                AbsoluteErrorFrom(-π * Metre, IsNear(2.7e-8_(1) * Metre)),
+                AbsoluteErrorFrom(12.275 * Metre, IsNear(2.6e-8_(1) * Metre))),
             Componentwise(
                 AbsoluteErrorFrom(0 * Metre, IsNear(3.9e-8_(1) * Metre)),
                 AbsoluteErrorFrom(π * Metre, IsNear(1.6e-9_(1) * Metre)),
-                RelativeErrorFrom(2.275 * Metre, IsNear(5.6e-9_(1)))),
+                AbsoluteErrorFrom(2.275 * Metre, IsNear(1.3e-8_(1) * Metre))),
             Componentwise(
                 AbsoluteErrorFrom(0 * Metre, IsNear(3.3e-8_(1) * Metre)),
                 AbsoluteErrorFrom(9.42478 * Metre, IsNear(2.0e-6_(1) * Metre)),
-                RelativeErrorFrom(2.475 * Metre, IsNear(3.8e-9_(1)))),
+                AbsoluteErrorFrom(2.475 * Metre, IsNear(9.5e-9_(1) * Metre))),
             Componentwise(
                 AbsoluteErrorFrom(0 * Metre, IsNear(4.7e-7_(1) * Metre)),
-                RelativeErrorFrom(5 * π * Metre, IsNear(1.3e-8_(1))),
-                RelativeErrorFrom(12.875 * Metre, IsNear(3.3e-8_(1))))));
+                AbsoluteErrorFrom(5 * π * Metre, IsNear(2.1e-7_(1) * Metre)),
+                AbsoluteErrorFrom(12.875 * Metre,
+                                  IsNear(4.4e-7_(1) * Metre)))));
   }
 }
 
@@ -199,19 +201,19 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
     EXPECT_EQ(1812, gradient_invocations);
     EXPECT_THAT(
         minima,
-        UnorderedElementsAre(
+        ElementsAre(
             Componentwise(
                 AbsoluteErrorFrom(0 * Metre, IsNear(7.6e-7_(1) * Metre)),
                 AbsoluteErrorFrom(0 * Metre, IsNear(5.3e-8_(1) * Metre)),
-                RelativeErrorFrom(-1 * Metre, IsNear(3.8e-8_(1)))),
+                AbsoluteErrorFrom(-1 * Metre, IsNear(3.8e-8_(1) * Metre))),
             Componentwise(
                 AbsoluteErrorFrom(0 * Metre, IsNear(5.6e-8_(1) * Metre)),
-                RelativeErrorFrom(-0.6 * Metre, IsNear(6.8e-10_(1))),
-                RelativeErrorFrom(-0.4 * Metre, IsNear(1.1e-9_(1)))),
+                AbsoluteErrorFrom(-0.6 * Metre, IsNear(4.1e-10_(1) * Metre)),
+                AbsoluteErrorFrom(-0.4 * Metre, IsNear(4.3e-10_(1) * Metre))),
             Componentwise(
                 AbsoluteErrorFrom(0 * Metre, IsNear(5.6e-8_(1) * Metre)),
-                RelativeErrorFrom(1.8 * Metre, IsNear(1.8e-10_(1))),
-                RelativeErrorFrom(0.2 * Metre, IsNear(7.0e-10_(1))))));
+                AbsoluteErrorFrom(1.8 * Metre, IsNear(3.1e-10_(1) * Metre)),
+                AbsoluteErrorFrom(0.2 * Metre, IsNear(1.4e-10_(1) * Metre)))));
   }
   function_invocations = 0;
   gradient_invocations = 0;
@@ -225,23 +227,23 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
     EXPECT_EQ(661, gradient_invocations);
     EXPECT_THAT(
         minima,
-        UnorderedElementsAre(
+        ElementsAre(
             Componentwise(
                 AbsoluteErrorFrom(0 * Metre, IsNear(1.6e-7_(1) * Metre)),
-                RelativeErrorFrom(-0.6 * Metre, IsNear(1.6e-8_(1))),
-                RelativeErrorFrom(-0.4 * Metre, IsNear(7.0e-8_(1)))),
+                AbsoluteErrorFrom(-0.6 * Metre, IsNear(9.9e-9_(1) * Metre)),
+                AbsoluteErrorFrom(-0.4 * Metre, IsNear(2.8e-8_(1) * Metre))),
             Componentwise(
                 AbsoluteErrorFrom(0 * Metre, IsNear(4.0e-7_(1) * Metre)),
                 AbsoluteErrorFrom(0 * Metre, IsNear(1.1e-7_(1) * Metre)),
-                RelativeErrorFrom(-1 * Metre, IsNear(7.0e-8_(1)))),
+                AbsoluteErrorFrom(-1 * Metre, IsNear(7.0e-8_(1) * Metre))),
             Componentwise(
                 AbsoluteErrorFrom(0 * Metre, IsNear(1.3e-7_(1) * Metre)),
-                RelativeErrorFrom(1.2 * Metre, IsNear(6.7e-10_(1))),
-                RelativeErrorFrom(0.8 * Metre, IsNear(9.6e-10_(1)))),
+                AbsoluteErrorFrom(1.2 * Metre, IsNear(8.0e-10_(1) * Metre)),
+                AbsoluteErrorFrom(0.8 * Metre, IsNear(7.7e-10_(1) * Metre))),
             Componentwise(
                 AbsoluteErrorFrom(0 * Metre, IsNear(3.6e-7_(1) * Metre)),
-                RelativeErrorFrom(1.8 * Metre, IsNear(4.4e-8_(1))),
-                RelativeErrorFrom(0.2 * Metre, IsNear(5.2e-7_(1))))));
+                AbsoluteErrorFrom(1.8 * Metre, IsNear(8.0e-8_(1) * Metre)),
+                AbsoluteErrorFrom(0.2 * Metre, IsNear(1.0e-7_(1) * Metre)))));
   }
 }
 
@@ -293,17 +295,20 @@ TEST_F(GlobalOptimizationTest, Hartmann3) {
         minima,
         ElementsAre(
             Componentwise(
-                RelativeErrorFrom(0.114589 * Metre, IsNear(3.0e-6_(1))),
-                RelativeErrorFrom(0.555649 * Metre, IsNear(4.9e-7_(1))),
-                RelativeErrorFrom(0.852547 * Metre, IsNear(4.6e-7_(1)))),
+                AbsoluteErrorFrom(0.114589 * Metre, IsNear(3.4e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.555649 * Metre, IsNear(2.7e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.852547 * Metre,
+                                  IsNear(3.9e-7_(1) * Metre))),
             Componentwise(
-                RelativeErrorFrom(0.109337 * Metre, IsNear(6.4e-6_(1))),
-                RelativeErrorFrom(0.860556 * Metre, IsNear(5.4e-7_(1))),
-                RelativeErrorFrom(0.564135 * Metre, IsNear(6.0e-7_(1)))),
+                AbsoluteErrorFrom(0.109337 * Metre, IsNear(7.0e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.860556 * Metre, IsNear(4.7e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.564135 * Metre,
+                                  IsNear(3.4e-7_(1) * Metre))),
             Componentwise(
-                RelativeErrorFrom(0.688823 * Metre, IsNear(3.5e-7_(1))),
-                RelativeErrorFrom(0.117274 * Metre, IsNear(5.0e-6_(1))),
-                RelativeErrorFrom(0.267465 * Metre, IsNear(5.2e-6_(1))))));
+                AbsoluteErrorFrom(0.688823 * Metre, IsNear(2.4e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.117274 * Metre, IsNear(5.8e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.267465 * Metre,
+                                  IsNear(1.3e-6_(1) * Metre)))));
   }
   function_invocations = 0;
   gradient_invocations = 0;
@@ -319,13 +324,15 @@ TEST_F(GlobalOptimizationTest, Hartmann3) {
         minima,
         ElementsAre(
             Componentwise(
-                RelativeErrorFrom(0.688823 * Metre, IsNear(3.8e-7_(1))),
-                RelativeErrorFrom(0.117274 * Metre, IsNear(3.5e-6_(1))),
-                RelativeErrorFrom(0.267465 * Metre, IsNear(4.5e-6_(1)))),
+                AbsoluteErrorFrom(0.688823 * Metre, IsNear(2.6e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.117274 * Metre, IsNear(4.1e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.267465 * Metre,
+                                  IsNear(1.2e-6_(1) * Metre))),
             Componentwise(
-                RelativeErrorFrom(0.114589 * Metre, IsNear(3.4e-6_(1))),
-                RelativeErrorFrom(0.555649 * Metre, IsNear(1.1e-6_(1))),
-                RelativeErrorFrom(0.852547 * Metre, IsNear(5.6e-7_(1))))));
+                AbsoluteErrorFrom(0.114589 * Metre, IsNear(3.9e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.555649 * Metre, IsNear(6.3e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.852547 * Metre,
+                                  IsNear(4.8e-7_(1) * Metre)))));
   }
 }
 
