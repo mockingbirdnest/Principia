@@ -46,10 +46,10 @@ bool IsNearMatcher<T>::MatchAndExplain(
   }
   if (match) {
     *listener << "is near " << expected_ << " (being "
-              << expected_.UlpDistance(actual) << " ulps away)";
+              << expected_.UlpDistance(actual) << " ulps away) ";
   } else {
     *listener << "is not near " << expected_ << " (being "
-              << expected_.UlpDistance(actual) << " ulps away)";
+              << expected_.UlpDistance(actual) << " ulps away) ";
   }
   return match;
 }
@@ -61,10 +61,10 @@ bool IsNearMatcher<T>::MatchAndExplain(
   bool const match =  expected_.min() <= actual && actual <= expected_.max();
   if (match) {
     *listener << "which is near " << expected_ << " (being "
-              << expected_.UlpDistance(actual) << " ulps away)";
+              << expected_.UlpDistance(actual) << " ulps away) ";
   } else {
     *listener << "which is not near " << expected_ << " (being "
-              << expected_.UlpDistance(actual) << " ulps away)";
+              << expected_.UlpDistance(actual) << " ulps away) ";
   }
   return match;
 }

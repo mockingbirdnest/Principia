@@ -40,6 +40,7 @@ TEST(OptimizationTestFunctionsTest, Branin) {
                 ElementsAre(IsNear(-20.7963_(1)), IsNear(-11.073_(1))));
   }
 }
+
 TEST(OptimizationTestFunctionsTest, GoldsteinPrice) {
   {
     double const x₁ = 0;
@@ -57,6 +58,28 @@ TEST(OptimizationTestFunctionsTest, GoldsteinPrice) {
   }
 }
 
+TEST(OptimizationTestFunctionsTest, Hartmann3) {
+  {
+    double const x₁ = 0.114589;
+    double const x₂ = 0.555649;
+    double const x₃ = 0.852547;
+    EXPECT_THAT(Hartmann3(x₁, x₂, x₃), IsNear(-3.86278_(1)));
+    EXPECT_THAT(𝛁Hartmann3(x₁, x₂, x₃),
+                ElementsAre(IsNear(5.06186e-8_(1)),
+                            IsNear(-1.26603e-5_(1)),
+                            IsNear(-7.74866e-05_(1))));
+  }
+  {
+    double const x₁ = 0.5;
+    double const x₂ = -0.3;
+    double const x₃ = 0.8;
+    EXPECT_THAT(Hartmann3(x₁, x₂, x₃), IsNear(-0.00585298_(1)));
+    EXPECT_THAT(𝛁Hartmann3(x₁, x₂, x₃),
+                ElementsAre(IsNear(0.000101777_(1)),
+                            IsNear(-0.0894713_(1)),
+                            IsNear(0.0113956_(1))));
+  }
+}
 
 }  // namespace testing_utilities
 }  // namespace principia
