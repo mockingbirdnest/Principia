@@ -39,7 +39,6 @@ using testing_utilities::𝛁GoldsteinPrice;
 using testing_utilities::𝛁Hartmann3;
 using testing_utilities::operator""_;
 using ::testing::ElementsAre;
-using ::testing::ElementsAre;
 
 // The test functions in this file are from
 // https://www.sfu.ca/~ssurjano/optimization.html.

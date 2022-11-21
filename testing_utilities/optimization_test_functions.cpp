@@ -37,7 +37,7 @@ constexpr FixedMatrix<double, /*rows=*/4, /*columns=*/3> A({3.0, 10, 30,
 // For A(0, 0) the two values 3689e-4 and 6890e-4 are customarily found.  For
 // instance, https://www.sfu.ca/~ssurjano/hart3.html has 3689e-4 but it cites
 // http://www-optima.amp.i.kyoto-u.ac.jp/member/student/hedar/Hedar_files/TestGO_files/Page1488.htm
-// which has 6890e-4 (barely legible) and which in turn points to Matlab code at
+// which has 6890e-4 (barely legible), which in turn points to Matlab code at
 // http://www-optima.amp.i.kyoto-u.ac.jp/member/student/hedar/Hedar_files/TestGO_files/TestGO_files/TestCodes/hart3.m
 // which has 3689e-4.
 // This doesn't really matter, though, because both values yield 0.114589 for
