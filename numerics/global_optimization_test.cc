@@ -31,10 +31,12 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::Branin;
 using testing_utilities::Componentwise;
 using testing_utilities::GoldsteinPrice;
+using testing_utilities::Hartmann3;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeErrorFrom;
 using testing_utilities::𝛁Branin;
 using testing_utilities::𝛁GoldsteinPrice;
+using testing_utilities::𝛁Hartmann3;
 using testing_utilities::operator""_;
 using ::testing::ElementsAre;
 using ::testing::UnorderedElementsAre;
@@ -240,6 +242,90 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
                 AbsoluteErrorFrom(0 * Metre, IsNear(3.6e-7_(1) * Metre)),
                 RelativeErrorFrom(1.8 * Metre, IsNear(4.4e-8_(1))),
                 RelativeErrorFrom(0.2 * Metre, IsNear(5.2e-7_(1))))));
+  }
+}
+
+TEST_F(GlobalOptimizationTest, Hartmann3) {
+  using Optimizer = MultiLevelSingleLinkage<double, Displacement<World>>;
+  int function_invocations = 0;
+  int gradient_invocations = 0;
+
+  auto hartmann3 =
+      [&function_invocations](Displacement<World> const& displacement) {
+    ++function_invocations;
+    auto const& coordinates = displacement.coordinates();
+    double const x₀ = coordinates[0] / Metre;
+    double const x₁ = coordinates[1] / Metre;
+    double const x₂ = coordinates[2] / Metre;
+    return Hartmann3(x₀, x₁, x₂);
+  };
+
+  auto grad_hartmann3 = [&gradient_invocations](
+                            Displacement<World> const& displacement) {
+    ++gradient_invocations;
+    auto const& coordinates = displacement.coordinates();
+    double const x₀ = coordinates[0] / Metre;
+    double const x₁ = coordinates[1] / Metre;
+    double const x₂ = coordinates[2] / Metre;
+    auto const [g₀, g₁, g₂] = 𝛁Hartmann3(x₀, x₁, x₂);
+    return Vector<Inverse<Length>, World>({g₀ / Metre, g₁ / Metre, g₂ / Metre});
+  };
+
+  Optimizer::Box const box = {
+      .centre = Displacement<World>({0.5 * Metre, 0.5 * Metre, 0.5 * Metre}),
+      .vertices = {
+          Displacement<World>({0.5 * Metre, 0 * Metre, 0 * Metre}),
+          Displacement<World>({0 * Metre, 0.5 * Metre, 0 * Metre}),
+          Displacement<World>({0 * Metre, 0 * Metre, 0.5 * Metre}),
+      }};
+
+  const auto tolerance = 1e-6 * Metre;
+  Optimizer optimizer(box, hartmann3, grad_hartmann3);
+
+  {
+    auto const minima = optimizer.FindGlobalMinima(/*points_per_round=*/10,
+                                                   /*number_of_rounds=*/10,
+                                                   tolerance);
+
+    EXPECT_EQ(1628, function_invocations);
+    EXPECT_EQ(602, gradient_invocations);
+    EXPECT_THAT(
+        minima,
+        ElementsAre(
+            Componentwise(
+                RelativeErrorFrom(0.114589 * Metre, IsNear(3.0e-6_(1))),
+                RelativeErrorFrom(0.555649 * Metre, IsNear(4.9e-7_(1))),
+                RelativeErrorFrom(0.852547 * Metre, IsNear(4.6e-7_(1)))),
+            Componentwise(
+                RelativeErrorFrom(0.109337 * Metre, IsNear(6.4e-6_(1))),
+                RelativeErrorFrom(0.860556 * Metre, IsNear(5.4e-7_(1))),
+                RelativeErrorFrom(0.564135 * Metre, IsNear(6.0e-7_(1)))),
+            Componentwise(
+                RelativeErrorFrom(0.688823 * Metre, IsNear(3.5e-7_(1))),
+                RelativeErrorFrom(0.117274 * Metre, IsNear(5.0e-6_(1))),
+                RelativeErrorFrom(0.267465 * Metre, IsNear(5.2e-6_(1))))));
+  }
+  function_invocations = 0;
+  gradient_invocations = 0;
+  {
+    auto const minima =
+        optimizer.FindGlobalMinima(/*points_per_round=*/10,
+                                   /*number_of_rounds=*/std::nullopt,
+                                   tolerance);
+
+    EXPECT_EQ(211, function_invocations);
+    EXPECT_EQ(161, gradient_invocations);
+    EXPECT_THAT(
+        minima,
+        ElementsAre(
+            Componentwise(
+                RelativeErrorFrom(0.688823 * Metre, IsNear(3.8e-7_(1))),
+                RelativeErrorFrom(0.117274 * Metre, IsNear(3.5e-6_(1))),
+                RelativeErrorFrom(0.267465 * Metre, IsNear(4.5e-6_(1)))),
+            Componentwise(
+                RelativeErrorFrom(0.114589 * Metre, IsNear(3.4e-6_(1))),
+                RelativeErrorFrom(0.555649 * Metre, IsNear(1.1e-6_(1))),
+                RelativeErrorFrom(0.852547 * Metre, IsNear(5.6e-7_(1))))));
   }
 }
 

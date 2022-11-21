@@ -30,8 +30,30 @@ constexpr FixedMatrix<double, /*rows=*/4, /*columns=*/3> A({3.0, 10, 30,
                                                             0.1, 10, 35,
                                                             3.0, 10, 30,
                                                             0.1, 10, 35});
+
+// There is a lot of confusion regarding the value of |P|, and unfortunately I
+// couldn't go back to the source, which is widely known as "the traditional ...
+// test set ... from Dixon and Szegő".
+// For A(0, 0) the two values 3689e-4 and 6890e-4 are customarily found.  For
+// instance, https://www.sfu.ca/~ssurjano/hart3.html has 3689e-4 but it cites
+// http://www-optima.amp.i.kyoto-u.ac.jp/member/student/hedar/Hedar_files/TestGO_files/Page1488.htm
+// which has 6890e-4 (barely legible) and which in turn points to Matlab code at
+// http://www-optima.amp.i.kyoto-u.ac.jp/member/student/hedar/Hedar_files/TestGO_files/TestGO_files/TestCodes/hart3.m
+// which has 3689e-4.
+// This doesn't really matter, though, because both values yield 0.114589 for
+// the first coordinate of the global minimum, not 0.114614 as found everywhere.
+// So where does 0.114614 come from?  It turns out that the Matlab code above
+// has 381.5e-4 for A(3, 0), and in this respect differs from every other
+// reference.  With 381.5e-4 the minimum is indeed at 0.114614.
+// It seems very weird that this element would not be an integral multiple of
+// 1e-4, when every single source except that Matlab code gives 381e-4.
+// So I am going to assume that the Matlab code is garbled; that A(3, 0) really
+// is 381e-4; that the incorrect value of A(0, 0) was copied by some authors,
+// and that the other value commonly found, 6890e-4, is the correct one; and
+// finally that the minimum at 0.114614 is the outcome of the garbled code and
+// is therefore garbled too.
 constexpr FixedMatrix<double, /*rows=*/4, /*columns=*/3> P(
-    {3689e-4, 1170e-4, 2673e-4,
+    {6890e-4, 1170e-4, 2673e-4,
      4699e-4, 4387e-4, 7470e-4,
      1091e-4, 8732e-4, 5547e-4,
       381e-4, 5743e-4, 8828e-4});
