@@ -217,6 +217,7 @@ class ParallelTestRunner {
                           " from a death test");
         Environment.Exit(process.ExitCode);
       }
+      process.Close();
     }
 
     Console.WriteLine("Running " + processes.Count + " processes...");
@@ -238,6 +239,7 @@ class ParallelTestRunner {
                             " " +
                             await process.StandardOutput.ReadLineAsync());
         }
+        process.WaitForExit();
         if (process.ExitCode != 0) {
           errors.Add("Exit code " +
                      process.ExitCode +
@@ -248,6 +250,7 @@ class ParallelTestRunner {
                      " " +
                      process.StartInfo.Arguments);
         }
+        process.Close();
         process_semaphore.Release();
       });
       tasks[2 * i + 1] = Task.Run(async () => {
