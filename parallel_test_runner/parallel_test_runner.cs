@@ -224,7 +224,7 @@ class ParallelTestRunner {
     var process_semaphore = new Semaphore(initialCount: max_parallelism,
                                           maximumCount: max_parallelism);
 
-    Task[] tasks = new Task[2 * processes.Count];
+    Task[] tasks = new Task[processes.Count];
     var   errors = new ConcurrentBag<string>();
     for (int i = 0; i < processes.Count; ++i) {
       var process = processes[i];
@@ -232,13 +232,23 @@ class ParallelTestRunner {
       int index = i;
       process_semaphore.WaitOne();
       process.Start();
-      tasks[2 * i] = Task.Run(async () => {
-        while (!process.StandardOutput.EndOfStream) {
-          Console.WriteLine("O" +
-                            index.ToString().PadLeft(4) +
-                            " " +
-                            await process.StandardOutput.ReadLineAsync());
-        }
+      tasks[i] = Task.Run(() => {
+        Task standard_output_writer = Task.Run(async () => {
+          while (!process.StandardOutput.EndOfStream) {
+            Console.WriteLine("O" +
+                              index.ToString().PadLeft(4) +
+                              " " +
+                              await process.StandardOutput.ReadLineAsync());
+          }
+        });
+        Task standard_error_writer = Task.Run(async () => {
+          while (!process.StandardError.EndOfStream) {
+            Console.WriteLine("E" +
+                              index.ToString().PadLeft(4) +
+                              " " +
+                              await process.StandardError.ReadLineAsync());
+          }
+        });
         process.WaitForExit();
         if (process.ExitCode != 0) {
           errors.Add("Exit code " +
@@ -250,15 +260,10 @@ class ParallelTestRunner {
                      " " +
                      process.StartInfo.Arguments);
         }
+        Task.WaitAll(new Task[]
+                         { standard_output_writer, standard_error_writer });
+        process.Close();
         process_semaphore.Release();
-      });
-      tasks[2 * i + 1] = Task.Run(async () => {
-        while (!process.StandardError.EndOfStream) {
-          Console.WriteLine("E" +
-                            index.ToString().PadLeft(4) +
-                            " " +
-                            await process.StandardError.ReadLineAsync());
-        }
       });
     }
 
