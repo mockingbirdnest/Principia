@@ -234,14 +234,14 @@ class ParallelTestRunner {
       try {
         process.Start();
       } catch (Exception e) {
-        errors.Add("Exception " +
-                   e +
-                   " from (" +
-                   index.ToString() +
-                   ") " +
-                   process.StartInfo.FileName +
-                   " " +
-                   process.StartInfo.Arguments);
+        Console.WriteLine("Exception " +
+                          e +
+                          " from (" +
+                          index.ToString() +
+                          ") " +
+                          process.StartInfo.FileName +
+                          " " +
+                          process.StartInfo.Arguments);
         throw;
       }
       tasks[i] = Task.Run(() => {
