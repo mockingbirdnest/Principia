@@ -250,7 +250,6 @@ class ParallelTestRunner {
                      " " +
                      process.StartInfo.Arguments);
         }
-        process.Close();
         process_semaphore.Release();
       });
       tasks[2 * i + 1] = Task.Run(async () => {
