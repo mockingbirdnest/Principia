@@ -231,7 +231,19 @@ class ParallelTestRunner {
       // We cannot use i in the lambdas, it would be captured by reference.
       int index = i;
       process_semaphore.WaitOne();
-      process.Start();
+      try {
+        process.Start();
+      } catch (Exception e) {
+        errors.Add("Exception " +
+                   e +
+                   " from (" +
+                   index.ToString() +
+                   ") " +
+                   process.StartInfo.FileName +
+                   " " +
+                   process.StartInfo.Arguments);
+        throw;
+      }
       tasks[i] = Task.Run(() => {
         Task standard_output_writer = Task.Run(async () => {
           while (!process.StandardOutput.EndOfStream) {
