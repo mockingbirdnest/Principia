@@ -57,22 +57,18 @@ TEST_F(GlobalOptimizationTest, Branin) {
       [&function_invocations](Displacement<World> const& displacement) {
     ++function_invocations;
     auto const& coordinates = displacement.coordinates();
-    // The extra |x₀| term ensures that we have a unique solution in three
-    // dimensions.
-    double const x₀ = coordinates[0] / Metre;
     double const x₁ = coordinates[1] / Metre;
     double const x₂ = coordinates[2] / Metre;
-    return Pow<2>(x₀) + Branin(x₁, x₂);
+    return Branin(x₁, x₂);
   };
 
   auto grad_branin = [&gradient_invocations](
                          Displacement<World> const& displacement) {
     ++gradient_invocations;
     auto const& coordinates = displacement.coordinates();
-    double const x₀ = coordinates[0] / Metre;
     double const x₁ = coordinates[1] / Metre;
     double const x₂ = coordinates[2] / Metre;
-    double const g₀ = 2 * x₀;
+    double const g₀ = 0;
     auto const [g₁, g₂] = 𝛁Branin(x₁, x₂);
     return Vector<Inverse<Length>, World>({g₀ / Metre, g₁ / Metre, g₂ / Metre});
   };
@@ -80,7 +76,7 @@ TEST_F(GlobalOptimizationTest, Branin) {
   Optimizer::Box const box = {
       .centre = Displacement<World>({0 * Metre, 2.5 * Metre, 7.5 * Metre}),
       .vertices = {
-          Displacement<World>({2 * Metre, 0 * Metre, 0 * Metre}),
+          Displacement<World>({0 * Metre, 0 * Metre, 0 * Metre}),
           Displacement<World>({0 * Metre, 7.5 * Metre, 0 * Metre}),
           Displacement<World>({0 * Metre, 0 * Metre, 7.5 * Metre}),
       }};
@@ -92,63 +88,57 @@ TEST_F(GlobalOptimizationTest, Branin) {
                                                    /*number_of_rounds=*/10,
                                                    tolerance);
 
-    EXPECT_EQ(1434, function_invocations);
-    EXPECT_EQ(598, gradient_invocations);
+    EXPECT_EQ(1487, function_invocations);
+    EXPECT_EQ(326, gradient_invocations);
 
     // Note that the fourth minima is outside the |box| passed to the optimizer.
     EXPECT_THAT(
         minima,
         ElementsAre(
             Componentwise(
-                AbsoluteErrorFrom(0 * Metre, IsNear(1.4e-7_(1) * Metre)),
-                AbsoluteErrorFrom(9.42478 * Metre, IsNear(2.0e-6_(1) * Metre)),
-                AbsoluteErrorFrom(2.475 * Metre, IsNear(2.0e-8_(1) * Metre))),
+                _,
+                AbsoluteErrorFrom(9.42478 * Metre, IsNear(1.8e-6_(1) * Metre)),
+                AbsoluteErrorFrom(2.475 * Metre, IsNear(2.0e-7_(1) * Metre))),
             Componentwise(
-                AbsoluteErrorFrom(0 * Metre, IsNear(5.7e-7_(1) * Metre)),
-                AbsoluteErrorFrom(π * Metre, IsNear(4.8e-9_(1) * Metre)),
-                AbsoluteErrorFrom(2.275 * Metre, IsNear(2.1e-7_(1) * Metre))),
+                _,
+                AbsoluteErrorFrom(-π * Metre, IsNear(3.4e-8_(1) * Metre)),
+                AbsoluteErrorFrom(12.275 * Metre, IsNear(1.2e-7_(1) * Metre))),
             Componentwise(
-                AbsoluteErrorFrom(0 * Metre, IsNear(5.9e-8_(1) * Metre)),
-                AbsoluteErrorFrom(-π * Metre, IsNear(1.1e-7_(1) * Metre)),
-                AbsoluteErrorFrom(12.275 * Metre, IsNear(7.7e-8_(1) * Metre))),
+                _,
+                AbsoluteErrorFrom(π * Metre, IsNear(3.4e-9_(1) * Metre)),
+                AbsoluteErrorFrom(2.275 * Metre, IsNear(1.7e-7_(1) * Metre))),
             Componentwise(
-                AbsoluteErrorFrom(0 * Metre, IsNear(1.9e-8_(1) * Metre)),
-                AbsoluteErrorFrom(5 * π * Metre, IsNear(1.1e-8_(1) * Metre)),
+                _,
+                AbsoluteErrorFrom(5 * π * Metre, IsNear(2.5e-8_(1) * Metre)),
                 AbsoluteErrorFrom(12.875 * Metre,
-                                  IsNear(1.3e-8_(1) * Metre)))));
+                                  IsNear(2.5e-7_(1) * Metre)))));
   }
   function_invocations = 0;
   gradient_invocations = 0;
   {
     auto const minima =
-        optimizer.FindGlobalMinima(/*points_per_round=*/10,
+        optimizer.FindGlobalMinima(/*points_per_round=*/100,
                                    /*number_of_rounds=*/std::nullopt,
                                    tolerance);
 
-    EXPECT_EQ(849, function_invocations);
-    EXPECT_EQ(641, gradient_invocations);
+    EXPECT_EQ(1404, function_invocations);
+    EXPECT_EQ(174, gradient_invocations);
 
-    // Note that the fourth minima is outside the |box| passed to the optimizer.
     EXPECT_THAT(
         minima,
         ElementsAre(
             Componentwise(
-                AbsoluteErrorFrom(0 * Metre, IsNear(4.3e-8_(1) * Metre)),
-                AbsoluteErrorFrom(-π * Metre, IsNear(2.7e-8_(1) * Metre)),
-                AbsoluteErrorFrom(12.275 * Metre, IsNear(2.6e-8_(1) * Metre))),
+                _,
+                AbsoluteErrorFrom(π * Metre, IsNear(4.9e-9_(1) * Metre)),
+                AbsoluteErrorFrom(2.275 * Metre, IsNear(7.0e-9_(1) * Metre))),
             Componentwise(
-                AbsoluteErrorFrom(0 * Metre, IsNear(3.9e-8_(1) * Metre)),
-                AbsoluteErrorFrom(π * Metre, IsNear(1.6e-9_(1) * Metre)),
-                AbsoluteErrorFrom(2.275 * Metre, IsNear(1.3e-8_(1) * Metre))),
+                _,
+                AbsoluteErrorFrom(-π * Metre, IsNear(6.7e-9_(1) * Metre)),
+                AbsoluteErrorFrom(12.275 * Metre, IsNear(8.6e-9_(1) * Metre))),
             Componentwise(
-                AbsoluteErrorFrom(0 * Metre, IsNear(3.3e-8_(1) * Metre)),
-                AbsoluteErrorFrom(9.42478 * Metre, IsNear(2.0e-6_(1) * Metre)),
-                AbsoluteErrorFrom(2.475 * Metre, IsNear(9.5e-9_(1) * Metre))),
-            Componentwise(
-                AbsoluteErrorFrom(0 * Metre, IsNear(4.7e-7_(1) * Metre)),
-                AbsoluteErrorFrom(5 * π * Metre, IsNear(2.1e-7_(1) * Metre)),
-                AbsoluteErrorFrom(12.875 * Metre,
-                                  IsNear(4.4e-7_(1) * Metre)))));
+                _,
+                AbsoluteErrorFrom(9.42478 * Metre, IsNear(2.4e-6_(1) * Metre)),
+                AbsoluteErrorFrom(2.475 * Metre, IsNear(9.1e-7_(1) * Metre)))));
   }
 }
 
