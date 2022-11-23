@@ -40,10 +40,8 @@ MultiLevelSingleLinkage<Scalar, Argument>::Box::measure() const {
   switch (nonzero_vertices.size()) {
     case 1:
       return 2 * nonzero_vertices[0].Norm();
-
     case 2:
       return 4 * Wedge(nonzero_vertices[0], nonzero_vertices[1]).Norm();
-
     case 3:
       return 8 * Wedge(nonzero_vertices[0],
                        Wedge(nonzero_vertices[1], nonzero_vertices[2]))
