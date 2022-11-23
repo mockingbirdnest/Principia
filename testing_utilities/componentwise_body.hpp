@@ -75,11 +75,11 @@ bool ComponentwiseMatcher2Impl<geometry::Pair<T1, T2> const&>::MatchAndExplain(
     MatchResultListener* listener) const {
   bool const t1_matches = t1_matcher_.MatchAndExplain(actual.t1_, listener);
   if (!t1_matches) {
-    *listener << " in the first element; ";
+    *listener << "in the first element; ";
   }
   bool const t2_matches = t2_matcher_.MatchAndExplain(actual.t2_, listener);
   if (!t2_matches) {
-    *listener << " in the second element; ";
+    *listener << "in the second element; ";
   }
   return t1_matches && t2_matches;
 }
@@ -117,12 +117,12 @@ MatchAndExplain(physics::DegreesOfFreedom<Frame> const& actual,
   bool const q_matches =
       q_matcher_.MatchAndExplain(actual.position(), listener);
   if (!q_matches) {
-    *listener << " in the position; ";
+    *listener << "in the position; ";
   }
   bool const p_matches =
       p_matcher_.MatchAndExplain(actual.velocity(), listener);
   if (!p_matches) {
-    *listener << " in the velocity; ";
+    *listener << "in the velocity; ";
   }
   return q_matches && p_matches;
 }
@@ -161,12 +161,12 @@ MatchAndExplain(physics::RelativeDegreesOfFreedom<Frame> const& actual,
   bool const q_matches =
       q_matcher_.MatchAndExplain(actual.displacement(), listener);
   if (!q_matches) {
-    *listener << " in the displacement; ";
+    *listener << "in the displacement; ";
   }
   bool const p_matches =
       p_matcher_.MatchAndExplain(actual.velocity(), listener);
   if (!p_matches) {
-    *listener << " in the velocity; ";
+    *listener << "in the velocity; ";
   }
   return q_matches && p_matches;
 }
@@ -205,11 +205,11 @@ MatchAndExplain(geometry::RP2Point<Scalar, Frame> const& actual,
                 MatchResultListener* listener) const {
   bool const x_matches = x_matcher_.MatchAndExplain(actual.x(), listener);
   if (!x_matches) {
-    *listener << " in the x coordinate; ";
+    *listener << "in the x coordinate; ";
   }
   bool const y_matches = y_matcher_.MatchAndExplain(actual.y(), listener);
   if (!y_matches) {
-    *listener << " in the y coordinate; ";
+    *listener << "in the y coordinate; ";
   }
   return x_matches && y_matches;
 }
@@ -248,15 +248,15 @@ MatchAndExplain(geometry::R3Element<Scalar> const& actual,
                 MatchResultListener* listener) const {
   bool const x_matches = x_matcher_.MatchAndExplain(actual.x, listener);
   if (!x_matches) {
-    *listener << " in the x coordinate; ";
+    *listener << "in the x coordinate; ";
   }
   bool const y_matches = y_matcher_.MatchAndExplain(actual.y, listener);
   if (!y_matches) {
-    *listener << " in the y coordinate; ";
+    *listener << "in the y coordinate; ";
   }
   bool const z_matches = z_matcher_.MatchAndExplain(actual.z, listener);
   if (!z_matches) {
-    *listener << " in the z coordinate; ";
+    *listener << "in the z coordinate; ";
   }
   return x_matches && y_matches && z_matches;
 }
@@ -300,17 +300,17 @@ MatchAndExplain(geometry::Vector<Scalar, Frame> const& actual,
   bool const x_matches =
       x_matcher_.MatchAndExplain(actual.coordinates().x, listener);
   if (!x_matches) {
-    *listener << " in the x coordinate; ";
+    *listener << "in the x coordinate; ";
   }
   bool const y_matches =
       y_matcher_.MatchAndExplain(actual.coordinates().y, listener);
   if (!y_matches) {
-    *listener << " in the y coordinate; ";
+    *listener << "in the y coordinate; ";
   }
   bool const z_matches =
       z_matcher_.MatchAndExplain(actual.coordinates().z, listener);
   if (!z_matches) {
-    *listener << " in the z coordinate; ";
+    *listener << "in the z coordinate; ";
   }
   return x_matches && y_matches && z_matches;
 }
@@ -354,17 +354,17 @@ MatchAndExplain(geometry::Bivector<Scalar, Frame> const& actual,
   bool const x_matches =
       x_matcher_.MatchAndExplain(actual.coordinates().x, listener);
   if (!x_matches) {
-    *listener << " in the x coordinate; ";
+    *listener << "in the x coordinate; ";
   }
   bool const y_matches =
       y_matcher_.MatchAndExplain(actual.coordinates().y, listener);
   if (!y_matches) {
-    *listener << " in the y coordinate; ";
+    *listener << "in the y coordinate; ";
   }
   bool const z_matches =
       z_matcher_.MatchAndExplain(actual.coordinates().z, listener);
   if (!z_matches) {
-    *listener << " in the z coordinate; ";
+    *listener << "in the z coordinate; ";
   }
   return x_matches && y_matches && z_matches;
 }

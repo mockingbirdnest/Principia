@@ -36,6 +36,7 @@
     <ClInclude Include="matchers.hpp" />
     <ClInclude Include="numerics.hpp" />
     <ClInclude Include="numerics_body.hpp" />
+    <ClInclude Include="optimization_test_functions.hpp" />
     <ClInclude Include="serialization.hpp" />
     <ClInclude Include="serialization_body.hpp" />
     <ClInclude Include="solar_system_factory.hpp" />
@@ -58,6 +59,8 @@
     <ClCompile Include="discrete_trajectory_factories_test.cpp" />
     <ClCompile Include="is_near_test.cpp" />
     <ClCompile Include="numerics_test.cpp" />
+    <ClCompile Include="optimization_test_functions.cpp" />
+    <ClCompile Include="optimization_test_functions_test.cpp" />
     <ClCompile Include="solar_system_factory_test.cpp" />
     <ClCompile Include="statistics_test.cpp" />
     <ClCompile Include="vanishes_before_test.cpp" />
