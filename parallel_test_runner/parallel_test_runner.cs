@@ -39,7 +39,17 @@ class ParallelTestRunner {
         Console.WriteLine(await process.StandardOutput.ReadLineAsync());
       }
       process.WaitForExit();
+      process.Close();
     });
+  }
+
+  static void LogProcess(Process process, int index) {
+    Console.WriteLine("Running from (" +
+                      index.ToString() +
+                      ") " +
+                      process.StartInfo.FileName +
+                      " " +
+                      process.StartInfo.Arguments);
   }
 
   static void Main(string[] args) {
@@ -210,6 +220,7 @@ class ParallelTestRunner {
     foreach (Process process in death_test_processes) {
       process.StartInfo.RedirectStandardOutput = false;
       process.StartInfo.RedirectStandardError = false;
+      LogProcess(process, -1);
       process.Start();
       process.WaitForExit();
       if (process.ExitCode != 0) {
@@ -231,17 +242,12 @@ class ParallelTestRunner {
       // We cannot use i in the lambdas, it would be captured by reference.
       int index = i;
       process_semaphore.WaitOne();
+      LogProcess(process, index);
       try {
         process.Start();
       } catch (Exception e) {
-        Console.WriteLine("Exception " +
-                          e +
-                          " from (" +
-                          index.ToString() +
-                          ") " +
-                          process.StartInfo.FileName +
-                          " " +
-                          process.StartInfo.Arguments);
+        Console.WriteLine("Exception " + e);
+        LogProcess(process, index);
         throw;
       }
       tasks[i] = Task.Run(() => {
