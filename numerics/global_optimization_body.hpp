@@ -31,7 +31,7 @@ constexpr int64_t pcp_tree_max_values_per_cell = 10;
 template<typename Scalar, typename Argument, int dimensions>
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::Measure
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::measure() const {
- if constexpr (dimensions == 1) {
+  if constexpr (dimensions == 1) {
     return 2 * vertices[0].Norm();
   } else if constexpr (dimensions == 2) {
     return 4 * Wedge(vertices[0], vertices[1]).Norm();
@@ -212,11 +212,11 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
 }
 
 template<typename Scalar, typename Argument, int dimensions>
-bool MultiLevelSingleLinkage<Scalar, Argument, dimensions>::IsNewStationaryPoint(
-    Argument const& stationary_point,
-    PrincipalComponentPartitioningTree<Argument> const&
-        stationary_point_neighbourhoods,
-    NormType const local_search_tolerance) {
+bool MultiLevelSingleLinkage<Scalar, Argument, dimensions>::
+IsNewStationaryPoint(Argument const& stationary_point,
+                      PrincipalComponentPartitioningTree<Argument> const&
+                          stationary_point_neighbourhoods,
+                      NormType const local_search_tolerance) {
   auto* const stationary_point_nearest_neighbour =
       stationary_point_neighbourhoods.FindNearestNeighbour(stationary_point);
 
