@@ -49,7 +49,8 @@ class GlobalOptimizationTest : public ::testing::Test {
 };
 
 TEST_F(GlobalOptimizationTest, Branin) {
-  using Optimizer = MultiLevelSingleLinkage<double, Displacement<World>>;
+  using Optimizer =
+      MultiLevelSingleLinkage<double, Displacement<World>, /*dimensions=*/2>;
   int function_invocations = 0;
   int gradient_invocations = 0;
 
@@ -76,7 +77,6 @@ TEST_F(GlobalOptimizationTest, Branin) {
   Optimizer::Box const box = {
       .centre = Displacement<World>({0 * Metre, 2.5 * Metre, 7.5 * Metre}),
       .vertices = {
-          Displacement<World>({0 * Metre, 0 * Metre, 0 * Metre}),
           Displacement<World>({0 * Metre, 7.5 * Metre, 0 * Metre}),
           Displacement<World>({0 * Metre, 0 * Metre, 7.5 * Metre}),
       }};
@@ -88,10 +88,9 @@ TEST_F(GlobalOptimizationTest, Branin) {
                                                    /*number_of_rounds=*/10,
                                                    tolerance);
 
-    EXPECT_EQ(1487, function_invocations);
-    EXPECT_EQ(326, gradient_invocations);
+    EXPECT_EQ(1500, function_invocations);
+    EXPECT_EQ(392, gradient_invocations);
 
-    // Note that the fourth minima is outside the |box| passed to the optimizer.
     EXPECT_THAT(
         minima,
         ElementsAre(
@@ -101,17 +100,12 @@ TEST_F(GlobalOptimizationTest, Branin) {
                 AbsoluteErrorFrom(2.475 * Metre, IsNear(2.0e-7_(1) * Metre))),
             Componentwise(
                 _,
-                AbsoluteErrorFrom(-π * Metre, IsNear(3.4e-8_(1) * Metre)),
-                AbsoluteErrorFrom(12.275 * Metre, IsNear(1.2e-7_(1) * Metre))),
+                AbsoluteErrorFrom(-π * Metre, IsNear(2.8e-7_(1) * Metre)),
+                AbsoluteErrorFrom(12.275 * Metre, IsNear(4.9e-8_(1) * Metre))),
             Componentwise(
                 _,
-                AbsoluteErrorFrom(π * Metre, IsNear(3.4e-9_(1) * Metre)),
-                AbsoluteErrorFrom(2.275 * Metre, IsNear(1.7e-7_(1) * Metre))),
-            Componentwise(
-                _,
-                AbsoluteErrorFrom(5 * π * Metre, IsNear(2.5e-8_(1) * Metre)),
-                AbsoluteErrorFrom(12.875 * Metre,
-                                  IsNear(2.5e-7_(1) * Metre)))));
+                AbsoluteErrorFrom(π * Metre, IsNear(3.3e-8_(1) * Metre)),
+                AbsoluteErrorFrom(2.275 * Metre, IsNear(5.7e-7_(1) * Metre)))));
   }
   function_invocations = 0;
   gradient_invocations = 0;
@@ -121,29 +115,30 @@ TEST_F(GlobalOptimizationTest, Branin) {
                                    /*number_of_rounds=*/std::nullopt,
                                    tolerance);
 
-    EXPECT_EQ(1404, function_invocations);
-    EXPECT_EQ(174, gradient_invocations);
+    EXPECT_EQ(1297, function_invocations);
+    EXPECT_EQ(170, gradient_invocations);
 
     EXPECT_THAT(
         minima,
         ElementsAre(
             Componentwise(
                 _,
-                AbsoluteErrorFrom(π * Metre, IsNear(4.9e-9_(1) * Metre)),
-                AbsoluteErrorFrom(2.275 * Metre, IsNear(7.0e-9_(1) * Metre))),
+                AbsoluteErrorFrom(π * Metre, IsNear(6.9e-9_(1) * Metre)),
+                AbsoluteErrorFrom(2.275 * Metre, IsNear(6.9e-9_(1) * Metre))),
             Componentwise(
                 _,
-                AbsoluteErrorFrom(-π * Metre, IsNear(6.7e-9_(1) * Metre)),
-                AbsoluteErrorFrom(12.275 * Metre, IsNear(8.6e-9_(1) * Metre))),
+                AbsoluteErrorFrom(-π * Metre, IsNear(4.8e-8_(1) * Metre)),
+                AbsoluteErrorFrom(12.275 * Metre, IsNear(1.5e-8_(1) * Metre))),
             Componentwise(
                 _,
-                AbsoluteErrorFrom(9.42478 * Metre, IsNear(2.4e-6_(1) * Metre)),
-                AbsoluteErrorFrom(2.475 * Metre, IsNear(9.1e-7_(1) * Metre)))));
+                AbsoluteErrorFrom(9.42478 * Metre, IsNear(1.6e-6_(1) * Metre)),
+                AbsoluteErrorFrom(2.475 * Metre, IsNear(2.9e-7_(1) * Metre)))));
   }
 }
 
 TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
-  using Optimizer = MultiLevelSingleLinkage<double, Displacement<World>>;
+  using Optimizer =
+      MultiLevelSingleLinkage<double, Displacement<World>, /*dimensions=*/2>;
   int function_invocations = 0;
   int gradient_invocations = 0;
 
@@ -170,7 +165,6 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
   Optimizer::Box const box = {
       .centre = Displacement<World>(),
       .vertices = {
-          Displacement<World>({0 * Metre, 0 * Metre, 0 * Metre}),
           Displacement<World>({0 * Metre, 2 * Metre, 0 * Metre}),
           Displacement<World>({0 * Metre, 0 * Metre, 2 * Metre}),
       }};
@@ -183,23 +177,23 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
                                                    /*number_of_rounds=*/10,
                                                    tolerance);
 
-    EXPECT_EQ(2975, function_invocations);
-    EXPECT_EQ(415, gradient_invocations);
+    EXPECT_EQ(2772, function_invocations);
+    EXPECT_EQ(366, gradient_invocations);
     EXPECT_THAT(
         minima,
         ElementsAre(
             Componentwise(
                 _,
-                AbsoluteErrorFrom(0 * Metre, IsNear(6.3e-9_(1) * Metre)),
-                AbsoluteErrorFrom(-1 * Metre, IsNear(1.3e-8_(1) * Metre))),
+                AbsoluteErrorFrom(-0.6 * Metre, IsNear(9.6e-8_(1) * Metre)),
+                AbsoluteErrorFrom(-0.4 * Metre, IsNear(5.8e-9_(1) * Metre))),
             Componentwise(
                 _,
-                AbsoluteErrorFrom(1.2 * Metre, IsNear(6.5e-9_(1) * Metre)),
-                AbsoluteErrorFrom(0.8 * Metre, IsNear(2.5e-8_(1) * Metre))),
+                AbsoluteErrorFrom(0 * Metre, IsNear(7.1e-8_(1) * Metre)),
+                AbsoluteErrorFrom(-1 * Metre, IsNear(2.4e-7_(1) * Metre))),
             Componentwise(
                 _,
-                AbsoluteErrorFrom(1.8 * Metre, IsNear(5.7e-8_(1) * Metre)),
-                AbsoluteErrorFrom(0.2 * Metre, IsNear(1.3e-7_(1) * Metre)))));
+                AbsoluteErrorFrom(1.8 * Metre, IsNear(5.6e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.2 * Metre, IsNear(4.8e-7_(1) * Metre)))));
   }
   function_invocations = 0;
   gradient_invocations = 0;
@@ -209,32 +203,33 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
                                    /*number_of_rounds=*/std::nullopt,
                                    tolerance);
 
-    EXPECT_EQ(7778, function_invocations);
-    EXPECT_EQ(341, gradient_invocations);
+    EXPECT_EQ(7758, function_invocations);
+    EXPECT_EQ(244, gradient_invocations);
     EXPECT_THAT(
         minima,
         ElementsAre(
             Componentwise(
                 _,
-                AbsoluteErrorFrom(1.8 * Metre, IsNear(2.2e-7_(1) * Metre)),
-                AbsoluteErrorFrom(0.2 * Metre, IsNear(2.7e-7_(1) * Metre))),
+                AbsoluteErrorFrom(0 * Metre, IsNear(4.4e-8_(1) * Metre)),
+                AbsoluteErrorFrom(-1 * Metre, IsNear(5.9e-10_(1) * Metre))),
             Componentwise(
                 _,
-                AbsoluteErrorFrom(0 * Metre, IsNear(1.0e-9_(1) * Metre)),
-                AbsoluteErrorFrom(-1 * Metre, IsNear(2.1e-9_(1) * Metre))),
+                AbsoluteErrorFrom(1.8 * Metre, IsNear(3.1e-8_(1) * Metre)),
+                AbsoluteErrorFrom(0.2 * Metre, IsNear(2.3e-8_(1) * Metre))),
             Componentwise(
                 _,
-                AbsoluteErrorFrom(-0.6 * Metre, IsNear(3.7e-7_(1) * Metre)),
-                AbsoluteErrorFrom(-0.4 * Metre, IsNear(4.9e-7_(1) * Metre))),
+                AbsoluteErrorFrom(-0.6 * Metre, IsNear(3.3e-8_(1) * Metre)),
+                AbsoluteErrorFrom(-0.4 * Metre, IsNear(6.1e-8_(1) * Metre))),
             Componentwise(
                 _,
-                AbsoluteErrorFrom(1.2 * Metre, IsNear(6.3e-8_(1) * Metre)),
-                AbsoluteErrorFrom(0.8 * Metre, IsNear(1.9e-7_(1) * Metre)))));
+                AbsoluteErrorFrom(1.2 * Metre, IsNear(5.3e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.8 * Metre, IsNear(4.3e-7_(1) * Metre)))));
   }
 }
 
 TEST_F(GlobalOptimizationTest, Hartmann3) {
-  using Optimizer = MultiLevelSingleLinkage<double, Displacement<World>>;
+  using Optimizer =
+      MultiLevelSingleLinkage<double, Displacement<World>, /*dimensions=*/3>;
   int function_invocations = 0;
   int gradient_invocations = 0;
 

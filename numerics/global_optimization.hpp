@@ -3,7 +3,6 @@
 #include <functional>
 #include <optional>
 #include <random>
-#include <variant>
 #include <vector>
 
 #include "base/not_null.hpp"
@@ -18,12 +17,11 @@ namespace internal_global_optimization {
 
 using base::not_null;
 using geometry::Hilbert;
-using quantities::Cube;
 using quantities::Difference;
+using quantities::Exponentiation;
 using quantities::Length;
 using quantities::Product;
 using quantities::Quotient;
-using quantities::Square;
 
 // In this file |Argument| must be such that its difference belongs to a Hilbert
 // space.
@@ -40,7 +38,11 @@ using Gradient =
 // NOTE(phl): This could nearly be a self-standing function (it doesn't have
 // much state) but having the type |Box| floating around would be unpleasant.
 // Plus, that would be too many parameters in that function.
-template<typename Scalar, typename Argument>
+// The parameter |dimensions| may be used to specify the dimension of the
+// problem.  It it is 1 or 2, the box is 1- or 2-dimensional and the computation
+// of rₖ is adjusted accordingly.  In all cases, the dimensions of the box must
+// be nonzero.
+template<typename Scalar, typename Argument, int dimensions = 3>
 class MultiLevelSingleLinkage {
  public:
   using NormType = typename Hilbert<Difference<Argument>>::NormType;
@@ -49,11 +51,9 @@ class MultiLevelSingleLinkage {
   // vertices.  Random points are uniformly distributed in the box.
   struct Box {
     Argument centre;
-    std::array<Difference<Argument>, 3> vertices;
+    std::array<Difference<Argument>, dimensions> vertices;
 
-    // If some of the dimensions of the box are zero, we handle the problem as a
-    // 1- or 2-dimensional problem.  This only affects the computation of rₖ.
-    using Measure = std::variant<NormType, Square<NormType>, Cube<NormType>>;
+    using Measure = Exponentiation<NormType, dimensions>;
     Measure measure() const;
   };
 
