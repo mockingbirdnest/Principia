@@ -26,6 +26,25 @@ class ParallelTestRunner {
       @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\" +
       @"Team Tools\Performance Tools\x64\vsinstr.exe";
 
+  static void StubbornStart(Process process) {
+    for (int remaining = 10; remaining > 0; --remaining) {
+      try {
+        process.Start();
+        return;
+      } catch (Exception e) {
+        Console.WriteLine("Exception " +
+                          e +
+                          process.StartInfo.FileName +
+                          " " +
+                          process.StartInfo.Arguments);
+        if (remaining == 1) {
+          throw;
+        }
+        Thread.Sleep(TimeSpan.FromSeconds(1));
+      }
+    }
+  }
+
   static Task RunProcessAsync(string file_name, string args) {
     var process = new Process{StartInfo = {FileName = file_name,
                                            Arguments = args,
@@ -34,11 +53,12 @@ class ParallelTestRunner {
                                            RedirectStandardOutput = true},
                               EnableRaisingEvents = true};
     return new Task(async () => {
-      process.Start();
+      StubbornStart(process);
       while (!process.StandardOutput.EndOfStream) {
         Console.WriteLine(await process.StandardOutput.ReadLineAsync());
       }
       process.WaitForExit();
+      process.Close();
     });
   }
 
@@ -210,34 +230,46 @@ class ParallelTestRunner {
     foreach (Process process in death_test_processes) {
       process.StartInfo.RedirectStandardOutput = false;
       process.StartInfo.RedirectStandardError = false;
-      process.Start();
+      StubbornStart(process);
       process.WaitForExit();
       if (process.ExitCode != 0) {
         Console.WriteLine("Exit code " + process.ExitCode +
                           " from a death test");
         Environment.Exit(process.ExitCode);
       }
+      process.Close();
     }
 
     Console.WriteLine("Running " + processes.Count + " processes...");
     var process_semaphore = new Semaphore(initialCount: max_parallelism,
                                           maximumCount: max_parallelism);
 
-    Task[] tasks = new Task[2 * processes.Count];
+    Task[] tasks = new Task[processes.Count];
     var   errors = new ConcurrentBag<string>();
     for (int i = 0; i < processes.Count; ++i) {
       var process = processes[i];
       // We cannot use i in the lambdas, it would be captured by reference.
       int index = i;
       process_semaphore.WaitOne();
-      process.Start();
-      tasks[2 * i] = Task.Run(async () => {
-        while (!process.StandardOutput.EndOfStream) {
-          Console.WriteLine("O" +
-                            index.ToString().PadLeft(4) +
-                            " " +
-                            await process.StandardOutput.ReadLineAsync());
-        }
+      StubbornStart(process);
+      tasks[i] = Task.Run(() => {
+        Task standard_output_writer = Task.Run(async () => {
+          while (!process.StandardOutput.EndOfStream) {
+            Console.WriteLine("O" +
+                              index.ToString().PadLeft(4) +
+                              " " +
+                              await process.StandardOutput.ReadLineAsync());
+          }
+        });
+        Task standard_error_writer = Task.Run(async () => {
+          while (!process.StandardError.EndOfStream) {
+            Console.WriteLine("E" +
+                              index.ToString().PadLeft(4) +
+                              " " +
+                              await process.StandardError.ReadLineAsync());
+          }
+        });
+        process.WaitForExit();
         if (process.ExitCode != 0) {
           errors.Add("Exit code " +
                      process.ExitCode +
@@ -248,15 +280,10 @@ class ParallelTestRunner {
                      " " +
                      process.StartInfo.Arguments);
         }
+        Task.WaitAll(new Task[]
+                         { standard_output_writer, standard_error_writer });
+        process.Close();
         process_semaphore.Release();
-      });
-      tasks[2 * i + 1] = Task.Run(async () => {
-        while (!process.StandardError.EndOfStream) {
-          Console.WriteLine("E" +
-                            index.ToString().PadLeft(4) +
-                            " " +
-                            await process.StandardError.ReadLineAsync());
-        }
       });
     }
 
