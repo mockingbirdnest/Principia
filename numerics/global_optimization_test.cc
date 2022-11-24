@@ -81,7 +81,7 @@ TEST_F(GlobalOptimizationTest, Branin) {
           Displacement<World>({0 * Metre, 0 * Metre, 7.5 * Metre}),
       }};
 
-  const auto tolerance = 1e-6 * Metre;
+  auto const tolerance = 1e-6 * Metre;
   Optimizer optimizer(box, branin, grad_branin);
   {
     auto const minima = optimizer.FindGlobalMinima(/*points_per_round=*/10,
@@ -169,7 +169,7 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
           Displacement<World>({0 * Metre, 0 * Metre, 2 * Metre}),
       }};
 
-  const auto tolerance = 1e-6 * Metre;
+  auto const tolerance = 1e-6 * Metre;
   Optimizer optimizer(box, goldstein_price, grad_goldstein_price);
 
   {
@@ -262,7 +262,7 @@ TEST_F(GlobalOptimizationTest, Hartmann3) {
           Displacement<World>({0 * Metre, 0 * Metre, 0.5 * Metre}),
       }};
 
-  const auto tolerance = 1e-6 * Metre;
+  auto const tolerance = 1e-6 * Metre;
   Optimizer optimizer(box, hartmann3, grad_hartmann3);
 
   {
