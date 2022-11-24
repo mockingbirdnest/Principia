@@ -26,6 +26,25 @@ class ParallelTestRunner {
       @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\" +
       @"Team Tools\Performance Tools\x64\vsinstr.exe";
 
+  static void StubbornStart(Process process) {
+    for (int remaining = 10; remaining > 0; --remaining) {
+      try {
+        process.Start();
+        return;
+      } catch (Exception e) {
+        Console.WriteLine("Exception " +
+                          e +
+                          process.StartInfo.FileName +
+                          " " +
+                          process.StartInfo.Arguments);
+        if (remaining == 1) {
+          throw;
+        }
+        Thread.Sleep(TimeSpan.FromSeconds(1));
+      }
+    }
+  }
+
   static Task RunProcessAsync(string file_name, string args) {
     var process = new Process{StartInfo = {FileName = file_name,
                                            Arguments = args,
@@ -34,22 +53,13 @@ class ParallelTestRunner {
                                            RedirectStandardOutput = true},
                               EnableRaisingEvents = true};
     return new Task(async () => {
-      process.Start();
+      StubbornStart(process);
       while (!process.StandardOutput.EndOfStream) {
         Console.WriteLine(await process.StandardOutput.ReadLineAsync());
       }
       process.WaitForExit();
       process.Close();
     });
-  }
-
-  static void LogProcess(Process process, int index) {
-    Console.WriteLine("Running from (" +
-                      index.ToString() +
-                      ") " +
-                      process.StartInfo.FileName +
-                      " " +
-                      process.StartInfo.Arguments);
   }
 
   static void Main(string[] args) {
@@ -220,8 +230,7 @@ class ParallelTestRunner {
     foreach (Process process in death_test_processes) {
       process.StartInfo.RedirectStandardOutput = false;
       process.StartInfo.RedirectStandardError = false;
-      LogProcess(process, -1);
-      process.Start();
+      StubbornStart(process);
       process.WaitForExit();
       if (process.ExitCode != 0) {
         Console.WriteLine("Exit code " + process.ExitCode +
@@ -242,14 +251,7 @@ class ParallelTestRunner {
       // We cannot use i in the lambdas, it would be captured by reference.
       int index = i;
       process_semaphore.WaitOne();
-      LogProcess(process, index);
-      try {
-        process.Start();
-      } catch (Exception e) {
-        Console.WriteLine("Exception " + e);
-        LogProcess(process, index);
-        throw;
-      }
+      StubbornStart(process);
       tasks[i] = Task.Run(() => {
         Task standard_output_writer = Task.Run(async () => {
           while (!process.StandardOutput.EndOfStream) {
