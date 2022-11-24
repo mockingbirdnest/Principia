@@ -17,8 +17,8 @@ namespace internal_global_optimization {
 
 using base::not_null;
 using geometry::Hilbert;
-using quantities::Cube;
 using quantities::Difference;
+using quantities::Exponentiation;
 using quantities::Length;
 using quantities::Product;
 using quantities::Quotient;
@@ -38,7 +38,11 @@ using Gradient =
 // NOTE(phl): This could nearly be a self-standing function (it doesn't have
 // much state) but having the type |Box| floating around would be unpleasant.
 // Plus, that would be too many parameters in that function.
-template<typename Scalar, typename Argument>
+// The parameter |dimensions| may be used to specify the dimension of the
+// problem.  It it is 1 or 2, the box is 1- or 2-dimensional and the computation
+// of rₖ is adjusted accordingly.  In all cases, the dimensions of the box must
+// be nonzero.
+template<typename Scalar, typename Argument, int dimensions = 3>
 class MultiLevelSingleLinkage {
  public:
   using NormType = typename Hilbert<Difference<Argument>>::NormType;
@@ -47,9 +51,10 @@ class MultiLevelSingleLinkage {
   // vertices.  Random points are uniformly distributed in the box.
   struct Box {
     Argument centre;
-    std::array<Difference<Argument>, 3> vertices;
+    std::array<Difference<Argument>, dimensions> vertices;
 
-    Cube<NormType> Measure() const;
+    using Measure = Exponentiation<NormType, dimensions>;
+    Measure measure() const;
   };
 
   MultiLevelSingleLinkage(
@@ -92,7 +97,7 @@ class MultiLevelSingleLinkage {
   NormType CriticalRadius(double σ, std::int64_t kN);
 
   Box const box_;
-  Cube<NormType> const box_measure_;
+  Box::Measure const box_measure_;
   Field<Scalar, Argument> const f_;
   Field<Gradient<Scalar, Argument>, Argument> const grad_f_;
 
