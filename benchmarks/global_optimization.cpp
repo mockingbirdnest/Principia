@@ -24,8 +24,10 @@ using quantities::Length;
 using quantities::si::Metre;
 using testing_utilities::Branin;
 using testing_utilities::GoldsteinPrice;
+using testing_utilities::Hartmann3;
 using testing_utilities::𝛁Branin;
 using testing_utilities::𝛁GoldsteinPrice;
+using testing_utilities::𝛁Hartmann3;
 
 using World = Frame<enum class WorldTag>;
 
@@ -107,8 +109,50 @@ void BM_MLSLGoldsteinPrice(benchmark::State& state) {
   }
 }
 
+void BM_MLSLHartmann3(benchmark::State& state) {
+  std::int64_t const points_per_round = state.range(0);
+  std::int64_t const number_of_rounds = state.range(1);
+
+  using Optimizer =
+      MultiLevelSingleLinkage<double, Displacement<World>, /*dimensions=*/3>;
+
+  auto hartmann3 = [](Displacement<World> const& displacement) {
+    auto const& coordinates = displacement.coordinates();
+    double const x₀ = coordinates[0] / Metre;
+    double const x₁ = coordinates[1] / Metre;
+    double const x₂ = coordinates[2] / Metre;
+    return Hartmann3(x₀, x₁, x₂);
+  };
+
+  auto grad_hartmann3 = [](Displacement<World> const& displacement) {
+    auto const& coordinates = displacement.coordinates();
+    double const x₀ = coordinates[0] / Metre;
+    double const x₁ = coordinates[1] / Metre;
+    double const x₂ = coordinates[2] / Metre;
+    auto const [g₀, g₁, g₂] = 𝛁Hartmann3(x₀, x₁, x₂);
+    return Vector<Inverse<Length>, World>({g₀ / Metre, g₁ / Metre, g₂ / Metre});
+  };
+
+  Optimizer::Box const box = {
+      .centre = Displacement<World>({0.5 * Metre, 0.5 * Metre, 0.5 * Metre}),
+      .vertices = {
+          Displacement<World>({0.5 * Metre, 0 * Metre, 0 * Metre}),
+          Displacement<World>({0 * Metre, 0.5 * Metre, 0 * Metre}),
+          Displacement<World>({0 * Metre, 0 * Metre, 0.5 * Metre}),
+      }};
+
+  auto const tolerance = 1e-6 * Metre;
+  Optimizer optimizer(box, hartmann3, grad_hartmann3);
+
+  for (auto _ : state) {
+    benchmark::DoNotOptimize(optimizer.FindGlobalMinima(
+        points_per_round, number_of_rounds, tolerance));
+  }
+}
+
 BENCHMARK(BM_MLSLBranin)->ArgsProduct({{10, 20, 50}, {10, 20, 50}});
 BENCHMARK(BM_MLSLGoldsteinPrice)->ArgsProduct({{10, 20, 50}, {10, 20, 50}});
+BENCHMARK(BM_MLSLHartmann3)->ArgsProduct({{10, 20, 50}, {10, 20, 50}});
 
 }  // namespace numerics
 }  // namespace principia
