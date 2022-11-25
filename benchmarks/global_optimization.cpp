@@ -1,10 +1,10 @@
-// .\Release\x64\benchmarks.exe --benchmark_filter=MLSL
-// --benchmark_repetitions=1  // NOLINT(whitespace/line_length)
+// .\Release\x64\benchmarks.exe --benchmark_filter=MLSL --benchmark_repetitions=1  // NOLINT(whitespace/line_length)
 
 #include "numerics/global_optimization.hpp"
 
 #include <random>
 
+#include "absl/strings/str_cat.h"
 #include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -64,10 +64,15 @@ void BM_MLSLBranin(benchmark::State& state) {
   auto const tolerance = 1e-6 * Metre;
   Optimizer optimizer(box, branin, grad_branin);
 
+  int64_t total_minima = 0;
   for (auto _ : state) {
-    benchmark::DoNotOptimize(optimizer.FindGlobalMinima(
-        points_per_round, number_of_rounds, tolerance));
+    total_minima +=
+        optimizer.FindGlobalMinima(points_per_round,
+                                   number_of_rounds, tolerance).size();
   }
+  state.SetLabel(
+      absl::StrCat("number of minima: ",
+                   static_cast<double>(total_minima) / state.iterations()));
 }
 
 void BM_MLSLGoldsteinPrice(benchmark::State& state) {
@@ -103,10 +108,15 @@ void BM_MLSLGoldsteinPrice(benchmark::State& state) {
   auto const tolerance = 1e-6 * Metre;
   Optimizer optimizer(box, goldstein_price, grad_goldstein_price);
 
+  int64_t total_minima = 0;
   for (auto _ : state) {
-    benchmark::DoNotOptimize(optimizer.FindGlobalMinima(
-        points_per_round, number_of_rounds, tolerance));
+    total_minima +=
+        optimizer.FindGlobalMinima(points_per_round,
+                                   number_of_rounds, tolerance).size();
   }
+  state.SetLabel(
+      absl::StrCat("number of minima: ",
+                   static_cast<double>(total_minima) / state.iterations()));
 }
 
 void BM_MLSLHartmann3(benchmark::State& state) {
@@ -144,10 +154,15 @@ void BM_MLSLHartmann3(benchmark::State& state) {
   auto const tolerance = 1e-6 * Metre;
   Optimizer optimizer(box, hartmann3, grad_hartmann3);
 
+  int64_t total_minima = 0;
   for (auto _ : state) {
-    benchmark::DoNotOptimize(optimizer.FindGlobalMinima(
-        points_per_round, number_of_rounds, tolerance));
+    total_minima +=
+        optimizer.FindGlobalMinima(points_per_round,
+                                   number_of_rounds, tolerance).size();
   }
+  state.SetLabel(
+      absl::StrCat("number of minima: ",
+                   static_cast<double>(total_minima) / state.iterations()));
 }
 
 BENCHMARK(BM_MLSLBranin)->ArgsProduct({{10, 20, 50}, {10, 20, 50}});
