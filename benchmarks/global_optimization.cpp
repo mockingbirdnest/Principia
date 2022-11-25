@@ -108,7 +108,7 @@ void BM_MLSLGoldsteinPrice(benchmark::State& state) {
 }
 
 BENCHMARK(BM_MLSLBranin)->ArgsProduct({{10, 20, 50}, {10, 20, 50}});
-//BENCHMARK(BM_MLSLGoldsteinPrice)->ArgsProduct({{10, 20, 50}, {10, 20, 50}});
+BENCHMARK(BM_MLSLGoldsteinPrice)->ArgsProduct({{10, 20, 50}, {10, 20, 50}});
 
 }  // namespace numerics
 }  // namespace principia
