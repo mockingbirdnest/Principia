@@ -8,7 +8,7 @@ namespace internal_mechanical_system {
 
 using geometry::Displacement;
 using geometry::OrthogonalMap;
-using geometry::SymmetricProduct;
+using geometry::SymmetricSquare;
 using geometry::Vector;
 using geometry::Velocity;
 using geometry::Wedge;
@@ -90,7 +90,7 @@ MechanicalSystem<InertialFrame, SystemFrame>::InertiaTensor() const {
         to_system_frame(degrees_of_freedom);
     Displacement<SystemFrame> const r =
         degrees_of_freedom_in_system_frame.position() - SystemFrame::origin;
-    result += m * SymmetricProduct(r, r);
+    result += m * SymmetricSquare(r);
   }
   return result.Anticommutator();
 }

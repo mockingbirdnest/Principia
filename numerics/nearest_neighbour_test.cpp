@@ -33,11 +33,9 @@ class PrincipalComponentPartitioningTreeTest : public ::testing::Test {
     V const* nearest = nullptr;
     double nearest_distance = Infinity<double>;
     for (auto const& value : values) {
-      if (filter != nullptr && !filter(&value)) {
-        continue;
-      }
       double const distance = (value - query_value).Norm();
-      if (distance < nearest_distance) {
+      if (distance < nearest_distance &&
+          (filter == nullptr || filter(&value))) {
         nearest_distance = distance;
         nearest = &value;
       }

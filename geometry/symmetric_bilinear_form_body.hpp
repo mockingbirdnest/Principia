@@ -396,6 +396,14 @@ SymmetricProduct(Vector<LScalar, Frame> const& left,
              KroneckerProduct(right.coordinates(), left.coordinates())));
 }
 
+template<typename Scalar, typename Frame>
+SymmetricBilinearForm<Square<Scalar>, Frame, Vector>
+SymmetricSquare(Vector<Scalar, Frame> const& vector) {
+  auto const& coordinates = vector.coordinates();
+  return SymmetricBilinearForm<Square<Scalar>, Frame, Vector>(
+      KroneckerProduct(coordinates, coordinates));
+}
+
 template<typename LScalar, typename RScalar, typename Frame>
 Bivector<Product<LScalar, RScalar>, Frame> Anticommutator(
     SymmetricBilinearForm<LScalar, Frame, Vector> const& form,
