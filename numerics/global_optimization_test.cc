@@ -88,8 +88,8 @@ TEST_F(GlobalOptimizationTest, Branin) {
                                                    /*number_of_rounds=*/10,
                                                    tolerance);
 
-    EXPECT_EQ(1500, function_invocations);
-    EXPECT_EQ(392, gradient_invocations);
+    EXPECT_EQ(1264, function_invocations);
+    EXPECT_EQ(316, gradient_invocations);
 
     EXPECT_THAT(
         minima,
@@ -115,8 +115,8 @@ TEST_F(GlobalOptimizationTest, Branin) {
                                    /*number_of_rounds=*/std::nullopt,
                                    tolerance);
 
-    EXPECT_EQ(1297, function_invocations);
-    EXPECT_EQ(170, gradient_invocations);
+    EXPECT_EQ(1019, function_invocations);
+    EXPECT_EQ(136, gradient_invocations);
 
     EXPECT_THAT(
         minima,
@@ -177,8 +177,8 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
                                                    /*number_of_rounds=*/10,
                                                    tolerance);
 
-    EXPECT_EQ(2772, function_invocations);
-    EXPECT_EQ(366, gradient_invocations);
+    EXPECT_EQ(2131, function_invocations);
+    EXPECT_EQ(280, gradient_invocations);
     EXPECT_THAT(
         minima,
         ElementsAre(
@@ -203,8 +203,8 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
                                    /*number_of_rounds=*/std::nullopt,
                                    tolerance);
 
-    EXPECT_EQ(7758, function_invocations);
-    EXPECT_EQ(244, gradient_invocations);
+    EXPECT_EQ(5738, function_invocations);
+    EXPECT_EQ(187, gradient_invocations);
     EXPECT_THAT(
         minima,
         ElementsAre(
@@ -270,8 +270,8 @@ TEST_F(GlobalOptimizationTest, Hartmann3) {
                                                    /*number_of_rounds=*/10,
                                                    tolerance);
 
-    EXPECT_EQ(1628, function_invocations);
-    EXPECT_EQ(602, gradient_invocations);
+    EXPECT_EQ(1372, function_invocations);
+    EXPECT_EQ(470, gradient_invocations);
     EXPECT_THAT(
         minima,
         ElementsAre(
@@ -299,8 +299,8 @@ TEST_F(GlobalOptimizationTest, Hartmann3) {
                                    /*number_of_rounds=*/std::nullopt,
                                    tolerance);
 
-    EXPECT_EQ(211, function_invocations);
-    EXPECT_EQ(161, gradient_invocations);
+    EXPECT_EQ(199, function_invocations);
+    EXPECT_EQ(124, gradient_invocations);
     EXPECT_THAT(
         minima,
         ElementsAre(
