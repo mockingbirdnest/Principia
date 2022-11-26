@@ -158,14 +158,15 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
     // Compute the radius below which we won't do a local search in this
     // iteration.
     auto const rₖ = CriticalRadius(/*σ=*/4, kN);
+    auto const rₖ² = Pow<2>(rₖ);
 
     // Process the points whose nearest neighbour is "sufficiently far" (or
     // unknown).
     for (auto it = schedule.upper_bound(rₖ); it != schedule.end();) {
       Argument const& xᵢ = *it->second;
       auto* const xⱼ = point_neighbourhoods.FindNearestNeighbour(
-          xᵢ, [this, f_xᵢ = f_(xᵢ), rₖ, xᵢ](Argument const* const xⱼ) {
-            return (xᵢ - *xⱼ).Norm() <= rₖ && f_(*xⱼ) < f_xᵢ;
+          xᵢ, [this, f_xᵢ = f_(xᵢ), rₖ², xᵢ](Argument const* const xⱼ) {
+            return (xᵢ - *xⱼ).Norm²() <= rₖ² && f_(*xⱼ) < f_xᵢ;
           });
 
       if (xⱼ == nullptr) {

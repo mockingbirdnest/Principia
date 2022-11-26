@@ -119,6 +119,7 @@ PrincipalComponentPartitioningTree<Value_>::BuildTree(
   if (size <= max_values_per_cell_) {
     // We are done subdividing, return a leaf.
     Leaf leaf;
+    leaf.reserve(size);
     for (auto it = begin; it != end; ++it) {
       leaf.push_back(it->index);
     }
@@ -346,13 +347,11 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
   min_distance² = Infinity<Norm²>;
   min_index = no_min_index;
   for (auto const index : leaf) {
+    auto const distance² = (displacements_[index] - displacement).Norm²();
     // Skip the values that are filtered out.  Note that *all* the values may be
     // filtered out.
-    if (filter != nullptr && !filter(values_[index])) {
-      continue;
-    }
-    auto const distance² = (displacements_[index] - displacement).Norm²();
-    if (distance² < min_distance²) {
+    if (distance² < min_distance² &&
+        (filter == nullptr || filter(values_[index]))) {
       min_distance² = distance²;
       min_index = index;
     }

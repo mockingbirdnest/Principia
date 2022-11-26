@@ -110,10 +110,11 @@ double Zoom(double α_lo,
 template<typename Scalar, typename Argument>
 double LineSearch(Argument const& x,
                   Difference<Argument> const& p,
+                  Gradient<Scalar, Argument> const& grad_f_x,
                   Field<Scalar, Argument> const& f,
                   Field<Gradient<Scalar, Argument>, Argument> const& grad_f) {
   auto const ϕ_0 = f(x);
-  auto const ϕʹ_0 = InnerProduct(grad_f(x), p);
+  auto const ϕʹ_0 = InnerProduct(grad_f_x, p);
   double αᵢ₋₁ = 0;  // α₀.
   double αᵢ = 1;    // α₁.
   Scalar ϕ_αᵢ₋₁ = ϕ_0;
@@ -169,7 +170,7 @@ Argument BroydenFletcherGoldfarbShanno(
   // have other unpleasant properties.
   Difference<Argument> const p₀ = -Normalize(grad_f_x₀) * tolerance;
 
-  double const α₀ = LineSearch(x₀, p₀, f, grad_f);
+  double const α₀ = LineSearch(x₀, p₀, grad_f_x₀, f, grad_f);
   auto const x₁ = x₀+ α₀ * p₀;
 
   // Special computation of H₀ using (6.20).
@@ -188,7 +189,7 @@ Argument BroydenFletcherGoldfarbShanno(
     if (pₖ.Norm() <= tolerance) {
       return xₖ;
     }
-    double const αₖ = LineSearch(xₖ, pₖ, f, grad_f);
+    double const αₖ = LineSearch(xₖ, pₖ, grad_f_xₖ, f, grad_f);
     auto const xₖ₊₁ = xₖ + αₖ * pₖ;
     auto const grad_f_xₖ₊₁ = grad_f(xₖ₊₁);
 
