@@ -77,6 +77,8 @@ class MultiLevelSingleLinkage {
       NormType local_search_tolerance);
 
  private:
+  using Norm²Type = typename Hilbert<Difference<Argument>>::Norm²Type;
+
   // We need pointer stability for the arguments as we store pointers, e.g., in
   // PCP trees.  We generally cannot |reserve| because we don't know the final
   // size of the vector, hence the |unique_ptr|s.
@@ -93,8 +95,9 @@ class MultiLevelSingleLinkage {
   // Returns a vector of size |values_per_round|.  The points are in |box_|.
   Arguments RandomArguments(std::int64_t values_per_round);
 
-  // Returns the radius rₖ from [RT87a], eqn. 35, specialized for 3 dimensions.
-  NormType CriticalRadius(double σ, std::int64_t kN);
+  // Returns the square of the radius rₖ from [RT87a], eqn. 35, specialized for
+  // |dimensions|.
+  Norm²Type CriticalRadius²(double σ, std::int64_t kN);
 
   Box const box_;
   Box::Measure const box_measure_;

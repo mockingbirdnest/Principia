@@ -23,10 +23,11 @@ using geometry::Wedge;
 using quantities::Cbrt;
 using quantities::Infinity;
 using quantities::Pow;
-using quantities::Sqrt;
 
-// TODO(phl): Provide a way to parameterize the PCP trees?
-constexpr int64_t pcp_tree_max_values_per_cell = 10;
+// Values that are too small cause extra activity in |Add| and deeper recursion
+// in |FindNearestNeighbour|.  Values that are too large cause extra function
+// evaluations in the leaf search.
+constexpr int64_t pcp_tree_max_values_per_cell = 20;
 
 template<typename Scalar, typename Argument, int dimensions>
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::Measure
@@ -93,7 +94,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
   // half of the map (distance greater than rₖ) are considered, and they are
   // moved down if a "too close" neighbour is found.
   // We modify this map while iterating so we need iterator stability.
-  std::multimap<NormType, Argument const*> schedule;
+  std::multimap<Norm²Type, Argument const*> schedule;
 
   // There are two ways to iterate through this loop, corresponding to different
   // termination conditions.  We can either do a fixed number of rounds with a
@@ -152,17 +153,17 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
       points.push_back(std::move(pointₖ));
       Argument const* const pointₖ_pointer = points.back().get();
       point_neighbourhoods.Add(pointₖ_pointer);
-      schedule.emplace_hint(schedule.end(), Infinity<NormType>, pointₖ_pointer);
+      schedule.emplace_hint(
+          schedule.end(), Infinity<Norm²Type>, pointₖ_pointer);
     }
 
     // Compute the radius below which we won't do a local search in this
     // iteration.
-    auto const rₖ = CriticalRadius(/*σ=*/4, kN);
-    auto const rₖ² = Pow<2>(rₖ);
+    Norm²Type const rₖ² = CriticalRadius²(/*σ=*/4, kN);
 
     // Process the points whose nearest neighbour is "sufficiently far" (or
     // unknown).
-    for (auto it = schedule.upper_bound(rₖ); it != schedule.end();) {
+    for (auto it = schedule.upper_bound(rₖ²); it != schedule.end();) {
       Argument const& xᵢ = *it->second;
       auto* const xⱼ = point_neighbourhoods.FindNearestNeighbour(
           xᵢ, [this, f_xᵢ = f_(xᵢ), rₖ², xᵢ](Argument const* const xⱼ) {
@@ -191,12 +192,12 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
       } else {
         // Move the point xᵢ "down" in the |schedule| map, based on the distance
         // to its nearest neighbour.
-        auto const distance_to_xⱼ = (xᵢ - *xⱼ).Norm();
-        DCHECK_LE(distance_to_xⱼ, rₖ);
+        auto const distance²_to_xⱼ = (xᵢ - *xⱼ).Norm²();
+        DCHECK_LE(distance²_to_xⱼ, rₖ²);
         it = schedule.erase(it);
-        // This insertion take places below |schedule.upper_bound(rₖ)|, so it
+        // This insertion take places below |schedule.upper_bound(rₖ²)|, so it
         // doesn't affect the current iteration.
-        schedule.emplace(distance_to_xⱼ, &xᵢ);
+        schedule.emplace(distance²_to_xⱼ, &xᵢ);
       }
     }
   }
@@ -245,16 +246,16 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::RandomArguments(
 }
 
 template<typename Scalar, typename Argument, int dimensions>
-typename Hilbert<Difference<Argument>>::NormType
-MultiLevelSingleLinkage<Scalar, Argument, dimensions>::CriticalRadius(
+typename MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Norm²Type
+MultiLevelSingleLinkage<Scalar, Argument, dimensions>::CriticalRadius²(
     double const σ,
     std::int64_t const kN) {
   if constexpr (dimensions == 1) {
-    return box_measure_ * σ * std::log(kN) / (2.0 * kN);
+    return Pow<2>(box_measure_ * σ * std::log(kN) / (2.0 * kN));
   } else if constexpr (dimensions == 2) {
-    return Sqrt(box_measure_ * σ * std::log(kN) / (π * kN));
+    return box_measure_ * σ * std::log(kN) / (π * kN);
   } else if constexpr (dimensions == 3) {
-    return Cbrt(3.0 * box_measure_ * σ * std::log(kN) / (4.0 * π * kN));
+    return Cbrt(Pow<2>(3.0 * box_measure_ * σ * std::log(kN) / (4.0 * π * kN)));
   }
   noreturn();
 }
