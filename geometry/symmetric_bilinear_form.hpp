@@ -336,6 +336,7 @@ using internal_symmetric_bilinear_form::Anticommutator;
 using internal_symmetric_bilinear_form::InnerProductForm;
 using internal_symmetric_bilinear_form::SymmetricBilinearForm;
 using internal_symmetric_bilinear_form::SymmetricProduct;
+using internal_symmetric_bilinear_form::SymmetricSquare;
 
 }  // namespace geometry
 }  // namespace principia

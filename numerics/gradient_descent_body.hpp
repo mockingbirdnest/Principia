@@ -20,6 +20,7 @@ using geometry::InnerProductForm;
 using geometry::Normalize;
 using geometry::SymmetricBilinearForm;
 using geometry::SymmetricProduct;
+using geometry::SymmetricSquare;
 using geometry::Vector;
 using quantities::Abs;
 using quantities::Quotient;
