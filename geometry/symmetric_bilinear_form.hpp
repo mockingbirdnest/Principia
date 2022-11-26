@@ -21,6 +21,7 @@ namespace internal_symmetric_bilinear_form {
 using base::not_null;
 using quantities::Product;
 using quantities::Quotient;
+using quantities::Square;
 
 // A symmetric bilinear form with dimensionality |Scalar|, on the given kind of
 // |Multivector|, expressed in the coordinates of |Frame|.
@@ -291,6 +292,11 @@ template<typename LScalar, typename RScalar, typename Frame>
 SymmetricBilinearForm<Product<LScalar, RScalar>, Frame, Vector>
 SymmetricProduct(Vector<LScalar, Frame> const& left,
                  Vector<RScalar, Frame> const& right);
+
+// |SymmetricSquare(v)| is |SymmetricProduct(v, v)|.
+template<typename Scalar, typename Frame>
+SymmetricBilinearForm<Square<Scalar>, Frame, Vector>
+SymmetricSquare(Vector<Scalar, Frame> const& vector);
 
 // Symmetric bilinear forms on vectors act on bivectors through this function.
 // |Anticommutator(F, B)| is (tr(F)𝟙 - F)B in ℝ³ representation.  In matrix

@@ -194,6 +194,8 @@ TEST_F(SymmetricBilinearFormTest, SymmetricProduct) {
                      R3x3Matrix<double>({   2,     6,  -3.5},
                                         {   6,    18, -10.5},
                                         {-3.5, -10.5,   5}))));
+  EXPECT_THAT(SymmetricSquare(v1), Eq(SymmetricProduct(v1, v1)));
+  EXPECT_THAT(SymmetricSquare(v2), Eq(SymmetricProduct(v2, v2)));
 }
 
 TEST_F(SymmetricBilinearFormTest, Anticommutator) {
