@@ -44,6 +44,7 @@ struct ArgumentHelper<Vector<Scalar, Frame>> {
 constexpr double c₁ = 1e-4;
 constexpr double c₂ = 0.9;
 constexpr double α_multiplier = 2;
+constexpr double hermite2_tolerance = 0.01;
 
 template<typename Scalar, typename Argument>
 double Zoom(double α_lo,
@@ -62,11 +63,14 @@ double Zoom(double α_lo,
     DCHECK_NE(α_lo, α_hi);
     double αⱼ;
     {
-      // Quadratic interpolation.
+      // Quadratic interpolation.  If the extremum is very close to one of the
+      // bounds, zooming would proceed very slowly.  Instead, we bisect, which
+      // ensures steady zooming.
       Hermite2<Scalar, double> const hermite2(
           {α_lo, α_hi}, {ϕ_α_lo, ϕ_α_hi}, ϕʹ_α_lo);
       auto const α_extremum = hermite2.FindExtremum();
-      if (α_lo < α_extremum && α_extremum < α_hi) {
+      if (α_lo * (1 + hermite2_tolerance) < α_extremum &&
+          α_extremum < α_hi * (1 - hermite2_tolerance)) {
         αⱼ = α_extremum;
       } else {
         // Fall back to bisection.
