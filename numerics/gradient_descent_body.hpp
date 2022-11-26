@@ -206,7 +206,7 @@ Argument BroydenFletcherGoldfarbShanno(
     // products.  Elementary transformations yield the formula below.
     auto const ρ = 1 / sₖyₖ;
     auto const Hₖ₊₁ =
-        Hₖ + ρ * ((ρ * Hₖ(yₖ, yₖ) + 1) * SymmetricProduct(sₖ, sₖ) -
+        Hₖ + ρ * ((ρ * Hₖ(yₖ, yₖ) + 1) * SymmetricSquare(sₖ) -
                   2 * SymmetricProduct(Hₖ * yₖ, sₖ));
 
     xₖ = xₖ₊₁;

@@ -180,8 +180,7 @@ PrincipalComponentPartitioningTree<Value_>::ComputePrincipalComponentForm(
     typename Indices::iterator const end) const {
   DisplacementSymmetricBilinearForm result;
   for (auto it = begin; it != end; ++it) {
-    auto const& displacement = displacements_[it->index];
-    result += SymmetricProduct(displacement, displacement);
+    result += SymmetricSquare(displacements_[it->index]);
   }
   return result;
 }

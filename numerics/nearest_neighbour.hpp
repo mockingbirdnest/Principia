@@ -20,7 +20,7 @@ using base::not_null;
 using geometry::Bivector;
 using geometry::Frame;
 using geometry::Hilbert;
-using geometry::SymmetricProduct;
+using geometry::SymmetricSquare;
 using quantities::Difference;
 
 // Principal component partitioning trees (PCP trees) are introduced by [WZ91]
@@ -68,11 +68,10 @@ class PrincipalComponentPartitioningTree {
   using Axis = typename Hilbert<Displacement>::NormalizedType;
 
   // A form that operates on |Displacement|s.
-  // NOTE(phl): We don't have SymmetricProduct for Bivector, so this effectively
+  // NOTE(phl): We don't have SymmetricSquare for Bivector, so this effectively
   // means that Displacement is a Vector.
   using DisplacementSymmetricBilinearForm =
-      decltype(SymmetricProduct(std::declval<Displacement>(),
-                                std::declval<Displacement>()));
+      decltype(SymmetricSquare(std::declval<Displacement>()));
 
   // The principal components (a.k.a. eigensystem) of the above form.
   using DisplacementPrincipalComponentsSystem =
