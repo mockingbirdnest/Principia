@@ -358,8 +358,8 @@ TEST_F(GlobalOptimizationTest, Potential) {
     logger.Append("minima", minima, mathematica::ExpressIn(Metre));
     logger.Flush();
 
-    EXPECT_EQ(29638, function_invocations);
-    EXPECT_EQ(28689, gradient_invocations);
+    EXPECT_EQ(1452, function_invocations);
+    EXPECT_EQ(503, gradient_invocations);
     EXPECT_THAT(minima, IsEmpty());
   }
   function_invocations = 0;
@@ -370,8 +370,8 @@ TEST_F(GlobalOptimizationTest, Potential) {
                                    /*number_of_rounds=*/std::nullopt,
                                    tolerance);
 
-    EXPECT_EQ(5101, function_invocations);
-    EXPECT_EQ(5065, gradient_invocations);
+    EXPECT_EQ(127, function_invocations);
+    EXPECT_EQ(91, gradient_invocations);
     EXPECT_THAT(minima, IsEmpty());
   }
 }

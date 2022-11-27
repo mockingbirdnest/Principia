@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <optional>
 
 #include "geometry/hilbert.hpp"
 #include "quantities/named_quantities.hpp"
@@ -12,6 +13,7 @@ namespace internal_gradient_descent {
 
 using geometry::Hilbert;
 using quantities::Difference;
+using quantities::Infinity;
 using quantities::Product;
 using quantities::Quotient;
 
@@ -27,12 +29,17 @@ using Gradient =
             Quotient<Difference<Argument>,
                      typename Hilbert<Difference<Argument>>::Norm²Type>>;
 
+// Stops when the search displacement is smaller than |tolerance|.  Returns
+// |nullopt| if no minimum is found within distance |radius| of
+// |start_argument|.
 template<typename Scalar, typename Argument>
-Argument BroydenFletcherGoldfarbShanno(
+std::optional<Argument> BroydenFletcherGoldfarbShanno(
     Argument const& start_argument,
     Field<Scalar, Argument> const& f,
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
-    typename Hilbert<Difference<Argument>>::NormType const& tolerance);
+    typename Hilbert<Difference<Argument>>::NormType const& tolerance,
+    typename Hilbert<Difference<Argument>>::NormType const& radius =
+        Infinity<typename Hilbert<Difference<Argument>>::NormType>);
 
 }  // namespace internal_gradient_descent
 

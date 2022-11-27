@@ -30,6 +30,7 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::IsNear;
 using testing_utilities::operator""_;
+using ::testing::Optional;
 
 class GradientDescentTest : public ::testing::Test {
  protected:
@@ -59,7 +60,7 @@ TEST_F(GradientDescentTest, Quadratic) {
           field,
           gradient,
           /*tolerance=*/1 * Micro(Metre));
-  EXPECT_THAT(actual_minimum, AlmostEquals(expected_minimum, 2));
+  EXPECT_THAT(actual_minimum, Optional(AlmostEquals(expected_minimum, 2)));
 }
 
 TEST_F(GradientDescentTest, Quartic) {
@@ -85,9 +86,9 @@ TEST_F(GradientDescentTest, Quartic) {
           field,
           gradient,
           /*tolerance=*/1 * Micro(Metre));
-  EXPECT_THAT(
-      actual_minimum,
-      AbsoluteErrorFrom(expected_minimum, IsNear(437_(1) * Micro(Metre))));
+  EXPECT_THAT(actual_minimum,
+              Optional(AbsoluteErrorFrom(expected_minimum,
+                                         IsNear(437_(1) * Micro(Metre)))));
 }
 
 TEST_F(GradientDescentTest, Gaussian) {
@@ -117,9 +118,9 @@ TEST_F(GradientDescentTest, Gaussian) {
           field,
           gradient,
           /*tolerance=*/1 * Micro(Metre));
-  EXPECT_THAT(
-      actual_minimum,
-      AbsoluteErrorFrom(expected_minimum, IsNear(0.82_(1) * Micro(Metre))));
+  EXPECT_THAT(actual_minimum,
+              Optional(AbsoluteErrorFrom(expected_minimum,
+                                         IsNear(0.82_(1) * Micro(Metre)))));
 }
 
 TEST_F(GradientDescentTest, Rosenbrock) {
@@ -151,9 +152,9 @@ TEST_F(GradientDescentTest, Rosenbrock) {
             field,
             gradient,
             /*tolerance=*/1 * Micro(Metre));
-    EXPECT_THAT(
-        actual_minimum,
-        AbsoluteErrorFrom(expected_minimum, IsNear(0.96_(1) * Micro(Metre))));
+    EXPECT_THAT(actual_minimum,
+                Optional(AbsoluteErrorFrom(expected_minimum,
+                                           IsNear(0.96_(1) * Micro(Metre)))));
   }
   {
     auto const actual_minimum =
@@ -163,9 +164,9 @@ TEST_F(GradientDescentTest, Rosenbrock) {
             field,
             gradient,
             /*tolerance=*/1 * Micro(Metre));
-    EXPECT_THAT(
-        actual_minimum,
-        AbsoluteErrorFrom(expected_minimum, IsNear(0.047_(1) * Micro(Metre))));
+    EXPECT_THAT(actual_minimum,
+                Optional(AbsoluteErrorFrom(expected_minimum,
+                                           IsNear(0.047_(1) * Micro(Metre)))));
   }
 }
 
