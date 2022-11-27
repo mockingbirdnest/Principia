@@ -208,7 +208,7 @@ TEST_F(EquipotentialTest, BodyCentredNonRotating) {
 }
 
 TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantPoints) {
-  mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd.wl",
+  mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd_distances.wl",
                              /*make_unique=*/true);
   auto const dynamic_frame(
       BodyCentredBodyDirectionDynamicFrame<Barycentric, World>(
@@ -236,7 +236,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantPoints) {
 }
 
 TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantEnergies) {
-  mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd.wl",
+  mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd_energies.wl",
                              /*make_unique=*/true);
   auto const dynamic_frame(
       BodyCentredBodyDirectionDynamicFrame<Barycentric, World>(
