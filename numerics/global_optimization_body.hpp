@@ -134,7 +134,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
     } else {
       std::int64_t const w = stationary_points.size();
       // Note that |w| may be 0 here if the stationary points were all outside
-      // |box_|.
+      // the local search radius.
       DCHECK_GT(kN, w + 2);
       // [RT87b] equation 3.
       if (kN > w + 2 &&

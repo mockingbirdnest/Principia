@@ -4,7 +4,6 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
-#include "mathematica/mathematica.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -321,7 +320,6 @@ TEST_F(GlobalOptimizationTest, Hartmann3) {
 
 // A function that looks like the opposite of the gravitational potential.
 TEST_F(GlobalOptimizationTest, Potential) {
-  mathematica::Logger logger(TEMP_DIR / "potential.wl");
   using Optimizer = MultiLevelSingleLinkage<Inverse<Length>,
                                             Displacement<World>,
                                             /*dimensions=*/3>;
@@ -355,8 +353,6 @@ TEST_F(GlobalOptimizationTest, Potential) {
     auto const minima = optimizer.FindGlobalMinima(/*points_per_round=*/10,
                                                    /*number_of_rounds=*/10,
                                                    tolerance);
-    logger.Append("minima", minima, mathematica::ExpressIn(Metre));
-    logger.Flush();
 
     EXPECT_EQ(1452, function_invocations);
     EXPECT_EQ(503, gradient_invocations);
