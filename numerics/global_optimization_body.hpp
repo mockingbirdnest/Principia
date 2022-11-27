@@ -43,6 +43,19 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::measure() const {
 }
 
 template<typename Scalar, typename Argument, int dimensions>
+bool MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::contains(
+    Argument const& point) const {
+  auto const displacement = point - centre;
+  for (auto const& vertex : vertices) {
+    auto const projection = InnerProduct(vertex, displacement) / vertex.Norm²();
+    if (projection < -1 || projection > 1) {
+      return false;
+    }
+  }
+  return true;
+}
+
+template<typename Scalar, typename Argument, int dimensions>
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::MultiLevelSingleLinkage(
     Box const& box,
     Field<Scalar, Argument> const& f,
@@ -123,7 +136,8 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
       }
     } else {
       std::int64_t const w = stationary_points.size();
-      DCHECK_GT(w, 0);
+      // Note that |w| may be 0 here if the stationary points were all outside
+      // |box_|.
       DCHECK_GT(kN, w + 2);
       // [RT87b] equation 3.
       if (kN > w + 2 &&
@@ -179,7 +193,8 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
 
         // If the new stationary point is sufficiently far from the ones we
         // already know, record it.
-        if (IsNewStationaryPoint(stationary_point,
+        if (box_.contains(stationary_point) &&
+            IsNewStationaryPoint(stationary_point,
                                  stationary_point_neighbourhoods,
                                  local_search_tolerance)) {
           stationary_points.push_back(

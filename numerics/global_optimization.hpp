@@ -55,6 +55,8 @@ class MultiLevelSingleLinkage {
 
     using Measure = Exponentiation<NormType, dimensions>;
     Measure measure() const;
+
+    bool contains(Argument const& point) const;
   };
 
   MultiLevelSingleLinkage(
