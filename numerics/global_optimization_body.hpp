@@ -2,6 +2,7 @@
 
 #include "numerics/global_optimization.hpp"
 
+#include <algorithm>
 #include <map>
 #include <type_traits>
 #include <utility>
