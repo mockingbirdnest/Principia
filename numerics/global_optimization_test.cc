@@ -39,6 +39,7 @@ using testing_utilities::𝛁GoldsteinPrice;
 using testing_utilities::𝛁Hartmann3;
 using testing_utilities::operator""_;
 using ::testing::ElementsAre;
+using ::testing::IsEmpty;
 using ::testing::_;
 
 // The test functions in this file are from
@@ -314,6 +315,60 @@ TEST_F(GlobalOptimizationTest, Hartmann3) {
                 AbsoluteErrorFrom(0.555649 * Metre, IsNear(6.3e-7_(1) * Metre)),
                 AbsoluteErrorFrom(0.852547 * Metre,
                                   IsNear(4.8e-7_(1) * Metre)))));
+  }
+}
+
+// A function that looks like the opposite of the gravitational potential.
+TEST_F(GlobalOptimizationTest, Potential) {
+  using Optimizer = MultiLevelSingleLinkage<Inverse<Length>,
+                                            Displacement<World>,
+                                            /*dimensions=*/3>;
+  int function_invocations = 0;
+  int gradient_invocations = 0;
+
+  auto potential =
+      [&function_invocations](Displacement<World> const& displacement) {
+    ++function_invocations;
+    return 1 / displacement.Norm();
+  };
+
+  auto grad_potential =
+      [&gradient_invocations](Displacement<World> const& displacement) {
+    ++gradient_invocations;
+    return -displacement / Pow<3>(displacement.Norm());
+  };
+
+  Optimizer::Box const box = {
+      .centre = Displacement<World>({1 * Metre, 1 * Metre, 1 * Metre}),
+      .vertices = {
+          Displacement<World>({10 * Metre, 0 * Metre, 0 * Metre}),
+          Displacement<World>({0 * Metre, 10 * Metre, 0 * Metre}),
+          Displacement<World>({0 * Metre, 0 * Metre, 10 * Metre}),
+      }};
+
+  auto const tolerance = 1e-6 * Metre;
+  Optimizer optimizer(box, potential, grad_potential);
+
+  {
+    auto const minima = optimizer.FindGlobalMinima(/*points_per_round=*/10,
+                                                   /*number_of_rounds=*/10,
+                                                   tolerance);
+
+    EXPECT_EQ(1452, function_invocations);
+    EXPECT_EQ(503, gradient_invocations);
+    EXPECT_THAT(minima, IsEmpty());
+  }
+  function_invocations = 0;
+  gradient_invocations = 0;
+  {
+    auto const minima =
+        optimizer.FindGlobalMinima(/*points_per_round=*/10,
+                                   /*number_of_rounds=*/std::nullopt,
+                                   tolerance);
+
+    EXPECT_EQ(127, function_invocations);
+    EXPECT_EQ(91, gradient_invocations);
+    EXPECT_THAT(minima, IsEmpty());
   }
 }
 

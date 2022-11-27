@@ -2,6 +2,7 @@
 
 #include "numerics/global_optimization.hpp"
 
+#include <algorithm>
 #include <map>
 #include <type_traits>
 #include <utility>
@@ -43,11 +44,22 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::measure() const {
 }
 
 template<typename Scalar, typename Argument, int dimensions>
+typename MultiLevelSingleLinkage<Scalar, Argument, dimensions>::NormType
+MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::diametre() const {
+  NormType diameter;
+  for (auto const& vertex : vertices) {
+    diameter = std::max(diameter, 2 * vertex.Norm());
+  }
+  return diameter;
+}
+
+template<typename Scalar, typename Argument, int dimensions>
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::MultiLevelSingleLinkage(
     Box const& box,
     Field<Scalar, Argument> const& f,
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f)
     : box_(box),
+      box_diametre_(box_.diametre()),
       box_measure_(box_.measure()),
       f_(f),
       grad_f_(grad_f),
@@ -76,7 +88,6 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
   PrincipalComponentPartitioningTree<Argument> stationary_point_neighbourhoods(
       /*values=*/{},
       pcp_tree_max_values_per_cell);
-
 
   // The PCP tree used for detecting proximity of the sample points .  It gets
   // updated as new points are generated.
@@ -123,7 +134,8 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
       }
     } else {
       std::int64_t const w = stationary_points.size();
-      DCHECK_GT(w, 0);
+      // Note that |w| may be 0 here if the stationary points were all outside
+      // the local search radius.
       DCHECK_GT(kN, w + 2);
       // [RT87b] equation 3.
       if (kN > w + 2 &&
@@ -172,18 +184,21 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
 
       if (xⱼ == nullptr) {
         // We must do a local search as xᵢ couldn't be added to an existing
-        // cluster.
+        // cluster.  Note that the radius of the search has to be the diametre
+        // of the box: it's possible that xᵢ would be near one vertex of the box
+        // and the stationary point near the opposite vertex.
         ++number_of_local_searches;
         auto const stationary_point = BroydenFletcherGoldfarbShanno(
-            xᵢ, f_, grad_f_, local_search_tolerance);
+            xᵢ, f_, grad_f_, local_search_tolerance, box_diametre_);
 
         // If the new stationary point is sufficiently far from the ones we
         // already know, record it.
-        if (IsNewStationaryPoint(stationary_point,
+        if (stationary_point.has_value() &&
+            IsNewStationaryPoint(stationary_point.value(),
                                  stationary_point_neighbourhoods,
                                  local_search_tolerance)) {
           stationary_points.push_back(
-              std::make_unique<Argument>(stationary_point));
+              std::make_unique<Argument>(stationary_point.value()));
           stationary_point_neighbourhoods.Add(stationary_points.back().get());
         }
         // A local search has been started from xᵢ, so no point in considering
