@@ -16,6 +16,7 @@
 #include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "mathematica/mathematica.hpp"
+#include "numerics/global_optimization.hpp"
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -33,18 +34,25 @@ using base::not_null;
 using geometry::Arbitrary;
 using geometry::Barycentre;
 using geometry::Bivector;
+using geometry::Displacement;
 using geometry::Frame;
 using geometry::Inertial;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Rotation;
+using geometry::Vector;
 using geometry::Velocity;
 using integrators::EmbeddedExplicitRungeKuttaIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::DormandPrince1986RK547FC;
 using integrators::methods::QuinlanTremaine1990Order12;
+using numerics::MultiLevelSingleLinkage;
+using quantities::Acceleration;
+using quantities::SpecificEnergy;
 using quantities::si::Day;
 using quantities::si::Degree;
+using quantities::si::Hour;
+using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Minute;
@@ -272,6 +280,58 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantEnergies) {
         }
         return degrees_of_freedom;
       });
+}
+
+TEST_F(EquipotentialTest, L4L5Trajectories) {
+  mathematica::Logger logger(TEMP_DIR / "l4_l5_trajectories.wl",
+                             /*make_unique=*/true);
+  std::int64_t const number_of_days = 30;
+  auto const dynamic_frame(
+      BodyCentredBodyDirectionDynamicFrame<Barycentric, World>(
+          ephemeris_.get(),
+          solar_system_->massive_body(
+              *ephemeris_,
+              SolarSystemFactory::name(SolarSystemFactory::Earth)),
+          solar_system_->massive_body(
+              *ephemeris_,
+              SolarSystemFactory::name(SolarSystemFactory::Moon))));
+  CHECK_OK(ephemeris_->Prolong(t0_ + number_of_days * Day));
+
+  Instant t = t0_;
+  auto const potential = [&dynamic_frame,
+                          &t](Position<World> const& position) {
+    // Note the sign.
+    return -dynamic_frame.GeometricPotential(t, position);
+  };
+  auto const acceleration = [&dynamic_frame,
+                              &t](Position<World> const& position) {
+    auto const acceleration =
+        dynamic_frame.GeometricAcceleration(t, {position, Velocity<World>{}});
+    return Vector<Acceleration, World>({acceleration.coordinates()[0],
+                                        acceleration.coordinates()[1],
+                                        Acceleration{}});
+  };
+  const MultiLevelSingleLinkage<SpecificEnergy, Position<World>, 2>::Box box = {
+      .centre = World::origin,
+      .vertices = {Displacement<World>({1'000'000 * Kilo(Metre),
+                                        0 * Metre,
+                                        0 * Metre}),
+                   Displacement<World>({0 * Metre,
+                                        1'000'000 * Kilo(Metre),
+                                        0 * Metre})}};
+
+  MultiLevelSingleLinkage<SpecificEnergy, Position<World>, 2> optimizer(
+      box, potential, acceleration);
+  for (int j = 0; j < number_of_days; ++j) {
+    t = t0_ + j * Day;
+    logger.Append("minima",
+                  optimizer.FindGlobalMinima(
+                      /*points_per_round=*/100,
+                      /*number_of_rounds=*/std::nullopt,
+                      /*local_search_tolerance=*/10'000 * Kilo(Metre)),
+                  mathematica::ExpressIn(Metre));
+    LOG(ERROR) << "Day #" << j;
+  }
 }
 
 #endif
