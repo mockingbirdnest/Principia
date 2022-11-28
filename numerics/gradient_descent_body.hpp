@@ -152,11 +152,12 @@ double LineSearch(Argument const& x,
 
 // The implementation of BFGS follows [NW06], algorithm 6.18.
 template<typename Scalar, typename Argument>
-Argument BroydenFletcherGoldfarbShanno(
+std::optional<Argument> BroydenFletcherGoldfarbShanno(
     Argument const& start_argument,
     Field<Scalar, Argument> const& f,
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
-    typename Hilbert<Difference<Argument>>::NormType const& tolerance) {
+    typename Hilbert<Difference<Argument>>::NormType const& tolerance,
+    typename Hilbert<Difference<Argument>>::NormType const& radius) {
   // The first step uses vanilla steepest descent.
   auto const x₀ = start_argument;
   auto const grad_f_x₀ = grad_f(x₀);
@@ -186,6 +187,9 @@ Argument BroydenFletcherGoldfarbShanno(
   auto grad_f_xₖ = grad_f_x₁;
   auto Hₖ = H₀;
   for (;;) {
+    if ((xₖ - x₀).Norm() > radius) {
+      return std::nullopt;
+    }
     Difference<Argument> const pₖ = -Hₖ * grad_f_xₖ;
     if (pₖ.Norm() <= tolerance) {
       return xₖ;

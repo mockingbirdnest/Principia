@@ -53,6 +53,8 @@ class MultiLevelSingleLinkage {
     Argument centre;
     std::array<Difference<Argument>, dimensions> vertices;
 
+    NormType diametre() const;
+
     using Measure = Exponentiation<NormType, dimensions>;
     Measure measure() const;
   };
@@ -100,6 +102,7 @@ class MultiLevelSingleLinkage {
   Norm²Type CriticalRadius²(double σ, std::int64_t kN);
 
   Box const box_;
+  NormType const box_diametre_;
   Box::Measure const box_measure_;
   Field<Scalar, Argument> const f_;
   Field<Gradient<Scalar, Argument>, Argument> const grad_f_;
