@@ -28,6 +28,7 @@ using quantities::Acceleration;
 using quantities::Difference;
 using quantities::Infinity;
 using quantities::Length;
+using quantities::SpecificEnergy;
 using quantities::si::Metre;
 using quantities::si::Second;
 
@@ -81,6 +82,14 @@ class Equipotential {
       Bivector<double, Frame> const& plane,
       Instant const& t,
       DegreesOfFreedom<Frame> const& degrees_of_freedom) const;
+
+  // Computes an equipotential line for the given |total_energy| starting from
+  // |start_position|.
+  typename ODE::State ComputeLine(
+      Bivector<double, Frame> const& plane,
+      Instant const& t,
+      Position<Frame> const& start_position,
+      SpecificEnergy const& total_energy) const;
 
  private:
   using IndependentVariableDifference =

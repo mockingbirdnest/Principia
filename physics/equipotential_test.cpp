@@ -297,10 +297,10 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantEnergies) {
       });
 }
 
-TEST_F(EquipotentialTest, L4L5Trajectories) {
-  mathematica::Logger logger(TEMP_DIR / "l4_l5_trajectories.wl",
+TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
+  mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd_global.wl",
                              /*make_unique=*/true);
-  std::int64_t const number_of_days = 30;
+  std::int64_t const number_of_days = 5;
   auto const dynamic_frame(
       BodyCentredBodyDirectionDynamicFrame<Barycentric, World>(
           ephemeris_.get(),
@@ -337,16 +337,43 @@ TEST_F(EquipotentialTest, L4L5Trajectories) {
 
   MultiLevelSingleLinkage<SpecificEnergy, Position<World>, 2> optimizer(
       box, potential, acceleration);
+  Equipotential<Barycentric, World> const equipotential(
+      equipotential_parameters_, &dynamic_frame);
+  Bivector<double, World> const plane({0, 0, 1});
+
+  std::vector<std::vector<std::vector<Position<World>>>> all_positions;
+  std::vector<std::vector<std::vector<double>>> all_βs;
   for (int j = 0; j < number_of_days; ++j) {
-    t = t0_ + j * Day;
-    logger.Append("minima",
-                  optimizer.FindGlobalMinima(
-                      /*points_per_round=*/100,
-                      /*number_of_rounds=*/std::nullopt,
-                      /*local_search_tolerance=*/10'000 * Kilo(Metre)),
-                  mathematica::ExpressIn(Metre));
     LOG(ERROR) << "Day #" << j;
+    t = t0_ + j * Day;
+    CHECK_OK(ephemeris_->Prolong(t));
+    all_positions.emplace_back();
+    all_βs.emplace_back();
+
+    // We minimize the opposite of the potential, so this gives us the maximum
+    // of the potential.
+    // TODO(phl): Add FindGlobalMaxima.
+    auto const maxima = optimizer.FindGlobalMinima(
+        /*points_per_round=*/100,
+        /*number_of_rounds=*/std::nullopt,
+        /*local_search_tolerance=*/10'000 * Kilo(Metre));
+    logger.Append("maxima", maxima, mathematica::ExpressIn(Metre));
+
+    for (auto const& maximum : maxima) {
+      auto const maximum_energy = -dynamic_frame.GeometricPotential(t, maximum);
+      for (int i = 0; i < 20; ++i) {
+        auto const& [positions, βs] = equipotential.ComputeLine(
+            plane, t, maximum, maximum_energy * i / 20.0);
+        all_positions.back().push_back(positions);
+        all_βs.back().push_back(βs);
+      }
+    }
   }
+  logger.Set("equipotentialsEarthMoonGlobalOptimization",
+             all_positions,
+             mathematica::ExpressIn(Metre));
+  logger.Set("betasEarthMoonGlobalOptimization", all_βs);
+
 }
 
 #endif

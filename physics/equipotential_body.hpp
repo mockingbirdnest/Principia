@@ -127,6 +127,15 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
   auto const kinetic_energy = 0.5 * degrees_of_freedom.velocity().Norm²();
   auto const total_energy = potential_energy + kinetic_energy;
 
+  return ComputeLine(plane, t, degrees_of_freedom.position(), total_energy);
+}
+
+template<typename InertialFrame, typename Frame>
+auto Equipotential<InertialFrame, Frame>::ComputeLine(
+    Bivector<double, Frame> const& plane,
+    Instant const& t,
+    Position<Frame> const& start_position,
+    SpecificEnergy const& total_energy) const -> State {
   // The function on which we perform gradient descent is defined to have a
   // minimum at a position where the potential is equal to the total energy.
   auto const f = [this, t, total_energy](Position<Frame> const& position) {
@@ -151,7 +160,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
   // use below.
   auto const equipotential_position =
       BroydenFletcherGoldfarbShanno<Square<SpecificEnergy>, Position<Frame>>(
-          degrees_of_freedom.position(),
+          start_position,
           f,
           grad_f,
           adaptive_parameters_.length_integration_tolerance());
