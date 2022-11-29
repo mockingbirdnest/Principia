@@ -169,6 +169,9 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
   // The BFGS algorithm will put us at the minimum of f, but that may be a point
   // that has (significantly) less energy that our total energy.  No point in
   // building a line in that case.
+  LOG(ERROR) << dynamic_frame_->GeometricPotential(
+                    t, equipotential_position.value())
+             << " " << total_energy;
   if (dynamic_frame_->GeometricPotential(t, equipotential_position.value()) <
       total_energy - Abs(total_energy) * energy_tolerance) {
     return State{};

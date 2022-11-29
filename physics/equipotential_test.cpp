@@ -360,10 +360,10 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
     logger.Append("maxima", maxima, mathematica::ExpressIn(Metre));
 
     for (auto const& maximum : maxima) {
-      auto const maximum_energy = -dynamic_frame.GeometricPotential(t, maximum);
+      auto const maximum_energy = dynamic_frame.GeometricPotential(t, maximum);
       for (int i = 0; i < 20; ++i) {
         auto const& [positions, βs] = equipotential.ComputeLine(
-            plane, t, maximum, maximum_energy * i / 20.0);
+            plane, t, maximum, maximum_energy * (1 + i / 20'000.0));
         all_positions.back().push_back(positions);
         all_βs.back().push_back(βs);
       }
