@@ -1,5 +1,6 @@
 #include "physics/equipotential.hpp"
 
+#include <array>
 #include <string>
 #include <vector>
 
@@ -97,6 +98,28 @@ class EquipotentialTest : public ::testing::Test {
             .EvaluatePosition(t));
   }
 
+  std::array<Position<World>, 2> ComputeLangrangePoints(
+      SolarSystemFactory::Index const body1,
+      SolarSystemFactory::Index const body2,
+      Instant const& t,
+      DynamicFrame<Barycentric, World> const& dynamic_frame,
+      Bivector<double, World> const& plane) {
+    auto const body1_position =
+        ComputePositionInWorld(t, dynamic_frame, body1);
+    auto const body2_position =
+        ComputePositionInWorld(t, dynamic_frame, body2);
+    auto const body2_body1 = body1_position - body2_position;
+
+    Rotation<World, World> const rot_l4(-60 * Degree, plane);
+    auto const body2_l4 = rot_l4(body2_body1);
+    auto const l4 = body2_l4 + body2_position;
+    Rotation<World, World> const rot_l5(60 * Degree, plane);
+    auto const body2_l5 = rot_l5(body2_body1);
+    auto const l5 = body2_l5 + body2_position;
+
+    return {l4, l5};
+  }
+
   // Logs to Mathematica the equipotential line for the given |body| in the
   // specified |dynamic_frame|.
   void LogEquipotentialLine(
@@ -111,11 +134,9 @@ class EquipotentialTest : public ::testing::Test {
     std::string const name = SolarSystemFactory::name(body);
 
     CHECK_OK(ephemeris_->Prolong(t));
-    auto const& [positions, βs] = equipotential.ComputeLine(
-        plane,
-        t,
-        ComputePositionInWorld(
-            t0_, dynamic_frame, SolarSystemFactory::Mercury));
+    auto const& [positions, βs] =
+        equipotential.ComputeLine(
+            plane, t, ComputePositionInWorld(t0_, dynamic_frame, body));
     logger.Set(absl::StrCat("equipotential", name, suffix),
                positions,
                mathematica::ExpressIn(Metre));
@@ -145,18 +166,12 @@ class EquipotentialTest : public ::testing::Test {
       CHECK_OK(ephemeris_->Prolong(t));
       all_positions.emplace_back();
       all_βs.emplace_back();
-      auto const earth_position =
-          ComputePositionInWorld(t, dynamic_frame, SolarSystemFactory::Earth);
-      auto const moon_position =
-          ComputePositionInWorld(t, dynamic_frame, SolarSystemFactory::Moon);
-      auto const moon_earth = earth_position - moon_position;
 
-      Rotation<World, World> const rot_l4(-60 * Degree, plane);
-      auto const moon_l4 = rot_l4(moon_earth);
-      auto const l4 = moon_l4 + moon_position;
-      Rotation<World, World> const rot_l5(60 * Degree, plane);
-      auto const moon_l5 = rot_l5(moon_earth);
-      auto const l5 = moon_l5 + moon_position;
+      auto const& [l4, l5] = ComputeLangrangePoints(SolarSystemFactory::Earth,
+                                                    SolarSystemFactory::Moon,
+                                                    t,
+                                                    dynamic_frame,
+                                                    plane);
 
       for (auto const& line_parameter : get_line_parameters(l4, l5)) {
         auto const& [positions, βs] =
