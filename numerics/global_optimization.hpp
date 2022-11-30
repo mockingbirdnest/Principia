@@ -61,8 +61,8 @@ class MultiLevelSingleLinkage {
 
   MultiLevelSingleLinkage(
       Box const& box,
-      Field<Scalar, Argument> const& f,
-      Field<Gradient<Scalar, Argument>, Argument> const& grad_f);
+      Field<Scalar, Argument> f,
+      Field<Gradient<Scalar, Argument>, Argument> grad_f);
 
   // If |number_of_rounds| is given, the algorithm does |number_of_rounds|
   // iterations, each time adding |points_per_round| to the sample.
@@ -93,12 +93,12 @@ class MultiLevelSingleLinkage {
   using Arguments = std::vector<not_null<std::unique_ptr<Argument>>>;
 
   // Implementation method for |FindGlobalMaxima| and |FindGlobalMinima|.
-  // |sign| must be -1 or 1.
-  template<int sign>
-  std::vector<Argument> FindGlobalExtrema(
+  std::vector<Argument> FindGlobalMinima(
       std::int64_t points_per_round,
       std::optional<std::int64_t> number_of_rounds,
-      NormType local_search_tolerance);
+      NormType local_search_tolerance,
+      Field<Scalar, Argument> const& f,
+      Field<Gradient<Scalar, Argument>, Argument> const& grad_f);
 
   // Returns true iff the given |stationary_point| is sufficiently far from the
   // ones already in |stationary_point_neighbourhoods|.

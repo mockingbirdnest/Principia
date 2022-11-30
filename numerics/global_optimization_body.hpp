@@ -56,13 +56,13 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::diametre() const {
 template<typename Scalar, typename Argument, int dimensions>
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::MultiLevelSingleLinkage(
     Box const& box,
-    Field<Scalar, Argument> const& f,
-    Field<Gradient<Scalar, Argument>, Argument> const& grad_f)
+    Field<Scalar, Argument> f,
+    Field<Gradient<Scalar, Argument>, Argument> grad_f)
     : box_(box),
       box_diametre_(box_.diametre()),
       box_measure_(box_.measure()),
-      f_(f),
-      grad_f_(grad_f),
+      f_(std::move(f)),
+      grad_f_(std::move(grad_f)),
       random_(42),
       distribution_(-1.0, 1.0) {
   for (auto const& vertex : box_.vertices) {
@@ -76,8 +76,19 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMaxima(
     std::int64_t const points_per_round,
     std::optional<std::int64_t> const number_of_rounds,
     NormType const local_search_tolerance) {
-  return FindGlobalExtrema</*sign=*/-1>(
-      points_per_round, number_of_rounds, local_search_tolerance);
+  Field<Scalar, Argument> minus_f = [this](Argument const& x) {
+    return -f_(x);
+  };
+  Field<Gradient<Scalar, Argument>, Argument> minus_grad_f =
+      [this](Argument const& x) {
+    return -grad_f_(x);
+  };
+
+  return FindGlobalMinima(points_per_round,
+                          number_of_rounds,
+                          local_search_tolerance,
+                          minus_f,
+                          minus_grad_f);
 }
 
 template<typename Scalar, typename Argument, int dimensions>
@@ -86,26 +97,21 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
     std::int64_t const points_per_round,
     std::optional<std::int64_t> const number_of_rounds,
     NormType const local_search_tolerance) {
-  return FindGlobalExtrema</*sign=*/1>(
-      points_per_round, number_of_rounds, local_search_tolerance);
+  return FindGlobalMinima(points_per_round,
+                          number_of_rounds,
+                          local_search_tolerance,
+                          f_,
+                          grad_f_);
 }
 
 template<typename Scalar, typename Argument, int dimensions>
-template<int sign>
 std::vector<Argument>
-MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalExtrema(
+MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
     std::int64_t const points_per_round,
     std::optional<std::int64_t> const number_of_rounds,
-    NormType const local_search_tolerance) {
-  // This algorithm naturally (i.e., when sign == 1) finds a minimum.
-  static_assert(sign == -1 || sign == 1);
-
-  Field<Scalar, Argument> const sign_f = [this](Argument const& x) {
-    return sign * f_(x);
-  };
-  Field<Gradient<Scalar, Argument>, Argument> const sign_grad_f =
-      [this](Argument const& x) { return sign * grad_f_(x); };
-
+    NormType const local_search_tolerance,
+    Field<Scalar, Argument> const& f,
+    Field<Gradient<Scalar, Argument>, Argument> const& grad_f) {
   // This is the set X* from [RT87b].
   Arguments stationary_points;
 
@@ -129,8 +135,8 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalExtrema(
 
   // This structure corresponds to the list T in [RT87b].  Points are ordered
   // based on their distance to their nearest neighbour that has a lower value
-  // of |f_|.  When new points are added to the map, they are initially given
-  // the key |Infinity|, which is then refined when the nearest neighbour search
+  // of |f|.  When new points are added to the map, they are initially given the
+  // key |Infinity|, which is then refined when the nearest neighbour search
   // happens.  Each time through the outer loop, only the points in the upper
   // half of the map (distance greater than rₖ) are considered, and they are
   // moved down if a "too close" neighbour is found.
@@ -208,8 +214,8 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalExtrema(
     for (auto it = schedule.upper_bound(rₖ²); it != schedule.end();) {
       Argument const& xᵢ = *it->second;
       auto* const xⱼ = point_neighbourhoods.FindNearestNeighbour(
-          xᵢ, [f_xᵢ = sign_f(xᵢ), rₖ², sign_f, xᵢ](Argument const* const xⱼ) {
-            return (xᵢ - *xⱼ).Norm²() <= rₖ² && sign_f(*xⱼ) < f_xᵢ;
+          xᵢ, [f_xᵢ = f(xᵢ), rₖ², f, xᵢ](Argument const* const xⱼ) {
+            return (xᵢ - *xⱼ).Norm²() <= rₖ² && f(*xⱼ) < f_xᵢ;
           });
 
       if (xⱼ == nullptr) {
@@ -220,8 +226,8 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalExtrema(
         ++number_of_local_searches;
         auto const stationary_point =
             BroydenFletcherGoldfarbShanno(xᵢ,
-                                          sign_f,
-                                          sign_grad_f,
+                                          f,
+                                          grad_f,
                                           local_search_tolerance,
                                           box_diametre_);
 
