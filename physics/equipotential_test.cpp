@@ -233,7 +233,7 @@ TEST_F(EquipotentialTest, BodyCentredNonRotating) {
 
 TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantPoints) {
   mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd_distances.wl",
-                             /*make_unique=*/true);
+                             /*make_unique=*/false);
   auto const dynamic_frame(
       BodyCentredBodyDirectionDynamicFrame<Barycentric, World>(
           ephemeris_.get(),
@@ -248,7 +248,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantPoints) {
       logger,
       dynamic_frame,
       /*number_of_days=*/30,
-      /*suffix=*/"Positions",
+      /*suffix=*/"Distances",
       [](Position<World> const& l4, Position<World> const& l5) {
         std::vector<Position<World>> positions;
         for (int i = 0; i <= 10; ++i) {
@@ -261,7 +261,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantPoints) {
 
 TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantEnergies) {
   mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd_energies.wl",
-                             /*make_unique=*/true);
+                             /*make_unique=*/false);
   auto const dynamic_frame(
       BodyCentredBodyDirectionDynamicFrame<Barycentric, World>(
           ephemeris_.get(),
@@ -287,7 +287,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantEnergies) {
                                                        0 * Metre / Second,
                                                        0 * Metre / Second})));
         }
-        for (int i = 0; i <= 10; ++i) {
+        for (int i = 0; i < 4; ++i) {
           degrees_of_freedom.push_back(DegreesOfFreedom<World>(
               midpoint,
               Velocity<World>({(1100 + i * 10) * Metre / Second,
@@ -300,8 +300,8 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantEnergies) {
 
 TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
   mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd_global.wl",
-                             /*make_unique=*/true);
-  std::int64_t const number_of_days = 5;
+                             /*make_unique=*/false);
+  std::int64_t const number_of_days = 30;
   auto const dynamic_frame(
       BodyCentredBodyDirectionDynamicFrame<Barycentric, World>(
           ephemeris_.get(),
