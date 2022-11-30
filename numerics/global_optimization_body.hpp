@@ -72,10 +72,40 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::MultiLevelSingleLinkage(
 
 template<typename Scalar, typename Argument, int dimensions>
 std::vector<Argument>
+MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMaxima(
+    std::int64_t const points_per_round,
+    std::optional<std::int64_t> const number_of_rounds,
+    NormType const local_search_tolerance) {
+  return FindGlobalExtrema</*sign=*/-1>(
+      points_per_round, number_of_rounds, local_search_tolerance);
+}
+
+template<typename Scalar, typename Argument, int dimensions>
+std::vector<Argument>
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
     std::int64_t const points_per_round,
     std::optional<std::int64_t> const number_of_rounds,
     NormType const local_search_tolerance) {
+  return FindGlobalExtrema</*sign=*/1>(
+      points_per_round, number_of_rounds, local_search_tolerance);
+}
+
+template<typename Scalar, typename Argument, int dimensions>
+template<int sign>
+std::vector<Argument>
+MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalExtrema(
+    std::int64_t const points_per_round,
+    std::optional<std::int64_t> const number_of_rounds,
+    NormType const local_search_tolerance) {
+  // This algorithm naturally (i.e., when sign == 1) finds a minimum.
+  static_assert(sign == -1 || sign == 1);
+
+  Field<Scalar, Argument> const sign_f = [this](Argument const& x) {
+    return sign * f_(x);
+  };
+  Field<Gradient<Scalar, Argument>, Argument> const sign_grad_f =
+      [this](Argument const& x) { return sign * grad_f_(x); };
+
   // This is the set X* from [RT87b].
   Arguments stationary_points;
 
@@ -178,8 +208,8 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
     for (auto it = schedule.upper_bound(rₖ²); it != schedule.end();) {
       Argument const& xᵢ = *it->second;
       auto* const xⱼ = point_neighbourhoods.FindNearestNeighbour(
-          xᵢ, [this, f_xᵢ = f_(xᵢ), rₖ², xᵢ](Argument const* const xⱼ) {
-            return (xᵢ - *xⱼ).Norm²() <= rₖ² && f_(*xⱼ) < f_xᵢ;
+          xᵢ, [f_xᵢ = sign_f(xᵢ), rₖ², sign_f, xᵢ](Argument const* const xⱼ) {
+            return (xᵢ - *xⱼ).Norm²() <= rₖ² && sign_f(*xⱼ) < f_xᵢ;
           });
 
       if (xⱼ == nullptr) {
@@ -188,8 +218,12 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
         // of the box: it's possible that xᵢ would be near one vertex of the box
         // and the stationary point near the opposite vertex.
         ++number_of_local_searches;
-        auto const stationary_point = BroydenFletcherGoldfarbShanno(
-            xᵢ, f_, grad_f_, local_search_tolerance, box_diametre_);
+        auto const stationary_point =
+            BroydenFletcherGoldfarbShanno(xᵢ,
+                                          sign_f,
+                                          sign_grad_f,
+                                          local_search_tolerance,
+                                          box_diametre_);
 
         // If the new stationary point is sufficiently far from the ones we
         // already know, record it.

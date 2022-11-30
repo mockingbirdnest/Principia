@@ -316,16 +316,16 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
   Instant t = t0_;
   auto const potential = [&dynamic_frame,
                           &t](Position<World> const& position) {
-    // Note the sign.
-    return -dynamic_frame.GeometricPotential(t, position);
+    return dynamic_frame.GeometricPotential(t, position);
   };
   auto const acceleration = [&dynamic_frame,
                               &t](Position<World> const& position) {
     auto const acceleration =
         dynamic_frame.GeometricAcceleration(t, {position, Velocity<World>{}});
-    return Vector<Acceleration, World>({acceleration.coordinates()[0],
-                                        acceleration.coordinates()[1],
-                                        Acceleration{}});
+    // Note the sign.
+    return -Vector<Acceleration, World>({acceleration.coordinates()[0],
+                                         acceleration.coordinates()[1],
+                                         Acceleration{}});
   };
   const MultiLevelSingleLinkage<SpecificEnergy, Position<World>, 2>::Box box = {
       .centre = World::origin,
@@ -351,10 +351,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
     all_positions.emplace_back();
     all_βs.emplace_back();
 
-    // We minimize the opposite of the potential, so this gives us the maximum
-    // of the potential.
-    // TODO(phl): Add FindGlobalMaxima.
-    auto const maxima = optimizer.FindGlobalMinima(
+    auto const maxima = optimizer.FindGlobalMaxima(
         /*points_per_round=*/100,
         /*number_of_rounds=*/std::nullopt,
         /*local_search_tolerance=*/10'000 * Kilo(Metre));
