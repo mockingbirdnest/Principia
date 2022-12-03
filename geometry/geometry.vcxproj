@@ -28,6 +28,8 @@
     <ClInclude Include="pair_body.hpp" />
     <ClInclude Include="perspective.hpp" />
     <ClInclude Include="perspective_body.hpp" />
+    <ClInclude Include="plane.hpp" />
+    <ClInclude Include="plane_body.hpp" />
     <ClInclude Include="point.hpp" />
     <ClInclude Include="point_body.hpp" />
     <ClInclude Include="grassmann_body.hpp" />
@@ -71,6 +73,7 @@
     <ClCompile Include="instant_output_test.cpp" />
     <ClCompile Include="pair_test.cpp" />
     <ClCompile Include="perspective_test.cpp" />
+    <ClCompile Include="plane_test.cpp" />
     <ClCompile Include="point_test.cpp" />
     <ClCompile Include="affine_map_test.cpp" />
     <ClCompile Include="orthogonal_map_test.cpp" />
