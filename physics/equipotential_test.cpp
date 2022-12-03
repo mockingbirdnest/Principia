@@ -363,9 +363,9 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
                                 dynamic_frame.GeometricPotential(t, maximum));
     }
     for (auto const& maximum : maxima) {
-      for (int i = 0; i < 20; ++i) {
+      for (int i = 0; i < 10; ++i) {
         auto const& [positions, βs] = equipotential.ComputeLine(
-            plane, t, maximum, maximum_energy * (1 + i / 100'000.0));
+            plane, t, maximum, maximum_energy * (1 + i / 50'000.0));
         all_positions.back().push_back(positions);
         all_βs.back().push_back(βs);
       }

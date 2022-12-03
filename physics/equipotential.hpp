@@ -25,6 +25,7 @@ using geometry::Position;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::ExplicitFirstOrderOrdinaryDifferentialEquation;
 using quantities::Acceleration;
+using quantities::Angle;
 using quantities::Difference;
 using quantities::Infinity;
 using quantities::Length;
@@ -91,6 +92,14 @@ class Equipotential {
       Position<Frame> const& start_position,
       SpecificEnergy const& total_energy) const;
 
+  //TODO(phl)comment The |start_positions| must be coplanar in a plane
+  // orthogonal to |plane|.
+  typename std::vector<ODE::State> ComputeLine(
+      Bivector<double, Frame> const& plane,
+      Instant const& t,
+      std::vector<Position<Frame>> const& start_positions,
+      SpecificEnergy const& total_energy) const;
+
  private:
   using IndependentVariableDifference =
       typename ODE::IndependentVariableDifference;
@@ -118,6 +127,10 @@ class Equipotential {
 
   double ToleranceToErrorRatio(IndependentVariableDifference current_s_step,
                                SystemStateError const& error) const;
+
+  Angle WindingNumber(Bivector<double, Frame> const& plane,
+                      Position<Frame> const& position,
+                      std::vector<State> const& line) const;
 
   AdaptiveParameters const& adaptive_parameters_;
   not_null<DynamicFrame<InertialFrame, Frame> const*> const dynamic_frame_;
