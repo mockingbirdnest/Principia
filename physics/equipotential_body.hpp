@@ -37,15 +37,6 @@ using ::std::placeholders::_3;
 // equipotential line.
 constexpr double energy_tolerance = 0x1p-24;
 
-// The following function projects a vector on the plane orthogonal to |plane|.
-// TODO(phl): Why don't we have projections?
-template<typename Scalar, typename Frame>
-Vector<Scalar, Frame> ProjectedVector(Bivector<double, Frame> const& plane,
-                                      Vector<Scalar, Frame> const& vector) {
-  Trivector<Scalar, Frame> const projection_on_plane = Wedge(plane, vector);
-  return vector - plane * projection_on_plane;
-}
-
 template<typename ODE>
 ODEAdaptiveStepParameters<ODE>::ODEAdaptiveStepParameters(
     AdaptiveStepSizeIntegrator<ODE> const& integrator,
@@ -80,7 +71,7 @@ Equipotential<InertialFrame, Frame>::Equipotential(
 
 template<typename InertialFrame, typename Frame>
 auto Equipotential<InertialFrame, Frame>::ComputeLine(
-    Bivector<double, Frame> const& plane,
+    Plane<Frame> const& plane,
     Instant const& t,
     Position<Frame> const& position) const -> State {
   ODE equation{
@@ -119,7 +110,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
 
 template<typename InertialFrame, typename Frame>
 auto Equipotential<InertialFrame, Frame>::ComputeLine(
-    Bivector<double, Frame> const& plane,
+    Plane<Frame> const& plane,
     Instant const& t,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) const -> State {
   // Compute the total (specific) energy.
@@ -133,7 +124,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
 
 template<typename InertialFrame, typename Frame>
 auto Equipotential<InertialFrame, Frame>::ComputeLine(
-    Bivector<double, Frame> const& plane,
+    Plane<Frame> const& plane,
     Instant const& t,
     Position<Frame> const& start_position,
     SpecificEnergy const& total_energy) const -> State {
@@ -181,7 +172,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
 
 template<typename InertialFrame, typename Frame>
 auto Equipotential<InertialFrame, Frame>::ComputeLine(
-    Bivector<double, Frame> const& plane,
+    Plane<Frame> const& plane,
     Instant const& t,
     std::vector<Position<Frame>> const& start_positions,
     SpecificEnergy const& total_energy) const -> std::vector<State> {
@@ -233,7 +224,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
 
 template<typename InertialFrame, typename Frame>
 absl::Status Equipotential<InertialFrame, Frame>::RightHandSide(
-    Bivector<double, Frame> const& plane,
+    Plane<Frame> const& plane,
     Position<Frame> const& position,
     Instant const& t,
     IndependentVariable const s,
@@ -272,7 +263,7 @@ double Equipotential<InertialFrame, Frame>::ToleranceToErrorRatio(
 
 template<typename InertialFrame, typename Frame>
 Angle Equipotential<InertialFrame, Frame>::WindingNumber(
-    Bivector<double, Frame> const& plane,
+    Plane<Frame> const& plane,
     Position<Frame> const& position,
     std::vector<State> const& line) const {
   Angle result;
@@ -285,7 +276,7 @@ Angle Equipotential<InertialFrame, Frame>::WindingNumber(
         position -
         plane * Wedge(point - position, plane) / plane.Norm²();
     if (previous_point.has_value()) {
-      auto const Position<Frame> projection =
+      Position<Frame> projection;
       result += OrientedAngleBetween(previous_point.value() - projection,
                                      point - projection,
                                      plane);

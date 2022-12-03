@@ -10,6 +10,7 @@
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
+#include "geometry/plane.hpp"
 #include "geometry/rotation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -39,6 +40,7 @@ using geometry::Displacement;
 using geometry::Frame;
 using geometry::Inertial;
 using geometry::Instant;
+using geometry::Plane;
 using geometry::Position;
 using geometry::Rotation;
 using geometry::Vector;
@@ -104,7 +106,7 @@ class EquipotentialTest : public ::testing::Test {
       SolarSystemFactory::Index const body2,
       Instant const& t,
       DynamicFrame<Barycentric, World> const& dynamic_frame,
-      Bivector<double, World> const& plane) {
+      Plane<World> const& plane) {
     auto const body1_position =
         ComputePositionInWorld(t, dynamic_frame, body1);
     auto const body2_position =
@@ -125,7 +127,7 @@ class EquipotentialTest : public ::testing::Test {
   // specified |dynamic_frame|.
   void LogEquipotentialLine(
       mathematica::Logger& logger,
-      Bivector<double, World> const& plane,
+      Plane<World> const& plane,
       Instant const& t,
       DynamicFrame<Barycentric, World> const& dynamic_frame,
       SolarSystemFactory::Index const body,
@@ -158,7 +160,7 @@ class EquipotentialTest : public ::testing::Test {
           Position<World> const& l5)> const& get_line_parameters) {
     Equipotential<Barycentric, World> const equipotential(
         equipotential_parameters_, &dynamic_frame);
-    Bivector<double, World> const plane({0, 0, 1});
+    auto const plane = Plane<World>::OrthogonalTo({0, 0, 1});
 
     std::vector<std::vector<std::vector<Position<World>>>> all_positions;
     std::vector<std::vector<std::vector<double>>> all_βs;
@@ -207,7 +209,8 @@ TEST_F(EquipotentialTest, BodyCentredNonRotating) {
   Equipotential<Barycentric, World> const equipotential(
       equipotential_parameters_, &dynamic_frame);
 
-  Bivector<double, World> const plane({2, 3, -5});
+  auto const plane =
+      Plane<World>::OrthogonalTo(Vector<double, World>({2, 3, -5}));
 
   LogEquipotentialLine(logger,
                        plane,
@@ -340,7 +343,8 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
       box, potential, acceleration);
   Equipotential<Barycentric, World> const equipotential(
       equipotential_parameters_, &dynamic_frame);
-  Bivector<double, World> const plane({0, 0, 1});
+  auto const plane =
+      Plane<World>::OrthogonalTo(Vector<double, World>({0, 0, 1}));
 
   std::vector<std::vector<std::vector<Position<World>>>> all_positions;
   std::vector<std::vector<std::vector<double>>> all_βs;

@@ -6,6 +6,7 @@
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
+#include "geometry/plane.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/dynamic_frame.hpp"
@@ -21,6 +22,7 @@ using base::not_null;
 using geometry::Bivector;
 using geometry::InfiniteFuture;
 using geometry::Instant;
+using geometry::Plane;
 using geometry::Position;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::ExplicitFirstOrderOrdinaryDifferentialEquation;
@@ -73,29 +75,29 @@ class Equipotential {
       not_null<DynamicFrame<InertialFrame, Frame> const*> dynamic_frame);
 
   // Computes an equipotential line going through the given point.
-  typename ODE::State ComputeLine(Bivector<double, Frame> const& plane,
+  typename ODE::State ComputeLine(Plane<Frame> const& plane,
                                   Instant const& t,
                                   Position<Frame> const& position) const;
 
   // Computes an equipotential line for the total energy determined by the
   // |degrees_of_freedom|.
   typename ODE::State ComputeLine(
-      Bivector<double, Frame> const& plane,
+      Plane<Frame> const& plane,
       Instant const& t,
       DegreesOfFreedom<Frame> const& degrees_of_freedom) const;
 
   // Computes an equipotential line for the given |total_energy| starting from
   // |start_position|.
   typename ODE::State ComputeLine(
-      Bivector<double, Frame> const& plane,
+      Plane<Frame> const& plane,
       Instant const& t,
       Position<Frame> const& start_position,
       SpecificEnergy const& total_energy) const;
 
   //TODO(phl)comment The |start_positions| must be coplanar in a plane
   // orthogonal to |plane|.
-  typename std::vector<ODE::State> ComputeLine(
-      Bivector<double, Frame> const& plane,
+  std::vector<typename ODE::State> ComputeLine(
+      Plane<Frame> const& plane,
       Instant const& t,
       std::vector<Position<Frame>> const& start_positions,
       SpecificEnergy const& total_energy) const;
@@ -118,7 +120,7 @@ class Equipotential {
   static constexpr double β_max_ = 1e6;
   static constexpr double β_tolerance_ = 1;
 
-  absl::Status RightHandSide(Bivector<double, Frame> const& plane,
+  absl::Status RightHandSide(Plane<Frame> const& plane,
                              Position<Frame> const& position,
                              Instant const& t,
                              IndependentVariable s,
@@ -128,7 +130,7 @@ class Equipotential {
   double ToleranceToErrorRatio(IndependentVariableDifference current_s_step,
                                SystemStateError const& error) const;
 
-  Angle WindingNumber(Bivector<double, Frame> const& plane,
+  Angle WindingNumber(Plane<Frame> const& plane,
                       Position<Frame> const& position,
                       std::vector<State> const& line) const;
 
