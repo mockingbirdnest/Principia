@@ -95,7 +95,7 @@ class Equipotential {
       SpecificEnergy const& total_energy) const;
 
   //The |start_positions| must be coplanar in a plane parallel to |plane|.
-  std::vector<typename ODE::State> ComputeLine(
+  std::vector<typename ODE::State> ComputeLines(
       Plane<Frame> const& plane,
       Instant const& t,
       std::vector<Position<Frame>> const& start_positions,
@@ -137,7 +137,7 @@ class Equipotential {
   // the |line| rotates around |position|.
   std::int64_t WindingNumber(Plane<Frame> const& plane,
                              Position<Frame> const& position,
-                             std::vector<State> const& line) const;
+                             std::vector<Position<Frame>> const& line) const;
 
   AdaptiveParameters const& adaptive_parameters_;
   not_null<DynamicFrame<InertialFrame, Frame> const*> const dynamic_frame_;
