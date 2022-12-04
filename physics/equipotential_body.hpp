@@ -10,6 +10,7 @@
 #include "numerics/double_precision.hpp"
 #include "numerics/gradient_descent.hpp"
 #include "quantities/elementary_functions.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace physics {
@@ -29,6 +30,7 @@ using quantities::Pow;
 using quantities::SpecificEnergy;
 using quantities::Square;
 using quantities::Time;
+using quantities::si::Radian;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
@@ -74,9 +76,11 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
     Plane<Frame> const& plane,
     Instant const& t,
     Position<Frame> const& position) const -> State {
+  auto const binormal = plane.UnitBinormals().front();
   ODE equation{
       .compute_derivative = std::bind(
-          &Equipotential::RightHandSide, this, plane, position, t, _1, _2, _3)};
+          &Equipotential::RightHandSide,
+          this, binormal, position, t, _1, _2, _3)};
   SystemState initial_state(s_initial_, {{position}, {/*β=*/0}});
   IntegrationProblem<ODE> const problem{
       .equation = std::move(equation),
@@ -139,11 +143,11 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
       Position<Frame> const& position) {
     // To keep the problem bidimensional we eliminate any off-plane component of
     // the gradient.
-    return ProjectedVector(
-        plane,
+    return Projection(
         -2 * (dynamic_frame_->GeometricPotential(t, position) - total_energy) *
             dynamic_frame_->RotationFreeGeometricAccelerationAtRest(t,
-                                                                    position));
+                                                                    position),
+        plane);
   };
 
   // Do the gradient descent to find a point on the equipotential having the
@@ -187,11 +191,11 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
       Position<Frame> const& position) {
     // To keep the problem bidimensional we eliminate any off-plane component of
     // the gradient.
-    return ProjectedVector(
-        plane,
+    return Projection(
         -2 * (dynamic_frame_->GeometricPotential(t, position) - total_energy) *
             dynamic_frame_->RotationFreeGeometricAccelerationAtRest(t,
-                                                                    position));
+                                                                    position),
+        plane);
   };
 
   std::vector<State> lines;
@@ -224,7 +228,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
 
 template<typename InertialFrame, typename Frame>
 absl::Status Equipotential<InertialFrame, Frame>::RightHandSide(
-    Plane<Frame> const& plane,
+    Bivector<double, Frame> const& binormal,
     Position<Frame> const& position,
     Instant const& t,
     IndependentVariable const s,
@@ -235,7 +239,7 @@ absl::Status Equipotential<InertialFrame, Frame>::RightHandSide(
   auto const dVǀᵧ₍ₛ₎ =
       dynamic_frame_->RotationFreeGeometricAccelerationAtRest(t, γₛ);
   Displacement<Frame> const γʹ =
-      Normalize(plane * dVǀᵧ₍ₛ₎) * characteristic_length_;
+      Normalize(binormal * dVǀᵧ₍ₛ₎) * characteristic_length_;
 
   // Second state variable.
   double const β = std::get<1>(state).front();
@@ -262,27 +266,22 @@ double Equipotential<InertialFrame, Frame>::ToleranceToErrorRatio(
 }
 
 template<typename InertialFrame, typename Frame>
-Angle Equipotential<InertialFrame, Frame>::WindingNumber(
+std::int64_t Equipotential<InertialFrame, Frame>::WindingNumber(
     Plane<Frame> const& plane,
     Position<Frame> const& position,
     std::vector<State> const& line) const {
-  Angle result;
-  std::optional<Position<Frame>> previous_point;
-  for (auto const& state : line) {
-    auto const& point = std::get<0>(state);
-    // This is the projection of |position| on the plane orthogonal to |plane|
-    // that goes through the |state| position.
-    auto const& projection =
-        position -
-        plane * Wedge(point - position, plane) / plane.Norm²();
-    if (previous_point.has_value()) {
-      Position<Frame> projection;
-      result += OrientedAngleBetween(previous_point.value() - projection,
-                                     point - projection,
-                                     plane);
-    }
+  auto const binormal = plane.UnitBinormals().front();
+  Angle angle;
+  int previous_i = line.size() - 1;
+  for (int i = 0; i < line.size(); ++i) {
+    auto const& previous_point = std::get<0>(line[previous_i]);
+    auto const& point = std::get<0>(line[i]);
+    angle += OrientedAngleBetween(previous_point - position,
+                                  point - position,
+                                  binormal);
+    previous_i = i;
   }
-  return result;
+  return static_cast<std::int64_t>(std::round(Abs(angle) / (2 * π * Radian)));
 }
 
 }  // namespace internal_equipotential

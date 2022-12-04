@@ -113,10 +113,11 @@ class EquipotentialTest : public ::testing::Test {
         ComputePositionInWorld(t, dynamic_frame, body2);
     auto const body2_body1 = body1_position - body2_position;
 
-    Rotation<World, World> const rot_l4(-60 * Degree, plane);
+    auto const binormal = plane.UnitBinormals().front();
+    Rotation<World, World> const rot_l4(-60 * Degree, binormal);
     auto const body2_l4 = rot_l4(body2_body1);
     auto const l4 = body2_l4 + body2_position;
-    Rotation<World, World> const rot_l5(60 * Degree, plane);
+    Rotation<World, World> const rot_l5(60 * Degree, binormal);
     auto const body2_l5 = rot_l5(body2_body1);
     auto const l5 = body2_l5 + body2_position;
 
@@ -160,7 +161,8 @@ class EquipotentialTest : public ::testing::Test {
           Position<World> const& l5)> const& get_line_parameters) {
     Equipotential<Barycentric, World> const equipotential(
         equipotential_parameters_, &dynamic_frame);
-    auto const plane = Plane<World>::OrthogonalTo({0, 0, 1});
+    auto const plane =
+        Plane<World>::OrthogonalTo(Vector<double, World>({0, 0, 1}));
 
     std::vector<std::vector<std::vector<Position<World>>>> all_positions;
     std::vector<std::vector<std::vector<double>>> all_βs;

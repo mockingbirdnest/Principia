@@ -94,8 +94,7 @@ class Equipotential {
       Position<Frame> const& start_position,
       SpecificEnergy const& total_energy) const;
 
-  //TODO(phl)comment The |start_positions| must be coplanar in a plane
-  // orthogonal to |plane|.
+  //The |start_positions| must be coplanar in a plane parallel to |plane|.
   std::vector<typename ODE::State> ComputeLine(
       Plane<Frame> const& plane,
       Instant const& t,
@@ -120,7 +119,9 @@ class Equipotential {
   static constexpr double β_max_ = 1e6;
   static constexpr double β_tolerance_ = 1;
 
-  absl::Status RightHandSide(Plane<Frame> const& plane,
+  // The |binormal| determines in what direction we go around the curve.  It may
+  // be anything, but must be consistent across calls to the right-hand side.
+  absl::Status RightHandSide(Bivector<double, Frame> const& binormal,
                              Position<Frame> const& position,
                              Instant const& t,
                              IndependentVariable s,
@@ -130,9 +131,13 @@ class Equipotential {
   double ToleranceToErrorRatio(IndependentVariableDifference current_s_step,
                                SystemStateError const& error) const;
 
-  Angle WindingNumber(Plane<Frame> const& plane,
-                      Position<Frame> const& position,
-                      std::vector<State> const& line) const;
+  // Computes the winding number of |line| around |position|.  |line| and
+  // |position| must be in the given |plane|.  The returned integer is
+  // nonnegative, i.e., doesn't give information about the direction in which
+  // the |line| rotates around |position|.
+  std::int64_t WindingNumber(Plane<Frame> const& plane,
+                             Position<Frame> const& position,
+                             std::vector<State> const& line) const;
 
   AdaptiveParameters const& adaptive_parameters_;
   not_null<DynamicFrame<InertialFrame, Frame> const*> const dynamic_frame_;
