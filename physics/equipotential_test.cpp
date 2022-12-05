@@ -23,6 +23,7 @@
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/dynamic_frame.hpp"
+#include "physics/kepler_orbit.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/si.hpp"
@@ -307,16 +308,50 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
   mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd_global.wl",
                              /*make_unique=*/false);
   std::int64_t const number_of_days = 30;
+  auto const earth = solar_system_->massive_body(
+      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
+  auto const moon = solar_system_->massive_body(
+      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Moon));
   auto const dynamic_frame(
       BodyCentredBodyDirectionDynamicFrame<Barycentric, World>(
-          ephemeris_.get(),
-          solar_system_->massive_body(
-              *ephemeris_,
-              SolarSystemFactory::name(SolarSystemFactory::Earth)),
-          solar_system_->massive_body(
-              *ephemeris_,
-              SolarSystemFactory::name(SolarSystemFactory::Moon))));
+          ephemeris_.get(), earth, moon));
   CHECK_OK(ephemeris_->Prolong(t0_ + number_of_days * Day));
+
+  DegreesOfFreedom<Barycentric> const earth_dof =
+      ephemeris_->trajectory(earth)->EvaluateDegreesOfFreedom(t0_);
+  KeplerOrbit<Barycentric> const moon_orbit(
+      *earth,
+      *moon,
+      ephemeris_->trajectory(moon)->EvaluateDegreesOfFreedom(t0_) - earth_dof,
+      t0_);
+  KeplerianElements<Barycentric> const moon_elements =
+      moon_orbit.elements_at_epoch();
+
+  KeplerianElements<Barycentric> const elements{
+      .periapsis_distance = 7000 * Kilo(Metre),
+      .apoapsis_distance = .9 * *moon_elements.periapsis_distance,
+      .inclination = moon_elements.inclination,
+      .longitude_of_ascending_node = moon_elements.longitude_of_ascending_node,
+      .argument_of_periapsis = moon_elements.argument_of_periapsis,
+      .mean_anomaly = 0 * Degree};
+  DegreesOfFreedom<Barycentric> const initial_state =
+      earth_dof +
+      KeplerOrbit<Barycentric>(*earth, MasslessBody{}, elements, t0_)
+          .StateVectors(t0_);
+
+  DiscreteTrajectory<Barycentric> trajectory;
+  CHECK_OK(trajectory.Append(t0_, initial_state));
+
+  auto const instance = ephemeris_->NewInstance(
+      {&trajectory},
+      Ephemeris<Barycentric>::NoIntrinsicAccelerations,
+      Ephemeris<Barycentric>::FixedStepParameters(
+          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+                                             Position<Barycentric>>(),
+          /*step=*/10 * Minute));
+
+  CHECK_OK(
+      ephemeris_->FlowWithFixedStep(t0_ + number_of_days * Day, *instance));
 
   Instant t = t0_;
   auto const potential = [&dynamic_frame,
@@ -350,6 +385,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
 
   std::vector<std::vector<std::vector<Position<World>>>> all_positions;
   std::vector<std::vector<std::vector<double>>> all_βs;
+  std::vector<SpecificEnergy> energies;
   for (int j = 0; j < number_of_days; ++j) {
     LOG(ERROR) << "Day #" << j;
     t = t0_ + j * Day;
@@ -363,21 +399,32 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
         /*local_search_tolerance=*/10'000 * Kilo(Metre));
     logger.Append("maxima", maxima, mathematica::ExpressIn(Metre));
 
-    SpecificEnergy maximum_energy = -Infinity<SpecificEnergy>;
-    for (auto const& maximum : maxima) {
-      maximum_energy = std::max(maximum_energy,
-                                dynamic_frame.GeometricPotential(t, maximum));
+    DegreesOfFreedom<World> const dof = dynamic_frame.ToThisFrameAtTime(t)(
+        trajectory.EvaluateDegreesOfFreedom(t));
+    SpecificEnergy energy =
+    dof.velocity().Norm²() / 2 +
+    dynamic_frame.GeometricPotential(t, dof.position());
+    energies.push_back(energy);
+    auto const& lines = equipotential.ComputeLines(
+        plane, t, maxima, energy);
+    for (auto const& line : lines) {
+      auto const& [positions, βs] = line;
+      all_positions.back().push_back(positions);
+      all_βs.back().push_back(βs);
     }
-      for (int i = 0; i < 10; ++i) {
-        auto const& lines = equipotential.ComputeLines(
-            plane, t, maxima, maximum_energy * (1 + i / 50'000.0));
-        for (auto const& line : lines) {
-          auto const& [positions, βs] = line;
-          all_positions.back().push_back(positions);
-          all_βs.back().push_back(βs);
-        }
-      }
   }
+  std::vector<Position<World>> world_trajectory;
+  for (auto const& [t, dof] : trajectory) {
+    world_trajectory.push_back(
+        dynamic_frame.ToThisFrameAtTime(t).rigid_transformation()(
+            dof.position()));
+  }
+  logger.Set("trajectory",
+             world_trajectory,
+             mathematica::ExpressIn(Metre));
+  logger.Set("energies",
+             energies,
+             mathematica::ExpressIn(Metre, Second));
   logger.Set("equipotentialsEarthMoonGlobalOptimization",
              all_positions,
              mathematica::ExpressIn(Metre));
