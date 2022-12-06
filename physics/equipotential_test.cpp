@@ -50,6 +50,7 @@ using integrators::EmbeddedExplicitRungeKuttaIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::DormandPrince1986RK547FC;
 using integrators::methods::QuinlanTremaine1990Order12;
+using integrators::methods::Quinlan1999Order8A;
 using numerics::MultiLevelSingleLinkage;
 using quantities::Acceleration;
 using quantities::Infinity;
@@ -307,7 +308,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantEnergies) {
 TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
   mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd_global.wl",
                              /*make_unique=*/false);
-  std::int64_t const number_of_days = 30;
+  std::int64_t const number_of_days = 24;
   auto const earth = solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
   auto const moon = solar_system_->massive_body(
@@ -329,7 +330,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
 
   KeplerianElements<Barycentric> const elements{
       .periapsis_distance = 7000 * Kilo(Metre),
-      .apoapsis_distance = .8 * *moon_elements.periapsis_distance,
+      .apoapsis_distance = .9 * *moon_elements.periapsis_distance,
       .inclination = moon_elements.inclination,
       .longitude_of_ascending_node = moon_elements.longitude_of_ascending_node,
       .argument_of_periapsis = moon_elements.argument_of_periapsis,
@@ -346,9 +347,9 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
       {&trajectory},
       Ephemeris<Barycentric>::NoIntrinsicAccelerations,
       Ephemeris<Barycentric>::FixedStepParameters(
-          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+          SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
                                              Position<Barycentric>>(),
-          /*step=*/10 * Minute));
+          /*step=*/10 * Second));
 
   CHECK_OK(
       ephemeris_->FlowWithFixedStep(t0_ + number_of_days * Day, *instance));
@@ -385,6 +386,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
 
   std::vector<std::vector<std::vector<Position<World>>>> all_positions;
   std::vector<std::vector<std::vector<double>>> all_βs;
+  std::vector<Position<World>> trajectory_positions;
   std::vector<SpecificEnergy> energies;
   for (int j = 0; j < number_of_days; ++j) {
     LOG(ERROR) << "Day #" << j;
@@ -401,6 +403,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
 
     DegreesOfFreedom<World> const dof = dynamic_frame.ToThisFrameAtTime(t)(
         trajectory.EvaluateDegreesOfFreedom(t));
+    trajectory_positions.push_back(dof.position());
     SpecificEnergy energy =
     dof.velocity().Norm²() / 2 +
     dynamic_frame.GeometricPotential(t, dof.position());
@@ -421,6 +424,9 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
   }
   logger.Set("trajectory",
              world_trajectory,
+             mathematica::ExpressIn(Metre));
+  logger.Set("trajectoryPositions",
+             trajectory_positions,
              mathematica::ExpressIn(Metre));
   logger.Set("energies",
              energies,
