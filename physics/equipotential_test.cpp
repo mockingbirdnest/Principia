@@ -308,42 +308,83 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantEnergies) {
 TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
   mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd_global.wl",
                              /*make_unique=*/false);
-  std::int64_t const number_of_days = 30;
-  auto const earth = solar_system_->massive_body(
-      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
-  auto const moon = solar_system_->massive_body(
-      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Moon));
-  auto const dynamic_frame(
-      BodyCentredBodyDirectionDynamicFrame<Barycentric, World>(
-          ephemeris_.get(), earth, moon));
-  CHECK_OK(ephemeris_->Prolong(t0_ + number_of_days * Day));
 
-  DegreesOfFreedom<Barycentric> const earth_dof =
-      ephemeris_->trajectory(earth)->EvaluateDegreesOfFreedom(t0_);
-  KeplerOrbit<Barycentric> const moon_orbit(
-      *earth,
-      *moon,
-      ephemeris_->trajectory(moon)->EvaluateDegreesOfFreedom(t0_) - earth_dof,
-      t0_);
-  KeplerianElements<Barycentric> const moon_elements =
-      moon_orbit.elements_at_epoch();
+  KeplerianElements<Barycentric> circular_moon_elements;
+  RelativeDegreesOfFreedom<Barycentric> circular_moon_dof{{}, {}};
+
+  {
+    auto const earth = solar_system_->massive_body(
+        *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
+    auto const moon = solar_system_->massive_body(
+        *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Moon));
+    CHECK_OK(ephemeris_->Prolong(t0_));
+
+    DegreesOfFreedom<Barycentric> const earth_dof =
+        ephemeris_->trajectory(earth)->EvaluateDegreesOfFreedom(t0_);
+    KeplerOrbit<Barycentric> const moon_orbit(
+        *earth,
+        *moon,
+        ephemeris_->trajectory(moon)->EvaluateDegreesOfFreedom(t0_) - earth_dof,
+        t0_);
+    KeplerianElements<Barycentric> const moon_elements =
+        moon_orbit.elements_at_epoch();
+    circular_moon_elements.eccentricity = 0;
+    circular_moon_elements.semimajor_axis = moon_elements.semimajor_axis;
+    circular_moon_elements.inclination = moon_elements.inclination;
+    circular_moon_elements.longitude_of_ascending_node =
+        moon_elements.longitude_of_ascending_node;
+    circular_moon_elements.argument_of_periapsis =
+        moon_elements.argument_of_periapsis;
+    circular_moon_elements.mean_anomaly = moon_elements.mean_anomaly;
+    KeplerOrbit<Barycentric> const circular_moon_orbit(
+        *earth, *moon, circular_moon_elements, t0_);
+    circular_moon_dof = circular_moon_orbit.StateVectors(t0_);
+    circular_moon_elements = circular_moon_orbit.elements_at_epoch();
+  }
+
+  std::int64_t const number_of_days = 30;
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  bodies.push_back(
+      solar_system_->MakeMassiveBody(solar_system_->gravity_model_message(
+          SolarSystemFactory::name(SolarSystemFactory::Earth))));
+  bodies.push_back(
+      solar_system_->MakeMassiveBody(solar_system_->gravity_model_message(
+          SolarSystemFactory::name(SolarSystemFactory::Moon))));
+  Ephemeris<Barycentric> ephemeris(
+      std::move(bodies),
+      {{Barycentric::origin, Barycentric::unmoving},
+       DegreesOfFreedom<Barycentric>(
+           {Barycentric::origin, Barycentric::unmoving}) +
+           circular_moon_dof},
+      t0_,
+      /*accuracy_parameters=*/
+      {/*fitting_tolerance=*/1 * Milli(Metre),
+       /*geopotential_tolerance=*/0x1p-24},
+      ephemeris_parameters_);
+  CHECK_OK(ephemeris.Prolong(t0_ + number_of_days * Day));
 
   KeplerianElements<Barycentric> const elements{
       .periapsis_distance = 7000 * Kilo(Metre),
-      .apoapsis_distance = .8 * *moon_elements.periapsis_distance,
-      .inclination = moon_elements.inclination,
-      .longitude_of_ascending_node = moon_elements.longitude_of_ascending_node,
-      .argument_of_periapsis = moon_elements.argument_of_periapsis,
+      .apoapsis_distance = .7 * *circular_moon_elements.periapsis_distance,
+      .inclination = circular_moon_elements.inclination,
+      .longitude_of_ascending_node = circular_moon_elements.longitude_of_ascending_node,
+      .argument_of_periapsis = circular_moon_elements.argument_of_periapsis,
       .mean_anomaly = 0 * Degree};
+  auto const earth = ephemeris.bodies()[0];
+  auto const moon = ephemeris.bodies()[1];
   DegreesOfFreedom<Barycentric> const initial_state =
-      earth_dof +
+      ephemeris.trajectory(earth)
+          ->EvaluateDegreesOfFreedom(t0_) +
       KeplerOrbit<Barycentric>(*earth, MasslessBody{}, elements, t0_)
           .StateVectors(t0_);
+    auto const dynamic_frame(
+        BodyCentredBodyDirectionDynamicFrame<Barycentric, World>(
+            &ephemeris, earth, moon));
 
   DiscreteTrajectory<Barycentric> trajectory;
   CHECK_OK(trajectory.Append(t0_, initial_state));
 
-  auto const instance = ephemeris_->NewInstance(
+  auto const instance = ephemeris.NewInstance(
       {&trajectory},
       Ephemeris<Barycentric>::NoIntrinsicAccelerations,
       Ephemeris<Barycentric>::FixedStepParameters(
@@ -352,7 +393,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
           /*step=*/10 * Second));
 
   CHECK_OK(
-      ephemeris_->FlowWithFixedStep(t0_ + number_of_days * Day, *instance));
+      ephemeris.FlowWithFixedStep(t0_ + number_of_days * Day, *instance));
 
   Instant t = t0_;
   auto const potential = [&dynamic_frame,
@@ -391,7 +432,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
   for (int j = 0; j < number_of_days; ++j) {
     LOG(ERROR) << "Day #" << j;
     t = t0_ + j * Day;
-    CHECK_OK(ephemeris_->Prolong(t));
+    CHECK_OK(ephemeris.Prolong(t));
     all_positions.emplace_back();
     all_βs.emplace_back();
 
