@@ -61,8 +61,8 @@ class MultiLevelSingleLinkage {
 
   MultiLevelSingleLinkage(
       Box const& box,
-      Field<Scalar, Argument> const& f,
-      Field<Gradient<Scalar, Argument>, Argument> const& grad_f);
+      Field<Scalar, Argument> f,
+      Field<Gradient<Scalar, Argument>, Argument> grad_f);
 
   // If |number_of_rounds| is given, the algorithm does |number_of_rounds|
   // iterations, each time adding |points_per_round| to the sample.
@@ -73,6 +73,12 @@ class MultiLevelSingleLinkage {
   // Beware!  The Bayesian stopping rule is typically more efficient, but it is
   // only technically correct (the best kind of correct) if the relative sizes
   // of the regions of attraction follow a uniform distribution.
+  std::vector<Argument> FindGlobalMaxima(
+      std::int64_t points_per_round,
+      std::optional<std::int64_t> number_of_rounds,
+      NormType local_search_tolerance);
+
+  // Same as above, but minimization instead of maximization.
   std::vector<Argument> FindGlobalMinima(
       std::int64_t points_per_round,
       std::optional<std::int64_t> number_of_rounds,
@@ -85,6 +91,14 @@ class MultiLevelSingleLinkage {
   // PCP trees.  We generally cannot |reserve| because we don't know the final
   // size of the vector, hence the |unique_ptr|s.
   using Arguments = std::vector<not_null<std::unique_ptr<Argument>>>;
+
+  // Implementation method for |FindGlobalMaxima| and |FindGlobalMinima|.
+  std::vector<Argument> FindGlobalMinima(
+      std::int64_t points_per_round,
+      std::optional<std::int64_t> number_of_rounds,
+      NormType local_search_tolerance,
+      Field<Scalar, Argument> const& f,
+      Field<Gradient<Scalar, Argument>, Argument> const& grad_f);
 
   // Returns true iff the given |stationary_point| is sufficiently far from the
   // ones already in |stationary_point_neighbourhoods|.
