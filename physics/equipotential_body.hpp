@@ -202,7 +202,9 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
       states.push_back(State{});
       continue;
     }
-
+    LOG(ERROR) << total_energy << " "
+               << dynamic_frame_->GeometricPotential(
+                      t, equipotential_position.value());
     // Compute that equipotential.
     states.push_back(ComputeLine(plane, t, equipotential_position.value()));
   }

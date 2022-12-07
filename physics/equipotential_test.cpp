@@ -308,14 +308,14 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantEnergies) {
 TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
   mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd_global.wl",
                              /*make_unique=*/false);
-  std::int64_t const number_of_days = 24;
+  std::int64_t const number_of_days = 30;
   auto const earth = solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
   auto const moon = solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Moon));
   auto const dynamic_frame(
       BodyCentredBodyDirectionDynamicFrame<Barycentric, World>(
-          ephemeris_.get(), moon, earth));
+          ephemeris_.get(), earth, moon));
   CHECK_OK(ephemeris_->Prolong(t0_ + number_of_days * Day));
 
   DegreesOfFreedom<Barycentric> const earth_dof =
@@ -330,7 +330,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
 
   KeplerianElements<Barycentric> const elements{
       .periapsis_distance = 7000 * Kilo(Metre),
-      .apoapsis_distance = .9 * *moon_elements.periapsis_distance,
+      .apoapsis_distance = .8 * *moon_elements.periapsis_distance,
       .inclination = moon_elements.inclination,
       .longitude_of_ascending_node = moon_elements.longitude_of_ascending_node,
       .argument_of_periapsis = moon_elements.argument_of_periapsis,
@@ -395,11 +395,16 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
     all_positions.emplace_back();
     all_βs.emplace_back();
 
-    auto const maxima = optimizer.FindGlobalMaxima(
+    auto const arg_maxima = optimizer.FindGlobalMaxima(
         /*points_per_round=*/100,
         /*number_of_rounds=*/std::nullopt,
         /*local_search_tolerance=*/10'000 * Kilo(Metre));
-    logger.Append("maxima", maxima, mathematica::ExpressIn(Metre));
+    logger.Append("argMaxima", arg_maxima, mathematica::ExpressIn(Metre));
+    std::vector<SpecificEnergy> maxima;
+    for (auto const& arg_maximum : arg_maxima) {
+      maxima.push_back(potential(arg_maximum));
+    }
+    logger.Append("maxima", maxima, mathematica::ExpressIn(Metre, Second));
 
     DegreesOfFreedom<World> const dof = dynamic_frame.ToThisFrameAtTime(t)(
         trajectory.EvaluateDegreesOfFreedom(t));
@@ -409,7 +414,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
     dynamic_frame.GeometricPotential(t, dof.position());
     energies.push_back(energy);
     auto const& lines = equipotential.ComputeLines(
-        plane, t, maxima, energy);
+        plane, t, arg_maxima, energy);
     for (auto const& line : lines) {
       auto const& [positions, βs] = line;
       all_positions.back().push_back(positions);
