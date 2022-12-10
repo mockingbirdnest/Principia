@@ -94,7 +94,9 @@ class Equipotential {
       Position<Frame> const& start_position,
       SpecificEnergy const& total_energy) const;
 
-  //The |start_positions| must be coplanar in a plane parallel to |plane|.
+  // Computes equipotential lines for the given |total_energy|.  Each of the
+  // given |start_positions| ends up enclosed by exactly one line of the result.
+  // The |start_positions| must be coplanar in a plane parallel to |plane|.
   std::vector<typename ODE::State> ComputeLines(
       Plane<Frame> const& plane,
       Instant const& t,
@@ -132,7 +134,7 @@ class Equipotential {
                                SystemStateError const& error) const;
 
   // Computes the winding number of |line| around |position|.  |line| and
-  // |position| must be in the given |plane|.  The returned integer is
+  // |position| must be in a plane paralles to |plane|.  The returned integer is
   // nonnegative, i.e., doesn't give information about the direction in which
   // the |line| rotates around |position|.
   std::int64_t WindingNumber(Plane<Frame> const& plane,
