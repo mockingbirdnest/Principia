@@ -6,6 +6,7 @@
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
+#include "geometry/plane.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/dynamic_frame.hpp"
@@ -21,13 +22,16 @@ using base::not_null;
 using geometry::Bivector;
 using geometry::InfiniteFuture;
 using geometry::Instant;
+using geometry::Plane;
 using geometry::Position;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::ExplicitFirstOrderOrdinaryDifferentialEquation;
 using quantities::Acceleration;
+using quantities::Angle;
 using quantities::Difference;
 using quantities::Infinity;
 using quantities::Length;
+using quantities::SpecificEnergy;
 using quantities::si::Metre;
 using quantities::si::Second;
 
@@ -71,16 +75,33 @@ class Equipotential {
       not_null<DynamicFrame<InertialFrame, Frame> const*> dynamic_frame);
 
   // Computes an equipotential line going through the given point.
-  typename ODE::State ComputeLine(Bivector<double, Frame> const& plane,
+  typename ODE::State ComputeLine(Plane<Frame> const& plane,
                                   Instant const& t,
                                   Position<Frame> const& position) const;
 
   // Computes an equipotential line for the total energy determined by the
   // |degrees_of_freedom|.
   typename ODE::State ComputeLine(
-      Bivector<double, Frame> const& plane,
+      Plane<Frame> const& plane,
       Instant const& t,
       DegreesOfFreedom<Frame> const& degrees_of_freedom) const;
+
+  // Computes an equipotential line for the given |total_energy| starting from
+  // |start_position|.
+  typename ODE::State ComputeLine(
+      Plane<Frame> const& plane,
+      Instant const& t,
+      Position<Frame> const& start_position,
+      SpecificEnergy const& total_energy) const;
+
+  // Computes equipotential lines for the given |total_energy|.  Each of the
+  // given |start_positions| ends up enclosed by exactly one line of the result.
+  // The |start_positions| must be coplanar in a plane parallel to |plane|.
+  std::vector<typename ODE::State> ComputeLines(
+      Plane<Frame> const& plane,
+      Instant const& t,
+      std::vector<Position<Frame>> const& start_positions,
+      SpecificEnergy const& total_energy) const;
 
  private:
   using IndependentVariableDifference =
@@ -100,7 +121,9 @@ class Equipotential {
   static constexpr double β_max_ = 1e6;
   static constexpr double β_tolerance_ = 1;
 
-  absl::Status RightHandSide(Bivector<double, Frame> const& plane,
+  // The |binormal| determines in what direction we go around the curve.  It may
+  // be anything, but must be consistent across calls to the right-hand side.
+  absl::Status RightHandSide(Bivector<double, Frame> const& binormal,
                              Position<Frame> const& position,
                              Instant const& t,
                              IndependentVariable s,
@@ -109,6 +132,14 @@ class Equipotential {
 
   double ToleranceToErrorRatio(IndependentVariableDifference current_s_step,
                                SystemStateError const& error) const;
+
+  // Computes the winding number of |line| around |position|.  |line| and
+  // |position| must be in a plane paralles to |plane|.  The returned integer is
+  // nonnegative, i.e., doesn't give information about the direction in which
+  // the |line| rotates around |position|.
+  std::int64_t WindingNumber(Plane<Frame> const& plane,
+                             Position<Frame> const& position,
+                             std::vector<Position<Frame>> const& line) const;
 
   AdaptiveParameters const& adaptive_parameters_;
   not_null<DynamicFrame<InertialFrame, Frame> const*> const dynamic_frame_;

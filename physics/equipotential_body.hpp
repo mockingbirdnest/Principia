@@ -3,12 +3,16 @@
 #include "physics/equipotential.hpp"
 
 #include <functional>
+#include <optional>
+#include <tuple>
+#include <vector>
 
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "numerics/double_precision.hpp"
 #include "numerics/gradient_descent.hpp"
 #include "quantities/elementary_functions.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace physics {
@@ -28,6 +32,7 @@ using quantities::Pow;
 using quantities::SpecificEnergy;
 using quantities::Square;
 using quantities::Time;
+using quantities::si::Radian;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
@@ -35,15 +40,6 @@ using ::std::placeholders::_3;
 // If the potential is below the total energy by this factor, return an empty
 // equipotential line.
 constexpr double energy_tolerance = 0x1p-24;
-
-// The following function projects a vector on the plane orthogonal to |plane|.
-// TODO(phl): Why don't we have projections?
-template<typename Scalar, typename Frame>
-Vector<Scalar, Frame> ProjectedVector(Bivector<double, Frame> const& plane,
-                                      Vector<Scalar, Frame> const& vector) {
-  Trivector<Scalar, Frame> const projection_on_plane = Wedge(plane, vector);
-  return vector - plane * projection_on_plane;
-}
 
 template<typename ODE>
 ODEAdaptiveStepParameters<ODE>::ODEAdaptiveStepParameters(
@@ -79,12 +75,14 @@ Equipotential<InertialFrame, Frame>::Equipotential(
 
 template<typename InertialFrame, typename Frame>
 auto Equipotential<InertialFrame, Frame>::ComputeLine(
-    Bivector<double, Frame> const& plane,
+    Plane<Frame> const& plane,
     Instant const& t,
     Position<Frame> const& position) const -> State {
+  auto const binormal = plane.UnitBinormals().front();
   ODE equation{
       .compute_derivative = std::bind(
-          &Equipotential::RightHandSide, this, plane, position, t, _1, _2, _3)};
+          &Equipotential::RightHandSide,
+          this, binormal, position, t, _1, _2, _3)};
   SystemState initial_state(s_initial_, {{position}, {/*β=*/0}});
   IntegrationProblem<ODE> const problem{
       .equation = std::move(equation),
@@ -118,7 +116,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
 
 template<typename InertialFrame, typename Frame>
 auto Equipotential<InertialFrame, Frame>::ComputeLine(
-    Bivector<double, Frame> const& plane,
+    Plane<Frame> const& plane,
     Instant const& t,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) const -> State {
   // Compute the total (specific) energy.
@@ -127,6 +125,26 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
   auto const kinetic_energy = 0.5 * degrees_of_freedom.velocity().Norm²();
   auto const total_energy = potential_energy + kinetic_energy;
 
+  return ComputeLine(plane, t, degrees_of_freedom.position(), total_energy);
+}
+
+template<typename InertialFrame, typename Frame>
+auto Equipotential<InertialFrame, Frame>::ComputeLine(
+    Plane<Frame> const& plane,
+    Instant const& t,
+    Position<Frame> const& start_position,
+    SpecificEnergy const& total_energy) const -> State {
+  auto const lines = ComputeLines(plane, t, {start_position}, total_energy);
+  CHECK_EQ(1, lines.size());
+  return lines[0];
+}
+
+template<typename InertialFrame, typename Frame>
+auto Equipotential<InertialFrame, Frame>::ComputeLines(
+    Plane<Frame> const& plane,
+    Instant const& t,
+    std::vector<Position<Frame>> const& start_positions,
+    SpecificEnergy const& total_energy) const -> std::vector<State> {
   // The function on which we perform gradient descent is defined to have a
   // minimum at a position where the potential is equal to the total energy.
   auto const f = [this, t, total_energy](Position<Frame> const& position) {
@@ -138,40 +156,64 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
       Position<Frame> const& position) {
     // To keep the problem bidimensional we eliminate any off-plane component of
     // the gradient.
-    return ProjectedVector(
-        plane,
+    return Projection(
         -2 * (dynamic_frame_->GeometricPotential(t, position) - total_energy) *
             dynamic_frame_->RotationFreeGeometricAccelerationAtRest(t,
-                                                                    position));
+                                                                    position),
+        plane);
   };
 
-  // Do the gradient descent to find a point on the equipotential having the
-  // total energy.
-  // NOTE(phl): Unclear if |length_integration_tolerance| is the right thing to
-  // use below.
-  auto const equipotential_position =
-      BroydenFletcherGoldfarbShanno<Square<SpecificEnergy>, Position<Frame>>(
-          degrees_of_freedom.position(),
-          f,
-          grad_f,
-          adaptive_parameters_.length_integration_tolerance());
-  CHECK(equipotential_position.has_value());
+  std::vector<State> states;
+  for (auto const& start_position : start_positions) {
+    // Compute the winding number of every line already found with respect to
+    // |start_position|.  If any line "turns around" that position, we don't
+    // need to compute a new equipotential, it would just duplicate one we
+    // already have.
+    bool must_compute_line = true;
+    for (auto const& state : states) {
+      auto const& line = std::get<0>(state);
+      std::int64_t const winding_number =
+          WindingNumber(plane, start_position, line);
+      if (winding_number > 0) {
+        must_compute_line = false;
+        break;
+      }
+    }
+    if (!must_compute_line) {
+      continue;
+    }
 
-  // The BFGS algorithm will put us at the minimum of f, but that may be a point
-  // that has (significantly) less energy that our total energy.  No point in
-  // building a line in that case.
-  if (dynamic_frame_->GeometricPotential(t, equipotential_position.value()) <
-      total_energy - Abs(total_energy) * energy_tolerance) {
-    return State{};
+    // Do the gradient descent to find a point on the equipotential having the
+    // total energy.
+    // NOTE(phl): Unclear if |length_integration_tolerance| is the right thing
+    // to use below.
+    auto const equipotential_position =
+        BroydenFletcherGoldfarbShanno<Square<SpecificEnergy>, Position<Frame>>(
+            start_position,
+            f,
+            grad_f,
+            adaptive_parameters_.length_integration_tolerance());
+    CHECK(equipotential_position.has_value());
+
+    // The BFGS algorithm will put us at the minimum of f, but that may be a
+    // point that has (significantly) less energy that our total energy.  No
+    // point in building a line in that case.
+    if (dynamic_frame_->GeometricPotential(t, equipotential_position.value()) <
+        total_energy - Abs(total_energy) * energy_tolerance) {
+      states.push_back(State{});
+      continue;
+    }
+
+    // Compute that equipotential.
+    states.push_back(ComputeLine(plane, t, equipotential_position.value()));
   }
 
-  // Compute that equipotential.
-  return ComputeLine(plane, t, equipotential_position.value());
+  return states;
 }
 
 template<typename InertialFrame, typename Frame>
 absl::Status Equipotential<InertialFrame, Frame>::RightHandSide(
-    Bivector<double, Frame> const& plane,
+    Bivector<double, Frame> const& binormal,
     Position<Frame> const& position,
     Instant const& t,
     IndependentVariable const s,
@@ -182,7 +224,7 @@ absl::Status Equipotential<InertialFrame, Frame>::RightHandSide(
   auto const dVǀᵧ₍ₛ₎ =
       dynamic_frame_->RotationFreeGeometricAccelerationAtRest(t, γₛ);
   Displacement<Frame> const γʹ =
-      Normalize(plane * dVǀᵧ₍ₛ₎) * characteristic_length_;
+      Normalize(binormal * dVǀᵧ₍ₛ₎) * characteristic_length_;
 
   // Second state variable.
   double const β = std::get<1>(state).front();
@@ -206,6 +248,25 @@ double Equipotential<InertialFrame, Frame>::ToleranceToErrorRatio(
   return std::min(
       adaptive_parameters_.length_integration_tolerance() / max_length_error,
       β_tolerance_ / max_braking_error);
+}
+
+template<typename InertialFrame, typename Frame>
+std::int64_t Equipotential<InertialFrame, Frame>::WindingNumber(
+    Plane<Frame> const& plane,
+    Position<Frame> const& position,
+    std::vector<Position<Frame>> const& line) const {
+  auto const binormal = plane.UnitBinormals().front();
+  Angle angle;
+  int previous_i = line.size() - 1;
+  for (int i = 0; i < line.size(); ++i) {
+    auto const& previous_point = line[previous_i];
+    auto const& point = line[i];
+    angle += OrientedAngleBetween(previous_point - position,
+                                  point - position,
+                                  binormal);
+    previous_i = i;
+  }
+  return static_cast<std::int64_t>(std::round(Abs(angle) / (2 * π * Radian)));
 }
 
 }  // namespace internal_equipotential
