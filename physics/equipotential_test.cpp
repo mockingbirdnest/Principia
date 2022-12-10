@@ -1,5 +1,6 @@
 #include "physics/equipotential.hpp"
 
+#include <algorithm>
 #include <array>
 #include <string>
 #include <vector>
@@ -382,7 +383,6 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
              all_positions,
              mathematica::ExpressIn(Metre));
   logger.Set("betasEarthMoonGlobalOptimization", all_βs);
-
 }
 
 #endif

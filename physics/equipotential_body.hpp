@@ -5,6 +5,7 @@
 #include <functional>
 #include <optional>
 #include <tuple>
+#include <vector>
 
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
