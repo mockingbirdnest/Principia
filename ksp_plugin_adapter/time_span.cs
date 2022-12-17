@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace principia {
-
 namespace ksp_plugin_adapter {
 
 // This class starts with "Principia" to avoid confusion with the .Net TimeSpan.
@@ -208,5 +207,4 @@ class PrincipiaTimeSpan {
 }
 
 } // namespace ksp_plugin_adapter
-
 } // namespace principia
