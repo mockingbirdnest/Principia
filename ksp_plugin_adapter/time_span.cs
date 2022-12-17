@@ -52,11 +52,10 @@ class PrincipiaTimeSpan {
                           fractional_seconds_digits);
   }
 
-  public string FormatPositive(
-      bool with_leading_zeroes, 
-      bool with_seconds,
-      bool iau_style = false,
-      int fractional_second_digits = 1) {
+  public string FormatPositive(bool with_leading_zeroes,
+                               bool with_seconds,
+                               bool iau_style = false,
+                               int fractional_second_digits = 1) {
     if (!Split(out int days,
                out int hours,
                out int minutes,
@@ -76,23 +75,22 @@ class PrincipiaTimeSpan {
       components.Add(days.ToString("0;0"));
     }
     if (components.Count > 0) {
-      components.Add(iau_style ?$"{short_day_symbol}{nbsp}"
-                               :$"{nbsp}{day_symbol}{nbsp}");
+      components.Add(iau_style
+                         ? $"{zwsp}{short_day_symbol}{nbsp}"
+                         : $"{nbsp}{day_symbol}{nbsp}");
     }
     if (components.Count > 0 || with_leading_zeroes || hours != 0) {
       components.Add(day_is_short
                          ? hours.ToString("0;0")
                          : hours.ToString("00;00"));
-      components.Add(iau_style ? $"ʰ{nbsp}"
-                               : $"{nbsp}h{nbsp}");
+      components.Add(iau_style ? $"{zwsp}ʰ{nbsp}" : $"{nbsp}h{nbsp}");
     }
     if (components.Count > 0 ||
         with_leading_zeroes ||
         minutes != 0 ||
         !with_seconds) {
       components.Add(minutes.ToString("00;00"));
-      components.Add(iau_style ? "ᵐ"
-                               : $"{nbsp}min");
+      components.Add(iau_style ? $"{zwsp}ᵐ" : $"{nbsp}min");
     }
     if (with_seconds) {
       if (fractional_second_digits > 0) {
@@ -102,15 +100,16 @@ class PrincipiaTimeSpan {
                 seconds.ToString(
                     $"00.{fractional_format};00.{fractional_format}"),
                 @"\d{3}(?=\d)",
-                match => match.Value + "'");;
+                match => match.Value + "'");
         if (iau_style) {
-          components.Add(nbsp + seconds_field.Replace(".", "ˢ."));
+          components.Add(nbsp + seconds_field.Replace(".", $"{zwsp}ˢ."));
         } else {
           components.Add($"{nbsp}{seconds_field}{nbsp}s");
         }
       } else {
-        components.Add(iau_style ? $"{nbsp}{seconds:00}ˢ"
-                                 : $"{nbsp}{seconds:00}{nbsp}s");
+        components.Add(iau_style
+                           ? $"{nbsp}{seconds:00}{zwsp}ˢ"
+                           : $"{nbsp}{seconds:00}{nbsp}s");
       }
     }
     return string.Join("", components.ToArray());
@@ -118,24 +117,24 @@ class PrincipiaTimeSpan {
 
   public double total_seconds => seconds_;
 
-  public static bool TryParse(string text,
-                              out PrincipiaTimeSpan time_span) {
+  public static bool TryParse(string text, out PrincipiaTimeSpan time_span) {
     time_span = new PrincipiaTimeSpan(double.NaN);
     // Using a technology that is customarily used to parse HTML.
     // Wrapping the literal in a Regex constructor and then substituting the day
     // symbols in order to get VS to syntax highlight the regex.
     var regex = new Regex(@"
         ^[+]?\s*
-        (?:(?<days>\d+)\s*(?:{day_symbol}|{short_day_symbol})\s*)?
-        (?:(?<hours>\d+)\s*[hʰ]\s*)?
-        (?:(?<minutes>\d+)\s*(?:[mᵐ]|min)\s*)?
-        (?:(?<seconds>[0-9.,']+)\s*[sˢ]\s*|
-           (?<integer_seconds>[0-9']+)[sˢ][.,]
+        (?:(?<days>\d+)[\s|{zwsp}]*(?:{day_symbol}|{short_day_symbol})\s*)?
+        (?:(?<hours>\d+)[\s|{zwsp}]*[hʰ]\s*)?
+        (?:(?<minutes>\d+)[\s|{zwsp}]*(?:[mᵐ]|min)\s*)?
+        (?:(?<seconds>[0-9.,']+)[\s|{zwsp}]*[sˢ]\s*|
+           (?<integer_seconds>[0-9']+)[\s|{zwsp}]*[sˢ][.,]
                 (?<fractional_seconds>[0-9']+))?$",
-        RegexOptions.IgnorePatternWhitespace);
+                          RegexOptions.IgnorePatternWhitespace);
     regex = new Regex(
-        regex.ToString().Replace("{day_symbol}", day_symbol)
-                        .Replace("{short_day_symbol}", short_day_symbol),
+        regex.ToString().Replace("{day_symbol}", day_symbol).
+            Replace("{short_day_symbol}", short_day_symbol).
+            Replace("{zwsp}", zwsp),
         RegexOptions.IgnorePatternWhitespace);
     var match = regex.Match(text);
     if (!match.Success) {
@@ -152,12 +151,14 @@ class PrincipiaTimeSpan {
     string hours = hours_group.Success ? hours_group.Value : "0";
     string minutes = minutes_group.Success ? minutes_group.Value : "0";
     string seconds = seconds_group.Success
-        ? seconds_group.Value
-        : integer_seconds_group.Success
-            ? string.Join(".",
-                          integer_seconds_group.Value,
-                          fractional_seconds_group.Value)
-            : "0";
+                         ? seconds_group.Value
+                         :
+                         integer_seconds_group.Success
+                             ?
+                             string.Join(".",
+                                         integer_seconds_group.Value,
+                                         fractional_seconds_group.Value)
+                             : "0";
     if (!int.TryParse(days, out int d) ||
         !int.TryParse(hours, out int h) ||
         !int.TryParse(minutes, out int min) ||
@@ -177,7 +178,7 @@ class PrincipiaTimeSpan {
   }
 
   public static int day_duration => date_time_formatter.Day;
-  
+
   public static string day_symbol =>
       hour_divides_day && day_is_short
           ? "d" + (int)(date_time_formatter.Day / date_time_formatter.Hour)
@@ -185,8 +186,8 @@ class PrincipiaTimeSpan {
 
   public static string short_day_symbol =>
       hour_divides_day && day_is_short
-          ? "ᵈ" + "⁰¹²³⁴⁵⁶⁷⁸⁹"[date_time_formatter.Day /
-                               date_time_formatter.Hour]
+          ? "ᵈ" +
+            "⁰¹²³⁴⁵⁶⁷⁸⁹"[date_time_formatter.Day / date_time_formatter.Hour]
           : "ᵈ";
 
   private static bool day_is_short =>
@@ -202,7 +203,8 @@ class PrincipiaTimeSpan {
 
   private readonly double seconds_;
   private const string nbsp = "\xA0";
+  private const string zwsp = "\u200B";
 }
 
-}  // namespace ksp_plugin_adapter
-}  // namespace principia
+} // namespace ksp_plugin_adapter
+} // namespace principia
