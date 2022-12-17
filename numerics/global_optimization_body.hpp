@@ -31,7 +31,7 @@ using quantities::Pow;
 constexpr int64_t pcp_tree_max_values_per_cell = 20;
 
 template<typename Scalar, typename Argument, int dimensions>
-MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::Measure
+typename MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::Measure
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::measure() const {
   if constexpr (dimensions == 1) {
     return 2 * vertices[0].Norm();
