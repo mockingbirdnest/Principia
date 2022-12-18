@@ -211,7 +211,7 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Symplecticity) {
                 _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
-  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
+  problem.initial_state = {t_initial, {q_initial}, {v_initial}};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
@@ -272,7 +272,7 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Convergence) {
                 _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
-  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
+  problem.initial_state = {t_initial, {q_initial}, {v_initial}};
   ODE::SystemState final_state;
   auto const append_state = [&final_state](ODE::SystemState const& state) {
     final_state = state;
@@ -346,7 +346,7 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Termination) {
                 _1, _2, _3, &evaluations);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
-  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
+  problem.initial_state = {t_initial, {q_initial}, {v_initial}};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
@@ -390,7 +390,7 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, LongIntegration) {
                 _1, _2, _3, &evaluations);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
-  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
+  problem.initial_state = {t_initial, {q_initial}, {v_initial}};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
@@ -432,7 +432,7 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Serialization) {
                 _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
-  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
+  problem.initial_state = {t_initial, {q_initial}, {v_initial}};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };

@@ -567,7 +567,7 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, TimeReversibility) {
   };
 
   {
-    problem.initial_state = {{q_initial}, {v_initial}, t_initial};
+    problem.initial_state = {t_initial, {q_initial}, {v_initial}};
     auto const instance =
         GetParam().integrator.NewInstance(problem, append_state, step);
     EXPECT_OK(instance->Solve(t_final));
@@ -618,7 +618,7 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Symplecticity) {
                 _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
-  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
+  problem.initial_state = {t_initial, {q_initial}, {v_initial}};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
@@ -683,7 +683,7 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Convergence) {
                 _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
-  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
+  problem.initial_state = {t_initial, {q_initial}, {v_initial}};
   ODE::SystemState final_state;
   auto const append_state = [&final_state](ODE::SystemState const& state) {
     final_state = state;
@@ -753,7 +753,7 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Termination) {
                 _1, _2, _3, &evaluations);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
-  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
+  problem.initial_state = {t_initial, {q_initial}, {v_initial}};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
@@ -807,7 +807,7 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, LongIntegration) {
                 _1, _2, _3, &evaluations);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
-  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
+  problem.initial_state = {t_initial, {q_initial}, {v_initial}};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
@@ -860,7 +860,7 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Serialization) {
                 _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
-  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
+  problem.initial_state = {t_initial, {q_initial}, {v_initial}};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };

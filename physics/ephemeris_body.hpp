@@ -1477,9 +1477,9 @@ absl::Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
   IntegrationProblem<ODE> problem;
   problem.equation.compute_acceleration = std::move(compute_acceleration);
 
-  problem.initial_state = {{trajectory_last_degrees_of_freedom.position()},
-                           {trajectory_last_degrees_of_freedom.velocity()},
-                           trajectory_last_time};
+  problem.initial_state = {trajectory_last_time,
+                           {trajectory_last_degrees_of_freedom.position()},
+                           {trajectory_last_degrees_of_freedom.velocity()}};
 
   typename AdaptiveStepSizeIntegrator<ODE>::Parameters const
       integrator_parameters(
