@@ -895,13 +895,31 @@ void Plugin::SetPredictionAdaptiveStepParameters(
   // If there is a target vessel, it is integrated with the same parameters as
   // the given (current) vessel.  This makes it possible to plot the prediction
   // of the current vessel.
+  auto& vessel = *FindOrDie(vessels_, vessel_guid);
   if (renderer_->HasTargetVessel()) {
-    renderer_->GetTargetVessel().set_prediction_adaptive_step_parameters(
-        prediction_adaptive_step_parameters);
-  }
-  FindOrDie(vessels_, vessel_guid)
-      ->set_prediction_adaptive_step_parameters(
+    auto& target_vessel = renderer_->GetTargetVessel();
+    if (vessel.has_flight_plan()) {
+      // If there is a target vessel and our vessel has a flight plan, make sure
+      // that we don't shorten the target vessel's prediction as it would hurt
+      // our flight plan.
+      auto const target_prediction_adaptive_step_parameters =
+        target_vessel.prediction_adaptive_step_parameters();
+      target_vessel.set_prediction_adaptive_step_parameters(
+          Ephemeris<Barycentric>::AdaptiveStepParameters(
+              prediction_adaptive_step_parameters.integrator(),
+              std::max(target_prediction_adaptive_step_parameters.max_steps(),
+                       prediction_adaptive_step_parameters.max_steps()),
+              prediction_adaptive_step_parameters
+                  .length_integration_tolerance(),
+              prediction_adaptive_step_parameters
+                  .speed_integration_tolerance()));
+    } else {
+      target_vessel.set_prediction_adaptive_step_parameters(
           prediction_adaptive_step_parameters);
+    }
+  }
+  vessel.set_prediction_adaptive_step_parameters(
+      prediction_adaptive_step_parameters);
 }
 
 void Plugin::UpdatePrediction(std::vector<GUID> const& vessel_guids) const {
@@ -945,6 +963,28 @@ void Plugin::CreateFlightPlan(GUID const& vessel_guid,
       initial_mass,
       DefaultPredictionParameters(),
       DefaultBurnParameters());
+}
+
+void Plugin::ExtendPredictionForFlightPlan(GUID const& vessel_guid) const {
+  auto& vessel = *FindOrDie(vessels_, vessel_guid);
+
+  // If there is a target vessel, and the prediction of the target is too short
+  // for the flight plan, multiply the number of steps by 4 (one notch in the
+  // UI).  We don't wait for the prediction to be computed, though, so there is
+  // no guarantee that it will be long enough.  Presumably the user will keep
+  // increasing the flight plan length and get what they want, ultimately.
+  if (renderer_->HasTargetVessel() && vessel.has_flight_plan()) {
+    auto& target_vessel = renderer_->GetTargetVessel();
+    if (target_vessel.prediction()->back().time <
+        vessel.flight_plan().actual_final_time()) {
+      auto prediction_adaptive_step_parameters =
+          target_vessel.prediction_adaptive_step_parameters();
+      prediction_adaptive_step_parameters.set_max_steps(
+          prediction_adaptive_step_parameters.max_steps() * 4);
+      target_vessel.set_prediction_adaptive_step_parameters(
+          prediction_adaptive_step_parameters);
+    }
+  }
 }
 
 void Plugin::ComputeAndRenderApsides(

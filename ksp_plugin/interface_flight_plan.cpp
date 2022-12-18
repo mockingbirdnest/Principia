@@ -170,18 +170,6 @@ NavigationManoeuvre ToInterfaceNavigationManoeuvre(
 
 }  // namespace
 
-Status* __cdecl principia__FlightPlanInsert(Plugin const* const plugin,
-                                            char const* const vessel_guid,
-                                            Burn const burn,
-                                            int const index) {
-  journal::Method<journal::FlightPlanInsert> m(
-      {plugin, vessel_guid, burn, index});
-  CHECK_NOTNULL(plugin);
-  return m.Return(
-      ToNewStatus(GetFlightPlan(*plugin, vessel_guid)
-                      .Insert(FromInterfaceBurn(*plugin, burn), index)));
-}
-
 int __cdecl principia__FlightPlanCount(Plugin const* const plugin,
                                        char const* const vessel_guid) {
   journal::Method<journal::FlightPlanCount> m({plugin, vessel_guid});
@@ -360,6 +348,19 @@ principia__FlightPlanGetManoeuvreFrenetTrihedron(Plugin const* const plugin,
   return m.Return(result);
 }
 
+Status* __cdecl principia__FlightPlanInsert(Plugin const* const plugin,
+                                            char const* const vessel_guid,
+                                            Burn const burn,
+                                            int const index) {
+  journal::Method<journal::FlightPlanInsert> m(
+      {plugin, vessel_guid, burn, index});
+  CHECK_NOTNULL(plugin);
+  auto const status = GetFlightPlan(*plugin, vessel_guid)
+                          .Insert(FromInterfaceBurn(*plugin, burn), index);
+  plugin->ExtendPredictionForFlightPlan(vessel_guid);
+  return m.Return(ToNewStatus(status));
+}
+
 int __cdecl principia__FlightPlanNumberOfAnomalousManoeuvres(
     Plugin const* const plugin,
     char const* const vessel_guid) {
@@ -396,6 +397,7 @@ Status* __cdecl principia__FlightPlanRebase(Plugin const* const plugin,
   CHECK_NOTNULL(plugin);
   auto const status =
       plugin->GetVessel(vessel_guid)->RebaseFlightPlan(mass_in_tonnes * Tonne);
+  plugin->ExtendPredictionForFlightPlan(vessel_guid);
   return m.Return(ToNewStatus(status));
 }
 
@@ -404,8 +406,9 @@ Status* __cdecl principia__FlightPlanRemove(Plugin const* const plugin,
                                             int const index) {
   journal::Method<journal::FlightPlanRemove> m({plugin, vessel_guid, index});
   CHECK_NOTNULL(plugin);
-  return m.Return(
-      ToNewStatus(GetFlightPlan(*plugin, vessel_guid).Remove(index)));
+  auto const status = GetFlightPlan(*plugin, vessel_guid).Remove(index);
+  plugin->ExtendPredictionForFlightPlan(vessel_guid);
+  return m.Return(ToNewStatus(status));
 }
 
 void __cdecl principia__FlightPlanRenderedApsides(
@@ -533,9 +536,10 @@ Status* __cdecl principia__FlightPlanReplace(Plugin const* const plugin,
                                                  burn,
                                                  index});
   CHECK_NOTNULL(plugin);
-  return m.Return(
-      ToNewStatus(GetFlightPlan(*plugin, vessel_guid)
-                      .Replace(FromInterfaceBurn(*plugin, burn), index)));
+  auto const status = GetFlightPlan(*plugin, vessel_guid)
+                          .Replace(FromInterfaceBurn(*plugin, burn), index);
+  plugin->ExtendPredictionForFlightPlan(vessel_guid);
+  return m.Return(ToNewStatus(status));
 }
 
 void __cdecl principia__FlightPlanSelect(Plugin const* const plugin,
@@ -564,9 +568,11 @@ Status* __cdecl principia__FlightPlanSetAdaptiveStepParameters(
   CHECK_NOTNULL(plugin);
   auto const parameters = FromFlightPlanAdaptiveStepParameters(
       flight_plan_adaptive_step_parameters);
-  return m.Return(ToNewStatus(
+  auto const status =
       GetFlightPlan(*plugin, vessel_guid)
-          .SetAdaptiveStepParameters(parameters.first, parameters.second)));
+          .SetAdaptiveStepParameters(parameters.first, parameters.second);
+  plugin->ExtendPredictionForFlightPlan(vessel_guid);
+  return m.Return(ToNewStatus(status));
 }
 
 Status* __cdecl principia__FlightPlanSetDesiredFinalTime(
@@ -577,9 +583,11 @@ Status* __cdecl principia__FlightPlanSetDesiredFinalTime(
                                                              vessel_guid,
                                                              final_time});
   CHECK_NOTNULL(plugin);
-  return m.Return(
-      ToNewStatus(GetFlightPlan(*plugin, vessel_guid)
-                      .SetDesiredFinalTime(FromGameTime(*plugin, final_time))));
+  auto const status =
+      GetFlightPlan(*plugin, vessel_guid)
+          .SetDesiredFinalTime(FromGameTime(*plugin, final_time));
+  plugin->ExtendPredictionForFlightPlan(vessel_guid);
+  return m.Return(ToNewStatus(status));
 }
 
 }  // namespace interface

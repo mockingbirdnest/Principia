@@ -117,7 +117,7 @@ class MultiLevelSingleLinkage {
 
   Box const box_;
   NormType const box_diametre_;
-  Box::Measure const box_measure_;
+  typename Box::Measure const box_measure_;
   Field<Scalar, Argument> const f_;
   Field<Gradient<Scalar, Argument>, Argument> const grad_f_;
 
