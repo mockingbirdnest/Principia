@@ -84,6 +84,11 @@ class MockPlugin : public Plugin {
               (const, override));
 
   MOCK_METHOD(void,
+              ExtendPredictionForFlightPlan,
+              (GUID const& vessel_guid),
+              (const, override));
+
+  MOCK_METHOD(void,
               SetPredictionAdaptiveStepParameters,
               (GUID const& vessel_guid,
                Ephemeris<Barycentric>::AdaptiveStepParameters const&

@@ -349,7 +349,7 @@ class Plugin {
 
   // If there is a target vessel, increases the size of the prediction to try
   // and cover the actual final time of the flight plan.
-  void ExtendPredictionForFlightPlan(GUID const& vessel_guid) const;
+  virtual void ExtendPredictionForFlightPlan(GUID const& vessel_guid) const;
 
   // Computes the apsides of the trajectory defined by |begin| and |end| with
   // respect to the celestial with index |celestial_index|.
