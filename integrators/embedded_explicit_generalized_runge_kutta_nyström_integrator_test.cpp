@@ -111,7 +111,7 @@ TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, Legendre) {
                 _1, _2, _3, _4, &evaluations);
   IntegrationProblem<ODE> problem;
   problem.equation = legendre_equation;
-  problem.initial_state = {{x_initial}, {v_initial}, t_initial};
+  problem.initial_state = {t_initial, {x_initial}, {v_initial}};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
