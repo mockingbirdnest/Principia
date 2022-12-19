@@ -330,7 +330,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
 
   KeplerianElements<Barycentric> const elements{
       .periapsis_distance = 7000 * Kilo(Metre),
-      .apoapsis_distance = .8 * *moon_elements.periapsis_distance,
+      .apoapsis_distance = .85 * *moon_elements.periapsis_distance,
       .inclination = moon_elements.inclination,
       .longitude_of_ascending_node = moon_elements.longitude_of_ascending_node,
       .argument_of_periapsis = moon_elements.argument_of_periapsis,
