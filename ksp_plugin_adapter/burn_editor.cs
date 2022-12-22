@@ -393,9 +393,9 @@ class BurnEditor : ScalingRenderer {
     string unsigned_format = "00,000." + new string('0', fractional_digits);
     return Regex.Replace(
         Regex.Replace(
-        metres_per_second.ToString($"+{unsigned_format};−{unsigned_format}",
+        metres_per_second.ToString($"+{unsigned_format};−{unsigned_format};{figure_space}{unsigned_format}",
                                    Culture.culture),
-        "^[+−][0']{1,5}",
+        @"^[+−\s][0']{1,5}",
         match => match.Value.Replace('0', figure_space)),
         // Add grouping marks to the fractional part.
         @"\d{3}(?=\d)",
