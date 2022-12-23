@@ -393,7 +393,7 @@ class BurnEditor : ScalingRenderer {
     string unsigned_format = "00,000." + new string('0', fractional_digits);
     return Regex.Replace(
         Regex.Replace(
-        metres_per_second.ToString($"+{unsigned_format};−{unsigned_format};{en_space}{unsigned_format}",
+        metres_per_second.ToString($"+{unsigned_format};−{unsigned_format};{figure_space}{unsigned_format}",
                                    Culture.culture),
         @"^[+−\s][0']{1,5}",
         match => match.Value.Replace('0', figure_space)),
@@ -478,7 +478,6 @@ class BurnEditor : ScalingRenderer {
   
   private static UnityEngine.Texture decrement_revolution;
   private static UnityEngine.Texture increment_revolution;
-  private const char en_space = '\u2002';
   private const char figure_space = '\u2007';
 }
 
