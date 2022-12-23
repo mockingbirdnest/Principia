@@ -37,6 +37,7 @@ internal class DifferentialSlider : ScalingRenderer {
       // marks, since .NET does not like those in the fractional part.
       parser_ = (string s, out double value) => double.TryParse(
           s.Replace(',', '.').Replace('-', '−')
+           .Replace(en_space, "")
            .Replace(figure_space, '0').Replace("'", ""),
           NumberStyles.AllowDecimalPoint |
           NumberStyles.AllowLeadingSign |
@@ -335,13 +336,6 @@ internal class DifferentialSlider : ScalingRenderer {
       return false;
     }
     increment = Math.Abs(adjusted_value - base_value);
-    if (adjusted_value + increment > max_value_ &&
-        base_value - increment < min_value_) {
-      // If the digit cannot be adjusted in either direction, don’t show arrows.
-      // This can happen if the digit is actually a figure space standing for
-      // the sign of 0.
-      return false;
-    }
     return true;
   }
 
@@ -389,6 +383,7 @@ internal class DifferentialSlider : ScalingRenderer {
   private static UnityEngine.Texture scroll_indicator;
 
   private string text_field_name => GetHashCode() + ":text_field";
+  private const string en_space = "\u2002";
   private const char figure_space = '\u2007';
 }
 
