@@ -335,7 +335,7 @@ internal class DifferentialSlider : ScalingRenderer {
       return false;
     }
     increment = Math.Abs(adjusted_value - base_value);
-    if (adjusted_value + increment > max_value_ &&
+    if (base_value + increment > max_value_ &&
         base_value - increment < min_value_) {
       // If the digit cannot be adjusted in either direction, don’t show arrows.
       // This can happen if the digit is actually a figure space standing for
