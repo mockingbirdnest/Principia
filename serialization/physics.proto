@@ -13,7 +13,7 @@ message AdaptiveStepParameters {
   required AdaptiveStepSizeIntegrator integrator = 1;
   required int64 max_steps = 2;
   required Quantity length_integration_tolerance = 3;
-  required Quantity speed_integration_tolerance = 4;
+  optional Quantity speed_integration_tolerance = 4;
 }
 
 message BarycentricRotatingDynamicFrame {

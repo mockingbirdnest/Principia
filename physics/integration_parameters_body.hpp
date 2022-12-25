@@ -7,8 +7,23 @@ namespace physics {
 namespace internal_integration_parameters {
 
 template<typename ODE>
+template<typename E, std::enable_if_t<E::order == 1, std::nullptr_t>>
 AdaptiveStepParameters<ODE>::AdaptiveStepParameters(
-    AdaptiveStepSizeIntegrator<ODE> const& integrator,
+    AdaptiveStepSizeIntegrator<E> const& integrator,
+    std::int64_t const max_steps,
+    Length const& length_integration_tolerance)
+    : integrator_(&integrator),
+      max_steps_(max_steps),
+      length_integration_tolerance_(length_integration_tolerance),
+      speed_integration_tolerance_(std::nullopt) {
+  CHECK_LT(0, max_steps_);
+  CHECK_LT(Length(), length_integration_tolerance_);
+}
+
+template<typename ODE>
+template<typename E, std::enable_if_t<E::order == 2, std::nullptr_t>>
+AdaptiveStepParameters<ODE>::AdaptiveStepParameters(
+    AdaptiveStepSizeIntegrator<E> const& integrator,
     std::int64_t const max_steps,
     Length const& length_integration_tolerance,
     Speed const& speed_integration_tolerance)
@@ -18,7 +33,7 @@ AdaptiveStepParameters<ODE>::AdaptiveStepParameters(
       speed_integration_tolerance_(speed_integration_tolerance) {
   CHECK_LT(0, max_steps_);
   CHECK_LT(Length(), length_integration_tolerance_);
-  CHECK_LT(Speed(), speed_integration_tolerance_);
+  CHECK_LT(Speed(), speed_integration_tolerance_.value());
 }
 
 template<typename ODE>
@@ -38,8 +53,9 @@ Length AdaptiveStepParameters<ODE>::length_integration_tolerance() const {
 }
 
 template<typename ODE>
+template<typename E, std::enable_if_t<E::order == 2, std::nullptr_t>>
 Speed AdaptiveStepParameters<ODE>::speed_integration_tolerance() const {
-  return speed_integration_tolerance_;
+  return speed_integration_tolerance_.value();
 }
 
 template<typename ODE>
@@ -55,6 +71,7 @@ void AdaptiveStepParameters<ODE>::set_length_integration_tolerance(
 }
 
 template<typename ODE>
+template<typename E, std::enable_if_t<E::order == 2, std::nullptr_t>>
 void AdaptiveStepParameters<ODE>::set_speed_integration_tolerance(
     Speed const& speed_integration_tolerance) {
   speed_integration_tolerance_ = speed_integration_tolerance;
@@ -67,18 +84,27 @@ void AdaptiveStepParameters<ODE>::WriteToMessage(
   message->set_max_steps(max_steps_);
   length_integration_tolerance_.WriteToMessage(
       message->mutable_length_integration_tolerance());
-  speed_integration_tolerance_.WriteToMessage(
-      message->mutable_speed_integration_tolerance());
+  if (speed_integration_tolerance_.has_value()) {
+    speed_integration_tolerance_.WriteToMessage(
+        message->mutable_speed_integration_tolerance());
+  }
 }
 
 template<typename ODE>
 AdaptiveStepParameters<ODE> AdaptiveStepParameters<ODE>::ReadFromMessage(
     serialization::AdaptiveStepParameters const& message) {
+  if (message.has_speed_integration_tolerance()) {
+    return AdaptiveStepParameters(
+        AdaptiveStepSizeIntegrator<ODE>::ReadFromMessage(message.integrator()),
+        message.max_steps(),
+        Length::ReadFromMessage(message.length_integration_tolerance()),
+        Speed::ReadFromMessage(message.speed_integration_tolerance()));
+  } else {
   return AdaptiveStepParameters(
-      AdaptiveStepSizeIntegrator<ODE>::ReadFromMessage(message.integrator()),
-      message.max_steps(),
-      Length::ReadFromMessage(message.length_integration_tolerance()),
-      Speed::ReadFromMessage(message.speed_integration_tolerance()));
+        AdaptiveStepSizeIntegrator<ODE>::ReadFromMessage(message.integrator()),
+        message.max_steps(),
+        Length::ReadFromMessage(message.length_integration_tolerance()));
+  }
 }
 
 template<typename ODE>
