@@ -21,6 +21,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/geopotential.hpp"
+#include "physics/integration_parameters.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
 #include "physics/protector.hpp"
@@ -58,43 +59,6 @@ template<typename Frame>
 class Ephemeris {
   static_assert(Frame::is_inertial, "Frame must be inertial");
 
-  template<typename ODE>
-  class ODEAdaptiveStepParameters final {
-   public:
-    // The |length_| and |speed_integration_tolerance|s are used to compute the
-    // |tolerance_to_error_ratio| for step size control.  The number of steps is
-    // limited to |max_steps|.
-    ODEAdaptiveStepParameters(AdaptiveStepSizeIntegrator<ODE> const& integrator,
-                              std::int64_t max_steps,
-                              Length const& length_integration_tolerance,
-                              Speed const& speed_integration_tolerance);
-
-    AdaptiveStepSizeIntegrator<ODE> const& integrator() const;
-    std::int64_t max_steps() const;
-    Length length_integration_tolerance() const;
-    Speed speed_integration_tolerance() const;
-
-    void set_max_steps(std::int64_t max_steps);
-    void set_length_integration_tolerance(
-        Length const& length_integration_tolerance);
-    void set_speed_integration_tolerance(
-        Speed const& speed_integration_tolerance);
-
-    void WriteToMessage(
-        not_null<serialization::Ephemeris::AdaptiveStepParameters*> message)
-        const;
-    static ODEAdaptiveStepParameters ReadFromMessage(
-        serialization::Ephemeris::AdaptiveStepParameters const& message);
-
-   private:
-    // This will refer to a static object returned by a factory.
-    not_null<AdaptiveStepSizeIntegrator<ODE> const*> integrator_;
-    std::int64_t max_steps_;
-    Length length_integration_tolerance_;
-    Speed speed_integration_tolerance_;
-    friend class Ephemeris<Frame>;
-  };
-
  public:
   using IntrinsicAcceleration =
       std::function<Vector<Acceleration, Frame>(Instant const& time)>;
@@ -115,9 +79,11 @@ class Ephemeris {
       ExplicitSecondOrderOrdinaryDifferentialEquation<Position<Frame>>;
 
   using AdaptiveStepParameters =
-      ODEAdaptiveStepParameters<NewtonianMotionEquation>;
+      physics::AdaptiveStepParameters<NewtonianMotionEquation>;
+  using FixedStepParameters =
+      physics::FixedStepParameters<NewtonianMotionEquation>;
   using GeneralizedAdaptiveStepParameters =
-      ODEAdaptiveStepParameters<GeneralizedNewtonianMotionEquation>;
+      physics::AdaptiveStepParameters<GeneralizedNewtonianMotionEquation>;
 
   class AccuracyParameters final {
    public:
@@ -132,27 +98,6 @@ class Ephemeris {
    private:
     Length fitting_tolerance_;
     double geopotential_tolerance_ = 0;
-    friend class Ephemeris<Frame>;
-  };
-
-  class FixedStepParameters final {
-   public:
-    FixedStepParameters(
-        FixedStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
-        Time const& step);
-
-    Time const& step() const;
-
-    void WriteToMessage(
-        not_null<serialization::Ephemeris::FixedStepParameters*> message) const;
-    static FixedStepParameters ReadFromMessage(
-        serialization::Ephemeris::FixedStepParameters const& message);
-
-   private:
-    // This will refer to a static object returned by a factory.
-    not_null<FixedStepSizeIntegrator<NewtonianMotionEquation> const*>
-        integrator_;
-    Time step_;
     friend class Ephemeris<Frame>;
   };
 
@@ -433,7 +378,7 @@ class Ephemeris {
       typename ODE::RightHandSideComputation compute_acceleration,
       not_null<DiscreteTrajectory<Frame>*> trajectory,
       Instant const& t,
-      ODEAdaptiveStepParameters<ODE> const& parameters,
+      physics::AdaptiveStepParameters<ODE> const& parameters,
       std::int64_t max_ephemeris_steps) EXCLUDES(lock_);
 
   // Computes an estimate of the ratio |tolerance / error|.
