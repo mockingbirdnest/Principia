@@ -19,6 +19,7 @@
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "mathematica/mathematica.hpp"
 #include "numerics/global_optimization.hpp"
+#include "numerics/root_finders.hpp"
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -308,14 +309,14 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantEnergies) {
 TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
   mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd_global.wl",
                              /*make_unique=*/false);
-  std::int64_t const number_of_days = 30;
+  std::int64_t const number_of_days = 24;
   auto const earth = solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
   auto const moon = solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Moon));
   auto const dynamic_frame(
       BodyCentredBodyDirectionDynamicFrame<Barycentric, World>(
-          ephemeris_.get(), earth, moon));
+          ephemeris_.get(), moon, earth));
   CHECK_OK(ephemeris_->Prolong(t0_ + number_of_days * Day));
 
   DegreesOfFreedom<Barycentric> const earth_dof =
@@ -401,24 +402,55 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
         /*local_search_tolerance=*/10'000 * Kilo(Metre));
     logger.Append("argMaxima", arg_maxima, mathematica::ExpressIn(Metre));
     std::vector<SpecificEnergy> maxima;
+    SpecificEnergy maximum_maximorum = -Infinity<SpecificEnergy>;
     for (auto const& arg_maximum : arg_maxima) {
       maxima.push_back(potential(arg_maximum));
+      maximum_maximorum = std::max(maximum_maximorum, maxima.back());
     }
     logger.Append("maxima", maxima, mathematica::ExpressIn(Metre, Second));
+
+    Position<World> const earth_position =
+        dynamic_frame.ToThisFrameAtTime(t).rigid_transformation()(
+            ephemeris_->trajectory(earth)->EvaluatePosition(t));
+
+    double const arg_approx_l1 = numerics::Brent(
+        [&](double x) {
+          return potential(Barycentre(std::pair(World::origin, earth_position),
+                                      std::pair(x, 1 - x)));
+        },
+        0.0,
+        1.0,
+        std::greater<>{});
+    double const arg_approx_l3 = numerics::Brent(
+        [&](double x) {
+          return potential(Barycentre(std::pair(World::origin, earth_position),
+                                      std::pair(x, 1 - x)));
+        },
+        0.0,
+        -1.5,
+        std::greater<>{});
+    SpecificEnergy const approx_l1_energy =
+        potential(Barycentre(std::pair(World::origin, earth_position),
+                             std::pair(arg_approx_l1, 1 - arg_approx_l1)));
+    SpecificEnergy const approx_l3_energy =
+        potential(Barycentre(std::pair(World::origin, earth_position),
+                             std::pair(arg_approx_l3, 1 - arg_approx_l1)));
 
     DegreesOfFreedom<World> const dof = dynamic_frame.ToThisFrameAtTime(t)(
         trajectory.EvaluateDegreesOfFreedom(t));
     trajectory_positions.push_back(dof.position());
-    SpecificEnergy energy =
-    dof.velocity().Norm²() / 2 +
-    dynamic_frame.GeometricPotential(t, dof.position());
-    energies.push_back(energy);
-    auto const& lines = equipotential.ComputeLines(
-        plane, t, arg_maxima, energy);
-    for (auto const& line : lines) {
-      auto const& [positions, βs] = line;
-      all_positions.back().push_back(positions);
-      all_βs.back().push_back(βs);
+    SpecificEnergy const ΔV =
+        maximum_maximorum - std::min(approx_l1_energy, approx_l3_energy);
+    for (int i = 1; i <= 8; ++i) {
+      SpecificEnergy const energy = maximum_maximorum - i * (0.2 * ΔV);
+      dynamic_frame.GeometricPotential(t, dof.position());
+      auto const& lines = equipotential.ComputeLines(
+          plane, t, arg_maxima, energy);
+      for (auto const& line : lines) {
+        auto const& [positions, βs] = line;
+        all_positions.back().push_back(positions);
+        all_βs.back().push_back(βs);
+      }
     }
   }
   std::vector<Position<World>> world_trajectory;
