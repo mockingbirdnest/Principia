@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 #include "physics/integration_parameters.hpp"
 
 namespace principia {
@@ -85,7 +87,7 @@ void AdaptiveStepParameters<ODE>::WriteToMessage(
   length_integration_tolerance_.WriteToMessage(
       message->mutable_length_integration_tolerance());
   if (speed_integration_tolerance_.has_value()) {
-    speed_integration_tolerance_.WriteToMessage(
+    speed_integration_tolerance_.value().WriteToMessage(
         message->mutable_speed_integration_tolerance());
   }
 }
@@ -93,17 +95,22 @@ void AdaptiveStepParameters<ODE>::WriteToMessage(
 template<typename ODE>
 AdaptiveStepParameters<ODE> AdaptiveStepParameters<ODE>::ReadFromMessage(
     serialization::AdaptiveStepParameters const& message) {
-  if (message.has_speed_integration_tolerance()) {
+  static_assert(ODE::order == 1 || ODE::order == 2);
+  if constexpr (ODE::order == 1) {
+    CHECK(!message.has_speed_integration_tolerance())
+        << "Unable to read from message " << message.DebugString();
+    return AdaptiveStepParameters(
+        AdaptiveStepSizeIntegrator<ODE>::ReadFromMessage(message.integrator()),
+        message.max_steps(),
+        Length::ReadFromMessage(message.length_integration_tolerance()));
+  } else if constexpr (ODE::order == 2) {
+    CHECK(message.has_speed_integration_tolerance())
+        << "Unable to read from message " << message.DebugString();
     return AdaptiveStepParameters(
         AdaptiveStepSizeIntegrator<ODE>::ReadFromMessage(message.integrator()),
         message.max_steps(),
         Length::ReadFromMessage(message.length_integration_tolerance()),
         Speed::ReadFromMessage(message.speed_integration_tolerance()));
-  } else {
-  return AdaptiveStepParameters(
-        AdaptiveStepSizeIntegrator<ODE>::ReadFromMessage(message.integrator()),
-        message.max_steps(),
-        Length::ReadFromMessage(message.length_integration_tolerance()));
   }
 }
 
