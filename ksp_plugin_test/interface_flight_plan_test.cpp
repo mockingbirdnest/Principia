@@ -187,7 +187,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                             length_integration_tolerance,
                         22 * Metre),
               Property(&Ephemeris<Barycentric>::AdaptiveStepParameters::
-                            speed_integration_tolerance,
+                            speed_integration_tolerance<>,
                         33 * Metre / Second)),
           AllOf(
               Property(&Ephemeris<Barycentric>::
@@ -199,7 +199,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                   22 * Metre),
               Property(
                   &Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters::
-                      speed_integration_tolerance,
+                      speed_integration_tolerance<>,
                   33 * Metre / Second))))
       .WillOnce(Return(absl::OkStatus()));
   EXPECT_THAT(*principia__FlightPlanSetAdaptiveStepParameters(
