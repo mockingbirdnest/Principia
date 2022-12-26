@@ -9,6 +9,13 @@ package principia.serialization;
 
 option cc_enable_arenas = true;
 
+message AdaptiveStepParameters {
+  required AdaptiveStepSizeIntegrator integrator = 1;
+  required int64 max_steps = 2;
+  required Quantity length_integration_tolerance = 3;
+  optional Quantity speed_integration_tolerance = 4;
+}
+
 message BarycentricRotatingDynamicFrame {
   extend DynamicFrame {
     optional BarycentricRotatingDynamicFrame extension = 6001;
@@ -151,16 +158,6 @@ message Ephemeris {
     required Quantity fitting_tolerance = 1;
     required double geopotential_tolerance = 2;
   }
-  message AdaptiveStepParameters {
-    required AdaptiveStepSizeIntegrator integrator = 1;
-    required int64 max_steps = 2;
-    required Quantity length_integration_tolerance = 3;
-    required Quantity speed_integration_tolerance = 4;
-  }
-  message FixedStepParameters {
-    required FixedStepSizeIntegrator integrator = 1;
-    required Quantity step = 2;
-  }
   message Checkpoint {
     required Point time = 1;
     required IntegratorInstance instance = 2;
@@ -195,6 +192,11 @@ message EulerSolver {
   required Multivector initial_angular_momentum = 2;
   required Rotation initial_attitude = 3;
   required Point initial_time = 4;
+}
+
+message FixedStepParameters {
+  required FixedStepSizeIntegrator integrator = 1;
+  required Quantity step = 2;
 }
 
 message HierarchicalSystem {

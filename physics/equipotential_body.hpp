@@ -41,31 +41,6 @@ using ::std::placeholders::_3;
 // equipotential line.
 constexpr double energy_tolerance = 0x1p-24;
 
-template<typename ODE>
-ODEAdaptiveStepParameters<ODE>::ODEAdaptiveStepParameters(
-    AdaptiveStepSizeIntegrator<ODE> const& integrator,
-    std::int64_t const max_steps,
-    Length const& length_integration_tolerance)
-    : integrator_(&integrator),
-      max_steps_(max_steps),
-      length_integration_tolerance_(length_integration_tolerance) {}
-
-template<typename ODE>
-AdaptiveStepSizeIntegrator<ODE> const&
-ODEAdaptiveStepParameters<ODE>::integrator() const {
-  return *integrator_;
-}
-
-template<typename ODE>
-std::int64_t ODEAdaptiveStepParameters<ODE>::max_steps() const {
-  return max_steps_;
-}
-
-template<typename ODE>
-Length ODEAdaptiveStepParameters<ODE>::length_integration_tolerance() const {
-  return length_integration_tolerance_;
-}
-
 template<typename InertialFrame, typename Frame>
 Equipotential<InertialFrame, Frame>::Equipotential(
     AdaptiveParameters const& adaptive_parameters,

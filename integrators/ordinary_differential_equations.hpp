@@ -46,6 +46,7 @@ using quantities::Variation;
 // |State| is the type of y.
 template<typename IndependentVariable_, typename... StateElements>
 struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
+  static constexpr std::int64_t order = 1;
   using IndependentVariable = IndependentVariable_;
   using IndependentVariableDifference = Difference<IndependentVariable>;
   using State = std::tuple<std::vector<StateElements>...>;
@@ -88,6 +89,7 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
 // using splitting methods.
 template<typename... StateElements>
 struct DecomposableFirstOrderDifferentialEquation final {
+  static constexpr std::int64_t order = 1;
   using State = std::tuple<std::vector<StateElements>...>;
 
   using Flow = std::function<absl::Status(Instant const& t_initial,
@@ -124,6 +126,7 @@ struct DecomposableFirstOrderDifferentialEquation final {
 // |Position| is the type of q.
 template<typename Position_>
 struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
+  static constexpr std::int64_t order = 2;
   using IndependentVariable = Instant;
   using IndependentVariableDifference = Time;
   using Position = Position_;
@@ -176,6 +179,7 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
 // |Position| is the type of q.
 template<typename Position_>
 struct SpecialSecondOrderDifferentialEquation final {
+  static constexpr std::int64_t order = 2;
   using IndependentVariable = Instant;
   using IndependentVariableDifference = Time;
   using Position = Position_;

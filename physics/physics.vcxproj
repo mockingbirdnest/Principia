@@ -47,6 +47,8 @@
     <ClInclude Include="equipotential_body.hpp" />
     <ClInclude Include="harmonic_damping.hpp" />
     <ClInclude Include="harmonic_damping_body.hpp" />
+    <ClInclude Include="integration_parameters.hpp" />
+    <ClInclude Include="integration_parameters_body.hpp" />
     <ClInclude Include="mechanical_system.hpp" />
     <ClInclude Include="mechanical_system_body.hpp" />
     <ClInclude Include="continuous_trajectory_body.hpp" />

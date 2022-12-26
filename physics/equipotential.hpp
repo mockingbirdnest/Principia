@@ -10,6 +10,7 @@
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/dynamic_frame.hpp"
+#include "physics/integration_parameters.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -35,25 +36,6 @@ using quantities::SpecificEnergy;
 using quantities::si::Metre;
 using quantities::si::Second;
 
-// TODO(phl): Similar class in Ephemeris.  Move to a common place.
-template<typename ODE>
-class ODEAdaptiveStepParameters final {
- public:
-  ODEAdaptiveStepParameters(AdaptiveStepSizeIntegrator<ODE> const& integrator,
-                            std::int64_t max_steps,
-                            Length const& length_integration_tolerance);
-
-  AdaptiveStepSizeIntegrator<ODE> const& integrator() const;
-  std::int64_t max_steps() const;
-  Length length_integration_tolerance() const;
-
- private:
-  // This will refer to a static object returned by a factory.
-  not_null<AdaptiveStepSizeIntegrator<ODE> const*> integrator_;
-  std::int64_t max_steps_;
-  Length length_integration_tolerance_;
-};
-
 template<typename InertialFrame, typename Frame>
 class Equipotential {
   static_assert(InertialFrame::is_inertial, "InertialFrame must be inertial");
@@ -68,7 +50,7 @@ class Equipotential {
       ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable,
                                                      Position<Frame>,
                                                      double>;
-  using AdaptiveParameters = ODEAdaptiveStepParameters<ODE>;
+  using AdaptiveParameters = physics::AdaptiveStepParameters<ODE>;
 
   Equipotential(
       AdaptiveParameters const& adaptive_parameters,
