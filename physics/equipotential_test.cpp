@@ -397,7 +397,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
     all_βs.emplace_back();
 
     auto const arg_maxima = optimizer.FindGlobalMaxima(
-        /*points_per_round=*/100,
+        /*points_per_round=*/1000,
         /*number_of_rounds=*/std::nullopt,
         /*local_search_tolerance=*/10'000 * Kilo(Metre));
     logger.Append("argMaxima", arg_maxima, mathematica::ExpressIn(Metre));
@@ -412,10 +412,13 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
     Position<World> const earth_position =
         dynamic_frame.ToThisFrameAtTime(t).rigid_transformation()(
             ephemeris_->trajectory(earth)->EvaluatePosition(t));
+    Position<World> const moon_position =
+        dynamic_frame.ToThisFrameAtTime(t).rigid_transformation()(
+            ephemeris_->trajectory(moon)->EvaluatePosition(t));
 
     double const arg_approx_l1 = numerics::Brent(
         [&](double x) {
-          return potential(Barycentre(std::pair(World::origin, earth_position),
+          return potential(Barycentre(std::pair(moon_position, earth_position),
                                       std::pair(x, 1 - x)));
         },
         0.0,
@@ -423,17 +426,17 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
         std::greater<>{});
     double const arg_approx_l3 = numerics::Brent(
         [&](double x) {
-          return potential(Barycentre(std::pair(World::origin, earth_position),
+          return potential(Barycentre(std::pair(moon_position, earth_position),
                                       std::pair(x, 1 - x)));
         },
         0.0,
         -1.5,
         std::greater<>{});
     SpecificEnergy const approx_l1_energy =
-        potential(Barycentre(std::pair(World::origin, earth_position),
+        potential(Barycentre(std::pair(moon_position, earth_position),
                              std::pair(arg_approx_l1, 1 - arg_approx_l1)));
     SpecificEnergy const approx_l3_energy =
-        potential(Barycentre(std::pair(World::origin, earth_position),
+        potential(Barycentre(std::pair(moon_position, earth_position),
                              std::pair(arg_approx_l3, 1 - arg_approx_l1)));
 
     DegreesOfFreedom<World> const dof = dynamic_frame.ToThisFrameAtTime(t)(
@@ -445,7 +448,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
       SpecificEnergy const energy = maximum_maximorum - i * (0.2 * ΔV);
       dynamic_frame.GeometricPotential(t, dof.position());
       auto const& lines = equipotential.ComputeLines(
-          plane, t, arg_maxima, energy);
+          plane, t, arg_maxima, {moon_position, earth_position}, energy);
       for (auto const& line : lines) {
         auto const& [positions, βs] = line;
         all_positions.back().push_back(positions);

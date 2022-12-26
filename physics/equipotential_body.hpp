@@ -213,6 +213,109 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
 }
 
 template<typename InertialFrame, typename Frame>
+auto Equipotential<InertialFrame, Frame>::ComputeLines(
+    Plane<Frame> const& plane,
+    Instant const& t,
+    std::vector<Position<Frame>> const& peaks,
+    std::vector<Position<Frame>> const& wells,
+    SpecificEnergy const& energy) const -> std::vector<State> {
+  struct PeakSeparation {
+    std::set<typename std::vector<Position<Frame>>::const_iterator> indistinct_wells;
+    bool separated_from_infinity = false;
+  };
+
+  std::vector<PeakSeparation> peak_separations(peaks.size());
+  for (auto& separation : peak_separations) {
+    for (auto it = wells.begin(); it != wells.end(); ++it) {
+      separation.indistinct_wells.insert(it);
+    }
+  }
+
+  std::vector<State> states;
+  for (int i = 0; i < peaks.size(); ++i) {
+    auto const& separation = peak_separations[i];
+    Position<Frame> const& peak = peaks[i];
+    while (separation.indistinct_wells.empty() ||
+           !separation.separated_from_infinity) {
+      std::optional<typename std::vector<Position<Frame>>::const_iterator>
+          expected_separated_well;
+      bool expect_separation_from_infinity = false;
+      if (!separation.indistinct_wells.empty()) {
+        expected_separated_well = *separation.indistinct_wells.begin();
+        Position<Frame> const well = **expected_separated_well;
+        double const x = numerics::Brent(
+            [&](double const& x) {
+              return dynamic_frame_->GeometricPotential(
+                         t,
+                         Barycentre(std::pair(peak, well),
+                                    std::pair(x, 1 - x))) -
+                     energy;
+            },
+            0.0,
+            1.0);
+        Position<Frame> const equipotential_position =
+            Barycentre(std::pair(peak, well), std::pair(x, 1 - x));
+        states.push_back(ComputeLine(plane, t, equipotential_position));
+      } else {
+        expect_separation_from_infinity = true;
+        Position<Frame> const well = wells.front();
+        double const x = numerics::Brent(
+            [&](double const& x) {
+              return dynamic_frame_->GeometricPotential(
+                         t,
+                         Barycentre(std::pair(peak, well),
+                                    std::pair(x, 1 - x))) -
+                     energy;
+            },
+            0.0,
+            -10.0);
+        Position<Frame> const equipotential_position =
+            Barycentre(std::pair(peak, well), std::pair(x, 1 - x));
+        states.push_back(ComputeLine(plane, t, equipotential_position));
+      }
+      auto const& line = std::get<0>(states.back());
+      std::set<typename std::vector<Position<Frame>>::const_iterator>
+          enclosed_wells;
+      for (auto it = wells.begin(); it != wells.end(); ++it) {
+        std::int64_t const winding_number = WindingNumber(plane, *it, line);
+        if (winding_number > 0) {
+          enclosed_wells.insert(it);
+        }
+      }
+      for (int j = 0; j < peaks.size(); ++j) {
+        bool const peak_j_enclosed = WindingNumber(plane, peaks[j], line) > 0;
+        peak_separations[j].separated_from_infinity |= peak_j_enclosed;
+        for (auto it = peak_separations[j].indistinct_wells.begin();
+             it != peak_separations[j].indistinct_wells.end();) {
+          if (enclosed_wells.contains(*it) != peak_j_enclosed) {
+            it = peak_separations[j].indistinct_wells.erase(it);
+          } else {
+            ++it;
+          }
+        }
+        if (j == i) {
+          if (expected_separated_well.has_value() &&
+              peak_separations[i].indistinct_wells.contains(
+                  *expected_separated_well)) {
+            LOG(ERROR) << "Failed to separate peak " << i << " from well "
+                       << *expected_separated_well - wells.begin();
+            peak_separations[i].indistinct_wells.erase(
+                *expected_separated_well);
+          }
+          if (expect_separation_from_infinity &&
+              !peak_separations[i].separated_from_infinity) {
+            LOG(ERROR) << "Failed to separate peak " << i << " from infinity";
+            peak_separations[i].separated_from_infinity = true;
+          }
+        }
+      }
+    }
+  }
+
+  return states;
+}
+
+template<typename InertialFrame, typename Frame>
 absl::Status Equipotential<InertialFrame, Frame>::RightHandSide(
     Bivector<double, Frame> const& binormal,
     Position<Frame> const& position,

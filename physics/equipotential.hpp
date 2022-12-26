@@ -101,6 +101,13 @@ class Equipotential {
       std::vector<Position<Frame>> const& start_positions,
       SpecificEnergy const& total_energy) const;
 
+  std::vector<typename ODE::State> ComputeLines(
+      Plane<Frame> const& plane,
+      Instant const& t,
+      std::vector<Position<Frame>> const& peaks,
+      std::vector<Position<Frame>> const& wells,
+      SpecificEnergy const& energy) const;
+
  private:
   using IndependentVariableDifference =
       typename ODE::IndependentVariableDifference;
