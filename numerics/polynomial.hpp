@@ -25,7 +25,8 @@
                                 _MSC_FULL_VER == 192'930'038 || \
                                 _MSC_FULL_VER == 192'930'133 || \
                                 _MSC_FULL_VER == 192'930'139 || \
-                                _MSC_FULL_VER == 192'930'143)
+                                _MSC_FULL_VER == 192'930'143 || \
+                                _MSC_FULL_VER == 192'930'147)
 
 namespace principia {
 namespace numerics {
