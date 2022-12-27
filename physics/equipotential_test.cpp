@@ -310,7 +310,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantEnergies) {
 TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
   mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd_global.wl",
                              /*make_unique=*/false);
-  std::int64_t const number_of_days = 37;
+  std::int64_t const number_of_days = 100;
   auto const earth = solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
   auto const moon = solar_system_->massive_body(
@@ -337,19 +337,19 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
       .longitude_of_ascending_node = moon_elements.longitude_of_ascending_node,
       .argument_of_periapsis = moon_elements.argument_of_periapsis,
       .mean_anomaly = 0 * Degree};
-  Position<World> const earth_position =
-      dynamic_frame.ToThisFrameAtTime(t0_).rigid_transformation()(
-          ephemeris_->trajectory(earth)->EvaluatePosition(t0_));
-  Position<World> const moon_position =
+  auto const earth_world_dof = dynamic_frame.ToThisFrameAtTime(t0_)(earth_dof);
+  Position<World> const qearth = earth_world_dof.position();
+  Position<World> const qmoon =
       dynamic_frame.ToThisFrameAtTime(t0_).rigid_transformation()(
           ephemeris_->trajectory(moon)->EvaluatePosition(t0_));
+  Velocity<World> const vearth = earth_world_dof.velocity();
   DegreesOfFreedom<Barycentric> const initial_state =
       dynamic_frame.FromThisFrameAtTime(t0_)(
-          {Barycentre(std::pair(earth_position, moon_position),
-                      std::pair(1, 1)) +
-               (earth_position - moon_position).Norm() *
+          {Barycentre(std::pair(qearth, qmoon), std::pair(1, 1)) +
+               (qearth - qmoon).Norm() *
                    Vector<double, World>({0, quantities::Sqrt(3) / 2, 0}),
-           World::unmoving});
+           vearth.Norm() *
+               Vector<double, World>({0.5, quantities::Sqrt(3) / 2, 0})});
       /*
       KeplerOrbit<Barycentric>(*earth, MasslessBody{}, elements, t0_)
           .StateVectors(t0_);*/
@@ -416,11 +416,6 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
     logger.Append("argMaxima", arg_maxima, mathematica::ExpressIn(Metre));
     std::vector<SpecificEnergy> maxima;
     SpecificEnergy maximum_maximorum = -Infinity<SpecificEnergy>;
-    for (auto const& arg_maximum : arg_maxima) {
-      maxima.push_back(potential(arg_maximum));
-      maximum_maximorum = std::max(maximum_maximorum, maxima.back());
-    }
-    logger.Append("maxima", maxima, mathematica::ExpressIn(Metre, Second));
 
     Position<World> const earth_position =
         dynamic_frame.ToThisFrameAtTime(t).rigid_transformation()(
@@ -428,6 +423,11 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
     Position<World> const moon_position =
         dynamic_frame.ToThisFrameAtTime(t).rigid_transformation()(
             ephemeris_->trajectory(moon)->EvaluatePosition(t));
+    for (auto const& arg_maximum : arg_maxima) {
+      maxima.push_back(potential(arg_maximum));
+      maximum_maximorum = std::max(maximum_maximorum, maxima.back());
+    }
+    logger.Append("maxima", maxima, mathematica::ExpressIn(Metre, Second));
 
     std::vector<SpecificEnergy> potential_slice;
     for (int i = 1; i < 1000; ++i) {

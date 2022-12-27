@@ -229,6 +229,16 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         expected_separated_well = *separation.indistinct_wells.begin();
         Well const well = **expected_separated_well;
         Length const r = (peak - well.position).Norm();
+        if (dynamic_frame_->GeometricPotential(
+                t,
+                Barycentre(std::pair(peak, well.position),
+                           std::pair(well.radius, r - well.radius))) >=
+            energy) {
+          LOG(ERROR) << "well " << *expected_separated_well - wells.begin()
+                     << " is weird";
+          peak_separations[i].indistinct_wells.erase(*expected_separated_well);
+          continue;
+        }
         Length const x = numerics::Brent(
             [&](Length const& x) {
               return dynamic_frame_->GeometricPotential(
@@ -246,6 +256,11 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         LOG(ERROR) << "Not delineated from infinity";
         expect_separation_from_infinity = true;
         Position<Frame> const far_away = towards_infinity(peak);
+        if (dynamic_frame_->GeometricPotential(t, far_away) >= energy) {
+          LOG(ERROR) << "far away point is weird";
+          peak_separations[i].separated_from_infinity = true;
+          continue;
+        }
         double const x = numerics::Brent(
             [&](double const& x) {
               return dynamic_frame_->GeometricPotential(
