@@ -2,6 +2,8 @@
 
 #include "mathematica/logger.hpp"
 
+#include <string>
+
 #include "mathematica/mathematica.hpp"
 
 namespace principia {
