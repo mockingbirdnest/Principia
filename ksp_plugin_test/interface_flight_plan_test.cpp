@@ -78,6 +78,7 @@ using quantities::si::Second;
 using quantities::si::Tonne;
 using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
+using ::testing::AnyNumber;
 using ::testing::ByMove;
 using ::testing::DoAll;
 using ::testing::Invoke;
@@ -147,6 +148,8 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       .WillRepeatedly(Return(true));
   EXPECT_CALL(vessel, flight_plan())
       .WillRepeatedly(ReturnRef(flight_plan));
+  EXPECT_CALL(*plugin_, ExtendPredictionForFlightPlan(vessel_guid))
+      .Times(AnyNumber());
 
   EXPECT_TRUE(principia__FlightPlanExists(plugin_.get(), vessel_guid));
 
@@ -184,7 +187,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                             length_integration_tolerance,
                         22 * Metre),
               Property(&Ephemeris<Barycentric>::AdaptiveStepParameters::
-                            speed_integration_tolerance,
+                            speed_integration_tolerance<>,
                         33 * Metre / Second)),
           AllOf(
               Property(&Ephemeris<Barycentric>::
@@ -196,7 +199,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                   22 * Metre),
               Property(
                   &Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters::
-                      speed_integration_tolerance,
+                      speed_integration_tolerance<>,
                   33 * Metre / Second))))
       .WillOnce(Return(absl::OkStatus()));
   EXPECT_THAT(*principia__FlightPlanSetAdaptiveStepParameters(

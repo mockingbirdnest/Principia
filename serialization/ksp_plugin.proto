@@ -21,8 +21,8 @@ message FlightPlan {
   required Pair initial_degrees_of_freedom = 12;
   required Point desired_final_time = 3;
   repeated Manoeuvre manoeuvre = 8;
-  required Ephemeris.AdaptiveStepParameters adaptive_step_parameters = 11;
-  optional Ephemeris.AdaptiveStepParameters
+  required AdaptiveStepParameters adaptive_step_parameters = 11;
+  optional AdaptiveStepParameters
       generalized_adaptive_step_parameters = 13;  // Added in Erdős.
 
   // Pre-Cardano.
@@ -91,8 +91,8 @@ message PileUp {
   optional EulerSolver euler_solver = 12;
   optional Multivector angular_momentum = 13;  // Required.
   // Added in Cartan.
-  optional Ephemeris.AdaptiveStepParameters adaptive_step_parameters = 7;
-  optional Ephemeris.FixedStepParameters fixed_step_parameters = 8;
+  optional AdaptiveStepParameters adaptive_step_parameters = 7;
+  optional FixedStepParameters fixed_step_parameters = 8;
 
   // Pre-Cesàro.
   reserved "psychohistory";
@@ -123,15 +123,15 @@ message Plugin {
   }
   message ZombieAndProperties {
     required string guid = 1;
-    required Ephemeris.AdaptiveStepParameters prediction_parameters = 2;
+    required AdaptiveStepParameters prediction_parameters = 2;
   }
   optional fixed64 system_fingerprint = 20;  // Added in Grassmann.
   repeated VesselAndProperties vessel = 1;
   map<fixed32, string> part_id_to_vessel = 16;
   repeated CelestialParenthood celestial = 10;
   required Ephemeris ephemeris = 7;
-  required Ephemeris.FixedStepParameters history_parameters = 12;
-  required Ephemeris.AdaptiveStepParameters psychohistory_parameters = 13;
+  required FixedStepParameters history_parameters = 12;
+  required AdaptiveStepParameters psychohistory_parameters = 13;
   required Quantity planetarium_rotation = 4;
   required Point game_epoch = 15;
   required Point current_time = 5;
@@ -164,14 +164,12 @@ message Vessel {
   message Checkpoint {
     required Point time = 1;
     required DiscreteTrajectory non_collapsible_segment = 2;
-    required Ephemeris.FixedStepParameters
-        collapsible_fixed_step_parameters = 3;
+    required FixedStepParameters collapsible_fixed_step_parameters = 3;
   }
   required string guid = 13;
   required string name = 19;
   required MasslessBody body = 1;
-  required Ephemeris.AdaptiveStepParameters
-      prediction_adaptive_step_parameters = 10;
+  required AdaptiveStepParameters prediction_adaptive_step_parameters = 10;
   repeated Part parts = 14;
   repeated fixed32 kept_parts = 15;
   required DiscreteTrajectory history = 16;

@@ -1,5 +1,6 @@
 #include "physics/equipotential.hpp"
 
+#include <algorithm>
 #include <array>
 #include <string>
 #include <vector>
@@ -104,7 +105,7 @@ class EquipotentialTest : public ::testing::Test {
             .EvaluatePosition(t));
   }
 
-  std::array<Position<World>, 2> ComputeLangrangePoints(
+  std::array<Position<World>, 2> ComputeLagrangePoints(
       SolarSystemFactory::Index const body1,
       SolarSystemFactory::Index const body2,
       Instant const& t,
@@ -175,7 +176,7 @@ class EquipotentialTest : public ::testing::Test {
       all_positions.emplace_back();
       all_βs.emplace_back();
 
-      auto const& [l4, l5] = ComputeLangrangePoints(SolarSystemFactory::Earth,
+      auto const& [l4, l5] = ComputeLagrangePoints(SolarSystemFactory::Earth,
                                                     SolarSystemFactory::Moon,
                                                     t,
                                                     dynamic_frame,
@@ -493,7 +494,6 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
              all_positions,
              mathematica::ExpressIn(Metre));
   logger.Set("betasEarthMoonGlobalOptimization", all_βs);
-
 }
 
 #endif

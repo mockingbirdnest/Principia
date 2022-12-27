@@ -46,6 +46,7 @@ using quantities::Variation;
 // |State| is the type of y.
 template<typename IndependentVariable_, typename... StateElements>
 struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
+  static constexpr std::int64_t order = 1;
   using IndependentVariable = IndependentVariable_;
   using IndependentVariableDifference = Difference<IndependentVariable>;
   using State = std::tuple<std::vector<StateElements>...>;
@@ -76,10 +77,10 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
 
   using SystemStateError = StateDifference;
 
-  // A functor that computes f(s, y) and stores it in |derivatives|.
-  // This functor must be called with |std::get<i>(derivatives).size()| equal to
+  // A functor that computes f(s, y) and stores it in |variations|.
+  // This functor must be called with |std::get<i>(variations).size()| equal to
   // |std::get<i>(state).size()| for all i, but there is no requirement on the
-  // values in |derivatives|.
+  // values in |variations|.
   RightHandSideComputation compute_derivative;
 };
 
@@ -88,6 +89,7 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
 // using splitting methods.
 template<typename... StateElements>
 struct DecomposableFirstOrderDifferentialEquation final {
+  static constexpr std::int64_t order = 1;
   using State = std::tuple<std::vector<StateElements>...>;
 
   using Flow = std::function<absl::Status(Instant const& t_initial,
@@ -97,13 +99,13 @@ struct DecomposableFirstOrderDifferentialEquation final {
 
   struct SystemState final {
     SystemState() = default;
-    SystemState(State const& y, Instant const& t);
+    SystemState(Instant const& t, State const& y);
 
-    std::tuple<std::vector<DoublePrecision<StateElements>>...> y;
     DoublePrecision<Instant> time;
+    std::tuple<std::vector<DoublePrecision<StateElements>>...> y;
 
     friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
-      return lhs.y == rhs.y && lhs.time == rhs.time;
+      return lhs.time == rhs.time && lhs.y == rhs.y;
     }
   };
 
@@ -120,10 +122,11 @@ struct DecomposableFirstOrderDifferentialEquation final {
   Flow right_flow;
 };
 
-// A differential equation of the form q″ = f(q, q′, t).
+// A differential equation of the form q″ = f(t, q, q′).
 // |Position| is the type of q.
 template<typename Position_>
 struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
+  static constexpr std::int64_t order = 2;
   using IndependentVariable = Instant;
   using IndependentVariableDifference = Time;
   using Position = Position_;
@@ -141,13 +144,13 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
 
   struct SystemState final {
     SystemState() = default;
-    SystemState(std::vector<Position> const& q,
-                std::vector<Velocity> const& v,
-                Instant const& t);
+    SystemState(Instant const& t,
+                std::vector<Position> const& q,
+                std::vector<Velocity> const& v);
 
+    DoublePrecision<Instant> time;
     std::vector<DoublePrecision<Position>> positions;
     std::vector<DoublePrecision<Velocity>> velocities;
-    DoublePrecision<Instant> time;
 
     friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
       return lhs.positions == rhs.positions &&
@@ -165,17 +168,18 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
     std::vector<Velocity> velocity_error;
   };
 
-  // A functor that computes f(q, q′, t) and stores it in |accelerations|.
+  // A functor that computes f(t, q, q′) and stores it in |accelerations|.
   // This functor must be called with |accelerations.size()| equal to
   // |positions.size()| and |velocities.size()| but there is no requirement on
   // the values in |accelerations|.
   RightHandSideComputation compute_acceleration;
 };
 
-// A differential equation of the form q″ = f(q, t).
+// A differential equation of the form q″ = f(t, q).
 // |Position| is the type of q.
 template<typename Position_>
 struct SpecialSecondOrderDifferentialEquation final {
+  static constexpr std::int64_t order = 2;
   using IndependentVariable = Instant;
   using IndependentVariableDifference = Time;
   using Position = Position_;

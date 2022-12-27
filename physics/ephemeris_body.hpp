@@ -82,97 +82,6 @@ inline absl::Status CollisionDetected() {
 }
 
 template<typename Frame>
-template<typename ODE>
-Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::ODEAdaptiveStepParameters(
-    AdaptiveStepSizeIntegrator<ODE> const& integrator,
-    std::int64_t const max_steps,
-    Length const& length_integration_tolerance,
-    Speed const& speed_integration_tolerance)
-    : integrator_(&integrator),
-      max_steps_(max_steps),
-      length_integration_tolerance_(length_integration_tolerance),
-      speed_integration_tolerance_(speed_integration_tolerance) {
-  CHECK_LT(0, max_steps_);
-  CHECK_LT(Length(), length_integration_tolerance_);
-  CHECK_LT(Speed(), speed_integration_tolerance_);
-}
-
-template<typename Frame>
-template<typename ODE>
-AdaptiveStepSizeIntegrator<ODE> const&
-Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::integrator() const {
-  return *integrator_;
-}
-
-template<typename Frame>
-template<typename ODE>
-std::int64_t Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::max_steps()
-    const {
-  return max_steps_;
-}
-
-template<typename Frame>
-template<typename ODE>
-Length Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::
-length_integration_tolerance() const {
-  return length_integration_tolerance_;
-}
-
-template<typename Frame>
-template<typename ODE>
-Speed Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::
-speed_integration_tolerance() const {
-  return speed_integration_tolerance_;
-}
-
-template<typename Frame>
-template<typename ODE>
-void Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::set_max_steps(
-    std::int64_t const max_steps) {
-  CHECK_LT(0, max_steps);
-  max_steps_ = max_steps;
-}
-
-template<typename Frame>
-template<typename ODE>
-void Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::
-set_length_integration_tolerance(Length const& length_integration_tolerance) {
-  length_integration_tolerance_ = length_integration_tolerance;
-}
-
-template<typename Frame>
-template<typename ODE>
-void Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::
-set_speed_integration_tolerance(Speed const& speed_integration_tolerance) {
-  speed_integration_tolerance_ = speed_integration_tolerance;
-}
-
-template<typename Frame>
-template<typename ODE>
-void Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::WriteToMessage(
-    not_null<serialization::Ephemeris::AdaptiveStepParameters*> const message)
-    const {
-  integrator_->WriteToMessage(message->mutable_integrator());
-  message->set_max_steps(max_steps_);
-  length_integration_tolerance_.WriteToMessage(
-      message->mutable_length_integration_tolerance());
-  speed_integration_tolerance_.WriteToMessage(
-      message->mutable_speed_integration_tolerance());
-}
-
-template<typename Frame>
-template<typename ODE>
-typename Ephemeris<Frame>::template ODEAdaptiveStepParameters<ODE>
-Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::ReadFromMessage(
-    serialization::Ephemeris::AdaptiveStepParameters const& message) {
-  return ODEAdaptiveStepParameters(
-      AdaptiveStepSizeIntegrator<ODE>::ReadFromMessage(message.integrator()),
-      message.max_steps(),
-      Length::ReadFromMessage(message.length_integration_tolerance()),
-      Speed::ReadFromMessage(message.speed_integration_tolerance()));
-}
-
-template<typename Frame>
 Ephemeris<Frame>::AccuracyParameters::AccuracyParameters(
     Length const& fitting_tolerance,
     double const geopotential_tolerance)
@@ -194,38 +103,6 @@ Ephemeris<Frame>::AccuracyParameters::ReadFromMessage(
   return AccuracyParameters(
       Length::ReadFromMessage(message.fitting_tolerance()),
       message.geopotential_tolerance());
-}
-
-template<typename Frame>
-Ephemeris<Frame>::FixedStepParameters::FixedStepParameters(
-    FixedStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
-    Time const& step)
-    : integrator_(&integrator),
-      step_(step) {
-  CHECK_LT(Time(), step);
-}
-
-template<typename Frame>
-inline Time const& Ephemeris<Frame>::FixedStepParameters::step() const {
-  return step_;
-}
-
-template<typename Frame>
-void Ephemeris<Frame>::FixedStepParameters::WriteToMessage(
-    not_null<serialization::Ephemeris::FixedStepParameters*> const message)
-    const {
-  integrator_->WriteToMessage(message->mutable_integrator());
-  step_.WriteToMessage(message->mutable_step());
-}
-
-template<typename Frame>
-typename Ephemeris<Frame>::FixedStepParameters
-Ephemeris<Frame>::FixedStepParameters::ReadFromMessage(
-    serialization::Ephemeris::FixedStepParameters const& message) {
-  return FixedStepParameters(
-      FixedStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
-          message.integrator()),
-      Time::ReadFromMessage(message.step()));
 }
 
 template<typename Frame>
@@ -265,7 +142,7 @@ Ephemeris<Frame>::Ephemeris(
     auto const [it, inserted] = bodies_to_trajectories_.emplace(
         body.get(),
         std::make_unique<ContinuousTrajectory<Frame>>(
-            fixed_step_parameters_.step_,
+            fixed_step_parameters_.step(),
             accuracy_parameters_.fitting_tolerance_));
     CHECK(inserted);
     ContinuousTrajectory<Frame>* const trajectory = it->second.get();
@@ -295,11 +172,11 @@ Ephemeris<Frame>::Ephemeris(
   }
 
   absl::ReaderMutexLock l(&lock_);  // For locking checks.
-  instance_ = fixed_step_parameters_.integrator_->NewInstance(
+  instance_ = fixed_step_parameters_.integrator().NewInstance(
       problem,
       /*append_state=*/std::bind(
           &Ephemeris::AppendMassiveBodiesState, this, _1),
-      fixed_step_parameters_.step_);
+      fixed_step_parameters_.step());
 }
 
 template<typename Frame>
@@ -345,7 +222,7 @@ template<typename Frame>
 FixedStepSizeIntegrator<
     typename Ephemeris<Frame>::NewtonianMotionEquation> const&
 Ephemeris<Frame>::planetary_integrator() const {
-  return *fixed_step_parameters_.integrator_;
+  return fixed_step_parameters_.integrator();
 }
 
 template<typename Frame>
@@ -407,7 +284,7 @@ absl::Status Ephemeris<Frame>::Prolong(Instant const& t) {
   Instant t_final;
   Instant const instance_time = this->instance_time();
   if (t <= instance_time) {
-    t_final = instance_time + fixed_step_parameters_.step_;
+    t_final = instance_time + fixed_step_parameters_.step();
   } else {
     t_final = t;
   }
@@ -419,7 +296,7 @@ absl::Status Ephemeris<Frame>::Prolong(Instant const& t) {
   while (t_max_locked() < t) {
     instance_->Solve(t_final).IgnoreError();
     RETURN_IF_STOPPED;
-    t_final += fixed_step_parameters_.step_;
+    t_final += fixed_step_parameters_.step();
   }
 
   return absl::OkStatus();
@@ -483,15 +360,15 @@ Ephemeris<Frame>::StoppableNewInstance(
 
   // The construction of the instance may evaluate the degrees of freedom of the
   // bodies.
-  Prolong(trajectory_last_time + parameters.step_).IgnoreError();
+  Prolong(trajectory_last_time + parameters.step()).IgnoreError();
   RETURN_IF_STOPPED;
 
   // NOTE(phl): For some reason the May 2021 version of absl wants an explicit
   // construction here.  Unsure if the bug is in absl, VS 2019, or both.
   return absl::StatusOr<not_null<std::unique_ptr<typename Integrator<
       typename Ephemeris<Frame>::NewtonianMotionEquation>::Instance>>>(
-      parameters.integrator_->NewInstance(
-          problem, append_state, parameters.step_));
+      parameters.integrator().NewInstance(
+          problem, append_state, parameters.step()));
 }
 
 template<typename Frame>
@@ -1019,7 +896,7 @@ absl::Status Ephemeris<Frame>::ReanimateOneCheckpoint(
       trajectories;
   for (int i = 0; i < trajectories_.size(); ++i) {
     trajectories.emplace_back(std::make_unique<ContinuousTrajectory<Frame>>(
-        fixed_step_parameters_.step_,
+        fixed_step_parameters_.step(),
         accuracy_parameters_.fitting_tolerance_));
 
     // This statement is subtle: it restores the checkpoints of the trajectories
@@ -1452,7 +1329,7 @@ absl::Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
     typename ODE::RightHandSideComputation compute_acceleration,
     not_null<DiscreteTrajectory<Frame>*> trajectory,
     Instant const& t,
-    ODEAdaptiveStepParameters<ODE> const& parameters,
+    physics::AdaptiveStepParameters<ODE> const& parameters,
     std::int64_t max_ephemeris_steps) {
   auto const& [trajectory_last_time,
                trajectory_last_degrees_of_freedom] = trajectory->back();
@@ -1477,23 +1354,23 @@ absl::Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
   IntegrationProblem<ODE> problem;
   problem.equation.compute_acceleration = std::move(compute_acceleration);
 
-  problem.initial_state = {{trajectory_last_degrees_of_freedom.position()},
-                           {trajectory_last_degrees_of_freedom.velocity()},
-                           trajectory_last_time};
+  problem.initial_state = {trajectory_last_time,
+                           {trajectory_last_degrees_of_freedom.position()},
+                           {trajectory_last_degrees_of_freedom.velocity()}};
 
   typename AdaptiveStepSizeIntegrator<ODE>::Parameters const
       integrator_parameters(
           /*first_time_step=*/t_final - problem.initial_state.time.value,
           /*safety_factor=*/0.9,
-          parameters.max_steps_,
+          parameters.max_steps(),
           /*last_step_is_exact=*/true);
   CHECK_GT(integrator_parameters.first_step, 0 * Second)
       << "Flow back to the future: " << t_final
       << " <= " << problem.initial_state.time.value;
   auto const tolerance_to_error_ratio =
       std::bind(&Ephemeris<Frame>::ToleranceToErrorRatio,
-                std::cref(parameters.length_integration_tolerance_),
-                std::cref(parameters.speed_integration_tolerance_),
+                parameters.length_integration_tolerance(),
+                parameters.speed_integration_tolerance(),
                 _1, _2);
 
   typename AdaptiveStepSizeIntegrator<ODE>::AppendState append_state =
@@ -1501,7 +1378,7 @@ absl::Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
                 _1,
                 std::cref(trajectories));
   auto const instance =
-      parameters.integrator_->NewInstance(problem,
+      parameters.integrator().NewInstance(problem,
                                           append_state,
                                           tolerance_to_error_ratio,
                                           integrator_parameters);

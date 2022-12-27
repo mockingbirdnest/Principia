@@ -2,6 +2,8 @@
 
 #include "numerics/gradient_descent.hpp"
 
+#include <algorithm>
+#include <cmath>
 #include <optional>
 
 #include "geometry/grassmann.hpp"
@@ -25,7 +27,6 @@ using geometry::Vector;
 using quantities::Abs;
 using quantities::Quotient;
 using quantities::Square;
-using quantities::si::Metre;
 namespace si = quantities::si;
 
 // A helper to use |Argument| with |SymmetricBilinearForm|.
@@ -58,20 +59,24 @@ double Zoom(double α_lo,
             Argument const& x,
             Difference<Argument> const& p,
             Field<Scalar, Argument> const& f,
-            Field<Gradient<Scalar, Argument>, Argument> const& grad_f) {
+            Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
+            bool& satisfies_strong_wolfe_condition) {
   std::optional<Scalar> previous_ϕ_αⱼ;
+  satisfies_strong_wolfe_condition = true;
   for (;;) {
+    // Note that there is no guarantee here that α_lo < α_hi.
     DCHECK_NE(α_lo, α_hi);
     double αⱼ;
     {
       // Quadratic interpolation.  If the extremum is very close to one of the
       // bounds, zooming would proceed very slowly.  Instead, we bisect, which
       // ensures steady zooming.
+      double const α_margin = std::abs(α_hi - α_lo) * hermite2_tolerance;
       Hermite2<Scalar, double> const hermite2(
           {α_lo, α_hi}, {ϕ_α_lo, ϕ_α_hi}, ϕʹ_α_lo);
       auto const α_extremum = hermite2.FindExtremum();
-      if (α_lo * (1 + hermite2_tolerance) < α_extremum &&
-          α_extremum < α_hi * (1 - hermite2_tolerance)) {
+      if (std::min(α_lo, α_hi) + α_margin < α_extremum &&
+          α_extremum < std::max(α_lo, α_hi) - α_margin) {
         αⱼ = α_extremum;
       } else {
         // Fall back to bisection.
@@ -82,9 +87,10 @@ double Zoom(double α_lo,
     auto const ϕ_αⱼ = f(x + αⱼ * p);
 
     // If the function has become (numerically) constant, we might as well
-    // return, even though the value of αⱼ may not meet the strong Wolfe
+    // return, even though the value of αⱼ may not satisfy the strong Wolfe
     // condition.
     if (previous_ϕ_αⱼ.has_value() && previous_ϕ_αⱼ.value() == ϕ_αⱼ) {
+      satisfies_strong_wolfe_condition = false;
       return αⱼ;
     }
     previous_ϕ_αⱼ = ϕ_αⱼ;
@@ -113,13 +119,15 @@ double LineSearch(Argument const& x,
                   Difference<Argument> const& p,
                   Gradient<Scalar, Argument> const& grad_f_x,
                   Field<Scalar, Argument> const& f,
-                  Field<Gradient<Scalar, Argument>, Argument> const& grad_f) {
+                  Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
+                  bool& satisfies_strong_wolfe_condition) {
   auto const ϕ_0 = f(x);
   auto const ϕʹ_0 = InnerProduct(grad_f_x, p);
   double αᵢ₋₁ = 0;  // α₀.
   double αᵢ = 1;    // α₁.
   Scalar ϕ_αᵢ₋₁ = ϕ_0;
   Scalar ϕʹ_αᵢ₋₁ = ϕʹ_0;
+  satisfies_strong_wolfe_condition = true;
   for (;;) {
     auto const ϕ_αᵢ = f(x + αᵢ * p);
     // For i = 1 the second condition implies the first, so it has no effect on
@@ -129,7 +137,8 @@ double LineSearch(Argument const& x,
                   ϕ_αᵢ₋₁, ϕ_αᵢ,
                   ϕʹ_αᵢ₋₁,
                   ϕ_0, ϕʹ_0,
-                  x, p, f, grad_f);
+                  x, p, f, grad_f,
+                  satisfies_strong_wolfe_condition);
     }
     auto const ϕʹ_αᵢ = InnerProduct(grad_f(x + αᵢ * p), p);
     if (Abs(ϕʹ_αᵢ) <= -c₂ * ϕʹ_0) {
@@ -140,7 +149,8 @@ double LineSearch(Argument const& x,
                   ϕ_αᵢ, ϕ_αᵢ₋₁,
                   ϕʹ_αᵢ,
                   ϕ_0, ϕʹ_0,
-                  x, p, f, grad_f);
+                  x, p, f, grad_f,
+                  satisfies_strong_wolfe_condition);
     }
 
     // We don't have a maximum value of α so we blindly increase it until the
@@ -158,6 +168,8 @@ std::optional<Argument> BroydenFletcherGoldfarbShanno(
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
     typename Hilbert<Difference<Argument>>::NormType const& tolerance,
     typename Hilbert<Difference<Argument>>::NormType const& radius) {
+  bool satisfies_strong_wolfe_condition;
+
   // The first step uses vanilla steepest descent.
   auto const x₀ = start_argument;
   auto const grad_f_x₀ = grad_f(x₀);
@@ -172,8 +184,12 @@ std::optional<Argument> BroydenFletcherGoldfarbShanno(
   // have other unpleasant properties.
   Difference<Argument> const p₀ = -Normalize(grad_f_x₀) * tolerance;
 
-  double const α₀ = LineSearch(x₀, p₀, grad_f_x₀, f, grad_f);
+  double const α₀ = LineSearch(x₀, p₀, grad_f_x₀, f, grad_f,
+                               satisfies_strong_wolfe_condition);
   auto const x₁ = x₀+ α₀ * p₀;
+  if (!satisfies_strong_wolfe_condition) {
+    return x₁;
+  }
 
   // Special computation of H₀ using (6.20).
   auto const grad_f_x₁ = grad_f(x₁);
@@ -194,16 +210,16 @@ std::optional<Argument> BroydenFletcherGoldfarbShanno(
     if (pₖ.Norm() <= tolerance) {
       return xₖ;
     }
-    double const αₖ = LineSearch(xₖ, pₖ, grad_f_xₖ, f, grad_f);
+    double const αₖ = LineSearch(xₖ, pₖ, grad_f_xₖ, f, grad_f,
+                                 satisfies_strong_wolfe_condition);
     auto const xₖ₊₁ = xₖ + αₖ * pₖ;
     auto const grad_f_xₖ₊₁ = grad_f(xₖ₊₁);
-
     auto const sₖ = xₖ₊₁ - xₖ;
     auto const yₖ = grad_f_xₖ₊₁ - grad_f_xₖ;
     auto const sₖyₖ = InnerProduct(sₖ, yₖ);
 
     // If we can't make progress, e.g., because αₖ is too small, give up.
-    if (sₖyₖ == Scalar{}) {
+    if (sₖyₖ == Scalar{} || !satisfies_strong_wolfe_condition) {  // NOLINT
       return xₖ;
     }
 

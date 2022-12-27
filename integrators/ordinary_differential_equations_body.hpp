@@ -56,15 +56,15 @@ SystemState::ReadFromMessage(serialization::SystemState const& message) {
 
 template<typename... State>
 DecomposableFirstOrderDifferentialEquation<State...>::SystemState::SystemState(
-    State const& y,
-    Instant const& t)
-    : y(y), time(t) {}
+    Instant const& t,
+    State const& y)
+    : time(t), y(y) {}
 
 template<typename Position_>
 ExplicitSecondOrderOrdinaryDifferentialEquation<
-    Position_>::SystemState::SystemState(std::vector<Position> const& q,
-                                         std::vector<Velocity> const& v,
-                                         Instant const& t)
+    Position_>::SystemState::SystemState(Instant const& t,
+                                         std::vector<Position> const& q,
+                                         std::vector<Velocity> const& v)
     : time(t) {
   for (int i = 0; i < q.size(); ++i) {
     positions.emplace_back(q[i]);

@@ -227,6 +227,12 @@
     <ClInclude Include="harmonic_damping_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="integration_parameters.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="integration_parameters_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
