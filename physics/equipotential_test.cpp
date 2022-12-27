@@ -139,9 +139,16 @@ class EquipotentialTest : public ::testing::Test {
     std::string const name = SolarSystemFactory::name(body);
 
     CHECK_OK(ephemeris_->Prolong(t));
-    auto const& [positions, βs] =
+    auto const line =
         equipotential.ComputeLine(
             plane, t, ComputePositionInWorld(t0_, dynamic_frame, body));
+    std::vector<Position<World>> positions;
+    std::vector<double> βs;
+    for (auto const& state : line) {
+      auto const& [positions_of_state, βs_of_state] = state;
+      positions.push_back(positions_of_state.front());
+      βs.push_back(βs_of_state.front());
+    }
     logger.Set(absl::StrCat("equipotential", name, suffix),
                positions,
                mathematica::ExpressIn(Metre));
@@ -180,10 +187,15 @@ class EquipotentialTest : public ::testing::Test {
                                                     plane);
 
       for (auto const& line_parameter : get_line_parameters(l4, l5)) {
-        auto const& [positions, βs] =
+        auto const line =
             equipotential.ComputeLine(plane, t, line_parameter);
-        all_positions.back().push_back(positions);
-        all_βs.back().push_back(βs);
+        all_positions.back().emplace_back();
+        all_βs.back().emplace_back();
+        for (auto const& state : line) {
+          auto const& [positions_of_state, βs_of_state] = state;
+          all_positions.back().back().push_back(positions_of_state.front());
+          all_βs.back().back().push_back(βs_of_state.front());
+        }
       }
     }
     logger.Set(absl::StrCat("equipotentialsEarthMoon", suffix),
@@ -369,15 +381,19 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
       maximum_energy = std::max(maximum_energy,
                                 dynamic_frame.GeometricPotential(t, maximum));
     }
-      for (int i = 0; i < 10; ++i) {
-        auto const& lines = equipotential.ComputeLines(
-            plane, t, maxima, maximum_energy * (1 + i / 50'000.0));
-        for (auto const& line : lines) {
-          auto const& [positions, βs] = line;
-          all_positions.back().push_back(positions);
-          all_βs.back().push_back(βs);
+    for (int i = 0; i < 10; ++i) {
+      auto const& lines = equipotential.ComputeLines(
+          plane, t, maxima, maximum_energy * (1 + i / 50'000.0));
+      for (auto const& line : lines) {
+        all_positions.back().emplace_back();
+        all_βs.back().emplace_back();
+        for (auto const& state : line) {
+          auto const& [positions_of_state, βs_of_state] = state;
+          all_positions.back().back().push_back(positions_of_state.front());
+          all_βs.back().back().push_back(βs_of_state.front());
         }
       }
+    }
   }
   logger.Set("equipotentialsEarthMoonGlobalOptimization",
              all_positions,

@@ -51,35 +51,34 @@ class Equipotential {
                                                      Position<Frame>,
                                                      double>;
   using AdaptiveParameters = physics::AdaptiveStepParameters<ODE>;
+  using States = std::vector<typename ODE::State>;
 
   Equipotential(
       AdaptiveParameters const& adaptive_parameters,
       not_null<DynamicFrame<InertialFrame, Frame> const*> dynamic_frame);
 
   // Computes an equipotential line going through the given point.
-  typename ODE::State ComputeLine(Plane<Frame> const& plane,
-                                  Instant const& t,
-                                  Position<Frame> const& position) const;
+  States ComputeLine(Plane<Frame> const& plane,
+                     Instant const& t,
+                     Position<Frame> const& position) const;
 
   // Computes an equipotential line for the total energy determined by the
   // |degrees_of_freedom|.
-  typename ODE::State ComputeLine(
-      Plane<Frame> const& plane,
-      Instant const& t,
-      DegreesOfFreedom<Frame> const& degrees_of_freedom) const;
+  States ComputeLine(Plane<Frame> const& plane,
+                     Instant const& t,
+                     DegreesOfFreedom<Frame> const& degrees_of_freedom) const;
 
   // Computes an equipotential line for the given |total_energy| starting from
   // |start_position|.
-  typename ODE::State ComputeLine(
-      Plane<Frame> const& plane,
-      Instant const& t,
-      Position<Frame> const& start_position,
-      SpecificEnergy const& total_energy) const;
+  States ComputeLine(Plane<Frame> const& plane,
+                     Instant const& t,
+                     Position<Frame> const& start_position,
+                     SpecificEnergy const& total_energy) const;
 
   // Computes equipotential lines for the given |total_energy|.  Each of the
   // given |start_positions| ends up enclosed by exactly one line of the result.
   // The |start_positions| must be coplanar in a plane parallel to |plane|.
-  std::vector<typename ODE::State> ComputeLines(
+  std::vector<States> ComputeLines(
       Plane<Frame> const& plane,
       Instant const& t,
       std::vector<Position<Frame>> const& start_positions,

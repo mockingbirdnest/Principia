@@ -52,7 +52,7 @@ template<typename InertialFrame, typename Frame>
 auto Equipotential<InertialFrame, Frame>::ComputeLine(
     Plane<Frame> const& plane,
     Instant const& t,
-    Position<Frame> const& position) const -> State {
+    Position<Frame> const& position) const -> States {
   auto const binormal = plane.UnitBinormals().front();
   ODE equation{
       .compute_derivative = std::bind(
@@ -70,13 +70,17 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
           /*max_steps=*/adaptive_parameters_.max_steps(),
           /*last_step_is_exact=*/true);
 
-  State equipotential;
+  States equipotential;
   typename AdaptiveStepSizeIntegrator<ODE>::AppendState const append_state =
       [&equipotential](SystemState const& system_state) {
-        std::get<0>(equipotential)
-            .push_back(std::get<0>(system_state.y).front().value);
-        std::get<1>(equipotential)
-            .push_back(std::get<1>(system_state.y).front().value);
+        State state;
+        for (auto const& y0 : std::get<0>(system_state.y)) {
+          std::get<0>(state).push_back(y0.value);
+        }
+        for (auto const& y1 : std::get<1>(system_state.y)) {
+          std::get<1>(state).push_back(y1.value);
+        }
+        equipotential.push_back(state);
       };
 
   auto const tolerance_to_error_ratio =
@@ -93,7 +97,7 @@ template<typename InertialFrame, typename Frame>
 auto Equipotential<InertialFrame, Frame>::ComputeLine(
     Plane<Frame> const& plane,
     Instant const& t,
-    DegreesOfFreedom<Frame> const& degrees_of_freedom) const -> State {
+    DegreesOfFreedom<Frame> const& degrees_of_freedom) const -> States {
   // Compute the total (specific) energy.
   auto const potential_energy =
       dynamic_frame_->GeometricPotential(t, degrees_of_freedom.position());
@@ -108,7 +112,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
     Plane<Frame> const& plane,
     Instant const& t,
     Position<Frame> const& start_position,
-    SpecificEnergy const& total_energy) const -> State {
+    SpecificEnergy const& total_energy) const -> States {
   auto const lines = ComputeLines(plane, t, {start_position}, total_energy);
   CHECK_EQ(1, lines.size());
   return lines[0];
@@ -119,7 +123,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     Plane<Frame> const& plane,
     Instant const& t,
     std::vector<Position<Frame>> const& start_positions,
-    SpecificEnergy const& total_energy) const -> std::vector<State> {
+    SpecificEnergy const& total_energy) const -> std::vector<States> {
   // The function on which we perform gradient descent is defined to have a
   // minimum at a position where the potential is equal to the total energy.
   auto const f = [this, t, total_energy](Position<Frame> const& position) {
@@ -138,17 +142,21 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         plane);
   };
 
-  std::vector<State> states;
+  std::vector<States> lines;
   for (auto const& start_position : start_positions) {
     // Compute the winding number of every line already found with respect to
     // |start_position|.  If any line "turns around" that position, we don't
     // need to compute a new equipotential, it would just duplicate one we
     // already have.
     bool must_compute_line = true;
-    for (auto const& state : states) {
-      auto const& line = std::get<0>(state);
+    for (auto const& line : lines) {
+      std::vector<Position<Frame>> positions;
+      for (auto const& state : line) {
+        auto const& [positions_of_state, _] = state;
+        positions.push_back(positions_of_state.front());
+      }
       std::int64_t const winding_number =
-          WindingNumber(plane, start_position, line);
+          WindingNumber(plane, start_position, positions);
       if (winding_number > 0) {
         must_compute_line = false;
         break;
@@ -175,15 +183,15 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     // point in building a line in that case.
     if (dynamic_frame_->GeometricPotential(t, equipotential_position.value()) <
         total_energy - Abs(total_energy) * energy_tolerance) {
-      states.push_back(State{});
+      lines.push_back(States{});
       continue;
     }
 
     // Compute that equipotential.
-    states.push_back(ComputeLine(plane, t, equipotential_position.value()));
+    lines.push_back(ComputeLine(plane, t, equipotential_position.value()));
   }
 
-  return states;
+  return lines;
 }
 
 template<typename InertialFrame, typename Frame>
