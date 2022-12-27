@@ -22,7 +22,7 @@
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
-#include "mathematica/mathematica.hpp"
+#include "mathematica/logger.hpp"
 #include "physics/integration_parameters.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"

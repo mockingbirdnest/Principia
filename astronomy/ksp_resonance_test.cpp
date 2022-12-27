@@ -8,7 +8,7 @@
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
-#include "mathematica/mathematica.hpp"
+#include "mathematica/logger.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/solar_system.hpp"

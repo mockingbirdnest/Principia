@@ -238,10 +238,10 @@ class WorkErrorGraphGenerator {
       names.emplace_back(ToMathematica(methods_[i].name));
     }
     std::string result;
-    result += Assign("qErrorData", q_error_data);
-    result += Assign("vErrorData", v_error_data);
-    result += Assign("eErrorData", e_error_data);
-    result += Assign("names", names);
+    result += Set("qErrorData", q_error_data);
+    result += Set("vErrorData", v_error_data);
+    result += Set("eErrorData", e_error_data);
+    result += Set("names", names);
     return result;
   }
 
