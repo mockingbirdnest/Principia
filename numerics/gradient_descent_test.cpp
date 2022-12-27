@@ -120,7 +120,7 @@ TEST_F(GradientDescentTest, Gaussian) {
           /*tolerance=*/1 * Micro(Metre));
   EXPECT_THAT(actual_minimum,
               Optional(AbsoluteErrorFrom(expected_minimum,
-                                         IsNear(0.82_(1) * Micro(Metre)))));
+                                         IsNear(0.78_(1) * Micro(Metre)))));
 }
 
 TEST_F(GradientDescentTest, Rosenbrock) {
@@ -154,7 +154,7 @@ TEST_F(GradientDescentTest, Rosenbrock) {
             /*tolerance=*/1 * Micro(Metre));
     EXPECT_THAT(actual_minimum,
                 Optional(AbsoluteErrorFrom(expected_minimum,
-                                           IsNear(0.96_(1) * Micro(Metre)))));
+                                           IsNear(0.69_(1) * Micro(Metre)))));
   }
   {
     auto const actual_minimum =
@@ -166,7 +166,7 @@ TEST_F(GradientDescentTest, Rosenbrock) {
             /*tolerance=*/1 * Micro(Metre));
     EXPECT_THAT(actual_minimum,
                 Optional(AbsoluteErrorFrom(expected_minimum,
-                                           IsNear(0.047_(1) * Micro(Metre)))));
+                                           IsNear(0.86_(1) * Micro(Metre)))));
   }
 }
 

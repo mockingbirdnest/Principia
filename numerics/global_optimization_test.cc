@@ -178,8 +178,8 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
                                                    /*number_of_rounds=*/10,
                                                    tolerance);
 
-    EXPECT_EQ(2131, function_invocations);
-    EXPECT_EQ(280, gradient_invocations);
+    EXPECT_EQ(2129, function_invocations);
+    EXPECT_EQ(278, gradient_invocations);
     EXPECT_THAT(
         minima,
         ElementsAre(
@@ -189,8 +189,8 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
                 AbsoluteErrorFrom(-0.4 * Metre, IsNear(5.8e-9_(1) * Metre))),
             Componentwise(
                 _,
-                AbsoluteErrorFrom(0 * Metre, IsNear(7.1e-8_(1) * Metre)),
-                AbsoluteErrorFrom(-1 * Metre, IsNear(2.4e-7_(1) * Metre))),
+                AbsoluteErrorFrom(0 * Metre, IsNear(6.2e-8_(1) * Metre)),
+                AbsoluteErrorFrom(-1 * Metre, IsNear(1.1e-7_(1) * Metre))),
             Componentwise(
                 _,
                 AbsoluteErrorFrom(1.8 * Metre, IsNear(5.6e-7_(1) * Metre)),
@@ -204,8 +204,8 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
                                    /*number_of_rounds=*/std::nullopt,
                                    tolerance);
 
-    EXPECT_EQ(5738, function_invocations);
-    EXPECT_EQ(187, gradient_invocations);
+    EXPECT_EQ(5730, function_invocations);
+    EXPECT_EQ(178, gradient_invocations);
     EXPECT_THAT(
         minima,
         ElementsAre(
@@ -215,8 +215,8 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
                 AbsoluteErrorFrom(-1 * Metre, IsNear(5.9e-10_(1) * Metre))),
             Componentwise(
                 _,
-                AbsoluteErrorFrom(1.8 * Metre, IsNear(3.1e-8_(1) * Metre)),
-                AbsoluteErrorFrom(0.2 * Metre, IsNear(2.3e-8_(1) * Metre))),
+                AbsoluteErrorFrom(1.8 * Metre, IsNear(2.8e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.2 * Metre, IsNear(5.8e-7_(1) * Metre))),
             Componentwise(
                 _,
                 AbsoluteErrorFrom(-0.6 * Metre, IsNear(3.3e-8_(1) * Metre)),
@@ -271,8 +271,8 @@ TEST_F(GlobalOptimizationTest, Hartmann3) {
                                                    /*number_of_rounds=*/10,
                                                    tolerance);
 
-    EXPECT_EQ(1372, function_invocations);
-    EXPECT_EQ(470, gradient_invocations);
+    EXPECT_EQ(1364, function_invocations);
+    EXPECT_EQ(463, gradient_invocations);
     EXPECT_THAT(
         minima,
         ElementsAre(
