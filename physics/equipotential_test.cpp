@@ -416,6 +416,14 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
         dynamic_frame.ToThisFrameAtTime(t).rigid_transformation()(
             ephemeris_->trajectory(moon)->EvaluatePosition(t));
 
+    std::vector<SpecificEnergy> potential_slice;
+    for (int i = 1; i < 1000; ++i) {
+      potential_slice.push_back(dynamic_frame.GeometricPotential(
+          t,
+          Barycentre(std::pair(moon_position, earth_position),
+                     std::pair(i * 1e-3, 1 - i * 1e-3))));
+    }
+
     double const arg_approx_l1 = numerics::Brent(
         [&](double x) {
           return potential(Barycentre(std::pair(moon_position, earth_position),
@@ -424,31 +432,29 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
         0.0,
         1.0,
         std::greater<>{});
-    double const arg_approx_l3 = numerics::Brent(
-        [&](double x) {
-          return potential(Barycentre(std::pair(moon_position, earth_position),
-                                      std::pair(x, 1 - x)));
-        },
-        0.0,
-        -1.5,
-        std::greater<>{});
     SpecificEnergy const approx_l1_energy =
         potential(Barycentre(std::pair(moon_position, earth_position),
                              std::pair(arg_approx_l1, 1 - arg_approx_l1)));
-    SpecificEnergy const approx_l3_energy =
-        potential(Barycentre(std::pair(moon_position, earth_position),
-                             std::pair(arg_approx_l3, 1 - arg_approx_l1)));
 
     DegreesOfFreedom<World> const dof = dynamic_frame.ToThisFrameAtTime(t)(
         trajectory.EvaluateDegreesOfFreedom(t));
     trajectory_positions.push_back(dof.position());
     SpecificEnergy const ΔV =
-        maximum_maximorum - std::min(approx_l1_energy, approx_l3_energy);
+        maximum_maximorum - approx_l1_energy;
     for (int i = 1; i <= 8; ++i) {
       SpecificEnergy const energy = maximum_maximorum - i * (0.2 * ΔV);
       dynamic_frame.GeometricPotential(t, dof.position());
       auto const& lines = equipotential.ComputeLines(
-          plane, t, arg_maxima, {moon_position, earth_position}, energy);
+          plane,
+          t,
+          arg_maxima,
+          {{moon_position, moon->min_radius()},
+           {earth_position, earth->min_radius()}},
+          [](Position<World> q) {
+            return World::origin +
+                   Normalize(q - World::origin) * 2'000'000 * Kilo(Metre);
+          },
+          energy);
       for (auto const& line : lines) {
         auto const& [positions, βs] = line;
         all_positions.back().push_back(positions);

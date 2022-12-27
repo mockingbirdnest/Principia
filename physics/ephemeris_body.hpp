@@ -1307,7 +1307,7 @@ void Ephemeris<Frame>::ComputeGravitationalPotentialsOfMassiveBody(
     Inverse<Length> const one_over_Δq_norm = 1 / Δq_norm;
     potentials[b2] -= μ1 * one_over_Δq_norm;
 
-    if (body1_is_oblate && IsFinite(Δq²)) {
+    if (body1_is_oblate) {
       Exponentiation<Length, -3> const one_over_Δq³ =
           one_over_Δq_norm * one_over_Δq_norm * one_over_Δq_norm;
 

@@ -101,11 +101,17 @@ class Equipotential {
       std::vector<Position<Frame>> const& start_positions,
       SpecificEnergy const& total_energy) const;
 
+  struct Well {
+    Position<Frame> position;
+    Length radius;
+  };
+
   std::vector<typename ODE::State> ComputeLines(
       Plane<Frame> const& plane,
       Instant const& t,
       std::vector<Position<Frame>> const& peaks,
-      std::vector<Position<Frame>> const& wells,
+      std::vector<Well> const& wells,
+      std::function<Position<Frame>(Position<Frame>)> towards_infinity,
       SpecificEnergy const& energy) const;
 
  private:

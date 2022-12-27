@@ -217,10 +217,13 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     Plane<Frame> const& plane,
     Instant const& t,
     std::vector<Position<Frame>> const& peaks,
-    std::vector<Position<Frame>> const& wells,
+    std::vector<Well> const& wells,
+    std::function<Position<Frame>(Position<Frame>)> towards_infinity,
     SpecificEnergy const& energy) const -> std::vector<State> {
+  using WellIterator = typename std::vector<Well>::const_iterator;
+  LOG(ERROR) << "V=" << energy;
   struct PeakSeparation {
-    std::set<typename std::vector<Position<Frame>>::const_iterator> indistinct_wells;
+    std::set<WellIterator> indistinct_wells;
     bool separated_from_infinity = false;
   };
 
@@ -235,59 +238,72 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
   for (int i = 0; i < peaks.size(); ++i) {
     auto const& separation = peak_separations[i];
     Position<Frame> const& peak = peaks[i];
-    while (separation.indistinct_wells.empty() ||
+    if (dynamic_frame_->GeometricPotential(t, peak) < energy) {
+      LOG(ERROR) << "Peak " << i << " is below energy";
+      continue;
+    }
+    LOG(ERROR) << "Delineating peak " << i;
+    while (!separation.indistinct_wells.empty() ||
            !separation.separated_from_infinity) {
-      std::optional<typename std::vector<Position<Frame>>::const_iterator>
-          expected_separated_well;
+      std::optional<WellIterator> expected_separated_well;
       bool expect_separation_from_infinity = false;
       if (!separation.indistinct_wells.empty()) {
+        LOG(ERROR) << separation.indistinct_wells.size()
+                   << " wells to delineate";
         expected_separated_well = *separation.indistinct_wells.begin();
-        Position<Frame> const well = **expected_separated_well;
+        Well const well = **expected_separated_well;
+        Length const r = (peak - well.position).Norm();
+        Length const x = numerics::Brent(
+            [&](Length const& x) {
+              return dynamic_frame_->GeometricPotential(
+                         t,
+                         Barycentre(std::pair(peak, well.position),
+                                    std::pair(x, r - x))) -
+                     energy;
+            },
+            well.radius,
+            r);
+        Position<Frame> const equipotential_position =
+            Barycentre(std::pair(peak, well.position), std::pair(x, r - x));
+        states.push_back(ComputeLine(plane, t, equipotential_position));
+      } else {
+        LOG(ERROR) << "Not delineated from infinity";
+        expect_separation_from_infinity = true;
+        Position<Frame> const far_away = towards_infinity(peak);
         double const x = numerics::Brent(
             [&](double const& x) {
               return dynamic_frame_->GeometricPotential(
                          t,
-                         Barycentre(std::pair(peak, well),
+                         Barycentre(std::pair(peak, far_away),
                                     std::pair(x, 1 - x))) -
                      energy;
             },
             0.0,
             1.0);
         Position<Frame> const equipotential_position =
-            Barycentre(std::pair(peak, well), std::pair(x, 1 - x));
-        states.push_back(ComputeLine(plane, t, equipotential_position));
-      } else {
-        expect_separation_from_infinity = true;
-        Position<Frame> const well = wells.front();
-        double const x = numerics::Brent(
-            [&](double const& x) {
-              return dynamic_frame_->GeometricPotential(
-                         t,
-                         Barycentre(std::pair(peak, well),
-                                    std::pair(x, 1 - x))) -
-                     energy;
-            },
-            0.0,
-            -10.0);
-        Position<Frame> const equipotential_position =
-            Barycentre(std::pair(peak, well), std::pair(x, 1 - x));
+            Barycentre(std::pair(peak, far_away), std::pair(x, 1 - x));
         states.push_back(ComputeLine(plane, t, equipotential_position));
       }
       auto const& line = std::get<0>(states.back());
-      std::set<typename std::vector<Position<Frame>>::const_iterator>
-          enclosed_wells;
+      std::set<WellIterator> enclosed_wells;
       for (auto it = wells.begin(); it != wells.end(); ++it) {
-        std::int64_t const winding_number = WindingNumber(plane, *it, line);
+        std::int64_t const winding_number =
+            WindingNumber(plane, it->position, line);
         if (winding_number > 0) {
           enclosed_wells.insert(it);
         }
       }
       for (int j = 0; j < peaks.size(); ++j) {
         bool const peak_j_enclosed = WindingNumber(plane, peaks[j], line) > 0;
+        if (peak_j_enclosed && !peak_separations[j].separated_from_infinity) {
+          LOG(ERROR) << "line delineates peak " << j << " from infinity";
+        }
         peak_separations[j].separated_from_infinity |= peak_j_enclosed;
         for (auto it = peak_separations[j].indistinct_wells.begin();
              it != peak_separations[j].indistinct_wells.end();) {
           if (enclosed_wells.contains(*it) != peak_j_enclosed) {
+            LOG(ERROR) << "line delineates peak " << j << " from well "
+                       << *it - wells.begin();
             it = peak_separations[j].indistinct_wells.erase(it);
           } else {
             ++it;
