@@ -13,7 +13,7 @@
 #include "integrators/integrators.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
-#include "mathematica/mathematica.hpp"
+#include "mathematica/logger.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"

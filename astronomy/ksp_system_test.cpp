@@ -10,7 +10,7 @@
 #include "astronomy/stabilize_ksp.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "mathematica/mathematica.hpp"
+#include "mathematica/logger.hpp"
 #include "integrators/integrators.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"

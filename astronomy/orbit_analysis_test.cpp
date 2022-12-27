@@ -10,7 +10,7 @@
 #include "base/not_null.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "mathematica/mathematica.hpp"
+#include "mathematica/logger.hpp"
 #include "numerics/polynomial.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/discrete_trajectory.hpp"

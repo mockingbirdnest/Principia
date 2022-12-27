@@ -25,7 +25,7 @@
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
-#include "mathematica/mathematica.hpp"
+#include "mathematica/logger.hpp"
 #include "numerics/root_finders.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
