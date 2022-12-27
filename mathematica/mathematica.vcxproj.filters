@@ -44,6 +44,9 @@
     <ClCompile Include="..\geometry\instant_output.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="logger_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mathematica.hpp">
@@ -62,6 +65,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="local_error_analysis_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="logger.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="logger_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

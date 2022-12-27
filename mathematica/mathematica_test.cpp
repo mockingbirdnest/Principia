@@ -375,28 +375,5 @@ TEST_F(MathematicaTest, ExpressIn) {
 #endif
 }
 
-// On macOS, std::filesystem is broken (prior to Catalina).  On Ubuntu, the
-// introduction of |Flush| caused the test to fail because apparently the file
-// is never written to.  We don't really care, we only use the logger on
-// Windows.
-#if PRINCIPIA_COMPILER_MSVC
-TEST_F(MathematicaTest, Logger) {
-  {
-    Logger logger(TEMP_DIR / "mathematica_test.wl");
-    logger.Append("a", std::vector{1.0, 2.0, 3.0});
-    logger.Append("β", 4 * Metre / Second);
-    logger.Append("a", F::origin);
-    logger.Set("c", 5.0);
-  }
-  // Go check the file.
-  EXPECT_EQ(Assign("a", std::tuple{std::vector{1.0, 2.0, 3.0}, F::origin}) +
-                Assign("β", std::tuple{4 * Metre / Second}) +
-                Assign("c", 5.0),
-            (std::stringstream{}
-             << std::ifstream(TEMP_DIR / "mathematica_test0.wl").rdbuf())
-                .str());
-}
-#endif
-
 }  // namespace mathematica
 }  // namespace principia
