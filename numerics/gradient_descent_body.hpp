@@ -219,7 +219,7 @@ std::optional<Argument> BroydenFletcherGoldfarbShanno(
     auto const sₖyₖ = InnerProduct(sₖ, yₖ);
 
     // If we can't make progress, e.g., because αₖ is too small, give up.
-    if (sₖyₖ == Scalar{} || !satisfies_strong_wolfe_condition) {
+    if (sₖyₖ == Scalar{} || !satisfies_strong_wolfe_condition) {  // NOLINT
       return xₖ;
     }
 
