@@ -289,14 +289,14 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
           if (expected_separated_well.has_value() &&
               peak_separations[i].indistinct_wells.contains(
                   *expected_separated_well)) {
-            LOG(ERROR) << "Failed to separate peak " << i << " from well "
+            LOG(ERROR) << "Failed to delineate peak " << i << " from well "
                        << *expected_separated_well - wells.begin();
             peak_separations[i].indistinct_wells.erase(
                 *expected_separated_well);
           }
           if (expect_separation_from_infinity &&
               !peak_separations[i].separated_from_infinity) {
-            LOG(ERROR) << "Failed to separate peak " << i << " from infinity";
+            LOG(ERROR) << "Failed to delineate peak " << i << " from infinity";
             peak_separations[i].separated_from_infinity = true;
           }
         }

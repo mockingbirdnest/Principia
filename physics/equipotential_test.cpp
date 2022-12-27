@@ -310,7 +310,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantEnergies) {
 TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
   mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd_global.wl",
                              /*make_unique=*/false);
-  std::int64_t const number_of_days = 24;
+  std::int64_t const number_of_days = 37;
   auto const earth = solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
   auto const moon = solar_system_->massive_body(
