@@ -277,6 +277,11 @@ template<typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(std::string const& str,
                           OptionalExpressIn express_in = std::nullopt);
 
+// Does not wrap its arguments in ToMathematica.  Do not export.  Do not use
+// externally.
+std::string RawApply(std::string const& function,
+                     std::vector<std::string> const& arguments);
+
 }  // namespace internal_mathematica
 
 using internal_mathematica::Apply;

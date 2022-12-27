@@ -2,8 +2,6 @@
 
 #include "mathematica/logger.hpp"
 
-#include <tuple>
-
 #include "mathematica/mathematica.hpp"
 
 namespace principia {
@@ -33,10 +31,13 @@ inline Logger::~Logger() {
 
 inline void Logger::Flush() {
   for (auto const& [name, values] : name_and_multiple_values_) {
-    file_ << Apply("Set", std::tuple{name, Apply("List", values)}) + ";\n";
+    file_ << internal_mathematica::RawApply(
+                 "Set",
+                 {name, internal_mathematica::RawApply("List", values)}) +
+                 ";\n";
   }
   for (auto const& [name, value] : name_and_single_value_) {
-    file_ << Apply("Set", std::tuple{name, value}) + ";\n";
+    file_ << internal_mathematica::RawApply("Set", {name, value}) + ";\n";
   }
 }
 
