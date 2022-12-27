@@ -211,16 +211,16 @@ inline std::string Evaluate(std::string const& expression) {
 }
 
 template<typename T, typename OptionalExpressIn>
-std::string Option(std::string const& name,
-                   T const& right,
-                   OptionalExpressIn express_in) {
+std::string Rule(std::string const& name,
+                 T const& right,
+                 OptionalExpressIn express_in) {
   return RawApply("Rule", {name, ToMathematica(right, express_in)});
 }
 
 template<typename T, typename OptionalExpressIn>
-std::string Assign(std::string const& name,
-                   T const& right,
-                   OptionalExpressIn express_in) {
+std::string Set(std::string const& name,
+                T const& right,
+                OptionalExpressIn express_in) {
   return RawApply("Set", {name, ToMathematica(right, express_in)}) + ";\n";
 }
 

@@ -103,17 +103,15 @@ std::string Apply(std::string const& name,
 
 std::string Evaluate(std::string const& expression);
 
-// TODO(phl): Rename this function to Rule.
 template<typename T, typename OptionalExpressIn = std::nullopt_t>
-std::string Option(std::string const& name,
-                   T const& right,
-                   OptionalExpressIn express_in = std::nullopt);
+std::string Rule(std::string const& name,
+                 T const& right,
+                 OptionalExpressIn express_in = std::nullopt);
 
-// TODO(phl): Rename this function to Set.
 template<typename T, typename OptionalExpressIn = std::nullopt_t>
-std::string Assign(std::string const& name,
-                   T const& right,
-                   OptionalExpressIn express_in = std::nullopt);
+std::string Set(std::string const& name,
+                T const& right,
+                OptionalExpressIn express_in = std::nullopt);
 
 template<typename T, typename U, typename OptionalExpressIn = std::nullopt_t>
 std::string PlottableDataset(std::vector<T> const& x,
@@ -285,11 +283,11 @@ std::string RawApply(std::string const& function,
 }  // namespace internal_mathematica
 
 using internal_mathematica::Apply;
-using internal_mathematica::Assign;
 using internal_mathematica::Evaluate;
 using internal_mathematica::ExpressIn;
-using internal_mathematica::Option;
 using internal_mathematica::PlottableDataset;
+using internal_mathematica::Rule;
+using internal_mathematica::Set;
 using internal_mathematica::ToMathematica;
 using internal_mathematica::ToMathematicaBody;
 

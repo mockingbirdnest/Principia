@@ -299,12 +299,12 @@ TEST_F(MathematicaTest, ToMathematica) {
   }
 }
 
-TEST_F(MathematicaTest, Option) {
-  EXPECT_EQ("Rule[option," + ToMathematica(3.0) + "]", Option("option", 3.0));
+TEST_F(MathematicaTest, Rule) {
+  EXPECT_EQ("Rule[option," + ToMathematica(3.0) + "]", Rule("option", 3.0));
 }
 
-TEST_F(MathematicaTest, Assign) {
-  EXPECT_EQ("Set[var," + ToMathematica(3.0) + "];\n", Assign("var", 3.0));
+TEST_F(MathematicaTest, Set) {
+  EXPECT_EQ("Set[var," + ToMathematica(3.0) + "];\n", Set("var", 3.0));
 }
 
 TEST_F(MathematicaTest, PlottableDataset) {

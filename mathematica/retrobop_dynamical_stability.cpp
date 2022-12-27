@@ -350,46 +350,31 @@ void ProduceCenturyPlots(Ephemeris<Barycentric>& ephemeris) {
   }
 
   OFStream file(TEMP_DIR / "retrobop_century.generated.wl");
-  file << Assign("laytheTimes",
-                 times_from_epoch[Laythe], ExpressIn(Second));
-  file << Assign("vallTimes",
-                 times_from_epoch[Vall], ExpressIn(Second));
-  file << Assign("tyloTimes",
-                 times_from_epoch[Tylo], ExpressIn(Second));
-  file << Assign("polTimes",
-                 times_from_epoch[Pol], ExpressIn(Second));
-  file << Assign("bopTimes",
-                 times_from_epoch[Bop], ExpressIn(Second));
-  file << Assign("laytheSeparations",
-                 extremal_separations[Laythe], ExpressIn(Metre));
-  file << Assign("vallSeparations",
-                 extremal_separations[Vall], ExpressIn(Metre));
-  file << Assign("tyloSeparations",
-                 extremal_separations[Tylo], ExpressIn(Metre));
-  file << Assign("polSeparations",
-                 extremal_separations[Pol], ExpressIn(Metre));
-  file << Assign("bopSeparations",
-                 extremal_separations[Bop], ExpressIn(Metre));
+  file << Set("laytheTimes", times_from_epoch[Laythe], ExpressIn(Second));
+  file << Set("vallTimes", times_from_epoch[Vall], ExpressIn(Second));
+  file << Set("tyloTimes", times_from_epoch[Tylo], ExpressIn(Second));
+  file << Set("polTimes", times_from_epoch[Pol], ExpressIn(Second));
+  file << Set("bopTimes", times_from_epoch[Bop], ExpressIn(Second));
+  file << Set("laytheSeparations",
+              extremal_separations[Laythe], ExpressIn(Metre));
+  file << Set("vallSeparations", extremal_separations[Vall], ExpressIn(Metre));
+  file << Set("tyloSeparations", extremal_separations[Tylo], ExpressIn(Metre));
+  file << Set("polSeparations", extremal_separations[Pol], ExpressIn(Metre));
+  file << Set("bopSeparations", extremal_separations[Bop], ExpressIn(Metre));
 
-  file << Assign("bopEccentricities", bop_eccentricities);
-  file << Assign("bopInclinations",
-                 bop_inclinations, ExpressIn(Degree));
-  file << Assign("bopNodes",
-                 bop_nodes, ExpressIn(Degree));
-  file << Assign("bopArguments",
-                 bop_arguments_of_periapsis, ExpressIn(Degree));
-  file << Assign("bopJacobiEccentricities", bop_jacobi_eccentricities);
-  file << Assign("bopJacobiInclinations",
-                 bop_jacobi_inclinations, ExpressIn(Degree));
-  file << Assign("bopJacobiNodes",
-                 bop_jacobi_nodes, ExpressIn(Degree));
-  file << Assign("bopJacobiArguments",
-                 bop_jacobi_arguments_of_periapsis, ExpressIn(Degree));
+  file << Set("bopEccentricities", bop_eccentricities);
+  file << Set("bopInclinations", bop_inclinations, ExpressIn(Degree));
+  file << Set("bopNodes", bop_nodes, ExpressIn(Degree));
+  file << Set("bopArguments", bop_arguments_of_periapsis, ExpressIn(Degree));
+  file << Set("bopJacobiEccentricities", bop_jacobi_eccentricities);
+  file << Set("bopJacobiInclinations",
+              bop_jacobi_inclinations, ExpressIn(Degree));
+  file << Set("bopJacobiNodes", bop_jacobi_nodes, ExpressIn(Degree));
+  file << Set("bopJacobiArguments",
+              bop_jacobi_arguments_of_periapsis, ExpressIn(Degree));
 
-  file << Assign("tyloBop",
-                 tylo_bop_separations, ExpressIn(Metre));
-  file << Assign("polBop",
-                 pol_bop_separations, ExpressIn(Metre));
+  file << Set("tyloBop", tylo_bop_separations, ExpressIn(Metre));
+  file << Set("polBop", pol_bop_separations, ExpressIn(Metre));
 }
 
 void ComputeHighestMoonError(Ephemeris<Barycentric> const& left,
@@ -439,12 +424,12 @@ void PlotPredictableYears() {
       *ephemeris, ksp_epoch, 5 * JulianYear, barycentric_positions_5_year);
 
   OFStream file(TEMP_DIR / "retrobop_predictable_years.generated.wl");
-  file << Assign("barycentricPositions1",
-                 barycentric_positions_1_year, ExpressIn(Metre));
-  file << Assign("barycentricPositions2",
-                 barycentric_positions_2_year, ExpressIn(Metre));
-  file << Assign("barycentricPositions5",
-                 barycentric_positions_5_year, ExpressIn(Metre));
+  file << Set("barycentricPositions1",
+              barycentric_positions_1_year, ExpressIn(Metre));
+  file << Set("barycentricPositions2",
+              barycentric_positions_2_year, ExpressIn(Metre));
+  file << Set("barycentricPositions5",
+              barycentric_positions_5_year, ExpressIn(Metre));
 }
 
 void PlotCentury() {
