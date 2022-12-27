@@ -336,10 +336,22 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
       .longitude_of_ascending_node = moon_elements.longitude_of_ascending_node,
       .argument_of_periapsis = moon_elements.argument_of_periapsis,
       .mean_anomaly = 0 * Degree};
+  Position<World> const earth_position =
+      dynamic_frame.ToThisFrameAtTime(t0_).rigid_transformation()(
+          ephemeris_->trajectory(earth)->EvaluatePosition(t0_));
+  Position<World> const moon_position =
+      dynamic_frame.ToThisFrameAtTime(t0_).rigid_transformation()(
+          ephemeris_->trajectory(moon)->EvaluatePosition(t0_));
   DegreesOfFreedom<Barycentric> const initial_state =
-      earth_dof +
+      dynamic_frame.FromThisFrameAtTime(t0_)(
+          {Barycentre(std::pair(earth_position, moon_position),
+                      std::pair(1, 1)) +
+               (earth_position - moon_position).Norm() *
+                   Vector<double, World>({0, quantities::Sqrt(3) / 2, 0}),
+           World::unmoving});
+      /*
       KeplerOrbit<Barycentric>(*earth, MasslessBody{}, elements, t0_)
-          .StateVectors(t0_);
+          .StateVectors(t0_);*/
 
   DiscreteTrajectory<Barycentric> trajectory;
   CHECK_OK(trajectory.Append(t0_, initial_state));
