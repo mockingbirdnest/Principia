@@ -96,6 +96,17 @@ class ExpressIn {
   std::tuple<Qs...> units_;
 };
 
+// Returns an object suitable for expressing a quantity in SI units.
+ExpressIn<Length,
+          Mass,
+          Time,
+          Current,
+          Temperature,
+          Amount,
+          LuminousIntensity,
+          Angle> const&
+ExpressInSIUnits();
+
 template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string Apply(std::string const& name,
                   T const& right,

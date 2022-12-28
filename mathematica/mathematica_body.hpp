@@ -26,9 +26,6 @@ using base::not_constructible;
 using base::not_null;
 using quantities::DebugString;
 using quantities::IsFinite;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
 namespace si = quantities::si;
 
 // Wraps the string in quotes and escapes things properly.
@@ -197,6 +194,27 @@ Quotient<Q2, Exponentiation<Q1, exponent>> ExpressIn<Qs...>::Divide(
   } else {
     return q2 / Pow<exponent>(std::get<Q1>(units_));
   }
+}
+
+ExpressIn<Length,
+          Mass,
+          Time,
+          Current,
+          Temperature,
+          Amount,
+          LuminousIntensity,
+          Angle> const&
+ExpressInSIUnits() {
+  static const auto* const express_in_si_units =
+      new ExpressIn(si::Unit<Length>,
+                    si::Unit<Mass>,
+                    si::Unit<Time>,
+                    si::Unit<Current>,
+                    si::Unit<Temperature>,
+                    si::Unit<Amount>,
+                    si::Unit<LuminousIntensity>,
+                    si::Unit<Angle>);
+  return *express_in_si_units;
 }
 
 template<typename T, typename OptionalExpressIn>
