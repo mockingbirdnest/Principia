@@ -344,12 +344,20 @@ std::string ToMathematica(Quantity<D> const& quantity,
 
 template<typename D>
 std::string ToMathematica(Quantity<D> const& quantity,
-                          std::nullopt_t express_in) {
+                          decltype(PreserveUnits) express_in) {
   std::string s = DebugString(quantity);
   std::string const number = ToMathematica(quantity / si::Unit<Quantity<D>>);
   std::size_t const split = s.find(" ");
   std::string const units = Escape(s.substr(split, s.size()));
   return RawApply("Quantity", {number, units});
+}
+
+template<typename D>
+std::string ToMathematica(Quantity<D> const& quantity,
+                          std::nullopt_t express_in) {
+  static_assert(
+      !std::is_same_v<Quantity<D>, Quantity<D>>,
+      "Must specify a way to express units for dimensionful quantities");
 }
 
 template<typename T, typename OptionalExpressIn>

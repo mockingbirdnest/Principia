@@ -72,6 +72,18 @@ namespace si = quantities::si;
 // (or Angle). They define a system of units.  They may be in any order.  If the
 // other arguments of the functions contain quantities that are not spanned by
 // that system of units, the call is ill-formed.
+//
+// A shortcut is provided for SI units:
+//
+//   ToMathematica(..., ExpressInSIUnits);
+//
+// and for preserving the units in the Mathematica output:
+//
+//   ToMathematica(..., PreserveUnits);
+//
+// One of ExpressIn... or PreserveUnits must be present as soon as the data
+// being converted contains (dimensionful) quantities.
+
 template<typename... Qs>
 class ExpressIn {
  public:
@@ -99,7 +111,6 @@ class ExpressIn {
   std::tuple<Qs...> units_;
 };
 
-// An object suitable for expressing a quantity in SI units.
 constexpr auto ExpressInSIUnits = ExpressIn(si::Unit<Length>,
                                             si::Unit<Mass>,
                                             si::Unit<Time>,
@@ -108,6 +119,7 @@ constexpr auto ExpressInSIUnits = ExpressIn(si::Unit<Length>,
                                             si::Unit<Amount>,
                                             si::Unit<LuminousIntensity>,
                                             si::Unit<Angle>);
+constexpr struct {} PreserveUnits;
 
 template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string Apply(std::string const& name,
@@ -175,6 +187,10 @@ std::string ToMathematica(Quaternion const& quaternion,
 template<typename D, typename... Qs>
 std::string ToMathematica(Quantity<D> const& quantity,
                           ExpressIn<Qs...> express_in);
+
+template<typename D>
+std::string ToMathematica(Quantity<D> const& quantity,
+                          decltype(PreserveUnits) express_in);
 
 template<typename D>
 std::string ToMathematica(Quantity<D> const& quantity,
@@ -300,6 +316,7 @@ using internal_mathematica::Evaluate;
 using internal_mathematica::ExpressIn;
 using internal_mathematica::ExpressInSIUnits;
 using internal_mathematica::PlottableDataset;
+using internal_mathematica::PreserveUnits;
 using internal_mathematica::Rule;
 using internal_mathematica::Set;
 using internal_mathematica::ToMathematica;
