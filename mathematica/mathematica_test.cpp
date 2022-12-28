@@ -330,6 +330,9 @@ TEST_F(MathematicaTest, ExpressIn) {
     EXPECT_EQ(
         ToMathematica(3.0),
         ToMathematica(3.0 * Metre / Second / Second, ExpressIn(Metre, Second)));
+    EXPECT_EQ(
+        ToMathematica(3.0),
+        ToMathematica(3.0 * Metre / Second / Second, ExpressInSIUnits));
     EXPECT_EQ(ToMathematica(1 * Radian / (1 * Degree)),
               ToMathematica(1 * Radian, ExpressIn(Degree)));
   }

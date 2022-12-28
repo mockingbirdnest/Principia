@@ -23,6 +23,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 #include "quantities/tuples.hpp"
 
 namespace principia {
@@ -59,6 +60,7 @@ using quantities::Quantity;
 using quantities::Quotient;
 using quantities::Temperature;
 using quantities::Time;
+namespace si = quantities::si;
 
 // A helper class for type erasure of quantities.  It may be used with the
 // functions in this file to remove the dimensions of quantities (we know that
@@ -84,7 +86,8 @@ class ExpressIn {
   // Check that all quantities are different.
   static_assert(all_different_v<Qs...>, "Must use different quantities");
 
-  ExpressIn(Qs const&... qs);  // NOLINT(runtime/explicit)
+  constexpr ExpressIn(Qs const&... qs)  // NOLINT(runtime/explicit)
+      : units_(std::make_tuple(qs...)) {}
 
   template<typename Q>
   double operator()(Q const& q) const;
@@ -96,16 +99,15 @@ class ExpressIn {
   std::tuple<Qs...> units_;
 };
 
-// Returns an object suitable for expressing a quantity in SI units.
-ExpressIn<Length,
-          Mass,
-          Time,
-          Current,
-          Temperature,
-          Amount,
-          LuminousIntensity,
-          Angle> const&
-ExpressInSIUnits();
+// An object suitable for expressing a quantity in SI units.
+constexpr auto ExpressInSIUnits = ExpressIn(si::Unit<Length>,
+                                            si::Unit<Mass>,
+                                            si::Unit<Time>,
+                                            si::Unit<Current>,
+                                            si::Unit<Temperature>,
+                                            si::Unit<Amount>,
+                                            si::Unit<LuminousIntensity>,
+                                            si::Unit<Angle>);
 
 template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string Apply(std::string const& name,
@@ -296,6 +298,7 @@ std::string RawApply(std::string const& function,
 using internal_mathematica::Apply;
 using internal_mathematica::Evaluate;
 using internal_mathematica::ExpressIn;
+using internal_mathematica::ExpressInSIUnits;
 using internal_mathematica::PlottableDataset;
 using internal_mathematica::Rule;
 using internal_mathematica::Set;
