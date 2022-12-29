@@ -198,45 +198,46 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     SpecificEnergy const& energy) const -> std::vector<State> {
   using WellIterator = typename std::vector<Well>::const_iterator;
   LOG(ERROR) << "V=" << energy;
-  struct PeakSeparation {
+  struct PeakDelineation {
     std::set<WellIterator> indistinct_wells;
-    bool separated_from_infinity = false;
+    bool delineated_from_infinity = false;
   };
 
-  std::vector<PeakSeparation> peak_separations(peaks.size());
-  for (auto& separation : peak_separations) {
+  std::vector<PeakDelineation> peak_delineations(peaks.size());
+  for (auto& delineation : peak_delineations) {
     for (auto it = wells.begin(); it != wells.end(); ++it) {
-      separation.indistinct_wells.insert(it);
+      delineation.indistinct_wells.insert(it);
     }
   }
 
   std::vector<State> states;
   for (int i = 0; i < peaks.size(); ++i) {
-    auto const& separation = peak_separations[i];
+    auto const& delineation = peak_delineations[i];
     Position<Frame> const& peak = peaks[i];
     if (dynamic_frame_->GeometricPotential(t, peak) < energy) {
       LOG(ERROR) << "Peak " << i << " is below energy";
       continue;
     }
     LOG(ERROR) << "Delineating peak " << i;
-    while (!separation.indistinct_wells.empty() ||
-           !separation.separated_from_infinity) {
-      std::optional<WellIterator> expected_separated_well;
-      bool expect_separation_from_infinity = false;
-      if (!separation.indistinct_wells.empty()) {
-        LOG(ERROR) << separation.indistinct_wells.size()
+    while (!delineation.indistinct_wells.empty() ||
+           !delineation.delineated_from_infinity) {
+      std::optional<WellIterator> expected_delineated_well;
+      bool expect_delineation_from_infinity = false;
+      if (!delineation.indistinct_wells.empty()) {
+        LOG(ERROR) << delineation.indistinct_wells.size()
                    << " wells to delineate";
-        expected_separated_well = *separation.indistinct_wells.begin();
-        Well const well = **expected_separated_well;
+        expected_delineated_well = *delineation.indistinct_wells.begin();
+        Well const well = **expected_delineated_well;
         Length const r = (peak - well.position).Norm();
         if (dynamic_frame_->GeometricPotential(
                 t,
                 Barycentre(std::pair(peak, well.position),
                            std::pair(well.radius, r - well.radius))) >=
             energy) {
-          LOG(ERROR) << "well " << *expected_separated_well - wells.begin()
+          LOG(ERROR) << "well " << *expected_delineated_well - wells.begin()
                      << " is weird";
-          peak_separations[i].indistinct_wells.erase(*expected_separated_well);
+          peak_delineations[i].indistinct_wells.erase(
+              *expected_delineated_well);
           continue;
         }
         Length const x = numerics::Brent(
@@ -254,11 +255,11 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         states.push_back(ComputeLine(plane, t, equipotential_position));
       } else {
         LOG(ERROR) << "Not delineated from infinity";
-        expect_separation_from_infinity = true;
+        expect_delineation_from_infinity = true;
         Position<Frame> const far_away = towards_infinity(peak);
         if (dynamic_frame_->GeometricPotential(t, far_away) >= energy) {
           LOG(ERROR) << "far away point is weird";
-          peak_separations[i].separated_from_infinity = true;
+          peak_delineations[i].delineated_from_infinity = true;
           continue;
         }
         double const x = numerics::Brent(
@@ -286,33 +287,33 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
       }
       for (int j = 0; j < peaks.size(); ++j) {
         bool const peak_j_enclosed = WindingNumber(plane, peaks[j], line) > 0;
-        if (peak_j_enclosed && !peak_separations[j].separated_from_infinity) {
+        if (peak_j_enclosed && !peak_delineations[j].delineated_from_infinity) {
           LOG(ERROR) << "line delineates peak " << j << " from infinity";
         }
-        peak_separations[j].separated_from_infinity |= peak_j_enclosed;
-        for (auto it = peak_separations[j].indistinct_wells.begin();
-             it != peak_separations[j].indistinct_wells.end();) {
+        peak_delineations[j].delineated_from_infinity |= peak_j_enclosed;
+        for (auto it = peak_delineations[j].indistinct_wells.begin();
+             it != peak_delineations[j].indistinct_wells.end();) {
           if (enclosed_wells.contains(*it) != peak_j_enclosed) {
             LOG(ERROR) << "line delineates peak " << j << " from well "
                        << *it - wells.begin();
-            it = peak_separations[j].indistinct_wells.erase(it);
+            it = peak_delineations[j].indistinct_wells.erase(it);
           } else {
             ++it;
           }
         }
         if (j == i) {
-          if (expected_separated_well.has_value() &&
-              peak_separations[i].indistinct_wells.contains(
-                  *expected_separated_well)) {
+          if (expected_delineated_well.has_value() &&
+              peak_delineations[i].indistinct_wells.contains(
+                  *expected_delineated_well)) {
             LOG(ERROR) << "Failed to delineate peak " << i << " from well "
-                       << *expected_separated_well - wells.begin();
-            peak_separations[i].indistinct_wells.erase(
-                *expected_separated_well);
+                       << *expected_delineated_well - wells.begin();
+            peak_delineations[i].indistinct_wells.erase(
+                *expected_delineated_well);
           }
-          if (expect_separation_from_infinity &&
-              !peak_separations[i].separated_from_infinity) {
+          if (expect_delineation_from_infinity &&
+              !peak_delineations[i].delineated_from_infinity) {
             LOG(ERROR) << "Failed to delineate peak " << i << " from infinity";
-            peak_separations[i].separated_from_infinity = true;
+            peak_delineations[i].delineated_from_infinity = true;
           }
         }
       }
