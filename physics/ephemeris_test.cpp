@@ -69,6 +69,7 @@ using integrators::methods::McLachlanAtela1992Order4Optimal;
 using integrators::methods::McLachlanAtela1992Order5Optimal;
 using integrators::methods::Quinlan1999Order8A;
 using integrators::methods::QuinlanTremaine1990Order12;
+using mathematica::PreserveUnits;
 using quantities::Abs;
 using quantities::ArcTan;
 using quantities::Area;
@@ -1179,8 +1180,10 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
   mathematica::Logger logger(
       TEMP_DIR / "discrete_trajectory_compression.generated.wl",
       /*make_unique=*/false);
-  logger.Set("trajectory1", trajectory1.begin(), trajectory1.end());
-  logger.Set("trajectory2", trajectory2.begin(), trajectory2.end());
+  logger.Set("trajectory1",
+             trajectory1.begin(), trajectory1.end(), PreserveUnits);
+  logger.Set("trajectory2",
+             trajectory2.begin(), trajectory2.end(), PreserveUnits);
 }
 
 TEST(EphemerisTestNoFixture, Reanimator) {

@@ -43,6 +43,7 @@ using integrators::methods::QuinlanTremaine1990Order12;
 using integrators::methods::BlanesMoan2002SRKN11B;
 using integrators::methods::BlanesMoan2002SRKN14A;
 using integrators::methods::McLachlanAtela1992Order5Optimal;
+using mathematica::PreserveUnits;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
 using physics::KeplerianElements;
@@ -423,7 +424,8 @@ TEST_P(KSPSystemConvergenceTest, DISABLED_Convergence) {
                     std::tuple(steps[i + 1],
                                position_errors[i],
                                worst_body[i],
-                               durations[i + 1].count() * Second));
+                               durations[i + 1].count() * Second),
+                    PreserveUnits);
   }
 }
 

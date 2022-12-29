@@ -25,13 +25,15 @@ TEST_F(LoggerTest, Logger) {
   {
     Logger logger(TEMP_DIR / "mathematica_test.wl");
     logger.Append("a", std::vector{1.0, 2.0, 3.0});
-    logger.Append("β", 4 * Metre / Second);
-    logger.Append("a", F::origin);
+    logger.Append("β", 4 * Metre / Second, PreserveUnits);
+    logger.Append("a", F::origin, PreserveUnits);
     logger.Set("c", 5.0);
   }
   // Go check the file.
-  EXPECT_EQ(Set("a", std::tuple{std::vector{1.0, 2.0, 3.0}, F::origin}) +
-                Set("β", std::tuple{4 * Metre / Second}) +
+  EXPECT_EQ(Set("a",
+                std::tuple{std::vector{1.0, 2.0, 3.0}, F::origin},
+                PreserveUnits) +
+                Set("β", std::tuple{4 * Metre / Second}, PreserveUnits) +
                 Set("c", 5.0),
             (std::stringstream{}
              << std::ifstream(TEMP_DIR / "mathematica_test0.wl").rdbuf())
