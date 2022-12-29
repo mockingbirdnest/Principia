@@ -87,14 +87,18 @@ class Equipotential {
 
   struct Well {
     Position<Frame> position;
+    // Below this radius the potential has spurious maxima (and eventually NaNs
+    // and infinities), so algorithms should not look there.
     Length radius;
   };
 
-  // Computes equipotential lines for the given |energy|, attempting to find the
-  // equipotentials that delineate the |peaks| from the |wells| and from
-  // infinity.  Given a position, |towards_infinity| should return a position
-  // far away where the potential is lower, in a direction where not much
-  // happens, e.g., away from the centre in a rotating frame.
+  // Computes equipotential lines for the given |energy| that delineate the
+  // |peaks| from the |wells| and from the “well at infinity” (which is a well
+  // because we are in a rotating frame).  An equipotential delineates a peak
+  // from a well if it encloses the peak but not the well, or vice-versa.  Given
+  // a position, |towards_infinity| should return a position far away where the
+  // potential is lower, in a direction where not much happens, e.g., away from
+  // the centre in a rotating frame.
   std::vector<typename ODE::State> ComputeLines(
       Plane<Frame> const& plane,
       Instant const& t,
