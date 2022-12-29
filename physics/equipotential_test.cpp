@@ -341,25 +341,28 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
       .mean_anomaly = 0 * Degree};
   auto const earth_world_dof = dynamic_frame.ToThisFrameAtTime(t0_)(earth_dof);
   auto const moon_world_dof = dynamic_frame.ToThisFrameAtTime(t0_)(moon_dof);
-  Position<World> const qearth = earth_world_dof.position();
-  Position<World> const qmoon = moon_world_dof.position();
-  Velocity<World> const vearth = earth_world_dof.velocity();
-  Velocity<World> const vmoon = moon_world_dof.velocity();
+  Position<World> const q_earth = earth_world_dof.position();
+  Position<World> const q_moon = moon_world_dof.position();
+  Velocity<World> const v_earth = earth_world_dof.velocity();
+  Velocity<World> const v_moon = moon_world_dof.velocity();
+  Position<World> const initial_earth_moon_l5 =
+      Barycentre(std::pair(q_earth, q_moon), std::pair(1, 1)) +
+      (q_earth - q_moon).Norm() *
+          Vector<double, World>({0, quantities::Sqrt(3) / 2, 0});
+  // The initial states for three trajectories:
+  // [0]: initially stationary in |dynamic_frame| at L5;
+  // [1]: initially stationary in the rotating-pulsating frame at L5;
+  // [2]: in an elliptic Earth orbit that reaches 80% of the way to the Moon.
   std::vector<DegreesOfFreedom<Barycentric>> const initial_states{
       dynamic_frame.FromThisFrameAtTime(t0_)(
-          {qmoon + 2 * (qearth - qmoon), World::unmoving}),
+          {q_moon + 2 * (q_earth - q_moon), World::unmoving}),
       dynamic_frame.FromThisFrameAtTime(t0_)(
-          {Barycentre(std::pair(qearth, qmoon), std::pair(1, 1)) +
-               (qearth - qmoon).Norm() *
-                   Vector<double, World>({0, quantities::Sqrt(3) / 2, 0}),
-           World::unmoving}),
+          {initial_earth_moon_l5, World::unmoving}),
       dynamic_frame.FromThisFrameAtTime(t0_)(
-          {Barycentre(std::pair(qearth, qmoon), std::pair(1, 1)) +
-               (qearth - qmoon).Norm() *
-                   Vector<double, World>({0, quantities::Sqrt(3) / 2, 0}),
-           Barycentre(std::pair(vearth, vmoon), std::pair(1, 1)) +
-               InnerProduct(qearth - qmoon, vearth - vmoon) /
-                   (qearth - qmoon).Norm() *
+          {initial_earth_moon_l5,
+           Barycentre(std::pair(v_earth, v_moon), std::pair(1, 1)) +
+               InnerProduct(q_earth - q_moon, v_earth - v_moon) /
+                   (q_earth - q_moon).Norm() *
                    Vector<double, World>({0, quantities::Sqrt(3) / 2, 0})}),
       earth_dof +
           KeplerOrbit<Barycentric>(*earth, MasslessBody{}, elements, t0_)
@@ -430,11 +433,11 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
     all_positions.emplace_back();
     all_βs.emplace_back();
 
-    auto const arg_maxima = optimizer.FindGlobalMaxima(
+    auto const arg_maximorum = optimizer.FindGlobalMaxima(
         /*points_per_round=*/1000,
         /*number_of_rounds=*/std::nullopt,
         /*local_search_tolerance=*/10'000 * Kilo(Metre));
-    logger.Append("argMaxima", arg_maxima, mathematica::ExpressIn(Metre));
+    logger.Append("argMaximorum", arg_maximorum, mathematica::ExpressIn(Metre));
     std::vector<SpecificEnergy> maxima;
     SpecificEnergy maximum_maximorum = -Infinity<SpecificEnergy>;
 
@@ -444,7 +447,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
     Position<World> const moon_position =
         dynamic_frame.ToThisFrameAtTime(t).rigid_transformation()(
             ephemeris_->trajectory(moon)->EvaluatePosition(t));
-    for (auto const& arg_maximum : arg_maxima) {
+    for (auto const& arg_maximum : arg_maximorum) {
       maxima.push_back(potential(arg_maximum));
       maximum_maximorum = std::max(maximum_maximorum, maxima.back());
     }
@@ -474,7 +477,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
       auto const& lines = equipotential.ComputeLines(
           plane,
           t,
-          arg_maxima,
+          arg_maximorum,
           {{moon_position, moon->min_radius()},
            {earth_position, earth->min_radius()}},
           [](Position<World> q) {
