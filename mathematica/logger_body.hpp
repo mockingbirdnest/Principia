@@ -3,6 +3,7 @@
 #include "mathematica/logger.hpp"
 
 #include <string>
+#include <utility>
 
 #include "mathematica/mathematica.hpp"
 
@@ -25,7 +26,12 @@ inline Logger::Logger(std::filesystem::path const& path, bool const make_unique)
         } else {
           return path;
         }
-      }()) {}
+      }()) {
+  absl::ReaderMutexLock l(&construction_callback_lock_);
+  if (construction_callback_ != nullptr) {
+    construction_callback_(path, this);
+  }
+}
 
 inline Logger::~Logger() {
   Flush();
@@ -45,15 +51,40 @@ inline void Logger::Flush() {
 
 template<typename... Args>
 void Logger::Append(std::string const& name, Args... args) {
-  name_and_multiple_values_[name].push_back(ToMathematica(args...));
+  if (enabled_) {
+    name_and_multiple_values_[name].push_back(ToMathematica(args...));
+  }
 }
 
 template<typename... Args>
 void Logger::Set(std::string const& name, Args... args) {
-  name_and_single_value_[name] = ToMathematica(args...);
+  if (enabled_) {
+    name_and_single_value_[name] = ToMathematica(args...);
+  }
+}
+
+inline void Logger::Enable() {
+  enabled_ = true;
+}
+
+inline void Logger::Disable() {
+  enabled_ = false;
+}
+
+inline void Logger::SetConstructionCallback(ConstructionCallback callback) {
+  absl::MutexLock l(&construction_callback_lock_);
+  construction_callback_ = std::move(callback);
+}
+
+inline void Logger::ClearConstructionCallback() {
+  absl::MutexLock l(&construction_callback_lock_);
+  construction_callback_ = nullptr;
 }
 
 inline std::atomic_uint64_t Logger::id_ = 0;
+inline Logger::ConstructionCallback Logger::construction_callback_ = nullptr;
+inline ABSL_CONST_INIT absl::Mutex Logger::construction_callback_lock_(
+    absl::kConstInit);
 
 }  // namespace internal_logger
 }  // namespace mathematica

@@ -2,16 +2,20 @@
 
 #include <atomic>
 #include <filesystem>
+#include <functional>
 #include <map>
 #include <string>
 #include <vector>
 
+#include "absl/synchronization/mutex.h"
 #include "base/file.hpp"
+#include "base/not_null.hpp"
 
 namespace principia {
 namespace mathematica {
 namespace internal_logger {
 
+using base::not_null;
 using base::OFStream;
 
 // Define this value to 1 to force the logger to append "_new" to the file
@@ -47,12 +51,31 @@ class Logger final {
   template<typename... Args>
   void Set(std::string const& name, Args... args);
 
+  // When a logger is disabled, the calls to |Append| and |Set| have no effect.
+  // Loggers are enabled at construction.
+  void Enable();
+  void Disable();
+
+  // It is possible to register a (single) callback that gets executed at
+  // construction of each logger.  This makes it possible for distant code to
+  // perform operations on the logger, e.g., to disable it or log client-
+  // specific data.  The path passed to the callback is the path passed to the
+  // constructor (i.e., before any alteration performed by |make_unique|).
+  using ConstructionCallback =
+      std::function<void(std::filesystem::path const&, not_null<Logger*>)>;
+
+  static void SetConstructionCallback(ConstructionCallback callback);
+  static void ClearConstructionCallback();
+
  private:
+  std::atomic_bool enabled_ = true;
   OFStream file_;
   std::map<std::string, std::vector<std::string>> name_and_multiple_values_;
   std::map<std::string, std::string> name_and_single_value_;
 
   static std::atomic_uint64_t id_;
+  static ConstructionCallback construction_callback_;
+  static absl::Mutex construction_callback_lock_;
 };
 
 }  // namespace internal_logger
