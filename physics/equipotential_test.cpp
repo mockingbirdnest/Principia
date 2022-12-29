@@ -345,7 +345,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
   Position<World> const qmoon = moon_world_dof.position();
   Velocity<World> const vearth = earth_world_dof.velocity();
   Velocity<World> const vmoon = moon_world_dof.velocity();
-  std::vector<DegreesOfFreedom<Barycentric>> const initial_state{
+  std::vector<DegreesOfFreedom<Barycentric>> const initial_states{
       dynamic_frame.FromThisFrameAtTime(t0_)(
           {qmoon + 2 * (qearth - qmoon), World::unmoving}),
       dynamic_frame.FromThisFrameAtTime(t0_)(
@@ -368,7 +368,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
   std::vector<not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>>>
       trajectories;
   std::vector<not_null<DiscreteTrajectory<Barycentric>*>> instance_trajectories;
-  for (auto const& s : initial_state) {
+  for (auto const& s : initial_states) {
     trajectories.push_back(
         make_not_null_unique<DiscreteTrajectory<Barycentric>>());
     instance_trajectories.push_back(trajectories.back().get());
@@ -463,12 +463,11 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
                              std::pair(arg_approx_l1, 1 - arg_approx_l1)));
 
     for (int i = 0; i < trajectories.size(); ++i) {
-    DegreesOfFreedom<World> const dof = dynamic_frame.ToThisFrameAtTime(t)(
+      DegreesOfFreedom<World> const dof = dynamic_frame.ToThisFrameAtTime(t)(
           trajectories[i]->EvaluateDegreesOfFreedom(t));
       trajectory_positions[i].push_back(dof.position());
     }
-    SpecificEnergy const ΔV =
-        maximum_maximorum - approx_l1_energy;
+    SpecificEnergy const ΔV = maximum_maximorum - approx_l1_energy;
     for (int i = 1; i <= 8; ++i) {
       all_positions.back().emplace_back();
       SpecificEnergy const energy = maximum_maximorum - i * (1.0 / 7.0 * ΔV);
@@ -491,18 +490,18 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
     }
   }
   std::vector<std::vector<Position<World>>> world_trajectories;
-  for (auto const& tr : trajectories) {
+  for (auto const& trajectory : trajectories) {
     world_trajectories.emplace_back();
-    for (auto const& [t, dof] : *tr) {
+    for (auto const& [t, dof] : *trajectory) {
       world_trajectories.back().push_back(
           dynamic_frame.ToThisFrameAtTime(t).rigid_transformation()(
               dof.position()));
     }
   }
   std::vector<std::vector<Vector<double, World>>> pulsating_trajectories;
-  for (auto const& tr : trajectories) {
+  for (auto const& trajectory : trajectories) {
     pulsating_trajectories.emplace_back();
-    for (auto const& [t, dof] : *tr) {
+    for (auto const& [t, dof] : *trajectory) {
       pulsating_trajectories.back().push_back(
           (dynamic_frame.ToThisFrameAtTime(t).rigid_transformation()(
                dof.position()) -
