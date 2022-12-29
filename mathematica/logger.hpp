@@ -60,15 +60,20 @@ class Logger final {
   // construction of each logger.  This makes it possible for distant code to
   // perform operations on the logger, e.g., to disable it or log client-
   // specific data.  The path passed to the callback is the path passed to the
-  // constructor (i.e., before any alteration performed by |make_unique|).
+  // constructor (i.e., before any alteration performed by |make_unique|).  The
+  // |id| is the uniquely-generated id for the logger (if |make_unique| is true)
+  // or nullopt (if |make_unique| is false).
   using ConstructionCallback =
-      std::function<void(std::filesystem::path const&, not_null<Logger*>)>;
+      std::function<void(std::filesystem::path const&,
+                         std::optional<std::uint64_t> id,
+                         not_null<Logger*>)>;
 
   static void SetConstructionCallback(ConstructionCallback callback);
   static void ClearConstructionCallback();
 
  private:
   std::atomic_bool enabled_ = true;
+  std::optional<std::uint64_t> my_id_;
   OFStream file_;
   std::map<std::string, std::vector<std::string>> name_and_multiple_values_;
   std::map<std::string, std::string> name_and_single_value_;

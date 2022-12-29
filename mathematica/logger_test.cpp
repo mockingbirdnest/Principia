@@ -6,6 +6,7 @@
 
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
 
@@ -16,6 +17,7 @@ using base::not_null;
 using geometry::Frame;
 using quantities::si::Metre;
 using quantities::si::Second;
+using ::testing::Optional;
 
 class LoggerTest : public ::testing::Test {
  protected:
@@ -32,8 +34,10 @@ TEST_F(LoggerTest, Logger) {
   Logger* logger_ptr;
   Logger::SetConstructionCallback(
       [&logger_ptr](std::filesystem::path const& path,
+                    std::optional<std::uint64_t> id,
                     not_null<Logger*> const logger) {
         EXPECT_EQ(TEMP_DIR / "mathematica_test.wl", path);
+        EXPECT_THAT(id, Optional(0));
         logger_ptr = logger;
         logger->Disable();
       });

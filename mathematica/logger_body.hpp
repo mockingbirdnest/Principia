@@ -12,11 +12,12 @@ namespace mathematica {
 namespace internal_logger {
 
 inline Logger::Logger(std::filesystem::path const& path, bool const make_unique)
-    : file_([make_unique, &path]() {
+    : file_([this, make_unique, &path]() {
         if (make_unique || PRINCIPIA_MATHEMATICA_LOGGER_REGRESSION_TEST != 0) {
           std::filesystem::path filename = path.stem();
           if (make_unique) {
-            filename += std::to_string(id_++);
+            my_id_ = id_++;
+            filename += std::to_string(my_id_.value());
           }
 #if PRINCIPIA_MATHEMATICA_LOGGER_REGRESSION_TEST
           filename += "_new";
@@ -29,7 +30,7 @@ inline Logger::Logger(std::filesystem::path const& path, bool const make_unique)
       }()) {
   absl::ReaderMutexLock l(&construction_callback_lock_);
   if (construction_callback_ != nullptr) {
-    construction_callback_(path, this);
+    construction_callback_(path, my_id_, this);
   }
 }
 
