@@ -12,7 +12,7 @@
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
-#include "mathematica/mathematica.hpp"
+#include "mathematica/logger.hpp"
 #include "numerics/apodization.hpp"
 #include "numerics/fast_fourier_transform.hpp"
 #include "numerics/frequency_analysis.hpp"

@@ -8,7 +8,7 @@
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/solar_system.hpp"
-#include "mathematica/mathematica.hpp"
+#include "mathematica/logger.hpp"
 #include "testing_utilities/matchers.hpp"
 #include "testing_utilities/is_near.hpp"
 

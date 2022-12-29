@@ -13,7 +13,7 @@
 #include "integrators/integrators.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
-#include "mathematica/mathematica.hpp"
+#include "mathematica/logger.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
@@ -56,6 +56,7 @@ using integrators::methods::QuinlanTremaine1990Order12;
 using integrators::methods::BlanesMoan2002SRKN11B;
 using integrators::methods::BlanesMoan2002SRKN14A;
 using integrators::methods::McLachlanAtela1992Order5Optimal;
+using mathematica::PreserveUnits;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
@@ -588,9 +589,11 @@ TEST(MarsTest, Phobos) {
     phobos_positions.push_back(phobos_trajectory.EvaluatePosition(t));
     phobos_velocities.push_back(phobos_trajectory.EvaluateVelocity(t));
     logger.Append("ppaMarsPhobosDisplacements",
-                  phobos_positions.back() - mars_positions.back());
+                  phobos_positions.back() - mars_positions.back(),
+                  PreserveUnits);
     logger.Append("ppaMarsPhobosVelocities",
-                  phobos_velocities.back() - mars_velocities.back());
+                  phobos_velocities.back() - mars_velocities.back(),
+                  PreserveUnits);
   }
 }
 
@@ -701,7 +704,8 @@ TEST_P(SolarSystemDynamicsConvergenceTest, DISABLED_Convergence) {
                     std::tuple(steps[i + 1],
                                position_errors[i],
                                worst_body[i],
-                               durations[i + 1].count() * Second));
+                               durations[i + 1].count() * Second),
+                    PreserveUnits);
   }
 }
 

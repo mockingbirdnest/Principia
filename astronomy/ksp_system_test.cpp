@@ -10,7 +10,7 @@
 #include "astronomy/stabilize_ksp.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "mathematica/mathematica.hpp"
+#include "mathematica/logger.hpp"
 #include "integrators/integrators.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
@@ -43,6 +43,7 @@ using integrators::methods::QuinlanTremaine1990Order12;
 using integrators::methods::BlanesMoan2002SRKN11B;
 using integrators::methods::BlanesMoan2002SRKN14A;
 using integrators::methods::McLachlanAtela1992Order5Optimal;
+using mathematica::PreserveUnits;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
 using physics::KeplerianElements;
@@ -423,7 +424,8 @@ TEST_P(KSPSystemConvergenceTest, DISABLED_Convergence) {
                     std::tuple(steps[i + 1],
                                position_errors[i],
                                worst_body[i],
-                               durations[i + 1].count() * Second));
+                               durations[i + 1].count() * Second),
+                    PreserveUnits);
   }
 }
 

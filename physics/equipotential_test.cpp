@@ -18,7 +18,7 @@
 #include "integrators/methods.hpp"
 #include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
-#include "mathematica/mathematica.hpp"
+#include "mathematica/logger.hpp"
 #include "numerics/global_optimization.hpp"
 #include "numerics/root_finders.hpp"
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"

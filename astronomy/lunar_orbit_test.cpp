@@ -14,7 +14,7 @@
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
-#include "mathematica/mathematica.hpp"
+#include "mathematica/logger.hpp"
 #include "physics/apsides.hpp"
 #include "physics/body_surface_dynamic_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
