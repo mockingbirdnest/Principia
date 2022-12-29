@@ -92,7 +92,7 @@ class Equipotential {
 
   // Computes equipotential lines for the given |energy|, attempting to find the
   // equipotentials that delineate the |peaks| from the |wells| and from
-  // |infinity|.  Given a position, |towards_infinity| should return a position
+  // infinity.  Given a position, |towards_infinity| should return a position
   // far away where the potential is lower, in a direction where not much
   // happens, e.g., away from the centre in a rotating frame.
   std::vector<typename ODE::State> ComputeLines(

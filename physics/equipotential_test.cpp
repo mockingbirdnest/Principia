@@ -316,7 +316,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
   auto const moon = solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Moon));
   auto const dynamic_frame(
-      BarycentricRotatingDynamicFrame<Barycentric, World>(
+      BodyCentredBodyDirectionDynamicFrame<Barycentric, World>(
           ephemeris_.get(), moon, earth));
   CHECK_OK(ephemeris_->Prolong(t0_ + number_of_days * Day));
 
