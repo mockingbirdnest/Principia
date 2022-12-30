@@ -170,6 +170,10 @@ class Renamespacer {
     }
   }
 
+  // Usage:
+  //   renamespacer --project:quantities --client:base --client:physics  --move
+  // This will renamespace quantities and fix the references in the client
+  // projects.  The files will be overwritten.
   static void Main(string[] args) {
     // Parse the arguments.
     DirectoryInfo project = null;
@@ -199,6 +203,7 @@ class Renamespacer {
       ProcessProjectFile(input_file, project_name, move_files);
     }
 
+    // Process the files in client projects.
     foreach (DirectoryInfo client in clients) {
       FileInfo[] client_hpp_files = client.GetFiles("*.hpp");
       FileInfo[] client_cpp_files = client.GetFiles("*.cpp");
