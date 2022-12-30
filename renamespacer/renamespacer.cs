@@ -9,7 +9,7 @@ namespace renamespacer {
 class Renamespacer {
   static void ProcessClientFile(FileInfo input_file,
                                 string project_name,
-                                bool move_files) {
+                                bool dry_run) {
     string input_filename = input_file.FullName;
     string output_filename = input_file.DirectoryName + "\\" +
                               input_file.Name + ".new";
@@ -36,8 +36,7 @@ class Renamespacer {
       } else if (line.StartsWith("using ")) {
         // We are in the block of usings.  Preserve them unless they are for the
         // project that we are processing, or for an internal namespace.
-        if (!line.StartsWith("using " + project_namespace) &&
-            !line.StartsWith("using internal_")) {
+        if (!line.StartsWith("using " + project_namespace)) {
           writer.WriteLine(line);
         } else if (line.StartsWith("using namespace")) {
           // Collect (and don't emit) existing using-directives as we'll want to
@@ -61,14 +60,14 @@ class Renamespacer {
     }
     writer.Close();
     reader.Close();
-    if (move_files) {
+    if (!dry_run) {
       File.Move(output_filename, input_filename, true);
     }
   }
 
   static void ProcessProjectFile(FileInfo input_file,
                                  string project_name,
-                                 bool move_files) {
+                                 bool dry_run) {
     string input_filename = input_file.FullName;
     string output_filename = input_file.DirectoryName + "\\" +
                               input_file.Name + ".new";
@@ -166,7 +165,7 @@ class Renamespacer {
     }
     writer.Close();
     reader.Close();
-    if (move_files) {
+    if (!dry_run) {
       File.Move(output_filename, input_filename, true);
     }
   }
@@ -179,7 +178,7 @@ class Renamespacer {
     // Parse the arguments.
     DirectoryInfo project = null;
     var clients = new List<DirectoryInfo>();
-    bool move_files = false;
+    bool dry_run = true;
     foreach (string arg in args) {
       if (arg.StartsWith("--") && arg.Contains(":")) {
         string[] split = arg.Split(new []{"--", ":"}, StringSplitOptions.None);
@@ -189,9 +188,9 @@ class Renamespacer {
           project = new DirectoryInfo(value);
         } else if (option == "client") {
           clients.Add(new DirectoryInfo(value));
+        } else if (option == "dry_run") {
+          dry_run = bool.Parse(value);
         }
-      } else if (arg == "--move") {
-        move_files = true;
       }
     }
 
@@ -201,7 +200,7 @@ class Renamespacer {
     FileInfo[] cpp_files = project.GetFiles("*.cpp");
     FileInfo[] all_files = hpp_files.Union(cpp_files).ToArray();
     foreach (FileInfo input_file in all_files) {
-      ProcessProjectFile(input_file, project_name, move_files);
+      ProcessProjectFile(input_file, project_name, dry_run);
     }
 
     // Process the files in client projects.
@@ -211,7 +210,7 @@ class Renamespacer {
       FileInfo[] all_client_files =
           client_hpp_files.Union(client_cpp_files).ToArray();
       foreach (FileInfo input_file in all_client_files) {
-        ProcessClientFile(input_file, project_name, move_files);
+        ProcessClientFile(input_file, project_name, dry_run);
       }
     }
   }
