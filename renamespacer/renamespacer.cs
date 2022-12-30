@@ -139,11 +139,17 @@ class Renamespacer {
         writer.WriteLine("}  // namespace " + file_namespace);
         writer.WriteLine(line);
         has_closed_file_namespace = true;
-      } else if (has_seen_usings && !has_emitted_new_style_usings) {
+      } else if ((has_seen_usings ||
+                 (line != "" && has_opened_file_namespace)) &&
+                 !has_emitted_new_style_usings) {
         // The first line that follows the using-declarations.  Emit the new
-        // style using-directives here.
+        // style using-directives here.  Note that this covers the first line
+        // after the namespace that's not empty, in case there are no usings.
         foreach (string using_directive in using_directives) {
           writer.WriteLine("using namespace " + using_directive + ";");
+        }
+        if (!has_seen_usings) {
+          writer.WriteLine("");
         }
         writer.WriteLine(line);
         has_emitted_new_style_usings = true;
