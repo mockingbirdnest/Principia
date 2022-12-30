@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "renamespacer": {
+      "commandName": "Project",
+      "commandLineArgs": "--directory:quantities",
+      "workingDirectory": "C:\\Users\\phl.mantegna\\Projects\\Principia\\Principia"
+    }
+  }
+}
