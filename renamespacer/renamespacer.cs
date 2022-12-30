@@ -16,7 +16,7 @@ class Renamespacer {
 
     string project_namespace = project_name;
 
-    var included_files = new List<string>();
+    var using_directives = new SortedSet<string>();
     bool has_emitted_new_style_usings = false;
     bool has_seen_usings = false;
 
@@ -26,29 +26,32 @@ class Renamespacer {
       string line = reader.ReadLine();
       if (line.StartsWith("#include \"" + project_name) &&
           (line.EndsWith(".hpp\"") || line.EndsWith(".cpp\""))) {
-        // Collect the includes for files in |directory|, we'll need them to
+        // Collect the includes for files in our project, we'll need them to
         // generate the using-directives.
-        included_files.Add(
-            Regex.Replace(
+        using_directives.Add(
+            "principia::" + Regex.Replace(
                 Regex.Replace(line, "#include \"", ""),
-                "\\.[hc]pp\"$", ""));
+                "\\.[hc]pp\"$", "").Replace("/", "::"));
         writer.WriteLine(line);
       } else if (line.StartsWith("using ")) {
-        // Record that we have seen the first using, but only emit it if it's
-        // a new-style using-directive or a using-declaration for a different
-        // project.  Skip using-declations for internal stuff.
-        if (line.StartsWith("using namespace") ||
-            (!line.StartsWith("using " + project_namespace) &&
-              !line.StartsWith("using internal_"))) {
+        // We are in the block of usings.  Preserve them unless they are for the
+        // project that we are processing, or for an internal namespace.
+        if (!line.StartsWith("using " + project_namespace) &&
+            !line.StartsWith("using internal_")) {
+          writer.WriteLine(line);
+        } else if (line.StartsWith("using namespace")) {
+          // Collect (and don't emit) existing using-directives as we'll want to
+          // reemit them in order.
+          using_directives.Add(
+              line.Replace("using namespace ", "").Replace(";", ""));
           writer.WriteLine(line);
         }
         has_seen_usings = true;
       } else if (has_seen_usings && !has_emitted_new_style_usings) {
         // The first line that follows the using-declarations.  Emit the new
         // style using-directives here.
-        foreach (string included_file in included_files) {
-          writer.WriteLine("using namespace principia::" +
-                            included_file.Replace("/", "::") + ";");
+        foreach (string using_directive in using_directives) {
+          writer.WriteLine("using namespace " + using_directive + ";");
         }
         writer.WriteLine(line);
         has_emitted_new_style_usings = true;
@@ -74,7 +77,7 @@ class Renamespacer {
     string project_namespace = project_name;
     string file_namespace = Regex.Replace(file_basename, "_body|_test", "");
 
-    var included_files = new List<string>();
+    var using_directives = new SortedSet<string>();
     bool has_closed_file_namespace = false;
     bool has_closed_internal_namespace = false;
     bool has_emitted_new_style_usings = false;
@@ -88,12 +91,12 @@ class Renamespacer {
       string line = reader.ReadLine();
       if (line.StartsWith("#include \"" + project_name) &&
           (line.EndsWith(".hpp\"") || line.EndsWith(".cpp\""))) {
-        // Collect the includes for files in |directory|, we'll need them to
+        // Collect the includes for files in our project, we'll need them to
         // generate the using-directives.
-        included_files.Add(
-            Regex.Replace(
+        using_directives.Add(
+            "principia::" + Regex.Replace(
                 Regex.Replace(line, "#include \"", ""),
-                "\\.[hc]pp\"$", ""));
+                "\\.[hc]pp\"$", "").Replace("/", "::"));
         writer.WriteLine(line);
       } else if (line.StartsWith("namespace internal_")) {
         // The internal namespace gets wrapped into the file namespace and is
@@ -112,12 +115,16 @@ class Renamespacer {
         // the declaration to the outside.
         writer.WriteLine(Regex.Replace(line, "_" + file_namespace, ""));
       } else if (line.StartsWith("using ")) {
-        // Record that we have seen the first using, but only emit it if it's
-        // a new-style using-directive or a using-declaration for a different
-        // project.  Skip using-declations for internal stuff.
-        if (line.StartsWith("using namespace") ||
-            (!line.StartsWith("using " + project_namespace) &&
-              !line.StartsWith("using internal_"))) {
+        // We are in the block of usings.  Preserve them unless they are for the
+        // project that we are processing, or for an internal namespace.
+        if (!line.StartsWith("using " + project_namespace) &&
+            !line.StartsWith("using internal_")) {
+          writer.WriteLine(line);
+        } else if (line.StartsWith("using namespace")) {
+          // Collect (and don't emit) existing using-directives as we'll want to
+          // reemit them in order.
+          using_directives.Add(
+              line.Replace("using namespace ", "").Replace(";", ""));
           writer.WriteLine(line);
         }
         has_seen_usings = true;
@@ -135,9 +142,8 @@ class Renamespacer {
       } else if (has_seen_usings && !has_emitted_new_style_usings) {
         // The first line that follows the using-declarations.  Emit the new
         // style using-directives here.
-        foreach (string included_file in included_files) {
-          writer.WriteLine("using namespace principia::" +
-                            included_file.Replace("/", "::") + ";");
+        foreach (string using_directive in using_directives) {
+          writer.WriteLine("using namespace " + using_directive + ";");
         }
         writer.WriteLine(line);
         has_emitted_new_style_usings = true;
@@ -190,8 +196,9 @@ class Renamespacer {
     foreach (DirectoryInfo client in clients) {
       FileInfo[] client_hpp_files = client.GetFiles("*.hpp");
       FileInfo[] client_cpp_files = client.GetFiles("*.cpp");
-      FileInfo[] all_client_files = hpp_files.Union(cpp_files).ToArray();
-      foreach (FileInfo input_file in all_files) {
+      FileInfo[] all_client_files =
+          client_hpp_files.Union(client_cpp_files).ToArray();
+      foreach (FileInfo input_file in all_client_files) {
         ProcessClientFile(input_file, project_name, move_files);
       }
     }
