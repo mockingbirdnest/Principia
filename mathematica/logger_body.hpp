@@ -84,7 +84,7 @@ inline void Logger::ClearConstructionCallback() {
 
 inline std::atomic_uint64_t Logger::id_ = 0;
 inline Logger::ConstructionCallback Logger::construction_callback_ = nullptr;
-inline ABSL_CONST_INIT absl::Mutex Logger::construction_callback_lock_(
+ABSL_CONST_INIT inline absl::Mutex Logger::construction_callback_lock_(
     absl::kConstInit);
 
 }  // namespace internal_logger
