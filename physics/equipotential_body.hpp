@@ -196,9 +196,10 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
   using WellIterator = typename std::vector<Well>::const_iterator;
   LOG(ERROR) << "V=" << energy;
 
-  // The set of wells that are not yet delineated from a peak by equipotentials
-  // already computed, as well as whether the well is delineated from the “well
-  // at infinity”.
+  // A |PeakDelineation| represents:
+  // 1. the set of wells that are not yet delineated from a peak by
+  //    equipotentials already computed;
+  // 2. whether the well is delineated from the “well at infinity”.
   struct PeakDelineation {
     std::set<WellIterator> indistinct_wells;
     bool delineated_from_infinity = false;
