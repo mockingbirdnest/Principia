@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <vector>
 
 #include "absl/status/status.h"
@@ -25,6 +26,7 @@ using geometry::InfiniteFuture;
 using geometry::Instant;
 using geometry::Plane;
 using geometry::Position;
+using geometry::Vector;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::ExplicitFirstOrderOrdinaryDifferentialEquation;
 using quantities::Acceleration;
@@ -54,7 +56,12 @@ class Equipotential {
 
   Equipotential(
       AdaptiveParameters const& adaptive_parameters,
-      not_null<DynamicFrame<InertialFrame, Frame> const*> dynamic_frame);
+      not_null<DynamicFrame<InertialFrame, Frame> const*> dynamic_frame,
+      std::function<SpecificEnergy(Instant const&, Position<Frame> const&)>
+          potential = nullptr,
+      std::function<Vector<Acceleration, Frame>(Instant const&,
+                                                Position<Frame> const&)>
+          gradient = nullptr);
 
   // Computes an equipotential line going through the given point.
   typename ODE::State ComputeLine(Plane<Frame> const& plane,
@@ -146,7 +153,11 @@ class Equipotential {
                              std::vector<Position<Frame>> const& line) const;
 
   AdaptiveParameters const& adaptive_parameters_;
-  not_null<DynamicFrame<InertialFrame, Frame> const*> const dynamic_frame_;
+  std::function<SpecificEnergy(Instant const&, Position<Frame> const&)>
+      potential_;
+  std::function<Vector<Acceleration, Frame>(Instant const&,
+                                            Position<Frame> const&)>
+      gradient_;
 };
 
 }  // namespace internal_equipotential
