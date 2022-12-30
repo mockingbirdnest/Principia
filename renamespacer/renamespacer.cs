@@ -28,10 +28,10 @@ class Renamespacer {
           (line.EndsWith(".hpp\"") || line.EndsWith(".cpp\""))) {
         // Collect the includes for files in our project, we'll need them to
         // generate the using-directives.
+        string included_file =
+            line.Replace("#include \"", "").Replace(".hpp\"", "");
         using_directives.Add(
-            "principia::" + Regex.Replace(
-                Regex.Replace(line, "#include \"", ""),
-                "\\.[hc]pp\"$", "").Replace("/", "::"));
+            "principia::" + included_file.Replace("/", "::"));
         writer.WriteLine(line);
       } else if (line.StartsWith("using ")) {
         // We are in the block of usings.  Preserve them unless they are for the
@@ -92,11 +92,13 @@ class Renamespacer {
       if (line.StartsWith("#include \"" + project_name) &&
           (line.EndsWith(".hpp\"") || line.EndsWith(".cpp\""))) {
         // Collect the includes for files in our project, we'll need them to
-        // generate the using-directives.
-        using_directives.Add(
-            "principia::" + Regex.Replace(
-                Regex.Replace(line, "#include \"", ""),
-                "\\.[hc]pp\"$", "").Replace("/", "::"));
+        // generate the using-directives.  Skip our own header.
+        string included_file =
+            line.Replace("#include \"", "").Replace(".hpp\"", "");
+        if (included_file != project_namespace + "/" + file_namespace) {
+          using_directives.Add(
+              "principia::" + included_file.Replace("/", "::"));
+        }
         writer.WriteLine(line);
       } else if (line.StartsWith("namespace internal_")) {
         // The internal namespace gets wrapped into the file namespace and is
@@ -125,7 +127,6 @@ class Renamespacer {
           // reemit them in order.
           using_directives.Add(
               line.Replace("using namespace ", "").Replace(";", ""));
-          writer.WriteLine(line);
         }
         has_seen_usings = true;
       } else if (line.StartsWith("}  // namespace internal_")) {
@@ -140,7 +141,7 @@ class Renamespacer {
         writer.WriteLine(line);
         has_closed_file_namespace = true;
       } else if ((has_seen_usings ||
-                 (line != "" && has_opened_file_namespace)) &&
+                  (line != "" && has_opened_file_namespace)) &&
                  !has_emitted_new_style_usings) {
         // The first line that follows the using-declarations.  Emit the new
         // style using-directives here.  Note that this covers the first line
@@ -148,7 +149,7 @@ class Renamespacer {
         foreach (string using_directive in using_directives) {
           writer.WriteLine("using namespace " + using_directive + ";");
         }
-        if (!has_seen_usings) {
+        if (!has_seen_usings && using_directives.Count > 0) {
           writer.WriteLine("");
         }
         writer.WriteLine(line);
