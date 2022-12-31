@@ -19,6 +19,10 @@ class Parser {
       }
     }
 
+    public virtual string Cxx() {
+      return "--FATAL--";
+    }
+
     // Writes a single node.
     public abstract void WriteNode(string indent = "");
 
@@ -29,10 +33,18 @@ class Parser {
       }
     }
 
+    public virtual bool must_rewrite {
+      get => must_rewrite_;
+      set {
+        must_rewrite_ = value;
+      }
+    }
+
     public int line_number = 0;
     public Node parent = null;
     public int position_in_parent = -1;
     public List<Node> children = null;
+    protected bool must_rewrite_ = false;
   }
 
   public class Class : Node {
@@ -90,6 +102,13 @@ class Parser {
       }
     }
 
+    public override string Cxx() {
+      if (!must_rewrite) {
+        throw new ArgumentException("inconsistent rewrite");
+      }
+      return "namespace " + name + "{";
+    }
+
     public override void WriteNode(string indent = "") {
       Console.WriteLine(indent + "Namespace " + name + (is_internal ? "Internal" : ""));
     }
@@ -120,10 +139,28 @@ class Parser {
       }
     }
 
+    public override string Cxx() {
+      if (!must_rewrite) {
+        throw new ArgumentException("inconsistent rewrite");
+      }
+      if (declared_in_namespace == null) {
+        return "using " + name + ";";
+      } else {
+        return "using " + declared_in_namespace.name + "::" +
+               declared_name + ";";
+      }
+    }
+
     public override void WriteNode(string indent = "") {
       Console.WriteLine(indent + "UsingDeclaration " + declared_name +
                         (declared_in_namespace == null ?
                             "" : " from " + declared_in_namespace.name));
+    }
+
+    public override bool must_rewrite {
+      get => must_rewrite_ ||
+             (declared_in_namespace != null &&
+              declared_in_namespace.must_rewrite);
     }
 
     public string name = null;
@@ -335,6 +372,7 @@ class Parser {
     var namespaces_to_normalize = FindNamespacesToNormalize(file, file);
     foreach (Namespace internal_namespace in namespaces_to_normalize) {
       internal_namespace.name = "internal";
+      internal_namespace.must_rewrite = true;
       var parent = internal_namespace.parent;
       if (!(parent is Namespace)) {
         throw new ArgumentException(
@@ -343,6 +381,7 @@ class Parser {
       var file_namespace = new Namespace(internal_namespace.line_number,
                                          parent: null,
                                          file.file_namespace);
+      file_namespace.must_rewrite = true;
       parent.children[internal_namespace.position_in_parent] = file_namespace;
       internal_namespace.parent = file_namespace;
       internal_namespace.position_in_parent = 0;
@@ -351,6 +390,58 @@ class Parser {
 }
 
 class Renamespacer {
+  static void RewriteFile(FileInfo input_file,
+                          Parser.File file,
+                          bool dry_run) {
+    string input_filename = input_file.FullName;
+    string output_filename = input_file.DirectoryName + "\\" +
+                              input_file.Name + ".new";
+
+    Parser.Node parent = file;
+    int child_position = 0;
+    StreamReader reader = input_file.OpenText();
+    StreamWriter writer = File.CreateText(output_filename);
+    int line_number = 1;
+    while (!reader.EndOfStream) {
+      string line = reader.ReadLine();
+      bool has_rewritten = false;
+      bool must_pop = false;
+      Parser.Node node = parent.children[child_position];
+      if (node.line_number == line_number) {
+        for (;;) {
+          if (node.must_rewrite) {
+            has_rewritten = true;
+            writer.WriteLine(node.Cxx());
+          }
+          ++child_position;
+          if (child_position == parent.children.Count) {
+            break;
+          }
+          node = parent.children[child_position];
+          if (node.line_number != line_number) {
+            break;
+          }
+        }
+        if (must_pop) {
+          child_position = parent.position_in_parent;
+          parent = parent.parent;
+        } else if (node is Parser.Namespace) {
+          parent = node;
+          child_position = 0;
+        }
+      }
+      if (!has_rewritten) {
+        writer.WriteLine(line);
+      }
+      ++line_number;
+    }
+    writer.Close();
+    reader.Close();
+    if (!dry_run) {
+      File.Move(output_filename, input_filename, true);
+    }
+  }
+
   // Usage:
   //   renamespacer --project:quantities --client:base --client:physics  --move
   // This will renamespace quantities and fix the references in the client
@@ -384,31 +475,30 @@ class Renamespacer {
       hpp_parsed_files.Add(input_file, parser_file);
       var exported_declarations =
           Parser.CollectExportedDeclarations(parser_file);
-      parser_file.WriteNode();
       foreach (Parser.Node exported_declaration in exported_declarations) {
-        exported_declaration.WriteNode("  ");
         declaration_to_file.Add(exported_declaration, input_file);
       }
+      RewriteFile(input_file, parser_file, dry_run);
     }
 
-    FileInfo[] cpp_files = project.GetFiles("*.cpp");
-    var cpp_parsed_files = new Dictionary<FileInfo, Parser.File>();
-    foreach (FileInfo input_file in cpp_files) {
-      Parser.File parser_file = Parser.ParseFile(input_file);
-      cpp_parsed_files.Add(input_file, parser_file);
-    }
+    //FileInfo[] cpp_files = project.GetFiles("*.cpp");
+    //var cpp_parsed_files = new Dictionary<FileInfo, Parser.File>();
+    //foreach (FileInfo input_file in cpp_files) {
+    //  Parser.File parser_file = Parser.ParseFile(input_file);
+    //  cpp_parsed_files.Add(input_file, parser_file);
+    //}
 
-    // Process the files in client projects.
-    foreach (DirectoryInfo client in clients) {
-      FileInfo[] client_hpp_files = client.GetFiles("*.hpp");
-      FileInfo[] client_cpp_files = client.GetFiles("*.cpp");
-      FileInfo[] all_client_files =
-          client_hpp_files.Union(client_cpp_files).ToArray();
-      var all_parsed_client_files = new Dictionary<FileInfo, Parser.File>();
-      foreach (FileInfo input_file in all_client_files) {
-        all_parsed_client_files.Add(input_file, Parser.ParseFile(input_file));
-      }
-    }
+    //// Process the files in client projects.
+    //foreach (DirectoryInfo client in clients) {
+    //  FileInfo[] client_hpp_files = client.GetFiles("*.hpp");
+    //  FileInfo[] client_cpp_files = client.GetFiles("*.cpp");
+    //  FileInfo[] all_client_files =
+    //      client_hpp_files.Union(client_cpp_files).ToArray();
+    //  var all_parsed_client_files = new Dictionary<FileInfo, Parser.File>();
+    //  foreach (FileInfo input_file in all_client_files) {
+    //    all_parsed_client_files.Add(input_file, Parser.ParseFile(input_file));
+    //  }
+    //}
   }
 }
 
