@@ -47,9 +47,17 @@ class Parser {
     public Namespace(int line_number, Node parent, string name)
         : base(line_number, parent) {
       this.name = name;
+      if (parent != null &&
+          parent.GetType() == typeof(Namespace) &&
+          ((Namespace)parent).is_internal) {
+        is_internal = true;
+      } else {
+        is_internal = name.StartsWith("internal");
+      }
     }
 
     public string name = null;
+    public bool is_internal = false;
   }
 
   public class UsingDeclaration : Node {
@@ -206,7 +214,7 @@ class Parser {
             ParseTypeAlias(line));
       } else if (IsClosingNamespace(line)) {
         var name = ParseClosingNamespace(line);
-        if (current.GetType().Name != "Namespace" ||
+        if (current.GetType() != typeof(Namespace) ||
             ((Namespace)current).name != name) {
           Console.WriteLine("Bad closing namespace at line " + line_number +
                             " of " + input_file.Name);
