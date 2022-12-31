@@ -311,7 +311,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantEnergies) {
 TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
   mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd_global.wl",
                              /*make_unique=*/false);
-  std::int64_t const number_of_days = 443;
+  std::int64_t const number_of_days = 502;
   auto const earth = solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
   auto const moon = solar_system_->massive_body(
@@ -336,11 +336,12 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
         ephemeris_->trajectory(earth)->EvaluateDegreesOfFreedom(t);
     auto const moon_dof =
         ephemeris_->trajectory(moon)->EvaluateDegreesOfFreedom(t);
-    auto const d = earth_dof.position() - moon_dof.position();
-    auto const v = earth_dof.velocity() - moon_dof.velocity();
-    auto const r = d.Norm();
-    auto const rʹ = InnerProduct(d, v) / r;
-    auto const r² = d.Norm²();
+    Displacement<Barycentric> const u =
+        earth_dof.position() - moon_dof.position();
+    Velocity<Barycentric> const v = earth_dof.velocity() - moon_dof.velocity();
+    auto const r = u.Norm();
+    auto const rʹ = InnerProduct(u, v) / r;
+    auto const r² = u.Norm²();
     auto const rdof = dynamic_frame.ToThisFrameAtTime(t)(dof);
     return {
         (rdof.position() - World::origin) / r * (1 * Metre) + World::origin,
@@ -382,16 +383,51 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
   };
   auto const potential_at_time =
       [&](Instant const& t, Position<World> const& q) -> SpecificEnergy {
-    return dynamic_frame.GeometricPotential(
-               t, (q - World::origin) / (1 * Metre) * r(t) + World::origin) /
-           r²(t) * (1 * quantities::Pow<2>(Metre));
+    auto const earth_dof =
+        ephemeris_->trajectory(earth)->EvaluateDegreesOfFreedom(t);
+    auto const moon_dof =
+        ephemeris_->trajectory(moon)->EvaluateDegreesOfFreedom(t);
+    Displacement<Barycentric> const u =
+        earth_dof.position() - moon_dof.position();
+    Velocity<Barycentric> const v = earth_dof.velocity() - moon_dof.velocity();
+    Vector<Acceleration, Barycentric> const γ =
+        ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(earth, t) -
+        ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(moon, t);
+    quantities::Length const r = u.Norm();
+    auto const r² = u.Norm²();
+    quantities::Speed const rʹ = InnerProduct(u, v) / r;
+    Acceleration const rʺ =
+        InnerProduct(u, γ) / r -
+        quantities::Pow<2>(InnerProduct(u, v)) / quantities::Pow<3>(r) +
+        v.Norm²() / r;
+    return (dynamic_frame.GeometricPotential(
+                t, (q - World::origin) / (1 * Metre) * r + World::origin) +
+            (q - World::origin).Norm() / (1 * Metre) * r * rʺ) /
+           r² * (1 * quantities::Pow<2>(Metre));
   };
   auto const gradient_at_time =
       [&](Instant const& t,
           Position<World> const& q) -> Vector<Acceleration, World> {
-    return dynamic_frame.RotationFreeGeometricAccelerationAtRest(
-               t, (q - World::origin) / (1 * Metre) * r(t) + World::origin) /
-           r(t) * (1 * Metre);
+    auto const earth_dof =
+        ephemeris_->trajectory(earth)->EvaluateDegreesOfFreedom(t);
+    auto const moon_dof =
+        ephemeris_->trajectory(moon)->EvaluateDegreesOfFreedom(t);
+    Displacement<Barycentric> const u =
+        earth_dof.position() - moon_dof.position();
+    Velocity<Barycentric> const v = earth_dof.velocity() - moon_dof.velocity();
+    Vector<Acceleration, Barycentric> const γ =
+        ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(earth, t) -
+        ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(moon, t);
+    auto const r = u.Norm();
+    auto const rʹ = InnerProduct(u, v) / r;
+    auto const rʺ =
+        InnerProduct(u, γ) / r -
+        quantities::Pow<2>(InnerProduct(u, v)) / quantities::Pow<3>(r) +
+        v.Norm²() / r;
+    return (dynamic_frame.RotationFreeGeometricAccelerationAtRest(
+                t, (q - World::origin) / (1 * Metre) * r + World::origin) -
+            (q - World::origin) / (1 * Metre) * rʺ) /
+           r * (1 * Metre);
   };
   CHECK_OK(ephemeris_->Prolong(t0_ + number_of_days * Day));
 
