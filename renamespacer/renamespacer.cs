@@ -287,58 +287,59 @@ class Parser {
     var file = new File(line_number: 0, file_info);
     Node current = file;
 
-    StreamReader reader = file_info.OpenText();
-    int line_number = 1;
-    while (!reader.EndOfStream) {
-      string line = reader.ReadLine();
-      if (IsPrincipiaInclude(line) && !IsOwnHeaderInclude(line, file_info)) {
-        var include = new Include(
-            line_number,
-            parent: current,
-            ParseIncludedPath(line));
-      } else if (IsOpeningNamespace(line)) {
-        current = new Namespace(
-            line_number,
-            parent: current,
-            ParseOpeningNamespace(line));
-      } else if (IsUsingDirective(line)) {
-        var using_directive = new UsingDirective(
-            line_number,
-            parent: current,
-            ParseUsingDirective(line));
-      } else if (IsUsingDeclaration(line)) {
-        var using_declaration = new UsingDeclaration(
-            line_number,
-            parent: current,
-            ParseUsingDeclaration(line));
-      } else if (IsClass(line)) {
-        var klass = new Class(
-            line_number,
-            parent: current,
-            ParseClass(line));
-      } else if (IsStruct(line)) {
-        var strukt = new Struct(
-            line_number,
-            parent: current,
-            ParseStruct(line));
-      } else if (IsTypeAlias(line)) {
-        var type_alias = new TypeAlias(
-            line_number,
-            parent: current,
-            ParseTypeAlias(line));
-      } else if (IsClosingNamespace(line)) {
-        var name = ParseClosingNamespace(line);
-        if (current is Namespace ns) {
-          Debug.Assert(ns.name == name);
-          ns.last_line_number = line_number;
-        } else {
-          Debug.Assert(false);
+    using (StreamReader reader = file_info.OpenText()) {
+      int line_number = 1;
+      while (!reader.EndOfStream) {
+        string line = reader.ReadLine();
+        if (IsPrincipiaInclude(line) && !IsOwnHeaderInclude(line, file_info)) {
+          var include = new Include(
+              line_number,
+              parent: current,
+              ParseIncludedPath(line));
+        } else if (IsOpeningNamespace(line)) {
+          current = new Namespace(
+              line_number,
+              parent: current,
+              ParseOpeningNamespace(line));
+        } else if (IsUsingDirective(line)) {
+          var using_directive = new UsingDirective(
+              line_number,
+              parent: current,
+              ParseUsingDirective(line));
+        } else if (IsUsingDeclaration(line)) {
+          var using_declaration = new UsingDeclaration(
+              line_number,
+              parent: current,
+              ParseUsingDeclaration(line));
+        } else if (IsClass(line)) {
+          var klass = new Class(
+              line_number,
+              parent: current,
+              ParseClass(line));
+        } else if (IsStruct(line)) {
+          var strukt = new Struct(
+              line_number,
+              parent: current,
+              ParseStruct(line));
+        } else if (IsTypeAlias(line)) {
+          var type_alias = new TypeAlias(
+              line_number,
+              parent: current,
+              ParseTypeAlias(line));
+        } else if (IsClosingNamespace(line)) {
+          var name = ParseClosingNamespace(line);
+          if (current is Namespace ns) {
+            Debug.Assert(ns.name == name);
+            ns.last_line_number = line_number;
+          } else {
+            Debug.Assert(false);
+          }
+          current = current.parent;
         }
-        current = current.parent;
+        ++line_number;
       }
-      ++line_number;
+      file.last_line_number = line_number;
     }
-    file.last_line_number = line_number;
     return file;
   }
 
@@ -413,53 +414,53 @@ class Renamespacer {
     int child_position = 0;
     Parser.Node node = parent.children[child_position];
     int node_line_number = node.line_number;
-    StreamReader reader = input_file.OpenText();
-    StreamWriter writer = File.CreateText(output_filename);
-    int line_number = 1;
-    bool is_at_exit = false;
-    while (!reader.EndOfStream) {
-      string line = reader.ReadLine();
-      Debug.Assert(node_line_number >= line_number);
+    using (StreamReader reader = input_file.OpenText()) {
+      using (StreamWriter writer = File.CreateText(output_filename)) {
+        int line_number = 1;
+        bool is_at_exit = false;
+        while (!reader.EndOfStream) {
+          string line = reader.ReadLine();
+          Debug.Assert(node_line_number >= line_number);
 
-      bool has_rewritten = false;
-      while (node_line_number == line_number) {
-        if (node.must_rewrite) {
-          has_rewritten = true;
-          writer.WriteLine(node.Cxx(is_at_exit));
-        } else {
-          has_rewritten = false;
-        }
+          bool has_rewritten = false;
+          while (node_line_number == line_number) {
+            if (node.must_rewrite) {
+              has_rewritten = true;
+              writer.WriteLine(node.Cxx(is_at_exit));
+            } else {
+              has_rewritten = false;
+            }
 
-        if (node is Parser.Namespace ns && ns.line_number == line_number) {
-          // Entering a namespace.
-          parent = node;
-          child_position = -1;
-        }
-        ++child_position;
-        if (child_position == parent.children.Count) {
-          // Exiting a namespace.
-          node = parent;
-          node_line_number = node.last_line_number.Value;
-          child_position = node.position_in_parent;
-          parent = node.parent;
-          is_at_exit = true;
-        } else {
-          // Moving to the next sibling.
-          node = parent.children[child_position];
-          node_line_number = node.line_number;
-          is_at_exit = false;
+            if (node is Parser.Namespace ns && ns.line_number == line_number) {
+              // Entering a namespace.
+              parent = node;
+              child_position = -1;
+            }
+            ++child_position;
+            if (child_position == parent.children.Count) {
+              // Exiting a namespace.
+              node = parent;
+              node_line_number = node.last_line_number.Value;
+              child_position = node.position_in_parent;
+              parent = node.parent;
+              is_at_exit = true;
+            } else {
+              // Moving to the next sibling.
+              node = parent.children[child_position];
+              node_line_number = node.line_number;
+              is_at_exit = false;
+            }
+          }
+
+          if (!has_rewritten) {
+            writer.WriteLine(line);
+          }
+          ++line_number;
         }
       }
-
-      if (!has_rewritten) {
-        writer.WriteLine(line);
-      }
-      ++line_number;
     }
-    writer.Close();
-    reader.Close();
     if (!dry_run) {
-      File.Move(output_filename, input_filename, true);
+      File.Move(output_filename, input_filename, overwrite:true);
     }
   }
 
