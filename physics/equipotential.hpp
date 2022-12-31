@@ -126,7 +126,8 @@ class Equipotential {
   static constexpr IndependentVariable const s_final_ =
       Infinity<IndependentVariable>;
   static constexpr IndependentVariableDifference const initial_s_step_ = 1;
-  static constexpr Length const characteristic_length_ = 1 * Metre;
+  // TODO(egg): Should be parameterized.
+  static constexpr Length const characteristic_length_ = 1e-9 * Metre;
 
   // TODO(phl): One or both of these values should probably be a parameter.
   static constexpr double β_max_ = 1e6;
