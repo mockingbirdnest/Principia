@@ -379,6 +379,7 @@ class Parser {
                                          file.file_namespace);
       parent.children[internal_namespace.position_in_parent] = file_namespace;
       file_namespace.parent = parent;
+      file_namespace.position_in_parent = internal_namespace.position_in_parent;
       file_namespace.children.Add(internal_namespace);
       file_namespace.last_line_number = internal_namespace.last_line_number;
       file_namespace.must_rewrite = true;
@@ -448,13 +449,16 @@ class Renamespacer {
   }
 
   // Usage:
-  //   renamespacer --project:quantities --client:base --client:physics  --move
+  //   renamespacer --project:quantities \
+  //                --client:base --client:physics \
+  //                --exclude:macros.hpp --dry_run:false
   // This will renamespace quantities and fix the references in the client
   // projects.  The files will be overwritten.
   static void Main(string[] args) {
     // Parse the arguments.
     DirectoryInfo project = null;
     var clients = new List<DirectoryInfo>();
+    var excluded = new HashSet<string>();
     bool dry_run = true;
     foreach (string arg in args) {
       if (arg.StartsWith("--") && arg.Contains(":")) {
@@ -465,6 +469,8 @@ class Renamespacer {
           project = new DirectoryInfo(value);
         } else if (option == "client") {
           clients.Add(new DirectoryInfo(value));
+        } else if (option == "exclude") {
+          excluded.Add(value);
         } else if (option == "dry_run") {
           dry_run = bool.Parse(value);
         }
@@ -475,6 +481,9 @@ class Renamespacer {
     var hpp_parsed_files = new Dictionary<FileInfo, Parser.File>();
     var declaration_to_file = new Dictionary<Parser.Node, FileInfo>();
     foreach (FileInfo input_file in hpp_files) {
+      if (excluded.Contains(input_file.Name)) {
+        continue;
+      }
       Parser.File parser_file = Parser.ParseFile(input_file);
       Parser.NormalizeNamespaces(parser_file);
       hpp_parsed_files.Add(input_file, parser_file);
