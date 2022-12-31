@@ -14,6 +14,7 @@ class Parser {
       this.parent = parent;
       this.children = new List<Node>();
       if (parent != null) {
+        position_in_parent = parent.children.Count;
         parent.children.Add(this);
       }
     }
@@ -30,6 +31,7 @@ class Parser {
 
     public int line_number = 0;
     public Node parent = null;
+    public int position_in_parent = -1;
     public List<Node> children = null;
   }
 
@@ -50,6 +52,8 @@ class Parser {
     public File(int line_number, FileInfo file_info)
         : base(line_number, parent: null) {
       this.file_info = file_info;
+      file_namespace = Regex.Replace(
+          file_info.Name, "(_body|_test)?\\.[hc]pp", ".hpp");
     }
 
     public override void WriteNode(string indent = "") {
@@ -57,6 +61,7 @@ class Parser {
     }
 
     public FileInfo file_info = null;
+    public string file_namespace = null;
   }
 
   public class Include : Node {
@@ -76,7 +81,8 @@ class Parser {
     public Namespace(int line_number, Node parent, string name)
         : base(line_number, parent) {
       this.name = name;
-      if (parent.GetType() == typeof(Namespace) &&
+      if (parent != null &&
+          parent.GetType() == typeof(Namespace) &&
           ((Namespace)parent).is_internal) {
         is_internal = true;
       } else {
@@ -237,15 +243,15 @@ class Parser {
     return line.Replace("using namespace ", "").Replace(";", "");
   }
 
-  public static File ParseFile(FileInfo input_file) {
-    var file = new File(line_number: 0, input_file);
+  public static File ParseFile(FileInfo file_info) {
+    var file = new File(line_number: 0, file_info);
     Node current = file;
 
-    StreamReader reader = input_file.OpenText();
+    StreamReader reader = file_info.OpenText();
     int line_number = 1;
     while (!reader.EndOfStream) {
       string line = reader.ReadLine();
-      if (IsPrincipiaInclude(line) && !IsOwnHeaderInclude(line, input_file)) {
+      if (IsPrincipiaInclude(line) && !IsOwnHeaderInclude(line, file_info)) {
         var include = new Include(
             line_number,
             parent: current,
@@ -285,7 +291,7 @@ class Parser {
         if (current.GetType() != typeof(Namespace) ||
             ((Namespace)current).name != name) {
           Console.WriteLine("Bad closing namespace at line " + line_number +
-                            " of " + input_file.Name);
+                            " of " + file_info.Name);
         }
         current = current.parent;
       }
@@ -308,6 +314,39 @@ class Parser {
       }
     }
     return exported_declarations;
+  }
+
+  public static List<Namespace> FindNamespacesToNormalize(File file,
+                                                          Node node) {
+    var namespaces_to_normalize = new List<Namespace>();
+    foreach (Node child in node.children) {
+      if (child is Namespace internal_namespace &&
+          internal_namespace.name.StartsWith("internal_")) {
+        namespaces_to_normalize.Add(internal_namespace);
+      } else if (child is Namespace ns) {
+        namespaces_to_normalize.AddRange(
+            FindNamespacesToNormalize(file, child));
+      }
+    }
+    return namespaces_to_normalize;
+  }
+
+  public static void NormalizeNamespaces(File file) {
+    var namespaces_to_normalize = FindNamespacesToNormalize(file, file);
+    foreach (Namespace internal_namespace in namespaces_to_normalize) {
+      internal_namespace.name = "internal";
+      var parent = internal_namespace.parent;
+      if (!(parent is Namespace)) {
+        throw new ArgumentException(
+            "internal namespace not within a namespace");
+      }
+      var file_namespace = new Namespace(internal_namespace.line_number,
+                                         parent: null,
+                                         file.file_namespace);
+      parent.children[internal_namespace.position_in_parent] = file_namespace;
+      internal_namespace.parent = file_namespace;
+      internal_namespace.position_in_parent = 0;
+    }
   }
 }
 
@@ -336,19 +375,27 @@ class Renamespacer {
       }
     }
 
-    // Process the files in the project.
     FileInfo[] hpp_files = project.GetFiles("*.hpp");
-    FileInfo[] cpp_files = project.GetFiles("*.cpp");
-    FileInfo[] all_files = hpp_files.Union(cpp_files).ToArray();
-    var all_parsed_files = new Dictionary<FileInfo, Parser.File>();
-    foreach (FileInfo input_file in all_files) {
+    var hpp_parsed_files = new Dictionary<FileInfo, Parser.File>();
+    var declaration_to_file = new Dictionary<Parser.Node, FileInfo>();
+    foreach (FileInfo input_file in hpp_files) {
       Parser.File parser_file = Parser.ParseFile(input_file);
-      all_parsed_files.Add(input_file, parser_file);
-      Console.WriteLine(input_file.FullName);
-      foreach (Parser.Node decl in
-               Parser.CollectExportedDeclarations(parser_file)) {
-        decl.WriteNode("  ");
+      Parser.NormalizeNamespaces(parser_file);
+      hpp_parsed_files.Add(input_file, parser_file);
+      var exported_declarations =
+          Parser.CollectExportedDeclarations(parser_file);
+      parser_file.WriteNode();
+      foreach (Parser.Node exported_declaration in exported_declarations) {
+        exported_declaration.WriteNode("  ");
+        declaration_to_file.Add(exported_declaration, input_file);
       }
+    }
+
+    FileInfo[] cpp_files = project.GetFiles("*.cpp");
+    var cpp_parsed_files = new Dictionary<FileInfo, Parser.File>();
+    foreach (FileInfo input_file in cpp_files) {
+      Parser.File parser_file = Parser.ParseFile(input_file);
+      cpp_parsed_files.Add(input_file, parser_file);
     }
 
     // Process the files in client projects.
