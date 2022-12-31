@@ -20,7 +20,7 @@ class Parser {
       }
     }
 
-    public virtual string Cxx() {
+    public virtual string Cxx(bool is_at_exit) {
       return "--FATAL--";
     }
 
@@ -104,9 +104,13 @@ class Parser {
       }
     }
 
-    public override string Cxx() {
+    public override string Cxx(bool is_at_exit) {
       Debug.Assert(must_rewrite, "inconsistent rewrite");
-      return "namespace " + name + "{";
+      if (is_at_exit) {
+        return "}  // namespace " + name;
+      } else {
+        return "namespace " + name + " {";
+      }
     }
 
     public override void WriteNode(string indent = "") {
@@ -139,7 +143,8 @@ class Parser {
       }
     }
 
-    public override string Cxx() {
+    public override string Cxx(bool is_at_exit) {
+      Debug.Assert(!is_at_exit, "no exit for using");
       Debug.Assert(must_rewrite, "inconsistent rewrite");
       if (declared_in_namespace == null) {
         return "using " + name + ";";
@@ -374,14 +379,19 @@ class Parser {
       var parent = internal_namespace.parent;
       Debug.Assert(parent is Namespace,
                    "internal namespace not within a namespace");
+      int internal_position_in_parent = internal_namespace.position_in_parent;
+      var preceding_nodes_in_parent =
+          parent.children.Take(internal_position_in_parent).ToList();
+      var following_nodes_in_parent =
+          parent.children.Skip(internal_position_in_parent + 1).ToList();
+      parent.children = preceding_nodes_in_parent;
       var file_namespace = new Namespace(internal_namespace.line_number,
-                                         parent: null,
+                                         parent,
                                          file.file_namespace);
-      parent.children[internal_namespace.position_in_parent] = file_namespace;
-      file_namespace.parent = parent;
-      file_namespace.position_in_parent = internal_namespace.position_in_parent;
+      file_namespace.position_in_parent = internal_position_in_parent;
       file_namespace.children.Add(internal_namespace);
-      file_namespace.last_line_number = internal_namespace.last_line_number;
+      file_namespace.children.AddRange(following_nodes_in_parent);
+      file_namespace.last_line_number = parent.last_line_number;
       file_namespace.must_rewrite = true;
       internal_namespace.parent = file_namespace;
       internal_namespace.position_in_parent = 0;
@@ -406,6 +416,7 @@ class Renamespacer {
     StreamReader reader = input_file.OpenText();
     StreamWriter writer = File.CreateText(output_filename);
     int line_number = 1;
+    bool is_at_exit = false;
     while (!reader.EndOfStream) {
       string line = reader.ReadLine();
       Debug.Assert(node_line_number >= line_number);
@@ -414,7 +425,9 @@ class Renamespacer {
       while (node_line_number == line_number) {
         if (node.must_rewrite) {
           has_rewritten = true;
-          writer.WriteLine(node.Cxx());
+          writer.WriteLine(node.Cxx(is_at_exit));
+        } else {
+          has_rewritten = false;
         }
 
         if (node is Parser.Namespace ns && ns.line_number == line_number) {
@@ -429,10 +442,12 @@ class Renamespacer {
           node_line_number = node.last_line_number.Value;
           child_position = node.position_in_parent;
           parent = node.parent;
+          is_at_exit = true;
         } else {
           // Moving to the next sibling.
           node = parent.children[child_position];
           node_line_number = node.line_number;
+          is_at_exit = false;
         }
       }
 
