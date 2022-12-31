@@ -6,170 +6,170 @@ using System.Text.RegularExpressions;
 
 namespace principia {
 namespace renamespacer {
+
+class Parser {
+  public class Node {
+    public Node(int line_number, Node parent) {
+      this.line_number = line_number;
+      this.parent = parent;
+      parent.children.Add(this);
+    }
+
+    public int line_number = 0;
+    public Node parent = null;
+    public List<Node> children = null;
+  }
+
+  public class Include : Node {
+    public Include(int line_number, Node parent, string[] path)
+        : base(line_number, parent) {
+      this.path = path;
+    }
+
+    public string[] path = null;
+  }
+
+  public class Namespace : Node {
+    public Namespace(int line_number, Node parent, string name)
+        : base(line_number, parent) {
+      this.name = name;
+    }
+
+    public string name = null;
+  }
+
+  public class UsingDeclaration : Node {
+    public UsingDeclaration(int line_number, Node parent, string name)
+        : base(line_number, parent) {
+      this.name = name;
+    }
+
+    public string name = null;
+  }
+
+  public class UsingDirective : Node {
+    public UsingDirective(int line_number, Node parent, string name)
+        : base(line_number, parent) {
+      this.name = name;
+    }
+
+    public string name = null;
+  }
+
+  public class TypeAlias : Node {
+    public TypeAlias(int line_number, Node parent, string name)
+        : base(line_number, parent) {
+      this.name = name;
+    }
+
+    public string name = null;
+  }
+
+  private static bool IsClosingNamespace(string line) {
+    return line.StartsWith("}  // namespace ");
+  }
+
+  private static bool IsOpeningNamespace(string line) {
+    return line.StartsWith("namespace ");
+  }
+
+  private static bool IsOwnHeaderInclude(string line,
+                                         FileInfo input_file) {
+    string own_header = Regex.Replace(
+        input_file.Name, "(_body|_test)?\\.[hc]pp", ".hpp");
+    return line == "#include \"" + own_header + "\"";
+  }
+
+  private static bool IsTypeAlias(string line) {
+    return Regex.IsMatch(line, @"^using [\w]+ =;$");
+  }
+
+  private static bool IsUsingDeclaration(string line) {
+    return !IsUsingDirective(line) && Regex.IsMatch(line, @"^using [\w:]+;$");
+  }
+
+  private static bool IsUsingDirective(string line) {
+    return line.StartsWith("using namespace ");
+  }
+
+  private static bool IsPrincipiaInclude(string line) {
+    // Principia header files end in .hpp.
+    return line.StartsWith("#include \"") && line.EndsWith(".hpp\"");
+  }
+
+  private static string ParseClosingNamespace(string line) {
+    return line.Replace("}  // namespace ", "");
+  }
+
+  private static string[] ParseIncludedPath(string line) {
+    string path = line.Replace("#include \"", "").Replace(".hpp\"", "");
+    return path.Split('/');
+  }
+
+  private static string ParseOpeningNamespaceName(string line) {
+    return line.Replace("namespace ", "").Replace(" {", "");
+  }
+
+  private static string ParseTypeAlias(string line) {
+    return Regex.Replace(line.Replace("using ", ""), @" =.*$", "");
+  }
+
+  private static string ParseUsingDeclarationName(string line) {
+    return line.Replace("using ", "").Replace(";", "");
+  }
+
+  private static string ParseUsingDirectiveNamespace(string line) {
+    return line.Replace("using namespace ", "").Replace(";", "");
+  }
+
+  public static Node ParseFile(FileInfo input_file) {
+    var file = new Node(line_number: 0, parent: null);
+    var current = file;
+
+    StreamReader reader = input_file.OpenText();
+    int line_number = 1;
+    while (!reader.EndOfStream) {
+      string line = reader.ReadLine();
+      if (IsPrincipiaInclude(line) && !IsOwnHeaderInclude(line, input_file)) {
+        var include = new Include(
+            line_number,
+            parent: current,
+            ParseIncludedPath(line));
+      } else if (IsOpeningNamespace(line)) {
+        current = new Namespace(
+            line_number,
+            parent: current,
+            ParseOpeningNamespaceName(line));
+      } else if (IsUsingDirective(line)) {
+        var using_directive = new UsingDirective(
+            line_number,
+            parent: current,
+            ParseUsingDirectiveNamespace(line));
+      } else if (IsUsingDeclaration(line)) {
+        var using_declaration = new UsingDeclaration(
+            line_number,
+            parent: current,
+            ParseUsingDeclarationName(line));
+      } else if (IsTypeAlias(line)) {
+        var type_alias = new TypeAlias(
+            line_number,
+            parent: current,
+            ParseTypeAlias(line));
+      } else if (IsClosingNamespace(line)) {
+        var name = ParseClosingNamespace(line);
+        if (current.GetType().Name != "Namespace" ||
+            ((Namespace)current).name != name) {
+          Console.WriteLine("Bad closing namespace at line " + line_number);
+        }
+        current = current.parent;
+      }
+      ++line_number;
+    }
+    return file;
+  }
+}
+
 class Renamespacer {
-  static void ProcessClientFile(FileInfo input_file,
-                                string project_name,
-                                bool dry_run) {
-    string input_filename = input_file.FullName;
-    string output_filename = input_file.DirectoryName + "\\" +
-                              input_file.Name + ".new";
-
-    string project_namespace = project_name;
-
-    var using_directives = new SortedSet<string>();
-    bool has_emitted_new_style_usings = false;
-    bool has_seen_usings = false;
-
-    StreamReader reader = input_file.OpenText();
-    StreamWriter writer = File.CreateText(output_filename);
-    while (!reader.EndOfStream) {
-      string line = reader.ReadLine();
-      if (line.StartsWith("#include \"" + project_name) &&
-          (line.EndsWith(".hpp\"") || line.EndsWith(".cpp\""))) {
-        // Collect the includes for files in our project, we'll need them to
-        // generate the using-directives.
-        string included_file =
-            line.Replace("#include \"", "").Replace(".hpp\"", "");
-        using_directives.Add(
-            "principia::" + included_file.Replace("/", "::"));
-        writer.WriteLine(line);
-      } else if (line.StartsWith("using ")) {
-        // We are in the block of usings.  Preserve them unless they are for the
-        // project that we are processing, or for an internal namespace.
-        if (!line.StartsWith("using " + project_namespace)) {
-          writer.WriteLine(line);
-        } else if (line.StartsWith("using namespace")) {
-          // Collect (and don't emit) existing using-directives as we'll want to
-          // reemit them in order.
-          using_directives.Add(
-              line.Replace("using namespace ", "").Replace(";", ""));
-          writer.WriteLine(line);
-        }
-        has_seen_usings = true;
-      } else if (has_seen_usings && !has_emitted_new_style_usings) {
-        // The first line that follows the using-declarations.  Emit the new
-        // style using-directives here.
-        foreach (string using_directive in using_directives) {
-          writer.WriteLine("using namespace " + using_directive + ";");
-        }
-        writer.WriteLine(line);
-        has_emitted_new_style_usings = true;
-      } else {
-        writer.WriteLine(line);
-      }
-    }
-    writer.Close();
-    reader.Close();
-    if (!dry_run) {
-      File.Move(output_filename, input_filename, true);
-    }
-  }
-
-  static void ProcessProjectFile(FileInfo input_file,
-                                 string project_name,
-                                 bool dry_run) {
-    string input_filename = input_file.FullName;
-    string output_filename = input_file.DirectoryName + "\\" +
-                              input_file.Name + ".new";
-    string file_basename = Regex.Replace(input_file.Name,  "\\.[hc]pp$", "");
-
-    string project_namespace = project_name;
-    string file_namespace = Regex.Replace(file_basename, "_body|_test", "");
-
-    var using_directives = new SortedSet<string>();
-    bool has_closed_file_namespace = false;
-    bool has_closed_internal_namespace = false;
-    bool has_emitted_new_style_usings = false;
-    bool has_opened_file_namespace = false;
-    bool has_seen_namespaces = false;
-    bool has_seen_usings = false;
-
-    StreamReader reader = input_file.OpenText();
-    StreamWriter writer = File.CreateText(output_filename);
-    while (!reader.EndOfStream) {
-      string line = reader.ReadLine();
-      if (line.StartsWith("#include \"" + project_name) &&
-          (line.EndsWith(".hpp\"") || line.EndsWith(".cpp\""))) {
-        // Collect the includes for files in our project, we'll need them to
-        // generate the using-directives.  Skip our own header.
-        string included_file =
-            line.Replace("#include \"", "").Replace(".hpp\"", "");
-        if (included_file != project_namespace + "/" + file_namespace) {
-          using_directives.Add(
-              "principia::" + included_file.Replace("/", "::"));
-        }
-        writer.WriteLine(line);
-      } else if (line.StartsWith("namespace internal_")) {
-        // The internal namespace gets wrapped into the file namespace and is
-        // named "internal".
-        writer.WriteLine("namespace " + file_namespace + " {");
-        writer.WriteLine("namespace internal {");
-        has_opened_file_namespace = true;
-      } else if (line.StartsWith("namespace ")) {
-        // Record that we have seen the first opening namespace.  Note that
-        // this code assumes that all the opening namespaces are in sequence.
-        writer.WriteLine(line);
-        has_seen_namespaces = true;
-      } else if (has_closed_internal_namespace &&
-                  line.StartsWith("using internal_")) {
-        // A using after the internal namespace has been closed, that exposes
-        // the declaration to the outside.
-        writer.WriteLine(Regex.Replace(line, "_" + file_namespace, ""));
-      } else if (line.StartsWith("using ")) {
-        // We are in the block of usings.  Preserve them unless they are for the
-        // project that we are processing, or for an internal namespace.
-        if (!line.StartsWith("using " + project_namespace) &&
-            !line.StartsWith("using internal_")) {
-          writer.WriteLine(line);
-        } else if (line.StartsWith("using namespace")) {
-          // Collect (and don't emit) existing using-directives as we'll want to
-          // reemit them in order.
-          using_directives.Add(
-              line.Replace("using namespace ", "").Replace(";", ""));
-        }
-        has_seen_usings = true;
-      } else if (line.StartsWith("}  // namespace internal_")) {
-        // Change the style of the line that closes the internal namespace.
-        writer.WriteLine("}  // namespace internal");
-        has_closed_internal_namespace = true;
-      } else if (line.StartsWith("}  // namespace") &&
-                  !has_closed_file_namespace) {
-        // The close of a namespace, and we have not closed the file namespace
-        // yet.  Do so now.
-        writer.WriteLine("}  // namespace " + file_namespace);
-        writer.WriteLine(line);
-        has_closed_file_namespace = true;
-      } else if ((has_seen_usings ||
-                  (line != "" && has_opened_file_namespace)) &&
-                 !has_emitted_new_style_usings) {
-        // The first line that follows the using-declarations.  Emit the new
-        // style using-directives here.  Note that this covers the first line
-        // after the namespace that's not empty, in case there are no usings.
-        foreach (string using_directive in using_directives) {
-          writer.WriteLine("using namespace " + using_directive + ";");
-        }
-        if (!has_seen_usings && using_directives.Count > 0) {
-          writer.WriteLine("");
-        }
-        writer.WriteLine(line);
-        has_emitted_new_style_usings = true;
-      } else if (has_seen_namespaces && !has_opened_file_namespace) {
-        // The first line that follows the opening namespaces.  Open the file
-        // namespace if we haven't done so yet.
-        writer.WriteLine("namespace " + file_namespace + " {");
-        writer.WriteLine(line);
-        has_opened_file_namespace = true;
-      } else {
-        writer.WriteLine(line);
-      }
-    }
-    writer.Close();
-    reader.Close();
-    if (!dry_run) {
-      File.Move(output_filename, input_filename, true);
-    }
-  }
-
   // Usage:
   //   renamespacer --project:quantities --client:base --client:physics  --move
   // This will renamespace quantities and fix the references in the client
@@ -195,12 +195,12 @@ class Renamespacer {
     }
 
     // Process the files in the project.
-    string project_name = project.Name;
     FileInfo[] hpp_files = project.GetFiles("*.hpp");
     FileInfo[] cpp_files = project.GetFiles("*.cpp");
     FileInfo[] all_files = hpp_files.Union(cpp_files).ToArray();
+    var all_parsed_files = new Dictionary<FileInfo, Parser.Node>();
     foreach (FileInfo input_file in all_files) {
-      ProcessProjectFile(input_file, project_name, dry_run);
+      all_parsed_files.Add(input_file, Parser.ParseFile(input_file));
     }
 
     // Process the files in client projects.
@@ -209,8 +209,9 @@ class Renamespacer {
       FileInfo[] client_cpp_files = client.GetFiles("*.cpp");
       FileInfo[] all_client_files =
           client_hpp_files.Union(client_cpp_files).ToArray();
+      var all_parsed_client_files = new Dictionary<FileInfo, Parser.Node>();
       foreach (FileInfo input_file in all_client_files) {
-        ProcessClientFile(input_file, project_name, dry_run);
+        all_parsed_client_files.Add(input_file, Parser.ParseFile(input_file));
       }
     }
   }
