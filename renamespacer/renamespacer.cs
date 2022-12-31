@@ -12,12 +12,26 @@ class Parser {
     public Node(int line_number, Node parent) {
       this.line_number = line_number;
       this.parent = parent;
-      parent.children.Add(this);
+      if (parent != null) {
+        if (parent.children == null) {
+          parent.children = new List<Node>();
+        }
+        parent.children.Add(this);
+      }
     }
 
     public int line_number = 0;
     public Node parent = null;
     public List<Node> children = null;
+  }
+
+  public class Class : Node {
+    public Class(int line_number, Node parent, string name)
+        : base(line_number, parent) {
+      this.name = name;
+    }
+
+    public string name = null;
   }
 
   public class Include : Node {
@@ -56,6 +70,15 @@ class Parser {
     public string name = null;
   }
 
+  public class Struct : Node {
+    public Struct(int line_number, Node parent, string name)
+        : base(line_number, parent) {
+      this.name = name;
+    }
+
+    public string name = null;
+  }
+
   public class TypeAlias : Node {
     public TypeAlias(int line_number, Node parent, string name)
         : base(line_number, parent) {
@@ -65,12 +88,16 @@ class Parser {
     public string name = null;
   }
 
+  private static bool IsClass(string line) {
+    return line.StartsWith("class ");
+  }
+
   private static bool IsClosingNamespace(string line) {
-    return line.StartsWith("}  // namespace ");
+    return line != "}  // namespace" && line.StartsWith("}  // namespace");
   }
 
   private static bool IsOpeningNamespace(string line) {
-    return line.StartsWith("namespace ");
+    return line != "namespace {" && line.StartsWith("namespace ");
   }
 
   private static bool IsOwnHeaderInclude(string line,
@@ -78,6 +105,10 @@ class Parser {
     string own_header = Regex.Replace(
         input_file.Name, "(_body|_test)?\\.[hc]pp", ".hpp");
     return line == "#include \"" + own_header + "\"";
+  }
+
+  private static bool IsStruct(string line) {
+    return line.StartsWith("struct ");
   }
 
   private static bool IsTypeAlias(string line) {
@@ -97,6 +128,10 @@ class Parser {
     return line.StartsWith("#include \"") && line.EndsWith(".hpp\"");
   }
 
+  private static string ParseClass(string line) {
+    return Regex.Replace(line.Replace("class ", ""), " .*$", "");
+  }
+
   private static string ParseClosingNamespace(string line) {
     return line.Replace("}  // namespace ", "");
   }
@@ -106,19 +141,23 @@ class Parser {
     return path.Split('/');
   }
 
-  private static string ParseOpeningNamespaceName(string line) {
+  private static string ParseOpeningNamespace(string line) {
     return line.Replace("namespace ", "").Replace(" {", "");
+  }
+
+  private static string ParseStruct(string line) {
+    return Regex.Replace(line.Replace("struct ", ""), " .*$", "");
   }
 
   private static string ParseTypeAlias(string line) {
     return Regex.Replace(line.Replace("using ", ""), @" =.*$", "");
   }
 
-  private static string ParseUsingDeclarationName(string line) {
+  private static string ParseUsingDeclaration(string line) {
     return line.Replace("using ", "").Replace(";", "");
   }
 
-  private static string ParseUsingDirectiveNamespace(string line) {
+  private static string ParseUsingDirective(string line) {
     return line.Replace("using namespace ", "").Replace(";", "");
   }
 
@@ -139,17 +178,27 @@ class Parser {
         current = new Namespace(
             line_number,
             parent: current,
-            ParseOpeningNamespaceName(line));
+            ParseOpeningNamespace(line));
       } else if (IsUsingDirective(line)) {
         var using_directive = new UsingDirective(
             line_number,
             parent: current,
-            ParseUsingDirectiveNamespace(line));
+            ParseUsingDirective(line));
       } else if (IsUsingDeclaration(line)) {
         var using_declaration = new UsingDeclaration(
             line_number,
             parent: current,
-            ParseUsingDeclarationName(line));
+            ParseUsingDeclaration(line));
+      } else if (IsClass(line)) {
+        var klass = new Class(
+            line_number,
+            parent: current,
+            ParseClass(line));
+      } else if (IsStruct(line)) {
+        var strukt = new Struct(
+            line_number,
+            parent: current,
+            ParseStruct(line));
       } else if (IsTypeAlias(line)) {
         var type_alias = new TypeAlias(
             line_number,
@@ -159,7 +208,8 @@ class Parser {
         var name = ParseClosingNamespace(line);
         if (current.GetType().Name != "Namespace" ||
             ((Namespace)current).name != name) {
-          Console.WriteLine("Bad closing namespace at line " + line_number);
+          Console.WriteLine("Bad closing namespace at line " + line_number +
+                            " of " + input_file.Name);
         }
         current = current.parent;
       }

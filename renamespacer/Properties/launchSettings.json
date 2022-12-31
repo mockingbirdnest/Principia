@@ -2,7 +2,7 @@
   "profiles": {
     "renamespacer": {
       "commandName": "Project",
-      "commandLineArgs": "--project:quantities --client:mathematica",
+      "commandLineArgs": "--project:base",
       "workingDirectory": "C:\\Users\\phl.mantegna\\Projects\\Principia\\Principia"
     }
   }
