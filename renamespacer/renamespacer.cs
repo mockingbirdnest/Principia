@@ -8,15 +8,23 @@ namespace principia {
 namespace renamespacer {
 
 class Parser {
-  public class Node {
+  public abstract class Node {
     public Node(int line_number, Node parent) {
       this.line_number = line_number;
       this.parent = parent;
+      this.children = new List<Node>();
       if (parent != null) {
-        if (parent.children == null) {
-          parent.children = new List<Node>();
-        }
         parent.children.Add(this);
+      }
+    }
+
+    // Writes a single node.
+    public abstract void WriteNode(string indent = "");
+
+    public void WriteTree(string indent = "") {
+      WriteNode(indent);
+      foreach (Node child in children) {
+        child.WriteTree(indent + "  ");
       }
     }
 
@@ -31,13 +39,34 @@ class Parser {
       this.name = name;
     }
 
+    public override void WriteNode(string indent = "") {
+      Console.WriteLine(indent + "Class " + name);
+    }
+
     public string name = null;
+  }
+
+  public class File : Node {
+    public File(int line_number, FileInfo file_info)
+        : base(line_number, parent: null) {
+      this.file_info = file_info;
+    }
+
+    public override void WriteNode(string indent = "") {
+      Console.WriteLine(indent + "File " + file_info.FullName);
+    }
+
+    public FileInfo file_info = null;
   }
 
   public class Include : Node {
     public Include(int line_number, Node parent, string[] path)
         : base(line_number, parent) {
       this.path = path;
+    }
+
+    public override void WriteNode(string indent = "") {
+      Console.WriteLine(indent + "Include " + String.Join(", ", path));
     }
 
     public string[] path = null;
@@ -56,6 +85,10 @@ class Parser {
       }
     }
 
+    public override void WriteNode(string indent = "") {
+      Console.WriteLine(indent + "Namespace " + name + (is_internal ? "Internal" : ""));
+    }
+
     public string name = null;
     public bool is_internal = false;
   }
@@ -64,6 +97,10 @@ class Parser {
     public UsingDeclaration(int line_number, Node parent, string name)
         : base(line_number, parent) {
       this.name = name;
+    }
+
+    public override void WriteNode(string indent = "") {
+      Console.WriteLine(indent + "UsingDeclaration " + name);
     }
 
     public string name = null;
@@ -75,6 +112,10 @@ class Parser {
       this.name = name;
     }
 
+    public override void WriteNode(string indent = "") {
+      Console.WriteLine(indent + "UsingDirective " + name);
+    }
+
     public string name = null;
   }
 
@@ -84,6 +125,10 @@ class Parser {
       this.name = name;
     }
 
+    public override void WriteNode(string indent = "") {
+      Console.WriteLine(indent + "Struct " + name);
+    }
+
     public string name = null;
   }
 
@@ -91,6 +136,10 @@ class Parser {
     public TypeAlias(int line_number, Node parent, string name)
         : base(line_number, parent) {
       this.name = name;
+    }
+
+    public override void WriteNode(string indent = "") {
+      Console.WriteLine(indent + "TypeAlias " + name);
     }
 
     public string name = null;
@@ -169,9 +218,9 @@ class Parser {
     return line.Replace("using namespace ", "").Replace(";", "");
   }
 
-  public static Node ParseFile(FileInfo input_file) {
-    var file = new Node(line_number: 0, parent: null);
-    var current = file;
+  public static File ParseFile(FileInfo input_file) {
+    var file = new File(line_number: 0, input_file);
+    Node current = file;
 
     StreamReader reader = input_file.OpenText();
     int line_number = 1;
@@ -225,6 +274,21 @@ class Parser {
     }
     return file;
   }
+
+  public List<Node> CollectExportedDeclarations(Node node) {
+    var visible_declarations = new List<Node>();
+    foreach (Node child in node.children) {
+      if (child.GetType() == typeof(Namespace) &&
+          !((Namespace)child).is_internal) {
+        visible_declarations.AddRange(CollectExportedDeclarations(child));
+      } else if (child.GetType() == typeof(Class) ||
+                 child.GetType() == typeof(Struct) ||
+                 child.GetType() == typeof(UsingDeclaration)) {
+        visible_declarations.Add(child);
+      }
+    }
+    return visible_declarations;
+  }
 }
 
 class Renamespacer {
@@ -256,9 +320,10 @@ class Renamespacer {
     FileInfo[] hpp_files = project.GetFiles("*.hpp");
     FileInfo[] cpp_files = project.GetFiles("*.cpp");
     FileInfo[] all_files = hpp_files.Union(cpp_files).ToArray();
-    var all_parsed_files = new Dictionary<FileInfo, Parser.Node>();
+    var all_parsed_files = new Dictionary<FileInfo, Parser.File>();
     foreach (FileInfo input_file in all_files) {
       all_parsed_files.Add(input_file, Parser.ParseFile(input_file));
+      all_parsed_files[input_file].WriteTree();
     }
 
     // Process the files in client projects.
@@ -267,7 +332,7 @@ class Renamespacer {
       FileInfo[] client_cpp_files = client.GetFiles("*.cpp");
       FileInfo[] all_client_files =
           client_hpp_files.Union(client_cpp_files).ToArray();
-      var all_parsed_client_files = new Dictionary<FileInfo, Parser.Node>();
+      var all_parsed_client_files = new Dictionary<FileInfo, Parser.File>();
       foreach (FileInfo input_file in all_client_files) {
         all_parsed_client_files.Add(input_file, Parser.ParseFile(input_file));
       }
