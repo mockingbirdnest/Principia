@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -103,9 +104,7 @@ class Parser {
     }
 
     public override string Cxx() {
-      if (!must_rewrite) {
-        throw new ArgumentException("inconsistent rewrite");
-      }
+      Debug.Assert(must_rewrite, "inconsistent rewrite");
       return "namespace " + name + "{";
     }
 
@@ -140,9 +139,7 @@ class Parser {
     }
 
     public override string Cxx() {
-      if (!must_rewrite) {
-        throw new ArgumentException("inconsistent rewrite");
-      }
+      Debug.Assert(must_rewrite, "inconsistent rewrite");
       if (declared_in_namespace == null) {
         return "using " + name + ";";
       } else {
@@ -374,10 +371,8 @@ class Parser {
       internal_namespace.name = "internal";
       internal_namespace.must_rewrite = true;
       var parent = internal_namespace.parent;
-      if (!(parent is Namespace)) {
-        throw new ArgumentException(
-            "internal namespace not within a namespace");
-      }
+      Debug.Assert(parent is Namespace,
+                   "internal namespace not within a namespace");
       var file_namespace = new Namespace(internal_namespace.line_number,
                                          parent: null,
                                          file.file_namespace);
