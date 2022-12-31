@@ -76,8 +76,7 @@ class Parser {
     public Namespace(int line_number, Node parent, string name)
         : base(line_number, parent) {
       this.name = name;
-      if (parent != null &&
-          parent.GetType() == typeof(Namespace) &&
+      if (parent.GetType() == typeof(Namespace) &&
           ((Namespace)parent).is_internal) {
         is_internal = true;
       } else {
@@ -97,13 +96,33 @@ class Parser {
     public UsingDeclaration(int line_number, Node parent, string name)
         : base(line_number, parent) {
       this.name = name;
+      string[] segments = name.Split("::");
+      declared_name = segments[segments.Length - 1];
+
+      // Try to figure out if the name was declared in a preceding namespace.
+      // This is useful to fixup the internal namespaces.
+      if (segments.Length == 2) {
+        if (parent.GetType() == typeof(Namespace)) {
+          foreach (Node sibling in ((Namespace)parent).children) {
+            if (sibling.GetType() == typeof(Namespace) &&
+                ((Namespace)sibling).name == segments[0]) {
+              declared_in_namespace = (Namespace)sibling;
+              break;
+            }
+          }
+        }
+      }
     }
 
     public override void WriteNode(string indent = "") {
-      Console.WriteLine(indent + "UsingDeclaration " + name);
+      Console.WriteLine(indent + "UsingDeclaration " + declared_name +
+                        (declared_in_namespace == null ?
+                            "" : " from " + declared_in_namespace.name));
     }
 
     public string name = null;
+    public string declared_name = null;
+    public Namespace declared_in_namespace = null;
   }
 
   public class UsingDirective : Node {
@@ -275,19 +294,20 @@ class Parser {
     return file;
   }
 
-  public List<Node> CollectExportedDeclarations(Node node) {
-    var visible_declarations = new List<Node>();
+  public static List<Node> CollectExportedDeclarations(Node node) {
+    var exported_declarations = new List<Node>();
     foreach (Node child in node.children) {
       if (child.GetType() == typeof(Namespace) &&
           !((Namespace)child).is_internal) {
-        visible_declarations.AddRange(CollectExportedDeclarations(child));
+        exported_declarations.AddRange(CollectExportedDeclarations(child));
       } else if (child.GetType() == typeof(Class) ||
                  child.GetType() == typeof(Struct) ||
+                 child.GetType() == typeof(TypeAlias) ||
                  child.GetType() == typeof(UsingDeclaration)) {
-        visible_declarations.Add(child);
+        exported_declarations.Add(child);
       }
     }
-    return visible_declarations;
+    return exported_declarations;
   }
 }
 
@@ -322,8 +342,13 @@ class Renamespacer {
     FileInfo[] all_files = hpp_files.Union(cpp_files).ToArray();
     var all_parsed_files = new Dictionary<FileInfo, Parser.File>();
     foreach (FileInfo input_file in all_files) {
-      all_parsed_files.Add(input_file, Parser.ParseFile(input_file));
-      all_parsed_files[input_file].WriteTree();
+      Parser.File parser_file = Parser.ParseFile(input_file);
+      all_parsed_files.Add(input_file, parser_file);
+      Console.WriteLine(input_file.FullName);
+      foreach (Parser.Node decl in
+               Parser.CollectExportedDeclarations(parser_file)) {
+        decl.WriteNode("  ");
+      }
     }
 
     // Process the files in client projects.
