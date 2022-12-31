@@ -42,6 +42,7 @@ class Parser {
     }
 
     public int line_number = 0;
+    public int? last_line_number = null;
     public Node parent = null;
     public int position_in_parent = -1;
     public List<Node> children = null;
@@ -66,7 +67,7 @@ class Parser {
         : base(line_number, parent: null) {
       this.file_info = file_info;
       file_namespace = Regex.Replace(
-          file_info.Name, "(_body|_test)?\\.[hc]pp", ".hpp");
+          file_info.Name, "(_body|_test)?\\.[hc]pp", "");
     }
 
     public override void WriteNode(string indent = "") {
@@ -322,15 +323,17 @@ class Parser {
             ParseTypeAlias(line));
       } else if (IsClosingNamespace(line)) {
         var name = ParseClosingNamespace(line);
-        if (current.GetType() != typeof(Namespace) ||
-            ((Namespace)current).name != name) {
-          Console.WriteLine("Bad closing namespace at line " + line_number +
-                            " of " + file_info.Name);
+        if (current is Namespace ns) {
+          Debug.Assert(ns.name == name);
+          ns.last_line_number = line_number;
+        } else {
+          Debug.Assert(false);
         }
         current = current.parent;
       }
       ++line_number;
     }
+    file.last_line_number = line_number;
     return file;
   }
 
@@ -368,18 +371,21 @@ class Parser {
   public static void NormalizeNamespaces(File file) {
     var namespaces_to_normalize = FindNamespacesToNormalize(file, file);
     foreach (Namespace internal_namespace in namespaces_to_normalize) {
-      internal_namespace.name = "internal";
-      internal_namespace.must_rewrite = true;
       var parent = internal_namespace.parent;
       Debug.Assert(parent is Namespace,
                    "internal namespace not within a namespace");
       var file_namespace = new Namespace(internal_namespace.line_number,
                                          parent: null,
                                          file.file_namespace);
-      file_namespace.must_rewrite = true;
       parent.children[internal_namespace.position_in_parent] = file_namespace;
+      file_namespace.parent = parent;
+      file_namespace.children.Add(internal_namespace);
+      file_namespace.last_line_number = internal_namespace.last_line_number;
+      file_namespace.must_rewrite = true;
       internal_namespace.parent = file_namespace;
       internal_namespace.position_in_parent = 0;
+      internal_namespace.name = "internal";
+      internal_namespace.must_rewrite = true;
     }
   }
 }
@@ -394,37 +400,41 @@ class Renamespacer {
 
     Parser.Node parent = file;
     int child_position = 0;
+    Parser.Node node = parent.children[child_position];
+    int node_line_number = node.line_number;
     StreamReader reader = input_file.OpenText();
     StreamWriter writer = File.CreateText(output_filename);
     int line_number = 1;
     while (!reader.EndOfStream) {
       string line = reader.ReadLine();
+      Debug.Assert(node_line_number >= line_number);
+
       bool has_rewritten = false;
-      bool must_pop = false;
-      Parser.Node node = parent.children[child_position];
-      if (node.line_number == line_number) {
-        for (;;) {
-          if (node.must_rewrite) {
-            has_rewritten = true;
-            writer.WriteLine(node.Cxx());
-          }
-          ++child_position;
-          if (child_position == parent.children.Count) {
-            break;
-          }
-          node = parent.children[child_position];
-          if (node.line_number != line_number) {
-            break;
-          }
+      while (node_line_number == line_number) {
+        if (node.must_rewrite) {
+          has_rewritten = true;
+          writer.WriteLine(node.Cxx());
         }
-        if (must_pop) {
-          child_position = parent.position_in_parent;
-          parent = parent.parent;
-        } else if (node is Parser.Namespace) {
+
+        if (node is Parser.Namespace ns && ns.line_number == line_number) {
+          // Entering a namespace.
           parent = node;
-          child_position = 0;
+          child_position = -1;
+        }
+        ++child_position;
+        if (child_position == parent.children.Count) {
+          // Exiting a namespace.
+          node = parent;
+          node_line_number = node.last_line_number.Value;
+          child_position = node.position_in_parent;
+          parent = node.parent;
+        } else {
+          // Moving to the next sibling.
+          node = parent.children[child_position];
+          node_line_number = node.line_number;
         }
       }
+
       if (!has_rewritten) {
         writer.WriteLine(line);
       }
