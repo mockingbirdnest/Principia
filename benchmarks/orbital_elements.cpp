@@ -1,3 +1,5 @@
+// .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=OrbitalElements --benchmark_min_time=30  // NOLINT(whitespace/line_length)
+
 #include "astronomy/orbital_elements.hpp"
 
 #include "astronomy/frames.hpp"
@@ -78,16 +80,16 @@ class OrbitalElementsBenchmark : public benchmark::Fixture {
 
   static not_null<std::unique_ptr<DiscreteTrajectory<GCRS>>>
   EarthCentredTrajectory(
-      KeplerianElements<GCRS>& initial_osculating_elements,
+      KeplerianElements<GCRS> const& initial_osculating_elements,
       Instant const& initial_time,
       Instant const& final_time) {
     BodyCentredNonRotatingDynamicFrame<ICRS, GCRS> gcrs{ephemeris_, earth_};
     DiscreteTrajectory<ICRS> icrs_trajectory;
-    KeplerOrbit<GCRS> initial_osculating_orbit{*earth_,
-                                               MasslessBody{},
-                                               initial_osculating_elements,
-                                               initial_time};
-    initial_osculating_elements = initial_osculating_orbit.elements_at_epoch();
+    KeplerOrbit<GCRS> const initial_osculating_orbit{
+        *earth_,
+        MasslessBody{},
+        initial_osculating_elements,
+        initial_time};
     CHECK_OK(icrs_trajectory.Append(
         initial_time,
         gcrs.FromThisFrameAtTime(initial_time)(
@@ -125,7 +127,7 @@ OblateBody<ICRS> const* OrbitalElementsBenchmark::earth_ = nullptr;
 
 BENCHMARK_F(OrbitalElementsBenchmark, ComputeOrbitalElements)(
     benchmark::State& state) {
-  Time const mission_duration = 10 * Day;
+  Time const mission_duration = 180 * Day;
   Instant const final_time = J2000 + mission_duration;
   CHECK_OK(ephemeris_->Prolong(final_time));
 
