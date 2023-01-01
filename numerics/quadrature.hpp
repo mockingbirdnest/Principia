@@ -61,6 +61,7 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> Midpoint(
 
 using internal_quadrature::AutomaticClenshawCurtis;
 using internal_quadrature::GaussLegendre;
+using internal_quadrature::MaxPointsHeuristicsForAutomaticClenshawCurtis;
 using internal_quadrature::Midpoint;
 
 }  // namespace quadrature
