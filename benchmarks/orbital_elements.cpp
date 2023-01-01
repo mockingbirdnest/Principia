@@ -2,6 +2,8 @@
 
 #include "astronomy/orbital_elements.hpp"
 
+#include <limits>
+
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
 #include "benchmark/benchmark.h"
