@@ -6,7 +6,7 @@
 #include "geometry/interval.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/body.hpp"
-#include "physics/discrete_trajectory.hpp"
+#include "physics/trajectory.hpp"
 #include "physics/massive_body.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -18,8 +18,8 @@ namespace internal_orbital_elements {
 using geometry::Instant;
 using geometry::Interval;
 using physics::Body;
-using physics::DiscreteTrajectory;
 using physics::MassiveBody;
+using physics::Trajectory;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::Difference;
@@ -37,7 +37,7 @@ class OrbitalElements {
 
   template<typename PrimaryCentred>
   static absl::StatusOr<OrbitalElements> ForTrajectory(
-      DiscreteTrajectory<PrimaryCentred> const& trajectory,
+      Trajectory<PrimaryCentred> const& trajectory,
       MassiveBody const& primary,
       Body const& secondary);
 
@@ -146,17 +146,19 @@ class OrbitalElements {
 
   template<typename PrimaryCentred>
   static std::vector<EquinoctialElements> OsculatingEquinoctialElements(
-      DiscreteTrajectory<PrimaryCentred> const& trajectory,
+      Trajectory<PrimaryCentred> const& trajectory,
       MassiveBody const& primary,
       Body const& secondary);
 
   template<typename PrimaryCentred>
   static std::vector<Length> RadialDistances(
-      DiscreteTrajectory<PrimaryCentred> const& trajectory);
+      Trajectory<PrimaryCentred> const& trajectory);
 
-  // |equinoctial_elements| must contain at least 2 elements.
   static absl::StatusOr<Time> SiderealPeriod(
-      std::vector<EquinoctialElements> const& equinoctial_elements);
+      std::function<EquinoctialElements(Instant const&)> const&
+          equinoctial_elements,
+      Instant const& t_min,
+      Instant const& t_max);
 
   // |osculating| must contain at least 2 elements.
   // The resulting elements are averaged over one period, centred on
@@ -179,7 +181,7 @@ class OrbitalElements {
   absl::Status ComputeIntervals();
 
   std::vector<EquinoctialElements> osculating_equinoctial_elements_;
-  std::vector<Length> radial_distances_;
+  //std::vector<Length> radial_distances_;
   Time sidereal_period_;
   std::vector<EquinoctialElements> mean_equinoctial_elements_;
   std::vector<ClassicalElements> mean_classical_elements_;

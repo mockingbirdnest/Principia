@@ -8,6 +8,7 @@
 #include "absl/strings/str_cat.h"
 #include "base/jthread.hpp"
 #include "base/status_utilities.hpp"
+#include "numerics/quadrature.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "quantities/elementary_functions.hpp"
 
@@ -17,6 +18,7 @@ namespace internal_orbital_elements {
 
 using base::this_stoppable_thread;
 using geometry::Velocity;
+using numerics::quadrature::AutomaticClenshawCurtis;
 using physics::DegreesOfFreedom;
 using physics::KeplerOrbit;
 using quantities::ArcTan;
@@ -33,14 +35,46 @@ using quantities::si::Radian;
 
 template<typename PrimaryCentred>
 absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
-    DiscreteTrajectory<PrimaryCentred> const& trajectory,
+    Trajectory<PrimaryCentred> const& trajectory,
     MassiveBody const& primary,
     Body const& secondary) {
   OrbitalElements orbital_elements;
-  if (trajectory.size() < 2) {
+  if (trajectory.t_min() >= trajectory.t_max()) {
     return absl::InvalidArgumentError(
-        absl::StrCat("trajectory.Size() is ", trajectory.size()));
+        absl::StrCat("trajectory has min time ",
+                     DebugString(trajectory.t_min()),
+                     " and max time ",
+                     DebugString(trajectory.t_max())));
   }
+
+  auto osculating_equinoctial_element = [&primary, &secondary, &trajectory](
+      Instant const& time) -> EquinoctialElements {
+    DegreesOfFreedom<PrimaryCentred> const primary_dof{
+        PrimaryCentred::origin, PrimaryCentred::unmoving};
+    DegreesOfFreedom<PrimaryCentred> const degrees_of_freedom =
+        trajectory.EvaluateDegreesOfFreedom(time);
+    auto const osculating_elements =
+        KeplerOrbit<PrimaryCentred>(
+            primary, secondary, degrees_of_freedom - primary_dof, time)
+            .elements_at_epoch();
+    double const& e = *osculating_elements.eccentricity;
+    Angle const& ϖ = *osculating_elements.longitude_of_periapsis;
+    Angle const& Ω = osculating_elements.longitude_of_ascending_node;
+    Angle const& M = *osculating_elements.mean_anomaly;
+    Angle const& i = osculating_elements.inclination;
+    double const tg_½i = Tan(i / 2);
+    double const cotg_½i = 1 / tg_½i;
+    return {.t = time,
+            .a = *osculating_elements.semimajor_axis,
+            .h = e * Sin(ϖ),
+            .k = e * Cos(ϖ),
+            .λ = result.empty() ? ϖ + M : UnwindFrom(result.back().λ, ϖ + M),
+            .p = tg_½i * Sin(Ω),
+            .q = tg_½i * Cos(Ω),
+            .pʹ = cotg_½i * Sin(Ω),
+            .qʹ = cotg_½i * Cos(Ω)};
+  };
+
   orbital_elements.osculating_equinoctial_elements_ =
       OsculatingEquinoctialElements(trajectory, primary, secondary);
   orbital_elements.radial_distances_ = RadialDistances(trajectory);
@@ -66,8 +100,7 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
         "trajectory does not span one sidereal period: sidereal period is " +
             DebugString(orbital_elements.sidereal_period_) +
             ", trajectory spans " +
-            DebugString(trajectory.back().time -
-                        trajectory.front().time));
+            DebugString(trajectory.t_max() - trajectory.t_min()));
   }
   auto mean_classical_elements =
       ToClassicalElements(orbital_elements.mean_equinoctial_elements_);
@@ -139,7 +172,7 @@ inline Interval<Length> OrbitalElements::radial_distance_interval() const {
 template<typename PrimaryCentred>
 std::vector<OrbitalElements::EquinoctialElements>
 OrbitalElements::OsculatingEquinoctialElements(
-    DiscreteTrajectory<PrimaryCentred> const& trajectory,
+    Trajectory<PrimaryCentred> const& trajectory,
     MassiveBody const& primary,
     Body const& secondary) {
   DegreesOfFreedom<PrimaryCentred> const primary_dof{
@@ -176,7 +209,7 @@ OrbitalElements::OsculatingEquinoctialElements(
 
 template<typename PrimaryCentred>
 std::vector<Length> OrbitalElements::RadialDistances(
-    DiscreteTrajectory<PrimaryCentred> const& trajectory) {
+    Trajectory<PrimaryCentred> const& trajectory) {
   std::vector<Length> radial_distances;
   radial_distances.reserve(trajectory.size());
   DegreesOfFreedom<PrimaryCentred> const primary_dof{PrimaryCentred::origin,
@@ -199,11 +232,15 @@ OrbitalElements::mean_equinoctial_elements() const {
 }
 
 inline absl::StatusOr<Time> OrbitalElements::SiderealPeriod(
-    std::vector<EquinoctialElements> const& equinoctial_elements) {
-  Time const Δt =
-      equinoctial_elements.back().t - equinoctial_elements.front().t;
+    std::function<EquinoctialElements(Instant const&)> const&
+        equinoctial_elements,
+    Instant const& t_min,
+    Instant const& t_max) {
+  Time const Δt = t_max - t_min;
   Instant const t0 = equinoctial_elements.front().t + Δt / 2;
-  Product<Angle, Square<Time>> ʃ_λt_dt;
+  Product<Angle, Square<Time>> const ʃ_λt_dt =
+    AutomaticClenshawCurtis([](){}, t_min, t_max, /*max_relative_error=*/1e-6,
+      /*max_points=*/1025;
 
   auto const first = equinoctial_elements.begin();
   Time const first_t = first->t - t0;
