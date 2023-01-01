@@ -8,6 +8,7 @@
 #include "absl/strings/str_cat.h"
 #include "base/jthread.hpp"
 #include "base/status_utilities.hpp"
+#include "numerics/quadrature.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "quantities/elementary_functions.hpp"
 
@@ -17,6 +18,7 @@ namespace internal_orbital_elements {
 
 using base::this_stoppable_thread;
 using geometry::Velocity;
+using numerics::quadrature::AutomaticClenshawCurtis;
 using physics::DegreesOfFreedom;
 using physics::KeplerOrbit;
 using quantities::ArcTan;
@@ -203,21 +205,32 @@ inline absl::StatusOr<Time> OrbitalElements::SiderealPeriod(
   Time const Δt =
       equinoctial_elements.back().t - equinoctial_elements.front().t;
   Instant const t0 = equinoctial_elements.front().t + Δt / 2;
-  Product<Angle, Square<Time>> ʃ_λt_dt;
-
-  auto const first = equinoctial_elements.begin();
-  Time const first_t = first->t - t0;
-  Product<Angle, Time> previous_λt = first->λ * first_t;
-  for (auto previous = first, it = first + 1;
-       it != equinoctial_elements.end();
-       previous = it, ++it) {
-    RETURN_IF_STOPPED;
-    Time const t = it->t - t0;
-    auto const λt = it->λ * t;
-    Time const dt = it->t - previous->t;
-    ʃ_λt_dt += (λt + previous_λt) / 2 * dt;
-    previous_λt = λt;
-  }
+  int z = 0;
+  Product<Angle, Square<Time>> const ʃ_λt_dt = AutomaticClenshawCurtis(
+      [&equinoctial_elements, &t0, &z](
+          Instant const& t) -> Product<Angle, Time> {
+        auto it =
+            std::partition_point(equinoctial_elements.begin(),
+                                 equinoctial_elements.end(),
+                                 [&t](EquinoctialElements const& elements) {
+                                   return elements.t < t;
+                                 });
+        EquinoctialElements const& low = *it;
+        Angle λ;
+        if (++it == equinoctial_elements.end()) {
+          λ = low.λ;
+        } else {
+          EquinoctialElements const& high = *it;
+          λ = low.λ + (t - low.t) * (high.λ - low.λ) / (high.t - low.t);
+        }
+        ++z;
+        return λ * (t - t0);
+      },
+      equinoctial_elements.front().t,
+      equinoctial_elements.back().t,
+      /*max_relative_error=*/1e-6,
+      /*max_points=*/equinoctial_elements.size());
+  LOG(ERROR) << z << "/" << equinoctial_elements.size();
   return 2 * π * Radian * Pow<3>(Δt) / (12 * ʃ_λt_dt);
 }
 
