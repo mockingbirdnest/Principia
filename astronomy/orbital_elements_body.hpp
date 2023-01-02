@@ -56,16 +56,46 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
                      DebugString(trajectory.t_max())));
   }
 
-  auto osculating_equinoctial_element = [&primary, &secondary, &trajectory](
-      Instant const& time) -> EquinoctialElements {
+  auto osculating_elements =
+      [&primary, &secondary, &trajectory](
+          Instant const& time) -> KeplerianElements<PrimaryCentred> {
     DegreesOfFreedom<PrimaryCentred> const primary_dof{
         PrimaryCentred::origin, PrimaryCentred::unmoving};
     DegreesOfFreedom<PrimaryCentred> const degrees_of_freedom =
         trajectory.EvaluateDegreesOfFreedom(time);
-    auto const osculating_elements =
-        KeplerOrbit<PrimaryCentred>(
-            primary, secondary, degrees_of_freedom - primary_dof, time)
-            .elements_at_epoch();
+    return KeplerOrbit<PrimaryCentred>(
+               primary, secondary, degrees_of_freedom - primary_dof, time)
+        .elements_at_epoch();
+  };
+
+  auto osculating_wound_λ =
+      [&osculating_elements](Instant const& time) -> EquinoctialElements {
+    auto const osculating_elements = osculating_elements(t);
+    Angle const& ϖ = *osculating_elements.longitude_of_periapsis;
+    Angle const& M = *osculating_elements.mean_anomaly;
+    return ϖ + M;
+  };
+
+  orbital_elements.radial_distances_ = RadialDistances(trajectory);
+
+
+  KeplerianElements<PrimaryCentred> const initial_osculating_elements =
+      osculating_elements(trajectory.t_min());
+  Time const estimated_period = *initial_osculating_elements.period;
+
+  std::vector<Angle> unwound_λs;
+  for (i = trajectory.t_min(); t <= trajectory.t_max();
+       t += estimated_period / 2) {
+    Angle const λ = osculating_wound_λ(t).λ;
+    λs.push_back(λs.empty() ? λ : UnwindFrom(λs.back(), λ));
+  }
+
+  auto osculating_equinoctial_elements =
+      [&estimated_period,
+       &osculating_elements,
+       t_min = trajectory.t_min(),
+       &unwound_λs](Instant const& time) -> EquinoctialElements {
+    auto const osculating_elements = osculating_elements(t);
     double const& e = *osculating_elements.eccentricity;
     Angle const& ϖ = *osculating_elements.longitude_of_periapsis;
     Angle const& Ω = osculating_elements.longitude_of_ascending_node;
@@ -77,16 +107,21 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
             .a = *osculating_elements.semimajor_axis,
             .h = e * Sin(ϖ),
             .k = e * Cos(ϖ),
-            .λ = result.empty() ? ϖ + M : UnwindFrom(result.back().λ, ϖ + M),
+            .λ = result.empty()
+                     ? ϖ + M
+                     : UnwindFrom(unwound_λs[(time - t_min) / estimated_period],
+                                  ϖ + M),
             .p = tg_½i * Sin(Ω),
             .q = tg_½i * Cos(Ω),
             .pʹ = cotg_½i * Sin(Ω),
             .qʹ = cotg_½i * Cos(Ω)};
   };
 
+
+  // REMOVE BEFORE FLIGHT
   orbital_elements.osculating_equinoctial_elements_ =
       OsculatingEquinoctialElements(trajectory, primary, secondary);
-  orbital_elements.radial_distances_ = RadialDistances(trajectory);
+
   auto const sidereal_period =
       SiderealPeriod(orbital_elements.osculating_equinoctial_elements_);
   RETURN_IF_ERROR(sidereal_period);
