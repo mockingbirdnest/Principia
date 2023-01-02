@@ -62,6 +62,7 @@ using World = Frame<enum class WorldTag, Inertial>;
 template<typename ODE>
 double HarmonicOscillatorToleranceRatio1D(
     Time const& h,
+    typename ODE::SystemState const& /*state*/,
     typename ODE::SystemStateError const& error,
     Length const& q_tolerance,
     Speed const& v_tolerance) {
@@ -72,6 +73,7 @@ double HarmonicOscillatorToleranceRatio1D(
 template<typename ODE>
 double HarmonicOscillatorToleranceRatio3D(
     Time const& h,
+    typename ODE::SystemState const& /*state*/,
     typename ODE::SystemStateError const& error,
     Length const& q_tolerance,
     Speed const& v_tolerance) {
@@ -112,7 +114,7 @@ void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
       /*safety_factor=*/0.9);
   auto const tolerance_to_error_ratio =
       std::bind(HarmonicOscillatorToleranceRatio1D<ODE>,
-                _1, _2, length_tolerance, speed_tolerance);
+                _1, _2, _3, length_tolerance, speed_tolerance);
 
   auto const instance = integrator.NewInstance(problem,
                                                append_state,
@@ -170,7 +172,7 @@ void SolveHarmonicOscillatorAndComputeError3D(
       /*safety_factor=*/0.9);
   auto const tolerance_to_error_ratio =
       std::bind(HarmonicOscillatorToleranceRatio3D<ODE>,
-                _1, _2, length_tolerance, speed_tolerance);
+                _1, _2, _3, length_tolerance, speed_tolerance);
 
   auto const instance = integrator.NewInstance(problem,
                                                append_state,
