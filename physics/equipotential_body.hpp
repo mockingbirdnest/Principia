@@ -81,7 +81,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
       };
 
   auto const tolerance_to_error_ratio =
-      std::bind(&Equipotential::ToleranceToErrorRatio, this, _1, _2);
+      std::bind(&Equipotential::ToleranceToErrorRatio, this, _1, _2, _3);
 
   auto const instance = adaptive_parameters_.integrator().NewInstance(
       problem, append_state, tolerance_to_error_ratio, integrator_parameters);
