@@ -1371,7 +1371,7 @@ absl::Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
       std::bind(&Ephemeris<Frame>::ToleranceToErrorRatio,
                 parameters.length_integration_tolerance(),
                 parameters.speed_integration_tolerance(),
-                _1, _2);
+                _1, _2, _3);
 
   typename AdaptiveStepSizeIntegrator<ODE>::AppendState append_state =
       std::bind(&Ephemeris::AppendMasslessBodiesStateToTrajectories,
@@ -1410,6 +1410,7 @@ double Ephemeris<Frame>::ToleranceToErrorRatio(
     Length const& length_integration_tolerance,
     Speed const& speed_integration_tolerance,
     Time const& current_step_size,
+    typename NewtonianMotionEquation::SystemState const& /*state*/,
     typename NewtonianMotionEquation::SystemStateError const& error) {
   Length max_length_error;
   Speed max_speed_error;
