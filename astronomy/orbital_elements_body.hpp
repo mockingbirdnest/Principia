@@ -388,7 +388,7 @@ OrbitalElements::MeanEquinoctialElements(
                                          {0 * Second}}),
   };
   AdaptiveStepSizeIntegrator<ODE>::Parameters const parameters(
-      /*first_time_step=*/t_max - t_min,
+      /*first_time_step=*/period / 10,
       /*safety_factor*/ 0.9,
       /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
       /*last_step_is_exact=*/true);
@@ -455,8 +455,8 @@ OrbitalElements::MeanEquinoctialElements(
                 auto const timespan = t_max - t_min;
                 using quantities::Abs;
                 // Fixed stepsize:
-                //return std::pow(0.9, -(DormandPrince1986RK547FC::lower_order + 1));
-                return std::min({1e-4 * Metre * period / Abs(Δa_Δt.front())});
+                return std::pow(0.9, -(DormandPrince1986RK547FC::lower_order + 1));
+                //return std::min({1e-4 * Metre * period / Abs(Δa_Δt.front())});
               },
               /*integrator_parameters=*/parameters);
   RETURN_IF_ERROR(instance->Solve(t_max));
