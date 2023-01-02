@@ -164,8 +164,12 @@ class OrbitalElements {
   // The resulting elements are averaged over one period, centred on
   // their |EquinoctialElements::t|.
   static absl::StatusOr<std::vector<EquinoctialElements>>
-  MeanEquinoctialElements(std::vector<EquinoctialElements> const& osculating,
-                          Time const& period);
+  MeanEquinoctialElements(
+      std::function<EquinoctialElements(Instant const&)> const&
+          equinoctial_elements,
+      Instant const& t_min,
+      Instant const& t_max,
+      Time const& period);
 
   static absl::StatusOr<std::vector<ClassicalElements>> ToClassicalElements(
       std::vector<EquinoctialElements> const& equinoctial_elements);
@@ -181,7 +185,7 @@ class OrbitalElements {
   absl::Status ComputeIntervals();
 
   std::vector<EquinoctialElements> osculating_equinoctial_elements_;
-  //std::vector<Length> radial_distances_;
+  std::vector<Length> radial_distances_;
   Time sidereal_period_;
   std::vector<EquinoctialElements> mean_equinoctial_elements_;
   std::vector<ClassicalElements> mean_classical_elements_;

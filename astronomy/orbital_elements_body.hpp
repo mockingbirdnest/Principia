@@ -11,6 +11,7 @@
 #include "numerics/quadrature.hpp"
 #include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
 #include "integrators/methods.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "quantities/elementary_functions.hpp"
 
@@ -29,6 +30,7 @@ using integrators::IntegrationProblem;
 using integrators::methods::DormandPrince1986RK547FC;
 using numerics::quadrature::AutomaticClenshawCurtis;
 using physics::DegreesOfFreedom;
+using physics::KeplerianElements;
 using physics::KeplerOrbit;
 using quantities::ArcTan;
 using quantities::Cos;
@@ -69,10 +71,10 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
   };
 
   auto osculating_wound_λ =
-      [&osculating_elements](Instant const& time) -> EquinoctialElements {
-    auto const osculating_elements = osculating_elements(t);
-    Angle const& ϖ = *osculating_elements.longitude_of_periapsis;
-    Angle const& M = *osculating_elements.mean_anomaly;
+      [&osculating_elements](Instant const& time) -> Angle {
+    auto const elements = osculating_elements(time);
+    Angle const& ϖ = *elements.longitude_of_periapsis;
+    Angle const& M = *elements.mean_anomaly;
     return ϖ + M;
   };
 
@@ -84,10 +86,11 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
   Time const estimated_period = *initial_osculating_elements.period;
 
   std::vector<Angle> unwound_λs;
-  for (i = trajectory.t_min(); t <= trajectory.t_max();
+  for (Instant t = trajectory.t_min(); t <= trajectory.t_max();
        t += estimated_period / 2) {
-    Angle const λ = osculating_wound_λ(t).λ;
-    λs.push_back(λs.empty() ? λ : UnwindFrom(λs.back(), λ));
+    Angle const λ = osculating_wound_λ(t);
+    unwound_λs.push_back(unwound_λs.empty() ? λ
+                                            : UnwindFrom(unwound_λs.back(), λ));
   }
 
   auto osculating_equinoctial_elements =
@@ -95,37 +98,31 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
        &osculating_elements,
        t_min = trajectory.t_min(),
        &unwound_λs](Instant const& time) -> EquinoctialElements {
-    auto const osculating_elements = osculating_elements(t);
-    double const& e = *osculating_elements.eccentricity;
-    Angle const& ϖ = *osculating_elements.longitude_of_periapsis;
-    Angle const& Ω = osculating_elements.longitude_of_ascending_node;
-    Angle const& M = *osculating_elements.mean_anomaly;
-    Angle const& i = osculating_elements.inclination;
+    auto const elements = osculating_elements(time);
+    double const& e = *elements.eccentricity;
+    Angle const& ϖ = *elements.longitude_of_periapsis;
+    Angle const& Ω = elements.longitude_of_ascending_node;
+    Angle const& M = *elements.mean_anomaly;
+    Angle const& i = elements.inclination;
     double const tg_½i = Tan(i / 2);
     double const cotg_½i = 1 / tg_½i;
     return {.t = time,
-            .a = *osculating_elements.semimajor_axis,
+            .a = *elements.semimajor_axis,
             .h = e * Sin(ϖ),
             .k = e * Cos(ϖ),
-            .λ = result.empty()
-                     ? ϖ + M
-                     : UnwindFrom(unwound_λs[(time - t_min) / estimated_period],
-                                  ϖ + M),
+            .λ = UnwindFrom(unwound_λs[(time - t_min) / (estimated_period / 2)],
+                            ϖ + M),
             .p = tg_½i * Sin(Ω),
             .q = tg_½i * Cos(Ω),
             .pʹ = cotg_½i * Sin(Ω),
             .qʹ = cotg_½i * Cos(Ω)};
   };
 
-
-  // REMOVE BEFORE FLIGHT
-  orbital_elements.osculating_equinoctial_elements_ =
-      OsculatingEquinoctialElements(trajectory, primary, secondary);
-
-  auto const sidereal_period =
-      SiderealPeriod(orbital_elements.osculating_equinoctial_elements_);
+  auto const sidereal_period = SiderealPeriod(
+      osculating_equinoctial_elements, trajectory.t_min(), trajectory.t_max());
   RETURN_IF_ERROR(sidereal_period);
   orbital_elements.sidereal_period_ = sidereal_period.value();
+
   if (!IsFinite(orbital_elements.sidereal_period_) ||
       orbital_elements.sidereal_period_ <= Time{}) {
     // Guard against NaN sidereal periods (from hyperbolic orbits) or negative
@@ -134,11 +131,18 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
         "sidereal period is " + DebugString(orbital_elements.sidereal_period_));
   }
   auto mean_equinoctial_elements =
-      MeanEquinoctialElements(orbital_elements.osculating_equinoctial_elements_,
+      MeanEquinoctialElements(osculating_equinoctial_elements,
+                              trajectory.t_min(),
+                              trajectory.t_max(),
                               orbital_elements.sidereal_period_);
   RETURN_IF_ERROR(mean_equinoctial_elements);
   orbital_elements.mean_equinoctial_elements_ =
       std::move(mean_equinoctial_elements).value();
+
+
+  /* REMOVE BEFORE FLIGHT
+  orbital_elements.osculating_equinoctial_elements_ =
+      OsculatingEquinoctialElements(trajectory, primary, secondary);*/
   if (orbital_elements.mean_equinoctial_elements_.size() < 2) {
     return absl::OutOfRangeError(
         "trajectory does not span one sidereal period: sidereal period is " +
@@ -255,10 +259,13 @@ template<typename PrimaryCentred>
 std::vector<Length> OrbitalElements::RadialDistances(
     Trajectory<PrimaryCentred> const& trajectory) {
   std::vector<Length> radial_distances;
-  radial_distances.reserve(trajectory.size());
+  auto const& discrete =
+      dynamic_cast<physics::DiscreteTrajectory<PrimaryCentred> const&>(
+          trajectory);
+  radial_distances.reserve(discrete.size());
   DegreesOfFreedom<PrimaryCentred> const primary_dof{PrimaryCentred::origin,
                                                      PrimaryCentred::unmoving};
-  for (auto const& [time, degrees_of_freedom] : trajectory) {
+  for (auto const& [time, degrees_of_freedom] : discrete) {
     radial_distances.push_back(
         (degrees_of_freedom.position() - primary_dof.position()).Norm());
   }
@@ -281,42 +288,32 @@ inline absl::StatusOr<Time> OrbitalElements::SiderealPeriod(
     Instant const& t_min,
     Instant const& t_max) {
   Time const Δt = t_max - t_min;
-  Instant const t0 = equinoctial_elements.front().t + Δt / 2;
+  Instant const t0 = t_min + Δt / 2;
   int z = 0;
   Product<Angle, Square<Time>> const ʃ_λt_dt = AutomaticClenshawCurtis(
       [&equinoctial_elements, &t0, &z](
           Instant const& t) -> Product<Angle, Time> {
-        auto it =
-            std::partition_point(equinoctial_elements.begin(),
-                                 equinoctial_elements.end(),
-                                 [&t](EquinoctialElements const& elements) {
-                                   return elements.t < t;
-                                 });
-        EquinoctialElements const& high = *it;
-        Angle λ;
-        if (it == equinoctial_elements.begin()) {
-          λ = high.λ;
-        } else {
-          EquinoctialElements const& low = *--it;
-          λ = low.λ + (t - low.t) * (high.λ - low.λ) / (high.t - low.t);
-        }
+        // TODO(egg): Consider computing only λ.
         ++z;
-        return λ * (t - t0);
+        return equinoctial_elements(t).λ * (t - t0);
       },
-      equinoctial_elements.front().t,
-      equinoctial_elements.back().t,
+      t_min,
+      t_max,
       /*max_relative_error=*/1e-6,
-      /*max_points=*/equinoctial_elements.size());
-  LOG(ERROR) << z << "/" << equinoctial_elements.size();
+      /*max_points=*/std::nullopt);
+  LOG(ERROR) << "Automatic Clenshaw Curtis for sidereal period: " << z
+             << " evaluations";
   return 2 * π * Radian * Pow<3>(Δt) / (12 * ʃ_λt_dt);
 }
 
 inline absl::StatusOr<std::vector<OrbitalElements::EquinoctialElements>>
 OrbitalElements::MeanEquinoctialElements(
-    std::vector<EquinoctialElements> const& osculating,
+    std::function<EquinoctialElements(Instant const&)> const&
+        equinoctial_elements,
+    Instant const& t_min,
+    Instant const& t_max,
     Time const& period) {
-  Instant const& t_min = osculating.front().t;
-  Instant const& t_max = osculating.back().t;
+  // REMOVE BEFORE FLIGHT REWRITE THIS COMMENT
   // This function averages the elements in |osculating| over |period|.
   // For each |EquinoctialElements osculating_elements = osculating[i]| in
   // |osculating| such that |osculating_elements.t <= osculating.back().t|, let
@@ -335,47 +332,19 @@ OrbitalElements::MeanEquinoctialElements(
   // |tⱼ₋₁| to |tᵢ + period| (a partial trapezoid on [tⱼ₋₁, tⱼ]).
 
   // Precompute the integrals from |t_min| to each of the |tᵢ|.
+
+
   int z = 0;
-  auto const evaluate_osculating =
-      [&osculating, &z](Instant const& t) -> EquinoctialElements {
-    auto it = std::partition_point(
-        osculating.begin(),
-        osculating.end(),
-        [&t](EquinoctialElements const& elements) { return elements.t < t; });
-    EquinoctialElements const& high = *it;
-    ++z;
-    if (it == osculating.begin()) {
-      return high;
-    } else {
-      EquinoctialElements const& low = *--it;
-      double const α = (t - low.t) / (high.t - low.t);
-      auto const interpolate = [α, &low, &high](auto const element) {
-        return low.*element + α * (high.*element - low.*element);
-      };
-      return {.t = t,
-              .a = interpolate(&EquinoctialElements::a),
-              .h = interpolate(&EquinoctialElements::h),
-              .k = interpolate(&EquinoctialElements::k),
-              .λ = interpolate(&EquinoctialElements::λ),
-              .p = interpolate(&EquinoctialElements::p),
-              .q = interpolate(&EquinoctialElements::q),
-              .pʹ = interpolate(&EquinoctialElements::pʹ),
-              .qʹ = interpolate(&EquinoctialElements::qʹ)};
-    }
-  };
 
   mathematica::Logger logger(TEMP_DIR / "integration.wl");
-  for (auto const& e : osculating) {
-    logger.Append("osculating",
-                  std::tuple{e.t, e.a, e.h, e.k, e.λ, e.p, e.q, e.pʹ, e.qʹ},
-                  mathematica::ExpressInSIUnits);
-  }
+  /*
   for (Instant t = t_min; t <= t_max; t += period / 100) {
-    auto const [_, a, h, k, λ, p, q, pʹ, qʹ] = evaluate_osculating(t);
+    auto const [_, a, h, k, λ, p, q, pʹ, qʹ] = equinoctial_elements(t);
     logger.Append("evaluatedOsculating",
                   std::tuple{t, a, h, k, λ, p, q, pʹ, qʹ},
                   mathematica::ExpressInSIUnits);
   }
+  */
 
   using ODE =
       ExplicitFirstOrderOrdinaryDifferentialEquation<Instant,
@@ -392,11 +361,11 @@ OrbitalElements::MeanEquinoctialElements(
       .equation =
           {
               .compute_derivative =
-                  [&evaluate_osculating](Instant const& t,
+                  [&equinoctial_elements](Instant const& t,
                                          ODE::State const& state,
                                          ODE::StateVariation& variations) {
                     auto const [_, a, h, k, λ, p, q, pʹ, qʹ] =
-                        evaluate_osculating(t);
+                        equinoctial_elements(t);
                     variations = {{a}, {h}, {k}, {λ}, {p}, {q}, {pʹ}, {qʹ}};
                     return absl::OkStatus();
                   },
@@ -430,7 +399,6 @@ OrbitalElements::MeanEquinoctialElements(
     Time ʃ_qʹ_dt;
   };
   std::vector<IntegratedEquinoctialElements> integrals;
-  integrals.reserve(osculating.size());
   auto const append_state = [&integrals](ODE::SystemState const& state) {
     Instant const& t = state.s.value;
     auto const& [ʃ_a_dt,
@@ -500,6 +468,7 @@ OrbitalElements::MeanEquinoctialElements(
                              i.ʃ_qʹ_dt},
                   mathematica::ExpressInSIUnits);
   }
+
   auto const evaluate_integrals =
       [&integrals, &z](Instant const& t) -> IntegratedEquinoctialElements {
     auto it = std::partition_point(
