@@ -262,7 +262,7 @@ Solve(IndependentVariable const& s_final) {
             });
       }
       tolerance_to_error_ratio =
-          this->tolerance_to_error_ratio_(h, error_estimate);
+          this->tolerance_to_error_ratio_(h, current_state, error_estimate);
     } while (tolerance_to_error_ratio < 1.0);
 
     status.Update(step_status);

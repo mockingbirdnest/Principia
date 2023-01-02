@@ -135,6 +135,7 @@ class Equipotential {
                              StateVariation& state_variation) const;
 
   double ToleranceToErrorRatio(IndependentVariableDifference current_s_step,
+                               SystemState const& /*state*/,
                                SystemStateError const& error) const;
 
   // Computes the winding number of |line| around |position|.  |line| and

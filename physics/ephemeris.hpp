@@ -386,6 +386,7 @@ class Ephemeris {
       Length const& length_integration_tolerance,
       Speed const& speed_integration_tolerance,
       Time const& current_step_size,
+      typename NewtonianMotionEquation::SystemState const& /*state*/,
       typename NewtonianMotionEquation::SystemStateError const& error);
 
   // The bodies in the order in which they were given at construction.

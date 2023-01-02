@@ -55,6 +55,7 @@ namespace {
 
 double ToleranceToErrorRatio(
     Time const& h,
+    ODE::SystemState const& /*state*/,
     ODE::SystemStateError const& error,
     double const& tolerance,
     Variation<double> const& derivative_tolerance,
@@ -120,8 +121,7 @@ TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, Legendre) {
       /*first_step=*/t_final - t_initial,
       /*safety_factor=*/0.9);
   auto const tolerance_to_error_ratio = std::bind(ToleranceToErrorRatio,
-                                                  _1,
-                                                  _2,
+                                                  _1, _2, _3,
                                                   tolerance,
                                                   derivative_tolerance,
                                                   step_size_callback);

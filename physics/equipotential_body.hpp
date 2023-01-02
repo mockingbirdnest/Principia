@@ -81,7 +81,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
       };
 
   auto const tolerance_to_error_ratio =
-      std::bind(&Equipotential::ToleranceToErrorRatio, this, _1, _2);
+      std::bind(&Equipotential::ToleranceToErrorRatio, this, _1, _2, _3);
 
   auto const instance = adaptive_parameters_.integrator().NewInstance(
       problem, append_state, tolerance_to_error_ratio, integrator_parameters);
@@ -367,6 +367,7 @@ absl::Status Equipotential<InertialFrame, Frame>::RightHandSide(
 template<typename InertialFrame, typename Frame>
 double Equipotential<InertialFrame, Frame>::ToleranceToErrorRatio(
     IndependentVariableDifference const current_s_step,
+    SystemState const& /*state*/,
     SystemStateError const& error) const {
   Length const max_length_error = std::get<0>(error).front().Norm();
   double const max_braking_error = Abs(std::get<1>(error).front());
