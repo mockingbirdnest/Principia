@@ -93,7 +93,7 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
 
   std::vector<Angle> unwound_λs;
   for (Instant t = trajectory.t_min(); t <= trajectory.t_max();
-       t += estimated_period / 2) {
+       t += estimated_period / 3) {
     Angle const λ = osculating_wound_λ(t);
     unwound_λs.push_back(unwound_λs.empty() ? λ
                                             : UnwindFrom(unwound_λs.back(), λ));
@@ -116,7 +116,7 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
             .a = *elements.semimajor_axis,
             .h = e * Sin(ϖ),
             .k = e * Cos(ϖ),
-            .λ = UnwindFrom(unwound_λs[(time - t_min) / (estimated_period / 2)],
+            .λ = UnwindFrom(unwound_λs[(time - t_min) / (estimated_period / 3)],
                             ϖ + M),
             .p = tg_½i * Sin(Ω),
             .q = tg_½i * Cos(Ω),
