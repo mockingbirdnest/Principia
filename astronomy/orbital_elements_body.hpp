@@ -50,6 +50,12 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
     MassiveBody const& primary,
     Body const& secondary) {
   OrbitalElements orbital_elements;
+  LOG(ERROR)
+      << "DiscreteTrajectory has "
+      << dynamic_cast<physics::DiscreteTrajectory<PrimaryCentred> const&>(
+             trajectory)
+             .size()
+      << " points";
   if (trajectory.t_min() >= trajectory.t_max()) {
     return absl::InvalidArgumentError(
         absl::StrCat("trajectory has min time ",
@@ -361,9 +367,10 @@ OrbitalElements::MeanEquinoctialElements(
       .equation =
           {
               .compute_derivative =
-                  [&equinoctial_elements](Instant const& t,
-                                         ODE::State const& state,
-                                         ODE::StateVariation& variations) {
+                  [&equinoctial_elements, &z](Instant const& t,
+                                              ODE::State const& state,
+                                              ODE::StateVariation& variations) {
+                    ++z;
                     auto const [_, a, h, k, λ, p, q, pʹ, qʹ] =
                         equinoctial_elements(t);
                     variations = {{a}, {h}, {k}, {λ}, {p}, {q}, {pʹ}, {qʹ}};
@@ -381,7 +388,7 @@ OrbitalElements::MeanEquinoctialElements(
                                          {0 * Second}}),
   };
   AdaptiveStepSizeIntegrator<ODE>::Parameters const parameters(
-      /*first_time_step=*/period,
+      /*first_time_step=*/t_max - t_min,
       /*safety_factor*/ 0.9,
       /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
       /*last_step_is_exact=*/true);
@@ -448,14 +455,18 @@ OrbitalElements::MeanEquinoctialElements(
                 auto const timespan = t_max - t_min;
                 using quantities::Abs;
                 // Fixed stepsize:
-                return std::pow(0.9, -(DormandPrince1986RK547FC::lower_order + 1));
-                //return std::min({1 * Metre * period / Abs(Δa_Δt.front())});
+                //return std::pow(0.9, -(DormandPrince1986RK547FC::lower_order + 1));
+                return std::min({1e-4 * Metre * period / Abs(Δa_Δt.front())});
               },
               /*integrator_parameters=*/parameters);
   RETURN_IF_ERROR(instance->Solve(t_max));
   LOG(ERROR) << z << " evaluations by integrator producing " << integrals.size()
              << " points";
   for (auto const& i : integrals) {
+    auto const [_, a, h, k, λ, p, q, pʹ, qʹ] = equinoctial_elements(i.t);
+    logger.Append("evaluatedOsculating",
+                  std::tuple{i.t, a, h, k, λ, p, q, pʹ, qʹ},
+                  mathematica::ExpressInSIUnits);
     logger.Append("integrals",
                   std::tuple{i.t,
                              i.ʃ_a_dt,
