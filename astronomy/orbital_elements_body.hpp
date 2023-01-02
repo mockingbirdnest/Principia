@@ -388,7 +388,7 @@ OrbitalElements::MeanEquinoctialElements(
                                          {0 * Second}}),
   };
   AdaptiveStepSizeIntegrator<ODE>::Parameters const parameters(
-      /*first_time_step=*/period / 10,
+      /*first_time_step=*/period / 4,
       /*safety_factor*/ 0.9,
       /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
       /*last_step_is_exact=*/true);
@@ -523,16 +523,18 @@ OrbitalElements::MeanEquinoctialElements(
     auto const high = evaluate_integrals(low.t + period);
     mean_elements.emplace_back();
     mean_elements.back().t = low.t + period / 2;
-    mean_elements.back().a = AutomaticClenshawCurtis(
-                                 [&equinoctial_elements, &y](Instant const& t) {
-                                   ++y;
-                                   return equinoctial_elements(t).a;
-                                 },
-                                 low.t,
-                                 high.t,
-                                 1e-8,
-                                 std::nullopt) /
-                             period;
+    mean_elements.back().a =
+        /* (high.ʃ_a_dt - low.ʃ_a_dt) / period; */
+        AutomaticClenshawCurtis(
+            [&equinoctial_elements, &y](Instant const& t) {
+              ++y;
+              return equinoctial_elements(t).a;
+            },
+            low.t,
+            high.t,
+            1e-8,
+            std::nullopt) /
+        period;
     mean_elements.back().h = (high.ʃ_h_dt - low.ʃ_h_dt) / period;
     mean_elements.back().k = (high.ʃ_k_dt - low.ʃ_k_dt) / period;
     mean_elements.back().λ = (high.ʃ_λ_dt - low.ʃ_λ_dt) / period;
