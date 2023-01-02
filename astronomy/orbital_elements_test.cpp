@@ -168,7 +168,7 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
                               J2000 + 10 * Day, *ephemeris),
       spherical_earth,
       MasslessBody{});
-  ASSERT_THAT(status_or_elements, IsOk());
+  ASSERT_THAT(status_or_elements, IsOk()) << status_or_elements.status();
   OrbitalElements const& elements = status_or_elements.value();
   EXPECT_THAT(
       elements.anomalistic_period(),
