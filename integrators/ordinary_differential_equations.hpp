@@ -37,82 +37,81 @@ namespace internal_ordinary_differential_equations {
 using base::not_null;
 using geometry::Instant;
 using numerics::DoublePrecision;
+using quantities::Derivative;
 using quantities::Difference;
-using quantities::Quotient;
 using quantities::Time;
 using quantities::Variation;
 
 // A differential equation of the form y′ = f(s, y).
-// |State| is the type of y.
-template<typename IndependentVariable_, typename... StateElements>
+// |DependentVariable_| are the types of the elements of y.
+template<typename IndependentVariable_, typename... DependentVariable>
 struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
   static constexpr std::int64_t order = 1;
   using IndependentVariable = IndependentVariable_;
   using IndependentVariableDifference = Difference<IndependentVariable>;
-  using State = std::tuple<std::vector<StateElements>...>;
-  using StateDifference = std::tuple<std::vector<Difference<StateElements>>...>;
-  using StateVariation = std::tuple<std::vector<
-      Quotient<Difference<StateElements>, IndependentVariableDifference>>...>;
+  using DependentVariables = std::tuple<std::vector<DependentVariable>...>;
+  using DependentVariableDifferences =
+      std::tuple<std::vector<Difference<DependentVariable>>...>;
+  using DependentVariableDerivatives = std::tuple<std::vector<
+      Derivative<DependentVariable, IndependentVariable>>...>;
 
+  // A functor that computes f(s, y) and stores it in |y′|.  This functor must
+  // be called with |std::get<i>(y′).size()| equal to |std::get<i>(y).size()|
+  // for all i, but there is no requirement on the values in |y′|.
   using RightHandSideComputation =
       std::function<absl::Status(IndependentVariable const& s,
-                                 State const& state,
-                                 StateVariation& variations)>;
+                                 DependentVariables const& y,
+                                 DependentVariableDerivatives& y′)>;
 
-  struct SystemState final {
-    SystemState() = default;
-    SystemState(IndependentVariable const& s, State const& y);
+  struct State final {
+    using Error = DependentVariableDifferences;
+
+    State() = default;
+    State(IndependentVariable const& s, DependentVariables const& y);
 
     DoublePrecision<IndependentVariable> s;
-    std::tuple<std::vector<DoublePrecision<StateElements>>...> y;
+    std::tuple<std::vector<DoublePrecision<DependentVariable>>...> y;
 
     friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
       return lhs.y == rhs.y && lhs.s == rhs.s;
     }
 
-    void WriteToMessage(not_null<serialization::SystemState*> message) const;
-    static SystemState ReadFromMessage(
-        serialization::SystemState const& message);
+    void WriteToMessage(not_null<serialization::State*> message) const;
+    static SystemState ReadFromMessage(serialization::State const& message);
   };
 
-  using SystemStateError = StateDifference;
-
-  // A functor that computes f(s, y) and stores it in |variations|.
-  // This functor must be called with |std::get<i>(variations).size()| equal to
-  // |std::get<i>(state).size()| for all i, but there is no requirement on the
-  // values in |variations|.
   RightHandSideComputation compute_derivative;
 };
 
 // A differential equation of the form X′ = A(X, t) + B(X, t), where exp(hA) and
-// exp(hB) are known.  |State| is the type of X.  These equations can be solved
+// exp(hB) are known.  |DependentVariable| is the type of X.  These equations can be solved
 // using splitting methods.
-template<typename... StateElements>
+template<typename... DependentVariable_>
 struct DecomposableFirstOrderDifferentialEquation final {
   static constexpr std::int64_t order = 1;
-  using State = std::tuple<std::vector<StateElements>...>;
+  using DependentVariable = std::tuple<std::vector<DependentVariable_>...>;
 
   using Flow = std::function<absl::Status(Instant const& t_initial,
                                           Instant const& t_final,
-                                          State const& initial_state,
-                                          State& final_state)>;
+                                          DependentVariable const& initial_state,
+                                          DependentVariable& final_state)>;
 
   struct SystemState final {
     SystemState() = default;
-    SystemState(Instant const& t, State const& y);
+    SystemState(Instant const& t, DependentVariable const& y);
 
     DoublePrecision<Instant> time;
-    std::tuple<std::vector<DoublePrecision<StateElements>>...> y;
+    std::tuple<std::vector<DoublePrecision<DependentVariable_>>...> y;
 
     friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
       return lhs.time == rhs.time && lhs.y == rhs.y;
     }
   };
 
-  // We cannot use |Difference<StateElements>| here for the same reason.  For
-  // some reason |DoublePrecision<StateElements>| above works...
+  // We cannot use |Difference<DependentVariable_>| here for the same reason.  For
+  // some reason |DoublePrecision<DependentVariable_>| above works...
   using SystemStateError =
-      std::tuple<std::vector<Difference<StateElements, StateElements>>...>;
+      std::tuple<std::vector<Difference<DependentVariable_, DependentVariable_>>...>;
 
   // left_flow(t₀, t₁, X₀, X₁) sets X₁ to exp((t₁-t₀)A)X₀, and
   // right_flow(t₀, t₁, X₀, X₁) sets X₁ to exp((t₁-t₀)B)X₀.
