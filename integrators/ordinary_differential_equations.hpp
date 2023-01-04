@@ -43,7 +43,7 @@ using quantities::Time;
 using quantities::Variation;
 
 // A differential equation of the form y′ = f(s, y).
-// |DependentVariable_| are the types of the elements of y.
+// |DependentVariable| are the types of the elements of y.
 template<typename IndependentVariable_, typename... DependentVariable>
 struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
   static constexpr std::int64_t order = 1;
