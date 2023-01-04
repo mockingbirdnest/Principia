@@ -77,7 +77,7 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
     }
 
     void WriteToMessage(not_null<serialization::State*> message) const;
-    static SystemState ReadFromMessage(serialization::State const& message);
+    static State ReadFromMessage(serialization::State const& message);
   };
 
   RightHandSideComputation compute_derivative;
