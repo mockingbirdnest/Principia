@@ -53,13 +53,13 @@ template<typename InertialFrame, typename Frame>
 auto Equipotential<InertialFrame, Frame>::ComputeLine(
     Plane<Frame> const& plane,
     Instant const& t,
-    Position<Frame> const& position) const -> State {
+    Position<Frame> const& position) const -> DependentVariables {
   auto const binormal = plane.UnitBinormals().front();
   ODE equation{
       .compute_derivative = std::bind(
           &Equipotential::RightHandSide,
           this, binormal, position, t, _1, _2, _3)};
-  SystemState initial_state(s_initial_, {{position}, {/*β=*/0}});
+  State initial_state(s_initial_, {{position}, {/*β=*/0}});
   InitialValueProblem<ODE> const problem{
       .equation = std::move(equation),
       .initial_state = std::move(initial_state)};
@@ -71,13 +71,13 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
           /*max_steps=*/adaptive_parameters_.max_steps(),
           /*last_step_is_exact=*/true);
 
-  State equipotential;
+  DependentVariables equipotential;
   typename AdaptiveStepSizeIntegrator<ODE>::AppendState const append_state =
-      [&equipotential](SystemState const& system_state) {
+      [&equipotential](State const& state) {
         std::get<0>(equipotential)
-            .push_back(std::get<0>(system_state.y).front().value);
+            .push_back(std::get<0>(state.y).front().value);
         std::get<1>(equipotential)
-            .push_back(std::get<1>(system_state.y).front().value);
+            .push_back(std::get<1>(state.y).front().value);
       };
 
   auto const tolerance_to_error_ratio =
@@ -94,7 +94,8 @@ template<typename InertialFrame, typename Frame>
 auto Equipotential<InertialFrame, Frame>::ComputeLine(
     Plane<Frame> const& plane,
     Instant const& t,
-    DegreesOfFreedom<Frame> const& degrees_of_freedom) const -> State {
+    DegreesOfFreedom<Frame> const& degrees_of_freedom) const
+    -> DependentVariables {
   // Compute the total (specific) energy.
   auto const potential_energy =
       dynamic_frame_->GeometricPotential(t, degrees_of_freedom.position());
@@ -109,7 +110,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
     Plane<Frame> const& plane,
     Instant const& t,
     Position<Frame> const& start_position,
-    SpecificEnergy const& total_energy) const -> State {
+    SpecificEnergy const& total_energy) const -> DependentVariables {
   auto const lines = ComputeLines(plane, t, {start_position}, total_energy);
   CHECK_EQ(1, lines.size());
   return lines[0];
@@ -120,7 +121,8 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     Plane<Frame> const& plane,
     Instant const& t,
     std::vector<Position<Frame>> const& start_positions,
-    SpecificEnergy const& total_energy) const -> std::vector<State> {
+    SpecificEnergy const& total_energy) const
+    -> std::vector<DependentVariables> {
   // The function on which we perform gradient descent is defined to have a
   // minimum at a position where the potential is equal to the total energy.
   auto const f = [this, t, total_energy](Position<Frame> const& position) {
@@ -193,7 +195,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     std::vector<Position<Frame>> const& peaks,
     std::vector<Well> const& wells,
     std::function<Position<Frame>(Position<Frame>)> towards_infinity,
-    SpecificEnergy const& energy) const -> std::vector<State> {
+    SpecificEnergy const& energy) const -> std::vector<DependentVariables> {
   using WellIterator = typename std::vector<Well>::const_iterator;
   LOG(ERROR) << "V=" << energy;
 
@@ -342,24 +344,24 @@ absl::Status Equipotential<InertialFrame, Frame>::RightHandSide(
     Position<Frame> const& position,
     Instant const& t,
     IndependentVariable const s,
-    State const& state,
-    StateVariation& state_variation) const {
+    DependentVariables const& values,
+    DependentVariableDerivatives& derivatives) const {
   // First state variable.
-  auto const& γₛ = std::get<0>(state).front();
+  auto const& γₛ = std::get<0>(values).front();
   auto const dVǀᵧ₍ₛ₎ =
       dynamic_frame_->RotationFreeGeometricAccelerationAtRest(t, γₛ);
   Displacement<Frame> const γʹ =
       Normalize(binormal * dVǀᵧ₍ₛ₎) * characteristic_length_;
 
   // Second state variable.
-  double const β = std::get<1>(state).front();
+  double const β = std::get<1>(values).front();
   auto const& γ₀ = position;
   double const βʹ = s == s_initial_ ? 0
                                     : Pow<2>(characteristic_length_) *
                                           (s - s_initial_) / (γₛ - γ₀).Norm²();
 
-  std::get<0>(state_variation).front() = γʹ;
-  std::get<1>(state_variation).front() = βʹ;
+  std::get<0>(derivatives).front() = γʹ;
+  std::get<1>(derivatives).front() = βʹ;
 
   return β > β_max_ ? absl::AbortedError("β reached max") : absl::OkStatus();
 }
@@ -367,8 +369,8 @@ absl::Status Equipotential<InertialFrame, Frame>::RightHandSide(
 template<typename InertialFrame, typename Frame>
 double Equipotential<InertialFrame, Frame>::ToleranceToErrorRatio(
     IndependentVariableDifference const current_s_step,
-    SystemState const& /*state*/,
-    SystemStateError const& error) const {
+    State const& /*state*/,
+    State::Error const& error) const {
   Length const max_length_error = std::get<0>(error).front().Norm();
   double const max_braking_error = Abs(std::get<1>(error).front());
   return std::min(

@@ -498,16 +498,16 @@ namespace internal_ordinary_differential_equations {
 
 void PrintTo(
     typename internal_embedded_explicit_runge_kutta_nyström_integrator::ODE::
-        State const& system_state,
+        State const& state,
     std::ostream* const out) {
-  *out << "\nTime: " << system_state.time << "\n";
+  *out << "\nTime: " << state.time << "\n";
   *out << "Positions:\n";
-  for (int i = 0; i < system_state.positions.size(); ++i) {
-    *out << "  " << i << ": " << system_state.positions[i] << "\n";
+  for (int i = 0; i < state.positions.size(); ++i) {
+    *out << "  " << i << ": " << state.positions[i] << "\n";
   }
   *out << "Velocities:\n";
-  for (int i = 0; i < system_state.velocities.size(); ++i) {
-    *out << "  " << i << ": " << system_state.velocities[i] << "\n";
+  for (int i = 0; i < state.velocities.size(); ++i) {
+    *out << "  " << i << ": " << state.velocities[i] << "\n";
   }
 }
 

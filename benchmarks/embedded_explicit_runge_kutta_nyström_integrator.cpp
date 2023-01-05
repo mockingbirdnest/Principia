@@ -62,8 +62,8 @@ using World = Frame<enum class WorldTag, Inertial>;
 template<typename ODE>
 double HarmonicOscillatorToleranceRatio1D(
     Time const& h,
-    typename ODE::SystemState const& /*state*/,
-    typename ODE::SystemStateError const& error,
+    typename ODE::State const& /*state*/,
+    typename ODE::State::Error const& error,
     Length const& q_tolerance,
     Speed const& v_tolerance) {
   return std::min(q_tolerance / Abs(error.position_error[0]),
@@ -73,8 +73,8 @@ double HarmonicOscillatorToleranceRatio1D(
 template<typename ODE>
 double HarmonicOscillatorToleranceRatio3D(
     Time const& h,
-    typename ODE::SystemState const& /*state*/,
-    typename ODE::SystemStateError const& error,
+    typename ODE::State const& /*state*/,
+    typename ODE::State::Error const& error,
     Length const& q_tolerance,
     Speed const& v_tolerance) {
   return std::min(q_tolerance / (error.position_error[0]).Norm(),
@@ -97,7 +97,7 @@ void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
   Length const length_tolerance = 1e-6 * Metre;
   Speed const speed_tolerance = 1e-6 * Metre / Second;
 
-  std::vector<ODE::SystemState> solution;
+  std::vector<ODE::State> solution;
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration1D,
@@ -105,7 +105,7 @@ void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
   InitialValueProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   problem.initial_state = {t_initial, {q_initial}, {v_initial}};
-  auto const append_state = [&solution](ODE::SystemState const& state) {
+  auto const append_state = [&solution](ODE::State const& state) {
     solution.push_back(state);
   };
 
@@ -155,7 +155,7 @@ void SolveHarmonicOscillatorAndComputeError3D(
   Length const length_tolerance = 1e-6 * Metre;
   Speed const speed_tolerance = 1e-6 * Metre / Second;
 
-  std::vector<ODE::SystemState> solution;
+  std::vector<ODE::State> solution;
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration3D<World>,
@@ -163,7 +163,7 @@ void SolveHarmonicOscillatorAndComputeError3D(
   InitialValueProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   problem.initial_state = {t_initial, {World::origin + q_initial}, {v_initial}};
-  auto const append_state = [&solution](ODE::SystemState const& state) {
+  auto const append_state = [&solution](ODE::State const& state) {
     solution.push_back(state);
   };
 

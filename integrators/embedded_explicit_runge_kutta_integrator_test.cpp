@@ -512,10 +512,10 @@ namespace internal_ordinary_differential_equations {
 
 void PrintTo(
     typename internal_embedded_explicit_runge_kutta_integrator::ODE::
-        State const& system_state,
+        State const& state,
     std::ostream* const out) {
-  auto const& [positions, velocities] = system_state.y;
-  *out << "\nTime: " << system_state.s << "\n";
+  auto const& [positions, velocities] = state.y;
+  *out << "\nTime: " << state.s << "\n";
   *out << "Positions:\n";
   for (int i = 0; i < positions.size(); ++i) {
     *out << "  " << i << ": " << positions[i] << "\n";

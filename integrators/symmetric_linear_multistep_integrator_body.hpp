@@ -375,7 +375,7 @@ void SymmetricLinearMultistepIntegrator<Method, Position>::Instance::
 FillStepFromState(ODE const& equation,
                   typename ODE::State const& state,
                   Step& step) {
-  std::vector<typename ODE::DependentVariableDifference> positions;
+  typename ODE::DependentVariables positions;
   step.time = state.time;
   for (auto const& position : state.positions) {
     step.displacements.push_back(position - DoublePrecision<Position>());

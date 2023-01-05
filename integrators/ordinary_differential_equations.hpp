@@ -84,8 +84,8 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
 };
 
 // A differential equation of the form Xʹ = A(X, t) + B(X, t), where exp(hA) and
-// exp(hB) are known.  |DependentVariable| is the type of X.  These equations
-// can be solved using splitting methods.
+// exp(hB) are known.  |DependentVariable| are the types of the elements of X.
+// These equations can be solved using splitting methods.
 template<typename... DependentVariable>
 struct DecomposableFirstOrderDifferentialEquation final {
   static constexpr std::int64_t order = 1;
