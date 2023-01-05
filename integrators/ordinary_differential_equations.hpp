@@ -90,6 +90,7 @@ template<typename... DependentVariable>
 struct DecomposableFirstOrderDifferentialEquation final {
   static constexpr std::int64_t order = 1;
   using IndependentVariable = Instant;
+  using IndependentVariableDifference = Time;
   using DependentVariables = std::tuple<std::vector<DependentVariable>...>;
   using DependentVariableDifferences =
       std::tuple<std::vector<Difference<DependentVariable>>...>;
@@ -114,9 +115,6 @@ struct DecomposableFirstOrderDifferentialEquation final {
     }
   };
 
-  // We cannot use |Difference<DependentVariable_>| here for the same reason.  For
-  // some reason |DoublePrecision<DependentVariable_>| above works...
-
   // left_flow(t₀, t₁, X₀, X₁) sets X₁ to exp((t₁-t₀)A)X₀, and
   // right_flow(t₀, t₁, X₀, X₁) sets X₁ to exp((t₁-t₀)B)X₀.
   // The |std::vectors| in X₁ must have the same |size()| as those in X₀.  There
@@ -126,34 +124,45 @@ struct DecomposableFirstOrderDifferentialEquation final {
 };
 
 // A differential equation of the form q″ = f(t, q, q′).
-// |Position| is the type of q.
-template<typename Position_>
+// |DependentVariable| is the type of q.
+template<typename DependentVariable>
 struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
   static constexpr std::int64_t order = 2;
   using IndependentVariable = Instant;
   using IndependentVariableDifference = Time;
-  using Position = Position_;
+  using DependentVariables = std::vector<DependentVariable>;
   // The type of Δq.
-  using Displacement = Difference<Position>;
+  using DependentVariableDifferences =
+      std::vector<Difference<DependentVariable>>;
   // The type of q′.
-  using Velocity = Variation<Position>;
+  using DependentVariableDerivatives =
+      std::vector<Derivative<DependentVariable, IndependentVariable>>;
   // The type of q″.
-  using Acceleration = Variation<Velocity>;
+  using DependentVariableDerivatives2 =
+      std::vector<Derivative<DependentVariable, IndependentVariable, 2>>;
+
   using RightHandSideComputation =
       std::function<absl::Status(Instant const& t,
-                                 std::vector<Position> const& positions,
-                                 std::vector<Velocity> const& velocities,
-                                 std::vector<Acceleration>& accelerations)>;
+                                 DependentVariables const& positions,
+                                 DependentVariableDerivatives const& velocities,
+                                 DependentVariableDerivatives2& accelerations)>;
 
-  struct SystemState final {
-    SystemState() = default;
-    SystemState(Instant const& t,
-                std::vector<Position> const& q,
-                std::vector<Velocity> const& v);
+  struct State final {
+    struct Error final {
+      DependentVariableDifferences position_error;
+      DependentVariableDerivatives velocity_error;
+    };
 
-    DoublePrecision<Instant> time;
-    std::vector<DoublePrecision<Position>> positions;
-    std::vector<DoublePrecision<Velocity>> velocities;
+    State() = default;
+    State(Instant const& t,
+          DependentVariables const& q,
+          DependentVariableDerivatives const& v);
+
+    DoublePrecision<IndependentVariable> time;
+    std::vector<DoublePrecision<DependentVariable>> positions;
+    std::vector<
+        DoublePrecision<Derivative<DependentVariable, IndependentVariable>>>
+        velocities;
 
     friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
       return lhs.positions == rhs.positions &&
@@ -162,13 +171,7 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
     }
 
     void WriteToMessage(not_null<serialization::SystemState*> message) const;
-    static SystemState ReadFromMessage(
-        serialization::SystemState const& message);
-  };
-
-  struct SystemStateError final {
-    std::vector<Displacement> position_error;
-    std::vector<Velocity> velocity_error;
+    static State ReadFromMessage(serialization::State const& message);
   };
 
   // A functor that computes f(t, q, q′) and stores it in |accelerations|.
@@ -179,30 +182,27 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
 };
 
 // A differential equation of the form q″ = f(t, q).
-// |Position| is the type of q.
-template<typename Position_>
+// |DependentVariable| is the type of q.
+template<typename DependentVariable>
 struct SpecialSecondOrderDifferentialEquation final {
   static constexpr std::int64_t order = 2;
   using IndependentVariable = Instant;
   using IndependentVariableDifference = Time;
-  using Position = Position_;
+  using DependentVariables = std::vector<DependentVariable>;
   // The type of Δq.
-  using Displacement = Difference<Position>;
-  // The type of q′.
-  using Velocity = Variation<Position>;
+  using DependentVariableDifferences =
+      std::vector<Difference<DependentVariable>>;
   // The type of q″.
-  using Acceleration = Variation<Velocity>;
-  using RightHandSideComputation =
-      std::function<
-          absl::Status(Instant const& t,
-                       std::vector<Position> const& positions,
-                       std::vector<Acceleration>& accelerations)>;
+  using DependentVariableDerivatives2 =
+      std::vector<Derivative<DependentVariable, IndependentVariable, 2>>;
 
-  using SystemState = typename ExplicitSecondOrderOrdinaryDifferentialEquation<
-      Position>::SystemState;
-  using SystemStateError =
-      typename ExplicitSecondOrderOrdinaryDifferentialEquation<
-          Position>::SystemStateError;
+  using RightHandSideComputation =
+      std::function<absl::Status(Instant const& t,
+                                 DependentVariables const& positions,
+                                 DependentVariableDerivatives2& accelerations)>;
+
+  using State = typename ExplicitSecondOrderOrdinaryDifferentialEquation<
+      DependentVariable>::State;
 
   // A functor that computes f(q, t) and stores it in |accelerations|.
   // This functor must be called with |accelerations.size()| equal to
@@ -213,9 +213,9 @@ struct SpecialSecondOrderDifferentialEquation final {
 
 // An initial value problem.
 template<typename ODE>
-struct IntegrationProblem final {
+struct InitialValueProblem final {
   ODE equation;
-  typename ODE::SystemState initial_state;
+  typename ODE::State initial_state;
 };
 
 }  // namespace internal_ordinary_differential_equations
@@ -226,7 +226,7 @@ using internal_ordinary_differential_equations::
     ExplicitFirstOrderOrdinaryDifferentialEquation;
 using internal_ordinary_differential_equations::
     ExplicitSecondOrderOrdinaryDifferentialEquation;
-using internal_ordinary_differential_equations::IntegrationProblem;
+using internal_ordinary_differential_equations::InitialValueProblem;
 using internal_ordinary_differential_equations::
     SpecialSecondOrderDifferentialEquation;
 
