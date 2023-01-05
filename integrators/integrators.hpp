@@ -28,13 +28,13 @@ class Integrator {
   using ODE = ODE_;
   using IndependentVariable = typename ODE::IndependentVariable;
   using AppendState =
-      std::function<void(typename ODE::SystemState const& state)>;
+      std::function<void(typename ODE::State const& state)>;
 
   // An object for holding the integrator state during the integration of a
   // problem.
   class Instance {
    public:
-    Instance(IntegrationProblem<ODE> const& problem,
+    Instance(InitialValueProblem<ODE> const& problem,
              AppendState const& append_state);
     virtual ~Instance() = default;
 
@@ -46,7 +46,7 @@ class Integrator {
     DoublePrecision<Instant> const& time() const;
 
     // The last state integrated by this instance.
-    typename ODE::SystemState const& state() const;
+    typename ODE::State const& state() const;
 
     // Performs a copy of this object.
     virtual not_null<std::unique_ptr<Instance>> Clone() const = 0;
@@ -62,7 +62,7 @@ class Integrator {
     // We make the data members protected because they need to be easily
     // accessible by subclasses.
     ODE const equation_;
-    typename ODE::SystemState current_state_;
+    typename ODE::State current_state_;
     AppendState const append_state_;
   };
 
@@ -87,7 +87,7 @@ class FixedStepSizeIntegrator : public Integrator<ODE_> {
 
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
-    template<typename S = typename ODE::SystemState,
+    template<typename S = typename ODE::State,
              typename = std::enable_if_t<base::is_serializable_v<S>>>
     static not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
     ReadFromMessage(serialization::IntegratorInstance const& message,
@@ -95,7 +95,7 @@ class FixedStepSizeIntegrator : public Integrator<ODE_> {
                     AppendState const& append_state);
 
    protected:
-    Instance(IntegrationProblem<ODE> const& problem,
+    Instance(InitialValueProblem<ODE> const& problem,
              AppendState const& append_state,
              Time const& step);
 
@@ -105,7 +105,7 @@ class FixedStepSizeIntegrator : public Integrator<ODE_> {
   // The factory function for |Instance|, above.  It ensures that the instance
   // has a back-pointer to its integrator.
   virtual not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
-  NewInstance(IntegrationProblem<ODE> const& problem,
+  NewInstance(InitialValueProblem<ODE> const& problem,
               AppendState const& append_state,
               Time const& step) const = 0;
 
@@ -140,8 +140,8 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
   // result of the next call to this functor close to |safety_factor|.
   using ToleranceToErrorRatio = std::function<double(
       IndependentVariableDifference const& current_step_size,
-      typename ODE::SystemState const& state,
-      typename ODE::SystemStateError const& error)>;
+      typename ODE::State const& state,
+      typename ODE::State::Error const& error)>;
 
   struct Parameters final {
     Parameters(IndependentVariableDifference const& first_step,
@@ -183,7 +183,7 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
 
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
-    template<typename S = typename ODE::SystemState,
+    template<typename S = typename ODE::State,
              typename = std::enable_if_t<base::is_serializable_v<S>>>
     static not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
     ReadFromMessage(serialization::IntegratorInstance const& message,
@@ -192,7 +192,7 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
                     ToleranceToErrorRatio const& tolerance_to_error_ratio);
 
    protected:
-    Instance(IntegrationProblem<ODE> const& problem,
+    Instance(InitialValueProblem<ODE> const& problem,
              AppendState const& append_state,
              ToleranceToErrorRatio tolerance_to_error_ratio,
              Parameters const& parameters,
@@ -208,7 +208,7 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
   // The factory function for |Instance|, above.  It ensures that the instance
   // has a back-pointer to its integrator.
   virtual not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
-  NewInstance(IntegrationProblem<ODE> const& problem,
+  NewInstance(InitialValueProblem<ODE> const& problem,
               typename Integrator<ODE>::AppendState const& append_state,
               ToleranceToErrorRatio const& tolerance_to_error_ratio,
               Parameters const& parameters) const = 0;

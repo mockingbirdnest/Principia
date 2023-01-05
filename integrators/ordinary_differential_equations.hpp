@@ -42,7 +42,7 @@ using quantities::Difference;
 using quantities::Time;
 using quantities::Variation;
 
-// A differential equation of the form y′ = f(s, y).
+// A differential equation of the form yʹ = f(s, y).
 // |DependentVariable| are the types of the elements of y.
 template<typename IndependentVariable_, typename... DependentVariable>
 struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
@@ -55,13 +55,13 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
   using DependentVariableDerivatives = std::tuple<std::vector<
       Derivative<DependentVariable, IndependentVariable>>...>;
 
-  // A functor that computes f(s, y) and stores it in |y′|.  This functor must
-  // be called with |std::get<i>(y′).size()| equal to |std::get<i>(y).size()|
-  // for all i, but there is no requirement on the values in |y′|.
+  // A functor that computes f(s, y) and stores it in |yʹ|.  This functor must
+  // be called with |std::get<i>(yʹ).size()| equal to |std::get<i>(y).size()|
+  // for all i, but there is no requirement on the values in |yʹ|.
   using RightHandSideComputation =
       std::function<absl::Status(IndependentVariable const& s,
                                  DependentVariables const& y,
-                                 DependentVariableDerivatives& y′)>;
+                                 DependentVariableDerivatives& yʹ)>;
 
   struct State final {
     using Error = DependentVariableDifferences;
@@ -72,7 +72,7 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
     DoublePrecision<IndependentVariable> s;
     std::tuple<std::vector<DoublePrecision<DependentVariable>>...> y;
 
-    friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
+    friend bool operator==(State const& lhs, State const& rhs) {
       return lhs.y == rhs.y && lhs.s == rhs.s;
     }
 
@@ -83,7 +83,7 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
   RightHandSideComputation compute_derivative;
 };
 
-// A differential equation of the form X′ = A(X, t) + B(X, t), where exp(hA) and
+// A differential equation of the form Xʹ = A(X, t) + B(X, t), where exp(hA) and
 // exp(hB) are known.  |DependentVariable| is the type of X.  These equations
 // can be solved using splitting methods.
 template<typename... DependentVariable>
@@ -110,7 +110,7 @@ struct DecomposableFirstOrderDifferentialEquation final {
     DoublePrecision<Instant> time;
     std::tuple<std::vector<DoublePrecision<DependentVariable>>...> y;
 
-    friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
+    friend bool operator==(State const& lhs, State const& rhs) {
       return lhs.time == rhs.time && lhs.y == rhs.y;
     }
   };
@@ -123,23 +123,27 @@ struct DecomposableFirstOrderDifferentialEquation final {
   Flow right_flow;
 };
 
-// A differential equation of the form q″ = f(t, q, q′).
-// |DependentVariable| is the type of q.
-template<typename DependentVariable>
+// A differential equation of the form qʺ = f(t, q, qʹ).
+// |DependentVariable_| is the type of q.
+template<typename DependentVariable_>
 struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
   static constexpr std::int64_t order = 2;
   using IndependentVariable = Instant;
   using IndependentVariableDifference = Time;
-  using DependentVariables = std::vector<DependentVariable>;
+  using DependentVariable = DependentVariable_;
   // The type of Δq.
-  using DependentVariableDifferences =
-      std::vector<Difference<DependentVariable>>;
-  // The type of q′.
-  using DependentVariableDerivatives =
-      std::vector<Derivative<DependentVariable, IndependentVariable>>;
-  // The type of q″.
+  using DependentVariableDifference = Difference<DependentVariable>;
+  // The type of qʹ.
+  using DependentVariableDerivative =
+      Derivative<DependentVariable, IndependentVariable>;
+  // The type of qʺ.
+  using DependentVariableDerivative2 =
+      Derivative<DependentVariable, IndependentVariable, 2>;
+  using DependentVariables = std::vector<DependentVariable>;
+  using DependentVariableDifferences = std::vector<DependentVariableDifference>;
+  using DependentVariableDerivatives = std::vector<DependentVariableDerivative>;
   using DependentVariableDerivatives2 =
-      std::vector<Derivative<DependentVariable, IndependentVariable, 2>>;
+      std::vector<DependentVariableDerivative2>;
 
   using RightHandSideComputation =
       std::function<absl::Status(IndependentVariable const& t,
@@ -164,7 +168,7 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
         DoublePrecision<Derivative<DependentVariable, IndependentVariable>>>
         velocities;
 
-    friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
+    friend bool operator==(State const& lhs, State const& rhs) {
       return lhs.positions == rhs.positions &&
              lhs.velocities == rhs.velocities &&
              lhs.time == rhs.time;
@@ -174,27 +178,33 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
     static State ReadFromMessage(serialization::State const& message);
   };
 
-  // A functor that computes f(t, q, q′) and stores it in |accelerations|.
+  // A functor that computes f(t, q, qʹ) and stores it in |accelerations|.
   // This functor must be called with |accelerations.size()| equal to
   // |positions.size()| and |velocities.size()| but there is no requirement on
   // the values in |accelerations|.
   RightHandSideComputation compute_acceleration;
 };
 
-// A differential equation of the form q″ = f(t, q).
-// |DependentVariable| is the type of q.
-template<typename DependentVariable>
+// A differential equation of the form qʺ = f(t, q).
+// |DependentVariable_| is the type of q.
+template<typename DependentVariable_>
 struct SpecialSecondOrderDifferentialEquation final {
   static constexpr std::int64_t order = 2;
   using IndependentVariable = Instant;
   using IndependentVariableDifference = Time;
-  using DependentVariables = std::vector<DependentVariable>;
+  using DependentVariable = DependentVariable_;
   // The type of Δq.
-  using DependentVariableDifferences =
-      std::vector<Difference<DependentVariable>>;
-  // The type of q″.
+  using DependentVariableDifference = Difference<DependentVariable>;
+  // The type of qʹ.
+  using DependentVariableDerivative =
+      Derivative<DependentVariable, IndependentVariable>;
+  // The type of qʺ.
+  using DependentVariableDerivative2 =
+      Derivative<DependentVariable, IndependentVariable, 2>;
+  using DependentVariables = std::vector<DependentVariable>;
+  using DependentVariableDifferences = std::vector<DependentVariableDifference>;
   using DependentVariableDerivatives2 =
-      std::vector<Derivative<DependentVariable, IndependentVariable, 2>>;
+      std::vector<DependentVariableDerivative2>;
 
   using RightHandSideComputation =
       std::function<absl::Status(IndependentVariable const& t,

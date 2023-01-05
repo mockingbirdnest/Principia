@@ -102,7 +102,7 @@ class EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator
         serialization::
         EmbeddedExplicitGeneralizedRungeKuttaNystromIntegratorInstance const&
                 extension,
-        IntegrationProblem<ODE> const& problem,
+        InitialValueProblem<ODE> const& problem,
         AppendState const& append_state,
         ToleranceToErrorRatio const& tolerance_to_error_ratio,
         Parameters const& parameters,
@@ -112,7 +112,7 @@ class EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator
             integrator);
 
    private:
-    Instance(IntegrationProblem<ODE> const& problem,
+    Instance(InitialValueProblem<ODE> const& problem,
              AppendState const& append_state,
              ToleranceToErrorRatio const& tolerance_to_error_ratio,
              Parameters const& parameters,
@@ -126,7 +126,7 @@ class EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator
   };
 
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
-      IntegrationProblem<ODE> const& problem,
+      InitialValueProblem<ODE> const& problem,
       AppendState const& append_state,
       ToleranceToErrorRatio const& tolerance_to_error_ratio,
       Parameters const& parameters) const override;

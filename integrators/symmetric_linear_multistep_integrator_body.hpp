@@ -25,8 +25,8 @@ template<typename Method, typename Position>
 absl::Status
 SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Solve(
     Instant const& t_final) {
-  using Acceleration = typename ODE::Acceleration;
-  using Displacement = typename ODE::Displacement;
+  using Displacement = typename ODE::DependentVariableDifference;
+  using Acceleration = typename ODE::DependentVariableDerivative2;
   using DoubleDisplacement = DoublePrecision<Displacement>;
   using DoubleDisplacements = std::vector<DoubleDisplacement>;
   using DoublePosition = DoublePrecision<Position>;
@@ -193,7 +193,7 @@ not_null<std::unique_ptr<
     typename SymmetricLinearMultistepIntegrator<Method, Position>::Instance>>
 SymmetricLinearMultistepIntegrator<Method, Position>::Instance::ReadFromMessage(
     serialization::SymmetricLinearMultistepIntegratorInstance const& extension,
-    IntegrationProblem<ODE> const& problem,
+    InitialValueProblem<ODE> const& problem,
     AppendState const& append_state,
     Time const& step,
     SymmetricLinearMultistepIntegrator const& integrator) {
@@ -215,7 +215,7 @@ WriteToMessage(
     not_null<serialization::SymmetricLinearMultistepIntegratorInstance::
                   Step*> const message) const {
   using AccelerationSerializer = QuantityOrMultivectorSerializer<
-      typename ODE::Acceleration,
+      typename ODE::DependentVariableDerivative2,
       serialization::SymmetricLinearMultistepIntegratorInstance::Step::
           Acceleration>;
   for (auto const& displacement : displacements) {
@@ -236,14 +236,14 @@ ReadFromMessage(
     serialization::SymmetricLinearMultistepIntegratorInstance::Step const&
         message) {
   using AccelerationSerializer = QuantityOrMultivectorSerializer<
-      typename ODE::Acceleration,
+      typename ODE::DependentVariableDerivative2,
       serialization::SymmetricLinearMultistepIntegratorInstance::Step::
           Acceleration>;
   Step step;
   for (auto const& displacement : message.displacements()) {
     step.displacements.push_back(
-        DoublePrecision<typename ODE::Displacement>::ReadFromMessage(
-            displacement));
+        DoublePrecision<typename ODE::DependentVariableDifference>::
+            ReadFromMessage(displacement));
   }
   for (auto const& acceleration : message.accelerations()) {
     step.accelerations.push_back(
@@ -255,21 +255,21 @@ ReadFromMessage(
 
 template<typename Method, typename Position>
 SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Instance(
-    IntegrationProblem<ODE> const& problem,
+    InitialValueProblem<ODE> const& problem,
     AppendState const& append_state,
     Time const& step,
     SymmetricLinearMultistepIntegrator const& integrator)
     : FixedStepSizeIntegrator<ODE>::Instance(problem, append_state, step),
       integrator_(integrator) {
   previous_steps_.emplace_back();
-  FillStepFromSystemState(this->equation_,
-                          this->current_state_,
-                          this->previous_steps_.back());
+  FillStepFromState(this->equation_,
+                    this->current_state_,
+                    this->previous_steps_.back());
 }
 
 template<typename Method, typename Position>
 SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Instance(
-    IntegrationProblem<ODE> const& problem,
+    InitialValueProblem<ODE> const& problem,
     AppendState const& append_state,
     Time const& step,
     int const startup_step_index,
@@ -293,7 +293,7 @@ Instance::StartupSolve(Instant const& t_final) {
   CHECK_LT(previous_steps_.size(), order);
 
   auto const startup_append_state =
-      [this](typename ODE::SystemState const& state) {
+      [this](typename ODE::State const& state) {
         // Stop changing anything once we're done with the startup.  We may be
         // called one more time by the |startup_integrator_|.
         if (previous_steps_.size() < order) {
@@ -304,9 +304,9 @@ Instance::StartupSolve(Instant const& t_final) {
           if (++startup_step_index_ % startup_step_divisor == 0) {
             CHECK_LT(previous_steps_.size(), order);
             previous_steps_.emplace_back();
-            FillStepFromSystemState(this->equation_,
-                                    this->current_state_,
-                                    previous_steps_.back());
+            FillStepFromState(this->equation_,
+                              this->current_state_,
+                              previous_steps_.back());
             // This call must happen last for a subtle reason: the callback may
             // want to |Clone| this instance (see |Ephemeris::Checkpoint|) in
             // which cases it is necessary that all the member variables be
@@ -332,9 +332,9 @@ Instance::StartupSolve(Instant const& t_final) {
 template<typename Method, typename Position>
 void SymmetricLinearMultistepIntegrator<Method, Position>::
 Instance::ComputeVelocityUsingCohenHubbardOesterwinter() {
-  using Acceleration = typename ODE::Acceleration;
-  using Displacement = typename ODE::Displacement;
-  using Velocity = typename ODE::Velocity;
+  using Displacement = typename ODE::DependentVariableDifference;
+  using Velocity = typename ODE::DependentVariableDerivative;
+  using Acceleration = typename ODE::DependentVariableDerivative2;
 
   // For the computation of the velocity we use a formula similar to that of
   // [CHO73].  More specifically, we use the coefficients η from
@@ -371,11 +371,11 @@ Instance::ComputeVelocityUsingCohenHubbardOesterwinter() {
 }
 
 template<typename Method, typename Position>
-void SymmetricLinearMultistepIntegrator<Method, Position>::
-Instance::FillStepFromSystemState(ODE const& equation,
-                                  typename ODE::SystemState const& state,
-                                  Step& step) {
-  std::vector<typename ODE::Position> positions;
+void SymmetricLinearMultistepIntegrator<Method, Position>::Instance::
+FillStepFromState(ODE const& equation,
+                  typename ODE::State const& state,
+                  Step& step) {
+  std::vector<typename ODE::DependentVariableDifference> positions;
   step.time = state.time;
   for (auto const& position : state.positions) {
     step.displacements.push_back(position - DoublePrecision<Position>());
@@ -403,7 +403,7 @@ template<typename Method, typename Position>
 not_null<std::unique_ptr<typename Integrator<
     SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
 SymmetricLinearMultistepIntegrator<Method, Position>::NewInstance(
-    IntegrationProblem<ODE> const& problem,
+    InitialValueProblem<ODE> const& problem,
     AppendState const& append_state,
     Time const& step) const {
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is

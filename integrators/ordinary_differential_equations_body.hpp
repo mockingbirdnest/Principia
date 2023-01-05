@@ -85,18 +85,22 @@ State::WriteToMessage(not_null<serialization::State*> const message) const {
   time.WriteToMessage(message->mutable_time());
 }
 
-template<typename Position>
-typename ExplicitSecondOrderOrdinaryDifferentialEquation<Position>::State
-ExplicitSecondOrderOrdinaryDifferentialEquation<Position>::
+template<typename DependentVariable>
+typename ExplicitSecondOrderOrdinaryDifferentialEquation<DependentVariable>::
+    State
+ExplicitSecondOrderOrdinaryDifferentialEquation<DependentVariable>::
 State::ReadFromMessage(serialization::State const& message) {
   State state;
   for (auto const& p : message.position()) {
-    state.positions.push_back(DoublePrecision<Position>::ReadFromMessage(p));
+    state.positions.push_back(
+        DoublePrecision<DependentVariable>::ReadFromMessage(p));
   }
   for (auto const& v : message.velocity()) {
-    state.velocities.push_back(DoublePrecision<Velocity>::ReadFromMessage(v));
+    state.velocities.push_back(
+        DoublePrecision<DependentVariableDerivative>::ReadFromMessage(v));
   }
-  state.time = DoublePrecision<Instant>::ReadFromMessage(message.time());
+  state.time =
+      DoublePrecision<IndependentVariable>::ReadFromMessage(message.time());
   return state;
 }
 

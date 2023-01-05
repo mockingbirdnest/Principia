@@ -45,7 +45,7 @@ using geometry::Sign;
 using geometry::Velocity;
 using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
 using integrators::ExplicitSecondOrderOrdinaryDifferentialEquation;
-using integrators::IntegrationProblem;
+using integrators::InitialValueProblem;
 using integrators::Integrator;
 using integrators::methods::Fine1987RKNG34;
 using numerics::Brent;
@@ -126,7 +126,7 @@ Ephemeris<Frame>::Ephemeris(
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
-  IntegrationProblem<NewtonianMotionEquation> problem;
+  InitialValueProblem<NewtonianMotionEquation> problem;
   problem.equation = MakeMassiveBodiesNewtonianMotionEquation();
 
   typename NewtonianMotionEquation::SystemState& state = problem.initial_state;
@@ -320,7 +320,7 @@ Ephemeris<Frame>::StoppableNewInstance(
     std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
     IntrinsicAccelerations const& intrinsic_accelerations,
     FixedStepParameters const& parameters) {
-  IntegrationProblem<NewtonianMotionEquation> problem;
+  InitialValueProblem<NewtonianMotionEquation> problem;
 
   problem.equation.compute_acceleration =
       [this, intrinsic_accelerations](
@@ -1351,7 +1351,7 @@ absl::Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
   Prolong(t_final).IgnoreError();
   RETURN_IF_STOPPED;
 
-  IntegrationProblem<ODE> problem;
+  InitialValueProblem<ODE> problem;
   problem.equation.compute_acceleration = std::move(compute_acceleration);
 
   problem.initial_state = {trajectory_last_time,

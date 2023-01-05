@@ -8,6 +8,7 @@
 #include "geometry/sign.hpp"
 #include "integrators/methods.hpp"
 #include "numerics/ulp_distance.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -19,13 +20,14 @@ using geometry::Sign;
 using numerics::DoublePrecision;
 using numerics::ULPDistance;
 using quantities::Abs;
+using quantities::Derivative;
 
 template<typename Method, typename Position>
 absl::Status SymplecticRungeKuttaNyströmIntegrator<Method, Position>::
 Instance::Solve(Instant const& t_final) {
-  using Displacement = typename ODE::Displacement;
-  using Velocity = typename ODE::Velocity;
-  using Acceleration = typename ODE::Acceleration;
+  using Displacement = typename ODE::DependentVariableDifference;
+  using Velocity = typename ODE::DependentVariableDerivative;
+  using Acceleration = typename ODE::DependentVariableDerivative2;
 
   auto const& a = integrator_.a_;
   auto const& b = integrator_.b_;
@@ -178,7 +180,7 @@ SymplecticRungeKuttaNyströmIntegrator<Method, Position>::Instance::
 ReadFromMessage(
     serialization::SymplecticRungeKuttaNystromIntegratorInstance const&
         extension,
-    IntegrationProblem<ODE> const& problem,
+    InitialValueProblem<ODE> const& problem,
     AppendState const& append_state,
     Time const& step,
     SymplecticRungeKuttaNyströmIntegrator const& integrator) {
@@ -188,7 +190,7 @@ ReadFromMessage(
 
 template<typename Method, typename Position>
 SymplecticRungeKuttaNyströmIntegrator<Method, Position>::
-Instance::Instance(IntegrationProblem<ODE> const& problem,
+Instance::Instance(InitialValueProblem<ODE> const& problem,
                    AppendState const& append_state,
                    Time const& step,
                    SymplecticRungeKuttaNyströmIntegrator const& integrator)
@@ -242,7 +244,7 @@ template<typename Method, typename Position>
 not_null<std::unique_ptr<typename Integrator<
     SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
 SymplecticRungeKuttaNyströmIntegrator<Method, Position>::NewInstance(
-    IntegrationProblem<ODE> const& problem,
+    InitialValueProblem<ODE> const& problem,
     AppendState const& append_state,
     Time const& step) const {
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is

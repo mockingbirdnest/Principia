@@ -86,13 +86,13 @@ class SymplecticRungeKuttaNyströmIntegrator
     static not_null<std::unique_ptr<Instance>> ReadFromMessage(
         serialization::SymplecticRungeKuttaNystromIntegratorInstance const&
             extension,
-        IntegrationProblem<ODE> const& problem,
+        InitialValueProblem<ODE> const& problem,
         AppendState const& append_state,
         Time const& step,
         SymplecticRungeKuttaNyströmIntegrator const& integrator);
 
    private:
-    Instance(IntegrationProblem<ODE> const& problem,
+    Instance(InitialValueProblem<ODE> const& problem,
              AppendState const& append_state,
              Time const& step,
              SymplecticRungeKuttaNyströmIntegrator const& integrator);
@@ -104,7 +104,7 @@ class SymplecticRungeKuttaNyströmIntegrator
   SymplecticRungeKuttaNyströmIntegrator();
 
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
-      IntegrationProblem<ODE> const& problem,
+      InitialValueProblem<ODE> const& problem,
       AppendState const& append_state,
       Time const& step) const override;
 

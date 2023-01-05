@@ -62,7 +62,7 @@ using geometry::InnerProduct;
 using geometry::Instant;
 using geometry::Velocity;
 using integrators::FixedStepSizeIntegrator;
-using integrators::IntegrationProblem;
+using integrators::InitialValueProblem;
 using integrators::SpecialSecondOrderDifferentialEquation;
 using numerics::DoublePrecision;
 using quantities::Acceleration;
@@ -102,7 +102,7 @@ namespace mathematica {
 // TODO(egg): it would probably be saner to use Position<Whatever> and make the
 // simple harmonic oscillator work in 3d.
 using ODE = SpecialSecondOrderDifferentialEquation<Length>;
-using Problem = IntegrationProblem<ODE>;
+using Problem = InitialValueProblem<ODE>;
 
 namespace {
 

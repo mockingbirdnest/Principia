@@ -60,7 +60,7 @@ template<typename Method, typename Position>
 not_null<std::unique_ptr<typename Integrator<
     DecomposableFirstOrderDifferentialEquation<Position>>::Instance>>
 SymplecticPartitionedRungeKuttaIntegrator<Method, Position>::
-NewInstance(IntegrationProblem<ODE> const& problem,
+NewInstance(InitialValueProblem<ODE> const& problem,
             AppendState const& append_state,
             Time const& step) const {
   return std::unique_ptr<Instance>(
@@ -79,7 +79,7 @@ not_null<std::unique_ptr<typename Integrator<
     DecomposableFirstOrderDifferentialEquation<Position>>::Instance>>
 SymplecticPartitionedRungeKuttaIntegrator<Method, Position>::
 ReadFromMessage(serialization::FixedStepSizeIntegratorInstance const& message,
-                IntegrationProblem<ODE> const& problem,
+                InitialValueProblem<ODE> const& problem,
                 AppendState const& append_state,
                 Time const& step) const {
   LOG(FATAL) << "ReadFromMessage NYI";

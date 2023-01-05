@@ -24,7 +24,7 @@ using geometry::Displacement;
 using geometry::Trivector;  // We don't use this every day.
 using geometry::Vector;
 using geometry::Wedge;
-using integrators::IntegrationProblem;
+using integrators::InitialValueProblem;
 using numerics::BroydenFletcherGoldfarbShanno;
 using numerics::DoublePrecision;
 using quantities::Abs;
@@ -60,7 +60,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
           &Equipotential::RightHandSide,
           this, binormal, position, t, _1, _2, _3)};
   SystemState initial_state(s_initial_, {{position}, {/*β=*/0}});
-  IntegrationProblem<ODE> const problem{
+  InitialValueProblem<ODE> const problem{
       .equation = std::move(equation),
       .initial_state = std::move(initial_state)};
 

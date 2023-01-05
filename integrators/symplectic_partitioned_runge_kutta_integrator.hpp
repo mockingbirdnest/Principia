@@ -69,7 +69,7 @@ class SymplecticPartitionedRungeKuttaIntegrator
         not_null<serialization::IntegratorInstance*> message) const override;
 
    private:
-    Instance(IntegrationProblem<ODE> const& problem,
+    Instance(InitialValueProblem<ODE> const& problem,
              AppendState const& append_state,
              Time const& step,
              SymplecticPartitionedRungeKuttaIntegrator const& integrator);
@@ -81,7 +81,7 @@ class SymplecticPartitionedRungeKuttaIntegrator
   SymplecticPartitionedRungeKuttaIntegrator();
 
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
-      IntegrationProblem<ODE> const& problem,
+      InitialValueProblem<ODE> const& problem,
       AppendState const& append_state,
       Time const& step) const override;
 
@@ -91,7 +91,7 @@ class SymplecticPartitionedRungeKuttaIntegrator
  private:
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> ReadFromMessage(
       serialization::FixedStepSizeIntegratorInstance const& message,
-      IntegrationProblem<ODE> const& problem,
+      InitialValueProblem<ODE> const& problem,
       AppendState const& append_state,
       Time const& step) const override;
 

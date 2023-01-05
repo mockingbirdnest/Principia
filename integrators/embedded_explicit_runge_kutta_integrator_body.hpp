@@ -28,11 +28,11 @@ using quantities::Quotient;
 
 template<typename Method,
          typename IndependentVariable,
-         typename... StateElements>
+         typename... DependentVariable>
 EmbeddedExplicitRungeKuttaIntegrator<
     Method,
     IndependentVariable,
-    StateElements...>::
+    DependentVariable...>::
 EmbeddedExplicitRungeKuttaIntegrator() {
   // The first node is always 0 in an explicit method.
   CHECK_EQ(0.0, c_[0]);
@@ -49,17 +49,18 @@ EmbeddedExplicitRungeKuttaIntegrator() {
 
 template<typename Method,
          typename IndependentVariable,
-         typename... StateElements>
+         typename... DependentVariable>
 absl::Status
 EmbeddedExplicitRungeKuttaIntegrator<Method,
                                      IndependentVariable,
-                                     StateElements...>::Instance::
+                                     DependentVariable...>::Instance::
 Solve(IndependentVariable const& s_final) {
   using IndependentVariableDifference =
       typename ODE::IndependentVariableDifference;
-  using State = typename ODE::State;
-  using StateDifference = typename ODE::StateDifference;
-  using StateVariation = typename ODE::StateVariation;
+  using DependentVariables = typename ODE::DependentVariables;
+  using DependentVariableDifferences = typename ODE::DependentVariableDifferences;
+  using DependentVariableDerivatives =
+      typename ODE::DependentVariableDerivatives;
 
   auto const& a = integrator_.a_;
   auto const& b̂ = integrator_.b̂_;
@@ -75,8 +76,8 @@ Solve(IndependentVariable const& s_final) {
   // |current_state| gets updated as the integration progresses to allow
   // restartability.
 
-  // State before the last, truncated step.
-  std::optional<typename ODE::SystemState> final_state;
+  // DependentVariables before the last, truncated step.
+  std::optional<typename ODE::State> final_state;
 
   // Argument checks.
   Sign const integration_direction = Sign(parameters.first_step);
@@ -97,21 +98,21 @@ Solve(IndependentVariable const& s_final) {
   // equations more readable.
   DoublePrecision<IndependentVariable>& s = current_state.s;
 
-  // State increment (high-order).
-  StateDifference Δŷ;
+  // DependentVariables increment (high-order).
+  DependentVariableDifferences Δŷ;
   // Current state.  This is a non-const reference whose purpose is to make
   // the equations more readable.
   auto& ŷ = current_state.y;
 
   // Difference between the low- and high-order approximations.
-  typename ODE::SystemStateError error_estimate;
+  typename ODE::State::Error error_estimate;
 
   // Current Runge-Kutta stage.
-  State y_stage;
+  DependentVariables y_stage;
 
-  StateVariation f;
-  StateVariation last_f;
-  std::vector<StateDifference> k(stages_);
+  DependentVariableDerivatives f;
+  DependentVariableDerivatives last_f;
+  std::vector<DependentVariableDifferences> k(stages_);
   for (auto& k_stage : k) {
     for_all_of(ŷ, Δŷ, k_stage).loop([](auto const& ŷ, auto& Δŷ, auto& k_stage) {
       int const dimension = ŷ.size();
@@ -205,7 +206,7 @@ Solve(IndependentVariable const& s_final) {
                   ? s_final
                   : s.value + (s.error + c[i] * h);
 
-          StateDifference Σⱼ_aᵢⱼ_kⱼ{};
+          DependentVariableDifferences Σⱼ_aᵢⱼ_kⱼ{};
           for (int j = 0; j < i; ++j) {
             for_all_of(k[j], ŷ, y_stage, Σⱼ_aᵢⱼ_kⱼ)
                 .loop([&a, i, j](auto const& kⱼ,
@@ -239,8 +240,8 @@ Solve(IndependentVariable const& s_final) {
       }
 
       // Increment computation and step size control.
-      StateDifference Σᵢ_b̂ᵢ_kᵢ{};
-      StateDifference Σᵢ_bᵢ_kᵢ{};
+      DependentVariableDifferences Σᵢ_b̂ᵢ_kᵢ{};
+      DependentVariableDifferences Σᵢ_bᵢ_kᵢ{};
       for (int i = 0; i < stages_; ++i) {
         for_all_of(k[i], ŷ, Δŷ, Σᵢ_b̂ᵢ_kᵢ, Σᵢ_bᵢ_kᵢ, error_estimate)
             .loop([&a, &b, &b̂, i](auto const& kᵢ,
@@ -308,36 +309,36 @@ Solve(IndependentVariable const& s_final) {
 
 template<typename Method,
          typename IndependentVariable,
-         typename... StateElements>
+         typename... DependentVariable>
 EmbeddedExplicitRungeKuttaIntegrator<Method,
                                      IndependentVariable,
-                                     StateElements...> const&
+                                     DependentVariable...> const&
 EmbeddedExplicitRungeKuttaIntegrator<Method,
                                      IndependentVariable,
-                                     StateElements...>::Instance::
+                                     DependentVariable...>::Instance::
 integrator() const {
   return integrator_;
 }
 
 template<typename Method,
          typename IndependentVariable,
-         typename... StateElements>
+         typename... DependentVariable>
 not_null<std::unique_ptr<
     typename Integrator<ExplicitFirstOrderOrdinaryDifferentialEquation<
-        IndependentVariable, StateElements...>>::Instance>>
+        IndependentVariable, DependentVariable...>>::Instance>>
 EmbeddedExplicitRungeKuttaIntegrator<Method,
                                      IndependentVariable,
-                                     StateElements...>::Instance::
+                                     DependentVariable...>::Instance::
 Clone() const {
   return std::unique_ptr<Instance>(new Instance(*this));
 }
 
 template<typename Method,
          typename IndependentVariable,
-         typename... StateElements>
+         typename... DependentVariable>
 void EmbeddedExplicitRungeKuttaIntegrator<Method,
                                           IndependentVariable,
-                                          StateElements...>::Instance::
+                                          DependentVariable...>::Instance::
 WriteToMessage(not_null<serialization::IntegratorInstance*> message) const {
   AdaptiveStepSizeIntegrator<ODE>::Instance::WriteToMessage(message);
   [[maybe_unused]] auto* const extension =
@@ -353,19 +354,19 @@ WriteToMessage(not_null<serialization::IntegratorInstance*> message) const {
 #if 0
 template<typename Method,
          typename IndependentVariable,
-         typename... StateElements>
+         typename... DependentVariable>
 template<typename, typename>
 not_null<std::unique_ptr<
     typename EmbeddedExplicitRungeKuttaIntegrator<Method,
                                                   IndependentVariable,
-                                                  StateElements...>::Instance>>
+                                                  DependentVariable...>::Instance>>
 EmbeddedExplicitRungeKuttaIntegrator<Method,
                                      IndependentVariable,
-                                     StateElements...>::Instance::
+                                     DependentVariable...>::Instance::
 ReadFromMessage(serialization::
                     EmbeddedExplicitRungeKuttaNystromIntegratorInstance const&
                         extension,
-                IntegrationProblem<ODE> const& problem,
+                InitialValueProblem<ODE> const& problem,
                 AppendState const& append_state,
                 ToleranceToErrorRatio const& tolerance_to_error_ratio,
                 Parameters const& parameters,
@@ -386,11 +387,11 @@ ReadFromMessage(serialization::
 
 template<typename Method,
          typename IndependentVariable,
-         typename... StateElements>
+         typename... DependentVariable>
 EmbeddedExplicitRungeKuttaIntegrator<Method,
                                      IndependentVariable,
-                                     StateElements...>::Instance::
-Instance(IntegrationProblem<ODE> const& problem,
+                                     DependentVariable...>::Instance::
+Instance(InitialValueProblem<ODE> const& problem,
          AppendState const& append_state,
          ToleranceToErrorRatio const& tolerance_to_error_ratio,
          Parameters const& parameters,
@@ -407,14 +408,14 @@ Instance(IntegrationProblem<ODE> const& problem,
 
 template<typename Method,
          typename IndependentVariable,
-         typename... StateElements>
+         typename... DependentVariable>
 not_null<std::unique_ptr<
     typename Integrator<ExplicitFirstOrderOrdinaryDifferentialEquation<
-        IndependentVariable, StateElements...>>::Instance>>
+        IndependentVariable, DependentVariable...>>::Instance>>
 EmbeddedExplicitRungeKuttaIntegrator<Method,
                                      IndependentVariable,
-                                     StateElements...>::
-NewInstance(IntegrationProblem<ODE> const& problem,
+                                     DependentVariable...>::
+NewInstance(InitialValueProblem<ODE> const& problem,
             AppendState const& append_state,
             ToleranceToErrorRatio const& tolerance_to_error_ratio,
             Parameters const& parameters) const {
@@ -432,10 +433,10 @@ NewInstance(IntegrationProblem<ODE> const& problem,
 
 template<typename Method,
          typename IndependentVariable,
-         typename... StateElements>
+         typename... DependentVariable>
 void EmbeddedExplicitRungeKuttaIntegrator<Method,
                                           IndependentVariable,
-                                          StateElements...>::
+                                          DependentVariable...>::
 WriteToMessage(
     not_null<serialization::AdaptiveStepSizeIntegrator*> message) const {
   message->set_kind(Method::kind);
@@ -445,11 +446,11 @@ WriteToMessage(
 
 template<typename Method,
          typename IndependentVariable,
-         typename... StateElements>
+         typename... DependentVariable>
 internal_embedded_explicit_runge_kutta_integrator::
     EmbeddedExplicitRungeKuttaIntegrator<Method,
                                          IndependentVariable,
-                                         StateElements...> const&
+                                         DependentVariable...> const&
 EmbeddedExplicitRungeKuttaIntegrator() {
   static_assert(
       std::is_base_of<methods::EmbeddedExplicitRungeKutta,
@@ -458,7 +459,7 @@ EmbeddedExplicitRungeKuttaIntegrator() {
   static internal_embedded_explicit_runge_kutta_integrator::
       EmbeddedExplicitRungeKuttaIntegrator<Method,
                                            IndependentVariable,
-                                           StateElements...> const integrator;
+                                           DependentVariable...> const integrator;
   return integrator;
 }
 

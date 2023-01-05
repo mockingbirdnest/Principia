@@ -51,7 +51,7 @@ class SymmetricLinearMultistepIntegrator
     static not_null<std::unique_ptr<Instance>> ReadFromMessage(
         serialization::SymmetricLinearMultistepIntegratorInstance const&
             extension,
-        IntegrationProblem<ODE> const& problem,
+        InitialValueProblem<ODE> const& problem,
         AppendState const& append_state,
         Time const& step,
         SymmetricLinearMultistepIntegrator const& integrator);
@@ -61,8 +61,9 @@ class SymmetricLinearMultistepIntegrator
     // here are really |Position|s, but we do complex computations on them and
     // it would be very inconvenient to cast these computations as barycentres.
     struct Step final {
-      std::vector<DoublePrecision<typename ODE::Displacement>> displacements;
-      std::vector<typename ODE::Acceleration> accelerations;
+      std::vector<DoublePrecision<typename ODE::DependentVariableDifference>>
+          displacements;
+      typename ODE::DependentVariableDerivatives2 accelerations;
       DoublePrecision<Instant> time;
 
       void WriteToMessage(
@@ -75,13 +76,13 @@ class SymmetricLinearMultistepIntegrator
               message);
     };
 
-    Instance(IntegrationProblem<ODE> const& problem,
+    Instance(InitialValueProblem<ODE> const& problem,
              AppendState const& append_state,
              Time const& step,
              SymmetricLinearMultistepIntegrator const& integrator);
 
     // For deserialization.
-    Instance(IntegrationProblem<ODE> const& problem,
+    Instance(InitialValueProblem<ODE> const& problem,
              AppendState const& append_state,
              Time const& step,
              int startup_step_index,
@@ -98,9 +99,9 @@ class SymmetricLinearMultistepIntegrator
     // method based on the accelerations computed by the main integrator.
     void ComputeVelocityUsingCohenHubbardOesterwinter();
 
-    static void FillStepFromSystemState(ODE const& equation,
-                                        typename ODE::SystemState const& state,
-                                        Step& step);
+    static void FillStepFromState(ODE const& equation,
+                                  typename ODE::State const& state,
+                                  Step& step);
 
     int startup_step_index_ = 0;
     std::list<Step> previous_steps_;  // At most |order_| elements.
@@ -112,7 +113,7 @@ class SymmetricLinearMultistepIntegrator
       FixedStepSizeIntegrator<ODE> const& startup_integrator);
 
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
-      IntegrationProblem<ODE> const& problem,
+      InitialValueProblem<ODE> const& problem,
       AppendState const& append_state,
       Time const& step) const override;
 
