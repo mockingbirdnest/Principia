@@ -392,6 +392,11 @@ Integrator<ODE_>::Instance::Instance(
       append_state_(std::move(append_state)) {}
 
 template<typename ODE_>
+ODE_ const& Integrator<ODE_>::Instance::equation() const {
+  return equation_;
+}
+
+template<typename ODE_>
 DoublePrecision<Instant> const&
 Integrator<ODE_>::Instance::time() const {
   return current_state_.time;
@@ -403,6 +408,11 @@ typename ODE_::SystemState const& Integrator<ODE_>::Instance::state() const {
 }
 
 template<typename ODE_>
+typename ODE_::SystemState& Integrator<ODE_>::Instance::state() {
+  return current_state_;
+}
+
+template<typename ODE_>
 void Integrator<ODE_>::Instance::WriteToMessage(
     not_null<serialization::IntegratorInstance*> message) const {
   current_state_.WriteToMessage(message->mutable_current_state());
@@ -410,6 +420,11 @@ void Integrator<ODE_>::Instance::WriteToMessage(
 
 template<typename ODE_>
 Integrator<ODE_>::Instance::Instance() : equation_() {}
+
+template<typename ODE_>
+Time const& FixedStepSizeIntegrator<ODE_>::Instance::step() const {
+  return step_;
+}
 
 template<typename ODE_>
 void FixedStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
