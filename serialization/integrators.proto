@@ -79,7 +79,7 @@ message FixedStepSizeIntegrator {
 message IntegratorInstance {
   extensions 7000 to 7999;  // Last used: 7001
 
-  required SystemState current_state = 1;
+  required State current_state = 1;
 }
 
 message AdaptiveStepSizeIntegratorInstance {
@@ -156,7 +156,7 @@ message SymplecticRungeKuttaNystromIntegratorInstance {
   }
 }
 
-message SystemState {
+message State {
   repeated DoublePrecision position = 1;
   repeated DoublePrecision velocity = 2;
   required DoublePrecision time = 3;
