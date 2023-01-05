@@ -84,24 +84,30 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
 };
 
 // A differential equation of the form X′ = A(X, t) + B(X, t), where exp(hA) and
-// exp(hB) are known.  |DependentVariable| is the type of X.  These equations can be solved
-// using splitting methods.
-template<typename... DependentVariable_>
+// exp(hB) are known.  |DependentVariable| is the type of X.  These equations
+// can be solved using splitting methods.
+template<typename... DependentVariable>
 struct DecomposableFirstOrderDifferentialEquation final {
   static constexpr std::int64_t order = 1;
-  using DependentVariable = std::tuple<std::vector<DependentVariable_>...>;
+  using IndependentVariable = Instant;
+  using DependentVariables = std::tuple<std::vector<DependentVariable>...>;
+  using DependentVariableDifferences =
+      std::tuple<std::vector<Difference<DependentVariable>>...>;
 
-  using Flow = std::function<absl::Status(Instant const& t_initial,
-                                          Instant const& t_final,
-                                          DependentVariable const& initial_state,
-                                          DependentVariable& final_state)>;
+  using Flow =
+      std::function<absl::Status(Instant const& t_initial,
+                                 Instant const& t_final,
+                                 DependentVariables const& initial_state,
+                                 DependentVariables& final_state)>;
 
-  struct SystemState final {
-    SystemState() = default;
-    SystemState(Instant const& t, DependentVariable const& y);
+  struct State final {
+    using Error = DependentVariableDifferences;
+
+    State() = default;
+    State(Instant const& t, DependentVariables const& y);
 
     DoublePrecision<Instant> time;
-    std::tuple<std::vector<DoublePrecision<DependentVariable_>>...> y;
+    std::tuple<std::vector<DoublePrecision<DependentVariable>>...> y;
 
     friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
       return lhs.time == rhs.time && lhs.y == rhs.y;
@@ -110,8 +116,6 @@ struct DecomposableFirstOrderDifferentialEquation final {
 
   // We cannot use |Difference<DependentVariable_>| here for the same reason.  For
   // some reason |DoublePrecision<DependentVariable_>| above works...
-  using SystemStateError =
-      std::tuple<std::vector<Difference<DependentVariable_, DependentVariable_>>...>;
 
   // left_flow(t₀, t₁, X₀, X₁) sets X₁ to exp((t₁-t₀)A)X₀, and
   // right_flow(t₀, t₁, X₀, X₁) sets X₁ to exp((t₁-t₀)B)X₀.
