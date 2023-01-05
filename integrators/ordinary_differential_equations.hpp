@@ -96,8 +96,8 @@ struct DecomposableFirstOrderDifferentialEquation final {
       std::tuple<std::vector<Difference<DependentVariable>>...>;
 
   using Flow =
-      std::function<absl::Status(Instant const& t_initial,
-                                 Instant const& t_final,
+      std::function<absl::Status(IndependentVariable const& t_initial,
+                                 IndependentVariable const& t_final,
                                  DependentVariables const& initial_state,
                                  DependentVariables& final_state)>;
 
@@ -105,7 +105,7 @@ struct DecomposableFirstOrderDifferentialEquation final {
     using Error = DependentVariableDifferences;
 
     State() = default;
-    State(Instant const& t, DependentVariables const& y);
+    State(IndependentVariable const& t, DependentVariables const& y);
 
     DoublePrecision<Instant> time;
     std::tuple<std::vector<DoublePrecision<DependentVariable>>...> y;
@@ -142,7 +142,7 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
       std::vector<Derivative<DependentVariable, IndependentVariable, 2>>;
 
   using RightHandSideComputation =
-      std::function<absl::Status(Instant const& t,
+      std::function<absl::Status(IndependentVariable const& t,
                                  DependentVariables const& positions,
                                  DependentVariableDerivatives const& velocities,
                                  DependentVariableDerivatives2& accelerations)>;
@@ -154,7 +154,7 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
     };
 
     State() = default;
-    State(Instant const& t,
+    State(IndependentVariable const& t,
           DependentVariables const& q,
           DependentVariableDerivatives const& v);
 
@@ -170,7 +170,7 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
              lhs.time == rhs.time;
     }
 
-    void WriteToMessage(not_null<serialization::SystemState*> message) const;
+    void WriteToMessage(not_null<serialization::State*> message) const;
     static State ReadFromMessage(serialization::State const& message);
   };
 
@@ -197,7 +197,7 @@ struct SpecialSecondOrderDifferentialEquation final {
       std::vector<Derivative<DependentVariable, IndependentVariable, 2>>;
 
   using RightHandSideComputation =
-      std::function<absl::Status(Instant const& t,
+      std::function<absl::Status(IndependentVariable const& t,
                                  DependentVariables const& positions,
                                  DependentVariableDerivatives2& accelerations)>;
 
