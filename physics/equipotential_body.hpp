@@ -141,15 +141,15 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         plane);
   };
 
-  std::vector<State> states;
+  std::vector<DependentVariables> lines;
   for (auto const& start_position : start_positions) {
     // Compute the winding number of every line already found with respect to
     // |start_position|.  If any line "turns around" that position, we don't
     // need to compute a new equipotential, it would just duplicate one we
     // already have.
     bool must_compute_line = true;
-    for (auto const& state : states) {
-      auto const& line = std::get<0>(state);
+    for (auto const& l : lines) {
+      auto const& line = std::get<0>(l);
       std::int64_t const winding_number =
           WindingNumber(plane, start_position, line);
       if (winding_number > 0) {
@@ -178,14 +178,14 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     // point in building a line in that case.
     if (dynamic_frame_->GeometricPotential(t, equipotential_position.value()) <
         total_energy - Abs(total_energy) * energy_tolerance) {
-      states.push_back(State{});
+      lines.push_back(DependentVariables{});
       continue;
     }
     // Compute that equipotential.
-    states.push_back(ComputeLine(plane, t, equipotential_position.value()));
+    lines.push_back(ComputeLine(plane, t, equipotential_position.value()));
   }
 
-  return states;
+  return lines;
 }
 
 template<typename InertialFrame, typename Frame>
@@ -216,7 +216,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     }
   }
 
-  std::vector<State> states;
+  std::vector<DependentVariables> lines;
   for (int i = 0; i < peaks.size(); ++i) {
     auto const& delineation = peak_delineations[i];
     Position<Frame> const& peak = peaks[i];
@@ -262,7 +262,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
             r);
         Position<Frame> const equipotential_position =
             Barycentre(std::pair(peak, well.position), std::pair(x, r - x));
-        states.push_back(ComputeLine(plane, t, equipotential_position));
+        lines.push_back(ComputeLine(plane, t, equipotential_position));
       } else {
         // Try to delineate |peak| from the well at infinity.
         LOG(ERROR) << "Not delineated from infinity";
@@ -287,9 +287,9 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
             1.0);
         Position<Frame> const equipotential_position =
             Barycentre(std::pair(peak, far_away), std::pair(x, 1 - x));
-        states.push_back(ComputeLine(plane, t, equipotential_position));
+        lines.push_back(ComputeLine(plane, t, equipotential_position));
       }
-      auto const& line = std::get<0>(states.back());
+      auto const& line = std::get<0>(lines.back());
 
       // Figure out whether the equipotential introduces new delineations.
       std::set<WellIterator> enclosed_wells;
@@ -335,7 +335,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     }
   }
 
-  return states;
+  return lines;
 }
 
 template<typename InertialFrame, typename Frame>
