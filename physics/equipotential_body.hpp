@@ -24,7 +24,7 @@ using geometry::Displacement;
 using geometry::Trivector;  // We don't use this every day.
 using geometry::Vector;
 using geometry::Wedge;
-using integrators::IntegrationProblem;
+using integrators::InitialValueProblem;
 using numerics::BroydenFletcherGoldfarbShanno;
 using numerics::DoublePrecision;
 using quantities::Abs;
@@ -53,14 +53,14 @@ template<typename InertialFrame, typename Frame>
 auto Equipotential<InertialFrame, Frame>::ComputeLine(
     Plane<Frame> const& plane,
     Instant const& t,
-    Position<Frame> const& position) const -> States {
+    Position<Frame> const& position) const -> Line {
   auto const binormal = plane.UnitBinormals().front();
   ODE equation{
       .compute_derivative = std::bind(
           &Equipotential::RightHandSide,
           this, binormal, position, t, _1, _2, _3)};
-  SystemState initial_state(s_initial_, {{position}, {/*β=*/0}});
-  IntegrationProblem<ODE> const problem{
+  State initial_state(s_initial_, {{position}, {/*β=*/0}});
+  InitialValueProblem<ODE> const problem{
       .equation = std::move(equation),
       .initial_state = std::move(initial_state)};
 
@@ -71,17 +71,17 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
           /*max_steps=*/adaptive_parameters_.max_steps(),
           /*last_step_is_exact=*/true);
 
-  States equipotential;
+  Line equipotential;
   typename AdaptiveStepSizeIntegrator<ODE>::AppendState const append_state =
-      [&equipotential](SystemState const& system_state) {
-        State state;
-        for (auto const& y0 : std::get<0>(system_state.y)) {
-          std::get<0>(state).push_back(y0.value);
+      [&equipotential](State const& state) {
+        DependentVariables dependent_variables;
+        for (auto const& y0 : std::get<0>(state.y)) {
+          std::get<0>(dependent_variables).push_back(y0.value);
         }
-        for (auto const& y1 : std::get<1>(system_state.y)) {
-          std::get<1>(state).push_back(y1.value);
+        for (auto const& y1 : std::get<1>(state.y)) {
+          std::get<1>(dependent_variables).push_back(y1.value);
         }
-        equipotential.push_back(state);
+        equipotential.push_back(dependent_variables);
       };
 
   auto const tolerance_to_error_ratio =
@@ -98,7 +98,7 @@ template<typename InertialFrame, typename Frame>
 auto Equipotential<InertialFrame, Frame>::ComputeLine(
     Plane<Frame> const& plane,
     Instant const& t,
-    DegreesOfFreedom<Frame> const& degrees_of_freedom) const -> States {
+    DegreesOfFreedom<Frame> const& degrees_of_freedom) const -> Line {
   // Compute the total (specific) energy.
   auto const potential_energy =
       dynamic_frame_->GeometricPotential(t, degrees_of_freedom.position());
@@ -113,7 +113,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
     Plane<Frame> const& plane,
     Instant const& t,
     Position<Frame> const& start_position,
-    SpecificEnergy const& total_energy) const -> States {
+    SpecificEnergy const& total_energy) const -> Line {
   auto const lines = ComputeLines(plane, t, {start_position}, total_energy);
   CHECK_EQ(1, lines.size());
   return lines[0];
@@ -124,7 +124,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     Plane<Frame> const& plane,
     Instant const& t,
     std::vector<Position<Frame>> const& start_positions,
-    SpecificEnergy const& total_energy) const -> std::vector<States> {
+    SpecificEnergy const& total_energy) const -> Lines {
   // The function on which we perform gradient descent is defined to have a
   // minimum at a position where the potential is equal to the total energy.
   auto const f = [this, t, total_energy](Position<Frame> const& position) {
@@ -143,7 +143,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         plane);
   };
 
-  std::vector<States> lines;
+  Lines lines;
   for (auto const& start_position : start_positions) {
     // Compute the winding number of every line already found with respect to
     // |start_position|.  If any line "turns around" that position, we don't
@@ -152,9 +152,9 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     bool must_compute_line = true;
     for (auto const& line : lines) {
       std::vector<Position<Frame>> positions;
-      for (auto const& state : line) {
-        auto const& [positions_of_state, _] = state;
-        positions.push_back(positions_of_state.front());
+      for (auto const& dependent_variables : line) {
+        auto const& [positions_of_dependent_variables, _] = dependent_variables;
+        positions.push_back(positions_of_dependent_variables.front());
       }
       std::int64_t const winding_number =
           WindingNumber(plane, start_position, positions);
@@ -184,7 +184,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     // point in building a line in that case.
     if (dynamic_frame_->GeometricPotential(t, equipotential_position.value()) <
         total_energy - Abs(total_energy) * energy_tolerance) {
-      lines.push_back(States{});
+      lines.push_back(Line{});
       continue;
     }
     // Compute that equipotential.
@@ -201,7 +201,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     std::vector<Position<Frame>> const& peaks,
     std::vector<Well> const& wells,
     std::function<Position<Frame>(Position<Frame>)> towards_infinity,
-    SpecificEnergy const& energy) const -> std::vector<States> {
+    SpecificEnergy const& energy) const -> Lines {
   using WellIterator = typename std::vector<Well>::const_iterator;
   LOG(ERROR) << "V=" << energy;
 
@@ -222,7 +222,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     }
   }
 
-  std::vector<States> lines;
+  Lines lines;
   for (int i = 0; i < peaks.size(); ++i) {
     auto const& delineation = peak_delineations[i];
     Position<Frame> const& peak = peaks[i];
@@ -296,9 +296,9 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         lines.push_back(ComputeLine(plane, t, equipotential_position));
       }
       std::vector<Position<Frame>> positions;
-      for (auto const& state : lines.back()) {
-        auto const& [positions_of_state, _] = state;
-        positions.push_back(positions_of_state.front());
+      for (auto const& dependent_variables : lines.back()) {
+        auto const& [positions_of_dependent_variables, _] = dependent_variables;
+        positions.push_back(positions_of_dependent_variables.front());
       }
 
       // Figure out whether the equipotential introduces new delineations.
@@ -355,24 +355,24 @@ absl::Status Equipotential<InertialFrame, Frame>::RightHandSide(
     Position<Frame> const& position,
     Instant const& t,
     IndependentVariable const s,
-    State const& state,
-    StateVariation& state_variation) const {
+    DependentVariables const& values,
+    DependentVariableDerivatives& derivatives) const {
   // First state variable.
-  auto const& γₛ = std::get<0>(state).front();
+  auto const& γₛ = std::get<0>(values).front();
   auto const dVǀᵧ₍ₛ₎ =
       dynamic_frame_->RotationFreeGeometricAccelerationAtRest(t, γₛ);
   Displacement<Frame> const γʹ =
       Normalize(binormal * dVǀᵧ₍ₛ₎) * characteristic_length_;
 
   // Second state variable.
-  double const β = std::get<1>(state).front();
+  double const β = std::get<1>(values).front();
   auto const& γ₀ = position;
   double const βʹ = s == s_initial_ ? 0
                                     : Pow<2>(characteristic_length_) *
                                           (s - s_initial_) / (γₛ - γ₀).Norm²();
 
-  std::get<0>(state_variation).front() = γʹ;
-  std::get<1>(state_variation).front() = βʹ;
+  std::get<0>(derivatives).front() = γʹ;
+  std::get<1>(derivatives).front() = βʹ;
 
   return β > β_max_ ? absl::AbortedError("β reached max") : absl::OkStatus();
 }
@@ -380,8 +380,8 @@ absl::Status Equipotential<InertialFrame, Frame>::RightHandSide(
 template<typename InertialFrame, typename Frame>
 double Equipotential<InertialFrame, Frame>::ToleranceToErrorRatio(
     IndependentVariableDifference const current_s_step,
-    SystemState const& /*state*/,
-    SystemStateError const& error) const {
+    State const& /*state*/,
+    State::Error const& error) const {
   Length const max_length_error = std::get<0>(error).front().Norm();
   double const max_braking_error = Abs(std::get<1>(error).front());
   return std::min(

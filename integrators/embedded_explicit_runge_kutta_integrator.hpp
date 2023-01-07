@@ -45,15 +45,16 @@ using quantities::Variation;
 
 template<typename Method,
          typename IndependentVariable,
-         typename... StateElements>
+         typename... DependentVariable>
 class EmbeddedExplicitRungeKuttaIntegrator
     : public AdaptiveStepSizeIntegrator<
-          ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable,
-                                                         StateElements...>> {
+          ExplicitFirstOrderOrdinaryDifferentialEquation<
+              IndependentVariable,
+              DependentVariable...>> {
  public:
   using ODE =
       ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable,
-                                                     StateElements...>;
+                                                     DependentVariable...>;
   using typename Integrator<ODE>::AppendState;
   using typename AdaptiveStepSizeIntegrator<ODE>::Parameters;
   using typename AdaptiveStepSizeIntegrator<ODE>::ToleranceToErrorRatio;
@@ -84,13 +85,13 @@ class EmbeddedExplicitRungeKuttaIntegrator
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
 #if 0
-    template<typename... S = StateElements...,
-             typename = std::enable_if_t<base::is_serializable_v<S...>>>
+    template<typename... DV = DependentVariable...,
+             typename = std::enable_if_t<base::is_serializable_v<DV...>>>
     static not_null<std::unique_ptr<Instance>> ReadFromMessage(
         serialization::
             EmbeddedExplicitRungeKuttaNystromIntegratorInstance const&
                 extension,
-        IntegrationProblem<ODE> const& problem,
+        InitialValueProblem<ODE> const& problem,
         AppendState const& append_state,
         ToleranceToErrorRatio const& tolerance_to_error_ratio,
         Parameters const& parameters,
@@ -100,7 +101,7 @@ class EmbeddedExplicitRungeKuttaIntegrator
 #endif
 
    private:
-    Instance(IntegrationProblem<ODE> const& problem,
+    Instance(InitialValueProblem<ODE> const& problem,
              AppendState const& append_state,
              ToleranceToErrorRatio const& tolerance_to_error_ratio,
              Parameters const& parameters,
@@ -113,7 +114,7 @@ class EmbeddedExplicitRungeKuttaIntegrator
   };
 
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
-      IntegrationProblem<ODE> const& problem,
+      InitialValueProblem<ODE> const& problem,
       AppendState const& append_state,
       ToleranceToErrorRatio const& tolerance_to_error_ratio,
       Parameters const& parameters) const override;
@@ -134,11 +135,11 @@ class EmbeddedExplicitRungeKuttaIntegrator
 
 template<typename Method,
          typename IndependentVariable,
-         typename... StateElements>
+         typename... DependentVariable>
 internal_embedded_explicit_runge_kutta_integrator::
     EmbeddedExplicitRungeKuttaIntegrator<Method,
                                          IndependentVariable,
-                                         StateElements...> const&
+                                         DependentVariable...> const&
 EmbeddedExplicitRungeKuttaIntegrator();
 
 }  // namespace integrators

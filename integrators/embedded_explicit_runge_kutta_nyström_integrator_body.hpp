@@ -43,9 +43,9 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator() {
 template<typename Method, typename Position>
 absl::Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position>::
 Instance::Solve(Instant const& t_final) {
-  using Displacement = typename ODE::Displacement;
-  using Velocity = typename ODE::Velocity;
-  using Acceleration = typename ODE::Acceleration;
+  using Displacement = typename ODE::DependentVariableDifference;
+  using Velocity = typename ODE::DependentVariableDerivative;
+  using Acceleration = typename ODE::DependentVariableDerivative2;
 
   auto const& a = integrator_.a_;
   auto const& b̂ = integrator_.b̂_;
@@ -64,7 +64,7 @@ Instance::Solve(Instant const& t_final) {
   // restartability.
 
   // State before the last, truncated step.
-  std::optional<typename ODE::SystemState> final_state;
+  std::optional<typename ODE::State> final_state;
 
   // Argument checks.
   int const dimension = current_state.positions.size();
@@ -98,7 +98,7 @@ Instance::Solve(Instant const& t_final) {
   std::vector<DoublePrecision<Velocity>>& v̂ = current_state.velocities;
 
   // Difference between the low- and high-order approximations.
-  typename ODE::SystemStateError error_estimate;
+  typename ODE::State::Error error_estimate;
   error_estimate.position_error.resize(dimension);
   error_estimate.velocity_error.resize(dimension);
 
@@ -295,7 +295,7 @@ ReadFromMessage(
     serialization::
         EmbeddedExplicitRungeKuttaNystromIntegratorInstance const&
             extension,
-    IntegrationProblem<ODE> const& problem,
+    InitialValueProblem<ODE> const& problem,
     AppendState const& append_state,
     ToleranceToErrorRatio const& tolerance_to_error_ratio,
     Parameters const& parameters,
@@ -316,7 +316,7 @@ ReadFromMessage(
 template<typename Method, typename Position>
 EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position>::
 Instance::Instance(
-    IntegrationProblem<ODE> const& problem,
+    InitialValueProblem<ODE> const& problem,
     AppendState const& append_state,
     ToleranceToErrorRatio const& tolerance_to_error_ratio,
     Parameters const& parameters,
@@ -335,7 +335,7 @@ template<typename Method, typename Position>
 not_null<std::unique_ptr<typename Integrator<
     SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
 EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position>::
-NewInstance(IntegrationProblem<ODE> const& problem,
+NewInstance(InitialValueProblem<ODE> const& problem,
             AppendState const& append_state,
             ToleranceToErrorRatio const& tolerance_to_error_ratio,
             Parameters const& parameters) const {
