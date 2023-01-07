@@ -58,7 +58,8 @@ Solve(IndependentVariable const& s_final) {
   using IndependentVariableDifference =
       typename ODE::IndependentVariableDifference;
   using DependentVariables = typename ODE::DependentVariables;
-  using DependentVariableDifferences = typename ODE::DependentVariableDifferences;
+  using DependentVariableDifferences =
+      typename ODE::DependentVariableDifferences;
   using DependentVariableDerivatives =
       typename ODE::DependentVariableDerivatives;
 
@@ -359,7 +360,8 @@ template<typename, typename>
 not_null<std::unique_ptr<
     typename EmbeddedExplicitRungeKuttaIntegrator<Method,
                                                   IndependentVariable,
-                                                  DependentVariable...>::Instance>>
+                                                  DependentVariable...>::
+    Instance>>
 EmbeddedExplicitRungeKuttaIntegrator<Method,
                                      IndependentVariable,
                                      DependentVariable...>::Instance::
@@ -459,7 +461,8 @@ EmbeddedExplicitRungeKuttaIntegrator() {
   static internal_embedded_explicit_runge_kutta_integrator::
       EmbeddedExplicitRungeKuttaIntegrator<Method,
                                            IndependentVariable,
-                                           DependentVariable...> const integrator;
+                                           DependentVariable...> const
+          integrator;
   return integrator;
 }
 
