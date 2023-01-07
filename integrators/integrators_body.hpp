@@ -607,13 +607,12 @@ void AdaptiveStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
 }
 
 #define PRINCIPIA_READ_ASS_INTEGRATOR_INSTANCE_EEGRKN(method)        \
-  auto const& integrator =                                           \
-      EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<        \
-          methods::method,                                           \
-          typename ODE::DependentVariable>();                        \
   if constexpr (base::is_instance_of_v<                              \
                     ExplicitSecondOrderOrdinaryDifferentialEquation, \
                     ODE>) {                                          \
+    auto const& integrator =                                         \
+        EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<      \
+            methods::method, ODE>();                                 \
     return ReadEegrknInstanceFromMessage(extension,                  \
                                          problem,                    \
                                          append_state,               \
@@ -624,11 +623,10 @@ void AdaptiveStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
                                          integrator);                \
   }
 #define PRINCIPIA_READ_ASS_INTEGRATOR_INSTANCE_EERKN(method)                   \
-  auto const& integrator = EmbeddedExplicitRungeKuttaNyströmIntegrator<        \
-      methods::method,                                                         \
-      typename ODE::DependentVariable>();                                      \
   if constexpr (base::is_instance_of_v<SpecialSecondOrderDifferentialEquation, \
                                        ODE>) {                                 \
+    auto const& integrator = EmbeddedExplicitRungeKuttaNyströmIntegrator<      \
+        methods::method, ODE>();                                               \
     return ReadEerknInstanceFromMessage(extension,                             \
                                         problem,                               \
                                         append_state,                          \
