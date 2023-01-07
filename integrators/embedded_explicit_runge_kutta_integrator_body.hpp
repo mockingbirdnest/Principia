@@ -331,7 +331,8 @@ WriteToMessage(not_null<serialization::IntegratorInstance*> message) const {
 #if 0
 template<typename Method, typename ODE_>
 template<typename, typename>
-not_null<std::unique_ptr<ODE_>::Instance>>
+not_null<std::unique_ptr<
+    typename EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_>::Instance>>
 EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_>::Instance::
 ReadFromMessage(serialization::
                     EmbeddedExplicitRungeKuttaNystromIntegratorInstance const&

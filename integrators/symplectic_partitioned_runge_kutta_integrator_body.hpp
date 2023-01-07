@@ -72,16 +72,6 @@ void SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_>::
   message->set_kind(Method::kind);
 }
 
-template<typename Method, typename ODE_>
-not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
-SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_>::
-ReadFromMessage(serialization::FixedStepSizeIntegratorInstance const& message,
-                InitialValueProblem<ODE> const& problem,
-                AppendState const& append_state,
-                Time const& step) const {
-  LOG(FATAL) << "ReadFromMessage NYI";
-}
-
 }  // namespace internal_symplectic_partitioned_runge_kutta_integrator
 
 template<typename Method, typename ODE_>
