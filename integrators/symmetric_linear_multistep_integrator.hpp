@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "absl/status/status.h"
+#include "base/not_null.hpp"
 #include "base/traits.hpp"
 #include "integrators/cohen_hubbard_oesterwinter.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
