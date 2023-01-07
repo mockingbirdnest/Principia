@@ -53,6 +53,7 @@ class Equipotential {
   using DependentVariables = typename ODE::DependentVariables;
   using AdaptiveParameters = physics::AdaptiveStepParameters<ODE>;
   using Line = std::vector<DependentVariables>;
+  using Lines = std::vector<Line>;
 
   Equipotential(
       AdaptiveParameters const& adaptive_parameters,
@@ -72,18 +73,17 @@ class Equipotential {
   // Computes an equipotential line for the given |total_energy| starting from
   // |start_position|.
   Line ComputeLine(Plane<Frame> const& plane,
-                     Instant const& t,
-                     Position<Frame> const& start_position,
-                     SpecificEnergy const& total_energy) const;
+                   Instant const& t,
+                   Position<Frame> const& start_position,
+                   SpecificEnergy const& total_energy) const;
 
   // Computes equipotential lines for the given |total_energy|.  Each of the
   // given |start_positions| ends up enclosed by exactly one line of the result.
   // The |start_positions| must be coplanar in a plane parallel to |plane|.
-  std::vector<Line> ComputeLines(
-      Plane<Frame> const& plane,
-      Instant const& t,
-      std::vector<Position<Frame>> const& start_positions,
-      SpecificEnergy const& total_energy) const;
+  Lines ComputeLines(Plane<Frame> const& plane,
+                     Instant const& t,
+                     std::vector<Position<Frame>> const& start_positions,
+                     SpecificEnergy const& total_energy) const;
 
   struct Well {
     Position<Frame> position;
@@ -99,7 +99,7 @@ class Equipotential {
   // a position, |towards_infinity| should return a position far away where the
   // potential is lower, in a direction where not much happens, e.g., away from
   // the centre in a rotating frame.
-  std::vector<Line> ComputeLines(
+  Lines ComputeLines(
       Plane<Frame> const& plane,
       Instant const& t,
       std::vector<Position<Frame>> const& peaks,
