@@ -93,8 +93,8 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
 
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
-    template<typename P = typename ODE::DependentVariable,
-             typename = std::enable_if_t<base::is_serializable_v<P>>>
+    template<typename DV = typename ODE::DependentVariable,
+             typename = std::enable_if_t<base::is_serializable_v<DV>>>
     static not_null<std::unique_ptr<Instance>> ReadFromMessage(
         serialization::
             EmbeddedExplicitRungeKuttaNystromIntegratorInstance const&
