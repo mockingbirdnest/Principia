@@ -87,12 +87,12 @@ ReadFromMessage(serialization::FixedStepSizeIntegratorInstance const& message,
 template<typename Method, typename ODE_>
 internal_symplectic_partitioned_runge_kutta_integrator::
     SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_> const&
-    SymplecticPartitionedRungeKuttaIntegrator() {
+SymplecticPartitionedRungeKuttaIntegrator() {
   static_assert(
       std::is_base_of<methods::SymplecticPartitionedRungeKutta, Method>::value,
       "Method must be derived from SymplecticPartitionedRungeKutta");
   static internal_symplectic_partitioned_runge_kutta_integrator::
-      SymplecticPartitionedRungeKuttaIntegrator<Method, Position> const
+      SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_> const
           integrator;
   return integrator;
 }

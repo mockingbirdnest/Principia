@@ -60,18 +60,18 @@ using ::testing::Lt;
 using ::testing::ValuesIn;
 namespace si = quantities::si;
 
-#define INSTANCE(integrator,                                                \
-                 beginning_of_convergence,                                  \
-                 expected_position_error,                                   \
-                 expected_velocity_error,                                   \
-                 expected_energy_error)                                     \
-  SimpleHarmonicMotionTestInstance(                                         \
-      SymplecticRungeKuttaNyströmIntegrator<methods::integrator, Length>(), \
-      #integrator,                                                          \
-      (beginning_of_convergence),                                           \
-      (expected_position_error),                                            \
-      (expected_velocity_error),                                            \
-      (expected_energy_error),                                              \
+#define INSTANCE(integrator,                                             \
+                 beginning_of_convergence,                               \
+                 expected_position_error,                                \
+                 expected_velocity_error,                                \
+                 expected_energy_error)                                  \
+  SimpleHarmonicMotionTestInstance(                                      \
+      SymplecticRungeKuttaNyströmIntegrator<methods::integrator, ODE>(), \
+      #integrator,                                                       \
+      (beginning_of_convergence),                                        \
+      (expected_position_error),                                         \
+      (expected_velocity_error),                                         \
+      (expected_energy_error),                                           \
       true)
 
 #define SPRK_INSTANCE(integrator,                                         \
@@ -84,7 +84,7 @@ namespace si = quantities::si;
       SymplecticRungeKuttaNyströmIntegrator<                              \
           methods::integrator,                                            \
           serialization::FixedStepSizeIntegrator::composition,            \
-          Length>(),                                                      \
+          ODE>(),                                                         \
       "AsSymplecticRungeKuttaNyström<" #integrator ", " #composition ">", \
       (beginning_of_convergence),                                         \
       (expected_position_error),                                          \
