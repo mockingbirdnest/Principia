@@ -42,7 +42,7 @@ using quantities::Difference;
 using quantities::Time;
 using quantities::Variation;
 
-// A differential equation of the form yʹ = f(s, y).
+// A differential equation of the form y′ = f(s, y).
 // |DependentVariable| are the types of the elements of y.
 template<typename IndependentVariable_, typename... DependentVariable>
 struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
@@ -55,9 +55,9 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
   using DependentVariableDerivatives = std::tuple<std::vector<
       Derivative<DependentVariable, IndependentVariable>>...>;
 
-  // A functor that computes f(s, y) and stores it in |yʹ|.  This functor must
-  // be called with |std::get<i>(yʹ).size()| equal to |std::get<i>(y).size()|
-  // for all i, but there is no requirement on the values in |yʹ|.
+  // A functor that computes f(s, y) and stores it in |y′|.  This functor must
+  // be called with |std::get<i>(y′).size()| equal to |std::get<i>(y).size()|
+  // for all i, but there is no requirement on the values in |y′|.
   using RightHandSideComputation =
       std::function<absl::Status(IndependentVariable const& s,
                                  DependentVariables const& y,
@@ -83,7 +83,7 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
   RightHandSideComputation compute_derivative;
 };
 
-// A differential equation of the form Xʹ = A(X, t) + B(X, t), where exp(hA) and
+// A differential equation of the form X′ = A(X, t) + B(X, t), where exp(hA) and
 // exp(hB) are known.  |DependentVariable| are the types of the elements of X.
 // These equations can be solved using splitting methods.
 template<typename... DependentVariable>
@@ -123,7 +123,7 @@ struct DecomposableFirstOrderDifferentialEquation final {
   Flow right_flow;
 };
 
-// A differential equation of the form qʺ = f(t, q, qʹ).
+// A differential equation of the form q″ = f(t, q, q′).
 // |DependentVariable_| is the type of q.
 template<typename DependentVariable_>
 struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
@@ -133,10 +133,10 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
   using DependentVariable = DependentVariable_;
   // The type of Δq.
   using DependentVariableDifference = Difference<DependentVariable>;
-  // The type of qʹ.
+  // The type of q′.
   using DependentVariableDerivative =
       Derivative<DependentVariable, IndependentVariable>;
-  // The type of qʺ.
+  // The type of q″.
   using DependentVariableDerivative2 =
       Derivative<DependentVariable, IndependentVariable, 2>;
   using DependentVariables = std::vector<DependentVariable>;
@@ -145,7 +145,7 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
   using DependentVariableDerivatives2 =
       std::vector<DependentVariableDerivative2>;
 
-  // A functor that computes f(t, q, qʹ) and stores it in |accelerations|.
+  // A functor that computes f(t, q, q′) and stores it in |accelerations|.
   // This functor must be called with |accelerations.size()| equal to
   // |positions.size()| and |velocities.size()| but there is no requirement on
   // the values in |accelerations|.
@@ -185,7 +185,7 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
   RightHandSideComputation compute_acceleration;
 };
 
-// A differential equation of the form qʺ = f(t, q).
+// A differential equation of the form q″ = f(t, q).
 // |DependentVariable_| is the type of q.
 template<typename DependentVariable_>
 struct SpecialSecondOrderDifferentialEquation final {
@@ -195,7 +195,7 @@ struct SpecialSecondOrderDifferentialEquation final {
   using DependentVariable = DependentVariable_;
   // The type of Δq.
   using DependentVariableDifference = Difference<DependentVariable>;
-  // The type of qʹ.
+  // The type of q′.
   using DependentVariableDerivative =
       Derivative<DependentVariable, IndependentVariable>;
   // The type of qʺ.

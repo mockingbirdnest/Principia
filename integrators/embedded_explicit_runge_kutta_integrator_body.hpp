@@ -50,7 +50,8 @@ Solve(typename ODE::IndependentVariable const& s_final) {
   using IndependentVariableDifference =
       typename ODE::IndependentVariableDifference;
   using DependentVariables = typename ODE::DependentVariables;
-  using DependentVariableDifferences = typename ODE::DependentVariableDifferences;
+  using DependentVariableDifferences =
+      typename ODE::DependentVariableDifferences;
   using DependentVariableDerivatives =
       typename ODE::DependentVariableDerivatives;
 
