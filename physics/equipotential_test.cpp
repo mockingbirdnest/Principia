@@ -143,9 +143,16 @@ class EquipotentialTest : public ::testing::Test {
     std::string const name = SolarSystemFactory::name(body);
 
     CHECK_OK(ephemeris_->Prolong(t));
-    auto const& [positions, βs] =
+    auto const line =
         equipotential.ComputeLine(
             plane, t, ComputePositionInWorld(t0_, dynamic_frame, body));
+    std::vector<Position<World>> positions;
+    std::vector<double> βs;
+    for (auto const& state : line) {
+      auto const& [positions_of_state, βs_of_state] = state;
+      positions.push_back(positions_of_state.front());
+      βs.push_back(βs_of_state.front());
+    }
     logger.Set(absl::StrCat("equipotential", name, suffix),
                positions,
                mathematica::ExpressIn(Metre));
@@ -184,10 +191,15 @@ class EquipotentialTest : public ::testing::Test {
                                                     plane);
 
       for (auto const& line_parameter : get_line_parameters(l4, l5)) {
-        auto const& [positions, βs] =
+        auto const line =
             equipotential.ComputeLine(plane, t, line_parameter);
-        all_positions.back().push_back(positions);
-        all_βs.back().push_back(βs);
+        all_positions.back().emplace_back();
+        all_βs.back().emplace_back();
+        for (auto const& state : line) {
+          auto const& [positions_of_state, βs_of_state] = state;
+          all_positions.back().back().push_back(positions_of_state.front());
+          all_βs.back().back().push_back(βs_of_state.front());
+        }
       }
     }
     logger.Set(absl::StrCat("equipotentialsEarthMoon", suffix),
@@ -423,7 +435,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
 
   std::vector<std::vector<std::vector<std::vector<Position<World>>>>>
       all_positions;
-  std::vector<std::vector<std::vector<double>>> all_βs;
+  std::vector<std::vector<std::vector<std::vector<double>>>> all_βs;
   std::vector<std::vector<Position<World>>> trajectory_positions(
       trajectories.size());
   std::vector<SpecificEnergy> energies;
@@ -474,6 +486,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
     SpecificEnergy const ΔV = maximum_maximorum - approx_l1_energy;
     for (int i = 1; i <= 8; ++i) {
       all_positions.back().emplace_back();
+      all_βs.back().emplace_back();
       SpecificEnergy const energy = maximum_maximorum - i * (1.0 / 7.0 * ΔV);
       auto const& lines = equipotential.ComputeLines(
           plane,
@@ -487,9 +500,13 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
           },
           energy);
       for (auto const& line : lines) {
-        auto const& [positions, βs] = line;
-        all_positions.back().back().push_back(positions);
-        all_βs.back().push_back(βs);
+        all_positions.back().back().emplace_back();
+        all_βs.back().back().emplace_back();
+        for (auto const& state : line) {
+          auto const& [positions, βs] = state;
+          all_positions.back().back().back().push_back(positions.front());
+          all_βs.back().back().back().push_back(βs.front());
+        }
       }
     }
   }

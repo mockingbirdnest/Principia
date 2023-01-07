@@ -52,35 +52,34 @@ class Equipotential {
                                                      double>;
   using DependentVariables = typename ODE::DependentVariables;
   using AdaptiveParameters = physics::AdaptiveStepParameters<ODE>;
+  using Line = std::vector<DependentVariables>;
 
   Equipotential(
       AdaptiveParameters const& adaptive_parameters,
       not_null<DynamicFrame<InertialFrame, Frame> const*> dynamic_frame);
 
   // Computes an equipotential line going through the given point.
-  DependentVariables ComputeLine(Plane<Frame> const& plane,
-                                 Instant const& t,
-                                 Position<Frame> const& position) const;
+  Line ComputeLine(Plane<Frame> const& plane,
+                   Instant const& t,
+                   Position<Frame> const& position) const;
 
   // Computes an equipotential line for the total energy determined by the
   // |degrees_of_freedom|.
-  DependentVariables ComputeLine(
-      Plane<Frame> const& plane,
-      Instant const& t,
-      DegreesOfFreedom<Frame> const& degrees_of_freedom) const;
+  Line ComputeLine(Plane<Frame> const& plane,
+                   Instant const& t,
+                   DegreesOfFreedom<Frame> const& degrees_of_freedom) const;
 
   // Computes an equipotential line for the given |total_energy| starting from
   // |start_position|.
-  DependentVariables ComputeLine(
-      Plane<Frame> const& plane,
-      Instant const& t,
-      Position<Frame> const& start_position,
-      SpecificEnergy const& total_energy) const;
+  Line ComputeLine(Plane<Frame> const& plane,
+                     Instant const& t,
+                     Position<Frame> const& start_position,
+                     SpecificEnergy const& total_energy) const;
 
   // Computes equipotential lines for the given |total_energy|.  Each of the
   // given |start_positions| ends up enclosed by exactly one line of the result.
   // The |start_positions| must be coplanar in a plane parallel to |plane|.
-  std::vector<DependentVariables> ComputeLines(
+  std::vector<Line> ComputeLines(
       Plane<Frame> const& plane,
       Instant const& t,
       std::vector<Position<Frame>> const& start_positions,
@@ -100,7 +99,7 @@ class Equipotential {
   // a position, |towards_infinity| should return a position far away where the
   // potential is lower, in a direction where not much happens, e.g., away from
   // the centre in a rotating frame.
-  std::vector<DependentVariables> ComputeLines(
+  std::vector<Line> ComputeLines(
       Plane<Frame> const& plane,
       Instant const& t,
       std::vector<Position<Frame>> const& peaks,
@@ -111,7 +110,6 @@ class Equipotential {
  private:
   using IndependentVariableDifference =
       typename ODE::IndependentVariableDifference;
-  using DependentVariables = typename ODE::DependentVariables;
   using DependentVariableDerivatives =
       typename ODE::DependentVariableDerivatives;
   using State = typename ODE::State;
