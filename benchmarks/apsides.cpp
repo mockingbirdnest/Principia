@@ -123,9 +123,8 @@ class ApsidesBenchmark : public benchmark::Fixture {
 
 SolarSystem<ICRS>* ApsidesBenchmark::solar_system_2010_ = nullptr;
 Ephemeris<ICRS>* ApsidesBenchmark::ephemeris_ = nullptr;
-OblateBody<ICRS> const* ApsidesBenchmark::ApsidesBenchmark::earth_ = nullptr;
-ContinuousTrajectory<ICRS> const*
-    ApsidesBenchmark::ApsidesBenchmark::earth_trajectory_ = nullptr;
+OblateBody<ICRS> const* ApsidesBenchmark::earth_ = nullptr;
+ContinuousTrajectory<ICRS> const* ApsidesBenchmark::earth_trajectory_ = nullptr;
 DiscreteTrajectory<ICRS>* ApsidesBenchmark::ilrsa_lageos2_trajectory_icrs_ =
     nullptr;
 DiscreteTrajectory<GCRS>* ApsidesBenchmark::ilrsa_lageos2_trajectory_gcrs_ =

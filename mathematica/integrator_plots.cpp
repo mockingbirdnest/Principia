@@ -230,18 +230,18 @@ class WorkErrorGraphGenerator {
     std::vector<std::string> names;
     for (int i = 0; i < methods_.size(); ++i) {
       q_error_data.emplace_back(
-          PlottableDataset(evaluations_[i], q_errors_[i]));
+          PlottableDataset(evaluations_[i], q_errors_[i], PreserveUnits));
       v_error_data.emplace_back(
-          PlottableDataset(evaluations_[i], v_errors_[i]));
+          PlottableDataset(evaluations_[i], v_errors_[i], PreserveUnits));
       e_error_data.emplace_back(
-          PlottableDataset(evaluations_[i], e_errors_[i]));
+          PlottableDataset(evaluations_[i], e_errors_[i], PreserveUnits));
       names.emplace_back(ToMathematica(methods_[i].name));
     }
     std::string result;
-    result += Assign("qErrorData", q_error_data);
-    result += Assign("vErrorData", v_error_data);
-    result += Assign("eErrorData", e_error_data);
-    result += Assign("names", names);
+    result += Set("qErrorData", q_error_data);
+    result += Set("vErrorData", v_error_data);
+    result += Set("eErrorData", e_error_data);
+    result += Set("names", names);
     return result;
   }
 

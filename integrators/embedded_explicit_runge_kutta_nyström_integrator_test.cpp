@@ -56,6 +56,7 @@ namespace {
 
 double HarmonicOscillatorToleranceRatio(
     Time const& h,
+    ODE::SystemState const& /*state*/,
     ODE::SystemStateError const& error,
     Length const& q_tolerance,
     Speed const& v_tolerance,
@@ -123,7 +124,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
         /*safety_factor=*/0.9);
     auto const tolerance_to_error_ratio =
         std::bind(HarmonicOscillatorToleranceRatio,
-                  _1, _2,
+                  _1, _2, _3,
                   length_tolerance,
                   speed_tolerance,
                   step_size_callback);
@@ -157,7 +158,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
         /*safety_factor=*/0.9);
     auto const tolerance_to_error_ratio =
         std::bind(HarmonicOscillatorToleranceRatio,
-                  _1, _2,
+                  _1, _2, _3,
                   2 * length_tolerance,
                   2 * speed_tolerance,
                   step_size_callback);
@@ -216,7 +217,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, MaxSteps) {
       /*last_step_is_exact=*/true);
   auto const tolerance_to_error_ratio =
       std::bind(HarmonicOscillatorToleranceRatio,
-                _1, _2,
+                _1, _2, _3,
                 length_tolerance,
                 speed_tolerance,
                 step_size_callback);
@@ -308,7 +309,9 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Singularity) {
       /*first_time_step=*/t_final - t_initial,
       /*safety_factor=*/0.9);
   auto const tolerance_to_error_ratio = [length_tolerance, speed_tolerance](
-      Time const& h, ODE::SystemStateError const& error) {
+      Time const& h,
+      ODE::SystemState const& /*state*/,
+      ODE::SystemStateError const& error) {
     return std::min(length_tolerance / Abs(error.position_error[0]),
                     speed_tolerance / Abs(error.velocity_error[0]));
   };
@@ -367,7 +370,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Restart) {
         /*last_step_is_exact=*/false);
     auto const tolerance_to_error_ratio =
         std::bind(HarmonicOscillatorToleranceRatio,
-                  _1, _2,
+                  _1, _2, _3,
                   length_tolerance,
                   speed_tolerance,
                   step_size_callback);
@@ -419,7 +422,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Restart) {
         /*last_step_is_exact=*/false);
     auto const tolerance_to_error_ratio =
         std::bind(HarmonicOscillatorToleranceRatio,
-                  _1, _2,
+                  _1, _2, _3,
                   length_tolerance,
                   speed_tolerance,
                   step_size_callback);
@@ -466,7 +469,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Serialization) {
       /*safety_factor=*/0.9);
   auto const tolerance_to_error_ratio =
       std::bind(HarmonicOscillatorToleranceRatio,
-                _1, _2,
+                _1, _2, _3,
                 length_tolerance,
                 speed_tolerance,
                 step_size_callback);

@@ -25,7 +25,7 @@
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
-#include "mathematica/mathematica.hpp"
+#include "mathematica/logger.hpp"
 #include "numerics/root_finders.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
@@ -54,6 +54,7 @@ using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::BlanesMoan2002SRKN11B;
 using integrators::methods::Quinlan1999Order8A;
+using mathematica::PreserveUnits;
 using numerics::Bisect;
 using physics::Ephemeris;
 using physics::KeplerianElements;
@@ -1173,7 +1174,8 @@ TEST_F(TrappistDynamicsTest, MathematicaPeriods) {
                 star_trajectory->EvaluateDegreesOfFreedom(t),
             t);
         logger.Append("period" + SanitizedName(*planet),
-                      *planet_orbit.elements_at_epoch().period);
+                      *planet_orbit.elements_at_epoch().period,
+                      PreserveUnits);
       }
     }
   }
@@ -1212,7 +1214,8 @@ TEST_F(TrappistDynamicsTest, DISABLED_MathematicaTransits) {
         computations[planet->name()] =
             ComputeTransits(*ephemeris, star, planet);
         logger.Set("transit" + absl::StrCat(index) + SanitizedName(*planet),
-                   computations[planet->name()]);
+                   computations[planet->name()],
+                   PreserveUnits);
       }
     }
 

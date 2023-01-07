@@ -4,6 +4,7 @@
 
 #include <functional>
 #include <optional>
+#include <set>
 #include <tuple>
 #include <vector>
 
@@ -84,7 +85,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
       };
 
   auto const tolerance_to_error_ratio =
-      std::bind(&Equipotential::ToleranceToErrorRatio, this, _1, _2);
+      std::bind(&Equipotential::ToleranceToErrorRatio, this, _1, _2, _3);
 
   auto const instance = adaptive_parameters_.integrator().NewInstance(
       problem, append_state, tolerance_to_error_ratio, integrator_parameters);
@@ -186,12 +187,161 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
       lines.push_back(States{});
       continue;
     }
-
     // Compute that equipotential.
     lines.push_back(ComputeLine(plane, t, equipotential_position.value()));
   }
 
   return lines;
+}
+
+template<typename InertialFrame, typename Frame>
+auto Equipotential<InertialFrame, Frame>::ComputeLines(
+    Plane<Frame> const& plane,
+    Instant const& t,
+    std::vector<Position<Frame>> const& peaks,
+    std::vector<Well> const& wells,
+    std::function<Position<Frame>(Position<Frame>)> towards_infinity,
+    SpecificEnergy const& energy) const -> std::vector<State> {
+  using WellIterator = typename std::vector<Well>::const_iterator;
+  LOG(ERROR) << "V=" << energy;
+
+  // A |PeakDelineation| represents:
+  // 1. the set of wells that are not yet delineated from a peak by
+  //    equipotentials already computed;
+  // 2. whether the well is delineated from the “well at infinity”.
+  struct PeakDelineation {
+    std::set<WellIterator> indistinct_wells;
+    bool delineated_from_infinity = false;
+  };
+
+  // |peak_delineations[i]| corresponds to |peaks[i]|.
+  std::vector<PeakDelineation> peak_delineations(peaks.size());
+  for (auto& delineation : peak_delineations) {
+    for (auto it = wells.begin(); it != wells.end(); ++it) {
+      delineation.indistinct_wells.insert(it);
+    }
+  }
+
+  std::vector<State> states;
+  for (int i = 0; i < peaks.size(); ++i) {
+    auto const& delineation = peak_delineations[i];
+    Position<Frame> const& peak = peaks[i];
+    // Ignore |peak| if it is below |energy|.
+    if (dynamic_frame_->GeometricPotential(t, peak) < energy) {
+      LOG(ERROR) << "Ignoring peak " << i << " which is below energy";
+      continue;
+    }
+    LOG(ERROR) << "Delineating peak " << i;
+    while (!delineation.indistinct_wells.empty() ||
+           !delineation.delineated_from_infinity) {
+      std::optional<WellIterator> expected_delineated_well;
+      bool expect_delineation_from_infinity = false;
+      if (!delineation.indistinct_wells.empty()) {
+        // Try to delineate |peak| from the first of its |indistinct_wells|.
+        LOG(ERROR) << delineation.indistinct_wells.size()
+                   << " wells to delineate";
+        expected_delineated_well = *delineation.indistinct_wells.begin();
+        Well const well = **expected_delineated_well;
+        Length const r = (peak - well.position).Norm();
+        if (dynamic_frame_->GeometricPotential(
+                t,
+                Barycentre(std::pair(peak, well.position),
+                           std::pair(well.radius, r - well.radius))) >=
+            energy) {
+          // TODO(phl): This happens when we find the peak at the centre of the
+          // Earth.
+          LOG(ERROR) << "well " << *expected_delineated_well - wells.begin()
+                     << " is weird";
+          peak_delineations[i].indistinct_wells.erase(
+              *expected_delineated_well);
+          continue;
+        }
+        Length const x = numerics::Brent(
+            [&](Length const& x) {
+              return dynamic_frame_->GeometricPotential(
+                         t,
+                         Barycentre(std::pair(peak, well.position),
+                                    std::pair(x, r - x))) -
+                     energy;
+            },
+            well.radius,
+            r);
+        Position<Frame> const equipotential_position =
+            Barycentre(std::pair(peak, well.position), std::pair(x, r - x));
+        states.push_back(ComputeLine(plane, t, equipotential_position));
+      } else {
+        // Try to delineate |peak| from the well at infinity.
+        LOG(ERROR) << "Not delineated from infinity";
+        expect_delineation_from_infinity = true;
+        Position<Frame> const far_away = towards_infinity(peak);
+        if (dynamic_frame_->GeometricPotential(t, far_away) >= energy) {
+          // TODO(phl): This happens when we find the peak at the centre of the
+          // Earth.
+          LOG(ERROR) << "far away point is weird";
+          peak_delineations[i].delineated_from_infinity = true;
+          continue;
+        }
+        double const x = numerics::Brent(
+            [&](double const& x) {
+              return dynamic_frame_->GeometricPotential(
+                         t,
+                         Barycentre(std::pair(peak, far_away),
+                                    std::pair(x, 1 - x))) -
+                     energy;
+            },
+            0.0,
+            1.0);
+        Position<Frame> const equipotential_position =
+            Barycentre(std::pair(peak, far_away), std::pair(x, 1 - x));
+        states.push_back(ComputeLine(plane, t, equipotential_position));
+      }
+      auto const& line = std::get<0>(states.back());
+
+      // Figure out whether the equipotential introduces new delineations.
+      std::set<WellIterator> enclosed_wells;
+      for (auto it = wells.begin(); it != wells.end(); ++it) {
+        std::int64_t const winding_number =
+            WindingNumber(plane, it->position, line);
+        if (winding_number > 0) {
+          enclosed_wells.insert(it);
+        }
+      }
+      for (int j = 0; j < peaks.size(); ++j) {
+        bool const peak_j_enclosed = WindingNumber(plane, peaks[j], line) > 0;
+        if (peak_j_enclosed && !peak_delineations[j].delineated_from_infinity) {
+          LOG(ERROR) << "line delineates peak " << j << " from infinity";
+        }
+        peak_delineations[j].delineated_from_infinity |= peak_j_enclosed;
+        for (auto it = peak_delineations[j].indistinct_wells.begin();
+             it != peak_delineations[j].indistinct_wells.end();) {
+          if (enclosed_wells.contains(*it) != peak_j_enclosed) {
+            LOG(ERROR) << "line delineates peak " << j << " from well "
+                       << *it - wells.begin();
+            it = peak_delineations[j].indistinct_wells.erase(it);
+          } else {
+            ++it;
+          }
+        }
+        if (j == i) {
+          if (expected_delineated_well.has_value() &&
+              peak_delineations[i].indistinct_wells.contains(
+                  *expected_delineated_well)) {
+            LOG(ERROR) << "Failed to delineate peak " << i << " from well "
+                       << *expected_delineated_well - wells.begin();
+            peak_delineations[i].indistinct_wells.erase(
+                *expected_delineated_well);
+          }
+          if (expect_delineation_from_infinity &&
+              !peak_delineations[i].delineated_from_infinity) {
+            LOG(ERROR) << "Failed to delineate peak " << i << " from infinity";
+            peak_delineations[i].delineated_from_infinity = true;
+          }
+        }
+      }
+    }
+  }
+
+  return states;
 }
 
 template<typename InertialFrame, typename Frame>
@@ -225,6 +375,7 @@ absl::Status Equipotential<InertialFrame, Frame>::RightHandSide(
 template<typename InertialFrame, typename Frame>
 double Equipotential<InertialFrame, Frame>::ToleranceToErrorRatio(
     IndependentVariableDifference const current_s_step,
+    SystemState const& /*state*/,
     SystemStateError const& error) const {
   Length const max_length_error = std::get<0>(error).front().Norm();
   double const max_braking_error = Abs(std::get<1>(error).front());

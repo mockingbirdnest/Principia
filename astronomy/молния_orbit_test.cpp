@@ -10,7 +10,7 @@
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
-#include "mathematica/mathematica.hpp"
+#include "mathematica/logger.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massless_body.hpp"
