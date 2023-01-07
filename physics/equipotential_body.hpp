@@ -201,7 +201,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     std::vector<Position<Frame>> const& peaks,
     std::vector<Well> const& wells,
     std::function<Position<Frame>(Position<Frame>)> towards_infinity,
-    SpecificEnergy const& energy) const -> std::vector<State> {
+    SpecificEnergy const& energy) const -> std::vector<States> {
   using WellIterator = typename std::vector<Well>::const_iterator;
   LOG(ERROR) << "V=" << energy;
 
@@ -222,7 +222,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     }
   }
 
-  std::vector<State> states;
+  std::vector<States> lines;
   for (int i = 0; i < peaks.size(); ++i) {
     auto const& delineation = peak_delineations[i];
     Position<Frame> const& peak = peaks[i];
@@ -268,7 +268,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
             r);
         Position<Frame> const equipotential_position =
             Barycentre(std::pair(peak, well.position), std::pair(x, r - x));
-        states.push_back(ComputeLine(plane, t, equipotential_position));
+        lines.push_back(ComputeLine(plane, t, equipotential_position));
       } else {
         // Try to delineate |peak| from the well at infinity.
         LOG(ERROR) << "Not delineated from infinity";
@@ -293,21 +293,26 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
             1.0);
         Position<Frame> const equipotential_position =
             Barycentre(std::pair(peak, far_away), std::pair(x, 1 - x));
-        states.push_back(ComputeLine(plane, t, equipotential_position));
+        lines.push_back(ComputeLine(plane, t, equipotential_position));
       }
-      auto const& line = std::get<0>(states.back());
+      std::vector<Position<Frame>> positions;
+      for (auto const& state : lines.back()) {
+        auto const& [positions_of_state, _] = state;
+        positions.push_back(positions_of_state.front());
+      }
 
       // Figure out whether the equipotential introduces new delineations.
       std::set<WellIterator> enclosed_wells;
       for (auto it = wells.begin(); it != wells.end(); ++it) {
         std::int64_t const winding_number =
-            WindingNumber(plane, it->position, line);
+            WindingNumber(plane, it->position, positions);
         if (winding_number > 0) {
           enclosed_wells.insert(it);
         }
       }
       for (int j = 0; j < peaks.size(); ++j) {
-        bool const peak_j_enclosed = WindingNumber(plane, peaks[j], line) > 0;
+        bool const peak_j_enclosed =
+            WindingNumber(plane, peaks[j], positions) > 0;
         if (peak_j_enclosed && !peak_delineations[j].delineated_from_infinity) {
           LOG(ERROR) << "line delineates peak " << j << " from infinity";
         }
@@ -341,7 +346,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     }
   }
 
-  return states;
+  return lines;
 }
 
 template<typename InertialFrame, typename Frame>

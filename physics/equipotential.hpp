@@ -98,7 +98,7 @@ class Equipotential {
   // a position, |towards_infinity| should return a position far away where the
   // potential is lower, in a direction where not much happens, e.g., away from
   // the centre in a rotating frame.
-  std::vector<typename ODE::State> ComputeLines(
+  std::vector<States> ComputeLines(
       Plane<Frame> const& plane,
       Instant const& t,
       std::vector<Position<Frame>> const& peaks,
