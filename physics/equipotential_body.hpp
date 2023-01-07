@@ -71,17 +71,17 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
           /*max_steps=*/adaptive_parameters_.max_steps(),
           /*last_step_is_exact=*/true);
 
-  States equipotential;
+  Line equipotential;
   typename AdaptiveStepSizeIntegrator<ODE>::AppendState const append_state =
-      [&equipotential](SystemState const& system_state) {
-        State state;
-        for (auto const& y0 : std::get<0>(system_state.y)) {
-          std::get<0>(state).push_back(y0.value);
+      [&equipotential](State const& state) {
+        DependentVariables dependent_variables;
+        for (auto const& y0 : std::get<0>(state.y)) {
+          std::get<0>(dependent_variables).push_back(y0.value);
         }
-        for (auto const& y1 : std::get<1>(system_state.y)) {
-          std::get<1>(state).push_back(y1.value);
+        for (auto const& y1 : std::get<1>(state.y)) {
+          std::get<1>(dependent_variables).push_back(y1.value);
         }
-        equipotential.push_back(state);
+        equipotential.push_back(dependent_variables);
       };
 
   auto const tolerance_to_error_ratio =
@@ -124,7 +124,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     Plane<Frame> const& plane,
     Instant const& t,
     std::vector<Position<Frame>> const& start_positions,
-    SpecificEnergy const& total_energy) const -> std::vector<Line> {
+    SpecificEnergy const& total_energy) const -> Lines {
   // The function on which we perform gradient descent is defined to have a
   // minimum at a position where the potential is equal to the total energy.
   auto const f = [this, t, total_energy](Position<Frame> const& position) {
@@ -143,7 +143,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         plane);
   };
 
-  std::vector<States> lines;
+  Lines lines;
   for (auto const& start_position : start_positions) {
     // Compute the winding number of every line already found with respect to
     // |start_position|.  If any line "turns around" that position, we don't
@@ -152,9 +152,9 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     bool must_compute_line = true;
     for (auto const& line : lines) {
       std::vector<Position<Frame>> positions;
-      for (auto const& state : line) {
-        auto const& [positions_of_state, _] = state;
-        positions.push_back(positions_of_state.front());
+      for (auto const& dependent_variables : line) {
+        auto const& [positions_of_dependent_variables, _] = dependent_variables;
+        positions.push_back(positions_of_dependent_variables.front());
       }
       std::int64_t const winding_number =
           WindingNumber(plane, start_position, positions);
@@ -201,7 +201,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     std::vector<Position<Frame>> const& peaks,
     std::vector<Well> const& wells,
     std::function<Position<Frame>(Position<Frame>)> towards_infinity,
-    SpecificEnergy const& energy) const -> std::vector<Line> {
+    SpecificEnergy const& energy) const -> Lines {
   using WellIterator = typename std::vector<Well>::const_iterator;
   LOG(ERROR) << "V=" << energy;
 
@@ -222,7 +222,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     }
   }
 
-  std::vector<Line> lines;
+  Lines lines;
   for (int i = 0; i < peaks.size(); ++i) {
     auto const& delineation = peak_delineations[i];
     Position<Frame> const& peak = peaks[i];
@@ -296,9 +296,9 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         lines.push_back(ComputeLine(plane, t, equipotential_position));
       }
       std::vector<Position<Frame>> positions;
-      for (auto const& state : lines.back()) {
-        auto const& [positions_of_state, _] = state;
-        positions.push_back(positions_of_state.front());
+      for (auto const& dependent_variables : lines.back()) {
+        auto const& [positions_of_dependent_variables, _] = dependent_variables;
+        positions.push_back(positions_of_dependent_variables.front());
       }
 
       // Figure out whether the equipotential introduces new delineations.
