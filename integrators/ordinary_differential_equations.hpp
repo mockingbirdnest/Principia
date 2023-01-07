@@ -145,6 +145,10 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
   using DependentVariableDerivatives2 =
       std::vector<DependentVariableDerivative2>;
 
+  // A functor that computes f(t, q, qʹ) and stores it in |accelerations|.
+  // This functor must be called with |accelerations.size()| equal to
+  // |positions.size()| and |velocities.size()| but there is no requirement on
+  // the values in |accelerations|.
   using RightHandSideComputation =
       std::function<absl::Status(IndependentVariable const& t,
                                  DependentVariables const& positions,
@@ -178,10 +182,6 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
     static State ReadFromMessage(serialization::State const& message);
   };
 
-  // A functor that computes f(t, q, qʹ) and stores it in |accelerations|.
-  // This functor must be called with |accelerations.size()| equal to
-  // |positions.size()| and |velocities.size()| but there is no requirement on
-  // the values in |accelerations|.
   RightHandSideComputation compute_acceleration;
 };
 

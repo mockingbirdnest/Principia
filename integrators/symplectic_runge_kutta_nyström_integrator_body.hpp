@@ -8,7 +8,6 @@
 #include "geometry/sign.hpp"
 #include "integrators/methods.hpp"
 #include "numerics/ulp_distance.hpp"
-#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -20,7 +19,6 @@ using geometry::Sign;
 using numerics::DoublePrecision;
 using numerics::ULPDistance;
 using quantities::Abs;
-using quantities::Derivative;
 
 template<typename Method, typename Position>
 absl::Status SymplecticRungeKuttaNyströmIntegrator<Method, Position>::

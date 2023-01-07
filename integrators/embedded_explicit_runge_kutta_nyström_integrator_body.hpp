@@ -21,7 +21,6 @@ using base::make_not_null_unique;
 using geometry::Sign;
 using numerics::DoublePrecision;
 using quantities::DebugString;
-using quantities::Derivative;
 using quantities::Difference;
 using quantities::Quotient;
 

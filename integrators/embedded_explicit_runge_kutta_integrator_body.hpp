@@ -76,7 +76,7 @@ Solve(IndependentVariable const& s_final) {
   // |current_state| gets updated as the integration progresses to allow
   // restartability.
 
-  // DependentVariables before the last, truncated step.
+  // State before the last, truncated step.
   std::optional<typename ODE::State> final_state;
 
   // Argument checks.
