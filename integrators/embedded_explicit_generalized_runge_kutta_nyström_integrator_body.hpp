@@ -371,7 +371,7 @@ WriteToMessage(not_null<serialization::AdaptiveStepSizeIntegrator*> message)
 template<typename Method, typename ODE_>
 internal_embedded_explicit_generalized_runge_kutta_nyström_integrator::
     EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, ODE_> const&
-        EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator() {
+EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator() {
   static_assert(
       std::is_base_of<methods::EmbeddedExplicitGeneralizedRungeKuttaNyström,
                       Method>::value,

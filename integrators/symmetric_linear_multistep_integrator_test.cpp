@@ -61,17 +61,17 @@ using ::testing::Lt;
 using ::testing::ValuesIn;
 namespace si = quantities::si;
 
-#define INSTANCE(integrator,                                             \
-                 beginning_of_convergence,                               \
-                 expected_position_error,                                \
-                 expected_velocity_error,                                \
-                 expected_energy_error)                                  \
-  SimpleHarmonicMotionTestInstance(                                      \
-      SymmetricLinearMultistepIntegrator<methods::integrator, Length>(), \
-      #integrator,                                                       \
-      (beginning_of_convergence),                                        \
-      (expected_position_error),                                         \
-      (expected_velocity_error),                                         \
+#define INSTANCE(integrator,                                          \
+                 beginning_of_convergence,                            \
+                 expected_position_error,                             \
+                 expected_velocity_error,                             \
+                 expected_energy_error)                               \
+  SimpleHarmonicMotionTestInstance(                                   \
+      SymmetricLinearMultistepIntegrator<methods::integrator, ODE>(), \
+      #integrator,                                                    \
+      (beginning_of_convergence),                                     \
+      (expected_position_error),                                      \
+      (expected_velocity_error),                                      \
       (expected_energy_error))
 
 namespace integrators {
