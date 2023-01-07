@@ -24,8 +24,8 @@ using quantities::DebugString;
 using quantities::Difference;
 using quantities::Quotient;
 
-template<typename Method, typename Position>
-EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, Position>::
+template<typename Method, typename ODE_>
+EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, ODE_>::
 EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator() {
   // The first node is always 0 in an explicit method.
   CHECK_EQ(0.0, c_[0]);
@@ -40,10 +40,11 @@ EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator() {
   }
 }
 
-template<typename Method, typename Position>
+template<typename Method, typename ODE_>
 absl::Status EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
     Method,
-    Position>::Instance::Solve(Instant const& t_final) {
+    ODE_>::Instance::Solve(Instant const& t_final) {
+  using Position = typename ODE::DependentVariable;
   using Displacement = typename ODE::DependentVariableDifference;
   using Velocity = typename ODE::DependentVariableDerivative;
   using Acceleration = typename ODE::DependentVariableDerivative2;
@@ -264,23 +265,22 @@ absl::Status EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
   return status;
 }
 
-template<typename Method, typename Position>
-EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, Position> const&
-EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, Position>::
+template<typename Method, typename ODE_>
+EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, ODE_> const&
+EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, ODE_>::
 Instance::integrator() const {
   return integrator_;
 }
 
-template<typename Method, typename Position>
-not_null<std::unique_ptr<typename Integrator<
-    ExplicitSecondOrderOrdinaryDifferentialEquation<Position>>::Instance>>
-EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, Position>::
+template<typename Method, typename ODE_>
+not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
+EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, ODE_>::
 Instance::Clone() const {
   return std::unique_ptr<Instance>(new Instance(*this));
 }
 
-template<typename Method, typename Position>
-void EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, Position>::
+template<typename Method, typename ODE_>
+void EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, ODE_>::
 Instance::WriteToMessage(
     not_null<serialization::IntegratorInstance*> message) const {
   AdaptiveStepSizeIntegrator<ODE>::Instance::WriteToMessage(message);
@@ -293,12 +293,12 @@ Instance::WriteToMessage(
           ->MutableExtension(rkng_extension);
 }
 
-template<typename Method, typename Position>
+template<typename Method, typename ODE_>
 template<typename, typename>
 not_null<std::unique_ptr<
     typename EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
-        Method, Position>::Instance>>
-EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, Position>::
+        Method, ODE_>::Instance>>
+EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, ODE_>::
 Instance::ReadFromMessage(
     serialization::
         EmbeddedExplicitGeneralizedRungeKuttaNystromIntegratorInstance const&
@@ -322,8 +322,8 @@ Instance::ReadFromMessage(
                                                 integrator));
 }
 
-template<typename Method, typename Position>
-EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, Position>::
+template<typename Method, typename ODE_>
+EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, ODE_>::
 Instance::Instance(
     InitialValueProblem<ODE> const& problem,
     AppendState const& append_state,
@@ -340,10 +340,9 @@ Instance::Instance(
                                                 first_use),
       integrator_(integrator) {}
 
-template<typename Method, typename Position>
-not_null<std::unique_ptr<typename Integrator<
-    ExplicitSecondOrderOrdinaryDifferentialEquation<Position>>::Instance>>
-EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, Position>::
+template<typename Method, typename ODE_>
+not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
+EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, ODE_>::
 NewInstance(InitialValueProblem<ODE> const& problem,
             AppendState const& append_state,
             ToleranceToErrorRatio const& tolerance_to_error_ratio,
@@ -360,8 +359,8 @@ NewInstance(InitialValueProblem<ODE> const& problem,
                    *this));
 }
 
-template<typename Method, typename Position>
-void EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, Position>::
+template<typename Method, typename ODE_>
+void EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, ODE_>::
 WriteToMessage(not_null<serialization::AdaptiveStepSizeIntegrator*> message)
     const {
   message->set_kind(Method::kind);
@@ -369,10 +368,10 @@ WriteToMessage(not_null<serialization::AdaptiveStepSizeIntegrator*> message)
 
 }  // namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator  // NOLINT
 
-template<typename Method, typename Position>
+template<typename Method, typename ODE_>
 internal_embedded_explicit_generalized_runge_kutta_nyström_integrator::
     EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method,
-                                                           Position> const&
+                                                           ODE_> const&
         EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator() {
   static_assert(
       std::is_base_of<methods::EmbeddedExplicitGeneralizedRungeKuttaNyström,
@@ -381,7 +380,7 @@ internal_embedded_explicit_generalized_runge_kutta_nyström_integrator::
       "EmbeddedExplicitGeneralizedRungeKuttaNyström");
   static internal_embedded_explicit_generalized_runge_kutta_nyström_integrator::
       EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method,
-                                                             Position> const
+                                                             ODE_> const
           integrator;
   return integrator;
 }

@@ -75,8 +75,7 @@ class EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest
 TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, Legendre) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
-          methods::Fine1987RKNG34,
-          double>();
+          methods::Fine1987RKNG34, ODE>();
   // TODO(egg): Change that back to 15 once compiling LegendrePolynomial<15>
   // becomes tractable.
   constexpr int degree = 3;

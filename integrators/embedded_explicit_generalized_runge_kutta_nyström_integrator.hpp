@@ -13,6 +13,7 @@
 
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
+#include "base/traits.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
@@ -23,6 +24,7 @@ namespace principia {
 namespace integrators {
 namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator {  // NOLINT(whitespace/line_length)
 
+using base::is_instance_of_v;
 using base::not_null;
 using geometry::Instant;
 using numerics::FixedStrictlyLowerTriangularMatrix;
@@ -61,12 +63,13 @@ using quantities::Variation;
 //   position weights bₖaᵏᵢ;
 //   velocity weights bᵢ.
 
-template<typename Method, typename Position>
+template<typename Method, typename ODE_>
 class EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator
-    : public AdaptiveStepSizeIntegrator<
-                 ExplicitSecondOrderOrdinaryDifferentialEquation<Position>> {
+    : public AdaptiveStepSizeIntegrator<ODE_> {
  public:
-  using ODE = ExplicitSecondOrderOrdinaryDifferentialEquation<Position>;
+  using ODE = ODE_;
+  static_assert(
+      is_instance_of_v<ExplicitSecondOrderOrdinaryDifferentialEquation, ODE>);
   using typename Integrator<ODE>::AppendState;
   using typename AdaptiveStepSizeIntegrator<ODE>::Parameters;
   using typename AdaptiveStepSizeIntegrator<ODE>::ToleranceToErrorRatio;
