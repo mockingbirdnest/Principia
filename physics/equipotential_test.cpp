@@ -75,8 +75,9 @@ class EquipotentialTest : public ::testing::Test {
 
   EquipotentialTest()
       : ephemeris_parameters_(
-            SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                               Position<Barycentric>>(),
+            SymmetricLinearMultistepIntegrator<
+                QuinlanTremaine1990Order12,
+                Ephemeris<Barycentric>::NewtonianMotionEquation>(),
             /*step=*/10 * Minute),
         solar_system_(make_not_null_unique<SolarSystem<Barycentric>>(
             SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
@@ -91,7 +92,7 @@ class EquipotentialTest : public ::testing::Test {
             EmbeddedExplicitRungeKuttaIntegrator<
                 DormandPrince1986RK547FC,
                 Equipotential<Barycentric, World>::IndependentVariable,
-                Position<World>,
+                Ephemeris<World>::NewtonianMotionEquation,
                 double>(),
             /*max_steps=*/1000,
             /*length_integration_tolerance=*/1 * Metre) {}
@@ -396,8 +397,9 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
       instance_trajectories,
       Ephemeris<Barycentric>::NoIntrinsicAccelerations,
       Ephemeris<Barycentric>::FixedStepParameters(
-          SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                             Position<Barycentric>>(),
+          SymmetricLinearMultistepIntegrator<
+              Quinlan1999Order8A,
+              Ephemeris<Barycentric>::NewtonianMotionEquation>(),
           /*step=*/10 * Second));
 
   CHECK_OK(

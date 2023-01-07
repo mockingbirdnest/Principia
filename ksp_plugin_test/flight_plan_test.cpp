@@ -104,8 +104,9 @@ class FlightPlanTest : public testing::Test {
             /*fitting_tolerance=*/1 * Milli(Metre),
             /*geopotential_tolerance=*/0x1p-24),
         Ephemeris<Barycentric>::FixedStepParameters(
-            SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                               Position<Barycentric>>(),
+            SymmetricLinearMultistepIntegrator<
+                QuinlanTremaine1990Order12,
+                Ephemeris<Barycentric>::NewtonianMotionEquation>(),
             /*step=*/10 * Minute));
     EXPECT_OK(ephemeris_->Prolong(t0_ - 2 * π * Second));
     navigation_frame_ = std::make_unique<TestNavigationFrame>(
@@ -134,14 +135,14 @@ class FlightPlanTest : public testing::Test {
         Ephemeris<Barycentric>::AdaptiveStepParameters(
             EmbeddedExplicitRungeKuttaNyströmIntegrator<
                 DormandالمكاوىPrince1986RKN434FM,
-                Position<Barycentric>>(),
+                Ephemeris<Barycentric>::NewtonianMotionEquation>(),
             /*max_steps=*/1000,
             /*length_integration_tolerance=*/1 * Milli(Metre),
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
         Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
             EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
                 Fine1987RKNG34,
-                Position<Barycentric>>(),
+                Ephemeris<Barycentric>::NewtonianMotionEquation>(),
             /*max_steps=*/1000,
             /*length_integration_tolerance=*/1 * Milli(Metre),
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second));
@@ -233,14 +234,14 @@ TEST_F(FlightPlanTest, Singular) {
       Ephemeris<Barycentric>::AdaptiveStepParameters(
           EmbeddedExplicitRungeKuttaNyströmIntegrator<
               DormandالمكاوىPrince1986RKN434FM,
-              Position<Barycentric>>(),
+              Ephemeris<Barycentric>::NewtonianMotionEquation>(),
           /*max_steps=*/1000,
           /*length_integration_tolerance=*/1 * Milli(Metre),
           /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
       Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
           EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
               Fine1987RKNG34,
-              Position<Barycentric>>(),
+              Ephemeris<Barycentric>::NewtonianMotionEquation>(),
           /*max_steps=*/1,
           /*length_integration_tolerance=*/1 * Metre,
           /*speed_integration_tolerance=*/1 * Metre / Second));
@@ -415,14 +416,14 @@ TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
         Ephemeris<Barycentric>::AdaptiveStepParameters(
             EmbeddedExplicitRungeKuttaNyströmIntegrator<
                 DormandالمكاوىPrince1986RKN434FM,
-                Position<Barycentric>>(),
+                Ephemeris<Barycentric>::NewtonianMotionEquation>(),
             /*max_steps=*/1,
             /*length_integration_tolerance=*/1 * Milli(Metre),
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
         Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
             EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
                 Fine1987RKNG34,
-                Position<Barycentric>>(),
+                Ephemeris<Barycentric>::NewtonianMotionEquation>(),
             /*max_steps=*/1,
             /*length_integration_tolerance=*/1 * Milli(Metre),
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second)),
@@ -441,14 +442,14 @@ TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
       Ephemeris<Barycentric>::AdaptiveStepParameters(
           EmbeddedExplicitRungeKuttaNyströmIntegrator<
               DormandالمكاوىPrince1986RKN434FM,
-              Position<Barycentric>>(),
+              Ephemeris<Barycentric>::NewtonianMotionEquation>(),
           /*max_steps=*/10000,
           /*length_integration_tolerance=*/1 * Milli(Metre),
           /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
       Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
           EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
               Fine1987RKNG34,
-              Position<Barycentric>>(),
+              Ephemeris<Barycentric>::NewtonianMotionEquation>(),
           /*max_steps=*/1,
           /*length_integration_tolerance=*/1 * Milli(Metre),
           /*speed_integration_tolerance=*/1 * Milli(Metre) / Second)));

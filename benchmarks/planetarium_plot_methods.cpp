@@ -184,15 +184,17 @@ class Satellites {
  private:
   Ephemeris<Barycentric>::FixedStepParameters EphemerisParameters() {
     return Ephemeris<Barycentric>::FixedStepParameters(
-        SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                           Position<Barycentric>>(),
+        SymmetricLinearMultistepIntegrator<
+            QuinlanTremaine1990Order12,
+            Ephemeris<Barycentric>::NewtonianMotionEquation>(),
         /*step=*/10 * Minute);
   }
 
   Ephemeris<Barycentric>::FixedStepParameters HistoryParameters() {
     return Ephemeris<Barycentric>::FixedStepParameters(
-        SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                           Position<Barycentric>>(),
+        SymmetricLinearMultistepIntegrator<
+            Quinlan1999Order8A,
+            Ephemeris<Barycentric>::NewtonianMotionEquation>(),
         /*step=*/10 * Second);
   }
 

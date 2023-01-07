@@ -1,4 +1,4 @@
-// .\Release\x64\benchmarks.exe --benchmark_repetitions=5 --benchmark_min_time=5 --benchmark_filter=SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator                                                                                                                 // NOLINT(whitespace/line_length)
+// .\Release\x64\benchmarks.exe --benchmark_repetitions=5 --benchmark_min_time=5 --benchmark_filter=SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator                                                                                                                 // NOLINT(whitespace/line_ODE1D)
 
 #define GLOG_NO_ABBREVIATED_SEVERITIES
 
@@ -57,6 +57,9 @@ namespace integrators {
 namespace {
 
 using World = Frame<enum class WorldTag, Inertial>;
+using ODE1D = SpecialSecondOrderDifferentialEquation<Length>;
+using ODE3D = SpecialSecondOrderDifferentialEquation<Position<World>>;
+
 
 }  // namespace
 
@@ -65,8 +68,6 @@ void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
                                               Length& q_error,
                                               Speed& v_error,
                                               Integrator const& integrator) {
-  using ODE = SpecialSecondOrderDifferentialEquation<Length>;
-
   state.PauseTiming();
   Length const q_initial = 1 * Metre;
   Speed const v_initial;
@@ -78,16 +79,16 @@ void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
 #endif
   Time const step = 3.0e-4 * Second;
 
-  std::vector<ODE::State> solution;
+  std::vector<ODE1D::State> solution;
   solution.reserve(static_cast<int>((t_final - t_initial) / step));
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration1D,
                 _1, _2, _3, /*evaluations=*/nullptr);
-  InitialValueProblem<ODE> problem;
+  InitialValueProblem<ODE1D> problem;
   problem.equation = harmonic_oscillator;
   problem.initial_state = {t_initial, {q_initial}, {v_initial}};
-  auto const append_state = [&solution](ODE::State const& state) {
+  auto const append_state = [&solution](ODE1D::State const& state) {
     solution.emplace_back(state);
   };
 
@@ -119,8 +120,6 @@ void SolveHarmonicOscillatorAndComputeError3D(benchmark::State& state,
                                               Length& q_error,
                                               Speed& v_error,
                                               Integrator const& integrator) {
-  using ODE = SpecialSecondOrderDifferentialEquation<Position<World>>;
-
   state.PauseTiming();
   Displacement<World> const q_initial({1 * Metre, 0 * Metre, 0 * Metre});
   Velocity<World> const v_initial;
@@ -132,16 +131,16 @@ void SolveHarmonicOscillatorAndComputeError3D(benchmark::State& state,
 #endif
   Time const step = 3.0e-4 * Second;
 
-  std::vector<ODE::State> solution;
+  std::vector<ODE3D::State> solution;
   solution.reserve(static_cast<int>((t_final - t_initial) / step));
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration3D<World>,
                 _1, _2, _3, /*evaluations=*/nullptr);
-  InitialValueProblem<ODE> problem;
+  InitialValueProblem<ODE3D> problem;
   problem.equation = harmonic_oscillator;
   problem.initial_state = {t_initial, {World::origin + q_initial}, {v_initial}};
-  auto const append_state = [&solution](ODE::State const& state) {
+  auto const append_state = [&solution](ODE3D::State const& state) {
     solution.emplace_back(state);
   };
 
@@ -168,7 +167,7 @@ void SolveHarmonicOscillatorAndComputeError3D(benchmark::State& state,
   state.ResumeTiming();
 }
 
-template<typename Method, typename Position>
+template<typename Method, typename ODE>
 void BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D(
     benchmark::State& state) {
   Length q_error;
@@ -178,14 +177,14 @@ void BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D(
         state,
         q_error,
         v_error,
-        SymplecticRungeKuttaNyströmIntegrator<Method, Position>());
+        SymplecticRungeKuttaNyströmIntegrator<Method, ODE>());
   }
   std::stringstream ss;
   ss << q_error << ", " << v_error;
   state.SetLabel(ss.str());
 }
 
-template<typename Method, typename Position>
+template<typename Method, typename ODE>
 void BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D(
     benchmark::State& state) {
   Length q_error;
@@ -195,7 +194,7 @@ void BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D(
         state,
         q_error,
         v_error,
-        SymplecticRungeKuttaNyströmIntegrator<Method, Position>());
+        SymplecticRungeKuttaNyströmIntegrator<Method, ODE>());
   }
   std::stringstream ss;
   ss << q_error << ", " << v_error;
@@ -204,68 +203,68 @@ void BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D(
 
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    methods::McLachlanAtela1992Order4Optimal, Length)
+    methods::McLachlanAtela1992Order4Optimal, ODE1D)
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    methods::McLachlan1995SB3A4, Length)
+    methods::McLachlan1995SB3A4, ODE1D)
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    methods::McLachlan1995SB3A5, Length)
+    methods::McLachlan1995SB3A5, ODE1D)
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    methods::BlanesMoan2002SRKN6B, Length)
+    methods::BlanesMoan2002SRKN6B, ODE1D)
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    methods::McLachlanAtela1992Order5Optimal, Length)
+    methods::McLachlanAtela1992Order5Optimal, ODE1D)
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    methods::OkunborSkeel1994Order6Method13, Length)
+    methods::OkunborSkeel1994Order6Method13, ODE1D)
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    methods::BlanesMoan2002SRKN11B, Length)
+    methods::BlanesMoan2002SRKN11B, ODE1D)
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    methods::BlanesMoan2002SRKN14A, Length)
+    methods::BlanesMoan2002SRKN14A, ODE1D)
     ->Unit(benchmark::kMillisecond);
 
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    methods::McLachlanAtela1992Order4Optimal, Position<World>)
+    methods::McLachlanAtela1992Order4Optimal, ODE3D)
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    methods::McLachlan1995SB3A4, Position<World>)
+    methods::McLachlan1995SB3A4, ODE3D)
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    methods::McLachlan1995SB3A5, Position<World>)
+    methods::McLachlan1995SB3A5, ODE3D)
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    methods::BlanesMoan2002SRKN6B, Position<World>)
+    methods::BlanesMoan2002SRKN6B, ODE3D)
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    methods::McLachlanAtela1992Order5Optimal, Position<World>)
+    methods::McLachlanAtela1992Order5Optimal, ODE3D)
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    methods::OkunborSkeel1994Order6Method13, Position<World>)
+    methods::OkunborSkeel1994Order6Method13, ODE3D)
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    methods::BlanesMoan2002SRKN11B, Position<World>)
+    methods::BlanesMoan2002SRKN11B, ODE3D)
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    methods::BlanesMoan2002SRKN14A, Position<World>)
+    methods::BlanesMoan2002SRKN14A, ODE3D)
     ->Unit(benchmark::kMillisecond);
 
 }  // namespace integrators

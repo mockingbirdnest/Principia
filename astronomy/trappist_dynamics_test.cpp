@@ -992,8 +992,9 @@ class TrappistDynamicsTest : public ::testing::Test {
                 /*fitting_tolerance=*/1 * Milli(Metre),
                 /*geopotential_tolerance=*/0x1.0p-24),
             Ephemeris<Sky>::FixedStepParameters(
-                SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                                   Position<Sky>>(),
+                SymmetricLinearMultistepIntegrator<
+                    Quinlan1999Order8A,
+                    Ephemeris<Sky>::NewtonianMotionEquation>(),
                 /*step=*/30 * Minute))) {}
 
   static Transits ComputeTransits(Ephemeris<Sky> const& ephemeris,

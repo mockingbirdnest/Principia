@@ -84,8 +84,9 @@ TEST_F(SolarSystemTest, RealSolarSystem) {
       /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Metre,
                                /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(
-          SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order4Optimal,
-                                                Position<ICRS>>(),
+          SymplecticRungeKuttaNyströmIntegrator<
+              McLachlanAtela1992Order4Optimal,
+              Ephemeris<ICRS>::NewtonianMotionEquation>(),
           /*step=*/1 * Second));
   auto const earth = solar_system.massive_body(*ephemeris, "Earth");
   EXPECT_LT(RelativeError(5.9723653 * Yotta(Kilogram), earth->mass()), 7e-9);
@@ -135,8 +136,9 @@ TEST_F(SolarSystemTest, KSPSystem) {
       /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Metre,
                                /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<KSP>::FixedStepParameters(
-          SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order4Optimal,
-                                                Position<KSP>>(),
+          SymplecticRungeKuttaNyströmIntegrator<
+              McLachlanAtela1992Order4Optimal,
+              Ephemeris<KSP>::NewtonianMotionEquation>(),
           /*step=*/1 * Second));
   auto const kerbin = solar_system.massive_body(*ephemeris, "Kerbin");
   EXPECT_LT(RelativeError(52.915158 * Zetta(Kilogram), kerbin->mass()), 7e-9);
