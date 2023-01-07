@@ -13,6 +13,7 @@
 
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
+#include "base/traits.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
@@ -23,6 +24,7 @@ namespace principia {
 namespace integrators {
 namespace internal_embedded_explicit_runge_kutta_integrator {
 
+using base::is_instance_of_v;
 using base::not_null;
 using numerics::FixedStrictlyLowerTriangularMatrix;
 using numerics::FixedVector;
@@ -43,18 +45,13 @@ using quantities::Variation;
 // RKq(p)s[F]X has higher order q, lower order p, comprises s stages, and has
 // the first-same-as-last property.
 
-template<typename Method,
-         typename IndependentVariable,
-         typename... DependentVariable>
+template<typename Method, typename ODE_>
 class EmbeddedExplicitRungeKuttaIntegrator
-    : public AdaptiveStepSizeIntegrator<
-          ExplicitFirstOrderOrdinaryDifferentialEquation<
-              IndependentVariable,
-              DependentVariable...>> {
+    : public AdaptiveStepSizeIntegrator<ODE_> {
  public:
-  using ODE =
-      ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable,
-                                                     DependentVariable...>;
+  using ODE = ODE_;
+  static_assert(
+      is_instance_of_v<ExplicitFirstOrderOrdinaryDifferentialEquation, ODE>);
   using typename Integrator<ODE>::AppendState;
   using typename AdaptiveStepSizeIntegrator<ODE>::Parameters;
   using typename AdaptiveStepSizeIntegrator<ODE>::ToleranceToErrorRatio;
@@ -76,7 +73,8 @@ class EmbeddedExplicitRungeKuttaIntegrator
 
   class Instance : public AdaptiveStepSizeIntegrator<ODE>::Instance {
    public:
-    absl::Status Solve(IndependentVariable const& s_final) override;
+    absl::Status Solve(
+        typename ODE::IndependentVariable const& s_final) override;
     EmbeddedExplicitRungeKuttaIntegrator const& integrator()
         const override;
     not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> Clone()
@@ -95,7 +93,7 @@ class EmbeddedExplicitRungeKuttaIntegrator
         AppendState const& append_state,
         ToleranceToErrorRatio const& tolerance_to_error_ratio,
         Parameters const& parameters,
-        ODE::IndependentVariableDifference const& step,
+        typename ODE::IndependentVariableDifference const& step,
         bool first_use,
         EmbeddedExplicitRungeKuttaIntegrator const& integrator);
 #endif
@@ -133,13 +131,9 @@ class EmbeddedExplicitRungeKuttaIntegrator
 
 }  // namespace internal_embedded_explicit_runge_kutta_integrator
 
-template<typename Method,
-         typename IndependentVariable,
-         typename... DependentVariable>
+template<typename Method, typename ODE>
 internal_embedded_explicit_runge_kutta_integrator::
-    EmbeddedExplicitRungeKuttaIntegrator<Method,
-                                         IndependentVariable,
-                                         DependentVariable...> const&
+    EmbeddedExplicitRungeKuttaIntegrator<Method, ODE> const&
 EmbeddedExplicitRungeKuttaIntegrator();
 
 }  // namespace integrators

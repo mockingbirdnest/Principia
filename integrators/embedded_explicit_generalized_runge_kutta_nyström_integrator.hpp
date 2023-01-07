@@ -151,11 +151,10 @@ class EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator
 
 }  // namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator  // NOLINT
 
-template<typename Method, typename Position>
+template<typename Method, typename ODE>
 internal_embedded_explicit_generalized_runge_kutta_nyström_integrator::
-    EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method,
-                                                           Position> const&
-        EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator();
+    EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, ODE> const&
+EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator();
 
 }  // namespace integrators
 }  // namespace principia

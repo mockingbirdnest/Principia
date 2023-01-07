@@ -26,13 +26,8 @@ using quantities::DebugString;
 using quantities::Difference;
 using quantities::Quotient;
 
-template<typename Method,
-         typename IndependentVariable,
-         typename... DependentVariable>
-EmbeddedExplicitRungeKuttaIntegrator<
-    Method,
-    IndependentVariable,
-    DependentVariable...>::
+template<typename Method, typename ODE_>
+EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_>::
 EmbeddedExplicitRungeKuttaIntegrator() {
   // The first node is always 0 in an explicit method.
   CHECK_EQ(0.0, c_[0]);
@@ -47,14 +42,11 @@ EmbeddedExplicitRungeKuttaIntegrator() {
   }
 }
 
-template<typename Method,
-         typename IndependentVariable,
-         typename... DependentVariable>
+template<typename Method, typename ODE_>
 absl::Status
-EmbeddedExplicitRungeKuttaIntegrator<Method,
-                                     IndependentVariable,
-                                     DependentVariable...>::Instance::
-Solve(IndependentVariable const& s_final) {
+EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_>::Instance::
+Solve(typename ODE::IndependentVariable const& s_final) {
+  using IndependentVariable = typename ODE::IndependentVariable;
   using IndependentVariableDifference =
       typename ODE::IndependentVariableDifference;
   using DependentVariables = typename ODE::DependentVariables;
@@ -307,38 +299,22 @@ Solve(IndependentVariable const& s_final) {
   return status;
 }
 
-template<typename Method,
-         typename IndependentVariable,
-         typename... DependentVariable>
-EmbeddedExplicitRungeKuttaIntegrator<Method,
-                                     IndependentVariable,
-                                     DependentVariable...> const&
-EmbeddedExplicitRungeKuttaIntegrator<Method,
-                                     IndependentVariable,
-                                     DependentVariable...>::Instance::
+template<typename Method, typename ODE_>
+EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_> const&
+EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_>::Instance::
 integrator() const {
   return integrator_;
 }
 
-template<typename Method,
-         typename IndependentVariable,
-         typename... DependentVariable>
-not_null<std::unique_ptr<
-    typename Integrator<ExplicitFirstOrderOrdinaryDifferentialEquation<
-        IndependentVariable, DependentVariable...>>::Instance>>
-EmbeddedExplicitRungeKuttaIntegrator<Method,
-                                     IndependentVariable,
-                                     DependentVariable...>::Instance::
+template<typename Method, typename ODE_>
+not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
+EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_>::Instance::
 Clone() const {
   return std::unique_ptr<Instance>(new Instance(*this));
 }
 
-template<typename Method,
-         typename IndependentVariable,
-         typename... DependentVariable>
-void EmbeddedExplicitRungeKuttaIntegrator<Method,
-                                          IndependentVariable,
-                                          DependentVariable...>::Instance::
+template<typename Method, typename ODE_>
+void EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_>::Instance::
 WriteToMessage(not_null<serialization::IntegratorInstance*> message) const {
   AdaptiveStepSizeIntegrator<ODE>::Instance::WriteToMessage(message);
   [[maybe_unused]] auto* const extension =
@@ -352,17 +328,10 @@ WriteToMessage(not_null<serialization::IntegratorInstance*> message) const {
 }
 
 #if 0
-template<typename Method,
-         typename IndependentVariable,
-         typename... DependentVariable>
+template<typename Method, typename ODE_>
 template<typename, typename>
-not_null<std::unique_ptr<
-    typename EmbeddedExplicitRungeKuttaIntegrator<Method,
-                                                  IndependentVariable,
-                                                  DependentVariable...>::Instance>>
-EmbeddedExplicitRungeKuttaIntegrator<Method,
-                                     IndependentVariable,
-                                     DependentVariable...>::Instance::
+not_null<std::unique_ptr<ODE_>::Instance>>
+EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_>::Instance::
 ReadFromMessage(serialization::
                     EmbeddedExplicitRungeKuttaNystromIntegratorInstance const&
                         extension,
@@ -385,12 +354,8 @@ ReadFromMessage(serialization::
 }
 #endif
 
-template<typename Method,
-         typename IndependentVariable,
-         typename... DependentVariable>
-EmbeddedExplicitRungeKuttaIntegrator<Method,
-                                     IndependentVariable,
-                                     DependentVariable...>::Instance::
+template<typename Method, typename ODE_>
+EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_>::Instance::
 Instance(InitialValueProblem<ODE> const& problem,
          AppendState const& append_state,
          ToleranceToErrorRatio const& tolerance_to_error_ratio,
@@ -406,15 +371,9 @@ Instance(InitialValueProblem<ODE> const& problem,
                                                 first_use),
       integrator_(integrator) {}
 
-template<typename Method,
-         typename IndependentVariable,
-         typename... DependentVariable>
-not_null<std::unique_ptr<
-    typename Integrator<ExplicitFirstOrderOrdinaryDifferentialEquation<
-        IndependentVariable, DependentVariable...>>::Instance>>
-EmbeddedExplicitRungeKuttaIntegrator<Method,
-                                     IndependentVariable,
-                                     DependentVariable...>::
+template<typename Method, typename ODE_>
+not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
+EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_>::
 NewInstance(InitialValueProblem<ODE> const& problem,
             AppendState const& append_state,
             ToleranceToErrorRatio const& tolerance_to_error_ratio,
@@ -431,12 +390,8 @@ NewInstance(InitialValueProblem<ODE> const& problem,
                    *this));
 }
 
-template<typename Method,
-         typename IndependentVariable,
-         typename... DependentVariable>
-void EmbeddedExplicitRungeKuttaIntegrator<Method,
-                                          IndependentVariable,
-                                          DependentVariable...>::
+template<typename Method, typename ODE_>
+void EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_>::
 WriteToMessage(
     not_null<serialization::AdaptiveStepSizeIntegrator*> message) const {
   message->set_kind(Method::kind);
@@ -444,22 +399,16 @@ WriteToMessage(
 
 }  // namespace internal_embedded_explicit_runge_kutta_integrator
 
-template<typename Method,
-         typename IndependentVariable,
-         typename... DependentVariable>
+template<typename Method, typename ODE_>
 internal_embedded_explicit_runge_kutta_integrator::
-    EmbeddedExplicitRungeKuttaIntegrator<Method,
-                                         IndependentVariable,
-                                         DependentVariable...> const&
+    EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_> const&
 EmbeddedExplicitRungeKuttaIntegrator() {
   static_assert(
       std::is_base_of<methods::EmbeddedExplicitRungeKutta,
                       Method>::value,
       "Method must be derived from EmbeddedExplicitRungeKutta");
   static internal_embedded_explicit_runge_kutta_integrator::
-      EmbeddedExplicitRungeKuttaIntegrator<Method,
-                                           IndependentVariable,
-                                           DependentVariable...> const integrator;
+      EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_> const integrator;
   return integrator;
 }
 
