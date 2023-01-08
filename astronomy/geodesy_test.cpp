@@ -145,7 +145,7 @@ TEST_F(GeodesyTest, DISABLED_LAGEOS2) {
             Ephemeris<ICRS>::AdaptiveStepParameters(
                 EmbeddedExplicitRungeKuttaNyströmIntegrator<
                     DormandالمكاوىPrince1986RKN434FM,
-                    Position<ICRS>>(),
+                    Ephemeris<ICRS>::NewtonianMotionEquation>(),
                 std::numeric_limits<std::int64_t>::max(),
                 /*length_integration_tolerance=*/1 * Milli(Metre),
                 /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),

@@ -1107,8 +1107,9 @@ class TrappistDynamicsTest : public ::testing::Test {
         /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
                                  /*geopotential_tolerance=*/0x1p-24},
         Ephemeris<Sky>::FixedStepParameters(
-            SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                               Position<Sky>>(),
+            SymmetricLinearMultistepIntegrator<
+                Quinlan1999Order8A,
+                Ephemeris<Sky>::NewtonianMotionEquation>(),
             /*step=*/30 * Minute));
     EXPECT_OK(ephemeris->Prolong(system.epoch() + 1000 * Day));
 
@@ -1193,15 +1194,17 @@ TEST_F(TrappistDynamicsTest, DISABLED_MathematicaTransits) {
             /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
                                      /*geopotential_tolerance=*/0x1p-24},
             Ephemeris<Sky>::FixedStepParameters(
-                SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                                   Position<Sky>>(),
+                SymmetricLinearMultistepIntegrator<
+                    Quinlan1999Order8A,
+                    Ephemeris<Sky>::NewtonianMotionEquation>(),
                 /*step=*/30 * Minute)),
         system_.MakeEphemeris(
             /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Centi(Metre),
                                      /*geopotential_tolerance=*/1.0e-7},
             Ephemeris<Sky>::FixedStepParameters(
-                SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN11B,
-                                                      Position<Sky>>(),
+                SymplecticRungeKuttaNyströmIntegrator<
+                    BlanesMoan2002SRKN11B,
+                    Ephemeris<Sky>::NewtonianMotionEquation>(),
                 /*step=*/45 * Minute))}) {
     Instant const a_century_later = system_.epoch() + 100 * JulianYear;
     EXPECT_OK(ephemeris->Prolong(a_century_later));
