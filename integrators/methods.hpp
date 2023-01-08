@@ -867,7 +867,7 @@ struct QuinlanTremaine1990Order14 : SymmetricLinearMultistep {
 struct RK4 :  ExplicitRungeKutta {
   static constexpr int order = 4;
   static constexpr int stages = 4;
-  static constexpr bool first_same_as_last = true;
+  static constexpr bool first_same_as_last = false;
   static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
       serialization::FixedStepSizeIntegrator::RK4;
   static constexpr FixedVector<double, stages> c{{

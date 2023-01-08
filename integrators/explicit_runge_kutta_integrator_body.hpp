@@ -123,63 +123,61 @@ Solve(typename ODE::IndependentVariable const& s_final) {
   }
 
   while (abs_h <= Abs((s_final - s.value) - s.error)) {
-      // Runge-Kutta iteration; fills |k|.
-      for (int i = 0; i < stages_; ++i) {
-        if (i == 0 && first_same_as_last) {
-          // TODO(phl): Use pointers to avoid copying big objects.
-          f = last_f;
-        } else {
-          DependentVariableDifferences Σⱼ_aᵢⱼ_kⱼ{};
-          for (int j = 0; j < i; ++j) {
-            for_all_of(k[j], y, y_stage, Σⱼ_aᵢⱼ_kⱼ)
-                .loop([&a, i, j](auto const& kⱼ,
-                                 auto const& y,
-                                 auto& y_stage,
-                                 auto& Σⱼ_aᵢⱼ_kⱼ) {
-                  int const dimension = y.size();
-                  Σⱼ_aᵢⱼ_kⱼ.resize(dimension);
-                  for (int l = 0; l < dimension; ++l) {
-                    Σⱼ_aᵢⱼ_kⱼ[l] += a(i, j) * kⱼ[l];
-                  }
-                });
-          }
-          for_all_of(y, Σⱼ_aᵢⱼ_kⱼ, y_stage)
-              .loop([](auto const& y, auto const& Σⱼ_aᵢⱼ_kⱼ, auto& y_stage) {
+    // Runge-Kutta iteration; fills |k|.
+    for (int i = 0; i < stages_; ++i) {
+      if (i == 0 && first_same_as_last) {
+        // TODO(phl): Use pointers to avoid copying big objects.
+        f = last_f;
+      } else {
+        DependentVariableDifferences Σⱼ_aᵢⱼ_kⱼ{};
+        for (int j = 0; j < i; ++j) {
+          for_all_of(k[j], y, y_stage, Σⱼ_aᵢⱼ_kⱼ)
+              .loop([&a, i, j](auto const& kⱼ,
+                               auto const& y,
+                               auto& y_stage,
+                               auto& Σⱼ_aᵢⱼ_kⱼ) {
                 int const dimension = y.size();
+                Σⱼ_aᵢⱼ_kⱼ.resize(dimension);
                 for (int l = 0; l < dimension; ++l) {
-                  y_stage[l] = y[l].value + Σⱼ_aᵢⱼ_kⱼ[l];
+                  Σⱼ_aᵢⱼ_kⱼ[l] += a(i, j) * kⱼ[l];
                 }
               });
-
-          termination_condition::UpdateWithAbort(
-              equation.compute_derivative(
-                  s.value + (s.error + c[i] * h), y_stage, f),
-              status);
         }
-        for_all_of(f, k[i]).loop([h](auto const& f, auto& kᵢ) {
-          int const dimension = f.size();
-          for (int l = 0; l < dimension; ++l) {
-            kᵢ[l] = h * f[l];
-          }
-        });
-      }
-
-      // Increment computation.
-      DependentVariableDifferences Σᵢ_bᵢ_kᵢ{};
-      for (int i = 0; i < stages_; ++i) {
-        for_all_of(k[i], y, Δy, Σᵢ_bᵢ_kᵢ)
-            .loop([&a, &b, i](auto const& kᵢ,
-                              auto const& y,
-                              auto& Δy,
-                              auto& Σᵢ_bᵢ_kᵢ) {
+        for_all_of(y, Σⱼ_aᵢⱼ_kⱼ, y_stage)
+            .loop([](auto const& y, auto const& Σⱼ_aᵢⱼ_kⱼ, auto& y_stage) {
               int const dimension = y.size();
-              Σᵢ_bᵢ_kᵢ.resize(dimension);
               for (int l = 0; l < dimension; ++l) {
-                Σᵢ_bᵢ_kᵢ[l] += b[i] * kᵢ[l];
-                Δy[l] = Σᵢ_bᵢ_kᵢ[l];
+                y_stage[l] = y[l].value + Σⱼ_aᵢⱼ_kⱼ[l];
               }
             });
+
+        termination_condition::UpdateWithAbort(
+            equation.compute_derivative(
+                s.value + (s.error + c[i] * h), y_stage, f),
+            status);
       }
+      for_all_of(f, k[i]).loop([h](auto const& f, auto& kᵢ) {
+        int const dimension = f.size();
+        for (int l = 0; l < dimension; ++l) {
+          kᵢ[l] = h * f[l];
+        }
+      });
+    }
+
+    // Increment computation.
+    DependentVariableDifferences Σᵢ_bᵢ_kᵢ{};
+    for (int i = 0; i < stages_; ++i) {
+      for_all_of(k[i], y, Δy, Σᵢ_bᵢ_kᵢ)
+          .loop([&a, &b, i](
+                    auto const& kᵢ, auto const& y, auto& Δy, auto& Σᵢ_bᵢ_kᵢ) {
+            int const dimension = y.size();
+            Σᵢ_bᵢ_kᵢ.resize(dimension);
+            for (int l = 0; l < dimension; ++l) {
+              Σᵢ_bᵢ_kᵢ[l] += b[i] * kᵢ[l];
+              Δy[l] = Σᵢ_bᵢ_kᵢ[l];
+            }
+          });
+    }
 
     if (first_same_as_last) {
       last_f = f;
