@@ -80,7 +80,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest,
        HarmonicOscillatorBackAndForth) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       EmbeddedExplicitRungeKuttaIntegrator<
-          methods::DormandPrince1986RK547FC, Instant, Length, Speed>();
+          methods::DormandPrince1986RK547FC, ODE>();
   Length const x_initial = 1 * Metre;
   Speed const v_initial = 0.0 * Metre / Second;
   Time const period = 2 * π * Second;
@@ -192,7 +192,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest,
 TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, MaxSteps) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       EmbeddedExplicitRungeKuttaIntegrator<
-          methods::DormandPrince1986RK547FC, Instant, Length, Speed>();
+          methods::DormandPrince1986RK547FC, ODE>();
   Length const x_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
   Speed const v_amplitude = 1 * Metre / Second;
@@ -332,7 +332,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Singularity) {
 
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       EmbeddedExplicitRungeKuttaIntegrator<
-          methods::DormandPrince1986RK547FC, Instant, Length, Speed>();
+          methods::DormandPrince1986RK547FC, ODE>();
 
   auto const instance = integrator.NewInstance(problem,
                                                append_state,
@@ -352,7 +352,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Singularity) {
 TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Restart) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       EmbeddedExplicitRungeKuttaIntegrator<
-          methods::DormandPrince1986RK547FC, Instant, Length, Speed>();
+          methods::DormandPrince1986RK547FC, ODE>();
   Length const x_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
   Time const period = 2 * π * Second;

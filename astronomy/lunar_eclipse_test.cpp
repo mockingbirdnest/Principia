@@ -69,8 +69,9 @@ class LunarEclipseTest : public ::testing::Test {
         /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
                                  /*geopotential_tolerance=*/0x1p-24},
         Ephemeris<ICRS>::FixedStepParameters(
-            SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                               Position<ICRS>>(),
+            SymmetricLinearMultistepIntegrator<
+                QuinlanTremaine1990Order12,
+                Ephemeris<ICRS>::NewtonianMotionEquation>(),
             /*step=*/10 * Minute));
     r_sun_ = solar_system_1950_.mean_radius("Sun");
     r_moon_ = solar_system_1950_.mean_radius("Moon");

@@ -30,14 +30,14 @@
   {                                                   \
     (integrators::SymmetricLinearMultistepIntegrator< \
         integrators::methods::name,                   \
-        Length>()),                                   \
+        ODE>()),                                      \
         u8###name, 1                                  \
   }
 #define SRKN_INTEGRATOR(name)                                 \
   {                                                           \
     (integrators::SymplecticRungeKuttaNyströmIntegrator<      \
         integrators::methods::name,                           \
-        Length>()),                                           \
+        ODE>()),                                              \
         u8###name, (integrators::methods::name::evaluations)  \
   }
 #define SPRK_INTEGRATOR(name, composition)                   \
@@ -45,7 +45,7 @@
     (integrators::SymplecticRungeKuttaNyströmIntegrator<     \
         integrators::methods::name,                          \
         serialization::FixedStepSizeIntegrator::composition, \
-        Length>()),                                          \
+        ODE>()),                                             \
         u8###name " " u8###composition,                      \
         (integrators::methods::name::evaluations)            \
   }

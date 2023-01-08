@@ -12,6 +12,8 @@
 #include <vector>
 
 #include "absl/status/status.h"
+#include "base/not_null.hpp"
+#include "base/traits.hpp"
 #include "integrators/cohen_hubbard_oesterwinter.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/double_precision.hpp"
@@ -21,18 +23,19 @@ namespace principia {
 namespace integrators {
 namespace internal_symmetric_linear_multistep_integrator {
 
+using base::is_instance_of_v;
 using base::not_null;
 using geometry::Instant;
 using numerics::DoublePrecision;
 using numerics::FixedVector;
 using quantities::Time;
 
-template<typename Method, typename Position>
+template<typename Method, typename ODE_>
 class SymmetricLinearMultistepIntegrator
-    : public FixedStepSizeIntegrator<
-          SpecialSecondOrderDifferentialEquation<Position>> {
+    : public FixedStepSizeIntegrator<ODE_> {
  public:
-  using ODE = SpecialSecondOrderDifferentialEquation<Position>;
+  using ODE = ODE_;
+  static_assert(is_instance_of_v<SpecialSecondOrderDifferentialEquation, ODE>);
   using AppendState = typename Integrator<ODE>::AppendState;
 
   static constexpr int order = Method::order;
@@ -46,8 +49,8 @@ class SymmetricLinearMultistepIntegrator
 
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
-    template<typename P = Position,
-             typename = std::enable_if_t<base::is_serializable_v<P>>>
+    template<typename DV = typename ODE::DependentVariable,
+             typename = std::enable_if_t<base::is_serializable_v<DV>>>
     static not_null<std::unique_ptr<Instance>> ReadFromMessage(
         serialization::SymmetricLinearMultistepIntegratorInstance const&
             extension,
@@ -69,8 +72,8 @@ class SymmetricLinearMultistepIntegrator
       void WriteToMessage(
           not_null<serialization::SymmetricLinearMultistepIntegratorInstance::
                        Step*> message) const;
-      template<typename P = Position,
-               typename = std::enable_if_t<base::is_serializable_v<P>>>
+      template<typename DV = typename ODE::DependentVariable,
+               typename = std::enable_if_t<base::is_serializable_v<DV>>>
       static Step ReadFromMessage(
           serialization::SymmetricLinearMultistepIntegratorInstance::Step const&
               message);

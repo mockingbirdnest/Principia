@@ -59,6 +59,9 @@ namespace {
 
 using World = Frame<enum class WorldTag, Inertial>;
 
+using ODE1D = SpecialSecondOrderDifferentialEquation<Length>;
+using ODE3D = SpecialSecondOrderDifferentialEquation<Position<World>>;
+
 template<typename ODE>
 double HarmonicOscillatorToleranceRatio1D(
     Time const& h,
@@ -88,8 +91,6 @@ void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
                                               Length& q_error,
                                               Speed& v_error,
                                               Integrator const& integrator) {
-  using ODE = SpecialSecondOrderDifferentialEquation<Length>;
-
   Length const q_initial = 1 * Metre;
   Speed const v_initial;
   Instant const t_initial;
@@ -97,15 +98,15 @@ void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
   Length const length_tolerance = 1e-6 * Metre;
   Speed const speed_tolerance = 1e-6 * Metre / Second;
 
-  std::vector<ODE::State> solution;
-  ODE harmonic_oscillator;
+  std::vector<ODE1D::State> solution;
+  ODE1D harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration1D,
                 _1, _2, _3, /*evaluations=*/nullptr);
-  InitialValueProblem<ODE> problem;
+  InitialValueProblem<ODE1D> problem;
   problem.equation = harmonic_oscillator;
   problem.initial_state = {t_initial, {q_initial}, {v_initial}};
-  auto const append_state = [&solution](ODE::State const& state) {
+  auto const append_state = [&solution](ODE1D::State const& state) {
     solution.push_back(state);
   };
 
@@ -113,7 +114,7 @@ void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
       /*first_time_step=*/t_final - t_initial,
       /*safety_factor=*/0.9);
   auto const tolerance_to_error_ratio =
-      std::bind(HarmonicOscillatorToleranceRatio1D<ODE>,
+      std::bind(HarmonicOscillatorToleranceRatio1D<ODE1D>,
                 _1, _2, _3, length_tolerance, speed_tolerance);
 
   auto const instance = integrator.NewInstance(problem,
@@ -146,8 +147,6 @@ void SolveHarmonicOscillatorAndComputeError3D(
     Length& q_error,
     Speed& v_error,
     Integrator const& integrator) {
-  using ODE = SpecialSecondOrderDifferentialEquation<Position<World>>;
-
   Displacement<World> const q_initial({1 * Metre, 0 * Metre, 0 * Metre});
   Velocity<World> const v_initial;
   Instant const t_initial;
@@ -155,15 +154,15 @@ void SolveHarmonicOscillatorAndComputeError3D(
   Length const length_tolerance = 1e-6 * Metre;
   Speed const speed_tolerance = 1e-6 * Metre / Second;
 
-  std::vector<ODE::State> solution;
-  ODE harmonic_oscillator;
+  std::vector<ODE3D::State> solution;
+  ODE3D harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration3D<World>,
                 _1, _2, _3, /*evaluations=*/nullptr);
-  InitialValueProblem<ODE> problem;
+  InitialValueProblem<ODE3D> problem;
   problem.equation = harmonic_oscillator;
   problem.initial_state = {t_initial, {World::origin + q_initial}, {v_initial}};
-  auto const append_state = [&solution](ODE::State const& state) {
+  auto const append_state = [&solution](ODE3D::State const& state) {
     solution.push_back(state);
   };
 
@@ -171,7 +170,7 @@ void SolveHarmonicOscillatorAndComputeError3D(
       /*first_time_step=*/t_final - t_initial,
       /*safety_factor=*/0.9);
   auto const tolerance_to_error_ratio =
-      std::bind(HarmonicOscillatorToleranceRatio3D<ODE>,
+      std::bind(HarmonicOscillatorToleranceRatio3D<ODE3D>,
                 _1, _2, _3, length_tolerance, speed_tolerance);
 
   auto const instance = integrator.NewInstance(problem,
@@ -198,7 +197,7 @@ void SolveHarmonicOscillatorAndComputeError3D(
   state.ResumeTiming();
 }
 
-template<typename Method, typename Position>
+template<typename Method, typename ODE>
 void BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D(
     benchmark::State& state) {
   Length q_error;
@@ -208,14 +207,14 @@ void BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D(
         state,
         q_error,
         v_error,
-        EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position>());
+        EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, ODE>());
   }
   std::stringstream ss;
   ss << q_error << ", " << v_error;
   state.SetLabel(ss.str());
 }
 
-template<typename Method, typename Position>
+template<typename Method, typename ODE>
 void BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D(
     benchmark::State& state) {
   Length q_error;
@@ -225,7 +224,7 @@ void BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D(
         state,
         q_error,
         v_error,
-        EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position>());
+        EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, ODE>());
   }
   std::stringstream ss;
   ss << q_error << ", " << v_error;
@@ -236,12 +235,12 @@ void BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D(
 
 BENCHMARK_TEMPLATE2(
     BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    methods::DormandالمكاوىPrince1986RKN434FM, Length)
+    methods::DormandالمكاوىPrince1986RKN434FM, ODE1D)
     ->Unit(benchmark::kMillisecond);
 
 BENCHMARK_TEMPLATE2(
     BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    methods::DormandالمكاوىPrince1986RKN434FM, Position<World>)
+    methods::DormandالمكاوىPrince1986RKN434FM, ODE3D)
     ->Unit(benchmark::kMillisecond);
 
 }  // namespace integrators

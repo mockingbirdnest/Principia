@@ -272,8 +272,9 @@ class StandardProduct3DynamicsTest
             /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
                                      /*geopotential_tolerance=*/0x1p-24},
             Ephemeris<ICRS>::FixedStepParameters(
-                SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                                   Position<ICRS>>(),
+                SymmetricLinearMultistepIntegrator<
+                    QuinlanTremaine1990Order12,
+                    Ephemeris<ICRS>::NewtonianMotionEquation>(),
                 /*step=*/1 * JulianYear))),
         earth_(dynamic_cast_not_null<RotatingBody<ICRS> const*>(
             solar_system_.massive_body(*ephemeris_, "Earth"))),
@@ -381,7 +382,7 @@ TEST_P(StandardProduct3DynamicsTest, PerturbedKeplerian) {
             Ephemeris<ICRS>::AdaptiveStepParameters(
                 EmbeddedExplicitRungeKuttaNyströmIntegrator<
                     DormandالمكاوىPrince1986RKN434FM,
-                    Position<ICRS>>(),
+                    Ephemeris<ICRS>::NewtonianMotionEquation>(),
                 std::numeric_limits<std::int64_t>::max(),
                 /*length_integration_tolerance=*/1 * Milli(Metre),
                 /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),

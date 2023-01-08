@@ -88,7 +88,8 @@ class KSPResonanceTest : public ::testing::Test {
                                  /*geopotential_tolerance=*/0x1p-24},
         Ephemeris<KSP>::FixedStepParameters(
             SymplecticRungeKuttaNyströmIntegrator<
-                McLachlanAtela1992Order5Optimal, Position<KSP>>(),
+                McLachlanAtela1992Order5Optimal,
+                Ephemeris<KSP>::NewtonianMotionEquation>(),
             /*step=*/Δt));
     jool_ = solar_system_.massive_body(*ephemeris, "Jool");
     laythe_ = solar_system_.massive_body(*ephemeris, "Laythe");
