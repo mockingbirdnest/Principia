@@ -1,4 +1,4 @@
-// .\Release\x64\benchmarks.exe --benchmark_repetitions=5 --benchmark_min_time=5 --benchmark_filter=SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator                                                                                                                 // NOLINT(whitespace/line_ODE1D)
+// .\Release\x64\benchmarks.exe --benchmark_repetitions=5 --benchmark_min_time=5 --benchmark_filter=SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator                                                                                                                 // NOLINT(whitespace/line_length)
 
 #define GLOG_NO_ABBREVIATED_SEVERITIES
 
