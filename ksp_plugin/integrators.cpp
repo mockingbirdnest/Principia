@@ -54,7 +54,7 @@ DefaultBurnParameters() {
   return Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
       EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
           Fine1987RKNG34,
-          Ephemeris<Barycentric>::NewtonianMotionEquation>(),
+          Ephemeris<Barycentric>::GeneralizedNewtonianMotionEquation>(),
       /*max_steps=*/1000,
       /*length_integration_tolerance=*/1 * Metre,
       /*speed_integration_tolerance=*/1 * Metre / Second);

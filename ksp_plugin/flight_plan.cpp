@@ -316,7 +316,7 @@ FlightPlan::FlightPlan()
       generalized_adaptive_step_parameters_(
           EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
               Fine1987RKNG34,
-              Ephemeris<Barycentric>::NewtonianMotionEquation>(),
+              Ephemeris<Barycentric>::GeneralizedNewtonianMotionEquation>(),
           /*max_steps=*/1,
           /*length_integration_tolerance=*/1 * Metre,
           /*speed_integration_tolerance=*/1 * Metre / Second) {}

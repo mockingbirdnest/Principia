@@ -716,16 +716,14 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::Instance(
                     ExplicitSecondOrderOrdinaryDifferentialEquation, \
                     ODE>) {                                          \
     return EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<   \
-        methods::method,                                             \
-        typename ODE::DependentVariable>();                          \
+        methods::method, ODE>();                                     \
   }
 
 #define PRINCIPIA_READ_ASS_INTEGRATOR_EERKN(method)                            \
   if constexpr (base::is_instance_of_v<SpecialSecondOrderDifferentialEquation, \
                                        ODE>) {                                 \
     return EmbeddedExplicitRungeKuttaNyströmIntegrator<                        \
-        methods::method,                                                       \
-        typename ODE::DependentVariable>();                                    \
+        methods::method, ODE>();                                               \
   }
 
 #define PRINCIPIA_READ_ASS_INTEGRATOR_EERK(method) LOG(FATAL) << "NYI"

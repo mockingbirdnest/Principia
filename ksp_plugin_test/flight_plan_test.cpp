@@ -142,7 +142,7 @@ class FlightPlanTest : public testing::Test {
         Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
             EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
                 Fine1987RKNG34,
-                Ephemeris<Barycentric>::NewtonianMotionEquation>(),
+                Ephemeris<Barycentric>::GeneralizedNewtonianMotionEquation>(),
             /*max_steps=*/1000,
             /*length_integration_tolerance=*/1 * Milli(Metre),
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second));
@@ -241,7 +241,7 @@ TEST_F(FlightPlanTest, Singular) {
       Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
           EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
               Fine1987RKNG34,
-              Ephemeris<Barycentric>::NewtonianMotionEquation>(),
+              Ephemeris<Barycentric>::GeneralizedNewtonianMotionEquation>(),
           /*max_steps=*/1,
           /*length_integration_tolerance=*/1 * Metre,
           /*speed_integration_tolerance=*/1 * Metre / Second));
@@ -423,7 +423,7 @@ TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
         Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
             EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
                 Fine1987RKNG34,
-                Ephemeris<Barycentric>::NewtonianMotionEquation>(),
+                Ephemeris<Barycentric>::GeneralizedNewtonianMotionEquation>(),
             /*max_steps=*/1,
             /*length_integration_tolerance=*/1 * Milli(Metre),
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second)),
@@ -449,7 +449,7 @@ TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
       Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
           EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
               Fine1987RKNG34,
-              Ephemeris<Barycentric>::NewtonianMotionEquation>(),
+              Ephemeris<Barycentric>::GeneralizedNewtonianMotionEquation>(),
           /*max_steps=*/1,
           /*length_integration_tolerance=*/1 * Milli(Metre),
           /*speed_integration_tolerance=*/1 * Milli(Metre) / Second)));

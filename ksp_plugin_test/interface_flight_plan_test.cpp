@@ -225,7 +225,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   generalized_adaptive_step_parameters(
       EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
           Fine1987RKNG34,
-          Ephemeris<Barycentric>::NewtonianMotionEquation>(),
+          Ephemeris<Barycentric>::GeneralizedNewtonianMotionEquation>(),
       /*max_steps=*/111,
       /*length_integration_tolerance=*/222 * Metre,
       /*speed_integration_tolerance=*/333 * Metre / Second);
