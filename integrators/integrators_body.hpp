@@ -51,7 +51,8 @@
 // All the case branches in a switch on the serialized fixed-step size
 // integrator kind.  Depending on the nature of the integrator, each case branch
 // calls one of the given actions, which must be 1-argument macros.
-#define PRINCIPIA_FSS_INTEGRATOR_CASES(slms_action, sprk_action, srkn_action) \
+#define PRINCIPIA_FSS_INTEGRATOR_CASES(                                       \
+    erk_action, slms_action, sprk_action, srkn_action)                        \
   PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
                             BLANES_MOAN_2002_S6,                              \
                             BlanesMoan2002S6,                                 \
@@ -199,7 +200,11 @@
   PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
                             YOSHIDA_1990_ORDER_8E,                            \
                             吉田1990Order8E,                                  \
-                            sprk_action)
+                            sprk_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            RK4,                                              \
+                            RK4,                                              \
+                            erk_action)
 
 namespace principia {
 namespace integrators {
@@ -422,6 +427,8 @@ void FixedStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
   integrator().WriteToMessage(extension->mutable_integrator());
 }
 
+#define PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_ERK(method) LOG(FATAL) << "NYI"
+
 #define PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SLMS(method)    \
   auto const& integrator = SymmetricLinearMultistepIntegrator< \
       methods::method, ODE>();                                 \
@@ -463,6 +470,7 @@ FixedStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
 
   switch (extension.integrator().kind()) {
     PRINCIPIA_FSS_INTEGRATOR_CASES(
+        PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_ERK,
         PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SLMS,
         PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SPRK,
         PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SRKN)
@@ -472,6 +480,7 @@ FixedStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
   }
 }
 
+#undef PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_ERK
 #undef PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SLMS
 #undef PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SPRK
 #undef PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SPRK
@@ -485,6 +494,9 @@ FixedStepSizeIntegrator<ODE_>::Instance::Instance(
       step_(step) {
   CHECK_NE(Time(), step_);
 }
+
+#define PRINCIPIA_READ_FSS_INTEGRATOR_ERK(method) \
+  return ExplicitRungeKuttaIntegrator<methods::method, ODE>()
 
 #define PRINCIPIA_READ_FSS_INTEGRATOR_SLMS(method) \
   return SymmetricLinearMultistepIntegrator<methods::method, ODE>()
@@ -506,7 +518,8 @@ FixedStepSizeIntegrator<ODE_> const&
 FixedStepSizeIntegrator<ODE_>::ReadFromMessage(
       serialization::FixedStepSizeIntegrator const& message) {
   switch (message.kind()) {
-    PRINCIPIA_FSS_INTEGRATOR_CASES(PRINCIPIA_READ_FSS_INTEGRATOR_SLMS,
+    PRINCIPIA_FSS_INTEGRATOR_CASES(PRINCIPIA_READ_FSS_INTEGRATOR_ERK,
+                                   PRINCIPIA_READ_FSS_INTEGRATOR_SLMS,
                                    PRINCIPIA_READ_FSS_INTEGRATOR_SPRK,
                                    PRINCIPIA_READ_FSS_INTEGRATOR_SRKN)
     default:
@@ -515,6 +528,7 @@ FixedStepSizeIntegrator<ODE_>::ReadFromMessage(
   }
 }
 
+#undef PRINCIPIA_READ_FSS_INTEGRATOR_ERK
 #undef PRINCIPIA_READ_FSS_INTEGRATOR_SLMS
 #undef PRINCIPIA_READ_FSS_INTEGRATOR_SPRK
 #undef PRINCIPIA_READ_FSS_INTEGRATOR_SRKN
@@ -766,7 +780,6 @@ AdaptiveStepSizeIntegrator<Equation> const& ParseAdaptiveStepSizeIntegrator(
 }  // namespace integrators
 }  // namespace principia
 
-#undef PRINCIPIA_CASE_SLMS
-#undef PRINCIPIA_CASE_SPRK
-#undef PRINCIPIA_CASE_SRKN
-#undef PRINCIPIA_CASES
+#undef PRINCIPIA_INTEGRATOR_CASE
+#undef PRINCIPIA_ASS_INTEGRATOR_CASES
+#undef PRINCIPIA_FSS_INTEGRATOR_CASES
