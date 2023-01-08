@@ -66,6 +66,7 @@ message FixedStepSizeIntegrator {
     YOSHIDA_1990_ORDER_8C = 23;
     YOSHIDA_1990_ORDER_8D = 24;
     YOSHIDA_1990_ORDER_8E = 25;
+    RK4=38;
   }
   enum CompositionMethod {
     BA = 0;   // Neither b₀ nor aᵣ vanishes.
@@ -125,9 +126,15 @@ message FixedStepSizeIntegratorInstance {
   extend IntegratorInstance {
     optional FixedStepSizeIntegratorInstance extension = 7000;
   }
-  extensions 8000 to 8999;  // Last used: 8001
+  extensions 8000 to 8999;  // Last used: 8002
   required Quantity step = 1;
   required FixedStepSizeIntegrator integrator = 2;
+}
+
+message ExplicitRungeKuttaNystromIntegratorInstance {
+  extend FixedStepSizeIntegratorInstance {
+    optional ExplicitRungeKuttaNystromIntegratorInstance extension = 8002;
+  }
 }
 
 message SymmetricLinearMultistepIntegratorInstance {

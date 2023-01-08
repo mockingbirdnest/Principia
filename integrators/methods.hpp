@@ -14,25 +14,6 @@ using base::not_constructible;
 using numerics::FixedStrictlyLowerTriangularMatrix;
 using numerics::FixedVector;
 
-// Every RKNG method is an RKN method by simply ignoring aʹ, hence the
-// inheritance.  Every RK method can be turned into an RKNG method, however this
-// requires a computation, so it is done explicitly.
-struct EmbeddedExplicitGeneralizedRungeKuttaNyström
-    : EmbeddedExplicitRungeKuttaNyström {
-  // static constexpr int higher_order = ...;
-  // static constexpr int lower_order = ...;
-  // static constexpr int stages = ...;
-  // static constexpr bool first_same_as_last = ...;
-  // static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind = ..;
-  // static constexpr FixedVector<double, stages> c = ...;
-  // static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a = ..;
-  // static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> aʹ = .;
-  // static constexpr FixedVector<double, stages> b̂ = ...;
-  // static constexpr FixedVector<double, stages> b̂ʹ = ...;
-  // static constexpr FixedVector<double, stages> b = ...;
-  // static constexpr FixedVector<double, stages> bʹ = ...;
-};
-
 struct EmbeddedExplicitRungeKutta : not_constructible {
   // static constexpr int higher_order = ...;
   // static constexpr int lower_order = ...;
@@ -53,6 +34,25 @@ struct EmbeddedExplicitRungeKuttaNyström : not_constructible {
   // static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind = ..;
   // static constexpr FixedVector<double, stages> c = ...;
   // static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a = ..;
+  // static constexpr FixedVector<double, stages> b̂ = ...;
+  // static constexpr FixedVector<double, stages> b̂ʹ = ...;
+  // static constexpr FixedVector<double, stages> b = ...;
+  // static constexpr FixedVector<double, stages> bʹ = ...;
+};
+
+// Every RKNG method is an RKN method by simply ignoring aʹ, hence the
+// inheritance.  Every RK method can be turned into an RKNG method, however this
+// requires a computation, so it is done explicitly.
+struct EmbeddedExplicitGeneralizedRungeKuttaNyström
+    : EmbeddedExplicitRungeKuttaNyström {
+  // static constexpr int higher_order = ...;
+  // static constexpr int lower_order = ...;
+  // static constexpr int stages = ...;
+  // static constexpr bool first_same_as_last = ...;
+  // static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind = ..;
+  // static constexpr FixedVector<double, stages> c = ...;
+  // static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a = ..;
+  // static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> aʹ = .;
   // static constexpr FixedVector<double, stages> b̂ = ...;
   // static constexpr FixedVector<double, stages> b̂ʹ = ...;
   // static constexpr FixedVector<double, stages> b = ...;
@@ -862,6 +862,24 @@ struct QuinlanTremaine1990Order14 : SymmetricLinearMultistep {
         -42056933842656.0,
         48471792742212.0}}};
   static constexpr double β_denominator = 237758976000.0;
+};
+
+struct RK4 :  ExplicitRungeKutta {
+  static constexpr int order = 4;
+  static constexpr int stages = 4;
+  static constexpr bool first_same_as_last = true;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::RK4;
+  static constexpr FixedVector<double, stages> c{{
+      {0.0, 1.0 / 2.0, 1.0 / 2.0, 1.0}}};
+  static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a{{
+      {1.0 / 2.0,
+       0.0,       1.0 / 2.0,
+       0.0,       0.0,       1.0}}};
+  static constexpr FixedVector<double, stages> b{{{1.0 / 6.0,
+                                                   1.0 / 3.0,
+                                                   1.0 / 3.0,
+                                                   1.0 / 6.0}}};
 };
 
 // Coefficients from [Rut83].

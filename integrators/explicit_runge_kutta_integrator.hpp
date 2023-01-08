@@ -47,17 +47,14 @@ using quantities::Variation;
 
 template<typename Method, typename ODE_>
 class ExplicitRungeKuttaIntegrator
-    : public AdaptiveStepSizeIntegrator<ODE_> {
+    : public FixedStepSizeIntegrator<ODE_> {
  public:
   using ODE = ODE_;
   static_assert(
       is_instance_of_v<ExplicitFirstOrderOrdinaryDifferentialEquation, ODE>);
   using typename Integrator<ODE>::AppendState;
-  using typename AdaptiveStepSizeIntegrator<ODE>::Parameters;
-  using typename AdaptiveStepSizeIntegrator<ODE>::ToleranceToErrorRatio;
 
-  static constexpr auto higher_order = Method::higher_order;
-  static constexpr auto lower_order = Method::lower_order;
+  static constexpr auto order = Method::order;
   static constexpr auto first_same_as_last = Method::first_same_as_last;
 
   ExplicitRungeKuttaIntegrator();
@@ -71,7 +68,7 @@ class ExplicitRungeKuttaIntegrator
   ExplicitRungeKuttaIntegrator& operator=(
       ExplicitRungeKuttaIntegrator&&) = delete;
 
-  class Instance : public AdaptiveStepSizeIntegrator<ODE>::Instance {
+  class Instance : public FixedStepSizeIntegrator<ODE>::Instance {
    public:
     absl::Status Solve(
         typename ODE::IndependentVariable const& s_final) override;
@@ -101,10 +98,7 @@ class ExplicitRungeKuttaIntegrator
    private:
     Instance(InitialValueProblem<ODE> const& problem,
              AppendState const& append_state,
-             ToleranceToErrorRatio const& tolerance_to_error_ratio,
-             Parameters const& parameters,
              typename ODE::IndependentVariableDifference const& step,
-             bool first_use,
              ExplicitRungeKuttaIntegrator const& integrator);
 
     ExplicitRungeKuttaIntegrator const& integrator_;
@@ -114,18 +108,16 @@ class ExplicitRungeKuttaIntegrator
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
       InitialValueProblem<ODE> const& problem,
       AppendState const& append_state,
-      ToleranceToErrorRatio const& tolerance_to_error_ratio,
-      Parameters const& parameters) const override;
+      typename ODE::IndependentVariableDifference const& step) const override;
 
   void WriteToMessage(
-      not_null<serialization::AdaptiveStepSizeIntegrator*> message)
+      not_null<serialization::FixedStepSizeIntegrator*> message)
       const override;
 
  private:
   static constexpr auto stages_ = Method::stages;
   static constexpr auto c_ = Method::c;
   static constexpr auto a_ = Method::a;
-  static constexpr auto b̂_ = Method::b̂;
   static constexpr auto b_ = Method::b;
 };
 
