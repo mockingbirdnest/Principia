@@ -545,8 +545,9 @@ void StatisticallyAnalyseStability() {
   std::list<not_null<std::unique_ptr<Ephemeris<Barycentric>>>>
       perturbed_ephemerides = MakePerturbedEphemerides(
           100,
-          SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
-                                                Position<Barycentric>>(),
+          SymplecticRungeKuttaNyströmIntegrator<
+              BlanesMoan2002SRKN14A,
+              Ephemeris<Barycentric>::NewtonianMotionEquation>(),
           step);
 
   std::map<not_null<Ephemeris<Barycentric>*>, bool> numerically_unsound;
