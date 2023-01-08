@@ -78,6 +78,10 @@
                             CandyRozmus1991ForestRuth1990,                    \
                             sprk_action)                                      \
   PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            KUTTA_1901_V_SIGMA1,                              \
+                            Kutta1901Vσ1,                                     \
+                            erk_action)                                       \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
                             MCLACHLAN_1995_S2,                                \
                             McLachlan1995S2,                                  \
                             sprk_action)                                      \
@@ -200,11 +204,7 @@
   PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
                             YOSHIDA_1990_ORDER_8E,                            \
                             吉田1990Order8E,                                  \
-                            sprk_action)                                      \
-  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
-                            RK4,                                              \
-                            RK4,                                              \
-                            erk_action)
+                            sprk_action)
 
 namespace principia {
 namespace integrators {

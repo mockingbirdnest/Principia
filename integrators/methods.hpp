@@ -446,7 +446,7 @@ struct Kutta1901Vσ1 :  ExplicitRungeKutta {
   static constexpr int stages = 4;
   static constexpr bool first_same_as_last = false;
   static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
-      serialization::FixedStepSizeIntegrator::RK4;
+      serialization::FixedStepSizeIntegrator::KUTTA_1901_V_SIGMA1;
   static constexpr FixedVector<double, stages> c{{
       {0.0, 1.0 / 2.0, 1.0 / 2.0, 1.0}}};
   static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a{{
