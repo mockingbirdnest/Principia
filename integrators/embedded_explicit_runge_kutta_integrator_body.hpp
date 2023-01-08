@@ -199,6 +199,7 @@ Solve(typename ODE::IndependentVariable const& s_final) {
                   ? s_final
                   : s.value + (s.error + c[i] * h);
 
+          // TODO(phl): Should dimension |Σⱼ_aᵢⱼ_kⱼ| in the not FSAL case.
           DependentVariableDifferences Σⱼ_aᵢⱼ_kⱼ{};
           for (int j = 0; j < i; ++j) {
             for_all_of(k[j], ŷ, y_stage, Σⱼ_aᵢⱼ_kⱼ)

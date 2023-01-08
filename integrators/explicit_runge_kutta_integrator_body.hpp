@@ -130,6 +130,13 @@ Solve(typename ODE::IndependentVariable const& s_final) {
         f = last_f;
       } else {
         DependentVariableDifferences Σⱼ_aᵢⱼ_kⱼ{};
+        for_all_of(y, Σⱼ_aᵢⱼ_kⱼ)
+            .loop([](auto const& y,
+                      auto& Σⱼ_aᵢⱼ_kⱼ) {
+              int const dimension = y.size();
+              Σⱼ_aᵢⱼ_kⱼ.resize(dimension);
+            });
+
         for (int j = 0; j < i; ++j) {
           for_all_of(k[j], y, y_stage, Σⱼ_aᵢⱼ_kⱼ)
               .loop([&a, i, j](auto const& kⱼ,
@@ -137,7 +144,6 @@ Solve(typename ODE::IndependentVariable const& s_final) {
                                auto& y_stage,
                                auto& Σⱼ_aᵢⱼ_kⱼ) {
                 int const dimension = y.size();
-                Σⱼ_aᵢⱼ_kⱼ.resize(dimension);
                 for (int l = 0; l < dimension; ++l) {
                   Σⱼ_aᵢⱼ_kⱼ[l] += a(i, j) * kⱼ[l];
                 }
