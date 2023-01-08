@@ -91,9 +91,7 @@ class EquipotentialTest : public ::testing::Test {
         equipotential_parameters_(
             EmbeddedExplicitRungeKuttaIntegrator<
                 DormandPrince1986RK547FC,
-                Equipotential<Barycentric, World>::IndependentVariable,
-                Ephemeris<World>::NewtonianMotionEquation,
-                double>(),
+                Equipotential<Barycentric, World>::ODE>(),
             /*max_steps=*/1000,
             /*length_integration_tolerance=*/1 * Metre) {}
 

@@ -92,7 +92,7 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
             Ephemeris<ICRS>::FixedStepParameters(
                 SymplecticRungeKuttaNyströmIntegrator<
                     McLachlanAtela1992Order4Optimal,
-                    Ephemeris<World>::NewtonianMotionEquation>(),
+                    Ephemeris<ICRS>::NewtonianMotionEquation>(),
                 /*step=*/10 * Milli(Second)))),
         big_initial_state_(solar_system_.degrees_of_freedom(big)),
         big_gravitational_parameter_(

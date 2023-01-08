@@ -419,7 +419,7 @@ TEST_P(EphemerisTest, EarthProbe) {
       Ephemeris<ICRS>::AdaptiveStepParameters(
           EmbeddedExplicitRungeKuttaNyströmIntegrator<
               DormandالمكاوىPrince1986RKN434FM,
-              Position<ICRS>>(),
+              Ephemeris<ICRS>::NewtonianMotionEquation>(),
           max_steps,
           1e-9 * Metre,
           2.6e-15 * Metre / Second),
@@ -720,7 +720,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
       Ephemeris<ICRS>::GeneralizedAdaptiveStepParameters(
           EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
               Fine1987RKNG34,
-              Ephemeris<ICRS>::NewtonianMotionEquation>(),
+              Ephemeris<ICRS>::GeneralizedNewtonianMotionEquation>(),
           max_steps,
           1e-9 * Metre,
           2.6e-15 * Metre / Second),
@@ -1253,11 +1253,12 @@ TEST(EphemerisTestNoFixture, Reanimator) {
 INSTANTIATE_TEST_SUITE_P(
     AllEphemerisTests,
     EphemerisTest,
-    ::testing::Values(
-        &SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order5Optimal,
-                                               Position<ICRS>>(),
-        &SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                            Position<ICRS>>()));
+    ::testing::Values(&SymplecticRungeKuttaNyströmIntegrator<
+                          McLachlanAtela1992Order5Optimal,
+                          Ephemeris<ICRS>::NewtonianMotionEquation>(),
+                      &SymmetricLinearMultistepIntegrator<
+                          Quinlan1999Order8A,
+                          Ephemeris<ICRS>::NewtonianMotionEquation>()));
 
 }  // namespace internal_ephemeris
 }  // namespace physics

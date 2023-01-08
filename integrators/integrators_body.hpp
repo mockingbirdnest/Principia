@@ -485,9 +485,8 @@ FixedStepSizeIntegrator<ODE_>::Instance::Instance(
   CHECK_NE(Time(), step_);
 }
 
-#define PRINCIPIA_READ_FSS_INTEGRATOR_SLMS(method)           \
-  return SymmetricLinearMultistepIntegrator<methods::method, \
-                                            typename ODE::DependentVariable>()
+#define PRINCIPIA_READ_FSS_INTEGRATOR_SLMS(method) \
+  return SymmetricLinearMultistepIntegrator<methods::method, ODE>()
 
 #define PRINCIPIA_READ_FSS_INTEGRATOR_SPRK(method)                \
   serialization::FixedStepSizeIntegratorInstance instance;        \
@@ -499,8 +498,7 @@ FixedStepSizeIntegrator<ODE_>::Instance::Instance(
 
 #define PRINCIPIA_READ_FSS_INTEGRATOR_SRKN(method) \
   return SymplecticRungeKuttaNyströmIntegrator<    \
-      methods::method,                             \
-      typename ODE::DependentVariable>()
+      methods::method, ODE>()
 
 template<typename ODE_>
 FixedStepSizeIntegrator<ODE_> const&

@@ -99,7 +99,7 @@ void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
   Speed const speed_tolerance = 1e-6 * Metre / Second;
 
   std::vector<ODE1D::State> solution;
-  ODE harmonic_oscillator;
+  ODE1D harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration1D,
                 _1, _2, _3, /*evaluations=*/nullptr);
@@ -155,7 +155,7 @@ void SolveHarmonicOscillatorAndComputeError3D(
   Speed const speed_tolerance = 1e-6 * Metre / Second;
 
   std::vector<ODE3D::State> solution;
-  ODE harmonic_oscillator;
+  ODE3D harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration3D<World>,
                 _1, _2, _3, /*evaluations=*/nullptr);

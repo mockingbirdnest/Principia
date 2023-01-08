@@ -369,7 +369,7 @@ TEST_F(BodyTest, SolarNoon) {
       Ephemeris<ICRS>::FixedStepParameters(
           SymmetricLinearMultistepIntegrator<
               QuinlanTremaine1990Order12,
-              Ephemeris<World>::NewtonianMotionEquation>(),
+              Ephemeris<ICRS>::NewtonianMotionEquation>(),
           /*step=*/10 * Minute));
   EXPECT_OK(ephemeris->Prolong("2010-10-01T12:00:00"_UTC));
 

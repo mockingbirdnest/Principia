@@ -81,7 +81,7 @@ class BodyCentredBodyDirectionDynamicFrameTest : public ::testing::Test {
             Ephemeris<ICRS>::FixedStepParameters(
                 SymplecticRungeKuttaNyströmIntegrator<
                     McLachlanAtela1992Order4Optimal,
-                    Ephemeris<World>::NewtonianMotionEquation>(),
+                    Ephemeris<ICRS>::NewtonianMotionEquation>(),
                 /*step=*/10 * Milli(Second)))),
         big_(solar_system_.massive_body(*ephemeris_, big)),
         big_initial_state_(solar_system_.degrees_of_freedom(big)),
