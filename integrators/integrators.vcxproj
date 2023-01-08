@@ -25,6 +25,8 @@
     <ClInclude Include="embedded_explicit_runge_kutta_integrator_body.hpp" />
     <ClInclude Include="embedded_explicit_runge_kutta_nyström_integrator.hpp" />
     <ClInclude Include="embedded_explicit_runge_kutta_nyström_integrator_body.hpp" />
+    <ClInclude Include="explicit_runge_kutta_integrator.hpp" />
+    <ClInclude Include="explicit_runge_kutta_integrator_body.hpp" />
     <ClInclude Include="integrators.hpp" />
     <ClInclude Include="integrators_body.hpp" />
     <ClInclude Include="methods.hpp" />

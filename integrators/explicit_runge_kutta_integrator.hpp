@@ -5,8 +5,8 @@
 #ifndef PRINCIPIA_INTEGRATORS_INTEGRATORS_HPP_
 #include "integrators/integrators.hpp"
 #else
-#ifndef PRINCIPIA_INTEGRATORS_EMBEDDED_EXPLICIT_RUNGE_KUTTA_INTEGRATOR_HPP_
-#define PRINCIPIA_INTEGRATORS_EMBEDDED_EXPLICIT_RUNGE_KUTTA_INTEGRATOR_HPP_
+#ifndef PRINCIPIA_INTEGRATORS_EXPLICIT_RUNGE_KUTTA_INTEGRATOR_HPP_
+#define PRINCIPIA_INTEGRATORS_EXPLICIT_RUNGE_KUTTA_INTEGRATOR_HPP_
 
 #include <functional>
 #include <vector>
@@ -22,7 +22,7 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_embedded_explicit_runge_kutta_integrator {
+namespace internal_explicit_runge_kutta_integrator {
 
 using base::is_instance_of_v;
 using base::not_null;
@@ -31,8 +31,8 @@ using numerics::FixedVector;
 using quantities::Variation;
 
 // This class solves ordinary differential equations of the form q′ = f(q, t)
-// using an embedded Runge-Kutta method.  We follow the standard conventions for
-// the coefficients, i.e.,
+// using a Runge-Kutta method.  We follow the standard conventions for the
+// coefficients, i.e.,
 //   c for the nodes;
 //   a for the Runge-Kutta matrix;
 //   b̂ for the weights of the high-order method;
@@ -46,7 +46,7 @@ using quantities::Variation;
 // the first-same-as-last property.
 
 template<typename Method, typename ODE_>
-class EmbeddedExplicitRungeKuttaIntegrator
+class ExplicitRungeKuttaIntegrator
     : public AdaptiveStepSizeIntegrator<ODE_> {
  public:
   using ODE = ODE_;
@@ -60,22 +60,22 @@ class EmbeddedExplicitRungeKuttaIntegrator
   static constexpr auto lower_order = Method::lower_order;
   static constexpr auto first_same_as_last = Method::first_same_as_last;
 
-  EmbeddedExplicitRungeKuttaIntegrator();
+  ExplicitRungeKuttaIntegrator();
 
-  EmbeddedExplicitRungeKuttaIntegrator(
-      EmbeddedExplicitRungeKuttaIntegrator const&) = delete;
-  EmbeddedExplicitRungeKuttaIntegrator(
-      EmbeddedExplicitRungeKuttaIntegrator&&) = delete;
-  EmbeddedExplicitRungeKuttaIntegrator& operator=(
-      EmbeddedExplicitRungeKuttaIntegrator const&) = delete;
-  EmbeddedExplicitRungeKuttaIntegrator& operator=(
-      EmbeddedExplicitRungeKuttaIntegrator&&) = delete;
+  ExplicitRungeKuttaIntegrator(
+      ExplicitRungeKuttaIntegrator const&) = delete;
+  ExplicitRungeKuttaIntegrator(
+      ExplicitRungeKuttaIntegrator&&) = delete;
+  ExplicitRungeKuttaIntegrator& operator=(
+      ExplicitRungeKuttaIntegrator const&) = delete;
+  ExplicitRungeKuttaIntegrator& operator=(
+      ExplicitRungeKuttaIntegrator&&) = delete;
 
   class Instance : public AdaptiveStepSizeIntegrator<ODE>::Instance {
    public:
     absl::Status Solve(
         typename ODE::IndependentVariable const& s_final) override;
-    EmbeddedExplicitRungeKuttaIntegrator const& integrator()
+    ExplicitRungeKuttaIntegrator const& integrator()
         const override;
     not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> Clone()
         const override;
@@ -87,7 +87,7 @@ class EmbeddedExplicitRungeKuttaIntegrator
              typename = std::enable_if_t<base::is_serializable_v<DV...>>>
     static not_null<std::unique_ptr<Instance>> ReadFromMessage(
         serialization::
-            EmbeddedExplicitRungeKuttaNystromIntegratorInstance const&
+            ExplicitRungeKuttaNystromIntegratorInstance const&
                 extension,
         InitialValueProblem<ODE> const& problem,
         AppendState const& append_state,
@@ -95,7 +95,7 @@ class EmbeddedExplicitRungeKuttaIntegrator
         Parameters const& parameters,
         typename ODE::IndependentVariableDifference const& step,
         bool first_use,
-        EmbeddedExplicitRungeKuttaIntegrator const& integrator);
+        ExplicitRungeKuttaIntegrator const& integrator);
 #endif
 
    private:
@@ -105,10 +105,10 @@ class EmbeddedExplicitRungeKuttaIntegrator
              Parameters const& parameters,
              typename ODE::IndependentVariableDifference const& step,
              bool first_use,
-             EmbeddedExplicitRungeKuttaIntegrator const& integrator);
+             ExplicitRungeKuttaIntegrator const& integrator);
 
-    EmbeddedExplicitRungeKuttaIntegrator const& integrator_;
-    friend class EmbeddedExplicitRungeKuttaIntegrator;
+    ExplicitRungeKuttaIntegrator const& integrator_;
+    friend class ExplicitRungeKuttaIntegrator;
   };
 
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
@@ -129,17 +129,17 @@ class EmbeddedExplicitRungeKuttaIntegrator
   static constexpr auto b_ = Method::b;
 };
 
-}  // namespace internal_embedded_explicit_runge_kutta_integrator
+}  // namespace internal_explicit_runge_kutta_integrator
 
 template<typename Method, typename ODE>
-internal_embedded_explicit_runge_kutta_integrator::
-    EmbeddedExplicitRungeKuttaIntegrator<Method, ODE> const&
-EmbeddedExplicitRungeKuttaIntegrator();
+internal_explicit_runge_kutta_integrator::
+    ExplicitRungeKuttaIntegrator<Method, ODE> const&
+ExplicitRungeKuttaIntegrator();
 
 }  // namespace integrators
 }  // namespace principia
 
-#include "integrators/embedded_explicit_runge_kutta_integrator_body.hpp"
+#include "integrators/explicit_runge_kutta_integrator_body.hpp"
 
-#endif  // PRINCIPIA_INTEGRATORS_EMBEDDED_EXPLICIT_RUNGE_KUTTA_INTEGRATOR_HPP_
+#endif  // PRINCIPIA_INTEGRATORS_EXPLICIT_RUNGE_KUTTA_INTEGRATOR_HPP_
 #endif  // PRINCIPIA_INTEGRATORS_INTEGRATORS_HPP_
