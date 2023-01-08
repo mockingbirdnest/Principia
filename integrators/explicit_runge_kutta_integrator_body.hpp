@@ -12,6 +12,7 @@
 #include "base/jthread.hpp"
 #include "geometry/sign.hpp"
 #include "glog/logging.h"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -22,6 +23,7 @@ using base::for_all_of;
 using base::make_not_null_unique;
 using geometry::Sign;
 using numerics::DoublePrecision;
+using quantities::Abs;
 using quantities::DebugString;
 using quantities::Difference;
 using quantities::Quotient;
@@ -35,9 +37,9 @@ ExplicitRungeKuttaIntegrator() {
     // Check that the conditions for the FSAL property are satisfied, see for
     // instance [DEP87a], equation 3.1.
     CHECK_EQ(1.0, c_[stages_ - 1]);
-    CHECK_EQ(0.0, b̂_[stages_ - 1]);
+    CHECK_EQ(0.0, b_[stages_ - 1]);
     for (int j = 0; j < stages_ - 1; ++j) {
-      CHECK_EQ(b̂_[j], a_(stages_ - 1, j));
+      CHECK_EQ(b_[j], a_(stages_ - 1, j));
     }
   }
 }
@@ -56,7 +58,6 @@ Solve(typename ODE::IndependentVariable const& s_final) {
       typename ODE::DependentVariableDerivatives;
 
   auto const& a = integrator_.a_;
-  auto const& b̂ = integrator_.b̂_;
   auto const& b = integrator_.b_;
   auto const& c = integrator_.c_;
 
@@ -65,11 +66,8 @@ Solve(typename ODE::IndependentVariable const& s_final) {
   auto const& equation = this->equation_;
   auto const& step = this->step_;
 
-  // |current_state| gets updated as the integration progresses to allow
-  // restartability.
-
   // Argument checks.
-  Sign const integration_direction = Sign(parameters.first_step);
+  Sign const integration_direction = Sign(step);
   if (integration_direction.is_positive()) {
     // Integrating forward.
     CHECK_LT(current_state.s.value, s_final);
@@ -77,9 +75,6 @@ Solve(typename ODE::IndependentVariable const& s_final) {
     // Integrating backward.
     CHECK_GT(current_state.s.value, s_final);
   }
-  CHECK(first_use || !parameters.last_step_is_exact)
-      << "Cannot reuse an instance where the last step is exact";
-  first_use = false;
 
   // Step.
   IndependentVariableDifference const& h = step;
@@ -172,17 +167,16 @@ Solve(typename ODE::IndependentVariable const& s_final) {
       // Increment computation.
       DependentVariableDifferences Σᵢ_bᵢ_kᵢ{};
       for (int i = 0; i < stages_; ++i) {
-        for_all_of(k[i], y, Δy, Σᵢ_bᵢ_kᵢ, error_estimate)
+        for_all_of(k[i], y, Δy, Σᵢ_bᵢ_kᵢ)
             .loop([&a, &b, i](auto const& kᵢ,
                               auto const& y,
                               auto& Δy,
-                              auto& Σᵢ_bᵢ_kᵢ,
-                              auto& error_estimate) {
+                              auto& Σᵢ_bᵢ_kᵢ) {
               int const dimension = y.size();
               Σᵢ_bᵢ_kᵢ.resize(dimension);
               for (int l = 0; l < dimension; ++l) {
                 Σᵢ_bᵢ_kᵢ[l] += b[i] * kᵢ[l];
-                Δy[l] = Σᵢ_b̂ᵢ_kᵢ[l];
+                Δy[l] = Σᵢ_bᵢ_kᵢ[l];
               }
             });
       }
