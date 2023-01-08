@@ -35,6 +35,7 @@ message FixedStepSizeIntegrator {
     BLANES_MOAN_2002_SRKN_11B = 2;
     BLANES_MOAN_2002_SRKN_14A = 3;
     CANDY_ROZMUS_1991_FOREST_RUTH_1990 = 26;
+    KUTTA_1901_V_SIGMA1 = 38;
     MCLACHLAN_1995_S2 = 29;
     MCLACHLAN_1995_S4 = 31;
     MCLACHLAN_1995_S5 = 32;
@@ -66,7 +67,6 @@ message FixedStepSizeIntegrator {
     YOSHIDA_1990_ORDER_8C = 23;
     YOSHIDA_1990_ORDER_8D = 24;
     YOSHIDA_1990_ORDER_8E = 25;
-    RK4=38;
   }
   enum CompositionMethod {
     BA = 0;   // Neither b₀ nor aᵣ vanishes.

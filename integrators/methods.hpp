@@ -440,6 +440,25 @@ struct DormandPrince1986RK547FC :  EmbeddedExplicitRungeKutta {
                                                        1.0 /    40.0}}};
 };
 
+// The coefficients are from [Kut01].
+struct Kutta1901Vσ1 :  ExplicitRungeKutta {
+  static constexpr int order = 4;
+  static constexpr int stages = 4;
+  static constexpr bool first_same_as_last = false;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::RK4;
+  static constexpr FixedVector<double, stages> c{{
+      {0.0, 1.0 / 2.0, 1.0 / 2.0, 1.0}}};
+  static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a{{
+      {1.0 / 2.0,
+       0.0,       1.0 / 2.0,
+       0.0,       0.0,       1.0}}};
+  static constexpr FixedVector<double, stages> b{{{1.0 / 6.0,
+                                                   1.0 / 3.0,
+                                                   1.0 / 3.0,
+                                                   1.0 / 6.0}}};
+};
+
 // The following methods have coefficients from [McL95].
 struct McLachlan1995S2 : SymplecticPartitionedRungeKutta {
   static constexpr int order = 2;
@@ -862,24 +881,6 @@ struct QuinlanTremaine1990Order14 : SymmetricLinearMultistep {
         -42056933842656.0,
         48471792742212.0}}};
   static constexpr double β_denominator = 237758976000.0;
-};
-
-struct RK4 :  ExplicitRungeKutta {
-  static constexpr int order = 4;
-  static constexpr int stages = 4;
-  static constexpr bool first_same_as_last = false;
-  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
-      serialization::FixedStepSizeIntegrator::RK4;
-  static constexpr FixedVector<double, stages> c{{
-      {0.0, 1.0 / 2.0, 1.0 / 2.0, 1.0}}};
-  static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a{{
-      {1.0 / 2.0,
-       0.0,       1.0 / 2.0,
-       0.0,       0.0,       1.0}}};
-  static constexpr FixedVector<double, stages> b{{{1.0 / 6.0,
-                                                   1.0 / 3.0,
-                                                   1.0 / 3.0,
-                                                   1.0 / 6.0}}};
 };
 
 // Coefficients from [Rut83].

@@ -24,41 +24,22 @@ namespace integrators {
 namespace internal_explicit_runge_kutta_integrator {
 
 using geometry::Instant;
-using quantities::Abs;
-using quantities::Acceleration;
-using quantities::AngularFrequency;
-using quantities::Cos;
 using quantities::Length;
 using quantities::Mass;
-using quantities::Sin;
 using quantities::SpecificImpulse;
 using quantities::Speed;
 using quantities::Time;
-using quantities::si::Centi;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
-using quantities::si::Milli;
 using quantities::si::Newton;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
-using testing_utilities::AlmostEquals;
-using testing_utilities::ComputeHarmonicOscillatorDerivatives1D;
-using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
 using testing_utilities::PearsonProductMomentCorrelationCoefficient;
 using testing_utilities::RelativeError;
 using testing_utilities::Slope;
-using testing_utilities::StatusIs;
 using testing_utilities::operator""_;
-using ::std::placeholders::_1;
-using ::std::placeholders::_2;
-using ::std::placeholders::_3;
-using ::testing::AllOf;
-using ::testing::ElementsAreArray;
-using ::testing::Gt;
-using ::testing::Le;
-using ::testing::Lt;
 
 using ODE =
     ExplicitFirstOrderOrdinaryDifferentialEquation<Instant, Length, Speed>;
@@ -123,7 +104,7 @@ TEST_F(ExplicitRungeKuttaIntegratorTest, Convergence) {
   problem.initial_state = {t_initial, {{q_initial}, {v_initial}}};
 
   FixedStepSizeIntegrator<ODE> const& integrator =
-      ExplicitRungeKuttaIntegrator<methods::RK4, ODE>();
+      ExplicitRungeKuttaIntegrator<methods::Kutta1901Vσ1, ODE>();
 
   for (int i = 0; i < step_sizes; ++i, step /= step_reduction) {
     auto const instance =
@@ -156,7 +137,7 @@ TEST_F(ExplicitRungeKuttaIntegratorTest, Convergence) {
   LOG(INFO) << "Correlation            : " << q_correlation;
 
 #if !defined(_DEBUG)
-  EXPECT_THAT(AbsoluteError(static_cast<double>(methods::RK4::order),
+  EXPECT_THAT(AbsoluteError(static_cast<double>(methods::Kutta1901Vσ1::order),
                             q_convergence_order),
               IsNear(0.15_(1)));
   EXPECT_THAT(q_correlation, IsNear(0.9996_(1)));
@@ -167,7 +148,7 @@ TEST_F(ExplicitRungeKuttaIntegratorTest, Convergence) {
   LOG(INFO) << "Convergence order in p : " << v_convergence_order;
   LOG(INFO) << "Correlation            : " << v_correlation;
 #if !defined(_DEBUG)
-  EXPECT_THAT(AbsoluteError(methods::RK4::order, v_convergence_order),
+  EXPECT_THAT(AbsoluteError(methods::Kutta1901Vσ1::order, v_convergence_order),
               IsNear(0.19_(1)));
   EXPECT_THAT(v_correlation, IsNear(0.9992_(1)));
 #endif
