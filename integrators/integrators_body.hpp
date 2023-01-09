@@ -436,6 +436,8 @@ void FixedStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
         SymmetricLinearMultistepIntegrator<methods::method, ODE>();            \
     return ReadSlmsInstanceFromMessage(                                        \
         extension, problem, append_state, step, integrator);                   \
+  } else {                                                                     \
+    base::noreturn();                                                          \
   }
 
 #define PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SPRK(method)            \
@@ -448,6 +450,8 @@ void FixedStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
         methods::method,                                               \
         methods::method::first_same_as_last>(                          \
         extension, problem, append_state, step);                       \
+  } else {                                                             \
+    base::noreturn();                                                  \
   }
 
 #define PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SRKN(method)                    \
@@ -457,6 +461,8 @@ void FixedStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
         SymplecticRungeKuttaNyströmIntegrator<methods::method, ODE>();         \
     return ReadSrknInstanceFromMessage(                                        \
         extension, problem, append_state, step, integrator);                   \
+  } else {                                                                     \
+    base::noreturn();                                                          \
   }
 
 template<typename ODE_>
@@ -510,12 +516,16 @@ FixedStepSizeIntegrator<ODE_>::Instance::Instance(
                     ExplicitFirstOrderOrdinaryDifferentialEquation, \
                     ODE>) {                                         \
     return ExplicitRungeKuttaIntegrator<methods::method, ODE>();    \
+  } else {                                                          \
+    base::noreturn();                                               \
   }
 
 #define PRINCIPIA_READ_FSS_INTEGRATOR_SLMS(method)                             \
   if constexpr (base::is_instance_of_v<SpecialSecondOrderDifferentialEquation, \
                                        ODE>) {                                 \
     return SymmetricLinearMultistepIntegrator<methods::method, ODE>();         \
+  } else {                                                                     \
+    base::noreturn();                                                          \
   }
 
 #define PRINCIPIA_READ_FSS_INTEGRATOR_SPRK(method)                             \
@@ -528,12 +538,16 @@ FixedStepSizeIntegrator<ODE_>::Instance::Instance(
                                ODE,                                            \
                                methods::method,                                \
                                methods::method::first_same_as_last>(instance); \
+  } else {                                                                     \
+    base::noreturn();                                                          \
   }
 
 #define PRINCIPIA_READ_FSS_INTEGRATOR_SRKN(method)                             \
   if constexpr (base::is_instance_of_v<SpecialSecondOrderDifferentialEquation, \
                                        ODE>) {                                 \
     return SymplecticRungeKuttaNyströmIntegrator<methods::method, ODE>();      \
+  } else {                                                                     \
+    base::noreturn();                                                          \
   }
 
 template<typename ODE_>
@@ -646,7 +660,8 @@ void AdaptiveStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
                     ODE>) {                                          \
     auto const& integrator =                                         \
         EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<      \
-            methods::method, ODE>();                                 \
+            methods::method,                                         \
+            ODE>();                                                  \
     return ReadEegrknInstanceFromMessage(extension,                  \
                                          problem,                    \
                                          append_state,               \
@@ -655,6 +670,8 @@ void AdaptiveStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
                                          step,                       \
                                          first_use,                  \
                                          integrator);                \
+  } else {                                                           \
+    base::noreturn();                                                \
   }
 #define PRINCIPIA_READ_ASS_INTEGRATOR_INSTANCE_EERKN(method)                   \
   if constexpr (base::is_instance_of_v<SpecialSecondOrderDifferentialEquation, \
@@ -669,6 +686,8 @@ void AdaptiveStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
                                         step,                                  \
                                         first_use,                             \
                                         integrator);                           \
+  } else {                                                                     \
+    base::noreturn();                                                          \
   }
 #define PRINCIPIA_READ_ASS_INTEGRATOR_INSTANCE_EERK(method) LOG(FATAL) << "NYI"
 
@@ -754,14 +773,19 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::Instance(
                     ExplicitSecondOrderOrdinaryDifferentialEquation, \
                     ODE>) {                                          \
     return EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<   \
-        methods::method, ODE>();                                     \
+        methods::method,                                             \
+        ODE>();                                                      \
+  } else {                                                           \
+    base::noreturn();                                                \
   }
 
 #define PRINCIPIA_READ_ASS_INTEGRATOR_EERKN(method)                            \
   if constexpr (base::is_instance_of_v<SpecialSecondOrderDifferentialEquation, \
                                        ODE>) {                                 \
-    return EmbeddedExplicitRungeKuttaNyströmIntegrator<                        \
-        methods::method, ODE>();                                               \
+    return EmbeddedExplicitRungeKuttaNyströmIntegrator<methods::method,        \
+                                                       ODE>();                 \
+  } else {                                                                     \
+    base::noreturn();                                                          \
   }
 
 #define PRINCIPIA_READ_ASS_INTEGRATOR_EERK(method) LOG(FATAL) << "NYI"
