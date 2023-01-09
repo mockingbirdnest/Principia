@@ -154,7 +154,6 @@ TEST_F(ExplicitRungeKuttaIntegratorTest, Convergence) {
 #endif
 }
 
-}  // namespace internal_ordinary_differential_equations
-
+}  // namespace internal_explicit_runge_kutta_integrator
 }  // namespace integrators
 }  // namespace principia
