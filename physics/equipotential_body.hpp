@@ -381,7 +381,7 @@ template<typename InertialFrame, typename Frame>
 double Equipotential<InertialFrame, Frame>::ToleranceToErrorRatio(
     IndependentVariableDifference const current_s_step,
     State const& /*state*/,
-    State::Error const& error) const {
+    typename State::Error const& error) const {
   Length const max_length_error = std::get<0>(error).front().Norm();
   double const max_braking_error = Abs(std::get<1>(error).front());
   return std::min(
