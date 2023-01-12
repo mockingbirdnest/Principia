@@ -93,7 +93,7 @@ class KSPSystemTest : public ::testing::Test, protected KSPSystem {
             Ephemeris<KSP>::FixedStepParameters(
                 SymplecticRungeKuttaNyströmIntegrator<
                     McLachlanAtela1992Order5Optimal,
-                    Position<KSP>>(),
+                    Ephemeris<KSP>::NewtonianMotionEquation>(),
                 /*step=*/45 * Minute))),
         sun_(solar_system_.massive_body(*ephemeris_, "Sun")),
         eeloo_(solar_system_.massive_body(*ephemeris_, "Eeloo")),
@@ -437,29 +437,33 @@ INSTANTIATE_TEST_SUITE_P(
         // integration over a year, it gives a position error of about 111 m on
         // Laythe and takes about 0.44 s of elapsed time.
         ConvergenceTestParameters{
-            SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
-                                                  Position<KSP>>(),
+            SymplecticRungeKuttaNyströmIntegrator<
+                BlanesMoan2002SRKN14A,
+                Ephemeris<KSP>::NewtonianMotionEquation>(),
             /*iterations=*/7,
             /*first_step_in_seconds=*/65.625},
         ConvergenceTestParameters{
             SymplecticRungeKuttaNyströmIntegrator<
                 McLachlanAtela1992Order5Optimal,
-                Position<KSP>>(),
+                Ephemeris<KSP>::NewtonianMotionEquation>(),
             /*iterations=*/8,
             /*first_step_in_seconds=*/32},
         ConvergenceTestParameters{
-            SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                               Position<KSP>>(),
+            SymmetricLinearMultistepIntegrator<
+                Quinlan1999Order8A,
+                Ephemeris<KSP>::NewtonianMotionEquation>(),
             /*iterations=*/6,
             /*first_step_in_seconds=*/64},
         ConvergenceTestParameters{
-            SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order8,
-                                               Position<KSP>>(),
+            SymmetricLinearMultistepIntegrator<
+                QuinlanTremaine1990Order8,
+                Ephemeris<KSP>::NewtonianMotionEquation>(),
             /*iterations=*/6,
             /*first_step_in_seconds=*/64},
         ConvergenceTestParameters{
-            SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order10,
-                                               Position<KSP>>(),
+            SymmetricLinearMultistepIntegrator<
+                QuinlanTremaine1990Order10,
+                Ephemeris<KSP>::NewtonianMotionEquation>(),
             /*iterations=*/6,
             /*first_step_in_seconds=*/64},
 
@@ -468,8 +472,9 @@ INSTANTIATE_TEST_SUITE_P(
         // integration over a year, it gives a position error of about 28 m on
         // Bop and takes about 0.7 s of elapsed time.
         ConvergenceTestParameters{
-            SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                               Position<KSP>>(),
+            SymmetricLinearMultistepIntegrator<
+                QuinlanTremaine1990Order12,
+                Ephemeris<KSP>::NewtonianMotionEquation>(),
             /*iterations=*/5,
             /*first_step_in_seconds=*/75}));
 

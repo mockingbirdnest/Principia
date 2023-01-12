@@ -2,6 +2,7 @@
 
 #include "numerics/quadrature.hpp"
 
+#include <algorithm>
 #include <memory>
 #include <vector>
 

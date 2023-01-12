@@ -20,12 +20,13 @@ using numerics::DoublePrecision;
 using numerics::ULPDistance;
 using quantities::Abs;
 
-template<typename Method, typename Position>
-absl::Status SymplecticRungeKuttaNyströmIntegrator<Method, Position>::
+template<typename Method, typename ODE_>
+absl::Status SymplecticRungeKuttaNyströmIntegrator<Method, ODE_>::
 Instance::Solve(Instant const& t_final) {
-  using Displacement = typename ODE::Displacement;
-  using Velocity = typename ODE::Velocity;
-  using Acceleration = typename ODE::Acceleration;
+  using Position = typename ODE::DependentVariable;
+  using Displacement = typename ODE::DependentVariableDifference;
+  using Velocity = typename ODE::DependentVariableDerivative;
+  using Acceleration = typename ODE::DependentVariableDerivative2;
 
   auto const& a = integrator_.a_;
   auto const& b = integrator_.b_;
@@ -142,23 +143,22 @@ Instance::Solve(Instant const& t_final) {
   return status;
 }
 
-template<typename Method, typename Position>
-SymplecticRungeKuttaNyströmIntegrator<Method, Position> const&
-SymplecticRungeKuttaNyströmIntegrator<Method, Position>::
+template<typename Method, typename ODE_>
+SymplecticRungeKuttaNyströmIntegrator<Method, ODE_> const&
+SymplecticRungeKuttaNyströmIntegrator<Method, ODE_>::
 Instance::integrator() const {
   return integrator_;
 }
 
-template<typename Method, typename Position>
-not_null<std::unique_ptr<typename Integrator<
-    SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
-SymplecticRungeKuttaNyströmIntegrator<Method, Position>::
+template<typename Method, typename ODE_>
+not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
+SymplecticRungeKuttaNyströmIntegrator<Method, ODE_>::
 Instance::Clone() const {
   return std::unique_ptr<Instance>(new Instance(*this));
 }
 
-template<typename Method, typename Position>
-void SymplecticRungeKuttaNyströmIntegrator<Method, Position>::
+template<typename Method, typename ODE_>
+void SymplecticRungeKuttaNyströmIntegrator<Method, ODE_>::
 Instance::WriteToMessage(
     not_null<serialization::IntegratorInstance*> message) const {
   FixedStepSizeIntegrator<ODE>::Instance::WriteToMessage(message);
@@ -171,14 +171,14 @@ Instance::WriteToMessage(
                   extension);
 }
 
-template<typename Method, typename Position>
+template<typename Method, typename ODE_>
 not_null<std::unique_ptr<
-    typename SymplecticRungeKuttaNyströmIntegrator<Method, Position>::Instance>>
-SymplecticRungeKuttaNyströmIntegrator<Method, Position>::Instance::
+    typename SymplecticRungeKuttaNyströmIntegrator<Method, ODE_>::Instance>>
+SymplecticRungeKuttaNyströmIntegrator<Method, ODE_>::Instance::
 ReadFromMessage(
     serialization::SymplecticRungeKuttaNystromIntegratorInstance const&
         extension,
-    IntegrationProblem<ODE> const& problem,
+    InitialValueProblem<ODE> const& problem,
     AppendState const& append_state,
     Time const& step,
     SymplecticRungeKuttaNyströmIntegrator const& integrator) {
@@ -186,9 +186,9 @@ ReadFromMessage(
       new Instance(problem, append_state, step, integrator));
 }
 
-template<typename Method, typename Position>
-SymplecticRungeKuttaNyströmIntegrator<Method, Position>::
-Instance::Instance(IntegrationProblem<ODE> const& problem,
+template<typename Method, typename ODE_>
+SymplecticRungeKuttaNyströmIntegrator<Method, ODE_>::
+Instance::Instance(InitialValueProblem<ODE> const& problem,
                    AppendState const& append_state,
                    Time const& step,
                    SymplecticRungeKuttaNyströmIntegrator const& integrator)
@@ -197,8 +197,8 @@ Instance::Instance(IntegrationProblem<ODE> const& problem,
                                              step),
       integrator_(integrator) {}
 
-template<typename Method, typename Position>
-SymplecticRungeKuttaNyströmIntegrator<Method, Position>::
+template<typename Method, typename ODE_>
+SymplecticRungeKuttaNyströmIntegrator<Method, ODE_>::
 SymplecticRungeKuttaNyströmIntegrator() {
   DoublePrecision<double> c_i(0.0);
   for (int i = 0; i < stages_; ++i) {
@@ -238,11 +238,10 @@ SymplecticRungeKuttaNyströmIntegrator() {
   }
 }
 
-template<typename Method, typename Position>
-not_null<std::unique_ptr<typename Integrator<
-    SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
-SymplecticRungeKuttaNyströmIntegrator<Method, Position>::NewInstance(
-    IntegrationProblem<ODE> const& problem,
+template<typename Method, typename ODE_>
+not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
+SymplecticRungeKuttaNyströmIntegrator<Method, ODE_>::NewInstance(
+    InitialValueProblem<ODE> const& problem,
     AppendState const& append_state,
     Time const& step) const {
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is
@@ -251,8 +250,8 @@ SymplecticRungeKuttaNyströmIntegrator<Method, Position>::NewInstance(
       new Instance(problem, append_state, step, *this));
 }
 
-template<typename Method, typename Position>
-void SymplecticRungeKuttaNyströmIntegrator<Method, Position>::WriteToMessage(
+template<typename Method, typename ODE_>
+void SymplecticRungeKuttaNyströmIntegrator<Method, ODE_>::WriteToMessage(
     not_null<serialization::FixedStepSizeIntegrator*> message) const {
   message->set_kind(Method::kind);
   message->set_composition_method(composition);
@@ -260,26 +259,26 @@ void SymplecticRungeKuttaNyströmIntegrator<Method, Position>::WriteToMessage(
 
 }  // namespace internal_symplectic_runge_kutta_nyström_integrator
 
-template<typename Method, typename Position>
+template<typename Method, typename ODE_>
 internal_symplectic_runge_kutta_nyström_integrator::
-    SymplecticRungeKuttaNyströmIntegrator<Method, Position> const&
+    SymplecticRungeKuttaNyströmIntegrator<Method, ODE_> const&
 SymplecticRungeKuttaNyströmIntegrator() {
   static_assert(
       std::is_base_of<methods::SymplecticRungeKuttaNyström, Method>::value,
       "Method must be derived from SymplecticRungeKuttaNyström");
   static internal_symplectic_runge_kutta_nyström_integrator::
-      SymplecticRungeKuttaNyströmIntegrator<Method, Position> const integrator;
+      SymplecticRungeKuttaNyströmIntegrator<Method, ODE_> const integrator;
   return integrator;
 }
 
 template<typename Method,
          serialization::FixedStepSizeIntegrator::CompositionMethod composition,
-         typename Position>
+         typename ODE_>
 internal_symplectic_runge_kutta_nyström_integrator::
     SymplecticRungeKuttaNyströmIntegrator<
         typename methods::AsSymplecticRungeKuttaNyström<Method,
                                                         composition>::Method,
-        Position> const&
+        ODE_> const&
 SymplecticRungeKuttaNyströmIntegrator() {
   static_assert(
       std::is_base_of<methods::SymplecticPartitionedRungeKutta, Method>::value,
@@ -288,7 +287,7 @@ SymplecticRungeKuttaNyströmIntegrator() {
       SymplecticRungeKuttaNyströmIntegrator<
           typename methods::AsSymplecticRungeKuttaNyström<Method,
                                                           composition>::Method,
-          Position> const integrator;
+          ODE_> const integrator;
   return integrator;
 }
 

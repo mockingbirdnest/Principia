@@ -600,19 +600,21 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
       /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Metre,
                                /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<Barycentric>::FixedStepParameters{
-          SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN6B,
-                                                Position<Barycentric>>(),
+          SymplecticRungeKuttaNyströmIntegrator<
+              BlanesMoan2002SRKN6B,
+              Ephemeris<Barycentric>::NewtonianMotionEquation>(),
           1 * Second}};
 
   Time const fixed_step = 10 * Second;
   Ephemeris<Barycentric>::FixedStepParameters fixed_parameters{
-      SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN6B,
-                                            Position<Barycentric>>(),
+      SymplecticRungeKuttaNyströmIntegrator<
+          BlanesMoan2002SRKN6B,
+          Ephemeris<Barycentric>::NewtonianMotionEquation>(),
       fixed_step};
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_parameters{
       EmbeddedExplicitRungeKuttaNyströmIntegrator<
           DormandالمكاوىPrince1986RKN434FM,
-          Position<Barycentric>>(),
+          Ephemeris<Barycentric>::NewtonianMotionEquation>(),
       /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
       /*length_integration_tolerance*/ 1 * Micro(Metre),
       /*speed_integration_tolerance=*/1 * Micro(Metre) / Second};

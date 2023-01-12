@@ -4,6 +4,7 @@
 
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
+#include "base/traits.hpp"
 #include "geometry/named_quantities.hpp"
 #include "integrators/integrators.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
@@ -13,6 +14,7 @@ namespace principia {
 namespace integrators {
 namespace internal_symplectic_partitioned_runge_kutta_integrator {
 
+using base::is_instance_of_v;
 using base::not_null;
 using geometry::Instant;
 using quantities::Time;
@@ -46,12 +48,13 @@ using quantities::Time;
 // deserialized.
 // TODO(egg): Make them serializable/deserializable.  We need to prevent
 // combinatorial explosion.
-template<typename Method, typename Position>
+template<typename Method, typename ODE_>
 class SymplecticPartitionedRungeKuttaIntegrator
-    : public FixedStepSizeIntegrator<
-          DecomposableFirstOrderDifferentialEquation<Position>> {
+    : public FixedStepSizeIntegrator<ODE_> {
  public:
-  using ODE = DecomposableFirstOrderDifferentialEquation<Position>;
+  using ODE = ODE_;
+  static_assert(
+      is_instance_of_v<DecomposableFirstOrderDifferentialEquation, ODE>);
   using AppendState = typename Integrator<ODE>::AppendState;
 
   static constexpr auto time_reversible = Method::time_reversible;
@@ -69,7 +72,7 @@ class SymplecticPartitionedRungeKuttaIntegrator
         not_null<serialization::IntegratorInstance*> message) const override;
 
    private:
-    Instance(IntegrationProblem<ODE> const& problem,
+    Instance(InitialValueProblem<ODE> const& problem,
              AppendState const& append_state,
              Time const& step,
              SymplecticPartitionedRungeKuttaIntegrator const& integrator);
@@ -81,7 +84,7 @@ class SymplecticPartitionedRungeKuttaIntegrator
   SymplecticPartitionedRungeKuttaIntegrator();
 
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
-      IntegrationProblem<ODE> const& problem,
+      InitialValueProblem<ODE> const& problem,
       AppendState const& append_state,
       Time const& step) const override;
 
@@ -91,7 +94,7 @@ class SymplecticPartitionedRungeKuttaIntegrator
  private:
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> ReadFromMessage(
       serialization::FixedStepSizeIntegratorInstance const& message,
-      IntegrationProblem<ODE> const& problem,
+      InitialValueProblem<ODE> const& problem,
       AppendState const& append_state,
       Time const& step) const override;
 
