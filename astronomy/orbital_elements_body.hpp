@@ -9,7 +9,7 @@
 #include "base/jthread.hpp"
 #include "base/status_utilities.hpp"
 #include "numerics/quadrature.hpp"
-#include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
+#include "integrators/explicit_runge_kutta_integrator.hpp"
 #include "integrators/methods.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/kepler_orbit.hpp"
@@ -25,9 +25,11 @@ using base::this_stoppable_thread;
 using geometry::Velocity;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::EmbeddedExplicitRungeKuttaIntegrator;
+using integrators::ExplicitRungeKuttaIntegrator;
 using integrators::ExplicitFirstOrderOrdinaryDifferentialEquation;
-using integrators::IntegrationProblem;
+using integrators::InitialValueProblem;
 using integrators::methods::DormandPrince1986RK547FC;
+using integrators::methods::Kutta1901Vσ1;
 using numerics::quadrature::AutomaticClenshawCurtis;
 using physics::DegreesOfFreedom;
 using physics::KeplerianElements;
@@ -363,35 +365,31 @@ OrbitalElements::MeanEquinoctialElements(
                                                      Time,
                                                      Time>;
   using namespace quantities::si;
-  IntegrationProblem<ODE> problem{
+  InitialValueProblem<ODE> problem{
       .equation =
           {
               .compute_derivative =
-                  [&equinoctial_elements, &z](Instant const& t,
-                                              ODE::State const& state,
-                                              ODE::StateVariation& variations) {
+                  [&equinoctial_elements, &z](
+                      Instant const& t,
+                      ODE::DependentVariables const& y,
+                      ODE::DependentVariableDerivatives& yʹ) {
                     ++z;
                     auto const [_, a, h, k, λ, p, q, pʹ, qʹ] =
                         equinoctial_elements(t);
-                    variations = {{a}, {h}, {k}, {λ}, {p}, {q}, {pʹ}, {qʹ}};
+                    yʹ = {{a}, {h}, {k}, {λ}, {p}, {q}, {pʹ}, {qʹ}};
                     return absl::OkStatus();
                   },
           },
-      .initial_state = ODE::SystemState(t_min,
-                                        {{0 * Metre * Second},
-                                         {0 * Second},
-                                         {0 * Second},
-                                         {0 * Radian * Second},
-                                         {0 * Second},
-                                         {0 * Second},
-                                         {0 * Second},
-                                         {0 * Second}}),
+      .initial_state = ODE::State(t_min,
+                                  {{0 * Metre * Second},
+                                   {0 * Second},
+                                   {0 * Second},
+                                   {0 * Radian * Second},
+                                   {0 * Second},
+                                   {0 * Second},
+                                   {0 * Second},
+                                   {0 * Second}}),
   };
-  AdaptiveStepSizeIntegrator<ODE>::Parameters const parameters(
-      /*first_time_step=*/period / 4,
-      /*safety_factor*/ 0.9,
-      /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
-      /*last_step_is_exact=*/true);
 
   struct IntegratedEquinoctialElements {
     Instant t;
@@ -406,7 +404,7 @@ OrbitalElements::MeanEquinoctialElements(
     Time ʃ_qʹ_dt;
   };
   std::vector<IntegratedEquinoctialElements> integrals;
-  auto const append_state = [&integrals](ODE::SystemState const& state) {
+  auto const append_state = [&integrals](ODE::State const& state) {
     Instant const& t = state.s.value;
     auto const& [ʃ_a_dt,
                  ʃ_h_dt,
@@ -429,36 +427,10 @@ OrbitalElements::MeanEquinoctialElements(
   };
   append_state(problem.initial_state);
   auto const instance =
-      EmbeddedExplicitRungeKuttaIntegrator<DormandPrince1986RK547FC,
-                                           Instant,
-                                           Product<Length, Time>,
-                                           Time,
-                                           Time,
-                                           Product<Angle, Time>,
-                                           Time,
-                                           Time,
-                                           Time,
-                                           Time>()
-          .NewInstance(
-              problem,
-              append_state,
-              /*tolerance_to_error_ratio=*/
-              [&t_max, &t_min, &period](Time const& Δt, ODE::SystemStateError const& error) {
-                auto const& [Δa_Δt,
-                             Δh_Δt,
-                             Δk_Δt,
-                             Δλ_Δt,
-                             Δp_Δt,
-                             Δq_Δt,
-                             Δpʹ_Δt,
-                             Δqʹ_Δt] = error;
-                auto const timespan = t_max - t_min;
-                using quantities::Abs;
-                // Fixed stepsize:
-                return std::pow(0.9, -(DormandPrince1986RK547FC::lower_order + 1));
-                //return std::min({1e-4 * Metre * period / Abs(Δa_Δt.front())});
-              },
-              /*integrator_parameters=*/parameters);
+      ExplicitRungeKuttaIntegrator<Kutta1901Vσ1, ODE>().NewInstance(
+          problem,
+          append_state,
+          /*step=*/period / 6);
   RETURN_IF_ERROR(instance->Solve(t_max));
   LOG(ERROR) << z << " evaluations by integrator producing " << integrals.size()
              << " points";
@@ -523,18 +495,7 @@ OrbitalElements::MeanEquinoctialElements(
     auto const high = evaluate_integrals(low.t + period);
     mean_elements.emplace_back();
     mean_elements.back().t = low.t + period / 2;
-    mean_elements.back().a =
-        /* (high.ʃ_a_dt - low.ʃ_a_dt) / period; */
-        AutomaticClenshawCurtis(
-            [&equinoctial_elements, &y](Instant const& t) {
-              ++y;
-              return equinoctial_elements(t).a;
-            },
-            low.t,
-            high.t,
-            1e-8,
-            std::nullopt) /
-        period;
+    mean_elements.back().a = (high.ʃ_a_dt - low.ʃ_a_dt) / period;
     mean_elements.back().h = (high.ʃ_h_dt - low.ʃ_h_dt) / period;
     mean_elements.back().k = (high.ʃ_k_dt - low.ʃ_k_dt) / period;
     mean_elements.back().λ = (high.ʃ_λ_dt - low.ʃ_λ_dt) / period;
