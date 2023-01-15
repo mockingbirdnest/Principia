@@ -453,15 +453,16 @@ OrbitalElements::MeanEquinoctialElements(
   }
 
   auto const evaluate_integrals =
-      [&integrals, &z](Instant const& t) -> IntegratedEquinoctialElements {
+      [&integrals](Instant const& t) -> IntegratedEquinoctialElements {
+    CHECK_LE(t, integrals.back().t);
     auto it = std::partition_point(
         integrals.begin(),
         integrals.end(),
         [&t](IntegratedEquinoctialElements const& elements) {
           return elements.t < t;
         });
+    CHECK(it != integrals.end());
     IntegratedEquinoctialElements const& high = *it;
-    ++z;
     if (it == integrals.begin()) {
       return high;
     } else {
@@ -489,7 +490,7 @@ OrbitalElements::MeanEquinoctialElements(
   int y = 0;
   for (auto const& low : integrals) {
     RETURN_IF_STOPPED;
-    if (low.t + period > t_max) {
+    if (low.t + period > integrals.back().t) {
       break;
     }
     auto const high = evaluate_integrals(low.t + period);
@@ -504,7 +505,6 @@ OrbitalElements::MeanEquinoctialElements(
     mean_elements.back().pʹ = (high.ʃ_pʹ_dt - low.ʃ_pʹ_dt) / period;
     mean_elements.back().qʹ = (high.ʃ_qʹ_dt - low.ʃ_qʹ_dt) / period;
   }
-  LOG(ERROR) << z << " evaluations by Clenshaw-Curtis for a";
   for (auto const& e : mean_elements) {
     logger.Append("mean",
                   std::tuple{e.t, e.a, e.h, e.k, e.λ, e.p, e.q, e.pʹ, e.qʹ},
