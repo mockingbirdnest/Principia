@@ -27,7 +27,7 @@ void Starter<ODE, order>::StartupSolve(IndependentVariable const& s_final) {
   CHECK_LT(previous_steps_.size(), order);
 
   auto const startup_append_state =
-      [&current_state, &equation](typename ODE::SystemState const& state) {
+      [&current_state, &equation](typename ODE::State const& state) {
         // Stop changing anything once we're done with the startup.  We may be
         // called one more time by the |startup_integrator_|.
         if (previous_steps_.size() < order) {
@@ -38,9 +38,9 @@ void Starter<ODE, order>::StartupSolve(IndependentVariable const& s_final) {
           if (++startup_step_index_ % startup_step_divisor == 0) {
             CHECK_LT(previous_steps_.size(), order);
             previous_steps_.emplace_back();
-            FillStepFromSystemState(equation,
-                                    current_state,
-                                    previous_steps_.back());
+            FillStepFromState(equation,
+                              current_state,
+                              previous_steps_.back());
             // This call must happen last for a subtle reason: the callback may
             // want to |Clone| this instance (see |Ephemeris::Checkpoint|) in
             // which cases it is necessary that all the member variables be
@@ -64,10 +64,9 @@ void Starter<ODE, order>::StartupSolve(IndependentVariable const& s_final) {
 }
 
 template<typename ODE, int order>
-void Starter<ODE, order>::FillStepFromSystemState(
-    ODE const& equation,
-    typename ODE::SystemState const& state,
-    Step& step) {
+void Starter<ODE, order>::FillStepFromState(ODE const& equation,
+                                            typename ODE::State const& state,
+                                            Step& step) {
   std::vector<DependentVariable> dependent_variables;
   step.s = state.time;
   for (auto const& position : state.positions) {

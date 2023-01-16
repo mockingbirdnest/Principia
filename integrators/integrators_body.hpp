@@ -414,7 +414,7 @@ typename ODE_::State const& Integrator<ODE_>::Instance::state() const {
 }
 
 template<typename ODE_>
-typename ODE_::SystemState& Integrator<ODE_>::Instance::state() {
+typename ODE_::State& Integrator<ODE_>::Instance::state() {
   return current_state_;
 }
 

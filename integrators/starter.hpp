@@ -48,9 +48,9 @@ class Starter {
             message);
   };
 
-  static void FillStepFromSystemState(ODE const& equation,
-                                      typename ODE::SystemState const& state,
-                                      Step& step);
+  static void FillStepFromState(ODE const& equation,
+                                typename ODE::State const& state,
+                                Step& step);
 
   FixedStepSizeIntegrator<ODE> const& startup_integrator_;
   not_null<typename FixedStepSizeIntegrator<ODE>::Instance*> const instance_;
