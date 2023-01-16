@@ -430,7 +430,7 @@ OrbitalElements::MeanEquinoctialElements(
       ExplicitRungeKuttaIntegrator<Kutta1901Vσ1, ODE>().NewInstance(
           problem,
           append_state,
-          /*step=*/period / 6);
+          /*step=*/period / 128);
   RETURN_IF_ERROR(instance->Solve(t_max));
   LOG(ERROR) << z << " evaluations by integrator producing " << integrals.size()
              << " points";
@@ -566,37 +566,63 @@ inline absl::Status OrbitalElements::ComputePeriodsAndPrecession() {
   //   12 ∫ э(t) (t - t̄) dt / Δt³.
   // We first compute ∫ э(t) (t - t̄) dt for the three elements of interest.
 
-  Product<Angle, Square<Time>> ʃ_Mt_dt;
-  Product<Angle, Square<Time>> ʃ_ut_dt;
-  Product<Angle, Square<Time>> ʃ_Ωt_dt;
+  auto const interpolate_function_of_mean_classical_element =
+      [this](auto const f, Instant const& t) {
+        CHECK_LE(t, mean_classical_elements_.back().time);
+        auto it = std::partition_point(mean_classical_elements_.begin(),
+                                       mean_classical_elements_.end(),
+                                       [&t](ClassicalElements const& elements) {
+                                         return elements.time < t;
+                                       });
+        ClassicalElements const& high = *it;
+        if (it == mean_classical_elements_.begin()) {
+          return f(high);
+        } else {
+          ClassicalElements const& low = *--it;
+          double const α = (t - low.time) / (high.time - low.time);
+          return f(low) + α * (f(low) - f(low));
+        }
+      };
 
   Instant const t̄ = mean_classical_elements_.front().time + Δt / 2;
-  auto const first = mean_classical_elements_.begin();
-  Time first_t = first->time - t̄;
-  Product<Angle, Time> previous_Mt = first->mean_anomaly * first_t;
-  Product<Angle, Time> previous_ut =
-      (first->argument_of_periapsis + first->mean_anomaly) * first_t;
-  Product<Angle, Time> previous_Ωt =
-      first->longitude_of_ascending_node * first_t;
-  for (auto previous = first, it = first + 1;
-       it != mean_classical_elements_.end();
-       previous = it, ++it) {
-    RETURN_IF_STOPPED;
-    Angle const u = it->argument_of_periapsis + it->mean_anomaly;
-    Angle const& M = it->mean_anomaly;
-    Angle const& Ω = it->longitude_of_ascending_node;
-    Time const t = it->time - t̄;
-    auto const Mt = M * t;
-    auto const ut = u * t;
-    auto const Ωt = Ω * t;
-    Time const dt = it->time - previous->time;
-    ʃ_Mt_dt += (Mt + previous_Mt) / 2 * dt;
-    ʃ_ut_dt += (ut + previous_ut) / 2 * dt;
-    ʃ_Ωt_dt += (Ωt + previous_Ωt) / 2 * dt;
-    previous_Mt = Mt;
-    previous_ut = ut;
-    previous_Ωt = Ωt;
-  }
+
+  Product<Angle, Square<Time>> const ʃ_Mt_dt = AutomaticClenshawCurtis(
+      [&interpolate_function_of_mean_classical_element, &t̄](Instant const& t) {
+        return interpolate_function_of_mean_classical_element(
+            [&t, &t̄](ClassicalElements const& elements) {
+              return elements.mean_anomaly * (t - t̄);
+            },
+            t);
+      },
+      mean_classical_elements_.front().time,
+      mean_classical_elements_.back().time,
+      /*max_relative_error=*/1e-6,
+      /*max_points=*/mean_classical_elements_.size());
+  Product<Angle, Square<Time>> const ʃ_ut_dt = AutomaticClenshawCurtis(
+      [&interpolate_function_of_mean_classical_element, &t̄](Instant const& t) {
+        return interpolate_function_of_mean_classical_element(
+            [&t, &t̄](ClassicalElements const& elements) {
+              return (elements.argument_of_periapsis + elements.mean_anomaly) *
+                     (t - t̄);
+            },
+            t);
+      },
+      mean_classical_elements_.front().time,
+      mean_classical_elements_.back().time,
+      /*max_relative_error=*/1e-6,
+      /*max_points=*/mean_classical_elements_.size());
+  Product<Angle, Square<Time>> const ʃ_Ωt_dt = AutomaticClenshawCurtis(
+      [&interpolate_function_of_mean_classical_element, &t̄](Instant const& t) {
+        return interpolate_function_of_mean_classical_element(
+            [&t, &t̄](ClassicalElements const& elements) {
+              return elements.longitude_of_ascending_node * (t - t̄);
+            },
+            t);
+      },
+      mean_classical_elements_.front().time,
+      mean_classical_elements_.back().time,
+      /*max_relative_error=*/1e-6,
+      /*max_points=*/mean_classical_elements_.size());
 
   // The periods are 2π over the mean rate of the relevant element; the nodal
   // precession is the mean rate of Ω.
