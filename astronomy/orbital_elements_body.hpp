@@ -430,7 +430,7 @@ OrbitalElements::MeanEquinoctialElements(
       ExplicitRungeKuttaIntegrator<Kutta1901Vσ1, ODE>().NewInstance(
           problem,
           append_state,
-          /*step=*/period / 128);
+          /*step=*/period / 6);
   RETURN_IF_ERROR(instance->Solve(t_max));
   LOG(ERROR) << z << " evaluations by integrator producing " << integrals.size()
              << " points";
@@ -566,21 +566,23 @@ inline absl::Status OrbitalElements::ComputePeriodsAndPrecession() {
   //   12 ∫ э(t) (t - t̄) dt / Δt³.
   // We first compute ∫ э(t) (t - t̄) dt for the three elements of interest.
 
+  int z = 0;
   auto const interpolate_function_of_mean_classical_element =
-      [this](auto const f, Instant const& t) {
+      [this, &z](auto const f, Instant const& t) {
         CHECK_LE(t, mean_classical_elements_.back().time);
         auto it = std::partition_point(mean_classical_elements_.begin(),
                                        mean_classical_elements_.end(),
                                        [&t](ClassicalElements const& elements) {
                                          return elements.time < t;
                                        });
+        ++z;
         ClassicalElements const& high = *it;
         if (it == mean_classical_elements_.begin()) {
           return f(high);
         } else {
           ClassicalElements const& low = *--it;
           double const α = (t - low.time) / (high.time - low.time);
-          return f(low) + α * (f(low) - f(low));
+          return f(low) + α * (f(high) - f(low));
         }
       };
 
@@ -598,6 +600,7 @@ inline absl::Status OrbitalElements::ComputePeriodsAndPrecession() {
       mean_classical_elements_.back().time,
       /*max_relative_error=*/1e-6,
       /*max_points=*/mean_classical_elements_.size());
+  LOG(ERROR) << z << " for M";z=0;
   Product<Angle, Square<Time>> const ʃ_ut_dt = AutomaticClenshawCurtis(
       [&interpolate_function_of_mean_classical_element, &t̄](Instant const& t) {
         return interpolate_function_of_mean_classical_element(
@@ -611,6 +614,7 @@ inline absl::Status OrbitalElements::ComputePeriodsAndPrecession() {
       mean_classical_elements_.back().time,
       /*max_relative_error=*/1e-6,
       /*max_points=*/mean_classical_elements_.size());
+  LOG(ERROR) << z << " for u";z = 0;
   Product<Angle, Square<Time>> const ʃ_Ωt_dt = AutomaticClenshawCurtis(
       [&interpolate_function_of_mean_classical_element, &t̄](Instant const& t) {
         return interpolate_function_of_mean_classical_element(
@@ -623,6 +627,7 @@ inline absl::Status OrbitalElements::ComputePeriodsAndPrecession() {
       mean_classical_elements_.back().time,
       /*max_relative_error=*/1e-6,
       /*max_points=*/mean_classical_elements_.size());
+  LOG(ERROR) << z << " for Ω";
 
   // The periods are 2π over the mean rate of the relevant element; the nodal
   // precession is the mean rate of Ω.
