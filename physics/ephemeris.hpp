@@ -42,7 +42,7 @@ using geometry::Vector;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::ExplicitSecondOrderOrdinaryDifferentialEquation;
 using integrators::FixedStepSizeIntegrator;
-using integrators::IntegrationProblem;
+using integrators::InitialValueProblem;
 using integrators::Integrator;
 using integrators::SpecialSecondOrderDifferentialEquation;
 using quantities::Acceleration;
@@ -277,14 +277,14 @@ class Ephemeris {
 
   // Callbacks for the integrators.
   void AppendMassiveBodiesState(
-      typename NewtonianMotionEquation::SystemState const& state)
+      typename NewtonianMotionEquation::State const& state)
       REQUIRES(lock_);
   template<typename ContinuousTrajectoryPtr>
   static std::vector<absl::Status> AppendMassiveBodiesStateToTrajectories(
-      typename NewtonianMotionEquation::SystemState const& state,
+      typename NewtonianMotionEquation::State const& state,
       std::vector<not_null<ContinuousTrajectoryPtr>> const& trajectories);
   static void AppendMasslessBodiesStateToTrajectories(
-      typename NewtonianMotionEquation::SystemState const& state,
+      typename NewtonianMotionEquation::State const& state,
       std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories);
 
   // Returns an equation suitable for the massive bodies contained in this
@@ -386,8 +386,8 @@ class Ephemeris {
       Length const& length_integration_tolerance,
       Speed const& speed_integration_tolerance,
       Time const& current_step_size,
-      typename NewtonianMotionEquation::SystemState const& /*state*/,
-      typename NewtonianMotionEquation::SystemStateError const& error);
+      typename NewtonianMotionEquation::State const& /*state*/,
+      typename NewtonianMotionEquation::State::Error const& error);
 
   // The bodies in the order in which they were given at construction.
   std::vector<not_null<MassiveBody const*>> unowned_bodies_;

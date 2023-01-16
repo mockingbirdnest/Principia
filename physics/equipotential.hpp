@@ -50,40 +50,40 @@ class Equipotential {
       ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable,
                                                      Position<Frame>,
                                                      double>;
+  using DependentVariables = typename ODE::DependentVariables;
   using AdaptiveParameters = physics::AdaptiveStepParameters<ODE>;
+  using Line = std::vector<DependentVariables>;
+  using Lines = std::vector<Line>;
 
   Equipotential(
       AdaptiveParameters const& adaptive_parameters,
       not_null<DynamicFrame<InertialFrame, Frame> const*> dynamic_frame);
 
   // Computes an equipotential line going through the given point.
-  typename ODE::State ComputeLine(Plane<Frame> const& plane,
-                                  Instant const& t,
-                                  Position<Frame> const& position) const;
+  Line ComputeLine(Plane<Frame> const& plane,
+                   Instant const& t,
+                   Position<Frame> const& position) const;
 
   // Computes an equipotential line for the total energy determined by the
   // |degrees_of_freedom|.
-  typename ODE::State ComputeLine(
-      Plane<Frame> const& plane,
-      Instant const& t,
-      DegreesOfFreedom<Frame> const& degrees_of_freedom) const;
+  Line ComputeLine(Plane<Frame> const& plane,
+                   Instant const& t,
+                   DegreesOfFreedom<Frame> const& degrees_of_freedom) const;
 
   // Computes an equipotential line for the given |total_energy| starting from
   // |start_position|.
-  typename ODE::State ComputeLine(
-      Plane<Frame> const& plane,
-      Instant const& t,
-      Position<Frame> const& start_position,
-      SpecificEnergy const& total_energy) const;
+  Line ComputeLine(Plane<Frame> const& plane,
+                   Instant const& t,
+                   Position<Frame> const& start_position,
+                   SpecificEnergy const& total_energy) const;
 
   // Computes equipotential lines for the given |total_energy|.  Each of the
   // given |start_positions| ends up enclosed by exactly one line of the result.
   // The |start_positions| must be coplanar in a plane parallel to |plane|.
-  std::vector<typename ODE::State> ComputeLines(
-      Plane<Frame> const& plane,
-      Instant const& t,
-      std::vector<Position<Frame>> const& start_positions,
-      SpecificEnergy const& total_energy) const;
+  Lines ComputeLines(Plane<Frame> const& plane,
+                     Instant const& t,
+                     std::vector<Position<Frame>> const& start_positions,
+                     SpecificEnergy const& total_energy) const;
 
   struct Well {
     Position<Frame> position;
@@ -99,7 +99,7 @@ class Equipotential {
   // a position, |towards_infinity| should return a position far away where the
   // potential is lower, in a direction where not much happens, e.g., away from
   // the centre in a rotating frame.
-  std::vector<typename ODE::State> ComputeLines(
+  Lines ComputeLines(
       Plane<Frame> const& plane,
       Instant const& t,
       std::vector<Position<Frame>> const& peaks,
@@ -110,10 +110,9 @@ class Equipotential {
  private:
   using IndependentVariableDifference =
       typename ODE::IndependentVariableDifference;
+  using DependentVariableDerivatives =
+      typename ODE::DependentVariableDerivatives;
   using State = typename ODE::State;
-  using StateVariation = typename ODE::StateVariation;
-  using SystemState = typename ODE::SystemState;
-  using SystemStateError = typename ODE::SystemStateError;
 
   static constexpr IndependentVariable const s_initial_ = 0;
   static constexpr IndependentVariable const s_final_ =
@@ -131,12 +130,12 @@ class Equipotential {
                              Position<Frame> const& position,
                              Instant const& t,
                              IndependentVariable s,
-                             State const& state,
-                             StateVariation& state_variation) const;
+                             DependentVariables const& values,
+                             DependentVariableDerivatives& derivatives) const;
 
   double ToleranceToErrorRatio(IndependentVariableDifference current_s_step,
-                               SystemState const& /*state*/,
-                               SystemStateError const& error) const;
+                               State const& /*state*/,
+                               typename State::Error const& error) const;
 
   // Computes the winding number of |line| around |position|.  |line| and
   // |position| must be in a plane paralles to |plane|.  The returned integer is

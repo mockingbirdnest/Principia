@@ -25,9 +25,10 @@ namespace internal_ordinary_differential_equations {
 
 using base::for_all_of;
 
-template<typename IndependentVariable, typename... State>
-ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable, State...>::
-SystemState::SystemState(IndependentVariable const& s, State const& y)
+template<typename IndependentVariable_, typename... DependentVariable>
+ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable_,
+                                               DependentVariable...>::
+State::State(IndependentVariable const& s, DependentVariables const& y)
     : s(s) {
   for_all_of(y, this->y).loop([](auto const& y, auto& this_y) {
     for (auto const& y_i : y) {
@@ -36,35 +37,35 @@ SystemState::SystemState(IndependentVariable const& s, State const& y)
   });
 }
 
-template<typename IndependentVariable, typename... State>
-void
-ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable, State...>::
-SystemState::WriteToMessage(
-    not_null<serialization::SystemState*> message) const {
+template<typename IndependentVariable_, typename... DependentVariable>
+void ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable_,
+                                                    DependentVariable...>::
+State::WriteToMessage(not_null<serialization::State*> message) const {
   // Writing the tuple would be tricky.
   LOG(FATAL) << "NYI";
 }
 
-template<typename IndependentVariable, typename... State>
-typename ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable,
-                                                        State...>::SystemState
-ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable, State...>::
-SystemState::ReadFromMessage(serialization::SystemState const& message) {
+template<typename IndependentVariable_, typename... DependentVariable>
+typename ExplicitFirstOrderOrdinaryDifferentialEquation<
+    IndependentVariable_,
+    DependentVariable...>::State
+ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable_,
+                                               DependentVariable...>::
+State::ReadFromMessage(serialization::State const& message) {
   // Reading the tuple would be tricky.
   LOG(FATAL) << "NYI";
 }
 
-template<typename... State>
-DecomposableFirstOrderDifferentialEquation<State...>::SystemState::SystemState(
-    Instant const& t,
-    State const& y)
+template<typename... DependentVariable>
+DecomposableFirstOrderDifferentialEquation<DependentVariable...>::
+State::State(IndependentVariable const& t, DependentVariables const& y)
     : time(t), y(y) {}
 
-template<typename Position_>
-ExplicitSecondOrderOrdinaryDifferentialEquation<
-    Position_>::SystemState::SystemState(Instant const& t,
-                                         std::vector<Position> const& q,
-                                         std::vector<Velocity> const& v)
+template<typename DependentVariable>
+ExplicitSecondOrderOrdinaryDifferentialEquation<DependentVariable>::
+State::State(IndependentVariable const& t,
+             DependentVariables const& q,
+             DependentVariableDerivatives const& v)
     : time(t) {
   for (int i = 0; i < q.size(); ++i) {
     positions.emplace_back(q[i]);
@@ -72,9 +73,9 @@ ExplicitSecondOrderOrdinaryDifferentialEquation<
   }
 }
 
-template<typename Position>
-void ExplicitSecondOrderOrdinaryDifferentialEquation<Position>::SystemState::
-    WriteToMessage(not_null<serialization::SystemState*> const message) const {
+template<typename DependentVariable>
+void ExplicitSecondOrderOrdinaryDifferentialEquation<DependentVariable>::
+State::WriteToMessage(not_null<serialization::State*> const message) const {
   for (auto const& position : positions) {
     position.WriteToMessage(message->add_position());
   }
@@ -84,21 +85,23 @@ void ExplicitSecondOrderOrdinaryDifferentialEquation<Position>::SystemState::
   time.WriteToMessage(message->mutable_time());
 }
 
-template<typename Position>
-typename ExplicitSecondOrderOrdinaryDifferentialEquation<Position>::SystemState
-ExplicitSecondOrderOrdinaryDifferentialEquation<Position>::SystemState::
-    ReadFromMessage(serialization::SystemState const& message) {
-  SystemState system_state;
+template<typename DependentVariable>
+typename ExplicitSecondOrderOrdinaryDifferentialEquation<DependentVariable>::
+    State
+ExplicitSecondOrderOrdinaryDifferentialEquation<DependentVariable>::
+State::ReadFromMessage(serialization::State const& message) {
+  State state;
   for (auto const& p : message.position()) {
-    system_state.positions.push_back(
-        DoublePrecision<Position>::ReadFromMessage(p));
+    state.positions.push_back(
+        DoublePrecision<DependentVariable>::ReadFromMessage(p));
   }
   for (auto const& v : message.velocity()) {
-    system_state.velocities.push_back(
-        DoublePrecision<Velocity>::ReadFromMessage(v));
+    state.velocities.push_back(
+        DoublePrecision<DependentVariableDerivative>::ReadFromMessage(v));
   }
-  system_state.time = DoublePrecision<Instant>::ReadFromMessage(message.time());
-  return system_state;
+  state.time =
+      DoublePrecision<IndependentVariable>::ReadFromMessage(message.time());
+  return state;
 }
 
 }  // namespace internal_ordinary_differential_equations

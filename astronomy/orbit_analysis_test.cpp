@@ -136,8 +136,9 @@ class OrbitAnalysisTest : public ::testing::Test {
             /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
                                      /*geopotential_tolerance=*/0x1p-24},
             Ephemeris<ICRS>::FixedStepParameters(
-                SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                                   Position<ICRS>>(),
+                SymmetricLinearMultistepIntegrator<
+                    QuinlanTremaine1990Order12,
+                    Ephemeris<ICRS>::NewtonianMotionEquation>(),
                 /*step=*/1 * JulianYear))),
         earth_(*earth_1957_.rotating_body(*ephemeris_, "Earth")) {}
 

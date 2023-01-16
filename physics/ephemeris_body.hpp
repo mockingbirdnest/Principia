@@ -45,7 +45,7 @@ using geometry::Sign;
 using geometry::Velocity;
 using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
 using integrators::ExplicitSecondOrderOrdinaryDifferentialEquation;
-using integrators::IntegrationProblem;
+using integrators::InitialValueProblem;
 using integrators::Integrator;
 using integrators::methods::Fine1987RKNG34;
 using numerics::Brent;
@@ -126,10 +126,10 @@ Ephemeris<Frame>::Ephemeris(
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
-  IntegrationProblem<NewtonianMotionEquation> problem;
+  InitialValueProblem<NewtonianMotionEquation> problem;
   problem.equation = MakeMassiveBodiesNewtonianMotionEquation();
 
-  typename NewtonianMotionEquation::SystemState& state = problem.initial_state;
+  typename NewtonianMotionEquation::State& state = problem.initial_state;
   state.time = DoublePrecision<Instant>(initial_time);
 
   for (int i = 0; i < bodies.size(); ++i) {
@@ -320,7 +320,7 @@ Ephemeris<Frame>::StoppableNewInstance(
     std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
     IntrinsicAccelerations const& intrinsic_accelerations,
     FixedStepParameters const& parameters) {
-  IntegrationProblem<NewtonianMotionEquation> problem;
+  InitialValueProblem<NewtonianMotionEquation> problem;
 
   problem.equation.compute_acceleration =
       [this, intrinsic_accelerations](
@@ -909,7 +909,7 @@ absl::Status Ephemeris<Frame>::ReanimateOneCheckpoint(
   // Reconstruct the integrator instance from the current checkpoint.
   auto append_massive_bodies_state =
       [&trajectories](
-          typename NewtonianMotionEquation::SystemState const& state) {
+          typename NewtonianMotionEquation::State const& state) {
         AppendMassiveBodiesStateToTrajectories(state, trajectories);
       };
   auto const instance = FixedStepSizeIntegrator<NewtonianMotionEquation>::
@@ -938,7 +938,7 @@ absl::Status Ephemeris<Frame>::ReanimateOneCheckpoint(
 
 template<typename Frame>
 void Ephemeris<Frame>::AppendMassiveBodiesState(
-    typename NewtonianMotionEquation::SystemState const& state) {
+    typename NewtonianMotionEquation::State const& state) {
   lock_.AssertHeld();
 
   // Extend the trajectories.
@@ -967,7 +967,7 @@ template<typename Frame>
 template<typename ContinuousTrajectoryPtr>
 std::vector<absl::Status>
 Ephemeris<Frame>::AppendMassiveBodiesStateToTrajectories(
-    typename NewtonianMotionEquation::SystemState const& state,
+    typename NewtonianMotionEquation::State const& state,
     std::vector<not_null<ContinuousTrajectoryPtr>> const& trajectories) {
   std::vector<absl::Status> statuses;
   statuses.reserve(trajectories.size());
@@ -985,7 +985,7 @@ Ephemeris<Frame>::AppendMassiveBodiesStateToTrajectories(
 
 template<typename Frame>
 void Ephemeris<Frame>::AppendMasslessBodiesStateToTrajectories(
-    typename NewtonianMotionEquation::SystemState const& state,
+    typename NewtonianMotionEquation::State const& state,
     std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories) {
   Instant const time = state.time.value;
   int index = 0;
@@ -1351,7 +1351,7 @@ absl::Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
   Prolong(t_final).IgnoreError();
   RETURN_IF_STOPPED;
 
-  IntegrationProblem<ODE> problem;
+  InitialValueProblem<ODE> problem;
   problem.equation.compute_acceleration = std::move(compute_acceleration);
 
   problem.initial_state = {trajectory_last_time,
@@ -1410,8 +1410,8 @@ double Ephemeris<Frame>::ToleranceToErrorRatio(
     Length const& length_integration_tolerance,
     Speed const& speed_integration_tolerance,
     Time const& current_step_size,
-    typename NewtonianMotionEquation::SystemState const& /*state*/,
-    typename NewtonianMotionEquation::SystemStateError const& error) {
+    typename NewtonianMotionEquation::State const& /*state*/,
+    typename NewtonianMotionEquation::State::Error const& error) {
   Length max_length_error;
   Speed max_speed_error;
   for (auto const& position_error : error.position_error) {

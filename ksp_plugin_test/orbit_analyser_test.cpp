@@ -58,8 +58,9 @@ class OrbitAnalyserTest : public testing::Test {
             /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
                                      /*geopotential_tolerance=*/0x1p-24},
             Ephemeris<Barycentric>::FixedStepParameters(
-                SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                                   Position<Barycentric>>(),
+                SymmetricLinearMultistepIntegrator<
+                    QuinlanTremaine1990Order12,
+                    Ephemeris<Barycentric>::NewtonianMotionEquation>(),
                 /*step=*/1 * JulianYear))),
         earth_(*earth_1957_.rotating_body(*ephemeris_, "Earth")),
         itrs_(ephemeris_.get(), &earth_),

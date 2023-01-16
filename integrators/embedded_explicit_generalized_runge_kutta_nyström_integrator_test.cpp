@@ -55,8 +55,8 @@ namespace {
 
 double ToleranceToErrorRatio(
     Time const& h,
-    ODE::SystemState const& /*state*/,
-    ODE::SystemStateError const& error,
+    ODE::State const& /*state*/,
+    ODE::State::Error const& error,
     double const& tolerance,
     Variation<double> const& derivative_tolerance,
     std::function<void(bool tolerable)> callback) {
@@ -75,8 +75,7 @@ class EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest
 TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, Legendre) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
-          methods::Fine1987RKNG34,
-          double>();
+          methods::Fine1987RKNG34, ODE>();
   // TODO(egg): Change that back to 15 once compiling LegendrePolynomial<15>
   // becomes tractable.
   constexpr int degree = 3;
@@ -105,15 +104,15 @@ TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, Legendre) {
     }
   };
 
-  std::vector<ODE::SystemState> solution;
+  std::vector<ODE::State> solution;
   ODE legendre_equation;
   legendre_equation.compute_acceleration =
       std::bind(ComputeLegendrePolynomialSecondDerivative<degree>,
                 _1, _2, _3, _4, &evaluations);
-  IntegrationProblem<ODE> problem;
+  InitialValueProblem<ODE> problem;
   problem.equation = legendre_equation;
   problem.initial_state = {t_initial, {x_initial}, {v_initial}};
-  auto const append_state = [&solution](ODE::SystemState const& state) {
+  auto const append_state = [&solution](ODE::State const& state) {
     solution.push_back(state);
   };
 
@@ -132,7 +131,7 @@ TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, Legendre) {
 
   double max_error{};
   Variation<double> max_derivative_error{};
-  for (ODE::SystemState const& state : solution) {
+  for (ODE::State const& state : solution) {
     double const x = (state.time.value - t_initial) / (1 * Second);
     double const error =
         AbsoluteError(LegendrePolynomial<degree, EstrinEvaluator>()(x),

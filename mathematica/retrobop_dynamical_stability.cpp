@@ -399,11 +399,12 @@ void ComputeHighestMoonError(Ephemeris<Barycentric> const& left,
 }  // namespace
 
 void PlotPredictableYears() {
-  auto const ephemeris = MakeEphemeris(
-      MakeStabilizedKSPSystem(),
-      SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
-                                            Position<Barycentric>>(),
-      step);
+  auto const ephemeris =
+      MakeEphemeris(MakeStabilizedKSPSystem(),
+                    SymplecticRungeKuttaNyströmIntegrator<
+                        BlanesMoan2002SRKN14A,
+                        Ephemeris<Barycentric>::NewtonianMotionEquation>(),
+                    step);
 
   for (int i = 1; i <= 5; ++i) {
     CHECK_OK(ephemeris->Prolong(ksp_epoch + i * JulianYear));
@@ -433,29 +434,33 @@ void PlotPredictableYears() {
 }
 
 void PlotCentury() {
-  ProduceCenturyPlots(*MakeEphemeris(
-      MakeStabilizedKSPSystem(),
-      SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
-                                            Position<Barycentric>>(),
-      step));
+  ProduceCenturyPlots(
+      *MakeEphemeris(MakeStabilizedKSPSystem(),
+                     SymplecticRungeKuttaNyströmIntegrator<
+                         BlanesMoan2002SRKN14A,
+                         Ephemeris<Barycentric>::NewtonianMotionEquation>(),
+                     step));
 }
 
 void AnalyseGlobalError() {
-  auto const reference_ephemeris = MakeEphemeris(
-      MakeStabilizedKSPSystem(),
-      SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
-                                            Position<Barycentric>>(),
-      step);
-  std::unique_ptr<Ephemeris<Barycentric>> refined_ephemeris = MakeEphemeris(
-      MakeStabilizedKSPSystem(),
-      SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
-                                            Position<Barycentric>>(),
-      step / 2);
+  auto const reference_ephemeris =
+      MakeEphemeris(MakeStabilizedKSPSystem(),
+                    SymplecticRungeKuttaNyströmIntegrator<
+                        BlanesMoan2002SRKN14A,
+                        Ephemeris<Barycentric>::NewtonianMotionEquation>(),
+                    step);
+  std::unique_ptr<Ephemeris<Barycentric>> refined_ephemeris =
+      MakeEphemeris(MakeStabilizedKSPSystem(),
+                    SymplecticRungeKuttaNyströmIntegrator<
+                        BlanesMoan2002SRKN14A,
+                        Ephemeris<Barycentric>::NewtonianMotionEquation>(),
+                    step / 2);
   std::list<not_null<std::unique_ptr<Ephemeris<Barycentric>>>>
       perturbed_ephemerides = MakePerturbedEphemerides(
           100,
-          SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
-                                                Position<Barycentric>>(),
+          SymplecticRungeKuttaNyströmIntegrator<
+              BlanesMoan2002SRKN14A,
+              Ephemeris<Barycentric>::NewtonianMotionEquation>(),
           step);
 
   bool log_radius = true;
@@ -540,8 +545,9 @@ void StatisticallyAnalyseStability() {
   std::list<not_null<std::unique_ptr<Ephemeris<Barycentric>>>>
       perturbed_ephemerides = MakePerturbedEphemerides(
           100,
-          SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
-                                                Position<Barycentric>>(),
+          SymplecticRungeKuttaNyströmIntegrator<
+              BlanesMoan2002SRKN14A,
+              Ephemeris<Barycentric>::NewtonianMotionEquation>(),
           step);
 
   std::map<not_null<Ephemeris<Barycentric>*>, bool> numerically_unsound;
@@ -580,11 +586,13 @@ void StatisticallyAnalyseStability() {
             std::move(system.bodies),
             system.degrees_of_freedom,
             ephemeris->t_min(),
-            /*accuracy_parameters=*/{1 * Milli(Metre),
-                                     /*geopotential_tolerance=*/0x1p-24},
+            /*accuracy_parameters=*/
+            {1 * Milli(Metre),
+             /*geopotential_tolerance=*/0x1p-24},
             Ephemeris<Barycentric>::FixedStepParameters(
-                SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
-                                                      Position<Barycentric>>(),
+                SymplecticRungeKuttaNyströmIntegrator<
+                    BlanesMoan2002SRKN14A,
+                    Ephemeris<Barycentric>::NewtonianMotionEquation>(),
                 step / 2));
         CHECK_OK(ephemeris->Prolong(t));
         CHECK_OK(refined.Prolong(t));

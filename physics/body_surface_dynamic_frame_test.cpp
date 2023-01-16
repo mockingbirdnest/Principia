@@ -86,7 +86,7 @@ class BodySurfaceDynamicFrameTest : public ::testing::Test {
             Ephemeris<ICRS>::FixedStepParameters(
                 SymplecticRungeKuttaNyströmIntegrator<
                     McLachlanAtela1992Order4Optimal,
-                    Position<ICRS>>(),
+                    Ephemeris<ICRS>::NewtonianMotionEquation>(),
                 /*step=*/10 * Milli(Second)))),
         big_(dynamic_cast_not_null<RotatingBody<ICRS> const*>(
             solar_system_.massive_body(*ephemeris_, big))),
