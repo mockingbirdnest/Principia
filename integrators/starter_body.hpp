@@ -6,22 +6,24 @@ namespace principia {
 namespace integrators {
 namespace internal_starter {
 
-constexpr int startup_step_divisor = 16;
-
-template<typename ODE, int order>
-Starter<ODE, order>::Starter(
+template<typename ODE, typename Step, int order>
+Starter<ODE, Step, order>::Starter(
     FixedStepSizeIntegrator<ODE> const& startup_integrator,
+    std::int64_t const startup_step_divisor,
     not_null<typename FixedStepSizeIntegrator<ODE>::Instance*> const instance)
     : startup_integrator_(startup_integrator),
+      startup_step_divisor_(startup_step_divisor),
       instance_(instance) {}
 
-template<typename ODE, int order>
-void Starter<ODE, order>::StartupSolve(IndependentVariable const& s_final) {
+template<typename ODE, typename Step, int order>
+void Starter<ODE, Step, order>::StartupSolve(
+    typename ODE::IndependentVariable const& s_final) {
   auto const& equation = instance_->equation();
   auto& current_state = instance_->state();
   auto const& step = instance_->step();
 
-  IndependentVariable const startup_step = step / startup_step_divisor;
+  typename ODE::IndependentVariable const startup_step =
+      step / startup_step_divisor_;
 
   CHECK(!previous_steps_.empty());
   CHECK_LT(previous_steps_.size(), order);
@@ -62,26 +64,6 @@ void Starter<ODE, order>::StartupSolve(IndependentVariable const& s_final) {
 
   CHECK_LE(previous_steps_.size(), order);
 }
-
-template<typename ODE, int order>
-void Starter<ODE, order>::FillStepFromState(ODE const& equation,
-                                            typename ODE::State const& state,
-                                            Step& step) {
-  std::vector<DependentVariable> dependent_variables;
-  step.s = state.time;
-  for (auto const& position : state.positions) {
-    step.displacements.push_back(position - DoublePrecision<Position>());
-    dependent_variables.push_back(position.value);
-  }
-  step.accelerations.resize(step.displacements.size());
-  // Ignore the status here.  We are merely computing the acceleration to store
-  // it, not to advance an integrator.
-  equation.compute_acceleration(step.time.value,
-                                dependent_variables,
-                                step.accelerations).IgnoreError();
-}
-
-
 
 }  // namespace internal_starter
 }  // namespace integrators
