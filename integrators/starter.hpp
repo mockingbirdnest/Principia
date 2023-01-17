@@ -36,6 +36,15 @@ class Starter {
   // updated more frequently than once every |instance.step_|.
   void StartupSolve(typename ODE::IndependentVariable const& s_final);
 
+  bool done() const;
+
+  std::list<Step> const& previous_steps() const;
+
+  template<typename Message>
+  void WriteToMessage(not_null<Message*> message) const;
+  template<typename Message>
+  void FillFromMessage(Message const& message);
+
  protected:
   // Must fill |step| from |state| and the right-hand side of the ODE.  |Step|
   // must contain all the information needed to compute subsequent steps of the
@@ -43,7 +52,7 @@ class Starter {
   virtual void FillStepFromState(
       typename ODE::RightHandSideComputation const& rhs,
       typename ODE::State const& state,
-      Step& step) = 0;
+      Step& step) const = 0;
 
  private:
   FixedStepSizeIntegrator<ODE> const& startup_integrator_;

@@ -65,6 +65,38 @@ void Starter<ODE, Step, order>::StartupSolve(
   CHECK_LE(previous_steps_.size(), order);
 }
 
+template<typename ODE, typename Step, int order>
+bool Starter<ODE, Step, order>::done() const {
+  CHECK_LE(previous_steps_.size(), order);
+  return previous_steps_.size() == order;
+}
+
+template<typename ODE, typename Step, int order>
+std::list<Step> const& Starter<ODE, Step, order>::previous_steps() const {
+  CHECK_EQ(previous_steps_.size(), order);
+  return previous_steps_;
+}
+
+template<typename ODE, typename Step, int order>
+template<typename Message>
+void Starter<ODE, Step, order>::WriteToMessage(
+    not_null<Message*> message) const {
+  for (auto const& previous_step : previous_steps_) {
+    previous_step.WriteToMessage(message->add_previous_steps());
+  }
+  message->set_startup_step_index(startup_step_index_);
+}
+
+template<typename ODE, typename Step, int order>
+template<typename Message>
+void Starter<ODE, Step, order>::FillFromMessage(Message const& message) {
+  previous_steps_.clear();
+  for (auto const& previous_step : message.previous_steps()) {
+    previous_steps_.push_back(Step::ReadFromMessage(previous_step));
+  }
+  startup_step_index_ = message.startup_step_index();
+}
+
 }  // namespace internal_starter
 }  // namespace integrators
 }  // namespace principia
