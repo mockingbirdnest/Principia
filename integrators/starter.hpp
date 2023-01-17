@@ -36,7 +36,7 @@ class Starter {
   // Returns true iff the startup steps have all been computed.
   bool done() const;
 
-  // Returns the startup steps.  The started must be |done|.
+  // Returns the startup steps.  The starter must be |done|.
   std::list<Step> const& previous_steps() const;
 
   // Serialization helpers to write/read the starter data to/from a message.
