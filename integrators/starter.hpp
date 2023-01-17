@@ -36,10 +36,13 @@ class Starter {
   // updated more frequently than once every |instance.step_|.
   void StartupSolve(typename ODE::IndependentVariable const& s_final);
 
+  // Returns true iff the startup steps have all been computed.
   bool done() const;
 
+  // Returns the startup steps.  The started must be |done|.
   std::list<Step> const& previous_steps() const;
 
+  // Serialization helpers to write/read the starter data to/from a message.
   template<typename Message>
   void WriteToMessage(not_null<Message*> message) const;
   template<typename Message>
@@ -49,10 +52,9 @@ class Starter {
   // Must fill |step| from |state| and the right-hand side of the ODE.  |Step|
   // must contain all the information needed to compute subsequent steps of the
   // integrator.
-  virtual void FillStepFromState(
-      typename ODE::RightHandSideComputation const& rhs,
-      typename ODE::State const& state,
-      Step& step) const = 0;
+  virtual void FillStepFromState(ODE const& equation,
+                                 typename ODE::State const& state,
+                                 Step& step) const = 0;
 
  private:
   FixedStepSizeIntegrator<ODE> const& startup_integrator_;

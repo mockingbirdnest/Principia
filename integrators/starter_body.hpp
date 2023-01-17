@@ -13,7 +13,12 @@ Starter<ODE, Step, order>::Starter(
     not_null<typename FixedStepSizeIntegrator<ODE>::Instance*> const instance)
     : startup_integrator_(startup_integrator),
       startup_step_divisor_(startup_step_divisor),
-      instance_(instance) {}
+      instance_(instance) {
+  previous_steps_.emplace_back();
+  FillStepFromState(instance_->equation(),
+                    instance_->state(),
+                    previous_steps_.back());
+}
 
 template<typename ODE, typename Step, int order>
 void Starter<ODE, Step, order>::StartupSolve(
