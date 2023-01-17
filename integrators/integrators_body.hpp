@@ -403,6 +403,12 @@ ODE_ const& Integrator<ODE_>::Instance::equation() const {
 }
 
 template<typename ODE_>
+typename Integrator<ODE_>::AppendState const&
+Integrator<ODE_>::Instance::append_state() const {
+  return append_state_;
+}
+
+template<typename ODE_>
 DoublePrecision<Instant> const&
 Integrator<ODE_>::Instance::time() const {
   return current_state_.time;

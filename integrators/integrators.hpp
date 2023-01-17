@@ -45,6 +45,9 @@ class Integrator {
     // The equation integrated by this instance.
     ODE const& equation() const;
 
+    // The |AppendState| function.
+    AppendState const& append_state() const;
+
     // The last instant integrated by this instance.
     DoublePrecision<Instant> const& time() const;
 

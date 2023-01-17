@@ -1,18 +1,15 @@
 #pragma once
 
+#include <list>
+
 #include "base/not_null.hpp"
 #include "integrators/integrators.hpp"
-#include "integrators/ordinary_differential_equations.hpp"
-#include "numerics/double_precision.hpp"
-#include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace integrators {
 namespace internal_starter {
 
 using base::not_null;
-using numerics::DoublePrecision;
-using quantities::Difference;
 
 // A helper object for starting a linear multistep integrator.  |ODE| is the
 // equation being integrated.  |Step| is an object holding the data produced by
@@ -63,7 +60,7 @@ class Starter {
       instance_;
 
   int startup_step_index_ = 0;
-  std::list<Step> previous_steps_;  // At most |order_| elements.
+  std::list<Step> previous_steps_;  // At most |order| elements.
 };
 
 }  // namespace internal_starter
