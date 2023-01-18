@@ -42,18 +42,11 @@ class Integrator {
     // the last call to |append_state|.
     virtual absl::Status Solve(IndependentVariable const& s_final) = 0;
 
-    // The equation integrated by this instance.
-    ODE const& equation() const;
-
-    // The |AppendState| function.
-    AppendState const& append_state() const;
-
     // The last instant integrated by this instance.
     DoublePrecision<Instant> const& time() const;
 
     // The last state integrated by this instance.
     typename ODE::State const& state() const;
-    typename ODE::State& state();
 
     // Performs a copy of this object.
     virtual not_null<std::unique_ptr<Instance>> Clone() const = 0;
@@ -89,9 +82,6 @@ class FixedStepSizeIntegrator : public Integrator<ODE_> {
   // |state.time.values|s at intervals differing from |step| by at most one ULP.
   class Instance : public Integrator<ODE>::Instance {
    public:
-    // The time step used by this instance.
-    Time const& step() const;
-
     // The integrator corresponding to this instance.
     virtual FixedStepSizeIntegrator const& integrator() const = 0;
 
