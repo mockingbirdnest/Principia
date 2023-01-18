@@ -2,6 +2,9 @@
 
 #include "integrators/starter.hpp"
 
+#include <algorithm>
+#include <list>
+
 namespace principia {
 namespace integrators {
 namespace internal_starter {
