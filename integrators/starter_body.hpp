@@ -6,8 +6,8 @@ namespace principia {
 namespace integrators {
 namespace internal_starter {
 
-template<typename ODE, typename Step, int order>
-Starter<ODE, Step, order>::Starter(
+template<typename ODE, typename Step, int steps>
+Starter<ODE, Step, steps>::Starter(
     FixedStepSizeIntegrator<ODE> const& startup_integrator,
     std::int64_t const startup_step_divisor,
     not_null<typename FixedStepSizeIntegrator<ODE>::Instance*> const instance)
@@ -15,8 +15,8 @@ Starter<ODE, Step, order>::Starter(
       startup_step_divisor_(startup_step_divisor),
       instance_(instance) {}
 
-template<typename ODE, typename Step, int order>
-void Starter<ODE, Step, order>::StartupSolve(
+template<typename ODE, typename Step, int steps>
+void Starter<ODE, Step, steps>::StartupSolve(
     typename ODE::IndependentVariable const& s_final) {
   auto const& equation = instance_->equation();
   auto& current_state = instance_->state();
@@ -68,21 +68,21 @@ void Starter<ODE, Step, order>::StartupSolve(
   CHECK_LE(previous_steps_.size(), order);
 }
 
-template<typename ODE, typename Step, int order>
-bool Starter<ODE, Step, order>::done() const {
+template<typename ODE, typename Step, int steps>
+bool Starter<ODE, Step, steps>::done() const {
   CHECK_LE(previous_steps_.size(), order);
   return previous_steps_.size() == order;
 }
 
-template<typename ODE, typename Step, int order>
-std::list<Step> const& Starter<ODE, Step, order>::previous_steps() const {
+template<typename ODE, typename Step, int steps>
+std::list<Step> const& Starter<ODE, Step, steps>::previous_steps() const {
   CHECK_EQ(previous_steps_.size(), order);
   return previous_steps_;
 }
 
-template<typename ODE, typename Step, int order>
+template<typename ODE, typename Step, int steps>
 template<typename Message>
-void Starter<ODE, Step, order>::WriteToMessage(
+void Starter<ODE, Step, steps>::WriteToMessage(
     not_null<Message*> message) const {
   for (auto const& previous_step : previous_steps_) {
     previous_step.WriteToMessage(message->add_previous_steps());
@@ -90,9 +90,9 @@ void Starter<ODE, Step, order>::WriteToMessage(
   message->set_startup_step_index(startup_step_index_);
 }
 
-template<typename ODE, typename Step, int order>
+template<typename ODE, typename Step, int steps>
 template<typename Message>
-void Starter<ODE, Step, order>::FillFromMessage(Message const& message) {
+void Starter<ODE, Step, steps>::FillFromMessage(Message const& message) {
   previous_steps_.clear();
   for (auto const& previous_step : message.previous_steps()) {
     previous_steps_.push_back(Step::ReadFromMessage(previous_step));

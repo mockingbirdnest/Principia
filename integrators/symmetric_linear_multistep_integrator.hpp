@@ -80,7 +80,7 @@ class SymmetricLinearMultistepIntegrator
               message);
     };
 
-    class Starter : public integrators::Starter<ODE, Step, order> {
+    class Starter : public integrators::Starter<ODE, Step, /*steps=*/order> {
      protected:
       using integrators::Starter<ODE, Step, order>::Starter;
 

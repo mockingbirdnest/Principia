@@ -15,8 +15,8 @@ using base::not_null;
 // equation being integrated.  |Step| is an object holding the data produced by
 // executing a step of the integrator and used for subsequent steps.  The
 // function |FillStepFromState| must fill this object from an |ODE::State|.
-// |order| is the order of the integrator being started.
-template<typename ODE, typename Step, int order>
+// |steps| is the number of steps of the integrator being started.
+template<typename ODE, typename Step, int steps>
 class Starter {
  public:
   // |startup_step_divisor| specifies how many steps of the |startup_integrator|
