@@ -179,7 +179,7 @@ Instance::WriteToMessage(
           ->MutableExtension(
               serialization::SymmetricLinearMultistepIntegratorInstance::
                   extension);
-  starter_.WriteToMessage<
+  starter_.template WriteToMessage<
       serialization::SymmetricLinearMultistepIntegratorInstance>(extension);
 }
 
