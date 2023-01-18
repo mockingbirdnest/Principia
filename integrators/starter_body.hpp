@@ -16,7 +16,7 @@ Starter<ODE, Step, steps>::Starter(
       instance_(instance) {}
 
 template<typename ODE, typename Step, int steps>
-void Starter<ODE, Step, steps>::StartupSolve(
+void Starter<ODE, Step, steps>::Solve(
     typename ODE::IndependentVariable const& s_final) {
   auto const& equation = instance_->equation();
   auto& current_state = instance_->state();
@@ -32,19 +32,19 @@ void Starter<ODE, Step, steps>::StartupSolve(
       step / startup_step_divisor_;
 
   CHECK(!previous_steps_.empty());
-  CHECK_LT(previous_steps_.size(), order);
+  CHECK_LT(previous_steps_.size(), steps);
 
   auto const startup_append_state =
       [this, &current_state, &equation](typename ODE::State const& state) {
         // Stop changing anything once we're done with the startup.  We may be
         // called one more time by the |startup_integrator_|.
-        if (previous_steps_.size() < order) {
+        if (previous_steps_.size() < steps) {
           current_state = state;
           // The startup integrator has a smaller step.  We do not record all
           // the states it computes, but only those that are a multiple of the
           // main integrator step.
           if (++startup_step_index_ % startup_step_divisor_ == 0) {
-            CHECK_LT(previous_steps_.size(), order);
+            CHECK_LT(previous_steps_.size(), steps);
             previous_steps_.emplace_back();
             FillStepFromState(equation, current_state, previous_steps_.back());
             // This call must happen last for a subtle reason: the callback may
@@ -61,23 +61,30 @@ void Starter<ODE, Step, steps>::StartupSolve(
 
   startup_instance
       ->Solve(std::min(instance_->time().value +
-                           (order - previous_steps_.size()) * step + step / 2.0,
+                           (steps - previous_steps_.size()) * step + step / 2.0,
                        s_final))
       .IgnoreError();
 
-  CHECK_LE(previous_steps_.size(), order);
+  CHECK_LE(previous_steps_.size(), steps);
 }
 
 template<typename ODE, typename Step, int steps>
-bool Starter<ODE, Step, steps>::done() const {
-  CHECK_LE(previous_steps_.size(), order);
-  return previous_steps_.size() == order;
+void Starter<ODE, Step, steps>::Push(Step step) {
+  CHECK(started());
+  previous_steps_.push_back(std::move(step));
+  previous_steps_.pop_front();
 }
 
 template<typename ODE, typename Step, int steps>
 std::list<Step> const& Starter<ODE, Step, steps>::previous_steps() const {
-  CHECK_EQ(previous_steps_.size(), order);
+  CHECK(started());
   return previous_steps_;
+}
+
+template<typename ODE, typename Step, int steps>
+bool Starter<ODE, Step, steps>::started() const {
+  CHECK_LE(previous_steps_.size(), steps);
+  return previous_steps_.size() == steps;
 }
 
 template<typename ODE, typename Step, int steps>

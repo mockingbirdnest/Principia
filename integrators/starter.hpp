@@ -31,13 +31,17 @@ class Starter {
   // reach |s_final| or to reach a point where |instance.previous_steps_| has
   // |order - 1| elements.  During startup |instance.current_state_| is
   // updated more frequently than once every |instance.step_|.
-  void StartupSolve(typename ODE::IndependentVariable const& s_final);
+  void Solve(typename ODE::IndependentVariable const& s_final);
+
+  // Appends a new step to |previous_steps_| and drops the oldest one if needed.
+  // This object must be |started()|.
+  void Push(Step step);
+
+  // Returns the startup steps.  This object must be |started()|.
+  std::list<Step> const& previous_steps() const;
 
   // Returns true iff the startup steps have all been computed.
-  bool done() const;
-
-  // Returns the startup steps.  The starter must be |done|.
-  std::list<Step> const& previous_steps() const;
+  bool started() const;
 
   // Serialization helpers to write/read the starter data to/from a message.
   template<typename Message>

@@ -98,7 +98,6 @@ class SymmetricLinearMultistepIntegrator
     // method based on the accelerations computed by the main integrator.
     void ComputeVelocityUsingCohenHubbardOesterwinter();
 
-    std::list<Step> previous_steps_;  // Empty or exactly |order_| elements.
     Starter starter_;
     SymmetricLinearMultistepIntegrator const& integrator_;
     friend class SymmetricLinearMultistepIntegrator;

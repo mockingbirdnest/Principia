@@ -41,27 +41,25 @@ SymmetricLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
   auto const& step = this->step_;
   auto const& equation = this->equation_;
 
-  if (!starter_.done()) {
-    starter_.StartupSolve(t_final);
+  if (!starter_.started()) {
+    starter_.Solve(t_final);
 
     // If |t_final| is not large enough, we may not have generated enough
     // points.  Bail out, we'll continue the next time |Solve| is called.
-    if (starter_.done()) {
-      previous_steps_ = starter_.previous_steps();
-    } else {
+    if (!starter_.started()) {
       return absl::OkStatus();
     }
   }
-  CHECK_EQ(previous_steps_.size(), order);
+  auto const& previous_steps = starter_.previous_steps();
 
   // Argument checks.
-  int const dimension = previous_steps_.back().displacements.size();
+  int const dimension = previous_steps.back().displacements.size();
 
   // Time step.
   CHECK_LT(Time(), step);
   Time const& h = step;
   // Current time.
-  DoublePrecision<Instant> t = previous_steps_.back().time;
+  DoublePrecision<Instant> t = previous_steps.back().time;
   // Order.
   int const k = order;
 
@@ -73,8 +71,8 @@ SymmetricLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
   while (h <= (t_final - t.value) - t.error) {
     // We take advantage of the symmetry to iterate on the list of previous
     // steps from both ends.
-    auto front_it = previous_steps_.begin();
-    auto back_it = previous_steps_.rbegin();
+    auto front_it = previous_steps.begin();
+    auto back_it = previous_steps.rbegin();
 
     // This block corresponds to j = 0.  We must not pair it with j = k.
     {
@@ -118,9 +116,7 @@ SymmetricLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
 
     // Create a new step in the instance.
     t.Increment(h);
-    previous_steps_.emplace_back();
-    Step& current_step = previous_steps_.back();
-    current_step.time = t;
+    Step current_step{.time = t};
     current_step.accelerations.resize(dimension);
     current_step.displacements.reserve(dimension);
 
@@ -142,7 +138,7 @@ SymmetricLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
                                       positions,
                                       current_step.accelerations),
         status);
-    previous_steps_.pop_front();
+    starter_.Push(std::move(current_step));
 
     ComputeVelocityUsingCohenHubbardOesterwinter();
 
@@ -291,14 +287,15 @@ Instance::ComputeVelocityUsingCohenHubbardOesterwinter() {
   auto const& cohen_hubbard_oesterwinter =
       integrator_.cohen_hubbard_oesterwinter_;
 
-  int const dimension = previous_steps_.back().displacements.size();
+  auto const& previous_steps = starter_.previous_steps();
+  int const dimension = previous_steps.back().displacements.size();
   auto& current_state = this->current_state_;
   auto const& step = this->step_;
 
   current_state.velocities.reserve(dimension);
   for (int d = 0; d < dimension; ++d) {
     DoublePrecision<Velocity>& velocity = current_state.velocities[d];
-    auto it = previous_steps_.rbegin();
+    auto it = previous_steps.rbegin();
 
     // Compute the displacement difference using double precision.
     DoublePrecision<Displacement> displacement_change =
