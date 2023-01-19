@@ -29,6 +29,7 @@ message FixedStepSizeIntegrator {
     optional FixedStepSizeIntegrator extension = 3001;
   }
   enum Kind {
+    ADAMS_BASHFORTH_ORDER_2 = 39;
     BLANES_MOAN_2002_S6 = 36;
     BLANES_MOAN_2002_S10 = 37;
     BLANES_MOAN_2002_SRKN_6B = 1;
@@ -131,6 +132,7 @@ message FixedStepSizeIntegratorInstance {
   required FixedStepSizeIntegrator integrator = 2;
 }
 
+// TODO(phl): Remove?
 message ExplicitRungeKuttaNystromIntegratorInstance {
   extend FixedStepSizeIntegratorInstance {
     optional ExplicitRungeKuttaNystromIntegratorInstance extension = 8002;

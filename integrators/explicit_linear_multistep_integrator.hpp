@@ -55,10 +55,6 @@ class ExplicitLinearMultistepIntegrator
     // The data for a previous step of the integration.
     struct Step final {
       DoublePrecision<Instant> time;
-
-      void WriteToMessage(
-          not_null<serialization::ExplicitLinearMultistepIntegratorInstance::
-                       Step*> message) const;
     };
 
     class Starter : public integrators::Starter<ODE, Step, /*steps=*/order> {
@@ -92,13 +88,10 @@ class ExplicitLinearMultistepIntegrator
       not_null<serialization::FixedStepSizeIntegrator*> message) const override;
 
  private:
-  static constexpr auto half_order_ = Method::Half(order);
-  static constexpr auto α_ = Method::α;
   static constexpr auto β_numerator_ = Method::β_numerator;
   static constexpr auto β_denominator_ = Method::β_denominator;
 
   FixedStepSizeIntegrator<ODE> const& startup_integrator_;
-  CohenHubbardOesterwinter<order> const& cohen_hubbard_oesterwinter_;
 };
 
 }  // namespace internal_explicit_linear_multistep_integrator

@@ -9,8 +9,8 @@
 
 #include "base/jthread.hpp"
 #include "geometry/serialization.hpp"
+#include "integrators/explicit_runge_kutta_integrator.hpp"
 #include "integrators/methods.hpp"
-#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 
 namespace principia {
 namespace integrators {
@@ -140,8 +140,6 @@ ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
         status);
     starter_.Push(std::move(current_step));
 
-    ComputeVelocityUsingCohenHubbardOesterwinter();
-
     // Inform the caller of the new state.
     RETURN_IF_STOPPED;
     current_state.time = t;
@@ -165,41 +163,6 @@ template<typename Method, typename ODE_>
 not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
 ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Clone() const {
   return std::unique_ptr<Instance>(new Instance(*this));
-}
-
-template<typename Method, typename ODE_>
-void ExplicitLinearMultistepIntegrator<Method, ODE_>::
-Instance::WriteToMessage(
-    not_null<serialization::IntegratorInstance*> message) const {
-  FixedStepSizeIntegrator<ODE>::Instance::WriteToMessage(message);
-  auto* const extension =
-      message
-          ->MutableExtension(
-              serialization::FixedStepSizeIntegratorInstance::extension)
-          ->MutableExtension(
-              serialization::ExplicitLinearMultistepIntegratorInstance::
-                  extension);
-  starter_.WriteToMessage<
-      serialization::ExplicitLinearMultistepIntegratorInstance>(extension);
-}
-
-template<typename Method, typename ODE_>
-void ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Step::
-WriteToMessage(
-    not_null<serialization::ExplicitLinearMultistepIntegratorInstance::
-                  Step*> const message) const {
-  using AccelerationSerializer = QuantityOrMultivectorSerializer<
-      typename ODE::DependentVariableDerivative2,
-      serialization::ExplicitLinearMultistepIntegratorInstance::Step::
-          Acceleration>;
-  for (auto const& displacement : displacements) {
-    displacement.WriteToMessage(message->add_displacements());
-  }
-  for (auto const& acceleration : accelerations) {
-    AccelerationSerializer::WriteToMessage(acceleration,
-                                           message->add_accelerations());
-  }
-  time.WriteToMessage(message->mutable_time());
 }
 
 template<typename Method, typename ODE_>
@@ -235,11 +198,7 @@ template<typename Method, typename ODE_>
 ExplicitLinearMultistepIntegrator<Method, ODE_>::
 ExplicitLinearMultistepIntegrator(
     FixedStepSizeIntegrator<ODE> const& startup_integrator)
-    : startup_integrator_(startup_integrator),
-      cohen_hubbard_oesterwinter_(CohenHubbardOesterwinterOrder<order>()) {
-  CHECK_EQ(α_[0], 1.0);
-  CHECK_EQ(β_numerator_[0], 0.0);
-}
+    : startup_integrator_(startup_integrator) {}
 
 template<typename Method, typename ODE_>
 not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
@@ -270,11 +229,10 @@ ExplicitLinearMultistepIntegrator() {
       "Method must be derived from ExplicitLinearMultistep");
   // TODO(phl): Someday, and that day may never come, I will call upon you to
   // expose the startup integrator to the clients.  But until that day, accept
-  // this Blanes-Moan integrator as a gift.
+  // this Runge-Kutta integrator as a gift.
   static internal_explicit_linear_multistep_integrator::
       ExplicitLinearMultistepIntegrator<Method, ODE_> const integrator(
-          SymplecticRungeKuttaNyströmIntegrator<methods::BlanesMoan2002SRKN14A,
-                                                ODE_>());
+          ExplicitRungeKuttaIntegrator<methods::Kutta1901Vσ1, ODE_>());
   return integrator;
 }
 
