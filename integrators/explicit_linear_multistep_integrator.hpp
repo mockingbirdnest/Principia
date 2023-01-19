@@ -25,10 +25,8 @@ namespace internal_explicit_linear_multistep_integrator {
 
 using base::is_instance_of_v;
 using base::not_null;
-using geometry::Instant;
 using numerics::DoublePrecision;
 using numerics::FixedVector;
-using quantities::Time;
 
 template<typename Method, typename ODE_>
 class ExplicitLinearMultistepIntegrator
@@ -38,23 +36,30 @@ class ExplicitLinearMultistepIntegrator
   static_assert(
       is_instance_of_v<ExplicitFirstOrderOrdinaryDifferentialEquation, ODE>);
   using AppendState = typename Integrator<ODE>::AppendState;
+  using IndependentVariable = typename ODE::IndependentVariable;
+  using IndependentVariableDifference =
+      typename ODE::IndependentVariableDifference;
 
   static constexpr int order = Method::order;
 
   class Instance : public FixedStepSizeIntegrator<ODE>::Instance {
    public:
-    absl::Status Solve(Instant const& t_final) override;
+    absl::Status Solve(IndependentVariable const& s_final) override;
     ExplicitLinearMultistepIntegrator const& integrator() const override;
     not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> Clone()
         const override;
 
-    void WriteToMessage(
-        not_null<serialization::IntegratorInstance*> message) const override;
-
    private:
+    using DependentVariableDerivatives =
+        typename ODE::DependentVariableDerivatives;
+    using DoubleDependentVariables =
+        decltype(std::declval<typename ODE::State>().y);
+
     // The data for a previous step of the integration.
     struct Step final {
-      DoublePrecision<Instant> time;
+      DoublePrecision<IndependentVariable> s;
+      DoubleDependentVariables y;
+      DependentVariableDerivatives yʹ;
     };
 
     class Starter : public integrators::Starter<ODE, Step, /*steps=*/order> {
@@ -68,7 +73,7 @@ class ExplicitLinearMultistepIntegrator
 
     Instance(InitialValueProblem<ODE> const& problem,
              AppendState const& append_state,
-             Time const& step,
+             IndependentVariableDifference const& step,
              ExplicitLinearMultistepIntegrator const& integrator);
 
     Starter starter_;
@@ -82,12 +87,13 @@ class ExplicitLinearMultistepIntegrator
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
       InitialValueProblem<ODE> const& problem,
       AppendState const& append_state,
-      Time const& step) const override;
+      IndependentVariableDifference const& step) const override;
 
   void WriteToMessage(
       not_null<serialization::FixedStepSizeIntegrator*> message) const override;
 
  private:
+  static constexpr auto α_ = Method::α;
   static constexpr auto β_numerator_ = Method::β_numerator;
   static constexpr auto β_denominator_ = Method::β_denominator;
 

@@ -62,7 +62,8 @@ struct EmbeddedExplicitGeneralizedRungeKuttaNyström
 struct ExplicitLinearMultistep : not_constructible {
   // static constexpr int order = ...;
   // static constexpr serialization::FixedStepSizeIntegrator::Kind kind = ...;
-  // static constexpr FixedVector<double, order> const β_numerator(...);
+  // static constexpr FixedVector<double, order + 1> const α(...);
+  // static constexpr FixedVector<double, order + 1> const β_numerator(...);
   // static constexpr double β_denominator = ...;
 };
 
@@ -188,7 +189,9 @@ struct AdamsBashforthOrder2 : ExplicitLinearMultistep {
   static constexpr int order = 2;
   static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
       serialization::FixedStepSizeIntegrator::ADAMS_BASHFORTH_ORDER_2;
-  static constexpr FixedVector<double, order> const β_numerator{{{3, -1}}};
+  static constexpr FixedVector<double, order + 1> const α{{{1.0, -1.0, 0.0}}};
+  static constexpr FixedVector<double, order + 1> const β_numerator{
+      {{0.0, 3.0, -1.0}}};
   static constexpr double β_denominator = 2;
 };
 
