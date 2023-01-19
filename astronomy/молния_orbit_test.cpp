@@ -10,7 +10,7 @@
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
-#include "mathematica/mathematica.hpp"
+#include "mathematica/logger.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massless_body.hpp"
@@ -76,8 +76,9 @@ class МолнияOrbitTest : public ::testing::Test {
         /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
                                  /*geopotential_tolerance=*/0x1p-24},
         Ephemeris<ICRS>::FixedStepParameters(
-            SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                               Position<ICRS>>(),
+            SymmetricLinearMultistepIntegrator<
+                QuinlanTremaine1990Order12,
+                Ephemeris<ICRS>::NewtonianMotionEquation>(),
             /*step=*/10 * Minute));
   }
 
@@ -125,8 +126,9 @@ TEST_F(МолнияOrbitTest, DISABLED_Satellite) {
       {&trajectory},
       Ephemeris<ICRS>::NoIntrinsicAccelerations,
       Ephemeris<ICRS>::FixedStepParameters(
-          SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                             Position<ICRS>>(),
+          SymmetricLinearMultistepIntegrator<
+              Quinlan1999Order8A,
+              Ephemeris<ICRS>::NewtonianMotionEquation>(),
           integration_step));
 
   // Remember that because of #228 we need to loop over FlowWithFixedStep.

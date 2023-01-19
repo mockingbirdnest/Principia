@@ -14,6 +14,18 @@ using base::not_constructible;
 using numerics::FixedStrictlyLowerTriangularMatrix;
 using numerics::FixedVector;
 
+struct EmbeddedExplicitRungeKutta : not_constructible {
+  // static constexpr int higher_order = ...;
+  // static constexpr int lower_order = ...;
+  // static constexpr int stages = ...;
+  // static constexpr bool first_same_as_last = ...;
+  // static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind = ..;
+  // static constexpr FixedVector<double, stages> c = ...;
+  // static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a = ..;
+  // static constexpr FixedVector<double, stages> b̂ = ...;
+  // static constexpr FixedVector<double, stages> b = ...;
+};
+
 struct EmbeddedExplicitRungeKuttaNyström : not_constructible {
   // static constexpr int higher_order = ...;
   // static constexpr int lower_order = ...;
@@ -47,12 +59,12 @@ struct EmbeddedExplicitGeneralizedRungeKuttaNyström
   // static constexpr FixedVector<double, stages> bʹ = ...;
 };
 
-struct EmbeddedExplicitRungeKutta : not_constructible {
+struct ExplicitRungeKutta : not_constructible {
   // static constexpr int higher_order = ...;
   // static constexpr int lower_order = ...;
   // static constexpr int stages = ...;
   // static constexpr bool first_same_as_last = ...;
-  // static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind = ..;
+  // static constexpr serialization::FixedStepSizeIntegrator::Kind kind = ..;
   // static constexpr FixedVector<double, stages> c = ...;
   // static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a = ..;
   // static constexpr FixedVector<double, stages> b̂ = ...;
@@ -426,6 +438,25 @@ struct DormandPrince1986RK547FC :  EmbeddedExplicitRungeKutta {
                                                       81.0 /   176.0,
                                                      171.0 /  1960.0,
                                                        1.0 /    40.0}}};
+};
+
+// The coefficients are from [Kut01].
+struct Kutta1901Vσ1 :  ExplicitRungeKutta {
+  static constexpr int order = 4;
+  static constexpr int stages = 4;
+  static constexpr bool first_same_as_last = false;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::KUTTA_1901_V_SIGMA1;
+  static constexpr FixedVector<double, stages> c{{
+      {0.0, 1.0 / 2.0, 1.0 / 2.0, 1.0}}};
+  static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a{{
+      {1.0 / 2.0,
+       0.0,       1.0 / 2.0,
+       0.0,       0.0,       1.0}}};
+  static constexpr FixedVector<double, stages> b{{{1.0 / 6.0,
+                                                   1.0 / 3.0,
+                                                   1.0 / 3.0,
+                                                   1.0 / 6.0}}};
 };
 
 // The following methods have coefficients from [McL95].

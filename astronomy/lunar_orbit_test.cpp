@@ -14,7 +14,7 @@
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
-#include "mathematica/mathematica.hpp"
+#include "mathematica/logger.hpp"
 #include "physics/apsides.hpp"
 #include "physics/body_surface_dynamic_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -161,8 +161,9 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
             /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
                                      /*geopotential_tolerance=*/0x1p-24},
             Ephemeris<ICRS>::FixedStepParameters(
-                SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                                   Position<ICRS>>(),
+                SymmetricLinearMultistepIntegrator<
+                    QuinlanTremaine1990Order12,
+                    Ephemeris<ICRS>::NewtonianMotionEquation>(),
                 /*step=*/10 * Minute))),
         moon_(dynamic_cast_not_null<OblateBody<ICRS> const*>(
             solar_system_2000_.massive_body(*ephemeris_, "Moon"))),
@@ -369,8 +370,9 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
       {&trajectory},
       Ephemeris<ICRS>::NoIntrinsicAccelerations,
       Ephemeris<ICRS>::FixedStepParameters(
-          SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                             Position<ICRS>>(),
+          SymmetricLinearMultistepIntegrator<
+              Quinlan1999Order8A,
+              Ephemeris<ICRS>::NewtonianMotionEquation>(),
           integration_step));
 
   EXPECT_OK(ephemeris_->FlowWithFixedStep(J2000 + GetParam().periods * period,

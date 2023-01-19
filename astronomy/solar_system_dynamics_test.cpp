@@ -13,7 +13,7 @@
 #include "integrators/integrators.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
-#include "mathematica/mathematica.hpp"
+#include "mathematica/logger.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
@@ -56,6 +56,7 @@ using integrators::methods::QuinlanTremaine1990Order12;
 using integrators::methods::BlanesMoan2002SRKN11B;
 using integrators::methods::BlanesMoan2002SRKN14A;
 using integrators::methods::McLachlanAtela1992Order5Optimal;
+using mathematica::PreserveUnits;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
@@ -279,8 +280,9 @@ TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
       /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
                                /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(
-          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                             Position<ICRS>>(),
+          SymmetricLinearMultistepIntegrator<
+              QuinlanTremaine1990Order12,
+              Ephemeris<ICRS>::NewtonianMotionEquation>(),
           /*step=*/10 * Minute));
   EXPECT_OK(ephemeris->Prolong(ten_years_later.epoch()));
 
@@ -565,8 +567,9 @@ TEST(MarsTest, Phobos) {
       /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
                                /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(
-          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                             Position<ICRS>>(),
+          SymmetricLinearMultistepIntegrator<
+              QuinlanTremaine1990Order12,
+              Ephemeris<ICRS>::NewtonianMotionEquation>(),
           /*step=*/10 * Minute));
   EXPECT_OK(ephemeris->Prolong(J2000 + 1 * JulianYear));
 
@@ -588,9 +591,11 @@ TEST(MarsTest, Phobos) {
     phobos_positions.push_back(phobos_trajectory.EvaluatePosition(t));
     phobos_velocities.push_back(phobos_trajectory.EvaluateVelocity(t));
     logger.Append("ppaMarsPhobosDisplacements",
-                  phobos_positions.back() - mars_positions.back());
+                  phobos_positions.back() - mars_positions.back(),
+                  PreserveUnits);
     logger.Append("ppaMarsPhobosVelocities",
-                  phobos_velocities.back() - mars_velocities.back());
+                  phobos_velocities.back() - mars_velocities.back(),
+                  PreserveUnits);
   }
 }
 
@@ -701,7 +706,8 @@ TEST_P(SolarSystemDynamicsConvergenceTest, DISABLED_Convergence) {
                     std::tuple(steps[i + 1],
                                position_errors[i],
                                worst_body[i],
-                               durations[i + 1].count() * Second));
+                               durations[i + 1].count() * Second),
+                    PreserveUnits);
   }
 }
 
@@ -710,34 +716,33 @@ INSTANTIATE_TEST_SUITE_P(
     SolarSystemDynamicsConvergenceTest,
     ::testing::Values(
         ConvergenceTestParameters{
-            .integrator =
-                SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN11B,
-                                                      Position<ICRS>>(),
+            .integrator = SymplecticRungeKuttaNyströmIntegrator<
+                BlanesMoan2002SRKN11B,
+                Ephemeris<ICRS>::NewtonianMotionEquation>(),
             .iterations = 8,
             .first_step_in_seconds = 64},
         ConvergenceTestParameters{
-            .integrator =
-                SymplecticRungeKuttaNyströmIntegrator<
-                    McLachlanAtela1992Order5Optimal,
-                    Position<ICRS>>(),
-             .iterations = 8,
-             .first_step_in_seconds = 32},
+            .integrator = SymplecticRungeKuttaNyströmIntegrator<
+                McLachlanAtela1992Order5Optimal,
+                Ephemeris<ICRS>::NewtonianMotionEquation>(),
+            .iterations = 8,
+            .first_step_in_seconds = 32},
         ConvergenceTestParameters{
-            .integrator =
-                SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                                   Position<ICRS>>(),
+            .integrator = SymmetricLinearMultistepIntegrator<
+                Quinlan1999Order8A,
+                Ephemeris<ICRS>::NewtonianMotionEquation>(),
             .iterations = 6,
             .first_step_in_seconds = 64},
         ConvergenceTestParameters{
-            .integrator =
-                SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order8,
-                                                   Position<ICRS>>(),
+            .integrator = SymmetricLinearMultistepIntegrator<
+                QuinlanTremaine1990Order8,
+                Ephemeris<ICRS>::NewtonianMotionEquation>(),
             .iterations = 6,
             .first_step_in_seconds = 64},
         ConvergenceTestParameters{
-            .integrator =
-                SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order10,
-                                                   Position<ICRS>>(),
+            .integrator = SymmetricLinearMultistepIntegrator<
+                QuinlanTremaine1990Order10,
+                Ephemeris<ICRS>::NewtonianMotionEquation>(),
             .iterations = 6,
             .first_step_in_seconds = 64},
 
@@ -745,9 +750,9 @@ INSTANTIATE_TEST_SUITE_P(
         // position error of about 2.3 m on Miranda and takes about 2.0 s of
         // elapsed time.  For steps larger than about 680 s, the errors explode.
         ConvergenceTestParameters{
-            .integrator =
-                SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                                   Position<ICRS>>(),
+            .integrator = SymmetricLinearMultistepIntegrator<
+                QuinlanTremaine1990Order12,
+                Ephemeris<ICRS>::NewtonianMotionEquation>(),
             .iterations = 5,
             .first_step_in_seconds = 75}));
 

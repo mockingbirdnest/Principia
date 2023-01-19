@@ -22,7 +22,8 @@
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
-#include "mathematica/mathematica.hpp"
+#include "mathematica/logger.hpp"
+#include "physics/integration_parameters.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
@@ -68,6 +69,7 @@ using integrators::methods::McLachlanAtela1992Order4Optimal;
 using integrators::methods::McLachlanAtela1992Order5Optimal;
 using integrators::methods::Quinlan1999Order8A;
 using integrators::methods::QuinlanTremaine1990Order12;
+using mathematica::PreserveUnits;
 using quantities::Abs;
 using quantities::ArcTan;
 using quantities::Area;
@@ -246,7 +248,7 @@ TEST_P(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
       Ephemeris<ICRS>::AdaptiveStepParameters(
           EmbeddedExplicitRungeKuttaNyströmIntegrator<
               DormandالمكاوىPrince1986RKN434FM,
-              Position<ICRS>>(),
+              Ephemeris<ICRS>::NewtonianMotionEquation>(),
           max_steps,
           1e-9 * Metre,
           2.6e-15 * Metre / Second),
@@ -258,7 +260,7 @@ TEST_P(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
       Ephemeris<ICRS>::AdaptiveStepParameters(
           EmbeddedExplicitRungeKuttaNyströmIntegrator<
               DormandالمكاوىPrince1986RKN434FM,
-              Position<ICRS>>(),
+              Ephemeris<ICRS>::NewtonianMotionEquation>(),
           max_steps,
           1e-9 * Metre,
           2.6e-15 * Metre / Second),
@@ -417,7 +419,7 @@ TEST_P(EphemerisTest, EarthProbe) {
       Ephemeris<ICRS>::AdaptiveStepParameters(
           EmbeddedExplicitRungeKuttaNyströmIntegrator<
               DormandالمكاوىPrince1986RKN434FM,
-              Position<ICRS>>(),
+              Ephemeris<ICRS>::NewtonianMotionEquation>(),
           max_steps,
           1e-9 * Metre,
           2.6e-15 * Metre / Second),
@@ -485,7 +487,7 @@ TEST_P(EphemerisTest, EarthProbe) {
                   Ephemeris<ICRS>::AdaptiveStepParameters(
                       EmbeddedExplicitRungeKuttaNyströmIntegrator<
                           DormandالمكاوىPrince1986RKN434FM,
-                          Position<ICRS>>(),
+                          Ephemeris<ICRS>::NewtonianMotionEquation>(),
                       max_steps,
                       1e-9 * Metre,
                       2.6e-15 * Metre / Second),
@@ -718,7 +720,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
       Ephemeris<ICRS>::GeneralizedAdaptiveStepParameters(
           EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
               Fine1987RKNG34,
-              Position<ICRS>>(),
+              Ephemeris<ICRS>::GeneralizedNewtonianMotionEquation>(),
           max_steps,
           1e-9 * Metre,
           2.6e-15 * Metre / Second),
@@ -793,13 +795,14 @@ TEST_P(EphemerisTest, CollisionDetection) {
               Vector<Length, ICRS>(
                   {0 * Metre, 0 * Metre, earth_mean_radius + 10 * Metre}),
           earth_velocity)));
-  auto const instance = ephemeris.NewInstance(
-      {&trajectory},
-      Ephemeris<ICRS>::NoIntrinsicAccelerations,
-      Ephemeris<ICRS>::FixedStepParameters(
-          SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                             Position<ICRS>>(),
-          1e-3 * Second));
+  auto const instance =
+      ephemeris.NewInstance({&trajectory},
+                            Ephemeris<ICRS>::NoIntrinsicAccelerations,
+                            Ephemeris<ICRS>::FixedStepParameters(
+                                SymmetricLinearMultistepIntegrator<
+                                    Quinlan1999Order8A,
+                                    Ephemeris<ICRS>::NewtonianMotionEquation>(),
+                                1e-3 * Second));
 
   EXPECT_OK(ephemeris.FlowWithFixedStep(t0_ + short_duration, *instance));
   EXPECT_THAT(ephemeris.FlowWithFixedStep(t0_ + long_duration, *instance),
@@ -949,8 +952,9 @@ TEST_P(EphemerisTest, ComputeGravitationalPotential) {
       /*accuracy_parameters=*/{/*fitting_tolerance-*/1 * Milli(Metre),
                                /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(
-          SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order4Optimal,
-                                                Position<ICRS>>(),
+          SymplecticRungeKuttaNyströmIntegrator<
+              McLachlanAtela1992Order4Optimal,
+              Ephemeris<ICRS>::NewtonianMotionEquation>(),
           /*step=*/10 * Minute));
   CHECK_OK(ephemeris->Prolong(j2000));
 
@@ -1028,8 +1032,9 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
       /*accuracy_parameters=*/{fitting_tolerance,
                                /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(
-          SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order4Optimal,
-                                                Position<ICRS>>(),
+          SymplecticRungeKuttaNyströmIntegrator<
+              McLachlanAtela1992Order4Optimal,
+              Ephemeris<ICRS>::NewtonianMotionEquation>(),
           /*step=*/10 * Milli(Second)));
   EXPECT_OK(ephemeris->Prolong(t0 + 10 * T));
 
@@ -1117,8 +1122,9 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
       /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
                                /*geopotential_tolerance=*/0x1p-24},
       /*fixed_step_parameters=*/{
-          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                             Position<ICRS>>(),
+          SymmetricLinearMultistepIntegrator<
+              QuinlanTremaine1990Order12,
+              Ephemeris<ICRS>::NewtonianMotionEquation>(),
           /*step=*/10 * Minute});
 
   Instant const t0 = Instant() - 1.323698948906726e9 * Second;
@@ -1142,8 +1148,9 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
       {&trajectory1},
       Ephemeris<ICRS>::NoIntrinsicAccelerations,
       Ephemeris<ICRS>::FixedStepParameters(
-          SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                             Position<ICRS>>(),
+          SymmetricLinearMultistepIntegrator<
+              Quinlan1999Order8A,
+              Ephemeris<ICRS>::NewtonianMotionEquation>(),
           10 * Second));
   EXPECT_OK(ephemeris->FlowWithFixedStep(t1, *instance));
   EXPECT_EQ(1162, trajectory1.size());
@@ -1178,8 +1185,10 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
   mathematica::Logger logger(
       TEMP_DIR / "discrete_trajectory_compression.generated.wl",
       /*make_unique=*/false);
-  logger.Set("trajectory1", trajectory1.begin(), trajectory1.end());
-  logger.Set("trajectory2", trajectory2.begin(), trajectory2.end());
+  logger.Set("trajectory1",
+             trajectory1.begin(), trajectory1.end(), PreserveUnits);
+  logger.Set("trajectory2",
+             trajectory2.begin(), trajectory2.end(), PreserveUnits);
 }
 
 TEST(EphemerisTestNoFixture, Reanimator) {
@@ -1197,8 +1206,9 @@ TEST(EphemerisTestNoFixture, Reanimator) {
       /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
                                /*geopotential_tolerance=*/0x1p-24},
       /*fixed_step_parameters=*/{
-          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                             Position<ICRS>>(),
+          SymmetricLinearMultistepIntegrator<
+              QuinlanTremaine1990Order12,
+              Ephemeris<ICRS>::NewtonianMotionEquation>(),
           /*step=*/10 * Minute});
   EXPECT_OK(ephemeris1->Prolong(t_final));
   EXPECT_EQ(t_initial, ephemeris1->t_min());
@@ -1243,11 +1253,12 @@ TEST(EphemerisTestNoFixture, Reanimator) {
 INSTANTIATE_TEST_SUITE_P(
     AllEphemerisTests,
     EphemerisTest,
-    ::testing::Values(
-        &SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order5Optimal,
-                                               Position<ICRS>>(),
-        &SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                            Position<ICRS>>()));
+    ::testing::Values(&SymplecticRungeKuttaNyströmIntegrator<
+                          McLachlanAtela1992Order5Optimal,
+                          Ephemeris<ICRS>::NewtonianMotionEquation>(),
+                      &SymmetricLinearMultistepIntegrator<
+                          Quinlan1999Order8A,
+                          Ephemeris<ICRS>::NewtonianMotionEquation>()));
 
 }  // namespace internal_ephemeris
 }  // namespace physics

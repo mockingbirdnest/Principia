@@ -25,7 +25,7 @@
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
-#include "mathematica/mathematica.hpp"
+#include "mathematica/logger.hpp"
 #include "numerics/root_finders.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
@@ -54,6 +54,7 @@ using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::BlanesMoan2002SRKN11B;
 using integrators::methods::Quinlan1999Order8A;
+using mathematica::PreserveUnits;
 using numerics::Bisect;
 using physics::Ephemeris;
 using physics::KeplerianElements;
@@ -991,8 +992,9 @@ class TrappistDynamicsTest : public ::testing::Test {
                 /*fitting_tolerance=*/1 * Milli(Metre),
                 /*geopotential_tolerance=*/0x1.0p-24),
             Ephemeris<Sky>::FixedStepParameters(
-                SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                                   Position<Sky>>(),
+                SymmetricLinearMultistepIntegrator<
+                    Quinlan1999Order8A,
+                    Ephemeris<Sky>::NewtonianMotionEquation>(),
                 /*step=*/30 * Minute))) {}
 
   static Transits ComputeTransits(Ephemeris<Sky> const& ephemeris,
@@ -1105,8 +1107,9 @@ class TrappistDynamicsTest : public ::testing::Test {
         /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
                                  /*geopotential_tolerance=*/0x1p-24},
         Ephemeris<Sky>::FixedStepParameters(
-            SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                               Position<Sky>>(),
+            SymmetricLinearMultistepIntegrator<
+                Quinlan1999Order8A,
+                Ephemeris<Sky>::NewtonianMotionEquation>(),
             /*step=*/30 * Minute));
     EXPECT_OK(ephemeris->Prolong(system.epoch() + 1000 * Day));
 
@@ -1173,7 +1176,8 @@ TEST_F(TrappistDynamicsTest, MathematicaPeriods) {
                 star_trajectory->EvaluateDegreesOfFreedom(t),
             t);
         logger.Append("period" + SanitizedName(*planet),
-                      *planet_orbit.elements_at_epoch().period);
+                      *planet_orbit.elements_at_epoch().period,
+                      PreserveUnits);
       }
     }
   }
@@ -1190,15 +1194,17 @@ TEST_F(TrappistDynamicsTest, DISABLED_MathematicaTransits) {
             /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
                                      /*geopotential_tolerance=*/0x1p-24},
             Ephemeris<Sky>::FixedStepParameters(
-                SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                                   Position<Sky>>(),
+                SymmetricLinearMultistepIntegrator<
+                    Quinlan1999Order8A,
+                    Ephemeris<Sky>::NewtonianMotionEquation>(),
                 /*step=*/30 * Minute)),
         system_.MakeEphemeris(
             /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Centi(Metre),
                                      /*geopotential_tolerance=*/1.0e-7},
             Ephemeris<Sky>::FixedStepParameters(
-                SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN11B,
-                                                      Position<Sky>>(),
+                SymplecticRungeKuttaNyströmIntegrator<
+                    BlanesMoan2002SRKN11B,
+                    Ephemeris<Sky>::NewtonianMotionEquation>(),
                 /*step=*/45 * Minute))}) {
     Instant const a_century_later = system_.epoch() + 100 * JulianYear;
     EXPECT_OK(ephemeris->Prolong(a_century_later));
@@ -1212,7 +1218,8 @@ TEST_F(TrappistDynamicsTest, DISABLED_MathematicaTransits) {
         computations[planet->name()] =
             ComputeTransits(*ephemeris, star, planet);
         logger.Set("transit" + absl::StrCat(index) + SanitizedName(*planet),
-                   computations[planet->name()]);
+                   computations[planet->name()],
+                   PreserveUnits);
       }
     }
 

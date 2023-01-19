@@ -40,6 +40,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="nearest_neighbour.cpp" />
     <ClCompile Include="newhall.cpp" />
+    <ClCompile Include="orbital_elements.cpp" />
     <ClCompile Include="perspective.cpp" />
     <ClCompile Include="planetarium_plot_methods.cpp" />
     <ClCompile Include="polynomial.cpp" />

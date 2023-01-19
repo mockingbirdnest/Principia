@@ -22,6 +22,7 @@
     <ClCompile Include="..\physics\protector.cpp" />
     <ClCompile Include="error_analysis_test.cpp" />
     <ClCompile Include="integrator_plots.cpp" />
+    <ClCompile Include="logger_test.cpp" />
     <ClCompile Include="mathematica_test.cpp" />
     <ClCompile Include="retrobop_dynamical_stability.cpp" />
   </ItemGroup>
@@ -29,6 +30,8 @@
     <ClInclude Include="integrator_plots.hpp" />
     <ClInclude Include="local_error_analysis.hpp" />
     <ClInclude Include="local_error_analysis_body.hpp" />
+    <ClInclude Include="logger.hpp" />
+    <ClInclude Include="logger_body.hpp" />
     <ClInclude Include="retrobop_dynamical_stability.hpp" />
     <ClInclude Include="mathematica.hpp" />
     <ClInclude Include="mathematica_body.hpp" />

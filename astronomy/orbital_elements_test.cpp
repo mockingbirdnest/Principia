@@ -8,7 +8,7 @@
 #include "base/not_null.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "mathematica/mathematica.hpp"
+#include "mathematica/logger.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
@@ -104,7 +104,7 @@ class OrbitalElementsTest : public ::testing::Test {
         Ephemeris<ICRS>::AdaptiveStepParameters{
             EmbeddedExplicitRungeKuttaNyströmIntegrator<
                 DormandالمكاوىPrince1986RKN434FM,
-                Position<ICRS>>(),
+                Ephemeris<ICRS>::NewtonianMotionEquation>(),
             /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
             /*length_integration_tolerance=*/1 * Milli(Metre),
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second
@@ -149,8 +149,9 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
       /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
                                /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(
-          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                             Position<ICRS>>(),
+          SymmetricLinearMultistepIntegrator<
+              QuinlanTremaine1990Order12,
+              Ephemeris<ICRS>::NewtonianMotionEquation>(),
           /*step=*/1 * JulianYear));
   MassiveBody const& spherical_earth =
       *solar_system.massive_body(*ephemeris, "Earth");
@@ -242,8 +243,9 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
       /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
                                /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(
-          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                             Position<ICRS>>(),
+          SymmetricLinearMultistepIntegrator<
+              QuinlanTremaine1990Order12,
+              Ephemeris<ICRS>::NewtonianMotionEquation>(),
           /*step=*/1 * JulianYear));
   auto const& oblate_earth = dynamic_cast<OblateBody<ICRS> const&>(
       *solar_system.massive_body(*ephemeris, "Earth"));
@@ -346,8 +348,9 @@ TEST_F(OrbitalElementsTest, RealPerturbation) {
       /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
                                /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(
-          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                             Position<ICRS>>(),
+          SymmetricLinearMultistepIntegrator<
+              QuinlanTremaine1990Order12,
+              Ephemeris<ICRS>::NewtonianMotionEquation>(),
           /*step=*/10 * Minute));
   MassiveBody const& earth = *solar_system.massive_body(*ephemeris, "Earth");
 

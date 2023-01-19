@@ -8,7 +8,7 @@
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
-#include "mathematica/mathematica.hpp"
+#include "mathematica/logger.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/solar_system.hpp"
@@ -88,7 +88,8 @@ class KSPResonanceTest : public ::testing::Test {
                                  /*geopotential_tolerance=*/0x1p-24},
         Ephemeris<KSP>::FixedStepParameters(
             SymplecticRungeKuttaNyströmIntegrator<
-                McLachlanAtela1992Order5Optimal, Position<KSP>>(),
+                McLachlanAtela1992Order5Optimal,
+                Ephemeris<KSP>::NewtonianMotionEquation>(),
             /*step=*/Δt));
     jool_ = solar_system_.massive_body(*ephemeris, "Jool");
     laythe_ = solar_system_.massive_body(*ephemeris, "Laythe");

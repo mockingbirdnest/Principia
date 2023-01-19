@@ -78,7 +78,7 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
             Ephemeris<ICRS>::FixedStepParameters(
                 SymplecticRungeKuttaNyströmIntegrator<
                     McLachlanAtela1992Order4Optimal,
-                    Position<ICRS>>(),
+                    Ephemeris<ICRS>::NewtonianMotionEquation>(),
                 /*step=*/10 * Milli(Second)))),
         big_(solar_system_.massive_body(*ephemeris_, big)),
         big_initial_state_(solar_system_.degrees_of_freedom(big)),

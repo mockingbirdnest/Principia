@@ -8,7 +8,7 @@
 #include "base/macros.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "mathematica/mathematica.hpp"
+#include "mathematica/logger.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -61,17 +61,17 @@ using ::testing::Lt;
 using ::testing::ValuesIn;
 namespace si = quantities::si;
 
-#define INSTANCE(integrator,                                             \
-                 beginning_of_convergence,                               \
-                 expected_position_error,                                \
-                 expected_velocity_error,                                \
-                 expected_energy_error)                                  \
-  SimpleHarmonicMotionTestInstance(                                      \
-      SymmetricLinearMultistepIntegrator<methods::integrator, Length>(), \
-      #integrator,                                                       \
-      (beginning_of_convergence),                                        \
-      (expected_position_error),                                         \
-      (expected_velocity_error),                                         \
+#define INSTANCE(integrator,                                          \
+                 beginning_of_convergence,                            \
+                 expected_position_error,                             \
+                 expected_velocity_error,                             \
+                 expected_energy_error)                               \
+  SimpleHarmonicMotionTestInstance(                                   \
+      SymmetricLinearMultistepIntegrator<methods::integrator, ODE>(), \
+      #integrator,                                                    \
+      (beginning_of_convergence),                                     \
+      (expected_position_error),                                      \
+      (expected_velocity_error),                                      \
       (expected_energy_error))
 
 namespace integrators {
@@ -204,15 +204,15 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Symplecticity) {
   Energy const initial_energy =
       0.5 * m * Pow<2>(v_initial) + 0.5 * k * Pow<2>(q_initial);
 
-  std::vector<ODE::SystemState> solution;
+  std::vector<ODE::State> solution;
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration1D,
                 _1, _2, _3, /*evaluations=*/nullptr);
-  IntegrationProblem<ODE> problem;
+  InitialValueProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   problem.initial_state = {t_initial, {q_initial}, {v_initial}};
-  auto const append_state = [&solution](ODE::SystemState const& state) {
+  auto const append_state = [&solution](ODE::State const& state) {
     solution.push_back(state);
   };
 
@@ -265,16 +265,16 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Convergence) {
   std::vector<double> log_p_errors;
   log_step_sizes.reserve(step_sizes);
 
-  std::vector<ODE::SystemState> solution;
+  std::vector<ODE::State> solution;
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration1D,
                 _1, _2, _3, /*evaluations=*/nullptr);
-  IntegrationProblem<ODE> problem;
+  InitialValueProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   problem.initial_state = {t_initial, {q_initial}, {v_initial}};
-  ODE::SystemState final_state;
-  auto const append_state = [&final_state](ODE::SystemState const& state) {
+  ODE::State final_state;
+  auto const append_state = [&final_state](ODE::State const& state) {
     final_state = state;
   };
 
@@ -339,15 +339,15 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Termination) {
 
   int evaluations = 0;
 
-  std::vector<ODE::SystemState> solution;
+  std::vector<ODE::State> solution;
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration1D,
                 _1, _2, _3, &evaluations);
-  IntegrationProblem<ODE> problem;
+  InitialValueProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   problem.initial_state = {t_initial, {q_initial}, {v_initial}};
-  auto const append_state = [&solution](ODE::SystemState const& state) {
+  auto const append_state = [&solution](ODE::State const& state) {
     solution.push_back(state);
   };
 
@@ -383,15 +383,15 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, LongIntegration) {
 
   int evaluations = 0;
 
-  std::vector<ODE::SystemState> solution;
+  std::vector<ODE::State> solution;
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration1D,
                 _1, _2, _3, &evaluations);
-  IntegrationProblem<ODE> problem;
+  InitialValueProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   problem.initial_state = {t_initial, {q_initial}, {v_initial}};
-  auto const append_state = [&solution](ODE::SystemState const& state) {
+  auto const append_state = [&solution](ODE::State const& state) {
     solution.push_back(state);
   };
 
@@ -425,15 +425,15 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Serialization) {
   Instant const t_initial;
   Time const step = 0.2 * Second;
 
-  std::vector<ODE::SystemState> solution;
+  std::vector<ODE::State> solution;
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration1D,
                 _1, _2, _3, /*evaluations=*/nullptr);
-  IntegrationProblem<ODE> problem;
+  InitialValueProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   problem.initial_state = {t_initial, {q_initial}, {v_initial}};
-  auto const append_state = [&solution](ODE::SystemState const& state) {
+  auto const append_state = [&solution](ODE::State const& state) {
     solution.push_back(state);
   };
 

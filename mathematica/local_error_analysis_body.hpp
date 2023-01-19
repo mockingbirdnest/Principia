@@ -80,8 +80,8 @@ void LocalErrorAnalyser<Frame>::WriteLocalErrors(
     }
   }
   OFStream file(path);
-  file << Assign("bodyNames", solar_system_->names());
-  file << Assign("errors", errors, ExpressIn(Metre));
+  file << Set("bodyNames", solar_system_->names());
+  file << Set("errors", errors, ExpressIn(Metre));
 }
 
 template<typename Frame>

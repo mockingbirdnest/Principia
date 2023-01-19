@@ -30,14 +30,14 @@
   {                                                   \
     (integrators::SymmetricLinearMultistepIntegrator< \
         integrators::methods::name,                   \
-        Length>()),                                   \
+        ODE>()),                                      \
         u8###name, 1                                  \
   }
 #define SRKN_INTEGRATOR(name)                                 \
   {                                                           \
     (integrators::SymplecticRungeKuttaNyströmIntegrator<      \
         integrators::methods::name,                           \
-        Length>()),                                           \
+        ODE>()),                                              \
         u8###name, (integrators::methods::name::evaluations)  \
   }
 #define SPRK_INTEGRATOR(name, composition)                   \
@@ -45,7 +45,7 @@
     (integrators::SymplecticRungeKuttaNyströmIntegrator<     \
         integrators::methods::name,                          \
         serialization::FixedStepSizeIntegrator::composition, \
-        Length>()),                                          \
+        ODE>()),                                             \
         u8###name " " u8###composition,                      \
         (integrators::methods::name::evaluations)            \
   }
@@ -62,7 +62,7 @@ using geometry::InnerProduct;
 using geometry::Instant;
 using geometry::Velocity;
 using integrators::FixedStepSizeIntegrator;
-using integrators::IntegrationProblem;
+using integrators::InitialValueProblem;
 using integrators::SpecialSecondOrderDifferentialEquation;
 using numerics::DoublePrecision;
 using quantities::Acceleration;
@@ -102,7 +102,7 @@ namespace mathematica {
 // TODO(egg): it would probably be saner to use Position<Whatever> and make the
 // simple harmonic oscillator work in 3d.
 using ODE = SpecialSecondOrderDifferentialEquation<Length>;
-using Problem = IntegrationProblem<ODE>;
+using Problem = InitialValueProblem<ODE>;
 
 namespace {
 
@@ -186,8 +186,8 @@ class WorkErrorGraphGenerator {
                                  std::vector<Length> const& q,
                                  std::vector<Acceleration>& result,
                                  int* evaluations)> compute_accelerations,
-      ODE::SystemState initial_state,
-      std::function<Errors(ODE::SystemState const&)> compute_errors,
+      ODE::State initial_state,
+      std::function<Errors(ODE::State const&)> compute_errors,
       Instant const& tmax,
       std::string problem_name)
       : methods_(Methods()),
@@ -230,18 +230,18 @@ class WorkErrorGraphGenerator {
     std::vector<std::string> names;
     for (int i = 0; i < methods_.size(); ++i) {
       q_error_data.emplace_back(
-          PlottableDataset(evaluations_[i], q_errors_[i]));
+          PlottableDataset(evaluations_[i], q_errors_[i], PreserveUnits));
       v_error_data.emplace_back(
-          PlottableDataset(evaluations_[i], v_errors_[i]));
+          PlottableDataset(evaluations_[i], v_errors_[i], PreserveUnits));
       e_error_data.emplace_back(
-          PlottableDataset(evaluations_[i], e_errors_[i]));
+          PlottableDataset(evaluations_[i], e_errors_[i], PreserveUnits));
       names.emplace_back(ToMathematica(methods_[i].name));
     }
     std::string result;
-    result += Assign("qErrorData", q_error_data);
-    result += Assign("vErrorData", v_error_data);
-    result += Assign("eErrorData", e_error_data);
-    result += Assign("names", names);
+    result += Set("qErrorData", q_error_data);
+    result += Set("vErrorData", v_error_data);
+    result += Set("eErrorData", e_error_data);
+    result += Set("names", names);
     return result;
   }
 
@@ -258,7 +258,7 @@ class WorkErrorGraphGenerator {
     Speed max_v_error;
     Energy max_e_error;
     auto append_state = [this, &max_q_error, &max_v_error, &max_e_error](
-      ODE::SystemState const& state) {
+      ODE::State const& state) {
       auto const errors = compute_errors_(state);
       max_q_error = std::max(max_q_error, errors.q_error);
       max_v_error = std::max(max_v_error, errors.v_error);
@@ -297,8 +297,8 @@ class WorkErrorGraphGenerator {
                              std::vector<Acceleration>& result,
                              int* evaluations)>
       compute_accelerations_;
-  ODE::SystemState initial_state_;
-  std::function<Errors(ODE::SystemState const&)> compute_errors_;
+  ODE::State initial_state_;
+  std::function<Errors(ODE::State const&)> compute_errors_;
   std::vector<std::vector<Length>> q_errors_;
   std::vector<std::vector<Speed>> v_errors_;
   std::vector<std::vector<Energy>> e_errors_;
@@ -312,7 +312,7 @@ class WorkErrorGraphGenerator {
 
 
 void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
-  ODE::SystemState initial_state;
+  ODE::State initial_state;
   Instant const t0;
   Length const q_amplitude = 1 * Metre;
   Speed const v_amplitude = 1 * Metre / Second;
@@ -326,7 +326,7 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
 
   Instant const tmax = t0 + 50 * Second;
   auto const compute_error = [q_amplitude, v_amplitude, ω, m, k, t0](
-      ODE::SystemState const& state) {
+      ODE::State const& state) {
     return WorkErrorGraphGenerator<Energy>::Errors{
         AbsoluteError(q_amplitude * Cos(ω * (state.time.value - t0)),
                       state.positions[0].value),
@@ -348,7 +348,7 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
 }
 
 void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
-  ODE::SystemState initial_state;
+  ODE::State initial_state;
   Instant const t0;
   GravitationalParameter const μ = si::Unit<GravitationalParameter>;
   MassiveBody b1(μ);
@@ -383,7 +383,7 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
       μ / initial_dof.displacement().Norm();
 
   auto const compute_error = [&orbit, μ, initial_specific_energy](
-      ODE::SystemState const& state) {
+      ODE::State const& state) {
     Displacement<World> q(
         {state.positions[0].value, state.positions[1].value, 0 * Metre});
     Velocity<World> v({state.velocities[0].value,

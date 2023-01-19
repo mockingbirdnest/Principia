@@ -1,6 +1,5 @@
 #pragma once
 
-#include <filesystem>
 #include <map>
 #include <string>
 #include <tuple>
@@ -8,7 +7,6 @@
 #include <vector>
 
 #include "astronomy/orbital_elements.hpp"
-#include "base/file.hpp"
 #include "base/traits.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
@@ -25,6 +23,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 #include "quantities/tuples.hpp"
 
 namespace principia {
@@ -32,7 +31,6 @@ namespace mathematica {
 namespace internal_mathematica {
 
 using base::all_different_v;
-using base::OFStream;
 using geometry::Bivector;
 using geometry::Point;
 using geometry::Quaternion;
@@ -62,10 +60,7 @@ using quantities::Quantity;
 using quantities::Quotient;
 using quantities::Temperature;
 using quantities::Time;
-
-// Define this value to 1 to force the logger to append "_new" to the file
-// names, which is useful for regression testing of the logger.
-#define PRINCIPIA_MATHEMATICA_LOGGER_REGRESSION_TEST 0
+namespace si = quantities::si;
 
 // A helper class for type erasure of quantities.  It may be used with the
 // functions in this file to remove the dimensions of quantities (we know that
@@ -77,6 +72,18 @@ using quantities::Time;
 // (or Angle). They define a system of units.  They may be in any order.  If the
 // other arguments of the functions contain quantities that are not spanned by
 // that system of units, the call is ill-formed.
+//
+// A shortcut is provided for SI units:
+//
+//   ToMathematica(..., ExpressInSIUnits);
+//
+// and for preserving the units in the Mathematica output:
+//
+//   ToMathematica(..., PreserveUnits);
+//
+// One of ExpressIn... or PreserveUnits must be present as soon as the data
+// being converted contains (dimensionful) quantities.
+
 template<typename... Qs>
 class ExpressIn {
  public:
@@ -91,7 +98,8 @@ class ExpressIn {
   // Check that all quantities are different.
   static_assert(all_different_v<Qs...>, "Must use different quantities");
 
-  ExpressIn(Qs const&... qs);  // NOLINT(runtime/explicit)
+  constexpr ExpressIn(Qs const&... qs)  // NOLINT(runtime/explicit)
+      : units_(std::make_tuple(qs...)) {}
 
   template<typename Q>
   double operator()(Q const& q) const;
@@ -103,6 +111,16 @@ class ExpressIn {
   std::tuple<Qs...> units_;
 };
 
+constexpr auto ExpressInSIUnits = ExpressIn(si::Unit<Length>,
+                                            si::Unit<Mass>,
+                                            si::Unit<Time>,
+                                            si::Unit<Current>,
+                                            si::Unit<Temperature>,
+                                            si::Unit<Amount>,
+                                            si::Unit<LuminousIntensity>,
+                                            si::Unit<Angle>);
+constexpr struct {} PreserveUnits;
+
 template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string Apply(std::string const& name,
                   T const& right,
@@ -110,17 +128,15 @@ std::string Apply(std::string const& name,
 
 std::string Evaluate(std::string const& expression);
 
-// TODO(phl): Rename this function to Rule.
 template<typename T, typename OptionalExpressIn = std::nullopt_t>
-std::string Option(std::string const& name,
-                   T const& right,
-                   OptionalExpressIn express_in = std::nullopt);
+std::string Rule(std::string const& name,
+                 T const& right,
+                 OptionalExpressIn express_in = std::nullopt);
 
-// TODO(phl): Rename this function to Set.
 template<typename T, typename OptionalExpressIn = std::nullopt_t>
-std::string Assign(std::string const& name,
-                   T const& right,
-                   OptionalExpressIn express_in = std::nullopt);
+std::string Set(std::string const& name,
+                T const& right,
+                OptionalExpressIn express_in = std::nullopt);
 
 template<typename T, typename U, typename OptionalExpressIn = std::nullopt_t>
 std::string PlottableDataset(std::vector<T> const& x,
@@ -171,6 +187,10 @@ std::string ToMathematica(Quaternion const& quaternion,
 template<typename D, typename... Qs>
 std::string ToMathematica(Quantity<D> const& quantity,
                           ExpressIn<Qs...> express_in);
+
+template<typename D>
+std::string ToMathematica(Quantity<D> const& quantity,
+                          decltype(PreserveUnits) express_in);
 
 template<typename D>
 std::string ToMathematica(Quantity<D> const& quantity,
@@ -284,52 +304,21 @@ template<typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(std::string const& str,
                           OptionalExpressIn express_in = std::nullopt);
 
-// An RAII object to help with Mathematica logging.
-class Logger final {
- public:
-  // Creates a logger object that will, at destruction, write to the given file.
-  // If make_unique is true, a unique id is inserted before the file extension
-  // to identify different loggers.
-  Logger(std::filesystem::path const& path,
-         bool make_unique = true);
-  ~Logger();
-
-  // Flushes the contents of the logger to the file.  This should not normally
-  // be called explicitly, but it's useful when debugging crashes.  Beware, the
-  // resulting file may contain many assignments to the same variable.
-  void Flush();
-
-  // Appends an element to the list of values for the List variable |name|.  The
-  // |args...| are passed verbatim to ToMathematica for stringification.  When
-  // this object is destroyed, an assignment is generated for each of the
-  // variables named in a call to Append.
-  template<typename... Args>
-  void Append(std::string const& name, Args... args);
-
-  // Sets an element as the single value for the variable |name|.  The
-  // |args...| are passed verbatim to ToMathematica for stringification.  When
-  // this object is destroyed, an assignment is generated for each of the
-  // variables named in a call to Set.
-  template<typename... Args>
-  void Set(std::string const& name, Args... args);
-
- private:
-  OFStream file_;
-  std::map<std::string, std::vector<std::string>> name_and_multiple_values_;
-  std::map<std::string, std::string> name_and_single_value_;
-
-  static std::atomic_uint64_t id_;
-};
+// Does not wrap its arguments in ToMathematica.  Do not export.  Do not use
+// externally.
+std::string RawApply(std::string const& function,
+                     std::vector<std::string> const& arguments);
 
 }  // namespace internal_mathematica
 
 using internal_mathematica::Apply;
-using internal_mathematica::Assign;
 using internal_mathematica::Evaluate;
 using internal_mathematica::ExpressIn;
-using internal_mathematica::Logger;
-using internal_mathematica::Option;
+using internal_mathematica::ExpressInSIUnits;
 using internal_mathematica::PlottableDataset;
+using internal_mathematica::PreserveUnits;
+using internal_mathematica::Rule;
+using internal_mathematica::Set;
 using internal_mathematica::ToMathematica;
 using internal_mathematica::ToMathematicaBody;
 

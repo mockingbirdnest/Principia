@@ -26,10 +26,6 @@ using base::not_constructible;
 using base::not_null;
 using quantities::DebugString;
 using quantities::IsFinite;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
-namespace si = quantities::si;
 
 // Wraps the string in quotes and escapes things properly.
 inline std::string Escape(std::string_view const str) {
@@ -52,7 +48,7 @@ inline std::string Escape(std::string_view const str) {
 }
 
 // Does not wrap its arguments in ToMathematica.
-inline std::string Apply(
+inline std::string RawApply(
     std::string const& function,
     std::vector<std::string> const& arguments) {
   std::string result;
@@ -103,8 +99,8 @@ std::string ToMathematicaBody(
                                                        express_in);
   std::string argument;
   if constexpr (is_instance_of_v<Point, A>) {
-    argument =
-        Apply("Subtract", {"#", ToMathematica(polynomial.origin_, express_in)});
+    argument = RawApply("Subtract",
+                        {"#", ToMathematica(polynomial.origin_, express_in)});
   } else {
     argument = "#";
   }
@@ -113,14 +109,14 @@ std::string ToMathematicaBody(
     if (i == 0) {
       monomials.push_back(coefficients[i]);
     } else if (i == 1) {
-      monomials.push_back(Apply("Times", {coefficients[i], argument}));
+      monomials.push_back(RawApply("Times", {coefficients[i], argument}));
     } else {
-      monomials.push_back(Apply(
+      monomials.push_back(RawApply(
           "Times",
-          {coefficients[i], Apply("Power", {argument, std::to_string(i)})}));
+          {coefficients[i], RawApply("Power", {argument, std::to_string(i)})}));
     }
   }
-  return Apply("Plus", monomials);
+  return RawApply("Plus", monomials);
 }
 
 template<typename V, int ad, int pd,
@@ -137,16 +133,16 @@ std::string ToMathematicaBody(
     std::string const polynomial_cos =
         ToMathematicaBody(polynomials.cos, express_in);
     std::string const angle =
-        Apply("Times",
-              {ToMathematica(ω, express_in),
-               Apply("Subtract",
-                     {"#", ToMathematica(series.origin_, express_in)})});
-    components.push_back(Apply("Times",
-                               {polynomial_sin, Apply("Sin", {angle})}));
-    components.push_back(Apply("Times",
-                               {polynomial_cos, Apply("Cos", {angle})}));
+        RawApply("Times",
+                 {ToMathematica(ω, express_in),
+                  RawApply("Subtract",
+                           {"#", ToMathematica(series.origin_, express_in)})});
+    components.push_back(
+        RawApply("Times", {polynomial_sin, RawApply("Sin", {angle})}));
+    components.push_back(
+        RawApply("Times", {polynomial_cos, RawApply("Cos", {angle})}));
   }
-  return Apply("Plus", components);
+  return RawApply("Plus", components);
 }
 
 template<typename V, int ad, int pd,
@@ -159,20 +155,16 @@ std::string ToMathematicaBody(
   for (int i = 0; i < series.series_.size(); ++i) {
     std::string const function =
         ToMathematicaBody(series.series_[i], express_in);
-    std::string const condition =
-        Apply("Between",
-              {"#",
-               Apply("List",
-                     {ToMathematica(series.bounds_[i], express_in),
-                      ToMathematica(series.bounds_[i + 1], express_in)})});
-    conditions_and_functions.push_back(Apply("List", {function, condition}));
+    std::string const condition = RawApply(
+        "Between",
+        {"#",
+         RawApply("List",
+                  {ToMathematica(series.bounds_[i], express_in),
+                   ToMathematica(series.bounds_[i + 1], express_in)})});
+    conditions_and_functions.push_back(RawApply("List", {function, condition}));
   }
-  return Apply("Piecewise", {Apply("List", conditions_and_functions)});
+  return RawApply("Piecewise", {RawApply("List", conditions_and_functions)});
 }
-
-template<typename... Qs>
-ExpressIn<Qs...>::ExpressIn(Qs const&... qs)
-    : units_(std::make_tuple(qs...)) {}
 
 template<typename... Qs>
 template<typename Q>
@@ -203,25 +195,25 @@ template<typename T, typename OptionalExpressIn>
 std::string Apply(std::string const& name,
                   T const& right,
                   OptionalExpressIn express_in) {
-  return Apply("Apply", {name, ToMathematica(right, express_in)});
+  return RawApply("Apply", {name, ToMathematica(right, express_in)});
 }
 
 inline std::string Evaluate(std::string const& expression) {
-  return Apply("Evaluate", {expression});
+  return RawApply("Evaluate", {expression});
 }
 
 template<typename T, typename OptionalExpressIn>
-std::string Option(std::string const& name,
-                   T const& right,
-                   OptionalExpressIn express_in) {
-  return Apply("Rule", {name, ToMathematica(right, express_in)});
+std::string Rule(std::string const& name,
+                 T const& right,
+                 OptionalExpressIn express_in) {
+  return RawApply("Rule", {name, ToMathematica(right, express_in)});
 }
 
 template<typename T, typename OptionalExpressIn>
-std::string Assign(std::string const& name,
-                   T const& right,
-                   OptionalExpressIn express_in) {
-  return Apply("Set", {name, ToMathematica(right, express_in)}) + ";\n";
+std::string Set(std::string const& name,
+                T const& right,
+                OptionalExpressIn express_in) {
+  return RawApply("Set", {name, ToMathematica(right, express_in)}) + ";\n";
 }
 
 template<typename T, typename U, typename OptionalExpressIn>
@@ -230,7 +222,7 @@ std::string PlottableDataset(std::vector<T> const& x,
                              OptionalExpressIn express_in) {
   std::vector<std::string> const xy = {ToMathematica(x, express_in),
                                        ToMathematica(y, express_in)};
-  return Apply("Transpose", {Apply("List", xy)});
+  return RawApply("Transpose", {RawApply("List", xy)});
 }
 
 template<typename T, typename OptionalExpressIn>
@@ -241,7 +233,7 @@ std::string ToMathematica(std::vector<T> const& list,
   for (auto const& expression : list) {
     expressions.emplace_back(ToMathematica(expression, express_in));
   }
-  return Apply("List", expressions);
+  return RawApply("List", expressions);
 }
 
 template<typename It, typename OptionalExpressIn>
@@ -251,7 +243,7 @@ std::string ToMathematica(It const begin, It const end,
   for (auto it = begin; it != end; ++it) {
     expressions.emplace_back(ToMathematica(*it, express_in));
   }
-  return Apply("List", expressions);
+  return RawApply("List", expressions);
 }
 
 template<typename OptionalExpressIn>
@@ -287,29 +279,31 @@ std::string ToMathematica(T const real,
     }
     std::int64_t const n =
         std::scalbln(std::abs(real), exponent_offset - exponent);
-    absolute_value = Apply("Times",
-                           {std::numeric_limits<T>::radix == 10
-                                ? ToMathematica(n)
-                                : (std::stringstream()
-                                   << "16^^" << std::uppercase << std::hex << n)
-                                      .str(),
-                            Apply("Power",
-                                  {"2",
-                                   Apply("Subtract",
-                                         {ToMathematica(std::ilogb(real)),
-                                          ToMathematica(exponent_offset)})})});
+    absolute_value =
+        RawApply("Times",
+                 {std::numeric_limits<T>::radix == 10
+                      ? ToMathematica(n)
+                      : (std::stringstream()
+                         << "16^^" << std::uppercase << std::hex << n)
+                            .str(),
+                  RawApply("Power",
+                           {"2",
+                            RawApply("Subtract",
+                                     {ToMathematica(std::ilogb(real)),
+                                      ToMathematica(exponent_offset)})})});
   }
-  return std::signbit(real) ? Apply("Minus", {absolute_value}) : absolute_value;
+  return std::signbit(real) ? RawApply("Minus", {absolute_value})
+                            : absolute_value;
 }
 
 template<typename OptionalExpressIn>
 std::string ToMathematica(Quaternion const& quaternion,
                           OptionalExpressIn /*express_in*/) {
-  return Apply("Quaternion",
-               {ToMathematica(quaternion.real_part()),
-                ToMathematica(quaternion.imaginary_part().x),
-                ToMathematica(quaternion.imaginary_part().y),
-                ToMathematica(quaternion.imaginary_part().z)});
+  return RawApply("Quaternion",
+                  {ToMathematica(quaternion.real_part()),
+                   ToMathematica(quaternion.imaginary_part().x),
+                   ToMathematica(quaternion.imaginary_part().y),
+                   ToMathematica(quaternion.imaginary_part().z)});
 }
 
 template<typename T, int size, typename OptionalExpressIn>
@@ -319,7 +313,7 @@ std::string ToMathematica(FixedVector<T, size> const& fixed_vector,
   for (int i = 0; i < size; ++i) {
     expressions.emplace_back(ToMathematica(fixed_vector[i], express_in));
   }
-  return Apply("List", expressions);
+  return RawApply("List", expressions);
 }
 
 template<typename T, typename OptionalExpressIn>
@@ -329,7 +323,7 @@ std::string ToMathematica(R3Element<T> const& r3_element,
   expressions.emplace_back(ToMathematica(r3_element.x, express_in));
   expressions.emplace_back(ToMathematica(r3_element.y, express_in));
   expressions.emplace_back(ToMathematica(r3_element.z, express_in));
-  return Apply("List", expressions);
+  return RawApply("List", expressions);
 }
 
 template<typename T, typename OptionalExpressIn>
@@ -350,20 +344,28 @@ std::string ToMathematica(Quantity<D> const& quantity,
 
 template<typename D>
 std::string ToMathematica(Quantity<D> const& quantity,
-                          std::nullopt_t express_in) {
+                          decltype(PreserveUnits) express_in) {
   std::string s = DebugString(quantity);
   std::string const number = ToMathematica(quantity / si::Unit<Quantity<D>>);
   std::size_t const split = s.find(" ");
   std::string const units = Escape(s.substr(split, s.size()));
-  return Apply("Quantity", {number, units});
+  return RawApply("Quantity", {number, units});
+}
+
+template<typename D>
+std::string ToMathematica(Quantity<D> const& quantity,
+                          std::nullopt_t express_in) {
+  static_assert(
+      !std::is_same_v<Quantity<D>, Quantity<D>>,
+      "Must specify a way to express units for dimensionful quantities");
 }
 
 template<typename T, typename OptionalExpressIn>
 std::string ToMathematica(DoublePrecision<T> const& double_precision,
                           OptionalExpressIn express_in) {
-  return Apply("Plus",
-               {ToMathematica(double_precision.value, express_in),
-                ToMathematica(double_precision.error, express_in)});
+  return RawApply("Plus",
+                  {ToMathematica(double_precision.value, express_in),
+                   ToMathematica(double_precision.error, express_in)});
 }
 
 template<typename S, typename F, typename OptionalExpressIn>
@@ -395,7 +397,7 @@ std::string ToMathematica(SymmetricBilinearForm<S, F, M> const& form,
 template<typename F, typename OptionalExpressIn>
 std::string ToMathematica(DegreesOfFreedom<F> const& degrees_of_freedom,
                           OptionalExpressIn express_in) {
-  return Apply(
+  return RawApply(
       "List",
       std::vector<std::string>{
           ToMathematica(degrees_of_freedom.position(), express_in),
@@ -408,7 +410,7 @@ std::string ToMathematica(Tuple const& tuple, OptionalExpressIn express_in) {
   expressions.reserve(std::tuple_size_v<Tuple>);
   TupleHelper<std::tuple_size_v<Tuple>, Tuple, OptionalExpressIn>::
       ToMathematicaStrings(tuple, expressions, express_in);
-  return Apply("List", expressions);
+  return RawApply("List", expressions);
 }
 
 template<typename Scalar, typename OptionalExpressIn>
@@ -425,9 +427,9 @@ std::string ToMathematica(UnboundedLowerTriangularMatrix<Scalar> const& matrix,
     for (int j = i + 1; j < matrix.rows(); ++j) {
       row.push_back(ToMathematica(Scalar{}, express_in));
     }
-    rows.push_back(Apply("List", row));
+    rows.push_back(RawApply("List", row));
   }
-  return Apply("List", rows);
+  return RawApply("List", rows);
 }
 
 template<typename Scalar, typename OptionalExpressIn>
@@ -444,9 +446,9 @@ std::string ToMathematica(UnboundedUpperTriangularMatrix<Scalar> const& matrix,
     for (int j = i; j < matrix.columns(); ++j) {
       row.push_back(ToMathematica(matrix(i, j), express_in));
     }
-    rows.push_back(Apply("List", row));
+    rows.push_back(RawApply("List", row));
   }
-  return Apply("List", rows);
+  return RawApply("List", rows);
 }
 
 template<typename Scalar, typename OptionalExpressIn>
@@ -457,16 +459,16 @@ std::string ToMathematica(UnboundedVector<Scalar> const& vector,
   for (int i = 0; i < vector.size(); ++i) {
     elements.push_back(ToMathematica(vector[i], express_in));
   }
-  return Apply("List", elements);
+  return RawApply("List", elements);
 }
 
 template<typename R, typename, typename, typename OptionalExpressIn>
 std::string ToMathematica(R const ref,
                           OptionalExpressIn express_in) {
-  return Apply("List",
-               std::vector<std::string>{
-                   ToMathematica(ref.time, express_in),
-                   ToMathematica(ref.degrees_of_freedom, express_in)});
+  return RawApply("List",
+                  std::vector<std::string>{
+                      ToMathematica(ref.time, express_in),
+                      ToMathematica(ref.degrees_of_freedom, express_in)});
 }
 
 template<typename V, typename A, int d,
@@ -475,7 +477,7 @@ template<typename V, typename A, int d,
 std::string ToMathematica(
     PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
     OptionalExpressIn express_in) {
-  return Apply("Function", {ToMathematicaBody(polynomial, express_in)});
+  return RawApply("Function", {ToMathematicaBody(polynomial, express_in)});
 }
 
 template<typename V, int ad, int pd,
@@ -483,7 +485,7 @@ template<typename V, int ad, int pd,
          typename OptionalExpressIn>
 std::string ToMathematica(PoissonSeries<V, ad, pd, E> const& series,
                           OptionalExpressIn express_in) {
-  return Apply("Function", {ToMathematicaBody(series, express_in)});
+  return RawApply("Function", {ToMathematicaBody(series, express_in)});
 }
 
 template<typename V, int ad, int pd,
@@ -491,7 +493,7 @@ template<typename V, int ad, int pd,
          typename OptionalExpressIn>
 std::string ToMathematica(PiecewisePoissonSeries<V, ad, pd, E> const& series,
                           OptionalExpressIn express_in) {
-  return Apply("Function", {ToMathematicaBody(series, express_in)});
+  return RawApply("Function", {ToMathematicaBody(series, express_in)});
 }
 
 template<typename OptionalExpressIn>
@@ -531,48 +533,6 @@ std::string ToMathematica(std::string const& str,
                           OptionalExpressIn /*express_in*/) {
   return Escape(str);
 }
-
-inline Logger::Logger(std::filesystem::path const& path, bool const make_unique)
-    : file_([make_unique, &path]() {
-        if (make_unique || PRINCIPIA_MATHEMATICA_LOGGER_REGRESSION_TEST != 0) {
-          std::filesystem::path filename = path.stem();
-          if (make_unique) {
-            filename += std::to_string(id_++);
-          }
-#if PRINCIPIA_MATHEMATICA_LOGGER_REGRESSION_TEST
-          filename += "_new";
-#endif
-          filename += path.extension();
-          return path.parent_path() / filename;
-        } else {
-          return path;
-        }
-      }()) {}
-
-inline Logger::~Logger() {
-  Flush();
-}
-
-inline void Logger::Flush() {
-  for (auto const& [name, values] : name_and_multiple_values_) {
-    file_ << Apply("Set", {name, Apply("List", values)}) + ";\n";
-  }
-  for (auto const& [name, value] : name_and_single_value_) {
-    file_ << Apply("Set", {name, value}) + ";\n";
-  }
-}
-
-template<typename... Args>
-void Logger::Append(std::string const& name, Args... args) {
-  name_and_multiple_values_[name].push_back(ToMathematica(args...));
-}
-
-template<typename... Args>
-void Logger::Set(std::string const& name, Args... args) {
-  name_and_single_value_[name] = ToMathematica(args...);
-}
-
-inline std::atomic_uint64_t Logger::id_ = 0;
 
 }  // namespace internal_mathematica
 }  // namespace mathematica

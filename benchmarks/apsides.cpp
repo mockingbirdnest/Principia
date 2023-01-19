@@ -54,13 +54,17 @@ class ApsidesBenchmark : public benchmark::Fixture {
         SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
         SOLUTION_DIR / "astronomy" /
             "sol_initial_state_jd_2455200_500000000.proto.txt").release();
-    ephemeris_ = solar_system_2010_->MakeEphemeris(
-        /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
-                                 /*geopotential_tolerance=*/0x1p-24},
-        Ephemeris<ICRS>::FixedStepParameters(
-            SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                               Position<ICRS>>(),
-            /*step=*/10 * Minute)).release();
+    ephemeris_ =
+        solar_system_2010_
+            ->MakeEphemeris(
+                /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                                         /*geopotential_tolerance=*/0x1p-24},
+                Ephemeris<ICRS>::FixedStepParameters(
+                    SymmetricLinearMultistepIntegrator<
+                        QuinlanTremaine1990Order12,
+                        Ephemeris<ICRS>::NewtonianMotionEquation>(),
+                    /*step=*/10 * Minute))
+            .release();
     earth_ = dynamic_cast_not_null<OblateBody<ICRS> const*>(
         solar_system_2010_->massive_body(*ephemeris_, "Earth"));
     earth_trajectory_ = ephemeris_->trajectory(earth_);
@@ -90,7 +94,7 @@ class ApsidesBenchmark : public benchmark::Fixture {
         Ephemeris<ICRS>::AdaptiveStepParameters(
             EmbeddedExplicitRungeKuttaNyströmIntegrator<
                 DormandالمكاوىPrince1986RKN434FM,
-                Position<ICRS>>(),
+                Ephemeris<ICRS>::NewtonianMotionEquation>(),
             std::numeric_limits<std::int64_t>::max(),
             /*length_integration_tolerance=*/1 * Milli(Metre),
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
@@ -123,9 +127,8 @@ class ApsidesBenchmark : public benchmark::Fixture {
 
 SolarSystem<ICRS>* ApsidesBenchmark::solar_system_2010_ = nullptr;
 Ephemeris<ICRS>* ApsidesBenchmark::ephemeris_ = nullptr;
-OblateBody<ICRS> const* ApsidesBenchmark::ApsidesBenchmark::earth_ = nullptr;
-ContinuousTrajectory<ICRS> const*
-    ApsidesBenchmark::ApsidesBenchmark::earth_trajectory_ = nullptr;
+OblateBody<ICRS> const* ApsidesBenchmark::earth_ = nullptr;
+ContinuousTrajectory<ICRS> const* ApsidesBenchmark::earth_trajectory_ = nullptr;
 DiscreteTrajectory<ICRS>* ApsidesBenchmark::ilrsa_lageos2_trajectory_icrs_ =
     nullptr;
 DiscreteTrajectory<GCRS>* ApsidesBenchmark::ilrsa_lageos2_trajectory_gcrs_ =

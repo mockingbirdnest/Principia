@@ -72,11 +72,13 @@ class MathematicaTest : public ::testing::Test {
 TEST_F(MathematicaTest, ToMathematica) {
   {
     EXPECT_EQ(
-        absl::StrReplaceAll("List[α,β,γ]",
-                            {{"α", ToMathematica(1 * Metre)},
-                             {"β", ToMathematica(2 * Second)},
-                             {"γ", ToMathematica(3 * Metre / Second)}}),
-        ToMathematica(std::tuple{1 * Metre, 2 * Second, 3 * Metre / Second}));
+        absl::StrReplaceAll(
+            "List[α,β,γ]",
+            {{"α", ToMathematica(1 * Metre, PreserveUnits)},
+             {"β", ToMathematica(2 * Second, PreserveUnits)},
+             {"γ", ToMathematica(3 * Metre / Second, PreserveUnits)}}),
+        ToMathematica(std::tuple{1 * Metre, 2 * Second, 3 * Metre / Second},
+                      PreserveUnits));
   }
   {
     EXPECT_EQ(ToMathematica(std::tuple{2.0, 3.0}),
@@ -147,7 +149,7 @@ TEST_F(MathematicaTest, ToMathematica) {
   {
     EXPECT_EQ(absl::StrReplaceAll(u8R"(Quantity[α," m s^-1"])",
                                   {{"α", ToMathematica(1.5)}}),
-              ToMathematica(1.5 * Metre / Second));
+              ToMathematica(1.5 * Metre / Second, PreserveUnits));
   }
   {
     DoublePrecision<double> d(3);
@@ -183,8 +185,9 @@ TEST_F(MathematicaTest, ToMathematica) {
             Velocity<F>({-1.0 * Metre / Second,
                          -5.0 * Metre / Second,
                          8.0 * Metre / Second}));
-    EXPECT_EQ(ToMathematica(std::tuple{dof.position(), dof.velocity()}),
-              ToMathematica(dof));
+    EXPECT_EQ(ToMathematica(std::tuple{dof.position(), dof.velocity()},
+                            PreserveUnits),
+              ToMathematica(dof, PreserveUnits));
   }
   {
     UnboundedLowerTriangularMatrix<double> l2({1,
@@ -215,41 +218,45 @@ TEST_F(MathematicaTest, ToMathematica) {
                          -5.0 * Metre / Second,
                          8.0 * Metre / Second}))));
     EXPECT_EQ(ToMathematica(std::tuple{trajectory.front().time,
-                                       trajectory.front().degrees_of_freedom}),
-              ToMathematica(trajectory.front()));
+                                       trajectory.front().degrees_of_freedom},
+                            PreserveUnits),
+              ToMathematica(trajectory.front(), PreserveUnits));
   }
   {
     OrbitalElements::EquinoctialElements elements{
         Instant(), 1 * Metre, 2, 3, 4 * Radian, 5, 6, 7, 8};
     EXPECT_EQ(
         ToMathematica(std::tuple{
-            Instant(), 1 * Metre, 2.0, 3.0, 4 * Radian, 5.0, 6.0, 7.0, 8.0}),
-        ToMathematica(elements));
+            Instant(), 1 * Metre, 2.0, 3.0, 4 * Radian, 5.0, 6.0, 7.0, 8.0},
+            PreserveUnits),
+        ToMathematica(elements, PreserveUnits));
   }
   {
     PolynomialInMonomialBasis<Length, Time, 2, HornerEvaluator> polynomial1(
         {2 * Metre, -3 * Metre / Second, 4 * Metre / Second / Second});
-    EXPECT_EQ(absl::StrReplaceAll(
-                  "Function[Plus[α,Times[β,#],Times[γ,Power[#,2]]]]",
-                  {{"α", ToMathematica(2 * Metre)},
-                   {"β", ToMathematica(-3 * Metre / Second)},
-                   {"γ", ToMathematica(4 * Metre / Second / Second)}}),
-              ToMathematica(polynomial1));
+    EXPECT_EQ(
+        absl::StrReplaceAll(
+            "Function[Plus[α,Times[β,#],Times[γ,Power[#,2]]]]",
+            {{"α", ToMathematica(2 * Metre, PreserveUnits)},
+             {"β", ToMathematica(-3 * Metre / Second, PreserveUnits)},
+             {"γ", ToMathematica(4 * Metre / Second / Second, PreserveUnits)}}),
+        ToMathematica(polynomial1, PreserveUnits));
     PolynomialInMonomialBasis<Length, Instant, 2, HornerEvaluator> polynomial2(
         {5 * Metre, 6 * Metre / Second, -7 * Metre / Second / Second},
         Instant() + 2 * Second);
-    EXPECT_EQ(absl::StrReplaceAll(
-                  u8R"(Function[Plus[
+    EXPECT_EQ(
+        absl::StrReplaceAll(
+            u8R"(Function[Plus[
                         α,
                         Times[β,Subtract[#,δ]],
                         Times[γ,Power[Subtract[#,δ],2]]]])",
-                  {{"α", ToMathematica(5 * Metre)},
-                   {"β", ToMathematica(6 * Metre / Second)},
-                   {"γ", ToMathematica(-7 * Metre / Second / Second)},
-                   {"δ", ToMathematica(polynomial2.origin())},
-                   {" ", ""},
-                   {"\n", ""}}),
-              ToMathematica(polynomial2));
+            {{"α", ToMathematica(5 * Metre, PreserveUnits)},
+             {"β", ToMathematica(6 * Metre / Second, PreserveUnits)},
+             {"γ", ToMathematica(-7 * Metre / Second / Second, PreserveUnits)},
+             {"δ", ToMathematica(polynomial2.origin(), PreserveUnits)},
+             {" ", ""},
+             {"\n", ""}}),
+        ToMathematica(polynomial2, PreserveUnits));
   }
   {
     using Series = PoissonSeries<double, 0, 0, HornerEvaluator>;
@@ -264,14 +271,14 @@ TEST_F(MathematicaTest, ToMathematica) {
                   α,
                   Times[β,Sin[Times[ω,Subtract[#,δ]]]],
                   Times[γ,Cos[Times[ω,Subtract[#,δ]]]]]])",
-            {{"α", ToMathematicaBody(secular, /*express_in=*/std::nullopt)},
-             {"β", ToMathematicaBody(sin, /*express_in=*/std::nullopt)},
-             {"γ", ToMathematicaBody(cos, /*express_in=*/std::nullopt)},
-             {"δ", ToMathematica(t0)},
-             {"ω", ToMathematica(4 * Radian / Second)},
+            {{"α", ToMathematicaBody(secular, PreserveUnits)},
+             {"β", ToMathematicaBody(sin, PreserveUnits)},
+             {"γ", ToMathematicaBody(cos, PreserveUnits)},
+             {"δ", ToMathematica(t0, PreserveUnits)},
+             {"ω", ToMathematica(4 * Radian / Second, PreserveUnits)},
              {" ", ""},
              {"\n", ""}}),
-        ToMathematica(series));
+        ToMathematica(series, PreserveUnits));
   }
   {
     using PiecewiseSeries =
@@ -287,9 +294,11 @@ TEST_F(MathematicaTest, ToMathematica) {
     EXPECT_EQ(
         absl::StrReplaceAll(
             "Function[Piecewise[List[List[α,Between[#,β]]]]]",
-            {{"α", ToMathematicaBody(series, /*express_in=*/std::nullopt)},
-             {"β", ToMathematica(std::tuple{interval.min, interval.max})}}),
-        ToMathematica(pw));
+            {{"α", ToMathematicaBody(series, PreserveUnits)},
+             {"β",
+              ToMathematica(std::tuple{interval.min, interval.max},
+                            PreserveUnits)}}),
+        ToMathematica(pw, PreserveUnits));
   }
   {
     std::optional<std::string> opt1;
@@ -299,12 +308,12 @@ TEST_F(MathematicaTest, ToMathematica) {
   }
 }
 
-TEST_F(MathematicaTest, Option) {
-  EXPECT_EQ("Rule[option," + ToMathematica(3.0) + "]", Option("option", 3.0));
+TEST_F(MathematicaTest, Rule) {
+  EXPECT_EQ("Rule[option," + ToMathematica(3.0) + "]", Rule("option", 3.0));
 }
 
-TEST_F(MathematicaTest, Assign) {
-  EXPECT_EQ("Set[var," + ToMathematica(3.0) + "];\n", Assign("var", 3.0));
+TEST_F(MathematicaTest, Set) {
+  EXPECT_EQ("Set[var," + ToMathematica(3.0) + "];\n", Set("var", 3.0));
 }
 
 TEST_F(MathematicaTest, PlottableDataset) {
@@ -330,6 +339,9 @@ TEST_F(MathematicaTest, ExpressIn) {
     EXPECT_EQ(
         ToMathematica(3.0),
         ToMathematica(3.0 * Metre / Second / Second, ExpressIn(Metre, Second)));
+    EXPECT_EQ(
+        ToMathematica(3.0),
+        ToMathematica(3.0 * Metre / Second / Second, ExpressInSIUnits));
     EXPECT_EQ(ToMathematica(1 * Radian / (1 * Degree)),
               ToMathematica(1 * Radian, ExpressIn(Degree)));
   }
@@ -374,29 +386,6 @@ TEST_F(MathematicaTest, ExpressIn) {
   ToMathematica(1 * Radian, ExpressIn(Degree, Metre, Metre));
 #endif
 }
-
-// On macOS, std::filesystem is broken (prior to Catalina).  On Ubuntu, the
-// introduction of |Flush| caused the test to fail because apparently the file
-// is never written to.  We don't really care, we only use the logger on
-// Windows.
-#if PRINCIPIA_COMPILER_MSVC
-TEST_F(MathematicaTest, Logger) {
-  {
-    Logger logger(TEMP_DIR / "mathematica_test.wl");
-    logger.Append("a", std::vector{1.0, 2.0, 3.0});
-    logger.Append("β", 4 * Metre / Second);
-    logger.Append("a", F::origin);
-    logger.Set("c", 5.0);
-  }
-  // Go check the file.
-  EXPECT_EQ(Assign("a", std::tuple{std::vector{1.0, 2.0, 3.0}, F::origin}) +
-                Assign("β", std::tuple{4 * Metre / Second}) +
-                Assign("c", 5.0),
-            (std::stringstream{}
-             << std::ifstream(TEMP_DIR / "mathematica_test0.wl").rdbuf())
-                .str());
-}
-#endif
 
 }  // namespace mathematica
 }  // namespace principia
