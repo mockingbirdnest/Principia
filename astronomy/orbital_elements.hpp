@@ -145,12 +145,6 @@ class OrbitalElements {
   OrbitalElements() = default;
 
   template<typename PrimaryCentred>
-  static std::vector<EquinoctialElements> OsculatingEquinoctialElements(
-      Trajectory<PrimaryCentred> const& trajectory,
-      MassiveBody const& primary,
-      Body const& secondary);
-
-  template<typename PrimaryCentred>
   static std::vector<Length> RadialDistances(
       Trajectory<PrimaryCentred> const& trajectory);
 

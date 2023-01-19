@@ -148,9 +148,15 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
       std::move(mean_equinoctial_elements).value();
 
 
-  /* REMOVE BEFORE FLIGHT
-  orbital_elements.osculating_equinoctial_elements_ =
-      OsculatingEquinoctialElements(trajectory, primary, secondary);*/
+  /* REMOVE BEFORE FLIGHT: This needs to be behind a flag, it is only for
+   * testing. */
+  orbital_elements.osculating_equinoctial_elements_;
+  for (Instant t = trajectory.t_min(); t <= trajectory.t_max();
+       t += orbital_elements.sidereal_period_ / 256) {
+    orbital_elements.osculating_equinoctial_elements_.push_back(
+        osculating_equinoctial_elements(t));
+  }
+
   if (orbital_elements.mean_equinoctial_elements_.size() < 2) {
     return absl::OutOfRangeError(
         "trajectory does not span one sidereal period: sidereal period is " +
@@ -223,44 +229,6 @@ inline Interval<Length> OrbitalElements::mean_apoapsis_distance_interval()
 
 inline Interval<Length> OrbitalElements::radial_distance_interval() const {
   return radial_distance_interval_;
-}
-
-template<typename PrimaryCentred>
-std::vector<OrbitalElements::EquinoctialElements>
-OrbitalElements::OsculatingEquinoctialElements(
-    Trajectory<PrimaryCentred> const& trajectory,
-    MassiveBody const& primary,
-    Body const& secondary) {
-  DegreesOfFreedom<PrimaryCentred> const primary_dof{
-      PrimaryCentred::origin, PrimaryCentred::unmoving};
-  std::vector<EquinoctialElements> result;
-  result.reserve(trajectory.size());
-  for (auto const& [time, degrees_of_freedom] : trajectory) {
-    auto const osculating_elements =
-        KeplerOrbit<PrimaryCentred>(primary,
-                                    secondary,
-                                    degrees_of_freedom - primary_dof,
-                                    time)
-            .elements_at_epoch();
-    double const& e = *osculating_elements.eccentricity;
-    Angle const& ϖ = *osculating_elements.longitude_of_periapsis;
-    Angle const& Ω = osculating_elements.longitude_of_ascending_node;
-    Angle const& M = *osculating_elements.mean_anomaly;
-    Angle const& i = osculating_elements.inclination;
-    double const tg_½i = Tan(i / 2);
-    double const cotg_½i = 1 / tg_½i;
-    result.push_back(
-        {.t = time,
-         .a = *osculating_elements.semimajor_axis,
-         .h = e * Sin(ϖ),
-         .k = e * Cos(ϖ),
-         .λ = result.empty() ? ϖ + M : UnwindFrom(result.back().λ, ϖ + M),
-         .p = tg_½i * Sin(Ω),
-         .q = tg_½i * Cos(Ω),
-         .pʹ = cotg_½i * Sin(Ω),
-         .qʹ = cotg_½i * Cos(Ω)});
-  }
-  return result;
 }
 
 template<typename PrimaryCentred>
