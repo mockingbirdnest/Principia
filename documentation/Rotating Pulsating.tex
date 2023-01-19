@@ -1,0 +1,26 @@
+\documentclass[10pt, a4paper, twoside]{basestyle}
+
+\usepackage{tikz}
+\usetikzlibrary{cd}
+
+\usepackage[Mathematics]{semtex}
+\usepackage{chngcntr}
+\counterwithout{equation}{section}
+
+%%%% Shorthands.
+
+%%%% Title and authors.
+
+\title{On the Rotating-Pulsating reference frame}
+\date{\printdate{2023-01-32}}
+\author{Robin~Leroy (egg)}
+\begin{document}
+\maketitle
+\[\vq^R = \matR \vq^I\]
+\[\deriv{t}{\vq^R} = \matR \deriv{t}{\vq^I} + \MatrixSymbol\gW \vq^R\]
+(TODO intermediate step:)
+\[\deriv[2]{t}{\vq^R} = \matR \deriv[2]{t}{\vq^I} + \deriv{t}{\MatrixSymbol\gW} \vq^R + 2 \MatrixSymbol\gW \deriv{t}{\vq^R} - 2 \MatrixSymbol\gW \MatrixSymbol\gW \vq^R\]
+\[\vq^P = \frac{\vq^R}{r}\]
+\[\deriv{t}{\vq^P} =  \frac{\deriv{t}{\vq^R}}{r} -  \frac{\deriv{t}{r}}{r} \vq^P\]
+\[\deriv[2]{t}{\vq^P} =  \frac{\deriv[2]{t}{\vq^R}}{r} -  \dotsb\]
+\end{document}
