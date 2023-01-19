@@ -16,11 +16,55 @@
 \author{Robin~Leroy (egg)}
 \begin{document}
 \maketitle
-\[\vq^R = \matR \vq^I\]
-\[\deriv{t}{\vq^R} = \matR \deriv{t}{\vq^I} + \MatrixSymbol\gW \vq^R\]
-(TODO intermediate step:)
-\[\deriv[2]{t}{\vq^R} = \matR \deriv[2]{t}{\vq^I} + \deriv{t}{\MatrixSymbol\gW} \vq^R + 2 \MatrixSymbol\gW \deriv{t}{\vq^R} - 2 \MatrixSymbol\gW \MatrixSymbol\gW \vq^R\]
-\[\vq^P = \frac{\vq^R}{r}\]
+
+
+\begin{equation}
+\deriv[2]{t}{\vq^I}=\Transpose{\deriv{\vq^I}{V}}
+\end{equation}
+
+\[
+\deriv{t}{\matR}=\MatrixSymbol\gW \matR
+\]
+
+\begin{equation}
+\vq^R = \matR \pa{\vq^I - \vq_0^I}
+\end{equation}
+
+\[\deriv{t}{\vq^R} =  -  \matR \deriv{t}{\vq_0^I} + \MatrixSymbol\gW \vq^R + \matR \deriv{t}{\vq^I}\]
+
+\begin{align}
+\deriv[2]{t}{\vq^R}
+&=  - \MatrixSymbol\gW\matR \deriv{t}{\vq_0^I} - \matR \deriv[2]{t}{\vq_0^I} \deriv{t}{\MatrixSymbol\gW} \vq^R +\MatrixSymbol\gW \deriv{t}{\vq^R} + \MatrixSymbol\gW \deriv{t}{\vq^I} + \matR \deriv[2]{t}{\vq^I} \nonumber \\
+&= - \MatrixSymbol\gW\matR \deriv{t}{\vq_0^I}
+- \matR \deriv[2]{t}{\vq_0^I}
++ \deriv{t}{\MatrixSymbol\gW} \vq^R
++ \MatrixSymbol\gW \deriv{t}{\vq^R}
++ \MatrixSymbol\gW\pa{\deriv{t}{\vq^R}-\MatrixSymbol\gW \vq^R + \matR \deriv{t}{\vq_0^I}}
++ \matR \deriv[2]{t}{\vq^I} \nonumber \\
+&=  - \matR \deriv[2]{t}{\vq_0^I}
++ \underbrace{\deriv{t}{\MatrixSymbol\gW} \vq^R}_{\text{Euler}}
++ \underbrace{2 \MatrixSymbol\gW \deriv{t}{\vq^R}}_{\text{Coriolis}}
+- \underbrace{\MatrixSymbol\gW \MatrixSymbol\gW \vq^R}_{\mathclap{\text{centrifugal}}}
++ \matR \deriv[2]{t}{\vq^I}
+\end{align}
+Note that 
+\[\matR\deriv[2]{t}{\vq^I}=\matR\Transpose{\deriv{\vq^I}{V}}=\Transpose{\pa{\deriv{\vq^I}{V}\matR^{-1}}}=\Transpose{\pa{\deriv{\vq^I}{V}\deriv{\vq^R}{\vq^I}}}=\Transpose{\deriv{\vq^R}{V}}\text.\]
+At rest in the rotating frame, \idest, for $\deriv{t}{\vq^R}=0$, we have
+\begin{align}
+\deriv[2]{t}{\vq^R}
+&=  - \matR \deriv[2]{t}{\vq_0^I}
++ \underbrace{\deriv{t}{\MatrixSymbol\gW} \vq^R}_{\text{Euler}}
+- \underbrace{\MatrixSymbol\gW \MatrixSymbol\gW \vq^R}_{\mathclap{\text{centrifugal}}}
++ \matR \deriv[2]{t}{\vq^I} \nonumber\\
+&=
+\deriv{t}{\MatrixSymbol\gW} \vq^R+
+\derivop{\vq^R}\pa{
+\InnerProduct{\vq^R}{\matR \deriv[2]{t}{\vq_0^I}}
+- \frac{\InnerProduct{\MatrixSymbol\gW \vq^R}{\MatrixSymbol\gW \vq^R}}{2}
++V}\text.
+\end{align}
+The rotating-pulsating reference frame is defined by
+\begin{equation}\vq^P = \frac{\vq^R}{r}\text.\end{equation}
 \[\deriv{t}{\vq^P} =  \frac{\deriv{t}{\vq^R}}{r} -  \frac{\deriv{t}{r}}{r} \vq^P\]
 \[\deriv[2]{t}{\vq^P} =  \frac{\deriv[2]{t}{\vq^R}}{r} -  \dotsb\]
 \end{document}
