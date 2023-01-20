@@ -11,7 +11,7 @@
 
 %%%% Title and authors.
 
-\title{On the Rotating-Pulsating reference frame}
+\title{On the rotating-pulsating reference frame}
 \date{\printdate{2023-01-32}}
 \author{Robin~Leroy (egg)}
 \begin{document}
@@ -19,52 +19,108 @@
 
 
 \begin{equation}
-\deriv[2]{t}{\vq^I}=\Transpose{\deriv{\vq^I}{V}}
+\SecondTimeDerivative{\vq^I}=\Transpose{\deriv{\vq^I}{V}}
 \end{equation}
-
+Consider the rotating reference frame $R$ is defined by
+\begin{equation}
+\vq^R = \matR \pa{\vq^I - \vq_0^I}\text.
+\end{equation}
+Velocities in $R$ are related to velocities in $I$ as follows:
+\[\TimeDerivative{\vq^R} =  -  \matR \TimeDerivative{\vq_0^I} + \MatrixSymbol\gW \vq^R + \matR \TimeDerivative{\vq^I}\text,\]
+where
 \[
-\deriv{t}{\matR}=\MatrixSymbol\gW \matR
+\TimeDerivative{\matR}=\MatrixSymbol\gW \matR\text.
 \]
 
-\begin{equation}
-\vq^R = \matR \pa{\vq^I - \vq_0^I}
-\end{equation}
-
-\[\deriv{t}{\vq^R} =  -  \matR \deriv{t}{\vq_0^I} + \MatrixSymbol\gW \vq^R + \matR \deriv{t}{\vq^I}\]
-
+Accelerations in $R$ are related to accelerations in $I$ as follows:
 \begin{align}
-\deriv[2]{t}{\vq^R}
-&=  - \MatrixSymbol\gW\matR \deriv{t}{\vq_0^I} - \matR \deriv[2]{t}{\vq_0^I} \deriv{t}{\MatrixSymbol\gW} \vq^R +\MatrixSymbol\gW \deriv{t}{\vq^R} + \MatrixSymbol\gW \deriv{t}{\vq^I} + \matR \deriv[2]{t}{\vq^I} \nonumber \\
-&= - \MatrixSymbol\gW\matR \deriv{t}{\vq_0^I}
-- \matR \deriv[2]{t}{\vq_0^I}
-+ \deriv{t}{\MatrixSymbol\gW} \vq^R
-+ \MatrixSymbol\gW \deriv{t}{\vq^R}
-+ \MatrixSymbol\gW\pa{\deriv{t}{\vq^R}-\MatrixSymbol\gW \vq^R + \matR \deriv{t}{\vq_0^I}}
-+ \matR \deriv[2]{t}{\vq^I} \nonumber \\
-&=  - \matR \deriv[2]{t}{\vq_0^I}
-+ \underbrace{\deriv{t}{\MatrixSymbol\gW} \vq^R}_{\text{Euler}}
-+ \underbrace{2 \MatrixSymbol\gW \deriv{t}{\vq^R}}_{\text{Coriolis}}
-- \underbrace{\MatrixSymbol\gW \MatrixSymbol\gW \vq^R}_{\mathclap{\text{centrifugal}}}
-+ \matR \deriv[2]{t}{\vq^I}
+\SecondTimeDerivative{\vq^R}
+&=  - \MatrixSymbol\gW\matR \TimeDerivative{\vq_0^I} - \matR \SecondTimeDerivative{\vq_0^I} \TimeDerivative{\MatrixSymbol\gW} \vq^R +\MatrixSymbol\gW \TimeDerivative{\vq^R} + \MatrixSymbol\gW \TimeDerivative{\vq^I} + \matR \SecondTimeDerivative{\vq^I} \nonumber \\
+&= \begin{aligned}[t]- \MatrixSymbol\gW\matR \TimeDerivative{\vq_0^I}
+- \matR \SecondTimeDerivative{\vq_0^I}
++ \TimeDerivative{\MatrixSymbol\gW} \vq^R
++ \MatrixSymbol\gW \TimeDerivative{\vq^R}
++ \MatrixSymbol\gW\pa{\TimeDerivative{\vq^R}-\MatrixSymbol\gW \vq^R + \matR \TimeDerivative{\vq_0^I}}\\
++ \matR \SecondTimeDerivative{\vq^I}
+\end{aligned}\nonumber \\
+&=  - \matR \SecondTimeDerivative{\vq_0^I}
++ \underbrace{\TimeDerivative{\MatrixSymbol\gW} \vq^R}_{\text{Euler}}
++ \underbrace{2 \MatrixSymbol\gW \TimeDerivative{\vq^R}}_{\text{Coriolis}}
+- \underbrace{\MatrixSymbol\gW^2 \vq^R}_{\mathclap{\text{centrifugal}}}
++ \matR \SecondTimeDerivative{\vq^I}\text.
 \end{align}
-Note that 
-\[\matR\deriv[2]{t}{\vq^I}=\matR\Transpose{\deriv{\vq^I}{V}}=\Transpose{\pa{\deriv{\vq^I}{V}\matR^{-1}}}=\Transpose{\pa{\deriv{\vq^I}{V}\deriv{\vq^R}{\vq^I}}}=\Transpose{\deriv{\vq^R}{V}}\text.\]
-At rest in the rotating frame, \idest, for $\deriv{t}{\vq^R}=0$, we have
+Observe that 
+\[\matR\SecondTimeDerivative{\vq^I}=\matR\Transpose{\deriv{\vq^I}{V}}=\Transpose{\pa{\deriv{\vq^I}{V}\matR^{-1}}}=\Transpose{\pa{\deriv{\vq^I}{V}\deriv{\vq^R}{\vq^I}}}=\Transpose{\deriv{\vq^R}{V}}\text.\]
+At rest in $R$, \idest, for $\TimeDerivative{\vq^R}=0$, we have
 \begin{align}
-\deriv[2]{t}{\vq^R}
-&=  - \matR \deriv[2]{t}{\vq_0^I}
-+ \underbrace{\deriv{t}{\MatrixSymbol\gW} \vq^R}_{\text{Euler}}
-- \underbrace{\MatrixSymbol\gW \MatrixSymbol\gW \vq^R}_{\mathclap{\text{centrifugal}}}
-+ \matR \deriv[2]{t}{\vq^I} \nonumber\\
+\SecondTimeDerivative{\vq^R}
+&=  - \matR \SecondTimeDerivative{\vq_0^I}
++ \TimeDerivative{\MatrixSymbol\gW} \vq^R
+- \MatrixSymbol\gW^2 \vq^R
++ \matR \SecondTimeDerivative{\vq^I} \nonumber\\
 &=
-\deriv{t}{\MatrixSymbol\gW} \vq^R+
-\derivop{\vq^R}\pa{
-\InnerProduct{\vq^R}{\matR \deriv[2]{t}{\vq_0^I}}
+\underbrace{\TimeDerivative{\MatrixSymbol\gW} \vq^R}_{\mathclap{\operatorname{div}=0}}+
+\Transpose{\pa{\derivop{\vq^R}\pa{
+\InnerProduct{\vq^R}{\matR \SecondTimeDerivative{\vq_0^I}}
 - \frac{\InnerProduct{\MatrixSymbol\gW \vq^R}{\MatrixSymbol\gW \vq^R}}{2}
-+V}\text.
++V}}}\text.
 \end{align}
-The rotating-pulsating reference frame is defined by
+Let
+\[
+V^R\DefineAs
+\InnerProduct{\vq^R}{\matR \SecondTimeDerivative{\vq_0^I}}
+- \frac{\InnerProduct{\MatrixSymbol\gW \vq^R}{\MatrixSymbol\gW \vq^R}}{2}
++V\text.
+\]
+The rotating-pulsating reference frame $P$ is defined by
 \begin{equation}\vq^P = \frac{\vq^R}{r}\text.\end{equation}
-\[\deriv{t}{\vq^P} =  \frac{\deriv{t}{\vq^R}}{r} -  \frac{\deriv{t}{r}}{r} \vq^P\]
-\[\deriv[2]{t}{\vq^P} =  \frac{\deriv[2]{t}{\vq^R}}{r} -  \dotsb\]
+For velocities in $P$, we have
+\[
+\TimeDerivative{\vq^P}
+= -\frac{1}{r^2} \TimeDerivative{r} \vq^R + \frac{1}{r} \TimeDerivative{\vq^R}
+= -\frac{1}{r} \TimeDerivative{r} \vq^P + \frac{1}{r} \TimeDerivative{\vq^R}\text.
+\]
+For accelerations in $P$,
+\begin{align}\SecondTimeDerivative{\vq^P} &=
+  \frac{1}{r^2}\pa{\TimeDerivative{r}}^2 \vq^P
+- \frac{1}{r}\SecondTimeDerivative{r} \vq^P
+- \frac{1}{r}\TimeDerivative{r} \TimeDerivative{\vq^P}
+- \frac{1}{r^2}\TimeDerivative{r} \TimeDerivative{\vq^R}
++ \frac{1}{r}\SecondTimeDerivative{\vq^R}
+\nonumber\\ &=
+  \frac{1}{r^2}\pa{\TimeDerivative{r}}^2 \vq^P
+- \frac{1}{r}\SecondTimeDerivative{r} \vq^P
+- \frac{1}{r}\TimeDerivative{r} \TimeDerivative{\vq^P}
+- \frac{1}{r} \TimeDerivative{r} \pa{\TimeDerivative{\vq^P}+\frac{1}{r} \vq^P}
++ \frac{1}{r}\SecondTimeDerivative{\vq^R}
+\nonumber\\ &=
+  \frac{1}{r}\SecondTimeDerivative{r} \vq^P
+- \frac{2}{r}\TimeDerivative{r} \TimeDerivative{\vq^P}
++ \frac{1}{r}\SecondTimeDerivative{\vq^R}
+\\ &=
+  \frac{1}{r}\SecondTimeDerivative{r} \vq^P
+- \frac{2}{r}\TimeDerivative{r} \TimeDerivative{\vq^P}
++ \frac{1}{r}\pa{
+\TimeDerivative{\MatrixSymbol\gW} \vq^R
++ 2 \MatrixSymbol\gW \TimeDerivative{\vq^R}
++ \Transpose{\deriv{\vq^R}{V^R}}}
+\nonumber\\ &=
+  \frac{1}{r}\SecondTimeDerivative{r} \vq^P
+- \frac{2}{r}\TimeDerivative{r} \TimeDerivative{\vq^P}
++ \TimeDerivative{\MatrixSymbol\gW} \vq^P
++ 2 \MatrixSymbol\gW \pa{\TimeDerivative\vq^P+\frac{\TimeDerivative r}{r}\vq^P}
++ \Transpose{\deriv{\vq^P}{V^R}}
+\nonumber\\ &=
+\pa{2 \MatrixSymbol\gW - \frac{2}{r}\TimeDerivative{r}\Identity} \TimeDerivative{\vq^P}
++ \pa{2 \frac{\TimeDerivative r}{r} \MatrixSymbol\gW + \TimeDerivative{\MatrixSymbol\gW}} \vq^P
++ \frac{1}{r}\SecondTimeDerivative{r} \vq^P
++ \Transpose{\deriv{\vq^P}{V^R}}
+\nonumber\\ &=
+\pa{2 \MatrixSymbol\gW - \frac{2}{r}\TimeDerivative{r}\Identity} \TimeDerivative{\vq^P}
++ \pa{2 \frac{\TimeDerivative r}{r} \MatrixSymbol\gW + \TimeDerivative{\MatrixSymbol\gW}} \vq^P
++ \Transpose{\pa{\derivop{\vq^P}\pa{
+\frac{\SecondTimeDerivative{r}\pa{q^P}^2}{2r} 
++ {V^R}}}}
+\text.
+\end{align}
 \end{document}
