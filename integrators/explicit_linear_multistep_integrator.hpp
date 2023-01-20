@@ -28,6 +28,8 @@ using base::not_null;
 using numerics::DoublePrecision;
 using numerics::FixedVector;
 
+// This implementation follows [HW10], but restricts itself to explicit
+// integrators.
 template<typename Method, typename ODE_>
 class ExplicitLinearMultistepIntegrator
     : public FixedStepSizeIntegrator<ODE_> {
@@ -93,6 +95,7 @@ class ExplicitLinearMultistepIntegrator
       not_null<serialization::FixedStepSizeIntegrator*> message) const override;
 
  private:
+  // See [HW10], equation (7).
   static constexpr auto α_ = Method::α;
   static constexpr auto β_numerator_ = Method::β_numerator;
   static constexpr auto β_denominator_ = Method::β_denominator;

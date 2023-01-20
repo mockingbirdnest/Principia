@@ -62,6 +62,10 @@ ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
     // the Adams-Bashforth formulæ are typically written.
     auto it = previous_steps.end();
 
+    // See [HW10], equation (7).  Note that our indices are numbered
+    // consistently with our implementation of the symmetric linear multistep
+    // integrator, so index |j| in [HW10] becomes index |k - j| below.  This
+    // makes our formula more similar to equation (6) of [HW10].
     for (int j = 1; j <= k; ++j) {
       --it;
       DoubleDependentVariables const& yⱼ = it->y;

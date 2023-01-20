@@ -31,6 +31,7 @@ using numerics::DoublePrecision;
 using numerics::FixedVector;
 using quantities::Time;
 
+// This implementation follows [QT90].
 template<typename Method, typename ODE_>
 class SymmetricLinearMultistepIntegrator
     : public FixedStepSizeIntegrator<ODE_> {
