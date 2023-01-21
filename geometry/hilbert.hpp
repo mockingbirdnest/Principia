@@ -3,6 +3,7 @@
 #include <type_traits>
 
 #include "base/not_constructible.hpp"
+#include "geometry/grassmann.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/traits.hpp"
 
@@ -64,7 +65,14 @@ struct Hilbert<T1, T2,
 
   using InnerProductType =
       decltype(InnerProduct(std::declval<T1>(), std::declval<T2>()));
-  static InnerProductType InnerProduct(T1 const& t1, T2 const& t2);
+  static InnerProductType InnerProduct(T1 const& t1, T2 const& t2)
+#if _MSC_FULL_VER == 193'431'937
+  {
+    return internal_grassmann::InnerProduct(t1, t2);
+  }
+#else
+  ;
+#endif
 };
 
 template<typename T>
@@ -76,13 +84,34 @@ struct Hilbert<T, T,
 
   using InnerProductType =
       decltype(InnerProduct(std::declval<T>(), std::declval<T>()));
-  static InnerProductType InnerProduct(T const& t1, T const& t2);
+  static InnerProductType InnerProduct(T const& t1, T const& t2)
+#if _MSC_FULL_VER == 193'431'937
+  {
+    return internal_grassmann::InnerProduct(t1, t2);
+  }
+#else
+  ;
+#endif
 
   using Norm²Type = InnerProductType;
-  static Norm²Type Norm²(T const& t);
+  static Norm²Type Norm²(T const& t)
+#if _MSC_FULL_VER == 193'431'937
+  {
+    return t.Norm²();
+  }
+#else
+  ;
+#endif
 
   using NormType = decltype(std::declval<T>().Norm());
-  static NormType Norm(T const& t);
+  static NormType Norm(T const& t)
+#if _MSC_FULL_VER == 193'431'937
+  {
+    return t.Norm();
+  }
+#else
+  ;
+#endif
 
   using NormalizedType = Quotient<T, NormType>;
 };
