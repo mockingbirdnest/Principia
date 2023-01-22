@@ -198,7 +198,7 @@ SymmetricLinearMultistepIntegrator<Method, ODE_>::Instance::ReadFromMessage(
                                                          step,
                                                          integrator));
   instance->starter_.FillFromMessage(extension);
-  return instance;
+  return std::move(instance);
 }
 
 template<typename Method, typename ODE_>
