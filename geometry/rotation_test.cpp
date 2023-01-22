@@ -415,17 +415,17 @@ TEST_F(RotationTest, EulerAngles) {
   Angle const ω = 100 * Degree;
 
   // The frame in which the above elements are given.
-  using Reference = Frame<enum class ReferenceTag>;
+  using Reference = Frame<struct ReferenceTag>;
   // |Nodes| shares its z axis with |Reference|, and has the ascending node of
   // the orbit as its positive x direction.
-  using Nodes = Frame<enum class NodesTag>;
+  using Nodes = Frame<struct NodesTag>;
   // |Plane| also has the ascending node of the orbit as its positive x
   // direction, and has the orbital plane as its xy plane (with z being the
   // positive orbit normal).
-  using Plane = Frame<enum class PlaneTag>;
+  using Plane = Frame<struct PlaneTag>;
   // |Orbit| has its x axis towards the periapsis, and its z axis towards the
   // positive orbit normal.
-  using Orbit = Frame<enum class OrbitTag>;
+  using Orbit = Frame<struct OrbitTag>;
 
   Bivector<double, Reference> const celestial_pole({0, 0, 1});
   Bivector<double, Nodes> const ascending_node({1, 0, 0});
@@ -450,13 +450,13 @@ TEST_F(RotationTest, EulerAngles) {
 }
 
 TEST_F(RotationTest, CardanoAngles) {
-  using Ground = Frame<enum class GroundTag>;
+  using Ground = Frame<struct GroundTag>;
   Vector<double, Ground> north({1, 0, 0});
   Vector<double, Ground> east({0, 1, 0});
   Vector<double, Ground> down({0, 0, 1});
   auto const up = -down;
 
-  using Aircraft = Frame<enum class AircraftTag>;
+  using Aircraft = Frame<struct AircraftTag>;
   Vector<double, Aircraft> forward({1, 0, 0});
   Vector<double, Aircraft> right({0, 1, 0});
   Vector<double, Aircraft> bottom({0, 0, 1});

@@ -69,7 +69,7 @@ constexpr Time Δt = 45 * Minute;
 
 class KSPResonanceTest : public ::testing::Test {
  protected:
-  using KSP = Frame<enum class KSPTag, Inertial>;
+  using KSP = Frame<struct KSPTag, Inertial>;
 
   using Periods = std::map<not_null<MassiveBody const*>, Time>;
 

@@ -30,7 +30,7 @@ namespace si = quantities::si;
 
 class DegreesOfFreedomTest : public testing::Test {
  protected:
-  using World = Frame<enum class WorldTag>;
+  using World = Frame<struct WorldTag>;
 
   DegreesOfFreedomTest()
       : d1_(origin_ + Displacement<World>({1 * si::Unit<Length>,

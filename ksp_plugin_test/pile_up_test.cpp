@@ -113,8 +113,8 @@ class TestablePileUp : public PileUp {
 
 class PileUpTest : public testing::Test {
  protected:
-  using CorrectedPileUp = Frame<enum class CorrectedPileUpTag, NonRotating>;
-  using Vessel = Frame<enum class VesselTag>;
+  using CorrectedPileUp = Frame<struct CorrectedPileUpTag, NonRotating>;
+  using Vessel = Frame<struct VesselTag>;
 
   PileUpTest()
       : inertia_tensor1_(MakeWaterSphereInertiaTensor(mass1_)),

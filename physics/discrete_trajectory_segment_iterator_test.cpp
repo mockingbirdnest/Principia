@@ -25,7 +25,7 @@ using ::testing::Return;
 
 class DiscreteTrajectorySegmentIteratorTest : public ::testing::Test {
  protected:
-  using World = Frame<enum class WorldTag>;
+  using World = Frame<struct WorldTag>;
   using Segments = internal_discrete_trajectory_types::Segments<World>;
 
   DiscreteTrajectorySegmentIteratorTest()

@@ -28,7 +28,7 @@ namespace numerics {
 
 class Hermite2Test : public ::testing::Test {
  protected:
-  using World = Frame<enum class WorldTag, Inertial>;
+  using World = Frame<struct WorldTag, Inertial>;
 
   Instant const t0_;
 };
