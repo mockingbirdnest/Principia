@@ -341,9 +341,9 @@ TEST_F(RotationTest, Enums) {
             ? Handedness::Right
             : Handedness::Left;
     using Permuted =
-        Frame<enum class PermutedTag, Inertial, permuted_handedness>;
+        Frame<struct PermutedTag, Inertial, permuted_handedness>;
     using PermutedRotated =
-        Frame<enum class PermutedRotatedTag, Inertial, permuted_handedness>;
+        Frame<struct PermutedRotatedTag, Inertial, permuted_handedness>;
     Permutation<World, Permuted> const σ(permutation);
     Permutation<PermutedRotated, World1> const τ =
         (Permutation<Permuted, PermutedRotated>::Identity() * σ *
@@ -381,9 +381,9 @@ TEST_F(RotationTest, Enums) {
             ? Handedness::Right
             : Handedness::Left;
     using Permuted =
-        Frame<enum class PermutedTag, Inertial, permuted_handedness>;
+        Frame<struct PermutedTag, Inertial, permuted_handedness>;
     using PermutedRotated =
-        Frame<enum class PermutedRotatedTag, Inertial, permuted_handedness>;
+        Frame<struct PermutedRotatedTag, Inertial, permuted_handedness>;
     Permutation<World, Permuted> const σ(permutation);
     Permutation<PermutedRotated, World1> const τ =
         (Permutation<Permuted, PermutedRotated>::Identity() * σ *

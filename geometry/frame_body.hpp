@@ -20,7 +20,9 @@ inline uint32_t Fingerprint(std::string const& s) {
 }
 
 template<typename FrameTag,
-         FrameMotion motion_, Handedness handedness_, FrameTag tag_>
+         FrameMotion motion_, Handedness handedness_,
+         std::conditional_t<std::is_enum_v<FrameTag>,
+                            FrameTag, std::nullptr_t> tag_>
 void Frame<FrameTag, motion_, handedness_, tag_>::WriteToMessage(
   not_null<serialization::Frame*> const message) {
   if constexpr (google::protobuf::is_proto_enum<FrameTag>::value) {
@@ -38,7 +40,9 @@ void Frame<FrameTag, motion_, handedness_, tag_>::WriteToMessage(
 }
 
 template<typename FrameTag,
-         FrameMotion motion_, Handedness handedness_, FrameTag tag_>
+         FrameMotion motion_, Handedness handedness_,
+         std::conditional_t<std::is_enum_v<FrameTag>,
+                            FrameTag, std::nullptr_t> tag_>
 template<typename T, typename>
 void Frame<FrameTag, motion_, handedness_, tag_>::ReadFromMessage(
   serialization::Frame const& message) {
@@ -53,15 +57,21 @@ void Frame<FrameTag, motion_, handedness_, tag_>::ReadFromMessage(
 
 // Default-initialized to {0, 0, 0}.
 template<typename FrameTag,
-         FrameMotion motion_, Handedness handedness_, FrameTag tag_>
+         FrameMotion motion_, Handedness handedness_,
+         std::conditional_t<std::is_enum_v<FrameTag>,
+                            FrameTag, std::nullptr_t> tag_>
 Position<Frame<FrameTag, motion_, handedness_, tag_>> const
 Frame<FrameTag, motion_, handedness_, tag_>::origin;
 template<typename FrameTag,
-         FrameMotion motion_, Handedness handedness_, FrameTag tag_>
+         FrameMotion motion_, Handedness handedness_,
+         std::conditional_t<std::is_enum_v<FrameTag>,
+                            FrameTag, std::nullptr_t> tag_>
 Velocity<Frame<FrameTag, motion_, handedness_, tag_>> const
 Frame<FrameTag, motion_, handedness_, tag_>::unmoving;
 template<typename FrameTag,
-         FrameMotion motion_, Handedness handedness_, FrameTag tag_>
+         FrameMotion motion_, Handedness handedness_,
+         std::conditional_t<std::is_enum_v<FrameTag>,
+                            FrameTag, std::nullptr_t> tag_>
 AngularVelocity<Frame<FrameTag, motion_, handedness_, tag_>> const
 Frame<FrameTag, motion_, handedness_, tag_>::nonrotating;
 

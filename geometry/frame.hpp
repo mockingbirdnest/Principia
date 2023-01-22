@@ -31,10 +31,10 @@ enum class Handedness {
 // The frame is serializable if and only if FrameTag is a protocol buffer enum.
 // To declare a local frame that does not need serialization, use the following
 // pattern:
-//   using MyFrame = Frame<enum class MyFrameTag>;
+//   using MyFrame = Frame<struct MyFrameTag>;
 //
 // or:
-//   using MyFrame = Frame<enum class MyFrameTag, Inertial>;
+//   using MyFrame = Frame<struct MyFrameTag, Inertial>;
 //
 // By default, the frame is arbitrary and right-handed.
 //
@@ -47,7 +47,10 @@ enum class Handedness {
 template<typename FrameTag,
          FrameMotion motion_ = Arbitrary,
          Handedness handedness_ = Handedness::Right,
-         FrameTag tag_ = FrameTag{}>
+         std::conditional_t<std::is_enum_v<FrameTag>,
+                            FrameTag, std::nullptr_t> tag_ =
+             std::conditional_t<std::is_enum_v<FrameTag>,
+                                FrameTag, std::nullptr_t>{}>
 struct Frame : not_constructible {
   static constexpr bool is_inertial = motion_ == Inertial;
   static constexpr bool may_rotate = motion_ == Arbitrary;
@@ -59,7 +62,8 @@ struct Frame : not_constructible {
   static const AngularVelocity<Frame> nonrotating;
 
   using Tag = FrameTag;
-  static constexpr Tag tag = tag_;
+  static constexpr std::conditional_t<std::is_enum_v<FrameTag>,
+                                      FrameTag, std::nullptr_t> tag = tag_;
 
   static void WriteToMessage(not_null<serialization::Frame*> message);
 
