@@ -10,7 +10,7 @@
 %%%% Title and authors.
 
 \title{On the rotating-pulsating reference frame}
-\date{\printdate{2023-01-32}}
+\date{\printdate{2023-01-23}}
 \author{Robin~Leroy (egg)}
 \begin{document}
 \maketitle
@@ -24,7 +24,7 @@ implicitly quantified for all times $t$.
 For example, we may write $f\in\R$ for $\FunctionSpec f T \R$.
 
 \paragraph*{Derivative} The notation $\deriv x f$ represents the evaluation
-at the (time-dependent) value $x$
+at $x$
 of the differential $\diffd f$, where the expression $f$ is taken as a function of $x$.
 Within $f$, any occurrences of $x$ represent a free variable, rather than a function of time.
 The derivative with respect to time $\deriv t f$ may be written $\TimeDerivative f$.
@@ -77,7 +77,7 @@ throughout space, thus, at time $t$,\[
 \operatorname{\StandardVectorSymbol{rot}}_{\vq^{\mathscr F}}\SecondTimeDerivative\vq^{\mathscr F} =
 \matA^{\mathscr F}
 \]
-for some $\matA^{\mathscr F}$ which does not depend on $\SecondTimeDerivative\vq^{\mathscr F}$.
+for some $\matA^{\mathscr F}$ which does not depend on $\vq^{\mathscr F}$.
 
 The \emph{geometric potential} $V^{\mathscr F}$ of a frame $\mathscr F$ is defined on
 $Q^{\mathscr F}$ at time $t$ by the equation
@@ -109,28 +109,29 @@ Consider the rotating reference frame $\mathscr R$ defined by
 \end{equation}
 Velocities in $\mathscr R$ are related to velocities in $\mathscr I$ as follows:
 \begin{equation}
-\TimeDerivative\vq^{\mathscr R} =  -  \matR \TimeDerivative{\vq_0^{\mathscr I}} + \MatrixSymbol\gW \vq^{\mathscr R} + \matR \TimeDerivative\vq^{\mathscr I}\text,
+\TimeDerivative\vq^{\mathscr R} =  -  \matR \TimeDerivative{\vq_0^{\mathscr I}} + \MatrixSymbol ω \vq^{\mathscr R} + \matR \TimeDerivative\vq^{\mathscr I}\text,
 \end{equation}
 where
 \[
-\TimeDerivative{\matR}=\MatrixSymbol\gW \matR\text.
+\TimeDerivative{\matR}=\MatrixSymbol ω \matR\text.
 \]
 
 Accelerations in $\mathscr R$ are related to accelerations in $\mathscr I$ as follows:
 \begin{align}
 \SecondTimeDerivative\vq^{\mathscr R}
-&=  - \MatrixSymbol\gW\matR \TimeDerivative{\vq_0^{\mathscr I}} - \matR \SecondTimeDerivative{\vq_0^{\mathscr I}} \TimeDerivative{\MatrixSymbol\gW} \vq^{\mathscr R} +\MatrixSymbol\gW \TimeDerivative\vq^{\mathscr R} + \MatrixSymbol\gW \TimeDerivative\vq^{\mathscr I} + \matR \SecondTimeDerivative\vq^{\mathscr I} \nonumber \\
-&= - \MatrixSymbol\gW\matR \TimeDerivative{\vq_0^{\mathscr I}}
-- \matR \SecondTimeDerivative{\vq_0^{\mathscr I}}
-+ \TimeDerivative{\MatrixSymbol\gW} \vq^{\mathscr R}
-+ \MatrixSymbol\gW \TimeDerivative\vq^{\mathscr R}
-+ \MatrixSymbol\gW\pa{\TimeDerivative\vq^{\mathscr R}-\MatrixSymbol\gW \vq^{\mathscr R} + \matR \TimeDerivative{\vq_0^{\mathscr I}}}
+&=  - \MatrixSymbol ω\matR \TimeDerivative{\vq_0^{\mathscr I}}
+- \matR \SecondTimeDerivative\vq_0^{\mathscr I} \TimeDerivative{\MatrixSymbol ω} \vq^{\mathscr R} +\MatrixSymbol ω \TimeDerivative\vq^{\mathscr R} + \MatrixSymbol ω \TimeDerivative\vq^{\mathscr I} + \matR \SecondTimeDerivative\vq^{\mathscr I} \nonumber \\
+&= - \MatrixSymbol ω\matR \TimeDerivative{\vq_0^{\mathscr I}}
+- \matR \SecondTimeDerivative\vq_0^{\mathscr I}
++ \TimeDerivative{\MatrixSymbol ω} \vq^{\mathscr R}
++ \MatrixSymbol ω \TimeDerivative\vq^{\mathscr R}
++ \MatrixSymbol ω\pa{\TimeDerivative\vq^{\mathscr R}-\MatrixSymbol ω \vq^{\mathscr R} + \matR \TimeDerivative{\vq_0^{\mathscr I}}}
 + \matR \SecondTimeDerivative\vq^{\mathscr I}
 \nonumber \\
-&=  - \matR \SecondTimeDerivative{\vq_0^{\mathscr I}}
-+ \underbrace{\TimeDerivative{\MatrixSymbol\gW} \vq^{\mathscr R}}_{\text{Euler}}
-+ \underbrace{2 \MatrixSymbol\gW \TimeDerivative\vq^{\mathscr R}}_{\text{Coriolis}}
-- \underbrace{\MatrixSymbol\gW^2 \vq^{\mathscr R}}_{\mathclap{\text{centrifugal}}}
+&=  - \matR \SecondTimeDerivative\vq_0^{\mathscr I}
++ \underbrace{\TimeDerivative{\MatrixSymbol ω} \vq^{\mathscr R}}_{\text{Euler}}
++ \underbrace{2 \MatrixSymbol ω \TimeDerivative\vq^{\mathscr R}}_{\text{Coriolis}}
+- \underbrace{\MatrixSymbol ω^2 \vq^{\mathscr R}}_{\mathclap{\text{centrifugal}}}
 + \matR \SecondTimeDerivative\vq^{\mathscr I}\text.
 \end{align}
 Observe that for a free-falling trajectory,
@@ -141,33 +142,33 @@ Observe that for a free-falling trajectory,
 At rest in $\mathscr R$, \idest, for $\TimeDerivative\vq^{\mathscr R}=0$, we have
 \begin{align}
 \SecondTimeDerivative\vq^{\mathscr R}
-&=  - \matR \SecondTimeDerivative{\vq_0^{\mathscr I}}
-+ \TimeDerivative{\MatrixSymbol\gW} \vq^{\mathscr R}
-- \MatrixSymbol\gW^2 \vq^{\mathscr R}
+&=  - \matR \SecondTimeDerivative\vq_0^{\mathscr I}
++ \TimeDerivative{\MatrixSymbol ω} \vq^{\mathscr R}
+- \MatrixSymbol ω^2 \vq^{\mathscr R}
 + \matR \SecondTimeDerivative\vq^{\mathscr I} \nonumber\\
 &=
-\TimeDerivative{\MatrixSymbol\gW} \vq^{\mathscr R}-
+\TimeDerivative{\MatrixSymbol ω} \vq^{\mathscr R}-
 \Transpose{\pa{\derivop{\vq^{\mathscr R}}\pa{
-\InnerProduct{\vq^{\mathscr R}}{\matR \SecondTimeDerivative{\vq_0^{\mathscr I}}}
-- \frac{\Transpose{\pa{\vq^{\mathscr R}}}\Transpose{\MatrixSymbol\gW}{\MatrixSymbol\gW \vq^{\mathscr R}}}{2}
+\InnerProduct{\vq^{\mathscr R}}{\matR \SecondTimeDerivative\vq_0^{\mathscr I}}
+- \frac{\Transpose{\pa{\vq^{\mathscr R}}}\Transpose{\MatrixSymbol ω}{\MatrixSymbol ω \vq^{\mathscr R}}}{2}
 +V^{\mathscr I}}}}\text,
 \end{align}
 so that the geometric potential is
 \begin{equation}
 V^{\mathscr R}=
-\InnerProduct{\vq^{\mathscr R}}{\matR \SecondTimeDerivative{\vq_0^{\mathscr I}}}
-- \frac{\InnerProduct{\MatrixSymbol\gW \vq^{\mathscr R}}{\MatrixSymbol\gW \vq^{\mathscr R}}}{2}
-+V\text.
+\InnerProduct{\vq^{\mathscr R}}{\matR \SecondTimeDerivative\vq_0^{\mathscr I}}
+- \frac{\InnerProduct{\MatrixSymbol ω \vq^{\mathscr R}}{\MatrixSymbol ω \vq^{\mathscr R}}}{2}
++V^{\mathscr I}\text.
 \end{equation}
 \section{Rotating-pulsating frame}
 The rotating-pulsating reference frame $\mathscr P$ is defined by
 \begin{equation}\vq^{\mathscr P} \DefineAs \frac{\vq^{\mathscr R}}{r}\text.\end{equation}
 For velocities in $\mathscr P$, we have
-\[
+\begin{equation}
 \TimeDerivative\vq^{\mathscr P}
 = -\frac{1}{r^2} \TimeDerivative{r} \vq^{\mathscr R} + \frac{1}{r} \TimeDerivative\vq^{\mathscr R}
 = -\frac{1}{r} \TimeDerivative{r} \vq^{\mathscr P} + \frac{1}{r} \TimeDerivative\vq^{\mathscr R}\text.
-\]
+\end{equation}
 For accelerations in $\mathscr P$,
 \begin{align}\SecondTimeDerivative\vq^{\mathscr P} &=
   \frac{1}{r^2}\TimeDerivative{r}^2 \vq^{\mathscr P}
@@ -189,32 +190,112 @@ For accelerations in $\mathscr P$,
   \frac{1}{r}\SecondTimeDerivative{r} \vq^{\mathscr P}
 - \frac{2\TimeDerivative{r}}{r} \TimeDerivative\vq^{\mathscr P}
 + \frac{1}{r}\pa{
-\TimeDerivative{\MatrixSymbol\gW} \vq^{\mathscr R}
-+ 2 \MatrixSymbol\gW \TimeDerivative\vq^{\mathscr R}
+\TimeDerivative{\MatrixSymbol ω} \vq^{\mathscr R}
++ 2 \MatrixSymbol ω \TimeDerivative\vq^{\mathscr R}
 + \Transpose{\deriv{\vq^{\mathscr R}}{V^{\mathscr R}}}}
 \nonumber\\ &=
   \frac{1}{r}\SecondTimeDerivative{r} \vq^{\mathscr P}
 - \frac{2\TimeDerivative{r}}{r} \TimeDerivative\vq^{\mathscr P}
-+ \TimeDerivative{\MatrixSymbol\gW} \vq^{\mathscr P}
-+ 2 \MatrixSymbol\gW \pa{\TimeDerivative\vq^{\mathscr P}+\frac{\TimeDerivative r}{r}\vq^{\mathscr P}}
-+ \Transpose{\deriv{\vq^{\mathscr P}}{V^{\mathscr R}}}
++ \TimeDerivative{\MatrixSymbol ω} \vq^{\mathscr P}
++ 2 \MatrixSymbol ω \pa{\TimeDerivative\vq^{\mathscr P}+\frac{\TimeDerivative r}{r}\vq^{\mathscr P}}
++ \frac{1}{r^2}\Transpose{\deriv{\vq^{\mathscr P}}{V^{\mathscr R}}}
 \nonumber\\ &=
-\pa{2 \MatrixSymbol\gW - \frac{2\TimeDerivative{r}}{r}\Identity} \TimeDerivative\vq^{\mathscr P}
-+ \pa{2 \frac{\TimeDerivative r}{r} \MatrixSymbol\gW + \TimeDerivative{\MatrixSymbol\gW}} \vq^{\mathscr P}
+\pa{2 \MatrixSymbol ω - \frac{2\TimeDerivative{r}}{r}\Identity} \TimeDerivative\vq^{\mathscr P}
++ \pa{2 \frac{\TimeDerivative r}{r} \MatrixSymbol ω + \TimeDerivative{\MatrixSymbol ω}} \vq^{\mathscr P}
 + \frac{1}{r}\SecondTimeDerivative{r} \vq^{\mathscr P}
-+ \Transpose{\deriv{\vq^{\mathscr P}}{V^{\mathscr R}}}
++ \frac{1}{r^2}\Transpose{\deriv{\vq^{\mathscr P}}{V^{\mathscr R}}}
 \nonumber\\ &=
-\pa{2 \MatrixSymbol\gW - \frac{2\TimeDerivative{r}}{r}\Identity} \TimeDerivative\vq^{\mathscr P}
-+ \pa{2 \frac{\TimeDerivative r}{r} \MatrixSymbol\gW + \TimeDerivative{\MatrixSymbol\gW}} \vq^{\mathscr P}
-- \Transpose{\pa{\derivop{\vq^{\mathscr P}}\pa{
+\pa{2 \MatrixSymbol ω - \frac{2\TimeDerivative{r}}{r}\Identity} \TimeDerivative\vq^{\mathscr P}
++ \pa{\underbrace{2 \frac{\TimeDerivative r}{r} \MatrixSymbol ω
++ \TimeDerivative{\MatrixSymbol ω}}_{\matA^{\mathscr P}}} \vq^{\mathscr P}
+- \Transpose{\pa{\derivop{\vq^{\mathscr P}}\pa{\underbrace{
 - \frac{\SecondTimeDerivative{r}\scal{\vq^{\mathscr P}}{\vq^{\mathscr P}}}{2r} 
-+ {V^{\mathscr R}}}}}
++ \frac{V^{\mathscr R}}{r^2}}_{V^{\mathscr P}}}}}
 \text.
 \end{align}
-The geometric potential is thus
-\[V^{\mathscr P}\DefineAs
--\frac{\SecondTimeDerivative{r}\scal{\vq^{\mathscr P}}{\vq^{\mathscr P}}}{2r}
-+ {V^{\mathscr R}}\text.\]
 \section{Rotating-pulsating frame of the Kepler problem}
+Consider a system consisting of two point masses with time-independent
+gravitational parameters $μ_1$ and $μ_2$, subject to Newtonian gravity.
+A test mass is then subject to the potential\begin{align*}
+V^{\mathscr I}&=
+-\frac{μ_1}{\norm{\vq_1^{\mathscr I}-\vq^{\mathscr I}}}
+-\frac{μ_2}{\norm{\vq_2^{\mathscr I}-\vq^{\mathscr I}}}
+\\&=
+-\frac{μ_1}{\norm{\vq_1^{\mathscr R}-\vq^{\mathscr R}}}
+-\frac{μ_2}{\norm{\vq_2^{\mathscr R}-\vq^{\mathscr R}}}
+\\&=
+-\frac{1}{r}\pa{\underbrace{
+\frac{μ_1}{\norm{\vq_1^{\mathscr P}-\vq^{\mathscr P}}}+
+\frac{μ_2}{\norm{\vq_2^{\mathscr P}-\vq^{\mathscr P}}}}_{\DefinitionOf{V'}}}
+\text.
+\end{align*}
+
+Let $\vq^{\mathscr I}_0$ be the barycentre,
+\[
+\vq^{\mathscr I}_0\DefineAs \frac{μ_1\vq_1^{\mathscr I}+μ_2\vq_2^{\mathscr I}}{μ_1+μ_2}\text.
+\]
+We have $\SecondTimeDerivative\vq_0^{\mathscr I}=\nullvec$.
+Let $\matR$ be such that $\vq_1^{\mathscr R}$ and $\vq_2^{\mathscr R}$ both lie on the $x$-axis,
+with $\vq_1^{\mathscr R}$ on the negative side, and such that
+$\MatrixSymbol ω$ is in the positive $x\Exterior y$ direction.
+
+Let $\vr\DefineAs\vq_1^{\mathscr I}-\vq_2^{\mathscr I}$, and $r\DefineAs\norm \vr$,
+so that
+\begin{align*}
+\vq_1^{\mathscr R}&=\begin{pmatrix}-\frac{μ_2}{μ_1+μ_2}r\\0\\0\end{pmatrix}
+&\vq_2^{\mathscr R}&=\begin{pmatrix}\frac{μ_1}{μ_1+μ_2}r\\0\\0\end{pmatrix}\text,
+\intertext{and, in the pulsating frame,}
+\vq_1^{\mathscr P}&=\begin{pmatrix}-\frac{μ_2}{μ_1+μ_2}\\0\\0\end{pmatrix}
+&\vq_2^{\mathscr P}&=\begin{pmatrix}\frac{μ_1}{μ_1+μ_2}\\0\\0\end{pmatrix}\text.
+\end{align*}
+
+If the eccentricity vanishes, $\TimeDerivative {\MatrixSymbol ω}=\nullvec$,
+so that the Euler force vanishes, and the geometric acceleration at rest in
+$\mathscr R$ is irrotational. Further, $r$ is constant, thus so are
+$\vq_1^{\mathscr R}$ and $\vq_2^{\mathscr R}$, and therefore the geometric
+potential $V^{\mathscr R}$  is constant.
+The critical points of $V^{\mathscr R}$ are thus fixed; they are the \emph{Lagrange points}.
+However, when the eccentricity does not vanish, the Euler force appears, and the critical
+points of the geometric potential are not fixed.
+
+Observe that $ωr^2$ is the areal velocity of the Kepler problem, so that\[
+\deriv{t}{ωr^2}=\TimeDerivative ω r^2 + 2 ω\TimeDerivative r r = 0
+\text{, and therefore }
+\TimeDerivative ω + 2 \frac{\TimeDerivative r}{r} ω = 0\text.
+\]
+Since the rotational axis is invariant in the Kepler problem,
+\[
+\matA^{\mathscr P}
+= \TimeDerivative {\MatrixSymbol ω} + 2 \frac{\TimeDerivative r}{r} \MatrixSymbol ω
+= \nullmat\text,
+\]
+\idest, the geometric acceleration at rest is irrotational: the pulsation of the reference
+frame eliminates the Euler force.
+
+Further, observe that, since $\SecondTimeDerivative \vr=-\frac{μ_1+μ_2}{r^2}\hat{\vr}$, we have\[
+\SecondTimeDerivative r - r ω^2=\InnerProduct{\SecondTimeDerivative\vr}{\hat{\vr}}=-\frac{μ_1+μ_2}{r^2}\text.
+\]
+Consider now the geometric potential\begin{align*}
+V^{\mathscr P} &=
+- \frac{\SecondTimeDerivative{r}\scal{\vq^{\mathscr P}}{\vq^{\mathscr P}}}{2r} 
++ \frac{V^{\mathscr R}}{r^2}
+\\ &=
+- \frac{\SecondTimeDerivative{r}\scal{\vq^{\mathscr P}}{\vq^{\mathscr P}}}{2r} 
+- \frac{\InnerProduct{\MatrixSymbol ω \vq^{\mathscr R}}{\MatrixSymbol ω \vq^{\mathscr R}}}{2r^2}
++\frac{V^{\mathscr I}}{r^2}
+\\ &=
+- \frac{\SecondTimeDerivative{r}\scal{\vq^{\mathscr P}}{\vq^{\mathscr P}}}{2r^2} 
+- \frac{\InnerProduct{\MatrixSymbol ω \vq^{\mathscr P}}{\MatrixSymbol ω \vq^{\mathscr P}}}{2}
++\frac{V'}{r^3}\text.
+\intertext{For $\vq^{P}$ in the $xy$ plane,}
+V^{\mathscr P} &=
+- \pa{\frac{\SecondTimeDerivative{r}}{r} 
++ ω^2}\frac{\pa{q^{\mathscr P}}^2}{2}
++\frac{V'}{r^3}
+\\ &= \frac{1}{r^3}\pa{-\frac{\pa{μ_1+μ_2}\pa{q^{\mathscr P}}^2}{2} + V'}
+\text.
+\end{align*}
+Thus, in the $xy$ plane, the geometric potential, while not constant, varies only by
+multiplication by a position-independent scalar; in particular, its critical points are fixed.
 
 \end{document}
