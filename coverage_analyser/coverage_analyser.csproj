@@ -34,12 +34,11 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Condition="$(MSBuildVersion)!=16.10.0" Include="Microsoft.VisualStudio.Coverage.Analysis, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(VCTargetsPath)\..\..\..\..\Common7\IDE\Extensions\TestPlatform\Microsoft.VisualStudio.Coverage.Analysis.dll</HintPath>
-    </Reference>
     <Reference Condition="$(MSBuildVersion)==16.10.0" Include="Microsoft.VisualStudio.Coverage.Analysis.Net">
       <HintPath>$(VCTargetsPath)\..\..\..\..\Common7\IDE\PrivateAssemblies\Microsoft.VisualStudio.Coverage.Analysis.Net.dll</HintPath>
+    </Reference>
+    <Reference Condition="$(MSBuildVersion)&gt;=17.0.0" Include="Microsoft.VisualStudio.Coverage.Analysis.Net">
+      <HintPath>C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\PrivateAssemblies\Microsoft.VisualStudio.Coverage.Analysis.Net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -67,7 +66,7 @@
     </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
