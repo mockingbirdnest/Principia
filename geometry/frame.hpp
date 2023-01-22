@@ -62,8 +62,10 @@ struct Frame : not_constructible {
   static const AngularVelocity<Frame> nonrotating;
 
   using Tag = FrameTag;
-  static constexpr std::conditional_t<std::is_enum_v<FrameTag>,
-                                      FrameTag, std::nullptr_t> tag = tag_;
+  static constexpr bool has_tag = std::is_enum_v<FrameTag>;
+  template<typename T = FrameTag,
+           typename = std::enable_if_t<std::is_enum_v<T>>>
+  static constexpr FrameTag tag();
 
   static void WriteToMessage(not_null<serialization::Frame*> message);
 
