@@ -33,6 +33,8 @@
     <ClInclude Include="mock_integrators.hpp" />
     <ClInclude Include="ordinary_differential_equations.hpp" />
     <ClInclude Include="ordinary_differential_equations_body.hpp" />
+    <ClInclude Include="starter.hpp" />
+    <ClInclude Include="starter_body.hpp" />
     <ClInclude Include="symmetric_linear_multistep_integrator.hpp" />
     <ClInclude Include="symmetric_linear_multistep_integrator_body.hpp" />
     <ClInclude Include="symplectic_partitioned_runge_kutta_integrator.hpp" />

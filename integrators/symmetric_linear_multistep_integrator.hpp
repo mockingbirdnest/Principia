@@ -16,6 +16,7 @@
 #include "base/traits.hpp"
 #include "integrators/cohen_hubbard_oesterwinter.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
+#include "integrators/starter.hpp"
 #include "numerics/double_precision.hpp"
 #include "numerics/fixed_arrays.hpp"
 
@@ -79,35 +80,25 @@ class SymmetricLinearMultistepIntegrator
               message);
     };
 
+    class Starter : public integrators::Starter<ODE, Step, /*steps=*/order> {
+     protected:
+      using integrators::Starter<ODE, Step, order>::Starter;
+
+      void FillStepFromState(ODE const& equation,
+                             typename ODE::State const& state,
+                             Step& step) const override;
+    };
+
     Instance(InitialValueProblem<ODE> const& problem,
              AppendState const& append_state,
              Time const& step,
              SymmetricLinearMultistepIntegrator const& integrator);
-
-    // For deserialization.
-    Instance(InitialValueProblem<ODE> const& problem,
-             AppendState const& append_state,
-             Time const& step,
-             int startup_step_index,
-             std::list<Step> previous_steps,
-             SymmetricLinearMultistepIntegrator const& integrator);
-
-    // Performs the startup integration, i.e., computes enough states to either
-    // reach |t_final| or to reach a point where |instance.previous_steps_| has
-    // |order - 1| elements.  During startup |instance.current_state_| is
-    // updated more frequently than once every |instance.step_|.
-    void StartupSolve(Instant const& t_final);
 
     // Performs the velocity computation using the Cohen-Hubbard-Oesterwinter
     // method based on the accelerations computed by the main integrator.
     void ComputeVelocityUsingCohenHubbardOesterwinter();
 
-    static void FillStepFromState(ODE const& equation,
-                                  typename ODE::State const& state,
-                                  Step& step);
-
-    int startup_step_index_ = 0;
-    std::list<Step> previous_steps_;  // At most |order_| elements.
+    Starter starter_;
     SymmetricLinearMultistepIntegrator const& integrator_;
     friend class SymmetricLinearMultistepIntegrator;
   };
