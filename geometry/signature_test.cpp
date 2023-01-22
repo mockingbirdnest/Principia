@@ -35,7 +35,7 @@ class SignatureTest : public testing::Test {
                    Inertial,
                    Handedness::Right,
                    serialization::Frame::TEST2>;
-  using L = Frame<enum class LTag, Inertial, Handedness::Left>;
+  using L = Frame<struct LTag, Inertial, Handedness::Left>;
 
   using PositiveSignature = Signature<R1, R2>;
   using NegativeSignature = Signature<R1, L>;

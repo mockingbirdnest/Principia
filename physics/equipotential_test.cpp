@@ -70,8 +70,8 @@ using testing_utilities::SolarSystemFactory;
 
 class EquipotentialTest : public ::testing::Test {
  protected:
-  using Barycentric = Frame<enum class BarycentricTag, Inertial>;
-  using World = Frame<enum class WorldTag, Arbitrary>;
+  using Barycentric = Frame<struct BarycentricTag, Inertial>;
+  using World = Frame<struct WorldTag, Arbitrary>;
 
   EquipotentialTest()
       : ephemeris_parameters_(

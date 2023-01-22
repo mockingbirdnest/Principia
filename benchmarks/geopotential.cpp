@@ -76,7 +76,7 @@ GeneralSphericalHarmonicsAccelerationF90(
     FixedMatrix<double, degree + 1, order + 1> const& snm,
     Instant const& t,
     Displacement<Frame> const& r) {
-  using SurfaceFrame = geometry::Frame<enum class SurfaceFrameTag>;
+  using SurfaceFrame = geometry::Frame<struct SurfaceFrameTag>;
   auto const from_surface_frame =
       body->template FromSurfaceFrame<SurfaceFrame>(t);
   auto const to_surface_frame = from_surface_frame.Inverse();

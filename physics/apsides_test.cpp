@@ -52,7 +52,7 @@ using ::testing::SizeIs;
 
 class ApsidesTest : public ::testing::Test {
  protected:
-  using World = Frame<enum class WorldTag, Inertial>;
+  using World = Frame<struct WorldTag, Inertial>;
 };
 
 #if !defined(_DEBUG)

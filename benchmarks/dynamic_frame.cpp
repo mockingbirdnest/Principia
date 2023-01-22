@@ -60,7 +60,7 @@ namespace si = quantities::si;
 
 namespace physics {
 
-using Rendering = Frame<enum class RenderingTag>;
+using Rendering = Frame<struct RenderingTag>;
 
 template<typename F, template<typename> class T>
 void FillLinearTrajectory(Position<F> const& initial,

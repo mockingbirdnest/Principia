@@ -20,48 +20,68 @@ inline uint32_t Fingerprint(std::string const& s) {
 }
 
 template<typename FrameTag,
-         FrameMotion motion_, Handedness handedness_, FrameTag tag_>
+         FrameMotion motion_, Handedness handedness_,
+         std::conditional_t<std::is_enum_v<FrameTag>,
+                            FrameTag, std::nullptr_t> tag_>
 void Frame<FrameTag, motion_, handedness_, tag_>::WriteToMessage(
   not_null<serialization::Frame*> const message) {
   if constexpr (google::protobuf::is_proto_enum<FrameTag>::value) {
+    static_assert(has_tag);
     std::string const& tag_type_full_name =
         google::protobuf::GetEnumDescriptor<Tag>()->full_name();
 
     message->set_tag_type_fingerprint(Fingerprint(tag_type_full_name));
-    message->set_tag(static_cast<int>(tag));
+    message->set_tag(static_cast<int>(tag()));
     message->set_is_inertial(is_inertial);
   } else {
-    LOG(FATAL) << "Non serializable frame with tag " << static_cast<int>(tag_)
-               << ", motion " << motion_ << ", handedness "
-               << static_cast<int>(handedness_);
+    LOG(FATAL) << "Non serializable frame with  motion " << motion_
+               << ", handedness " << static_cast<int>(handedness_);
   }
 }
 
 template<typename FrameTag,
-         FrameMotion motion_, Handedness handedness_, FrameTag tag_>
+         FrameMotion motion_, Handedness handedness_,
+         std::conditional_t<std::is_enum_v<FrameTag>,
+                            FrameTag, std::nullptr_t> tag_>
+template<typename T, typename>
+constexpr FrameTag Frame<FrameTag, motion_, handedness_, tag_>::tag() {
+  return tag_;
+}
+
+template<typename FrameTag,
+         FrameMotion motion_, Handedness handedness_,
+         std::conditional_t<std::is_enum_v<FrameTag>,
+                            FrameTag, std::nullptr_t> tag_>
 template<typename T, typename>
 void Frame<FrameTag, motion_, handedness_, tag_>::ReadFromMessage(
   serialization::Frame const& message) {
+  static_assert(has_tag);
   std::string const& tag_type_full_name =
       google::protobuf::GetEnumDescriptor<Tag>()->full_name();
 
   CHECK_EQ(Fingerprint(tag_type_full_name), message.tag_type_fingerprint())
       << tag_type_full_name;
-  CHECK_EQ(static_cast<int>(tag), message.tag());
+  CHECK_EQ(static_cast<int>(tag()), message.tag());
   CHECK_EQ(is_inertial, message.is_inertial());
 }
 
 // Default-initialized to {0, 0, 0}.
 template<typename FrameTag,
-         FrameMotion motion_, Handedness handedness_, FrameTag tag_>
+         FrameMotion motion_, Handedness handedness_,
+         std::conditional_t<std::is_enum_v<FrameTag>,
+                            FrameTag, std::nullptr_t> tag_>
 Position<Frame<FrameTag, motion_, handedness_, tag_>> const
 Frame<FrameTag, motion_, handedness_, tag_>::origin;
 template<typename FrameTag,
-         FrameMotion motion_, Handedness handedness_, FrameTag tag_>
+         FrameMotion motion_, Handedness handedness_,
+         std::conditional_t<std::is_enum_v<FrameTag>,
+                            FrameTag, std::nullptr_t> tag_>
 Velocity<Frame<FrameTag, motion_, handedness_, tag_>> const
 Frame<FrameTag, motion_, handedness_, tag_>::unmoving;
 template<typename FrameTag,
-         FrameMotion motion_, Handedness handedness_, FrameTag tag_>
+         FrameMotion motion_, Handedness handedness_,
+         std::conditional_t<std::is_enum_v<FrameTag>,
+                            FrameTag, std::nullptr_t> tag_>
 AngularVelocity<Frame<FrameTag, motion_, handedness_, tag_>> const
 Frame<FrameTag, motion_, handedness_, tag_>::nonrotating;
 

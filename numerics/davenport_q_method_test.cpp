@@ -30,8 +30,8 @@ constexpr int number_of_test_vectors = 100;
 
 class DavenportQMethodTest : public ::testing::Test {
  protected:
-  using World1 = Frame<enum class World1Tag>;
-  using World2 = Frame<enum class World2Tag>;
+  using World1 = Frame<struct World1Tag>;
+  using World2 = Frame<struct World2Tag>;
 
   DavenportQMethodTest()
       : random_(42) {

@@ -55,7 +55,7 @@ class PrincipalComponentPartitioningTree {
  private:
   // A frame used to compute the principal components.
   using PrincipalComponentsFrame =
-      Frame<enum class PrincipalComponentsFrameTag>;
+      Frame<struct PrincipalComponentsFrameTag>;
 
   // A displacement from the centroid.
   using Displacement = Difference<Value>;

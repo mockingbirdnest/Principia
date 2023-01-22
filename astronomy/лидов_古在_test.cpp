@@ -50,7 +50,7 @@ using testing_utilities::IsNear;
 class Лидов古在Test : public ::testing::Test {
  protected:
   using MercuryCentredInertial =
-      Frame<enum class MercuryCentredInertialTag, NonRotating>;
+      Frame<struct MercuryCentredInertialTag, NonRotating>;
 
   Лидов古在Test()
       : solar_system_1950_(

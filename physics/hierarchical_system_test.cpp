@@ -33,7 +33,7 @@ namespace si = quantities::si;
 
 class HierarchicalSystemTest : public ::testing::Test {
  protected:
-  using World = Frame<enum class WorldTag, Inertial>;
+  using World = Frame<struct WorldTag, Inertial>;
 };
 
 TEST_F(HierarchicalSystemTest, HierarchicalSystem) {

@@ -32,7 +32,7 @@ using ::testing::Ne;
 
 class NumericsTest : public testing::Test {
  protected:
-  using World = Frame<enum class WorldTag>;
+  using World = Frame<struct WorldTag>;
 
   R3Element<double> const i_ = {1, 0, 0};
   R3Element<double> const j_ = {0, 1, 0};

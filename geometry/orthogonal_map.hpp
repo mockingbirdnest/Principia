@@ -100,7 +100,7 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
  private:
   explicit OrthogonalMap(Quaternion const& quaternion);
 
-  using IntermediateFrame = Frame<enum class IntermediateFrameTag,
+  using IntermediateFrame = Frame<struct IntermediateFrameTag,
                                   ToFrame::motion,
                                   ToFrame::handedness>;
 

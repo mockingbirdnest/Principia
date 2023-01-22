@@ -438,7 +438,7 @@ void EphemerisL4ProbeBenchmark(Time const integration_duration,
     // plane is the ecliptic realized by the obliquity given by the IAU in 1976
     // (16th general assembly, resolution 10, commission 4, recommendation 1),
     // identifying the ICRS xy plane with the mean equator of J2000.0.
-    using Ecliptic = Frame<enum class EclipticTag>;
+    using Ecliptic = Frame<struct EclipticTag>;
 
     Rotation<ICRS, Ecliptic> const equatorial_to_ecliptic(
         23 * Degree + 26 * ArcMinute + 21.448 * ArcSecond,
