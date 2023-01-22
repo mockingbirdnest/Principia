@@ -4,8 +4,6 @@
 \usetikzlibrary{cd}
 
 \usepackage[Mathematics]{semtex}
-\usepackage{chngcntr}
-\counterwithout{equation}{section}
 
 %%%% Shorthands.
 
@@ -17,110 +15,193 @@
 \begin{document}
 \maketitle
 
+\section*{Notation}
+\paragraph*{Time} Unless otherwise mentioned, all variables implicitly depend on time, a one-dimensional real oriented inner product space $T$.
+All equations are for those functions evaluated at time $t$.
+Unless otherwise mentioned, all predicates involving variables dependent on time are
+implicitly quantified for all times $t$.
 
+For example, we may write $f\in\R$ for $\FunctionSpec f T \R$.
+
+\paragraph*{Derivative} The notation $\deriv x f$ represents the evaluation
+at the (time-dependent) value $x$
+of the differential $\diffd f$, where the expression $f$ is taken as a function of $x$.
+Within $f$, any occurrences of $x$ represent a free variable, rather than a function of time.
+The derivative with respect to time $\deriv t f$ may be written $\TimeDerivative f$.
+
+For example, we may write
+\[\derivop t \deriv x {\E^{x}} = \derivop t {\E^{x}} = \E^{x}\TimeDerivative x\text,\]
+which is implicitly
+\[\Evaluate{\derivop τ \pa{\Evaluate{\deriv ξ {\E^{ξ}}}{ξ=x\of{τ}}\phantom{_{ξ=x\of{τ}}}}}{τ=t} = \Evaluate{\deriv τ {\E^{x\of{τ}}}}{τ=t} = \E^{x\of{t}}\TimeDerivative x\of{t}\text.\]
+This also applies for multidimensional $x$; in particular we may write
+\[\Transpose{\deriv \vx {f\of{\vx}}}\text{ for }\pa{\grad f\of{t,\placeholder}}\of{t, \vx\of t}\text.\]
+This notation facilitates changes of variables, which are the main focus of this document.
+
+Note that $\diffd$ here is always the differential, not the exterior derivative; thus for vector
+spaces $V$ and $W$ and $\FunctionSpec f V W$, we have $\FunctionSpec {\diffd f} {V} {\Dual V \Tensor W}$, and
+$\FunctionSpec {\diffd^2 f} {V} {\Dual V \Tensor \Dual V \Tensor W}$, rather than $\diffd^2=0$.
+
+As it is somewhat impractical to construct a notation which makes pullbacks of two-forms natural,
+and as we do not perform changes of variables on curls, we eschew the exterior derivative entirely,
+and merely get rid of orientation-dependent identifications by writing
+\[\pa{\operatorname{\StandardVectorSymbol{rot}}_{\vq}\vv}\vw\text{ for }
+\pa{\mathbf{\nabla}\times\vv\of{t,\placeholder}}\of{\vq\of t}\times\vw\of{t,\vq\of t}\text.\]
+
+\paragraph*{Reference frames}
+Script capital letters denote reference frames.
+For all frames $\mathscr F$, $Q^{\mathscr F}$ is the space of displacements
+from the origin in frame $\mathscr F$ (representing positions in space),
+a three-dimensional real inner product space associated with $\mathscr F$.
+Variables $\vq^{\mathscr F}$ or $\vq_i^{\mathscr F}$ have values in $Q^{\mathscr F}$.
+
+Reference frames are defined in relation to each other by invertible transformations; thus if
+$\mathscr G$ is defined by $\vq^{\mathscr G} \DefineAs \vg\of{\vq^{\mathscr F}}$, a function $f$
+that depends on $\vq^{\mathscr F}$ can be taken as a function that depends on $\vq^{\mathscr G}$,
+and differentiated accordingly.
+
+For example, for $f$ implicitly dependent on $\vq^{\mathscr F}$ as well as $t$, we may write\[
+\deriv{\vq^{\mathscr G}}{f}=\deriv{\vq^{\mathscr F}}{f}\deriv{\vq^{\mathscr G}}{\vq^{\mathscr F}}\text,
+\]
+which is implicitly
+\[
+\diffd \pa{f\of{t,\placeholder}\Compose\vg\of{t,\placeholder}^{-1}}\of{\vq^{\mathscr G}\of{t}} =
+\diffd \pa{f\of{t,\placeholder}}\of{\vg\of{t,\vq^{\mathscr G}\of{t}}} \diffd\vg\of{t,\placeholder}^{-1}\text.
+\]
+
+\section{Geometric potential}
+The \emph{geometric potential} $V^{\mathscr F}$ of a frame $\mathscr F$ is defined on
+$Q^{\mathscr F}$ at any time $t$ by the equation
+TODO FLIP SIGN OF $V$
 \begin{equation}
-\SecondTimeDerivative{\vq^I}=\Transpose{\deriv{\vq^I}{V}}
+\SecondTimeDerivative\vq^{\mathscr F} =
+\Transpose{\deriv{\vq^{\mathscr F}}{V^{\mathscr F}}} +
+\frac{1}{2}\pa{\operatorname{\StandardVectorSymbol{rot}}_{\vq^{\mathscr F}}\SecondTimeDerivative\vq^{\mathscr F}}\vq^{\mathscr F}\text,
 \end{equation}
-Consider the rotating reference frame $R$ is defined by
+where $\vq^{\mathscr F}$ is a field of free-falling trajectories such that $\TimeDerivative\vq^{\mathscr F}=0$ at time $t$.
+The geometric potential $V^{\mathscr F}$ implictly depends on $\vq^{\mathscr F}$ as well as $t$.
+
+The acceleration $\SecondTimeDerivative\vq^{\mathscr F}$ of a free-falling trajectory $\vq^{\mathscr F}$
+is the \emph{geometric acceleration}, which, for a given frame, depends on time, position, and velocity.
+The gradient of the geometric potential is the \emph{rotation-free geometric acceleration at rest}; it
+depends on time and position. If the geometric acceleration at rest is irrotational, it is equal to the
+rotation-free geometric acceleration at rest.
+
+Note that unless the geometric acceleration at rest is irrotational, the geometric potential depends on
+the choice of the origin of $\mathscr F$.
+
+\section{Inertial frame}
+Let $\mathscr I$ be an inertial frame. Then for all free-falling trajectories $\vq^{\mathscr I}$,
 \begin{equation}
-\vq^R = \matR \pa{\vq^I - \vq_0^I}\text.
+\SecondTimeDerivative\vq^{\mathscr I}=\Transpose{\deriv{\vq^{\mathscr I}}{V^{\mathscr I}}}\text.
 \end{equation}
-Velocities in $R$ are related to velocities in $I$ as follows:
-\[\TimeDerivative{\vq^R} =  -  \matR \TimeDerivative{\vq_0^I} + \MatrixSymbol\gW \vq^R + \matR \TimeDerivative{\vq^I}\text,\]
+\section{Rotating frame}
+Consider the rotating reference frame $\mathscr R$ defined by
+\begin{equation}
+\vq^{\mathscr R} \DefineAs \matR \pa{\vq^{\mathscr I} - \vq_0^{\mathscr I}}\text.
+\end{equation}
+Velocities in $\mathscr R$ are related to velocities in $\mathscr I$ as follows:
+\begin{equation}
+\TimeDerivative\vq^{\mathscr R} =  -  \matR \TimeDerivative{\vq_0^{\mathscr I}} + \MatrixSymbol\gW \vq^{\mathscr R} + \matR \TimeDerivative\vq^{\mathscr I}\text,
+\end{equation}
 where
 \[
 \TimeDerivative{\matR}=\MatrixSymbol\gW \matR\text.
 \]
 
-Accelerations in $R$ are related to accelerations in $I$ as follows:
+Accelerations in $\mathscr R$ are related to accelerations in $\mathscr I$ as follows:
 \begin{align}
-\SecondTimeDerivative{\vq^R}
-&=  - \MatrixSymbol\gW\matR \TimeDerivative{\vq_0^I} - \matR \SecondTimeDerivative{\vq_0^I} \TimeDerivative{\MatrixSymbol\gW} \vq^R +\MatrixSymbol\gW \TimeDerivative{\vq^R} + \MatrixSymbol\gW \TimeDerivative{\vq^I} + \matR \SecondTimeDerivative{\vq^I} \nonumber \\
-&= \begin{aligned}[t]- \MatrixSymbol\gW\matR \TimeDerivative{\vq_0^I}
-- \matR \SecondTimeDerivative{\vq_0^I}
-+ \TimeDerivative{\MatrixSymbol\gW} \vq^R
-+ \MatrixSymbol\gW \TimeDerivative{\vq^R}
-+ \MatrixSymbol\gW\pa{\TimeDerivative{\vq^R}-\MatrixSymbol\gW \vq^R + \matR \TimeDerivative{\vq_0^I}}\\
-+ \matR \SecondTimeDerivative{\vq^I}
-\end{aligned}\nonumber \\
-&=  - \matR \SecondTimeDerivative{\vq_0^I}
-+ \underbrace{\TimeDerivative{\MatrixSymbol\gW} \vq^R}_{\text{Euler}}
-+ \underbrace{2 \MatrixSymbol\gW \TimeDerivative{\vq^R}}_{\text{Coriolis}}
-- \underbrace{\MatrixSymbol\gW^2 \vq^R}_{\mathclap{\text{centrifugal}}}
-+ \matR \SecondTimeDerivative{\vq^I}\text.
+\SecondTimeDerivative\vq^{\mathscr R}
+&=  - \MatrixSymbol\gW\matR \TimeDerivative{\vq_0^{\mathscr I}} - \matR \SecondTimeDerivative{\vq_0^{\mathscr I}} \TimeDerivative{\MatrixSymbol\gW} \vq^{\mathscr R} +\MatrixSymbol\gW \TimeDerivative\vq^{\mathscr R} + \MatrixSymbol\gW \TimeDerivative\vq^{\mathscr I} + \matR \SecondTimeDerivative\vq^{\mathscr I} \nonumber \\
+&= - \MatrixSymbol\gW\matR \TimeDerivative{\vq_0^{\mathscr I}}
+- \matR \SecondTimeDerivative{\vq_0^{\mathscr I}}
++ \TimeDerivative{\MatrixSymbol\gW} \vq^{\mathscr R}
++ \MatrixSymbol\gW \TimeDerivative\vq^{\mathscr R}
++ \MatrixSymbol\gW\pa{\TimeDerivative\vq^{\mathscr R}-\MatrixSymbol\gW \vq^{\mathscr R} + \matR \TimeDerivative{\vq_0^{\mathscr I}}}
++ \matR \SecondTimeDerivative\vq^{\mathscr I}
+\nonumber \\
+&=  - \matR \SecondTimeDerivative{\vq_0^{\mathscr I}}
++ \underbrace{\TimeDerivative{\MatrixSymbol\gW} \vq^{\mathscr R}}_{\text{Euler}}
++ \underbrace{2 \MatrixSymbol\gW \TimeDerivative\vq^{\mathscr R}}_{\text{Coriolis}}
+- \underbrace{\MatrixSymbol\gW^2 \vq^{\mathscr R}}_{\mathclap{\text{centrifugal}}}
++ \matR \SecondTimeDerivative\vq^{\mathscr I}\text.
 \end{align}
-Observe that 
-\[\matR\SecondTimeDerivative{\vq^I}=\matR\Transpose{\deriv{\vq^I}{V}}=\Transpose{\pa{\deriv{\vq^I}{V}\matR^{-1}}}=\Transpose{\pa{\deriv{\vq^I}{V}\deriv{\vq^R}{\vq^I}}}=\Transpose{\deriv{\vq^R}{V}}\text.\]
-At rest in $R$, \idest, for $\TimeDerivative{\vq^R}=0$, we have
+Observe that for a free-falling trajectory,
+\[\matR\SecondTimeDerivative\vq^{\mathscr I}=\matR\Transpose{\deriv{\vq^{\mathscr I}}{V^{\mathscr I}}}=\Transpose{\pa{\deriv{\vq^{\mathscr I}}{V^{\mathscr I}}\matR^{-1}}}=\Transpose{\pa{\deriv{\vq^{\mathscr I}}{V}\deriv{\vq^{\mathscr R}}{\vq^{\mathscr I}}}}=\Transpose{\deriv{\vq^{\mathscr R}}{V^{\mathscr I}}}\text.\]
+At rest in $\mathscr R$, \idest, for $\TimeDerivative\vq^{\mathscr R}=0$, we have
 \begin{align}
-\SecondTimeDerivative{\vq^R}
-&=  - \matR \SecondTimeDerivative{\vq_0^I}
-+ \TimeDerivative{\MatrixSymbol\gW} \vq^R
-- \MatrixSymbol\gW^2 \vq^R
-+ \matR \SecondTimeDerivative{\vq^I} \nonumber\\
+\SecondTimeDerivative\vq^{\mathscr R}
+&=  - \matR \SecondTimeDerivative{\vq_0^{\mathscr I}}
++ \TimeDerivative{\MatrixSymbol\gW} \vq^{\mathscr R}
+- \MatrixSymbol\gW^2 \vq^{\mathscr R}
++ \matR \SecondTimeDerivative\vq^{\mathscr I} \nonumber\\
 &=
-\underbrace{\TimeDerivative{\MatrixSymbol\gW} \vq^R}_{\mathclap{\operatorname{div}=0}}+
-\Transpose{\pa{\derivop{\vq^R}\pa{
-\InnerProduct{\vq^R}{\matR \SecondTimeDerivative{\vq_0^I}}
-- \frac{\InnerProduct{\MatrixSymbol\gW \vq^R}{\MatrixSymbol\gW \vq^R}}{2}
-+V}}}\text.
+\underbrace{\TimeDerivative{\MatrixSymbol\gW} \vq^{\mathscr R}}_{\mathclap{\operatorname{div}=0}}+
+\Transpose{\pa{\derivop{\vq^{\mathscr R}}\pa{
+\InnerProduct{\vq^{\mathscr R}}{\matR \SecondTimeDerivative{\vq_0^{\mathscr I}}}
+- \frac{\InnerProduct{\MatrixSymbol\gW \vq^{\mathscr R}}{\MatrixSymbol\gW \vq^{\mathscr R}}}{2}
++V^{\mathscr I}}}}\text,
 \end{align}
-Let
-\[
-V^R\DefineAs
-\InnerProduct{\vq^R}{\matR \SecondTimeDerivative{\vq_0^I}}
-- \frac{\InnerProduct{\MatrixSymbol\gW \vq^R}{\MatrixSymbol\gW \vq^R}}{2}
+so that the geometric potential is
+\begin{equation}
+V^{\mathscr R}=
+\InnerProduct{\vq^{\mathscr R}}{\matR \SecondTimeDerivative{\vq_0^{\mathscr I}}}
+- \frac{\InnerProduct{\MatrixSymbol\gW \vq^{\mathscr R}}{\MatrixSymbol\gW \vq^{\mathscr R}}}{2}
 +V\text.
-\]
-The rotating-pulsating reference frame $P$ is defined by
-\begin{equation}\vq^P = \frac{\vq^R}{r}\text.\end{equation}
-For velocities in $P$, we have
+\end{equation}
+\section{Rotating-pulsating frame}
+The rotating-pulsating reference frame $\mathscr P$ is defined by
+\begin{equation}\vq^{\mathscr P} \DefineAs \frac{\vq^{\mathscr R}}{r}\text.\end{equation}
+For velocities in $\mathscr P$, we have
 \[
-\TimeDerivative{\vq^P}
-= -\frac{1}{r^2} \TimeDerivative{r} \vq^R + \frac{1}{r} \TimeDerivative{\vq^R}
-= -\frac{1}{r} \TimeDerivative{r} \vq^P + \frac{1}{r} \TimeDerivative{\vq^R}\text.
+\TimeDerivative\vq^{\mathscr P}
+= -\frac{1}{r^2} \TimeDerivative{r} \vq^{\mathscr R} + \frac{1}{r} \TimeDerivative\vq^{\mathscr R}
+= -\frac{1}{r} \TimeDerivative{r} \vq^{\mathscr P} + \frac{1}{r} \TimeDerivative\vq^{\mathscr R}\text.
 \]
-For accelerations in $P$,
-\begin{align}\SecondTimeDerivative{\vq^P} &=
-  \frac{1}{r^2}\pa{\TimeDerivative{r}}^2 \vq^P
-- \frac{1}{r}\SecondTimeDerivative{r} \vq^P
-- \frac{1}{r}\TimeDerivative{r} \TimeDerivative{\vq^P}
-- \frac{1}{r^2}\TimeDerivative{r} \TimeDerivative{\vq^R}
-+ \frac{1}{r}\SecondTimeDerivative{\vq^R}
+For accelerations in $\mathscr P$,
+\begin{align}\SecondTimeDerivative\vq^{\mathscr P} &=
+  \frac{1}{r^2}\TimeDerivative{r}^2 \vq^{\mathscr P}
+- \frac{1}{r}\SecondTimeDerivative{r} \vq^{\mathscr P}
+- \frac{1}{r}\TimeDerivative{r} \TimeDerivative\vq^{\mathscr P}
+- \frac{1}{r^2}\TimeDerivative{r} \TimeDerivative\vq^{\mathscr R}
++ \frac{1}{r}\SecondTimeDerivative\vq^{\mathscr R}
 \nonumber\\ &=
-  \frac{1}{r^2}\pa{\TimeDerivative{r}}^2 \vq^P
-- \frac{1}{r}\SecondTimeDerivative{r} \vq^P
-- \frac{1}{r}\TimeDerivative{r} \TimeDerivative{\vq^P}
-- \frac{1}{r} \TimeDerivative{r} \pa{\TimeDerivative{\vq^P}+\frac{1}{r} \vq^P}
-+ \frac{1}{r}\SecondTimeDerivative{\vq^R}
+  \frac{1}{r^2}\TimeDerivative{r}^2 \vq^{\mathscr P}
+- \frac{1}{r}\SecondTimeDerivative{r} \vq^{\mathscr P}
+- \frac{1}{r}\TimeDerivative{r} \TimeDerivative\vq^{\mathscr P}
+- \frac{1}{r} \TimeDerivative{r} \pa{\TimeDerivative\vq^{\mathscr P}+\frac{1}{r} \vq^{\mathscr P}}
++ \frac{1}{r}\SecondTimeDerivative\vq^{\mathscr R}
 \nonumber\\ &=
-  \frac{1}{r}\SecondTimeDerivative{r} \vq^P
-- \frac{2}{r}\TimeDerivative{r} \TimeDerivative{\vq^P}
-+ \frac{1}{r}\SecondTimeDerivative{\vq^R}
+  \frac{1}{r}\SecondTimeDerivative{r} \vq^{\mathscr P}
+- \frac{2\TimeDerivative{r}}{r} \TimeDerivative\vq^{\mathscr P}
++ \frac{1}{r}\SecondTimeDerivative\vq^{\mathscr R}
 \\ &=
-  \frac{1}{r}\SecondTimeDerivative{r} \vq^P
-- \frac{2}{r}\TimeDerivative{r} \TimeDerivative{\vq^P}
+  \frac{1}{r}\SecondTimeDerivative{r} \vq^{\mathscr P}
+- \frac{2\TimeDerivative{r}}{r} \TimeDerivative\vq^{\mathscr P}
 + \frac{1}{r}\pa{
-\TimeDerivative{\MatrixSymbol\gW} \vq^R
-+ 2 \MatrixSymbol\gW \TimeDerivative{\vq^R}
-+ \Transpose{\deriv{\vq^R}{V^R}}}
+\TimeDerivative{\MatrixSymbol\gW} \vq^{\mathscr R}
++ 2 \MatrixSymbol\gW \TimeDerivative\vq^{\mathscr R}
++ \Transpose{\deriv{\vq^{\mathscr R}}{V^{\mathscr R}}}}
 \nonumber\\ &=
-  \frac{1}{r}\SecondTimeDerivative{r} \vq^P
-- \frac{2}{r}\TimeDerivative{r} \TimeDerivative{\vq^P}
-+ \TimeDerivative{\MatrixSymbol\gW} \vq^P
-+ 2 \MatrixSymbol\gW \pa{\TimeDerivative\vq^P+\frac{\TimeDerivative r}{r}\vq^P}
-+ \Transpose{\deriv{\vq^P}{V^R}}
+  \frac{1}{r}\SecondTimeDerivative{r} \vq^{\mathscr P}
+- \frac{2\TimeDerivative{r}}{r} \TimeDerivative\vq^{\mathscr P}
++ \TimeDerivative{\MatrixSymbol\gW} \vq^{\mathscr P}
++ 2 \MatrixSymbol\gW \pa{\TimeDerivative\vq^{\mathscr P}+\frac{\TimeDerivative r}{r}\vq^{\mathscr P}}
++ \Transpose{\deriv{\vq^{\mathscr P}}{V^{\mathscr R}}}
 \nonumber\\ &=
-\pa{2 \MatrixSymbol\gW - \frac{2}{r}\TimeDerivative{r}\Identity} \TimeDerivative{\vq^P}
-+ \pa{2 \frac{\TimeDerivative r}{r} \MatrixSymbol\gW + \TimeDerivative{\MatrixSymbol\gW}} \vq^P
-+ \frac{1}{r}\SecondTimeDerivative{r} \vq^P
-+ \Transpose{\deriv{\vq^P}{V^R}}
+\pa{2 \MatrixSymbol\gW - \frac{2\TimeDerivative{r}}{r}\Identity} \TimeDerivative\vq^{\mathscr P}
++ \pa{2 \frac{\TimeDerivative r}{r} \MatrixSymbol\gW + \TimeDerivative{\MatrixSymbol\gW}} \vq^{\mathscr P}
++ \frac{1}{r}\SecondTimeDerivative{r} \vq^{\mathscr P}
++ \Transpose{\deriv{\vq^{\mathscr P}}{V^{\mathscr R}}}
 \nonumber\\ &=
-\pa{2 \MatrixSymbol\gW - \frac{2}{r}\TimeDerivative{r}\Identity} \TimeDerivative{\vq^P}
-+ \pa{2 \frac{\TimeDerivative r}{r} \MatrixSymbol\gW + \TimeDerivative{\MatrixSymbol\gW}} \vq^P
-+ \Transpose{\pa{\derivop{\vq^P}\pa{
-\frac{\SecondTimeDerivative{r}\pa{q^P}^2}{2r} 
-+ {V^R}}}}
+\pa{2 \MatrixSymbol\gW - \frac{2\TimeDerivative{r}}{r}\Identity} \TimeDerivative\vq^{\mathscr P}
++ \underbrace{\pa{2 \frac{\TimeDerivative r}{r} \MatrixSymbol\gW + \TimeDerivative{\MatrixSymbol\gW}} \vq^{\mathscr P}}_{\operatorname{div}=0}
++ \Transpose{\pa{\derivop{\vq^{\mathscr P}}\pa{
+\frac{\SecondTimeDerivative{r}\scal{\vq^{\mathscr P}}{\vq^{\mathscr P}}}{2r} 
++ {V^{\mathscr R}}}}}
 \text.
 \end{align}
+The geometric potential is thus
+\[V^{\mathscr P}\DefineAs\frac{\SecondTimeDerivative{r}\scal{\vq^{\mathscr P}}{\vq^{\mathscr P}}}{2r} + {V^{\mathscr R}}\text.\]
+\section{Rotating-pulsating frame of the Kepler problem}
+
 \end{document}
