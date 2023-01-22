@@ -69,15 +69,23 @@ which is implicitly
 \]
 
 \section{Geometric potential}
+Let $\vq^{\mathscr F}$ be a field of free-falling trajectories such that $\TimeDerivative\vq^{\mathscr F}=0$ at time $t$; the field $\SecondTimeDerivative\vq^{\mathscr F}$ is the field of \emph{geometric accelerations at rest}.
+
+In all reference frames considered, the geometric accelerations at rest have a constant curl
+throughout space, thus, at time $t$,\[
+\operatorname{\StandardVectorSymbol{rot}}_{\vq^{\mathscr F}}\SecondTimeDerivative\vq^{\mathscr F} =
+\matA^{\mathscr F}
+\]
+for some $\matA^{\mathscr F}$ which does not depend on $\SecondTimeDerivative\vq^{\mathscr F}$.
+
 The \emph{geometric potential} $V^{\mathscr F}$ of a frame $\mathscr F$ is defined on
-$Q^{\mathscr F}$ at any time $t$ by the equation
+$Q^{\mathscr F}$ at time $t$ by the equation
 TODO FLIP SIGN OF $V$
 \begin{equation}
 \SecondTimeDerivative\vq^{\mathscr F} =
 \Transpose{\deriv{\vq^{\mathscr F}}{V^{\mathscr F}}} +
-\frac{1}{2}\pa{\operatorname{\StandardVectorSymbol{rot}}_{\vq^{\mathscr F}}\SecondTimeDerivative\vq^{\mathscr F}}\vq^{\mathscr F}\text,
+\frac{1}{2}\matA^{\mathscr F}\vq^{\mathscr F}\text.
 \end{equation}
-where $\vq^{\mathscr F}$ is a field of free-falling trajectories such that $\TimeDerivative\vq^{\mathscr F}=0$ at time $t$.
 The geometric potential $V^{\mathscr F}$ implictly depends on $\vq^{\mathscr F}$ as well as $t$.
 
 The acceleration $\SecondTimeDerivative\vq^{\mathscr F}$ of a free-falling trajectory $\vq^{\mathscr F}$
@@ -135,7 +143,7 @@ At rest in $\mathscr R$, \idest, for $\TimeDerivative\vq^{\mathscr R}=0$, we hav
 - \MatrixSymbol\gW^2 \vq^{\mathscr R}
 + \matR \SecondTimeDerivative\vq^{\mathscr I} \nonumber\\
 &=
-\underbrace{\TimeDerivative{\MatrixSymbol\gW} \vq^{\mathscr R}}_{\mathclap{\operatorname{div}=0}}+
+\TimeDerivative{\MatrixSymbol\gW} \vq^{\mathscr R}+
 \Transpose{\pa{\derivop{\vq^{\mathscr R}}\pa{
 \InnerProduct{\vq^{\mathscr R}}{\matR \SecondTimeDerivative{\vq_0^{\mathscr I}}}
 - \frac{\InnerProduct{\MatrixSymbol\gW \vq^{\mathscr R}}{\MatrixSymbol\gW \vq^{\mathscr R}}}{2}
@@ -194,7 +202,7 @@ For accelerations in $\mathscr P$,
 + \Transpose{\deriv{\vq^{\mathscr P}}{V^{\mathscr R}}}
 \nonumber\\ &=
 \pa{2 \MatrixSymbol\gW - \frac{2\TimeDerivative{r}}{r}\Identity} \TimeDerivative\vq^{\mathscr P}
-+ \underbrace{\pa{2 \frac{\TimeDerivative r}{r} \MatrixSymbol\gW + \TimeDerivative{\MatrixSymbol\gW}} \vq^{\mathscr P}}_{\operatorname{div}=0}
++ \pa{2 \frac{\TimeDerivative r}{r} \MatrixSymbol\gW + \TimeDerivative{\MatrixSymbol\gW}} \vq^{\mathscr P}
 + \Transpose{\pa{\derivop{\vq^{\mathscr P}}\pa{
 \frac{\SecondTimeDerivative{r}\scal{\vq^{\mathscr P}}{\vq^{\mathscr P}}}{2r} 
 + {V^{\mathscr R}}}}}
