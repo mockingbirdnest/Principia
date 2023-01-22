@@ -39,7 +39,10 @@ void Frame<FrameTag, motion_, handedness_, tag_>::WriteToMessage(
   }
 }
 
-template<typename FrameTag, FrameMotion motion_, Handedness handedness_, std::conditional_t<std::is_enum_v<FrameTag>, FrameTag, std::nullptr_t> tag_>
+template<typename FrameTag,
+         FrameMotion motion_, Handedness handedness_,
+         std::conditional_t<std::is_enum_v<FrameTag>,
+                            FrameTag, std::nullptr_t> tag_>
 template<typename T, typename>
 constexpr FrameTag Frame<FrameTag, motion_, handedness_, tag_>::tag() {
   return tag_;

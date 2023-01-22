@@ -90,7 +90,7 @@ struct Hilbert<T, T,
     return internal_grassmann::InnerProduct(t1, t2);
   }
 #else
-  ;
+  ;  // NOLINT
 #endif
 
   using Norm²Type = InnerProductType;
@@ -100,7 +100,7 @@ struct Hilbert<T, T,
     return t.Norm²();
   }
 #else
-  ;
+  ;  // NOLINT
 #endif
 
   using NormType = decltype(std::declval<T>().Norm());
@@ -110,7 +110,7 @@ struct Hilbert<T, T,
     return t.Norm();
   }
 #else
-  ;
+  ;  // NOLINT
 #endif
 
   using NormalizedType = Quotient<T, NormType>;

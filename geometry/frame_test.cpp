@@ -56,7 +56,7 @@ TEST_F(FrameDeathTest, SerializationError) {
     serialization::Frame message;
     World1::WriteToMessage(&message);
     World2::ReadFromMessage(message);
-  }, R"(\(tag\) ==)");
+  }, R"(\(tag\(\)\) ==)");
   EXPECT_DEATH({
     serialization::Frame message;
     World1::WriteToMessage(&message);
