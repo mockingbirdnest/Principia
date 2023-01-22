@@ -43,7 +43,8 @@ $\FunctionSpec {\diffd^2 f} {V} {\Dual V \Tensor \Dual V \Tensor W}$, rather tha
 
 As it is somewhat impractical to construct a notation which makes pullbacks of two-forms natural,
 and as we do not perform changes of variables on curls, we eschew the exterior derivative entirely,
-and merely get rid of orientation-dependent identifications by writing
+and merely get rid of orientation-dependent identifications by writing, for $\vv$ and $\vw$
+implicitly dependent on $\vq$,
 \[\pa{\operatorname{\StandardVectorSymbol{rot}}_{\vq}\vv}\vw\text{ for }
 \pa{\mathbf{\nabla}\times\vv\of{t,\placeholder}}\of{\vq\of t}\times\vw\of{t,\vq\of t}\text.\]
 
@@ -80,10 +81,9 @@ for some $\matA^{\mathscr F}$ which does not depend on $\SecondTimeDerivative\vq
 
 The \emph{geometric potential} $V^{\mathscr F}$ of a frame $\mathscr F$ is defined on
 $Q^{\mathscr F}$ at time $t$ by the equation
-TODO FLIP SIGN OF $V$
 \begin{equation}
 \SecondTimeDerivative\vq^{\mathscr F} =
-\Transpose{\deriv{\vq^{\mathscr F}}{V^{\mathscr F}}} +
+-\Transpose{\deriv{\vq^{\mathscr F}}{V^{\mathscr F}}} +
 \frac{1}{2}\matA^{\mathscr F}\vq^{\mathscr F}\text.
 \end{equation}
 The geometric potential $V^{\mathscr F}$ implictly depends on $\vq^{\mathscr F}$ as well as $t$.
@@ -100,7 +100,7 @@ the choice of the origin of $\mathscr F$.
 \section{Inertial frame}
 Let $\mathscr I$ be an inertial frame. Then for all free-falling trajectories $\vq^{\mathscr I}$,
 \begin{equation}
-\SecondTimeDerivative\vq^{\mathscr I}=\Transpose{\deriv{\vq^{\mathscr I}}{V^{\mathscr I}}}\text.
+\SecondTimeDerivative\vq^{\mathscr I}=-\Transpose{\deriv{\vq^{\mathscr I}}{V^{\mathscr I}}}\text.
 \end{equation}
 \section{Rotating frame}
 Consider the rotating reference frame $\mathscr R$ defined by
@@ -134,7 +134,10 @@ Accelerations in $\mathscr R$ are related to accelerations in $\mathscr I$ as fo
 + \matR \SecondTimeDerivative\vq^{\mathscr I}\text.
 \end{align}
 Observe that for a free-falling trajectory,
-\[\matR\SecondTimeDerivative\vq^{\mathscr I}=\matR\Transpose{\deriv{\vq^{\mathscr I}}{V^{\mathscr I}}}=\Transpose{\pa{\deriv{\vq^{\mathscr I}}{V^{\mathscr I}}\matR^{-1}}}=\Transpose{\pa{\deriv{\vq^{\mathscr I}}{V}\deriv{\vq^{\mathscr R}}{\vq^{\mathscr I}}}}=\Transpose{\deriv{\vq^{\mathscr R}}{V^{\mathscr I}}}\text.\]
+\[\matR\SecondTimeDerivative\vq^{\mathscr I}
+=-\matR\Transpose{\deriv{\vq^{\mathscr I}}{V^{\mathscr I}}}
+=-\Transpose{\pa{\deriv{\vq^{\mathscr I}}{V^{\mathscr I}}\matR^{-1}}}
+=-\Transpose{\pa{\deriv{\vq^{\mathscr I}}{V}\deriv{\vq^{\mathscr R}}{\vq^{\mathscr I}}}}=-\Transpose{\deriv{\vq^{\mathscr R}}{V^{\mathscr I}}}\text.\]
 At rest in $\mathscr R$, \idest, for $\TimeDerivative\vq^{\mathscr R}=0$, we have
 \begin{align}
 \SecondTimeDerivative\vq^{\mathscr R}
@@ -143,10 +146,10 @@ At rest in $\mathscr R$, \idest, for $\TimeDerivative\vq^{\mathscr R}=0$, we hav
 - \MatrixSymbol\gW^2 \vq^{\mathscr R}
 + \matR \SecondTimeDerivative\vq^{\mathscr I} \nonumber\\
 &=
-\TimeDerivative{\MatrixSymbol\gW} \vq^{\mathscr R}+
+\TimeDerivative{\MatrixSymbol\gW} \vq^{\mathscr R}-
 \Transpose{\pa{\derivop{\vq^{\mathscr R}}\pa{
 \InnerProduct{\vq^{\mathscr R}}{\matR \SecondTimeDerivative{\vq_0^{\mathscr I}}}
-- \frac{\InnerProduct{\MatrixSymbol\gW \vq^{\mathscr R}}{\MatrixSymbol\gW \vq^{\mathscr R}}}{2}
+- \frac{\Transpose{\pa{\vq^{\mathscr R}}}\Transpose{\MatrixSymbol\gW}{\MatrixSymbol\gW \vq^{\mathscr R}}}{2}
 +V^{\mathscr I}}}}\text,
 \end{align}
 so that the geometric potential is
@@ -203,13 +206,15 @@ For accelerations in $\mathscr P$,
 \nonumber\\ &=
 \pa{2 \MatrixSymbol\gW - \frac{2\TimeDerivative{r}}{r}\Identity} \TimeDerivative\vq^{\mathscr P}
 + \pa{2 \frac{\TimeDerivative r}{r} \MatrixSymbol\gW + \TimeDerivative{\MatrixSymbol\gW}} \vq^{\mathscr P}
-+ \Transpose{\pa{\derivop{\vq^{\mathscr P}}\pa{
-\frac{\SecondTimeDerivative{r}\scal{\vq^{\mathscr P}}{\vq^{\mathscr P}}}{2r} 
+- \Transpose{\pa{\derivop{\vq^{\mathscr P}}\pa{
+- \frac{\SecondTimeDerivative{r}\scal{\vq^{\mathscr P}}{\vq^{\mathscr P}}}{2r} 
 + {V^{\mathscr R}}}}}
 \text.
 \end{align}
 The geometric potential is thus
-\[V^{\mathscr P}\DefineAs\frac{\SecondTimeDerivative{r}\scal{\vq^{\mathscr P}}{\vq^{\mathscr P}}}{2r} + {V^{\mathscr R}}\text.\]
+\[V^{\mathscr P}\DefineAs
+-\frac{\SecondTimeDerivative{r}\scal{\vq^{\mathscr P}}{\vq^{\mathscr P}}}{2r}
++ {V^{\mathscr R}}\text.\]
 \section{Rotating-pulsating frame of the Kepler problem}
 
 \end{document}
