@@ -71,7 +71,7 @@ struct Hilbert<T1, T2,
     return internal_grassmann::InnerProduct(t1, t2);
   }
 #else
-  ;
+  ;  // NOLINT
 #endif
 };
 
