@@ -23,7 +23,7 @@ using ::testing::UnorderedElementsAre;
 
 class PlaneTest : public ::testing::Test {
  protected:
-  using World = Frame<enum class WorldTag>;
+  using World = Frame<struct WorldTag>;
 };
 
 TEST_F(PlaneTest, AmpèresLaw) {

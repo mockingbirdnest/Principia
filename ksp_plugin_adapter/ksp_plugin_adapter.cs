@@ -297,16 +297,16 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           load_error);
       bad_installation_dialog_.Show();
     }
-#if KSP_VERSION_1_12_4
+#if KSP_VERSION_1_12_5
     if (!(Versioning.version_major == 1 &&
           (Versioning.version_minor == 8 && Versioning.Revision == 1) ||
           (Versioning.version_minor == 9 && Versioning.Revision == 1) ||
           (Versioning.version_minor == 10 && Versioning.Revision == 1) ||
           (Versioning.version_minor == 11 && Versioning.Revision <= 2) ||
           (Versioning.version_minor == 12 && (Versioning.Revision >= 2 &&
-                                              Versioning.Revision <= 4)))) {
+                                              Versioning.Revision <= 5)))) {
       string expected_version =
-          "1.8.1, 1.9.1, 1.10.1, 1.11.x, 1.12.2, 1.12.3, and 1.12.4";
+          "1.8.1, 1.9.1, 1.10.1, 1.11.x, 1.12.2, 1.12.3, 1.12.4, and 1.12.5";
 #elif KSP_VERSION_1_7_3
     if (!(Versioning.version_major == 1 &&
           (Versioning.version_minor == 5 && Versioning.Revision == 1) ||

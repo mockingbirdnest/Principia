@@ -106,7 +106,7 @@ TEST_F(PointTest, Ordering) {
 // Uncomment to check that non-serializable frames are detected at compile-time.
 #if 0
 TEST_F(PointTest, SerializationCompilationError) {
-  using F = Frame<enum class FrameTag>;
+  using F = Frame<struct FrameTag>;
   Point<Vector<Length, F>> p;
   serialization::Point message;
   p.WriteToMessage(&message);

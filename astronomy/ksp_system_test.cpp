@@ -68,7 +68,7 @@ using ::testing::_;
 
 namespace astronomy {
 
-using KSP = Frame<enum class KSPTag, Inertial>;
+using KSP = Frame<struct KSPTag, Inertial>;
 
 class KSPSystem {
  protected:

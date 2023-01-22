@@ -22,7 +22,7 @@ using ::testing::Pointee;
 
 class PrincipalComponentPartitioningTreeTest : public ::testing::Test {
  protected:
-  using World = Frame<enum class WorldTag>;
+  using World = Frame<struct WorldTag>;
   using V = Vector<double, World>;
 
   // Computes the nearest point using the brute force algorithm.

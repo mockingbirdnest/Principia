@@ -175,14 +175,14 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
   // This Moon-centred, Moon-fixed reference frame has the x axis pointing
   // towards the Earth, and the y axis in the direction of the velocity of the
   // Earth, see figure 1. of [RL06].
-  using LunarSurface = Frame<enum class LunarSurfaceTag, Arbitrary>;
+  using LunarSurface = Frame<struct LunarSurfaceTag, Arbitrary>;
 
   // This reference frame is non-rotating, with its origin at the selenocentre.
   // The axes are those of LunarSurface at J2000.
   // Note that this frame is not actually inertial, but we want to use it with
   // |KeplerOrbit|.  Perhaps we should have a concept of non-rotating, and
   // |KeplerOrbit| should check that; this is good enough for a test.
-  using Selenocentric = Frame<enum class SelenocentricTag, Inertial>;
+  using Selenocentric = Frame<struct SelenocentricTag, Inertial>;
 
   // We do not use a |BodyCentredNonRotatingDynamicFrame| since that would use
   // ICRS axes.

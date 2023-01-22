@@ -56,7 +56,7 @@ namespace integrators {
 
 namespace {
 
-using World = Frame<enum class WorldTag, Inertial>;
+using World = Frame<struct WorldTag, Inertial>;
 using ODE1D = SpecialSecondOrderDifferentialEquation<Length>;
 using ODE3D = SpecialSecondOrderDifferentialEquation<Position<World>>;
 

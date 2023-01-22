@@ -358,7 +358,7 @@ TEST_F(BodyTest, AllFrames) {
 
 // Check that the rotation of the Earth gives the right solar noon.
 TEST_F(BodyTest, SolarNoon) {
-  using SurfaceFrame = Frame<enum class SurfaceFrameTag>;
+  using SurfaceFrame = Frame<struct SurfaceFrameTag>;
   SolarSystem<ICRS> solar_system_j2000(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /

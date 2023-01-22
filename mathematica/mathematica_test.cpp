@@ -66,7 +66,7 @@ using quantities::si::Second;
 
 class MathematicaTest : public ::testing::Test {
  protected:
-  using F = Frame<enum class FTag>;
+  using F = Frame<struct FTag>;
 };
 
 TEST_F(MathematicaTest, ToMathematica) {

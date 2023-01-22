@@ -43,7 +43,7 @@ namespace si = quantities::si;
 
 namespace testing_utilities {
 
-using World = Frame<enum class WorldTag>;
+using World = Frame<struct WorldTag>;
 
 class ComponentwiseTest : public testing::Test {};
 
