@@ -243,7 +243,7 @@ TEST_F(PermutationTest, SerializationSuccess) {
   auto const test_serialization_for = [&](auto const& permutations) {
     serialization::LinearMap message;
     for (auto const cp : permutations) {
-#if _MSC_FULL_VER == 193'431'937
+#if PRINCIPIA_COMPILER_MSVC && _MSC_FULL_VER == 193'431'937
       using Perm =
           std::conditional<std::is_same_v<decltype(cp), EvenPermutation const>,
                            PermutationR1R2,
