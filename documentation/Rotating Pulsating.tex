@@ -120,7 +120,10 @@ Accelerations in $\mathscr R$ are related to accelerations in $\mathscr I$ as fo
 \begin{align}
 \SecondTimeDerivative\vq^{\mathscr R}
 &=  - \MatrixSymbol ω\matR \TimeDerivative{\vq_0^{\mathscr I}}
-- \matR \SecondTimeDerivative\vq_0^{\mathscr I} \TimeDerivative{\MatrixSymbol ω} \vq^{\mathscr R} +\MatrixSymbol ω \TimeDerivative\vq^{\mathscr R} + \MatrixSymbol ω \TimeDerivative\vq^{\mathscr I} + \matR \SecondTimeDerivative\vq^{\mathscr I} \nonumber \\
+- \matR \SecondTimeDerivative\vq_0^{\mathscr I}
++ \TimeDerivative{\MatrixSymbol ω} \vq^{\mathscr R} +\MatrixSymbol ω \TimeDerivative\vq^{\mathscr R} +
+\MatrixSymbol ω \matR \TimeDerivative\vq^{\mathscr I} +
+\matR \SecondTimeDerivative\vq^{\mathscr I} \nonumber \\
 &= - \MatrixSymbol ω\matR \TimeDerivative{\vq_0^{\mathscr I}}
 - \matR \SecondTimeDerivative\vq_0^{\mathscr I}
 + \TimeDerivative{\MatrixSymbol ω} \vq^{\mathscr R}
@@ -180,36 +183,36 @@ For accelerations in $\mathscr P$,
   \frac{1}{r^2}\TimeDerivative{r}^2 \vq^{\mathscr P}
 - \frac{1}{r}\SecondTimeDerivative{r} \vq^{\mathscr P}
 - \frac{1}{r}\TimeDerivative{r} \TimeDerivative\vq^{\mathscr P}
-- \frac{1}{r} \TimeDerivative{r} \pa{\TimeDerivative\vq^{\mathscr P}+\frac{1}{r} \vq^{\mathscr P}}
+- \frac{1}{r} \TimeDerivative{r} \pa{\TimeDerivative\vq^{\mathscr P}+\frac{1}{r} \TimeDerivative{r} \vq^{\mathscr P}}
 + \frac{1}{r}\SecondTimeDerivative\vq^{\mathscr R}
 \nonumber\\ &=
-  \frac{1}{r}\SecondTimeDerivative{r} \vq^{\mathscr P}
+- \frac{1}{r}\SecondTimeDerivative{r} \vq^{\mathscr P}
 - \frac{2\TimeDerivative{r}}{r} \TimeDerivative\vq^{\mathscr P}
 + \frac{1}{r}\SecondTimeDerivative\vq^{\mathscr R}
 \\ &=
-  \frac{1}{r}\SecondTimeDerivative{r} \vq^{\mathscr P}
+- \frac{1}{r}\SecondTimeDerivative{r} \vq^{\mathscr P}
 - \frac{2\TimeDerivative{r}}{r} \TimeDerivative\vq^{\mathscr P}
 + \frac{1}{r}\pa{
 \TimeDerivative{\MatrixSymbol ω} \vq^{\mathscr R}
 + 2 \MatrixSymbol ω \TimeDerivative\vq^{\mathscr R}
-+ \Transpose{\deriv{\vq^{\mathscr R}}{V^{\mathscr R}}}}
+- \Transpose{\deriv{\vq^{\mathscr R}}{V^{\mathscr R}}}}
 \nonumber\\ &=
-  \frac{1}{r}\SecondTimeDerivative{r} \vq^{\mathscr P}
+- \frac{1}{r}\SecondTimeDerivative{r} \vq^{\mathscr P}
 - \frac{2\TimeDerivative{r}}{r} \TimeDerivative\vq^{\mathscr P}
 + \TimeDerivative{\MatrixSymbol ω} \vq^{\mathscr P}
 + 2 \MatrixSymbol ω \pa{\TimeDerivative\vq^{\mathscr P}+\frac{\TimeDerivative r}{r}\vq^{\mathscr P}}
-+ \frac{1}{r^2}\Transpose{\deriv{\vq^{\mathscr P}}{V^{\mathscr R}}}
+- \frac{1}{r^2}\Transpose{\deriv{\vq^{\mathscr P}}{V^{\mathscr R}}}
 \nonumber\\ &=
 \pa{2 \MatrixSymbol ω - \frac{2\TimeDerivative{r}}{r}\Identity} \TimeDerivative\vq^{\mathscr P}
 + \pa{2 \frac{\TimeDerivative r}{r} \MatrixSymbol ω + \TimeDerivative{\MatrixSymbol ω}} \vq^{\mathscr P}
-+ \frac{1}{r}\SecondTimeDerivative{r} \vq^{\mathscr P}
-+ \frac{1}{r^2}\Transpose{\deriv{\vq^{\mathscr P}}{V^{\mathscr R}}}
+- \frac{1}{r}\SecondTimeDerivative{r} \vq^{\mathscr P}
+- \frac{1}{r^2}\Transpose{\deriv{\vq^{\mathscr P}}{V^{\mathscr R}}}
 \nonumber\\ &=
 \pa{2 \MatrixSymbol ω - \frac{2\TimeDerivative{r}}{r}\Identity} \TimeDerivative\vq^{\mathscr P}
 + \pa{\underbrace{2 \frac{\TimeDerivative r}{r} \MatrixSymbol ω
 + \TimeDerivative{\MatrixSymbol ω}}_{\matA^{\mathscr P}}} \vq^{\mathscr P}
 - \Transpose{\pa{\derivop{\vq^{\mathscr P}}\pa{\underbrace{
-- \frac{\SecondTimeDerivative{r}\scal{\vq^{\mathscr P}}{\vq^{\mathscr P}}}{2r} 
+  \frac{\SecondTimeDerivative{r}\scal{\vq^{\mathscr P}}{\vq^{\mathscr P}}}{2r} 
 + \frac{V^{\mathscr R}}{r^2}}_{V^{\mathscr P}}}}}
 \text.
 \end{align}
@@ -277,20 +280,20 @@ Further, observe that, since $\SecondTimeDerivative \vr=-\frac{μ_1+μ_2}{r^2}\h
 \]
 Consider now the geometric potential\begin{align*}
 V^{\mathscr P} &=
-- \frac{\SecondTimeDerivative{r}\scal{\vq^{\mathscr P}}{\vq^{\mathscr P}}}{2r} 
+  \frac{\SecondTimeDerivative{r}\scal{\vq^{\mathscr P}}{\vq^{\mathscr P}}}{2r} 
 + \frac{V^{\mathscr R}}{r^2}
 \\ &=
-- \frac{\SecondTimeDerivative{r}\scal{\vq^{\mathscr P}}{\vq^{\mathscr P}}}{2r} 
+  \frac{\SecondTimeDerivative{r}\scal{\vq^{\mathscr P}}{\vq^{\mathscr P}}}{2r} 
 - \frac{\InnerProduct{\MatrixSymbol ω \vq^{\mathscr R}}{\MatrixSymbol ω \vq^{\mathscr R}}}{2r^2}
 +\frac{V^{\mathscr I}}{r^2}
 \\ &=
-- \frac{\SecondTimeDerivative{r}\scal{\vq^{\mathscr P}}{\vq^{\mathscr P}}}{2r^2} 
+  \frac{\SecondTimeDerivative{r}\scal{\vq^{\mathscr P}}{\vq^{\mathscr P}}}{2r^2} 
 - \frac{\InnerProduct{\MatrixSymbol ω \vq^{\mathscr P}}{\MatrixSymbol ω \vq^{\mathscr P}}}{2}
 +\frac{V'}{r^3}\text.
 \intertext{For $\vq^{P}$ in the $xy$ plane,}
 V^{\mathscr P} &=
-- \pa{\frac{\SecondTimeDerivative{r}}{r} 
-+ ω^2}\frac{\pa{q^{\mathscr P}}^2}{2}
+\pa{\frac{\SecondTimeDerivative{r}}{r} 
+- ω^2}\frac{\pa{q^{\mathscr P}}^2}{2}
 +\frac{V'}{r^3}
 \\ &= \frac{1}{r^3}\pa{-\frac{\pa{μ_1+μ_2}\pa{q^{\mathscr P}}^2}{2} + V'}
 \text.
