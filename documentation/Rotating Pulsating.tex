@@ -169,46 +169,46 @@ The rotating-pulsating reference frame $\mathscr P$ is defined by
 For velocities in $\mathscr P$, we have
 \begin{equation}
 \TimeDerivative\vq^{\mathscr P}
-= -\frac{1}{r^2} \TimeDerivative{r} \vq^{\mathscr R} + \frac{1}{r} \TimeDerivative\vq^{\mathscr R}
-= -\frac{1}{r} \TimeDerivative{r} \vq^{\mathscr P} + \frac{1}{r} \TimeDerivative\vq^{\mathscr R}\text.
+= -\frac{\TimeDerivative{r}}{r^2} \vq^{\mathscr R} + \frac{1}{r} \TimeDerivative\vq^{\mathscr R}
+= -\frac{\TimeDerivative{r}}{r} \vq^{\mathscr P} + \frac{1}{r} \TimeDerivative\vq^{\mathscr R}\text.
 \end{equation}
 For accelerations in $\mathscr P$,
 \begin{align}\SecondTimeDerivative\vq^{\mathscr P} &=
-  \frac{1}{r^2}\TimeDerivative{r}^2 \vq^{\mathscr P}
-- \frac{1}{r}\SecondTimeDerivative{r} \vq^{\mathscr P}
-- \frac{1}{r}\TimeDerivative{r} \TimeDerivative\vq^{\mathscr P}
-- \frac{1}{r^2}\TimeDerivative{r} \TimeDerivative\vq^{\mathscr R}
+  \frac{\TimeDerivative{r}^2}{r^2} \vq^{\mathscr P}
+- \frac{\SecondTimeDerivative{r}}{r} \vq^{\mathscr P}
+- ω \TimeDerivative\vq^{\mathscr P}
+- \frac{\TimeDerivative{r}}{r^2} \TimeDerivative\vq^{\mathscr R}
 + \frac{1}{r}\SecondTimeDerivative\vq^{\mathscr R}
 \nonumber\\ &=
-  \frac{1}{r^2}\TimeDerivative{r}^2 \vq^{\mathscr P}
-- \frac{1}{r}\SecondTimeDerivative{r} \vq^{\mathscr P}
-- \frac{1}{r}\TimeDerivative{r} \TimeDerivative\vq^{\mathscr P}
-- \frac{1}{r} \TimeDerivative{r} \pa{\TimeDerivative\vq^{\mathscr P}+\frac{1}{r} \TimeDerivative{r} \vq^{\mathscr P}}
+  \frac{\TimeDerivative{r}^2}{r^2} \vq^{\mathscr P}
+- \frac{\SecondTimeDerivative{r}}{r} \vq^{\mathscr P}
+- \frac{\TimeDerivative{r}}{r} \TimeDerivative\vq^{\mathscr P}
+- \frac{\TimeDerivative{r}}{r} \pa{\TimeDerivative\vq^{\mathscr P}+\frac{\TimeDerivative{r}}{r} \vq^{\mathscr P}}
 + \frac{1}{r}\SecondTimeDerivative\vq^{\mathscr R}
 \nonumber\\ &=
-- \frac{1}{r}\SecondTimeDerivative{r} \vq^{\mathscr P}
-- \frac{2\TimeDerivative{r}}{r} \TimeDerivative\vq^{\mathscr P}
+- \frac{\SecondTimeDerivative{r}}{r} \vq^{\mathscr P}
+- 2\frac{\TimeDerivative{r}}{r} \TimeDerivative\vq^{\mathscr P}
 + \frac{1}{r}\SecondTimeDerivative\vq^{\mathscr R}
 \\ &=
-- \frac{1}{r}\SecondTimeDerivative{r} \vq^{\mathscr P}
-- \frac{2\TimeDerivative{r}}{r} \TimeDerivative\vq^{\mathscr P}
+- \frac{\SecondTimeDerivative{r}}{r} \vq^{\mathscr P}
+- 2\frac{\TimeDerivative{r}}{r} \TimeDerivative\vq^{\mathscr P}
 + \frac{1}{r}\pa{
 \TimeDerivative{\MatrixSymbol ω} \vq^{\mathscr R}
 + 2 \MatrixSymbol ω \TimeDerivative\vq^{\mathscr R}
 - \Transpose{\deriv{\vq^{\mathscr R}}{V^{\mathscr R}}}}
 \nonumber\\ &=
-- \frac{1}{r}\SecondTimeDerivative{r} \vq^{\mathscr P}
-- \frac{2\TimeDerivative{r}}{r} \TimeDerivative\vq^{\mathscr P}
+- \frac{\SecondTimeDerivative{r}}{r} \vq^{\mathscr P}
+- 2\frac{\TimeDerivative{r}}{r} \TimeDerivative\vq^{\mathscr P}
 + \TimeDerivative{\MatrixSymbol ω} \vq^{\mathscr P}
 + 2 \MatrixSymbol ω \pa{\TimeDerivative\vq^{\mathscr P}+\frac{\TimeDerivative r}{r}\vq^{\mathscr P}}
 - \frac{1}{r^2}\Transpose{\deriv{\vq^{\mathscr P}}{V^{\mathscr R}}}
 \nonumber\\ &=
-\pa{2 \MatrixSymbol ω - \frac{2\TimeDerivative{r}}{r}\Identity} \TimeDerivative\vq^{\mathscr P}
+\pa{2 \MatrixSymbol ω - 2\frac{\TimeDerivative{r}}{r}\Identity} \TimeDerivative\vq^{\mathscr P}
 + \pa{2 \frac{\TimeDerivative r}{r} \MatrixSymbol ω + \TimeDerivative{\MatrixSymbol ω}} \vq^{\mathscr P}
-- \frac{1}{r}\SecondTimeDerivative{r} \vq^{\mathscr P}
+- \frac{\SecondTimeDerivative{r}}{r} \vq^{\mathscr P}
 - \frac{1}{r^2}\Transpose{\deriv{\vq^{\mathscr P}}{V^{\mathscr R}}}
 \nonumber\\ &=
-\pa{2 \MatrixSymbol ω - \frac{2\TimeDerivative{r}}{r}\Identity} \TimeDerivative\vq^{\mathscr P}
+\pa{2 \MatrixSymbol ω - 2\frac{\TimeDerivative{r}}{r}\Identity} \TimeDerivative\vq^{\mathscr P}
 + \pa{\underbrace{2 \frac{\TimeDerivative r}{r} \MatrixSymbol ω
 + \TimeDerivative{\MatrixSymbol ω}}_{\matA^{\mathscr P}}} \vq^{\mathscr P}
 - \Transpose{\pa{\derivop{\vq^{\mathscr P}}\pa{\underbrace{
