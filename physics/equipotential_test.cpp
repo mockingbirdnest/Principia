@@ -401,9 +401,10 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
         quantities::Pow<2>(InnerProduct(u, v)) / quantities::Pow<3>(r) +
         v.Norm²() / r;
     return (dynamic_frame.GeometricPotential(
-                t, (q - World::origin) / (1 * Metre) * r + World::origin) +
-            (q - World::origin).Norm() / (1 * Metre) * r * rʺ) /
-           r² * (1 * quantities::Pow<2>(Metre));
+                t, (q - World::origin) / (1 * Metre) * r + World::origin) /
+                r² +
+            ((q - World::origin) / (1 * Metre)).Norm²() * rʺ / (2 * r)) *
+           (1 * quantities::Pow<2>(Metre));
   };
   auto const gradient_at_time =
       [&](Instant const& t,
