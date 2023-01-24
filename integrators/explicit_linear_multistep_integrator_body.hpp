@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/for_all_of.hpp"
 #include "base/jthread.hpp"
 #include "geometry/serialization.hpp"
 #include "integrators/explicit_runge_kutta_integrator.hpp"
@@ -16,6 +17,7 @@ namespace principia {
 namespace integrators {
 namespace internal_explicit_linear_multistep_integrator {
 
+using base::for_all_of;
 using base::make_not_null_unique;
 using geometry::QuantityOrMultivectorSerializer;
 
@@ -25,6 +27,8 @@ template<typename Method, typename ODE_>
 absl::Status
 ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
     IndependentVariable const& s_final) {
+  using DependentVariables = typename ODE::DependentVariables;
+
   auto const& α = integrator_.α_;
   auto const& β_numerator = integrator_.β_numerator_;
   auto const& β_denominator = integrator_.β_denominator_;
@@ -54,9 +58,8 @@ ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
   int const k = order;
 
   absl::Status status;
+  DependentVariables y;
 
-  DoubleDependentVariables Σⱼ_minus_αⱼ_yⱼ;
-  DependentVariableDerivatives Σⱼ_βⱼ_numerator_fⱼ;
   while (h <= (s_final - s.value) - s.error) {
     // Scan the previous steps from the most recent to the oldest.  That's how
     // the Adams-Bashforth formulæ are typically written.
@@ -66,14 +69,22 @@ ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
     // consistently with our implementation of the symmetric linear multistep
     // integrator, so index |j| in [HW10] becomes index |k - j| below.  This
     // makes our formula more similar to equation (6) of [HW10].
+    DoubleDependentVariables Σⱼ_minus_αⱼ_yⱼ;
+    DependentVariableDerivatives Σⱼ_βⱼ_numerator_fⱼ;
     for (int j = 1; j <= k; ++j) {
       --it;
       DoubleDependentVariables const& yⱼ = it->y;
       DependentVariableDerivatives const& fⱼ = it->yʹ;
       double const αⱼ = α[j];
       double const βⱼ_numerator = β_numerator[j];
-      Σⱼ_minus_αⱼ_yⱼ -= αⱼ * yⱼ;
-      Σⱼ_βⱼ_numerator_fⱼ += βⱼ_numerator * fⱼ;
+      for_all_of(yⱼ, fⱼ, Σⱼ_minus_αⱼ_yⱼ, Σⱼ_βⱼ_numerator_fⱼ)
+          .loop([αⱼ, βⱼ_numerator](auto const& yⱼ,
+                                   auto const& fⱼ,
+                                   auto& Σⱼ_minus_αⱼ_yⱼ,
+                                   auto& Σⱼ_βⱼ_numerator_fⱼ) {
+            Σⱼ_minus_αⱼ_yⱼ -= αⱼ * yⱼ;
+            Σⱼ_βⱼ_numerator_fⱼ += βⱼ_numerator * fⱼ;
+          });
     }
 
     // Create a new step in the instance.
@@ -83,13 +94,22 @@ ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
     // Fill the new step.  We skip the division by αₖ as it is equal to 1.0.
     double const αₖ = α[0];
     DCHECK_EQ(αₖ, 1.0);
-    Σⱼ_minus_αⱼ_yⱼ.Increment(h * Σⱼ_βⱼ_numerator_fⱼ / β_denominator);
+    for_all_of(Σⱼ_βⱼ_numerator_fⱼ, Σⱼ_minus_αⱼ_yⱼ)
+        .loop([h, β_denominator](auto const& Σⱼ_βⱼ_numerator_fⱼ,
+                                 auto& Σⱼ_minus_αⱼ_yⱼ) {
+          Σⱼ_minus_αⱼ_yⱼ.Increment(h * Σⱼ_βⱼ_numerator_fⱼ / β_denominator);
+        });
+
+    for_all_of(Σⱼ_minus_αⱼ_yⱼ, y)
+        .loop([](auto const& Σⱼ_minus_αⱼ_yⱼ, auto& y) {
+          DCHECK_EQ(y.size(), Σⱼ_minus_αⱼ_yⱼ.size());
+          for (int i = 0; i < y.size(); ++i) {
+            y[i] = Σⱼ_minus_αⱼ_yⱼ[i].value;
+          }
+        });
     current_step.y = Σⱼ_minus_αⱼ_yⱼ;
-    current_state.y = Σⱼ_minus_αⱼ_yⱼ.value;
     termination_condition::UpdateWithAbort(
-        equation.compute_acceleration(s.value,
-                                      current_state.y,
-                                      current_step.yʹ),
+        equation.compute_derivative(s.value, y, current_step.yʹ),
         status);
     starter_.Push(std::move(current_step));
 
@@ -123,18 +143,19 @@ void ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Starter::
 FillStepFromState(ODE const& equation,
                   typename ODE::State const& state,
                   Step& step) const {
-  using Position = typename ODE::DependentVariable;
-  typename ODE::DependentVariables positions;
   step.s = state.s;
-  for (auto const& position : state.positions) {
-    step.displacements.push_back(position - DoublePrecision<Position>());
-    positions.push_back(position.value);
-  }
-  step.accelerations.resize(step.displacements.size());
-  // Ignore the status here.  We are merely computing the acceleration to store
-  // it, not to advance an integrator.
-  equation.compute_acceleration(step.time.value, positions, step.accelerations)
-      .IgnoreError();
+  step.y = state.y;
+  typename ODE::DependentVariables y;
+  for_all_of(state.y, y)
+      .loop([](auto const& state_y, auto& y) {
+        DCHECK_EQ(state_y.size(), y.size());
+        for (int i = 0; i < state_y.size(); ++i) {
+          y[i] = state_y[i].value;
+        }
+      });
+  // Ignore the status here.  We are merely computing yʹ to store it, not to
+  // advance an integrator.
+  equation.compute_derivative(step.s.value, y, step.yʹ).IgnoreError();
 }
 
 template<typename Method, typename ODE_>
