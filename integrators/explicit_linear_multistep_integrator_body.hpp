@@ -54,13 +54,34 @@ ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
   IndependentVariableDifference const& h = step;
   // Current independent variable.
   DoublePrecision<IndependentVariable> s = previous_steps.back().s;
+
+  // Current state.  This is a non-const reference whose purpose is to make
+  // the equations more readable.
+  auto& y = current_state.y;
+
   // Order.
   int const k = order;
 
+  // Current stage of the integrator.
+  DependentVariables y_stage;
+  for_all_of(y, y_stage).loop([](auto const& y, auto& y_stage) {
+    int const dimension = y.size();
+    y_stage.resize(dimension);
+  });
+
   absl::Status status;
-  DependentVariables y;
 
   while (h <= (s_final - s.value) - s.error) {
+    DoubleDependentVariables Σⱼ_minus_αⱼ_yⱼ{};
+    DependentVariableDerivatives Σⱼ_βⱼ_numerator_fⱼ{};
+    for_all_of(y_stage, Σⱼ_minus_αⱼ_yⱼ, Σⱼ_βⱼ_numerator_fⱼ)
+        .loop(
+            [](auto const& y, auto& Σⱼ_minus_αⱼ_yⱼ, auto& Σⱼ_βⱼ_numerator_fⱼ) {
+              int const dimension = y.size();
+              Σⱼ_minus_αⱼ_yⱼ.resize(dimension);
+              Σⱼ_βⱼ_numerator_fⱼ.resize(dimension);
+            });
+
     // Scan the previous steps from the most recent to the oldest.  That's how
     // the Adams-Bashforth formulæ are typically written.
     auto it = previous_steps.end();
@@ -69,8 +90,6 @@ ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
     // consistently with our implementation of the symmetric linear multistep
     // integrator, so index |j| in [HW10] becomes index |k - j| below.  This
     // makes our formula more similar to equation (6) of [HW10].
-    DoubleDependentVariables Σⱼ_minus_αⱼ_yⱼ;
-    DependentVariableDerivatives Σⱼ_βⱼ_numerator_fⱼ;
     for (int j = 1; j <= k; ++j) {
       --it;
       DoubleDependentVariables const& yⱼ = it->y;
@@ -82,8 +101,11 @@ ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
                                    auto const& fⱼ,
                                    auto& Σⱼ_minus_αⱼ_yⱼ,
                                    auto& Σⱼ_βⱼ_numerator_fⱼ) {
-            Σⱼ_minus_αⱼ_yⱼ -= αⱼ * yⱼ;
-            Σⱼ_βⱼ_numerator_fⱼ += βⱼ_numerator * fⱼ;
+            int const dimension = yⱼ.size();
+            for (int i = 0; i < dimension; ++i) {
+              Σⱼ_minus_αⱼ_yⱼ[i] -= Scale(αⱼ, yⱼ[i]);
+              Σⱼ_βⱼ_numerator_fⱼ[i] += βⱼ_numerator * fⱼ[i];
+            }
           });
     }
 
@@ -97,19 +119,23 @@ ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
     for_all_of(Σⱼ_βⱼ_numerator_fⱼ, Σⱼ_minus_αⱼ_yⱼ)
         .loop([h, β_denominator](auto const& Σⱼ_βⱼ_numerator_fⱼ,
                                  auto& Σⱼ_minus_αⱼ_yⱼ) {
-          Σⱼ_minus_αⱼ_yⱼ.Increment(h * Σⱼ_βⱼ_numerator_fⱼ / β_denominator);
+          int const dimension = Σⱼ_βⱼ_numerator_fⱼ.size();
+          for (int i = 0; i < dimension; ++i) {
+            Σⱼ_minus_αⱼ_yⱼ[i].Increment(h * Σⱼ_βⱼ_numerator_fⱼ[i] /
+                                        β_denominator);
+          }
         });
 
-    for_all_of(Σⱼ_minus_αⱼ_yⱼ, y)
-        .loop([](auto const& Σⱼ_minus_αⱼ_yⱼ, auto& y) {
-          DCHECK_EQ(y.size(), Σⱼ_minus_αⱼ_yⱼ.size());
-          for (int i = 0; i < y.size(); ++i) {
-            y[i] = Σⱼ_minus_αⱼ_yⱼ[i].value;
+    for_all_of(Σⱼ_minus_αⱼ_yⱼ, y_stage)
+        .loop([](auto const& Σⱼ_minus_αⱼ_yⱼ, auto& y_stage) {
+          DCHECK_EQ(y_stage.size(), Σⱼ_minus_αⱼ_yⱼ.size());
+          for (int i = 0; i < y_stage.size(); ++i) {
+            y_stage[i] = Σⱼ_minus_αⱼ_yⱼ[i].value;
           }
         });
     current_step.y = Σⱼ_minus_αⱼ_yⱼ;
     termination_condition::UpdateWithAbort(
-        equation.compute_derivative(s.value, y, current_step.yʹ),
+        equation.compute_derivative(s.value, y_stage, current_step.yʹ),
         status);
     starter_.Push(std::move(current_step));
 
