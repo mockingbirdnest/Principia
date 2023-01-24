@@ -580,9 +580,22 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
         0.0,
         1.0,
         std::greater<>{});
+    double const arg_approx_l2 = numerics::Brent(
+        [&](double x) {
+          return potential(Barycentre(
+              std::pair(moon_position,
+                        World::origin + 2 * (moon_position - World::origin)),
+              std::pair(x, 1 - x)));
+        },
+        0.0,
+        1.0,
+        std::greater<>{});
     SpecificEnergy const approx_l1_energy =
         potential(Barycentre(std::pair(moon_position, earth_position),
                              std::pair(arg_approx_l1, 1 - arg_approx_l1)));
+    SpecificEnergy const approx_l2_energy = potential(Barycentre(
+        std::pair(moon_position, World::origin + 2 * (moon_position - World::origin)),
+        std::pair(arg_approx_l2, 1 - arg_approx_l2)));
     for (int i = 0; i < trajectories.size(); ++i) {
       DegreesOfFreedom<World> const dof =
           dof_to_world_at_time(t, trajectories[i]->EvaluateDegreesOfFreedom(t));
@@ -607,6 +620,21 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
         all_positions.back().back().push_back(positions);
         all_βs.back().push_back(βs);
       }
+    }
+    auto const& lines = equipotential.ComputeLines(
+        plane,
+        t,
+        arg_maximorum,
+        {{moon_position, moon->min_radius() / r(t) * (1 * Metre)},
+         {earth_position, earth->min_radius() / r(t) * (1 * Metre)}},
+        [](Position<World> q) {
+          return World::origin + Normalize(q - World::origin) * 3 * Metre;
+        },
+        approx_l2_energy);
+    for (auto const& line : lines) {
+      auto const& [positions, βs] = line;
+      all_positions.back().back().push_back(positions);
+      all_βs.back().push_back(βs);
     }
   }
   std::vector<std::vector<Position<World>>> world_trajectories;

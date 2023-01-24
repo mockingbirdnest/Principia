@@ -236,18 +236,18 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     Position<Frame> const& peak = peaks[i];
     // Ignore |peak| if it is below |energy|.
     if (potential_(t, peak) < energy) {
-      LOG(ERROR) << "Ignoring peak " << i << " which is below energy";
+      //LOG(ERROR) << "Ignoring peak " << i << " which is below energy";
       continue;
     }
-    LOG(ERROR) << "Delineating peak " << i;
+    //LOG(ERROR) << "Delineating peak " << i;
     while (!delineation.indistinct_wells.empty() ||
            !delineation.delineated_from_infinity) {
       std::optional<WellIterator> expected_delineated_well;
       bool expect_delineation_from_infinity = false;
       if (!delineation.indistinct_wells.empty()) {
         // Try to delineate |peak| from the first of its |indistinct_wells|.
-        LOG(ERROR) << delineation.indistinct_wells.size()
-                   << " wells to delineate";
+        //LOG(ERROR) << delineation.indistinct_wells.size()
+        //           << " wells to delineate";
         expected_delineated_well = *delineation.indistinct_wells.begin();
         Well const well = **expected_delineated_well;
         Length const r = (peak - well.position).Norm();
@@ -279,7 +279,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         states.push_back(ComputeLine(plane, t, equipotential_position));
       } else {
         // Try to delineate |peak| from the well at infinity.
-        LOG(ERROR) << "Not delineated from infinity";
+        //LOG(ERROR) << "Not delineated from infinity";
         expect_delineation_from_infinity = true;
         Position<Frame> const far_away = towards_infinity(peak);
         if (potential_(t, far_away) >= energy) {
@@ -317,14 +317,14 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
       for (int j = 0; j < peaks.size(); ++j) {
         bool const peak_j_enclosed = WindingNumber(plane, peaks[j], line) > 0;
         if (peak_j_enclosed && !peak_delineations[j].delineated_from_infinity) {
-          LOG(ERROR) << "line delineates peak " << j << " from infinity";
+          //LOG(ERROR) << "line delineates peak " << j << " from infinity";
         }
         peak_delineations[j].delineated_from_infinity |= peak_j_enclosed;
         for (auto it = peak_delineations[j].indistinct_wells.begin();
              it != peak_delineations[j].indistinct_wells.end();) {
           if (enclosed_wells.contains(*it) != peak_j_enclosed) {
-            LOG(ERROR) << "line delineates peak " << j << " from well "
-                       << *it - wells.begin();
+            //LOG(ERROR) << "line delineates peak " << j << " from well "
+            //           << *it - wells.begin();
             it = peak_delineations[j].indistinct_wells.erase(it);
           } else {
             ++it;
