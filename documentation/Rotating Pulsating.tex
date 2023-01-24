@@ -227,9 +227,9 @@ V^{\mathscr I}&=
 -\frac{μ_1}{\norm{\vq_1^{\mathscr R}-\vq^{\mathscr R}}}
 -\frac{μ_2}{\norm{\vq_2^{\mathscr R}-\vq^{\mathscr R}}}
 \\&=
--\frac{1}{r}\pa{\underbrace{
-\frac{μ_1}{\norm{\vq_1^{\mathscr P}-\vq^{\mathscr P}}}+
-\frac{μ_2}{\norm{\vq_2^{\mathscr P}-\vq^{\mathscr P}}}}_{\DefinitionOf{V'}}}
+\frac{1}{r}\pa{\underbrace{
+-\frac{μ_1}{\norm{\vq_1^{\mathscr P}-\vq^{\mathscr P}}}
+-\frac{μ_2}{\norm{\vq_2^{\mathscr P}-\vq^{\mathscr P}}}}_{\DefinitionOf{V'}}}
 \text.
 \end{align*}
 
@@ -261,11 +261,12 @@ The critical points of $V^{\mathscr R}$ are thus fixed; they are the \emph{Lagra
 However, when the eccentricity does not vanish, the Euler force appears, and the critical
 points of the geometric potential are not fixed.
 
-Observe that $ωr^2$ is the areal velocity of the Kepler problem, so that\[
+Observe that $ωr^2$ is the areal velocity of the Kepler problem, so that\begin{equation}
 \deriv{t}{ωr^2}=\TimeDerivative ω r^2 + 2 ω\TimeDerivative r r = 0
 \text{, and therefore }
 \TimeDerivative ω + 2 \frac{\TimeDerivative r}{r} ω = 0\text.
-\]
+\label{eqnArealAcceleration}
+\end{equation}
 Since the rotational axis is invariant in the Kepler problem,
 \[
 \matA^{\mathscr P}
@@ -300,5 +301,35 @@ V^{\mathscr P} &=
 \end{align*}
 Thus, in the $xy$ plane, the geometric potential, while not constant, varies only by
 multiplication by a position-independent scalar; in particular, its critical points are fixed.
+
+\section{Reparametrization}
+In the Kepler problem, while the geometric acceleration at rest is irrotational, the
+component of the geometric acceleration due to velocity is not orthogonal to the velocity,
+so that it affects the kinetic energy:\[\SecondTimeDerivative\vq^{\mathscr P} =
+\pa{2 \MatrixSymbol ω - \underbrace{2\frac{\TimeDerivative{r}}{r}\Identity}_{\mathclap{\text{Not antisymmetric.}}}} \TimeDerivative\vq^{\mathscr P}
+- \Transpose{\deriv{\vq^{\mathscr P}}{V^{\mathscr P}}}\text.
+\]
+Treatments of the elliptic restricted three-body problem, such as
+\cite{Bennett1965} or \cite[587\psqq]{Szebehely1967},
+solve this issue by changing the time coordinate in addition to rescaling space.
+Indeed, observe that\begin{align*}
+\deriv[2]{ν}\vq^{\mathscr P}
+=\derivop{ν}\pa{\deriv{t}\vq^{\mathscr P}\deriv{ν}{t}}
+&=\deriv[2]{t}\vq^{\mathscr P}\pa{\deriv{ν}{t}}^2
+ +\deriv{t}\vq^{\mathscr P}\deriv[2]{ν}{t}\\
+&=\deriv[2]{t}\vq^{\mathscr P}\pa{\deriv{ν}{t}}^2
+ +\deriv{t}\vq^{\mathscr P}\pa{\derivop{t}\deriv{ν}{t}}\deriv{ν}{t}\\
+&=\frac{\SecondTimeDerivative\vq^{\mathscr P}}{\TimeDerivative ν^2}
+ +\TimeDerivative\vq^{\mathscr P}\pa{\derivop{t}\frac{1}{\TimeDerivative ν}}\frac{1}{\TimeDerivative ν}\\
+&=\frac{\SecondTimeDerivative\vq^{\mathscr P}}{\TimeDerivative ν^2}
+ \TimeDerivative\vq^{\mathscr P}\frac{\SecondTimeDerivative ν}{\TimeDerivative ν^2}\frac{1}{\TimeDerivative ν}\\&=\frac{1}{\TimeDerivative ν^2}\pa{\SecondTimeDerivative\vq^{\mathscr P}
+ -\frac{\SecondTimeDerivative ν}{\TimeDerivative ν}\TimeDerivative\vq^{\mathscr P}}\text,
+\end{align*}
+so that picking $ν$ such that
+$\frac{\SecondTimeDerivative ν}{\TimeDerivative ν}+2\frac{\TimeDerivative r}{r}=0$ eliminates
+the acceleration along the velocity vector.
+This condition is satisfied if $ν$ is the true anomaly, as in that case
+$\TimeDerivative ν=ω$, so that the condition becomes (\ref{eqnArealAcceleration}).
+This technique is not needed when considering solely the geometric potential.
 
 \end{document}
