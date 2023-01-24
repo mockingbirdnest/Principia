@@ -179,7 +179,7 @@ Instance::WriteToMessage(
           ->MutableExtension(
               serialization::SymmetricLinearMultistepIntegratorInstance::
                   extension);
-  starter_.WriteToMessage<
+  starter_.template WriteToMessage<
       serialization::SymmetricLinearMultistepIntegratorInstance>(extension);
 }
 
@@ -198,7 +198,7 @@ SymmetricLinearMultistepIntegrator<Method, ODE_>::Instance::ReadFromMessage(
                                                          step,
                                                          integrator));
   instance->starter_.FillFromMessage(extension);
-  return instance;
+  return std::move(instance);
 }
 
 template<typename Method, typename ODE_>
