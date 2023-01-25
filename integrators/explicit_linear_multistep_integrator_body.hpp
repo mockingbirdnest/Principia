@@ -126,9 +126,12 @@ ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
           }
         });
 
-    for_all_of(Σⱼ_minus_αⱼ_yⱼ, y_stage)
-        .loop([](auto const& Σⱼ_minus_αⱼ_yⱼ, auto& y_stage) {
+    for_all_of(Σⱼ_minus_αⱼ_yⱼ, y_stage, current_step.yʹ)
+        .loop([](auto const& Σⱼ_minus_αⱼ_yⱼ,
+                 auto& y_stage,
+                 auto& current_step_yʹ) {
           DCHECK_EQ(y_stage.size(), Σⱼ_minus_αⱼ_yⱼ.size());
+          current_step_yʹ.resize(y_stage.size());
           for (int i = 0; i < y_stage.size(); ++i) {
             y_stage[i] = Σⱼ_minus_αⱼ_yⱼ[i].value;
           }
@@ -172,11 +175,11 @@ FillStepFromState(ODE const& equation,
   step.s = state.s;
   step.y = state.y;
   typename ODE::DependentVariables y;
-  for_all_of(state.y, y)
-      .loop([](auto const& state_y, auto& y) {
-        DCHECK_EQ(state_y.size(), y.size());
-        for (int i = 0; i < state_y.size(); ++i) {
-          y[i] = state_y[i].value;
+  for_all_of(state.y, y, step.yʹ)
+      .loop([](auto const& state_y, auto& y, auto& step_yʹ) {
+        step_yʹ.resize(state_y.size());
+        for (auto const& state_yᵢ : state_y) {
+          y.push_back(state_yᵢ.value);
         }
       });
   // Ignore the status here.  We are merely computing yʹ to store it, not to

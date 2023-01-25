@@ -35,24 +35,88 @@ using quantities::si::Newton;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
+using testing_utilities::ApproximateQuantity;
 using testing_utilities::IsNear;
 using testing_utilities::PearsonProductMomentCorrelationCoefficient;
 using testing_utilities::RelativeError;
 using testing_utilities::Slope;
 using testing_utilities::operator""_;
+using ::testing::ValuesIn;
+
+#define PARAM(integrator,                                            \
+              expected_q_convergence_order,                          \
+              expected_q_correlation,                                \
+              expected_v_convergence_order,                          \
+              expected_v_correlation)                                \
+  IntegratorTestParam(                                               \
+      ExplicitLinearMultistepIntegrator<methods::integrator, ODE>(), \
+      #integrator,                                                   \
+      (expected_q_convergence_order),                                \
+      (expected_q_correlation),                                      \
+      (expected_v_convergence_order),                                \
+      (expected_v_correlation))
 
 using ODE =
     ExplicitFirstOrderOrdinaryDifferentialEquation<Instant, Length, Speed>;
 
-class ExplicitLinearMultistepIntegratorTest : public ::testing::Test {
+// TODO(phl): This probably needs a beginning_of_convergence.
+struct IntegratorTestParam final {
+  template<typename Integrator>
+  IntegratorTestParam(
+      Integrator const& integrator,
+      std::string const& name,
+      ApproximateQuantity<double> const& expected_q_convergence_order,
+      ApproximateQuantity<double> const& expected_q_correlation,
+      ApproximateQuantity<double> const& expected_v_convergence_order,
+      ApproximateQuantity<double> const& expected_v_correlation)
+      : integrator(integrator),
+        order(integrator.order),
+        name(name),
+        expected_q_convergence_order(expected_q_convergence_order),
+        expected_q_correlation(expected_q_correlation),
+        expected_v_convergence_order(expected_v_convergence_order),
+        expected_v_correlation(expected_v_correlation) {}
+
+  FixedStepSizeIntegrator<ODE> const& integrator;
+  int const order;
+  std::string const name;
+  ApproximateQuantity<double> const expected_q_convergence_order;
+  ApproximateQuantity<double> const expected_q_correlation;
+  ApproximateQuantity<double> const expected_v_convergence_order;
+  ApproximateQuantity<double> const expected_v_correlation;
+};
+
+// This allows the test output to be legible, i.e.,
+// "where GetParam() = Leapfrog" rather than
+// "where GetParam() = n-byte object <hex>"
+std::ostream& operator<<(std::ostream& stream,
+                         IntegratorTestParam const& param) {
+  return stream << param.name;
+}
+
+std::vector<IntegratorTestParam> IntegratorTestParams() {
+  return {PARAM(AdamsBashforthOrder2,
+                -2.022_(1),
+                -0.99996_(1),
+                -1.034_(1),
+                -0.9997_(1))};
+}
+
+class ExplicitLinearMultistepIntegratorTest
+      : public ::testing::TestWithParam<IntegratorTestParam> {
  public:
   ExplicitLinearMultistepIntegratorTest() {
     google::LogToStderr();
   }
 };
 
+INSTANTIATE_TEST_SUITE_P(ExplicitLinearMultistepIntegratorTests,
+                         ExplicitLinearMultistepIntegratorTest,
+                         ValuesIn(IntegratorTestParams()));
+
 // Integrates with diminishing step sizes, and checks the order of convergence.
-TEST_F(ExplicitLinearMultistepIntegratorTest, Convergence) {
+TEST_P(ExplicitLinearMultistepIntegratorTest, Convergence) {
+  LOG(INFO) << GetParam();
   // Integrating the position of an ideal rocket,
   //   x"(t) = m' I_sp / m(t),
   //   x'(0) = 0, x(0) = 0,
@@ -129,6 +193,12 @@ TEST_F(ExplicitLinearMultistepIntegratorTest, Convergence) {
     log_step_sizes.push_back(std::log10(step / Second));
     log_q_errors.push_back(log_q_error);
     log_p_errors.push_back(log_p_error);
+    LOG(ERROR) << q << " "
+               << specific_impulse *
+                      (t +
+                       (t - initial_mass / mass_flow) *
+                           std::log(initial_mass / mass(final_state.s.value)))
+               << " " << step;
   }
   double const q_convergence_order = Slope(log_step_sizes, log_q_errors);
   double const q_correlation =
@@ -137,10 +207,11 @@ TEST_F(ExplicitLinearMultistepIntegratorTest, Convergence) {
   LOG(INFO) << "Correlation            : " << q_correlation;
 
 #if !defined(_DEBUG)
-  EXPECT_THAT(AbsoluteError(static_cast<double>(methods::AdamsBashforthOrder2::order),
-                            q_convergence_order),
-              IsNear(0.15_(1)));
-  EXPECT_THAT(q_correlation, IsNear(0.9996_(1)));
+  EXPECT_THAT(
+      AbsoluteError(static_cast<double>(GetParam().order),
+                    q_convergence_order),
+      IsNear(GetParam().expected_q_convergence_order));
+  EXPECT_THAT(q_correlation, IsNear(GetParam().expected_q_correlation));
 #endif
   double const v_convergence_order = Slope(log_step_sizes, log_p_errors);
   double const v_correlation =
@@ -148,9 +219,10 @@ TEST_F(ExplicitLinearMultistepIntegratorTest, Convergence) {
   LOG(INFO) << "Convergence order in p : " << v_convergence_order;
   LOG(INFO) << "Correlation            : " << v_correlation;
 #if !defined(_DEBUG)
-  EXPECT_THAT(AbsoluteError(methods::AdamsBashforthOrder2::order, v_convergence_order),
-              IsNear(0.19_(1)));
-  EXPECT_THAT(v_correlation, IsNear(0.9992_(1)));
+  EXPECT_THAT(
+      AbsoluteError(GetParam().order, v_convergence_order),
+      IsNear(GetParam().expected_v_convergence_order));
+  EXPECT_THAT(v_correlation, IsNear(GetParam().expected_v_correlation));
 #endif
 }
 
