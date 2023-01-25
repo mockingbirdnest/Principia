@@ -1,0 +1,335 @@
+\documentclass[10pt, a4paper, twoside]{basestyle}
+
+\usepackage{tikz}
+\usetikzlibrary{cd}
+
+\usepackage[Mathematics]{semtex}
+
+%%%% Shorthands.
+
+%%%% Title and authors.
+
+\title{On the rotating-pulsating reference frame}
+\date{\printdate{2023-01-23}}
+\author{Robin~Leroy (egg)}
+\begin{document}
+\maketitle
+
+\section*{Notation}
+\paragraph*{Time} Unless otherwise mentioned, all variables implicitly depend on time, a one-dimensional real oriented inner product space $T$.
+All equations are for those functions evaluated at time $t$.
+Unless otherwise mentioned, all predicates involving variables dependent on time are
+implicitly quantified for all times $t$.
+
+For example, we may write $f\in\R$ for $\FunctionSpec f T \R$.
+
+\paragraph*{Derivative} The notation $\deriv x f$ represents the evaluation
+at $x$
+of the differential $\diffd f$, where the expression $f$ is taken as a function of $x$.
+Within $f$, any occurrences of $x$ represent a free variable, rather than a function of time.
+The derivative with respect to time $\deriv t f$ may be written $\TimeDerivative f$.
+
+For example, we may write
+\[\derivop t \deriv x {\E^{x}} = \derivop t {\E^{x}} = \E^{x}\TimeDerivative x\text,\]
+which is implicitly
+\[\Evaluate{\derivop τ \pa{\Evaluate{\deriv ξ {\E^{ξ}}}{ξ=x\of{τ}}\phantom{_{ξ=x\of{τ}}}}}{τ=t} = \Evaluate{\deriv τ {\E^{x\of{τ}}}}{τ=t} = \E^{x\of{t}}\TimeDerivative x\of{t}\text.\]
+This also applies for multidimensional $x$; in particular we may write
+\[\Transpose{\deriv \vx {f\of{\vx}}}\text{ for }\pa{\grad f\of{t,\placeholder}}\of{t, \vx\of t}\text.\]
+This notation facilitates changes of variables, which are the main focus of this document.
+
+Note that $\diffd$ here is always the differential, not the exterior derivative; thus for vector
+spaces $V$ and $W$ and $\FunctionSpec f V W$, we have $\FunctionSpec {\diffd f} {V} {\Dual V \Tensor W}$, and
+$\FunctionSpec {\diffd^2 f} {V} {\Dual V \Tensor \Dual V \Tensor W}$, rather than $\diffd^2=0$.
+
+As it is somewhat impractical to construct a notation which makes pullbacks of two-forms natural,
+and as we do not perform changes of variables on curls, we eschew the exterior derivative entirely,
+and merely get rid of orientation-dependent identifications by writing, for $\vv$ and $\vw$
+implicitly dependent on $\vq$,
+\[\pa{\operatorname{\StandardVectorSymbol{rot}}_{\vq}\vv}\vw\text{ for }
+\pa{\mathbf{\nabla}\times\vv\of{t,\placeholder}}\of{\vq\of t}\times\vw\of{t,\vq\of t}\text.\]
+
+\paragraph*{Reference frames}
+Script capital letters denote reference frames.
+For all frames $\mathscr F$, $Q^{\mathscr F}$ is the space of displacements
+from the origin in frame $\mathscr F$ (representing positions in space),
+a three-dimensional real inner product space associated with $\mathscr F$.
+Variables $\vq^{\mathscr F}$ or $\vq_i^{\mathscr F}$ have values in $Q^{\mathscr F}$.
+
+Reference frames are defined in relation to each other by invertible transformations; thus if
+$\mathscr G$ is defined by $\vq^{\mathscr G} \DefineAs \vg\of{\vq^{\mathscr F}}$, a function $f$
+that depends on $\vq^{\mathscr F}$ can be taken as a function that depends on $\vq^{\mathscr G}$,
+and differentiated accordingly.
+
+For example, for $f$ implicitly dependent on $\vq^{\mathscr F}$ as well as $t$, we may write\[
+\deriv{\vq^{\mathscr G}}{f}=\deriv{\vq^{\mathscr F}}{f}\deriv{\vq^{\mathscr G}}{\vq^{\mathscr F}}\text,
+\]
+which is implicitly
+\[
+\diffd \pa{f\of{t,\placeholder}\Compose\vg\of{t,\placeholder}^{-1}}\of{\vq^{\mathscr G}\of{t}} =
+\diffd \pa{f\of{t,\placeholder}}\of{\vg\of{t,\vq^{\mathscr G}\of{t}}} \diffd\vg\of{t,\placeholder}^{-1}\text.
+\]
+
+\section{Geometric potential}
+Let $\vq^{\mathscr F}$ be a field of free-falling trajectories such that $\TimeDerivative\vq^{\mathscr F}=0$ at time $t$; the field $\SecondTimeDerivative\vq^{\mathscr F}$ is the field of \emph{geometric accelerations at rest}.
+
+In all reference frames considered, the geometric accelerations at rest have a constant curl
+throughout space, thus, at time $t$,\[
+\operatorname{\StandardVectorSymbol{rot}}_{\vq^{\mathscr F}}\SecondTimeDerivative\vq^{\mathscr F} =
+\matA^{\mathscr F}
+\]
+for some $\matA^{\mathscr F}$ which does not depend on $\vq^{\mathscr F}$.
+
+The \emph{geometric potential} $V^{\mathscr F}$ of a frame $\mathscr F$ is defined on
+$Q^{\mathscr F}$ at time $t$ by the equation
+\begin{equation}
+\SecondTimeDerivative\vq^{\mathscr F} =
+-\Transpose{\deriv{\vq^{\mathscr F}}{V^{\mathscr F}}} +
+\frac{1}{2}\matA^{\mathscr F}\vq^{\mathscr F}\text.
+\end{equation}
+The geometric potential $V^{\mathscr F}$ implictly depends on $\vq^{\mathscr F}$ as well as $t$.
+
+The acceleration $\SecondTimeDerivative\vq^{\mathscr F}$ of a free-falling trajectory $\vq^{\mathscr F}$
+is the \emph{geometric acceleration}, which, for a given frame, depends on time, position, and velocity.
+The gradient of the geometric potential is the \emph{rotation-free geometric acceleration at rest}; it
+depends on time and position. If the geometric acceleration at rest is irrotational, it is equal to the
+rotation-free geometric acceleration at rest.
+
+Note that unless the geometric acceleration at rest is irrotational, the geometric potential depends on
+the choice of the origin of $\mathscr F$.
+
+\section{Inertial frame}
+Let $\mathscr I$ be an inertial frame. Then for all free-falling trajectories $\vq^{\mathscr I}$,
+\begin{equation}
+\SecondTimeDerivative\vq^{\mathscr I}=-\Transpose{\deriv{\vq^{\mathscr I}}{V^{\mathscr I}}}\text.
+\end{equation}
+\section{Rotating frame}
+Consider the rotating reference frame $\mathscr R$ defined by
+\begin{equation}
+\vq^{\mathscr R} \DefineAs \matR \pa{\vq^{\mathscr I} - \vq_0^{\mathscr I}}\text.
+\end{equation}
+Velocities in $\mathscr R$ are related to velocities in $\mathscr I$ as follows:
+\begin{equation}
+\TimeDerivative\vq^{\mathscr R} =  -  \matR \TimeDerivative{\vq_0^{\mathscr I}} + \MatrixSymbol ω \vq^{\mathscr R} + \matR \TimeDerivative\vq^{\mathscr I}\text,
+\end{equation}
+where
+\[
+\TimeDerivative{\matR}=\MatrixSymbol ω \matR\text.
+\]
+
+Accelerations in $\mathscr R$ are related to accelerations in $\mathscr I$ as follows:
+\begin{align}
+\SecondTimeDerivative\vq^{\mathscr R}
+&=  - \MatrixSymbol ω\matR \TimeDerivative{\vq_0^{\mathscr I}}
+- \matR \SecondTimeDerivative\vq_0^{\mathscr I}
++ \TimeDerivative{\MatrixSymbol ω} \vq^{\mathscr R} +\MatrixSymbol ω \TimeDerivative\vq^{\mathscr R} +
+\MatrixSymbol ω \matR \TimeDerivative\vq^{\mathscr I} +
+\matR \SecondTimeDerivative\vq^{\mathscr I} \nonumber \\
+&= - \MatrixSymbol ω\matR \TimeDerivative{\vq_0^{\mathscr I}}
+- \matR \SecondTimeDerivative\vq_0^{\mathscr I}
++ \TimeDerivative{\MatrixSymbol ω} \vq^{\mathscr R}
++ \MatrixSymbol ω \TimeDerivative\vq^{\mathscr R}
++ \MatrixSymbol ω\pa{\TimeDerivative\vq^{\mathscr R}-\MatrixSymbol ω \vq^{\mathscr R} + \matR \TimeDerivative{\vq_0^{\mathscr I}}}
++ \matR \SecondTimeDerivative\vq^{\mathscr I}
+\nonumber \\
+&=  - \matR \SecondTimeDerivative\vq_0^{\mathscr I}
++ \underbrace{\TimeDerivative{\MatrixSymbol ω} \vq^{\mathscr R}}_{\text{Euler}}
++ \underbrace{2 \MatrixSymbol ω \TimeDerivative\vq^{\mathscr R}}_{\text{Coriolis}}
+- \underbrace{\MatrixSymbol ω^2 \vq^{\mathscr R}}_{\mathclap{\text{centrifugal}}}
++ \matR \SecondTimeDerivative\vq^{\mathscr I}\text.
+\end{align}
+Observe that for a free-falling trajectory,
+\[\matR\SecondTimeDerivative\vq^{\mathscr I}
+=-\matR\Transpose{\deriv{\vq^{\mathscr I}}{V^{\mathscr I}}}
+=-\Transpose{\pa{\deriv{\vq^{\mathscr I}}{V^{\mathscr I}}\matR^{-1}}}
+=-\Transpose{\pa{\deriv{\vq^{\mathscr I}}{V}\deriv{\vq^{\mathscr R}}{\vq^{\mathscr I}}}}=-\Transpose{\deriv{\vq^{\mathscr R}}{V^{\mathscr I}}}\text.\]
+At rest in $\mathscr R$, \idest, for $\TimeDerivative\vq^{\mathscr R}=0$, we have
+\begin{align}
+\SecondTimeDerivative\vq^{\mathscr R}
+&=  - \matR \SecondTimeDerivative\vq_0^{\mathscr I}
++ \TimeDerivative{\MatrixSymbol ω} \vq^{\mathscr R}
+- \MatrixSymbol ω^2 \vq^{\mathscr R}
++ \matR \SecondTimeDerivative\vq^{\mathscr I} \nonumber\\
+&=
+\TimeDerivative{\MatrixSymbol ω} \vq^{\mathscr R}-
+\Transpose{\pa{\derivop{\vq^{\mathscr R}}\pa{
+\InnerProduct{\vq^{\mathscr R}}{\matR \SecondTimeDerivative\vq_0^{\mathscr I}}
+- \frac{\Transpose{\pa{\vq^{\mathscr R}}}\Transpose{\MatrixSymbol ω}{\MatrixSymbol ω \vq^{\mathscr R}}}{2}
++V^{\mathscr I}}}}\text,
+\end{align}
+so that the geometric potential is
+\begin{equation}
+V^{\mathscr R}=
+\InnerProduct{\vq^{\mathscr R}}{\matR \SecondTimeDerivative\vq_0^{\mathscr I}}
+- \frac{\InnerProduct{\MatrixSymbol ω \vq^{\mathscr R}}{\MatrixSymbol ω \vq^{\mathscr R}}}{2}
++V^{\mathscr I}\text.
+\end{equation}
+\section{Rotating-pulsating frame}
+The rotating-pulsating reference frame $\mathscr P$ is defined by
+\begin{equation}\vq^{\mathscr P} \DefineAs \frac{\vq^{\mathscr R}}{r}\text.\end{equation}
+For velocities in $\mathscr P$, we have
+\begin{equation}
+\TimeDerivative\vq^{\mathscr P}
+= -\frac{\TimeDerivative{r}}{r^2} \vq^{\mathscr R} + \frac{1}{r} \TimeDerivative\vq^{\mathscr R}
+= -\frac{\TimeDerivative{r}}{r} \vq^{\mathscr P} + \frac{1}{r} \TimeDerivative\vq^{\mathscr R}\text.
+\end{equation}
+For accelerations in $\mathscr P$,
+\begin{align}\SecondTimeDerivative\vq^{\mathscr P} &=
+  \frac{\TimeDerivative{r}^2}{r^2} \vq^{\mathscr P}
+- \frac{\SecondTimeDerivative{r}}{r} \vq^{\mathscr P}
+- ω \TimeDerivative\vq^{\mathscr P}
+- \frac{\TimeDerivative{r}}{r^2} \TimeDerivative\vq^{\mathscr R}
++ \frac{1}{r}\SecondTimeDerivative\vq^{\mathscr R}
+\nonumber\\ &=
+  \frac{\TimeDerivative{r}^2}{r^2} \vq^{\mathscr P}
+- \frac{\SecondTimeDerivative{r}}{r} \vq^{\mathscr P}
+- \frac{\TimeDerivative{r}}{r} \TimeDerivative\vq^{\mathscr P}
+- \frac{\TimeDerivative{r}}{r} \pa{\TimeDerivative\vq^{\mathscr P}+\frac{\TimeDerivative{r}}{r} \vq^{\mathscr P}}
++ \frac{1}{r}\SecondTimeDerivative\vq^{\mathscr R}
+\nonumber\\ &=
+- \frac{\SecondTimeDerivative{r}}{r} \vq^{\mathscr P}
+- 2\frac{\TimeDerivative{r}}{r} \TimeDerivative\vq^{\mathscr P}
++ \frac{1}{r}\SecondTimeDerivative\vq^{\mathscr R}
+\\ &=
+- \frac{\SecondTimeDerivative{r}}{r} \vq^{\mathscr P}
+- 2\frac{\TimeDerivative{r}}{r} \TimeDerivative\vq^{\mathscr P}
++ \frac{1}{r}\pa{
+\TimeDerivative{\MatrixSymbol ω} \vq^{\mathscr R}
++ 2 \MatrixSymbol ω \TimeDerivative\vq^{\mathscr R}
+- \Transpose{\deriv{\vq^{\mathscr R}}{V^{\mathscr R}}}}
+\nonumber\\ &=
+- \frac{\SecondTimeDerivative{r}}{r} \vq^{\mathscr P}
+- 2\frac{\TimeDerivative{r}}{r} \TimeDerivative\vq^{\mathscr P}
++ \TimeDerivative{\MatrixSymbol ω} \vq^{\mathscr P}
++ 2 \MatrixSymbol ω \pa{\TimeDerivative\vq^{\mathscr P}+\frac{\TimeDerivative r}{r}\vq^{\mathscr P}}
+- \frac{1}{r^2}\Transpose{\deriv{\vq^{\mathscr P}}{V^{\mathscr R}}}
+\nonumber\\ &=
+\pa{2 \MatrixSymbol ω - 2\frac{\TimeDerivative{r}}{r}\Identity} \TimeDerivative\vq^{\mathscr P}
++ \pa{2 \frac{\TimeDerivative r}{r} \MatrixSymbol ω + \TimeDerivative{\MatrixSymbol ω}} \vq^{\mathscr P}
+- \frac{\SecondTimeDerivative{r}}{r} \vq^{\mathscr P}
+- \frac{1}{r^2}\Transpose{\deriv{\vq^{\mathscr P}}{V^{\mathscr R}}}
+\nonumber\\ &=
+\pa{2 \MatrixSymbol ω - 2\frac{\TimeDerivative{r}}{r}\Identity} \TimeDerivative\vq^{\mathscr P}
++ \pa{\underbrace{2 \frac{\TimeDerivative r}{r} \MatrixSymbol ω
++ \TimeDerivative{\MatrixSymbol ω}}_{\matA^{\mathscr P}}} \vq^{\mathscr P}
+- \Transpose{\pa{\derivop{\vq^{\mathscr P}}\pa{\underbrace{
+  \frac{\SecondTimeDerivative{r}\scal{\vq^{\mathscr P}}{\vq^{\mathscr P}}}{2r} 
++ \frac{V^{\mathscr R}}{r^2}}_{V^{\mathscr P}}}}}
+\text.
+\end{align}
+\section{Rotating-pulsating frame of the Kepler problem}
+Consider a system consisting of two point masses with time-independent
+gravitational parameters $μ_1$ and $μ_2$, subject to Newtonian gravity.
+A test mass is then subject to the potential\begin{align*}
+V^{\mathscr I}&=
+-\frac{μ_1}{\norm{\vq_1^{\mathscr I}-\vq^{\mathscr I}}}
+-\frac{μ_2}{\norm{\vq_2^{\mathscr I}-\vq^{\mathscr I}}}
+\\&=
+-\frac{μ_1}{\norm{\vq_1^{\mathscr R}-\vq^{\mathscr R}}}
+-\frac{μ_2}{\norm{\vq_2^{\mathscr R}-\vq^{\mathscr R}}}
+\\&=
+\frac{1}{r}\pa{\underbrace{
+-\frac{μ_1}{\norm{\vq_1^{\mathscr P}-\vq^{\mathscr P}}}
+-\frac{μ_2}{\norm{\vq_2^{\mathscr P}-\vq^{\mathscr P}}}}_{\DefinitionOf{V'}}}
+\text.
+\end{align*}
+
+Let $\vq^{\mathscr I}_0$ be the barycentre,
+\[
+\vq^{\mathscr I}_0\DefineAs \frac{μ_1\vq_1^{\mathscr I}+μ_2\vq_2^{\mathscr I}}{μ_1+μ_2}\text.
+\]
+We have $\SecondTimeDerivative\vq_0^{\mathscr I}=\nullvec$.
+Let $\matR$ be such that $\vq_1^{\mathscr R}$ and $\vq_2^{\mathscr R}$ both lie on the $x$-axis,
+with $\vq_1^{\mathscr R}$ on the negative side, and such that
+$\MatrixSymbol ω$ is in the positive $x\Exterior y$ direction.
+
+Let $\vr\DefineAs\vq_1^{\mathscr I}-\vq_2^{\mathscr I}$, and $r\DefineAs\norm \vr$,
+so that
+\begin{align*}
+\vq_1^{\mathscr R}&=\begin{pmatrix}-\frac{μ_2}{μ_1+μ_2}r\\0\\0\end{pmatrix}
+&\vq_2^{\mathscr R}&=\begin{pmatrix}\frac{μ_1}{μ_1+μ_2}r\\0\\0\end{pmatrix}\text,
+\intertext{and, in the pulsating frame,}
+\vq_1^{\mathscr P}&=\begin{pmatrix}-\frac{μ_2}{μ_1+μ_2}\\0\\0\end{pmatrix}
+&\vq_2^{\mathscr P}&=\begin{pmatrix}\frac{μ_1}{μ_1+μ_2}\\0\\0\end{pmatrix}\text.
+\end{align*}
+
+If the eccentricity vanishes, $\TimeDerivative {\MatrixSymbol ω}=\nullvec$,
+so that the Euler force vanishes, and the geometric acceleration at rest in
+$\mathscr R$ is irrotational. Further, $r$ is constant, thus so are
+$\vq_1^{\mathscr R}$ and $\vq_2^{\mathscr R}$, and therefore the geometric
+potential $V^{\mathscr R}$  is constant.
+The critical points of $V^{\mathscr R}$ are thus fixed; they are the \emph{Lagrange points}.
+However, when the eccentricity does not vanish, the Euler force appears, and the critical
+points of the geometric potential are not fixed.
+
+Observe that $ωr^2$ is the areal velocity of the Kepler problem, so that\begin{equation}
+\deriv{t}{ωr^2}=\TimeDerivative ω r^2 + 2 ω\TimeDerivative r r = 0
+\text{, and therefore }
+\TimeDerivative ω + 2 \frac{\TimeDerivative r}{r} ω = 0\text.
+\label{eqnArealAcceleration}
+\end{equation}
+Since the rotational axis is invariant in the Kepler problem,
+\[
+\matA^{\mathscr P}
+= \TimeDerivative {\MatrixSymbol ω} + 2 \frac{\TimeDerivative r}{r} \MatrixSymbol ω
+= \nullmat\text,
+\]
+\idest, the geometric acceleration at rest is irrotational: the pulsation of the reference
+frame eliminates the Euler force.
+
+Further, observe that, since $\SecondTimeDerivative \vr=-\frac{μ_1+μ_2}{r^2}\hat{\vr}$, we have\[
+\SecondTimeDerivative r - r ω^2=\InnerProduct{\SecondTimeDerivative\vr}{\hat{\vr}}=-\frac{μ_1+μ_2}{r^2}\text.
+\]
+Consider now the geometric potential\begin{align*}
+V^{\mathscr P} &=
+  \frac{\SecondTimeDerivative{r}\scal{\vq^{\mathscr P}}{\vq^{\mathscr P}}}{2r} 
++ \frac{V^{\mathscr R}}{r^2}
+\\ &=
+  \frac{\SecondTimeDerivative{r}\scal{\vq^{\mathscr P}}{\vq^{\mathscr P}}}{2r} 
+- \frac{\InnerProduct{\MatrixSymbol ω \vq^{\mathscr R}}{\MatrixSymbol ω \vq^{\mathscr R}}}{2r^2}
++\frac{V^{\mathscr I}}{r^2}
+\\ &=
+  \frac{\SecondTimeDerivative{r}\scal{\vq^{\mathscr P}}{\vq^{\mathscr P}}}{2r^2} 
+- \frac{\InnerProduct{\MatrixSymbol ω \vq^{\mathscr P}}{\MatrixSymbol ω \vq^{\mathscr P}}}{2}
++\frac{V'}{r^3}\text.
+\intertext{For $\vq^{P}$ in the $xy$ plane,}
+V^{\mathscr P} &=
+\pa{\frac{\SecondTimeDerivative{r}}{r} 
+- ω^2}\frac{\pa{q^{\mathscr P}}^2}{2}
++\frac{V'}{r^3}
+\\ &= \frac{1}{r^3}\pa{-\frac{\pa{μ_1+μ_2}\pa{q^{\mathscr P}}^2}{2} + V'}
+\text.
+\end{align*}
+Thus, in the $xy$ plane, the geometric potential, while not constant, varies only by
+multiplication by a position-independent scalar; in particular, its critical points are fixed.
+
+\section{Reparametrization}
+In the Kepler problem, while the geometric acceleration at rest is irrotational, the
+component of the geometric acceleration due to velocity is not orthogonal to the velocity,
+so that it affects the kinetic energy:\[\SecondTimeDerivative\vq^{\mathscr P} =
+\pa{2 \MatrixSymbol ω - \underbrace{2\frac{\TimeDerivative{r}}{r}\Identity}_{\mathclap{\text{Not antisymmetric.}}}} \TimeDerivative\vq^{\mathscr P}
+- \Transpose{\deriv{\vq^{\mathscr P}}{V^{\mathscr P}}}\text.
+\]
+Treatments of the elliptic restricted three-body problem, such as
+\cite{Bennett1965} or \cite[587\psqq]{Szebehely1967},
+solve this issue by changing the time coordinate in addition to rescaling space.
+Indeed, observe that\begin{align*}
+\deriv[2]{ν}\vq^{\mathscr P}
+=\derivop{ν}\pa{\deriv{t}\vq^{\mathscr P}\deriv{ν}{t}}
+&=\deriv[2]{t}\vq^{\mathscr P}\pa{\deriv{ν}{t}}^2
+ +\deriv{t}\vq^{\mathscr P}\deriv[2]{ν}{t}\\
+&=\deriv[2]{t}\vq^{\mathscr P}\pa{\deriv{ν}{t}}^2
+ +\deriv{t}\vq^{\mathscr P}\pa{\derivop{t}\deriv{ν}{t}}\deriv{ν}{t}\\
+&=\frac{\SecondTimeDerivative\vq^{\mathscr P}}{\TimeDerivative ν^2}
+ +\TimeDerivative\vq^{\mathscr P}\pa{\derivop{t}\frac{1}{\TimeDerivative ν}}\frac{1}{\TimeDerivative ν}\\
+&=\frac{\SecondTimeDerivative\vq^{\mathscr P}}{\TimeDerivative ν^2}
+- \TimeDerivative\vq^{\mathscr P}\frac{\SecondTimeDerivative ν}{\TimeDerivative ν^2}\frac{1}{\TimeDerivative ν}\\&=\frac{1}{\TimeDerivative ν^2}\pa{\SecondTimeDerivative\vq^{\mathscr P}
+ -\frac{\SecondTimeDerivative ν}{\TimeDerivative ν}\TimeDerivative\vq^{\mathscr P}}\text,
+\end{align*}
+so that picking $ν$ such that
+$\frac{\SecondTimeDerivative ν}{\TimeDerivative ν}+2\frac{\TimeDerivative r}{r}=0$ eliminates
+the acceleration along the velocity vector.
+This condition is satisfied if $ν$ is the true anomaly, as in that case
+$\TimeDerivative ν=ω$, so that the condition becomes (\ref{eqnArealAcceleration}).
+This technique is not needed when considering solely the geometric potential.
+
+\end{document}
