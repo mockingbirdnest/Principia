@@ -53,7 +53,11 @@
 // integrator kind.  Depending on the nature of the integrator, each case branch
 // calls one of the given actions, which must be 1-argument macros.
 #define PRINCIPIA_FSS_INTEGRATOR_CASES(                                       \
-    erk_action, slms_action, sprk_action, srkn_action)                        \
+    elms_action, erk_action, slms_action, sprk_action, srkn_action)           \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            ADAMS_BASHFORTH_ORDER_2,                          \
+                            AdamsBashforthOrder2,                             \
+                            elms_action)                                      \
   PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
                             BLANES_MOAN_2002_S6,                              \
                             BlanesMoan2002S6,                                 \
@@ -449,6 +453,8 @@ void FixedStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
   integrator().WriteToMessage(extension->mutable_integrator());
 }
 
+#define PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_ELMS(method) LOG(FATAL) << "NYI"
+
 #define PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_ERK(method) LOG(FATAL) << "NYI"
 
 #define PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SLMS(method)                    \
@@ -508,6 +514,7 @@ FixedStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
 
   switch (extension.integrator().kind()) {
     PRINCIPIA_FSS_INTEGRATOR_CASES(
+        PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_ELMS,
         PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_ERK,
         PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SLMS,
         PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SPRK,
@@ -518,6 +525,7 @@ FixedStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
   }
 }
 
+#undef PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_ELMS
 #undef PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_ERK
 #undef PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SLMS
 #undef PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SPRK
@@ -532,6 +540,15 @@ FixedStepSizeIntegrator<ODE_>::Instance::Instance(
       step_(step) {
   CHECK_NE(Time(), step_);
 }
+
+#define PRINCIPIA_READ_FSS_INTEGRATOR_ELMS(method)                    \
+  if constexpr (base::is_instance_of_v<                               \
+                    ExplicitFirstOrderOrdinaryDifferentialEquation,   \
+                    ODE>) {                                           \
+    return ExplicitLinearMultistepIntegrator<methods::method, ODE>(); \
+  } else {                                                            \
+    base::noreturn();                                                 \
+  }
 
 #define PRINCIPIA_READ_FSS_INTEGRATOR_ERK(method)                   \
   if constexpr (base::is_instance_of_v<                             \
@@ -577,7 +594,8 @@ FixedStepSizeIntegrator<ODE_> const&
 FixedStepSizeIntegrator<ODE_>::ReadFromMessage(
       serialization::FixedStepSizeIntegrator const& message) {
   switch (message.kind()) {
-    PRINCIPIA_FSS_INTEGRATOR_CASES(PRINCIPIA_READ_FSS_INTEGRATOR_ERK,
+    PRINCIPIA_FSS_INTEGRATOR_CASES(PRINCIPIA_READ_FSS_INTEGRATOR_ELMS,
+                                   PRINCIPIA_READ_FSS_INTEGRATOR_ERK,
                                    PRINCIPIA_READ_FSS_INTEGRATOR_SLMS,
                                    PRINCIPIA_READ_FSS_INTEGRATOR_SPRK,
                                    PRINCIPIA_READ_FSS_INTEGRATOR_SRKN)
@@ -587,6 +605,7 @@ FixedStepSizeIntegrator<ODE_>::ReadFromMessage(
   }
 }
 
+#undef PRINCIPIA_READ_FSS_INTEGRATOR_ELMS
 #undef PRINCIPIA_READ_FSS_INTEGRATOR_ERK
 #undef PRINCIPIA_READ_FSS_INTEGRATOR_SLMS
 #undef PRINCIPIA_READ_FSS_INTEGRATOR_SPRK

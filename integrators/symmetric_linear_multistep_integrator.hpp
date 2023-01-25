@@ -88,6 +88,7 @@ class SymmetricLinearMultistepIntegrator
       void FillStepFromState(ODE const& equation,
                              typename ODE::State const& state,
                              Step& step) const override;
+      typename ODE::IndependentVariable independent_variable() const override;
     };
 
     Instance(InitialValueProblem<ODE> const& problem,

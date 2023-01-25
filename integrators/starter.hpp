@@ -57,6 +57,12 @@ class Starter {
                                  typename ODE::State const& state,
                                  Step& step) const = 0;
 
+  // Returns the last value of the independent variable known to the instance.
+  virtual typename ODE::IndependentVariable independent_variable() const = 0;
+
+  // A helper to implement the previous function in subclasses.
+  typename FixedStepSizeIntegrator<ODE>::Instance const& instance() const;
+
  private:
   FixedStepSizeIntegrator<ODE> const& startup_integrator_;
   std::int64_t const startup_step_divisor_;

@@ -185,6 +185,13 @@ FillStepFromState(ODE const& equation,
 }
 
 template<typename Method, typename ODE_>
+typename ODE_::IndependentVariable
+ExplicitLinearMultistepIntegrator<Method,ODE_>::Instance::Starter::
+independent_variable() const {
+  return this->instance().state().s.value;
+}
+
+template<typename Method, typename ODE_>
 ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Instance(
     InitialValueProblem<ODE> const& problem,
     AppendState const& append_state,
