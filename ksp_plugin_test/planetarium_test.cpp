@@ -88,7 +88,7 @@ using ::testing::SizeIs;
 
 class PlanetariumTest : public ::testing::Test {
   using LeftNavigation =
-    Frame<enum class LeftNavigationTag, Arbitrary, Handedness::Left>;
+    Frame<struct LeftNavigationTag, Arbitrary, Handedness::Left>;
  protected:
   PlanetariumTest()
       :  // The camera is located as {0, 20, 0} and is looking along -y.

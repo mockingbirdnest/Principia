@@ -50,7 +50,7 @@ class JacobiCoordinates final {
  private:
   // A reference frame parallel to |Frame|, in which the primary is motionless
   // at the origin.
-  using PrimocentricFrame = geometry::Frame<enum class PrimocentricFrameTag>;
+  using PrimocentricFrame = geometry::Frame<struct PrimocentricFrameTag>;
   static Identity<PrimocentricFrame, Frame> const id_pf_;
   static Identity<Frame, PrimocentricFrame> const id_fp_;
 

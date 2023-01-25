@@ -22,7 +22,7 @@ TEST(Traits, IsVectorV) {
   static_assert(!is_vector_v<Entropy&>);
   static_assert(!is_vector_v<float const&>);
 
-  using F = Frame<enum class FTag>;
+  using F = Frame<struct FTag>;
   static_assert(is_vector_v<Displacement<F>>);
   static_assert(is_vector_v<Velocity<F>>);
   static_assert(is_vector_v<AngularVelocity<F>>);

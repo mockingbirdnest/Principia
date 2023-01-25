@@ -52,7 +52,7 @@ using ::testing::SizeIs;
 
 class ApsidesTest : public ::testing::Test {
  protected:
-  using World = Frame<enum class WorldTag, Inertial>;
+  using World = Frame<struct WorldTag, Inertial>;
 };
 
 #if !defined(_DEBUG)
@@ -74,8 +74,9 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
       /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Metre,
                                /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<World>::FixedStepParameters(
-          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                             Position<World>>(),
+          SymmetricLinearMultistepIntegrator<
+              QuinlanTremaine1990Order12,
+              Ephemeris<World>::NewtonianMotionEquation>(),
           10 * Minute));
 
   Displacement<World> r(
@@ -101,7 +102,7 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
       Ephemeris<World>::AdaptiveStepParameters(
           EmbeddedExplicitRungeKuttaNyströmIntegrator<
               DormandالمكاوىPrince1986RKN434FM,
-              Position<World>>(),
+              Ephemeris<World>::NewtonianMotionEquation>(),
           std::numeric_limits<std::int64_t>::max(),
           1e-3 * Metre,
           1e-3 * Metre / Second),
@@ -170,8 +171,9 @@ TEST_F(ApsidesTest, ComputeNodes) {
       /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Metre,
                                /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<World>::FixedStepParameters(
-          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                             Position<World>>(),
+          SymmetricLinearMultistepIntegrator<
+              QuinlanTremaine1990Order12,
+              Ephemeris<World>::NewtonianMotionEquation>(),
           10 * Minute));
 
   KeplerianElements<World> elements;
@@ -195,7 +197,7 @@ TEST_F(ApsidesTest, ComputeNodes) {
       Ephemeris<World>::AdaptiveStepParameters(
           EmbeddedExplicitRungeKuttaNyströmIntegrator<
               DormandالمكاوىPrince1986RKN434FM,
-              Position<World>>(),
+              Ephemeris<World>::NewtonianMotionEquation>(),
           std::numeric_limits<std::int64_t>::max(),
           1e-3 * Metre,
           1e-3 * Metre / Second),

@@ -689,13 +689,15 @@ SolarSystem<Frame>::MakeAllDegreesOfFreedom() const {
 template<typename Frame>
 template<typename Message>
 void SolarSystem<Frame>::CheckFrame(Message const& message) {
-  if (message.has_solar_system_frame()) {
-    CHECK_EQ(static_cast<int>(Frame::tag),
-             static_cast<int>(message.solar_system_frame()));
-  }
-  if (message.has_plugin_frame()) {
-    CHECK_EQ(static_cast<int>(Frame::tag),
-             static_cast<int>(message.plugin_frame()));
+  if constexpr (Frame::has_tag) {
+    if (message.has_solar_system_frame()) {
+      CHECK_EQ(static_cast<int>(Frame::tag()),
+               static_cast<int>(message.solar_system_frame()));
+    }
+    if (message.has_plugin_frame()) {
+      CHECK_EQ(static_cast<int>(Frame::tag()),
+               static_cast<int>(message.plugin_frame()));
+    }
   }
 }
 

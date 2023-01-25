@@ -56,8 +56,8 @@ namespace si = quantities::si;
 
 class DynamicFrameTest : public testing::Test {
  protected:
-  using Inertial = Frame<enum class InertialFrameTag, geometry::Inertial>;
-  using Rotating = Frame<enum class RotatingFrameTag, Arbitrary>;
+  using Inertial = Frame<struct InertialFrameTag, geometry::Inertial>;
+  using Rotating = Frame<struct RotatingFrameTag, Arbitrary>;
   using Translating = Rotating;  // A better name for linear acceleration.
 
   // Computes a first-order approximation of the acceleration using the
@@ -536,9 +536,9 @@ TEST_F(DynamicFrameTest, EulerAcceleration) {
 // normal (directed along -z) but different tangents: for the fixed jaw, the
 // tangent is directed along the lead angle of the screw.
 TEST_F(DynamicFrameTest, FrenetFrame) {
-  using Handle = Frame<enum class HangleTag, geometry::Inertial>;
-  using FixedJaw = Frame<enum class FixedJawTag, geometry::Inertial>;
-  using MovingJaw = Frame<enum class MovingJawTag, geometry::Inertial>;
+  using Handle = Frame<struct HangleTag, geometry::Inertial>;
+  using FixedJaw = Frame<struct FixedJawTag, geometry::Inertial>;
+  using MovingJaw = Frame<struct MovingJawTag, geometry::Inertial>;
 
   StrictMock<MockDynamicFrame<FixedJaw, MovingJaw>> jaw_to_jaw_frame;
   StrictMock<MockDynamicFrame<MovingJaw, Handle>> jaw_to_handle_frame;

@@ -17,7 +17,7 @@ using base::not_null;
 using geometry::Frame;
 using geometry::Vector;
 
-using World = Frame<enum class WorldTag>;
+using World = Frame<struct WorldTag>;
 using V = Vector<double, World>;
 
 PrincipalComponentPartitioningTree<V> BuildTreeUsingAdd(

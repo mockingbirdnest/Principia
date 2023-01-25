@@ -46,7 +46,7 @@ using ::testing::_;
 // https://www.sfu.ca/~ssurjano/optimization.html.
 class GlobalOptimizationTest : public ::testing::Test {
  protected:
-  using World = Frame<enum class WorldTag>;
+  using World = Frame<struct WorldTag>;
 };
 
 TEST_F(GlobalOptimizationTest, Branin) {

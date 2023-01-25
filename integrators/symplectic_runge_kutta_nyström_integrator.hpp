@@ -9,6 +9,8 @@
 #define PRINCIPIA_INTEGRATORS_SYMPLECTIC_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_
 
 #include "absl/status/status.h"
+#include "base/not_null.hpp"
+#include "base/traits.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/fixed_arrays.hpp"
@@ -17,6 +19,7 @@ namespace principia {
 namespace integrators {
 namespace internal_symplectic_runge_kutta_nyström_integrator {
 
+using base::is_instance_of_v;
 using base::not_null;
 using geometry::Instant;
 using numerics::FixedVector;
@@ -61,12 +64,12 @@ using quantities::Time;
 // See the documentation for a description of the correspondence between
 // these coefficients and those of a general Runge-Kutta-Nyström method.
 
-template<typename Method, typename Position>
+template<typename Method, typename ODE_>
 class SymplecticRungeKuttaNyströmIntegrator
-    : public FixedStepSizeIntegrator<
-                 SpecialSecondOrderDifferentialEquation<Position>> {
+    : public FixedStepSizeIntegrator<ODE_> {
  public:
-  using ODE = SpecialSecondOrderDifferentialEquation<Position>;
+  using ODE = ODE_;
+  static_assert(is_instance_of_v<SpecialSecondOrderDifferentialEquation, ODE>);
   using AppendState = typename Integrator<ODE>::AppendState;
 
   static constexpr auto order = Method::order;
@@ -86,13 +89,13 @@ class SymplecticRungeKuttaNyströmIntegrator
     static not_null<std::unique_ptr<Instance>> ReadFromMessage(
         serialization::SymplecticRungeKuttaNystromIntegratorInstance const&
             extension,
-        IntegrationProblem<ODE> const& problem,
+        InitialValueProblem<ODE> const& problem,
         AppendState const& append_state,
         Time const& step,
         SymplecticRungeKuttaNyströmIntegrator const& integrator);
 
    private:
-    Instance(IntegrationProblem<ODE> const& problem,
+    Instance(InitialValueProblem<ODE> const& problem,
              AppendState const& append_state,
              Time const& step,
              SymplecticRungeKuttaNyströmIntegrator const& integrator);
@@ -104,7 +107,7 @@ class SymplecticRungeKuttaNyströmIntegrator
   SymplecticRungeKuttaNyströmIntegrator();
 
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
-      IntegrationProblem<ODE> const& problem,
+      InitialValueProblem<ODE> const& problem,
       AppendState const& append_state,
       Time const& step) const override;
 
@@ -125,19 +128,19 @@ class SymplecticRungeKuttaNyströmIntegrator
 
 }  // namespace internal_symplectic_runge_kutta_nyström_integrator
 
-template<typename Method, typename Position>
+template<typename Method, typename ODE_>
 internal_symplectic_runge_kutta_nyström_integrator::
-    SymplecticRungeKuttaNyströmIntegrator<Method, Position> const&
+    SymplecticRungeKuttaNyströmIntegrator<Method, ODE_> const&
 SymplecticRungeKuttaNyströmIntegrator();
 
 template<typename Method,
          serialization::FixedStepSizeIntegrator::CompositionMethod composition,
-         typename Position>
+         typename ODE_>
 internal_symplectic_runge_kutta_nyström_integrator::
     SymplecticRungeKuttaNyströmIntegrator<
         typename methods::AsSymplecticRungeKuttaNyström<Method,
                                                         composition>::Method,
-        Position> const&
+        ODE_> const&
 SymplecticRungeKuttaNyströmIntegrator();
 
 }  // namespace integrators

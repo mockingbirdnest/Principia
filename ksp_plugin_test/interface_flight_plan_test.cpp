@@ -215,7 +215,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters(
       EmbeddedExplicitRungeKuttaNyströmIntegrator<
           DormandالمكاوىPrince1986RKN434FM,
-          Position<Barycentric>>(),
+          Ephemeris<Barycentric>::NewtonianMotionEquation>(),
       /*max_steps=*/111,
       /*length_integration_tolerance=*/222 * Metre,
       /*speed_integration_tolerance=*/333 * Metre / Second);
@@ -225,7 +225,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   generalized_adaptive_step_parameters(
       EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
           Fine1987RKNG34,
-          Position<Barycentric>>(),
+          Ephemeris<Barycentric>::GeneralizedNewtonianMotionEquation>(),
       /*max_steps=*/111,
       /*length_integration_tolerance=*/222 * Metre,
       /*speed_integration_tolerance=*/333 * Metre / Second);

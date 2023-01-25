@@ -22,7 +22,7 @@ namespace geometry {
 
 class BarycentreCalculatorTest : public testing::Test {
  protected:
-  using World = Frame<enum class WorldTag>;
+  using World = Frame<struct WorldTag>;
 
   BarycentreCalculatorTest()
       : b1_({1 * si::Unit<Entropy>,

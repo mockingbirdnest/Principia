@@ -63,7 +63,7 @@ class Geopotential {
 
  private:
   // The frame of the surface of the celestial.
-  using SurfaceFrame = geometry::Frame<enum class SurfaceFrameTag>;
+  using SurfaceFrame = geometry::Frame<struct SurfaceFrameTag>;
   static const Vector<double, SurfaceFrame> x_;
   static const Vector<double, SurfaceFrame> y_;
 

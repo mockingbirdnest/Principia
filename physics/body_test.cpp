@@ -358,7 +358,7 @@ TEST_F(BodyTest, AllFrames) {
 
 // Check that the rotation of the Earth gives the right solar noon.
 TEST_F(BodyTest, SolarNoon) {
-  using SurfaceFrame = Frame<enum class SurfaceFrameTag>;
+  using SurfaceFrame = Frame<struct SurfaceFrameTag>;
   SolarSystem<ICRS> solar_system_j2000(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
@@ -367,8 +367,9 @@ TEST_F(BodyTest, SolarNoon) {
       /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
                                /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(
-          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                             Position<ICRS>>(),
+          SymmetricLinearMultistepIntegrator<
+              QuinlanTremaine1990Order12,
+              Ephemeris<ICRS>::NewtonianMotionEquation>(),
           /*step=*/10 * Minute));
   EXPECT_OK(ephemeris->Prolong("2010-10-01T12:00:00"_UTC));
 

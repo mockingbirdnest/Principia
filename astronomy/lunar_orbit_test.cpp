@@ -161,8 +161,9 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
             /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
                                      /*geopotential_tolerance=*/0x1p-24},
             Ephemeris<ICRS>::FixedStepParameters(
-                SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                                   Position<ICRS>>(),
+                SymmetricLinearMultistepIntegrator<
+                    QuinlanTremaine1990Order12,
+                    Ephemeris<ICRS>::NewtonianMotionEquation>(),
                 /*step=*/10 * Minute))),
         moon_(dynamic_cast_not_null<OblateBody<ICRS> const*>(
             solar_system_2000_.massive_body(*ephemeris_, "Moon"))),
@@ -174,14 +175,14 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
   // This Moon-centred, Moon-fixed reference frame has the x axis pointing
   // towards the Earth, and the y axis in the direction of the velocity of the
   // Earth, see figure 1. of [RL06].
-  using LunarSurface = Frame<enum class LunarSurfaceTag, Arbitrary>;
+  using LunarSurface = Frame<struct LunarSurfaceTag, Arbitrary>;
 
   // This reference frame is non-rotating, with its origin at the selenocentre.
   // The axes are those of LunarSurface at J2000.
   // Note that this frame is not actually inertial, but we want to use it with
   // |KeplerOrbit|.  Perhaps we should have a concept of non-rotating, and
   // |KeplerOrbit| should check that; this is good enough for a test.
-  using Selenocentric = Frame<enum class SelenocentricTag, Inertial>;
+  using Selenocentric = Frame<struct SelenocentricTag, Inertial>;
 
   // We do not use a |BodyCentredNonRotatingDynamicFrame| since that would use
   // ICRS axes.
@@ -369,8 +370,9 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
       {&trajectory},
       Ephemeris<ICRS>::NoIntrinsicAccelerations,
       Ephemeris<ICRS>::FixedStepParameters(
-          SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                             Position<ICRS>>(),
+          SymmetricLinearMultistepIntegrator<
+              Quinlan1999Order8A,
+              Ephemeris<ICRS>::NewtonianMotionEquation>(),
           integration_step));
 
   EXPECT_OK(ephemeris_->FlowWithFixedStep(J2000 + GetParam().periods * period,

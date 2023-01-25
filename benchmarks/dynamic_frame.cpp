@@ -60,7 +60,7 @@ namespace si = quantities::si;
 
 namespace physics {
 
-using Rendering = Frame<enum class RenderingTag>;
+using Rendering = Frame<struct RenderingTag>;
 
 template<typename F, template<typename> class T>
 void FillLinearTrajectory(Position<F> const& initial,
@@ -130,8 +130,9 @@ void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
       /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
                                /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<Barycentric>::FixedStepParameters(
-          SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order5Optimal,
-                                                Position<Barycentric>>(),
+          SymplecticRungeKuttaNyströmIntegrator<
+              McLachlanAtela1992Order5Optimal,
+              Ephemeris<Barycentric>::NewtonianMotionEquation>(),
           /*step=*/45 * Minute));
   CHECK_OK(ephemeris->Prolong(solar_system.epoch() + steps * Δt));
 
@@ -179,8 +180,9 @@ void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
       /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
                                /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<Barycentric>::FixedStepParameters(
-          SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order5Optimal,
-                                                Position<Barycentric>>(),
+          SymplecticRungeKuttaNyströmIntegrator<
+              McLachlanAtela1992Order5Optimal,
+              Ephemeris<Barycentric>::NewtonianMotionEquation>(),
           /*step=*/45 * Minute));
   CHECK_OK(ephemeris->Prolong(solar_system.epoch() + steps * Δt));
 

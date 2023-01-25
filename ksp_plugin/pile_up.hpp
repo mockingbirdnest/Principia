@@ -64,7 +64,7 @@ using quantities::Torque;
 // pile up.  This frame is distinguished from NonRotatingPileUp in that it is
 // used to hold uncorrected (apparent) coordinates given by the game, before
 // the enforcement of conservation laws; see also Apparent.
-using ApparentPileUp = Frame<enum class ApparentPileUpTag,
+using ApparentPileUp = Frame<struct ApparentPileUpTag,
                              NonRotating,
                              Handedness::Right>;
 

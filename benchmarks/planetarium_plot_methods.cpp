@@ -72,7 +72,7 @@ constexpr Length focal = 1 * Metre;
 Perspective<Navigation, Camera> PolarPerspective(
     Length const distance_from_earth) {
   using LeftNavigation =
-      Frame<enum class LeftNavigationTag, Arbitrary, Handedness::Left>;
+      Frame<struct LeftNavigationTag, Arbitrary, Handedness::Left>;
   return {
       RigidTransformation<Navigation, Camera>(
           Navigation::origin + Displacement<Navigation>(
@@ -93,7 +93,7 @@ Perspective<Navigation, Camera> PolarPerspective(
 Perspective<Navigation, Camera> EquatorialPerspective(
     Length const distance_from_earth) {
   using LeftNavigation =
-      Frame<enum class LeftNavigationTag, Arbitrary, Handedness::Left>;
+      Frame<struct LeftNavigationTag, Arbitrary, Handedness::Left>;
   return {
       RigidTransformation<Navigation, Camera>(
           Navigation::origin + Displacement<Navigation>(
@@ -184,15 +184,17 @@ class Satellites {
  private:
   Ephemeris<Barycentric>::FixedStepParameters EphemerisParameters() {
     return Ephemeris<Barycentric>::FixedStepParameters(
-        SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                           Position<Barycentric>>(),
+        SymmetricLinearMultistepIntegrator<
+            QuinlanTremaine1990Order12,
+            Ephemeris<Barycentric>::NewtonianMotionEquation>(),
         /*step=*/10 * Minute);
   }
 
   Ephemeris<Barycentric>::FixedStepParameters HistoryParameters() {
     return Ephemeris<Barycentric>::FixedStepParameters(
-        SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                           Position<Barycentric>>(),
+        SymmetricLinearMultistepIntegrator<
+            Quinlan1999Order8A,
+            Ephemeris<Barycentric>::NewtonianMotionEquation>(),
         /*step=*/10 * Second);
   }
 

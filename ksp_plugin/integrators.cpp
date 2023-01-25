@@ -43,8 +43,9 @@ DefaultEphemerisAccuracyParameters() {
 Ephemeris<Barycentric>::FixedStepParameters
 DefaultEphemerisFixedStepParameters() {
   return Ephemeris<Barycentric>::FixedStepParameters(
-      SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
-                                            Position<Barycentric>>(),
+      SymplecticRungeKuttaNyströmIntegrator<
+          BlanesMoan2002SRKN14A,
+          Ephemeris<Barycentric>::NewtonianMotionEquation>(),
       /*step=*/35 * Minute);
 }
 
@@ -53,7 +54,7 @@ DefaultBurnParameters() {
   return Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
       EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
           Fine1987RKNG34,
-          Position<Barycentric>>(),
+          Ephemeris<Barycentric>::GeneralizedNewtonianMotionEquation>(),
       /*max_steps=*/1000,
       /*length_integration_tolerance=*/1 * Metre,
       /*speed_integration_tolerance=*/1 * Metre / Second);
@@ -61,8 +62,9 @@ DefaultBurnParameters() {
 
 Ephemeris<Barycentric>::FixedStepParameters DefaultHistoryParameters() {
   return Ephemeris<Barycentric>::FixedStepParameters(
-      SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                         Position<Barycentric>>(),
+      SymmetricLinearMultistepIntegrator<
+          Quinlan1999Order8A,
+          Ephemeris<Barycentric>::NewtonianMotionEquation>(),
       /*step=*/10 * Second);
 }
 
@@ -71,7 +73,7 @@ DefaultPsychohistoryParameters() {
   return Ephemeris<Barycentric>::AdaptiveStepParameters(
       EmbeddedExplicitRungeKuttaNyströmIntegrator<
           DormandالمكاوىPrince1986RKN434FM,
-          Position<Barycentric>>(),
+          Ephemeris<Barycentric>::NewtonianMotionEquation>(),
       /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
       /*length_integration_tolerance=*/1 * Milli(Metre),
       /*speed_integration_tolerance=*/1 * Milli(Metre) / Second);
@@ -81,7 +83,7 @@ Ephemeris<Barycentric>::AdaptiveStepParameters DefaultPredictionParameters() {
   return Ephemeris<Barycentric>::AdaptiveStepParameters(
       EmbeddedExplicitRungeKuttaNyströmIntegrator<
           DormandالمكاوىPrince1986RKN434FM,
-          Position<Barycentric>>(),
+          Ephemeris<Barycentric>::NewtonianMotionEquation>(),
       /*max_steps=*/1000,
       /*length_integration_tolerance=*/1 * Metre,
       /*speed_integration_tolerance=*/1 * Metre / Second);

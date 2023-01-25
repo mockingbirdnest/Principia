@@ -68,7 +68,7 @@ using geometry::Rotation;
 using geometry::Trivector;
 using geometry::Vector;
 using geometry::Velocity;
-using integrators::IntegrationProblem;
+using integrators::InitialValueProblem;
 using integrators::MockFixedStepSizeIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::QuinlanTremaine1990Order12;

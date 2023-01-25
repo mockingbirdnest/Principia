@@ -48,7 +48,7 @@ using testing::Not;
 namespace si = quantities::si;
 
 namespace {
-using World = Frame<enum class WorldTag>;
+using World = Frame<struct WorldTag>;
 }  // namespace
 
 class AlmostEqualsTest : public testing::Test {};

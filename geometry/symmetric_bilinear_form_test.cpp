@@ -223,8 +223,8 @@ TEST_F(SymmetricBilinearFormTest, AnticommutatorDiagonalization) {
   auto const f = MakeSymmetricBilinearForm<World>({{1, 0, 0},
                                                    {0, 9, 0},
                                                    {0, 0, 2}});
-  using VectorEigenframe = Frame<enum class VectorTag>;
-  using BivectorEigenframe = Frame<enum class BivectorTag>;
+  using VectorEigenframe = Frame<struct VectorTag>;
+  using BivectorEigenframe = Frame<struct BivectorTag>;
   auto const eigenvector = [](int i) {
     R3Element<double> result;
     result[i] = 1;

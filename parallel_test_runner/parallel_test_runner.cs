@@ -23,8 +23,8 @@ class ParallelTestRunner {
   }
 
   private const string vsinstr =
-      @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\" +
-      @"Team Tools\Performance Tools\x64\vsinstr.exe";
+      @"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Team Tools" +
+      @"\Performance Tools\x64\vsinstr.exe";
 
   static void StubbornStart(Process process) {
     for (int remaining = 10; remaining > 0; --remaining) {

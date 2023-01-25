@@ -41,8 +41,8 @@ namespace physics {
 
 class MechanicalSystemTest : public testing::Test{
  protected:
-  using InertialFrame = Frame<enum class InertialTag, Inertial>;
-  using SystemFrame = Frame<enum class SystemTag, NonRotating>;
+  using InertialFrame = Frame<struct InertialTag, Inertial>;
+  using SystemFrame = Frame<struct SystemTag, NonRotating>;
 
   MechanicalSystem<InertialFrame, SystemFrame> system_;
 };
@@ -54,7 +54,7 @@ TEST_F(MechanicalSystemTest, RigidTwoPointMasses) {
   constexpr Length r = 5 * Metre;
   constexpr Speed v = 3 * Metre / Second;
 
-  using M1 = Frame<enum class M1Tag>;
+  using M1 = Frame<struct M1Tag>;
   RigidMotion<M1, InertialFrame> m1_motion(
       RigidTransformation<M1, InertialFrame>(
           M1::origin,
@@ -65,7 +65,7 @@ TEST_F(MechanicalSystemTest, RigidTwoPointMasses) {
   system_.AddRigidBody(
       m1_motion, m1, SymmetricBilinearForm<MomentOfInertia, M1, Bivector>{});
 
-  using M2 = Frame<enum class M2Tag>;
+  using M2 = Frame<struct M2Tag>;
   RigidMotion<M2, InertialFrame> m2_motion(
       RigidTransformation<M2, InertialFrame>(
           M2::origin,
@@ -119,7 +119,7 @@ TEST_F(MechanicalSystemTest, RigidTwoCubes) {
   // cuboid 3 m × 3 m × 6 m.
   constexpr Mass cube_mass = 10 * Tonne;
   constexpr Length cube_side = 3 * Metre;
-  using Cube = Frame<enum class CubeTag>;
+  using Cube = Frame<struct CubeTag>;
   SymmetricBilinearForm<MomentOfInertia, Cube, Bivector> const cube_inertia(
       R3x3Matrix<MomentOfInertia>::DiagonalMatrix(
           {cube_mass * Pow<2>(cube_side) / 6,
@@ -171,7 +171,7 @@ TEST_F(MechanicalSystemTest, NonRigidTwoCubes) {
   // A system of two counter-rotating lead cubes.
   constexpr Mass cube_mass = 10 * Tonne;
   constexpr Length cube_side = 3 * Metre;
-  using Cube = Frame<enum class CubeTag>;
+  using Cube = Frame<struct CubeTag>;
   SymmetricBilinearForm<MomentOfInertia, Cube, Bivector> const cube_inertia(
       R3x3Matrix<MomentOfInertia>::DiagonalMatrix(
           {cube_mass * Pow<2>(cube_side) / 6,

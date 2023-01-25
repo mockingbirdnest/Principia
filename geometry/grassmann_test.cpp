@@ -320,7 +320,7 @@ TEST_F(GrassmannTest, Normalize) {
 // Uncomment to check that non-serializable frames are detected at compile-time.
 #if 0
 TEST_F(GrassmannTest, SerializationCompilationError) {
-  using F = Frame<enum class FrameTag>;
+  using F = Frame<struct FrameTag>;
   Vector<Length, F> v;
   serialization::Multivector message;
   v.WriteToMessage(&message);

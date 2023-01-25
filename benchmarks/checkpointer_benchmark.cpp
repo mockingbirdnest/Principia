@@ -24,13 +24,13 @@ using serialization::DoublePrecision;
 using serialization::Ephemeris;
 using serialization::IntegratorInstance;
 using serialization::R3Element;
-using serialization::SystemState;
+using serialization::State;
 
 // Stub writer for checkpointer. Adds some data to the checkpoint.
 void WriteToCheckpoint(not_null<typename Ephemeris::Checkpoint*> checkpoint) {
   // Fill out the state with dummy values. We don't care what the values are (or
   // even if they're valid), just that they take time to copy.
-  SystemState* state = checkpoint->mutable_instance()->mutable_current_state();
+  State* state = checkpoint->mutable_instance()->mutable_current_state();
   state->mutable_time()->mutable_value()->set_double_(1.0);
   state->mutable_time()->mutable_error()->set_double_(1.0);
   for (int i = 0; i < 5; i++) {

@@ -36,7 +36,7 @@ class PairTest : public testing::Test {
                       Handedness::Right,
                       serialization::Frame::TEST>;
 
-  using Universe = Frame<enum class UniverseTag>;
+  using Universe = Frame<struct UniverseTag>;
 
   PairTest()
       : p1_(P1() + V1({4 * si::Unit<Action>,

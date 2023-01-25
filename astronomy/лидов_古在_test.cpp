@@ -50,7 +50,7 @@ using testing_utilities::IsNear;
 class Лидов古在Test : public ::testing::Test {
  protected:
   using MercuryCentredInertial =
-      Frame<enum class MercuryCentredInertialTag, NonRotating>;
+      Frame<struct MercuryCentredInertialTag, NonRotating>;
 
   Лидов古在Test()
       : solar_system_1950_(
@@ -61,8 +61,9 @@ class Лидов古在Test : public ::testing::Test {
             /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
                                      /*geopotential_tolerance=*/0x1p-24},
             Ephemeris<ICRS>::FixedStepParameters(
-                SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                                   Position<ICRS>>(),
+                SymmetricLinearMultistepIntegrator<
+                    QuinlanTremaine1990Order12,
+                    Ephemeris<ICRS>::NewtonianMotionEquation>(),
                 /*step=*/10 * Minute))),
         mercury_(*solar_system_1950_.massive_body(*ephemeris_, "Mercury")),
         mercury_frame_(ephemeris_.get(), &mercury_) {
@@ -88,11 +89,13 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
   auto& icrs_segment = icrs_trajectory.segments().front();
   icrs_segment.SetDownsampling({.max_dense_intervals = 10'000,
                                 .tolerance = 10 * Metre});
-  auto const instance = ephemeris_->NewInstance(
-      {&icrs_trajectory},
-      Ephemeris<ICRS>::NoIntrinsicAccelerations,
-      {SymmetricLinearMultistepIntegrator<Quinlan1999Order8A, Position<ICRS>>(),
-       /*step=*/10 * Second});
+  auto const instance =
+      ephemeris_->NewInstance({&icrs_trajectory},
+                              Ephemeris<ICRS>::NoIntrinsicAccelerations,
+                              {SymmetricLinearMultistepIntegrator<
+                                   Quinlan1999Order8A,
+                                   Ephemeris<ICRS>::NewtonianMotionEquation>(),
+                               /*step=*/10 * Second});
 
   for (int year = 1967; year < 1980; ++year) {
     Instant const t = DateTimeAsTT(date_time::DateTime::BeginningOfDay(
