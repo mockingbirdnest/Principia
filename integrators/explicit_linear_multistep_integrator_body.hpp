@@ -126,17 +126,20 @@ ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
           }
         });
 
-    for_all_of(Σⱼ_minus_αⱼ_yⱼ, y_stage, current_step.yʹ)
-        .loop([](auto const& Σⱼ_minus_αⱼ_yⱼ,
+    auto& yₙ₊₁ = Σⱼ_minus_αⱼ_yⱼ;
+    for_all_of(yₙ₊₁, y, y_stage, current_step.yʹ)
+        .loop([](auto const& yₙ₊₁,
+                 auto& y,
                  auto& y_stage,
                  auto& current_step_yʹ) {
-          DCHECK_EQ(y_stage.size(), Σⱼ_minus_αⱼ_yⱼ.size());
+          DCHECK_EQ(y_stage.size(), yₙ₊₁.size());
           current_step_yʹ.resize(y_stage.size());
           for (int i = 0; i < y_stage.size(); ++i) {
-            y_stage[i] = Σⱼ_minus_αⱼ_yⱼ[i].value;
+            y_stage[i] = yₙ₊₁[i].value;
+            y[i] = yₙ₊₁[i];
           }
         });
-    current_step.y = Σⱼ_minus_αⱼ_yⱼ;
+    current_step.y = yₙ₊₁;
     termination_condition::UpdateWithAbort(
         equation.compute_derivative(s.value, y_stage, current_step.yʹ),
         status);
