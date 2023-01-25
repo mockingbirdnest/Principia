@@ -133,13 +133,6 @@ message FixedStepSizeIntegratorInstance {
   required FixedStepSizeIntegrator integrator = 2;
 }
 
-// TODO(phl): Remove?
-message ExplicitRungeKuttaNystromIntegratorInstance {
-  extend FixedStepSizeIntegratorInstance {
-    optional ExplicitRungeKuttaNystromIntegratorInstance extension = 8002;
-  }
-}
-
 message SymmetricLinearMultistepIntegratorInstance {
   extend FixedStepSizeIntegratorInstance {
     optional SymmetricLinearMultistepIntegratorInstance extension = 8000;
