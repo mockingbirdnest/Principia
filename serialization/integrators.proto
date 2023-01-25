@@ -30,6 +30,7 @@ message FixedStepSizeIntegrator {
   }
   enum Kind {
     ADAMS_BASHFORTH_ORDER_2 = 39;
+    ADAMS_BASHFORTH_ORDER_3 = 40;
     BLANES_MOAN_2002_S6 = 36;
     BLANES_MOAN_2002_S10 = 37;
     BLANES_MOAN_2002_SRKN_6B = 1;

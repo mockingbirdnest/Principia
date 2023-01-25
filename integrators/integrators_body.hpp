@@ -59,6 +59,10 @@
                             AdamsBashforthOrder2,                             \
                             elms_action)                                      \
   PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
+                            ADAMS_BASHFORTH_ORDER_3,                          \
+                            AdamsBashforthOrder3,                             \
+                            elms_action)                                      \
+  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
                             BLANES_MOAN_2002_S6,                              \
                             BlanesMoan2002S6,                                 \
                             sprk_action)                                      \

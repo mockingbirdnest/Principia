@@ -94,12 +94,19 @@ std::ostream& operator<<(std::ostream& stream,
   return stream << param.name;
 }
 
+// TODO(phl): The numbers below are not great, probably because we need to
+// specify the starting step size to ensure convergence.
 std::vector<IntegratorTestParam> IntegratorTestParams() {
   return {PARAM(AdamsBashforthOrder2,
                 0.12_(1),
                 0.9996_(1),
                 0.19_(1),
-                0.9989_(1))};
+                0.9989_(1)),
+          PARAM(AdamsBashforthOrder3,
+                0.30_(1),
+                0.9990_(1),
+                0.41_(1),
+                0.9980_(1))};
 }
 
 class ExplicitLinearMultistepIntegratorTest
@@ -167,8 +174,7 @@ TEST_P(ExplicitLinearMultistepIntegratorTest, Convergence) {
   problem.equation = rocket_equation;
   problem.initial_state = {t_initial, {{q_initial}, {v_initial}}};
 
-  FixedStepSizeIntegrator<ODE> const& integrator =
-      ExplicitLinearMultistepIntegrator<methods::AdamsBashforthOrder2, ODE>();
+  FixedStepSizeIntegrator<ODE> const& integrator = GetParam().integrator;
 
   for (int i = 0; i < step_sizes; ++i, step /= step_reduction) {
     auto const instance =

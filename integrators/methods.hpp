@@ -192,7 +192,17 @@ struct AdamsBashforthOrder2 : ExplicitLinearMultistep {
   static constexpr FixedVector<double, order + 1> const α{{{1.0, -1.0, 0.0}}};
   static constexpr FixedVector<double, order + 1> const β_numerator{
       {{0.0, 3.0, -1.0}}};
-  static constexpr double β_denominator = 2;
+  static constexpr double β_denominator = 2.0;
+};
+
+struct AdamsBashforthOrder3 : ExplicitLinearMultistep {
+  static constexpr int order = 3;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::ADAMS_BASHFORTH_ORDER_3;
+  static constexpr FixedVector<double, order + 1> const α{{{1.0, -1.0, 0.0}}};
+  static constexpr FixedVector<double, order + 1> const β_numerator{
+      {{0.0, 23.0, -16.0, 5.0}}};
+  static constexpr double β_denominator = 12.0;
 };
 
 // The following methods have coefficients from [BM02].
