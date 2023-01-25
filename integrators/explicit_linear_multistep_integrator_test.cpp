@@ -44,6 +44,7 @@ using testing_utilities::operator""_;
 using ::testing::ValuesIn;
 
 #define PARAM(integrator,                                            \
+              initial_number_of_steps,                               \
               expected_q_convergence_error,                          \
               expected_q_correlation,                                \
               expected_v_convergence_error,                          \
@@ -51,6 +52,7 @@ using ::testing::ValuesIn;
   IntegratorTestParam(                                               \
       ExplicitLinearMultistepIntegrator<methods::integrator, ODE>(), \
       #integrator,                                                   \
+      (initial_number_of_steps),                                     \
       (expected_q_convergence_error),                                \
       (expected_q_correlation),                                      \
       (expected_v_convergence_error),                                \
@@ -65,6 +67,7 @@ struct IntegratorTestParam final {
   IntegratorTestParam(
       Integrator const& integrator,
       std::string const& name,
+      int const initial_number_of_steps,
       ApproximateQuantity<double> const& expected_q_convergence_error,
       ApproximateQuantity<double> const& expected_q_correlation,
       ApproximateQuantity<double> const& expected_v_convergence_error,
@@ -72,6 +75,7 @@ struct IntegratorTestParam final {
       : integrator(integrator),
         order(integrator.order),
         name(name),
+        initial_number_of_steps(initial_number_of_steps),
         expected_q_convergence_error(expected_q_convergence_error),
         expected_q_correlation(expected_q_correlation),
         expected_v_convergence_error(expected_v_convergence_error),
@@ -80,6 +84,7 @@ struct IntegratorTestParam final {
   FixedStepSizeIntegrator<ODE> const& integrator;
   int const order;
   std::string const name;
+  int const initial_number_of_steps;
   ApproximateQuantity<double> const expected_q_convergence_error;
   ApproximateQuantity<double> const expected_q_correlation;
   ApproximateQuantity<double> const expected_v_convergence_error;
@@ -94,19 +99,19 @@ std::ostream& operator<<(std::ostream& stream,
   return stream << param.name;
 }
 
-// TODO(phl): The numbers below are not great, probably because we need to
-// specify the starting step size to ensure convergence.
 std::vector<IntegratorTestParam> IntegratorTestParams() {
   return {PARAM(AdamsBashforthOrder2,
-                0.12_(1),
-                0.9996_(1),
-                0.19_(1),
-                0.9989_(1)),
+                20,
+                0.066_(1),
+                0.99984_(1),
+                0.107_(1),
+                0.99955_(1)),
           PARAM(AdamsBashforthOrder3,
-                0.30_(1),
-                0.9990_(1),
-                0.41_(1),
-                0.9980_(1))};
+                40,
+                0.093_(1),
+                0.99987_(1),
+                0.135_(1),
+                0.99971_(1))};
 }
 
 class ExplicitLinearMultistepIntegratorTest
@@ -145,7 +150,7 @@ TEST_P(ExplicitLinearMultistepIntegratorTest, Convergence) {
     return initial_mass - (t - t_initial) * mass_flow;
   };
 
-  Time step = (t_final - t_initial) / 10;
+  Time step = (t_final - t_initial) / GetParam().initial_number_of_steps;
   int const step_sizes = 50;
   double const step_reduction = 1.1;
   std::vector<double> log_step_sizes;
