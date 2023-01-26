@@ -191,7 +191,7 @@ FillStepFromState(ODE const& equation,
 
 template<typename Method, typename ODE_>
 typename ODE_::IndependentVariable
-ExplicitLinearMultistepIntegrator<Method,ODE_>::Instance::Starter::
+ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Starter::
 independent_variable() const {
   return this->instance().state().s.value;
 }

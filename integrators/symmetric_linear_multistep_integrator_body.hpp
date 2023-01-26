@@ -266,7 +266,7 @@ FillStepFromState(ODE const& equation,
 
 template<typename Method, typename ODE_>
 typename ODE_::IndependentVariable
-SymmetricLinearMultistepIntegrator<Method,ODE_>::Instance::Starter::
+SymmetricLinearMultistepIntegrator<Method, ODE_>::Instance::Starter::
 independent_variable() const {
   return this->instance().state().time.value;
 }
