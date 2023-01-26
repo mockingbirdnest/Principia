@@ -59,8 +59,7 @@ ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
   // the equations more readable.
   auto& y = current_state.y;
 
-  // Order.
-  int const k = order;
+  int const k = steps;
 
   // Current stage of the integrator.
   DependentVariables y_stage;

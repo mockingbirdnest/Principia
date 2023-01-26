@@ -187,6 +187,7 @@ struct AsSymplecticRungeKuttaNyström {
 
 struct AdamsBashforthOrder2 : ExplicitLinearMultistep {
   static constexpr int order = 2;
+  static constexpr int steps = 2;
   static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
       serialization::FixedStepSizeIntegrator::ADAMS_BASHFORTH_ORDER_2;
   static constexpr FixedVector<double, order + 1> const α{{{1.0, -1.0, 0.0}}};
@@ -197,6 +198,7 @@ struct AdamsBashforthOrder2 : ExplicitLinearMultistep {
 
 struct AdamsBashforthOrder3 : ExplicitLinearMultistep {
   static constexpr int order = 3;
+  static constexpr int steps = 3;
   static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
       serialization::FixedStepSizeIntegrator::ADAMS_BASHFORTH_ORDER_3;
   static constexpr FixedVector<double, order + 1> const α{{{1.0, -1.0, 0.0}}};

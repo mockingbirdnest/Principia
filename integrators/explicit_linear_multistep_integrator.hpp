@@ -42,7 +42,7 @@ class ExplicitLinearMultistepIntegrator
   using IndependentVariableDifference =
       typename ODE::IndependentVariableDifference;
 
-  static constexpr int order = Method::order;
+  static constexpr int steps = Method::steps;
 
   class Instance : public FixedStepSizeIntegrator<ODE>::Instance {
    public:
@@ -64,9 +64,9 @@ class ExplicitLinearMultistepIntegrator
       DependentVariableDerivatives yʹ;
     };
 
-    class Starter : public integrators::Starter<ODE, Step, /*steps=*/order> {
+    class Starter : public integrators::Starter<ODE, Step, steps> {
      protected:
-      using integrators::Starter<ODE, Step, order>::Starter;
+      using integrators::Starter<ODE, Step, steps>::Starter;
 
       void FillStepFromState(ODE const& equation,
                              typename ODE::State const& state,
