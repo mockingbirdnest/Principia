@@ -59,6 +59,14 @@ struct EmbeddedExplicitGeneralizedRungeKuttaNyström
   // static constexpr FixedVector<double, stages> bʹ = ...;
 };
 
+struct ExplicitLinearMultistep : not_constructible {
+  // static constexpr int order = ...;
+  // static constexpr serialization::FixedStepSizeIntegrator::Kind kind = ...;
+  // static constexpr FixedVector<double, order + 1> const α(...);
+  // static constexpr FixedVector<double, order + 1> const β_numerator(...);
+  // static constexpr double β_denominator = ...;
+};
+
 struct ExplicitRungeKutta : not_constructible {
   // static constexpr int higher_order = ...;
   // static constexpr int lower_order = ...;
@@ -176,6 +184,28 @@ struct AsSymplecticRungeKuttaNyström {
   };
 };
 
+
+struct AdamsBashforthOrder2 : ExplicitLinearMultistep {
+  static constexpr int order = 2;
+  static constexpr int steps = 2;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::ADAMS_BASHFORTH_ORDER_2;
+  static constexpr FixedVector<double, order + 1> const α{{{1.0, -1.0, 0.0}}};
+  static constexpr FixedVector<double, order + 1> const β_numerator{
+      {{0.0, 3.0, -1.0}}};
+  static constexpr double β_denominator = 2.0;
+};
+
+struct AdamsBashforthOrder3 : ExplicitLinearMultistep {
+  static constexpr int order = 3;
+  static constexpr int steps = 3;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::ADAMS_BASHFORTH_ORDER_3;
+  static constexpr FixedVector<double, order + 1> const α{{{1.0, -1.0, 0.0}}};
+  static constexpr FixedVector<double, order + 1> const β_numerator{
+      {{0.0, 23.0, -16.0, 5.0}}};
+  static constexpr double β_denominator = 12.0;
+};
 
 // The following methods have coefficients from [BM02].
 struct BlanesMoan2002S6 : SymplecticPartitionedRungeKutta {

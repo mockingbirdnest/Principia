@@ -63,7 +63,7 @@ void Starter<ODE, Step, steps>::Solve(
       {equation, current_state}, startup_append_state, startup_step);
 
   startup_instance
-      ->Solve(std::min(instance_->time().value +
+      ->Solve(std::min(independent_variable() +
                            (steps - previous_steps_.size()) * step + step / 2.0,
                        s_final))
       .IgnoreError();
@@ -108,6 +108,12 @@ void Starter<ODE, Step, steps>::FillFromMessage(Message const& message) {
     previous_steps_.push_back(Step::ReadFromMessage(previous_step));
   }
   startup_step_index_ = message.startup_step_index();
+}
+
+template<typename ODE, typename Step, int steps>
+typename FixedStepSizeIntegrator<ODE>::Instance const&
+Starter<ODE, Step, steps>::instance() const {
+  return *instance_;
 }
 
 }  // namespace internal_starter

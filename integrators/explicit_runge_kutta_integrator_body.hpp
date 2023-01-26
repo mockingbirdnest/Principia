@@ -223,48 +223,6 @@ Clone() const {
 }
 
 template<typename Method, typename ODE_>
-void ExplicitRungeKuttaIntegrator<Method, ODE_>::Instance::
-WriteToMessage(not_null<serialization::IntegratorInstance*> message) const {
-  FixedStepSizeIntegrator<ODE>::Instance::WriteToMessage(message);
-  [[maybe_unused]] auto* const extension =
-      message
-          ->MutableExtension(
-              serialization::FixedStepSizeIntegratorInstance::extension)
-          ->MutableExtension(
-              serialization::
-                  ExplicitRungeKuttaNystromIntegratorInstance::
-                      extension);
-}
-
-#if 0
-template<typename Method, typename ODE_>
-template<typename, typename>
-not_null<std::unique_ptr<
-    typename ExplicitRungeKuttaIntegrator<Method, ODE_>::Instance>>
-ExplicitRungeKuttaIntegrator<Method, ODE_>::Instance::
-ReadFromMessage(serialization::
-                    ExplicitRungeKuttaNystromIntegratorInstance const&
-                        extension,
-                InitialValueProblem<ODE> const& problem,
-                AppendState const& append_state,
-                ToleranceToErrorRatio const& tolerance_to_error_ratio,
-                Parameters const& parameters,
-                Time const& time_step,
-                bool const first_use,
-                ExplicitRungeKuttaIntegrator const& integrator) {
-  // Cannot use |make_not_null_unique| because the constructor of |Instance| is
-  // private.
-  return std::unique_ptr<Instance>(new Instance(problem,
-                                                append_state,
-                                                tolerance_to_error_ratio,
-                                                parameters,
-                                                time_step,
-                                                first_use,
-                                                integrator));
-}
-#endif
-
-template<typename Method, typename ODE_>
 ExplicitRungeKuttaIntegrator<Method, ODE_>::Instance::
 Instance(InitialValueProblem<ODE> const& problem,
          AppendState const& append_state,
