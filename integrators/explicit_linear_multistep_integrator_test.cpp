@@ -63,7 +63,6 @@ using ::testing::ValuesIn;
 using ODE =
     ExplicitFirstOrderOrdinaryDifferentialEquation<Instant, Length, Speed>;
 
-// TODO(phl): This probably needs a beginning_of_convergence.
 struct IntegratorTestParam final {
   template<typename Integrator>
   IntegratorTestParam(
