@@ -53,6 +53,7 @@ using ::testing::ValuesIn;
   IntegratorTestParam(                                               \
       ExplicitLinearMultistepIntegrator<methods::integrator, ODE>(), \
       #integrator,                                                   \
+      methods::integrator::order,                                    \
       (initial_number_of_steps),                                     \
       (expected_q_convergence_error),                                \
       (expected_q_correlation),                                      \
@@ -68,14 +69,15 @@ struct IntegratorTestParam final {
   IntegratorTestParam(
       Integrator const& integrator,
       std::string const& name,
+      int const order,
       int const initial_number_of_steps,
       ApproximateQuantity<double> const& expected_q_convergence_error,
       ApproximateQuantity<double> const& expected_q_correlation,
       ApproximateQuantity<double> const& expected_v_convergence_error,
       ApproximateQuantity<double> const& expected_v_correlation)
       : integrator(integrator),
-        order(integrator.order),
         name(name),
+        order(order),
         initial_number_of_steps(initial_number_of_steps),
         expected_q_convergence_error(expected_q_convergence_error),
         expected_q_correlation(expected_q_correlation),
@@ -83,8 +85,8 @@ struct IntegratorTestParam final {
         expected_v_correlation(expected_v_correlation) {}
 
   FixedStepSizeIntegrator<ODE> const& integrator;
-  int const order;
   std::string const name;
+  int const order;
   int const initial_number_of_steps;
   ApproximateQuantity<double> const expected_q_convergence_error;
   ApproximateQuantity<double> const expected_q_correlation;
