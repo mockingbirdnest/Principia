@@ -30,6 +30,8 @@ using integrators::ExplicitRungeKuttaIntegrator;
 using integrators::ExplicitFirstOrderOrdinaryDifferentialEquation;
 using integrators::InitialValueProblem;
 using integrators::methods::AdamsBashforthOrder4;
+using integrators::methods::AdamsBashforthOrder5;
+using integrators::methods::AdamsBashforthOrder6;
 using integrators::methods::DormandPrince1986RK547FC;
 using integrators::methods::Kutta1901Vσ1;
 using numerics::quadrature::AutomaticClenshawCurtis;
@@ -397,7 +399,7 @@ OrbitalElements::MeanEquinoctialElements(
   };
   append_state(problem.initial_state);
   auto const instance =
-      ExplicitLinearMultistepIntegrator<AdamsBashforthOrder4, ODE>()
+      ExplicitLinearMultistepIntegrator<AdamsBashforthOrder6, ODE>()
           .NewInstance(problem,
                        append_state,
                        /*step=*/period / 24);
