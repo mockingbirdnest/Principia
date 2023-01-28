@@ -146,11 +146,11 @@ BENCHMARK_F(OrbitalElementsBenchmark, ComputeOrbitalElements)(
   initial_osculating.longitude_of_ascending_node = 10 * Degree;
   initial_osculating.argument_of_periapsis = 20 * Degree;
   initial_osculating.mean_anomaly = 30 * Degree;
+  auto const trajectory =
+      EarthCentredTrajectory(initial_osculating, J2000, final_time);
   for (auto _ : state) {
-    OrbitalElements::ForTrajectory(
-        *EarthCentredTrajectory(initial_osculating, J2000, final_time),
-        *earth_,
-        MasslessBody{}).IgnoreError();
+    OrbitalElements::ForTrajectory(*trajectory, *earth_, MasslessBody{})
+        .IgnoreError();
   }
 }
 
