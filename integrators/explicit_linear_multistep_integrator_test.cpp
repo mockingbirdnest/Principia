@@ -139,6 +139,7 @@ class ExplicitLinearMultistepIntegratorTest
   }
 };
 
+#if !defined(_DEBUG)
 INSTANTIATE_TEST_SUITE_P(ExplicitLinearMultistepIntegratorTests,
                          ExplicitLinearMultistepIntegratorTest,
                          ValuesIn(IntegratorTestParams()));
@@ -232,20 +233,17 @@ TEST_P(ExplicitLinearMultistepIntegratorTest, Convergence) {
   LOG(INFO) << "Convergence order in q : " << q_convergence_error;
   LOG(INFO) << "Correlation            : " << q_correlation;
 
-#if !defined(_DEBUG)
   EXPECT_THAT(q_convergence_error, IsNear(GetParam().expected_q_convergence));
   EXPECT_THAT(q_correlation, IsNear(GetParam().expected_q_correlation));
-#endif
   double const v_convergence_error = Slope(log_step_sizes, log_p_errors);
   double const v_correlation =
       PearsonProductMomentCorrelationCoefficient(log_step_sizes, log_p_errors);
   LOG(INFO) << "Convergence order in p : " << v_convergence_error;
   LOG(INFO) << "Correlation            : " << v_correlation;
-#if !defined(_DEBUG)
   EXPECT_THAT(v_convergence_error, IsNear(GetParam().expected_v_convergence));
   EXPECT_THAT(v_correlation, IsNear(GetParam().expected_v_correlation));
-#endif
 }
+#endif
 
 }  // namespace internal_explicit_runge_kutta_integrator
 }  // namespace integrators
