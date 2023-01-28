@@ -10,6 +10,7 @@
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "mathematica/logger.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -35,7 +36,6 @@ using quantities::si::Metre;
 using quantities::si::Newton;
 using quantities::si::Radian;
 using quantities::si::Second;
-using testing_utilities::AbsoluteError;
 using testing_utilities::ApproximateQuantity;
 using testing_utilities::IsNear;
 using testing_utilities::PearsonProductMomentCorrelationCoefficient;
@@ -44,20 +44,23 @@ using testing_utilities::Slope;
 using testing_utilities::operator""_;
 using ::testing::ValuesIn;
 
+// The execution time is exponential in |step_sizes|.
+constexpr int step_sizes = 110;
+constexpr double step_reduction = 1.1;
+
 #define PARAM(integrator,                                            \
               initial_number_of_steps,                               \
-              expected_q_convergence_error,                          \
+              expected_q_convergence,                                \
               expected_q_correlation,                                \
-              expected_v_convergence_error,                          \
+              expected_v_convergence,                                \
               expected_v_correlation)                                \
   IntegratorTestParam(                                               \
       ExplicitLinearMultistepIntegrator<methods::integrator, ODE>(), \
       #integrator,                                                   \
-      methods::integrator::order,                                    \
       (initial_number_of_steps),                                     \
-      (expected_q_convergence_error),                                \
+      (expected_q_convergence),                                      \
       (expected_q_correlation),                                      \
-      (expected_v_convergence_error),                                \
+      (expected_v_convergence),                                      \
       (expected_v_correlation))
 
 using ODE =
@@ -68,28 +71,25 @@ struct IntegratorTestParam final {
   IntegratorTestParam(
       Integrator const& integrator,
       std::string const& name,
-      int const order,
       int const initial_number_of_steps,
-      ApproximateQuantity<double> const& expected_q_convergence_error,
+      ApproximateQuantity<double> const& expected_q_convergence,
       ApproximateQuantity<double> const& expected_q_correlation,
-      ApproximateQuantity<double> const& expected_v_convergence_error,
+      ApproximateQuantity<double> const& expected_v_convergence,
       ApproximateQuantity<double> const& expected_v_correlation)
       : integrator(integrator),
         name(name),
-        order(order),
         initial_number_of_steps(initial_number_of_steps),
-        expected_q_convergence_error(expected_q_convergence_error),
+        expected_q_convergence(expected_q_convergence),
         expected_q_correlation(expected_q_correlation),
-        expected_v_convergence_error(expected_v_convergence_error),
+        expected_v_convergence(expected_v_convergence),
         expected_v_correlation(expected_v_correlation) {}
 
   FixedStepSizeIntegrator<ODE> const& integrator;
   std::string const name;
-  int const order;
   int const initial_number_of_steps;
-  ApproximateQuantity<double> const expected_q_convergence_error;
+  ApproximateQuantity<double> const expected_q_convergence;
   ApproximateQuantity<double> const expected_q_correlation;
-  ApproximateQuantity<double> const expected_v_convergence_error;
+  ApproximateQuantity<double> const expected_v_convergence;
   ApproximateQuantity<double> const expected_v_correlation;
 };
 
@@ -102,18 +102,21 @@ std::ostream& operator<<(std::ostream& stream,
 }
 
 std::vector<IntegratorTestParam> IntegratorTestParams() {
+  // The |initial_number_of_steps| below were carefully chosen using
+  // Mathematica to only select the domain where |p| and |step| are properly
+  // correlated.
   return {PARAM(AdamsBashforthOrder2,
-                20,
-                0.066_(1),
-                0.99984_(1),
-                0.107_(1),
-                0.99955_(1)),
+                10,
+                1.964_(1),
+                0.99985_(1),
+                1.942_(1),
+                0.99963_(1)),
           PARAM(AdamsBashforthOrder3,
-                40,
-                0.093_(1),
-                0.99987_(1),
-                0.135_(1),
-                0.99971_(1))};
+                20,
+                2.928_(1),
+                0.99980_(1),
+                2.898_(1),
+                0.99960_(1))};
 }
 
 class ExplicitLinearMultistepIntegratorTest
@@ -153,8 +156,6 @@ TEST_P(ExplicitLinearMultistepIntegratorTest, Convergence) {
   };
 
   Time step = (t_final - t_initial) / GetParam().initial_number_of_steps;
-  int const step_sizes = 50;
-  double const step_reduction = 1.1;
   std::vector<double> log_step_sizes;
   log_step_sizes.reserve(step_sizes);
   std::vector<double> log_q_errors;
@@ -183,6 +184,9 @@ TEST_P(ExplicitLinearMultistepIntegratorTest, Convergence) {
 
   FixedStepSizeIntegrator<ODE> const& integrator = GetParam().integrator;
 
+  mathematica::Logger logger(
+      TEMP_DIR / ("convergence." + GetParam().name + ".generated.wl"),
+      /*make_unique=*/false);
   for (int i = 0; i < step_sizes; ++i, step /= step_reduction) {
     auto const instance =
         integrator.NewInstance(problem, append_state, step);
@@ -206,6 +210,9 @@ TEST_P(ExplicitLinearMultistepIntegratorTest, Convergence) {
     log_step_sizes.push_back(std::log10(step / Second));
     log_q_errors.push_back(log_q_error);
     log_p_errors.push_back(log_p_error);
+    logger.Append("logStepSizes", log_step_sizes.back());
+    logger.Append("logQErrors", log_q_errors.back());
+    logger.Append("logPErrors", log_p_errors.back());
   }
   double const q_convergence_error = Slope(log_step_sizes, log_q_errors);
   double const q_correlation =
@@ -214,10 +221,7 @@ TEST_P(ExplicitLinearMultistepIntegratorTest, Convergence) {
   LOG(INFO) << "Correlation            : " << q_correlation;
 
 #if !defined(_DEBUG)
-  EXPECT_THAT(
-      AbsoluteError(static_cast<double>(GetParam().order),
-                    q_convergence_error),
-      IsNear(GetParam().expected_q_convergence_error));
+  EXPECT_THAT(q_convergence_error, IsNear(GetParam().expected_q_convergence));
   EXPECT_THAT(q_correlation, IsNear(GetParam().expected_q_correlation));
 #endif
   double const v_convergence_error = Slope(log_step_sizes, log_p_errors);
@@ -226,9 +230,7 @@ TEST_P(ExplicitLinearMultistepIntegratorTest, Convergence) {
   LOG(INFO) << "Convergence order in p : " << v_convergence_error;
   LOG(INFO) << "Correlation            : " << v_correlation;
 #if !defined(_DEBUG)
-  EXPECT_THAT(
-      AbsoluteError(GetParam().order, v_convergence_error),
-      IsNear(GetParam().expected_v_convergence_error));
+  EXPECT_THAT(v_convergence_error, IsNear(GetParam().expected_v_convergence));
   EXPECT_THAT(v_correlation, IsNear(GetParam().expected_v_correlation));
 #endif
 }
