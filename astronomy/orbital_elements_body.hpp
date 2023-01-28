@@ -54,7 +54,8 @@ template<typename PrimaryCentred>
 absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
     Trajectory<PrimaryCentred> const& trajectory,
     MassiveBody const& primary,
-    Body const& secondary) {
+    Body const& secondary,
+    bool const sample_dense_elements) {
   OrbitalElements orbital_elements;
   LOG(ERROR)
       << "DiscreteTrajectory has "
@@ -152,13 +153,13 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
       std::move(mean_equinoctial_elements).value();
 
 
-  /* REMOVE BEFORE FLIGHT: This needs to be behind a flag, it is only for
-   * testing. */
-  orbital_elements.osculating_equinoctial_elements_;
-  for (Instant t = trajectory.t_min(); t <= trajectory.t_max();
-       t += orbital_elements.sidereal_period_ / 256) {
-    orbital_elements.osculating_equinoctial_elements_.push_back(
-        osculating_equinoctial_elements(t));
+  if (sample_dense_elements) {
+    orbital_elements.osculating_equinoctial_elements_;
+    for (Instant t = trajectory.t_min(); t <= trajectory.t_max();
+         t += orbital_elements.sidereal_period_ / 256) {
+      orbital_elements.osculating_equinoctial_elements_.push_back(
+          osculating_equinoctial_elements(t));
+    }
   }
 
   if (orbital_elements.mean_equinoctial_elements_.size() < 2) {
@@ -316,7 +317,6 @@ OrbitalElements::MeanEquinoctialElements(
 
   int z = 0;
 
-  mathematica::Logger logger(TEMP_DIR / "integration.wl");
   /*
   for (Instant t = t_min; t <= t_max; t += period / 100) {
     auto const [_, a, h, k, λ, p, q, pʹ, qʹ] = equinoctial_elements(t);
@@ -408,20 +408,6 @@ OrbitalElements::MeanEquinoctialElements(
              << " points";
   for (auto const& i : integrals) {
     auto const [_, a, h, k, λ, p, q, pʹ, qʹ] = equinoctial_elements(i.t);
-    logger.Append("evaluatedOsculating",
-                  std::tuple{i.t, a, h, k, λ, p, q, pʹ, qʹ},
-                  mathematica::ExpressInSIUnits);
-    logger.Append("integrals",
-                  std::tuple{i.t,
-                             i.ʃ_a_dt,
-                             i.ʃ_h_dt,
-                             i.ʃ_k_dt,
-                             i.ʃ_λ_dt,
-                             i.ʃ_p_dt,
-                             i.ʃ_q_dt,
-                             i.ʃ_pʹ_dt,
-                             i.ʃ_qʹ_dt},
-                  mathematica::ExpressInSIUnits);
   }
 
   auto const evaluate_integrals =
@@ -476,11 +462,6 @@ OrbitalElements::MeanEquinoctialElements(
     mean_elements.back().q = (high.ʃ_q_dt - low.ʃ_q_dt) / period;
     mean_elements.back().pʹ = (high.ʃ_pʹ_dt - low.ʃ_pʹ_dt) / period;
     mean_elements.back().qʹ = (high.ʃ_qʹ_dt - low.ʃ_qʹ_dt) / period;
-  }
-  for (auto const& e : mean_elements) {
-    logger.Append("mean",
-                  std::tuple{e.t, e.a, e.h, e.k, e.λ, e.p, e.q, e.pʹ, e.qʹ},
-                  mathematica::ExpressInSIUnits);
   }
   return mean_elements;
 }

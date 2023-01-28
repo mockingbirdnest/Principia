@@ -39,7 +39,8 @@ class OrbitalElements {
   static absl::StatusOr<OrbitalElements> ForTrajectory(
       Trajectory<PrimaryCentred> const& trajectory,
       MassiveBody const& primary,
-      Body const& secondary);
+      Body const& secondary,
+      bool sample_dense_elements = false);
 
   // The classical Keplerian elements (a, e, i, Ω, ω, M),
   // together with an epoch.
