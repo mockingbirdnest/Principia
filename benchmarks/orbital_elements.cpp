@@ -14,6 +14,7 @@
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_trajectory_segment.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
@@ -37,6 +38,7 @@ using integrators::methods::QuinlanTremaine1990Order12;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
+using physics::DiscreteTrajectorySegment;
 using physics::Ephemeris;
 using physics::KeplerianElements;
 using physics::KeplerOrbit;
@@ -90,6 +92,11 @@ class OrbitalElementsBenchmark : public benchmark::Fixture {
       Instant const& final_time) {
     BodyCentredNonRotatingDynamicFrame<ICRS, GCRS> gcrs{ephemeris_, earth_};
     DiscreteTrajectory<ICRS> icrs_trajectory;
+    icrs_trajectory.segments().front().SetDownsampling(
+        DiscreteTrajectorySegment<ICRS>::DownsamplingParameters{
+            .max_dense_intervals = 10'000,
+            .tolerance = 10 * Metre,
+        });
     KeplerOrbit<GCRS> const initial_osculating_orbit{
         *earth_,
         MasslessBody{},
