@@ -472,7 +472,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
       Barycentre(std::pair(q_earth, q_moon), std::pair(1, 1)) +
       (q_earth - q_moon).Norm() *
           Vector<double, World>({0, quantities::Sqrt(3) / 2, 0});
-  using MEO = Frame<enum class BarycentricTag, Arbitrary>;
+  using MEO = Frame<struct BarycentricTag, Arbitrary>;
   BodyCentredBodyDirectionDynamicFrame<Barycentric, MEO> meo(
       ephemeris_.get(), moon, earth);
   // The initial states for three trajectories:
@@ -541,9 +541,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
   Equipotential<Barycentric, World>::AdaptiveParameters ap(
       EmbeddedExplicitRungeKuttaIntegrator<
           DormandPrince1986RK547FC,
-          Equipotential<Barycentric, World>::IndependentVariable,
-          Position<World>,
-          double>(),
+          Equipotential<Barycentric, World>::ODE>(),
       /*max_steps=*/1000,
       /*length_integration_tolerance=*/1e-9 * Metre);
   Equipotential<Barycentric, World> const equipotential(ap,
@@ -649,9 +647,13 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
         },
         approx_l2_energy);
     for (auto const& line : lines) {
-      auto const& [positions, βs] = line;
-      all_positions.back().back().push_back(positions);
-      all_βs.back().push_back(βs);
+      all_positions.back().back().emplace_back();
+      all_βs.back().back().emplace_back();
+      for (auto const& state : line) {
+        auto const& [positions, βs] = state;
+        all_positions.back().back().back().push_back(positions.front());
+        all_βs.back().back().back().push_back(βs.front());
+      }
     }
   }
   std::vector<std::vector<Position<World>>> world_trajectories;
