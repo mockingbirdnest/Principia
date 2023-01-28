@@ -25,9 +25,11 @@ using base::this_stoppable_thread;
 using geometry::Velocity;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::EmbeddedExplicitRungeKuttaIntegrator;
+using integrators::ExplicitLinearMultistepIntegrator;
 using integrators::ExplicitRungeKuttaIntegrator;
 using integrators::ExplicitFirstOrderOrdinaryDifferentialEquation;
 using integrators::InitialValueProblem;
+using integrators::methods::AdamsBashforthOrder4;
 using integrators::methods::DormandPrince1986RK547FC;
 using integrators::methods::Kutta1901Vσ1;
 using numerics::quadrature::AutomaticClenshawCurtis;
@@ -395,10 +397,10 @@ OrbitalElements::MeanEquinoctialElements(
   };
   append_state(problem.initial_state);
   auto const instance =
-      ExplicitRungeKuttaIntegrator<Kutta1901Vσ1, ODE>().NewInstance(
-          problem,
-          append_state,
-          /*step=*/period / 6);
+      ExplicitLinearMultistepIntegrator<AdamsBashforthOrder4, ODE>()
+          .NewInstance(problem,
+                       append_state,
+                       /*step=*/period / 24);
   RETURN_IF_ERROR(instance->Solve(t_max));
   LOG(ERROR) << z << " evaluations by integrator producing " << integrals.size()
              << " points";
