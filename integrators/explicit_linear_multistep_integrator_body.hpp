@@ -253,5 +253,3 @@ ExplicitLinearMultistepIntegrator() {
 
 }  // namespace integrators
 }  // namespace principia
-
-#undef PRINCIPIA_USE_COHEN_HUBBARD_OESTERWINTER
