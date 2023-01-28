@@ -116,7 +116,19 @@ std::vector<IntegratorTestParam> IntegratorTestParams() {
                 2.928_(1),
                 0.99980_(1),
                 2.898_(1),
-                0.99960_(1))};
+                0.99960_(1)),
+          PARAM(AdamsBashforthOrder4,
+                40,
+                3.86_(1),
+                0.99977_(1),
+                3.81_(1),
+                0.99960_(1)),
+          PARAM(AdamsBashforthOrder5,
+                70,
+                4.78_(1),
+                0.99981_(1),
+                4.72_(1),
+                0.99971_(1))};
 }
 
 class ExplicitLinearMultistepIntegratorTest
