@@ -101,6 +101,8 @@ class OrbitalElementsBenchmark : public benchmark::Fixture {
         gcrs.FromThisFrameAtTime(initial_time)(
             DegreesOfFreedom<GCRS>{GCRS::origin, GCRS::unmoving} +
             initial_osculating_orbit.StateVectors(initial_time))));
+    icrs_trajectory.segments().back().SetDownsampling(
+        {.max_dense_intervals = 10'000, .tolerance = 10 * Metre});
     CHECK_OK(ephemeris_->FlowWithAdaptiveStep(
         &icrs_trajectory,
         Ephemeris<ICRS>::NoIntrinsicAcceleration,
