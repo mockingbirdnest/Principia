@@ -148,9 +148,9 @@ class EquipotentialTest : public ::testing::Test {
     std::vector<Position<World>> positions;
     std::vector<double> βs;
     for (auto const& state : line) {
-      auto const& [positions_of_state, βs_of_state] = state;
-      positions.push_back(positions_of_state.front());
-      βs.push_back(βs_of_state.front());
+      auto const& [position, β] = state;
+      positions.push_back(position);
+      βs.push_back(β);
     }
     logger.Set(absl::StrCat("equipotential", name, suffix),
                positions,
@@ -195,9 +195,9 @@ class EquipotentialTest : public ::testing::Test {
         all_positions.back().emplace_back();
         all_βs.back().emplace_back();
         for (auto const& state : line) {
-          auto const& [positions_of_state, βs_of_state] = state;
-          all_positions.back().back().push_back(positions_of_state.front());
-          all_βs.back().back().push_back(βs_of_state.front());
+          auto const& [position, β] = state;
+          all_positions.back().back().push_back(position);
+          all_βs.back().back().push_back(β);
         }
       }
     }
@@ -630,9 +630,9 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
         all_positions.back().back().emplace_back();
         all_βs.back().back().emplace_back();
         for (auto const& state : line) {
-          auto const& [positions, βs] = state;
-          all_positions.back().back().back().push_back(positions.front());
-          all_βs.back().back().back().push_back(βs.front());
+          auto const& [position, β] = state;
+          all_positions.back().back().back().push_back(position);
+          all_βs.back().back().back().push_back(β);
         }
       }
     }

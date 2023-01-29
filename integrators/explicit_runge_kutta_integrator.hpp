@@ -77,24 +77,6 @@ class ExplicitRungeKuttaIntegrator
     not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> Clone()
         const override;
 
-    void WriteToMessage(
-        not_null<serialization::IntegratorInstance*> message) const override;
-#if 0
-    template<typename... DV = DependentVariable...,
-             typename = std::enable_if_t<base::is_serializable_v<DV...>>>
-    static not_null<std::unique_ptr<Instance>> ReadFromMessage(
-        serialization::
-            ExplicitRungeKuttaNystromIntegratorInstance const&
-                extension,
-        InitialValueProblem<ODE> const& problem,
-        AppendState const& append_state,
-        ToleranceToErrorRatio const& tolerance_to_error_ratio,
-        Parameters const& parameters,
-        typename ODE::IndependentVariableDifference const& step,
-        bool first_use,
-        ExplicitRungeKuttaIntegrator const& integrator);
-#endif
-
    private:
     Instance(InitialValueProblem<ODE> const& problem,
              AppendState const& append_state,

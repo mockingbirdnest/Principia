@@ -95,26 +95,10 @@ Solve(typename ODE::IndependentVariable const& s_final) {
   DependentVariableDerivatives f;
   DependentVariableDerivatives last_f;
   std::vector<DependentVariableDifferences> k(stages_);
-  for (auto& k_stage : k) {
-    for_all_of(y, Δy, k_stage).loop([](auto const& y, auto& Δy, auto& k_stage) {
-      int const dimension = y.size();
-      Δy.resize(dimension);
-      k_stage.resize(dimension);
-    });
-  }
 
-  for_all_of(y, f, last_f, y_stage)
-      .loop([](auto const& y,
-               auto& f,
-               auto& last_f,
-               auto& y_stage) {
-        int const dimension = y.size();
-        f.resize(dimension);
-        last_f.resize(dimension);
-        for (auto const& yₗ : y) {
-          y_stage.push_back(yₗ.value);
-        }
-      });
+  for_all_of(y, y_stage).loop([](auto const& y, auto& y_stage) {
+    y_stage = y.value;
+  });
 
   absl::Status status;
 
@@ -130,12 +114,6 @@ Solve(typename ODE::IndependentVariable const& s_final) {
         f = last_f;
       } else {
         DependentVariableDifferences Σⱼ_aᵢⱼ_kⱼ{};
-        for_all_of(y, Σⱼ_aᵢⱼ_kⱼ)
-            .loop([](auto const& y,
-                      auto& Σⱼ_aᵢⱼ_kⱼ) {
-              int const dimension = y.size();
-              Σⱼ_aᵢⱼ_kⱼ.resize(dimension);
-            });
 
         for (int j = 0; j < i; ++j) {
           for_all_of(k[j], y, y_stage, Σⱼ_aᵢⱼ_kⱼ)
@@ -143,18 +121,12 @@ Solve(typename ODE::IndependentVariable const& s_final) {
                                auto const& y,
                                auto& y_stage,
                                auto& Σⱼ_aᵢⱼ_kⱼ) {
-                int const dimension = y.size();
-                for (int l = 0; l < dimension; ++l) {
-                  Σⱼ_aᵢⱼ_kⱼ[l] += a(i, j) * kⱼ[l];
-                }
+                Σⱼ_aᵢⱼ_kⱼ += a(i, j) * kⱼ;
               });
         }
         for_all_of(y, Σⱼ_aᵢⱼ_kⱼ, y_stage)
             .loop([](auto const& y, auto const& Σⱼ_aᵢⱼ_kⱼ, auto& y_stage) {
-              int const dimension = y.size();
-              for (int l = 0; l < dimension; ++l) {
-                y_stage[l] = y[l].value + Σⱼ_aᵢⱼ_kⱼ[l];
-              }
+              y_stage = y.value + Σⱼ_aᵢⱼ_kⱼ;
             });
 
         termination_condition::UpdateWithAbort(
@@ -163,10 +135,7 @@ Solve(typename ODE::IndependentVariable const& s_final) {
             status);
       }
       for_all_of(f, k[i]).loop([h](auto const& f, auto& kᵢ) {
-        int const dimension = f.size();
-        for (int l = 0; l < dimension; ++l) {
-          kᵢ[l] = h * f[l];
-        }
+        kᵢ = h * f;
       });
     }
 
@@ -176,12 +145,8 @@ Solve(typename ODE::IndependentVariable const& s_final) {
       for_all_of(k[i], y, Δy, Σᵢ_bᵢ_kᵢ)
           .loop([&a, &b, i](
                     auto const& kᵢ, auto const& y, auto& Δy, auto& Σᵢ_bᵢ_kᵢ) {
-            int const dimension = y.size();
-            Σᵢ_bᵢ_kᵢ.resize(dimension);
-            for (int l = 0; l < dimension; ++l) {
-              Σᵢ_bᵢ_kᵢ[l] += b[i] * kᵢ[l];
-              Δy[l] = Σᵢ_bᵢ_kᵢ[l];
-            }
+            Σᵢ_bᵢ_kᵢ += b[i] * kᵢ;
+            Δy = Σᵢ_bᵢ_kᵢ;
           });
     }
 
@@ -192,10 +157,7 @@ Solve(typename ODE::IndependentVariable const& s_final) {
     // Increment the solution.
     s.Increment(h);
     for_all_of(Δy, y).loop([](auto const& Δy, auto& y) {
-      int const dimension = y.size();
-      for (int l = 0; l < dimension; ++l) {
-        y[l].Increment(Δy[l]);
-      }
+      y.Increment(Δy);
     });
 
     RETURN_IF_STOPPED;
@@ -221,48 +183,6 @@ ExplicitRungeKuttaIntegrator<Method, ODE_>::Instance::
 Clone() const {
   return std::unique_ptr<Instance>(new Instance(*this));
 }
-
-template<typename Method, typename ODE_>
-void ExplicitRungeKuttaIntegrator<Method, ODE_>::Instance::
-WriteToMessage(not_null<serialization::IntegratorInstance*> message) const {
-  FixedStepSizeIntegrator<ODE>::Instance::WriteToMessage(message);
-  [[maybe_unused]] auto* const extension =
-      message
-          ->MutableExtension(
-              serialization::FixedStepSizeIntegratorInstance::extension)
-          ->MutableExtension(
-              serialization::
-                  ExplicitRungeKuttaNystromIntegratorInstance::
-                      extension);
-}
-
-#if 0
-template<typename Method, typename ODE_>
-template<typename, typename>
-not_null<std::unique_ptr<
-    typename ExplicitRungeKuttaIntegrator<Method, ODE_>::Instance>>
-ExplicitRungeKuttaIntegrator<Method, ODE_>::Instance::
-ReadFromMessage(serialization::
-                    ExplicitRungeKuttaNystromIntegratorInstance const&
-                        extension,
-                InitialValueProblem<ODE> const& problem,
-                AppendState const& append_state,
-                ToleranceToErrorRatio const& tolerance_to_error_ratio,
-                Parameters const& parameters,
-                Time const& time_step,
-                bool const first_use,
-                ExplicitRungeKuttaIntegrator const& integrator) {
-  // Cannot use |make_not_null_unique| because the constructor of |Instance| is
-  // private.
-  return std::unique_ptr<Instance>(new Instance(problem,
-                                                append_state,
-                                                tolerance_to_error_ratio,
-                                                parameters,
-                                                time_step,
-                                                first_use,
-                                                integrator));
-}
-#endif
 
 template<typename Method, typename ODE_>
 ExplicitRungeKuttaIntegrator<Method, ODE_>::Instance::

@@ -106,28 +106,10 @@ Solve(typename ODE::IndependentVariable const& s_final) {
   DependentVariableDerivatives f;
   DependentVariableDerivatives last_f;
   std::vector<DependentVariableDifferences> k(stages_);
-  for (auto& k_stage : k) {
-    for_all_of(ŷ, Δŷ, k_stage).loop([](auto const& ŷ, auto& Δŷ, auto& k_stage) {
-      int const dimension = ŷ.size();
-      Δŷ.resize(dimension);
-      k_stage.resize(dimension);
-    });
-  }
 
-  for_all_of(ŷ, error_estimate, f, last_f, y_stage)
-      .loop([](auto const& ŷ,
-               auto& error_estimate,
-               auto& f,
-               auto& last_f,
-               auto& y_stage) {
-        int const dimension = ŷ.size();
-        error_estimate.resize(dimension);
-        f.resize(dimension);
-        last_f.resize(dimension);
-        for (auto const& ŷₗ : ŷ) {
-          y_stage.push_back(ŷₗ.value);
-        }
-      });
+  for_all_of(ŷ, y_stage).loop([](auto const& ŷ, auto& y_stage) {
+    y_stage = ŷ.value;
+  });
 
   bool at_end = false;
   double tolerance_to_error_ratio;
@@ -202,34 +184,21 @@ Solve(typename ODE::IndependentVariable const& s_final) {
           // TODO(phl): Should dimension |Σⱼ_aᵢⱼ_kⱼ| in the not FSAL case.
           DependentVariableDifferences Σⱼ_aᵢⱼ_kⱼ{};
           for (int j = 0; j < i; ++j) {
-            for_all_of(k[j], ŷ, y_stage, Σⱼ_aᵢⱼ_kⱼ)
-                .loop([&a, i, j](auto const& kⱼ,
-                                 auto const& ŷ,
-                                 auto& y_stage,
-                                 auto& Σⱼ_aᵢⱼ_kⱼ) {
-                  int const dimension = ŷ.size();
-                  Σⱼ_aᵢⱼ_kⱼ.resize(dimension);
-                  for (int l = 0; l < dimension; ++l) {
-                    Σⱼ_aᵢⱼ_kⱼ[l] += a(i, j) * kⱼ[l];
-                  }
+            for_all_of(k[j], Σⱼ_aᵢⱼ_kⱼ)
+                .loop([&a, i, j](auto const& kⱼ, auto& Σⱼ_aᵢⱼ_kⱼ) {
+                  Σⱼ_aᵢⱼ_kⱼ += a(i, j) * kⱼ;
                 });
           }
           for_all_of(ŷ, Σⱼ_aᵢⱼ_kⱼ, y_stage)
               .loop([](auto const& ŷ, auto const& Σⱼ_aᵢⱼ_kⱼ, auto& y_stage) {
-                int const dimension = ŷ.size();
-                for (int l = 0; l < dimension; ++l) {
-                  y_stage[l] = ŷ[l].value + Σⱼ_aᵢⱼ_kⱼ[l];
-                }
+                y_stage = ŷ.value + Σⱼ_aᵢⱼ_kⱼ;
               });
 
           termination_condition::UpdateWithAbort(
               equation.compute_derivative(s_stage, y_stage, f), step_status);
         }
         for_all_of(f, k[i]).loop([h](auto const& f, auto& kᵢ) {
-          int const dimension = f.size();
-          for (int l = 0; l < dimension; ++l) {
-            kᵢ[l] = h * f[l];
-          }
+          kᵢ = h * f;
         });
       }
 
@@ -244,16 +213,11 @@ Solve(typename ODE::IndependentVariable const& s_final) {
                                   auto& Σᵢ_b̂ᵢ_kᵢ,
                                   auto& Σᵢ_bᵢ_kᵢ,
                                   auto& error_estimate) {
-              int const dimension = ŷ.size();
-              Σᵢ_b̂ᵢ_kᵢ.resize(dimension);
-              Σᵢ_bᵢ_kᵢ.resize(dimension);
-              for (int l = 0; l < dimension; ++l) {
-                Σᵢ_b̂ᵢ_kᵢ[l] += b̂[i] * kᵢ[l];
-                Σᵢ_bᵢ_kᵢ[l] += b[i] * kᵢ[l];
-                Δŷ[l] = Σᵢ_b̂ᵢ_kᵢ[l];
-                auto const Δyₗ = Σᵢ_bᵢ_kᵢ[l];
-                error_estimate[l] = Δyₗ - Δŷ[l];
-              }
+              Σᵢ_b̂ᵢ_kᵢ += b̂[i] * kᵢ;
+              Σᵢ_bᵢ_kᵢ += b[i] * kᵢ;
+              Δŷ = Σᵢ_b̂ᵢ_kᵢ;
+              auto const Δy = Σᵢ_bᵢ_kᵢ;
+              error_estimate = Δy - Δŷ;
             });
       }
       tolerance_to_error_ratio =
@@ -275,10 +239,7 @@ Solve(typename ODE::IndependentVariable const& s_final) {
     // Increment the solution with the high-order approximation.
     s.Increment(h);
     for_all_of(Δŷ, ŷ).loop([](auto const& Δŷ, auto& ŷ) {
-      int const dimension = ŷ.size();
-      for (int l = 0; l < dimension; ++l) {
-        ŷ[l].Increment(Δŷ[l]);
-      }
+      ŷ.Increment(Δŷ);
     });
 
     RETURN_IF_STOPPED;

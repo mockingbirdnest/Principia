@@ -31,6 +31,7 @@ using numerics::DoublePrecision;
 using numerics::FixedVector;
 using quantities::Time;
 
+// This implementation follows [QT90].
 template<typename Method, typename ODE_>
 class SymmetricLinearMultistepIntegrator
     : public FixedStepSizeIntegrator<ODE_> {
@@ -87,6 +88,7 @@ class SymmetricLinearMultistepIntegrator
       void FillStepFromState(ODE const& equation,
                              typename ODE::State const& state,
                              Step& step) const override;
+      typename ODE::IndependentVariable independent_variable() const override;
     };
 
     Instance(InitialValueProblem<ODE> const& problem,

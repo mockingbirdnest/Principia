@@ -91,8 +91,8 @@ TEST_F(ExplicitRungeKuttaIntegratorTest, Convergence) {
       ODE::DependentVariableDerivatives& dependent_variable_derivatives) {
     auto const& [q, v] = dependent_variables;
     auto& [qʹ, vʹ] = dependent_variable_derivatives;
-    qʹ[0] = v[0];
-    vʹ[0] = mass_flow * specific_impulse / mass(t);
+    qʹ = v;
+    vʹ = mass_flow * specific_impulse / mass(t);
     return absl::OkStatus();
   };
   InitialValueProblem<ODE> problem;
@@ -111,8 +111,8 @@ TEST_F(ExplicitRungeKuttaIntegratorTest, Convergence) {
         integrator.NewInstance(problem, append_state, step);
     EXPECT_OK(instance->Solve(t_final));
     Time const t = final_state.s.value - t_initial;
-    Length const& q = std::get<0>(final_state.y)[0].value;
-    Speed const& v = std::get<1>(final_state.y)[0].value;
+    Length const& q = std::get<0>(final_state.y).value;
+    Speed const& v = std::get<1>(final_state.y).value;
     double const log_q_error = std::log10(RelativeError(
         q,
         specific_impulse *
