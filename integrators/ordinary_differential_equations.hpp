@@ -49,11 +49,11 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
   static constexpr std::int64_t order = 1;
   using IndependentVariable = IndependentVariable_;
   using IndependentVariableDifference = Difference<IndependentVariable>;
-  using DependentVariables = std::tuple<std::vector<DependentVariable>...>;
+  using DependentVariables = std::tuple<DependentVariable...>;
   using DependentVariableDifferences =
-      std::tuple<std::vector<Difference<DependentVariable>>...>;
-  using DependentVariableDerivatives = std::tuple<std::vector<
-      Derivative<DependentVariable, IndependentVariable>>...>;
+      std::tuple<Difference<DependentVariable>...>;
+  using DependentVariableDerivatives = std::tuple<
+      Derivative<DependentVariable, IndependentVariable>...>;
 
   // A functor that computes f(s, y) and stores it in |y′|.  This functor must
   // be called with |std::get<i>(y′).size()| equal to |std::get<i>(y).size()|
@@ -70,7 +70,7 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
     State(IndependentVariable const& s, DependentVariables const& y);
 
     DoublePrecision<IndependentVariable> s;
-    std::tuple<std::vector<DoublePrecision<DependentVariable>>...> y;
+    std::tuple<DoublePrecision<DependentVariable>...> y;
 
     friend bool operator==(State const& lhs, State const& rhs) {
       return lhs.y == rhs.y && lhs.s == rhs.s;

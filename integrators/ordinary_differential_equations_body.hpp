@@ -31,9 +31,7 @@ ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable_,
 State::State(IndependentVariable const& s, DependentVariables const& y)
     : s(s) {
   for_all_of(y, this->y).loop([](auto const& y, auto& this_y) {
-    for (auto const& y_i : y) {
-      this_y.emplace_back(y_i);
-    }
+    this_y = DoublePrecision(y);
   });
 }
 
