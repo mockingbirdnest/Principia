@@ -348,17 +348,7 @@ OrbitalElements::MeanEquinoctialElements(
                     ++z;
                     auto const [_, a, h, k, λ, p, q, pʹ, qʹ] =
                         equinoctial_elements(t);
-                    // This rather ugly way of writing the assignments matter
-                    // for performance: a temporary like {{a}, ..., {qʹ}} would
-                    // do lots of allocations.
-                    std::get<0>(yʹ)[0] = a;
-                    std::get<1>(yʹ)[0] = h;
-                    std::get<2>(yʹ)[0] = k;
-                    std::get<3>(yʹ)[0] = λ;
-                    std::get<4>(yʹ)[0] = p;
-                    std::get<5>(yʹ)[0] = q;
-                    std::get<6>(yʹ)[0] = pʹ;
-                    std::get<7>(yʹ)[0] = qʹ;
+                    yʹ= {a, h, k, λ, p, q, pʹ, qʹ};
                     return absl::OkStatus();
                   },
           },
@@ -398,14 +388,14 @@ OrbitalElements::MeanEquinoctialElements(
                  ʃ_qʹ_dt] = state.y;
     integrals.push_back(
         IntegratedEquinoctialElements{.t = t,
-                                      .ʃ_a_dt = ʃ_a_dt.front().value,
-                                      .ʃ_h_dt = ʃ_h_dt.front().value,
-                                      .ʃ_k_dt = ʃ_k_dt.front().value,
-                                      .ʃ_λ_dt = ʃ_λ_dt.front().value,
-                                      .ʃ_p_dt = ʃ_p_dt.front().value,
-                                      .ʃ_q_dt = ʃ_q_dt.front().value,
-                                      .ʃ_pʹ_dt = ʃ_pʹ_dt.front().value,
-                                      .ʃ_qʹ_dt = ʃ_qʹ_dt.front().value});
+                                      .ʃ_a_dt = ʃ_a_dt.value,
+                                      .ʃ_h_dt = ʃ_h_dt.value,
+                                      .ʃ_k_dt = ʃ_k_dt.value,
+                                      .ʃ_λ_dt = ʃ_λ_dt.value,
+                                      .ʃ_p_dt = ʃ_p_dt.value,
+                                      .ʃ_q_dt = ʃ_q_dt.value,
+                                      .ʃ_pʹ_dt = ʃ_pʹ_dt.value,
+                                      .ʃ_qʹ_dt = ʃ_qʹ_dt.value});
   };
   append_state(problem.initial_state);
   auto const instance =
