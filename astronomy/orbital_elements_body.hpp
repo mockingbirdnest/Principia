@@ -416,9 +416,6 @@ OrbitalElements::MeanEquinoctialElements(
   RETURN_IF_ERROR(instance->Solve(t_max));
   LOG(ERROR) << z << " evaluations by integrator producing " << integrals.size()
              << " points";
-  for (auto const& i : integrals) {
-    auto const [_, a, h, k, λ, p, q, pʹ, qʹ] = equinoctial_elements(i.t);
-  }
 
   auto const evaluate_integrals =
       [&integrals](Instant const& t) -> IntegratedEquinoctialElements {
