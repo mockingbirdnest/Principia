@@ -75,12 +75,8 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
   typename AdaptiveStepSizeIntegrator<ODE>::AppendState const append_state =
       [&equipotential](State const& state) {
         DependentVariables dependent_variables;
-        for (auto const& y0 : std::get<0>(state.y)) {
-          std::get<0>(dependent_variables).push_back(y0.value);
-        }
-        for (auto const& y1 : std::get<1>(state.y)) {
-          std::get<1>(dependent_variables).push_back(y1.value);
-        }
+        std::get<0>(dependent_variables) = std::get<0>(state.y).value;
+        std::get<1>(dependent_variables) = std::get<1>(state.y).value;
         equipotential.push_back(dependent_variables);
       };
 
@@ -153,8 +149,8 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     for (auto const& line : lines) {
       std::vector<Position<Frame>> positions;
       for (auto const& dependent_variables : line) {
-        auto const& [positions_of_dependent_variables, _] = dependent_variables;
-        positions.push_back(positions_of_dependent_variables.front());
+        auto const& [position, _] = dependent_variables;
+        positions.push_back(position);
       }
       std::int64_t const winding_number =
           WindingNumber(plane, start_position, positions);
@@ -297,8 +293,8 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
       }
       std::vector<Position<Frame>> positions;
       for (auto const& dependent_variables : lines.back()) {
-        auto const& [positions_of_dependent_variables, _] = dependent_variables;
-        positions.push_back(positions_of_dependent_variables.front());
+        auto const& [position, _] = dependent_variables;
+        positions.push_back(position);
       }
 
       // Figure out whether the equipotential introduces new delineations.
@@ -357,22 +353,20 @@ absl::Status Equipotential<InertialFrame, Frame>::RightHandSide(
     IndependentVariable const s,
     DependentVariables const& values,
     DependentVariableDerivatives& derivatives) const {
+  auto const& [γₛ, β] = values;
   // First state variable.
-  auto const& γₛ = std::get<0>(values).front();
   auto const dVǀᵧ₍ₛ₎ =
       dynamic_frame_->RotationFreeGeometricAccelerationAtRest(t, γₛ);
   Displacement<Frame> const γʹ =
       Normalize(binormal * dVǀᵧ₍ₛ₎) * characteristic_length_;
 
   // Second state variable.
-  double const β = std::get<1>(values).front();
   auto const& γ₀ = position;
   double const βʹ = s == s_initial_ ? 0
                                     : Pow<2>(characteristic_length_) *
                                           (s - s_initial_) / (γₛ - γ₀).Norm²();
 
-  std::get<0>(derivatives).front() = γʹ;
-  std::get<1>(derivatives).front() = βʹ;
+  derivatives = {γʹ, βʹ};
 
   return β > β_max_ ? absl::AbortedError("β reached max") : absl::OkStatus();
 }
@@ -382,8 +376,8 @@ double Equipotential<InertialFrame, Frame>::ToleranceToErrorRatio(
     IndependentVariableDifference const current_s_step,
     State const& /*state*/,
     typename State::Error const& error) const {
-  Length const max_length_error = std::get<0>(error).front().Norm();
-  double const max_braking_error = Abs(std::get<1>(error).front());
+  Length const max_length_error = std::get<0>(error).Norm();
+  double const max_braking_error = Abs(std::get<1>(error));
   return std::min(
       adaptive_parameters_.length_integration_tolerance() / max_length_error,
       β_tolerance_ / max_braking_error);
