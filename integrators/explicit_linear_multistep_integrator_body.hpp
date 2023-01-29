@@ -63,31 +63,12 @@ ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
 
   // Current stage of the integrator.
   DependentVariables y_stage;
-  DoubleDependentVariables Σⱼ_minus_αⱼ_yⱼ;
-  DependentVariableDerivatives Σⱼ_βⱼ_numerator_fⱼ;
-  for_all_of(y, y_stage, Σⱼ_minus_αⱼ_yⱼ, Σⱼ_βⱼ_numerator_fⱼ)
-      .loop([](auto const& y,
-               auto& y_stage,
-               auto& Σⱼ_minus_αⱼ_yⱼ,
-               auto& Σⱼ_βⱼ_numerator_fⱼ) {
-        int const dimension = y.size();
-        y_stage.resize(dimension);
-        Σⱼ_minus_αⱼ_yⱼ.reserve(dimension);
-        Σⱼ_βⱼ_numerator_fⱼ.reserve(dimension);
-      });
 
   absl::Status status;
 
   while (h <= (s_final - s.value) - s.error) {
-    for_all_of(y_stage, Σⱼ_minus_αⱼ_yⱼ, Σⱼ_βⱼ_numerator_fⱼ)
-        .loop(
-            [](auto const& y, auto& Σⱼ_minus_αⱼ_yⱼ, auto& Σⱼ_βⱼ_numerator_fⱼ) {
-              int const dimension = y.size();
-              Σⱼ_minus_αⱼ_yⱼ.clear();
-              Σⱼ_minus_αⱼ_yⱼ.resize(dimension);
-              Σⱼ_βⱼ_numerator_fⱼ.clear();
-              Σⱼ_βⱼ_numerator_fⱼ.resize(dimension);
-            });
+    DoubleDependentVariables Σⱼ_minus_αⱼ_yⱼ{};
+    DependentVariableDerivatives Σⱼ_βⱼ_numerator_fⱼ{};
 
     // Scan the previous steps from the most recent to the oldest.  That's how
     // the Adams-Bashforth formulæ are typically written.
@@ -108,11 +89,8 @@ ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
                                    auto const& fⱼ,
                                    auto& Σⱼ_minus_αⱼ_yⱼ,
                                    auto& Σⱼ_βⱼ_numerator_fⱼ) {
-            int const dimension = yⱼ.size();
-            for (int i = 0; i < dimension; ++i) {
-              Σⱼ_minus_αⱼ_yⱼ[i] -= Scale(αⱼ, yⱼ[i]);
-              Σⱼ_βⱼ_numerator_fⱼ[i] += βⱼ_numerator * fⱼ[i];
-            }
+            Σⱼ_minus_αⱼ_yⱼ -= Scale(αⱼ, yⱼ);
+            Σⱼ_βⱼ_numerator_fⱼ += βⱼ_numerator * fⱼ;
           });
     }
 
@@ -126,11 +104,7 @@ ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
     for_all_of(Σⱼ_βⱼ_numerator_fⱼ, Σⱼ_minus_αⱼ_yⱼ)
         .loop([h, β_denominator](auto const& Σⱼ_βⱼ_numerator_fⱼ,
                                  auto& Σⱼ_minus_αⱼ_yⱼ) {
-          int const dimension = Σⱼ_βⱼ_numerator_fⱼ.size();
-          for (int i = 0; i < dimension; ++i) {
-            Σⱼ_minus_αⱼ_yⱼ[i].Increment(h * Σⱼ_βⱼ_numerator_fⱼ[i] /
-                                        β_denominator);
-          }
+          Σⱼ_minus_αⱼ_yⱼ.Increment(h * Σⱼ_βⱼ_numerator_fⱼ / β_denominator);
         });
 
     auto& yₙ₊₁ = Σⱼ_minus_αⱼ_yⱼ;
@@ -139,12 +113,8 @@ ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
                  auto& y,
                  auto& y_stage,
                  auto& current_step_yʹ) {
-          DCHECK_EQ(y_stage.size(), yₙ₊₁.size());
-          current_step_yʹ.resize(y_stage.size());
-          for (int i = 0; i < y_stage.size(); ++i) {
-            y_stage[i] = yₙ₊₁[i].value;
-            y[i] = yₙ₊₁[i];
-          }
+          y_stage = yₙ₊₁.value;
+          y = yₙ₊₁;
         });
     current_step.y = std::move(yₙ₊₁);
     termination_condition::UpdateWithAbort(
@@ -185,13 +155,9 @@ FillStepFromState(ODE const& equation,
   step.s = state.s;
   step.y = state.y;
   typename ODE::DependentVariables y;
-  for_all_of(state.y, y, step.yʹ)
-      .loop([](auto const& state_y, auto& y, auto& step_yʹ) {
-        step_yʹ.resize(state_y.size());
-        for (auto const& state_yᵢ : state_y) {
-          y.push_back(state_yᵢ.value);
-        }
-      });
+  for_all_of(state.y, y).loop([](auto const& state_y, auto& y) {
+    y = state_y.value;
+  });
   // Ignore the status here.  We are merely computing yʹ to store it, not to
   // advance an integrator.
   equation.compute_derivative(step.s.value, y, step.yʹ).IgnoreError();

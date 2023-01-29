@@ -149,8 +149,8 @@ BENCHMARK_F(OrbitalElementsBenchmark, ComputeOrbitalElements)(
   auto const trajectory =
       EarthCentredTrajectory(initial_osculating, J2000, final_time);
   for (auto _ : state) {
-    OrbitalElements::ForTrajectory(*trajectory, *earth_, MasslessBody{})
-        .IgnoreError();
+    benchmark::DoNotOptimize(
+        OrbitalElements::ForTrajectory(*trajectory, *earth_, MasslessBody{}));
   }
 }
 
