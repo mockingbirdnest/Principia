@@ -308,7 +308,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Singularity) {
       ODE::DependentVariableDerivatives& dependent_variable_derivatives) {
     auto const& [q, v] = dependent_variables;
     auto& [qʹ, vʹ] = dependent_variable_derivatives;
-    qʹ= v;
+    qʹ = v;
     vʹ = mass_flow * specific_impulse / mass(t);
     return absl::OkStatus();
   };
