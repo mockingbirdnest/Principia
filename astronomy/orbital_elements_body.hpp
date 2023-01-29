@@ -348,7 +348,17 @@ OrbitalElements::MeanEquinoctialElements(
                     ++z;
                     auto const [_, a, h, k, λ, p, q, pʹ, qʹ] =
                         equinoctial_elements(t);
-                    yʹ = {{a}, {h}, {k}, {λ}, {p}, {q}, {pʹ}, {qʹ}};
+                    // This rather ugly way of writing the assignments matter
+                    // for performance: a temporary like {{a}, ..., {qʹ}} would
+                    // do lots of allocations.
+                    std::get<0>(yʹ)[0] = a;
+                    std::get<1>(yʹ)[0] = h;
+                    std::get<2>(yʹ)[0] = k;
+                    std::get<3>(yʹ)[0] = λ;
+                    std::get<4>(yʹ)[0] = p;
+                    std::get<5>(yʹ)[0] = q;
+                    std::get<6>(yʹ)[0] = pʹ;
+                    std::get<7>(yʹ)[0] = qʹ;
                     return absl::OkStatus();
                   },
           },
