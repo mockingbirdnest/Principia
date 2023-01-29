@@ -650,9 +650,9 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
       all_positions.back().back().emplace_back();
       all_βs.back().back().emplace_back();
       for (auto const& state : line) {
-        auto const& [positions, βs] = state;
-        all_positions.back().back().back().push_back(positions.front());
-        all_βs.back().back().back().push_back(βs.front());
+        auto const& [position, β] = state;
+        all_positions.back().back().back().push_back(position);
+        all_βs.back().back().back().push_back(β);
       }
     }
   }
