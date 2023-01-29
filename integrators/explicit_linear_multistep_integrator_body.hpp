@@ -63,21 +63,29 @@ ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
 
   // Current stage of the integrator.
   DependentVariables y_stage;
-  for_all_of(y, y_stage).loop([](auto const& y, auto& y_stage) {
-    int const dimension = y.size();
-    y_stage.resize(dimension);
-  });
+  DoubleDependentVariables Σⱼ_minus_αⱼ_yⱼ;
+  DependentVariableDerivatives Σⱼ_βⱼ_numerator_fⱼ;
+  for_all_of(y, y_stage, Σⱼ_minus_αⱼ_yⱼ, Σⱼ_βⱼ_numerator_fⱼ)
+      .loop([](auto const& y,
+               auto& y_stage,
+               auto& Σⱼ_minus_αⱼ_yⱼ,
+               auto& Σⱼ_βⱼ_numerator_fⱼ) {
+        int const dimension = y.size();
+        y_stage.resize(dimension);
+        Σⱼ_minus_αⱼ_yⱼ.reserve(dimension);
+        Σⱼ_βⱼ_numerator_fⱼ.reserve(dimension);
+      });
 
   absl::Status status;
 
   while (h <= (s_final - s.value) - s.error) {
-    DoubleDependentVariables Σⱼ_minus_αⱼ_yⱼ{};
-    DependentVariableDerivatives Σⱼ_βⱼ_numerator_fⱼ{};
     for_all_of(y_stage, Σⱼ_minus_αⱼ_yⱼ, Σⱼ_βⱼ_numerator_fⱼ)
         .loop(
             [](auto const& y, auto& Σⱼ_minus_αⱼ_yⱼ, auto& Σⱼ_βⱼ_numerator_fⱼ) {
               int const dimension = y.size();
+              Σⱼ_minus_αⱼ_yⱼ.clear();
               Σⱼ_minus_αⱼ_yⱼ.resize(dimension);
+              Σⱼ_βⱼ_numerator_fⱼ.clear();
               Σⱼ_βⱼ_numerator_fⱼ.resize(dimension);
             });
 
