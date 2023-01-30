@@ -145,6 +145,9 @@ class OrbitalElements {
  private:
   OrbitalElements() = default;
 
+  // TODO(egg): This is not an orbital element, and it doesn't work for non-
+  // discrete trajectories.  It should move to the orbit analyser, at a place
+  // where we know that we have a discrete trajectory and we could use apsides.
   template<typename PrimaryCentred>
   static std::vector<Length> RadialDistances(
       Trajectory<PrimaryCentred> const& trajectory);

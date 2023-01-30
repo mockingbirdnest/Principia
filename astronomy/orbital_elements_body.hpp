@@ -240,7 +240,6 @@ template<typename PrimaryCentred>
 std::vector<Length> OrbitalElements::RadialDistances(
     Trajectory<PrimaryCentred> const& trajectory) {
   std::vector<Length> radial_distances;
-  //TODO(egg): C'est pas fini.
   auto const& discrete =
       dynamic_cast<physics::DiscreteTrajectory<PrimaryCentred> const&>(
           trajectory);
