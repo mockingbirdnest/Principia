@@ -269,8 +269,6 @@ absl::StatusOr<Time> OrbitalElements::SiderealPeriod(
     EquinoctialElementsComputation const& equinoctial_elements,
     Instant const& t_min,
     Instant const& t_max) {
-  static constexpr int points_per_period = 24;
-
   Time const Δt = t_max - t_min;
   Instant const t0 = t_min + Δt / 2;
   Product<Angle, Square<Time>> const ʃ_λt_dt = AutomaticClenshawCurtis(
@@ -303,6 +301,7 @@ OrbitalElements::MeanEquinoctialElements(
   // directly, we precompute the integrals from |t_min|.  The integral from
   // |t - period / 2| to |t + period / 2| is then computed by subtraction.
 
+  static constexpr int points_per_period = 24;
   using ODE =
       ExplicitFirstOrderOrdinaryDifferentialEquation<Instant,
                                                      Product<Length, Time>,
@@ -378,7 +377,7 @@ OrbitalElements::MeanEquinoctialElements(
   std::vector<EquinoctialElements> mean_elements;
   mean_elements.reserve(integrals.size());
   for (auto low_it = integrals.begin();
-       integrals.end() - low_it <= points_per_period;
+       integrals.end() - low_it > points_per_period;
        ++low_it) {
     RETURN_IF_STOPPED;
     auto const& low = *low_it;
