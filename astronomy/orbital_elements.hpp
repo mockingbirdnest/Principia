@@ -40,7 +40,7 @@ class OrbitalElements {
       Trajectory<PrimaryCentred> const& trajectory,
       MassiveBody const& primary,
       Body const& secondary,
-      bool sample_dense_elements = false);
+      bool fill_osculating_equinoctial_elements = false);
 
   // The classical Keplerian elements (a, e, i, Ω, ω, M),
   // together with an epoch.
@@ -149,19 +149,21 @@ class OrbitalElements {
   static std::vector<Length> RadialDistances(
       Trajectory<PrimaryCentred> const& trajectory);
 
+  // The functor EquinoctialElementsComputation must have the profile
+  // |EquinoctialElements(Instant const&)|.
+  template<typename EquinoctialElementsComputation>
   static absl::StatusOr<Time> SiderealPeriod(
-      std::function<EquinoctialElements(Instant const&)> const&
-          equinoctial_elements,
+      EquinoctialElementsComputation const& equinoctial_elements,
       Instant const& t_min,
       Instant const& t_max);
 
   // |osculating| must contain at least 2 elements.
   // The resulting elements are averaged over one period, centred on
   // their |EquinoctialElements::t|.
+  template<typename EquinoctialElementsComputation>
   static absl::StatusOr<std::vector<EquinoctialElements>>
   MeanEquinoctialElements(
-      std::function<EquinoctialElements(Instant const&)> const&
-          equinoctial_elements,
+      EquinoctialElementsComputation const& equinoctial_elements,
       Instant const& t_min,
       Instant const& t_max,
       Time const& period);
