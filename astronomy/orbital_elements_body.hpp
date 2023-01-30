@@ -372,6 +372,7 @@ OrbitalElements::MeanEquinoctialElements(
                        /*step=*/period / 24);
   RETURN_IF_ERROR(instance->Solve(t_max));
 
+  // TODO(egg): Find a nice way to do linear interpolation.
   auto const evaluate_integrals =
       [&integrals](Instant const& t) -> IntegratedEquinoctialElements {
     CHECK_LE(t, integrals.back().t);
