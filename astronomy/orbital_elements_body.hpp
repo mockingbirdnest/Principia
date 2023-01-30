@@ -15,8 +15,6 @@
 #include "physics/kepler_orbit.hpp"
 #include "quantities/elementary_functions.hpp"
 
-#include "mathematica/logger.hpp"
-
 namespace principia {
 namespace astronomy {
 namespace internal_orbital_elements {
