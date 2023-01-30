@@ -133,7 +133,7 @@ SolarSystem<ICRS>* OrbitalElementsBenchmark::solar_system_ = nullptr;
 Ephemeris<ICRS>* OrbitalElementsBenchmark::ephemeris_ = nullptr;
 OblateBody<ICRS> const* OrbitalElementsBenchmark::earth_ = nullptr;
 
-BENCHMARK_F(OrbitalElementsBenchmark, ComputeOrbitalElements)(
+BENCHMARK_F(OrbitalElementsBenchmark, ComputeOrbitalElementsEquatorial)(
     benchmark::State& state) {
   Time const mission_duration = 180 * Day;
   Instant const final_time = J2000 + mission_duration;
@@ -143,6 +143,27 @@ BENCHMARK_F(OrbitalElementsBenchmark, ComputeOrbitalElements)(
   initial_osculating.semimajor_axis = 7000 * Kilo(Metre);
   initial_osculating.eccentricity = 1e-6;
   initial_osculating.inclination = 10 * Milli(ArcSecond);
+  initial_osculating.longitude_of_ascending_node = 10 * Degree;
+  initial_osculating.argument_of_periapsis = 20 * Degree;
+  initial_osculating.mean_anomaly = 30 * Degree;
+  auto const trajectory =
+      EarthCentredTrajectory(initial_osculating, J2000, final_time);
+  for (auto _ : state) {
+    benchmark::DoNotOptimize(
+        OrbitalElements::ForTrajectory(*trajectory, *earth_, MasslessBody{}));
+  }
+}
+
+BENCHMARK_F(OrbitalElementsBenchmark, ComputeOrbitalElementsInclined)(
+    benchmark::State& state) {
+  Time const mission_duration = 180 * Day;
+  Instant const final_time = J2000 + mission_duration;
+  CHECK_OK(ephemeris_->Prolong(final_time));
+
+  KeplerianElements<GCRS> initial_osculating;
+  initial_osculating.semimajor_axis = 7000 * Kilo(Metre);
+  initial_osculating.eccentricity = 1e-6;
+  initial_osculating.inclination = 60 * Degree;
   initial_osculating.longitude_of_ascending_node = 10 * Degree;
   initial_osculating.argument_of_periapsis = 20 * Degree;
   initial_osculating.mean_anomaly = 30 * Degree;
