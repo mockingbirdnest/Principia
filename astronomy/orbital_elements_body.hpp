@@ -23,9 +23,9 @@ using base::this_stoppable_thread;
 using geometry::Velocity;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::EmbeddedExplicitRungeKuttaIntegrator;
+using integrators::ExplicitFirstOrderOrdinaryDifferentialEquation;
 using integrators::ExplicitLinearMultistepIntegrator;
 using integrators::ExplicitRungeKuttaIntegrator;
-using integrators::ExplicitFirstOrderOrdinaryDifferentialEquation;
 using integrators::InitialValueProblem;
 using integrators::methods::AdamsBashforthOrder4;
 using integrators::methods::AdamsBashforthOrder5;
@@ -65,7 +65,7 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
 
   orbital_elements.radial_distances_ = RadialDistances(trajectory);
 
-  auto osculating_elements =
+  auto const osculating_elements =
       [&primary, &secondary, &trajectory](
           Instant const& time) -> KeplerianElements<PrimaryCentred> {
     DegreesOfFreedom<PrimaryCentred> const primary_dof{
@@ -77,7 +77,7 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
         .elements_at_epoch();
   };
 
-  auto wound_osculating_λ =
+  auto const wound_osculating_λ =
       [&osculating_elements](Instant const& time) -> Angle {
     auto const elements = osculating_elements(time);
     Angle const& ϖ = *elements.longitude_of_periapsis;
@@ -103,7 +103,7 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
                                             : UnwindFrom(unwound_λs.back(), λ));
   }
 
-  auto osculating_equinoctial_elements =
+  auto const osculating_equinoctial_elements =
       [&osculating_elements,
        t_min = trajectory.t_min(),
        third_of_estimated_period,
@@ -309,7 +309,7 @@ OrbitalElements::MeanEquinoctialElements(
                                                      Time,
                                                      Time,
                                                      Time>;
-  InitialValueProblem<ODE> problem{
+  InitialValueProblem<ODE> const problem{
       .equation =
           {
               .compute_derivative =
