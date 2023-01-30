@@ -269,6 +269,8 @@ absl::StatusOr<Time> OrbitalElements::SiderealPeriod(
     EquinoctialElementsComputation const& equinoctial_elements,
     Instant const& t_min,
     Instant const& t_max) {
+  static constexpr int points_per_period = 24;
+
   Time const Δt = t_max - t_min;
   Instant const t0 = t_min + Δt / 2;
   Product<Angle, Square<Time>> const ʃ_λt_dt = AutomaticClenshawCurtis(
@@ -369,52 +371,18 @@ OrbitalElements::MeanEquinoctialElements(
       ExplicitLinearMultistepIntegrator<AdamsBashforthOrder6, ODE>()
           .NewInstance(problem,
                        append_state,
-                       /*step=*/period / 24);
+                       /*step=*/period / points_per_period);
   RETURN_IF_ERROR(instance->Solve(t_max));
-
-  // TODO(egg): Find a nice way to do linear interpolation.
-  auto const evaluate_integrals =
-      [&integrals](Instant const& t) -> IntegratedEquinoctialElements {
-    CHECK_LE(t, integrals.back().t);
-    auto it = std::partition_point(
-        integrals.begin(),
-        integrals.end(),
-        [&t](IntegratedEquinoctialElements const& elements) {
-          return elements.t < t;
-        });
-    CHECK(it != integrals.end());
-    IntegratedEquinoctialElements const& high = *it;
-    if (it == integrals.begin()) {
-      return high;
-    } else {
-      IntegratedEquinoctialElements const& low = *--it;
-      double const α = (t - low.t) / (high.t - low.t);
-      auto const interpolate = [α, &low, &high](auto const element) {
-        return low.*element + α * (high.*element - low.*element);
-      };
-      return {.t = t,
-              .ʃ_a_dt = interpolate(&IntegratedEquinoctialElements::ʃ_a_dt),
-              .ʃ_h_dt = interpolate(&IntegratedEquinoctialElements::ʃ_h_dt),
-              .ʃ_k_dt = interpolate(&IntegratedEquinoctialElements::ʃ_k_dt),
-              .ʃ_λ_dt = interpolate(&IntegratedEquinoctialElements::ʃ_λ_dt),
-              .ʃ_p_dt = interpolate(&IntegratedEquinoctialElements::ʃ_p_dt),
-              .ʃ_q_dt = interpolate(&IntegratedEquinoctialElements::ʃ_q_dt),
-              .ʃ_pʹ_dt = interpolate(&IntegratedEquinoctialElements::ʃ_pʹ_dt),
-              .ʃ_qʹ_dt = interpolate(&IntegratedEquinoctialElements::ʃ_qʹ_dt)};
-    }
-  };
 
   // Now compute the averages.
   std::vector<EquinoctialElements> mean_elements;
   mean_elements.reserve(integrals.size());
-  int j = 0;
-  int y = 0;
-  for (auto const& low : integrals) {
+  for (auto low_it = integrals.begin();
+       integrals.end() - low_it <= points_per_period;
+       ++low_it) {
     RETURN_IF_STOPPED;
-    if (low.t + period > integrals.back().t) {
-      break;
-    }
-    auto const high = evaluate_integrals(low.t + period);
+    auto const& low = *low_it;
+    auto const& high = *(low_it + points_per_period);
     mean_elements.emplace_back();
     mean_elements.back().t = low.t + period / 2;
     mean_elements.back().a = (high.ʃ_a_dt - low.ʃ_a_dt) / period;
@@ -482,16 +450,14 @@ inline absl::Status OrbitalElements::ComputePeriodsAndPrecession() {
   //   12 ∫ э(t) (t - t̄) dt / Δt³.
   // We first compute ∫ э(t) (t - t̄) dt for the three elements of interest.
 
-  int z = 0;
   auto const interpolate_function_of_mean_classical_element =
-      [this, &z](auto const f, Instant const& t) {
+      [this](auto const f, Instant const& t) {
         CHECK_LE(t, mean_classical_elements_.back().time);
         auto it = std::partition_point(mean_classical_elements_.begin(),
                                        mean_classical_elements_.end(),
                                        [&t](ClassicalElements const& elements) {
                                          return elements.time < t;
                                        });
-        ++z;
         ClassicalElements const& high = *it;
         if (it == mean_classical_elements_.begin()) {
           return f(high);
@@ -516,7 +482,6 @@ inline absl::Status OrbitalElements::ComputePeriodsAndPrecession() {
       mean_classical_elements_.back().time,
       /*max_relative_error=*/1e-6,
       /*max_points=*/mean_classical_elements_.size());
-  LOG(ERROR) << z << " for M";z=0;
   Product<Angle, Square<Time>> const ʃ_ut_dt = AutomaticClenshawCurtis(
       [&interpolate_function_of_mean_classical_element, &t̄](Instant const& t) {
         return interpolate_function_of_mean_classical_element(
@@ -530,7 +495,6 @@ inline absl::Status OrbitalElements::ComputePeriodsAndPrecession() {
       mean_classical_elements_.back().time,
       /*max_relative_error=*/1e-6,
       /*max_points=*/mean_classical_elements_.size());
-  LOG(ERROR) << z << " for u";z = 0;
   Product<Angle, Square<Time>> const ʃ_Ωt_dt = AutomaticClenshawCurtis(
       [&interpolate_function_of_mean_classical_element, &t̄](Instant const& t) {
         return interpolate_function_of_mean_classical_element(
@@ -543,7 +507,6 @@ inline absl::Status OrbitalElements::ComputePeriodsAndPrecession() {
       mean_classical_elements_.back().time,
       /*max_relative_error=*/1e-6,
       /*max_points=*/mean_classical_elements_.size());
-  LOG(ERROR) << z << " for Ω";
 
   // The periods are 2π over the mean rate of the relevant element; the nodal
   // precession is the mean rate of Ω.
