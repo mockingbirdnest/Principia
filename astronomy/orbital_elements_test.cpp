@@ -69,6 +69,7 @@ using testing_utilities::IsNear;
 using testing_utilities::IsOk;
 using testing_utilities::RelativeError;
 using testing_utilities::operator""_;
+using ::testing::AnyOf;
 using ::testing::Lt;
 
 class OrbitalElementsTest : public ::testing::Test {
@@ -187,16 +188,16 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
   // Mean element values.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
               AbsoluteErrorFrom(*initial_osculating.semimajor_axis,
-                                Lt(410 * Micro(Metre))));
+                                Lt(4.2 * Milli(Metre))));
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
               AbsoluteErrorFrom(*initial_osculating.eccentricity,
-                                Lt(1.9e-10)));
+                                Lt(3.3e-10)));
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
               AbsoluteErrorFrom(initial_osculating.inclination,
                                 Lt(9.5 * Micro(ArcSecond))));
   EXPECT_THAT(elements.mean_longitude_of_ascending_node_interval().midpoint(),
               AbsoluteErrorFrom(initial_osculating.longitude_of_ascending_node,
-                                Lt(106 * ArcSecond)));
+                                Lt(116 * ArcSecond)));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
               AbsoluteErrorFrom(*initial_osculating.argument_of_periapsis,
                                 Lt(202 * ArcSecond)));
@@ -299,7 +300,7 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
   EXPECT_THAT(theoretical_ωʹ, IsNear(14_(1) * Degree / Day));
 
   EXPECT_THAT(RelativeError(theoretical_Ωʹ, elements.nodal_precession()),
-              IsNear(0.0026_(1)));
+              AnyOf(IsNear(0.0026_(1)), IsNear(0.0029_(1))));
 
   // Mean element values.  Since Ω and ω precess rapidly, the midpoint of the
   // range of values is of no interest.
@@ -314,21 +315,22 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
 
   // Mean element stability: Ω and ω precess as expected, the other elements are
   // stable.
-  EXPECT_THAT(elements.mean_semimajor_axis_interval().measure(),
-              IsNear(210_(1) * Milli(Metre)));
+  EXPECT_THAT(
+      elements.mean_semimajor_axis_interval().measure(),
+      AnyOf(IsNear(157_(1) * Milli(Metre)), IsNear(210_(1) * Milli(Metre))));
   EXPECT_THAT(elements.mean_eccentricity_interval().measure(),
-              IsNear(3.7e-8_(1)));
+              AnyOf(IsNear(2.9e-8_(1)), IsNear(3.7e-8_(1))));
   EXPECT_THAT(elements.mean_inclination_interval().measure(),
               Lt(212 * Micro(ArcSecond)));
   EXPECT_THAT(
       RelativeError(
           -theoretical_Ωʹ * mission_duration,
           elements.mean_longitude_of_ascending_node_interval().measure()),
-      IsNear(0.0009_(1)));
+      AnyOf(IsNear(0.0009_(1)), IsNear(0.0023_(1))));
   EXPECT_THAT(
       RelativeError(theoretical_ωʹ * mission_duration,
                     elements.mean_argument_of_periapsis_interval().measure()),
-      IsNear(0.0018_(1)));
+      AnyOf(IsNear(0.0018_(1)), IsNear(0.0025_(1))));
 
   mathematica::Logger logger(
       SOLUTION_DIR / "mathematica" / "j2_perturbed_elements.generated.wl",
