@@ -48,6 +48,9 @@ using quantities::Tan;
 using quantities::UnwindFrom;
 using quantities::si::Radian;
 
+constexpr double max_clenshaw_curtis_relative_error = 1.0e-6;
+constexpr int max_clenshaw_curtis_points = 2000;
+
 template<typename PrimaryCentred>
 absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
     Trajectory<PrimaryCentred> const& trajectory,
@@ -276,8 +279,8 @@ absl::StatusOr<Time> OrbitalElements::SiderealPeriod(
       },
       t_min,
       t_max,
-      /*max_relative_error=*/1e-6,
-      /*max_points=*/std::nullopt);
+      max_clenshaw_curtis_relative_error,
+      max_clenshaw_curtis_points);
   return 2 * π * Radian * Pow<3>(Δt) / (12 * ʃ_λt_dt);
 }
 
@@ -476,7 +479,7 @@ inline absl::Status OrbitalElements::ComputePeriodsAndPrecession() {
       },
       mean_classical_elements_.front().time,
       mean_classical_elements_.back().time,
-      /*max_relative_error=*/1e-6,
+      max_clenshaw_curtis_relative_error,
       /*max_points=*/mean_classical_elements_.size());
   Product<Angle, Square<Time>> const ʃ_ut_dt = AutomaticClenshawCurtis(
       [&interpolate_function_of_mean_classical_element, &t̄](Instant const& t) {
@@ -489,7 +492,7 @@ inline absl::Status OrbitalElements::ComputePeriodsAndPrecession() {
       },
       mean_classical_elements_.front().time,
       mean_classical_elements_.back().time,
-      /*max_relative_error=*/1e-6,
+      max_clenshaw_curtis_relative_error,
       /*max_points=*/mean_classical_elements_.size());
   Product<Angle, Square<Time>> const ʃ_Ωt_dt = AutomaticClenshawCurtis(
       [&interpolate_function_of_mean_classical_element, &t̄](Instant const& t) {
@@ -501,7 +504,7 @@ inline absl::Status OrbitalElements::ComputePeriodsAndPrecession() {
       },
       mean_classical_elements_.front().time,
       mean_classical_elements_.back().time,
-      /*max_relative_error=*/1e-6,
+      max_clenshaw_curtis_relative_error,
       /*max_points=*/mean_classical_elements_.size());
 
   // The periods are 2π over the mean rate of the relevant element; the nodal
