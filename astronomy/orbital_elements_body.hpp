@@ -311,7 +311,7 @@ OrbitalElements::MeanEquinoctialElements(
                                                      Time>;
   InitialValueProblem<ODE> const problem{
       .equation =
-          {
+          {  // NOLINT
               .compute_derivative =
                   [&equinoctial_elements](
                       Instant const& t,
