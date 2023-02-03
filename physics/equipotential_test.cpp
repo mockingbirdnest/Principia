@@ -324,9 +324,9 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
                              /*make_unique=*/false);
   std::int64_t const number_of_days = 502;
   auto const earth = solar_system_->massive_body(
-      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
+      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Jupiter));
   auto const moon = solar_system_->massive_body(
-      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Moon));
+      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Europa));
   auto const dynamic_frame(
       BarycentricRotatingDynamicFrame<Barycentric, World>(
           ephemeris_.get(), moon, earth));
@@ -512,8 +512,11 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
               Ephemeris<Barycentric>::NewtonianMotionEquation>(),
           /*step=*/10 * Second));
 
+  
+  LOG(ERROR) << "Flowing trajectories";
   CHECK_OK(
       ephemeris_->FlowWithFixedStep(t0_ + number_of_days * Day, *instance));
+  LOG(ERROR) << "Flowed";
 
   Instant t = t0_;
   auto const potential = [&](Position<World> const& position) {
