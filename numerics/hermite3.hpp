@@ -22,6 +22,7 @@ using geometry::Hilbert;
 // TODO(phl): Invert the two template arguments for consistency with Derivative.
 template<typename Argument, typename Value>
 class Hermite3 final {
+  using NormType = typename Hilbert<Difference<Value>>::NormType;
  public:
   using Derivative1 = Derivative<Value, Argument>;
 
@@ -43,12 +44,23 @@ class Hermite3 final {
   // Returns the largest error (in the given |norm|) between this polynomial and
   // the given |samples|.
   template<typename Samples>
-  typename Hilbert<Difference<Value>>::NormType LInfinityError(
+  NormType LInfinityError(
       Samples const& samples,
       std::function<Argument const&(typename Samples::value_type const&)> const&
           get_argument,
       std::function<Value const&(typename Samples::value_type const&)> const&
           get_value) const;
+
+  // Returns true if the |LInfinityError| is less than |tolerance|.  More
+  // efficient than the above function in the case where it returns false.
+  template<typename Samples>
+  bool LInfinityErrorIsWithin(
+      Samples const& samples,
+      std::function<Argument const&(typename Samples::value_type const&)> const&
+          get_argument,
+      std::function<Value const&(typename Samples::value_type const&)> const&
+          get_value,
+      NormType const& tolerance) const;
 
  private:
   using Derivative2 = Derivative<Derivative1, Argument>;
