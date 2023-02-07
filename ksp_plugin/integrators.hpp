@@ -46,6 +46,7 @@ using internal_integrators::DefaultEphemerisFixedStepParameters;
 using internal_integrators::DefaultHistoryParameters;
 using internal_integrators::DefaultPredictionParameters;
 using internal_integrators::DefaultPsychohistoryParameters;
+using internal_integrators::OrbitAnalyserDownsamplingParameters;
 
 }  // namespace ksp_plugin
 }  // namespace principia
