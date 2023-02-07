@@ -36,11 +36,11 @@ absl::StatusOr<std::list<typename Samples::const_iterator>> FitHermiteSpline(
                 Range(begin, last + 1), get_argument, get_value, tolerance);
       };
 
-  std::list<Iterator> tail;
+  std::list<Iterator> fit;
   if (samples.size() < 3) {
     // With 0 or 1 points there is nothing to interpolate, with 2 we cannot
     // estimate the error.
-    return tail;
+    return fit;
   }
 
   Iterator begin = samples.begin();
@@ -76,7 +76,7 @@ absl::StatusOr<std::list<typename Samples::const_iterator>> FitHermiteSpline(
         upper = middle;
       }
     }
-    tail.push_back(lower);
+    fit.push_back(lower);
 
     begin = lower;
   }
@@ -85,9 +85,9 @@ absl::StatusOr<std::list<typename Samples::const_iterator>> FitHermiteSpline(
   // point, except at the end where we give up because we don't have enough
   // points left.
 #if PRINCIPIA_MUST_ALWAYS_DOWNSAMPLE
-  CHECK_LT(tail.size(), samples.size() - 2);
+  CHECK_LT(fit.size(), samples.size() - 2);
 #endif
-  return tail;
+  return fit;
 }
 
 }  // namespace internal_fit_hermite_spline

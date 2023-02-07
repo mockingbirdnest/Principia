@@ -23,6 +23,7 @@ using geometry::Hilbert;
 template<typename Argument, typename Value>
 class Hermite3 final {
   using NormType = typename Hilbert<Difference<Value>>::NormType;
+
  public:
   using Derivative1 = Derivative<Value, Argument>;
 
