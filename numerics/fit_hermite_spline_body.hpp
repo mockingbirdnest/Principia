@@ -25,26 +25,28 @@ absl::StatusOr<std::list<typename Samples::const_iterator>> FitHermiteSpline(
     typename Hilbert<Difference<Value>>::NormType const& tolerance) {
   using Iterator = typename Samples::const_iterator;
 
-  auto interpolation_error = [get_argument, get_derivative, get_value](
-                                 Iterator begin, Iterator last) {
-    return Hermite3<Argument, Value>(
-               {get_argument(*begin), get_argument(*last)},
-               {get_value(*begin), get_value(*last)},
-               {get_derivative(*begin), get_derivative(*last)})
-        .LInfinityError(Range(begin, last + 1), get_argument, get_value);
-  };
+  auto interpolation_error_is_within_tolerance =
+      [get_argument, get_derivative, get_value, tolerance](
+          Iterator const begin, Iterator const last) {
+        return Hermite3<Argument, Value>(
+                   {get_argument(*begin), get_argument(*last)},
+                   {get_value(*begin), get_value(*last)},
+                   {get_derivative(*begin), get_derivative(*last)})
+            .LInfinityErrorIsWithin(
+                Range(begin, last + 1), get_argument, get_value, tolerance);
+      };
 
-  std::list<Iterator> tail;
+  std::list<Iterator> fit;
   if (samples.size() < 3) {
     // With 0 or 1 points there is nothing to interpolate, with 2 we cannot
     // estimate the error.
-    return tail;
+    return fit;
   }
 
   Iterator begin = samples.begin();
   Iterator const last = samples.end() - 1;
   while (last - begin + 1 >= 3 &&
-         interpolation_error(begin, last) >= tolerance) {
+         !interpolation_error_is_within_tolerance(begin, last)) {
     // Look for a cubic that fits the beginning within |tolerance| and
     // such the cubic fitting one more sample would not fit the samples within
     // |tolerance|.
@@ -68,13 +70,13 @@ absl::StatusOr<std::list<typename Samples::const_iterator>> FitHermiteSpline(
       if (middle == lower) {
         break;
       }
-      if (interpolation_error(begin, middle) < tolerance) {
+      if (interpolation_error_is_within_tolerance(begin, middle)) {
         lower = middle;
       } else {
         upper = middle;
       }
     }
-    tail.push_back(lower);
+    fit.push_back(lower);
 
     begin = lower;
   }
@@ -83,9 +85,9 @@ absl::StatusOr<std::list<typename Samples::const_iterator>> FitHermiteSpline(
   // point, except at the end where we give up because we don't have enough
   // points left.
 #if PRINCIPIA_MUST_ALWAYS_DOWNSAMPLE
-  CHECK_LT(tail.size(), samples.size() - 2);
+  CHECK_LT(fit.size(), samples.size() - 2);
 #endif
-  return tail;
+  return fit;
 }
 
 }  // namespace internal_fit_hermite_spline
