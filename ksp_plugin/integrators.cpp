@@ -33,6 +33,14 @@ DefaultDownsamplingParameters() {
   };
 }
 
+DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters
+OrbitAnalyserDownsamplingParameters() {
+  return DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters{
+      .max_dense_intervals = 10'000,
+      .tolerance = 1 * Metre,
+  };
+}
+
 Ephemeris<Barycentric>::AccuracyParameters
 DefaultEphemerisAccuracyParameters() {
   return Ephemeris<Barycentric>::AccuracyParameters(

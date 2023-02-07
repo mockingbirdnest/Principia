@@ -88,7 +88,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
       MercuryOrbiterInitialTime, MercuryOrbiterInitialDegreesOfFreedom<ICRS>));
   auto& icrs_segment = icrs_trajectory.segments().front();
   icrs_segment.SetDownsampling({.max_dense_intervals = 10'000,
-                                .tolerance = 10 * Metre});
+                                .tolerance = 1 * Metre});
   auto const instance =
       ephemeris_->NewInstance({&icrs_trajectory},
                               Ephemeris<ICRS>::NoIntrinsicAccelerations,
@@ -159,9 +159,9 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
   // is excellent: while the sun is nudging and deforming the orbit, it is not
   // pumping energy into nor out of it.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().min,
-              IsNear(14'906.7_(1) * Kilo(Metre)));
+              IsNear(14'910.0_(1) * Kilo(Metre)));
   EXPECT_THAT(elements.mean_semimajor_axis_interval().max,
-              IsNear(14'913.5_(1) * Kilo(Metre)));
+              IsNear(14'910.3_(1) * Kilo(Metre)));
 
   // The integral c₁ is preserved quite well: we have an exchange between
   // inclination and eccentricity.
