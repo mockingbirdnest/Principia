@@ -426,8 +426,7 @@ OrbitalElements::MeanEquinoctialElements(
   // Now compute the averages.
   std::vector<EquinoctialElements> mean_elements;
   mean_elements.reserve(integrals.size());
-  for (auto low_it = integrals.begin();
-       integrals.end() - low_it > points_per_period;
+  for (auto low_it = integrals.begin();;
        ++low_it) {
     RETURN_IF_STOPPED;
     auto const& low = *low_it;
