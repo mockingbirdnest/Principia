@@ -301,7 +301,7 @@ OrbitalElements::MeanEquinoctialElements(
   // directly, we precompute the integrals from |t_min|.  The integral from
   // |t - period / 2| to |t + period / 2| is then computed by subtraction.
 
-  static constexpr int points_per_period = 24;
+  static constexpr int points_per_period = 113;
   using ODE =
       ExplicitFirstOrderOrdinaryDifferentialEquation<Instant,
                                                      Product<Length, Time>,
@@ -312,14 +312,16 @@ OrbitalElements::MeanEquinoctialElements(
                                                      Time,
                                                      Time,
                                                      Time>;
+  int evaluations;
   InitialValueProblem<ODE> const problem{
       .equation =
           {  // NOLINT
               .compute_derivative =
-                  [&equinoctial_elements](
+                  [&equinoctial_elements, &evaluations](
                       Instant const& t,
                       ODE::DependentVariables const& y,
                       ODE::DependentVariableDerivatives& yʹ) {
+                    ++evaluations;
                     auto const [_, a, h, k, λ, p, q, pʹ, qʹ] =
                         equinoctial_elements(t);
                     yʹ = {a, h, k, λ, p, q, pʹ, qʹ};
@@ -365,13 +367,61 @@ OrbitalElements::MeanEquinoctialElements(
                                       .ʃ_qʹ_dt = ʃ_qʹ_dt.value});
   };
 
+  auto const tolerance_to_error_ratio =
+      [period, t_min, t_max](Time const& step,
+                             ODE::State const& state,
+                             ODE::State::Error const& error) -> double {
+    auto const& [TΔa, TΔh, TΔk, TΔλ, TΔp, TΔq, TΔpʹ, TΔqʹ] = error;
+    return 1 * quantities::si::Metre / (quantities::Abs(TΔa) / period);
+  };
+
   append_state(problem.initial_state);
   auto const instance =
-      ExplicitLinearMultistepIntegrator<AdamsBashforthOrder6, ODE>()
+      EmbeddedExplicitRungeKuttaIntegrator<integrators::methods::HeunEuler,
+                                           ODE>()
           .NewInstance(problem,
                        append_state,
-                       /*step=*/period / points_per_period);
-  RETURN_IF_ERROR(instance->Solve(t_max));
+                       tolerance_to_error_ratio,
+                       AdaptiveStepSizeIntegrator<ODE>::Parameters(
+                           /*first_step=*/t_max - t_min,
+                           /*safety_factor=*/0.9));
+  evaluations = 0;
+  RETURN_IF_ERROR(instance->Solve(t_max)); /*
+  LOG(ERROR) << evaluations << " evaluations by integrator";
+  LOG(ERROR) << (t_max - t_min) / period << " periods";
+  LOG(ERROR) << evaluations / ((t_max - t_min) / period) << " epp";*/
+
+    // TODO(egg): Find a nice way to do linear interpolation.
+  auto const evaluate_integrals =
+      [&integrals](Instant const& t) -> IntegratedEquinoctialElements {
+    CHECK_LE(t, integrals.back().t);
+    auto it = std::partition_point(
+        integrals.begin(),
+        integrals.end(),
+        [&t](IntegratedEquinoctialElements const& elements) {
+          return elements.t < t;
+        });
+    CHECK(it != integrals.end());
+    IntegratedEquinoctialElements const& high = *it;
+    if (it == integrals.begin()) {
+      return high;
+    } else {
+      IntegratedEquinoctialElements const& low = *--it;
+      double const α = (t - low.t) / (high.t - low.t);
+      auto const interpolate = [α, &low, &high](auto const element) {
+        return low.*element + α * (high.*element - low.*element);
+      };
+      return {.t = t,
+              .ʃ_a_dt = interpolate(&IntegratedEquinoctialElements::ʃ_a_dt),
+              .ʃ_h_dt = interpolate(&IntegratedEquinoctialElements::ʃ_h_dt),
+              .ʃ_k_dt = interpolate(&IntegratedEquinoctialElements::ʃ_k_dt),
+              .ʃ_λ_dt = interpolate(&IntegratedEquinoctialElements::ʃ_λ_dt),
+              .ʃ_p_dt = interpolate(&IntegratedEquinoctialElements::ʃ_p_dt),
+              .ʃ_q_dt = interpolate(&IntegratedEquinoctialElements::ʃ_q_dt),
+              .ʃ_pʹ_dt = interpolate(&IntegratedEquinoctialElements::ʃ_pʹ_dt),
+              .ʃ_qʹ_dt = interpolate(&IntegratedEquinoctialElements::ʃ_qʹ_dt)};
+    }
+  };
 
   // Now compute the averages.
   std::vector<EquinoctialElements> mean_elements;
@@ -381,7 +431,10 @@ OrbitalElements::MeanEquinoctialElements(
        ++low_it) {
     RETURN_IF_STOPPED;
     auto const& low = *low_it;
-    auto const& high = *(low_it + points_per_period);
+    if (low.t + period > integrals.back().t) {
+      break;
+    }
+    auto const high = evaluate_integrals(low.t + period);
     mean_elements.emplace_back();
     mean_elements.back().t = low.t + period / 2;
     mean_elements.back().a = (high.ʃ_a_dt - low.ʃ_a_dt) / period;

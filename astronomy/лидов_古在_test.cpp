@@ -121,7 +121,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
         mercury_centred_trajectory.back().degrees_of_freedom.position(),
         mathematica::ExpressIn(Metre));
   }
-
+  LOG(ERROR) << mercury_centred_trajectory.size() << " points in trajectory";
   OrbitalElements const elements = OrbitalElements::ForTrajectory(
       mercury_centred_trajectory, mercury_, MasslessBody{}).value();
   // The constants c₁ and c₂ are defined in [Лид61], equations (58) and (59)
