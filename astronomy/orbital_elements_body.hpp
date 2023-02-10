@@ -8,7 +8,6 @@
 #include "absl/strings/str_cat.h"
 #include "base/jthread.hpp"
 #include "base/status_utilities.hpp"
-#include "mathematica/logger.hpp"
 #include "numerics/quadrature.hpp"
 #include "integrators/explicit_runge_kutta_integrator.hpp"
 #include "integrators/methods.hpp"
@@ -47,10 +46,14 @@ using quantities::Sqrt;
 using quantities::Square;
 using quantities::Tan;
 using quantities::UnwindFrom;
+using quantities::si::Metre;
+using quantities::si::Milli;
 using quantities::si::Radian;
 
 constexpr double max_clenshaw_curtis_relative_error = 1.0e-6;
 constexpr int max_clenshaw_curtis_points = 2000;
+// Carefully tuned based on MercuryOrbiter test.
+constexpr Length eerk_tolerance = 1 * Milli(Metre);
 
 template<typename PrimaryCentred>
 absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
@@ -368,63 +371,29 @@ OrbitalElements::MeanEquinoctialElements(
                                       .ʃ_qʹ_dt = ʃ_qʹ_dt.value});
   };
 
-  Length tolerance = 10 * quantities::si::Metre;
   auto const tolerance_to_error_ratio =
-      [period, t_min, t_max, &tolerance](
+      [period, t_min, t_max](
           Time const& step,
           ODE::State const& state,
           ODE::State::Error const& error) -> double {
     auto const& [TΔa, TΔh, TΔk, TΔλ, TΔp, TΔq, TΔpʹ, TΔqʹ] = error;
-    return tolerance / (quantities::Abs(TΔa) / period);
+    return eerk_tolerance / (quantities::Abs(TΔa) / period);
   };
 
-  mathematica::Logger logger(TEMP_DIR / "orbital_elements_dp.wl");
+  append_state(problem.initial_state);
+  auto const instance =
+      EmbeddedExplicitRungeKuttaIntegrator<
+          integrators::methods::DormandPrince1986RK547FC,
+          ODE>()
+          .NewInstance(problem,
+                       append_state,
+                       tolerance_to_error_ratio,
+                       AdaptiveStepSizeIntegrator<ODE>::Parameters(
+                           /*first_step=*/t_max - t_min,
+                           /*safety_factor=*/0.9));
+  RETURN_IF_ERROR(instance->Solve(t_max));
 
-  for (int i = 0; i < 20; ++i) {
-    LOG(ERROR) << "i = " << i;
-    integrals.clear();
-    evaluations = 0;
-    append_state(problem.initial_state);
-    auto const instance =
-        EmbeddedExplicitRungeKuttaIntegrator<
-            integrators::methods::DormandPrince1986RK547FC,
-            ODE>()
-            .NewInstance(problem,
-                         append_state,
-                         tolerance_to_error_ratio,
-                         AdaptiveStepSizeIntegrator<ODE>::Parameters(
-                             /*first_step=*/t_max - t_min,
-                             /*safety_factor=*/0.9));
-    RETURN_IF_ERROR(instance->Solve(t_min + period));
-
-    for (auto const& v : integrals) {
-      //if (v.t <= t_min + period) {
-        logger.Append(absl::StrCat("first[", i, "]"),
-                      std::tuple(v.t,
-                                 v.ʃ_a_dt,
-                                 v.ʃ_h_dt,
-                                 v.ʃ_k_dt,
-                                 v.ʃ_λ_dt,
-                                 v.ʃ_p_dt,
-                                 v.ʃ_q_dt,
-                                 v.ʃ_pʹ_dt,
-                                 v.ʃ_qʹ_dt),
-                      mathematica::ExpressInSIUnits);
-      //}
-    }
-    logger.Set(absl::StrCat("evaluations[", i, "]"),
-               evaluations,
-               mathematica::ExpressInSIUnits);
-
-    tolerance /= Sqrt(2);
-  }
-  logger.Flush();
-  LOG(FATAL) << "done";
-  //LOG(ERROR) << evaluations << " evaluations by integrator";
-  //LOG(ERROR) << (t_max - t_min) / period << " periods";
-  //LOG(ERROR) << evaluations / ((t_max - t_min) / period) << " epp";
-
-    // TODO(egg): Find a nice way to do linear interpolation.
+  // TODO(egg): Find a nice way to do linear interpolation.
   auto const evaluate_integrals =
       [&integrals](Instant const& t) -> IntegratedEquinoctialElements {
     CHECK_LE(t, integrals.back().t);
