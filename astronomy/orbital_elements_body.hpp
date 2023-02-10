@@ -380,7 +380,7 @@ OrbitalElements::MeanEquinoctialElements(
 
   mathematica::Logger logger(TEMP_DIR / "orbital_elements_dp.wl");
 
-  for (int i = 0; i < 8; ++i) {
+  for (int i = 0; i < 20; ++i) {
     LOG(ERROR) << "i = " << i;
     integrals.clear();
     evaluations = 0;
@@ -395,10 +395,10 @@ OrbitalElements::MeanEquinoctialElements(
                          AdaptiveStepSizeIntegrator<ODE>::Parameters(
                              /*first_step=*/t_max - t_min,
                              /*safety_factor=*/0.9));
-    RETURN_IF_ERROR(instance->Solve(t_max));
+    RETURN_IF_ERROR(instance->Solve(t_min + period));
 
     for (auto const& v : integrals) {
-      if (v.t <= t_min + period) {
+      //if (v.t <= t_min + period) {
         logger.Append(absl::StrCat("first[", i, "]"),
                       std::tuple(v.t,
                                  v.ʃ_a_dt,
@@ -410,14 +410,16 @@ OrbitalElements::MeanEquinoctialElements(
                                  v.ʃ_pʹ_dt,
                                  v.ʃ_qʹ_dt),
                       mathematica::ExpressInSIUnits);
-      }
+      //}
     }
     logger.Set(absl::StrCat("evaluations[", i, "]"),
                evaluations,
                mathematica::ExpressInSIUnits);
 
-    tolerance /= 2;
+    tolerance /= Sqrt(2);
   }
+  logger.Flush();
+  LOG(FATAL) << "done";
   //LOG(ERROR) << evaluations << " evaluations by integrator";
   //LOG(ERROR) << (t_max - t_min) / period << " periods";
   //LOG(ERROR) << evaluations / ((t_max - t_min) / period) << " epp";

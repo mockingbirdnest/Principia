@@ -88,7 +88,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
       MercuryOrbiterInitialTime, MercuryOrbiterInitialDegreesOfFreedom<ICRS>));
   auto& icrs_segment = icrs_trajectory.segments().front();
   icrs_segment.SetDownsampling({.max_dense_intervals = 10'000,
-                                .tolerance = 0.1 * Metre});
+                                .tolerance = 10 * Metre});
   auto const instance =
       ephemeris_->NewInstance({&icrs_trajectory},
                               Ephemeris<ICRS>::NoIntrinsicAccelerations,
@@ -107,20 +107,22 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
       break;
     }
   }
-  mathematica::Logger logger(
-      SOLUTION_DIR / "mathematica" /
-          PRINCIPIA_UNICODE_PATH("лидов_古在.generated.wl"),
-      /*make_unique=*/false);
+  mathematica::Logger logger(TEMP_DIR / "times.wl ");
 
   DiscreteTrajectory<MercuryCentredInertial> mercury_centred_trajectory;
   for (auto const& [t, dof] : icrs_trajectory) {
     EXPECT_OK(mercury_centred_trajectory.Append(
         t, mercury_frame_.ToThisFrameAtTime(t)(dof)));
+    //logger.Append(
+    //    "q",
+    //    mercury_centred_trajectory.back().degrees_of_freedom.position(),
+    //    mathematica::ExpressIn(Metre));
     logger.Append(
-        "q",
-        mercury_centred_trajectory.back().degrees_of_freedom.position(),
-        mathematica::ExpressIn(Metre));
+        "t",
+        t,
+        mathematica::ExpressIn(Second));
   }
+  logger.Flush();
   LOG(ERROR) << mercury_centred_trajectory.size() << " points in trajectory";
   OrbitalElements const elements = OrbitalElements::ForTrajectory(
       mercury_centred_trajectory, mercury_, MasslessBody{}).value();
@@ -135,13 +137,13 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
     double const sin²_ω = Pow<2>(Sin(elements.argument_of_periapsis));
     c₁.Include(ε * cos²_i);
     c₂.Include((1 - ε) * (2.0 / 5.0 - sin²_i * sin²_ω));
-    logger.Append("t", elements.time, mathematica::ExpressIn(Second));
-    logger.Append("a", elements.semimajor_axis, mathematica::ExpressIn(Metre));
-    logger.Append("e", elements.eccentricity);
-    logger.Append("i", elements.inclination, mathematica::ExpressIn(Radian));
-    logger.Append(R"(\[Omega])",
-                  elements.argument_of_periapsis,
-                  mathematica::ExpressIn(Radian));
+    //logger.Append("t", elements.time, mathematica::ExpressIn(Second));
+    //logger.Append("a", elements.semimajor_axis, mathematica::ExpressIn(Metre));
+    //logger.Append("e", elements.eccentricity);
+    //logger.Append("i", elements.inclination, mathematica::ExpressIn(Radian));
+    //logger.Append(R"(\[Omega])",
+    //              elements.argument_of_periapsis,
+    //              mathematica::ExpressIn(Radian));
   }
   // The elements e, i, and ω all vary quite a lot.
   EXPECT_THAT(elements.mean_eccentricity_interval().min, IsNear(0.40_(1)));
