@@ -394,7 +394,9 @@ OrbitalElements::MeanEquinoctialElements(
                   mathematica::ExpressInSIUnits);
     auto const hk_norm = Abs(TΔh) + Abs(TΔk);
     //return eerk_a_tolerance / (Abs(TΔa) / period);
-    return eerk_hk_tolerance / (hk_norm / period);
+    //return eerk_hk_tolerance / (hk_norm / period);
+    return 1 / ((Abs(TΔa) / period) / eerk_a_tolerance +
+                (hk_norm / period) / eerk_hk_tolerance);
   };
 
   append_state(problem.initial_state);
