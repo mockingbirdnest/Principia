@@ -8,6 +8,7 @@
 #include "absl/strings/str_cat.h"
 #include "base/jthread.hpp"
 #include "base/status_utilities.hpp"
+#include "mathematica/logger.hpp"
 #include "numerics/quadrature.hpp"
 #include "integrators/explicit_runge_kutta_integrator.hpp"
 #include "integrators/methods.hpp"
@@ -56,7 +57,7 @@ constexpr double max_clenshaw_curtis_relative_error = 1.0e-6;
 constexpr int max_clenshaw_curtis_points = 2000;
 // Carefully tuned based on MercuryOrbiter test.
 constexpr Length eerk_a_tolerance = 1 * Milli(Metre);
-constexpr double eerk_hk_tolerance = 1e-6;
+constexpr double eerk_hk_tolerance = 1e-8;
 
 template<typename PrimaryCentred>
 absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
@@ -372,14 +373,28 @@ OrbitalElements::MeanEquinoctialElements(
                                       .ʃ_qʹ_dt = ʃ_qʹ_dt.value});
   };
 
+  mathematica::Logger logger(TEMP_DIR / "orbital_elements.wl");
+  logger.Set("period", period, mathematica::ExpressInSIUnits);
+
   auto const tolerance_to_error_ratio =
-      [period](Time const& step,
+      [&logger,period](Time const& step,
                ODE::State const& state,
                ODE::State::Error const& error) -> double {
     auto const& [TΔa, TΔh, TΔk, TΔλ, TΔp, TΔq, TΔpʹ, TΔqʹ] = error;
-    auto const hk_norm = Sqrt(Pow<2>(TΔh) + Pow<2>(TΔk));
-    return std::min(eerk_a_tolerance / (Abs(TΔa) / period),
-                    eerk_hk_tolerance / (hk_norm / period));
+    logger.Append("time", state.s.value, mathematica::ExpressInSIUnits);
+    logger.Append("error",
+                  std::tuple(TΔa / period,
+                             TΔh / period,
+                             TΔk / period,
+                             TΔλ / period,
+                             TΔp / period,
+                             TΔq / period,
+                             TΔpʹ / period,
+                             TΔqʹ / period),
+                  mathematica::ExpressInSIUnits);
+    auto const hk_norm = Abs(TΔh) + Abs(TΔk);
+    //return eerk_a_tolerance / (Abs(TΔa) / period);
+    return eerk_hk_tolerance / (hk_norm / period);
   };
 
   append_state(problem.initial_state);
