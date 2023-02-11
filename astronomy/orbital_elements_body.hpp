@@ -39,6 +39,7 @@ using physics::KeplerOrbit;
 using quantities::Abs;
 using quantities::ArcTan;
 using quantities::Cos;
+using quantities::Length;
 using quantities::Mod;
 using quantities::Pow;
 using quantities::Product;
@@ -54,7 +55,8 @@ using quantities::si::Radian;
 constexpr double max_clenshaw_curtis_relative_error = 1.0e-6;
 constexpr int max_clenshaw_curtis_points = 2000;
 // Carefully tuned based on MercuryOrbiter test.
-constexpr Length eerk_tolerance = 1 * Milli(Metre);
+constexpr Length eerk_a_tolerance = 1 * Milli(Metre);
+constexpr double eerk_hk_tolerance = 1e-6;
 
 template<typename PrimaryCentred>
 absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
@@ -317,16 +319,14 @@ OrbitalElements::MeanEquinoctialElements(
                                                      Time,
                                                      Time,
                                                      Time>;
-  int evaluations;
   InitialValueProblem<ODE> const problem{
       .equation =
           {  // NOLINT
               .compute_derivative =
-                  [&equinoctial_elements, &evaluations](
+                  [&equinoctial_elements](
                       Instant const& t,
                       ODE::DependentVariables const& y,
                       ODE::DependentVariableDerivatives& yʹ) {
-                    ++evaluations;
                     auto const [_, a, h, k, λ, p, q, pʹ, qʹ] =
                         equinoctial_elements(t);
                     yʹ = {a, h, k, λ, p, q, pʹ, qʹ};
@@ -373,12 +373,13 @@ OrbitalElements::MeanEquinoctialElements(
   };
 
   auto const tolerance_to_error_ratio =
-      [period, t_min, t_max](
-          Time const& step,
-          ODE::State const& state,
-          ODE::State::Error const& error) -> double {
+      [period](Time const& step,
+               ODE::State const& state,
+               ODE::State::Error const& error) -> double {
     auto const& [TΔa, TΔh, TΔk, TΔλ, TΔp, TΔq, TΔpʹ, TΔqʹ] = error;
-    return eerk_tolerance / (Abs(TΔa) / period);
+    auto const hk_norm = Sqrt(Pow<2>(TΔh) + Pow<2>(TΔk));
+    return std::min(eerk_a_tolerance / (Abs(TΔa) / period),
+                    eerk_hk_tolerance / (hk_norm / period));
   };
 
   append_state(problem.initial_state);
@@ -395,6 +396,7 @@ OrbitalElements::MeanEquinoctialElements(
   RETURN_IF_ERROR(instance->Solve(t_max));
 
   // TODO(egg): Find a nice way to do linear interpolation.
+  LOG(ERROR) << integrals.size();
   auto const evaluate_integrals =
       [&integrals](Instant const& t) -> IntegratedEquinoctialElements {
     CHECK_LE(t, integrals.back().t);
