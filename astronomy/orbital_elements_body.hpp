@@ -36,6 +36,7 @@ using numerics::quadrature::AutomaticClenshawCurtis;
 using physics::DegreesOfFreedom;
 using physics::KeplerianElements;
 using physics::KeplerOrbit;
+using quantities::Abs;
 using quantities::ArcTan;
 using quantities::Cos;
 using quantities::Mod;
@@ -377,7 +378,7 @@ OrbitalElements::MeanEquinoctialElements(
           ODE::State const& state,
           ODE::State::Error const& error) -> double {
     auto const& [TΔa, TΔh, TΔk, TΔλ, TΔp, TΔq, TΔpʹ, TΔqʹ] = error;
-    return eerk_tolerance / (quantities::Abs(TΔa) / period);
+    return eerk_tolerance / (Abs(TΔa) / period);
   };
 
   append_state(problem.initial_state);
