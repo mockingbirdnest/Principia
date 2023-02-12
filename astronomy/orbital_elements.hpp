@@ -6,8 +6,8 @@
 #include "geometry/interval.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/body.hpp"
-#include "physics/discrete_trajectory.hpp"
 #include "physics/massive_body.hpp"
+#include "physics/trajectory.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -18,8 +18,8 @@ namespace internal_orbital_elements {
 using geometry::Instant;
 using geometry::Interval;
 using physics::Body;
-using physics::DiscreteTrajectory;
 using physics::MassiveBody;
+using physics::Trajectory;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::Difference;
@@ -37,9 +37,10 @@ class OrbitalElements {
 
   template<typename PrimaryCentred>
   static absl::StatusOr<OrbitalElements> ForTrajectory(
-      DiscreteTrajectory<PrimaryCentred> const& trajectory,
+      Trajectory<PrimaryCentred> const& trajectory,
       MassiveBody const& primary,
-      Body const& secondary);
+      Body const& secondary,
+      bool fill_osculating_equinoctial_elements = false);
 
   // The classical Keplerian elements (a, e, i, Ω, ω, M),
   // together with an epoch.
@@ -144,26 +145,31 @@ class OrbitalElements {
  private:
   OrbitalElements() = default;
 
-  template<typename PrimaryCentred>
-  static std::vector<EquinoctialElements> OsculatingEquinoctialElements(
-      DiscreteTrajectory<PrimaryCentred> const& trajectory,
-      MassiveBody const& primary,
-      Body const& secondary);
-
+  // TODO(egg): This is not an orbital element, and it doesn't work for non-
+  // discrete trajectories.  It should move to the orbit analyser, at a place
+  // where we know that we have a discrete trajectory and we could use apsides.
   template<typename PrimaryCentred>
   static std::vector<Length> RadialDistances(
-      DiscreteTrajectory<PrimaryCentred> const& trajectory);
+      Trajectory<PrimaryCentred> const& trajectory);
 
-  // |equinoctial_elements| must contain at least 2 elements.
+  // The functor EquinoctialElementsComputation must have the profile
+  // |EquinoctialElements(Instant const&)|.
+  template<typename EquinoctialElementsComputation>
   static absl::StatusOr<Time> SiderealPeriod(
-      std::vector<EquinoctialElements> const& equinoctial_elements);
+      EquinoctialElementsComputation const& equinoctial_elements,
+      Instant const& t_min,
+      Instant const& t_max);
 
   // |osculating| must contain at least 2 elements.
   // The resulting elements are averaged over one period, centred on
   // their |EquinoctialElements::t|.
+  template<typename EquinoctialElementsComputation>
   static absl::StatusOr<std::vector<EquinoctialElements>>
-  MeanEquinoctialElements(std::vector<EquinoctialElements> const& osculating,
-                          Time const& period);
+  MeanEquinoctialElements(
+      EquinoctialElementsComputation const& equinoctial_elements,
+      Instant const& t_min,
+      Instant const& t_max,
+      Time const& period);
 
   static absl::StatusOr<std::vector<ClassicalElements>> ToClassicalElements(
       std::vector<EquinoctialElements> const& equinoctial_elements);

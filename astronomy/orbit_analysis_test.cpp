@@ -176,7 +176,9 @@ class OrbitAnalysisTest : public ::testing::Test {
     auto elements = OrbitalElements::ForTrajectory(
                         *earth_centred_trajectory,
                         earth_,
-                        MasslessBody{}).value();
+                        MasslessBody{},
+                        /*fill_osculating_equinoctial_elements=*/true)
+                        .value();
 
     {
       auto const identifier = (std::stringstream() << orbit.satellite).str();
@@ -361,7 +363,7 @@ TEST_F(OrbitAnalysisTest, 北斗MEO) {
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
               IsNear(0.000558_(1)));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
-              IsNear(1.003_(1) * Degree));
+              IsNear(1.0035_(1) * Degree));
 }
 
 // COSPAR ID 2016-030A.
@@ -377,7 +379,7 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
                     Property(&OrbitRecurrence::Cᴛₒ, 10)));
 
   // Reference elements from
-  // https://www.gsc-europa.eu/system-status/orbital-and-technical-parameters.
+  // https://www.gsc-europa.eu/system-service-status/orbital-and-technical-parameters.
   Instant const reference_epoch = "2016-11-21T00:00:00"_UTC;
   Instant const initial_time = elements.mean_elements().front().time;
   Instant const mean_time =
@@ -395,11 +397,11 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
               AllOf(AbsoluteErrorFrom(nominal_anomalistic_mean_motion,
                                       IsNear(0.53_(1) * Degree / Day)),
                     RelativeErrorFrom(nominal_anomalistic_mean_motion,
-                                      IsNear(0.00086_(1)))));
+                                      IsNear(0.00087_(1)))));
 
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
               AbsoluteErrorFrom(29'599.8 * Kilo(Metre),
-                                IsNear(0.35_(1) * Kilo(Metre))));
+                                IsNear(0.33_(1) * Kilo(Metre))));
   EXPECT_THAT(elements.mean_semimajor_axis_interval().measure(),
               IsNear(00'000.084_(1) * Kilo(Metre)));
 
@@ -468,15 +470,15 @@ TEST_F(OrbitAnalysisTest, GalileoExtendedSlot) {
             RelativeErrorFrom(nominal_nodal_precession, IsNear(0.0059_(1)))));
   EXPECT_THAT(2 * π * Radian / elements.anomalistic_period(),
               AllOf(AbsoluteErrorFrom(nominal_anomalistic_mean_motion,
-                                      IsNear(0.00047_(1) * Degree / Day)),
+                                      IsNear(0.0014_(1) * Degree / Day)),
                     RelativeErrorFrom(nominal_anomalistic_mean_motion,
-                                      IsNear(7.1e-07_(1)))));
+                                      IsNear(2.0e-06_(1)))));
 
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
               AbsoluteErrorFrom(27'977.6 * Kilo(Metre),
-                                IsNear(0.0997_(1) * Kilo(Metre))));
+                                IsNear(0.0513_(1) * Kilo(Metre))));
   EXPECT_THAT(elements.mean_semimajor_axis_interval().measure(),
-              IsNear(00'000.096_(1) * Kilo(Metre)));
+              IsNear(00'000.099_(1) * Kilo(Metre)));
 
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
               AbsoluteErrorFrom(0.162, IsNear(0.0041_(1))));
@@ -562,20 +564,20 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
                     Property(&OrbitRecurrence::Dᴛₒ, -3),
                     Property(&OrbitRecurrence::Cᴛₒ, 10)));
 
-  // Reference semimajor axis from the legend of figure 7 of Bhat et al.; that
-  // value is given as 7 714.42942 in table 1 of Bhat et al., 7 714.4278 km in
-  // Blanc et al., and 7 714.43 km in Benada.
-  // Figure 7 of Bhat et al. shows that the mean semimajor axis varies by up to
+  // Reference semimajor axis from the legend of figure 7 of [BSFL98]; that
+  // value is given as 7 714.42942 in table 1 of [BSFL98], 7 714.4278 km in
+  // [BS96], and 7 714.43 km in [Ben97].
+  // Figure 7 of [BSFL98] shows that the mean semimajor axis varies by up to
   // 6 m either side of the reference value.  Our test data is from cycle 198;
   // reading the graph around that time shows that the mean semimajor axis was a
   // bit less than 3 m above the nominal value around that time.
   EXPECT_THAT(
       elements.mean_semimajor_axis_interval().midpoint(),
-      DifferenceFrom(7714.42938 * Kilo(Metre), IsNear(2.93_(1) * Metre)));
-  // Reference inclination from the legend of figure 9 of Bhat et al.; that
-  // value is given as 66.040° in table 1 of Bhat et al., 66.039° in Blanc et
-  // al., and 66.04° in Benada.
-  // Figure 9 of Bhat et al. shows that the observed values of the mean
+      DifferenceFrom(7714.42938 * Kilo(Metre), IsNear(3.38_(1) * Metre)));
+  // Reference inclination from the legend of figure 9 of [BSFL98]; that
+  // value is given as 66.040° in table 1 of [BSFL98], 66.039° in [BS96], and
+  // 66.04° in [Ben97].
+  // Figure 9 of [BSFL98] shows that the observed values of the mean
   // inclination vary between 66.0375° and 66.0455° over the course of the
   // mission (66.0408° ± 0.0040° according to the abstract).  We can see from
   // the graph that during the period under test, in early December 1997, the
@@ -589,25 +591,25 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
       AllOf(Field(&Interval<Angle>::min, IsNear(66.0365_(1) * Degree)),
             Field(&Interval<Angle>::max, IsNear(66.0401_(1) * Degree))));
 
-  // The same nominal values are given by Blanc et al., Benada, and Bhat et al:
+  // The same nominal values are given by [BS96], [Ben97], and [BSFL98]:
   // e = 0.000095, ω = 90.0°.
   // However, these values are only meaningful if we take mean elements that are
   // free of variations over one 127-revolution ground track cycle (rather than
-  // simply over one revolution).  Figure 8 of Bhat et al. shows that both the
+  // simply over one revolution).  Figure 8 of [BSFL98] shows that both the
   // theoretical and observed mean e and ω vary between 40 ppm and 140 ppm, and
   // between 60° and 120°, respectively.
   EXPECT_THAT(elements.mean_eccentricity_interval(),
               AllOf(Field(&Interval<double>::min, IsNear(88e-6_(1))),
                     Field(&Interval<double>::max, IsNear(110e-6_(1)))));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval(),
-              AllOf(Field(&Interval<Angle>::min, IsNear(74.7_(1) * Degree)),
-                    Field(&Interval<Angle>::max, IsNear(98.5_(1) * Degree))));
+              AllOf(Field(&Interval<Angle>::min, IsNear(73.8_(1) * Degree)),
+                    Field(&Interval<Angle>::max, IsNear(99.1_(1) * Degree))));
 
   // Nominal longitude of the equatorial crossing of the first ascending pass
-  // East of the ITRF zero-meridian (pass 135), as given in section 2 of Benada.
-  // Blanc et al. round these longitudes to a hundredth of a degree, thus 0.71°
-  // for pass 135.
-  // We can see from figure 6 of Bhat et al. that, during the period under test,
+  // East of the ITRF zero-meridian (pass 135), as given in section 2 of
+  // [Ben97].  [BS96] round these longitudes to a hundredth of a degree, thus
+  // 0.71° for pass 135.
+  // We can see from figure 6 of [BSFL98] that, during the period under test,
   // the equatorial crossing is about 600 m east of the reference.
   EXPECT_THAT(
       ground_track
@@ -620,7 +622,7 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
                            IsNear(573_(1) * Metre *
                                   (Radian / TerrestrialEquatorialRadius)))));
   // Nominal longitude of the equatorial crossing of the following (descending)
-  // pass (pass 136), as given in section 2 of Benada.  Blanc et al. round these
+  // pass (pass 136), as given in section 2 of [Ben97].  [BS96] round these
   // longitudes to a hundredth of a degree, thus 166.54° for pass 136.
   EXPECT_THAT(ground_track
                   .equator_crossing_longitudes(
@@ -630,10 +632,10 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
               DifferenceFrom(166.5385 * Degree, IsNear(0.0071_(1) * Degree)));
 
   // Nominal longitude of the equatorial crossing of pass 1, as given in the
-  // auxiliary data table in Blanc et al.  The reference grid there lists that
-  // longitude as 99.92°, and the table of equator crossing longitudes in Benada
-  // lists it as 99.9249°.  However, the auxiliary data table in Benada gives a
-  // longitude of 99.947° for pass 1, which looks like a typo.
+  // auxiliary data table in [BS96].  The reference grid there lists that
+  // longitude as 99.92°, and the table of equator crossing longitudes in
+  // [Ben97] lists it as 99.9249°.  However, the auxiliary data table in [Ben97]
+  // gives a longitude of 99.947° for pass 1, which looks like a typo.
   EXPECT_THAT(ground_track
                   .equator_crossing_longitudes(
                       recurrence, /*first_ascending_pass_index=*/135)
@@ -718,7 +720,7 @@ TEST_F(OrbitAnalysisTest, Sentinel3A) {
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
               IsNear(0.0011_(1)));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
-              IsNear(90.01_(1) * Degree));
+              IsNear(89.99_(1) * Degree));
 
   // The nominal mean solar times of the nodes are 22:00 ascending, 10:00
   // descending.

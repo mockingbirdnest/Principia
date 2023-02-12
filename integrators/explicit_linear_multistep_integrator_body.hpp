@@ -116,7 +116,7 @@ ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
           y_stage = yₙ₊₁.value;
           y = yₙ₊₁;
         });
-    current_step.y = yₙ₊₁;
+    current_step.y = std::move(yₙ₊₁);
     termination_condition::UpdateWithAbort(
         equation.compute_derivative(s.value, y_stage, current_step.yʹ),
         status);

@@ -22,6 +22,8 @@ using integrators::methods::BlanesMoan2002SRKN14A;
 using integrators::methods::Fine1987RKNG34;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using integrators::methods::Quinlan1999Order8A;
+using quantities::si::Metre;
+using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Second;
 
@@ -30,6 +32,15 @@ DefaultDownsamplingParameters() {
   return DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters{
       .max_dense_intervals = 10'000,
       .tolerance = 10 * Metre,
+  };
+}
+
+DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters
+OrbitAnalyserDownsamplingParameters() {
+  // Carefully tuned based on MercuryOrbiter test.
+  return DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters{
+      .max_dense_intervals = 10'000,
+      .tolerance = 1 * Milli(Metre),
   };
 }
 

@@ -20,6 +20,12 @@ using quantities::si::Milli;
 DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters
 DefaultDownsamplingParameters();
 
+// Parameters for the orbit analyser.  Finer-grained than the default to obtain
+// reasonable element.  The 10'000 times smaller tolerance results in
+// trajectories that are about 10 times as big.
+DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters
+OrbitAnalyserDownsamplingParameters();
+
 // Factories for parameters used to control integration.
 Ephemeris<Barycentric>::AccuracyParameters
 DefaultEphemerisAccuracyParameters();
@@ -40,6 +46,7 @@ using internal_integrators::DefaultEphemerisFixedStepParameters;
 using internal_integrators::DefaultHistoryParameters;
 using internal_integrators::DefaultPredictionParameters;
 using internal_integrators::DefaultPsychohistoryParameters;
+using internal_integrators::OrbitAnalyserDownsamplingParameters;
 
 }  // namespace ksp_plugin
 }  // namespace principia

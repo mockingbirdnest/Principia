@@ -229,6 +229,17 @@ struct AdamsBashforthOrder5 : ExplicitLinearMultistep {
   static constexpr double β_denominator = 720.0;
 };
 
+struct AdamsBashforthOrder6 : ExplicitLinearMultistep {
+  static constexpr int order = 6;
+  static constexpr int steps = 6;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::ADAMS_BASHFORTH_ORDER_6;
+  static constexpr FixedVector<double, order + 1> const α{{{1.0, -1.0, 0.0}}};
+  static constexpr FixedVector<double, order + 1> const β_numerator{
+      {{0.0, 4277.0, -7923.0, 9982.0, -7298.0, 2877.0, -475.0}}};
+  static constexpr double β_denominator = 1440.0;
+};
+
 // The following methods have coefficients from [BM02].
 struct BlanesMoan2002S6 : SymplecticPartitionedRungeKutta {
   static constexpr int order = 4;
