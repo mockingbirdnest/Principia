@@ -471,20 +471,6 @@ struct DormandالمكاوىPrince1986RKN434FM :
       {13.0 /   21.0, -20.0 /  27.0, 275.0 / 189.0, -1.0 /  3.0}}};
 };
 
-struct HeunEuler : EmbeddedExplicitRungeKutta {
-  static constexpr int higher_order = 2;
-  static constexpr int lower_order = 1;
-  static constexpr int stages = 2;
-  static constexpr bool first_same_as_last = false;
-  static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind =
-      serialization::AdaptiveStepSizeIntegrator::DORMAND_PRINCE_1986_RK_547FC;
-  static constexpr FixedVector<double, stages> c{{{0, 1}}};
-  static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a{
-      {{0.5}}};
-  static constexpr FixedVector<double, stages> b̂{{{0.5, 0.5}}};
-  static constexpr FixedVector<double, stages> b{{{1, 0}}};
-};
-
 struct DormandPrince1986RK547FC :  EmbeddedExplicitRungeKutta {
   static constexpr int higher_order = 5;
   static constexpr int lower_order = 4;

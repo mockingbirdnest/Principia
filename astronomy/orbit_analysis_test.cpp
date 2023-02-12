@@ -173,11 +173,12 @@ class OrbitAnalysisTest : public ::testing::Test {
   std::tuple<OrbitalElements, OrbitRecurrence, OrbitGroundTrack>
   ElementsAndRecurrence(SP3Orbit const& orbit) {
     auto const earth_centred_trajectory = EarthCentredTrajectory(orbit);
-    auto elements =
-        OrbitalElements::ForTrajectory(*earth_centred_trajectory,
-                                       earth_,
-                                       MasslessBody{},
-                                       /*sample_dense_elements=*/true).value();
+    auto const elements = OrbitalElements::ForTrajectory(
+                              *earth_centred_trajectory,
+                              earth_,
+                              MasslessBody{},
+                              /*fill_osculating_equinoctial_elements=*/true)
+                              .value();
 
     {
       auto const identifier = (std::stringstream() << orbit.satellite).str();

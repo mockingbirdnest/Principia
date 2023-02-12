@@ -170,7 +170,7 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
                               J2000 + 10 * Day, *ephemeris),
       spherical_earth,
       MasslessBody{},
-      /*sample_dense_elements=*/true);
+      /*fill_osculating_equinoctial_elements=*/true);
   ASSERT_THAT(status_or_elements, IsOk());
   OrbitalElements const& elements = status_or_elements.value();
   EXPECT_THAT(
@@ -268,7 +268,7 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
                               *ephemeris),
       oblate_earth,
       MasslessBody{},
-      /*sample_dense_elements=*/true);
+      /*fill_osculating_equinoctial_elements=*/true);
   ASSERT_THAT(status_or_elements, IsOk());
   OrbitalElements const& elements = status_or_elements.value();
   EXPECT_THAT(
@@ -372,7 +372,7 @@ TEST_F(OrbitalElementsTest, RealPerturbation) {
           initial_osculating, J2000, J2000 + mission_duration, *ephemeris),
       earth,
       MasslessBody{},
-      /*sample_dense_elements=*/true);
+      /*fill_osculating_equinoctial_elements=*/true);
   ASSERT_THAT(status_or_elements, IsOk());
   OrbitalElements const& elements = status_or_elements.value();
   EXPECT_THAT(

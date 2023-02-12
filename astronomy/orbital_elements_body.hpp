@@ -9,7 +9,7 @@
 #include "base/jthread.hpp"
 #include "base/status_utilities.hpp"
 #include "numerics/quadrature.hpp"
-#include "integrators/explicit_runge_kutta_integrator.hpp"
+#include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
 #include "integrators/methods.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/kepler_orbit.hpp"
@@ -46,6 +46,7 @@ using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Radian;
 
+constexpr int osculating_equinoctial_elements_per_sidereal_period = 256;
 constexpr double max_clenshaw_curtis_relative_error = 1.0e-6;
 constexpr int max_clenshaw_curtis_points = 2000;
 // Carefully tuned based on MercuryOrbiter test.
@@ -71,12 +72,15 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
   auto const osculating_elements =
       [&primary, &secondary, &trajectory](
           Instant const& time) -> KeplerianElements<PrimaryCentred> {
-    DegreesOfFreedom<PrimaryCentred> const primary_dof{
+    DegreesOfFreedom<PrimaryCentred> const primary_degrees_of_freedom{
         PrimaryCentred::origin, PrimaryCentred::unmoving};
     DegreesOfFreedom<PrimaryCentred> const degrees_of_freedom =
         trajectory.EvaluateDegreesOfFreedom(time);
     return KeplerOrbit<PrimaryCentred>(
-               primary, secondary, degrees_of_freedom - primary_dof, time)
+               primary,
+               secondary,
+               degrees_of_freedom - primary_degrees_of_freedom,
+               time)
         .elements_at_epoch();
   };
 
@@ -137,7 +141,6 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
       osculating_equinoctial_elements, trajectory.t_min(), trajectory.t_max());
   RETURN_IF_ERROR(sidereal_period);
   orbital_elements.sidereal_period_ = sidereal_period.value();
-
   if (!IsFinite(orbital_elements.sidereal_period_) ||
       orbital_elements.sidereal_period_ <= Time{}) {
     // Guard against NaN sidereal periods (from hyperbolic orbits) or negative
@@ -145,6 +148,7 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
     return absl::OutOfRangeError(
         "sidereal period is " + DebugString(orbital_elements.sidereal_period_));
   }
+
   auto mean_equinoctial_elements =
       MeanEquinoctialElements(osculating_equinoctial_elements,
                               trajectory.t_min(),
@@ -155,8 +159,10 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
       std::move(mean_equinoctial_elements).value();
 
   if (fill_osculating_equinoctial_elements) {
-    for (Instant t = trajectory.t_min(); t <= trajectory.t_max();
-         t += orbital_elements.sidereal_period_ / 256) {
+    for (Instant t = trajectory.t_min();
+         t <= trajectory.t_max();
+         t += orbital_elements.sidereal_period_ /
+              osculating_equinoctial_elements_per_sidereal_period) {
       orbital_elements.osculating_equinoctial_elements_.push_back(
           osculating_equinoctial_elements(t));
     }
@@ -301,7 +307,6 @@ OrbitalElements::MeanEquinoctialElements(
   // directly, we precompute the integrals from |t_min|.  The integral from
   // |t - period / 2| to |t + period / 2| is then computed by subtraction.
 
-  static constexpr int points_per_period = 113;
   using ODE =
       ExplicitFirstOrderOrdinaryDifferentialEquation<Instant,
                                                      Product<Length, Time>,
@@ -386,11 +391,11 @@ OrbitalElements::MeanEquinoctialElements(
                            /*safety_factor=*/0.9));
   RETURN_IF_ERROR(instance->Solve(t_max));
 
-  // TODO(egg): Find a nice way to do linear interpolation.
+  // TODO(egg): Integrate the moving average directly.
   auto const evaluate_integrals =
       [&integrals](Instant const& t) -> IntegratedEquinoctialElements {
     CHECK_LE(t, integrals.back().t);
-    auto it = std::partition_point(
+    auto const it = std::partition_point(
         integrals.begin(),
         integrals.end(),
         [&t](IntegratedEquinoctialElements const& elements) {
@@ -401,7 +406,7 @@ OrbitalElements::MeanEquinoctialElements(
     if (it == integrals.begin()) {
       return high;
     } else {
-      IntegratedEquinoctialElements const& low = *--it;
+      IntegratedEquinoctialElements const& low = *std::prev(it);
       double const α = (t - low.t) / (high.t - low.t);
       auto const interpolate = [α, &low, &high](auto const element) {
         return low.*element + α * (high.*element - low.*element);
@@ -499,16 +504,17 @@ inline absl::Status OrbitalElements::ComputePeriodsAndPrecession() {
   auto const interpolate_function_of_mean_classical_element =
       [this](auto const f, Instant const& t) {
         CHECK_LE(t, mean_classical_elements_.back().time);
-        auto it = std::partition_point(mean_classical_elements_.begin(),
-                                       mean_classical_elements_.end(),
-                                       [&t](ClassicalElements const& elements) {
-                                         return elements.time < t;
-                                       });
+        auto const it =
+            std::partition_point(mean_classical_elements_.begin(),
+                                 mean_classical_elements_.end(),
+                                 [&t](ClassicalElements const& elements) {
+                                   return elements.time < t;
+                                 });
         ClassicalElements const& high = *it;
         if (it == mean_classical_elements_.begin()) {
           return f(high);
         } else {
-          ClassicalElements const& low = *--it;
+          ClassicalElements const& low = *std::prev(it);
           double const α = (t - low.time) / (high.time - low.time);
           return f(low) + α * (f(high) - f(low));
         }

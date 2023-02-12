@@ -21,8 +21,8 @@ DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters
 DefaultDownsamplingParameters();
 
 // Parameters for the orbit analyser.  Finer-grained than the default to obtain
-// reasonable element.  The 10 times smaller tolerance results in trajectories
-// that are about twice as big.
+// reasonable element.  The 10'000 times smaller tolerance results in
+// trajectories that are about 10 times as big.
 DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters
 OrbitAnalyserDownsamplingParameters();
 
