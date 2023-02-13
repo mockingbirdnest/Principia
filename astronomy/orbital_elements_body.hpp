@@ -3,6 +3,7 @@
 #include "astronomy/orbital_elements.hpp"
 
 #include <algorithm>
+#include <tuple>
 #include <vector>
 
 #include "absl/strings/str_cat.h"
@@ -318,31 +319,25 @@ OrbitalElements::MeanEquinoctialElements(
                                                      double,
                                                      double,
                                                      double>;
-  InitialValueProblem<ODE> const problem{
-      .equation =
-          {  // NOLINT
-              .compute_derivative =
-                  [&equinoctial_elements](
-                      Instant const& t,
-                      ODE::DependentVariables const& y,
-                      ODE::DependentVariableDerivatives& yʹ) {
-                    auto const [_, a₋, h₋, k₋, λ₋, p₋, q₋, pʹ₋, qʹ₋] =
-                        equinoctial_elements(t - period / 2);
-                    auto const [_, a₊, h₊, k₊, λ₊, p₊, q₊, pʹ₊, qʹ₊] =
-                        equinoctial_elements(t + period / 2);
-                    yʹ = {(a₊ - a₋) / period,
-                          (h₊ - h₋) / period,
-                          (k₊ - k₋) / period,
-                          (λ₊ - λ₋) / period,
-                          (p₊ - p₋) / period,
-                          (q₊ - q₋) / period,
-                          (pʹ₊ - pʹ₋) / period,
-                          (qʹ₊ - qʹ₋) / period};
-                    return absl::OkStatus();
-                  },
-          },
-      .initial_state = ODE::State(t_min + period / 2, {}),
-  };
+  ODE const equation = {
+      .compute_derivative = [&equinoctial_elements, period](
+                                Instant const& t,
+                                ODE::DependentVariables const& y,
+                                ODE::DependentVariableDerivatives& yʹ) {
+        auto const [_1, a₋, h₋, k₋, λ₋, p₋, q₋, pʹ₋, qʹ₋] =
+            equinoctial_elements(t - period / 2);
+        auto const [_2, a₊, h₊, k₊, λ₊, p₊, q₊, pʹ₊, qʹ₊] =
+            equinoctial_elements(t + period / 2);
+        yʹ = {(a₊ - a₋) / period,
+              (h₊ - h₋) / period,
+              (k₊ - k₋) / period,
+              (λ₊ - λ₋) / period,
+              (p₊ - p₋) / period,
+              (q₊ - q₋) / period,
+              (pʹ₊ - pʹ₋) / period,
+              (qʹ₊ - qʹ₋) / period};
+        return absl::OkStatus();
+      }};
 
   std::vector<EquinoctialElements> mean_elements;
   auto const append_state = [&mean_elements](ODE::State const& state) {
@@ -367,21 +362,33 @@ OrbitalElements::MeanEquinoctialElements(
     return eerk_a_tolerance / Abs(Δa);
   };
 
-    Product<Angle, Square<Time>> const ʃ_Mt_dt = AutomaticClenshawCurtis(
-      [&interpolate_function_of_mean_classical_element, &t̄](Instant const& t) {
-        return interpolate_function_of_mean_classical_element(
-            [&t, &t̄](ClassicalElements const& elements) {
-              return elements.mean_anomaly * (t - t̄);
-            },
-            t);
-      },
-      t_min,
-      t_min + period,
-      max_clenshaw_curtis_relative_error,
-      /*max_points=*/max_clenshaw_curtis_points;
+  auto const initial_integration =
+      [&equinoctial_elements, period, t_min, t_max](auto const element) {
+        return AutomaticClenshawCurtis(
+                   [element, &equinoctial_elements](Instant const& t) {
+                     return equinoctial_elements(t).*element;
+                   },
+                   t_min,
+                   t_min + period,
+                   max_clenshaw_curtis_relative_error,
+                   /*max_points=*/max_clenshaw_curtis_points) /
+               period;
+      };
 
+  InitialValueProblem<ODE> const problem = {
+      .equation = equation,
+      .initial_state = ODE::State(
+          t_min + period / 2,
+          std::tuple(initial_integration(&EquinoctialElements::a),
+                     initial_integration(&EquinoctialElements::h),
+                     initial_integration(&EquinoctialElements::k),
+                     initial_integration(&EquinoctialElements::λ),
+                     initial_integration(&EquinoctialElements::p),
+                     initial_integration(&EquinoctialElements::q),
+                     initial_integration(&EquinoctialElements::pʹ),
+                     initial_integration(&EquinoctialElements::qʹ)))};
+  append_state(problem.initial_state);
 
-  append_state(problem.initial_state);////
   auto const instance =
       EmbeddedExplicitRungeKuttaIntegrator<
           integrators::methods::DormandPrince1986RK547FC,
