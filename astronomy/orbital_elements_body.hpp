@@ -364,15 +364,28 @@ OrbitalElements::MeanEquinoctialElements(
 
   auto const initial_integration =
       [&equinoctial_elements, period, t_min, t_max](auto const element) {
-        return AutomaticClenshawCurtis(
-                   [element, &equinoctial_elements](Instant const& t) {
-                     return equinoctial_elements(t).*element;
-                   },
-                   t_min,
-                   t_min + period,
-                   max_clenshaw_curtis_relative_error,
-                   /*max_points=*/max_clenshaw_curtis_points) /
-               period;
+        int cnt = 0;
+        auto r = AutomaticClenshawCurtis(
+                     [&cnt, element, &equinoctial_elements](Instant const& t) {
+                       ++cnt;
+                       return equinoctial_elements(t).*element;
+                     },
+                     t_min,
+                     t_min + period,
+                     max_clenshaw_curtis_relative_error / 100,
+                     /*max_points=*/max_clenshaw_curtis_points) /
+                 period;
+        LOG(ERROR) << cnt;
+        return r;
+        //return AutomaticClenshawCurtis(
+        //           [element, &equinoctial_elements](Instant const& t) {
+        //             return equinoctial_elements(t).*element;
+        //           },
+        //           t_min,
+        //           t_min + period,
+        //           max_clenshaw_curtis_relative_error,
+        //           /*max_points=*/max_clenshaw_curtis_points) /
+        //       period;
       };
 
   InitialValueProblem<ODE> const problem = {
@@ -401,6 +414,7 @@ OrbitalElements::MeanEquinoctialElements(
                            /*safety_factor=*/0.9));
   RETURN_IF_ERROR(instance->Solve(t_max - period / 2));
 
+  LOG(ERROR)<<mean_elements.size();
   return mean_elements;
 }
 
