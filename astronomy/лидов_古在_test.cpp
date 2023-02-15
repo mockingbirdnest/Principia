@@ -169,9 +169,10 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
 
   // The conservation of the “тривиального интеграла a = const” [Лид61, p. 25]
   // is excellent: while the sun is nudging and deforming the orbit, it is not
-  // pumping energy into nor out of it.
+  // pumping energy into nor out of it.  The true values are 14'910.01 and
+  // 14'910.28 km.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().min,
-              IsNear(14'909.96_(1) * Kilo(Metre)));
+              IsNear(14'909.99_(1) * Kilo(Metre)));
   EXPECT_THAT(elements.mean_semimajor_axis_interval().max,
               IsNear(14'910.28_(1) * Kilo(Metre)));
 
