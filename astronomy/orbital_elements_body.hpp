@@ -12,7 +12,6 @@
 #include "numerics/quadrature.hpp"
 #include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
 #include "integrators/methods.hpp"
-#include "mathematica/logger.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -355,13 +354,12 @@ OrbitalElements::MeanEquinoctialElements(
                                                 .qʹ = qʹ.value});
   };
 
-  Length tolerance = 10 * eerk_a_tolerance;
   auto const tolerance_to_error_ratio =
-      [&tolerance](Time const& step,
+      [](Time const& step,
          ODE::State const& state,
          ODE::State::Error const& error) -> double {
     auto const& [Δa, Δh, Δk, Δλ, Δp, Δq, Δpʹ, Δqʹ] = error;
-    return tolerance / Abs(Δa);
+    return eerk_a_tolerance / Abs(Δa);
   };
 
   auto const initial_integration =
@@ -402,35 +400,21 @@ OrbitalElements::MeanEquinoctialElements(
                      initial_integration(&EquinoctialElements::q),
                      initial_integration(&EquinoctialElements::pʹ),
                      initial_integration(&EquinoctialElements::qʹ)))};
+  append_state(problem.initial_state);
 
-  mathematica::Logger logger(TEMP_DIR / "orbital_elements.wl");
-  for (int i = 0; i < 1; ++i) {
-    mean_elements.clear();
-    append_state(problem.initial_state);
+  auto const instance =
+      EmbeddedExplicitRungeKuttaIntegrator<
+          integrators::methods::DormandPrince1986RK547FC,
+          ODE>()
+          .NewInstance(problem,
+                       append_state,
+                       tolerance_to_error_ratio,
+                       AdaptiveStepSizeIntegrator<ODE>::Parameters(
+                           /*first_step=*/t_max - t_min - period,
+                           /*safety_factor=*/0.9));
+  RETURN_IF_ERROR(instance->Solve(t_max - period / 2));
 
-    auto const instance =
-        EmbeddedExplicitRungeKuttaIntegrator<
-            integrators::methods::DormandPrince1986RK547FC,
-            ODE>()
-            .NewInstance(problem,
-                          append_state,
-                          tolerance_to_error_ratio,
-                          AdaptiveStepSizeIntegrator<ODE>::Parameters(
-                              /*first_step=*/t_max - t_min - period,
-                              /*safety_factor=*/0.9));
-    RETURN_IF_ERROR(instance->Solve(t_max - period / 2));
-
-    LOG(ERROR)<<mean_elements.size();
-    for (auto const& me : mean_elements) {
-      logger.Append(absl::StrCat("meanElements[", i, "]"),
-                    me,
-                    mathematica::ExpressInSIUnits);
-    }
-
-    tolerance *= Sqrt(Sqrt(2));
-  }
-  logger.Flush();
-  //LOG(FATAL)<<"Done";
+  LOG(ERROR)<<mean_elements.size();
   return mean_elements;
 }
 

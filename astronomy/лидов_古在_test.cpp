@@ -10,9 +10,9 @@
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/solar_system.hpp"
-//#if PRINCIPIA_LOG_TO_MATHEMATICA
+#if PRINCIPIA_LOG_TO_MATHEMATICA
 #include "mathematica/logger.hpp"
-//#endif
+#endif
 #include "testing_utilities/matchers.hpp"
 #include "testing_utilities/is_near.hpp"
 
@@ -118,13 +118,11 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
           PRINCIPIA_UNICODE_PATH("лидов_古在.generated.wl"),
       /*make_unique=*/false);
 #endif
-  mathematica::Logger logger(TEMP_DIR / "mercury_orbiter.wl");
 
   DiscreteTrajectory<MercuryCentredInertial> mercury_centred_trajectory;
   for (auto const& [t, dof] : icrs_trajectory) {
     EXPECT_OK(mercury_centred_trajectory.Append(
         t, mercury_frame_.ToThisFrameAtTime(t)(dof)));
-    logger.Append("mercuryTimes", t, mathematica::ExpressInSIUnits);
 #if PRINCIPIA_LOG_TO_MATHEMATICA
     logger.Append(
         "q",
