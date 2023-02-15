@@ -306,10 +306,8 @@ OrbitalElements::MeanEquinoctialElements(
   // the osculating э from |mean_elements.t - period / 2| to
   // |mean_elements.t + period / 2|, divided by |period|.
 
-  //TODO(phl):Fix the comment.
-  // Instead of computing the integral from |t - period / 2| to |t + period / 2|
-  // directly, we precompute the integrals from |t_min|.  The integral from
-  // |t - period / 2| to |t + period / 2| is then computed by subtraction.
+  // We integrate the function (э(t + period / 2) - э(t - period / 2)) / period
+  // using as the initial value an integral obtain by Clenshaw-Curtis.
 
   using ODE =
       ExplicitFirstOrderOrdinaryDifferentialEquation<Instant,

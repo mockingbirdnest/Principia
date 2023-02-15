@@ -397,7 +397,7 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
               AllOf(AbsoluteErrorFrom(nominal_anomalistic_mean_motion,
                                       IsNear(0.54_(1) * Degree / Day)),
                     RelativeErrorFrom(nominal_anomalistic_mean_motion,
-                                      IsNear(0.00087_(1)))));
+                                      IsNear(0.00088_(1)))));
 
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
               AbsoluteErrorFrom(29'599.8 * Kilo(Metre),
@@ -472,7 +472,7 @@ TEST_F(OrbitAnalysisTest, GalileoExtendedSlot) {
               AllOf(AbsoluteErrorFrom(nominal_anomalistic_mean_motion,
                                       IsNear(0.0011_(1) * Degree / Day)),
                     RelativeErrorFrom(nominal_anomalistic_mean_motion,
-                                      IsNear(2.0e-06_(1)))));
+                                      IsNear(1.7e-06_(1)))));
 
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
               AbsoluteErrorFrom(27'977.6 * Kilo(Metre),
@@ -600,10 +600,10 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
   // between 60° and 120°, respectively.
   EXPECT_THAT(elements.mean_eccentricity_interval(),
               AllOf(Field(&Interval<double>::min, IsNear(85e-6_(1))),
-                    Field(&Interval<double>::max, IsNear(110e-6_(1)))));
+                    Field(&Interval<double>::max, IsNear(109e-6_(1)))));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval(),
               AllOf(Field(&Interval<Angle>::min, IsNear(74.4_(1) * Degree)),
-                    Field(&Interval<Angle>::max, IsNear(99.1_(1) * Degree))));
+                    Field(&Interval<Angle>::max, IsNear(99.2_(1) * Degree))));
 
   // Nominal longitude of the equatorial crossing of the first ascending pass
   // East of the ITRF zero-meridian (pass 135), as given in section 2 of
