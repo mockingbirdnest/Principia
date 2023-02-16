@@ -300,14 +300,18 @@ OrbitalElements::MeanEquinoctialElements(
     Instant const& t_min,
     Instant const& t_max,
     Time const& period) {
-  // This function averages the elements in |osculating| over |period|.
-  // For each |mean_elements| in the result, for all э in the set of equinoctial
+  if (t_max - t_min < period) {
+    return std::vector<EquinoctialElements>{};
+  }
+
+  // This function averages the elements in |osculating| over |period|.  For
+  // each |mean_elements| in the result, for all э in the set of equinoctial
   // elements {a, h, k, λ, p, q, pʹ, qʹ}, |mean_elements.э| is the integral of
   // the osculating э from |mean_elements.t - period / 2| to
   // |mean_elements.t + period / 2|, divided by |period|.
 
   // We integrate the function (э(t + period / 2) - э(t - period / 2)) / period
-  // using as the initial value an integral obtain by Clenshaw-Curtis.
+  // using as the initial value an integral obtained by Clenshaw-Curtis.
 
   using ODE =
       ExplicitFirstOrderOrdinaryDifferentialEquation<Instant,
