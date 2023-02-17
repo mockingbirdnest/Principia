@@ -3,6 +3,7 @@
 #include "astronomy/orbital_elements.hpp"
 
 #include <algorithm>
+#include <tuple>
 #include <vector>
 
 #include "absl/strings/str_cat.h"
@@ -35,6 +36,7 @@ using quantities::ArcTan;
 using quantities::Cos;
 using quantities::Length;
 using quantities::Mod;
+using quantities::NextDown;
 using quantities::Pow;
 using quantities::Product;
 using quantities::Sin;
@@ -50,7 +52,9 @@ constexpr int osculating_equinoctial_elements_per_sidereal_period = 256;
 constexpr double max_clenshaw_curtis_relative_error = 1.0e-6;
 constexpr int max_clenshaw_curtis_points = 2000;
 // Carefully tuned based on MercuryOrbiter test.
-constexpr Length eerk_a_tolerance = 1 * Milli(Metre);
+constexpr double max_clenshaw_curtis_relative_error_for_initial_integration =
+    1.0e-8;
+constexpr Length eerk_a_tolerance = 10 * Milli(Metre);
 
 template<typename PrimaryCentred>
 absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
@@ -297,88 +301,121 @@ OrbitalElements::MeanEquinoctialElements(
     Instant const& t_min,
     Instant const& t_max,
     Time const& period) {
-  // This function averages the elements in |osculating| over |period|.
-  // For each |mean_elements| in the result, for all э in the set of equinoctial
+  // This function averages the elements in |osculating| over |period|.  For
+  // each |mean_elements| in the result, for all э in the set of equinoctial
   // elements {a, h, k, λ, p, q, pʹ, qʹ}, |mean_elements.э| is the integral of
   // the osculating э from |mean_elements.t - period / 2| to
   // |mean_elements.t + period / 2|, divided by |period|.
 
-  // Instead of computing the integral from |t - period / 2| to |t + period / 2|
-  // directly, we precompute the integrals from |t_min|.  The integral from
-  // |t - period / 2| to |t + period / 2| is then computed by subtraction.
+  // We integrate the function (э(t + period / 2) - э(t - period / 2)) / period
+  // using as the initial value an integral obtained by Clenshaw-Curtis.
 
   using ODE =
       ExplicitFirstOrderOrdinaryDifferentialEquation<Instant,
-                                                     Product<Length, Time>,
-                                                     Time,
-                                                     Time,
-                                                     Product<Angle, Time>,
-                                                     Time,
-                                                     Time,
-                                                     Time,
-                                                     Time>;
-  InitialValueProblem<ODE> const problem{
-      .equation =
-          {  // NOLINT
-              .compute_derivative =
-                  [&equinoctial_elements](
-                      Instant const& t,
-                      ODE::DependentVariables const& y,
-                      ODE::DependentVariableDerivatives& yʹ) {
-                    auto const [_, a, h, k, λ, p, q, pʹ, qʹ] =
-                        equinoctial_elements(t);
-                    yʹ = {a, h, k, λ, p, q, pʹ, qʹ};
-                    return absl::OkStatus();
-                  },
-          },
-      .initial_state = ODE::State(t_min, {}),
-  };
+                                                     Length,
+                                                     double,
+                                                     double,
+                                                     Angle,
+                                                     double,
+                                                     double,
+                                                     double,
+                                                     double>;
+  ODE const equation = {
+      .compute_derivative = [&equinoctial_elements, period](
+                                Instant const& t,
+                                ODE::DependentVariables const& y,
+                                ODE::DependentVariableDerivatives& yʹ) {
+        auto const [_1, a₋, h₋, k₋, λ₋, p₋, q₋, pʹ₋, qʹ₋] =
+            equinoctial_elements(t - period / 2);
+        auto const [_2, a₊, h₊, k₊, λ₊, p₊, q₊, pʹ₊, qʹ₊] =
+            equinoctial_elements(t + period / 2);
+        yʹ = {(a₊ - a₋) / period,
+              (h₊ - h₋) / period,
+              (k₊ - k₋) / period,
+              (λ₊ - λ₋) / period,
+              (p₊ - p₋) / period,
+              (q₊ - q₋) / period,
+              (pʹ₊ - pʹ₋) / period,
+              (qʹ₊ - qʹ₋) / period};
+        return absl::OkStatus();
+      }};
 
-  struct IntegratedEquinoctialElements {
-    Instant t;
-    // The integrals are from |t_min| to |t|.
-    Product<Length, Time> ʃ_a_dt;
-    Time ʃ_h_dt;
-    Time ʃ_k_dt;
-    Product<Angle, Time> ʃ_λ_dt;
-    Time ʃ_p_dt;
-    Time ʃ_q_dt;
-    Time ʃ_pʹ_dt;
-    Time ʃ_qʹ_dt;
-  };
-
-  std::vector<IntegratedEquinoctialElements> integrals;
-  auto const append_state = [&integrals](ODE::State const& state) {
+  std::vector<EquinoctialElements> mean_elements;
+  auto const append_state = [&mean_elements](ODE::State const& state) {
     Instant const& t = state.s.value;
-    auto const& [ʃ_a_dt,
-                 ʃ_h_dt,
-                 ʃ_k_dt,
-                 ʃ_λ_dt,
-                 ʃ_p_dt,
-                 ʃ_q_dt,
-                 ʃ_pʹ_dt,
-                 ʃ_qʹ_dt] = state.y;
-    integrals.push_back(
-        IntegratedEquinoctialElements{.t = t,
-                                      .ʃ_a_dt = ʃ_a_dt.value,
-                                      .ʃ_h_dt = ʃ_h_dt.value,
-                                      .ʃ_k_dt = ʃ_k_dt.value,
-                                      .ʃ_λ_dt = ʃ_λ_dt.value,
-                                      .ʃ_p_dt = ʃ_p_dt.value,
-                                      .ʃ_q_dt = ʃ_q_dt.value,
-                                      .ʃ_pʹ_dt = ʃ_pʹ_dt.value,
-                                      .ʃ_qʹ_dt = ʃ_qʹ_dt.value});
+    auto const& [a, h, k, λ, p, q, pʹ, qʹ] = state.y;
+    mean_elements.push_back(EquinoctialElements{.t = t,
+                                                .a = a.value,
+                                                .h = h.value,
+                                                .k = k.value,
+                                                .λ = λ.value,
+                                                .p = p.value,
+                                                .q = q.value,
+                                                .pʹ = pʹ.value,
+                                                .qʹ = qʹ.value});
   };
 
   auto const tolerance_to_error_ratio =
-      [period](Time const& step,
-               ODE::State const& state,
-               ODE::State::Error const& error) -> double {
-    auto const& [TΔa, TΔh, TΔk, TΔλ, TΔp, TΔq, TΔpʹ, TΔqʹ] = error;
-    return eerk_a_tolerance / (Abs(TΔa) / period);
+      [](Time const& step,
+         ODE::State const& state,
+         ODE::State::Error const& error) -> double {
+    auto const& [Δa, Δh, Δk, Δλ, Δp, Δq, Δpʹ, Δqʹ] = error;
+    return eerk_a_tolerance / Abs(Δa);
   };
 
+  auto const initial_integration =
+      [&equinoctial_elements, period, t_min, t_max](auto const element) {
+        return AutomaticClenshawCurtis(
+                   [element, &equinoctial_elements](Instant const& t) {
+                     return equinoctial_elements(t).*element;
+                   },
+                   t_min,
+                   t_min + period,
+                   max_clenshaw_curtis_relative_error_for_initial_integration,
+                   /*max_points=*/max_clenshaw_curtis_points) /
+               period;
+      };
+
+  // Ensure that Clenshaw-Curtis will not go out of the bounds of the
+  // trajectory.
+  if (t_max < t_min + period) {
+    return mean_elements;
+  }
+
+  ODE::DependentVariables const initial_mean_elements{
+      initial_integration(&EquinoctialElements::a),
+      initial_integration(&EquinoctialElements::h),
+      initial_integration(&EquinoctialElements::k),
+      initial_integration(&EquinoctialElements::λ),
+      initial_integration(&EquinoctialElements::p),
+      initial_integration(&EquinoctialElements::q),
+      initial_integration(&EquinoctialElements::pʹ),
+      initial_integration(&EquinoctialElements::qʹ)};
+
+  // Compute bounds that make sure that the ODE integrator never evaluate the
+  // trajectory outside of its bounds.
+  Instant t₁ = t_min + period / 2;
+  if (t₁ - period / 2 < t_min) {
+    t₁ = NextUp(t₁);
+  }
+  Instant t₂ = t_max - period / 2;
+  if (t₂ + period / 2 > t_max) {
+    t₂ = NextDown(t₂);
+  }
+
+  InitialValueProblem<ODE> const problem = {
+      .equation = equation,
+      .initial_state = ODE::State(t₁, initial_mean_elements)};
   append_state(problem.initial_state);
+
+  Time first_step = t₂ - t₁;
+  if (t₁ + first_step > t₂) {
+    first_step = NextDown(first_step);
+  }
+  if (first_step <= Time{}) {
+    return mean_elements;
+  }
+
   auto const instance =
       EmbeddedExplicitRungeKuttaIntegrator<
           integrators::methods::DormandPrince1986RK547FC,
@@ -387,64 +424,10 @@ OrbitalElements::MeanEquinoctialElements(
                        append_state,
                        tolerance_to_error_ratio,
                        AdaptiveStepSizeIntegrator<ODE>::Parameters(
-                           /*first_step=*/t_max - t_min,
+                           /*first_step=*/first_step,
                            /*safety_factor=*/0.9));
-  RETURN_IF_ERROR(instance->Solve(t_max));
+  RETURN_IF_ERROR(instance->Solve(t₂));
 
-  // TODO(egg): Integrate the moving average directly.
-  auto const evaluate_integrals =
-      [&integrals](Instant const& t) -> IntegratedEquinoctialElements {
-    CHECK_LE(t, integrals.back().t);
-    auto const it = std::partition_point(
-        integrals.begin(),
-        integrals.end(),
-        [&t](IntegratedEquinoctialElements const& elements) {
-          return elements.t < t;
-        });
-    CHECK(it != integrals.end());
-    IntegratedEquinoctialElements const& high = *it;
-    if (it == integrals.begin()) {
-      return high;
-    } else {
-      IntegratedEquinoctialElements const& low = *std::prev(it);
-      double const α = (t - low.t) / (high.t - low.t);
-      auto const interpolate = [α, &low, &high](auto const element) {
-        return low.*element + α * (high.*element - low.*element);
-      };
-      return {.t = t,
-              .ʃ_a_dt = interpolate(&IntegratedEquinoctialElements::ʃ_a_dt),
-              .ʃ_h_dt = interpolate(&IntegratedEquinoctialElements::ʃ_h_dt),
-              .ʃ_k_dt = interpolate(&IntegratedEquinoctialElements::ʃ_k_dt),
-              .ʃ_λ_dt = interpolate(&IntegratedEquinoctialElements::ʃ_λ_dt),
-              .ʃ_p_dt = interpolate(&IntegratedEquinoctialElements::ʃ_p_dt),
-              .ʃ_q_dt = interpolate(&IntegratedEquinoctialElements::ʃ_q_dt),
-              .ʃ_pʹ_dt = interpolate(&IntegratedEquinoctialElements::ʃ_pʹ_dt),
-              .ʃ_qʹ_dt = interpolate(&IntegratedEquinoctialElements::ʃ_qʹ_dt)};
-    }
-  };
-
-  // Now compute the averages.
-  std::vector<EquinoctialElements> mean_elements;
-  mean_elements.reserve(integrals.size());
-  for (auto low_it = integrals.begin();;
-       ++low_it) {
-    RETURN_IF_STOPPED;
-    auto const& low = *low_it;
-    if (low.t + period > integrals.back().t) {
-      break;
-    }
-    auto const high = evaluate_integrals(low.t + period);
-    mean_elements.emplace_back();
-    mean_elements.back().t = low.t + period / 2;
-    mean_elements.back().a = (high.ʃ_a_dt - low.ʃ_a_dt) / period;
-    mean_elements.back().h = (high.ʃ_h_dt - low.ʃ_h_dt) / period;
-    mean_elements.back().k = (high.ʃ_k_dt - low.ʃ_k_dt) / period;
-    mean_elements.back().λ = (high.ʃ_λ_dt - low.ʃ_λ_dt) / period;
-    mean_elements.back().p = (high.ʃ_p_dt - low.ʃ_p_dt) / period;
-    mean_elements.back().q = (high.ʃ_q_dt - low.ʃ_q_dt) / period;
-    mean_elements.back().pʹ = (high.ʃ_pʹ_dt - low.ʃ_pʹ_dt) / period;
-    mean_elements.back().qʹ = (high.ʃ_qʹ_dt - low.ʃ_qʹ_dt) / period;
-  }
   return mean_elements;
 }
 
