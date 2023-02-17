@@ -172,7 +172,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
   // pumping energy into nor out of it.  The true values are 14'910.01 and
   // 14'910.28 km.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().min,
-              IsNear(14'909.99_(1) * Kilo(Metre)));
+              IsNear(14'910.02_(1) * Kilo(Metre)));
   EXPECT_THAT(elements.mean_semimajor_axis_interval().max,
               IsNear(14'910.28_(1) * Kilo(Metre)));
 

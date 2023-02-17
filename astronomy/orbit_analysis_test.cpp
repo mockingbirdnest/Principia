@@ -361,9 +361,9 @@ TEST_F(OrbitAnalysisTest, 北斗MEO) {
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
               IsNear(55.10_(1) * Degree));
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
-              IsNear(0.000560_(1)));
+              IsNear(0.000557_(1)));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
-              IsNear(0.9858_(1) * Degree));
+              IsNear(0.4737_(1) * Degree));
 }
 
 // COSPAR ID 2016-030A.
@@ -395,7 +395,7 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
             RelativeErrorFrom(nominal_nodal_precession, IsNear(0.011_(1)))));
   EXPECT_THAT(2 * π * Radian / elements.anomalistic_period(),
               AllOf(AbsoluteErrorFrom(nominal_anomalistic_mean_motion,
-                                      IsNear(0.54_(1) * Degree / Day)),
+                                      IsNear(0.63_(1) * Degree / Day)),
                     RelativeErrorFrom(nominal_anomalistic_mean_motion,
                                       IsNear(0.00088_(1)))));
 
@@ -408,7 +408,7 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
               IsNear(0.000'17_(1)));  // Nominal: 0.0.
   EXPECT_THAT(elements.mean_eccentricity_interval().measure(),
-              IsNear(0.000'015_(1)));
+              IsNear(0.000'020_(1)));
 
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
               AbsoluteErrorFrom(56.0 * Degree, IsNear(0.61_(1) * Degree)));
@@ -425,9 +425,9 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
   // set ω = 0, ω′ = 0.
   // However, e is never quite 0; we can compute a mean ω.
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
-              IsNear(88_(1) * Degree));
+              IsNear(89_(1) * Degree));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().measure(),
-              IsNear(6.1_(1) * Degree));
+              IsNear(7.7_(1) * Degree));
 
   // Since the reference parameters conventionally set ω = 0, the given mean
   // anomaly is actually the mean argument of latitude; in order to get numbers
@@ -476,7 +476,7 @@ TEST_F(OrbitAnalysisTest, GalileoExtendedSlot) {
 
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
               AbsoluteErrorFrom(27'977.6 * Kilo(Metre),
-                                IsNear(0.0505_(1) * Kilo(Metre))));
+                                IsNear(0.0519_(1) * Kilo(Metre))));
   EXPECT_THAT(elements.mean_semimajor_axis_interval().measure(),
               IsNear(00'000.099_(1) * Kilo(Metre)));
 
@@ -685,7 +685,7 @@ TEST_F(OrbitAnalysisTest, SPOT5) {
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
               IsNear(0.0012_(1)));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
-              IsNear(89.66_(1) * Degree));
+              IsNear(89.69_(1) * Degree));
 
   // The nominal mean solar times of the nodes are 22:30 ascending, 10:30
   // descending.
