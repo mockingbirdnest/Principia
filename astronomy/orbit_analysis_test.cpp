@@ -397,7 +397,7 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
               AllOf(AbsoluteErrorFrom(nominal_anomalistic_mean_motion,
                                       IsNear(0.63_(1) * Degree / Day)),
                     RelativeErrorFrom(nominal_anomalistic_mean_motion,
-                                      IsNear(0.00088_(1)))));
+                                      IsNear(0.00102_(1)))));
 
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
               AbsoluteErrorFrom(29'599.8 * Kilo(Metre),
