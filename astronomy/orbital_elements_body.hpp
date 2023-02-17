@@ -36,6 +36,7 @@ using quantities::ArcTan;
 using quantities::Cos;
 using quantities::Length;
 using quantities::Mod;
+using quantities::NextDown;
 using quantities::Pow;
 using quantities::Product;
 using quantities::Sin;
@@ -300,10 +301,6 @@ OrbitalElements::MeanEquinoctialElements(
     Instant const& t_min,
     Instant const& t_max,
     Time const& period) {
-  if (t_max - t_min < period) {
-    return std::vector<EquinoctialElements>{};
-  }
-
   // This function averages the elements in |osculating| over |period|.  For
   // each |mean_elements| in the result, for all э in the set of equinoctial
   // elements {a, h, k, λ, p, q, pʹ, qʹ}, |mean_elements.э| is the integral of
@@ -379,19 +376,45 @@ OrbitalElements::MeanEquinoctialElements(
                period;
       };
 
+  // Ensure that Clenshaw-Curtis will not go out of the bounds of the
+  // trajectory.
+  if (t_max < t_min + period) {
+    return mean_elements;
+  }
+
+  ODE::DependentVariables const initial_mean_elements{
+      initial_integration(&EquinoctialElements::a),
+      initial_integration(&EquinoctialElements::h),
+      initial_integration(&EquinoctialElements::k),
+      initial_integration(&EquinoctialElements::λ),
+      initial_integration(&EquinoctialElements::p),
+      initial_integration(&EquinoctialElements::q),
+      initial_integration(&EquinoctialElements::pʹ),
+      initial_integration(&EquinoctialElements::qʹ)};
+
+  // Compute bounds that make sure that the ODE integrator never evaluate the
+  // trajectory outside of its bounds.
+  Instant t₁ = t_min + period / 2;
+  if (t₁ - period / 2 < t_min) {
+    t₁ = NextUp(t₁);
+  }
+  Instant t₂ = t_max - period / 2;
+  if (t₂ + period / 2 > t_max) {
+    t₂ = NextDown(t₂);
+  }
+
   InitialValueProblem<ODE> const problem = {
       .equation = equation,
-      .initial_state = ODE::State(
-          t_min + period / 2,
-          std::tuple(initial_integration(&EquinoctialElements::a),
-                     initial_integration(&EquinoctialElements::h),
-                     initial_integration(&EquinoctialElements::k),
-                     initial_integration(&EquinoctialElements::λ),
-                     initial_integration(&EquinoctialElements::p),
-                     initial_integration(&EquinoctialElements::q),
-                     initial_integration(&EquinoctialElements::pʹ),
-                     initial_integration(&EquinoctialElements::qʹ)))};
+      .initial_state = ODE::State(t₁, initial_mean_elements)};
   append_state(problem.initial_state);
+
+  Time first_step = t₂ - t₁;
+  if (t₁ + first_step > t₂) {
+    first_step = NextDown(first_step);
+  }
+  if (first_step <= Time{}) {
+    return mean_elements;
+  }
 
   auto const instance =
       EmbeddedExplicitRungeKuttaIntegrator<
@@ -401,9 +424,9 @@ OrbitalElements::MeanEquinoctialElements(
                        append_state,
                        tolerance_to_error_ratio,
                        AdaptiveStepSizeIntegrator<ODE>::Parameters(
-                           /*first_step=*/t_max - t_min - period,
+                           /*first_step=*/first_step,
                            /*safety_factor=*/0.9));
-  RETURN_IF_ERROR(instance->Solve(t_max - period / 2));
+  RETURN_IF_ERROR(instance->Solve(t₂));
 
   return mean_elements;
 }
