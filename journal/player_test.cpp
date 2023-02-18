@@ -127,23 +127,21 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   LOG(ERROR) << "Last successful method out/return: \n"
              << player.last_method_out_return().DebugString();
 
-#if 0
+#if 1
   serialization::Method method_in;
   {
     auto* extension = method_in.MutableExtension(
-        serialization::ReportPartCollision::extension);
+        serialization::DeletePlugin::extension);
     auto* in = extension->mutable_in();
-    in->set_plugin(3174370143056);
-    in->set_part1_id(238837834);
-    in->set_part2_id(1852216795);
+    in->set_plugin(2734566559920);
   }
   serialization::Method method_out_return;
   {
     auto* extension = method_out_return.MutableExtension(
-        serialization::ReportPartCollision::extension);
+        serialization::DeletePlugin::extension);
   }
   LOG(ERROR) << "Running unpaired method:\n" << method_in.DebugString();
-  CHECK(RunIfAppropriate<ReportPartCollision>(
+  CHECK(RunIfAppropriate<DeletePlugin>(
       method_in, method_out_return, player));
 #endif
 #if 0
