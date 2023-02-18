@@ -7,10 +7,10 @@ namespace ksp_plugin_adapter {
 
 internal class MainWindow : VesselSupervisedWindowRenderer {
   // Update this section before each release.
-  private const string next_release_name = "Householder";
-  private const int next_release_lunation_number = 286;
+  private const string next_release_name = "Hurwitz";
+  private const int next_release_lunation_number = 287;
   private readonly DateTimeOffset next_release_date_ =
-      new DateTimeOffset(2023, 02, 20, 07, 08, 00, TimeSpan.Zero);
+      new DateTimeOffset(2023, 03, 21, 17, 25, 00, TimeSpan.Zero);
 
   public MainWindow(PrincipiaPluginAdapter adapter,
                     FlightPlanner flight_planner,
