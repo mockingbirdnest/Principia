@@ -183,8 +183,9 @@ class Vessel {
   // |desired_t_min|.
   void RequestReanimation(Instant const& desired_t_min) EXCLUDES(lock_);
 
-  // Blocks until the |t_min()| of the vessel is at or before |desired_t_min|.
-  void WaitForReanimation(Instant const& desired_t_min) EXCLUDES(lock_);
+  // Same as |RequestReanimation|, but synchronous.  This function blocks until
+  // the |t_min()| of the vessel is at or before |desired_t_min|.
+  void AwaitReanimation(Instant const& desired_t_min) EXCLUDES(lock_);
 
   // Creates a flight plan at the end of history using the given parameters;
   // selects that flight plan, which is the last one in |flight_plans_|.

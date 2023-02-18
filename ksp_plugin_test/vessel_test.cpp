@@ -963,11 +963,8 @@ TEST_F(VesselTest, Reanimator) {
             vessel->psychohistory()->back().time);
 
   // Reanimate the vessel that we just read.
-  vessel->RequestReanimation(t0_);
-
-  // Wait for reanimation to happen.
   LOG(ERROR) << "Waiting until Herbert West is done...";
-  vessel->WaitForReanimation(t0_);
+  vessel->AwaitReanimation(t0_);
   LOG(ERROR) << "Herbert West is finally done.";
 
   EXPECT_EQ("2000-01-01T12:00:30"_TT + 0.1399999999994463 * Second,

@@ -140,9 +140,9 @@ class Ephemeris {
   // |desired_t_min|.
   void RequestReanimation(Instant const& desired_t_min);
 
-  // Blocks until the |t_min()| of the ephemeris is at or before
-  // |desired_t_min|.
-  void WaitForReanimation(Instant const& desired_t_min);
+  // Same as |RequestReanimation|, but synchronous.  This function blocks until
+  // the |t_min()| of the ephemeris is at or before |desired_t_min|.
+  void AwaitReanimation(Instant const& desired_t_min);
 
   // Creates an instance suitable for integrating the given |trajectories| with
   // their |intrinsic_accelerations| using a fixed-step integrator parameterized

@@ -448,11 +448,12 @@ void Vessel::RequestReanimation(Instant const& desired_t_min) {
   reanimator_.Put(desired_t_min);
 }
 
-void Vessel::WaitForReanimation(Instant const& desired_t_min) {
+void Vessel::AwaitReanimation(Instant const& desired_t_min) {
   auto desired_t_min_reached_or_fully_reanimated = [this, desired_t_min]() {
     return DesiredTMinReachedOrFullyReanimated(desired_t_min);
   };
 
+  RequestReanimation(desired_t_min);
   absl::ReaderMutexLock l(&lock_);
   lock_.Await(absl::Condition(&desired_t_min_reached_or_fully_reanimated));
 }
@@ -1002,8 +1003,7 @@ absl::StatusOr<Instant> Vessel::ReanimateOneCheckpoint(
 
   // Make sure that the ephemeris covers the times that we are going to
   // reanimate.
-  ephemeris_->RequestReanimation(t_initial);
-  ephemeris_->WaitForReanimation(t_initial);
+  ephemeris_->AwaitReanimation(t_initial);
   auto fixed_instance =
       ephemeris_->NewInstance({&reanimated_trajectory},
                               Ephemeris<Barycentric>::NoIntrinsicAccelerations,

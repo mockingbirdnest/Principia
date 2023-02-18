@@ -1222,11 +1222,8 @@ TEST(EphemerisTestNoFixture, Reanimator) {
       message);
 
   // Reanimate the ephemeris that we just read.
-  ephemeris2->RequestReanimation(t_initial);
-
-  // Wait for reanimation to happen.
   LOG(ERROR) << "Waiting until Herbert West is done...";
-  ephemeris2->WaitForReanimation(t_initial);
+  ephemeris2->AwaitReanimation(t_initial);
   LOG(ERROR) << "Herbert West is finally done.";
   EXPECT_OK(ephemeris2->Prolong(t_final));
 
