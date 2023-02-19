@@ -99,9 +99,7 @@ class Parser {
         line_number,
         parent) {
       this.name = name;
-      if (parent != null &&
-          parent.GetType() == typeof(Namespace) &&
-          ((Namespace)parent).is_internal) {
+      if (parent is Namespace{ is_internal: true } ) {
         is_internal = true;
       } else {
         is_internal = name.StartsWith("internal");
@@ -139,11 +137,11 @@ class Parser {
       // Try to figure out if the name was declared in a preceding namespace.
       // This is useful to fix up the internal namespaces.
       if (segments.Length == 2) {
-        if (parent.GetType() == typeof(Namespace)) {
-          foreach (Node sibling in ((Namespace)parent).children) {
-            if (sibling.GetType() == typeof(Namespace) &&
-                ((Namespace)sibling).name == segments[0]) {
-              declared_in_namespace = (Namespace)sibling;
+        if (parent is Namespace ns) {
+          foreach (Node sibling in ns.children) {
+            if (sibling is Namespace nested_ns &&
+                nested_ns.name == segments[0]) {
+              declared_in_namespace = nested_ns;
               break;
             }
           }
@@ -357,13 +355,9 @@ class Parser {
   public static List<Node> CollectExportedDeclarations(Node node) {
     var exported_declarations = new List<Node>();
     foreach (Node child in node.children) {
-      if (child.GetType() == typeof(Namespace) &&
-          !((Namespace)child).is_internal) {
+      if (child is Namespace{ is_internal: false } ) {
         exported_declarations.AddRange(CollectExportedDeclarations(child));
-      } else if (child.GetType() == typeof(Class) ||
-                 child.GetType() == typeof(Struct) ||
-                 child.GetType() == typeof(TypeAlias) ||
-                 child.GetType() == typeof(UsingDeclaration)) {
+      } else if (child is Class or Struct or TypeAlias or UsingDeclaration) {
         exported_declarations.Add(child);
       }
     }
