@@ -365,40 +365,41 @@ class Parser {
     return exported_declarations;
   }
 
-  public static List<Node> CollectInternalUsingDeclarations(Node node) {
-    var internal_using_declarations = new List<Node>();
+  public static List<UsingDeclaration>
+      FindInternalUsingDeclarations(Node node) {
+    var internal_using_declarations = new List<UsingDeclaration>();
     foreach (Node child in node.children) {
       if (child is Namespace{ is_internal: false }) {
         foreach (Node grandchild in child.children) {
-          if (grandchild is UsingDeclaration) {
-            internal_using_declarations.Add(grandchild);
+          if (grandchild is UsingDeclaration ud) {
+            internal_using_declarations.Add(ud);
           }
         }
         internal_using_declarations.AddRange(
-            CollectInternalUsingDeclarations(child));
+            FindInternalUsingDeclarations(child));
       }
     }
     return internal_using_declarations;
   }
 
   public static List<Namespace>
-      FindNamespacesToNormalize(File file, Node node) {
-    var namespaces_to_normalize = new List<Namespace>();
+      FindLegacyInternalNamespaces(File file, Node node) {
+    var legacy_internal_namespaces = new List<Namespace>();
     foreach (Node child in node.children) {
       if (child is Namespace internal_namespace &&
           internal_namespace.name.StartsWith("internal_")) {
-        namespaces_to_normalize.Add(internal_namespace);
+        legacy_internal_namespaces.Add(internal_namespace);
       } else if (child is Namespace ns) {
-        namespaces_to_normalize.AddRange(
-            FindNamespacesToNormalize(file, child));
+        legacy_internal_namespaces.AddRange(
+            FindLegacyInternalNamespaces(file, child));
       }
     }
-    return namespaces_to_normalize;
+    return legacy_internal_namespaces;
   }
 
-  public static void NormalizeNamespaces(File file) {
-    var namespaces_to_normalize = FindNamespacesToNormalize(file, file);
-    foreach (Namespace internal_namespace in namespaces_to_normalize) {
+  public static void FixLegacyInternalNamespaces(File file) {
+    var legacy_internal_namespaces = FindLegacyInternalNamespaces(file, file);
+    foreach (Namespace internal_namespace in legacy_internal_namespaces) {
       var parent = internal_namespace.parent;
       Debug.Assert(parent is Namespace,
                    "internal namespace not within a namespace");
@@ -421,6 +422,12 @@ class Parser {
       internal_namespace.name = "internal";
       internal_namespace.must_rewrite = true;
     }
+  }
+
+  public static void FixInternalUsingDeclarations(File file) {
+    var internal_using_declarations = FindInternalUsingDeclarations(file);
+    foreach (UsingDeclaration internal_using_declaration in
+             internal_using_declarations) {}
   }
 }
 
@@ -522,7 +529,7 @@ class Renamespacer {
         continue;
       }
       Parser.File parser_file = Parser.ParseFile(input_file);
-      Parser.NormalizeNamespaces(parser_file);
+      Parser.FixLegacyInternalNamespaces(parser_file);
       hpp_parsed_files.Add(input_file, parser_file);
       var exported_declarations =
           Parser.CollectExportedDeclarations(parser_file);
@@ -539,7 +546,7 @@ class Renamespacer {
         continue;
       }
       Parser.File parser_file = Parser.ParseFile(input_file);
-      Parser.NormalizeNamespaces(parser_file);
+      Parser.FixLegacyInternalNamespaces(parser_file);
       cpp_parsed_files.Add(input_file, parser_file);
       RewriteFile(input_file, parser_file, dry_run);
     }
@@ -552,8 +559,7 @@ class Renamespacer {
           client_hpp_files.Union(client_cpp_files).ToArray();
       foreach (FileInfo input_file in all_client_files) {
         Parser.File parser_file = Parser.ParseFile(input_file);
-        var internal_using_declarations =
-            Parser.CollectInternalUsingDeclarations(parser_file);
+        Parser.FixInternalUsingDeclarations(parser_file);
       }
     }
   }
