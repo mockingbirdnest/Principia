@@ -387,11 +387,12 @@ class Parser {
       FindInternalUsingDeclarations(Node node) {
     var internal_using_declarations = new List<UsingDeclaration>();
     foreach (Node child in node.children) {
-      if (child is Namespace{ is_internal: false }) {
-        foreach (Node grandchild in child.children) {
-          if (grandchild is UsingDeclaration ud) {
-            // TODO(phl): Skip the using declarations that we just generated.
-            internal_using_declarations.Add(ud);
+      if (child is Namespace ns) {
+        if (ns.is_internal) {
+          foreach (Node grandchild in child.children) {
+            if (grandchild is UsingDeclaration ud) {
+              internal_using_declarations.Add(ud);
+            }
           }
         }
         internal_using_declarations.AddRange(
