@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 namespace principia {
@@ -364,6 +365,22 @@ class Parser {
     return exported_declarations;
   }
 
+  public static List<Node> CollectInternalUsingDeclarations(Node node) {
+    var internal_using_declarations = new List<Node>();
+    foreach (Node child in node.children) {
+      if (child is Namespace{ is_internal: false }) {
+        foreach (Node grandchild in child.children) {
+          if (grandchild is UsingDeclaration) {
+            internal_using_declarations.Add(grandchild);
+          }
+        }
+        internal_using_declarations.AddRange(
+            CollectInternalUsingDeclarations(child));
+      }
+    }
+    return internal_using_declarations;
+  }
+
   public static List<Namespace>
       FindNamespacesToNormalize(File file, Node node) {
     var namespaces_to_normalize = new List<Namespace>();
@@ -527,17 +544,18 @@ class Renamespacer {
       RewriteFile(input_file, parser_file, dry_run);
     }
 
-    //// Process the files in client projects.
-    //foreach (DirectoryInfo client in clients) {
-    //  FileInfo[] client_hpp_files = client.GetFiles("*.hpp");
-    //  FileInfo[] client_cpp_files = client.GetFiles("*.cpp");
-    //  FileInfo[] all_client_files =
-    //      client_hpp_files.Union(client_cpp_files).ToArray();
-    //  var all_parsed_client_files = new Dictionary<FileInfo, Parser.File>();
-    //  foreach (FileInfo input_file in all_client_files) {
-    //    all_parsed_client_files.Add(input_file, Parser.ParseFile(input_file));
-    //  }
-    //}
+    // Process the files in client projects.
+    foreach (DirectoryInfo client in clients) {
+      FileInfo[] client_hpp_files = client.GetFiles("*.hpp");
+      FileInfo[] client_cpp_files = client.GetFiles("*.cpp");
+      FileInfo[] all_client_files =
+          client_hpp_files.Union(client_cpp_files).ToArray();
+      foreach (FileInfo input_file in all_client_files) {
+        Parser.File parser_file = Parser.ParseFile(input_file);
+        var internal_using_declarations =
+            Parser.CollectInternalUsingDeclarations(parser_file);
+      }
+    }
   }
 }
 
