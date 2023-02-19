@@ -11,7 +11,8 @@ namespace internal_clientele {
 using base::not_null;
 
 // A helper class to manage a set of clients to a service.  Clients are ordered
-// based on the value of type |Key| passed when they join the |Clientele|.
+// based on the value of type |Key| passed when they join the |Clientele|.  A
+// |Clientele| may contain multiple clients with the same key.
 template<typename Key>
 class Clientele {
  public:
@@ -29,7 +30,7 @@ class Clientele {
  private:
   Key const default_value_;
 
-  absl::Mutex lock_;
+  mutable absl::Mutex lock_;
   absl::btree_multiset<Key> clients_;
 };
 
@@ -46,6 +47,10 @@ class Client {
 };
 
 }  // namespace internal_clientele
+
+using internal_clientele::Client;
+using internal_clientele::Clientele;
+
 }  // namespace physics
 }  // namespace principia
 

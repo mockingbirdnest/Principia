@@ -21,14 +21,14 @@ template<typename Key>
 void Clientele<Key>::Leave(Key const& key) {
   absl::MutexLock l(&lock_);
   auto const it = clients_.find(key);
-  CHECK(it != client_.end()) << key;
+  CHECK(it != clients_.end()) << key;
   clients_.erase(it);
 }
 
 template<typename Key>
 Key const& Clientele<Key>::first() const {
   absl::MutexLock l(&lock_);
-  if (auto const it = clients_.find(key); it == clients_.end()) {
+  if (auto const it = clients_.begin(); it == clients_.end()) {
     return default_value_;
   } else {
     return *it;

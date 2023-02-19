@@ -233,8 +233,11 @@
     <ClInclude Include="integration_parameters_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="waiting_list.hpp">
+    <ClInclude Include="\\Carpaccio\c$\Users\phl\Projects\GitHub\Principia\Principia\physics\clientele.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="clientele_body.hpp">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -347,6 +350,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="harmonic_damping_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="clientele_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
