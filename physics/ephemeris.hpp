@@ -17,6 +17,7 @@
 #include "integrators/integrators.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/checkpointer.hpp"
+#include "physics/clientele.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -140,9 +141,9 @@ class Ephemeris {
   // |desired_t_min|.
   void RequestReanimation(Instant const& desired_t_min);
 
-  // Blocks until the |t_min()| of the ephemeris is at or before
-  // |desired_t_min|.
-  void WaitForReanimation(Instant const& desired_t_min);
+  // Same as |RequestReanimation|, but synchronous.  This function blocks until
+  // the |t_min()| of the ephemeris is at or before |desired_t_min|.
+  void AwaitReanimation(Instant const& desired_t_min);
 
   // Creates an instance suitable for integrating the given |trajectories| with
   // their |intrinsic_accelerations| using a fixed-step integrator parameterized
@@ -426,6 +427,7 @@ class Ephemeris {
 
   // The techniques and terminology follow [Lov22].
   RecurringThread<Instant> reanimator_;
+  Clientele<Instant> reanimator_clientele_;
 
   // The fields above this line are fixed at construction and therefore not
   // protected.  Note that |ContinuousTrajectory| is thread-safe.  |lock_| is
