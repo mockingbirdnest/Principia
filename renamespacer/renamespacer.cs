@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace principia {
+
 namespace renamespacer {
 
 class Parser {
@@ -36,9 +37,7 @@ class Parser {
 
     public virtual bool must_rewrite {
       get => must_rewrite_;
-      set {
-        must_rewrite_ = value;
-      }
+      set { must_rewrite_ = value; }
     }
 
     public int line_number = 0;
@@ -50,8 +49,9 @@ class Parser {
   }
 
   public class Class : Node {
-    public Class(int line_number, Node parent, string name)
-        : base(line_number, parent) {
+    public Class(int line_number, Node parent, string name) : base(
+        line_number,
+        parent) {
       this.name = name;
     }
 
@@ -63,11 +63,14 @@ class Parser {
   }
 
   public class File : Node {
-    public File(int line_number, FileInfo file_info)
-        : base(line_number, parent: null) {
+    public File(int line_number, FileInfo file_info) : base(
+        line_number,
+        parent: null) {
       this.file_info = file_info;
       file_namespace = Regex.Replace(
-          file_info.Name, "(_body|_test)?\\.[hc]pp", "");
+          file_info.Name,
+          "(_body|_test)?\\.[hc]pp",
+          "");
     }
 
     public override void WriteNode(string indent = "") {
@@ -79,21 +82,23 @@ class Parser {
   }
 
   public class Include : Node {
-    public Include(int line_number, Node parent, string[] path)
-        : base(line_number, parent) {
+    public Include(int line_number, Node parent, string[] path) : base(
+        line_number,
+        parent) {
       this.path = path;
     }
 
     public override void WriteNode(string indent = "") {
-      Console.WriteLine(indent + "Include " + String.Join(", ", path));
+      Console.WriteLine(indent + "Include " + string.Join(", ", path));
     }
 
     public string[] path = null;
   }
 
   public class Namespace : Node {
-    public Namespace(int line_number, Node parent, string name)
-        : base(line_number, parent) {
+    public Namespace(int line_number, Node parent, string name) : base(
+        line_number,
+        parent) {
       this.name = name;
       if (parent != null &&
           parent.GetType() == typeof(Namespace) &&
@@ -114,7 +119,10 @@ class Parser {
     }
 
     public override void WriteNode(string indent = "") {
-      Console.WriteLine(indent + "Namespace " + name + (is_internal ? "Internal" : ""));
+      Console.WriteLine(indent +
+                        "Namespace " +
+                        name +
+                        (is_internal ? "Internal" : ""));
     }
 
     public string name = null;
@@ -122,8 +130,9 @@ class Parser {
   }
 
   public class UsingDeclaration : Node {
-    public UsingDeclaration(int line_number, Node parent, string name)
-        : base(line_number, parent) {
+    public UsingDeclaration(int line_number, Node parent, string name) : base(
+        line_number,
+        parent) {
       this.name = name;
       string[] segments = name.Split("::");
       declared_name = segments[segments.Length - 1];
@@ -149,15 +158,21 @@ class Parser {
       if (declared_in_namespace == null) {
         return "using " + name + ";";
       } else {
-        return "using " + declared_in_namespace.name + "::" +
-               declared_name + ";";
+        return "using " +
+               declared_in_namespace.name +
+               "::" +
+               declared_name +
+               ";";
       }
     }
 
     public override void WriteNode(string indent = "") {
-      Console.WriteLine(indent + "UsingDeclaration " + declared_name +
-                        (declared_in_namespace == null ?
-                            "" : " from " + declared_in_namespace.name));
+      Console.WriteLine(indent +
+                        "UsingDeclaration " +
+                        declared_name +
+                        (declared_in_namespace == null
+                             ? ""
+                             : " from " + declared_in_namespace.name));
     }
 
     public override bool must_rewrite {
@@ -172,8 +187,9 @@ class Parser {
   }
 
   public class UsingDirective : Node {
-    public UsingDirective(int line_number, Node parent, string name)
-        : base(line_number, parent) {
+    public UsingDirective(int line_number, Node parent, string name) : base(
+        line_number,
+        parent) {
       this.name = name;
     }
 
@@ -185,8 +201,9 @@ class Parser {
   }
 
   public class Struct : Node {
-    public Struct(int line_number, Node parent, string name)
-        : base(line_number, parent) {
+    public Struct(int line_number, Node parent, string name) : base(
+        line_number,
+        parent) {
       this.name = name;
     }
 
@@ -198,8 +215,9 @@ class Parser {
   }
 
   public class TypeAlias : Node {
-    public TypeAlias(int line_number, Node parent, string name)
-        : base(line_number, parent) {
+    public TypeAlias(int line_number, Node parent, string name) : base(
+        line_number,
+        parent) {
       this.name = name;
     }
 
@@ -222,10 +240,11 @@ class Parser {
     return line != "namespace {" && line.StartsWith("namespace ");
   }
 
-  private static bool IsOwnHeaderInclude(string line,
-                                         FileInfo input_file) {
+  private static bool IsOwnHeaderInclude(string line, FileInfo input_file) {
     string own_header = Regex.Replace(
-        input_file.Name, "(_body|_test)?\\.[hc]pp", ".hpp");
+        input_file.Name,
+        "(_body|_test)?\\.[hc]pp",
+        ".hpp");
     return line == "#include \"" + own_header + "\"";
   }
 
@@ -292,15 +311,13 @@ class Parser {
       while (!reader.EndOfStream) {
         string line = reader.ReadLine();
         if (IsPrincipiaInclude(line) && !IsOwnHeaderInclude(line, file_info)) {
-          var include = new Include(
-              line_number,
-              parent: current,
-              ParseIncludedPath(line));
+          var include = new Include(line_number,
+                                    parent: current,
+                                    ParseIncludedPath(line));
         } else if (IsOpeningNamespace(line)) {
-          current = new Namespace(
-              line_number,
-              parent: current,
-              ParseOpeningNamespace(line));
+          current = new Namespace(line_number,
+                                  parent: current,
+                                  ParseOpeningNamespace(line));
         } else if (IsUsingDirective(line)) {
           var using_directive = new UsingDirective(
               line_number,
@@ -312,10 +329,7 @@ class Parser {
               parent: current,
               ParseUsingDeclaration(line));
         } else if (IsClass(line)) {
-          var klass = new Class(
-              line_number,
-              parent: current,
-              ParseClass(line));
+          var klass = new Class(line_number, parent: current, ParseClass(line));
         } else if (IsStruct(line)) {
           var strukt = new Struct(
               line_number,
@@ -359,8 +373,8 @@ class Parser {
     return exported_declarations;
   }
 
-  public static List<Namespace> FindNamespacesToNormalize(File file,
-                                                          Node node) {
+  public static List<Namespace>
+      FindNamespacesToNormalize(File file, Node node) {
     var namespaces_to_normalize = new List<Namespace>();
     foreach (Node child in node.children) {
       if (child is Namespace internal_namespace &&
@@ -383,8 +397,8 @@ class Parser {
       int internal_position_in_parent = internal_namespace.position_in_parent;
       var preceding_nodes_in_parent =
           parent.children.Take(internal_position_in_parent).ToList();
-      var following_nodes_in_parent =
-          parent.children.Skip(internal_position_in_parent + 1).ToList();
+      var following_nodes_in_parent = parent.children.
+          Skip(internal_position_in_parent + 1).ToList();
       parent.children = preceding_nodes_in_parent;
       var file_namespace = new Namespace(internal_namespace.line_number,
                                          parent,
@@ -403,12 +417,10 @@ class Parser {
 }
 
 class Renamespacer {
-  static void RewriteFile(FileInfo input_file,
-                          Parser.File file,
-                          bool dry_run) {
+  static void RewriteFile(FileInfo input_file, Parser.File file, bool dry_run) {
     string input_filename = input_file.FullName;
-    string output_filename = input_file.DirectoryName + "\\" +
-                              input_file.Name + ".new";
+    string output_filename =
+        input_file.DirectoryName + "\\" + input_file.Name + ".new";
 
     Parser.Node parent = file;
     int child_position = 0;
@@ -460,7 +472,7 @@ class Renamespacer {
       }
     }
     if (!dry_run) {
-      File.Move(output_filename, input_filename, overwrite:true);
+      File.Move(output_filename, input_filename, overwrite: true);
     }
   }
 
@@ -478,7 +490,8 @@ class Renamespacer {
     bool dry_run = true;
     foreach (string arg in args) {
       if (arg.StartsWith("--") && arg.Contains(":")) {
-        string[] split = arg.Split(new []{"--", ":"}, StringSplitOptions.None);
+        string[] split =
+            arg.Split(new []{ "--", ":" }, StringSplitOptions.None);
         string option = split[1];
         string value = split[2];
         if (option == "project") {
@@ -532,5 +545,6 @@ class Renamespacer {
   }
 }
 
-}  // namespace renamespacer
-}  // namespace principia
+} // namespace renamespacer
+
+} // namespace principia
