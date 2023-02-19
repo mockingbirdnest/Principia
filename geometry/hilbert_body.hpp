@@ -39,6 +39,8 @@ auto Hilbert<T, T, std::enable_if_t<is_quantity_v<T>>>::Norm(
   return Abs(t);
 }
 
+#if !(_MSC_FULL_VER == 193'431'937 || \
+      _MSC_FULL_VER == 193'431'942)
 template<typename T1, typename T2>
 auto Hilbert<T1, T2,
              std::void_t<decltype(InnerProduct(std::declval<T1>(),
@@ -74,6 +76,7 @@ auto Hilbert<T, T,
 Norm(T const& t) -> NormType {
   return t.Norm();
 }
+#endif
 
 }  // namespace internal_hilbert
 }  // namespace geometry

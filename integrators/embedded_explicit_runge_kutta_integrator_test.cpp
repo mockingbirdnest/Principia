@@ -59,13 +59,14 @@ namespace {
 
 double HarmonicOscillatorToleranceRatio(
     Time const& h,
-    ODE::SystemStateError const& error,
+    ODE::State const& /*state*/,
+    ODE::State::Error const& error,
     Length const& q_tolerance,
     Speed const& v_tolerance,
     std::function<void(bool tolerable)> callback) {
   auto const& [position_error, velocity_error] = error;
-  double const r = std::min(q_tolerance / Abs(position_error[0]),
-                            v_tolerance / Abs(velocity_error[0]));
+  double const r = std::min(q_tolerance / Abs(position_error),
+                            v_tolerance / Abs(velocity_error));
   callback(r > 1.0);
   return r;
 }
@@ -79,7 +80,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest,
        HarmonicOscillatorBackAndForth) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       EmbeddedExplicitRungeKuttaIntegrator<
-          methods::DormandPrince1986RK547FC, Instant, Length, Speed>();
+          methods::DormandPrince1986RK547FC, ODE>();
   Length const x_initial = 1 * Metre;
   Speed const v_initial = 0.0 * Metre / Second;
   Time const period = 2 * π * Second;
@@ -108,15 +109,15 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest,
     }
   };
 
-  std::vector<ODE::SystemState> solution;
+  std::vector<ODE::State> solution;
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_derivative =
       std::bind(ComputeHarmonicOscillatorDerivatives1D,
                 _1, _2, _3, &evaluations);
-  IntegrationProblem<ODE> problem;
+  InitialValueProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   problem.initial_state = {t_initial, {{x_initial}, {v_initial}}};
-  auto const append_state = [&](ODE::SystemState const& state) {
+  auto const append_state = [&](ODE::State const& state) {
     solution.push_back(state);
   };
 
@@ -126,7 +127,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest,
         /*safety_factor=*/0.9);
     auto const tolerance_to_error_ratio =
         std::bind(HarmonicOscillatorToleranceRatio,
-                  _1, _2,
+                  _1, _2, _3,
                   length_tolerance,
                   speed_tolerance,
                   step_size_callback);
@@ -139,9 +140,9 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest,
   }
   {
     auto const& [positions, velocities] = solution.back().y;
-    EXPECT_THAT(AbsoluteError(x_initial, positions[0].value),
+    EXPECT_THAT(AbsoluteError(x_initial, positions.value),
                 IsNear(7.5e-2_(1) * Metre));
-    EXPECT_THAT(AbsoluteError(v_initial, velocities[0].value),
+    EXPECT_THAT(AbsoluteError(v_initial, velocities.value),
                 IsNear(6.8e-2_(1) * Metre / Second));
     EXPECT_EQ(t_final, solution.back().s.value);
     EXPECT_EQ(steps_forward, solution.size());
@@ -163,7 +164,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest,
         /*safety_factor=*/0.9);
     auto const tolerance_to_error_ratio =
         std::bind(HarmonicOscillatorToleranceRatio,
-                  _1, _2,
+                  _1, _2, _3,
                   2 * length_tolerance,
                   2 * speed_tolerance,
                   step_size_callback);
@@ -174,9 +175,9 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest,
   }
   {
     auto const& [positions, velocities] = solution.back().y;
-    EXPECT_THAT(AbsoluteError(x_initial, positions[0].value),
+    EXPECT_THAT(AbsoluteError(x_initial, positions.value),
                 IsNear(2.1e-1_(1) * Metre));
-    EXPECT_THAT(AbsoluteError(v_initial, velocities[0].value),
+    EXPECT_THAT(AbsoluteError(v_initial, velocities.value),
                 IsNear(6.8e-2_(1) * Metre / Second));
     EXPECT_EQ(t_initial, solution.back().s.value);
     EXPECT_EQ(steps_backward, solution.size() - steps_forward);
@@ -191,7 +192,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest,
 TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, MaxSteps) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       EmbeddedExplicitRungeKuttaIntegrator<
-          methods::DormandPrince1986RK547FC, Instant, Length, Speed>();
+          methods::DormandPrince1986RK547FC, ODE>();
   Length const x_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
   Speed const v_amplitude = 1 * Metre / Second;
@@ -206,15 +207,15 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, MaxSteps) {
 
   auto const step_size_callback = [](bool tolerable) {};
 
-  std::vector<ODE::SystemState> solution;
+  std::vector<ODE::State> solution;
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_derivative =
       std::bind(ComputeHarmonicOscillatorDerivatives1D,
                 _1, _2, _3, /*evaluations=*/nullptr);
-  IntegrationProblem<ODE> problem;
+  InitialValueProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   problem.initial_state = {t_initial, {{x_initial}, {v_initial}}};
-  auto const append_state = [&solution](ODE::SystemState const& state) {
+  auto const append_state = [&solution](ODE::State const& state) {
     solution.push_back(state);
   };
   AdaptiveStepSizeIntegrator<ODE>::Parameters const parameters(
@@ -224,7 +225,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, MaxSteps) {
       /*last_step_is_exact=*/true);
   auto const tolerance_to_error_ratio =
       std::bind(HarmonicOscillatorToleranceRatio,
-                _1, _2,
+                _1, _2, _3,
                 length_tolerance,
                 speed_tolerance,
                 step_size_callback);
@@ -240,12 +241,12 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, MaxSteps) {
               StatusIs(termination_condition::ReachedMaximalStepCount));
   EXPECT_THAT(AbsoluteError(
                   x_initial * Cos(ω * (solution.back().s.value - t_initial)),
-                  positions[0].value),
+                  positions.value),
               IsNear(5.9e-2_(1) * Metre));
   EXPECT_THAT(AbsoluteError(
                   -v_amplitude *
                       Sin(ω * (solution.back().s.value - t_initial)),
-                  velocities[0].value),
+                  velocities.value),
               IsNear(5.6e-2_(1) * Metre / Second));
   EXPECT_THAT(solution.back().s.value, Lt(t_final));
   EXPECT_EQ(40, solution.size());
@@ -267,9 +268,9 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, MaxSteps) {
     auto const outcome = instance->Solve(t_final);
     auto const& [positions, velocities] = solution.back().y;
     EXPECT_THAT(outcome, StatusIs(termination_condition::Done));
-    EXPECT_THAT(AbsoluteError(x_initial, positions[0].value),
+    EXPECT_THAT(AbsoluteError(x_initial, positions.value),
                 IsNear(7.5e-2_(1) * Metre));
-    EXPECT_THAT(AbsoluteError(v_initial, velocities[0].value),
+    EXPECT_THAT(AbsoluteError(v_initial, velocities.value),
                 IsNear(6.8e-2_(1) * Metre / Second));
     EXPECT_EQ(t_final, solution.back().s.value);
     EXPECT_EQ(steps_forward, solution.size());
@@ -299,20 +300,20 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Singularity) {
   Length const length_tolerance = 1 * Milli(Metre);
   Speed const speed_tolerance = 1 * Milli(Metre) / Second;
 
-  std::vector<ODE::SystemState> solution;
+  std::vector<ODE::State> solution;
   ODE rocket_equation;
   rocket_equation.compute_derivative = [&mass, specific_impulse, mass_flow](
       Instant const& t,
-      ODE::State const& state,
-      ODE::StateVariation& result) {
-    auto const& [q, v] = state;
-    auto& [qʹ, vʹ] = result;
-    qʹ[0] = v[0];
-    vʹ[0] = mass_flow * specific_impulse / mass(t);
+      ODE::DependentVariables const& dependent_variables,
+      ODE::DependentVariableDerivatives& dependent_variable_derivatives) {
+    auto const& [q, v] = dependent_variables;
+    auto& [qʹ, vʹ] = dependent_variable_derivatives;
+    qʹ = v;
+    vʹ = mass_flow * specific_impulse / mass(t);
     return absl::OkStatus();
   };
-  IntegrationProblem<ODE> problem;
-  auto const append_state = [&solution](ODE::SystemState const& state) {
+  InitialValueProblem<ODE> problem;
+  auto const append_state = [&solution](ODE::State const& state) {
     solution.push_back(state);
   };
   problem.equation = rocket_equation;
@@ -321,15 +322,17 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Singularity) {
       /*first_time_step=*/t_final - t_initial,
       /*safety_factor=*/0.9);
   auto const tolerance_to_error_ratio = [length_tolerance, speed_tolerance](
-      Time const& h, ODE::SystemStateError const& error) {
+      Time const& h,
+      ODE::State const& /*state*/,
+      ODE::State::Error const& error) {
     auto const& [position_error, velocity_error] = error;
-    return std::min(length_tolerance / Abs(position_error[0]),
-                    speed_tolerance / Abs(velocity_error[0]));
+    return std::min(length_tolerance / Abs(position_error),
+                    speed_tolerance / Abs(velocity_error));
   };
 
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       EmbeddedExplicitRungeKuttaIntegrator<
-          methods::DormandPrince1986RK547FC, Instant, Length, Speed>();
+          methods::DormandPrince1986RK547FC, ODE>();
 
   auto const instance = integrator.NewInstance(problem,
                                                append_state,
@@ -337,19 +340,19 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Singularity) {
                                                parameters);
   auto const outcome = instance->Solve(t_final);
 
-  auto const& [positions, velocities] = solution.back().y;
+  auto const& [position, velocity] = solution.back().y;
   EXPECT_THAT(outcome, StatusIs(termination_condition::VanishingStepSize));
   EXPECT_EQ(101, solution.size());
   EXPECT_THAT(solution.back().s.value - t_initial,
               AlmostEquals(t_singular - t_initial, 4));
-  EXPECT_THAT(positions.back().value,
+  EXPECT_THAT(position.value,
               AlmostEquals(specific_impulse * initial_mass / mass_flow, 155));
 }
 
 TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Restart) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       EmbeddedExplicitRungeKuttaIntegrator<
-          methods::DormandPrince1986RK547FC, Instant, Length, Speed>();
+          methods::DormandPrince1986RK547FC, ODE>();
   Length const x_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
   Time const period = 2 * π * Second;
@@ -360,16 +363,16 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Restart) {
 
   auto const step_size_callback = [](bool tolerable) {};
 
-  std::vector<ODE::SystemState> solution1;
+  std::vector<ODE::State> solution1;
   {
     ODE harmonic_oscillator;
     harmonic_oscillator.compute_derivative =
         std::bind(ComputeHarmonicOscillatorDerivatives1D,
                   _1, _2, _3, /*evaluations=*/nullptr);
-    IntegrationProblem<ODE> problem;
+    InitialValueProblem<ODE> problem;
     problem.equation = harmonic_oscillator;
     problem.initial_state = {t_initial, {{x_initial}, {v_initial}}};
-    auto const append_state = [&solution1](ODE::SystemState const& state) {
+    auto const append_state = [&solution1](ODE::State const& state) {
       solution1.push_back(state);
     };
 
@@ -380,7 +383,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Restart) {
         /*last_step_is_exact=*/false);
     auto const tolerance_to_error_ratio =
         std::bind(HarmonicOscillatorToleranceRatio,
-                  _1, _2,
+                  _1, _2, _3,
                   length_tolerance,
                   speed_tolerance,
                   step_size_callback);
@@ -412,16 +415,16 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Restart) {
   }
 
   // Do it again in one call to |Solve| and check associativity.
-  std::vector<ODE::SystemState> solution2;
+  std::vector<ODE::State> solution2;
   {
     ODE harmonic_oscillator;
     harmonic_oscillator.compute_derivative =
         std::bind(ComputeHarmonicOscillatorDerivatives1D,
                   _1, _2, _3, /*evaluations=*/nullptr);
-    IntegrationProblem<ODE> problem;
+    InitialValueProblem<ODE> problem;
     problem.equation = harmonic_oscillator;
     problem.initial_state = {t_initial, {{x_initial}, {v_initial}}};
-    auto const append_state = [&solution2](ODE::SystemState const& state) {
+    auto const append_state = [&solution2](ODE::State const& state) {
       solution2.push_back(state);
     };
 
@@ -432,7 +435,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Restart) {
         /*last_step_is_exact=*/false);
     auto const tolerance_to_error_ratio =
         std::bind(HarmonicOscillatorToleranceRatio,
-                  _1, _2,
+                  _1, _2, _3,
                   length_tolerance,
                   speed_tolerance,
                   step_size_callback);
@@ -463,15 +466,15 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Serialization) {
 
   auto const step_size_callback = [](bool tolerable) {};
 
-  std::vector<ODE::SystemState> solution;
+  std::vector<ODE::State> solution;
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_derivative =
       std::bind(ComputeHarmonicOscillatorDerivatives1D,
                 _1, _2, _3, /*evaluations=*/nullptr);
-  IntegrationProblem<ODE> problem;
+  InitialValueProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   problem.initial_state = {{{x_initial}, {v_initial}}, t_initial};
-  auto const append_state = [&solution](ODE::SystemState const& state) {
+  auto const append_state = [&solution](ODE::State const& state) {
     solution.push_back(state);
   };
   AdaptiveStepSizeIntegrator<ODE>::Parameters const parameters(
@@ -509,18 +512,12 @@ namespace internal_ordinary_differential_equations {
 
 void PrintTo(
     typename internal_embedded_explicit_runge_kutta_integrator::ODE::
-        SystemState const& system_state,
+        State const& state,
     std::ostream* const out) {
-  auto const& [positions, velocities] = system_state.y;
-  *out << "\nTime: " << system_state.s << "\n";
-  *out << "Positions:\n";
-  for (int i = 0; i < positions.size(); ++i) {
-    *out << "  " << i << ": " << positions[i] << "\n";
-  }
-  *out << "Velocities:\n";
-  for (int i = 0; i < velocities.size(); ++i) {
-    *out << "  " << i << ": " << velocities[i] << "\n";
-  }
+  auto const& [position, velocity] = state.y;
+  *out << "\nTime: " << state.s << "\n";
+  *out << "Position: " << position << "\n";
+  *out << "Velocity: " << velocity << "\n";
 }
 
 }  // namespace internal_ordinary_differential_equations

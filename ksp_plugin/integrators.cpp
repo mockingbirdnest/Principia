@@ -22,6 +22,8 @@ using integrators::methods::BlanesMoan2002SRKN14A;
 using integrators::methods::Fine1987RKNG34;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using integrators::methods::Quinlan1999Order8A;
+using quantities::si::Metre;
+using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Second;
 
@@ -30,6 +32,15 @@ DefaultDownsamplingParameters() {
   return DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters{
       .max_dense_intervals = 10'000,
       .tolerance = 10 * Metre,
+  };
+}
+
+DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters
+OrbitAnalyserDownsamplingParameters() {
+  // Carefully tuned based on MercuryOrbiter test.
+  return DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters{
+      .max_dense_intervals = 10'000,
+      .tolerance = 1 * Milli(Metre),
   };
 }
 
@@ -43,8 +54,9 @@ DefaultEphemerisAccuracyParameters() {
 Ephemeris<Barycentric>::FixedStepParameters
 DefaultEphemerisFixedStepParameters() {
   return Ephemeris<Barycentric>::FixedStepParameters(
-      SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
-                                            Position<Barycentric>>(),
+      SymplecticRungeKuttaNyströmIntegrator<
+          BlanesMoan2002SRKN14A,
+          Ephemeris<Barycentric>::NewtonianMotionEquation>(),
       /*step=*/35 * Minute);
 }
 
@@ -53,7 +65,7 @@ DefaultBurnParameters() {
   return Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
       EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
           Fine1987RKNG34,
-          Position<Barycentric>>(),
+          Ephemeris<Barycentric>::GeneralizedNewtonianMotionEquation>(),
       /*max_steps=*/1000,
       /*length_integration_tolerance=*/1 * Metre,
       /*speed_integration_tolerance=*/1 * Metre / Second);
@@ -61,8 +73,9 @@ DefaultBurnParameters() {
 
 Ephemeris<Barycentric>::FixedStepParameters DefaultHistoryParameters() {
   return Ephemeris<Barycentric>::FixedStepParameters(
-      SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                         Position<Barycentric>>(),
+      SymmetricLinearMultistepIntegrator<
+          Quinlan1999Order8A,
+          Ephemeris<Barycentric>::NewtonianMotionEquation>(),
       /*step=*/10 * Second);
 }
 
@@ -71,7 +84,7 @@ DefaultPsychohistoryParameters() {
   return Ephemeris<Barycentric>::AdaptiveStepParameters(
       EmbeddedExplicitRungeKuttaNyströmIntegrator<
           DormandالمكاوىPrince1986RKN434FM,
-          Position<Barycentric>>(),
+          Ephemeris<Barycentric>::NewtonianMotionEquation>(),
       /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
       /*length_integration_tolerance=*/1 * Milli(Metre),
       /*speed_integration_tolerance=*/1 * Milli(Metre) / Second);
@@ -81,7 +94,7 @@ Ephemeris<Barycentric>::AdaptiveStepParameters DefaultPredictionParameters() {
   return Ephemeris<Barycentric>::AdaptiveStepParameters(
       EmbeddedExplicitRungeKuttaNyströmIntegrator<
           DormandالمكاوىPrince1986RKN434FM,
-          Position<Barycentric>>(),
+          Ephemeris<Barycentric>::NewtonianMotionEquation>(),
       /*max_steps=*/1000,
       /*length_integration_tolerance=*/1 * Metre,
       /*speed_integration_tolerance=*/1 * Metre / Second);

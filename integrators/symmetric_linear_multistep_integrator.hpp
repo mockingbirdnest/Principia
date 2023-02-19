@@ -12,8 +12,11 @@
 #include <vector>
 
 #include "absl/status/status.h"
+#include "base/not_null.hpp"
+#include "base/traits.hpp"
 #include "integrators/cohen_hubbard_oesterwinter.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
+#include "integrators/starter.hpp"
 #include "numerics/double_precision.hpp"
 #include "numerics/fixed_arrays.hpp"
 
@@ -21,18 +24,20 @@ namespace principia {
 namespace integrators {
 namespace internal_symmetric_linear_multistep_integrator {
 
+using base::is_instance_of_v;
 using base::not_null;
 using geometry::Instant;
 using numerics::DoublePrecision;
 using numerics::FixedVector;
 using quantities::Time;
 
-template<typename Method, typename Position>
+// This implementation follows [QT90].
+template<typename Method, typename ODE_>
 class SymmetricLinearMultistepIntegrator
-    : public FixedStepSizeIntegrator<
-          SpecialSecondOrderDifferentialEquation<Position>> {
+    : public FixedStepSizeIntegrator<ODE_> {
  public:
-  using ODE = SpecialSecondOrderDifferentialEquation<Position>;
+  using ODE = ODE_;
+  static_assert(is_instance_of_v<SpecialSecondOrderDifferentialEquation, ODE>);
   using AppendState = typename Integrator<ODE>::AppendState;
 
   static constexpr int order = Method::order;
@@ -46,12 +51,12 @@ class SymmetricLinearMultistepIntegrator
 
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
-    template<typename P = Position,
-             typename = std::enable_if_t<base::is_serializable_v<P>>>
+    template<typename DV = typename ODE::DependentVariable,
+             typename = std::enable_if_t<base::is_serializable_v<DV>>>
     static not_null<std::unique_ptr<Instance>> ReadFromMessage(
         serialization::SymmetricLinearMultistepIntegratorInstance const&
             extension,
-        IntegrationProblem<ODE> const& problem,
+        InitialValueProblem<ODE> const& problem,
         AppendState const& append_state,
         Time const& step,
         SymmetricLinearMultistepIntegrator const& integrator);
@@ -61,49 +66,41 @@ class SymmetricLinearMultistepIntegrator
     // here are really |Position|s, but we do complex computations on them and
     // it would be very inconvenient to cast these computations as barycentres.
     struct Step final {
-      std::vector<DoublePrecision<typename ODE::Displacement>> displacements;
-      std::vector<typename ODE::Acceleration> accelerations;
+      std::vector<DoublePrecision<typename ODE::DependentVariableDifference>>
+          displacements;
+      typename ODE::DependentVariableDerivatives2 accelerations;
       DoublePrecision<Instant> time;
 
       void WriteToMessage(
           not_null<serialization::SymmetricLinearMultistepIntegratorInstance::
                        Step*> message) const;
-      template<typename P = Position,
-               typename = std::enable_if_t<base::is_serializable_v<P>>>
+      template<typename DV = typename ODE::DependentVariable,
+               typename = std::enable_if_t<base::is_serializable_v<DV>>>
       static Step ReadFromMessage(
           serialization::SymmetricLinearMultistepIntegratorInstance::Step const&
               message);
     };
 
-    Instance(IntegrationProblem<ODE> const& problem,
+    class Starter : public integrators::Starter<ODE, Step, /*steps=*/order> {
+     protected:
+      using integrators::Starter<ODE, Step, order>::Starter;
+
+      void FillStepFromState(ODE const& equation,
+                             typename ODE::State const& state,
+                             Step& step) const override;
+      typename ODE::IndependentVariable independent_variable() const override;
+    };
+
+    Instance(InitialValueProblem<ODE> const& problem,
              AppendState const& append_state,
              Time const& step,
              SymmetricLinearMultistepIntegrator const& integrator);
-
-    // For deserialization.
-    Instance(IntegrationProblem<ODE> const& problem,
-             AppendState const& append_state,
-             Time const& step,
-             int startup_step_index,
-             std::list<Step> previous_steps,
-             SymmetricLinearMultistepIntegrator const& integrator);
-
-    // Performs the startup integration, i.e., computes enough states to either
-    // reach |t_final| or to reach a point where |instance.previous_steps_| has
-    // |order - 1| elements.  During startup |instance.current_state_| is
-    // updated more frequently than once every |instance.step_|.
-    void StartupSolve(Instant const& t_final);
 
     // Performs the velocity computation using the Cohen-Hubbard-Oesterwinter
     // method based on the accelerations computed by the main integrator.
     void ComputeVelocityUsingCohenHubbardOesterwinter();
 
-    static void FillStepFromSystemState(ODE const& equation,
-                                        typename ODE::SystemState const& state,
-                                        Step& step);
-
-    int startup_step_index_ = 0;
-    std::list<Step> previous_steps_;  // At most |order_| elements.
+    Starter starter_;
     SymmetricLinearMultistepIntegrator const& integrator_;
     friend class SymmetricLinearMultistepIntegrator;
   };
@@ -112,7 +109,7 @@ class SymmetricLinearMultistepIntegrator
       FixedStepSizeIntegrator<ODE> const& startup_integrator);
 
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
-      IntegrationProblem<ODE> const& problem,
+      InitialValueProblem<ODE> const& problem,
       AppendState const& append_state,
       Time const& step) const override;
 

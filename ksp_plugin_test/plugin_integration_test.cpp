@@ -702,7 +702,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters(
       EmbeddedExplicitRungeKuttaNyströmIntegrator<
           DormandالمكاوىPrince1986RKN434FM,
-          Position<Barycentric>>(),
+          Ephemeris<Barycentric>::NewtonianMotionEquation>(),
       /*max_steps=*/14,
       /*length_integration_tolerance=*/1 * Milli(Metre),
       /*speed_integration_tolerance=*/1 * Milli(Metre) / Second);

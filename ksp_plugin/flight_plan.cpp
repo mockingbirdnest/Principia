@@ -309,14 +309,14 @@ FlightPlan::FlightPlan()
       adaptive_step_parameters_(
           EmbeddedExplicitRungeKuttaNyströmIntegrator<
               DormandالمكاوىPrince1986RKN434FM,
-              Position<Barycentric>>(),
+              Ephemeris<Barycentric>::NewtonianMotionEquation>(),
           /*max_steps=*/1,
           /*length_integration_tolerance=*/1 * Metre,
           /*speed_integration_tolerance=*/1 * Metre / Second),
       generalized_adaptive_step_parameters_(
           EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
               Fine1987RKNG34,
-              Position<Barycentric>>(),
+              Ephemeris<Barycentric>::GeneralizedNewtonianMotionEquation>(),
           /*max_steps=*/1,
           /*length_integration_tolerance=*/1 * Metre,
           /*speed_integration_tolerance=*/1 * Metre / Second) {}
@@ -340,8 +340,7 @@ absl::Status FlightPlan::BurnSegment(
     // waiting if necessary.
     Instant const starting_time = segment->back().time;
     if (starting_time < ephemeris_->t_min()) {
-      ephemeris_->RequestReanimation(starting_time);
-      ephemeris_->WaitForReanimation(starting_time);
+      ephemeris_->AwaitReanimation(starting_time);
     }
 
     if (manœuvre.is_inertially_fixed()) {
@@ -371,8 +370,7 @@ absl::Status FlightPlan::CoastSegment(
   // waiting if necessary.
   Instant const starting_time = segment->back().time;
   if (starting_time < ephemeris_->t_min()) {
-    ephemeris_->RequestReanimation(starting_time);
-    ephemeris_->WaitForReanimation(starting_time);
+    ephemeris_->AwaitReanimation(starting_time);
   }
 
   return ephemeris_->FlowWithAdaptiveStep(

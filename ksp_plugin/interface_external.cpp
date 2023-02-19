@@ -117,7 +117,7 @@ Status* __cdecl principia__ExternalCelestialGetSurfacePosition(
                   << "] of the trajectory of " << celestial.body()->name())
                     .str())));
   }
-  using Surface = Frame<enum class SurfaceTag>;
+  using Surface = Frame<struct SurfaceTag>;
   OrthogonalMap<Surface, WorldSun> const to_world_axes =
       plugin->renderer().BarycentricToWorldSun(plugin->PlanetariumRotation()) *
       celestial.body()->FromSurfaceFrame<Surface>(t).Forget<OrthogonalMap>();

@@ -24,8 +24,8 @@ using quantities::si::Metre;
 using quantities::si::Radian;
 
 namespace {
-using World = Frame<enum class WorldTag>;
-using Camera = Frame<enum class CameraTag>;
+using World = Frame<struct WorldTag>;
+using Camera = Frame<struct CameraTag>;
 }  // namespace
 
 void RandomSegmentsBenchmark(

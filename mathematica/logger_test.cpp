@@ -21,7 +21,7 @@ using ::testing::Optional;
 
 class LoggerTest : public ::testing::Test {
  protected:
-  using F = Frame<enum class FTag>;
+  using F = Frame<struct FTag>;
 };
 
 // On macOS, std::filesystem is broken (prior to Catalina).  On Ubuntu, the

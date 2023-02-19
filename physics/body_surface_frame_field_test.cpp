@@ -35,7 +35,7 @@ using ::testing::_;
 
 class BodySurfaceFrameFieldTest : public ::testing::Test {
  protected:
-  using TestFrame = Frame<enum class TestFrameTag>;
+  using TestFrame = Frame<struct TestFrameTag>;
 
   BodySurfaceFrameFieldTest()
       : body_(MassiveBody::Parameters(1 * Kilogram),

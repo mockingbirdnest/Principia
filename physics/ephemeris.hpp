@@ -17,6 +17,7 @@
 #include "integrators/integrators.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/checkpointer.hpp"
+#include "physics/clientele.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -42,7 +43,7 @@ using geometry::Vector;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::ExplicitSecondOrderOrdinaryDifferentialEquation;
 using integrators::FixedStepSizeIntegrator;
-using integrators::IntegrationProblem;
+using integrators::InitialValueProblem;
 using integrators::Integrator;
 using integrators::SpecialSecondOrderDifferentialEquation;
 using quantities::Acceleration;
@@ -140,9 +141,9 @@ class Ephemeris {
   // |desired_t_min|.
   void RequestReanimation(Instant const& desired_t_min);
 
-  // Blocks until the |t_min()| of the ephemeris is at or before
-  // |desired_t_min|.
-  void WaitForReanimation(Instant const& desired_t_min);
+  // Same as |RequestReanimation|, but synchronous.  This function blocks until
+  // the |t_min()| of the ephemeris is at or before |desired_t_min|.
+  void AwaitReanimation(Instant const& desired_t_min);
 
   // Creates an instance suitable for integrating the given |trajectories| with
   // their |intrinsic_accelerations| using a fixed-step integrator parameterized
@@ -277,14 +278,14 @@ class Ephemeris {
 
   // Callbacks for the integrators.
   void AppendMassiveBodiesState(
-      typename NewtonianMotionEquation::SystemState const& state)
+      typename NewtonianMotionEquation::State const& state)
       REQUIRES(lock_);
   template<typename ContinuousTrajectoryPtr>
   static std::vector<absl::Status> AppendMassiveBodiesStateToTrajectories(
-      typename NewtonianMotionEquation::SystemState const& state,
+      typename NewtonianMotionEquation::State const& state,
       std::vector<not_null<ContinuousTrajectoryPtr>> const& trajectories);
   static void AppendMasslessBodiesStateToTrajectories(
-      typename NewtonianMotionEquation::SystemState const& state,
+      typename NewtonianMotionEquation::State const& state,
       std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories);
 
   // Returns an equation suitable for the massive bodies contained in this
@@ -386,7 +387,8 @@ class Ephemeris {
       Length const& length_integration_tolerance,
       Speed const& speed_integration_tolerance,
       Time const& current_step_size,
-      typename NewtonianMotionEquation::SystemStateError const& error);
+      typename NewtonianMotionEquation::State const& /*state*/,
+      typename NewtonianMotionEquation::State::Error const& error);
 
   // The bodies in the order in which they were given at construction.
   std::vector<not_null<MassiveBody const*>> unowned_bodies_;
@@ -425,6 +427,7 @@ class Ephemeris {
 
   // The techniques and terminology follow [Lov22].
   RecurringThread<Instant> reanimator_;
+  Clientele<Instant> reanimator_clientele_;
 
   // The fields above this line are fixed at construction and therefore not
   // protected.  Note that |ContinuousTrajectory| is thread-safe.  |lock_| is

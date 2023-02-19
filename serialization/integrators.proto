@@ -29,12 +29,18 @@ message FixedStepSizeIntegrator {
     optional FixedStepSizeIntegrator extension = 3001;
   }
   enum Kind {
+    ADAMS_BASHFORTH_ORDER_2 = 39;
+    ADAMS_BASHFORTH_ORDER_3 = 40;
+    ADAMS_BASHFORTH_ORDER_4 = 41;
+    ADAMS_BASHFORTH_ORDER_5 = 42;
+    ADAMS_BASHFORTH_ORDER_6 = 43;
     BLANES_MOAN_2002_S6 = 36;
     BLANES_MOAN_2002_S10 = 37;
     BLANES_MOAN_2002_SRKN_6B = 1;
     BLANES_MOAN_2002_SRKN_11B = 2;
     BLANES_MOAN_2002_SRKN_14A = 3;
     CANDY_ROZMUS_1991_FOREST_RUTH_1990 = 26;
+    KUTTA_1901_V_SIGMA1 = 38;
     MCLACHLAN_1995_S2 = 29;
     MCLACHLAN_1995_S4 = 31;
     MCLACHLAN_1995_S5 = 32;
@@ -79,7 +85,7 @@ message FixedStepSizeIntegrator {
 message IntegratorInstance {
   extensions 7000 to 7999;  // Last used: 7001
 
-  required SystemState current_state = 1;
+  required State current_state = 1;
 }
 
 message AdaptiveStepSizeIntegratorInstance {
@@ -125,7 +131,7 @@ message FixedStepSizeIntegratorInstance {
   extend IntegratorInstance {
     optional FixedStepSizeIntegratorInstance extension = 7000;
   }
-  extensions 8000 to 8999;  // Last used: 8001
+  extensions 8000 to 8999;  // Last used: 8002
   required Quantity step = 1;
   required FixedStepSizeIntegrator integrator = 2;
 }
@@ -156,7 +162,7 @@ message SymplecticRungeKuttaNystromIntegratorInstance {
   }
 }
 
-message SystemState {
+message State {
   repeated DoublePrecision position = 1;
   repeated DoublePrecision velocity = 2;
   required DoublePrecision time = 3;

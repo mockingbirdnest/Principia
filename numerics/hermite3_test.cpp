@@ -40,7 +40,7 @@ namespace numerics {
 
 class Hermite3Test : public ::testing::Test {
  protected:
-  using World = Frame<enum class WorldTag, Inertial>;
+  using World = Frame<struct WorldTag, Inertial>;
 
   Instant const t0_;
 };
@@ -110,6 +110,17 @@ TEST_F(Hermite3Test, OneDimensionalInterpolationError) {
       /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
       /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; }),
       Eq(1 / 16.0));
+
+  EXPECT_TRUE(not_a_quartic.LInfinityErrorIsWithin(
+      samples,
+      /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
+      /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; },
+      /*tolerance=*/0.1));
+  EXPECT_FALSE(not_a_quartic.LInfinityErrorIsWithin(
+      samples,
+      /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
+      /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; },
+      /*tolerance=*/0.05));
 }
 
 TEST_F(Hermite3Test, ThreeDimensionalInterpolationError) {
@@ -138,6 +149,17 @@ TEST_F(Hermite3Test, ThreeDimensionalInterpolationError) {
           /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
           /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; }),
       IsNear(1.5_(1) * Centi(Metre)));
+
+  EXPECT_TRUE(not_a_circle.LInfinityErrorIsWithin(
+      samples,
+      /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
+      /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; },
+      /*tolerance=*/2 * Centi(Metre)));
+  EXPECT_FALSE(not_a_circle.LInfinityErrorIsWithin(
+      samples,
+      /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
+      /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; },
+      /*tolerance=*/1 * Centi(Metre)));
 }
 
 }  // namespace numerics

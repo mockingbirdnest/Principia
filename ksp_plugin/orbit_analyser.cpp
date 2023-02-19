@@ -86,7 +86,7 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
   Analysis analysis{parameters.first_time};
   DiscreteTrajectory<Barycentric> trajectory;
   trajectory.segments().front().SetDownsampling(
-      DefaultDownsamplingParameters());
+      OrbitAnalyserDownsamplingParameters());
   trajectory.Append(parameters.first_time, parameters.first_degrees_of_freedom)
       .IgnoreError();
 
@@ -141,7 +141,7 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
     // in the progress bar being stuck at 100% while the elements and nodes
     // are being computed.
 
-    using PrimaryCentred = Frame<enum class PrimaryCentredTag, NonRotating>;
+    using PrimaryCentred = Frame<struct PrimaryCentredTag, NonRotating>;
     DiscreteTrajectory<PrimaryCentred> primary_centred_trajectory;
     BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred>
         body_centred(ephemeris_, primary);

@@ -243,10 +243,19 @@ TEST_F(PermutationTest, SerializationSuccess) {
   auto const test_serialization_for = [&](auto const& permutations) {
     serialization::LinearMap message;
     for (auto const cp : permutations) {
+#if PRINCIPIA_COMPILER_MSVC && \
+    (_MSC_FULL_VER == 193'431'937 || \
+     _MSC_FULL_VER == 193'431'942)
+      using Perm =
+          std::conditional<std::is_same_v<decltype(cp), EvenPermutation const>,
+                           PermutationR1R2,
+                           PermutationR1L>::type;
+#else
       using Perm = std::conditional_t<
           std::is_same_v<decltype(cp), EvenPermutation const>,
-                             PermutationR1R2,
-                             PermutationR1L>;
+          PermutationR1R2,
+          PermutationR1L>;
+#endif
       Perm const perm_a(cp);
       perm_a.WriteToMessage(&message);
       EXPECT_TRUE(message.has_from_frame());

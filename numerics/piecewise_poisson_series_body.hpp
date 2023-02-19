@@ -164,7 +164,7 @@ Norm(PoissonSeries<double,
      Instant const& t_max) const {
   AngularFrequency const max_ω = 2 * this->max_ω() + weight.max_ω();
   std::optional<int> const max_points =
-      MaxPointsHeuristicsForAutomaticClenshawCurtis(
+      quadrature::MaxPointsHeuristicsForAutomaticClenshawCurtis(
           max_ω,
           t_max - t_min,
           clenshaw_curtis_min_points_overall,
@@ -689,7 +689,7 @@ InnerProduct(PiecewisePoissonSeries<LValue,
              std::optional<int> max_points) {
   AngularFrequency const max_ω = left.max_ω() + right.max_ω() + weight.max_ω();
   std::optional<int> const max_points_heuristic =
-      MaxPointsHeuristicsForAutomaticClenshawCurtis(
+      quadrature::MaxPointsHeuristicsForAutomaticClenshawCurtis(
           max_ω,
           t_max - t_min,
           clenshaw_curtis_min_points_overall,

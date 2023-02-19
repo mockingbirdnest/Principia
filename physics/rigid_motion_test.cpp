@@ -260,12 +260,12 @@ TEST_F(RigidMotionTest, Serialization) {
 
 TEST_F(RigidMotionTest, QuaternionNormalization) {
   using Barycentric =
-      Frame<enum class BarycentricTag, Inertial, Handedness::Right>;
+      Frame<struct BarycentricTag, Inertial, Handedness::Right>;
   using RigidPart =
-      Frame<enum class RigidPartTag, Arbitrary, Handedness::Left>;
+      Frame<struct RigidPartTag, Arbitrary, Handedness::Left>;
   using AliceWorld =
-      Frame<enum class AliceWorldTag, Inertial, Handedness::Right>;
-  using World = Frame<enum class WorldTag, Inertial, Handedness::Left>;
+      Frame<struct AliceWorldTag, Inertial, Handedness::Right>;
+  using World = Frame<struct WorldTag, Inertial, Handedness::Left>;
 
   AngularVelocity<RigidPart> const ω1(
       {-4.31524874936563274e-04 * Radian / Second,

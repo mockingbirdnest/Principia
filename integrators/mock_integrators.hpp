@@ -34,7 +34,7 @@ class MockFixedStepSizeIntegrator
 
   MOCK_METHOD(not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>,
               NewInstance,
-              (IntegrationProblem<ODE> const& problem,
+              (InitialValueProblem<ODE> const& problem,
                typename Integrator<ODE>::AppendState const& append_state,
                Time const& step),
               (const, override));

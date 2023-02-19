@@ -17,7 +17,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\Debug\GameData\Principia\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;KSP_VERSION_1_12_4</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;KSP_VERSION_1_12_5</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -28,7 +28,7 @@
     <DebugType>full</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\Release\GameData\Principia\</OutputPath>
-    <DefineConstants>TRACE;KSP_VERSION_1_12_4</DefineConstants>
+    <DefineConstants>TRACE;KSP_VERSION_1_12_5</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DebugSymbols>true</DebugSymbols>
@@ -65,44 +65,44 @@
   </ItemGroup>
   <ItemGroup Condition="'$(Configuration)' == 'Release' Or '$(Configuration)' == 'Debug'">
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\KSP Assemblies\1.12.4\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.12.5\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>..\..\KSP Assemblies\1.12.4\Assembly-CSharp-firstpass.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.12.5\Assembly-CSharp-firstpass.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="UnityEngine">
-      <HintPath>..\..\KSP Assemblies\1.12.4\UnityEngine.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.12.5\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\KSP Assemblies\1.12.4\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.12.5\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.ImageConversionModule">
-      <HintPath>..\..\KSP Assemblies\1.12.4\UnityEngine.ImageConversionModule.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.12.5\UnityEngine.ImageConversionModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
-      <HintPath>..\..\KSP Assemblies\1.12.4\UnityEngine.IMGUIModule.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.12.5\UnityEngine.IMGUIModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
-      <HintPath>..\..\KSP Assemblies\1.12.4\UnityEngine.InputLegacyModule.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.12.5\UnityEngine.InputLegacyModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.PhysicsModule">
-      <HintPath>..\..\KSP Assemblies\1.12.4\UnityEngine.PhysicsModule.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.12.5\UnityEngine.PhysicsModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>..\..\KSP Assemblies\1.12.4\UnityEngine.TextRenderingModule.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.12.5\UnityEngine.TextRenderingModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\KSP Assemblies\1.12.4\UnityEngine.UI.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.12.5\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>

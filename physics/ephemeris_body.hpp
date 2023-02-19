@@ -38,6 +38,7 @@ using base::make_not_null_unique;
 using base::MakeStoppableThread;
 using geometry::Barycentre;
 using geometry::Displacement;
+using geometry::InfiniteFuture;
 using geometry::InnerProduct;
 using geometry::Position;
 using geometry::R3Element;
@@ -45,7 +46,7 @@ using geometry::Sign;
 using geometry::Velocity;
 using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
 using integrators::ExplicitSecondOrderOrdinaryDifferentialEquation;
-using integrators::IntegrationProblem;
+using integrators::InitialValueProblem;
 using integrators::Integrator;
 using integrators::methods::Fine1987RKNG34;
 using numerics::Brent;
@@ -122,14 +123,15 @@ Ephemeris<Frame>::Ephemeris(
           [this](Instant const& desired_t_min) {
             return Reanimate(desired_t_min);
           },
-          20ms) {  // 50 Hz.
+          20ms),  // 50 Hz.
+      reanimator_clientele_(/*default_value=*/InfiniteFuture) {
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
-  IntegrationProblem<NewtonianMotionEquation> problem;
+  InitialValueProblem<NewtonianMotionEquation> problem;
   problem.equation = MakeMassiveBodiesNewtonianMotionEquation();
 
-  typename NewtonianMotionEquation::SystemState& state = problem.initial_state;
+  typename NewtonianMotionEquation::State& state = problem.initial_state;
   state.time = DoublePrecision<Instant>(initial_time);
 
   for (int i = 0; i < bodies.size(); ++i) {
@@ -243,30 +245,37 @@ void Ephemeris<Frame>::RequestReanimation(Instant const& desired_t_min) {
     // the time between checkpoints) than it is currently doing, interrupt it.
     // Note that this is fundamentally racy: for instance the reanimator may not
     // have picked the last input given by Put.  But it helps if the user was
-    // doing a very long reanimation and wants to shorten it.
+    // doing a very long reanimation and wants to shorten it.  Note however that
+    // we must not move the desired t_min beyond the point where there are
+    // clients waiting for reanimation (e.g., vessels) as they would never
+    // succeed.
+    Instant const allowable_desired_t_min =
+        std::min(desired_t_min, reanimator_clientele_.first());
     must_restart = last_desired_t_min_.has_value() &&
                    last_desired_t_min_.value() + max_time_between_checkpoints <
-                       desired_t_min;
+                       allowable_desired_t_min;
     LOG_IF(WARNING, must_restart)
         << "Restarting reanimator because desired t_min went from "
-        << last_desired_t_min_.value() << " to " << desired_t_min;
-    last_desired_t_min_ = desired_t_min;
+        << last_desired_t_min_.value() << " to " << allowable_desired_t_min;
+    last_desired_t_min_ = allowable_desired_t_min;
   }
 
   // Don't hold the lock while restarting, the reanimator needs it.
   if (must_restart) {
     reanimator_.Restart();
   }
-  reanimator_.Put(desired_t_min);
+  reanimator_.Put(last_desired_t_min_.value());
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::WaitForReanimation(Instant const& desired_t_min) {
+void Ephemeris<Frame>::AwaitReanimation(Instant const& desired_t_min) {
   auto desired_t_min_reached = [this, desired_t_min]() {
     lock_.AssertReaderHeld();
     return t_min_locked() <= desired_t_min;
   };
 
+  Client me(desired_t_min, reanimator_clientele_);
+  RequestReanimation(desired_t_min);
   absl::ReaderMutexLock l(&lock_);
   lock_.Await(absl::Condition(&desired_t_min_reached));
 }
@@ -320,7 +329,7 @@ Ephemeris<Frame>::StoppableNewInstance(
     std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
     IntrinsicAccelerations const& intrinsic_accelerations,
     FixedStepParameters const& parameters) {
-  IntegrationProblem<NewtonianMotionEquation> problem;
+  InitialValueProblem<NewtonianMotionEquation> problem;
 
   problem.equation.compute_acceleration =
       [this, intrinsic_accelerations](
@@ -792,7 +801,8 @@ Ephemeris<Frame>::Ephemeris(
       checkpointer_(
           make_not_null_unique<Checkpointer<serialization::Ephemeris>>(
               /*reader=*/nullptr, /*writer=*/nullptr)),
-      reanimator_(/*action=*/nullptr, 0ms) {}
+      reanimator_(/*action=*/nullptr, 0ms),
+      reanimator_clientele_(InfiniteFuture) {}
 
 template<typename Frame>
 void Ephemeris<Frame>::WriteToCheckpointIfNeeded(Instant const& time) const {
@@ -909,7 +919,7 @@ absl::Status Ephemeris<Frame>::ReanimateOneCheckpoint(
   // Reconstruct the integrator instance from the current checkpoint.
   auto append_massive_bodies_state =
       [&trajectories](
-          typename NewtonianMotionEquation::SystemState const& state) {
+          typename NewtonianMotionEquation::State const& state) {
         AppendMassiveBodiesStateToTrajectories(state, trajectories);
       };
   auto const instance = FixedStepSizeIntegrator<NewtonianMotionEquation>::
@@ -938,7 +948,7 @@ absl::Status Ephemeris<Frame>::ReanimateOneCheckpoint(
 
 template<typename Frame>
 void Ephemeris<Frame>::AppendMassiveBodiesState(
-    typename NewtonianMotionEquation::SystemState const& state) {
+    typename NewtonianMotionEquation::State const& state) {
   lock_.AssertHeld();
 
   // Extend the trajectories.
@@ -967,7 +977,7 @@ template<typename Frame>
 template<typename ContinuousTrajectoryPtr>
 std::vector<absl::Status>
 Ephemeris<Frame>::AppendMassiveBodiesStateToTrajectories(
-    typename NewtonianMotionEquation::SystemState const& state,
+    typename NewtonianMotionEquation::State const& state,
     std::vector<not_null<ContinuousTrajectoryPtr>> const& trajectories) {
   std::vector<absl::Status> statuses;
   statuses.reserve(trajectories.size());
@@ -985,7 +995,7 @@ Ephemeris<Frame>::AppendMassiveBodiesStateToTrajectories(
 
 template<typename Frame>
 void Ephemeris<Frame>::AppendMasslessBodiesStateToTrajectories(
-    typename NewtonianMotionEquation::SystemState const& state,
+    typename NewtonianMotionEquation::State const& state,
     std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories) {
   Instant const time = state.time.value;
   int index = 0;
@@ -1351,7 +1361,7 @@ absl::Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
   Prolong(t_final).IgnoreError();
   RETURN_IF_STOPPED;
 
-  IntegrationProblem<ODE> problem;
+  InitialValueProblem<ODE> problem;
   problem.equation.compute_acceleration = std::move(compute_acceleration);
 
   problem.initial_state = {trajectory_last_time,
@@ -1371,7 +1381,7 @@ absl::Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
       std::bind(&Ephemeris<Frame>::ToleranceToErrorRatio,
                 parameters.length_integration_tolerance(),
                 parameters.speed_integration_tolerance(),
-                _1, _2);
+                _1, _2, _3);
 
   typename AdaptiveStepSizeIntegrator<ODE>::AppendState append_state =
       std::bind(&Ephemeris::AppendMasslessBodiesStateToTrajectories,
@@ -1410,7 +1420,8 @@ double Ephemeris<Frame>::ToleranceToErrorRatio(
     Length const& length_integration_tolerance,
     Speed const& speed_integration_tolerance,
     Time const& current_step_size,
-    typename NewtonianMotionEquation::SystemStateError const& error) {
+    typename NewtonianMotionEquation::State const& /*state*/,
+    typename NewtonianMotionEquation::State::Error const& error) {
   Length max_length_error;
   Speed max_speed_error;
   for (auto const& position_error : error.position_error) {

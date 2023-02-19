@@ -29,7 +29,7 @@ using testing_utilities::𝛁Branin;
 using testing_utilities::𝛁GoldsteinPrice;
 using testing_utilities::𝛁Hartmann3;
 
-using World = Frame<enum class WorldTag>;
+using World = Frame<struct WorldTag>;
 
 void BM_MLSLBranin(benchmark::State& state) {
   std::int64_t const points_per_round = state.range(0);

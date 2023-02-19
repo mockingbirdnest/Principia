@@ -318,7 +318,7 @@ void Plugin::SetMainBody(Index const index) {
 Rotation<BodyWorld, World> Plugin::CelestialRotation(
     Index const index) const {
   // |BodyWorld| with its y and z axes swapped (so that z is the polar axis).
-  using BodyFixed = Frame<enum class BodyFixedTag>;
+  using BodyFixed = Frame<struct BodyFixedTag>;
   Permutation<BodyWorld, BodyFixed> const body_mirror(OddPermutation::XZY);
 
   auto const& body = *FindOrDie(celestials_, index)->body();
@@ -1201,7 +1201,7 @@ void Plugin::SetTargetVessel(GUID const& vessel_guid,
 std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
     Position<World> const& sun_world_position) const {
 
-  using RightHandedNavball = Frame<enum class RightHandedNavballTag>;
+  using RightHandedNavball = Frame<struct RightHandedNavballTag>;
 
   // TODO(phl): Clean up this mess!
   class NavballFrameField : public FrameField<World, Navball> {
@@ -1611,7 +1611,7 @@ void Plugin::InitializeIndices(std::string const& name,
 }
 
 void Plugin::UpdatePlanetariumRotation() {
-  using PlanetariumFrame = Frame<enum class PlanetariumFrameTag>;
+  using PlanetariumFrame = Frame<struct PlanetariumFrameTag>;
 
   CHECK_NOTNULL(main_body_);
   Rotation<Barycentric, PlanetariumFrame> const to_planetarium =

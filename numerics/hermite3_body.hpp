@@ -65,20 +65,37 @@ BoundedArray<Argument, 2> Hermite3<Argument, Value>::FindExtrema() const {
 
 template<typename Argument, typename Value>
 template<typename Samples>
-typename Hilbert<Difference<Value>>::NormType
-Hermite3<Argument, Value>::LInfinityError(
+auto Hermite3<Argument, Value>::LInfinityError(
     Samples const& samples,
-    std::function<Argument const&(
-        typename Samples::value_type const&)> const& get_argument,
+    std::function<Argument const&(typename Samples::value_type const&)> const&
+        get_argument,
     std::function<Value const&(typename Samples::value_type const&)> const&
-        get_value) const {
-  typename Hilbert<Difference<Value>>::NormType result{};
+        get_value) const -> NormType {
+  NormType result{};
   for (const auto& sample : samples) {
     result = std::max(result,
                       Hilbert<Difference<Value>>::Norm(
                           Evaluate(get_argument(sample)) - get_value(sample)));
   }
   return result;
+}
+
+template<typename Argument, typename Value>
+template<typename Samples>
+bool Hermite3<Argument, Value>::LInfinityErrorIsWithin(
+    Samples const& samples,
+    std::function<Argument const&(typename Samples::value_type const&)> const&
+        get_argument,
+    std::function<Value const&(typename Samples::value_type const&)> const&
+        get_value,
+    NormType const& tolerance) const {
+  for (const auto& sample : samples) {
+    if (Hilbert<Difference<Value>>::Norm(Evaluate(get_argument(sample)) -
+                                         get_value(sample)) >= tolerance) {
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace internal_hermite3

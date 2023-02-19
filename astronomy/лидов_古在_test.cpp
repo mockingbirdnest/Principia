@@ -1,3 +1,5 @@
+#define PRINCIPIA_LOG_TO_MATHEMATICA 0
+
 #include <memory>
 
 #include "astronomy/mercury_orbiter.hpp"
@@ -8,7 +10,9 @@
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/solar_system.hpp"
+#if PRINCIPIA_LOG_TO_MATHEMATICA
 #include "mathematica/logger.hpp"
+#endif
 #include "testing_utilities/matchers.hpp"
 #include "testing_utilities/is_near.hpp"
 
@@ -50,7 +54,7 @@ using testing_utilities::IsNear;
 class Лидов古在Test : public ::testing::Test {
  protected:
   using MercuryCentredInertial =
-      Frame<enum class MercuryCentredInertialTag, NonRotating>;
+      Frame<struct MercuryCentredInertialTag, NonRotating>;
 
   Лидов古在Test()
       : solar_system_1950_(
@@ -61,8 +65,9 @@ class Лидов古在Test : public ::testing::Test {
             /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
                                      /*geopotential_tolerance=*/0x1p-24},
             Ephemeris<ICRS>::FixedStepParameters(
-                SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                                   Position<ICRS>>(),
+                SymmetricLinearMultistepIntegrator<
+                    QuinlanTremaine1990Order12,
+                    Ephemeris<ICRS>::NewtonianMotionEquation>(),
                 /*step=*/10 * Minute))),
         mercury_(*solar_system_1950_.massive_body(*ephemeris_, "Mercury")),
         mercury_frame_(ephemeris_.get(), &mercury_) {
@@ -86,13 +91,16 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
   EXPECT_OK(icrs_trajectory.Append(
       MercuryOrbiterInitialTime, MercuryOrbiterInitialDegreesOfFreedom<ICRS>));
   auto& icrs_segment = icrs_trajectory.segments().front();
+  // Carefully tuned.
   icrs_segment.SetDownsampling({.max_dense_intervals = 10'000,
-                                .tolerance = 10 * Metre});
-  auto const instance = ephemeris_->NewInstance(
-      {&icrs_trajectory},
-      Ephemeris<ICRS>::NoIntrinsicAccelerations,
-      {SymmetricLinearMultistepIntegrator<Quinlan1999Order8A, Position<ICRS>>(),
-       /*step=*/10 * Second});
+                                .tolerance = 1 * Milli(Metre)});
+  auto const instance =
+      ephemeris_->NewInstance({&icrs_trajectory},
+                              Ephemeris<ICRS>::NoIntrinsicAccelerations,
+                              {SymmetricLinearMultistepIntegrator<
+                                   Quinlan1999Order8A,
+                                   Ephemeris<ICRS>::NewtonianMotionEquation>(),
+                               /*step=*/10 * Second});
 
   for (int year = 1967; year < 1980; ++year) {
     Instant const t = DateTimeAsTT(date_time::DateTime::BeginningOfDay(
@@ -104,21 +112,26 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
       break;
     }
   }
+#if PRINCIPIA_LOG_TO_MATHEMATICA
   mathematica::Logger logger(
       SOLUTION_DIR / "mathematica" /
           PRINCIPIA_UNICODE_PATH("лидов_古在.generated.wl"),
       /*make_unique=*/false);
+#endif
 
   DiscreteTrajectory<MercuryCentredInertial> mercury_centred_trajectory;
   for (auto const& [t, dof] : icrs_trajectory) {
     EXPECT_OK(mercury_centred_trajectory.Append(
         t, mercury_frame_.ToThisFrameAtTime(t)(dof)));
+#if PRINCIPIA_LOG_TO_MATHEMATICA
     logger.Append(
         "q",
         mercury_centred_trajectory.back().degrees_of_freedom.position(),
         mathematica::ExpressIn(Metre));
+#endif
   }
 
+  EXPECT_EQ(1'534'438, mercury_centred_trajectory.size());
   OrbitalElements const elements = OrbitalElements::ForTrajectory(
       mercury_centred_trajectory, mercury_, MasslessBody{}).value();
   // The constants c₁ and c₂ are defined in [Лид61], equations (58) and (59)
@@ -132,6 +145,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
     double const sin²_ω = Pow<2>(Sin(elements.argument_of_periapsis));
     c₁.Include(ε * cos²_i);
     c₂.Include((1 - ε) * (2.0 / 5.0 - sin²_i * sin²_ω));
+#if PRINCIPIA_LOG_TO_MATHEMATICA
     logger.Append("t", elements.time, mathematica::ExpressIn(Second));
     logger.Append("a", elements.semimajor_axis, mathematica::ExpressIn(Metre));
     logger.Append("e", elements.eccentricity);
@@ -139,6 +153,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
     logger.Append(R"(\[Omega])",
                   elements.argument_of_periapsis,
                   mathematica::ExpressIn(Radian));
+#endif
   }
   // The elements e, i, and ω all vary quite a lot.
   EXPECT_THAT(elements.mean_eccentricity_interval().min, IsNear(0.40_(1)));
@@ -154,11 +169,12 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
 
   // The conservation of the “тривиального интеграла a = const” [Лид61, p. 25]
   // is excellent: while the sun is nudging and deforming the orbit, it is not
-  // pumping energy into nor out of it.
+  // pumping energy into nor out of it.  The true values are 14'910.01 and
+  // 14'910.28 km.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().min,
-              IsNear(14'910.0_(1) * Kilo(Metre)));
+              IsNear(14'910.02_(1) * Kilo(Metre)));
   EXPECT_THAT(elements.mean_semimajor_axis_interval().max,
-              IsNear(14'910.3_(1) * Kilo(Metre)));
+              IsNear(14'910.28_(1) * Kilo(Metre)));
 
   // The integral c₁ is preserved quite well: we have an exchange between
   // inclination and eccentricity.
@@ -178,3 +194,4 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
 
 }  // namespace astronomy
 }  // namespace principia
+#undef PRINCIPIA_LOG_TO_MATHEMATICA

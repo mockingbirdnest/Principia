@@ -10,36 +10,35 @@ namespace internal_symplectic_partitioned_runge_kutta_integrator {
 
 using base::mod;
 
-template<typename Method, typename Position>
-absl::Status SymplecticPartitionedRungeKuttaIntegrator<Method, Position>::
+template<typename Method, typename ODE_>
+absl::Status SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_>::
 Instance::Solve(Instant const& t_final) {
   LOG(FATAL) << "I'm sorry Dave.  I'm afraid I can't do that.";
 }
 
-template<typename Method, typename Position>
-SymplecticPartitionedRungeKuttaIntegrator<Method, Position> const&
-SymplecticPartitionedRungeKuttaIntegrator<Method, Position>::
+template<typename Method, typename ODE_>
+SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_> const&
+SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_>::
 Instance::integrator() const {
   return integrator_;
 }
 
-template<typename Method, typename Position>
-not_null<std::unique_ptr<typename Integrator<
-    DecomposableFirstOrderDifferentialEquation<Position>>::Instance>>
-SymplecticPartitionedRungeKuttaIntegrator<Method, Position>::
+template<typename Method, typename ODE_>
+not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
+SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_>::
 Instance::Clone() const {
   return std::unique_ptr<Instance>(new Instance(*this));
 }
 
-template<typename Method, typename Position>
-void SymplecticPartitionedRungeKuttaIntegrator<Method, Position>::
+template<typename Method, typename ODE_>
+void SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_>::
 Instance::WriteToMessage(
     not_null<serialization::IntegratorInstance*> message) const {
   LOG(FATAL) << "WriteToMessage NYI";
 }
 
-template<typename Method, typename Position>
-SymplecticPartitionedRungeKuttaIntegrator<Method, Position>::
+template<typename Method, typename ODE_>
+SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_>::
 SymplecticPartitionedRungeKuttaIntegrator() {
   // TODO(phl): This might be turned into a static_assert.
   if (first_same_as_last) {
@@ -56,46 +55,34 @@ SymplecticPartitionedRungeKuttaIntegrator() {
   }
 }
 
-template<typename Method, typename Position>
-not_null<std::unique_ptr<typename Integrator<
-    DecomposableFirstOrderDifferentialEquation<Position>>::Instance>>
-SymplecticPartitionedRungeKuttaIntegrator<Method, Position>::
-NewInstance(IntegrationProblem<ODE> const& problem,
+template<typename Method, typename ODE_>
+not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
+SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_>::
+NewInstance(InitialValueProblem<ODE> const& problem,
             AppendState const& append_state,
             Time const& step) const {
   return std::unique_ptr<Instance>(
       new Instance(problem, append_state, step, *this));
 }
 
-template<typename Method, typename Position>
-void SymplecticPartitionedRungeKuttaIntegrator<Method, Position>::
+template<typename Method, typename ODE_>
+void SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_>::
     WriteToMessage(
         not_null<serialization::FixedStepSizeIntegrator*> message) const {
   message->set_kind(Method::kind);
 }
 
-template<typename Method, typename Position>
-not_null<std::unique_ptr<typename Integrator<
-    DecomposableFirstOrderDifferentialEquation<Position>>::Instance>>
-SymplecticPartitionedRungeKuttaIntegrator<Method, Position>::
-ReadFromMessage(serialization::FixedStepSizeIntegratorInstance const& message,
-                IntegrationProblem<ODE> const& problem,
-                AppendState const& append_state,
-                Time const& step) const {
-  LOG(FATAL) << "ReadFromMessage NYI";
-}
-
 }  // namespace internal_symplectic_partitioned_runge_kutta_integrator
 
-template<typename Method, typename Position>
+template<typename Method, typename ODE_>
 internal_symplectic_partitioned_runge_kutta_integrator::
-    SymplecticPartitionedRungeKuttaIntegrator<Method, Position> const&
-    SymplecticPartitionedRungeKuttaIntegrator() {
+    SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_> const&
+SymplecticPartitionedRungeKuttaIntegrator() {
   static_assert(
       std::is_base_of<methods::SymplecticPartitionedRungeKutta, Method>::value,
       "Method must be derived from SymplecticPartitionedRungeKutta");
   static internal_symplectic_partitioned_runge_kutta_integrator::
-      SymplecticPartitionedRungeKuttaIntegrator<Method, Position> const
+      SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_> const
           integrator;
   return integrator;
 }

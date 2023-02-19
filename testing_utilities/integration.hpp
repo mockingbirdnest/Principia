@@ -50,8 +50,8 @@ absl::Status ComputeHarmonicOscillatorAcceleration3D(
 //   vʹ = -q k / m.
 absl::Status ComputeHarmonicOscillatorDerivatives1D(
     Instant const& t,
-    std::tuple<std::vector<Length>, std::vector<Speed>> const& state,
-    std::tuple<std::vector<Speed>, std::vector<Acceleration>>& result,
+    std::tuple<Length, Speed> const& state,
+    std::tuple<Speed, Acceleration>& result,
     int* evaluations);
 
 // The Kepler problem with unit gravitational parameter, where the

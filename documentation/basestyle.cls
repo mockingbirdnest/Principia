@@ -22,7 +22,7 @@
 % Language.
 \RequirePackage{polyglossia}
 \setdefaultlanguage[variant=british]{english}
-\setotherlanguages{greek,german,russian,latin,french}
+\setotherlanguages{greek,german,russian,french}
 % We use the english/american quote style, i.e., outer double quotes and inner
 % single quotes, but british typographic rules (punctuation after the quotation
 % marks).
