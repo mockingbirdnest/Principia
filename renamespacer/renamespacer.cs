@@ -521,12 +521,17 @@ class Renamespacer {
       RewriteFile(input_file, parser_file, dry_run);
     }
 
-    //FileInfo[] cpp_files = project.GetFiles("*.cpp");
-    //var cpp_parsed_files = new Dictionary<FileInfo, Parser.File>();
-    //foreach (FileInfo input_file in cpp_files) {
-    //  Parser.File parser_file = Parser.ParseFile(input_file);
-    //  cpp_parsed_files.Add(input_file, parser_file);
-    //}
+    FileInfo[] cpp_files = project.GetFiles("*.cpp");
+    var cpp_parsed_files = new Dictionary<FileInfo, Parser.File>();
+    foreach (FileInfo input_file in cpp_files) {
+      if (excluded.Contains(input_file.Name)) {
+        continue;
+      }
+      Parser.File parser_file = Parser.ParseFile(input_file);
+      Parser.NormalizeNamespaces(parser_file);
+      cpp_parsed_files.Add(input_file, parser_file);
+      RewriteFile(input_file, parser_file, dry_run);
+    }
 
     //// Process the files in client projects.
     //foreach (DirectoryInfo client in clients) {
