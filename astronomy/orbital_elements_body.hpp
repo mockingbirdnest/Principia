@@ -71,8 +71,6 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
                      DebugString(trajectory.t_max())));
   }
 
-  orbital_elements.radial_distances_ = RadialDistances(trajectory);
-
   auto const osculating_elements =
       [&primary, &secondary, &trajectory](
           Instant const& time) -> KeplerianElements<PrimaryCentred> {
@@ -241,27 +239,6 @@ inline Interval<Length> OrbitalElements::mean_periapsis_distance_interval()
 inline Interval<Length> OrbitalElements::mean_apoapsis_distance_interval()
     const {
   return mean_apoapsis_distance_interval_;
-}
-
-inline Interval<Length> OrbitalElements::radial_distance_interval() const {
-  return radial_distance_interval_;
-}
-
-template<typename PrimaryCentred>
-std::vector<Length> OrbitalElements::RadialDistances(
-    Trajectory<PrimaryCentred> const& trajectory) {
-  std::vector<Length> radial_distances;
-  auto const& discrete =
-      dynamic_cast<physics::DiscreteTrajectory<PrimaryCentred> const&>(
-          trajectory);
-  radial_distances.reserve(discrete.size());
-  DegreesOfFreedom<PrimaryCentred> const primary_dof{PrimaryCentred::origin,
-                                                     PrimaryCentred::unmoving};
-  for (auto const& [time, degrees_of_freedom] : discrete) {
-    radial_distances.push_back(
-        (degrees_of_freedom.position() - primary_dof.position()).Norm());
-  }
-  return radial_distances;
 }
 
 inline std::vector<OrbitalElements::EquinoctialElements> const&
@@ -553,10 +530,6 @@ inline absl::Status OrbitalElements::ComputePeriodsAndPrecession() {
 }
 
 inline absl::Status OrbitalElements::ComputeIntervals() {
-  for (auto const& r : radial_distances_) {
-    RETURN_IF_STOPPED;
-    radial_distance_interval_.Include(r);
-  }
   for (auto const& elements : mean_classical_elements_) {
     RETURN_IF_STOPPED;
     mean_semimajor_axis_interval_.Include(elements.semimajor_axis);
