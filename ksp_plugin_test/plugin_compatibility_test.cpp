@@ -403,7 +403,7 @@ TEST_F(PluginCompatibilityTest, 3273) {
 // Use for debugging saves given by users.
 TEST_F(PluginCompatibilityTest, DISABLED_SECULAR_Debug) {
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
-      R"(P:\Public Mockingbird\Principia\Issues\3520\save.proto.b64)",
+      R"(P:\Public Mockingbird\Principia\Saves\3203\wip.proto.b64)",
       /*compressor=*/"gipfeli",
       /*decoder=*/"base64");
 }

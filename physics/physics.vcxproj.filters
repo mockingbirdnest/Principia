@@ -233,7 +233,7 @@
     <ClInclude Include="integration_parameters_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="\\Carpaccio\c$\Users\phl\Projects\GitHub\Principia\Principia\physics\clientele.hpp">
+    <ClInclude Include="clientele.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="clientele_body.hpp">
