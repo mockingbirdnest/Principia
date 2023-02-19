@@ -10,6 +10,7 @@
 #include "astronomy/orbital_elements.hpp"
 #include "base/jthread.hpp"
 #include "base/not_null.hpp"
+#include "geometry/interval.hpp"
 #include "geometry/named_quantities.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -27,9 +28,11 @@ using astronomy::OrbitRecurrence;
 using base::jthread;
 using base::not_null;
 using geometry::Instant;
+using geometry::Interval;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
 using physics::RotatingBody;
+using quantities::Length;
 using quantities::Time;
 
 // The |OrbitAnalyser| asynchronously integrates a trajectory, and computes
@@ -49,6 +52,7 @@ class OrbitAnalyser {
     Instant const& first_time() const;
     Time const& mission_duration() const;
     RotatingBody<Barycentric> const* primary() const;
+    std::optional<Interval<Length>> radial_distance_interval() const;
     std::optional<OrbitalElements> const& elements() const;
     std::optional<OrbitRecurrence> const& recurrence() const;
     std::optional<OrbitGroundTrack> const& ground_track() const;
@@ -74,6 +78,7 @@ class OrbitAnalyser {
     Instant first_time_;
     Time mission_duration_;
     RotatingBody<Barycentric> const* primary_ = nullptr;
+    std::optional<Interval<Length>> radial_distance_interval_;
     std::optional<OrbitalElements> elements_;
     std::optional<OrbitRecurrence> closest_recurrence_;
     std::optional<OrbitRecurrence> recurrence_;
