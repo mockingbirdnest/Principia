@@ -113,7 +113,6 @@ class OrbitalElements {
 
   Interval<Length> mean_periapsis_distance_interval() const;
   Interval<Length> mean_apoapsis_distance_interval() const;
-  Interval<Length> radial_distance_interval() const;
 
   // The equinoctial elements, and in particular the osculating equinoctial
   // elements, are not directly interesting; anything that could be derived from
@@ -145,13 +144,6 @@ class OrbitalElements {
  private:
   OrbitalElements() = default;
 
-  // TODO(egg): This is not an orbital element, and it doesn't work for non-
-  // discrete trajectories.  It should move to the orbit analyser, at a place
-  // where we know that we have a discrete trajectory and we could use apsides.
-  template<typename PrimaryCentred>
-  static std::vector<Length> RadialDistances(
-      Trajectory<PrimaryCentred> const& trajectory);
-
   // The functor EquinoctialElementsComputation must have the profile
   // |EquinoctialElements(Instant const&)|.
   template<typename EquinoctialElementsComputation>
@@ -180,20 +172,17 @@ class OrbitalElements {
   // element computation is based on it, so it gets computed earlier).
   absl::Status ComputePeriodsAndPrecession();
 
-  // |radial_distances_| and |mean_classical_elements_| must have been computed;
-  // sets |radial_distance_interval_| and |mean_*_interval_| accordingly.
+  // The |mean_classical_elements_| must have been computed; sets
+  // |mean_*_interval_| accordingly.
   absl::Status ComputeIntervals();
 
   std::vector<EquinoctialElements> osculating_equinoctial_elements_;
-  std::vector<Length> radial_distances_;
   Time sidereal_period_;
   std::vector<EquinoctialElements> mean_equinoctial_elements_;
   std::vector<ClassicalElements> mean_classical_elements_;
   Time anomalistic_period_;
   Time nodal_period_;
   AngularFrequency nodal_precession_;
-
-  Interval<Length> radial_distance_interval_;
 
   Interval<Length> mean_semimajor_axis_interval_;
   Interval<Length> mean_periapsis_distance_interval_;

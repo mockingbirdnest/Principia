@@ -21,8 +21,28 @@ using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DiscreteTrajectory;
 using physics::KeplerOrbit;
 using physics::MasslessBody;
-using quantities::IsFinite;
 using quantities::Infinity;
+using quantities::IsFinite;
+
+// TODO(egg): This could be implemented using ComputeApsides.
+template<typename PrimaryCentred>
+Interval<Length> RadialDistanceInterval(
+    DiscreteTrajectory<PrimaryCentred> const& trajectory) {
+  std::vector<Length> radial_distances;
+  radial_distances.reserve(trajectory.size());
+  DegreesOfFreedom<PrimaryCentred> const primary_dof{PrimaryCentred::origin,
+                                                     PrimaryCentred::unmoving};
+  for (auto const& [time, degrees_of_freedom] : trajectory) {
+    radial_distances.push_back(
+        (degrees_of_freedom.position() - primary_dof.position()).Norm());
+  }
+
+  Interval<Length> radial_distance_interval;
+  for (auto const& r : radial_distances) {
+    radial_distance_interval.Include(r);
+  }
+  return radial_distance_interval;
+}
 
 OrbitAnalyser::OrbitAnalyser(
     not_null<Ephemeris<Barycentric>*> const ephemeris,
@@ -153,6 +173,8 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
           .IgnoreError();
     }
     analysis.primary_ = primary;
+    analysis.radial_distance_interval_ =
+        RadialDistanceInterval(primary_centred_trajectory);
     auto elements = OrbitalElements::ForTrajectory(
         primary_centred_trajectory, *primary, MasslessBody{});
     // We do not RETURN_IF_ERROR as ForTrajectory can return non-CANCELLED
@@ -196,6 +218,11 @@ Time const& OrbitAnalyser::Analysis::mission_duration() const {
 
 RotatingBody<Barycentric> const* OrbitAnalyser::Analysis::primary() const {
   return primary_;
+}
+
+std::optional<Interval<Length>>
+OrbitAnalyser::Analysis::radial_distance_interval() const {
+  return radial_distance_interval_;
 }
 
 std::optional<OrbitalElements> const& OrbitAnalyser::Analysis::elements()

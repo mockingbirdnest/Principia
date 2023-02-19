@@ -571,7 +571,8 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
             ToInterval(elements.mean_periapsis_distance_interval()),
         .mean_apoapsis_distance =
             ToInterval(elements.mean_apoapsis_distance_interval()),
-        .radial_distance = ToInterval(elements.radial_distance_interval()),
+        .radial_distance =
+            ToInterval(*vessel_analysis->radial_distance_interval()),
     };
   }
   if (has_nominal_recurrence && vessel_analysis->primary() != nullptr) {
