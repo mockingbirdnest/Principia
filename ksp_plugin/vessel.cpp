@@ -30,6 +30,7 @@ using geometry::BarycentreCalculator;
 using geometry::InfiniteFuture;
 using geometry::InfinitePast;
 using geometry::Position;
+using physics::Client;
 using quantities::IsFinite;
 using quantities::Length;
 using quantities::Time;
@@ -81,6 +82,7 @@ Vessel::Vessel(
             return Reanimate(desired_t_min);
           },
           20ms),  // 50 Hz.
+      reanimator_clientele_(/*default_value=*/InfiniteFuture),
       backstory_(trajectory_.segments().begin()),
       psychohistory_(trajectory_.segments().end()),
       prediction_(trajectory_.segments().end()),
@@ -419,20 +421,26 @@ void Vessel::RequestReanimation(Instant const& desired_t_min) {
 
   // No locking here because vessel reanimation is only invoked from the main
   // thread.
-
-  // If the reanimator is asked to do significantly less work (in terms of
-  // checkpoints to reanimate) than it is currently doing, interrupt it.  Note
-  // that this is fundamentally racy: for instance the reanimator may not have
-  // picked the last input given by Put.  But it helps if the user was doing a
-  // very long reanimation and wants to shorten it.
-  bool const must_restart =
-      last_desired_t_min_.has_value() &&
-      checkpointer_->checkpoint_at_or_before(last_desired_t_min_.value()) <
-          checkpointer_->checkpoint_at_or_before(desired_t_min);
-  LOG_IF(WARNING, must_restart)
-      << "Restarting reanimator because desired t_min went from "
-      << last_desired_t_min_.value() << " to " << desired_t_min;
-  last_desired_t_min_ = desired_t_min;
+  bool must_restart;
+  {
+    // If the reanimator is asked to do significantly less work (in terms of
+    // checkpoints to reanimate) than it is currently doing, interrupt it.  Note
+    // that this is fundamentally racy: for instance the reanimator may not have
+    // picked the last input given by Put.  But it helps if the user was doing a
+    // very long reanimation and wants to shorten it.  Note however that we must
+    // not move the desired t_min beyond the point where there are clients
+    // waiting for reanimation as they would never succeed.
+    Instant const allowable_desired_t_min =
+        std::min(desired_t_min, reanimator_clientele_.first());
+    must_restart =
+        last_desired_t_min_.has_value() &&
+        checkpointer_->checkpoint_at_or_before(last_desired_t_min_.value()) <
+            checkpointer_->checkpoint_at_or_before(allowable_desired_t_min);
+    LOG_IF(WARNING, must_restart)
+        << "Restarting reanimator because desired t_min went from "
+        << last_desired_t_min_.value() << " to " << allowable_desired_t_min;
+    last_desired_t_min_ = allowable_desired_t_min;
+  }
 
   if (must_restart) {
     reanimator_.Restart();
@@ -440,12 +448,12 @@ void Vessel::RequestReanimation(Instant const& desired_t_min) {
 
   {
     absl::MutexLock l(&lock_);
-    if (DesiredTMinReachedOrFullyReanimated(desired_t_min)) {
+    if (DesiredTMinReachedOrFullyReanimated(last_desired_t_min_.value())) {
       return;
     }
   }
 
-  reanimator_.Put(desired_t_min);
+  reanimator_.Put(last_desired_t_min_.value());
 }
 
 void Vessel::AwaitReanimation(Instant const& desired_t_min) {
@@ -453,6 +461,7 @@ void Vessel::AwaitReanimation(Instant const& desired_t_min) {
     return DesiredTMinReachedOrFullyReanimated(desired_t_min);
   };
 
+  Client me(desired_t_min, reanimator_clientele_);
   RequestReanimation(desired_t_min);
   absl::ReaderMutexLock l(&lock_);
   lock_.Await(absl::Condition(&desired_t_min_reached_or_fully_reanimated));
@@ -897,6 +906,7 @@ Vessel::Vessel()
           /*reader=*/nullptr,
           /*writer=*/nullptr)),
       reanimator_(/*action=*/nullptr, 0ms),
+      reanimator_clientele_(InfiniteFuture),
       backstory_(trajectory_.segments().begin()),
       psychohistory_(trajectory_.segments().end()),
       prediction_(trajectory_.segments().end()),

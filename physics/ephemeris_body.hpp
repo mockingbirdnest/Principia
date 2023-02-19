@@ -38,6 +38,7 @@ using base::make_not_null_unique;
 using base::MakeStoppableThread;
 using geometry::Barycentre;
 using geometry::Displacement;
+using geometry::InfiniteFuture;
 using geometry::InnerProduct;
 using geometry::Position;
 using geometry::R3Element;
@@ -122,7 +123,8 @@ Ephemeris<Frame>::Ephemeris(
           [this](Instant const& desired_t_min) {
             return Reanimate(desired_t_min);
           },
-          20ms) {  // 50 Hz.
+          20ms),  // 50 Hz.
+      reanimator_clientele_(/*default_value=*/InfiniteFuture) {
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
@@ -243,21 +245,26 @@ void Ephemeris<Frame>::RequestReanimation(Instant const& desired_t_min) {
     // the time between checkpoints) than it is currently doing, interrupt it.
     // Note that this is fundamentally racy: for instance the reanimator may not
     // have picked the last input given by Put.  But it helps if the user was
-    // doing a very long reanimation and wants to shorten it.
+    // doing a very long reanimation and wants to shorten it.  Note however that
+    // we must not move the desired t_min beyond the point where there are
+    // clients waiting for reanimation (e.g., vessels) as they would never
+    // succeed.
+    Instant const allowable_desired_t_min =
+        std::min(desired_t_min, reanimator_clientele_.first());
     must_restart = last_desired_t_min_.has_value() &&
                    last_desired_t_min_.value() + max_time_between_checkpoints <
-                       desired_t_min;
+                       allowable_desired_t_min;
     LOG_IF(WARNING, must_restart)
         << "Restarting reanimator because desired t_min went from "
-        << last_desired_t_min_.value() << " to " << desired_t_min;
-    last_desired_t_min_ = desired_t_min;
+        << last_desired_t_min_.value() << " to " << allowable_desired_t_min;
+    last_desired_t_min_ = allowable_desired_t_min;
   }
 
   // Don't hold the lock while restarting, the reanimator needs it.
   if (must_restart) {
     reanimator_.Restart();
   }
-  reanimator_.Put(desired_t_min);
+  reanimator_.Put(last_desired_t_min_.value());
 }
 
 template<typename Frame>
@@ -267,6 +274,7 @@ void Ephemeris<Frame>::AwaitReanimation(Instant const& desired_t_min) {
     return t_min_locked() <= desired_t_min;
   };
 
+  Client me(desired_t_min, reanimator_clientele_);
   RequestReanimation(desired_t_min);
   absl::ReaderMutexLock l(&lock_);
   lock_.Await(absl::Condition(&desired_t_min_reached));
@@ -793,7 +801,8 @@ Ephemeris<Frame>::Ephemeris(
       checkpointer_(
           make_not_null_unique<Checkpointer<serialization::Ephemeris>>(
               /*reader=*/nullptr, /*writer=*/nullptr)),
-      reanimator_(/*action=*/nullptr, 0ms) {}
+      reanimator_(/*action=*/nullptr, 0ms),
+      reanimator_clientele_(InfiniteFuture) {}
 
 template<typename Frame>
 void Ephemeris<Frame>::WriteToCheckpointIfNeeded(Instant const& time) const {
