@@ -187,6 +187,12 @@ class Parser {
       this.ns = ns;
     }
 
+    public override string Cxx(bool is_at_exit) {
+      Debug.Assert(!is_at_exit, "no exit for using");
+      Debug.Assert(must_rewrite, "inconsistent rewrite");
+      return "using namespace " + ns + ";";
+    }
+
     public override void WriteNode(string indent = "") {
       Console.WriteLine(indent + "UsingDirective " + ns);
     }
@@ -371,9 +377,6 @@ class Parser {
       if (declaration.name == referenced_name &&
           declaration.parent is Namespace ns &&
           ns.name == referenced_innermost_namespace) {
-        Console.WriteLine(using_declaration.full_name +
-                          " -> " +
-                          pair.Value.FullName);
         return pair.Value;
       }
     }
@@ -469,7 +472,6 @@ class Parser {
                                                NamespaceForFile(file_info));
       using_directive.position_in_parent = using_position_in_parent;
       using_directive.must_rewrite = true;
-      parent.children.Add(using_directive);
       parent.children.AddRange(following_nodes_in_parent);
     }
   }
@@ -615,6 +617,7 @@ class Renamespacer {
         }
         Parser.File parser_file = Parser.ParseFile(input_file);
         Parser.FixInternalUsingDeclarations(parser_file, declaration_to_file);
+        RewriteFile(input_file, parser_file, dry_run);
       }
     }
   }
