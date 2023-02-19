@@ -88,6 +88,7 @@
     <ClInclude Include="solar_system.hpp" />
     <ClInclude Include="solar_system_body.hpp" />
     <ClInclude Include="trajectory.hpp" />
+    <ClInclude Include="waiting_list.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\base\cpuid.cpp" />

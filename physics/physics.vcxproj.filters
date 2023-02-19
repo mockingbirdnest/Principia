@@ -233,6 +233,9 @@
     <ClInclude Include="integration_parameters_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="waiting_list.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
