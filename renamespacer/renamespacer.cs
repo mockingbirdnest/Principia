@@ -48,12 +48,10 @@ class Parser {
     protected bool must_rewrite_ = false;
   }
 
-  public abstract class Declaration : Node
-  {
+  public abstract class Declaration : Node {
     protected Declaration(int line_number, Node parent, string name) : base(
         line_number,
-        parent)
-    {
+        parent) {
       this.name = name;
     }
 
@@ -162,11 +160,7 @@ class Parser {
       if (declared_in_namespace == null) {
         return "using " + full_name + ";";
       } else {
-        return "using " +
-               declared_in_namespace.name +
-               "::" +
-               name +
-               ";";
+        return "using " + declared_in_namespace.name + "::" + name + ";";
       }
     }
 
@@ -180,8 +174,7 @@ class Parser {
     }
 
     public override bool must_rewrite =>
-        must_rewrite_ ||
-        declared_in_namespace is { must_rewrite: true };
+        must_rewrite_ || declared_in_namespace is { must_rewrite: true };
 
     public string full_name = null;
     public Namespace declared_in_namespace = null;
@@ -232,7 +225,8 @@ class Parser {
   }
 
   private static bool IsOpeningNamespace(string line) {
-    return line != "namespace {" && line.StartsWith("namespace ") &&
+    return line != "namespace {" &&
+           line.StartsWith("namespace ") &&
            !Regex.IsMatch(line, @"^namespace [\w]+ = .*$");
   }
 
@@ -365,9 +359,9 @@ class Parser {
     return exported_declarations;
   }
 
-  public static FileInfo FindFileForUsingDeclaration(
+  private static FileInfo FindFileReferencedByUsingDeclaration(
       UsingDeclaration using_declaration,
-      Dictionary<Parser.Declaration, FileInfo> declaration_to_file) {
+      Dictionary<Declaration, FileInfo> declaration_to_file) {
     var referenced_name = using_declaration.name;
     var referenced_innermost_namespace =
         using_declaration.full_name.Split("::")[^2];
@@ -377,21 +371,23 @@ class Parser {
       if (declaration.name == referenced_name &&
           declaration.parent is Namespace ns &&
           ns.name == referenced_innermost_namespace) {
-        Console.WriteLine(
-            using_declaration.full_name + " -> " + pair.Value.FullName);
+        Console.WriteLine(using_declaration.full_name +
+                          " -> " +
+                          pair.Value.FullName);
         return pair.Value;
       }
     }
     return null;
   }
 
-  public static List<UsingDeclaration>
+  private static List<UsingDeclaration>
       FindInternalUsingDeclarations(Node node) {
     var internal_using_declarations = new List<UsingDeclaration>();
     foreach (Node child in node.children) {
       if (child is Namespace{ is_internal: false }) {
         foreach (Node grandchild in child.children) {
           if (grandchild is UsingDeclaration ud) {
+            // TODO(phl): Skip the using declarations that we just generated.
             internal_using_declarations.Add(ud);
           }
         }
@@ -402,8 +398,9 @@ class Parser {
     return internal_using_declarations;
   }
 
-  public static List<Namespace>
-      FindLegacyInternalNamespaces(File file, Node node) {
+  private static List<Namespace> FindLegacyInternalNamespaces(
+      File file,
+      Node node) {
     var legacy_internal_namespaces = new List<Namespace>();
     foreach (Node child in node.children) {
       if (child is Namespace internal_namespace &&
@@ -446,13 +443,43 @@ class Parser {
 
   public static void FixInternalUsingDeclarations(
       File file,
-      Dictionary<Parser.Declaration, FileInfo> declaration_to_file) {
+      Dictionary<Declaration, FileInfo> declaration_to_file) {
     var internal_using_declarations = FindInternalUsingDeclarations(file);
-    foreach (UsingDeclaration internal_using_declaration in
+    foreach (UsingDeclaration using_declaration in
              internal_using_declarations) {
-      var file_info = FindFileForUsingDeclaration(internal_using_declaration,
-                                                  declaration_to_file);
+      var file_info =
+          FindFileReferencedByUsingDeclaration(using_declaration,
+                                               declaration_to_file);
+      if (file_info == null) {
+        // Not a reference to an entity that is in the project being processed.
+        continue;
+      }
+      var parent = using_declaration.parent;
+      Debug.Assert(parent is Namespace,
+                   "internal namespace not within a namespace");
+      int using_position_in_parent = using_declaration.position_in_parent;
+      var preceding_nodes_in_parent =
+          parent.children.Take(using_position_in_parent).ToList();
+      var following_nodes_in_parent = parent.children.
+          Skip(using_position_in_parent + 1).ToList();
+      parent.children = preceding_nodes_in_parent;
+      // TODO(phl): This will create duplicates.
+      var using_directive = new UsingDirective(using_declaration.line_number,
+                                               parent,
+                                               NamespaceForFile(file_info));
+      using_directive.position_in_parent = using_position_in_parent;
+      using_directive.must_rewrite = true;
+      parent.children.Add(using_directive);
+      parent.children.AddRange(following_nodes_in_parent);
     }
+  }
+
+  private static string NamespaceForFile(FileInfo file_info) {
+    return "principia::" +
+           file_info.Directory.Name +
+           "::" +
+           Regex.Replace(file_info.Name, @"\.hpp|\.cpp", "");
+
   }
 }
 
