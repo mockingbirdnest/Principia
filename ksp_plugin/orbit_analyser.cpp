@@ -44,26 +44,6 @@ Interval<Length> RadialDistanceInterval(
   return radial_distance_interval;
 }
 
-// TODO(egg): This could be implemented using ComputeApsides.
-template<typename PrimaryCentred>
-Interval<Length> RadialDistanceInterval(
-    DiscreteTrajectory<PrimaryCentred> const& trajectory) {
-  std::vector<Length> radial_distances;
-  radial_distances.reserve(trajectory.size());
-  DegreesOfFreedom<PrimaryCentred> const primary_dof{PrimaryCentred::origin,
-                                                     PrimaryCentred::unmoving};
-  for (auto const& [time, degrees_of_freedom] : trajectory) {
-    radial_distances.push_back(
-        (degrees_of_freedom.position() - primary_dof.position()).Norm());
-  }
-
-  Interval<Length> radial_distance_interval;
-  for (auto const& r : radial_distances) {
-    radial_distance_interval.Include(r);
-  }
-  return radial_distance_interval;
-}
-
 OrbitAnalyser::OrbitAnalyser(
     not_null<Ephemeris<Barycentric>*> const ephemeris,
     Ephemeris<Barycentric>::FixedStepParameters analysed_trajectory_parameters)
