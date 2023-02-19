@@ -6,12 +6,11 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace principia {
-
 namespace renamespacer {
 
 class Parser {
   public abstract class Node {
-    public Node(int line_number, Node parent) {
+    protected Node(int line_number, Node parent) {
       this.line_number = line_number;
       this.parent = parent;
       this.children = new List<Node>();
@@ -48,7 +47,7 @@ class Parser {
     protected bool must_rewrite_ = false;
   }
 
-  public class Class : Node {
+      public class Class : Node {
     public Class(int line_number, Node parent, string name) : base(
         line_number,
         parent) {
@@ -135,10 +134,10 @@ class Parser {
         parent) {
       this.name = name;
       string[] segments = name.Split("::");
-      declared_name = segments[segments.Length - 1];
+      declared_name = segments[^1];
 
       // Try to figure out if the name was declared in a preceding namespace.
-      // This is useful to fixup the internal namespaces.
+      // This is useful to fix up the internal namespaces.
       if (segments.Length == 2) {
         if (parent.GetType() == typeof(Namespace)) {
           foreach (Node sibling in ((Namespace)parent).children) {
@@ -175,11 +174,9 @@ class Parser {
                              : " from " + declared_in_namespace.name));
     }
 
-    public override bool must_rewrite {
-      get => must_rewrite_ ||
-             (declared_in_namespace != null &&
-              declared_in_namespace.must_rewrite);
-    }
+    public override bool must_rewrite =>
+        must_rewrite_ ||
+        declared_in_namespace is { must_rewrite: true };
 
     public string name = null;
     public string declared_name = null;
@@ -546,5 +543,4 @@ class Renamespacer {
 }
 
 } // namespace renamespacer
-
 } // namespace principia
