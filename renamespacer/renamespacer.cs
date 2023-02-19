@@ -128,12 +128,11 @@ class Parser {
   }
 
   public class UsingDeclaration : Node {
-    public UsingDeclaration(int line_number, Node parent, string name) : base(
-        line_number,
-        parent) {
-      this.name = name;
-      string[] segments = name.Split("::");
-      declared_name = segments[^1];
+    public UsingDeclaration(int line_number, Node parent, string full_name) :
+        base(line_number, parent) {
+      this.full_name = full_name;
+      string[] segments = full_name.Split("::");
+      name = segments[^1];
 
       // Try to figure out if the name was declared in a preceding namespace.
       // This is useful to fix up the internal namespaces.
@@ -154,12 +153,12 @@ class Parser {
       Debug.Assert(!is_at_exit, "no exit for using");
       Debug.Assert(must_rewrite, "inconsistent rewrite");
       if (declared_in_namespace == null) {
-        return "using " + name + ";";
+        return "using " + full_name + ";";
       } else {
         return "using " +
                declared_in_namespace.name +
                "::" +
-               declared_name +
+               name +
                ";";
       }
     }
@@ -167,7 +166,7 @@ class Parser {
     public override void WriteNode(string indent = "") {
       Console.WriteLine(indent +
                         "UsingDeclaration " +
-                        declared_name +
+                        name +
                         (declared_in_namespace == null
                              ? ""
                              : " from " + declared_in_namespace.name));
@@ -177,8 +176,8 @@ class Parser {
         must_rewrite_ ||
         declared_in_namespace is { must_rewrite: true };
 
+    public string full_name = null;
     public string name = null;
-    public string declared_name = null;
     public Namespace declared_in_namespace = null;
   }
 
@@ -424,7 +423,9 @@ class Parser {
     }
   }
 
-  public static void FixInternalUsingDeclarations(File file) {
+  public static void FixInternalUsingDeclarations(
+      File file,
+      Dictionary<Parser.Node, FileInfo> declaration_to_file) {
     var internal_using_declarations = FindInternalUsingDeclarations(file);
     foreach (UsingDeclaration internal_using_declaration in
              internal_using_declarations) {}
@@ -559,7 +560,7 @@ class Renamespacer {
           client_hpp_files.Union(client_cpp_files).ToArray();
       foreach (FileInfo input_file in all_client_files) {
         Parser.File parser_file = Parser.ParseFile(input_file);
-        Parser.FixInternalUsingDeclarations(parser_file);
+        Parser.FixInternalUsingDeclarations(parser_file, declaration_to_file);
       }
     }
   }
