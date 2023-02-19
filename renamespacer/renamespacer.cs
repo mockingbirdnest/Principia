@@ -48,18 +48,27 @@ class Parser {
     protected bool must_rewrite_ = false;
   }
 
-      public class Class : Node {
-    public Class(int line_number, Node parent, string name) : base(
+  public abstract class Declaration : Node
+  {
+    protected Declaration(int line_number, Node parent, string name) : base(
         line_number,
-        parent) {
+        parent)
+    {
       this.name = name;
     }
+
+    public string name = null;
+  }
+
+  public class Class : Declaration {
+    public Class(int line_number, Node parent, string name) : base(
+        line_number,
+        parent,
+        name) {}
 
     public override void WriteNode(string indent = "") {
       Console.WriteLine(indent + "Class " + name);
     }
-
-    public string name = null;
   }
 
   public class File : Node {
@@ -95,11 +104,11 @@ class Parser {
     public string[] path = null;
   }
 
-  public class Namespace : Node {
+  public class Namespace : Declaration {
     public Namespace(int line_number, Node parent, string name) : base(
         line_number,
-        parent) {
-      this.name = name;
+        parent,
+        name) {
       if (parent is Namespace{ is_internal: true } ) {
         is_internal = true;
       } else {
@@ -123,16 +132,14 @@ class Parser {
                         (is_internal ? "Internal" : ""));
     }
 
-    public string name = null;
     public bool is_internal = false;
   }
 
-  public class UsingDeclaration : Node {
+  public class UsingDeclaration : Declaration {
     public UsingDeclaration(int line_number, Node parent, string full_name) :
-        base(line_number, parent) {
+        base(line_number, parent, full_name.Split("::")[^1]) {
       this.full_name = full_name;
       string[] segments = full_name.Split("::");
-      name = segments[^1];
 
       // Try to figure out if the name was declared in a preceding namespace.
       // This is useful to fix up the internal namespaces.
@@ -177,50 +184,43 @@ class Parser {
         declared_in_namespace is { must_rewrite: true };
 
     public string full_name = null;
-    public string name = null;
     public Namespace declared_in_namespace = null;
   }
 
   public class UsingDirective : Node {
-    public UsingDirective(int line_number, Node parent, string name) : base(
+    public UsingDirective(int line_number, Node parent, string ns) : base(
         line_number,
         parent) {
-      this.name = name;
+      this.ns = ns;
     }
 
     public override void WriteNode(string indent = "") {
-      Console.WriteLine(indent + "UsingDirective " + name);
+      Console.WriteLine(indent + "UsingDirective " + ns);
     }
 
-    public string name = null;
+    public string ns = null;
   }
 
-  public class Struct : Node {
+  public class Struct : Declaration {
     public Struct(int line_number, Node parent, string name) : base(
         line_number,
-        parent) {
-      this.name = name;
-    }
+        parent,
+        name) {}
 
     public override void WriteNode(string indent = "") {
       Console.WriteLine(indent + "Struct " + name);
     }
-
-    public string name = null;
   }
 
-  public class TypeAlias : Node {
+  public class TypeAlias : Declaration {
     public TypeAlias(int line_number, Node parent, string name) : base(
         line_number,
-        parent) {
-      this.name = name;
-    }
+        parent,
+        name) {}
 
     public override void WriteNode(string indent = "") {
       Console.WriteLine(indent + "TypeAlias " + name);
     }
-
-    public string name = null;
   }
 
   private static bool IsClass(string line) {
@@ -232,7 +232,8 @@ class Parser {
   }
 
   private static bool IsOpeningNamespace(string line) {
-    return line != "namespace {" && line.StartsWith("namespace ");
+    return line != "namespace {" && line.StartsWith("namespace ") &&
+           !Regex.IsMatch(line, @"^namespace [\w]+ = .*$");
   }
 
   private static bool IsOwnHeaderInclude(string line, FileInfo input_file) {
@@ -241,6 +242,11 @@ class Parser {
         "(_body|_test)?\\.[hc]pp",
         ".hpp");
     return line == "#include \"" + own_header + "\"";
+  }
+
+  private static bool IsPrincipiaInclude(string line) {
+    // Principia header files end in .hpp.
+    return line.StartsWith("#include \"") && line.EndsWith(".hpp\"");
   }
 
   private static bool IsStruct(string line) {
@@ -257,11 +263,6 @@ class Parser {
 
   private static bool IsUsingDirective(string line) {
     return line.StartsWith("using namespace ");
-  }
-
-  private static bool IsPrincipiaInclude(string line) {
-    // Principia header files end in .hpp.
-    return line.StartsWith("#include \"") && line.EndsWith(".hpp\"");
   }
 
   private static string ParseClass(string line) {
@@ -352,16 +353,36 @@ class Parser {
     return file;
   }
 
-  public static List<Node> CollectExportedDeclarations(Node node) {
-    var exported_declarations = new List<Node>();
+  public static List<Declaration> CollectExportedDeclarations(Node node) {
+    var exported_declarations = new List<Declaration>();
     foreach (Node child in node.children) {
       if (child is Namespace{ is_internal: false } ) {
         exported_declarations.AddRange(CollectExportedDeclarations(child));
       } else if (child is Class or Struct or TypeAlias or UsingDeclaration) {
-        exported_declarations.Add(child);
+        exported_declarations.Add((Declaration)child);
       }
     }
     return exported_declarations;
+  }
+
+  public static FileInfo FindFileForUsingDeclaration(
+      UsingDeclaration using_declaration,
+      Dictionary<Parser.Declaration, FileInfo> declaration_to_file) {
+    var referenced_name = using_declaration.name;
+    var referenced_innermost_namespace =
+        using_declaration.full_name.Split("::")[^2];
+    foreach (var pair in declaration_to_file) {
+      var declaration = pair.Key;
+      // Poor man's name resolution.
+      if (declaration.name == referenced_name &&
+          declaration.parent is Namespace ns &&
+          ns.name == referenced_innermost_namespace) {
+        Console.WriteLine(
+            using_declaration.full_name + " -> " + pair.Value.FullName);
+        return pair.Value;
+      }
+    }
+    return null;
   }
 
   public static List<UsingDeclaration>
@@ -425,10 +446,13 @@ class Parser {
 
   public static void FixInternalUsingDeclarations(
       File file,
-      Dictionary<Parser.Node, FileInfo> declaration_to_file) {
+      Dictionary<Parser.Declaration, FileInfo> declaration_to_file) {
     var internal_using_declarations = FindInternalUsingDeclarations(file);
     foreach (UsingDeclaration internal_using_declaration in
-             internal_using_declarations) {}
+             internal_using_declarations) {
+      var file_info = FindFileForUsingDeclaration(internal_using_declaration,
+                                                  declaration_to_file);
+    }
   }
 }
 
@@ -524,7 +548,7 @@ class Renamespacer {
 
     FileInfo[] hpp_files = project.GetFiles("*.hpp");
     var hpp_parsed_files = new Dictionary<FileInfo, Parser.File>();
-    var declaration_to_file = new Dictionary<Parser.Node, FileInfo>();
+    var declaration_to_file = new Dictionary<Parser.Declaration, FileInfo>();
     foreach (FileInfo input_file in hpp_files) {
       if (excluded.Contains(input_file.Name)) {
         continue;
@@ -534,7 +558,7 @@ class Renamespacer {
       hpp_parsed_files.Add(input_file, parser_file);
       var exported_declarations =
           Parser.CollectExportedDeclarations(parser_file);
-      foreach (Parser.Node exported_declaration in exported_declarations) {
+      foreach (var exported_declaration in exported_declarations) {
         declaration_to_file.Add(exported_declaration, input_file);
       }
       RewriteFile(input_file, parser_file, dry_run);
@@ -559,6 +583,9 @@ class Renamespacer {
       FileInfo[] all_client_files =
           client_hpp_files.Union(client_cpp_files).ToArray();
       foreach (FileInfo input_file in all_client_files) {
+        if (excluded.Contains(input_file.Name)) {
+          continue;
+        }
         Parser.File parser_file = Parser.ParseFile(input_file);
         Parser.FixInternalUsingDeclarations(parser_file, declaration_to_file);
       }
