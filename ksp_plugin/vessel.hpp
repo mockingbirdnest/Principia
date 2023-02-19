@@ -20,6 +20,7 @@
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/pile_up.hpp"
 #include "physics/checkpointer.hpp"
+#include "physics/clientele.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
@@ -41,6 +42,7 @@ using geometry::InfinitePast;
 using geometry::Instant;
 using geometry::Vector;
 using physics::Checkpointer;
+using physics::Clientele;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::DiscreteTrajectorySegment;
@@ -183,8 +185,9 @@ class Vessel {
   // |desired_t_min|.
   void RequestReanimation(Instant const& desired_t_min) EXCLUDES(lock_);
 
-  // Blocks until the |t_min()| of the vessel is at or before |desired_t_min|.
-  void WaitForReanimation(Instant const& desired_t_min) EXCLUDES(lock_);
+  // Same as |RequestReanimation|, but synchronous.  This function blocks until
+  // the |t_min()| of the vessel is at or before |desired_t_min|.
+  void AwaitReanimation(Instant const& desired_t_min) EXCLUDES(lock_);
 
   // Creates a flight plan at the end of history using the given parameters;
   // selects that flight plan, which is the last one in |flight_plans_|.
@@ -377,6 +380,7 @@ class Vessel {
 
   // The techniques and terminology follow [Lov22].
   RecurringThread<Instant> reanimator_;
+  Clientele<Instant> reanimator_clientele_;
 
   // Parameter passed to the last call to |RequestReanimation|, if any.
   std::optional<Instant> last_desired_t_min_;

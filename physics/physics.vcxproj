@@ -31,6 +31,7 @@
     <ClInclude Include="body_surface_frame_field_body.hpp" />
     <ClInclude Include="checkpointer.hpp" />
     <ClInclude Include="checkpointer_body.hpp" />
+    <ClInclude Include="clientele_body.hpp" />
     <ClInclude Include="discrete_trajectory.hpp" />
     <ClInclude Include="discrete_trajectory_body.hpp" />
     <ClInclude Include="discrete_trajectory_iterator.hpp" />
@@ -88,6 +89,7 @@
     <ClInclude Include="solar_system.hpp" />
     <ClInclude Include="solar_system_body.hpp" />
     <ClInclude Include="trajectory.hpp" />
+    <ClInclude Include="clientele.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\base\cpuid.cpp" />
@@ -106,6 +108,7 @@
     <ClCompile Include="body_surface_frame_field_test.cpp" />
     <ClCompile Include="body_test.cpp" />
     <ClCompile Include="checkpointer_test.cpp" />
+    <ClCompile Include="clientele_test.cpp" />
     <ClCompile Include="discrete_trajectory_iterator_test.cpp" />
     <ClCompile Include="discrete_trajectory_segment_iterator_test.cpp" />
     <ClCompile Include="discrete_trajectory_segment_range_test.cpp" />

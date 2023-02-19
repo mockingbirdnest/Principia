@@ -340,8 +340,7 @@ absl::Status FlightPlan::BurnSegment(
     // waiting if necessary.
     Instant const starting_time = segment->back().time;
     if (starting_time < ephemeris_->t_min()) {
-      ephemeris_->RequestReanimation(starting_time);
-      ephemeris_->WaitForReanimation(starting_time);
+      ephemeris_->AwaitReanimation(starting_time);
     }
 
     if (manœuvre.is_inertially_fixed()) {
@@ -371,8 +370,7 @@ absl::Status FlightPlan::CoastSegment(
   // waiting if necessary.
   Instant const starting_time = segment->back().time;
   if (starting_time < ephemeris_->t_min()) {
-    ephemeris_->RequestReanimation(starting_time);
-    ephemeris_->WaitForReanimation(starting_time);
+    ephemeris_->AwaitReanimation(starting_time);
   }
 
   return ephemeris_->FlowWithAdaptiveStep(
