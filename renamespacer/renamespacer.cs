@@ -791,11 +791,13 @@ class Renamespacer {
         continue;
       }
       Parser.File parser_file = Parser.ParseFile(input_file);
+      // The declarations must be collected before any changes, because the
+      // names that we'll find reference the old state.
+      var exported_declarations =
+          Parser.CollectExportedDeclarations(parser_file);
       Parser.FixLegacyInternalNamespaces(parser_file);
       Parser.FixMissingInternalNamespaces(parser_file);
       hpp_parsed_files.Add(input_file, parser_file);
-      var exported_declarations =
-          Parser.CollectExportedDeclarations(parser_file);
       foreach (var exported_declaration in exported_declarations) {
         declaration_to_file.Add(exported_declaration, input_file);
       }
