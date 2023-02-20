@@ -656,13 +656,17 @@ class Parser {
         internal_namespace.last_line_number = ns.last_line_number;
         internal_namespace.must_rewrite = true;
 
-        // Insert the using declarations.
+        // Insert the using declarations.  First dedupe and sort the symbols.
+        var names = new SortedSet<string>();
         foreach (Node n in nodes_in_ns) {
           if (n is Declaration decl) {
-            var using_declaration =
-                new UsingDeclaration(ns.last_line_number.Value, ns, decl.name);
-            using_declaration.must_rewrite = true;
+            names.Add(decl.name);
           }
+        }
+        foreach (string name in names) {
+          var using_declaration =
+              new UsingDeclaration(ns.last_line_number.Value, ns, name);
+          using_declaration.must_rewrite = true;
         }
       }
     }
