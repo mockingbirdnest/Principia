@@ -84,20 +84,6 @@ class Parser {
   }
 
   // A placeholder for a deleted node.
-  public class Empty : Node {
-    public Empty(int line_number, Node parent) : base(line_number, parent) {}
-
-    public override string Cxx(bool is_at_exit) {
-      return "";
-    }
-
-    public override void WriteNode(string indent = "") {
-      Console.WriteLine(indent + "Empty");
-    }
-
-    public override bool must_rewrite => true;
-  }
-
   public class File : Node {
     public File(int line_number, FileInfo file_info) : base(
         line_number,
@@ -171,6 +157,26 @@ class Parser {
     }
 
     public bool is_internal = false;
+  }
+
+  public class Text : Node {
+    public Text(int line_number, Node parent, string text) : base(
+        line_number,
+        parent) {
+      text_ = text;
+    }
+
+    public override string Cxx(bool is_at_exit) {
+      return text_;
+    }
+
+    public override void WriteNode(string indent = "") {
+      Console.WriteLine(indent + "Text (" + text_ + ")");
+    }
+
+    public override bool must_rewrite => true;
+
+    private readonly string text_;
   }
 
   public class UsingDeclaration : Declaration {
@@ -634,7 +640,7 @@ class Parser {
         var following_nodes_in_parent = parent.children.
             Skip(using_position_in_parent + 1).ToList();
         parent.children = preceding_nodes_in_parent;
-        var empty = new Empty(using_declaration.line_number, parent);
+        var empty = new Text(using_declaration.line_number, parent, "");
         parent.children.AddRange(following_nodes_in_parent);
       }
     }
@@ -663,6 +669,8 @@ class Parser {
             names.Add(decl.name);
           }
         }
+        var blank_line_before =
+            new Text(ns.last_line_number.Value, ns, Environment.NewLine);
         foreach (string name in names) {
           var using_declaration =
               new UsingDeclaration(ns.last_line_number.Value,
@@ -670,6 +678,8 @@ class Parser {
                                    "internal::" + name);
           using_declaration.must_rewrite = true;
         }
+        var blank_line_after =
+            new Text(ns.last_line_number.Value, ns, Environment.NewLine);
       }
     }
   }
