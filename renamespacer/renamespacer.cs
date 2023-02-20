@@ -21,8 +21,9 @@ class Parser {
       }
     }
 
+    // This function must return a string ending with a new line.
     public virtual string Cxx(bool is_at_exit) {
-      return "--FATAL--";
+      return "--FATAL--" + Environment.NewLine;
     }
 
     // Writes a single node.
@@ -154,9 +155,9 @@ class Parser {
     public override string Cxx(bool is_at_exit) {
       Debug.Assert(must_rewrite, "inconsistent rewrite");
       if (is_at_exit) {
-        return "}  // namespace " + name;
+        return "}  // namespace " + name + Environment.NewLine;
       } else {
-        return "namespace " + name + " {";
+        return "namespace " + name + " {" + Environment.NewLine;
       }
     }
 
@@ -195,9 +196,14 @@ class Parser {
       Debug.Assert(!is_at_exit, "no exit for using");
       Debug.Assert(must_rewrite, "inconsistent rewrite");
       if (declared_in_namespace == null) {
-        return "using " + full_name + ";";
+        return "using " + full_name + ";" + Environment.NewLine;
       } else {
-        return "using " + declared_in_namespace.name + "::" + name + ";";
+        return "using " +
+               declared_in_namespace.name +
+               "::" +
+               name +
+               ";" +
+               Environment.NewLine;
       }
     }
 
@@ -227,7 +233,7 @@ class Parser {
     public override string Cxx(bool is_at_exit) {
       Debug.Assert(!is_at_exit, "no exit for using");
       Debug.Assert(must_rewrite, "inconsistent rewrite");
-      return "using namespace " + ns + ";";
+      return "using namespace " + ns + ";" + Environment.NewLine;
     }
 
     public override void WriteNode(string indent = "") {
@@ -548,21 +554,27 @@ class Parser {
       string file_namespace = NamespaceForFile(file_info);
       bool file_namespace_already_exists = false;
       Node file_namespace_insertion_point = internal_using_declarations[0];
+      int file_namespace_insertion_index = 0;
       foreach (UsingDirective ud in internal_using_directives) {
         if (ud.ns == file_namespace) {
           file_namespace_already_exists = true;
           break;
         } else if (string.CompareOrdinal(file_namespace, ud.ns) < 0) {
           file_namespace_insertion_point = ud;
+          break;
         }
+        ++file_namespace_insertion_index;
       }
       if (file_namespace_already_exists) {
         continue;
       }
 
-      // Insert the using directive.
+      // Insert the using directive.  Note that we must update
+      // |internal_using_directives|.
       {
-        var parent = file_namespace_insertion_point;
+        var parent = file_namespace_insertion_point.parent;
+        Debug.Assert(parent is Namespace,
+                     "Insertion point not within a namespace");
         int insertion_point_position_in_parent =
             file_namespace_insertion_point.position_in_parent;
         var preceding_nodes_in_parent = parent.children.
@@ -576,6 +588,8 @@ class Parser {
             file_namespace);
         using_directive.position_in_parent = insertion_point_position_in_parent;
         using_directive.must_rewrite = true;
+        internal_using_directives.Insert(file_namespace_insertion_index,
+                                         using_directive);
         foreach (Node n in following_nodes_in_parent) {
           ++n.position_in_parent;
         }
@@ -631,7 +645,7 @@ class Renamespacer {
           while (node_line_number == line_number) {
             if (node.must_rewrite) {
               has_rewritten = true;
-              writer.WriteLine(node.Cxx(is_at_exit));
+              writer.Write(node.Cxx(is_at_exit));
             } else {
               has_rewritten = false;
             }
