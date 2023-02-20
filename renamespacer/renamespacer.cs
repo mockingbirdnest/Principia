@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 
 namespace principia {
@@ -11,6 +12,7 @@ namespace renamespacer {
 
 class Parser {
   public abstract class Node {
+    // This links the new node as the last child of its parent.
     protected Node(int line_number, Node parent) {
       this.line_number = line_number;
       this.parent = parent;
@@ -420,6 +422,13 @@ class Parser {
     return file;
   }
 
+  private static string NamespaceForFile(FileInfo file_info) {
+    return "principia::" +
+           file_info.Directory.Name +
+           "::" +
+           Regex.Replace(file_info.Name, @"\.hpp|\.cpp", "");
+  }
+
   public static List<Declaration> CollectExportedDeclarations(Node node) {
     var exported_declarations = new List<Declaration>();
     foreach (Node child in node.children) {
@@ -450,6 +459,21 @@ class Parser {
       }
     }
     return null;
+  }
+
+  private static List<Namespace> FindInnermostNamespaces(Node node) {
+    var innermost_namespaces = new List<Namespace>();
+    foreach (Node child in node.children) {
+      if (child is Namespace ns) {
+        var nested_namespaces = FindInnermostNamespaces(child);
+        if (nested_namespaces.Count == 0) {
+          innermost_namespaces.Add(ns);
+        } else {
+          innermost_namespaces.AddRange(nested_namespaces);
+        }
+      }
+    }
+    return innermost_namespaces;
   }
 
   private static List<UsingDeclaration>
@@ -506,6 +530,8 @@ class Parser {
     return legacy_internal_namespaces;
   }
 
+  // Replaces the legacy "internal_foo" namespaces with a namespace "foo"
+  // containing a namespace "internal".
   public static void FixLegacyInternalNamespaces(File file) {
     var legacy_internal_namespaces = FindLegacyInternalNamespaces(file, file);
     foreach (Namespace internal_namespace in legacy_internal_namespaces) {
@@ -521,7 +547,6 @@ class Parser {
       var file_namespace = new Namespace(internal_namespace.line_number,
                                          parent,
                                          file.file_namespace);
-      file_namespace.position_in_parent = internal_position_in_parent;
       file_namespace.children.Add(internal_namespace);
       file_namespace.children.AddRange(following_nodes_in_parent);
       file_namespace.last_line_number = parent.last_line_number;
@@ -533,6 +558,9 @@ class Parser {
     }
   }
 
+  // Replaces the using declaration appearing in internal namespaces with
+  // using directives of the appropriate file namespaces.  Ensures that the
+  // using directives are deduplicated and sorted.
   public static void FixInternalUsingDeclarations(
       File file,
       Dictionary<Declaration, FileInfo> declaration_to_file) {
@@ -586,7 +614,6 @@ class Parser {
             file_namespace_insertion_point.line_number,
             parent,
             file_namespace);
-        using_directive.position_in_parent = insertion_point_position_in_parent;
         using_directive.must_rewrite = true;
         internal_using_directives.Insert(file_namespace_insertion_index,
                                          using_directive);
@@ -607,19 +634,38 @@ class Parser {
         var following_nodes_in_parent = parent.children.
             Skip(using_position_in_parent + 1).ToList();
         parent.children = preceding_nodes_in_parent;
-        // TODO(phl): This will create duplicates.
-        var empty = new Empty (using_declaration.line_number, parent);
-        empty.position_in_parent = using_position_in_parent;
+        var empty = new Empty(using_declaration.line_number, parent);
         parent.children.AddRange(following_nodes_in_parent);
       }
     }
   }
 
-  private static string NamespaceForFile(FileInfo file_info) {
-    return "principia::" +
-           file_info.Directory.Name +
-           "::" +
-           Regex.Replace(file_info.Name, @"\.hpp|\.cpp", "");
+  // Finds the innermost namespaces that are not internal, and moves all of
+  // their declaration into a nested "internal" namespace.  Adds using
+  // declarations to make all the now-internal declarations accessible to the
+  // outside world.
+  public static void FixMissingInternalNamespaces(File file) {
+    var innermost_namespaces = FindInnermostNamespaces(file);
+    foreach (var ns in innermost_namespaces) {
+      if (!ns.is_internal) {
+        var nodes_in_ns = ns.children.ToList();
+        ns.children.Clear();
+        ns.must_rewrite = true;
+        var internal_namespace = new Namespace(ns.line_number, ns, "internal");
+        internal_namespace.children.AddRange(nodes_in_ns);
+        internal_namespace.last_line_number = ns.last_line_number;
+        internal_namespace.must_rewrite = true;
+
+        // Insert the using declarations.
+        foreach (Node n in nodes_in_ns) {
+          if (n is Declaration decl) {
+            var using_declaration =
+                new UsingDeclaration(ns.last_line_number.Value, ns, decl.name);
+            using_declaration.must_rewrite = true;
+          }
+        }
+      }
+    }
   }
 }
 
@@ -722,6 +768,7 @@ class Renamespacer {
       }
       Parser.File parser_file = Parser.ParseFile(input_file);
       Parser.FixLegacyInternalNamespaces(parser_file);
+      Parser.FixMissingInternalNamespaces(parser_file);
       hpp_parsed_files.Add(input_file, parser_file);
       var exported_declarations =
           Parser.CollectExportedDeclarations(parser_file);
@@ -739,6 +786,7 @@ class Renamespacer {
       }
       Parser.File parser_file = Parser.ParseFile(input_file);
       Parser.FixLegacyInternalNamespaces(parser_file);
+      Parser.FixMissingInternalNamespaces(parser_file);
       cpp_parsed_files.Add(input_file, parser_file);
       RewriteFile(input_file, parser_file, dry_run);
     }
