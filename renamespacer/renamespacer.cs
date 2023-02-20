@@ -292,7 +292,7 @@ class Parser {
   private static bool IsOwnHeaderInclude(string line, FileInfo input_file) {
     string own_header = Regex.Replace(
         input_file.Name,
-        "(_body|_test)?\\.[hc]pp",
+        @"(_body|_test)?\.[hc]pp",
         ".hpp");
     return line == "#include \"" + own_header + "\"";
   }
@@ -319,7 +319,7 @@ class Parser {
   }
 
   private static string ParseClass(string line) {
-    return Regex.Replace(line.Replace("class ", ""), "[; ].*$", "");
+    return Regex.Replace(line.Replace("class ", ""), @"[; ].*$", "");
   }
 
   private static string ParseClosingNamespace(string line) {
@@ -346,7 +346,7 @@ class Parser {
   }
 
   private static string ParseStruct(string line) {
-    return Regex.Replace(line.Replace("struct ", ""), " .*$", "");
+    return Regex.Replace(line.Replace("struct ", ""), @"[; ].*$", "");
   }
 
   private static string ParseTypeAlias(string line) {
@@ -665,7 +665,9 @@ class Parser {
         }
         foreach (string name in names) {
           var using_declaration =
-              new UsingDeclaration(ns.last_line_number.Value, ns, name);
+              new UsingDeclaration(ns.last_line_number.Value,
+                                   ns,
+                                   "internal::" + name);
           using_declaration.must_rewrite = true;
         }
       }
