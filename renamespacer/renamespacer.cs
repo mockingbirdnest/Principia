@@ -657,7 +657,13 @@ class Parser {
         var nodes_in_ns = ns.children.ToList();
         ns.children.Clear();
         ns.must_rewrite = true;
-        var internal_namespace = new Namespace(ns.line_number, ns, "internal");
+        var file_namespace = new Namespace(ns.line_number,
+                                           ns,
+                                           file.file_namespace);
+        file_namespace.last_line_number = ns.last_line_number;
+        file_namespace.must_rewrite = true;
+        var internal_namespace =
+            new Namespace(ns.line_number, file_namespace, "internal");
         internal_namespace.children.AddRange(nodes_in_ns);
         internal_namespace.last_line_number = ns.last_line_number;
         internal_namespace.must_rewrite = true;
@@ -669,17 +675,19 @@ class Parser {
             names.Add(decl.name);
           }
         }
-        var blank_line_before =
-            new Text(ns.last_line_number.Value, ns, Environment.NewLine);
+        var blank_line_before = new Text(file_namespace.last_line_number.Value,
+                                         file_namespace,
+                                         Environment.NewLine);
         foreach (string name in names) {
           var using_declaration =
-              new UsingDeclaration(ns.last_line_number.Value,
-                                   ns,
+              new UsingDeclaration(file_namespace.last_line_number.Value,
+                                   file_namespace,
                                    "internal::" + name);
           using_declaration.must_rewrite = true;
         }
-        var blank_line_after =
-            new Text(ns.last_line_number.Value, ns, Environment.NewLine);
+        var blank_line_after = new Text(file_namespace.last_line_number.Value,
+                                        file_namespace,
+                                        Environment.NewLine);
       }
     }
   }
