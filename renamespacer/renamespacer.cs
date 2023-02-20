@@ -69,6 +69,17 @@ class Parser {
     }
   }
 
+  public class Constant : Declaration {
+    public Constant(int line_number, Node parent, string name) : base(
+        line_number,
+        parent,
+        name) { }
+
+    public override void WriteNode(string indent = "") {
+      Console.WriteLine(indent + "Constant " + name);
+    }
+  }
+
   public class File : Node {
     public File(int line_number, FileInfo file_info) : base(
         line_number,
@@ -86,6 +97,17 @@ class Parser {
 
     public FileInfo file_info = null;
     public string file_namespace = null;
+  }
+
+  public class Function : Declaration {
+    public Function(int line_number, Node parent, string name) : base(
+        line_number,
+        parent,
+        name) { }
+
+    public override void WriteNode(string indent = "") {
+      Console.WriteLine(indent + "Function " + name);
+    }
   }
 
   public class Include : Node {
@@ -230,6 +252,14 @@ class Parser {
     return line != "}  // namespace" && line.StartsWith("}  // namespace");
   }
 
+  private static bool IsConstant(string line) {
+    return Regex.IsMatch(line, @"^constexpr .* = .*$");
+  }
+
+  private static bool IsFunction(string line) {
+    return Regex.IsMatch(line, @"^[\w].+ [^: ]+\(.*$");
+  }
+
   private static bool IsOpeningNamespace(string line) {
     return line != "namespace {" &&
            line.StartsWith("namespace ") &&
@@ -273,7 +303,17 @@ class Parser {
     return line.Replace("}  // namespace ", "");
   }
 
-  private static string[] ParseIncludedPath(string line) {
+  private static string ParseConstant(string line) {
+    return Regex.Replace(Regex.Replace(line, @"^constexpr [^ ]+ ", ""),
+                         @" = .*$",
+                         "");
+  }
+
+  private static string ParseFunction(string line) {
+    return Regex.Replace(Regex.Replace(line, @"\(.*$", ""), @"^.+ ", "");
+  }
+
+      private static string[] ParseIncludedPath(string line) {
     string path = line.Replace("#include \"", "").Replace(".hpp\"", "");
     return path.Split('/');
   }
@@ -314,18 +354,23 @@ class Parser {
           current = new Namespace(line_number,
                                   parent: current,
                                   ParseOpeningNamespace(line));
-        } else if (IsUsingDirective(line)) {
-          var using_directive = new UsingDirective(
-              line_number,
-              parent: current,
-              ParseUsingDirective(line));
-        } else if (IsUsingDeclaration(line)) {
-          var using_declaration = new UsingDeclaration(
-              line_number,
-              parent: current,
-              ParseUsingDeclaration(line));
+        } else if (IsClosingNamespace(line)) {
+          var name = ParseClosingNamespace(line);
+          if (current is Namespace ns) {
+            Debug.Assert(ns.name == name);
+            ns.last_line_number = line_number;
+          } else {
+            Debug.Assert(false);
+          }
+          current = current.parent;
         } else if (IsClass(line)) {
           var klass = new Class(line_number, parent: current, ParseClass(line));
+        } else if (IsConstant(line)) {
+          var constant =
+              new Constant(line_number, parent: current, ParseConstant(line));
+        } else if (IsFunction(line)) {
+          var function =
+              new Function(line_number, parent: current, ParseFunction(line));
         } else if (IsStruct(line)) {
           var strukt = new Struct(
               line_number,
@@ -336,15 +381,16 @@ class Parser {
               line_number,
               parent: current,
               ParseTypeAlias(line));
-        } else if (IsClosingNamespace(line)) {
-          var name = ParseClosingNamespace(line);
-          if (current is Namespace ns) {
-            Debug.Assert(ns.name == name);
-            ns.last_line_number = line_number;
-          } else {
-            Debug.Assert(false);
-          }
-          current = current.parent;
+        } else if (IsUsingDirective(line)) {
+          var using_directive = new UsingDirective(
+              line_number,
+              parent: current,
+              ParseUsingDirective(line));
+        } else if (IsUsingDeclaration(line)) {
+          var using_declaration = new UsingDeclaration(
+              line_number,
+              parent: current,
+              ParseUsingDeclaration(line));
         }
         ++line_number;
       }
@@ -356,10 +402,12 @@ class Parser {
   public static List<Declaration> CollectExportedDeclarations(Node node) {
     var exported_declarations = new List<Declaration>();
     foreach (Node child in node.children) {
-      if (child is Namespace{ is_internal: false } ) {
-        exported_declarations.AddRange(CollectExportedDeclarations(child));
-      } else if (child is Class or Struct or TypeAlias or UsingDeclaration) {
-        exported_declarations.Add((Declaration)child);
+      if (child is Namespace ns) {
+        if (!ns.is_internal) {
+          exported_declarations.AddRange(CollectExportedDeclarations(child));
+        }
+      } else if (child is Declaration decl) {
+        exported_declarations.Add(decl);
       }
     }
     return exported_declarations;
