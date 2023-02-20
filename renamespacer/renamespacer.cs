@@ -80,6 +80,21 @@ class Parser {
     }
   }
 
+  // A placeholder for a deleted node.
+  public class Empty : Node {
+    public Empty(int line_number, Node parent) : base(line_number, parent) {}
+
+    public override string Cxx(bool is_at_exit) {
+      return "";
+    }
+
+    public override void WriteNode(string indent = "") {
+      Console.WriteLine(indent + "Empty");
+    }
+
+    public override bool must_rewrite => true;
+  }
+
   public class File : Node {
     public File(int line_number, FileInfo file_info) : base(
         line_number,
@@ -450,6 +465,25 @@ class Parser {
     return internal_using_declarations;
   }
 
+  private static List<UsingDirective>
+      FindInternalUsingDirectives(Node node) {
+    var internal_using_declarations = new List<UsingDirective>();
+    foreach (Node child in node.children) {
+      if (child is Namespace ns) {
+        if (ns.is_internal) {
+          foreach (Node grandchild in child.children) {
+            if (grandchild is UsingDirective ud) {
+              internal_using_declarations.Add(ud);
+            }
+          }
+        }
+        internal_using_declarations.AddRange(
+            FindInternalUsingDirectives(child));
+      }
+    }
+    return internal_using_declarations;
+  }
+
   private static List<Namespace> FindLegacyInternalNamespaces(
       File file,
       Node node) {
@@ -471,7 +505,7 @@ class Parser {
     foreach (Namespace internal_namespace in legacy_internal_namespaces) {
       var parent = internal_namespace.parent;
       Debug.Assert(parent is Namespace,
-                   "internal namespace not within a namespace");
+                   "Internal namespace not within a namespace");
       int internal_position_in_parent = internal_namespace.position_in_parent;
       var preceding_nodes_in_parent =
           parent.children.Take(internal_position_in_parent).ToList();
@@ -497,6 +531,7 @@ class Parser {
       File file,
       Dictionary<Declaration, FileInfo> declaration_to_file) {
     var internal_using_declarations = FindInternalUsingDeclarations(file);
+    var internal_using_directives = FindInternalUsingDirectives(file);
     foreach (UsingDeclaration using_declaration in
              internal_using_declarations) {
       var file_info =
@@ -506,22 +541,63 @@ class Parser {
         // Not a reference to an entity that is in the project being processed.
         continue;
       }
-      var parent = using_declaration.parent;
-      Debug.Assert(parent is Namespace,
-                   "internal namespace not within a namespace");
-      int using_position_in_parent = using_declaration.position_in_parent;
-      var preceding_nodes_in_parent =
-          parent.children.Take(using_position_in_parent).ToList();
-      var following_nodes_in_parent = parent.children.
-          Skip(using_position_in_parent + 1).ToList();
-      parent.children = preceding_nodes_in_parent;
-      // TODO(phl): This will create duplicates.
-      var using_directive = new UsingDirective(using_declaration.line_number,
-                                               parent,
-                                               NamespaceForFile(file_info));
-      using_directive.position_in_parent = using_position_in_parent;
-      using_directive.must_rewrite = true;
-      parent.children.AddRange(following_nodes_in_parent);
+
+      // Check if the using directive for the file is already present, and if
+      // not determine where it should be inserted.  This assumes that the using
+      // directives are sorted.
+      string file_namespace = NamespaceForFile(file_info);
+      bool file_namespace_already_exists = false;
+      Node file_namespace_insertion_point = internal_using_declarations[0];
+      foreach (UsingDirective ud in internal_using_directives) {
+        if (ud.ns == file_namespace) {
+          file_namespace_already_exists = true;
+          break;
+        } else if (string.CompareOrdinal(file_namespace, ud.ns) < 0) {
+          file_namespace_insertion_point = ud;
+        }
+      }
+      if (file_namespace_already_exists) {
+        continue;
+      }
+
+      // Insert the using directive.
+      {
+        var parent = file_namespace_insertion_point;
+        int insertion_point_position_in_parent =
+            file_namespace_insertion_point.position_in_parent;
+        var preceding_nodes_in_parent = parent.children.
+            Take(insertion_point_position_in_parent).ToList();
+        var following_nodes_in_parent = parent.children.
+            Skip(insertion_point_position_in_parent).ToList();
+        parent.children = preceding_nodes_in_parent;
+        var using_directive = new UsingDirective(
+            file_namespace_insertion_point.line_number,
+            parent,
+            file_namespace);
+        using_directive.position_in_parent = insertion_point_position_in_parent;
+        using_directive.must_rewrite = true;
+        foreach (Node n in following_nodes_in_parent) {
+          ++n.position_in_parent;
+        }
+        parent.children.AddRange(following_nodes_in_parent);
+      }
+
+      // Erase the using declaration.
+      {
+        var parent = using_declaration.parent;
+        Debug.Assert(parent is Namespace,
+                     "Using declaration not within a namespace");
+        int using_position_in_parent = using_declaration.position_in_parent;
+        var preceding_nodes_in_parent =
+            parent.children.Take(using_position_in_parent).ToList();
+        var following_nodes_in_parent = parent.children.
+            Skip(using_position_in_parent + 1).ToList();
+        parent.children = preceding_nodes_in_parent;
+        // TODO(phl): This will create duplicates.
+        var empty = new Empty (using_declaration.line_number, parent);
+        empty.position_in_parent = using_position_in_parent;
+        parent.children.AddRange(following_nodes_in_parent);
+      }
     }
   }
 
