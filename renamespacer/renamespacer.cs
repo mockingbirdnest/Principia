@@ -268,7 +268,7 @@ class Parser {
   }
 
   private static bool IsClass(string line) {
-    return line.StartsWith("class ");
+    return Regex.IsMatch(line, @"^class [\w]+[ ;].*$");
   }
 
   private static bool IsClosingNamespace(string line) {
@@ -303,7 +303,7 @@ class Parser {
   }
 
   private static bool IsStruct(string line) {
-    return line.StartsWith("struct ");
+    return Regex.IsMatch(line, @"^struct [\w]+[ ;].*$");
   }
 
   private static bool IsTypeAlias(string line) {
@@ -319,7 +319,7 @@ class Parser {
   }
 
   private static string ParseClass(string line) {
-    return Regex.Replace(line.Replace("class ", ""), " .*$", "");
+    return Regex.Replace(line.Replace("class ", ""), "[; ].*$", "");
   }
 
   private static string ParseClosingNamespace(string line) {
