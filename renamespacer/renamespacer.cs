@@ -428,11 +428,16 @@ class Parser {
     return file;
   }
 
-  private static string NamespaceForFile(FileInfo file_info) {
+  private static string FileNamespaceForFile(FileInfo file_info) {
     return "principia::" +
            file_info.Directory.Name +
            "::" +
            Regex.Replace(file_info.Name, @"\.hpp|\.cpp", "");
+  }
+
+  private static string ProjectNamespaceForFile(FileInfo file_info) {
+    return "principia::" +
+           file_info.Directory.Name;
   }
 
   public static List<Declaration> CollectExportedDeclarations(Node node) {
@@ -520,8 +525,17 @@ class Parser {
     return internal_using_declarations;
   }
 
+  private static Namespace FindLastOutermostNamespace(File file) {
+    Namespace last_outermost_namespace = null;
+    foreach (Node child in file.children) {
+      if (child is Namespace ns) {
+        last_outermost_namespace = ns;
+      }
+    }
+    return last_outermost_namespace;
+  }
+
   private static List<Namespace> FindLegacyInternalNamespaces(
-      File file,
       Node node) {
     var legacy_internal_namespaces = new List<Namespace>();
     foreach (Node child in node.children) {
@@ -530,16 +544,50 @@ class Parser {
         legacy_internal_namespaces.Add(internal_namespace);
       } else if (child is Namespace ns) {
         legacy_internal_namespaces.AddRange(
-            FindLegacyInternalNamespaces(file, child));
+            FindLegacyInternalNamespaces(child));
       }
     }
     return legacy_internal_namespaces;
   }
 
+  public static void AppendCompatibilityNamespace(File file) {
+    var last_namespace = FindLastOutermostNamespace(file);
+    if (last_namespace == null) {
+      // Strange file with no namespace at all, inserting into ::.
+      return;
+    }
+    var parent = last_namespace.parent;
+    Debug.Assert(parent is File, "Last namespace not within a file");
+    int last_namespace_position_in_parent = last_namespace.position_in_parent;
+    var preceding_nodes_in_parent = parent.children.
+        Take(last_namespace_position_in_parent + 1).ToList();
+    var following_nodes_in_parent = parent.children.
+        Skip(last_namespace_position_in_parent + 1).ToList();
+    parent.children = preceding_nodes_in_parent;
+    var project_namespace = new Namespace(last_namespace.last_line_number.Value + 1,
+                                          parent,
+                                          ProjectNamespaceForFile(
+                                              file.file_info));
+    project_namespace.last_line_number = project_namespace.line_number + 2;
+    project_namespace.must_rewrite = true;
+    var using_directive = new UsingDirective(project_namespace.line_number,
+                                             project_namespace,
+                                             FileNamespaceForFile(
+                                                 file.file_info));
+    using_directive.must_rewrite = true;
+    foreach (Node n in following_nodes_in_parent) {
+      n.line_number += 2;
+      if (n.last_line_number.HasValue) {
+        n.last_line_number += 2;
+      }
+    }
+    parent.children.AddRange(following_nodes_in_parent);
+  }
+
   // Replaces the legacy "internal_foo" namespaces with a namespace "foo"
   // containing a namespace "internal".
   public static void FixLegacyInternalNamespaces(File file) {
-    var legacy_internal_namespaces = FindLegacyInternalNamespaces(file, file);
+    var legacy_internal_namespaces = FindLegacyInternalNamespaces(file);
     foreach (Namespace internal_namespace in legacy_internal_namespaces) {
       var parent = internal_namespace.parent;
       Debug.Assert(parent is Namespace,
@@ -585,7 +633,7 @@ class Parser {
       // Check if the using directive for the file is already present, and if
       // not determine where it should be inserted.  This assumes that the using
       // directives are sorted.
-      string file_namespace = NamespaceForFile(file_info);
+      string file_namespace = FileNamespaceForFile(file_info);
       bool file_namespace_already_exists = false;
       Node file_namespace_insertion_point = internal_using_declarations[0];
       int file_namespace_insertion_index = 0;
@@ -801,6 +849,7 @@ class Renamespacer {
       foreach (var exported_declaration in exported_declarations) {
         declaration_to_file.Add(exported_declaration, input_file);
       }
+      Parser.AppendCompatibilityNamespace(parser_file);
       RewriteFile(input_file, parser_file, dry_run);
     }
 
