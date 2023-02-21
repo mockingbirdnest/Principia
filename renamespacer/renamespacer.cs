@@ -858,6 +858,9 @@ class Renamespacer {
       // names that we'll find reference the old state.
       var exported_declarations =
           Parser.CollectExportedDeclarations(parser_file);
+      Parser.FixUsingDeclarations(parser_file,
+                                  internal_only: true,
+                                  declaration_to_file);
       Parser.FixLegacyInternalNamespaces(parser_file);
       Parser.FixMissingInternalNamespaces(parser_file,
                                           insert_using_declarations: true);
@@ -876,6 +879,9 @@ class Renamespacer {
         continue;
       }
       Parser.File parser_file = Parser.ParseFile(input_file);
+      Parser.FixUsingDeclarations(parser_file,
+                                  internal_only: false,
+                                  declaration_to_file);
       if (IsTest(input_file)) {
         Parser.FixUselessInternalNamespace(parser_file);
         Parser.FixFileUsingDirective(parser_file);
