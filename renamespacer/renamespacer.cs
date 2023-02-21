@@ -500,11 +500,11 @@ class Parser {
   }
 
   private static List<UsingDeclaration>
-      FindInternalUsingDeclarations(Node node) {
+      FindUsingDeclarations(Node node, bool internal_only) {
     var internal_using_declarations = new List<UsingDeclaration>();
     foreach (Node child in node.children) {
       if (child is Namespace ns) {
-        if (ns.is_internal) {
+        if (ns.is_internal || !internal_only) {
           foreach (Node grandchild in child.children) {
             if (grandchild is UsingDeclaration ud) {
               internal_using_declarations.Add(ud);
@@ -512,18 +512,18 @@ class Parser {
           }
         }
         internal_using_declarations.AddRange(
-            FindInternalUsingDeclarations(child));
+            FindUsingDeclarations(child, internal_only));
       }
     }
     return internal_using_declarations;
   }
 
   private static List<UsingDirective>
-      FindInternalUsingDirectives(Node node) {
+      FindUsingDirectives(Node node, bool internal_only) {
     var internal_using_directives = new List<UsingDirective>();
     foreach (Node child in node.children) {
       if (child is Namespace ns) {
-        if (ns.is_internal) {
+        if (ns.is_internal || !internal_only) {
           foreach (Node grandchild in child.children) {
             if (grandchild is UsingDirective ud) {
               internal_using_directives.Add(ud);
@@ -531,7 +531,7 @@ class Parser {
           }
         }
         internal_using_directives.AddRange(
-            FindInternalUsingDirectives(child));
+            FindUsingDirectives(child, internal_only));
       }
     }
     return internal_using_directives;
@@ -635,8 +635,10 @@ class Parser {
   }
 
   public static void FixFileUsingDirective(File file) {
-    var internal_using_directives = FindInternalUsingDirectives(file);
-    var internal_using_declarations = FindInternalUsingDeclarations(file);
+    var internal_using_directives =
+        FindUsingDirectives(file, internal_only: false);
+    var internal_using_declarations =
+        FindUsingDeclarations(file, internal_only: false);
     var innermost_namespaces = FindInnermostNamespaces(file);
     var innermost_namespace = innermost_namespaces[0];
     Node before;
@@ -683,11 +685,13 @@ class Parser {
   // Replaces the using declaration appearing in internal namespaces with
   // using directives of the appropriate file namespaces.  Ensures that the
   // using directives are deduplicated and sorted.
-  public static void FixInternalUsingDeclarations(
+  public static void FixUsingDeclarations(
       File file,
+      bool internal_only,
       Dictionary<Declaration, FileInfo> declaration_to_file) {
-    var internal_using_declarations = FindInternalUsingDeclarations(file);
-    var internal_using_directives = FindInternalUsingDirectives(file);
+    var internal_using_declarations =
+        FindUsingDeclarations(file, internal_only);
+    var internal_using_directives = FindUsingDirectives(file, internal_only);
     foreach (UsingDeclaration using_declaration in
              internal_using_declarations) {
       var file_info =
@@ -805,6 +809,14 @@ class Renamespacer {
     }
   }
 
+  static bool IsBody(FileInfo file_info) {
+    return Regex.IsMatch(file_info.Name, @"_body\.hpp$|\.cpp$");
+  }
+
+  static bool IsTest(FileInfo file_info) {
+    return Regex.IsMatch(file_info.Name, @"_test\.cpp$");
+  }
+
   // Usage:
   //   renamespacer --project:quantities \
   //                --client:base --client:physics \
@@ -838,8 +850,7 @@ class Renamespacer {
     FileInfo[] hpp_files = project.GetFiles("*.hpp");
     var declaration_to_file = new Dictionary<Parser.Declaration, FileInfo>();
     foreach (FileInfo input_file in hpp_files) {
-      if (excluded.Contains(input_file.Name) ||
-          Regex.IsMatch(input_file.Name, @"_body\.hpp$")) {
+      if (excluded.Contains(input_file.Name) || IsBody(input_file)) {
         continue;
       }
       Parser.File parser_file = Parser.ParseFile(input_file);
@@ -865,7 +876,7 @@ class Renamespacer {
         continue;
       }
       Parser.File parser_file = Parser.ParseFile(input_file);
-      if (Regex.IsMatch(input_file.Name, @"_test\.cpp$")) {
+      if (IsTest(input_file)) {
         Parser.FixUselessInternalNamespace(parser_file);
         Parser.FixFileUsingDirective(parser_file);
       } else {
@@ -887,7 +898,9 @@ class Renamespacer {
           continue;
         }
         Parser.File parser_file = Parser.ParseFile(input_file);
-        Parser.FixInternalUsingDeclarations(parser_file, declaration_to_file);
+        Parser.FixUsingDeclarations(parser_file,
+                                    internal_only: !IsBody(input_file),
+                                    declaration_to_file);
         RewriteFile(input_file, parser_file, dry_run);
       }
     }
