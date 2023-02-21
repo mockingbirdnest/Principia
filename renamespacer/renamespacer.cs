@@ -444,7 +444,7 @@ class Parser {
     return "principia::" +
            file_info.Directory.Name +
            "::" +
-           Regex.Replace(file_info.Name, @"\.hpp|\.cpp", "");
+           Regex.Replace(file_info.Name, @"\.hpp$|\.cpp$|_test\.cpp$", "");
   }
 
   private static string ProjectNamespaceForFile(FileInfo file_info) {
@@ -634,6 +634,30 @@ class Parser {
     parent.AddChildren(following_nodes_in_parent);
   }
 
+  public static void FixFileUsingDirective(File file) {
+    var internal_using_directives = FindInternalUsingDirectives(file);
+    var internal_using_declarations = FindInternalUsingDeclarations(file);
+    var innermost_namespaces = FindInnermostNamespaces(file);
+    var innermost_namespace = innermost_namespaces[0];
+    Node before;
+    if (internal_using_declarations.Count == 0) {
+      // If there is no using declaration to hook our new using directive,
+      // insert a blank line and put the using directive immediately after.
+      // This assumes/ that the namespace starts with a blank line.
+      var nodes_in_innermost_namespace = innermost_namespace.children.ToList();
+      innermost_namespace.children.Clear();
+      var blank_line_before = new Text("", innermost_namespaces[0]);
+      innermost_namespace.AddChildren(nodes_in_innermost_namespace);
+      before = innermost_namespace.children[1];
+    } else {
+      before = internal_using_declarations[0];
+    }
+    InsertUsingDirectiveIfNeeded(
+        file_namespace: FileNamespaceForFile(file.file_info),
+        before: before,
+        using_directives: internal_using_directives);
+  }
+
   // Replaces the legacy "internal_foo" namespaces with a namespace "foo"
   // containing a namespace "internal".
   public static void FixLegacyInternalNamespaces(File file) {
@@ -732,7 +756,6 @@ class Parser {
 
   public static void FixUselessInternalNamespace(File file) {
     var legacy_internal_namespaces = FindLegacyInternalNamespaces(file);
-    var internal_using_directives = FindInternalUsingDirectives(file);
     foreach (Namespace internal_namespace in legacy_internal_namespaces) {
       var parent = internal_namespace.parent;
       Debug.Assert(parent is Namespace,
@@ -740,9 +763,11 @@ class Parser {
       int internal_position_in_parent = internal_namespace.position_in_parent;
       var preceding_nodes_in_parent =
           parent.children.Take(internal_position_in_parent).ToList();
+      var nodes_in_internal_namespace = internal_namespace.children.ToList();
       var following_nodes_in_parent = parent.children.
           Skip(internal_position_in_parent + 1).ToList();
       parent.children = preceding_nodes_in_parent;
+      parent.AddChildren(nodes_in_internal_namespace);
       parent.AddChildren(following_nodes_in_parent);
     }
   }
@@ -842,6 +867,7 @@ class Renamespacer {
       Parser.File parser_file = Parser.ParseFile(input_file);
       if (Regex.IsMatch(input_file.Name, @"_test\.cpp$")) {
         Parser.FixUselessInternalNamespace(parser_file);
+        Parser.FixFileUsingDirective(parser_file);
       } else {
         Parser.FixLegacyInternalNamespaces(parser_file);
         Parser.FixMissingInternalNamespaces(parser_file,
