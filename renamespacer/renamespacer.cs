@@ -40,18 +40,14 @@ class Parser {
       }
     }
 
-    public string text {
-      get => text_;
-    }
+    public string text => text_;
 
-    public bool must_rewrite {
-      get => text_ == null;
-    }
+    public virtual bool must_rewrite => text_ == null;
 
     public Node parent = null;
     public int position_in_parent = -1;
     public List<Node> children = null;
-    protected string text_;
+    private readonly string text_;
   }
 
   public abstract class Declaration : Node {
@@ -175,12 +171,14 @@ class Parser {
     public Text(string text, Node parent) : base(text, parent) {}
 
     public override string Cxx() {
-      return text_;
+      return text;
     }
 
     public override void WriteNode(string indent = "") {
-      Console.WriteLine(indent + "Text (" + text_ + ")");
+      Console.WriteLine(indent + "Text (" + text + ")");
     }
+
+    public override bool must_rewrite => true;
   }
 
   public class UsingDeclaration : Declaration {
