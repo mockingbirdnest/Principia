@@ -564,23 +564,23 @@ class Parser {
     var following_nodes_in_parent = parent.children.
         Skip(last_namespace_position_in_parent + 1).ToList();
     parent.children = preceding_nodes_in_parent;
-    var project_namespace = new Namespace(last_namespace.last_line_number.Value + 1,
+    var blank_line_before = new Text(last_namespace.last_line_number.Value + 1,
+                                     parent,
+                                     Environment.NewLine);
+    var project_namespace = new Namespace(blank_line_before.line_number,
                                           parent,
                                           ProjectNamespaceForFile(
                                               file.file_info));
-    project_namespace.last_line_number = project_namespace.line_number + 2;
+    project_namespace.last_line_number = project_namespace.line_number + 1;
     project_namespace.must_rewrite = true;
+    var blank_line_after = new Text(project_namespace.last_line_number.Value,
+                                    parent,
+                                    Environment.NewLine);
     var using_directive = new UsingDirective(project_namespace.line_number,
                                              project_namespace,
                                              FileNamespaceForFile(
                                                  file.file_info));
     using_directive.must_rewrite = true;
-    foreach (Node n in following_nodes_in_parent) {
-      n.line_number += 2;
-      if (n.last_line_number.HasValue) {
-        n.last_line_number += 2;
-      }
-    }
     parent.children.AddRange(following_nodes_in_parent);
   }
 
