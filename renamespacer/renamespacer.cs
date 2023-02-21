@@ -25,9 +25,8 @@ class Parser {
       }
     }
 
-    // This function must return a string ending with a new line.
     public virtual string Cxx() {
-      return "--FATAL--" + Environment.NewLine;
+      return "--FATAL--";
     }
 
     // Writes a single node.
@@ -42,7 +41,7 @@ class Parser {
 
     public string text => text_;
 
-    public virtual bool must_rewrite => text_ == null;
+    public bool must_rewrite => text_ == null;
 
     public Node parent = null;
     public int position_in_parent = -1;
@@ -148,12 +147,12 @@ class Parser {
 
     public override string Cxx() {
       Debug.Assert(must_rewrite, "inconsistent rewrite");
-      return "namespace " + name + " {" + Environment.NewLine;
+      return "namespace " + name + " {";
     }
 
     public string ClosingCxx() {
       Debug.Assert(must_rewrite, "inconsistent rewrite");
-      return "}  // namespace " + name + Environment.NewLine;
+      return "}  // namespace " + name;
     }
 
     public override void WriteNode(string indent = "") {
@@ -167,18 +166,38 @@ class Parser {
     public string closing_text;
   }
 
-  public class Text : Node {
-    public Text(string text, Node parent) : base(text, parent) {}
+  public class Struct : Declaration {
+    public Struct(string text, Node parent, string name) : base(
+        text,
+        parent,
+        name) {}
 
-    public override string Cxx() {
-      return text;
+    public override void WriteNode(string indent = "") {
+      Console.WriteLine(indent + "Struct " + name);
+    }
+  }
+
+  public class Text : Node {
+    public Text(string text, Node parent) : base(text, parent) {
+      if (text == null) {
+        throw new ArgumentNullException();
+      }
     }
 
     public override void WriteNode(string indent = "") {
       Console.WriteLine(indent + "Text (" + text + ")");
     }
+  }
 
-    public override bool must_rewrite => true;
+  public class TypeAlias : Declaration {
+    public TypeAlias(string text, Node parent, string name) : base(
+        text,
+        parent,
+        name) {}
+
+    public override void WriteNode(string indent = "") {
+      Console.WriteLine(indent + "TypeAlias " + name);
+    }
   }
 
   public class UsingDeclaration : Declaration {
@@ -210,14 +229,9 @@ class Parser {
     public override string Cxx() {
       Debug.Assert(must_rewrite, "inconsistent rewrite");
       if (declared_in_namespace == null) {
-        return "using " + full_name + ";" + Environment.NewLine;
+        return "using " + full_name + ";";
       } else {
-        return "using " +
-               declared_in_namespace.name +
-               "::" +
-               name +
-               ";" +
-               Environment.NewLine;
+        return "using " + declared_in_namespace.name + "::" + name + ";";
       }
     }
 
@@ -249,7 +263,7 @@ class Parser {
 
     public override string Cxx() {
       Debug.Assert(must_rewrite, "inconsistent rewrite");
-      return "using namespace " + ns + ";" + Environment.NewLine;
+      return "using namespace " + ns + ";";
     }
 
     public override void WriteNode(string indent = "") {
@@ -257,28 +271,6 @@ class Parser {
     }
 
     public string ns = null;
-  }
-
-  public class Struct : Declaration {
-    public Struct(string text, Node parent, string name) : base(
-        text,
-        parent,
-        name) {}
-
-    public override void WriteNode(string indent = "") {
-      Console.WriteLine(indent + "Struct " + name);
-    }
-  }
-
-  public class TypeAlias : Declaration {
-    public TypeAlias(string text, Node parent, string name) : base(
-        text,
-        parent,
-        name) {}
-
-    public override void WriteNode(string indent = "") {
-      Console.WriteLine(indent + "TypeAlias " + name);
-    }
   }
 
   private static bool IsClass(string line) {
@@ -571,11 +563,11 @@ class Parser {
     var following_nodes_in_parent = parent.children.
         Skip(last_namespace_position_in_parent + 1).ToList();
     parent.children = preceding_nodes_in_parent;
-    var blank_line_before = new Text(Environment.NewLine, parent);
+    var blank_line_before = new Text("", parent);
     var project_namespace = new Namespace(parent,
                                           ProjectNamespaceForFile(
                                               file.file_info));
-    var blank_line_after = new Text(Environment.NewLine, parent);
+    var blank_line_after = new Text("", parent);
     var using_directive = new UsingDirective(project_namespace,
                                              FileNamespaceForFile(
                                                  file.file_info));
@@ -680,7 +672,6 @@ class Parser {
         var following_nodes_in_parent = parent.children.
             Skip(using_position_in_parent + 1).ToList();
         parent.children = preceding_nodes_in_parent;
-        var empty = new Text("", parent);
         parent.children.AddRange(following_nodes_in_parent);
       }
     }
@@ -708,13 +699,13 @@ class Parser {
             names.Add(decl.name);
           }
         }
-        var blank_line_before = new Text(Environment.NewLine, file_namespace);
+        var blank_line_before = new Text("", file_namespace);
         foreach (string name in names) {
           var using_declaration =
               new UsingDeclaration(file_namespace,
                                    "internal::" + name);
         }
-        var blank_line_after = new Text(Environment.NewLine, file_namespace);
+        var blank_line_after = new Text("", file_namespace);
       }
     }
   }
@@ -737,14 +728,14 @@ class Renamespacer {
   static void RewriteNode(StreamWriter writer, Parser.Node node) {
     foreach (Parser.Node child in node.children) {
       if (child.must_rewrite) {
-        writer.Write(child.Cxx());
+        writer.WriteLine(child.Cxx());
       } else {
         writer.WriteLine(child.text);
       }
       if (child is Parser.Namespace ns) {
         RewriteNode(writer, child);
         if (ns.must_rewrite) {
-          writer.Write(ns.ClosingCxx());
+          writer.WriteLine(ns.ClosingCxx());
         } else {
           writer.WriteLine(ns.closing_text);
         }
