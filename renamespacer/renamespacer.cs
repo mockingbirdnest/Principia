@@ -686,7 +686,9 @@ class Parser {
   // their declaration into a nested "internal" namespace.  Adds using
   // declarations to make all the now-internal declarations accessible to the
   // outside world.
-  public static void FixMissingInternalNamespaces(File file) {
+  public static void FixMissingInternalNamespaces(
+      File file,
+      bool insert_using_declarations) {
     var innermost_namespaces = FindInnermostNamespaces(file);
     foreach (var ns in innermost_namespaces) {
       if (!ns.is_internal) {
@@ -698,19 +700,20 @@ class Parser {
         internal_namespace.children.AddRange(nodes_in_ns);
 
         // Insert the using declarations.  First dedupe and sort the symbols.
-        var names = new SortedSet<string>();
-        foreach (Node n in nodes_in_ns) {
-          if (n is Declaration decl) {
-            names.Add(decl.name);
+        if (insert_using_declarations) {
+          var names = new SortedSet<string>();
+          foreach (Node n in nodes_in_ns) {
+            if (n is Declaration decl) {
+              names.Add(decl.name);
+            }
           }
+          var blank_line_before = new Text("", file_namespace);
+          foreach (string name in names) {
+            var using_declaration =
+                new UsingDeclaration(file_namespace, "internal::" + name);
+          }
+          var blank_line_after = new Text("", file_namespace);
         }
-        var blank_line_before = new Text("", file_namespace);
-        foreach (string name in names) {
-          var using_declaration =
-              new UsingDeclaration(file_namespace,
-                                   "internal::" + name);
-        }
-        var blank_line_after = new Text("", file_namespace);
       }
     }
   }
@@ -779,10 +782,10 @@ class Renamespacer {
     }
 
     FileInfo[] hpp_files = project.GetFiles("*.hpp");
-    var hpp_parsed_files = new Dictionary<FileInfo, Parser.File>();
     var declaration_to_file = new Dictionary<Parser.Declaration, FileInfo>();
     foreach (FileInfo input_file in hpp_files) {
-      if (excluded.Contains(input_file.Name)) {
+      if (excluded.Contains(input_file.Name) ||
+          Regex.IsMatch(input_file.Name, @"_body\.hpp$")) {
         continue;
       }
       Parser.File parser_file = Parser.ParseFile(input_file);
@@ -791,8 +794,8 @@ class Renamespacer {
       var exported_declarations =
           Parser.CollectExportedDeclarations(parser_file);
       Parser.FixLegacyInternalNamespaces(parser_file);
-      Parser.FixMissingInternalNamespaces(parser_file);
-      hpp_parsed_files.Add(input_file, parser_file);
+      Parser.FixMissingInternalNamespaces(parser_file,
+                                          insert_using_declarations: true);
       foreach (var exported_declaration in exported_declarations) {
         declaration_to_file.Add(exported_declaration, input_file);
       }
@@ -801,15 +804,16 @@ class Renamespacer {
     }
 
     FileInfo[] cpp_files = project.GetFiles("*.cpp");
-    var cpp_parsed_files = new Dictionary<FileInfo, Parser.File>();
-    foreach (FileInfo input_file in cpp_files) {
+    FileInfo[] body_hpp_files = project.GetFiles("*_body.hpp");
+    FileInfo[] all_body_files = cpp_files.Union(body_hpp_files).ToArray();
+    foreach (FileInfo input_file in all_body_files) {
       if (excluded.Contains(input_file.Name)) {
         continue;
       }
       Parser.File parser_file = Parser.ParseFile(input_file);
       Parser.FixLegacyInternalNamespaces(parser_file);
-      Parser.FixMissingInternalNamespaces(parser_file);
-      cpp_parsed_files.Add(input_file, parser_file);
+      Parser.FixMissingInternalNamespaces(parser_file,
+                                          insert_using_declarations: false);
       RewriteFile(input_file, parser_file, dry_run);
     }
 
