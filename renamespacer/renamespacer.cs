@@ -549,10 +549,14 @@ class Parser {
     return legacy_internal_namespaces;
   }
 
-  public static void AppendCompatibilityNamespace(File file) {
+  public static void AppendCompatibilityNamespaceIfNeeded(File file) {
     var last_namespace = FindLastOutermostNamespace(file);
     if (last_namespace == null) {
       // Strange file with no namespace at all, inserting into ::.
+      return;
+    }
+    if (last_namespace.name.Contains("::")) {
+      // The namespace is already there.  We identify it by its ::.
       return;
     }
     var parent = last_namespace.parent;
@@ -567,7 +571,8 @@ class Parser {
     var project_namespace = new Namespace(parent,
                                           ProjectNamespaceForFile(
                                               file.file_info));
-    var blank_line_after = new Text("", parent);
+    // No blank line after because either we have a blank line and an include,
+    // or the end of the file.
     var using_directive = new UsingDirective(project_namespace,
                                              FileNamespaceForFile(
                                                  file.file_info));
@@ -791,7 +796,7 @@ class Renamespacer {
       foreach (var exported_declaration in exported_declarations) {
         declaration_to_file.Add(exported_declaration, input_file);
       }
-      Parser.AppendCompatibilityNamespace(parser_file);
+      Parser.AppendCompatibilityNamespaceIfNeeded(parser_file);
       RewriteFile(input_file, parser_file, dry_run);
     }
 
