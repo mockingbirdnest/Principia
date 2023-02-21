@@ -440,6 +440,7 @@ class Parser {
     return file;
   }
 
+  //TODO(phl)Leading underscore.
   private static string FileNamespaceForFile(FileInfo file_info) {
     return "principia::" +
            file_info.Directory.Name +
@@ -604,7 +605,7 @@ class Parser {
     using_directives.Insert(file_namespace_insertion_index, using_directive);
   }
 
-  public static void AppendCompatibilityNamespaceIfNeeded(File file) {
+  public static void FixCompatibilityNamespace(File file) {
     var last_namespace = FindLastOutermostNamespace(file);
     if (last_namespace == null) {
       // Strange file with no namespace at all, inserting into ::.
@@ -660,6 +661,7 @@ class Parser {
         using_directives: internal_using_directives);
   }
 
+  //TODO(phl)Something odd with digits.
   // Replaces the legacy "internal_foo" namespaces with a namespace "foo"
   // containing a namespace "internal".
   public static void FixLegacyInternalNamespaces(File file) {
@@ -867,7 +869,7 @@ class Renamespacer {
       foreach (var exported_declaration in exported_declarations) {
         declaration_to_file.Add(exported_declaration, input_file);
       }
-      Parser.AppendCompatibilityNamespaceIfNeeded(parser_file);
+      Parser.FixCompatibilityNamespace(parser_file);
       RewriteFile(input_file, parser_file, dry_run);
     }
 
