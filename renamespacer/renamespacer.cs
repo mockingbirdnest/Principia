@@ -13,9 +13,11 @@ namespace renamespacer {
 class Parser {
   public abstract class Node {
     // This links the new node as the last child of its parent.
-    protected Node(int line_number, Node parent) {
-      this.line_number = line_number;
+    protected Node(Node parent) : this(text: null, parent) {}
+
+    protected Node(string text, Node parent) {
       this.parent = parent;
+      this.text_ = text;
       this.children = new List<Node>();
       if (parent != null) {
         position_in_parent = parent.children.Count;
@@ -24,7 +26,7 @@ class Parser {
     }
 
     // This function must return a string ending with a new line.
-    public virtual string Cxx(bool is_at_exit) {
+    public virtual string Cxx() {
       return "--FATAL--" + Environment.NewLine;
     }
 
@@ -38,22 +40,28 @@ class Parser {
       }
     }
 
-    public virtual bool must_rewrite {
-      get => must_rewrite_;
-      set { must_rewrite_ = value; }
+    public string text {
+      get => text_;
     }
 
-    public int line_number = 0;
-    public int? last_line_number = null;
+    public bool must_rewrite {
+      get => text_ == null;
+    }
+
     public Node parent = null;
     public int position_in_parent = -1;
     public List<Node> children = null;
-    protected bool must_rewrite_ = false;
+    protected string text_;
   }
 
   public abstract class Declaration : Node {
-    protected Declaration(int line_number, Node parent, string name) : base(
-        line_number,
+    protected Declaration(Node parent, string name) : this(
+        text: null,
+        parent,
+        name) {}
+
+    protected Declaration(string text, Node parent, string name) : base(
+        text,
         parent) {
       this.name = name;
     }
@@ -62,8 +70,8 @@ class Parser {
   }
 
   public class Class : Declaration {
-    public Class(int line_number, Node parent, string name) : base(
-        line_number,
+    public Class(string text, Node parent, string name) : base(
+        text,
         parent,
         name) {}
 
@@ -73,8 +81,8 @@ class Parser {
   }
 
   public class Constant : Declaration {
-    public Constant(int line_number, Node parent, string name) : base(
-        line_number,
+    public Constant(string text, Node parent, string name) : base(
+        text,
         parent,
         name) { }
 
@@ -85,13 +93,12 @@ class Parser {
 
   // A placeholder for a deleted node.
   public class File : Node {
-    public File(int line_number, FileInfo file_info) : base(
-        line_number,
+    public File(FileInfo file_info) : base(
         parent: null) {
       this.file_info = file_info;
       file_namespace = Regex.Replace(
           file_info.Name,
-          "(_body|_test)?\\.[hc]pp",
+          @"(_body|_test)?\.[hc]pp",
           "");
     }
 
@@ -104,8 +111,8 @@ class Parser {
   }
 
   public class Function : Declaration {
-    public Function(int line_number, Node parent, string name) : base(
-        line_number,
+    public Function(string text, Node parent, string name) : base(
+        text,
         parent,
         name) { }
 
@@ -115,8 +122,8 @@ class Parser {
   }
 
   public class Include : Node {
-    public Include(int line_number, Node parent, string[] path) : base(
-        line_number,
+    public Include(string text, Node parent, string[] path) : base(
+        text,
         parent) {
       this.path = path;
     }
@@ -129,8 +136,11 @@ class Parser {
   }
 
   public class Namespace : Declaration {
-    public Namespace(int line_number, Node parent, string name) : base(
-        line_number,
+    public Namespace(Node parent, string name) :
+        this(text: null, parent, name) { }
+
+    public Namespace(string text, Node parent, string name) : base(
+        text,
         parent,
         name) {
       if (parent is Namespace{ is_internal: true } ) {
@@ -140,13 +150,14 @@ class Parser {
       }
     }
 
-    public override string Cxx(bool is_at_exit) {
+    public override string Cxx() {
       Debug.Assert(must_rewrite, "inconsistent rewrite");
-      if (is_at_exit) {
-        return "}  // namespace " + name + Environment.NewLine;
-      } else {
-        return "namespace " + name + " {" + Environment.NewLine;
-      }
+      return "namespace " + name + " {" + Environment.NewLine;
+    }
+
+    public string ClosingCxx() {
+      Debug.Assert(must_rewrite, "inconsistent rewrite");
+      return "}  // namespace " + name + Environment.NewLine;
     }
 
     public override void WriteNode(string indent = "") {
@@ -157,31 +168,29 @@ class Parser {
     }
 
     public bool is_internal = false;
+    public string closing_text;
   }
 
   public class Text : Node {
-    public Text(int line_number, Node parent, string text) : base(
-        line_number,
-        parent) {
-      text_ = text;
-    }
+    public Text(string text, Node parent) : base(text, parent) {}
 
-    public override string Cxx(bool is_at_exit) {
+    public override string Cxx() {
       return text_;
     }
 
     public override void WriteNode(string indent = "") {
       Console.WriteLine(indent + "Text (" + text_ + ")");
     }
-
-    public override bool must_rewrite => true;
-
-    private readonly string text_;
   }
 
   public class UsingDeclaration : Declaration {
-    public UsingDeclaration(int line_number, Node parent, string full_name) :
-        base(line_number, parent, full_name.Split("::")[^1]) {
+    public UsingDeclaration(Node parent, string full_name) : this(
+        text: null,
+        parent,
+        full_name) {}
+
+    public UsingDeclaration(string text, Node parent, string full_name) :
+        base(text, parent, full_name.Split("::")[^1]) {
       this.full_name = full_name;
       string[] segments = full_name.Split("::");
 
@@ -200,8 +209,7 @@ class Parser {
       }
     }
 
-    public override string Cxx(bool is_at_exit) {
-      Debug.Assert(!is_at_exit, "no exit for using");
+    public override string Cxx() {
       Debug.Assert(must_rewrite, "inconsistent rewrite");
       if (declared_in_namespace == null) {
         return "using " + full_name + ";" + Environment.NewLine;
@@ -224,22 +232,24 @@ class Parser {
                              : " from " + declared_in_namespace.name));
     }
 
-    public override bool must_rewrite =>
-        must_rewrite_ || declared_in_namespace is { must_rewrite: true };
+    //public override bool must_rewrite =>
+    //    must_rewrite_ || declared_in_namespace is { must_rewrite: true };
 
     public string full_name = null;
     public Namespace declared_in_namespace = null;
   }
 
   public class UsingDirective : Node {
-    public UsingDirective(int line_number, Node parent, string ns) : base(
-        line_number,
+    public UsingDirective(Node parent, string ns) :
+        this(text: null, parent, ns) {}
+
+    public UsingDirective(string text, Node parent, string ns) : base(
+        text,
         parent) {
       this.ns = ns;
     }
 
-    public override string Cxx(bool is_at_exit) {
-      Debug.Assert(!is_at_exit, "no exit for using");
+    public override string Cxx() {
       Debug.Assert(must_rewrite, "inconsistent rewrite");
       return "using namespace " + ns + ";" + Environment.NewLine;
     }
@@ -252,8 +262,8 @@ class Parser {
   }
 
   public class Struct : Declaration {
-    public Struct(int line_number, Node parent, string name) : base(
-        line_number,
+    public Struct(string text, Node parent, string name) : base(
+        text,
         parent,
         name) {}
 
@@ -263,8 +273,8 @@ class Parser {
   }
 
   public class TypeAlias : Declaration {
-    public TypeAlias(int line_number, Node parent, string name) : base(
-        line_number,
+    public TypeAlias(string text, Node parent, string name) : base(
+        text,
         parent,
         name) {}
 
@@ -368,62 +378,61 @@ class Parser {
   }
 
   public static File ParseFile(FileInfo file_info) {
-    var file = new File(line_number: 0, file_info);
+    var file = new File(file_info);
     Node current = file;
 
     using (StreamReader reader = file_info.OpenText()) {
-      int line_number = 1;
       while (!reader.EndOfStream) {
         string line = reader.ReadLine();
         if (IsPrincipiaInclude(line) && !IsOwnHeaderInclude(line, file_info)) {
-          var include = new Include(line_number,
+          var include = new Include(line,
                                     parent: current,
                                     ParseIncludedPath(line));
         } else if (IsOpeningNamespace(line)) {
-          current = new Namespace(line_number,
+          current = new Namespace(line,
                                   parent: current,
                                   ParseOpeningNamespace(line));
         } else if (IsClosingNamespace(line)) {
           var name = ParseClosingNamespace(line);
           if (current is Namespace ns) {
             Debug.Assert(ns.name == name);
-            ns.last_line_number = line_number;
+            ns.closing_text = line;
           } else {
             Debug.Assert(false);
           }
           current = current.parent;
         } else if (IsClass(line)) {
-          var klass = new Class(line_number, parent: current, ParseClass(line));
+          var klass = new Class(line, parent: current, ParseClass(line));
         } else if (IsConstant(line)) {
           var constant =
-              new Constant(line_number, parent: current, ParseConstant(line));
+              new Constant(line, parent: current, ParseConstant(line));
         } else if (IsFunction(line)) {
           var function =
-              new Function(line_number, parent: current, ParseFunction(line));
+              new Function(line, parent: current, ParseFunction(line));
         } else if (IsStruct(line)) {
           var strukt = new Struct(
-              line_number,
+              line,
               parent: current,
               ParseStruct(line));
         } else if (IsTypeAlias(line)) {
           var type_alias = new TypeAlias(
-              line_number,
+              line,
               parent: current,
               ParseTypeAlias(line));
         } else if (IsUsingDirective(line)) {
           var using_directive = new UsingDirective(
-              line_number,
+              line,
               parent: current,
               ParseUsingDirective(line));
         } else if (IsUsingDeclaration(line)) {
           var using_declaration = new UsingDeclaration(
-              line_number,
+              line,
               parent: current,
               ParseUsingDeclaration(line));
+        } else {
+          var text = new Text(line, parent: current);
         }
-        ++line_number;
       }
-      file.last_line_number = line_number;
     }
     return file;
   }
@@ -564,23 +573,14 @@ class Parser {
     var following_nodes_in_parent = parent.children.
         Skip(last_namespace_position_in_parent + 1).ToList();
     parent.children = preceding_nodes_in_parent;
-    var blank_line_before = new Text(last_namespace.last_line_number.Value + 1,
-                                     parent,
-                                     Environment.NewLine);
-    var project_namespace = new Namespace(blank_line_before.line_number,
-                                          parent,
+    var blank_line_before = new Text(Environment.NewLine, parent);
+    var project_namespace = new Namespace(parent,
                                           ProjectNamespaceForFile(
                                               file.file_info));
-    project_namespace.last_line_number = project_namespace.line_number + 1;
-    project_namespace.must_rewrite = true;
-    var blank_line_after = new Text(project_namespace.last_line_number.Value,
-                                    parent,
-                                    Environment.NewLine);
-    var using_directive = new UsingDirective(project_namespace.line_number,
-                                             project_namespace,
+    var blank_line_after = new Text(Environment.NewLine, parent);
+    var using_directive = new UsingDirective(project_namespace,
                                              FileNamespaceForFile(
                                                  file.file_info));
-    using_directive.must_rewrite = true;
     parent.children.AddRange(following_nodes_in_parent);
   }
 
@@ -598,17 +598,13 @@ class Parser {
       var following_nodes_in_parent = parent.children.
           Skip(internal_position_in_parent + 1).ToList();
       parent.children = preceding_nodes_in_parent;
-      var file_namespace = new Namespace(internal_namespace.line_number,
-                                         parent,
+      var file_namespace = new Namespace(parent,
                                          file.file_namespace);
       file_namespace.children.Add(internal_namespace);
       file_namespace.children.AddRange(following_nodes_in_parent);
-      file_namespace.last_line_number = parent.last_line_number;
-      file_namespace.must_rewrite = true;
       internal_namespace.parent = file_namespace;
       internal_namespace.position_in_parent = 0;
       internal_namespace.name = "internal";
-      internal_namespace.must_rewrite = true;
     }
   }
 
@@ -665,10 +661,8 @@ class Parser {
             Skip(insertion_point_position_in_parent).ToList();
         parent.children = preceding_nodes_in_parent;
         var using_directive = new UsingDirective(
-            file_namespace_insertion_point.line_number,
             parent,
             file_namespace);
-        using_directive.must_rewrite = true;
         internal_using_directives.Insert(file_namespace_insertion_index,
                                          using_directive);
         foreach (Node n in following_nodes_in_parent) {
@@ -688,7 +682,7 @@ class Parser {
         var following_nodes_in_parent = parent.children.
             Skip(using_position_in_parent + 1).ToList();
         parent.children = preceding_nodes_in_parent;
-        var empty = new Text(using_declaration.line_number, parent, "");
+        var empty = new Text("", parent);
         parent.children.AddRange(following_nodes_in_parent);
       }
     }
@@ -704,17 +698,10 @@ class Parser {
       if (!ns.is_internal) {
         var nodes_in_ns = ns.children.ToList();
         ns.children.Clear();
-        ns.must_rewrite = true;
-        var file_namespace = new Namespace(ns.line_number,
-                                           ns,
+        var file_namespace = new Namespace(ns,
                                            file.file_namespace);
-        file_namespace.last_line_number = ns.last_line_number;
-        file_namespace.must_rewrite = true;
-        var internal_namespace =
-            new Namespace(ns.line_number, file_namespace, "internal");
+        var internal_namespace = new Namespace(file_namespace, "internal");
         internal_namespace.children.AddRange(nodes_in_ns);
-        internal_namespace.last_line_number = ns.last_line_number;
-        internal_namespace.must_rewrite = true;
 
         // Insert the using declarations.  First dedupe and sort the symbols.
         var names = new SortedSet<string>();
@@ -723,19 +710,13 @@ class Parser {
             names.Add(decl.name);
           }
         }
-        var blank_line_before = new Text(file_namespace.last_line_number.Value,
-                                         file_namespace,
-                                         Environment.NewLine);
+        var blank_line_before = new Text(Environment.NewLine, file_namespace);
         foreach (string name in names) {
           var using_declaration =
-              new UsingDeclaration(file_namespace.last_line_number.Value,
-                                   file_namespace,
+              new UsingDeclaration(file_namespace,
                                    "internal::" + name);
-          using_declaration.must_rewrite = true;
         }
-        var blank_line_after = new Text(file_namespace.last_line_number.Value,
-                                        file_namespace,
-                                        Environment.NewLine);
+        var blank_line_after = new Text(Environment.NewLine, file_namespace);
       }
     }
   }
@@ -747,57 +728,29 @@ class Renamespacer {
     string output_filename =
         input_file.DirectoryName + "\\" + input_file.Name + ".new";
 
-    Parser.Node parent = file;
-    int child_position = 0;
-    Parser.Node node = parent.children[child_position];
-    int node_line_number = node.line_number;
-    using (StreamReader reader = input_file.OpenText()) {
-      using (StreamWriter writer = File.CreateText(output_filename)) {
-        int line_number = 1;
-        bool is_at_exit = false;
-        while (!reader.EndOfStream) {
-          string line = reader.ReadLine();
-          Debug.Assert(node_line_number >= line_number);
-
-          bool has_rewritten = false;
-          while (node_line_number == line_number) {
-            if (node.must_rewrite) {
-              has_rewritten = true;
-              writer.Write(node.Cxx(is_at_exit));
-            } else {
-              has_rewritten = false;
-            }
-
-            if (node is Parser.Namespace ns && ns.line_number == line_number) {
-              // Entering a namespace.
-              parent = node;
-              child_position = -1;
-            }
-            ++child_position;
-            if (child_position == parent.children.Count) {
-              // Exiting a namespace.
-              node = parent;
-              node_line_number = node.last_line_number.Value;
-              child_position = node.position_in_parent;
-              parent = node.parent;
-              is_at_exit = true;
-            } else {
-              // Moving to the next sibling.
-              node = parent.children[child_position];
-              node_line_number = node.line_number;
-              is_at_exit = false;
-            }
-          }
-
-          if (!has_rewritten) {
-            writer.WriteLine(line);
-          }
-          ++line_number;
-        }
-      }
+    using (StreamWriter writer = File.CreateText(output_filename)) {
+      RewriteNode(writer, file);
     }
     if (!dry_run) {
       File.Move(output_filename, input_filename, overwrite: true);
+    }
+  }
+
+  static void RewriteNode(StreamWriter writer, Parser.Node node) {
+    foreach (Parser.Node child in node.children) {
+      if (child.must_rewrite) {
+        writer.Write(child.Cxx());
+      } else {
+        writer.WriteLine(child.text);
+      }
+      if (child is Parser.Namespace ns) {
+        RewriteNode(writer, child);
+        if (ns.must_rewrite) {
+          writer.Write(ns.ClosingCxx());
+        } else {
+          writer.WriteLine(ns.closing_text);
+        }
+      }
     }
   }
 
