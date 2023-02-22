@@ -39,7 +39,7 @@ class Parser {
     }
 
     public virtual string Cxx() {
-      return "--FATAL--";
+      throw new InvalidOperationException();
     }
 
     // Writes a single node.
@@ -54,9 +54,9 @@ class Parser {
 
     public int position_in_parent { get ; private set; } = -1;
 
-    public string text { get ; }
+    public string text { get ; protected set; }
 
-    public bool must_rewrite => text == null;
+    public virtual bool must_rewrite => text == null;
 
     public Node parent = null;
     public List<Node> children = null;
@@ -71,10 +71,18 @@ class Parser {
     protected Declaration(string text, Node parent, string name) : base(
         text,
         parent) {
-      this.name = name;
+      name_ = name;
     }
 
-    public string name = null;
+    public string name {
+      get => name_;
+      set {
+        name_ = value;
+        text = null;
+      }
+    }
+
+    private string name_;
   }
 
   public class Class : Declaration {
@@ -257,8 +265,8 @@ class Parser {
                              : " from " + declared_in_namespace.name));
     }
 
-    //public override bool must_rewrite =>
-    //    must_rewrite_ || declared_in_namespace is { must_rewrite: true };
+    public override bool must_rewrite =>
+        declared_in_namespace is { must_rewrite: true };
 
     public string full_name = null;
     public Namespace declared_in_namespace = null;
