@@ -112,18 +112,24 @@ class Parser {
     public File(FileInfo file_info) : base(
         parent: null) {
       this.file_info = file_info;
-      file_namespace = Regex.Replace(
-          file_info.Name,
-          @"(_body|_test)?\.[hc]pp",
-          "");
+      file_namespace_simple_name = "_" +
+                              Regex.Replace(file_info.Name,
+                                            @"(_body|_test)?\.[hc]pp",
+                                            "");
+      project_namespace_full_name = "principia::" + file_info.Directory.Name;
+      file_namespace_full_name = project_namespace_full_name +
+                                 "::" +
+                                 file_namespace_simple_name;
     }
 
     public override void WriteNode(string indent = "") {
       Console.WriteLine(indent + "File " + file_info.FullName);
     }
 
-    public FileInfo file_info = null;
-    public string file_namespace = null;
+    public FileInfo file_info { get; } = null;
+    public string file_namespace_full_name { get; }
+    public string file_namespace_simple_name { get; }
+    public string project_namespace_full_name { get; }
   }
 
   public class Function : Declaration {
@@ -448,19 +454,6 @@ class Parser {
     return file;
   }
 
-  //TODO(phl)Leading underscore.
-  private static string FileNamespaceForFile(FileInfo file_info) {
-    return "principia::" +
-           file_info.Directory.Name +
-           "::" +
-           Regex.Replace(file_info.Name, @"\.hpp$|\.cpp$|_test\.cpp$", "");
-  }
-
-  private static string ProjectNamespaceForFile(FileInfo file_info) {
-    return "principia::" +
-           file_info.Directory.Name;
-  }
-
   public static List<Declaration> CollectExportedDeclarations(Node node) {
     var exported_declarations = new List<Declaration>();
     foreach (Node child in node.children) {
@@ -633,13 +626,11 @@ class Parser {
     parent.children = preceding_nodes_in_parent;
     var blank_line_before = new Text("", parent);
     var project_namespace = new Namespace(parent,
-                                          ProjectNamespaceForFile(
-                                              file.file_info));
+                                          file.project_namespace_full_name);
     // No blank line after because either we have a blank line and an include,
     // or the end of the file.
     var using_directive = new UsingDirective(project_namespace,
-                                             FileNamespaceForFile(
-                                                 file.file_info));
+                                             file.file_namespace_full_name);
     parent.AddChildren(following_nodes_in_parent);
   }
 
@@ -664,7 +655,7 @@ class Parser {
       before = internal_using_declarations[0];
     }
     InsertUsingDirectiveIfNeeded(
-        file_namespace: FileNamespaceForFile(file.file_info),
+        file_namespace: file.file_namespace_full_name,
         before: before,
         using_directives: internal_using_directives);
   }
@@ -685,7 +676,7 @@ class Parser {
           Skip(internal_position_in_parent + 1).ToList();
       parent.children = preceding_nodes_in_parent;
       var file_namespace = new Namespace(parent,
-                                         file.file_namespace);
+                                         file.file_namespace_simple_name);
       file_namespace.AddChild(internal_namespace);
       file_namespace.AddChildren(following_nodes_in_parent);
       internal_namespace.name = "internal";
@@ -714,7 +705,7 @@ class Parser {
 
       // Insert the using directive if not already present.
       InsertUsingDirectiveIfNeeded(
-          file_namespace: FileNamespaceForFile(file_info),
+          file_namespace: file.file_namespace_full_name,
           before: internal_using_declarations[0],
           using_directives: internal_using_directives);
 
@@ -745,7 +736,7 @@ class Parser {
         var nodes_in_ns = ns.children.ToList();
         ns.children.Clear();
         var file_namespace = new Namespace(ns,
-                                           file.file_namespace);
+                                           file.file_namespace_simple_name);
         var internal_namespace = new Namespace(file_namespace, "internal");
         internal_namespace.children.AddRange(nodes_in_ns);
 
