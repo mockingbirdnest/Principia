@@ -468,9 +468,9 @@ class Parser {
     return exported_declarations;
   }
 
-  private static FileInfo FindFileReferencedByUsingDeclaration(
+  private static File FindFileReferencedByUsingDeclaration(
       UsingDeclaration using_declaration,
-      Dictionary<Declaration, FileInfo> declaration_to_file) {
+      Dictionary<Declaration, File> declaration_to_file) {
     var referenced_name = using_declaration.name;
     var referenced_innermost_namespace =
         using_declaration.full_name.Split("::")[^2];
@@ -689,23 +689,23 @@ class Parser {
   public static void FixUsingDeclarations(
       File file,
       bool internal_only,
-      Dictionary<Declaration, FileInfo> declaration_to_file) {
+      Dictionary<Declaration, File> declaration_to_file) {
     var internal_using_declarations =
         FindUsingDeclarations(file, internal_only);
     var internal_using_directives = FindUsingDirectives(file, internal_only);
     foreach (UsingDeclaration using_declaration in
              internal_using_declarations) {
-      var file_info =
+      var referenced_file =
           FindFileReferencedByUsingDeclaration(using_declaration,
                                                declaration_to_file);
-      if (file_info == null) {
+      if (referenced_file == null) {
         // Not a reference to an entity that is in the project being processed.
         continue;
       }
 
       // Insert the using directive if not already present.
       InsertUsingDirectiveIfNeeded(
-          file_namespace: file.file_namespace_full_name,
+          file_namespace: referenced_file.file_namespace_full_name,
           before: internal_using_declarations[0],
           using_directives: internal_using_directives);
 
@@ -849,7 +849,7 @@ class Renamespacer {
     }
 
     FileInfo[] hpp_files = project.GetFiles("*.hpp");
-    var declaration_to_file = new Dictionary<Parser.Declaration, FileInfo>();
+    var declaration_to_file = new Dictionary<Parser.Declaration, Parser.File>();
     foreach (FileInfo input_file in hpp_files) {
       if (excluded.Contains(input_file.Name) || IsBody(input_file)) {
         continue;
@@ -866,7 +866,7 @@ class Renamespacer {
       Parser.FixMissingInternalNamespaces(parser_file,
                                           insert_using_declarations: true);
       foreach (var exported_declaration in exported_declarations) {
-        declaration_to_file.Add(exported_declaration, input_file);
+        declaration_to_file.Add(exported_declaration, parser_file);
       }
       Parser.FixCompatibilityNamespace(parser_file);
       RewriteFile(input_file, parser_file, dry_run);
