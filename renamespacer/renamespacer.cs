@@ -14,12 +14,12 @@ namespace renamespacer {
 class Parser {
   public abstract class Node {
     // This links the new node as the last child of its parent.
-    protected Node(Node parent) : this(text: null, parent) {}
+    protected Node(Node? parent) : this(text: null, parent) {}
 
-    protected Node(string text, Node parent) {
+    protected Node(string? text, Node? parent) {
       this.parent = parent;
       this.text = text;
-      this.children = new List<Node>();
+      children = new List<Node>();
       if (parent != null) {
         position_in_parent = parent.children.Count;
         parent.children.Add(this);
@@ -54,12 +54,12 @@ class Parser {
 
     public int position_in_parent { get ; private set; } = -1;
 
-    public string text { get ; protected set; }
+    public string? text { get ; protected set; }
 
     public virtual bool must_rewrite => text == null;
 
-    public Node parent = null;
-    public List<Node> children = null;
+    public Node? parent = null;
+    public List<Node> children;
   }
 
   public abstract class Declaration : Node {
@@ -68,7 +68,7 @@ class Parser {
         parent,
         name) {}
 
-    protected Declaration(string text, Node parent, string name) : base(
+    protected Declaration(string? text, Node parent, string name) : base(
         text,
         parent) {
       name_ = name;
@@ -116,7 +116,7 @@ class Parser {
                               Regex.Replace(file_info.Name,
                                             @"(_body|_test)?\.[hc]pp",
                                             "");
-      project_namespace_full_name = "principia::" + file_info.Directory.Name;
+      project_namespace_full_name = "principia::" + file_info.Directory!.Name;
       file_namespace_full_name = project_namespace_full_name +
                                  "::" +
                                  file_namespace_simple_name;
@@ -126,7 +126,7 @@ class Parser {
       Console.WriteLine(indent + "File " + file_info.FullName);
     }
 
-    public FileInfo file_info { get; } = null;
+    public FileInfo file_info { get; }
     public string file_namespace_full_name { get; }
     public string file_namespace_simple_name { get; }
     public string project_namespace_full_name { get; }
@@ -154,14 +154,14 @@ class Parser {
       Console.WriteLine(indent + "Include " + string.Join(", ", path));
     }
 
-    public string[] path = null;
+    public string[] path;
   }
 
   public class Namespace : Declaration {
     public Namespace(Node parent, string name) :
         this(text: null, parent, name) { }
 
-    public Namespace(string text, Node parent, string name) : base(
+    public Namespace(string? text, Node parent, string name) : base(
         text,
         parent,
         name) {
@@ -192,7 +192,7 @@ class Parser {
     // The compatibility namespace is identified by its ::.
     public bool is_compatibility_namespace => name.Contains("::");
     public bool is_internal = false;
-    public string closing_text;
+    public string? closing_text;
   }
 
   public class Struct : Declaration {
@@ -235,7 +235,7 @@ class Parser {
         parent,
         full_name) {}
 
-    public UsingDeclaration(string text, Node parent, string full_name) :
+    public UsingDeclaration(string? text, Node parent, string full_name) :
         base(text, parent, full_name.Split("::")[^1]) {
       this.full_name = full_name;
       string[] segments = full_name.Split("::");
@@ -276,15 +276,15 @@ class Parser {
     public override bool must_rewrite =>
         declared_in_namespace is { must_rewrite: true };
 
-    public string full_name = null;
-    public Namespace declared_in_namespace = null;
+    public string full_name;
+    public Namespace? declared_in_namespace;
   }
 
   public class UsingDirective : Node {
     public UsingDirective(Node parent, string ns) :
         this(text: null, parent, ns) {}
 
-    public UsingDirective(string text, Node parent, string ns) : base(
+    public UsingDirective(string? text, Node parent, string ns) : base(
         text,
         parent) {
       this.ns = ns;
@@ -299,7 +299,7 @@ class Parser {
       Console.WriteLine(indent + "UsingDirective " + ns);
     }
 
-    public string ns = null;
+    public string ns;
   }
 
   private static bool IsClass(string line) {
@@ -402,7 +402,7 @@ class Parser {
 
     using (StreamReader reader = file_info.OpenText()) {
       while (!reader.EndOfStream) {
-        string line = reader.ReadLine();
+        string line = reader.ReadLine()!;
         if (IsPrincipiaInclude(line) && !IsOwnHeaderInclude(line, file_info)) {
           var include = new Include(line,
                                     parent: current,
@@ -419,7 +419,7 @@ class Parser {
           } else {
             Debug.Assert(false);
           }
-          current = current.parent;
+          current = current.parent!;
         } else if (IsClass(line)) {
           var klass = new Class(line, parent: current, ParseClass(line));
         } else if (IsConstant(line)) {
@@ -470,7 +470,7 @@ class Parser {
     return exported_declarations;
   }
 
-  private static File FindFileReferencedByUsingDeclaration(
+  private static File? FindFileReferencedByUsingDeclaration(
       UsingDeclaration using_declaration,
       Dictionary<Declaration, File> declaration_to_file) {
     var referenced_name = using_declaration.name;
@@ -541,8 +541,8 @@ class Parser {
     return internal_using_directives;
   }
 
-  private static Namespace FindLastOutermostNamespace(File file) {
-    Namespace last_outermost_namespace = null;
+  private static Namespace? FindLastOutermostNamespace(File file) {
+    Namespace? last_outermost_namespace = null;
     foreach (Node child in file.children) {
       if (child is Namespace ns) {
         last_outermost_namespace = ns;
@@ -672,7 +672,6 @@ class Parser {
     }
   }
 
-  //TODO(phl)Something odd with digits.
   // Replaces the legacy "internal_foo" namespaces with a namespace "foo"
   // containing a namespace "internal".
   public static void FixLegacyInternalNamespaces(File file) {
@@ -838,7 +837,7 @@ class Renamespacer {
   // projects.  The files will be overwritten.
   static void Main(string[] args) {
     // Parse the arguments.
-    DirectoryInfo project = null;
+    DirectoryInfo? project = null;
     var clients = new List<DirectoryInfo>();
     var excluded = new HashSet<string>();
     bool dry_run = true;
@@ -858,6 +857,9 @@ class Renamespacer {
           dry_run = bool.Parse(value);
         }
       }
+    }
+    if (project == null) {
+      throw new NullReferenceException();
     }
 
     FileInfo[] hpp_files = project.GetFiles("*.hpp");
