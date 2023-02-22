@@ -566,24 +566,25 @@ class Parser {
 
   // Insert a using directive for |file_namespace| at the correct place in
   // |using_directives|, but only if it's not there already.  If
-  // |using_directives| is empty, the insertion takes place before |before|.
+  // |using_directives| is empty, the insertion takes place after |after|.
   private static void InsertUsingDirectiveIfNeeded(
       string file_namespace,
-      Node before,
+      Node after,
       List<UsingDirective> using_directives) {
     // Check if the using directive for the file is already present, and if
     // not determine where it should be inserted.  This assumes that the using
     // directives are sorted.
     bool file_namespace_already_exists = false;
-    Node file_namespace_insertion_point = before;
+    Node file_namespace_insertion_point = after;
     int file_namespace_insertion_index = 0;
     foreach (UsingDirective ud in using_directives) {
       if (ud.ns == file_namespace) {
         file_namespace_already_exists = true;
         break;
       } else if (string.CompareOrdinal(file_namespace, ud.ns) < 0) {
-        file_namespace_insertion_point = ud;
         break;
+      } else {
+        file_namespace_insertion_point = ud;
       }
       ++file_namespace_insertion_index;
     }
@@ -597,9 +598,9 @@ class Parser {
     int insertion_point_position_in_parent =
         file_namespace_insertion_point.position_in_parent;
     var preceding_nodes_in_parent = parent.children.
-        Take(insertion_point_position_in_parent).ToList();
+        Take(insertion_point_position_in_parent + 1).ToList();
     var following_nodes_in_parent = parent.children.
-        Skip(insertion_point_position_in_parent).ToList();
+        Skip(insertion_point_position_in_parent + 1).ToList();
     parent.children = preceding_nodes_in_parent;
     var using_directive = new UsingDirective(parent, file_namespace);
     parent.AddChildren(following_nodes_in_parent);
@@ -641,7 +642,7 @@ class Parser {
         FindUsingDeclarations(file, internal_only: false);
     var innermost_namespaces = FindInnermostNamespaces(file);
     var innermost_namespace = innermost_namespaces[0];
-    Node before;
+    Node after;
     if (internal_using_declarations.Count == 0) {
       // If there is no using declaration to hook our new using directive,
       // insert a blank line and put the using directive immediately after.
@@ -650,13 +651,13 @@ class Parser {
       innermost_namespace.children.Clear();
       var blank_line_before = new Text("", innermost_namespaces[0]);
       innermost_namespace.AddChildren(nodes_in_innermost_namespace);
-      before = innermost_namespace.children[1];
+      after = innermost_namespace.children[0];
     } else {
-      before = internal_using_declarations[0];
+      after = internal_using_declarations[^1];
     }
     InsertUsingDirectiveIfNeeded(
         file_namespace: file.file_namespace_full_name,
-        before: before,
+        after: after,
         using_directives: internal_using_directives);
   }
 
@@ -706,7 +707,7 @@ class Parser {
       // Insert the using directive if not already present.
       InsertUsingDirectiveIfNeeded(
           file_namespace: referenced_file.file_namespace_full_name,
-          before: internal_using_declarations[0],
+          after: internal_using_declarations[^1],
           using_directives: internal_using_directives);
 
       // Erase the using declaration.
