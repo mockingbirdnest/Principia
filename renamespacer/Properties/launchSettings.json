@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "renamespacer": {
+      "commandName": "Project",
+      "commandLineArgs": "--project:base --client:physics --exclude:macros.hpp --dry_run:false",
+      "workingDirectory": "C:\\Users\\phl\\Projects\\GitHub\\Principia\\Principia"
+    }
+  }
+}
