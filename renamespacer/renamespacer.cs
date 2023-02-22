@@ -189,6 +189,8 @@ class Parser {
                         (is_internal ? "Internal" : ""));
     }
 
+    // The compatibility namespace is identified by its ::.
+    public bool is_compatibility_namespace => name.Contains("::");
     public bool is_internal = false;
     public string closing_text;
   }
@@ -567,7 +569,8 @@ class Parser {
   // Insert a using directive for |file_namespace| at the correct place in
   // |using_directives|, but only if it's not there already.  If
   // |using_directives| is empty, the insertion takes place after |after|.
-  private static void InsertUsingDirectiveIfNeeded(
+  // Return true iff a directive was added.
+  private static bool InsertUsingDirectiveIfNeeded(
       string file_namespace,
       Node after,
       List<UsingDirective> using_directives) {
@@ -589,7 +592,7 @@ class Parser {
       ++file_namespace_insertion_index;
     }
     if (file_namespace_already_exists) {
-      return;
+      return false;
     }
 
     // Insert the using directive.  Note that we must update |using_directives|.
@@ -605,6 +608,7 @@ class Parser {
     var using_directive = new UsingDirective(parent, file_namespace);
     parent.AddChildren(following_nodes_in_parent);
     using_directives.Insert(file_namespace_insertion_index, using_directive);
+    return true;
   }
 
   public static void FixCompatibilityNamespace(File file) {
@@ -613,8 +617,8 @@ class Parser {
       // Strange file with no namespace at all, inserting into ::.
       return;
     }
-    if (last_namespace.name.Contains("::")) {
-      // The namespace is already there.  We identify it by its ::.
+    if (last_namespace.is_compatibility_namespace) {
+      // The namespace is already there.
       return;
     }
     var parent = last_namespace.parent;
@@ -645,20 +649,27 @@ class Parser {
     Node after;
     if (internal_using_declarations.Count == 0) {
       // If there is no using declaration to hook our new using directive,
-      // insert a blank line and put the using directive immediately after.
-      // This assumes/ that the namespace starts with a blank line.
-      var nodes_in_innermost_namespace = innermost_namespace.children.ToList();
-      innermost_namespace.children.Clear();
-      var blank_line_before = new Text("", innermost_namespaces[0]);
-      innermost_namespace.AddChildren(nodes_in_innermost_namespace);
+      // insert it after the first child of the namespace.  This assumes/ that
+      // the namespace starts with a blank line.
       after = innermost_namespace.children[0];
     } else {
       after = internal_using_declarations[^1];
     }
-    InsertUsingDirectiveIfNeeded(
+    bool inserted_using_directive = InsertUsingDirectiveIfNeeded(
         file_namespace: file.file_namespace_full_name,
         after: after,
         using_directives: internal_using_directives);
+    if (inserted_using_directive && internal_using_declarations.Count == 0) {
+      // insert a blank line after the newly-inserted, self-standing using
+      // directive.
+      var preceding_nodes_in_innermost_namespace =
+          innermost_namespace.children.Take(2).ToList();
+      var following_nodes_in_innermost_namespace =
+          innermost_namespace.children.Skip(2).ToList();
+      innermost_namespace.children = preceding_nodes_in_innermost_namespace;
+      var blank_line_before = new Text("", innermost_namespace);
+      innermost_namespace.AddChildren(following_nodes_in_innermost_namespace);
+    }
   }
 
   //TODO(phl)Something odd with digits.
@@ -733,7 +744,7 @@ class Parser {
       bool insert_using_declarations) {
     var innermost_namespaces = FindInnermostNamespaces(file);
     foreach (var ns in innermost_namespaces) {
-      if (!ns.is_internal) {
+      if (!ns.is_internal && !ns.is_compatibility_namespace) {
         var nodes_in_ns = ns.children.ToList();
         ns.children.Clear();
         var file_namespace = new Namespace(ns,
