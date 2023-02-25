@@ -3,9 +3,6 @@
 #include <functional>
 #include <type_traits>
 
-namespace principia {
-namespace base {
-
 #define SET_OPTIONAL(message_expression, value_identifier)        \
   [&value = (value_identifier), message = (message_expression)] { \
     if (value) {                                                  \
@@ -23,10 +20,3 @@ namespace base {
       message->clear_##value_identifier();                          \
     }                                                               \
   }()
-
-}  // namespace base
-}  // namespace principia
-
-namespace principia::base {
-using namespace principia::base::_optional_serialization;
-}  // namespace principia::base
