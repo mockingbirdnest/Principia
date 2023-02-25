@@ -311,7 +311,8 @@ class Parser {
   }
 
   private static bool IsConstant(string line) {
-    return Regex.IsMatch(line, @"^constexpr .* = .*$");
+    return Regex.IsMatch(line, @"^constexpr .* = .*$") ||
+           Regex.IsMatch(line, @"^constexpr [^ ]+ [^ ]+;");
   }
 
   private static bool IsFunction(string line) {
@@ -367,7 +368,7 @@ class Parser {
 
   private static string ParseConstant(string line) {
     return Regex.Replace(Regex.Replace(line, @"^constexpr [^ ]+ ", ""),
-                         @" = .*$",
+                         @" = .*$|;$",
                          "");
   }
 
