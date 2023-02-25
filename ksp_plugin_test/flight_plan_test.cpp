@@ -31,7 +31,6 @@ namespace principia {
 namespace ksp_plugin {
 
 using astronomy::J2000;
-using base::make_not_null_shared;
 using geometry::Barycentre;
 using geometry::Displacement;
 using geometry::Instant;

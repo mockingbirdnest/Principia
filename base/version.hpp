@@ -16,6 +16,8 @@ extern char const Version[];
 
 }  // namespace internal
 
+using internal::BuildDate;
+using internal::Version;
 
 }  // namespace _version
 }  // namespace base
