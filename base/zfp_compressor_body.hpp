@@ -8,7 +8,6 @@
 
 namespace principia {
 namespace base {
-namespace zfp_compressor_internal {
 namespace _zfp_compressor {
 namespace internal {
 
@@ -123,9 +122,5 @@ void ZfpCompressor::ReadFromMessageMultidimensional(
 
 }  // namespace internal
 }  // namespace _zfp_compressor
-}  // namespace zfp_compressor_internal
-
-using namespace principia::base::_zfp_compressor;
-
 }  // namespace base
 }  // namespace principia

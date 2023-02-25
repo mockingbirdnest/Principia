@@ -9,7 +9,6 @@
 
 namespace principia {
 namespace base {
-namespace zfp_compressor_internal {
 namespace _zfp_compressor {
 namespace internal {
 
@@ -65,6 +64,5 @@ void ZfpCompressor::ReadFromMessage(zfp_field* const field,
 
 }  // namespace internal
 }  // namespace _zfp_compressor
-}  // namespace zfp_compressor_internal
 }  // namespace base
 }  // namespace principia

@@ -22,8 +22,6 @@ inline void ExecuteAndSetValue<void>(std::function<void()> const& function,
   promise.set_value();
 }
 
-}  // namespace internal
-
 template<typename T>
 ThreadPool<T>::ThreadPool(std::int64_t const pool_size) {
   for (std::int64_t i = 0; i < pool_size; ++i) {
@@ -77,11 +75,11 @@ void ThreadPool<T>::DequeueCallAndExecute() {
 
     // Execute the function without holding the |lock_| as it might take some
     // time.
-    internal_thread_pool::ExecuteAndSetValue(this_call.function,
-                                             this_call.promise);
+    ExecuteAndSetValue(this_call.function, this_call.promise);
   }
 }
 
+}  // namespace internal
 }  // namespace _thread_pool
 }  // namespace base
 }  // namespace principia

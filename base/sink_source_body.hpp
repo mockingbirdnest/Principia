@@ -10,13 +10,11 @@ namespace _sink_source {
 namespace internal {
 
 template<typename Element>
-principia::base::internal_sink_source::ArraySource<Element>::ArraySource(
-    Array<Element> const& array)
+ArraySource<Element>::ArraySource(Array<Element> const& array)
     : array_(array) {}
 
 template<typename Element>
-size_t principia::base::internal_sink_source::ArraySource<Element>::Available()
-    const {
+size_t ArraySource<Element>::Available() const {
   return array_.size - next_to_read_;
 }
 
@@ -32,9 +30,7 @@ void ArraySource<Element>::Skip(size_t const n) {
 }
 
 template<typename Element>
-principia::base::internal_sink_source::ArraySink<Element>::ArraySink(
-    Array<Element> const& array)
-    : array_(array) {}
+ArraySink<Element>::ArraySink(Array<Element> const& array) : array_(array) {}
 
 template<typename Element>
 Array<Element> ArraySink<Element>::array() const {
@@ -45,9 +41,7 @@ Array<Element> ArraySink<Element>::array() const {
 }
 
 template<typename Element>
-void principia::base::internal_sink_source::ArraySink<Element>::Append(
-    const char* const data,
-    size_t const n) {
+void ArraySink<Element>::Append(const char* const data, size_t const n) {
   // Do no copying if the caller filled in the result of GetAppendBuffer()
   if (data != reinterpret_cast<const char*>(array_.data + next_to_write_)) {
     memcpy(array_.data + next_to_write_, data, n);

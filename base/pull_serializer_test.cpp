@@ -23,6 +23,8 @@ using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 using namespace principia::base::_pull_serializer;
 
+namespace this_internal = _pull_serializer::internal;
+
 namespace {
   int const chunk_size = 99;
   int const number_of_chunks = 3;
@@ -78,7 +80,7 @@ class PullSerializerTest : public ::testing::Test {
   }
 
   std::unique_ptr<PullSerializer> pull_serializer_;
-  DelegatingArrayOutputStream stream_;
+  this_internal::DelegatingArrayOutputStream stream_;
   std::list<std::string> strings_;
   std::uint8_t data_[small_chunk_size];
 };

@@ -9,7 +9,6 @@
 
 namespace principia {
 namespace base {
-namespace zfp_compressor_internal {
 namespace _zfp_compressor {
 namespace internal {
 
@@ -66,10 +65,6 @@ using internal::not_null;
 using internal::ZfpCompressor;
 
 }  // namespace _zfp_compressor
-}  // namespace zfp_compressor_internal
-
-using zfp_compressor_internal::ZfpCompressor;
-
 }  // namespace base
 }  // namespace principia
 
