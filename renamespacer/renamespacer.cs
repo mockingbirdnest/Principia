@@ -358,7 +358,11 @@ class Parser {
   }
 
   private static string ParseClosingNamespace(string line) {
-    return line.Replace("}  // namespace ", "");
+    // This gets the line *with comments* to be able to identify the namespace,
+    // but beware the NOLINT my son!
+    return Regex.Replace(line.Replace("}  // namespace ", ""),
+                         @" +// NOLINT.*$",
+                         "");
   }
 
   private static string ParseConstant(string line) {
@@ -400,7 +404,7 @@ class Parser {
     string uncommented_line = line;
     if (in_comment) {
       int end_of_comment = uncommented_line.IndexOf("*/", 0);
-      if (end_of_comment > 0) {
+      if (end_of_comment >= 0) {
         uncommented_line = uncommented_line.Substring(end_of_comment + 2);
         in_comment = false;
       } else {
@@ -424,7 +428,9 @@ class Parser {
         break;
       }
     }
-    return uncommented_line;
+    // We normally don't have spaces at end of line, but of course we have
+    // spaces before comments.
+    return uncommented_line.TrimEnd(' ');
   }
 
   public static File ParseFile(FileInfo file_info) {
