@@ -16,13 +16,13 @@ namespace principia {
 namespace numerics {
 namespace internal_fast_fourier_transform {
 
-using base::FloorLog2;
 using geometry::Complexification;
 using geometry::Hilbert;
 using geometry::Interval;
 using quantities::Angle;
 using quantities::Derivative;
 using quantities::Difference;
+using namespace principia::base::_bits;
 
 // Given (u₀, ..., uₙ₋₁), this class computes the discrete Fourier transform
 //   Uₛ = ∑ᵣ uᵣ exp(-2πirs/n),

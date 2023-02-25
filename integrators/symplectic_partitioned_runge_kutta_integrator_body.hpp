@@ -8,7 +8,7 @@ namespace principia {
 namespace integrators {
 namespace internal_symplectic_partitioned_runge_kutta_integrator {
 
-using base::mod;
+using namespace principia::base::_mod;
 
 template<typename Method, typename ODE_>
 absl::Status SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_>::

@@ -25,8 +25,8 @@ FORWARD_DECLARE_FROM(
 
 namespace internal_rotation {
 
-using base::not_null;
 using quantities::Angle;
+using namespace principia::base::_not_null;
 
 template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,

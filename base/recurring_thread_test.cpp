@@ -8,6 +8,8 @@ using namespace std::chrono_literals;
 
 namespace base {
 
+using namespace principia::base::_recurring_thread;
+
 class RecurringThreadTest : public ::testing::Test {
  protected:
   using ToyRecurringThread1 = RecurringThread<int>;

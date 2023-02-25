@@ -15,10 +15,10 @@ namespace principia {
 namespace physics {
 namespace internal_massive_body {
 
-using base::not_null;
 using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Mass;
+using namespace principia::base::_not_null;
 
 class MassiveBody : public Body {
  public:

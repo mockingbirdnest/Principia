@@ -2,6 +2,8 @@
 
 namespace principia {
 namespace base {
+namespace _bits {
+namespace internal {
 
 // Floor log2 of n, or 0 for n = 0.  8 ↦ 3, 7 ↦ 2.
 constexpr int FloorLog2(int n);
@@ -14,7 +16,18 @@ constexpr int PowerOf2Le(int n);
 //   0 ↦ 8 ↦ 4 ↦ C ↦ 2 ↦ A ↦ 6 ↦ E ↦ 1 ↦ 9 ↦ 5 ↦ D ↦ 3 ↦ B ↦ 7 ↦ F
 constexpr int BitReversedIncrement(int n, int bits);
 
+}  // namespace internal
+
+using internal::BitReversedIncrement;
+using internal::FloorLog2;
+using internal::PowerOf2Le;
+
+}  // namespace _bits
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_bits;
+}  // namespace principia::base
 
 #include "base/bits_body.hpp"

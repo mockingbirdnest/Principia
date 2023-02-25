@@ -16,7 +16,7 @@ FORWARD_DECLARE_FROM(orthogonal_map,
 
 namespace internal_permutation {
 
-using base::not_null;
+using namespace principia::base::_not_null;
 
 // Declare shorter names for the protocol buffer enums.
 static constexpr int EVEN = serialization::Permutation::EVEN;

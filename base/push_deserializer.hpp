@@ -18,7 +18,8 @@
 
 namespace principia {
 namespace base {
-namespace internal_push_deserializer {
+namespace _push_deserializer {
+namespace internal {
 
 using google::compression::Compressor;
 
@@ -135,11 +136,16 @@ class PushDeserializer final {
   std::queue<std::function<void()>> done_ GUARDED_BY(lock_);
 };
 
-}  // namespace internal_push_deserializer
+}  // namespace internal
 
-using internal_push_deserializer::PushDeserializer;
+using internal::PushDeserializer;
 
+}  // namespace _push_deserializer
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_push_deserializer;
+}  // namespace principia::base
 
 #include "base/push_deserializer_body.hpp"

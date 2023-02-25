@@ -16,7 +16,6 @@ namespace principia {
 namespace testing_utilities {
 namespace internal_discrete_trajectory_factories {
 
-using base::not_null;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Vector;
@@ -29,6 +28,7 @@ using quantities::Acceleration;
 using quantities::AngularFrequency;
 using quantities::Length;
 using quantities::Time;
+using namespace principia::base::_not_null;
 
 // A helper class to avoid having to declare friendship for all the individual
 // functions in this file.

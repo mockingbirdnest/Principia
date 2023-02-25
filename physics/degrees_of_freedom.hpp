@@ -15,11 +15,11 @@ namespace principia {
 namespace physics {
 namespace internal_degrees_of_freedom {
 
-using base::not_constructible;
 using geometry::Displacement;
 using geometry::Pair;
 using geometry::Position;
 using geometry::Velocity;
+using namespace principia::base::_not_constructible;
 
 // This class is analogous to the pair which is its base class, except that it
 // exports properly-named selectors.  It is implicitly convertible in both

@@ -18,7 +18,6 @@
 namespace principia {
 
 using astronomy::Sky;
-using base::FindOrDie;
 using physics::KeplerOrbit;
 using physics::SolarSystem;
 using quantities::Angle;
@@ -33,6 +32,7 @@ using quantities::constants::GravitationalConstant;
 using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
+using namespace principia::base::_map_util;
 namespace si = quantities::si;
 
 namespace tools {

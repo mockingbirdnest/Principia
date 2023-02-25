@@ -52,8 +52,6 @@
 
 namespace principia {
 
-using base::Bundle;
-using base::not_null;
 using base::OFStream;
 using geometry::BarycentreCalculator;
 using geometry::Displacement;
@@ -95,6 +93,8 @@ using testing_utilities::ComputeKeplerAcceleration;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
+using namespace principia::base::_bundle;
+using namespace principia::base::_not_null;
 namespace si = quantities::si;
 
 namespace mathematica {

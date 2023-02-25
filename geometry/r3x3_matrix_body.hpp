@@ -15,10 +15,10 @@ namespace principia {
 namespace geometry {
 namespace internal_r3x3_matrix {
 
-using base::uninitialized;
 using geometry::Dot;
 using quantities::Abs;
 using quantities::Sqrt;
+using namespace principia::base::_tags;
 
 template<typename Scalar>
 R3x3Matrix<Scalar>::R3x3Matrix(uninitialized_t) {}

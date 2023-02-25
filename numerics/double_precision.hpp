@@ -10,12 +10,12 @@ namespace principia {
 namespace numerics {
 namespace internal_double_precision {
 
-using base::not_null;
 using quantities::Angle;
 using quantities::Difference;
 using quantities::Product;
 using quantities::Quotient;
 using quantities::Sum;
+using namespace principia::base::_not_null;
 
 // A simple container for accumulating a value using double precision.  The
 // type of the value must be an affine space.  The notations follow [HLB08].

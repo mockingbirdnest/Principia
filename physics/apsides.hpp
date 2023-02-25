@@ -11,9 +11,8 @@ namespace principia {
 namespace physics {
 namespace internal_apsides {
 
-using base::ConstantFunction;
-using base::Identically;
 using geometry::Vector;
+using namespace principia::base::_constant_function;
 
 // Computes the apsides with respect to |reference| for the section given by
 // |begin| and |end| of |trajectory|.  Appends to the given output trajectories

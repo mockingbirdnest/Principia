@@ -17,8 +17,6 @@
 namespace principia {
 namespace astronomy {
 
-using base::dynamic_cast_not_null;
-using base::not_null;
 using geometry::Position;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
@@ -48,6 +46,7 @@ using ::testing::ResultOf;
 using ::testing::SizeIs;
 using ::testing::UnorderedElementsAre;
 using ::testing::ValuesIn;
+using namespace principia::base::_not_null;
 
 class StandardProduct3Test : public ::testing::Test {
  protected:

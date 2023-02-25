@@ -15,7 +15,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_flight_plan {
 
-using base::make_not_null_unique;
 using geometry::Position;
 using geometry::Vector;
 using geometry::Velocity;
@@ -26,6 +25,7 @@ using integrators::methods::Fine1987RKNG34;
 using quantities::Acceleration;
 using quantities::si::Metre;
 using quantities::si::Second;
+using namespace principia::base::_not_null;
 
 inline absl::Status BadDesiredFinalTime() {
   return absl::Status(FlightPlan::bad_desired_final_time,

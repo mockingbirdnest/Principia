@@ -22,7 +22,7 @@ FORWARD_DECLARE_FROM(
 
 namespace internal_identity {
 
-using base::not_null;
+using namespace principia::base::_not_null;
 
 // The identity map.
 template<typename FromFrame, typename ToFrame>

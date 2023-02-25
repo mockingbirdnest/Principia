@@ -76,6 +76,8 @@
 
 namespace principia {
 namespace base {
+namespace _not_null {
+namespace internal {
 
 template<typename Pointer>
 class not_null;
@@ -358,7 +360,22 @@ not_null<Result> dynamic_cast_not_null(not_null<T*> const pointer);
 template<typename Result, typename T>
 not_null<Result> dynamic_cast_not_null(not_null<std::unique_ptr<T>>&& pointer);
 
+}  // namespace internal
+
+using internal::check_not_null;
+using internal::dynamic_cast_not_null;
+using internal::make_not_null_unique;
+using internal::not_null;
+using internal::NotNullStorage;
+using internal::operator<<;
+using internal::remove_not_null;
+
+}  // namespace _not_null
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_not_null;
+}  // namespace principia::base
 
 #include "base/not_null_body.hpp"

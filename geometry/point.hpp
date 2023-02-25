@@ -15,9 +15,9 @@ namespace principia {
 namespace geometry {
 namespace internal_point {
 
-using base::not_null;
 using quantities::is_quantity_v;
 using quantities::Product;
+using namespace principia::base::_not_null;
 
 // Point<Vector> is an affine space on the vector space Vector. Vector should
 // be equipped with operators +, -, +=, -=, ==, !=, as well as Vector * Weight

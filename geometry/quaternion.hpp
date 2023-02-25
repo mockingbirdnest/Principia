@@ -7,7 +7,7 @@ namespace principia {
 namespace geometry {
 namespace internal_quaternion {
 
-using base::not_null;
+using namespace principia::base::_not_null;
 
 // An element of the skew field of quaternions ℍ (where ℝ is modeled by
 // |double|).

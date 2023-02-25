@@ -20,7 +20,6 @@ namespace principia {
 namespace physics {
 namespace internal_apsides {
 
-using base::not_null;
 using geometry::Displacement;
 using geometry::Inertial;
 using geometry::Frame;
@@ -49,6 +48,7 @@ using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using ::testing::Eq;
 using ::testing::SizeIs;
+using namespace principia::base::_not_null;
 
 class ApsidesTest : public ::testing::Test {
  protected:

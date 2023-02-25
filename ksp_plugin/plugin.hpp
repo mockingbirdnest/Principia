@@ -51,9 +51,6 @@ class TestablePlugin;
 
 namespace internal_plugin {
 
-using base::not_null;
-using base::Subset;
-using base::ThreadPool;
 using geometry::AffineMap;
 using geometry::AngularVelocity;
 using geometry::Bivector;
@@ -93,6 +90,9 @@ using quantities::si::Hour;
 using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Second;
+using namespace principia::base::_disjoint_sets;
+using namespace principia::base::_not_null;
+using namespace principia::base::_thread_pool;
 
 // The index of a body in |FlightGlobals.Bodies|, obtained by
 // |b.flightGlobalsIndex| in C#. We use this as a key in an |std::map|.

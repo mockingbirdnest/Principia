@@ -9,7 +9,7 @@ namespace principia {
 namespace integrators {
 namespace internal_starter {
 
-using base::not_null;
+using namespace principia::base::_not_null;
 
 // A helper object for starting a linear multistep integrator.  |ODE| is the
 // equation being integrated.  |Step| is an object holding the data produced by

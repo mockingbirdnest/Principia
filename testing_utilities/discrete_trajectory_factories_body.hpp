@@ -13,8 +13,6 @@ namespace principia {
 namespace testing_utilities {
 namespace internal_discrete_trajectory_factories {
 
-using base::check_not_null;
-using base::make_not_null_unique;
 using geometry::Displacement;
 using geometry::Velocity;
 using physics::DegreesOfFreedom;
@@ -25,6 +23,7 @@ using quantities::Pow;
 using quantities::Sin;
 using quantities::Speed;
 using quantities::si::Radian;
+using namespace principia::base::_not_null;
 
 template<typename Frame>
 absl::Status DiscreteTrajectoryFactoriesFriend<Frame>::Append(

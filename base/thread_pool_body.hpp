@@ -4,7 +4,8 @@
 
 namespace principia {
 namespace base {
-namespace internal_thread_pool {
+namespace _thread_pool {
+namespace internal {
 
 // A helper function that is specialized for void because void is not really a
 // type.
@@ -21,7 +22,7 @@ inline void ExecuteAndSetValue<void>(std::function<void()> const& function,
   promise.set_value();
 }
 
-}  // namespace internal_thread_pool
+}  // namespace internal
 
 template<typename T>
 ThreadPool<T>::ThreadPool(std::int64_t const pool_size) {
@@ -81,5 +82,6 @@ void ThreadPool<T>::DequeueCallAndExecute() {
   }
 }
 
+}  // namespace _thread_pool
 }  // namespace base
 }  // namespace principia

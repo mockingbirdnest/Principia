@@ -34,7 +34,7 @@ class DiscreteTrajectorySegmentTest;
 
 namespace internal_discrete_trajectory_segment_iterator {
 
-using base::not_null;
+using namespace principia::base::_not_null;
 
 template<typename Frame>
 class DiscreteTrajectorySegmentIterator {

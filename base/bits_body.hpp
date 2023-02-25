@@ -9,6 +9,8 @@
 
 namespace principia {
 namespace base {
+namespace _bits {
+namespace internal {
 
 constexpr int FloorLog2(int const n) {
   return n == 0 ? 0 : n == 1 ? 0 : FloorLog2(n >> 1) + 1;
@@ -38,5 +40,7 @@ constexpr int BitReversedIncrement(int const n, int const bits) {
   return x >> (32 - bits);
 }
 
+}  // namespace internal
+}  // namespace _bits
 }  // namespace base
 }  // namespace principia

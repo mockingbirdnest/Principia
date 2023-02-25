@@ -29,7 +29,6 @@ namespace physics {
 namespace internal_body_surface_dynamic_frame {
 
 using astronomy::ICRS;
-using base::dynamic_cast_not_null;
 using geometry::Arbitrary;
 using geometry::Displacement;
 using geometry::Frame;
@@ -57,6 +56,7 @@ using ::testing::Lt;
 using ::testing::Not;
 using ::testing::Return;
 using ::testing::_;
+using namespace principia::base::_not_null;
 
 namespace {
 

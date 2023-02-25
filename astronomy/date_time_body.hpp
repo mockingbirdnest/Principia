@@ -15,7 +15,7 @@ namespace astronomy {
 namespace date_time {
 namespace internal_date_time {
 
-using base::mod;
+using namespace principia::base::_mod;
 
 // Arithmetico-calendrical utility functions.
 

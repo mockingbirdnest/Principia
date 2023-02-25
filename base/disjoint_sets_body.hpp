@@ -6,6 +6,8 @@
 
 namespace principia {
 namespace base {
+namespace _disjoint_sets {
+namespace internal {
 
 template<typename T>
 typename Subset<T>::Properties const& Subset<T>::properties() const {
@@ -72,5 +74,7 @@ not_null<typename Subset<T>::Node*> Subset<T>::Node::Root() {
   return parent_;
 }
 
+}  // namespace internal
+}  // namespace _disjoint_sets
 }  // namespace base
 }  // namespace principia

@@ -4,6 +4,8 @@
 
 namespace principia {
 namespace base {
+namespace _ranges {
+namespace internal {
 
 // A range [begin, end[, suitable for use in a range-based for loop.
 template<typename Iterator>
@@ -49,7 +51,17 @@ class IterableRange {
 template<typename Iterator>
 IterableRange<Iterator> Range(Iterator begin, Iterator end);
 
+}  // namespace internal
+
+using internal::IterableRange;
+using internal::Range;
+
+}  // namespace _ranges
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_ranges;
+}  // namespace principia::base
 
 #include "base/ranges_body.hpp"

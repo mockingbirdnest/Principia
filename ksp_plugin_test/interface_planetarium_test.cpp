@@ -16,8 +16,6 @@
 namespace principia {
 namespace interface {
 
-using base::make_not_null_unique;
-using base::not_null;
 using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Permutation;
@@ -35,6 +33,7 @@ using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::StrictMock;
 using ::testing::_;
+using namespace principia::base::_not_null;
 
 class InterfacePlanetariumTest : public ::testing::Test {
  protected:

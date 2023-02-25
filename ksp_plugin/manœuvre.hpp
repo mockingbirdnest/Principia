@@ -15,7 +15,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_manœuvre {
 
-using base::not_null;
 using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Vector;
@@ -32,6 +31,7 @@ using quantities::SpecificImpulse;
 using quantities::Speed;
 using quantities::Time;
 using quantities::Variation;
+using namespace principia::base::_not_null;
 
 // This class represents a constant-thrust burn.  |InertialFrame| is an
 // underlying inertial reference frame, |Frame| is the reference frame used to

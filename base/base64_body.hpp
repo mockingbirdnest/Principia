@@ -8,7 +8,8 @@
 
 namespace principia {
 namespace base {
-namespace internal_base64 {
+namespace _base64 {
+namespace internal {
 
 constexpr std::int64_t bits_per_byte = 8;
 constexpr std::int64_t bits_per_char = 6;
@@ -75,6 +76,7 @@ std::int64_t Base64Encoder<null_terminated>::DecodedLength(
   return bits_per_char * input.size / bits_per_byte;
 }
 
-}  // namespace internal_base64
+}  // namespace internal
+}  // namespace _base64
 }  // namespace base
 }  // namespace principia

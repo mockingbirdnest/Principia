@@ -18,7 +18,6 @@ namespace principia {
 namespace physics {
 namespace internal_euler_solver {
 
-using base::not_null;
 using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::Frame;
@@ -33,6 +32,7 @@ using quantities::MomentOfInertia;
 using quantities::NaN;
 using quantities::Product;
 using quantities::Time;
+using namespace principia::base::_not_null;
 
 // A solver for Euler's rotation equations.  It follows [CFSZ07] and [CFSZ08].
 // See documentation/Celledoni.pdf for corrections and adaptations.

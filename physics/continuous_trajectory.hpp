@@ -22,7 +22,6 @@ namespace principia {
 namespace physics {
 namespace internal_continuous_trajectory {
 
-using base::not_null;
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::Position;
@@ -32,6 +31,7 @@ using quantities::Time;
 using numerics::EstrinEvaluator;
 using numerics::PiecewisePoissonSeries;
 using numerics::Polynomial;
+using namespace principia::base::_not_null;
 
 template<typename Frame>
 class TestableContinuousTrajectory;

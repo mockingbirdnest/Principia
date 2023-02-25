@@ -5,7 +5,8 @@
 
 namespace principia {
 namespace base {
-namespace internal_status_utilities {
+namespace _status_utilities {
+namespace internal {
 
 inline absl::Status const& GetStatus(absl::Status const& s) {
   return s;
@@ -16,7 +17,7 @@ absl::Status const& GetStatus(absl::StatusOr<T> const& s) {
   return s.status();
 }
 
-}  // namespace internal_status_utilities
+}  // namespace internal
 
 #define CHECK_OK(value) CHECK_EQ((value), ::absl::OkStatus())
 #define DCHECK_OK(value) DCHECK_EQ((value), ::absl::OkStatus())
@@ -30,5 +31,10 @@ absl::Status const& GetStatus(absl::StatusOr<T> const& s) {
       return _status;                                                        \
   } while (false)
 
+}  // namespace _status_utilities
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_status_utilities;
+}  // namespace principia::base

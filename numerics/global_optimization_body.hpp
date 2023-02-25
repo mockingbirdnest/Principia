@@ -17,13 +17,13 @@ namespace principia {
 namespace numerics {
 namespace internal_global_optimization {
 
-using base::make_not_null_unique;
 using base::noreturn;
 using geometry::Barycentre;
 using geometry::Wedge;
 using quantities::Cbrt;
 using quantities::Infinity;
 using quantities::Pow;
+using namespace principia::base::_not_null;
 
 // Values that are too small cause extra activity in |Add| and deeper recursion
 // in |FindNearestNeighbour|.  Values that are too large cause extra function

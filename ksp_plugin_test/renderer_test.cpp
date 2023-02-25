@@ -23,7 +23,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using base::not_null;
 using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::DefinesFrame;
@@ -50,6 +49,7 @@ using testing_utilities::NewLinearTrajectoryTimeline;
 using ::testing::Ref;
 using ::testing::Return;
 using ::testing::_;
+using namespace principia::base::_not_null;
 
 class RendererTest : public ::testing::Test {
  protected:

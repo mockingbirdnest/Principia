@@ -9,6 +9,8 @@
 namespace principia {
 namespace base {
 namespace zfp_compressor_internal {
+namespace _zfp_compressor {
+namespace internal {
 
 template<int D>
 class NDimensionalHelper {
@@ -119,9 +121,11 @@ void ZfpCompressor::ReadFromMessageMultidimensional(
   ReadFromMessage(field.get(), message);
 }
 
+}  // namespace internal
+}  // namespace _zfp_compressor
 }  // namespace zfp_compressor_internal
 
-using zfp_compressor_internal::ZfpCompressor;
+using namespace principia::base::_zfp_compressor;
 
 }  // namespace base
 }  // namespace principia

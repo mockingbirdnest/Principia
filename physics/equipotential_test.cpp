@@ -35,8 +35,6 @@
 namespace principia {
 namespace physics {
 
-using base::make_not_null_unique;
-using base::not_null;
 using geometry::Arbitrary;
 using geometry::Barycentre;
 using geometry::Bivector;
@@ -67,6 +65,7 @@ using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Second;
 using testing_utilities::SolarSystemFactory;
+using namespace principia::base::_not_null;
 
 class EquipotentialTest : public ::testing::Test {
  protected:

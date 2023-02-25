@@ -15,12 +15,12 @@ namespace ksp_plugin {
 namespace internal_equator_relevance_threshold {
 
 using astronomy::ICRS;
-using base::not_null;
 using physics::SolarSystem;
 using quantities::astronomy::JovianEquatorialRadius;
 using quantities::astronomy::SolarRadius;
 using quantities::astronomy::TerrestrialEquatorialRadius;
 using testing_utilities::IsNear;
+using namespace principia::base::_not_null;
 using testing_utilities::operator""_;
 
 class EquatorRelevanceThresholdTest : public testing::Test {

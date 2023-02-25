@@ -25,8 +25,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_part {
 
-using base::not_null;
-using base::Subset;
 using geometry::Bivector;
 using geometry::Displacement;
 using geometry::InertiaTensor;
@@ -41,6 +39,8 @@ using physics::RigidMotion;
 using quantities::Force;
 using quantities::Mass;
 using quantities::Torque;
+using namespace principia::base::_disjoint_sets;
+using namespace principia::base::_not_null;
 
 // Represents a KSP part.
 class Part final {

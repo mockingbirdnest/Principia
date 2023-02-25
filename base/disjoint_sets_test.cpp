@@ -10,6 +10,8 @@ using testing::Eq;
 namespace principia {
 namespace base {
 
+using namespace principia::base::_disjoint_sets;
+
 namespace {
 
 struct CountableInteger;

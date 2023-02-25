@@ -16,6 +16,7 @@ using namespace std::chrono_literals;
 namespace base {
 
 using principia::testing_utilities::StatusIs;
+using namespace principia::base::_bundle;
 
 constexpr int workers = 8;
 

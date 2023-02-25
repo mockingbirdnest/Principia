@@ -15,9 +15,9 @@ namespace integrators {
 namespace internal_symplectic_partitioned_runge_kutta_integrator {
 
 using base::is_instance_of_v;
-using base::not_null;
 using geometry::Instant;
 using quantities::Time;
+using namespace principia::base::_not_null;
 
 // A symplectic partitioned Runge-Kutta integrator.  Does not subclass
 // |Integrator|; used to generate (less general)

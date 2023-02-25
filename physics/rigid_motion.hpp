@@ -16,7 +16,6 @@ namespace principia {
 namespace physics {
 namespace internal_rigid_motion {
 
-using base::not_null;
 using geometry::AffineMap;
 using geometry::AngularVelocity;
 using geometry::Bivector;
@@ -31,6 +30,7 @@ using quantities::AngularAcceleration;
 using quantities::Length;
 using quantities::Variation;
 using quantities::si::Radian;
+using namespace principia::base::_not_null;
 
 // A trait to determine if Frame is FromFrame or ToFrame and return the other
 // one as the |type| member.

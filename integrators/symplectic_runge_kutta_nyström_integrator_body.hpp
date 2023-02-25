@@ -14,11 +14,11 @@ namespace principia {
 namespace integrators {
 namespace internal_symplectic_runge_kutta_nyström_integrator {
 
-using base::make_not_null_unique;
 using geometry::Sign;
 using numerics::DoublePrecision;
 using numerics::ULPDistance;
 using quantities::Abs;
+using namespace principia::base::_not_null;
 
 template<typename Method, typename ODE_>
 absl::Status SymplecticRungeKuttaNyströmIntegrator<Method, ODE_>::

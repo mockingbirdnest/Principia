@@ -20,7 +20,6 @@ namespace principia {
 namespace physics {
 namespace internal_discrete_trajectory_segment {
 
-using base::ZfpCompressor;
 using geometry::Displacement;
 using geometry::InfiniteFuture;
 using geometry::InfinitePast;
@@ -30,6 +29,7 @@ using quantities::Length;
 using quantities::Time;
 using quantities::si::Metre;
 using quantities::si::Second;
+using namespace principia::base::_zfp_compressor;
 
 template<typename Frame>
 DiscreteTrajectorySegment<Frame>::DiscreteTrajectorySegment(

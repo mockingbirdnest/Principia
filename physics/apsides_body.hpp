@@ -13,7 +13,6 @@ namespace principia {
 namespace physics {
 namespace internal_apsides {
 
-using base::BoundedArray;
 using geometry::Barycentre;
 using geometry::Instant;
 using geometry::Position;
@@ -25,6 +24,7 @@ using quantities::Length;
 using quantities::Speed;
 using quantities::Square;
 using quantities::Variation;
+using namespace principia::base::_array;
 
 template<typename Frame>
 void ComputeApsides(Trajectory<Frame> const& reference,

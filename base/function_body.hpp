@@ -6,7 +6,8 @@
 
 namespace principia {
 namespace base {
-namespace internal_function {
+namespace _function {
+namespace internal {
 
 template<typename F, typename Result, typename... Args>
 ConcreteFunctor<F, Result, Args...>::ConcreteFunctor(F functor)
@@ -31,6 +32,7 @@ Result function<Result(Args...)>::operator()(Args&&... args) const {
   return functor_->Call(std::forward<Args>(args)...);
 }
 
-}  // namespace internal_function
+}  // namespace internal
+}  // namespace _function
 }  // namespace base
 }  // namespace principia

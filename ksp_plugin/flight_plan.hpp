@@ -21,7 +21,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_flight_plan {
 
-using base::not_null;
 using geometry::Instant;
 using integrators::AdaptiveStepSizeIntegrator;
 using physics::DegreesOfFreedom;
@@ -31,6 +30,7 @@ using physics::Ephemeris;
 using quantities::Length;
 using quantities::Mass;
 using quantities::Speed;
+using namespace principia::base::_not_null;
 
 // A chain of trajectories obtained by executing the corresponding
 // |NavigationManœuvre|s.

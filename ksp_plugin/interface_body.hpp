@@ -18,7 +18,6 @@
 namespace principia {
 namespace interface {
 
-using base::UniqueArray;
 using geometry::OrthogonalMap;
 using geometry::RigidTransformation;
 using geometry::Rotation;
@@ -31,6 +30,7 @@ using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
 using quantities::si::Tonne;
+using namespace principia::base::_array;
 namespace si = quantities::si;
 
 // No partial specialization of functions, so we wrap everything into structs.

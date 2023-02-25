@@ -17,8 +17,8 @@ namespace principia {
 namespace tools {
 namespace internal_journal_proto_processor {
 
-using base::Contains;
 using ::google::protobuf::MessageOptions;
+using namespace principia::base::_map_util;
 
 namespace {
 

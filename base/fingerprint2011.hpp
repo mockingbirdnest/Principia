@@ -23,6 +23,8 @@
 
 namespace principia {
 namespace base {
+namespace _fingerprint2011 {
+namespace internal {
 
 inline std::uint64_t FingerprintCat2011(std::uint64_t const fp1,
                                         std::uint64_t const fp2) {
@@ -63,5 +65,15 @@ inline std::uint64_t Fingerprint2011(Array<std::uint8_t const> const bytes) {
   return Fingerprint2011(reinterpret_cast<char const*>(bytes.data), bytes.size);
 }
 
+}  // namespace internal
+
+using internal::Fingerprint2011;
+using internal::FingerprintCat2011;
+
+}  // namespace _fingerprint2011
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_fingerprint2011;
+}  // namespace principia::base

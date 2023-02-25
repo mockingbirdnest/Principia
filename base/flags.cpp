@@ -8,6 +8,8 @@
 
 namespace principia {
 namespace base {
+namespace _flags {
+namespace internal {
 
 void Flags::Clear() {
   flags().clear();
@@ -48,5 +50,7 @@ std::multimap<std::string, std::string>& Flags::flags() {
   return *flags;
 }
 
+}  // namespace internal
+}  // namespace _flags
 }  // namespace base
 }  // namespace principia

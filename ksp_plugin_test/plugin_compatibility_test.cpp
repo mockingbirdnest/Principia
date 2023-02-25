@@ -30,8 +30,6 @@ using astronomy::MercuryOrbiterInitialTime;
 using astronomy::TTSecond;
 using astronomy::date_time::DateTime;
 using astronomy::date_time::operator""_DateTime;
-using base::not_null;
-using base::ParseFromBytes;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Plugin;
 using physics::DiscreteTrajectory;
@@ -54,6 +52,8 @@ using ::testing::Pair;
 using ::testing::SizeIs;
 using ::testing::internal::CaptureStderr;
 using ::testing::internal::GetCapturedStderr;
+using namespace principia::base::_not_null;
+using namespace principia::base::_serialization;
 
 using namespace std::chrono_literals;
 

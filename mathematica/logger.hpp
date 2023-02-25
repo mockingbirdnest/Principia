@@ -15,8 +15,8 @@ namespace principia {
 namespace mathematica {
 namespace internal_logger {
 
-using base::not_null;
 using base::OFStream;
+using namespace principia::base::_not_null;
 
 // Define this value to 1 to force the logger to append "_new" to the file
 // names, which is useful for regression testing of the logger.

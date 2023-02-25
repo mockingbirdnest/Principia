@@ -2,6 +2,8 @@
 
 namespace principia {
 namespace base {
+namespace _constant_function {
+namespace internal {
 
 // A function object that can be called with arbitrary arguments, and always
 // returns the same |value|.
@@ -20,5 +22,15 @@ constexpr ConstantFunction<T> Identically(T value) {
   return {value};
 }
 
+}  // namespace internal
+
+using internal::ConstantFunction;
+using internal::Identically;
+
+}  // namespace _constant_function
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_constant_function;
+}  // namespace principia::base

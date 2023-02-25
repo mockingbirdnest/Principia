@@ -20,8 +20,6 @@
 namespace principia {
 namespace interface {
 
-using base::check_not_null;
-using base::not_null;
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::OrthogonalMap;
@@ -50,6 +48,7 @@ using quantities::si::Metre;
 using quantities::si::Newton;
 using quantities::si::Second;
 using quantities::si::Tonne;
+using namespace principia::base::_not_null;
 
 namespace {
 

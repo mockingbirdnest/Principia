@@ -16,7 +16,6 @@
 namespace principia {
 namespace interface {
 
-using base::UniqueArray;
 using geometry::AngularVelocity;
 using geometry::Frame;
 using geometry::RadiusLatitudeLongitude;
@@ -30,6 +29,7 @@ using physics::DiscreteTrajectory;
 using physics::OblateBody;
 using physics::RigidMotion;
 using physics::RigidTransformation;
+using namespace principia::base::_array;
 
 namespace {
 

@@ -16,7 +16,6 @@ namespace principia {
 namespace physics {
 namespace internal_geopotential {
 
-using base::not_null;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Instant;
@@ -32,6 +31,7 @@ using quantities::Length;
 using quantities::Quotient;
 using quantities::SpecificEnergy;
 using quantities::Square;
+using namespace principia::base::_not_null;
 
 // Representation of the geopotential model of an oblate body.
 template<typename Frame>

@@ -22,7 +22,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_renderer {
 
-using base::not_null;
 using geometry::AffineMap;
 using geometry::Instant;
 using geometry::OrthogonalMap;
@@ -34,6 +33,7 @@ using physics::Ephemeris;
 using physics::Frenet;
 using physics::RigidMotion;
 using quantities::Length;
+using namespace principia::base::_not_null;
 
 class Renderer {
  public:

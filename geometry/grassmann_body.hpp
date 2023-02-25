@@ -12,12 +12,12 @@ namespace principia {
 namespace geometry {
 namespace internal_grassmann {
 
-using base::not_constructible;
 using quantities::ArcTan;
 using quantities::FusedMultiplyAdd;
 using quantities::FusedMultiplySubtract;
 using quantities::FusedNegatedMultiplyAdd;
 using quantities::FusedNegatedMultiplySubtract;
+using namespace principia::base::_not_constructible;
 
 template<typename Scalar, typename Frame>
 Multivector<Scalar, Frame, 1>::Multivector(R3Element<Scalar> const& coordinates)
