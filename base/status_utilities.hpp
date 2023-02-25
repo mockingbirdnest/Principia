@@ -26,7 +26,7 @@ absl::Status const& GetStatus(absl::StatusOr<T> const& s) {
   do {                                                                       \
     /* Using _status below to avoid capture problems if expr is "status". */ \
     ::absl::Status const _status =                                           \
-        (::principia::base::internal_status_utilities::GetStatus(expr));     \
+        (::principia::base::_status_utilities::internal::GetStatus(expr));   \
     if (!_status.ok())                                                       \
       return _status;                                                        \
   } while (false)

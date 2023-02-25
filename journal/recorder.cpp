@@ -14,6 +14,7 @@ namespace principia {
 using namespace principia::base::_array;
 using namespace principia::base::_hexadecimal;
 using namespace principia::base::_serialization;
+using namespace principia::base::_version;
 
 namespace journal {
 
@@ -45,8 +46,8 @@ void Recorder::Activate(base::not_null<Recorder*> const recorder) {
   active_recorder_->WriteAtConstruction(method);
   not_null<serialization::GetVersion::Out*> const out =
       get_version->mutable_out();
-  out->set_build_date(base::BuildDate);
-  out->set_version(base::Version);
+  out->set_build_date(BuildDate);
+  out->set_version(Version);
   active_recorder_->WriteAtDestruction(method);
 }
 

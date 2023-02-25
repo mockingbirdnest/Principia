@@ -367,12 +367,9 @@ not_null<Result> dynamic_cast_not_null(not_null<std::unique_ptr<T>>&& pointer);
 
 using internal::check_not_null;
 using internal::dynamic_cast_not_null;
-using internal::is_instance_of_not_null_v;
 using internal::make_not_null_shared;
 using internal::make_not_null_unique;
 using internal::not_null;
-using internal::NotNullStorage;
-using internal::operator<<;
 using internal::remove_not_null;
 
 }  // namespace _not_null

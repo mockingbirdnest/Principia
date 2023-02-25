@@ -116,6 +116,7 @@ using quantities::si::Second;
 using quantities::si::Tonne;
 using ::google::protobuf::Arena;
 using ::google::protobuf::ArenaOptions;
+using ::operator<<;
 using namespace principia::base::_array;
 using namespace principia::base::_base64;
 using namespace principia::base::_encoder;
