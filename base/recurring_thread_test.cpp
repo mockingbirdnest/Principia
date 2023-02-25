@@ -3,12 +3,10 @@
 #include "gtest/gtest.h"
 
 namespace principia {
-
-using namespace std::chrono_literals;
-
 namespace base {
 
 using namespace principia::base::_recurring_thread;
+using namespace std::chrono_literals;
 
 class RecurringThreadTest : public ::testing::Test {
  protected:
