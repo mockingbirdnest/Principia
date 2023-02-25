@@ -803,6 +803,9 @@ class Parser {
               names.Add(decl.name);
             }
           }
+          if (names.Count == 0) {
+            throw new NotSupportedException(file.file_info.Name);
+          }
           var blank_line_before = new Text("", file_namespace);
           foreach (string name in names) {
             var using_declaration =
