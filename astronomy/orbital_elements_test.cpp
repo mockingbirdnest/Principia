@@ -429,6 +429,47 @@ TEST_F(OrbitalElementsTest, RealPerturbation) {
              mathematica::ExpressIn(Metre, Second, Radian));
 }
 
+TEST_F(OrbitalElementsTest, Years) {
+  SolarSystem<ICRS> solar_system(
+      SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "sol_initial_state_jd_2451545_000000000.proto.txt");
+  auto const ephemeris = solar_system.MakeEphemeris(
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
+      Ephemeris<ICRS>::FixedStepParameters(
+          SymmetricLinearMultistepIntegrator<
+              QuinlanTremaine1990Order12,
+              Ephemeris<ICRS>::NewtonianMotionEquation>(),
+          /*step=*/10 * Minute));
+  MassiveBody const& sun = *solar_system.massive_body(*ephemeris, "Sun");
+  MassiveBody const& earth = *solar_system.massive_body(*ephemeris, "Earth");
+
+  LOG(ERROR) << "Prolonging...";
+
+  ASSERT_THAT(ephemeris->Prolong("2050-01-01T12:00:00"_TT), IsOk());
+
+  LOG(ERROR) << "Analysing...";
+
+  auto const status_or_elements =
+      OrbitalElements::OrbitalElements::ForTrajectories(
+          sun,
+          *ephemeris->trajectory(&sun),
+          earth,
+          *ephemeris->trajectory(&earth));
+  LOG(ERROR) << "Done.";
+  ASSERT_THAT(status_or_elements, IsOk());
+  OrbitalElements const& elements = status_or_elements.value();
+  // The value given by the Astronomical Almanac is 365.259'636.
+  EXPECT_THAT(elements.anomalistic_period(), IsNear(365.259'8_(1) * Day));
+  // This should be 365.242190 if the node were with respect to the precessing
+  // equator, but we do not have axial precession, so it is just the sidereal
+  // period.
+  EXPECT_THAT(elements.nodal_period(), IsNear(365.256'38_(1) * Day));
+  // https://hpiers.obspm.fr/eop-pc/models/constants.html gives 365.256'363'004.
+  EXPECT_THAT(elements.sidereal_period(), IsNear(365.256'35_(1) * Day));
+}
+
 #endif
 
 }  // namespace astronomy

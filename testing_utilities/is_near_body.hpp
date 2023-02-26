@@ -41,8 +41,13 @@ bool IsNearMatcher<T>::MatchAndExplain(
   if (expected_.has_trivial_unit()) {
     *listener << "which ";
   } else {
-    *listener << "which is " << actual / expected_.unit() << " * "
-              << expected_.unit() << " and ";
+    *listener << "which is "
+              << std::setprecision(std::ceil(
+                     std::log10(std::abs(expected_.min() / expected_.unit())) -
+                     std::log10(std::abs((expected_.max() - expected_.min()) /
+                                         expected_.unit()))))
+              << actual / expected_.unit() << " * " << expected_.unit()
+              << " and ";
   }
   if (match) {
     *listener << "is near " << expected_ << " (being "
