@@ -168,7 +168,8 @@ class Parser {
       if (parent is Namespace{ is_internal: true } ) {
         is_internal = true;
       } else {
-        is_internal = name.StartsWith("internal");
+        is_internal = name.StartsWith("internal") ||
+                      name == "interface";
       }
     }
 
@@ -311,8 +312,10 @@ class Parser {
   }
 
   private static bool IsConstant(string line) {
-    return Regex.IsMatch(line, @"^constexpr .* = .*$") ||
-           Regex.IsMatch(line, @"^constexpr [^ ]+ [^ ]+;");
+    return Regex.IsMatch(line, @"^constexpr .* =.*$") ||
+           Regex.IsMatch(line, @"^constexpr [^ ]+ [^ ]+;") ||
+           Regex.IsMatch(line, @"^inline +constexpr .* =.*$") ||
+           Regex.IsMatch(line, @"^inline +constexpr [^ ]+ [^ ]+;");
   }
 
   private static bool IsFunction(string line) {
@@ -367,9 +370,12 @@ class Parser {
   }
 
   private static string ParseConstant(string line) {
-    return Regex.Replace(Regex.Replace(line, @"^constexpr [^ ]+ ", ""),
-                         @" = .*$|;$",
-                         "");
+    return Regex.Replace(
+        Regex.Replace(Regex.Replace(line, @"^inline +", ""),
+                      @"^constexpr [^ ]+ ",
+                      ""),
+        @" =.*$|;$",
+        "");
   }
 
   private static string ParseFunction(string line) {
@@ -915,9 +921,10 @@ class Renamespacer {
     // Parse all the files in our project.
     FileInfo[] hpp_files = project.GetFiles("*.hpp");
     FileInfo[] cpp_files = project.GetFiles("*.cpp");
-    FileInfo[] body_hpp_files = project.GetFiles("*_body.hpp");
-    FileInfo[] all_body_files = cpp_files.Union(body_hpp_files).ToArray();
-    FileInfo[] all_files = all_body_files.Union(hpp_files).ToArray();
+    FileInfo[] body_hpp_files =
+        Array.FindAll(hpp_files, f => Regex.IsMatch(f.Name, @"^.*_body\.hpp$"));
+    FileInfo[] all_body_files = body_hpp_files.Union(cpp_files).ToArray();
+    FileInfo[] all_files = hpp_files.Union(cpp_files).ToArray();
     var file_info_to_file = new Dictionary<FileInfo, Parser.File>();
     foreach (FileInfo input_file in all_files) {
       if (excluded.Contains(input_file.Name)) {
@@ -935,7 +942,7 @@ class Renamespacer {
       if (excluded.Contains(input_file.Name) || IsBody(input_file)) {
         continue;
       }
-      Parser.File parser_file = Parser.ParseFile(input_file);
+      Parser.File parser_file = file_info_to_file[input_file];
       var exported_declarations =
           Parser.CollectExportedDeclarations(parser_file);
       foreach (var exported_declaration in exported_declarations) {
@@ -964,7 +971,7 @@ class Renamespacer {
 
     // Fix the using declarations in our project.
     foreach (FileInfo input_file in all_files) {
-      if (excluded.Contains(input_file.Name) || IsBody(input_file)) {
+      if (excluded.Contains(input_file.Name)) {
         continue;
       }
       Parser.File parser_file = file_info_to_file[input_file];
