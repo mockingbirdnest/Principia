@@ -22,15 +22,12 @@ constexpr void Iteration<Tuple...>::loop(F const& f) {
   }
 }
 
-}  // namespace internal
-
 template<typename... Tuple>
-constexpr internal_for_all_of::Iteration<Tuple...> for_all_of(
-    Tuple&&... tuple) {
-  return internal_for_all_of::Iteration<Tuple...>(
-      std::forward<Tuple>(tuple)...);
+constexpr Iteration<Tuple...> for_all_of(Tuple&&... tuple) {
+  return Iteration<Tuple...>(std::forward<Tuple>(tuple)...);
 }
 
+}  // namespace internal
 }  // namespace _for_all_of
 }  // namespace base
 }  // namespace principia

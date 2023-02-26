@@ -22,6 +22,7 @@
 namespace principia {
 namespace base {
 
+using google::compression::Compressor;
 using serialization::DiscreteTrajectory;
 using serialization::Pair;
 using serialization::Point;
@@ -32,6 +33,8 @@ using ::testing::ElementsAreArray;
 using namespace principia::base::_not_null;
 using namespace principia::base::_push_deserializer;
 using namespace principia::base::_serialization;
+
+namespace this_internal = _push_deserializer::internal;
 
 namespace {
 int const deserializer_chunk_size = 99;
@@ -152,7 +155,7 @@ class PushDeserializerTest : public ::testing::Test {
 
   std::unique_ptr<PullSerializer> pull_serializer_;
   std::unique_ptr<PushDeserializer> push_deserializer_;
-  DelegatingArrayInputStream stream_;
+  this_internal::DelegatingArrayInputStream stream_;
   std::list<std::string> strings_;
 };
 

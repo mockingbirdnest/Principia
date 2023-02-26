@@ -15,9 +15,8 @@ constexpr std::int64_t bits_per_byte = 8;
 constexpr std::int64_t bits_per_char = 6;
 
 template<bool null_terminated>
-void principia::base::internal_base64::Base64Encoder<null_terminated>::Encode(
-    Array<std::uint8_t const> input,
-    Array<char> output) {
+void Base64Encoder<null_terminated>::Encode(Array<std::uint8_t const> input,
+                                            Array<char> output) {
   std::string_view const input_view(reinterpret_cast<const char*>(input.data),
                                     input.size);
   std::string output_string;

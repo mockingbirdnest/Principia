@@ -26,8 +26,6 @@ class Iteration {
   std::tuple<Tuple&&...> all_the_tuples_;
 };
 
-}  // namespace internal
-
 // Iterates over all the tuples in parallel.  |F| must be a functor taking
 // elements at corresponding positions in each of the tuples.
 // Example:
@@ -37,7 +35,11 @@ class Iteration {
 //     std::cout << tuple_element << " " << i << "\n";
 //   });
 template<typename... Tuple>
-constexpr internal_for_all_of::Iteration<Tuple...> for_all_of(Tuple&&... tuple);
+constexpr Iteration<Tuple...> for_all_of(Tuple&&... tuple);
+
+}  // namespace internal
+
+using internal::for_all_of;
 
 }  // namespace _for_all_of
 }  // namespace base
