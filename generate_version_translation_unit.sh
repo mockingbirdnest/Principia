@@ -5,11 +5,15 @@ VERSION_TEMPLATE="\xef\xbb\xbf
 
 namespace principia {
 namespace base {
+namespace _version {
+namespace internal {
 
 char const BuildDate[] = \"%%DATE%%\";
 char const Version[] =
     u8\"%%VERSION%%\";
 
+}  // namespace internal
+}  // namespace _version
 }  // namespace base
 }  // namespace principia"
 
