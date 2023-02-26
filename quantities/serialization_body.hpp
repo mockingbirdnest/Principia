@@ -9,7 +9,7 @@ namespace principia {
 namespace quantities {
 namespace internal_serialization {
 
-using base::not_null;
+using namespace principia::base::_not_null;
 
 template<typename Dimensions, typename Message>
 struct DoubleOrQuantitySerializer<Quantity<Dimensions>, Message>

@@ -11,6 +11,8 @@
 namespace principia {
 namespace base {
 
+using namespace principia::base::_for_all_of;
+
 class ForAllOfTest : public ::testing::Test {
  protected:
   using AnArray = std::array<float, 3>;

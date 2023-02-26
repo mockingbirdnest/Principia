@@ -17,7 +17,6 @@ namespace principia {
 namespace physics {
 namespace internal_rotating_body {
 
-using base::not_null;
 using geometry::AngularVelocity;
 using geometry::DefinesFrame;
 using geometry::EulerAngles;
@@ -28,6 +27,7 @@ using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::Length;
 using quantities::si::Radian;
+using namespace principia::base::_not_null;
 
 template<typename Frame>
 class RotatingBody : public MassiveBody {

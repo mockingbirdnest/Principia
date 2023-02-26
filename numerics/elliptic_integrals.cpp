@@ -21,7 +21,6 @@ namespace principia {
 namespace numerics {
 namespace internal_elliptic_integrals {
 
-using base::uninitialized;
 using quantities::Abs;
 using quantities::ArcSin;
 using quantities::Angle;
@@ -33,6 +32,7 @@ using quantities::Sin;
 using quantities::Sqrt;
 using quantities::Tan;
 using quantities::si::Radian;
+using namespace principia::base::_tags;
 
 namespace {
 

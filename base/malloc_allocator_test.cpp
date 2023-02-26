@@ -10,6 +10,7 @@ namespace base {
 
 using ::testing::IsNull;
 using ::testing::Not;
+using namespace principia::base::_malloc_allocator;
 
 TEST(MallocAllocatorTest, Allocate) {
   int* p;

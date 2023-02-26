@@ -18,10 +18,10 @@ FORWARD_DECLARE_FROM(rotation,
 
 namespace internal_symmetric_bilinear_form {
 
-using base::not_null;
 using quantities::Product;
 using quantities::Quotient;
 using quantities::Square;
+using namespace principia::base::_not_null;
 
 // A symmetric bilinear form with dimensionality |Scalar|, on the given kind of
 // |Multivector|, expressed in the coordinates of |Frame|.

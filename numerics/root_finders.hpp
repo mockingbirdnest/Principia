@@ -13,9 +13,9 @@ namespace principia {
 namespace numerics {
 namespace internal_root_finders {
 
-using base::BoundedArray;
 using quantities::Derivative;
 using quantities::Sqrt;
+using namespace principia::base::_array;
 
 // Approximates a root of |f| between |lower_bound| and |upper_bound| by
 // bisection.  The result is less than one ULP from a root of any continuous

@@ -19,8 +19,8 @@ namespace principia {
 using base::GetLine;
 using base::Version;
 using base::HexadecimalEncoder;
-using base::UniqueArray;
 using interface::principia__ActivatePlayer;
+using namespace principia::base::_array;
 
 using namespace std::chrono_literals;
 

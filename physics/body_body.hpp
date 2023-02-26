@@ -11,8 +11,8 @@ namespace principia {
 namespace physics {
 namespace internal_body {
 
-using base::dynamic_cast_not_null;
-using base::not_constructible;
+using namespace principia::base::_not_constructible;
+using namespace principia::base::_not_null;
 
 template<typename Frame>
 bool Body::is_compatible_with() const {

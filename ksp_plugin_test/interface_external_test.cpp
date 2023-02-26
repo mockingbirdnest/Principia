@@ -14,7 +14,6 @@
 namespace principia {
 
 using astronomy::ICRS;
-using base::make_not_null_unique;
 using ksp_plugin::GUID;
 using ksp_plugin::Navigation;
 using ksp_plugin::PartId;
@@ -41,6 +40,7 @@ using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
+using namespace principia::base::_not_null;
 
 namespace interface {
 namespace {

@@ -21,7 +21,6 @@ namespace principia {
 namespace physics {
 namespace internal_geopotential {
 
-using base::uninitialized;
 using numerics::FixedLowerTriangularMatrix;
 using numerics::FixedVector;
 using numerics::HornerEvaluator;
@@ -38,6 +37,7 @@ using quantities::NaN;
 using quantities::Pow;
 using quantities::Sqrt;
 using quantities::Sin;
+using namespace principia::base::_tags;
 
 // The notation in this file follows documentation/Geopotential.pdf.
 

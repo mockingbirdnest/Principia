@@ -11,10 +11,10 @@ namespace principia {
 namespace numerics {
 namespace internal_fixed_arrays {
 
-using base::uninitialized_t;
 using quantities::Difference;
 using quantities::Product;
 using quantities::Quotient;
+using namespace principia::base::_tags;
 
 template<typename Scalar, int rows, int columns>
 class FixedMatrix;

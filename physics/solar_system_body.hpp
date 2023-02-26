@@ -39,13 +39,6 @@ namespace internal_solar_system {
 
 using astronomy::J2000;
 using astronomy::ParseTT;
-using base::Contains;
-using base::dynamic_cast_not_null;
-using base::FindOrDie;
-using base::Fingerprint2011;
-using base::FingerprintCat2011;
-using base::make_not_null_unique;
-using base::SerializeAsBytes;
 using geometry::Bivector;
 using geometry::Frame;
 using geometry::Instant;
@@ -63,6 +56,10 @@ using quantities::Speed;
 using quantities::Time;
 using quantities::si::Radian;
 using quantities::si::Second;
+using namespace principia::base::_fingerprint2011;
+using namespace principia::base::_map_util;
+using namespace principia::base::_not_null;
+using namespace principia::base::_serialization;
 
 inline serialization::GravityModel ParseGravityModel(
     std::filesystem::path const& gravity_model_filename) {

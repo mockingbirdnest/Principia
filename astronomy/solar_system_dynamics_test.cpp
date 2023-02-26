@@ -30,7 +30,6 @@
 
 namespace principia {
 
-using base::dynamic_cast_not_null;
 using geometry::AngleBetween;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
@@ -90,6 +89,7 @@ using testing_utilities::operator""_;
 using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::Gt;
+using namespace principia::base::_not_null;
 
 namespace astronomy {
 

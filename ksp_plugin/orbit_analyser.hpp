@@ -26,7 +26,6 @@ using astronomy::OrbitalElements;
 using astronomy::OrbitGroundTrack;
 using astronomy::OrbitRecurrence;
 using base::jthread;
-using base::not_null;
 using geometry::Instant;
 using geometry::Interval;
 using physics::DegreesOfFreedom;
@@ -34,6 +33,7 @@ using physics::Ephemeris;
 using physics::RotatingBody;
 using quantities::Length;
 using quantities::Time;
+using namespace principia::base::_not_null;
 
 // The |OrbitAnalyser| asynchronously integrates a trajectory, and computes
 // orbital elements, recurrence, and ground track properties of the resulting

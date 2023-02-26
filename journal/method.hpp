@@ -11,8 +11,8 @@ namespace principia {
 namespace journal {
 namespace internal_method {
 
-using base::not_constructible;
-using base::not_null;
+using namespace principia::base::_not_constructible;
+using namespace principia::base::_not_null;
 
 // The parameter |Profile| is expected to have the following structure:
 //

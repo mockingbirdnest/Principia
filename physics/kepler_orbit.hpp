@@ -11,7 +11,6 @@ namespace principia {
 namespace physics {
 namespace internal_kepler_orbit {
 
-using base::not_null;
 using geometry::Instant;
 using quantities::Angle;
 using quantities::AngularFrequency;
@@ -21,6 +20,7 @@ using quantities::SpecificAngularMomentum;
 using quantities::SpecificEnergy;
 using quantities::Speed;
 using quantities::Time;
+using namespace principia::base::_not_null;
 
 template<typename Frame>
 struct KeplerianElements final {

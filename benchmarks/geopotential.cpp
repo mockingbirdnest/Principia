@@ -26,7 +26,6 @@ namespace physics {
 
 using astronomy::ICRS;
 using astronomy::ITRS;
-using base::not_null;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Instant;
@@ -49,6 +48,7 @@ using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+using namespace principia::base::_not_null;
 namespace si = quantities::si;
 
 template<typename Frame>

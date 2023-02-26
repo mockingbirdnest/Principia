@@ -18,8 +18,8 @@ namespace integrators {
 namespace internal_explicit_linear_multistep_integrator {
 
 using base::for_all_of;
-using base::make_not_null_unique;
 using geometry::QuantityOrMultivectorSerializer;
+using namespace principia::base::_not_null;
 
 int const startup_step_divisor = 16;
 

@@ -6,7 +6,7 @@ namespace principia {
 namespace geometry {
 namespace internal_serialization {
 
-using base::not_constructible;
+using namespace principia::base::_not_constructible;
 
 // A helper class that serializes a |double|, a |Quantity|, a |Point| or a
 // |Multivector| to a protobuf structure like:

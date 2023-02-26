@@ -8,7 +8,7 @@ namespace principia {
 namespace physics {
 namespace internal_clientele {
 
-using base::not_null;
+using namespace principia::base::_not_null;
 
 // A helper class to manage a set of clients to a service.  Clients are ordered
 // based on the value of type |Key| passed when they join the |Clientele|.  A

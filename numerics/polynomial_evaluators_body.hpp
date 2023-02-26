@@ -12,9 +12,8 @@ namespace principia {
 namespace numerics {
 namespace internal_polynomial_evaluators {
 
-using base::FloorLog2;
-using base::PowerOf2Le;
 using quantities::FusedMultiplyAdd;
+using namespace principia::base::_bits;
 
 // Generator for repeated squaring:
 //   SquareGenerator<Length, 0>::Type is Exponentiation<Length, 2>

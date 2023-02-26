@@ -16,12 +16,11 @@
 namespace principia {
 namespace physics {
 
-using base::make_not_null_unique;
-using base::not_null;
 using geometry::Frame;
 using geometry::Instant;
 using quantities::si::Second;
 using ::testing::Return;
+using namespace principia::base::_not_null;
 
 class DiscreteTrajectorySegmentIteratorTest : public ::testing::Test {
  protected:

@@ -19,7 +19,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_planetarium {
 
-using base::not_null;
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::OrthogonalMap;
@@ -38,6 +37,7 @@ using physics::RigidMotion;
 using physics::Trajectory;
 using quantities::Angle;
 using quantities::Length;
+using namespace principia::base::_not_null;
 
 // Corresponds to a UnityEngine.Vector3 representing a position in KSP’s
 // ScaledSpace.

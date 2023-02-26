@@ -17,8 +17,6 @@ namespace geometry {
 
 using astronomy::operator""_UT1;
 using astronomy::operator""_TT;
-using base::make_not_null_unique;
-using base::not_null;
 using geometry::Bivector;
 using geometry::DeduceSignReversingOrientation;
 using geometry::Perspective;
@@ -62,6 +60,7 @@ using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::SolarSystemFactory;
+using namespace principia::base::_not_null;
 
 namespace {
 

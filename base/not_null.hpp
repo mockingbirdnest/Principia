@@ -76,6 +76,8 @@
 
 namespace principia {
 namespace base {
+namespace _not_null {
+namespace internal {
 
 template<typename Pointer>
 class not_null;
@@ -340,6 +342,9 @@ template<typename Pointer>
 not_null<Pointer> check_not_null(not_null<Pointer> pointer);
 #endif
 
+template<typename T, typename... Args>
+not_null<std::shared_ptr<T>> make_not_null_shared(Args&&... args);
+
 // Factory for a |not_null<std::unique_ptr<T>>|, forwards the arguments to the
 // constructor of T.  |make_not_null_unique<T>(args)| is interchangeable with
 // |check_not_null(make_unique<T>(args))|, but does not perform a |CHECK|, since
@@ -358,7 +363,21 @@ not_null<Result> dynamic_cast_not_null(not_null<T*> const pointer);
 template<typename Result, typename T>
 not_null<Result> dynamic_cast_not_null(not_null<std::unique_ptr<T>>&& pointer);
 
+}  // namespace internal
+
+using internal::check_not_null;
+using internal::dynamic_cast_not_null;
+using internal::make_not_null_shared;
+using internal::make_not_null_unique;
+using internal::not_null;
+using internal::remove_not_null;
+
+}  // namespace _not_null
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_not_null;
+}  // namespace principia::base
 
 #include "base/not_null_body.hpp"

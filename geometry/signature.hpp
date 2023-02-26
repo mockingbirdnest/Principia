@@ -8,7 +8,7 @@ namespace principia {
 namespace geometry {
 namespace internal_signature {
 
-using base::not_null;
+using namespace principia::base::_not_null;
 
 struct DeduceSignPreservingOrientation final {};
 struct DeduceSignReversingOrientation final {};

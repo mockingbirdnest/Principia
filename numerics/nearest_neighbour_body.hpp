@@ -17,13 +17,13 @@ namespace principia {
 namespace numerics {
 namespace internal_nearest_neighbour {
 
-using base::make_not_null_unique;
 using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::SymmetricBilinearForm;
 using geometry::Wedge;
 using quantities::Infinity;
 using quantities::Pow;
+using namespace principia::base::_not_null;
 
 constexpr std::int32_t no_min_index = -1;
 

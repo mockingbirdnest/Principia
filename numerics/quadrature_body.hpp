@@ -18,13 +18,12 @@ namespace numerics {
 namespace quadrature {
 namespace internal_quadrature {
 
-using base::BitReversedIncrement;
-using base::FloorLog2;
 using geometry::Hilbert;
 using quantities::Angle;
 using quantities::Cos;
 using quantities::Difference;
 using quantities::si::Radian;
+using namespace principia::base::_bits;
 
 template<int points, typename Argument, typename Function>
 Primitive<std::invoke_result_t<Function, Argument>, Argument> Gauss(

@@ -11,7 +11,8 @@
 
 namespace principia {
 namespace base {
-namespace internal_file {
+namespace _file {
+namespace internal {
 
 inline OFStream::OFStream(std::filesystem::path const& path) {
 #if PRINCIPIA_COMPILER_MSVC
@@ -46,6 +47,7 @@ inline OFStream&  OFStream::operator<<(std::string const& s) {
   return *this;
 }
 
-}  // namespace internal_file
+}  // namespace internal
+}  // namespace _file
 }  // namespace base
 }  // namespace principia

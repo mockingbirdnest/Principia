@@ -7,6 +7,8 @@
 
 namespace principia {
 namespace base {
+namespace _array {
+namespace internal {
 
 // A simple container for a pointer and size.  |data| is not owned.
 template<typename Element>
@@ -155,7 +157,19 @@ template<typename LeftElement,
 bool operator==(UniqueArray<LeftElement> const& left,
                 UniqueArray<RightElement> const& right);
 
+}  // namespace internal
+
+using internal::Array;
+using internal::BoundedArray;
+using internal::operator==;
+using internal::UniqueArray;
+
+}  // namespace _array
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_array;
+}  // namespace principia::base
 
 #include "base/array_body.hpp"

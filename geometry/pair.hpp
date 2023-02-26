@@ -19,11 +19,11 @@ FORWARD_DECLARE_FROM(componentwise,
 namespace geometry {
 namespace internal_pair {
 
-using base::not_constructible;
-using base::not_null;
 using quantities::Difference;
 using quantities::Product;
 using quantities::Quotient;
+using namespace principia::base::_not_constructible;
+using namespace principia::base::_not_null;
 
 template<typename T1, typename T2>
 class Pair;

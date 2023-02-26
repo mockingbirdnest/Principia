@@ -18,8 +18,6 @@ namespace principia {
 namespace astronomy {
 namespace internal_standard_product_3 {
 
-using base::FindOrDie;
-using base::make_not_null_unique;
 using geometry::Displacement;
 using numerics::FiniteDifference;
 using quantities::NaN;
@@ -28,6 +26,8 @@ using quantities::si::Deci;
 using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Second;
+using namespace principia::base::_map_util;
+using namespace principia::base::_not_null;
 
 // Given a trajectory whose velocities are bad or absent (e.g., NaN), uses
 // n-point finite difference formulæ on the positions to produce a trajectory

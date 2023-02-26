@@ -33,8 +33,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using base::not_null;
-using base::make_not_null_unique;
 using geometry::AngularVelocity;
 using geometry::Arbitrary;
 using geometry::Bivector;
@@ -86,6 +84,7 @@ using ::testing::Return;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::_;
+using namespace principia::base::_not_null;
 namespace si = quantities::si;
 
 class ManœuvreTest : public ::testing::Test {

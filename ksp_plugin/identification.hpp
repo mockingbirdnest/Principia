@@ -15,7 +15,7 @@ FORWARD_DECLARE_FROM(vessel, class, Vessel);
 
 namespace internal_identification {
 
-using base::not_null;
+using namespace principia::base::_not_null;
 
 // The GUID of a vessel, obtained by |v.id.ToString()| in C#. We use this as a
 // key in an |std::map|.

@@ -19,7 +19,6 @@
 namespace principia {
 namespace astronomy {
 
-using base::not_null;
 using geometry::Frame;
 using geometry::Instant;
 using geometry::Interval;
@@ -48,6 +47,7 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::operator""_;
 using testing_utilities::IsNear;
+using namespace principia::base::_not_null;
 
 // A test that showcases the eccentricity-inclination exchange mechanism
 // described in [Лид61] and [Koz62].  We follow the treatment in [Лид61].

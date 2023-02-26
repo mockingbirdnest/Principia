@@ -19,12 +19,12 @@ namespace integrators {
 namespace internal_embedded_explicit_runge_kutta_integrator {
 
 using base::for_all_of;
-using base::make_not_null_unique;
 using geometry::Sign;
 using numerics::DoublePrecision;
 using quantities::DebugString;
 using quantities::Difference;
 using quantities::Quotient;
+using namespace principia::base::_not_null;
 
 template<typename Method, typename ODE_>
 EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_>::

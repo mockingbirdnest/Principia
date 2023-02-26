@@ -6,7 +6,7 @@ namespace principia {
 namespace quantities {
 namespace internal_serialization {
 
-using base::not_constructible;
+using namespace principia::base::_not_constructible;
 
 // A helper class that serializes a |Quantity| or a |double| to a protobuf
 // structure like:

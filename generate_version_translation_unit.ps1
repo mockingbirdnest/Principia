@@ -12,11 +12,15 @@ $versionheadertext = [string]::format(
     "`n"                                                                   +
     "namespace principia {{`n"                                             +
     "namespace base {{`n"                                                  +
+    "namespace _version {{`n"                                              +
+    "namespace internal {{`n"                                              +
     "`n"                                                                   +
-    "char const BuildDate[] = `"{0:yyyy'-'MM'-'dd'T'HH':'mm':'ssK}`";`n"  +
+    "char const BuildDate[] = `"{0:yyyy'-'MM'-'dd'T'HH':'mm':'ssK}`";`n"   +
     "char const Version[] =`n"                                             +
     "    u8`"{1}`";`n"                                                     +
     "`n"                                                                   +
+    "}}  // namespace internal`n"                                          +
+    "}}  // namespace _version`n"                                          +
     "}}  // namespace base`n"                                              +
     "}}  // namespace principia`n",
     $newdate.ToUniversalTime(),

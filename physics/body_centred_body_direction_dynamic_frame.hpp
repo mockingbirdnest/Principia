@@ -24,7 +24,6 @@ namespace principia {
 namespace physics {
 namespace internal_body_centred_body_direction_dynamic_frame {
 
-using base::not_null;
 using geometry::AngularVelocity;
 using geometry::Instant;
 using geometry::Position;
@@ -32,6 +31,7 @@ using geometry::Rotation;
 using geometry::Vector;
 using quantities::Acceleration;
 using quantities::SpecificEnergy;
+using namespace principia::base::_not_null;
 
 // The origin of the frame is the centre of mass of the primary body.  The X
 // axis points to the secondary.  The Y axis is in the direction of the velocity

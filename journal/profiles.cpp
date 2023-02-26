@@ -11,7 +11,7 @@
 
 namespace principia {
 
-using base::FindOrDie;
+using namespace principia::base::_map_util;
 
 namespace journal {
 namespace {

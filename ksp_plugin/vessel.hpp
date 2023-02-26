@@ -36,7 +36,6 @@ class VesselTest;
 
 namespace internal_vessel {
 
-using base::not_null;
 using base::RecurringThread;
 using geometry::InfinitePast;
 using geometry::Instant;
@@ -54,6 +53,7 @@ using quantities::Force;
 using quantities::GravitationalParameter;
 using quantities::Mass;
 using quantities::Time;
+using namespace principia::base::_not_null;
 
 // Represents a KSP |Vessel|.
 class Vessel {

@@ -27,7 +27,6 @@ namespace principia {
 namespace physics {
 
 using astronomy::operator""_TT;
-using base::ParseFromBytes;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Handedness;
@@ -59,6 +58,7 @@ using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::HasSubstr;
 using ::testing::Not;
+using namespace principia::base::_serialization;
 
 class DiscreteTrajectoryTest : public ::testing::Test {
  protected:

@@ -13,9 +13,9 @@
 namespace principia {
 namespace numerics {
 
-using base::not_null;
 using geometry::Frame;
 using geometry::Vector;
+using namespace principia::base::_not_null;
 
 using World = Frame<struct WorldTag>;
 using V = Vector<double, World>;

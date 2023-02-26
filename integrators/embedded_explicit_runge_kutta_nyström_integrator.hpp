@@ -25,12 +25,12 @@ namespace integrators {
 namespace internal_embedded_explicit_runge_kutta_nyström_integrator {
 
 using base::is_instance_of_v;
-using base::not_null;
 using geometry::Instant;
 using numerics::FixedStrictlyLowerTriangularMatrix;
 using numerics::FixedVector;
 using quantities::Time;
 using quantities::Variation;
+using namespace principia::base::_not_null;
 
 // This class solves ordinary differential equations of the form q″ = f(q, t)
 // using an embedded Runge-Kutta-Nyström method.  We follow the standard

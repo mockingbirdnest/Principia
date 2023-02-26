@@ -5,7 +5,8 @@
 
 namespace principia {
 namespace base {
-namespace internal_for_all_of {
+namespace _for_all_of {
+namespace internal {
 
 template<typename... Tuple>
 class Iteration {
@@ -25,8 +26,6 @@ class Iteration {
   std::tuple<Tuple&&...> all_the_tuples_;
 };
 
-}  // namespace internal_for_all_of
-
 // Iterates over all the tuples in parallel.  |F| must be a functor taking
 // elements at corresponding positions in each of the tuples.
 // Example:
@@ -36,9 +35,18 @@ class Iteration {
 //     std::cout << tuple_element << " " << i << "\n";
 //   });
 template<typename... Tuple>
-constexpr internal_for_all_of::Iteration<Tuple...> for_all_of(Tuple&&... tuple);
+constexpr Iteration<Tuple...> for_all_of(Tuple&&... tuple);
 
+}  // namespace internal
+
+using internal::for_all_of;
+
+}  // namespace _for_all_of
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_for_all_of;
+}  // namespace principia::base
 
 #include "base/for_all_of_body.hpp"

@@ -12,7 +12,6 @@
 
 namespace principia {
 
-using base::Range;
 using geometry::Instant;
 using quantities::AngularFrequency;
 using quantities::Cos;
@@ -31,6 +30,7 @@ using testing_utilities::operator""_;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::ResultOf;
+using namespace principia::base::_ranges;
 
 namespace numerics {
 

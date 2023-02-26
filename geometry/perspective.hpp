@@ -17,9 +17,9 @@ namespace principia {
 namespace geometry {
 namespace internal_perspective {
 
-using base::BoundedArray;
 using quantities::Length;
 using quantities::Square;
+using namespace principia::base::_array;
 
 template<typename Frame>
 using Segment = std::pair<Position<Frame>, Position<Frame>>;

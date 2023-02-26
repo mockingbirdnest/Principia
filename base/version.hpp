@@ -4,6 +4,8 @@
 
 namespace principia {
 namespace base {
+namespace _version {
+namespace internal {
 
 extern char const BuildDate[];
 extern char const Version[];
@@ -12,5 +14,15 @@ extern char const Version[];
 #pragma message("Compiler version: " STRINGIFY_EXPANSION(_MSC_FULL_VER))
 #endif
 
+}  // namespace internal
+
+using internal::BuildDate;
+using internal::Version;
+
+}  // namespace _version
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_version;
+}  // namespace principia::base

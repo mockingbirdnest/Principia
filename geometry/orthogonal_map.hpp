@@ -40,7 +40,7 @@ FORWARD_DECLARE_FROM(
 
 namespace internal_orthogonal_map {
 
-using base::not_null;
+using namespace principia::base::_not_null;
 
 // An orthogonal map between the inner product spaces |FromFrame| and
 // |ToFrame|, as well as the induced maps on the exterior algebra.

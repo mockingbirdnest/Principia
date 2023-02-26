@@ -51,10 +51,6 @@ namespace ksp_plugin {
 
 using astronomy::ICRS;
 using astronomy::ParseTT;
-using base::FindOrDie;
-using base::make_not_null_unique;
-using base::not_null;
-using base::SerializeAsBytes;
 using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::Displacement;
@@ -136,6 +132,9 @@ using ::testing::SetArgPointee;
 using ::testing::SizeIs;
 using ::testing::StrictMock;
 using ::testing::_;
+using namespace principia::base::_map_util;
+using namespace principia::base::_not_null;
+using namespace principia::base::_serialization;
 
 namespace {
 

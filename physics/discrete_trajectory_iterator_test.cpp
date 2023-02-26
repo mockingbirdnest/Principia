@@ -19,15 +19,13 @@
 namespace principia {
 namespace physics {
 
-using base::check_not_null;
-using base::make_not_null_unique;
-using base::not_null;
 using geometry::Frame;
 using geometry::Instant;
 using physics::DegreesOfFreedom;
 using quantities::Time;
 using quantities::si::Second;
 using ::testing::Return;
+using namespace principia::base::_not_null;
 
 class DiscreteTrajectoryIteratorTest : public ::testing::Test {
  protected:

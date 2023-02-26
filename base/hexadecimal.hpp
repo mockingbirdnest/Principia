@@ -6,7 +6,8 @@
 
 namespace principia {
 namespace base {
-namespace internal_hexadecimal {
+namespace _hexadecimal {
+namespace internal {
 
 template<bool null_terminated>
 class HexadecimalEncoder : public Encoder<char, null_terminated> {
@@ -38,11 +39,16 @@ class HexadecimalEncoder : public Encoder<char, null_terminated> {
   std::int64_t DecodedLength(Array<char const> input) override;
 };
 
-}  // namespace internal_hexadecimal
+}  // namespace internal
 
-using internal_hexadecimal::HexadecimalEncoder;
+using internal::HexadecimalEncoder;
 
+}  // namespace _hexadecimal
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_hexadecimal;
+}  // namespace principia::base
 
 #include "base/hexadecimal_body.hpp"

@@ -9,7 +9,7 @@ namespace principia {
 namespace geometry {
 namespace internal_affine_map {
 
-using base::not_null;
+using namespace principia::base::_not_null;
 
 template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap>

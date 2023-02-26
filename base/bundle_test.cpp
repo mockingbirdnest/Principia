@@ -8,14 +8,12 @@
 #include "testing_utilities/matchers.hpp"
 
 namespace principia {
-
-using ::testing::Eq;
-
-using namespace std::chrono_literals;
-
 namespace base {
 
-using principia::testing_utilities::StatusIs;
+using testing_utilities::StatusIs;
+using ::testing::Eq;
+using namespace principia::base::_bundle;
+using namespace std::chrono_literals;
 
 constexpr int workers = 8;
 

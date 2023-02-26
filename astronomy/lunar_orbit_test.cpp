@@ -38,8 +38,6 @@ namespace principia {
 
 using astronomy::ICRS;
 using astronomy::J2000;
-using base::dynamic_cast_not_null;
-using base::not_null;
 using geometry::AngularVelocity;
 using geometry::Arbitrary;
 using geometry::Displacement;
@@ -97,6 +95,7 @@ using testing_utilities::RelativeError;
 using testing_utilities::Slope;
 using testing_utilities::operator""_;
 using ::testing::Lt;
+using namespace principia::base::_not_null;
 
 namespace astronomy {
 

@@ -16,7 +16,6 @@
 
 namespace principia {
 
-using base::ParseFromBytes;
 using base::PullSerializer;
 using base::PushDeserializer;
 using geometry::Instant;
@@ -32,6 +31,7 @@ using quantities::si::Hertz;
 using quantities::si::Second;
 using testing_utilities::ReadFromBinaryFile;
 using testing_utilities::ReadLinesFromHexadecimalFile;
+using namespace principia::base::_serialization;
 
 namespace ksp_plugin {
 

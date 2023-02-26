@@ -311,7 +311,8 @@ class Parser {
   }
 
   private static bool IsConstant(string line) {
-    return Regex.IsMatch(line, @"^constexpr .* = .*$");
+    return Regex.IsMatch(line, @"^constexpr .* = .*$") ||
+           Regex.IsMatch(line, @"^constexpr [^ ]+ [^ ]+;");
   }
 
   private static bool IsFunction(string line) {
@@ -358,12 +359,16 @@ class Parser {
   }
 
   private static string ParseClosingNamespace(string line) {
-    return line.Replace("}  // namespace ", "");
+    // This gets the line *with comments* to be able to identify the namespace,
+    // but beware the NOLINT my son!
+    return Regex.Replace(line.Replace("}  // namespace ", ""),
+                         @" +// NOLINT.*$",
+                         "");
   }
 
   private static string ParseConstant(string line) {
     return Regex.Replace(Regex.Replace(line, @"^constexpr [^ ]+ ", ""),
-                         @" = .*$",
+                         @" = .*$|;$",
                          "");
   }
 
@@ -396,61 +401,100 @@ class Parser {
     return line.Replace("using namespace ", "").Replace(";", "");
   }
 
+  private static string Uncomment(string line, ref bool in_comment) {
+    string uncommented_line = line;
+    if (in_comment) {
+      int end_of_comment = uncommented_line.IndexOf("*/", 0);
+      if (end_of_comment >= 0) {
+        uncommented_line = uncommented_line.Substring(end_of_comment + 2);
+        in_comment = false;
+      } else {
+        return "";
+      }
+    }
+    Debug.Assert(!in_comment);
+    uncommented_line = Regex.Replace(uncommented_line, @"//.*$", "");
+    for (;;) {
+      int start_of_comment = uncommented_line.IndexOf("/*", 0);
+      if (start_of_comment < 0) {
+        break;
+      }
+      int end_of_comment = uncommented_line.IndexOf("*/", start_of_comment + 2);
+      if (end_of_comment > 0) {
+        uncommented_line = uncommented_line.Substring(0, start_of_comment) +
+                           uncommented_line.Substring(end_of_comment + 2);
+      } else {
+        uncommented_line = uncommented_line.Substring(0, start_of_comment);
+        in_comment = true;
+        break;
+      }
+    }
+    // We normally don't have spaces at end of line, but of course we have
+    // spaces before comments.
+    return uncommented_line.TrimEnd(' ');
+  }
+
   public static File ParseFile(FileInfo file_info) {
     var file = new File(file_info);
     Node current = file;
 
-    using (StreamReader reader = file_info.OpenText()) {
-      while (!reader.EndOfStream) {
-        string line = reader.ReadLine()!;
-        if (IsPrincipiaInclude(line) && !IsOwnHeaderInclude(line, file_info)) {
-          var include = new Include(line,
-                                    parent: current,
-                                    ParseIncludedPath(line));
-        } else if (IsOpeningNamespace(line)) {
-          current = new Namespace(line,
+    using StreamReader reader = file_info.OpenText();
+    bool in_comment = false;
+    while (!reader.EndOfStream) {
+      string line = reader.ReadLine()!;
+      string uncommented_line = Uncomment(line, ref in_comment);
+      if (IsPrincipiaInclude(uncommented_line) &&
+          !IsOwnHeaderInclude(uncommented_line, file_info)) {
+        var include = new Include(line,
                                   parent: current,
-                                  ParseOpeningNamespace(line));
-        } else if (IsClosingNamespace(line)) {
-          var name = ParseClosingNamespace(line);
-          if (current is Namespace ns) {
-            Debug.Assert(ns.name == name);
-            ns.closing_text = line;
-          } else {
-            Debug.Assert(false);
-          }
-          current = current.parent!;
-        } else if (IsClass(line)) {
-          var klass = new Class(line, parent: current, ParseClass(line));
-        } else if (IsConstant(line)) {
-          var constant =
-              new Constant(line, parent: current, ParseConstant(line));
-        } else if (IsFunction(line)) {
-          var function =
-              new Function(line, parent: current, ParseFunction(line));
-        } else if (IsStruct(line)) {
-          var strukt = new Struct(
-              line,
-              parent: current,
-              ParseStruct(line));
-        } else if (IsTypeAlias(line)) {
-          var type_alias = new TypeAlias(
-              line,
-              parent: current,
-              ParseTypeAlias(line));
-        } else if (IsUsingDirective(line)) {
-          var using_directive = new UsingDirective(
-              line,
-              parent: current,
-              ParseUsingDirective(line));
-        } else if (IsUsingDeclaration(line)) {
-          var using_declaration = new UsingDeclaration(
-              line,
-              parent: current,
-              ParseUsingDeclaration(line));
+                                  ParseIncludedPath(uncommented_line));
+      } else if (IsOpeningNamespace(uncommented_line)) {
+        current = new Namespace(line,
+                                parent: current,
+                                ParseOpeningNamespace(uncommented_line));
+      } else if (IsClosingNamespace(line)) {
+        // Must use the raw line here as we use the comments to identify the
+        // line.  Don't put funky stuff on the closing namespace line, please.
+        var name = ParseClosingNamespace(line);
+        if (current is Namespace ns) {
+          Debug.Assert(ns.name == name);
+          ns.closing_text = line;
         } else {
-          var text = new Text(line, parent: current);
+          Debug.Assert(false);
         }
+        current = current.parent!;
+      } else if (IsClass(uncommented_line)) {
+        var klass = new Class(line,
+                              parent: current,
+                              ParseClass(uncommented_line));
+      } else if (IsConstant(uncommented_line)) {
+        var constant = new Constant(line,
+                                    parent: current,
+                                    ParseConstant(uncommented_line));
+      } else if (IsFunction(uncommented_line)) {
+        var function = new Function(line,
+                                    parent: current,
+                                    ParseFunction(uncommented_line));
+      } else if (IsStruct(uncommented_line)) {
+        var strukt = new Struct(line,
+                                parent: current,
+                                ParseStruct(uncommented_line));
+      } else if (IsTypeAlias(uncommented_line)) {
+        var type_alias = new TypeAlias(line,
+                                       parent: current,
+                                       ParseTypeAlias(uncommented_line));
+      } else if (IsUsingDirective(uncommented_line)) {
+        var using_directive = new UsingDirective(
+            line,
+            parent: current,
+            ParseUsingDirective(uncommented_line));
+      } else if (IsUsingDeclaration(uncommented_line)) {
+        var using_declaration = new UsingDeclaration(
+            line,
+            parent: current,
+            ParseUsingDeclaration(uncommented_line));
+      } else {
+        var text = new Text(line, parent: current);
       }
     }
     return file;
@@ -758,6 +802,9 @@ class Parser {
             if (n is Declaration decl) {
               names.Add(decl.name);
             }
+          }
+          if (names.Count == 0) {
+            throw new NotSupportedException(file.file_info.Name);
           }
           var blank_line_before = new Text("", file_namespace);
           foreach (string name in names) {

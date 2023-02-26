@@ -22,8 +22,6 @@ namespace principia {
 namespace physics {
 namespace internal_continuous_trajectory {
 
-using base::dynamic_cast_not_null;
-using base::make_not_null_unique;
 using geometry::InfiniteFuture;
 using geometry::InfinitePast;
 using geometry::Interval;
@@ -35,6 +33,7 @@ using numerics::ЧебышёвSeries;
 using quantities::DebugString;
 using quantities::si::Metre;
 using quantities::si::Second;
+using namespace principia::base::_not_null;
 namespace si = quantities::si;
 
 constexpr int max_degree = 17;

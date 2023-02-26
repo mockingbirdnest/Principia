@@ -56,8 +56,6 @@ namespace numerics {
 namespace internal_polynomial {
 
 using base::is_instance_of_v;
-using base::not_constructible;
-using base::not_null;
 using geometry::is_vector_v;
 using geometry::Hilbert;
 using geometry::Point;
@@ -67,6 +65,8 @@ using quantities::Difference;
 using quantities::Primitive;
 using quantities::Product;
 using quantities::Quotient;
+using namespace principia::base::_not_constructible;
+using namespace principia::base::_not_null;
 
 // |Value_| must belong to an affine space.  |Argument_| must belong to a ring
 // or to Point based on a ring.

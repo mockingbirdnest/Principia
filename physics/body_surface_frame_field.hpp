@@ -11,11 +11,11 @@ namespace principia {
 namespace physics {
 namespace internal_body_surface_frame_field {
 
-using base::not_null;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Rotation;
 using geometry::Vector;
+using namespace principia::base::_not_null;
 
 // The z-axis goes from the point |q| to the centre of |body| at |t|  The
 // x-axis is orthogonal to the z-axis and in the plane defined by the z-axis and

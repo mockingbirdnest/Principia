@@ -24,8 +24,6 @@
 namespace principia {
 namespace astronomy {
 
-using base::make_not_null_unique;
-using base::not_null;
 using geometry::Instant;
 using geometry::Interval;
 using geometry::Position;
@@ -68,6 +66,7 @@ using ::testing::AllOf;
 using ::testing::Field;
 using ::testing::Lt;
 using ::testing::Property;
+using namespace principia::base::_not_null;
 
 namespace {
 

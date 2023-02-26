@@ -14,7 +14,6 @@ namespace principia {
 namespace testing_utilities {
 namespace internal_integration {
 
-using base::not_null;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Vector;
@@ -26,6 +25,7 @@ using quantities::Momentum;
 using quantities::Speed;
 using quantities::Time;
 using quantities::Variation;
+using namespace principia::base::_not_null;
 
 // Right-hand sides for various differential equations frequently used to test
 // the properties of integrators.

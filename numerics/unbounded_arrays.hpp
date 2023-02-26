@@ -13,10 +13,10 @@ namespace principia {
 namespace numerics {
 namespace internal_unbounded_arrays {
 
-using base::uninitialized_t;
 using quantities::Product;
 using quantities::Quotient;
 using quantities::SquareRoot;
+using namespace principia::base::_tags;
 
 // An allocator that does not initialize the allocated objects.
 template<class T>

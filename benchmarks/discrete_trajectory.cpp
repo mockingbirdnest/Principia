@@ -19,8 +19,6 @@
 namespace principia {
 namespace physics {
 
-using base::make_not_null_unique;
-using base::not_null;
 using geometry::Barycentre;
 using geometry::Displacement;
 using geometry::Frame;
@@ -40,6 +38,7 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::NewCircularTrajectoryTimeline;
 using testing_utilities::NewMotionlessTrajectoryTimeline;
+using namespace principia::base::_not_null;
 
 namespace {
 

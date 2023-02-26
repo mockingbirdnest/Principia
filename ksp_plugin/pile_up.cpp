@@ -20,9 +20,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_pile_up {
 
-using base::check_not_null;
-using base::FindOrDie;
-using base::make_not_null_unique;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
 using geometry::Bivector;
@@ -67,6 +64,8 @@ using quantities::si::Second;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
+using namespace principia::base::_map_util;
+using namespace principia::base::_not_null;
 
 const auto part_x = Vector<double, RigidPart>({1, 0, 0});
 const auto part_y = Vector<double, RigidPart>({0, 1, 0});

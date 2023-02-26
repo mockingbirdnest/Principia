@@ -10,8 +10,8 @@ namespace principia {
 namespace physics {
 namespace internal_body {
 
-using base::not_constructible;
-using base::not_null;
+using namespace principia::base::_not_constructible;
+using namespace principia::base::_not_null;
 
 class Body {
  public:

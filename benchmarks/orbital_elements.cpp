@@ -27,9 +27,6 @@ namespace principia {
 namespace astronomy {
 
 using astronomy::GCRS;
-using base::dynamic_cast_not_null;
-using base::make_not_null_unique;
-using base::not_null;
 using geometry::Instant;
 using geometry::Position;
 using integrators::SymmetricLinearMultistepIntegrator;
@@ -55,6 +52,7 @@ using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Second;
+using namespace principia::base::_not_null;
 
 class OrbitalElementsBenchmark : public benchmark::Fixture {
  protected:

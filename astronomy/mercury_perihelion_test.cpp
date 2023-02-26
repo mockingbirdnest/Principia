@@ -25,7 +25,6 @@
 
 namespace principia {
 
-using base::not_null;
 using geometry::AngleBetween;
 using geometry::Instant;
 using geometry::Position;
@@ -51,6 +50,7 @@ using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
+using namespace principia::base::_not_null;
 using testing_utilities::operator""_;
 
 namespace astronomy {

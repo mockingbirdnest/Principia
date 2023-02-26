@@ -16,7 +16,7 @@ namespace principia {
 namespace physics {
 namespace internal_hierarchical_system {
 
-using base::not_null;
+using namespace principia::base::_not_null;
 
 template<typename Frame>
 class HierarchicalSystem final {

@@ -50,7 +50,6 @@ namespace physics {
 namespace internal_ephemeris {
 
 using astronomy::ICRS;
-using base::not_null;
 using geometry::Barycentre;
 using geometry::AngularVelocity;
 using geometry::Displacement;
@@ -106,6 +105,7 @@ using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Ref;
+using namespace principia::base::_not_null;
 using namespace std::chrono_literals;
 namespace si = quantities::si;
 
