@@ -17,14 +17,13 @@
 #include "quantities/si.hpp"
 
 namespace principia {
+namespace mathematica {
 
 using base::Contains;
 using base::make_not_null_unique;
 using quantities::ParseQuantity;
 using integrators::ParseFixedStepSizeIntegrator;
 using ksp_plugin::Barycentric;
-
-namespace mathematica {
 
 class ErrorAnalysisTest : public ::testing::Test {
  protected:

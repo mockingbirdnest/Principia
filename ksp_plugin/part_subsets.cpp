@@ -8,6 +8,7 @@
 #include "ksp_plugin/pile_up.hpp"
 
 namespace principia {
+namespace base {
 
 using base::make_not_null_shared;
 using geometry::Instant;
@@ -16,8 +17,6 @@ using ksp_plugin::Part;
 using ksp_plugin::PileUp;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
-
-namespace base {
 
 Subset<Part>::Properties::Properties(not_null<ksp_plugin::Part*> const part) {
   if (part->is_piled_up()) {

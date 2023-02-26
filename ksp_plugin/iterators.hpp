@@ -8,6 +8,7 @@
 
 namespace principia {
 namespace ksp_plugin {
+namespace internal_iterators {
 
 using base::not_null;
 using physics::DiscreteTrajectory;
@@ -73,6 +74,11 @@ class TypedIterator<DiscreteTrajectory<World>> : public Iterator {
   DiscreteTrajectory<World>::iterator iterator_;
   not_null<Plugin const*> plugin_;
 };
+
+}  // namespace internal_iterators
+
+using internal_iterators::Iterator;
+using internal_iterators::TypedIterator;
 
 }  // namespace ksp_plugin
 }  // namespace principia

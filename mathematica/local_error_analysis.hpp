@@ -9,6 +9,7 @@
 
 namespace principia {
 namespace mathematica {
+namespace internal_local_error_analysis {
 
 using base::not_null;
 using geometry::Instant;
@@ -57,6 +58,10 @@ class LocalErrorAnalyser {
       typename Ephemeris<Frame>::NewtonianMotionEquation> const& integrator_;
   Time const step_;
 };
+
+}  // namespace internal_local_error_analysis
+
+using internal_local_error_analysis::LocalErrorAnalyser;
 
 }  // namespace mathematica
 }  // namespace principia
