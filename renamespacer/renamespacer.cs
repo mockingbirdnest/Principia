@@ -457,7 +457,7 @@ class Parser {
         // line.  Don't put funky stuff on the closing namespace line, please.
         var name = ParseClosingNamespace(line);
         if (current is Namespace ns) {
-          Debug.Assert(ns.name == name);
+          Debug.Assert(ns.name == name, ns.name, name);
           ns.closing_text = line;
         } else {
           Debug.Assert(false);
@@ -789,23 +789,26 @@ class Parser {
     foreach (var ns in innermost_namespaces) {
       if (!ns.is_internal && !ns.is_compatibility_namespace) {
         var nodes_in_ns = ns.children.ToList();
+        // Check if there are names to export from this namespace.  If not,
+        // don't touch it.  It may be some local reopening.  This produces a
+        // deduped and sorted set of symbols.
+        var names = new SortedSet<string>();
+        foreach (Node n in nodes_in_ns) {
+          if (n is Declaration decl) {
+            names.Add(decl.name);
+          }
+        }
+        if (names.Count == 0) {
+          continue;
+        }
         ns.children.Clear();
         var file_namespace = new Namespace(ns,
                                            file.file_namespace_simple_name);
         var internal_namespace = new Namespace(file_namespace, "internal");
         internal_namespace.children.AddRange(nodes_in_ns);
 
-        // Insert the using declarations.  First dedupe and sort the symbols.
+        // Insert the using declarations.
         if (insert_using_declarations) {
-          var names = new SortedSet<string>();
-          foreach (Node n in nodes_in_ns) {
-            if (n is Declaration decl) {
-              names.Add(decl.name);
-            }
-          }
-          if (names.Count == 0) {
-            throw new NotSupportedException(file.file_info.Name);
-          }
           var blank_line_before = new Text("", file_namespace);
           foreach (string name in names) {
             var using_declaration =
