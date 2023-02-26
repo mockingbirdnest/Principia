@@ -4,7 +4,8 @@
 
 namespace principia {
 namespace base {
-namespace internal_traits {
+namespace _traits {
+namespace internal {
 
 template<typename... Ts>
 constexpr bool all_different_v = false;
@@ -48,7 +49,7 @@ struct has_unconditional_read_from_message<
     T, std::void_t<decltype(&T::ReadFromMessage)>>
     : std::true_type {};
 
-}  // namespace internal_traits
+}  // namespace internal
 
 // True if and only if U is an instance of T.
 template<template<typename...> typename T, typename U>
@@ -67,7 +68,12 @@ inline constexpr bool is_serializable_v =
     internal_traits::has_sfinae_read_from_message<T>::value ||
     internal_traits::has_unconditional_read_from_message<T>::value;
 
-using internal_traits::all_different_v;
+using internal::all_different_v;
 
+}  // namespace _traits
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_traits;
+}  // namespace principia::base

@@ -28,7 +28,6 @@ namespace internal_geopotential {
 
 using astronomy::ICRS;
 using astronomy::ITRS;
-using base::make_not_null_unique;
 using geometry::Frame;
 using geometry::Handedness;
 using geometry::Inertial;
@@ -64,6 +63,7 @@ using ::testing::ElementsAre;
 using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Property;
+using namespace principia::base::_not_null;
 namespace si = quantities::si;
 
 class GeopotentialTest : public ::testing::Test {

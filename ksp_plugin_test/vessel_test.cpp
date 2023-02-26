@@ -38,8 +38,6 @@ namespace principia {
 namespace ksp_plugin {
 
 using astronomy::operator""_TT;
-using base::not_null;
-using base::make_not_null_unique;
 using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::Displacement;
@@ -87,6 +85,7 @@ using ::testing::MockFunction;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::_;
+using namespace principia::base::_not_null;
 
 class VesselTest : public testing::Test {
  protected:

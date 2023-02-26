@@ -11,7 +11,8 @@
 
 namespace principia {
 namespace base {
-namespace internal_jthread {
+namespace _jthread {
+namespace internal {
 
 // A minimal implementation of the C++20 jthread library, intended to be
 // compatible.
@@ -132,16 +133,21 @@ class this_stoppable_thread {
     }                                                              \
   } while (false)
 
-}  // namespace internal_jthread
+}  // namespace internal
 
-using internal_jthread::MakeStoppableThread;
-using internal_jthread::jthread;
-using internal_jthread::stop_callback;
-using internal_jthread::stop_source;
-using internal_jthread::stop_token;
-using internal_jthread::this_stoppable_thread;
+using internal::MakeStoppableThread;
+using internal::jthread;
+using internal::stop_callback;
+using internal::stop_source;
+using internal::stop_token;
+using internal::this_stoppable_thread;
 
+}  // namespace _jthread
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_jthread;
+}  // namespace principia::base
 
 #include "base/jthread_body.hpp"

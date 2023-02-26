@@ -21,8 +21,6 @@
 
 namespace principia {
 
-using base::make_not_null_unique;
-using base::not_null;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
 using geometry::Displacement;
@@ -60,6 +58,7 @@ using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using testing_utilities::operator""_;
 using ::testing::Eq;
+using namespace principia::base::_not_null;
 
 namespace astronomy {
 

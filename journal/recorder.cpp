@@ -11,9 +11,9 @@
 
 namespace principia {
 
-using base::HexadecimalEncoder;
-using base::SerializeAsBytes;
-using base::UniqueArray;
+using namespace principia::base::_array;
+using namespace principia::base::_hexadecimal;
+using namespace principia::base::_serialization;
 
 namespace journal {
 

@@ -6,7 +6,8 @@
 
 namespace principia {
 namespace base {
-namespace internal_sink_source {
+namespace _sink_source {
+namespace internal {
 
 template<typename Element>
 principia::base::internal_sink_source::ArraySource<Element>::ArraySource(
@@ -66,6 +67,7 @@ char* ArraySink<Element>::GetAppendBuffer(
   return reinterpret_cast<char*>(array_.data + next_to_write_);
 }
 
-}  // namespace internal_sink_source
+}  // namespace internal
+}  // namespace _sink_source
 }  // namespace base
 }  // namespace principia

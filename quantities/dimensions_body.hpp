@@ -8,7 +8,7 @@ namespace principia {
 namespace quantities {
 namespace internal_dimensions {
 
-using base::not_constructible;
+using namespace principia::base::_not_constructible;
 
 class ExponentSerializer : not_constructible {
  public:

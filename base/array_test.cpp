@@ -15,6 +15,8 @@ using ::testing::SizeIs;
 namespace principia {
 namespace base {
 
+using namespace principia::base::_array;
+
 TEST(ArrayTest, BoundedArray0) {
   BoundedArray<double, 3> a{};
   EXPECT_THAT(a, AllOf(IsEmpty(), SizeIs(0)));

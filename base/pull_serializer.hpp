@@ -17,7 +17,8 @@
 
 namespace principia {
 namespace base {
-namespace internal_pull_serializer {
+namespace _pull_serializer {
+namespace internal {
 
 using google::compression::Compressor;
 
@@ -138,11 +139,16 @@ class PullSerializer final {
   std::queue<not_null<std::uint8_t*>> free_ GUARDED_BY(lock_);
 };
 
-}  // namespace internal_pull_serializer
+}  // namespace internal
 
-using internal_pull_serializer::PullSerializer;
+using internal::PullSerializer;
 
+}  // namespace _pull_serializer
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_pull_serializer;
+}  // namespace principia::base
 
 #include "base/pull_serializer_body.hpp"

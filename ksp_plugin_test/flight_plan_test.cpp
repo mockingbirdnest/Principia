@@ -31,9 +31,6 @@ namespace principia {
 namespace ksp_plugin {
 
 using astronomy::J2000;
-using base::not_null;
-using base::make_not_null_shared;
-using base::make_not_null_unique;
 using geometry::Barycentre;
 using geometry::Displacement;
 using geometry::Instant;
@@ -77,6 +74,7 @@ using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::MockFunction;
+using namespace principia::base::_not_null;
 
 class FlightPlanTest : public testing::Test {
  protected:

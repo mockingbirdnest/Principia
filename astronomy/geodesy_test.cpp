@@ -17,9 +17,6 @@
 namespace principia {
 namespace astronomy {
 
-using base::Bundle;
-using base::dynamic_cast_not_null;
-using base::not_null;
 using geometry::AngleBetween;
 using geometry::Displacement;
 using geometry::Instant;
@@ -55,6 +52,8 @@ using testing_utilities::IsNear;
 using testing_utilities::operator""_;
 using ::testing::AnyOf;
 using ::testing::Eq;
+using namespace principia::base::_bundle;
+using namespace principia::base::_not_null;
 
 class GeodesyTest : public ::testing::Test {
  protected:

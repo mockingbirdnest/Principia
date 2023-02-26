@@ -34,12 +34,6 @@ namespace principia {
 namespace interface {
 
 using astronomy::operator""_TT;
-using base::check_not_null;
-using base::make_not_null_unique;
-using base::OFStream;
-using base::ParseFromBytes;
-using base::PullSerializer;
-using base::PushDeserializer;
 using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::Displacement;
@@ -107,6 +101,11 @@ using ::testing::SetArgReferee;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::_;
+using namespace principia::base::_file;
+using namespace principia::base::_not_null;
+using namespace principia::base::_pull_serializer;
+using namespace principia::base::_push_deserializer;
+using namespace principia::base::_serialization;
 namespace si = quantities::si;
 
 namespace {

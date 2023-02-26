@@ -18,12 +18,12 @@ namespace principia {
 namespace quantities {
 namespace internal_quantities {
 
-using base::not_constructible;
-using base::not_null;
-using base::uninitialized_t;
 using internal_dimensions::Dimensions;
 using internal_generators::ProductGenerator;
 using internal_generators::QuotientGenerator;
+using namespace principia::base::_not_constructible;
+using namespace principia::base::_not_null;
+using namespace principia::base::_tags;
 
 template<typename D>
 class Quantity;

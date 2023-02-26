@@ -14,3 +14,7 @@ extern char const Version[];
 
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_version;
+}  // namespace principia::base

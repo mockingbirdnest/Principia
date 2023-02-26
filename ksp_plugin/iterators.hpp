@@ -10,8 +10,8 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_iterators {
 
-using base::not_null;
 using physics::DiscreteTrajectory;
+using namespace principia::base::_not_null;
 
 // A wrapper for a container and an iterator into that container.
 class Iterator {

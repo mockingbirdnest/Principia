@@ -9,7 +9,7 @@ namespace principia {
 namespace numerics {
 namespace internal_fma {
 
-using base::CPUFeatureFlags;
+using namespace principia::base::_cpuid;
 
 // With clang, using FMA requires VEX-encoding everything; see #3019.
 #if PRINCIPIA_COMPILER_MSVC

@@ -64,15 +64,6 @@ using astronomy::KSPStabilizedSystemFingerprints;
 using astronomy::KSPStockSystemFingerprints;
 using astronomy::ParseTT;
 using astronomy::StabilizeKSP;
-using base::check_not_null;
-using base::dynamic_cast_not_null;
-using base::FindOrDie;
-using base::Fingerprint2011;
-using base::HexadecimalEncoder;
-using base::make_not_null_unique;
-using base::not_null;
-using base::OFStream;
-using base::SerializeAsBytes;
 using geometry::AffineMap;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
@@ -109,6 +100,12 @@ using quantities::MomentOfInertia;
 using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
+using namespace principia::base::_file;
+using namespace principia::base::_fingerprint2011;
+using namespace principia::base::_hexadecimal;
+using namespace principia::base::_map_util;
+using namespace principia::base::_not_null;
+using namespace principia::base::_serialization;
 using ::operator<<;
 
 Plugin::Plugin(std::string const& game_epoch,

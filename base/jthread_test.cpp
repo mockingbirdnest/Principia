@@ -7,6 +7,8 @@
 namespace principia {
 namespace base {
 
+using namespace principia::base::_jthread;
+
 TEST(JThreadTest, StopOnDestruction) {
   auto f = [](stop_token st, int value, bool* const observed_stop) {
     while (!st.stop_requested()) {

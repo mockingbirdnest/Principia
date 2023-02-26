@@ -9,7 +9,8 @@
 
 namespace principia {
 namespace base {
-namespace internal_zfp_compressor {
+namespace _zfp_compressor {
+namespace internal {
 
 // ZFP headers limit the dimensions to 2^(48 / N).  For N = 4, this is way too
 // small for our purposes.  Therefore, we must not include the bit
@@ -61,6 +62,7 @@ void ZfpCompressor::ReadFromMessage(zfp_field* const field,
   message.remove_prefix(compressed_size);
 }
 
-}  // namespace internal_zfp_compressor
+}  // namespace internal
+}  // namespace _zfp_compressor
 }  // namespace base
 }  // namespace principia

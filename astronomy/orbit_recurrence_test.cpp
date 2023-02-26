@@ -10,7 +10,6 @@
 namespace principia {
 namespace astronomy {
 
-using base::not_null;
 using physics::RotatingBody;
 using physics::SolarSystem;
 using quantities::AngularFrequency;
@@ -22,6 +21,7 @@ using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::Property;
+using namespace principia::base::_not_null;
 
 class OrbitRecurrenceTest : public ::testing::Test {
  protected:

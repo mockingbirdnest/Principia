@@ -19,11 +19,11 @@
 namespace principia {
 namespace mathematica {
 
-using base::Contains;
-using base::make_not_null_unique;
 using quantities::ParseQuantity;
 using integrators::ParseFixedStepSizeIntegrator;
 using ksp_plugin::Barycentric;
+using namespace principia::base::_map_util;
+using namespace principia::base::_not_null;
 
 class ErrorAnalysisTest : public ::testing::Test {
  protected:

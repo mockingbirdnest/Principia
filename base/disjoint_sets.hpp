@@ -7,6 +7,8 @@
 
 namespace principia {
 namespace base {
+namespace _disjoint_sets {
+namespace internal {
 
 // For the purposes of this class, |T| represents the set of its values, and
 // a single globally unique partition is being built.  If |MakeSingleton| is
@@ -76,7 +78,16 @@ class Subset final {
   not_null<Node*> const node_;
 };
 
+}  // namespace internal
+
+using internal::Subset;
+
+}  // namespace _disjoint_sets
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_disjoint_sets;
+}  // namespace principia::base
 
 #include "base/disjoint_sets_body.hpp"

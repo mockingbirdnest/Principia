@@ -12,7 +12,7 @@ namespace principia {
 namespace geometry {
 namespace internal_frame {
 
-using base::Fingerprint2011;
+using namespace principia::base::_fingerprint2011;
 
 // Utility for fingerprinting.
 inline uint32_t Fingerprint(std::string const& s) {

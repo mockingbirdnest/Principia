@@ -8,7 +8,8 @@
 
 namespace principia {
 namespace base {
-namespace internal_pull_serializer {
+namespace _pull_serializer {
+namespace internal {
 
 using std::placeholders::_1;
 using std::swap;
@@ -185,6 +186,7 @@ inline Array<std::uint8_t> PullSerializer::Push(Array<std::uint8_t> bytes) {
   return result;
 }
 
-}  // namespace internal_pull_serializer
+}  // namespace internal
+}  // namespace _pull_serializer
 }  // namespace base
 }  // namespace principia

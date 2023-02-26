@@ -20,13 +20,13 @@ FORWARD_DECLARE_FROM(rotation,
 
 namespace internal_grassmann {
 
-using base::not_null;
 using quantities::Angle;
 using quantities::is_quantity_v;
 using quantities::Product;
 using quantities::Quantity;
 using quantities::Quotient;
 using quantities::Square;
+using namespace principia::base::_not_null;
 
 // A multivector of rank |rank| on a three-dimensional real inner product
 // space bearing the dimensionality of |Scalar|, i.e., an element of

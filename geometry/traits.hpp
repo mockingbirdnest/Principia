@@ -9,8 +9,8 @@ namespace principia {
 namespace geometry {
 namespace internal_traits {
 
-using base::not_constructible;
 using quantities::Difference;
+using namespace principia::base::_not_constructible;
 
 // A type trait for testing if a type is a member of a vector space (as opposed
 // to an affine space).

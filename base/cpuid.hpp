@@ -5,7 +5,8 @@
 
 namespace principia {
 namespace base {
-namespace internal_cpuid {
+namespace _cpuid {
+namespace internal {
 
 // See the Intel® 64 and IA-32 Architectures Software Developer’s Manual,
 // Volume 2A, CPUID—CPU Identification.
@@ -37,11 +38,16 @@ CPUFeatureFlags operator|(CPUFeatureFlags left, CPUFeatureFlags right);
 // Whether the CPU has all features listed in |flags|.
 bool HasCPUFeatures(CPUFeatureFlags flags);
 
-}  // namespace internal_cpuid
+}  // namespace internal
 
-using internal_cpuid::CPUFeatureFlags;
-using internal_cpuid::CPUVendorIdentificationString;
-using internal_cpuid::HasCPUFeatures;
+using internal::CPUFeatureFlags;
+using internal::CPUVendorIdentificationString;
+using internal::HasCPUFeatures;
 
+}  // namespace _cpuid
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_cpuid;
+}  // namespace principia::base

@@ -8,6 +8,7 @@ namespace base {
 
 using ::testing::Eq;
 using ::testing::Test;
+using namespace principia::base::_cpuid;
 
 class CPUIDTest : public Test {};
 

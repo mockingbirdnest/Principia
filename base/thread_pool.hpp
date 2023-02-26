@@ -11,6 +11,8 @@
 
 namespace principia {
 namespace base {
+namespace _thread_pool {
+namespace internal {
 
 // A pool of threads that are created at construction and to which functions can
 // be added for asynchronous execution.  This class is thread-safe.
@@ -46,7 +48,16 @@ class ThreadPool final {
   std::list<std::thread> threads_;
 };
 
+}  // namespace internal
+
+using internal::ThreadPool;
+
+}  // namespace _thread_pool
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_thread_pool;
+}  // namespace principia::base
 
 #include "base/thread_pool_body.hpp"

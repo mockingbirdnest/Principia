@@ -33,7 +33,6 @@
 
 namespace principia {
 
-using base::not_null;
 using geometry::AngularVelocity;
 using geometry::Displacement;
 using geometry::Exp;
@@ -56,6 +55,7 @@ using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
+using namespace principia::base::_not_null;
 namespace si = quantities::si;
 
 namespace physics {

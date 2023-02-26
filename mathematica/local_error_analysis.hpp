@@ -11,7 +11,6 @@ namespace principia {
 namespace mathematica {
 namespace internal_local_error_analysis {
 
-using base::not_null;
 using geometry::Instant;
 using integrators::FixedStepSizeIntegrator;
 using physics::Ephemeris;
@@ -20,6 +19,7 @@ using quantities::Length;
 using quantities::Time;
 using quantities::si::Metre;
 using quantities::si::Milli;
+using namespace principia::base::_not_null;
 
 // A utility to compute the local errors in the numerical integration of a
 // |solar_system| with a given |integrator| and |step|.

@@ -16,11 +16,11 @@ namespace principia {
 namespace geometry {
 namespace internal_rotation {
 
-using base::is_same_template_v;
-using base::not_null;
 using quantities::ArcTan;
 using quantities::Cos;
 using quantities::Sin;
+using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 
 // Well-conditioned conversion of a rotation matrix to a quaternion.  See
 // http://en.wikipedia.org/wiki/Rotation_matrix#Quaternion and

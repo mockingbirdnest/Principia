@@ -7,6 +7,8 @@
 
 namespace principia {
 namespace base {
+namespace _flags {
+namespace internal {
 
 // Example of usage: create a file zfp.cfg containing:
 //   principia_flags {
@@ -34,5 +36,14 @@ class Flags {
   static std::multimap<std::string, std::string>& flags();
 };
 
+}  // namespace internal
+
+using internal::Flags;
+
+}  // namespace _flags
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_flags;
+}  // namespace principia::base

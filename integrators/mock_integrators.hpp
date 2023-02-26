@@ -8,7 +8,7 @@ namespace principia {
 namespace integrators {
 namespace internal_integrators {
 
-using base::make_not_null_unique;
+using namespace principia::base::_not_null;
 
 template<typename DifferentialEquation>
 class MockFixedStepSizeIntegrator

@@ -15,11 +15,11 @@ namespace principia {
 namespace astronomy {
 namespace internal_standard_product_3 {
 
-using base::not_null;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Velocity;
 using physics::DiscreteTrajectory;
+using namespace principia::base::_not_null;
 
 // A representation of data in the extended standard product 3 orbit format.
 // Specification:

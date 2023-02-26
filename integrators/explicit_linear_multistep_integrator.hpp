@@ -23,10 +23,10 @@ namespace principia {
 namespace integrators {
 namespace internal_explicit_linear_multistep_integrator {
 
-using base::is_instance_of_v;
-using base::not_null;
 using numerics::DoublePrecision;
 using numerics::FixedVector;
+using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 
 // This implementation follows [HW10], but restricts itself to explicit
 // integrators.

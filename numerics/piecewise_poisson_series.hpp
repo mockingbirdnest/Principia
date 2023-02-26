@@ -44,7 +44,6 @@ FORWARD_DECLARE_FUNCTION_FROM(
 namespace numerics {
 namespace internal_piecewise_poisson_series {
 
-using base::not_null;
 using geometry::Complexification;
 using geometry::Hilbert;
 using geometry::Instant;
@@ -54,6 +53,7 @@ using quantities::Primitive;
 using quantities::Product;
 using quantities::Quotient;
 using quantities::Time;
+using namespace principia::base::_not_null;
 
 // The trigonometric functions are by default assumed to look like a polynomial
 // of this degree over an interval of a piecewise series.

@@ -29,12 +29,12 @@ FORWARD_DECLARE_FROM(discrete_trajectory_segment,
 
 namespace internal_discrete_trajectory {
 
-using base::not_null;
-using base::uninitialized_t;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Velocity;
 using physics::DegreesOfFreedom;
+using namespace principia::base::_not_null;
+using namespace principia::base::_tags;
 
 template<typename Frame>
 class DiscreteTrajectory : public Trajectory<Frame> {

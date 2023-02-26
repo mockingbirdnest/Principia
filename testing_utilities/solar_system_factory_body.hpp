@@ -13,7 +13,7 @@ namespace principia {
 namespace testing_utilities {
 namespace internal_solar_system_factory {
 
-using base::Contains;
+using namespace principia::base::_map_util;
 
 template<typename Frame>
 void SolarSystemFactory::AdjustAccuracy(

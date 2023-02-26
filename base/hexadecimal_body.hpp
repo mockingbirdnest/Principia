@@ -9,7 +9,8 @@
 
 namespace principia {
 namespace base {
-namespace internal_hexadecimal {
+namespace _hexadecimal {
+namespace internal {
 
 constexpr char byte_to_hexadecimal_digits[] =
     "000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F2021222324"
@@ -125,6 +126,7 @@ std::int64_t HexadecimalEncoder<null_terminated>::DecodedLength(
   return input.size >> 1;
 }
 
-}  // namespace internal_hexadecimal
+}  // namespace internal
+}  // namespace _hexadecimal
 }  // namespace base
 }  // namespace principia

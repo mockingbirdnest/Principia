@@ -4,6 +4,8 @@
 
 namespace principia {
 namespace base {
+namespace _mappable {
+namespace internal {
 
 // This struct helps in declaring that a type is "mappable", i.e., that the maps
 // declared in principia::geometry can be act on it through the operator().  To
@@ -22,5 +24,14 @@ struct Mappable : not_constructible {
   // static type Do(Functor const& functor, T const& t);
 };
 
+}  // namespace internal
+
+using internal::Mappable;
+
+}  // namespace _mappable
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_mappable;
+}  // namespace principia::base

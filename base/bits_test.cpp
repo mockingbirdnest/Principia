@@ -5,6 +5,8 @@
 namespace principia {
 namespace base {
 
+using namespace principia::base::_bits;
+
 TEST(BitsTest, FloorLog2) {
   EXPECT_EQ(0, FloorLog2(0));
   EXPECT_EQ(0, FloorLog2(1));

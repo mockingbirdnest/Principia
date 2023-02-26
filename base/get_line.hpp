@@ -7,16 +7,22 @@
 
 namespace principia {
 namespace base {
-namespace internal_get_line {
+namespace _get_line {
+namespace internal {
 
 // Recursively reads a line of arbitrary length.
 std::string GetLine(std::ifstream& stream);
 
-}  // namespace internal_get_line
+}  // namespace internal
 
-using internal_get_line::GetLine;
+using internal::GetLine;
 
+}  // namespace _get_line
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_get_line;
+}  // namespace principia::base
 
 #include "base/get_line_body.hpp"

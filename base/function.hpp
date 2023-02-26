@@ -4,7 +4,8 @@
 
 namespace principia {
 namespace base {
-namespace internal_function {
+namespace _function {
+namespace internal {
 
 template<typename Result, typename... Args>
 class Functor {
@@ -42,11 +43,16 @@ class function<Result(Args...)> {
   std::unique_ptr<Functor<Result, Args...>> functor_;
 };
 
-}  // namespace internal_function
+}  // namespace internal
 
-using internal_function::function;
+using internal::function;
 
+}  // namespace _function
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_function;
+}  // namespace principia::base
 
 #include "base/function_body.hpp"

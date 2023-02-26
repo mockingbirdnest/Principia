@@ -32,9 +32,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using base::not_null;
-using base::make_not_null_unique;
-using base::ParseFromBytes;
 using geometry::AngularVelocity;
 using geometry::Arbitrary;
 using geometry::Bivector;
@@ -85,6 +82,8 @@ using ::testing::Le;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::SizeIs;
+using namespace principia::base::_not_null;
+using namespace principia::base::_serialization;
 
 class PlanetariumTest : public ::testing::Test {
   using LeftNavigation =

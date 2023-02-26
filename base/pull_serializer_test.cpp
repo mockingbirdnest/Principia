@@ -12,7 +12,6 @@
 
 namespace principia {
 namespace base {
-namespace internal_pull_serializer {
 
 using google::compression::Compressor;
 using serialization::DiscreteTrajectory;
@@ -22,6 +21,7 @@ using serialization::Quantity;
 using ::std::placeholders::_1;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
+using namespace principia::base::_pull_serializer;
 
 namespace {
   int const chunk_size = 99;
@@ -215,6 +215,5 @@ TEST_F(PullSerializerTest, SerializationThreading) {
   }
 }
 
-}  // namespace internal_pull_serializer
 }  // namespace base
 }  // namespace principia

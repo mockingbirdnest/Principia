@@ -15,6 +15,8 @@ using testing::Eq;
 namespace principia {
 namespace base {
 
+using namespace principia::base::_not_null;
+
 class NotNullTest : public testing::Test {
  protected:
   // A very convoluted wrapper for the x86 add...

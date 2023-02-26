@@ -35,9 +35,6 @@
 namespace principia {
 namespace interface {
 
-using base::check_not_null;
-using base::make_not_null_unique;
-using base::not_null;
 using geometry::AngularVelocity;
 using geometry::Identity;
 using geometry::OrthogonalMap;
@@ -89,6 +86,7 @@ using ::testing::ReturnRef;
 using ::testing::SetArgReferee;
 using ::testing::StrictMock;
 using ::testing::_;
+using namespace principia::base::_not_null;
 
 namespace {
 

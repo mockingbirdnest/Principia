@@ -18,7 +18,6 @@ namespace physics {
 namespace internal_solar_system {
 
 using astronomy::ICRS;
-using base::Fingerprint2011;
 using geometry::Inertial;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
@@ -32,6 +31,7 @@ using quantities::si::Yotta;
 using quantities::si::Zetta;
 using testing_utilities::RelativeError;
 using ::testing::ElementsAreArray;
+using namespace principia::base::_fingerprint2011;
 
 class SolarSystemTest : public ::testing::Test {};
 

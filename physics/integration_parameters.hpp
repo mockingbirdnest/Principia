@@ -12,12 +12,12 @@ namespace principia {
 namespace physics {
 namespace internal_integration_parameters {
 
-using base::not_null;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::FixedStepSizeIntegrator;
 using quantities::Length;
 using quantities::Speed;
 using quantities::Time;
+using namespace principia::base::_not_null;
 
 template<typename ODE>
 class AdaptiveStepParameters final {

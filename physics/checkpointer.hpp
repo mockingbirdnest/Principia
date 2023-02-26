@@ -15,9 +15,9 @@ namespace principia {
 namespace physics {
 namespace internal_checkpointer {
 
-using base::not_null;
 using geometry::Instant;
 using quantities::Time;
+using namespace principia::base::_not_null;
 
 // The checkpointer helps with compact serialization of timelines, i.e., classes
 // that associate some data with distinct instants.  The naïve implementation of

@@ -11,7 +11,7 @@ namespace principia {
 namespace numerics {
 namespace internal_fit_hermite_spline {
 
-using base::Range;
+using namespace principia::base::_ranges;
 
 template<typename Argument, typename Value, typename Samples>
 absl::StatusOr<std::list<typename Samples::const_iterator>> FitHermiteSpline(

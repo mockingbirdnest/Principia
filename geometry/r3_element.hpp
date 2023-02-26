@@ -16,14 +16,14 @@ namespace principia {
 namespace geometry {
 namespace internal_r3_element {
 
-using base::not_null;
-using base::uninitialized_t;
 using quantities::Angle;
 using quantities::is_quantity_v;
 using quantities::Product;
 using quantities::Quantity;
 using quantities::Quotient;
 using quantities::Square;
+using namespace principia::base::_not_null;
+using namespace principia::base::_tags;
 
 template<typename Scalar>
 struct SphericalCoordinates;

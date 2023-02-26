@@ -6,7 +6,8 @@
 
 namespace principia {
 namespace base {
-namespace internal_recurring_thread {
+namespace _recurring_thread {
+namespace internal {
 
 inline void BaseRecurringThread::Start() {
   absl::MutexLock l(&jthread_lock_);
@@ -120,6 +121,7 @@ absl::Status RecurringThread<Input, void>::RunAction() {
   return action_(input.value());
 }
 
-}  // namespace internal_recurring_thread
+}  // namespace internal
+}  // namespace _recurring_thread
 }  // namespace base
 }  // namespace principia

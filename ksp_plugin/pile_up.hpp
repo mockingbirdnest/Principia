@@ -34,7 +34,6 @@ FORWARD_DECLARE_FROM(part, class, Part);
 
 namespace internal_pile_up {
 
-using base::not_null;
 using geometry::Arbitrary;
 using geometry::Bivector;
 using geometry::Frame;
@@ -59,6 +58,7 @@ using quantities::Force;
 using quantities::Mass;
 using quantities::Time;
 using quantities::Torque;
+using namespace principia::base::_not_null;
 
 // The axes are those of Barycentric. The origin is the centre of mass of the
 // pile up.  This frame is distinguished from NonRotatingPileUp in that it is

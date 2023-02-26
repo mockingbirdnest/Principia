@@ -9,7 +9,6 @@
 namespace principia {
 namespace physics {
 
-using base::not_null;
 using geometry::InfiniteFuture;
 using geometry::InfinitePast;
 using geometry::Instant;
@@ -23,6 +22,7 @@ using ::testing::MockFunction;
 using ::testing::Ref;
 using ::testing::Return;
 using ::testing::_;
+using namespace principia::base::_not_null;
 
 ACTION_P(SetPayload, payload) {
   arg0->payload = payload;

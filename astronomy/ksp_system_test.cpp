@@ -24,7 +24,6 @@
 
 namespace principia {
 
-using base::not_null;
 using geometry::BarycentreCalculator;
 using geometry::Displacement;
 using geometry::Frame;
@@ -65,6 +64,7 @@ using quantities::si::Second;
 using ::testing::Lt;
 using ::testing::Matcher;
 using ::testing::_;
+using namespace principia::base::_not_null;
 
 namespace astronomy {
 

@@ -23,9 +23,6 @@ namespace principia {
 namespace numerics {
 namespace internal_polynomial {
 
-using base::is_instance_of_v;
-using base::make_not_null_unique;
-using base::not_constructible;
 using geometry::DoubleOrQuantityOrPointOrMultivectorSerializer;
 using geometry::cartesian_product::operator+;
 using geometry::cartesian_product::operator-;
@@ -39,6 +36,9 @@ using quantities::Difference;
 using quantities::Exponentiation;
 using quantities::Pow;
 using quantities::Time;
+using namespace principia::base::_not_constructible;
+using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 
 // A helper for changing the origin of a monomial (x - x₁)ⁿ.  It computes the
 // coefficients of the same monomial as a polynomial of (x - x₂), i.e.:

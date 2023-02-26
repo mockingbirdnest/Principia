@@ -26,3 +26,7 @@ namespace base {
 
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_optional_serialization;
+}  // namespace principia::base

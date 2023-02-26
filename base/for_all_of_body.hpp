@@ -6,7 +6,8 @@
 namespace principia {
 namespace base {
 
-namespace internal_for_all_of {
+namespace _for_all_of {
+namespace internal {
 template<typename... Tuple>
 constexpr Iteration<Tuple...>::Iteration(Tuple&&... tuple)
     : all_the_tuples_(std::forward_as_tuple(tuple...)) {}
@@ -21,7 +22,7 @@ constexpr void Iteration<Tuple...>::loop(F const& f) {
   }
 }
 
-}  // namespace internal_for_all_of
+}  // namespace internal
 
 template<typename... Tuple>
 constexpr internal_for_all_of::Iteration<Tuple...> for_all_of(
@@ -30,5 +31,6 @@ constexpr internal_for_all_of::Iteration<Tuple...> for_all_of(
       std::forward<Tuple>(tuple)...);
 }
 
+}  // namespace _for_all_of
 }  // namespace base
 }  // namespace principia

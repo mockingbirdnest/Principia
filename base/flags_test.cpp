@@ -8,6 +8,7 @@ namespace base {
 
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
+using namespace principia::base::_flags;
 
 TEST(FlagsTest, Basics) {
   Flags::Set("zfp", "yes");

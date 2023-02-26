@@ -17,12 +17,12 @@
 namespace principia {
 
 using astronomy::ICRS;
-using base::not_null;
 using geometry::Displacement;
 using geometry::Instant;
 using quantities::Variation;
 using quantities::si::Metre;
 using quantities::si::Second;
+using namespace principia::base::_not_null;
 
 namespace numerics {
 

@@ -38,9 +38,6 @@
 namespace principia {
 
 using astronomy::ICRS;
-using base::make_not_null_unique;
-using base::not_null;
-using base::ThreadPool;
 using geometry::Bivector;
 using geometry::DefinesFrame;
 using geometry::Displacement;
@@ -81,6 +78,8 @@ using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::SolarSystemFactory;
+using namespace principia::base::_not_null;
+using namespace principia::base::_thread_pool;
 
 namespace physics {
 

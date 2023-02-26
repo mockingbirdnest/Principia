@@ -5,6 +5,8 @@
 
 namespace principia {
 namespace base {
+namespace _serialization {
+namespace internal {
 
 UniqueArray<std::uint8_t> SerializeAsBytes(
     google::protobuf::MessageLite const& message) {
@@ -20,5 +22,7 @@ Message ParseFromBytes(Array<std::uint8_t const> bytes) {
   return message;
 }
 
+}  // namespace internal
+}  // namespace _serialization
 }  // namespace base
 }  // namespace principia

@@ -12,7 +12,8 @@
 
 namespace principia {
 namespace base {
-namespace internal_recurring_thread {
+namespace _recurring_thread {
+namespace internal {
 
 // A stoppable thread that supports cyclical execution of an action.  It is
 // connected to two monodirectional channels that can (optionally) hold a value
@@ -108,11 +109,16 @@ class RecurringThread<Input, void> : public BaseRecurringThread {
   std::optional<Input> input_ GUARDED_BY(input_lock_);
 };
 
-}  // namespace internal_recurring_thread
+}  // namespace internal
 
-using internal_recurring_thread::RecurringThread;
+using internal::RecurringThread;
 
+}  // namespace _recurring_thread
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_recurring_thread;
+}  // namespace principia::base
 
 #include "base/recurring_thread_body.hpp"

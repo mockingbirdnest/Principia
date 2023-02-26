@@ -40,10 +40,6 @@
 
 namespace principia {
 
-using base::Bundle;
-using base::Graveyard;
-using base::not_null;
-using base::OFStream;
 using geometry::Displacement;
 using geometry::InnerProduct;
 using geometry::Instant;
@@ -89,6 +85,10 @@ using quantities::si::Second;
 using ::testing::AllOf;
 using ::testing::Gt;
 using ::testing::Lt;
+using namespace principia::base::_bundle;
+using namespace principia::base::_file;
+using namespace principia::base::_graveyard;
+using namespace principia::base::_not_null;
 
 using namespace std::chrono_literals;
 

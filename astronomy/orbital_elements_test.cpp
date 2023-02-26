@@ -24,8 +24,6 @@ namespace principia {
 namespace astronomy {
 
 using astronomy::J2000;
-using base::make_not_null_unique;
-using base::not_null;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Velocity;
@@ -69,6 +67,7 @@ using testing_utilities::IsOk;
 using testing_utilities::RelativeError;
 using testing_utilities::operator""_;
 using ::testing::Lt;
+using namespace principia::base::_not_null;
 
 class OrbitalElementsTest : public ::testing::Test {
  protected:

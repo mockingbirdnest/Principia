@@ -27,7 +27,6 @@ namespace internal_plugin {
 
 using astronomy::ICRS;
 using astronomy::ParseTT;
-using base::make_not_null_unique;
 using geometry::AffineMap;
 using geometry::Bivector;
 using geometry::Identity;
@@ -70,6 +69,7 @@ using ::testing::Gt;
 using ::testing::Le;
 using ::testing::Lt;
 using ::testing::SizeIs;
+using namespace principia::base::_not_null;
 
 namespace {
 

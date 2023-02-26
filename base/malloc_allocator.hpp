@@ -5,6 +5,8 @@
 
 namespace principia {
 namespace base {
+namespace _malloc_allocator {
+namespace internal {
 
 // An allocator (for use with containers such as `std::vector`) that uses malloc
 // and free for memory management instead of global new and delete. The purpose
@@ -50,5 +52,16 @@ constexpr bool operator!=(const MallocAllocator<T1>&,
   return false;
 }
 
+}  // namespace internal
+
+using internal::MallocAllocator;
+using internal::operator!=;
+using internal::operator==;
+
+}  // namespace _malloc_allocator
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_malloc_allocator;
+}  // namespace principia::base

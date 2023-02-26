@@ -15,8 +15,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_celestial {
 
-using base::not_null;
-using base::make_not_null_unique;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Velocity;
@@ -25,6 +23,7 @@ using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
 using physics::RotatingBody;
 using quantities::GravitationalParameter;
+using namespace principia::base::_not_null;
 
 // Represents a KSP |CelestialBody|.
 class Celestial {

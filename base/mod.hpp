@@ -2,6 +2,8 @@
 
 namespace principia {
 namespace base {
+namespace _mod {
+namespace internal {
 
 // The result of |mod| has the same sign as |divisor| (same convention as Ada,
 // ISO Prolog, Haskell, etc.), whereas the result of |dividend % divisor| has
@@ -17,5 +19,14 @@ constexpr int mod(int const dividend, int const divisor, int const offset) {
   return mod(dividend - offset, divisor) + offset;
 }
 
+}  // namespace internal
+
+using internal::mod;
+
+}  // namespace _mod
 }  // namespace base
 }  // namespace principia
+
+namespace principia::base {
+using namespace principia::base::_mod;
+}  // namespace principia::base

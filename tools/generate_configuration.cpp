@@ -24,8 +24,6 @@ namespace principia {
 
 using astronomy::ICRS;
 using astronomy::J2000;
-using base::Fingerprint2011;
-using base::SerializeAsBytes;
 using physics::DegreesOfFreedom;
 using physics::SolarSystem;
 using quantities::DebugString;
@@ -38,6 +36,8 @@ using quantities::constants::GravitationalConstant;
 using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Second;
+using namespace principia::base::_fingerprint2011;
+using namespace principia::base::_serialization;
 
 namespace tools {
 

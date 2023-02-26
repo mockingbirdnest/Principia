@@ -8,7 +8,7 @@ namespace principia {
 namespace geometry {
 namespace internal_linear_map {
 
-using base::not_null;
+using namespace principia::base::_not_null;
 
 template<typename FromFrame, typename ToFrame>
 class LinearMap {

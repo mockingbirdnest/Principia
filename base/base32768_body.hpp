@@ -22,7 +22,8 @@
 
 namespace principia {
 namespace base {
-namespace internal_base32768 {
+namespace _base32768 {
+namespace internal {
 
 // A repertoire is used to encode or decode integers into Basic Multilingual
 // Plane code points.
@@ -352,7 +353,8 @@ std::int64_t Base32768Encoder<null_terminated>::DecodedLength(
   return encoded_bits / bits_per_byte;
 }
 
-}  // namespace internal_base32768
+}  // namespace internal
+}  // namespace _base32768
 }  // namespace base
 }  // namespace principia
 

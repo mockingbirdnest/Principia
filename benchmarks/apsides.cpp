@@ -28,8 +28,6 @@ using astronomy::GCRS;
 using astronomy::ICRS;
 using astronomy::ITRS;
 using astronomy::StandardProduct3;
-using base::dynamic_cast_not_null;
-using base::not_null;
 using geometry::InfiniteFuture;
 using geometry::Position;
 using geometry::Vector;
@@ -42,6 +40,7 @@ using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Second;
+using namespace principia::base::_not_null;
 
 namespace physics {
 

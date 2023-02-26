@@ -14,11 +14,11 @@ namespace principia {
 namespace numerics {
 namespace internal_newhall {
 
-using base::make_not_null_unique;
 using geometry::Barycentre;
 using quantities::Exponentiation;
 using quantities::Frequency;
 using quantities::Time;
+using namespace principia::base::_not_null;
 
 // Only supports 8 divisions for now.
 constexpr int divisions = 8;

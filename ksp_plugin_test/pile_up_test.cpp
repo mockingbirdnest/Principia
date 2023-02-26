@@ -32,8 +32,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_pile_up {
 
-using base::check_not_null;
-using base::make_not_null_unique;
 using geometry::AngularVelocity;
 using geometry::Displacement;
 using geometry::NonRotating;
@@ -78,6 +76,7 @@ using ::testing::MockFunction;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::_;
+using namespace principia::base::_not_null;
 namespace si = quantities::si;
 
 // A helper class to expose the internal state of a pile-up for testing.

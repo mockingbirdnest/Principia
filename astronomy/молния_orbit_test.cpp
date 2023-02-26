@@ -31,7 +31,6 @@ namespace principia {
 
 using astronomy::ICRS;
 using astronomy::J2000;
-using base::dynamic_cast_not_null;
 using geometry::Instant;
 using geometry::Position;
 using integrators::SymmetricLinearMultistepIntegrator;
@@ -64,6 +63,7 @@ using testing_utilities::IsNear;
 using testing_utilities::PearsonProductMomentCorrelationCoefficient;
 using testing_utilities::RelativeError;
 using testing_utilities::Slope;
+using namespace principia::base::_not_null;
 using testing_utilities::operator""_;
 
 namespace astronomy {

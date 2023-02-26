@@ -10,7 +10,7 @@ namespace principia {
 namespace quantities {
 namespace internal_tuples {
 
-using base::not_constructible;
+using namespace principia::base::_not_constructible;
 
 // A trait for finding if something is a tuple.
 // TODO(phl): We might want to use this for pair and array too.

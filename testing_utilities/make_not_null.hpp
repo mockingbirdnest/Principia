@@ -6,7 +6,7 @@ namespace principia {
 namespace testing_utilities {
 namespace internal_make_not_null {
 
-using base::not_null;
+using namespace principia::base::_not_null;
 
 // Returns a bogus not-null value of the right type.  Dereferencing it is UB.
 template<typename T>
