@@ -9,7 +9,7 @@
 
 namespace principia {
 namespace base {
-namespace zfp_compressor_internal {
+namespace internal_zfp_compressor {
 
 using base::not_null;
 
@@ -58,9 +58,9 @@ class ZfpCompressor {
   std::optional<double> const accuracy_;
 };
 
-}  // namespace zfp_compressor_internal
+}  // namespace internal_zfp_compressor
 
-using zfp_compressor_internal::ZfpCompressor;
+using internal_zfp_compressor::ZfpCompressor;
 
 }  // namespace base
 }  // namespace principia
