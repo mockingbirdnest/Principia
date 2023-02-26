@@ -912,53 +912,38 @@ class Renamespacer {
       throw new NullReferenceException();
     }
 
+    // Parse all the files in our project.
     FileInfo[] hpp_files = project.GetFiles("*.hpp");
+    FileInfo[] cpp_files = project.GetFiles("*.cpp");
+    FileInfo[] body_hpp_files = project.GetFiles("*_body.hpp");
+    FileInfo[] all_body_files = cpp_files.Union(body_hpp_files).ToArray();
+    FileInfo[] all_files = all_body_files.Union(hpp_files).ToArray();
+    var file_info_to_file = new Dictionary<FileInfo, Parser.File>();
+    foreach (FileInfo input_file in all_files) {
+      if (excluded.Contains(input_file.Name)) {
+        continue;
+      }
+      Parser.File parser_file = Parser.ParseFile(input_file);
+      file_info_to_file.Add(input_file, parser_file);
+    }
+
+    // First collect all the declarations.  We'll them to rewrite the clients.
+    // This must happen before we restructure any namespace, as the namespace
+    // names will change and would confuse our super-fancy name resolution.
     var declaration_to_file = new Dictionary<Parser.Declaration, Parser.File>();
     foreach (FileInfo input_file in hpp_files) {
       if (excluded.Contains(input_file.Name) || IsBody(input_file)) {
         continue;
       }
       Parser.File parser_file = Parser.ParseFile(input_file);
-      // The declarations must be collected before any changes, because the
-      // names that we'll find reference the old state.
       var exported_declarations =
           Parser.CollectExportedDeclarations(parser_file);
-      Parser.FixUsingDeclarations(parser_file,
-                                  internal_only: true,
-                                  declaration_to_file);
-      Parser.FixLegacyInternalNamespaces(parser_file);
-      Parser.FixMissingInternalNamespaces(parser_file,
-                                          insert_using_declarations: true);
       foreach (var exported_declaration in exported_declarations) {
         declaration_to_file.Add(exported_declaration, parser_file);
       }
-      Parser.FixCompatibilityNamespace(parser_file);
-      RewriteFile(input_file, parser_file, dry_run);
     }
 
-    FileInfo[] cpp_files = project.GetFiles("*.cpp");
-    FileInfo[] body_hpp_files = project.GetFiles("*_body.hpp");
-    FileInfo[] all_body_files = cpp_files.Union(body_hpp_files).ToArray();
-    foreach (FileInfo input_file in all_body_files) {
-      if (excluded.Contains(input_file.Name)) {
-        continue;
-      }
-      Parser.File parser_file = Parser.ParseFile(input_file);
-      Parser.FixUsingDeclarations(parser_file,
-                                  internal_only: false,
-                                  declaration_to_file);
-      if (IsTest(input_file)) {
-        Parser.FixUselessInternalNamespace(parser_file);
-        Parser.FixFileUsingDirective(parser_file);
-      } else {
-        Parser.FixLegacyInternalNamespaces(parser_file);
-        Parser.FixMissingInternalNamespaces(parser_file,
-                                            insert_using_declarations: false);
-      }
-      RewriteFile(input_file, parser_file, dry_run);
-    }
-
-    // Process the files in client projects.
+    // Process the files in client projects to fix the using declarations.
     foreach (DirectoryInfo client in clients) {
       FileInfo[] client_hpp_files = client.GetFiles("*.hpp");
       FileInfo[] client_cpp_files = client.GetFiles("*.cpp");
@@ -968,12 +953,54 @@ class Renamespacer {
         if (excluded.Contains(input_file.Name)) {
           continue;
         }
+        // This file is not in our project, so we didn't parse it yet.
         Parser.File parser_file = Parser.ParseFile(input_file);
         Parser.FixUsingDeclarations(parser_file,
                                     internal_only: !IsBody(input_file),
                                     declaration_to_file);
         RewriteFile(input_file, parser_file, dry_run);
       }
+    }
+
+    // Fix the using declarations in our project.
+    foreach (FileInfo input_file in all_files) {
+      if (excluded.Contains(input_file.Name) || IsBody(input_file)) {
+        continue;
+      }
+      Parser.File parser_file = file_info_to_file[input_file];
+      Parser.FixUsingDeclarations(parser_file,
+                                  internal_only: true,
+                                  declaration_to_file);
+    }
+
+    // Rewrite the namespaces in our project's header files.
+    foreach (FileInfo input_file in hpp_files) {
+      if (excluded.Contains(input_file.Name) || IsBody(input_file)) {
+        continue;
+      }
+      Parser.File parser_file = file_info_to_file[input_file];
+      Parser.FixLegacyInternalNamespaces(parser_file);
+      Parser.FixMissingInternalNamespaces(parser_file,
+                                          insert_using_declarations: true);
+      Parser.FixCompatibilityNamespace(parser_file);
+      RewriteFile(input_file, parser_file, dry_run);
+    }
+
+    // Fix the body files in our project.
+    foreach (FileInfo input_file in all_body_files) {
+      if (excluded.Contains(input_file.Name)) {
+        continue;
+      }
+      Parser.File parser_file = file_info_to_file[input_file];
+      if (IsTest(input_file)) {
+        Parser.FixUselessInternalNamespace(parser_file);
+        Parser.FixFileUsingDirective(parser_file);
+      } else {
+        Parser.FixLegacyInternalNamespaces(parser_file);
+        Parser.FixMissingInternalNamespaces(parser_file,
+                                            insert_using_declarations: false);
+      }
+      RewriteFile(input_file, parser_file, dry_run);
     }
   }
 }
