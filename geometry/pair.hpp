@@ -24,6 +24,7 @@ using quantities::Product;
 using quantities::Quotient;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 
 template<typename T1, typename T2>
 class Pair;
@@ -94,8 +95,8 @@ class Pair {
   void WriteToMessage(not_null<serialization::Pair*> message) const;
   template<typename U1 = T1,
            typename U2 = T2,
-           typename = std::enable_if_t<base::is_serializable_v<U1> &&
-                                       base::is_serializable_v<U2>>>
+           typename = std::enable_if_t<is_serializable_v<U1> &&
+                                       is_serializable_v<U2>>>
   static Pair ReadFromMessage(serialization::Pair const& message);
 
  protected:
@@ -115,7 +116,7 @@ class Pair {
 
   // This is needed to make Pair mappable.
   template<typename Functor, typename T, typename>
-  friend struct base::Mappable;
+  friend struct base::_mappable::internal::Mappable;
 
   // This is needed for testing.
   template<typename PairType>
@@ -240,6 +241,8 @@ class BarycentreCalculator<Pair<T1, T2>, Weight> final {
 
 // Reopen the base namespace to make Pairs of vectors mappable.
 namespace base {
+namespace _mappable {
+namespace internal {
 
 template<typename Functor, typename T1, typename T2>
 class Mappable<Functor,
@@ -254,6 +257,8 @@ class Mappable<Functor,
                  geometry::Pair<T1, T2> const& pair);
 };
 
+}  // namespace internal
+}  // namespace _mappable
 }  // namespace base
 }  // namespace principia
 
