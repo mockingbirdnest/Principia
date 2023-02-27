@@ -17,8 +17,6 @@ namespace geometry {
 
 using astronomy::J2000;
 using astronomy::operator""_TT;
-using base::CPUFeatureFlags;
-using base::HasCPUFeatures;
 using numerics::CanEmitFMAInstructions;
 using quantities::Length;
 using quantities::Time;
@@ -29,6 +27,7 @@ using quantities::si::Metre;
 using quantities::si::Second;
 using testing::Eq;
 using testing_utilities::AlmostEquals;
+using namespace principia::base::_cpuid;
 
 class PointTest : public testing::Test {
  protected:

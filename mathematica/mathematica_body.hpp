@@ -20,12 +20,12 @@ namespace mathematica {
 namespace internal_mathematica {
 
 using astronomy::J2000;
-using base::is_instance_of_v;
 using quantities::DebugString;
 using quantities::IsFinite;
 using namespace principia::base::_mod;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 
 // Wraps the string in quotes and escapes things properly.
 inline std::string Escape(std::string_view const str) {

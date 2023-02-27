@@ -64,11 +64,6 @@ namespace interface {
 
 using astronomy::J2000;
 using astronomy::ParseTT;
-using base::Base64Encoder;
-using base::Encoder;
-using base::HexadecimalEncoder;
-using base::PullSerializer;
-using base::PushDeserializer;
 using geometry::Arbitrary;
 using geometry::Displacement;
 using geometry::Frame;
@@ -123,9 +118,14 @@ using ::google::protobuf::Arena;
 using ::google::protobuf::ArenaOptions;
 using ::operator<<;
 using namespace principia::base::_array;
+using namespace principia::base::_base64;
+using namespace principia::base::_encoder;
 using namespace principia::base::_fingerprint2011;
 using namespace principia::base::_flags;
+using namespace principia::base::_hexadecimal;
 using namespace principia::base::_not_null;
+using namespace principia::base::_pull_serializer;
+using namespace principia::base::_push_deserializer;
 using namespace principia::base::_serialization;
 namespace si = quantities::si;
 

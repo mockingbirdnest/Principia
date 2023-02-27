@@ -17,8 +17,6 @@ namespace principia {
 namespace numerics {
 namespace internal_cbrt {
 
-using base::CPUFeatureFlags;
-using base::HasCPUFeatures;
 using ::testing::AllOf;
 using ::testing::AnyOf;
 using ::testing::Eq;
@@ -26,6 +24,7 @@ using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Ne;
 using ::testing::Truly;
+using namespace principia::base::_cpuid;
 
 #define EXPECT_SIGNALS(expression, exceptions)                             \
   do {                                                                     \

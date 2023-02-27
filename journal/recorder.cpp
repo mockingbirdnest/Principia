@@ -11,8 +11,8 @@
 
 namespace principia {
 
-using base::HexadecimalEncoder;
 using namespace principia::base::_array;
+using namespace principia::base::_hexadecimal;
 using namespace principia::base::_serialization;
 using namespace principia::base::_version;
 

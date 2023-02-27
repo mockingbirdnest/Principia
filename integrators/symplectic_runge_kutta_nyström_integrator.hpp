@@ -19,11 +19,11 @@ namespace principia {
 namespace integrators {
 namespace internal_symplectic_runge_kutta_nyström_integrator {
 
-using base::is_instance_of_v;
 using geometry::Instant;
 using numerics::FixedVector;
 using quantities::Time;
 using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 
 // This class solves ordinary differential equations of following forms using a
 // symplectic Runge-Kutta-Nyström method:

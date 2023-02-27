@@ -16,8 +16,6 @@
 
 namespace principia {
 
-using base::PullSerializer;
-using base::PushDeserializer;
 using geometry::Instant;
 using interface::principia__AdvanceTime;
 using interface::principia__FutureCatchUpVessel;
@@ -31,6 +29,8 @@ using quantities::si::Hertz;
 using quantities::si::Second;
 using testing_utilities::ReadFromBinaryFile;
 using testing_utilities::ReadLinesFromHexadecimalFile;
+using namespace principia::base::_pull_serializer;
+using namespace principia::base::_push_deserializer;
 using namespace principia::base::_serialization;
 
 namespace ksp_plugin {

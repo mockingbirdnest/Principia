@@ -16,11 +16,11 @@ namespace internal_plugin_io {
 const char preferred_compressor[] = "gipfeli";
 const char preferred_encoder[] = "base64";
 
-using base::OFStream;
-using base::PullSerializer;
-using base::PushDeserializer;
 using testing_utilities::ReadLinesFromBase64File;
 using testing_utilities::ReadLinesFromHexadecimalFile;
+using namespace principia::base::_file;
+using namespace principia::base::_pull_serializer;
+using namespace principia::base::_push_deserializer;
 
 not_null<std::unique_ptr<Plugin const>> ReadPluginFromFile(
     std::filesystem::path const& filename,

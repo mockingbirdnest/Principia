@@ -20,8 +20,6 @@
 
 namespace principia {
 
-using base::CPUFeatureFlags;
-using base::HasCPUFeatures;
 using numerics::CanEmitFMAInstructions;
 using quantities::Area;
 using quantities::Charge;
@@ -48,6 +46,7 @@ using quantities::uk::Rod;
 using quantities::uk::admiralty::Fathom;
 using testing_utilities::AlmostEquals;
 using ::testing::Eq;
+using namespace principia::base::_cpuid;
 
 namespace geometry {
 

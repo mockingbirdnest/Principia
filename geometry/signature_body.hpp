@@ -8,7 +8,7 @@ namespace principia {
 namespace geometry {
 namespace internal_signature {
 
-using base::is_same_template_v;
+using namespace principia::base::_traits;
 
 template<typename FromFrame, typename ToFrame>
 constexpr Signature<FromFrame, ToFrame>::Signature(Sign const x,

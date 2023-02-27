@@ -23,7 +23,7 @@ inline void UpdateWithAbort(absl::Status const& updater,
 
 namespace internal_ordinary_differential_equations {
 
-using base::for_all_of;
+using namespace principia::base::_for_all_of;
 
 template<typename IndependentVariable_, typename... DependentVariable>
 ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable_,

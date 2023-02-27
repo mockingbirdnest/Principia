@@ -13,16 +13,17 @@
 
 namespace principia {
 namespace mathematica {
+namespace internal_local_error_analysis {
 
 using astronomy::KSP191;
 using astronomy::KSPStabilizedSystemFingerprints;
 using astronomy::KSPStockSystemFingerprints;
-using base::OFStream;
 using geometry::Position;
 using physics::DegreesOfFreedom;
 using physics::MassiveBody;
 using quantities::si::Day;
 using quantities::si::Minute;
+using namespace principia::base::_file;
 using namespace principia::base::_not_null;
 
 template<typename Frame>
@@ -106,5 +107,6 @@ LocalErrorAnalyser<Frame>::ForkEphemeris(
       typename Ephemeris<Frame>::FixedStepParameters(integrator, step));
 }
 
+}  // namespace internal_local_error_analysis
 }  // namespace mathematica
 }  // namespace principia
